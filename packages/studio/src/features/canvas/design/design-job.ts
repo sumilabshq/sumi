@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type { Job } from "@widgetarium/core/app-jobs.js";
 import type { JobControls } from "@widgetarium/core/engine/design-port.js";
-import type { Size } from "../canvas/frame-size.js";
+import type { Size } from "../stage/frame-size.js";
 import { Group } from "./design-group.js";
 import { Region } from "./design-region.js";
 import { JobLine } from "./design-job-line.js";

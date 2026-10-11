@@ -1,4 +1,4 @@
-import { flightBetween } from "../packages/studio/src/canvas/flight.ts";
+import { flightBetween } from "../packages/studio/src/features/canvas/stage/flight.ts";
 
 let failed = 0;
 function check(what: string, ok: boolean, got: unknown): void {

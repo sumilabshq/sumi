@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent, RefObject } from "react";
-import { movedNow } from "../canvas/zoom-settled.js";
+import { movedNow } from "../stage/zoom-settled.js";
 import { projectedDrop, shownTopOf } from "./layer-drag.js";
 import type { DragRow, Projection } from "./layer-drag.js";
 

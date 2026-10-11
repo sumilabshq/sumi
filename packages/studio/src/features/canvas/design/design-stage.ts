@@ -4,7 +4,7 @@ import type { Job } from "@widgetarium/core/app-jobs.js";
 import type { CanvasDoc, DesignPort, DrawnDesign, LayerMove } from "@widgetarium/core/engine/design-port.js";
 import type { Look } from "@widgetarium/core/app-look.js";
 import type { Parsed } from "@widgetarium/core/json-text.js";
-import type { Size } from "../canvas/frame-size.js";
+import type { Size } from "../stage/frame-size.js";
 import { CanvasTopBar, DesignCanvas } from "./design-canvas.js";
 import type { DesignCanvasProps } from "./design-canvas.js";
 import { COMPONENTS_PAGE, shownPageOf } from "./design-canvas-page.js";

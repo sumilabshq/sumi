@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { MouseEvent, RefObject } from "react";
 import type { LayerFocus } from "./design-layers-panel.js";
 import { seenLayersOf } from "./design-layers-panel.js";
-import type { PanZoom } from "../canvas/pan-zoom.js";
+import type { PanZoom } from "../stage/pan-zoom.js";
 import { LIVE_SCREEN, hitsAt, parentsOf, pickedHit } from "./design-selection.js";
 import type { PickDepth } from "./design-selection.js";
 import { firstScreenOf, isSameSpot, lookOnto, screenBoxOf, spotOn } from "./design-spotlight.js";

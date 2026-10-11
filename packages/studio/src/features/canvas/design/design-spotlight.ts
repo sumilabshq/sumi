@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import type { Box } from "../canvas/flight.js";
-import type { Look } from "../canvas/pan-zoom.js";
+import type { Box } from "../stage/flight.js";
+import type { Look } from "../stage/pan-zoom.js";
 import type { Hit } from "./design-selection.js";
 
 export interface Spot {

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { StateDrawing } from "../canvas/state-drawing.js";
-import { cardPxOf } from "../canvas/card-width.js";
+import { StateDrawing } from "../stage/state-drawing.js";
+import { cardPxOf } from "../stage/card-width.js";
 import type { Drawing } from "./design-canvas-shapes.js";
 import { DefaultDrawing } from "./design-default-drawing.js";
 import { DrawnWhenSeen } from "./design-drawn-when-seen.js";

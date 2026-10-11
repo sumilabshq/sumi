@@ -1,12 +1,12 @@
 import { createElement as h, useEffect, useMemo, useRef } from "react";
 import type { DragEvent, ReactElement, RefObject } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import { PRESSABLE_CONTROLS, usePanZoom } from "../canvas/pan-zoom.js";
-import type { PanZoom } from "../canvas/pan-zoom.js";
-import { ZoomBar } from "../canvas/zoom-bar.js";
-import { useLayerFit } from "../canvas/layer-fit.js";
-import type { Box } from "../canvas/flight.js";
-import type { Size } from "../canvas/frame-size.js";
+import { PRESSABLE_CONTROLS, usePanZoom } from "../stage/pan-zoom.js";
+import type { PanZoom } from "../stage/pan-zoom.js";
+import { ZoomBar } from "../stage/zoom-bar.js";
+import { useLayerFit } from "../stage/layer-fit.js";
+import type { Box } from "../stage/flight.js";
+import type { Size } from "../stage/frame-size.js";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 import type { DrawnReference, DrawnScreen, DrawnWidget } from "./design-canvas-shapes.js";
 import { imageFilesIn } from "./design-photos.js";

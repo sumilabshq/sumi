@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { Job } from "@widgetarium/core/app-jobs.js";
-import { DESKTOP_FRAME } from "../canvas/frame-size.js";
+import { DESKTOP_FRAME } from "../stage/frame-size.js";
 import type { Drawing, DrawnReference, DrawnScreen, DrawnWidget } from "./design-canvas-shapes.js";
 import { DocsRegion } from "./design-docs.js";
 import type { CanvasDoc } from "./design-docs.js";

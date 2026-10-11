@@ -1,9 +1,9 @@
 import { createElement as h, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactElement, RefObject } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import { DESKTOP_FRAME } from "../canvas/frame-size.js";
-import { StateDrawing } from "../canvas/state-drawing.js";
-import type { StatePicture } from "../canvas/state-drawing.js";
+import { DESKTOP_FRAME } from "../stage/frame-size.js";
+import { StateDrawing } from "../stage/state-drawing.js";
+import type { StatePicture } from "../stage/state-drawing.js";
 import type { Drawing, DrawnScreen } from "./design-canvas-shapes.js";
 import { LIVE_SCREEN, ancestorsOf, hitOfMark, parentsOf } from "./design-selection.js";
 import type { Hit } from "./design-selection.js";

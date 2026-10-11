@@ -1,5 +1,5 @@
 import { NODE_MARK } from "@widgetarium/core/engine/node-marks.js";
-import type { Box } from "../canvas/flight.js";
+import type { Box } from "../stage/flight.js";
 import type { Layer } from "./layer-tree.js";
 
 export interface Hit {

@@ -4,7 +4,7 @@ import { Icon } from "@widgetarium/kit";
 import type { Layer, LayerKind } from "./layer-tree.js";
 import { canHoldChildren } from "./layer-moves.js";
 import type { LayerDrag } from "./design-layer-drag.js";
-import { foldOf } from "../assistant/cards/spec-rows.js";
+import { foldOf } from "../../../assistant/cards/spec-rows.js";
 import { Tip } from "./design-tip.js";
 
 export interface LayerRowProps {

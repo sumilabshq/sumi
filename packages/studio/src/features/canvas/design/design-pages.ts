@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@widgetarium/kit";
-import type { Size } from "../canvas/frame-size.js";
+import type { Size } from "../stage/frame-size.js";
 import type { Drawing, DrawnScreen } from "./design-canvas-shapes.js";
 import { Group } from "./design-group.js";
 import { Region } from "./design-region.js";

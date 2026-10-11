@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { StateDrawing } from "../canvas/state-drawing.js";
-import type { Size } from "../canvas/frame-size.js";
+import { StateDrawing } from "../stage/state-drawing.js";
+import type { Size } from "../stage/frame-size.js";
 import type { Drawing, DrawnState } from "./design-canvas-shapes.js";
 import { ScreenBoard } from "./design-screen-board.js";
 import { DrawnWhenSeen } from "./design-drawn-when-seen.js";

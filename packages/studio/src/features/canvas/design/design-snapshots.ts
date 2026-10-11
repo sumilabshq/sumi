@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { contentHash } from "@widgetarium/core/engine/content-hash.js";
 import type { Drawing } from "./design-canvas-shapes.js";
 import { framePictureOf, keepFramePicture } from "./design-pictures-store.js";
-import { msSinceMoved } from "../canvas/zoom-settled.js";
+import { msSinceMoved } from "../stage/zoom-settled.js";
 import type { PictureTaker } from "@widgetarium/core/engine/design-port.js";
 
 export interface ShownPicture {

@@ -2,8 +2,8 @@ import { createElement as h, useCallback, useMemo, useRef, useState } from "reac
 import type { ReactElement } from "react";
 import type { DesignPort } from "@widgetarium/core/engine/design-port.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
-import type { Size } from "./canvas/frame-size.js";
-import { innerSizeOf, useWatchesSize } from "./canvas/layer-fit.js";
+import type { Size } from "./stage/frame-size.js";
+import { innerSizeOf, useWatchesSize } from "./stage/layer-fit.js";
 import { DESIGN_OPENED_ON, DesignStage } from "./design/design-stage.js";
 import type { TopBarCorners } from "./design/design-top-bar.js";
 

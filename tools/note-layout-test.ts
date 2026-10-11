@@ -1,5 +1,5 @@
-import { placedNotes } from "../packages/studio/src/design/note-layout.ts";
-import type { NoteBox, PlacedNote } from "../packages/studio/src/design/note-layout.ts";
+import { placedNotes } from "../packages/studio/src/features/canvas/design/note-layout.ts";
+import type { NoteBox, PlacedNote } from "../packages/studio/src/features/canvas/design/note-layout.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
