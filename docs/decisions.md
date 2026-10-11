@@ -185,7 +185,7 @@ The decisions, each with what it replaced:
 `packages/widgetarium` held five jobs — the widget API facade, app mode, the studio, the CLI and the
 Vite plugin — and was split so each has one owner: app mode and the routers moved into core
 (`@widgetarium/core/app`), the CLI into `packages/cli`, the plugin into `packages/vite`, the studio into
-`apps/studio` as `@widgetarium/studio`, and the facade was deleted. Files moved as they were; only
+`packages/studio` as `@widgetarium/studio`, and the facade was deleted. Files moved as they were; only
 imports and package wiring changed.
 
 - **Core imports no pack.** `openApp` registered `corePack` itself, which would have made core depend
@@ -198,7 +198,7 @@ imports and package wiring changed.
 
 ## The studio wraps the app, it is not inside it
 
-The engine's shell (band, app switcher, AI button, canvas; assistant later) is `@widgetarium/studio` (`apps/studio`),
+The engine's shell (band, app switcher, AI button, canvas; assistant later) is `@widgetarium/studio` (`packages/studio`),
 itself built from `@studio` widgets and a pack. Replaced: `@chrome` widgets in the registry, a
 `@chrome` pack, and corner boards an Obsidian note laid over itself.
 
@@ -223,7 +223,7 @@ itself built from `@studio` widgets and a pack. Replaced: `@chrome` widgets in t
 - **One composition.** `startOpenedStudio` takes routes and a built registry, so the Vite build and
   the vault's in-memory compile reach the same studio; only how a project is opened differs.
 - **The canvas draws the running project, not a copy of it.** "Edit in canvas" swaps the outlet for
-  `ProjectCanvas` (`apps/studio/src/canvas`): one frame per route drawn by the
+  `ProjectCanvas` (`packages/studio/src/canvas`): one frame per route drawn by the
   `routeElementOf` the app uses, each over a memory router of its own whose page params are keyed per
   frame, so a frame never navigates the studio; and a Components page drawing every widget's
   `defineStates`. Pan, zoom and the camera latch live there once, and the Obsidian design view

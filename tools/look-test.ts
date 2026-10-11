@@ -12,7 +12,7 @@ import {
 } from "../packages/core/src/app-look.ts";
 import type { Look, OfferedSetting } from "../packages/core/src/app-look.ts";
 import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
-import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../apps/studio/src/design/look-tokens.ts";
+import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/studio/src/design/look-tokens.ts";
 import { runLookCommand } from "../apps/obsidian/src/ai/look-command.ts";
 import type { Told } from "../apps/obsidian/src/ai/shape-command.ts";
 

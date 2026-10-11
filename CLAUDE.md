@@ -17,10 +17,10 @@ the rename that fixes it. A `widget.js` beside a TypeScript source is ignored, n
 
 ```
 apps/obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
-apps/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
+packages/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
       ↓
 packages/cli      FSL  @widgetarium/cli: the `widgetarium` bin (create, check, catalogue, add) and templates/project
-packages/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, apps/studio, so a project's `npm run studio` resolves it
+packages/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, packages/studio, so a project's `npm run studio` resolves it
       ↓
 packages/core     FSL  the board builder: tree, engine, queries and commands, renderer, laws; `.` is the widget API, `./app` app mode and the routers
       ↓
@@ -529,7 +529,7 @@ a press that opens the catalogue and puts the pick at the end of **that** box. T
 add: a press that named no box left the person guessing where the widget went.
 
 **The catalogue is an engine board of widgets, and every pick is a request.** `CatalogueBoard`
-(`apps/studio/src/catalogue`) draws the catalogue or the docs board
+(`packages/studio/src/catalogue`) draws the catalogue or the docs board
 (`catalogue-boards.ts`) of static `@catalogue` widgets (`catalogue/widgets`) over the `@catalogue`
 pack and a `CataloguePort`; it is the one owner of that UI. The studio draws it in its panel, and
 Obsidian's two sidebar `ItemView`s draw the same component over the plugin's port. Nothing of it is
@@ -551,14 +551,14 @@ studio. `test:studio-render` measures both in Chrome and proves the app entry bu
 `test:project-render` builds a created app both ways.
 
 **The studio is a Widgetarium app.** Its band is a board of `@studio/*` widgets
-(`apps/studio/src/widgets`) over the `@studio` pack; the route is drawn below it by the
+(`packages/studio/src/widgets`) over the `@studio` pack; the route is drawn below it by the
 same `routeElementOf` app mode calls, never merged into the band's tree, because a route nested one
 level down stops being regions and changes its spacing. The outlet's view and the one right panel —
 `none | assistant | catalogue`, toggled by the band's Widgets and AI buttons — live in the studio's own
 `StudioState`, made by `createStudioState` (`studio/studio-state.ts`) for each `StartedStudio`, one per leaf
 in Obsidian. That object is the one writer: `@studio` commands reach it as `ports.studioState`, and a
 catalogue ask opens the panel through its `openPanel`. The canvas view is the engine's `ProjectCanvas`
-(`apps/studio/src/canvas`): a frame per route on its own memory router and the
+(`packages/studio/src/canvas`): a frame per route on its own memory router and the
 widgets' `defineStates`, under the one pan-zoom the Obsidian design view imports too. What the host can do is its
 `StudioHostPort` (`packages/core/src/engine/studio-host.ts`): window-button insets, which the safe areas
 read as `--wg-studio-inset-left|right`, and the apps; a host without them answers "not available" and

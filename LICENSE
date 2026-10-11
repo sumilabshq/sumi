@@ -23,8 +23,8 @@ service. Each version becomes Apache 2.0 two years after its release:
                   packages/cli/LICENSE
   packages/vite/  the Vite plugin a project builds with
                   packages/vite/LICENSE
-  apps/studio/    the studio drawn around an app
-                  apps/studio/LICENSE
+  packages/studio/    the studio drawn around an app
+                  packages/studio/LICENSE
   apps/obsidian/  the Obsidian plugin
                   apps/obsidian/LICENSE
 

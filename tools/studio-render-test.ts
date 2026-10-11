@@ -7,7 +7,7 @@ import { promisify } from "node:util";
 import esbuild from "esbuild";
 import { NOT_AVAILABLE_ON_HOST } from "../packages/core/src/engine/studio-host.ts";
 import { ASSISTANT_NOT_AVAILABLE } from "../packages/core/src/engine/assistant-port.ts";
-import { STUDIO_BAND_PX } from "../apps/studio/src/shared/studio-band-size.ts";
+import { STUDIO_BAND_PX } from "../packages/studio/src/shared/studio-band-size.ts";
 import {
 	catalogueImportsIn,
 	checkCatalogueAbsentInApp,
@@ -93,7 +93,7 @@ const MAC_SAFE_AREA_PX = 76;
 const CENTRE_SLACK_PX = 2;
 const REACT_ID = /«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g;
 const APP_ENTRY = "packages/core/src/app.ts";
-const STUDIO_FOLDER = "apps/studio/src/";
+const STUDIO_FOLDER = "packages/studio/src/";
 
 const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-render"));
 mkdirSync(shotsAt, { recursive: true });

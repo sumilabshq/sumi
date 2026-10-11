@@ -19,29 +19,6 @@ const FONT_PAIRS: Readonly<Record<string, FontPair>> = {
 	contrast: { family: "Hanken Grotesk", weights: TEXT_WEIGHTS },
 };
 
-function fontTokensOf({ family }: FontPair): Tokens {
-	const stack = `"${family}", system-ui, sans-serif`;
-	return { "--font-interface": stack, "--font-text": stack };
-}
-
-interface Expression {
-	readonly plate: number;
-	readonly pill: string;
-	readonly controls: readonly [number, number, number];
-	readonly spring: string;
-}
-
-function expressionOf({ plate, pill, controls: [small, medium, large], spring }: Expression): Tokens {
-	return {
-		"--wg-kit-plate": `${plate}px`,
-		"--wg-kit-pill": pill,
-		"--wg-kit-control-s": `${small}px`,
-		"--wg-kit-control-m": `${medium}px`,
-		"--wg-kit-control-l": `${large}px`,
-		"--wg-spring": spring,
-	};
-}
-
 const LIVE_RULES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
 	edges: {
 		outline:
@@ -97,4 +74,27 @@ export function fontsUrlOf(look: Look): string | null {
 	const pair = picked === undefined ? undefined : FONT_PAIRS[picked];
 	if (!pair) return null;
 	return FONTS_URL.replace("{family}", pair.family.replaceAll(" ", "+")).replace("{weights}", pair.weights);
+}
+
+function fontTokensOf({ family }: FontPair): Tokens {
+	const stack = `"${family}", system-ui, sans-serif`;
+	return { "--font-interface": stack, "--font-text": stack };
+}
+
+interface Expression {
+	readonly plate: number;
+	readonly pill: string;
+	readonly controls: readonly [number, number, number];
+	readonly spring: string;
+}
+
+function expressionOf({ plate, pill, controls: [small, medium, large], spring }: Expression): Tokens {
+	return {
+		"--wg-kit-plate": `${plate}px`,
+		"--wg-kit-pill": pill,
+		"--wg-kit-control-s": `${small}px`,
+		"--wg-kit-control-m": `${medium}px`,
+		"--wg-kit-control-l": `${large}px`,
+		"--wg-spring": spring,
+	};
 }

@@ -24,7 +24,7 @@ export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/packs/stats",
 	"packages/packs/git",
 	"packages/packs/catalogue",
-	"apps/studio",
+	"packages/studio",
 	"packages/vite",
 	"packages/cli",
 ];
@@ -52,7 +52,7 @@ const BROWSER_STYLES = {
 	host: path.join(REPO, "packages/core/browser-host.css"),
 	board: path.join(REPO, "apps/obsidian/styles.css"),
 	into: path.join(REPO, "packages/core/dist/styles.css"),
-	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
+	studioInto: path.join(REPO, "packages/studio/dist/studio.css"),
 };
 
 export async function packEngine(): Promise<PackedPackage[]> {
