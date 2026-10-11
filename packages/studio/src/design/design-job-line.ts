@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Loader, useNow } from "@widgetarium/kit";
+import { Spinner, useNow } from "@widgetarium/kit";
 import type { Job } from "@widgetarium/core/app-jobs.js";
 import type { JobControls } from "./design-job.js";
 import { doingOf } from "@widgetarium/core/job-words.js";
@@ -26,7 +26,7 @@ export function JobLine({
 		{ className: isInline ? "wg-design-job-line is-inline" : "wg-design-job-line", "data-wg-job": job.id },
 		[
 			h("div", { key: "status", className: "wg-design-job-status" }, [
-				h(Loader, { key: "mark", label: "", size: 18 }),
+				h(Spinner, { key: "mark", size: 18 }),
 				h("span", { key: "said" }, doingOf(job)),
 			]),
 			h("div", { key: "meta", className: "wg-design-job-meta" }, [

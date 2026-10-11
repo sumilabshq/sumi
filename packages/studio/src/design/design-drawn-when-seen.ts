@@ -2,7 +2,6 @@ import { createContext, createElement as h, useContext, useEffect, useState } fr
 import type { ReactElement, ReactNode } from "react";
 import { useMountedInTurn } from "./design-mount-turns.js";
 import { askForSnapshot, useFramePicture } from "./design-snapshots.js";
-import { useIsFar } from "../canvas/zoom-settled.js";
 import type { PictureTaker } from "@widgetarium/core/engine/design-port.js";
 
 export interface DrawnWhenSeenProps {
@@ -26,7 +25,8 @@ export function DrawnWhenSeen({ minHeight, frame, pictureKey, children }: DrawnW
 	const isMounted = useMountedInTurn(useIsSeen(node)) || isAtOnce;
 	const picture = useFramePicture(frame);
 	const isFresh = picture?.key === pictureKey;
-	const isPicture = useIsFar() && picture !== undefined && !isAtOnce;
+	// TRADE-OFF: pictures at every zoom; seventeen live frames froze Obsidian, a sharp close-up costs too much
+	const isPicture = picture !== undefined && !isAtOnce;
 	const pictureOf = useContext(TAKES_PICTURES);
 	useAsksForSnapshot(isMounted && !isAtOnce && !isFresh ? live : null, frame, pictureKey, pictureOf);
 	const isLiveDrawn = isMounted && !(isPicture && isFresh);

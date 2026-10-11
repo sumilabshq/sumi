@@ -1,4 +1,4 @@
-import { createElement as h } from "react";
+import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import { Contained } from "@widgetarium/core/catalogue-contained.js";
 import { leaseFor } from "@widgetarium/core/engine/render.js";
@@ -22,6 +22,9 @@ const NOT_BUILT = "{widget} is not built yet";
 const FAILED = "{widget} failed to draw this state: {why}";
 
 export function StateDrawing({ picture, registry }: StateDrawingProps): ReactElement {
+	const mounts = useMemo(() => mountsOf(picture, registry), [picture, registry]);
+	const given = isObject(picture.props) ? picture.props : {};
+	const props = mounts === null ? given : { ...given, mounts };
 	const component = registry.get(picture.widget)?.component;
 	if (!component) return refused(NOT_BUILT.replace("{widget}", picture.widget));
 	const instead = (failure: unknown): ReactElement =>
@@ -31,7 +34,6 @@ export function StateDrawing({ picture, registry }: StateDrawingProps): ReactEle
 				failure instanceof Error ? failure.message : String(failure),
 			),
 		);
-	const props = withSlotsDrawn(picture, registry);
 	return h(Contained, { instead }, h("div", { className: "wg-studio-drawn" }, h(component, props)));
 }
 
@@ -43,14 +45,13 @@ export function statePropsOf<Props>(
 	return states[state ?? first ?? ""];
 }
 
-function withSlotsDrawn(picture: StatePicture, registry: Registry): Readonly<Record<string, unknown>> {
+function mountsOf(picture: StatePicture, registry: Registry): Readonly<Record<string, MountEntry[]>> | null {
 	const props = isObject(picture.props) ? picture.props : {};
 	const slots = Object.keys(mountSpecsOf(registry.get(picture.widget)?.manifest));
-	if (slots.length === 0) return props;
-	const mounts = Object.fromEntries(
+	if (slots.length === 0) return null;
+	return Object.fromEntries(
 		slots.map((name) => [name, slotStatesIn(props[name]).map((one, at) => entryOf(one, at, registry))]),
 	);
-	return { ...props, mounts };
 }
 
 function slotStatesIn(held: unknown): SlotState[] {

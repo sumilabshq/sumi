@@ -341,7 +341,11 @@ check(
 	sameList(studio.seen.cards, ["Full", "Empty"]),
 	studio.seen.cards,
 );
-check("a state card draws the state's props", studio.seen.cardDrawsState === true, studio.seen.cardDrawsState);
+check(
+	"a state card draws the state, live or as its picture",
+	studio.seen.cardDrawsState === true,
+	studio.seen.cardDrawsState,
+);
 check(
 	"a press on the route's popover trigger reaches it",
 	studio.seen.routeTriggerHit === true,

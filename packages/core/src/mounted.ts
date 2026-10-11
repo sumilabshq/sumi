@@ -59,7 +59,7 @@ function useDrawsInto(entry: MountedEntry): RefObject<HTMLDivElement | null> {
 		}
 		release.current?.();
 		release.current = null;
-	});
+	}, [entry.drawInto, platesAbove]);
 	useEffect(() => () => release.current?.(), []);
 	return node;
 }
