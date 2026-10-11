@@ -1,0 +1,14 @@
+{
+	"agent": "Recommended choices for the spec card. Drop what this product does not need, add what it does, offer only options that fit.",
+	"settings": [
+		{ "name": "plates", "ask": "Groups on cards or on the page?", "options": ["none", "cards"], "default": "none" },
+		{ "name": "ground", "ask": "Page background", "options": ["frost", "white"], "default": "frost" },
+		{ "name": "wash", "ask": "Colour glowing through the glass", "options": ["off", "on"], "default": "off" },
+		{ "name": "accent", "ask": "Status colour", "options": ["none", "neon"], "default": "neon" },
+		{
+			"name": "shell",
+			"ask": "Navigation",
+			"options": "the agent offers the shells from shells.md that fit the domain"
+		}
+	]
+}

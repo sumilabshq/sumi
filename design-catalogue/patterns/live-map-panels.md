@@ -10,7 +10,7 @@ device: [desktop, both]
 
 # Live map + floating panels
 
-The structure of the Noir Telemetry source. A product structure, not a look: any design system can paint it.
+A product structure, not a look: any design system can paint it.
 
 ## Job
 

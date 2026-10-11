@@ -1,0 +1,6 @@
+{
+	"id": "frosted",
+	"title": "Frosted",
+	"kit": "packages/kit",
+	"settings": "settings.json"
+}
