@@ -49,9 +49,21 @@ Take the feel, never the page.
 | `14-objects-and-one-pill.webp`   | soft round plates, a found object picture, one tinted pill as the label                                    |
 | `15-record-figures.webp`         | a record led by a big figure, small grey labels                                                            |
 
+Built in this system for other products (`tests/`) — proof the rules travel to a domain the source never had:
+
+| File                                 | Read it for                                                                                                   |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `16-built-translate-word-opened.png` | text leads the page in the reading size; the chosen word is the one black pill; what it opens is a white card |
+| `17-built-phone-conversation.png`    | the one washed plate holds the sentence that matters now; a line splits halves that face two people           |
+| `18-built-phone-typing.png`          | white ground, no accent: the result leads, a formality pill, a quiet hint under it                            |
+| `19-built-cards-chosen-white.png`    | `plates: cards` for places a person opens one by one; the chosen card is white                                |
+| `20-built-phone-opened-card.png`     | an opened card over the grid, actions as circles, one black commit button                                     |
+| `21-built-phone-tile-wash.png`       | a tile opened over the grid with a wash, figures by air, never by lines                                       |
+| `22-built-record-cards.png`          | a record page under a rail: one white card for the next deadline, the rest frosted                            |
+
 ## Settings
 
-Values the agent picks for a product and the person may change later with one switch. `settings.json` beside this file lists them for the canvas.
+Values the agent picks for a product and the person may change later with one switch. They hold for the whole app; only `plates` may differ by page kind, and then by kind, never by screen (overviews `none`, collections of objects `cards`). `settings.json` beside this file lists them for the canvas.
 
 | Setting  | Values            | Default    | What changes                                                                                                     |
 | -------- | ----------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -72,21 +84,23 @@ The rule that makes this look: **at rest, nothing has a background.**
 - **Top pills or a rail:** top pills when the app has up to seven sections and its pages lead with type (refs 1, 8); a rail of circled icons with an avatar at the foot when it has more sections or its pages are records (ref 11). One app uses one of them.
 - **Tabs** are grey words. The chosen one is black and underlined (ref 1, `Authorized`), or a black pill (ref 1, `1M`). Tabs switch views, filter a list and pick a period alike — one mechanism for all three.
 - **Filters and toolbars** are grey pills with no outline: `Filters`, `Export CSV ⌄`, `Page size 15 ⌄` (ref 5). A pill shows its current value beside its label.
-- **Selected content** — an opened row, a picked card — gets the plate or the black fill; its siblings stay bare (ref 7).
+- **Selected content** — an opened row, a picked card — gets the plate or the black fill; its siblings stay bare (ref 7). Something opened over the page (a word's meanings, a record) is a white card on the frosted ground in both `plates` settings.
 - **The rule is for rows of choices** (navigation, tabs, filters, periods, list rows). Under `plates: cards` the tiles are content and carry their frosted plate at rest; the chosen tile is told apart by turning **white** (ref 10) or, with `wash: on`, by being the washed one (ref 7). Never by a border.
 - **Buttons at rest are grey pills.** There is no colour primary: the strongest button is black. Use it for the one action that commits; everything else is a grey pill or a circled icon.
 
 ## Page hero and layout
 
-- **Hero:** a light display title (300 weight, 40–56px) with one grey line under it; a small note or link on the right. The hero ends in one full-width hairline (ref 3).
-- **One figure leads an overview:** a giant light number (96–120px) with its month under it in ink-3, beside two or three small figures with their change pills (ref 1). The small figures stand left in a row; the giant one is centred over the chart it summarises.
-- **Charts are the canvas:** a full-width line or bar chart with a soft range brush under it, period pills centred below (ref 1). Markers on the chart are round pills with an icon.
-- **Content below the hero obeys the tabs:** tabs on the left, a count pill (`237 Items`) and a search pill, then the list (ref 4).
-- **Phone:** a top bar of two circled buttons around a centred title; tabs become a large swipeable title row where the next tab is cut off grey (refs 6–7).
+Principles, not a page. The structure of every page comes from what the person does on it; the references show the feel of these principles, never a layout to fill with other nouns.
+
+- **One thing leads each page, and it is chosen by the page's job:** the text being worked on, a figure, a chart, a picture, a list. It takes the space and the largest light type; everything else is visibly smaller.
+- **A page opens with a light title and at most one quiet line**, and ends its head with the one full-width hairline when content follows.
+- **Space separates, type ranks:** groups stand apart by air, and inside them size and the black/grey step say what matters.
+- **The chosen state is the only body on a page** (Navigation and selection); a page with three filled shapes has lost its hierarchy.
+- **Phone:** the same principles on one column; the leading thing first, controls as large pills and circles within reach of the thumb.
 
 ## Lines and plates
 
-- **Lines are rare and only divide screens:** the sidebar from the content, the hero from the content. A table has no row lines and no outer border; spacing is the row (ref 4).
+- **Lines are rare and only divide screens:** the sidebar from the content, the hero from the content, and one screen split into halves that face different people or tasks (two sides of a conversation). Inside a strip of figures, air replaces the line. A table has no row lines and no outer border; spacing is the row (ref 4).
 - **`plates: none`:** groups are made by space and a small grey label. No plate around figures, no plate around the chart.
 - **`plates: cards`:** a group sits on a frosted plate — the ground lightened 4–6% with a backdrop blur of 24–40px, radius 24–32px, no border, no shadow (refs 6, 8). A white card on a frosted ground is the one allowed lift (ref 10). Cards are tiles of a grid; one tile opens into the full record over the grid.
 - **`wash: on`:** a plate shows a blurred gradient of two neighbouring hues behind its glass (ref 9). At most two washed plates per screen, never behind a table. A wash belongs to one plate, inside its edges; the ground never glows.
@@ -108,19 +122,20 @@ OKLCH. Light first; dark beside it.
 
 - **Black is the primary.** The chosen item, the committing button, the selected period are ink-filled. No hue does that job.
 - **Colour is information, with two named exceptions.** Information: `+33%` on lime, `-22%` on violet, a green check for finished. Exceptions: the one chart series that is the page's subject (and the range it highlights), and a wash when `wash: on`. Nothing else is coloured.
-- **What each hue means:** lime = done, up, good; violet = in progress, down, needs a look; a warning is a black triangle, never red.
+- **What each hue means:** lime = done, up, good; violet = in progress, down, needs a look; a warning is a black triangle, never red. The chosen one among alternatives is black, like every other choice, not a hue.
 - **The black/grey step is the hierarchy:** what is chosen or a value is ink; what is at rest or a label is ink-2 or ink-3. Never fade text with opacity.
 
 ## Type
 
 One geometric sans (Urbanist, Outfit, Manrope class). Light weights carry size; regular carries reading.
 
-| Role    | Weight | Sizes        | Carries                            |
-| ------- | ------ | ------------ | ---------------------------------- |
-| figure  | 300    | 96 · 120     | the one leading number of a page   |
-| display | 300    | 40 · 56      | page and record titles             |
-| heading | 400    | 20 · 24      | a tab row on a phone, a card title |
-| text    | 400    | 13 · 15 · 17 | everything else                    |
+| Role    | Weight | Sizes        | Carries                                                  |
+| ------- | ------ | ------------ | -------------------------------------------------------- |
+| figure  | 300    | 96 · 120     | the one leading number of a page                         |
+| display | 300    | 40 · 56      | page and record titles                                   |
+| heading | 400    | 20 · 24      | a tab row on a phone, a card title                       |
+| reading | 300    | 20 · 28 · 34 | the text the page exists for (a translation, an article) |
+| text    | 400    | 13 · 15 · 17 | everything else                                          |
 
 - Labels are small and ink-3; values beside them are ink and larger.
 - Figures are tabular and never bold.
@@ -145,7 +160,7 @@ Soft and physical: plates fade and blur in over 220ms, a chosen pill slides to i
 ## Fit
 
 - Suits: overviews and logs, money and credit, health, trackers glanced at daily, phone-first apps of a few kinds of record.
-- Weak for: dense all-day tables of many columns (Minimal), text-heavy reading, products with many simultaneous actions per screen.
+- Weak for: dense all-day tables of many columns (Minimal), long documents read for an hour, products with many simultaneous actions per screen. Short texts read at a glance — a translation, a message, a phrase — suit it.
 
 ## Never
 
