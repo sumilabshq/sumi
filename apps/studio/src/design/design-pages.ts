@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@widgetarium/kit";
 import type { Size } from "../canvas/frame-size.js";
 import type { Drawing, DrawnScreen } from "./design-canvas-shapes.js";
 import { Group } from "./design-group.js";
@@ -13,11 +14,19 @@ export interface PagesRegionProps extends Drawing {
 	readonly aside?: ReactNode;
 }
 
-const PAGES = "Pages";
+export const PAGES = "Pages";
 const STATES_SAID = "{count} states";
+const NOTHING_DRAWN = "No pages drawn yet";
+const DRAWN_WHEN =
+	"The assistant draws every page here at the design step, after Build it is pressed on the spec card. Ask in the chat to start.";
 
 export function PagesRegion({ screens, size, status, aside, registry, host }: PagesRegionProps): ReactElement | null {
-	if (screens.length === 0) return null;
+	if (screens.length === 0)
+		return h(
+			Region,
+			{ title: PAGES, count: 0, aside },
+			h(Empty, null, h(EmptyHeader, null, h(EmptyTitle, null, NOTHING_DRAWN), h(EmptyDescription, null, DRAWN_WHEN))),
+		);
 	return h(
 		Region,
 		{ title: PAGES, count: screens.length, aside },

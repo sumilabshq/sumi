@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { SPEC_FOLDER } from "./app-spec.js";
+import { issueSaidOf, jsonOf } from "./json-text.js";
 
 export const DESIGN_FOLDER = "design";
 export const DESIGN_FILE = "canvas.json";
 export const REFERENCES_FOLDER = "references";
 
-const NOT_JSON = "the canvas is not JSON: {why}";
+const THE_CANVAS = "the canvas";
 
 export type ScreenState = z.infer<typeof StateSchema>;
 
@@ -136,16 +137,18 @@ export function withScreenAdded(text: string | null, placement: ScreenPlacement)
 }
 
 export function readDesign(text: string): DesignRead {
-	let held: unknown;
-	try {
-		held = JSON.parse(text);
-	} catch (failure) {
-		return { refusal: NOT_JSON.replace("{why}", failure instanceof Error ? failure.message : String(failure)) };
-	}
-	const parsed = DesignSchema.safeParse(held);
+	const held = jsonOf(text, THE_CANVAS);
+	if (held.refusal !== undefined) return { refusal: held.refusal };
+	const parsed = DesignSchema.safeParse(held.value);
 	if (parsed.success) return { design: parsed.data };
-	const [issue] = parsed.error.issues;
-	return { refusal: `${issue?.path.join(".") || "the canvas"}: ${issue?.message ?? "does not fit"}` };
+	return { refusal: issueSaidOf(parsed.error, THE_CANVAS) };
+}
+
+export function isNothingDrawn(text: string): boolean {
+	const held = jsonOf(text, THE_CANVAS);
+	if (held.refusal !== undefined) return false;
+	const parsed = DesignFieldsSchema.safeParse(held.value);
+	return parsed.success && parsed.data.screens.length + parsed.data.references.length === 0;
 }
 
 const ScreenFileSchema = z
@@ -211,14 +214,14 @@ const ScreenSchema = z
 		message: "a screen names one file, or its states, each with a file of its own",
 	});
 
-const DesignSchema = z
-	.object({
-		screens: z.array(ScreenSchema).default([]),
-		references: z.array(ReferenceSchema).default([]),
-	})
-	.refine((design) => design.screens.length + design.references.length > 0, {
-		message: "a design shows at least one screen or one reference",
-	});
+const DesignFieldsSchema = z.object({
+	screens: z.array(ScreenSchema).default([]),
+	references: z.array(ReferenceSchema).default([]),
+});
+
+const DesignSchema = DesignFieldsSchema.refine((design) => design.screens.length + design.references.length > 0, {
+	message: "a design shows at least one screen or one reference",
+});
 
 function screenWith(placed: unknown, { screen, state, file, situation }: ScreenPlacement): unknown {
 	const name = state ?? screen;

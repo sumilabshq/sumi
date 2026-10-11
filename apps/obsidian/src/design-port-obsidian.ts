@@ -1,7 +1,17 @@
 import { Notice, TFile } from "obsidian";
 import type { WorkspaceLeaf } from "obsidian";
-import { designFolderOf, designPathOf, readDesign, referencePathOf, statesOf } from "@widgetarium/core/app-design.js";
+import {
+	designFolderOf,
+	designPathOf,
+	isNothingDrawn,
+	readDesign,
+	referencePathOf,
+	statesOf,
+} from "@widgetarium/core/app-design.js";
 import type { Design } from "@widgetarium/core/app-design.js";
+import { lookPathOf, lookToWrite, readLook, withOptionPicked } from "@widgetarium/core/app-look.js";
+import type { Look } from "@widgetarium/core/app-look.js";
+import type { Parsed } from "@widgetarium/core/json-text.js";
 import { appWidgetsOf } from "@widgetarium/core/app-widgets.js";
 import { specPathOf } from "@widgetarium/core/app-spec.js";
 import { refusedDesignOf } from "@widgetarium/core/engine/design-port.js";
@@ -31,6 +41,8 @@ const NO_PAGE_FOLDER = "{widget} has no folder in this vault, so its layout cann
 const NOT_MOVED = "Nothing was moved: {why}";
 const NO_NOTE_TO_RETURN_TO = "{app} has no page with a note to go back to.";
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
+const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
+const NOT_PICKED = "The look was not changed: {why}";
 
 export function obsidianDesignPort(plugin: WidgetariumPlugin, place: DesignPlace): DesignPort {
 	const drawnOn = new Map<string, DrawnDesign>();
@@ -51,6 +63,8 @@ export function obsidianDesignPort(plugin: WidgetariumPlugin, place: DesignPlace
 		addPhotos: (app, photos) => photosAdded(plugin, app, photos),
 		moveLayer: (widget, move) => layerMoved(plugin, widget, move),
 		returnToView: (app, page) => returnedToAppNote(plugin, place, app, page),
+		look: (app) => readAppLook(plugin, app),
+		pickLook: (app, settingName, option) => pickLookOption(plugin, app, settingName, option),
 		pictureOf: canvasOf,
 	};
 }
@@ -66,7 +80,8 @@ export async function studioDesignOf(
 
 export async function designOf(plugin: WidgetariumPlugin, app: string, isStarting = false): Promise<DrawnDesign> {
 	const text = await plugin.app.vault.adapter.read(designPathOf(app)).catch(() => null);
-	if (text === null && isStarting) return { screens: [], references: [], widgets: [] };
+	const isEmpty = text === null ? isStarting : isNothingDrawn(text);
+	if (isEmpty) return { screens: [], references: [], widgets: [] };
 	if (text === null) return refusedDesignOf(app, NO_DESIGN_YET.replace("{app}", app));
 	const read = readDesign(text);
 	if (read.refusal !== undefined) return refusedDesignOf(app, read.refusal);
@@ -109,7 +124,7 @@ function polledChanges(
 async function changeStampOf(plugin: WidgetariumPlugin, app: string, drawn: DrawnDesign | undefined): Promise<string> {
 	const adapter = plugin.app.vault.adapter;
 	const stats = await Promise.all(
-		[designPathOf(app), specPathOf(app)].map((path) => adapter.stat(path).catch(() => null)),
+		[designPathOf(app), specPathOf(app), lookPathOf(app)].map((path) => adapter.stat(path).catch(() => null)),
 	);
 	const screens = drawn?.screens ?? [];
 	const blocksNow = draftsOn(screens)
@@ -119,6 +134,34 @@ async function changeStampOf(plugin: WidgetariumPlugin, app: string, drawn: Draw
 		.map((id) => plugin.registry.get(id)?.buildKey ?? "")
 		.join(",");
 	return [...stats.map((stat) => String(stat?.mtime ?? "")), blocksNow, buildsNow].join("|");
+}
+
+async function readAppLook(plugin: WidgetariumPlugin, app: string): Promise<Parsed<Look> | null> {
+	const text = await plugin.app.vault.adapter.read(lookPathOf(app)).catch(() => null);
+	if (text === null) return null;
+	const read = readLook(text);
+	if (read.refusal !== undefined) console.error("[widgetarium] the look of the app cannot be read", app, read.refusal);
+	return read;
+}
+
+async function pickLookOption(
+	plugin: WidgetariumPlugin,
+	app: string,
+	settingName: string,
+	option: string,
+): Promise<void> {
+	const was = await readAppLook(plugin, app);
+	if (!was) return refusePick(NO_LOOK.replace("{app}", app));
+	if (was.refusal !== undefined) return refusePick(was.refusal);
+	const picked = withOptionPicked(was.value, settingName, option);
+	if (picked.refusal !== undefined) return refusePick(picked.refusal);
+	// TRADE-OFF: read then write across two processes; an agent write between them loses this pick, a lock costs more.
+	await plugin.app.vault.adapter.write(lookPathOf(app), lookToWrite(picked.value));
+}
+
+function refusePick(refusal: string): never {
+	new Notice(NOT_PICKED.replace("{why}", refusal));
+	throw new Error(refusal);
 }
 
 async function photosAdded(plugin: WidgetariumPlugin, app: string, photos: readonly File[]): Promise<void> {

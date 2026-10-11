@@ -2,6 +2,8 @@ import { Fragment, createElement as h, useCallback, useEffect, useMemo, useRef, 
 import type { ReactElement } from "react";
 import type { Job } from "@widgetarium/core/app-jobs.js";
 import type { CanvasDoc, DesignPort, DrawnDesign, LayerMove } from "@widgetarium/core/engine/design-port.js";
+import type { Look } from "@widgetarium/core/app-look.js";
+import type { Parsed } from "@widgetarium/core/json-text.js";
 import type { Size } from "../canvas/frame-size.js";
 import { CanvasTopBar, DesignCanvas } from "./design-canvas.js";
 import type { DesignCanvasProps } from "./design-canvas.js";
@@ -34,11 +36,12 @@ export const DESIGN_OPENED_ON: DesignViewState = { page: "", isLayersOpen: false
 interface LoadedDesign extends DrawnDesign {
 	readonly jobs: readonly Job[];
 	readonly docs: readonly CanvasDoc[];
+	readonly look: Parsed<Look> | null;
 }
 
 type StageActions = Pick<
 	DesignCanvasProps,
-	"controls" | "opener" | "onAddPhotos" | "onMove" | "onReturn" | "onPage" | "onLayers" | "onMode"
+	"controls" | "opener" | "onAddPhotos" | "onMove" | "onReturn" | "onPage" | "onLayers" | "onMode" | "onPickLook"
 >;
 
 export function DesignStage(props: DesignStageProps): ReactElement | null {
@@ -100,9 +103,9 @@ function useLoadedDesign(port: DesignPort, app: string): readonly [LoadedDesign 
 
 async function loadedDesignOf(port: DesignPort, app: string): Promise<LoadedDesign> {
 	const jobs = port.jobs(app);
-	const docs = await port.docs(app);
-	const design = await port.design(app, jobs.length > 0 || docs.length > 0);
-	return { ...design, jobs, docs };
+	const [docs, look] = await Promise.all([port.docs(app), port.look(app)]);
+	const design = await port.design(app, jobs.length > 0 || docs.length > 0 || look !== null);
+	return { ...design, jobs, docs, look };
 }
 
 function useShownPage(
@@ -156,6 +159,8 @@ function useStageActions({ port, app, view, onView }: DesignStageProps, needs: S
 			onMove: (widget: string, move: LayerMove) =>
 				void port.moveLayer(widget, move).catch(failed("the layer was not moved")),
 			onReturn: () => void port.returnToView(app, page).catch(failed("the canvas cannot return to the app")),
+			onPickLook: (settingName: string, option: string) =>
+				void port.pickLook(app, settingName, option).then(load, failed("the look was not changed")),
 			onPage,
 			onLayers: () => onView({ ...view, isLayersOpen: !view.isLayersOpen }),
 			onMode: (mode: CanvasMode) => onView({ ...view, mode }),

@@ -9,7 +9,7 @@ import { KitRegion } from "./design-kit.js";
 import { PlannedPageRegion, pagesBeingWorkedOn, runningJobOfPage } from "./design-job.js";
 import type { JobControls } from "./design-job.js";
 import { JobLine } from "./design-job-line.js";
-import { PagesRegion } from "./design-pages.js";
+import { PAGES, PagesRegion } from "./design-pages.js";
 import { ReferencesRegion } from "./design-references.js";
 import type { WidgetOpener } from "./design-noted-picture.js";
 import { WidgetsRegion } from "./design-widgets.js";
@@ -60,7 +60,7 @@ export function canvasTabsOf({ screens, references, jobs, docs, keptPage = "" }:
 	const isKept = keptPage !== "" && !listed.includes(keptPage) && !(keptPage in TAB_REGIONS);
 	return {
 		leading: docs.length > 0 ? [DOCS_PAGE] : [],
-		screens: isKept ? [...listed, keptPage] : listed,
+		screens: isKept ? [...listed, keptPage] : listed.length > 0 ? listed : [PAGES],
 		trailing: [...(references.length > 0 ? [REFERENCES_PAGE] : []), COMPONENTS_PAGE],
 	};
 }

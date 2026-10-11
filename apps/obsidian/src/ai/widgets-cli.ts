@@ -13,14 +13,14 @@ import { specOfApp, stageOfApp } from "./spec-command.js";
 import { JOB_ENV, addJob, askJob, listJobs, refuseOwnedElsewhere } from "./job-command.js";
 import type { JobAdd } from "./job-command.js";
 import { checkedWidget } from "./widget-checking.js";
-import { refuseStage, reportOfApp, isReportClean } from "./report-command.js";
+import { refuseStage, reportOfApp, isReportClean, type ReportPlace } from "./report-command.js";
 import { shotOf, shotSaid } from "./shot-command.js";
 import { designOfApp } from "./design-command.js";
 import { noteOfApp, referenceOfApp } from "./reference-command.js";
 import { photosOfApp } from "./photos-command.js";
+import { runLookCommand } from "./look-command.js";
 import { rulesOfApp } from "./rules-command.js";
 import { screenOfApp } from "./screen-command.js";
-import type { ReportPlace } from "./report-command.js";
 import { surfaceNamesIn } from "./widget-surface.js";
 import { rankWidgets, refuseReading } from "./find-command.js";
 import type { FindOptions } from "./find-command.js";
@@ -77,6 +77,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
 			tell(asText(options), await noteOfApp(VAULT, argument, [options._[2], options._[3]], options)),
 	},
 	photos: { run: async (argument, options) => tell(asText(options), await photosOfApp(VAULT, argument)) },
+	look: { run: async (argument, options) => tell(asText(options), await runLookCommand(VAULT, argument, options)) },
 	rules: { run: async (argument, options) => tell(asText(options), await rulesOfApp(VAULT, argument)) },
 	screen: {
 		run: async (argument, options) => tell(asText(options), await screenOfApp(VAULT, argument, options._[2], options)),

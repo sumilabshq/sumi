@@ -70,6 +70,7 @@ const isOwnSource = (file: string): boolean =>
 function ownModuleSource(file: string): string | null {
 	const extension = path.extname(file);
 	if (READ_AS_TEXT.has(extension)) return `export default ${JSON.stringify(fs.readFileSync(file, "utf8"))};\n`;
+	if (extension === ".json") return `export default ${JSON.stringify(JSON.parse(fs.readFileSync(file, "utf8")))};\n`;
 	const loader = TRANSFORMED.get(extension);
 	if (loader) return transformed(file, loader);
 	if (extension === ".js" && isModuleJs(file)) return fs.readFileSync(file, "utf8");

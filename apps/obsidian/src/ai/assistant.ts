@@ -1,4 +1,6 @@
 import { Platform } from "obsidian";
+import { baseNameOf } from "@widgetarium/core/project/project-files.js";
+import { studioNoteOf } from "../studio-note.js";
 import { openDesign } from "../design-view.js";
 import type { App } from "obsidian";
 import { bindNote } from "../host.js";
@@ -21,7 +23,8 @@ import type { Jobs } from "./job-runner.js";
 import { createJobFiles } from "./job-store.js";
 import type { BriefNote } from "./brief.js";
 import { openProviderWindow } from "./provider-window.js";
-import { HANDBOOK_DIR, TOOL_PATH } from "./agent-files.js";
+import { TOOL_PATH } from "./agent-files.js";
+import { HANDBOOK_DIR } from "@widgetarium/core/paths.js";
 import { whereCommandIs } from "./path.js";
 import type { Environment } from "./path.js";
 import { HTTP } from "./providers.js";
@@ -216,7 +219,12 @@ async function noteNow(app: App): Promise<OpenNote | null> {
 	const file = app.workspace.getActiveFile();
 	if (!file) return null;
 	const text = await app.vault.cachedRead(file);
-	return { path: file.path, hasBoard: text.includes(`${FENCE}${BLOCK_LANGUAGE}`) };
+	const studio = studioNoteOf(app.metadataCache.getFileCache(file)?.frontmatter);
+	return {
+		path: file.path,
+		hasBoard: text.includes(`${FENCE}${BLOCK_LANGUAGE}`),
+		app: studio ? baseNameOf(studio.folder) : null,
+	};
 }
 
 function briefPathsOf({ vaultPath, pluginPath }: AgentPaths): Readonly<Record<string, string>> {

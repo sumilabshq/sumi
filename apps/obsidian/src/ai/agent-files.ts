@@ -1,5 +1,6 @@
 import type { DataAdapter } from "obsidian";
-import { ROOT } from "@widgetarium/core/paths.js";
+import { HANDBOOK_DIR, ROOT } from "@widgetarium/core/paths.js";
+import MINIMAL_CHOICES from "../../../../design-catalogue/systems/minimal/settings.json";
 import { DESIGN_SYSTEM_PATH } from "@widgetarium/core/design-rules.js";
 import HANDBOOK_BOARD from "../../../../docs/ai/board.md";
 import HANDBOOK_SURFACES from "../../../../docs/ai/surfaces.md";
@@ -38,7 +39,6 @@ import DESIGN_SYSTEM from "../../../../docs/ai/design-system.md";
 import unpackWidgetsCli, { packedHash as WIDGETS_CLI_HASH } from "widgetarium:widgets-cli";
 import unpackWidgetTypes, { packedHash as WIDGET_TYPES_HASH } from "widgetarium:widget-types";
 
-export const HANDBOOK_DIR = `${ROOT}/agent`;
 export const BIN_DIR = `${ROOT}/bin`;
 export const WIDGETS_DIR = `${ROOT}/widgets`;
 export const TOOL_PATH = `${BIN_DIR}/widgets.mjs`;
@@ -61,6 +61,7 @@ export const HANDBOOK: Readonly<Record<string, string>> = {
 	"kit.md": HANDBOOK_KIT,
 	"clean-ui.md": HANDBOOK_CLEAN_UI,
 	"minimal/system.md": MINIMAL,
+	"minimal/settings.json": `${JSON.stringify(MINIMAL_CHOICES, null, "\t")}\n`,
 	"minimal/patterns/aside.md": MINIMAL_ASIDE,
 	"minimal/patterns/breadcrumbs.md": MINIMAL_BREADCRUMBS,
 	"minimal/patterns/cards.md": MINIMAL_CARDS,

@@ -32,6 +32,10 @@ export const HELP = `widgets — the Widgetarium catalogue, for the agent
     --at 0.4,0.2                        the point on the picture it is about, from the top left
     --into @scope/name                  a take or like that became a widget: the note gets a button to it
   node widgets.mjs photos <app>         after Approve design: download the photos the screens use
+  node widgets.mjs look <app>           the look the person picked on the canvas, setting by setting
+    --system <id>                       offer every setting of that system's settings.json; picks already made stay
+    --setting <name> --options a,b --recommend a [--ask <line>]   add or replace one setting
+    --drop <name>                       take a setting off the canvas
   node widgets.mjs rules <app>          every design rule in force for the app, to check the canvas against
   node widgets.mjs screen <app> <screen>   write one screen of the design canvas: its note and its place in canvas.json
     --widget @<app>/<page>-page         the page widget that draws this screen

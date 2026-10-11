@@ -1,5 +1,10 @@
 export const ROOT = ".widgetarium";
 export const WIDGETS_DIR = `${ROOT}/widgets`;
+export const HANDBOOK_DIR = `${ROOT}/agent`;
+
+export function systemSettingsPathOf(system: string): string {
+	return `${HANDBOOK_DIR}/${system}/settings.json`;
+}
 export const CATALOGUE_SCOPE = "@catalogue";
 export const CATALOGUE_COPY_DIR = `${WIDGETS_DIR}/${CATALOGUE_SCOPE}`;
 export const COMPONENTS_DIR = `${ROOT}/components`;

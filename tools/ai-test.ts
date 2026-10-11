@@ -29,8 +29,8 @@ const { briefFor, templatePlaceholders } = await import("../apps/obsidian/src/ai
 const { createRunner } = await import("../apps/obsidian/src/ai/run.js");
 const { createSession, STILL_ANSWERING } = await import("../apps/obsidian/src/ai/session.js");
 const { turnsToKeep } = await import("../apps/obsidian/src/ai/transcript.js");
-const { layAgentFiles, HANDBOOK_DIR, TOOL_PATH, HANDBOOK, WIDGETS_DIR } =
-	await import("../apps/obsidian/src/ai/agent-files.js");
+const { HANDBOOK_DIR } = await import("../packages/core/src/paths.js");
+const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } = await import("../apps/obsidian/src/ai/agent-files.js");
 const { glyphForTool, glyphOf, hintOf, titleOf, ourCallIn, withResult } =
 	await import("../apps/obsidian/src/ai/tools.js");
 const { failuresIn, firstGlyphsOf } = await import("../apps/studio/src/assistant/tool-calls.js");
@@ -983,6 +983,24 @@ check(
 	[1, 1],
 );
 check("and two runs never draw the same fence", fenceIn(briefOverAName) === closer, false);
+
+const briefInAStudio = briefFor({
+	paths: { vault: "/v", plugin: "/p", widgets: "/w", handbook: "/h", tool: "/t" },
+	note: { path: "Untitled app.md", app: "Untitled app" },
+	publishWidgets: false,
+});
+const appFence = (/<(app-name-[0-9a-f]{8})>/.exec(briefInAStudio) ?? [])[1] ?? null;
+check(
+	"in an app's studio the agent is told that app's name, fenced as data",
+	briefInAStudio.includes(`<${appFence}>\nUntitled app\n</${appFence}>`),
+	true,
+);
+check(
+	"and to build under that name, not a new one",
+	briefInAStudio.includes("never start an app under another name"),
+	true,
+);
+check("a note outside any studio names no app", briefWithNoNote.includes("app-name-"), false);
 
 const chatBrief = briefFor({
 	paths: { vault: "/v", plugin: "/p", widgets: "/w", handbook: "/h", tool: "/t" },

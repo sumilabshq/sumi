@@ -24,6 +24,7 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
+		"resolveJsonModule": true,
 		"allowJs": false,
 		"types": ["node"]
 	},

@@ -1,4 +1,6 @@
 import type { ReferenceNote } from "../app-design.js";
+import type { Look } from "../app-look.js";
+import type { Parsed } from "../json-text.js";
 import type { Job } from "../app-jobs.js";
 import type { Board } from "../model.js";
 import type { WidgetSurfaceProps } from "../surface/widget-surface.js";
@@ -84,6 +86,8 @@ export interface DesignPort {
 	addPhotos(app: string, photos: readonly File[]): Promise<void>;
 	moveLayer(widget: string, move: LayerMove): Promise<void>;
 	returnToView(app: string, page: string): Promise<void>;
+	look(app: string): Promise<Parsed<Look> | null>;
+	pickLook(app: string, settingName: string, option: string): Promise<void>;
 	readonly pictureOf: PictureTaker | null;
 }
 
@@ -115,6 +119,8 @@ export const NO_DESIGN: DesignPort = {
 	addPhotos: refuseOffHost,
 	moveLayer: refuseOffHost,
 	returnToView: refuseOffHost,
+	look: async () => null,
+	pickLook: refuseOffHost,
 	pictureOf: null,
 };
 

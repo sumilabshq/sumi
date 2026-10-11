@@ -3,9 +3,9 @@
 	"settings": [
 		{
 			"name": "expression",
-			"ask": "How lively should it feel?",
-			"options": ["low", "mid", "high"],
-			"default": "low"
+			"ask": "Corners and motion",
+			"options": ["sharp", "soft", "round"],
+			"default": "sharp"
 		},
 		{
 			"name": "colour",

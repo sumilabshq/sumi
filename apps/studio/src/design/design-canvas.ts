@@ -27,6 +27,10 @@ import type { CanvasMode } from "./design-tools.js";
 import type { LayerMove } from "./layer-moves.js";
 import { PicturesProgress } from "./design-pictures-progress.js";
 import { AgentLookChip } from "./design-agent-look.js";
+import { LookPanel } from "./design-look-panel.js";
+import type { LookPick } from "./design-look-panel.js";
+import type { Look } from "@widgetarium/core/app-look.js";
+import type { Parsed } from "@widgetarium/core/json-text.js";
 import { TopBar } from "./design-top-bar.js";
 import type { CanvasTab, TopBarCorners } from "./design-top-bar.js";
 
@@ -40,6 +44,8 @@ export interface DesignCanvasProps {
 	readonly controls: JobControls;
 	readonly opener: WidgetOpener;
 	readonly pick: VariantPick;
+	readonly look: Parsed<Look> | null;
+	readonly onPickLook: LookPick;
 	readonly focusWidget: string | null;
 	readonly onFocusedWidget: () => void;
 	readonly onAddPhotos: (photos: readonly File[]) => void;
@@ -103,6 +109,7 @@ export function DesignCanvas(props: DesignCanvasProps): ReactElement {
 				{ ...props, picked: selection.picked?.mark ?? null, onFocus: selection.onFocus, keepsLiveCopy: isPointer },
 				page,
 			),
+			props.look ? h(LookPanel, { key: "look", read: props.look, onPick: props.onPickLook }) : null,
 			h(ZoomBar, { key: "zoom", pan }),
 			h("div", { key: "hint", className: "wg-design-hint" }, HINT),
 		],

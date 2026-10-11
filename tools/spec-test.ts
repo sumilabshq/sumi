@@ -774,7 +774,7 @@ check(
 );
 render(null, host);
 
-const { readDesign, designPathOf } = await import("../packages/core/src/app-design.ts");
+const { readDesign, designPathOf, isNothingDrawn } = await import("../packages/core/src/app-design.ts");
 const { lastDesignAppIn } = await import("../apps/obsidian/src/ai/spec-calls.js");
 const { DesignCard } = await import("../apps/studio/src/assistant/cards/design-card.js");
 const DESIGN = JSON.stringify({
@@ -789,6 +789,13 @@ check(
 	readDesign(DESIGN).design?.screens.map((screen) => screen.name),
 	["Words", "Review"],
 );
+check(
+	"an empty canvas file is nothing drawn yet, not an error",
+	isNothingDrawn('{ "screens": [], "references": [] }'),
+	true,
+);
+check("a canvas with screens is drawn", isNothingDrawn(DESIGN), false);
+check("a canvas that is not JSON is not mistaken for an empty one", isNothingDrawn("{"), false);
 check(
 	"a screen that is not a note is refused, naming the field",
 	readDesign(DESIGN.replace("Words.md", "Words.html")).refusal?.startsWith("screens.0.file"),
