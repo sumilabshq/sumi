@@ -31,7 +31,7 @@ const { createSession, STILL_ANSWERING } = await import("../apps/obsidian/src/ai
 const { turnsToKeep } = await import("../apps/obsidian/src/ai/transcript.js");
 const { HANDBOOK_DIR } = await import("../packages/core/src/paths.js");
 const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } = await import("../apps/obsidian/src/ai/agent-files.js");
-const { glyphForTool, glyphOf, hintOf, titleOf, ourCallIn, withResult } =
+const { argumentsIn, glyphForTool, glyphOf, hintOf, titleOf, ourCallIn, withResult } =
 	await import("../apps/obsidian/src/ai/tools.js");
 const { failuresIn, firstGlyphsOf } = await import("../packages/studio/src/assistant/tool-calls.js");
 const { canRenderMarkdown } = await import("../apps/obsidian/src/ai/assistant-port-obsidian.js");
@@ -375,6 +375,9 @@ check(
 	"terminal",
 );
 check("a command naming no tool of ours is not claimed", ourCallIn("npm run build"), null);
+const throughVariables = ourCallIn('cd /v; W=.widgetarium/bin/widgets.mjs; A="Untitled app"; node $W spec "$A" --text');
+check("a call made through shell variables is still ours", throughVariables?.verb, "spec");
+check("and its app is read from the variable", argumentsIn(throughVariables?.said ?? "")[0], "Untitled app");
 check(
 	"our call ends where the shell chains the next command, so an app is never read as `Studio;`",
 	[

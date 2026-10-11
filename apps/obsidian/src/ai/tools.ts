@@ -46,6 +46,8 @@ const LONGEST_HINT = 120;
 export const OUR_NAME = "Widgetarium";
 const OUR_TOOL_CALL = /widgets\.mjs\s+([a-z][a-z-]*)((?:"[^"]*"|'[^']*'|\\.|[^;&|<>\n"'])*)/;
 const REDIRECTED_STREAM = /\s\d+$/;
+const SHELL_ASSIGNMENT = /(?:^|[;&\n]|\s)([A-Za-z_]\w*)=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))/g;
+const SHELL_VARIABLE = /"\$\{?([A-Za-z_]\w*)\}?"|\$\{?([A-Za-z_]\w*)\}?/g;
 const ARGUMENT = /"([^"]*)"|'([^']*)'|((?:\\.|[^\s"'])+)/g;
 
 export function glyphForTool(name: unknown): string {
@@ -53,7 +55,7 @@ export function glyphForTool(name: unknown): string {
 }
 
 export function ourCallIn(command: unknown): OurCall | null {
-	const said = String(command ?? "");
+	const said = withShellVariablesExpanded(String(command ?? ""));
 	const found = said.match(OUR_TOOL_CALL);
 	if (!found) return null;
 	const ends = said[(found.index ?? 0) + found[0].length];
@@ -115,4 +117,16 @@ export function clipLine(text: unknown, longest: number): string {
 function inputOf(call: CallSeen | null | undefined): Readonly<Record<string, unknown>> {
 	const input = call?.input;
 	return isObject(input) ? input : {};
+}
+
+function withShellVariablesExpanded(command: string): string {
+	const values = new Map(
+		[...command.matchAll(SHELL_ASSIGNMENT)].map((found) => [found[1] ?? "", found[2] ?? found[3] ?? found[4] ?? ""]),
+	);
+	if (values.size === 0) return command;
+	return command.replace(SHELL_VARIABLE, (whole: string, quoted?: string, bare?: string) => {
+		const value = values.get(quoted ?? bare ?? "");
+		if (value === undefined) return whole;
+		return quoted === undefined ? value : `"${value}"`;
+	});
 }
