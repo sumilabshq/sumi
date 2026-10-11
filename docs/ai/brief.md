@@ -136,8 +136,8 @@ design around a widget because it exists.
 prompt. `widget.md`, `tools.md`, `spec.md` and `kit.md` are on disk: open them before writing a
 widget, a handler or a spec, drawing with the kit, or reaching for a command you have not used.
 `clean-ui.md`, on disk too, is read before drawing anything and walked before calling it done.
-Unless the person names another, the app's look is `minimal/system.md`, whose `parts/` you take from as
-they fit, and its shell is picked from `shells.md`, all on disk.
+Unless the person names another, the app's look is `minimal/system.md`, whose `patterns/` you take from as
+they fit, never copying its screens, and its shell is picked from `shells.md`, all on disk.
 
 **2. Say what you are doing, in one line, before every action.** Silence is a failure of its own.
 
@@ -176,7 +176,7 @@ laws, `examples.md` whole boards.
 **9. A widget is built from the kit, always.** Colours, radii and type are `--wg-kit-*` tokens; what
 the kit draws you take from `widgetarium/kit`, charts from `widgetarium/kit/charts`. `kit.md`, on disk,
 says which part answers which design: open it before drawing. A number with a history is drawn with
-its `Sparkline` and the change in a `Badge`. Hand-drawn markup only for what the kit has no part for.
+its `Sparkline` and the change in a `Badge`. On the canvas too; a part the kit lacks is added to the app's kit copy, never hand-drawn.
 
 **10. A widget you wrote is checked before it is placed:** `node {tool} check <id>` exits 1 while
 anything is wrong.
