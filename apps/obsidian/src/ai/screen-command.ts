@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
 	designPathOf,
+	frameSizeIn,
 	isSafeAppName,
 	readDesign,
 	screenFileOf,
@@ -17,6 +18,8 @@ const NO_APP =
 const NO_SITUATION =
 	'Say which situation this frame draws: --for "<who arrives, with what job right now>", for example --for "first visit, nothing added yet" or --for "a record just finished, checking how it went".';
 const NO_WIDGET = "Name the page widget that draws this screen with --widget @<app>/<page>-page.";
+const BAD_SIZE =
+	"--size is phone (390×844), tablet (834×1194), desktop (1280×832) or <width>x<height> in pixels, 240 to 4000 each.";
 const BAD_SET = 'Each --set is prop=value, several split by commas: --set "page=inbox,dialog=add"';
 const REFUSED = "That screen does not fit the canvas: {why}";
 const WRITTEN = "{file} drawn by {widget} is on the {app} canvas as {where}. Run `shot --design {app}` to see it.";
@@ -33,14 +36,16 @@ export async function screenOfApp(
 	if (!app || !isSafeAppName(app) || typeof screen !== "string" || screen.trim() === "") return { refusal: NO_APP };
 	const situation = typeof asked["for"] === "string" ? asked["for"].trim() : "";
 	if (situation === "") return { refusal: NO_SITUATION };
-	const place = { ...placeOf(screen.trim(), asked["state"]), situation };
+	const size = asked["size"] === undefined ? undefined : frameSizeIn(String(asked["size"]));
+	if (size === null) return { refusal: BAD_SIZE };
+	const place = { ...placeOf(screen.trim(), asked["state"]), situation, size };
 	if (asked["board"] === true) return placeBoard(vault, app, place);
 	return placeDraft(vault, app, place, asked);
 }
 
 type ScreenPlace = ScreenPlacement;
 
-function placeOf(screen: string, state: unknown): Omit<ScreenPlace, "situation"> {
+function placeOf(screen: string, state: unknown): Omit<ScreenPlace, "situation" | "size"> {
 	const named = typeof state === "string" && state.trim() !== "" ? state.trim() : undefined;
 	return { screen, state: named, file: screenFileOf(screen, named) };
 }

@@ -19,6 +19,7 @@ export interface DrawnState {
 	readonly picture?: StatePicture | undefined;
 	readonly refusal?: string | undefined;
 	readonly situation?: string | undefined;
+	readonly size?: { readonly width: number; readonly height: number } | undefined;
 }
 
 export interface DrawnScreen {

@@ -3,6 +3,7 @@ import type { WorkspaceLeaf } from "obsidian";
 import {
 	designFolderOf,
 	designPathOf,
+	framePixelsOf,
 	isNothingDrawn,
 	readDesign,
 	referencePathOf,
@@ -216,6 +217,7 @@ function drawnScreensOf(
 				statesOf(screen).map(async (state) => ({
 					...(await readDrawnState(source, app, state, screen.name)),
 					situation: state.situation,
+					size: framePixelsOf(state.size),
 				})),
 			),
 		})),

@@ -5,7 +5,6 @@ import { DESKTOP_FRAME } from "../canvas/frame-size.js";
 import type { Drawing, DrawnReference, DrawnScreen, DrawnWidget } from "./design-canvas-shapes.js";
 import { DocsRegion } from "./design-docs.js";
 import type { CanvasDoc } from "./design-docs.js";
-import { KitRegion } from "./design-kit.js";
 import { PlannedPageRegion, pagesBeingWorkedOn, runningJobOfPage } from "./design-job.js";
 import type { JobControls } from "./design-job.js";
 import { JobLine } from "./design-job-line.js";
@@ -83,12 +82,7 @@ type TabRegions = (props: CanvasPageProps) => ReactElement[];
 const TAB_REGIONS: Readonly<Record<string, TabRegions>> = {
 	[DOCS_PAGE]: ({ docs, host }) => [h(DocsRegion, { key: "docs", title: DOCS_PAGE, docs, host })],
 	[REFERENCES_PAGE]: ({ references, opener }) => [h(ReferencesRegion, { key: "references", references, opener })],
-	[COMPONENTS_PAGE]: ({ widgets, registry, host }) => [
-		h("div", { key: "components", className: "wg-design-regions-row" }, [
-			h(WidgetsRegion, { key: "widgets", widgets, registry, host }),
-			h(KitRegion, { key: "kit" }),
-		]),
-	],
+	[COMPONENTS_PAGE]: ({ widgets, registry, host }) => [h(WidgetsRegion, { key: "widgets", widgets, registry, host })],
 };
 
 export function regionsOfPage(props: CanvasPageProps): ReactElement[] {

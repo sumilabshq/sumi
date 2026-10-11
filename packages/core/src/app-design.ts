@@ -121,6 +121,7 @@ export interface ScreenPlacement {
 	readonly state: string | undefined;
 	readonly file: string;
 	readonly situation: string | undefined;
+	readonly size?: FrameSize | undefined;
 }
 
 export function withScreenAdded(text: string | null, placement: ScreenPlacement): string {
@@ -149,6 +150,39 @@ export function isNothingDrawn(text: string): boolean {
 	if (held.refusal !== undefined) return false;
 	const parsed = DesignFieldsSchema.safeParse(held.value);
 	return parsed.success && parsed.data.screens.length + parsed.data.references.length === 0;
+}
+
+export const FRAME_SIZES = {
+	phone: { width: 390, height: 844 },
+	tablet: { width: 834, height: 1194 },
+	desktop: { width: 1280, height: 832 },
+} as const;
+
+const FRAME_PX = z.number().int().min(240).max(4000);
+
+const FrameSizeSchema = z.union([
+	z.enum(["phone", "tablet", "desktop"]),
+	z.object({ width: FRAME_PX, height: FRAME_PX }),
+]);
+
+export type FrameSize = z.infer<typeof FrameSizeSchema>;
+
+export function framePixelsOf(
+	size: FrameSize | undefined,
+): { readonly width: number; readonly height: number } | undefined {
+	if (size === undefined) return undefined;
+	return typeof size === "string" ? FRAME_SIZES[size] : size;
+}
+
+const FRAME_SIZE_WRITTEN = /^(\d+)\s*[x×]\s*(\d+)$/;
+
+export function frameSizeIn(said: string): FrameSize | null {
+	const word = said.trim().toLowerCase();
+	if (word === "phone" || word === "tablet" || word === "desktop") return word;
+	const found = word.match(FRAME_SIZE_WRITTEN);
+	if (!found) return null;
+	const parsed = FrameSizeSchema.safeParse({ width: Number(found[1]), height: Number(found[2]) });
+	return parsed.success ? parsed.data : null;
 }
 
 const ScreenFileSchema = z
@@ -202,6 +236,7 @@ const StateSchema = z.object({
 	name: z.string().trim().min(1),
 	file: ScreenFileSchema,
 	situation: z.string().trim().min(1).optional(),
+	size: FrameSizeSchema.optional(),
 });
 
 const ScreenSchema = z
@@ -223,14 +258,23 @@ const DesignSchema = DesignFieldsSchema.refine((design) => design.screens.length
 	message: "a design shows at least one screen or one reference",
 });
 
-function screenWith(placed: unknown, { screen, state, file, situation }: ScreenPlacement): unknown {
+function screenWith(placed: unknown, { screen, state, file, situation, size }: ScreenPlacement): unknown {
 	const name = state ?? screen;
 	const others = statesHeldBy(placed, screen).filter((one) => Reflect.get(one, "name") !== name);
-	const entry = situation === undefined ? { name, file } : { name, file, situation };
+	const entry = {
+		name,
+		file,
+		...(situation === undefined ? {} : { situation }),
+		...(size === undefined ? {} : { size }),
+	};
 	const states = name === screen ? [entry, ...others] : [...others, entry];
 	const [only] = states;
 	const isPlain =
-		states.length === 1 && only !== undefined && Reflect.get(only, "name") === screen && situation === undefined;
+		states.length === 1 &&
+		only !== undefined &&
+		Reflect.get(only, "name") === screen &&
+		situation === undefined &&
+		size === undefined;
 	if (isPlain) return { name: screen, file };
 	return { name: screen, states };
 }

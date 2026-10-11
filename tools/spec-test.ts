@@ -1378,5 +1378,23 @@ check(
 	{ fromCatalogue: ["@default/hero", "@flow/git-tree"], made: ["@agent-desk/project-grid"] },
 );
 
-console.log(`\nspec gate: ${failed === 0 ? "clean" : `${failed} of ${checks} failed`}, ${checks} checks`);
+const { frameSizeIn, framePixelsOf, withScreenAdded } = await import("../packages/core/src/app-design.ts");
+check("a frame size is a named device", frameSizeIn("Phone"), "phone");
+check("or width by height in pixels", frameSizeIn("375x667"), { width: 375, height: 667 });
+check("a size past the canvas's bounds is refused", frameSizeIn("100x9000"), null);
+check("a named size is drawn at its pixels", framePixelsOf("phone"), { width: 390, height: 844 });
+const sizedCanvas = withScreenAdded(null, {
+	screen: "Translate",
+	state: "Phone",
+	file: "translate-phone.md",
+	situation: "on the way",
+	size: "phone",
+});
+check(
+	"a placed state keeps its size on the canvas",
+	readDesign(sizedCanvas).design?.screens[0]?.states?.[0]?.size,
+	"phone",
+);
+
+console.log(`\nspec gate:${failed === 0 ? "clean" : `${failed} of ${checks} failed`}, ${checks} checks`);
 process.exit(failed === 0 ? 0 : 1);
