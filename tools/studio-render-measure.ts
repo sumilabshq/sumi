@@ -152,12 +152,7 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	topButton("Components")?.click();
 	await until(() => document.querySelector(".wg-design-widget"));
 	seen.cards = [...document.querySelectorAll(".wg-design-widget .wg-design-state-name")].map((name) => name.textContent);
-	seen.cardDrawsState = Boolean(
-		await until(() => {
-			const card = document.querySelector(".wg-design-widget");
-			return (card?.textContent ?? "").includes("Sow the beans") || card?.querySelector("img.wg-design-snapshot");
-		}),
-	);
+	seen.cardDrawsState = Boolean(await until(() => (document.querySelector(".wg-design-widget")?.textContent ?? "").includes("Sow the beans")));
 	report();
 	topButton("Back to view")?.click();
 	seen.backShowsRoute = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-task]")));

@@ -4,7 +4,7 @@ import { StateDrawing } from "../stage/state-drawing.js";
 import { cardPxOf } from "../stage/card-width.js";
 import type { Drawing } from "./design-canvas-shapes.js";
 import { DefaultDrawing } from "./design-default-drawing.js";
-import { DrawnWhenSeen } from "./design-drawn-when-seen.js";
+import { DRAWS_AT_ONCE, DrawnWhenSeen } from "./design-drawn-when-seen.js";
 import { frameIdOf, snapshotKeyOf } from "./design-snapshots.js";
 
 export interface WidgetCardProps extends Drawing {
@@ -23,15 +23,19 @@ export function WidgetCard({ id, label, props, registry, host }: WidgetCardProps
 			"div",
 			{ key: "drawn", className: "wg-design-widget-body", inert: true, "data-wg-overlay-root": "" },
 			h(
-				DrawnWhenSeen,
-				{
-					minHeight: CARD_UNSEEN_PX,
-					frame: frameIdOf(id, label),
-					pictureKey: snapshotKeyOf(registry, id, label, props ?? null),
-				},
-				props
-					? h(StateDrawing, { picture: { widget: id, props }, registry })
-					: h(DefaultDrawing, { id, width: cardPx, registry, host }),
+				DRAWS_AT_ONCE.Provider,
+				{ value: true },
+				h(
+					DrawnWhenSeen,
+					{
+						minHeight: CARD_UNSEEN_PX,
+						frame: frameIdOf(id, label),
+						pictureKey: snapshotKeyOf(registry, id, label, props ?? null),
+					},
+					props
+						? h(StateDrawing, { picture: { widget: id, props }, registry })
+						: h(DefaultDrawing, { id, width: cardPx, registry, host }),
+				),
 			),
 		),
 	]);
