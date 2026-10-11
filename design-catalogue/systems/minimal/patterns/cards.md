@@ -9,6 +9,7 @@ In this system most of the page stands without cards. A card appears only to gro
 | A table                                          | **no card.** Edge to edge in its region; header row on sunken; lines between rows | `DataTable` / `Table`        |
 | A calendar, a board of lanes, a timeline         | no card, edge to edge                                                             | `Calendar`, lanes as columns |
 | A list on the page                               | **no card.** Rows on the page, a line between them, a mark leading each row       | `ItemGroup` of `Item`s       |
+| A collection browsed by its pictures             | a card grid or row (`collections.md`)                                             | `Grid` of pressable `Card`s  |
 | A list in the aside, beside other aside blocks   | one card holding the rows                                                         | `Card` around an `ItemGroup` |
 | A strip of 3–5 figures                           | **one** card split by vertical lines                                              | one `Card`, cells divided    |
 | Facts of one record                              | one card, label left in ink-2, value right                                        | `Card` with `Row`s           |

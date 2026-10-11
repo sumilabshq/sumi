@@ -39,7 +39,9 @@ This file is the look. The `patterns/` files show how this system solves each ta
 | `minimal/patterns/search.md`             | a command menu, a results page, search in a list                 |
 | `minimal/patterns/notifications.md`      | toasts, a bell, banners, a sidebar notice, badges                |
 | `minimal/patterns/page-widths.md`        | reading, working and split pages                                 |
+| `minimal/patterns/collections.md`        | many items of one kind: table, list, card grid, row, view switch |
 | `minimal/patterns/cards.md`              | when a card appears and when it does not                         |
+| `minimal/patterns/motion.md`             | how every interaction moves: timing, easing, CSS or Motion       |
 | `minimal/patterns/settings.md`           | a settings area and how it saves                                 |
 | `minimal/patterns/footer.md`             | how each kind of page ends                                       |
 | `minimal/patterns/colour-monochrome.md`  | colour level 1: ink on paper, tones only for meaning (default)   |
@@ -139,6 +141,7 @@ Three roles, each a setting. The roles are fixed; the families are not.
 - **Marks over pictures:** a company is a rounded square monogram on a muted pigment chosen from its name; a person is a round avatar with initials. A real logo or photo replaces the mark when the record has one.
 - A record page may carry one real photo of its object; a collection page carries marks only.
 - Sources: the record's own picture, or nothing. Never drawn (`design-catalogue/README.md`).
+- **Shapes are flat:** a kit `Shape` is drawn `look="flat"` in ink or one tone, as a quiet marker of a number or a kind. Never the 3D look, a glow or a gradient on it.
 
 ## Surfaces
 
@@ -174,7 +177,7 @@ Lines, plates, padding and icons follow `clean-ui.md`; where a card appears and 
 
 ## Motion
 
-Quick and small: popovers rise 2px over 140ms, sheets slide 24px over 220ms, rows fade in. A press answers with the kit's own spring. Nothing moves on load except content arriving. Reduced motion stops all of it.
+Every interactive element has at least a transition: smooth, non-linear, 120–280ms. CSS transitions by default, Motion only where an element leaves, siblings close a gap or something travels. Nothing moves on load except content arriving. Timing, easing and every interaction are in `minimal/patterns/motion.md`.
 
 ## Copy
 
@@ -198,5 +201,6 @@ The defaults a generated screen falls into. Each one is refused by name.
 - a second filled button in a region
 - an icon with no word where a word fits
 - a shadow on a plate that does not float
+- a 3D shape (`Shape` with its default `look="3d"`), or the kit's `EmptyState` with its 3D cluster
 - a banner picture, a stock illustration, a drawn picture
 - the display serif on body text, buttons or table cells
