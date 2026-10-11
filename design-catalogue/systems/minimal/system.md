@@ -25,26 +25,27 @@ For products a person works or reads in: dashboards, tools, docs, notes. Landing
 
 ## How to use this system
 
-This file is the look. The `parts/` files show how this system builds each piece of a product, often in several variants. **They are references, not orders.** Read the parts the product needs, take what fits the person's task, and where nothing fits, design your own piece in the same look. Every system is built on the kit; `clean-ui.md` holds under all of it.
+This file is the look. The `patterns/` files show how this system solves each task of a product, often in several variants. **They are patterns, not orders.** Read the patterns the product needs, take what fits the person's task, and where nothing fits, design your own piece in the same look. Every system is built on the kit; `clean-ui.md` holds under all of it.
 
-| Part                                  | Read it when the product needs                                   |
-| ------------------------------------- | ---------------------------------------------------------------- |
-| `minimal/parts/navigation-sidebar.md` | a navigation column: simple, sectioned, tree, rail and list      |
-| `minimal/parts/navigation-header.md`  | navigation across the top                                        |
-| `minimal/parts/aside.md`              | a right column that explains a page or a record                  |
-| `minimal/parts/in-page-navigation.md` | tabs, a contents list, steps, anchors                            |
-| `minimal/parts/breadcrumbs.md`        | pages two or more levels deep                                    |
-| `minimal/parts/navigation-logic.md`   | how addresses, back, selection and keyboard behave               |
-| `minimal/parts/search.md`             | a command menu, a results page, search in a list                 |
-| `minimal/parts/notifications.md`      | toasts, a bell, banners, a sidebar notice, badges                |
-| `minimal/parts/page-widths.md`        | reading, working and split pages                                 |
-| `minimal/parts/cards.md`              | when a card appears and when it does not                         |
-| `minimal/parts/settings.md`           | a settings area and how it saves                                 |
-| `minimal/parts/footer.md`             | how each kind of page ends                                       |
-| `minimal/parts/colour-monochrome.md`  | colour level 1: ink on paper, tones only for meaning (default)   |
-| `minimal/parts/colour-spot.md`        | colour level 2: one hue spent on a few things                    |
-| `minimal/parts/colour-art.md`         | colour level 3: a monochrome UI with a few colourful art objects |
-| `minimal/parts/typography.md`         | the font pairs, one per product                                  |
+| Pattern                                  | Read it when the product needs                                   |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `minimal/patterns/navigation-sidebar.md` | a navigation column: simple, sectioned, tree, rail and list      |
+| `minimal/patterns/navigation-header.md`  | navigation across the top                                        |
+| `minimal/patterns/page-header.md`        | what opens a page: a status header, a hero header                |
+| `minimal/patterns/aside.md`              | a right column that explains a page or a record                  |
+| `minimal/patterns/in-page-navigation.md` | tabs, a contents list, steps, anchors                            |
+| `minimal/patterns/breadcrumbs.md`        | pages two or more levels deep                                    |
+| `minimal/patterns/navigation-logic.md`   | how addresses, back, selection and keyboard behave               |
+| `minimal/patterns/search.md`             | a command menu, a results page, search in a list                 |
+| `minimal/patterns/notifications.md`      | toasts, a bell, banners, a sidebar notice, badges                |
+| `minimal/patterns/page-widths.md`        | reading, working and split pages                                 |
+| `minimal/patterns/cards.md`              | when a card appears and when it does not                         |
+| `minimal/patterns/settings.md`           | a settings area and how it saves                                 |
+| `minimal/patterns/footer.md`             | how each kind of page ends                                       |
+| `minimal/patterns/colour-monochrome.md`  | colour level 1: ink on paper, tones only for meaning (default)   |
+| `minimal/patterns/colour-spot.md`        | colour level 2: one hue spent on a few things                    |
+| `minimal/patterns/colour-art.md`         | colour level 3: a monochrome UI with a few colourful art objects |
+| `minimal/patterns/typography.md`         | the font pairs, one per product                                  |
 
 ## References
 
@@ -53,7 +54,7 @@ Take the feel, never the page.
 | File                                | Read it for                                                                                                                        |
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `4-stage-and-side.webp`             | quiet controls, one strong action, a calm split between an object and its detail                                                   |
-| `5-worklist-home.png`               | the shell with a top bar of words; the page header recipe; a figure strip as one plate split by lines                              |
+| `5-worklist-home.png`               | the shell with a top bar of words; a status header; a figure strip as one plate split by lines                                     |
 | `6-ledger-full-bleed.png`           | a collection page: a table edge to edge in its region, no card, a mark leading every row                                           |
 | `7-row-sheet.png`                   | a row opened in a side sheet: a score with its reasons, one accent button among small outlined ones, facts as label–value rows     |
 | `8-dialog.png`                      | a dialog: display title, one line of what will happen, choice rows, the footer explaining the result beside Cancel and one primary |
@@ -64,6 +65,8 @@ Take the feel, never the page.
 | `13-aside.png`                      | the aside alone: contents, share and a way back in one card, quieter links below it                                                |
 | `14-sidebar-bottom-notice.png`      | a notice at the bottom of the sidebar: a mark, a title, one line, no card                                                          |
 | `15-breadcrumb.png`                 | a breadcrumb: earlier step in ink-3, current page in full ink, a slash between                                                     |
+| `16-site-header-search.webp`        | a site's top: its name on the left, a filled search and one tinted action on the right                                             |
+| `17-hero-page-header.webp`          | a hero header: eyebrow, heading, description and a link beside a large picture, arrows to rotate                                   |
 
 ## Settings
 
@@ -84,9 +87,9 @@ Values the agent picks for a product and the person may change later with one sw
 
 ## Shells and page header
 
-The page structure comes from `shells.md`; this system suits **sidebar**, **top bar**, **rail and list** and **command-first**. How it draws each navigation piece is in the parts.
+The page structure comes from `shells.md`; this system suits **sidebar**, **top bar**, **rail and list** and **command-first**. How it draws each navigation piece is in the patterns.
 
-- **Page header** (every page, same recipe): an eyebrow (breadcrumbs, date or context) · display title · one sentence of live state in ink-2 (`11 overdue and 9 new leads waiting.`) · small actions on the right, one primary · tabs underneath with counts.
+- **Page header**: chosen by the page's job, from `minimal/patterns/page-header.md` or designed anew; pages of one app need not share one.
 - **Counts** are ink-3 numbers; a count that waits on the person is a small pen-coloured pill.
 - Air between regions, density inside them; spacing comes from the tree (`docs/ai/board.md`), never written.
 
@@ -139,7 +142,7 @@ Three roles, each a setting. The roles are fixed; the families are not.
 
 ## Surfaces
 
-Lines, plates, padding and icons follow `clean-ui.md`; where a card appears and where it does not is `minimal/parts/cards.md`.
+Lines, plates, padding and icons follow `clean-ui.md`; where a card appears and where it does not is `minimal/patterns/cards.md`.
 
 ## Controls
 

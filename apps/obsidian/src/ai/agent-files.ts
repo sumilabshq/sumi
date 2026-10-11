@@ -10,22 +10,23 @@ import HANDBOOK_SPEC from "../../../../docs/ai/spec.md";
 import HANDBOOK_KIT from "../../../../docs/ai/kit.md";
 import HANDBOOK_CLEAN_UI from "../../../../docs/ai/clean-ui.md";
 import MINIMAL from "../../../../design-catalogue/systems/minimal/system.md";
-import MINIMAL_ASIDE from "../../../../design-catalogue/systems/minimal/parts/aside.md";
-import MINIMAL_BREADCRUMBS from "../../../../design-catalogue/systems/minimal/parts/breadcrumbs.md";
-import MINIMAL_CARDS from "../../../../design-catalogue/systems/minimal/parts/cards.md";
-import MINIMAL_COLOUR_ART from "../../../../design-catalogue/systems/minimal/parts/colour-art.md";
-import MINIMAL_COLOUR_MONOCHROME from "../../../../design-catalogue/systems/minimal/parts/colour-monochrome.md";
-import MINIMAL_COLOUR_SPOT from "../../../../design-catalogue/systems/minimal/parts/colour-spot.md";
-import MINIMAL_TYPOGRAPHY from "../../../../design-catalogue/systems/minimal/parts/typography.md";
-import MINIMAL_FOOTER from "../../../../design-catalogue/systems/minimal/parts/footer.md";
-import MINIMAL_IN_PAGE_NAVIGATION from "../../../../design-catalogue/systems/minimal/parts/in-page-navigation.md";
-import MINIMAL_NAVIGATION_HEADER from "../../../../design-catalogue/systems/minimal/parts/navigation-header.md";
-import MINIMAL_NAVIGATION_LOGIC from "../../../../design-catalogue/systems/minimal/parts/navigation-logic.md";
-import MINIMAL_NAVIGATION_SIDEBAR from "../../../../design-catalogue/systems/minimal/parts/navigation-sidebar.md";
-import MINIMAL_NOTIFICATIONS from "../../../../design-catalogue/systems/minimal/parts/notifications.md";
-import MINIMAL_PAGE_WIDTHS from "../../../../design-catalogue/systems/minimal/parts/page-widths.md";
-import MINIMAL_SEARCH from "../../../../design-catalogue/systems/minimal/parts/search.md";
-import MINIMAL_SETTINGS from "../../../../design-catalogue/systems/minimal/parts/settings.md";
+import MINIMAL_ASIDE from "../../../../design-catalogue/systems/minimal/patterns/aside.md";
+import MINIMAL_BREADCRUMBS from "../../../../design-catalogue/systems/minimal/patterns/breadcrumbs.md";
+import MINIMAL_CARDS from "../../../../design-catalogue/systems/minimal/patterns/cards.md";
+import MINIMAL_COLOUR_ART from "../../../../design-catalogue/systems/minimal/patterns/colour-art.md";
+import MINIMAL_COLOUR_MONOCHROME from "../../../../design-catalogue/systems/minimal/patterns/colour-monochrome.md";
+import MINIMAL_COLOUR_SPOT from "../../../../design-catalogue/systems/minimal/patterns/colour-spot.md";
+import MINIMAL_TYPOGRAPHY from "../../../../design-catalogue/systems/minimal/patterns/typography.md";
+import MINIMAL_FOOTER from "../../../../design-catalogue/systems/minimal/patterns/footer.md";
+import MINIMAL_IN_PAGE_NAVIGATION from "../../../../design-catalogue/systems/minimal/patterns/in-page-navigation.md";
+import MINIMAL_NAVIGATION_HEADER from "../../../../design-catalogue/systems/minimal/patterns/navigation-header.md";
+import MINIMAL_NAVIGATION_LOGIC from "../../../../design-catalogue/systems/minimal/patterns/navigation-logic.md";
+import MINIMAL_NAVIGATION_SIDEBAR from "../../../../design-catalogue/systems/minimal/patterns/navigation-sidebar.md";
+import MINIMAL_NOTIFICATIONS from "../../../../design-catalogue/systems/minimal/patterns/notifications.md";
+import MINIMAL_PAGE_HEADER from "../../../../design-catalogue/systems/minimal/patterns/page-header.md";
+import MINIMAL_PAGE_WIDTHS from "../../../../design-catalogue/systems/minimal/patterns/page-widths.md";
+import MINIMAL_SEARCH from "../../../../design-catalogue/systems/minimal/patterns/search.md";
+import MINIMAL_SETTINGS from "../../../../design-catalogue/systems/minimal/patterns/settings.md";
 import SHELLS from "../../../../design-catalogue/shells/README.md";
 import SHELL_SIDEBAR from "../../../../design-catalogue/shells/sidebar.md";
 import SHELL_TOP_BAR from "../../../../design-catalogue/shells/top-bar.md";
@@ -60,22 +61,23 @@ export const HANDBOOK: Readonly<Record<string, string>> = {
 	"kit.md": HANDBOOK_KIT,
 	"clean-ui.md": HANDBOOK_CLEAN_UI,
 	"minimal/system.md": MINIMAL,
-	"minimal/parts/aside.md": MINIMAL_ASIDE,
-	"minimal/parts/breadcrumbs.md": MINIMAL_BREADCRUMBS,
-	"minimal/parts/cards.md": MINIMAL_CARDS,
-	"minimal/parts/colour-art.md": MINIMAL_COLOUR_ART,
-	"minimal/parts/colour-monochrome.md": MINIMAL_COLOUR_MONOCHROME,
-	"minimal/parts/colour-spot.md": MINIMAL_COLOUR_SPOT,
-	"minimal/parts/typography.md": MINIMAL_TYPOGRAPHY,
-	"minimal/parts/footer.md": MINIMAL_FOOTER,
-	"minimal/parts/in-page-navigation.md": MINIMAL_IN_PAGE_NAVIGATION,
-	"minimal/parts/navigation-header.md": MINIMAL_NAVIGATION_HEADER,
-	"minimal/parts/navigation-logic.md": MINIMAL_NAVIGATION_LOGIC,
-	"minimal/parts/navigation-sidebar.md": MINIMAL_NAVIGATION_SIDEBAR,
-	"minimal/parts/notifications.md": MINIMAL_NOTIFICATIONS,
-	"minimal/parts/page-widths.md": MINIMAL_PAGE_WIDTHS,
-	"minimal/parts/search.md": MINIMAL_SEARCH,
-	"minimal/parts/settings.md": MINIMAL_SETTINGS,
+	"minimal/patterns/aside.md": MINIMAL_ASIDE,
+	"minimal/patterns/breadcrumbs.md": MINIMAL_BREADCRUMBS,
+	"minimal/patterns/cards.md": MINIMAL_CARDS,
+	"minimal/patterns/colour-art.md": MINIMAL_COLOUR_ART,
+	"minimal/patterns/colour-monochrome.md": MINIMAL_COLOUR_MONOCHROME,
+	"minimal/patterns/colour-spot.md": MINIMAL_COLOUR_SPOT,
+	"minimal/patterns/typography.md": MINIMAL_TYPOGRAPHY,
+	"minimal/patterns/footer.md": MINIMAL_FOOTER,
+	"minimal/patterns/in-page-navigation.md": MINIMAL_IN_PAGE_NAVIGATION,
+	"minimal/patterns/navigation-header.md": MINIMAL_NAVIGATION_HEADER,
+	"minimal/patterns/navigation-logic.md": MINIMAL_NAVIGATION_LOGIC,
+	"minimal/patterns/navigation-sidebar.md": MINIMAL_NAVIGATION_SIDEBAR,
+	"minimal/patterns/notifications.md": MINIMAL_NOTIFICATIONS,
+	"minimal/patterns/page-header.md": MINIMAL_PAGE_HEADER,
+	"minimal/patterns/page-widths.md": MINIMAL_PAGE_WIDTHS,
+	"minimal/patterns/search.md": MINIMAL_SEARCH,
+	"minimal/patterns/settings.md": MINIMAL_SETTINGS,
 	"shells.md": [
 		SHELLS,
 		SHELL_SIDEBAR,

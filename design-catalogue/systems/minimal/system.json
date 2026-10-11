@@ -1,0 +1,6 @@
+{
+	"id": "minimal",
+	"title": "Minimal",
+	"kit": "packages/kit",
+	"settings": "settings.json"
+}

@@ -1,0 +1,31 @@
+{
+	"agent": "Recommended choices for the spec card. Drop what this product does not need, add what it does, offer only options that fit.",
+	"settings": [
+		{
+			"name": "expression",
+			"ask": "How lively should it feel?",
+			"options": ["low", "mid", "high"],
+			"default": "low"
+		},
+		{
+			"name": "colour",
+			"ask": "How much colour?",
+			"options": ["monochrome", "spot", "art"],
+			"default": "monochrome"
+		},
+		{ "name": "ground", "ask": "Page background", "options": ["white", "grey"], "default": "white" },
+		{ "name": "edges", "ask": "How plates stand apart", "options": ["fill", "outline"], "default": "fill" },
+		{ "name": "density", "ask": "How much fits on a screen", "options": ["regular", "compact"], "default": "regular" },
+		{
+			"name": "fonts",
+			"ask": "Typefaces",
+			"options": ["editorial", "bookish", "neutral", "grotesk", "contrast", "native"],
+			"default": "native"
+		},
+		{
+			"name": "shell",
+			"ask": "Navigation",
+			"options": "the agent offers the shells from shells.md that fit the domain"
+		}
+	]
+}
