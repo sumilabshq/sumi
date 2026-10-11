@@ -56,6 +56,8 @@ export const HELD_BY_THE_ENGINE: readonly string[] = [
 	"widgetarium/kit/emojis",
 	"widgetarium/kit/charts",
 	"zod",
+	"radix-ui",
+	"motion/react",
 ];
 export const ANSWERED_BY_THE_ENGINE: readonly string[] = [...HELD_BY_THE_ENGINE, ...KEPT_OUTSIDE_A_BUNDLE];
 

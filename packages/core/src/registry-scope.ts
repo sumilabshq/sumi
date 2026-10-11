@@ -6,6 +6,8 @@ import { coreSurface } from "./api-core.js";
 import { reactSurface, kit, emojis, isPropsToDefine } from "./widget-api.js";
 import * as charts from "@widgetarium/kit/charts";
 import * as zod from "zod";
+import * as radix from "radix-ui";
+import * as motion from "motion/react";
 import { WIDGET_API } from "./version.js";
 import { compileWidget } from "./engine/widget-build.js";
 import { HELD_BY_THE_ENGINE } from "./engine/modules.js";
@@ -37,6 +39,8 @@ export interface WidgetScope {
 	readonly emojis: unknown;
 	readonly charts: unknown;
 	readonly zod: unknown;
+	readonly radix: unknown;
+	readonly motion: unknown;
 	readonly draw: DrawWidget<GivenProps> | null;
 }
 
@@ -67,6 +71,9 @@ const MODULE_INTEROP_KEYS = new Set(["__esModule", "default", "then"]);
 const CHARTS_NEED_THE_ENGINE_REACT =
 	'"widgetarium/kit/charts" draws with the plugin\'s own React, so a widget bringing {react} cannot import it — declare recharts as a dependency of its own instead';
 
+const DRAWN_WITH_THE_ENGINE_REACT =
+	'"{name}" runs on the plugin\'s own React, so a widget bringing {react} cannot import it — declare it as a dependency of its own instead';
+
 const SURFACE_UNREADABLE = "the widget surface this build carries did not load";
 
 export const ENGINE_SCOPE: WidgetScope = {
@@ -78,6 +85,8 @@ export const ENGINE_SCOPE: WidgetScope = {
 	emojis,
 	charts,
 	zod,
+	radix,
+	motion,
 	draw: null,
 };
 
@@ -107,6 +116,8 @@ export function foreignScope(
 		emojis: built.emojis,
 		charts: createRefusedModule(CHARTS_NEED_THE_ENGINE_REACT.replace("{react}", said)),
 		zod,
+		radix: createRefusedModule(DRAWN_WITH_THE_ENGINE_REACT.replace("{name}", "radix-ui").replace("{react}", said)),
+		motion: createRefusedModule(DRAWN_WITH_THE_ENGINE_REACT.replace("{name}", "motion/react").replace("{react}", said)),
 		draw: isDrawWidget(built.drawWidget) ? built.drawWidget : null,
 	};
 }
@@ -284,6 +295,8 @@ function heldByTheEngineIn(scope: WidgetScope): Readonly<Record<string, unknown>
 		"widgetarium/kit/emojis": scope.emojis,
 		"widgetarium/kit/charts": scope.charts,
 		zod: scope.zod,
+		"radix-ui": scope.radix,
+		"motion/react": scope.motion,
 	};
 }
 

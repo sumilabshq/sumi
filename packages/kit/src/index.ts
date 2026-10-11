@@ -215,6 +215,7 @@ export { useNow } from "./hooks/use-now";
 export { usePages } from "./hooks/use-pages";
 export { useScrollFog } from "./hooks/use-scroll-fog";
 export type { ScrollEdges } from "./hooks/use-scroll-fog";
+export { usePortalContainer } from "./hooks/use-portal-container";
 export { useShown } from "./hooks/use-shown";
 export { useWhenSeen } from "./hooks/use-when-seen";
 

@@ -173,16 +173,9 @@ check(
 	[],
 );
 check(
-	"a raw button drawn in a widget is a finding, because Obsidian paints every bare control",
+	"a raw button drawn in a widget is clean, because the engine resets every bare control under a widget",
 	rulesIn(checkWidget({ ...clean, source: `${clean.source}\n<button className="pick" onClick={go}>Pick</button>` })),
-	["control"],
-);
-check(
-	"and it names the kit control that replaces each tag",
-	checkWidget({ ...clean, source: `${clean.source}\n<input value={v} />\nh("select", {})` })[0]?.message.includes(
-		"<input> → Input or Checkbox; <select> → Select",
-	),
-	true,
+	[],
 );
 check(
 	"a collection that adds records is clean: its add stands in its own header",

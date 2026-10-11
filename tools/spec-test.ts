@@ -1216,12 +1216,12 @@ check(
 check("an ungated stage is never refused", refuseStage("data", rowsOf(firstReport)), null);
 await writeFile(
 	join(widgetFolder, "widget.tsx"),
-	"export const states = defineStates(List, {});\nexport default function List() { return <button>Add</button>; }",
+	"export const states = defineStates(List, {});\nexport default function List() { return <h1>Add</h1>; }",
 );
 check(
 	"a widget that fails check fails its feature",
 	rowsOf(await reportOfApp(reportPlace, "Garden")).find((row) => row.feature === "Plant a word")?.problems,
-	["check: control"],
+	["check: heading"],
 );
 await writeFile(
 	join(widgetFolder, "widget.tsx"),

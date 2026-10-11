@@ -19,6 +19,10 @@ import { moduleFromBundle } from "./compiled-module.js";
 import type { ModuleSpace } from "./modules.js";
 import { failureMessage } from "./failure-message.js";
 
+const DEFAULT_SHEET_NAME = "widget.css";
+const DEFAULT_SHEET = '@import "tailwindcss";\n@import "widgetarium/theme.css";\n';
+const DRAWN_WITH_THE_KIT = /["']widgetarium\/kit["']/;
+
 export interface BuilderAdapter {
 	exists(path: string): Promise<boolean>;
 	mkdir(path: string): Promise<unknown>;
@@ -217,8 +221,11 @@ async function compileSheet({
 	code,
 	aboutToBeWritten,
 }: SheetAsked): Promise<StyledSheet> {
-	const name = SHEET_FILES.find((each) => typeof files[each] === "string");
-	const sheet = name === undefined ? undefined : files[name];
+	const written = SHEET_FILES.find((each) => typeof files[each] === "string");
+	const isDrawnByItself =
+		written === undefined && code !== null && code.includes("className") && !DRAWN_WITH_THE_KIT.test(code);
+	const name = isDrawnByItself ? DEFAULT_SHEET_NAME : written;
+	const sheet = isDrawnByItself ? DEFAULT_SHEET : name === undefined ? undefined : files[name];
 	if (name === undefined || sheet === undefined || !importsTailwind(sheet))
 		return { ok: true, lock, css: null, compiler: null, inputs: {}, failure: null };
 
@@ -232,7 +239,14 @@ async function compileSheet({
 		readFile: async (path) => aboutToBeWritten[path] ?? readIfThere(adapter, path),
 		candidates: candidatesIn(code),
 	});
-	return { ...done, compiler: found.key, lock: withModule(lock, id, found) };
+	const locked = withModule(lock, id, found);
+	if (!done.ok) return { ...done, compiler: found.key, lock: locked };
+	const inputs = isDrawnByItself ? withoutKey(done.inputs, `${folder}/${name}`) : done.inputs;
+	return { ok: true, css: done.css, inputs, failure: null, compiler: found.key, lock: locked };
+}
+
+function withoutKey(texts: Readonly<Record<string, string>>, key: string): Record<string, string> {
+	return Object.fromEntries(Object.entries(texts).filter(([path]) => path !== key));
 }
 
 async function scopeLibInput(

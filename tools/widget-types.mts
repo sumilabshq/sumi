@@ -13,6 +13,7 @@ const CORE = "packages/core";
 const DECLARATIONS = "node_modules/.cache/widgetarium";
 const REACT_TYPES = ["node_modules/@types/react/index.d.ts", "node_modules/@types/react/jsx-runtime.d.ts"];
 const REACT_DOM_TYPES = ["node_modules/@types/react-dom/index.d.ts"];
+const ENGINE_PACKAGE_TYPES = ["node_modules/radix-ui/dist/index.d.ts", "node_modules/motion/dist/react.d.ts"];
 const LAID_AT = "types";
 const PACKAGES_LAID_AT = `${LAID_AT}/node_modules`;
 const LAID_ROOTS: readonly (readonly [from: string, to: string])[] = [
@@ -66,7 +67,13 @@ const declarationOfKitSource = (source: string): string =>
 	`${LAID_AT}/kit/${source.slice(`${KIT}/src/`.length).replace(/\.tsx?$/, ".d.ts")}`;
 
 function probeConfig(): object {
-	const entries = [HANDED_TO_A_WIDGET, ...kitEntries().map(({ source }) => source), ...REACT_TYPES, ...REACT_DOM_TYPES];
+	const entries = [
+		HANDED_TO_A_WIDGET,
+		...kitEntries().map(({ source }) => source),
+		...REACT_TYPES,
+		...REACT_DOM_TYPES,
+		...ENGINE_PACKAGE_TYPES,
+	];
 	const { compilerOptions } = widgetOptions();
 	return {
 		compilerOptions: { ...compilerOptions, paths: {}, types: [], skipLibCheck: true, noEmit: true },

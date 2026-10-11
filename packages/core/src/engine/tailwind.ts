@@ -44,7 +44,7 @@ const PREFLIGHT = "tailwindcss/preflight.css";
 // TRADE-OFF: preflight is dropped rather than offered, because it restyles the host's own elements and a plugin has no page of its own to reset
 const WITHOUT_PREFLIGHT = `@layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);`;
+@import "tailwindcss/utilities.css" layer(utilities) important;`;
 
 export function importsTailwind(css: unknown): boolean {
 	return TAILWIND_IMPORT.test(String(css ?? ""));

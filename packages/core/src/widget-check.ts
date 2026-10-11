@@ -21,18 +21,6 @@ const WIDGETARIUM_IMPORT = /import\s+(type\s+)?\{([^}]+)\}\s+from\s+"widgetarium
 const BOARD_HEADING = /<(h[12])[\s/>]/g;
 const KIT_BOARD_HEADING = /<Heading\b[^>]*\b(?:level|size)=\{?["']?([12])\b/g;
 const ROLES_THAT_MAY_TITLE: readonly string[] = ["text", "layout"];
-const RAW_CONTROL =
-	/<(button|input|select|textarea)[\s/>]|createElement\(\s*["'](button|input|select|textarea)["']|\bh\(\s*["'](button|input|select|textarea)["']/g;
-const KIT_CONTROL_FOR: Readonly<Record<string, string>> = {
-	button: "Button, IconButton or a pressable Row",
-	input: "Input or Checkbox",
-	select: "Select",
-	textarea: "Textarea",
-};
-
-const RAW_CONTROL_SAID =
-	"a raw control drawn by hand ({instead}); Obsidian styles every bare control with its own fill and border, so it never looks or answers like the kit — take the kit's";
-
 export const WIDGET_CHECK_RULES = [
 	"colour",
 	"font",
@@ -40,7 +28,6 @@ export const WIDGET_CHECK_RULES = [
 	"role",
 	"reaches",
 	"heading",
-	"control",
 	"tailwind",
 	"hand-written",
 	"blocks",
@@ -130,7 +117,6 @@ function sourceFindings(source: string, card: CheckedCard | null, surface: reado
 		...roleFindings(card),
 		...reachFindings(source, surface),
 		...headingFindings(source, card),
-		...controlFindings(source),
 		...titledFindings(source, card),
 		...restyledFindings(source),
 		...statesFindings(source),
@@ -177,13 +163,6 @@ function pageFindings(id: string, source: string): Finding[] {
 	const classes = [...new Set([...source.matchAll(HAND_PAGE_WIDTH)].map((found) => found[0]))];
 	if (classes.length === 0) return [];
 	return [{ rule: "page", message: HAND_WIDTH_SAID.replace("{classes}", classes.join(", ")) }];
-}
-
-function controlFindings(source: string): Finding[] {
-	const tags = [...new Set([...source.matchAll(RAW_CONTROL)].map((found) => found[1] ?? found[2] ?? found[3] ?? ""))];
-	if (tags.length === 0) return [];
-	const instead = tags.map((tag) => `<${tag}> → ${KIT_CONTROL_FOR[tag] ?? "the kit's control"}`).join("; ");
-	return [{ rule: "control", message: RAW_CONTROL_SAID.replace("{instead}", instead) }];
 }
 
 function reachFindings(source: string, surface: readonly unknown[] | null): Finding[] {
