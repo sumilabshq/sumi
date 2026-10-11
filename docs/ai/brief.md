@@ -94,7 +94,7 @@ too: every switch two widgets must agree on (`home.view`) and every record a pag
 (`project`). The spec's `Data` choice decides where rows come from. _Over when a query bound to each
 folder would answer with rows._
 
-**Stage 3 — the design, drawn on the canvas.** First the catalogue: for every block the page needs,
+**Stage 3 — the design, drawn on the canvas.** First offer the look (`look`, tools.md). Then the catalogue: for every block the page needs,
 `node {tool} find --about "<the block>"` and open each candidate's `picture`; a widget whose picture is
 that block is placed, not redrawn. Every block the catalogue lacks is a widget of the app's own
 (`@<app>/<block>`), started with `node {tool} start` (law 15), drawn with the kit and Tailwind, its

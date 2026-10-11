@@ -36,6 +36,14 @@ thing". It is never the default wrapper.
 - **Few items are rows, never a grid of two or three plates.**
 - **No plate around a single figure.** A strip of figures is one plate split by lines.
 
+## Plain is not simple
+
+Minimalism removes decoration, never design. The calm is in the ground, the space and the few colours;
+the components stay full. A thing the person looks at gets the component that shows it — a figure
+with its trend and change, a record with its picture and state, a step with what it produces, a
+progress with its ring or bar — never a line of text standing in for it. A list of text rows is right
+only for things that really are a name and one line.
+
 ## Padding: three gaps in one order
 
 ```
@@ -103,3 +111,5 @@ Walk the screen and fix each one you find.
 10. An emoji used as an icon or a decoration.
 11. Uppercase on a heading, a button or a sentence; uppercase with no letter-spacing; an uppercase
     label on every block.
+12. Plain instead of simple: figures, records, steps or progress drawn as rows of text with no chart,
+    picture, state or shape, and called minimal.

@@ -155,6 +155,23 @@ When a take becomes a widget, write it again with `--into @<app>/<widget>`. Noth
 while you design: a widget shows a photo by its literal `https://` address, and the implement job runs
 `photos <app>` before it places the page.
 
+**The look before anything is drawn.** The app's design system ships its settings beside its
+`system.md` (`minimal/settings.json` for Minimal): the choices a person may make about its look (corners and motion, how much colour, the
+ground, density, fonts) with what each offers. Offer them on the canvas, then shape the offer to this
+app: drop a setting the domain has no use for and one that changes nothing on its pages (how plates stand
+apart when the pages draw no plates), narrow its options, recommend the one you would pick
+and say why in the chat, and add what the system leaves to you, such as the shell or a cover photo:
+
+```
+node {tool} look <app> --system minimal
+node {tool} look <app> --drop density
+node {tool} look <app> --setting shell --options sidebar,top-bar --recommend sidebar --ask "Navigation"
+node {tool} look <app>
+```
+
+The person picks on the canvas; the screens redraw at once for what tokens can show, and the rest
+you draw. Read the picks with `look <app>` before every page and draw in exactly what they say.
+
 **Three directions first.** Pick the shell from the App shell table in `design-system.md`, then draw
 the opening page three ways that differ in structure — what leads, how the page is cut — as
 `@<app>/<page>-a-page`, `-b-page` and `-c-page`, placed as screens `<Page> · A`, `· B`, `· C`. Shoot
