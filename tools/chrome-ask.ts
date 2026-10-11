@@ -8,6 +8,7 @@ export type PageSize = readonly [number, number];
 
 export interface PageAsk {
 	readonly size: PageSize;
+	readonly onGpu?: boolean;
 }
 
 export type PagePoint = readonly [x: number, y: number];
@@ -83,12 +84,14 @@ function handled(socket: PageSocket, chrome: ChildProcess): AskedPage {
 	};
 }
 
-function spawned(browser: string, file: string, { size }: PageAsk, profile: string): ChildProcess {
+const GPU_FLAGS: readonly string[] = ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"];
+
+function spawned(browser: string, file: string, { size, onGpu = false }: PageAsk, profile: string): ChildProcess {
 	return spawn(
 		browser,
 		[
 			"--headless=new",
-			"--disable-gpu",
+			...(onGpu ? GPU_FLAGS : ["--disable-gpu"]),
 			"--no-sandbox",
 			"--hide-scrollbars",
 			"--no-first-run",
@@ -96,7 +99,7 @@ function spawned(browser: string, file: string, { size }: PageAsk, profile: stri
 			`--window-size=${size[0]},${size[1]}`,
 			"--remote-debugging-port=0",
 			`--user-data-dir=${profile}`,
-			`file://${file}`,
+			/^https?:/.test(file) ? file : `file://${file}`,
 		],
 		{ stdio: ["ignore", "ignore", "ignore"] },
 	);
