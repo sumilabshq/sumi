@@ -340,6 +340,20 @@ async function jobsWith(stored: Record<string, unknown>) {
 
 {
 	const { jobs, runs, put } = await jobsWith({});
+	put(JobSchema.parse({ ...base, status: "paused", reason: "stopped", createdAt: 1 }));
+	await settle();
+	put(JobSchema.parse({ ...base, createdAt: 9 }));
+	await settle();
+	check(
+		"a new job written under a stopped job's id is read as new and starts",
+		[runs.length, jobs.jobsOf("Studio")[0]?.status],
+		[1, "running"],
+	);
+	jobs.close();
+}
+
+{
+	const { jobs, runs, put } = await jobsWith({});
 	put(base);
 	await settle();
 	await jobs.note("Studio", "home-design", "Make the calendar square.");

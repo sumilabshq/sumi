@@ -210,7 +210,7 @@ async function load(state: JobsHeld): Promise<void> {
 		for (const job of await state.doors.files.jobsOf(app)) {
 			const key = keyOf(app, job.id);
 			seen.add(key);
-			if (state.held.has(key)) continue;
+			if (state.held.get(key)?.createdAt === job.createdAt) continue;
 			state.held.set(key, job);
 			if (isCutOff(job) && !state.running.has(key)) await move(state, job, { to: "queued", note: null });
 		}
