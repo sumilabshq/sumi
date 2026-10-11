@@ -37,9 +37,7 @@ Imports point down only: **app → widgets → logic → shared.**
 | `src/shared/kit`, `libs/`   | the kit, copied in, items found by name; third-party libraries       |
 | `docs/`                     | the spec, the design, the references                                 |
 
-A widget installed from the catalogue is a starting point: move its schema into the project's
-schemas or map it in a feature handler, and refactor it to the project. `widget.md` has the code of
-every pattern; `examples.md`, in this prompt, has each one whole.
+`widget.md` has the code of every pattern; `examples.md`, in this prompt, has each one whole.
 
 ## The five stages
 
@@ -94,10 +92,9 @@ too: every switch two widgets must agree on (`home.view`) and every record a pag
 (`project`). The spec's `Data` choice decides where rows come from. _Over when a query bound to each
 folder would answer with rows._
 
-**Stage 3 — the design, drawn on the canvas.** First offer the look (`look`, tools.md). Then the catalogue: for every block the page needs,
-`node {tool} find --about "<the block>"` and open each candidate's `picture`; a widget whose picture is
-that block is placed, not redrawn. Every block the catalogue lacks is a widget of the app's own
-(`@<app>/<block>`), started with `node {tool} start` (law 15), drawn with the kit and Tailwind, its
+**Stage 3 — the design, drawn on the canvas.** First offer the look (`look`, tools.md). The widget
+catalogue is switched off: every block the page needs is a widget of the app's own
+(`@<app>/<block>`), started with `node {tool} start` (law 15), built on Radix and Tailwind (law 9), its
 inputs and outputs typed by the stage 2 schemas, its sample rows in `states`, never in `draw`. Each
 page is one `layout` widget, `@<app>/<page>-page`, whose blocks stand in slots. `widget.md` has the
 code for all three.
@@ -126,9 +123,6 @@ widgets share is one `@core/screen-state` key bound in both. Then `node {tool} s
 picture, and hold it block by block against the approved screen; fix and shoot again. _Over when
 `node {tool} report <app>` says every kept feature is ✓._ The build ends with the report's lines; a
 feature you cannot finish stays ✗ with its reason.
-
-**The catalogue is not the ceiling on the design.** Reuse a widget because it fits the design; never
-design around a widget because it exists.
 
 ## The laws
 
@@ -173,10 +167,10 @@ has open; `shot --design <app> --page <page>` is how you look at one page.
 **8. Give every node its surface as you place it.** Nothing lays one for you. `surfaces.md` has the
 laws, `examples.md` whole boards.
 
-**9. A widget is built from the kit, always.** Colours, radii and type are `--wg-kit-*` tokens; what
-the kit draws you take from `widgetarium/kit`, charts from `widgetarium/kit/charts`. `kit.md`, on disk,
-says which part answers which design: open it before drawing. A number with a history is drawn with
-its `Sparkline` and the change in a `Badge`. On the canvas too; a part the kit lacks is added to the app's kit copy, never hand-drawn.
+**9. You draw every element yourself, on Radix.** Behaviour from `radix-ui`, the look from Tailwind
+on the tokens and the design system, motion as its `motion.md` says. `components.md` lists the
+elements and each one's Radix part. No drawn component from `widgetarium/kit`;
+charts from `widgetarium/kit/charts`; a Radix `Portal` takes `container` from `usePortalContainer()`.
 
 **10. A widget you wrote is checked before it is placed:** `node {tool} check <id>` exits 1 while
 anything is wrong.

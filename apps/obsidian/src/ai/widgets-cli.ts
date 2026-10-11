@@ -5,13 +5,10 @@ import { surfacesOfNote } from "./surfaces-command.js";
 import { layoutOfNote } from "./layout-command.js";
 import { cardIn } from "./entries.js";
 import { filesIn, readJson } from "./vault-files.js";
-import { installWidget } from "./install-command.js";
-import type { Installed } from "./install-command.js";
-import { BASE_NAMES, baseNamed, cardLayoutNamed, everyBase } from "./shape-command.js";
-import type { Told } from "./shape-command.js";
+import { installWidget, type Installed } from "./install-command.js";
+import { BASE_NAMES, baseNamed, cardLayoutNamed, everyBase, type Told } from "./shape-command.js";
 import { specOfApp, stageOfApp } from "./spec-command.js";
-import { JOB_ENV, addJob, askJob, listJobs, refuseOwnedElsewhere } from "./job-command.js";
-import type { JobAdd } from "./job-command.js";
+import { JOB_ENV, addJob, askJob, listJobs, refuseOwnedElsewhere, type JobAdd } from "./job-command.js";
 import { checkedWidget } from "./widget-checking.js";
 import { refuseStage, reportOfApp, isReportClean, type ReportPlace } from "./report-command.js";
 import { shotOf, shotSaid } from "./shot-command.js";
@@ -22,8 +19,7 @@ import { runLookCommand } from "./look-command.js";
 import { rulesOfApp } from "./rules-command.js";
 import { screenOfApp } from "./screen-command.js";
 import { surfaceNamesIn } from "./widget-surface.js";
-import { rankWidgets, refuseReading } from "./find-command.js";
-import type { FindOptions } from "./find-command.js";
+import { rankWidgets, refuseReading, type FindOptions } from "./find-command.js";
 import { saidWidgetCheck } from "@widgetarium/core/widget-check.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { HELP } from "./widgets-cli-help.js";
@@ -31,6 +27,7 @@ import { LOCK_PATH } from "@widgetarium/core/paths.js";
 import { SOURCE_FILES, isWidgetModule } from "@widgetarium/core/engine/widget-build.js";
 import { VAULT, WIDGETS_DIR } from "./cli-paths.js";
 import { configuredSources, entryById, everyWidget, installedWidgets } from "./catalogue-entries.js";
+import { refuseCatalogueVerb } from "./catalogue-switch.js";
 
 type Options = FindOptions & { readonly _: string[]; readonly [flag: string]: unknown };
 
@@ -123,6 +120,8 @@ function optionsIn(argv: readonly string[]): Options {
 }
 
 function ranCommand(named: string | undefined, given: string | undefined, asked: Options): Ran | Promise<Ran> {
+	const catalogueOff = refuseCatalogueVerb(named);
+	if (catalogueOff !== null) return tell(asked, { refusal: catalogueOff });
 	const found = named !== undefined && Object.hasOwn(COMMANDS, named) ? COMMANDS[named] : undefined;
 	if (found === undefined) {
 		console.log(HELP);

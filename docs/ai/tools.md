@@ -120,7 +120,6 @@ node {tool} check @you/clock
 | **role**      | a manifest naming none, so no surface law can judge it                             |
 | **reaches**   | a name imported from `widgetarium` that the surface does not carry; it will crash  |
 | **heading**   | an `h1` or `h2` inside a widget whose role is not `text`                           |
-| **control**   | a raw `<button>`, `<input>`, `<select>` or `<textarea>` instead of the kit's       |
 | **titled**    | a collection drawing its own title; the `Section` above it owns it                 |
 | **page**      | an `-page` widget without `<Page kind>`, with its own width, or drawing kit `Hero` |
 | **restyled**  | a kit component painted through `className`; a swapped kit would miss it           |
@@ -193,10 +192,14 @@ situation is a frame, named as the key in the page widget's `states`:
 node {tool} screen <app> "People" --widget @<app>/people-page --for "back on a routine day: who is due"
 node {tool} screen <app> "People" --widget @<app>/people-page --state Empty --for "first visit, nobody added yet"
 node {tool} screen <app> "People" --widget @<app>/people-page --state "Add person" --for "adding someone"
+node {tool} screen <app> "People" --widget @<app>/people-page --state Phone --size phone --for "checking who is due on the way"
 ```
 
+`--size` draws the frame at the size the person will hold it: `phone`, `tablet`, `desktop` (the
+default) or `<width>x<height>`.
+
 Every screen that shows rows has an `Empty` state; every press that opens something — add, edit,
-delete, confirm — has its own state with the kit's `Dialog` open over the page. Never edit
+delete, confirm — has its own state with its Radix `Dialog` open over the page. Never edit
 `canvas.json`.
 
 **Then the rules.** `node {tool} rules <app>` prints every rule of `.widgetarium/design-system.md` and

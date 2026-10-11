@@ -18,6 +18,8 @@ import type { Spawn, SpawnAsk } from "../apps/obsidian/src/ai/run.ts";
 import type { AssistantPlugin } from "../apps/obsidian/src/ai/assistant.ts";
 import type { AgentFilesAdapter } from "../apps/obsidian/src/ai/agent-files.ts";
 
+process.env["WIDGETARIUM_CATALOGUE"] = "on";
+
 const WIDGETS_CLI = await widgetsCliBundle();
 
 const { expandArgs, commandLineOf } = await import("../apps/obsidian/src/ai/command.js");
@@ -1822,6 +1824,22 @@ const readable = execFileSync("node", [path.join(vault, ".widgetarium/bin/widget
 	encoding: "utf8",
 });
 check("a readable table can be asked for", readable.includes(`${fieldOf(listed, "total")} widgets`), true);
+
+let catalogueRefusal = "";
+try {
+	execFileSync("node", [path.join(vault, ".widgetarium/bin/widgets.mjs"), "find"], {
+		encoding: "utf8",
+		stdio: "pipe",
+		env: { ...process.env, WIDGETARIUM_CATALOGUE: "off" },
+	});
+} catch (failure) {
+	catalogueRefusal = String(Reflect.get(Object(failure), "stderr") ?? "");
+}
+check(
+	"with the catalogue off, find refuses and says to build the block",
+	catalogueRefusal.includes("switched off"),
+	true,
+);
 
 let refusedUnknown: unknown = 0;
 try {

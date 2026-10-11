@@ -1,5 +1,8 @@
 # The kit, as the HTML it replaces
 
+This page describes the kit the shipped widgets draw with. A widget you write draws its elements
+itself on Radix (brief law 9, `components.md`); from here it takes only hooks and charts.
+
 Every piece below comes from `widgetarium/kit`. Its vocabulary is shadcn/ui's: the same component
 names, parts, props, variants and Tailwind token names, so a shadcn block or a component you already
 know is written here as you would write it there, imported from `widgetarium/kit` instead of

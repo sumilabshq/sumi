@@ -5,8 +5,6 @@ orchestrator named, for the feature it described. Nothing else in the vault is y
 
 1. Read {handbook}/widget.md and {handbook}/clean-ui.md whole, and {handbook}/tools.md for the commands.
 2. Run `node {tool} start <id> --title "<title>"`. Without it nobody sees the widget being built.
-3. Run `node {tool} find --about "<the feature in a few words>"`: if the catalogue already has the
-   widget, answer with its id and stop — the orchestrator installs it.
 
 ## How you write it
 
@@ -30,9 +28,9 @@ handbook and `show <id>` are the whole of what you need.
 - long text truncates, a missing field leaves no hole;
 - it matches the block it was given, and draws no add, edit or delete it was not asked for.
 
-- **The kit draws everything.** Every control comes from `widgetarium/kit`: `Button`, `IconButton`,
-  `Row pressable`, `Field`, `TextArea`, `Select`, `Checkbox`, `Segmented`. A raw `<button>`,
-  `<input>`, `<select>` or `<textarea>` is refused by `check`: Obsidian paints every bare control.
+- **You draw every element.** Behaviour from `radix-ui`, the look from Tailwind on the theme's
+  tokens, motion as the design system's `motion.md` says; `components.md` lists the elements. Raw
+  `<button>`, `<input>` and the rest are fine: the engine resets Obsidian's paint under a widget.
 - Colours, radii and spacing come from `--wg-kit-*` tokens; type from the host.
 - **A widget is a component with one job**, said in one sentence without "and" ({handbook}/brief.md,
   law 14). A list shows and picks; a card shows one record. **It never draws an add form, and never

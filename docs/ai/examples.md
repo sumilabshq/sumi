@@ -310,7 +310,6 @@ import {
 	defineStates,
 	useData,
 } from "widgetarium";
-import { Badge, EmptyState, ItemGroup, LayoutItem, ShowMore } from "widgetarium/kit";
 import { TaskFilterSchema, TaskSchema, TaskStatusSchema } from "../../../shared/schemas/task";
 
 const TaskList = createWidget({
@@ -320,17 +319,27 @@ const TaskList = createWidget({
 	},
 	draw: ({ getTasks, getStatus: status }) => {
 		const { data, isLoading, failure, hasMore, more } = useData(getTasks, { status, limit: 20 });
-		if (failure) return <EmptyState title="The tasks could not be read" text={failure} />;
-		if (!isLoading && data.length === 0) return <EmptyState title="Nothing in this status" />;
+		if (failure) return <p className="text-sm text-muted-foreground">The tasks could not be read: {failure}</p>;
+		if (!isLoading && data.length === 0) return <p className="text-sm text-muted-foreground">Nothing in this status</p>;
 		return (
-			<ItemGroup>
+			<ul className="divide-y divide-line">
 				{data.map((task) => (
-					<LayoutItem key={task.id}>
-						{task.title} <Badge size="s">{task.status}</Badge>
-					</LayoutItem>
+					<li key={task.id} className="flex items-center justify-between py-items">
+						{task.title}
+						<span className="rounded-pill bg-fill px-2 text-xs text-muted-foreground">{task.status}</span>
+					</li>
 				))}
-				{hasMore ? <ShowMore isLoading={isLoading} onMore={more} /> : null}
-			</ItemGroup>
+				{hasMore ? (
+					<button
+						type="button"
+						disabled={isLoading}
+						onClick={() => more()}
+						className="py-items text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+					>
+						Show more
+					</button>
+				) : null}
+			</ul>
 		);
 	},
 });
@@ -380,7 +389,6 @@ export class CreateTaskCommand extends ICommand.input(NewTaskSchema).output(Task
 ```tsx file=src/widgets/tasks/new-task/widget.tsx
 import { useState } from "react";
 import { ICommand, createWidget, defineLayout, defineMetadata, defineStates } from "widgetarium";
-import { Button, Input } from "widgetarium/kit";
 import { NewTaskSchema, TaskSchema } from "../../../shared/schemas/task";
 
 const NewTask = createWidget({
@@ -397,11 +405,20 @@ const NewTask = createWidget({
 		};
 		return (
 			<form className="flex flex-col gap-cards" onSubmit={(event) => (event.preventDefault(), void send())}>
-				<Input value={title} onValueChange={setTitle} placeholder="What needs doing" />
+				<input
+					value={title}
+					onChange={(event) => setTitle(event.target.value)}
+					placeholder="What needs doing"
+					className="rounded-item bg-fill px-3 py-2 transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-ring"
+				/>
 				{refusal ? <p className="text-destructive">{refusal}</p> : null}
-				<Button type="submit" disabled={title.trim() === ""}>
+				<button
+					type="submit"
+					disabled={title.trim() === ""}
+					className="rounded-item bg-primary px-4 py-2 text-primary-foreground transition-[opacity,transform] duration-150 active:scale-[0.97] disabled:opacity-50"
+				>
 					Add task
-				</Button>
+				</button>
 			</form>
 		);
 	},

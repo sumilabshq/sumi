@@ -120,6 +120,6 @@ widgets placed in it or one widget drawn per row; `examples.md` has both.
 
 - The YAML parses; `v:` is unchanged.
 - Every leaf `id` exists in `tiles`; a swap box's `id` does not.
-- Every `widget` id is installed or offered by `find`.
+- Every `widget` id is a widget in this vault.
 - Every node carries the surface you meant.
 - `lint` passes.

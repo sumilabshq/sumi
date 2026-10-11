@@ -10,6 +10,9 @@ import HANDBOOK_TOOLS from "../../../../docs/ai/tools.md";
 import HANDBOOK_SPEC from "../../../../docs/ai/spec.md";
 import HANDBOOK_KIT from "../../../../docs/ai/kit.md";
 import HANDBOOK_CLEAN_UI from "../../../../docs/ai/clean-ui.md";
+import HANDBOOK_COMPONENTS from "../../../../docs/ai/components.md";
+import MINIMAL_COLLECTIONS from "../../../../design-catalogue/systems/minimal/patterns/collections.md";
+import MINIMAL_MOTION from "../../../../design-catalogue/systems/minimal/patterns/motion.md";
 import MINIMAL from "../../../../design-catalogue/systems/minimal/system.md";
 import MINIMAL_ASIDE from "../../../../design-catalogue/systems/minimal/patterns/aside.md";
 import MINIMAL_BREADCRUMBS from "../../../../design-catalogue/systems/minimal/patterns/breadcrumbs.md";
@@ -60,6 +63,9 @@ export const HANDBOOK: Readonly<Record<string, string>> = {
 	"spec.md": HANDBOOK_SPEC,
 	"kit.md": HANDBOOK_KIT,
 	"clean-ui.md": HANDBOOK_CLEAN_UI,
+	"components.md": HANDBOOK_COMPONENTS,
+	"minimal/patterns/collections.md": MINIMAL_COLLECTIONS,
+	"minimal/patterns/motion.md": MINIMAL_MOTION,
 	"minimal/system.md": MINIMAL,
 	"minimal/settings.json": `${JSON.stringify(MINIMAL_CHOICES, null, "\t")}\n`,
 	"minimal/patterns/aside.md": MINIMAL_ASIDE,

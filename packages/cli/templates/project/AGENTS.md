@@ -1,6 +1,6 @@
 # {name}
 
-A Widgetarium app: Vite, React, TypeScript, Tailwind and zod. Every page is a board of widgets.
+A Widgetarium app: Vite, React, TypeScript, Tailwind, zod, Radix and Motion. Every page is a board of widgets.
 
 ## Where everything lives
 
@@ -31,7 +31,7 @@ widget; both import the schema in `{paths.schemas}`.
 2. A widget declares gateway interfaces (`IQuery`, `ICommand`, `I*Gateway`), never implementations; the rules live in handlers under `{paths.logic}`.
 3. Values are checked by zod where they cross a gateway, never inside a widget.
 4. A board is a tree of boxes and tiles, and every node carries its surface: [board.md]({handbook}/board.md), [surfaces.md]({handbook}/surfaces.md), [examples.md]({handbook}/examples.md).
-5. Everything drawn comes from the kit and every colour from its tokens: [kit.md]({handbook}/kit.md), [design-system.md]({handbook}/design-system.md).
+5. You draw every element yourself on Radix (`radix-ui`), with Tailwind on the kit's tokens and motion from `motion/react` where CSS cannot: [components.md]({handbook}/components.md), [design-system.md]({handbook}/design-system.md).
 
 A command written `node {tool} …` in the handbook belongs to the Obsidian plugin and does not run here.
 

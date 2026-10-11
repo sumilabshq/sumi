@@ -2,6 +2,10 @@
 
 Only when `find` offers nothing close. A near neighbour with different controls beats a new widget.
 
+**What a widget draws, it draws itself on Radix** (brief law 9, `components.md`). Where this page
+names a kit component to draw with, that describes the widgets already shipped; a widget you write
+takes only `usePortalContainer`, the hooks and `widgetarium/kit/charts` from the kit.
+
 **One widget draws one thing.** A total with its bar, a chart, a list of rows: each is a widget of
 its own, and a section places them together. When the design asks for a figure over a list, write
 two widgets reading the same query, never one that draws both.
