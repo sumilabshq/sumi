@@ -2,112 +2,76 @@
 
 The rules every developer and every agent follows when writing code in this repository. Read this page first; the pages below go deeper.
 
-| Page                         | Answers                                                                         |
-| ---------------------------- | ------------------------------------------------------------------------------- |
-| [placement.md](placement.md) | where a file goes, the folders inside a domain, and the questions an agent asks |
-| [handlers.md](handlers.md)   | queries, commands and services, and how they reach each other                   |
-| [hosts.md](hosts.md)         | what a host is, what it hands over, servers, secrets and deploy                 |
-| [lint.md](lint.md)           | the checks that hold every rule here                                            |
-| [legacy.md](legacy.md)       | code written before these rules, and how it leaves                              |
+| Page                         | Answers                                                                                         |
+| ---------------------------- | ----------------------------------------------------------------------------------------------- |
+| [requests.md](requests.md)   | requests and their handlers, the mediator, modules, idempotency, data, integrations, the server |
+| [views.md](views.md)         | blocks, layouts, slots, how a view reads and writes, loading, error and empty                   |
+| [placement.md](placement.md) | where each file goes                                                                            |
+| [hosts.md](hosts.md)         | platforms, deploy, secrets, webhooks                                                            |
+| [lint.md](lint.md)           | the checks that hold every rule here                                                            |
+| [legacy.md](legacy.md)       | code written before these rules, and how it leaves                                              |
 
-> Status: this is the target. Code under any `legacy/` folder does not follow it yet. A rule marked **planned** is not checked by a tool yet.
+> Status: this is the target. The code still runs on the earlier widget builder and handles; it moves domain by domain, the canvas first. A rule marked **planned** is not checked by a tool yet.
 
 ## Three rules
 
 Everything else on these pages follows from them.
 
-1. **Imports go one way: `hosts` → `apps` → `packages`.** A lower level never imports a higher one. A domain uses another domain only through its `index.ts`.
-2. **A file's place is what it is.** Drawn → `ui/`. Connects a view to data → `widgets/`. Reads or writes → `logic/`, with every platform implementation next to its interface. Wires handlers to widgets → the app. Picks the platform's implementations → the host.
-3. **Everything from outside is passed in.** A view gets data from its widget. A widget gets handlers from the app. A handler gets sources in its constructor. The host creates the platform's sources and gives them to the app. Nothing reaches for anything on its own.
+1. **Imports go one way: `apps` → `packages`.** A package never imports an app. A domain uses another domain only through its `index.ts`.
+2. **A file's place is what it is.** A request and its handler → one file in `requests/`. What is drawn → a block in `blocks/`. Where blocks stand → a layout. Which implementation runs → the domain's module.
+3. **Nothing reaches for anything.** A view sends requests through the mediator. A handler gets its dependencies in its constructor from the module's container. The platform is given by the framework (`host`). No hidden globals, no singletons.
 
-## Three levels
+## Two levels
 
 ```
-hosts/       a runtime: obsidian, web, desktop, mobile, api
-   ↓
-apps/        a product: routes, pages composed in TSX, the hosts it ships on
+apps/        a product: routes, pages, which modules it uses
    ↓
 packages/    domains (business areas) and common (no domain at all)
 ```
 
-| Level               | Holds                                                                     | Never holds                              |
-| ------------------- | ------------------------------------------------------------------------- | ---------------------------------------- |
-| `hosts/<runtime>`   | how to run any app: rendering engine, storage, files, network, window     | anything about one product               |
-| `apps/<product>`    | routes; pages in TSX that create handlers and pass them to widgets; hosts | widgets, handlers, schemas               |
-| `packages/<domain>` | the widgets, handlers and schemas of one business area                    | the internals of another domain          |
-| `packages/<common>` | engine, kit, helpers, data sources, widgets that name no record           | anything that names a record of a domain |
-
-**What it gives:** a product is a file you read in a minute; a host is written once and runs every product; a domain is the one place its rules live.
+Hosts are part of the framework, not of a project: `@widgetarium/host-obsidian`, `@widgetarium/host-web`. An app runs on them; a project writes no host code. A module reads `host.is("obsidian")` and the host's raw objects (`host.vault`, `host.window`) when it picks an implementation.
 
 ## Domains
 
-A domain is a business area: `video`, `analytics`, `parental`; for this repository `canvas`, `assistant`, `catalogue`. Nx calls the same cut a _scope_, DDD a _bounded context_. A domain is named by its area, never by the product that uses it first: a chart of channel views is `analytics`, not `studio`.
+A domain is a business area: `video`, `analytics`, `billing`; for this repository `canvas`, `assistant`, `catalogue`. Named by its area, never by the product that uses it first.
 
 ```
 packages/<domain>/
-  index.ts              the public API: widgets, logic and schemas, never ui/; the only file another package may import
-  ui/<view>/            what is drawn: plain components, props only
-  widgets/              <widget>.widget.ts — the link from a view to data (see placement.md)
-  logic/<record>/       queries, commands, services
-  schemas/              the zod shape of each record — where widgets and logic meet
+  index.ts                  the public API: requests, blocks, the module
+  <domain>.module.ts        the handlers it registers, the implementations it provides, its middleware
+  requests/<feature>/       one file per request: the request and its handler
+  blocks/<block>/           what is drawn: a component that reads its own requests
+  layouts/                  where blocks stand; no data
+  ports/                    interfaces for outside systems + their adapters
+  schema/                   Drizzle tables and the zod shapes derived from them
 ```
 
-- A view is what the person sees; a widget is the layer that connects a view to data and draws nothing itself.
-- `ui/` and `widgets/` are cut by what is drawn (`task-kanban`, `task-table`), `logic/` by the kind of record (`tasks`).
-- Views and widgets never import logic, and logic never imports them. All import `schemas/`. A widget gets its handlers as props from the app.
-- Inside one domain, logic imports logic directly.
-
-**What it gives:** a widget is reused for any record that fits its schema and swapped by the app (A/B tests, redesigns) without touching logic. Logic reads like ordinary code: go-to-definition opens the real function.
+**What it gives:** one feature is one request file and one block. The path from a click to the data is linear: `useCommand(ShowPage)` → `show-page.ts` (the handler is below the request) → its constructor → the module's one line that picks the implementation.
 
 ## Common
 
-Common packages hold code with no domain: the engine (`core`), the kit (`kit`), helpers, data sources and widgets whose schema names no record (the `registry/` library). Today: `core`, `kit`, `sdk`, `cli`, `vite`, `packs/*`.
-
-A data source is a ready library for an outside system: the vault, Supabase, auth, SQL, or the HTTP API of a backend someone already has. Handlers import it directly.
-
-**Common imports no domain.** So code that needs a domain's schema cannot be put there: the compiler answers "does this belong in common", not a person.
+Common packages hold code with no domain: the engine (`core`: mediator, container, hooks, slots), the kit, behaviors (headless, Radix-style), ports with adapters for outside systems, helpers. Common imports no domain.
 
 ## Imports
 
-| From ↓ may import → | host | app | own domain | another domain              | common |
-| ------------------- | ---- | --- | ---------- | --------------------------- | ------ |
-| host                | own  | yes | —          | its `index.ts`              | yes    |
-| app                 | no   | own | —          | its `index.ts`              | yes    |
-| domain              | no   | no  | anything   | its `index.ts`, if declared | yes    |
-| common              | no   | no  | —          | no                          | yes    |
+| From ↓ may import → | app | own domain | another domain                                | common |
+| ------------------- | --- | ---------- | --------------------------------------------- | ------ |
+| app                 | own | —          | its `index.ts`                                | yes    |
+| domain              | no  | anything   | its `index.ts`, if declared in `package.json` | yes    |
+| common              | no  | —          | no                                            | yes    |
 
-- A domain that uses another lists it in its `package.json` dependencies, and imports only its `index.ts`.
-- The graph of domains has no cycle. When two domains would need each other, the later one reacts to an event or asks through a port.
-
-**What it gives:** the dependencies of a domain are one list in one file; reaching into another domain's internals is impossible; a central domain (`video`) depends on nobody and everyone may depend on it.
-
-## Size
-
-A file is at most 200 lines. A folder that would list more than about ten files is cut into subfolders by what they are (`hooks/`, `ui/`), never into one long list.
-
-## A new project
-
-| Moment                                      | What exists                                                             |
-| ------------------------------------------- | ----------------------------------------------------------------------- |
-| start                                       | one app, one domain package; it runs inside the studio, no host         |
-| a second business area                      | a second domain package                                                 |
-| an existing backend                         | a data source in common for its API; handlers call it                   |
-| shipping outside the studio                 | the first host (`hosts/web`, `hosts/desktop`)                           |
-| the first secret (DB password, payment key) | a server handler; the web host starts serving `/rpc`                    |
-| a second product                            | a second app using the same domains                                     |
-| a large organisation                        | many domains; a developer opens one domain and its app as the workspace |
-
-No level is added for growth. The three levels stay three.
+The graph of domains has no cycle.
 
 ## Prior art
 
-| Source                                                              | Taken                                                                           |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| FSD and its 3-layer variants (app / features / shared)              | one-way layers; features cut by what they draw; the API layer shared below them |
-| Composition Root (Seemann), Backstage `apiRef`                      | the app is the one place handlers are created and given to widgets              |
-| Shopify Packwerk, Spring Modulith                                   | a domain uses another only through its public API, declared and checked         |
-| Nx (apps thin, libs hold code, `scope:` tags)                       | domains as packages; lint by tags _(from memory)_                               |
-| SvelteKit `.server`, Next `"use server"`, TanStack `createServerFn` | server code marked in code, removed from the browser bundle by the build        |
-| Critics of ports everywhere (Rentea, Tarkhanov)                     | a port only where an implementation is really swapped                           |
+| Source                                | Taken                                                                                                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| MediatR, NestJS CQRS                  | a request is sent to a bus; the handler is found by the request's type and gets its dependencies from the container |
+| NestJS modules                        | a module lists its handlers and providers; swapping an implementation is one line                                   |
+| Vertical slices (Bogard, CodeOpinion) | a request and its handler in one file                                                                               |
+| Radix                                 | behavior ready-made, the look written by the project                                                                |
+| Relay, Fowler's Presentation Model    | a block gets data already shaped for what it draws                                                                  |
+| Drizzle                               | tables as code, migrations generated from them                                                                      |
+| Stripe idempotency keys, Convex       | a write runs once; typed queries and mutations                                                                      |
 
-Research behind this page: [coupling between domains](https://claude.ai/artifact/XbHJNHvW3Fr1xGB1zgUkQV).
+Research behind this page: [a simpler architecture](https://claude.ai/artifact/XkjuHUsXeX65WK4bfzEAiC), [coupling between domains](https://claude.ai/artifact/XbHJNHvW3Fr1xGB1zgUkQV).

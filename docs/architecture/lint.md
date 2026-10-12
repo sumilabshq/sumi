@@ -1,32 +1,22 @@
 # Lint
 
-Every rule in these pages is a folder, a file name or a type. So every rule is checked by a tool, not by review. All are **planned**; a rule is switched on only after a count shows which files it would refuse.
+Every rule in these pages is a folder, a file name or a type, so a tool checks it, not a review. A rule is switched on only after a count shows which files it would refuse.
 
-Every package carries its level in `package.json`:
+| Rule          | Refuses                                                                                            |
+| ------------- | -------------------------------------------------------------------------------------------------- |
+| levels        | an import against the table in [README.md](README.md#imports); a package importing an app          |
+| public API    | an import of another package by any path but its `index.ts`                                        |
+| declared      | an import of a domain not listed in `package.json` dependencies                                    |
+| no cycles     | a cycle in the graph of domains                                                                    |
+| request names | a request name that is not `<module>/<constant in kebab case>`                                     |
+| idempotency   | a command with no `idempotencyKey` (a type error, not lint)                                        |
+| uniqueness    | a table with no `unique` choice (a type error, not lint)                                           |
+| one handler   | a request with no handler, or two handlers across the app's modules                                |
+| blocks        | hand-written pointer or scroll math in a block; a decision about request data in a block (warning) |
+| new in a page | `new` of a handler or an adapter outside a module                                                  |
+| server        | a server-only file reached from a client bundle (a build error naming the chain)                   |
+| size          | a file over 200 lines, a component over 80                                                         |
+| index files   | anything in an `index.ts` but re-exports                                                           |
+| legacy        | a new file in a `legacy/` folder; an import of `legacy/` from outside its owner                    |
 
-```json
-{ "widgetarium": { "level": "host" | "app" | "domain" | "common" } }
-```
-
-| Rule            | Refuses                                                                                                                                                                                                                                                          |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| levels          | an import against the table in [README.md](README.md#imports); a package importing anything from `hosts/` or `apps/`                                                                                                                                             |
-| public API      | an import of another package by any path but its `index.ts`                                                                                                                                                                                                      |
-| declared        | an import of a domain not listed in `package.json` dependencies                                                                                                                                                                                                  |
-| no cycles       | a cycle in the graph of domains                                                                                                                                                                                                                                  |
-| inside a domain | `ui/` or `widgets/` importing `logic/`; `logic/` importing `ui/` or `widgets/`; a view importing a widget; JSX in a `.widget.ts`                                                                                                                                 |
-| index files     | anything in an `index.ts` but re-exports; a re-export from `ui/`                                                                                                                                                                                                 |
-| placement       | `.query.ts`, `.command.ts`, `.service.ts` outside `logic/`; `.schema.ts` outside `schemas/`; JSX outside `ui/`, the kit, apps and hosts; `.widget.ts` outside `widgets/`; a widget declaring metadata or layout                                                  |
-| size            | a file over 200 lines; an inject with more than 12 entries (warning); a view whose props type is not `InjectProps` of its widget; `.inject({ … })` with an inline object instead of an `inject()` constant (warning; the agent's `widgets.mjs check` refuses it) |
-| hooks           | a `use*` in `logic/`; a widget hook that calls a port                                                                                                                                                                                                            |
-| schemas         | `z.object` in a widget, or in a handler except as its own input                                                                                                                                                                                                  |
-| server          | `secrets` outside a `.server()` handler; a `.server()` file or a server-only module reached from a browser bundle (build error naming the import chain)                                                                                                          |
-| legacy          | a new file in a `legacy/` folder; an import of `legacy/` from anything but its own app or host                                                                                                                                                                   |
-
-Tools: `eslint-plugin-boundaries` for the import rules, a small check under `tools/` for placement, size and legacy, the type system for `secrets`.
-
-Each check is proven by breaking it on purpose: write the file it must refuse, see it red, remove the file.
-
-A rule's message says what to do, not only what is wrong. The inject limit, for example:
-
-> `canvas-field` injects 20 entries; more than 12 usually means one widget draws several things. Split it into small widgets that each answer one question, and compose them in a layout widget the app places.
+Every rule is **planned** unless the code says otherwise. Each check is proven by breaking it on purpose: write the file it must refuse, see it red, remove the file. A rule's message says what to do, not only what is wrong.
