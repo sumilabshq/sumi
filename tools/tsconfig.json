@@ -44,10 +44,10 @@
 		"*.tsx",
 		"loader/**/*.mts",
 		"lint/**/*.mts",
-		"../apps/obsidian/*.mts",
+		"../hosts/obsidian/*.mts",
 		"loader/**/*.ts",
 		"lint/**/*.ts",
-		"../apps/obsidian/src/build-modules.d.ts",
+		"../hosts/obsidian/src/legacy/build-modules.d.ts",
 		"../packages/core/src/*.d.ts",
 		"../packages/kit/src/jsx-namespace.d.ts"
 	]

@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
-const css = readFileSync("apps/obsidian/styles.css", "utf8");
+const css = readFileSync("hosts/obsidian/styles.css", "utf8");
 
 const rootTokenBlock = /\.wg-root\s*\{([\s\S]*?)\n\}/.exec(css);
 const kitRules = [

@@ -32,7 +32,7 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { TEMPLATES, templateWidgets, templateBoard, templateSketch } = await import("../packages/core/src/templates.js");
-const { boardNoteText } = await import("../apps/obsidian/src/board-note.js");
+const { boardNoteText } = await import("../hosts/obsidian/src/legacy/board-note.js");
 const { findBlocks } = await import("../packages/core/src/block-writer.js");
 const { normalizeBoard, serializeBoard, VIEW_GROUP } = await import("../packages/core/src/model.js");
 const { swapBoxes } = await import("../packages/core/src/tree.js");

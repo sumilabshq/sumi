@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import type { DataAdapter, Stat } from "obsidian";
-import type { MountContext } from "../apps/obsidian/src/board-mount.js";
-import type { AppProjectsAdapter } from "../apps/obsidian/src/app-projects.js";
+import type { MountContext } from "../hosts/obsidian/src/legacy/board-mount.js";
+import type { AppProjectsAdapter } from "../hosts/obsidian/src/legacy/app-projects.js";
 import type { SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
 import { standIn } from "./stand-in.ts";
 
@@ -28,8 +28,8 @@ Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configu
 
 const { registerPacks } = await import("../packages/core/src/engine/packs.js");
 const { corePack } = await import("../packages/packs/core/src/index.js");
-const { drawAppBlock } = await import("../apps/obsidian/src/app-block.js");
-const { createAppProjects } = await import("../apps/obsidian/src/app-projects.js");
+const { drawAppBlock } = await import("../hosts/obsidian/src/legacy/app-block.js");
+const { createAppProjects } = await import("../hosts/obsidian/src/legacy/app-projects.js");
 
 registerPacks(corePack);
 

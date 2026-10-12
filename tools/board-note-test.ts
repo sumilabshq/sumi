@@ -8,7 +8,7 @@ import {
 	isScreenNote,
 	createBoardNote,
 	insertBoardAtCursor,
-} from "../apps/obsidian/src/board-note.js";
+} from "../hosts/obsidian/src/legacy/board-note.js";
 import { findBlocks } from "../packages/core/src/block-writer.js";
 import { readId, withId } from "../packages/core/src/record-id.js";
 import { normalizeBoard } from "../packages/core/src/model.js";

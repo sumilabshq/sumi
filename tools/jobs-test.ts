@@ -6,17 +6,18 @@ Object.assign(globalThis, { window: globalThis });
 
 const { JobSchema, movedJob, isStartable, readJob, jobText, jobPathOf } =
 	await import("../packages/core/src/app-jobs.js");
-const { createJobs } = await import("../apps/obsidian/src/ai/job-runner.js");
-const { createJobFiles } = await import("../apps/obsidian/src/ai/job-store.js");
-const { createAiSettings } = await import("../apps/obsidian/src/ai/settings.js");
-const { addJob, askJob, listJobs, refuseOwnedElsewhere } = await import("../apps/obsidian/src/ai/job-command.js");
-const { jobBriefFor } = await import("../apps/obsidian/src/ai/brief.js");
-const { buildsIn } = await import("../apps/obsidian/src/ai/builds.js");
+const { createJobs } = await import("../hosts/obsidian/src/legacy/ai/job-runner.js");
+const { createJobFiles } = await import("../hosts/obsidian/src/legacy/ai/job-store.js");
+const { createAiSettings } = await import("../hosts/obsidian/src/legacy/ai/settings.js");
+const { addJob, askJob, listJobs, refuseOwnedElsewhere } =
+	await import("../hosts/obsidian/src/legacy/ai/job-command.js");
+const { jobBriefFor } = await import("../hosts/obsidian/src/legacy/ai/brief.js");
+const { buildsIn } = await import("../hosts/obsidian/src/legacy/ai/builds.js");
 
 import type { Job } from "../packages/core/src/app-jobs.js";
-import type { JobAdapter } from "../apps/obsidian/src/ai/job-store.js";
-import type { Emit } from "../apps/obsidian/src/ai/stream.js";
-import type { RunAsk, RunAnswer } from "../apps/obsidian/src/ai/run.js";
+import type { JobAdapter } from "../hosts/obsidian/src/legacy/ai/job-store.js";
+import type { Emit } from "../hosts/obsidian/src/legacy/ai/stream.js";
+import type { RunAsk, RunAnswer } from "../hosts/obsidian/src/legacy/ai/run.js";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -447,12 +448,12 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/core/src/app-design.js");
-const { NotedPicture } = await import("../packages/studio/src/features/canvas/ui/design-noted-picture.js");
-const { JobLine } = await import("../packages/studio/src/features/canvas/ui/design-job-line.js");
-const { Group } = await import("../packages/studio/src/features/canvas/ui/design-group.js");
+const { NotedPicture } = await import("../apps/studio/src/legacy/features/canvas/ui/design-noted-picture.js");
+const { JobLine } = await import("../apps/studio/src/legacy/features/canvas/ui/design-job-line.js");
+const { Group } = await import("../apps/studio/src/legacy/features/canvas/ui/design-group.js");
 const { canvasPagesOf, canvasTabsOf, shownPageOf } =
-	await import("../packages/studio/src/features/canvas/ui/design-canvas-page.js");
-const { noteOfApp } = await import("../apps/obsidian/src/ai/reference-command.js");
+	await import("../apps/studio/src/legacy/features/canvas/ui/design-canvas-page.js");
+const { noteOfApp } = await import("../hosts/obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");
 

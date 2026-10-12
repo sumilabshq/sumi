@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { COLOUR_WORDS, LENGTH_WORDS } from "../packages/studio/src/features/canvas/render/gpu/gpu-tokens.ts";
+import { COLOUR_WORDS, LENGTH_WORDS } from "../apps/studio/src/legacy/features/canvas/render/gpu/gpu-tokens.ts";
 import type { Colour, Pixels } from "./png-pixels.ts";
 
 export interface Region {

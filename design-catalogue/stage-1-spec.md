@@ -8,13 +8,13 @@ Today the agent builds every app in the same look, because the brief says "the l
 
 ## What stands in the way today (read 2026-10-10)
 
-| Where                             | What it says or does                                                                                                     |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `docs/ai/brief.md:64`             | "the look is always the kit's and copy is rewritten"                                                                     |
-| `docs/ai/brief.md:173–176`, law 9 | widgets take parts "from `widgetarium/kit`"; hand-drawn markup only where the kit has no part                            |
-| `docs/ai/brief.md:37`             | the project already holds the kit copied in, `src/shared/kit` — but nothing tells the agent it may change it             |
-| `docs/ai/design-system.md`        | one vault-wide style ("Quiet and strict"), laid once by `layDesignSystemOnce` (`apps/obsidian/src/ai/agent-files.ts:55`) |
-| stages in `brief.md`              | 1 spec → 2 domain → 3 design → 4 data → 5 pages; no step chooses a look                                                  |
+| Where                             | What it says or does                                                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `docs/ai/brief.md:64`             | "the look is always the kit's and copy is rewritten"                                                                             |
+| `docs/ai/brief.md:173–176`, law 9 | widgets take parts "from `widgetarium/kit`"; hand-drawn markup only where the kit has no part                                    |
+| `docs/ai/brief.md:37`             | the project already holds the kit copied in, `src/shared/kit` — but nothing tells the agent it may change it                     |
+| `docs/ai/design-system.md`        | one vault-wide style ("Quiet and strict"), laid once by `layDesignSystemOnce` (`hosts/obsidian/src/legacy/ai/agent-files.ts:55`) |
+| stages in `brief.md`              | 1 spec → 2 domain → 3 design → 4 data → 5 pages; no step chooses a look                                                          |
 
 ## Changes
 

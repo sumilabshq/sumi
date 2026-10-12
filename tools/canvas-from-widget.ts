@@ -6,7 +6,7 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { findBrowser } from "./harness.ts";
 import { THEMES, HOST_FONTS, type HostTheme } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 
 interface CanvasFrame {
 	readonly file: string;
@@ -31,7 +31,7 @@ interface ArtboardPlace {
 
 const OUT = "docs/reference/metric-total";
 const SHEETS = [
-	"apps/obsidian/styles.css",
+	"hosts/obsidian/styles.css",
 	"registry/@default/tokens.css",
 	"registry/@default/metric-total/widget.css",
 ];

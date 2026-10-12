@@ -1,8 +1,8 @@
 import type { App } from "obsidian";
 import { standIn } from "./stand-in.ts";
 
-const { warmLikelyNotes } = await import("../apps/obsidian/src/note-warming.js");
-const { isScreenNote } = await import("../apps/obsidian/src/board-note.js");
+const { warmLikelyNotes } = await import("../hosts/obsidian/src/legacy/note-warming.js");
+const { isScreenNote } = await import("../hosts/obsidian/src/legacy/board-note.js");
 
 let failed = 0;
 let checks = 0;

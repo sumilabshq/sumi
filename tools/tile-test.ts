@@ -6,7 +6,7 @@ import type { ReactElement } from "react";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../apps/obsidian/src/host.js";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.js";
 import type { Board } from "../packages/core/src/model.js";
 import type { GivenProps } from "../packages/core/src/declared-widget.js";
 import type { ValueGateway } from "../packages/core/src/gateway/contract.js";
@@ -48,7 +48,7 @@ const { movesFrom, positionsWithin } = await import("../packages/core/src/flip.j
 const { WidgetSurface } = await import("../packages/core/src/surface.js");
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../apps/obsidian/src/host.js");
+const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
 const { TFile } = await import("obsidian");
 const { useData } = await import("../packages/core/src/gateway/use-data.ts");
 

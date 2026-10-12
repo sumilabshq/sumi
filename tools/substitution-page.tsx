@@ -2,10 +2,10 @@ import "./packs-registered.ts";
 import { createElement as h, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { render } from "../packages/core/src/engine/render.js";
-import { SubstitutionDialog } from "../apps/obsidian/src/substitution-dialog.js";
+import { SubstitutionDialog } from "../hosts/obsidian/src/legacy/substitution-dialog.js";
 import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { normalizeRules } from "../apps/obsidian/src/substitution.js";
-import type { Rule } from "../apps/obsidian/src/substitution.js";
+import { normalizeRules } from "../hosts/obsidian/src/legacy/substitution.js";
+import type { Rule } from "../hosts/obsidian/src/legacy/substitution.js";
 import { filesAdapter, pageFiles } from "./page-harness.ts";
 
 const adapter = filesAdapter(pageFiles());

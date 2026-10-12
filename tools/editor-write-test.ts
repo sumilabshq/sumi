@@ -1,9 +1,9 @@
-import WidgetariumPlugin from "../apps/obsidian/src/main.js";
+import WidgetariumPlugin from "../hosts/obsidian/src/main.js";
 import { TFile, stringifyYaml } from "obsidian";
 import type { App, PluginManifest } from "obsidian";
 import { normalizeBoard, serializeBoard } from "../packages/core/src/model.js";
 import type { Board } from "../packages/core/src/model.js";
-import type { EditorBlock, WriteJob } from "../apps/obsidian/src/board-writes.js";
+import type { EditorBlock, WriteJob } from "../hosts/obsidian/src/legacy/board-writes.js";
 import { standIn } from "./stand-in.ts";
 
 let failed = 0;

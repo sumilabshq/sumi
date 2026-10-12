@@ -1,7 +1,7 @@
 import type * as FsPromises from "node:fs/promises";
 import type { PlatformPath } from "node:path";
 import type { Component, TFile as ObsidianFile } from "obsidian";
-import type { HostPlugin } from "../apps/obsidian/src/host.ts";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.ts";
 import type { SourceDisk } from "../packages/core/src/engine/source-disk.ts";
 import type { DeclaredNeeds } from "../packages/core/src/gateway/resolve-needs.ts";
 

@@ -439,7 +439,7 @@ async function openedChatPage(): Promise<AskedPage> {
 	const script = await bundleOf("tools/kit-chat-page.tsx");
 	const html = `<!doctype html><html><head><meta charset="utf-8">
 <style>:root { ${THEMES.light} }</style>
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; } #host { height: 300px; width: 400px; display: flex; flex-direction: column; }</style>
 </head><body class="wg-root"><div id="host"></div><script>${script}</script></body></html>`;
 	const file = path.join(mkdtempSync(path.join(tmpdir(), "wg-kit-chat-")), "chat.html");

@@ -1,4 +1,4 @@
-import { widgetsCliBundleSync } from "../../apps/obsidian/build.mts";
+import { widgetsCliBundleSync } from "../../hosts/obsidian/build.mts";
 import { widgetTypeFiles } from "../widget-types.mts";
 import { packedModuleSource } from "../packed-module.mts";
 

@@ -9,7 +9,7 @@ import { isObject } from "../packages/core/src/engine/is-object.js";
 import { standIn } from "./stand-in.ts";
 import type { BoardNode, BoxNode, PreferredSize } from "../packages/core/src/tree-nodes.js";
 import type { Spot } from "../packages/core/src/tree-drop.js";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 
 const {
 	targetAt,
@@ -125,7 +125,7 @@ const HOST_BUTTON_PAINT_COPIED_VERBATIM = `button:not(.clickable-icon) {
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
 <style>${HOST_BUTTON_PAINT_COPIED_VERBATIM}</style>
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --background-modifier-hover: #ededed; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;

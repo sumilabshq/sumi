@@ -7,7 +7,7 @@ new code, those pages win.
 
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
 widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
-classic `h` factory, one component per file), `packages/core` and `apps/obsidian` are `.ts` React with
+classic `h` factory, one component per file), `packages/core` and `hosts/obsidian` are `.ts` React with
 `h()` hyperscript — **no JSX there** — and `tools/` is `.ts` too. `npm run test:types` gates it all
 (`tsc -b` over kit, core, the app and tools, then the `double-cast` lint): no `any`, no
 `as unknown as`, no `!`; data from outside arrives `unknown` and is narrowed by a guard. Widgets under
@@ -21,11 +21,11 @@ the rename that fixes it. A `widget.js` beside a TypeScript source is ignored, n
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
 ```
-apps/obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
-packages/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
+hosts/obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
+apps/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
       ↓
 packages/cli      FSL  @widgetarium/cli: the `widgetarium` bin (create, check, catalogue, add) and templates/project
-packages/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, packages/studio, so a project's `npm run studio` resolves it
+packages/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, apps/studio, so a project's `npm run studio` resolves it
       ↓
 packages/core     FSL  the board builder: tree, engine, queries and commands, renderer, laws; `.` is the widget API, `./app` app mode and the routers
       ↓
@@ -50,7 +50,7 @@ hands `zod` to vault widgets like React.
 layer's path has a default, a path is project-relative with `/` and never `..`, and `aliases` adds to
 `@kit`, `@schemas`, `@libs`, `@logic` and `@widgets`. `discover-project.ts` walks every layer
 recursively through the `ProjectFiles` port — over Node (`project-files-node.ts`) and over the vault
-(`apps/obsidian/src/project-files-vault.ts`) — and finds a handler by parsing its class, never by
+(`hosts/obsidian/src/legacy/project-files-vault.ts`) — and finds a handler by parsing its class, never by
 running it. `checkDiscovered` in `check-project.ts` is the one judge: the CLI's `check`, the Vite
 plugin and the Obsidian block all refuse a project through it, so a project one of them opens the
 others open too.
@@ -64,7 +64,7 @@ others open too.
   `virtual:widgetarium/project`, which the `@widgetarium/vite` plugin builds from discovery and fails
   the build on findings; the project hands its packs (`packs: [corePack]`), so core imports no pack.
   `@widgetarium/core/styles.css` is cut at pack time from `packages/core/browser-host.css` and
-  `apps/obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
+  `hosts/obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
 - **In Obsidian** a `widgetarium-app` code block names `app: <folder>` and `route: <path>`
   (`app-block.ts`). `app-projects.ts` opens a project only when a block draws it — **a start reads no
   project file** — compiling its modules in memory (`project-program.ts`) into the module space vault
@@ -514,7 +514,7 @@ and a resize that gives the box its place back never writes anything.
 of its own. `TreeBoard` hands `onActions` one action per box that names no `trigger`, keyed
 `box:<openKey>` so the button survives every change of state, with `isOn` while the box is shown; a
 `toggle: always` box has one on every screen (folding while docked, opening while collapsed), a
-`toggle: adaptive` box has one only while collapsed. `apps/obsidian/src/header-actions.ts` places them with `view.addAction`
+`toggle: adaptive` box has one only while collapsed. `hosts/obsidian/src/legacy/header-actions.ts` places them with `view.addAction`
 beside the reading-mode button, next to the edit-mode pencil. A box naming `trigger: t1/open` reads that `@default/toggle` tile's memory cell
 instead, and no header button appears for it. The box reads the toggle; the toggle knows nothing of
 the box.
@@ -534,7 +534,7 @@ a press that opens the catalogue and puts the pick at the end of **that** box. T
 add: a press that named no box left the person guessing where the widget went.
 
 **The catalogue is an engine board of widgets, and every pick is a request.** `CatalogueBoard`
-(`packages/studio/src/catalogue`) draws the catalogue or the docs board
+(`apps/studio/src/legacy/catalogue`) draws the catalogue or the docs board
 (`catalogue-boards.ts`) of static `@catalogue` widgets (`catalogue/widgets`) over the `@catalogue`
 pack and a `CataloguePort`; it is the one owner of that UI. The studio draws it in its panel, and
 Obsidian's two sidebar `ItemView`s draw the same component over the plugin's port. Nothing of it is
@@ -556,14 +556,14 @@ studio. `test:studio-render` measures both in Chrome and proves the app entry bu
 `test:project-render` builds a created app both ways.
 
 **The studio is a Widgetarium app.** Its band is a board of `@studio/*` widgets
-(`packages/studio/src/widgets`) over the `@studio` pack; the route is drawn below it by the
+(`apps/studio/src/legacy/widgets`) over the `@studio` pack; the route is drawn below it by the
 same `routeElementOf` app mode calls, never merged into the band's tree, because a route nested one
 level down stops being regions and changes its spacing. The outlet's view and the one right panel —
 `none | assistant | catalogue`, toggled by the band's Widgets and AI buttons — live in the studio's own
 `StudioState`, made by `createStudioState` (`studio/studio-state.ts`) for each `StartedStudio`, one per leaf
 in Obsidian. That object is the one writer: `@studio` commands reach it as `ports.studioState`, and a
 catalogue ask opens the panel through its `openPanel`. The canvas view is the engine's `ProjectCanvas`
-(`packages/studio/src/canvas`): a frame per route on its own memory router and the
+(`apps/studio/src/legacy/canvas`): a frame per route on its own memory router and the
 widgets' `defineStates`, under the one pan-zoom the Obsidian design view imports too. What the host can do is its
 `StudioHostPort` (`packages/core/src/engine/studio-host.ts`): window-button insets, which the safe areas
 read as `--wg-studio-inset-left|right`, and the apps; a host without them answers "not available" and
@@ -579,7 +579,7 @@ Obsidian's, handed in as `AssistantCards` by that view alone (TODO in `assistant
 **In Obsidian an app note opens in the studio view, and Obsidian draws nothing of its own over it.** A
 markdown note whose front matter holds `widgetarium-app: <project folder>` (and optionally
 `widgetarium-route: /path`, `/` by default) is switched, in whatever leaf opens it, to the
-`widgetarium-studio` `FileView` (`apps/obsidian/src/studio-view.ts`, switching in `studio-leaves.ts`),
+`widgetarium-studio` `FileView` (`hosts/obsidian/src/legacy/studio-view.ts`, switching in `studio-leaves.ts`),
 which hides its own header and mounts `WidgetariumStudio` through `startOpenedStudio`, the one
 function the browser's `startStudio` calls too. Its pane menu's "Open as Markdown" switches that leaf
 back and is remembered for that leaf and note only. Inside Obsidian routing is a `createMemoryRouter`
@@ -669,7 +669,7 @@ terminal.
 **A start reads no widget file.** An iCloud vault on a full disk evicts `.widgetarium/`, and every
 read waited ~1.7 s for a download: 655 reads, ten minutes of an empty screen. The plugin now mounts
 from a snapshot kept on this machine in IndexedDB (`packages/core/src/startup-snapshot.ts`, the store
-in `apps/obsidian/src/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
+in `hosts/obsidian/src/legacy/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
 packages, the plugin stamp, and each file's `mtime:size` taken **before** it was read. A snapshot zod
 refuses is ignored and the vault is read; one from another plugin build mounts like any other, because
 it holds raw files and the fingerprint lists with the running build's own `listVault` — refusing it
@@ -750,7 +750,7 @@ along with whatever depends on it — rather than ship it.
 
 **Tests import the real sources; nothing is copied.** Every `node tools/…` script in `package.json`
 runs under `node --single-threaded --import ./tools/loader/register.mts`, an in-memory loader that compiles `.ts`,
-`.tsx` and `.jsx` with esbuild exactly as `apps/obsidian/build.mts` does (`h`/`Fragment`, the
+`.tsx` and `.jsx` with esbuild exactly as `hosts/obsidian/build.mts` does (`h`/`Fragment`, the
 nearest `tsconfig.json`, `es2020`), resolves extensionless and `.js` specifiers to the `.ts` behind
 them and `@widgetarium/*` through each package's `exports`, reads `.md` and `.css` as text, answers
 `obsidian` with `tools/loader/obsidian-stub.mts` and the `widgetarium:*` specifiers the build
@@ -808,8 +808,8 @@ npm run dev            # build + install: the plugin as a symlink, for working
 npm run install-vault  # build --prod + install: a production copy, for using
 ```
 
-**The engine is copied, the widgets are symlinked — except where they are not.** `apps/obsidian/install.mts` copies
-`main.js`, `styles.css` and `manifest.json` from `apps/obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
+**The engine is copied, the widgets are symlinked — except where they are not.** `hosts/obsidian/install.mts` copies
+`main.js`, `styles.css` and `manifest.json` from `hosts/obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
 that was never installed leaves the vault running yesterday's engine. Under `.widgetarium/widgets` each
 scope is normally a symlink back to this repo, and for those a widget edit is live with no install at
 all. **A scope that is a real directory is a published copy and is frozen** — edits to the repo never

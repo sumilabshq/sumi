@@ -1058,7 +1058,7 @@ check(
 );
 check(
 	"the padding the stylesheet paints is the padding the layout subtracts",
-	Number(/--wg-group-pad:\s*(\d+)px/.exec(readFileSync("apps/obsidian/styles.css", "utf8"))?.[1]),
+	Number(/--wg-group-pad:\s*(\d+)px/.exec(readFileSync("hosts/obsidian/styles.css", "utf8"))?.[1]),
 	SURFACE_PAD_PX,
 );
 
@@ -1103,7 +1103,7 @@ console.log("\n— painted in Chrome —\n");
 const script = await bundleOf("tools/surface-page.tsx");
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;
 	--text-on-accent: #fff; --interactive-accent: #6d4ee0; }

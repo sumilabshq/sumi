@@ -1,9 +1,9 @@
-import BRIEF from "../../../../docs/ai/brief.md";
-import CHAT_BRIEF from "../../../../docs/ai/chat-brief.md";
-import ORCHESTRATOR from "../../../../docs/ai/roles/orchestrator.md";
-import WIDGET_DEVELOPER from "../../../../docs/ai/roles/widget-developer.md";
-import PAGE_DESIGNER from "../../../../docs/ai/roles/page-designer.md";
-import JOB from "../../../../docs/ai/roles/job.md";
+import BRIEF from "../../../../../docs/ai/brief.md";
+import CHAT_BRIEF from "../../../../../docs/ai/chat-brief.md";
+import ORCHESTRATOR from "../../../../../docs/ai/roles/orchestrator.md";
+import WIDGET_DEVELOPER from "../../../../../docs/ai/roles/widget-developer.md";
+import PAGE_DESIGNER from "../../../../../docs/ai/roles/page-designer.md";
+import JOB from "../../../../../docs/ai/roles/job.md";
 import { HANDBOOK } from "./agent-files.js";
 
 const NO_NOTE = "The person has no note open. Ask which note the screen should be built in before you write anything.";

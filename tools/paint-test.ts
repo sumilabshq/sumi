@@ -1,5 +1,5 @@
 import { THEMES } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -75,7 +75,7 @@ async function bundle(source: string): Promise<string> {
 
 function pageFor(theme: keyof typeof THEMES, script: string, name: string, sheets: readonly string[] = []): string {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>${sheets.map((at) => readFileSync(at, "utf8")).join("\n")}</style>
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -387,9 +387,9 @@ const SUB_PROBE = `
 import { createElement as h } from "react";
 import { render } from "./packages/core/src/engine/render.js";
 import { useEffect, useState } from "react";
-import { SubstitutionDialog } from "./apps/obsidian/src/substitution-dialog.js";
+import { SubstitutionDialog } from "./hosts/obsidian/src/legacy/substitution-dialog.js";
 import { WidgetRegistry } from "./packages/core/src/registry.js";
-import { normalizeRules } from "./apps/obsidian/src/substitution.js";
+import { normalizeRules } from "./hosts/obsidian/src/legacy/substitution.js";
 
 const FILES = window.__FILES__;
 const adapter = {

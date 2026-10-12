@@ -345,7 +345,7 @@ const widgetItems = PIECES.map((piece) => {
 	);
 }).join("\n");
 
-const css = fs.readFileSync("apps/obsidian/styles.css", "utf8");
+const css = fs.readFileSync("hosts/obsidian/styles.css", "utf8");
 
 fs.writeFileSync(
 	OUT,

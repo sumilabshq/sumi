@@ -41,7 +41,7 @@ const BEFORE_THE_MIGRATION = {
 
 function twinPage(script: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; ${THEMES.light} ${HOST} background: var(--background-primary); }</style>
 </head><body class="wg-root theme-light"><div id="host"></div><script>${script}</script>
 <script>window.ready = true;</script></body></html>`;

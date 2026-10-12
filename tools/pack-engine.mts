@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import esbuild, { type Plugin } from "esbuild";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
 import { studioSplitOf } from "./studio-sheet.mts";
@@ -24,7 +24,7 @@ export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/packs/stats",
 	"packages/packs/git",
 	"packages/packs/catalogue",
-	"packages/studio",
+	"apps/studio",
 	"packages/vite",
 	"packages/cli",
 ];
@@ -50,9 +50,9 @@ const BUILT_BIN = /^\.\/dist\/(.+)\.js$/;
 const HANDBOOK = { from: path.join(REPO, "docs/ai"), into: path.join(REPO, "packages/cli/dist/handbook") };
 const BROWSER_STYLES = {
 	host: path.join(REPO, "packages/core/browser-host.css"),
-	board: path.join(REPO, "apps/obsidian/styles.css"),
+	board: path.join(REPO, "hosts/obsidian/styles.css"),
 	into: path.join(REPO, "packages/core/dist/styles.css"),
-	studioInto: path.join(REPO, "packages/studio/dist/studio.css"),
+	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
 };
 
 export async function packEngine(): Promise<PackedPackage[]> {

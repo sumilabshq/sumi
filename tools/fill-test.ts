@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import { GRID, spanToPixels } from "../packages/core/src/paths.js";
 import { z } from "../packages/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
@@ -64,7 +64,7 @@ const bundle = await esbuild.build({
 });
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }</style>
 </head><body><div class="wg-root"></div><script id="wg-measure" type="application/json"></script>

@@ -104,7 +104,7 @@ const ACCORDION = `(() => {
 
 function pageHtml(script: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>${OBSIDIAN_FOCUSED_SEARCH}</style>
 <style>${OBSIDIAN_FOCUS_OUTLINE}</style>
 <style>:root { ${THEMES.light} ${HOST_FONTS} } body { margin: 0; padding: 20px; font-family: var(--font-interface); }</style>

@@ -1,4 +1,4 @@
-import { browserStudioHost } from "../packages/studio/src/browser-studio-host.ts";
+import { browserStudioHost } from "../apps/studio/src/legacy/browser-studio-host.ts";
 
 interface TitlebarRect {
 	readonly x: number;

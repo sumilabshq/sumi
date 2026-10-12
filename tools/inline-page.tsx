@@ -1,7 +1,7 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
 import { render } from "../packages/core/src/engine/render.js";
-import { InlineWidget, HOST_CLASS } from "../apps/obsidian/src/inline-render.js";
+import { InlineWidget, HOST_CLASS } from "../hosts/obsidian/src/legacy/inline-render.js";
 import { manifestOf } from "../packages/core/src/engine/catalogue-index.js";
 import type { EngineManifest } from "../packages/core/src/engine/catalogue-index.js";
 import { isObject } from "../packages/core/src/engine/is-object.js";

@@ -6,10 +6,10 @@ import { fakeVault, type FakeVault } from "./fake-vault.ts";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../apps/obsidian/src/host.js";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.js";
 import type { Board } from "../packages/core/src/model.js";
 import type { Tile } from "../packages/core/src/board-tiles.js";
-import { surfaceOptions } from "../apps/obsidian/build.mts";
+import { surfaceOptions } from "../hosts/obsidian/build.mts";
 
 const dom = new JSDOM(`<!doctype html><body><div class="view-content"><div id="host"></div></div></body>`, {
 	pretendToBeVisual: true,
@@ -43,7 +43,7 @@ const { render } = await import("../packages/core/src/engine/render.js");
 const { WidgetSurface, resolveSlots } = await import("../packages/core/src/surface.js");
 const { WidgetRegistry, ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
 const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../apps/obsidian/src/host.js");
+const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
 const { gatewayCache } = await import("../packages/core/src/gateway/cache.ts");
 const { reactClash, slotFit } = await import("../packages/core/src/fit.js");
 const { keyFor, modulePath, createModuleSpace, HELD_BY_THE_ENGINE } =

@@ -3,10 +3,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { JSDOM } from "jsdom";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import type { App } from "obsidian";
-import type { HostPlugin } from "../apps/obsidian/src/host.ts";
-import type { Rule } from "../apps/obsidian/src/substitution.ts";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.ts";
+import type { Rule } from "../hosts/obsidian/src/legacy/substitution.ts";
 import type { NavigationTarget } from "../packages/core/src/gateway/host.ts";
 import { found, foundAs } from "./dom-find.ts";
 import { isRecord, present } from "./page-dom.ts";
@@ -50,18 +50,18 @@ const { createElement: h } = await import("react");
 const { render } = await import("../packages/core/src/engine/render.js");
 const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalogue-requests.js");
 const { matchLines, normalizeRule, normalizeRules, newRule, ruleError, activeRules } =
-	await import("../apps/obsidian/src/substitution.js");
-const { sampleFromPattern } = await import("../apps/obsidian/src/regex-sample.js");
-const { substituteIn, passageHere } = await import("../apps/obsidian/src/inline-render.js");
-const { SubstitutionDialog } = await import("../apps/obsidian/src/substitution-dialog.js");
-const { defaultSample, triggerLabel } = await import("../apps/obsidian/src/substitution-say.js");
+	await import("../hosts/obsidian/src/legacy/substitution.js");
+const { sampleFromPattern } = await import("../hosts/obsidian/src/legacy/regex-sample.js");
+const { substituteIn, passageHere } = await import("../hosts/obsidian/src/legacy/inline-render.js");
+const { SubstitutionDialog } = await import("../hosts/obsidian/src/legacy/substitution-dialog.js");
+const { defaultSample, triggerLabel } = await import("../hosts/obsidian/src/legacy/substitution-say.js");
 const { WidgetRegistry, boardWidgets, inlineWidgets } = await import("../packages/core/src/registry.js");
-const { createHost, bindNote } = await import("../apps/obsidian/src/host.js");
+const { createHost, bindNote } = await import("../hosts/obsidian/src/legacy/host.js");
 const { typeOf } = await import("../packages/core/src/engine/record-type.js");
 const { readLink } = await import("../packages/core/src/engine/link.js");
 const { findLines, replaceLines } = await import("../packages/core/src/engine/text-span.js");
 const { TFile, TFolder, MarkdownRenderer } = await import("./loader/obsidian-stub.mts");
-const { passageReader } = await import("../apps/obsidian/src/inline-render.js");
+const { passageReader } = await import("../hosts/obsidian/src/legacy/inline-render.js");
 const { readTarget, UNREADABLE } = await import("../packages/core/src/engine/read-file.js");
 const { previewReader } = await import("../packages/core/src/preview.js");
 
@@ -385,7 +385,7 @@ check(
 check("and says why there is no widget", missing.querySelector(".wg-inline-why")?.textContent, "widget not installed");
 
 // CONTEXT: every kit rule and --wg-kit-* token is hung on these scopes, so a host outside them is unpainted
-const styleSheet = fs.readFileSync("apps/obsidian/styles.css", "utf8");
+const styleSheet = fs.readFileSync("hosts/obsidian/styles.css", "utf8");
 const kitScopes = [
 	...new Set(
 		[...styleSheet.matchAll(/:is\(([^)]*)\)\s+\.wg-kit-/g)].flatMap((found) =>
@@ -878,7 +878,7 @@ check(
 	"!code main.py | zig",
 );
 
-const sheet = fs.readFileSync("apps/obsidian/styles.css", "utf8");
+const sheet = fs.readFileSync("hosts/obsidian/styles.css", "utf8");
 const codeSheet = shownCode.querySelector(".wgc-code style")?.textContent ?? "";
 const ruleOf = (css: string, selector: string) => new RegExp(`\\${selector}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? "";
 const valueOf = (css: string, selector: string, property: string) =>
@@ -1409,7 +1409,7 @@ function isCdpPage(entry: unknown): entry is CdpPage {
 	const file = path.join(work, "look.html");
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${fs.readFileSync("apps/obsidian/styles.css", "utf8")}</style>` +
+		`<!doctype html><html><head><meta charset="utf-8"><style>${fs.readFileSync("hosts/obsidian/styles.css", "utf8")}</style>` +
 			`<style>body { margin: 0; --background-primary: #fff; --background-secondary: #f6f6f6; --background-modifier-border: #e4e4e4;` +
 			` --background-modifier-hover: rgba(0,0,0,0.05); --text-normal: #222; --text-muted: #707070; --text-faint: #a0a0a0;` +
 			` --text-on-accent: #fff; --text-error: #c0392b; --text-success: #1f8a4c; --interactive-accent: #6d4ee0;` +
@@ -1649,7 +1649,7 @@ function isCdpPage(entry: unknown): entry is CdpPage {
 	writeFileSync(
 		file,
 		`<!doctype html><html><head><meta charset="utf-8">` +
-			`<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style><style>${OBSIDIAN}</style>` +
+			`<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style><style>${OBSIDIAN}</style>` +
 			`<style>#note { width: 640px; padding: 24px; }</style></head>` +
 			`<body><button id="before">before</button>` +
 			`<div class="markdown-preview-view markdown-rendered" id="note"></div>` +

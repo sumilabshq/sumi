@@ -4,7 +4,7 @@ import { FIXTURE_UTILITIES } from "./gpu-design-fixture-sheet.ts";
 import { THEMES } from "./harness.ts";
 
 export function pageHtml(): string {
-	const sheets = ["packages/core/browser-host.css", "apps/obsidian/styles.css"].map((at) => readFileSync(at, "utf8"));
+	const sheets = ["packages/core/browser-host.css", "hosts/obsidian/styles.css"].map((at) => readFileSync(at, "utf8"));
 	const fonts = [400, 500, 600].map(
 		(weight, at) =>
 			`@font-face { font-family: Inter; font-weight: ${weight}; src: url(/fonts/${["Inter_400Regular", "Inter_500Medium", "Inter_600SemiBold"][at]}.ttf); }`,

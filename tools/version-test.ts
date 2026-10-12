@@ -5,7 +5,7 @@ import { standIn } from "./stand-in.ts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
 import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
 import type { InstallerAdapter } from "../packages/core/src/installer-context.js";
-import type { BlockContext } from "../apps/obsidian/src/draw-block.js";
+import type { BlockContext } from "../hosts/obsidian/src/legacy/draw-block.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -289,7 +289,7 @@ const offer = {
 	check("and nothing of it reached the vault", vault.files.size, 0);
 }
 
-const { default: WidgetariumPlugin, drawable } = await import("../apps/obsidian/src/main.js");
+const { default: WidgetariumPlugin, drawable } = await import("../hosts/obsidian/src/main.js");
 
 const offered = (api: unknown) =>
 	drawable({ manifest: { id: "@demo/clock", api }, sources: { "widget.tsx": WIDGET }, path: "@demo/clock" });

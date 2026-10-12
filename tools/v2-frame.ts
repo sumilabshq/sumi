@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import esbuild, { type BuildOptions } from "esbuild";
 import { THEMES, fontsOf, type HostTheme } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 
 export interface V2Frame {
 	readonly theme: HostTheme;
@@ -22,7 +22,7 @@ export const FRAMES: Readonly<Record<string, V2Frame>> = {
 	RecordList: { theme: "dark", view: "curve", tile: [840, 480], window: [660, 700], opens: "list" },
 };
 
-export const SHEETS = ["apps/obsidian/styles.css", "registry/@default/tokens.css"];
+export const SHEETS = ["hosts/obsidian/styles.css", "registry/@default/tokens.css"];
 
 export const SETTLED_AT = Date.parse("2026-09-13T09:00:00Z");
 

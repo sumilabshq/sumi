@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { widgetsCliBundle } from "../apps/obsidian/build.mts";
+import { widgetsCliBundle } from "../hosts/obsidian/build.mts";
 import { z } from "../packages/core/src/gateway/declared.ts";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
@@ -201,7 +201,7 @@ check("and names every rule it broke", (dirty.findings ?? []).map((one) => one.r
 ]);
 check("a widget that does not exist is refused", (await checked("@test/nothing").catch(() => ({ code: 1 }))).code, 1);
 
-const { rankWidgets } = await import("../apps/obsidian/src/ai/find-command.ts");
+const { rankWidgets } = await import("../hosts/obsidian/src/legacy/ai/find-command.ts");
 const entryNamed = (id: string, title: string, description: string, keywords: string[]) => ({
 	id,
 	pack: id.split("/")[0] ?? "",

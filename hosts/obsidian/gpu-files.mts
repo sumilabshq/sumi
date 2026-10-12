@@ -1,7 +1,7 @@
 import { copyFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 
-const GPU_FOLDER = "apps/obsidian/gpu";
+const GPU_FOLDER = "hosts/obsidian/gpu";
 const GPU_SOURCES: readonly string[] = [
 	"node_modules/canvaskit-wasm/bin/canvaskit.wasm",
 	"node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf",

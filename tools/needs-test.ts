@@ -5,7 +5,7 @@ import { collectionOf } from "./gateway-kinds.ts";
 import type * as Parsed from "../packages/core/src/gateway/parsed.js";
 import type * as Problems from "../packages/core/src/gateway/problems.js";
 import { propsOfEveryShippedWidget } from "./widget-props.ts";
-import { TEXT_LOADERS } from "../apps/obsidian/build.mts";
+import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
 import type * as Create from "../packages/core/src/gateway/create.js";
 import type * as Fields from "../packages/core/src/gateway/fields.js";

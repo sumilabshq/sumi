@@ -1,5 +1,5 @@
-import type { JobsDoor, ObsidianAssistantPort } from "../apps/obsidian/src/ai/assistant-port-obsidian.ts";
-import type { SpecPort } from "../apps/obsidian/src/ai/spec-port.ts";
+import type { JobsDoor, ObsidianAssistantPort } from "../hosts/obsidian/src/legacy/ai/assistant-port-obsidian.ts";
+import type { SpecPort } from "../hosts/obsidian/src/legacy/ai/spec-port.ts";
 import type { AssistantSession, ProgressWidget } from "../packages/core/src/engine/assistant-port.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";

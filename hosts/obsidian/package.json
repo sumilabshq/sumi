@@ -19,5 +19,8 @@
 	"devDependencies": {
 		"@types/node": "^22.20.4",
 		"obsidian": "^1.13.1"
+	},
+	"widgetarium": {
+		"level": "host"
 	}
 }

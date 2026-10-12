@@ -7,7 +7,7 @@ import type { App, TFile as ObsidianFile } from "obsidian";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../apps/obsidian/src/host.js";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.js";
 import type { Board } from "../packages/core/src/model.js";
 const EVERY_VERB = ["list", "get", "create", "update", "remove", "replace", "repairIds"];
 
@@ -46,7 +46,7 @@ const { render } = await import("../packages/core/src/engine/render.js");
 const { WidgetSurface } = await import("../packages/core/src/surface.js");
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../apps/obsidian/src/host.js");
+const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
 const { TFile, TFolder, MarkdownRenderer } = await import("obsidian");
 const { readBody } = await import("../packages/core/src/block-writer.js");
 const { TONE_NAMES } = await import("../packages/kit/src/index.ts");

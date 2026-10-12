@@ -2,7 +2,7 @@ import fs from "node:fs";
 import nodePath from "node:path";
 import type { FileStat, RegistryAdapter } from "../packages/core/src/registry-reading.js";
 import type { StartupSnapshot, StartupSnapshotStore } from "../packages/core/src/startup-snapshot.js";
-import type { AgentFilesAdapter } from "../apps/obsidian/src/ai/agent-files.js";
+import type { AgentFilesAdapter } from "../hosts/obsidian/src/legacy/ai/agent-files.js";
 import { standIn } from "./stand-in.ts";
 
 Object.assign(globalThis, {
@@ -15,7 +15,7 @@ Object.assign(globalThis, {
 
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 const { StartupCache } = await import("../packages/core/src/startup-snapshot.js");
-const { removeLaidCatalogue } = await import("../apps/obsidian/src/laid-catalogue.js");
+const { removeLaidCatalogue } = await import("../hosts/obsidian/src/legacy/laid-catalogue.js");
 const { boardWidgets, inlineWidgets } = await import("../packages/core/src/registry.js");
 
 const SOURCE = nodePath.resolve("registry");

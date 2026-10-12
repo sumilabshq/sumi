@@ -94,7 +94,7 @@ const built = await esbuild.build({
 });
 const bundle = built.outputFiles[0]?.text ?? "";
 
-const sheet = readFileSync("apps/obsidian/styles.css", "utf8");
+const sheet = readFileSync("hosts/obsidian/styles.css", "utf8");
 
 function framePage(theme: Theme): string {
 	return `<!doctype html><html><head><meta charset="utf-8">

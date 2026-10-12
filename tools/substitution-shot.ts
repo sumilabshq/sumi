@@ -38,7 +38,7 @@ const bundle = built.outputFiles[0]?.text ?? "";
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;
 	--font-text: "Helvetica Neue", Helvetica, Arial, sans-serif;

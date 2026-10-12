@@ -12,8 +12,8 @@ import type { GivenProps } from "../packages/core/src/declared-widget.ts";
 import type { EngineManifest } from "../packages/core/src/engine/catalogue-index.ts";
 import type { ResolvedMounts } from "../packages/core/src/surface/mounts.ts";
 import type { MountContext } from "../packages/core/src/surface/widget-host.ts";
-import type { HostPlugin } from "../apps/obsidian/src/host.ts";
-import type { BlockContext } from "../apps/obsidian/src/draw-block.ts";
+import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.ts";
+import type { BlockContext } from "../hosts/obsidian/src/legacy/draw-block.ts";
 import { byId } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -119,7 +119,7 @@ const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalog
 const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
 const { leavesOf } = await import("../packages/core/src/tree.js");
 const { findBlocks } = await import("../packages/core/src/block-writer.js");
-const { createHost } = await import("../apps/obsidian/src/host.js");
+const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
 const { TFile, TFolder } = await import("obsidian");
 
 const adapter = {
@@ -145,7 +145,7 @@ const adapter = {
 	stat: async () => ({ mtime: 1, size: 1 }),
 };
 
-// The slot comes from apps/obsidian/src/host.js — the adapter that ships. Building one here is how the
+// The slot comes from hosts/obsidian/src/legacy/host.js — the adapter that ships. Building one here is how the
 // board passed this test while being dead in the app.
 const written: { created: Created[]; updated: Updated[] } = { created: [], updated: [] };
 const notices: string[] = [];
@@ -1533,7 +1533,7 @@ const pickView = async (name: string, id = "views") => {
 // drawn inside a note's own element; this one is opened from the command palette, where there is
 // no note, no block and no tree to hang it on.
 {
-	const { default: WidgetariumPlugin } = await import("../apps/obsidian/src/main.js");
+	const { default: WidgetariumPlugin } = await import("../hosts/obsidian/src/main.js");
 	const commands: Command[] = [];
 	const ribbon: string[] = [];
 	const posts: PostProcessor[] = [];

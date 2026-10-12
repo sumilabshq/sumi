@@ -16,9 +16,9 @@ import {
 	fontsUrlOf,
 	isSettingDrawnLive,
 	liveTokensOf,
-} from "../packages/studio/src/features/canvas/local/look-tokens.ts";
-import { runLookCommand } from "../apps/obsidian/src/ai/look-command.ts";
-import type { Told } from "../apps/obsidian/src/ai/shape-command.ts";
+} from "../apps/studio/src/legacy/features/canvas/local/look-tokens.ts";
+import { runLookCommand } from "../hosts/obsidian/src/legacy/ai/look-command.ts";
+import type { Told } from "../hosts/obsidian/src/legacy/ai/shape-command.ts";
 
 let failures = 0;
 

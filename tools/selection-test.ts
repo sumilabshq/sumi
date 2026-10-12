@@ -1,5 +1,5 @@
-import { ancestorsOf, parentsOf, pickedHit } from "../packages/studio/src/features/canvas/local/design-selection.ts";
-import type { Hit } from "../packages/studio/src/features/canvas/local/design-selection.ts";
+import { ancestorsOf, parentsOf, pickedHit } from "../apps/studio/src/legacy/features/canvas/local/design-selection.ts";
+import type { Hit } from "../apps/studio/src/legacy/features/canvas/local/design-selection.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

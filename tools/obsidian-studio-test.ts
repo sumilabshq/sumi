@@ -1,8 +1,8 @@
 import type { Menu, Stat } from "obsidian";
-import type { AppProjectsAdapter } from "../apps/obsidian/src/app-projects.ts";
+import type { AppProjectsAdapter } from "../hosts/obsidian/src/legacy/app-projects.ts";
 import { parse } from "yaml";
-import type WidgetariumPlugin from "../apps/obsidian/src/main.ts";
-import type { ShownNote, StudioPlace } from "../apps/obsidian/src/studio-drawing.ts";
+import type WidgetariumPlugin from "../hosts/obsidian/src/main.ts";
+import type { ShownNote, StudioPlace } from "../hosts/obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
@@ -16,8 +16,8 @@ import {
 	projectFoldersOf,
 	renamedFolderOf,
 	studioNoteOf,
-} from "../apps/obsidian/src/studio-note.ts";
-import type { WindowChrome } from "../apps/obsidian/src/studio-note.ts";
+} from "../hosts/obsidian/src/legacy/studio-note.ts";
+import type { WindowChrome } from "../hosts/obsidian/src/legacy/studio-note.ts";
 
 let failed = 0;
 function check(what: string, held: unknown, wanted: unknown): void {
@@ -168,18 +168,18 @@ const { registerPacks } = await import("../packages/core/src/engine/packs.js");
 const { pageParamCell } = await import("../packages/core/src/engine/page-params.js");
 const { corePack } = await import("../packages/packs/core/src/index.js");
 const { createMemoryRouter } = await import("../packages/core/src/app/memory-router.js");
-const { createAppProjects } = await import("../apps/obsidian/src/app-projects.js");
-const { drawStudio } = await import("../apps/obsidian/src/studio-drawing.js");
-const { obsidianStudioHost } = await import("../apps/obsidian/src/studio-host-obsidian.js");
-const { registerStudioView } = await import("../apps/obsidian/src/studio-leaves.js");
-const { followAppFolderRename } = await import("../apps/obsidian/src/studio-renames.js");
-const { createStudioRouting } = await import("../apps/obsidian/src/studio-routing.js");
-const { STUDIO_VIEW_TYPE, StudioView } = await import("../apps/obsidian/src/studio-view.js");
+const { createAppProjects } = await import("../hosts/obsidian/src/legacy/app-projects.js");
+const { drawStudio } = await import("../hosts/obsidian/src/legacy/studio-drawing.js");
+const { obsidianStudioHost } = await import("../hosts/obsidian/src/legacy/studio-host-obsidian.js");
+const { registerStudioView } = await import("../hosts/obsidian/src/legacy/studio-leaves.js");
+const { followAppFolderRename } = await import("../hosts/obsidian/src/legacy/studio-renames.js");
+const { createStudioRouting } = await import("../hosts/obsidian/src/legacy/studio-routing.js");
+const { STUDIO_VIEW_TYPE, StudioView } = await import("../hosts/obsidian/src/legacy/studio-view.js");
 const { checkedAssistantPort } = await import("./obsidian-assistant-port-checks.ts");
 const { NO_ASSISTANT } = await import("../packages/core/src/engine/assistant-port.js");
 const { NO_CATALOGUE_PORT } = await import("../packages/core/src/engine/catalogue-port.js");
 const { shutPortsOf } = await import("../packages/core/src/engine/packs.js");
-const { AppsQuery } = await import("../packages/studio/src/logic/apps-queries.js");
+const { AppsQuery } = await import("../apps/studio/src/legacy/logic/apps-queries.js");
 registerPacks(corePack);
 
 const APP_NOTE = { path: "Apps/Farm.md", basename: "Farm" };

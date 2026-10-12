@@ -5,8 +5,8 @@ import os from "node:os";
 import nodePath from "node:path";
 import vm from "node:vm";
 import type { App } from "obsidian";
-import { bundleOptions } from "../apps/obsidian/build.mts";
-import type { ObsidianHost } from "../apps/obsidian/src/host.ts";
+import { bundleOptions } from "../hosts/obsidian/build.mts";
+import type { ObsidianHost } from "../hosts/obsidian/src/legacy/host.ts";
 import type { ActionMeta } from "../packages/core/src/gateway/create.ts";
 import type { CollectionGateway, Query } from "../packages/core/src/gateway/contract.ts";
 import type { NoteRecord } from "../packages/core/src/gateway/obsidian.ts";
@@ -17,7 +17,7 @@ import { fakeVault } from "./fake-vault.ts";
 import type { FakeVault } from "./fake-vault.ts";
 import { standIn } from "./stand-in.ts";
 
-const { createHost } = await import("../apps/obsidian/src/host.js");
+const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
 const { folderGateway } = await import("../packages/packs/obsidian/src/folder-gateway.ts");
 const { mapCollection } = await import("../packages/core/src/gateway/mapped.ts");
 const { narrow } = await import("../packages/core/src/gateway/narrow.ts");
@@ -46,7 +46,7 @@ const megabytes = (bytes: number): string => `${(bytes / 1048576).toFixed(2)} MB
 const isDevBuild = (source: string): boolean => source.includes("//# sourceMappingURL=");
 
 function onloadBody(): string {
-	const startup = fs.readFileSync("apps/obsidian/src/plugin-setup.ts", "utf8");
+	const startup = fs.readFileSync("hosts/obsidian/src/legacy/plugin-setup.ts", "utf8");
 	const opens = startup.indexOf("\nexport function startPlugin(");
 	const closes = startup.indexOf("\n}\n", opens);
 	return startup.slice(opens, closes);
@@ -334,7 +334,7 @@ async function reportThisVaultsSources(): Promise<void> {
 
 async function reportPollGate(): Promise<void> {
 	heading("7 · does this vault poll the filesystem");
-	const startup = fs.readFileSync("apps/obsidian/src/widget-upkeep.ts", "utf8");
+	const startup = fs.readFileSync("hosts/obsidian/src/legacy/widget-upkeep.ts", "utf8");
 	const isGated = /isAuthoringWidgetsHere\(plugin\)\) await watchWidgetFolder\(plugin\)/.test(startup);
 	row("interval", `${Number(/WIDGET_POLL_MS = (\d+)/.exec(startup)?.[1] ?? 0)} ms`);
 	row("gated on a folder catalogue source", isGated ? "yes — other vaults never poll" : "NO — every vault polls");

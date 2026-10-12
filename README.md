@@ -14,15 +14,15 @@ Build working screens out of your own notes. A board of widget tiles lives insid
 
 An npm-workspaces monorepo. Dependencies point one way: the app uses core, core uses the kit, the kit uses only React.
 
-| Folder                           | What it is                                                                | Licence      |
-| -------------------------------- | ------------------------------------------------------------------------- | ------------ |
-| [`apps/obsidian`](apps/obsidian) | The Obsidian plugin: mounts core in a note and gives it the vault         | FSL-1.1-ALv2 |
-| [`packages/core`](packages/core) | The board engine: layout tree, widget build and install, gateways, render | FSL-1.1-ALv2 |
-| [`packages/kit`](packages/kit)   | The component kit every widget and screen is drawn with                   | MIT          |
-| [`packages/sdk`](packages/sdk)   | The types a widget is written against                                     | FSL-1.1-ALv2 |
-| [`registry`](registry)           | The widget library: `@default`, `@flow`, `@media`                         | MIT          |
-| `tools`                          | Tests, generators and repository checks                                   | FSL-1.1-ALv2 |
-| `docs`                           | The assistant's handbook (`docs/ai`), design decisions, catalogue guides  | FSL-1.1-ALv2 |
+| Folder                             | What it is                                                                | Licence      |
+| ---------------------------------- | ------------------------------------------------------------------------- | ------------ |
+| [`hosts/obsidian`](hosts/obsidian) | The Obsidian plugin: mounts core in a note and gives it the vault         | FSL-1.1-ALv2 |
+| [`packages/core`](packages/core)   | The board engine: layout tree, widget build and install, gateways, render | FSL-1.1-ALv2 |
+| [`packages/kit`](packages/kit)     | The component kit every widget and screen is drawn with                   | MIT          |
+| [`packages/sdk`](packages/sdk)     | The types a widget is written against                                     | FSL-1.1-ALv2 |
+| [`registry`](registry)             | The widget library: `@default`, `@flow`, `@media`                         | MIT          |
+| `tools`                            | Tests, generators and repository checks                                   | FSL-1.1-ALv2 |
+| `docs`                             | The assistant's handbook (`docs/ai`), design decisions, catalogue guides  | FSL-1.1-ALv2 |
 
 ## Develop
 
@@ -95,12 +95,12 @@ The engine compiles it in the vault; nothing is built ahead of time. [Add your o
 
 Two licences, one per folder. [LICENSE](LICENSE) is the map.
 
-| Folder           | Licence                               |
-| ---------------- | ------------------------------------- |
-| `packages/kit/`  | [MIT](packages/kit/LICENSE)           |
-| `registry/`      | [MIT](registry/LICENSE)               |
-| `packages/core/` | [FSL-1.1-ALv2](packages/core/LICENSE) |
-| `packages/sdk/`  | [FSL-1.1-ALv2](packages/sdk/LICENSE)  |
-| `apps/obsidian/` | [FSL-1.1-ALv2](apps/obsidian/LICENSE) |
+| Folder            | Licence                                |
+| ----------------- | -------------------------------------- |
+| `packages/kit/`   | [MIT](packages/kit/LICENSE)            |
+| `registry/`       | [MIT](registry/LICENSE)                |
+| `packages/core/`  | [FSL-1.1-ALv2](packages/core/LICENSE)  |
+| `packages/sdk/`   | [FSL-1.1-ALv2](packages/sdk/LICENSE)   |
+| `hosts/obsidian/` | [FSL-1.1-ALv2](hosts/obsidian/LICENSE) |
 
 The kit and the widgets are MIT so they can be copied into any project, including a commercial one. The FSL folders may be used, changed and shared for any purpose except a Competing Use: offering them, or something substantially similar built from them, as a commercial product or service. Each version becomes Apache 2.0 two years after its release. To build a competing product, contact the author for a commercial license.

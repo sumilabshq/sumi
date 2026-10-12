@@ -40,7 +40,7 @@ const LIGHT = `--background-primary:#ffffff;--background-secondary:#f6f6f6;--bac
 
 function pageFor(variant: string, title: string, said: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("tools/card-variants.css", "utf8")}</style>
 <style>
 body { margin: 0; padding: 28px 32px; ${LIGHT}

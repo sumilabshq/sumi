@@ -8,5 +8,8 @@
 		".": {
 			"types": "./types/widgetarium.d.ts"
 		}
+	},
+	"widgetarium": {
+		"level": "common"
 	}
 }

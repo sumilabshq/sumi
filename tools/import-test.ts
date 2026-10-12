@@ -10,8 +10,8 @@ const dom = layJsdomGlobals();
 Object.assign(globalThis, { ResizeObserver: InertResizeObserver });
 Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 
-const SOURCE_ROOTS = ["packages/kit/src", "packages/core/src", "apps/obsidian/src"];
-const ENTRY_PROGRAMS = new Set([path.resolve("apps/obsidian/src/ai/widgets-cli.ts")]);
+const SOURCE_ROOTS = ["packages/kit/src", "packages/core/src", "hosts/obsidian/src"];
+const ENTRY_PROGRAMS = new Set([path.resolve("hosts/obsidian/src/legacy/ai/widgets-cli.ts")]);
 const isModuleSource = (name: string): boolean => /\.(js|ts|tsx|jsx)$/.test(name) && !name.endsWith(".d.ts");
 
 const modules: string[] = [];
