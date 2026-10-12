@@ -7,7 +7,8 @@ import { PageInputSchema, PageOf, pageAt, offsetOfCursor } from "../packages/cor
 import type { Page } from "../packages/core/src/gateway/page.ts";
 import { rowOf } from "../packages/core/src/gateway/create.ts";
 import type { RecordRef } from "../packages/core/src/gateway/declared.ts";
-import type { FailedViewProps, ViewProps } from "../packages/core/src/widget-builder-types.ts";
+import type { FailedViewProps, InjectProps } from "../packages/core/src/widget-builder-types.ts";
+import { inject } from "../packages/core/src/widget-builder.ts";
 
 export const TaskSchema = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
 export type Task = z.output<typeof TaskSchema>;
@@ -22,16 +23,16 @@ const TaskAskSchema = z.object({ id: z.string() });
 const FilterSchema = PageInputSchema.extend({ done: z.boolean().optional() });
 const RenameSchema = z.object({ id: z.string(), title: z.string().min(1) });
 
-export const ports = {
+export const ports = inject({
 	getTitle: IQuery.output(z.string().default("Tasks")),
 	getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
 	getTask: IQuery.input(TaskAskSchema).output(TaskSchema.nullable()),
 	getFiltered: IQuery.input(FilterSchema).output(PageOf(TaskSchema)),
 	rename: ICommand.input(RenameSchema).output(TaskSchema),
 	extras: ISlot.array(),
-};
+});
 
-export type BoardProps = ViewProps<typeof ports>;
+export type BoardProps = InjectProps<typeof ports>;
 
 type Row = Task & { readonly ref: RecordRef };
 
@@ -111,6 +112,16 @@ export function FailedView({ failures }: FailedViewProps): ReactElement {
 
 export function NumberTitleView({ getTitle }: { readonly getTitle: number }): ReactElement {
 	return h("p", null, String(getTitle));
+}
+
+export function ExtraPropView({
+	getTitle,
+	extra,
+}: {
+	readonly getTitle: string;
+	readonly extra: number;
+}): ReactElement {
+	return h("p", null, `${getTitle} ${extra}`);
 }
 
 export function TitleView({ getTitle }: { readonly getTitle: string }): ReactElement {

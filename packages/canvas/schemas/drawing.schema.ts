@@ -15,9 +15,15 @@ export interface DrawingKit extends Drawing {
 	readonly takesPictures: boolean;
 }
 
+export const DrawingSchema = z.custom<Drawing>(isDrawing);
+
 export const DrawingKitSchema = z.custom<DrawingKit>(isDrawingKit);
 
 function isDrawingKit(held: unknown): held is DrawingKit {
+	return isDrawing(held);
+}
+
+function isDrawing(held: unknown): held is Drawing {
 	if (typeof held !== "object" || held === null) return false;
 	const registry: unknown = Reflect.get(held, "registry");
 	return typeof registry === "object" && registry !== null && typeof Reflect.get(registry, "get") === "function";

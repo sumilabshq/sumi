@@ -6,6 +6,7 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { mountSpecsOf } from "@widgetarium/core/manifest-holds.js";
 import type { MountEntry } from "@widgetarium/core";
 import type { SlotState } from "@widgetarium/core/gateway/declared-types.js";
+import { statePropsOf } from "../../schemas/design.schema.js";
 import type { StatePicture } from "../../schemas/design.schema.js";
 import type { Drawing } from "../../schemas/drawing.schema.js";
 import { RefusedDrawing } from "./refused-drawing.js";
@@ -42,14 +43,6 @@ export function StateDrawing({ picture, registry }: StateDrawingProps): ReactEle
 			</div>
 		</Contained>
 	);
-}
-
-export function statePropsOf<Props>(
-	states: Readonly<Record<string, Props>>,
-	state: string | null | undefined,
-): Props | undefined {
-	const [first] = Object.keys(states);
-	return states[state ?? first ?? ""];
 }
 
 function mountsOf(picture: StatePicture, registry: Registry): Readonly<Record<string, MountEntry[]>> | null {

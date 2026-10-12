@@ -13,13 +13,8 @@ export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/en
 export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
 export {
+	CanvasShotWidget,
 	DESKTOP_FRAME,
-	DRAWS_AT_ONCE,
-	PagesRegion,
-	ReferencesRegion,
-	ScreenBoard,
-	StateDrawing,
-	WidgetsRegion,
 	addPhotos,
 	frameLabelOf,
 	pageOfScreen,
@@ -27,7 +22,6 @@ export {
 	specMarkdownOf,
 	statePropsOf,
 	whileAgentLooks,
-	widgetOpenerOf,
 } from "@widgetarium/canvas";
 export type {
 	AgentLook,
@@ -43,6 +37,7 @@ export type {
 	GpuSupply,
 	LayerMove,
 	LiveJob,
+	Shot,
 	StatePicture,
 } from "@widgetarium/canvas";
 export { CANVAS_OPENED_ON, DesignStage } from "../canvas/design-stage.js";

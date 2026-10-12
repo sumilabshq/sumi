@@ -28,13 +28,17 @@ export const PRESSABLE_CONTROLS = "button, input, textarea, [role=radio], [role=
 const UNMEASURED: StageLook = { x: 0, y: 0, scale: 1 };
 const FOLLOWS_LAYOUT_MS = 1500;
 
+export interface StageRefs {
+	readonly layerRef: RefObject<HTMLDivElement | null>;
+	readonly fieldRef: RefObject<HTMLDivElement | null>;
+}
+
 export function usePanZoom(
-	layerRef: RefObject<HTMLDivElement | null>,
+	{ layerRef, fieldRef }: StageRefs,
 	fit: StageLook | null,
 	grips: Grips,
 	kept: KeptCamera,
 ): PanZoom {
-	const fieldRef = useRef<HTMLDivElement | null>(null);
 	const percentRef = useRef<HTMLSpanElement | null>(null);
 	const held = useRef<StageLook | null>(kept.camera);
 	const committed = useRef<StageLook | null>(kept.camera);

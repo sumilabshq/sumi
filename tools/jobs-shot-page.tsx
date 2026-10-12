@@ -4,7 +4,7 @@ import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
 import { PlannedPageRegion } from "../packages/canvas/ui/canvas-view/regions/planned-page-region.tsx";
-import { PageLabel } from "../packages/canvas/ui/canvas-top-bar/status-chips.tsx";
+import { PageLabel } from "../packages/canvas/ui/page-tabs/page-label.tsx";
 import { JobLine } from "../packages/canvas/ui/job-status/job-line.tsx";
 import { ReferencesRegion } from "../packages/canvas/ui/canvas-view/regions/references-region.tsx";
 

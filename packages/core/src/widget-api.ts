@@ -22,7 +22,7 @@ import { declareProps, isDeclaredProps } from "./gateway/declared";
 import type { DeclaredProps, DrawnProps as DrawnPropsOf, GivenProps as GivenPropsOf } from "./gateway/declared";
 import type { Release } from "./gateway/host.js";
 import { createDeclaredWidget } from "./declared-widget.js";
-import { widget } from "./widget-builder.js";
+import { inject, widget } from "./widget-builder.js";
 import type { DrawnProps, InjectedWidget } from "./declared-widget.js";
 import { isObject } from "./engine/is-object.js";
 import * as kitModule from "@widgetarium/kit";
@@ -74,6 +74,7 @@ export const reactSurface = {
 	Mounted,
 	WidgetRoot,
 	createWidget,
+	inject,
 	widget,
 	useData,
 	useNarrowed,

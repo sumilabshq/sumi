@@ -145,14 +145,15 @@ export type {
 
 export type { CreatedWidget, WidgetToCreate } from "../../core/src/widget-api";
 export { createWidget } from "../../core/src/widget-api";
-export { widget } from "../../core/src/widget-builder";
+export { inject, widget } from "../../core/src/widget-builder";
 export type {
 	AskedPagedView,
 	AskedView,
 	BuiltWidget,
 	FailedViewProps,
+	Inject,
+	InjectProps,
 	PagedView,
-	ViewProps,
 	WidgetBuilder,
 } from "../../core/src/widget-builder-types";
 export type { DialogProps } from "../../core/src/dialog";

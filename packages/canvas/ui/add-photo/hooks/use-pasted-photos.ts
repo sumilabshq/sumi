@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { imageFilesIn } from "../../../image-files/image-files.js";
+import { imageFilesIn } from "../../image-files/image-files.js";
 
 export function usePastedPhotos(ownsPaste: (() => boolean) | null, onPhotos: (photos: readonly File[]) => void): void {
 	useEffect(() => {

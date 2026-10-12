@@ -7,20 +7,8 @@ import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
 import type WidgetariumPlugin from "../main.js";
 import { boardIn } from "./board-in-note.js";
 import type { DrawnScreen } from "@widgetarium/studio";
-import {
-	DESKTOP_FRAME,
-	DRAWS_AT_ONCE,
-	PagesRegion,
-	ReferencesRegion,
-	ScreenBoard,
-	WidgetsRegion,
-	frameLabelOf,
-	pageOfScreen,
-	screensOfPage,
-	whileAgentLooks,
-	widgetOpenerOf,
-} from "@widgetarium/studio";
-import type { AgentLook } from "@widgetarium/studio";
+import { CanvasShotWidget, frameLabelOf, pageOfScreen, screensOfPage, whileAgentLooks } from "@widgetarium/studio";
+import type { AgentLook, Shot } from "@widgetarium/studio";
 import { withBlocks } from "./design-block-registry.js";
 import { designOf } from "./design-port-obsidian.js";
 import { canvasOf, drawnOffScreen, pngOf, stackedPngOf } from "./off-screen.js";
@@ -36,7 +24,7 @@ const NO_NOTE = "{note} is not a note in this vault";
 const NO_BOARD = "{note} holds no widgetarium board to draw";
 const NO_PAGE = "{app} has no page {page} with a frame {frame}: its pages are {pages}";
 
-interface Shot {
+interface TakenShot {
 	readonly png: ArrayBuffer;
 	readonly measured: readonly MeasuredFinding[] | null;
 }
@@ -84,17 +72,16 @@ async function answerOne(plugin: WidgetariumPlugin, id: string, asked: ShotAsked
 	}
 }
 
-function shotWhileAgentLooks(plugin: WidgetariumPlugin, asked: ShotAsked): Promise<Shot> {
+function shotWhileAgentLooks(plugin: WidgetariumPlugin, asked: ShotAsked): Promise<TakenShot> {
 	const look = { app: asked.design, page: asked.page, frame: asked.frame };
 	return whileAgentLooks(look, () => (asked.page ? pageShotOf(plugin, look) : designShotOf(plugin, asked.design)));
 }
 
-async function pageShotOf(plugin: WidgetariumPlugin, look: AgentLook): Promise<Shot> {
+async function pageShotOf(plugin: WidgetariumPlugin, look: AgentLook): Promise<TakenShot> {
 	const design = await designOf(plugin, look.app);
 	const screens = framesNamed(screensOfPage(design.screens, look.page), look.frame);
 	if (screens.length === 0) throw new Error(noPageSaid(look, design.screens));
-	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
-	const tree = drawnAtOnce(h(PagesRegion, { screens, size: DESKTOP_FRAME, ...drawing }));
+	const tree = shotOf(plugin, { kind: "pages", screens });
 	return drawnOffScreen({}, tree, async (node) => ({ measured: measuredFindingsIn(node), png: await pngOf(node) }));
 }
 
@@ -116,22 +103,22 @@ function noPageSaid(look: AgentLook, screens: readonly DrawnScreen[]): string {
 		.replace("{pages}", pages);
 }
 
-function drawnAtOnce(chunk: ReactElement): ReactElement {
-	return h(DRAWS_AT_ONCE.Provider, { value: true }, h("div", { className: "wg-design-field wg-portal" }, chunk));
+function shotOf(plugin: WidgetariumPlugin, shot: Shot): ReactElement {
+	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
+	return h(CanvasShotWidget, { getShot: shot, getDrawing: drawing });
 }
 
-async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<Shot> {
+async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<TakenShot> {
 	const design = await designOf(plugin, app);
-	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
-	const chunks = [
-		h(ReferencesRegion, { references: design.references, opener: widgetOpenerOf(drawing.registry, () => undefined) }),
-		...design.screens.map((screen) => h(PagesRegion, { screens: [screen], size: DESKTOP_FRAME, ...drawing })),
-		...widgetBatchesOf(design.widgets).map((widgets) => h(WidgetsRegion, { widgets, ...drawing })),
+	const shots: Shot[] = [
+		{ kind: "references", references: design.references },
+		...design.screens.map((screen): Shot => ({ kind: "pages", screens: [screen] })),
+		...widgetBatchesOf(design.widgets).map((widgets): Shot => ({ kind: "widgets", widgets })),
 	];
 	const measured: MeasuredFinding[] = [];
 	const canvases: HTMLCanvasElement[] = [];
-	for (const chunk of chunks) {
-		const drawn = await drawnOffScreen({}, drawnAtOnce(chunk), async (node) => ({
+	for (const shot of shots) {
+		const drawn = await drawnOffScreen({}, shotOf(plugin, shot), async (node) => ({
 			found: measuredFindingsIn(node),
 			canvas: await canvasOf(node, DESIGN_SCALE),
 		}));
@@ -149,17 +136,12 @@ function widgetBatchesOf<T>(widgets: readonly T[]): T[][] {
 }
 
 // TRADE-OFF: only the note's board is drawn, not its markdown; a screen note holds nothing else.
-async function noteShotOf(plugin: WidgetariumPlugin, note: string): Promise<Shot> {
+async function noteShotOf(plugin: WidgetariumPlugin, note: string): Promise<TakenShot> {
 	const text = await plugin.app.vault.adapter.read(note).catch(() => null);
 	if (text === null) throw new Error(NO_NOTE.replace("{note}", note));
 	const board = boardIn(text);
 	if (!board) throw new Error(NO_BOARD.replace("{note}", note));
-	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
-	const tree = h(
-		"div",
-		{ className: "wg-portal wg-off-screen-page" },
-		h(ScreenBoard, { board, width: NOTE_SHOT.width, ...drawing }),
-	);
+	const tree = shotOf(plugin, { kind: "board", board, width: NOTE_SHOT.width });
 	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(node) }));
 }
 

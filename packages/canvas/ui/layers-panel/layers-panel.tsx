@@ -1,12 +1,8 @@
 import { Fragment, createElement as h, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
-import type { CanvasMode } from "../../schemas/canvas-view.schema.js";
-import type { DrawnScreen, ReadDesign } from "../../schemas/design.schema.js";
-import type { Drawing, DrawingKit } from "../../schemas/drawing.schema.js";
-import type { Selection } from "../../schemas/selection.schema.js";
-import type { Act, Answer } from "../said-line/use-refusal.js";
+import type { DrawnScreen } from "../../schemas/design.schema.js";
+import type { Drawing } from "../../schemas/drawing.schema.js";
 import { useLayerDrag } from "./hooks/use-layer-drag.js";
 import { useLayersOf } from "./hooks/use-layers-of.js";
 import { useScrolledToPicked } from "./hooks/use-scrolled-to-picked.js";
@@ -31,17 +27,6 @@ export interface LayersPanelProps extends Pick<Drawing, "registry"> {
 	readonly picked: string | null;
 	readonly onDrop: (dropped: LayerDropped) => Promise<string | null>;
 	readonly onPick: (widget: string, mark: string | null) => Promise<string | null>;
-}
-
-export interface LayersPanelViewProps {
-	readonly getDesign: ReadDesign | null;
-	readonly getDrawing: DrawingKit | null;
-	readonly getPages: CanvasPages | null;
-	readonly getIsLayersOpen: boolean;
-	readonly getMode: CanvasMode;
-	readonly getSelection: Selection | null;
-	readonly select: Act<{ readonly selection: Selection | null }>;
-	readonly moveLayer: Act<LayerDropped>;
 }
 
 const TITLE = "Layers";
@@ -131,26 +116,4 @@ function titledLayers(layers: readonly Layer[], registry: Drawing["registry"]): 
 		const name = typeof title === "string" && layer.name === layer.widget ? title : layer.name;
 		return { ...layer, name, children: titledLayers(layer.children, registry) };
 	});
-}
-
-export function LayersPanelView(props: LayersPanelViewProps): ReactElement | null {
-	const { getDesign, getDrawing, getPages, getSelection, select, moveLayer } = props;
-	const screen = getDesign?.screens.find((one) => one.name === getPages?.shownScreen);
-	if (!screen || !getDrawing) return null;
-	return (
-		<LayersPanel
-			screen={screen}
-			isOpen={props.getIsLayersOpen}
-			keepsLiveCopy={props.getMode === "pointer"}
-			registry={getDrawing.registry}
-			picked={getSelection?.mark ?? null}
-			onPick={(widget, mark) => reasonOf(select({ selection: mark ? { widget, mark, spot: null } : null }))}
-			onDrop={(dropped) => reasonOf(moveLayer(dropped))}
-		/>
-	);
-}
-
-async function reasonOf(answer: Promise<Answer>): Promise<string | null> {
-	const heard = await answer;
-	return heard.ok ? null : heard.reason;
 }

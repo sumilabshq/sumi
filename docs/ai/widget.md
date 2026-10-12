@@ -191,23 +191,24 @@ draws the change.
 
 **Write the view first, then the widget that feeds it.** The view is a plain component that reads and
 writes nothing: it gets values and functions as props and draws them, so it draws anywhere with plain
-values. The widget is the layer between the view and the data, and draws nothing itself:
+values. The widget is the layer between the view and the data, and draws nothing itself. The inject is
+declared once, as its own constant; the view takes its props from it with `InjectProps<typeof …>`, so
+changing the inject changes the view's types:
 
 ```tsx
-import { ICommand, IQuery, PageInputSchema, PageOf, widget } from "widgetarium";
-import type { CommandAnswer, PagedView } from "widgetarium";
+import { ICommand, IQuery, PageInputSchema, PageOf, inject, widget } from "widgetarium";
+import type { InjectProps } from "widgetarium";
 import { z } from "zod";
 
 const TaskSchema = z.object({ id: z.string(), title: z.string() });
-type Task = z.output<typeof TaskSchema>;
 
-interface TaskListProps {
-	readonly getHeading: string;
-	readonly getTasks: PagedView<Task>;
-	readonly archive: (input: { id: string }) => Promise<CommandAnswer>;
-}
+const taskListInject = inject({
+	getHeading: IQuery.output(z.string().default("To do")),
+	getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
+	archive: ICommand.input(z.object({ id: z.string() })),
+});
 
-function TaskListView({ getHeading, getTasks, archive }: TaskListProps) {
+function TaskListView({ getHeading, getTasks, archive }: InjectProps<typeof taskListInject>) {
 	return (
 		<section>
 			<h3>{getHeading}</h3>
@@ -222,11 +223,7 @@ function TaskListView({ getHeading, getTasks, archive }: TaskListProps) {
 }
 
 const TaskList = widget()
-	.inject({
-		getHeading: IQuery.output(z.string().default("To do")),
-		getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
-		archive: ICommand.input(z.object({ id: z.string() })),
-	})
+	.inject(taskListInject)
 	.states({ Full: { getTasks: [{ id: "1", title: "Water the plants" }] }, Empty: { getTasks: [] } })
 	.render(TaskListView);
 
@@ -246,12 +243,16 @@ export default TaskList;
   until the view asks, and `data` is `null` until then. Ask from an effect, never while drawing.
 - **The view never draws a missing value.** Until every port is read the widget draws `.pending(View)`,
   or nothing; a failed read draws `.failed(View)`, which gets `{ failures }`, or the engine's notice.
-- **`.render(View)` refuses a view whose props do not match the ports.** `.states`, `.pending` and
-  `.failed` are optional; `.render` ends the chain.
+- **`.render(View)` refuses a view whose props are not exactly `InjectProps` of the inject**: a prop
+  missing, a required prop the inject does not give, or a prop typed otherwise. Never write the view's
+  props type by hand. `.states`, `.pending` and `.failed` are optional; `.render` ends the chain.
+- **A widget answers one question.** More than 12 entries in an inject usually means it draws several
+  things: split it into small widgets and compose them in a layout widget whose slots are positions.
 - **A builder widget declares no metadata and no layout.** Labels come from the port names; it stands
   as role `control`, `preferredWidth: "full"`, `preferredHeight: "auto"`.
 - The view lives in `ui/<view>/<view>.tsx` with its `hooks/` and `lib/`; the widget is
-  `widgets/<name>.widget.ts`, with no JSX.
+  `widgets/<name>.widget.ts`, with no JSX. A view imports the inject with `import type`, so there is
+  no cycle.
 
 ## A whole widget with createWidget
 

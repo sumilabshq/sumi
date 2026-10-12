@@ -62,6 +62,18 @@ export type DrawnWidget = z.output<typeof DrawnWidgetSchema>;
 export type DrawnDesign = z.output<typeof DrawnDesignSchema>;
 export type ReadDesign = z.output<typeof ReadDesignSchema>;
 
+export function frameLabelOf(screen: DrawnScreen, state: string): string {
+	return screen.states.length < 2 || state === screen.name ? screen.name : `${screen.name} · ${state}`;
+}
+
+export function statePropsOf<Props>(
+	states: Readonly<Record<string, Props>>,
+	state: string | null | undefined,
+): Props | undefined {
+	const [first] = Object.keys(states);
+	return states[state ?? first ?? ""];
+}
+
 function isBoard(held: unknown): held is Board {
 	return typeof held === "object" && held !== null && Array.isArray(Reflect.get(held, "tiles"));
 }

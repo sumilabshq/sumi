@@ -5,8 +5,7 @@ import {
 	AgentLookQuery,
 	AskForPicturesCommand,
 	CameraQuery,
-	CanvasFieldWidget,
-	CanvasTopBarWidget,
+	CanvasOverlayWidget,
 	ChooseRendererCommand,
 	DesignQuery,
 	DocsQuery,
@@ -37,6 +36,7 @@ import {
 	ViewportQuery,
 } from "@widgetarium/canvas";
 import type { CanvasState, DesignSource, GpuSupply } from "@widgetarium/canvas";
+import { fieldOf, topBarOf } from "./canvas-parts.js";
 import { useCanvasState } from "./use-canvas-state.js";
 import type { CanvasStateFollowed } from "./use-canvas-state.js";
 
@@ -59,47 +59,17 @@ export function CanvasPage({ source, app, gpu, ownsPaste, corners, ...followed }
 		() => designHandlersOf(source, app, state, gpu, ownsPaste),
 		[source, app, state, gpu, ownsPaste],
 	);
-	const shown = { getDesign: design.design, getDrawing: design.drawing, getPages: design.pages };
 	return (
-		<CanvasFieldWidget
-			{...shown}
-			getDocs={design.docs}
-			addPhotos={design.addPhotos}
-			pickVariant={view.pickVariant}
-			getFocusedWidget={view.focusedWidget}
-			focusWidget={view.focusWidget}
-			getMode={view.mode}
-			getRenderer={view.renderer}
-			getCamera={view.camera}
-			moveCamera={view.moveCamera}
+		<CanvasOverlayWidget
 			getViewport={view.viewport}
-			getSelection={view.selection}
-			select={view.select}
-			getFramePictures={view.framePictures}
-			askForPictures={design.askForPictures}
-			top={[
-				<CanvasTopBarWidget
-					key="Top bar"
-					{...shown}
-					showPage={view.showPage}
-					getIsLayersOpen={view.isLayersOpen}
-					toggleLayers={view.toggleLayers}
-					getMode={view.mode}
-					setMode={view.setMode}
-					addPhotos={design.addPhotos}
-					getRenderer={view.renderer}
-					chooseRenderer={view.chooseRenderer}
-					getFramePictures={view.framePictures}
-					getAgentLook={design.agentLook}
-					returnToView={design.returnToView}
-					start={corners.start}
-					end={corners.end}
-				/>,
-			]}
+			field={fieldOf(view, design)}
+			header={[topBarOf(view, design, corners)]}
 			start={[
 				<LayersPanelWidget
 					key="Layers"
-					{...shown}
+					getDesign={design.design}
+					getDrawing={design.drawing}
+					getPages={design.pages}
 					getIsLayersOpen={view.isLayersOpen}
 					getMode={view.mode}
 					getSelection={view.selection}
@@ -108,7 +78,7 @@ export function CanvasPage({ source, app, gpu, ownsPaste, corners, ...followed }
 				/>,
 			]}
 			end={[<LookPanelWidget key="Look" getLook={design.look} pickLook={design.pickLook} />]}
-			status={[
+			bottom={[
 				<JobStatusWidget
 					key="Job status"
 					getPages={design.pages}
@@ -119,6 +89,9 @@ export function CanvasPage({ source, app, gpu, ownsPaste, corners, ...followed }
 		/>
 	);
 }
+
+export type ViewHandlers = ReturnType<typeof viewHandlersOf>;
+export type DesignHandlers = ReturnType<typeof designHandlersOf>;
 
 function viewHandlersOf(state: CanvasState) {
 	return {

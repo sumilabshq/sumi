@@ -8,7 +8,7 @@ import type { DeclaredProps } from "./gateway/declared";
 import { isPageSchema } from "./gateway/page";
 import { useAnswer } from "./gateway/use-data";
 import type { DataState, PageState } from "./gateway/use-data";
-import type { BuiltWidget, FailedViewProps, ViewProps, WidgetBuilder } from "./widget-builder-types.js";
+import type { BuiltWidget, FailedViewProps, Inject, WidgetBuilder } from "./widget-builder-types.js";
 
 type PortRead = "as-drawn" | "page" | "asked" | "asked-page" | "rows";
 
@@ -30,6 +30,11 @@ interface PortView {
 const NOT_ASKED = Symbol("not asked");
 const PAGE_WINDOW_KEYS: readonly string[] = ["cursor", "limit"];
 
+export function inject<const P extends DeclaredProps>(entries: P): Inject<P>;
+export function inject(entries: DeclaredProps): DeclaredProps {
+	return declareProps(entries);
+}
+
 export function widget(): WidgetBuilder<{}> {
 	return builderOf({ ports: declareProps({}), states: {}, pending: null, failed: null });
 }
@@ -40,11 +45,11 @@ function builderOf<P extends DeclaredProps>(built: Built): WidgetBuilder<P> {
 		states: (states) => builderOf({ ...built, states: defineStates({ declared: built.ports }, states) }),
 		pending: (view) => builderOf({ ...built, pending: view }),
 		failed: (view) => builderOf({ ...built, failed: view }),
-		render: (view: ComponentType<ViewProps<P>>): BuiltWidget<P> => renderedOf(built, view),
+		render: (view) => renderedOf(built, view),
 	};
 }
 
-function renderedOf<P extends DeclaredProps>(built: Built, view: ComponentType<ViewProps<P>>): BuiltWidget<P>;
+function renderedOf<P extends DeclaredProps, Props>(built: Built, view: ComponentType<Props>): BuiltWidget<P>;
 function renderedOf(built: Built, view: DrawnView): InjectedWidget & { readonly states: object } {
 	const reads = Object.entries(built.ports).map(([name, port]) => [name, portReadOf(port), startOf(port)] as const);
 	const draw = (drawn: DrawnProps, read: ReadState): ReactNode => {

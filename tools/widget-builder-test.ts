@@ -21,7 +21,7 @@ Object.assign(globalThis, {
 
 const { createElement: h } = await import("react");
 const { render } = await import("../packages/core/src/engine/render.js");
-const { widget } = await import("../packages/core/src/widget-builder.ts");
+const { inject, widget } = await import("../packages/core/src/widget-builder.ts");
 const { manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
 const { statesIn } = await import("../packages/core/src/registry-scope.ts");
 const { checkWidget } = await import("../packages/core/src/widget-check.ts");
@@ -52,8 +52,15 @@ const Board = widget()
 	.failed(fixture.FailedView)
 	.render(fixture.BoardView);
 
-// @ts-expect-error a view whose props do not match the ports is refused
-widget().inject({ getTitle: ports.getTitle }).render(fixture.NumberTitleView);
+const titlePorts = inject({ getTitle: ports.getTitle });
+// @ts-expect-error a plain object is not an inject: it is declared once with inject()
+widget().inject({ getTitle: ports.getTitle });
+// @ts-expect-error a view typing a prop differently from the inject is refused
+widget().inject(titlePorts).render(fixture.NumberTitleView);
+// @ts-expect-error a view missing a prop the inject gives is refused
+widget().inject(ports).render(fixture.TitleView);
+// @ts-expect-error a view asking for a prop the inject does not give is refused
+widget().inject(titlePorts).render(fixture.ExtraPropView);
 
 render(
 	h(Board, {
@@ -165,7 +172,7 @@ check(
 	broken.querySelector("#failed")?.textContent?.startsWith("getTitle: "),
 	true,
 );
-const Plain = widget().inject({ getTitle: ports.getTitle }).render(fixture.TitleView);
+const Plain = widget().inject(titlePorts).render(fixture.TitleView);
 render(h(Plain, { getTitle: new fixture.BrokenTitleQuery() }), broken);
 await settle();
 check("without .failed() the engine's notice is drawn", broken.querySelector(".wg-error") !== null, true);

@@ -1,30 +1,16 @@
-import { createElement as h, useEffect } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { AskedView } from "@widgetarium/core";
-import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
-import type { LiveJob } from "../../schemas/job.schema.js";
+import type { InjectProps } from "@widgetarium/core";
+import type { jobStatusInject } from "../../widgets/job-status.widget.js";
 import { SaidLine } from "../said-line/said-line.js";
 import { useRefusal } from "../said-line/use-refusal.js";
-import type { Act } from "../said-line/use-refusal.js";
+import { useLiveJobAsked } from "./hooks/use-live-job-asked.js";
 import { JobLine } from "./job-line.js";
 
-interface JobAsked {
-	readonly id: string;
-}
-
-export interface JobStatusProps {
-	readonly getPages: CanvasPages | null;
-	readonly getLiveJob: AskedView<JobAsked, LiveJob | null>;
-	readonly stopJob: Act<JobAsked>;
-}
-
-export function JobStatus({ getPages, getLiveJob, stopJob }: JobStatusProps): ReactElement | null {
+export function JobStatus({ getPages, getLiveJob, stopJob }: InjectProps<typeof jobStatusInject>): ReactElement | null {
 	const job = getPages?.shownJob ?? null;
 	const { refusal, heard } = useRefusal();
-	const { ask } = getLiveJob;
-	useEffect(() => {
-		if (job) ask({ id: job.id });
-	}, [job?.id, ask]);
+	useLiveJobAsked(job?.id ?? null, getLiveJob.ask);
 	if (!job) return null;
 	return (
 		<div
