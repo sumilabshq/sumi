@@ -21,9 +21,10 @@ export function addPhotos(adapter: PhotoAdapter, app: string, photos: readonly F
 	const before = ADDING.get(app) ?? Promise.resolve();
 	const adding = before.catch(() => undefined).then(() => photosWritten(adapter, app, photos));
 	ADDING.set(app, adding);
-	void adding.finally(() => {
+	const forget = (): void => {
 		if (ADDING.get(app) === adding) ADDING.delete(app);
-	});
+	};
+	adding.then(forget, forget);
 	return adding;
 }
 

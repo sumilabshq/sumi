@@ -41,7 +41,7 @@ export class DesignView extends ItemView {
 			obsidian: plugin.app,
 			registry: plugin.registry,
 			host: plugin.host,
-			jobs: plugin.assistant?.jobs,
+			jobs: plugin.assistant.jobs,
 			place: { leafOf: () => this.leaf, fromNote: () => this.fromNote },
 		});
 		this.gpu = obsidianGpuSupply(plugin);

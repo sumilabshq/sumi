@@ -1,4 +1,4 @@
-import { Notice, TFile } from "obsidian";
+import { TFile } from "obsidian";
 import type { App, WorkspaceLeaf } from "obsidian";
 import { lookPathOf, lookToWrite, readLook, withOptionPicked } from "@widgetarium/core/app-look.js";
 import type { Look } from "@widgetarium/core/app-look.js";
@@ -32,10 +32,12 @@ export async function readAppLook(obsidian: App, app: string): Promise<Parsed<Lo
 
 export async function pickLookOption(obsidian: App, app: string, settingName: string, option: string): Promise<void> {
 	const was = await readAppLook(obsidian, app);
-	if (!was) return refusePick(NO_LOOK.replace("{app}", app));
-	if (was.refusal !== undefined) return refusePick(was.refusal);
+	if (!was) return refused(NO_LOOK.replace("{app}", app), "the look was not picked", app);
+	if (was.refusal !== undefined)
+		return refused(NOT_PICKED.replace("{why}", was.refusal), "the look was not picked", app);
 	const picked = withOptionPicked(was.value, settingName, option);
-	if (picked.refusal !== undefined) return refusePick(picked.refusal);
+	if (picked.refusal !== undefined)
+		return refused(NOT_PICKED.replace("{why}", picked.refusal), "the look was not picked", app, settingName, option);
 	// TRADE-OFF: read then write across two processes; an agent write between them loses this pick, a lock costs more.
 	await obsidian.vault.adapter.write(lookPathOf(app), lookToWrite(picked.value));
 }
@@ -44,8 +46,8 @@ export async function photosAdded(obsidian: App, app: string, photos: readonly F
 	try {
 		await addPhotos(obsidian.vault.adapter, app, photos);
 	} catch (failure) {
-		console.error("[widgetarium] design photos were not added", failure);
-		new Notice(PHOTOS_FAILED.replace("{why}", failure instanceof Error ? failure.message : String(failure)));
+		const why = failure instanceof Error ? failure.message : String(failure);
+		refused(PHOTOS_FAILED.replace("{why}", why), "design photos were not added", app, failure);
 	}
 }
 
@@ -56,27 +58,27 @@ export async function layerMoved(
 	move: LayerMove,
 ): Promise<void> {
 	const folder = registry.get(widget)?.folder;
-	if (!folder) return void new Notice(NO_PAGE_FOLDER.replace("{widget}", widget));
+	if (!folder) return refused(NO_PAGE_FOLDER.replace("{widget}", widget), "the layer was not moved", widget, move);
 	const path = `${folder}/${move.file}`;
 	const adapter = obsidian.vault.adapter;
 	const moved = movedNode(await adapter.read(path), move);
-	if ("refusal" in moved) return void new Notice(NOT_MOVED.replace("{why}", moved.refusal));
+	if ("refusal" in moved)
+		return refused(NOT_MOVED.replace("{why}", moved.refusal), "the layer was not moved", path, move);
 	await adapter.write(path, moved.source);
 }
 
 export async function returnedToAppNote(obsidian: App, place: DesignPlace, app: string, page: string): Promise<void> {
 	const read = await readAppSpec(obsidian.vault.adapter, app);
-	if (read?.refusal !== undefined) {
-		console.error("[widgetarium] the canvas cannot return to the app", read.refusal);
-		return void new Notice(SPEC_REFUSED.replace("{app}", app).replace("{why}", read.refusal));
-	}
+	if (read?.refusal !== undefined)
+		return refused(SPEC_REFUSED.replace("{app}", app).replace("{why}", read.refusal), "the canvas cannot return", app);
 	const note = noteToReturnTo(read?.spec.pages ?? [], page, place.fromNote());
 	const file = note && obsidian.vault.getAbstractFileByPath(note);
-	if (!(file instanceof TFile)) return void new Notice(NO_NOTE_TO_RETURN_TO.replace("{app}", app));
+	if (!(file instanceof TFile))
+		return refused(NO_NOTE_TO_RETURN_TO.replace("{app}", app), "the canvas cannot return", app, page, note);
 	await place.leafOf().openFile(file, { active: true });
 }
 
-function refusePick(refusal: string): never {
-	new Notice(NOT_PICKED.replace("{why}", refusal));
-	throw new Error(refusal);
+function refused(reason: string, what: string, ...context: readonly unknown[]): never {
+	console.error(`[widgetarium] ${what}`, ...context, reason);
+	throw new Error(reason);
 }

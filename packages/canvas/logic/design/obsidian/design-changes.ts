@@ -17,9 +17,9 @@ export interface AppJobs {
 const DESIGN_POLL_MS = 1500;
 const JOBS_REDRAW_MS = 400;
 
-export function watchedJobs(jobs: AppJobs | undefined, changed: () => void): () => void {
+export function watchedJobs(jobs: AppJobs, changed: () => void): () => void {
 	let soon: number | null = null;
-	const stop = jobs?.watch(() => {
+	const stop = jobs.watch(() => {
 		if (soon !== null) return;
 		soon = window.setTimeout(() => {
 			soon = null;
@@ -28,7 +28,7 @@ export function watchedJobs(jobs: AppJobs | undefined, changed: () => void): () 
 	});
 	return () => {
 		if (soon !== null) window.clearTimeout(soon);
-		stop?.();
+		stop();
 	};
 }
 
@@ -39,13 +39,25 @@ export function polledChanges(
 	changed: () => void,
 ): () => void {
 	let seen = "";
+	let isBusy = false;
+	let isStopped = false;
 	const poll = async (): Promise<void> => {
-		const now = await changeStampOf(vault, app, drawn());
+		if (isBusy) return;
+		isBusy = true;
+		const now = await changeStampOf(vault, app, drawn()).finally(() => (isBusy = false));
+		if (isStopped) return;
 		if (seen !== "" && now !== seen) changed();
 		seen = now;
 	};
-	const timer = window.setInterval(() => void poll(), DESIGN_POLL_MS);
-	return () => window.clearInterval(timer);
+	const timer = window.setInterval(() => void poll().catch(pollFailed), DESIGN_POLL_MS);
+	return () => {
+		isStopped = true;
+		window.clearInterval(timer);
+	};
+}
+
+function pollFailed(failure: unknown): void {
+	console.error("[widgetarium] the design was not polled for changes", failure);
 }
 
 async function changeStampOf(vault: DesignVault, app: string, drawn: DrawnDesign | undefined): Promise<string> {

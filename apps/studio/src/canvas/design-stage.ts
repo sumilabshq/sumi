@@ -36,7 +36,7 @@ export function DesignStage({ size, gpu, ownsPaste, shell, returnTo, ...page }: 
 		h(CanvasPage, {
 			...page,
 			size,
-			returnTo: returnTo ?? page.source,
+			returnTo,
 			gpu: gpu ?? null,
 			ownsPaste: ownsPaste ?? null,
 			corners: shell?.corners ?? NO_CORNERS,

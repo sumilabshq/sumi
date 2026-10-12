@@ -18,19 +18,14 @@ import { canvasOf } from "./obsidian/off-screen.js";
 import { drawnDesignOf } from "./obsidian/vault-design.js";
 import type { DesignVault } from "./obsidian/vault-design.js";
 
-export type { AppJobs } from "./obsidian/design-changes.js";
-export type { DesignPlace } from "./obsidian/design-writes.js";
-export type { DesignVault } from "./obsidian/vault-design.js";
-export { drawnDesignOf } from "./obsidian/vault-design.js";
-export { withBlocks } from "./obsidian/design-block-registry.js";
 export { boardIn } from "./obsidian/board-in-note.js";
-export { canvasOf, drawnOffScreen, pngOf, stackedPngOf } from "./obsidian/off-screen.js";
+export { drawnOffScreen, pngOf, stackedPngOf } from "./obsidian/off-screen.js";
 
 export interface ObsidianDesignHeld {
 	readonly obsidian: App;
 	readonly registry: WidgetRegistry;
 	readonly host: Drawing["host"];
-	readonly jobs: AppJobs | undefined;
+	readonly jobs: AppJobs;
 	readonly place: DesignPlace;
 }
 
@@ -54,7 +49,7 @@ export class ObsidianDesignSource implements DesignSource {
 	}
 
 	jobs(app: string): readonly Job[] {
-		return this.held.jobs?.jobsOf(app) ?? [];
+		return this.held.jobs.jobsOf(app);
 	}
 
 	onJobs(changed: () => void): () => void {
@@ -62,11 +57,11 @@ export class ObsidianDesignSource implements DesignSource {
 	}
 
 	liveJob(app: string, id: string): LiveJob | null {
-		return this.held.jobs?.liveOf(app, id) ?? null;
+		return this.held.jobs.liveOf(app, id);
 	}
 
 	async stopJob(app: string, id: string): Promise<void> {
-		await this.held.jobs?.stop(app, id);
+		await this.held.jobs.stop(app, id);
 	}
 
 	drawing(): Drawing {

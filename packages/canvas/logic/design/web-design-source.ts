@@ -6,6 +6,7 @@ import type { CanvasDoc } from "../../schemas/doc.schema.js";
 import type { Drawing } from "../../schemas/drawing.schema.js";
 import type { Job, LiveJob } from "../../schemas/job.schema.js";
 import type { DesignSource } from "./design-source.js";
+import { shownWidgetsOf } from "./shown-widgets.js";
 
 const HOME = "/";
 
@@ -19,15 +20,12 @@ export class WebDesignSource implements DesignSource {
 
 	async design(): Promise<DrawnDesign> {
 		const { routes, registry } = this.project;
-		const withStates = registry.ids().filter((id) => Object.keys(registry.get(id)?.states ?? {}).length > 0);
-		return {
-			screens: routes.map((route) => ({
-				name: route.path,
-				states: [{ name: route.path, board: normalizeBoard(route.board) }],
-			})),
-			references: [],
-			widgets: withStates.map((id) => ({ id, isFromCatalogue: false })),
-		};
+		const screens = routes.map((route) => ({
+			name: route.path,
+			states: [{ name: route.path, board: normalizeBoard(route.board) }],
+		}));
+		const widgets = shownWidgetsOf(registry, registry.ids(), screens);
+		return { screens, references: [], widgets: widgets.map((id) => ({ id, isFromCatalogue: false })) };
 	}
 
 	async docs(): Promise<readonly CanvasDoc[]> {

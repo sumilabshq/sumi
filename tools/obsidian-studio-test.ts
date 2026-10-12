@@ -757,6 +757,9 @@ check(
 );
 drawInto(null, designNode);
 
+const { checkDesignSource } = await import("./obsidian-design-source-checks.ts");
+await checkDesignSource(check, settle);
+
 if (failed > 0) {
 	console.log(`obsidian studio: ${failed} failed`);
 	process.exit(1);

@@ -59,7 +59,7 @@ async function studioDesignOf(
 		obsidian: plugin.app,
 		registry,
 		host,
-		jobs: plugin.assistant?.jobs,
+		jobs: plugin.assistant.jobs,
 		place,
 	});
 	return { source, app, gpu: obsidianGpuSupply(plugin) };

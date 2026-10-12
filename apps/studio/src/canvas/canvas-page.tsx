@@ -50,7 +50,7 @@ export interface CanvasCorners {
 
 export interface CanvasPageProps extends CanvasStateFollowed {
 	readonly source: DesignSource;
-	readonly returnTo: ViewReturn;
+	readonly returnTo?: ViewReturn | undefined;
 	readonly gpu: GpuSupply | null;
 	readonly ownsPaste: (() => boolean) | null;
 	readonly corners: CanvasCorners;
@@ -117,7 +117,7 @@ function viewHandlersOf(state: CanvasState, pictures: FramePicturesService) {
 
 interface DesignWiring {
 	readonly source: DesignSource;
-	readonly returnTo: ViewReturn;
+	readonly returnTo?: ViewReturn | undefined;
 	readonly state: CanvasState;
 	readonly gpu: GpuSupply | null;
 	readonly ownsPaste: (() => boolean) | null;

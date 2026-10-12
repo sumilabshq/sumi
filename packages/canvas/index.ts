@@ -21,6 +21,7 @@ export { MoveCameraCommand } from "./logic/camera/move-camera.command.js";
 export { ViewportQuery } from "./logic/camera/viewport.query.js";
 export { DesignQuery } from "./logic/design/design.query.js";
 export { DrawingQuery } from "./logic/design/drawing.query.js";
+export { readDesign } from "./logic/design/read-design.js";
 export { DocsQuery } from "./logic/docs/docs.query.js";
 export { LiveJobQuery } from "./logic/jobs/live-job.query.js";
 export { StopJobCommand } from "./logic/jobs/stop-job.command.js";

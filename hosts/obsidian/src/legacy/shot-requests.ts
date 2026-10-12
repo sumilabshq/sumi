@@ -4,20 +4,13 @@ import { ROOT } from "@widgetarium/core/paths.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
+import type { DataAdapter } from "obsidian";
 import type WidgetariumPlugin from "../main.js";
-import type { DesignVault } from "@widgetarium/canvas/obsidian";
 import type { DrawnScreen } from "@widgetarium/studio";
 import { CanvasShotWidget, frameLabelOf, pageOfScreen, screensOfPage, whileAgentLooks } from "@widgetarium/studio";
 import type { AgentLook, Shot } from "@widgetarium/studio";
-import {
-	boardIn,
-	canvasOf,
-	drawnDesignOf,
-	drawnOffScreen,
-	pngOf,
-	stackedPngOf,
-	withBlocks,
-} from "@widgetarium/canvas/obsidian";
+import { readDesign } from "@widgetarium/canvas";
+import { boardIn, drawnOffScreen, ObsidianDesignSource, pngOf, stackedPngOf } from "@widgetarium/canvas/obsidian";
 
 export const SHOTS_DIR = `${ROOT}/shots`;
 export const SHOT_REQUESTS_DIR = `${SHOTS_DIR}/requests`;
@@ -42,12 +35,18 @@ interface ShotAsked {
 	readonly frame: string;
 }
 
+interface ShotTaker {
+	readonly adapter: DataAdapter;
+	readonly source: ObsidianDesignSource;
+}
+
 export function answerShotRequests(plugin: WidgetariumPlugin): void {
+	const taker = shotTakerOf(plugin);
 	let isBusy = false;
 	const poll = async (): Promise<void> => {
 		if (isBusy) return;
 		isBusy = true;
-		await answerPending(plugin).catch((failure: unknown) =>
+		await answerPending(taker).catch((failure: unknown) =>
 			console.error("[widgetarium] a shot was not taken", failure),
 		);
 		isBusy = false;
@@ -55,22 +54,29 @@ export function answerShotRequests(plugin: WidgetariumPlugin): void {
 	plugin.registerInterval(window.setInterval(() => void poll(), SHOT_POLL_MS));
 }
 
-async function answerPending(plugin: WidgetariumPlugin): Promise<void> {
-	const adapter = plugin.app.vault.adapter;
+function shotTakerOf(plugin: WidgetariumPlugin): ShotTaker {
+	const { app, registry, host } = plugin;
+	const place = { leafOf: () => app.workspace.getLeaf(false), fromNote: () => "" };
+	const source = new ObsidianDesignSource({ obsidian: app, registry, host, jobs: plugin.assistant.jobs, place });
+	return { adapter: app.vault.adapter, source };
+}
+
+async function answerPending(taker: ShotTaker): Promise<void> {
+	const { adapter } = taker;
 	if (!(await adapter.exists(SHOT_REQUESTS_DIR))) return;
 	const { files } = await adapter.list(SHOT_REQUESTS_DIR);
 	for (const path of files.filter((one) => one.endsWith(".json"))) {
 		const id = path.slice(path.lastIndexOf("/") + 1, -".json".length);
 		const asked = askedIn(await adapter.read(path));
 		await adapter.remove(path);
-		await answerOne(plugin, id, asked);
+		await answerOne(taker, id, asked);
 	}
 }
 
-async function answerOne(plugin: WidgetariumPlugin, id: string, asked: ShotAsked): Promise<void> {
-	const adapter = plugin.app.vault.adapter;
+async function answerOne(taker: ShotTaker, id: string, asked: ShotAsked): Promise<void> {
+	const { adapter, source } = taker;
 	try {
-		const shot = asked.design ? await shotWhileAgentLooks(plugin, asked) : await noteShotOf(plugin, asked.note);
+		const shot = asked.design ? await shotWhileAgentLooks(source, asked) : await noteShotOf(taker, asked.note);
 		if (shot.measured) await adapter.write(`${SHOTS_DIR}/${id}.measured.json`, JSON.stringify(shot.measured));
 		await adapter.writeBinary(`${SHOTS_DIR}/${id}.png`, shot.png);
 	} catch (failure) {
@@ -78,16 +84,16 @@ async function answerOne(plugin: WidgetariumPlugin, id: string, asked: ShotAsked
 	}
 }
 
-function shotWhileAgentLooks(plugin: WidgetariumPlugin, asked: ShotAsked): Promise<TakenShot> {
+function shotWhileAgentLooks(source: ObsidianDesignSource, asked: ShotAsked): Promise<TakenShot> {
 	const look = { app: asked.design, page: asked.page, frame: asked.frame };
-	return whileAgentLooks(look, () => (asked.page ? pageShotOf(plugin, look) : designShotOf(plugin, asked.design)));
+	return whileAgentLooks(look, () => (asked.page ? pageShotOf(source, look) : designShotOf(source, asked.design)));
 }
 
-async function pageShotOf(plugin: WidgetariumPlugin, look: AgentLook): Promise<TakenShot> {
-	const design = await drawnDesignOf(designVaultOf(plugin), look.app);
+async function pageShotOf(source: ObsidianDesignSource, look: AgentLook): Promise<TakenShot> {
+	const design = (await readDesign(source, look.app)).design.value;
 	const screens = framesNamed(screensOfPage(design.screens, look.page), look.frame);
 	if (screens.length === 0) throw new Error(noPageSaid(look, design.screens));
-	const tree = shotOf(plugin, { kind: "pages", screens });
+	const tree = shotOf(source, { kind: "pages", screens });
 	return drawnOffScreen({}, tree, async (node) => ({ measured: measuredFindingsIn(node), png: await pngOf(node) }));
 }
 
@@ -109,13 +115,12 @@ function noPageSaid(look: AgentLook, screens: readonly DrawnScreen[]): string {
 		.replace("{pages}", pages);
 }
 
-function shotOf(plugin: WidgetariumPlugin, shot: Shot): ReactElement {
-	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
-	return h(CanvasShotWidget, { shotQuery: shot, drawingQuery: drawing });
+function shotOf(source: ObsidianDesignSource, shot: Shot): ReactElement {
+	return h(CanvasShotWidget, { shotQuery: shot, drawingQuery: source.drawing() });
 }
 
-async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<TakenShot> {
-	const design = await drawnDesignOf(designVaultOf(plugin), app);
+async function designShotOf(source: ObsidianDesignSource, app: string): Promise<TakenShot> {
+	const design = (await readDesign(source, app)).design.value;
 	const shots: Shot[] = [
 		{ kind: "references", references: design.references },
 		...design.screens.map((screen): Shot => ({ kind: "pages", screens: [screen] })),
@@ -124,9 +129,9 @@ async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<Tak
 	const measured: MeasuredFinding[] = [];
 	const canvases: HTMLCanvasElement[] = [];
 	for (const shot of shots) {
-		const drawn = await drawnOffScreen({}, shotOf(plugin, shot), async (node) => ({
+		const drawn = await drawnOffScreen({}, shotOf(source, shot), async (node) => ({
 			found: measuredFindingsIn(node),
-			canvas: await canvasOf(node, DESIGN_SCALE),
+			canvas: await source.pictureOf(node, DESIGN_SCALE),
 		}));
 		measured.push(...drawn.found);
 		canvases.push(drawn.canvas);
@@ -142,17 +147,13 @@ function widgetBatchesOf<T>(widgets: readonly T[]): T[][] {
 }
 
 // TRADE-OFF: only the note's board is drawn, not its markdown; a screen note holds nothing else.
-async function noteShotOf(plugin: WidgetariumPlugin, note: string): Promise<TakenShot> {
-	const text = await plugin.app.vault.adapter.read(note).catch(() => null);
+async function noteShotOf(taker: ShotTaker, note: string): Promise<TakenShot> {
+	const text = await taker.adapter.read(note).catch(() => null);
 	if (text === null) throw new Error(NO_NOTE.replace("{note}", note));
 	const board = boardIn(text);
 	if (!board) throw new Error(NO_BOARD.replace("{note}", note));
-	const tree = shotOf(plugin, { kind: "board", board, width: NOTE_SHOT.width });
+	const tree = shotOf(taker.source, { kind: "board", board, width: NOTE_SHOT.width });
 	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(node) }));
-}
-
-function designVaultOf(plugin: WidgetariumPlugin): DesignVault {
-	return { adapter: plugin.app.vault.adapter, registry: plugin.registry };
 }
 
 function askedIn(text: string): ShotAsked {

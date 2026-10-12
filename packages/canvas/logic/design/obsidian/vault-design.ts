@@ -11,6 +11,7 @@ import type { Design } from "@widgetarium/core/app-design.js";
 import { appWidgetsOf } from "@widgetarium/core/app-widgets.js";
 import type { WidgetRegistry } from "@widgetarium/core/registry.js";
 import type { DrawnDesign } from "../../../schemas/design.schema.js";
+import { shownWidgetsOf, widgetsOnScreens } from "../shown-widgets.js";
 import { blockIdOf, blocksOf } from "./design-block-registry.js";
 import { readDrawnState } from "./design-drawn-state.js";
 import { catalogueInstallsOf, specWidgetsOf } from "./design-spec-widgets.js";
@@ -97,13 +98,11 @@ async function widgetsOf(
 	screens: DrawnDesign["screens"],
 ): Promise<DrawnDesign["widgets"]> {
 	const { registry, adapter } = vault;
-	const pages = new Set(widgetsOnScreens(screens));
-	const onScreens = [...pages].flatMap((id) => registry.get(id)?.uses ?? []);
+	const onScreens = [...new Set(widgetsOnScreens(screens))].flatMap((id) => registry.get(id)?.uses ?? []);
 	const used = appWidgetsOf([...(await specWidgetsOf(adapter, app)), ...onScreens], await catalogueInstallsOf(adapter));
-	const isShown = (id: string): boolean => Boolean(registry.get(id)?.component) && !pages.has(id);
 	return [
-		...used.fromCatalogue.filter(isShown).map((id) => ({ id, isFromCatalogue: true })),
-		...[...draftBlocksOf(registry, screens), ...used.made.filter(isShown)].map((id) => ({
+		...shownWidgetsOf(registry, used.fromCatalogue, screens).map((id) => ({ id, isFromCatalogue: true })),
+		...[...draftBlocksOf(registry, screens), ...shownWidgetsOf(registry, used.made, screens)].map((id) => ({
 			id,
 			isFromCatalogue: false,
 		})),
@@ -116,9 +115,4 @@ function draftBlocksOf(registry: WidgetRegistry, screens: DrawnDesign["screens"]
 
 function isDraft(id: string): boolean {
 	return id.startsWith(DRAFT_PREFIX);
-}
-
-function widgetsOnScreens(screens: DrawnDesign["screens"]): string[] {
-	const tiles = screens.flatMap((screen) => screen.states.flatMap((state) => state.board?.tiles ?? []));
-	return tiles.map((tile) => tile.widget);
 }

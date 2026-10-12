@@ -18,7 +18,7 @@ export interface CanvasMoment {
 	readonly viewport: FrameSize | null;
 }
 
-export type CanvasField = keyof CanvasMoment;
+export type CanvasField = keyof Omit<CanvasMoment, "app">;
 
 export interface CanvasState {
 	now(): CanvasMoment;
