@@ -363,7 +363,7 @@ export function TaskListView({ tasksQuery, completeTaskCommand }: InjectProps<ty
 
 The widget mints the record's `id` at the press, so a retry writes nothing twice. An answer with
 `ok: false` carries `reason`; `ran: true` means the write happened and only its output was refused,
-so it is never sent again.
+so it is never sent again. The view draws `refusal` off the handle and keeps no copy of its own.
 
 ```ts file=src/logic/tasks/create-task-command.ts
 import { ICommand } from "widgetarium";
@@ -383,53 +383,48 @@ export class CreateTaskCommand extends ICommand.input(NewTaskSchema).output(Task
 }
 ```
 
-```tsx file=src/widgets/tasks/new-task/widget.tsx
-import { useState } from "react";
-import { ICommand, createWidget, defineLayout, defineMetadata, defineStates } from "widgetarium";
-import { NewTaskSchema, TaskSchema } from "../../../shared/schemas/task";
+```ts file=src/widgets/new-task.widget.ts
+import { ICommand, inject, widget } from "widgetarium";
+import { NewTaskSchema, TaskSchema } from "../shared/schemas/task";
+import { NewTaskView } from "../ui/new-task/new-task";
 
-const NewTask = createWidget({
-	inject: {
-		createTask: ICommand.input(NewTaskSchema).output(TaskSchema),
-	},
-	draw: ({ createTask }) => {
-		const [title, setTitle] = useState("");
-		const [refusal, setRefusal] = useState<string | null>(null);
-		const send = async (): Promise<void> => {
-			const answer = await createTask({ id: crypto.randomUUID(), title, due: null });
-			setRefusal(answer.ok ? null : answer.reason);
-			if (answer.ok) setTitle("");
-		};
-		return (
-			<form className="flex flex-col gap-cards" onSubmit={(event) => (event.preventDefault(), void send())}>
-				<input
-					value={title}
-					onChange={(event) => setTitle(event.target.value)}
-					placeholder="What needs doing"
-					className="rounded-item bg-fill px-3 py-2 transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-ring"
-				/>
-				{refusal ? <p className="text-destructive">{refusal}</p> : null}
-				<button
-					type="submit"
-					disabled={title.trim() === ""}
-					className="rounded-item bg-primary px-4 py-2 text-primary-foreground transition-[opacity,transform] duration-150 active:scale-[0.97] disabled:opacity-50"
-				>
-					Add task
-				</button>
-			</form>
-		);
-	},
+export const newTaskInject = inject({
+	createTaskCommand: ICommand.input(NewTaskSchema).output(TaskSchema),
 });
 
-export const metadata = defineMetadata(NewTask, {
-	title: "New task",
-	description: "Adds a task with a title.",
-	keywords: ["task", "add", "form"],
-});
-
-export const layout = defineLayout({ role: "composer", size: { preferredWidth: 480, preferredHeight: "auto" } });
-
-export const states = defineStates(NewTask, { Empty: {} });
+const NewTask = widget().inject(newTaskInject).states({ Empty: {} }).render(NewTaskView);
 
 export default NewTask;
+```
+
+```tsx file=src/ui/new-task/new-task.tsx
+import { useState } from "react";
+import type { InjectProps } from "widgetarium";
+import type { newTaskInject } from "../../widgets/new-task.widget";
+
+export function NewTaskView({ createTaskCommand }: InjectProps<typeof newTaskInject>) {
+	const [title, setTitle] = useState("");
+	const send = async (): Promise<void> => {
+		const answer = await createTaskCommand.run({ id: crypto.randomUUID(), title, due: null });
+		if (answer.ok) setTitle("");
+	};
+	return (
+		<form className="flex flex-col gap-cards" onSubmit={(event) => (event.preventDefault(), void send())}>
+			<input
+				value={title}
+				onChange={(event) => setTitle(event.target.value)}
+				placeholder="What needs doing"
+				className="rounded-item bg-fill px-3 py-2 transition-shadow duration-150 focus-visible:ring-2 focus-visible:ring-ring"
+			/>
+			{createTaskCommand.refusal ? <p className="text-destructive">{createTaskCommand.refusal}</p> : null}
+			<button
+				type="submit"
+				disabled={title.trim() === "" || createTaskCommand.isRunning}
+				className="rounded-item bg-primary px-4 py-2 text-primary-foreground transition-[opacity,transform] duration-150 active:scale-[0.97] disabled:opacity-50"
+			>
+				Add task
+			</button>
+		</form>
+	);
+}
 ```

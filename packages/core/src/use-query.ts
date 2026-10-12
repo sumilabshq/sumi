@@ -24,6 +24,6 @@ export function useQuery(query: object): unknown {
 	const { name, declaration } = declaredHandlerOf(query);
 	const read = useProp(name, declaration, query);
 	const held = { isLoading: read.isLoading ?? false, failure: read.failure };
-	const port = usePortHandle(portReadOf(declaration, read.value), read.value, startOf(declaration), held);
+	const port = usePortHandle(name, portReadOf(declaration, read.value), read.value, startOf(declaration), held);
 	return port.value ?? { data: null, isLoading: false, failure: port.failure };
 }

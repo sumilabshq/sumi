@@ -98,9 +98,9 @@ export async function checkHandles(check: Check, settle: () => Promise<void>): P
 	await runningA;
 	await settle();
 	check(
-		"a refusal belongs to its own input",
+		"a refusal belongs to its own input, and the command's is its latest started run's",
 		[stateOf("a"), stateOf("refused"), last().markCommand.refusal],
-		[[false, null], [false, "nothing to mark"], null],
+		[[false, null], [false, "nothing to mark"], "nothing to mark"],
 	);
 	render(h(OnRefused, { value: () => undefined }, h(Mark, { markCommand: new LockedCommand() })), host);
 	await settle();

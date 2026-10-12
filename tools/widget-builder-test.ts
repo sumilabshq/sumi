@@ -29,6 +29,7 @@ const { offsetOfCursor, pageAt } = await import("../packages/core/src/gateway/pa
 const fixture = await import("./widget-builder-fixture.ts");
 const { checkOutcomes } = await import("./widget-builder-outcomes.ts");
 const { checkHandles } = await import("./widget-builder-handles.ts");
+const { checkRuns } = await import("./widget-builder-runs.ts");
 const { ports, seen, askedIds } = fixture;
 
 let failed = 0;
@@ -233,6 +234,7 @@ check(
 
 await checkOutcomes(check, settle);
 await checkHandles(check, settle);
+await checkRuns(check, settle);
 
 render(null, host);
 render(null, broken);

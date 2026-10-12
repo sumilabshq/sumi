@@ -18,5 +18,5 @@ export function useCommand(command: object): unknown {
 		readGatewayIds: READS_NOTHING,
 		handsRefusals: true,
 	});
-	return useCommandHandle(drawn);
+	return useCommandHandle(name, drawn);
 }

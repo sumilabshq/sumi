@@ -72,7 +72,7 @@ function renderedOf(built: Built, view: DrawnView): InjectedWidget & { readonly 
 
 function usePortView({ name, declaration, start }: Port, drawn: unknown, read: ReadState): PortView {
 	if (declaration?.kind === "command" && isDrawnCommand(drawn))
-		return { value: useCommandHandle(drawn), isLoading: false, failure: null };
+		return { value: useCommandHandle(name, drawn), isLoading: false, failure: null };
 	const held = { isLoading: read.loading.includes(name), failure: null };
-	return usePortHandle(portReadOf(declaration, drawn), drawn, start, held);
+	return usePortHandle(name, portReadOf(declaration, drawn), drawn, start, held);
 }

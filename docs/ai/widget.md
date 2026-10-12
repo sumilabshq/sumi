@@ -241,7 +241,7 @@ export default TaskList;
 | `IQuery.output(S)`                | `{ data, isLoading, failure }`                                                                 |
 | a query with an input             | the same plus `ask(input)`; over a page `data` is `{ items }`, plus `total`, `hasMore`, `more` |
 | a command                         | `{ run(input), isRunning, refusal, can, cannotBecause, with(input) }`                          |
-| `command.with(input)`             | the same, bound to that input: `run()`, and `isRunning`, `refusal`, `can` of that input only   |
+| `command.with(input)`             | bound to that input: `run()`, its own `isRunning` and `refusal`; `can` stays the command's     |
 | `ISlot`, `ISlot.array()`          | the drawn children                                                                             |
 | `IHost`, `INavigator`, `IHere`, … | what the host hands over                                                                       |
 

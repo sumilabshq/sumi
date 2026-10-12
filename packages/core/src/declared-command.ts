@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useMemo, useRef } from "react";
 import { z } from "zod";
 import { canOf } from "./gateway/create";
 import { gatewayCache } from "./gateway/cache";
@@ -19,7 +19,9 @@ const NOT_GIVEN = "{name} is not given";
 
 type Heard = (answer: CommandAnswer<unknown>) => void;
 
-export type DrawnCommand = Action<unknown, CommandAnswer<unknown>> & { readonly refusal: string | null };
+const DRAWN = Symbol("drawn command");
+
+export type DrawnCommand = Action<unknown, CommandAnswer<unknown>> & { readonly [DRAWN]: true };
 
 interface DeclaredCommand {
 	readonly name: string;
@@ -67,27 +69,24 @@ export function useCommandOver({ name, declaration, given, readGatewayIds, hands
 	const readGatewayIdsNow = useReaderOfLatest(readGatewayIds);
 	const context = useShutHostContext(name);
 	const onRefused = useContext(REFUSAL_HANDLER);
-	const [refusal, setRefusal] = useState<string | null>(null);
 	return useMemo(() => {
-		const heard = handsRefusals ? hearerOf(name, onRefused, setRefusal) : null;
+		const heard = handsRefusals ? hearerOf(name, onRefused) : null;
 		const unfed = handsRefusals ? UNFED_IN_BUILT_WIDGET : UNFED_ON_BOARD;
-		return commandOver({ name, declaration, given, readGatewayIdsNow, context, heard, unfed }, refusal);
-	}, [given, context, onRefused, refusal]);
+		return commandOver({ name, declaration, given, readGatewayIdsNow, context, heard, unfed });
+	}, [given, context, onRefused]);
 }
 
 export function isDrawnCommand(held: unknown): held is DrawnCommand {
-	return typeof held === "function" && "can" in held && "refusal" in held;
+	return typeof held === "function" && DRAWN in held;
 }
 
-function hearerOf(name: string, onRefused: RefusalHandler, setRefusal: (reason: string | null) => void): Heard {
+function hearerOf(name: string, onRefused: RefusalHandler): Heard {
 	return (answer) => {
 		if (answer.ok) {
 			console.debug(`[widgetarium] ${name} ran`);
-			setRefusal(null);
 			return;
 		}
 		console.warn(`[widgetarium] ${name} refused: ${answer.reason}`, { ran: answer.ran });
-		setRefusal(answer.reason);
 		onRefused({ name, reason: answer.reason, ran: answer.ran });
 	};
 }
@@ -103,13 +102,15 @@ function useShutHostContext(name: string): HandlerContext {
 	return useHandlerContext(host);
 }
 
-function commandOver(command: DeclaredCommand, refusal: string | null): DrawnCommand {
+function commandOver(command: DeclaredCommand): DrawnCommand {
 	const run = async (input: unknown): Promise<CommandAnswer<unknown>> => {
-		const answer = await runDeclaredCommand(command, input);
+		const answer = await runDeclaredCommand(command, input).catch((thrown: unknown) =>
+			thrownAnswer(command.name, thrown, false),
+		);
 		command.heard?.(answer);
 		return answer;
 	};
-	return Object.assign(run, { can: () => command.unfed.can(command.name, command.given), refusal });
+	return Object.assign(run, { can: () => command.unfed.can(command.name, command.given), [DRAWN]: true as const });
 }
 
 async function runDeclaredCommand(command: DeclaredCommand, input: unknown): Promise<CommandAnswer<unknown>> {
@@ -119,9 +120,19 @@ async function runDeclaredCommand(command: DeclaredCommand, input: unknown): Pro
 	const fitted = fitOutput(declaration.schema, input);
 	if (!fitted.ok) return { ...fitted, ran: false };
 	const answered = await runToAnswer(command, fitted.output);
-	if (answered.ok || answered.ran) await gatewayCache.refetch(command.readGatewayIdsNow());
+	if (!answered.ok && !answered.ran) return answered;
+	return answerAfterWrite(command, answered).catch((thrown: unknown) => thrownAnswer(name, thrown, true));
+}
+
+async function answerAfterWrite(command: DeclaredCommand, answered: CommandAnswer<unknown>) {
+	await gatewayCache.refetch(command.readGatewayIdsNow());
 	if (!answered.ok) return answered;
-	return answerAfterRun(name, declaration.output, answered.output);
+	return answerAfterRun(command.name, command.declaration.output, answered.output);
+}
+
+function thrownAnswer(name: string, thrown: unknown, ran: boolean): CommandAnswer<unknown> {
+	console.error(`[widgetarium] ${name} threw`, { ran }, thrown);
+	return { ok: false, reason: thrown instanceof Error ? thrown.message : String(thrown), ran };
 }
 
 function notGivenOf(name: string): string {

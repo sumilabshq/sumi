@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 import { metaOf } from "./gateway/create";
 import type { Declaration } from "./gateway/declaration";
@@ -47,16 +47,25 @@ export function startOf(declaration: Declaration | null): unknown {
 	return input.safeParse({}).success ? {} : NOT_ASKED;
 }
 
-export function usePortHandle(kind: PortDecision, drawn: unknown, start: unknown, held: HeldRead): PortView {
+export function usePortHandle(
+	name: string,
+	kind: PortDecision,
+	drawn: unknown,
+	start: unknown,
+	held: HeldRead,
+): PortView {
 	const [asked, setAsked] = useState<unknown>(start);
 	const ask = useCallback((input: unknown) => setAsked(input), []);
 	const isRead = typeof kind === "string" && ASKED_READS.includes(kind) && asked !== NOT_ASKED;
 	const answer = useAnswer(isRead ? drawn : null, isRead ? asked : undefined);
+	const mismatch = mismatchOf(kind, answer);
+	useEffect(() => {
+		if (mismatch !== null) console.error(`[widgetarium] ${name} ${mismatch}`);
+	}, [name, mismatch]);
 	if (typeof kind !== "string") return { value: null, isLoading: false, failure: kind.mismatch };
 	if (kind === "as-drawn") return { value: drawn, isLoading: false, failure: null };
 	if (kind === "value") return { value: { data: drawn, ...held }, ...held };
-	const refusal = shapeRefusalOf(kind, answer);
-	if (refusal !== null) return { value: null, isLoading: false, failure: refusal };
+	if (mismatch !== null) return { value: null, isLoading: false, failure: mismatch };
 	const { isLoading, failure } = answer;
 	return { value: { ...handleOf(kind, answer, ask), isLoading, failure }, isLoading, failure };
 }
@@ -70,6 +79,12 @@ function declaredReadOf(declaration: Declaration | null): "as-drawn" | "value" |
 
 function isPageWindow(input: z.ZodType): boolean {
 	return input instanceof z.ZodObject && Object.keys(input.shape).every((key) => PAGE_WINDOW_KEYS.includes(key));
+}
+
+function mismatchOf(kind: PortDecision, answer: Answer): string | null {
+	if (typeof kind !== "string") return kind.mismatch;
+	if (kind === "as-drawn" || kind === "value") return null;
+	return shapeRefusalOf(kind, answer);
 }
 
 function shapeRefusalOf(kind: Exclude<PortRead, "as-drawn" | "value">, answer: Answer): string | null {
