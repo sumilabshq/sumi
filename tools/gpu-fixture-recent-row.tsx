@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuIcon, GpuText, GpuView } from "../apps/studio/src/legacy/features/canvas/render/gpu/index.ts";
+import { GpuIcon, GpuText, GpuView } from "../packages/gpu/index.ts";
 import type { Recent } from "./gpu-fixture-copy.ts";
 
 export function RecentRow({ entry }: { readonly entry: Recent }): ReactElement {

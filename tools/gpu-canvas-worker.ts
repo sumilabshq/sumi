@@ -1,4 +1,4 @@
-import { serveGpuCanvas } from "../apps/studio/src/legacy/features/canvas/render/gpu/index.ts";
+import { serveGpuCanvas } from "../packages/gpu/index.ts";
 import { addTranslators, loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 
 const WORKER_COPIES = 12;

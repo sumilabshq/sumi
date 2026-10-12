@@ -1,4 +1,5 @@
 import type { ImportedWidgets } from "@widgetarium/core/engine/module-registry.js";
+import { CANVAS_WIDGETS } from "../canvas/canvas-widgets.js";
 import * as band from "./widgets/band/widget.js";
 import * as controlMenu from "./widgets/control-menu/widget.js";
 import * as panelButton from "./widgets/panel-button/widget.js";
@@ -9,4 +10,5 @@ export const STUDIO_WIDGETS: ImportedWidgets = {
 	"@studio/control-menu": controlMenu,
 	"@studio/panel-button": panelButton,
 	"@studio/safe-area": safeArea,
+	...CANVAS_WIDGETS,
 };

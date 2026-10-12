@@ -3,7 +3,7 @@ const ZOOM_DELTA = 6;
 const ZOOM_EVERY = 5;
 
 export async function benchedPan(steps: number): Promise<number> {
-	const field = document.querySelector(".wg-design-field");
+	const field = document.querySelector("[data-canvas-field]");
 	if (!field) return 0;
 	const box = field.getBoundingClientRect();
 	for (let step = 0; step < steps; step += 1) {
@@ -31,8 +31,8 @@ const AT_LEFT_PX = 40;
 const AT_TOP_PX = 90;
 
 export async function lookedAtFrame(index: number, scale: number): Promise<number> {
-	const field = document.querySelector(".wg-design-field");
-	const layer = document.querySelector<HTMLElement>(".wg-design-layer");
+	const field = document.querySelector("[data-canvas-field]");
+	const layer = document.querySelector<HTMLElement>("[data-canvas-layer]");
 	if (!field || !layer) return 0;
 	const box = field.getBoundingClientRect();
 	const centre = { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 };
@@ -43,7 +43,7 @@ export async function lookedAtFrame(index: number, scale: number): Promise<numbe
 		await nextFrame();
 		await nextFrame();
 	}
-	const frame = document.querySelectorAll(".wg-design-frame")[index]?.getBoundingClientRect();
+	const frame = document.querySelectorAll("[data-canvas-layer] .wg-design-frame")[index]?.getBoundingClientRect();
 	if (!frame) return scaleOf(layer);
 	const deltaX = frame.left - (box.left + AT_LEFT_PX);
 	const deltaY = frame.top - (box.top + AT_TOP_PX);

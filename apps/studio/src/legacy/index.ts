@@ -12,30 +12,38 @@ export type { StudioState } from "@widgetarium/core/engine/studio-state-port.js"
 export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
-export { DESKTOP_FRAME } from "./features/canvas/local/frame-size.js";
-export type { Size } from "./features/canvas/local/frame-size.js";
-export { PRESSABLE_CONTROLS, fitLook, usePanZoom } from "./features/canvas/local/pan-zoom.js";
-export type { Look, PanZoom, PanZoomGrips } from "./features/canvas/local/pan-zoom.js";
-export { flightBetween } from "./features/canvas/local/flight.js";
-export type { Box } from "./features/canvas/local/flight.js";
-export { movedNow, msSinceMoved, useIsFar } from "./features/canvas/local/zoom-settled.js";
-export { StateDrawing, statePropsOf } from "./features/canvas/ui/state-drawing.js";
-export type { StatePicture } from "./features/canvas/ui/state-drawing.js";
-export { ZoomBar } from "./features/canvas/ui/zoom-bar.js";
-export { cardPxOf } from "./features/canvas/local/card-width.js";
-export { useLayerFit } from "./features/canvas/local/layer-fit.js";
-export { DESIGN_OPENED_ON, DesignStage } from "./features/canvas/ui/design-stage.js";
-export type { DesignStageProps, DesignViewState } from "./features/canvas/ui/design-stage.js";
-export type { StudioDesign } from "./features/canvas/ui/studio-canvas.js";
-export type { GpuSupply } from "./features/canvas/render/gpu-supply.js";
-export { DRAWS_AT_ONCE } from "./features/canvas/ui/design-drawn-when-seen.js";
-export { PagesRegion, frameLabelOf } from "./features/canvas/ui/design-pages.js";
-export { ReferencesRegion, widgetOpenerOf } from "./features/canvas/ui/design-references.js";
-export { WidgetsRegion } from "./features/canvas/ui/design-widgets.js";
-export { ScreenBoard } from "./features/canvas/ui/design-screen-board.js";
-export { pageOfScreen, screensOfPage } from "./features/canvas/ui/design-variants.js";
-export { whileAgentLooks } from "./features/canvas/ui/design-agent-look.js";
-export type { AgentLook } from "./features/canvas/ui/design-agent-look.js";
-export { addPhotos } from "./features/canvas/local/design-photos.js";
-export { specMarkdownOf } from "./features/canvas/ui/design-docs.js";
-export * from "./features/canvas/contract.js";
+export {
+	DESKTOP_FRAME,
+	DRAWS_AT_ONCE,
+	PagesRegion,
+	ReferencesRegion,
+	ScreenBoard,
+	StateDrawing,
+	WidgetsRegion,
+	addPhotos,
+	frameLabelOf,
+	pageOfScreen,
+	screensOfPage,
+	specMarkdownOf,
+	statePropsOf,
+	whileAgentLooks,
+	widgetOpenerOf,
+} from "@widgetarium/canvas";
+export type {
+	AgentLook,
+	CanvasDoc,
+	DesignSource,
+	DrawnDesign,
+	DrawnReference,
+	DrawnScreen,
+	DrawnState,
+	DrawnWidget,
+	FrameSize,
+	GpuSupply,
+	LayerMove,
+	LiveJob,
+	StatePicture,
+} from "@widgetarium/canvas";
+export { DESIGN_OPENED_ON, DesignStage } from "../canvas/design-stage.js";
+export type { CanvasShell, DesignStageProps, DesignViewState } from "../canvas/design-stage.js";
+export type { StudioDesign } from "../canvas/studio-canvas.js";

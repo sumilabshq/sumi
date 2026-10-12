@@ -15,10 +15,11 @@ import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { StudioBand } from "./studio-band.js";
 import { StudioCorner } from "./studio-corner.js";
-import type { TopBarCorners } from "./features/canvas/ui/design-top-bar.js";
+import type { TopBarCorners } from "./studio-band.js";
 import { StudioOutlet } from "./studio-outlet.js";
-import type { StudioDesign } from "./features/canvas/ui/studio-canvas.js";
-import { projectDesignPort } from "./features/canvas/local/project-design-port.js";
+import type { StudioDesign } from "../canvas/studio-canvas.js";
+import { projectDesignSource } from "../canvas/project-design-source.js";
+import { cornerItemsOf } from "./band-board.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
@@ -64,7 +65,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appId: start.appId ?? opened.app.name,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
-		design: start.design ?? { port: projectDesignPort(project), app: opened.app.name },
+		design: start.design ?? { source: projectDesignSource(project), app: opened.app.name },
 	};
 }
 
@@ -81,10 +82,18 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		start: h(StudioCorner, { key: `start ${appId}`, corner: "start", ...shell }),
 		end: h(StudioCorner, { key: `end ${appId}`, corner: "end", ...shell }),
 	};
+	const canvasShell = useMemo(
+		() => ({
+			registry: shellRegistry,
+			host: { ...host, studio, studioState: state },
+			corners: { start: cornerItemsOf(appId, "start"), end: cornerItemsOf(appId, "end") },
+		}),
+		[shellRegistry, host, studio, state, appId],
+	);
 	const isCanvas = view === "canvas";
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),
-		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, corners }),
+		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
 		panel === "none" ? null : h(StudioSidebar, { key: "sidebar", panel, assistant, catalogue, host, catalogueAsk }),
 	]);
 }

@@ -3,13 +3,13 @@ import type { App, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
-import type { DesignPort } from "@widgetarium/studio";
+import type { DesignSource } from "@widgetarium/studio";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { DESIGN_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { DesignViewState, GpuSupply } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
-import { obsidianDesignPort } from "./design-port-obsidian.js";
-import type WidgetariumPlugin from "./main.js";
+import { obsidianDesignSource } from "./design-port-obsidian.js";
+import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
 
@@ -20,7 +20,7 @@ export class DesignView extends ItemView {
 	private fromNote = "";
 	private view: DesignViewState = DESIGN_OPENED_ON;
 	private node: HTMLElement | null = null;
-	private readonly port: DesignPort;
+	private readonly port: DesignSource;
 	private readonly gpu: GpuSupply;
 	private readonly onView = (view: DesignViewState): void => {
 		this.view = view;
@@ -36,7 +36,7 @@ export class DesignView extends ItemView {
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.port = obsidianDesignPort(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
+		this.port = obsidianDesignSource(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 

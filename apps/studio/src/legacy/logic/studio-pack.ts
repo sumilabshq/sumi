@@ -1,5 +1,6 @@
 import { definePack } from "@widgetarium/core/engine/packs.js";
 import type { Pack } from "@widgetarium/core/engine/packs.js";
+import { canvasPack } from "@widgetarium/canvas";
 import { cataloguePack } from "@widgetarium/pack-catalogue";
 import { defineCommandMetadata, defineGatewayMetadata } from "@widgetarium/core/gateway/implementation-metadata.js";
 import { AppsQuery, CurrentAppQuery } from "./apps-queries.js";
@@ -92,4 +93,4 @@ export const studioPack = definePack({
 	],
 });
 
-export const STUDIO_PACKS: readonly Pack[] = [studioPack, cataloguePack];
+export const STUDIO_PACKS: readonly Pack[] = [studioPack, cataloguePack, canvasPack];

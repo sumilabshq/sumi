@@ -1,0 +1,30 @@
+{
+	"name": "@widgetarium/canvas",
+	"version": "0.1.0",
+	"description": "The design canvas: an app's pages, states, references and widgets laid out to look at and change",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/gpu": "0.1.0",
+		"@widgetarium/kit": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	}
+}

@@ -23,6 +23,10 @@ service. Each version becomes Apache 2.0 two years after its release:
                   packages/cli/LICENSE
   packages/vite/  the Vite plugin a project builds with
                   packages/vite/LICENSE
+  packages/gpu/   the renderer that draws widget trees on the GPU
+                  packages/gpu/LICENSE
+  packages/canvas/ the design canvas: pages, states, references
+                  packages/canvas/LICENSE
   apps/studio/    the studio drawn around an app
                   apps/studio/LICENSE
   hosts/obsidian/  the Obsidian plugin

@@ -26,6 +26,8 @@ packages/<domain>/
 ```
 
 - `index.ts` holds re-exports and nothing else.
+- A file in `logic/<record>/` without a handler suffix is a plain helper private to that folder: a rule about the record that several handlers share.
+- A widget's `lib/` holds pure view math only (hit testing, geometry). A rule about records is never there; it is logic.
 - A widget folder starts as `index.ts` + `widget.tsx`; `hooks/` and `ui/` appear when the 200-line limit needs them.
 - A part drawn by two widgets of one domain goes to `widgets/<domain>-ui/` _(one shared folder per domain)_; a part with no domain goes to the kit.
 

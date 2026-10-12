@@ -42,14 +42,14 @@ else console.log(`gpu design canvas: clean; shots in ${shotsAt}`);
 process.exit(failed > 0 ? 1 : 0);
 
 async function htmlRun(): Promise<void> {
-	await until(`document.querySelectorAll(".wg-design-frame").length === ${FRAMES}`);
+	await until(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length === ${FRAMES}`);
 	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);
 	await waited(600);
 	check(
 		"html: every state is a frame and no canvas is drawn",
-		(await page.ask(`document.querySelectorAll(".wg-design-frame").length`)) === FRAMES &&
-			(await page.ask(`document.querySelector(".wg-design-gpu") === null`)) === true,
-		await page.ask(`document.querySelectorAll(".wg-design-frame").length`),
+		(await page.ask(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length`)) === FRAMES &&
+			(await page.ask(`document.querySelector("[data-canvas-gpu]") === null`)) === true,
+		await page.ask(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length`),
 	);
 	await shot("html-tags");
 	await page.ask(`window.designPage.lookAtFrame(${indexOf(KIT_FRAME)}, 1)`);
@@ -129,10 +129,10 @@ async function hovered(): Promise<void> {
 async function failedFrame(): Promise<void> {
 	const listed: unknown = await page.ask(`${PAGES}.failureOf(${idOf(BROKEN_FRAME)}) ?? null`);
 	const badge: unknown = await page.ask(
-		`[...document.querySelectorAll(".wg-design-gpu-said")].map((one) => one.textContent).join("|")`,
+		`[...document.querySelectorAll("[data-canvas-gpu-said]")].map((one) => one.textContent).join("|")`,
 	);
 	const html: unknown = await page.ask(
-		`document.querySelector(".wg-design-gpu-fallen .wg-design-screen") ? document.querySelector(".wg-design-gpu-fallen").textContent : ""`,
+		`document.querySelector("[data-canvas-gpu-fallen] [data-canvas-screen]") ? document.querySelector("[data-canvas-gpu-fallen]").textContent : ""`,
 	);
 	check(
 		"gpu: a frame that throws falls back to HTML, listed with its reason",
@@ -146,8 +146,8 @@ async function failedFrame(): Promise<void> {
 	);
 	check(
 		"gpu: the other frames still draw",
-		(await page.ask(`document.querySelectorAll(".wg-design-gpu-frame").length`)) === GPU_FRAMES,
-		await page.ask(`document.querySelectorAll(".wg-design-gpu-frame").length`),
+		(await page.ask(`document.querySelectorAll("[data-canvas-gpu-frame]").length`)) === GPU_FRAMES,
+		await page.ask(`document.querySelectorAll("[data-canvas-gpu-frame]").length`),
 	);
 }
 
@@ -174,7 +174,7 @@ async function remembered(): Promise<void> {
 	check(
 		"gpu: the choice is remembered for this viewer",
 		(await page.ask(`localStorage.getItem("widgetarium.design.page-renderer")`)) === "gpu" &&
-			(await page.ask(`document.querySelector(".wg-design-gpu") !== null`)) === true,
+			(await page.ask(`document.querySelector("[data-canvas-gpu]") !== null`)) === true,
 		await page.ask(`localStorage.getItem("widgetarium.design.page-renderer")`),
 	);
 }
@@ -183,11 +183,13 @@ async function backToHtml(): Promise<void> {
 	await pressToggle("HTML");
 	await waited(1200);
 	const gone = await page.ask(
-		`document.querySelector(".wg-design-gpu") === null && document.querySelectorAll(".wg-design-gpu-frame").length === 0`,
+		`document.querySelector("[data-canvas-gpu]") === null && document.querySelectorAll("[data-canvas-gpu-frame]").length === 0`,
 	);
-	const frames = await page.ask(`document.querySelectorAll(".wg-design-frame .wg-design-screen").length`);
+	const frames = await page.ask(
+		`document.querySelectorAll("[data-canvas-layer] .wg-design-frame [data-canvas-screen]").length`,
+	);
 	const live = await page.ask(
-		`document.querySelector(".wg-design-layer")?.textContent?.includes(${JSON.stringify(HARVEST_TITLE)}) === true`,
+		`document.querySelector("[data-canvas-layer]")?.textContent?.includes(${JSON.stringify(HARVEST_TITLE)}) === true`,
 	);
 	check("html again: today's canvas comes back", gone === true && frames === FRAMES && live === true, {
 		gone,

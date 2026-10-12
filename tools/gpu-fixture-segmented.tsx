@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuText, GpuView } from "../apps/studio/src/legacy/features/canvas/render/gpu/index.ts";
+import { GpuText, GpuView } from "../packages/gpu/index.ts";
 import type { Tone } from "./gpu-fixture-copy.ts";
 
 interface SegmentedProps {

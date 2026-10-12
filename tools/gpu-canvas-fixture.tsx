@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import CanvasKitInit from "canvaskit-wasm";
 import type { CanvasKit } from "canvaskit-wasm";
-import type { GpuCanvas, GpuFont } from "../apps/studio/src/legacy/features/canvas/render/gpu/index.ts";
+import type { GpuCanvas, GpuFont } from "../packages/gpu/index.ts";
 import { Translator } from "./gpu-fixture-translator.tsx";
 
 export const FIXTURE_FRAME_WIDTH = 1200;

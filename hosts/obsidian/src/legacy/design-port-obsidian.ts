@@ -15,8 +15,7 @@ import type { Look } from "@widgetarium/core/app-look.js";
 import type { Parsed } from "@widgetarium/core/json-text.js";
 import { appWidgetsOf } from "@widgetarium/core/app-widgets.js";
 import { specPathOf } from "@widgetarium/core/app-spec.js";
-import { refusedDesignOf } from "@widgetarium/studio";
-import type { DesignPort, DrawnDesign, LayerMove } from "@widgetarium/studio";
+import type { DesignSource, DrawnDesign, LayerMove } from "@widgetarium/studio";
 import { movedNode } from "@widgetarium/core/engine/node-moves.js";
 import { addPhotos } from "@widgetarium/studio";
 import type { StudioDesign } from "@widgetarium/studio";
@@ -26,7 +25,7 @@ import { blockIdOf, blocksOf, withBlocks } from "./design-block-registry.js";
 import { docsOf } from "./design-docs-read.js";
 import { readDrawnState } from "./design-drawn-state.js";
 import { catalogueInstallsOf, specWidgetsOf } from "./design-spec-widgets.js";
-import type WidgetariumPlugin from "./main.js";
+import type WidgetariumPlugin from "../main.js";
 import { canvasOf } from "./off-screen.js";
 
 export interface DesignPlace {
@@ -46,7 +45,7 @@ const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
 const NOT_PICKED = "The look was not changed: {why}";
 
-export function obsidianDesignPort(plugin: WidgetariumPlugin, place: DesignPlace): DesignPort {
+export function obsidianDesignSource(plugin: WidgetariumPlugin, place: DesignPlace): DesignSource {
 	const drawnOn = new Map<string, DrawnDesign>();
 	const jobs = () => plugin.assistant?.jobs;
 	return {
@@ -78,7 +77,7 @@ export async function studioDesignOf(
 ): Promise<StudioDesign | undefined> {
 	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return undefined;
 	return {
-		port: obsidianDesignPort(plugin, { leafOf: () => leaf, fromNote: () => "" }),
+		source: obsidianDesignSource(plugin, { leafOf: () => leaf, fromNote: () => "" }),
 		app,
 		gpu: obsidianGpuSupply(plugin),
 	};
@@ -94,6 +93,14 @@ export async function designOf(plugin: WidgetariumPlugin, app: string, isStartin
 	const screens = await drawnScreensOf(plugin, app, read.design.screens);
 	const references = drawnReferencesOf(plugin, app, read.design.references);
 	return { screens, references, widgets: await widgetsOf(plugin, app, screens) };
+}
+
+function refusedDesignOf(app: string, refusal: string): DrawnDesign {
+	return {
+		screens: [{ name: app, states: [{ name: app, board: null, refusal }] }],
+		references: [],
+		widgets: [],
+	};
 }
 
 function watchedJobs(plugin: WidgetariumPlugin, changed: () => void): () => void {

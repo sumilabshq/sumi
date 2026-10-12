@@ -12,7 +12,7 @@ export function pageHtml(): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
 <style>${sheets.join("\n")}</style>
 <style>${fonts.join("\n")}\n${FIXTURE_UTILITIES}</style>
-<style>html, body { margin: 0; height: 100%; overflow: hidden; } #root, .wg-design-view, .wg-design-mount { height: 100%; }</style>
+<style>html, body { margin: 0; height: 100%; overflow: hidden; } #root { height: 100%; }</style>
 </head><body class="wg-root theme-light" style="${THEMES.light.replace(/\s+/g, " ")} ${HOST_SIZES} --font-interface: Inter; --font-text: Inter;">
 <div id="root"></div><pre id="boom"></pre>
 <script src="/page.js"></script>

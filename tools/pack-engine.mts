@@ -6,6 +6,7 @@ import esbuild, { type Plugin } from "esbuild";
 import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
+import { TAILWIND_BANNER } from "./canvas-sheet.mts";
 import { studioSplitOf } from "./studio-sheet.mts";
 
 export interface PackedPackage {
@@ -24,6 +25,8 @@ export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/packs/stats",
 	"packages/packs/git",
 	"packages/packs/catalogue",
+	"packages/gpu",
+	"packages/canvas",
 	"apps/studio",
 	"packages/vite",
 	"packages/cli",
@@ -84,10 +87,11 @@ const builtIn = (folder: string): string => path.join(folder, BUILT_TO);
 
 // TRADE-OFF: the engine package's sheet is cut from the app's styles.css; moving that owner into core touches every paint gate
 function writeBrowserStyles(): void {
-	const sheets = [BROWSER_STYLES.host, BROWSER_STYLES.board].map((at) => fs.readFileSync(at, "utf8"));
-	const { app, studio } = studioSplitOf(sheets.join("\n"));
+	const [host = "", board = ""] = [BROWSER_STYLES.host, BROWSER_STYLES.board].map((at) => fs.readFileSync(at, "utf8"));
+	const [authored = "", canvas = ""] = board.split(TAILWIND_BANNER);
+	const { app, studio } = studioSplitOf(`${host}\n${authored}`);
 	fs.writeFileSync(BROWSER_STYLES.into, app);
-	fs.writeFileSync(BROWSER_STYLES.studioInto, studio);
+	fs.writeFileSync(BROWSER_STYLES.studioInto, canvas === "" ? studio : `${studio}\n${TAILWIND_BANNER}${canvas}`);
 }
 
 function manifestIn(folder: string): PackageManifest {
@@ -122,7 +126,7 @@ async function bundleEntries(folder: string, built: string): Promise<void> {
 	await esbuild.build({
 		entryPoints: entrySourcesOf(folder),
 		outdir: built,
-		outbase: path.join(folder, SOURCE_FOLDER),
+		outbase: sourceRootOf(folder),
 		bundle: true,
 		splitting: true,
 		format: "esm",
@@ -144,7 +148,7 @@ async function bundleNodeEntries(folder: string, built: string): Promise<void> {
 	await esbuild.build({
 		entryPoints,
 		outdir: built,
-		outbase: path.join(folder, SOURCE_FOLDER),
+		outbase: sourceRootOf(folder),
 		bundle: true,
 		format: "esm",
 		platform: "node",
@@ -235,7 +239,7 @@ function publishedDeclarationsConfig(folder: string, built: string, configAt: st
 			noEmit: false,
 			declaration: true,
 			emitDeclarationOnly: true,
-			rootDir: path.join(folder, SOURCE_FOLDER),
+			rootDir: sourceRootOf(folder),
 			outDir: built,
 			tsBuildInfoFile: path.join(configAt, "pack.tsbuildinfo"),
 		},
@@ -243,14 +247,23 @@ function publishedDeclarationsConfig(folder: string, built: string, configAt: st
 }
 
 function copyHandWrittenDeclarations(folder: string, built: string): void {
-	const sources = path.join(folder, SOURCE_FOLDER);
+	const sources = sourceRootOf(folder);
 	for (const entry of fs.readdirSync(sources, { recursive: true, withFileTypes: true })) {
-		if (!entry.isFile() || !DECLARATION.test(entry.name)) continue;
+		if (!entry.isFile() || !DECLARATION.test(entry.name) || isUnder(built, entry.parentPath)) continue;
 		const from = path.join(entry.parentPath, entry.name);
 		const to = path.join(built, path.relative(sources, from));
 		fs.mkdirSync(path.dirname(to), { recursive: true });
 		fs.copyFileSync(from, to);
 	}
+}
+
+function sourceRootOf(folder: string): string {
+	const entry = sourceOfExport(fieldOf(fieldOf(rawManifestIn(folder), "exports"), "."));
+	return entry === null ? path.join(folder, SOURCE_FOLDER) : path.dirname(path.join(folder, entry));
+}
+
+function isUnder(folder: string, at: string): boolean {
+	return !path.relative(folder, at).startsWith("..");
 }
 
 function npmPack(folder: string): PackedPackage {

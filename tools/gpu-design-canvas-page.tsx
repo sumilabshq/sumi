@@ -2,12 +2,12 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
-import { NO_DESIGN } from "../apps/studio/src/legacy/features/canvas/contract.js";
-import type { DesignPort, DrawnState } from "../apps/studio/src/legacy/features/canvas/contract.js";
+import { NO_HOST } from "../packages/core/src/engine/host-none.js";
+import type { DesignSource, DrawnState } from "../packages/canvas/index.ts";
+import { gpuFrameIdOf } from "../packages/canvas/widgets/canvas-field/lib/frame-keys.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
-import { DesignStage, DESIGN_OPENED_ON } from "../apps/studio/src/legacy/features/canvas/ui/design-stage.js";
-import type { DesignViewState } from "../apps/studio/src/legacy/features/canvas/ui/design-stage.js";
-import { frameIdOf } from "../apps/studio/src/legacy/features/canvas/local/design-snapshots.js";
+import { DesignStage, DESIGN_OPENED_ON } from "../apps/studio/src/canvas/design-stage.ts";
+import type { DesignViewState } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 import { DESIGN_FRAMES, DESIGN_SCREEN } from "./gpu-design-canvas-frames.ts";
 import { benchedPan, lookedAtFrame } from "./gpu-design-canvas-moves.ts";
@@ -21,16 +21,35 @@ reportsFailures();
 registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
+const NOT_HERE = "not on this test page";
 const registry = new ModuleRegistry({ "fixture-tags": tags, "task-list": taskList, "kit-panel": kitPanel, broken });
 const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 	name: state,
 	board: null,
 	picture: { widget, props },
 }));
-const port: DesignPort = {
-	...NO_DESIGN,
+const refused = (): Promise<never> => Promise.reject(new Error(NOT_HERE));
+const TEST_HOST = {
+	...NO_HOST,
+	can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
+	slot: (): never => {
+		throw new Error(NOT_HERE);
+	},
+};
+const source: DesignSource = {
 	design: async () => ({ screens: [{ name: DESIGN_SCREEN, states }], references: [], widgets: [] }),
-	drawing: () => ({ registry, host: NO_DESIGN.drawing().host }),
+	docs: async () => [],
+	jobs: () => [],
+	onJobs: () => () => undefined,
+	liveJob: () => null,
+	stopJob: refused,
+	drawing: () => ({ registry, host: TEST_HOST }),
+	onChanged: () => () => undefined,
+	addPhotos: refused,
+	moveLayer: refused,
+	returnToView: refused,
+	look: async () => null,
+	pickLook: refused,
 	pictureOf: null,
 };
 const supply = { loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
@@ -41,7 +60,7 @@ const viewHeld: { view: DesignViewState } = { view: DESIGN_OPENED_ON };
 
 function draw(): void {
 	const stage = h(DesignStage, {
-		port,
+		port: source,
 		app: "Farm",
 		view: viewHeld.view,
 		onView: (view: DesignViewState) => {
@@ -49,12 +68,9 @@ function draw(): void {
 			draw();
 		},
 		size: VIEW,
-		fieldOf: () => document.querySelector<HTMLElement>(".wg-design-field"),
 		gpu: supply,
 	});
-	reactRoot?.render(
-		h("div", { className: "wg-design-view" }, h("div", { className: "wg-mount wg-design-mount wg-portal" }, stage)),
-	);
+	reactRoot?.render(stage);
 }
 
 try {
@@ -65,7 +81,7 @@ try {
 
 Object.assign(window, {
 	designPage: {
-		frameIds: DESIGN_FRAMES.map(({ state, widget }) => frameIdOf(widget, `${DESIGN_SCREEN} · ${state}`)),
+		frameIds: DESIGN_FRAMES.map(({ state, widget }) => gpuFrameIdOf(widget, `${DESIGN_SCREEN} · ${state}`)),
 		panBench: benchedPan,
 		lookAtFrame: lookedAtFrame,
 	},

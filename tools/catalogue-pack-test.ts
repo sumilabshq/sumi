@@ -132,6 +132,7 @@ const ports: ImplementationPorts = {
 	catalogue: port,
 	studio: NO_STUDIO_HOST,
 	studioState: NO_STUDIO_STATE,
+	sources: {},
 	confirm: async () => true,
 };
 

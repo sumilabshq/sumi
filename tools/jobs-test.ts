@@ -448,11 +448,9 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/core/src/app-design.js");
-const { NotedPicture } = await import("../apps/studio/src/legacy/features/canvas/ui/design-noted-picture.js");
-const { JobLine } = await import("../apps/studio/src/legacy/features/canvas/ui/design-job-line.js");
-const { Group } = await import("../apps/studio/src/legacy/features/canvas/ui/design-group.js");
-const { canvasPagesOf, canvasTabsOf, shownPageOf } =
-	await import("../apps/studio/src/legacy/features/canvas/ui/design-canvas-page.js");
+const { NotedPicture } = await import("../packages/canvas/widgets/canvas-field/ui/frames/noted-picture.js");
+const { JobLine } = await import("../packages/canvas/widgets/job-status/ui/job-line.js");
+const { canvasPagesOf } = await import("../packages/canvas/logic/pages/canvas-pages.js");
 const { noteOfApp } = await import("../hosts/obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");
@@ -491,29 +489,15 @@ const reference = {
 const notedDrawn = renderToStaticMarkup(createElement(NotedPicture, { reference, opener }));
 check(
 	"a take that became a widget carries a button named after the widget, a leave carries none",
-	[notedDrawn.match(/wg-design-note-widget/g)?.length ?? 0, notedDrawn.includes("Video pipeline board ↗")],
+	[notedDrawn.match(/data-canvas-note-widget/g)?.length ?? 0, notedDrawn.includes("Video pipeline board ↗")],
 	[1, true],
 );
 
 const review = JobSchema.parse({ ...base, id: "ideas-review", page: "Ideas", phase: "review", status: "running" });
-const headDrawn = renderToStaticMarkup(
-	createElement(
-		Group,
-		{
-			title: "Ideas",
-			sub: "4 states",
-			status: createElement(JobLine, {
-				job: review,
-				controls: { live: () => null, stop: () => undefined },
-				isInline: true,
-			}),
-		},
-		null,
-	),
-);
+const statusDrawn = renderToStaticMarkup(createElement(JobLine, { job: review, isInline: true }));
 check(
-	"a drawn page being worked on says so in one line beside its name",
-	[headDrawn.includes("is-inline"), /<b>Ideas<\/b>.*Reviewing the Ideas page/.test(headDrawn)],
+	"a page being worked on says so in one line",
+	[statusDrawn.includes('data-canvas-job-line="inline"'), statusDrawn.includes("Reviewing the Ideas page")],
 	[true, true],
 );
 const planned = [
@@ -523,30 +507,48 @@ const planned = [
 ];
 check(
 	"the canvas shows a page only once something is drawn or being drawn on it",
-	canvasPagesOf({ screens: [], references: [], jobs: planned, docs: [] }),
+	tabsIn(
+		canvasPagesOf("", {
+			design: { screens: [], references: [], widgets: [] },
+			jobs: planned,
+			hasDocs: false,
+			keptPage: "",
+			variants: {},
+		}),
+	),
 	["Ideas", "Components"],
 );
 const held = {
-	screens: [],
-	references: [reference],
+	design: { screens: [], references: [reference], widgets: [] },
 	jobs: planned,
-	docs: [{ name: "Spec", path: ".widgetarium/apps/Studio/spec.md", markdown: "**Ideas**" }],
+	hasDocs: true,
+	keptPage: "",
+	variants: {},
 };
-check("docs lead the tabs, the screens follow, references and components close them", canvasTabsOf(held), {
-	leading: ["Docs"],
-	screens: ["Ideas"],
-	trailing: ["References", "Components"],
-});
+const { leading, screens, trailing } = canvasPagesOf("", held);
+check(
+	"docs lead the tabs, the screens follow, references and components close them",
+	{ leading, screens, trailing },
+	{ leading: ["Docs"], screens: ["Ideas"], trailing: ["References", "Components"] },
+);
 check(
 	"a tab saved under its old name opens the tab it moved into",
-	["Brief", "Design system", "Widgets"].map((page) => shownPageOf(page, held)),
+	["Brief", "Design system", "Widgets"].map((page) => canvasPagesOf(page, held).shown),
 	["Docs", "Docs", "Components"],
 );
 check(
 	"an old docs tab with no docs left opens the first page, never a blank one",
-	shownPageOf("Brief", { ...held, docs: [] }),
+	canvasPagesOf("Brief", { ...held, hasDocs: false }).shown,
 	"Ideas",
 );
+
+function tabsIn(tabs: {
+	readonly leading: readonly string[];
+	readonly screens: readonly string[];
+	readonly trailing: readonly string[];
+}): string[] {
+	return [...tabs.leading, ...tabs.screens, ...tabs.trailing];
+}
 
 const vault = await mkdtemp(join(tmpdir(), "wg-jobs-"));
 await mkdir(join(vault, ".widgetarium/apps/Studio/design"), { recursive: true });

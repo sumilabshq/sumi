@@ -1,6 +1,6 @@
 import CanvasKitInit from "canvaskit-wasm";
 import type { GpuSupply } from "@widgetarium/studio";
-import type WidgetariumPlugin from "./main.js";
+import type WidgetariumPlugin from "../main.js";
 
 export const GPU_FILES_FOLDER = "gpu";
 

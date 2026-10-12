@@ -1,5 +1,7 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
 import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
+import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
 import { layGpuFiles } from "./gpu-files.mts";
@@ -21,6 +23,7 @@ const WIDGETS_CLI_SOURCE = "hosts/obsidian/src/legacy/ai/widgets-cli.ts";
 const WIDGET_TYPES_SPECIFIER = "widgetarium:widget-types";
 const CATALOGUE_WIDGETS_FOLDER = "apps/studio/src/legacy/catalogue/widgets";
 const BUILD_STAMP_SPECIFIER = "widgetarium:build-stamp";
+const PLUGIN_SHEET = "hosts/obsidian/styles.css";
 
 const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
 	"obsidian",
@@ -209,8 +212,15 @@ function runGates(): void {
 	}
 }
 
+async function layCanvasSheet(): Promise<void> {
+	const authored = readFileSync(PLUGIN_SHEET, "utf8");
+	const laid = withCanvasSheet(authored, await canvasSheet(process.cwd()));
+	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
+}
+
 if (import.meta.main) {
 	const production = process.argv.includes("--prod");
+	await layCanvasSheet();
 	runGates();
 	layGpuFiles();
 	await esbuild.build(bundleOptions({ minify: production, sourcemap: production ? false : "inline" }));

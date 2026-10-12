@@ -3,13 +3,13 @@ import { createRoot } from "react-dom/client";
 import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
-import type { JobControls } from "../apps/studio/src/legacy/features/canvas/ui/design-job.ts";
-import { PlannedPageRegion, pageLabelOf } from "../apps/studio/src/legacy/features/canvas/ui/design-job.ts";
-import { JobLine } from "../apps/studio/src/legacy/features/canvas/ui/design-job-line.ts";
-import { ReferencesRegion } from "../apps/studio/src/legacy/features/canvas/ui/design-references.ts";
+import { PlannedPageRegion } from "../packages/canvas/widgets/canvas-field/ui/regions/planned-page-region.tsx";
+import { PageLabel } from "../packages/canvas/widgets/canvas-top-bar/ui/status-chips.tsx";
+import { JobLine } from "../packages/canvas/widgets/job-status/ui/job-line.tsx";
+import { ReferencesRegion } from "../packages/canvas/widgets/canvas-field/ui/regions/references-region.tsx";
 
 const PICTURE = `data:image/svg+xml;utf8,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='640' height='420'><rect width='640' height='420' fill='#f3f3f1'/></svg>")}`;
-import { Group } from "../apps/studio/src/legacy/features/canvas/ui/design-group.ts";
+import { Group } from "../packages/canvas/widgets/canvas-field/ui/regions/group.tsx";
 
 const MINUTE = 60000;
 const NOW = Date.now();
@@ -71,31 +71,22 @@ const JOBS: Job[] = [
 	}),
 ];
 
-const LINES = [
-	'Widgetarium · find — --about "idea board"',
-	"Write — .widgetarium/widgets/@studio/idea-card/widget.tsx",
-	"Widgetarium · check — @studio/idea-card",
-	'Widgetarium · screen — Studio "Ideas" --widget @studio/ideas-page',
-];
-
-const controls: JobControls = {
-	live: (id) =>
-		id === "ideas-design" ? { activity: "Widgetarium · shot — --design Studio", lines: LINES, spent: 9120 } : null,
-	stop: () => undefined,
-};
-
 const host = document.getElementById("host");
 if (!host) throw new Error("jobs shot: the page has no #host");
 const pages = ["Docs", "Studio", "Ideas", "Filming", "Hooks", "References", "Components", "Jobs"];
 const byId = (id: string): Job =>
 	JOBS.find((one) => one.id === id) ?? JOBS[0] ?? job({ id: "x", title: "x", page: null, phase: "task" });
 
+function isRunning(page: string): boolean {
+	return JOBS.some((one) => one.page === page && one.status === "running");
+}
+
 createRoot(host).render(
 	h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
 		h(Segmented<string>, {
 			key: "tabs",
 			size: "s",
-			items: pages.map((page) => ({ value: page, label: pageLabelOf(page, JOBS) })),
+			items: pages.map((page) => ({ value: page, label: h(PageLabel, { page, isRunning: isRunning(page) }) })),
 			value: "Ideas",
 			onValueChange: () => undefined,
 		}),
@@ -146,22 +137,21 @@ createRoot(host).render(
 						key: "page",
 						title: "Ideas",
 						sub: "4 states",
-						status: h(JobLine, {
-							job: JobSchema.parse({
-								id: "ideas-review",
-								app: "Studio",
-								title: "Polish Ideas",
-								page: "Ideas",
-								phase: "review",
-								says: "x",
-								status: "running",
-								spent: 3400,
-								startedAt: NOW - 2 * MINUTE,
-							}),
-							controls,
-							isInline: true,
-						}),
 					},
+					h(JobLine, {
+						job: JobSchema.parse({
+							id: "ideas-review",
+							app: "Studio",
+							title: "Polish Ideas",
+							page: "Ideas",
+							phase: "review",
+							says: "x",
+							status: "running",
+							spent: 3400,
+							startedAt: NOW - 2 * MINUTE,
+						}),
+						isInline: true,
+					}),
 					h("div", {
 						style: {
 							width: "1280px",
@@ -188,7 +178,7 @@ createRoot(host).render(
 			},
 			[
 				...["ideas-design"].map((id) =>
-					h(PlannedPageRegion, { key: id, job: byId(id), controls, size: { width: 1280, height: 832 } }),
+					h(PlannedPageRegion, { key: id, job: byId(id), size: { width: 1280, height: 832 } }),
 				),
 			],
 		),

@@ -18,7 +18,7 @@ export interface DesignProbe {
 	shot(name: string): Promise<Pixels>;
 }
 
-export const PAGES = "window.__WG_GPU_PAGES__";
+export const PAGES = "window.__WG_GPU_FRAMES__";
 const VIEW: readonly [number, number] = [1280, 800];
 
 export const indexOf = (state: string): number => DESIGN_FRAMES.findIndex((frame) => frame.state === state);
@@ -29,7 +29,7 @@ export function probeOf(page: AskedPage, shotsAt: string, check: Check): DesignP
 
 	async function pressToggle(label: string): Promise<void> {
 		const point: unknown = await page.ask(
-			`(() => { const button = [...document.querySelectorAll(".wg-design-renderer button")].find((one) => one.textContent === ${JSON.stringify(label)}); const box = button?.getBoundingClientRect(); return box ? [box.left + box.width / 2, box.top + box.height / 2] : null; })()`,
+			`(() => { const button = [...document.querySelectorAll("[data-canvas-renderer] button")].find((one) => one.textContent === ${JSON.stringify(label)}); const box = button?.getBoundingClientRect(); return box ? [box.left + box.width / 2, box.top + box.height / 2] : null; })()`,
 		);
 		check(`the ${label} toggle is in the top bar`, Array.isArray(point), point);
 		if (Array.isArray(point)) await page.press(Number(point[0]), Number(point[1]));
@@ -37,7 +37,7 @@ export function probeOf(page: AskedPage, shotsAt: string, check: Check): DesignP
 
 	async function pointOf(state: string, text: string): Promise<readonly [number, number] | null> {
 		const point: unknown = await page.ask(
-			`(() => { const at = ${PAGES}.locateText(${idOf(state)}, ${JSON.stringify(text)}); const box = document.querySelector(".wg-design-gpu")?.getBoundingClientRect(); return at && box ? [box.left + at.x, box.top + at.y] : null; })()`,
+			`(() => { const at = ${PAGES}.locateText(${idOf(state)}, ${JSON.stringify(text)}); const box = document.querySelector("[data-canvas-gpu]")?.getBoundingClientRect(); return at && box ? [box.left + at.x, box.top + at.y] : null; })()`,
 		);
 		return Array.isArray(point) ? [Number(point[0]), Number(point[1])] : null;
 	}
@@ -45,7 +45,7 @@ export function probeOf(page: AskedPage, shotsAt: string, check: Check): DesignP
 	async function regionOf(state: string): Promise<Region> {
 		return frameRegionOf(
 			await page.ask(
-				`(() => { const box = document.querySelectorAll(".wg-design-frame")[${indexOf(state)}]?.querySelector(".wg-design-gpu-frame, .wg-design-screen")?.getBoundingClientRect(); return box ? [box.left, box.top, box.width, box.height] : null; })()`,
+				`(() => { const box = document.querySelectorAll("[data-canvas-layer] .wg-design-frame")[${indexOf(state)}]?.querySelector("[data-canvas-gpu-frame], [data-canvas-screen]")?.getBoundingClientRect(); return box ? [box.left, box.top, box.width, box.height] : null; })()`,
 			),
 			VIEW,
 		);

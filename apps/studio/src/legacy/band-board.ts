@@ -2,7 +2,11 @@ import { bound, keptValue } from "./shared/board-bindings.js";
 import type { Binding } from "./shared/board-bindings.js";
 import type { OpenablePanel } from "@widgetarium/core/engine/studio-state-port.js";
 
-type Mounted = { readonly name: string; readonly widget: string; readonly props: Readonly<Record<string, Binding>> };
+export type Mounted = {
+	readonly name: string;
+	readonly widget: string;
+	readonly props: Readonly<Record<string, Binding>>;
+};
 
 type PanelButton = {
 	readonly name: string;
@@ -15,9 +19,14 @@ const BAND_TILE = "studio-band";
 
 export type BandCorner = "start" | "end";
 
+export function cornerItemsOf(app: string, corner: BandCorner): readonly Mounted[] {
+	return corner === "start"
+		? [safeAreaAt("left"), controlMenuOf(app)]
+		: [WIDGETS_BUTTON, AI_BUTTON, safeAreaAt("right")];
+}
+
 export function cornerBoardOf(app: string, corner: BandCorner): Record<string, unknown> {
-	const items =
-		corner === "start" ? [safeAreaAt("left"), controlMenuOf(app)] : [WIDGETS_BUTTON, AI_BUTTON, safeAreaAt("right")];
+	const items = cornerItemsOf(app, corner);
 	return {
 		v: 2,
 		tiles: [
@@ -31,6 +40,10 @@ export function cornerBoardOf(app: string, corner: BandCorner): Record<string, u
 		],
 		layout: { dir: "row", of: [{ dir: "column", keep: true, of: [{ id: BAND_TILE, surface: "none" }] }] },
 	};
+}
+
+export function mountRowOf({ name, widget }: Mounted): { readonly name: string; readonly widget: string } {
+	return { name, widget };
 }
 
 const WIDGETS_BUTTON = panelButtonOf({
@@ -77,8 +90,4 @@ function safeAreaAt(side: "left" | "right"): Mounted {
 		widget: "@studio/safe-area",
 		props: { getSide: keptValue(side) },
 	};
-}
-
-function mountRowOf({ name, widget }: Mounted): { readonly name: string; readonly widget: string } {
-	return { name, widget };
 }

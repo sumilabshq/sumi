@@ -1,4 +1,4 @@
-import { flightBetween } from "../apps/studio/src/legacy/features/canvas/local/flight.ts";
+import { flightBetween } from "../packages/gpu/index.ts";
 
 let failed = 0;
 function check(what: string, ok: boolean, got: unknown): void {

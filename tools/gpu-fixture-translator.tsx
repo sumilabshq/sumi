@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { GpuText, GpuView } from "../apps/studio/src/legacy/features/canvas/render/gpu/index.ts";
+import { GpuText, GpuView } from "../packages/gpu/index.ts";
 import { ControlsRow } from "./gpu-fixture-controls-row.tsx";
 import { FIRST_RECENT, LANGUAGE, SOURCE, TRANSLATION } from "./gpu-fixture-copy.ts";
 import type { Direction, Recent, Tone } from "./gpu-fixture-copy.ts";
