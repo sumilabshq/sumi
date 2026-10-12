@@ -1,22 +1,24 @@
 import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import type { InjectProps } from "@widgetarium/core";
-import type { addPhotoInject } from "../../widgets/add-photo.widget.js";
-import { imageFilesIn } from "../image-files/image-files.js";
+import { useCommand } from "@widgetarium/core/mediator";
+import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
+import { AddPhotosCommand } from "../../requests/photos/add-photos.js";
+import { PastePhotosCommand } from "../../requests/photos/paste-photos.js";
 import { Tip } from "../tip/tip.js";
-import { useDroppedPhotos } from "./hooks/use-dropped-photos.js";
-import { usePastedPhotos } from "./hooks/use-pasted-photos.js";
 
 const ADD_PHOTO = "Add photo";
 const ADD_PHOTO_SAID = "Add a reference photo, or drop or paste one on the canvas";
+const IMAGES = "image/";
+const DROPPED_ON = "[data-canvas-view]";
 
-export function AddPhoto({ drawingQuery, addPhotosCommand }: InjectProps<typeof addPhotoInject>): ReactElement {
+export function AddPhoto(): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const addPhotos = addPhotosCommand.run;
-	usePastedPhotos(drawingQuery.data?.ownsPaste ?? null, addPhotos);
-	useDroppedPhotos(anchor, addPhotos);
+	const add = useCommand(AddPhotosCommand);
+	const paste = useCommand(PastePhotosCommand);
+	usePastedFiles(IMAGES, (photos) => void paste.run({ photos }));
+	useDroppedFiles(anchor, { scope: DROPPED_ON, typePrefix: IMAGES, onFiles: (photos) => void add.run({ photos }) });
 	return (
 		<span ref={anchor} className="cv:inline-flex cv:items-center cv:gap-1.5">
 			<Tip label={ADD_PHOTO_SAID}>
@@ -24,8 +26,8 @@ export function AddPhoto({ drawingQuery, addPhotosCommand }: InjectProps<typeof 
 					size="s"
 					variant="ghost"
 					label={ADD_PHOTO}
-					disabled={!addPhotosCommand.can}
-					isLoading={addPhotosCommand.isRunning}
+					disabled={!add.can}
+					isLoading={add.isRunning}
 					onClick={() => picker.current?.click()}
 				>
 					<Icon name="image-plus" size={16} />
@@ -38,7 +40,7 @@ export function AddPhoto({ drawingQuery, addPhotosCommand }: InjectProps<typeof 
 				multiple
 				hidden
 				onChange={(event: ChangeEvent<HTMLInputElement>) => {
-					void addPhotos({ photos: imageFilesIn(event.currentTarget.files) });
+					void add.run({ photos: filesOfType(event.currentTarget.files, IMAGES) });
 					event.currentTarget.value = "";
 				}}
 			/>

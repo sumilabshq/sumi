@@ -14,7 +14,7 @@ import { START_MODULE_ID, startModuleSourceOf } from "./start-module-source.js";
 
 export interface WidgetariumVitePlugin {
 	readonly name: string;
-	config(): Promise<{ resolve: { alias: ResolvedAlias[] } }>;
+	config(): Promise<{ resolve: { alias: ResolvedAlias[] }; define: Readonly<Record<string, string>> }>;
 	configResolved(resolved: ResolvedMode): void;
 	resolveId(id: string): string | null;
 	load(id: string): Promise<string | null>;
@@ -42,7 +42,10 @@ export function widgetarium(root: string = process.cwd()): WidgetariumVitePlugin
 	const resolved = { mode: "" };
 	return {
 		name: "widgetarium",
-		config: async () => ({ resolve: { alias: viteAliasesOf((await projectIn(root)).config.aliases, root) } }),
+		config: async () => ({
+			resolve: { alias: viteAliasesOf((await projectIn(root)).config.aliases, root) },
+			define: { __WG_PLATFORM__: JSON.stringify("web") },
+		}),
 		configResolved: ({ mode }) => {
 			resolved.mode = mode;
 		},

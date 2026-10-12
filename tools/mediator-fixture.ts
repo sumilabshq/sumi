@@ -1,18 +1,18 @@
 import { z } from "zod";
-import { command, handlerOf, inject, module, provided, query, token } from "../packages/core/src/mediator/index.ts";
+import { command, handlerOf, inject, module, provided, query } from "../packages/core/src/mediator/index.ts";
 import type { AppHost, InputOf, Middleware, RequestContext } from "../packages/core/src/mediator/index.ts";
 
-export interface Pages {
-	readonly platform: string;
-	list(): readonly string[];
-	add(title: string): number;
+export abstract class Pages {
+	abstract readonly platform: string;
+	abstract list(): readonly string[];
+	abstract add(title: string): number;
 }
 
-export const Pages = token<Pages>("Pages");
-
-class MemoryPages implements Pages {
+class MemoryPages extends Pages {
 	private readonly titles: string[] = ["Home"];
-	constructor(readonly platform: string) {}
+	constructor(readonly platform: string) {
+		super();
+	}
 	list(): readonly string[] {
 		return [...this.titles];
 	}
@@ -115,7 +115,6 @@ const traced =
 
 export const canvasModule = module({
 	name: "canvas",
-	requests: [GetPages, GetPlatform, GetSlow, GetFailing, GetHalf, AddPage, Bump, Save],
 	handlers: [
 		GetPagesHandler,
 		GetPlatformHandler,

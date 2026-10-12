@@ -730,15 +730,18 @@ const designSource = {
 	returnToView: refusedHere,
 	look: async () => null,
 	pickLook: refusedHere,
+	noteBoard: async () => null,
 	pictureOf: null,
 };
+const { canvasModuleOver } = await import("./canvas-over-source.ts");
 const keptPages: string[] = [];
 const handed: { showPage: (page: string) => void }[] = [];
 const designNode = document.createElement("div");
 document.body.append(designNode);
 drawInto(
 	createElement(DesignStage, {
-		source: designSource,
+		platform: "web",
+		modules: [canvasModuleOver(designSource)],
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
@@ -748,6 +751,15 @@ drawInto(
 	designNode,
 );
 await settledUntil(() => handed.length > 0);
+await settledUntil(() => designNode.querySelector("[data-canvas-topbar]")?.textContent?.includes("Farm") === true);
+check(
+	"every block of the canvas top bar reads its own requests and draws, none falls to its slot's error",
+	[
+		designNode.querySelector("[data-canvas-topbar]")?.textContent?.includes("Farm0 screens"),
+		designNode.textContent?.includes("Could not load"),
+	],
+	[true, false],
+);
 handed.at(-1)?.showPage("References");
 await settledUntil(() => keptPages.includes("References"));
 check(

@@ -1,19 +1,18 @@
 import type { CommandAnswer } from "../gateway/run-handler";
-import { token } from "./token";
 
-export interface DoneKeys {
-	once(key: string, run: () => Promise<CommandAnswer<unknown>>): Promise<CommandAnswer<unknown>>;
+export abstract class DoneKeys {
+	abstract once(key: string, run: () => Promise<CommandAnswer<unknown>>): Promise<CommandAnswer<unknown>>;
 }
-
-export const DoneKeys = token<DoneKeys>("DoneKeys");
 
 const ANSWERS_KEPT = 1000;
 
-export class MemoryDoneKeys implements DoneKeys {
+export class MemoryDoneKeys extends DoneKeys {
 	private readonly answers = new Map<string, Promise<CommandAnswer<unknown>>>();
 
 	// TRADE-OFF: a count cap, not Stripe's 24h TTL: memory needs a bound, retries come within the last few calls.
-	constructor(private readonly kept: number = ANSWERS_KEPT) {}
+	constructor(private readonly kept: number = ANSWERS_KEPT) {
+		super();
+	}
 
 	once(key: string, run: () => Promise<CommandAnswer<unknown>>): Promise<CommandAnswer<unknown>> {
 		const known = this.answers.get(key);

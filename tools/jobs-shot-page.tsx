@@ -3,13 +3,14 @@ import { createRoot } from "react-dom/client";
 import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
-import { PlannedPageRegion } from "../packages/canvas/ui/canvas-view/regions/planned-page-region.tsx";
+import { AppProvider, fakeApp } from "../packages/core/src/mediator/index.ts";
+import { PlannedPageRegion } from "../packages/canvas/ui/canvas-field/regions/planned-page-region.tsx";
 import { PageLabel } from "../packages/canvas/ui/page-tabs/page-label.tsx";
 import { JobLine } from "../packages/canvas/ui/job-status/job-line.tsx";
-import { ReferencesRegion } from "../packages/canvas/ui/canvas-view/regions/references-region.tsx";
+import { ReferencesRegion } from "../packages/canvas/ui/canvas-field/regions/references-region.tsx";
 
 const PICTURE = `data:image/svg+xml;utf8,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='640' height='420'><rect width='640' height='420' fill='#f3f3f1'/></svg>")}`;
-import { Group } from "../packages/canvas/ui/canvas-view/regions/group.tsx";
+import { Group } from "../packages/canvas/ui/canvas-field/regions/group.tsx";
 
 const MINUTE = 60000;
 const NOW = Date.now();
@@ -82,105 +83,135 @@ function isRunning(page: string): boolean {
 }
 
 createRoot(host).render(
-	h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
-		h(Segmented<string>, {
-			key: "tabs",
-			size: "s",
-			items: pages.map((page) => ({ value: page, label: h(PageLabel, { page, isRunning: isRunning(page) }) })),
-			value: "Ideas",
-			onValueChange: () => undefined,
-		}),
-		h(
-			"div",
-			{
-				key: "draft",
-				style: {
-					transform: "scale(0.5)",
-					transformOrigin: "0 0",
-					width: "200%",
-					display: "flex",
-					flexDirection: "column",
-					gap: "48px",
-				},
-			},
-			[
-				h(ReferencesRegion, {
-					key: "references",
-					opener: {
-						open: () => undefined,
-						nameOf: (widget: string) => (widget === "@studio/video-board" ? "Video pipeline board" : "Video card"),
+	h(
+		AppProvider,
+		{ app: fakeApp({ answers: {} }) },
+		h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
+			h(Segmented<string>, {
+				key: "tabs",
+				size: "s",
+				items: pages.map((page) => ({ value: page, label: h(PageLabel, { page, isRunning: isRunning(page) }) })),
+				value: "Ideas",
+				onValueChange: () => undefined,
+			}),
+			h(
+				"div",
+				{
+					key: "draft",
+					style: {
+						transform: "scale(0.5)",
+						transformOrigin: "0 0",
+						width: "200%",
+						display: "flex",
+						flexDirection: "column",
+						gap: "48px",
 					},
-					references: [
-						{
-							name: "notion-board.png",
-							src: PICTURE,
-							why: "Notion board of a content calendar",
-							kind: "app",
-							pages: [],
-							notes: [
+				},
+				[
+					h(ReferencesRegion, {
+						key: "references",
+						region: {
+							kind: "references",
+							title: "References",
+							count: 1,
+							references: [
 								{
-									text: "Columns by stage, a count on each",
-									tone: "take",
-									into: "@studio/video-board",
-									at: [0.3, 0.2],
+									key: "notion-board.png",
+									title: "notion-board.png",
+									badge: "app",
+									sub: "Notion board of a content calendar",
+									src: PICTURE,
+									alt: "Notion board of a content calendar",
+									callouts: [
+										{
+											text: "Columns by stage, a count on each",
+											tone: "take",
+											widget: { id: "@studio/video-board", name: "Video pipeline board" },
+											at: [0.3, 0.2],
+										},
+										{
+											text: "Status chip on every card",
+											tone: "take",
+											widget: { id: "@studio/video-card", name: "Video card" },
+											at: [0.6, 0.5],
+										},
+										{
+											text: "Board under a week strip became the Ideas layout",
+											tone: "take",
+											widget: null,
+											at: [0.5, 0.1],
+										},
+										{
+											text: "Property list on every card: too busy on a phone",
+											tone: "dislike",
+											widget: null,
+											at: [0.7, 0.8],
+										},
+									],
 								},
-								{ text: "Status chip on every card", tone: "take", into: "@studio/video-card", at: [0.6, 0.5] },
-								{ text: "Board under a week strip became the Ideas layout", tone: "take", at: [0.5, 0.1] },
-								{ text: "Property list on every card: too busy on a phone", tone: "dislike", at: [0.7, 0.8] },
 							],
 						},
-					],
-				}),
-				h(
-					Group,
-					{
-						key: "page",
-						title: "Ideas",
-						sub: "4 states",
-					},
-					h(JobLine, {
-						job: JobSchema.parse({
-							id: "ideas-review",
-							app: "Studio",
-							title: "Polish Ideas",
-							page: "Ideas",
-							phase: "review",
-							says: "x",
-							status: "running",
-							spent: 3400,
-							startedAt: NOW - 2 * MINUTE,
-						}),
-						isInline: true,
 					}),
-					h("div", {
-						style: {
-							width: "1280px",
-							height: "320px",
-							background: "var(--background-primary)",
-							boxShadow: "0 0 0 1px var(--background-modifier-border)",
+					h(
+						Group,
+						{
+							key: "page",
+							title: "Ideas",
+							sub: "4 states",
 						},
-					}),
-				),
-			],
-		),
-		h(
-			"div",
-			{
-				key: "field",
-				style: {
-					transform: "scale(0.35)",
-					transformOrigin: "0 0",
-					width: "285%",
-					display: "flex",
-					flexWrap: "wrap",
-					gap: "48px",
+						h(JobLine, {
+							job: JobSchema.parse({
+								id: "ideas-review",
+								app: "Studio",
+								title: "Polish Ideas",
+								page: "Ideas",
+								phase: "review",
+								says: "x",
+								status: "running",
+								spent: 3400,
+								startedAt: NOW - 2 * MINUTE,
+							}),
+							isInline: true,
+						}),
+						h("div", {
+							style: {
+								width: "1280px",
+								height: "320px",
+								background: "var(--background-primary)",
+								boxShadow: "0 0 0 1px var(--background-modifier-border)",
+							},
+						}),
+					),
+				],
+			),
+			h(
+				"div",
+				{
+					key: "field",
+					style: {
+						transform: "scale(0.35)",
+						transformOrigin: "0 0",
+						width: "285%",
+						display: "flex",
+						flexWrap: "wrap",
+						gap: "48px",
+					},
 				},
-			},
-			[
-				...["ideas-design"].map((id) =>
-					h(PlannedPageRegion, { key: id, job: byId(id), size: { width: 1280, height: 832 } }),
-				),
-			],
-		),
-	]),
+				[
+					...["ideas-design"].map((id) =>
+						h(PlannedPageRegion, {
+							key: id,
+							region: {
+								kind: "planned",
+								title: "Pages",
+								page: byId(id).page ?? byId(id).title,
+								width: 1280,
+								height: 832,
+							},
+						}),
+					),
+				],
+			),
+		]),
+	),
 );

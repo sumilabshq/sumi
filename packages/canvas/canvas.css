@@ -1,19 +1,33 @@
 @theme {
 	--animate-canvas-fade-in: canvas-fade-in var(--wg-quick) var(--wg-ease);
-	--animate-canvas-tip-in: canvas-tip-in var(--wg-quick) var(--wg-spring);
 	--animate-canvas-pulse: canvas-pulse 1.4s ease-in-out infinite;
 	--animate-canvas-wave: canvas-wave 2.2s ease-in-out infinite;
+	--animate-canvas-fold-open: canvas-fold-open var(--wg-quick) var(--wg-ease);
+	--animate-canvas-fold-shut: canvas-fold-shut var(--wg-quick) var(--wg-ease);
 
-	@keyframes canvas-fade-in {
+	@keyframes canvas-fold-open {
 		from {
+			height: 0;
+			opacity: 0;
+		}
+		to {
+			height: var(--radix-collapsible-content-height);
+		}
+	}
+
+	@keyframes canvas-fold-shut {
+		from {
+			height: var(--radix-collapsible-content-height);
+		}
+		to {
+			height: 0;
 			opacity: 0;
 		}
 	}
 
-	@keyframes canvas-tip-in {
+	@keyframes canvas-fade-in {
 		from {
 			opacity: 0;
-			translate: -50% -4px;
 		}
 	}
 

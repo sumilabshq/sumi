@@ -1,0 +1,27 @@
+{
+	"name": "@widgetarium/behaviors",
+	"version": "0.1.0",
+	"description": "Headless behaviours with no domain: pan and zoom, tree drag and scroll, pointing at marked layers, callouts, files dropped or pasted",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/gpu": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8"
+	},
+	"widgetarium": {
+		"level": "common"
+	}
+}

@@ -6,15 +6,15 @@ Logic lives only in handlers. A view or another handler reaches logic by sending
 
 ```ts skip-check
 // packages/billing/requests/subscriptions/subscribe.ts
-export const Subscribe = command("billing/subscribe")
+export const SubscribeCommand = command("billing/subscribe")
 	.input(z.object({ user: z.string(), plan: z.string() }))
 	.output(SubscriptionSchema)
 	.idempotencyKey(({ user, plan }) => `${user}:${plan}`);
 
-export class SubscribeHandler extends handlerOf(Subscribe) {
+export class SubscribeCommandHandler extends handlerOf(SubscribeCommand) {
 	private readonly payments = inject(Payments);
 	private readonly subscriptions = inject(Subscriptions);
-	override async handle(input: InputOf<typeof Subscribe>, { idempotencyKey }: RequestContext) { … }
+	override async handle(input: InputOf<typeof SubscribeCommand>, { idempotencyKey }: RequestContext) { … }
 }
 ```
 
@@ -23,8 +23,8 @@ export class SubscribeHandler extends handlerOf(Subscribe) {
 | `query("<module>/<name>")`   | `.output()`          | `.input()`              |
 | `command("<module>/<name>")` | `.idempotencyKey(…)` | `.input()`, `.output()` |
 
-- The name `"<module>/<name>"` is the request's address on the network (`/rpc/billing/subscribe`), in logs and in the table of done keys. It is stable across a rename of the constant. Lint checks it equals the module and the constant's name in kebab case.
-- `handlerOf(Subscribe)` names the request once: it is the class's `static request`, and the types check `handle` takes its input and returns its output. A module takes only classes made by `handlerOf`.
+- The name `"<module>/<name>"` is the request's address on the network (`/rpc/billing/subscribe`), in logs and in the table of done keys. It is stable across a rename of the constant. Lint checks it equals the module and the constant's name without its `Query`/`Command` suffix, in kebab case.
+- `handlerOf(SubscribeCommand)` names the request once: it is the class's `static request`, and the types check `handle` takes its input and returns its output. A module takes only classes made by `handlerOf`.
 - The output schema decides whether `null` is a valid answer. A handler cannot return what its schema does not allow.
 
 ## The mediator
@@ -35,12 +35,14 @@ Middleware is declared once per module: `use: [authenticated, rateLimited]`. A h
 
 Every refusal reaches the developer once, through `ReportFailure`: the console by default, `provided(ReportFailure, …)` to send it to Sentry. After a command that ran, every query on screen is read again.
 
+A query whose data changes outside a command (a file edited on disk, a job finishing) declares `watch(input, changed)` on its handler; the mediator calls it while someone reads the query and reads it again on `changed()`. A re-read keeps every part of the answer that did not change by identity (TanStack Query's structural sharing), so a block that drew it does not draw again.
+
 ## Modules
 
 ```ts skip-check
 // packages/billing/billing.module.ts
 export const billingModule = module({
-	handlers: [SubscribeHandler, ApplyStripeEventHandler, GetMySubscriptionHandler],
+	handlers: [SubscribeCommandHandler, ApplyStripeEventCommandHandler, MySubscriptionQueryHandler],
 	provide: [
 		provided(Payments, (host) => (host.is("mobile") ? new RevenueCatPayments(host) : new StripePayments(host))),
 		provided(Subscriptions, (host) => new DrizzleSubscriptions(host.db)),
@@ -49,7 +51,9 @@ export const billingModule = module({
 });
 ```
 
-- A dependency is a token, `export const Payments = token<Payments>("Payments")`, and `provided(Payments, make)` type-checks that `make` returns a `Payments`.
+- A dependency is an abstract class, and the class is its own token (Angular, NestJS): `export abstract class Payments { abstract subscribe(…): Promise<Subscription>; }`. `provided(Payments, make)` type-checks that `make` returns a `Payments`; an error names it by `Payments.name`.
+- A handler injects what it calls. `this.reads.source.addPhotos(…)` reaches through one dependency into another: inject `DesignSource` for the write and keep `DesignReads` for what it owns.
+- `app()` refuses two handlers for one request. A request no module handles is refused when it is sent: `no module handles canvas/pages`.
 - The container builds each handler, and `inject(Payments)` in a field initialiser takes the value the module provides (Angular's `inject()`). It works only while the container builds a handler or a provided value: a constructor parameter would need decorator metadata, which this project does not use. No page or app writes `new SomeHandler(...)`.
 - Swapping an implementation is one line in `provide`. Swapping a handler is one line in `handlers`.
 - An app lists the modules it uses; a test builds a module with fakes in `provide`.
@@ -83,8 +87,8 @@ An outside system is reached through a port: an interface with typed methods and
 
 ```ts skip-check
 // packages/payments/payments.port.ts
-export interface Payments {
-	subscribe(input: { user: string; plan: string; idempotencyKey: string }): Promise<Subscription>;
+export abstract class Payments {
+	abstract subscribe(input: { user: string; plan: string; idempotencyKey: string }): Promise<Subscription>;
 }
 export type PaymentRefusal = "card-declined" | "already-subscribed" | "provider-down";
 ```
@@ -95,7 +99,7 @@ export type PaymentRefusal = "card-declined" | "already-subscribed" | "provider-
 
 ## The server
 
-A request whose handler must run on a server (it holds a secret, or receives webhooks) says so in its file: `command(…).onServer()`. The client's mediator sends it over `/rpc/<name>`; the server registers its handler; secrets live only in the server's `provide`. The build fails when a client bundle reaches a server-only file. A host with no server refuses such a request at build time.
+A request whose handler must run on a server (it holds a secret, or receives webhooks) says so once, in its file: `command(…).onServer()`. There is one app, not two roots: the same `app({ modules })` definition runs in the browser, where the mediator sends every `.onServer()` request over `/rpc/<name>`, and on the server, where it runs them. A dependency only the server can build (it reads a secret) is marked where it is provided, `provided(Payments, make, { onServer: true })`; the browser's app never builds it, and the build fails when a client bundle reaches a server-only file. A host with no server refuses such a request at build time. **planned**: the canvas has no server request yet, so `.onServer()`, `{ onServer: true }` and the `/rpc` route are not implemented.
 
 ## Webhooks
 

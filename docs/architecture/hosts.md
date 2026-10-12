@@ -10,6 +10,8 @@ A host is a platform an app runs on: Obsidian, the browser, desktop, mobile, a s
 
 A module picks implementations from the host in its `provide` ([requests.md](requests.md#modules)). Nothing else in a project asks which platform it runs on.
 
+The platform is also a build-time constant: each host's build defines `__WG_PLATFORM__` (`"obsidian"` in the plugin's esbuild, `"web"` in the Vite plugin). A module branches on it where it picks an adapter, so a web bundle carries no Obsidian adapter: the bundler removes the branch it does not take. Without the constant (a test run straight from source) the module asks `host.is(...)` at run time.
+
 ## The Obsidian host
 
 1. Installs as a plugin and keeps its settings, the AI connection among them.

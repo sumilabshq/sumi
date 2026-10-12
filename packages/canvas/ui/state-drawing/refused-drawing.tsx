@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useReportsDrawFailure } from "./hooks/use-reports-draw-failure.js";
+import { useReportsDrawFailure } from "./use-reports-draw-failure.js";
 
 export interface RefusedDrawingProps {
 	readonly said: string;

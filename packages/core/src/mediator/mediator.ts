@@ -4,9 +4,9 @@ import type { AppHost, Handles, Middleware, RequestCall } from "./handles";
 import { idempotencyKeyOf } from "./idempotency-key";
 import { frozen, throughMiddleware } from "./middleware-chain";
 import { QueryStore } from "./query-store";
-import type { ReportFailure } from "./report-failure";
-import type { AnyRequest, OutputOf, SentOf } from "./request";
-import { issuesOf, parsedOutput, reasonOf, refused } from "./sends";
+import type { FailureReport } from "./report-failure";
+import type { AnyQuery, AnyRequest, OutputOf, SentOf } from "./request";
+import { NOT_WATCHED, issuesOf, parsedOutput, reasonOf, refused } from "./sends";
 import type { App, SendOptions } from "./sends";
 
 export interface Route {
@@ -17,15 +17,15 @@ export interface Route {
 export interface MediatorNeeds {
 	readonly host: AppHost;
 	readonly doneKeys: DoneKeys;
-	readonly reportFailure: ReportFailure;
+	readonly reportFailure: FailureReport;
 }
 
-const NO_HANDLER = "{name} has no handler";
+const NO_HANDLER = "no module handles {name}";
 const NEVER_ABORTED = new AbortController().signal;
 
 export class Mediator implements App {
 	readonly queries: QueryStore = new QueryStore(this);
-	readonly reportFailure: ReportFailure;
+	readonly reportFailure: FailureReport;
 
 	constructor(
 		private readonly routes: ReadonlyMap<string, Route>,
@@ -39,6 +39,13 @@ export class Mediator implements App {
 		const answer = await this.answerOf(request, input, options);
 		this.queries.afterCommand(request, answer);
 		return answer;
+	}
+
+	watch(request: AnyQuery, input: unknown, changed: () => void): () => void {
+		const handler = this.routes.get(request.name)?.handler;
+		const parsed = request.input.safeParse(input);
+		if (handler?.watch === undefined || !parsed.success) return NOT_WATCHED;
+		return handler.watch(parsed.data, changed);
 	}
 
 	private async answerOf(request: AnyRequest, input: unknown, options: SendOptions): Promise<CommandAnswer<unknown>> {

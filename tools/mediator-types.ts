@@ -61,7 +61,6 @@ class HandWrittenHandler {
 
 export const moduleWithHandWritten = module({
 	name: "canvas",
-	requests: [],
 	// @ts-expect-error a module takes only handlers made by handlerOf
 	handlers: [HandWrittenHandler],
 });

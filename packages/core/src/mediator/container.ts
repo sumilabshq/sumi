@@ -1,5 +1,5 @@
 import type { AppHost } from "./handles";
-import { buildWith, nameOfToken } from "./token";
+import { buildWith } from "./token";
 import type { Provided, Resolver, Token } from "./token";
 
 interface Made<T> {
@@ -11,15 +11,15 @@ const NOT_PROVIDED = "{token} is provided by no module";
 const CYCLE = "{token} needs itself while it is built";
 
 export class Container implements Resolver {
-	private readonly made = new Map<symbol, Made<unknown>>();
-	private readonly making = new Set<symbol>();
+	private readonly made = new Map<Token<unknown>, Made<unknown>>();
+	private readonly making = new Set<Token<unknown>>();
 
 	constructor(
-		private readonly provided: ReadonlyMap<symbol, Provided>,
+		private readonly provided: ReadonlyMap<Token<unknown>, Provided>,
 		private readonly host: AppHost,
 	) {}
 
-	has(wanted: symbol): boolean {
+	has(wanted: Token<unknown>): boolean {
 		return this.provided.has(wanted);
 	}
 
@@ -28,8 +28,8 @@ export class Container implements Resolver {
 		if (known !== undefined && isMadeFor(known, wanted)) return known.value;
 		const pair = this.provided.get(wanted);
 		if (pair === undefined || !isProvidedFor(pair, wanted))
-			throw new Error(NOT_PROVIDED.replace("{token}", nameOfToken(wanted)));
-		if (this.making.has(wanted)) throw new Error(CYCLE.replace("{token}", nameOfToken(wanted)));
+			throw new Error(NOT_PROVIDED.replace("{token}", wanted.name));
+		if (this.making.has(wanted)) throw new Error(CYCLE.replace("{token}", wanted.name));
 		this.making.add(wanted);
 		try {
 			const value = this.build(() => pair.make(this.host));

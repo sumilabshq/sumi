@@ -15,6 +15,8 @@ const { jobBriefFor } = await import("../hosts/obsidian/src/legacy/ai/brief.js")
 const { buildsIn } = await import("../hosts/obsidian/src/legacy/ai/builds.js");
 
 import type { Job } from "../packages/core/src/app-jobs.js";
+import type { Drawing } from "../packages/canvas/schema/drawing.js";
+import { standIn } from "./stand-in.ts";
 import type { JobAdapter } from "../hosts/obsidian/src/legacy/ai/job-store.js";
 import type { Emit } from "../hosts/obsidian/src/legacy/ai/stream.js";
 import type { RunAsk, RunAnswer } from "../hosts/obsidian/src/legacy/ai/run.js";
@@ -448,9 +450,11 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/core/src/app-design.js");
-const { NotedPicture } = await import("../packages/canvas/ui/canvas-view/frames/noted-picture.js");
+const { NotedPicture } = await import("../packages/canvas/ui/canvas-field/frames/noted-picture.js");
+const { referencesRegionOf } = await import("../packages/canvas/requests/field/reference-regions.js");
 const { JobLine } = await import("../packages/canvas/ui/job-status/job-line.js");
-const { canvasPagesOf } = await import("../packages/canvas/logic/pages/canvas-pages.js");
+const { canvasPagesOf } = await import("../packages/canvas/requests/pages/canvas-pages.js");
+const { AppProvider, fakeApp } = await import("../packages/core/src/mediator/index.js");
 const { noteOfApp } = await import("../hosts/obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");
@@ -470,11 +474,12 @@ check(
 	[{ text: "Columns with counts", tone: "take", into: "@studio/video-board" }],
 );
 
-const opened: string[] = [];
-const opener = {
-	open: (widget: string) => void opened.push(widget),
-	nameOf: (widget: string) => (widget === "@studio/video-board" ? "Video pipeline board" : widget),
-};
+const titled = new Map([["@studio/video-board", { manifest: { title: "Video pipeline board" } }]]);
+const titles = standIn<Drawing>(
+	{ registry: { get: (widget: string | null | undefined) => titled.get(widget ?? "") ?? null }, host: {} },
+	["registry", "host"],
+	"drawing",
+);
 const reference = {
 	name: "board.png",
 	src: "https://x.test/board.png",
@@ -486,7 +491,17 @@ const reference = {
 		{ text: "Property list on every card: too busy on a phone", tone: "dislike" as const },
 	],
 };
-const notedDrawn = renderToStaticMarkup(createElement(NotedPicture, { reference, opener }));
+const [shownRegion] = referencesRegionOf([reference], titles);
+const shownReference = shownRegion?.kind === "references" ? shownRegion.references[0] : undefined;
+const notedDrawn = shownReference
+	? renderToStaticMarkup(
+			createElement(
+				AppProvider,
+				{ app: fakeApp({ answers: {} }) },
+				createElement(NotedPicture, { reference: shownReference }),
+			),
+		)
+	: "";
 check(
 	"a take that became a widget carries a button named after the widget, a leave carries none",
 	[notedDrawn.match(/data-canvas-note-widget/g)?.length ?? 0, notedDrawn.includes("Video pipeline board ↗")],

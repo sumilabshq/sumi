@@ -12,23 +12,16 @@
 			"source": "./index.ts",
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
-		},
-		"./obsidian": {
-			"source": "./logic/design/obsidian-design-source.ts",
-			"types": "./dist/logic/design/obsidian-design-source.d.ts",
-			"default": "./dist/logic/design/obsidian-design-source.js"
-		},
-		"./web": {
-			"source": "./logic/design/web-design-source.ts",
-			"types": "./dist/logic/design/web-design-source.d.ts",
-			"default": "./dist/logic/design/web-design-source.js"
 		}
 	},
 	"dependencies": {
+		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/gpu": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
-		"modern-screenshot": "^4.7.0"
+		"modern-screenshot": "^4.7.0",
+		"radix-ui": "^1.7.0",
+		"yaml": "^2.9.0"
 	},
 	"devDependencies": {
 		"obsidian": "^1.13.1"
@@ -46,5 +39,6 @@
 	},
 	"widgetarium": {
 		"level": "domain"
-	}
+	},
+	"sideEffects": false
 }

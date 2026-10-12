@@ -6,12 +6,12 @@ export { DoneKeys, MemoryDoneKeys } from "./done-keys";
 export { fakeApp } from "./fake-app";
 export type { FakeAnswers } from "./fake-app";
 export { handlerOf } from "./handler-of";
-export type { AppHost, HandlerClass, Middleware, RequestCall, RequestContext } from "./handles";
+export type { AppHost, HandlerClass, Handles, Middleware, RequestCall, RequestContext } from "./handles";
 export { module } from "./module";
 export type { Module, ModuleDeclaration } from "./module";
-export type { QueryEntry, QueryStore } from "./query-store";
+export type { QueryEntry, QuerySender, QueryStore } from "./query-store";
 export { ReportFailure, reportToConsole } from "./report-failure";
-export type { Failure } from "./report-failure";
+export type { Failure, FailureReport } from "./report-failure";
 export { command, query } from "./request";
 export type {
 	AnyCommand,
@@ -34,7 +34,7 @@ export { Section } from "./section";
 export type { App, SendOptions } from "./sends";
 export { Slot } from "./slot";
 export type { BoundaryProps } from "./slot";
-export { inject, provided, token } from "./token";
+export { inject, provided } from "./token";
 export type { Provided, Token } from "./token";
 export { useCommand } from "./use-command";
 export { useOptionalQuery } from "./use-optional-query";

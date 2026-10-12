@@ -6,9 +6,9 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { mountSpecsOf } from "@widgetarium/core/manifest-holds.js";
 import type { MountEntry } from "@widgetarium/core";
 import type { SlotState } from "@widgetarium/core/gateway/declared-types.js";
-import { statePropsOf } from "../../schemas/design.schema.js";
-import type { StatePicture } from "../../schemas/design.schema.js";
-import type { Drawing } from "../../schemas/drawing.schema.js";
+import { statePropsOf } from "../../schema/design.js";
+import type { StatePicture } from "../../schema/design.js";
+import type { Drawing } from "../../schema/drawing.js";
 import { RefusedDrawing } from "./refused-drawing.js";
 
 type Registry = Drawing["registry"];

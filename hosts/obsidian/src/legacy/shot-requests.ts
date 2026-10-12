@@ -1,27 +1,34 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { requestUrl } from "obsidian";
+import type { DataAdapter } from "obsidian";
 import { ROOT } from "@widgetarium/core/paths.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
-import type { DataAdapter } from "obsidian";
+import { AppProvider, Slot, app } from "@widgetarium/core/mediator";
+import type { App } from "@widgetarium/core/mediator";
+import {
+	CanvasShot,
+	NoteBoardQuery,
+	NoteShot,
+	ShotCountQuery,
+	canvasHost,
+	canvasModule,
+	whileAgentLooks,
+} from "@widgetarium/canvas";
+import type { AgentLook } from "@widgetarium/canvas";
+import { drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas";
+import type { ObsidianDesignHeld } from "@widgetarium/canvas";
+import { CANVAS_OPENED_ON } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
-import type { DrawnScreen } from "@widgetarium/studio";
-import { CanvasShotWidget, frameLabelOf, pageOfScreen, screensOfPage, whileAgentLooks } from "@widgetarium/studio";
-import type { AgentLook, Shot } from "@widgetarium/studio";
-import { readDesign } from "@widgetarium/canvas";
-import { boardIn, drawnOffScreen, ObsidianDesignSource, pngOf, stackedPngOf } from "@widgetarium/canvas/obsidian";
 
 export const SHOTS_DIR = `${ROOT}/shots`;
 export const SHOT_REQUESTS_DIR = `${SHOTS_DIR}/requests`;
 
 const SHOT_POLL_MS = 1000;
 const DESIGN_SCALE = 0.5;
-const WIDGETS_PER_CHUNK = 4;
 const NOTE_SHOT = { width: 1280 } as const;
-const NO_NOTE = "{note} is not a note in this vault";
-const NO_BOARD = "{note} holds no widgetarium board to draw";
-const NO_PAGE = "{app} has no page {page} with a frame {frame}: its pages are {pages}";
 
 interface TakenShot {
 	readonly png: ArrayBuffer;
@@ -37,7 +44,7 @@ interface ShotAsked {
 
 interface ShotTaker {
 	readonly adapter: DataAdapter;
-	readonly source: ObsidianDesignSource;
+	readonly held: ObsidianDesignHeld;
 }
 
 export function answerShotRequests(plugin: WidgetariumPlugin): void {
@@ -55,10 +62,15 @@ export function answerShotRequests(plugin: WidgetariumPlugin): void {
 }
 
 function shotTakerOf(plugin: WidgetariumPlugin): ShotTaker {
-	const { app, registry, host } = plugin;
-	const place = { leafOf: () => app.workspace.getLeaf(false), fromNote: () => "" };
-	const source = new ObsidianDesignSource({ obsidian: app, registry, host, jobs: plugin.assistant.jobs, place });
-	return { adapter: app.vault.adapter, source };
+	const { registry, host } = plugin;
+	const place = { leafOf: () => plugin.app.workspace.getLeaf(false), fromNote: () => "" };
+	const held = { obsidian: plugin.app, registry, host, jobs: plugin.assistant.jobs, place, fetchUrl: requestUrl };
+	return { adapter: plugin.app.vault.adapter, held };
+}
+
+function shotAppOf(taker: ShotTaker, design: string): App {
+	const opened = { ...CANVAS_OPENED_ON, app: design };
+	return app({ modules: [canvasModule], host: canvasHost({ platform: "obsidian", opened, obsidian: taker.held }) });
 }
 
 async function answerPending(taker: ShotTaker): Promise<void> {
@@ -74,9 +86,9 @@ async function answerPending(taker: ShotTaker): Promise<void> {
 }
 
 async function answerOne(taker: ShotTaker, id: string, asked: ShotAsked): Promise<void> {
-	const { adapter, source } = taker;
+	const { adapter } = taker;
 	try {
-		const shot = asked.design ? await shotWhileAgentLooks(source, asked) : await noteShotOf(taker, asked.note);
+		const shot = asked.design ? await shotWhileAgentLooks(taker, asked) : await noteShotOf(taker, asked.note);
 		if (shot.measured) await adapter.write(`${SHOTS_DIR}/${id}.measured.json`, JSON.stringify(shot.measured));
 		await adapter.writeBinary(`${SHOTS_DIR}/${id}.png`, shot.png);
 	} catch (failure) {
@@ -84,76 +96,50 @@ async function answerOne(taker: ShotTaker, id: string, asked: ShotAsked): Promis
 	}
 }
 
-function shotWhileAgentLooks(source: ObsidianDesignSource, asked: ShotAsked): Promise<TakenShot> {
-	const look = { app: asked.design, page: asked.page, frame: asked.frame };
-	return whileAgentLooks(look, () => (asked.page ? pageShotOf(source, look) : designShotOf(source, asked.design)));
+function shotWhileAgentLooks(taker: ShotTaker, asked: ShotAsked): Promise<TakenShot> {
+	const look: AgentLook = { app: asked.design, page: asked.page, frame: asked.frame };
+	return whileAgentLooks(look, () => designShotOf(taker, look));
 }
 
-async function pageShotOf(source: ObsidianDesignSource, look: AgentLook): Promise<TakenShot> {
-	const design = (await readDesign(source, look.app)).design.value;
-	const screens = framesNamed(screensOfPage(design.screens, look.page), look.frame);
-	if (screens.length === 0) throw new Error(noPageSaid(look, design.screens));
-	const tree = shotOf(source, { kind: "pages", screens });
-	return drawnOffScreen({}, tree, async (node) => ({ measured: measuredFindingsIn(node), png: await pngOf(node) }));
-}
-
-function framesNamed(screens: readonly DrawnScreen[], frame: string): DrawnScreen[] {
-	if (!frame) return [...screens];
-	return screens
-		.map((screen) => ({
-			...screen,
-			states: screen.states.filter((state) => state.name === frame || frameLabelOf(screen, state.name) === frame),
-		}))
-		.filter((screen) => screen.states.length > 0);
-}
-
-function noPageSaid(look: AgentLook, screens: readonly DrawnScreen[]): string {
-	const pages = [...new Set(screens.map((screen) => pageOfScreen(screen.name)))].join(", ");
-	return NO_PAGE.replace("{app}", look.app)
-		.replace("{page}", look.page)
-		.replace("{frame}", look.frame || "*")
-		.replace("{pages}", pages);
-}
-
-function shotOf(source: ObsidianDesignSource, shot: Shot): ReactElement {
-	return h(CanvasShotWidget, { shotQuery: shot, drawingQuery: source.drawing() });
-}
-
-async function designShotOf(source: ObsidianDesignSource, app: string): Promise<TakenShot> {
-	const design = (await readDesign(source, app)).design.value;
-	const shots: Shot[] = [
-		{ kind: "references", references: design.references },
-		...design.screens.map((screen): Shot => ({ kind: "pages", screens: [screen] })),
-		...widgetBatchesOf(design.widgets).map((widgets): Shot => ({ kind: "widgets", widgets })),
-	];
+async function designShotOf(taker: ShotTaker, look: AgentLook): Promise<TakenShot> {
+	const shotApp = shotAppOf(taker, look.app);
+	const asked = { page: look.page, frame: look.frame };
+	const counted = await shotApp.send(ShotCountQuery, asked);
+	if (!counted.ok) throw new Error(counted.reason);
+	const parts = Array.from({ length: counted.output.count }, (_, at) =>
+		drawn(shotApp, h(CanvasShot, { asked: { ...asked, at } })),
+	);
+	if (look.page)
+		return drawnOffScreen({}, parts[0] ?? null, async (node) => ({
+			measured: measuredFindingsIn(node),
+			png: await pngOf(requestUrl, node),
+		}));
+	const pictureOf = pictureTakerOf(requestUrl);
 	const measured: MeasuredFinding[] = [];
 	const canvases: HTMLCanvasElement[] = [];
-	for (const shot of shots) {
-		const drawn = await drawnOffScreen({}, shotOf(source, shot), async (node) => ({
+	for (const part of parts) {
+		const shot = await drawnOffScreen({}, part, async (node) => ({
 			found: measuredFindingsIn(node),
-			canvas: await source.pictureOf(node, DESIGN_SCALE),
+			canvas: await pictureOf(node, DESIGN_SCALE),
 		}));
-		measured.push(...drawn.found);
-		canvases.push(drawn.canvas);
+		measured.push(...shot.found);
+		canvases.push(shot.canvas);
 	}
 	return { measured, png: await stackedPngOf(canvases) };
 }
 
-function widgetBatchesOf<T>(widgets: readonly T[]): T[][] {
-	const batches: T[][] = [];
-	for (let at = 0; at < widgets.length; at += WIDGETS_PER_CHUNK)
-		batches.push(widgets.slice(at, at + WIDGETS_PER_CHUNK));
-	return batches;
-}
-
 // TRADE-OFF: only the note's board is drawn, not its markdown; a screen note holds nothing else.
 async function noteShotOf(taker: ShotTaker, note: string): Promise<TakenShot> {
-	const text = await taker.adapter.read(note).catch(() => null);
-	if (text === null) throw new Error(NO_NOTE.replace("{note}", note));
-	const board = boardIn(text);
-	if (!board) throw new Error(NO_BOARD.replace("{note}", note));
-	const tree = shotOf(taker.source, { kind: "board", board, width: NOTE_SHOT.width });
-	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(node) }));
+	const shotApp = shotAppOf(taker, "");
+	const asked = { note, width: NOTE_SHOT.width };
+	const board = await shotApp.send(NoteBoardQuery, asked);
+	if (!board.ok) throw new Error(board.reason);
+	const tree = drawn(shotApp, h(NoteShot, { asked }));
+	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(requestUrl, node) }));
+}
+
+function drawn(shotApp: App, block: ReactElement): ReactElement {
+	return h(AppProvider, { app: shotApp }, h(Slot, null, block));
 }
 
 function askedIn(text: string): ShotAsked {

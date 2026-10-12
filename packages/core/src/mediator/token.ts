@@ -1,8 +1,6 @@
 import type { AppHost } from "./handles";
 
-declare const PROVIDES: unique symbol;
-
-export type Token<T> = symbol & { readonly [PROVIDES]?: T };
+export type Token<T> = abstract new (...args: never[]) => T;
 
 export interface Provided<T = unknown> {
 	readonly token: Token<T>;
@@ -18,18 +16,13 @@ const NOT_BUILDING = "inject({token}) runs only while the app builds a handler o
 // TRADE-OFF: inject() reads this slot, so it works only synchronously while the container builds; constructor injection needs decorator metadata.
 const BUILDING: { current: Resolver | null } = { current: null };
 
-export function token<T>(name: string): Token<T>;
-export function token(name: string): symbol {
-	return Symbol(name);
-}
-
 export function provided<T>(wanted: Token<T>, make: (host: AppHost) => NoInfer<T>): Provided<T> {
 	return { token: wanted, make };
 }
 
 export function inject<T>(wanted: Token<T>): T {
 	const resolver = BUILDING.current;
-	if (resolver === null) throw new Error(NOT_BUILDING.replace("{token}", nameOfToken(wanted)));
+	if (resolver === null) throw new Error(NOT_BUILDING.replace("{token}", wanted.name));
 	return resolver.resolve(wanted);
 }
 
@@ -41,8 +34,4 @@ export function buildWith<T>(resolver: Resolver, make: () => T): T {
 	} finally {
 		BUILDING.current = before;
 	}
-}
-
-export function nameOfToken(held: symbol): string {
-	return held.description ?? "an unnamed token";
 }

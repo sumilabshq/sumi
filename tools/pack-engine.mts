@@ -26,6 +26,7 @@ export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/packs/git",
 	"packages/packs/catalogue",
 	"packages/gpu",
+	"packages/behaviors",
 	"packages/canvas",
 	"apps/studio",
 	"packages/vite",

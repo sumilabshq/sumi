@@ -1,46 +1,41 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { NativeSelect, NativeSelectOption, Segmented } from "@widgetarium/kit";
-import type { LookSetting } from "../../schemas/look.schema.js";
-import { isSettingDrawnLive } from "./lib/look-tokens.js";
-import type { LookPicked } from "./look-panel.js";
+import type { OutputOf } from "@widgetarium/core/mediator";
+import type { LookPanelQuery } from "../../requests/look/look-panel.js";
 
-const SUGGESTED_HINT = "Suggested: {option}";
+type LookRowShown = Extract<OutputOf<typeof LookPanelQuery>, { kind: "look" }>["rows"][number];
+
+export interface LookRowProps {
+	readonly row: LookRowShown;
+	readonly onPick: (option: string) => void;
+}
+
 const REDRAWN_HINT = "The assistant draws this into the next screens";
-const SEGMENTS_AT_MOST = 3;
 const SAID = "cv:text-xs cv:text-muted-foreground";
 
-export function LookRow({
-	setting,
-	onPick,
-}: {
-	readonly setting: LookSetting;
-	readonly onPick: LookPicked;
-}): ReactElement {
-	const pick = (option: string): void => onPick(setting.name, option);
+export function LookRow({ row, onPick }: LookRowProps): ReactElement {
 	return (
 		<div className="cv:flex cv:flex-col cv:items-start cv:gap-1.5">
-			<span className="cv:text-sm cv:text-ink">{setting.ask ?? setting.name}</span>
-			{setting.options.length <= SEGMENTS_AT_MOST ? (
+			<span className="cv:text-sm cv:text-ink">{row.label}</span>
+			{row.isSegmented ? (
 				<Segmented<string>
 					size="s"
-					items={setting.options.map((option) => ({ value: option, label: option }))}
-					value={setting.picked}
-					onValueChange={pick}
+					items={row.options.map((option) => ({ value: option, label: option }))}
+					value={row.picked}
+					onValueChange={onPick}
 				/>
 			) : (
-				<NativeSelect value={setting.picked} onValueChange={pick} aria-label={setting.ask ?? setting.name}>
-					{setting.options.map((option) => (
+				<NativeSelect value={row.picked} onValueChange={onPick} aria-label={row.label}>
+					{row.options.map((option) => (
 						<NativeSelectOption key={option} value={option}>
 							{option}
 						</NativeSelectOption>
 					))}
 				</NativeSelect>
 			)}
-			{setting.picked !== setting.recommended ? (
-				<span className={SAID}>{SUGGESTED_HINT.replace("{option}", setting.recommended)}</span>
-			) : null}
-			{isSettingDrawnLive(setting.name) ? null : <span className={SAID}>{REDRAWN_HINT}</span>}
+			{row.suggested ? <span className={SAID}>{row.suggested}</span> : null}
+			{row.isRedrawn ? <span className={SAID}>{REDRAWN_HINT}</span> : null}
 		</div>
 	);
 }

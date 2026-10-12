@@ -2,6 +2,7 @@ import type { CommandAnswer } from "../gateway/run-handler";
 import { stableKey } from "../gateway/stable-key";
 import type { AnyQuery, AnyRequest } from "./request";
 import type { App } from "./sends";
+import { sharedWith } from "./shared-with";
 
 export interface QueryEntry {
 	readonly status: "loading" | "ready" | "failed";
@@ -10,9 +11,12 @@ export interface QueryEntry {
 	readonly read: Promise<void>;
 }
 
+export type QuerySender = Pick<App, "send"> & Partial<Pick<App, "watch">>;
+
 interface Held {
 	entry: QueryEntry;
 	issued: number;
+	stopWatching: (() => void) | null;
 	readonly request: AnyQuery;
 	readonly input: unknown;
 	readonly listeners: Set<() => void>;
@@ -23,7 +27,7 @@ export const NOT_READ: QueryEntry = { status: "loading", data: null, failure: nu
 export class QueryStore {
 	private readonly held = new Map<string, Held>();
 
-	constructor(private readonly sender: Pick<App, "send">) {}
+	constructor(private readonly sender: QuerySender) {}
 
 	keyOf(request: AnyQuery, input: unknown): string {
 		return `${request.name} ${stableKey(input)}`;
@@ -37,7 +41,8 @@ export class QueryStore {
 		const key = this.keyOf(request, input);
 		const known = this.held.get(key);
 		if (known !== undefined && !isAbandonedFailure(known)) return known.entry;
-		const held: Held = { entry: NOT_READ, issued: 0, request, input, listeners: new Set() };
+		known?.stopWatching?.();
+		const held: Held = { entry: NOT_READ, issued: 0, stopWatching: null, request, input, listeners: new Set() };
 		this.held.set(key, held);
 		held.entry = { ...NOT_READ, read: this.read(held) };
 		return held.entry;
@@ -48,6 +53,8 @@ export class QueryStore {
 		this.start(request, input);
 		const held = this.held.get(key);
 		held?.listeners.add(listener);
+		if (held !== undefined && held.stopWatching === null)
+			held.stopWatching = this.sender.watch?.(request, input, () => void this.read(held)) ?? null;
 		return () => {
 			held?.listeners.delete(listener);
 			this.drop(key);
@@ -55,14 +62,17 @@ export class QueryStore {
 	}
 
 	drop(key: string): void {
-		if (this.held.get(key)?.listeners.size === 0) this.held.delete(key);
+		const held = this.held.get(key);
+		if (held?.listeners.size !== 0) return;
+		held.stopWatching?.();
+		this.held.delete(key);
 	}
 
 	afterCommand(request: AnyRequest, answer: CommandAnswer<unknown>): void {
 		if (request.kind !== "command" || (!answer.ok && !answer.ran)) return;
 		// TODO: per-request invalidation
 		for (const [key, held] of this.held) {
-			if (held.listeners.size === 0) this.held.delete(key);
+			if (held.listeners.size === 0) this.drop(key);
 			else void this.read(held);
 		}
 	}
@@ -72,10 +82,13 @@ export class QueryStore {
 		const issued = held.issued;
 		const answer = await this.sender.send(held.request, held.input);
 		if (issued !== held.issued) return;
+		const was = held.entry;
+		const data = answer.ok ? sharedWith(was.data, answer.output) : was.data;
+		if (answer.ok && was.status === "ready" && data === was.data) return;
 		const read = Promise.resolve();
 		held.entry = answer.ok
-			? { status: "ready", data: answer.output, failure: null, read }
-			: { status: "failed", data: held.entry.data, failure: answer.reason, read };
+			? { status: "ready", data, failure: null, read }
+			: { status: "failed", data, failure: answer.reason, read };
 		for (const listener of held.listeners) listener();
 	}
 }

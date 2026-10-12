@@ -6,15 +6,13 @@ const { seen } = fx;
 const web = app({ modules: [fx.canvasModule], host: fx.hostOn("web") });
 const obsidian = app({ modules: [fx.canvasModule], host: fx.hostOn("obsidian") });
 
-const orphaned = module({ name: "canvas", requests: [fx.Orphan, fx.GetPlatform], handlers: [fx.GetPlatformHandler] });
+const orphanAnswer = await web.send(fx.Orphan, undefined);
 check(
-	"app() refuses a request with no handler, naming it",
-	thrownBy(() =>
-		app({ modules: [orphaned, module({ name: "canvas", requests: [], handlers: [] })], host: fx.hostOn("web") }),
-	),
-	"app() refused:\ncanvas/orphan has no handler",
+	"a request no module handles is refused at send, naming it",
+	orphanAnswer.ok ? "answered" : orphanAnswer.reason,
+	"no module handles canvas/orphan",
 );
-const again = module({ name: "canvas", requests: [], handlers: [fx.GetPlatformHandler] });
+const again = module({ name: "canvas", handlers: [fx.GetPlatformHandler] });
 check(
 	"app() refuses a request with two handlers, naming both",
 	thrownBy(() => app({ modules: [fx.canvasModule, again], host: fx.hostOn("web") })).includes(
@@ -24,7 +22,6 @@ check(
 );
 const elsewhere = module({
 	name: "billing",
-	requests: [],
 	handlers: [fx.GetPlatformHandler],
 	provide: fx.canvasModule.provide,
 });
@@ -37,7 +34,7 @@ check(
 	"app() refuses a handler whose dependency no module provides",
 	thrownBy(() =>
 		app({
-			modules: [module({ name: "canvas", requests: [], handlers: [fx.GetPlatformHandler] })],
+			modules: [module({ name: "canvas", handlers: [fx.GetPlatformHandler] })],
 			host: fx.hostOn("web"),
 		}),
 	),
@@ -81,7 +78,7 @@ check("a throw in a query handler becomes a refusal that wrote nothing", await w
 });
 check("a request with no handler is refused", await web.send(fx.Orphan, undefined), {
 	ok: false,
-	reason: "canvas/orphan has no handler",
+	reason: "no module handles canvas/orphan",
 	ran: false,
 });
 

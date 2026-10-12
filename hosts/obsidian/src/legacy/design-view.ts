@@ -1,14 +1,13 @@
-import { ItemView } from "obsidian";
+import { ItemView, requestUrl } from "obsidian";
 import type { App, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
-import type { DesignSource } from "@widgetarium/studio";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
-import { ObsidianDesignSource } from "@widgetarium/canvas/obsidian";
+import type { ObsidianDesignHeld } from "@widgetarium/canvas";
 import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
@@ -24,7 +23,7 @@ export class DesignView extends ItemView {
 	private readonly onCanvas = (canvas: CanvasHandle): void => {
 		this.canvas = canvas;
 	};
-	private readonly source: DesignSource;
+	private readonly held: ObsidianDesignHeld;
 	private readonly gpu: GpuSupply;
 	private readonly onKept = (view: CanvasOpening): void => {
 		this.view = view;
@@ -37,13 +36,14 @@ export class DesignView extends ItemView {
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.source = new ObsidianDesignSource({
+		this.held = {
 			obsidian: plugin.app,
 			registry: plugin.registry,
 			host: plugin.host,
 			jobs: plugin.assistant.jobs,
 			place: { leafOf: () => this.leaf, fromNote: () => this.fromNote },
-		});
+			fetchUrl: requestUrl,
+		};
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 
@@ -99,9 +99,22 @@ export class DesignView extends ItemView {
 		const node = this.node;
 		const size = { width: this.contentEl.clientWidth, height: this.contentEl.clientHeight };
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
-		const { source, onKept, onCanvas, ownsPaste, gpu } = this;
+		const { held, onKept, onCanvas, ownsPaste, gpu } = this;
 		const app = this.appName;
-		render(h(DesignStage, { key: app, source, app, opening: this.view, onKept, onCanvas, size, ownsPaste, gpu }), node);
+		const opening = this.view;
+		const stage = {
+			key: app,
+			platform: "obsidian",
+			obsidian: held,
+			app,
+			opening,
+			onKept,
+			onCanvas,
+			size,
+			ownsPaste,
+			gpu,
+		} as const;
+		render(h(DesignStage, stage), node);
 	}
 }
 

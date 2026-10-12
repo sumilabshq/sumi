@@ -18,7 +18,6 @@ import { StudioCorner } from "./studio-corner.js";
 import type { TopBarCorners } from "./studio-band.js";
 import { StudioOutlet } from "./studio-outlet.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { WebDesignSource } from "@widgetarium/canvas/web";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
@@ -64,7 +63,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appId: start.appId ?? opened.app.name,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
-		design: start.design ?? { source: new WebDesignSource(project), app: opened.app.name },
+		design: start.design ?? { app: opened.app.name },
 	};
 }
 
@@ -81,7 +80,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		start: h(StudioCorner, { key: `start ${appId}`, corner: "start", ...shell }),
 		end: h(StudioCorner, { key: `end ${appId}`, corner: "end", ...shell }),
 	} satisfies TopBarCorners;
-	const canvasShell = { corners: { start: [corners.start], end: [corners.end] } };
+	const canvasShell = { corners };
 	const isCanvas = view === "canvas";
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),

@@ -27,6 +27,8 @@ service. Each version becomes Apache 2.0 two years after its release:
                   packages/gpu/LICENSE
   packages/canvas/ the design canvas: pages, states, references
                   packages/canvas/LICENSE
+  packages/behaviors/ headless behaviours: pan and zoom, tree drag, pointing
+                  packages/behaviors/LICENSE
   apps/studio/    the studio drawn around an app
                   apps/studio/LICENSE
   hosts/obsidian/  the Obsidian plugin

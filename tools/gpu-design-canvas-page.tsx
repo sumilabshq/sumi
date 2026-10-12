@@ -4,7 +4,8 @@ import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
 import type { DesignSource, DrawnState } from "../packages/canvas/index.ts";
-import { frameIdOf } from "../packages/canvas/ui/canvas-view/lib/frame-keys.ts";
+import { frameIdOf } from "../packages/canvas/requests/field/frame-keys.ts";
+import { canvasModuleOver } from "./canvas-over-source.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
@@ -49,6 +50,7 @@ const source: DesignSource = {
 	returnToView: refused,
 	look: async () => null,
 	pickLook: refused,
+	noteBoard: async () => null,
 	pictureOf: null,
 };
 const supply = { loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
@@ -57,7 +59,16 @@ const root = document.getElementById("root");
 const reactRoot = root ? createRoot(root) : null;
 
 function draw(): void {
-	reactRoot?.render(h(DesignStage, { source, app: "Farm", opening: CANVAS_OPENED_ON, size: VIEW, gpu: supply }));
+	reactRoot?.render(
+		h(DesignStage, {
+			platform: "web",
+			modules: [canvasModuleOver(source)],
+			app: "Farm",
+			opening: CANVAS_OPENED_ON,
+			size: VIEW,
+			gpu: supply,
+		}),
+	);
 }
 
 try {

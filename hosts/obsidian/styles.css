@@ -11809,9 +11809,10 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 		--cv-default-transition-duration: 150ms;
 		--cv-default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 		--cv-animate-canvas-fade-in: canvas-fade-in var(--wg-quick) var(--wg-ease);
-		--cv-animate-canvas-tip-in: canvas-tip-in var(--wg-quick) var(--wg-spring);
 		--cv-animate-canvas-pulse: canvas-pulse 1.4s ease-in-out infinite;
 		--cv-animate-canvas-wave: canvas-wave 2.2s ease-in-out infinite;
+		--cv-animate-canvas-fold-open: canvas-fold-open var(--wg-quick) var(--wg-ease);
+		--cv-animate-canvas-fold-shut: canvas-fold-shut var(--wg-quick) var(--wg-ease);
 	}
 }
 @layer utilities {
@@ -11943,9 +11944,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:h-full {
 		height: 100% !important;
 	}
-	.cv\:min-h-0 {
-		min-height: 0px !important;
-	}
 	.cv\:min-h-9 {
 		min-height: calc(var(--cv-spacing) * 9) !important;
 	}
@@ -12024,12 +12022,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	}
 	.cv\:grid-cols-\[280px_auto_280px\] {
 		grid-template-columns: 280px auto 280px !important;
-	}
-	.cv\:grid-rows-\[0fr\] {
-		grid-template-rows: 0fr !important;
-	}
-	.cv\:grid-rows-\[1fr\] {
-		grid-template-rows: 1fr !important;
 	}
 	.cv\:flex-col {
 		flex-direction: column !important;
@@ -12438,11 +12430,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
-	.cv\:transition-\[grid-template-rows\,opacity\] {
-		transition-property: grid-template-rows, opacity !important;
-		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
-		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
-	}
 	.cv\:transition-\[opacity\,left\,top\,width\,height\,border-radius\] {
 		transition-property: opacity, left, top, width, height, border-radius !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
@@ -12481,9 +12468,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:ease-standard {
 		--tw-ease: var(--wg-ease) !important;
 		transition-timing-function: var(--wg-ease) !important;
-	}
-	.cv\:will-change-transform {
-		will-change: transform !important;
 	}
 	.cv\:\[contain\:layout_paint\] {
 		contain: layout paint !important;
@@ -12636,15 +12620,18 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:data-\[state\=closed\]\:animate-canvas-fold-shut[data-state="closed"] {
+		animation: var(--cv-animate-canvas-fold-shut) !important;
+	}
+	.cv\:data-\[state\=open\]\:animate-canvas-fold-open[data-state="open"] {
+		animation: var(--cv-animate-canvas-fold-open) !important;
+	}
 	@media (prefers-reduced-motion: no-preference) {
 		.cv\:motion-safe\:animate-canvas-fade-in {
 			animation: var(--cv-animate-canvas-fade-in) !important;
 		}
 		.cv\:motion-safe\:animate-canvas-pulse {
 			animation: var(--cv-animate-canvas-pulse) !important;
-		}
-		.cv\:motion-safe\:animate-canvas-tip-in {
-			animation: var(--cv-animate-canvas-tip-in) !important;
 		}
 		.cv\:motion-safe\:animate-canvas-wave {
 			animation: var(--cv-animate-canvas-wave) !important;
@@ -12898,15 +12885,27 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	syntax: "*";
 	inherits: false;
 }
-@keyframes canvas-fade-in {
+@keyframes canvas-fold-open {
 	from {
+		height: 0;
+		opacity: 0;
+	}
+	to {
+		height: var(--radix-collapsible-content-height);
+	}
+}
+@keyframes canvas-fold-shut {
+	from {
+		height: var(--radix-collapsible-content-height);
+	}
+	to {
+		height: 0;
 		opacity: 0;
 	}
 }
-@keyframes canvas-tip-in {
+@keyframes canvas-fade-in {
 	from {
 		opacity: 0;
-		translate: -50% -4px;
 	}
 }
 @keyframes canvas-pulse {

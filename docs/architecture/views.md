@@ -1,14 +1,14 @@
 # Views
 
-A page is a composition of blocks. A block is a plain React component that reads its own requests. A view decides nothing about data.
+A page is a composition of blocks, all under `ui/`. A block is a plain React component that reads its own requests; a layout is a block that places slots and reads nothing; a domain exports one root view (`Canvas`) composing them. A view decides nothing about data.
 
 ## Four rules
 
 1. **A view makes no decision about data.** A query answers already shaped for what is drawn; a command receives the bare intent and decides.
 
    ```ts skip-check
-   GetLayersPanel → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
-   pickLayer.run({ id: row.id })   // toggling the pick is the handler's rule, not the view's
+   LayersPanelQuery → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
+   pickLayerCommand.run({ id: row.id })   // toggling the pick is the handler's rule, not the view's
    ```
 
 2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding.
@@ -19,9 +19,9 @@ A page is a composition of blocks. A block is a plain React component that reads
 
 ```tsx skip-check
 export function TaskList() {
-	const tasks = useQuery(GetTasks, { status: "open" });
-	const stats = useOptionalQuery(GetTaskStats, {});
-	const complete = useCommand(CompleteTask);
+	const tasks = useQuery(TasksQuery, { status: "open" });
+	const stats = useOptionalQuery(TaskStatsQuery, {});
+	const complete = useCommand(CompleteTaskCommand);
 	if (tasks.data.items.length === 0) return <EmptyTasks />;
 	return tasks.data.items.map((task) => {
 		const done = complete.with({ id: task.id });
@@ -43,7 +43,7 @@ A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause
 ## Layouts and slots
 
 ```tsx skip-check
-export function CanvasPage() {
+export function Canvas() {
 	return (
 		<CanvasLayout header={<PageTabs />} start={<LayersPanel />} end={<LookPanel />}>
 			<CanvasField />
@@ -51,6 +51,10 @@ export function CanvasPage() {
 	);
 }
 ```
+
+`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule], host })}><Canvas /></AppProvider>`.
+
+A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
 
 A layout is built from `<Slot>`, and a slot is a boundary: Suspense for a block's required data and an error boundary for its failures. Both have defaults from the kit; a block that needs its own passes them: `<Slot loading={<TasksSkeleton />} error={(refusal) => <TasksFailed reason={refusal} />}>`. Inside a block, `<Section>` is the same boundary around one part, so a failing column does not break the block. A block that reads no required data needs nothing.
 

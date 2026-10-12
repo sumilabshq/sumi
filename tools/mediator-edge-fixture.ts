@@ -94,7 +94,6 @@ const misbehaving: Middleware = async (call, next) => {
 
 export const edgeModule = module({
 	name: "edge",
-	requests: [WriteThenThrow, ThrowBeforeHandler, KeyBroken, TransformBroken, NextTwice, Mutated, Flaky],
 	handlers: [
 		WriteThenThrowHandler,
 		ThrowBeforeHandlerHandler,
@@ -104,6 +103,6 @@ export const edgeModule = module({
 		MutatedHandler,
 		FlakyHandler,
 	],
-	provide: [provided(ReportFailure, () => (failure: Failure) => edge.reports.push(failure))],
+	provide: [provided(ReportFailure, () => ({ report: (failure: Failure) => void edge.reports.push(failure) }))],
 	use: [misbehaving],
 });

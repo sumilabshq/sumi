@@ -81,6 +81,7 @@ export function bundleOptions({
 		platform: "browser",
 		target: "es2020",
 		external: SUPPLIED_BY_ELECTRON_AT_RUNTIME,
+		define: { __WG_PLATFORM__: JSON.stringify("obsidian") },
 		loader: TEXT_LOADERS,
 		jsxFactory: "h",
 		jsxFragment: "Fragment",

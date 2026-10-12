@@ -1,9 +1,9 @@
 import type { CommandAnswer } from "../gateway/run-handler";
 import { QueryStore } from "./query-store";
 import { reportToConsole } from "./report-failure";
-import type { ReportFailure } from "./report-failure";
+import type { FailureReport } from "./report-failure";
 import type { AnyRequest, OutputOf, SentOf } from "./request";
-import { issuesOf, parsedOutput, refused } from "./sends";
+import { NOT_WATCHED, issuesOf, parsedOutput, refused } from "./sends";
 import type { App, SendOptions } from "./sends";
 
 export interface FakeAnswers {
@@ -18,7 +18,7 @@ export function fakeApp({ answers }: FakeAnswers): App {
 
 class FakeMediator implements App {
 	readonly queries: QueryStore = new QueryStore(this);
-	readonly reportFailure: ReportFailure = reportToConsole;
+	readonly reportFailure: FailureReport = reportToConsole;
 
 	constructor(private readonly answers: Readonly<Record<string, unknown>>) {}
 
@@ -28,6 +28,10 @@ class FakeMediator implements App {
 		if (!answer.ok) this.reportFailure({ source: request.name, reason: answer.reason, ran: answer.ran, thrown: null });
 		this.queries.afterCommand(request, answer);
 		return answer;
+	}
+
+	watch(): () => void {
+		return NOT_WATCHED;
 	}
 
 	private answerOf(request: AnyRequest, input: unknown): CommandAnswer<unknown> {

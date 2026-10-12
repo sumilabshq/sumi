@@ -1,31 +1,35 @@
-import { createElement as h, useEffect, useMemo, useRef, useState } from "react";
+import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import type { DesignSource, FrameSize, GpuSupply, ViewReturn } from "@widgetarium/canvas";
+import type { FrameSize, GpuSupply } from "@widgetarium/canvas";
+import type { ObsidianDesignHeld } from "@widgetarium/canvas";
+import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell } from "./design-stage.js";
 
 export interface StudioDesign {
-	readonly source: DesignSource;
 	readonly app: string;
+	readonly obsidian?: ObsidianDesignHeld | undefined;
 	readonly gpu?: GpuSupply | undefined;
 }
 
 export interface StudioCanvasProps {
 	readonly design: StudioDesign;
+	readonly project: StartedProject;
 	readonly state: StudioState;
 	readonly shell: CanvasShell;
 }
 
-export function StudioCanvas({ design, state, shell }: StudioCanvasProps): ReactElement {
+export function StudioCanvas({ design, project, state, shell }: StudioCanvasProps): ReactElement {
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<FrameSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
-	const returnTo = useMemo<ViewReturn>(() => ({ returnToView: async () => state.show("app") }), [state]);
 	const stage = size
 		? h(DesignStage, {
-				source: design.source,
-				returnTo,
+				platform: design.obsidian ? "obsidian" : "web",
+				obsidian: design.obsidian,
+				project,
+				returnToView: async () => state.show("app"),
 				app: design.app,
 				opening: CANVAS_OPENED_ON,
 				size,

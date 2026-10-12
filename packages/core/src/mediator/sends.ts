@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import type { CommandAnswer } from "../gateway/run-handler";
-import type { AnyRequest, OutputOf, SentOf } from "./request";
+import type { AnyQuery, AnyRequest, OutputOf, SentOf } from "./request";
 import type { QueryStore } from "./query-store";
-import type { ReportFailure } from "./report-failure";
+import type { FailureReport } from "./report-failure";
 
 export interface SendOptions {
 	readonly idempotencyKey?: string | undefined;
@@ -11,9 +11,12 @@ export interface SendOptions {
 
 export interface App {
 	readonly queries: QueryStore;
-	readonly reportFailure: ReportFailure;
+	readonly reportFailure: FailureReport;
 	send<R extends AnyRequest>(request: R, input: SentOf<R>, options?: SendOptions): Promise<CommandAnswer<OutputOf<R>>>;
+	watch(request: AnyQuery, input: unknown, changed: () => void): () => void;
 }
+
+export const NOT_WATCHED = (): void => undefined;
 
 export function refused(reason: string, ran: boolean): CommandAnswer<unknown> {
 	return { ok: false, reason, ran };

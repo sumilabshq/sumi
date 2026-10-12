@@ -46,16 +46,19 @@ Object.assign(dom.window, {
 });
 
 const layerSize = { width: 3000, height: 1500 };
-const isLayer = (element: Element): boolean => element.classList.contains("wg-design-layer");
+const FIELD_SIZE = { width: 1600, height: 1000 };
+const isLayer = (element: Element): boolean => element.hasAttribute("data-canvas-layer");
+const sizeOf = (element: Element): { width: number; height: number } | null =>
+	isLayer(element) ? layerSize : element.hasAttribute("data-canvas-field") ? FIELD_SIZE : null;
 Object.defineProperties(dom.window.HTMLElement.prototype, {
 	offsetWidth: {
 		get: function (this: HTMLElement) {
-			return isLayer(this) ? layerSize.width : 0;
+			return sizeOf(this)?.width ?? 0;
 		},
 	},
 	offsetHeight: {
 		get: function (this: HTMLElement) {
-			return isLayer(this) ? layerSize.height : 0;
+			return sizeOf(this)?.height ?? 0;
 		},
 	},
 	createDiv: {
@@ -158,7 +161,7 @@ Object.assign(view, {
 });
 
 const pause = (ms: number): Promise<void> => new Promise((done) => dom.window.setTimeout(done, ms));
-const layerOf = (): HTMLElement | null => contentEl.querySelector<HTMLElement>(".wg-design-layer");
+const layerOf = (): HTMLElement | null => contentEl.querySelector<HTMLElement>("[data-canvas-layer]");
 const resizeAll = (): void => {
 	for (const answer of [...resized]) answer();
 };

@@ -1,37 +1,26 @@
-import { createElement as h, useRef, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { createPortal } from "react-dom";
-import { TipBubble } from "./tip-bubble.js";
-import type { Placed } from "./tip-bubble.js";
+import { Tooltip } from "radix-ui";
 
 const SHOWN_AFTER_MS = 400;
 const BELOW_PX = 10;
+const WINDOW_EDGE_PX = 8;
+const BUBBLE =
+	"wg-portal cv:pointer-events-none cv:z-[var(--layer-tooltip)] cv:w-max cv:max-w-80 cv:rounded-lg cv:bg-ink cv:px-2.5 cv:py-1.5 cv:text-sm cv:leading-[1.35] cv:font-medium cv:text-page cv:motion-safe:animate-canvas-fade-in";
 
 export function Tip({ label, children }: { readonly label: string; readonly children?: ReactNode }): ReactElement {
-	const [placed, setPlaced] = useState<Placed | null>(null);
-	const timer = useRef(0);
-	const anchor = useRef<HTMLSpanElement | null>(null);
-	const show = (): void => {
-		window.clearTimeout(timer.current);
-		timer.current = window.setTimeout(() => {
-			const box = anchor.current?.getBoundingClientRect();
-			if (box) setPlaced({ left: box.left + box.width / 2, top: box.bottom + BELOW_PX });
-		}, SHOWN_AFTER_MS);
-	};
-	const hide = (): void => {
-		window.clearTimeout(timer.current);
-		setPlaced(null);
-	};
 	return (
-		<span
-			className="cv:relative cv:inline-flex"
-			ref={anchor}
-			onMouseEnter={show}
-			onMouseLeave={hide}
-			onPointerDown={hide}
-		>
-			{children}
-			{placed ? createPortal(<TipBubble label={label} placed={placed} />, document.body) : null}
-		</span>
+		<Tooltip.Provider delayDuration={SHOWN_AFTER_MS}>
+			<Tooltip.Root>
+				<Tooltip.Trigger asChild>
+					<span className="cv:relative cv:inline-flex">{children}</span>
+				</Tooltip.Trigger>
+				<Tooltip.Portal>
+					<Tooltip.Content side="bottom" sideOffset={BELOW_PX} collisionPadding={WINDOW_EDGE_PX} className={BUBBLE}>
+						{label}
+					</Tooltip.Content>
+				</Tooltip.Portal>
+			</Tooltip.Root>
+		</Tooltip.Provider>
 	);
 }

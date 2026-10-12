@@ -6,7 +6,8 @@ import { Mediator } from "./mediator";
 import type { Route } from "./mediator";
 import type { Module } from "./module";
 import { ReportFailure, reportToConsole } from "./report-failure";
-import type { Provided } from "./token";
+import type { FailureReport } from "./report-failure";
+import type { Provided, Token } from "./token";
 import type { App } from "./sends";
 
 export interface AppDeclaration {
@@ -31,10 +32,18 @@ export function app({ modules, host }: AppDeclaration): App {
 	return new Mediator(routes, {
 		host,
 		doneKeys: container.has(DoneKeys) ? container.resolve(DoneKeys) : new MemoryDoneKeys(),
-		reportFailure: container.has(ReportFailure) ? container.resolve(ReportFailure) : reportToConsole,
+		reportFailure: reporterOf(container),
 	});
 }
 
-function providedOf(modules: readonly Module[]): Map<symbol, Provided> {
-	return new Map(modules.flatMap((module) => module.provide.map((pair): [symbol, Provided] => [pair.token, pair])));
+function reporterOf(container: Container): FailureReport {
+	if (!container.has(ReportFailure)) return reportToConsole;
+	const reporter = container.resolve(ReportFailure);
+	return (failure) => reporter.report(failure);
+}
+
+function providedOf(modules: readonly Module[]): Map<Token<unknown>, Provided> {
+	return new Map(
+		modules.flatMap((module) => module.provide.map((pair): [Token<unknown>, Provided] => [pair.token, pair])),
+	);
 }

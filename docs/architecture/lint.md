@@ -11,7 +11,7 @@ Every rule in these pages is a folder, a file name or a type, so a tool checks i
 | request names | a request name that is not `<module>/<constant in kebab case>`                                     |
 | idempotency   | a command with no `idempotencyKey` (a type error, not lint)                                        |
 | uniqueness    | a table with no `unique` choice (a type error, not lint)                                           |
-| one handler   | a request with no handler, or two handlers across the app's modules                                |
+| one handler   | a request with no handler (`app()` refuses two; `send` refuses none at run time)                   |
 | blocks        | hand-written pointer or scroll math in a block; a decision about request data in a block (warning) |
 | new in a page | `new` of a handler or an adapter outside a module                                                  |
 | server        | a server-only file reached from a client bundle (a build error naming the chain)                   |

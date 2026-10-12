@@ -12,21 +12,10 @@ export type { StudioState } from "@widgetarium/core/engine/studio-state-port.js"
 export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
-export {
-	CanvasShotWidget,
-	addPhotos,
-	frameLabelOf,
-	pageOfScreen,
-	screensOfPage,
-	specMarkdownOf,
-	statePropsOf,
-	whileAgentLooks,
-} from "@widgetarium/canvas";
 export type {
 	AgentLook,
-	CanvasOpening,
 	CanvasDoc,
-	DesignSource,
+	CanvasOpening,
 	DrawnDesign,
 	DrawnScreen,
 	DrawnState,
@@ -34,7 +23,6 @@ export type {
 	GpuSupply,
 	LayerMove,
 	LiveJob,
-	Shot,
 	StatePicture,
 } from "@widgetarium/canvas";
 export { CANVAS_OPENED_ON, DesignStage } from "../canvas/design-stage.js";

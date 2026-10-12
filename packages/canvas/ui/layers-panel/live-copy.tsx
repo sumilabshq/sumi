@@ -1,35 +1,19 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { StatePicture } from "../../schemas/design.schema.js";
-import type { Drawing } from "../../schemas/drawing.schema.js";
-import { DESKTOP_FRAME } from "../../schemas/frame-size.schema.js";
-import { LIVE_SCREEN } from "../layers/hits.js";
-import { DRAWS_AT_ONCE } from "../state-drawing/draw-contexts.js";
-import { SCREEN } from "../state-drawing/screen-class.js";
-import { StateDrawing } from "../state-drawing/state-drawing.js";
+import { useQuery } from "@widgetarium/core/mediator";
+import { LayersPanelQuery } from "../../requests/layers/layers-panel.js";
+import { LiveScreen } from "./live-screen.js";
 
-export interface LiveCopyProps extends Pick<Drawing, "registry"> {
-	readonly picture: StatePicture;
-	readonly onNode: (node: HTMLDivElement | null) => void;
-}
-
-export function LiveCopy({ picture, registry, onNode }: LiveCopyProps): ReactElement {
+export function LiveCopy(): ReactElement | null {
+	const { liveCopy } = useQuery(LayersPanelQuery).data;
+	if (!liveCopy) return null;
 	return (
 		<div
 			className="cv:pointer-events-none cv:fixed cv:top-0 cv:left-[-100000px] cv:[contain:layout_paint]"
 			aria-hidden
 			data-canvas-live-copy=""
 		>
-			<div
-				className={SCREEN}
-				ref={onNode}
-				{...{ [LIVE_SCREEN]: picture.widget }}
-				style={{ width: DESKTOP_FRAME.width }}
-			>
-				<DRAWS_AT_ONCE.Provider value={true}>
-					<StateDrawing picture={picture} registry={registry} />
-				</DRAWS_AT_ONCE.Provider>
-			</div>
+			<LiveScreen picture={liveCopy} />
 		</div>
 	);
 }

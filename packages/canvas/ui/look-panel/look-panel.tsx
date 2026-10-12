@@ -1,31 +1,29 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { InjectProps } from "@widgetarium/core";
-import type { lookPanelInject } from "../../widgets/look-panel.widget.js";
-import { LiveLookTokens } from "./live-look-tokens.js";
+import { useCommand, useQuery } from "@widgetarium/core/mediator";
+import { LookPanelQuery } from "../../requests/look/look-panel.js";
+import { PickLookCommand } from "../../requests/look/pick-look.js";
 import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "./look-chrome.js";
 import { LookRow } from "./look-row.js";
 import { LookUnreadable } from "./look-unreadable.js";
 
-export type LookPicked = (settingName: string, option: string) => void;
-
-export function LookPanel({
-	lookQuery: { data: read },
-	pickLookCommand,
-}: InjectProps<typeof lookPanelInject>): ReactElement | null {
-	const onPick: LookPicked = (settingName, option) => void pickLookCommand.run({ settingName, option });
-	if (!read) return null;
-	if ("refusal" in read) return <LookUnreadable why={read.refusal} />;
-	const look = read.value;
+export function LookPanel(): ReactElement | null {
+	const panel = useQuery(LookPanelQuery).data;
+	const pick = useCommand(PickLookCommand);
+	if (panel.kind === "none") return null;
+	if (panel.kind === "unreadable") return <LookUnreadable said={panel.said} />;
 	return (
 		<aside className={LOOK_PANEL} data-canvas-chrome="">
-			<LiveLookTokens look={look} />
+			<div hidden>
+				<style>{panel.sheet}</style>
+				{panel.fontsUrl ? <link rel="stylesheet" href={panel.fontsUrl} /> : null}
+			</div>
 			<div className="cv:flex cv:items-baseline cv:justify-between cv:gap-2">
 				<span className="cv:text-base cv:font-semibold">{LOOK_TITLE}</span>
-				<span className={LOOK_SAID}>{look.system}</span>
+				<span className={LOOK_SAID}>{panel.system}</span>
 			</div>
-			{look.settings.map((setting) => (
-				<LookRow key={setting.name} setting={setting} onPick={onPick} />
+			{panel.rows.map((row) => (
+				<LookRow key={row.name} row={row} onPick={(option) => void pick.run({ settingName: row.name, option })} />
 			))}
 		</aside>
 	);

@@ -17,6 +17,7 @@ export interface StudioOutletProps {
 }
 
 export function StudioOutlet({ project, pathname, view, design, state, shell }: StudioOutletProps): ReactElement {
-	const shown = view === "canvas" ? h(StudioCanvas, { design, state, shell }) : routeElementOf(project, pathname);
+	const shown =
+		view === "canvas" ? h(StudioCanvas, { design, project, state, shell }) : routeElementOf(project, pathname);
 	return h("main", { className: "wg-studio-outlet" }, shown);
 }

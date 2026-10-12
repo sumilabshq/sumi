@@ -1,30 +1,25 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { App, DataAdapter, Stat } from "obsidian";
+import type { App, DataAdapter, Stat, WorkspaceLeaf } from "obsidian";
 import { render } from "../packages/core/src/engine/render.js";
-import { inject, widget } from "../packages/core/src/widget-builder.ts";
-import { OnRefused } from "../packages/core/src/command-refusals.ts";
-import type { CommandRefusal } from "../packages/core/src/command-refusals.ts";
-import { ICommand } from "../packages/core/src/gateway/queries.ts";
-import type { InjectProps } from "../packages/core/src/widget-builder-types.ts";
+import { AppProvider, OnRefused, app, useCommand } from "../packages/core/src/mediator/index.ts";
+import type { CommandHandle, CommandRefusal } from "../packages/core/src/mediator/index.ts";
 import type { WidgetRegistry } from "../packages/core/src/registry.ts";
-import { ObsidianDesignSource } from "../packages/canvas/logic/design/obsidian-design-source.ts";
-import { polledChanges } from "../packages/canvas/logic/design/obsidian/design-changes.ts";
-import { shownWidgetsOf } from "../packages/canvas/logic/design/shown-widgets.ts";
+import { canvasModule } from "../packages/canvas/canvas.module.ts";
+import { canvasHost } from "../packages/canvas/ports/canvas-host.ts";
+import { polledChanges } from "../packages/canvas/ports/obsidian/design-changes.ts";
+import { shownWidgetsOf } from "../packages/canvas/requests/design/shown-widgets.ts";
+import { AddPhotosCommand } from "../packages/canvas/requests/photos/add-photos.ts";
 import { normalizeBoard } from "../packages/core/src/model.ts";
 import type { WidgetDefinition } from "../packages/core/src/registry.ts";
-import { AddPhotosCommand } from "../packages/canvas/logic/photos/add-photos.command.ts";
-import { createCanvasState } from "../packages/canvas/logic/view/canvas-state.ts";
-import { PhotosSchema } from "../packages/canvas/schemas/photo.schema.ts";
-import type { Drawing } from "../packages/canvas/schemas/drawing.schema.ts";
+import type { Drawing } from "../packages/canvas/schema/drawing.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
 
 const WRITE_FAILED = "the disk is full";
-const photoPorts = inject({ addPhotosCommand: ICommand.input(PhotosSchema) });
-const drawn: InjectProps<typeof photoPorts>[] = [];
+const drawn: CommandHandle<{ photos: File[] }, void>[] = [];
 
 export async function checkDesignSource(check: Check, settle: () => Promise<void>): Promise<void> {
 	await checkFailedWrite(check, settle);
@@ -35,28 +30,28 @@ export async function checkDesignSource(check: Check, settle: () => Promise<void
 async function checkFailedWrite(check: Check, settle: () => Promise<void>): Promise<void> {
 	const failing = (): Promise<never> => Promise.reject(new Error(WRITE_FAILED));
 	const adapter = { exists: failing, mkdir: failing, writeBinary: failing, write: failing, process: failing };
-	const source = new ObsidianDesignSource({
+	const obsidian = {
 		obsidian: standIn<App>({ vault: { adapter } }, ["vault"], "app"),
 		registry: standIn<WidgetRegistry>({ get: () => null }, ["get"], "registry"),
 		host: standIn<Drawing["host"]>({}, [], "host"),
 		jobs: { jobsOf: () => [], liveOf: () => null, stop: async () => undefined, watch: () => () => undefined },
-		place: { leafOf: () => standIn({}, [], "leaf"), fromNote: () => "" },
-	});
-	const state = createCanvasState({ app: "Farm", page: "", isLayersOpen: false, mode: "hand" });
+		place: { leafOf: () => standIn<WorkspaceLeaf>({}, [], "leaf"), fromNote: () => "" },
+		fetchUrl: () => Promise.reject(new Error("no network here")),
+	};
+	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
+	const canvasApp = app({ modules: [canvasModule], host: canvasHost({ platform: "obsidian", opened, obsidian }) });
 	const heard: CommandRefusal[] = [];
 	const node = document.createElement("div");
 	document.body.append(node);
 	const hearing = h(
 		OnRefused,
 		{ value: (refusal: CommandRefusal) => heard.push(refusal) },
-		h(AddsPhotos, {
-			addPhotosCommand: new AddPhotosCommand(source, state),
-		}),
+		h(AppProvider, { app: canvasApp }, h(PhotoView)),
 	);
 	render(hearing, node);
 	await settle();
 	const view = present(drawn.at(-1), "a drawn photo view");
-	const answer = await view.addPhotosCommand.run({ photos: [new File(["x"], "a.png")] });
+	const answer = await view.run({ photos: [new File(["x"], "a.png")] });
 	await settle();
 	check(
 		"a design write the vault refuses is answered not ok and reaches the one refusal handler once",
@@ -137,9 +132,7 @@ function checkShownWidgets(check: Check): void {
 	);
 }
 
-function PhotoView(props: InjectProps<typeof photoPorts>): ReactElement {
-	drawn.push(props);
+function PhotoView(): ReactElement {
+	drawn.push(useCommand(AddPhotosCommand));
 	return h("p", null, "photos");
 }
-
-const AddsPhotos = widget().inject(photoPorts).render(PhotoView);

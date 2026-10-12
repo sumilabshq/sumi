@@ -1,13 +1,12 @@
 import type { Module } from "./module";
-import { nameOfToken } from "./token";
+import type { Token } from "./token";
 
 const WRONG_MODULE = '{request} is handled by {handler} in module "{module}", but its name names module "{named}"';
 const TWO_HANDLERS = "{request} has {count} handlers: {handlers}";
-const NO_HANDLER = "{request} has no handler";
 const TWO_PROVIDERS = "{token} is provided by {count} modules: {modules}";
 
 export function appFindings(modules: readonly Module[]): string[] {
-	return [...handlerFindings(modules), ...missingHandlers(modules), ...providerFindings(modules)];
+	return [...handlerFindings(modules), ...providerFindings(modules)];
 }
 
 function handlerFindings(modules: readonly Module[]): string[] {
@@ -37,16 +36,8 @@ function handlerFindings(modules: readonly Module[]): string[] {
 	return findings;
 }
 
-function missingHandlers(modules: readonly Module[]): string[] {
-	const handled = new Set(modules.flatMap((module) => module.handlers.map(({ request }) => request.name)));
-	const declared = modules.flatMap((module) => module.requests.map(({ name }) => name));
-	return [...new Set(declared)]
-		.filter((name) => !handled.has(name))
-		.map((name) => NO_HANDLER.replace("{request}", name));
-}
-
 function providerFindings(modules: readonly Module[]): string[] {
-	const providers = new Map<symbol, string[]>();
+	const providers = new Map<Token<unknown>, string[]>();
 	for (const module of modules) {
 		for (const { token: provided } of module.provide)
 			providers.set(provided, [...(providers.get(provided) ?? []), module.name]);
@@ -54,7 +45,7 @@ function providerFindings(modules: readonly Module[]): string[] {
 	return [...providers]
 		.filter(([, named]) => named.length > 1)
 		.map(([provided, named]) =>
-			TWO_PROVIDERS.replace("{token}", nameOfToken(provided))
+			TWO_PROVIDERS.replace("{token}", provided.name)
 				.replace("{count}", String(named.length))
 				.replace("{modules}", named.join(", ")),
 		);

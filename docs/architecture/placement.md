@@ -6,12 +6,11 @@ A file's place is decided by **what it is**, never by how many places use it. No
 
 ```
 packages/<domain>/
-  index.ts                              re-exports only: requests, blocks, layouts, the module
+  index.ts                              re-exports only: the module and the one root view an app draws
   package.json                          name, level, the domains it uses
   <domain>.module.ts                    handlers, provide, use
   requests/<feature>/<name>.ts          one request + its handler
-  blocks/<block>/<block>.tsx            a block (+ its parts beside it)
-  layouts/<layout>.tsx                  slots, no data
+  ui/<name>/<name>.tsx                  everything drawn: a block (+ its parts beside it), a layout, the root view
   ports/<system>.port.ts                an interface for an outside system
   ports/<system>-<adapter>.ts           its adapters, beside it
   schema/<record>.ts                    a Drizzle table + the zod shapes derived from it
@@ -23,8 +22,9 @@ packages/<domain>/
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | a read or a write, with its rule                           | `requests/<feature>/<name>.ts`                                                          |
 | work that runs alone (sync, a timer, a reconciliation job) | `requests/<feature>/<name>.ts` as a service registered in the module                    |
-| what is drawn and reads data                               | `blocks/<block>/`                                                                       |
-| where blocks stand                                         | `layouts/`                                                                              |
+| what is drawn and reads data                               | `ui/<block>/`                                                                           |
+| where blocks stand                                         | `ui/<layout>/`: a layout is a block that places slots and reads nothing                 |
+| the screen an app draws                                    | `ui/<domain>/`, exported with the module (`Canvas` beside `canvasModule`)               |
 | which implementation runs, middleware                      | `<domain>.module.ts`                                                                    |
 | an outside system (database, Stripe, Twilio, the vault)    | `ports/`, interface and adapters side by side (a common package when no domain owns it) |
 | a table                                                    | `schema/`                                                                               |
@@ -41,6 +41,12 @@ packages/<domain>/
 **Where does this handler get X?** Its constructor. X is provided by the module (`provide`), one line per implementation.
 
 **A decision about data in a block?** It moves into the query's answer or into the command's handler.
+
+**A decision about data in an adapter?** It moves to `requests/` too. An adapter holds only the calls to its system (read a file, write a file, take a picture); which widgets a spec names, how a drawn state is chosen, which note to return to are canvas rules.
+
+**What does an app import from a domain?** The module and its root view: `app({ modules: [canvasModule], host })` and `<Canvas />`. A block the app does not draw on its own is not exported.
+
+**One platform's adapter in another platform's bundle?** No subpath per platform. Each host's build defines `__WG_PLATFORM__` (esbuild or Vite `define`), the module branches on it in `provide`, and the bundler drops the branch it does not take, adapter included. `npm run test:web-canvas-bundle` proves it for the canvas from the esbuild metafile.
 
 ## File names
 

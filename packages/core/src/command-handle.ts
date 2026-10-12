@@ -7,7 +7,7 @@ import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
 import { APP } from "./mediator/app-context";
 import { reportToConsole } from "./mediator/report-failure";
-import type { ReportFailure } from "./mediator/report-failure";
+import type { FailureReport } from "./mediator/report-failure";
 import { reasonOf } from "./mediator/sends";
 
 type Run = (input: unknown) => Promise<CommandAnswer<unknown>>;
@@ -25,7 +25,7 @@ interface Runs extends InputRuns {
 
 interface Told {
 	readonly onRefused: RefusalHandler;
-	readonly reportFailure: ReportFailure;
+	readonly reportFailure: FailureReport;
 }
 
 interface BoundRuns {

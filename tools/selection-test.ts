@@ -1,5 +1,5 @@
-import { ancestorsOf, parentsOf, pickedHit } from "../packages/canvas/ui/layers/hits.ts";
-import type { Hit } from "../packages/canvas/ui/layers/hits.ts";
+import { ancestorsOf, parentsOf, pickedHit } from "../packages/behaviors/src/marked-layers/hits.ts";
+import type { Hit } from "../packages/behaviors/src/marked-layers/hits.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

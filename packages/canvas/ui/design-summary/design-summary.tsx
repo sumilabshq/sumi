@@ -1,19 +1,13 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { InjectProps } from "@widgetarium/core";
-import type { designSummaryInject } from "../../widgets/design-summary.widget.js";
+import { useQuery } from "@widgetarium/core/mediator";
+import { DesignSummaryQuery } from "../../requests/pages/design-summary.js";
 
-const SCREENS_SAID = "{count} screens · {frames} frames · read only";
-
-export function DesignSummary({
-	designQuery: { data: design },
-}: InjectProps<typeof designSummaryInject>): ReactElement | null {
-	if (!design) return null;
-	const frames = design.screens.reduce((count, screen) => count + screen.states.length, 0);
-	const said = SCREENS_SAID.replace("{count}", String(design.screens.length)).replace("{frames}", String(frames));
+export function DesignSummary(): ReactElement {
+	const { app, said } = useQuery(DesignSummaryQuery).data;
 	return (
 		<>
-			<b>{design.app}</b>
+			<b>{app}</b>
 			<span className="cv:text-muted-foreground">{said}</span>
 		</>
 	);

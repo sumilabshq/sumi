@@ -2,14 +2,15 @@
 
 The rules every developer and every agent follows when writing code in this repository. Read this page first; the pages below go deeper.
 
-| Page                         | Answers                                                                                         |
-| ---------------------------- | ----------------------------------------------------------------------------------------------- |
-| [requests.md](requests.md)   | requests and their handlers, the mediator, modules, idempotency, data, integrations, the server |
-| [views.md](views.md)         | blocks, layouts, slots, how a view reads and writes, loading, error and empty                   |
-| [placement.md](placement.md) | where each file goes                                                                            |
-| [hosts.md](hosts.md)         | platforms, deploy, secrets, webhooks                                                            |
-| [lint.md](lint.md)           | the checks that hold every rule here                                                            |
-| [legacy.md](legacy.md)       | code written before these rules, and how it leaves                                              |
+| Page                           | Answers                                                                                         |
+| ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| [requests.md](requests.md)     | requests and their handlers, the mediator, modules, idempotency, data, integrations, the server |
+| [views.md](views.md)           | blocks, layouts, slots, how a view reads and writes, loading, error and empty                   |
+| [placement.md](placement.md)   | where each file goes                                                                            |
+| [code-style.md](code-style.md) | names, injected fields, the shape of a handler, a block and a dependency                        |
+| [hosts.md](hosts.md)           | platforms, deploy, secrets, webhooks                                                            |
+| [lint.md](lint.md)             | the checks that hold every rule here                                                            |
+| [legacy.md](legacy.md)         | code written before these rules, and how it leaves                                              |
 
 > Status: this is the target. The code still runs on the earlier widget builder and handles; it moves domain by domain, the canvas first. A rule marked **planned** is not checked by a tool yet.
 
@@ -18,25 +19,25 @@ The rules every developer and every agent follows when writing code in this repo
 Everything else on these pages follows from them.
 
 1. **Imports go one way: `apps` → `packages`.** A package never imports an app. A domain uses another domain only through its `index.ts`.
-2. **A file's place is what it is.** A request and its handler → one file in `requests/`. What is drawn → a block in `blocks/`. Where blocks stand → a layout. Which implementation runs → the domain's module.
+2. **A file's place is what it is.** A request and its handler → one file in `requests/`. What is drawn → `ui/` (a block, a layout, the domain's root view). Which implementation runs → the domain's module.
 3. **Nothing reaches for anything.** A view sends requests through the mediator. A handler gets its dependencies with `inject(Token)` from the module's container. The platform is given by the framework (`host`). No hidden globals, no singletons.
 
 ## Names
 
 One word declares a thing; the constant says which one.
 
-| Declares                      | Written                                      | Named                  | Example           |
-| ----------------------------- | -------------------------------------------- | ---------------------- | ----------------- |
-| a read                        | `query("<module>/<name>")`                   | PascalCase verb phrase | `GetPages`        |
-| a write                       | `command("<module>/<name>")`                 | PascalCase verb phrase | `ShowPage`        |
-| its logic                     | `class … implements Handles<typeof X>`       | `<Request>Handler`     | `ShowPageHandler` |
-| a domain's wiring             | `module({ handlers, provide, use })`         | `<domain>Module`       | `canvasModule`    |
-| variables                     | `env({ server, client })`                    | `<part>Env`            | `stripeEnv`       |
-| an outside system             | `interface`                                  | the system             | `Payments`        |
-| its implementation            | `class … implements Payments`                | `<Provider><System>`   | `StripePayments`  |
-| reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand` | —                      | —                 |
+| Declares                      | Written                                      | Named                   | Example                  |
+| ----------------------------- | -------------------------------------------- | ----------------------- | ------------------------ |
+| a read                        | `query("<module>/<name>")`                   | noun phrase + `Query`   | `PagesQuery`             |
+| a write                       | `command("<module>/<name>")`                 | verb phrase + `Command` | `ShowPageCommand`        |
+| its logic                     | `class … extends handlerOf(X)`               | `<Request>Handler`      | `ShowPageCommandHandler` |
+| a domain's wiring             | `module({ handlers, provide, use })`         | `<domain>Module`        | `canvasModule`           |
+| variables                     | `env({ server, client })`                    | `<part>Env`             | `stripeEnv`              |
+| an outside system             | `abstract class` (its own token)             | the system              | `Payments`               |
+| its implementation            | `class … extends Payments`                   | `<Provider><System>`    | `StripePayments`         |
+| reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand` | —                       | —                        |
 
-No `define…` or `create…` prefix on these: the word itself is the declaration. A request's string name is `<module>/<the constant in kebab case>` (`canvas/show-page`).
+No `define…` or `create…` prefix on these: the word itself is the declaration. A query takes no `Get…` prefix (`PagesQuery`, not `GetPagesQuery`): the suffix already says it reads. A request's string name is `<module>/<the constant without its suffix, in kebab case>` (`ShowPageCommand` → `canvas/show-page`).
 
 ## Two levels
 
@@ -54,16 +55,15 @@ A domain is a business area: `video`, `analytics`, `billing`; for this repositor
 
 ```
 packages/<domain>/
-  index.ts                  the public API: requests, blocks, the module
+  index.ts                  the public API: the module and its root view
   <domain>.module.ts        the handlers it registers, the implementations it provides, its middleware
   requests/<feature>/       one file per request: the request and its handler
-  blocks/<block>/           what is drawn: a component that reads its own requests
-  layouts/                  where blocks stand; no data
+  ui/<name>/                what is drawn: blocks reading their own requests, layouts placing slots
   ports/                    interfaces for outside systems + their adapters
   schema/                   Drizzle tables and the zod shapes derived from them
 ```
 
-**What it gives:** one feature is one request file and one block. The path from a click to the data is linear: `useCommand(ShowPage)` → `show-page.ts` (the handler is below the request) → its `inject(...)` fields → the module's one line that picks the implementation.
+**What it gives:** one feature is one request file and one block. The path from a click to the data is linear: `useCommand(ShowPageCommand)` → `show-page.ts` (the handler is below the request) → its `inject(...)` fields → the module's one line that picks the implementation.
 
 ## Common
 
