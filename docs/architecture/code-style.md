@@ -19,9 +19,9 @@ How code is written inside the architecture. The rules hold in any project built
 **An injected field is named exactly like its class, in camelCase.** Never shortened, never generic:
 
 ```ts skip-check
-private readonly designSource = inject(DesignSource);
-private readonly designReads = inject(DesignReads);
-private readonly canvasStore = inject(CanvasStore);
+private readonly designSource = this.inject(DesignSource);
+private readonly designReads = this.inject(DesignReads);
+private readonly canvasStore = this.inject(CanvasStore);
 ```
 
 Not `source`, `reads`, `store`: a second store would force renaming the first, and `store` beside `source` reads as the same word. The name of a thing is the same everywhere it appears.
@@ -32,8 +32,8 @@ Not `source`, `reads`, `store`: a second store would force renaming the first, a
 export const AddPhotosCommand = command("canvas/add-photos").input(PhotosSchema).idempotencyKey("per-call");
 
 export class AddPhotosCommandHandler extends handlerOf(AddPhotosCommand) {
-	private readonly designSource = inject(DesignSource);
-	private readonly canvasStore = inject(CanvasStore);
+	private readonly designSource = this.inject(DesignSource);
+	private readonly canvasStore = this.inject(CanvasStore);
 
 	override async handle({ photos }: InputOf<typeof AddPhotosCommand>): Promise<void> {
 		const { app } = this.canvasStore.now();

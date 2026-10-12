@@ -12,8 +12,8 @@ export const SubscribeCommand = command("billing/subscribe")
 	.idempotencyKey(({ user, plan }) => `${user}:${plan}`);
 
 export class SubscribeCommandHandler extends handlerOf(SubscribeCommand) {
-	private readonly payments = inject(Payments);
-	private readonly subscriptions = inject(Subscriptions);
+	private readonly payments = this.inject(Payments);
+	private readonly subscriptions = this.inject(Subscriptions);
 	override async handle(input: InputOf<typeof SubscribeCommand>, { idempotencyKey }: RequestContext) { … }
 }
 ```
@@ -44,8 +44,11 @@ A query whose data changes outside a command (a file edited on disk, a job finis
 export const billingModule = module({
 	handlers: [SubscribeCommandHandler, ApplyStripeEventCommandHandler, MySubscriptionQueryHandler],
 	provide: [
-		provided(Payments, (host) => (host.is("mobile") ? new RevenueCatPayments(host) : new StripePayments(host))),
-		provided(Subscriptions, (host) => new DrizzleSubscriptions(host.db)),
+		provided(Payments, {
+			server: (host) => new StripePayments(host.env.STRIPE_SECRET),
+			mobile: (host) => new RevenueCatPayments(host),
+		}),
+		provided(Subscriptions, { server: (host) => new DrizzleSubscriptions(host.db) }),
 	],
 	use: [authenticated],
 });
@@ -97,9 +100,75 @@ export type PaymentRefusal = "card-declined" | "already-subscribed" | "provider-
 - One contract test runs against every adapter, so switching adapters keeps behaviour.
 - The module picks the adapter; the handler knows only the port.
 
+## Platforms
+
+One interface, one implementation per platform, chosen at build — the way a Tauri plugin keeps `desktop.rs` and `mobile.rs` behind one API. **The server is a platform like any other.**
+
+```ts skip-check
+provided(DesignSource, {
+	obsidian: (host) => new ObsidianDesignSource(host.vault),
+	web: (host) => new WebDesignSource(host.project),
+});
+```
+
+- The platforms are one union, `"obsidian" | "web" | "mobile" | "desktop" | "server"`, declared once by the framework as the global `__WG_PLATFORM__`, set by each build (esbuild or Vite `define`) and by the test loader. No `typeof` check, no `undefined`. The bundler drops every branch but the build's own.
+- Each factory receives the host of its own platform, typed: `host.vault` exists only inside `obsidian`. A missing capability is a type error, never a null to check.
+- An app names where it ships: `app({ modules, platforms: ["obsidian", "web"] })`. A dependency a handler injects with no implementation for one of those platforms is a build error naming the dependency and the platform.
+- **Where a dependency is provided is where it lives.** `StripeGateway` provided only for `server` does not exist in a browser; `CanvasStore` provided for `web` and `obsidian` lives on the client, and giving it a `server` entry moves it. Nothing is client-only or server-only by nature.
+- A platform that physically cannot do something (a browser cannot write to a folder) gets an implementation that does it another way (IndexedDB) or refuses with a reason the person reads. Choosing which is a line in the record, decided once.
+- A handler reads where it runs from `ctx.host.platform`: `"server"` inside a `.onServer()` request, the app's platform otherwise.
+
 ## The server
 
-A request whose handler must run on a server (it holds a secret, or receives webhooks) says so once, in its file: `command(…).onServer()`. There is one app, not two roots: the same `app({ modules })` definition runs in the browser, where the mediator sends every `.onServer()` request over `/rpc/<name>`, and on the server, where it runs them. A dependency only the server can build (it reads a secret) is marked where it is provided, `provided(Payments, make, { onServer: true })`; the browser's app never builds it, and the build fails when a client bundle reaches a server-only file. A host with no server refuses such a request at build time. **planned**: the canvas has no server request yet, so `.onServer()`, `{ onServer: true }` and the `/rpc` route are not implemented.
+A request whose handler must run on a server (it holds a secret, or receives webhooks) says so once, in its file: `command(…).onServer()`. There is one app, not two roots: the same `app({ modules })` runs in the browser, where the mediator sends every `.onServer()` request over `/rpc/<name>`, and on the server, where it runs them with the `server` implementations. A `.onServer()` handler that injects a dependency with no `server` entry, or a client handler that injects one provided only for `server`, is a build error whose message says the fix:
+
+> `ChargeCardCommand` injects `StripeGateway`, which is provided only on `server`. Mark the request `.onServer()`, or keep it on the client and `send` a server request from it.
+
+**planned**: `.onServer()`, the `server` platform and `/rpc` are not implemented yet.
+
+### Calling the server from the client
+
+**Problem:** a client handler holds state the server does not have (a draft, the canvas), and the work needs the server (a database, a secret). **Pattern:** keep the handler on the client and `send` a server request from it; its typed output is the server's answer.
+
+```ts skip-check
+export const SaveDraftCommand = command("editor/save-draft").idempotencyKey("per-call");
+
+export class SaveDraftCommandHandler extends handlerOf(SaveDraftCommand) {
+	private readonly editorStore = this.inject(EditorStore);
+
+	override async handle() {
+		const draft = this.editorStore.now().draft;
+		this.editorStore.change({ draft: { ...draft, status: "saving" } }, "save started");
+		const answer = await this.send(StoreDraftCommand, draft); // StoreDraftCommand is .onServer()
+		if (!answer.ok) return this.editorStore.change({ draft: { ...draft, status: "unsaved" } }, answer.reason);
+		this.editorStore.change({ draft: answer.output }, "saved by the server");
+	}
+}
+```
+
+- `this.send` is the API call: typed input, typed output, one visible line — no fetch, no route, no controller.
+- The local state changes first (optimistic), then takes the server's answer as the truth; a refusal puts it back and reaches the one refusal handler.
+- A `useQuery` reading that server data stays fresh by its `watch`, so other blocks see the saved draft too.
+
+## Live data: `watch`
+
+`watch` is part of every query handler (the base declares it; a handler overrides it when its data can change from outside). It calls `changed()` when the data moved; every `useQuery` of that query reads again and draws the new answer.
+
+- On the client, `watch` listens to a store, a file, a timer.
+- On the server, the same `watch` becomes a live subscription: the framework keeps one connection per browser (WebSocket or SSE) and one server watch per query key however many people look, batching changes. Prior art: Convex `useQuery` over a WebSocket, re-run when a write touches what the query read. **planned**
+- A query that injects a client-provided dependency cannot be `.onServer()` (a build error), so local state is never pushed through the server.
+
+## Background work
+
+**planned.** Three kinds, declared in a module beside its handlers:
+
+| Kind                                     | Runs                        | Client                        | Server on a long-lived process | Server on Vercel / serverless                            |
+| ---------------------------------------- | --------------------------- | ----------------------------- | ------------------------------ | -------------------------------------------------------- |
+| `cron("<module>/<name>", "*/5 * * * *")` | on a schedule               | a timer while the app is open | in the process                 | the platform's scheduler (Vercel Cron) calls its route   |
+| `worker("<module>/<name>")`              | one job until done, retried | in the background of the tab  | in the process, from a queue   | a queue service calls its route per job                  |
+| `loop("<module>/<name>")`                | forever                     | while the app is open         | in the process                 | not possible: a build error that names the deploy target |
+
+Each kind is a handler like any other (`extends handlerOf(...)`, `this.inject`, idempotency on every job), so the rules above hold for it. Which deploy target an app ships to decides how the framework runs it, never the handler. Prior art: Vercel Cron Jobs, Inngest and Trigger.dev for queued jobs on serverless (from memory, to be checked when built).
 
 ## Webhooks
 
