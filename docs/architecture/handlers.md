@@ -42,6 +42,9 @@ export function CanvasPage({ source }: { source: DesignSource }) {
 ```
 
 - A widget prop takes a query or command instance, or a plain value; the widget layer turns it into what the view receives ([placement.md](placement.md#widget-and-view)).
+- A plain function is wrapped once per function, so its reads stay cached while the function is the same. An inline arrow is a new function every render: it reads again each time. Create it once (`useMemo`, `useCallback`, or a handler class).
+- Every query and command a widget injects is a required prop: a forgotten handler does not compile. A command given nothing answers `{ ok: false, reason: "<name> is not given" }`.
+- A command's refusal goes to one handler the app sets once, `<OnRefused value={handler}>` from `@widgetarium/core`; with none set, the kit's toaster shows the reason. The widget layer logs every outcome; a view writes no refusal code.
 - There are no packs, no handler ids, no bindings in JSON and no handler metadata (`title`, `resource`, `description`). Swapping an implementation is a code change in the app; a test passes a fake class.
 - A command that writes the vault takes `consent: "ask"` in its constructor and runs only after the person's switch.
 

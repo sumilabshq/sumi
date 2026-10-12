@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CANVAS_MODES = ["pointer", "hand"] as const;
+const CANVAS_MODES = ["pointer", "hand"] as const;
 
 export const PAGE_RENDERERS = ["html", "gpu"] as const;
 

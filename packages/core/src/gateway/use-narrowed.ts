@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { CollectionGateway } from "./contract";
-import { stableKey } from "./cache";
+import { stableKey } from "./stable-key";
 import type { Narrowing } from "./narrow";
 import { narrow } from "./narrow";
 

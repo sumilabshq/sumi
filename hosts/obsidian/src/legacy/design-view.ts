@@ -103,15 +103,6 @@ export function registerDesignView(plugin: WidgetariumPlugin): void {
 	plugin.registerView(DESIGN_VIEW_TYPE, (leaf) => new DesignView(leaf, plugin));
 }
 
-export async function openDesignInLeaf(
-	leaf: WorkspaceLeaf,
-	app: string,
-	page: string,
-	fromNote: string,
-): Promise<void> {
-	await leaf.setViewState({ type: DESIGN_VIEW_TYPE, active: true, state: { app, page, fromNote } });
-}
-
 export async function openDesign(obsidian: App, app: string, page?: string): Promise<void> {
 	const open = obsidian.workspace.getLeavesOfType(DESIGN_VIEW_TYPE).find((held) => held.view.getState()["app"] === app);
 	const leaf = open ?? obsidian.workspace.getLeaf("tab");

@@ -22,10 +22,6 @@ export function layFlow(node: FlowNode): void {
 	for (const child of node.children) child.yoga.setAlignSelf(selfOf(node, child, flows));
 }
 
-export function isInlineLevel(node: FlowNode): boolean {
-	return node.type === "Text" || node.style.inline;
-}
-
 export function isHtmlTag(type: string): boolean {
 	return type === type.toLowerCase();
 }
@@ -39,4 +35,8 @@ function selfOf(parent: FlowNode, child: FlowNode, flows: boolean): Align {
 	const isBlockParent = !flows && !parent.style.displaySet;
 	if (isBlockParent && child.type !== "Text" && isInlineLevel(child)) return Align.FlexStart;
 	return Align.Auto;
+}
+
+function isInlineLevel(node: FlowNode): boolean {
+	return node.type === "Text" || node.style.inline;
 }

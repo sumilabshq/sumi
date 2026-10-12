@@ -4,8 +4,6 @@ import { Button, Icon } from "@widgetarium/kit";
 import type { InjectProps } from "@widgetarium/core";
 import type { agentLookInject } from "../../widgets/agent-look.widget.js";
 import { fadedTurn } from "../page-tabs/faded-turn.js";
-import { SaidLine } from "../said-line/said-line.js";
-import { useRefusal } from "../said-line/use-refusal.js";
 import { DesignLookChip } from "./design-look-chip.js";
 
 const LOOKING_AT_PAGE = "Agent is looking at {where}";
@@ -16,7 +14,6 @@ export function AgentLookChip({
 	showPage,
 }: InjectProps<typeof agentLookInject>): ReactElement | null {
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const { refusal, heard } = useRefusal();
 	if (!look) return null;
 	if (!look.page) return <DesignLookChip />;
 	const { page } = look;
@@ -27,12 +24,11 @@ export function AgentLookChip({
 				size="s"
 				variant="ghost"
 				title={GO_THERE}
-				onClick={() => fadedTurn(anchor.current, () => heard(showPage({ page })))}
+				onClick={() => fadedTurn(anchor.current, () => void showPage({ page }))}
 			>
 				<Icon name="sparkles" size={14} />
 				{LOOKING_AT_PAGE.replace("{where}", where)}
 			</Button>
-			<SaidLine said={refusal} />
 		</span>
 	);
 }

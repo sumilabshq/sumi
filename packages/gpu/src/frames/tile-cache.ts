@@ -7,7 +7,7 @@ import type { GpuContext } from "../engine/gpu-context.js";
 import type { Rgba } from "../style/gpu-tokens.js";
 import type { DrawBudget, RasterCache } from "./raster-cache.js";
 
-export interface TilePass {
+interface TilePass {
 	readonly canvas: Canvas;
 	readonly visible: readonly FrameRoot[];
 	readonly camera: Camera;
@@ -25,7 +25,7 @@ interface Tile {
 	usedAt: number;
 }
 
-export const TILE_PX = 512;
+const TILE_PX = 512;
 const MAX_TILES = 96;
 
 export class TileCache {

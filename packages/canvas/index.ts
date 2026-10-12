@@ -38,6 +38,7 @@ export { ShowPageCommand } from "./logic/pages/show-page.command.js";
 export { AddPhotosCommand } from "./logic/photos/add-photos.command.js";
 export { AskForPicturesCommand } from "./logic/pictures/ask-for-pictures.command.js";
 export { FramePicturesQuery } from "./logic/pictures/frame-pictures.query.js";
+export { FramePicturesService } from "./logic/pictures/frame-pictures.service.js";
 export { SelectCommand } from "./logic/selection/select.command.js";
 export { SelectionQuery } from "./logic/selection/selection.query.js";
 export { ChooseRendererCommand } from "./logic/view/choose-renderer.command.js";
@@ -47,27 +48,15 @@ export { SetModeCommand } from "./logic/view/set-mode.command.js";
 export type { DesignSource } from "./logic/design/design-source.js";
 export { createCanvasState } from "./logic/view/canvas-state.js";
 export { showPage } from "./logic/pages/show-page.js";
-export type { CanvasField, CanvasMoment, CanvasOpening, CanvasState } from "./logic/view/canvas-state.js";
+export type { CanvasOpening, CanvasState } from "./logic/view/canvas-state.js";
 export { addPhotos } from "./logic/photos/photo-files.js";
-export type { PhotoAdapter } from "./logic/photos/photo-files.js";
 export { specMarkdownOf } from "./logic/docs/spec-markdown.js";
 export { whileAgentLooks } from "./logic/agent/agent-look.js";
 export type { AgentLook } from "./schemas/agent-look.schema.js";
-export type { CanvasMode } from "./schemas/canvas-view.schema.js";
-export type {
-	DrawnDesign,
-	DrawnReference,
-	DrawnScreen,
-	DrawnState,
-	DrawnWidget,
-	ReferenceNote,
-	StatePicture,
-} from "./schemas/design.schema.js";
+export type { DrawnDesign, DrawnScreen, DrawnState, StatePicture } from "./schemas/design.schema.js";
 export type { CanvasDoc } from "./schemas/doc.schema.js";
-export type { Drawing, PictureTaker } from "./schemas/drawing.schema.js";
-export { DESKTOP_FRAME } from "./schemas/frame-size.schema.js";
 export type { FrameSize } from "./schemas/frame-size.schema.js";
-export type { Job, LiveJob } from "./schemas/job.schema.js";
+export type { LiveJob } from "./schemas/job.schema.js";
 export type { LayerMove } from "./schemas/layer-move.schema.js";
 export { pageOfScreen, screensOfPage } from "./logic/pages/screen-names.js";
 export { frameLabelOf, statePropsOf } from "./schemas/design.schema.js";

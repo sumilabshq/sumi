@@ -6,7 +6,6 @@ import type { Drawing } from "../../schemas/drawing.schema.js";
 import { useLayerDrag } from "./hooks/use-layer-drag.js";
 import { useLayersOf } from "./hooks/use-layers-of.js";
 import { useScrolledToPicked } from "./hooks/use-scrolled-to-picked.js";
-import { useShownForAWhile } from "../shown-for-a-while/use-shown-for-a-while.js";
 import { ancestorsOf, parentsOf } from "../layers/hits.js";
 import type { Projection } from "./lib/layer-drag.js";
 import type { Layer } from "../layers/layer-tree.js";
@@ -25,8 +24,8 @@ export interface LayersPanelProps extends Pick<Drawing, "registry"> {
 	readonly isOpen: boolean;
 	readonly keepsLiveCopy: boolean;
 	readonly picked: string | null;
-	readonly onDrop: (dropped: LayerDropped) => Promise<string | null>;
-	readonly onPick: (widget: string, mark: string | null) => Promise<string | null>;
+	readonly onDrop: (dropped: LayerDropped) => void;
+	readonly onPick: (widget: string, mark: string | null) => void;
 }
 
 const TITLE = "Layers";
@@ -47,7 +46,6 @@ export function LayersPanel({
 	onPick: onPicked,
 }: LayersPanelProps): ReactElement {
 	const [isLocked, setLocked] = useState(true);
-	const [refusal, setRefusal] = useShownForAWhile();
 	const [live, setLive] = useState<HTMLDivElement | null>(null);
 	const scroller = useRef<HTMLDivElement | null>(null);
 	const picture = screen.states[0]?.picture;
@@ -55,7 +53,7 @@ export function LayersPanel({
 	const layers = titledLayers(seen ?? [], registry);
 	const isShown = isOpen && (seen !== null || !picture);
 	const onPick = (mark: string): void => {
-		if (picture) void onPicked(picture.widget, mark === picked ? null : mark).then(setRefusal);
+		if (picture) onPicked(picture.widget, mark === picked ? null : mark);
 	};
 	const opened = useMemo(() => ancestorsOf(parentsOf(seen ?? []), picked), [seen, picked]);
 	useScrolledToPicked(scroller, picked, isShown, INDENT_PX);
@@ -64,7 +62,7 @@ export function LayersPanel({
 	}, []);
 	const onDropped = (dragged: string, { parent, before }: Projection): void => {
 		if (!picture) return;
-		void onDrop({ widget: picture.widget, dragged, parent, before }).then(setRefusal);
+		onDrop({ widget: picture.widget, dragged, parent, before });
 	};
 	const drag = useLayerDrag(scroller, INDENT_PX, onDropped, seen);
 	const rows = { isLocked, picked, opened, drag, onPick, onHover };
@@ -81,7 +79,6 @@ export function LayersPanel({
 					<Icon name={isLocked ? "lock" : "lock-open"} size={14} />
 				</IconButton>
 			</header>
-			{refusal ? <p className={SAID}>{refusal}</p> : null}
 			<div
 				key={`tree:${screen.name}:${seen !== null}`}
 				className="cv:group/tree cv:relative cv:flex-1 cv:overflow-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in"

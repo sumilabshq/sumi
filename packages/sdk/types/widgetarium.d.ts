@@ -146,9 +146,12 @@ export type {
 export type { CreatedWidget, WidgetToCreate } from "../../core/src/widget-api";
 export { createWidget } from "../../core/src/widget-api";
 export { inject, widget } from "../../core/src/widget-builder";
+export { OnRefused, toastRefusal } from "../../core/src/command-refusals";
+export type { CommandRefusal, RefusalHandler } from "../../core/src/command-refusals";
 export type {
 	AskedPagedView,
 	AskedView,
+	BuiltGivenProps,
 	BuiltWidget,
 	FailedViewProps,
 	Inject,

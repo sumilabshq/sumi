@@ -27,6 +27,7 @@ const { statesIn } = await import("../packages/core/src/registry-scope.ts");
 const { checkWidget } = await import("../packages/core/src/widget-check.ts");
 const { offsetOfCursor, pageAt } = await import("../packages/core/src/gateway/page.ts");
 const fixture = await import("./widget-builder-fixture.ts");
+const { checkOutcomes } = await import("./widget-builder-outcomes.ts");
 const { ports, seen, askedIds } = fixture;
 
 let failed = 0;
@@ -115,6 +116,7 @@ check("a command's answer reaches the view", renamed, {
 });
 const refused = await last().rename({ id: "t1", title: "" });
 check("a refused command answers ok false", refused.ok, false);
+await settle();
 check("a slot arrives as drawn children", [Array.isArray(last().extras), last().extras.length], [true, 0]);
 check("the view drew the values", host.querySelector("#board")?.textContent, "Today: 150 Task 3");
 
@@ -165,7 +167,16 @@ await settle();
 check("and draws that element", extraNode.querySelector("#extra-note")?.textContent, "drawn by the app");
 
 const broken = byId(document, "broken");
-render(h(Board, { getTitle: new fixture.BrokenTitleQuery() }), broken);
+render(
+	h(Board, {
+		getTitle: new fixture.BrokenTitleQuery(),
+		getTasks: new fixture.TasksQuery(),
+		getTask: new fixture.TaskQuery(),
+		getFiltered: new fixture.FilteredQuery(),
+		rename: new fixture.RenameCommand(),
+	}),
+	broken,
+);
 await settle();
 check(
 	"a failed read draws the failed view, naming the port",
@@ -211,6 +222,8 @@ check(
 	checkWidget({ id: "@test/board", source, card: manifest }).filter((one) => ["role", "states"].includes(one.rule)),
 	[],
 );
+
+await checkOutcomes(check, settle);
 
 render(null, host);
 render(null, broken);

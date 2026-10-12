@@ -1,7 +1,7 @@
 import type { CollectionGateway, ValueGateway } from "@widgetarium/core/gateway/contract.js";
 import type { EveryValueVerb } from "@widgetarium/core/gateway/needs.js";
 import { valueGateway, valueIn } from "@widgetarium/core/gateway/create.js";
-import { stableKey } from "@widgetarium/core/gateway/cache.js";
+import { stableKey } from "@widgetarium/core/gateway/stable-key.js";
 import { todayIso } from "@widgetarium/core/today.js";
 import { isMatch, valueOf } from "@widgetarium/core/gateway/match.js";
 import {

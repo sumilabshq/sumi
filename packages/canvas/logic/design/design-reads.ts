@@ -20,7 +20,7 @@ interface Watch {
 	readonly stop: () => void;
 }
 
-export interface ReadCache<T> {
+interface ReadCache<T> {
 	read(source: DesignSource, app: string, load: () => Promise<T>): Promise<Read<T>>;
 	stale(source: DesignSource, app: string): void;
 }
@@ -30,10 +30,6 @@ const WATCHES = new WeakMap<DesignSource, Map<string, Watch>>();
 export const DESIGN_READS = createReadCache<DrawnDesign>();
 export const DOCS_READS = createReadCache<readonly CanvasDoc[]>();
 export const LOOK_READS = createReadCache<Parsed<AppLook> | null>();
-
-export function staleReads(source: DesignSource, app: string): void {
-	for (const cache of [DESIGN_READS, DOCS_READS, LOOK_READS]) cache.stale(source, app);
-}
 
 export function sourceChanged(source: DesignSource, app: string): void {
 	staleReads(source, app);
@@ -96,4 +92,8 @@ function createReadCache<T>(): ReadCache<T> {
 			if (one) one.isFresh = false;
 		},
 	};
+}
+
+function staleReads(source: DesignSource, app: string): void {
+	for (const cache of [DESIGN_READS, DOCS_READS, LOOK_READS]) cache.stale(source, app);
 }

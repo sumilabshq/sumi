@@ -9,7 +9,7 @@ import type { WidgetDefinition } from "../registry.js";
 import type { EngineManifest } from "../engine/catalogue-index.js";
 import { failureMessage } from "../engine/failure-message.js";
 import { leaseFor } from "../engine/render.js";
-import { stableKey } from "../gateway/cache.js";
+import { stableKey } from "../gateway/stable-key.js";
 import { arrayGateway } from "../gateway/create.js";
 import type { CollectionGateway } from "../gateway/contract.js";
 import type { Release } from "../gateway/host.js";

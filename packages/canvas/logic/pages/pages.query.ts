@@ -1,10 +1,9 @@
 import { IQuery } from "@widgetarium/core";
 import { CanvasPagesSchema } from "../../schemas/canvas-page.schema.js";
 import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
-import { watchSource } from "../design/design-reads.js";
 import type { DesignSource } from "../design/design-source.js";
 import type { CanvasState } from "../view/canvas-state.js";
-import { readPages } from "./read-pages.js";
+import { readPages, watchPages } from "./read-pages.js";
 
 export class PagesQuery extends IQuery.output(CanvasPagesSchema) {
 	constructor(
@@ -20,11 +19,6 @@ export class PagesQuery extends IQuery.output(CanvasPagesSchema) {
 	}
 
 	override subscribe(changed: () => void): () => void {
-		const stopSource = watchSource(this.source, this.app, changed);
-		const stopState = this.state.watch(["page", "keptPage", "variants"], changed);
-		return () => {
-			stopSource();
-			stopState();
-		};
+		return watchPages(this.source, this.app, this.state, changed);
 	}
 }

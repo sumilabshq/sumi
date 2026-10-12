@@ -5,7 +5,7 @@ import type { EveryValueVerb } from "./needs";
 import type { FieldDescription } from "./manifest";
 import type { DeclaredNeed } from "./resolve-needs";
 import type { FieldType } from "./fields";
-import { stableKey } from "./cache";
+import { stableKey } from "./stable-key";
 import { FIELD_TYPES } from "./fields";
 import { STAT_ALGORITHMS } from "../engine/stat-fields";
 

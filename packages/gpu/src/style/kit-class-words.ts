@@ -6,7 +6,7 @@ const SEG_BUTTON =
 	"flex-row items-center justify-center rounded-pill px-4 h-[38px] text-base font-medium text-ink-muted";
 
 // TRADE-OFF: control heights and insets written as the kit's current pixels; a theme that resizes them is not followed
-export const KIT_LOOKS: Readonly<Record<string, string>> = {
+const KIT_LOOKS: Readonly<Record<string, string>> = {
 	"wg-kit-surface-group": "bg-group rounded-plate p-4",
 	"wg-kit-surface-inset": "bg-group-inset",
 	"wg-kit-btn":

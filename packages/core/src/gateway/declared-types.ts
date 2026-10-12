@@ -129,6 +129,7 @@ export type Command<Input, Output = void> = ([Input] extends [void | undefined]
 	? () => Promise<CommandAnswer<Output>>
 	: (input: Input) => Promise<CommandAnswer<Output>>) & {
 	can(): CanResult;
+	readonly refused?: string | null;
 };
 
 export type QueryRead<R> = Action<Query | void, RowsResult<R>> & { readonly get: Action<RecordRef, Row<R> | null> };

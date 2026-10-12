@@ -1,5 +1,6 @@
-import { createElement as h, useContext, useEffect, useState } from "react";
+import { createElement as h, useContext, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
+import { useAsksForPicture } from "../hooks/frames/use-asks-for-picture.js";
 import { useIsSeen } from "../hooks/frames/use-is-seen.js";
 import { useMountedInTurn } from "../hooks/frames/use-mounted-in-turn.js";
 import { DRAWS_AT_ONCE } from "../../state-drawing/draw-contexts.js";
@@ -23,9 +24,7 @@ export function DrawnWhenSeen({ minHeight, frame, pictureKey, children }: DrawnW
 	// TRADE-OFF: pictures at every zoom; seventeen live frames froze Obsidian, a sharp close-up costs too much
 	const isPicture = picture !== undefined && !isAtOnce;
 	const asked = isMounted && !isAtOnce && !isFresh ? live : null;
-	useEffect(() => {
-		if (asked && pictures) pictures.ask({ frame, key: pictureKey, node: asked });
-	}, [asked, frame, pictureKey, pictures]);
+	useAsksForPicture({ node: asked, frame, pictureKey, pictures });
 	const isLiveDrawn = isMounted && !(isPicture && isFresh);
 	return (
 		<div ref={setNode} className="wg-design-seen cv:relative" style={isMounted ? undefined : { minHeight }}>

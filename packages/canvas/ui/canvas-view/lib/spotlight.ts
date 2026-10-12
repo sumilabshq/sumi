@@ -5,7 +5,7 @@ import type { Hit } from "../../layers/hits.js";
 
 export const SCREEN_OF = "data-canvas-screen";
 export const FRAME_OF = "data-canvas-frame";
-export const LAYERS_OPEN = "[data-canvas-layers='open']";
+const LAYERS_OPEN = "[data-canvas-layers='open']";
 
 const TOP_BAR_PX = 80;
 const MARGIN_PX = 48;
@@ -55,13 +55,13 @@ export function lookOnto(target: Box, field: HTMLElement | null): StageLook {
 	};
 }
 
-function placedOn(start: number, room: number, at: number, size: number, scale: number): number {
-	if (size * scale > room) return start - at * scale;
-	return start + room / 2 - (at + size / 2) * scale;
-}
-
 export function hitRootOf(layer: HTMLElement, screen: HTMLElement, widget: string): HTMLElement | null {
 	if (screen.querySelector("[data-wg-node]")) return screen;
 	if (firstScreenOf(layer, widget) !== screen) return null;
 	return document.querySelector<HTMLElement>(`[${LIVE_SCREEN}="${CSS.escape(widget)}"]`);
+}
+
+function placedOn(start: number, room: number, at: number, size: number, scale: number): number {
+	if (size * scale > room) return start - at * scale;
+	return start + room / 2 - (at + size / 2) * scale;
 }

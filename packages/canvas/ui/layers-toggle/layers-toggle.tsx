@@ -4,14 +4,11 @@ import { Icon, IconButton } from "@widgetarium/kit";
 import type { InjectProps } from "@widgetarium/core";
 import { COMPONENTS_PAGE } from "../../schemas/canvas-page.schema.js";
 import type { layersToggleInject } from "../../widgets/layers-toggle.widget.js";
-import { SaidLine } from "../said-line/said-line.js";
-import { useRefusal } from "../said-line/use-refusal.js";
 
 const LAYERS_SAID = "Layers";
 
 export function LayersToggle(props: InjectProps<typeof layersToggleInject>): ReactElement | null {
 	const { getPages: pages, getIsLayersOpen: isOpen, toggleLayers } = props;
-	const { refusal, heard } = useRefusal();
 	if (!pages || pages.shown === COMPONENTS_PAGE) return null;
 	return (
 		<>
@@ -19,11 +16,10 @@ export function LayersToggle(props: InjectProps<typeof layersToggleInject>): Rea
 				size="s"
 				variant={isOpen ? "raised" : "ghost"}
 				label={LAYERS_SAID}
-				onClick={() => heard(toggleLayers())}
+				onClick={() => void toggleLayers()}
 			>
 				<Icon name="panel-left" size={16} />
 			</IconButton>
-			<SaidLine said={refusal} />
 		</>
 	);
 }

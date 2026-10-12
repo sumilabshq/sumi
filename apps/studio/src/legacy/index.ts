@@ -14,7 +14,6 @@ export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
 export {
 	CanvasShotWidget,
-	DESKTOP_FRAME,
 	addPhotos,
 	frameLabelOf,
 	pageOfScreen,
@@ -29,10 +28,8 @@ export type {
 	CanvasDoc,
 	DesignSource,
 	DrawnDesign,
-	DrawnReference,
 	DrawnScreen,
 	DrawnState,
-	DrawnWidget,
 	FrameSize,
 	GpuSupply,
 	LayerMove,

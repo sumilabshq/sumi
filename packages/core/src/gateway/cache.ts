@@ -1,6 +1,6 @@
 import type { Unsubscribe } from "./contract";
 import type { ActionMeta } from "./create";
-import { isObject } from "../engine/is-object";
+import { stableKey } from "./stable-key";
 
 interface CacheEntry {
 	status: "loading" | "ready" | "failed";
@@ -44,11 +44,6 @@ interface CacheState {
 	awaitingRefetch: Set<string>;
 }
 
-export function stableKey(input: unknown): string {
-	if (input === undefined) return "";
-	return JSON.stringify(sortKeys(input));
-}
-
 export function createGatewayCache() {
 	const state: CacheState = { entries: new Map(), tracked: new Map(), attached: new Map(), awaitingRefetch: new Set() };
 	return {
@@ -62,16 +57,6 @@ export function createGatewayCache() {
 }
 
 export const gatewayCache = createGatewayCache();
-
-function sortKeys(input: unknown): unknown {
-	if (Array.isArray(input)) return input.map(sortKeys);
-	if (isObject(input)) {
-		const sorted: Record<string, unknown> = {};
-		for (const key of Object.keys(input).sort()) sorted[key] = sortKeys(input[key]);
-		return sorted;
-	}
-	return input;
-}
 
 function keyOf(meta: ActionMeta, input: unknown): string {
 	return `${meta.gatewayId}${KEY_GAP_NO_PATH_HOLDS}${meta.verb}${KEY_GAP_NO_PATH_HOLDS}${stableKey(input)}`;

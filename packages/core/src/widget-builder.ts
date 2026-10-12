@@ -3,16 +3,22 @@ import type { ComponentType, ReactNode } from "react";
 import { z } from "zod";
 import { createDeclaredWidget, notReadNotice } from "./declared-widget.js";
 import type { DrawnProps, InjectedWidget, ReadState } from "./declared-widget.js";
+import { metaOf } from "./gateway/create";
 import { declarationIn, declareProps, defineStates, isDeclaredProps } from "./gateway/declared";
 import type { DeclaredProps } from "./gateway/declared";
-import { isPageSchema } from "./gateway/page";
+import type { Declaration } from "./gateway/declaration";
 import { useAnswer } from "./gateway/use-data";
 import type { DataState, PageState } from "./gateway/use-data";
+import { ViewBoundary } from "./view-boundary.js";
 import type { BuiltWidget, FailedViewProps, Inject, WidgetBuilder } from "./widget-builder-types.js";
 
 type PortRead = "as-drawn" | "page" | "asked" | "asked-page" | "rows";
 
+type PortDecision = PortRead | { readonly mismatch: string };
+
 type DrawnView = ComponentType<Readonly<Record<string, unknown>>>;
+
+type Answer = DataState<unknown> | PageState<unknown>;
 
 interface Built {
 	readonly ports: DeclaredProps;
@@ -29,6 +35,10 @@ interface PortView {
 
 const NOT_ASKED = Symbol("not asked");
 const PAGE_WINDOW_KEYS: readonly string[] = ["cursor", "limit"];
+const READ_OTHERWISE = "was declared {declared} but arrived {stamped}";
+const NOT_A_PAGE = "was stamped paged but answered no page";
+const NOT_ROWS = "was stamped a list but answered no rows";
+const UNPAGED_ANSWERED_PAGE = "was stamped unpaged but answered a page";
 
 export function inject<const P extends DeclaredProps>(entries: P): Inject<P>;
 export function inject(entries: DeclaredProps): DeclaredProps {
@@ -51,10 +61,13 @@ function builderOf<P extends DeclaredProps>(built: Built): WidgetBuilder<P> {
 
 function renderedOf<P extends DeclaredProps, Props>(built: Built, view: ComponentType<Props>): BuiltWidget<P>;
 function renderedOf(built: Built, view: DrawnView): InjectedWidget & { readonly states: object } {
-	const reads = Object.entries(built.ports).map(([name, port]) => [name, portReadOf(port), startOf(port)] as const);
+	const ports = Object.entries(built.ports).map(([name, port]) => [name, declarationIn(port), startOf(port)] as const);
 	const draw = (drawn: DrawnProps, read: ReadState): ReactNode => {
 		const shown = useRef(false);
-		const views = reads.map(([name, kind, start]) => [name, usePortView(kind, drawn[name], start)] as const);
+		const views = ports.map(
+			([name, declaration, start]) =>
+				[name, usePortView(portReadOf(declaration, drawn[name]), drawn[name], start)] as const,
+		);
 		const failures = [
 			...read.failures,
 			...views.flatMap(([name, one]) => (one.failure ? [`${name}: ${one.failure}`] : [])),
@@ -63,20 +76,26 @@ function renderedOf(built: Built, view: DrawnView): InjectedWidget & { readonly 
 		const isLoading = read.loading.length > 0 || views.some(([, one]) => one.isLoading);
 		if (isLoading && !shown.current) return built.pending ? h(built.pending) : null;
 		shown.current = true;
-		return h(view, { ...drawn, ...Object.fromEntries(views.map(([name, one]) => [name, one.value])) });
+		const props = { ...drawn, ...Object.fromEntries(views.map(([name, one]) => [name, one.value])) };
+		return h(ViewBoundary, { failed: built.failed }, h(view, props));
 	};
-	const created = createDeclaredWidget(built.ports, draw, true);
+	const created = createDeclaredWidget(built.ports, draw, { drawsFailures: true, handsRefusals: true });
 	return Object.assign(created, { states: built.states });
 }
 
-function portReadOf(port: unknown): PortRead {
-	const declaration = declarationIn(port);
-	if (!declaration) return "as-drawn";
-	const { input, output } = declaration;
-	if (input && output) {
-		if (!isPageSchema(output)) return "asked";
-		return isPageWindow(input) ? "page" : "asked-page";
-	}
+function portReadOf(declaration: Declaration | null, drawn: unknown): PortDecision {
+	const meta = metaOf(drawn);
+	const declared = declaredReadOf(declaration);
+	const stamped = meta?.verb === "query" ? "asked" : meta?.verb === "list" ? "rows" : "as-drawn";
+	if (declared !== stamped)
+		return { mismatch: READ_OTHERWISE.replace("{declared}", declared).replace("{stamped}", stamped) };
+	if (stamped !== "asked" || meta?.isPaged !== true) return stamped;
+	return declaration?.input && isPageWindow(declaration.input) ? "page" : "asked-page";
+}
+
+function declaredReadOf(declaration: Declaration | null): "as-drawn" | "asked" | "rows" {
+	if (!declaration || declaration.kind === "command") return "as-drawn";
+	if (declaration.input && declaration.output) return "asked";
 	return declaration.isQuery && declaration.kind === "collection" ? "rows" : "as-drawn";
 }
 
@@ -90,34 +109,40 @@ function startOf(port: unknown): unknown {
 	return input.safeParse({}).success ? {} : NOT_ASKED;
 }
 
-function usePortView(kind: PortRead, drawn: unknown, start: unknown): PortView {
+function usePortView(kind: PortDecision, drawn: unknown, start: unknown): PortView {
 	const [asked, setAsked] = useState<unknown>(start);
 	const ask = useCallback((input: unknown) => setAsked(input), []);
-	const isRead = kind !== "as-drawn" && asked !== NOT_ASKED;
+	const isRead = kind !== "as-drawn" && typeof kind === "string" && asked !== NOT_ASKED;
 	const answer = useAnswer(isRead ? drawn : null, isRead ? asked : undefined);
+	if (typeof kind !== "string") return { value: null, isLoading: false, failure: kind.mismatch };
 	if (kind === "as-drawn") return { value: drawn, isLoading: false, failure: null };
 	const { isLoading, failure } = answer;
-	if (kind === "page") return { value: pagedOf(answer), isLoading, failure };
-	if (kind === "rows") return { value: rowsOf(answer), isLoading, failure };
-	if (kind === "asked-page") {
-		const { items, ...paged } = pagedOf(answer);
-		return { value: { ...paged, data: items, ask }, isLoading, failure };
-	}
-	return { value: { data: isPageState(answer) ? null : answer.data, ask }, isLoading, failure };
+	if (failure) return { value: null, isLoading, failure };
+	return { ...shapedOf(kind, answer, ask), isLoading };
 }
 
-function pagedOf(answer: DataState<unknown> | PageState<unknown>) {
-	if (!isPageState(answer)) return { ...rowsOf(answer) };
+function shapedOf(kind: Exclude<PortRead, "as-drawn">, answer: Answer, ask: (input: unknown) => void) {
+	if (kind === "rows") return isList(answer.data) || answer.data === null ? rowsOf(answer) : refused(NOT_ROWS);
+	if (kind === "asked") return isPageState(answer) ? refused(UNPAGED_ANSWERED_PAGE) : read({ data: answer.data, ask });
+	if (!isPageState(answer)) return refused(NOT_A_PAGE);
 	const { data, total, hasMore, more } = answer;
-	return { items: data, total, hasMore, more };
+	if (kind === "page") return read({ items: data, total, hasMore, more });
+	return read({ data, total, hasMore, more, ask });
 }
 
-function rowsOf(answer: DataState<unknown> | PageState<unknown>) {
-	const items = isList(answer.data) ? answer.data : [];
-	return { items, total: answer.total, hasMore: false, more: noMore };
+function rowsOf(answer: Answer) {
+	return read({ items: answer.data ?? [], total: answer.total, hasMore: false, more: noMore });
 }
 
-function isPageState(answer: DataState<unknown> | PageState<unknown>): answer is PageState<unknown> {
+function read(value: unknown): { readonly value: unknown; readonly failure: null } {
+	return { value, failure: null };
+}
+
+function refused(why: string): { readonly value: null; readonly failure: string } {
+	return { value: null, failure: why };
+}
+
+function isPageState(answer: Answer): answer is PageState<unknown> {
 	return "hasMore" in answer;
 }
 

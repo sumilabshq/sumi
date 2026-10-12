@@ -101,53 +101,10 @@ export const LENGTH_WORDS: Readonly<Record<string, string>> = {
 	"radius-pill": "var(--wg-kit-pill)",
 };
 
-export const FIXED_COLOURS: Readonly<Record<string, Rgba>> = {
+const FIXED_COLOURS: Readonly<Record<string, Rgba>> = {
 	transparent: [0, 0, 0, 0],
 	white: [1, 1, 1, 1],
 	black: [0, 0, 0, 1],
-};
-
-const INK: Rgba = [0.133, 0.133, 0.133, 1];
-const PAGE: Rgba = [1, 1, 1, 1];
-const MUTED_INK: Rgba = [0.473, 0.473, 0.473, 1];
-const FILL: Rgba = [0.952, 0.952, 0.952, 1];
-const FILL_HOVER: Rgba = [0.909, 0.909, 0.909, 1];
-
-// TRADE-OFF: Obsidian's default light theme, written out; only a worker that was never handed the document's tokens draws with it
-export const FALLBACK_TOKENS: GpuTokens = {
-	colours: {
-		page: PAGE,
-		background: PAGE,
-		raise: PAGE,
-		"group-inset": PAGE,
-		"primary-foreground": PAGE,
-		group: [0.133, 0.133, 0.133, 0.03],
-		line: [0.133, 0.133, 0.133, 0.07],
-		edge: [0.133, 0.133, 0.133, 0.09],
-		border: [0.133, 0.133, 0.133, 0.09],
-		fill: FILL,
-		muted: FILL,
-		"fill-hover": FILL_HOVER,
-		accent: FILL_HOVER,
-		ink: INK,
-		foreground: INK,
-		primary: INK,
-		"muted-foreground": MUTED_INK,
-		brand: [0.427, 0.306, 0.878, 1],
-	},
-	lengths: {
-		"text-xs": 11,
-		"text-sm": 12,
-		"text-base": 14,
-		"text-lg": 16,
-		"radius-sm": 10,
-		"radius-md": 12,
-		"radius-lg": 14,
-		"radius-xl": 18,
-		"radius-plate": 14,
-		"radius-item": 6,
-		"radius-pill": 999,
-	},
 };
 
 export function colourOf(tokens: GpuTokens, word: string): Rgba | null {

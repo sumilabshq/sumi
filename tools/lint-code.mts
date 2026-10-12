@@ -1,4 +1,5 @@
 import { LINTED_ROOTS } from "./lint/limits.mts";
+import { packagesWithCodeOutsideSrc } from "./lint/package-roots.mts";
 import { findingOnLine, type Finding } from "./lint/finding.mts";
 import { collectFiles, readSource, type ParsedSource, type UnparsedSource } from "./lint/source.mts";
 import { printReport, type FileReport, type ReportAsk } from "./lint/report.mts";
@@ -48,7 +49,7 @@ function lintAskOf(argv: readonly string[]): LintAsk {
 	const roots = argv.filter((argument) => !argument.startsWith("--"));
 	const named = flags.find((flag) => flag.startsWith("--rule="))?.slice("--rule=".length) ?? "";
 	return {
-		roots: roots.length > 0 ? roots : LINTED_ROOTS,
+		roots: roots.length > 0 ? roots : defaultRoots(),
 		summaryOnly: flags.includes("--summary"),
 		errorsOnly: flags.includes("--errors"),
 		onlyRules: named ? named.split(",") : [],
@@ -60,6 +61,13 @@ function inspect(path: string, lintAsk: LintAsk): FileReport {
 	if (isUnparsed(source)) return { path, findings: [toParseFailureFinding(source)] };
 	const wanted = RULES.filter((rule) => lintAsk.onlyRules.length === 0 || lintAsk.onlyRules.includes(rule.id));
 	return { path, findings: wanted.flatMap((rule) => rule.check(source)) };
+}
+
+function defaultRoots(): string[] {
+	const outsideSrc = packagesWithCodeOutsideSrc(cwd).filter(
+		(root) => !LINTED_ROOTS.some((linted) => linted === root || linted.startsWith(`${root}/`)),
+	);
+	return [...LINTED_ROOTS, ...outsideSrc];
 }
 
 function isUnparsed(source: ParsedSource | UnparsedSource): source is UnparsedSource {

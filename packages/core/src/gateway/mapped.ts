@@ -7,7 +7,7 @@ import { fieldOf } from "./match";
 import { delegateVerbs } from "./narrow";
 import type { ChosenProps, DeclaredNeeds, Resolution } from "./resolve-needs";
 import { resolveNeeds } from "./resolve-needs";
-import { stableKey } from "./cache";
+import { stableKey } from "./stable-key";
 import { pageIn } from "./paged-read";
 import { problemsOf, reportDroppedSort, UnansweredFilterError } from "./problems";
 import type { Problem } from "./problems";

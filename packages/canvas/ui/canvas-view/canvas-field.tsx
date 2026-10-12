@@ -9,8 +9,6 @@ import type { CanvasDoc } from "../../schemas/doc.schema.js";
 import type { DrawingKit } from "../../schemas/drawing.schema.js";
 import type { Selection } from "../../schemas/selection.schema.js";
 import type { canvasFieldInject } from "../../widgets/canvas-field.widget.js";
-import { SaidLine } from "../said-line/said-line.js";
-import { useRefusal } from "../said-line/use-refusal.js";
 import { useFliesToWidget } from "./hooks/camera/use-flies-to-widget.js";
 import { useLayerFit } from "./hooks/camera/use-layer-fit.js";
 import { PRESSABLE_CONTROLS, usePanZoom } from "./hooks/camera/use-pan-zoom.js";
@@ -42,23 +40,22 @@ export function CanvasField({ acts, design, drawing, pages, docs }: CanvasFieldP
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
 	const { getMode: mode, getSelection: picked } = acts;
-	const { refusal, heard } = useRefusal();
 	const isPointer = mode === "pointer";
 	const grips = { isHand: mode === "hand", pressable: PRESSABLE_IN_DESIGN, ownScroll: null };
-	const kept = { camera: acts.getCamera, onKept: (camera: Camera) => heard(acts.moveCamera({ camera })) };
+	const kept = { camera: acts.getCamera, onKept: (camera: Camera) => void acts.moveCamera({ camera }) };
 	const pan = usePanZoom({ layerRef, fieldRef }, useLayerFit(layerRef, fieldRef), grips, kept);
-	const onPick = useCallback((selection: Selection | null) => heard(acts.select({ selection })), [acts, heard]);
+	const onPick = useCallback((selection: Selection | null) => void acts.select({ selection }), [acts]);
 	const picking = { picked, onPick };
 	const selection = useCanvasSelection(layerRef, pan, picking);
 	usePickResolved(layerRef, pan, picking);
 	const clear = useCallback(() => onPick(null), [onPick]);
 	useEscapeClears(picked !== null, clear);
-	const flown = useCallback(() => heard(acts.focusWidget({ widget: null })), [acts, heard]);
+	const flown = useCallback(() => void acts.focusWidget({ widget: null }), [acts]);
 	useFliesToWidget({ layerRef, pan, widget: acts.getFocusedWidget, onDone: flown });
 	const regions = useMemo(() => {
-		const opener = widgetOpenerOf(drawing.registry, (widget) => heard(acts.focusWidget({ widget })));
+		const opener = widgetOpenerOf(drawing.registry, (widget) => void acts.focusWidget({ widget }));
 		return regionsOfPage({ design, pages, docs, opener, registry: drawing.registry, host: drawing.host });
-	}, [design, pages, docs, drawing, acts, heard]);
+	}, [design, pages, docs, drawing, acts]);
 	const gpu = useGpuStage(acts.getRenderer === "gpu" ? drawing.gpu : null, layerRef, pan);
 	return (
 		<GPU_FRAMES.Provider value={gpu.frames}>
@@ -82,7 +79,6 @@ export function CanvasField({ acts, design, drawing, pages, docs }: CanvasFieldP
 					/>
 				) : null}
 				<ZoomBar pan={pan} />
-				<SaidLine said={refusal} className={`${FLOATING} cv:right-4 cv:bottom-16`} />
 				<div className={`${FLOATING} cv:right-4 cv:bottom-4 cv:gap-2 cv:text-muted-foreground`} data-canvas-chrome="">
 					{HINT}
 				</div>

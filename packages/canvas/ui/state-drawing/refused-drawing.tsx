@@ -1,6 +1,6 @@
-import { createElement as h, useContext, useEffect } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { REPORTS_DRAW_FAILURE } from "./draw-contexts.js";
+import { useReportsDrawFailure } from "./hooks/use-reports-draw-failure.js";
 
 export interface RefusedDrawingProps {
 	readonly said: string;
@@ -8,7 +8,6 @@ export interface RefusedDrawingProps {
 }
 
 export function RefusedDrawing({ said, failure }: RefusedDrawingProps): ReactElement {
-	const report = useContext(REPORTS_DRAW_FAILURE);
-	useEffect(() => report?.(failure), [report, failure]);
+	useReportsDrawFailure(failure);
 	return <p className="wg-studio-refused cv:m-0 cv:text-base cv:text-[var(--wg-kit-error-ink)]">{said}</p>;
 }

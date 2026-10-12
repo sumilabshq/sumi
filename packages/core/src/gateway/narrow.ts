@@ -1,6 +1,6 @@
 import type { CollectionGateway, FilterRow, Query } from "./contract";
 import { collectionGateway } from "./create";
-import { stableKey } from "./cache";
+import { stableKey } from "./stable-key";
 import { KNOWN_OPERATORS } from "./match";
 import { isAction, verbOf } from "./verbs-of";
 

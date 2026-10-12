@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { propConfig } from "../model.js";
 import type { TileProp } from "../model.js";
-import { stableKey } from "../gateway/cache.js";
+import { stableKey } from "../gateway/stable-key.js";
 import { gatewayOverImplementation } from "../gateway/adapted.js";
 import { inResourceOrder } from "../gateway/implementation-metadata.js";
 import type { GatewayMetadata } from "../gateway/implementation-metadata.js";

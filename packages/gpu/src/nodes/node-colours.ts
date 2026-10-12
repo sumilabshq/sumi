@@ -4,14 +4,14 @@ import { colourOf } from "../style/gpu-tokens.js";
 import type { Rgba } from "../style/gpu-tokens.js";
 
 export type ColourPart = keyof PaintStyle;
-export type Colours = Readonly<Record<ColourPart, Rgba | null>>;
+type Colours = Readonly<Record<ColourPart, Rgba | null>>;
 
 export interface ColourOwner {
 	readonly context: GpuContext;
 	markPaintDirty(): void;
 }
 
-export interface Interaction {
+interface Interaction {
 	readonly hovered: boolean;
 	readonly pressed: boolean;
 }

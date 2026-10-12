@@ -6,7 +6,7 @@ export interface EventNode {
 	readonly parent: EventNode | null;
 }
 
-export interface GpuEvent {
+interface GpuEvent {
 	readonly type: string;
 	readonly clientX: number;
 	readonly clientY: number;

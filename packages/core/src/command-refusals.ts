@@ -1,0 +1,18 @@
+import { createContext } from "react";
+import { toast } from "@widgetarium/kit";
+
+export interface CommandRefusal {
+	readonly name: string;
+	readonly reason: string;
+	readonly ran: boolean;
+}
+
+export type RefusalHandler = (refusal: CommandRefusal) => void;
+
+export function toastRefusal({ reason }: CommandRefusal): void {
+	toast.error(reason);
+}
+
+export const REFUSAL_HANDLER = createContext<RefusalHandler>(toastRefusal);
+
+export const OnRefused = REFUSAL_HANDLER.Provider;

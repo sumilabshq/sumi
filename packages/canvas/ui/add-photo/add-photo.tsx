@@ -4,8 +4,6 @@ import { Icon, IconButton } from "@widgetarium/kit";
 import type { InjectProps } from "@widgetarium/core";
 import type { addPhotoInject } from "../../widgets/add-photo.widget.js";
 import { imageFilesIn } from "../image-files/image-files.js";
-import { SaidLine } from "../said-line/said-line.js";
-import { useRefusal } from "../said-line/use-refusal.js";
 import { Tip } from "../tip/tip.js";
 import { useDroppedPhotos } from "./hooks/use-dropped-photos.js";
 import { usePastedPhotos } from "./hooks/use-pasted-photos.js";
@@ -16,11 +14,7 @@ const ADD_PHOTO_SAID = "Add a reference photo, or drop or paste one on the canva
 export function AddPhoto({ getDrawing, addPhotos }: InjectProps<typeof addPhotoInject>): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const { refusal, heard } = useRefusal();
-	const onPhotos = useCallback(
-		(photos: readonly File[]) => heard(addPhotos({ photos: [...photos] })),
-		[addPhotos, heard],
-	);
+	const onPhotos = useCallback((photos: readonly File[]) => void addPhotos({ photos: [...photos] }), [addPhotos]);
 	usePastedPhotos(getDrawing?.ownsPaste ?? null, onPhotos);
 	useDroppedPhotos(anchor, onPhotos);
 	return (
@@ -41,7 +35,6 @@ export function AddPhoto({ getDrawing, addPhotos }: InjectProps<typeof addPhotoI
 					event.currentTarget.value = "";
 				}}
 			/>
-			<SaidLine said={refusal} />
 		</span>
 	);
 }

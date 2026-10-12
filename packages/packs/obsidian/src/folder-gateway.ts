@@ -1,5 +1,5 @@
 import { collectionGateway, rowOf } from "@widgetarium/core/gateway/create.js";
-import { stableKey } from "@widgetarium/core/gateway/cache.js";
+import { stableKey } from "@widgetarium/core/gateway/stable-key.js";
 import type {
 	CollectionGateway,
 	FilterRow,

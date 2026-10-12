@@ -1,10 +1,10 @@
-import { createElement as h, useEffect, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { Spot } from "../../schemas/selection.schema.js";
+import { useLingeringSpot } from "./hooks/selection/use-lingering-spot.js";
 
 export type SpotTone = "hover" | "picked";
 
-const LEAVES_AFTER_MS = 200;
 const TONE: Readonly<Record<SpotTone, string>> = {
 	hover: "cv:bg-[color-mix(in_srgb,var(--wg-kit-accent)_8%,transparent)]",
 	picked: "cv:bg-[color-mix(in_srgb,var(--wg-kit-accent)_16%,transparent)]",
@@ -17,13 +17,7 @@ export function Highlight({
 	readonly spot: Spot | null;
 	readonly tone: SpotTone;
 }): ReactElement | null {
-	const [last, setLast] = useState<Spot | null>(spot);
-	useEffect(() => {
-		if (spot) return void setLast(spot);
-		const timer = window.setTimeout(() => setLast(null), LEAVES_AFTER_MS);
-		return () => window.clearTimeout(timer);
-	}, [spot]);
-	const shown = spot ?? last;
+	const shown = useLingeringSpot(spot);
 	if (!shown) return null;
 	const { target, radius } = shown;
 	return (

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { stableKey } from "../gateway/cache.js";
+import { stableKey } from "../gateway/stable-key.js";
 import { arrayGateway, valueGateway } from "../gateway/create.js";
 import type { CollectionGateway, ValueGateway } from "../gateway/contract.js";
 import type { EveryValueVerb } from "../gateway/needs.js";

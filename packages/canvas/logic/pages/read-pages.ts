@@ -1,4 +1,5 @@
 import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
+import { watchSource } from "../design/design-reads.js";
 import type { DesignSource } from "../design/design-source.js";
 import { readDesign } from "../design/read-design.js";
 import type { CanvasState } from "../view/canvas-state.js";
@@ -9,4 +10,13 @@ export async function readPages(source: DesignSource, app: string, state: Canvas
 	const { page, keptPage, variants } = state.now();
 	const held = { design: design.value, jobs: source.jobs(app), hasDocs: docs.length > 0, keptPage, variants };
 	return canvasPagesOf(page, held);
+}
+
+export function watchPages(source: DesignSource, app: string, state: CanvasState, changed: () => void): () => void {
+	const stopSource = watchSource(source, app, changed);
+	const stopState = state.watch(["page", "keptPage", "variants"], changed);
+	return () => {
+		stopSource();
+		stopState();
+	};
 }

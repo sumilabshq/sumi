@@ -4,8 +4,6 @@ import { Icon, Segmented } from "@widgetarium/kit";
 import type { InjectProps } from "@widgetarium/core";
 import type { CanvasMode } from "../../schemas/canvas-view.schema.js";
 import type { modeSwitchInject } from "../../widgets/mode-switch.widget.js";
-import { SaidLine } from "../said-line/said-line.js";
-import { useRefusal } from "../said-line/use-refusal.js";
 import { Tip } from "../tip/tip.js";
 
 const MODES: readonly { readonly value: CanvasMode; readonly icon: string; readonly said: string }[] = [
@@ -14,7 +12,6 @@ const MODES: readonly { readonly value: CanvasMode; readonly icon: string; reado
 ];
 
 export function ModeSwitch({ getMode, setMode }: InjectProps<typeof modeSwitchInject>): ReactElement {
-	const { refusal, heard } = useRefusal();
 	return (
 		<>
 			<Segmented<CanvasMode>
@@ -27,11 +24,10 @@ export function ModeSwitch({ getMode, setMode }: InjectProps<typeof modeSwitchIn
 					),
 				}))}
 				value={getMode}
-				onValueChange={(mode) => heard(setMode({ mode }))}
+				onValueChange={(mode) => void setMode({ mode })}
 				size="s"
 				className="cv:rounded-full cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
 			/>
-			<SaidLine said={refusal} />
 		</>
 	);
 }

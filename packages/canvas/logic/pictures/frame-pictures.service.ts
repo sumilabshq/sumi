@@ -94,8 +94,6 @@ export class FramePicturesService {
 	}
 }
 
-export const FRAME_PICTURES = new FramePicturesService();
-
 async function pictureOf(node: HTMLElement, canvasOf: PictureTaker): Promise<Blob> {
 	const canvas = await canvasOf(node, SNAPSHOT_SCALE);
 	const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));

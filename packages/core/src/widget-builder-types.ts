@@ -1,9 +1,8 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import type { DeclaredProps, DrawnProps, GivenProps } from "./gateway/declared";
-import type { askedInput, askedOutput, queryRowHeld } from "./gateway/declared-types";
+import type { askedInput, askedOutput, passedAs, queryRowHeld } from "./gateway/declared-types";
 import type { RowWithRef } from "./gateway/manifest";
 import type { PAGE_ITEM } from "./gateway/page";
-import type { CreatedWidget } from "./widget-api";
 
 export interface PagedView<Item> {
 	readonly items: readonly Item[];
@@ -59,7 +58,14 @@ export type ViewChecked<Props, Wanted> = IsExactly<Props, Wanted> extends true ?
 
 export type WidgetStatesOf<P> = Readonly<Record<string, GivenProps<P>>>;
 
-export type BuiltWidget<P extends DeclaredProps> = CreatedWidget<P> & { readonly states: WidgetStatesOf<P> };
+type HandedKey<P> = { [K in keyof P]: typeof passedAs extends keyof P[K] ? K : never }[keyof P];
+
+export type BuiltGivenProps<P> = GivenProps<Pick<P, HandedKey<P>>> & Required<GivenProps<Omit<P, HandedKey<P>>>>;
+
+export type BuiltWidget<P extends DeclaredProps> = ((given: BuiltGivenProps<P>) => ReactNode) & {
+	readonly declared: P;
+	readonly states: WidgetStatesOf<P>;
+};
 
 export interface WidgetBuilder<P extends DeclaredProps> {
 	inject<Q extends DeclaredProps>(ports: Inject<Q>): WidgetBuilder<Q>;

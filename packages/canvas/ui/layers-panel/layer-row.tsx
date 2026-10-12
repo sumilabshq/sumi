@@ -1,7 +1,8 @@
-import { createElement as h, useEffect, useState } from "react";
+import { createElement as h } from "react";
 import type { MouseEvent, PointerEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import type { LayerDrag } from "./hooks/use-layer-drag.js";
+import { useOpensToPicked } from "./hooks/use-opens-to-picked.js";
 import { canHoldChildren } from "./lib/can-hold.js";
 import type { Layer, LayerKind } from "../layers/layer-tree.js";
 import { Tip } from "../tip/tip.js";
@@ -38,11 +39,7 @@ const OPENER =
 
 export function LayerRow(props: LayerRowProps): ReactElement {
 	const { layer, depth, isLocked, picked, opened, drag, onPick, onHover } = props;
-	const [isOpen, setOpen] = useState(true);
-	const holdsPicked = opened.has(layer.mark);
-	useEffect(() => {
-		if (holdsPicked) setOpen(true);
-	}, [holdsPicked]);
+	const [isOpen, setOpen] = useOpensToPicked(opened.has(layer.mark));
 	const isDraggable = !layer.isHeld && (layer.kind === "widget" || !isLocked);
 	const hasChildren = layer.children.length > 0;
 	return (

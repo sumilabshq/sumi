@@ -46,7 +46,7 @@ export function watchTokens(from: Element, changed: (tokens: GpuTokens) => void)
 	};
 }
 
-export function rgbaOfCss(css: string): Rgba | null {
+function rgbaOfCss(css: string): Rgba | null {
 	const srgb = SRGB_FUNCTION.exec(css);
 	if (srgb) return [Number(srgb[1]), Number(srgb[2]), Number(srgb[3]), srgb[4] === undefined ? 1 : Number(srgb[4])];
 	const rgb = RGB_FUNCTION.exec(css);

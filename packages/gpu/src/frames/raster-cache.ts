@@ -9,7 +9,7 @@ export interface DrawBudget {
 	pending: boolean;
 }
 
-export interface Raster {
+interface Raster {
 	readonly image: Image;
 	readonly scale: number;
 	readonly version: number;
