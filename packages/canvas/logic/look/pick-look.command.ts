@@ -4,7 +4,7 @@ import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { LookPickSchema } from "../../schemas/look.schema.js";
 import type { LookPick } from "../../schemas/look.schema.js";
 import { canvasSourceIn } from "../canvas/canvas-source.js";
-import { staleReads } from "../design/design-reads.js";
+import { sourceChanged } from "../design/design-reads.js";
 
 export class PickLookCommand extends ICommand.input(LookPickSchema) {
 	constructor(
@@ -17,6 +17,6 @@ export class PickLookCommand extends ICommand.input(LookPickSchema) {
 	async run({ settingName, option }: LookPick): Promise<void> {
 		const { design, app } = canvasSourceIn(this.ports);
 		await design.pickLook(app, settingName, option);
-		staleReads(design, app);
+		sourceChanged(design, app);
 	}
 }

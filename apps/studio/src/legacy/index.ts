@@ -31,6 +31,7 @@ export {
 } from "@widgetarium/canvas";
 export type {
 	AgentLook,
+	CanvasOpening,
 	CanvasDoc,
 	DesignSource,
 	DrawnDesign,
@@ -44,6 +45,6 @@ export type {
 	LiveJob,
 	StatePicture,
 } from "@widgetarium/canvas";
-export { DESIGN_OPENED_ON, DesignStage } from "../canvas/design-stage.js";
-export type { CanvasShell, DesignStageProps, DesignViewState } from "../canvas/design-stage.js";
+export { CANVAS_OPENED_ON, DesignStage } from "../canvas/design-stage.js";
+export type { CanvasHandle, CanvasShell, DesignStageProps } from "../canvas/design-stage.js";
 export type { StudioDesign } from "../canvas/studio-canvas.js";

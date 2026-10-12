@@ -8,10 +8,7 @@ const LookPanelWidget = createWidget({
 		getLook: IQuery.output(LookReadSchema.nullable().default(null)),
 		pickLook: ICommand.input(LookPickSchema),
 	},
-	draw: ({ getLook, pickLook }) =>
-		getLook ? (
-			<LookPanel read={getLook} onPick={(settingName, option) => void pickLook({ settingName, option })} />
-		) : null,
+	draw: ({ getLook, pickLook }) => (getLook ? <LookPanel read={getLook} pickLook={pickLook} /> : null),
 });
 
 export const metadata = defineMetadata(LookPanelWidget, {

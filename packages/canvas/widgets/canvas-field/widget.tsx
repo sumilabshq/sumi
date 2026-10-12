@@ -24,7 +24,6 @@ import { CanvasDocSchema } from "../../schemas/doc.schema.js";
 import { DrawingKitSchema } from "../../schemas/drawing.schema.js";
 import { FramePicturesSchema, PictureAsksSchema } from "../../schemas/frame-picture.schema.js";
 import { FrameSizeSchema } from "../../schemas/frame-size.schema.js";
-import { JobSchema } from "../../schemas/job.schema.js";
 import { PhotosSchema } from "../../schemas/photo.schema.js";
 import { SelectAskSchema, SelectionSchema } from "../../schemas/selection.schema.js";
 import { CanvasView } from "./ui/canvas-view.js";
@@ -35,7 +34,6 @@ const CanvasField = createWidget({
 		getDrawing: IQuery.output(DrawingKitSchema.nullable().default(null)),
 		getPages: IQuery.output(CanvasPagesSchema.nullable().default(null)),
 		getDocs: IQuery.input(PageInputSchema).output(PageOf(CanvasDocSchema)),
-		getJobs: IQuery.input(PageInputSchema).output(PageOf(JobSchema)),
 		addPhotos: ICommand.input(PhotosSchema),
 		pickVariant: ICommand.input(VariantPickSchema),
 		getFocusedWidget: IQuery.output(z.string().nullable().default(null)),
@@ -68,7 +66,6 @@ export const metadata = defineMetadata(CanvasField, {
 		getDrawing: { label: "Drawing", hint: "The widgets and the host the pages are drawn with." },
 		getPages: { label: "Tabs", hint: "The page shown and the screens it draws." },
 		getDocs: { label: "Docs", hint: "The spec and the documents written for the app." },
-		getJobs: { label: "Jobs", hint: "The assistant's jobs, for a page being drawn." },
 		addPhotos: { label: "Add photos", hint: "Adds photos dropped or pasted on the field." },
 		pickVariant: { label: "Pick a variant", hint: "Shows another variant of a page." },
 		getFocusedWidget: { label: "Focused widget", hint: "The widget the field flies to." },

@@ -35,6 +35,11 @@ export function staleReads(source: DesignSource, app: string): void {
 	for (const cache of [DESIGN_READS, DOCS_READS, LOOK_READS]) cache.stale(source, app);
 }
 
+export function sourceChanged(source: DesignSource, app: string): void {
+	staleReads(source, app);
+	for (const listener of [...(WATCHES.get(source)?.get(app)?.listeners ?? [])]) listener();
+}
+
 export function watchSource(source: DesignSource, app: string, changed: () => void): () => void {
 	const watches = WATCHES.get(source) ?? new Map<string, Watch>();
 	WATCHES.set(source, watches);

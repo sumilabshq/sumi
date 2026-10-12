@@ -6,7 +6,7 @@ import type { Drawing } from "../../../../schemas/drawing.schema.js";
 import type { FrameSize } from "../../../../schemas/frame-size.schema.js";
 import { SCREEN } from "../../../canvas-ui/frames/screen-class.js";
 import { StateDrawing } from "../../../canvas-ui/frames/state-drawing.js";
-import { gpuFrameIdOf, snapshotKeyOf } from "../../lib/frame-keys.js";
+import { frameIdOf, snapshotKeyOf } from "../../lib/frame-keys.js";
 import { DrawnWhenSeen } from "./drawn-when-seen.js";
 import { GpuScreen } from "./gpu-screen.js";
 import { ScreenBoard } from "./screen-board.js";
@@ -19,8 +19,6 @@ export interface ScreenFrameProps extends Drawing {
 
 interface FramePicture {
 	readonly frame: string;
-	readonly widget: string;
-	readonly state: string;
 	readonly pictureKey: string;
 }
 
@@ -58,12 +56,7 @@ export function ScreenFrame({ label, state, size: canvasSize, registry, host }: 
 function htmlScreenOf(state: DrawnState, size: FrameSize, picture: FramePicture, drawing: Drawing): ReactElement {
 	return (
 		<div className={SCREEN} style={{ minHeight: size.height }} inert data-wg-overlay-root="" data-canvas-screen="">
-			<DrawnWhenSeen
-				minHeight={size.height}
-				widget={picture.widget}
-				state={picture.state}
-				pictureKey={picture.pictureKey}
-			>
+			<DrawnWhenSeen minHeight={size.height} {...picture}>
 				{screenOf(state, size, drawing)}
 			</DrawnWhenSeen>
 		</div>
@@ -73,9 +66,7 @@ function htmlScreenOf(state: DrawnState, size: FrameSize, picture: FramePicture,
 function framePictureOf(state: DrawnState, label: string, registry: Drawing["registry"]): FramePicture {
 	const widget = state.picture?.widget ?? state.board?.tiles[0]?.widget ?? label;
 	return {
-		frame: gpuFrameIdOf(widget, label),
-		widget,
-		state: label,
+		frame: frameIdOf(widget, label),
 		pictureKey: snapshotKeyOf(registry, widget, label, state.picture?.props ?? state.board),
 	};
 }

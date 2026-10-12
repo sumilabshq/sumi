@@ -701,6 +701,62 @@ check(
 	[["Apps/Ranch", "Apps/Ranch", "Apps/Farmhouse", "Apps/Elsewhere"], ["Apps/Farm.md → Apps/Ranch.md"]],
 );
 
+const { DesignStage, CANVAS_OPENED_ON } = await import("../apps/studio/src/canvas/design-stage.js");
+const { ModuleRegistry } = await import("../packages/core/src/engine/module-registry.js");
+const { NO_HOST } = await import("../packages/core/src/engine/host-none.js");
+const { render: drawInto } = await import("../packages/core/src/engine/render.js");
+const { createElement } = await import("react");
+const refusedHere = (): Promise<never> => Promise.reject(new Error("not on this test page"));
+const designSource = {
+	design: async () => ({ screens: [], references: [], widgets: [] }),
+	docs: async () => [],
+	jobs: () => [],
+	onJobs: () => () => undefined,
+	liveJob: () => null,
+	stopJob: refusedHere,
+	drawing: () => ({
+		registry: new ModuleRegistry({}),
+		host: {
+			...NO_HOST,
+			can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
+			slot: (): never => {
+				throw new Error("not on this test page");
+			},
+		},
+	}),
+	onChanged: () => () => undefined,
+	addPhotos: refusedHere,
+	moveLayer: refusedHere,
+	returnToView: refusedHere,
+	look: async () => null,
+	pickLook: refusedHere,
+	pictureOf: null,
+};
+const keptPages: string[] = [];
+const handed: { showPage: (page: string) => void }[] = [];
+const designNode = document.createElement("div");
+document.body.append(designNode);
+drawInto(
+	createElement(DesignStage, {
+		source: designSource,
+		app: "Farm",
+		opening: CANVAS_OPENED_ON,
+		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
+		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
+		size: { width: 1200, height: 800 },
+	}),
+	designNode,
+);
+await settledUntil(() => handed.length > 0);
+handed.at(-1)?.showPage("References");
+await settledUntil(() => keptPages.includes("References"));
+check(
+	"a host asking an open canvas for a page runs the page writer, and the canvas keeps that page",
+	[handed.length > 0, keptPages.at(-1)],
+	[true, "References"],
+);
+drawInto(null, designNode);
+
 if (failed > 0) {
 	console.log(`obsidian studio: ${failed} failed`);
 	process.exit(1);

@@ -11870,6 +11870,9 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:bottom-4 {
 		bottom: calc(var(--cv-spacing) * 4) !important;
 	}
+	.cv\:bottom-16 {
+		bottom: calc(var(--cv-spacing) * 16) !important;
+	}
 	.cv\:left-0 {
 		left: 0px !important;
 	}

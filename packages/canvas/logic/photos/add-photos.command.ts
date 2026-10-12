@@ -4,7 +4,7 @@ import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { PhotosSchema } from "../../schemas/photo.schema.js";
 import type { Photos } from "../../schemas/photo.schema.js";
 import { canvasSourceIn } from "../canvas/canvas-source.js";
-import { staleReads } from "../design/design-reads.js";
+import { sourceChanged } from "../design/design-reads.js";
 
 export class AddPhotosCommand extends ICommand.input(PhotosSchema) {
 	constructor(
@@ -17,6 +17,6 @@ export class AddPhotosCommand extends ICommand.input(PhotosSchema) {
 	async run({ photos }: Photos): Promise<void> {
 		const { design, app } = canvasSourceIn(this.ports);
 		await design.addPhotos(app, photos);
-		staleReads(design, app);
+		sourceChanged(design, app);
 	}
 }

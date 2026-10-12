@@ -1,18 +1,10 @@
 import { msSinceMoved } from "@widgetarium/gpu";
 import type { FramePicture, FramePictures, PictureAsk } from "../../schemas/frame-picture.schema.js";
 import type { PictureTaker } from "../../schemas/drawing.schema.js";
-import { frameIdOf } from "./frame-keys.js";
 import { framePictureOf, keepFramePicture } from "./picture-store.js";
-
-interface Shown extends FramePicture {
-	readonly widget: string;
-	readonly state: string;
-}
 
 interface Waiting {
 	readonly key: string;
-	readonly widget: string;
-	readonly state: string;
 	readonly node: HTMLElement;
 	readonly pictureOf: PictureTaker;
 }
@@ -23,7 +15,7 @@ const STILL_FOR_MS = 1500;
 const AT_ONCE = 1;
 
 export class FramePicturesService {
-	private readonly shown = new Map<string, Shown>();
+	private readonly shown = new Map<string, FramePicture>();
 	private readonly waiting = new Map<string, Waiting>();
 	private readonly queued: string[] = [];
 	private readonly listeners = new Set<() => void>();
@@ -40,10 +32,9 @@ export class FramePicturesService {
 	}
 
 	ask(asks: readonly PictureAsk[], pictureOf: PictureTaker): void {
-		for (const { widget, state, key, node } of asks) {
-			const frame = frameIdOf(widget, state);
+		for (const { frame, key, node } of asks) {
 			if (this.shown.get(frame)?.key === key || this.waiting.get(frame)?.key === key) continue;
-			this.waiting.set(frame, { key, widget, state, node, pictureOf });
+			this.waiting.set(frame, { key, node, pictureOf });
 			void this.storedOrQueued(frame, key);
 		}
 		this.tell();
@@ -87,11 +78,8 @@ export class FramePicturesService {
 
 	private show(frame: string, key: string, picture: Blob): void {
 		const was = this.shown.get(frame);
-		const asked = this.waiting.get(frame);
 		if (was) URL.revokeObjectURL(was.url);
-		const place = asked ?? was;
-		if (!place) return;
-		this.shown.set(frame, { key, url: URL.createObjectURL(picture), widget: place.widget, state: place.state });
+		this.shown.set(frame, { key, url: URL.createObjectURL(picture) });
 		this.tell();
 	}
 
@@ -101,10 +89,7 @@ export class FramePicturesService {
 	}
 
 	private tell(): void {
-		const shown: Record<string, Record<string, FramePicture>> = {};
-		for (const { widget, state, key, url } of this.shown.values())
-			shown[widget] = { ...shown[widget], [state]: { key, url } };
-		this.told = { shown, waiting: this.waiting.size };
+		this.told = { shown: Object.fromEntries(this.shown), waiting: this.waiting.size };
 		for (const listener of [...this.listeners]) listener();
 	}
 }

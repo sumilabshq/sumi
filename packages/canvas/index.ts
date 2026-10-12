@@ -8,6 +8,7 @@ export { CANVAS_SOURCE } from "./logic/canvas/canvas-source.js";
 export type { CanvasSource } from "./logic/canvas/canvas-source.js";
 export type { DesignSource } from "./logic/design/design-source.js";
 export { createCanvasState } from "./logic/view/canvas-state.js";
+export { showPage } from "./logic/pages/show-page.js";
 export type { CanvasField, CanvasMoment, CanvasOpening, CanvasState } from "./logic/view/canvas-state.js";
 export { addPhotos } from "./logic/photos/photo-files.js";
 export type { PhotoAdapter } from "./logic/photos/photo-files.js";

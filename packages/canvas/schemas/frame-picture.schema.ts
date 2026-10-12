@@ -3,13 +3,12 @@ import { z } from "zod";
 export const FramePictureSchema = z.object({ key: z.string(), url: z.string() });
 
 export const FramePicturesSchema = z.object({
-	shown: z.record(z.string(), z.record(z.string(), FramePictureSchema)),
+	shown: z.record(z.string(), FramePictureSchema),
 	waiting: z.number(),
 });
 
 export const PictureAskSchema = z.object({
-	widget: z.string(),
-	state: z.string(),
+	frame: z.string(),
 	key: z.string(),
 	node: z.custom<HTMLElement>((held) => held instanceof HTMLElement),
 });

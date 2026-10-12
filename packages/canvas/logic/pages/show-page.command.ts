@@ -4,6 +4,7 @@ import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import type { z } from "zod";
 import { PageAskSchema } from "../../schemas/canvas-view.schema.js";
 import { canvasSourceIn } from "../canvas/canvas-source.js";
+import { showPage } from "./show-page.js";
 
 export class ShowPageCommand extends ICommand.input(PageAskSchema) {
 	constructor(
@@ -14,7 +15,6 @@ export class ShowPageCommand extends ICommand.input(PageAskSchema) {
 	}
 
 	async run({ page }: z.output<typeof PageAskSchema>): Promise<void> {
-		const change = { page, keptPage: page, selection: null, focusedWidget: null };
-		canvasSourceIn(this.ports).state.change(change, `show ${page}`);
+		showPage(canvasSourceIn(this.ports).state, page);
 	}
 }

@@ -6,7 +6,7 @@ import type { Drawing } from "../../../schemas/drawing.schema.js";
 import { useLayerDrag } from "../hooks/use-layer-drag.js";
 import { useLayersOf } from "../hooks/use-layers-of.js";
 import { useScrolledToPicked } from "../hooks/use-scrolled-to-picked.js";
-import { useShownForAWhile } from "../hooks/use-shown-for-a-while.js";
+import { useShownForAWhile } from "../../canvas-ui/use-shown-for-a-while.js";
 import { ancestorsOf, parentsOf } from "../../canvas-ui/layers/hits.js";
 import type { Projection } from "../lib/layer-drag.js";
 import type { Layer } from "../../canvas-ui/layers/layer-tree.js";
@@ -26,7 +26,7 @@ export interface LayersPanelProps extends Pick<Drawing, "registry"> {
 	readonly keepsLiveCopy: boolean;
 	readonly picked: string | null;
 	readonly onDrop: (dropped: LayerDropped) => Promise<string | null>;
-	readonly onPick: (widget: string, mark: string | null) => void;
+	readonly onPick: (widget: string, mark: string | null) => Promise<string | null>;
 }
 
 const TITLE = "Layers";
@@ -55,7 +55,7 @@ export function LayersPanel({
 	const layers = titledLayers(seen ?? [], registry);
 	const isShown = isOpen && (seen !== null || !picture);
 	const onPick = (mark: string): void => {
-		if (picture) onPicked(picture.widget, mark === picked ? null : mark);
+		if (picture) void onPicked(picture.widget, mark === picked ? null : mark).then(setRefusal);
 	};
 	const opened = useMemo(() => ancestorsOf(parentsOf(seen ?? []), picked), [seen, picked]);
 	useScrolledToPicked(scroller, picked, isShown, INDENT_PX);

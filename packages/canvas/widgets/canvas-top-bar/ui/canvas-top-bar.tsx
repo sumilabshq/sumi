@@ -6,6 +6,8 @@ import type { CanvasPages } from "../../../schemas/canvas-page.schema.js";
 import type { ReadDesign } from "../../../schemas/design.schema.js";
 import type { DrawingKit } from "../../../schemas/drawing.schema.js";
 import type { CanvasTopBarPorts } from "../widget.js";
+import { SaidLine } from "../../canvas-ui/said-line.js";
+import { useRefusal } from "../../canvas-ui/use-refusal.js";
 import { CanvasTools } from "./canvas-tools.js";
 import { AgentLookChip, PageLabel, PicturesProgress, RendererToggle } from "./status-chips.js";
 import { TopBar } from "./top-bar.js";
@@ -25,8 +27,9 @@ const FADED_ON_TURN = "[data-canvas-layer], [data-canvas-layers='open']";
 
 export function CanvasTopBar({ ports, design, drawing, pages }: CanvasTopBarProps): ReactElement {
 	const bar = useRef<HTMLDivElement | null>(null);
+	const { refusal, heard } = useRefusal();
 	const viewOf = (): Element | null => bar.current?.closest("[data-canvas-view]") ?? null;
-	const onPage = (page: string): void => fadedTurn(viewOf(), () => void ports.showPage({ page }));
+	const onPage = (page: string): void => fadedTurn(viewOf(), () => heard(ports.showPage({ page })));
 	const frames = design.screens.reduce((count, screen) => count + screen.states.length, 0);
 	const said = SCREENS_SAID.replace("{count}", String(design.screens.length)).replace("{frames}", String(frames));
 	const head = (
@@ -36,7 +39,7 @@ export function CanvasTopBar({ ports, design, drawing, pages }: CanvasTopBarProp
 					size="s"
 					variant={ports.getIsLayersOpen ? "raised" : "ghost"}
 					label={LAYERS_SAID}
-					onClick={() => void ports.toggleLayers()}
+					onClick={() => heard(ports.toggleLayers())}
 				>
 					<Icon name="panel-left" size={16} />
 				</IconButton>
@@ -45,15 +48,16 @@ export function CanvasTopBar({ ports, design, drawing, pages }: CanvasTopBarProp
 			<span className="cv:text-muted-foreground">{said}</span>
 			<CanvasTools
 				mode={ports.getMode}
-				onMode={(mode) => void ports.setMode({ mode })}
-				onAddPhotos={(photos) => void ports.addPhotos({ photos: [...photos] })}
+				onMode={(mode) => heard(ports.setMode({ mode }))}
+				onAddPhotos={(photos) => heard(ports.addPhotos({ photos: [...photos] }))}
 			/>
 			<PicturesProgress waiting={ports.getFramePictures.waiting} />
+			<SaidLine said={refusal} />
 			<AgentLookChip look={ports.getAgentLook} onPage={onPage} />
 			{drawing.gpu ? (
 				<RendererToggle
 					renderer={ports.getRenderer}
-					onRenderer={(renderer) => void ports.chooseRenderer({ renderer })}
+					onRenderer={(renderer) => heard(ports.chooseRenderer({ renderer }))}
 				/>
 			) : null}
 		</div>
@@ -70,7 +74,7 @@ export function CanvasTopBar({ ports, design, drawing, pages }: CanvasTopBarProp
 			trailing={pages.trailing.map(tabOf)}
 			page={pages.shown}
 			onPage={onPage}
-			onReturn={() => void ports.returnToView()}
+			onReturn={() => heard(ports.returnToView())}
 			start={cornerOf(ports.start)}
 			end={cornerOf(ports.end)}
 			hasCorners={ports.start.length + ports.end.length > 0}

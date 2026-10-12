@@ -17,7 +17,6 @@ export class FocusWidgetCommand extends ICommand.input(WidgetFocusSchema) {
 	async run({ widget }: z.output<typeof WidgetFocusSchema>): Promise<void> {
 		const { state } = canvasSourceIn(this.ports);
 		if (widget === null) return state.change({ focusedWidget: null }, "flown to the widget");
-		const shown = { page: COMPONENTS_PAGE, keptPage: COMPONENTS_PAGE };
-		state.change({ ...shown, selection: null, focusedWidget: widget }, `open ${widget}`);
+		state.change({ page: COMPONENTS_PAGE, focusedWidget: widget }, `open ${widget}`);
 	}
 }

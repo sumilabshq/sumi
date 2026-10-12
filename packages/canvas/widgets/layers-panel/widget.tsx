@@ -21,7 +21,7 @@ const LayersPanelWidget = createWidget({
 		moveLayer: ICommand.input(LayerDropSchema),
 	},
 	draw: ({ getDesign, getDrawing, getPages, getIsLayersOpen, getMode, getSelection, select, moveLayer }) => {
-		const screen = getDesign?.screens.find((one) => one.name === getPages?.shownScreens[0]);
+		const screen = getDesign?.screens.find((one) => one.name === getPages?.shownScreen);
 		if (!screen || !getDrawing) return null;
 		return (
 			<LayersPanel
@@ -30,15 +30,19 @@ const LayersPanelWidget = createWidget({
 				keepsLiveCopy={getMode === "pointer"}
 				registry={getDrawing.registry}
 				picked={getSelection?.mark ?? null}
-				onPick={(widget, mark) => void select({ selection: mark ? { widget, mark, spot: null } : null })}
-				onDrop={async (dropped) => {
-					const answer = await moveLayer(dropped);
-					return answer.ok ? null : answer.reason;
-				}}
+				onPick={(widget, mark) => reasonOf(select({ selection: mark ? { widget, mark, spot: null } : null }))}
+				onDrop={(dropped) => reasonOf(moveLayer(dropped))}
 			/>
 		);
 	},
 });
+
+async function reasonOf(
+	answer: Promise<{ readonly ok: true } | { readonly ok: false; readonly reason: string }>,
+): Promise<string | null> {
+	const heard = await answer;
+	return heard.ok ? null : heard.reason;
+}
 
 export const metadata = defineMetadata(LayersPanelWidget, {
 	title: "Layers panel",

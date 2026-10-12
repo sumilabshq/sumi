@@ -1,9 +1,9 @@
 import { contentHash } from "@widgetarium/core/engine/content-hash.js";
 import type { Drawing } from "../../../schemas/drawing.schema.js";
 
-let lookStamp: string | null = null;
+let lookStamp = { sheets: "", stamp: "" };
 
-export function gpuFrameIdOf(widget: string, state: string): string {
+export function frameIdOf(widget: string, state: string): string {
 	return `${widget}#${state}`;
 }
 
@@ -14,11 +14,10 @@ export function snapshotKeyOf(registry: Drawing["registry"], widget: string, sta
 }
 
 function lookStampOf(): string {
-	lookStamp ??= contentHash(
-		[...document.querySelectorAll("style")]
-			.map((style) => style.textContent ?? "")
-			.filter((sheet) => sheet.includes(".wg-"))
-			.join("\n"),
-	);
-	return `${lookStamp}:${document.body.classList.contains("theme-dark") ? "dark" : "light"}`;
+	const sheets = [...document.querySelectorAll("style")]
+		.map((style) => style.textContent ?? "")
+		.filter((sheet) => sheet.includes(".wg-"))
+		.join("\n");
+	if (sheets !== lookStamp.sheets) lookStamp = { sheets, stamp: contentHash(sheets) };
+	return `${lookStamp.stamp}:${document.body.classList.contains("theme-dark") ? "dark" : "light"}`;
 }

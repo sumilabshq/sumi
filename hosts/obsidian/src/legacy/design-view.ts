@@ -5,8 +5,8 @@ import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import type { DesignSource } from "@widgetarium/studio";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { DESIGN_OPENED_ON, DesignStage } from "@widgetarium/studio";
-import type { DesignViewState, GpuSupply } from "@widgetarium/studio";
+import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
+import type { CanvasHandle, CanvasOpening, GpuSupply } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { obsidianDesignSource } from "./design-port-obsidian.js";
 import type WidgetariumPlugin from "../main.js";
@@ -18,25 +18,26 @@ const TITLE = "Design · {app}";
 export class DesignView extends ItemView {
 	private appName = "";
 	private fromNote = "";
-	private view: DesignViewState = DESIGN_OPENED_ON;
+	private view: CanvasOpening = CANVAS_OPENED_ON;
 	private node: HTMLElement | null = null;
-	private readonly port: DesignSource;
+	private canvas: CanvasHandle | null = null;
+	private readonly onCanvas = (canvas: CanvasHandle): void => {
+		this.canvas = canvas;
+	};
+	private readonly source: DesignSource;
 	private readonly gpu: GpuSupply;
-	private readonly onView = (view: DesignViewState): void => {
+	private readonly onKept = (view: CanvasOpening): void => {
 		this.view = view;
 		this.app.workspace.requestSaveLayout();
-		this.draw();
 	};
 	private readonly ownsPaste = (): boolean => this.app.workspace.getActiveViewOfType(DesignView) === this;
-	private readonly fieldOf = (): HTMLElement | null =>
-		this.node?.querySelector<HTMLElement>(".wg-design-field") ?? null;
 
 	constructor(
 		leaf: WorkspaceLeaf,
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.port = obsidianDesignSource(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
+		this.source = obsidianDesignSource(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 
@@ -58,6 +59,7 @@ export class DesignView extends ItemView {
 	}
 
 	override async setState(state: unknown, result: ViewStateResult): Promise<void> {
+		const isDrawn = this.canvas !== null && textIn(state, "app") === this.appName;
 		this.appName = textIn(state, "app");
 		this.fromNote = textIn(state, "fromNote");
 		this.view = {
@@ -65,6 +67,7 @@ export class DesignView extends ItemView {
 			isLayersOpen: isObject(state) && state["layers"] === true,
 			mode: isObject(state) && state["mode"] === "pointer" ? "pointer" : "hand",
 		};
+		if (isDrawn && this.view.page) this.canvas?.showPage(this.view.page);
 		await super.setState(state, result);
 		refreshHeader(this.leaf);
 		this.draw();
@@ -90,11 +93,9 @@ export class DesignView extends ItemView {
 		const node = this.node;
 		const size = { width: this.contentEl.clientWidth, height: this.contentEl.clientHeight };
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
-		const { port, view, onView, fieldOf, ownsPaste, gpu } = this;
-		render(
-			h(DesignStage, { key: this.appName, port, app: this.appName, view, onView, size, fieldOf, ownsPaste, gpu }),
-			node,
-		);
+		const { source, onKept, onCanvas, ownsPaste, gpu } = this;
+		const app = this.appName;
+		render(h(DesignStage, { key: app, source, app, opening: this.view, onKept, onCanvas, size, ownsPaste, gpu }), node);
 	}
 }
 

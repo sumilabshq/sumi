@@ -7,9 +7,10 @@ import type { ReadDesign } from "../../../schemas/design.schema.js";
 import type { CanvasDoc } from "../../../schemas/doc.schema.js";
 import type { DrawingKit } from "../../../schemas/drawing.schema.js";
 import type { FrameSize } from "../../../schemas/frame-size.schema.js";
-import type { Job } from "../../../schemas/job.schema.js";
 import type { Selection } from "../../../schemas/selection.schema.js";
 import { imageFilesIn } from "../../canvas-ui/image-files.js";
+import { SaidLine } from "../../canvas-ui/said-line.js";
+import { useRefusal } from "../../canvas-ui/use-refusal.js";
 import { useFliesToWidget } from "../hooks/camera/use-flies-to-widget.js";
 import { useLayerFit } from "../hooks/camera/use-layer-fit.js";
 import { PRESSABLE_CONTROLS, usePanZoom } from "../hooks/camera/use-pan-zoom.js";
@@ -29,7 +30,6 @@ export interface CanvasFieldProps {
 	readonly design: ReadDesign;
 	readonly drawing: DrawingKit;
 	readonly pages: CanvasPages;
-	readonly jobs: readonly Job[];
 	readonly docs: readonly CanvasDoc[];
 	readonly viewport: FrameSize;
 }
@@ -41,29 +41,33 @@ const FIELD =
 const LAYER =
 	"cv:absolute cv:top-0 cv:left-0 cv:flex cv:w-max cv:origin-top-left cv:flex-col cv:items-start cv:gap-[120px] cv:p-20 cv:motion-safe:animate-canvas-fade-in";
 
-export function CanvasField({ ports, design, drawing, pages, jobs, docs, viewport }: CanvasFieldProps): ReactElement {
+export function CanvasField({ ports, design, drawing, pages, docs, viewport }: CanvasFieldProps): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const { getMode: mode, getSelection: picked } = ports;
+	const { refusal, heard } = useRefusal();
 	const isPointer = mode === "pointer";
 	const grips = { isHand: mode === "hand", pressable: PRESSABLE_IN_DESIGN, ownScroll: null };
-	const kept = { camera: ports.getCamera, onKept: (camera: Camera) => void ports.moveCamera({ camera }) };
+	const kept = { camera: ports.getCamera, onKept: (camera: Camera) => heard(ports.moveCamera({ camera })) };
 	const pan = usePanZoom(layerRef, useLayerFit(layerRef, viewport), grips, kept);
-	const onPick = useCallback((selection: Selection | null) => void ports.select({ selection }), [ports]);
+	const onPick = useCallback((selection: Selection | null) => heard(ports.select({ selection })), [ports, heard]);
 	const picking = { picked, onPick };
 	const selection = useCanvasSelection(layerRef, pan, picking);
 	usePickResolved(layerRef, pan, picking);
 	const clear = useCallback(() => onPick(null), [onPick]);
 	useEscapeClears(picked !== null, clear);
-	const flown = useCallback(() => void ports.focusWidget({ widget: null }), [ports]);
+	const flown = useCallback(() => heard(ports.focusWidget({ widget: null })), [ports, heard]);
 	useFliesToWidget({ layerRef, pan, widget: ports.getFocusedWidget, onDone: flown });
-	const addPhotos = useCallback((photos: readonly File[]) => void ports.addPhotos({ photos: [...photos] }), [ports]);
+	const addPhotos = useCallback(
+		(photos: readonly File[]) => heard(ports.addPhotos({ photos: [...photos] })),
+		[ports, heard],
+	);
 	usePastedPhotos(drawing.ownsPaste, addPhotos);
 	const { registry, host } = drawing;
 	const regions = useMemo(() => {
-		const opener = widgetOpenerOf(registry, (widget) => void ports.focusWidget({ widget }));
-		const onVariant = (page: string, screen: string): void => void ports.pickVariant({ page, screen });
-		return regionsOfPage({ design, pages, jobs, docs, opener, onVariant, registry, host });
-	}, [design, pages, jobs, docs, registry, host, ports]);
+		const opener = widgetOpenerOf(registry, (widget) => heard(ports.focusWidget({ widget })));
+		const onVariant = (page: string, screen: string): void => heard(ports.pickVariant({ page, screen }));
+		return regionsOfPage({ design, pages, docs, opener, onVariant, registry, host });
+	}, [design, pages, docs, registry, host, ports, heard]);
 	const gpu = useGpuStage(ports.getRenderer === "gpu" ? drawing.gpu : null, layerRef, pan);
 	return (
 		<GPU_FRAMES.Provider value={gpu.frames}>
@@ -94,6 +98,7 @@ export function CanvasField({ ports, design, drawing, pages, jobs, docs, viewpor
 					/>
 				) : null}
 				<ZoomBar pan={pan} />
+				<SaidLine said={refusal} className={`${FLOATING} cv:right-4 cv:bottom-16`} />
 				<div className={`${FLOATING} cv:right-4 cv:bottom-4 cv:gap-2 cv:text-muted-foreground`} data-canvas-chrome="">
 					{HINT}
 				</div>

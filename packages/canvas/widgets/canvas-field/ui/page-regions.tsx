@@ -6,7 +6,6 @@ import type { DrawnDesign } from "../../../schemas/design.schema.js";
 import type { CanvasDoc } from "../../../schemas/doc.schema.js";
 import type { Drawing } from "../../../schemas/drawing.schema.js";
 import { DESKTOP_FRAME } from "../../../schemas/frame-size.schema.js";
-import type { Job } from "../../../schemas/job.schema.js";
 import type { WidgetOpener } from "./frames/noted-picture.js";
 import { DocsRegion } from "./regions/docs-region.js";
 import { PagesRegion } from "./regions/pages-region.js";
@@ -18,7 +17,6 @@ import { WidgetsRegion } from "./regions/widgets-region.js";
 export interface PageRegionsAsk extends Drawing {
 	readonly design: DrawnDesign;
 	readonly pages: CanvasPages;
-	readonly jobs: readonly Job[];
 	readonly docs: readonly CanvasDoc[];
 	readonly opener: WidgetOpener;
 	readonly onVariant: (page: string, screen: string) => void;
@@ -34,17 +32,14 @@ export function regionsOfPage(ask: PageRegionsAsk): ReactElement[] {
 	return screenRegionsOf(ask);
 }
 
-function screenRegionsOf({ design, pages, jobs, opener, onVariant, registry, host }: PageRegionsAsk): ReactElement[] {
+function screenRegionsOf({ design, pages, opener, onVariant, registry, host }: PageRegionsAsk): ReactElement[] {
 	const page = pages.shown;
 	const shown = design.screens.filter((screen) => pages.shownScreens.includes(screen.name));
-	const ofPage = design.references.filter(
-		(reference) => reference.pages.length === 0 || reference.pages.includes(page),
-	);
-	const job = jobs.find((one) => one.id === pages.running[page]) ?? null;
+	const job = pages.shownJob;
 	const aside = (
 		<VariantSwitch
 			variants={pages.variants}
-			shown={pages.shownScreens[0] ?? ""}
+			shown={pages.shownScreen ?? ""}
 			onVariant={(screen) => onVariant(page, screen)}
 		/>
 	);
@@ -54,5 +49,5 @@ function screenRegionsOf({ design, pages, jobs, opener, onVariant, registry, hos
 		) : (
 			<PagesRegion key="pages" screens={shown} size={DESKTOP_FRAME} aside={aside} registry={registry} host={host} />
 		);
-	return [<ReferencesRegion key="references" references={ofPage} opener={opener} />, drawn];
+	return [<ReferencesRegion key="references" references={pages.shownReferences} opener={opener} />, drawn];
 }

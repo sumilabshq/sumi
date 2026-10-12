@@ -26,11 +26,18 @@ export function canvasPagesOf(asked: string, held: CanvasHeld): CanvasPages {
 	const all = [...tabs.leading, ...tabs.screens, ...tabs.trailing];
 	const shown = shownPageOf(asked, all);
 	const ofPage = screensOfPage(held.design.screens, shown);
+	const running = runningJobsOf(held.jobs);
+	const shownScreens = shownVariantOf(ofPage, held.variants[shown]).map((screen) => screen.name);
 	return {
 		...tabs,
 		shown,
-		running: runningJobsOf(held.jobs),
-		shownScreens: shownVariantOf(ofPage, held.variants[shown]).map((screen) => screen.name),
+		running,
+		shownScreens,
+		shownScreen: shownScreens[0] ?? null,
+		shownReferences: held.design.references.filter(
+			(reference) => reference.pages.length === 0 || reference.pages.includes(shown),
+		),
+		shownJob: held.jobs.find((job) => job.id === running[shown]) ?? null,
 		variants: ofPage.length < 2 ? [] : ofPage.map(({ name }) => ({ screen: name, letter: variantLetterOf(name) })),
 	};
 }

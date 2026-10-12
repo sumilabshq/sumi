@@ -15,7 +15,20 @@ export interface PhotoAdapter {
 	process(path: string, change: (text: string) => string): Promise<string>;
 }
 
-export async function addPhotos(adapter: PhotoAdapter, app: string, photos: readonly File[]): Promise<void> {
+const ADDING = new Map<string, Promise<void>>();
+
+export function addPhotos(adapter: PhotoAdapter, app: string, photos: readonly File[]): Promise<void> {
+	const before = ADDING.get(app) ?? Promise.resolve();
+	const adding = before.catch(() => undefined).then(() => photosWritten(adapter, app, photos));
+	ADDING.set(app, adding);
+	void adding.finally(() => {
+		if (ADDING.get(app) === adding) ADDING.delete(app);
+	});
+	return adding;
+}
+
+// TODO: write the files and the references as one step, and find photo files no reference names
+async function photosWritten(adapter: PhotoAdapter, app: string, photos: readonly File[]): Promise<void> {
 	if (photos.length === 0) return;
 	const folder = `${designFolderOf(app)}/${REFERENCES_FOLDER}`;
 	if (!(await adapter.exists(folder))) await adapter.mkdir(folder);

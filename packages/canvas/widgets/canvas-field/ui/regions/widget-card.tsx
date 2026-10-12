@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { Drawing } from "../../../../schemas/drawing.schema.js";
 import { cardPxOf } from "../../lib/card-width.js";
-import { snapshotKeyOf } from "../../lib/frame-keys.js";
+import { frameIdOf, snapshotKeyOf } from "../../lib/frame-keys.js";
 import { DRAWS_AT_ONCE } from "../../../canvas-ui/draw-contexts.js";
 import { DefaultDrawing } from "../frames/default-drawing.js";
 import { DrawnWhenSeen } from "../frames/drawn-when-seen.js";
@@ -35,8 +35,7 @@ export function WidgetCard({ id, label, props, registry, host }: WidgetCardProps
 				<DRAWS_AT_ONCE.Provider value={true}>
 					<DrawnWhenSeen
 						minHeight={CARD_UNSEEN_PX}
-						widget={id}
-						state={label}
+						frame={frameIdOf(id, label)}
 						pictureKey={snapshotKeyOf(registry, id, label, props ?? null)}
 					>
 						{props ? (

@@ -48,7 +48,8 @@ export function createCanvasState(opening: CanvasOpening): CanvasState {
 			watchers.add(watcher);
 			return () => void watchers.delete(watcher);
 		},
-		change: (next, reason) => {
+		change: (asked, reason) => {
+			const next = withPageTurned(moment, asked);
 			const changed = fieldsChanged(moment, next);
 			if (changed.length === 0) return;
 			const was = moment;
@@ -59,6 +60,12 @@ export function createCanvasState(opening: CanvasOpening): CanvasState {
 				if (watcher.fields.some((field) => changed.includes(field))) watcher.changed();
 		},
 	};
+}
+
+function withPageTurned(moment: CanvasMoment, asked: Partial<CanvasMoment>): Partial<CanvasMoment> {
+	if (asked.page === undefined || asked.page === moment.page) return asked;
+	const turned = { keptPage: asked.page, selection: null, camera: null, focusedWidget: null };
+	return { ...turned, ...asked };
 }
 
 function fieldsChanged(moment: CanvasMoment, next: Partial<CanvasMoment>): CanvasField[] {
