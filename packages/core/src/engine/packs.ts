@@ -76,7 +76,6 @@ export interface ImplementationPorts extends HandlerHost {
 	readonly catalogue: CataloguePort;
 	readonly studio: StudioHostPort;
 	readonly studioState: StudioState;
-	readonly sources: Readonly<Record<string, unknown>>;
 }
 
 export interface PropPort {
@@ -134,7 +133,6 @@ export interface PortsHost {
 	readonly catalogue?: CataloguePort | undefined;
 	readonly studio?: StudioHostPort | undefined;
 	readonly studioState?: StudioState | undefined;
-	readonly sources?: Readonly<Record<string, unknown>> | undefined;
 	readonly confirm?: ((said: string) => Promise<boolean>) | undefined;
 	readonly notePath?: string | undefined;
 	readonly pageParamsKey?: string | undefined;
@@ -214,7 +212,6 @@ export function portsOf(host: PortsHost, refs: RefsPort, self: string): Implemen
 		catalogue: host.catalogue ?? NO_CATALOGUE_PORT,
 		studio: host.studio ?? NO_STUDIO_HOST,
 		studioState: host.studioState ?? NO_STUDIO_STATE,
-		sources: host.sources ?? {},
 		confirm: host.confirm ?? (async () => false),
 	};
 }

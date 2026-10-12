@@ -53,7 +53,6 @@ const ports: ImplementationPorts = {
 	catalogue: NO_CATALOGUE_PORT,
 	studio: NO_STUDIO_HOST,
 	studioState: NO_STUDIO_STATE,
-	sources: {},
 	network: { can: false, request: () => Promise.reject(new Error("no network")) },
 	vault: {
 		can: false,

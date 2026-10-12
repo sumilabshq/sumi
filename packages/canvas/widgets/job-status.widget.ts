@@ -10,5 +10,3 @@ export const JobStatusWidget = widget()
 		stopJob: ICommand.input(JobAskedSchema),
 	})
 	.render(JobStatus);
-
-export default JobStatusWidget;

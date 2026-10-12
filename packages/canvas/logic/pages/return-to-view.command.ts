@@ -1,20 +1,19 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { ICommand } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
+import type { DesignSource } from "../design/design-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 import { readPages } from "./read-pages.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
 
 export class ReturnToViewCommand extends ICommand {
 	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
+		private readonly source: DesignSource,
+		private readonly app: string,
+		private readonly state: CanvasState,
 	) {
 		super();
 	}
 
 	async run(): Promise<void> {
-		const source = canvasSourceIn(this.ports);
-		const { shown } = await readPages(source);
-		await source.design.returnToView(source.app, shown);
+		const { shown } = await readPages(this.source, this.app, this.state);
+		await this.source.returnToView(this.app, shown);
 	}
 }

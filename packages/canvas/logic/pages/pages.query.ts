@@ -1,28 +1,27 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { CanvasPagesSchema } from "../../schemas/canvas-page.schema.js";
 import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
 import { watchSource } from "../design/design-reads.js";
+import type { DesignSource } from "../design/design-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 import { readPages } from "./read-pages.js";
 
 export class PagesQuery extends IQuery.output(CanvasPagesSchema) {
 	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
+		private readonly source: DesignSource,
+		private readonly app: string,
+		private readonly state: CanvasState,
 	) {
 		super();
 	}
 
 	async get(): Promise<CanvasPages> {
-		return readPages(canvasSourceIn(this.ports));
+		return readPages(this.source, this.app, this.state);
 	}
 
 	override subscribe(changed: () => void): () => void {
-		const { design, app, state } = canvasSourceIn(this.ports);
-		const stopSource = watchSource(design, app, changed);
-		const stopState = state.watch(["page", "keptPage", "variants"], changed);
+		const stopSource = watchSource(this.source, this.app, changed);
+		const stopState = this.state.watch(["page", "keptPage", "variants"], changed);
 		return () => {
 			stopSource();
 			stopState();

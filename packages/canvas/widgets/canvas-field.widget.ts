@@ -17,7 +17,7 @@ import { PhotosSchema } from "../schemas/photo.schema.js";
 import { SelectAskSchema, SelectionSchema } from "../schemas/selection.schema.js";
 import { CanvasView } from "../ui/canvas-view/canvas-view.js";
 
-export const CanvasField = widget()
+export const CanvasFieldWidget = widget()
 	.inject({
 		getDesign: IQuery.output(ReadDesignSchema.nullable().default(null)),
 		getDrawing: IQuery.output(DrawingKitSchema.nullable().default(null)),
@@ -42,5 +42,3 @@ export const CanvasField = widget()
 		status: ISlot.array(),
 	})
 	.render(CanvasView);
-
-export default CanvasField;

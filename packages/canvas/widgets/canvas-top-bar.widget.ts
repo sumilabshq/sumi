@@ -35,5 +35,3 @@ export const CanvasTopBarWidget = widget()
 		end: ISlot.array(),
 	})
 	.render(CanvasTopBar);
-
-export default CanvasTopBarWidget;

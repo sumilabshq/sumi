@@ -2,9 +2,12 @@ import { JSDOM } from "jsdom";
 import { byId } from "./dom-find.ts";
 import { present } from "./page-dom.ts";
 
-const dom = new JSDOM(`<!doctype html><body><div id="host"></div><div id="broken"></div></body>`, {
-	pretendToBeVisual: true,
-});
+const dom = new JSDOM(
+	`<!doctype html><body><div id="host"></div><div id="broken"></div><div id="plain"></div><div id="extra"></div></body>`,
+	{
+		pretendToBeVisual: true,
+	},
+);
 Object.assign(globalThis, {
 	window: dom.window,
 	document: dom.window.document,
@@ -22,6 +25,7 @@ const { widget } = await import("../packages/core/src/widget-builder.ts");
 const { manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
 const { statesIn } = await import("../packages/core/src/registry-scope.ts");
 const { checkWidget } = await import("../packages/core/src/widget-check.ts");
+const { offsetOfCursor, pageAt } = await import("../packages/core/src/gateway/page.ts");
 const fixture = await import("./widget-builder-fixture.ts");
 const { ports, seen, askedIds } = fixture;
 
@@ -107,6 +111,52 @@ check("a refused command answers ok false", refused.ok, false);
 check("a slot arrives as drawn children", [Array.isArray(last().extras), last().extras.length], [true, 0]);
 check("the view drew the values", host.querySelector("#board")?.textContent, "Today: 150 Task 3");
 
+const plain = byId(document, "plain");
+const renamedPlainly: unknown[] = [];
+render(
+	h(Board, {
+		getTitle: "Plain",
+		getTasks: ({ cursor, limit }) => {
+			const offset = offsetOfCursor(cursor);
+			return pageAt(fixture.TASKS.slice(offset, offset + limit), offset, fixture.TASKS.length);
+		},
+		getTask: ({ id }) => fixture.TASKS.find((task) => task.id === id) ?? null,
+		getFiltered: new fixture.FilteredQuery(),
+		rename: (input) => {
+			renamedPlainly.push(input);
+			return { ...input, done: true };
+		},
+		extras: [h("em", { key: "note", id: "extra-note" }, "drawn by the app")],
+	}),
+	plain,
+);
+await settle();
+check("a plain value stands for a value query", last().getTitle, "Plain");
+check(
+	"a plain function answers a paged query, a page at a time",
+	[last().getTasks.items.length, last().getTasks.total, last().getTasks.hasMore],
+	[100, 150, true],
+);
+last().getTask.ask({ id: "t7" });
+await settle();
+check("a plain function answers an asked query with the input asked", last().getTask.data?.title, "Task 7");
+check("a plain function runs as a command", await last().rename({ id: "t2", title: "Plainly" }), {
+	ok: true,
+	output: { id: "t2", title: "Plainly", done: true },
+});
+const refusedPlainly = await last().rename({ id: "t2", title: "" });
+check(
+	"and its input is checked at the crossing before it runs",
+	[refusedPlainly.ok, refusedPlainly.ok ? null : refusedPlainly.ran, renamedPlainly.length],
+	[false, false, 1],
+);
+const [Extra] = last().extras;
+check("an element handed to a slot arrives as a slot item", [last().extras.length, Extra?.id], [1, "note"]);
+const extraNode = byId(document, "extra");
+if (Extra) render(h(Extra), extraNode);
+await settle();
+check("and draws that element", extraNode.querySelector("#extra-note")?.textContent, "drawn by the app");
+
 const broken = byId(document, "broken");
 render(h(Board, { getTitle: new fixture.BrokenTitleQuery() }), broken);
 await settle();
@@ -122,6 +172,9 @@ check("without .failed() the engine's notice is drawn", broken.querySelector(".w
 render(h(Plain, { getTitle: new fixture.SlowTitleQuery() }), broken);
 await settle();
 check("without .pending() nothing is drawn while reading", broken.innerHTML, "");
+render(h(Plain, { getTitle: () => "From a function" }), broken);
+await settle();
+check("a plain function answers a value query", broken.textContent, "From a function");
 
 check("states ride on the widget", statesIn({ default: Board }), { Empty: { getTitle: "Nothing yet", getTasks: [] } });
 const refusalOf = (declare: () => unknown): string => {
@@ -154,6 +207,8 @@ check(
 
 render(null, host);
 render(null, broken);
+render(null, plain);
+render(null, extraNode);
 if (failed > 0) {
 	console.log(`${failed} check(s) failed`);
 	process.exit(1);

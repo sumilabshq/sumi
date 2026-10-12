@@ -1,19 +1,14 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
-import { ICommand } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import type { z } from "zod";
+import { ICommand } from "@widgetarium/core";
 import { SelectAskSchema } from "../../schemas/selection.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 
 export class SelectCommand extends ICommand.input(SelectAskSchema) {
-	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
-	) {
+	constructor(private readonly state: CanvasState) {
 		super();
 	}
 
 	async run({ selection }: z.output<typeof SelectAskSchema>): Promise<void> {
-		canvasSourceIn(this.ports).state.change({ selection }, selection ? `pick ${selection.mark}` : "clear the pick");
+		this.state.change({ selection }, selection ? `pick ${selection.mark}` : "clear the pick");
 	}
 }

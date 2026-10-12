@@ -1,25 +1,22 @@
 import type { z } from "zod";
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { JobAskedSchema, LiveJobSchema } from "../../schemas/job.schema.js";
 import type { LiveJob } from "../../schemas/job.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { DesignSource } from "../design/design-source.js";
 
 export class LiveJobQuery extends IQuery.input(JobAskedSchema).output(LiveJobSchema.nullable()) {
 	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
+		private readonly source: DesignSource,
+		private readonly app: string,
 	) {
 		super();
 	}
 
 	async query({ id }: z.output<typeof JobAskedSchema>): Promise<LiveJob | null> {
-		const { design, app } = canvasSourceIn(this.ports);
-		return design.liveJob(app, id);
+		return this.source.liveJob(this.app, id);
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return canvasSourceIn(this.ports).design.onJobs(changed);
+		return this.source.onJobs(changed);
 	}
 }

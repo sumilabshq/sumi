@@ -12677,9 +12677,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:\[\&_\.wg-kit-pop-inner\]\:overflow-y-auto .wg-kit-pop-inner {
 		overflow-y: auto !important;
 	}
-	.cv\:\[\&_\.wg-tree-region\]\:p-0 .wg-tree-region {
-		padding: 0px !important;
-	}
 	.cv\:\[\&_button\]\:h-\[calc\(var\(--wg-kit-control-s\)-4px\)\] button {
 		height: calc(var(--wg-kit-control-s) - 4px) !important;
 	}

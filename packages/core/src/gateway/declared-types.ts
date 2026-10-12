@@ -1,3 +1,4 @@
+import type { ReactElement } from "react";
 import type { z } from "zod";
 import type { Action, CanResult, GatewayBase, Query, Row, RowsResult } from "./contract";
 import type { ManifestCard, PropCommon, RecordRef, RowWithRef, WidgetSize } from "./manifest";
@@ -259,7 +260,9 @@ type DrawnOf<C> = C extends { readonly [passedAs]?: infer Drawn }
 						? DrawnList<Held, Verbs, CreateIn, PatchIn>
 						: never;
 
-type GivenOf<C> = [SlotGivenOf<C>] extends [never] ? GivenOfGateway<C> : SlotGivenOf<C>;
+type GivenOf<C> = [SlotGivenOf<C>] extends [never] ? GivenOfGateway<C> : SlotGivenOf<C> | SlotElementsOf<C>;
+
+type SlotElementsOf<C> = SlotGivenOf<C> extends readonly unknown[] ? readonly ReactElement[] : ReactElement;
 
 type SlotGivenOf<C> = C extends { readonly [slotGiven]?: infer State }
 	? unknown extends State
@@ -271,17 +274,25 @@ type GivenOfGateway<C> = C extends { readonly [passedAs]?: infer Drawn }
 	? Drawn
 	: C extends { readonly [commandInput]?: unknown; readonly [commandOutput]?: infer Output }
 		? C extends abstract new () => CommandContract<infer Received, unknown>
-			? CommandContract<Received, Output>
+			? CommandContract<Received, Output> | ((input: Received) => Answer<Output>)
 			: never
 		: C extends { readonly [askedOutput]?: infer Out }
-			? AskedGiven<Out>
+			? AskedGiven<Out> | AskedFunctionOf<C>
 			: C extends { readonly [queryRowHeld]?: infer Held }
 				? readonly Held[] | QueryRowsContract<Held> | (GatewayBase & { readonly kind: "collection" })
 				: C extends { readonly [valueHeld]?: infer Held }
-					? Held | AnyImplementation<C>
+					? Held | AnyImplementation<C> | ValueFunctionOf<C, Held>
 					: C extends { readonly [rowHeld]?: infer Held }
 						? readonly Held[] | AnyImplementation<C>
 						: never;
+
+type AskedFunctionOf<C> = C extends abstract new () => QueryAskContract<infer Received, infer Returned>
+	? (input: Received) => Answer<Returned>
+	: never;
+
+type ValueFunctionOf<C, Held> = C extends abstract new () => QueryValueContract<unknown>
+	? () => Answer<Held | null>
+	: never;
 
 type DrawnValue<Held, Verbs, ValueIn> = (["get"] extends [Verbs] ? { readonly value: Held } : unknown) &
 	(["update"] extends [Verbs] ? { readonly update: Action<ValueIn, Held | null> } : unknown) &

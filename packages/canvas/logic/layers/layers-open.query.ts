@@ -1,24 +1,19 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { z } from "zod";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 
 export class LayersOpenQuery extends IQuery.output(z.boolean()) {
 	readonly settlesNow = true;
 
-	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
-	) {
+	constructor(private readonly state: CanvasState) {
 		super();
 	}
 
 	get(): boolean {
-		return canvasSourceIn(this.ports).state.now().isLayersOpen;
+		return this.state.now().isLayersOpen;
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return canvasSourceIn(this.ports).state.watch(["isLayersOpen"], changed);
+		return this.state.watch(["isLayersOpen"], changed);
 	}
 }

@@ -1,25 +1,20 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { CanvasModeSchema } from "../../schemas/canvas-view.schema.js";
 import type { CanvasMode } from "../../schemas/canvas-view.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 
 export class ModeQuery extends IQuery.output(CanvasModeSchema) {
 	readonly settlesNow = true;
 
-	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
-	) {
+	constructor(private readonly state: CanvasState) {
 		super();
 	}
 
 	get(): CanvasMode {
-		return canvasSourceIn(this.ports).state.now().mode;
+		return this.state.now().mode;
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return canvasSourceIn(this.ports).state.watch(["mode"], changed);
+		return this.state.watch(["mode"], changed);
 	}
 }

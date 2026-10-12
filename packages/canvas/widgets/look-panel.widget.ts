@@ -8,5 +8,3 @@ export const LookPanelWidget = widget()
 		pickLook: ICommand.input(LookPickSchema),
 	})
 	.render(LookPanel);
-
-export default LookPanelWidget;

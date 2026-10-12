@@ -23,8 +23,8 @@ import { shutHostFor } from "./gateway/handler-context";
 import type { HandlerContext } from "./gateway/handler-context";
 import { useHandlerContext } from "./gateway/use-signal-until-unmount";
 import { isObject } from "./engine/is-object.js";
-import { useSlotsOf } from "./slot-components.js";
-import type { MountEntry } from "./gateway/host.js";
+import { useSlotsGiven } from "./slot-nodes.js";
+import { implementationOfFunction, isQueryFunction } from "./gateway/function-handler.js";
 
 const NOT_READ = "A prop could not be read";
 const NOT_DECLARED = 'prop "{name}" declares no gateway interface';
@@ -119,7 +119,7 @@ function readOf(name: string, declaration: Declaration | null, given: GivenProps
 	if (!declaration) throw new TypeError(NOT_DECLARED.replace("{name}", name));
 	if (declaration.kind === "mounts")
 		return {
-			value: useSlotsOf(entriesOf(fieldOf(given["mounts"], name) ?? given[name]), declaration.held?.single === true),
+			value: useSlotsGiven(fieldOf(given["mounts"], name) ?? given[name], declaration.held?.single === true),
 			failure: null,
 		};
 	const hand = HANDED[declaration.kind];
@@ -200,7 +200,7 @@ function handlerContractOf(handler: object): HandlerContract {
 }
 
 function useGateway(name: string, declaration: Declaration, given: unknown): AdaptedGateway {
-	const isPlain = !isGateway(given) && !isImplementation(declaration, given);
+	const isPlain = !isGateway(given) && !isImplementation(declaration, given) && typeof given !== "function";
 	return useMemo(() => gatewayOver(name, declaration, given), [isPlain ? stableKey(given) : given]);
 }
 
@@ -208,6 +208,10 @@ function gatewayOver(name: string, declaration: Declaration, given: unknown): Ad
 	if (isGateway(given)) return given;
 	if (isImplementation(declaration, given))
 		return gatewayOverImplementation(name, declaration, given, { host: shutHostFor(name) });
+	if (isQueryFunction(declaration, given))
+		return gatewayOverImplementation(name, declaration, implementationOfFunction(declaration, given), {
+			host: shutHostFor(name),
+		});
 	return gatewayOverGiven(name, declaration, given);
 }
 
@@ -285,12 +289,4 @@ function verbIn(drawn: object, verb: string): unknown {
 
 function fieldOf(held: unknown, key: string): unknown {
 	return isObject(held) ? held[key] : undefined;
-}
-
-function entriesOf(held: unknown): readonly MountEntry[] {
-	return Array.isArray(held) ? held.filter(isMountEntry) : [];
-}
-
-function isMountEntry(held: unknown): held is MountEntry {
-	return isObject(held) && typeof held["name"] === "string";
 }

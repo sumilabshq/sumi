@@ -20,5 +20,3 @@ export const LayersPanelWidget = widget()
 		moveLayer: ICommand.input(LayerDropSchema),
 	})
 	.render(LayersPanelView);
-
-export default LayersPanelWidget;

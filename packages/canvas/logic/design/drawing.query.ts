@@ -1,22 +1,22 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
+import type { GpuSupply } from "@widgetarium/gpu";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { DrawingKitSchema } from "../../schemas/drawing.schema.js";
 import type { DrawingKit } from "../../schemas/drawing.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { DesignSource } from "./design-source.js";
 
 export class DrawingQuery extends IQuery.output(DrawingKitSchema) {
 	readonly settlesNow = true;
 
 	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
+		private readonly source: DesignSource,
+		private readonly gpu: GpuSupply | null,
+		private readonly ownsPaste: (() => boolean) | null,
 	) {
 		super();
 	}
 
 	get(): DrawingKit {
-		const { design, gpu, ownsPaste } = canvasSourceIn(this.ports);
-		return { ...design.drawing(), gpu, ownsPaste, takesPictures: design.pictureOf !== null };
+		const { gpu, ownsPaste, source } = this;
+		return { ...source.drawing(), gpu, ownsPaste, takesPictures: source.pictureOf !== null };
 	}
 }

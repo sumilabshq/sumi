@@ -1,25 +1,20 @@
-import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { IQuery } from "@widgetarium/core";
-import type { NoFields } from "../../schemas/canvas-fields.schema.js";
 import { SelectionSchema } from "../../schemas/selection.schema.js";
 import type { Selection } from "../../schemas/selection.schema.js";
-import { canvasSourceIn } from "../canvas/canvas-source.js";
+import type { CanvasState } from "../view/canvas-state.js";
 
 export class SelectionQuery extends IQuery.output(SelectionSchema.nullable()) {
 	readonly settlesNow = true;
 
-	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
-	) {
+	constructor(private readonly state: CanvasState) {
 		super();
 	}
 
 	get(): Selection | null {
-		return canvasSourceIn(this.ports).state.now().selection;
+		return this.state.now().selection;
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return canvasSourceIn(this.ports).state.watch(["selection"], changed);
+		return this.state.watch(["selection"], changed);
 	}
 }

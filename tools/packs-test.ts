@@ -80,7 +80,6 @@ const portsOf = (answer: string, status = 200): ImplementationPorts => ({
 	catalogue: NO_CATALOGUE_PORT,
 	studio: NO_STUDIO_HOST,
 	studioState: NO_STUDIO_STATE,
-	sources: {},
 	commandLine: { can: false, run: async () => ({ ok: false, output: "", failure: "none" }) },
 	workingDirectory: undefined,
 	network: {
