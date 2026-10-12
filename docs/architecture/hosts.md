@@ -13,9 +13,32 @@ A host is a runtime. It takes an app and runs it on one platform. It knows nothi
 
 A person builds in the studio, and the studio runs the app; no host is needed for that. A host is created when the app is shipped outside the studio. Today the only host is Obsidian, because the studio itself runs inside it.
 
-## What a host gives is a port
+## A host writes no code a package uses
 
-A host gives everything through ports: `IFiles`, `IStorage`, `INotifications`. A handler that needs files declares `IFiles`. **planned:** every host lists the ports it has, and the build checks every app against every host it ships on — an app on `web` whose handler needs `IFiles` stops the build and names the handler.
+Dependencies point one way: packages → apps → hosts. A host only picks and wires; it never holds an implementation that logic in a package calls.
+
+When something differs per platform, **the interface and every implementation live together in the package**, in one folder, named for the platform:
+
+```
+packages/canvas/logic/design/
+  design-source.ts               interface DesignSource
+  obsidian-design-source.ts      over the vault
+  web-design-source.ts           over a project in the browser
+```
+
+- A platform implementation is exported from its own subpath (`@widgetarium/canvas/obsidian`, `@widgetarium/canvas/web`), so a host bundles only its own and never pulls another platform's API.
+- **The host picks the platform's sources and passes them to the app; the app wires everything else.**
+
+  ```ts skip-check
+  // hosts/obsidian/src/studio.ts
+  const designSource = new ObsidianDesignSource(this.app);
+  render(<Studio designSource={designSource} />, leaf.contentEl);
+  ```
+
+  The app (`<Studio>`) takes its sources as props and creates every handler from them. The host writes no logic: it only chooses which ready implementation to create.
+
+- Go-to-definition on `DesignSource` lands in the folder that holds every implementation.
+- A platform file in a host (`hosts/*/src/…-source.ts` imported by logic) is a dependency pointing backwards and is refused.
 
 ## Deploy
 

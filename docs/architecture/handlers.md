@@ -70,8 +70,10 @@ class ChargeCardCommand extends ICommand.server().input(CardSchema).output(Recei
 ```
 
 - `secrets` exists only in the `ctx` of a `.server()` handler.
-- The build replaces a `.server()` class in a browser bundle with a stub that calls `/rpc/<name>`. The widget sees no difference.
-- A host with no server refuses a `.server()` handler at build time.
+- **Two composition roots.** The app's page (`app.tsx`) runs in the browser and composes everything that runs there. A `.server()` handler is composed only in the app's **server root** (`server.ts`), which runs on the server, reads secrets from the server's environment and creates the SQL client, the payment client and the server handlers.
+- The browser root never imports a `.server()` handler, its SQL client or its secrets: it gets a stub with the same port that calls `/rpc/<name>`. The widget sees no difference.
+- A client bundle that reaches a `.server()` file, or a module only a server file may import, fails the build and names the import chain; lint says the same in the editor.
+- A host with no server (the Obsidian plugin) refuses a `.server()` handler at build time. A key a person types into the plugin's settings is their own key on their own machine, not a secret of the app.
 
 ## Services
 

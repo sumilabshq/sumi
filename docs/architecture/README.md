@@ -12,6 +12,14 @@ The rules every developer and every agent follows when writing code in this repo
 
 > Status: this is the target. Code under any `legacy/` folder does not follow it yet. A rule marked **planned** is not checked by a tool yet.
 
+## Three rules
+
+Everything else on these pages follows from them.
+
+1. **Imports go one way: `hosts` → `apps` → `packages`.** A lower level never imports a higher one. A domain uses another domain only through its `index.ts`.
+2. **A file's place is what it is.** Drawn → `ui/`. Connects a view to data → `widgets/`. Reads or writes → `logic/`, with every platform implementation next to its interface. Wires handlers to widgets → the app. Picks the platform's implementations → the host.
+3. **Everything from outside is passed in.** A view gets data from its widget. A widget gets handlers from the app. A handler gets sources in its constructor. The host creates the platform's sources and gives them to the app. Nothing reaches for anything on its own.
+
 ## Three levels
 
 ```
