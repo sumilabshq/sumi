@@ -36,14 +36,28 @@ A **view** is what the person sees: a plain React component in `ui/`, TSX + Tail
 A **widget** is the layer between a view and data. It draws nothing itself:
 
 ```ts skip-check
+export const layersPanelInject = inject({
+	layers: IQuery.input(PageInputSchema).output(PageOf(LayerSchema)),
+	pick: ICommand.input(LayerPickSchema),
+});
+
 export const LayersPanel = widget()
-	.inject({
-		layers: IQuery.input(PageInputSchema).output(PageOf(LayerSchema)),
-		pick: ICommand.input(LayerPickSchema),
-	})
+	.inject(layersPanelInject)
 	.states({ empty: { layers: [] } })
 	.render(LayersPanelView);
 ```
+
+```tsx skip-check
+import type { layersPanelInject } from "../../widgets/layers-panel.widget.js";
+
+export function LayersPanelView({ layers, pick }: InjectProps<typeof layersPanelInject>) { … }
+```
+
+- The inject is declared once, as a constant in the widget file. The view takes its props type from it with `InjectProps<typeof …>`, so changing the inject changes the view's types. A view never writes its props type by hand.
+- `.render()` refuses a view whose props are not exactly `InjectProps` of the widget's inject.
+- The view's import of the widget is `import type`: erased at build, so there is no cycle. `InjectProps<typeof LayersPanel>` would be one (the widget's type depends on the view), which is why the inject is its own constant.
+- **A widget answers one question.** More than 8 entries in an inject means it draws several things: split it into small widgets and compose them in a layout widget with positions (`header`, `start`, `end`, `bottom`), placed by the app.
+- Props, never context: a view moved elsewhere fails to type-check when its data is missing, instead of silently reading `undefined`.
 
 | The widget…           | The view gets                                                                    |
 | --------------------- | -------------------------------------------------------------------------------- |

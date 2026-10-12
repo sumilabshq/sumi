@@ -15,9 +15,9 @@ Every package carries its level in `package.json`:
 | declared        | an import of a domain not listed in `package.json` dependencies                                                                                                                                                 |
 | no cycles       | a cycle in the graph of domains                                                                                                                                                                                 |
 | inside a domain | `ui/` or `widgets/` importing `logic/`; `logic/` importing `ui/` or `widgets/`; a view importing a widget; JSX in a `.widget.ts`                                                                                |
-| index files     | anything in an `index.ts` but re-exports                                                                                                                                                                        |
+| index files     | anything in an `index.ts` but re-exports; a re-export from `ui/`                                                                                                                                                |
 | placement       | `.query.ts`, `.command.ts`, `.service.ts` outside `logic/`; `.schema.ts` outside `schemas/`; JSX outside `ui/`, the kit, apps and hosts; `.widget.ts` outside `widgets/`; a widget declaring metadata or layout |
-| size            | a file over 200 lines                                                                                                                                                                                           |
+| size            | a file over 200 lines; an inject with more than 8 entries (warning); a view whose props type is not `InjectProps` of its widget                                                                                 |
 | hooks           | a `use*` in `logic/`; a widget hook that calls a port                                                                                                                                                           |
 | schemas         | `z.object` in a widget, or in a handler except as its own input                                                                                                                                                 |
 | server          | `secrets` outside a `.server()` handler; a server-only source reached from a browser bundle                                                                                                                     |
@@ -26,3 +26,7 @@ Every package carries its level in `package.json`:
 Tools: `eslint-plugin-boundaries` for the import rules, a small check under `tools/` for placement, size and legacy, the type system for `secrets`.
 
 Each check is proven by breaking it on purpose: write the file it must refuse, see it red, remove the file.
+
+A rule's message says what to do, not only what is wrong. The inject limit, for example:
+
+> `canvas-field` injects 20 entries; more than 8 usually means one widget draws several things. Split it into small widgets that each answer one question, and compose them in a layout widget the app places.

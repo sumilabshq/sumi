@@ -37,7 +37,7 @@ A domain is a business area: `video`, `analytics`, `parental`; for this reposito
 
 ```
 packages/<domain>/
-  index.ts              the public API: the only file another package may import
+  index.ts              the public API: widgets, logic and schemas, never ui/; the only file another package may import
   ui/<view>/            what is drawn: plain components, props only
   widgets/              <widget>.widget.ts — the link from a view to data (see placement.md)
   logic/<record>/       queries, commands, services
