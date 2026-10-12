@@ -26,11 +26,37 @@ A module picks implementations from the host in its `provide` ([requests.md](req
 
 There is never a server per device. Desktop and mobile call the same `/rpc`.
 
-## Secrets and config
+## Env
 
-| Kind          | Lives in                               | Read by                       |
-| ------------- | -------------------------------------- | ----------------------------- |
-| secret        | the server's environment, never in git | the server module's `provide` |
-| public config | any env or a constant                  | everyone                      |
+Each module and integration declares the variables it needs and on which side; the app joins the parts it uses.
 
-Everything that reaches a browser is public. A key a person types into the Obsidian plugin's settings is their own key on their own machine, not a secret of the app.
+```ts skip-check
+// packages/payments/stripe.env.ts
+export const stripeEnv = env({
+	server: {
+		STRIPE_SECRET: z.string().describe("Secret key, Stripe dashboard → Developers → API keys"),
+		STRIPE_WEBHOOK_SECRET: z.string(),
+	},
+});
+
+// apps/<product>/env.ts
+export const appEnv = env(stripeEnv, supabaseEnv, { client: { PUBLIC_API_URL: z.string().url() } });
+```
+
+```
+# .env — never in git; .env.example is generated from the schemas, keys only
+STRIPE_SECRET=sk_live_…
+STRIPE_WEBHOOK_SECRET=whsec_…
+PUBLIC_API_URL=https://…
+```
+
+- **The side belongs to the part that declares it.** An app joins `stripeEnv`; it cannot move a Stripe secret to the client. Only the `client` part reaches a browser bundle; a server variable reached from a client bundle is a build error.
+- **Checked at start:** a missing or malformed variable stops the app with the variable's name and its `describe` text.
+- **Only what runs is checked:** a test or a host that builds only some modules needs only their parts.
+- **Handlers never read `process.env`**: values reach them through the module's `provide`.
+- **Filled by the person, never seen by the agent.** The studio's integrations page draws a form from each part's schema and writes the values into `.env` (or the deploy target's env). The agent sees only "filled" or "missing" and sends the person to the page; it never reads a value.
+- A key a person types into the Obsidian plugin's settings is their own key on their own machine, not a secret of the app.
+
+## Other frameworks
+
+Routing, SSR, deploy and loading `process.env` belong to the host. Widgetarium owns requests, handlers, modules and blocks. Inside Next.js it is an adapter, the way tRPC is: a route handler calls `handleRpc`, pages draw blocks, Next keeps its routing and env loading, and the env schema only validates. `host-web` stays on Vite; a `host-next` adapter is written when a project needs it.

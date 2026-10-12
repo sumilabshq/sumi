@@ -21,6 +21,23 @@ Everything else on these pages follows from them.
 2. **A file's place is what it is.** A request and its handler → one file in `requests/`. What is drawn → a block in `blocks/`. Where blocks stand → a layout. Which implementation runs → the domain's module.
 3. **Nothing reaches for anything.** A view sends requests through the mediator. A handler gets its dependencies in its constructor from the module's container. The platform is given by the framework (`host`). No hidden globals, no singletons.
 
+## Names
+
+One word declares a thing; the constant says which one.
+
+| Declares                      | Written                                      | Named                  | Example           |
+| ----------------------------- | -------------------------------------------- | ---------------------- | ----------------- |
+| a read                        | `query("<module>/<name>")`                   | PascalCase verb phrase | `GetPages`        |
+| a write                       | `command("<module>/<name>")`                 | PascalCase verb phrase | `ShowPage`        |
+| its logic                     | `class … implements Handles<typeof X>`       | `<Request>Handler`     | `ShowPageHandler` |
+| a domain's wiring             | `module({ handlers, provide, use })`         | `<domain>Module`       | `canvasModule`    |
+| variables                     | `env({ server, client })`                    | `<part>Env`            | `stripeEnv`       |
+| an outside system             | `interface`                                  | the system             | `Payments`        |
+| its implementation            | `class … implements Payments`                | `<Provider><System>`   | `StripePayments`  |
+| reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand` | —                      | —                 |
+
+No `define…` or `create…` prefix on these: the word itself is the declaration. A request's string name is `<module>/<the constant in kebab case>` (`canvas/show-page`).
+
 ## Two levels
 
 ```
