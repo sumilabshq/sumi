@@ -20,6 +20,7 @@ import type { DesignPort, DrawnDesign, LayerMove } from "@widgetarium/core/engin
 import { movedNode } from "@widgetarium/core/engine/node-moves.js";
 import { addPhotos } from "@widgetarium/studio";
 import type { StudioDesign } from "@widgetarium/studio";
+import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { noteToReturnTo, readAppSpec } from "./app-of-note.js";
 import { blockIdOf, blocksOf, withBlocks } from "./design-block-registry.js";
 import { docsOf } from "./design-docs-read.js";
@@ -76,7 +77,11 @@ export async function studioDesignOf(
 	leaf: WorkspaceLeaf,
 ): Promise<StudioDesign | undefined> {
 	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return undefined;
-	return { port: obsidianDesignPort(plugin, { leafOf: () => leaf, fromNote: () => "" }), app };
+	return {
+		port: obsidianDesignPort(plugin, { leafOf: () => leaf, fromNote: () => "" }),
+		app,
+		gpu: obsidianGpuSupply(plugin),
+	};
 }
 
 export async function designOf(plugin: WidgetariumPlugin, app: string, isStarting = false): Promise<DrawnDesign> {

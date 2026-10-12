@@ -1,7 +1,7 @@
 import type { Surface } from "canvaskit-wasm";
 import { overlaps, visibleRectOf } from "./camera.js";
 import type { Camera, Viewport } from "./camera.js";
-import { FRAME_GAP_PX, FrameTitles } from "./frame-titles.js";
+import { FrameTitles } from "./frame-titles.js";
 import type { FrameRoot } from "./frame-root.js";
 import { paintFrames } from "./frame-painter.js";
 import { advanceAnimations } from "./gpu-context.js";
@@ -17,16 +17,27 @@ export interface GpuSwitches {
 	readonly tiles: boolean;
 	readonly lod: number | false;
 	readonly waitForGpu: boolean;
+	readonly titles: boolean;
+	readonly transparent: boolean;
+	readonly pans: boolean;
 }
 
 export type DrawingCanvas = HTMLCanvasElement | OffscreenCanvas;
 
-export const DEFAULT_SWITCHES: GpuSwitches = { tiles: true, lod: 1, waitForGpu: false };
+export const DEFAULT_SWITCHES: GpuSwitches = {
+	tiles: true,
+	lod: 1,
+	waitForGpu: false,
+	titles: true,
+	transparent: false,
+	pans: true,
+};
 
 const SETTLE_MS = 140;
 const RASTERS_PER_DRAW = 3;
 const TILES_PER_DRAW = 4;
 const STAGE_FALLBACK: Rgba = [0.95, 0.95, 0.95, 1];
+const STAGE_CLEAR: Rgba = [0, 0, 0, 0];
 
 export class CanvasView {
 	readonly camera: Camera = { x: 0, y: 0, zoom: 1 };
@@ -118,7 +129,7 @@ export class CanvasView {
 		const { camera, viewport, context } = this;
 		this.drawCount += 1;
 		const canvas = this.surface.getCanvas();
-		const stage = colourOf(context.tokens, "muted") ?? STAGE_FALLBACK;
+		const stage = this.switches.transparent ? STAGE_CLEAR : (colourOf(context.tokens, "muted") ?? STAGE_FALLBACK);
 		canvas.clear(context.ck.Color4f(...stage));
 		const seen = visibleRectOf(camera, viewport);
 		const visible = this.frames.filter((frame) => frame.picture && overlaps(frame, seen));
@@ -156,7 +167,7 @@ export class CanvasView {
 		this.rasters.evictHidden(new Set(visible));
 		canvas.save();
 		canvas.scale(viewport.dpr, viewport.dpr);
-		this.titles.draw(canvas, visible, camera);
+		if (this.switches.titles) this.titles.draw(canvas, visible, camera);
 		canvas.restore();
 		this.surface.flush();
 	}
@@ -169,21 +180,5 @@ export class CanvasView {
 			this.settleTimer = setTimeout(() => this.requestFrame(), SETTLE_MS + 5);
 		}
 		return now - this.zoomChangedAt < SETTLE_MS;
-	}
-}
-
-export function arrangeFrames(frames: readonly FrameRoot[]): void {
-	for (const frame of frames) frame.update();
-	const columns = Math.max(1, Math.ceil(Math.sqrt(frames.length * 1.6)));
-	let y = 0;
-	for (let start = 0; start < frames.length; start += columns) {
-		const row = frames.slice(start, start + columns);
-		let x = 0;
-		for (const frame of row) {
-			frame.x = x;
-			frame.y = y;
-			x += frame.width + FRAME_GAP_PX;
-		}
-		y += Math.max(...row.map((frame) => frame.height)) + FRAME_GAP_PX;
 	}
 }

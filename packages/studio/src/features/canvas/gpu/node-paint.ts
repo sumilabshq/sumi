@@ -2,7 +2,11 @@ import type { Canvas, Path } from "canvaskit-wasm";
 import { pxOf } from "./class-style.js";
 import type { GpuContext } from "./gpu-context.js";
 import { ICON_GRID, ICON_STROKE, pathsOfIcon } from "./icon-path.js";
+import { numberProp, textProp } from "./node-props.js";
+import { drawSvg } from "./node-shapes.js";
 import type { SceneNode } from "./scene-node.js";
+
+const ICON_PX = 16;
 
 export function drawNode(node: SceneNode, canvas: Canvas): void {
 	const { style, colours, context } = node;
@@ -25,7 +29,7 @@ export function drawNode(node: SceneNode, canvas: Canvas): void {
 		else canvas.clipRect(rect, ck.ClipOp.Intersect, true);
 	}
 	drawContent(node, canvas);
-	for (const child of node.children) drawNode(child, canvas);
+	if (!node.holdsShapes) for (const child of node.children) drawNode(child, canvas);
 	if (style.clip) canvas.restore();
 }
 
@@ -38,6 +42,7 @@ function drawContent(node: SceneNode, canvas: Canvas): void {
 	const paragraph = node.type === "Text" ? node.paragraphAt(contentWidth) : null;
 	if (paragraph) canvas.drawParagraph(paragraph, left, top);
 	if (node.type === "Icon") drawIcon(node, canvas);
+	if (node.type === "svg") drawSvg(node, canvas);
 }
 
 function drawBorder(node: SceneNode, canvas: Canvas, radius: number): void {
@@ -65,8 +70,8 @@ function drawBorder(node: SceneNode, canvas: Canvas, radius: number): void {
 
 function drawIcon(node: SceneNode, canvas: Canvas): void {
 	const { ck, stroke } = node.context;
-	node.iconPaths ??= iconPathsOf(node.context, node.props.name ?? "");
-	const size = node.props.size ?? 16;
+	node.iconPaths ??= iconPathsOf(node.context, textProp(node.props, "name") ?? "");
+	const size = numberProp(node.props, "size") ?? ICON_PX;
 	const { x, y, w, h } = node.box;
 	canvas.save();
 	canvas.translate(x + (w - size) / 2, y + (h - size) / 2);

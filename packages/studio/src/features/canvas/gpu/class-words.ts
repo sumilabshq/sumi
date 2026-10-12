@@ -11,35 +11,16 @@ import {
 } from "./class-style.js";
 import type { AlignWord, ClassStyle, JustifyWord, PaintStyle, Sides } from "./class-style.js";
 import { isColourWord } from "./gpu-tokens.js";
+import { FLAG_WORDS } from "./flag-words.js";
+import { readKitWord } from "./kit-class-words.js";
 
 type WordReader = (style: ClassStyle, word: string) => boolean;
 
 const PARSED = new Map<string, ClassStyle>();
 const UNKNOWN_WORDS = new Set<string>();
-const TRANSITION_MS = 160;
-
-const FLAG_WORDS: Readonly<Record<string, (style: ClassStyle) => void>> = {
-	flex: (style) => (style.display = "row"),
-	"flex-row": (style) => (style.display = "row"),
-	"flex-col": (style) => (style.display = "column"),
-	"flex-row-reverse": (style) => Object.assign(style, { display: "row", reverse: true }),
-	"flex-col-reverse": (style) => Object.assign(style, { display: "column", reverse: true }),
-	hidden: (style) => (style.display = "none"),
-	"flex-wrap": (style) => (style.wrap = true),
-	"flex-1": (style) => Object.assign(style, { grow: 1, shrink: 1, basis: 0 }),
-	grow: (style) => (style.grow = 1),
-	"shrink-0": (style) => (style.shrink = 0),
-	"overflow-hidden": (style) => (style.clip = true),
-	truncate: (style) => Object.assign(style, { truncate: true, clip: true }),
-	"tabular-nums": (style) => (style.tabular = true),
-	"font-sans": (style) => (style.family = "sans"),
-	"font-serif": (style) => (style.family = "serif"),
-	"font-mono": (style) => (style.family = "mono"),
-	transition: (style) => (style.transitionMs ||= TRANSITION_MS),
-	"transition-colors": (style) => (style.transitionMs ||= TRANSITION_MS),
-};
 
 const READERS: readonly WordReader[] = [
+	readKit,
 	readState,
 	readColour,
 	readFlag,
@@ -57,17 +38,24 @@ export function styleOfClassName(className: string | undefined): ClassStyle {
 	const cached = PARSED.get(key);
 	if (cached) return cached;
 	const style = emptyStyle();
-	for (const word of key.split(/\s+/).filter(Boolean)) {
-		if (READERS.some((read) => read(style, word))) continue;
-		if (!UNKNOWN_WORDS.has(word)) console.warn(`gpu canvas: class "${word}" is not in the supported subset`);
-		UNKNOWN_WORDS.add(word);
-	}
+	for (const word of key.split(/\s+/).filter(Boolean)) applyWord(style, word);
 	PARSED.set(key, style);
 	return style;
 }
 
 export function unknownClassWords(): string[] {
 	return [...UNKNOWN_WORDS];
+}
+
+function applyWord(style: ClassStyle, word: string): boolean {
+	if (READERS.some((read) => read(style, word))) return true;
+	if (!UNKNOWN_WORDS.has(word)) console.warn(`gpu canvas: class "${word}" is not in the supported subset`);
+	UNKNOWN_WORDS.add(word);
+	return false;
+}
+
+function readKit(style: ClassStyle, word: string): boolean {
+	return readKitWord(style, word, applyWord);
 }
 
 function readState(style: ClassStyle, word: string): boolean {

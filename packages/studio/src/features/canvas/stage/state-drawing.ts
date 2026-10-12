@@ -8,6 +8,7 @@ import type { MountEntry } from "@widgetarium/core/gateway/host.js";
 import type { SlotState } from "@widgetarium/core/gateway/declared-types.js";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 import type { StatePicture } from "@widgetarium/core/engine/design-port.js";
+import { RefusedDrawing } from "./draw-failure.js";
 
 export type { StatePicture };
 
@@ -28,12 +29,13 @@ export function StateDrawing({ picture, registry }: StateDrawingProps): ReactEle
 	const component = registry.get(picture.widget)?.component;
 	if (!component) return refused(NOT_BUILT.replace("{widget}", picture.widget));
 	const instead = (failure: unknown): ReactElement =>
-		refused(
-			FAILED.replace("{widget}", picture.widget).replace(
+		h(RefusedDrawing, {
+			said: FAILED.replace("{widget}", picture.widget).replace(
 				"{why}",
 				failure instanceof Error ? failure.message : String(failure),
 			),
-		);
+			failure,
+		});
 	return h(Contained, { instead }, h("div", { className: "wg-studio-drawn" }, h(component, props)));
 }
 
@@ -82,9 +84,10 @@ function entryOf(one: SlotState, at: number, registry: Registry): MountEntry {
 			lease.draw(h(StateDrawing, { picture: { widget: one.widget, props }, registry }));
 			return lease.release;
 		},
+		drawInline: () => h(StateDrawing, { picture: { widget: one.widget, props }, registry }),
 	};
 }
 
 function refused(said: string): ReactElement {
-	return h("p", { className: "wg-studio-refused" }, said);
+	return h(RefusedDrawing, { said, failure: said });
 }

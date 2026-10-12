@@ -2,13 +2,27 @@ import type { SkPicture } from "canvaskit-wasm";
 import { Direction } from "yoga-layout/load";
 import type { GpuContext } from "./gpu-context.js";
 import { drawNode } from "./node-paint.js";
+import { collectHits } from "./node-hits.js";
 import { SceneNode } from "./scene-node.js";
 import type { NodeOwner } from "./scene-node.js";
+
+export interface Crossings {
+	readonly entered: readonly SceneNode[];
+	readonly left: readonly SceneNode[];
+}
+
+export interface FramePoint {
+	readonly x: number;
+	readonly y: number;
+}
 
 export interface FrameSpec {
 	readonly id: string;
 	readonly title: string;
 	readonly width: number;
+	readonly at?: FramePoint | undefined;
+	readonly minHeight?: number | undefined;
+	readonly onHeight?: ((height: number) => void) | undefined;
 }
 
 export class FrameRoot implements NodeOwner {
@@ -28,6 +42,9 @@ export class FrameRoot implements NodeOwner {
 		readonly context: GpuContext,
 	) {
 		this.root = new SceneNode("View", { className: "bg-page" }, this);
+		this.root.yoga.setMinHeight(spec.minHeight);
+		this.x = spec.at?.x ?? 0;
+		this.y = spec.at?.y ?? 0;
 	}
 
 	get width(): number {
@@ -48,6 +65,7 @@ export class FrameRoot implements NodeOwner {
 		if (this.layoutDirty) {
 			this.root.yoga.calculateLayout(this.width, undefined, Direction.LTR);
 			this.root.writeBoxes(0, 0);
+			if (this.height !== this.root.box.h) this.spec.onHeight?.(this.root.box.h);
 			this.height = this.root.box.h;
 			this.layoutDirty = false;
 			this.paintDirty = true;
@@ -71,15 +89,18 @@ export class FrameRoot implements NodeOwner {
 
 	hitTest(localX: number, localY: number): SceneNode[] {
 		const chain: SceneNode[] = [];
-		this.root.collectHits(localX, localY, chain);
+		collectHits(this.root, localX, localY, chain);
 		return chain;
 	}
 
-	setPointerChain(chain: SceneNode[]): void {
+	setPointerChain(chain: SceneNode[]): Crossings {
 		const next = new Set(chain);
-		for (const node of this.hoverChain) if (!next.has(node)) node.setInteraction(false, node === this.pressed);
+		const was = new Set(this.hoverChain);
+		const left = this.hoverChain.filter((node) => !next.has(node));
+		for (const node of left) node.setInteraction(false, node === this.pressed);
 		for (const node of chain) node.setInteraction(true, node === this.pressed);
 		this.hoverChain = chain;
+		return { entered: chain.filter((node) => !was.has(node)), left };
 	}
 
 	isHovered(): boolean {

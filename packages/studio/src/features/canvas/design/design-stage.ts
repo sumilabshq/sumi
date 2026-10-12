@@ -5,7 +5,8 @@ import type { CanvasDoc, DesignPort, DrawnDesign, LayerMove } from "@widgetarium
 import type { Look } from "@widgetarium/core/app-look.js";
 import type { Parsed } from "@widgetarium/core/json-text.js";
 import type { Size } from "../stage/frame-size.js";
-import { CanvasTopBar, DesignCanvas } from "./design-canvas.js";
+import { DesignCanvas } from "./design-canvas.js";
+import { CanvasTopBar } from "./design-canvas-top-bar.js";
 import type { DesignCanvasProps } from "./design-canvas.js";
 import { COMPONENTS_PAGE, shownPageOf } from "./design-canvas-page.js";
 import { TAKES_PICTURES } from "./design-drawn-when-seen.js";
@@ -13,6 +14,8 @@ import { imageFilesIn } from "./design-photos.js";
 import { widgetOpenerOf } from "./design-references.js";
 import type { CanvasMode } from "./design-tools.js";
 import type { TopBarCorners } from "./design-top-bar.js";
+import { GPU_SUPPLY } from "./gpu-supply.js";
+import type { GpuSupply } from "./gpu-supply.js";
 
 export interface DesignViewState {
 	readonly page: string;
@@ -29,6 +32,7 @@ export interface DesignStageProps {
 	readonly fieldOf: () => HTMLElement | null;
 	readonly ownsPaste?: (() => boolean) | undefined;
 	readonly corners?: TopBarCorners | undefined;
+	readonly gpu?: GpuSupply | undefined;
 }
 
 export const DESIGN_OPENED_ON: DesignViewState = { page: "", isLayersOpen: false, mode: "hand" };
@@ -68,13 +72,14 @@ export function DesignStage(props: DesignStageProps): ReactElement | null {
 		focusWidget,
 		onFocusedWidget,
 	};
+	const drawn = h(Fragment, null, [
+		h(DesignCanvas, { key: page, ...canvas }),
+		h(CanvasTopBar, { key: "top", ...canvas, fieldOf: props.fieldOf, corners: props.corners }),
+	]);
 	return h(
-		TAKES_PICTURES.Provider,
-		{ value: port.pictureOf },
-		h(Fragment, null, [
-			h(DesignCanvas, { key: page, ...canvas }),
-			h(CanvasTopBar, { key: "top", ...canvas, fieldOf: props.fieldOf, corners: props.corners }),
-		]),
+		GPU_SUPPLY.Provider,
+		{ value: props.gpu ?? null },
+		h(TAKES_PICTURES.Provider, { value: port.pictureOf }, drawn),
 	);
 }
 

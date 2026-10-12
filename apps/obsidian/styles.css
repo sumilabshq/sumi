@@ -8017,6 +8017,39 @@ body.wg-tree-carrying .wg-tile-body {
 	max-width: none;
 }
 
+.wg-design-gpu {
+	position: absolute;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.wg-design-gpu-frame {
+	position: relative;
+}
+
+.wg-design-gpu-fallen {
+	position: relative;
+}
+
+.wg-design-gpu-said {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	z-index: 1;
+	max-width: 60%;
+	padding: 2px 8px;
+	border-radius: var(--wg-kit-pill);
+	background: var(--wg-kit-warning-wash);
+	color: var(--wg-kit-text);
+	font-size: var(--wg-kit-text-xs);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .wg-design-look {
 	position: absolute;
 	top: 0;

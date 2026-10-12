@@ -15,6 +15,12 @@ export const COLOUR_WORDS: Readonly<Record<string, string>> = {
 	raise: "var(--wg-kit-raise)",
 	edge: "var(--wg-kit-card-edge)",
 	ink: "var(--wg-kit-text)",
+	"ink-muted": "var(--wg-kit-text-muted)",
+	"ink-faint": "var(--text-faint)",
+	interactive: "var(--interactive-accent)",
+	"on-interactive": "var(--text-on-accent)",
+	hover: "var(--background-modifier-hover)",
+	link: "var(--link-color)",
 	background: "var(--background)",
 	foreground: "var(--foreground)",
 	card: "var(--card)",
@@ -75,6 +81,7 @@ export const COLOUR_WORDS: Readonly<Record<string, string>> = {
 };
 
 export const LENGTH_WORDS: Readonly<Record<string, string>> = {
+	"text-inherited": "1em",
 	"text-xs": "var(--wg-kit-text-xs)",
 	"text-sm": "var(--wg-kit-text-s)",
 	"text-base": "var(--wg-kit-text-m)",

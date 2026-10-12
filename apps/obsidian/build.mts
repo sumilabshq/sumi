@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
+import { layGpuFiles } from "./gpu-files.mts";
 
 export interface SurfaceAsk {
 	readonly minify?: boolean;
@@ -28,6 +29,8 @@ const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
 	"node:fs/promises",
 	"node:path",
 	"node:child_process",
+	"fs",
+	"path",
 ];
 
 const HELD_BY_THE_ONE_CORE =
@@ -209,5 +212,6 @@ function runGates(): void {
 if (import.meta.main) {
 	const production = process.argv.includes("--prod");
 	runGates();
+	layGpuFiles();
 	await esbuild.build(bundleOptions({ minify: production, sourcemap: production ? false : "inline" }));
 }

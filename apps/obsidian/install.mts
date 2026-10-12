@@ -1,4 +1,4 @@
-import { access, copyFile, mkdir, readFile, realpath, stat } from "node:fs/promises";
+import { access, copyFile, cp, mkdir, readFile, realpath, stat } from "node:fs/promises";
 
 process.chdir(import.meta.dirname);
 
@@ -8,6 +8,7 @@ const target = `${VAULT}/.obsidian/plugins/widgetarium`;
 const VAULT_MISSING = "there is no vault at {at} — set WG_VAULT to the folder Obsidian opens, or move the vault there";
 const BUILD_OUTPUTS = ["main.js", "manifest.json", "styles.css"];
 const SETTINGS_FILE = "data.json";
+const GPU_FOLDER = "gpu";
 const BYTES_IN_A_MEGABYTE = 1048576;
 
 const here = await realpath(".");
@@ -28,6 +29,7 @@ if (targetIsThisRepo) {
 } else {
 	await mkdir(target, { recursive: true });
 	for (const file of BUILD_OUTPUTS) await copyFile(file, `${target}/${file}`);
+	await cp(GPU_FOLDER, `${target}/${GPU_FOLDER}`, { recursive: true });
 	await seedSettings();
 	console.log(`installed to ${target}: ${await describeBuild()}`);
 }

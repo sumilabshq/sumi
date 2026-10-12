@@ -1,7 +1,16 @@
 import { worldOf, zoomAround } from "./camera.js";
 import type { CanvasView } from "./canvas-view.js";
-import type { FrameRoot } from "./frame-root.js";
+import type { Crossings, FrameRoot } from "./frame-root.js";
 import { pressInside } from "./frame-render.js";
+import {
+	DOWN_HANDLERS,
+	ENTER_HANDLERS,
+	LEAVE_HANDLERS,
+	PRESS_HANDLERS,
+	UP_HANDLERS,
+	bubble,
+	tellEach,
+} from "./node-events.js";
 import type { SceneNode } from "./scene-node.js";
 
 export interface PointerSink {
@@ -24,6 +33,7 @@ const WHEEL_ZOOM_RATE = 0.01;
 export class ViewPointer implements PointerSink {
 	private panningFrom: Point | null = null;
 	private pressedFrame: FrameRoot | null = null;
+	private pressedLeaf: SceneNode | null = null;
 	private pointer: Point | null = null;
 	private cursor = "default";
 
@@ -49,14 +59,23 @@ export class ViewPointer implements PointerSink {
 
 	down(x: number, y: number, button: number): void {
 		const hit = this.hitAt(x, y);
-		const target = hit?.chain.at(-1)?.pressTarget() ?? null;
+		const leaf = hit?.chain.at(-1) ?? null;
+		const target = leaf?.pressTarget() ?? null;
 		if (hit && target && button === 0) {
 			this.pressedFrame = hit.frame;
+			this.pressedLeaf = leaf;
 			hit.frame.setPressed(target);
+			pressInside(() => bubble(leaf, DOWN_HANDLERS, [x, y]));
 			return;
 		}
+		if (!this.view.switches.pans) return;
 		this.panningFrom = [x, y];
 		this.refreshHover();
+	}
+
+	pressableAt(x: number, y: number): boolean {
+		const leaf = this.hitAt(x, y)?.chain.at(-1);
+		return leaf !== undefined && leaf.pressTarget() !== null;
 	}
 
 	up(x: number, y: number): void {
@@ -66,16 +85,21 @@ export class ViewPointer implements PointerSink {
 		}
 		const frame = this.pressedFrame;
 		const target = frame?.pressed;
+		const leaf = this.pressedLeaf;
 		this.pressedFrame = null;
+		this.pressedLeaf = null;
 		if (!frame || !target) return;
 		frame.setPressed(null);
 		const hit = this.hitAt(x, y);
-		const press = target.props.onPress;
-		if (press && hit?.frame === frame && hit.chain.includes(target)) pressInside(press);
+		pressInside(() => {
+			bubble(hit?.chain.at(-1) ?? leaf, UP_HANDLERS, [x, y]);
+			if (hit?.frame === frame && hit.chain.includes(target)) bubble(target, PRESS_HANDLERS, [x, y]);
+		});
 	}
 
 	wheel(x: number, y: number, deltaX: number, deltaY: number, zooms: boolean): void {
 		this.pointer = [x, y];
+		if (!this.view.switches.pans) return;
 		if (zooms) zoomAround(this.view.camera, x, y, Math.exp(-deltaY * WHEEL_ZOOM_RATE));
 		else {
 			this.view.camera.x -= deltaX;
@@ -94,10 +118,20 @@ export class ViewPointer implements PointerSink {
 		return { frame, chain: frame.hitTest(worldX - frame.x, worldY - frame.y) };
 	}
 
+	private tellCrossings({ entered, left }: Crossings, at: Point): void {
+		if (entered.length === 0 && left.length === 0) return;
+		pressInside(() => {
+			tellEach(left, LEAVE_HANDLERS, at);
+			tellEach(entered, ENTER_HANDLERS, at);
+		});
+	}
+
 	private refreshHover(): void {
 		const hit = this.pointer && !this.panningFrom ? this.hitAt(...this.pointer) : null;
-		for (const frame of this.view.frames) if (frame !== hit?.frame && frame.isHovered()) frame.setPointerChain([]);
-		if (hit) hit.frame.setPointerChain(hit.chain);
+		const at: Point = this.pointer ?? [0, 0];
+		for (const frame of this.view.frames)
+			if (frame !== hit?.frame && frame.isHovered()) this.tellCrossings(frame.setPointerChain([]), at);
+		if (hit) this.tellCrossings(hit.frame.setPointerChain(hit.chain), at);
 		const leaf = hit?.chain.at(-1) ?? null;
 		const cursor = this.panningFrom ? "grabbing" : leaf?.pressTarget() ? "pointer" : "default";
 		if (cursor === this.cursor) return;

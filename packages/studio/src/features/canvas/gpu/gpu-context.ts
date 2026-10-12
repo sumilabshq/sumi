@@ -18,14 +18,11 @@ export interface GpuContext {
 	invalidate: () => void;
 }
 
-export type HostType = "View" | "Text" | "Icon";
+export type HostType = string;
 
 export interface HostProps {
-	readonly className?: string | undefined;
+	readonly [name: string]: unknown;
 	readonly children?: unknown;
-	readonly onPress?: (() => void) | undefined;
-	readonly name?: string | undefined;
-	readonly size?: number | undefined;
 }
 
 export function advanceAnimations(context: GpuContext, now: number): boolean {

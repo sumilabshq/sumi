@@ -6,10 +6,12 @@ import type { Size } from "./stage/frame-size.js";
 import { innerSizeOf, useWatchesSize } from "./stage/layer-fit.js";
 import { DESIGN_OPENED_ON, DesignStage } from "./design/design-stage.js";
 import type { TopBarCorners } from "./design/design-top-bar.js";
+import type { GpuSupply } from "./design/gpu-supply.js";
 
 export interface StudioDesign {
 	readonly port: DesignPort;
 	readonly app: string;
+	readonly gpu?: GpuSupply | undefined;
 }
 
 export interface StudioCanvasProps {
@@ -28,7 +30,9 @@ export function StudioCanvas({ design, state, corners }: StudioCanvasProps): Rea
 	useWatchesSize(viewRef, setSize, innerSizeOf);
 	const port = useMemo(() => ({ ...design.port, returnToView: async () => state.show("app") }), [design.port, state]);
 	const fieldOf = useCallback(() => mountRef.current?.querySelector<HTMLElement>(FIELD) ?? null, []);
-	const stage = size ? h(DesignStage, { port, app: design.app, view, onView: setView, size, fieldOf, corners }) : null;
+	const stage = size
+		? h(DesignStage, { port, app: design.app, view, onView: setView, size, fieldOf, corners, gpu: design.gpu })
+		: null;
 	return h(
 		"div",
 		{ ref: viewRef, className: "wg-design-view" },

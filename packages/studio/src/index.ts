@@ -27,6 +27,7 @@ export { useLayerFit } from "./features/canvas/stage/layer-fit.js";
 export { DESIGN_OPENED_ON, DesignStage } from "./features/canvas/design/design-stage.js";
 export type { DesignStageProps, DesignViewState } from "./features/canvas/design/design-stage.js";
 export type { StudioDesign } from "./features/canvas/studio-canvas.js";
+export type { GpuSupply } from "./features/canvas/design/gpu-supply.js";
 export { DRAWS_AT_ONCE } from "./features/canvas/design/design-drawn-when-seen.js";
 export { PagesRegion, frameLabelOf } from "./features/canvas/design/design-pages.js";
 export { ReferencesRegion, widgetOpenerOf } from "./features/canvas/design/design-references.js";

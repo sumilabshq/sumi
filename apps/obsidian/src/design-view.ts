@@ -6,7 +6,8 @@ import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import type { DesignPort } from "@widgetarium/core/engine/design-port.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { DESIGN_OPENED_ON, DesignStage } from "@widgetarium/studio";
-import type { DesignViewState } from "@widgetarium/studio";
+import type { DesignViewState, GpuSupply } from "@widgetarium/studio";
+import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { obsidianDesignPort } from "./design-port-obsidian.js";
 import type WidgetariumPlugin from "./main.js";
 
@@ -20,6 +21,7 @@ export class DesignView extends ItemView {
 	private view: DesignViewState = DESIGN_OPENED_ON;
 	private node: HTMLElement | null = null;
 	private readonly port: DesignPort;
+	private readonly gpu: GpuSupply;
 	private readonly onView = (view: DesignViewState): void => {
 		this.view = view;
 		this.app.workspace.requestSaveLayout();
@@ -35,6 +37,7 @@ export class DesignView extends ItemView {
 	) {
 		super(leaf);
 		this.port = obsidianDesignPort(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
+		this.gpu = obsidianGpuSupply(plugin);
 	}
 
 	getViewType(): string {
@@ -87,9 +90,9 @@ export class DesignView extends ItemView {
 		const node = this.node;
 		const size = { width: this.contentEl.clientWidth, height: this.contentEl.clientHeight };
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
-		const { port, view, onView, fieldOf, ownsPaste } = this;
+		const { port, view, onView, fieldOf, ownsPaste, gpu } = this;
 		render(
-			h(DesignStage, { key: this.appName, port, app: this.appName, view, onView, size, fieldOf, ownsPaste }),
+			h(DesignStage, { key: this.appName, port, app: this.appName, view, onView, size, fieldOf, ownsPaste, gpu }),
 			node,
 		);
 	}

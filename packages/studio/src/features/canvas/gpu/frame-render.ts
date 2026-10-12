@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Reconciler from "react-reconciler";
-import { ConcurrentRoot, DiscreteEventPriority } from "react-reconciler/constants";
+import { ConcurrentRoot, DiscreteEventPriority } from "react-reconciler/constants.js";
 import type { FrameRoot } from "./frame-root.js";
 import { HOST_CONFIG, withUpdatePriority } from "./host-config.js";
 
@@ -11,8 +11,11 @@ export interface MountedFrame {
 
 const RENDERER = Reconciler(HOST_CONFIG);
 
-export function mountFrame(frame: FrameRoot): MountedFrame {
-	const report = (error: Error): void => console.error("gpu canvas: a frame failed to render", error);
+export function mountFrame(frame: FrameRoot, onFailure?: (failure: Error) => void): MountedFrame {
+	const report = (error: Error): void => {
+		console.error("gpu canvas: a frame failed to render", error);
+		onFailure?.(error);
+	};
 	const container = RENDERER.createContainer(
 		frame,
 		ConcurrentRoot,

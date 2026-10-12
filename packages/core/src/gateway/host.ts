@@ -79,6 +79,7 @@ export interface MountEntry {
 	surface: "group" | "none" | null;
 	height: number | null;
 	drawInto: ((element: HTMLElement) => Release) | null;
+	drawInline?: (() => ReactNode) | null | undefined;
 }
 
 export type ConfigureMounts = (name: string, rows: readonly MountRow[]) => void;

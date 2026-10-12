@@ -1,17 +1,14 @@
 import { createElement as h, useEffect, useMemo, useRef } from "react";
-import type { DragEvent, ReactElement, RefObject } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import type { DragEvent, ReactElement } from "react";
 import { PRESSABLE_CONTROLS, usePanZoom } from "../stage/pan-zoom.js";
-import type { PanZoom } from "../stage/pan-zoom.js";
 import { ZoomBar } from "../stage/zoom-bar.js";
 import { useLayerFit } from "../stage/layer-fit.js";
-import type { Box } from "../stage/flight.js";
 import type { Size } from "../stage/frame-size.js";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 import type { DrawnReference, DrawnScreen, DrawnWidget } from "./design-canvas-shapes.js";
 import { imageFilesIn } from "./design-photos.js";
-import { COMPONENTS_PAGE, canvasTabsOf, regionsOfPage, shownPageOf } from "./design-canvas-page.js";
-import { pageLabelOf } from "./design-job.js";
+import { regionsOfPage, shownPageOf } from "./design-canvas-page.js";
+import { useFliesToWidget } from "./design-flies-to-widget.js";
 import type { Job } from "@widgetarium/core/app-jobs.js";
 import type { CanvasDoc } from "./design-docs.js";
 import type { JobControls } from "./design-job.js";
@@ -20,19 +17,17 @@ import { shownVariantOf } from "./design-variants.js";
 import type { VariantPick } from "./design-variants.js";
 import { LayersPanel } from "./design-layers-panel.js";
 import type { LayerFocus } from "./design-layers-panel.js";
-import { Highlight, lookOnto } from "./design-spotlight.js";
+import { Highlight } from "./design-spotlight.js";
 import { useCanvasSelection } from "./design-canvas-selection.js";
-import { CanvasTools } from "./design-tools.js";
 import type { CanvasMode } from "./design-tools.js";
 import type { LayerMove } from "./layer-moves.js";
-import { PicturesProgress } from "./design-pictures-progress.js";
-import { AgentLookChip } from "./design-agent-look.js";
 import { LookPanel } from "./design-look-panel.js";
 import type { LookPick } from "./design-look-panel.js";
 import type { Look } from "@widgetarium/core/app-look.js";
 import type { Parsed } from "@widgetarium/core/json-text.js";
-import { TopBar } from "./design-top-bar.js";
-import type { CanvasTab, TopBarCorners } from "./design-top-bar.js";
+import { GPU_PAGES } from "./gpu-pages.js";
+import { usePageRenderer } from "./page-renderer.js";
+import { useGpuPages } from "./use-gpu-pages.js";
 
 export interface DesignCanvasProps {
 	readonly app: string;
@@ -63,11 +58,7 @@ export interface DesignCanvasProps {
 	readonly host: WidgetSurfaceProps["host"];
 }
 
-const SCREENS_SAID = "{count} screens · {frames} frames · read only";
 const HINT = "Answer a job on its page, or tell the agent in the chat";
-const LAYERS_SAID = "Layers";
-const PAGE_FADE_MS = 140;
-const FADED_ON_TURN = ".wg-design-layer, .wg-design-layers.is-open";
 const LAYERS_PANEL = ".wg-design-layers";
 const PRESSABLE_IN_DESIGN = `${PRESSABLE_CONTROLS}, ${LAYERS_PANEL}, .wg-design-job`;
 
@@ -88,7 +79,8 @@ export function DesignCanvas(props: DesignCanvasProps): ReactElement {
 		[page, screens, references, widgets, jobs, docs, controls, opener, pick, registry, host],
 	);
 	const isPointer = props.mode === "pointer";
-	return h(
+	const gpu = useGpuPages(usePageRenderer() === "gpu", layerRef, pan);
+	const field = h(
 		"div",
 		{
 			className: `wg-design-field wg-portal ${isPointer ? "is-pointer" : "is-hand"}`,
@@ -105,6 +97,7 @@ export function DesignCanvas(props: DesignCanvasProps): ReactElement {
 				h(Highlight, { key: "hovered", spot: isPointer ? selection.hovered : null, tone: "hover" }),
 				h(Highlight, { key: "picked", spot: selection.picked, tone: "picked" }),
 			),
+			gpu.canvas,
 			layersOf(
 				{ ...props, picked: selection.picked?.mark ?? null, onFocus: selection.onFocus, keepsLiveCopy: isPointer },
 				page,
@@ -114,75 +107,7 @@ export function DesignCanvas(props: DesignCanvasProps): ReactElement {
 			h("div", { key: "hint", className: "wg-design-hint" }, HINT),
 		],
 	);
-}
-
-export interface CanvasTopBarProps extends DesignCanvasProps {
-	readonly fieldOf: () => HTMLElement | null;
-	readonly corners?: TopBarCorners | undefined;
-}
-
-export function CanvasTopBar(props: CanvasTopBarProps): ReactElement {
-	const page = shownPageOf(props.page, props);
-	const onPage = (next: string): void => fadedTurn(props.fieldOf(), () => props.onPage(next));
-	return topBarOf({ ...props, onPage }, page);
-}
-
-function topBarOf(
-	{
-		app,
-		screens,
-		references,
-		jobs,
-		docs,
-		keptPage,
-		onPage,
-		onAddPhotos,
-		mode,
-		onMode,
-		onReturn,
-		isLayersOpen,
-		onLayers,
-		corners,
-	}: CanvasTopBarProps,
-	page: string,
-): ReactElement {
-	const frames = screens.reduce((count, screen) => count + screen.states.length, 0);
-	const said = SCREENS_SAID.replace("{count}", String(screens.length)).replace("{frames}", String(frames));
-	const status = [h(PicturesProgress, { key: "pictures" }), h(AgentLookChip, { key: "agent", app, onPage })];
-	const tabs = canvasTabsOf({ screens, references, jobs, docs, keptPage });
-	const layers =
-		page === COMPONENTS_PAGE
-			? null
-			: h(
-					IconButton,
-					{
-						key: "layers",
-						size: "s",
-						variant: isLayersOpen ? "raised" : "ghost",
-						label: LAYERS_SAID,
-						onClick: onLayers,
-					},
-					h(Icon, { name: "panel-left", size: 16 }),
-				);
-	return h(TopBar, {
-		key: "top",
-		app,
-		said,
-		leading: tabs.leading.map(tabOf),
-		pages: tabs.screens.map((one) => ({ value: one, label: pageLabelOf(one, jobs) })),
-		trailing: tabs.trailing.map(tabOf),
-		page,
-		onPage,
-		canvasTools: h(CanvasTools, { key: "canvas-tools", mode, onMode, onAddPhotos }),
-		onReturn,
-		status,
-		layers,
-		corners,
-	});
-}
-
-function tabOf(page: string): CanvasTab {
-	return { value: page, label: page };
+	return h(GPU_PAGES.Provider, { value: gpu.pages }, field);
 }
 
 interface Picking {
@@ -220,15 +145,6 @@ function useEscapeClears(isSet: boolean, clear: () => void): void {
 	}, [isSet, clear]);
 }
 
-function fadedTurn(field: HTMLElement | null, turn: () => void): void {
-	const shown = field ? [...field.querySelectorAll<HTMLElement>(FADED_ON_TURN)] : [];
-	if (shown.length === 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return turn();
-	const outs = shown.map((element) =>
-		element.animate([{ opacity: 1 }, { opacity: 0 }], { duration: PAGE_FADE_MS, easing: "ease-out", fill: "forwards" }),
-	);
-	void Promise.all(outs.map((out) => out.finished)).then(turn);
-}
-
 function photoDrops(onAddPhotos: (photos: readonly File[]) => void) {
 	return {
 		onDragOver: (event: DragEvent): void => event.preventDefault(),
@@ -238,40 +154,5 @@ function photoDrops(onAddPhotos: (photos: readonly File[]) => void) {
 			event.preventDefault();
 			onAddPhotos(photos);
 		},
-	};
-}
-
-interface WidgetFlight {
-	readonly layerRef: RefObject<HTMLDivElement | null>;
-	readonly pan: PanZoom;
-	readonly page: string;
-	readonly widget: string | null;
-	readonly onDone: () => void;
-}
-
-function useFliesToWidget({ layerRef, pan, page, widget, onDone }: WidgetFlight): void {
-	useEffect(() => {
-		if (widget === null || page !== COMPONENTS_PAGE) return undefined;
-		const frame = requestAnimationFrame(() => {
-			const layer = layerRef.current;
-			const group = layer
-				? [...layer.querySelectorAll<HTMLElement>("[data-wg-group]")].find((one) => one.dataset["wgGroup"] === widget)
-				: null;
-			if (layer && group) pan.flyTo(lookOnto(boxInLayer(layer, group), pan.fieldRef.current));
-			onDone();
-		});
-		return () => cancelAnimationFrame(frame);
-	}, [layerRef, pan, page, widget, onDone]);
-}
-
-function boxInLayer(layer: HTMLElement, element: HTMLElement): Box {
-	const origin = layer.getBoundingClientRect();
-	const drawn = element.getBoundingClientRect();
-	const scale = drawn.width / Math.max(1, element.offsetWidth);
-	return {
-		x: (drawn.left - origin.left) / scale,
-		y: (drawn.top - origin.top) / scale,
-		width: element.offsetWidth,
-		height: element.offsetHeight,
 	};
 }

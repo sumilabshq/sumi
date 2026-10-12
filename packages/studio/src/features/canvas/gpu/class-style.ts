@@ -20,6 +20,8 @@ export interface PaintStyle {
 
 export interface ClassStyle {
 	display: "none" | "column" | "row";
+	displaySet: boolean;
+	inline: boolean;
 	reverse: boolean;
 	wrap: boolean;
 	gapRow: number;
@@ -95,6 +97,8 @@ export const JUSTIFY_WORDS: ReadonlySet<string> = new Set(["start", "center", "e
 export function emptyStyle(): ClassStyle {
 	return {
 		display: "column",
+		displaySet: false,
+		inline: false,
 		reverse: false,
 		wrap: false,
 		gapRow: 0,

@@ -13,13 +13,17 @@ const ATTRIBUTE = /([\w-]+)="([^"]*)"/g;
 export function pathsOfIcon(name: string): string[] {
 	const body = Object.hasOwn(ICON_BODIES, name) ? ICON_BODIES[name] : undefined;
 	if (body === undefined) return [];
+	return pathsOfMarkup(body);
+}
+
+export function pathsOfMarkup(body: string): string[] {
 	return [...body.matchAll(ELEMENT)].flatMap(([, tag = "", attributes = ""]) => {
-		const path = pathOfElement(tag, attributesOf(attributes));
+		const path = pathOfShape(tag, attributesOf(attributes));
 		return path ? [path] : [];
 	});
 }
 
-function pathOfElement(tag: string, attributes: Attributes): string | null {
+export function pathOfShape(tag: string, attributes: Attributes): string | null {
 	const at = (name: string): number => Number(attributes[name] ?? 0);
 	if (tag === "path") return attributes["d"] ?? null;
 	if (tag === "circle") return ellipsePath(at("cx"), at("cy"), at("r"), at("r"));

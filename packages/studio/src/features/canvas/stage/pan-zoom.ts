@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { MutableRefObject, PointerEvent as ReactPointerEvent, RefObject } from "react";
-import type { Size } from "./frame-size.js";
 import { movedNow, zoomSettledAt } from "./zoom-settled.js";
 import { flightBetween } from "./flight.js";
+import { centreOf, scaledAround, wheeled } from "./look-math.js";
+
+export { fitLook } from "./look-math.js";
 
 export interface Look {
 	readonly x: number;
@@ -19,7 +21,10 @@ export interface PanZoom {
 	readonly refit: () => void;
 	readonly flyTo: (look: Look) => void;
 	readonly lookNow: () => Look;
+	readonly watchLook: (watcher: LookWatcher) => () => void;
 }
+
+export type LookWatcher = (look: Look) => void;
 
 export interface PanZoomGrips {
 	readonly isHand: boolean;
@@ -34,21 +39,11 @@ interface PointerMoves {
 	readonly onPointerCancel: () => void;
 }
 
-const ZOOM_FLOOR = 0.1;
-const ZOOM_CEILING = 2;
 const UNMEASURED: Look = { x: 0, y: 0, scale: 1 };
 const FOLLOWS_LAYOUT_MS = 1500;
-const PINCH_RATE = 0.012;
-const WHEEL_RATE = 0.003;
-const PINCH_DELTA_BELOW = 30;
 const SHARP_AFTER_MS = 150;
 const MOVING = "is-moving";
 export const PRESSABLE_CONTROLS = "button, input, textarea, [role=radio], [role=tab], [role=switch]";
-
-export function fitLook(field: Size, view: Size): Look {
-	const scale = Math.max(ZOOM_FLOOR, Math.min(1, view.width / field.width, view.height / field.height));
-	return { scale, x: (view.width - field.width * scale) / 2, y: (view.height - field.height * scale) / 2 };
-}
 
 export function usePanZoom(
 	layerRef: RefObject<HTMLDivElement | null>,
@@ -58,7 +53,12 @@ export function usePanZoom(
 	const fieldRef = useRef<HTMLDivElement | null>(null);
 	const percentRef = useRef<HTMLSpanElement | null>(null);
 	const held = useRef<Look | null>(null);
-	const painter = usePainter(layerRef, percentRef);
+	const watchers = useRef(new Set<LookWatcher>());
+	const painter = usePainter(layerRef, percentRef, watchers.current);
+	const watchLook = useCallback((watcher: LookWatcher) => {
+		watchers.current.add(watcher);
+		return () => void watchers.current.delete(watcher);
+	}, []);
 	const flying = useRef(0);
 	const lookNow = useCallback((): Look => held.current ?? fit ?? UNMEASURED, [fit]);
 	const moveTo = useCallback(
@@ -102,6 +102,7 @@ export function usePanZoom(
 			flying.current = window.requestAnimationFrame(step);
 		},
 		lookNow,
+		watchLook,
 	};
 }
 
@@ -119,6 +120,7 @@ function useFitLatchedAfterLayout(held: MutableRefObject<Look | null>, fit: Look
 function usePainter(
 	layerRef: RefObject<HTMLDivElement | null>,
 	percentRef: RefObject<HTMLSpanElement | null>,
+	watchers: ReadonlySet<LookWatcher>,
 ): (look: Look) => void {
 	const frame = useRef(0);
 	const settle = useRef(0);
@@ -135,6 +137,7 @@ function usePainter(
 				if (!layer || !next) return;
 				layer.classList.add(MOVING);
 				layer.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
+				for (const watcher of watchers) watcher(next);
 				if (percentRef.current) percentRef.current.textContent = `${Math.round(next.scale * 100)}%`;
 				window.clearTimeout(settle.current);
 				settle.current = window.setTimeout(() => {
@@ -143,7 +146,7 @@ function usePainter(
 				}, SHARP_AFTER_MS);
 			});
 		},
-		[layerRef, percentRef],
+		[layerRef, percentRef, watchers],
 	);
 }
 
@@ -190,19 +193,4 @@ function useDragMoves(
 		onPointerUp: () => void (drag.current = null),
 		onPointerCancel: () => void (drag.current = null),
 	};
-}
-
-function wheeled(look: Look, event: WheelEvent, at: { x: number; y: number }): Look {
-	if (!event.ctrlKey && !event.metaKey) return { ...look, x: look.x - event.deltaX, y: look.y - event.deltaY };
-	const rate = Math.abs(event.deltaY) < PINCH_DELTA_BELOW ? PINCH_RATE : WHEEL_RATE;
-	return scaledAround(look, look.scale * Math.exp(-event.deltaY * rate), at);
-}
-
-function scaledAround(look: Look, wanted: number, at: { x: number; y: number }): Look {
-	const scale = Math.max(ZOOM_FLOOR, Math.min(wanted, ZOOM_CEILING));
-	return { scale, x: at.x - ((at.x - look.x) * scale) / look.scale, y: at.y - ((at.y - look.y) * scale) / look.scale };
-}
-
-function centreOf(field: HTMLDivElement | null): { x: number; y: number } {
-	return { x: (field?.clientWidth ?? 0) / 2, y: (field?.clientHeight ?? 0) / 2 };
 }

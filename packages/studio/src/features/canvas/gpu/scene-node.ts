@@ -1,16 +1,22 @@
 import type { Path } from "canvaskit-wasm";
 import { MeasureMode } from "yoga-layout/load";
 import type { Node as YogaNode } from "yoga-layout/load";
-import { pxOf } from "./class-style.js";
 import type { ClassStyle } from "./class-style.js";
 import { styleOfClassName } from "./class-words.js";
+import { wordsOfElement } from "./element-words.js";
 import type { GpuContext, HostProps, HostType } from "./gpu-context.js";
 import { colourOf } from "./gpu-tokens.js";
 import type { Rgba } from "./gpu-tokens.js";
+import { PLACEHOLDER_INK, SHAPE_HOLDERS, ownTextOf } from "./html-tags.js";
 import { NodeColours } from "./node-colours.js";
 import type { ColourOwner } from "./node-colours.js";
+import { isPressable } from "./node-events.js";
+import { layFlow } from "./node-flow.js";
+import { dropShapePaths } from "./node-shapes.js";
+import { sizeIntrinsic } from "./node-size.js";
 import { TextBlock, textOfChildren } from "./node-text.js";
-import type { MeasuredText, TextLook } from "./node-text.js";
+import type { MeasuredText } from "./node-text.js";
+import { textLookOf } from "./node-text-look.js";
 import { applyLayoutStyle } from "./yoga-style.js";
 
 export interface NodeOwner extends ColourOwner {
@@ -24,10 +30,6 @@ export interface Box {
 	readonly h: number;
 }
 
-const DEFAULT_FONT_PX = 14;
-const DEFAULT_LINE_PX = 20;
-const LINE_RATIO = 1.4;
-
 export class SceneNode {
 	readonly yoga: YogaNode;
 	readonly colours: NodeColours;
@@ -40,6 +42,7 @@ export class SceneNode {
 	hovered = false;
 	pressed = false;
 	iconPaths: Path[] | null = null;
+	private ownText: SceneNode | null = null;
 	private readonly textBlock: TextBlock | null;
 
 	constructor(
@@ -59,19 +62,33 @@ export class SceneNode {
 		return this.owner.context;
 	}
 
+	get holdsShapes(): boolean {
+		return SHAPE_HOLDERS.has(this.type);
+	}
 	setProps(props: HostProps, initial = false): void {
-		const previousStyle = this.style;
 		this.props = props;
-		this.style = styleOfClassName(props.className);
-		if (this.style !== previousStyle || initial) applyLayoutStyle(this.yoga, this.style);
-		if (this.type === "Icon") this.sizeIcon();
-		const text = this.type === "Text" ? textOfChildren(props.children) : "";
-		if (text !== this.text || (this.type === "Text" && this.style !== previousStyle)) {
+		this.restyle(initial);
+		sizeIntrinsic(this);
+		if (this.parent?.holdsShapes) dropShapePaths(this);
+		const text = this.type === "Text" ? textOfChildren(props["children"]) : "";
+		if (text !== this.text) {
 			this.text = text;
 			this.yoga.markDirty();
 		}
-		this.colours.retarget(this.style, this, initial);
+		this.syncOwnText();
 		this.owner.markLayoutDirty();
+	}
+
+	restyle(initial = false): void {
+		const style = styleOfClassName(wordsOfElement(this));
+		if (style === this.style && !initial) return;
+		this.style = style;
+		applyLayoutStyle(this.yoga, style);
+		sizeIntrinsic(this);
+		layFlow(this);
+		if (this.parent) layFlow(this.parent);
+		if (this.type === "Text") this.yoga.markDirty();
+		this.colours.retarget(style, this, initial);
 	}
 
 	retint(): void {
@@ -91,7 +108,10 @@ export class SceneNode {
 		this.detach(child);
 		child.parent = this;
 		this.children.splice(index, 0, child);
-		this.yoga.insertChild(child.yoga, index);
+		if (this.holdsShapes) dropShapePaths(this);
+		else this.yoga.insertChild(child.yoga, index);
+		child.restyleTree();
+		layFlow(this);
 		this.owner.markLayoutDirty();
 	}
 
@@ -104,26 +124,25 @@ export class SceneNode {
 		this.detach(child);
 		child.parent = null;
 		child.dispose();
+		layFlow(this);
 		this.owner.markLayoutDirty();
+	}
+
+	dropOwnText(): void {
+		if (!this.ownText) return;
+		this.remove(this.ownText);
+		this.ownText = null;
 	}
 
 	writeBoxes(parentX: number, parentY: number): void {
 		const layout = this.yoga.getComputedLayout();
 		this.box = { x: parentX + layout.left, y: parentY + layout.top, w: layout.width, h: layout.height };
+		if (this.holdsShapes) return;
 		for (const child of this.children) child.writeBoxes(this.box.x, this.box.y);
 	}
 
-	collectHits(x: number, y: number, chain: SceneNode[]): boolean {
-		if (this.style.display === "none") return false;
-		const { box } = this;
-		if (x < box.x || y < box.y || x >= box.x + box.w || y >= box.y + box.h) return false;
-		chain.push(this);
-		for (let at = this.children.length - 1; at >= 0; at -= 1) if (this.children[at]?.collectHits(x, y, chain)) break;
-		return true;
-	}
-
 	pressTarget(): SceneNode | null {
-		for (let node: SceneNode | null = this; node; node = node.parent) if (node.props.onPress) return node;
+		for (let node: SceneNode | null = this; node; node = node.parent) if (isPressable(node.props)) return node;
 		return null;
 	}
 
@@ -134,7 +153,7 @@ export class SceneNode {
 	}
 
 	paragraphAt(width: number): ReturnType<TextBlock["paragraphAt"]> | null {
-		return this.textBlock?.paragraphAt(this.textLook(), width) ?? null;
+		return this.textBlock?.paragraphAt(textLookOf(this), width) ?? null;
 	}
 
 	dispose(): void {
@@ -145,54 +164,29 @@ export class SceneNode {
 		this.yoga.free();
 	}
 
+	private restyleTree(): void {
+		this.restyle();
+		for (const child of this.children) child.restyleTree();
+	}
+
+	private syncOwnText(): void {
+		const own = ownTextOf(this.type, this.props);
+		if (!own) return this.dropOwnText();
+		const props = { children: own.text, className: own.isPlaceholder ? PLACEHOLDER_INK : undefined };
+		if (this.ownText) return this.ownText.setProps(props);
+		this.ownText = new SceneNode("Text", props, this.owner);
+		this.insert(this.ownText, 0);
+	}
+
 	private detach(child: SceneNode): void {
 		const index = this.children.indexOf(child);
 		if (index < 0) return;
 		this.children.splice(index, 1);
-		this.yoga.removeChild(child.yoga);
-	}
-
-	private sizeIcon(): void {
-		const size = this.props.size ?? 16;
-		if (this.style.width === undefined) this.yoga.setWidth(size);
-		if (this.style.height === undefined) this.yoga.setHeight(size);
-		this.yoga.setFlexShrink(0);
-		for (const path of this.iconPaths ?? []) path.delete();
-		this.iconPaths = null;
-	}
-
-	private inherited<K extends keyof ClassStyle>(key: K): ClassStyle[K] | undefined {
-		for (let node: SceneNode | null = this; node; node = node.parent)
-			if (node.style[key] !== undefined) return node.style[key];
-		return undefined;
-	}
-
-	private textLook(): TextLook {
-		const sized = this.inherited("fontSize");
-		const fontSize = sized === undefined ? DEFAULT_FONT_PX : pxOf(sized, this.context.tokens.lengths);
-		const lineHeight =
-			this.inherited("lineHeight") ?? (sized === undefined ? DEFAULT_LINE_PX : Math.round(fontSize * LINE_RATIO));
-		return {
-			text: this.text,
-			fontSize,
-			lineHeight,
-			weight: this.inherited("weight") ?? 400,
-			family: this.inherited("family") ?? "sans",
-			tracking: this.inherited("tracking") ?? 0,
-			tabular: this.inherited("tabular") ?? false,
-			align: this.inherited("align") ?? "left",
-			colour: this.textColour(),
-			truncate: this.style.truncate,
-		};
+		if (!this.holdsShapes) this.yoga.removeChild(child.yoga);
 	}
 
 	private measureText(width: number, mode: MeasureMode): MeasuredText {
-		const measured = this.textBlock?.measure(
-			this.textLook(),
-			width,
-			mode === MeasureMode.Exactly,
-			mode === MeasureMode.AtMost,
-		);
-		return measured ?? { width: 0, height: 0 };
+		const [fixed, bounded] = [mode === MeasureMode.Exactly, mode === MeasureMode.AtMost];
+		return this.textBlock?.measure(textLookOf(this), width, fixed, bounded) ?? { width: 0, height: 0 };
 	}
 }

@@ -1,4 +1,3 @@
-// TODO: the design canvas draws its frames as HTML; it becomes this module's first consumer once a spec says how
 export { startGpuCanvas } from "./start-gpu-canvas.js";
 export type { GpuCanvasStart } from "./start-gpu-canvas.js";
 export { startGpuCanvasInWorker } from "./gpu-canvas-in-worker.js";

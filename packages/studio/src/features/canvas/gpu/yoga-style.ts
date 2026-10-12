@@ -7,7 +7,7 @@ export interface LoadedLayout {
 	readonly yogaConfig: YogaConfig;
 }
 
-const ALIGN_OF: Readonly<Record<AlignWord, Align>> = {
+export const ALIGN_OF: Readonly<Record<AlignWord, Align>> = {
 	start: Align.FlexStart,
 	center: Align.Center,
 	end: Align.FlexEnd,

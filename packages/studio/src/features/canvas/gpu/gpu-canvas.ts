@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { fitCamera } from "./camera.js";
 import type { Camera, Viewport } from "./camera.js";
-import { arrangeFrames } from "./canvas-view.js";
+import { arrangeFrames } from "./arrange-frames.js";
 import type { CanvasView } from "./canvas-view.js";
 import { unknownClassWords } from "./class-words.js";
 import { mountFrame } from "./frame-render.js";
@@ -17,6 +17,7 @@ import type { WorkSummary } from "./work-log.js";
 
 export interface GpuFrameSpec extends FrameSpec {
 	readonly element: ReactNode;
+	readonly onFailure?: ((failure: Error) => void) | undefined;
 }
 
 export interface CanvasPoint {
@@ -38,8 +39,11 @@ export interface GpuCanvas {
 	addFrame(spec: GpuFrameSpec): void;
 	renderFrame(id: string, element: ReactNode): void;
 	removeFrame(id: string): void;
+	moveFrame(id: string, at: CanvasPoint): void;
 	camera(): Camera;
 	setCamera(camera: Camera): void;
+	drawAt(camera: Camera): void;
+	isPressableAt(x: number, y: number): boolean;
 	fitAll(): void;
 	focusFrame(id: string, zoom: number, at: CanvasPoint): void;
 	locateText(id: string, text: string): CanvasPoint | null;
@@ -57,16 +61,17 @@ interface HeldFrame {
 
 export function createGpuCanvas(context: GpuContext, view: CanvasView, setCursor: (cursor: string) => void): GpuCanvas {
 	const held = new Map<string, HeldFrame>();
+	const pointer = new ViewPointer(view, setCursor);
 	const rootOf = (id: string): FrameRoot | null => held.get(id)?.root ?? null;
 	const rearrange = (): void => {
 		arrangeFrames(view.frames);
 		view.requestFrame();
 	};
 	return {
-		pointer: new ViewPointer(view, setCursor),
+		pointer,
 		addFrame: (spec) => {
 			const root = new FrameRoot(spec, context);
-			const mounted = mountFrame(root);
+			const mounted = mountFrame(root, spec.onFailure);
 			held.set(spec.id, { root, mounted });
 			view.frames.push(root);
 			mounted.render(spec.element);
@@ -76,11 +81,23 @@ export function createGpuCanvas(context: GpuContext, view: CanvasView, setCursor
 		removeFrame: (id) => {
 			if (released(view, held, id)) rearrange();
 		},
+		moveFrame: (id, at) => {
+			const root = rootOf(id);
+			if (!root || (root.x === at.x && root.y === at.y)) return;
+			Object.assign(root, at);
+			view.tiles.dropAll();
+			view.requestFrame();
+		},
 		camera: () => ({ ...view.camera }),
 		setCamera: (camera) => {
 			Object.assign(view.camera, camera);
 			view.requestFrame();
 		},
+		drawAt: (camera) => {
+			Object.assign(view.camera, camera);
+			view.renderNow();
+		},
+		isPressableAt: (x, y) => pointer.pressableAt(x, y),
 		fitAll: () => {
 			fitCamera(view.camera, view.frames, view.viewport);
 			view.requestFrame();

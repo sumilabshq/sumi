@@ -1,5 +1,6 @@
 import { createElement as h, useContext, useEffect, useRef } from "react";
-import type { ComponentType, ContextType, ReactElement, RefObject } from "react";
+import type { ComponentType, ContextType, ReactElement, ReactNode, RefObject } from "react";
+import { DRAWS_INLINE } from "./draws-inline.js";
 import { rootWidget } from "./widget-root.js";
 import { PLATES_ABOVE } from "@widgetarium/kit/surface";
 import { MountSettingsButton } from "./mount-settings-button.js";
@@ -22,6 +23,7 @@ interface MountedEntry {
 	readonly name?: string | undefined;
 	readonly title?: string | null | undefined;
 	readonly drawInto?: ((element: HTMLElement, platesAbove: PlatesAbove) => Release) | null | undefined;
+	readonly drawInline?: (() => ReactNode) | null | undefined;
 	readonly enter?: (() => void) | null | undefined;
 }
 
@@ -40,7 +42,9 @@ export function drawWidget<Props extends object>(definition: DrawableWidget<Prop
 }
 
 export function Mounted({ entry }: MountedProps): ReactElement {
-	const node = useDrawsInto(entry);
+	const isInline = useContext(DRAWS_INLINE);
+	const node = useDrawsInto(isInline && entry.drawInline ? {} : entry);
+	if (isInline && entry.drawInline) return h("div", { className: "wg-mounted" }, entry.drawInline());
 	if (!entry.drawInto) return nothingToDraw(entry);
 	const drawn = h("div", { className: "wg-mounted", ref: node, key: "drawn" });
 	if (!isEnterable(entry)) return drawn;
