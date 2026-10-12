@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { GpuText, GpuView } from "../packages/studio/src/features/canvas/gpu/index.ts";
+import { GpuText, GpuView } from "../packages/studio/src/features/canvas/render/gpu/index.ts";
 
 interface TextPanelProps {
 	readonly heading: ReactNode;

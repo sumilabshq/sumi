@@ -16,7 +16,7 @@ import {
 	fontsUrlOf,
 	isSettingDrawnLive,
 	liveTokensOf,
-} from "../packages/studio/src/features/canvas/design/look-tokens.ts";
+} from "../packages/studio/src/features/canvas/local/look-tokens.ts";
 import { runLookCommand } from "../apps/obsidian/src/ai/look-command.ts";
 import type { Told } from "../apps/obsidian/src/ai/shape-command.ts";
 

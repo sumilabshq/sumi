@@ -447,11 +447,11 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/core/src/app-design.js");
-const { NotedPicture } = await import("../packages/studio/src/features/canvas/design/design-noted-picture.js");
-const { JobLine } = await import("../packages/studio/src/features/canvas/design/design-job-line.js");
-const { Group } = await import("../packages/studio/src/features/canvas/design/design-group.js");
+const { NotedPicture } = await import("../packages/studio/src/features/canvas/ui/design-noted-picture.js");
+const { JobLine } = await import("../packages/studio/src/features/canvas/ui/design-job-line.js");
+const { Group } = await import("../packages/studio/src/features/canvas/ui/design-group.js");
 const { canvasPagesOf, canvasTabsOf, shownPageOf } =
-	await import("../packages/studio/src/features/canvas/design/design-canvas-page.js");
+	await import("../packages/studio/src/features/canvas/ui/design-canvas-page.js");
 const { noteOfApp } = await import("../apps/obsidian/src/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");

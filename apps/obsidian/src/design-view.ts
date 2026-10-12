@@ -3,7 +3,7 @@ import type { App, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
-import type { DesignPort } from "@widgetarium/core/engine/design-port.js";
+import type { DesignPort } from "@widgetarium/studio";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { DESIGN_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { DesignViewState, GpuSupply } from "@widgetarium/studio";

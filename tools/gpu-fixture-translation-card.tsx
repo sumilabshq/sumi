@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuText, GpuView } from "../packages/studio/src/features/canvas/gpu/index.ts";
+import { GpuText, GpuView } from "../packages/studio/src/features/canvas/render/gpu/index.ts";
 import { ActionButton } from "./gpu-fixture-action-button.tsx";
 import { LANGUAGE, SOURCE, TRANSLATION } from "./gpu-fixture-copy.ts";
 import type { Direction, Tone } from "./gpu-fixture-copy.ts";

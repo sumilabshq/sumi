@@ -6,7 +6,7 @@ import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
 import type WidgetariumPlugin from "./main.js";
 import { boardIn } from "./board-in-note.js";
-import type { DrawnScreen } from "@widgetarium/core/engine/design-port.js";
+import type { DrawnScreen } from "@widgetarium/studio";
 import {
 	DESKTOP_FRAME,
 	DRAWS_AT_ONCE,

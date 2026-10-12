@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuIcon, GpuText, GpuView } from "../packages/studio/src/features/canvas/gpu/index.ts";
+import { GpuIcon, GpuText, GpuView } from "../packages/studio/src/features/canvas/render/gpu/index.ts";
 
 export type ActionKind = "ghost" | "outline" | "primary";
 

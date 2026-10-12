@@ -2,7 +2,7 @@ import type { DataAdapter } from "obsidian";
 import { readSpec, specPathOf, SPEC_FOLDER } from "@widgetarium/core/app-spec.js";
 import { ROOT } from "@widgetarium/core/paths.js";
 import { specMarkdownOf } from "@widgetarium/studio";
-import type { CanvasDoc } from "@widgetarium/core/engine/design-port.js";
+import type { CanvasDoc } from "@widgetarium/studio";
 import type WidgetariumPlugin from "./main.js";
 
 const APP_DOCS = [
