@@ -17,6 +17,11 @@
 			"types": "./dist/app.d.ts",
 			"default": "./dist/app.js"
 		},
+		"./mediator": {
+			"source": "./src/mediator/index.ts",
+			"types": "./dist/mediator/index.d.ts",
+			"default": "./dist/mediator/index.js"
+		},
 		"./styles.css": {
 			"style": "./dist/styles.css",
 			"default": "./dist/styles.css"

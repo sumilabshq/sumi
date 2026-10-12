@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { stableKey } from "./gateway/stable-key";
 import type { CommandAnswer } from "./gateway/run-handler";
-import type { DrawnCommand } from "./declared-command.js";
+import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
 
 type Run = (input: unknown) => Promise<CommandAnswer<unknown>>;
@@ -26,7 +26,10 @@ const IDLE: InputRuns = { running: 0, refusal: null, latest: 0 };
 const NO_RUNS: Runs = { ...IDLE, byInput: {} };
 const ALREADY_RUNNING = "{name} is already running";
 
-export function useCommandHandle(name: string, command: DrawnCommand): CommandHandle<unknown, unknown> {
+export function useCommandHandle(
+	name: string,
+	command: Action<unknown, CommandAnswer<unknown>>,
+): CommandHandle<unknown, unknown> {
 	const latest = useRef(command);
 	latest.current = command;
 	const [runs, setRuns] = useState<Runs>(NO_RUNS);
