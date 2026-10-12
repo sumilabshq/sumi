@@ -15,21 +15,47 @@ packages/<domain>/
       <name>.query.ts
       <name>.command.ts
       <name>.service.ts
-  widgets/
-    <widget>/
-      index.ts                   public API of the widget: re-exports widget.tsx
-      widget.tsx                 createWidget, metadata, layout
+  ui/                            everything drawn: components with props only, no data
+    <view>/
+      <view>.tsx
       hooks/                     state of the view only
-        use-<what>.ts
-      ui/                        parts only this widget draws
-        <part>.tsx
+      lib/                       pure view math (hit testing, geometry)
+  widgets/
+    <widget>.widget.ts           the link from one view to data: ports, states, the view it renders
 ```
 
 - `index.ts` holds re-exports and nothing else.
 - A file in `logic/<record>/` without a handler suffix is a plain helper private to that folder: a rule about the record that several handlers share.
-- A widget's `lib/` holds pure view math only (hit testing, geometry). A rule about records is never there; it is logic.
-- A widget folder starts as `index.ts` + `widget.tsx`; `hooks/` and `ui/` appear when the 200-line limit needs them.
-- A part drawn by two widgets of one domain goes to `widgets/<domain>-ui/` _(one shared folder per domain)_; a part with no domain goes to the kit.
+- A rule about records is never in `ui/`; it is logic.
+- A part with no domain goes to the kit.
+
+## Widget and view
+
+A **view** is what the person sees: a plain React component in `ui/`, TSX + Tailwind, props only. It reads and writes nothing; it can be drawn anywhere with plain values.
+
+A **widget** is the layer between a view and data. It draws nothing itself:
+
+```ts skip-check
+export const LayersPanel = widget()
+	.inject({
+		layers: IQuery.input(PageInputSchema).output(PageOf(LayerSchema)),
+		pick: ICommand.input(LayerPickSchema),
+	})
+	.states({ empty: { layers: [] } })
+	.render(LayersPanelView);
+```
+
+| The widget…           | The view gets                                                                    |
+| --------------------- | -------------------------------------------------------------------------------- |
+| a value query         | the value                                                                        |
+| a paged query         | `{ items, total, hasMore, more }`                                                |
+| a query with an input | `{ data, …, ask(input) }`: the widget keeps the input, the view asks for another |
+| a command             | an async function answering `{ ok, output }` or `{ ok: false, reason }`          |
+| a slot                | the drawn children                                                               |
+
+- Loading and failure are drawn by the widget layer (`.pending()`, `.failed()`, engine defaults otherwise), so a view never draws a missing value.
+- A widget declares no metadata and no layout. Labels, sizes and catalogue cards are not part of it.
+- **When to write a widget:** you always write a view. You write a widget when that view must stand on a board and get its data from the app.
 
 ## The table
 

@@ -38,13 +38,15 @@ A domain is a business area: `video`, `analytics`, `parental`; for this reposito
 ```
 packages/<domain>/
   index.ts              the public API: the only file another package may import
-  widgets/<widget>/     one folder per widget (see placement.md)
+  ui/<view>/            what is drawn: plain components, props only
+  widgets/              <widget>.widget.ts — the link from a view to data (see placement.md)
   logic/<record>/       queries, commands, services
   schemas/              the zod shape of each record — where widgets and logic meet
 ```
 
-- `widgets/` is cut by what is drawn (`task-kanban`, `task-table`), `logic/` by the kind of record (`tasks`).
-- Widgets never import logic, and logic never imports widgets. Both import `schemas/`. A widget reaches logic only through a port the app binds.
+- A view is what the person sees; a widget is the layer that connects a view to data and draws nothing itself.
+- `ui/` and `widgets/` are cut by what is drawn (`task-kanban`, `task-table`), `logic/` by the kind of record (`tasks`).
+- Views and widgets never import logic, and logic never imports them. All import `schemas/`. A widget reaches logic only through a port the app binds.
 - Inside one domain, logic imports logic directly.
 
 **What it gives:** a widget is reused for any record that fits its schema and swapped by the app (A/B tests, redesigns) without touching logic. Logic reads like ordinary code: go-to-definition opens the real function.
