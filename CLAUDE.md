@@ -1,5 +1,10 @@
 # Widgetarium
 
+**New code follows [docs/architecture/](docs/architecture/README.md)**: hosts → apps → packages,
+domains and common, placement by what a file is. Code under a `legacy/` folder predates it and leaves
+by rewrite ([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree for
+new code, those pages win.
+
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
 widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
 classic `h` factory, one component per file), `packages/core` and `apps/obsidian` are `.ts` React with
