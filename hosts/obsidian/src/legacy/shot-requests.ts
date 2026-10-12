@@ -21,6 +21,7 @@ import type { AgentLook } from "@widgetarium/canvas";
 import { drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas";
 import type { ObsidianDesignHeld } from "@widgetarium/canvas";
 import { CANVAS_OPENED_ON } from "@widgetarium/studio";
+import { designHeldOf } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
 
 export const SHOTS_DIR = `${ROOT}/shots`;
@@ -62,38 +63,38 @@ export function answerShotRequests(plugin: WidgetariumPlugin): void {
 }
 
 function shotTakerOf(plugin: WidgetariumPlugin): ShotTaker {
-	const { registry, host } = plugin;
-	const place = { leafOf: () => plugin.app.workspace.getLeaf(false), fromNote: () => "" };
-	const held = { obsidian: plugin.app, registry, host, jobs: plugin.assistant.jobs, place, fetchUrl: requestUrl };
+	const held = designHeldOf(plugin, { leafOf: () => plugin.app.workspace.getLeaf(false), fromNote: () => "" });
 	return { adapter: plugin.app.vault.adapter, held };
 }
 
 function shotAppOf(taker: ShotTaker, design: string): App {
 	const opened = { ...CANVAS_OPENED_ON, app: design };
-	return app({ modules: [canvasModule], host: canvasHost({ platform: "obsidian", opened, obsidian: taker.held }) });
+	const host = canvasHost({ platform: "obsidian", opened, obsidian: taker.held, ownsPaste: takesNoPaste });
+	return app({ modules: [canvasModule], host });
 }
 
 async function answerPending(taker: ShotTaker): Promise<void> {
 	const { adapter } = taker;
 	if (!(await adapter.exists(SHOT_REQUESTS_DIR))) return;
 	const { files } = await adapter.list(SHOT_REQUESTS_DIR);
-	for (const path of files.filter((one) => one.endsWith(".json"))) {
-		const id = path.slice(path.lastIndexOf("/") + 1, -".json".length);
-		const asked = askedIn(await adapter.read(path));
-		await adapter.remove(path);
-		await answerOne(taker, id, asked);
-	}
+	for (const path of files.filter((one) => one.endsWith(".json")))
+		await answerOne(taker, path).catch((failure: unknown) =>
+			console.error("[widgetarium] a shot request stays unanswered", path, failure),
+		);
 }
 
-async function answerOne(taker: ShotTaker, id: string, asked: ShotAsked): Promise<void> {
+async function answerOne(taker: ShotTaker, path: string): Promise<void> {
 	const { adapter } = taker;
+	const id = path.slice(path.lastIndexOf("/") + 1, -".json".length);
 	try {
+		const asked = askedIn(await adapter.read(path));
 		const shot = asked.design ? await shotWhileAgentLooks(taker, asked) : await noteShotOf(taker, asked.note);
 		if (shot.measured) await adapter.write(`${SHOTS_DIR}/${id}.measured.json`, JSON.stringify(shot.measured));
 		await adapter.writeBinary(`${SHOTS_DIR}/${id}.png`, shot.png);
 	} catch (failure) {
 		await adapter.write(`${SHOTS_DIR}/${id}.failed.txt`, failure instanceof Error ? failure.message : String(failure));
 	}
+	await adapter.remove(path);
 }
 
 function shotWhileAgentLooks(taker: ShotTaker, asked: ShotAsked): Promise<TakenShot> {
@@ -140,6 +141,10 @@ async function noteShotOf(taker: ShotTaker, note: string): Promise<TakenShot> {
 
 function drawn(shotApp: App, block: ReactElement): ReactElement {
 	return h(AppProvider, { app: shotApp }, h(Slot, null, block));
+}
+
+function takesNoPaste(): boolean {
+	return false;
 }
 
 function askedIn(text: string): ShotAsked {

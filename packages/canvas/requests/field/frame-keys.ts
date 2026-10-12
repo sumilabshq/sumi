@@ -1,6 +1,7 @@
 import { contentHash } from "@widgetarium/core/engine/content-hash.js";
 import type { Drawing } from "../../schema/drawing.js";
 
+// TODO: module state shared by every canvas; provide it per app.
 let lookStamp = { sheets: "", stamp: "" };
 
 export function frameIdOf(widget: string, state: string): string {

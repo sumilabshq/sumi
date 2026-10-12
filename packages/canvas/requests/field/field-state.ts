@@ -5,6 +5,8 @@ import { CanvasHost } from "../../ports/canvas-host.js";
 import { GpuSupplySchema } from "../../schema/drawing.js";
 import { SpotSchema } from "../../schema/selection.js";
 import { DesignReads } from "../design/design-reads.js";
+import { pickedMarkOf } from "../layers/picked-mark.js";
+import { pictureWidgetsShownOf } from "../layers/shown-screen.js";
 import { pagesNow, watchPages } from "../pages/pages-now.js";
 import { CanvasStore } from "../view/canvas-store.js";
 
@@ -26,13 +28,14 @@ export class FieldStateQueryHandler extends handlerOf(FieldStateQuery) {
 	private readonly canvasHost = inject(CanvasHost);
 
 	override async handle(): Promise<ReturnedOf<typeof FieldStateQuery>> {
-		const { pages } = await pagesNow(this.designReads, this.canvasStore);
-		const { mode, renderer, selection, focusedWidget } = this.canvasStore.now();
+		const read = await pagesNow(this.designReads, this.canvasStore);
+		const moment = this.canvasStore.now();
+		const { mode, renderer, selection, focusedWidget } = moment;
 		return {
-			page: pages.shown,
+			page: read.pages.shown,
 			isPointer: mode === "pointer",
 			flyTo: focusedWidget,
-			pickedMark: selection?.mark ?? null,
+			pickedMark: pickedMarkOf(moment, pictureWidgetsShownOf(read)),
 			pickedSpot: selection?.spot ?? null,
 			unresolved: selection && selection.spot === null ? { widget: selection.widget, mark: selection.mark } : null,
 			gpu: renderer === "gpu" ? this.canvasHost.gpu : null,

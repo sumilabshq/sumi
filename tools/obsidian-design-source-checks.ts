@@ -39,7 +39,10 @@ async function checkFailedWrite(check: Check, settle: () => Promise<void>): Prom
 		fetchUrl: () => Promise.reject(new Error("no network here")),
 	};
 	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
-	const canvasApp = app({ modules: [canvasModule], host: canvasHost({ platform: "obsidian", opened, obsidian }) });
+	const canvasApp = app({
+		modules: [canvasModule],
+		host: canvasHost({ platform: "obsidian", opened, obsidian, ownsPaste: () => true }),
+	});
 	const heard: CommandRefusal[] = [];
 	const node = document.createElement("div");
 	document.body.append(node);
@@ -123,7 +126,7 @@ function checkShownWidgets(check: Check): void {
 	]);
 	const tiles = ["stated", "stateless", "pictured"].map((widget) => ({ id: widget, widget }));
 	const board = normalizeBoard({ v: 2, tiles, layout: { dir: "column", of: tiles.map(({ id }) => ({ id })) } });
-	const picture = { widget: "pictured", props: {} };
+	const picture = { widget: "pictured", props: {}, mounts: null };
 	const screens = [{ name: "Home", states: [{ name: "Home", board, picture }] }];
 	check(
 		"a widget is shown beside the screens unless a screen already draws all of it",

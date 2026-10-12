@@ -2,7 +2,7 @@ import { z } from "zod";
 import { handlerOf, inject, query } from "@widgetarium/core/mediator";
 import type { ReturnedOf } from "@widgetarium/core/mediator";
 import { CanvasStore } from "../view/canvas-store.js";
-import { agentLookNow, watchAgentLook } from "./agent-looks.js";
+import { agentLookNow, agentPageOf, watchAgentLook } from "./agent-looks.js";
 
 export const AgentLookQuery = query("canvas/agent-look").output(
 	z.object({ isShown: z.boolean(), said: z.string(), canGo: z.boolean() }),
@@ -16,9 +16,11 @@ export class AgentLookQueryHandler extends handlerOf(AgentLookQuery) {
 
 	override async handle(): Promise<ReturnedOf<typeof AgentLookQuery>> {
 		const look = agentLookNow();
-		if (look?.app !== this.canvasStore.now().app) return { isShown: false, said: "", canGo: false };
-		if (!look.page) return { isShown: true, said: LOOKING_AT_DESIGN, canGo: false };
-		const where = look.frame ? `${look.page} · ${look.frame}` : look.page;
+		const { app } = this.canvasStore.now();
+		if (look?.app !== app) return { isShown: false, said: "", canGo: false };
+		const page = agentPageOf(look, app);
+		if (page === null) return { isShown: true, said: LOOKING_AT_DESIGN, canGo: false };
+		const where = look.frame ? `${page} · ${look.frame}` : page;
 		return { isShown: true, said: LOOKING_AT_PAGE.replace("{where}", where), canGo: true };
 	}
 

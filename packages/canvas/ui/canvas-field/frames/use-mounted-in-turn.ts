@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+// TODO: module state shared by every canvas; provide it per app.
 const waiting: (() => void)[] = [];
 let isTurning = false;
 

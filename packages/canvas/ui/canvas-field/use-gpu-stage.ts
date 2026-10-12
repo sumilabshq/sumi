@@ -36,7 +36,10 @@ export function useGpuStage(
 		void frames.start(canvas);
 		// TRADE-OFF: a window handle, because a GPU frame draws no DOM a test or a probe could read
 		Object.assign(window, { __WG_GPU_FRAMES__: frames });
-		return () => frames.stop();
+		return () => {
+			frames.stop();
+			if (Reflect.get(window, "__WG_GPU_FRAMES__") === frames) Reflect.deleteProperty(window, "__WG_GPU_FRAMES__");
+		};
 	}, [frames, canvas]);
 	const setCanvas = useCallback((node: HTMLCanvasElement | null) => {
 		canvasRef.current = node;

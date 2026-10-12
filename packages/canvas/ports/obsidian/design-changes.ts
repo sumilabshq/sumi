@@ -50,6 +50,7 @@ export function polledChanges(
 		seen = now;
 	};
 	const timer = window.setInterval(() => void poll().catch(pollFailed), DESIGN_POLL_MS);
+	void poll().catch(pollFailed);
 	return () => {
 		isStopped = true;
 		window.clearInterval(timer);

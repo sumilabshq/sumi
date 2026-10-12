@@ -5,15 +5,12 @@ import type { GpuFrames } from "@widgetarium/gpu";
 import { DRAWS_INLINE } from "@widgetarium/core/draws-inline.js";
 import type { StatePicture } from "../../../schema/design.js";
 import type { Drawing } from "../../../schema/drawing.js";
-import type { FrameSize } from "../../../schema/frame-size.js";
+import type { Frame } from "../../../schema/regions.js";
 import { REPORTS_DRAW_FAILURE } from "../../state-drawing/draw-contexts.js";
 import { StateDrawing } from "../../state-drawing/state-drawing.js";
 
 export interface GpuFrameAsk {
-	readonly id: string;
-	readonly label: string;
-	readonly size: FrameSize;
-	readonly picture: StatePicture | null;
+	readonly frame: Frame;
 	readonly registry: Drawing["registry"];
 	readonly node: RefObject<HTMLDivElement | null>;
 }
@@ -26,22 +23,23 @@ export interface GpuFrameDrawn {
 // TODO: draw a board on the GPU; WidgetSurface still needs a DOM node
 const BOARDS_STAY_HTML = "a board is drawn as HTML; the GPU canvas draws widget states only";
 
-export function useGpuFrame({ id, label, size, picture, registry, node }: GpuFrameAsk): GpuFrameDrawn {
+export function useGpuFrame({ frame, registry, node }: GpuFrameAsk): GpuFrameDrawn {
+	const { frame: id, label, width, height, picture, isGpuDrawn } = frame;
 	const frames = useContext(GPU_FRAMES);
 	const failure = useGpuFailure(frames, id);
 	const element = useMemo(
-		() => (picture ? frameTreeOf(frames, id, picture, registry) : null),
-		[frames, id, picture, registry],
+		() => (isGpuDrawn && picture ? frameTreeOf(frames, id, picture, registry) : null),
+		[frames, id, isGpuDrawn, picture, registry],
 	);
 	const isGpu = frames !== null && element !== null && failure === undefined;
 	useEffect(() => {
-		if (frames && !picture) frames.fail(id, BOARDS_STAY_HTML);
-	}, [frames, picture, id]);
+		if (frames && !isGpuDrawn) frames.fail(id, BOARDS_STAY_HTML);
+	}, [frames, isGpuDrawn, id]);
 	useLayoutEffect(() => {
 		const held = node.current;
 		if (!isGpu || !held) return undefined;
-		return frames.claim({ id, title: label, width: size.width, minHeight: size.height, node: held }, element);
-	}, [isGpu, frames, id, label, size.width, size.height, node]);
+		return frames.claim({ id, title: label, width, minHeight: height, node: held }, element);
+	}, [isGpu, frames, id, label, width, height, node]);
 	useEffect(() => {
 		if (isGpu) frames.redraw(id, element);
 	}, [isGpu, frames, id, element]);

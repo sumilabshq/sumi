@@ -12,7 +12,7 @@ export interface CanvasHostParts {
 	readonly obsidian?: ObsidianDesignHeld | undefined;
 	readonly project?: StartedProject | undefined;
 	readonly gpu?: GpuSupply | undefined;
-	readonly ownsPaste?: (() => boolean) | undefined;
+	readonly ownsPaste: () => boolean;
 	readonly returnToView?: (() => Promise<void>) | undefined;
 	readonly keepOpening?: ((kept: CanvasOpening) => void) | undefined;
 }
@@ -38,7 +38,7 @@ export function canvasHost(parts: CanvasHostParts): CanvasHost {
 		obsidian: parts.obsidian ?? null,
 		project: parts.project ?? null,
 		gpu: parts.gpu ?? null,
-		ownsPaste: parts.ownsPaste ?? isAlwaysOwner,
+		ownsPaste: parts.ownsPaste,
 		returnToView: parts.returnToView ?? null,
 		keepOpening: parts.keepOpening ?? keepsNothing,
 	};
@@ -53,10 +53,6 @@ export function canvasHostOf(host: AppHost): CanvasHost {
 
 function isCanvasHost(host: AppHost): host is CanvasHost {
 	return CANVAS_HOSTS.has(host);
-}
-
-function isAlwaysOwner(): boolean {
-	return true;
 }
 
 function keepsNothing(): void {}

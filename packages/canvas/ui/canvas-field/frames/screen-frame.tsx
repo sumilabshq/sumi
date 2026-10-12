@@ -21,18 +21,7 @@ export function ScreenFrame({ frame }: { readonly frame: Frame }): ReactElement 
 				<span className="wg-design-name cv:text-lg cv:font-semibold cv:text-muted-foreground">{frame.label}</span>
 				{frame.situation ? <span className="cv:text-base cv:text-muted-foreground">{frame.situation}</span> : null}
 			</div>
-			{isGpu ? (
-				<GpuScreen
-					id={frame.frame}
-					label={frame.label}
-					size={{ width: frame.width, height: frame.height }}
-					picture={frame.picture}
-					registry={registry}
-					fallback={html}
-				/>
-			) : (
-				html
-			)}
+			{isGpu ? <GpuScreen frame={frame} registry={registry} fallback={html} /> : html}
 		</div>
 	);
 }

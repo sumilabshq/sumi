@@ -13,6 +13,7 @@ export const FrameSchema = z.object({
 	pictureKey: z.string(),
 	widget: z.string().nullable(),
 	picture: StatePictureSchema.nullable(),
+	isGpuDrawn: z.boolean(),
 	board: BoardSchema.nullable(),
 	refusal: z.string(),
 });

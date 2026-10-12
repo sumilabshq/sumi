@@ -1,4 +1,4 @@
-import { ItemView, requestUrl } from "obsidian";
+import { ItemView } from "obsidian";
 import type { App, ViewStateResult, WorkspaceLeaf } from "obsidian";
 import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
@@ -8,6 +8,7 @@ import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import type { ObsidianDesignHeld } from "@widgetarium/canvas";
+import { designHeldOf } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
@@ -36,14 +37,7 @@ export class DesignView extends ItemView {
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.held = {
-			obsidian: plugin.app,
-			registry: plugin.registry,
-			host: plugin.host,
-			jobs: plugin.assistant.jobs,
-			place: { leafOf: () => this.leaf, fromNote: () => this.fromNote },
-			fetchUrl: requestUrl,
-		};
+		this.held = designHeldOf(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 

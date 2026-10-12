@@ -1,11 +1,14 @@
-import { boardIn } from "./board-in-note.js";
+import { boardIn, boardOrRefused } from "./board-in-note.js";
+import { textAt, textOrRefused } from "./text-at.js";
+import type { ReadingAdapter } from "./text-at.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { readSpec, specPathOf } from "@widgetarium/core/app-spec.js";
 import { LOCK_PATH } from "@widgetarium/core/paths.js";
-import type { DataAdapter } from "obsidian";
 
-export async function specWidgetsOf(adapter: Pick<DataAdapter, "read">, app: string): Promise<string[]> {
-	const text = await adapter.read(specPathOf(app)).catch(() => null);
+const LOCK_REFUSED = "{path} cannot be read: {why}";
+
+export async function specWidgetsOf(adapter: ReadingAdapter, app: string): Promise<string[]> {
+	const text = textOrRefused(await textAt(adapter, specPathOf(app)));
 	const read = text === null ? null : readSpec(text);
 	if (!read?.spec) return [];
 	const named = read.spec.features.flatMap((feature) => (feature.widget ? [feature.widget] : []));
@@ -14,17 +17,24 @@ export async function specWidgetsOf(adapter: Pick<DataAdapter, "read">, app: str
 	return [...named, ...onPages.flat()];
 }
 
-export async function catalogueInstallsOf(adapter: Pick<DataAdapter, "read">): Promise<string[]> {
-	const text = await adapter.read(LOCK_PATH).catch(() => "");
-	try {
-		const lock: unknown = JSON.parse(text);
-		return isObject(lock) && isObject(lock["widgets"]) ? Object.keys(lock["widgets"]) : [];
-	} catch {
-		return [];
-	}
+export async function catalogueInstallsOf(adapter: ReadingAdapter): Promise<string[]> {
+	const text = textOrRefused(await textAt(adapter, LOCK_PATH));
+	if (text === null) return [];
+	const lock = lockIn(text);
+	return isObject(lock) && isObject(lock["widgets"]) ? Object.keys(lock["widgets"]) : [];
 }
 
-async function widgetsOnNote(adapter: Pick<DataAdapter, "read">, note: string): Promise<string[]> {
-	const text = await adapter.read(note).catch(() => "");
-	return boardIn(text)?.tiles.map((tile) => tile.widget) ?? [];
+async function widgetsOnNote(adapter: ReadingAdapter, note: string): Promise<string[]> {
+	const text = textOrRefused(await textAt(adapter, note));
+	if (text === null) return [];
+	return boardOrRefused(boardIn(text), note)?.tiles.map((tile) => tile.widget) ?? [];
+}
+
+function lockIn(text: string): unknown {
+	try {
+		return JSON.parse(text);
+	} catch (failure) {
+		const why = failure instanceof Error ? failure.message : String(failure);
+		throw new Error(LOCK_REFUSED.replace("{path}", LOCK_PATH).replace("{why}", why));
+	}
 }

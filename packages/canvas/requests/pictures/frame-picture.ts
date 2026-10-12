@@ -17,15 +17,10 @@ export class FramePictureQueryHandler extends handlerOf(FramePictureQuery) {
 		key,
 		isAtOnce,
 	}: InputOf<typeof FramePictureQuery>): Promise<ReturnedOf<typeof FramePictureQuery>> {
-		const picture =
-			this.designSource.pictureOf === null || isAtOnce ? undefined : this.framePictureTaker.now().shown[frame];
-		const isFresh = picture?.key === key;
-		const url = picture?.url ?? null;
-		return {
-			url,
-			isLiveHidden: url !== null && isFresh,
-			isAsked: this.designSource.pictureOf !== null && !isAtOnce && !isFresh,
-		};
+		if (this.designSource.pictureOf === null || isAtOnce) return { url: null, isLiveHidden: false, isAsked: false };
+		const url = this.framePictureTaker.now().shown[frame]?.url ?? null;
+		const isCurrent = this.framePictureTaker.isCurrent(frame, key);
+		return { url, isLiveHidden: url !== null && isCurrent, isAsked: !isCurrent };
 	}
 
 	watch(_input: InputOf<typeof FramePictureQuery>, changed: () => void): () => void {

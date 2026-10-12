@@ -3,6 +3,7 @@ import { readSpec, specPathOf, SPEC_FOLDER } from "@widgetarium/core/app-spec.js
 import { ROOT } from "@widgetarium/core/paths.js";
 import type { CanvasDoc } from "../../schema/doc.js";
 import { specMarkdownOf } from "./spec-markdown.js";
+import { textAt, textOrRefused } from "./text-at.js";
 
 const APP_DOCS = [
 	{ name: "Research", file: "research.md" },
@@ -23,13 +24,13 @@ export async function docsOf(adapter: DataAdapter, app: string): Promise<readonl
 }
 
 async function docAt(adapter: DataAdapter, name: string, path: string): Promise<CanvasDoc[]> {
-	const markdown = await adapter.read(path).catch(() => null);
+	const markdown = textOrRefused(await textAt(adapter, path));
 	return markdown === null || markdown.trim() === "" ? [] : [{ name, path, markdown }];
 }
 
 async function specDocOf(adapter: DataAdapter, app: string): Promise<CanvasDoc[]> {
 	const path = specPathOf(app);
-	const text = await adapter.read(path).catch(() => null);
+	const text = textOrRefused(await textAt(adapter, path));
 	const spec = text === null ? null : readSpec(text).spec;
 	return spec ? [{ name: SPEC_DOC, path, markdown: specMarkdownOf(spec) }] : [];
 }

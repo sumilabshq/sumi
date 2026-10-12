@@ -33,6 +33,7 @@ import { PageTabsQueryHandler } from "./requests/pages/page-tabs.js";
 import { VariantsQueryHandler } from "./requests/pages/variants.js";
 import { PickVariantCommandHandler } from "./requests/pages/pick-variant.js";
 import { ReturnToViewCommandHandler } from "./requests/pages/return-to-view.js";
+import { DesignSourceViewReturn, HostViewReturn, ViewReturn } from "./requests/pages/view-return.js";
 import { ShowPageCommandHandler } from "./requests/pages/show-page.js";
 import { AddPhotosCommandHandler } from "./requests/photos/add-photos.js";
 import { PastePhotosCommandHandler } from "./requests/photos/paste-photos.js";
@@ -52,6 +53,7 @@ import { SetModeCommandHandler } from "./requests/view/set-mode.js";
 declare const __WG_PLATFORM__: string | undefined;
 
 const NO_DESIGN_SOURCE = "the canvas host names {platform} but hands no design to read";
+const NOT_BUILT_FOR_OBSIDIAN = "this build of the canvas carries no Obsidian design source";
 
 export const canvasModule = module({
 	name: "canvas",
@@ -107,14 +109,25 @@ export const canvasModule = module({
 		}),
 		provided(DesignReads, () => new CachedDesignReads()),
 		provided(FramePictureTaker, () => new QueuedFramePictures()),
+		provided(ViewReturn, viewReturnOf),
 	],
 });
 
 function designSourceOf(host: AppHost): DesignSource {
 	const { obsidian, project } = canvasHostOf(host);
-	if (typeof __WG_PLATFORM__ === "string" ? __WG_PLATFORM__ === "obsidian" : host.is("obsidian"))
-		return new ObsidianDesignSource(obsidian ?? refusedWithout("obsidian"));
-	return new WebDesignSource(project ?? refusedWithout("web"));
+	if (!host.is("obsidian")) return new WebDesignSource(project ?? refusedWithout("web"));
+	return typeof __WG_PLATFORM__ === "string" && __WG_PLATFORM__ === "web"
+		? refusedOffBuild()
+		: new ObsidianDesignSource(obsidian ?? refusedWithout("obsidian"));
+}
+
+function refusedOffBuild(): never {
+	throw new Error(NOT_BUILT_FOR_OBSIDIAN);
+}
+
+function viewReturnOf(host: AppHost): ViewReturn {
+	const { returnToView } = canvasHostOf(host);
+	return returnToView ? new HostViewReturn(returnToView) : new DesignSourceViewReturn();
 }
 
 function refusedWithout(platform: string): never {

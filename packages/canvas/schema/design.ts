@@ -5,9 +5,36 @@ import { FrameSizeSchema } from "./frame-size.js";
 
 export const BoardSchema = z.custom<Board>(isBoard);
 
-export const StatePictureSchema = z.object({
+export interface StatePicture {
+	readonly widget: string;
+	readonly props: Readonly<Record<string, unknown>>;
+	readonly mounts: Readonly<Record<string, readonly MountPicture[]>> | null;
+}
+
+export interface MountPicture {
+	readonly name: string;
+	readonly widget: string;
+	readonly title: string;
+	readonly surface: "group" | "none" | null;
+	readonly picture: StatePicture;
+}
+
+export const StatePictureSchema: z.ZodType<StatePicture> = z.object({
 	widget: z.string(),
 	props: z.record(z.string(), z.unknown()).readonly(),
+	get mounts() {
+		return z.record(z.string(), z.array(MountPictureSchema).readonly()).readonly().nullable();
+	},
+});
+
+const MountPictureSchema: z.ZodType<MountPicture> = z.object({
+	name: z.string(),
+	widget: z.string(),
+	title: z.string(),
+	surface: z.enum(["group", "none"]).nullable(),
+	get picture() {
+		return StatePictureSchema;
+	},
 });
 
 export const DrawnStateSchema = z.object({
@@ -53,7 +80,6 @@ export const DrawnDesignSchema = z.object({
 
 export const ReadDesignSchema = DrawnDesignSchema.extend({ app: z.string(), stamp: z.number() });
 
-export type StatePicture = z.output<typeof StatePictureSchema>;
 export type DrawnState = z.output<typeof DrawnStateSchema>;
 export type DrawnScreen = z.output<typeof DrawnScreenSchema>;
 export type ReferenceNote = z.output<typeof ReferenceNoteSchema>;

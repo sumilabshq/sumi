@@ -38,6 +38,7 @@ function frameOf(state: DrawnState, label: string, { registry }: Drawing): Frame
 		pictureKey: snapshotKeyOf(registry, widget, label, state.picture?.props ?? state.board),
 		widget: state.picture?.widget ?? null,
 		picture: state.picture ?? null,
+		isGpuDrawn: state.picture !== undefined,
 		board: state.picture ? null : state.board,
 		refusal: state.refusal ?? "",
 	};

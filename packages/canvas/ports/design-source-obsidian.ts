@@ -15,7 +15,7 @@ import { withBlocks } from "../requests/design/design-block-registry.js";
 import { docsOf } from "../requests/design/design-docs.js";
 import { layerMoved, photosAdded, pickLookOption, readAppLook, returnedToAppNote } from "./obsidian/design-writes.js";
 import type { DesignPlace } from "./obsidian/design-writes.js";
-import { boardIn } from "../requests/design/board-in-note.js";
+import { boardIn, boardOrRefused } from "../requests/design/board-in-note.js";
 import { pictureTakerOf } from "./obsidian/off-screen.js";
 import type { FetchUrl } from "./obsidian/off-screen.js";
 import { drawnDesignOf } from "../requests/design/drawn-design.js";
@@ -100,6 +100,6 @@ export class ObsidianDesignSource extends DesignSource {
 	override async noteBoard(path: string): Promise<Board | null> {
 		const text = await this.vault.adapter.read(path).catch(() => null);
 		if (text === null) throw new Error(NO_NOTE.replace("{note}", path));
-		return boardIn(text);
+		return boardOrRefused(boardIn(text), path);
 	}
 }

@@ -1,6 +1,7 @@
 import type { CommandAnswer } from "../gateway/run-handler";
 import { stableKey } from "../gateway/stable-key";
 import type { AnyQuery, AnyRequest } from "./request";
+import { NOT_WATCHED } from "./sends";
 import type { App } from "./sends";
 import { sharedWith } from "./shared-with";
 
@@ -53,8 +54,7 @@ export class QueryStore {
 		this.start(request, input);
 		const held = this.held.get(key);
 		held?.listeners.add(listener);
-		if (held !== undefined && held.stopWatching === null)
-			held.stopWatching = this.sender.watch?.(request, input, () => void this.read(held)) ?? null;
+		if (held !== undefined && held.stopWatching === null) this.startWatching(held);
 		return () => {
 			held?.listeners.delete(listener);
 			this.drop(key);
@@ -75,6 +75,12 @@ export class QueryStore {
 			if (held.listeners.size === 0) this.drop(key);
 			else void this.read(held);
 		}
+	}
+
+	private startWatching(held: Held): void {
+		if (this.sender.watch === undefined) return;
+		held.stopWatching = this.sender.watch(held.request, held.input, () => void this.read(held));
+		if (held.stopWatching !== NOT_WATCHED) void held.entry.read.then(() => this.read(held));
 	}
 
 	private async read(held: Held): Promise<void> {

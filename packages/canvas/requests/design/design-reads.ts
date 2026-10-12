@@ -56,7 +56,7 @@ export class CachedDesignReads extends DesignReads {
 		watch.listeners.add(changed);
 		return () => {
 			watch.listeners.delete(changed);
-			if (watch.listeners.size > 0) return;
+			if (watch.listeners.size > 0 || this.watches.get(app) !== watch) return;
 			watch.stop();
 			this.watches.delete(app);
 			this.stale(app);

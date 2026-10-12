@@ -442,7 +442,7 @@ const place = standIn<StudioPlace>(
 		hostOf: () => host,
 		openAsMarkdown: async () => undefined,
 		showAsMarkdown: async () => undefined,
-		designFor: async () => undefined,
+		designFor: async (app: string) => ({ app, ownsPaste: () => false }),
 	},
 	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
 	"place",
@@ -747,6 +747,7 @@ drawInto(
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
 		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
 		size: { width: 1200, height: 800 },
+		ownsPaste: () => false,
 	}),
 	designNode,
 );
@@ -771,6 +772,33 @@ drawInto(null, designNode);
 
 const { checkDesignSource } = await import("./obsidian-design-source-checks.ts");
 await checkDesignSource(check, settle);
+const { checkCanvasReads } = await import("./canvas-read-checks.ts");
+await checkCanvasReads(check);
+const { checkCanvasRequests } = await import("./canvas-request-checks.ts");
+await checkCanvasRequests(check);
+
+const { studioDesignOf } = await import("../hosts/obsidian/src/legacy/studio-leaves.js");
+const activeLeaf = standIn<WorkspaceLeaf>({}, [], "leaf");
+const otherLeaf = standIn<WorkspaceLeaf>({}, [], "leaf");
+const designPlugin = standIn<WidgetariumPlugin>(
+	{
+		app: {
+			vault: { adapter: { exists: async () => false } },
+			workspace: { getActiveViewOfType: () => ({ leaf: activeLeaf }) },
+		},
+	},
+	["app"],
+	"plugin",
+);
+const [activeDesign, otherDesign] = await Promise.all([
+	studioDesignOf(designPlugin, "Farm", activeLeaf),
+	studioDesignOf(designPlugin, "Farm", otherLeaf),
+]);
+check(
+	"a studio with no design folder still says whose paste it is: only the active studio leaf takes one",
+	[activeDesign.ownsPaste(), otherDesign.ownsPaste(), activeDesign.obsidian === undefined],
+	[true, false, true],
+);
 
 if (failed > 0) {
 	console.log(`obsidian studio: ${failed} failed`);

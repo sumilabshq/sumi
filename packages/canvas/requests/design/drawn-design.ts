@@ -12,9 +12,10 @@ import { appWidgetsOf } from "@widgetarium/core/app-widgets.js";
 import type { WidgetRegistry } from "@widgetarium/core/registry.js";
 import type { DrawnDesign } from "../../schema/design.js";
 import { shownWidgetsOf, widgetsOnScreens } from "./shown-widgets.js";
-import { blockIdOf, blocksOf } from "./design-block-registry.js";
+import { blockIdOf, blocksOf, withBlocks } from "./design-block-registry.js";
 import { readDrawnState } from "./drawn-state.js";
 import { catalogueInstallsOf, specWidgetsOf } from "./spec-widgets.js";
+import { textAt } from "./text-at.js";
 
 export interface DesignVault {
 	readonly adapter: DataAdapter;
@@ -25,7 +26,9 @@ const DRAFT_PREFIX = "@draft/";
 const NO_DESIGN_YET = "{app} has no design yet, or it was removed.";
 
 export async function drawnDesignOf(vault: DesignVault, app: string, isStarting = false): Promise<DrawnDesign> {
-	const text = await vault.adapter.read(designPathOf(app)).catch(() => null);
+	const held = await textAt(vault.adapter, designPathOf(app));
+	if (held.kind === "refused") return refusedDesignOf(app, held.refusal);
+	const text = held.kind === "read" ? held.text : null;
 	const isEmpty = text === null ? isStarting : isNothingDrawn(text);
 	if (isEmpty) return { screens: [], references: [], widgets: [] };
 	if (text === null) return refusedDesignOf(app, NO_DESIGN_YET.replace("{app}", app));
@@ -59,10 +62,7 @@ function refusedDesignOf(app: string, refusal: string): DrawnDesign {
 }
 
 function drawnScreensOf(vault: DesignVault, app: string, screens: Design["screens"]): Promise<DrawnDesign["screens"]> {
-	const source = {
-		adapter: vault.adapter,
-		statesOf: (widget: string) => vault.registry.get(widget)?.states,
-	};
+	const source = { adapter: vault.adapter, registry: withBlocks(vault.registry) };
 	return Promise.all(
 		screens.map(async (screen) => ({
 			name: screen.name,

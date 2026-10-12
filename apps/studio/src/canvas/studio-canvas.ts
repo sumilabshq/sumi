@@ -9,6 +9,7 @@ import type { CanvasShell } from "./design-stage.js";
 
 export interface StudioDesign {
 	readonly app: string;
+	readonly ownsPaste: () => boolean;
 	readonly obsidian?: ObsidianDesignHeld | undefined;
 	readonly gpu?: GpuSupply | undefined;
 }
@@ -28,6 +29,7 @@ export function StudioCanvas({ design, project, state, shell }: StudioCanvasProp
 		? h(DesignStage, {
 				platform: design.obsidian ? "obsidian" : "web",
 				obsidian: design.obsidian,
+				ownsPaste: design.ownsPaste,
 				project,
 				returnToView: async () => state.show("app"),
 				app: design.app,

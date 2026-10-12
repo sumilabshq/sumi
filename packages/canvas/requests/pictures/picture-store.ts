@@ -13,6 +13,7 @@ export interface FramePicture {
 	readonly usedAt: number;
 }
 
+// TODO: module state shared by every canvas; provide it per app.
 let opened: Promise<IDBDatabase> | null = null;
 
 export async function framePictureOf(frame: string): Promise<FramePicture | null> {

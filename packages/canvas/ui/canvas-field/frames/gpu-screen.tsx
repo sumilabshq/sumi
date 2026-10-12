@@ -1,26 +1,22 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import type { StatePicture } from "../../../schema/design.js";
 import type { Drawing } from "../../../schema/drawing.js";
-import type { FrameSize } from "../../../schema/frame-size.js";
+import type { Frame } from "../../../schema/regions.js";
 import { useGpuFrame } from "./use-gpu-frame.js";
 
 export interface GpuScreenProps {
-	readonly id: string;
-	readonly label: string;
-	readonly size: FrameSize;
-	readonly picture: StatePicture | null;
+	readonly frame: Frame;
 	readonly registry: Drawing["registry"];
 	readonly fallback: ReactElement;
 }
 
 const FELL_BACK_SAID = "HTML · {why}";
 
-export function GpuScreen({ fallback, ...frame }: GpuScreenProps): ReactElement {
+export function GpuScreen({ frame, registry, fallback }: GpuScreenProps): ReactElement {
 	const node = useRef<HTMLDivElement | null>(null);
-	const { isGpu, failure } = useGpuFrame({ ...frame, node });
+	const { isGpu, failure } = useGpuFrame({ frame, registry, node });
 	if (isGpu)
-		return <div className="cv:relative" ref={node} style={{ minHeight: frame.size.height }} data-canvas-gpu-frame="" />;
+		return <div className="cv:relative" ref={node} style={{ minHeight: frame.height }} data-canvas-gpu-frame="" />;
 	return (
 		<div className="cv:relative" data-canvas-gpu-fallen="">
 			{fallback}

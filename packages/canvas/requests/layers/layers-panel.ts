@@ -7,6 +7,7 @@ import { DesignReads } from "../design/design-reads.js";
 import { pagesNow, watchPages } from "../pages/pages-now.js";
 import { CanvasStore } from "../view/canvas-store.js";
 import { LayerRowSchema, layerRowsOf } from "./layer-rows.js";
+import { pickedMarkOf } from "./picked-mark.js";
 import { shownScreenOf } from "./shown-screen.js";
 
 export const LayersPanelQuery = query("canvas/layers-panel").output(
@@ -41,9 +42,10 @@ export class LayersPanelQueryHandler extends handlerOf(LayersPanelQuery) {
 	override async handle(): Promise<ReturnedOf<typeof LayersPanelQuery>> {
 		const shown = shownScreenOf(await pagesNow(this.designReads, this.canvasStore));
 		if (!shown) return NOT_DRAWN;
-		const { isLayersOpen, isLayoutLocked, mode, selection, seenLayers, closedLayers } = this.canvasStore.now();
+		const moment = this.canvasStore.now();
+		const { isLayersOpen, isLayoutLocked, mode, seenLayers, closedLayers } = moment;
 		const seen = seenLayers[shown.key] ?? null;
-		const picked = selection?.widget === shown.picture?.widget ? (selection?.mark ?? null) : null;
+		const picked = pickedMarkOf(moment, shown.picture ? [shown.picture.widget] : []);
 		const ask = {
 			registry: this.designSource.drawing().registry,
 			picked,

@@ -15,6 +15,7 @@ export interface PhotoAdapter {
 	process(path: string, change: (text: string) => string): Promise<string>;
 }
 
+// TODO: module state shared by every canvas; provide it per app.
 const ADDING = new Map<string, Promise<void>>();
 
 export function addPhotos(adapter: PhotoAdapter, app: string, photos: readonly File[]): Promise<void> {

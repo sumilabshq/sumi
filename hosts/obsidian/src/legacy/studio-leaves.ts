@@ -1,10 +1,10 @@
-import { requestUrl } from "obsidian";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { STUDIO_PACKS } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 import type { AppProjects } from "./app-projects.js";
+import { designHeldOf } from "./design-held.js";
 import { bindNote } from "./host.js";
 import { designFolderOf } from "@widgetarium/core/app-design.js";
 import type { StudioDesign } from "@widgetarium/studio";
@@ -47,16 +47,15 @@ export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProje
 	switchAppNotesToStudio(plugin, createLeafSwitcher(plugin.app, choices));
 }
 
-async function studioDesignOf(
+export async function studioDesignOf(
 	plugin: WidgetariumPlugin,
 	app: string,
 	leaf: WorkspaceLeaf,
-): Promise<StudioDesign | undefined> {
-	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return undefined;
-	const place = { leafOf: () => leaf, fromNote: () => "" };
-	const { registry, host } = plugin;
-	const obsidian = { obsidian: plugin.app, registry, host, jobs: plugin.assistant.jobs, place, fetchUrl: requestUrl };
-	return { app, obsidian, gpu: obsidianGpuSupply(plugin) };
+): Promise<StudioDesign> {
+	const ownsPaste = (): boolean => plugin.app.workspace.getActiveViewOfType(StudioView)?.leaf === leaf;
+	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return { app, ownsPaste };
+	const obsidian = designHeldOf(plugin, { leafOf: () => leaf, fromNote: () => "" });
+	return { app, ownsPaste, obsidian, gpu: obsidianGpuSupply(plugin) };
 }
 
 function markdownStateOf(leaf: WorkspaceLeaf, state: Record<string, unknown>): ViewState {

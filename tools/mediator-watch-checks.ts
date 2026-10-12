@@ -22,7 +22,21 @@ class GetCountedHandler extends handlerOf(GetCounted) {
 	}
 }
 
-const watchedModule = module({ name: "watched", handlers: [GetCountedHandler] });
+const fresh = { value: 1 };
+
+const GetFresh = query("watched/get-fresh").output(z.object({ value: z.number() }));
+
+class GetFreshHandler extends handlerOf(GetFresh) {
+	override async handle(): Promise<{ value: number }> {
+		return { value: fresh.value };
+	}
+
+	watch(): () => void {
+		return () => undefined;
+	}
+}
+
+const watchedModule = module({ name: "watched", handlers: [GetCountedHandler, GetFreshHandler] });
 const running = app({ modules: [watchedModule], host: hostOn("web") });
 const key = running.queries.keyOf(GetCounted, undefined);
 let heard = 0;
@@ -63,4 +77,23 @@ check(
 	"structural sharing keeps every equal branch and replaces only the changed one",
 	[shared === kept, Reflect.get(Object(Reflect.get(Object(shared), "list")), 0) === kept.list[0]],
 	[false, true],
+);
+
+const freshKey = running.queries.keyOf(GetFresh, undefined);
+await running.queries.start(GetFresh, undefined).read;
+fresh.value = 2;
+const stopFresh = running.queries.subscribe(GetFresh, undefined, () => undefined);
+await waitFor(() => JSON.stringify(running.queries.peek(freshKey)?.data) === '{"value":2}');
+check(
+	"a change between the first read and the watch attaching is read once the watch attaches",
+	running.queries.peek(freshKey)?.data,
+	{ value: 2 },
+);
+stopFresh();
+
+const renamedFrom = { kept: undefined };
+check(
+	"structural sharing never keeps a record whose keys were renamed",
+	sharedWith(renamedFrom, { renamed: undefined }) === renamedFrom,
+	false,
 );

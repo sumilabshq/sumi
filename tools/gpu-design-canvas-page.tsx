@@ -26,7 +26,7 @@ const registry = new ModuleRegistry({ "fixture-tags": tags, "task-list": taskLis
 const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 	name: state,
 	board: null,
-	picture: { widget, props },
+	picture: { widget, props, mounts: null },
 }));
 const refused = (): Promise<never> => Promise.reject(new Error(NOT_HERE));
 const TEST_HOST = {
@@ -67,6 +67,7 @@ function draw(): void {
 			opening: CANVAS_OPENED_ON,
 			size: VIEW,
 			gpu: supply,
+			ownsPaste: () => false,
 		}),
 	);
 }

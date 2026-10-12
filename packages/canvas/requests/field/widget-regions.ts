@@ -1,6 +1,7 @@
 import type { DrawnWidget } from "../../schema/design.js";
 import type { Drawing } from "../../schema/drawing.js";
 import type { Region, WidgetCard } from "../../schema/regions.js";
+import { statePictureOf } from "../design/drawn-state.js";
 import { cardPxOf } from "./card-width.js";
 import { frameIdOf, snapshotKeyOf } from "./frame-keys.js";
 
@@ -23,7 +24,7 @@ export function widgetsRegionOf(widgets: readonly DrawnWidget[], { registry }: D
 			width,
 			frame: frameIdOf(widget.id, label),
 			pictureKey: snapshotKeyOf(registry, widget.id, label, props),
-			picture: props ? { widget: widget.id, props } : null,
+			picture: props ? statePictureOf(registry, widget.id, props) : null,
 		});
 		return {
 			id: widget.id,

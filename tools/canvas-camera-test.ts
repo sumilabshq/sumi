@@ -226,6 +226,25 @@ for (let tries = 0; tries < 40 && !pageRefusal; tries += 1) {
 check("a page the design does not hold is refused by name", pageRefusal.startsWith("Demo has no page Nowhere"), true);
 check("and the agent's page picture leaves the person where they stand", personSees(), before);
 
+const writeAnswer = adapter.write;
+adapter.write = async (path: string, text: string): Promise<void> => {
+	if (path.endsWith("blocked.failed.txt")) throw new Error("the disk is full");
+	await writeAnswer(path, text);
+};
+files.set(`${SHOT_REQUESTS_DIR}/blocked.json`, "{");
+files.set(`${SHOT_REQUESTS_DIR}/broken.json`, "{");
+for (let tries = 0; tries < 40 && !files.has(`${SHOTS_DIR}/broken.failed.txt`); tries += 1) await pause(100);
+check(
+	"a request that cannot be parsed is answered with why, and only then removed; one whose answer cannot be written stays and blocks no other",
+	[
+		(files.get(`${SHOTS_DIR}/broken.failed.txt`) ?? "").length > 0,
+		files.has(`${SHOT_REQUESTS_DIR}/broken.json`),
+		files.has(`${SHOT_REQUESTS_DIR}/blocked.json`),
+	],
+	[true, false, true],
+);
+adapter.write = writeAnswer;
+
 for (const id of intervals) dom.window.clearInterval(id);
 await view.onClose();
 console.log(`\n${failed === 0 ? "canvas camera: clean" : `canvas camera: ${failed} failed`}`);

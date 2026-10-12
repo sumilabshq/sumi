@@ -17,7 +17,8 @@ function sharedRecordOf(
 ): Readonly<Record<string, unknown>> {
 	const keys = Object.keys(after);
 	const fields = Object.fromEntries(keys.map((key) => [key, sharedWith(before[key], after[key])]));
-	const isSame = keys.length === Object.keys(before).length && keys.every((key) => fields[key] === before[key]);
+	const isSame =
+		keys.length === Object.keys(before).length && keys.every((key) => key in before && fields[key] === before[key]);
 	return isSame ? before : fields;
 }
 

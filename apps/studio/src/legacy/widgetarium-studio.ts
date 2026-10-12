@@ -63,7 +63,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appId: start.appId ?? opened.app.name,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
-		design: start.design ?? { app: opened.app.name },
+		design: start.design ?? { app: opened.app.name, ownsPaste: ownsEveryPasteInItsTab },
 	};
 }
 
@@ -87,4 +87,8 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
 		panel === "none" ? null : h(StudioSidebar, { key: "sidebar", panel, assistant, catalogue, host, catalogueAsk }),
 	]);
+}
+
+function ownsEveryPasteInItsTab(): boolean {
+	return true;
 }

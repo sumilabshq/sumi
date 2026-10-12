@@ -5,7 +5,6 @@ import { useQuery } from "@widgetarium/core/mediator";
 import { PageTabsQuery } from "../../requests/pages/page-tabs.js";
 import { PAGES_TAB } from "../../schema/canvas-page.js";
 import { PagesPopover } from "./pages-popover.js";
-import { useAskedPage } from "./use-asked-page.js";
 
 export interface PageSwitchProps {
 	readonly onPage: (page: string) => void;
@@ -16,17 +15,14 @@ const SWITCH =
 
 export function PageSwitch({ onPage }: PageSwitchProps): ReactElement {
 	const tabs = useQuery(PageTabsQuery).data;
-	const [asked, setAsked] = useAskedPage(tabs.shown);
 	const pagesTab = tabs.pages.length > 0 ? [{ value: PAGES_TAB, label: <PagesPopover onPage={onPage} /> }] : [];
 	return (
 		<span className="cv:inline-flex" data-canvas-page-switch="">
 			<Segmented<string>
 				items={[...tabs.leading.map(tabOf), ...pagesTab, ...tabs.trailing.map(tabOf)]}
-				value={asked ?? tabs.shownTab}
+				value={tabs.shownTab}
 				onValueChange={(next) => {
-					if (next === PAGES_TAB) return;
-					setAsked(next);
-					onPage(next);
+					if (next !== PAGES_TAB) onPage(next);
 				}}
 				size="s"
 				className={SWITCH}

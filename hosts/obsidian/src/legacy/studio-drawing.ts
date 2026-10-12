@@ -21,7 +21,7 @@ export interface StudioPlace {
 	readonly viewType: string;
 	readonly assistant: AssistantPort;
 	hostOf(notePath: string): SurfaceHost;
-	designFor(app: string, leaf: WorkspaceLeaf): Promise<StudioDesign | undefined>;
+	designFor(app: string, leaf: WorkspaceLeaf): Promise<StudioDesign>;
 	openAsMarkdown(leaf: WorkspaceLeaf, file: TFile): Promise<void>;
 	showAsMarkdown(leaf: WorkspaceLeaf, file: TFile): Promise<void>;
 }
@@ -78,21 +78,21 @@ function redrawOnEveryChange(drawing: StudioDrawing): () => void {
 async function drawOpening(drawing: StudioDrawing, isCurrent: () => boolean): Promise<void> {
 	const { folder } = drawing.note;
 	try {
-		const opening = await drawing.place.projects.open(folder);
-		const design = opening.ok ? await drawing.place.designFor(opening.app.name, drawing.shown.leaf) : undefined;
-		if (isCurrent()) render(openingElementOf(drawing, opening, design), drawing.shown.node);
+		const element = await openingElementOf(drawing, await drawing.place.projects.open(folder));
+		if (isCurrent()) render(element, drawing.shown.node);
 	} catch (failure) {
 		const said = reportNotDrawn(folder, failure);
 		if (isCurrent()) render(refusalOf(said), drawing.shown.node);
 	}
 }
 
-function openingElementOf(drawing: StudioDrawing, opening: AppOpening, design: StudioDesign | undefined): ReactElement {
+async function openingElementOf(drawing: StudioDrawing, opening: AppOpening): Promise<ReactElement> {
 	if (!opening.ok) return refusalOf(reportRefused(drawing.note.folder, opening.findings));
+	const design = await drawing.place.designFor(opening.app.name, drawing.shown.leaf);
 	return h(WidgetariumStudio, { key: opening.version, started: startStudioOver(drawing, opening, design) });
 }
 
-function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: StudioDesign | undefined): StartedStudio {
+function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: StudioDesign): StartedStudio {
 	const { place, shown, note, studio, state } = drawing;
 	const notePath = shown.file.path;
 	const router = drawing.routing.routerFor(note, opening.routes);
@@ -106,7 +106,7 @@ function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: Stu
 			state,
 			assistant: place.assistant,
 			appId: note.folder,
-			...(design ? { design } : {}),
+			design,
 		},
 	);
 }

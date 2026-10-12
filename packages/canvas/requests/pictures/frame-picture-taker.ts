@@ -16,6 +16,7 @@ const AT_ONCE = 1;
 
 export abstract class FramePictureTaker {
 	abstract now(): FramePictures;
+	abstract isCurrent(frame: string, key: string): boolean;
 	abstract watch(changed: () => void): () => void;
 	abstract ask(asks: readonly PictureAsk[], pictureOf: PictureTaker): void;
 }
@@ -32,6 +33,10 @@ export class QueuedFramePictures extends FramePictureTaker {
 		return this.told;
 	}
 
+	override isCurrent(frame: string, key: string): boolean {
+		return this.shown.get(frame)?.key === key;
+	}
+
 	override watch(changed: () => void): () => void {
 		this.listeners.add(changed);
 		return () => void this.listeners.delete(changed);
@@ -39,7 +44,7 @@ export class QueuedFramePictures extends FramePictureTaker {
 
 	override ask(asks: readonly PictureAsk[], pictureOf: PictureTaker): void {
 		for (const { frame, key, node } of asks) {
-			if (this.shown.get(frame)?.key === key || this.waiting.get(frame)?.key === key) continue;
+			if (this.isCurrent(frame, key) || this.waiting.get(frame)?.key === key) continue;
 			this.waiting.set(frame, { key, node, pictureOf });
 			void this.storedOrQueued(frame, key);
 		}

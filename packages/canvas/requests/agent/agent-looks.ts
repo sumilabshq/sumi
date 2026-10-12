@@ -23,6 +23,10 @@ export function agentLookNow(): AgentLook | null {
 	return lookNow;
 }
 
+export function agentPageOf(look: AgentLook | null, app: string): string | null {
+	return look?.app === app && look.page ? look.page : null;
+}
+
 export function watchAgentLook(changed: () => void): () => void {
 	listeners.add(changed);
 	return () => void listeners.delete(changed);

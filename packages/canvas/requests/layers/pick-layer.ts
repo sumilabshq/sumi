@@ -5,7 +5,9 @@ import { DesignReads } from "../design/design-reads.js";
 import { pagesNow } from "../pages/pages-now.js";
 import { CanvasStore } from "../view/canvas-store.js";
 import { openedTo } from "./opened-to.js";
+import { pickedMarkOf } from "./picked-mark.js";
 import { shownScreenOf } from "./shown-screen.js";
+import { turnedAway } from "../pages/turned-away.js";
 
 export const PickLayerCommand = command("canvas/pick-layer")
 	.input(z.object({ id: z.string() }))
@@ -18,10 +20,12 @@ export class PickLayerCommandHandler extends handlerOf(PickLayerCommand) {
 	private readonly canvasStore = inject(CanvasStore);
 
 	override async handle({ id }: InputOf<typeof PickLayerCommand>): Promise<void> {
+		const asked = this.canvasStore.now().page;
 		const widget = shownScreenOf(await pagesNow(this.designReads, this.canvasStore))?.picture?.widget;
-		if (!widget) throw new Error(NOT_A_PAGE);
 		const moment = this.canvasStore.now();
-		const selection = moment.selection?.mark === id ? null : { widget, mark: id, spot: null };
+		if (moment.page !== asked) return turnedAway(`pick ${id}`, asked, moment.page);
+		if (!widget) throw new Error(NOT_A_PAGE);
+		const selection = pickedMarkOf(moment, [widget]) === id ? null : { widget, mark: id, spot: null };
 		this.canvasStore.change(
 			{ selection, closedLayers: openedTo(moment, selection) },
 			selection ? `pick ${id}` : "clear the pick",
