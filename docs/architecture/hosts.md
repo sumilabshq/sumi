@@ -41,8 +41,10 @@ Everything that reaches a browser is public. A secret in a client env is not a s
 It does four things and nothing else:
 
 1. Installs as a plugin and keeps its settings, the AI connection among them.
-2. Opens a note whose front matter names `widgetarium-app` in the studio instead of the markdown editor.
-3. Hands the studio the vault (`IFiles`, the app's project files), the AI session and the window insets.
-4. Runs the AI agent's tools (`widgets.mjs`) over the vault.
+2. Opens a note whose front matter names `widgetarium-app` in the studio instead of the markdown editor; lists the vault's apps and creates a new one (the `Open app` and `Create new app` commands).
+3. Hands the studio the vault (`IFiles`, the app's project files, the design source), the AI session and the window insets.
+4. Runs the AI agent's tools (`widgets.mjs`) over the vault: lays the agent's files, builds the vault's widgets, answers screenshot requests, and opens the design view the chat links to.
+
+TODO: building and installing vault widgets is engine work living in the host until it has a common home.
 
 The AI chat and the catalogue are drawn by the studio in its own panel; the host draws no sidebar of its own.

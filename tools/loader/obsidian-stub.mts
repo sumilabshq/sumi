@@ -29,6 +29,11 @@ export class Plugin {
 	registerEvent(): void {}
 }
 export class Modal {}
+export class SuggestModal extends Modal {
+	emptyStateText = "";
+	setPlaceholder(): void {}
+	open(): void {}
+}
 export class ItemView {
 	leaf: unknown;
 	constructor(leaf: unknown) {

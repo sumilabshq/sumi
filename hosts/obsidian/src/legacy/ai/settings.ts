@@ -79,10 +79,15 @@ export function changedFrom(provider: Provider | null | undefined): EditableFiel
 export function createAiSettings({ read, write }: PluginDataStore): AiSettings {
 	const stateNow = async (): Promise<AiState> => aiStateOf(await read());
 
-	async function writeAi(patch: Held): Promise<AiState> {
-		const stored = objectIn(await read());
-		await write({ ...stored, [AI_KEY]: { ...aiIn(stored), ...patch } });
-		return stateNow();
+	let writing: Promise<unknown> = Promise.resolve();
+
+	function writeAi(patchOf: (stored: Held) => Held): Promise<AiState> {
+		const written = writing.then(async () => {
+			const stored = objectIn(await read());
+			await write({ ...stored, [AI_KEY]: { ...aiIn(stored), ...patchOf(stored) } });
+		});
+		writing = written.catch(() => undefined);
+		return written.then(stateNow);
 	}
 
 	return {
@@ -91,35 +96,39 @@ export function createAiSettings({ read, write }: PluginDataStore): AiSettings {
 		remembered: async () => transcriptIn(await read()),
 
 		async remember({ turns, session }) {
-			await writeAi({ transcript: { turns: turnsToKeep(turns), session: sessionToKeep(session) } });
+			await writeAi(() => ({ transcript: { turns: turnsToKeep(turns), session: sessionToKeep(session) } }));
 		},
 
 		async choose(id) {
 			if (!presetById(id)) return stateNow();
-			return writeAi({ provider: id });
+			return writeAi(() => ({ provider: id }));
 		},
 
 		async setSkipPermissions(on) {
-			return writeAi({ skipPermissions: on === true });
+			return writeAi(() => ({ skipPermissions: on === true }));
 		},
 
 		async setPublishWidgets(on) {
-			return writeAi({ publishWidgets: on === true });
+			return writeAi(() => ({ publishWidgets: on === true }));
 		},
 
 		async setHelperAgents(on) {
-			return writeAi({ helperAgents: on === true });
+			return writeAi(() => ({ helperAgents: on === true }));
 		},
 
 		async update(id, patch) {
 			if (!presetById(id)) return stateNow();
-			const held = overridesOf(await read());
-			return writeAi({ overrides: { ...held, [id]: { ...objectIn(held[id]), ...keepEditableFields(patch) } } });
+			return writeAi((stored) => {
+				const held = overridesOf(stored);
+				return { overrides: { ...held, [id]: { ...objectIn(held[id]), ...keepEditableFields(patch) } } };
+			});
 		},
 
 		async reset(id) {
-			const { [id]: dropped, ...rest } = overridesOf(await read());
-			return writeAi({ overrides: rest });
+			return writeAi((stored) => {
+				const { [id]: dropped, ...rest } = overridesOf(stored);
+				return { overrides: rest };
+			});
 		},
 	};
 }

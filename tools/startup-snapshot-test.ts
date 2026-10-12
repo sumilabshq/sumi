@@ -2,8 +2,6 @@ import fs from "node:fs";
 import nodePath from "node:path";
 import type { FileStat, RegistryAdapter } from "../packages/core/src/registry-reading.js";
 import type { StartupSnapshot, StartupSnapshotStore } from "../packages/core/src/startup-snapshot.js";
-import type { AgentFilesAdapter } from "../hosts/obsidian/src/legacy/ai/agent-files.js";
-import { standIn } from "./stand-in.ts";
 
 Object.assign(globalThis, {
 	window: { setTimeout, clearTimeout, queueMicrotask },
@@ -15,7 +13,6 @@ Object.assign(globalThis, {
 
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 const { StartupCache } = await import("../packages/core/src/startup-snapshot.js");
-const { removeLaidCatalogue } = await import("../hosts/obsidian/src/legacy/laid-catalogue.js");
 const { boardWidgets, inlineWidgets } = await import("../packages/core/src/registry.js");
 
 const SOURCE = nodePath.resolve("registry");
@@ -270,7 +267,7 @@ check(
 	[],
 );
 
-console.log("\n— (e) the copy an older plugin laid is removed, and only that copy —");
+console.log("\n— (e) a vault copy of the engine's catalogue is never listed —");
 const leftovers = [
 	{ manifest: { id: "@catalogue/head" }, folder: `${WIDGETS_DIR}/@catalogue/head` },
 	{ manifest: { id: "@catalogue/chip", inline: true }, folder: `${WIDGETS_DIR}/@catalogue/chip` },
@@ -281,29 +278,6 @@ check(
 	[boardWidgets(leftovers).map((one) => one.manifest.id), inlineWidgets(leftovers).map((one) => one.manifest.id)],
 	[["@default/chart"], []],
 );
-const laidPaths = new Set([`${WIDGETS_DIR}/@catalogue/.laid-by-plugin`, `${WIDGETS_DIR}/@catalogue/head/widget.tsx`]);
-const removed: string[] = [];
-const laidAdapter = standIn<AgentFilesAdapter>(
-	{
-		read: async (path: string) => {
-			if (!laidPaths.has(path)) throw new Error(`${path} does not exist`);
-			return "laid";
-		},
-		rmdir: async (path: string) => {
-			removed.push(path);
-		},
-	},
-	["read", "rmdir"],
-	"adapter",
-);
-check(
-	"a marked copy is removed",
-	[await removeLaidCatalogue(laidAdapter), removed],
-	[true, [`${WIDGETS_DIR}/@catalogue`]],
-);
-laidPaths.delete(`${WIDGETS_DIR}/@catalogue/.laid-by-plugin`);
-removed.length = 0;
-check("a scope without the mark is left alone", [await removeLaidCatalogue(laidAdapter), removed], [false, []]);
 
 console.log(`\n${checks - failed}/${checks} startup snapshot checks passed`);
 process.exit(failed === 0 ? 0 : 1);

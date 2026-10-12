@@ -5,7 +5,6 @@ import { standIn } from "./stand-in.ts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
 import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
 import type { InstallerAdapter } from "../packages/core/src/installer-context.js";
-import type { BlockContext } from "../hosts/obsidian/src/legacy/draw-block.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -289,7 +288,7 @@ const offer = {
 	check("and nothing of it reached the vault", vault.files.size, 0);
 }
 
-const { default: WidgetariumPlugin, drawable } = await import("../hosts/obsidian/src/main.js");
+const { drawable } = await import("../hosts/obsidian/src/legacy/widget-offers.js");
 
 const offered = (api: unknown) =>
 	drawable({ manifest: { id: "@demo/clock", api }, sources: { "widget.tsx": WIDGET }, path: "@demo/clock" });
@@ -300,49 +299,6 @@ check(
 	String(pathIn(offered(WIDGET_API + 1), "error", "message") ?? ""),
 	`@demo/clock needs widget API ${WIDGET_API + 1}, and this Widgetarium provides ${WIDGET_API}.`,
 );
-
-function bareWidgetariumPlugin(): InstanceType<typeof WidgetariumPlugin> {
-	const built: unknown = Reflect.construct(WidgetariumPlugin, []);
-	if (!(built instanceof WidgetariumPlugin)) throw new Error("the plugin class built something else");
-	return built;
-}
-
-function renderedBlock(source: string): { said: unknown[]; mounts: unknown[][] } {
-	const plugin = bareWidgetariumPlugin();
-	const said: unknown[] = [];
-	const mounts: unknown[][] = [];
-	Object.assign(plugin, {
-		registry: { resolveId: (id: string) => id },
-		mounts: new Map(),
-		isScreen: () => false,
-		mount: (...given: unknown[]) => {
-			mounts.push(given);
-			return {};
-		},
-	});
-	const element = standIn<HTMLElement>(
-		{ createEl: (_tag: string, options?: { readonly text?: string }) => said.push(options?.text ?? "") },
-		["createEl"],
-		"element",
-	);
-	const context = standIn<BlockContext>(
-		{ sourcePath: "Note.md", getSectionInfo: () => null },
-		["sourcePath", "getSectionInfo"],
-		"block context",
-	);
-	plugin.drawBlock(source, element, context);
-	return { said, mounts };
-}
-
-const readable = renderedBlock("v: 1\ntiles:\n  - id: a\n    widget: '@demo/clock'\nlayouts: {}\n");
-check("a block this plugin can read is mounted", readable.mounts.length, 1);
-check("and nothing is printed over it", readable.said, []);
-
-const newer = renderedBlock("v: 99\ntiles:\n  - id: a\n    widget: '@demo/clock'\nlayouts: {}\n");
-check("a block from a newer plugin is never mounted", newer.mounts.length, 0);
-check("and the note says why, with both numbers", newer.said, [
-	`Widgetarium: this board was written in format 99, and this plugin reads up to ${BLOCK_FORMAT}. Update Widgetarium to open it — nothing was changed.`,
-]);
 
 console.log(failed ? `\nversion gate: ${failed} of ${checks} failed` : `\nversion gate: clean, ${checks} checks`);
 process.exit(failed ? 1 : 0);

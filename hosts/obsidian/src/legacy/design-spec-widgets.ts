@@ -2,7 +2,7 @@ import { boardIn } from "./board-in-note.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { readSpec, specPathOf } from "@widgetarium/core/app-spec.js";
 import { LOCK_PATH } from "@widgetarium/core/paths.js";
-import type WidgetariumPlugin from "./main.js";
+import type WidgetariumPlugin from "../main.js";
 
 export async function specWidgetsOf(plugin: WidgetariumPlugin, app: string): Promise<string[]> {
 	const text = await plugin.app.vault.adapter.read(specPathOf(app)).catch(() => null);

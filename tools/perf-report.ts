@@ -45,11 +45,10 @@ const settle = (ms: number): Promise<void> => new Promise<void>((done) => setTim
 const megabytes = (bytes: number): string => `${(bytes / 1048576).toFixed(2)} MB`;
 const isDevBuild = (source: string): boolean => source.includes("//# sourceMappingURL=");
 
-function onloadBody(): string {
-	const startup = fs.readFileSync("hosts/obsidian/src/legacy/plugin-setup.ts", "utf8");
-	const opens = startup.indexOf("\nexport function startPlugin(");
-	const closes = startup.indexOf("\n}\n", opens);
-	return startup.slice(opens, closes);
+function startupSources(): string {
+	return ["hosts/obsidian/src/main.ts", "hosts/obsidian/src/vault-widgets.ts"]
+		.map((file) => fs.readFileSync(file, "utf8"))
+		.join("\n");
 }
 
 function parseCost(source: string, label: string): number {
@@ -167,7 +166,7 @@ async function reportWidgetCompile(): Promise<void> {
 	row("passes on the startup path", await passesPerInstalledWidget());
 	row(
 		"the catalogue",
-		onloadBody().includes("drawable") ? "compiles every offer at startup too" : "waits to be opened",
+		startupSources().includes("drawable") ? "compiles every offer at startup too" : "waits to be opened",
 	);
 }
 
@@ -319,34 +318,11 @@ async function reportEmojiTable(): Promise<void> {
 	row("parse + evaluate", `${parseCost(asScript, "emoji").toFixed(1)} ms`);
 }
 
-async function reportThisVaultsSources(): Promise<void> {
-	const live = `${VAULT}/.widgetarium/catalogue.json`;
-	if (!fs.existsSync(live)) return;
-	const installer = createInstaller({
-		adapter: installerAdapterOver(JSON.parse(fs.readFileSync(live, "utf8"))),
-		fetchJson: async () => null,
-		fetchText: async () => "",
-		disk: null,
-	});
-	const authored = await installer.folderSourcePaths();
-	row("this vault", authored.length > 0 ? `polls, authoring from ${authored.join(", ")}` : "never polls");
-}
-
-async function reportPollGate(): Promise<void> {
-	heading("7 · does this vault poll the filesystem");
-	const startup = fs.readFileSync("hosts/obsidian/src/legacy/widget-upkeep.ts", "utf8");
-	const isGated = /isAuthoringWidgetsHere\(plugin\)\) await watchWidgetFolder\(plugin\)/.test(startup);
-	row("interval", `${Number(/WIDGET_POLL_MS = (\d+)/.exec(startup)?.[1] ?? 0)} ms`);
-	row("gated on a folder catalogue source", isGated ? "yes — other vaults never poll" : "NO — every vault polls");
-	await reportThisVaultsSources();
-}
-
 await reportBundles();
 await reportWidgetCompile();
 await reportCatalogueWalk();
 await reportCardMove();
 await reportFirstPaint();
 await reportEmojiTable();
-await reportPollGate();
 console.log();
 process.exit(0);

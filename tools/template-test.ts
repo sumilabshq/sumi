@@ -1,5 +1,4 @@
 import fs from "node:fs";
-import { parse as parseYaml } from "yaml";
 import { JSDOM } from "jsdom";
 import { isObject } from "../packages/core/src/engine/is-object.js";
 import type { Template } from "../packages/core/src/templates.js";
@@ -32,11 +31,8 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { TEMPLATES, templateWidgets, templateBoard, templateSketch } = await import("../packages/core/src/templates.js");
-const { boardNoteText } = await import("../hosts/obsidian/src/legacy/board-note.js");
-const { findBlocks } = await import("../packages/core/src/block-writer.js");
-const { normalizeBoard, serializeBoard, VIEW_GROUP } = await import("../packages/core/src/model.js");
+const { VIEW_GROUP } = await import("../packages/core/src/model.js");
 const { swapBoxes } = await import("../packages/core/src/tree.js");
-const { blockRefusal } = await import("../packages/core/src/version.js");
 
 let failed = 0;
 const pathIn = (value: unknown, ...keys: readonly string[]): unknown =>
@@ -183,38 +179,6 @@ check(
 	cells.filter((cell) => !cell.widget),
 	[],
 );
-
-const note = boardNoteText(board);
-const lines = note.split("\n");
-const blocks = findBlocks(lines).map((block) => lines.slice(block.start + 1, block.end).join("\n"));
-check("the note holds exactly one board", blocks.length, 1);
-const parsedBlock: unknown = parseYaml(blocks[0] ?? "");
-const written = isObject(parsedBlock) ? parsedBlock : {};
-check("the board is written in the format this plugin reads", blockRefusal(written), null);
-check("it is a tree, never a grid", "layouts" in written, false);
-check("and it opens as a page, because a template is a whole screen", written["mode"], "expanded");
-check(
-	"every tile survives the write",
-	listIn(written, "tiles").map((tile) => pathIn(tile, "id")),
-	["boards", "filter", "views", "kanban"],
-);
-check("the kanban is a tile of its own, standing in the swap box", pathIn(written, "layout", "of", "1", "of", "1"), {
-	dir: "swap",
-	id: "board",
-	strip: false,
-	of: [{ id: "kanban", height: 640, name: "Kanban" }],
-});
-check(
-	"with the card slot it draws through",
-	pathIn(written, "tiles", "3", "slots", "card", "widget"),
-	"@default/task-card",
-);
-check(
-	"and the refs it was authored with",
-	pathIn(written, "tiles", "3", "props", "getSelection", "fields", "ref"),
-	"boards/getSelection",
-);
-check("reading it back changes nothing", serializeBoard(normalizeBoard(written)), written);
 
 console.log(failed === 0 ? "\ntemplate: clean" : `\ntemplate: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

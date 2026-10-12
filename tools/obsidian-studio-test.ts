@@ -177,7 +177,6 @@ const { createStudioRouting } = await import("../hosts/obsidian/src/legacy/studi
 const { STUDIO_VIEW_TYPE, StudioView } = await import("../hosts/obsidian/src/legacy/studio-view.js");
 const { checkedAssistantPort } = await import("./obsidian-assistant-port-checks.ts");
 const { NO_ASSISTANT } = await import("../packages/core/src/engine/assistant-port.js");
-const { NO_CATALOGUE_PORT } = await import("../packages/core/src/engine/catalogue-port.js");
 const { shutPortsOf } = await import("../packages/core/src/engine/packs.js");
 const { AppsQuery } = await import("../apps/studio/src/legacy/logic/apps-queries.js");
 registerPacks(corePack);
@@ -273,7 +272,6 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 	const views: Array<(leaf: unknown) => unknown> = [];
 	const plugin = {
 		host,
-		cataloguePort: NO_CATALOGUE_PORT,
 		registerEvent: () => undefined,
 		registerView: (_type: string, make: (leaf: unknown) => unknown) => views.push(make),
 		app: {
@@ -290,7 +288,7 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 		},
 	};
 	registerStudioView(
-		standIn<WidgetariumPlugin>(plugin, ["app", "host", "cataloguePort", "registerView", "registerEvent"], "plugin"),
+		standIn<WidgetariumPlugin>(plugin, ["app", "host", "registerView", "registerEvent"], "plugin"),
 		countedProjects,
 		NO_ASSISTANT,
 	);
@@ -441,13 +439,12 @@ const place = standIn<StudioPlace>(
 		projects: createAppProjects(adapter),
 		viewType: STUDIO_VIEW_TYPE,
 		assistant: checkedAssistant.port,
-		catalogue: NO_CATALOGUE_PORT,
 		hostOf: () => host,
 		openAsMarkdown: async () => undefined,
 		showAsMarkdown: async () => undefined,
 		designFor: async () => undefined,
 	},
-	["app", "projects", "viewType", "assistant", "catalogue", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
+	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
 	"place",
 );
 async function drawnFor(file: NoteFile): Promise<HTMLElement> {
@@ -506,12 +503,12 @@ await settledUntil(() => document.querySelector(".wg-studio-action-said") !== nu
 	.find((said) => said.textContent === "Edit in canvas")
 	?.closest<HTMLElement>('[role="button"]')
 	?.click();
-await settledUntil(() => studioNode.querySelector(".wg-design-view") !== null);
+await settledUntil(() => studioNode.querySelector("[data-canvas-studio]") !== null);
 check(
 	"Edit in canvas in one studio shows its canvas and leaves the studio beside it on its route",
 	[
-		studioNode.querySelector(".wg-design-view") !== null,
-		besideNode.querySelector(".wg-design-view") !== null,
+		studioNode.querySelector("[data-canvas-studio]") !== null,
+		besideNode.querySelector("[data-canvas-studio]") !== null,
 		besideNode.querySelector(".wg-studio-outlet .wg-root") !== null,
 	],
 	[true, false, true],

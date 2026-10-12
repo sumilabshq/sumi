@@ -4,7 +4,7 @@ import { ROOT } from "@widgetarium/core/paths.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
-import type WidgetariumPlugin from "./main.js";
+import type WidgetariumPlugin from "../main.js";
 import { boardIn } from "./board-in-note.js";
 import type { DrawnScreen } from "@widgetarium/studio";
 import {

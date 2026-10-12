@@ -383,49 +383,6 @@ function sideReach(value) {
 	}, -Infinity);
 }`;
 
-const SUB_PROBE = `
-import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { useEffect, useState } from "react";
-import { SubstitutionDialog } from "./hosts/obsidian/src/legacy/substitution-dialog.js";
-import { WidgetRegistry } from "./packages/core/src/registry.js";
-import { normalizeRules } from "./hosts/obsidian/src/legacy/substitution.js";
-
-const FILES = window.__FILES__;
-const adapter = {
-	async exists(path) {
-		return Object.hasOwn(FILES, path) || Object.keys(FILES).some((key) => key.startsWith(path + "/"));
-	},
-	async list(path) {
-		const files = [];
-		const folders = new Set();
-		for (const key of Object.keys(FILES)) {
-			if (!key.startsWith(path + "/")) continue;
-			const rest = key.slice(path.length + 1);
-			const cut = rest.indexOf("/");
-			if (cut === -1) files.push(key);
-			else folders.add(path + "/" + rest.slice(0, cut));
-		}
-		return { files, folders: [...folders] };
-	},
-	async read(path) {
-		return FILES[path];
-	},
-};
-const START = normalizeRules([{ id: "sub-0", name: "Code", mode: "line", open: "!code", widget: "@default/code-block" }]);
-function Harness() {
-	const [registry, setRegistry] = useState(null);
-	const [rules, setRules] = useState(START);
-	useEffect(() => {
-		const loading = new WidgetRegistry({ vault: { adapter } });
-		loading.load().then(() => setRegistry(loading));
-	}, []);
-	if (!registry) return h("p", null, "Loading widgets");
-	return h(SubstitutionDialog, { rules, registry, host: null, onChange: setRules, onClose: () => {} });
-}
-render(h(Harness), document.getElementById("host"));
-`;
-
 const KIT_PROBE = `
 import { createElement as h } from "react";
 import { render } from "./packages/core/src/engine/render.js";
@@ -509,18 +466,6 @@ window.__PRESS__ = async (target) => {
 };
 window.__ROWS__ = () => [...document.querySelectorAll(".wg-set-panel .wg-kit-row")];
 `;
-
-const SUB_ASK = `(() => {
-	${SHADOW_READER}
-	const list = document.querySelector(".wg-sub-list");
-	const shadow = list ? getComputedStyle(list).boxShadow : "none";
-	return {
-		found: Boolean(list),
-		insetLayers: shadowLayers(shadow).filter((layer) => layer.inset).length,
-		layers: shadowLayers(shadow).length,
-		reachesSideways: sideReach(shadow) > 0,
-	};
-})()`;
 
 const KIT_ASK = `(() => {
 	${SHADOW_READER}
@@ -1070,27 +1015,17 @@ const DRAWER_ASK = `(() => {
 	};
 })()`;
 
-const [
-	subScript,
-	kitScript,
-	mountScript,
-	overlayScript,
-	streakScript,
-	rankScript,
-	metricScript,
-	catalogueScript,
-	plateScript,
-] = await Promise.all([
-	bundle(SUB_PROBE),
-	bundle(KIT_PROBE),
-	bundle(MOUNT_PROBE),
-	bundle(OVERLAY_PROBE),
-	bundle(STREAK_PROBE),
-	bundle(RANK_PROBE),
-	bundle(METRIC_PROBE),
-	bundle(CATALOGUE_PROBE),
-	bundle(PLATE_PROBE),
-]);
+const [kitScript, mountScript, overlayScript, streakScript, rankScript, metricScript, catalogueScript, plateScript] =
+	await Promise.all([
+		bundle(KIT_PROBE),
+		bundle(MOUNT_PROBE),
+		bundle(OVERLAY_PROBE),
+		bundle(STREAK_PROBE),
+		bundle(RANK_PROBE),
+		bundle(METRIC_PROBE),
+		bundle(CATALOGUE_PROBE),
+		bundle(PLATE_PROBE),
+	]);
 
 const sheet = await ask(pageFor("light", SHEET_SCRIPT, "sheet"), SHEET_ASK, 400);
 check(
@@ -1103,12 +1038,6 @@ check("and what the widget drew is the first thing in the tile", field(sheet, "h
 
 for (const theme of ["light", "dark"] as const) {
 	console.log(`\n— ${theme} —`);
-
-	const side = await ask(pageFor(theme, subScript, "sub"), SUB_ASK, 3000);
-	check("the substitutions sidebar is drawn at all", field(side, "found"), true);
-	check("and carries no inset edge", field(side, "insetLayers"), 0);
-	check("its cast is the kit lift, both layers", field(side, "layers"), 2);
-	check("and that cast paints beside the block, as every sidebar's does", field(side, "reachesSideways"), true);
 
 	const drawer = await ask(pageFor(theme, DRAWER_SCRIPT, "drawer"), DRAWER_ASK, 600);
 	check("a drawer lies over the app, not inside the note", field(drawer, "lies"), "fixed");

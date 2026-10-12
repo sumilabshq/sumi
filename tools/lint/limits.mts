@@ -25,7 +25,6 @@ export const LINTED_ROOTS: readonly string[] = [
 export const SKIPPED_PATHS: readonly string[] = [
 	"packages/kit/src/emojis/emoji-table.ts",
 	"packages/kit/src/icons/icon-table.ts",
-	"hosts/obsidian/src/legacy/regex-sample.ts",
 ];
 
 export const ALLOWED_COMMENT_PREFIXES: readonly string[] = ["TODO:", "TRADE-OFF:"];

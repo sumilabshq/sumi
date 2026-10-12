@@ -37,9 +37,13 @@ export function obsidianStudioHost(place: StudioHostPlace): StudioHostPort {
 		insets: () => chromeInsetsOf(windowChromeOf(place.frame)),
 		onInsets: (changed) => watchChrome(place.frame, changed),
 		apps: () => vaultAppsOf(place.app),
-		openApp: (id) => runReported(OPEN_FAILED.replace("{id}", id), () => openApp(place, id)),
-		createApp: () => runReported(CREATE_FAILED, () => createApp(place)),
+		openApp: (id) => runNamingFailure(OPEN_FAILED.replace("{id}", id), () => openApp(place, id)),
+		createApp: () => runNamingFailure(CREATE_FAILED, () => createApp(place)),
 	};
+}
+
+export function isAlreadyExists(failure: unknown): boolean {
+	return ALREADY_EXISTS.test(failureMessage(failure));
 }
 
 function windowChromeOf(frame: HTMLElement): WindowChrome {
@@ -78,8 +82,12 @@ async function hostAppAt(app: App, folder: string): Promise<HostApp> {
 	const files = vaultProjectFiles(app.vault.adapter, folder);
 	const reading = await readProjectConfig(files);
 	if ("refusal" in reading) return refusedAppAt(folder, `${PROJECT_CONFIG_FILE}: ${reading.refusal}`);
-	const routes = await discoverRoutes(files, reading.config.paths.routes);
-	return { id: folder, name: reading.config.app.name, pages: routes.length, firstPage: routes[0]?.path ?? null };
+	try {
+		const routes = await discoverRoutes(files, reading.config.paths.routes);
+		return { id: folder, name: reading.config.app.name, pages: routes.length, firstPage: routes[0]?.path ?? null };
+	} catch (failure) {
+		return refusedAppAt(folder, failureMessage(failure));
+	}
 }
 
 function refusedAppAt(folder: string, refusal: string): HostApp {
@@ -151,15 +159,10 @@ async function layFile(vault: Vault, path: string, text: string): Promise<void> 
 	await vault.create(path, text);
 }
 
-function isAlreadyExists(failure: unknown): boolean {
-	return ALREADY_EXISTS.test(failureMessage(failure));
-}
-
-async function runReported(said: string, run: () => Promise<void>): Promise<void> {
+async function runNamingFailure(said: string, run: () => Promise<void>): Promise<void> {
 	try {
 		await run();
 	} catch (failure) {
-		console.error(`[widgetarium] ${said}`, failure);
-		throw new Error(`${said}: ${failureMessage(failure)}`);
+		throw new Error(`${said}: ${failureMessage(failure)}`, { cause: failure });
 	}
 }

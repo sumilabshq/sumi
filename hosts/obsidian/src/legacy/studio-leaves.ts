@@ -2,7 +2,7 @@ import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { STUDIO_PACKS } from "@widgetarium/studio";
-import type WidgetariumPlugin from "./main.js";
+import type WidgetariumPlugin from "../main.js";
 import type { AppProjects } from "./app-projects.js";
 import { bindNote } from "./host.js";
 import { studioDesignOf } from "./design-port-obsidian.js";
@@ -32,7 +32,6 @@ export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProje
 		projects,
 		viewType: STUDIO_VIEW_TYPE,
 		assistant,
-		catalogue: plugin.cataloguePort,
 		hostOf: (notePath) => bindNote(plugin.host, notePath),
 		designFor: (app, leaf) => studioDesignOf(plugin, app, leaf),
 		openAsMarkdown: (leaf, file) => {

@@ -6,14 +6,13 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { JSDOM } from "jsdom";
 import { parse as parseYaml } from "yaml";
-import type { App, Command, PluginManifest, TFile as ObsidianFile } from "obsidian";
+import type { App, TFile as ObsidianFile } from "obsidian";
 import type { Board } from "../packages/core/src/model.ts";
 import type { GivenProps } from "../packages/core/src/declared-widget.ts";
 import type { EngineManifest } from "../packages/core/src/engine/catalogue-index.ts";
 import type { ResolvedMounts } from "../packages/core/src/surface/mounts.ts";
 import type { MountContext } from "../packages/core/src/surface/widget-host.ts";
 import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.ts";
-import type { BlockContext } from "../hosts/obsidian/src/legacy/draw-block.ts";
 import { byId } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -32,11 +31,6 @@ interface Updated {
 	readonly path: string;
 	readonly text?: string;
 	readonly props?: NoteProps;
-}
-type PostProcessor = (element: HTMLElement, context: object) => unknown;
-interface Fence {
-	readonly language: string;
-	readonly handler: unknown;
 }
 type HeldBoard = Board & { readonly properties?: readonly string[] | undefined; readonly context?: unknown };
 
@@ -1527,235 +1521,6 @@ const pickView = async (name: string, id = "views") => {
 
 	render(null, spare);
 	spare.remove();
-}
-
-// THE CATALOGUE HAS TO STAND UP WITHOUT A BOARD UNDER IT. Every other surface in this plugin is
-// drawn inside a note's own element; this one is opened from the command palette, where there is
-// no note, no block and no tree to hang it on.
-{
-	const { default: WidgetariumPlugin } = await import("../hosts/obsidian/src/main.js");
-	const commands: Command[] = [];
-	const ribbon: string[] = [];
-	const posts: PostProcessor[] = [];
-	const fences: Fence[] = [];
-	const pluginApp = {
-		vault: { adapter: { ...adapter, mkdir: async () => {} }, getAbstractFileByPath: () => null },
-		metadataCache: { getFileCache: () => null, getFirstLinkpathDest: () => null },
-		workspace: { getLeavesOfType: () => [], getRightLeaf: () => null, on: () => ({}), onLayoutReady: () => {} },
-	};
-	const pluginManifest = () => standIn<PluginManifest>({ id: "widgetarium" }, ["id"], "manifest");
-	const plugin = Object.assign(
-		new WidgetariumPlugin(standIn<App>(pluginApp, ["vault", "metadataCache", "workspace"], "app"), pluginManifest()),
-		{
-			app: pluginApp,
-			manifest: { id: "widgetarium" },
-			_data: {
-				substitutions: [{ id: "sub-1", name: "Reminder", mode: "line", open: "!", widget: "@default/reminder" }],
-			},
-			addCommand: (command: Command) => commands.push(command),
-			addRibbonIcon: (_icon: string, title: string) => ribbon.push(title),
-			registerMarkdownCodeBlockProcessor: (language: string, handler: unknown) => fences.push({ language, handler }),
-			registerMarkdownPostProcessor: (handler: PostProcessor) => posts.push(handler),
-			registerView: () => {},
-			registerEvent: () => {},
-			addSettingTab: () => {},
-			registerInterval: () => {},
-		},
-	);
-	await plugin.onload();
-	await plugin.started;
-
-	check("the plugin hands Obsidian a post processor", posts.length, 1);
-	check("and a processor for its own fence", fences[0]?.language, "widgetarium");
-
-	const noteContext = { sourcePath: "Orbitask/Board.md", addChild: () => {}, getSectionInfo: () => null };
-	const note = dom.window.document.createElement("div");
-	note.innerHTML = "<p>! call Olena before Friday</p>";
-	dom.window.document.body.appendChild(note);
-	present(posts[0], "the post processor")(note, noteContext);
-	check("running it replaces the triggered line with the widget", note.querySelectorAll(".wgi-reminder").length, 1);
-	check("and the paragraph it stood in is gone", note.querySelectorAll("p").length, 0);
-	check(
-		"and the host carries the kit's scope, or nothing in it is painted",
-		note.querySelectorAll(".wg-inline-host.wg-root").length,
-		1,
-	);
-	note.remove();
-
-	const boardBlock = dom.window.document.createElement("div");
-	dom.window.document.body.appendChild(boardBlock);
-	const sided = readBoard({
-		tiles: [{ id: "a", widget: "@default/reminder" }],
-		layout: {
-			left: { rows: [[{ id: "a" }]] },
-			main: { rows: [[{ id: "a" }]] },
-		},
-		layouts: {},
-	});
-	plugin.mount(
-		boardBlock,
-		sided,
-		() => {},
-		false,
-		standIn<BlockContext>(noteContext, ["sourcePath", "addChild", "getSectionInfo"], "block context"),
-		"Orbitask/Board.md#0",
-	);
-	const boardMount = plugin.firstMountIn("Orbitask/Board.md");
-	check("the plugin can find the board a note carries", Boolean(boardMount), true);
-	boardBlock.remove();
-
-	// CONTEXT: Obsidian never reprocesses a note rendered before registration
-	const brokenPosts: PostProcessor[] = [];
-	const brokenApp = {
-		...pluginApp,
-		vault: {
-			adapter: {
-				...adapter,
-				exists: async () => {
-					throw new Error("vault unreachable");
-				},
-			},
-		},
-	};
-	const broken = Object.assign(
-		new WidgetariumPlugin(standIn<App>(brokenApp, ["vault", "metadataCache", "workspace"], "app"), pluginManifest()),
-		{
-			app: brokenApp,
-			manifest: { id: "widgetarium" },
-			addCommand: () => {},
-			addRibbonIcon: () => {},
-			registerMarkdownCodeBlockProcessor: () => {},
-			registerMarkdownPostProcessor: (handler: PostProcessor) => brokenPosts.push(handler),
-			registerView: () => {},
-			registerEvent: () => {},
-			addSettingTab: () => {},
-			registerInterval: () => {},
-		},
-	);
-	const said: string[] = [];
-	const quiet = console.error;
-	console.error = (...parts: unknown[]) =>
-		said.push(parts.map((part) => maybeFieldOf(part, "message") ?? String(part)).join(" "));
-	await broken.onload();
-	await broken.started;
-	console.error = quiet;
-	check(
-		"a disk that rejects never fails onload, and says why",
-		said.some((line) => line.includes("vault unreachable")),
-		true,
-	);
-	check("but the post processor was registered before it", brokenPosts.length, 1);
-	check(
-		"and it substitutes nothing rather than throwing",
-		present(brokenPosts[0], "the post processor")(dom.window.document.createElement("div"), noteContext),
-		0,
-	);
-
-	// CONTEXT: Obsidian draws the open note while onload still awaits, and never draws it twice
-	const asked: unknown[] = [];
-	const openLeaf = { view: { previewMode: { rerender: (full: unknown) => asked.push(full) } } };
-	const startingPosts: PostProcessor[] = [];
-	const startingApp = {
-		...pluginApp,
-		workspace: {
-			getLeavesOfType: (kind: string) => (kind === "markdown" ? [openLeaf] : []),
-			getRightLeaf: () => null,
-			on: () => ({}),
-			onLayoutReady: () => {},
-		},
-	};
-	const starting = Object.assign(
-		new WidgetariumPlugin(standIn<App>(startingApp, ["vault", "metadataCache", "workspace"], "app"), pluginManifest()),
-		{
-			app: startingApp,
-			manifest: { id: "widgetarium" },
-			_data: {
-				substitutions: [{ id: "sub-1", name: "Reminder", mode: "line", open: "!", widget: "@default/reminder" }],
-			},
-			addCommand: () => {},
-			addRibbonIcon: () => {},
-			registerMarkdownCodeBlockProcessor: () => {},
-			registerMarkdownPostProcessor: (handler: PostProcessor) => startingPosts.push(handler),
-			registerView: () => {},
-			registerEvent: () => {},
-			addSettingTab: () => {},
-			registerInterval: () => {},
-		},
-	);
-	const loading = starting.onload();
-	const early = dom.window.document.createElement("div");
-	early.innerHTML = "<p>! call Olena before Friday</p>";
-	dom.window.document.body.appendChild(early);
-	check("the processor is live before the load's awaits have landed", startingPosts.length, 1);
-	check(
-		"and a note drawn in that gap gets nothing, because there are no rules yet",
-		present(startingPosts[0], "the post processor")(early, noteContext),
-		0,
-	);
-	check("which leaves the note plain", early.querySelectorAll(".wg-inline-host").length, 0);
-	await loading;
-	await starting.started;
-	check("so the load ends by asking every open note to draw again", asked.length, 1);
-	check("in full, because a substitution is only made while a note renders", asked[0], true);
-	check("and the rules it will draw with are the ones on disk", starting.rules.length, 1);
-	const redrawn = dom.window.document.createElement("div");
-	redrawn.innerHTML = early.innerHTML;
-	dom.window.document.body.appendChild(redrawn);
-	check(
-		"the very same paragraph, drawn after them, becomes the widget",
-		present(startingPosts[0], "the post processor")(redrawn, noteContext),
-		1,
-	);
-	check(
-		"so the empty gap was the timing, not the guard or the selector",
-		redrawn.querySelectorAll(".wg-inline-host").length,
-		1,
-	);
-	redrawn.remove();
-	early.remove();
-
-	check("the ribbon offers substitutions beside edit mode", ribbon, [
-		"Widgetarium: edit mode",
-		"Widgetarium: substitutions",
-		"Widgetarium: ask the assistant",
-		"Widgetarium: widget catalogue",
-	]);
-	check(
-		"and a command opens the same surface",
-		commands.some((entry) => entry.id === "edit-substitutions"),
-		true,
-	);
-	call(
-		present(
-			commands.find((entry) => entry.id === "edit-substitutions"),
-			"the substitutions command",
-		),
-		"callback",
-	);
-	await settle();
-	check(
-		"running it opens the substitutions dialog",
-		Boolean(dom.window.document.body.querySelector(".wg-sub-dialog")),
-		true,
-	);
-	if (!plugin.closeSubstitutions) throw new TypeError("closeSubstitutions is not a function");
-	plugin.closeSubstitutions();
-	await settle();
-	check(
-		"and closing it takes the dialog off the page",
-		Boolean(dom.window.document.body.querySelector(".wg-sub-dialog")),
-		false,
-	);
-
-	const command = commands.find((entry) => entry.id === "open-catalogue");
-	check("the plugin registers a command for the catalogue", command?.name, "Open widget catalogue");
-	check(
-		"the catalogue is a sidebar, never a dialog over the note",
-		Boolean(dom.window.document.body.querySelector(".wg-cat-dialog")),
-		false,
-	);
-
-	plugin.onunload();
 }
 
 {

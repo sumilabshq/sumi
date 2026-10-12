@@ -277,28 +277,11 @@ check("and the list follows the page", facet(DOC_PAGES[1]?.title ?? "")?.classLi
 
 console.log("\n— a request goes to whoever asked —");
 render(null, node);
-const { registerBoardViews } = await import("../hosts/obsidian/src/legacy/catalogue-views.ts");
 const { useTakesCatalogueAsks } = await import("../apps/studio/src/legacy/studio-on-screen.ts");
 const { StudioCatalogue } = await import("../apps/studio/src/legacy/catalogue/studio-catalogue.ts");
 const { createStudioState } = await import("../apps/studio/src/legacy/studio-state.ts");
 const { Board } = await import("../packages/core/src/surface/board.ts");
 const { CatalogueAsk } = await import("../packages/core/src/catalogue-ask.ts");
-const sidebarShown: number[] = [];
-const sidebarPlugin = {
-	registerView: () => undefined,
-	register: () => undefined,
-	showCatalogue: async () => {
-		sidebarShown.push(CATALOGUE_REQUESTS.current()?.id ?? -1);
-	},
-};
-registerBoardViews(
-	standIn<Parameters<typeof registerBoardViews>[0]>(
-		sidebarPlugin,
-		["registerView", "register", "showCatalogue"],
-		"plugin",
-	),
-);
-
 const placed = (className: string, isShown: boolean): HTMLElement => {
 	const made = document.createElement("div");
 	made.className = className;
@@ -343,17 +326,13 @@ const closePanel = (): void => {
 
 void CATALOGUE_REQUESTS.ask({ mode: "place", asker: note });
 await settled();
-check("a note's ask goes to the sidebar", [sidebarShown.length, panelsNow()], [1, ["none", "none"]]);
+check("a note's ask opens no studio panel", panelsNow(), ["none", "none"]);
 CATALOGUE_REQUESTS.answer(null);
 
 askingFrom = shownStudio;
 drawStudio(shownStudio);
 await settled();
-check(
-	"an ask from inside the studio goes to the studio",
-	[sidebarShown.length, panelsNow()],
-	[1, ["catalogue", "none"]],
-);
+check("an ask from inside the studio goes to the studio", panelsNow(), ["catalogue", "none"]);
 check(
 	"because the board it stands on names itself the asker",
 	shownStudio.contains(CATALOGUE_REQUESTS.current()?.asker ?? null),
@@ -367,7 +346,7 @@ await settled();
 
 void CATALOGUE_REQUESTS.ask({ mode: "place", asker: hiddenStudio });
 await settled();
-check("a hidden studio never takes one", [sidebarShown.length, panelsNow()], [2, ["none", "none"]]);
+check("a hidden studio never takes one", panelsNow(), ["none", "none"]);
 CATALOGUE_REQUESTS.answer(null);
 
 console.log("\n— closing the studio's panel keeps other people's requests —");
