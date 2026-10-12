@@ -12,17 +12,37 @@
 			"source": "./index.ts",
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
+		},
+		"./obsidian": {
+			"source": "./logic/design/obsidian-design-source.ts",
+			"types": "./dist/logic/design/obsidian-design-source.d.ts",
+			"default": "./dist/logic/design/obsidian-design-source.js"
+		},
+		"./web": {
+			"source": "./logic/design/web-design-source.ts",
+			"types": "./dist/logic/design/web-design-source.d.ts",
+			"default": "./dist/logic/design/web-design-source.js"
 		}
 	},
 	"dependencies": {
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/gpu": "0.1.0",
-		"@widgetarium/kit": "0.1.0"
+		"@widgetarium/kit": "0.1.0",
+		"modern-screenshot": "^4.7.0"
+	},
+	"devDependencies": {
+		"obsidian": "^1.13.1"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",
 		"react-dom": "^19.2.8",
-		"zod": "^4.6.5"
+		"zod": "^4.6.5",
+		"obsidian": "^1.13.1"
+	},
+	"peerDependenciesMeta": {
+		"obsidian": {
+			"optional": true
+		}
 	},
 	"widgetarium": {
 		"level": "domain"

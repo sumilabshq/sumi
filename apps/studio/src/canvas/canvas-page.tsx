@@ -36,7 +36,7 @@ import {
 	ToggleLayersCommand,
 	ViewportQuery,
 } from "@widgetarium/canvas";
-import type { CanvasState, DesignSource, GpuSupply } from "@widgetarium/canvas";
+import type { CanvasState, DesignSource, GpuSupply, ViewReturn } from "@widgetarium/canvas";
 import { OnRefused, toastRefusal } from "@widgetarium/core";
 import { Toaster } from "@widgetarium/kit";
 import { fieldOf, topBarOf } from "./canvas-parts.js";
@@ -50,18 +50,19 @@ export interface CanvasCorners {
 
 export interface CanvasPageProps extends CanvasStateFollowed {
 	readonly source: DesignSource;
+	readonly returnTo: ViewReturn;
 	readonly gpu: GpuSupply | null;
 	readonly ownsPaste: (() => boolean) | null;
 	readonly corners: CanvasCorners;
 }
 
-export function CanvasPage({ source, app, gpu, ownsPaste, corners, ...followed }: CanvasPageProps): ReactElement {
-	const state = useCanvasState({ app, ...followed });
+export function CanvasPage({ source, returnTo, gpu, ownsPaste, corners, ...followed }: CanvasPageProps): ReactElement {
+	const state = useCanvasState(followed);
 	const pictures = useMemo(() => new FramePicturesService(), []);
 	const view = useMemo(() => viewHandlersOf(state, pictures), [state, pictures]);
 	const design = useMemo(
-		() => designHandlersOf({ source, app, state, gpu, ownsPaste, pictures }),
-		[source, app, state, gpu, ownsPaste, pictures],
+		() => designHandlersOf({ source, returnTo, state, gpu, ownsPaste, pictures }),
+		[source, returnTo, state, gpu, ownsPaste, pictures],
 	);
 	return (
 		<OnRefused value={toastRefusal}>
@@ -116,27 +117,27 @@ function viewHandlersOf(state: CanvasState, pictures: FramePicturesService) {
 
 interface DesignWiring {
 	readonly source: DesignSource;
-	readonly app: string;
+	readonly returnTo: ViewReturn;
 	readonly state: CanvasState;
 	readonly gpu: GpuSupply | null;
 	readonly ownsPaste: (() => boolean) | null;
 	readonly pictures: FramePicturesService;
 }
 
-function designHandlersOf({ source, app, state, gpu, ownsPaste, pictures }: DesignWiring) {
+function designHandlersOf({ source, returnTo, state, gpu, ownsPaste, pictures }: DesignWiring) {
 	return {
-		design: new DesignQuery(source, app),
+		design: new DesignQuery(source, state),
 		drawing: new DrawingQuery(source, gpu, ownsPaste),
-		pages: new PagesQuery(source, app, state),
-		docs: new DocsQuery(source, app),
-		look: new LookQuery(source, app),
-		pickLook: new PickLookCommand(source, app),
-		addPhotos: new AddPhotosCommand(source, app),
+		pages: new PagesQuery(source, state),
+		docs: new DocsQuery(source, state),
+		look: new LookQuery(source, state),
+		pickLook: new PickLookCommand(source, state),
+		addPhotos: new AddPhotosCommand(source, state),
 		moveLayer: new MoveLayerCommand(source),
-		returnToView: new ReturnToViewCommand(source, app, state),
-		liveJob: new LiveJobQuery(source, app, state),
-		stopJob: new StopJobCommand(source, app),
+		returnToView: new ReturnToViewCommand(source, state, returnTo),
+		liveJob: new LiveJobQuery(source, state),
+		stopJob: new StopJobCommand(source, state),
 		askForPictures: new AskForPicturesCommand(source, pictures),
-		agentLook: new AgentLookQuery(app),
+		agentLook: new AgentLookQuery(state),
 	};
 }

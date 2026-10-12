@@ -5,7 +5,10 @@ import { STUDIO_PACKS } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 import type { AppProjects } from "./app-projects.js";
 import { bindNote } from "./host.js";
-import { studioDesignOf } from "./design-port-obsidian.js";
+import { designFolderOf } from "@widgetarium/core/app-design.js";
+import { ObsidianDesignSource } from "@widgetarium/canvas/obsidian";
+import type { StudioDesign } from "@widgetarium/studio";
+import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { studioNoteOfFile } from "./studio-drawing.js";
 import type { StudioPlace } from "./studio-drawing.js";
 import { STUDIO_VIEW_TYPE, StudioView } from "./studio-view.js";
@@ -42,6 +45,24 @@ export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProje
 	};
 	plugin.registerView(STUDIO_VIEW_TYPE, (leaf) => new StudioView(leaf, place));
 	switchAppNotesToStudio(plugin, createLeafSwitcher(plugin.app, choices));
+}
+
+async function studioDesignOf(
+	plugin: WidgetariumPlugin,
+	app: string,
+	leaf: WorkspaceLeaf,
+): Promise<StudioDesign | undefined> {
+	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return undefined;
+	const place = { leafOf: () => leaf, fromNote: () => "" };
+	const { registry, host } = plugin;
+	const source = new ObsidianDesignSource({
+		obsidian: plugin.app,
+		registry,
+		host,
+		jobs: plugin.assistant?.jobs,
+		place,
+	});
+	return { source, app, gpu: obsidianGpuSupply(plugin) };
 }
 
 function markdownStateOf(leaf: WorkspaceLeaf, state: Record<string, unknown>): ViewState {

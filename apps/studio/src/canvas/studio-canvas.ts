@@ -1,6 +1,6 @@
 import { createElement as h, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import type { DesignSource, FrameSize, GpuSupply } from "@widgetarium/canvas";
+import type { DesignSource, FrameSize, GpuSupply, ViewReturn } from "@widgetarium/canvas";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell } from "./design-stage.js";
@@ -21,12 +21,17 @@ export function StudioCanvas({ design, state, shell }: StudioCanvasProps): React
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<FrameSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
-	const source = useMemo<DesignSource>(
-		() => ({ ...design.source, returnToView: async () => state.show("app") }),
-		[design.source, state],
-	);
+	const returnTo = useMemo<ViewReturn>(() => ({ returnToView: async () => state.show("app") }), [state]);
 	const stage = size
-		? h(DesignStage, { source, app: design.app, opening: CANVAS_OPENED_ON, size, gpu: design.gpu, shell })
+		? h(DesignStage, {
+				source: design.source,
+				returnTo,
+				app: design.app,
+				opening: CANVAS_OPENED_ON,
+				size,
+				gpu: design.gpu,
+				shell,
+			})
 		: null;
 	return h("div", { ref: viewRef, className: "cv:h-full cv:overflow-hidden", "data-canvas-studio": "" }, stage);
 }

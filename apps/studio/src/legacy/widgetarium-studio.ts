@@ -18,7 +18,7 @@ import { StudioCorner } from "./studio-corner.js";
 import type { TopBarCorners } from "./studio-band.js";
 import { StudioOutlet } from "./studio-outlet.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { projectDesignSource } from "../canvas/project-design-source.js";
+import { WebDesignSource } from "@widgetarium/canvas/web";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
@@ -64,7 +64,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appId: start.appId ?? opened.app.name,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
-		design: start.design ?? { source: projectDesignSource(project), app: opened.app.name },
+		design: start.design ?? { source: new WebDesignSource(project), app: opened.app.name },
 	};
 }
 

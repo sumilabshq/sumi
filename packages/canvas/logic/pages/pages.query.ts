@@ -8,17 +8,16 @@ import { readPages, watchPages } from "./read-pages.js";
 export class PagesQuery extends IQuery.output(CanvasPagesSchema) {
 	constructor(
 		private readonly source: DesignSource,
-		private readonly app: string,
 		private readonly state: CanvasState,
 	) {
 		super();
 	}
 
 	async get(): Promise<CanvasPages> {
-		return readPages(this.source, this.app, this.state);
+		return readPages(this.source, this.state);
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return watchPages(this.source, this.app, this.state, changed);
+		return watchPages(this.source, this.state, changed);
 	}
 }

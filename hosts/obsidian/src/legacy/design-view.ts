@@ -8,7 +8,7 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
-import { obsidianDesignSource } from "./design-port-obsidian.js";
+import { ObsidianDesignSource } from "@widgetarium/canvas/obsidian";
 import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
@@ -37,7 +37,13 @@ export class DesignView extends ItemView {
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.source = obsidianDesignSource(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
+		this.source = new ObsidianDesignSource({
+			obsidian: plugin.app,
+			registry: plugin.registry,
+			host: plugin.host,
+			jobs: plugin.assistant?.jobs,
+			place: { leafOf: () => this.leaf, fromNote: () => this.fromNote },
+		});
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 

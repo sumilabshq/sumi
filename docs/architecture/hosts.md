@@ -31,7 +31,7 @@ packages/canvas/logic/design/
 
   ```ts skip-check
   // hosts/obsidian/src/studio.ts
-  const designSource = new ObsidianDesignSource(this.app);
+  const designSource = new ObsidianDesignSource({ obsidian: this.app, registry, host, jobs, place });
   render(<Studio designSource={designSource} />, leaf.contentEl);
   ```
 

@@ -8,20 +8,19 @@ import type { CanvasState } from "../view/canvas-state.js";
 export class LiveJobQuery extends IQuery.output(ShownJobSchema.nullable()) {
 	constructor(
 		private readonly source: DesignSource,
-		private readonly app: string,
 		private readonly state: CanvasState,
 	) {
 		super();
 	}
 
 	async get(): Promise<ShownJob | null> {
-		const { shownJob } = await readPages(this.source, this.app, this.state);
+		const { shownJob } = await readPages(this.source, this.state);
 		if (!shownJob) return null;
-		const live = this.source.liveJob(this.app, shownJob.id);
+		const live = this.source.liveJob(this.state.now().app, shownJob.id);
 		return { job: shownJob, spent: live ? live.spent : shownJob.spent };
 	}
 
 	override subscribe(changed: () => void): () => void {
-		return watchPages(this.source, this.app, this.state, changed);
+		return watchPages(this.source, this.state, changed);
 	}
 }

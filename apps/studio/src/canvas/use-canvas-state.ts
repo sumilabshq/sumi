@@ -15,7 +15,7 @@ export interface CanvasStateFollowed {
 }
 
 export function useCanvasState({ app, opening, size, onKept, onCanvas }: CanvasStateFollowed): CanvasState {
-	const state = useMemo(() => createCanvasState(opening), [app]);
+	const state = useMemo(() => createCanvasState({ ...opening, app }), [app]);
 	useOpeningKept(state, onKept);
 	useCanvasHandedOver(state, onCanvas);
 	useViewportFollowed(state, size);

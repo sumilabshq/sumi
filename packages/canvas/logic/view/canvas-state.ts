@@ -5,6 +5,7 @@ import type { Selection } from "../../schemas/selection.schema.js";
 import { keepRenderer, keptRenderer } from "./kept-renderer.js";
 
 export interface CanvasMoment {
+	readonly app: string;
 	readonly page: string;
 	readonly keptPage: string;
 	readonly isLayersOpen: boolean;
@@ -22,17 +23,21 @@ export type CanvasField = keyof CanvasMoment;
 export interface CanvasState {
 	now(): CanvasMoment;
 	watch(fields: readonly CanvasField[], changed: () => void): () => void;
-	change(next: Partial<CanvasMoment>, reason: string): void;
+	change(next: CanvasChange, reason: string): void;
 }
 
 export type CanvasOpening = Pick<CanvasMoment, "page" | "isLayersOpen" | "mode">;
 
+export type CanvasOpened = CanvasOpening & Pick<CanvasMoment, "app">;
+
+export type CanvasChange = Partial<Omit<CanvasMoment, "app">>;
+
 const QUIET_FIELDS: ReadonlySet<CanvasField> = new Set(["camera", "viewport", "selection"]);
 
-export function createCanvasState(opening: CanvasOpening): CanvasState {
+export function createCanvasState(opened: CanvasOpened): CanvasState {
 	const watchers = new Set<{ readonly fields: readonly CanvasField[]; readonly changed: () => void }>();
 	let moment: CanvasMoment = {
-		...opening,
+		...opened,
 		keptPage: "",
 		renderer: keptRenderer(),
 		camera: null,
@@ -62,15 +67,15 @@ export function createCanvasState(opening: CanvasOpening): CanvasState {
 	};
 }
 
-function withPageTurned(moment: CanvasMoment, asked: Partial<CanvasMoment>): Partial<CanvasMoment> {
+function withPageTurned(moment: CanvasMoment, asked: CanvasChange): CanvasChange {
 	if (asked.page === undefined || asked.page === moment.page) return asked;
 	const turned = { keptPage: asked.page, selection: null, camera: null, focusedWidget: null };
 	return { ...turned, ...asked };
 }
 
-function fieldsChanged(moment: CanvasMoment, next: Partial<CanvasMoment>): CanvasField[] {
+function fieldsChanged(moment: CanvasMoment, next: CanvasChange): CanvasField[] {
 	return Object.keys(next)
-		.filter((field): field is CanvasField => field in moment)
+		.filter((field): field is keyof CanvasChange => field !== "app" && field in moment)
 		.filter((field) => !Object.is(moment[field], next[field]));
 }
 

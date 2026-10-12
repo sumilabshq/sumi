@@ -1,9 +1,8 @@
 import type { DataAdapter } from "obsidian";
 import { readSpec, specPathOf, SPEC_FOLDER } from "@widgetarium/core/app-spec.js";
 import { ROOT } from "@widgetarium/core/paths.js";
-import { specMarkdownOf } from "@widgetarium/studio";
-import type { CanvasDoc } from "@widgetarium/studio";
-import type WidgetariumPlugin from "../main.js";
+import type { CanvasDoc } from "../../../schemas/doc.schema.js";
+import { specMarkdownOf } from "../../docs/spec-markdown.js";
 
 const APP_DOCS = [
 	{ name: "Research", file: "research.md" },
@@ -13,8 +12,7 @@ const APP_DOCS = [
 const SPEC_DOC = "Spec";
 const VAULT_SYSTEM = "Your design system";
 
-export async function docsOf(plugin: WidgetariumPlugin, app: string): Promise<readonly CanvasDoc[]> {
-	const adapter = plugin.app.vault.adapter;
+export async function docsOf(adapter: DataAdapter, app: string): Promise<readonly CanvasDoc[]> {
 	const folder = `${SPEC_FOLDER}/${app}`;
 	const docs = await Promise.all([
 		specDocOf(adapter, app),

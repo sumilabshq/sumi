@@ -5,13 +5,19 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
 import type WidgetariumPlugin from "../main.js";
-import { boardIn } from "./board-in-note.js";
+import type { DesignVault } from "@widgetarium/canvas/obsidian";
 import type { DrawnScreen } from "@widgetarium/studio";
 import { CanvasShotWidget, frameLabelOf, pageOfScreen, screensOfPage, whileAgentLooks } from "@widgetarium/studio";
 import type { AgentLook, Shot } from "@widgetarium/studio";
-import { withBlocks } from "./design-block-registry.js";
-import { designOf } from "./design-port-obsidian.js";
-import { canvasOf, drawnOffScreen, pngOf, stackedPngOf } from "./off-screen.js";
+import {
+	boardIn,
+	canvasOf,
+	drawnDesignOf,
+	drawnOffScreen,
+	pngOf,
+	stackedPngOf,
+	withBlocks,
+} from "@widgetarium/canvas/obsidian";
 
 export const SHOTS_DIR = `${ROOT}/shots`;
 export const SHOT_REQUESTS_DIR = `${SHOTS_DIR}/requests`;
@@ -78,7 +84,7 @@ function shotWhileAgentLooks(plugin: WidgetariumPlugin, asked: ShotAsked): Promi
 }
 
 async function pageShotOf(plugin: WidgetariumPlugin, look: AgentLook): Promise<TakenShot> {
-	const design = await designOf(plugin, look.app);
+	const design = await drawnDesignOf(designVaultOf(plugin), look.app);
 	const screens = framesNamed(screensOfPage(design.screens, look.page), look.frame);
 	if (screens.length === 0) throw new Error(noPageSaid(look, design.screens));
 	const tree = shotOf(plugin, { kind: "pages", screens });
@@ -109,7 +115,7 @@ function shotOf(plugin: WidgetariumPlugin, shot: Shot): ReactElement {
 }
 
 async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<TakenShot> {
-	const design = await designOf(plugin, app);
+	const design = await drawnDesignOf(designVaultOf(plugin), app);
 	const shots: Shot[] = [
 		{ kind: "references", references: design.references },
 		...design.screens.map((screen): Shot => ({ kind: "pages", screens: [screen] })),
@@ -143,6 +149,10 @@ async function noteShotOf(plugin: WidgetariumPlugin, note: string): Promise<Take
 	if (!board) throw new Error(NO_BOARD.replace("{note}", note));
 	const tree = shotOf(plugin, { kind: "board", board, width: NOTE_SHOT.width });
 	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(node) }));
+}
+
+function designVaultOf(plugin: WidgetariumPlugin): DesignVault {
+	return { adapter: plugin.app.vault.adapter, registry: plugin.registry };
 }
 
 function askedIn(text: string): ShotAsked {
