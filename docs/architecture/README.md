@@ -17,7 +17,7 @@ The rules every developer and every agent follows when writing code in this repo
 ```
 hosts/       a runtime: obsidian, web, desktop, mobile, api
    ↓
-apps/        a product: routes, pages, bindings, the hosts it ships on
+apps/        a product: routes, pages composed in TSX, the hosts it ships on
    ↓
 packages/    domains (business areas) and common (no domain at all)
 ```
@@ -25,7 +25,7 @@ packages/    domains (business areas) and common (no domain at all)
 | Level               | Holds                                                                     | Never holds                              |
 | ------------------- | ------------------------------------------------------------------------- | ---------------------------------------- |
 | `hosts/<runtime>`   | how to run any app: rendering engine, storage, files, network, window     | anything about one product               |
-| `apps/<product>`    | routes, pages, which handler answers which widget port, the list of hosts | widgets, handlers, schemas               |
+| `apps/<product>`    | routes; pages in TSX that create handlers and pass them to widgets; hosts | widgets, handlers, schemas               |
 | `packages/<domain>` | the widgets, handlers and schemas of one business area                    | the internals of another domain          |
 | `packages/<common>` | engine, kit, helpers, data sources, widgets that name no record           | anything that names a record of a domain |
 
@@ -46,7 +46,7 @@ packages/<domain>/
 
 - A view is what the person sees; a widget is the layer that connects a view to data and draws nothing itself.
 - `ui/` and `widgets/` are cut by what is drawn (`task-kanban`, `task-table`), `logic/` by the kind of record (`tasks`).
-- Views and widgets never import logic, and logic never imports them. All import `schemas/`. A widget reaches logic only through a port the app binds.
+- Views and widgets never import logic, and logic never imports them. All import `schemas/`. A widget gets its handlers as props from the app.
 - Inside one domain, logic imports logic directly.
 
 **What it gives:** a widget is reused for any record that fits its schema and swapped by the app (A/B tests, redesigns) without touching logic. Logic reads like ordinary code: go-to-definition opens the real function.
@@ -96,7 +96,7 @@ No level is added for growth. The three levels stay three.
 | Source                                                              | Taken                                                                           |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
 | FSD and its 3-layer variants (app / features / shared)              | one-way layers; features cut by what they draw; the API layer shared below them |
-| Composition Root (Seemann), Backstage `apiRef`                      | the app is the one place widgets are bound to handlers                          |
+| Composition Root (Seemann), Backstage `apiRef`                      | the app is the one place handlers are created and given to widgets              |
 | Shopify Packwerk, Spring Modulith                                   | a domain uses another only through its public API, declared and checked         |
 | Nx (apps thin, libs hold code, `scope:` tags)                       | domains as packages; lint by tags _(from memory)_                               |
 | SvelteKit `.server`, Next `"use server"`, TanStack `createServerFn` | server code marked in code, removed from the browser bundle by the build        |

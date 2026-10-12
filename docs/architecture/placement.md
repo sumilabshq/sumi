@@ -59,19 +59,19 @@ export const LayersPanel = widget()
 
 ## The table
 
-| The file is…                                                                           | It goes to                                           |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| the shape of a record                                                                  | `packages/<domain>/schemas/<record>.schema.ts`       |
-| something drawn for a domain                                                           | `packages/<domain>/widgets/<widget>/`                |
-| something drawn whose schema names no record                                           | a common widget package (`registry/`)                |
-| a read for a widget                                                                    | `packages/<domain>/logic/<record>/<name>.query.ts`   |
-| a write                                                                                | `packages/<domain>/logic/<record>/<name>.command.ts` |
-| work that runs alone (cursor tracking, sync, a timer)                                  | `packages/<domain>/logic/<record>/<name>.service.ts` |
-| reading or writing an outside system (vault, Supabase, SQL, an existing backend's API) | a common package, `sources/<system>/`                |
-| a pure helper (format a date, clamp a number)                                          | a common package, `lib/`                             |
-| a drawn part with no domain (resize handle, spinner)                                   | the kit                                              |
-| a route, a page, a binding                                                             | `apps/<product>/`                                    |
-| how to render, store, or reach the network on one platform                             | `hosts/<runtime>/`                                   |
+| The file is…                                                                           | It goes to                                                  |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| the shape of a record                                                                  | `packages/<domain>/schemas/<record>.schema.ts`              |
+| something drawn for a domain                                                           | `packages/<domain>/ui/<view>/` + `widgets/<name>.widget.ts` |
+| something drawn whose schema names no record                                           | a common widget package (`registry/`)                       |
+| a read for a widget                                                                    | `packages/<domain>/logic/<record>/<name>.query.ts`          |
+| a write                                                                                | `packages/<domain>/logic/<record>/<name>.command.ts`        |
+| work that runs alone (cursor tracking, sync, a timer)                                  | `packages/<domain>/logic/<record>/<name>.service.ts`        |
+| reading or writing an outside system (vault, Supabase, SQL, an existing backend's API) | a common package, `sources/<system>/`                       |
+| a pure helper (format a date, clamp a number)                                          | a common package, `lib/`                                    |
+| a drawn part with no domain (resize handle, spinner)                                   | the kit                                                     |
+| a route, a page and its wiring (TSX)                                                   | `apps/<product>/`                                           |
+| how to render, store, or reach the network on one platform                             | `hosts/<runtime>/`                                          |
 
 `<record>` is the kind of record (`tasks`), `<name>` is the file (`create-task`). Example: `packages/planning/logic/tasks/create-task.command.ts`.
 
@@ -89,7 +89,7 @@ export const LayersPanel = widget()
 
 **A hook in a widget?** Yes, in `hooks/`, for state of the view only: hover, open, a drag in progress. A hook never reads or writes data; that is a query or a command reached through a port.
 
-**A widget that draws tasks as a kanban and as a table?** Two widgets, `task-kanban` and `task-table`, bound to the same query.
+**A widget that draws tasks as a kanban and as a table?** Two widgets, `task-kanban` and `task-table`, given the same query by the app.
 
 ## File names
 
