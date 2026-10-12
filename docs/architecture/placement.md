@@ -56,7 +56,7 @@ export function LayersPanelView({ layers, pick }: InjectProps<typeof layersPanel
 - The inject is declared once, as a constant in the widget file. The view takes its props type from it with `InjectProps<typeof …>`, so changing the inject changes the view's types. A view never writes its props type by hand.
 - `.render()` refuses a view whose props are not exactly `InjectProps` of the widget's inject.
 - The view's import of the widget is `import type`: erased at build, so there is no cycle. `InjectProps<typeof LayersPanel>` would be one (the widget's type depends on the view), which is why the inject is its own constant.
-- **A widget answers one question.** More than 8 entries in an inject means it draws several things: split it into small widgets and compose them in a layout widget with positions (`header`, `start`, `end`, `bottom`), placed by the app.
+- **A widget answers one question.** A widget has more props than a component, because every read and write comes from outside: that is expected. More than 12 entries in an inject usually means it draws several things: split it into small widgets and compose them in a layout widget with positions (`header`, `start`, `end`, `bottom`), placed by the app. Never add a query that bundles data only to cut the number of props.
 - Props, never context: a view moved elsewhere fails to type-check when its data is missing, instead of silently reading `undefined`.
 
 | The widget…           | The view gets                                                                    |
