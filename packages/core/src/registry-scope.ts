@@ -140,8 +140,8 @@ export function blocksIn(shell: unknown): Readonly<Record<string, WidgetComponen
 export type WidgetStates = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
 
 export function statesIn(shell: unknown): WidgetStates {
-	const held: unknown = isObject(shell) ? Reflect.get(shell, "states") : undefined;
-	if (!isObject(held)) return {};
+	const held = statesHeldIn(shell) ?? statesHeldIn(defaultIn(shell));
+	if (!held) return {};
 	return Object.fromEntries(
 		Object.entries(held).filter((entry): entry is [string, Readonly<Record<string, unknown>>] => isObject(entry[1])),
 	);
@@ -216,6 +216,11 @@ function isDrawWidget(held: unknown): held is DrawWidget<GivenProps> {
 function isDeclaredModule(shell: unknown): shell is DeclaredModule {
 	const exported = defaultIn(shell);
 	return isObject(shell) && typeof exported === "function" && isDeclaredProps(Reflect.get(exported, "declared"));
+}
+
+function statesHeldIn(shell: unknown): Readonly<Record<string, unknown>> | null {
+	const held: unknown = isObject(shell) || typeof shell === "function" ? Reflect.get(shell, "states") : undefined;
+	return isObject(held) ? held : null;
 }
 
 function defaultIn(shell: unknown): unknown {

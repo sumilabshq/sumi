@@ -4,7 +4,7 @@ import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
 import type { DesignSource, DrawnState } from "../packages/canvas/index.ts";
-import { frameIdOf } from "../packages/canvas/widgets/canvas-field/lib/frame-keys.ts";
+import { frameIdOf } from "../packages/canvas/ui/canvas-view/lib/frame-keys.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";

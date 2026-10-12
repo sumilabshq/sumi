@@ -47,6 +47,10 @@ export function useData<I, Item>(read: Action<I, Page<Item>>, input: Omit<I, "cu
 export function useData<I, O>(read: Action<I, O>, input?: I): DataState<O>;
 export function useData<T>(value: T): DataState<T>;
 export function useData(read: unknown, input?: unknown): DataState<unknown> | PageState<unknown> {
+	return useAnswer(read, input);
+}
+
+export function useAnswer(read: unknown, input: unknown): DataState<unknown> | PageState<unknown> {
 	const meta = metaOf(read);
 	const isPaged = meta?.isPaged === true;
 	const asked = isPaged ? withoutCursor(input) : input;

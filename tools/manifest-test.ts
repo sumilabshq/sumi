@@ -177,12 +177,17 @@ refusal(
 	"of() takes no options for a value",
 );
 
+check(
+	"a module naming no layout stands as a control at full width and auto height",
+	manifestOfModule({ default: { declared: declareProps({}) } })?.size,
+	{ preferredWidth: "full", preferredHeight: "auto" },
+);
 refusal(
-	"a module naming no preferred size is refused",
+	"a module naming a size with no preferred width is refused",
 	() =>
 		manifestOfModule({
 			default: { declared: declareProps({}) },
-			metadata: { title: "Probe", description: "x", props: {} },
+			layout: { role: "indicator", size: { preferredWidth: 0, preferredHeight: "auto" } },
 		}),
 	"size names no preferredWidth",
 );

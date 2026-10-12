@@ -21,11 +21,11 @@ interface MountRow {
 
 const FIELD_TILE = "canvas-field";
 const DECLARED_PORTS: Readonly<Record<string, readonly string[]>> = {
-	"@canvas/canvas-field": Object.keys(canvasField.metadata.props ?? {}),
-	"@canvas/canvas-top-bar": Object.keys(canvasTopBar.metadata.props ?? {}),
-	"@canvas/layers-panel": Object.keys(layersPanel.metadata.props ?? {}),
-	"@canvas/look-panel": Object.keys(lookPanel.metadata.props ?? {}),
-	"@canvas/job-status": Object.keys(jobStatus.metadata.props ?? {}),
+	"@canvas/canvas-field": Object.keys(canvasField.default.declared),
+	"@canvas/canvas-top-bar": Object.keys(canvasTopBar.default.declared),
+	"@canvas/layers-panel": Object.keys(layersPanel.default.declared),
+	"@canvas/look-panel": Object.keys(lookPanel.default.declared),
+	"@canvas/job-status": Object.keys(jobStatus.default.declared),
 };
 const NO_CORNERS: CanvasCorners = { start: [], end: [] };
 

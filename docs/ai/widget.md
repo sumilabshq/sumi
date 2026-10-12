@@ -98,7 +98,7 @@ and `types/` beside the widgets so an editor types every port instead of handing
 
 ## Ports: what a widget reads and writes
 
-**Data reaches a widget only through `IQuery` and `ICommand`**, declared in `createWidget({ inject })`:
+**Data reaches a widget only through `IQuery` and `ICommand`**, declared in `inject`:
 
 | Declared in `inject`            | Is                                       | Used as                                     |
 | ------------------------------- | ---------------------------------------- | ------------------------------------------- |
@@ -187,9 +187,76 @@ draws the change.
 | `IReader`, `IContent`                            | the passage and its reader, for an `inline` widget                                |
 | `ICatalogue`, `ICarrier`, `IPreview`             | the sidebar catalogue's pick, a drag the host runs, any widget drawn as a preview |
 
-## A whole widget
+## A widget and its view
 
-`createWidget({ inject, draw })` declares and draws; `defineMetadata` describes it for a person;
+**Write the view first, then the widget that feeds it.** The view is a plain component that reads and
+writes nothing: it gets values and functions as props and draws them, so it draws anywhere with plain
+values. The widget is the layer between the view and the data, and draws nothing itself:
+
+```tsx
+import { ICommand, IQuery, PageInputSchema, PageOf, widget } from "widgetarium";
+import type { CommandAnswer, PagedView } from "widgetarium";
+import { z } from "zod";
+
+const TaskSchema = z.object({ id: z.string(), title: z.string() });
+type Task = z.output<typeof TaskSchema>;
+
+interface TaskListProps {
+	readonly getHeading: string;
+	readonly getTasks: PagedView<Task>;
+	readonly archive: (input: { id: string }) => Promise<CommandAnswer>;
+}
+
+function TaskListView({ getHeading, getTasks, archive }: TaskListProps) {
+	return (
+		<section>
+			<h3>{getHeading}</h3>
+			{getTasks.items.map((task) => (
+				<button key={task.id} onClick={() => void archive({ id: task.id })}>
+					{task.title}
+				</button>
+			))}
+			{getTasks.hasMore ? <button onClick={getTasks.more}>More</button> : null}
+		</section>
+	);
+}
+
+const TaskList = widget()
+	.inject({
+		getHeading: IQuery.output(z.string().default("To do")),
+		getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
+		archive: ICommand.input(z.object({ id: z.string() })),
+	})
+	.states({ Full: { getTasks: [{ id: "1", title: "Water the plants" }] }, Empty: { getTasks: [] } })
+	.render(TaskListView);
+
+export default TaskList;
+```
+
+| The widget injects                          | The view gets                                                            |
+| ------------------------------------------- | ------------------------------------------------------------------------ |
+| `IQuery.output(S)`                          | the value                                                                |
+| a paged query taking only `PageInputSchema` | `{ items, total, hasMore, more }`                                        |
+| a query with an input                       | `{ data, ask(input) }`, plus `total`, `hasMore`, `more` over a page      |
+| a command                                   | `(input) => Promise<{ ok: true, output } \| { ok: false, reason, ran }>` |
+| `ISlot`, `ISlot.array()`                    | the drawn children                                                       |
+| `IHost`, `INavigator`, `IHere`, …           | what the host hands over                                                 |
+
+- **`ask(input)` re-reads.** The widget keeps the input; a query whose input needs a field is not read
+  until the view asks, and `data` is `null` until then. Ask from an effect, never while drawing.
+- **The view never draws a missing value.** Until every port is read the widget draws `.pending(View)`,
+  or nothing; a failed read draws `.failed(View)`, which gets `{ failures }`, or the engine's notice.
+- **`.render(View)` refuses a view whose props do not match the ports.** `.states`, `.pending` and
+  `.failed` are optional; `.render` ends the chain.
+- **A builder widget declares no metadata and no layout.** Labels come from the port names; it stands
+  as role `control`, `preferredWidth: "full"`, `preferredHeight: "auto"`.
+- The view lives in `ui/<view>/<view>.tsx` with its `hooks/` and `lib/`; the widget is
+  `widgets/<name>.widget.ts`, with no JSX.
+
+## A whole widget with createWidget
+
+`createWidget({ inject, draw })` is still accepted, and vault widgets written with it keep working. It
+declares and draws in one function; `defineMetadata` describes it for a person;
 `defineLayout` places it; `defineStates` holds its sample data, one entry per look. `examples.md` has
 a list widget and a form widget whole; their shape:
 
@@ -265,8 +332,8 @@ a timestamp into a record to remember which one was opened.
 
 ### Layout is where it stands
 
-- `role` — required, and one. A widget drawing two roles is two widgets (brief law 14).
-- `size` — required. `preferredWidth` (pixels or `"full"`) and `preferredHeight` (pixels or `"auto"`)
+- `role` — one; a widget built with `widget()` declares none and stands as `control`. A widget drawing two roles is two widgets (brief law 14).
+- `size` — required by `defineLayout`. `preferredWidth` (pixels or `"full"`) and `preferredHeight` (pixels or `"auto"`)
   are what it prefers, never what it is promised; `keepsRatio` holds height to width; `at` steps by the
   width of the **region**: `at: [{ belowPx: 520, preferredWidth: "full" }]`. In a page's slots they are
   ignored. Use `useNarrowed`, never a media query.

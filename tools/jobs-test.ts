@@ -448,8 +448,8 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/core/src/app-design.js");
-const { NotedPicture } = await import("../packages/canvas/widgets/canvas-field/ui/frames/noted-picture.js");
-const { JobLine } = await import("../packages/canvas/widgets/job-status/ui/job-line.js");
+const { NotedPicture } = await import("../packages/canvas/ui/canvas-view/frames/noted-picture.js");
+const { JobLine } = await import("../packages/canvas/ui/job-status/job-line.js");
 const { canvasPagesOf } = await import("../packages/canvas/logic/pages/canvas-pages.js");
 const { noteOfApp } = await import("../hosts/obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");

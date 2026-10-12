@@ -93,6 +93,8 @@ export const VaultRecordSchema = z.looseObject({
 
 export type VaultRecord = z.infer<typeof VaultRecordSchema>;
 
+const LAYOUT_UNSAID: WidgetLayout = { role: "control", size: { preferredWidth: "full", preferredHeight: "auto" } };
+
 const DEFINED_PROPS = Symbol.for("widgetarium.defined-props");
 const STATE_NAMES_NOTHING = 'state "{state}" gives {props}, which the widget does not inject';
 
@@ -308,7 +310,7 @@ export function manifestOfModule(module: DeclaredModule): ModuleManifest | null 
 	refuseBadProps(props);
 	const input = {
 		...card,
-		...module.layout,
+		...(module.layout ?? LAYOUT_UNSAID),
 		...partsOfDeclared(props, described ?? {}),
 		...(module.migrations ? { migrate: module.migrations.map(migrationOfDeclared) } : {}),
 	};

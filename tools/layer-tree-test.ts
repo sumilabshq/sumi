@@ -1,7 +1,7 @@
 import { layJsdomGlobals } from "./jsdom-globals.ts";
 
 layJsdomGlobals();
-const { layersIn } = await import("../packages/canvas/widgets/canvas-ui/layers/layer-tree.ts");
+const { layersIn } = await import("../packages/canvas/ui/layers/layer-tree.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

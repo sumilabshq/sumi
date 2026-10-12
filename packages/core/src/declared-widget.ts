@@ -45,7 +45,13 @@ type Hand = (name: string, declaration: Declaration, given: GivenProps) => unkno
 interface PropRead {
 	readonly value: unknown;
 	readonly failure: string | null;
+	readonly isLoading?: boolean;
 	readonly gatewayId?: string;
+}
+
+export interface ReadState {
+	readonly loading: readonly string[];
+	readonly failures: readonly string[];
 }
 
 interface DeclaredCommand {
@@ -64,30 +70,43 @@ const HANDED: Readonly<Partial<Record<Declaration["kind"], Hand>>> = {
 	slot: (name, _declaration, given) => fieldOf(given["slots"], name) ?? given[name] ?? null,
 };
 
-export function createDeclaredWidget(props: DeclaredProps, draw: (drawn: DrawnProps) => ReactNode): InjectedWidget {
+export function createDeclaredWidget(
+	props: DeclaredProps,
+	draw: (drawn: DrawnProps, read: ReadState) => ReactNode,
+	drawsFailures = false,
+): InjectedWidget {
 	const declared = Object.entries(props).map(([name, held]) => [name, declarationOfInterface(held)] as const);
 	const reads = declared.filter(([, declaration]) => declaration?.kind !== "command");
 	const commands = declared.filter((entry): entry is readonly [string, Declaration] => entry[1]?.kind === "command");
-	function DrawnWidget({ drawn }: { readonly drawn: DrawnProps }): ReactNode {
-		return draw(drawn);
+	function DrawnWidget({ drawn, read }: { readonly drawn: DrawnProps; readonly read: ReadState }): ReactNode {
+		return draw(drawn, read);
 	}
 	function InjectedWidget(given: GivenProps): ReactNode {
 		const drawn: Record<string, unknown> = {};
 		const failures: string[] = [];
+		const loading: string[] = [];
 		const readGatewayIds: string[] = [];
 		for (const [name, declaration] of reads) {
 			const read = readOf(name, declaration, given);
 			drawn[name] = read.value;
 			if (read.gatewayId) readGatewayIds.push(read.gatewayId);
 			if (read.failure) failures.push(`${name}: ${read.failure}`);
+			if (read.isLoading) loading.push(name);
 		}
 		for (const [name, declaration] of commands)
 			drawn[name] = useCommandOver(name, declaration, given[name], readGatewayIds);
-		if (failures.length > 0) return notReadNotice(failures);
-		return h(DrawnWidget, { drawn });
+		if (failures.length > 0 && !drawsFailures) return notReadNotice(failures);
+		return h(DrawnWidget, { drawn, read: { loading, failures } });
 	}
 	InjectedWidget.declared = props;
 	return InjectedWidget;
+}
+
+export function notReadNotice(failures: readonly string[]): ReactElement {
+	return h("div", { className: "wg-error" }, [
+		h("b", { key: "what" }, NOT_READ),
+		...failures.map((said) => h("code", { key: said }, said)),
+	]);
 }
 
 function declarationOfInterface(held: unknown): Declaration | null {
@@ -106,13 +125,6 @@ function readOf(name: string, declaration: Declaration | null, given: GivenProps
 	const hand = HANDED[declaration.kind];
 	if (hand) return { value: hand(name, declaration, given), failure: null };
 	return useProp(name, declaration, given[name]);
-}
-
-function notReadNotice(failures: readonly string[]): ReactElement {
-	return h("div", { className: "wg-error" }, [
-		h("b", { key: "what" }, NOT_READ),
-		...failures.map((said) => h("code", { key: said }, said)),
-	]);
 }
 
 function useProp(name: string, declaration: Declaration, given: unknown): PropRead {
@@ -232,10 +244,10 @@ function keepOnlyPicked(name: string, declaration: Declaration, drawn: object): 
 }
 
 function useValueProp(name: string, declaration: Declaration, gateway: ValueHeldGateway): PropRead {
-	const { data, failure } = useData(gateway.get);
+	const { data, failure, isLoading } = useData(gateway.get);
 	const value = useMemo(() => valueOrDefault(declaration, data), [data]);
 	const update = useMemo(() => checkValueUpdate(gateway.update, declaration, name), [gateway.update]);
-	if (declaration.writes.length === 0) return { value, failure };
+	if (declaration.writes.length === 0) return { value, failure, isLoading };
 	const picked: Readonly<Record<string, unknown>> = { value, update, remove: gateway.remove };
 	const verbs = [
 		...(declaration.reads ?? ["get"]).map((verb) => (verb === "get" ? "value" : verb)),
@@ -244,6 +256,7 @@ function useValueProp(name: string, declaration: Declaration, gateway: ValueHeld
 	return {
 		value: Object.fromEntries(verbs.filter((verb) => verb in picked).map((verb) => [verb, picked[verb]] as const)),
 		failure,
+		isLoading,
 	};
 }
 

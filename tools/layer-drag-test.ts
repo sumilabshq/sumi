@@ -1,5 +1,5 @@
-import { projectedDrop } from "../packages/canvas/widgets/layers-panel/lib/layer-drag.ts";
-import type { DragRow } from "../packages/canvas/widgets/layers-panel/lib/layer-drag.ts";
+import { projectedDrop } from "../packages/canvas/ui/layers-panel/lib/layer-drag.ts";
+import type { DragRow } from "../packages/canvas/ui/layers-panel/lib/layer-drag.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

@@ -3,13 +3,13 @@ import { createRoot } from "react-dom/client";
 import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
-import { PlannedPageRegion } from "../packages/canvas/widgets/canvas-field/ui/regions/planned-page-region.tsx";
-import { PageLabel } from "../packages/canvas/widgets/canvas-top-bar/ui/status-chips.tsx";
-import { JobLine } from "../packages/canvas/widgets/job-status/ui/job-line.tsx";
-import { ReferencesRegion } from "../packages/canvas/widgets/canvas-field/ui/regions/references-region.tsx";
+import { PlannedPageRegion } from "../packages/canvas/ui/canvas-view/regions/planned-page-region.tsx";
+import { PageLabel } from "../packages/canvas/ui/canvas-top-bar/status-chips.tsx";
+import { JobLine } from "../packages/canvas/ui/job-status/job-line.tsx";
+import { ReferencesRegion } from "../packages/canvas/ui/canvas-view/regions/references-region.tsx";
 
 const PICTURE = `data:image/svg+xml;utf8,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='640' height='420'><rect width='640' height='420' fill='#f3f3f1'/></svg>")}`;
-import { Group } from "../packages/canvas/widgets/canvas-field/ui/regions/group.tsx";
+import { Group } from "../packages/canvas/ui/canvas-view/regions/group.tsx";
 
 const MINUTE = 60000;
 const NOW = Date.now();

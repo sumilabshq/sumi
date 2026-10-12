@@ -134,6 +134,16 @@ export type {
 
 export type { CreatedWidget, WidgetToCreate } from "./widget-api.js";
 export { createWidget } from "./widget-api.js";
+export { widget } from "./widget-builder.js";
+export type {
+	AskedPagedView,
+	AskedView,
+	BuiltWidget,
+	FailedViewProps,
+	PagedView,
+	ViewProps,
+	WidgetBuilder,
+} from "./widget-builder-types.js";
 export type { DialogProps } from "./dialog.js";
 export {
 	ConfirmDialog,

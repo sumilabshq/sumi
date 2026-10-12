@@ -53,7 +53,7 @@ const HAND_WIDTH_SAID = "a page widget that sets its own width ({classes}); the 
 const KIT_HERO_IN_PAGE = /import\s*\{[^}]*\bHero\b[^}]*\}\s*from\s*"widgetarium\/kit"/;
 const KIT_HERO_SAID =
 	"a page that draws the kit's Hero itself; a page block is a widget — import @default/hero (or the catalogue's) and feed it, so the catalogue owns how a hero looks";
-const DECLARES_STATES = /export\s+const\s+states\s*=\s*defineStates\(/;
+const DECLARES_STATES = /export\s+const\s+states\s*=\s*defineStates\(|\.states\(/;
 const NO_STATES_SAID =
 	"a widget that declares no states; write `export const states = defineStates(Widget, { Full: {…sample props}, Empty: {…} })` so the canvas draws it with real-looking rows and empty, never blank";
 const KIT_IMPORT = /import\s*\{([^}]*)\}\s*from\s*"widgetarium\/kit"/g;

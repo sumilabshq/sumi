@@ -1,5 +1,5 @@
-import { placedNotes } from "../packages/canvas/widgets/canvas-field/lib/note-layout.ts";
-import type { NoteBox, PlacedNote } from "../packages/canvas/widgets/canvas-field/lib/note-layout.ts";
+import { placedNotes } from "../packages/canvas/ui/canvas-view/lib/note-layout.ts";
+import type { NoteBox, PlacedNote } from "../packages/canvas/ui/canvas-view/lib/note-layout.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

@@ -29,7 +29,8 @@
 		"schemas/**/*.ts",
 		"logic/**/*.ts",
 		"widgets/**/*.ts",
-		"widgets/**/*.tsx",
+		"ui/**/*.ts",
+		"ui/**/*.tsx",
 		"../core/src/*.d.ts",
 		"../kit/src/jsx-namespace.d.ts"
 	]

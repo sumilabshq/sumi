@@ -48,6 +48,7 @@
 		"test:defaults": "node --single-threaded --import ./tools/loader/register.mts tools/defaults-test.ts",
 		"test:source-list": "node --single-threaded --import ./tools/loader/register.mts tools/source-list-test.ts",
 		"test:help": "node --single-threaded --import ./tools/loader/register.mts tools/help-test.ts",
+		"test:widget-builder": "node --single-threaded --import ./tools/loader/register.mts tools/widget-builder-test.ts",
 		"test:declared": "node --single-threaded --import ./tools/loader/register.mts tools/declared-test.ts",
 		"test:command": "node --single-threaded --import ./tools/loader/register.mts tools/command-test.ts",
 		"codemod:contract-words": "node --import ./tools/loader/register.mts tools/codemod-contract-words.mts",
