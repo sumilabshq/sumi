@@ -135,17 +135,28 @@ export type {
 export type { CreatedWidget, WidgetToCreate } from "./widget-api.js";
 export { createWidget } from "./widget-api.js";
 export { inject, widget } from "./widget-builder.js";
+export { useCommand } from "./use-command.js";
+export { useQuery } from "./use-query.js";
+export type { CommandHandleOf } from "./use-command.js";
+export type { QueryHandleOf } from "./use-query.js";
+export type {
+	AskedPagedQueryHandle,
+	AskedQueryHandle,
+	BoundCommandHandle,
+	CommandHandle,
+	PagedQueryHandle,
+	PageItems,
+	QueryHandle,
+} from "./handle-types.js";
 export { OnRefused, toastRefusal } from "./command-refusals.js";
 export type { CommandRefusal, RefusalHandler } from "./command-refusals.js";
 export type {
-	AskedPagedView,
-	AskedView,
 	BuiltGivenProps,
 	BuiltWidget,
 	FailedViewProps,
 	Inject,
 	InjectProps,
-	PagedView,
+	KindsNamed,
 	WidgetBuilder,
 } from "./widget-builder-types.js";
 export type { DialogProps } from "./dialog.js";

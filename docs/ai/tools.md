@@ -24,6 +24,7 @@
 | `install <id>`                        | writes it and its scope's shared files into the vault                                                                                   |
 | `start <id>`                          | your access to a widget's files, and the progress card in the chat                                                                      |
 | `check <id>`                          | the defects below in a widget you wrote; exits 1 while any stands                                                                       |
+| `new widget <name>`                   | `widgets/<name>.widget.ts` and `ui/<name>/<name>.tsx`, the view typed from the inject; `--dir` picks the folder                         |
 | `bases`                               | every base a screen can start from                                                                                                      |
 | `base <name>`                         | one base: its regions, its sections, ready to write into a note                                                                         |
 | `base <body> --with aside,dock`       | the body with these shell zones added: `nav`, `index`, `aside`, `dock`                                                                  |

@@ -105,7 +105,7 @@ function noPageSaid(look: AgentLook, screens: readonly DrawnScreen[]): string {
 
 function shotOf(plugin: WidgetariumPlugin, shot: Shot): ReactElement {
 	const drawing = { registry: withBlocks(plugin.registry), host: plugin.host };
-	return h(CanvasShotWidget, { getShot: shot, getDrawing: drawing });
+	return h(CanvasShotWidget, { shotQuery: shot, drawingQuery: drawing });
 }
 
 async function designShotOf(plugin: WidgetariumPlugin, app: string): Promise<TakenShot> {

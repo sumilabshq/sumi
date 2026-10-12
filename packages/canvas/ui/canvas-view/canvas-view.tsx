@@ -6,8 +6,9 @@ import { useSettled } from "./hooks/frames/use-settled.js";
 import { CanvasField } from "./canvas-field.js";
 
 export function CanvasFieldView(props: InjectProps<typeof canvasFieldInject>): ReactElement | null {
-	const { getDrawing: drawing, getPages: pages } = props;
-	const design = useSettled(props.getDesign);
+	const drawing = props.drawingQuery.data;
+	const pages = props.pagesQuery.data;
+	const design = useSettled(props.designQuery.data);
 	if (!design || !drawing || !pages) return null;
 	return (
 		<CanvasField
@@ -16,7 +17,7 @@ export function CanvasFieldView(props: InjectProps<typeof canvasFieldInject>): R
 			design={design}
 			drawing={drawing}
 			pages={pages}
-			docs={props.getDocs.items}
+			docs={props.docsQuery.data.items}
 		/>
 	);
 }

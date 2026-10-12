@@ -52,6 +52,7 @@ export const HELP = `widgets — the Widgetarium catalogue, for the agent
   node widgets.mjs show <id>            one widget's manifest and the files it is made of
   node widgets.mjs start <id> --title <words>   say you are building a widget, before its first file
   node widgets.mjs check <id>           a widget's own colours, type, paging and manifest, rule by rule
+  node widgets.mjs new widget <name>    a widget file and its view, typed from one inject; --dir <folder>, here by default
   node widgets.mjs source <id>          print a widget's component source
   node widgets.mjs packs                the packs, and how many widgets each holds
   node widgets.mjs sources              the catalogue sources this vault reads

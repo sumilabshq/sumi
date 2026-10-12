@@ -8,13 +8,13 @@ import { PageSwitch } from "./page-switch.js";
 import type { CanvasTab } from "./page-switch.js";
 
 export function PageTabs({
-	getPages: pages,
-	showPage,
-	returnToView,
+	pagesQuery: { data: pages },
+	showPageCommand,
+	returnToViewCommand,
 }: InjectProps<typeof pageTabsInject>): ReactElement | null {
 	const anchor = useRef<HTMLSpanElement | null>(null);
 	if (!pages) return null;
-	const onPage = (page: string): void => fadedTurn(anchor.current, () => void showPage({ page }));
+	const onPage = (page: string): void => fadedTurn(anchor.current, () => void showPageCommand.run({ page }));
 	return (
 		<span ref={anchor} className="cv:flex cv:items-center cv:gap-2">
 			<PageSwitch
@@ -26,7 +26,7 @@ export function PageTabs({
 				trailing={pages.trailing.map(tabOf)}
 				page={pages.shown}
 				onPage={onPage}
-				onReturn={() => void returnToView()}
+				onReturn={() => void returnToViewCommand.run()}
 			/>
 		</span>
 	);

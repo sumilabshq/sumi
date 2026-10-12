@@ -1,13 +1,11 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
+import type { Photos } from "../../../schemas/photo.schema.js";
 import { imageFilesIn } from "../../image-files/image-files.js";
 
 const DROPPED_ON = "[data-canvas-view]";
 
-export function useDroppedPhotos(
-	anchor: RefObject<HTMLElement | null>,
-	onPhotos: (photos: readonly File[]) => void,
-): void {
+export function useDroppedPhotos(anchor: RefObject<HTMLElement | null>, addPhotos: (ask: Photos) => unknown): void {
 	useEffect(() => {
 		const view = anchor.current?.closest<HTMLElement>(DROPPED_ON);
 		if (!view) return undefined;
@@ -16,7 +14,7 @@ export function useDroppedPhotos(
 			const photos = imageFilesIn(event.dataTransfer?.files);
 			if (photos.length === 0) return;
 			event.preventDefault();
-			onPhotos(photos);
+			addPhotos({ photos });
 		};
 		view.addEventListener("dragover", onDragOver);
 		view.addEventListener("drop", onDrop);
@@ -24,5 +22,5 @@ export function useDroppedPhotos(
 			view.removeEventListener("dragover", onDragOver);
 			view.removeEventListener("drop", onDrop);
 		};
-	}, [anchor, onPhotos]);
+	}, [anchor, addPhotos]);
 }

@@ -67,24 +67,24 @@ export function CanvasPage({ source, app, gpu, ownsPaste, corners, ...followed }
 		<OnRefused value={toastRefusal}>
 			<Toaster />
 			<CanvasOverlayWidget
-				getViewport={view.viewport}
+				viewportQuery={view.viewport}
 				field={fieldOf(view, design)}
 				header={[topBarOf(view, design, corners)]}
 				start={[
 					<LayersPanelWidget
 						key="Layers"
-						getDesign={design.design}
-						getDrawing={design.drawing}
-						getPages={design.pages}
-						getIsLayersOpen={view.isLayersOpen}
-						getMode={view.mode}
-						getSelection={view.selection}
-						select={view.select}
-						moveLayer={design.moveLayer}
+						designQuery={design.design}
+						drawingQuery={design.drawing}
+						pagesQuery={design.pages}
+						isLayersOpenQuery={view.isLayersOpen}
+						modeQuery={view.mode}
+						selectionQuery={view.selection}
+						selectCommand={view.select}
+						moveLayerCommand={design.moveLayer}
 					/>,
 				]}
-				end={[<LookPanelWidget key="Look" getLook={design.look} pickLook={design.pickLook} />]}
-				bottom={[<JobStatusWidget key="Job status" getLiveJob={design.liveJob} stopJob={design.stopJob} />]}
+				end={[<LookPanelWidget key="Look" lookQuery={design.look} pickLookCommand={design.pickLook} />]}
+				bottom={[<JobStatusWidget key="Job status" liveJobQuery={design.liveJob} stopJobCommand={design.stopJob} />]}
 			/>
 		</OnRefused>
 	);

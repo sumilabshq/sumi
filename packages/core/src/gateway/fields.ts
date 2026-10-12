@@ -14,16 +14,6 @@ export interface FieldReport {
 const VALUES_KEPT = 24;
 const LOOKS_LIKE_A_DAY = /^\d{4}-\d\d-\d\d/;
 
-function isRecord(held: unknown): held is Record<string, unknown> {
-	return typeof held === "object" && held !== null;
-}
-
-function fieldsIn(record: unknown): Record<string, unknown> {
-	if (!isRecord(record)) return {};
-	const carried = record["props"];
-	return isRecord(carried) ? carried : record;
-}
-
 export function isBoolean(held: unknown): boolean {
 	return held === true || held === false || held === "true" || held === "false";
 }
@@ -42,6 +32,44 @@ interface Seen {
 	values: Set<string>;
 	holdsList: boolean;
 	countsAs: Set<FieldType>;
+}
+
+// TRADE-OFF: read off the records rather than declared, because frontmatter carries no schema to read
+export function fieldsOf(records: readonly unknown[]): FieldReport[] {
+	const held = new Map<string, Seen>();
+	for (const record of records) {
+		for (const [prop, value] of Object.entries(fieldsIn(record))) {
+			const seen = held.get(prop) ?? {
+				prop,
+				values: new Set<string>(),
+				holdsList: false,
+				countsAs: new Set<FieldType>(),
+			};
+			note(seen, value);
+			held.set(prop, seen);
+		}
+	}
+	return [...held.values()]
+		.filter((seen) => seen.countsAs.size > 0 || seen.holdsList)
+		.map((seen) => ({
+			prop: seen.prop,
+			type: typeOfSeen(seen),
+			elementType: heldBySeen(seen),
+			typesSeen: [...seen.countsAs].sort(),
+			many: seen.holdsList,
+			values: [...seen.values].sort(),
+		}))
+		.sort((left, right) => left.prop.localeCompare(right.prop));
+}
+
+function isRecord(held: unknown): held is Record<string, unknown> {
+	return typeof held === "object" && held !== null;
+}
+
+function fieldsIn(record: unknown): Record<string, unknown> {
+	if (!isRecord(record)) return {};
+	const carried = record["props"];
+	return isRecord(carried) ? carried : record;
 }
 
 function heldBySeen(seen: Seen): FieldType {
@@ -71,32 +99,4 @@ function note(seen: Seen, held: unknown) {
 	if (isRecord(held) && !(held instanceof Date)) return;
 	seen.countsAs.add(countAs(held));
 	if (seen.values.size < VALUES_KEPT) seen.values.add(String(held));
-}
-
-// TRADE-OFF: read off the records rather than declared, because frontmatter carries no schema to read
-export function fieldsOf(records: readonly unknown[]): FieldReport[] {
-	const held = new Map<string, Seen>();
-	for (const record of records) {
-		for (const [prop, value] of Object.entries(fieldsIn(record))) {
-			const seen = held.get(prop) ?? {
-				prop,
-				values: new Set<string>(),
-				holdsList: false,
-				countsAs: new Set<FieldType>(),
-			};
-			note(seen, value);
-			held.set(prop, seen);
-		}
-	}
-	return [...held.values()]
-		.filter((seen) => seen.countsAs.size > 0 || seen.holdsList)
-		.map((seen) => ({
-			prop: seen.prop,
-			type: typeOfSeen(seen),
-			elementType: heldBySeen(seen),
-			typesSeen: [...seen.countsAs].sort(),
-			many: seen.holdsList,
-			values: [...seen.values].sort(),
-		}))
-		.sort((left, right) => left.prop.localeCompare(right.prop));
 }

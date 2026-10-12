@@ -5,7 +5,8 @@ import type { canvasOverlayInject } from "../../widgets/canvas-overlay.widget.js
 import { Placed } from "./placed.js";
 
 export function CanvasOverlay(props: InjectProps<typeof canvasOverlayInject>): ReactElement | null {
-	const { getViewport: viewport, field: Field } = props;
+	const { viewportQuery, field: Field } = props;
+	const viewport = viewportQuery.data;
 	if (!viewport) return null;
 	return (
 		<div

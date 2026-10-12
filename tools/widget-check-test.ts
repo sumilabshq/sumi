@@ -438,10 +438,31 @@ check(
 	[],
 );
 
+check(
+	"an inject written inline in the builder is a finding naming the constant to declare",
+	checkWidget({
+		...clean,
+		source: `${clean.source}\nexport const TaskList = widget().inject({ tasksQuery }).render(View);`,
+	})
+		.filter((one) => one.rule === "inline-inject")
+		.map((one) => one.message.includes("const taskListInject = inject({…})")),
+	[true],
+);
+check(
+	"an inject declared once as its own constant is not",
+	rulesIn(
+		checkWidget({
+			...clean,
+			source: `${clean.source}\nconst TaskList = widget().inject(taskListInject).render(View);`,
+		}),
+	),
+	[],
+);
+
 const allBroken = {
 	id: "@x/bad",
 	source:
-		'import { flatRows } from "widgetarium";\nconst l = useData(rows.list);\nl.data.map((r) => r);\nconst c = \'#abc\';\nreturn <h1 className="text-muted">Title<button>Go</button></h1>;',
+		'import { flatRows } from "widgetarium";\nconst l = useData(rows.list);\nl.data.map((r) => r);\nconst c = \'#abc\';\nwidget().inject({ x });\nreturn <h1 className="text-muted">Title<button>Go</button></h1>;',
 	styles: '@import "tailwindcss/base";\n@import "tailwindcss";\n.bad { font-family: Inter; }',
 	card: {},
 	surface,

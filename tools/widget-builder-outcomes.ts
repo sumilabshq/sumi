@@ -17,7 +17,7 @@ type Check = (what: string, got: unknown, wanted: unknown) => void;
 
 const SaveSchema = z.object({ title: z.string().min(1) });
 
-const savePorts = inject({ getTitle: IQuery.output(z.string()), save: ICommand.input(SaveSchema) });
+const savePorts = inject({ titleQuery: IQuery.output(z.string()), saveCommand: ICommand.input(SaveSchema) });
 
 type SaveProps = InjectProps<typeof savePorts>;
 
@@ -33,16 +33,16 @@ export async function checkOutcomes(check: Check, settle: () => Promise<void>): 
 	const said = captureConsole();
 
 	// @ts-expect-error a builder widget drawn without one of its handlers does not compile
-	render(h(Save, { getTitle: "Draft" }), host);
+	render(h(Save, { titleQuery: "Draft" }), host);
 	await settle();
-	check("a forgotten command answers not given", await last().save({ title: "x" }), {
+	check("a forgotten command answers not given", await last().saveCommand.run({ title: "x" }), {
 		ok: false,
-		reason: "save is not given",
+		reason: "saveCommand is not given",
 		ran: false,
 	});
 	check(
 		"and says so as an error",
-		said.errors.some((line) => line.includes("save is not given")),
+		said.errors.some((line) => line.includes("saveCommand is not given")),
 		true,
 	);
 
@@ -52,28 +52,28 @@ export async function checkOutcomes(check: Check, settle: () => Promise<void>): 
 		h(
 			OnRefused,
 			{ value: (refusal: CommandRefusal) => heard.push(refusal) },
-			h(Save, { getTitle: "Draft", save: new RefusingSave() }),
+			h(Save, { titleQuery: "Draft", saveCommand: new RefusingSave() }),
 		),
 		host,
 	);
 	await settle();
-	await last().save({ title: "x" });
+	await last().saveCommand.run({ title: "x" });
 	await settle();
 	check(
 		"a refusal reaches the app's handler once, with name, reason and ran",
 		heard.map(({ name, ran }) => [name, ran]),
-		[["save", false]],
+		[["saveCommand", false]],
 	);
-	check("the view may read the last refusal on the command", last().save.refused, heard[0]?.reason);
+	check("the view may read the last refusal on the command", last().saveCommand.refusal, heard[0]?.reason);
 	check("and the app's handler stands in for the toast", toast.getToasts().length, toastsBefore);
 
-	render(h(Save, { getTitle: "Draft", save: new RefusingSave() }), host);
+	render(h(Save, { titleQuery: "Draft", saveCommand: new RefusingSave() }), host);
 	await settle();
-	await last().save({ title: "x" });
+	await last().saveCommand.run({ title: "x" });
 	check("with no handler set a refusal is toasted", toast.getToasts().length, toastsBefore + 1);
 	check(
 		"each of the three refusals is logged once, where commands answer",
-		said.warnings.filter((line) => line.includes("save refused")).length,
+		said.warnings.filter((line) => line.includes("saveCommand refused")).length,
 		3,
 	);
 
@@ -81,8 +81,8 @@ export async function checkOutcomes(check: Check, settle: () => Promise<void>): 
 		h(
 			"div",
 			null,
-			h(Throwing, { getTitle: "Broken", save: () => undefined }),
-			h(Save, { getTitle: "Sibling", save: () => undefined }),
+			h(Throwing, { titleQuery: "Broken", saveCommand: () => undefined }),
+			h(Save, { titleQuery: "Sibling", saveCommand: () => undefined }),
 		),
 		host,
 	);
@@ -106,7 +106,7 @@ export async function checkOutcomes(check: Check, settle: () => Promise<void>): 
 }
 
 function checkKeys(check: Check): void {
-	const declaration = present(declarationIn(savePorts.getTitle), "the title declaration");
+	const declaration = present(declarationIn(savePorts.titleQuery), "the title declaration");
 	const answer = (): string => "same";
 	check(
 		"one function is wrapped once, so its gateway keeps its id",
@@ -142,7 +142,7 @@ function captureConsole() {
 
 function SaveView(props: SaveProps): ReactElement {
 	drawn.push(props);
-	return h("p", { className: "saved" }, props.getTitle);
+	return h("p", { className: "saved" }, props.titleQuery.data);
 }
 
 function ThrowingView(_props: SaveProps): ReactElement {

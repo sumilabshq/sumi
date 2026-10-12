@@ -10,13 +10,14 @@ const LOOKING_AT_PAGE = "Agent is looking at {where}";
 const GO_THERE = "Go to the page the agent is looking at";
 
 export function AgentLookChip({
-	getAgentLook: look,
-	showPage,
+	agentLookQuery: { data: look },
+	showPageCommand,
 }: InjectProps<typeof agentLookInject>): ReactElement | null {
 	const anchor = useRef<HTMLSpanElement | null>(null);
 	if (!look) return null;
 	if (!look.page) return <DesignLookChip />;
 	const { page } = look;
+	const show = showPageCommand.with({ page });
 	const where = look.frame ? `${page} · ${look.frame}` : page;
 	return (
 		<span ref={anchor} className="cv:inline-flex cv:items-center cv:gap-2">
@@ -24,7 +25,8 @@ export function AgentLookChip({
 				size="s"
 				variant="ghost"
 				title={GO_THERE}
-				onClick={() => fadedTurn(anchor.current, () => void showPage({ page }))}
+				disabled={!show.can}
+				onClick={() => fadedTurn(anchor.current, () => void show.run())}
 			>
 				<Icon name="sparkles" size={14} />
 				{LOOKING_AT_PAGE.replace("{where}", where)}

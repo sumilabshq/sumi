@@ -3,7 +3,7 @@ import { FramePicturesSchema } from "../schemas/frame-picture.schema.js";
 import { PicturesProgress } from "../ui/pictures-progress/pictures-progress.js";
 
 export const picturesProgressInject = inject({
-	getFramePictures: IQuery.output(FramePicturesSchema.default({ shown: {}, waiting: 0 })),
+	framePicturesQuery: IQuery.output(FramePicturesSchema.default({ shown: {}, waiting: 0 })),
 });
 
 export const PicturesProgressWidget = widget().inject(picturesProgressInject).render(PicturesProgress);

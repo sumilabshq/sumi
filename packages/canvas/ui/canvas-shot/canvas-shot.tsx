@@ -14,8 +14,8 @@ import { BoardShot } from "./board-shot.js";
 type RegionShot = Exclude<Shot, { readonly kind: "board" }>;
 
 export function CanvasShot({
-	getShot: shot,
-	getDrawing: drawing,
+	shotQuery: { data: shot },
+	drawingQuery: { data: drawing },
 }: InjectProps<typeof canvasShotInject>): ReactElement | null {
 	if (!shot || !drawing) return null;
 	if (shot.kind === "board")

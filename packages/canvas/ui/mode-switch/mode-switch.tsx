@@ -11,7 +11,7 @@ const MODES: readonly { readonly value: CanvasMode; readonly icon: string; reado
 	{ value: "hand", icon: "hand", said: "Hand: drag to move around the canvas" },
 ];
 
-export function ModeSwitch({ getMode, setMode }: InjectProps<typeof modeSwitchInject>): ReactElement {
+export function ModeSwitch({ modeQuery, setModeCommand }: InjectProps<typeof modeSwitchInject>): ReactElement {
 	return (
 		<>
 			<Segmented<CanvasMode>
@@ -23,8 +23,8 @@ export function ModeSwitch({ getMode, setMode }: InjectProps<typeof modeSwitchIn
 						</Tip>
 					),
 				}))}
-				value={getMode}
-				onValueChange={(mode) => void setMode({ mode })}
+				value={modeQuery.data}
+				onValueChange={(mode) => void setModeCommand.run({ mode })}
 				size="s"
 				className="cv:rounded-full cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
 			/>

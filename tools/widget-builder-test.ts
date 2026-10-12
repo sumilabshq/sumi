@@ -28,6 +28,7 @@ const { checkWidget } = await import("../packages/core/src/widget-check.ts");
 const { offsetOfCursor, pageAt } = await import("../packages/core/src/gateway/page.ts");
 const fixture = await import("./widget-builder-fixture.ts");
 const { checkOutcomes } = await import("./widget-builder-outcomes.ts");
+const { checkHandles } = await import("./widget-builder-handles.ts");
 const { ports, seen, askedIds } = fixture;
 
 let failed = 0;
@@ -48,14 +49,19 @@ const host = byId(document, "host");
 
 const Board = widget()
 	.inject(ports)
-	.states({ Empty: { getTitle: "Nothing yet", getTasks: [] } })
+	.states({ Empty: { titleQuery: "Nothing yet", tasksQuery: [] } })
 	.pending(fixture.PendingView)
 	.failed(fixture.FailedView)
 	.render(fixture.BoardView);
 
-const titlePorts = inject({ getTitle: ports.getTitle });
+const titlePorts = inject({ titleQuery: ports.titleQuery });
 // @ts-expect-error a plain object is not an inject: it is declared once with inject()
-widget().inject({ getTitle: ports.getTitle });
+widget().inject({ titleQuery: ports.titleQuery });
+// @ts-expect-error an IQuery key ends in Query
+inject({ getTitle: ports.titleQuery });
+// @ts-expect-error an ICommand key ends in Command
+inject({ rename: ports.renameCommand });
+inject({ extras: ports.extras });
 // @ts-expect-error a view typing a prop differently from the inject is refused
 widget().inject(titlePorts).render(fixture.NumberTitleView);
 // @ts-expect-error a view missing a prop the inject gives is refused
@@ -65,11 +71,11 @@ widget().inject(titlePorts).render(fixture.ExtraPropView);
 
 render(
 	h(Board, {
-		getTitle: new fixture.TitleQuery(),
-		getTasks: new fixture.TasksQuery(),
-		getTask: new fixture.TaskQuery(),
-		getFiltered: new fixture.FilteredQuery(),
-		rename: new fixture.RenameCommand(),
+		titleQuery: new fixture.TitleQuery(),
+		tasksQuery: new fixture.TasksQuery(),
+		taskQuery: new fixture.TaskQuery(),
+		filteredQuery: new fixture.FilteredQuery(),
+		renameCommand: new fixture.RenameCommand(),
 	}),
 	host,
 );
@@ -82,39 +88,39 @@ check(
 
 fixture.settleTitle("Today");
 await settle();
-check("once read, the view gets the value itself", last().getTitle, "Today");
+check("once read, the view gets the value as data", last().titleQuery.data, "Today");
 check(
 	"a paged query arrives as items, total and hasMore",
-	[last().getTasks.items.length, last().getTasks.total, last().getTasks.hasMore],
+	[last().tasksQuery.data.items.length, last().tasksQuery.total, last().tasksQuery.hasMore],
 	[100, 150, true],
 );
-last().getTasks.more();
+last().tasksQuery.more();
 await settle();
-check("more appends the next page", [last().getTasks.items.length, last().getTasks.hasMore], [150, false]);
+check("more appends the next page", [last().tasksQuery.data.items.length, last().tasksQuery.hasMore], [150, false]);
 
-check("a query whose input has no start is not read until asked", [last().getTask.data, askedIds], [null, []]);
-last().getTask.ask({ id: "t2" });
+check("a query whose input has no start is not read until asked", [last().taskQuery.data, askedIds], [null, []]);
+last().taskQuery.ask({ id: "t2" });
 await settle();
-check("ask reads with the input the view gave", last().getTask.data?.title, "Task 2");
-last().getTask.ask({ id: "t3" });
+check("ask reads with the input the view gave", last().taskQuery.data?.title, "Task 2");
+last().taskQuery.ask({ id: "t3" });
 await settle();
-check("asking again re-reads", [last().getTask.data?.title, askedIds], ["Task 3", ["t2", "t3"]]);
+check("asking again re-reads", [last().taskQuery.data?.title, askedIds], ["Task 3", ["t2", "t3"]]);
 
-check("a paged query with a filter starts read", last().getFiltered.data.length, 100);
-last().getFiltered.ask({ done: true });
+check("a paged query with a filter starts read", last().filteredQuery.data.items.length, 100);
+last().filteredQuery.ask({ done: true });
 await settle();
 check(
 	"and asking narrows it",
-	[last().getFiltered.data.every((task) => task.done), last().getFiltered.total],
+	[last().filteredQuery.data.items.every((task) => task.done), last().filteredQuery.total],
 	[true, 75],
 );
 
-const renamed = await last().rename({ id: "t1", title: "Renamed" });
+const renamed = await last().renameCommand.run({ id: "t1", title: "Renamed" });
 check("a command's answer reaches the view", renamed, {
 	ok: true,
 	output: { id: "t1", title: "Renamed", done: false },
 });
-const refused = await last().rename({ id: "t1", title: "" });
+const refused = await last().renameCommand.run({ id: "t1", title: "" });
 check("a refused command answers ok false", refused.ok, false);
 await settle();
 check("a slot arrives as drawn children", [Array.isArray(last().extras), last().extras.length], [true, 0]);
@@ -124,14 +130,14 @@ const plain = byId(document, "plain");
 const renamedPlainly: unknown[] = [];
 render(
 	h(Board, {
-		getTitle: "Plain",
-		getTasks: ({ cursor, limit }) => {
+		titleQuery: "Plain",
+		tasksQuery: ({ cursor, limit }) => {
 			const offset = offsetOfCursor(cursor);
 			return pageAt(fixture.TASKS.slice(offset, offset + limit), offset, fixture.TASKS.length);
 		},
-		getTask: ({ id }) => fixture.TASKS.find((task) => task.id === id) ?? null,
-		getFiltered: new fixture.FilteredQuery(),
-		rename: (input) => {
+		taskQuery: ({ id }) => fixture.TASKS.find((task) => task.id === id) ?? null,
+		filteredQuery: new fixture.FilteredQuery(),
+		renameCommand: (input) => {
 			renamedPlainly.push(input);
 			return { ...input, done: true };
 		},
@@ -140,20 +146,20 @@ render(
 	plain,
 );
 await settle();
-check("a plain value stands for a value query", last().getTitle, "Plain");
+check("a plain value stands for a value query", last().titleQuery.data, "Plain");
 check(
 	"a plain function answers a paged query, a page at a time",
-	[last().getTasks.items.length, last().getTasks.total, last().getTasks.hasMore],
+	[last().tasksQuery.data.items.length, last().tasksQuery.total, last().tasksQuery.hasMore],
 	[100, 150, true],
 );
-last().getTask.ask({ id: "t7" });
+last().taskQuery.ask({ id: "t7" });
 await settle();
-check("a plain function answers an asked query with the input asked", last().getTask.data?.title, "Task 7");
-check("a plain function runs as a command", await last().rename({ id: "t2", title: "Plainly" }), {
+check("a plain function answers an asked query with the input asked", last().taskQuery.data?.title, "Task 7");
+check("a plain function runs as a command", await last().renameCommand.run({ id: "t2", title: "Plainly" }), {
 	ok: true,
 	output: { id: "t2", title: "Plainly", done: true },
 });
-const refusedPlainly = await last().rename({ id: "t2", title: "" });
+const refusedPlainly = await last().renameCommand.run({ id: "t2", title: "" });
 check(
 	"and its input is checked at the crossing before it runs",
 	[refusedPlainly.ok, refusedPlainly.ok ? null : refusedPlainly.ran, renamedPlainly.length],
@@ -169,32 +175,34 @@ check("and draws that element", extraNode.querySelector("#extra-note")?.textCont
 const broken = byId(document, "broken");
 render(
 	h(Board, {
-		getTitle: new fixture.BrokenTitleQuery(),
-		getTasks: new fixture.TasksQuery(),
-		getTask: new fixture.TaskQuery(),
-		getFiltered: new fixture.FilteredQuery(),
-		rename: new fixture.RenameCommand(),
+		titleQuery: new fixture.BrokenTitleQuery(),
+		tasksQuery: new fixture.TasksQuery(),
+		taskQuery: new fixture.TaskQuery(),
+		filteredQuery: new fixture.FilteredQuery(),
+		renameCommand: new fixture.RenameCommand(),
 	}),
 	broken,
 );
 await settle();
 check(
 	"a failed read draws the failed view, naming the port",
-	broken.querySelector("#failed")?.textContent?.startsWith("getTitle: "),
+	broken.querySelector("#failed")?.textContent?.startsWith("titleQuery: "),
 	true,
 );
 const Plain = widget().inject(titlePorts).render(fixture.TitleView);
-render(h(Plain, { getTitle: new fixture.BrokenTitleQuery() }), broken);
+render(h(Plain, { titleQuery: new fixture.BrokenTitleQuery() }), broken);
 await settle();
 check("without .failed() the engine's notice is drawn", broken.querySelector(".wg-error") !== null, true);
-render(h(Plain, { getTitle: new fixture.SlowTitleQuery() }), broken);
+render(h(Plain, { titleQuery: new fixture.SlowTitleQuery() }), broken);
 await settle();
 check("without .pending() nothing is drawn while reading", broken.innerHTML, "");
-render(h(Plain, { getTitle: () => "From a function" }), broken);
+render(h(Plain, { titleQuery: () => "From a function" }), broken);
 await settle();
 check("a plain function answers a value query", broken.textContent, "From a function");
 
-check("states ride on the widget", statesIn({ default: Board }), { Empty: { getTitle: "Nothing yet", getTasks: [] } });
+check("states ride on the widget", statesIn({ default: Board }), {
+	Empty: { titleQuery: "Nothing yet", tasksQuery: [] },
+});
 const refusalOf = (declare: () => unknown): string => {
 	try {
 		declare();
@@ -203,7 +211,7 @@ const refusalOf = (declare: () => unknown): string => {
 		return refusal instanceof Error ? refusal.message : String(refusal);
 	}
 };
-const ODD_STATES = { Odd: { getTitle: "x", nothing: 1 } };
+const ODD_STATES = { Odd: { titleQuery: "x", nothing: 1 } };
 check(
 	"a state naming a port the widget lacks is refused",
 	refusalOf(() => widget().inject(ports).states(ODD_STATES)),
@@ -224,6 +232,7 @@ check(
 );
 
 await checkOutcomes(check, settle);
+await checkHandles(check, settle);
 
 render(null, host);
 render(null, broken);

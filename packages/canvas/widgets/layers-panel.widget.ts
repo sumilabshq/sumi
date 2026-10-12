@@ -9,14 +9,14 @@ import { SelectAskSchema, SelectionSchema } from "../schemas/selection.schema.js
 import { LayersPanelView } from "../ui/layers-panel/layers-panel-view.js";
 
 export const layersPanelInject = inject({
-	getDesign: IQuery.output(ReadDesignSchema.nullable().default(null)),
-	getDrawing: IQuery.output(DrawingKitSchema.nullable().default(null)),
-	getPages: IQuery.output(CanvasPagesSchema.nullable().default(null)),
-	getIsLayersOpen: IQuery.output(z.boolean().default(false)),
-	getMode: IQuery.output(CanvasModeSchema.default("hand")),
-	getSelection: IQuery.output(SelectionSchema.nullable().default(null)),
-	select: ICommand.input(SelectAskSchema),
-	moveLayer: ICommand.input(LayerDropSchema),
+	designQuery: IQuery.output(ReadDesignSchema.nullable().default(null)),
+	drawingQuery: IQuery.output(DrawingKitSchema.nullable().default(null)),
+	pagesQuery: IQuery.output(CanvasPagesSchema.nullable().default(null)),
+	isLayersOpenQuery: IQuery.output(z.boolean().default(false)),
+	modeQuery: IQuery.output(CanvasModeSchema.default("hand")),
+	selectionQuery: IQuery.output(SelectionSchema.nullable().default(null)),
+	selectCommand: ICommand.input(SelectAskSchema),
+	moveLayerCommand: ICommand.input(LayerDropSchema),
 });
 
 export const LayersPanelWidget = widget().inject(layersPanelInject).render(LayersPanelView);

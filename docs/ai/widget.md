@@ -195,6 +195,9 @@ values. The widget is the layer between the view and the data, and draws nothing
 declared once, as its own constant; the view takes its props from it with `InjectProps<typeof …>`, so
 changing the inject changes the view's types:
 
+An inject key names its kind: an `IQuery` key ends in `Query`, an `ICommand` key in `Command`, and
+the types refuse any other name.
+
 ```tsx
 import { ICommand, IQuery, PageInputSchema, PageOf, inject, widget } from "widgetarium";
 import type { InjectProps } from "widgetarium";
@@ -203,44 +206,57 @@ import { z } from "zod";
 const TaskSchema = z.object({ id: z.string(), title: z.string() });
 
 const taskListInject = inject({
-	getHeading: IQuery.output(z.string().default("To do")),
-	getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
-	archive: ICommand.input(z.object({ id: z.string() })),
+	headingQuery: IQuery.output(z.string().default("To do")),
+	tasksQuery: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
+	archiveCommand: ICommand.input(z.object({ id: z.string() })),
 });
 
-function TaskListView({ getHeading, getTasks, archive }: InjectProps<typeof taskListInject>) {
+function TaskListView({ headingQuery, tasksQuery, archiveCommand }: InjectProps<typeof taskListInject>) {
 	return (
 		<section>
-			<h3>{getHeading}</h3>
-			{getTasks.items.map((task) => (
-				<button key={task.id} onClick={() => void archive({ id: task.id })}>
-					{task.title}
-				</button>
-			))}
-			{getTasks.hasMore ? <button onClick={getTasks.more}>More</button> : null}
+			<h3>{headingQuery.data}</h3>
+			{tasksQuery.data.items.map((task) => {
+				const archive = archiveCommand.with({ id: task.id });
+				return (
+					<button key={task.id} disabled={!archive.can || archive.isRunning} onClick={() => void archive.run()}>
+						{archive.refusal ?? task.title}
+					</button>
+				);
+			})}
+			{tasksQuery.hasMore ? <button onClick={() => tasksQuery.more()}>More</button> : null}
 		</section>
 	);
 }
 
 const TaskList = widget()
 	.inject(taskListInject)
-	.states({ Full: { getTasks: [{ id: "1", title: "Water the plants" }] }, Empty: { getTasks: [] } })
+	.states({ Full: { tasksQuery: [{ id: "1", title: "Water the plants" }] }, Empty: { tasksQuery: [] } })
 	.render(TaskListView);
 
 export default TaskList;
 ```
 
-| The widget injects                          | The view gets                                                            |
-| ------------------------------------------- | ------------------------------------------------------------------------ |
-| `IQuery.output(S)`                          | the value                                                                |
-| a paged query taking only `PageInputSchema` | `{ items, total, hasMore, more }`                                        |
-| a query with an input                       | `{ data, ask(input) }`, plus `total`, `hasMore`, `more` over a page      |
-| a command                                   | `(input) => Promise<{ ok: true, output } \| { ok: false, reason, ran }>` |
-| `ISlot`, `ISlot.array()`                    | the drawn children                                                       |
-| `IHost`, `INavigator`, `IHere`, …           | what the host hands over                                                 |
+| The widget injects                | The view gets a handle                                                                         |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `IQuery.output(S)`                | `{ data, isLoading, failure }`                                                                 |
+| a query with an input             | the same plus `ask(input)`; over a page `data` is `{ items }`, plus `total`, `hasMore`, `more` |
+| a command                         | `{ run(input), isRunning, refusal, can, cannotBecause, with(input) }`                          |
+| `command.with(input)`             | the same, bound to that input: `run()`, and `isRunning`, `refusal`, `can` of that input only   |
+| `ISlot`, `ISlot.array()`          | the drawn children                                                                             |
+| `IHost`, `INavigator`, `IHere`, … | what the host hands over                                                                       |
+
+- **One rule for a list:** an action on one row is `command.with(input)`, an action on everything is
+  `command`. Never a hook per row, never a `useCallback` around a command: `run` keeps its identity.
+- `run` answers `{ ok: true, output }` or `{ ok: false, reason, ran }`. Every refusal goes to the app's
+  one handler and the log; `refusal` is the inline copy, drawn only where a message fits.
+- Outside a widget, plain React calls `useQuery(query)` and `useCommand(command)` with a handler and
+  gets the same handles.
+- **Start one with `node {tool} new widget <name>`:** it writes the widget file and its view, typed
+  from one inject.
 
 - **`ask(input)` re-reads.** The widget keeps the input; a query whose input needs a field is not read
   until the view asks, and `data` is `null` until then. Ask from an effect, never while drawing.
+  `isLoading` is a re-read: the first read is waited for before the view draws.
 - **The view never draws a missing value.** Until every port is read the widget draws `.pending(View)`,
   or nothing; a failed read draws `.failed(View)`, which gets `{ failures }`, or the engine's notice.
 - **`.render(View)` refuses a view whose props are not exactly `InjectProps` of the inject**: a prop

@@ -4,9 +4,9 @@ import { PageAskSchema } from "../schemas/canvas-view.schema.js";
 import { PageTabs } from "../ui/page-tabs/page-tabs.js";
 
 export const pageTabsInject = inject({
-	getPages: IQuery.output(CanvasPagesSchema.nullable().default(null)),
-	showPage: ICommand.input(PageAskSchema),
-	returnToView: ICommand,
+	pagesQuery: IQuery.output(CanvasPagesSchema.nullable().default(null)),
+	showPageCommand: ICommand.input(PageAskSchema),
+	returnToViewCommand: ICommand,
 });
 
 export const PageTabsWidget = widget().inject(pageTabsInject).render(PageTabs);

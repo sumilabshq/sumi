@@ -1,22 +1,24 @@
 import type { ComponentType, ReactNode } from "react";
 import type { DeclaredProps, DrawnProps, GivenProps } from "./gateway/declared";
-import type { askedInput, askedOutput, passedAs, queryRowHeld } from "./gateway/declared-types";
+import type {
+	askedInput,
+	askedOutput,
+	commandInput,
+	commandOutput,
+	passedAs,
+	queryRowHeld,
+	valueHeld,
+} from "./gateway/declared-types";
 import type { RowWithRef } from "./gateway/manifest";
 import type { PAGE_ITEM } from "./gateway/page";
-
-export interface PagedView<Item> {
-	readonly items: readonly Item[];
-	readonly total: number | null;
-	readonly hasMore: boolean;
-	readonly more: () => void;
-}
-
-export interface AskedView<In, Data> {
-	readonly data: Data;
-	readonly ask: (input: In) => void;
-}
-
-export type AskedPagedView<In, Item> = AskedView<Omit<In, "cursor">, readonly Item[]> & Omit<PagedView<Item>, "items">;
+import type { QueryValueContract } from "./gateway/queries";
+import type {
+	AskedPagedQueryHandle,
+	AskedQueryHandle,
+	CommandHandle,
+	PagedQueryHandle,
+	QueryHandle,
+} from "./handle-types.js";
 
 export interface FailedViewProps {
 	readonly failures: readonly string[];
@@ -24,19 +26,57 @@ export interface FailedViewProps {
 
 type PageItemOf<Out> = Out extends { readonly [PAGE_ITEM]: infer Item } ? Item : never;
 
-type IsPageWindow<In> = [Exclude<keyof In, "cursor" | "limit">] extends [never] ? true : false;
+type AskedHandleOf<In, Out> = [PageItemOf<Out>] extends [never]
+	? AskedQueryHandle<In, Out | null>
+	: AskedPagedQueryHandle<Omit<In, "cursor">, RowWithRef<PageItemOf<Out>>>;
 
-type AskedViewOf<In, Out> = [PageItemOf<Out>] extends [never]
-	? AskedView<In, Out | null>
-	: IsPageWindow<In> extends true
-		? PagedView<RowWithRef<PageItemOf<Out>>>
-		: AskedPagedView<In, RowWithRef<PageItemOf<Out>>>;
+type IsCommand<C> = typeof commandInput extends keyof C ? true : false;
 
-type ViewPropOf<C, Drawn> = C extends { readonly [askedInput]?: infer In; readonly [askedOutput]?: infer Out }
-	? AskedViewOf<In, Out>
-	: C extends { readonly [queryRowHeld]?: infer Held }
-		? PagedView<RowWithRef<Held>>
-		: Drawn;
+type IsValueQuery<C> = typeof valueHeld extends keyof C
+	? C extends abstract new () => QueryValueContract<unknown>
+		? true
+		: false
+	: false;
+
+type IsQuery<C> = typeof askedOutput extends keyof C
+	? true
+	: typeof queryRowHeld extends keyof C
+		? true
+		: IsValueQuery<C>;
+
+type ViewPropOf<C, Drawn> =
+	IsCommand<C> extends true
+		? C extends { readonly [commandInput]?: infer In; readonly [commandOutput]?: infer Out }
+			? CommandHandle<In, Out>
+			: never
+		: typeof askedOutput extends keyof C
+			? C extends { readonly [askedInput]?: infer In; readonly [askedOutput]?: infer Out }
+				? AskedHandleOf<In, Out>
+				: never
+			: C extends { readonly [queryRowHeld]?: infer Held }
+				? typeof queryRowHeld extends keyof C
+					? PagedQueryHandle<RowWithRef<Held>>
+					: never
+				: IsValueQuery<C> extends true
+					? QueryHandle<Drawn>
+					: Drawn;
+
+interface KeyRefused<Said extends string> {
+	readonly "this inject key is refused": Said;
+}
+
+type EntryNamed<K, C> =
+	IsQuery<C> extends true
+		? K extends `${string}Query`
+			? C
+			: KeyRefused<"an IQuery key ends in Query">
+		: IsCommand<C> extends true
+			? K extends `${string}Command`
+				? C
+				: KeyRefused<"an ICommand key ends in Command">
+			: C;
+
+export type KindsNamed<P> = { readonly [K in keyof P]: EntryNamed<K, P[K]> };
 
 declare const INJECTED: unique symbol;
 

@@ -20,7 +20,7 @@ export interface CanvasSelection {
 
 export interface Picking {
 	readonly picked: Selection | null;
-	readonly onPick: (selection: Selection | null) => void;
+	readonly select: (ask: { readonly selection: Selection | null }) => unknown;
 }
 
 interface ScreenUnder {
@@ -33,7 +33,7 @@ const CHROME = "[data-canvas-chrome]";
 export function useCanvasSelection(
 	layerRef: RefObject<HTMLDivElement | null>,
 	pan: PanZoom,
-	{ picked, onPick }: Picking,
+	{ picked, select }: Picking,
 ): CanvasSelection {
 	const [hovered, setHovered] = useState<Spot | null>(null);
 	const pickAt = (event: MouseEvent, depth: PickDepth): Selection | null => {
@@ -65,11 +65,11 @@ export function useCanvasSelection(
 			onMouseLeave: () => setHovered(null),
 			onClick: (event) => {
 				if (event.target instanceof Element && event.target.closest(CHROME)) return;
-				onPick(pickAt(event, depthOf(event, "level")));
+				void select({ selection: pickAt(event, depthOf(event, "level")) });
 				setHovered(null);
 			},
 			onDoubleClick: (event) => {
-				onPick(pickAt(event, depthOf(event, "deeper")));
+				void select({ selection: pickAt(event, depthOf(event, "deeper")) });
 				setHovered(null);
 			},
 		},

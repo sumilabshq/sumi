@@ -296,70 +296,67 @@ A page may come back shorter than `limit`; `next` alone says whether more exist.
 
 ### A list widget reading that query
 
-The widget declares the port it needs, with the same input and output the handler serves, and draws
-states. It never filters, maps fields or picks a row.
+The widget declares its inject once; the view takes its props from it. A query arrives as a handle
+(`data`, `ask`, `more`, `hasMore`), a command as one (`run`, `can`, `isRunning`, `refusal`), and an
+action on one row is `command.with(input)`. The widget never filters, maps fields or picks a row.
 
-```tsx file=src/widgets/tasks/task-list/widget.tsx
-import {
-	IQuery,
-	PageInputSchema,
-	PageOf,
-	createWidget,
-	defineLayout,
-	defineMetadata,
-	defineStates,
-	useData,
-} from "widgetarium";
-import { TaskFilterSchema, TaskSchema, TaskStatusSchema } from "../../../shared/schemas/task";
+```ts file=src/widgets/task-list.widget.ts
+import { ICommand, IQuery, PageInputSchema, PageOf, inject, widget } from "widgetarium";
+import { TaskFilterSchema, TaskSchema } from "../shared/schemas/task";
+import { TaskListView } from "../ui/task-list/task-list";
 
-const TaskList = createWidget({
-	inject: {
-		getTasks: IQuery.input(PageInputSchema.extend(TaskFilterSchema.shape)).output(PageOf(TaskSchema)),
-		getStatus: IQuery.output(TaskStatusSchema.default("todo")),
-	},
-	draw: ({ getTasks, getStatus: status }) => {
-		const { data, isLoading, failure, hasMore, more } = useData(getTasks, { status, limit: 20 });
-		if (failure) return <p className="text-sm text-muted-foreground">The tasks could not be read: {failure}</p>;
-		if (!isLoading && data.length === 0) return <p className="text-sm text-muted-foreground">Nothing in this status</p>;
-		return (
-			<ul className="divide-y divide-line">
-				{data.map((task) => (
-					<li key={task.id} className="flex items-center justify-between py-items">
-						{task.title}
-						<span className="rounded-pill bg-fill px-2 text-xs text-muted-foreground">{task.status}</span>
-					</li>
-				))}
-				{hasMore ? (
-					<button
-						type="button"
-						disabled={isLoading}
-						onClick={() => more()}
-						className="py-items text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
-					>
-						Show more
-					</button>
-				) : null}
-			</ul>
-		);
-	},
+export const taskListInject = inject({
+	tasksQuery: IQuery.input(PageInputSchema.extend(TaskFilterSchema.shape)).output(PageOf(TaskSchema)),
+	completeTaskCommand: ICommand.input(TaskSchema.pick({ id: true })),
 });
 
-export const metadata = defineMetadata(TaskList, {
-	title: "Task list",
-	description: "Which tasks are in this status.",
-	keywords: ["tasks", "todo", "status"],
-});
-
-export const layout = defineLayout({ role: "collection", size: { preferredWidth: "full", preferredHeight: "auto" } });
-
-export const states = defineStates(TaskList, {
-	Full: {
-		getTasks: [{ id: "6f1c7c0e-4f7a-4c55-9a43-0b7a3e1f2d10", title: "Call the plumber", status: "todo", due: null }],
-	},
-	Empty: { getTasks: [] },
-});
+const TaskList = widget()
+	.inject(taskListInject)
+	.states({
+		Full: {
+			tasksQuery: [
+				{ id: "6f1c7c0e-4f7a-4c55-9a43-0b7a3e1f2d10", title: "Call the plumber", status: "todo", due: null },
+			],
+		},
+		Empty: { tasksQuery: [] },
+	})
+	.render(TaskListView);
 
 export default TaskList;
+```
+
+```tsx file=src/ui/task-list/task-list.tsx
+import type { InjectProps } from "widgetarium";
+import type { taskListInject } from "../../widgets/task-list.widget";
+
+export function TaskListView({ tasksQuery, completeTaskCommand }: InjectProps<typeof taskListInject>) {
+	if (tasksQuery.data.items.length === 0) return <p className="text-sm text-muted-foreground">Nothing to do</p>;
+	return (
+		<ul className="divide-y divide-line">
+			{tasksQuery.data.items.map((task) => {
+				const complete = completeTaskCommand.with({ id: task.id });
+				return (
+					<li key={task.id} className="flex items-center justify-between py-items">
+						{task.title}
+						<button
+							type="button"
+							disabled={!complete.can || complete.isRunning}
+							onClick={() => void complete.run()}
+							className="text-sm text-muted-foreground transition-colors duration-150 hover:text-foreground"
+						>
+							{complete.refusal ?? "Done"}
+						</button>
+					</li>
+				);
+			})}
+			{tasksQuery.hasMore ? (
+				<button type="button" onClick={() => tasksQuery.more()} className="py-items text-sm text-muted-foreground">
+					Show more
+				</button>
+			) : null}
+		</ul>
+	);
+}
 ```
 
 ### A form widget and the command it sends

@@ -5,7 +5,9 @@ import type { designSummaryInject } from "../../widgets/design-summary.widget.js
 
 const SCREENS_SAID = "{count} screens · {frames} frames · read only";
 
-export function DesignSummary({ getDesign: design }: InjectProps<typeof designSummaryInject>): ReactElement | null {
+export function DesignSummary({
+	designQuery: { data: design },
+}: InjectProps<typeof designSummaryInject>): ReactElement | null {
 	if (!design) return null;
 	const frames = design.screens.reduce((count, screen) => count + screen.states.length, 0);
 	const said = SCREENS_SAID.replace("{count}", String(design.screens.length)).replace("{frames}", String(frames));

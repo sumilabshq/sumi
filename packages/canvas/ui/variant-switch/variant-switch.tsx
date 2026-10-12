@@ -7,8 +7,8 @@ import type { variantSwitchInject } from "../../widgets/variant-switch.widget.js
 const PICKED = "Picked";
 
 export function VariantSwitch({
-	getPages: pages,
-	pickVariant,
+	pagesQuery: { data: pages },
+	pickVariantCommand,
 }: InjectProps<typeof variantSwitchInject>): ReactElement | null {
 	if (!pages || pages.variants.length < 2) return null;
 	const page = pages.shown;
@@ -18,7 +18,7 @@ export function VariantSwitch({
 				size="s"
 				items={pages.variants.map(({ screen, letter }) => ({ value: screen, label: letter ?? PICKED }))}
 				value={pages.shownScreen ?? ""}
-				onValueChange={(screen) => void pickVariant({ page, screen })}
+				onValueChange={(screen) => void pickVariantCommand.run({ page, screen })}
 				className="cv:rounded-full cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)]"
 			/>
 		</span>

@@ -11,14 +11,14 @@ const RENDERERS: readonly { readonly value: PageRenderer; readonly label: string
 ];
 
 export function RendererSwitch(props: InjectProps<typeof rendererSwitchInject>): ReactElement | null {
-	const { getDrawing: drawing, getRenderer, chooseRenderer } = props;
-	if (!drawing?.gpu) return null;
+	const { rendererQuery, chooseRendererCommand } = props;
+	if (!props.drawingQuery.data?.gpu) return null;
 	return (
 		<span className="cv:inline-flex cv:items-center cv:gap-2" data-canvas-renderer="">
 			<Segmented<PageRenderer>
 				items={RENDERERS}
-				value={getRenderer}
-				onValueChange={(renderer) => void chooseRenderer({ renderer })}
+				value={rendererQuery.data}
+				onValueChange={(renderer) => void chooseRendererCommand.run({ renderer })}
 				size="s"
 			/>
 		</span>

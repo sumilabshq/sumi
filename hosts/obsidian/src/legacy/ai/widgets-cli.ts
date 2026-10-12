@@ -8,7 +8,7 @@ import { filesIn, readJson } from "./vault-files.js";
 import { installWidget, type Installed } from "./install-command.js";
 import { BASE_NAMES, baseNamed, cardLayoutNamed, everyBase, type Told } from "./shape-command.js";
 import { specOfApp, stageOfApp } from "./spec-command.js";
-import { JOB_ENV, addJob, askJob, listJobs, refuseOwnedElsewhere, type JobAdd } from "./job-command.js";
+import { JOB_ENV, addJob, askJob, jobAddOf, listJobs, refuseOwnedElsewhere } from "./job-command.js";
 import { checkedWidget } from "./widget-checking.js";
 import { refuseStage, reportOfApp, isReportClean, type ReportPlace } from "./report-command.js";
 import { shotOf, shotSaid } from "./shot-command.js";
@@ -18,6 +18,7 @@ import { photosOfApp } from "./photos-command.js";
 import { runLookCommand } from "./look-command.js";
 import { rulesOfApp } from "./rules-command.js";
 import { screenOfApp } from "./screen-command.js";
+import { newWidgetAsked } from "./new-widget-command.js";
 import { surfaceNamesIn } from "./widget-surface.js";
 import { rankWidgets, refuseReading, type FindOptions } from "./find-command.js";
 import { saidWidgetCheck } from "@widgetarium/core/widget-check.js";
@@ -84,6 +85,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
 	job: { run: (argument, options) => runJob(argument, options) },
 	report: { run: (argument, options) => runReport(argument, options) },
 	shot: { run: (argument, options) => runShot(argument, options) },
+	new: { run: async (argument, options) => tell(asText(options), await newWidgetAsked(argument, options)) },
 };
 
 const MISSING_ARGUMENT: Readonly<Record<string, (argument: unknown) => number>> = {
@@ -372,18 +374,6 @@ function runJob(verb: string | undefined, asked: Options): Promise<number> | num
 	}
 	console.error(JOB_VERBS);
 	return 1;
-}
-
-function jobAddOf(asked: Options): JobAdd {
-	return {
-		title: asked["title"],
-		page: asked["page"],
-		phase: asked["phase"],
-		says: asked["says"],
-		after: asked["after"],
-		budget: asked["budget"],
-		id: asked["id"],
-	};
 }
 
 async function runStage(app: string | undefined, asked: Options): Promise<number> {

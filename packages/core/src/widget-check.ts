@@ -1,5 +1,6 @@
 import { SHADCN_TOKENS } from "@widgetarium/kit";
 import { TAILWIND_PALETTE_CLASS, draftBlockFindings, sheetFindings } from "./widget-check-tailwind.js";
+import { inlineInjectFindings } from "./widget-check-inject.js";
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 const FUNCTIONAL_COLOUR = /\b(?:rgba?|hsla?|oklch|lab|lch)\s*\(/g;
@@ -36,6 +37,7 @@ export const WIDGET_CHECK_RULES = [
 	"restyled",
 	"states",
 	"renamed",
+	"inline-inject",
 ] as const;
 
 const COLLECTION_TITLE = /<LayoutTitle\b|<LayoutHeader\b[^>]*\btitle=/;
@@ -121,6 +123,7 @@ function sourceFindings(source: string, card: CheckedCard | null, surface: reado
 		...restyledFindings(source),
 		...statesFindings(source),
 		...renamedFindings(source),
+		...inlineInjectFindings(source),
 	];
 }
 

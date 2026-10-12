@@ -4,9 +4,9 @@ import { FramePicturesSchema, PictureAsksSchema } from "../schemas/frame-picture
 import { FramePictures } from "../ui/frame-pictures/frame-pictures.js";
 
 export const framePicturesInject = inject({
-	getDrawing: IQuery.output(DrawingKitSchema.nullable().default(null)),
-	getFramePictures: IQuery.output(FramePicturesSchema.default({ shown: {}, waiting: 0 })),
-	askForPictures: ICommand.input(PictureAsksSchema),
+	drawingQuery: IQuery.output(DrawingKitSchema.nullable().default(null)),
+	framePicturesQuery: IQuery.output(FramePicturesSchema.default({ shown: {}, waiting: 0 })),
+	askForPicturesCommand: ICommand.input(PictureAsksSchema),
 	field: ISlot,
 });
 

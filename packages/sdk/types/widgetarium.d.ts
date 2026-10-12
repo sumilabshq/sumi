@@ -146,17 +146,28 @@ export type {
 export type { CreatedWidget, WidgetToCreate } from "../../core/src/widget-api";
 export { createWidget } from "../../core/src/widget-api";
 export { inject, widget } from "../../core/src/widget-builder";
+export { useCommand } from "../../core/src/use-command";
+export { useQuery } from "../../core/src/use-query";
+export type { CommandHandleOf } from "../../core/src/use-command";
+export type { QueryHandleOf } from "../../core/src/use-query";
+export type {
+	AskedPagedQueryHandle,
+	AskedQueryHandle,
+	BoundCommandHandle,
+	CommandHandle,
+	PagedQueryHandle,
+	PageItems,
+	QueryHandle,
+} from "../../core/src/handle-types";
 export { OnRefused, toastRefusal } from "../../core/src/command-refusals";
 export type { CommandRefusal, RefusalHandler } from "../../core/src/command-refusals";
 export type {
-	AskedPagedView,
-	AskedView,
 	BuiltGivenProps,
 	BuiltWidget,
 	FailedViewProps,
 	Inject,
 	InjectProps,
-	PagedView,
+	KindsNamed,
 	WidgetBuilder,
 } from "../../core/src/widget-builder-types";
 export type { DialogProps } from "../../core/src/dialog";

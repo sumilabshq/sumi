@@ -1,4 +1,4 @@
-import { createElement as h, useCallback, useRef } from "react";
+import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import type { InjectProps } from "@widgetarium/core";
@@ -11,16 +11,23 @@ import { usePastedPhotos } from "./hooks/use-pasted-photos.js";
 const ADD_PHOTO = "Add photo";
 const ADD_PHOTO_SAID = "Add a reference photo, or drop or paste one on the canvas";
 
-export function AddPhoto({ getDrawing, addPhotos }: InjectProps<typeof addPhotoInject>): ReactElement {
+export function AddPhoto({ drawingQuery, addPhotosCommand }: InjectProps<typeof addPhotoInject>): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
 	const anchor = useRef<HTMLSpanElement | null>(null);
-	const onPhotos = useCallback((photos: readonly File[]) => void addPhotos({ photos: [...photos] }), [addPhotos]);
-	usePastedPhotos(getDrawing?.ownsPaste ?? null, onPhotos);
-	useDroppedPhotos(anchor, onPhotos);
+	const addPhotos = addPhotosCommand.run;
+	usePastedPhotos(drawingQuery.data?.ownsPaste ?? null, addPhotos);
+	useDroppedPhotos(anchor, addPhotos);
 	return (
 		<span ref={anchor} className="cv:inline-flex cv:items-center cv:gap-1.5">
 			<Tip label={ADD_PHOTO_SAID}>
-				<IconButton size="s" variant="ghost" label={ADD_PHOTO} onClick={() => picker.current?.click()}>
+				<IconButton
+					size="s"
+					variant="ghost"
+					label={ADD_PHOTO}
+					disabled={!addPhotosCommand.can}
+					isLoading={addPhotosCommand.isRunning}
+					onClick={() => picker.current?.click()}
+				>
 					<Icon name="image-plus" size={16} />
 				</IconButton>
 			</Tip>
@@ -31,7 +38,7 @@ export function AddPhoto({ getDrawing, addPhotos }: InjectProps<typeof addPhotoI
 				multiple
 				hidden
 				onChange={(event: ChangeEvent<HTMLInputElement>) => {
-					onPhotos(imageFilesIn(event.currentTarget.files));
+					void addPhotos({ photos: imageFilesIn(event.currentTarget.files) });
 					event.currentTarget.value = "";
 				}}
 			/>

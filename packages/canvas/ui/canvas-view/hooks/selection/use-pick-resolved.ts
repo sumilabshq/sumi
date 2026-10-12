@@ -9,7 +9,7 @@ import type { Picking } from "./use-canvas-selection.js";
 export function usePickResolved(
 	layerRef: RefObject<HTMLDivElement | null>,
 	pan: PanZoom,
-	{ picked, onPick }: Picking,
+	{ picked, select }: Picking,
 ): void {
 	useEffect(() => {
 		if (!picked || picked.spot !== null) return;
@@ -20,7 +20,7 @@ export function usePickResolved(
 		if (!layer || !screen || !hit) return;
 		const spot = spotOn(screenBoxOf(layer, screen, pan.lookNow().scale), hit);
 		const resolved: Selection = { ...picked, spot };
-		onPick(resolved);
+		void select({ selection: resolved });
 		pan.flyTo(lookOnto(spot.target, pan.fieldRef.current));
-	}, [layerRef, pan, picked, onPick]);
+	}, [layerRef, pan, picked, select]);
 }

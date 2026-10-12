@@ -9,8 +9,11 @@ import { LookUnreadable } from "./look-unreadable.js";
 
 export type LookPicked = (settingName: string, option: string) => void;
 
-export function LookPanel({ getLook: read, pickLook }: InjectProps<typeof lookPanelInject>): ReactElement | null {
-	const onPick: LookPicked = (settingName, option) => void pickLook({ settingName, option });
+export function LookPanel({
+	lookQuery: { data: read },
+	pickLookCommand,
+}: InjectProps<typeof lookPanelInject>): ReactElement | null {
+	const onPick: LookPicked = (settingName, option) => void pickLookCommand.run({ settingName, option });
 	if (!read) return null;
 	if ("refusal" in read) return <LookUnreadable why={read.refusal} />;
 	const look = read.value;

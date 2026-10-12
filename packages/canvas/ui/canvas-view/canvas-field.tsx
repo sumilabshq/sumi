@@ -1,4 +1,4 @@
-import { createElement as h, useCallback, useMemo, useRef } from "react";
+import { createElement as h, useMemo, useRef } from "react";
 import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
 import type { InjectProps } from "@widgetarium/core";
@@ -7,7 +7,6 @@ import type { CanvasPages } from "../../schemas/canvas-page.schema.js";
 import type { ReadDesign } from "../../schemas/design.schema.js";
 import type { CanvasDoc } from "../../schemas/doc.schema.js";
 import type { DrawingKit } from "../../schemas/drawing.schema.js";
-import type { Selection } from "../../schemas/selection.schema.js";
 import type { canvasFieldInject } from "../../widgets/canvas-field.widget.js";
 import { useFliesToWidget } from "./hooks/camera/use-flies-to-widget.js";
 import { useLayerFit } from "./hooks/camera/use-layer-fit.js";
@@ -39,24 +38,28 @@ const LAYER =
 export function CanvasField({ acts, design, drawing, pages, docs }: CanvasFieldProps): ReactElement {
 	const layerRef = useRef<HTMLDivElement | null>(null);
 	const fieldRef = useRef<HTMLDivElement | null>(null);
-	const { getMode: mode, getSelection: picked } = acts;
+	const { selectCommand, focusWidgetCommand } = acts;
+	const mode = acts.modeQuery.data;
+	const picked = acts.selectionQuery.data;
 	const isPointer = mode === "pointer";
 	const grips = { isHand: mode === "hand", pressable: PRESSABLE_IN_DESIGN, ownScroll: null };
-	const kept = { camera: acts.getCamera, onKept: (camera: Camera) => void acts.moveCamera({ camera }) };
+	const kept = {
+		camera: acts.cameraQuery.data,
+		onKept: (camera: Camera) => void acts.moveCameraCommand.run({ camera }),
+	};
 	const pan = usePanZoom({ layerRef, fieldRef }, useLayerFit(layerRef, fieldRef), grips, kept);
-	const onPick = useCallback((selection: Selection | null) => void acts.select({ selection }), [acts]);
-	const picking = { picked, onPick };
+	const picking = { picked, select: selectCommand.run };
 	const selection = useCanvasSelection(layerRef, pan, picking);
 	usePickResolved(layerRef, pan, picking);
-	const clear = useCallback(() => onPick(null), [onPick]);
-	useEscapeClears(picked !== null, clear);
-	const flown = useCallback(() => void acts.focusWidget({ widget: null }), [acts]);
-	useFliesToWidget({ layerRef, pan, widget: acts.getFocusedWidget, onDone: flown });
+	useEscapeClears(picked !== null, selectCommand.with({ selection: null }).run);
+	const flown = focusWidgetCommand.with({ widget: null }).run;
+	useFliesToWidget({ layerRef, pan, widget: acts.focusedWidgetQuery.data, onDone: flown });
+	const focus = focusWidgetCommand.run;
 	const regions = useMemo(() => {
-		const opener = widgetOpenerOf(drawing.registry, (widget) => void acts.focusWidget({ widget }));
+		const opener = widgetOpenerOf(drawing.registry, (widget) => void focus({ widget }));
 		return regionsOfPage({ design, pages, docs, opener, registry: drawing.registry, host: drawing.host });
-	}, [design, pages, docs, drawing, acts]);
-	const gpu = useGpuStage(acts.getRenderer === "gpu" ? drawing.gpu : null, layerRef, pan);
+	}, [design, pages, docs, drawing, focus]);
+	const gpu = useGpuStage(acts.rendererQuery.data === "gpu" ? drawing.gpu : null, layerRef, pan);
 	return (
 		<GPU_FRAMES.Provider value={gpu.frames}>
 			<div

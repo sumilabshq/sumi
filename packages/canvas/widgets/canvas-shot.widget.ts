@@ -4,8 +4,8 @@ import { ShotSchema } from "../schemas/shot.schema.js";
 import { CanvasShot } from "../ui/canvas-shot/canvas-shot.js";
 
 export const canvasShotInject = inject({
-	getShot: IQuery.output(ShotSchema.nullable().default(null)),
-	getDrawing: IQuery.output(DrawingSchema.nullable().default(null)),
+	shotQuery: IQuery.output(ShotSchema.nullable().default(null)),
+	drawingQuery: IQuery.output(DrawingSchema.nullable().default(null)),
 });
 
 export const CanvasShotWidget = widget().inject(canvasShotInject).render(CanvasShot);

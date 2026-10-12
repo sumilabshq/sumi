@@ -3,8 +3,8 @@ import { CanvasModeSchema, ModeAskSchema } from "../schemas/canvas-view.schema.j
 import { ModeSwitch } from "../ui/mode-switch/mode-switch.js";
 
 export const modeSwitchInject = inject({
-	getMode: IQuery.output(CanvasModeSchema.default("hand")),
-	setMode: ICommand.input(ModeAskSchema),
+	modeQuery: IQuery.output(CanvasModeSchema.default("hand")),
+	setModeCommand: ICommand.input(ModeAskSchema),
 });
 
 export const ModeSwitchWidget = widget().inject(modeSwitchInject).render(ModeSwitch);

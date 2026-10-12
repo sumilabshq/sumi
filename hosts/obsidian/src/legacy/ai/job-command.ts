@@ -27,6 +27,18 @@ export interface JobAdd {
 	readonly id: unknown;
 }
 
+export function jobAddOf(asked: Readonly<Record<string, unknown>>): JobAdd {
+	return {
+		title: asked["title"],
+		page: asked["page"],
+		phase: asked["phase"],
+		says: asked["says"],
+		after: asked["after"],
+		budget: asked["budget"],
+		id: asked["id"],
+	};
+}
+
 export const JOB_ENV = "WIDGETARIUM_JOB";
 
 const NO_PHASE = `Name the phase: --phase ${JOB_PHASES.join("|")}.`;

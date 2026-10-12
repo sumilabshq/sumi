@@ -8,12 +8,13 @@ import { FRAME_PICTURES } from "../canvas-view/field-contexts.js";
 import type { FramePicturesKit } from "../canvas-view/field-contexts.js";
 
 export function FramePictures(props: InjectProps<typeof framePicturesInject>): ReactElement {
-	const { getDrawing, getFramePictures, askForPictures, field: Field } = props;
-	const ask = useBatched((asks: readonly PictureAsk[]) => void askForPictures({ asks: [...asks] }));
-	const takesPictures = getDrawing?.takesPictures === true;
+	const { drawingQuery, framePicturesQuery, askForPicturesCommand, field: Field } = props;
+	const ask = useBatched((asks: readonly PictureAsk[]) => void askForPicturesCommand.run({ asks: [...asks] }));
+	const takesPictures = drawingQuery.data?.takesPictures === true;
+	const shown = framePicturesQuery.data.shown;
 	const pictures = useMemo<FramePicturesKit | null>(
-		() => (takesPictures ? { shown: getFramePictures.shown, ask } : null),
-		[takesPictures, getFramePictures, ask],
+		() => (takesPictures ? { shown, ask } : null),
+		[takesPictures, shown, ask],
 	);
 	return (
 		<FRAME_PICTURES.Provider value={pictures}>

@@ -19,23 +19,23 @@ import type { CanvasCorners, DesignHandlers, ViewHandlers } from "./canvas-page.
 export function fieldOf(view: ViewHandlers, design: DesignHandlers): ReactElement {
 	return (
 		<FramePicturesWidget
-			getDrawing={design.drawing}
-			getFramePictures={view.framePictures}
-			askForPictures={design.askForPictures}
+			drawingQuery={design.drawing}
+			framePicturesQuery={view.framePictures}
+			askForPicturesCommand={design.askForPictures}
 			field={
 				<CanvasFieldWidget
-					getDesign={design.design}
-					getDrawing={design.drawing}
-					getPages={design.pages}
-					getDocs={design.docs}
-					getMode={view.mode}
-					getRenderer={view.renderer}
-					getCamera={view.camera}
-					moveCamera={view.moveCamera}
-					getSelection={view.selection}
-					select={view.select}
-					getFocusedWidget={view.focusedWidget}
-					focusWidget={view.focusWidget}
+					designQuery={design.design}
+					drawingQuery={design.drawing}
+					pagesQuery={design.pages}
+					docsQuery={design.docs}
+					modeQuery={view.mode}
+					rendererQuery={view.renderer}
+					cameraQuery={view.camera}
+					moveCameraCommand={view.moveCamera}
+					selectionQuery={view.selection}
+					selectCommand={view.select}
+					focusedWidgetQuery={view.focusedWidget}
+					focusWidgetCommand={view.focusWidget}
 				/>
 			}
 		/>
@@ -50,29 +50,29 @@ export function topBarOf(view: ViewHandlers, design: DesignHandlers, corners: Ca
 			start={[
 				<LayersToggleWidget
 					key="Layers"
-					getPages={design.pages}
-					getIsLayersOpen={view.isLayersOpen}
-					toggleLayers={view.toggleLayers}
+					pagesQuery={design.pages}
+					isLayersOpenQuery={view.isLayersOpen}
+					toggleLayersCommand={view.toggleLayers}
 				/>,
-				<DesignSummaryWidget key="Design" getDesign={design.design} />,
-				<AddPhotoWidget key="Add photo" getDrawing={design.drawing} addPhotos={design.addPhotos} />,
-				<ModeSwitchWidget key="Mode" getMode={view.mode} setMode={view.setMode} />,
-				<PicturesProgressWidget key="Pictures" getFramePictures={view.framePictures} />,
-				<AgentLookWidget key="Agent look" getAgentLook={design.agentLook} showPage={view.showPage} />,
+				<DesignSummaryWidget key="Design" designQuery={design.design} />,
+				<AddPhotoWidget key="Add photo" drawingQuery={design.drawing} addPhotosCommand={design.addPhotos} />,
+				<ModeSwitchWidget key="Mode" modeQuery={view.mode} setModeCommand={view.setMode} />,
+				<PicturesProgressWidget key="Pictures" framePicturesQuery={view.framePictures} />,
+				<AgentLookWidget key="Agent look" agentLookQuery={design.agentLook} showPageCommand={view.showPage} />,
 				<RendererSwitchWidget
 					key="Renderer"
-					getDrawing={design.drawing}
-					getRenderer={view.renderer}
-					chooseRenderer={view.chooseRenderer}
+					drawingQuery={design.drawing}
+					rendererQuery={view.renderer}
+					chooseRendererCommand={view.chooseRenderer}
 				/>,
 			]}
 			end={[
-				<VariantSwitchWidget key="Variants" getPages={design.pages} pickVariant={view.pickVariant} />,
+				<VariantSwitchWidget key="Variants" pagesQuery={design.pages} pickVariantCommand={view.pickVariant} />,
 				<PageTabsWidget
 					key="Pages"
-					getPages={design.pages}
-					showPage={view.showPage}
-					returnToView={design.returnToView}
+					pagesQuery={design.pages}
+					showPageCommand={view.showPage}
+					returnToViewCommand={design.returnToView}
 				/>,
 			]}
 			cornersEnd={corners.end}

@@ -24,11 +24,11 @@ const FilterSchema = PageInputSchema.extend({ done: z.boolean().optional() });
 const RenameSchema = z.object({ id: z.string(), title: z.string().min(1) });
 
 export const ports = inject({
-	getTitle: IQuery.output(z.string().default("Tasks")),
-	getTasks: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
-	getTask: IQuery.input(TaskAskSchema).output(TaskSchema.nullable()),
-	getFiltered: IQuery.input(FilterSchema).output(PageOf(TaskSchema)),
-	rename: ICommand.input(RenameSchema).output(TaskSchema),
+	titleQuery: IQuery.output(z.string().default("Tasks")),
+	tasksQuery: IQuery.input(PageInputSchema).output(PageOf(TaskSchema)),
+	taskQuery: IQuery.input(TaskAskSchema).output(TaskSchema.nullable()),
+	filteredQuery: IQuery.input(FilterSchema).output(PageOf(TaskSchema)),
+	renameCommand: ICommand.input(RenameSchema).output(TaskSchema),
 	extras: ISlot.array(),
 });
 
@@ -96,9 +96,9 @@ export const seen: BoardProps[] = [];
 
 export function BoardView(props: BoardProps): ReactElement {
 	seen.push(props);
-	const items: readonly Task[] = props.getTasks.items;
-	const title: string = props.getTitle;
-	const asked: Task | null = props.getTask.data;
+	const items: readonly Task[] = props.tasksQuery.data.items;
+	const title: string = props.titleQuery.data;
+	const asked: Task | null = props.taskQuery.data;
 	return h("p", { id: "board" }, `${title}: ${items.length} ${asked?.title ?? "none"}`);
 }
 
@@ -110,20 +110,26 @@ export function FailedView({ failures }: FailedViewProps): ReactElement {
 	return h("b", { id: "failed" }, failures.join("; "));
 }
 
-export function NumberTitleView({ getTitle }: { readonly getTitle: number }): ReactElement {
-	return h("p", null, String(getTitle));
+interface TitleHandle {
+	readonly data: string;
+	readonly isLoading: boolean;
+	readonly failure: string | null;
+}
+
+export function NumberTitleView({ titleQuery }: { readonly titleQuery: number }): ReactElement {
+	return h("p", null, String(titleQuery));
 }
 
 export function ExtraPropView({
-	getTitle,
+	titleQuery,
 	extra,
 }: {
-	readonly getTitle: string;
+	readonly titleQuery: TitleHandle;
 	readonly extra: number;
 }): ReactElement {
-	return h("p", null, `${getTitle} ${extra}`);
+	return h("p", null, `${titleQuery.data} ${extra}`);
 }
 
-export function TitleView({ getTitle }: { readonly getTitle: string }): ReactElement {
-	return h("p", null, getTitle);
+export function TitleView({ titleQuery }: { readonly titleQuery: TitleHandle }): ReactElement {
+	return h("p", null, titleQuery.data);
 }

@@ -3,8 +3,8 @@ import { JobAskedSchema, ShownJobSchema } from "../schemas/job.schema.js";
 import { JobStatus } from "../ui/job-status/job-status.js";
 
 export const jobStatusInject = inject({
-	getLiveJob: IQuery.output(ShownJobSchema.nullable().default(null)),
-	stopJob: ICommand.input(JobAskedSchema),
+	liveJobQuery: IQuery.output(ShownJobSchema.nullable().default(null)),
+	stopJobCommand: ICommand.input(JobAskedSchema),
 });
 
 export const JobStatusWidget = widget().inject(jobStatusInject).render(JobStatus);

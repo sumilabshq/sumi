@@ -19,7 +19,7 @@ const NOT_GIVEN = "{name} is not given";
 
 type Heard = (answer: CommandAnswer<unknown>) => void;
 
-export type DrawnCommand = Action<unknown, CommandAnswer<unknown>> & { readonly refused: string | null };
+export type DrawnCommand = Action<unknown, CommandAnswer<unknown>> & { readonly refusal: string | null };
 
 interface DeclaredCommand {
 	readonly name: string;
@@ -67,23 +67,27 @@ export function useCommandOver({ name, declaration, given, readGatewayIds, hands
 	const readGatewayIdsNow = useReaderOfLatest(readGatewayIds);
 	const context = useShutHostContext(name);
 	const onRefused = useContext(REFUSAL_HANDLER);
-	const [refused, setRefused] = useState<string | null>(null);
+	const [refusal, setRefusal] = useState<string | null>(null);
 	return useMemo(() => {
-		const heard = handsRefusals ? hearerOf(name, onRefused, setRefused) : null;
+		const heard = handsRefusals ? hearerOf(name, onRefused, setRefusal) : null;
 		const unfed = handsRefusals ? UNFED_IN_BUILT_WIDGET : UNFED_ON_BOARD;
-		return commandOver({ name, declaration, given, readGatewayIdsNow, context, heard, unfed }, refused);
-	}, [given, context, onRefused, refused]);
+		return commandOver({ name, declaration, given, readGatewayIdsNow, context, heard, unfed }, refusal);
+	}, [given, context, onRefused, refusal]);
 }
 
-function hearerOf(name: string, onRefused: RefusalHandler, setRefused: (reason: string | null) => void): Heard {
+export function isDrawnCommand(held: unknown): held is DrawnCommand {
+	return typeof held === "function" && "can" in held && "refusal" in held;
+}
+
+function hearerOf(name: string, onRefused: RefusalHandler, setRefusal: (reason: string | null) => void): Heard {
 	return (answer) => {
 		if (answer.ok) {
 			console.debug(`[widgetarium] ${name} ran`);
-			setRefused(null);
+			setRefusal(null);
 			return;
 		}
 		console.warn(`[widgetarium] ${name} refused: ${answer.reason}`, { ran: answer.ran });
-		setRefused(answer.reason);
+		setRefusal(answer.reason);
 		onRefused({ name, reason: answer.reason, ran: answer.ran });
 	};
 }
@@ -99,13 +103,13 @@ function useShutHostContext(name: string): HandlerContext {
 	return useHandlerContext(host);
 }
 
-function commandOver(command: DeclaredCommand, refused: string | null): DrawnCommand {
+function commandOver(command: DeclaredCommand, refusal: string | null): DrawnCommand {
 	const run = async (input: unknown): Promise<CommandAnswer<unknown>> => {
 		const answer = await runDeclaredCommand(command, input);
 		command.heard?.(answer);
 		return answer;
 	};
-	return Object.assign(run, { can: () => command.unfed.can(command.name, command.given), refused });
+	return Object.assign(run, { can: () => command.unfed.can(command.name, command.given), refusal });
 }
 
 async function runDeclaredCommand(command: DeclaredCommand, input: unknown): Promise<CommandAnswer<unknown>> {

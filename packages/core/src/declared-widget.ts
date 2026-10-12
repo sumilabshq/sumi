@@ -89,6 +89,16 @@ export function notReadNotice(failures: readonly string[]): ReactElement {
 	]);
 }
 
+export function useProp(name: string, declaration: Declaration, given: unknown): PropRead {
+	const gateway = useGateway(name, declaration, given);
+	const { input, output } = declaration;
+	if (input && output)
+		return { value: useAskedRead(name, { input, output }, gateway), failure: null, gatewayId: gateway.id };
+	if (gateway.kind === "collection")
+		return { value: useCollectionProp(name, declaration, gateway), failure: null, gatewayId: gateway.id };
+	return { ...useValueProp(name, declaration, gateway), gatewayId: gateway.id };
+}
+
 function declarationOfInterface(held: unknown): Declaration | null {
 	const declaration = declarationIn(held);
 	if (declaration) declaredInterfaces.set(declaration, held);
@@ -105,16 +115,6 @@ function readOf(name: string, declaration: Declaration | null, given: GivenProps
 	const hand = HANDED[declaration.kind];
 	if (hand) return { value: hand(name, declaration, given), failure: null };
 	return useProp(name, declaration, given[name]);
-}
-
-function useProp(name: string, declaration: Declaration, given: unknown): PropRead {
-	const gateway = useGateway(name, declaration, given);
-	const { input, output } = declaration;
-	if (input && output)
-		return { value: useAskedRead(name, { input, output }, gateway), failure: null, gatewayId: gateway.id };
-	if (gateway.kind === "collection")
-		return { value: useCollectionProp(name, declaration, gateway), failure: null, gatewayId: gateway.id };
-	return { ...useValueProp(name, declaration, gateway), gatewayId: gateway.id };
 }
 
 function useAskedRead(name: string, shape: AskedShape, gateway: AdaptedGateway): AskedRead {
