@@ -60,6 +60,7 @@
 		"test:catalogue-board": "node --single-threaded --import ./tools/loader/register.mts tools/catalogue-board-test.ts",
 		"test:studio-render": "node --single-threaded --import ./tools/loader/register.mts tools/studio-render-test.ts",
 		"test:gpu-canvas": "node --single-threaded --import ./tools/loader/register.mts tools/gpu-canvas-test.ts",
+		"test:gpu-design-canvas": "node --single-threaded --import ./tools/loader/register.mts tools/gpu-design-canvas-test.ts",
 		"test:studio-host": "node --single-threaded --import ./tools/loader/register.mts tools/studio-host-test.ts",
 		"test:obsidian-studio": "node --single-threaded --import ./tools/loader/register.mts tools/obsidian-studio-test.ts",
 		"test:studio-header": "node --single-threaded --import ./tools/loader/register.mts tools/studio-header-paint-test.ts",
