@@ -74,7 +74,7 @@ check("output is validated after the handler", await web.send(fx.GetHalf, undefi
 	reason: "canvas/get-half output: (root): Invalid input: expected int, received number",
 	ran: false,
 });
-check("a throw becomes a refusal", await web.send(fx.GetFailing, undefined), {
+check("a throw in a query handler becomes a refusal that wrote nothing", await web.send(fx.GetFailing, undefined), {
 	ok: false,
 	reason: "the vault is gone",
 	ran: false,
@@ -99,12 +99,10 @@ await web.send(fx.Bump, undefined);
 check('"none" runs every repeat with no key', [seen.bumped, seen.keys], [2, [null, null]]);
 
 seen.keys.length = 0;
-await web.send(fx.Save, { text: "a" });
-await web.send(fx.Save, { text: "a" });
 await web.send(fx.Save, { text: "a" }, { idempotencyKey: "call-1" });
 await web.send(fx.Save, { text: "a" }, { idempotencyKey: "call-1" });
-check('"per-call" makes a key per send and drops a repeat of one call', seen.keys.length, 3);
-check('"per-call" hands the given key on', seen.keys[2], "call-1");
+await web.send(fx.Save, { text: "a" }, { idempotencyKey: "call-2" });
+check('"per-call" drops a repeat of one call and runs another', seen.keys, ["call-1", "call-2"]);
 
 const fake = fakeApp({ answers: { [fx.GetPages.name]: ["Fake"], [fx.GetPlatform.name]: 7 } });
 check("fakeApp answers a given answer", await fake.send(fx.GetPages, { prefix: "" }), { ok: true, output: ["Fake"] });

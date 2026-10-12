@@ -1,5 +1,8 @@
 import { Component, Suspense, createElement as h } from "react";
-import type { ReactNode } from "react";
+import type { ContextType, ReactNode } from "react";
+import { APP } from "./app-context";
+import { reportToConsole } from "./report-failure";
+import { RequestFailed } from "./request-failed";
 import { reasonOf } from "./sends";
 
 export type FailedView = (reason: string) => ReactNode;
@@ -14,7 +17,11 @@ interface Failure {
 	readonly reason: string | null;
 }
 
+const A_BLOCK = "a block";
+
 export class RequestBoundary extends Component<RequestBoundaryProps, Failure> {
+	static override contextType = APP;
+	declare context: ContextType<typeof APP>;
 	override state: Failure = { reason: null };
 
 	static getDerivedStateFromError(thrown: unknown): Failure {
@@ -22,7 +29,12 @@ export class RequestBoundary extends Component<RequestBoundaryProps, Failure> {
 	}
 
 	override componentDidCatch(thrown: unknown): void {
-		console.warn("[widgetarium] a block failed to read", thrown);
+		if (!(thrown instanceof RequestFailed)) {
+			const report = this.context?.reportFailure ?? reportToConsole;
+			report({ source: A_BLOCK, reason: reasonOf(thrown), ran: false, thrown });
+			return;
+		}
+		if (thrown.key !== null) this.context?.queries.drop(thrown.key);
 	}
 
 	override render(): ReactNode {

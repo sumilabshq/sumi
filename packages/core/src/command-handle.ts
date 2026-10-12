@@ -1,8 +1,14 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
+import { REFUSAL_HANDLER } from "./command-refusals";
+import type { RefusalHandler } from "./command-refusals";
 import { stableKey } from "./gateway/stable-key";
 import type { CommandAnswer } from "./gateway/run-handler";
 import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
+import { APP } from "./mediator/app-context";
+import { reportToConsole } from "./mediator/report-failure";
+import type { ReportFailure } from "./mediator/report-failure";
+import { reasonOf } from "./mediator/sends";
 
 type Run = (input: unknown) => Promise<CommandAnswer<unknown>>;
 type BoundRun = () => Promise<CommandAnswer<unknown>>;
@@ -15,6 +21,11 @@ interface InputRuns {
 
 interface Runs extends InputRuns {
 	readonly byInput: Readonly<Record<string, InputRuns>>;
+}
+
+interface Told {
+	readonly onRefused: RefusalHandler;
+	readonly reportFailure: ReportFailure;
 }
 
 interface BoundRuns {
@@ -32,6 +43,10 @@ export function useCommandHandle(
 ): CommandHandle<unknown, unknown> {
 	const latest = useRef(command);
 	latest.current = command;
+	const onRefused = useContext(REFUSAL_HANDLER);
+	const reportFailure = useContext(APP)?.reportFailure ?? reportToConsole;
+	const told = useRef<Told>({ onRefused, reportFailure });
+	told.current = { onRefused, reportFailure };
 	const [runs, setRuns] = useState<Runs>(NO_RUNS);
 	const started = useRef(0);
 	const runningKeys = useRef(new Set<string>());
@@ -44,10 +59,15 @@ export function useCommandHandle(
 			started.current += 1;
 			const id = started.current;
 			setRuns((now) => withRunStarted(now, key, id));
-			const answer = await latest.current(input);
-			runningKeys.current.delete(key);
-			setRuns((now) => withRunEnded(now, key, id, answer.ok ? null : answer.reason));
-			return answer;
+			const ended: { refusal: string | null } = { refusal: null };
+			try {
+				const answer = await answerOrRefusal(latest.current, input, name, told.current);
+				ended.refusal = answer.ok ? null : answer.reason;
+				return answer;
+			} finally {
+				runningKeys.current.delete(key);
+				setRuns((now) => withRunEnded(now, key, id, ended.refusal));
+			}
 		},
 		[name],
 	);
@@ -66,6 +86,22 @@ export function useCommandHandle(
 		return { ...stateOf(runs.byInput[key] ?? IDLE), run: boundRunOf(key, input) };
 	};
 	return { ...stateOf(runs), run, with: withInput };
+}
+
+async function answerOrRefusal(
+	command: Run,
+	input: unknown,
+	name: string,
+	told: Told,
+): Promise<CommandAnswer<unknown>> {
+	try {
+		return await command(input);
+	} catch (thrown) {
+		const reason = reasonOf(thrown);
+		told.reportFailure({ source: name, reason, ran: false, thrown });
+		told.onRefused({ name, reason, ran: false });
+		return { ok: false, reason, ran: false };
+	}
 }
 
 function useBoundRuns(runs: Runs, run: Run): (key: string, input: unknown) => BoundRun {

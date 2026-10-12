@@ -2,6 +2,7 @@ import type { z } from "zod";
 import type { CommandAnswer } from "../gateway/run-handler";
 import type { AnyRequest, OutputOf, SentOf } from "./request";
 import type { QueryStore } from "./query-store";
+import type { ReportFailure } from "./report-failure";
 
 export interface SendOptions {
 	readonly idempotencyKey?: string | undefined;
@@ -10,11 +11,11 @@ export interface SendOptions {
 
 export interface App {
 	readonly queries: QueryStore;
+	readonly reportFailure: ReportFailure;
 	send<R extends AnyRequest>(request: R, input: SentOf<R>, options?: SendOptions): Promise<CommandAnswer<OutputOf<R>>>;
 }
 
 export function refused(reason: string, ran: boolean): CommandAnswer<unknown> {
-	console.warn(`[widgetarium] refused: ${reason}`, { ran });
 	return { ok: false, reason, ran };
 }
 

@@ -12,9 +12,9 @@ export function useQuery(request: AnyQuery, input?: unknown): QueryRead<unknown>
 	const { queries } = useApp("useQuery");
 	const key = queries.keyOf(request, input);
 	const subscribe = useCallback((listener: () => void) => queries.subscribe(request, input, listener), [queries, key]);
-	const shown = useSyncExternalStore(subscribe, () => queries.start(request, input));
+	const shown = useSyncExternalStore(subscribe, () => queries.peek(key) ?? queries.start(request, input));
 	if (shown.status === "loading") use(shown.read);
 	const entry = queries.peek(key) ?? shown;
-	if (entry.status === "failed") throw new RequestFailed(entry.failure ?? request.name);
+	if (entry.status === "failed") throw new RequestFailed(entry.failure ?? request.name, key);
 	return { data: entry.data };
 }

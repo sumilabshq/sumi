@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { command, inject, module, query, token } from "../packages/core/src/mediator/index.ts";
-import type { AppHost, Handles, InputOf, Middleware, RequestContext } from "../packages/core/src/mediator/index.ts";
+import { command, handlerOf, inject, module, provided, query, token } from "../packages/core/src/mediator/index.ts";
+import type { AppHost, InputOf, Middleware, RequestContext } from "../packages/core/src/mediator/index.ts";
 
 export interface Pages {
 	readonly platform: string;
@@ -48,66 +48,58 @@ export const Save = command("canvas/save")
 	.idempotencyKey("per-call");
 export const Orphan = query("canvas/orphan").output(z.string());
 
-export class GetPagesHandler implements Handles<typeof GetPages> {
-	static readonly request = GetPages;
+export class GetPagesHandler extends handlerOf(GetPages) {
 	private readonly pages = inject(Pages);
-	async handle({ prefix }: InputOf<typeof GetPages>): Promise<string[]> {
+	override async handle({ prefix }: InputOf<typeof GetPages>): Promise<string[]> {
 		seen.order.push("handler");
 		return this.pages.list().filter((title) => title.startsWith(prefix));
 	}
 }
 
-export class GetPlatformHandler implements Handles<typeof GetPlatform> {
-	static readonly request = GetPlatform;
+export class GetPlatformHandler extends handlerOf(GetPlatform) {
 	private readonly pages = inject(Pages);
-	async handle(): Promise<string> {
+	override async handle(): Promise<string> {
 		return this.pages.platform;
 	}
 }
 
-export class GetSlowHandler implements Handles<typeof GetSlow> {
-	static readonly request = GetSlow;
-	async handle(): Promise<string> {
+export class GetSlowHandler extends handlerOf(GetSlow) {
+	override async handle(): Promise<string> {
 		await gate.shut;
 		return "slow answer";
 	}
 }
 
-export class GetFailingHandler implements Handles<typeof GetFailing> {
-	static readonly request = GetFailing;
-	async handle(): Promise<string> {
+export class GetFailingHandler extends handlerOf(GetFailing) {
+	override async handle(): Promise<string> {
 		throw new Error("the vault is gone");
 	}
 }
 
-export class GetHalfHandler implements Handles<typeof GetHalf> {
-	static readonly request = GetHalf;
-	async handle(): Promise<number> {
+export class GetHalfHandler extends handlerOf(GetHalf) {
+	override async handle(): Promise<number> {
 		return 1.5;
 	}
 }
 
-export class AddPageHandler implements Handles<typeof AddPage> {
-	static readonly request = AddPage;
+export class AddPageHandler extends handlerOf(AddPage) {
 	private readonly pages = inject(Pages);
-	async handle({ title }: InputOf<typeof AddPage>, ctx: RequestContext): Promise<{ count: number }> {
+	override async handle({ title }: InputOf<typeof AddPage>, ctx: RequestContext): Promise<{ count: number }> {
 		seen.added += 1;
 		seen.keys.push(ctx.idempotencyKey);
 		return { count: this.pages.add(title) };
 	}
 }
 
-export class BumpHandler implements Handles<typeof Bump> {
-	static readonly request = Bump;
-	async handle(_input: void, ctx: RequestContext): Promise<void> {
+export class BumpHandler extends handlerOf(Bump) {
+	override async handle(_input: void, ctx: RequestContext): Promise<void> {
 		seen.bumped += 1;
 		seen.keys.push(ctx.idempotencyKey);
 	}
 }
 
-export class SaveHandler implements Handles<typeof Save> {
-	static readonly request = Save;
-	async handle(_input: InputOf<typeof Save>, ctx: RequestContext): Promise<void> {
+export class SaveHandler extends handlerOf(Save) {
+	override async handle(_input: InputOf<typeof Save>, ctx: RequestContext): Promise<void> {
 		seen.keys.push(ctx.idempotencyKey);
 	}
 }
@@ -134,7 +126,7 @@ export const canvasModule = module({
 		BumpHandler,
 		SaveHandler,
 	],
-	provide: { [Pages]: (host: AppHost) => new MemoryPages(host.is("obsidian") ? "obsidian" : "web") },
+	provide: [provided(Pages, (host) => new MemoryPages(host.is("obsidian") ? "obsidian" : "web"))],
 	use: [traced("outer"), traced("inner")],
 });
 

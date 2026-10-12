@@ -14,9 +14,12 @@ export interface Handles<R extends AnyRequest> {
 	handle(input: InputOf<R>, ctx: RequestContext): Promise<ReturnedOf<R>>;
 }
 
+export const MADE_BY_HANDLER_OF: unique symbol = Symbol("handlerOf");
+
 export interface HandlerClass<R extends AnyRequest = AnyRequest> {
 	readonly name: string;
 	readonly request: R;
+	readonly [MADE_BY_HANDLER_OF]: true;
 	new (): Handles<R>;
 }
 

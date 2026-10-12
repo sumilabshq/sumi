@@ -48,7 +48,7 @@ function missingHandlers(modules: readonly Module[]): string[] {
 function providerFindings(modules: readonly Module[]): string[] {
 	const providers = new Map<symbol, string[]>();
 	for (const module of modules) {
-		for (const provided of Object.getOwnPropertySymbols(module.provide))
+		for (const { token: provided } of module.provide)
 			providers.set(provided, [...(providers.get(provided) ?? []), module.name]);
 	}
 	return [...providers]

@@ -5,7 +5,8 @@ import type { AppHost } from "./handles";
 import { Mediator } from "./mediator";
 import type { Route } from "./mediator";
 import type { Module } from "./module";
-import type { Provider } from "./token";
+import { ReportFailure, reportToConsole } from "./report-failure";
+import type { Provided } from "./token";
 import type { App } from "./sends";
 
 export interface AppDeclaration {
@@ -18,7 +19,7 @@ const REFUSED = "app() refused:\n{findings}";
 export function app({ modules, host }: AppDeclaration): App {
 	const findings = appFindings(modules);
 	if (findings.length > 0) throw new Error(REFUSED.replace("{findings}", findings.join("\n")));
-	const container = new Container(providersOf(modules), host);
+	const container = new Container(providedOf(modules), host);
 	const routes = new Map<string, Route>(
 		modules.flatMap((module) =>
 			module.handlers.map((handler): [string, Route] => [
@@ -27,17 +28,13 @@ export function app({ modules, host }: AppDeclaration): App {
 			]),
 		),
 	);
-	const doneKeys = container.has(DoneKeys) ? container.resolve(DoneKeys) : new MemoryDoneKeys();
-	return new Mediator(routes, host, doneKeys);
+	return new Mediator(routes, {
+		host,
+		doneKeys: container.has(DoneKeys) ? container.resolve(DoneKeys) : new MemoryDoneKeys(),
+		reportFailure: container.has(ReportFailure) ? container.resolve(ReportFailure) : reportToConsole,
+	});
 }
 
-function providersOf(modules: readonly Module[]): Map<symbol, Provider> {
-	return new Map(
-		modules.flatMap((module) =>
-			Object.getOwnPropertySymbols(module.provide).flatMap((provided): [symbol, Provider][] => {
-				const provider = module.provide[provided];
-				return provider === undefined ? [] : [[provided, provider]];
-			}),
-		),
-	);
+function providedOf(modules: readonly Module[]): Map<symbol, Provided> {
+	return new Map(modules.flatMap((module) => module.provide.map((pair): [symbol, Provided] => [pair.token, pair])));
 }

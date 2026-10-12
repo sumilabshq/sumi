@@ -19,7 +19,7 @@ Everything else on these pages follows from them.
 
 1. **Imports go one way: `apps` → `packages`.** A package never imports an app. A domain uses another domain only through its `index.ts`.
 2. **A file's place is what it is.** A request and its handler → one file in `requests/`. What is drawn → a block in `blocks/`. Where blocks stand → a layout. Which implementation runs → the domain's module.
-3. **Nothing reaches for anything.** A view sends requests through the mediator. A handler gets its dependencies in its constructor from the module's container. The platform is given by the framework (`host`). No hidden globals, no singletons.
+3. **Nothing reaches for anything.** A view sends requests through the mediator. A handler gets its dependencies with `inject(Token)` from the module's container. The platform is given by the framework (`host`). No hidden globals, no singletons.
 
 ## Names
 
@@ -63,7 +63,7 @@ packages/<domain>/
   schema/                   Drizzle tables and the zod shapes derived from them
 ```
 
-**What it gives:** one feature is one request file and one block. The path from a click to the data is linear: `useCommand(ShowPage)` → `show-page.ts` (the handler is below the request) → its constructor → the module's one line that picks the implementation.
+**What it gives:** one feature is one request file and one block. The path from a click to the data is linear: `useCommand(ShowPage)` → `show-page.ts` (the handler is below the request) → its `inject(...)` fields → the module's one line that picks the implementation.
 
 ## Common
 

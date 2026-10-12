@@ -4,10 +4,9 @@ declare const PROVIDES: unique symbol;
 
 export type Token<T> = symbol & { readonly [PROVIDES]?: T };
 
-export type Provider = (host: AppHost) => unknown;
-
-export interface Providers {
-	readonly [token: symbol]: Provider;
+export interface Provided<T = unknown> {
+	readonly token: Token<T>;
+	readonly make: (host: AppHost) => T;
 }
 
 export interface Resolver {
@@ -16,11 +15,16 @@ export interface Resolver {
 
 const NOT_BUILDING = "inject({token}) runs only while the app builds a handler or a provided value";
 
+// TRADE-OFF: inject() reads this slot, so it works only synchronously while the container builds; constructor injection needs decorator metadata.
 const BUILDING: { current: Resolver | null } = { current: null };
 
 export function token<T>(name: string): Token<T>;
 export function token(name: string): symbol {
 	return Symbol(name);
+}
+
+export function provided<T>(wanted: Token<T>, make: (host: AppHost) => NoInfer<T>): Provided<T> {
+	return { token: wanted, make };
 }
 
 export function inject<T>(wanted: Token<T>): T {

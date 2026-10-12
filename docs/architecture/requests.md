@@ -11,9 +11,10 @@ export const Subscribe = command("billing/subscribe")
 	.output(SubscriptionSchema)
 	.idempotencyKey(({ user, plan }) => `${user}:${plan}`);
 
-export class SubscribeHandler implements Handles<typeof Subscribe> {
-	constructor(private readonly payments: Payments, private readonly subscriptions: Subscriptions) {}
-	async handle(input, { idempotencyKey }) { … }
+export class SubscribeHandler extends handlerOf(Subscribe) {
+	private readonly payments = inject(Payments);
+	private readonly subscriptions = inject(Subscriptions);
+	override async handle(input: InputOf<typeof Subscribe>, { idempotencyKey }: RequestContext) { … }
 }
 ```
 
@@ -23,14 +24,16 @@ export class SubscribeHandler implements Handles<typeof Subscribe> {
 | `command("<module>/<name>")` | `.idempotencyKey(…)` | `.input()`, `.output()` |
 
 - The name `"<module>/<name>"` is the request's address on the network (`/rpc/billing/subscribe`), in logs and in the table of done keys. It is stable across a rename of the constant. Lint checks it equals the module and the constant's name in kebab case.
-- `Handles<typeof Subscribe>` ties the class to the request: the types check `handle` takes its input and returns its output.
+- `handlerOf(Subscribe)` names the request once: it is the class's `static request`, and the types check `handle` takes its input and returns its output. A module takes only classes made by `handlerOf`.
 - The output schema decides whether `null` is a valid answer. A handler cannot return what its schema does not allow.
 
 ## The mediator
 
 `send(Request, input)` validates the input (zod), runs the module's middleware, finds the handler by the request, runs it, validates the output, and answers `{ ok: true, output }` or `{ ok: false, reason, ran }`. A view never calls `send` directly; it uses `useQuery` / `useCommand` ([views.md](views.md)).
 
-Middleware is declared once per module: `use: [authenticated, rateLimited]`. A handler holds no auth checks of its own.
+Middleware is declared once per module: `use: [authenticated, rateLimited]`. A handler holds no auth checks of its own. Middleware gets a frozen input, and a second `next()` answers the first one's promise.
+
+Every refusal reaches the developer once, through `ReportFailure`: the console by default, `provided(ReportFailure, …)` to send it to Sentry. After a command that ran, every query on screen is read again.
 
 ## Modules
 
@@ -38,15 +41,16 @@ Middleware is declared once per module: `use: [authenticated, rateLimited]`. A h
 // packages/billing/billing.module.ts
 export const billingModule = module({
 	handlers: [SubscribeHandler, ApplyStripeEventHandler, GetMySubscriptionHandler],
-	provide: {
-		Payments: (host) => (host.is("mobile") ? new RevenueCatPayments(host) : new StripePayments(host)),
-		Subscriptions: (host) => new DrizzleSubscriptions(host.db),
-	},
+	provide: [
+		provided(Payments, (host) => (host.is("mobile") ? new RevenueCatPayments(host) : new StripePayments(host))),
+		provided(Subscriptions, (host) => new DrizzleSubscriptions(host.db)),
+	],
 	use: [authenticated],
 });
 ```
 
-- The container builds each handler with its constructor dependencies. No page or app writes `new SomeHandler(...)`.
+- A dependency is a token, `export const Payments = token<Payments>("Payments")`, and `provided(Payments, make)` type-checks that `make` returns a `Payments`.
+- The container builds each handler, and `inject(Payments)` in a field initialiser takes the value the module provides (Angular's `inject()`). It works only while the container builds a handler or a provided value: a constructor parameter would need decorator metadata, which this project does not use. No page or app writes `new SomeHandler(...)`.
 - Swapping an implementation is one line in `provide`. Swapping a handler is one line in `handlers`.
 - An app lists the modules it uses; a test builds a module with fakes in `provide`.
 
@@ -54,13 +58,13 @@ export const billingModule = module({
 
 Every command declares how a repeat is recognised. The type refuses a command that declares nothing.
 
-| Declaration                   | Meaning                                                                                                                 |
-| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `.idempotencyKey(input => …)` | the same data is the same action: a repeat does nothing and answers the first answer                                    |
-| `.idempotencyKey("per-call")` | each call is new; the key is made at the call on the client, so only a retry or a double submit of that call is dropped |
-| `.idempotencyKey("none")`     | repeats are wanted (a "+1" counter)                                                                                     |
+| Declaration                   | Meaning                                                                                                                                                                                        |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.idempotencyKey(input => …)` | the same data is the same action: a repeat does nothing and answers the first answer                                                                                                           |
+| `.idempotencyKey("per-call")` | each call is new; `useCommand` makes the key and keeps it for that input until an answer that ran, so only a retry or a double submit of that call is dropped; `send` without a key is refused |
+| `.idempotencyKey("none")`     | repeats are wanted (a "+1" counter)                                                                                                                                                            |
 
-The mediator keeps done keys in a table and passes `idempotencyKey` to the handler, which hands it on to a provider that supports one (Stripe).
+The mediator keeps done keys in a table and passes `idempotencyKey` to the handler, which hands it on to a provider that supports one (Stripe). The default table is in memory and keeps the last 1000 keys; a project provides `DoneKeys` to keep them elsewhere. A throw after the handler was entered answers `ran: true`, and its key stays done.
 
 An idempotency key stops **the same call** twice. Two different calls that would leave broken data are stopped by the database: see Data.
 
