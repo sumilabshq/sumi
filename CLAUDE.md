@@ -270,11 +270,6 @@ from core's emitted declarations, so a widget written in a vault is typed by the
 the engine reads. `npm run test:vault-types` lays them into a temp folder and compiles a widget
 against them.
 
-**`manifest.generated.json` is the catalogue's card, and it is written, never authored.** `npm run
-manifest` runs every widget's code and writes `cardOf(manifest)` beside it, and refuses to write a
-card for a widget whose manifest the engine would refuse. A
-catalogue that has not run a widget's code reads the card; a vault that has reads the code. An
-install runs the code and refuses a card that says something the code does not.
 `tools/widget-props.json` pins every shipped widget's resolved props — regenerate it with `node
 --import ./tools/loader/register.mts tools/widget-props.ts` when a prop change is intended.
 
