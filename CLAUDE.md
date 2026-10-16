@@ -14,6 +14,14 @@ module is `<Domain><Side>Module` (`BillingServerModule`, `CanvasClientModule`), 
 it runs. camelCase is for ordinary values and functions. A string appears only as
 free-form data (a request or permission name); every other choice is a typed value.
 
+**Code style, every rule enforced by a tool, never by memory**: tabs, width 4. `if` and `for` always
+take braces and a body on its own line, even a lone `return`. An object literal is always spread over
+lines, one property per line. More than three parameters or arguments go one per line, and a declaration
+takes at most three (more → one object). Blank lines separate a group of declarations from the logic and
+stand around `if`/`for` blocks. `===`, `const` unless reassigned, no nested ternaries, no `else` after
+`return`, object shorthand, one statement per line. ESLint Stylistic formats `.ts`/`.tsx` (`eslint --fix`),
+Prettier the rest; a hook formats every edit, and `npm test` fails on a violation.
+
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
 widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
 classic `h` factory, one component per file), `packages/core` and `packages/host-obsidian` are `.ts` React with

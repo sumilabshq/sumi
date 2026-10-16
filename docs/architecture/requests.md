@@ -197,14 +197,14 @@ Both import the assembled module from `<package>/module`.
 
 TanStack Query is the cache under the hooks; a component never touches it. A local query gets no retry and no re-read on focus; a remote one retries an unreachable server and re-reads on focus. After a command that ran, its `invalidates` list, or every query on screen, is read again; a re-read keeps the previous data on screen and every unchanged part by identity.
 
-## Adapters
+## Gateways
 
-An outside system is reached through an adapter: an abstract class in `adapters/<port>/<port>.adapter.ts`, one `<platform>.adapter.ts` per platform beside it (`ObsidianDesignFiles`, `WebDesignFiles`).
+Data or an outside system is reached through a gateway: an abstract class in `gateways/<gateway>/<gateway>.gateway.ts`, one `<platform>.gateway.ts` per platform beside it (`ObsidianDesignFilesGateway`, `WebDesignFilesGateway`).
 
-- **Split by area, not by line count.** The canvas once had one `DesignSource`; it is now `DesignFolder`, `DesignJobs`, `DesignDrawing`, `DesignFiles`, and `CanvasHost` (what the mount gives, `returnToView` among it). One port per system: reading and writing design files is one `DesignFiles`, whoever the caller.
-- **One shape per port.** The assistant's jobs are a `DesignJobs`; a second interface with the same verbs under other names is a wrapper to delete.
-- **A handler holds the decision, an adapter only calls its system** (read a file by path, write a file, take a picture). A store owns long-lived state (`CanvasStore`). `DesignReads` is the one cached reader of the design; every handler reads through it.
-- Its methods return typed results; each implementation turns its provider's errors into the adapter's refusals.
+- **Split by area, not by line count.** The canvas once had one `DesignSource`; it is now `DesignFolderGateway`, `AgentJobsGateway`, `WidgetDrawingGateway`, `DesignFilesGateway`, and `CanvasHost` (what the mount gives, `returnToView` among it). One gateway per system: reading and writing design files is one `DesignFilesGateway`, whoever the caller.
+- **One shape per gateway.** The assistant's jobs are an `AgentJobsGateway`; a second interface with the same verbs under other names is a wrapper to delete.
+- **A handler holds the decision, a gateway only calls its system** (read a file by path, write a file, take a picture). A store owns long-lived state (`CanvasStore`) and keeps its invariants in its own writer. `DesignReads` is the one cached reader of the design; every handler reads through it.
+- Its methods return typed results; each implementation turns its provider's errors into the gateway's refusals.
 
 ## Data
 

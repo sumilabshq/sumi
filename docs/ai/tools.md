@@ -7,9 +7,7 @@
 | `spec <app>`                          | checks `.widgetarium/apps/<app>/spec.md` and shows it to the person as a card                                                           |
 | `stage <app> <stage> --said <line>`   | fills a row of the build card: `data`, `design`, `catalogue`, `widgets`, `pages`                                                        |
 | `report <app>`                        | per kept feature: widget, page, check, lint — ✓ or what is left; exits 1 until done                                                     |
-| `shot <note>`                         | a PNG of the note's board, drawn off screen — no tab opens; open the path it prints and look                                            |
-| `shot --design <app>`                 | a PNG of the whole design canvas, every screen side by side                                                                             |
-| `shot --design <app> --page <page>`   | one page at full size, `--frame <state>` one frame of it, drawn off screen; the person's own canvas never moves                         |
+| `shot <note>`, `shot --design <app>`  | refused: the canvas draws only on the GPU and a GPU shot is not built yet; the answer says so                                           |
 | `screen <app> <screen> --widget <id>` | puts a page widget on the canvas; `--state <name>` draws the state of that name from the widget's `states`                              |
 | `design <app>`                        | checks `.widgetarium/apps/<app>/design/` and shows it to the person as a card                                                           |
 | `reference <app> <url> --why <line>`  | a picture on the canvas; `--kind app\|site\|marketing\|photo` says what it is, `--page People,Person` the screens it informs            |
@@ -174,11 +172,10 @@ you draw. Read the picks with `look <app>` before every page and draw in exactly
 
 **Three directions first.** Pick the shell from the App shell table in `design-system.md`, then draw
 the opening page three ways that differ in structure — what leads, how the page is cut — as
-`@<app>/<page>-a-page`, `-b-page` and `-c-page`, placed as screens `<Page> · A`, `· B`, `· C`. Shoot
-them, ask, and end your turn:
+`@<app>/<page>-a-page`, `-b-page` and `-c-page`, placed as screens `<Page> · A`, `· B`, `· C`. Ask
+the person to compare them on the canvas, and end your turn:
 
 ```
-node {tool} shot --design <app>
 node {tool} job ask <app> <job> --options "A,B,C" "<what each direction bets on, in one line>"
 ```
 

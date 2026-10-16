@@ -47,7 +47,11 @@ A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause
 ```tsx skip-check
 export function Canvas() {
 	return (
-		<CanvasLayout header={<PageTabs />} start={<LayersPanel />} end={<LookPanel />}>
+		<CanvasLayout
+			header={<PageTabs />}
+			start={<CanvasSidebar top={<PagesList />} bottom={<LayersPanel />} />}
+			end={<LookPanel />}
+		>
 			<CanvasField />
 		</CanvasLayout>
 	);

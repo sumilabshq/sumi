@@ -119,8 +119,9 @@ spec. _Over when every kept feature names a widget that passes `check`._
 **Stage 5 — the pages.** Each page widget is placed alone in the note the spec names, its `states`
 untouched. Every query is bound to its handler, every command to its handler with `allow: [run]`
 for exactly the actions the spec said yes to (board.md, "Switching a command on"). A value two
-widgets share is one `@core/screen-state` key bound in both. Then `node {tool} shot <note>`, open the
-picture, and hold it block by block against the approved screen; fix and shoot again. _Over when
+widgets share is one `@core/screen-state` key bound in both. Then `node {tool} lint <note>` and hold
+the note block by block against the approved screen; fix and lint again. `shot` is refused while the
+canvas draws only on the GPU. _Over when
 `node {tool} report <app>` says every kept feature is ✓._ The build ends with the report's lines; a
 feature you cannot finish stays ✗ with its reason.
 
@@ -161,8 +162,7 @@ pages). The body is cut into named slots; you put widgets into slots, never posi
 a slot name used twice. Never reshape the body; if the design does not fit, take another one.
 
 **7. The web is for research and references only**, in stages 1 and 3. Never open a tab or a note the
-person did not ask for: `shot` draws off screen. Never pan, zoom, turn or focus the canvas the person
-has open; `shot --design <app> --page <page>` is how you look at one page.
+person did not ask for. Never pan, zoom, turn or focus the canvas the person has open.
 
 **8. Give every node its surface as you place it.** Nothing lays one for you. `surfaces.md` has the
 laws, `examples.md` whole boards.

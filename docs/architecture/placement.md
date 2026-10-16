@@ -13,38 +13,55 @@ packages/<module>/
   shared/ui/                   blocks two features use, and the module's root views (composition); ui/index.ts is the public ui
   shared/lib/                  code two features use
   shared/schema/               <record>.schema.ts: zod shapes (and Drizzle tables, when the module has a database)
-  adapters/<port>/             <port>.adapter.ts (abstract) and one <platform>.adapter.ts per platform
-  adapters/<port>/<platform>/  an implementation with private parts: <platform>.adapter.ts is its one entry
-  generated/                   index.ts, module.ts, adapters.ts: written by `widgetarium generate`, never by hand
+  gateways/<gateway>/          <gateway>.gateway.ts (abstract) and one <platform>.gateway.ts per platform
+  gateways/<gateway>/<platform>/ an implementation with private parts: <platform>.gateway.ts is its one entry
+  generated/                   index.ts, module.ts, gateways.ts: written by `widgetarium generate`, never by hand
 ```
 
 A server module has no `ui/`. No empty folder is created ahead. The top holds nothing else but `package.json`, `tsconfig*.json`, `LICENSE` and a stylesheet.
 
+## The layer order
+
+A module has four layers, and imports point one way, the right one importing the left:
+
+```
+shared → gateways → features → module.ts
+```
+
+| Layer       | Imports                                                                   |
+| ----------- | ------------------------------------------------------------------------- |
+| `shared/`   | `shared/` only                                                            |
+| `gateways/` | `shared/` and `gateways/`                                                 |
+| `features/` | `shared/`, `gateways/` and its own folder; `handlers.ts` also `module.ts` |
+| `module.ts` | `shared/` and `gateways/`                                                 |
+
+`handlers.ts` imports `module.ts` only to name it, `handler(X, CanvasClientModule)`; `module.ts` imports no feature, so no cycle forms. `generated/` is written by the generator and stands outside the order. A gateway is the module's access to data or an outside system (Fowler's Gateway): an abstract class and one implementation per platform. `layer-order` checks the table.
+
 ## The three entries
 
-| Entry          | Points at               | Holds                                                                                                             | Imported by                                                                                                           |
-| -------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `"."`          | `generated/index.ts`    | every contract, every `shared/schema`, and `shared/ui/index.ts`                                                   | anyone                                                                                                                |
-| `"./module"`   | `generated/module.ts`   | the definition joined with every exported `*Handler`                                                              | a starter: a client app or host for a client module; a server app for a server module (behind the `server` condition) |
-| `"./adapters"` | `generated/adapters.ts` | every port, every platform implementation, the parts type and factories (`obsidianCanvasParts`, `webCanvasParts`) | a starter or host; a web build keeps only what it uses (`sideEffects: false`)                                         |
+| Entry          | Points at               | Holds                                                                                                                | Imported by                                                                                                           |
+| -------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `"."`          | `generated/index.ts`    | every contract, every `shared/schema`, and `shared/ui/index.ts`                                                      | anyone                                                                                                                |
+| `"./module"`   | `generated/module.ts`   | the definition joined with every exported `*Handler`                                                                 | a starter: a client app or host for a client module; a server app for a server module (behind the `server` condition) |
+| `"./gateways"` | `generated/gateways.ts` | every gateway, every platform implementation, the parts type and factories (`obsidianCanvasParts`, `webCanvasParts`) | a starter or host; a web build keeps only what it uses (`sideEffects: false`)                                         |
 
 ## The table
 
-| The file is…                                      | It goes to                                             |
-| ------------------------------------------------- | ------------------------------------------------------ |
-| what a view or another module may ask             | `features/<feature>/contract.ts`                       |
-| the logic answering it                            | `features/<feature>/handlers.ts`                       |
-| a block one feature draws                         | `features/<feature>/ui/`                               |
-| code one feature uses                             | `features/<feature>/lib/`                              |
-| a block or code two features use, a root view     | `shared/ui/`, `shared/lib/`                            |
-| a record's shape                                  | `shared/schema/<record>.schema.ts`                     |
-| where the module runs and what its handlers share | `module.ts`                                            |
-| an outside system (the vault, a database, Stripe) | `adapters/<port>/`: the port and one file per platform |
-| the parts one platform builds                     | `adapters/<module>-parts/<platform>.adapter.ts`        |
-| behavior with no domain (drag, scroll, focus)     | `packages/behaviors`                                   |
-| a drawn part with no domain                       | the kit                                                |
-| a route, a page, the modules an app starts        | `apps/<product>/`                                      |
-| what runs the apps inside another program         | `packages/host-<name>/`                                |
+| The file is…                                              | It goes to                                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------ |
+| what a view or another module may ask                     | `features/<feature>/contract.ts`                             |
+| the logic answering it                                    | `features/<feature>/handlers.ts`                             |
+| a block one feature draws                                 | `features/<feature>/ui/`                                     |
+| code one feature uses                                     | `features/<feature>/lib/`                                    |
+| a block or code two features use, a root view             | `shared/ui/`, `shared/lib/`                                  |
+| a record's shape                                          | `shared/schema/<record>.schema.ts`                           |
+| where the module runs and what its handlers share         | `module.ts`                                                  |
+| data or an outside system (the vault, a database, Stripe) | `gateways/<gateway>/`: the gateway and one file per platform |
+| the parts one platform builds                             | `gateways/<module>-parts/<platform>.gateway.ts`              |
+| behavior with no domain (drag, scroll, focus)             | `packages/behaviors`                                         |
+| a drawn part with no domain                               | the kit                                                      |
+| a route, a page, the modules an app starts                | `apps/<product>/`                                            |
+| what runs the apps inside another program                 | `packages/host-<name>/`                                      |
 
 ## Questions an agent asks, answered
 
@@ -54,11 +71,11 @@ A server module has no `ui/`. No empty folder is created ahead. The top holds no
 
 **Where does this handler get X?** It names `x: X` in `inject`. The module's `provide` returns it, built from the host's parts.
 
-**A decision about data in an adapter?** It moves to a handler or `lib/`. An adapter holds only the calls to its system.
+**A decision about data in a gateway?** It moves to a handler or `lib/`. A gateway holds only the calls to its system.
 
-**What does an app import from a module?** The root view from `"."`, the assembled module from `"./module"`, the parts factory from `"./adapters"`: `app({ modules: [CanvasClientModule.with(webCanvasParts(project, host))] })`.
+**What does an app import from a module?** The root view from `"."`, the assembled module from `"./module"`, the parts factory from `"./gateways"`: `app({ modules: [CanvasClientModule.with(webCanvasParts(project, host))] })`.
 
-**One platform's adapter in another's bundle?** Never: the browser studio imports `webCanvasParts` from `"./adapters"`, and tree-shaking leaves every Obsidian implementation out. `npm run test:web-canvas-bundle` proves it from the esbuild metafile.
+**One platform's gateway in another's bundle?** Never: the browser studio imports `webCanvasParts` from `"./gateways"`, and tree-shaking leaves every Obsidian implementation out. `npm run test:web-canvas-bundle` proves it from the esbuild metafile.
 
 ## File names
 
@@ -67,8 +84,8 @@ A server module has no `ui/`. No empty folder is created ahead. The top holds no
 | `contract.ts`           | a feature's requests                         |
 | `handlers.ts`           | their handlers                               |
 | `module.ts`             | the module definition                        |
-| `<port>.adapter.ts`     | the abstract class of an outside system      |
-| `<platform>.adapter.ts` | one implementation of it (`obsidian`, `web`) |
+| `<gateway>.gateway.ts`  | the abstract class of a gateway              |
+| `<platform>.gateway.ts` | one implementation of it (`obsidian`, `web`) |
 | `<record>.schema.ts`    | zod shapes                                   |
 | `<block>.tsx`           | a block or a part, TSX + Tailwind            |
 

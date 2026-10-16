@@ -4,12 +4,12 @@ A host is the framework code that runs apps inside another program: `packages/ho
 
 ## What a host hands a module
 
-A client module's `provide` takes **parts**: the implementations of its adapters, built by the host for one mount. The domain writes one function per host that builds them:
+A client module's `provide` takes **parts**: the implementations of its gateways, built by the host for one mount. The domain writes one function per host that builds them:
 
 | Host                                   | Builds parts with                                 | From                           |
 | -------------------------------------- | ------------------------------------------------- | ------------------------------ |
-| Obsidian, a vault design               | `obsidianCanvasParts(obsidianDesign, canvasHost)` | `@widgetarium/canvas/adapters` |
-| a project (browser, Obsidian app note) | `webCanvasParts(project, canvasHost)`             | `@widgetarium/canvas/adapters` |
+| Obsidian, a vault design               | `obsidianCanvasParts(obsidianDesign, canvasHost)` | `@widgetarium/canvas/gateways` |
+| a project (browser, Obsidian app note) | `webCanvasParts(project, canvasHost)`             | `@widgetarium/canvas/gateways` |
 
 The host then starts it: `app({ modules: [CanvasClientModule.with(parts)] })`, the module from `@widgetarium/canvas/module`. `CanvasHost` is what the mount itself gives (the opened page, who owns a paste, the GPU supply, `returnToView`), one class built from its fields; `detachedHostOf(opened)` gives the defaults a mount overrides.
 
@@ -17,7 +17,7 @@ A server module's `provide` takes `{ env }` from `server({ modules, env })`. The
 
 ## One host's code stays out of another's bundle
 
-There is no build-time platform switch. Every platform's implementations sit behind one `./adapters` entry, and `sideEffects: false` lets a bundler keep only what is used: the browser studio imports `webCanvasParts` and carries no Obsidian implementation. Only `apps/server` imports `@widgetarium/core/requests/server` (Hono, the oRPC server). `npm run test:web-canvas-bundle` builds the browser studio and fails if it carries an Obsidian implementation, any `packages/host-obsidian` code, Hono, the oRPC server or `obsidian`; it proves each check can fail by building the whole `./adapters` entry and the server entry.
+There is no build-time platform switch. Every platform's implementations sit behind one `./gateways` entry, and `sideEffects: false` lets a bundler keep only what is used: the browser studio imports `webCanvasParts` and carries no Obsidian implementation. Only `apps/server` imports `@widgetarium/core/requests/server` (Hono, the oRPC server). `npm run test:web-canvas-bundle` builds the browser studio and fails if it carries an Obsidian implementation, any `packages/host-obsidian` code, Hono, the oRPC server or `obsidian`; it proves each check can fail by building the whole `./gateways` entry and the server entry.
 
 ## The Obsidian host
 
