@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import * as fileSystem from "node:fs/promises";
 import os from "node:os";
@@ -30,6 +31,7 @@ interface CliRun {
 const REPO = path.resolve(import.meta.dirname, "..");
 const SCHEMA_FILE = path.join(REPO, "packages/cli/widgetarium.schema.json");
 const TEMPLATE_MANIFEST = path.join(REPO, "packages/cli/templates/project/package.json");
+const PRETTIER = path.join(REPO, "node_modules/.bin/prettier");
 const WRITE_SCHEMA = process.argv.includes("--write-schema");
 const HANDBOOK_FOLDER = "docs/widgetarium";
 const UNFILLED = /\{(?:name|handbook|paths\.[a-z]+)\}/;
@@ -39,8 +41,16 @@ const DUPLICATE_WIDGET = 'widget id "tasks" is declared 2 times';
 const SHELL_FILE = /chrome|corner|studio/i;
 const WIDGETARIUM_IMPORT = /import\s+(?:[^";]*?from\s+)?"((?:virtual:)?widgetarium[^"]*)"/g;
 
+const PRETTIER_IGNORED = ["dist", "emoji-table.ts", "generated", "icon-table.ts", "node_modules"];
+const VALIDATION_SCRIPTS = {
+	format: "prettier --write .",
+	"format:check": "prettier --check .",
+	check: "npm run lint && npm run format:check && npm run typecheck && widgetarium check",
+};
+
 const EXPECTED_FILES = [
 	".gitignore",
+	".prettierignore",
 	"AGENTS.md",
 	"CLAUDE.md",
 	"docs/references/.gitkeep",
@@ -224,9 +234,32 @@ try {
 
 	check("the template's versions are the repo's", templateDriftFrom(), []);
 	check(
+		"format, format:check and check run lint, then format:check, then typecheck",
+		[scripts["format"], scripts["format:check"], scripts["check"]],
+		[VALIDATION_SCRIPTS.format, VALIDATION_SCRIPTS["format:check"], VALIDATION_SCRIPTS.check],
+	);
+	check(
+		"prettier is pinned to the repo's exact version and formats with the repo's settings",
+		[fieldOf(fieldOf(manifest, "devDependencies"), "prettier"), fieldOf(manifest, "prettier")],
+		[versionInRepo("prettier"), fieldOf(jsonAt(path.join(REPO, "package.json")), "prettier")],
+	);
+	check(
+		".prettierignore keeps build output, generated entries, the kit's generated tables and dependencies out",
+		fs.readFileSync(path.join(project, ".prettierignore"), "utf8").split("\n").filter(Boolean).sort(),
+		PRETTIER_IGNORED,
+	);
+	check(
 		"widgetarium.schema.json is projectConfigJsonSchema (regenerate with --write-schema)",
 		JSON.stringify(jsonAt(SCHEMA_FILE)),
 		JSON.stringify(projectConfigJsonSchema()),
+	);
+
+	check(
+		"prettier finds every file of a created project formatted",
+		spawnSync(PRETTIER, ["--list-different", "."], { cwd: project, encoding: "utf8" })
+			.stdout.split("\n")
+			.filter(Boolean),
+		[],
 	);
 
 	const clean = await cli(["check", project]);

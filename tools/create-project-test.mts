@@ -11,13 +11,18 @@ const ALIAS_PROBE = "src/shared/kit/alias-probe.ts";
 const KIT_CONSUMER = "src/widgets/greeting/widget.tsx";
 const BUNDLED_ICON = "src/app-icon.svg";
 const RENAMED_APP = 'Farm & "Field"';
+const UNFORMATTED_PROBE = "src/unformatted-probe.ts";
 const ICON_LINK = '<link rel="icon" type="image/svg+xml" href="/icon.svg">';
 const KIT_CONSUMER_SOURCE = `import { createWidget, defineLayout, defineMetadata } from "@widgetarium/core";
 import { Card } from "@widgetarium/kit";
 
 const Greeting = createWidget({ draw: () => <Card>Hello</Card> });
 
-export const metadata = defineMetadata(Greeting, { title: "Greeting", description: "Who is greeted?", keywords: ["greeting"] });
+export const metadata = defineMetadata(Greeting, {
+	title: "Greeting",
+	description: "Who is greeted?",
+	keywords: ["greeting"],
+});
 
 export const layout = defineLayout({ role: "text", size: { preferredWidth: 240, preferredHeight: "auto" } });
 
@@ -114,6 +119,18 @@ try {
 	fs.writeFileSync(path.join(app, KIT_CONSUMER), KIT_CONSUMER_SOURCE);
 	installOfflineFirst(app);
 
+	const lint = ran(app, "npm", ["run", "lint"]);
+	check("npm run lint is clean", lint.ok ? "" : lint.said, "");
+	const formatted = ran(app, "npm", ["run", "format:check"]);
+	check("npm run format:check is clean", formatted.ok ? "" : formatted.said, "");
+	fs.writeFileSync(path.join(app, UNFORMATTED_PROBE), "export const  probe={a:1}\n");
+	const unformatted = ran(app, "npm", ["run", "check"]);
+	check(
+		"falsified: an unformatted file turns npm run check red at format:check, naming it",
+		[unformatted.ok, unformatted.said.includes(UNFORMATTED_PROBE)].join(),
+		"false,true",
+	);
+	fs.rmSync(path.join(app, UNFORMATTED_PROBE));
 	const typecheck = ran(app, "npm", ["run", "typecheck"]);
 	check("npm run typecheck is clean", typecheck.ok ? "" : typecheck.said, "");
 	const projectCheck = ran(app, "npm", ["run", "check"]);

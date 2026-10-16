@@ -22,7 +22,7 @@ export function writeFile(at: string, text: string): void {
 	fs.writeFileSync(at, text);
 }
 
-function filesUnder(folder: string, isWanted: (relative: string) => boolean): string[] {
+export function filesUnder(folder: string, isWanted: (relative: string) => boolean): string[] {
 	return fs
 		.readdirSync(folder, { recursive: true, withFileTypes: true })
 		.filter((entry) => entry.isFile())

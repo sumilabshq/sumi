@@ -40,7 +40,7 @@ A command written `node {tool} …` in the handbook belongs to the Obsidian plug
 1. Find it: `npx widgetarium catalogue search <words>`, then `catalogue show <id>` for its props and commands.
 2. `npx widgetarium add <id>`, with `--as <name>` when the name is taken; it lands in `{paths.widgets}` and is yours, never updated.
 3. Move its schema into `{paths.schemas}`, or map this project's records to it in a feature handler under `{paths.logic}`.
-4. `npm run typecheck && npm run check`.
+4. `npm run format && npm run check`.
 
 ## Code style
 
@@ -55,9 +55,10 @@ A command written `node {tool} …` in the handbook belongs to the Obsidian plug
 - `npm run dev`: the app on a local server.
 - `npm run studio`: the same app inside the engine's studio: its band with the app switcher and the AI button above every route.
 - `npm run typecheck`: TypeScript over `src` and `vite.config.ts`.
-- `npm run check`: `widgetarium check`, every layer against `widgetarium.json`; exits 1 on findings.
+- `npm run format`: Prettier writes every file in the project's style.
+- `npm run check`: the final validation, in order: `lint` (ESLint), `format:check` (Prettier), `typecheck`, then `widgetarium check`, every layer against `widgetarium.json`; exits 1 at the first failure.
 - `npx widgetarium catalogue list | search <words> | show <id>`: the widgets the registries offer.
 - `npx widgetarium add <id> [--as <name>]`: copies one into `{paths.widgets}`.
-- `npx widgetarium check`: what `npm run check` runs.
+- `npx widgetarium check`: the last step of `npm run check`.
 
-After every change run `npm run typecheck && npm run check`.
+After every change run `npm run format && npm run check`.

@@ -43,3 +43,9 @@ export default [...widgetarium.configs.recommended, { rules: { "@widgetarium/no-
 | levels, declared dependencies, no cycles, blocks, legacy                                                                                                                                                                                                                                                                                | **planned**                                                                                 |
 
 Each rule is proven by breaking it on purpose: `npm run test:eslint-plugin` runs ESLint's `RuleTester` with a valid and an invalid case per rule, and each rule was falsified once. A rule's message says what to do, not only what is wrong.
+
+## Final validation
+
+Final validation = lint → `format:check` → tests, and the first red step stops the run. In this repository `npm test` opens with `lint:style` and `format:check`; in a created project `npm run check` runs `lint`, `format:check`, `typecheck`, then `widgetarium check`. Prettier's settings and its exact version are the repository's, copied into the project's `package.json` by `create`.
+
+Agents format on every edit: the `PostToolUse` hook in `.claude/settings.json` runs `prettier --write` on each file a Write or Edit touches, so `format:check` only catches a file written another way.

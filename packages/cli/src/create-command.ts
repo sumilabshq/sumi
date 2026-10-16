@@ -9,6 +9,7 @@ import { HANDBOOK_FOLDER, copyHandbook } from "./handbook-copy.js";
 import { copyKit } from "./kit-copy.js";
 import { packageLocations, type PackageLocations } from "./package-locations.js";
 import { addEngineDependencies, addTsconfigPaths, writeProjectConfig } from "./project-manifests.js";
+import { formatProject } from "./project-format.js";
 import { runIn } from "./run-process.js";
 import { writeTemplates, type TemplateValues } from "./template-files.js";
 
@@ -45,6 +46,7 @@ async function layProject({ target, name, locations, closure }: ProjectToLay): P
 	addTsconfigPaths(target, config.aliases);
 	copyKit(locations.kit, path.join(target, config.paths.kit));
 	copyHandbook(locations.handbook, path.join(target, handbook));
+	await formatProject(target);
 }
 
 async function configWritten(target: string): Promise<ProjectConfig> {
