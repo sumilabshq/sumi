@@ -27,7 +27,7 @@
 	"include": [
 		"*.ts",
 		"shared/**/*.ts",
-		"adapters/**/*.ts",
+		"gateways/**/*.ts",
 		"features/**/*.ts",
 		"generated/**/*.ts",
 		"../core/src/*.d.ts",

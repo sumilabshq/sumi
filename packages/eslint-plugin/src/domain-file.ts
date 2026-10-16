@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { parse } from "@babel/parser";
+import { babelBodyOf } from "./files.js";
+import { fieldOf } from "./guards.js";
 import { moduleDeclaredIn } from "./module-declared.js";
 import type { DeclaredModule } from "./module-declared.js";
 import { jsonAt, levelOf } from "./workspace.js";
@@ -12,8 +13,13 @@ export interface DomainFile {
 	readonly folder: string;
 }
 
+export const MODULE_FILE = "module.ts";
+export const CONTRACT_FILE = "contract.ts";
+export const HANDLERS_FILE = "handlers.ts";
+export const FEATURES = "features";
+export const FEATURE_FILES: readonly string[] = [CONTRACT_FILE, HANDLERS_FILE];
+
 const DOMAIN_LEVEL = "domain";
-const MODULE_FILE = "module.ts";
 const ROOTS = new Map<string, DomainRoot | null>();
 
 interface DomainRoot {
@@ -31,8 +37,21 @@ export function domainFileOf(filename: string): DomainFile | null {
 export function moduleOfDomain(root: string): DeclaredModule | null {
 	const file = path.join(root, MODULE_FILE);
 	if (!fs.existsSync(file)) return null;
-	const parsed = parse(fs.readFileSync(file, "utf8"), { sourceType: "module", plugins: ["typescript"] });
-	return moduleDeclaredIn(parsed.program.body);
+	return moduleDeclaredIn(babelBodyOf(file));
+}
+
+export function isFeatureFolder(folder: string): boolean {
+	return FEATURE_FILES.some((name) => fs.existsSync(path.join(folder, name)));
+}
+
+export function featureFolderOf(root: string, inside: readonly string[]): string | null {
+	const [head, first = "", second = ""] = inside;
+	if (head !== FEATURES) {
+		return null;
+	}
+
+	const leaf = isFeatureFolder(path.join(root, FEATURES, first)) ? [first] : [first, second];
+	return [FEATURES, ...leaf].join("/");
 }
 
 function domainRootOf(folder: string): DomainRoot | null {
@@ -51,6 +70,6 @@ function domainRootIn(folder: string): DomainRoot | null {
 }
 
 function nameOf(manifest: unknown): string {
-	const name: unknown = typeof manifest === "object" && manifest !== null ? Reflect.get(manifest, "name") : "";
+	const name = fieldOf(manifest, "name");
 	return typeof name === "string" ? name : "";
 }

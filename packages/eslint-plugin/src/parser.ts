@@ -3,6 +3,7 @@ import type { ParserPlugin } from "@babel/parser";
 import { VISITOR_KEYS } from "@babel/types";
 import type { AST, Linter } from "eslint";
 import { KEYS } from "eslint-visitor-keys";
+import { fieldOf } from "./guards.js";
 
 interface Located {
 	readonly start: number;
@@ -66,6 +67,5 @@ function eslintToken(token: BabelToken) {
 }
 
 function isProgram(value: unknown): value is AST.Program {
-	if (typeof value !== "object" || value === null) return false;
-	return Reflect.get(value, "type") === "Program" && Array.isArray(Reflect.get(value, "tokens"));
+	return fieldOf(value, "type") === "Program" && Array.isArray(fieldOf(value, "tokens"));
 }

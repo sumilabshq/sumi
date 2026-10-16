@@ -27,11 +27,11 @@ interface Cost {
 const PREAMBLE = `import { z } from "zod";
 import { AuthenticatedGuard, PerCall, command, guard, handler, middleware, serverModule } from "@widgetarium/core/requests";
 
-export abstract class Ledger {
+export abstract class LedgerGateway {
 	abstract add(amount: number): Promise<{ total: number }>;
 }
 
-class MemoryLedger extends Ledger {
+class MemoryLedgerGateway extends LedgerGateway {
 	override add(amount: number): Promise<{ total: number }> {
 		return Promise.resolve({ total: amount });
 	}
@@ -43,7 +43,7 @@ export const TimingMiddleware = middleware().handle(async (_call, _deps, next) =
 
 export const BudgetServerModule = serverModule("budget")
 	.use(TimingMiddleware)
-	.provide(() => ({ ledger: new MemoryLedger() }));
+	.provide(() => ({ ledgerGateway: new MemoryLedgerGateway() }));
 `;
 
 function handlerSource(at: number): string {
@@ -57,8 +57,8 @@ export const Item${at}CommandHandler = handler(Item${at}Command, BudgetServerMod
 	.guard(AuthenticatedGuard)
 	.guard(OwnsItemGuard)
 	.use(TimingMiddleware)
-	.inject({ ledger: Ledger })
-	.handle(({ amount }, { ledger, user, item }) => ledger.add(amount + item.length + user.id.length));
+	.inject({ ledgerGateway: LedgerGateway })
+	.handle(({ amount }, { ledgerGateway, user, item }) => ledgerGateway.add(amount + item.length + user.id.length));
 `;
 }
 

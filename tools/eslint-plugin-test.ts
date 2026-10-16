@@ -33,7 +33,7 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/notes/module.ts": CLIENT_MODULE,
 	"packages/notes/features/search/contract.ts": "",
 	"packages/notes/features/search/handlers.ts": "",
-	"packages/notes/features/search/lib/rank.ts": "",
+	"packages/notes/features/search/lib/rank.ts": 'import { split } from "../../../shared/lib/words.js";\n',
 	"packages/notes/features/search/ui/search-box.tsx": "",
 	"packages/notes/features/edit/rename/contract.ts": "",
 	"packages/notes/features/edit/rename/handlers.ts": "",
@@ -41,9 +41,11 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/notes/shared/schema/note.schema.ts": "",
 	"packages/notes/shared/lib/clock.ts": "",
 	"packages/notes/shared/ui/index.ts": "",
-	"packages/notes/adapters/store/store.adapter.ts": "",
-	"packages/notes/adapters/store/obsidian/obsidian.adapter.ts": "",
-	"packages/notes/adapters/store/obsidian/paths.ts": "",
+	"packages/notes/gateways/store/store.gateway.ts": "",
+	"packages/notes/gateways/store/obsidian/obsidian.gateway.ts": "",
+	"packages/notes/gateways/store/obsidian/paths.ts": "",
+	"packages/notes/shared/lib/words.ts": "export const split = 1;\nexport const join = 2;\n",
+	"packages/notes/shared/lib/uses-words.ts": 'import { join, split } from "./words.js";\n',
 	"packages/billing/package.json": JSON.stringify({
 		name: "@fixture/billing",
 		exports: { ".": "./generated/index.ts", "./module": { server: "./generated/module.ts" } },
@@ -163,7 +165,7 @@ tested("module-imports", {
 	valid: [
 		ok('import { NotesClientModule } from "@fixture/notes/module";', "apps/web/src/main.ts"),
 		ok('import { NotesClientModule } from "@fixture/notes/module";', "packages/host-web/src/start.ts"),
-		ok('import { webNotesParts } from "@fixture/notes/adapters";', "packages/host-web/src/start.ts"),
+		ok('import { webNotesParts } from "@fixture/notes/gateways";', "packages/host-web/src/start.ts"),
 		ok('import { BillingServerModule } from "@fixture/billing/module";', "apps/api/src/main.ts"),
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
 	],
@@ -221,10 +223,10 @@ tested("feature-layout", {
 		ok("export const RenameCommand = 1;", "packages/notes/features/edit/rename/contract.ts"),
 		ok('import { clock } from "../../shared/lib/clock.js";', "packages/notes/features/search/handlers.ts"),
 		ok(
-			'import { Store } from "../store/obsidian/obsidian.adapter.js";',
-			"packages/notes/adapters/store/store.adapter.ts",
+			'import { Store } from "../store/obsidian/obsidian.gateway.js";',
+			"packages/notes/gateways/store/store.gateway.ts",
 		),
-		ok('import { paths } from "./paths.js";', "packages/notes/adapters/store/obsidian/obsidian.adapter.ts"),
+		ok('import { paths } from "./paths.js";', "packages/notes/gateways/store/obsidian/obsidian.gateway.ts"),
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
 	],
 	invalid: [
@@ -234,8 +236,7 @@ tested("feature-layout", {
 		bad("export const a = 1;", "misplaced", "packages/notes/stray.ts"),
 		bad("export const a = 1;", "misplaced", "packages/notes/shared/stuff.ts"),
 		bad("export const a = 1;", "misplaced", "packages/notes/features/lonely/contract.ts"),
-		bad("export const a = 1;", "misplaced", "packages/notes/adapters/store/helper.ts"),
-		bad("export let count = 0;", "topLevelLet", "packages/notes/features/search/handlers.ts"),
+		bad("export const a = 1;", "misplaced", "packages/notes/gateways/store/helper.ts"),
 		bad(
 			'import { handler } from "@widgetarium/core/requests";\nexport const SearchQueryHandler = handler(SearchQuery, M);',
 			"handlerInContract",
@@ -257,10 +258,86 @@ tested("feature-layout", {
 			"packages/notes/features/edit/rename/handlers.ts",
 		),
 		bad(
-			'import { paths } from "../../adapters/store/obsidian/paths.js";',
-			"adapterPart",
+			'import { paths } from "../../gateways/store/obsidian/paths.js";',
+			"gatewayPart",
 			"packages/notes/shared/lib/clock.ts",
 		),
+		bad(
+			'import { SearchQuery } from "../../search/contract.js";',
+			"otherFeature",
+			"packages/notes/features/edit/rename/handlers.ts",
+		),
+		bad(
+			'import { RenameCommand } from "../edit/rename/contract.js";',
+			"otherFeature",
+			"packages/notes/features/search/handlers.ts",
+		),
+	],
+});
+
+const NOTES_MODULE = "packages/notes/module.ts";
+const SEARCH_HANDLERS = "packages/notes/features/search/handlers.ts";
+const STORE_GATEWAY = "packages/notes/gateways/store/store.gateway.ts";
+tested("layer-order", {
+	valid: [
+		ok('import type { Note } from "../schema/note.schema.js";'),
+		ok('import { clock } from "../../shared/lib/clock.js";', STORE_GATEWAY),
+		ok('import { Store } from "../store/obsidian/obsidian.gateway.js";', STORE_GATEWAY),
+		ok('import { Store } from "../../gateways/store/store.gateway.js";', SEARCH_HANDLERS),
+		ok('import { rank } from "./lib/rank.js";', SEARCH_HANDLERS),
+		ok('import { NotesClientModule } from "../../module.js";', SEARCH_HANDLERS),
+		ok('import { clock } from "../../../shared/lib/clock.js";', "packages/notes/features/edit/rename/handlers.ts"),
+		ok('import { Store } from "./gateways/store/obsidian/obsidian.gateway.js";', NOTES_MODULE),
+		ok('import { clock } from "./shared/lib/clock.js";', NOTES_MODULE),
+		ok('import { SearchQueryHandler } from "../features/search/handlers.js";', "packages/notes/generated/module.ts"),
+		ok('import { anything } from "../../features/search/contract.js";', "apps/web/src/main.ts"),
+	],
+	invalid: [
+		bad('import { SearchQuery } from "../../features/search/contract.js";', "upward"),
+		bad('import type { Store } from "../../gateways/store/store.gateway.js";', "upward"),
+		bad('import { SearchQuery } from "../../features/search/contract.js";', "upward", STORE_GATEWAY),
+		bad('import { NotesClientModule } from "../../module.js";', "upward", STORE_GATEWAY),
+		bad(
+			'import { NotesClientModule } from "../../../module.js";',
+			"upward",
+			"packages/notes/features/search/lib/rank.ts",
+		),
+		bad('import { rank } from "./features/search/lib/rank.js";', "upward", NOTES_MODULE),
+	],
+});
+
+tested("module-state", {
+	valid: [
+		ok("export const LIMIT = 3;"),
+		ok('const NAMES: readonly string[] = ["a"];'),
+		ok("const SEEN: ReadonlySet<string> = new Set();"),
+		ok("const BY_NAME: ReadonlyMap<string, number> = new Map();"),
+		ok('const KINDS = ["a", "b"] as const;'),
+		ok("export function counted() { let count = 0; count += 1; return count; }"),
+		ok("let count = 0;", "apps/web/src/main.ts"),
+		ok("let count = 0;", "packages/notes/generated/module.ts"),
+	],
+	invalid: [
+		bad("let count = 0;", "topLevelLet"),
+		bad("export let count = 0;", "topLevelLet", SEARCH_HANDLERS),
+		bad("var count = 0;", "topLevelLet", STORE_GATEWAY),
+		bad("let count = 0;", "topLevelLet", NOTES_MODULE),
+		bad("const seen = new Set<string>();", "writableCollection"),
+		bad("export const cache = new Map();", "writableCollection", "packages/notes/features/search/lib/rank.ts"),
+		bad("const queue: (() => void)[] = [];", "writableCollection"),
+		bad("const listed = new Array(3) satisfies number[];", "writableCollection"),
+	],
+});
+
+tested("single-use-lib", {
+	valid: [
+		ok("export const split = 1;", "packages/notes/shared/lib/words.ts"),
+		ok("export const unused = 1;", "packages/notes/shared/lib/words.ts"),
+		ok("export const join = 1;", "packages/notes/shared/schema/note.schema.ts"),
+	],
+	invalid: [
+		bad("export const split = 1;\nexport const join = 2;", "singleUse", "packages/notes/shared/lib/words.ts"),
+		bad("export function join() {}", "singleUse", "packages/notes/shared/lib/words.ts"),
 	],
 });
 
@@ -285,7 +362,7 @@ tested("handler-ownership", {
 
 const configured = widgetarium.configs.recommended[0]?.rules ?? {};
 check(
-	"the recommended config switches every rule on, ownership as a warning",
+	"the recommended config switches every rule on, ownership, layer order and single-use lib as warnings",
 	Object.entries(configured).map(([id, severity]) => `${id} ${String(severity)}`),
 	[
 		"@widgetarium/building-block-names error",
@@ -293,9 +370,12 @@ check(
 		"@widgetarium/contract-imports error",
 		"@widgetarium/module-imports error",
 		"@widgetarium/module-definition error",
+		"@widgetarium/module-state error",
 		"@widgetarium/server-module error",
 		"@widgetarium/feature-layout error",
+		"@widgetarium/layer-order warn",
 		"@widgetarium/handler-ownership warn",
+		"@widgetarium/single-use-lib warn",
 	],
 );
 

@@ -1,5 +1,5 @@
 import { PublicGuard, deny, guard, handler } from "@widgetarium/core/requests";
-import { Ledger } from "../../adapters/ledger/ledger.adapter.js";
+import { LedgerGateway } from "../../gateways/ledger/ledger.gateway.js";
 import { FixtureBillingServerModule } from "../../module.js";
 import type { ChargeInput } from "../../shared/schema/balance.schema.js";
 import { BalanceQuery, ChargeCommand } from "./contract.js";
@@ -15,10 +15,10 @@ export const WithinLimitGuard = guard<ChargeInput>().handle(({ input }) => {
 export const ChargeCommandHandler = handler(ChargeCommand, FixtureBillingServerModule)
 	.guard(PublicGuard)
 	.guard(WithinLimitGuard)
-	.inject({ ledger: Ledger })
-	.handle(({ amount }, { ledger }) => ledger.add(amount));
+	.inject({ ledgerGateway: LedgerGateway })
+	.handle(({ amount }, { ledgerGateway }) => ledgerGateway.add(amount));
 
 export const BalanceQueryHandler = handler(BalanceQuery, FixtureBillingServerModule)
 	.guard(PublicGuard)
-	.inject({ ledger: Ledger })
-	.handle((_input, { ledger }) => ledger.balance());
+	.inject({ ledgerGateway: LedgerGateway })
+	.handle((_input, { ledgerGateway }) => ledgerGateway.balance());

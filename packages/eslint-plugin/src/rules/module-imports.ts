@@ -1,6 +1,7 @@
 import path from "node:path";
 import type { Rule } from "eslint";
 import { moduleOfDomain } from "../domain-file.js";
+import { fieldOf } from "../guards.js";
 import { importListener } from "../imports.js";
 import { jsonAt, workspacePackagesIn } from "../workspace.js";
 import type { WorkspacePackage } from "../workspace.js";
@@ -21,7 +22,7 @@ interface Importing {
 }
 
 const DOMAIN_LEVEL = "domain";
-const WIRING_ENTRIES: ReadonlySet<string> = new Set(["module", "adapters"]);
+const WIRING_ENTRIES: ReadonlySet<string> = new Set(["module", "gateways"]);
 const SERVER_CONDITION = "server";
 const DECLARATION_FILE = /\.d\.ts$/;
 const CLIENT_STARTER = /^(apps\/[^/]+|packages\/host-[^/]+)$/;
@@ -37,7 +38,7 @@ export const moduleImports: Rule.RuleModule = {
 				'{{specifier}} wires a server module: only a server app imports it (a package whose tsconfig sets customConditions ["server"], today apps/server)',
 			clientWiring:
 				"{{specifier}} wires a client module: only a client app starter (apps/*, not a server app) or a host (packages/host-*) imports it",
-			noSuchEntry: '{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./adapters"',
+			noSuchEntry: '{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways"',
 		},
 	},
 	create(context) {
@@ -80,8 +81,7 @@ function placeOf(cwd: string, owner: WorkspacePackage): Place {
 }
 
 function conditionsOf(tsconfig: string): readonly unknown[] {
-	const options: unknown = Reflect.get(Object(jsonAt(tsconfig)), "compilerOptions");
-	const conditions: unknown = Reflect.get(Object(options), "customConditions");
+	const conditions = fieldOf(fieldOf(jsonAt(tsconfig), "compilerOptions"), "customConditions");
 	return Array.isArray(conditions) ? conditions : [];
 }
 

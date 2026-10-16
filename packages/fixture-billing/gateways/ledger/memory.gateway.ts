@@ -1,7 +1,7 @@
 import type { Balance } from "../../shared/schema/balance.schema.js";
-import { Ledger } from "./ledger.adapter.js";
+import { LedgerGateway } from "./ledger.gateway.js";
 
-export class MemoryLedger extends Ledger {
+export class MemoryLedgerGateway extends LedgerGateway {
 	private held: Balance;
 
 	constructor(currency: string) {

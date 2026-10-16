@@ -1,11 +1,11 @@
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { domainFileOf, moduleOfDomain } from "../domain-file.js";
+import { FEATURES, HANDLERS_FILE, domainFileOf, moduleOfDomain } from "../domain-file.js";
+import { isNode } from "../guards.js";
 
 const ID_FIELD = /^(id|invoice)$|Id$/;
 const ACCESS_ONLY_GUARDS: ReadonlySet<string> = new Set(["PublicGuard", "AuthenticatedGuard", "HasPermissionGuard"]);
 const CALL_FACTS: ReadonlySet<string> = new Set(["idempotencyKey", "signal", "user"]);
-const HANDLERS_FILE = "handlers.ts";
 const HANDLER_NAME = /Handler$/;
 
 export const handlerOwnership: Rule.RuleModule = {
@@ -22,7 +22,7 @@ export const handlerOwnership: Rule.RuleModule = {
 	},
 	create(context) {
 		const file = domainFileOf(context.filename);
-		if (file === null || file.folder !== "features" || file.inside.at(-1) !== HANDLERS_FILE) return {};
+		if (file === null || file.folder !== FEATURES || file.inside.at(-1) !== HANDLERS_FILE) return {};
 		if (moduleOfDomain(file.root)?.runs !== "server") return {};
 		return {
 			CallExpression(node) {
@@ -124,8 +124,4 @@ function visit(node: ESTree.Node, seen: (node: ESTree.Node) => void): void {
 		if (key === "parent") continue;
 		for (const child of Array.isArray(value) ? value : [value]) if (isNode(child)) visit(child, seen);
 	}
-}
-
-function isNode(value: unknown): value is ESTree.Node {
-	return typeof value === "object" && value !== null && typeof Reflect.get(value, "type") === "string";
 }

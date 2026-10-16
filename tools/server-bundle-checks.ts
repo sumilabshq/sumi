@@ -12,7 +12,7 @@ const MODULE_SPECIFIER = "@widgetarium/fixture-billing/module";
 const FIXTURE = /packages\/fixture-billing\//;
 const FIXTURE_CONTRACT = /packages\/fixture-billing\/features\/charge\/contract\.ts$/;
 const SERVER_ONLY_CODE =
-	/packages\/fixture-billing\/(module\.ts|generated\/module\.ts|features\/[^/]+\/handlers\.ts|adapters\/)|node_modules\/(hono|@orpc\/server)\//;
+	/packages\/fixture-billing\/(module\.ts|generated\/module\.ts|features\/[^/]+\/handlers\.ts|gateways\/)|node_modules\/(hono|@orpc\/server)\//;
 const SERVER_CONDITION = "server";
 const SERVER_MODULE = "packages/fixture-billing/generated/module.ts";
 const GUARD_REASON = "a charge is at most";
@@ -66,7 +66,7 @@ check(
 	true,
 );
 check(
-	"and none of its module, handlers, adapters, Hono or the oRPC server",
+	"and none of its module, handlers, gateways, Hono or the oRPC server",
 	inputs.filter((input) => SERVER_ONLY_CODE.test(input)),
 	[],
 );

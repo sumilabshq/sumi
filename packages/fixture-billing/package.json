@@ -12,8 +12,8 @@
 		"./module": {
 			"server": "./generated/module.ts"
 		},
-		"./adapters": {
-			"server": "./generated/adapters.ts"
+		"./gateways": {
+			"server": "./generated/gateways.ts"
 		}
 	},
 	"dependencies": {

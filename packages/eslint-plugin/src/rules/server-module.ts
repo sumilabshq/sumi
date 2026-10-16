@@ -1,12 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Rule } from "eslint";
-import { domainFileOf, moduleOfDomain } from "../domain-file.js";
+import { FEATURES, MODULE_FILE, domainFileOf, moduleOfDomain } from "../domain-file.js";
+import { entriesUnder } from "../files.js";
+import { fieldOf, isRecord } from "../guards.js";
 import { jsonAt } from "../workspace.js";
 
 const SERVER_CONDITION = "server";
-const GATED_ENTRIES = ["./module", "./adapters"];
-const MODULE_FILE = "module.ts";
+const GATED_ENTRIES = ["./module", "./gateways"];
+const UI_FOLDER = "ui";
 const UI_FOLDERS = ["shared/ui"];
 
 export const serverModule: Rule.RuleModule = {
@@ -36,22 +38,22 @@ export const serverModule: Rule.RuleModule = {
 };
 
 function exportsOf(manifest: unknown): Readonly<Record<string, unknown>> {
-	const exported: unknown = typeof manifest === "object" && manifest !== null ? Reflect.get(manifest, "exports") : null;
-	return typeof exported === "object" && exported !== null ? { ...exported } : {};
+	const exported = fieldOf(manifest, "exports");
+	return isRecord(exported) ? exported : {};
 }
 
 function isGated(entry: unknown): boolean {
-	if (typeof entry !== "object" || entry === null) return false;
+	if (!isRecord(entry)) {
+		return false;
+	}
+
 	const conditions = Object.keys(entry);
 	return conditions.length === 1 && conditions[0] === SERVER_CONDITION;
 }
 
 function uiFoldersIn(root: string): string[] {
-	const featureUi = fs.existsSync(path.join(root, "features"))
-		? fs
-				.readdirSync(path.join(root, "features"), { recursive: true, withFileTypes: true })
-				.filter((entry) => entry.isDirectory() && entry.name === "ui")
-				.map((entry) => path.relative(root, path.join(entry.parentPath, entry.name)))
-		: [];
+	const featureUi = entriesUnder(path.join(root, FEATURES))
+		.filter(({ full, isFolder }) => isFolder && path.basename(full) === UI_FOLDER)
+		.map(({ full }) => path.relative(root, full));
 	return [...UI_FOLDERS.filter((folder) => fs.existsSync(path.join(root, folder))), ...featureUi];
 }

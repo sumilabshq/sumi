@@ -1,8 +1,7 @@
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { domainFileOf } from "../domain-file.js";
+import { MODULE_FILE, domainFileOf } from "../domain-file.js";
 
-const MODULE_FILE = "module.ts";
 const STARTERS: ReadonlySet<string> = new Set(["serverModule", "clientModule"]);
 
 export const moduleDefinition: Rule.RuleModule = {
@@ -12,7 +11,7 @@ export const moduleDefinition: Rule.RuleModule = {
 		schema: [],
 		messages: {
 			notTheModule:
-				"module.ts exports only its serverModule(...) or clientModule(...) const; move this export to adapters/, shared/ or a feature",
+				"module.ts exports only its serverModule(...) or clientModule(...) const; move this export to gateways/, shared/ or a feature",
 		},
 	},
 	create(context) {

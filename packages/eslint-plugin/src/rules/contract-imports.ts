@@ -1,11 +1,10 @@
 import path from "node:path";
 import type { Rule } from "eslint";
-import { domainFileOf } from "../domain-file.js";
+import { CONTRACT_FILE, FEATURES, domainFileOf } from "../domain-file.js";
 import type { DomainFile } from "../domain-file.js";
 import { importListener } from "../imports.js";
 import { workspacePackagesIn } from "../workspace.js";
 
-const CONTRACT_FILE = "contract.ts";
 const SCHEMAS = "shared/schema/";
 const DOMAIN_LEVEL = "domain";
 
@@ -22,7 +21,7 @@ export const contractImports: Rule.RuleModule = {
 	},
 	create(context) {
 		const file = domainFileOf(context.filename);
-		if (file === null || file.folder !== "features" || file.inside.at(-1) !== CONTRACT_FILE) return {};
+		if (file === null || file.folder !== FEATURES || file.inside.at(-1) !== CONTRACT_FILE) return {};
 		const domains = workspacePackagesIn(context.cwd)
 			.filter(({ level }) => level === DOMAIN_LEVEL)
 			.map(({ name }) => name);

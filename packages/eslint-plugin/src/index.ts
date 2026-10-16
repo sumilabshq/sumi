@@ -4,10 +4,13 @@ import { buildingBlockNames } from "./rules/building-block-names.js";
 import { contractImports } from "./rules/contract-imports.js";
 import { featureLayout } from "./rules/feature-layout.js";
 import { handlerOwnership } from "./rules/handler-ownership.js";
+import { layerOrder } from "./rules/layer-order.js";
 import { moduleDefinition } from "./rules/module-definition.js";
 import { moduleImports } from "./rules/module-imports.js";
+import { moduleState } from "./rules/module-state.js";
 import { noChoiceStrings } from "./rules/no-choice-strings.js";
 import { serverModule } from "./rules/server-module.js";
+import { singleUseLib } from "./rules/single-use-lib.js";
 
 const PREFIX = "@widgetarium";
 
@@ -17,9 +20,12 @@ const rules = {
 	"contract-imports": contractImports,
 	"module-imports": moduleImports,
 	"module-definition": moduleDefinition,
+	"module-state": moduleState,
 	"server-module": serverModule,
 	"feature-layout": featureLayout,
+	"layer-order": layerOrder,
 	"handler-ownership": handlerOwnership,
+	"single-use-lib": singleUseLib,
 } as const;
 
 const SEVERITY: Readonly<Record<keyof typeof rules, Linter.RuleSeverity>> = {
@@ -28,9 +34,12 @@ const SEVERITY: Readonly<Record<keyof typeof rules, Linter.RuleSeverity>> = {
 	"contract-imports": "error",
 	"module-imports": "error",
 	"module-definition": "error",
+	"module-state": "error",
 	"server-module": "error",
 	"feature-layout": "error",
+	"layer-order": "warn",
 	"handler-ownership": "warn",
+	"single-use-lib": "warn",
 };
 
 const ruled: ESLint.Plugin = { meta: { name: "@widgetarium/eslint-plugin" }, rules };

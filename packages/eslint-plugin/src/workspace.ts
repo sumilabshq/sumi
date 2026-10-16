@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fieldOf } from "./guards.js";
 
 export interface WorkspacePackage {
 	readonly folder: string;
@@ -9,6 +10,7 @@ export interface WorkspacePackage {
 
 const ANY_FOLDER = "/*";
 const DOMAIN_LEVEL = "domain";
+const NOT_JSON = "{file} is not plain JSON, so the Widgetarium lint rules cannot read it";
 
 export function domainModulesIn(cwd: string): string[] {
 	return workspacePackagesIn(cwd)
@@ -28,7 +30,18 @@ export function levelOf(manifest: unknown): string {
 }
 
 export function jsonAt(file: string): unknown {
-	return fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, "utf8")) : null;
+	if (!fs.existsSync(file)) {
+		return null;
+	}
+
+	try {
+		return JSON.parse(fs.readFileSync(file, "utf8"));
+	} catch (failure) {
+		throw new Error(
+			NOT_JSON.replace("{file}", () => file),
+			{ cause: failure },
+		);
+	}
 }
 
 function workspacesOf(cwd: string): string[] {
@@ -52,10 +65,6 @@ function packageIn(cwd: string, folder: string): WorkspacePackage[] {
 	const manifest = jsonAt(path.join(cwd, folder, "package.json"));
 	if (manifest === null) return [];
 	return [{ folder, name: stringAt(manifest, "name"), level: levelOf(manifest) }];
-}
-
-function fieldOf(value: unknown, key: string): unknown {
-	return typeof value === "object" && value !== null ? Reflect.get(value, key) : undefined;
 }
 
 function stringAt(value: unknown, key: string): string {
