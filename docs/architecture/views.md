@@ -52,9 +52,9 @@ export function Canvas() {
 }
 ```
 
-`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule], host })}><Canvas /></AppProvider>`.
+`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule], platforms, host })}><Canvas /></AppProvider>`.
 
-A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
+A query whose data changes outside a command overrides `watch` on its handler ([requests.md](requests.md)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
 
 A layout is built from `<Slot>`, and a slot is a boundary: Suspense for a block's required data and an error boundary for its failures. Both have defaults from the kit; a block that needs its own passes them: `<Slot loading={<TasksSkeleton />} error={(refusal) => <TasksFailed reason={refusal} />}>`. Inside a block, `<Section>` is the same boundary around one part, so a failing column does not break the block. A block that reads no required data needs nothing.
 

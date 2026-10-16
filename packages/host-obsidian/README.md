@@ -1,4 +1,4 @@
-# @widgetarium/obsidian
+# @widgetarium/host-obsidian
 
 The Obsidian plugin. It mounts [`@widgetarium/core`](../../packages/core) inside notes and gives it what only Obsidian has: the vault, the editor, the header and the sidebar.
 
