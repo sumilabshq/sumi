@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
+import { format, resolveConfig } from "prettier";
 import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
@@ -214,8 +215,16 @@ function runGates(): void {
 
 async function layCanvasSheet(): Promise<void> {
 	const authored = readFileSync(PLUGIN_SHEET, "utf8");
-	const laid = withCanvasSheet(authored, await canvasSheet(process.cwd()));
+	const laid = await formattedAsRepo(withCanvasSheet(authored, await canvasSheet(process.cwd())), PLUGIN_SHEET);
 	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
+}
+
+async function formattedAsRepo(text: string, filepath: string): Promise<string> {
+	const config = await resolveConfig(filepath);
+	return format(text, {
+		...config,
+		filepath,
+	});
 }
 
 if (import.meta.main) {
