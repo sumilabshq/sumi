@@ -2,16 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import { z } from "zod";
-import {
-	AppProvider,
-	PublicGuard,
-	Slot,
-	app,
-	handler,
-	module,
-	query,
-	useQuery,
-} from "../packages/core/src/requests/index.ts";
+import { AppProvider, Slot, app, clientModule, handler, query, useQuery } from "../packages/core/src/requests/index.ts";
 import type { AnyQuery } from "../packages/core/src/requests/index.ts";
 
 const RUNS = 12;
@@ -20,22 +11,15 @@ const FRAMES_AT_MOST = 300;
 const ASYNC_DELAY_MS = 20;
 const RunSchema = z.object({ run: z.number() });
 
-const SettledNowQuery = query("probe/settled-now").guard(PublicGuard).settlesNow().input(RunSchema).output(z.number());
-const AsyncQuery = query("probe/async").guard(PublicGuard).input(RunSchema).output(z.number());
+const SettledNowQuery = query("probe/settled-now").settlesNow().input(RunSchema).output(z.number());
+const AsyncQuery = query("probe/async").input(RunSchema).output(z.number());
 
-const started = app({
-	modules: [
-		module("probe", {
-			runs: "client",
-			handlers: [
-				handler(SettledNowQuery, { run: ({ run }) => run }),
-				handler(AsyncQuery, {
-					run: ({ run }) => new Promise<number>((settled) => setTimeout(() => settled(run), ASYNC_DELAY_MS)),
-				}),
-			],
-		}),
-	],
-});
+const ProbeClientModule = clientModule("probe");
+const SettledNowQueryHandler = handler(SettledNowQuery, ProbeClientModule).handle(({ run }) => run);
+const AsyncQueryHandler = handler(AsyncQuery, ProbeClientModule).handle(
+	({ run }) => new Promise<number>((settled) => setTimeout(() => settled(run), ASYNC_DELAY_MS)),
+);
+const started = app({ modules: [ProbeClientModule.handlers([SettledNowQueryHandler, AsyncQueryHandler])] });
 
 function Probe({ asked, run }: { readonly asked: AnyQuery; readonly run: number }): ReactElement {
 	const { data } = useQuery(asked, { run });

@@ -7,12 +7,13 @@ interface Built {
 }
 
 const WEB_STUDIO = "apps/studio/src/index.ts";
-const VAULT_ENTRY = "packages/canvas/vault.ts";
+const ADAPTERS_ENTRY = "packages/canvas/generated/adapters.ts";
 const SERVER_ENTRY = "packages/core/src/requests/server/index.ts";
 const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
 const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
-const SERVER_CONDITION = "widgetarium-server";
-const VAULT_CODE = /packages\/canvas\/(vault\.ts|adapters\/[^/]+\/(vault\.adapter\.ts|vault\/|assistant\.adapter\.ts))/;
+const SERVER_CONDITION = "server";
+const VAULT_CODE = /packages\/canvas\/adapters\/[^/]+\/(obsidian\.adapter\.ts|obsidian\/)/;
+const WEB_PARTS = /packages\/canvas\/adapters\/canvas-parts\/web\.adapter\.ts$/;
 const HOST_CODE = /packages\/host-obsidian\//;
 const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/core\/src\/requests\/server\//;
 let failed = 0;
@@ -63,7 +64,12 @@ function check(what: string, isOk: boolean, got: unknown): void {
 
 const web = await builtOf(WEB_STUDIO);
 const webVault = web.inputs.filter((input) => VAULT_CODE.test(input));
-check("the web studio bundle carries none of the canvas's vault implementations", webVault.length === 0, webVault);
+check(
+	"the web studio takes its parts from the canvas's one ./adapters entry",
+	web.inputs.some((input) => WEB_PARTS.test(input)),
+	web.inputs.filter((input) => WEB_PARTS.test(input)),
+);
+check("and tree-shaking leaves none of the canvas's Obsidian implementations in it", webVault.length === 0, webVault);
 const webHost = web.inputs.filter((input) => HOST_CODE.test(input));
 check("nor any code of the Obsidian host", webHost.length === 0, webHost);
 const webServer = web.inputs.filter((input) => SERVER_CODE.test(input));
@@ -73,9 +79,9 @@ check(
 	!web.imports.includes("obsidian"),
 	web.imports.filter((path) => path === "obsidian"),
 );
-const vault = await builtOf(VAULT_ENTRY);
+const vault = await builtOf(ADAPTERS_ENTRY);
 check(
-	"the vault entry the Obsidian host imports does carry them, so the first check can fail",
+	"the whole ./adapters entry does carry them, so the tree-shaking check can fail",
 	vault.inputs.some((input) => VAULT_CODE.test(input)),
 	vault.inputs.filter((input) => VAULT_CODE.test(input)).length,
 );
@@ -92,10 +98,6 @@ check(
 	guardForClient.slice(0, 120),
 );
 const guardForServer = await buildFailureOf([SERVER_CONDITION]);
-check(
-	"and builds under the widgetarium-server condition, so the check can fail",
-	guardForServer === "",
-	guardForServer,
-);
+check("and builds under the server condition, so the check can fail", guardForServer === "", guardForServer);
 console.log(failed === 0 ? "web canvas bundle: clean" : `web canvas bundle: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

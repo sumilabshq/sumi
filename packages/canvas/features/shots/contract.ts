@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { query } from "@widgetarium/core/requests";
-import { BoardSchema } from "../../schema/design.schema.js";
-import { ShotAskSchema } from "../../schema/shot-ask.schema.js";
-import { RegionSchema } from "../../schema/regions.schema.js";
+import { BoardSchema } from "../../shared/schema/design.schema.js";
+import { ShotAskSchema } from "../../shared/schema/shot-ask.schema.js";
+import { RegionSchema } from "../../shared/schema/regions.schema.js";
 
 export const NoteBoardQuery = query("canvas/note-board")
 	.input(z.object({ note: z.string(), width: z.number() }))

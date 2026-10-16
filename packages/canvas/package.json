@@ -9,19 +9,19 @@
 	],
 	"exports": {
 		".": {
-			"source": "./index.ts",
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
+			"source": "./generated/index.ts",
+			"types": "./dist/generated/index.d.ts",
+			"default": "./dist/generated/index.js"
 		},
 		"./module": {
-			"source": "./module.ts",
-			"types": "./dist/module.d.ts",
-			"default": "./dist/module.js"
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
 		},
-		"./vault": {
-			"source": "./vault.ts",
-			"types": "./dist/vault.d.ts",
-			"default": "./dist/vault.js"
+		"./adapters": {
+			"source": "./generated/adapters.ts",
+			"types": "./dist/generated/adapters.d.ts",
+			"default": "./dist/generated/adapters.js"
 		}
 	},
 	"dependencies": {

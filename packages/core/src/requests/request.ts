@@ -1,12 +1,8 @@
 import { z } from "zod";
 import type { Duration } from "./duration";
-import { isPublicGuard } from "./guard";
-import type { AnyGuard, Guard, OpenGuard } from "./guard";
 
 type RequestKind = "query" | "command";
-type GuardStage = "unguarded" | "guarded" | "public";
 type KeyStage = "unkeyed" | "keyed";
-type GuardedStage = "guarded" | "public";
 
 type KeyMaker<In> = { bivariant(input: In): string }["bivariant"];
 
@@ -19,11 +15,6 @@ export type IdempotencyKey<In> = KeyPolicy | KeyMaker<In>;
 export const PerCall: KeyPolicy = Object.freeze({ policy: "per-call" });
 export const Repeatable: KeyPolicy = Object.freeze({ policy: "repeatable" });
 
-export interface RateLimit {
-	readonly calls: number;
-	readonly per: Duration;
-}
-
 export interface CachePolicy {
 	readonly freshFor: Duration;
 }
@@ -34,8 +25,6 @@ interface Definition<K extends RequestKind, I extends z.ZodType, O extends z.Zod
 	readonly module: string;
 	readonly input: I;
 	readonly output: O;
-	readonly guards: readonly AnyGuard[];
-	readonly rateLimit: RateLimit | null;
 	readonly idempotencyKey: IdempotencyKey<unknown> | null;
 	readonly freshFor: Duration | null;
 	readonly settlesNow: boolean;
@@ -45,20 +34,12 @@ interface Definition<K extends RequestKind, I extends z.ZodType, O extends z.Zod
 const REQUEST_NAME = /^([a-z][a-z0-9-]*)\/[a-z][a-z0-9-]*$/;
 const BAD_NAME = 'a request is named "<module>/<name>" in kebab case, got "{name}"';
 
-export class Contract<
-	K extends RequestKind,
-	I extends z.ZodType,
-	O extends z.ZodType,
-	G extends GuardStage,
-	Key extends KeyStage,
-> {
+export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.ZodType, Key extends KeyStage> {
 	readonly kind: K;
 	readonly name: string;
 	readonly module: string;
 	readonly inputSchema: I;
 	readonly outputSchema: O;
-	readonly guards: readonly AnyGuard[];
-	readonly limit: RateLimit | null;
 	readonly keyPolicy: IdempotencyKey<unknown> | null;
 	readonly freshFor: Duration | null;
 	readonly isSettledNow: boolean;
@@ -66,7 +47,6 @@ export class Contract<
 
 	constructor(
 		private readonly definition: Definition<K, I, O>,
-		readonly guardStage: G,
 		readonly keyStage: Key,
 	) {
 		this.kind = definition.kind;
@@ -74,65 +54,46 @@ export class Contract<
 		this.module = definition.module;
 		this.inputSchema = definition.input;
 		this.outputSchema = definition.output;
-		this.guards = definition.guards;
-		this.limit = definition.rateLimit;
 		this.keyPolicy = definition.idempotencyKey;
 		this.freshFor = definition.freshFor;
 		this.isSettledNow = definition.settlesNow;
 		this.invalidated = definition.invalidates;
 	}
 
-	input<S extends z.ZodType>(schema: S): Contract<K, S, O, G, Key> {
-		return new Contract({ ...this.definition, input: schema }, this.guardStage, this.keyStage);
+	input<S extends z.ZodType>(schema: S): Contract<K, S, O, Key> {
+		return new Contract({ ...this.definition, input: schema }, this.keyStage);
 	}
 
-	output<S extends z.ZodType>(schema: S): Contract<K, I, S, G, Key> {
-		return new Contract({ ...this.definition, output: schema }, this.guardStage, this.keyStage);
-	}
-
-	guard(this: Contract<K, I, O, "unguarded", Key>, wanted: OpenGuard): Contract<K, I, O, "public", Key>;
-	guard(this: Contract<K, I, O, "unguarded" | "guarded", Key>, wanted: Guard): Contract<K, I, O, "guarded", Key>;
-	guard(wanted: AnyGuard): Contract<K, I, O, GuardStage, Key> {
-		const stage: GuardStage = isPublicGuard(wanted) ? "public" : "guarded";
-		return new Contract({ ...this.definition, guards: [...this.definition.guards, wanted] }, stage, this.keyStage);
-	}
-
-	rateLimit(limit: RateLimit): Contract<K, I, O, G, Key> {
-		return new Contract({ ...this.definition, rateLimit: limit }, this.guardStage, this.keyStage);
+	output<S extends z.ZodType>(schema: S): Contract<K, I, S, Key> {
+		return new Contract({ ...this.definition, output: schema }, this.keyStage);
 	}
 
 	idempotencyKey(
-		this: Contract<"command", I, O, G, "unkeyed">,
+		this: Contract<"command", I, O, "unkeyed">,
 		key: IdempotencyKey<z.output<I>>,
-	): Contract<"command", I, O, G, "keyed"> {
-		return new Contract({ ...this.definition, idempotencyKey: key }, this.guardStage, "keyed");
+	): Contract<"command", I, O, "keyed"> {
+		return new Contract({ ...this.definition, idempotencyKey: key }, "keyed");
 	}
 
-	cache(this: Contract<"query", I, O, G, Key>, policy: CachePolicy): Contract<"query", I, O, G, Key> {
-		return new Contract({ ...this.definition, freshFor: policy.freshFor }, this.guardStage, this.keyStage);
+	cache(this: Contract<"query", I, O, Key>, policy: CachePolicy): Contract<"query", I, O, Key> {
+		return new Contract({ ...this.definition, freshFor: policy.freshFor }, this.keyStage);
 	}
 
-	settlesNow(this: Contract<"query", I, O, G, Key>): Contract<"query", I, O, G, Key> {
-		return new Contract({ ...this.definition, settlesNow: true }, this.guardStage, this.keyStage);
+	settlesNow(this: Contract<"query", I, O, Key>): Contract<"query", I, O, Key> {
+		return new Contract({ ...this.definition, settlesNow: true }, this.keyStage);
 	}
 
-	invalidates(
-		this: Contract<"command", I, O, G, Key>,
-		queries: readonly AnyQuery[],
-	): Contract<"command", I, O, G, Key> {
-		return new Contract({ ...this.definition, invalidates: queries }, this.guardStage, this.keyStage);
+	invalidates(this: Contract<"command", I, O, Key>, queries: readonly AnyQuery[]): Contract<"command", I, O, Key> {
+		return new Contract({ ...this.definition, invalidates: queries }, this.keyStage);
 	}
 }
 
-export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, GuardStage, KeyStage>;
-export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, GuardStage, "keyed">;
+export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, KeyStage>;
+export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, "keyed">;
 
 export type AnyQuery = Query<z.ZodType, z.ZodType>;
 export type AnyCommand = Command<z.ZodType, z.ZodType>;
 export type AnyRequest = AnyQuery | AnyCommand;
-export type GuardedRequest =
-	| Contract<"query", z.ZodType, z.ZodType, GuardedStage, KeyStage>
-	| Contract<"command", z.ZodType, z.ZodType, GuardedStage, "keyed">;
 
 export type SentOf<R extends AnyRequest> = z.input<R["inputSchema"]>;
 export type InputOf<R extends AnyRequest> = z.output<R["inputSchema"]>;
@@ -140,12 +101,12 @@ export type ReturnedOf<R extends AnyRequest> = z.input<R["outputSchema"]>;
 export type OutputOf<R extends AnyRequest> = z.output<R["outputSchema"]>;
 export type InputArgs<R extends AnyRequest> = [SentOf<R>] extends [void] ? [input?: SentOf<R>] : [input: SentOf<R>];
 
-export function query(name: string): Contract<"query", z.ZodVoid, z.ZodVoid, "unguarded", "keyed"> {
-	return new Contract(definitionOf("query", name), "unguarded", "keyed");
+export function query(name: string): Contract<"query", z.ZodVoid, z.ZodVoid, "keyed"> {
+	return new Contract(definitionOf("query", name), "keyed");
 }
 
-export function command(name: string): Contract<"command", z.ZodVoid, z.ZodVoid, "unguarded", "unkeyed"> {
-	return new Contract(definitionOf("command", name), "unguarded", "unkeyed");
+export function command(name: string): Contract<"command", z.ZodVoid, z.ZodVoid, "unkeyed"> {
+	return new Contract(definitionOf("command", name), "unkeyed");
 }
 
 export function isQuery(request: AnyRequest): request is AnyQuery {
@@ -159,8 +120,6 @@ function definitionOf<K extends RequestKind>(kind: K, name: string): Definition<
 		module: moduleOf(name),
 		input: z.void(),
 		output: z.void(),
-		guards: [],
-		rateLimit: null,
 		idempotencyKey: null,
 		freshFor: null,
 		settlesNow: false,

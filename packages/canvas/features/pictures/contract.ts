@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
-import { PictureAskSchema } from "../../schema/frame-picture.schema.js";
+import { PictureAskSchema } from "../../shared/schema/frame-picture.schema.js";
 
 export const AskForPictureCommand = command("canvas/ask-for-picture")
 	.input(PictureAskSchema)

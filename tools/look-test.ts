@@ -12,17 +12,21 @@ import {
 } from "../packages/core/src/app-look.ts";
 import type { Look, OfferedSetting } from "../packages/core/src/app-look.ts";
 import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
-import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/lib/look/look-tokens.ts";
+import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/features/look/lib/look-tokens.ts";
 import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
 import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
-import { VaultAppLook } from "../packages/canvas/adapters/app-look/vault.adapter.ts";
-import { ProjectDesignJobs } from "../packages/canvas/adapters/design-jobs/project.adapter.ts";
-import { pickLookHandler } from "../packages/canvas/features/look/handlers.ts";
-import { CachedDesignReads } from "../packages/canvas/lib/design/design-reads.ts";
-import { MomentCanvasStore } from "../packages/canvas/lib/view/canvas-store.ts";
+import { ObsidianDesignFiles } from "../packages/canvas/adapters/design-files/obsidian.adapter.ts";
+import { WebDesignJobs } from "../packages/canvas/adapters/design-jobs/web.adapter.ts";
+import { PickLookCommandHandler } from "../packages/canvas/features/look/handlers.ts";
+import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
+import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
 import { FARM_OPENED, FixedDesignFolder } from "./canvas-hosts.ts";
 
 let failures = 0;
+
+async function refusesWrites(): Promise<void> {
+	throw new Error("the look test writes no binary file");
+}
 
 function check(what: string, actual: unknown, expected: unknown): void {
 	const isSame = JSON.stringify(actual) === JSON.stringify(expected);
@@ -198,15 +202,15 @@ const lookAdapter = {
 		return lookFile.text;
 	},
 };
-const appLook = new VaultAppLook(lookAdapter);
+const designFiles = new ObsidianDesignFiles({ ...lookAdapter, mkdir: refusesWrites, writeBinary: refusesWrites });
 const lookReads = new CachedDesignReads(
 	new FixedDesignFolder(async () => ({ screens: [], references: [], widgets: [] })),
-	new ProjectDesignJobs(),
-	appLook,
+	new WebDesignJobs(),
+	designFiles,
 );
-await pickLookHandler.run(
+await PickLookCommandHandler.handle(
 	{ settingName: "ground", option: "grey" },
-	{ appLook, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
+	{ designFiles, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
 );
 const afterPick = readLook(lookFile.text);
 check(

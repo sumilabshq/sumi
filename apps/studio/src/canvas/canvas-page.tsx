@@ -1,8 +1,8 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Canvas } from "@widgetarium/canvas";
-import { canvasModule } from "@widgetarium/canvas/module";
-import type { CanvasParts } from "@widgetarium/canvas/module";
+import { CanvasClientModule } from "@widgetarium/canvas/module";
+import type { CanvasParts } from "@widgetarium/canvas/adapters";
 import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
 import { useHandsCanvas } from "./use-hands-canvas.js";
@@ -20,7 +20,7 @@ export interface CanvasPageProps {
 }
 
 export function CanvasPage({ parts, corners, onCanvas }: CanvasPageProps): ReactElement {
-	const [canvasApp] = useState(() => app({ modules: [canvasModule.with(parts)] }));
+	const [canvasApp] = useState(() => app({ modules: [CanvasClientModule.with(parts)] }));
 	useHandsCanvas(canvasApp, onCanvas);
 	return (
 		<AppProvider app={canvasApp}>

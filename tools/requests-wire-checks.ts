@@ -1,6 +1,15 @@
 import { MemoryDoneKeys, MemoryRateLimits, app } from "../packages/core/src/requests/index.ts";
 import type { DoneKeys, RateLimit, RateLimits } from "../packages/core/src/requests/index.ts";
-import { Repeatable, command, handler, module, query } from "../packages/core/src/requests/index.ts";
+import {
+	PublicGuard,
+	Repeatable,
+	clientModule,
+	command,
+	guard,
+	handler,
+	query,
+	serverModule,
+} from "../packages/core/src/requests/index.ts";
 import { server } from "../packages/core/src/requests/server/index.ts";
 import { z } from "zod";
 import { remoteOver } from "../packages/core/src/requests/wire-client.ts";
@@ -25,7 +34,7 @@ class TracingDoneKeys extends MemoryDoneKeys {
 
 const rateLimits: RateLimits = new TracingRateLimits();
 const served = server({
-	modules: [fx.serverPagesModule],
+	modules: [fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule],
 	env: { PAGES_SEED: "Home,About" },
 	host: { authenticate: new fx.HeaderAuthenticate(), rateLimits, doneKeys: new TracingDoneKeys() },
 });
@@ -88,7 +97,7 @@ check("a user with the permission runs it", await editor.send(fx.RenamePageComma
 check(
 	"a project guard reads what its module provides, and refuses a rename of a page that is not there",
 	await editor.send(fx.RenamePageCommand, { from: "Nowhere", to: "Else" }),
-	{ ok: false, reason: "pages/rename-page: no such page", code: "refused-by-guard", ran: false },
+	{ ok: false, reason: "pages/rename-page: no such page", code: "forbidden", ran: false },
 );
 check("a guard that throws on the server is a refusal, and nothing ran", await anonymous.send(fx.GuardCrashQuery), {
 	ok: false,
@@ -123,6 +132,39 @@ check("the policies run guards, then the rate limit, then the key, then the hand
 	"key",
 	"handler",
 ]);
+
+fx.traced.length = 0;
+check("a guard and a middleware add to the context the handler reads", await editor.send(fx.ContextQuery), {
+	ok: true,
+	output: { user: "editor", startedAt: fx.STARTED_AT },
+});
+check("the default rate limit runs first, and a middleware wraps the rest of the chain", fx.traced, [
+	"rate limit",
+	"before",
+	"handler",
+	"after",
+]);
+
+fx.traced.length = 0;
+check(
+	"a module middleware and guard run for its handler, and the module guard's user reaches it",
+	await editor.send(fx.OrderedCommand, { note: "o-1" }),
+	{ ok: true, output: "editor" },
+);
+check("the default limit runs first, then module steps, the handler's, the key and the handle", fx.traced, [
+	"rate limit",
+	"module use",
+	"handler use",
+	"key",
+	"handle",
+]);
+fx.traced.length = 0;
+const refusedByModule = await anonymous.send(fx.OrderedCommand, { note: "o-2" });
+check(
+	"the module guard refuses after the module middleware, before the handler's own",
+	[refusedByModule.ok ? "ran" : refusedByModule.code, fx.traced],
+	["unauthenticated", ["rate limit", "module use"]],
+);
 
 fx.shutGate();
 const one = editor.send(fx.AddPageCommand, { title: "Wire" }, { idempotencyKey: "w-1" });
@@ -178,45 +220,145 @@ check("an unreachable server is a refusal, never a throw", lost.ok ? null : lost
 
 check(
 	"server() refuses a client module",
-	// @ts-expect-error
 	thrownBy(() => server({ modules: [fx.pagesModuleOver(new fx.MemoryPages())], env: {} })),
 	'server() refused:\nmodule "pages" runs on the client; a server runs only modules that run on the server',
 );
 check(
 	"server() refuses a module whose guards need a user and no Authenticate",
-	thrownBy(() => server({ modules: [fx.serverPagesModule], env: {} })),
-	"server() refused:\npages/rename-page is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host\npages/traced is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host\npages/who is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host\npages/stamp is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host",
+	thrownBy(() => server({ modules: [fx.JoinedPagesServerModule], env: {} })),
+	[
+		"server() refused:",
+		...["rename-page", "traced", "who", "stamp", "context", "secret", "who-else", "pay"].map(
+			(name) => `pages/${name} is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host`,
+		),
+		"pages/mine is guarded by guard #1, which needs an Authenticate in the starter's host",
+	].join("\n"),
 );
 const RenameElsewhereCommand = command("pages/rename-elsewhere")
-	.guard(fx.KnownPageGuard)
 	.idempotencyKey(Repeatable)
 	.input(z.object({ from: z.string() }));
 check(
 	"server() refuses a guard whose injected dependency its module does not provide, naming request and guard",
-	thrownBy(() =>
-		server({
-			modules: [
-				module("pages", {
-					runs: "server",
-					handlers: [handler(RenameElsewhereCommand, { run: () => undefined })],
-				}),
-			],
-			env: {},
-		}),
-	),
-	"server() refused:\nguard #1 of pages/rename-elsewhere injects pages, which its module does not provide as a Pages",
+	thrownBy(() => {
+		const ElsewhereServerModule = serverModule("pages");
+		const RenameElsewhereCommandHandler = handler(RenameElsewhereCommand, ElsewhereServerModule)
+			.guard(PublicGuard)
+			.guard(fx.KnownPageGuard)
+			.handle(() => undefined);
+		return server({ modules: [ElsewhereServerModule.handlers([RenameElsewhereCommandHandler])], env: {} });
+	}),
+	"server() refused:\nguard #2 of pages/rename-elsewhere injects pages, which its module does not provide as a Pages",
 );
 const Unguarded = query("pages/unguarded").output(z.string());
+const UnguardedClientModule = clientModule("pages");
+const UnguardedQueryHandler = handler(Unguarded, UnguardedClientModule).handle(() => "");
+const InputOnlyGuard = guard().handle(() => undefined);
+const UnguardedServerModule = serverModule("pages").guard(InputOnlyGuard);
 check(
-	"server() refuses a request with no guard",
+	"server() refuses a request no guard covers, and a handler built for another module",
 	thrownBy(() =>
 		server({
 			// @ts-expect-error
-			modules: [module("pages", { runs: "server", handlers: [handler(Unguarded, { run: () => "" })] })],
+			modules: [UnguardedServerModule.handlers([UnguardedQueryHandler])],
 			env: {},
 		}),
 	),
-	"server() refused:\npages/unguarded runs on the server with no guard: give it PublicGuard or a guard",
+	[
+		"server() refused:",
+		'the handler of pages/unguarded was built for module "pages", but module "pages" holds it',
+		"pages/unguarded runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
+	].join("\n"),
+);
+
+check(
+	"a step answering without next() is refused: a middleware before a guard cannot answer for anyone",
+	await anonymous.send(fx.SecretQuery),
+	{
+		ok: false,
+		reason: "step #2 of pages/secret answered without next(): a step may only refuse",
+		code: "failed",
+		ran: false,
+	},
+);
+
+check(
+	"a step that passes on a user of its own is refused: the user comes from Authenticate only",
+	[await anonymous.send(fx.WhoElseQuery), (await editor.send(fx.WhoElseQuery)).ok],
+	[
+		{
+			ok: false,
+			reason: "step #2 of pages/who-else replaced user, which only the server sets",
+			code: "failed",
+			ran: false,
+		},
+		false,
+	],
+);
+
+const paysBefore = fx.counted.pays;
+const paid = [
+	await editor.send(fx.PayCommand, { n: 5 }, { idempotencyKey: "pay-1" }),
+	await editor.send(fx.PayCommand, { n: 5 }, { idempotencyKey: "pay-1" }),
+];
+check(
+	"a step throwing after the command ran answers ran: true, and the settled key never runs it again",
+	[paid, fx.counted.pays - paysBefore],
+	[
+		[
+			{ ok: false, reason: "the logger broke", code: "failed", ran: true },
+			{ ok: false, reason: "the logger broke", code: "failed", ran: true },
+		],
+		1,
+	],
+);
+
+const mine = [await anonymous.send(fx.MineQuery), await editor.send(fx.MineQuery)];
+check(
+	"a project guard that needs a user covers its handler and refuses a caller with none",
+	mine.map((answer) => (answer.ok ? answer.output : answer.code)),
+	["unauthenticated", "editor"],
+);
+
+const notesBefore = fx.counted.notes;
+const anonymousNotes = [
+	await anonymous.send(fx.NoteCommand, { note: "shared" }),
+	await anonymous.send(fx.NoteCommand, { note: "shared" }),
+];
+check(
+	"a key made from the input never hands one anonymous caller another's answer: each runs",
+	[anonymousNotes.map((answer) => answer.ok), fx.counted.notes - notesBefore],
+	[[true, true], 2],
+);
+const signedNotes = [
+	await editor.send(fx.NoteCommand, { note: "shared" }),
+	await editor.send(fx.NoteCommand, { note: "shared" }),
+];
+check(
+	"while a signed-in caller's repeat of the same data answers the first answer",
+	[signedNotes[1], fx.counted.notes - notesBefore],
+	[signedNotes[0], 3],
+);
+
+const anonymousAdds = [
+	await anonymous.send(fx.AddPageCommand, { title: "Anon" }, { idempotencyKey: "anon-1" }),
+	await anonymous.send(fx.AddPageCommand, { title: "Anon" }, { idempotencyKey: "anon-1" }),
+];
+const anonPages = await anonymous.send(fx.PagesQuery, { prefix: "Anon" });
+check(
+	"an anonymous PerCall key still answers its repeat, because a call key cannot be guessed",
+	[anonymousAdds[1], anonPages.ok ? anonPages.output.length : anonPages.reason],
+	[anonymousAdds[0], 1],
+);
+
+const GreedyServerModule = serverModule("greedy").provide(() => ({ rateLimits: new MemoryRateLimits() }));
+const GreedyQuery = query("greedy/greedy").output(z.string());
+const GreedyQueryHandler = handler(GreedyQuery, GreedyServerModule)
+	.guard(PublicGuard)
+	.handle(() => "");
+check(
+	"server() refuses a module providing what the host provides",
+	thrownBy(() => server({ modules: [GreedyServerModule.handlers([GreedyQueryHandler])], env: {} })),
+	'server() refused:\nmodule "greedy" provides rateLimits, which the host provides',
 );
 
 const outside = await served.fetch(new Request(`${SERVER}/elsewhere`));

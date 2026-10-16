@@ -5,10 +5,10 @@ import { render } from "../packages/core/src/engine/render.js";
 import { AppProvider, OnRefused, useCommand } from "../packages/core/src/requests/index.ts";
 import type { CommandHandle, CommandRefusal } from "../packages/core/src/requests/index.ts";
 import type { WidgetRegistry } from "../packages/core/src/registry.ts";
-import { VaultDesignPhotos } from "../packages/canvas/adapters/design-photos/vault/vault.adapter.ts";
+import { ObsidianDesignFiles } from "../packages/canvas/adapters/design-files/obsidian.adapter.ts";
 import { canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
-import { polledChanges } from "../packages/canvas/adapters/design-folder/vault/design-changes.ts";
-import { shownWidgetsOf } from "../packages/canvas/lib/design/shown-widgets.ts";
+import { polledChanges } from "../packages/canvas/adapters/design-folder/obsidian/design-changes.ts";
+import { shownWidgetsOf } from "../packages/canvas/shared/lib/design/shown-widgets.ts";
 import { AddPhotosCommand } from "../packages/canvas/features/photos/contract.ts";
 import { normalizeBoard } from "../packages/core/src/model.ts";
 import type { WidgetDefinition } from "../packages/core/src/registry.ts";
@@ -28,9 +28,16 @@ export async function checkVaultDesign(check: Check, settle: () => Promise<void>
 
 async function checkFailedWrite(check: Check, settle: () => Promise<void>): Promise<void> {
 	const failing = (): Promise<never> => Promise.reject(new Error(WRITE_FAILED));
-	const adapter = { exists: failing, mkdir: failing, writeBinary: failing, write: failing, process: failing };
+	const adapter = {
+		exists: failing,
+		read: failing,
+		mkdir: failing,
+		writeBinary: failing,
+		write: failing,
+		process: failing,
+	};
 	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
-	const parts = canvasPartsOver({ opened, ownsPaste: () => true }, { designPhotos: new VaultDesignPhotos(adapter) });
+	const parts = canvasPartsOver({ opened, ownsPaste: () => true }, { designFiles: new ObsidianDesignFiles(adapter) });
 	const canvasApp = canvasAppOver(parts);
 	const heard: CommandRefusal[] = [];
 	const node = document.createElement("div");

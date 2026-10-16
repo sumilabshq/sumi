@@ -125,7 +125,7 @@ check("a settlesNow query draws its answer in the very first commit, never its l
 ]);
 
 const remoteServer = server({
-	modules: [fx.serverPagesModule],
+	modules: [fx.JoinedPagesServerModule],
 	env: {},
 	host: { authenticate: new fx.HeaderAuthenticate() },
 });

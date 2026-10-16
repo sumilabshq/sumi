@@ -1,66 +1,134 @@
-import type { AnyHandler, Handler, Inject, Injected } from "./handler";
-import type { GuardedRequest } from "./request";
+import type { Guard, OpenGuard } from "./guard";
+import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
+import type { Added, Middleware, NothingAdded, Step } from "./middleware";
+import type { AnyRequest } from "./request";
 
 export type Runs = "client" | "server";
 
 export type Provided = Readonly<Record<string, object>>;
 
-export interface ReadyModule {
-	readonly name: string;
-	readonly runs: Runs;
-	readonly handlers: readonly AnyHandler[];
-	readonly provide: () => Provided;
-}
+export type NothingProvided = Readonly<Record<never, never>>;
 
-export interface Module<P> {
-	readonly name: string;
-	readonly runs: Runs;
-	readonly handlers: readonly AnyHandler[];
-	readonly with: (parts: P) => ReadyModule;
-}
-
-export type StartableModule = Module<void> | ReadyModule;
+export type Cover = "unguarded" | GuardedState;
 
 export interface ServerParts {
 	readonly env: Readonly<Record<string, string | undefined>>;
 }
 
-type InjectedBy<H> = H extends Handler<infer _R, infer D extends Inject> ? Injected<D> : never;
-
-type Joined<U> = (U extends unknown ? (joined: U) => void : never) extends (joined: infer I) => void ? I : never;
-
-type NeededBy<H extends readonly AnyHandler[]> = Joined<InjectedBy<H[number]>> & Provided;
-
-type ServerHandler = Handler<GuardedRequest, Inject>;
-
-interface ModuleDefinition<P, H extends readonly AnyHandler[], R extends Runs> {
-	readonly runs: R;
-	readonly handlers: H;
-	readonly provide?: (parts: P) => NeededBy<H>;
+export interface ModuleDefinition {
+	readonly name: string;
+	readonly runs: Runs;
+	readonly steps: readonly Step[];
 }
 
-const NOTHING_PROVIDED: Provided = Object.freeze({});
-
-export function module<P = void, const H extends readonly ServerHandler[] = readonly ServerHandler[]>(
-	name: string,
-	definition: ModuleDefinition<P, H, "server">,
-): Module<P>;
-export function module<P = void, const H extends readonly AnyHandler[] = readonly AnyHandler[]>(
-	name: string,
-	definition: ModuleDefinition<P, H, "client">,
-): Module<P>;
-export function module<P>(
-	name: string,
-	{ runs, handlers, provide }: ModuleDefinition<P, readonly AnyHandler[], Runs>,
-): Module<P> {
-	return {
-		name,
-		runs,
-		handlers,
-		with: (parts) => ({ name, runs, handlers, provide: () => (provide ? provide(parts) : NOTHING_PROVIDED) }),
-	};
+export interface ReadyModule {
+	readonly definition: ModuleDefinition;
+	readonly handlers: readonly AnyHandler[];
+	readonly provide: () => Provided;
 }
 
-export function readyModuleOf<P>(module: Module<P> | ReadyModule, parts: P): ReadyModule {
-	return "with" in module ? module.with(parts) : module;
+type ServerHandler = Handler<AnyRequest, Inject, GuardedState>;
+
+type ClientHandler = Handler<AnyRequest, Inject, "client">;
+
+interface ServerPlan<P extends Provided> {
+	readonly name: string;
+	readonly steps: readonly Step[];
+	readonly provide: (parts: ServerParts) => P;
+}
+
+const NOTHING_PROVIDED: NothingProvided = Object.freeze({});
+
+export class HandledModule<Q> {
+	constructor(
+		readonly definition: ModuleDefinition,
+		readonly handlers: readonly AnyHandler[],
+		private readonly provider: (parts: Q) => Provided,
+	) {}
+
+	with(parts: Q): ReadyModule {
+		const { definition, handlers, provider } = this;
+		return { definition, handlers, provide: () => provider(parts) };
+	}
+}
+
+export type StartableModule = HandledModule<void> | ReadyModule;
+
+export type StartableServerModule = HandledModule<ServerParts> | ReadyModule;
+
+export class ServerModule<
+	P extends Provided = NothingProvided,
+	S extends Cover = "unguarded",
+	C extends Added = NothingAdded,
+> implements ModuleDefinition {
+	readonly runs = "server";
+	readonly name: string;
+	readonly steps: readonly Step[];
+
+	constructor(
+		private readonly plan: ServerPlan<P>,
+		readonly cover: S,
+	) {
+		this.name = plan.name;
+		this.steps = plan.steps;
+	}
+
+	guard(this: ServerModule<P, "unguarded", C>, step: OpenGuard): ServerModule<P, "public", C>;
+	guard<A extends Added>(
+		this: ServerModule<P, "unguarded" | "guarded", C>,
+		step: Guard<unknown, A, Inject, true>,
+	): ServerModule<P, "guarded", C & A>;
+	guard<A extends Added>(step: Guard<unknown, A, Inject, false>): ServerModule<P, S, C & A>;
+	guard(step: Step): ServerModule<P, Cover, Added> {
+		return new ServerModule({ ...this.plan, steps: [...this.plan.steps, step] }, coverAfter(this.cover, step));
+	}
+
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): ServerModule<P, S, C & A> {
+		return new ServerModule({ ...this.plan, steps: [...this.plan.steps, step] }, this.cover);
+	}
+
+	provide<N extends Provided>(provide: (parts: ServerParts) => N): ServerModule<N, S, C> {
+		return new ServerModule({ ...this.plan, provide }, this.cover);
+	}
+
+	handlers(handlers: readonly ServerHandler[]): HandledModule<ServerParts> {
+		return new HandledModule(this, handlers, this.plan.provide);
+	}
+}
+
+export class ClientModule<P extends Provided = NothingProvided, Q = void> implements ModuleDefinition {
+	readonly runs = "client";
+	readonly steps: readonly Step[] = [];
+
+	constructor(
+		readonly name: string,
+		private readonly provider: (parts: Q) => P,
+	) {}
+
+	provide<N extends Provided, R = void>(provide: (parts: R) => N): ClientModule<N, R> {
+		return new ClientModule(this.name, provide);
+	}
+
+	handlers(handlers: readonly ClientHandler[]): HandledModule<Q> {
+		return new HandledModule(this, handlers, this.provider);
+	}
+}
+
+export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;
+
+export function serverModule(name: string): ServerModule {
+	return new ServerModule({ name, steps: [], provide: () => NOTHING_PROVIDED }, "unguarded");
+}
+
+export function clientModule(name: string): ClientModule {
+	return new ClientModule(name, () => NOTHING_PROVIDED);
+}
+
+export function readyModuleOf<Q>(module: HandledModule<Q> | ReadyModule, parts: Q): ReadyModule {
+	return module instanceof HandledModule ? module.with(parts) : module;
+}
+
+function coverAfter(cover: Cover, step: Step): Cover {
+	if (step.kind === "public") return "public";
+	return step.needsUser ? "guarded" : cover;
 }

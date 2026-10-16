@@ -7,10 +7,17 @@ import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
 import { AppProvider, Slot, app, reasonOf, reportToConsole } from "@widgetarium/core/requests";
 import type { FailureReport, StartedApp } from "@widgetarium/core/requests";
-import { CanvasShot, NoteBoardQuery, NoteShot, ShotCountQuery } from "@widgetarium/canvas";
+import {
+	CanvasShot,
+	EndAgentLookCommand,
+	NoteBoardQuery,
+	NoteShot,
+	ShotCountQuery,
+	StartAgentLookCommand,
+} from "@widgetarium/canvas";
 import type { AgentLook } from "@widgetarium/canvas";
-import { canvasModule, detachedMountOf, whileAgentLooks } from "@widgetarium/canvas/module";
-import { drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas/vault";
+import { CanvasClientModule } from "@widgetarium/canvas/module";
+import { detachedHostOf, drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas/adapters";
 import { CANVAS_OPENED_ON } from "@widgetarium/studio";
 import { HELD_IN_VAULT, partsFor } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
@@ -56,8 +63,8 @@ export function answerShotRequests(plugin: WidgetariumPlugin): void {
 }
 
 function shotAppOf({ plugin, reportFailure }: ShotTaker, design: string): StartedApp {
-	const parts = partsFor(plugin, HELD_IN_VAULT, detachedMountOf({ ...CANVAS_OPENED_ON, app: design }));
-	return app({ modules: [canvasModule.with(parts)], host: { reportFailure } });
+	const parts = partsFor(plugin, HELD_IN_VAULT, detachedHostOf({ ...CANVAS_OPENED_ON, app: design }));
+	return app({ modules: [CanvasClientModule.with(parts)], host: { reportFailure } });
 }
 
 function reportShotFailure({ reportFailure }: ShotTaker, source: string, thrown: unknown): void {
@@ -87,13 +94,21 @@ async function answerOne(taker: ShotTaker, path: string): Promise<void> {
 	await adapter.remove(path);
 }
 
-function shotWhileAgentLooks(taker: ShotTaker, asked: ShotAsked): Promise<TakenShot> {
+async function shotWhileAgentLooks(taker: ShotTaker, asked: ShotAsked): Promise<TakenShot> {
 	const look: AgentLook = { app: asked.design, page: asked.page, frame: asked.frame };
-	return whileAgentLooks(look, () => designShotOf(taker, look));
+	const shotApp = shotAppOf(taker, look.app);
+	await shotApp.send(StartAgentLookCommand, look);
+	try {
+		const shot = await designShotOf(shotApp, look);
+		await shotApp.send(EndAgentLookCommand, { isFailed: false });
+		return shot;
+	} catch (failure) {
+		await shotApp.send(EndAgentLookCommand, { isFailed: true });
+		throw failure;
+	}
 }
 
-async function designShotOf(taker: ShotTaker, look: AgentLook): Promise<TakenShot> {
-	const shotApp = shotAppOf(taker, look.app);
+async function designShotOf(shotApp: StartedApp, look: AgentLook): Promise<TakenShot> {
 	const asked = { page: look.page, frame: look.frame };
 	const counted = await shotApp.send(ShotCountQuery, asked);
 	if (!counted.ok) throw new Error(counted.reason);

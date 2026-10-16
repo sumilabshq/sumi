@@ -1,4 +1,4 @@
-import type { Drawing, PictureTaker } from "../../schema/drawing.schema.js";
+import type { Drawing, PictureTaker } from "../../shared/schema/drawing.schema.js";
 
 export abstract class DesignDrawing {
 	abstract readonly pictureOf: PictureTaker | null;

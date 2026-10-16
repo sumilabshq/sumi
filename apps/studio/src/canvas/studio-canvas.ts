@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
-import { MountedCanvasHost, projectCanvasParts } from "@widgetarium/canvas/module";
-import type { CanvasParts } from "@widgetarium/canvas/module";
+import { CanvasHost, detachedHostOf, webCanvasParts } from "@widgetarium/canvas/adapters";
+import type { CanvasParts } from "@widgetarium/canvas/adapters";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell, StageMount } from "./design-stage.js";
 
@@ -46,9 +46,10 @@ export function webStudioDesign(app: string): StudioDesign {
 	return {
 		app,
 		partsOf: ({ project, returnToView, ...mount }) =>
-			projectCanvasParts(
+			webCanvasParts(
 				project,
-				new MountedCanvasHost({
+				new CanvasHost({
+					...detachedHostOf(mount.opened),
 					...mount,
 					returnTo: { kind: "view", open: returnToView },
 					ownsPaste: ownsEveryPasteInItsTab,

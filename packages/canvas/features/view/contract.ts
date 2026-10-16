@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
-import { CameraSchema } from "../../schema/camera.schema.js";
-import { PageRendererSchema } from "../../schema/canvas-view.schema.js";
-import { CanvasModeSchema } from "../../schema/canvas-view.schema.js";
+import { CameraSchema } from "../../shared/schema/camera.schema.js";
+import { PageRendererSchema } from "../../shared/schema/canvas-view.schema.js";
+import { CanvasModeSchema } from "../../shared/schema/canvas-view.schema.js";
 
 export const CameraQuery = query("canvas/camera").output(z.object({ camera: CameraSchema.nullable() }));
 

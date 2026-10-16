@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { PerCall, command, query } from "@widgetarium/core/requests";
-import { ShownJobSchema } from "../../schema/job.schema.js";
+import { ShownJobSchema } from "../../shared/schema/job.schema.js";
 
 export const JobStatusQuery = query("canvas/job-status").output(z.object({ shown: ShownJobSchema.nullable() }));
 

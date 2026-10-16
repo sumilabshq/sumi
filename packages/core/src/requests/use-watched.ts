@@ -5,5 +5,5 @@ import type { AnyQuery } from "./request";
 
 export function useWatchesWhileShown(started: StartedApp, request: AnyQuery, sent: unknown): void {
 	const asked = stableKey(sent);
-	useEffect(() => started.watch(request, sent), [started, request, asked]);
+	useEffect(() => started.watches.watch(request, sent), [started, request, asked]);
 }

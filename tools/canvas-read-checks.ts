@@ -1,9 +1,9 @@
 import { screenPathOf } from "../packages/core/src/app-design.ts";
 import { sourceKeyOf } from "../packages/core/src/engine/node-marks.ts";
-import { VaultDesignLayers } from "../packages/canvas/adapters/design-layers/vault.adapter.ts";
+import { ObsidianDesignFiles } from "../packages/canvas/adapters/design-files/obsidian.adapter.ts";
 import { sourceMoved } from "../packages/canvas/features/layers/handlers.ts";
-import { boardIn } from "../packages/canvas/lib/design/board-in-note.ts";
-import { readDrawnState } from "../packages/canvas/adapters/design-folder/vault/drawn-state.ts";
+import { boardIn } from "../packages/canvas/features/shots/lib/design/board-in-note.ts";
+import { readDrawnState } from "../packages/canvas/adapters/design-folder/obsidian/drawn-state.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
 
@@ -67,6 +67,9 @@ async function checkLayerMoveWritesWhatItRead(check: Check): Promise<void> {
 	const path = "W/widget.tsx";
 	const files = new Map([[path, PAGE]]);
 	const adapter = {
+		exists: async (): Promise<boolean> => true,
+		mkdir: async (): Promise<void> => undefined,
+		writeBinary: async (): Promise<void> => undefined,
 		read: async (): Promise<string> => STALE_PAGE,
 		write: async (): Promise<void> => undefined,
 		process: async (at: string, change: (text: string) => string): Promise<string> => {
@@ -82,10 +85,10 @@ async function checkLayerMoveWritesWhatItRead(check: Check): Promise<void> {
 		into: text.indexOf("<aside"),
 		before: null,
 	});
-	const layers = new VaultDesignLayers(adapter);
+	const layers = new ObsidianDesignFiles(adapter);
 	const answerOf = (text: string): Promise<string> =>
 		layers
-			.change(path, (source) => sourceMoved(source, moveOn(text)))
+			.changeText(path, (source) => sourceMoved(source, moveOn(text)))
 			.then(
 				() => "moved",
 				(failure: unknown) => (failure instanceof Error ? failure.message : String(failure)),

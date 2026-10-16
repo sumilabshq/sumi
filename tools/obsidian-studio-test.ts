@@ -5,8 +5,8 @@ import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
 import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
 import { FixedDesignDrawing, FixedDesignFolder, canvasHostOf, canvasPartsOver, emptyProject } from "./canvas-hosts.ts";
-import { projectCanvasParts } from "../packages/canvas/module.ts";
-import { ProjectDesignFolder } from "../packages/canvas/adapters/design-folder/project.adapter.ts";
+import { webCanvasParts } from "../packages/canvas/generated/adapters.ts";
+import { WebDesignFolder } from "../packages/canvas/adapters/design-folder/web.adapter.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -449,7 +449,7 @@ const place = standIn<StudioPlace>(
 		showAsMarkdown: async () => undefined,
 		designFor: async (app: string) => ({
 			app,
-			partsOf: (mount: StudioMount) => projectCanvasParts(mount.project, canvasHostOf(mount)),
+			partsOf: (mount: StudioMount) => webCanvasParts(mount.project, canvasHostOf(mount)),
 		}),
 	},
 	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
@@ -795,7 +795,7 @@ check(
 	[
 		activeParts.canvasHost.ownsPaste(),
 		otherParts.canvasHost.ownsPaste(),
-		activeParts.designFolder instanceof ProjectDesignFolder,
+		activeParts.designFolder instanceof WebDesignFolder,
 	],
 	[true, false, true],
 );

@@ -1,5 +1,10 @@
 import { minutes } from "./duration";
-import type { RateLimit } from "./request";
+import type { Duration } from "./duration";
+
+export interface RateLimit {
+	readonly calls: number;
+	readonly per: Duration;
+}
 
 export abstract class RateLimits {
 	abstract take(key: string, limit: RateLimit): Promise<boolean>;

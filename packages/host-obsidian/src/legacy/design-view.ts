@@ -4,6 +4,7 @@ import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/adapters";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply, StageMount } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
@@ -95,7 +96,11 @@ export class DesignView extends ItemView {
 		const cameFrom = (): string => this.fromNote;
 		const returnTo = returnToNoteIn(this.app, () => this.leaf, app);
 		const partsOf = (mount: StageMount) =>
-			partsFor(this.plugin, HELD_IN_VAULT, { ...mount, ownsPaste, gpu, cameFrom, returnTo });
+			partsFor(
+				this.plugin,
+				HELD_IN_VAULT,
+				new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu, cameFrom, returnTo }),
+			);
 		render(h(DesignStage, { key: app, app, opening: this.view, partsOf, onKept, onCanvas, size }), node);
 	}
 }

@@ -1,15 +1,19 @@
-import { whileAgentLooks } from "../packages/canvas/lib/agent/agent-looks.ts";
 import type { SpecRead } from "../packages/core/src/app-spec.ts";
-import { DesignPhotos, MountedCanvasHost, detachedMountOf } from "../packages/canvas/module.ts";
-import { showAgentPageHandler } from "../packages/canvas/features/agent/handlers.ts";
+import { CanvasHost, DesignFiles, detachedHostOf } from "../packages/canvas/generated/adapters.ts";
+import type { ReturnTo } from "../packages/canvas/generated/adapters.ts";
+import {
+	EndAgentLookCommandHandler,
+	ShowAgentPageCommandHandler,
+	StartAgentLookCommandHandler,
+} from "../packages/canvas/features/agent/handlers.ts";
 import { PageTabsQuery, ReturnToViewCommand } from "../packages/canvas/features/pages/contract.ts";
-import { pickVariantHandler } from "../packages/canvas/features/pages/handlers.ts";
+import { PickVariantCommandHandler } from "../packages/canvas/features/pages/handlers.ts";
 import { PastePhotosCommand } from "../packages/canvas/features/photos/contract.ts";
-import { CachedDesignReads } from "../packages/canvas/lib/design/design-reads.ts";
-import { MomentCanvasStore } from "../packages/canvas/lib/view/canvas-store.ts";
-import { ProjectAppLook } from "../packages/canvas/adapters/app-look/project.adapter.ts";
-import { ProjectDesignJobs } from "../packages/canvas/adapters/design-jobs/project.adapter.ts";
-import type { DrawnDesign } from "../packages/canvas/schema/design.schema.ts";
+import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
+import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
+import { WebDesignFiles } from "../packages/canvas/adapters/design-files/web.adapter.ts";
+import { WebDesignJobs } from "../packages/canvas/adapters/design-jobs/web.adapter.ts";
+import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
 import { FARM_OPENED, FixedDesignFolder, canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
@@ -29,16 +33,20 @@ const DESIGN: DrawnDesign = {
 	widgets: [],
 };
 
-class RecordedPhotos extends DesignPhotos {
+class RecordedPhotos extends DesignFiles {
 	readonly added: string[] = [];
 
 	override async exists(): Promise<boolean> {
 		return true;
 	}
 
+	override async read(): Promise<null> {
+		return null;
+	}
+
 	override async makeFolder(): Promise<void> {}
 
-	override async writePhoto(path: string): Promise<void> {
+	override async writeBinary(path: string): Promise<void> {
 		this.added.push(path);
 	}
 
@@ -72,13 +80,13 @@ export async function checkCanvasRequests(check: Check): Promise<void> {
 
 async function checkReturnTo(check: Check): Promise<void> {
 	const opened: string[] = [];
-	const returnOver = (returnTo: ConstructorParameters<typeof MountedCanvasHost>[0]["returnTo"]) =>
+	const returnOver = (returnTo: ReturnTo) =>
 		canvasAppOver(
 			canvasPartsOver(
 				{ opened: FARM_OPENED },
 				{
 					designFolder: new BrokenSpecFolder(async () => DESIGN),
-					canvasHost: new MountedCanvasHost({ ...detachedMountOf(FARM_OPENED), returnTo }),
+					canvasHost: new CanvasHost({ ...detachedHostOf(FARM_OPENED), returnTo }),
 				},
 			),
 		).send(ReturnToViewCommand);
@@ -108,11 +116,11 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 async function checkPickAfterPageTurn(check: Check): Promise<void> {
 	const held = heldFolder();
 	const canvasStore = new RecordingCanvasStore(FARM_OPENED, () => undefined);
-	const designReads = new CachedDesignReads(held.folder, new ProjectDesignJobs(), new ProjectAppLook());
-	const picking = pickVariantHandler.run({ screen: "Home B" }, { designReads, canvasStore });
-	await whileAgentLooks({ app: "Farm", page: "Other", frame: "" }, async () =>
-		showAgentPageHandler.run(undefined, { canvasStore }),
-	);
+	const designReads = new CachedDesignReads(held.folder, new WebDesignJobs(), new WebDesignFiles());
+	const picking = PickVariantCommandHandler.handle({ screen: "Home B" }, { designReads, canvasStore });
+	StartAgentLookCommandHandler.handle({ app: "Farm", page: "Other", frame: "" }, {});
+	await ShowAgentPageCommandHandler.handle(undefined, { canvasStore });
+	EndAgentLookCommandHandler.handle({ isFailed: false }, {});
 	held.release();
 	await picking;
 	check("a variant pick whose page turned while the design was read writes nothing", canvasStore.reasons, [
@@ -123,9 +131,9 @@ async function checkPickAfterPageTurn(check: Check): Promise<void> {
 async function checkWatchStopsOnce(check: Check): Promise<void> {
 	const held = heldFolder();
 	const canvas = canvasAppOver(canvasPartsOver({ opened: FARM_OPENED }, { designFolder: held.folder }));
-	const stopFirst = canvas.watch(PageTabsQuery, undefined);
+	const stopFirst = canvas.watches.watch(PageTabsQuery, undefined);
 	stopFirst();
-	const stopSecond = canvas.watch(PageTabsQuery, undefined);
+	const stopSecond = canvas.watches.watch(PageTabsQuery, undefined);
 	stopFirst();
 	check("a watch stopped twice stops its own watch once and leaves the next one", held.watching, {
 		started: 2,
@@ -137,7 +145,7 @@ async function checkWatchStopsOnce(check: Check): Promise<void> {
 async function checkPasteOwner(check: Check): Promise<void> {
 	const photos = new RecordedPhotos();
 	const owner = { isOwner: false };
-	const parts = canvasPartsOver({ opened: FARM_OPENED, ownsPaste: () => owner.isOwner }, { designPhotos: photos });
+	const parts = canvasPartsOver({ opened: FARM_OPENED, ownsPaste: () => owner.isOwner }, { designFiles: photos });
 	const canvas = canvasAppOver(parts);
 	const photo = new File(["x"], "a.png");
 	const elsewhere = await canvas.send(PastePhotosCommand, { photos: [photo] }, { idempotencyKey: "elsewhere" });

@@ -1,7 +1,7 @@
 import { RPCLink } from "@orpc/client/fetch";
 import { reasonOf, refusalOf } from "./answer";
 import type { Answer } from "./answer";
-import type { Remote, RemoteCall } from "./mediator";
+import type { Remote, RemoteCall } from "./remote-server";
 import { WIRE_PREFIX, wireAnswerOf, wirePathOf } from "./wire";
 import type { WireCall } from "./wire";
 

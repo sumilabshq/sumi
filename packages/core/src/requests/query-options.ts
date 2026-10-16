@@ -1,5 +1,5 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
-import { queryKeyOf } from "./app";
+import { queryKeyOf } from "./query-key";
 import type { StartedApp } from "./app";
 import { RequestFailed } from "./request-failed";
 import type { AnyQuery } from "./request";
@@ -30,8 +30,8 @@ export function queryOptionsOf(started: StartedApp, request: AnyQuery, sent: unk
 			return answer.output;
 		},
 		staleTime: request.freshFor ?? 0,
-		initialData: request.isSettledNow ? () => started.readNow(request, sent)?.output : undefined,
-		...(started.isLocal(request) ? LOCAL_POLICY : REMOTE_POLICY),
+		initialData: request.isSettledNow ? () => started.routes.readNow(request, sent)?.output : undefined,
+		...(started.routes.isLocal(request) ? LOCAL_POLICY : REMOTE_POLICY),
 	};
 }
 

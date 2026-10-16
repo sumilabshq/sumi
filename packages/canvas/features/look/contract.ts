@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { PerCall, command, query } from "@widgetarium/core/requests";
-import { LookRowSchema } from "../../schema/look-row.schema.js";
+import { LookRowSchema } from "../../shared/schema/look-row.schema.js";
 
 export const LookPanelQuery = query("canvas/look-panel").output(
 	z.discriminatedUnion("kind", [

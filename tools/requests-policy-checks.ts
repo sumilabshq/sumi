@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { MemoryDoneKeys, PublicGuard, app, handler, module, query } from "../packages/core/src/requests/index.ts";
+import { MemoryDoneKeys, app, clientModule, handler, query } from "../packages/core/src/requests/index.ts";
 import type { Failure } from "../packages/core/src/requests/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
@@ -57,14 +57,6 @@ check(
 );
 
 check(
-	"a client app runs no guard: a guarded request runs, with no user",
-	await app({ modules: [module("pages", { runs: "client", handlers: [fx.stampHandler] })] }).send(fx.StampCommand, {
-		note: "n",
-	}),
-	{ ok: true, output: "nobody" },
-);
-
-check(
 	"a PerCall command sent without a key gets one minted by the client, and runs",
 	await started.send(fx.AddPageCommand, { title: "A" }),
 	{ ok: true, output: { count: pages.titles.length } },
@@ -114,13 +106,7 @@ pages.runs.length = 0;
 await Promise.all([started.send(fx.PagesQuery, { prefix: "H" }), started.send(fx.PagesQuery, { prefix: "H" })]);
 check("two identical reads at once run the handler once", pages.runs, ["list H"]);
 
-check(
-	"a local module has no rate limit, whatever the request declares",
-	(await Promise.all([1, 2, 3].map(() => started.send(fx.LimitedQuery)))).map((answer) => answer.ok),
-	[true, true, true],
-);
-
-const unhandled = query("pages/unhandled").guard(PublicGuard).output(z.string());
+const unhandled = query("pages/unhandled").output(z.string());
 check("a request no module runs, with no server, is refused as no-server", await started.send(unhandled), {
 	ok: false,
 	reason: "pages/unhandled runs on no module of this app, and no server is configured",
@@ -128,13 +114,13 @@ check("a request no module runs, with no server, is refused as no-server", await
 	ran: false,
 });
 
-check("readNow answers a settlesNow query in the same tick", started.readNow(fx.CountQuery), {
+check("readNow answers a settlesNow query in the same tick", started.routes.readNow(fx.CountQuery), {
 	output: pages.titles.length,
 });
 reported.length = 0;
 check(
 	"readNow answers nothing for a settlesNow query whose handler throws",
-	started.readNow(fx.BrokenCountQuery),
+	started.routes.readNow(fx.BrokenCountQuery),
 	null,
 );
 check(
@@ -145,31 +131,53 @@ check(
 
 check(
 	"readNow answers nothing for a query that does not settle now",
-	started.readNow(fx.PagesQuery, { prefix: "" }),
+	started.routes.readNow(fx.PagesQuery, { prefix: "" }),
 	null,
 );
 
-check("pagesHandler.run is callable with a fake and no app", pagesHandler(new fx.MemoryPages(["Fake"])), ["Fake"]);
+check("PagesQueryHandler.handle is callable with a fake and no app", pagesOf(new fx.MemoryPages(["Fake"])), ["Fake"]);
 
-function pagesHandler(fake: fx.Pages): unknown {
-	return fx.pagesHandler.run({ prefix: "" }, { pages: fake });
+function pagesOf(fake: fx.Pages): unknown {
+	return fx.PagesQueryHandler.handle({ prefix: "" }, { pages: fake });
 }
 
 class Missing {}
-const needsMissing = handler(fx.SlowQuery, { inject: { missing: Missing }, run: () => "x" });
+const MissingClientModule = clientModule("pages").provide(() => ({ missing: {} }));
 check(
 	"a handler injecting what its module does not provide refuses the start, naming it",
 	thrownBy(() =>
-		app({ modules: [module("pages", { runs: "client", handlers: [needsMissing], provide: () => ({ missing: {} }) })] }),
+		app({
+			modules: [
+				MissingClientModule.handlers([
+					handler(fx.SlowQuery, MissingClientModule)
+						.inject({ missing: Missing })
+						.handle(() => "x"),
+				]),
+			],
+		}),
 	),
 	"app() refused:\nthe handler of pages/slow injects missing, which its module does not provide as a Missing",
 );
 
-const otherModule = handler(query("other/thing").guard(PublicGuard).output(z.string()), { run: () => "x" });
+const PlainClientModule = clientModule("pages");
+const OtherQuery = query("other/thing").output(z.string());
 check(
 	"a handler in a module its request does not name refuses the start",
-	thrownBy(() => app({ modules: [module("pages", { runs: "client", handlers: [otherModule] })] })),
+	thrownBy(() =>
+		app({ modules: [PlainClientModule.handlers([handler(OtherQuery, PlainClientModule).handle(() => "x")])] }),
+	),
 	'app() refused:\nother/thing is handled in module "pages", but its name names module "other"',
+);
+
+const ElsewhereClientModule = clientModule("pages");
+check(
+	"a handler built for one module and joined into another refuses the start, naming both",
+	thrownBy(() =>
+		app({
+			modules: [ElsewhereClientModule.handlers([handler(fx.SlowQuery, PlainClientModule).handle(() => "x")])],
+		}),
+	),
+	'app() refused:\nthe handler of pages/slow was built for module "pages", but module "pages" holds it',
 );
 
 check(
@@ -177,7 +185,10 @@ check(
 	thrownBy(() =>
 		app({
 			modules: [
-				module("pages", { runs: "client", handlers: [fx.slowHandler, handler(fx.SlowQuery, { run: () => "again" })] }),
+				fx.PagesClientModule.handlers([
+					fx.SlowQueryHandler,
+					handler(fx.SlowQuery, fx.PagesClientModule).handle(() => "again"),
+				]).with(new fx.MemoryPages()),
 			],
 		}),
 	),
@@ -186,7 +197,7 @@ check(
 
 check(
 	"a client app refuses a module that runs on the server",
-	thrownBy(() => app({ modules: [fx.serverPagesModule.with({ env: {} })] })),
+	thrownBy(() => app({ modules: [fx.JoinedPagesServerModule.with({ env: {} })] })),
 	'app() refused:\nmodule "pages" runs on the server; a client app reaches it through its server',
 );
 

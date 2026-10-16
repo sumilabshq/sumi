@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
-import { DrawingSchema } from "../../schema/drawing.schema.js";
-import { RegionSchema } from "../../schema/regions.schema.js";
-import { GpuSupplySchema } from "../../schema/drawing.schema.js";
-import { SpotSchema } from "../../schema/selection.schema.js";
-import { SelectionSchema } from "../../schema/selection.schema.js";
+import { DrawingSchema } from "../../shared/schema/drawing.schema.js";
+import { RegionSchema } from "../../shared/schema/regions.schema.js";
+import { GpuSupplySchema } from "../../shared/schema/drawing.schema.js";
+import { SpotSchema } from "../../shared/schema/selection.schema.js";
+import { SelectionSchema } from "../../shared/schema/selection.schema.js";
 
 export const DrawingQuery = query("canvas/drawing").output(DrawingSchema);
 

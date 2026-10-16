@@ -2,12 +2,14 @@ import { os } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { refusalOf } from "../answer";
+import type { Refusal } from "../answer";
 import { MemoryDoneKeys } from "../done-keys";
 import type { DoneKeys } from "../done-keys";
+import { LocalRoutes } from "../local-routes";
+import type { Route } from "../local-routes";
 import { Mediator } from "../mediator";
-import type { Route } from "../mediator";
 import { readyModuleOf } from "../module";
-import type { Module, ReadyModule, ServerParts } from "../module";
+import type { ServerParts, StartableServerModule } from "../module";
 import { MemoryRateLimits } from "../rate-limits";
 import type { RateLimits } from "../rate-limits";
 import { reportToConsole } from "../report-failure";
@@ -25,7 +27,7 @@ interface ServerHost {
 }
 
 interface ServerStart {
-	readonly modules: readonly (Module<ServerParts> | ReadyModule)[];
+	readonly modules: readonly StartableServerModule[];
 	readonly env: ServerParts["env"];
 	readonly host?: ServerHost;
 }
@@ -39,12 +41,14 @@ interface WireContext {
 }
 
 const NOT_A_CALL = "the body is not a widgetarium call";
+const NOT_HERE = "{name} runs on no module of this server";
 
 export function server({ modules, env, host = {} }: ServerStart): StartedServer {
 	const routes = routesOf({
 		side: "server",
 		modules: modules.map((module) => readyModuleOf(module, { env })),
 		hasAuthenticate: host.authenticate !== undefined,
+		hostProvided: { rateLimits: host.rateLimits ?? new MemoryRateLimits() },
 	});
 	const handler = new RPCHandler<WireContext>(routerOf(routes, serverMediatorOf(routes, host)));
 	const hono = new Hono();
@@ -57,13 +61,18 @@ export function server({ modules, env, host = {} }: ServerStart): StartedServer 
 }
 
 function serverMediatorOf(routes: ReadonlyMap<string, Route>, host: ServerHost): Mediator {
-	return new Mediator({
+	const local = new LocalRoutes({
 		routes,
-		remote: null,
-		policies: { rateLimits: host.rateLimits ?? new MemoryRateLimits(), authenticate: host.authenticate ?? null },
+		authenticate: host.authenticate ?? null,
 		doneKeys: host.doneKeys ?? new MemoryDoneKeys(),
-		reportFailure: host.reportFailure ?? reportToConsole,
+		callers: "many",
 	});
+	const reportFailure = host.reportFailure ?? reportToConsole;
+	return new Mediator({ local, remote: null, keyMinting: "caller-gives", missing: notHere, reportFailure });
+}
+
+function notHere(request: AnyRequest): Refusal {
+	return refusalOf("not-found", NOT_HERE.replace("{name}", request.name));
 }
 
 type WireProcedure = ReturnType<typeof wireProcedureOf>;

@@ -1,3 +1,4 @@
+import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/adapters";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
@@ -58,7 +59,12 @@ export async function studioDesignOf(
 	const gpu = hasDesign ? obsidianGpuSupply(plugin) : null;
 	const partsOf: StudioDesign["partsOf"] = ({ project, returnToView, ...mount }) => {
 		const held: DesignHeld = hasDesign ? HELD_IN_VAULT : { kind: "project", project };
-		return partsFor(plugin, held, { ...mount, ownsPaste, gpu, returnTo: { kind: "view", open: returnToView } });
+		const returnTo = { kind: "view", open: returnToView } as const;
+		return partsFor(
+			plugin,
+			held,
+			new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu, returnTo }),
+		);
 	};
 	return { app, partsOf };
 }

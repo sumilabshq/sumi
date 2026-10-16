@@ -46,7 +46,7 @@ async function answerOf(
 }
 
 function canRun(started: StartedApp, request: AnyCommand): CanResult {
-	const reason = started.cannotRun(request);
+	const reason = started.routes.cannotRun(request);
 	return reason === null ? { can: true } : { can: false, reason };
 }
 

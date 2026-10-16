@@ -3,19 +3,19 @@ import type { StartedApp } from "../packages/core/src/requests/index.ts";
 import type { SpecRead } from "../packages/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
+import { CanvasClientModule } from "../packages/canvas/generated/module.ts";
 import {
+	CanvasHost,
 	DesignDrawing,
 	DesignFolder,
-	MountedCanvasHost,
-	canvasModule,
-	detachedMountOf,
-	projectCanvasParts,
-} from "../packages/canvas/module.ts";
-import type { CanvasParts } from "../packages/canvas/module.ts";
-import type { CanvasOpened, CanvasOpening } from "../packages/canvas/schema/canvas-view.schema.ts";
-import type { CanvasDoc } from "../packages/canvas/schema/doc.schema.ts";
-import type { DrawnDesign } from "../packages/canvas/schema/design.schema.ts";
-import type { Drawing } from "../packages/canvas/schema/drawing.schema.ts";
+	detachedHostOf,
+	webCanvasParts,
+} from "../packages/canvas/generated/adapters.ts";
+import type { CanvasParts } from "../packages/canvas/generated/adapters.ts";
+import type { CanvasOpened, CanvasOpening } from "../packages/canvas/shared/schema/canvas-view.schema.ts";
+import type { CanvasDoc } from "../packages/canvas/shared/schema/doc.schema.ts";
+import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
+import type { Drawing } from "../packages/canvas/shared/schema/drawing.schema.ts";
 import type { GpuSupply } from "../packages/gpu/index.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -41,16 +41,16 @@ export function canvasHostOf({
 	ownsPaste = never,
 	gpu = null,
 	keepOpening = keepsNothing,
-}: CanvasAsk): MountedCanvasHost {
-	return new MountedCanvasHost({ ...detachedMountOf(opened), ownsPaste, gpu, keepOpening });
+}: CanvasAsk): CanvasHost {
+	return new CanvasHost({ ...detachedHostOf(opened), ownsPaste, gpu, keepOpening });
 }
 
 export function canvasPartsOver(ask: CanvasAsk, chosen: Partial<CanvasParts> = {}): CanvasParts {
-	return { ...projectCanvasParts(emptyProject(), canvasHostOf(ask)), ...chosen };
+	return { ...webCanvasParts(emptyProject(), canvasHostOf(ask)), ...chosen };
 }
 
 export function canvasAppOver(parts: CanvasParts): StartedApp {
-	return app({ modules: [canvasModule.with(parts)] });
+	return app({ modules: [CanvasClientModule.with(parts)] });
 }
 
 export class FixedDesignFolder extends DesignFolder {

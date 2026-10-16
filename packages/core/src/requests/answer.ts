@@ -6,7 +6,6 @@ export const REFUSAL_CODES = [
 	"invalid-output",
 	"unauthenticated",
 	"forbidden",
-	"refused-by-guard",
 	"refused",
 	"rate-limited",
 	"missing-key",

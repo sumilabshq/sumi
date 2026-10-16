@@ -1,8 +1,8 @@
 import { isLive, isStartable, movedJob } from "@widgetarium/core/app-jobs.js";
-import type { Job, JobAsk, JobMove, JobQuestion } from "@widgetarium/core/app-jobs.js";
+import type { Job, JobAsk, JobMove } from "@widgetarium/core/app-jobs.js";
 import { CLI, briefGoesInTheMessage } from "./providers.js";
 import type { AiSettings } from "./settings.js";
-import type { Run, Runner } from "./run.js";
+import type { Runner } from "./run.js";
 import type { StreamPart } from "./stream.js";
 import { hintOf, titleOf } from "./tools.js";
 import { startIn } from "./builds.js";
@@ -10,9 +10,11 @@ import { JOB_ENV } from "./job-command.js";
 import type { JobFiles } from "./job-store.js";
 import { askedSaid, endingOf, promptOf } from "./job-endings.js";
 import type { EndedBy } from "./job-endings.js";
+import type { JobsHeld, Running } from "./jobs-held.js";
 import type { LiveJob } from "@widgetarium/studio";
+import { DesignJobs } from "@widgetarium/canvas/adapters";
 
-export interface Jobs {
+export interface Jobs extends DesignJobs {
 	watch(onChange: () => void): () => void;
 	version(): number;
 	apps(): string[];
@@ -34,27 +36,6 @@ export interface JobsDoors {
 	readonly tell: (app: string, said: string) => void;
 	readonly now: () => number;
 	readonly tickMs?: number;
-}
-
-interface Running {
-	readonly run: Run;
-	readonly spentBefore: number;
-	spentNow: number;
-	text: string;
-	activity: string | null;
-	question: JobQuestion | null;
-	endedBy: EndedBy | null;
-	unsaved: string[];
-}
-
-interface JobsHeld {
-	readonly doors: JobsDoors;
-	readonly held: Map<string, Job>;
-	readonly running: Map<string, Running>;
-	readonly lines: Map<string, string[]>;
-	readonly watchers: Set<() => void>;
-	isTicking: boolean;
-	changes: number;
 }
 
 type Call = { readonly ref: string; readonly name: string; readonly input: Readonly<Record<string, unknown>> };
@@ -87,22 +68,61 @@ export function createJobs(doors: JobsDoors): Jobs {
 		setInterval(() => void saveLive(state), tickMs * (SAVE_EVERY_MS / TICK_MS)),
 	];
 	void tick(state);
-	return {
-		watch(onChange) {
-			state.watchers.add(onChange);
-			return () => state.watchers.delete(onChange);
-		},
-		version: () => state.changes,
-		apps: () => [...new Set([...state.held.values()].map((job) => job.app))].sort(),
-		jobsOf: (app) => jobsOfApp(state, app),
-		liveOf: (app, id) => liveOf(state, keyOf(app, id)),
-		start: (app, id) => startJob(state, keyOf(app, id)),
-		stop: (app, id) => stopJob(state, keyOf(app, id)),
-		note: (app, id, said) => noteJob(state, keyOf(app, id), said),
-		answer: (app, id, said) => answerJob(state, keyOf(app, id), said),
-		stopAll: () => stopAll(state),
-		close: () => closeJobs(state, timers),
-	};
+	return new RunningJobs(state, timers);
+}
+
+class RunningJobs extends DesignJobs implements Jobs {
+	constructor(
+		private readonly state: JobsHeld,
+		private readonly timers: readonly ReturnType<typeof setInterval>[],
+	) {
+		super();
+	}
+
+	override watch(onChange: () => void): () => void {
+		this.state.watchers.add(onChange);
+		return () => void this.state.watchers.delete(onChange);
+	}
+
+	version(): number {
+		return this.state.changes;
+	}
+
+	apps(): string[] {
+		return [...new Set([...this.state.held.values()].map((job) => job.app))].sort();
+	}
+
+	override jobsOf(app: string): Job[] {
+		return jobsOfApp(this.state, app);
+	}
+
+	override liveOf(app: string, id: string): LiveJob | null {
+		return liveOf(this.state, keyOf(app, id));
+	}
+
+	start(app: string, id: string): Promise<void> {
+		return startJob(this.state, keyOf(app, id));
+	}
+
+	override stop(app: string, id: string): Promise<void> {
+		return stopJob(this.state, keyOf(app, id));
+	}
+
+	note(app: string, id: string, said: string): Promise<void> {
+		return noteJob(this.state, keyOf(app, id), said);
+	}
+
+	answer(app: string, id: string, said: string): Promise<void> {
+		return answerJob(this.state, keyOf(app, id), said);
+	}
+
+	stopAll(): Promise<void> {
+		return stopAll(this.state);
+	}
+
+	close(): void {
+		closeJobs(this.state, this.timers);
+	}
 }
 
 function keyOf(app: string, id: string): string {

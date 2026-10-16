@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { PerCall, Repeatable, command, query } from "@widgetarium/core/requests";
-import { LayerSchema } from "../../schema/layer.schema.js";
-import { StatePictureSchema } from "../../schema/design.schema.js";
-import { LayerRowSchema } from "../../lib/layers/layer-rows.js";
+import { LayerSchema } from "../../shared/schema/layer.schema.js";
+import { StatePictureSchema } from "../../shared/schema/design.schema.js";
+import { LayerRowSchema } from "../../shared/schema/layer-row.schema.js";
 
 export const KeepSeenLayersCommand = command("canvas/keep-seen-layers")
 	.input(z.object({ key: z.string(), layers: z.array(LayerSchema).readonly() }))
