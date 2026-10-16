@@ -11,6 +11,7 @@ export const HANDBOOK_PAGES: readonly string[] = [
 	"components.md",
 	"design-system.md",
 	"catalogue.md",
+	"requests.md",
 ];
 
 export function copyHandbook(handbook: string, target: string): void {

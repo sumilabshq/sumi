@@ -1,0 +1,3 @@
+generated/** linguist-generated=true
+packages/*/generated/** linguist-generated=true
+packages/packs/*/generated/** linguist-generated=true

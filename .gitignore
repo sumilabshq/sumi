@@ -16,4 +16,5 @@ registry/*/*/build/
 .tasks/
 /dist-packages/
 /packages/**/dist/
+/apps/**/dist/
 .playwright-mcp/

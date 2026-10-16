@@ -1,0 +1,39 @@
+{
+	"name": "@widgetarium/eslint-plugin",
+	"version": "0.1.0",
+	"description": "The style rules of a Widgetarium project: building block names, feature layout, module boundaries",
+	"license": "MIT",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./module-declared": {
+			"source": "./src/module-declared.ts",
+			"types": "./dist/module-declared.d.ts",
+			"default": "./dist/module-declared.js"
+		},
+		"./workspace": {
+			"source": "./src/workspace.ts",
+			"types": "./dist/workspace.d.ts",
+			"default": "./dist/workspace.js"
+		}
+	},
+	"dependencies": {
+		"@babel/parser": "^8.0.5",
+		"@babel/types": "^8.0.5",
+		"eslint-visitor-keys": "^5.0.1"
+	},
+	"peerDependencies": {
+		"eslint": ">=9"
+	},
+	"widgetarium": {
+		"level": "common"
+	},
+	"sideEffects": false
+}

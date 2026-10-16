@@ -7,7 +7,7 @@ const FAKE_ENGINE = [
 	{
 		name: "@widgetarium/cli",
 		file: "widgetarium-cli-0.1.0.tgz",
-		dependencies: { "@widgetarium/core": "0.1.0", "@widgetarium/kit": "0.1.0" },
+		dependencies: { "@widgetarium/core": "0.1.0", "@widgetarium/eslint-plugin": "0.1.0", "@widgetarium/kit": "0.1.0" },
 	},
 	{
 		name: "@widgetarium/vite",
@@ -20,6 +20,7 @@ const FAKE_ENGINE = [
 		dependencies: { "@widgetarium/kit": "0.1.0", yaml: "^2.9.0" },
 	},
 	{ name: "@widgetarium/kit", file: "widgetarium-kit-0.1.0.tgz", dependencies: {} },
+	{ name: "@widgetarium/eslint-plugin", file: "widgetarium-eslint-plugin-0.1.0.tgz", dependencies: {} },
 	{ name: "@widgetarium/packs-obsidian", file: "widgetarium-packs-obsidian-0.1.0.tgz", dependencies: {} },
 ];
 

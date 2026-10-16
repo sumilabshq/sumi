@@ -1,10 +1,11 @@
 import { runAdd } from "./add-command.js";
 import { runCatalogue } from "./catalogue-command.js";
-import { parseAddArgs, parseCatalogueArgs, parseCheckArgs, parseCreateArgs } from "./cli-args.js";
+import { parseAddArgs, parseCatalogueArgs, parseCheckArgs, parseCreateArgs, parseGenerateArgs } from "./cli-args.js";
 import { CLI_HELP, HELP_WORDS } from "./cli-help.js";
 import { CliRefusal, type CliOutput } from "./cli-output.js";
 import { runCheck } from "./check-command.js";
 import { runCreate } from "./create-command.js";
+import { runGenerate } from "./generate-command.js";
 
 export async function runCli(argv: readonly string[], output: CliOutput, cwd: string = process.cwd()): Promise<number> {
 	const [command, ...rest] = argv;
@@ -31,6 +32,7 @@ async function runCommand(
 	if (command === "check") return runCheck(parseCheckArgs(rest), output);
 	if (command === "catalogue") return runCatalogue(parseCatalogueArgs(rest), output, cwd);
 	if (command === "add") return runAdd(parseAddArgs(rest), output, cwd);
+	if (command === "generate") return runGenerate(parseGenerateArgs(rest), output, cwd);
 	if (command === undefined || HELP_WORDS.includes(command)) {
 		output.out(CLI_HELP);
 		return 0;

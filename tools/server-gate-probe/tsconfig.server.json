@@ -1,0 +1,6 @@
+{
+	"extends": "./tsconfig.client.json",
+	"compilerOptions": {
+		"customConditions": ["source", "server"]
+	}
+}

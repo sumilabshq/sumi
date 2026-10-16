@@ -1,0 +1,10 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"customConditions": ["source"],
+		"tsBuildInfoFile": null,
+		"types": []
+	},
+	"references": [],
+	"include": ["client-imports-module.ts", "../../packages/core/src/*.d.ts", "../../packages/kit/src/jsx-namespace.d.ts"]
+}

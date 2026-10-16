@@ -13,11 +13,12 @@ import * as onePerFile from "./lint/rules/one-per-file.mts";
 import * as typing from "./lint/rules/typing.mts";
 import * as propsWidth from "./lint/rules/props-width.mts";
 import * as doubleCast from "./lint/rules/double-cast.mts";
-import * as domainLayout from "./lint/rules/domain-layout.mts";
+import * as serverCondition from "./lint/rules/server-condition.mts";
 
 interface LintRule {
 	readonly id: string;
 	check(source: ParsedSource): Finding[];
+	checkConfigs?(roots: readonly string[], cwd: string): FileReport[];
 }
 
 interface LintAsk extends ReportAsk {
@@ -36,12 +37,15 @@ const RULES: readonly LintRule[] = [
 	typing,
 	propsWidth,
 	doubleCast,
-	domainLayout,
+	serverCondition,
 ];
 
 const cwd = process.cwd();
 const ask = lintAskOf(process.argv.slice(2));
-const reports = collectFiles(ask.roots, cwd).map((path) => inspect(path, ask));
+const reports = [
+	...collectFiles(ask.roots, cwd).map((path) => inspect(path, ask)),
+	...wantedRules(ask).flatMap((rule) => rule.checkConfigs?.(ask.roots, cwd) ?? []),
+];
 
 printReport(reports, ask);
 process.exit(reports.some((report) => report.findings.some((finding) => finding.severity === "error")) ? 1 : 0);
@@ -61,8 +65,11 @@ function lintAskOf(argv: readonly string[]): LintAsk {
 function inspect(path: string, lintAsk: LintAsk): FileReport {
 	const source = readSource(path, cwd);
 	if (isUnparsed(source)) return { path, findings: [toParseFailureFinding(source)] };
-	const wanted = RULES.filter((rule) => lintAsk.onlyRules.length === 0 || lintAsk.onlyRules.includes(rule.id));
-	return { path, findings: wanted.flatMap((rule) => rule.check(source)) };
+	return { path, findings: wantedRules(lintAsk).flatMap((rule) => rule.check(source)) };
+}
+
+function wantedRules(lintAsk: LintAsk): readonly LintRule[] {
+	return RULES.filter((rule) => lintAsk.onlyRules.length === 0 || lintAsk.onlyRules.includes(rule.id));
 }
 
 function defaultRoots(): string[] {

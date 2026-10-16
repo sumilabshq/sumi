@@ -30,6 +30,7 @@ export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/canvas",
 	"apps/studio",
 	"packages/vite",
+	"packages/eslint-plugin",
 	"packages/cli",
 ];
 
@@ -46,6 +47,7 @@ type PackageManifest = z.infer<typeof PackageManifestSchema>;
 const INTERNAL_PACKAGE = /^@widgetarium\/.+$/;
 const BUILT_TO = "dist";
 const SOURCE_FOLDER = "src";
+const GENERATED_ENTRY_FOLDER = "generated";
 const KIT_THEME = /^@widgetarium\/kit\/theme\.css$/;
 const ENTRY_SOURCE = /\.tsx?$/;
 const DECLARATION = /\.d\.ts$/;
@@ -260,7 +262,9 @@ function copyHandWrittenDeclarations(folder: string, built: string): void {
 
 function sourceRootOf(folder: string): string {
 	const entry = sourceOfExport(fieldOf(fieldOf(rawManifestIn(folder), "exports"), "."));
-	return entry === null ? path.join(folder, SOURCE_FOLDER) : path.dirname(path.join(folder, entry));
+	if (entry === null) return path.join(folder, SOURCE_FOLDER);
+	const entryFolder = path.dirname(path.join(folder, entry));
+	return path.basename(entryFolder) === GENERATED_ENTRY_FOLDER ? path.dirname(entryFolder) : entryFolder;
 }
 
 function isUnder(folder: string, at: string): boolean {

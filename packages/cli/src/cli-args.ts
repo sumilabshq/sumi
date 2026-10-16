@@ -24,6 +24,8 @@ const CreateArgsSchema = z.object({
 
 const CheckArgsSchema = z.object({ dir: z.string().min(1) });
 
+const GENERATE_OPTIONS = { check: { type: "boolean" } } as const;
+
 const CATALOGUE_OPTIONS = {
 	registry: { type: "string" },
 	json: { type: "boolean" },
@@ -69,6 +71,11 @@ export type CheckArgs = z.output<typeof CheckArgsSchema>;
 export type CatalogueArgs = z.output<typeof CatalogueArgsSchema>;
 export type AddArgs = z.output<typeof AddArgsSchema>;
 
+export interface GenerateArgs {
+	readonly modules: readonly string[];
+	readonly check: boolean;
+}
+
 export function parseCreateArgs(argv: readonly string[]): CreateArgs {
 	const { values, positionals } = parsedArgs(() =>
 		parseArgs({ args: [...argv], options: CREATE_OPTIONS, allowPositionals: true }),
@@ -108,6 +115,13 @@ export function parseAddArgs(argv: readonly string[]): AddArgs {
 	);
 	refuseExtraPositionals(positionals, 1);
 	return parsedWith(AddArgsSchema, { id: positionals[0] ?? "", as: values.as, registry: values.registry });
+}
+
+export function parseGenerateArgs(argv: readonly string[]): GenerateArgs {
+	const { values, positionals } = parsedArgs(() =>
+		parseArgs({ args: [...argv], options: GENERATE_OPTIONS, allowPositionals: true }),
+	);
+	return { modules: positionals, check: values.check === true };
 }
 
 function parsedArgs<T>(parse: () => T): T {

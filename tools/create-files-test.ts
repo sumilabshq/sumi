@@ -44,6 +44,7 @@ const EXPECTED_FILES = [
 	"AGENTS.md",
 	"CLAUDE.md",
 	"docs/references/.gitkeep",
+	"eslint.config.js",
 	"index.html",
 	"package.json",
 	ICON,
@@ -59,6 +60,7 @@ const EXPECTED_FILES = [
 	"tsconfig.node.json",
 	"vendor/engine/widgetarium-cli-0.1.0.tgz",
 	"vendor/engine/widgetarium-core-0.1.0.tgz",
+	"vendor/engine/widgetarium-eslint-plugin-0.1.0.tgz",
 	"vendor/engine/widgetarium-kit-0.1.0.tgz",
 	"vendor/engine/widgetarium-vite-0.1.0.tgz",
 	"vite.config.ts",
@@ -185,6 +187,12 @@ try {
 
 	const manifest = jsonAt(path.join(project, "package.json"));
 	check("package.json is named after the folder", fieldOf(manifest, "name"), "shop");
+	const scripts = RecordSchema.parse(fieldOf(manifest, "scripts"));
+	check(
+		"generate is a script, and dev, studio and build run it first",
+		["generate", "dev", "studio", "build"].map((name) => String(scripts[name]).startsWith("widgetarium generate")),
+		[true, true, true, true],
+	);
 	check(
 		"the engine is the vendored closure of the CLI and the Vite plugin, and only it",
 		Object.entries(RecordSchema.parse(fieldOf(manifest, "dependencies"))).filter(([, spec]) =>
@@ -193,6 +201,7 @@ try {
 		[
 			["@widgetarium/cli", "file:vendor/engine/widgetarium-cli-0.1.0.tgz"],
 			["@widgetarium/core", "file:vendor/engine/widgetarium-core-0.1.0.tgz"],
+			["@widgetarium/eslint-plugin", "file:vendor/engine/widgetarium-eslint-plugin-0.1.0.tgz"],
 			["@widgetarium/kit", "file:vendor/engine/widgetarium-kit-0.1.0.tgz"],
 			["@widgetarium/vite", "file:vendor/engine/widgetarium-vite-0.1.0.tgz"],
 		],

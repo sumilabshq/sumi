@@ -1,0 +1,25 @@
+{
+	"name": "@widgetarium/server",
+	"version": "0.1.0",
+	"private": true,
+	"description": "The Hono server: serves every server module's requests at /rpc/*",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"scripts": {
+		"dev": "tsx watch --conditions=source --conditions=server src/main.ts",
+		"build": "esbuild src/main.ts --bundle --platform=node --format=esm --target=node20 --conditions=source,server --outfile=dist/main.js --log-level=warning",
+		"start": "node dist/main.js"
+	},
+	"dependencies": {
+		"@hono/node-server": "2.1.5",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/fixture-billing": "0.1.0",
+		"hono": "4.13.12"
+	},
+	"devDependencies": {
+		"tsx": "4.23.15"
+	},
+	"widgetarium": {
+		"level": "app"
+	}
+}

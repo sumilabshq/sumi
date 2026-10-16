@@ -32,6 +32,7 @@ export const ALLOWED_COMMENT_PREFIXES: readonly string[] = ["TODO:", "TRADE-OFF:
 
 export const DIRECTIVE_PREFIXES: readonly string[] = [
 	"@ts-",
+	"@generated",
 	"eslint",
 	"prettier-ignore",
 	"ignore:",

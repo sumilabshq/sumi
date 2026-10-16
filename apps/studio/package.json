@@ -4,6 +4,11 @@
 	"description": "The studio drawn around a Widgetarium app",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
+	"scripts": {
+		"dev": "npm --prefix ../.. run dev",
+		"build": "npm --prefix ../.. run build",
+		"start": "npm --prefix ../.. run install-vault"
+	},
 	"files": [
 		"dist"
 	],

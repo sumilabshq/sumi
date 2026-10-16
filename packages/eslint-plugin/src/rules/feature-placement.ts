@@ -1,0 +1,103 @@
+import fs from "node:fs";
+import path from "node:path";
+import type { DomainFile } from "../domain-file.js";
+
+const TOP_FILES = /^(module\.ts|package\.json|tsconfig(\.[\w-]+)?\.json|LICENSE|README\.md|[\w-]+\.css)$/;
+const TOP_FOLDERS: ReadonlySet<string> = new Set([
+	"features",
+	"shared",
+	"adapters",
+	"generated",
+	"node_modules",
+	"dist",
+]);
+const FEATURE_FILES: readonly string[] = ["contract.ts", "handlers.ts"];
+const FEATURE_PARTS: ReadonlySet<string> = new Set(["ui", "lib"]);
+const SHARED_SCHEMA = /^shared\/schema\/[\w-]+\.schema\.ts$/;
+const SHARED_UI = /^shared\/ui\/(index\.ts|.+\.tsx)$/;
+const SHARED_LIB = /^shared\/lib\//;
+
+const NOT_AT_TOP =
+	"{name} does not belong at the top of a module: it holds module.ts, features/, shared/, adapters/ and generated/";
+const NOT_A_FEATURE_FILE =
+	"a feature holds contract.ts, handlers.ts, ui/ and lib/; move {file} into one of them, or to shared/";
+const FEATURE_TOO_DEEP = "features/ nests two levels at most: features/<feature>/ or features/<group>/<feature>/";
+const LEAF_MISSING = "{feature} is a feature: it holds contract.ts and handlers.ts, and {missing} is missing";
+const GROUP_WITH_FILES = "features/{group}/ is a group of features: it holds only folders, never {files}";
+const UI_NOT_TSX = "ui/ holds only .tsx blocks: move {file} to lib/";
+const NOT_SHARED = "shared/ holds ui/ (.tsx and ui/index.ts), lib/ and schema/ (*.schema.ts); {file} is none of them";
+const NOT_AN_ADAPTER =
+	"adapters/<port>/ holds <port>.adapter.ts and one <platform>.adapter.ts per platform; a many-file implementation goes in adapters/<port>/<platform>/";
+const NO_IMPLEMENTATION_ENTRY =
+	"adapters/<port>/{folder}/ has no {folder}.adapter.ts, the one file outside it may import";
+
+export function placementOf(file: DomainFile): string[] {
+	const relative = file.inside.join("/");
+	if (file.inside.length === 1)
+		return relative === "module.ts" ? strayEntriesIn(file.root) : [said(NOT_AT_TOP, { name: relative })];
+	if (file.folder === "features") return featurePlacement(file);
+	if (file.folder === "shared") return isShared(relative) ? [] : [said(NOT_SHARED, { file: relative })];
+	if (file.folder === "adapters") return adapterPlacement(file);
+	return file.folder === "generated" ? [] : [said(NOT_AT_TOP, { name: `${file.folder}/` })];
+}
+
+function strayEntriesIn(root: string): string[] {
+	return fs
+		.readdirSync(root, { withFileTypes: true })
+		.filter((entry) => !entry.name.startsWith("."))
+		.filter((entry) => (entry.isDirectory() ? !TOP_FOLDERS.has(entry.name) : !TOP_FILES.test(entry.name)))
+		.map((entry) => said(NOT_AT_TOP, { name: entry.isDirectory() ? `${entry.name}/` : entry.name }));
+}
+
+function featurePlacement(file: DomainFile): string[] {
+	const [, first = "", second = ""] = file.inside;
+	const isGrouped = !isLeaf(path.join(file.root, "features", first));
+	const featureDepth = isGrouped ? 3 : 2;
+	if (isGrouped && file.inside.length > 3 && !isLeaf(path.join(file.root, "features", first, second)))
+		return [FEATURE_TOO_DEEP];
+	const feature = file.inside.slice(0, featureDepth).join("/");
+	const rest = file.inside.slice(featureDepth);
+	const grouped = isGrouped ? groupFindings(file.root, first) : [];
+	return [...grouped, ...insideFeature(file.root, feature, rest)];
+}
+
+function insideFeature(root: string, feature: string, rest: readonly string[]): string[] {
+	const [head = "", ...tail] = rest;
+	if (tail.length === 0)
+		return FEATURE_FILES.includes(head) ? leafFindings(root, feature) : [said(NOT_A_FEATURE_FILE, { file: head })];
+	if (!FEATURE_PARTS.has(head)) return [said(NOT_A_FEATURE_FILE, { file: rest.join("/") })];
+	const name = tail.at(-1) ?? "";
+	return head === "ui" && !name.endsWith(".tsx") ? [said(UI_NOT_TSX, { file: name })] : [];
+}
+
+function leafFindings(root: string, feature: string): string[] {
+	const missing = FEATURE_FILES.filter((name) => !fs.existsSync(path.join(root, feature, name)));
+	return missing.length === 0 ? [] : [said(LEAF_MISSING, { feature: `${feature}/`, missing: missing.join(", ") })];
+}
+
+function groupFindings(root: string, group: string): string[] {
+	const files = fs
+		.readdirSync(path.join(root, "features", group), { withFileTypes: true })
+		.filter((entry) => !entry.isDirectory())
+		.map((entry) => entry.name);
+	return files.length === 0 ? [] : [said(GROUP_WITH_FILES, { group, files: files.join(", ") })];
+}
+
+function adapterPlacement(file: DomainFile): string[] {
+	const [, port = "", folder = ""] = file.inside;
+	if (file.inside.length === 3) return folder.endsWith(".adapter.ts") ? [] : [NOT_AN_ADAPTER];
+	if (fs.existsSync(path.join(file.root, "adapters", port, folder, `${folder}.adapter.ts`))) return [];
+	return [said(NO_IMPLEMENTATION_ENTRY, { folder })];
+}
+
+function isLeaf(folder: string): boolean {
+	return FEATURE_FILES.some((name) => fs.existsSync(path.join(folder, name)));
+}
+
+function isShared(relative: string): boolean {
+	return SHARED_SCHEMA.test(relative) || SHARED_UI.test(relative) || SHARED_LIB.test(relative);
+}
+
+function said(message: string, data: Readonly<Record<string, string>>): string {
+	return Object.entries(data).reduce((text, [key, value]) => text.replaceAll(`{${key}}`, value), message);
+}

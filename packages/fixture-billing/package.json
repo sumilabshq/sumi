@@ -1,0 +1,29 @@
+{
+	"name": "@widgetarium/fixture-billing",
+	"version": "0.1.0",
+	"private": true,
+	"description": "A server module the server and its checks run: one guarded command, one public query",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./generated/index.ts"
+		},
+		"./module": {
+			"server": "./generated/module.ts"
+		},
+		"./adapters": {
+			"server": "./generated/adapters.ts"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/core": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

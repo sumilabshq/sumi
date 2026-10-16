@@ -15,6 +15,11 @@ export const CLI_HELP = `widgetarium <command>
   add <id> [--as <name>] [--registry <folder or URL>]
       copies a catalogue widget into the project's widgets folder, its scope's libs into libs with
       the imports rewritten to the alias, its npm dependencies into package.json, and origin.json
-      beside it; never over a widget of the same name`;
+      beside it; never over a widget of the same name
+
+  generate [module folder…] [--check]
+      writes each module's generated/index.ts: every contract, every schema and, for a client
+      module, ui/index.ts; with no folder, every package marked widgetarium.level "domain" in the
+      workspaces; --check writes nothing and exits 1 naming each module whose entry is stale`;
 
 export const HELP_WORDS: readonly string[] = ["help", "--help", "-h"];
