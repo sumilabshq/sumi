@@ -5,6 +5,7 @@ import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
 import { layGpuFiles } from "./gpu-files.mts";
+import { esbuildPlatformBuildOf } from "./platform-adapters-plugin.mts";
 
 export interface SurfaceAsk {
 	readonly minify?: boolean;
@@ -18,6 +19,7 @@ export interface BundleAsk {
 
 export const TEXT_LOADERS: Readonly<Record<string, Loader>> = { ".md": "text", ".css": "text" };
 
+const OBSIDIAN_BUILD = esbuildPlatformBuildOf("obsidian");
 const WIDGETS_CLI_SPECIFIER = "widgetarium:widgets-cli";
 const WIDGETS_CLI_SOURCE = "packages/host-obsidian/src/legacy/ai/widgets-cli.ts";
 const WIDGET_TYPES_SPECIFIER = "widgetarium:widget-types";
@@ -72,7 +74,13 @@ export function bundleOptions({
 	sourcemap = false,
 }: BundleAsk = {}): BuildOptions {
 	return {
-		plugins: [surfaceSource(minify), widgetsCliSource(), widgetTypesSource(), buildStampSource()],
+		plugins: [
+			surfaceSource(minify),
+			widgetsCliSource(),
+			widgetTypesSource(),
+			buildStampSource(),
+			OBSIDIAN_BUILD.plugin,
+		],
 		entryPoints: ["packages/host-obsidian/src/main.ts"],
 		bundle: true,
 		conditions: ["source"],
@@ -81,7 +89,7 @@ export function bundleOptions({
 		platform: "browser",
 		target: "es2020",
 		external: SUPPLIED_BY_ELECTRON_AT_RUNTIME,
-		define: { __WG_PLATFORM__: JSON.stringify("obsidian") },
+		define: OBSIDIAN_BUILD.define,
 		loader: TEXT_LOADERS,
 		jsxFactory: "h",
 		jsxFragment: "Fragment",
