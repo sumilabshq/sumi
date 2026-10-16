@@ -1,197 +1,185 @@
 # Requests
 
-Logic lives only in handlers. A view or another handler reaches logic by sending a request to the mediator.
+Logic lives only in handlers. A view or another handler reaches logic by sending a request through the mediator. Everything here is exported from `@widgetarium/core/requests`.
 
-## A contract and its handler
+## A contract
 
-The contract says what may be asked; it is shared by every side and holds no logic.
+The contract says what may be asked and who may ask it; it is shared by every side and holds no logic. It lives in `features/<feature>/contract.ts`.
 
 ```ts skip-check
-// packages/billing/requests/subscribe.command.ts
-export const SubscribeCommand = command("billing/subscribe")
-	.input(z.object({ user: z.string(), plan: z.string() }))
-	.output(SubscriptionSchema)
-	.idempotencyKey(({ user, plan }) => `${user}:${plan}`)
-	.onServer();
+export const ChargeCommand = command("billing/charge")
+	.guard(AuthenticatedGuard)
+	.guard(HasPermissionGuard(BillingPermissions.charge))
+	.input(ChargeInputSchema)
+	.output(ChargeSchema)
+	.idempotencyKey(PerCall)
+	.rateLimit({ calls: 10, per: minutes(1) });
+
+export const PagesQuery = query("canvas/pages")
+	.input(z.object({ app: z.string() }))
+	.output(PagesSchema)
+	.cache({ freshFor: seconds(30) });
 ```
 
-```ts skip-check
-// packages/billing/server/subscriptions/subscribe.handler.ts
-export class SubscribeCommandHandler extends handlerOf(SubscribeCommand) {
-	private readonly payments = this.inject(Payments);
-	private readonly subscriptions = this.inject(Subscriptions);
+| Declaration                                    | On      | Means                                                                                      |
+| ---------------------------------------------- | ------- | ------------------------------------------------------------------------------------------ |
+| `.guard(SomeGuard)`                            | both    | **required on a server module's request**, absent on a client module's ([Guards](#guards)) |
+| `.input(S)`, `.output(S)`                      | both    | zod schemas; omitted means `void`                                                          |
+| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error                                        |
+| `.rateLimit({ calls, per })`                   | both    | overrides the server's default                                                             |
+| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)                                    |
+| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module                                 |
+| `.invalidates([Query, …])`                     | command | the queries re-read after it ran; without it every query on screen is re-read              |
 
-	override async handle(input: InputOf<typeof SubscribeCommand>, { idempotencyKey }: RequestContext) { … }
-}
-```
+- The name `"<module>/<name>"` is the request's address on the wire (`/rpc/billing/charge`), in logs and in done keys. `query()` throws on a name that is not kebab case `<module>/<name>`; lint holds it equal to the domain and the constant without its suffix.
+- **Strings only for free-form data** (request names, reasons). Every other choice is a typed value: a guard, a `permission("…")` constant, `PerCall` / `Repeatable`, a `Duration` (`seconds(n)`, `minutes(n)`, `hours(n)`, `duration({ hours: 1, minutes: 5 })`).
 
-| Kind                         | Must declare         | May declare                            |
-| ---------------------------- | -------------------- | -------------------------------------- |
-| `query("<module>/<name>")`   | `.output()`          | `.input()`, `.onServer()`              |
-| `command("<module>/<name>")` | `.idempotencyKey(…)` | `.input()`, `.output()`, `.onServer()` |
+## Guards
 
-- The name `"<module>/<name>"` is the request's address on the network (`/rpc/billing/subscribe`), in logs and in the table of done keys. Lint holds it equal to the module and the constant without its `Query`/`Command` suffix, in kebab case.
-- `handlerOf(Request)` names the request once: it is the class's `static request`, and the types check that `handle` takes its input and returns its output. A module takes only classes made by `handlerOf`.
-- The output schema decides whether `null` is a valid answer. A handler cannot return what its schema does not allow.
+Guards run **only on the server**. A client app validates schemas and nothing else: no guard, no rate limit, no `Authenticate`, and `user` is `null` in a client handler. A client module's requests carry no guard; a request handled by a `runs: "server"` module carries at least one, or `module({ runs: "server" })` is a type error and `server()` refuses to start.
 
-## The handler base
+| Guard                      | Lets through                                |
+| -------------------------- | ------------------------------------------- |
+| `PublicGuard`              | anyone; explicit, and nothing may follow it |
+| `AuthenticatedGuard`       | a signed-in user                            |
+| `HasPermissionGuard(perm)` | a user holding that permission              |
+| `guard({ inject, check })` | a project's own                             |
 
-`handlerOf(Request)` returns a class extending `RequestHandler`, which gives every handler three members:
-
-| Member                                | Does                                                                                       |
-| ------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `this.inject(X)`                      | in a field initialiser: the instance of `X` the module provides for this platform          |
-| `this.send(Request, input, options?)` | sends another request through the same mediator; typed input, typed `CommandAnswer` output |
-| `watch({ input, changed })`           | a query whose data changes outside a command overrides it; the base watches nothing        |
+A guard is one value, shaped like a handler:
 
 ```ts skip-check
-export class PageTabsQueryHandler extends handlerOf(PageTabsQuery) {
-	private readonly designReads = this.inject(DesignReads);
-	private readonly canvasStore = this.inject(CanvasStore);
-
-	override async handle(): Promise<ReturnedOf<typeof PageTabsQuery>> { … }
-
-	override watch({ changed }: Watching<typeof PageTabsQuery>): () => void {
-		return watchPages(this.designReads, this.canvasStore, changed);
-	}
-}
-```
-
-A handler is built only by `app()`: `new SomeHandler()` anywhere else throws, naming the class. `this.inject` works because the container sets a building slot while it builds the class (Angular's `inject()`); a constructor parameter would need decorator metadata, which this project does not use.
-
-## The mediator
-
-`send(Request, input)` validates the input (zod), runs the module's middleware, finds the handler by the request, runs it, validates the output, and answers `{ ok: true, output }` or `{ ok: false, reason, ran }`. A view never calls `send` directly; it uses `useQuery` / `useCommand` ([views.md](views.md)).
-
-Middleware is declared once per module: `use: [authenticated, rateLimited]`. A handler holds no auth checks of its own. Middleware gets a frozen input, and a second `next()` answers the first one's promise.
-
-Every refusal reaches the developer once, through `ReportFailure`: the console by default, a module providing `ReportFailure` sends it elsewhere. After a command that ran, every query on screen is read again. A re-read keeps every part of the answer that did not change by identity (TanStack Query's structural sharing), so a block that drew it does not draw again.
-
-## Modules
-
-```ts skip-check
-// packages/canvas/canvas.module.ts
-export const canvasModule = module({
-	name: "canvas",
-	handlers: [PageTabsQueryHandler, ShowPageCommandHandler, …],
-	provide: [
-		provided(DesignSource, {
-			obsidian: obsidianDesignSourceOf,
-			web: (host) => new ProjectDesignSource(host.project),
-		}),
-		provided(DesignReads, {
-			obsidian: (_host, inject) => new CachedDesignReads(inject(DesignSource)),
-			web: (_host, inject) => new CachedDesignReads(inject(DesignSource)),
-		}),
-	],
-	imports: [],
-	exports: [],
+export const OwnsInvoiceGuard = guard({
+	inject: { invoices: Invoices },
+	check: async ({ input, user }, { invoices }) => {
+		const invoice = await invoices.byId(input.id);
+		return invoice?.ownerId === user?.id ? null : { code: "forbidden", reason: "not your invoice" };
+	},
 });
+
+command("billing/refund").guard(AuthenticatedGuard).guard(OwnsInvoiceGuard);
 ```
 
-- A dependency is an abstract class, and the class is its own token: `export abstract class DesignSource { abstract design(app: string): Promise<DrawnDesign>; }`.
-- `provided(Token, record)` takes one factory per platform. Each factory receives **its own platform's host**, typed (`host.project` exists only in `web`), and an `inject` for the dependencies the built value needs as constructor arguments. A bare factory for every platform is a type error.
-- **Where a dependency is provided is where it lives.** A record with only `server` makes the dependency server-only; giving it `web` and `obsidian` keeps it on the client. Nothing is client-only by nature.
-- **A module injects only its own providers and what its imports export.** `module({ imports: [designModule] })` and `exports: [DesignSource]` on the other side. Anything else is refused by `app()`, naming the handler, both modules and the fix.
-- `app()` refuses two handlers for one request, two providers for one token, a handler in a module its request does not name, a module exporting what it does not provide, and an import the app does not list. A request no module handles is refused when it is sent: `no module handles canvas/pages`.
-- Swapping an implementation is one entry in a record. Swapping a handler is one line in `handlers`. A test builds a module with fakes in `provide`.
+- `check` answers `null` or `{ code: "unauthenticated" | "forbidden" | "refused-by-guard", reason }`. No class, no registration, no string name: the value is the guard.
+- **A guard gets every dependency through `inject`**, resolved from the `provide` of the request's server module, and imports nothing server-only. Its code may then sit in a client bundle harmlessly; a guard importing a server-only module fails the client build, because a server module's `package.json` exposes `./module` only under the `widgetarium-server` condition, which only `apps/server` sets.
+- **A guard never holds a secret.** The server host's `Authenticate` (an abstract class, `userOf(headers) → User | null`, exported with `server` from `@widgetarium/core/requests/server`) turns the request's token (headers) into `user`; whether permissions come from JWT claims or the database is the project's `Authenticate`'s choice. Guards read `user` and may query more.
 
-## Platforms
+## Policy order
 
-```ts skip-check
-const app = app({ modules: [canvasModule], platforms: ["obsidian", "web"], host });
+Fixed:
+
+```
+client: input → idempotency key (minted if PerCall and absent) → in-flight dedup → handler → output
+server: input → Authenticate → guards → rate limit → idempotency key → in-flight dedup (per user) → handler → output
 ```
 
-- The platforms are one union, `"obsidian" | "web" | "mobile" | "desktop" | "server"`, declared by the engine together with the global `__WG_PLATFORM__`. Every build defines it (esbuild or Vite `define`), the test loader sets it, so it is never undefined and nothing checks its type.
-- `platforms` names where the app ships. **A dependency with no factory for one of them is a type error** at `app(...)` when the modules are a literal list, and `app()` refuses it at start in every case, naming the dependency, its module and the platform.
-- `app()` refuses a host of another platform than the build: the host an Obsidian build receives is an `ObsidianHost`.
-- A handler reads where it runs from `ctx.host.platform`.
-- A platform that physically cannot do something (a browser cannot write to a folder) gets an implementation that does it another way or refuses with a reason the person reads; that choice is one entry in the record.
-
-Hosts, their typed fields and how a build keeps only its own platform's adapters: [hosts.md](hosts.md).
+- **Rate limit:** `SERVER_RATE_LIMIT` (120 calls a minute per request and user) unless the request declares its own. A client has none.
+- **In-flight dedup:** a second identical query waits for the first and gets its answer. On the server it is keyed by request, input and user and runs after the guards, so one user never receives an answer another was allowed.
+- Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 
 ## Idempotency
 
-Every command declares how a repeat is recognised. The type refuses a command that declares nothing.
+| Declaration                   | Meaning                                                                              |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| `.idempotencyKey(input => …)` | the same data is the same action: a repeat does nothing and answers the first answer |
+| `.idempotencyKey(PerCall)`    | each call is new; the key travels with the call                                      |
+| `.idempotencyKey(Repeatable)` | repeats are wanted (a "+1" counter)                                                  |
 
-| Declaration                   | Meaning                                                                                                                                                                                        |
-| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.idempotencyKey(input => …)` | the same data is the same action: a repeat does nothing and answers the first answer                                                                                                           |
-| `.idempotencyKey("per-call")` | each call is new; `useCommand` makes the key and keeps it for that input until an answer that ran, so only a retry or a double submit of that call is dropped; `send` without a key is refused |
-| `.idempotencyKey("none")`     | repeats are wanted (a "+1" counter)                                                                                                                                                            |
+- **Done keys are scoped per user:** `${request}:${user.id ?? "anonymous"}:${key}` (Stripe scopes keys per account); on a client `user` is always anonymous. A second call with a key still running waits for the first and gets its answer.
+- **`PerCall` keys:** the client mediator mints one for a call sent with none; `useCommand` keeps one key per call so only a retry of that same call reuses it. A server refuses a `PerCall` call that arrives with no key (`missing-key`).
+- The handler receives `idempotencyKey` and hands it on to a provider that supports one (Stripe).
+- `DoneKeys` is abstract. `MemoryDoneKeys` keeps the last 1000 and evicts only settled answers, never a pending claim. TODO: a durable store with pending-with-expiry for a server with more than one process.
+- An idempotency key stops **the same call** twice. Two different calls that would leave broken data are stopped by the database (see Data).
 
-The mediator keeps done keys in a table and passes `idempotencyKey` to the handler, which hands it on to a provider that supports one (Stripe). The default table is in memory and keeps the last 1000 keys; a module providing `DoneKeys` keeps them elsewhere. A throw after the handler was entered answers `ran: true`, and its key stays done.
+## `ran`
 
-An idempotency key stops **the same call** twice. Two different calls that would leave broken data are stopped by the database: see Data.
+Every answer is `{ ok: true, output }` or `{ ok: false, code, reason, ran }`.
 
-## The server
+- A command whose handler throws answers `ran: true`: the write may have happened, so it is never retried and its done key stays.
+- A handler that refuses **before** writing calls `refuse(reason)` (it throws `Refused`); the answer is `{ ok: false, code: "refused", ran: false }` and the done key is released, so a corrected call may run.
 
-A request whose handler must run on a server (it holds a secret, or receives webhooks) says so in its contract: `.onServer()`. Its handler lives in `server/<feature>/`. There is one contract and one module, not two roots:
+## A handler
 
-- In an app, the mediator never builds a `.onServer()` handler. It sends the request through `ServerTransport`; the input is validated before it leaves and the answer is held to the output schema when it comes back.
-- Until a server exists the transport is `NoServerTransport`, which refuses: `billing/subscribe runs on the server, and no server is configured for this app`. **planned**: a tRPC transport posting to `/rpc/<name>`, and `apps/server` running `server({ modules })` with the `server` factories.
-- **A client handler that injects a dependency provided only for `server` is refused by `app()` at start**, with the fix:
-
-  > `TotalQueryHandler injects Ledger, which is provided only on server. Mark the request .onServer(), or keep it on the client and send a server request from it.`
-
-  It is a start-time refusal, not a type error: the class that injects and the record that provides are in different files, and only the app joins them.
-
-### Calling the server from the client
-
-**Problem:** a client handler holds state the server does not have (a draft, the canvas), and the work needs the server (a database, a secret). **Pattern:** keep the handler on the client and `this.send` a server request from it; its typed output is the server's answer.
+A plain function bound to its contract, in `features/<feature>/handlers.ts`:
 
 ```ts skip-check
-export class SaveDraftCommandHandler extends handlerOf(SaveDraftCommand) {
-	private readonly editorStore = this.inject(EditorStore);
-
-	override async handle() {
-		const draft = this.editorStore.now().draft;
-		this.editorStore.change({ draft: { ...draft, status: "saving" } }, "save started");
-		const answer = await this.send(StoreDraftCommand, draft);
-		if (!answer.ok) return this.editorStore.change({ draft: { ...draft, status: "unsaved" } }, answer.reason);
-		this.editorStore.change({ draft: answer.output }, "saved by the server");
-	}
-}
+export const chargeHandler = handler(ChargeCommand, {
+	inject: { billingDb: BillingDb },
+	run: (input, { billingDb, idempotencyKey, signal, user }) => billingDb.insertCharge(input, idempotencyKey),
+});
 ```
 
-`StoreDraftCommand` is `.onServer()`. The local state changes first, then takes the server's answer as the truth; a refusal puts it back and reaches the one refusal handler.
+- `inject` maps a key to an abstract class; `run` receives those instances plus `idempotencyKey`, `signal` and `user` (`null` in a client module). Types check that `run` takes the contract's input and returns its output.
+- **A test calls it directly:** `await chargeHandler.run(input, { billingDb: fakeBillingDb })`.
+- A handler may run another handler of its module the same way (`addPhotosHandler.run(input, injected)`); a request of another module is sent through the app.
 
-## Live data: `watch`
+### Live data: `watch`
 
-A query handler overrides `watch({ input, changed })` when its data can change from outside (a file edited on disk, a job finishing). The mediator calls it while someone reads the query and reads again on `changed()`.
+```ts skip-check
+export const pageTabsHandler = handler(PageTabsQuery, {
+	inject: { designReads: DesignReads, canvasStore: CanvasStore },
+	run: async (input, { designReads, canvasStore }) => tabsOf(await designReads.read(canvasStore.now().app)),
+	watch: (input, { designReads, canvasStore }, changed) => designReads.watch(canvasStore.now().app, changed),
+});
+```
 
-- On the client, `watch` listens to a store, a file, a timer.
-- On the server, the same `watch` becomes a live subscription: one connection per browser and one server watch per query key however many people look. Prior art: Convex `useQuery` over a WebSocket. **planned**
+A query whose data changes outside a command (a file edited on disk, a job finishing) declares `watch`. The app calls it while someone reads the query, once per query key however many read it, and re-reads on `changed()`. **planned**: the same `watch` over the wire as a live subscription (Convex's `useQuery`).
 
-## Data
+## A module
 
-Tables are Drizzle code in `schema/`; the zod shapes requests use are derived from them (`drizzle-zod`). Migrations are generated from the tables, never written by hand. **planned**
+```ts skip-check
+export const canvasModule = module("canvas", {
+	runs: "client",
+	handlers: [pageTabsHandler, addPhotosHandler, …],
+	provide: (parts: CanvasParts) => ({
+		...parts,
+		canvasStore: new MomentCanvasStore(parts.canvasHost.opened, (kept) => parts.canvasHost.keepOpening(kept)),
+		designReads: new CachedDesignReads(parts.designFolder, parts.designJobs, parts.appLook),
+	}),
+});
 
-- **Uniqueness is an explicit choice.** Every table declares it: `unique: [["userId", "plan"]]` or `unique: "none"`.
-- **Two people editing one row:** a `version` column; an update matches `WHERE id = ? AND version = ?`, and zero rows answer "conflict" instead of overwriting.
-- **A destructive migration** is refused unless the change says so explicitly; every migration runs first on a copy of the data and reports what changed.
+export const billingModule = module("billing", {
+	runs: "server",
+	handlers: [chargeHandler],
+	provide: ({ env }) => ({ billingDb: new PostgresBillingDb(env.DATABASE_URL) }),
+});
+```
+
+- `provide` must return every key its handlers inject, typed by the handlers' `inject`. A client module's `provide` takes the parts its host builds (`canvasModule.with(parts)`); a server module's takes `{ env }`.
+- A dependency is an abstract class, and the class is its own token. A starter refuses a provided value that is not an instance of the injected class.
+- Swapping an implementation is one line in a host's parts. A test builds `module.with(fakes)`.
+
+## Starting: `app()` and `server()`
+
+```ts skip-check
+const canvasApp = app({ modules: [canvasModule.with(parts)], server: env.SERVER_URL, host });
+const started = server({ modules: [billingModule], env: process.env, host: { authenticate } });
+```
+
+- `app({ modules, server?, host? })` runs every `runs: "client"` module locally and sends every other request to `server`. With no `server`, such a request answers `no-server`.
+- `server({ modules, env, host? })` is a Hono app mounting `/rpc/*`; it answers `{ fetch }`. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
+- A starter refuses, naming the request: a module of the other side, a request handled in a module its name does not name, two handlers for one request, a missing or wrong provided value, a server module's request with no guard, a guard injecting what the request's module does not provide (`guard #1 of pages/rename-elsewhere injects pages, which its module does not provide as a Pages`), a guard that needs a user (`AuthenticatedGuard`, `HasPermissionGuard`) when the host has no `Authenticate`.
+- The wire is oRPC v2, and only `core` knows it (`wire.ts`, `wire-client.ts`, `server/`). Nothing in a module imports oRPC; replacing it changes those files. `apps/server` is **planned**.
+
+## Cache and re-read
+
+TanStack Query is the cache under the hooks; a component never touches it. A local query gets no retry and no re-read on focus; a remote one retries an unreachable server and re-reads on focus. After a command that ran, its `invalidates` list, or every query on screen, is read again; a re-read keeps the previous data on screen and every unchanged part by identity.
 
 ## Adapters
 
-An outside system is reached through an adapter: an abstract class with typed methods and a closed list of refusals, in `adapters/<what>/<what>.adapter.ts`, with one implementation per platform beside it.
+An outside system is reached through an adapter: an abstract class in `adapters/<area>/<area>.adapter.ts`, one implementation per host beside it.
 
-- Each implementation turns its provider's errors into the adapter's refusals and retries what may be retried.
-- One contract test runs against every implementation, so switching keeps behaviour.
-- The module picks the implementation per platform; the handler knows only the abstract class.
-- An adapter holds only the calls to its system. A decision about data (which note to return to, how a drawn state is chosen) is a domain rule in `lib/` or a handler.
+- **Split by area, not by line count.** The canvas once had one `DesignSource`; it is now `DesignFolder`, `DesignJobs`, `DesignDrawing`, `DesignPhotos`, `DesignLayers`, `AppLook`, and `CanvasHost` (what the mount gives, `returnToView` among it).
+- **A handler holds the decision, an adapter only calls its system** (read a file by path, write a file, take a picture). A store owns long-lived state (`CanvasStore`). `DesignReads` is the one cached reader of the design; every handler reads through it.
+- Its methods return typed results; each implementation turns its provider's errors into the adapter's refusals.
 
-## Background work
+## Data
 
-**planned.** Three kinds, declared in a module beside its handlers:
+**planned.** Tables are Drizzle code in `schema/`; the zod shapes requests use are derived from them. Migrations are generated, never written by hand.
 
-| Kind                                     | Runs                        | Client                        | Server on a long-lived process | Server on Vercel / serverless                            |
-| ---------------------------------------- | --------------------------- | ----------------------------- | ------------------------------ | -------------------------------------------------------- |
-| `cron("<module>/<name>", "*/5 * * * *")` | on a schedule               | a timer while the app is open | in the process                 | the platform's scheduler (Vercel Cron) calls its route   |
-| `worker("<module>/<name>")`              | one job until done, retried | in the background of the tab  | in the process, from a queue   | a queue service calls its route per job                  |
-| `loop("<module>/<name>")`                | forever                     | while the app is open         | in the process                 | not possible: a build error that names the deploy target |
+- **Uniqueness is an explicit choice:** `unique: [["userId", "plan"]]` or `unique: "none"`.
+- **Two people editing one row:** a `version` column; an update matches `WHERE id = ? AND version = ?`, and zero rows answer "conflict".
+- **A done key on a server is an atomic unique insert first**; read-then-write is forbidden.
 
-Each kind is a handler like any other (`extends handlerOf(...)`, `this.inject`, idempotency on every job). Prior art: Vercel Cron Jobs, Inngest and Trigger.dev (from memory, to be checked when built).
+## Background work and webhooks
 
-## Webhooks
-
-**planned.** A webhook lands on a server route, is verified, and is **stored raw first** (an inbox row), then answered `2xx`. A command applies it, keyed by the provider's event id. An event the strict schema refuses stays in the inbox marked failed with the reason and is applied again after the fix. A periodic job compares our rows with the provider and repairs drift.
+**planned.** `cron`, `worker` and `loop` are handlers declared in a module, with idempotency on every job. A webhook lands on a server route, is verified, **stored raw first**, answered `2xx`, then applied by a command keyed by the provider's event id; a periodic job compares our rows with the provider and repairs drift.

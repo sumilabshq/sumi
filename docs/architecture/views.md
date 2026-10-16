@@ -8,10 +8,12 @@ A page is a composition of blocks, all under `ui/`. A block is a plain React com
 
    ```ts skip-check
    LayersPanelQuery → { isShown, rows: [{ id, title, depth, isPicked, isOpen }] }
-   pickLayerCommand.run({ id: row.id })   // toggling the pick is the handler's rule, not the view's
+   useCommand(PickLayerCommand).run({ id: row.id })
    ```
 
-2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding.
+   Toggling the pick is the handler's rule, not the view's.
+
+2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding (**planned**).
 3. **A block owns its data; a layout passes none.** A layout only says where blocks stand. Swapping a block is one line.
 4. **State lives where it is needed.** Only this block, only for a moment (hover, an open popover) → the primitive's own state. Another block needs it, or it survives navigation → a query and a command over a client store.
 
@@ -38,7 +40,7 @@ export function TaskList() {
 
 The second argument is always the request's input. Choose by one question: can the block draw anything meaningful without this data? No → `useQuery`.
 
-A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause`, and `with(input)` bound to one input. Every refusal goes to the app's one refusal handler (a toast by default); a block shows `refusal` inline only where it fits. A second run of an input still running is refused to the caller.
+A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause`, and `with(input)` bound to one input. `can` / `cannotBecause` say only whether the request can be routed (a local module runs it or a server is configured); they never evaluate guards, which run only on the server. Every refusal goes to the app's one refusal handler (`OnRefused`, `toastRefusal` by default); a block shows `refusal` inline only where it fits. A second run of an input still running is refused to the caller (`… is already running`).
 
 ## Layouts and slots
 
@@ -52,9 +54,9 @@ export function Canvas() {
 }
 ```
 
-`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule], platforms, host })}><Canvas /></AppProvider>`.
+`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule.with(parts)] })}><Canvas /></AppProvider>`.
 
-A query whose data changes outside a command overrides `watch` on its handler ([requests.md](requests.md)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
+A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md#live-data-watch)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
 
 A layout is built from `<Slot>`, and a slot is a boundary: Suspense for a block's required data and an error boundary for its failures. Both have defaults from the kit; a block that needs its own passes them: `<Slot loading={<TasksSkeleton />} error={(refusal) => <TasksFailed reason={refusal} />}>`. Inside a block, `<Section>` is the same boundary around one part, so a failing column does not break the block. A block that reads no required data needs nothing.
 

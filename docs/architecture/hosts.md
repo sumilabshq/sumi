@@ -1,41 +1,41 @@
 # Hosts
 
-A platform is where an app runs: `obsidian`, `web`, `mobile`, `desktop`, `server`. A host is the framework package that runs apps there (`packages/host-obsidian`, the web host inside `@widgetarium/vite`); a project writes no host code.
+A host is the framework code that runs apps inside another program: `packages/host-obsidian` (the Obsidian plugin), the browser host inside `@widgetarium/vite`. A project writes no host code.
 
-## The host a module receives
+## What a host hands a module
 
-`app({ modules, platforms, host })` takes the host of its platform, and each `provided()` factory receives the host of **its** platform, typed:
+A client module's `provide` takes **parts**: the implementations of its adapters, built by the host for one mount. The domain writes one function per host that builds them:
 
-| Platform                       | Host                        | Carries                                       |
-| ------------------------------ | --------------------------- | --------------------------------------------- |
-| `obsidian`                     | `ObsidianHost`              | `app` (Obsidian's `App`, the vault inside it) |
-| `web`                          | `WebHost`                   | `project`, the started project                |
-| `server`                       | `ServerHost`                | `env`, the server's variables                 |
-| `mobile`, `desktop` _(future)_ | `MobileHost`, `DesktopHost` | the platform's own objects                    |
+| Host                                   | Builds parts with                           | From                        |
+| -------------------------------------- | ------------------------------------------- | --------------------------- |
+| Obsidian, a vault design               | `vaultCanvasParts(vaultDesign, canvasHost)` | `packages/canvas/vault.ts`  |
+| a project (browser, Obsidian app note) | `projectCanvasParts(project, canvasHost)`   | `packages/canvas/module.ts` |
 
-The engine declares the hosts; a domain that needs more from whoever mounts it adds a field by module augmentation of `@widgetarium/core/mediator/platform.js`, typed per platform. The canvas adds `canvas`: what a mount gives it (the opened page, who owns a paste, the GPU supply, whether it reads a vault design or a project). A host built without that field is a type error, never a null to check.
+The host then starts it: `app({ modules: [canvasModule.with(parts)] })`. `CanvasHost` is what the mount itself gives (the opened page, who owns a paste, the GPU supply, `returnToView`); `MountedCanvasHost` builds it from a `CanvasMount`.
 
-## One build per platform
+A server module's `provide` takes `{ env }` from `server({ modules, env })`. The server's host gives `authenticate`, `doneKeys`, `rateLimits` and `reportFailure`; an app's host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates).
 
-Each build defines `__WG_PLATFORM__` (`"obsidian"` in the plugin's esbuild, `"web"` in the Vite plugin); the test loader sets it to `"obsidian"`, or to `WG_PLATFORM`. `app()` refuses a host of another platform than the build.
+## One host's code stays out of another's bundle
 
-A build from source keeps only its own platform's code, the way React Native resolves `file.ios.ts` or `file.android.ts`: an import of `adapters/<what>/<platform>.adapter.ts` (or `<platform>/<platform>.adapter.ts`) for another platform, or of any file under a domain's `server/` in a build that is not `server`, resolves to a stand-in exporting the same names, each throwing `… belongs to the obsidian build, and this build is for web` on construction, call or read. A stood-in handler keeps its `request`, so the module still routes it to the server. The record keeps its entry, so the types stay whole; the code behind it never ships. **Packed packages do not hold this yet**: `npm run pack:engine` bundles every platform's adapters into `dist` (TODO in `tools/pack-engine.mts`). The esbuild side is `packages/host-obsidian/platform-adapters-plugin.mts`, the Vite side the `load` hook of `@widgetarium/vite`; both use `platform-adapters.ts` in that package.
+There is no build-time platform switch. A host's implementations live in files only that host imports: the browser studio imports `module.ts`, the Obsidian host imports `vault.ts`, and only `apps/server` imports `@widgetarium/core/requests/server` (Hono, the oRPC server). `npm run test:web-canvas-bundle` builds the browser studio and fails if it carries a vault implementation, any `packages/host-obsidian` code, Hono, the oRPC server or `obsidian`; it also proves each check can fail by building `vault.ts` and the server entry.
 
 ## The Obsidian host
 
 1. Installs as a plugin and keeps its settings, the AI connection among them.
 2. Opens a note whose front matter names `widgetarium-app` in the studio; `Open app` and `Create new app` commands.
-3. Builds the `ObsidianHost` for each mount: the studio view, the design view, the agent's shots.
+3. Builds the canvas parts for each mount: the studio view, the design view, the agent's shots.
 4. Runs the AI agent's tools (`widgets.mjs`) over the vault.
 
 ## Deploy
 
-| An app has…              | It needs                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| no `.onServer()` request | no server; every host runs the handlers itself                                            |
-| one or more              | `apps/server`: `server({ modules })` runs the `server` factories and serves `/rpc/<name>` |
+| An app has…                   | It needs                                                                                  |
+| ----------------------------- | ----------------------------------------------------------------------------------------- |
+| only `runs: "client"` modules | no server; the app runs every handler itself                                              |
+| a `runs: "server"` module     | `apps/server`: `server({ modules, env })` serves `/rpc/*`; the app passes `server: <url>` |
 
-`apps/server` is created with the first server request; until then an app's `.onServer()` requests are refused by `NoServerTransport` ([requests.md](requests.md#the-server)). There is never a server per device: desktop and mobile call the same `/rpc`.
+`apps/server` is **planned**: Hono, with `dev`, `build` and `start`; Next.js runs the same Hono app through Hono's Vercel handler (to verify when built). Until it exists a request no local module handles answers `no-server`. There is never a server per device: desktop and mobile call the same `/rpc`.
+
+**CORS is not security.** Obsidian's origin is allowed; the server is protected by guards and `Authenticate` ([requests.md](requests.md#guards)).
 
 ## Env
 
@@ -48,16 +48,14 @@ export const stripeEnv = env({
 		STRIPE_WEBHOOK_SECRET: z.string(),
 	},
 });
-
-export const appEnv = env(stripeEnv, supabaseEnv, { client: { PUBLIC_API_URL: z.string().url() } });
 ```
 
-- **The side belongs to the part that declares it.** An app joins `stripeEnv`; it cannot move a Stripe secret to the client. Only the `client` part reaches a browser bundle.
+- **The side belongs to the part that declares it.** An app cannot move a Stripe secret to the client. Only the `client` part reaches a browser bundle.
 - **Checked at start:** a missing or malformed variable stops the app with the variable's name and its `describe` text.
-- **Handlers never read `process.env`**: values reach them through `ServerHost.env` in the module's `server` factories.
+- **Handlers never read `process.env`**: values reach them through a server module's `provide({ env })`.
 - **Filled by the person, never seen by the agent.** The studio's integrations page draws a form from each part's schema and writes `.env`; the agent sees only "filled" or "missing".
 - A key a person types into the Obsidian plugin's settings is their own key on their own machine, not a secret of the app.
 
 ## Other frameworks
 
-Routing, SSR, deploy and loading `process.env` belong to the host. Widgetarium owns requests, handlers, modules and blocks. Inside Next.js it is an adapter, the way tRPC is: a route handler serves `/rpc`, pages draw blocks, Next keeps its routing and env loading. A `host-next` package is written when a project needs it.
+Routing, SSR, deploy and loading `process.env` belong to the host. Widgetarium owns requests, handlers, modules and blocks. Inside Next.js the `/rpc/*` route is the Hono app's `fetch`; pages draw blocks, Next keeps its routing and env loading.
