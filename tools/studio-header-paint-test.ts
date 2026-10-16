@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { paged } from "./chrome-ask.ts";
 
-const SHEET = readFileSync("hosts/obsidian/styles.css", "utf8");
+const SHEET = readFileSync("packages/host-obsidian/styles.css", "utf8");
 const LEAVES = `<div class="workspace-leaf-content" data-type="widgetarium-studio">
 	<div class="view-header" id="studio-header">Farm</div>
 	<div class="view-content wg-studio-view"></div>

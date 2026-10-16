@@ -8,18 +8,18 @@ Today every app gets the same "quiet and strict" look, because the brief says th
 
 ## What exists today (verified 2026-10-10)
 
-| Fact                                                                                          | Where                                                                                                 |
-| --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Stage 1 says "the look is always the kit's and copy is rewritten"                             | `docs/ai/brief.md` Stage 1                                                                            |
-| One vault-wide design system is laid once, with the style line "Quiet and strict"             | `docs/ai/design-system.md`, `layDesignSystemOnce` in `hosts/obsidian/src/legacy/ai/agent-files.ts:55` |
-| Rules are parsed per id and checked by `rules <app>`; an app file overrides by id             | `packages/core/src/design-rules.ts`                                                                   |
-| Canvas tabs are Docs, References, Components; "Brief" and "Design system" are renamed to Docs | `TABS_RENAMED` in `hosts/obsidian/src/legacy/design-canvas-page.ts`                                   |
-| Jobs with phase, page and `--after` run stages 2–5 a page at a time                           | `brief.md` "Then plan the build as jobs"; `hosts/obsidian/src/legacy/ai/job-*.ts`                     |
-| A provider takes `{model}`; there is no effort setting                                        | `hosts/obsidian/src/legacy/ai/providers.ts`                                                           |
-| Vault widgets draw with the plugin's kit, not a project copy (a TODO)                         | CLAUDE.md, "In Obsidian"                                                                              |
-| A project made by `create` gets its own kit copy and aliases                                  | `packages/widgetarium/src/cli/create-command.ts:46`                                                   |
-| Reference pictures and notes on the canvas: `reference`, `note`                               | `hosts/obsidian/src/legacy/ai/reference-command.ts`                                                   |
-| Trait-format systems, fit profiles and merge rules                                            | `docs/design-systems/{verdant,gallery,cloud,merging}.md`                                              |
+| Fact                                                                                          | Where                                                                                                         |
+| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Stage 1 says "the look is always the kit's and copy is rewritten"                             | `docs/ai/brief.md` Stage 1                                                                                    |
+| One vault-wide design system is laid once, with the style line "Quiet and strict"             | `docs/ai/design-system.md`, `layDesignSystemOnce` in `packages/host-obsidian/src/legacy/ai/agent-files.ts:55` |
+| Rules are parsed per id and checked by `rules <app>`; an app file overrides by id             | `packages/core/src/design-rules.ts`                                                                           |
+| Canvas tabs are Docs, References, Components; "Brief" and "Design system" are renamed to Docs | `TABS_RENAMED` in `packages/host-obsidian/src/legacy/design-canvas-page.ts`                                   |
+| Jobs with phase, page and `--after` run stages 2–5 a page at a time                           | `brief.md` "Then plan the build as jobs"; `packages/host-obsidian/src/legacy/ai/job-*.ts`                     |
+| A provider takes `{model}`; there is no effort setting                                        | `packages/host-obsidian/src/legacy/ai/providers.ts`                                                           |
+| Vault widgets draw with the plugin's kit, not a project copy (a TODO)                         | CLAUDE.md, "In Obsidian"                                                                                      |
+| A project made by `create` gets its own kit copy and aliases                                  | `packages/widgetarium/src/cli/create-command.ts:46`                                                           |
+| Reference pictures and notes on the canvas: `reference`, `note`                               | `packages/host-obsidian/src/legacy/ai/reference-command.ts`                                                   |
+| Trait-format systems, fit profiles and merge rules                                            | `docs/design-systems/{verdant,gallery,cloud,merging}.md`                                                      |
 
 ## Prior art
 

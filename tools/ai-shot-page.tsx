@@ -2,17 +2,17 @@ import "./packs-registered.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AssistantChat } from "../apps/studio/src/legacy/assistant/assistant-chat.js";
-import { obsidianAssistantPort } from "../hosts/obsidian/src/legacy/ai/assistant-port-obsidian.js";
-import { DEFAULT_PRESET, PRESETS } from "../hosts/obsidian/src/legacy/ai/providers.js";
+import { obsidianAssistantPort } from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js";
+import { DEFAULT_PRESET, PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.js";
 import type { AssistantCall, ProgressWidget } from "../packages/core/src/engine/assistant-port.js";
-import type { ObsidianHost } from "../hosts/obsidian/src/legacy/host.js";
+import type { ObsidianHost } from "../packages/host-obsidian/src/legacy/host.js";
 import { standIn } from "./stand-in.ts";
-import type { Session, SessionState } from "../hosts/obsidian/src/legacy/ai/session.js";
+import type { Session, SessionState } from "../packages/host-obsidian/src/legacy/ai/session.js";
 import { buildWidget } from "../packages/core/src/registry.js";
 import taskProgressSource from "widget-source:@default/task-progress/widget.tsx";
 import taskProgressCard from "../registry/@default/task-progress/manifest.generated.json";
 
-import type { Jobs } from "../hosts/obsidian/src/legacy/ai/job-runner.js";
+import type { Jobs } from "../packages/host-obsidian/src/legacy/ai/job-runner.js";
 
 const SHOWN_PROVIDERS = new Set(["claude-code", "opencode", "ollama"]);
 const PROVIDERS = PRESETS.filter((provider) => SHOWN_PROVIDERS.has(provider.id));

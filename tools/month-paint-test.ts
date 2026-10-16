@@ -4,7 +4,7 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import { LIB_FILES } from "../packages/core/src/engine/widget-build.js";
 import { z } from "../packages/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
@@ -157,7 +157,7 @@ const boxes = tiles
 	.join("");
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>${HOST_RULES}</style>
 <style>body { margin: 0; padding: 8px; ${THEME}

@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 
 const OBSIDIAN_ADAPTER = "packages/canvas/ports/design-source-obsidian.ts";
 const OBSIDIAN_PORT_FOLDER = "packages/canvas/ports/obsidian/";

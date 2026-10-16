@@ -12,7 +12,7 @@ import type { GivenProps } from "../packages/core/src/declared-widget.ts";
 import type { EngineManifest } from "../packages/core/src/engine/catalogue-index.ts";
 import type { ResolvedMounts } from "../packages/core/src/surface/mounts.ts";
 import type { MountContext } from "../packages/core/src/surface/widget-host.ts";
-import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.ts";
+import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.ts";
 import { byId } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -113,7 +113,7 @@ const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalog
 const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
 const { leavesOf } = await import("../packages/core/src/tree.js");
 const { findBlocks } = await import("../packages/core/src/block-writer.js");
-const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
+const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
 const { TFile, TFolder } = await import("obsidian");
 
 const adapter = {
@@ -139,7 +139,7 @@ const adapter = {
 	stat: async () => ({ mtime: 1, size: 1 }),
 };
 
-// The slot comes from hosts/obsidian/src/legacy/host.js — the adapter that ships. Building one here is how the
+// The slot comes from packages/host-obsidian/src/legacy/host.js — the adapter that ships. Building one here is how the
 // board passed this test while being dead in the app.
 const written: { created: Created[]; updated: Updated[] } = { created: [], updated: [] };
 const notices: string[] = [];

@@ -4,7 +4,7 @@ import * as obsidian from "obsidian";
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, { window: dom.window, document: dom.window.document, HTMLElement: dom.window.HTMLElement });
 
-const { default: WidgetariumPlugin } = await import("../hosts/obsidian/src/main.ts");
+const { default: WidgetariumPlugin } = await import("../packages/host-obsidian/src/main.ts");
 
 let failed = 0;
 const check = (said: string, got: unknown, wanted: unknown): void => {

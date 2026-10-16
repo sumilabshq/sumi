@@ -1,13 +1,13 @@
 # Widgetarium
 
-**New code follows [docs/architecture/](docs/architecture/README.md)**: hosts → apps → packages,
+**New code follows [docs/architecture/](docs/architecture/README.md)**: apps → packages, hosts as `packages/host-*`,
 domains and common, placement by what a file is. Code under a `legacy/` folder predates it and leaves
 by rewrite ([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree for
 new code, those pages win.
 
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
 widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
-classic `h` factory, one component per file), `packages/core` and `hosts/obsidian` are `.ts` React with
+classic `h` factory, one component per file), `packages/core` and `packages/host-obsidian` are `.ts` React with
 `h()` hyperscript — **no JSX there** — and `tools/` is `.ts` too. `npm run test:types` gates it all
 (`tsc -b` over kit, core, the app and tools, then the `double-cast` lint): no `any`, no
 `as unknown as`, no `!`; data from outside arrives `unknown` and is narrowed by a guard. Widgets under
@@ -21,7 +21,7 @@ the rename that fixes it. A `widget.js` beside a TypeScript source is ignored, n
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
 ```
-hosts/obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
+packages/host-obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
 apps/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
       ↓
 packages/cli      FSL  @widgetarium/cli: the `widgetarium` bin (create, check, catalogue, add) and templates/project
@@ -50,7 +50,7 @@ hands `zod` to vault widgets like React.
 layer's path has a default, a path is project-relative with `/` and never `..`, and `aliases` adds to
 `@kit`, `@schemas`, `@libs`, `@logic` and `@widgets`. `discover-project.ts` walks every layer
 recursively through the `ProjectFiles` port — over Node (`project-files-node.ts`) and over the vault
-(`hosts/obsidian/src/legacy/project-files-vault.ts`) — and finds a handler by parsing its class, never by
+(`packages/host-obsidian/src/legacy/project-files-vault.ts`) — and finds a handler by parsing its class, never by
 running it. `checkDiscovered` in `check-project.ts` is the one judge: the CLI's `check`, the Vite
 plugin and the Obsidian block all refuse a project through it, so a project one of them opens the
 others open too.
@@ -64,7 +64,7 @@ others open too.
   `virtual:widgetarium/project`, which the `@widgetarium/vite` plugin builds from discovery and fails
   the build on findings; the project hands its packs (`packs: [corePack]`), so core imports no pack.
   `@widgetarium/core/styles.css` is cut at pack time from `packages/core/browser-host.css` and
-  `hosts/obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
+  `packages/host-obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
 - **In Obsidian** a `widgetarium-app` code block names `app: <folder>` and `route: <path>`
   (`app-block.ts`). `app-projects.ts` opens a project only when a block draws it — **a start reads no
   project file** — compiling its modules in memory (`project-program.ts`) into the module space vault
@@ -88,7 +88,7 @@ re-export it from there. The app reaches core as `@widgetarium/core/<file>` and 
 `@widgetarium/kit[/surface|/plates|/icons|/emoji-table|/emojis|/charts|/shapes|/showcase]` — the kit's
 `package.json` `exports` is the one list of its entry points, and the test loader resolves
 `@widgetarium/*` through it. Every tool runs from the repo root. A second host (web, Tauri) is another
-`apps/*` beside `obsidian`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
+`packages/host-*` beside `host-obsidian`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
 map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths to them.
 
 **The handbook written for the in-app agent is your handbook too.** `docs/ai/` is the whole of it:
@@ -514,7 +514,7 @@ and a resize that gives the box its place back never writes anything.
 of its own. `TreeBoard` hands `onActions` one action per box that names no `trigger`, keyed
 `box:<openKey>` so the button survives every change of state, with `isOn` while the box is shown; a
 `toggle: always` box has one on every screen (folding while docked, opening while collapsed), a
-`toggle: adaptive` box has one only while collapsed. `hosts/obsidian/src/legacy/header-actions.ts` places them with `view.addAction`
+`toggle: adaptive` box has one only while collapsed. `packages/host-obsidian/src/legacy/header-actions.ts` places them with `view.addAction`
 beside the reading-mode button, next to the edit-mode pencil. A box naming `trigger: t1/open` reads that `@default/toggle` tile's memory cell
 instead, and no header button appears for it. The box reads the toggle; the toggle knows nothing of
 the box.
@@ -579,7 +579,7 @@ Obsidian's, handed in as `AssistantCards` by that view alone (TODO in `assistant
 **In Obsidian an app note opens in the studio view, and Obsidian draws nothing of its own over it.** A
 markdown note whose front matter holds `widgetarium-app: <project folder>` (and optionally
 `widgetarium-route: /path`, `/` by default) is switched, in whatever leaf opens it, to the
-`widgetarium-studio` `FileView` (`hosts/obsidian/src/legacy/studio-view.ts`, switching in `studio-leaves.ts`),
+`widgetarium-studio` `FileView` (`packages/host-obsidian/src/legacy/studio-view.ts`, switching in `studio-leaves.ts`),
 which hides its own header and mounts `WidgetariumStudio` through `startOpenedStudio`, the one
 function the browser's `startStudio` calls too. Its pane menu's "Open as Markdown" switches that leaf
 back and is remembered for that leaf and note only. Inside Obsidian routing is a `createMemoryRouter`
@@ -669,7 +669,7 @@ terminal.
 **A start reads no widget file.** An iCloud vault on a full disk evicts `.widgetarium/`, and every
 read waited ~1.7 s for a download: 655 reads, ten minutes of an empty screen. The plugin now mounts
 from a snapshot kept on this machine in IndexedDB (`packages/core/src/startup-snapshot.ts`, the store
-in `hosts/obsidian/src/legacy/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
+in `packages/host-obsidian/src/legacy/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
 packages, the plugin stamp, and each file's `mtime:size` taken **before** it was read. A snapshot zod
 refuses is ignored and the vault is read; one from another plugin build mounts like any other, because
 it holds raw files and the fingerprint lists with the running build's own `listVault` — refusing it
@@ -750,7 +750,7 @@ along with whatever depends on it — rather than ship it.
 
 **Tests import the real sources; nothing is copied.** Every `node tools/…` script in `package.json`
 runs under `node --single-threaded --import ./tools/loader/register.mts`, an in-memory loader that compiles `.ts`,
-`.tsx` and `.jsx` with esbuild exactly as `hosts/obsidian/build.mts` does (`h`/`Fragment`, the
+`.tsx` and `.jsx` with esbuild exactly as `packages/host-obsidian/build.mts` does (`h`/`Fragment`, the
 nearest `tsconfig.json`, `es2020`), resolves extensionless and `.js` specifiers to the `.ts` behind
 them and `@widgetarium/*` through each package's `exports`, reads `.md` and `.css` as text, answers
 `obsidian` with `tools/loader/obsidian-stub.mts` and the `widgetarium:*` specifiers the build
@@ -808,8 +808,8 @@ npm run dev            # build + install: the plugin as a symlink, for working
 npm run install-vault  # build --prod + install: a production copy, for using
 ```
 
-**The engine is copied, the widgets are symlinked — except where they are not.** `hosts/obsidian/install.mts` copies
-`main.js`, `styles.css` and `manifest.json` from `hosts/obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
+**The engine is copied, the widgets are symlinked — except where they are not.** `packages/host-obsidian/install.mts` copies
+`main.js`, `styles.css` and `manifest.json` from `packages/host-obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
 that was never installed leaves the vault running yesterday's engine. Under `.widgetarium/widgets` each
 scope is normally a symlink back to this repo, and for those a widget edit is live with no install at
 all. **A scope that is a real directory is a published copy and is frozen** — edits to the repo never

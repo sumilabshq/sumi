@@ -99,7 +99,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-r
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/studio-render-page.tsx");
-const sheets = ["packages/core/browser-host.css", "hosts/obsidian/styles.css"]
+const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
 

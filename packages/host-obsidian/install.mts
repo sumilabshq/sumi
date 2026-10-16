@@ -18,7 +18,7 @@ const targetIsThisRepo = await realpath(target).then(
 );
 
 if (targetIsThisRepo) {
-	console.log(`the plugin folder is a symlink to hosts/obsidian — nothing to copy`);
+	console.log(`the plugin folder is a symlink to packages/host-obsidian — nothing to copy`);
 	console.log(`Obsidian is running main.js from here: ${await describeBuild()}`);
 	console.log(
 		`a dev build costs the vault every start; "npm run install-vault" replaces the symlink with a production copy`,

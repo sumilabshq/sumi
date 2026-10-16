@@ -13,7 +13,7 @@ import {
 	type ProjectFiles,
 } from "../packages/core/src/project/index.js";
 import { fieldOf } from "./export-source.mts";
-import { vaultProjectFiles, type ProjectAdapter } from "../hosts/obsidian/src/legacy/project-files-vault.js";
+import { vaultProjectFiles, type ProjectAdapter } from "../packages/host-obsidian/src/legacy/project-files-vault.js";
 
 type FixtureFiles = Readonly<Record<string, string>>;
 

@@ -3,7 +3,7 @@ import path from "node:path";
 import { JSDOM } from "jsdom";
 import { parse as parseYaml } from "yaml";
 import type { App } from "obsidian";
-import type { HostPlugin } from "../hosts/obsidian/src/legacy/host.js";
+import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
 import { byId, found, foundAs } from "./dom-find.ts";
 import { fieldAt } from "./held-fields.ts";
 import { isRecord, present } from "./page-dom.ts";
@@ -69,7 +69,7 @@ const { render } = await import("../packages/core/src/engine/render.js");
 const { WidgetSurface } = await import("../packages/core/src/surface.js");
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
+const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
 const { TFile, TFolder } = await import("./loader/obsidian-stub.mts");
 
 const adapter = {

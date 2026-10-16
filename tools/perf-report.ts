@@ -5,8 +5,8 @@ import os from "node:os";
 import nodePath from "node:path";
 import vm from "node:vm";
 import type { App } from "obsidian";
-import { bundleOptions } from "../hosts/obsidian/build.mts";
-import type { ObsidianHost } from "../hosts/obsidian/src/legacy/host.ts";
+import { bundleOptions } from "../packages/host-obsidian/build.mts";
+import type { ObsidianHost } from "../packages/host-obsidian/src/legacy/host.ts";
 import type { ActionMeta } from "../packages/core/src/gateway/create.ts";
 import type { CollectionGateway, Query } from "../packages/core/src/gateway/contract.ts";
 import type { NoteRecord } from "../packages/core/src/gateway/obsidian.ts";
@@ -17,7 +17,7 @@ import { fakeVault } from "./fake-vault.ts";
 import type { FakeVault } from "./fake-vault.ts";
 import { standIn } from "./stand-in.ts";
 
-const { createHost } = await import("../hosts/obsidian/src/legacy/host.js");
+const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
 const { folderGateway } = await import("../packages/packs/obsidian/src/folder-gateway.ts");
 const { mapCollection } = await import("../packages/core/src/gateway/mapped.ts");
 const { narrow } = await import("../packages/core/src/gateway/narrow.ts");
@@ -46,7 +46,7 @@ const megabytes = (bytes: number): string => `${(bytes / 1048576).toFixed(2)} MB
 const isDevBuild = (source: string): boolean => source.includes("//# sourceMappingURL=");
 
 function startupSources(): string {
-	return ["hosts/obsidian/src/main.ts", "hosts/obsidian/src/vault-widgets.ts"]
+	return ["packages/host-obsidian/src/main.ts", "packages/host-obsidian/src/vault-widgets.ts"]
 		.map((file) => fs.readFileSync(file, "utf8"))
 		.join("\n");
 }

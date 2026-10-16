@@ -7,7 +7,7 @@ import type { Mark } from "../packages/kit/src/utils/marks.ts";
 import type { PlaceholderMarkProps } from "../packages/kit/src/components/placeholder-mark.tsx";
 import type { SortOrder } from "../packages/kit/src/utils/data-table.ts";
 import { JSDOM } from "jsdom";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import { byId, found, foundAs } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 import type { ReactNode } from "react";
@@ -2086,7 +2086,7 @@ check(
 	check("nor the trigger touched, at any beat", beats.map((state) => state.rowTouched).join(""), "||||||||||||");
 
 	// TRADE-OFF: the peak is READ OFF the keyframes, because that is where it is authored
-	const css = (await import("node:fs")).readFileSync("hosts/obsidian/styles.css", "utf8");
+	const css = (await import("node:fs")).readFileSync("packages/host-obsidian/styles.css", "utf8");
 	const frames = captured(/@keyframes wg-kit-pop-bloom \{([\s\S]*?)\n\}/, css);
 	const stopAt = (label: string) => numbers(captured(new RegExp(`${label}\\s*\\{\\s*scale:\\s*([^;]+);`), frames));
 	const peakStop = Number(captured(/(\d+)%\s*\{\s*scale:/, frames)) / 100;
@@ -2953,7 +2953,7 @@ check(
 	const file = nodePath.join(work, "mirror.html");
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>` +
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>` +
 			`<style>:root { --text-normal: #222; --text-muted: #707070; --text-faint: #ababab; --background-primary: #fff; --interactive-accent: #6d4ee0; --font-interface: -apple-system, "Segoe UI", sans-serif; --font-ui-small: 14px; --size-4-4: 16px; }` +
 			`body { margin: 0; } .wg-root { width: 380px; }</style>` +
 			`</head><body><div class="wg-root"></div><div class="wg-root wg-sides" style="width:300px"></div>` +
@@ -3311,7 +3311,7 @@ check(
 	const liftFile = nodePath.join(work, "lift.html");
 	writeFileSync(
 		liftFile,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>` +
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>` +
 			`<style>html, body { margin: 0; padding: 0; } body { width: 400px; height: ${pageHeight}px; }` +
 			`.wg-ground { position: absolute; left: 0; width: 400px; height: ${BLOCK.slot}px; background: var(--wg-kit-raise); }` +
 			`.wg-ground .wg-kit-side { position: absolute; left: ${BLOCK.left}px; top: ${BLOCK.top}px; width: ${BLOCK.width}px; height: ${BLOCK.height}px; }</style>` +
@@ -4039,7 +4039,7 @@ check(
 	);
 	render(null, host);
 
-	const sheet = readFileSync("hosts/obsidian/styles.css", "utf8");
+	const sheet = readFileSync("packages/host-obsidian/styles.css", "utf8");
 	const heightOf = (selector: string) =>
 		new RegExp(`${selector.replace(/[.[\]"=]/g, "\\$&")} \\{[^}]*height: ([^;]+);`).exec(sheet)?.[1];
 	check(

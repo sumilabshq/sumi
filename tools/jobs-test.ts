@@ -6,20 +6,20 @@ Object.assign(globalThis, { window: globalThis });
 
 const { JobSchema, movedJob, isStartable, readJob, jobText, jobPathOf } =
 	await import("../packages/core/src/app-jobs.js");
-const { createJobs } = await import("../hosts/obsidian/src/legacy/ai/job-runner.js");
-const { createJobFiles } = await import("../hosts/obsidian/src/legacy/ai/job-store.js");
-const { createAiSettings } = await import("../hosts/obsidian/src/legacy/ai/settings.js");
+const { createJobs } = await import("../packages/host-obsidian/src/legacy/ai/job-runner.js");
+const { createJobFiles } = await import("../packages/host-obsidian/src/legacy/ai/job-store.js");
+const { createAiSettings } = await import("../packages/host-obsidian/src/legacy/ai/settings.js");
 const { addJob, askJob, listJobs, refuseOwnedElsewhere } =
-	await import("../hosts/obsidian/src/legacy/ai/job-command.js");
-const { jobBriefFor } = await import("../hosts/obsidian/src/legacy/ai/brief.js");
-const { buildsIn } = await import("../hosts/obsidian/src/legacy/ai/builds.js");
+	await import("../packages/host-obsidian/src/legacy/ai/job-command.js");
+const { jobBriefFor } = await import("../packages/host-obsidian/src/legacy/ai/brief.js");
+const { buildsIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");
 
 import type { Job } from "../packages/core/src/app-jobs.js";
 import type { Drawing } from "../packages/canvas/schema/drawing.js";
 import { standIn } from "./stand-in.ts";
-import type { JobAdapter } from "../hosts/obsidian/src/legacy/ai/job-store.js";
-import type { Emit } from "../hosts/obsidian/src/legacy/ai/stream.js";
-import type { RunAsk, RunAnswer } from "../hosts/obsidian/src/legacy/ai/run.js";
+import type { JobAdapter } from "../packages/host-obsidian/src/legacy/ai/job-store.js";
+import type { Emit } from "../packages/host-obsidian/src/legacy/ai/stream.js";
+import type { RunAsk, RunAnswer } from "../packages/host-obsidian/src/legacy/ai/run.js";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -455,7 +455,7 @@ const { referencesRegionOf } = await import("../packages/canvas/requests/field/r
 const { JobLine } = await import("../packages/canvas/ui/job-status/job-line.js");
 const { canvasPagesOf } = await import("../packages/canvas/requests/pages/canvas-pages.js");
 const { AppProvider, fakeApp } = await import("../packages/core/src/mediator/index.js");
-const { noteOfApp } = await import("../hosts/obsidian/src/legacy/ai/reference-command.js");
+const { noteOfApp } = await import("../packages/host-obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");
 

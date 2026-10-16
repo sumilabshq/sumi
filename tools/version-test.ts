@@ -288,7 +288,7 @@ const offer = {
 	check("and nothing of it reached the vault", vault.files.size, 0);
 }
 
-const { drawable } = await import("../hosts/obsidian/src/legacy/widget-offers.js");
+const { drawable } = await import("../packages/host-obsidian/src/legacy/widget-offers.js");
 
 const offered = (api: unknown) =>
 	drawable({ manifest: { id: "@demo/clock", api }, sources: { "widget.tsx": WIDGET }, path: "@demo/clock" });

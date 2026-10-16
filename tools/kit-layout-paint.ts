@@ -292,7 +292,7 @@ const STEPS = `(() => {
 
 function pageHtml(script: string, tailwindCss: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
 <style>${tailwindCss}</style>
 <style>:root { ${THEMES.light} ${HOST} } body { margin: 0; padding: 20px; }</style>
 </head><body class="wg-root theme-light"><div id="host"></div><script>${script}</script></body></html>`;

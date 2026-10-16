@@ -13,8 +13,8 @@ import {
 import type { Look, OfferedSetting } from "../packages/core/src/app-look.ts";
 import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
 import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/requests/look/look-tokens.ts";
-import { runLookCommand } from "../hosts/obsidian/src/legacy/ai/look-command.ts";
-import type { Told } from "../hosts/obsidian/src/legacy/ai/shape-command.ts";
+import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
+import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
 
 let failures = 0;
 

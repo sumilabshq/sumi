@@ -41,7 +41,7 @@ const built = await esbuild.build({
 const bundled = built.outputFiles[0];
 if (!bundled) throw new Error("esbuild wrote no output");
 const script = bundled.text;
-const sheet = readFileSync("hosts/obsidian/styles.css", "utf8");
+const sheet = readFileSync("packages/host-obsidian/styles.css", "utf8");
 
 const HOST_TOKENS = `--font-ui-small: 14px; --font-ui-smaller: 12px; --font-ui-large: 18px; --font-semibold: 600;
 	--font-monospace: ui-monospace, monospace; font-family: -apple-system, system-ui, sans-serif;`;

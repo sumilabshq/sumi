@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import type * as RefDraft from "../packages/core/src/ref-draft.js";
 
 const built = await esbuild.build({

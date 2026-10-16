@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import { fieldAt, fieldIn, itemsIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";

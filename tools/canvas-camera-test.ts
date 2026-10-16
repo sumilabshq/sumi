@@ -78,9 +78,9 @@ Object.defineProperties(dom.window.HTMLElement.prototype, {
 
 const { ItemView } = await import("obsidian");
 Object.assign(ItemView.prototype, { setState: async () => undefined });
-const { DesignView } = await import("../hosts/obsidian/src/legacy/design-view.ts");
+const { DesignView } = await import("../packages/host-obsidian/src/legacy/design-view.ts");
 const { answerShotRequests, SHOTS_DIR, SHOT_REQUESTS_DIR } =
-	await import("../hosts/obsidian/src/legacy/shot-requests.ts");
+	await import("../packages/host-obsidian/src/legacy/shot-requests.ts");
 const { designPathOf } = await import("../packages/core/src/app-design.ts");
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
 

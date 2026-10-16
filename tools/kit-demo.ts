@@ -31,7 +31,7 @@ const page = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ${themed("dark")} } }
 :root[data-theme="dark"] { ${themed("dark")} }
 </style>
-<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
 <style>${DEMO_CHROME}</style>
 </head><body class="wg-root"><div id="demo"></div>
 <script>${script}</script>

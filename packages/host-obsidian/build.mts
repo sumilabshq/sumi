@@ -19,11 +19,11 @@ export interface BundleAsk {
 export const TEXT_LOADERS: Readonly<Record<string, Loader>> = { ".md": "text", ".css": "text" };
 
 const WIDGETS_CLI_SPECIFIER = "widgetarium:widgets-cli";
-const WIDGETS_CLI_SOURCE = "hosts/obsidian/src/legacy/ai/widgets-cli.ts";
+const WIDGETS_CLI_SOURCE = "packages/host-obsidian/src/legacy/ai/widgets-cli.ts";
 const WIDGET_TYPES_SPECIFIER = "widgetarium:widget-types";
 const CATALOGUE_WIDGETS_FOLDER = "apps/studio/src/legacy/catalogue/widgets";
 const BUILD_STAMP_SPECIFIER = "widgetarium:build-stamp";
-const PLUGIN_SHEET = "hosts/obsidian/styles.css";
+const PLUGIN_SHEET = "packages/host-obsidian/styles.css";
 
 const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
 	"obsidian",
@@ -67,13 +67,13 @@ export function surfaceOptions({ minify = false }: SurfaceAsk = {}): BuildOption
 }
 
 export function bundleOptions({
-	outfile = "hosts/obsidian/main.js",
+	outfile = "packages/host-obsidian/main.js",
 	minify = false,
 	sourcemap = false,
 }: BundleAsk = {}): BuildOptions {
 	return {
 		plugins: [surfaceSource(minify), widgetsCliSource(), widgetTypesSource(), buildStampSource()],
-		entryPoints: ["hosts/obsidian/src/main.ts"],
+		entryPoints: ["packages/host-obsidian/src/main.ts"],
 		bundle: true,
 		conditions: ["source"],
 		outfile,
@@ -207,7 +207,7 @@ function runGates(): void {
 		execFileSync("node", ["tools/check-adaptive.mts", "registry", CATALOGUE_WIDGETS_FOLDER, ...alsoInVault], {
 			stdio: "inherit",
 		});
-		execFileSync("node", ["tools/check-overrides.mts", "hosts/obsidian/styles.css"], { stdio: "inherit" });
+		execFileSync("node", ["tools/check-overrides.mts", "packages/host-obsidian/styles.css"], { stdio: "inherit" });
 	} catch {
 		process.exit(1);
 	}

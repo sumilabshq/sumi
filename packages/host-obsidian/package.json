@@ -1,5 +1,5 @@
 {
-	"name": "@widgetarium/obsidian",
+	"name": "@widgetarium/host-obsidian",
 	"version": "0.1.0",
 	"private": true,
 	"license": "FSL-1.1-ALv2",

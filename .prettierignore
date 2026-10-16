@@ -1,6 +1,6 @@
 node_modules
-hosts/obsidian/main.js
-hosts/obsidian/data.json
+packages/host-obsidian/main.js
+packages/host-obsidian/data.json
 package-lock.json
 export
 packages/kit/assets

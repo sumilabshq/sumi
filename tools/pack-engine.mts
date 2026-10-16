@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import esbuild, { type Plugin } from "esbuild";
-import { TEXT_LOADERS } from "../hosts/obsidian/build.mts";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
 import { TAILWIND_BANNER } from "./canvas-sheet.mts";
@@ -54,7 +54,7 @@ const BUILT_BIN = /^\.\/dist\/(.+)\.js$/;
 const HANDBOOK = { from: path.join(REPO, "docs/ai"), into: path.join(REPO, "packages/cli/dist/handbook") };
 const BROWSER_STYLES = {
 	host: path.join(REPO, "packages/core/browser-host.css"),
-	board: path.join(REPO, "hosts/obsidian/styles.css"),
+	board: path.join(REPO, "packages/host-obsidian/styles.css"),
 	into: path.join(REPO, "packages/core/dist/styles.css"),
 	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
 };

@@ -1003,7 +1003,7 @@ console.log("\n— an unfed child is a level of its own, and the trail is the wa
 
 	// THE AFFORDANCE IS NOT BEHIND A HOVER. Gutenberg shipped that, called it a mistake, and was
 	// still adding a back button to it five years later.
-	const sheet = readFileSync(new URL("../hosts/obsidian/styles.css", import.meta.url), "utf8");
+	const sheet = readFileSync(new URL("../packages/host-obsidian/styles.css", import.meta.url), "utf8");
 	const hoverGated = sheet
 		.split("}")
 		.map((block) => present(block.split("{")[0], "selector"))

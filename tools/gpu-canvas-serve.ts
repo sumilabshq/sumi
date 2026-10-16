@@ -70,7 +70,7 @@ async function bundled(entry: string): Promise<Buffer> {
 
 function pageHtml(): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("hosts/obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
 <style>html, body { margin: 0; height: 100%; overflow: hidden; } #stage { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }</style>
 </head><body class="wg-root theme-light" style="${THEMES.light.replace(/\s+/g, " ")} ${HOST_SIZES}">
 <canvas id="stage"></canvas>
