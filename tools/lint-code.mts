@@ -13,6 +13,7 @@ import * as onePerFile from "./lint/rules/one-per-file.mts";
 import * as typing from "./lint/rules/typing.mts";
 import * as propsWidth from "./lint/rules/props-width.mts";
 import * as doubleCast from "./lint/rules/double-cast.mts";
+import * as domainLayout from "./lint/rules/domain-layout.mts";
 
 interface LintRule {
 	readonly id: string;
@@ -35,6 +36,7 @@ const RULES: readonly LintRule[] = [
 	typing,
 	propsWidth,
 	doubleCast,
+	domainLayout,
 ];
 
 const cwd = process.cwd();

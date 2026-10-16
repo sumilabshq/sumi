@@ -9,6 +9,7 @@ export interface ParsedSource {
 	readonly ast: File;
 	readonly comments: readonly Comment[];
 	readonly isWidgetEntry: boolean;
+	readonly path: string;
 }
 
 export interface UnparsedSource {
@@ -44,6 +45,7 @@ export function readSource(path: string, cwd: string): ParsedSource | UnparsedSo
 		lines: text.split("\n"),
 		ast: parsed,
 		comments: parsed.comments ?? [],
+		path,
 		isWidgetEntry: /^widgets\/.+\/widget\.tsx$/.test(path),
 	};
 }
