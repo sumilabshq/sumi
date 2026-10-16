@@ -1,7 +1,13 @@
 export type Size = number | "full" | "auto" | undefined;
 export type TokenLength = number | { readonly token: string };
-export type AlignWord = "start" | "center" | "end" | "stretch" | "baseline";
-export type JustifyWord = "start" | "center" | "end" | "between" | "around" | "evenly";
+const ALIGN_WORD_LIST = ["start", "center", "end", "stretch", "baseline"] as const;
+const JUSTIFY_WORD_LIST = ["start", "center", "end", "between", "around", "evenly"] as const;
+const TEXT_ALIGN_LIST = ["left", "center", "right"] as const;
+const TEXT_TRANSFORM_LIST = ["none", "uppercase", "lowercase", "capitalize"] as const;
+export type AlignWord = (typeof ALIGN_WORD_LIST)[number];
+export type JustifyWord = (typeof JUSTIFY_WORD_LIST)[number];
+export type TextAlignWord = (typeof TEXT_ALIGN_LIST)[number];
+export type TextTransform = (typeof TEXT_TRANSFORM_LIST)[number];
 export type Weight = 400 | 500 | 600 | 700;
 export type FamilyWord = "sans" | "serif" | "mono";
 
@@ -53,7 +59,8 @@ export interface ClassStyle {
 	tracking?: number;
 	tabular?: boolean;
 	truncate: boolean;
-	align?: "left" | "center" | "right";
+	align?: TextAlignWord;
+	textTransform?: TextTransform;
 }
 
 export const RADIUS_WORDS: Readonly<Record<string, TokenLength>> = {
@@ -91,8 +98,27 @@ export const TRACKING_WORDS: Readonly<Record<string, number>> = {
 	normal: 0,
 	wide: 0.025,
 };
-export const ALIGN_WORDS: ReadonlySet<string> = new Set(["start", "center", "end", "stretch", "baseline"]);
-export const JUSTIFY_WORDS: ReadonlySet<string> = new Set(["start", "center", "end", "between", "around", "evenly"]);
+export const WEIGHTS: readonly Weight[] = [...new Set(Object.values(WEIGHT_WORDS))];
+const ALIGN_WORDS: ReadonlySet<string> = new Set(ALIGN_WORD_LIST);
+const JUSTIFY_WORDS: ReadonlySet<string> = new Set(JUSTIFY_WORD_LIST);
+const TEXT_ALIGN_WORDS: ReadonlySet<string> = new Set(TEXT_ALIGN_LIST);
+const TEXT_TRANSFORMS: ReadonlySet<string> = new Set(TEXT_TRANSFORM_LIST);
+
+export function isAlignWord(word: string): word is AlignWord {
+	return ALIGN_WORDS.has(word);
+}
+
+export function isJustifyWord(word: string): word is JustifyWord {
+	return JUSTIFY_WORDS.has(word);
+}
+
+export function isTextAlignWord(word: string): word is TextAlignWord {
+	return TEXT_ALIGN_WORDS.has(word);
+}
+
+export function isTextTransform(word: string): word is TextTransform {
+	return TEXT_TRANSFORMS.has(word);
+}
 
 export function emptyStyle(): ClassStyle {
 	return {
@@ -117,6 +143,18 @@ export function emptyStyle(): ClassStyle {
 		active: {},
 		transitionMs: 0,
 		truncate: false,
+	};
+}
+
+export function copyStyle(style: ClassStyle): ClassStyle {
+	return {
+		...style,
+		padding: { ...style.padding },
+		margin: { ...style.margin },
+		borderWidth: { ...style.borderWidth },
+		paint: { ...style.paint },
+		hover: { ...style.hover },
+		active: { ...style.active },
 	};
 }
 

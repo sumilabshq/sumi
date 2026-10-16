@@ -11,6 +11,7 @@ import type { FrameSpec } from "../frames/frame-root.js";
 import type { GpuContext } from "./gpu-context.js";
 import type { GpuTokens } from "../style/gpu-tokens.js";
 import type { SceneNode } from "../nodes/scene-node.js";
+import { drawnTextOf } from "../nodes/node-text-look.js";
 import { ViewPointer } from "../frames/view-pointer.js";
 import type { PointerSink } from "../frames/view-pointer.js";
 import type { WorkSummary } from "./work-log.js";
@@ -49,6 +50,7 @@ export interface GpuCanvas {
 	locateText(id: string, text: string): CanvasPoint | null;
 	textIn(id: string, includes: string): string | null;
 	setTokens(tokens: GpuTokens): void;
+	restyle(): void;
 	resize(viewport: Viewport): void;
 	stats(): GpuStats;
 	stop(): void;
@@ -106,9 +108,11 @@ export function createGpuCanvas(context: GpuContext, view: CanvasView, setCursor
 		locateText: (id, text) => locate(view.camera, rootOf(id), text),
 		textIn: (id, includes) => {
 			const root = rootOf(id);
-			return root ? (findText(root.root, (text) => text.includes(includes))?.text ?? null) : null;
+			const found = root ? findText(root.root, (text) => text.includes(includes)) : undefined;
+			return found ? drawnTextOf(found) : null;
 		},
 		setTokens: (tokens) => view.setTokens(tokens),
+		restyle: () => view.restyle(),
 		resize: (viewport) => view.resize(viewport),
 		stats: () => statsOf(view),
 		stop: () => {
@@ -147,6 +151,7 @@ function locate(camera: Camera, root: FrameRoot | null, text: string): CanvasPoi
 }
 
 function findText(node: SceneNode, matches: (text: string) => boolean): SceneNode | undefined {
+	if (node.style.display === "none") return undefined;
 	if (node.type === "Text" && matches(node.text)) return node;
 	for (const child of node.children) {
 		const found = findText(child, matches);

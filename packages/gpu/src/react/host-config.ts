@@ -5,6 +5,8 @@ import type { HostProps, HostType } from "../engine/gpu-context.js";
 import { isTextual } from "../nodes/node-props.js";
 import { textOfChildren } from "../nodes/node-text.js";
 import { SceneNode } from "../nodes/scene-node.js";
+import { UNPAINTED_TAGS } from "../style/html-tags.js";
+import { publicTwinOf, twinnedNodeOf } from "./public-twins.js";
 
 type GpuHostConfig = HostConfig<
 	HostType,
@@ -16,7 +18,7 @@ type GpuHostConfig = HostConfig<
 	never,
 	never,
 	never,
-	null,
+	Element | null,
 	FrameRoot | null,
 	never,
 	ReturnType<typeof setTimeout>,
@@ -89,14 +91,15 @@ export const HOST_CONFIG: GpuHostConfig = {
 		else node.props = next;
 	},
 	commitTextUpdate: (node, _old, text) => node.setProps({ ...node.props, children: text }),
-	shouldSetTextContent: (type, props) => type === "Text" || type === "textarea" || isTextual(props.children),
+	shouldSetTextContent: (type, props) =>
+		type === "Text" || type === "textarea" || UNPAINTED_TAGS.has(type) || isTextual(props.children),
 	resetTextContent: (node) => node.dropOwnText(),
 	getRootHostContext: (container) => {
 		if (container instanceof FrameRoot) rendering.frame = container;
 		return rendering.frame;
 	},
 	getChildHostContext: (parent) => parent,
-	getPublicInstance: () => null,
+	getPublicInstance: (node) => publicTwinOf(node),
 	prepareForCommit: (container) => {
 		committing.frame = container instanceof FrameRoot ? container : committing.frame;
 		return null;
@@ -156,9 +159,10 @@ function ownerOf(container: FrameRoot, frame: FrameRoot | null): FrameRoot {
 	throw new Error("gpu canvas: a portal opened outside any frame");
 }
 
-// TRADE-OFF: a portal's container is a DOM node; its content is drawn at the end of the frame being committed
+// TRADE-OFF: content portalled anywhere but a node's twin is held off the frame; an overlay needs its anchor measured
 function rootIn(container: FrameRoot): SceneNode | null {
-	return container instanceof FrameRoot ? container.root : (committing.frame?.root ?? null);
+	if (container instanceof FrameRoot) return container.root;
+	return twinnedNodeOf(container) ?? committing.frame?.portalled ?? null;
 }
 
 function noop(): void {}

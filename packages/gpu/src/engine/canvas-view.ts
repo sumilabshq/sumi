@@ -75,10 +75,15 @@ export class CanvasView {
 
 	setTokens(tokens: GpuTokens): void {
 		this.context.tokens = tokens;
+		this.restyle();
+	}
+
+	restyle(): void {
+		this.context.styles?.clear();
 		this.rasters.dropAll();
 		this.tiles.dropAll();
 		this.titles.dropAll();
-		for (const frame of this.frames) frame.retint();
+		for (const frame of this.frames) frame.restyle();
 	}
 
 	forget(frame: FrameRoot): void {
@@ -121,7 +126,7 @@ export class CanvasView {
 		return surface;
 	}
 
-	private glContext(): WebGL2RenderingContext | null {
+	glContext(): WebGL2RenderingContext | null {
 		return this.canvas.getContext("webgl2");
 	}
 

@@ -1,5 +1,6 @@
 import type { CanvasKit, Paint, TypefaceFontProvider } from "canvaskit-wasm";
 import type { Config as YogaConfig, Yoga } from "yoga-layout/load";
+import type { ComputedStyles } from "../style/computed-styles.js";
 import type { GpuTokens } from "../style/gpu-tokens.js";
 
 export interface Animated {
@@ -15,6 +16,7 @@ export interface GpuContext {
 	readonly yogaConfig: YogaConfig;
 	readonly animating: Set<Animated>;
 	tokens: GpuTokens;
+	readonly styles: ComputedStyles | null;
 	invalidate: () => void;
 }
 

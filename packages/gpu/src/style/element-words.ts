@@ -22,13 +22,16 @@ const MODIFIER = /^is-/;
 const HOST_RESET_TAGS: ReadonlySet<string> = new Set(["button", "input", "select", "textarea"]);
 const RESET_BY_HOST = /^(?:hover:|active:)?(?:bg-|rounded|border|shadow|[pm][xytrbl]?-)/;
 const GROUP = "group";
+const TAILWIND_GROUP = /^group(?:\/.+)?$/;
+const GROUP_VARIANT = /^!?group-/;
+const HIDDEN_BY_ATTRIBUTE = "hidden";
 
-// TODO: read an inline style prop; only classes and attributes are drawn
 export function wordsOfElement(node: WordHolder): string {
 	const written = withHostReset(node.type, classWordsOf(node.props));
 	const tagWords = TAG_WORDS[node.type] ?? "";
 	return [
 		tagWords,
+		...userAgentWordsOf(node.props),
 		...withKitModifiers(written),
 		...plateWordsOf(node, written),
 		...segWordsOf(node),
@@ -36,9 +39,26 @@ export function wordsOfElement(node: WordHolder): string {
 	].join(" ");
 }
 
-function classWordsOf(props: HostProps): string[] {
+export function isGroupHolder(props: HostProps): boolean {
+	return classWordsOf(props).some((word) => TAILWIND_GROUP.test(word));
+}
+
+export function readsGroup(props: HostProps): boolean {
+	return classWordsOf(props).some((word) => GROUP_VARIANT.test(word));
+}
+
+export function classNameOf(props: HostProps): string {
 	const { className } = props;
-	return typeof className === "string" ? className.split(/\s+/).filter(Boolean) : [];
+	return typeof className === "string" ? className : "";
+}
+
+function userAgentWordsOf(props: HostProps): string[] {
+	const { hidden } = props;
+	return hidden === true || typeof hidden === "string" ? [HIDDEN_BY_ATTRIBUTE] : [];
+}
+
+function classWordsOf(props: HostProps): string[] {
+	return classNameOf(props).split(/\s+/).filter(Boolean);
 }
 
 // TRADE-OFF: mirrors the host sheet, which strips a bare control's fill, corner and spacing even when a utility asks for them

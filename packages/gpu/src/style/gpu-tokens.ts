@@ -107,8 +107,20 @@ const FIXED_COLOURS: Readonly<Record<string, Rgba>> = {
 	black: [0, 0, 0, 1],
 };
 
-export function colourOf(tokens: GpuTokens, word: string): Rgba | null {
-	return FIXED_COLOURS[word] ?? tokens.colours[word] ?? null;
+const CHANNEL = "(-?[\\d.]+(?:e-?\\d+)?)";
+const RGB_FUNCTION = new RegExp(`^rgba?\\(${CHANNEL},?\\s*${CHANNEL},?\\s*${CHANNEL}(?:\\s*[,/]\\s*${CHANNEL})?\\)$`);
+const SRGB_FUNCTION = new RegExp(`^color\\(srgb\\s+${CHANNEL}\\s+${CHANNEL}\\s+${CHANNEL}(?:\\s*/\\s*${CHANNEL})?\\)$`);
+
+export function colourOf(tokens: GpuTokens, paint: string): Rgba | null {
+	return FIXED_COLOURS[paint] ?? tokens.colours[paint] ?? rgbaOfCss(paint);
+}
+
+export function rgbaOfCss(css: string): Rgba | null {
+	const srgb = SRGB_FUNCTION.exec(css);
+	if (srgb) return [Number(srgb[1]), Number(srgb[2]), Number(srgb[3]), srgb[4] === undefined ? 1 : Number(srgb[4])];
+	const rgb = RGB_FUNCTION.exec(css);
+	if (!rgb) return null;
+	return [Number(rgb[1]) / 255, Number(rgb[2]) / 255, Number(rgb[3]) / 255, rgb[4] === undefined ? 1 : Number(rgb[4])];
 }
 
 export function isColourWord(word: string): boolean {

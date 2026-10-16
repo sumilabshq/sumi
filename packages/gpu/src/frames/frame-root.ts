@@ -27,6 +27,7 @@ export interface FrameSpec {
 
 export class FrameRoot implements NodeOwner {
 	readonly root: SceneNode;
+	readonly portalled: SceneNode;
 	x = 0;
 	y = 0;
 	height = 0;
@@ -42,6 +43,7 @@ export class FrameRoot implements NodeOwner {
 		readonly context: GpuContext,
 	) {
 		this.root = new SceneNode("View", { className: "bg-page" }, this);
+		this.portalled = new SceneNode("View", {}, this);
 		this.root.yoga.setMinHeight(spec.minHeight);
 		this.x = spec.at?.x ?? 0;
 		this.y = spec.at?.y ?? 0;
@@ -82,7 +84,8 @@ export class FrameRoot implements NodeOwner {
 		this.recordCount += 1;
 	}
 
-	retint(): void {
+	restyle(): void {
+		this.root.restyleTree();
 		this.root.retint();
 		this.markLayoutDirty();
 	}
@@ -116,6 +119,7 @@ export class FrameRoot implements NodeOwner {
 
 	dispose(): void {
 		this.root.dispose();
+		this.portalled.dispose();
 		this.picture?.delete();
 		this.picture = null;
 	}

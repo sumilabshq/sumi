@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { FrameRate } from "../engine/frame-rate.js";
 import { startGpuCanvas } from "../engine/start-gpu-canvas.js";
 import type { GpuCanvas } from "../engine/gpu-canvas.js";
 import type { LookWatcher, StageLook } from "./stage-look.js";
@@ -21,9 +22,10 @@ interface HeldClaim {
 }
 
 const SWITCHES = { titles: false, transparent: true, pans: false } as const;
-const FELL_BACK = "[widgetarium] a GPU frame fell back to its HTML picture";
+const NOT_DRAWN = "[widgetarium] a GPU frame is not drawn; its marker says why";
 
 export class GpuFramesHost implements GpuFrames {
+	readonly frameRate = new FrameRate();
 	private gpu: GpuCanvas | null = null;
 	private startFailure: string | null = null;
 	private isStopped = false;
@@ -46,6 +48,7 @@ export class GpuFramesHost implements GpuFrames {
 				fonts,
 				switches: SWITCHES,
 				tokensFrom: canvas.parentElement ?? undefined,
+				frameRate: this.frameRate,
 			});
 			if (this.isStopped) return gpu.stop();
 			this.gpu = gpu;
@@ -91,7 +94,7 @@ export class GpuFramesHost implements GpuFrames {
 		if (this.failed.has(id)) return;
 		const why = reasonOf(failure);
 		this.failed.set(id, why);
-		console.warn(FELL_BACK, id, why);
+		console.warn(NOT_DRAWN, id, why);
 		this.gpu?.removeFrame(id);
 		for (const listener of this.listeners) listener();
 	}

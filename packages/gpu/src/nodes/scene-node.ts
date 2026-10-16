@@ -1,9 +1,10 @@
 import type { Path } from "canvaskit-wasm";
 import { MeasureMode } from "yoga-layout/load";
 import type { Node as YogaNode } from "yoga-layout/load";
+import { emptyStyle } from "../style/class-style.js";
 import type { ClassStyle } from "../style/class-style.js";
-import { styleOfClassName } from "../style/class-words.js";
-import { wordsOfElement } from "../style/element-words.js";
+import { styleOfElement } from "../style/element-style.js";
+import { isGroupHolder } from "../style/element-words.js";
 import type { GpuContext, HostProps, HostType } from "../engine/gpu-context.js";
 import { colourOf } from "../style/gpu-tokens.js";
 import type { Rgba } from "../style/gpu-tokens.js";
@@ -34,7 +35,7 @@ export class SceneNode {
 	readonly yoga: YogaNode;
 	readonly colours: NodeColours;
 	props: HostProps = {};
-	style: ClassStyle = styleOfClassName("");
+	style: ClassStyle = emptyStyle();
 	children: SceneNode[] = [];
 	parent: SceneNode | null = null;
 	box: Box = { x: 0, y: 0, w: 0, h: 0 };
@@ -68,6 +69,7 @@ export class SceneNode {
 	setProps(props: HostProps, initial = false): void {
 		this.props = props;
 		this.restyle(initial);
+		if (!initial && isGroupHolder(props)) this.restyleDescendants();
 		sizeIntrinsic(this);
 		if (this.parent?.holdsShapes) dropShapePaths(this);
 		const text = this.type === "Text" ? textOfChildren(props["children"]) : "";
@@ -80,7 +82,7 @@ export class SceneNode {
 	}
 
 	restyle(initial = false): void {
-		const style = styleOfClassName(wordsOfElement(this));
+		const style = styleOfElement(this, this.context.styles);
 		if (style === this.style && !initial) return;
 		this.style = style;
 		applyLayoutStyle(this.yoga, style);
@@ -89,6 +91,15 @@ export class SceneNode {
 		if (this.parent) layFlow(this.parent);
 		if (this.type === "Text") this.yoga.markDirty();
 		this.colours.retarget(style, this, initial);
+	}
+
+	restyleTree(): void {
+		this.restyle();
+		this.restyleDescendants();
+	}
+
+	restyleDescendants(): void {
+		for (const child of this.children) child.restyleTree();
 	}
 
 	retint(): void {
@@ -162,11 +173,6 @@ export class SceneNode {
 		this.textBlock?.dispose();
 		for (const path of this.iconPaths ?? []) path.delete();
 		this.yoga.free();
-	}
-
-	private restyleTree(): void {
-		this.restyle();
-		for (const child of this.children) child.restyleTree();
 	}
 
 	private syncOwnText(): void {

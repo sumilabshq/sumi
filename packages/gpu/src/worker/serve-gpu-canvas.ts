@@ -38,6 +38,7 @@ async function begin(
 			loadCanvasKit: serve.loadCanvasKit,
 			fonts: await serve.loadFonts(),
 			tokens: start.tokens,
+			styles: null,
 			switches: start.switches,
 			setCursor: (cursor) => scope.postMessage({ kind: "cursor", cursor }),
 		});

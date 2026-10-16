@@ -6,8 +6,11 @@ import type { FamilyWord } from "../style/class-style.js";
 import { createGpuCanvas } from "./gpu-canvas.js";
 import type { GpuCanvas } from "./gpu-canvas.js";
 import type { GpuContext } from "./gpu-context.js";
+import type { ComputedStyles } from "../style/computed-styles.js";
 import type { GpuTokens } from "../style/gpu-tokens.js";
 import { loadLayout } from "../style/yoga-style.js";
+import { meterFrames } from "./frame-meter.js";
+import type { FrameRate } from "./frame-rate.js";
 
 export interface GpuFont {
 	readonly family: FamilyWord;
@@ -20,8 +23,10 @@ export interface GpuEngineStart {
 	readonly loadCanvasKit: () => Promise<CanvasKit>;
 	readonly fonts: readonly GpuFont[];
 	readonly tokens: GpuTokens;
+	readonly styles: ComputedStyles | null;
 	readonly switches?: Partial<GpuSwitches> | undefined;
 	readonly setCursor: (cursor: string) => void;
+	readonly frameRate?: FrameRate | undefined;
 }
 
 export async function startGpuEngine(start: GpuEngineStart): Promise<GpuCanvas> {
@@ -44,9 +49,22 @@ export async function startGpuEngine(start: GpuEngineStart): Promise<GpuCanvas> 
 		...layout,
 		animating: new Set(),
 		tokens: start.tokens,
+		styles: start.styles,
 		invalidate: () => {},
 	};
 	const view = new CanvasView(context, start.canvas, start.viewport, { ...DEFAULT_SWITCHES, ...start.switches });
 	context.invalidate = () => view.requestFrame();
-	return createGpuCanvas(context, view, start.setCursor);
+	const gpu = createGpuCanvas(context, view, start.setCursor);
+	return start.frameRate ? withMeter(gpu, view, start.frameRate) : gpu;
+}
+
+function withMeter(gpu: GpuCanvas, view: CanvasView, frameRate: FrameRate): GpuCanvas {
+	const stopMeter = meterFrames(frameRate, { gl: () => view.glContext(), render: () => view.renderNow() });
+	return {
+		...gpu,
+		stop: () => {
+			stopMeter();
+			gpu.stop();
+		},
+	};
 }
