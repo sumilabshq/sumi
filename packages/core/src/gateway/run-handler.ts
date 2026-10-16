@@ -23,7 +23,7 @@ export class AnsweringCommand {
 const RUNS_NOTHING = "{name} has no run";
 const OUTPUT_DOES_NOT_FIT = "{name} answered an output its schema refuses: {why}";
 
-// TODO: retire with the gateway; the mediator's parsedOutput in mediator/sends.ts owns output fitting.
+// TODO: retire with the gateway; Mediator.held in requests/mediator.ts owns output fitting.
 export function fitOutput(schema: z.ZodType | undefined, value: unknown): Fitted {
 	if (!schema) return { ok: true, output: undefined };
 	const parsed = schema.safeParse(value);

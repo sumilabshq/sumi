@@ -1,0 +1,10 @@
+{
+	"name": "@fixture/billing",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./module": {
+			"widgetarium-server": "./module.ts"
+		}
+	}
+}

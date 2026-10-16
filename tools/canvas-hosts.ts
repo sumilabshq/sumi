@@ -1,12 +1,22 @@
-import type { App as ObsidianApp } from "obsidian";
-import { app } from "../packages/core/src/mediator/index.ts";
-import type { AnyHost, App, Module, ObsidianHost, WebHost } from "../packages/core/src/mediator/index.ts";
+import { app } from "../packages/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/core/src/requests/index.ts";
+import type { SpecRead } from "../packages/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
-import type { ObsidianDesignOrigin } from "../packages/canvas/adapters/canvas-host/canvas-host.adapter.ts";
+import {
+	DesignDrawing,
+	DesignFolder,
+	MountedCanvasHost,
+	canvasModule,
+	detachedMountOf,
+	projectCanvasParts,
+} from "../packages/canvas/module.ts";
+import type { CanvasParts } from "../packages/canvas/module.ts";
 import type { CanvasOpened, CanvasOpening } from "../packages/canvas/schema/canvas-view.schema.ts";
+import type { CanvasDoc } from "../packages/canvas/schema/doc.schema.ts";
+import type { DrawnDesign } from "../packages/canvas/schema/design.schema.ts";
+import type { Drawing } from "../packages/canvas/schema/drawing.schema.ts";
 import type { GpuSupply } from "../packages/gpu/index.ts";
-import { onPlatform } from "./mediator-fixture.ts";
 import { standIn } from "./stand-in.ts";
 
 export interface CanvasAsk {
@@ -26,25 +36,62 @@ export function emptyProject(): StartedProject {
 	);
 }
 
-export function webCanvasHostOf(ask: CanvasAsk, project = emptyProject()): WebHost {
-	return { platform: "web", project, canvas: { ...mountOf(ask), returnToView: async () => undefined } };
+export function canvasHostOf({
+	opened,
+	ownsPaste = never,
+	gpu = null,
+	keepOpening = keepsNothing,
+}: CanvasAsk): MountedCanvasHost {
+	return new MountedCanvasHost({ ...detachedMountOf(opened), ownsPaste, gpu, keepOpening });
 }
 
-export function obsidianCanvasHostOf(
-	ask: CanvasAsk,
-	design: ObsidianDesignOrigin = { kind: "project", project: emptyProject() },
-	obsidian: ObsidianApp = standIn<ObsidianApp>({}, [], "app"),
-): ObsidianHost {
-	return { platform: "obsidian", app: obsidian, canvas: { ...mountOf(ask), returnTo: "app-note", design } };
+export function canvasPartsOver(ask: CanvasAsk, chosen: Partial<CanvasParts> = {}): CanvasParts {
+	return { ...projectCanvasParts(emptyProject(), canvasHostOf(ask)), ...chosen };
 }
 
-export function canvasAppOn(host: AnyHost, modules: readonly Module[]): App {
-	const platform = host.platform === "server" ? "web" : host.platform;
-	return onPlatform(platform, () => app({ modules, platforms: [platform], host }));
+export function canvasAppOver(parts: CanvasParts): StartedApp {
+	return app({ modules: [canvasModule.with(parts)] });
 }
 
-function mountOf({ opened, ownsPaste = never, gpu = null, keepOpening = keepsNothing }: CanvasAsk) {
-	return { opened, ownsPaste, gpu, keepOpening };
+export class FixedDesignFolder extends DesignFolder {
+	constructor(
+		private readonly drawn: () => Promise<DrawnDesign>,
+		private readonly watched: (changed: () => void) => () => void = () => keepsNothing,
+	) {
+		super();
+	}
+
+	override design(): Promise<DrawnDesign> {
+		return this.drawn();
+	}
+
+	override async docs(): Promise<readonly CanvasDoc[]> {
+		return [];
+	}
+
+	override async spec(): Promise<SpecRead | null> {
+		return null;
+	}
+
+	override onChanged(_app: string, changed: () => void): () => void {
+		return this.watched(changed);
+	}
+
+	override async noteText(): Promise<null> {
+		return null;
+	}
+}
+
+export class FixedDesignDrawing extends DesignDrawing {
+	override readonly pictureOf = null;
+
+	constructor(private readonly drawn: Drawing) {
+		super();
+	}
+
+	override drawing(): Drawing {
+		return this.drawn;
+	}
 }
 
 function never(): boolean {

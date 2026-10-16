@@ -1,5 +1,5 @@
 import { z } from "zod";
 
-export const AgentLookSchema = z.object({ app: z.string(), page: z.string(), frame: z.string() });
+const AgentLookSchema = z.object({ app: z.string(), page: z.string(), frame: z.string() });
 
 export type AgentLook = z.output<typeof AgentLookSchema>;

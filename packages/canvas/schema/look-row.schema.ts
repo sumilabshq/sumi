@@ -9,3 +9,5 @@ export const LookRowSchema = z.object({
 	suggested: z.string().nullable(),
 	isRedrawn: z.boolean(),
 });
+
+export type LookRow = z.infer<typeof LookRowSchema>;

@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
-import { AppProvider, fakeApp } from "../packages/core/src/mediator/index.ts";
+import { AppProvider, app } from "../packages/core/src/requests/index.ts";
 import { PlannedPageRegion } from "../packages/canvas/ui/canvas-field/regions/planned-page-region.tsx";
 import { PageLabel } from "../packages/canvas/ui/page-tabs/page-label.tsx";
 import { JobLine } from "../packages/canvas/ui/job-status/job-line.tsx";
@@ -85,7 +85,7 @@ function isRunning(page: string): boolean {
 createRoot(host).render(
 	h(
 		AppProvider,
-		{ app: fakeApp({ answers: {} }) },
+		{ app: app({ modules: [] }) },
 		h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
 			h(Segmented<string>, {
 				key: "tabs",

@@ -1,5 +1,5 @@
 import { drawn, layBehaviorGlobals, pause } from "./behaviors-dom.ts";
-import { check, tally, waitFor } from "./mediator-check.ts";
+import { check, tally, waitFor } from "./check-helpers.ts";
 
 layBehaviorGlobals();
 const { createElement: h, useRef } = await import("react");

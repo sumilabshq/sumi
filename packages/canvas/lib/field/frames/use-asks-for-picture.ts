@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { useCommand } from "@widgetarium/core/mediator";
-import { AskForPictureCommand } from "../../../requests/ask-for-picture.command.js";
+import { useCommand } from "@widgetarium/core/requests";
+import { AskForPictureCommand } from "../../../features/pictures/contract.js";
 
-export interface PictureAsked {
+interface PictureAsked {
 	readonly node: HTMLDivElement | null;
 	readonly frame: string;
 	readonly pictureKey: string;

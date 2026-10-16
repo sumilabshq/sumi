@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { LayersToggleQuery } from "../../requests/layers-toggle.query.js";
-import { ToggleLayersCommand } from "../../requests/toggle-layers.command.js";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { LayersToggleQuery } from "../../features/layers/contract.js";
+import { ToggleLayersCommand } from "../../features/layers/contract.js";
 
 const LAYERS_SAID = "Layers";
 

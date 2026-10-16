@@ -1,7 +1,7 @@
 import type { DrawnWidget } from "../../schema/design.schema.js";
 import type { Drawing } from "../../schema/drawing.schema.js";
 import type { Region, WidgetCard } from "../../schema/regions.schema.js";
-import { statePictureOf } from "../design/drawn-state.js";
+import { statePictureOf } from "../design/state-picture.js";
 import { cardPxOf } from "./card-width.js";
 import { frameIdOf, snapshotKeyOf } from "./frame-keys.js";
 

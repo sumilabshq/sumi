@@ -5,10 +5,10 @@ import { stableKey } from "./gateway/stable-key";
 import type { CommandAnswer } from "./gateway/run-handler";
 import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
-import { APP } from "./mediator/app-context";
-import { reportToConsole } from "./mediator/report-failure";
-import type { FailureReport } from "./mediator/report-failure";
-import { reasonOf } from "./mediator/sends";
+import { reasonOf } from "./requests/answer";
+import { APP } from "./requests/app-context";
+import { reportToConsole } from "./requests/report-failure";
+import type { FailureReport } from "./requests/report-failure";
 
 type Run = (input: unknown) => Promise<CommandAnswer<unknown>>;
 type BoundRun = () => Promise<CommandAnswer<unknown>>;
@@ -98,7 +98,7 @@ async function answerOrRefusal(
 		return await command(input);
 	} catch (thrown) {
 		const reason = reasonOf(thrown);
-		told.reportFailure({ source: name, reason, ran: false, thrown });
+		told.reportFailure({ source: name, reason, code: "failed", ran: false, thrown });
 		told.onRefused({ name, reason, ran: false });
 		return { ok: false, reason, ran: false };
 	}

@@ -4,7 +4,9 @@ import { parse } from "yaml";
 import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
 import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
-import { emptyProject, obsidianCanvasHostOf } from "./canvas-hosts.ts";
+import { FixedDesignDrawing, FixedDesignFolder, canvasHostOf, canvasPartsOver, emptyProject } from "./canvas-hosts.ts";
+import { projectCanvasParts } from "../packages/canvas/module.ts";
+import { ProjectDesignFolder } from "../packages/canvas/adapters/design-folder/project.adapter.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -20,6 +22,7 @@ import {
 } from "../packages/host-obsidian/src/legacy/studio-note.ts";
 import type { WindowChrome } from "../packages/host-obsidian/src/legacy/studio-note.ts";
 import type { StudioMount } from "../apps/studio/src/canvas/studio-canvas.ts";
+import type { StageMount } from "../apps/studio/src/canvas/design-stage.ts";
 
 let failed = 0;
 function check(what: string, held: unknown, wanted: unknown): void {
@@ -446,7 +449,7 @@ const place = standIn<StudioPlace>(
 		showAsMarkdown: async () => undefined,
 		designFor: async (app: string) => ({
 			app,
-			hostOf: (mount: StudioMount) => obsidianCanvasHostOf(mount, { kind: "project", project: mount.project }),
+			partsOf: (mount: StudioMount) => projectCanvasParts(mount.project, canvasHostOf(mount)),
 		}),
 	},
 	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
@@ -711,44 +714,26 @@ const { ModuleRegistry } = await import("../packages/core/src/engine/module-regi
 const { NO_HOST } = await import("../packages/core/src/engine/host-none.js");
 const { render: drawInto } = await import("../packages/core/src/engine/render.js");
 const { createElement } = await import("react");
-const refusedHere = (): Promise<never> => Promise.reject(new Error("not on this test page"));
-const designSource = {
-	design: async () => ({ screens: [], references: [], widgets: [] }),
-	docs: async () => [],
-	jobs: () => [],
-	onJobs: () => () => undefined,
-	liveJob: () => null,
-	stopJob: refusedHere,
-	drawing: () => ({
-		registry: new ModuleRegistry({}),
-		host: {
-			...NO_HOST,
-			can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
-			slot: (): never => {
-				throw new Error("not on this test page");
-			},
+const stageDrawing = new FixedDesignDrawing({
+	registry: new ModuleRegistry({}),
+	host: {
+		...NO_HOST,
+		can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
+		slot: (): never => {
+			throw new Error("not on this test page");
 		},
-	}),
-	onChanged: () => () => undefined,
-	addPhotos: refusedHere,
-	moveLayer: refusedHere,
-	returnToView: refusedHere,
-	look: async () => null,
-	pickLook: refusedHere,
-	noteBoard: async () => null,
-	pictureOf: null,
-};
-const { canvasModuleOver } = await import("./canvas-over-source.ts");
+	},
+});
+const stageFolder = new FixedDesignFolder(async () => ({ screens: [], references: [], widgets: [] }));
 const keptPages: string[] = [];
 const handed: { showPage: (page: string) => void }[] = [];
 const designNode = document.createElement("div");
 document.body.append(designNode);
 drawInto(
 	createElement(DesignStage, {
-		modules: [canvasModuleOver(designSource)],
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
-		hostOf: obsidianCanvasHostOf,
+		partsOf: (mount: StageMount) => canvasPartsOver(mount, { designFolder: stageFolder, designDrawing: stageDrawing }),
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
 		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
 		size: { width: 1200, height: 800 },
@@ -774,8 +759,8 @@ check(
 );
 drawInto(null, designNode);
 
-const { checkDesignSource } = await import("./obsidian-design-source-checks.ts");
-await checkDesignSource(check, settle);
+const { checkVaultDesign } = await import("./vault-design-checks.ts");
+await checkVaultDesign(check, settle);
 const { checkCanvasReads } = await import("./canvas-read-checks.ts");
 await checkCanvasReads(check);
 const { checkCanvasRequests } = await import("./canvas-request-checks.ts");
@@ -804,15 +789,15 @@ const studioMount = {
 	project: emptyProject(),
 	returnToView: async () => undefined,
 };
-const [activeHost, otherHost] = [activeDesign.hostOf(studioMount), otherDesign.hostOf(studioMount)];
+const [activeParts, otherParts] = [activeDesign.partsOf(studioMount), otherDesign.partsOf(studioMount)];
 check(
 	"a studio with no design folder still says whose paste it is: only the active studio leaf takes one, and it draws the project",
 	[
-		activeHost.platform === "obsidian" && activeHost.canvas.ownsPaste(),
-		otherHost.platform === "obsidian" && otherHost.canvas.ownsPaste(),
-		activeHost.platform === "obsidian" && activeHost.canvas.design.kind,
+		activeParts.canvasHost.ownsPaste(),
+		otherParts.canvasHost.ownsPaste(),
+		activeParts.designFolder instanceof ProjectDesignFolder,
 	],
-	[true, false, "project"],
+	[true, false, true],
 );
 
 if (failed > 0) {

@@ -3,7 +3,7 @@ import { NOTE_TONES } from "@widgetarium/core/app-design.js";
 import { BoardSchema, StatePictureSchema } from "./design.schema.js";
 import { CanvasDocSchema } from "./doc.schema.js";
 
-export const FrameSchema = z.object({
+const FrameSchema = z.object({
 	key: z.string(),
 	label: z.string(),
 	situation: z.string().nullable(),
@@ -18,16 +18,16 @@ export const FrameSchema = z.object({
 	refusal: z.string(),
 });
 
-export const ScreenGroupSchema = z.object({ name: z.string(), sub: z.string(), frames: z.array(FrameSchema) });
+const ScreenGroupSchema = z.object({ name: z.string(), sub: z.string(), frames: z.array(FrameSchema) });
 
-export const CalloutSchema = z.object({
+const CalloutSchema = z.object({
 	text: z.string(),
 	tone: z.enum(NOTE_TONES),
 	at: z.tuple([z.number(), z.number()]).optional(),
 	widget: z.object({ id: z.string(), name: z.string() }).nullable(),
 });
 
-export const ReferenceShownSchema = z.object({
+const ReferenceShownSchema = z.object({
 	key: z.string(),
 	title: z.string(),
 	badge: z.string().optional(),
@@ -47,7 +47,7 @@ export const WidgetCardSchema = z.object({
 	picture: StatePictureSchema.nullable(),
 });
 
-export const WidgetGroupSchema = z.object({
+const WidgetGroupSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	badge: z.string(),
@@ -69,11 +69,9 @@ export const RegionSchema = z.discriminatedUnion("kind", [
 ]);
 
 export type Frame = z.output<typeof FrameSchema>;
-export type ScreenGroup = z.output<typeof ScreenGroupSchema>;
 export type CalloutShown = z.output<typeof CalloutSchema>;
 export type ReferenceShown = z.output<typeof ReferenceShownSchema>;
 export type WidgetCard = z.output<typeof WidgetCardSchema>;
-export type WidgetGroup = z.output<typeof WidgetGroupSchema>;
 export type Region = z.output<typeof RegionSchema>;
 
 export type RegionOf<K extends Region["kind"]> = Extract<Region, { readonly kind: K }>;

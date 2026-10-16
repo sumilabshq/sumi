@@ -1,8 +1,8 @@
 import { z } from "zod";
 
-export const FramePictureSchema = z.object({ key: z.string(), url: z.string() });
+const FramePictureSchema = z.object({ key: z.string(), url: z.string() });
 
-export const FramePicturesSchema = z.object({
+const FramePicturesSchema = z.object({
 	shown: z.record(z.string(), FramePictureSchema),
 	waiting: z.number(),
 });

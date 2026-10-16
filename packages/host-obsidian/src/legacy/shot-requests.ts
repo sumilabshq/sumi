@@ -1,26 +1,18 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { requestUrl } from "obsidian";
-import type { App as ObsidianApp, DataAdapter } from "obsidian";
+import { z } from "zod";
 import { ROOT } from "@widgetarium/core/paths.js";
-import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
-import { AppProvider, Slot, app } from "@widgetarium/core/mediator";
-import type { App, ObsidianHost } from "@widgetarium/core/mediator";
-import {
-	CanvasShot,
-	NoteBoardQuery,
-	NoteShot,
-	ShotCountQuery,
-	canvasModule,
-	whileAgentLooks,
-} from "@widgetarium/canvas";
+import { AppProvider, Slot, app, reasonOf, reportToConsole } from "@widgetarium/core/requests";
+import type { FailureReport, StartedApp } from "@widgetarium/core/requests";
+import { CanvasShot, NoteBoardQuery, NoteShot, ShotCountQuery } from "@widgetarium/canvas";
 import type { AgentLook } from "@widgetarium/canvas";
-import { drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas";
-import type { ObsidianDesignHeld } from "@widgetarium/canvas";
+import { canvasModule, detachedMountOf, whileAgentLooks } from "@widgetarium/canvas/module";
+import { drawnOffScreen, pictureTakerOf, pngOf, stackedPngOf } from "@widgetarium/canvas/vault";
 import { CANVAS_OPENED_ON } from "@widgetarium/studio";
-import { designHeldOf } from "./design-held.js";
+import { HELD_IN_VAULT, partsFor } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
 
 export const SHOTS_DIR = `${ROOT}/shots`;
@@ -35,77 +27,62 @@ interface TakenShot {
 	readonly measured: readonly MeasuredFinding[] | null;
 }
 
-interface ShotAsked {
-	readonly note: string;
-	readonly design: string;
-	readonly page: string;
-	readonly frame: string;
-}
+const ShotAskedSchema = z.object({
+	note: z.string().default(""),
+	design: z.string().default(""),
+	page: z.string().default(""),
+	frame: z.string().default(""),
+});
+
+type ShotAsked = z.output<typeof ShotAskedSchema>;
 
 interface ShotTaker {
-	readonly adapter: DataAdapter;
-	readonly held: ObsidianDesignHeld;
-	readonly app: ObsidianApp;
+	readonly plugin: WidgetariumPlugin;
+	readonly reportFailure: FailureReport;
 }
 
+const SHOTS = "shot requests";
+
 export function answerShotRequests(plugin: WidgetariumPlugin): void {
-	const taker = shotTakerOf(plugin);
-	let isBusy = false;
+	const taker: ShotTaker = { plugin, reportFailure: reportToConsole };
+	const polling = { isBusy: false };
 	const poll = async (): Promise<void> => {
-		if (isBusy) return;
-		isBusy = true;
-		await answerPending(taker).catch((failure: unknown) =>
-			console.error("[widgetarium] a shot was not taken", failure),
-		);
-		isBusy = false;
+		if (polling.isBusy) return;
+		polling.isBusy = true;
+		await answerPending(taker).catch((failure: unknown) => reportShotFailure(taker, SHOTS, failure));
+		polling.isBusy = false;
 	};
 	plugin.registerInterval(window.setInterval(() => void poll(), SHOT_POLL_MS));
 }
 
-function shotTakerOf(plugin: WidgetariumPlugin): ShotTaker {
-	const held = designHeldOf(plugin, { leafOf: () => plugin.app.workspace.getLeaf(false), fromNote: () => "" });
-	return { adapter: plugin.app.vault.adapter, held, app: plugin.app };
+function shotAppOf({ plugin, reportFailure }: ShotTaker, design: string): StartedApp {
+	const parts = partsFor(plugin, HELD_IN_VAULT, detachedMountOf({ ...CANVAS_OPENED_ON, app: design }));
+	return app({ modules: [canvasModule.with(parts)], host: { reportFailure } });
 }
 
-function shotAppOf(taker: ShotTaker, design: string): App {
-	const opened = { ...CANVAS_OPENED_ON, app: design };
-	const host: ObsidianHost = {
-		platform: "obsidian",
-		app: taker.app,
-		canvas: {
-			opened,
-			keepOpening: keepsNothing,
-			ownsPaste: takesNoPaste,
-			gpu: null,
-			returnTo: "app-note",
-			design: { kind: "vault", held: taker.held },
-		},
-	};
-	return app({ modules: [canvasModule], platforms: ["obsidian"], host });
+function reportShotFailure({ reportFailure }: ShotTaker, source: string, thrown: unknown): void {
+	reportFailure({ source, reason: reasonOf(thrown), code: "failed", ran: false, thrown });
 }
-
-function keepsNothing(): void {}
 
 async function answerPending(taker: ShotTaker): Promise<void> {
-	const { adapter } = taker;
+	const { adapter } = taker.plugin.app.vault;
 	if (!(await adapter.exists(SHOT_REQUESTS_DIR))) return;
 	const { files } = await adapter.list(SHOT_REQUESTS_DIR);
 	for (const path of files.filter((one) => one.endsWith(".json")))
-		await answerOne(taker, path).catch((failure: unknown) =>
-			console.error("[widgetarium] a shot request stays unanswered", path, failure),
-		);
+		await answerOne(taker, path).catch((failure: unknown) => reportShotFailure(taker, path, failure));
 }
 
 async function answerOne(taker: ShotTaker, path: string): Promise<void> {
-	const { adapter } = taker;
+	const { adapter } = taker.plugin.app.vault;
 	const id = path.slice(path.lastIndexOf("/") + 1, -".json".length);
 	try {
-		const asked = askedIn(await adapter.read(path));
+		const asked = ShotAskedSchema.parse(JSON.parse(await adapter.read(path)));
 		const shot = asked.design ? await shotWhileAgentLooks(taker, asked) : await noteShotOf(taker, asked.note);
 		if (shot.measured) await adapter.write(`${SHOTS_DIR}/${id}.measured.json`, JSON.stringify(shot.measured));
 		await adapter.writeBinary(`${SHOTS_DIR}/${id}.png`, shot.png);
 	} catch (failure) {
-		await adapter.write(`${SHOTS_DIR}/${id}.failed.txt`, failure instanceof Error ? failure.message : String(failure));
+		reportShotFailure(taker, path, failure);
+		await adapter.write(`${SHOTS_DIR}/${id}.failed.txt`, reasonOf(failure));
 	}
 	await adapter.remove(path);
 }
@@ -152,16 +129,6 @@ async function noteShotOf(taker: ShotTaker, note: string): Promise<TakenShot> {
 	return drawnOffScreen(NOTE_SHOT, tree, async (node) => ({ measured: null, png: await pngOf(requestUrl, node) }));
 }
 
-function drawn(shotApp: App, block: ReactElement): ReactElement {
+function drawn(shotApp: StartedApp, block: ReactElement): ReactElement {
 	return h(AppProvider, { app: shotApp }, h(Slot, null, block));
-}
-
-function takesNoPaste(): boolean {
-	return false;
-}
-
-function askedIn(text: string): ShotAsked {
-	const parsed: unknown = JSON.parse(text);
-	const textAt = (key: string): string => (isObject(parsed) && typeof parsed[key] === "string" ? parsed[key] : "");
-	return { note: textAt("note"), design: textAt("design"), page: textAt("page"), frame: textAt("frame") };
 }

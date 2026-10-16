@@ -1,7 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { posix } from "node:path";
 import type { Node } from "@babel/types";
-import { PLATFORMS } from "../../../packages/core/src/mediator/platform.ts";
 import { walk } from "../ast.mts";
 import { findingAt, findingOnLine, type Finding } from "../finding.mts";
 import type { ParsedSource } from "../source.mts";
@@ -21,27 +20,23 @@ interface RelativeImport {
 }
 
 const IN_PACKAGE = /^packages\/([^/]+)\/(.+)$/;
-const CONTRACT_FILE = /^[a-z0-9-]+\.(query|command)\.ts$/;
+const FEATURE_FILES = new Set(["contract.ts", "handlers.ts"]);
 const REQUEST_SUFFIX = /(Query|Command)$/;
-const PLATFORM_PART = /^(packages\/[^/]+\/adapters\/[^/]+\/([^/]+)\/)/;
+const IMPLEMENTATION_PART = /^(packages\/[^/]+\/adapters\/[^/]+\/([^/]+)\/)/;
 const SCRIPT_EXTENSION = /\.[jt]sx?$/;
-const NEVER_REACHING_SERVER = new Set(["client", "ui", "lib"]);
 const DOMAINS = new Map<string, boolean>();
 
-const NOT_A_CONTRACT =
-	"requests/ holds only <name>.query.ts and <name>.command.ts; move {file} to lib/ (a helper) or client/<feature>/ (a handler)";
+const NOT_A_FEATURE_FILE =
+	"features/<feature>/ holds only contract.ts and handlers.ts; move {file} to lib/ (a helper) or adapters/ (a system it calls)";
 const HANDLER_IN_CONTRACT =
-	"a handler lives in client/<feature>/<name>.handler.ts or server/<feature>/, never in requests/: move {name} there";
-const REACHES_SERVER =
-	"{folder}/ never imports server/ code: send a .onServer() request instead of importing {specifier}";
+	"a handler lives in handlers.ts beside its contract, never in contract.ts: move {name} there";
 const NOT_TSX = "ui/ holds only .tsx blocks and layouts; move {file} to lib/";
 const NOT_AN_ADAPTER =
-	"adapters/<what>/ holds only .adapter.ts files at its top; an implementation's parts go in its own folder, adapters/<what>/<platform>/";
-const NOT_A_PLATFORM_FOLDER =
-	"adapters/<what>/{folder}/ is not named for a platform; a folder under adapters/<what>/ holds one platform's parts: {platforms}";
-const NO_PLATFORM_ENTRY = "adapters/<what>/{folder}/ has no {folder}.adapter.ts, the one file outside it may import";
-const PLATFORM_PART_REACHED =
-	"{specifier} is a part of a platform's adapter; import its {platform}.adapter.ts instead, the folder's one entry";
+	"adapters/<what>/ holds only .adapter.ts files at its top; an implementation's parts go in its own folder, adapters/<what>/<implementation>/";
+const NO_IMPLEMENTATION_ENTRY =
+	"adapters/<what>/{folder}/ has no {folder}.adapter.ts, the one file outside it may import";
+const IMPLEMENTATION_PART_REACHED =
+	"{specifier} is a part of an adapter; import its {implementation}.adapter.ts instead, the folder's one entry";
 const WRONG_NAME =
 	'request {constant} is named "{name}"; name it "{wanted}": <module>/<the constant without its suffix, in kebab case>';
 
@@ -49,11 +44,7 @@ export function check(source: ParsedSource): Finding[] {
 	const file = domainFileOf(source.path);
 	if (file === null) return [];
 	const imports = relativeImportsOf(source);
-	return [
-		...placementFindings(source, file),
-		...platformPartImports(source.path, imports),
-		...serverImports(file, imports),
-	];
+	return [...placementFindings(source, file), ...implementationPartImports(source.path, imports)];
 }
 
 function placementFindings(source: ParsedSource, file: DomainFile): Finding[] {
@@ -61,9 +52,10 @@ function placementFindings(source: ParsedSource, file: DomainFile): Finding[] {
 	if (file.folder === "ui" && !fileName.endsWith(".tsx"))
 		return [findingOnLine(id, "error", 1, NOT_TSX.replace("{file}", fileName))];
 	if (file.folder === "adapters") return adapterPlacement(file, fileName);
-	if (file.folder !== "requests") return [];
-	if (file.inside.length !== 2 || !CONTRACT_FILE.test(fileName))
-		return [findingOnLine(id, "error", 1, NOT_A_CONTRACT.replace("{file}", fileName))];
+	if (file.folder !== "features") return [];
+	if (file.inside.length !== 3 || !FEATURE_FILES.has(fileName))
+		return [findingOnLine(id, "error", 1, NOT_A_FEATURE_FILE.replace("{file}", fileName))];
+	if (fileName !== "contract.ts") return [];
 	return [...handlersIn(source), ...requestNames(source, file.domain)];
 }
 
@@ -72,12 +64,8 @@ function adapterPlacement(file: DomainFile, fileName: string): Finding[] {
 		return fileName.endsWith(".adapter.ts") ? [] : [findingOnLine(id, "error", 1, NOT_AN_ADAPTER)];
 	const [, what = "", folder = ""] = file.inside;
 	if (file.inside.length < 4) return [];
-	if (!PLATFORMS.some((platform) => platform === folder)) {
-		const said = NOT_A_PLATFORM_FOLDER.replace("{folder}", folder).replace("{platforms}", PLATFORMS.join(", "));
-		return [findingOnLine(id, "error", 1, said)];
-	}
 	if (existsSync(`packages/${file.domain}/adapters/${what}/${folder}/${folder}.adapter.ts`)) return [];
-	return [findingOnLine(id, "error", 1, NO_PLATFORM_ENTRY.replaceAll("{folder}", folder))];
+	return [findingOnLine(id, "error", 1, NO_IMPLEMENTATION_ENTRY.replaceAll("{folder}", folder))];
 }
 
 function relativeImportsOf(source: ParsedSource): RelativeImport[] {
@@ -106,12 +94,15 @@ function stringIn(node: Node | null): string | null {
 	return node?.type === "StringLiteral" ? node.value : null;
 }
 
-function platformPartImports(importer: string, imports: readonly RelativeImport[]): Finding[] {
+function implementationPartImports(importer: string, imports: readonly RelativeImport[]): Finding[] {
 	return imports.flatMap(({ node, specifier, target }) => {
-		const [, folder = "", platform = ""] = PLATFORM_PART.exec(target) ?? [];
+		const [, folder = "", implementation = ""] = IMPLEMENTATION_PART.exec(target) ?? [];
 		if (folder === "" || importer.startsWith(folder)) return [];
-		if (posix.basename(target).replace(SCRIPT_EXTENSION, "") === `${platform}.adapter`) return [];
-		const said = PLATFORM_PART_REACHED.replace("{specifier}", specifier).replace("{platform}", platform);
+		if (posix.basename(target).replace(SCRIPT_EXTENSION, "") === `${implementation}.adapter`) return [];
+		const said = IMPLEMENTATION_PART_REACHED.replace("{specifier}", specifier).replace(
+			"{implementation}",
+			implementation,
+		);
 		return [findingAt(id, "error", node, said)];
 	});
 }
@@ -136,24 +127,13 @@ function isDomain(name: string): boolean {
 	return isOne;
 }
 
-function serverImports(file: DomainFile, imports: readonly RelativeImport[]): Finding[] {
-	if (!NEVER_REACHING_SERVER.has(file.folder)) return [];
-	const serverFolder = `packages/${file.domain}/server/`;
-	return imports
-		.filter(({ target }) => `${target}/`.startsWith(serverFolder))
-		.map(({ node, specifier }) =>
-			findingAt(id, "error", node, REACHES_SERVER.replace("{folder}", file.folder).replace("{specifier}", specifier)),
-		);
-}
-
 function handlersIn(source: ParsedSource): Finding[] {
 	const findings: Finding[] = [];
 	walk(source.ast.program, (node) => {
-		if (node.type !== "ClassDeclaration" && node.type !== "ClassExpression") return;
-		const parent = node.superClass;
-		if (parent?.type !== "CallExpression" || parent.callee.type !== "Identifier" || parent.callee.name !== "handlerOf")
-			return;
-		findings.push(findingAt(id, "error", node, HANDLER_IN_CONTRACT.replace("{name}", node.id?.name ?? "the class")));
+		if (node.type !== "CallExpression" || node.callee.type !== "Identifier" || node.callee.name !== "handler") return;
+		const [request] = node.arguments;
+		const name = request?.type === "Identifier" ? request.name : "the handler";
+		findings.push(findingAt(id, "error", node, HANDLER_IN_CONTRACT.replace("{name}", name)));
 	});
 	return findings;
 }

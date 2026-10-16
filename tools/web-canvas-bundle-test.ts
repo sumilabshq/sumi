@@ -1,48 +1,40 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { pathToFileURL } from "node:url";
 import esbuild from "esbuild";
 import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { PLATFORM_STUB, esbuildPlatformBuildOf } from "../packages/host-obsidian/platform-adapters-plugin.mts";
 
-const OBSIDIAN_ADAPTER = "packages/canvas/adapters/design-source/obsidian/obsidian.adapter.ts";
-const OBSIDIAN_ADAPTER_FOLDER = "packages/canvas/adapters/design-source/obsidian/";
-const OBSIDIAN_ADAPTER_FILE = /\/obsidian(\/obsidian)?\.adapter\.ts$/;
-const SERVER_SECRET = "only-on-the-server";
-const SERVER_FIXTURE: Readonly<Record<string, string>> = {
-	"packages/demo/requests/ping.command.ts": 'export const PingCommand = { name: "demo/ping", side: "server" };',
-	"packages/demo/server/ping/handler-of.ts":
-		"export const handlerOf = (request: unknown) => class { static request = request; };",
-	"packages/demo/server/ping/ping.handler.ts": [
-		'import { PingCommand } from "../../requests/ping.command.js";',
-		'import { handlerOf } from "./handler-of.js";',
-		`export const SERVER_SECRET = "${SERVER_SECRET}";`,
-		"export class PingCommandHandler extends handlerOf(PingCommand) {}",
-	].join("\n"),
-	"packages/demo/demo.module.ts": 'export { PingCommandHandler, SERVER_SECRET } from "./server/ping/ping.handler.js";',
-};
+interface Built {
+	readonly inputs: readonly string[];
+	readonly imports: readonly string[];
+}
+
+const WEB_STUDIO = "apps/studio/src/index.ts";
+const VAULT_ENTRY = "packages/canvas/vault.ts";
+const SERVER_ENTRY = "packages/core/src/requests/server/index.ts";
+const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
+const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
+const SERVER_CONDITION = "widgetarium-server";
+const VAULT_CODE = /packages\/canvas\/(vault\.ts|adapters\/[^/]+\/(vault\.adapter\.ts|vault\/|assistant\.adapter\.ts))/;
+const HOST_CODE = /packages\/host-obsidian\//;
+const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/core\/src\/requests\/server\//;
 let failed = 0;
 
-async function inputsFor(platform: string): Promise<{ inputs: string[]; imports: string[] }> {
-	const built = await esbuild.build({
-		entryPoints: ["apps/studio/src/index.ts"],
-		bundle: true,
-		write: false,
-		metafile: true,
-		minify: true,
-		format: "esm",
-		platform: "browser",
-		target: "es2020",
-		conditions: ["source"],
-		define: esbuildPlatformBuildOf(platform).define,
-		plugins: [esbuildPlatformBuildOf(platform).plugin],
-		external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "obsidian"],
-		loader: TEXT_LOADERS,
-		jsxFactory: "h",
-		jsxFragment: "Fragment",
-		logLevel: "silent",
-	});
+const BUILT_FOR_THE_BROWSER = {
+	bundle: true,
+	write: false,
+	metafile: true,
+	minify: true,
+	format: "esm",
+	platform: "browser",
+	target: "es2020",
+	conditions: ["source"],
+	external: ["react", "react-dom", "react-dom/client", "react/jsx-runtime", "obsidian"],
+	loader: TEXT_LOADERS,
+	jsxFactory: "h",
+	jsxFragment: "Fragment",
+	logLevel: "silent",
+} satisfies esbuild.BuildOptions;
+
+async function builtOf(entry: string): Promise<Built> {
+	const built = await esbuild.build({ ...BUILT_FOR_THE_BROWSER, entryPoints: [entry] });
 	const output = Object.values(built.metafile.outputs)[0];
 	return {
 		inputs: Object.keys(output?.inputs ?? {}).filter((input) => (output?.inputs[input]?.bytesInOutput ?? 0) > 0),
@@ -50,34 +42,17 @@ async function inputsFor(platform: string): Promise<{ inputs: string[]; imports:
 	};
 }
 
-function serverFixtureIn(root: string): string {
-	for (const [file, source] of Object.entries(SERVER_FIXTURE)) {
-		mkdirSync(dirname(join(root, file)), { recursive: true });
-		writeFileSync(join(root, file), source);
-	}
-	return join(root, "packages/demo/demo.module.ts");
-}
-
-async function fixtureBuiltFor(entry: string, platform: string): Promise<{ text: string; inputs: string[] }> {
-	const built = await esbuild.build({
-		entryPoints: [entry],
-		bundle: true,
-		write: false,
-		metafile: true,
-		format: "esm",
-		platform: "node",
-		plugins: [esbuildPlatformBuildOf(platform).plugin],
-		logLevel: "silent",
-	});
-	return { text: built.outputFiles[0]?.text ?? "", inputs: Object.keys(built.metafile.inputs) };
-}
-
-function thrownBy(run: () => unknown): string {
+async function buildFailureOf(conditions: readonly string[]): Promise<string> {
 	try {
-		run();
+		await esbuild.build({
+			...BUILT_FOR_THE_BROWSER,
+			entryPoints: [GUARD_IMPORTING_SERVER],
+			conditions: ["source", ...conditions],
+			nodePaths: [FIXTURE_PACKAGES],
+		});
 		return "";
-	} catch (thrown) {
-		return thrown instanceof Error ? thrown.message : String(thrown);
+	} catch (failure) {
+		return failure instanceof Error ? failure.message : String(failure);
 	}
 }
 
@@ -86,70 +61,41 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
 }
 
-const web = await inputsFor("web");
-const webObsidian = web.inputs.filter((input) => input.startsWith(OBSIDIAN_ADAPTER_FOLDER));
-check("the web studio bundle carries no Obsidian design-source code", webObsidian.length === 0, webObsidian);
-const webObsidianAdapters = web.inputs.filter((input) => OBSIDIAN_ADAPTER_FILE.test(input));
-check(
-	"every obsidian.adapter.ts the web bundle reaches is the stand-in that refuses",
-	webObsidianAdapters.length > 0 && webObsidianAdapters.every((input) => input.startsWith(`${PLATFORM_STUB}:`)),
-	webObsidianAdapters,
-);
+const web = await builtOf(WEB_STUDIO);
+const webVault = web.inputs.filter((input) => VAULT_CODE.test(input));
+check("the web studio bundle carries none of the canvas's vault implementations", webVault.length === 0, webVault);
+const webHost = web.inputs.filter((input) => HOST_CODE.test(input));
+check("nor any code of the Obsidian host", webHost.length === 0, webHost);
+const webServer = web.inputs.filter((input) => SERVER_CODE.test(input));
+check("nor the server: no Hono, no oRPC server, no requests/server", webServer.length === 0, webServer);
 check(
 	"and imports no obsidian module",
 	!web.imports.includes("obsidian"),
 	web.imports.filter((path) => path === "obsidian"),
 );
-const obsidian = await inputsFor("obsidian");
+const vault = await builtOf(VAULT_ENTRY);
 check(
-	"built for obsidian, the same entry carries the Obsidian adapter, so the checks above can fail",
-	obsidian.inputs.includes(OBSIDIAN_ADAPTER),
-	obsidian.inputs.filter((input) => input.includes("design-source")),
+	"the vault entry the Obsidian host imports does carry them, so the first check can fail",
+	vault.inputs.some((input) => VAULT_CODE.test(input)),
+	vault.inputs.filter((input) => VAULT_CODE.test(input)).length,
 );
-const fixtureRoot = mkdtempSync(join(tmpdir(), "wg-server-stand-in-"));
-const fixtureEntry = serverFixtureIn(fixtureRoot);
-const webServer = await fixtureBuiltFor(fixtureEntry, "web");
+const served = await builtOf(SERVER_ENTRY);
 check(
-	"a web build carries no code of a domain's server/ folder",
-	!webServer.text.includes(SERVER_SECRET),
-	webServer.inputs,
+	"the server entry does carry Hono and the oRPC server, so the server check can fail",
+	served.inputs.some((input) => SERVER_CODE.test(input)),
+	served.inputs.filter((input) => SERVER_CODE.test(input)).length,
 );
+const guardForClient = await buildFailureOf([]);
 check(
-	"every server/ file the web build reaches is the stand-in",
-	webServer.inputs
-		.filter((input) => input.includes("/server/"))
-		.every((input) => input.startsWith(`${PLATFORM_STUB}:`)),
-	webServer.inputs.filter((input) => input.includes("/server/")),
+	"a guard importing a server-only module fails the client build",
+	guardForClient.includes("@fixture/billing/module"),
+	guardForClient.slice(0, 120),
 );
-const webModulePath = join(fixtureRoot, "web.mjs");
-writeFileSync(webModulePath, webServer.text);
-const webModule: unknown = await import(pathToFileURL(webModulePath).href);
-const standInHandler: unknown = Reflect.get(Object(webModule), "PingCommandHandler");
+const guardForServer = await buildFailureOf([SERVER_CONDITION]);
 check(
-	"the stand-in handler keeps its request, so a module listing it still routes it to the server",
-	Reflect.get(Object(Reflect.get(Object(standInHandler), "request")), "name"),
-	"demo/ping",
+	"and builds under the widgetarium-server condition, so the check can fail",
+	guardForServer === "",
+	guardForServer,
 );
-check(
-	"constructing the stand-in handler throws the not-built message",
-	thrownBy(() => (typeof standInHandler === "function" ? Reflect.construct(standInHandler, []) : null)).includes(
-		"belongs to the server build, and this build is for web",
-	),
-	true,
-);
-check(
-	"reading a stood-in const throws the not-built message",
-	thrownBy(() => Reflect.get(Object(Reflect.get(Object(webModule), "SERVER_SECRET")), "length")).includes(
-		"belongs to the server build",
-	),
-	true,
-);
-const serverServer = await fixtureBuiltFor(fixtureEntry, "server");
-check(
-	"built for server, the same entry carries the server code, so the checks above can fail",
-	serverServer.text.includes(SERVER_SECRET),
-	serverServer.inputs,
-);
-rmSync(fixtureRoot, { recursive: true, force: true });
 console.log(failed === 0 ? "web canvas bundle: clean" : `web canvas bundle: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

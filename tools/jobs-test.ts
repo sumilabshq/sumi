@@ -454,7 +454,7 @@ const { NotedPicture } = await import("../packages/canvas/ui/canvas-field/frames
 const { referencesRegionOf } = await import("../packages/canvas/lib/field/reference-regions.js");
 const { JobLine } = await import("../packages/canvas/ui/job-status/job-line.js");
 const { canvasPagesOf } = await import("../packages/canvas/lib/pages/canvas-pages.js");
-const { AppProvider, fakeApp } = await import("../packages/core/src/mediator/index.js");
+const { AppProvider, app: startedApp } = await import("../packages/core/src/requests/index.js");
 const { noteOfApp } = await import("../packages/host-obsidian/src/legacy/ai/reference-command.js");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { createElement } = await import("react");
@@ -497,7 +497,7 @@ const notedDrawn = shownReference
 	? renderToStaticMarkup(
 			createElement(
 				AppProvider,
-				{ app: fakeApp({ answers: {} }) },
+				{ app: startedApp({ modules: [] }) },
 				createElement(NotedPicture, { reference: shownReference }),
 			),
 		)

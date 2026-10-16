@@ -1,5 +1,5 @@
 import { boxed, drawn, pause, redrawable } from "./behaviors-dom.ts";
-import { check, waitFor } from "./mediator-check.ts";
+import { check, waitFor } from "./check-helpers.ts";
 
 const { createElement: h, useRef } = await import("react");
 const b = await import("../packages/behaviors/index.ts");

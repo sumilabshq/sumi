@@ -123,7 +123,6 @@ function clearBuilds(): void {
 	for (const folder of ENGINE_PACKAGES) fs.rmSync(builtIn(path.join(REPO, folder)), { recursive: true, force: true });
 }
 
-// TODO: stand in other platforms' adapters per platform; dist ships every one, Obsidian's into web.
 async function bundleEntries(folder: string, built: string): Promise<void> {
 	await esbuild.build({
 		entryPoints: entrySourcesOf(folder),

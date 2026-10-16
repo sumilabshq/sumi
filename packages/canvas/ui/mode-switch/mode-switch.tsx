@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, Segmented } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { ModeQuery } from "../../requests/mode.query.js";
-import { SetModeCommand } from "../../requests/set-mode.command.js";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { ModeQuery } from "../../features/view/contract.js";
+import { SetModeCommand } from "../../features/view/contract.js";
 import type { CanvasMode } from "../../schema/canvas-view.schema.js";
 import { Tip } from "../tip/tip.js";
 

@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { WEB_PAGE_DEFINE, findBrowser } from "./harness.ts";
+import { findBrowser } from "./harness.ts";
 import { THEMES, HOST_FONTS, type HostTheme } from "./host-themes.ts";
 import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 
@@ -195,7 +195,6 @@ async function bundled(): Promise<string> {
 		target: "es2020",
 		jsxFactory: "h",
 		jsxFragment: "Fragment",
-		define: WEB_PAGE_DEFINE,
 		inject: ["tools/fill-inject.ts"],
 		alias: {
 			widgetarium: "./tools/fill-shim.ts",

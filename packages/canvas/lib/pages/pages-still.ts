@@ -12,6 +12,6 @@ export async function pagesStill(
 	const now = await pagesNow(designReads, canvasStore);
 	const { page } = canvasStore.now();
 	if (page === asked) return now;
-	console.info(`[widgetarium] ${what} dropped: the page turned ${asked} → ${page} while it was read`);
+	canvasStore.unchanged(`${what}: the page turned ${asked} → ${page} while it was read`);
 	return null;
 }

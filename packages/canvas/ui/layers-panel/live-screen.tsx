@@ -1,9 +1,9 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { useMarkedLayers } from "@widgetarium/behaviors";
-import { DrawingQuery } from "../../requests/drawing.query.js";
-import { KeepSeenLayersCommand } from "../../requests/keep-seen-layers.command.js";
+import { DrawingQuery } from "../../features/field/contract.js";
+import { KeepSeenLayersCommand } from "../../features/layers/contract.js";
 import type { StatePicture } from "../../schema/design.schema.js";
 import { DESKTOP_FRAME } from "../../schema/frame-size.schema.js";
 import { LIVE_SCREEN } from "../../lib/field/field-marks.js";

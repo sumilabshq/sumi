@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
 import type { Plugin } from "esbuild";
-import { OBSIDIAN_STUB, WEB_PAGE_DEFINE, shoot, THEMES } from "./harness.ts";
+import { OBSIDIAN_STUB, shoot, THEMES } from "./harness.ts";
 import type { Theme } from "./harness.ts";
 
 const WIDGET_SOURCE_PREFIX = "widget-source:";
@@ -35,7 +35,6 @@ const built = await esbuild.build({
 	target: "es2020",
 	jsxFactory: "h",
 	jsxFragment: "Fragment",
-	define: WEB_PAGE_DEFINE,
 	logLevel: "warning",
 	plugins: [OBSIDIAN_STUB, widgetSourceAsText],
 });

@@ -15,9 +15,12 @@ import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
 import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/lib/look/look-tokens.ts";
 import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
 import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
-import type { App } from "obsidian";
-import { pickLookOption } from "../packages/canvas/adapters/design-source/obsidian/design-writes.ts";
-import { standIn } from "./stand-in.ts";
+import { VaultAppLook } from "../packages/canvas/adapters/app-look/vault.adapter.ts";
+import { ProjectDesignJobs } from "../packages/canvas/adapters/design-jobs/project.adapter.ts";
+import { pickLookHandler } from "../packages/canvas/features/look/handlers.ts";
+import { CachedDesignReads } from "../packages/canvas/lib/design/design-reads.ts";
+import { MomentCanvasStore } from "../packages/canvas/lib/view/canvas-store.ts";
+import { FARM_OPENED, FixedDesignFolder } from "./canvas-hosts.ts";
 
 let failures = 0;
 
@@ -195,7 +198,16 @@ const lookAdapter = {
 		return lookFile.text;
 	},
 };
-await pickLookOption(standIn<App>({ vault: { adapter: lookAdapter } }, ["vault"], "app"), "Farm", "ground", "grey");
+const appLook = new VaultAppLook(lookAdapter);
+const lookReads = new CachedDesignReads(
+	new FixedDesignFolder(async () => ({ screens: [], references: [], widgets: [] })),
+	new ProjectDesignJobs(),
+	appLook,
+);
+await pickLookHandler.run(
+	{ settingName: "ground", option: "grey" },
+	{ appLook, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
+);
 const afterPick = readLook(lookFile.text);
 check(
 	"a look pick in Obsidian changes the file as it is at the write, keeping a pick written meanwhile",

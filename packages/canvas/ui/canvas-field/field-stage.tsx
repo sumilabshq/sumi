@@ -1,11 +1,11 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { usePanZoom } from "@widgetarium/behaviors";
-import { FieldStateQuery } from "../../requests/field-state.query.js";
-import { CameraQuery } from "../../requests/camera.query.js";
-import { KeepCameraCommand } from "../../requests/keep-camera.command.js";
+import { FieldStateQuery } from "../../features/field/contract.js";
+import { CameraQuery } from "../../features/view/contract.js";
+import { KeepCameraCommand } from "../../features/view/contract.js";
 import { FieldRegions } from "./field-regions.js";
 import { PRESSABLE } from "../../lib/field/field-marks.js";
 import { Highlight } from "./highlight.js";

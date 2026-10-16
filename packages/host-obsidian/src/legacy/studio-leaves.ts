@@ -4,12 +4,11 @@ import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { STUDIO_PACKS } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 import type { AppProjects } from "./app-projects.js";
-import { designHeldOf } from "./design-held.js";
+import { HELD_IN_VAULT, partsFor } from "./design-held.js";
+import type { DesignHeld } from "./design-held.js";
 import { bindNote } from "./host.js";
 import { designFolderOf } from "@widgetarium/core/app-design.js";
 import type { StudioDesign } from "@widgetarium/studio";
-import type { ObsidianDesignOrigin } from "@widgetarium/canvas";
-import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { studioNoteOfFile } from "./studio-drawing.js";
 import type { StudioPlace } from "./studio-drawing.js";
@@ -57,30 +56,11 @@ export async function studioDesignOf(
 	const ownsPaste = (): boolean => plugin.app.workspace.getActiveViewOfType(StudioView)?.leaf === leaf;
 	const hasDesign = await plugin.app.vault.adapter.exists(designFolderOf(app));
 	const gpu = hasDesign ? obsidianGpuSupply(plugin) : null;
-	return {
-		app,
-		hostOf: ({ project, returnToView, ...mount }) => ({
-			platform: "obsidian",
-			app: plugin.app,
-			canvas: {
-				...mount,
-				ownsPaste,
-				gpu,
-				design: designOriginOf(plugin, leaf, hasDesign, project),
-				returnTo: returnToView,
-			},
-		}),
+	const partsOf: StudioDesign["partsOf"] = ({ project, returnToView, ...mount }) => {
+		const held: DesignHeld = hasDesign ? HELD_IN_VAULT : { kind: "project", project };
+		return partsFor(plugin, held, { ...mount, ownsPaste, gpu, returnTo: { kind: "view", open: returnToView } });
 	};
-}
-
-function designOriginOf(
-	plugin: WidgetariumPlugin,
-	leaf: WorkspaceLeaf,
-	hasDesign: boolean,
-	project: StartedProject,
-): ObsidianDesignOrigin {
-	if (!hasDesign) return { kind: "project", project };
-	return { kind: "vault", held: designHeldOf(plugin, { leafOf: () => leaf, fromNote: () => "" }) };
+	return { app, partsOf };
 }
 
 function markdownStateOf(leaf: WorkspaceLeaf, state: Record<string, unknown>): ViewState {

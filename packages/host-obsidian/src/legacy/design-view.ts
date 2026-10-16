@@ -6,10 +6,8 @@ import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply, StageMount } from "@widgetarium/studio";
-import type { ObsidianHost } from "@widgetarium/core/mediator";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
-import type { ObsidianDesignHeld } from "@widgetarium/canvas";
-import { designHeldOf } from "./design-held.js";
+import { HELD_IN_VAULT, partsFor, returnToNoteIn } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
@@ -25,7 +23,6 @@ export class DesignView extends ItemView {
 	private readonly onCanvas = (canvas: CanvasHandle): void => {
 		this.canvas = canvas;
 	};
-	private readonly held: ObsidianDesignHeld;
 	private readonly gpu: GpuSupply;
 	private readonly onKept = (view: CanvasOpening): void => {
 		this.view = view;
@@ -38,7 +35,6 @@ export class DesignView extends ItemView {
 		private readonly plugin: WidgetariumPlugin,
 	) {
 		super(leaf);
-		this.held = designHeldOf(plugin, { leafOf: () => this.leaf, fromNote: () => this.fromNote });
 		this.gpu = obsidianGpuSupply(plugin);
 	}
 
@@ -94,14 +90,13 @@ export class DesignView extends ItemView {
 		const node = this.node;
 		const size = { width: this.contentEl.clientWidth, height: this.contentEl.clientHeight };
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
-		const { held, onKept, onCanvas, ownsPaste, gpu } = this;
+		const { onKept, onCanvas, ownsPaste, gpu } = this;
 		const app = this.appName;
-		const hostOf = (mount: StageMount): ObsidianHost => ({
-			platform: "obsidian",
-			app: this.app,
-			canvas: { ...mount, ownsPaste, gpu, design: { kind: "vault", held }, returnTo: "app-note" },
-		});
-		render(h(DesignStage, { key: app, app, opening: this.view, hostOf, onKept, onCanvas, size }), node);
+		const cameFrom = (): string => this.fromNote;
+		const returnTo = returnToNoteIn(this.app, () => this.leaf, app);
+		const partsOf = (mount: StageMount) =>
+			partsFor(this.plugin, HELD_IN_VAULT, { ...mount, ownsPaste, gpu, cameFrom, returnTo });
+		render(h(DesignStage, { key: app, app, opening: this.view, partsOf, onKept, onCanvas, size }), node);
 	}
 }
 

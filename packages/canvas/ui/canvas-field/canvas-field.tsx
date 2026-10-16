@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/mediator";
-import { FieldStateQuery } from "../../requests/field-state.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import { FieldStateQuery } from "../../features/field/contract.js";
 import { FieldStage } from "./field-stage.js";
 
 export function CanvasField(): ReactElement {

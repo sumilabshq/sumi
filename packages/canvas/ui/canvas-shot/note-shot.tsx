@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/mediator";
-import type { InputOf } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../requests/drawing.query.js";
-import { NoteBoardQuery } from "../../requests/note-board.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import type { InputOf } from "@widgetarium/core/requests";
+import { DrawingQuery } from "../../features/field/contract.js";
+import { NoteBoardQuery } from "../../features/shots/contract.js";
 import { ScreenBoard } from "../canvas-field/frames/screen-board.js";
 
 export interface NoteShotProps {

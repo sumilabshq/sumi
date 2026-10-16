@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Segmented } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { VariantsQuery } from "../../requests/variants.query.js";
-import { PickVariantCommand } from "../../requests/pick-variant.command.js";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { VariantsQuery } from "../../features/pages/contract.js";
+import { PickVariantCommand } from "../../features/pages/contract.js";
 
 export function VariantSwitch(): ReactElement | null {
 	const { isShown, shown, items } = useQuery(VariantsQuery).data;

@@ -17,7 +17,7 @@ export interface CanvasPages {
 	readonly variants: readonly { readonly screen: string; readonly letter: string | null }[];
 }
 
-export interface CanvasHeld {
+interface CanvasHeld {
 	readonly design: DrawnDesign;
 	readonly jobs: readonly Job[];
 	readonly hasDocs: boolean;

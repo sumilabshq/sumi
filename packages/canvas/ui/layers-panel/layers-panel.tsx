@@ -1,9 +1,9 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { useTreeDrag, useTreeScroll } from "@widgetarium/behaviors";
-import { LayersPanelQuery } from "../../requests/layers-panel.query.js";
-import { MoveLayerCommand } from "../../requests/move-layer.command.js";
+import { LayersPanelQuery } from "../../features/layers/contract.js";
+import { MoveLayerCommand } from "../../features/layers/contract.js";
 import { DropSlot } from "./drop-slot.js";
 import { LayersHeader } from "./layers-header.js";
 import { LayerRow, INDENT_PX } from "./layer-row.js";

@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/mediator";
-import { DesignSummaryQuery } from "../../requests/design-summary.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import { DesignSummaryQuery } from "../../features/pages/contract.js";
 
 export function DesignSummary(): ReactElement {
 	const { app, said } = useQuery(DesignSummaryQuery).data;

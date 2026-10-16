@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const LayerMoveSchema = z.object({
+const LayerMoveSchema = z.object({
 	file: z.string(),
 	sourceKey: z.string(),
 	from: z.number(),

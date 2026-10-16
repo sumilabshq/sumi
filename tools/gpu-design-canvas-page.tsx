@@ -3,10 +3,9 @@ import { createRoot } from "react-dom/client";
 import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
-import type { DesignSource, DrawnState } from "../packages/canvas/index.ts";
+import type { DrawnState } from "../packages/canvas/index.ts";
 import { frameIdOf } from "../packages/canvas/lib/field/frame-keys.ts";
-import { canvasModuleOver } from "./canvas-over-source.ts";
-import { webCanvasHostOf } from "./canvas-hosts.ts";
+import { FixedDesignDrawing, FixedDesignFolder, canvasPartsOver } from "./canvas-hosts.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
@@ -29,7 +28,6 @@ const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 	board: null,
 	picture: { widget, props, mounts: null },
 }));
-const refused = (): Promise<never> => Promise.reject(new Error(NOT_HERE));
 const TEST_HOST = {
 	...NO_HOST,
 	can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
@@ -37,23 +35,12 @@ const TEST_HOST = {
 		throw new Error(NOT_HERE);
 	},
 };
-const source: DesignSource = {
-	design: async () => ({ screens: [{ name: DESIGN_SCREEN, states }], references: [], widgets: [] }),
-	docs: async () => [],
-	jobs: () => [],
-	onJobs: () => () => undefined,
-	liveJob: () => null,
-	stopJob: refused,
-	drawing: () => ({ registry, host: TEST_HOST }),
-	onChanged: () => () => undefined,
-	addPhotos: refused,
-	moveLayer: refused,
-	returnToView: refused,
-	look: async () => null,
-	pickLook: refused,
-	noteBoard: async () => null,
-	pictureOf: null,
-};
+const designFolder = new FixedDesignFolder(async () => ({
+	screens: [{ name: DESIGN_SCREEN, states }],
+	references: [],
+	widgets: [],
+}));
+const designDrawing = new FixedDesignDrawing({ registry, host: TEST_HOST });
 const supply = { loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
 
 const root = document.getElementById("root");
@@ -62,11 +49,10 @@ const reactRoot = root ? createRoot(root) : null;
 function draw(): void {
 	reactRoot?.render(
 		h(DesignStage, {
-			modules: [canvasModuleOver(source)],
 			app: "Farm",
 			opening: CANVAS_OPENED_ON,
 			size: VIEW,
-			hostOf: ({ opened }) => webCanvasHostOf({ opened, gpu: supply }),
+			partsOf: ({ opened }) => canvasPartsOver({ opened, gpu: supply }, { designFolder, designDrawing }),
 		}),
 	);
 }

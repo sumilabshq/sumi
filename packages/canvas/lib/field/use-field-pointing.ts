@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
 import type { RefObject } from "react";
-import { useCommand } from "@widgetarium/core/mediator";
-import type { OutputOf } from "@widgetarium/core/mediator";
+import { useCommand } from "@widgetarium/core/requests";
+import type { OutputOf } from "@widgetarium/core/requests";
 import { useEscape, useFlyToElement, usePointedLayer, useResolvedSpot } from "@widgetarium/behaviors";
 import type { PanZoom, PointedLayer } from "@widgetarium/behaviors";
-import { FinishFlightCommand } from "../../requests/finish-flight.command.js";
-import { PickSpotCommand } from "../../requests/pick-spot.command.js";
-import { ResolveSpotCommand } from "../../requests/resolve-spot.command.js";
-import type { FieldStateQuery } from "../../requests/field-state.query.js";
+import { FinishFlightCommand } from "../../features/pages/contract.js";
+import { PickSpotCommand } from "../../features/field/contract.js";
+import { ResolveSpotCommand } from "../../features/field/contract.js";
+import type { FieldStateQuery } from "../../features/field/contract.js";
 import type { Selection, Spot } from "../../schema/selection.schema.js";
 import { LOOK_ROOM, POINTING, groupSelectorOf } from "./field-marks.js";
 

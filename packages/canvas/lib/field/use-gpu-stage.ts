@@ -4,7 +4,7 @@ import { GpuFramesHost } from "@widgetarium/gpu";
 import type { GpuSupply } from "@widgetarium/gpu";
 import type { PanZoom } from "@widgetarium/behaviors";
 
-export interface GpuStage {
+interface GpuStage {
 	readonly frames: GpuFramesHost | null;
 	readonly setCanvas: (canvas: HTMLCanvasElement | null) => void;
 }

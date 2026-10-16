@@ -12,6 +12,16 @@
 			"source": "./index.ts",
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
+		},
+		"./module": {
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
+		},
+		"./vault": {
+			"source": "./vault.ts",
+			"types": "./dist/vault.d.ts",
+			"default": "./dist/vault.js"
 		}
 	},
 	"dependencies": {

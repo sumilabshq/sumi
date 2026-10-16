@@ -37,7 +37,7 @@ const MountPictureSchema: z.ZodType<MountPicture> = z.object({
 	},
 });
 
-export const DrawnStateSchema = z.object({
+const DrawnStateSchema = z.object({
 	name: z.string(),
 	board: BoardSchema.nullable(),
 	picture: StatePictureSchema.optional(),
@@ -46,7 +46,7 @@ export const DrawnStateSchema = z.object({
 	size: FrameSizeSchema.optional(),
 });
 
-export const DrawnScreenSchema = z.object({
+const DrawnScreenSchema = z.object({
 	name: z.string(),
 	states: z.array(DrawnStateSchema).readonly(),
 });
@@ -58,7 +58,7 @@ export const ReferenceNoteSchema = z.object({
 	into: z.string().optional(),
 });
 
-export const DrawnReferenceSchema = z.object({
+const DrawnReferenceSchema = z.object({
 	name: z.string(),
 	src: z.string(),
 	why: z.string().optional(),
@@ -67,18 +67,16 @@ export const DrawnReferenceSchema = z.object({
 	notes: z.array(ReferenceNoteSchema).readonly(),
 });
 
-export const DrawnWidgetSchema = z.object({
+const DrawnWidgetSchema = z.object({
 	id: z.string(),
 	isFromCatalogue: z.boolean(),
 });
 
-export const DrawnDesignSchema = z.object({
+const DrawnDesignSchema = z.object({
 	screens: z.array(DrawnScreenSchema).readonly(),
 	references: z.array(DrawnReferenceSchema).readonly(),
 	widgets: z.array(DrawnWidgetSchema).readonly(),
 });
-
-export const ReadDesignSchema = DrawnDesignSchema.extend({ app: z.string(), stamp: z.number() });
 
 export type DrawnState = z.output<typeof DrawnStateSchema>;
 export type DrawnScreen = z.output<typeof DrawnScreenSchema>;
@@ -86,7 +84,6 @@ export type ReferenceNote = z.output<typeof ReferenceNoteSchema>;
 export type DrawnReference = z.output<typeof DrawnReferenceSchema>;
 export type DrawnWidget = z.output<typeof DrawnWidgetSchema>;
 export type DrawnDesign = z.output<typeof DrawnDesignSchema>;
-export type ReadDesign = z.output<typeof ReadDesignSchema>;
 
 export function frameLabelOf(screen: DrawnScreen, state: string): string {
 	return screen.states.length < 2 || state === screen.name ? screen.name : `${screen.name} · ${state}`;

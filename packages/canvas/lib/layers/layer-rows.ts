@@ -35,7 +35,7 @@ export const LayerRowSchema: z.ZodType<LayerRow> = z.object({
 	},
 });
 
-export interface RowsAsk {
+interface RowsAsk {
 	readonly registry: Drawing["registry"];
 	readonly picked: string | null;
 	readonly closed: ReadonlySet<string>;

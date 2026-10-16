@@ -9,13 +9,13 @@ import type { Frame } from "../../../schema/regions.schema.js";
 import { REPORTS_DRAW_FAILURE } from "../../state-drawing/draw-contexts.js";
 import { StateDrawing } from "../../../ui/state-drawing/state-drawing.js";
 
-export interface GpuFrameAsk {
+interface GpuFrameAsk {
 	readonly frame: Frame;
 	readonly registry: Drawing["registry"];
 	readonly node: RefObject<HTMLDivElement | null>;
 }
 
-export interface GpuFrameDrawn {
+interface GpuFrameDrawn {
 	readonly isGpu: boolean;
 	readonly failure: string | undefined;
 }

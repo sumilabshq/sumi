@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { RenderedMarkdown } from "@widgetarium/kit";
-import { useQuery } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../../requests/drawing.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import { DrawingQuery } from "../../../features/field/contract.js";
 import type { RegionOf } from "../../../schema/regions.schema.js";
 import { Group } from "./group.js";
 import { Region } from "./region.js";

@@ -52,7 +52,6 @@ export function findBrowser(gate: string): string {
 }
 
 export const WIDGETS_AT = ".widgetarium/widgets";
-export const WEB_PAGE_DEFINE: Readonly<Record<string, string>> = { __WG_PLATFORM__: JSON.stringify("web") };
 
 const reachesAVault = (name: string): boolean => !name.endsWith(".md");
 
@@ -160,7 +159,6 @@ export async function bundleOf(entry: string, plugins: readonly Plugin[] = []): 
 		target: "es2020",
 		jsxFactory: "h",
 		jsxFragment: "Fragment",
-		define: WEB_PAGE_DEFINE,
 		logLevel: "warning",
 	});
 	return firstOutput(built.outputFiles);
@@ -178,7 +176,6 @@ export async function stage({ board, files, steps, editing, rows }: StageAsk): P
 		target: "es2020",
 		jsxFactory: "h",
 		jsxFragment: "Fragment",
-		define: WEB_PAGE_DEFINE,
 		logLevel: "warning",
 	});
 

@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/mediator";
-import type { InputOf } from "@widgetarium/core/mediator";
-import { ShotPartQuery } from "../../requests/shot-part.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import type { InputOf } from "@widgetarium/core/requests";
+import { ShotPartQuery } from "../../features/shots/contract.js";
 import { RegionDrawn } from "../canvas-field/region-drawn.js";
 import { DRAWS_AT_ONCE } from "../../lib/state-drawing/draw-contexts.js";
 

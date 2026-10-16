@@ -11,11 +11,10 @@ import {
 import { appHeadTagsOf, type AppHeadTag } from "./app-head.js";
 import { PROJECT_MODULE_ID, projectModuleSourceOf } from "./project-module-source.js";
 import { START_MODULE_ID, startModuleSourceOf } from "./start-module-source.js";
-import { platformBuildOf } from "./platform-adapters.js";
 
 export interface WidgetariumVitePlugin {
 	readonly name: string;
-	config(): Promise<{ resolve: { alias: ResolvedAlias[] }; define: Readonly<Record<string, string>> }>;
+	config(): Promise<{ resolve: { alias: ResolvedAlias[] } }>;
 	configResolved(resolved: ResolvedMode): void;
 	resolveId(id: string): string | null;
 	load(id: string): Promise<string | null>;
@@ -31,7 +30,6 @@ interface ReadProject {
 	readonly config: ProjectConfig;
 }
 
-const WEB_BUILD = platformBuildOf("web");
 const RESOLVED_PROJECT_MODULE = `\0${PROJECT_MODULE_ID}`;
 const RESOLVED_START_MODULE = `\0${START_MODULE_ID}`;
 const VIRTUAL_MODULES: ReadonlyMap<string, string> = new Map([
@@ -46,7 +44,6 @@ export function widgetarium(root: string = process.cwd()): WidgetariumVitePlugin
 		name: "widgetarium",
 		config: async () => ({
 			resolve: { alias: viteAliasesOf((await projectIn(root)).config.aliases, root) },
-			define: WEB_BUILD.define,
 		}),
 		configResolved: ({ mode }) => {
 			resolved.mode = mode;
@@ -54,7 +51,6 @@ export function widgetarium(root: string = process.cwd()): WidgetariumVitePlugin
 		resolveId: (id) => VIRTUAL_MODULES.get(id) ?? null,
 		load: async (id) => {
 			if (id === RESOLVED_START_MODULE) return startModuleSourceOf(resolved.mode);
-			if (WEB_BUILD.isStoodIn(id)) return WEB_BUILD.standInOf(id);
 			if (id !== RESOLVED_PROJECT_MODULE) return null;
 			const { files, config } = await projectIn(root);
 			return projectModuleSourceOf(root, files, config);

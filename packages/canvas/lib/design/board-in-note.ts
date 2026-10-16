@@ -3,7 +3,7 @@ import { findBlocks } from "@widgetarium/core/block-writer.js";
 import { normalizeBoard } from "@widgetarium/core/model.js";
 import type { Board } from "@widgetarium/core/model.js";
 
-export type BoardInNote =
+type BoardInNote =
 	| { readonly kind: "board"; readonly board: Board }
 	| { readonly kind: "none" }
 	| { readonly kind: "refused"; readonly refusal: string };

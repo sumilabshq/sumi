@@ -1,7 +1,7 @@
 import { createElement as h, useContext, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useOptionalQuery } from "@widgetarium/core/mediator";
-import { FramePictureQuery } from "../../../requests/frame-picture.query.js";
+import { useOptionalQuery } from "@widgetarium/core/requests";
+import { FramePictureQuery } from "../../../features/pictures/contract.js";
 import { DRAWS_AT_ONCE } from "../../../lib/state-drawing/draw-contexts.js";
 import { useAsksForPicture } from "../../../lib/field/frames/use-asks-for-picture.js";
 import { useIsSeen } from "../../../lib/field/frames/use-is-seen.js";

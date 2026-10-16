@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/mediator";
+import { useCommand } from "@widgetarium/core/requests";
 import { CALLOUT } from "@widgetarium/behaviors";
 import type { NoteSide, PlacedNote } from "@widgetarium/behaviors";
-import { FocusWidgetCommand } from "../../../requests/focus-widget.command.js";
+import { FocusWidgetCommand } from "../../../features/pages/contract.js";
 import type { CalloutShown } from "../../../schema/regions.schema.js";
 
 export interface CalloutNoteProps {

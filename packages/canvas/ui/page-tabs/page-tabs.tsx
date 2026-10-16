@@ -1,9 +1,9 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { Button } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/mediator";
-import { ReturnToViewCommand } from "../../requests/return-to-view.command.js";
-import { ShowPageCommand } from "../../requests/show-page.command.js";
+import { useCommand } from "@widgetarium/core/requests";
+import { ReturnToViewCommand } from "../../features/pages/contract.js";
+import { ShowPageCommand } from "../../features/pages/contract.js";
 import { fadedTurn } from "../../lib/pages/faded-turn.js";
 import { PageSwitch } from "./page-switch.js";
 

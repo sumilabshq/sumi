@@ -3,7 +3,8 @@ import type { ReactElement } from "react";
 import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
-import type { AnyHost } from "@widgetarium/core/mediator";
+import { MountedCanvasHost, projectCanvasParts } from "@widgetarium/canvas/module";
+import type { CanvasParts } from "@widgetarium/canvas/module";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell, StageMount } from "./design-stage.js";
 
@@ -14,7 +15,7 @@ export interface StudioMount extends StageMount {
 
 export interface StudioDesign {
 	readonly app: string;
-	readonly hostOf: (mount: StudioMount) => AnyHost;
+	readonly partsOf: (mount: StudioMount) => CanvasParts;
 }
 
 export interface StudioCanvasProps {
@@ -33,7 +34,7 @@ export function StudioCanvas({ design, project, state, shell }: StudioCanvasProp
 		? h(DesignStage, {
 				app: design.app,
 				opening: CANVAS_OPENED_ON,
-				hostOf: (mount) => design.hostOf({ ...mount, project, returnToView }),
+				partsOf: (mount) => design.partsOf({ ...mount, project, returnToView }),
 				size,
 				shell,
 			})
@@ -44,11 +45,16 @@ export function StudioCanvas({ design, project, state, shell }: StudioCanvasProp
 export function webStudioDesign(app: string): StudioDesign {
 	return {
 		app,
-		hostOf: ({ project, returnToView, ...mount }) => ({
-			platform: "web",
-			project,
-			canvas: { ...mount, returnToView, ownsPaste: ownsEveryPasteInItsTab, gpu: null },
-		}),
+		partsOf: ({ project, returnToView, ...mount }) =>
+			projectCanvasParts(
+				project,
+				new MountedCanvasHost({
+					...mount,
+					returnTo: { kind: "view", open: returnToView },
+					ownsPaste: ownsEveryPasteInItsTab,
+					gpu: null,
+				}),
+			),
 	};
 }
 

@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { LookPanelQuery } from "../../requests/look-panel.query.js";
-import { PickLookCommand } from "../../requests/pick-look.command.js";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { LookPanelQuery } from "../../features/look/contract.js";
+import { PickLookCommand } from "../../features/look/contract.js";
 import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "../../lib/look/look-chrome.js";
 import { LookRow } from "./look-row.js";
 import { LookUnreadable } from "./look-unreadable.js";

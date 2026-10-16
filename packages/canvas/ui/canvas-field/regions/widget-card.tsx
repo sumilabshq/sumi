@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../../requests/drawing.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import { DrawingQuery } from "../../../features/field/contract.js";
 import type { WidgetCard as Card } from "../../../schema/regions.schema.js";
 import { DRAWS_AT_ONCE } from "../../../lib/state-drawing/draw-contexts.js";
 import { StateDrawing } from "../../state-drawing/state-drawing.js";

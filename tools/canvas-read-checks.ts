@@ -1,11 +1,9 @@
-import type { App, DataAdapter } from "obsidian";
 import { screenPathOf } from "../packages/core/src/app-design.ts";
 import { sourceKeyOf } from "../packages/core/src/engine/node-marks.ts";
-import type { WidgetRegistry } from "../packages/core/src/registry.ts";
-import { layerMoved } from "../packages/canvas/adapters/design-source/obsidian/design-writes.ts";
+import { VaultDesignLayers } from "../packages/canvas/adapters/design-layers/vault.adapter.ts";
+import { sourceMoved } from "../packages/canvas/features/layers/handlers.ts";
 import { boardIn } from "../packages/canvas/lib/design/board-in-note.ts";
-import { readDrawnState } from "../packages/canvas/lib/design/drawn-state.ts";
-import { standIn } from "./stand-in.ts";
+import { readDrawnState } from "../packages/canvas/adapters/design-folder/vault/drawn-state.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
 
@@ -77,12 +75,6 @@ async function checkLayerMoveWritesWhatItRead(check: Check): Promise<void> {
 			return changed;
 		},
 	};
-	const obsidian = standIn<App>(
-		{ vault: { adapter: standIn<DataAdapter>(adapter, ["process"], "adapter") } },
-		["vault"],
-		"app",
-	);
-	const registry = standIn<WidgetRegistry>({ get: () => ({ folder: "W" }) }, ["get"], "registry");
 	const moveOn = (text: string) => ({
 		file: "widget.tsx",
 		sourceKey: sourceKeyOf(text),
@@ -90,11 +82,14 @@ async function checkLayerMoveWritesWhatItRead(check: Check): Promise<void> {
 		into: text.indexOf("<aside"),
 		before: null,
 	});
+	const layers = new VaultDesignLayers(adapter);
 	const answerOf = (text: string): Promise<string> =>
-		layerMoved(obsidian, registry, "w", moveOn(text)).then(
-			() => "moved",
-			(failure: unknown) => (failure instanceof Error ? failure.message : String(failure)),
-		);
+		layers
+			.change(path, (source) => sourceMoved(source, moveOn(text)))
+			.then(
+				() => "moved",
+				(failure: unknown) => (failure instanceof Error ? failure.message : String(failure)),
+			);
 	const stale = await answerOf(STALE_PAGE);
 	check(
 		"a layer move judged against an older file is refused inside the write and leaves the file alone",

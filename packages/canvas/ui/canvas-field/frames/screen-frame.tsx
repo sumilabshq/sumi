@@ -1,8 +1,8 @@
 import { createElement as h, useContext } from "react";
 import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
-import { useQuery } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../../requests/drawing.query.js";
+import { useQuery } from "@widgetarium/core/requests";
+import { DrawingQuery } from "../../../features/field/contract.js";
 import type { Frame } from "../../../schema/regions.schema.js";
 import { FrameScreen } from "./frame-screen.js";
 import { GpuScreen } from "./gpu-screen.js";

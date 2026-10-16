@@ -1,10 +1,10 @@
 import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/mediator";
+import { useCommand } from "@widgetarium/core/requests";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
-import { AddPhotosCommand } from "../../requests/add-photos.command.js";
-import { PastePhotosCommand } from "../../requests/paste-photos.command.js";
+import { AddPhotosCommand } from "../../features/photos/contract.js";
+import { PastePhotosCommand } from "../../features/photos/contract.js";
 import { Tip } from "../tip/tip.js";
 
 const ADD_PHOTO = "Add photo";

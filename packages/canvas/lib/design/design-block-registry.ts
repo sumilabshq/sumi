@@ -3,7 +3,7 @@ import type { WidgetDefinition } from "@widgetarium/core/registry.js";
 
 type Registry = WidgetSurfaceProps["registry"];
 
-export const BLOCK_SEPARATOR = "#";
+const BLOCK_SEPARATOR = "#";
 
 export function blockIdOf(draft: string, block: string): string {
 	return `${draft}${BLOCK_SEPARATOR}${block}`;
