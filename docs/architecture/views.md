@@ -54,7 +54,7 @@ export function Canvas() {
 }
 ```
 
-`Canvas` lives in `packages/canvas/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [canvasModule.with(parts)] })}><Canvas /></AppProvider>`.
+`Canvas` lives in `packages/canvas/shared/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [CanvasClientModule.with(parts)] })}><Canvas /></AppProvider>`.
 
 A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md#live-data-watch)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
 

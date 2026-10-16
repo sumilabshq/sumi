@@ -16,28 +16,32 @@ The rules every developer and every agent follows when writing code in this repo
 
 ## Three rules
 
-1. **Imports go one way: `apps` → `packages`.** A package never imports an app. A domain uses another domain only through its `index.ts`.
+1. **Imports go one way: `apps` → `packages`.** A package never imports an app. A domain uses another domain only through its public entry, `generated/index.ts`.
 2. **A file's place is what it is.** A request's contract → `features/<feature>/contract.ts`. Its handler → `handlers.ts` beside it. What is drawn → `ui/`. An outside system → `adapters/`. What a handler needs → the module's `provide`.
-3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler declares what it needs in `inject` and receives it as an argument. A host builds the implementations and hands them to `module.with(parts)`. No hidden globals, no singletons.
+3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler declares what it needs in `inject` and receives it as an argument. A host builds the implementations and hands them to `Module.with(parts)`. No hidden globals, no singletons.
 
 ## Names
 
-| Declares                      | Written                                         | Named                         | Example             |
-| ----------------------------- | ----------------------------------------------- | ----------------------------- | ------------------- |
-| a read                        | `query("<module>/<name>")`                      | noun phrase + `Query`         | `PagesQuery`        |
-| a write                       | `command("<module>/<name>")`                    | verb phrase + `Command`       | `ShowPageCommand`   |
-| its logic                     | `handler(Request, { inject, run, watch? })`     | request, camelCase, `Handler` | `showPageHandler`   |
-| a domain's wiring             | `module("<name>", { runs, handlers, provide })` | `<domain>Module`              | `canvasModule`      |
-| an outside system             | `abstract class`, its own token                 | the system                    | `DesignPhotos`      |
-| its implementation            | `class … extends DesignPhotos`                  | `<Kind><System>`              | `VaultDesignPhotos` |
-| reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`    | —                             | —                   |
+| Declares                      | Written                                                                                    | Named                       | Example                  |
+| ----------------------------- | ------------------------------------------------------------------------------------------ | --------------------------- | ------------------------ |
+| a read                        | `query("<module>/<name>")`                                                                 | noun phrase + `Query`       | `PagesQuery`             |
+| a write                       | `command("<module>/<name>")`                                                               | verb phrase + `Command`     | `ShowPageCommand`        |
+| its logic                     | `handler(Request, Module).guard(…).use(…).inject({…}).handle(fn)`                          | the request + `Handler`     | `ShowPageCommandHandler` |
+| who may call                  | `guard<In>().inject({…}).handle(check)`                                                    | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
+| what wraps a call             | `middleware().inject({…}).handle(fn)`                                                      | what it does + `Middleware` | `TimingLoggerMiddleware` |
+| a domain's wiring             | `serverModule("<name>").guard(…).use(…).provide(fn)`, `clientModule("<name>").provide(fn)` | domain + side + `Module`    | `CanvasClientModule`     |
+| an outside system             | `abstract class`, its own token                                                            | the system                  | `DesignFiles`            |
+| its implementation            | `class … extends DesignFiles`                                                              | `<Platform><System>`        | `ObsidianDesignFiles`    |
+| reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`                                               | —                           | —                        |
 
-No `define…` or `create…` prefix: the word itself is the declaration. A query takes no `Get…` prefix. A request's string name is `<module>/<the constant without its suffix, in kebab case>` (`ShowPageCommand` → `canvas/show-page`).
+A module is named `<Domain><Side>Module`; a handler names its module, so its side is visible in the handler file.
+
+Every declared building block is PascalCase and ends with its kind; every declaration is a fluent chain, and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)). No `define…` or `create…` prefix: the word itself is the declaration. A query takes no `Get…` prefix. A request's string name is `<module>/<the constant without its suffix, in kebab case>` (`ShowPageCommand` → `canvas/show-page`).
 
 ## Two levels
 
 ```
-apps/        a product you deploy: studio (the app); server (planned, Hono, serves /rpc)
+apps/        a product you deploy: studio (the app); server (Hono, serves /rpc)
    ↓
 packages/    domains (business areas), common code, and the hosts (packages/host-obsidian, …)
 ```
@@ -50,16 +54,16 @@ A domain is a business area: `video`, `billing`; for this repository `canvas`, `
 
 ```
 packages/<domain>/
-  index.ts                     the public entry: contracts, schemas' types, the root view (TODO: generated)
+  generated/index.ts           the public entry, written by `widgetarium generate`: every contract, every schema, ui/index.ts
   module.ts                    the one module: runs, handlers, provide; imported only by a starter
-  features/<feature>/          contract.ts (requests) + handlers.ts (their handlers)
+  features/<feature>/          contract.ts (requests) + handlers.ts (their handlers); or features/<group>/<feature>/
   adapters/<area>/             <area>.adapter.ts (the abstract class) + one implementation per host
   lib/                         helpers, stores, cached readers used inside the domain
   schema/                      <record>.schema.ts
-  ui/                          only .tsx: blocks, layouts, the root view (client modules only)
+  ui/                          only .tsx: blocks, layouts, the root view; ui/index.ts names what is public (client modules only)
 ```
 
-**What it gives:** the path from a click to the data is linear: `useCommand(AddPhotosCommand)` → `features/photos/contract.ts` → `addPhotosHandler` in `handlers.ts` → its `inject` keys → the module's `provide` → the part the host built.
+**What it gives:** the path from a click to the data is linear: `useCommand(AddPhotosCommand)` → `features/photos/contract.ts` → `AddPhotosCommandHandler` in `handlers.ts` → its `inject` keys → the module's `provide` → the part the host built.
 
 ## Common
 
@@ -67,11 +71,11 @@ Common packages hold code with no domain: the engine (`core`: requests, mediator
 
 ## Imports
 
-| From ↓ may import → | app | own domain | another domain                                | common |
-| ------------------- | --- | ---------- | --------------------------------------------- | ------ |
-| app                 | own | —          | its `index.ts`; its `module.ts` to start it   | yes    |
-| domain              | no  | anything   | its `index.ts`, if declared in `package.json` | yes    |
-| common              | no  | —          | no                                            | yes    |
+| From ↓ may import → | app | own domain | another domain                           | common |
+| ------------------- | --- | ---------- | ---------------------------------------- | ------ |
+| app                 | own | —          | its entry; its `module.ts` to start it   | yes    |
+| domain              | no  | anything   | its entry, if declared in `package.json` | yes    |
+| common              | no  | —          | no                                       | yes    |
 
 A server module's code never reaches a client bundle; nothing in a module imports oRPC or Hono. The graph of domains has no cycle.
 

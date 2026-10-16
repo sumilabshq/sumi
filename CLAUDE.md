@@ -5,6 +5,15 @@ domains and common, placement by what a file is. Code under a `legacy/` folder p
 by rewrite ([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree for
 new code, those pages win.
 
+**Every declaration is a fluent chain, never an options object, and every behaviour ends in `.handle()`**:
+`handler(X, BillingServerModule).guard(…).use(…).inject({…}).handle(…)`, `guard().inject({…}).handle(…)`,
+`middleware().inject({…}).handle(…)`, `serverModule(name)` / `clientModule(name)`, `query(name).input(…).output(…)`.
+A declared building block is PascalCase with its kind as suffix (`ChargeCommand`, `ChargeCommandHandler`,
+`PagesQueryHandler`, `OwnsInvoiceGuard`, `TimingLoggerMiddleware`), so a move to classes renames nothing; a
+module is `<Domain><Side>Module` (`BillingServerModule`, `CanvasClientModule`), so a handler file shows where
+it runs. camelCase is for ordinary values and functions. A string appears only as
+free-form data (a request or permission name); every other choice is a typed value.
+
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
 widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
 classic `h` factory, one component per file), `packages/core` and `packages/host-obsidian` are `.ts` React with
