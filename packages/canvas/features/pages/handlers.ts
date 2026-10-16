@@ -1,16 +1,18 @@
 import { handler, refuse } from "@widgetarium/core/requests";
-import { CanvasHost } from "../../adapters/canvas-host/canvas-host.adapter.js";
+import { offsetOfCursor, pageAt } from "@widgetarium/core/gateway/page.js";
+import { CanvasHost } from "../../gateways/canvas-host/canvas-host.gateway.js";
 import { DesignReads } from "../../shared/lib/design/design-reads.js";
 import { noteToReturnTo } from "./lib/note-to-return-to.js";
 import { pagesNow, watchPages } from "../../shared/lib/pages/pages-now.js";
 import { pagesStill } from "../../shared/lib/pages/pages-still.js";
 import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
-import { COMPONENTS_PAGE, PAGES_TAB } from "../../shared/schema/canvas-page.schema.js";
+import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import {
 	DesignSummaryQuery,
 	FinishFlightCommand,
 	FocusWidgetCommand,
 	PageTabsQuery,
+	PagesQuery,
 	PickVariantCommand,
 	ReturnToViewCommand,
 	ShowPageCommand,
@@ -34,26 +36,33 @@ export const DesignSummaryQueryHandler = handler(DesignSummaryQuery, CanvasClien
 
 export const FinishFlightCommandHandler = handler(FinishFlightCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
-	.handle((_input, { canvasStore }) => canvasStore.change({ focusedWidget: null }, "flown to the widget"));
+	.handle((_input, { canvasStore }) => {
+		canvasStore.change({ focusedWidget: null }, "flown to the widget");
+	});
 
 export const FocusWidgetCommandHandler = handler(FocusWidgetCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
-	.handle(({ widget }, { canvasStore }) =>
-		canvasStore.change({ page: COMPONENTS_PAGE, focusedWidget: widget }, `open ${widget}`),
-	);
+	.handle(({ widget }, { canvasStore }) => {
+		canvasStore.changeOpening({ page: COMPONENTS_PAGE, focusedWidget: widget }, `open ${widget}`);
+	});
 
 export const PageTabsQueryHandler = handler(PageTabsQuery, CanvasClientModule)
 	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
 	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
 	.handle(async (_input, { designReads, canvasStore }) => {
 		const { pages } = await pagesNow(designReads, canvasStore);
-		return {
-			leading: [...pages.leading],
-			pages: pages.screens.map((page) => ({ page, isRunning: page in pages.running, isShown: page === pages.shown })),
-			trailing: [...pages.trailing],
-			shown: pages.shown,
-			shownTab: pages.screens.includes(pages.shown) ? PAGES_TAB : pages.shown,
-		};
+		return { tabs: [...pages.leading, ...pages.trailing], shown: pages.shown };
+	});
+
+export const PagesQueryHandler = handler(PagesQuery, CanvasClientModule)
+	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
+	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
+	.handle(async ({ cursor, limit }, { designReads, canvasStore }) => {
+		const { pages } = await pagesNow(designReads, canvasStore);
+		const offset = offsetOfCursor(cursor);
+		const listed = pages.screens.slice(offset, offset + limit);
+		const rows = listed.map((page) => ({ page, isRunning: page in pages.running, isShown: page === pages.shown }));
+		return pageAt(rows, offset, pages.screens.length);
 	});
 
 export const PickVariantCommandHandler = handler(PickVariantCommand, CanvasClientModule)
@@ -79,7 +88,9 @@ export const ReturnToViewCommandHandler = handler(ReturnToViewCommand, CanvasCli
 
 export const ShowPageCommandHandler = handler(ShowPageCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
-	.handle(({ page }, { canvasStore }) => canvasStore.change({ page }, `show ${page}`));
+	.handle(({ page }, { canvasStore }) => {
+		canvasStore.changeOpening({ page }, `show ${page}`);
+	});
 
 export const VariantsQueryHandler = handler(VariantsQuery, CanvasClientModule)
 	.inject({ designReads: DesignReads, canvasStore: CanvasStore })

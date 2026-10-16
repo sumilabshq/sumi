@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { NOTE_TONES } from "@widgetarium/core/app-design.js";
-import { BoardSchema, StatePictureSchema } from "./design.schema.js";
+import { StatePictureSchema } from "./design.schema.js";
 import { CanvasDocSchema } from "./doc.schema.js";
 
 const FrameSchema = z.object({
@@ -10,11 +10,8 @@ const FrameSchema = z.object({
 	width: z.number(),
 	height: z.number(),
 	frame: z.string(),
-	pictureKey: z.string(),
 	widget: z.string().nullable(),
 	picture: StatePictureSchema.nullable(),
-	isGpuDrawn: z.boolean(),
-	board: BoardSchema.nullable(),
 	refusal: z.string(),
 });
 
@@ -43,8 +40,7 @@ export const WidgetCardSchema = z.object({
 	widget: z.string(),
 	width: z.number(),
 	frame: z.string(),
-	pictureKey: z.string(),
-	picture: StatePictureSchema.nullable(),
+	picture: StatePictureSchema,
 });
 
 const WidgetGroupSchema = z.object({

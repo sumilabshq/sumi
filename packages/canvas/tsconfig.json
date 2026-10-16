@@ -26,7 +26,7 @@
 	"references": [{ "path": "../kit" }, { "path": "../core" }],
 	"include": [
 		"*.ts",
-		"adapters/**/*.ts",
+		"gateways/**/*.ts",
 		"features/**/*.ts",
 		"features/**/*.tsx",
 		"shared/**/*.ts",

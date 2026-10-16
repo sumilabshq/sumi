@@ -11,10 +11,7 @@ export interface GroupProps {
 
 export function Group({ title, sub, badge, mark, children }: GroupProps): ReactElement {
 	return (
-		<div
-			className="cv:flex cv:flex-col cv:gap-5 cv:rounded-[28px] cv:bg-raise cv:p-7 cv:ring-1 cv:ring-edge"
-			data-wg-group={mark}
-		>
+		<div className="cv:flex cv:flex-col cv:gap-5 cv:p-7" data-wg-group={mark}>
 			<header className="cv:flex cv:flex-wrap cv:items-baseline cv:gap-3 cv:text-[24px] cv:text-ink">
 				<b>{title}</b>
 				{badge ? (

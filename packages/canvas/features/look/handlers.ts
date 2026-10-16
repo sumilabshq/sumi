@@ -1,6 +1,6 @@
 import { handler, refuse } from "@widgetarium/core/requests";
 import { lookPathOf } from "@widgetarium/core/app-look.js";
-import { DesignFiles } from "../../adapters/design-files/design-files.adapter.js";
+import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
 import { DesignReads } from "../../shared/lib/design/design-reads.js";
 import { lookTextPicked } from "./lib/look-picked.js";
 import type { LookTextPicked } from "./lib/look-picked.js";
@@ -33,12 +33,12 @@ export const LookPanelQueryHandler = handler(LookPanelQuery, CanvasClientModule)
 	});
 
 export const PickLookCommandHandler = handler(PickLookCommand, CanvasClientModule)
-	.inject({ designReads: DesignReads, designFiles: DesignFiles, canvasStore: CanvasStore })
-	.handle(async ({ settingName, option }, { designReads, designFiles, canvasStore }) => {
+	.inject({ designReads: DesignReads, designFilesGateway: DesignFilesGateway, canvasStore: CanvasStore })
+	.handle(async ({ settingName, option }, { designReads, designFilesGateway, canvasStore }) => {
 		const { app } = canvasStore.now();
 		const path = lookPathOf(app);
-		if (!(await designFiles.exists(path))) refuse(NO_LOOK.replace("{app}", app));
-		await designFiles.changeText(path, (text) => pickedOrRefused(lookTextPicked(text, settingName, option)));
+		if (!(await designFilesGateway.exists(path))) refuse(NO_LOOK.replace("{app}", app));
+		await designFilesGateway.changeText(path, (text) => pickedOrRefused(lookTextPicked(text, settingName, option)));
 		designReads.changed(app);
 	});
 

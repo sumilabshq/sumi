@@ -1,7 +1,7 @@
 import { movedNode } from "@widgetarium/core/engine/node-moves.js";
 import { handler, refuse } from "@widgetarium/core/requests";
-import { DesignDrawing } from "../../adapters/design-drawing/design-drawing.adapter.js";
-import { DesignFiles } from "../../adapters/design-files/design-files.adapter.js";
+import { WidgetDrawingGateway } from "../../gateways/widget-drawing/widget-drawing.gateway.js";
+import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
 import { DesignReads } from "../../shared/lib/design/design-reads.js";
 import { layerMoveTo } from "./lib/layer-moves.js";
 import { NOT_DRAWN, layersPanelOf } from "./lib/layers-panel.js";
@@ -39,12 +39,12 @@ export const KeepSeenLayersCommandHandler = handler(KeepSeenLayersCommand, Canva
 	});
 
 export const LayersPanelQueryHandler = handler(LayersPanelQuery, CanvasClientModule)
-	.inject({ designReads: DesignReads, designDrawing: DesignDrawing, canvasStore: CanvasStore })
+	.inject({ designReads: DesignReads, widgetDrawingGateway: WidgetDrawingGateway, canvasStore: CanvasStore })
 	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed, PANEL_FIELDS))
-	.handle(async (_input, { designReads, designDrawing, canvasStore }) => {
+	.handle(async (_input, { designReads, widgetDrawingGateway, canvasStore }) => {
 		const shown = shownScreenOf(await pagesNow(designReads, canvasStore));
 		if (!shown) return NOT_DRAWN;
-		return layersPanelOf(shown, canvasStore.now(), designDrawing.drawing().registry);
+		return layersPanelOf(shown, canvasStore.now(), widgetDrawingGateway.drawing().registry);
 	});
 
 export const LayersToggleQueryHandler = handler(LayersToggleQuery, CanvasClientModule)
@@ -60,22 +60,24 @@ export const LayersToggleQueryHandler = handler(LayersToggleQuery, CanvasClientM
 export const MoveLayerCommandHandler = handler(MoveLayerCommand, CanvasClientModule)
 	.inject({
 		designReads: DesignReads,
-		designFiles: DesignFiles,
-		designDrawing: DesignDrawing,
+		designFilesGateway: DesignFilesGateway,
+		widgetDrawingGateway: WidgetDrawingGateway,
 		canvasStore: CanvasStore,
 	})
-	.handle(async ({ dragged, parent, before }, { designReads, designFiles, designDrawing, canvasStore }) => {
-		const now = await pagesStill(designReads, canvasStore, `move ${dragged}`);
-		if (!now) return;
-		const widget = shownScreenOf(now)?.picture?.widget;
-		if (!widget) return refuse(NOT_A_PAGE);
-		const move = layerMoveTo(dragged, parent, before);
-		if (!move) return refuse(NOT_MOVABLE);
-		const folder = designDrawing.drawing().registry.get(widget)?.folder;
-		if (!folder) return refuse(NO_PAGE_FOLDER.replace("{widget}", widget));
-		await designFiles.changeText(`${folder}/${move.file}`, (source) => sourceMoved(source, move));
-		designReads.changed(now.app);
-	});
+	.handle(
+		async ({ dragged, parent, before }, { designReads, designFilesGateway, widgetDrawingGateway, canvasStore }) => {
+			const now = await pagesStill(designReads, canvasStore, `move ${dragged}`);
+			if (!now) return;
+			const widget = shownScreenOf(now)?.picture?.widget;
+			if (!widget) return refuse(NOT_A_PAGE);
+			const move = layerMoveTo(dragged, parent, before);
+			if (!move) return refuse(NOT_MOVABLE);
+			const folder = widgetDrawingGateway.drawing().registry.get(widget)?.folder;
+			if (!folder) return refuse(NO_PAGE_FOLDER.replace("{widget}", widget));
+			await designFilesGateway.changeText(`${folder}/${move.file}`, (source) => sourceMoved(source, move));
+			designReads.changed(now.app);
+		},
+	);
 
 export const PickLayerCommandHandler = handler(PickLayerCommand, CanvasClientModule)
 	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
@@ -99,7 +101,7 @@ export const ToggleLayerFoldCommandHandler = handler(ToggleLayerFoldCommand, Can
 export const ToggleLayersCommandHandler = handler(ToggleLayersCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
 	.handle((_input, { canvasStore }) => {
-		canvasStore.change({ isLayersOpen: !canvasStore.now().isLayersOpen }, "toggle layers");
+		canvasStore.changeOpening({ isLayersOpen: !canvasStore.now().isLayersOpen }, "toggle layers");
 	});
 
 export const ToggleLayoutLockCommandHandler = handler(ToggleLayoutLockCommand, CanvasClientModule)

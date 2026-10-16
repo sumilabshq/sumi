@@ -1,25 +1,20 @@
 import type { SpecRead } from "../packages/core/src/app-spec.ts";
-import { CanvasHost, DesignFiles, detachedHostOf } from "../packages/canvas/generated/adapters.ts";
-import type { ReturnTo } from "../packages/canvas/generated/adapters.ts";
-import {
-	EndAgentLookCommandHandler,
-	ShowAgentPageCommandHandler,
-	StartAgentLookCommandHandler,
-} from "../packages/canvas/features/agent/handlers.ts";
+import { CanvasHost, DesignFilesGateway, detachedHostOf } from "../packages/canvas/generated/gateways.ts";
+import type { ReturnTo } from "../packages/canvas/generated/gateways.ts";
 import { PageTabsQuery, ReturnToViewCommand } from "../packages/canvas/features/pages/contract.ts";
-import { PickVariantCommandHandler } from "../packages/canvas/features/pages/handlers.ts";
+import { PickVariantCommandHandler, ShowPageCommandHandler } from "../packages/canvas/features/pages/handlers.ts";
 import { PastePhotosCommand } from "../packages/canvas/features/photos/contract.ts";
 import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
 import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
-import { WebDesignFiles } from "../packages/canvas/adapters/design-files/web.adapter.ts";
-import { WebDesignJobs } from "../packages/canvas/adapters/design-jobs/web.adapter.ts";
+import { WebDesignFilesGateway } from "../packages/canvas/gateways/design-files/web.gateway.ts";
+import { WebAgentJobsGateway } from "../packages/canvas/gateways/agent-jobs/web.gateway.ts";
 import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
-import { FARM_OPENED, FixedDesignFolder, canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
+import { FARM_OPENED, FixedDesignFolderGateway, canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
 
 interface HeldFolder {
-	readonly folder: FixedDesignFolder;
+	readonly folder: FixedDesignFolderGateway;
 	readonly release: () => void;
 	readonly watching: { started: number; stopped: number };
 }
@@ -33,7 +28,7 @@ const DESIGN: DrawnDesign = {
 	widgets: [],
 };
 
-class RecordedPhotos extends DesignFiles {
+class RecordedDesignFilesGateway extends DesignFilesGateway {
 	readonly added: string[] = [];
 
 	override async exists(): Promise<boolean> {
@@ -55,8 +50,8 @@ class RecordedPhotos extends DesignFiles {
 	override async changeText(): Promise<void> {}
 }
 
-class BrokenSpecFolder extends FixedDesignFolder {
-	override async spec(): Promise<SpecRead> {
+class BrokenSpecDesignFolderGateway extends FixedDesignFolderGateway {
+	override async readSpec(): Promise<SpecRead> {
 		return { refusal: "the front matter is broken" };
 	}
 }
@@ -64,9 +59,14 @@ class BrokenSpecFolder extends FixedDesignFolder {
 class RecordingCanvasStore extends MomentCanvasStore {
 	readonly reasons: string[] = [];
 
-	override change(...[next, reason]: Parameters<MomentCanvasStore["change"]>): void {
+	override change(...[next, reason]: Parameters<MomentCanvasStore["change"]>): boolean {
 		this.reasons.push(reason);
-		super.change(next, reason);
+		return super.change(next, reason);
+	}
+
+	override changeOpening(...[next, reason]: Parameters<MomentCanvasStore["changeOpening"]>): boolean {
+		this.reasons.push(reason);
+		return super.changeOpening(next, reason);
 	}
 }
 
@@ -85,7 +85,7 @@ async function checkReturnTo(check: Check): Promise<void> {
 			canvasPartsOver(
 				{ opened: FARM_OPENED },
 				{
-					designFolder: new BrokenSpecFolder(async () => DESIGN),
+					designFolderGateway: new BrokenSpecDesignFolderGateway(async () => DESIGN),
 					canvasHost: new CanvasHost({ ...detachedHostOf(FARM_OPENED), returnTo }),
 				},
 			),
@@ -108,7 +108,7 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 	const tabs = await canvasAppOver(canvasPartsOver({ opened: { ...FARM_OPENED, page: "" } })).send(PageTabsQuery);
 	check(
 		"a canvas over a project with no design folder reads the project's design",
-		tabs.ok ? tabs.output.trailing : tabs.reason,
+		tabs.ok ? tabs.output.tabs : tabs.reason,
 		["Components"],
 	);
 }
@@ -116,21 +116,19 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 async function checkPickAfterPageTurn(check: Check): Promise<void> {
 	const held = heldFolder();
 	const canvasStore = new RecordingCanvasStore(FARM_OPENED, () => undefined);
-	const designReads = new CachedDesignReads(held.folder, new WebDesignJobs(), new WebDesignFiles());
+	const designReads = new CachedDesignReads(held.folder, new WebAgentJobsGateway(), new WebDesignFilesGateway());
 	const picking = PickVariantCommandHandler.handle({ screen: "Home B" }, { designReads, canvasStore });
-	StartAgentLookCommandHandler.handle({ app: "Farm", page: "Other", frame: "" }, {});
-	await ShowAgentPageCommandHandler.handle(undefined, { canvasStore });
-	EndAgentLookCommandHandler.handle({ isFailed: false }, {});
+	ShowPageCommandHandler.handle({ page: "Other" }, { canvasStore });
 	held.release();
 	await picking;
 	check("a variant pick whose page turned while the design was read writes nothing", canvasStore.reasons, [
-		"show Other, where the agent looks",
+		"show Other",
 	]);
 }
 
 async function checkWatchStopsOnce(check: Check): Promise<void> {
 	const held = heldFolder();
-	const canvas = canvasAppOver(canvasPartsOver({ opened: FARM_OPENED }, { designFolder: held.folder }));
+	const canvas = canvasAppOver(canvasPartsOver({ opened: FARM_OPENED }, { designFolderGateway: held.folder }));
 	const stopFirst = canvas.watches.watch(PageTabsQuery, undefined);
 	stopFirst();
 	const stopSecond = canvas.watches.watch(PageTabsQuery, undefined);
@@ -143,9 +141,12 @@ async function checkWatchStopsOnce(check: Check): Promise<void> {
 }
 
 async function checkPasteOwner(check: Check): Promise<void> {
-	const photos = new RecordedPhotos();
+	const photos = new RecordedDesignFilesGateway();
 	const owner = { isOwner: false };
-	const parts = canvasPartsOver({ opened: FARM_OPENED, ownsPaste: () => owner.isOwner }, { designFiles: photos });
+	const parts = canvasPartsOver(
+		{ opened: FARM_OPENED, ownsPaste: () => owner.isOwner },
+		{ designFilesGateway: photos },
+	);
 	const canvas = canvasAppOver(parts);
 	const photo = new File(["x"], "a.png");
 	const elsewhere = await canvas.send(PastePhotosCommand, { photos: [photo] }, { idempotencyKey: "elsewhere" });
@@ -164,7 +165,7 @@ function heldFolder(): HeldFolder {
 		released.release = () => done(DESIGN);
 	});
 	const watching = { started: 0, stopped: 0 };
-	const folder = new FixedDesignFolder(
+	const folder = new FixedDesignFolderGateway(
 		() => designed,
 		() => {
 			watching.started += 1;

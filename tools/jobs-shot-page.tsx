@@ -5,7 +5,7 @@ import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
 import { AppProvider, app } from "../packages/core/src/requests/index.ts";
 import { PlannedPageRegion } from "../packages/canvas/shared/ui/canvas-field/regions/planned-page-region.tsx";
-import { PageLabel } from "../packages/canvas/features/pages/ui/page-tabs/page-label.tsx";
+import { PageLabel } from "../packages/canvas/features/pages/ui/pages-list/page-label.tsx";
 import { JobLine } from "../packages/canvas/features/jobs/ui/job-status/job-line.tsx";
 import { ReferencesRegion } from "../packages/canvas/shared/ui/canvas-field/regions/references-region.tsx";
 

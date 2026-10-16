@@ -6,16 +6,15 @@ import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { CanvasClientModule } from "../packages/canvas/generated/module.ts";
 import {
 	CanvasHost,
-	DesignDrawing,
-	DesignFolder,
+	WidgetDrawingGateway,
+	DesignFolderGateway,
 	detachedHostOf,
 	webCanvasParts,
-} from "../packages/canvas/generated/adapters.ts";
-import type { CanvasParts } from "../packages/canvas/generated/adapters.ts";
+} from "../packages/canvas/generated/gateways.ts";
+import type { CanvasParts } from "../packages/canvas/generated/gateways.ts";
 import type { CanvasOpened, CanvasOpening } from "../packages/canvas/shared/schema/canvas-view.schema.ts";
 import type { CanvasDoc } from "../packages/canvas/shared/schema/doc.schema.ts";
 import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
-import type { Drawing } from "../packages/canvas/shared/schema/drawing.schema.ts";
 import type { GpuSupply } from "../packages/gpu/index.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -53,7 +52,7 @@ export function canvasAppOver(parts: CanvasParts): StartedApp {
 	return app({ modules: [CanvasClientModule.with(parts)] });
 }
 
-export class FixedDesignFolder extends DesignFolder {
+export class FixedDesignFolderGateway extends DesignFolderGateway {
 	constructor(
 		private readonly drawn: () => Promise<DrawnDesign>,
 		private readonly watched: (changed: () => void) => () => void = () => keepsNothing,
@@ -61,38 +60,24 @@ export class FixedDesignFolder extends DesignFolder {
 		super();
 	}
 
-	override design(): Promise<DrawnDesign> {
+	override readDesign(): Promise<DrawnDesign> {
 		return this.drawn();
 	}
 
-	override async docs(): Promise<readonly CanvasDoc[]> {
+	override async readDocs(): Promise<readonly CanvasDoc[]> {
 		return [];
 	}
 
-	override async spec(): Promise<SpecRead | null> {
+	override async readSpec(): Promise<SpecRead | null> {
 		return null;
 	}
 
-	override onChanged(_app: string, changed: () => void): () => void {
+	override watch(_app: string, changed: () => void): () => void {
 		return this.watched(changed);
 	}
-
-	override async noteText(): Promise<null> {
-		return null;
-	}
 }
 
-export class FixedDesignDrawing extends DesignDrawing {
-	override readonly pictureOf = null;
-
-	constructor(private readonly drawn: Drawing) {
-		super();
-	}
-
-	override drawing(): Drawing {
-		return this.drawn;
-	}
-}
+export class FixedWidgetDrawingGateway extends WidgetDrawingGateway {}
 
 function never(): boolean {
 	return false;

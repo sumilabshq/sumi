@@ -14,8 +14,14 @@ import { HARVEST_TITLE, HOVERED_CROP } from "./gpu-design-fixture-tags.tsx";
 const VIEW: readonly [number, number] = [1280, 800];
 const WORK_P95_LIMIT_MS = 8;
 const BENCH_STEPS = 300;
+const SETTLED_MS = 2000;
+const FPS_LABEL = `document.querySelector("[data-canvas-fps]")?.textContent ?? null`;
+const DRAWING_FPS = /^([1-9]\d*) FPS$/;
+const FPS_TOLERANCE = 0.25;
+const RAF_RATE = `new Promise((done) => { const stamps = []; const tick = (now) => { stamps.push(now); if (now - stamps[0] < 500) requestAnimationFrame(tick); else done(Math.round((1000 * (stamps.length - 1)) / (now - stamps[0]))); }; requestAnimationFrame(tick); })`;
 const FRAMES = DESIGN_FRAMES.length;
 const GPU_FRAMES = FRAMES - 1;
+const CARD_FRAME = "window.designPage.cardFrameId";
 
 const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-gpu-design-canvas"));
 mkdirSync(shotsAt, { recursive: true });
@@ -28,11 +34,9 @@ function check(what: string, isOk: boolean, got: unknown): void {
 
 const served = await servedGpuPages({ entry: "tools/gpu-design-canvas-page.tsx", html: pageHtml() });
 const page = await paged(served.origin, "gpu design canvas", { size: VIEW, onGpu: true });
-const { pressToggle, pointOf, regionOf, until, shot } = probeOf(page, shotsAt, check);
+const { pointOf, regionOf, until, shot } = probeOf(page, shotsAt, check);
 try {
-	await htmlRun();
 	await gpuRun();
-	await backToHtml();
 } finally {
 	page.close();
 	served.close();
@@ -41,25 +45,14 @@ if (failed > 0) console.log(`${failed} check(s) failed; shots in ${shotsAt}`);
 else console.log(`gpu design canvas: clean; shots in ${shotsAt}`);
 process.exit(failed > 0 ? 1 : 0);
 
-async function htmlRun(): Promise<void> {
-	await until(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length === ${FRAMES}`);
-	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);
-	await waited(600);
+async function gpuRun(): Promise<void> {
+	await until(`${PAGES}?.work()?.frames === ${GPU_FRAMES}`);
 	check(
-		"html: every state is a frame and no canvas is drawn",
+		"gpu: every state is a frame, drawn on the GPU with no HTML screen",
 		(await page.ask(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length`)) === FRAMES &&
-			(await page.ask(`document.querySelector("[data-canvas-gpu]") === null`)) === true,
+			(await page.ask(`document.querySelectorAll("[data-canvas-screen]").length`)) === 0,
 		await page.ask(`document.querySelectorAll("[data-canvas-layer] .wg-design-frame").length`),
 	);
-	await shot("html-tags");
-	await page.ask(`window.designPage.lookAtFrame(${indexOf(KIT_FRAME)}, 1)`);
-	await waited(600);
-	await shot("html-kit");
-}
-
-async function gpuRun(): Promise<void> {
-	await pressToggle("GPU");
-	await until(`${PAGES}?.work()?.frames === ${GPU_FRAMES}`);
 	await waited(800);
 	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);
 	await waited(800);
@@ -93,7 +86,8 @@ async function gpuRun(): Promise<void> {
 		`info classes the GPU does not draw — ${JSON.stringify(await page.ask(`${PAGES}.work().unknownClasses`))}`,
 	);
 	await benched();
-	await remembered();
+	await frameRateShown();
+	await componentCard();
 }
 
 async function clicked(): Promise<void> {
@@ -128,21 +122,17 @@ async function hovered(): Promise<void> {
 
 async function failedFrame(): Promise<void> {
 	const listed: unknown = await page.ask(`${PAGES}.failureOf(${idOf(BROKEN_FRAME)}) ?? null`);
-	const badge: unknown = await page.ask(
-		`[...document.querySelectorAll("[data-canvas-gpu-said]")].map((one) => one.textContent).join("|")`,
-	);
-	const html: unknown = await page.ask(
-		`document.querySelector("[data-canvas-gpu-fallen] [data-canvas-screen]") ? document.querySelector("[data-canvas-gpu-fallen]").textContent : ""`,
+	const marker: unknown = await page.ask(
+		`[...document.querySelectorAll("[data-canvas-not-drawn]")].map((one) => one.textContent).join("|")`,
 	);
 	check(
-		"gpu: a frame that throws falls back to HTML, listed with its reason",
+		"gpu: a frame that throws shows a marker with its reason, never a picture or HTML",
 		typeof listed === "string" &&
 			listed.includes(BROKEN_SAID) &&
-			typeof badge === "string" &&
-			badge.includes(BROKEN_SAID) &&
-			typeof html === "string" &&
-			html.includes(BROKEN_SAID),
-		{ listed, badge, html },
+			typeof marker === "string" &&
+			marker.includes(BROKEN_SAID) &&
+			(await page.ask(`document.querySelectorAll("[data-canvas-screen], img[data-canvas-picture]").length`)) === 0,
+		{ listed, marker },
 	);
 	check(
 		"gpu: the other frames still draw",
@@ -167,33 +157,28 @@ async function benched(): Promise<void> {
 	);
 }
 
-async function remembered(): Promise<void> {
-	await page.ask("location.reload()");
-	await waited(500);
-	await until(`${PAGES}?.work()?.frames === ${GPU_FRAMES}`);
+async function frameRateShown(): Promise<void> {
+	await page.ask(`window.designPage.panBench(${BENCH_STEPS})`);
+	await waited(SETTLED_MS);
+	const idle = fpsIn(await page.ask(FPS_LABEL));
+	const display = Number(await page.ask(RAF_RATE));
 	check(
-		"gpu: the choice is remembered for this viewer",
-		(await page.ask(`localStorage.getItem("widgetarium.design.page-renderer")`)) === "gpu" &&
-			(await page.ask(`document.querySelector("[data-canvas-gpu]") !== null`)) === true,
-		await page.ask(`localStorage.getItem("widgetarium.design.page-renderer")`),
+		"gpu: the FPS label counts frames the GPU finished and reads the display rate once idle",
+		idle !== null && idle > 0 && Math.abs(idle - display) <= display * FPS_TOLERANCE,
+		{ idle, display },
 	);
 }
 
-async function backToHtml(): Promise<void> {
-	await pressToggle("HTML");
-	await waited(1200);
-	const gone = await page.ask(
-		`document.querySelector("[data-canvas-gpu]") === null && document.querySelectorAll("[data-canvas-gpu-frame]").length === 0`,
+function fpsIn(label: unknown): number | null {
+	const shown = typeof label === "string" ? DRAWING_FPS.exec(label) : null;
+	return shown ? Number(shown[1]) : null;
+}
+
+async function componentCard(): Promise<void> {
+	await page.ask(
+		`[...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === "Components")?.click()`,
 	);
-	const frames = await page.ask(
-		`document.querySelectorAll("[data-canvas-layer] .wg-design-frame [data-canvas-screen]").length`,
-	);
-	const live = await page.ask(
-		`document.querySelector("[data-canvas-layer]")?.textContent?.includes(${JSON.stringify(HARVEST_TITLE)}) === true`,
-	);
-	check("html again: today's canvas comes back", gone === true && frames === FRAMES && live === true, {
-		gone,
-		frames,
-		live,
-	});
+	await until(`${PAGES}.textIn(${CARD_FRAME}, "beans") !== null`);
+	const drawn = await page.ask(`${PAGES}.textIn(${CARD_FRAME}, "beans")`);
+	check("gpu: a widget card on the Components page draws its state's props", drawn === "Sow the beans", drawn);
 }

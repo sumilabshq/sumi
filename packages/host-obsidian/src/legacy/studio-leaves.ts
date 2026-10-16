@@ -1,4 +1,4 @@
-import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/adapters";
+import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
@@ -28,6 +28,7 @@ interface LeafSwitcher {
 
 const MARKDOWN_VIEW_TYPE = "markdown";
 const AS_MARKDOWN = "asMarkdown";
+const STUDIO_IN_FRONT = "wg-studio-in-front";
 
 export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProjects, assistant: AssistantPort): void {
 	registerPacks(...STUDIO_PACKS);
@@ -47,6 +48,7 @@ export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProje
 	};
 	plugin.registerView(STUDIO_VIEW_TYPE, (leaf) => new StudioView(leaf, place));
 	switchAppNotesToStudio(plugin, createLeafSwitcher(plugin.app, choices));
+	markStudioInFront(plugin);
 }
 
 export async function studioDesignOf(
@@ -82,6 +84,22 @@ function switchAppNotesToStudio(plugin: WidgetariumPlugin, switcher: LeafSwitche
 	plugin.registerEvent(workspace.on("active-leaf-change", switchAll));
 	plugin.registerEvent(metadataCache.on("changed", (file) => switcher.switchShowing(file)));
 	workspace.onLayoutReady(switchAll);
+}
+
+function markStudioInFront(plugin: WidgetariumPlugin): void {
+	const { workspace } = plugin.app;
+	if (typeof workspace?.on !== "function") {
+		return;
+	}
+
+	const mark = (): void => {
+		const inFront = workspace.getMostRecentLeaf()?.view.getViewType() === STUDIO_VIEW_TYPE;
+		document.body.classList.toggle(STUDIO_IN_FRONT, inFront);
+	};
+	plugin.registerEvent(workspace.on("active-leaf-change", mark));
+	plugin.registerEvent(workspace.on("layout-change", mark));
+	plugin.register(() => document.body.classList.remove(STUDIO_IN_FRONT));
+	workspace.onLayoutReady(mark);
 }
 
 function createLeafSwitcher(app: App, choices: MarkdownChoices): LeafSwitcher {

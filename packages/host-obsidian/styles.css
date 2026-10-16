@@ -7964,18 +7964,6 @@ body.wg-tree-carrying .wg-tile-body {
 	font-weight: 600;
 }
 
-.wg-off-screen {
-	position: fixed;
-	top: 0;
-	left: -100000px;
-	pointer-events: none;
-	contain: layout paint;
-}
-
-.wg-off-screen-page {
-	background: var(--background-primary);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-jobs {
 	flex: none;
 	display: flex;
@@ -10993,6 +10981,10 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	display: none;
 }
 
+body.wg-studio-in-front .status-bar {
+	display: none;
+}
+
 .workspace-leaf-content[data-type="widgetarium-studio"] > .view-content.wg-studio-view {
 	padding: 0;
 	overflow: hidden;
@@ -11852,17 +11844,8 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:top-0 {
 		top: 0px !important;
 	}
-	.cv\:top-2 {
-		top: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:right-0 {
 		right: 0px !important;
-	}
-	.cv\:right-2 {
-		right: calc(var(--cv-spacing) * 2) !important;
-	}
-	.cv\:right-4 {
-		right: calc(var(--cv-spacing) * 4) !important;
 	}
 	.cv\:bottom-4 {
 		bottom: calc(var(--cv-spacing) * 4) !important;
@@ -11938,14 +11921,20 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:h-\[var\(--wg-studio-band\,50px\)\] {
 		height: var(--wg-studio-band, 50px) !important;
 	}
-	.cv\:h-auto {
-		height: auto !important;
-	}
 	.cv\:h-full {
 		height: 100% !important;
 	}
+	.cv\:max-h-\[40\%\] {
+		max-height: 40% !important;
+	}
+	.cv\:min-h-0 {
+		min-height: 0px !important;
+	}
 	.cv\:min-h-9 {
 		min-height: calc(var(--cv-spacing) * 9) !important;
+	}
+	.cv\:min-h-\[var\(--wg-kit-control-s\)\] {
+		min-height: var(--wg-kit-control-s) !important;
 	}
 	.cv\:w-\[248px\] {
 		width: 248px !important;
@@ -11968,8 +11957,8 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:max-w-80 {
 		max-width: calc(var(--cv-spacing) * 80) !important;
 	}
-	.cv\:max-w-\[60\%\] {
-		max-width: 60% !important;
+	.cv\:max-w-\[80\%\] {
+		max-width: 80% !important;
 	}
 	.cv\:max-w-\[5300px\] {
 		max-width: 5300px !important;
@@ -12050,9 +12039,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:justify-center {
 		justify-content: center !important;
 	}
-	.cv\:gap-0\.5 {
-		gap: calc(var(--cv-spacing) * 0.5) !important;
-	}
 	.cv\:gap-1 {
 		gap: var(--cv-spacing) !important;
 	}
@@ -12101,11 +12087,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:self-start {
 		align-self: flex-start !important;
 	}
-	.cv\:truncate {
-		overflow: hidden !important;
-		text-overflow: ellipsis !important;
-		white-space: nowrap !important;
-	}
 	.cv\:overflow-auto {
 		overflow: auto !important;
 	}
@@ -12121,12 +12102,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:rounded-\[5px\] {
 		border-radius: 5px !important;
 	}
-	.cv\:rounded-\[28px\] {
-		border-radius: 28px !important;
-	}
-	.cv\:rounded-\[40px\] {
-		border-radius: 40px !important;
-	}
 	.cv\:rounded-full {
 		border-radius: calc(infinity * 1px) !important;
 	}
@@ -12136,15 +12111,23 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:rounded-md {
 		border-radius: calc(var(--radius) - 2px) !important;
 	}
-	.cv\:rounded-pill {
-		border-radius: var(--wg-kit-pill) !important;
-	}
 	.cv\:rounded-xl {
 		border-radius: calc(var(--radius) + 4px) !important;
 	}
 	.cv\:border-0 {
 		border-style: var(--tw-border-style) !important;
 		border-width: 0px !important;
+	}
+	.cv\:border-2 {
+		border-style: var(--tw-border-style) !important;
+		border-width: 2px !important;
+	}
+	.cv\:border-dashed {
+		--tw-border-style: dashed !important;
+		border-style: dashed !important;
+	}
+	.cv\:border-\[var\(--wg-kit-error-ink\)\] {
+		border-color: var(--wg-kit-error-ink) !important;
 	}
 	.cv\:bg-\[color-mix\(in_srgb\,var\(--wg-kit-accent\)_8\%\,transparent\)\] {
 		background-color: var(--wg-kit-accent) !important;
@@ -12184,9 +12167,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	}
 	.cv\:bg-page {
 		background-color: var(--wg-kit-page) !important;
-	}
-	.cv\:bg-raise {
-		background-color: var(--wg-kit-raise) !important;
 	}
 	.cv\:bg-success-wash {
 		background-color: var(--wg-kit-success-wash) !important;
@@ -12229,8 +12209,8 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:p-0 {
 		padding: 0px !important;
 	}
-	.cv\:p-5 {
-		padding: calc(var(--cv-spacing) * 5) !important;
+	.cv\:p-6 {
+		padding: calc(var(--cv-spacing) * 6) !important;
 	}
 	.cv\:p-7 {
 		padding: calc(var(--cv-spacing) * 7) !important;
@@ -12300,6 +12280,9 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	}
 	.cv\:pl-2\.5 {
 		padding-left: calc(var(--cv-spacing) * 2.5) !important;
+	}
+	.cv\:text-center {
+		text-align: center !important;
 	}
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
@@ -12373,6 +12356,9 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	}
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
+	}
+	.cv\:text-foreground {
+		color: var(--foreground) !important;
 	}
 	.cv\:text-ink {
 		color: var(--wg-kit-text) !important;
@@ -12579,9 +12565,6 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 	.cv\:active\:scale-\[0\.96\]:active {
 		scale: 0.96 !important;
 	}
-	.cv\:has-\[\.wg-kit-modal-layer\]\:min-h-\[640px\]:has(:is(.wg-kit-modal-layer)) {
-		min-height: 640px !important;
-	}
 	.cv\:data-\[dragging\]\:cursor-grabbing[data-dragging] {
 		cursor: grabbing !important;
 	}
@@ -12642,23 +12625,8 @@ body:not(.is-mobile) .workspace-leaf-content[data-type="widgetarium-studio"] > .
 			transition-property: none !important;
 		}
 	}
-	.cv\:\[\&_\.wg-kit-anchor\]\:flex .wg-kit-anchor {
-		display: flex !important;
-	}
-	.cv\:\[\&_\.wg-kit-anchor\]\:h-full .wg-kit-anchor {
-		height: 100% !important;
-	}
-	.cv\:\[\&_\.wg-kit-pop-inner\]\:max-h-\[320px\] .wg-kit-pop-inner {
-		max-height: 320px !important;
-	}
-	.cv\:\[\&_\.wg-kit-pop-inner\]\:overflow-y-auto .wg-kit-pop-inner {
-		overflow-y: auto !important;
-	}
 	.cv\:\[\&_button\]\:h-\[calc\(var\(--wg-kit-control-s\)-4px\)\] button {
 		height: calc(var(--wg-kit-control-s) - 4px) !important;
-	}
-	.cv\:\[\&_button\:has\(\[data-canvas-pages-trigger\]\)\]\:p-0 button:has([data-canvas-pages-trigger]) {
-		padding: 0px !important;
 	}
 	.cv\:\[\&\>\.wg-page\]\:relative > .wg-page {
 		position: relative !important;

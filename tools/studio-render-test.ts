@@ -8,6 +8,7 @@ import esbuild from "esbuild";
 import { NOT_AVAILABLE_ON_HOST } from "../packages/core/src/engine/studio-host.ts";
 import { ASSISTANT_NOT_AVAILABLE } from "../packages/core/src/engine/assistant-port.ts";
 import { STUDIO_BAND_PX } from "../apps/studio/src/legacy/shared/studio-band-size.ts";
+import { NO_GPU } from "../packages/canvas/shared/lib/field/frames/use-gpu-frame.ts";
 import {
 	catalogueImportsIn,
 	checkCatalogueAbsentInApp,
@@ -68,7 +69,7 @@ interface Seen extends CatalogueSeen {
 	readonly routeTriggerHit?: boolean | null;
 	readonly frameTriggerHit?: boolean | null;
 	readonly frameTriggerFocused?: boolean | null;
-	readonly cardDrawsState?: boolean;
+	readonly cardNotDrawn?: string | null;
 	readonly backShowsRoute?: boolean;
 	readonly routeDomBack?: string | null;
 	readonly bandAfterRefusal?: boolean;
@@ -303,8 +304,9 @@ checkCataloguePanel(studio.seen, check);
 check("Edit in canvas swaps the route for the canvas", studio.seen.canvasShown === true, studio.seen.canvasShown);
 check("and the route leaves the outlet", studio.seen.taskGoneInCanvas === true, studio.seen.taskGoneInCanvas);
 check(
-	"the canvas is the design canvas: its top bar names the app, the routes as screens, and Components",
-	["Farm", "2 screens", "Pages", "Components", "Back to view"].every((said) => studio.seen.topBar?.includes(said)),
+	"the canvas is the design canvas: its top bar names the app, the routes as screens, and Components, and no Pages tab",
+	["Farm", "2 screens", "Components", "Back to view"].every((said) => studio.seen.topBar?.includes(said)) &&
+		studio.seen.topBar?.includes("Pages") === false,
 	studio.seen.topBar,
 );
 const { canvasMenu, canvasAi, canvasPages } = studio.seen;
@@ -314,7 +316,7 @@ check(
 	{ bands: studio.seen.bandsInCanvas, topBars: studio.seen.topBarsInCanvas, corners: studio.seen.cornersInTopBar },
 );
 check(
-	"the menu and the Pages switch share one vertical centre",
+	"the menu and the page switch share one vertical centre",
 	Math.abs(centreOf(canvasMenu) - centreOf(canvasPages)) <= CENTRE_SLACK_PX,
 	{ canvasMenu, canvasPages },
 );
@@ -341,7 +343,11 @@ check(
 	sameList(studio.seen.cards, ["Full", "Empty"]),
 	studio.seen.cards,
 );
-check("a state card draws the state's props, live", studio.seen.cardDrawsState === true, studio.seen.cardDrawsState);
+check(
+	"a state card on a host lending no GPU says it is not drawn, and why",
+	studio.seen.cardNotDrawn === NO_GPU,
+	studio.seen.cardNotDrawn,
+);
 check(
 	"a press on the route's popover trigger reaches it",
 	studio.seen.routeTriggerHit === true,

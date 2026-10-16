@@ -12,5 +12,5 @@ export function regionsOf({ pages, design, docs }: PagesNow, drawing: Drawing): 
 	if (pages.shown === REFERENCES_PAGE) return referencesRegionOf(design.references, drawing);
 	if (pages.shown === COMPONENTS_PAGE) return widgetsRegionOf(design.widgets, drawing);
 	const shown = design.screens.filter((screen) => pages.shownScreens.includes(screen.name));
-	return [...referencesRegionOf(pages.shownReferences, drawing), screensRegionOf(shown, pages.shownJob, drawing)];
+	return [...referencesRegionOf(pages.shownReferences, drawing), screensRegionOf(shown, pages.shownJob)];
 }

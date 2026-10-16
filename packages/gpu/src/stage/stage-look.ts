@@ -33,11 +33,7 @@ export function wheeled(look: StageLook, event: WheelEvent, at: StagePoint): Sta
 	return scaledAround(look, look.scale * Math.exp(-event.deltaY * rate), at);
 }
 
-export function scaledAround(look: StageLook, wanted: number, at: StagePoint): StageLook {
+function scaledAround(look: StageLook, wanted: number, at: StagePoint): StageLook {
 	const scale = Math.max(ZOOM_FLOOR, Math.min(wanted, ZOOM_CEILING));
 	return { scale, x: at.x - ((at.x - look.x) * scale) / look.scale, y: at.y - ((at.y - look.y) * scale) / look.scale };
-}
-
-export function centreOf(field: HTMLElement | null): StagePoint {
-	return { x: (field?.clientWidth ?? 0) / 2, y: (field?.clientHeight ?? 0) / 2 };
 }

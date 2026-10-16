@@ -7,7 +7,6 @@ import { KeepSeenLayersCommand } from "../../../features/layers/contract.js";
 import type { StatePicture } from "../../schema/design.schema.js";
 import { DESKTOP_FRAME } from "../../schema/frame-size.schema.js";
 import { LIVE_SCREEN } from "../../lib/field/field-marks.js";
-import { DRAWS_AT_ONCE } from "../../lib/state-drawing/draw-contexts.js";
 import { SCREEN } from "../../lib/state-drawing/screen-class.js";
 import { StateDrawing } from "../state-drawing/state-drawing.js";
 
@@ -18,9 +17,7 @@ export function LiveScreen({ picture }: { readonly picture: StatePicture }): Rea
 	useMarkedLayers(node, (layers) => void keep.run({ key: picture.widget, layers }));
 	return (
 		<div className={SCREEN} ref={setNode} {...{ [LIVE_SCREEN]: picture.widget }} style={{ width: DESKTOP_FRAME.width }}>
-			<DRAWS_AT_ONCE.Provider value={true}>
-				<StateDrawing picture={picture} registry={registry} />
-			</DRAWS_AT_ONCE.Provider>
+			<StateDrawing picture={picture} registry={registry} />
 		</div>
 	);
 }

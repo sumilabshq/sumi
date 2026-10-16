@@ -7,7 +7,6 @@ const SHARP_AFTER_MS = 150;
 
 export function usePainter(
 	layerRef: RefObject<HTMLElement | null>,
-	percentRef: RefObject<HTMLElement | null>,
 	watchers: ReadonlySet<LookWatcher>,
 	onSettled: (look: StageLook) => void,
 ): (look: StageLook) => void {
@@ -29,7 +28,6 @@ export function usePainter(
 				layer.style.willChange = "transform";
 				layer.style.transform = `translate(${next.x}px, ${next.y}px) scale(${next.scale})`;
 				for (const watcher of watchers) watcher(next);
-				if (percentRef.current) percentRef.current.textContent = `${Math.round(next.scale * 100)}%`;
 				window.clearTimeout(settle.current);
 				settle.current = window.setTimeout(() => {
 					layer.style.willChange = "";
@@ -37,6 +35,6 @@ export function usePainter(
 				}, SHARP_AFTER_MS);
 			});
 		},
-		[layerRef, percentRef, watchers],
+		[layerRef, watchers],
 	);
 }

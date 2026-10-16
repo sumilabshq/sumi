@@ -3,9 +3,9 @@ import type { Parsed } from "@widgetarium/core/json-text.js";
 import { SharedSubscriptions } from "@widgetarium/core/shared-subscriptions.js";
 import { lookPathOf, readLook } from "@widgetarium/core/app-look.js";
 import type { Look } from "@widgetarium/core/app-look.js";
-import type { DesignFiles } from "../../../adapters/design-files/design-files.adapter.js";
-import type { DesignFolder } from "../../../adapters/design-folder/design-folder.adapter.js";
-import type { DesignJobs } from "../../../adapters/design-jobs/design-jobs.adapter.js";
+import type { DesignFilesGateway } from "../../../gateways/design-files/design-files.gateway.js";
+import type { DesignFolderGateway } from "../../../gateways/design-folder/design-folder.gateway.js";
+import type { AgentJobsGateway } from "../../../gateways/agent-jobs/agent-jobs.gateway.js";
 import type { CanvasDoc } from "../../schema/doc.schema.js";
 import type { DrawnDesign } from "../../schema/design.schema.js";
 import type { Job } from "../../schema/job.schema.js";
@@ -33,9 +33,9 @@ const JOBS_REDRAW_MS = 400;
 
 export class CachedDesignReads extends DesignReads {
 	constructor(
-		private readonly designFolder: DesignFolder,
-		private readonly designJobs: DesignJobs,
-		private readonly designFiles: DesignFiles,
+		private readonly designFolderGateway: DesignFolderGateway,
+		private readonly agentJobsGateway: AgentJobsGateway,
+		private readonly designFilesGateway: DesignFilesGateway,
 	) {
 		super();
 	}
@@ -47,9 +47,11 @@ export class CachedDesignReads extends DesignReads {
 
 	override async read(app: string): Promise<DesignRead> {
 		const [docs, look] = await Promise.all([this.docs(app), this.look(app)]);
-		const jobs = this.designJobs.jobsOf(app);
+		const jobs = this.agentJobsGateway.jobsOf(app);
 		const isStarting = jobs.length > 0 || docs.length > 0 || look !== null;
-		const design = await this.designs.read(app, this.isWatched(app), () => this.designFolder.design(app, isStarting));
+		const design = await this.designs.read(app, this.isWatched(app), () =>
+			this.designFolderGateway.readDesign(app, isStarting),
+		);
 		return { design, docs, jobs };
 	}
 
@@ -58,11 +60,11 @@ export class CachedDesignReads extends DesignReads {
 	}
 
 	override spec(app: string): Promise<SpecRead | null> {
-		return this.designFolder.spec(app);
+		return this.designFolderGateway.readSpec(app);
 	}
 
 	override async docs(app: string): Promise<readonly CanvasDoc[]> {
-		return (await this.docsRead.read(app, this.isWatched(app), () => this.designFolder.docs(app))).value;
+		return (await this.docsRead.read(app, this.isWatched(app), () => this.designFolderGateway.readDocs(app))).value;
 	}
 
 	override async look(app: string): Promise<Parsed<Look> | null> {
@@ -79,7 +81,7 @@ export class CachedDesignReads extends DesignReads {
 	}
 
 	private async lookOf(app: string): Promise<Parsed<Look> | null> {
-		const text = await this.designFiles.read(lookPathOf(app));
+		const text = await this.designFilesGateway.read(lookPathOf(app));
 		return text === null ? null : readLook(text);
 	}
 
@@ -88,9 +90,9 @@ export class CachedDesignReads extends DesignReads {
 			this.stale(app);
 			tell();
 		};
-		const stopChanges = this.designFolder.onChanged(app, heard);
+		const stopChanges = this.designFolderGateway.watch(app, heard);
 		const jobsHeard = onceSoon(heard, JOBS_REDRAW_MS);
-		const stopJobs = this.designJobs.watch(jobsHeard.call);
+		const stopJobs = this.agentJobsGateway.watch(jobsHeard.call);
 		return () => {
 			stopChanges();
 			stopJobs();

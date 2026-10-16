@@ -1,10 +1,9 @@
-import { requestUrl } from "obsidian";
 import type { App, WorkspaceLeaf } from "obsidian";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import { obsidianCanvasParts } from "@widgetarium/canvas/adapters";
-import type { ObsidianDesign } from "@widgetarium/canvas/adapters";
-import { webCanvasParts } from "@widgetarium/canvas/adapters";
-import type { CanvasHost, CanvasParts, ReturnTo } from "@widgetarium/canvas/adapters";
+import { obsidianCanvasParts } from "@widgetarium/canvas/gateways";
+import type { ObsidianDesign } from "@widgetarium/canvas/gateways";
+import { webCanvasParts } from "@widgetarium/canvas/gateways";
+import type { CanvasHost, CanvasParts, ReturnTo } from "@widgetarium/canvas/gateways";
 import type WidgetariumPlugin from "../main.js";
 
 export type DesignHeld = { readonly kind: "vault" } | { readonly kind: "project"; readonly project: StartedProject };
@@ -30,5 +29,10 @@ async function noteOpened(obsidian: App, leaf: WorkspaceLeaf, note: string | nul
 
 function obsidianDesignOf(plugin: WidgetariumPlugin): ObsidianDesign {
 	const { registry, host } = plugin;
-	return { adapter: plugin.app.vault.adapter, registry, host, jobs: plugin.assistant.jobs, fetchUrl: requestUrl };
+	return {
+		adapter: plugin.app.vault.adapter,
+		registry,
+		host,
+		jobs: plugin.assistant.jobs,
+	};
 }

@@ -12,7 +12,7 @@ const COUNTED = "{title} · {count}";
 export function Region({ title, count, children }: RegionProps): ReactElement {
 	return (
 		<section
-			className="cv:flex cv:max-w-none cv:cursor-default cv:flex-col cv:gap-10 cv:rounded-[40px] cv:bg-group cv:p-12 cv:ring-1 cv:ring-edge"
+			className="cv:flex cv:max-w-none cv:cursor-default cv:flex-col cv:gap-10 cv:p-12"
 			data-canvas-region={title}
 		>
 			<header className="cv:flex cv:items-center cv:gap-7 cv:text-[40px] cv:font-bold cv:text-ink">

@@ -4,9 +4,15 @@ import { parse } from "yaml";
 import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
 import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
-import { FixedDesignDrawing, FixedDesignFolder, canvasHostOf, canvasPartsOver, emptyProject } from "./canvas-hosts.ts";
-import { webCanvasParts } from "../packages/canvas/generated/adapters.ts";
-import { WebDesignFolder } from "../packages/canvas/adapters/design-folder/web.adapter.ts";
+import {
+	FixedWidgetDrawingGateway,
+	FixedDesignFolderGateway,
+	canvasHostOf,
+	canvasPartsOver,
+	emptyProject,
+} from "./canvas-hosts.ts";
+import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
+import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -278,6 +284,7 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 	const plugin = {
 		host,
 		registerEvent: () => undefined,
+		register: () => undefined,
 		registerView: (_type: string, make: (leaf: unknown) => unknown) => views.push(make),
 		app: {
 			workspace: {
@@ -293,7 +300,7 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 		},
 	};
 	registerStudioView(
-		standIn<WidgetariumPlugin>(plugin, ["app", "host", "registerView", "registerEvent"], "plugin"),
+		standIn<WidgetariumPlugin>(plugin, ["app", "host", "registerView", "registerEvent", "register"], "plugin"),
 		countedProjects,
 		NO_ASSISTANT,
 	);
@@ -714,7 +721,7 @@ const { ModuleRegistry } = await import("../packages/core/src/engine/module-regi
 const { NO_HOST } = await import("../packages/core/src/engine/host-none.js");
 const { render: drawInto } = await import("../packages/core/src/engine/render.js");
 const { createElement } = await import("react");
-const stageDrawing = new FixedDesignDrawing({
+const stageDrawing = new FixedWidgetDrawingGateway({
 	registry: new ModuleRegistry({}),
 	host: {
 		...NO_HOST,
@@ -724,7 +731,7 @@ const stageDrawing = new FixedDesignDrawing({
 		},
 	},
 });
-const stageFolder = new FixedDesignFolder(async () => ({ screens: [], references: [], widgets: [] }));
+const stageFolder = new FixedDesignFolderGateway(async () => ({ screens: [], references: [], widgets: [] }));
 const keptPages: string[] = [];
 const handed: { showPage: (page: string) => void }[] = [];
 const designNode = document.createElement("div");
@@ -733,7 +740,8 @@ drawInto(
 	createElement(DesignStage, {
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
-		partsOf: (mount: StageMount) => canvasPartsOver(mount, { designFolder: stageFolder, designDrawing: stageDrawing }),
+		partsOf: (mount: StageMount) =>
+			canvasPartsOver(mount, { designFolderGateway: stageFolder, widgetDrawingGateway: stageDrawing }),
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
 		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
 		size: { width: 1200, height: 800 },
@@ -758,6 +766,59 @@ check(
 	[true, "References"],
 );
 drawInto(null, designNode);
+
+const pagedFolder = new FixedDesignFolderGateway(async () => ({
+	screens: [
+		{ name: "Home", states: [] },
+		{ name: "Barn", states: [] },
+	],
+	references: [],
+	widgets: [],
+}));
+const pagedKept: string[] = [];
+const pagedNode = document.createElement("div");
+document.body.append(pagedNode);
+Object.assign(dom.window, { matchMedia: () => ({ matches: true }) });
+drawInto(
+	createElement(DesignStage, {
+		app: "Farm",
+		opening: CANVAS_OPENED_ON,
+		partsOf: (mount: StageMount) =>
+			canvasPartsOver(mount, { designFolderGateway: pagedFolder, widgetDrawingGateway: stageDrawing }),
+		onKept: (kept: { readonly page: string }) => void pagedKept.push(kept.page),
+		onCanvas: () => undefined,
+		size: { width: 1200, height: 800 },
+	}),
+	pagedNode,
+);
+const pageRows = (): Element[] => [
+	...pagedNode.querySelectorAll("[data-canvas-sidebar] [data-canvas-pages] [data-canvas-page]"),
+];
+const pickedPages = (): (string | null)[] =>
+	pageRows()
+		.filter((row) => row.hasAttribute("data-picked"))
+		.map((row) => row.getAttribute("data-canvas-page"));
+const switchTabs = (): (string | null)[] =>
+	[...pagedNode.querySelectorAll("[data-canvas-page-switch] [role=tab]")].map((tab) => tab.textContent);
+await settledUntil(() => pageRows().length === 2 && switchTabs().length > 0);
+check(
+	"the pages stand first in the left sidebar as a list, the shown page picked, and the top switcher holds no Pages tab",
+	[
+		pagedNode.querySelector("[data-canvas-sidebar] > section")?.hasAttribute("data-canvas-pages"),
+		pageRows().map((row) => row.textContent),
+		pickedPages(),
+		switchTabs(),
+	],
+	[true, ["Home", "Barn"], ["Home"], ["Components"]],
+);
+pageRows()[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+await settledUntil(() => pickedPages()[0] === "Barn");
+check(
+	"clicking a page row turns the canvas to that page through the page writer, and the list picks it",
+	[pagedKept.at(-1), pickedPages()],
+	["Barn", ["Barn"]],
+);
+drawInto(null, pagedNode);
 
 const { checkVaultDesign } = await import("./vault-design-checks.ts");
 await checkVaultDesign(check, settle);
@@ -795,7 +856,7 @@ check(
 	[
 		activeParts.canvasHost.ownsPaste(),
 		otherParts.canvasHost.ownsPaste(),
-		activeParts.designFolder instanceof WebDesignFolder,
+		activeParts.designFolderGateway instanceof WebDesignFolderGateway,
 	],
 	[true, false, true],
 );

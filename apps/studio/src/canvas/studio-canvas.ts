@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
-import { CanvasHost, detachedHostOf, webCanvasParts } from "@widgetarium/canvas/adapters";
-import type { CanvasParts } from "@widgetarium/canvas/adapters";
+import { CanvasHost, detachedHostOf, webCanvasParts } from "@widgetarium/canvas/gateways";
+import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell, StageMount } from "./design-stage.js";
 

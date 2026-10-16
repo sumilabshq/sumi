@@ -5,11 +5,11 @@ import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
 import type { DrawnState } from "@widgetarium/canvas";
 import { frameIdOf } from "../packages/canvas/shared/lib/field/frame-keys.ts";
-import { FixedDesignDrawing, FixedDesignFolder, canvasPartsOver } from "./canvas-hosts.ts";
+import { FixedWidgetDrawingGateway, FixedDesignFolderGateway, canvasPartsOver } from "./canvas-hosts.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
-import { DESIGN_FRAMES, DESIGN_SCREEN } from "./gpu-design-canvas-frames.ts";
+import { DESIGN_FRAMES, DESIGN_SCREEN, TASKS_CARD, TASKS_WIDGET } from "./gpu-design-canvas-frames.ts";
 import { benchedPan, lookedAtFrame } from "./gpu-design-canvas-moves.ts";
 import * as broken from "./gpu-design-fixture-broken.tsx";
 import * as kitPanel from "./gpu-design-fixture-kit.tsx";
@@ -22,7 +22,7 @@ registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
 const NOT_HERE = "not on this test page";
-const registry = new ModuleRegistry({ "fixture-tags": tags, "task-list": taskList, "kit-panel": kitPanel, broken });
+const registry = new ModuleRegistry({ "fixture-tags": tags, [TASKS_WIDGET]: taskList, "kit-panel": kitPanel, broken });
 const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 	name: state,
 	board: null,
@@ -35,12 +35,17 @@ const TEST_HOST = {
 		throw new Error(NOT_HERE);
 	},
 };
-const designFolder = new FixedDesignFolder(async () => ({
+const designFolderGateway = new FixedDesignFolderGateway(async () => ({
 	screens: [{ name: DESIGN_SCREEN, states }],
 	references: [],
-	widgets: [],
+	widgets: [
+		{
+			id: TASKS_WIDGET,
+			isFromCatalogue: false,
+		},
+	],
 }));
-const designDrawing = new FixedDesignDrawing({ registry, host: TEST_HOST });
+const widgetDrawingGateway = new FixedWidgetDrawingGateway({ registry, host: TEST_HOST });
 const supply = { loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
 
 const root = document.getElementById("root");
@@ -52,7 +57,7 @@ function draw(): void {
 			app: "Farm",
 			opening: CANVAS_OPENED_ON,
 			size: VIEW,
-			partsOf: ({ opened }) => canvasPartsOver({ opened, gpu: supply }, { designFolder, designDrawing }),
+			partsOf: ({ opened }) => canvasPartsOver({ opened, gpu: supply }, { designFolderGateway, widgetDrawingGateway }),
 		}),
 	);
 }
@@ -66,6 +71,7 @@ try {
 Object.assign(window, {
 	designPage: {
 		frameIds: DESIGN_FRAMES.map(({ state, widget }) => frameIdOf(widget, `${DESIGN_SCREEN} · ${state}`)),
+		cardFrameId: frameIdOf(TASKS_WIDGET, TASKS_CARD),
 		panBench: benchedPan,
 		lookAtFrame: lookedAtFrame,
 	},

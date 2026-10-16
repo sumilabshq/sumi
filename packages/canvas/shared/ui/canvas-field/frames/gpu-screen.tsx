@@ -1,32 +1,26 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import type { Drawing } from "../../../schema/drawing.schema.js";
-import type { Frame } from "../../../schema/regions.schema.js";
 import { useGpuFrame } from "../../../lib/field/frames/use-gpu-frame.js";
+import type { GpuFrameAsk } from "../../../lib/field/frames/use-gpu-frame.js";
 
-export interface GpuScreenProps {
-	readonly frame: Frame;
-	readonly registry: Drawing["registry"];
-	readonly fallback: ReactElement;
-}
+export type GpuScreenProps = Omit<GpuFrameAsk, "node">;
 
-const FELL_BACK_SAID = "HTML · {why}";
+const NOT_DRAWN_SAID = "Not drawn · {why}";
 
-export function GpuScreen({ frame, registry, fallback }: GpuScreenProps): ReactElement {
+export function GpuScreen(asked: GpuScreenProps): ReactElement {
 	const node = useRef<HTMLDivElement | null>(null);
-	const { isGpu, failure } = useGpuFrame({ frame, registry, node });
-	if (isGpu)
-		return <div className="cv:relative" ref={node} style={{ minHeight: frame.height }} data-canvas-gpu-frame="" />;
+	const notDrawn = useGpuFrame({ ...asked, node });
+	if (notDrawn === null)
+		return <div className="cv:relative" ref={node} style={{ minHeight: asked.minHeight }} data-canvas-gpu-frame="" />;
 	return (
-		<div className="cv:relative" data-canvas-gpu-fallen="">
-			{fallback}
-			<span
-				className="cv:absolute cv:top-2 cv:right-2 cv:z-[1] cv:max-w-[60%] cv:truncate cv:rounded-pill cv:bg-warning-wash cv:px-2 cv:py-0.5 cv:text-xs cv:text-ink"
-				title={failure}
-				data-canvas-gpu-said=""
-			>
-				{FELL_BACK_SAID.replace("{why}", failure ?? "")}
-			</span>
+		<div
+			className="cv:flex cv:items-center cv:justify-center cv:rounded-2xl cv:border-2 cv:border-dashed cv:border-[var(--wg-kit-error-ink)] cv:p-6"
+			style={{ minHeight: asked.minHeight }}
+			data-canvas-not-drawn={notDrawn}
+		>
+			<p className="cv:m-0 cv:max-w-[80%] cv:text-center cv:text-lg cv:text-[var(--wg-kit-error-ink)]">
+				{NOT_DRAWN_SAID.replace("{why}", notDrawn)}
+			</p>
 		</div>
 	);
 }

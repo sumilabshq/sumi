@@ -152,7 +152,7 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	topButton("Components")?.click();
 	await until(() => document.querySelector("[data-canvas-card]"));
 	seen.cards = [...document.querySelectorAll("[data-canvas-card] [data-canvas-card-name]")].map((name) => name.textContent);
-	seen.cardDrawsState = Boolean(await until(() => (document.querySelector("[data-canvas-card]")?.textContent ?? "").includes("Sow the beans")));
+	seen.cardNotDrawn = (await until(() => document.querySelector("[data-canvas-card] [data-canvas-not-drawn]")))?.dataset.canvasNotDrawn ?? null;
 	report();
 	topButton("Back to view")?.click();
 	seen.backShowsRoute = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-task]")));

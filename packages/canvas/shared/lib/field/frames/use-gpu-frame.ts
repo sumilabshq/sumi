@@ -1,49 +1,72 @@
-import { createElement as h, useContext, useEffect, useLayoutEffect, useMemo } from "react";
+import { createElement as h, useContext, useLayoutEffect, useEffect, useMemo } from "react";
 import type { ReactNode, RefObject } from "react";
 import { GPU_FRAMES, useGpuFailure } from "@widgetarium/gpu";
 import type { GpuFrames } from "@widgetarium/gpu";
 import { DRAWS_INLINE } from "@widgetarium/core/draws-inline.js";
 import type { StatePicture } from "../../../schema/design.schema.js";
 import type { Drawing } from "../../../schema/drawing.schema.js";
-import type { Frame } from "../../../schema/regions.schema.js";
 import { REPORTS_DRAW_FAILURE } from "../../state-drawing/draw-contexts.js";
 import { StateDrawing } from "../../../ui/state-drawing/state-drawing.js";
 
-interface GpuFrameAsk {
-	readonly frame: Frame;
+export interface GpuFrameAsk {
+	readonly id: string;
+	readonly label: string;
+	readonly width: number;
+	readonly minHeight: number;
+	readonly picture: StatePicture | null;
+	readonly unpictured?: string;
 	readonly registry: Drawing["registry"];
 	readonly node: RefObject<HTMLDivElement | null>;
 }
 
-interface GpuFrameDrawn {
-	readonly isGpu: boolean;
-	readonly failure: string | undefined;
-}
+export const NO_GPU = "this host gives the canvas no GPU renderer";
+const NO_PICTURE = "this frame has no picture to draw";
+const NOT_DRAWN = "[widgetarium] a GPU frame is not drawn; its marker says why";
 
-// TODO: draw a board on the GPU; WidgetSurface still needs a DOM node
-const BOARDS_STAY_HTML = "a board is drawn as HTML; the GPU canvas draws widget states only";
-
-export function useGpuFrame({ frame, registry, node }: GpuFrameAsk): GpuFrameDrawn {
-	const { frame: id, label, width, height, picture, isGpuDrawn } = frame;
+export function useGpuFrame({
+	id,
+	label,
+	width,
+	minHeight,
+	picture,
+	unpictured,
+	registry,
+	node,
+}: GpuFrameAsk): string | null {
 	const frames = useContext(GPU_FRAMES);
 	const failure = useGpuFailure(frames, id);
 	const element = useMemo(
-		() => (isGpuDrawn && picture ? frameTreeOf(frames, id, picture, registry) : null),
-		[frames, id, isGpuDrawn, picture, registry],
+		() => (picture ? frameTreeOf(frames, id, picture, registry) : null),
+		[frames, id, picture, registry],
 	);
-	const isGpu = frames !== null && element !== null && failure === undefined;
-	useEffect(() => {
-		if (frames && !isGpuDrawn) frames.fail(id, BOARDS_STAY_HTML);
-	}, [frames, isGpuDrawn, id]);
+	const refusal = refusalOf(frames, element !== null, unpictured);
+	const notDrawn = refusal ?? failure ?? null;
+	useWarnsNotDrawn(id, refusal);
 	useLayoutEffect(() => {
 		const held = node.current;
-		if (!isGpu || !held) return undefined;
-		return frames.claim({ id, title: label, width, minHeight: height, node: held }, element);
-	}, [isGpu, frames, id, label, width, height, node]);
+		if (notDrawn !== null || !frames || !held) return undefined;
+		return frames.claim({ id, title: label, width, minHeight, node: held }, element);
+	}, [notDrawn, frames, id, label, width, minHeight, node]);
 	useEffect(() => {
-		if (isGpu) frames.redraw(id, element);
-	}, [isGpu, frames, id, element]);
-	return { isGpu, failure };
+		if (notDrawn === null) frames?.redraw(id, element);
+	}, [notDrawn, frames, id, element]);
+	return notDrawn;
+}
+
+function useWarnsNotDrawn(id: string, refusal: string | null): void {
+	useEffect(() => {
+		if (refusal !== null) {
+			console.warn(NOT_DRAWN, id, refusal);
+		}
+	}, [id, refusal]);
+}
+
+function refusalOf(frames: GpuFrames | null, isPictured: boolean, unpictured: string | undefined): string | null {
+	if (!frames) {
+		return NO_GPU;
+	}
+
+	return isPictured ? null : (unpictured ?? NO_PICTURE);
 }
 
 function frameTreeOf(

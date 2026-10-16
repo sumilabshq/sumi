@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Canvas } from "@widgetarium/canvas";
 import { CanvasClientModule } from "@widgetarium/canvas/module";
-import type { CanvasParts } from "@widgetarium/canvas/adapters";
+import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
 import { useHandsCanvas } from "./use-hands-canvas.js";

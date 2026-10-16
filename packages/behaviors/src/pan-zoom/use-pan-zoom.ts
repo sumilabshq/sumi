@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { MutableRefObject, RefObject } from "react";
-import { centreOf, flightBetween, scaledAround } from "@widgetarium/gpu";
+import { flightBetween } from "@widgetarium/gpu";
 import type { LookWatcher, StageLook } from "@widgetarium/gpu";
 import { useLayerFit } from "./use-layer-fit.js";
 import { usePainter } from "./use-painter.js";
@@ -9,11 +9,7 @@ import type { Grips, PointerMoves } from "./use-pointer-moves.js";
 
 export interface PanZoom {
 	readonly fieldRef: RefObject<HTMLDivElement | null>;
-	readonly percentRef: RefObject<HTMLSpanElement | null>;
 	readonly moves: PointerMoves;
-	readonly zoomBy: (step: number) => void;
-	readonly zoomTo: (scale: number) => void;
-	readonly refit: () => void;
 	readonly flyTo: (look: StageLook) => void;
 	readonly lookNow: () => StageLook;
 	readonly watchLook: (watcher: LookWatcher) => () => void;
@@ -40,7 +36,6 @@ const FOLLOWS_LAYOUT_MS = 1500;
 
 export function usePanZoom({ layerRef, fieldRef }: StageRefs, grips: Grips, kept: KeptCamera): PanZoom {
 	const fit = useLayerFit(layerRef, fieldRef);
-	const percentRef = useRef<HTMLSpanElement | null>(null);
 	const held = useRef<StageLook | null>(kept.camera);
 	const committed = useRef<StageLook | null>(kept.camera);
 	const onKept = useRef(kept.onKept);
@@ -51,7 +46,7 @@ export function usePanZoom({ layerRef, fieldRef }: StageRefs, grips: Grips, kept
 		onKept.current(held.current);
 	}, []);
 	const watchers = useRef(new Set<LookWatcher>()).current;
-	const painter = usePainter(layerRef, percentRef, watchers, commit);
+	const painter = usePainter(layerRef, watchers, commit);
 	const flying = useRef(0);
 	const lookNow = useCallback((): StageLook => held.current ?? fit ?? UNMEASURED, [fit]);
 	const moveTo = useCallback(
@@ -95,18 +90,12 @@ export function usePanZoom({ layerRef, fieldRef }: StageRefs, grips: Grips, kept
 	return useMemo(
 		() => ({
 			fieldRef,
-			percentRef,
 			moves,
-			zoomBy: (step: number) => moveTo(scaledAround(lookNow(), lookNow().scale + step, centreOf(fieldRef.current))),
-			zoomTo: (scale: number) => moveTo(scaledAround(lookNow(), scale, centreOf(fieldRef.current))),
-			refit: () => {
-				if (fit) moveTo(fit);
-			},
 			flyTo,
 			lookNow,
 			watchLook,
 		}),
-		[fieldRef, moves, moveTo, lookNow, fit, flyTo, watchLook],
+		[fieldRef, moves, lookNow, flyTo, watchLook],
 	);
 }
 

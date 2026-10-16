@@ -1,9 +1,9 @@
 import { screenPathOf } from "../packages/core/src/app-design.ts";
 import { sourceKeyOf } from "../packages/core/src/engine/node-marks.ts";
-import { ObsidianDesignFiles } from "../packages/canvas/adapters/design-files/obsidian.adapter.ts";
+import { ObsidianDesignFilesGateway } from "../packages/canvas/gateways/design-files/obsidian.gateway.ts";
 import { sourceMoved } from "../packages/canvas/features/layers/handlers.ts";
-import { boardIn } from "../packages/canvas/features/shots/lib/design/board-in-note.ts";
-import { readDrawnState } from "../packages/canvas/adapters/design-folder/obsidian/drawn-state.ts";
+import { boardIn } from "../packages/canvas/shared/lib/design/board-in-note.ts";
+import { readDrawnState } from "../packages/canvas/gateways/design-folder/obsidian/drawn-state.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
 
@@ -85,7 +85,7 @@ async function checkLayerMoveWritesWhatItRead(check: Check): Promise<void> {
 		into: text.indexOf("<aside"),
 		before: null,
 	});
-	const layers = new ObsidianDesignFiles(adapter);
+	const layers = new ObsidianDesignFilesGateway(adapter);
 	const answerOf = (text: string): Promise<string> =>
 		layers
 			.changeText(path, (source) => sourceMoved(source, moveOn(text)))

@@ -11,6 +11,8 @@ export const TAGS_FRAME = "Log 1";
 export const TASKS_FRAME = "Tasks 1";
 export const KIT_FRAME = "Seeds 1";
 export const BROKEN_FRAME = "Broken";
+export const TASKS_WIDGET = "task-list";
+export const TASKS_CARD = "Full";
 
 const COPIES = { log: 7, tasks: 6, seeds: 6 } as const;
 

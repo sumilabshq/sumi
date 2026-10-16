@@ -4,7 +4,7 @@ import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/adapters";
+import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
 import type { CanvasHandle, CanvasOpening, GpuSupply, StageMount } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";

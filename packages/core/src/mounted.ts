@@ -11,6 +11,8 @@ export { DrawnInShell } from "./drawn-in-shell.js";
 
 export type PlatesAbove = ContextType<typeof PLATES_ABOVE>;
 
+const NOT_INLINE = "{name} draws itself into the page, so it cannot be drawn here";
+
 export type DrawWidget<Props> = (element: HTMLElement, component: ComponentType<Props>, props: Props) => Release;
 
 interface DrawableWidget<Props> {
@@ -43,8 +45,8 @@ export function drawWidget<Props extends object>(definition: DrawableWidget<Prop
 
 export function Mounted({ entry }: MountedProps): ReactElement {
 	const isInline = useContext(DRAWS_INLINE);
-	const node = useDrawsInto(isInline && entry.drawInline ? {} : entry);
-	if (isInline && entry.drawInline) return h("div", { className: "wg-mounted" }, entry.drawInline());
+	const node = useDrawsInto(isInline ? {} : entry);
+	if (isInline) return drawnInline(entry);
 	if (!entry.drawInto) return nothingToDraw(entry);
 	const drawn = h("div", { className: "wg-mounted", ref: node, key: "drawn" });
 	if (!isEnterable(entry)) return drawn;
@@ -66,6 +68,12 @@ function useDrawsInto(entry: MountedEntry): RefObject<HTMLDivElement | null> {
 	}, [entry.drawInto, platesAbove]);
 	useEffect(() => () => release.current?.(), []);
 	return node;
+}
+
+function drawnInline(entry: MountedEntry): ReactElement {
+	if (entry.drawInline) return h("div", { className: "wg-mounted" }, entry.drawInline());
+	const said = NOT_INLINE.replace("{name}", entry.name ?? "This view");
+	return h("div", { className: "wg-missing", "data-not-inline": entry.name ?? "" }, h("b", null, said));
 }
 
 function nothingToDraw(entry: MountedEntry): ReactElement {

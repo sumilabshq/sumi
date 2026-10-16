@@ -13,7 +13,6 @@ export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/en
 export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
 export type {
-	AgentLook,
 	CanvasDoc,
 	CanvasOpening,
 	DrawnDesign,

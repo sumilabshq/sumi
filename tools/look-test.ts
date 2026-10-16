@@ -15,12 +15,12 @@ import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
 import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/features/look/lib/look-tokens.ts";
 import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
 import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
-import { ObsidianDesignFiles } from "../packages/canvas/adapters/design-files/obsidian.adapter.ts";
-import { WebDesignJobs } from "../packages/canvas/adapters/design-jobs/web.adapter.ts";
+import { ObsidianDesignFilesGateway } from "../packages/canvas/gateways/design-files/obsidian.gateway.ts";
+import { WebAgentJobsGateway } from "../packages/canvas/gateways/agent-jobs/web.gateway.ts";
 import { PickLookCommandHandler } from "../packages/canvas/features/look/handlers.ts";
 import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
 import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
-import { FARM_OPENED, FixedDesignFolder } from "./canvas-hosts.ts";
+import { FARM_OPENED, FixedDesignFolderGateway } from "./canvas-hosts.ts";
 
 let failures = 0;
 
@@ -202,15 +202,19 @@ const lookAdapter = {
 		return lookFile.text;
 	},
 };
-const designFiles = new ObsidianDesignFiles({ ...lookAdapter, mkdir: refusesWrites, writeBinary: refusesWrites });
+const designFilesGateway = new ObsidianDesignFilesGateway({
+	...lookAdapter,
+	mkdir: refusesWrites,
+	writeBinary: refusesWrites,
+});
 const lookReads = new CachedDesignReads(
-	new FixedDesignFolder(async () => ({ screens: [], references: [], widgets: [] })),
-	new WebDesignJobs(),
-	designFiles,
+	new FixedDesignFolderGateway(async () => ({ screens: [], references: [], widgets: [] })),
+	new WebAgentJobsGateway(),
+	designFilesGateway,
 );
 await PickLookCommandHandler.handle(
 	{ settingName: "ground", option: "grey" },
-	{ designFiles, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
+	{ designFilesGateway, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
 );
 const afterPick = readLook(lookFile.text);
 check(

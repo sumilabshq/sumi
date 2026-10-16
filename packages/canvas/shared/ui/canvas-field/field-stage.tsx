@@ -11,9 +11,8 @@ import { PRESSABLE } from "../../lib/field/field-marks.js";
 import { Highlight } from "./highlight.js";
 import { useFieldPointing } from "../../lib/field/use-field-pointing.js";
 import { useGpuStage } from "../../lib/field/use-gpu-stage.js";
-import { FLOATING, ZoomBar } from "./zoom-bar.js";
+import { FrameRateLabel } from "./frame-rate-label.js";
 
-const HINT = "Answer a job on its page, or tell the agent in the chat";
 const FIELD =
 	"cv:relative cv:h-full cv:touch-none cv:overflow-hidden cv:bg-group cv:bg-[radial-gradient(var(--wg-kit-group-line)_1px,transparent_1px)] cv:bg-[length:20px_20px]";
 const LAYER =
@@ -53,10 +52,7 @@ export function FieldStage(): ReactElement {
 						data-canvas-gpu=""
 					/>
 				) : null}
-				<ZoomBar pan={pan} />
-				<div className={`${FLOATING} cv:right-4 cv:bottom-4 cv:gap-2 cv:text-muted-foreground`} data-canvas-chrome="">
-					{HINT}
-				</div>
+				{gpu.frames ? <FrameRateLabel frameRate={gpu.frames.frameRate} /> : null}
 			</div>
 		</GPU_FRAMES.Provider>
 	);

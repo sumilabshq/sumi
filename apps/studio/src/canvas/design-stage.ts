@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import type { CanvasOpened, CanvasOpening, FrameSize } from "@widgetarium/canvas";
-import type { CanvasParts } from "@widgetarium/canvas/adapters";
+import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { CanvasPage } from "./canvas-page.js";
 import type { CanvasCorners } from "./canvas-page.js";
 import type { CanvasHandle } from "./use-hands-canvas.js";

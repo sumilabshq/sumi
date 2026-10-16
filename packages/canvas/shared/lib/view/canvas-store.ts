@@ -1,11 +1,13 @@
 import type { CanvasOpened, CanvasOpening } from "../../schema/canvas-view.schema.js";
-import type { CanvasChange, CanvasField, CanvasMoment } from "./canvas-moment.js";
-import { keepRenderer, keptRenderer } from "./kept-renderer.js";
+import type { CanvasChange, CanvasField, CanvasMoment, MomentChange, OpeningChange } from "./canvas-moment.js";
+
+export type KeepOpening = (kept: CanvasOpening) => void;
 
 export abstract class CanvasStore {
 	abstract now(): CanvasMoment;
 	abstract watch(fields: readonly CanvasField[], changed: () => void): () => void;
-	abstract change(next: CanvasChange, reason: string): void;
+	abstract change(next: CanvasChange, reason: string): boolean;
+	abstract changeOpening(next: OpeningChange, reason: string): boolean;
 	abstract unchanged(reason: string): void;
 }
 
@@ -15,7 +17,7 @@ interface Watcher {
 }
 
 const QUIET_FIELDS: ReadonlySet<CanvasField> = new Set(["camera", "selection", "seenLayers", "closedLayers"]);
-const KEPT_FIELDS: readonly CanvasField[] = ["page", "isLayersOpen", "mode"];
+const OPENING_KEYS = ["page", "isLayersOpen", "mode"] as const satisfies readonly (keyof CanvasOpening)[];
 
 export class MomentCanvasStore extends CanvasStore {
 	private readonly watchers = new Set<Watcher>();
@@ -23,7 +25,7 @@ export class MomentCanvasStore extends CanvasStore {
 
 	constructor(
 		opened: CanvasOpened,
-		private readonly keepOpening: (kept: CanvasOpening) => void,
+		private readonly keepOpening: KeepOpening,
 	) {
 		super();
 		this.moment = momentOpened(opened);
@@ -39,26 +41,45 @@ export class MomentCanvasStore extends CanvasStore {
 		return () => void this.watchers.delete(watcher);
 	}
 
-	override change(asked: CanvasChange, reason: string): void {
-		const next = withPageTurned(this.moment, asked);
-		const changed = fieldsChanged(this.moment, next);
-		if (changed.length === 0) return;
-		const was = this.moment;
-		this.moment = { ...this.moment, ...next };
-		logged(was, this.moment, changed, reason);
-		if (changed.includes("renderer")) keepRenderer(this.moment.renderer);
-		if (changed.some((field) => KEPT_FIELDS.includes(field))) this.keepOpened();
-		for (const watcher of [...this.watchers])
-			if (watcher.fields.some((field) => changed.includes(field))) watcher.changed();
+	override change(next: CanvasChange, reason: string): boolean {
+		return this.write(next, reason);
+	}
+
+	override changeOpening({ page, ...rest }: OpeningChange, reason: string): boolean {
+		const was = openingOf(this.moment);
+		const turned = page === undefined ? rest : { ...pageTurnedTo(this.moment, page), ...rest };
+		if (!this.write(turned, reason)) {
+			return false;
+		}
+
+		const opening = openingOf(this.moment);
+		if (OPENING_KEYS.some((key) => was[key] !== opening[key])) {
+			this.keepOpening(opening);
+		}
+
+		return true;
 	}
 
 	override unchanged(reason: string): void {
 		toldCanvas(`unchanged (${reason})`);
 	}
 
-	private keepOpened(): void {
-		const { page, isLayersOpen, mode } = this.moment;
-		this.keepOpening({ page, isLayersOpen, mode });
+	private write(next: MomentChange, reason: string): boolean {
+		const changed = fieldsChanged(this.moment, next);
+		if (changed.length === 0) {
+			return false;
+		}
+
+		const was = this.moment;
+		this.moment = { ...this.moment, ...next };
+		logged(was, this.moment, changed, reason);
+		for (const watcher of [...this.watchers]) {
+			if (watcher.fields.some((field) => changed.includes(field))) {
+				watcher.changed();
+			}
+		}
+
+		return true;
 	}
 }
 
@@ -66,7 +87,6 @@ function momentOpened(opened: CanvasOpened): CanvasMoment {
 	return {
 		...opened,
 		keptPage: "",
-		renderer: keptRenderer(),
 		camera: null,
 		selection: null,
 		variants: {},
@@ -77,21 +97,30 @@ function momentOpened(opened: CanvasOpened): CanvasMoment {
 	};
 }
 
-function withPageTurned(moment: CanvasMoment, asked: CanvasChange): CanvasChange {
-	if (asked.page === undefined || asked.page === moment.page) return asked;
-	const turned = { keptPage: asked.page, selection: null, camera: null, focusedWidget: null };
-	return { ...turned, ...asked };
+function pageTurnedTo(moment: CanvasMoment, page: string): MomentChange {
+	if (page === moment.page) {
+		return { page };
+	}
+
+	return { page, keptPage: page, selection: null, camera: null, focusedWidget: null };
 }
 
-function fieldsChanged(moment: CanvasMoment, next: CanvasChange): CanvasField[] {
+function openingOf({ page, isLayersOpen, mode }: CanvasMoment): CanvasOpening {
+	return { page, isLayersOpen, mode };
+}
+
+function fieldsChanged(moment: CanvasMoment, next: MomentChange): CanvasField[] {
 	return Object.keys(next)
-		.filter((field): field is keyof CanvasChange => field !== "app" && field in moment)
+		.filter((field): field is keyof MomentChange => field !== "app" && field in moment)
 		.filter((field) => !Object.is(moment[field], next[field]));
 }
 
 function logged(was: CanvasMoment, now: CanvasMoment, changed: readonly CanvasField[], reason: string): void {
 	const told = changed.filter((field) => !QUIET_FIELDS.has(field));
-	if (told.length === 0) return;
+	if (told.length === 0) {
+		return;
+	}
+
 	const from = JSON.stringify(Object.fromEntries(told.map((field) => [field, was[field]])));
 	const to = JSON.stringify(Object.fromEntries(told.map((field) => [field, now[field]])));
 	toldCanvas(`${from} → ${to} (${reason})`);

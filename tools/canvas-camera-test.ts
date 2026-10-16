@@ -83,6 +83,7 @@ const { answerShotRequests, SHOTS_DIR, SHOT_REQUESTS_DIR } =
 	await import("../packages/host-obsidian/src/legacy/shot-requests.ts");
 const { designPathOf } = await import("../packages/core/src/app-design.ts");
 const { WidgetRegistry } = await import("../packages/core/src/registry.js");
+const { AgentJobsGateway } = await import("../packages/canvas/generated/gateways.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -136,15 +137,19 @@ const plugin = {
 	host: { ...PROBE_VIEW, slot: () => null, here: null },
 	started: Promise.resolve(),
 	assistant: {
-		jobs: {
-			jobsOf: () => jobs,
-			watch: (onChange: () => void) => {
+		jobs: new (class extends AgentJobsGateway {
+			override jobsOf(): Job[] {
+				return jobs;
+			}
+			override watch(onChange: () => void): () => void {
 				jobWatchers.add(onChange);
-				return () => jobWatchers.delete(onChange);
-			},
-			liveOf: () => null,
-			stop: async () => undefined,
-		},
+				return () => void jobWatchers.delete(onChange);
+			}
+			override liveOf(): null {
+				return null;
+			}
+			override async stop(): Promise<void> {}
+		})(),
 	},
 	registerInterval: (id: number) => void intervals.push(id),
 };
@@ -197,34 +202,21 @@ check("the agent's job ending does not turn the person's page", personSees(), be
 
 callAsUntypedSource(answerShotRequests, plugin);
 files.set(`${SHOT_REQUESTS_DIR}/agent.json`, JSON.stringify({ design: APP }));
-let sawAgent = false;
-const shotTold = async (): Promise<string> => {
-	for (let tries = 0; tries < 60; tries += 1) {
-		const answer = [...files.keys()].find((path) => path.startsWith(`${SHOTS_DIR}/agent.`));
-		if (answer) return answer.slice(SHOTS_DIR.length + 1);
-		if (contentEl.textContent?.includes("Agent is looking")) sawAgent = true;
-		await pause(100);
-	}
-	return "";
-};
-const answered = await shotTold();
-check("the agent's picture of the design was drawn and answered", answered.length > 0, true);
-check("the person's canvas says where the agent is looking, without moving", sawAgent, true);
-check("the agent's picture does not move the person's camera or page", personSees(), before);
-check(
-	"nothing the agent drew off screen is left in the window",
-	dom.window.document.querySelectorAll(".wg-off-screen").length,
-	0,
-);
-
-files.set(`${SHOT_REQUESTS_DIR}/page.json`, JSON.stringify({ design: APP, page: "Nowhere" }));
-let pageRefusal = "";
-for (let tries = 0; tries < 40 && !pageRefusal; tries += 1) {
+let shotRefusal = "";
+for (let tries = 0; tries < 40 && !shotRefusal; tries += 1) {
 	await pause(100);
-	pageRefusal = files.get(`${SHOTS_DIR}/page.failed.txt`) ?? "";
+	shotRefusal = files.get(`${SHOTS_DIR}/agent.failed.txt`) ?? "";
 }
-check("a page the design does not hold is refused by name", pageRefusal.startsWith("Demo has no page Nowhere"), true);
-check("and the agent's page picture leaves the person where they stand", personSees(), before);
+check(
+	"a design shot is refused with why, never drawn as a picture",
+	[
+		shotRefusal.includes("draws only on the GPU"),
+		files.has(`${SHOTS_DIR}/agent.png`),
+		files.has(`${SHOT_REQUESTS_DIR}/agent.json`),
+	],
+	[true, false, false],
+);
+check("the refused shot does not move the person's camera or page", personSees(), before);
 
 const writeAnswer = adapter.write;
 adapter.write = async (path: string, text: string): Promise<void> => {

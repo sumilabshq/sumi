@@ -7,13 +7,13 @@ interface Built {
 }
 
 const WEB_STUDIO = "apps/studio/src/index.ts";
-const ADAPTERS_ENTRY = "packages/canvas/generated/adapters.ts";
+const GATEWAYS_ENTRY = "packages/canvas/generated/gateways.ts";
 const SERVER_ENTRY = "packages/core/src/requests/server/index.ts";
 const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
 const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
 const SERVER_CONDITION = "server";
-const VAULT_CODE = /packages\/canvas\/adapters\/[^/]+\/(obsidian\.adapter\.ts|obsidian\/)/;
-const WEB_PARTS = /packages\/canvas\/adapters\/canvas-parts\/web\.adapter\.ts$/;
+const VAULT_CODE = /packages\/canvas\/gateways\/[^/]+\/(obsidian\.gateway\.ts|obsidian\/)/;
+const WEB_PARTS = /packages\/canvas\/gateways\/canvas-parts\/web\.gateway\.ts$/;
 const HOST_CODE = /packages\/host-obsidian\//;
 const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/core\/src\/requests\/server\//;
 let failed = 0;
@@ -65,7 +65,7 @@ function check(what: string, isOk: boolean, got: unknown): void {
 const web = await builtOf(WEB_STUDIO);
 const webVault = web.inputs.filter((input) => VAULT_CODE.test(input));
 check(
-	"the web studio takes its parts from the canvas's one ./adapters entry",
+	"the web studio takes its parts from the canvas's one ./gateways entry",
 	web.inputs.some((input) => WEB_PARTS.test(input)),
 	web.inputs.filter((input) => WEB_PARTS.test(input)),
 );
@@ -79,9 +79,9 @@ check(
 	!web.imports.includes("obsidian"),
 	web.imports.filter((path) => path === "obsidian"),
 );
-const vault = await builtOf(ADAPTERS_ENTRY);
+const vault = await builtOf(GATEWAYS_ENTRY);
 check(
-	"the whole ./adapters entry does carry them, so the tree-shaking check can fail",
+	"the whole ./gateways entry does carry them, so the tree-shaking check can fail",
 	vault.inputs.some((input) => VAULT_CODE.test(input)),
 	vault.inputs.filter((input) => VAULT_CODE.test(input)).length,
 );

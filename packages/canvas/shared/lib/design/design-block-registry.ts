@@ -13,6 +13,8 @@ export function blocksOf(registry: Registry, draft: string): string[] {
 	return Object.keys(registry.get(draft)?.blocks ?? {});
 }
 
+// TODO: module state shared by every canvas; provide it per app.
+// eslint-disable-next-line @widgetarium/module-state
 const WRAPPED = new WeakMap<Registry, Registry>();
 
 export function withBlocks(registry: Registry): Registry {

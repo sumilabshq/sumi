@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
+import { PageInputSchema, PageOf } from "@widgetarium/core/gateway/page.js";
 
 export const DesignSummaryQuery = query("canvas/design-summary").output(
 	z.object({ app: z.string(), said: z.string() }),
@@ -12,14 +13,12 @@ export const FocusWidgetCommand = command("canvas/focus-widget")
 	.idempotencyKey(Repeatable);
 
 export const PageTabsQuery = query("canvas/page-tabs").output(
-	z.object({
-		leading: z.array(z.string()),
-		pages: z.array(z.object({ page: z.string(), isRunning: z.boolean(), isShown: z.boolean() })),
-		trailing: z.array(z.string()),
-		shown: z.string(),
-		shownTab: z.string(),
-	}),
+	z.object({ tabs: z.array(z.string()).readonly(), shown: z.string() }),
 );
+
+export const PagesQuery = query("canvas/pages")
+	.input(PageInputSchema)
+	.output(PageOf(z.object({ page: z.string(), isRunning: z.boolean(), isShown: z.boolean() })));
 
 export const PickVariantCommand = command("canvas/pick-variant")
 	.input(z.object({ screen: z.string() }))

@@ -1,6 +1,6 @@
 import type { Layer } from "@widgetarium/behaviors";
 import type { Camera } from "../../schema/camera.schema.js";
-import type { CanvasMode, PageRenderer, Variants } from "../../schema/canvas-view.schema.js";
+import type { CanvasMode, CanvasOpening, Variants } from "../../schema/canvas-view.schema.js";
 import type { Selection } from "../../schema/selection.schema.js";
 
 export interface CanvasMoment {
@@ -9,7 +9,6 @@ export interface CanvasMoment {
 	readonly keptPage: string;
 	readonly isLayersOpen: boolean;
 	readonly mode: CanvasMode;
-	readonly renderer: PageRenderer;
 	readonly camera: Camera | null;
 	readonly selection: Selection | null;
 	readonly variants: Variants;
@@ -21,4 +20,8 @@ export interface CanvasMoment {
 
 export type CanvasField = keyof Omit<CanvasMoment, "app">;
 
-export type CanvasChange = Partial<Omit<CanvasMoment, "app">>;
+export type MomentChange = Partial<Omit<CanvasMoment, "app">>;
+
+export type CanvasChange = Partial<Omit<CanvasMoment, "app" | "page" | "keptPage" | "mode" | "isLayersOpen">>;
+
+export type OpeningChange = Partial<CanvasOpening> & Pick<CanvasChange, "focusedWidget">;

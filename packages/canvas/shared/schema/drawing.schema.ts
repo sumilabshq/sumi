@@ -2,8 +2,6 @@ import { z } from "zod";
 import type { GpuSupply } from "@widgetarium/gpu";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 
-export type PictureTaker = (node: HTMLElement, scale: number) => Promise<HTMLCanvasElement>;
-
 export interface Drawing {
 	readonly registry: WidgetSurfaceProps["registry"];
 	readonly host: WidgetSurfaceProps["host"];

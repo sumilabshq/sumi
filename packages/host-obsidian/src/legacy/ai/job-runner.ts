@@ -12,9 +12,9 @@ import { askedSaid, endingOf, promptOf } from "./job-endings.js";
 import type { EndedBy } from "./job-endings.js";
 import type { JobsHeld, Running } from "./jobs-held.js";
 import type { LiveJob } from "@widgetarium/studio";
-import { DesignJobs } from "@widgetarium/canvas/adapters";
+import { AgentJobsGateway } from "@widgetarium/canvas/gateways";
 
-export interface Jobs extends DesignJobs {
+export interface Jobs extends AgentJobsGateway {
 	watch(onChange: () => void): () => void;
 	version(): number;
 	apps(): string[];
@@ -68,10 +68,10 @@ export function createJobs(doors: JobsDoors): Jobs {
 		setInterval(() => void saveLive(state), tickMs * (SAVE_EVERY_MS / TICK_MS)),
 	];
 	void tick(state);
-	return new RunningJobs(state, timers);
+	return new ObsidianAgentJobsGateway(state, timers);
 }
 
-class RunningJobs extends DesignJobs implements Jobs {
+class ObsidianAgentJobsGateway extends AgentJobsGateway implements Jobs {
 	constructor(
 		private readonly state: JobsHeld,
 		private readonly timers: readonly ReturnType<typeof setInterval>[],
