@@ -5,7 +5,8 @@ import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
-import type { CanvasHandle, CanvasOpening, GpuSupply } from "@widgetarium/studio";
+import type { CanvasHandle, CanvasOpening, GpuSupply, StageMount } from "@widgetarium/studio";
+import type { ObsidianHost } from "@widgetarium/core/mediator";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import type { ObsidianDesignHeld } from "@widgetarium/canvas";
 import { designHeldOf } from "./design-held.js";
@@ -95,20 +96,12 @@ export class DesignView extends ItemView {
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
 		const { held, onKept, onCanvas, ownsPaste, gpu } = this;
 		const app = this.appName;
-		const opening = this.view;
-		const stage = {
-			key: app,
+		const hostOf = (mount: StageMount): ObsidianHost => ({
 			platform: "obsidian",
-			obsidian: held,
-			app,
-			opening,
-			onKept,
-			onCanvas,
-			size,
-			ownsPaste,
-			gpu,
-		} as const;
-		render(h(DesignStage, stage), node);
+			app: this.app,
+			canvas: { ...mount, ownsPaste, gpu, design: { kind: "vault", held }, returnTo: "app-note" },
+		});
+		render(h(DesignStage, { key: app, app, opening: this.view, hostOf, onKept, onCanvas, size }), node);
 	}
 }
 

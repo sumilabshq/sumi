@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@widgetarium/kit";
-import type { RegionOf } from "../../../schema/regions.js";
+import type { RegionOf } from "../../../schema/regions.schema.js";
 import { Region } from "./region.js";
 
 const NOTHING_DRAWN = "No pages drawn yet";

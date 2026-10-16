@@ -1,19 +1,18 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { requestUrl } from "obsidian";
-import type { DataAdapter } from "obsidian";
+import type { App as ObsidianApp, DataAdapter } from "obsidian";
 import { ROOT } from "@widgetarium/core/paths.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { measuredFindingsIn } from "@widgetarium/core/page-measure.js";
 import type { MeasuredFinding } from "@widgetarium/core/page-measure.js";
 import { AppProvider, Slot, app } from "@widgetarium/core/mediator";
-import type { App } from "@widgetarium/core/mediator";
+import type { App, ObsidianHost } from "@widgetarium/core/mediator";
 import {
 	CanvasShot,
 	NoteBoardQuery,
 	NoteShot,
 	ShotCountQuery,
-	canvasHost,
 	canvasModule,
 	whileAgentLooks,
 } from "@widgetarium/canvas";
@@ -46,6 +45,7 @@ interface ShotAsked {
 interface ShotTaker {
 	readonly adapter: DataAdapter;
 	readonly held: ObsidianDesignHeld;
+	readonly app: ObsidianApp;
 }
 
 export function answerShotRequests(plugin: WidgetariumPlugin): void {
@@ -64,14 +64,27 @@ export function answerShotRequests(plugin: WidgetariumPlugin): void {
 
 function shotTakerOf(plugin: WidgetariumPlugin): ShotTaker {
 	const held = designHeldOf(plugin, { leafOf: () => plugin.app.workspace.getLeaf(false), fromNote: () => "" });
-	return { adapter: plugin.app.vault.adapter, held };
+	return { adapter: plugin.app.vault.adapter, held, app: plugin.app };
 }
 
 function shotAppOf(taker: ShotTaker, design: string): App {
 	const opened = { ...CANVAS_OPENED_ON, app: design };
-	const host = canvasHost({ platform: "obsidian", opened, obsidian: taker.held, ownsPaste: takesNoPaste });
-	return app({ modules: [canvasModule], host });
+	const host: ObsidianHost = {
+		platform: "obsidian",
+		app: taker.app,
+		canvas: {
+			opened,
+			keepOpening: keepsNothing,
+			ownsPaste: takesNoPaste,
+			gpu: null,
+			returnTo: "app-note",
+			design: { kind: "vault", held: taker.held },
+		},
+	};
+	return app({ modules: [canvasModule], platforms: ["obsidian"], host });
 }
+
+function keepsNothing(): void {}
 
 async function answerPending(taker: ShotTaker): Promise<void> {
 	const { adapter } = taker;

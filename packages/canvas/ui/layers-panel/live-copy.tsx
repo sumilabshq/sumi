@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/core/mediator";
-import { LayersPanelQuery } from "../../requests/layers/layers-panel.js";
+import { LayersPanelQuery } from "../../requests/layers-panel.query.js";
 import { LiveScreen } from "./live-screen.js";
 
 export function LiveCopy(): ReactElement | null {

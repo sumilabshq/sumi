@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import esbuild from "esbuild";
-import { THEMES } from "./harness.ts";
+import { THEMES, WEB_PAGE_DEFINE } from "./harness.ts";
 
 export interface ServedPages {
 	readonly origin: string;
@@ -60,7 +60,7 @@ async function bundled(entry: string): Promise<Buffer> {
 		jsxFactory: "h",
 		jsxFragment: "Fragment",
 		external: ["fs", "path"],
-		define: { "process.env.NODE_ENV": JSON.stringify("production") },
+		define: { "process.env.NODE_ENV": JSON.stringify("production"), ...WEB_PAGE_DEFINE },
 		logLevel: "warning",
 	});
 	const [output] = built.outputFiles;

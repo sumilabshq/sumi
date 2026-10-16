@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "./look-chrome.js";
+import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "../../lib/look/look-chrome.js";
 
 export function LookUnreadable({ said }: { readonly said: string }): ReactElement {
 	return (

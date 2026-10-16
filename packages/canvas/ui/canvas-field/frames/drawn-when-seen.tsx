@@ -1,11 +1,11 @@
 import { createElement as h, useContext, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useOptionalQuery } from "@widgetarium/core/mediator";
-import { FramePictureQuery } from "../../../requests/pictures/frame-picture.js";
-import { DRAWS_AT_ONCE } from "../../state-drawing/draw-contexts.js";
-import { useAsksForPicture } from "./use-asks-for-picture.js";
-import { useIsSeen } from "./use-is-seen.js";
-import { useMountedInTurn } from "./use-mounted-in-turn.js";
+import { FramePictureQuery } from "../../../requests/frame-picture.query.js";
+import { DRAWS_AT_ONCE } from "../../../lib/state-drawing/draw-contexts.js";
+import { useAsksForPicture } from "../../../lib/field/frames/use-asks-for-picture.js";
+import { useIsSeen } from "../../../lib/field/frames/use-is-seen.js";
+import { useMountedInTurn } from "../../../lib/field/frames/use-mounted-in-turn.js";
 
 export interface DrawnWhenSeenProps {
 	readonly minHeight: number;

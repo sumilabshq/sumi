@@ -2,9 +2,9 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, Segmented } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { ModeQuery } from "../../requests/view/mode.js";
-import { SetModeCommand } from "../../requests/view/set-mode.js";
-import type { CanvasMode } from "../../schema/canvas-view.js";
+import { ModeQuery } from "../../requests/mode.query.js";
+import { SetModeCommand } from "../../requests/set-mode.command.js";
+import type { CanvasMode } from "../../schema/canvas-view.schema.js";
 import { Tip } from "../tip/tip.js";
 
 export function ModeSwitch(): ReactElement {

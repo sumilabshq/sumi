@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+	app,
 	command,
 	handlerOf,
 	module,
@@ -8,8 +9,8 @@ import {
 	useCommand,
 	useQuery,
 } from "../packages/core/src/mediator/index.ts";
-import type { App, InputOf } from "../packages/core/src/mediator/index.ts";
-import { GetPages, GetPlatform, Pages } from "./mediator-fixture.ts";
+import type { AnyHost, App, InputOf } from "../packages/core/src/mediator/index.ts";
+import { PagesQuery, PlatformQuery, Pages } from "./mediator-fixture.ts";
 
 const NoKey = command("canvas/no-key").input(z.object({ title: z.string() }));
 const NoOutput = query("canvas/no-output").input(z.object({ title: z.string() }));
@@ -35,17 +36,17 @@ export function readsNoOutput(): unknown {
 
 export function sendsWrongInput(app: App): unknown {
 	// @ts-expect-error the input is the request's input schema
-	return app.send(GetPages, { prefix: 1 });
+	return app.send(PagesQuery, { prefix: 1 });
 }
 
-export class WrongReturnHandler extends handlerOf(GetPlatform) {
+export class WrongReturnHandler extends handlerOf(PlatformQuery) {
 	// @ts-expect-error a handler returns its request's output
 	override async handle(): Promise<number> {
 		return 1;
 	}
 }
 
-export class WrongInputHandler extends handlerOf(GetPages) {
+export class WrongInputHandler extends handlerOf(PagesQuery) {
 	// @ts-expect-error a handler takes its request's input
 	override async handle({ prefix }: { prefix: number }): Promise<string[]> {
 		return [String(prefix)];
@@ -65,25 +66,54 @@ export const moduleWithHandWritten = module({
 	handlers: [HandWrittenHandler],
 });
 
-export class TypedInputHandler extends handlerOf(GetPages) {
-	override async handle({ prefix }: InputOf<typeof GetPages>): Promise<string[]> {
+export class TypedInputHandler extends handlerOf(PagesQuery) {
+	override async handle({ prefix }: InputOf<typeof PagesQuery>): Promise<string[]> {
 		return [prefix];
 	}
 }
 
 // @ts-expect-error a provided value is what its token promises
-export const providesNumber = provided(Pages, () => 1);
+export const providesNumber = provided(Pages, { web: () => 1 });
 
 // @ts-expect-error a provided value carries every member of its token
-export const providesHalf = provided(Pages, () => ({ platform: "web", list: () => [] }));
+export const providesHalf = provided(Pages, { web: () => ({ platform: "web", list: () => [] }) });
 
-export const providesPages = provided(Pages, (host) => ({
-	platform: host.is("web") ? "web" : "other",
-	list: () => [],
-	add: () => 0,
-}));
+export const providesPages = provided(Pages, {
+	web: (host) => ({ platform: host.project.app.name, list: () => [], add: () => 0 }),
+	server: (host) => ({ platform: host.env["REGION"] ?? "server", list: () => [], add: () => 0 }),
+});
+
+export const readsTheWrongHost = provided(Pages, {
+	// @ts-expect-error each factory gets its own platform's host: a mobile host has no project
+	mobile: (host) => ({ platform: host.project.app.name, list: () => [], add: () => 0 }),
+});
+
+// @ts-expect-error a provided value is a record per platform, never one factory for all
+export const providesOneFactory = provided(Pages, () => ({ platform: "any", list: () => [], add: () => 0 }));
+
+const webOnly = module({ name: "canvas", handlers: [], provide: [providesPages] });
+
+export function shipsWhereProvided(host: AnyHost): App {
+	return app({ modules: [webOnly], platforms: ["web"], host });
+}
+
+export function shipsWhereNotProvided(host: AnyHost): App {
+	// @ts-expect-error an app ships only to platforms every injected dependency is provided on
+	return app({ modules: [webOnly], platforms: ["web", "obsidian"], host });
+}
+
+export function sendsFromAHandler(): unknown {
+	return class extends handlerOf(PlatformQuery) {
+		override async handle(): Promise<string> {
+			const pages = await this.send(PagesQuery, { prefix: "" });
+			// @ts-expect-error this.send answers the sent request's output, not the handler's
+			const wrong: number = pages.ok ? pages.output : 0;
+			return String(wrong);
+		}
+	};
+}
 
 export async function typedAnswer(app: App): Promise<readonly string[]> {
-	const answer = await app.send(GetPages, { prefix: "" });
+	const answer = await app.send(PagesQuery, { prefix: "" });
 	return answer.ok ? answer.output : [];
 }

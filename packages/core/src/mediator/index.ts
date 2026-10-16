@@ -1,14 +1,31 @@
 export { app } from "./app";
-export type { AppDeclaration } from "./app";
+export type { AppDeclaration, CoveredByAll } from "./app";
 export { AppProvider } from "./app-provider";
 export type { AppProviderProps } from "./app-provider";
 export { DoneKeys, MemoryDoneKeys } from "./done-keys";
 export { fakeApp } from "./fake-app";
 export type { FakeAnswers } from "./fake-app";
 export { handlerOf } from "./handler-of";
-export type { AppHost, HandlerClass, Handles, Middleware, RequestCall, RequestContext } from "./handles";
+export type { HandlerOf } from "./handler-of";
+export type { HandlerClass, Handles, Middleware, RequestCall, RequestContext, Watching } from "./handles";
+export { RequestHandler } from "./request-handler";
+export { PLATFORMS, builtFor } from "./platform";
+export type {
+	AnyHost,
+	AppPlatform,
+	DesktopHost,
+	HostOf,
+	HostsByPlatform,
+	MobileHost,
+	ObsidianHost,
+	Platform,
+	ServerHost,
+	WebHost,
+} from "./platform";
+export { NoServerTransport, ServerTransport } from "./server-transport";
+export type { ServerCall } from "./server-transport";
 export { module } from "./module";
-export type { Module, ModuleDeclaration } from "./module";
+export type { CoveredBy, Module, ModuleDeclaration } from "./module";
 export type { QueryEntry, QuerySender, QueryStore } from "./query-store";
 export { ReportFailure, reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";
@@ -25,6 +42,7 @@ export type {
 	OutputOf,
 	QueryDraft,
 	QueryRequest,
+	RequestSide,
 	ReturnedOf,
 	SentOf,
 } from "./request";
@@ -34,8 +52,8 @@ export { Section } from "./section";
 export type { App, SendOptions } from "./sends";
 export { Slot } from "./slot";
 export type { BoundaryProps } from "./slot";
-export { inject, provided } from "./token";
-export type { Provided, Token } from "./token";
+export { provided } from "./token";
+export type { Inject, PlatformMakers, Provided, Token } from "./token";
 export { useCommand } from "./use-command";
 export { useOptionalQuery } from "./use-optional-query";
 export type { OptionalQueryRead } from "./use-optional-query";

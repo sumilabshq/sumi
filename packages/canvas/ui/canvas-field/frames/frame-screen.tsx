@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../../requests/field/drawing.js";
-import type { Frame } from "../../../schema/regions.js";
-import { SCREEN } from "../../state-drawing/screen-class.js";
+import { DrawingQuery } from "../../../requests/drawing.query.js";
+import type { Frame } from "../../../schema/regions.schema.js";
+import { SCREEN } from "../../../lib/state-drawing/screen-class.js";
 import { StateDrawing } from "../../state-drawing/state-drawing.js";
 import { DrawnWhenSeen } from "./drawn-when-seen.js";
 import { ScreenBoard } from "./screen-board.js";

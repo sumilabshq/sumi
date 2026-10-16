@@ -1,18 +1,20 @@
+import type { AnyHost } from "./platform";
 import type { AnyRequest, InputOf, ReturnedOf } from "./request";
-
-export interface AppHost {
-	is(platform: string): boolean;
-}
 
 export interface RequestContext {
 	readonly idempotencyKey: string | null;
 	readonly signal: AbortSignal;
-	readonly host: AppHost;
+	readonly host: AnyHost;
+}
+
+export interface Watching<R extends AnyRequest> {
+	readonly input: InputOf<R>;
+	readonly changed: () => void;
 }
 
 export interface Handles<R extends AnyRequest> {
 	handle(input: InputOf<R>, ctx: RequestContext): Promise<ReturnedOf<R>>;
-	watch?(input: InputOf<R>, changed: () => void): () => void;
+	watch(watching: Watching<R>): () => void;
 }
 
 export interface HandlerClass<R extends AnyRequest = AnyRequest> {

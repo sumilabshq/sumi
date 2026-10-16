@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { JobStatusQuery } from "../../requests/jobs/job-status.js";
-import { StopJobCommand } from "../../requests/jobs/stop-job.js";
+import { JobStatusQuery } from "../../requests/job-status.query.js";
+import { StopJobCommand } from "../../requests/stop-job.command.js";
 import { JobLine } from "./job-line.js";
 
 export function JobStatus(): ReactElement | null {

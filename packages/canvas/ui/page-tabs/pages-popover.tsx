@@ -2,7 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverItem } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/core/mediator";
-import { PageTabsQuery } from "../../requests/pages/page-tabs.js";
+import { PageTabsQuery } from "../../requests/page-tabs.query.js";
 import { PageLabel } from "./page-label.js";
 
 export interface PagesPopoverProps {

@@ -4,8 +4,9 @@ import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
 import type { DesignSource, DrawnState } from "../packages/canvas/index.ts";
-import { frameIdOf } from "../packages/canvas/requests/field/frame-keys.ts";
+import { frameIdOf } from "../packages/canvas/lib/field/frame-keys.ts";
 import { canvasModuleOver } from "./canvas-over-source.ts";
+import { webCanvasHostOf } from "./canvas-hosts.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
@@ -61,13 +62,11 @@ const reactRoot = root ? createRoot(root) : null;
 function draw(): void {
 	reactRoot?.render(
 		h(DesignStage, {
-			platform: "web",
 			modules: [canvasModuleOver(source)],
 			app: "Farm",
 			opening: CANVAS_OPENED_ON,
 			size: VIEW,
-			gpu: supply,
-			ownsPaste: () => false,
+			hostOf: ({ opened }) => webCanvasHostOf({ opened, gpu: supply }),
 		}),
 	);
 }

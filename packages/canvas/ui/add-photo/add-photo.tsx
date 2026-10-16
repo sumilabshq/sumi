@@ -3,8 +3,8 @@ import type { ChangeEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/mediator";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
-import { AddPhotosCommand } from "../../requests/photos/add-photos.js";
-import { PastePhotosCommand } from "../../requests/photos/paste-photos.js";
+import { AddPhotosCommand } from "../../requests/add-photos.command.js";
+import { PastePhotosCommand } from "../../requests/paste-photos.command.js";
 import { Tip } from "../tip/tip.js";
 
 const ADD_PHOTO = "Add photo";

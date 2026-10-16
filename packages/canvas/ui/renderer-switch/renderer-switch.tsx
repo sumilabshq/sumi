@@ -2,9 +2,9 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Segmented } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { ChooseRendererCommand } from "../../requests/view/choose-renderer.js";
-import { RendererSwitchQuery } from "../../requests/view/renderer-switch.js";
-import type { PageRenderer } from "../../schema/canvas-view.js";
+import { ChooseRendererCommand } from "../../requests/choose-renderer.command.js";
+import { RendererSwitchQuery } from "../../requests/renderer-switch.query.js";
+import type { PageRenderer } from "../../schema/canvas-view.schema.js";
 
 const RENDERERS: readonly { readonly value: PageRenderer; readonly label: string }[] = [
 	{ value: "html", label: "HTML" },

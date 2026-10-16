@@ -2,8 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Segmented } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/core/mediator";
-import { PageTabsQuery } from "../../requests/pages/page-tabs.js";
-import { PAGES_TAB } from "../../schema/canvas-page.js";
+import { PageTabsQuery } from "../../requests/page-tabs.query.js";
+import { PAGES_TAB } from "../../schema/canvas-page.schema.js";
 import { PagesPopover } from "./pages-popover.js";
 
 export interface PageSwitchProps {

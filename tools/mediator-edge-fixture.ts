@@ -103,6 +103,8 @@ export const edgeModule = module({
 		MutatedHandler,
 		FlakyHandler,
 	],
-	provide: [provided(ReportFailure, () => ({ report: (failure: Failure) => void edge.reports.push(failure) }))],
+	provide: [
+		provided(ReportFailure, { web: () => ({ report: (failure: Failure) => void edge.reports.push(failure) }) }),
+	],
 	use: [misbehaving],
 });

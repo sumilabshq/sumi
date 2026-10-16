@@ -17,6 +17,7 @@ import { StudioBand } from "./studio-band.js";
 import { StudioCorner } from "./studio-corner.js";
 import type { TopBarCorners } from "./studio-band.js";
 import { StudioOutlet } from "./studio-outlet.js";
+import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -63,7 +64,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appId: start.appId ?? opened.app.name,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
-		design: start.design ?? { app: opened.app.name, ownsPaste: ownsEveryPasteInItsTab },
+		design: start.design ?? webStudioDesign(opened.app.name),
 	};
 }
 
@@ -87,8 +88,4 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
 		panel === "none" ? null : h(StudioSidebar, { key: "sidebar", panel, assistant, catalogue, host, catalogueAsk }),
 	]);
-}
-
-function ownsEveryPasteInItsTab(): boolean {
-	return true;
 }

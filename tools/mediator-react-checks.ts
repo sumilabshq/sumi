@@ -5,7 +5,6 @@ import {
 	AppProvider,
 	OnRefused,
 	Slot,
-	app,
 	fakeApp,
 	useCommand,
 	useOptionalQuery,
@@ -30,26 +29,26 @@ function drawn(running: App, tree: ReactNode): HTMLElement {
 }
 
 function Slow(): ReactElement {
-	return h("b", null, useQuery(fx.GetSlow).data);
+	return h("b", null, useQuery(fx.SlowQuery).data);
 }
 
 function Failing(): ReactElement {
-	return h("b", null, useQuery(fx.GetFailing).data);
+	return h("b", null, useQuery(fx.FailingQuery).data);
 }
 
 function OptionalSlow(): ReactElement {
-	const slow = useOptionalQuery(fx.GetSlow);
+	const slow = useOptionalQuery(fx.SlowQuery);
 	return h("i", null, slow.isLoading ? "optional loading" : slow.data);
 }
 
 function PageList(): ReactElement {
-	held.add = useCommand(fx.AddPage);
-	return h("ul", null, useQuery(fx.GetPages, { prefix: "" }).data.join(","));
+	held.add = useCommand(fx.AddPageCommand);
+	return h("ul", null, useQuery(fx.PagesQuery, { prefix: "" }).data.join(","));
 }
 
 const loading = h("span", null, "slot loading");
 const failed = (reason: string): ReactNode => h("span", null, `failed: ${reason}`);
-const web = (): App => app({ modules: [fx.canvasModule], host: fx.hostOn("web") });
+const web = (): App => fx.appOn("web", [fx.canvasModule]);
 
 fx.shutGate();
 const suspended = drawn(web(), h(Slot, { loading, error: failed }, h(Slow)));
@@ -87,7 +86,7 @@ await waitFor(() => (held.add?.refusal ?? null) !== null);
 check("the handle keeps the refusal", held.add?.refusal?.startsWith("canvas/add-page input"), true);
 
 const designed = drawn(
-	fakeApp({ answers: { [fx.GetPages.name]: ["Designed"] } }),
+	fakeApp({ answers: { [fx.PagesQuery.name]: ["Designed"] } }),
 	h(Slot, { loading, error: failed }, h(PageList)),
 );
 check("fakeApp draws a block with given answers", await waitFor(() => designed.textContent === "Designed"), true);

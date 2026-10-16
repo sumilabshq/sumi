@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { Contained } from "@widgetarium/core/catalogue-contained.js";
 import { leaseFor } from "@widgetarium/core/engine/render.js";
 import type { MountEntry } from "@widgetarium/core";
-import type { MountPicture, StatePicture } from "../../schema/design.js";
-import type { Drawing } from "../../schema/drawing.js";
+import type { MountPicture, StatePicture } from "../../schema/design.schema.js";
+import type { Drawing } from "../../schema/drawing.schema.js";
 import { RefusedDrawing } from "./refused-drawing.js";
 
 type Registry = Drawing["registry"];

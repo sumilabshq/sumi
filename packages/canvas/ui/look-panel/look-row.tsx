@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { NativeSelect, NativeSelectOption, Segmented } from "@widgetarium/kit";
 import type { OutputOf } from "@widgetarium/core/mediator";
-import type { LookPanelQuery } from "../../requests/look/look-panel.js";
+import type { LookPanelQuery } from "../../requests/look-panel.query.js";
 
 type LookRowShown = Extract<OutputOf<typeof LookPanelQuery>, { kind: "look" }>["rows"][number];
 

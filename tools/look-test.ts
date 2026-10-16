@@ -12,9 +12,12 @@ import {
 } from "../packages/core/src/app-look.ts";
 import type { Look, OfferedSetting } from "../packages/core/src/app-look.ts";
 import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
-import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/requests/look/look-tokens.ts";
+import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/lib/look/look-tokens.ts";
 import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
 import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
+import type { App } from "obsidian";
+import { pickLookOption } from "../packages/canvas/adapters/design-source/obsidian/design-writes.ts";
+import { standIn } from "./stand-in.ts";
 
 let failures = 0;
 
@@ -178,6 +181,27 @@ check(
 	"string",
 );
 await rm(vault, { recursive: true, force: true });
+
+const agentWroteMeanwhile = lookToWrite(lookPickedAs(offered, { shell: "top-bar" }));
+const lookFile = { text: lookToWrite(offered) };
+const lookAdapter = {
+	exists: async () => true,
+	read: async () => lookToWrite(offered),
+	write: async (_path: string, text: string) => {
+		lookFile.text = text;
+	},
+	process: async (_path: string, change: (text: string) => string) => {
+		lookFile.text = change(agentWroteMeanwhile);
+		return lookFile.text;
+	},
+};
+await pickLookOption(standIn<App>({ vault: { adapter: lookAdapter } }, ["vault"], "app"), "Farm", "ground", "grey");
+const afterPick = readLook(lookFile.text);
+check(
+	"a look pick in Obsidian changes the file as it is at the write, keeping a pick written meanwhile",
+	afterPick.refusal === undefined ? afterPick.value.settings.map((one) => one.picked) : afterPick.refusal,
+	["grey", "top-bar"],
+);
 
 console.log(failures === 0 ? "\nlook gate: clean" : `\nlook gate: ${failures} failing`);
 process.exit(failures === 0 ? 0 : 1);

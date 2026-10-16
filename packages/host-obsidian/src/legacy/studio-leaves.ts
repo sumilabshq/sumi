@@ -8,6 +8,8 @@ import { designHeldOf } from "./design-held.js";
 import { bindNote } from "./host.js";
 import { designFolderOf } from "@widgetarium/core/app-design.js";
 import type { StudioDesign } from "@widgetarium/studio";
+import type { ObsidianDesignOrigin } from "@widgetarium/canvas";
+import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { studioNoteOfFile } from "./studio-drawing.js";
 import type { StudioPlace } from "./studio-drawing.js";
@@ -53,9 +55,32 @@ export async function studioDesignOf(
 	leaf: WorkspaceLeaf,
 ): Promise<StudioDesign> {
 	const ownsPaste = (): boolean => plugin.app.workspace.getActiveViewOfType(StudioView)?.leaf === leaf;
-	if (!(await plugin.app.vault.adapter.exists(designFolderOf(app)))) return { app, ownsPaste };
-	const obsidian = designHeldOf(plugin, { leafOf: () => leaf, fromNote: () => "" });
-	return { app, ownsPaste, obsidian, gpu: obsidianGpuSupply(plugin) };
+	const hasDesign = await plugin.app.vault.adapter.exists(designFolderOf(app));
+	const gpu = hasDesign ? obsidianGpuSupply(plugin) : null;
+	return {
+		app,
+		hostOf: ({ project, returnToView, ...mount }) => ({
+			platform: "obsidian",
+			app: plugin.app,
+			canvas: {
+				...mount,
+				ownsPaste,
+				gpu,
+				design: designOriginOf(plugin, leaf, hasDesign, project),
+				returnTo: returnToView,
+			},
+		}),
+	};
+}
+
+function designOriginOf(
+	plugin: WidgetariumPlugin,
+	leaf: WorkspaceLeaf,
+	hasDesign: boolean,
+	project: StartedProject,
+): ObsidianDesignOrigin {
+	if (!hasDesign) return { kind: "project", project };
+	return { kind: "vault", held: designHeldOf(plugin, { leafOf: () => leaf, fromNote: () => "" }) };
 }
 
 function markdownStateOf(leaf: WorkspaceLeaf, state: Record<string, unknown>): ViewState {

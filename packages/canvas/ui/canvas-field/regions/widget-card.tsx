@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/core/mediator";
-import { DrawingQuery } from "../../../requests/field/drawing.js";
-import type { WidgetCard as Card } from "../../../schema/regions.js";
-import { DRAWS_AT_ONCE } from "../../state-drawing/draw-contexts.js";
+import { DrawingQuery } from "../../../requests/drawing.query.js";
+import type { WidgetCard as Card } from "../../../schema/regions.schema.js";
+import { DRAWS_AT_ONCE } from "../../../lib/state-drawing/draw-contexts.js";
 import { StateDrawing } from "../../state-drawing/state-drawing.js";
 import { DefaultDrawing } from "../frames/default-drawing.js";
 import { DrawnWhenSeen } from "../frames/drawn-when-seen.js";

@@ -2,8 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { LayersPanelQuery } from "../../requests/layers/layers-panel.js";
-import { ToggleLayoutLockCommand } from "../../requests/layers/toggle-layout-lock.js";
+import { LayersPanelQuery } from "../../requests/layers-panel.query.js";
+import { ToggleLayoutLockCommand } from "../../requests/toggle-layout-lock.command.js";
 
 const TITLE = "Layers";
 const LOCKED = "Layout locked: only widgets move";

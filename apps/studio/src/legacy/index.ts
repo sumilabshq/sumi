@@ -26,5 +26,5 @@ export type {
 	StatePicture,
 } from "@widgetarium/canvas";
 export { CANVAS_OPENED_ON, DesignStage } from "../canvas/design-stage.js";
-export type { CanvasHandle, CanvasShell, DesignStageProps } from "../canvas/design-stage.js";
-export type { StudioDesign } from "../canvas/studio-canvas.js";
+export type { CanvasHandle, CanvasShell, DesignStageProps, StageMount } from "../canvas/design-stage.js";
+export type { StudioDesign, StudioMount } from "../canvas/studio-canvas.js";

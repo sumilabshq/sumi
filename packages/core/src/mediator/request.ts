@@ -4,20 +4,25 @@ type KeyMaker<In> = { bivariant(input: In): string }["bivariant"];
 
 export type IdempotencyKey<In> = KeyMaker<In> | "per-call" | "none";
 
+export type RequestSide = "client" | "server";
+
 interface RequestOf<InS extends z.ZodType, OutS extends z.ZodType> {
 	readonly name: string;
 	readonly module: string;
 	readonly input: InS;
 	readonly output: OutS;
+	readonly side: RequestSide;
 }
 
 export interface QueryRequest<InS extends z.ZodType, OutS extends z.ZodType> extends RequestOf<InS, OutS> {
 	readonly kind: "query";
+	onServer(): QueryRequest<InS, OutS>;
 }
 
 export interface CommandRequest<InS extends z.ZodType, OutS extends z.ZodType> extends RequestOf<InS, OutS> {
 	readonly kind: "command";
 	readonly idempotencyKey: IdempotencyKey<z.output<InS>>;
+	onServer(): CommandRequest<InS, OutS>;
 }
 
 export type AnyQuery = QueryRequest<z.ZodType, z.ZodType>;
@@ -55,8 +60,20 @@ export function command(name: string): CommandDraft<z.ZodVoid, z.ZodVoid> {
 function queryDraftOf<InS extends z.ZodType>(name: string, module: string, input: InS): QueryDraft<InS> {
 	return {
 		input: (schema) => queryDraftOf(name, module, schema),
-		output: (output) => ({ kind: "query", name, module, input, output }),
+		output: (output) => queryOf({ kind: "query", name, module, input, output, side: "client" }),
 	};
+}
+
+function queryOf<InS extends z.ZodType, OutS extends z.ZodType>(
+	fields: Omit<QueryRequest<InS, OutS>, "onServer">,
+): QueryRequest<InS, OutS> {
+	return { ...fields, onServer: () => queryOf({ ...fields, side: "server" }) };
+}
+
+function commandOf<InS extends z.ZodType, OutS extends z.ZodType>(
+	fields: Omit<CommandRequest<InS, OutS>, "onServer">,
+): CommandRequest<InS, OutS> {
+	return { ...fields, onServer: () => commandOf({ ...fields, side: "server" }) };
 }
 
 function commandDraftOf<InS extends z.ZodType, OutS extends z.ZodType>(
@@ -68,7 +85,8 @@ function commandDraftOf<InS extends z.ZodType, OutS extends z.ZodType>(
 	return {
 		input: (schema) => commandDraftOf(name, module, schema, output),
 		output: (schema) => commandDraftOf(name, module, input, schema),
-		idempotencyKey: (idempotencyKey) => ({ kind: "command", name, module, input, output, idempotencyKey }),
+		idempotencyKey: (idempotencyKey) =>
+			commandOf({ kind: "command", name, module, input, output, idempotencyKey, side: "client" }),
 	};
 }
 

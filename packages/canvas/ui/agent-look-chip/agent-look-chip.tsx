@@ -2,9 +2,9 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { AgentLookQuery } from "../../requests/agent/agent-look.js";
-import { ShowAgentPageCommand } from "../../requests/agent/show-agent-page.js";
-import { fadedTurn } from "../page-tabs/faded-turn.js";
+import { AgentLookQuery } from "../../requests/agent-look.query.js";
+import { ShowAgentPageCommand } from "../../requests/show-agent-page.command.js";
+import { fadedTurn } from "../../lib/pages/faded-turn.js";
 
 const GO_THERE = "Go to the page the agent is looking at";
 

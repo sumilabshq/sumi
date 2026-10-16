@@ -1,6 +1,15 @@
 import { z } from "zod";
-import { command, handlerOf, inject, module, provided, query } from "../packages/core/src/mediator/index.ts";
-import type { AppHost, InputOf, Middleware, RequestContext } from "../packages/core/src/mediator/index.ts";
+import { app, command, handlerOf, module, provided, query } from "../packages/core/src/mediator/index.ts";
+import type {
+	AnyHost,
+	App,
+	AppPlatform,
+	InputOf,
+	Middleware,
+	Module,
+	RequestContext,
+} from "../packages/core/src/mediator/index.ts";
+import { standIn } from "./stand-in.ts";
 
 export abstract class Pages {
 	abstract readonly platform: string;
@@ -31,75 +40,75 @@ export function shutGate(): void {
 	});
 }
 
-export const GetPages = query("canvas/get-pages")
+export const PagesQuery = query("canvas/pages")
 	.input(z.object({ prefix: z.string() }))
 	.output(z.array(z.string()));
-export const GetPlatform = query("canvas/get-platform").output(z.string());
-export const GetSlow = query("canvas/get-slow").output(z.string());
-export const GetFailing = query("canvas/get-failing").output(z.string());
-export const GetHalf = query("canvas/get-half").output(z.number().int());
-export const AddPage = command("canvas/add-page")
+export const PlatformQuery = query("canvas/platform").output(z.string());
+export const SlowQuery = query("canvas/slow").output(z.string());
+export const FailingQuery = query("canvas/failing").output(z.string());
+export const HalfQuery = query("canvas/half").output(z.number().int());
+export const AddPageCommand = command("canvas/add-page")
 	.input(z.object({ title: z.string().min(1) }))
 	.output(z.object({ count: z.number() }))
 	.idempotencyKey(({ title }) => title);
-export const Bump = command("canvas/bump").idempotencyKey("none");
-export const Save = command("canvas/save")
+export const BumpCommand = command("canvas/bump").idempotencyKey("none");
+export const SaveCommand = command("canvas/save")
 	.input(z.object({ text: z.string() }))
 	.idempotencyKey("per-call");
-export const Orphan = query("canvas/orphan").output(z.string());
+export const OrphanQuery = query("canvas/orphan").output(z.string());
 
-export class GetPagesHandler extends handlerOf(GetPages) {
-	private readonly pages = inject(Pages);
-	override async handle({ prefix }: InputOf<typeof GetPages>): Promise<string[]> {
+export class PagesQueryHandler extends handlerOf(PagesQuery) {
+	private readonly pages = this.inject(Pages);
+	override async handle({ prefix }: InputOf<typeof PagesQuery>): Promise<string[]> {
 		seen.order.push("handler");
 		return this.pages.list().filter((title) => title.startsWith(prefix));
 	}
 }
 
-export class GetPlatformHandler extends handlerOf(GetPlatform) {
-	private readonly pages = inject(Pages);
-	override async handle(): Promise<string> {
-		return this.pages.platform;
+export class PlatformQueryHandler extends handlerOf(PlatformQuery) {
+	private readonly pages = this.inject(Pages);
+	override async handle(_input: void, ctx: RequestContext): Promise<string> {
+		return `${this.pages.platform} on ${ctx.host.platform}`;
 	}
 }
 
-export class GetSlowHandler extends handlerOf(GetSlow) {
+export class SlowQueryHandler extends handlerOf(SlowQuery) {
 	override async handle(): Promise<string> {
 		await gate.shut;
 		return "slow answer";
 	}
 }
 
-export class GetFailingHandler extends handlerOf(GetFailing) {
+export class FailingQueryHandler extends handlerOf(FailingQuery) {
 	override async handle(): Promise<string> {
 		throw new Error("the vault is gone");
 	}
 }
 
-export class GetHalfHandler extends handlerOf(GetHalf) {
+export class HalfQueryHandler extends handlerOf(HalfQuery) {
 	override async handle(): Promise<number> {
 		return 1.5;
 	}
 }
 
-export class AddPageHandler extends handlerOf(AddPage) {
-	private readonly pages = inject(Pages);
-	override async handle({ title }: InputOf<typeof AddPage>, ctx: RequestContext): Promise<{ count: number }> {
+export class AddPageCommandHandler extends handlerOf(AddPageCommand) {
+	private readonly pages = this.inject(Pages);
+	override async handle({ title }: InputOf<typeof AddPageCommand>, ctx: RequestContext): Promise<{ count: number }> {
 		seen.added += 1;
 		seen.keys.push(ctx.idempotencyKey);
 		return { count: this.pages.add(title) };
 	}
 }
 
-export class BumpHandler extends handlerOf(Bump) {
+export class BumpCommandHandler extends handlerOf(BumpCommand) {
 	override async handle(_input: void, ctx: RequestContext): Promise<void> {
 		seen.bumped += 1;
 		seen.keys.push(ctx.idempotencyKey);
 	}
 }
 
-export class SaveHandler extends handlerOf(Save) {
-	override async handle(_input: InputOf<typeof Save>, ctx: RequestContext): Promise<void> {
+export class SaveCommandHandler extends handlerOf(SaveCommand) {
+	override async handle(_input: InputOf<typeof SaveCommand>, ctx: RequestContext): Promise<void> {
 		seen.keys.push(ctx.idempotencyKey);
 	}
 }
@@ -116,19 +125,38 @@ const traced =
 export const canvasModule = module({
 	name: "canvas",
 	handlers: [
-		GetPagesHandler,
-		GetPlatformHandler,
-		GetSlowHandler,
-		GetFailingHandler,
-		GetHalfHandler,
-		AddPageHandler,
-		BumpHandler,
-		SaveHandler,
+		PagesQueryHandler,
+		PlatformQueryHandler,
+		SlowQueryHandler,
+		FailingQueryHandler,
+		HalfQueryHandler,
+		AddPageCommandHandler,
+		BumpCommandHandler,
+		SaveCommandHandler,
 	],
-	provide: [provided(Pages, (host) => new MemoryPages(host.is("obsidian") ? "obsidian" : "web"))],
+	provide: [
+		provided(Pages, {
+			obsidian: () => new MemoryPages("vault pages"),
+			web: (host) => new MemoryPages(`${host.platform} pages`),
+		}),
+	],
 	use: [traced("outer"), traced("inner")],
 });
 
-export function hostOn(platform: string): AppHost {
-	return { is: (asked) => asked === platform };
+export function hostOn(platform: AppPlatform): AnyHost {
+	return standIn<AnyHost>({ platform }, ["platform"], `${platform} host`);
+}
+
+export function onPlatform<T>(platform: AppPlatform, run: () => T): T {
+	const before: unknown = Reflect.get(globalThis, "__WG_PLATFORM__");
+	Reflect.set(globalThis, "__WG_PLATFORM__", platform);
+	try {
+		return run();
+	} finally {
+		Reflect.set(globalThis, "__WG_PLATFORM__", before);
+	}
+}
+
+export function appOn(platform: AppPlatform, modules: readonly Module[]): App {
+	return onPlatform(platform, () => app({ modules, platforms: [platform], host: hostOn(platform) }));
 }

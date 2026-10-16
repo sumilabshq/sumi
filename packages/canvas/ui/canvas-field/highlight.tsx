@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { Spot } from "../../schema/selection.js";
-import { useLingeringSpot } from "./use-lingering-spot.js";
+import type { Spot } from "../../schema/selection.schema.js";
+import { useLingeringSpot } from "../../lib/field/use-lingering-spot.js";
 
 export type SpotTone = "hover" | "picked";
 

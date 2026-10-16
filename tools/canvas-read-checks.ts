@@ -2,9 +2,9 @@ import type { App, DataAdapter } from "obsidian";
 import { screenPathOf } from "../packages/core/src/app-design.ts";
 import { sourceKeyOf } from "../packages/core/src/engine/node-marks.ts";
 import type { WidgetRegistry } from "../packages/core/src/registry.ts";
-import { layerMoved } from "../packages/canvas/ports/obsidian/design-writes.ts";
-import { boardIn } from "../packages/canvas/requests/design/board-in-note.ts";
-import { readDrawnState } from "../packages/canvas/requests/design/drawn-state.ts";
+import { layerMoved } from "../packages/canvas/adapters/design-source/obsidian/design-writes.ts";
+import { boardIn } from "../packages/canvas/lib/design/board-in-note.ts";
+import { readDrawnState } from "../packages/canvas/lib/design/drawn-state.ts";
 import { standIn } from "./stand-in.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;

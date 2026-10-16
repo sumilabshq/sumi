@@ -1,17 +1,20 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import type { FrameSize, GpuSupply } from "@widgetarium/canvas";
-import type { ObsidianDesignHeld } from "@widgetarium/canvas";
+import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
+import type { AnyHost } from "@widgetarium/core/mediator";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
-import type { CanvasShell } from "./design-stage.js";
+import type { CanvasShell, StageMount } from "./design-stage.js";
+
+export interface StudioMount extends StageMount {
+	readonly project: StartedProject;
+	readonly returnToView: () => Promise<void>;
+}
 
 export interface StudioDesign {
 	readonly app: string;
-	readonly ownsPaste: () => boolean;
-	readonly obsidian?: ObsidianDesignHeld | undefined;
-	readonly gpu?: GpuSupply | undefined;
+	readonly hostOf: (mount: StudioMount) => AnyHost;
 }
 
 export interface StudioCanvasProps {
@@ -25,21 +28,32 @@ export function StudioCanvas({ design, project, state, shell }: StudioCanvasProp
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<FrameSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
+	const returnToView = async (): Promise<void> => state.show("app");
 	const stage = size
 		? h(DesignStage, {
-				platform: design.obsidian ? "obsidian" : "web",
-				obsidian: design.obsidian,
-				ownsPaste: design.ownsPaste,
-				project,
-				returnToView: async () => state.show("app"),
 				app: design.app,
 				opening: CANVAS_OPENED_ON,
+				hostOf: (mount) => design.hostOf({ ...mount, project, returnToView }),
 				size,
-				gpu: design.gpu,
 				shell,
 			})
 		: null;
 	return h("div", { ref: viewRef, className: "cv:h-full cv:overflow-hidden", "data-canvas-studio": "" }, stage);
+}
+
+export function webStudioDesign(app: string): StudioDesign {
+	return {
+		app,
+		hostOf: ({ project, returnToView, ...mount }) => ({
+			platform: "web",
+			project,
+			canvas: { ...mount, returnToView, ownsPaste: ownsEveryPasteInItsTab, gpu: null },
+		}),
+	};
+}
+
+function ownsEveryPasteInItsTab(): boolean {
+	return true;
 }
 
 function useWatchesInnerSize(ref: { readonly current: HTMLElement | null }, onSize: (size: FrameSize) => void): void {

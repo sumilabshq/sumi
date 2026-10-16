@@ -2,7 +2,7 @@ import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import { normalizeBoard } from "@widgetarium/core/model.js";
 import type { Board } from "@widgetarium/core/model.js";
-import type { Drawing } from "../../../schema/drawing.js";
+import type { Drawing } from "../../../schema/drawing.schema.js";
 import { ScreenBoard } from "./screen-board.js";
 
 export interface DefaultDrawingProps extends Drawing {

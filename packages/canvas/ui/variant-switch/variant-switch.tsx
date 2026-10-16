@@ -2,8 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Segmented } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
-import { VariantsQuery } from "../../requests/pages/variants.js";
-import { PickVariantCommand } from "../../requests/pages/pick-variant.js";
+import { VariantsQuery } from "../../requests/variants.query.js";
+import { PickVariantCommand } from "../../requests/pick-variant.command.js";
 
 export function VariantSwitch(): ReactElement | null {
 	const { isShown, shown, items } = useQuery(VariantsQuery).data;

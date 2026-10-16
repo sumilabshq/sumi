@@ -4,6 +4,7 @@ import { parse } from "yaml";
 import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
 import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
+import { emptyProject, obsidianCanvasHostOf } from "./canvas-hosts.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -18,6 +19,7 @@ import {
 	studioNoteOf,
 } from "../packages/host-obsidian/src/legacy/studio-note.ts";
 import type { WindowChrome } from "../packages/host-obsidian/src/legacy/studio-note.ts";
+import type { StudioMount } from "../apps/studio/src/canvas/studio-canvas.ts";
 
 let failed = 0;
 function check(what: string, held: unknown, wanted: unknown): void {
@@ -442,7 +444,10 @@ const place = standIn<StudioPlace>(
 		hostOf: () => host,
 		openAsMarkdown: async () => undefined,
 		showAsMarkdown: async () => undefined,
-		designFor: async (app: string) => ({ app, ownsPaste: () => false }),
+		designFor: async (app: string) => ({
+			app,
+			hostOf: (mount: StudioMount) => obsidianCanvasHostOf(mount, { kind: "project", project: mount.project }),
+		}),
 	},
 	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
 	"place",
@@ -740,14 +745,13 @@ const designNode = document.createElement("div");
 document.body.append(designNode);
 drawInto(
 	createElement(DesignStage, {
-		platform: "web",
 		modules: [canvasModuleOver(designSource)],
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
+		hostOf: obsidianCanvasHostOf,
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
 		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
 		size: { width: 1200, height: 800 },
-		ownsPaste: () => false,
 	}),
 	designNode,
 );
@@ -794,10 +798,21 @@ const [activeDesign, otherDesign] = await Promise.all([
 	studioDesignOf(designPlugin, "Farm", activeLeaf),
 	studioDesignOf(designPlugin, "Farm", otherLeaf),
 ]);
+const studioMount = {
+	opened: { ...CANVAS_OPENED_ON, app: "Farm" },
+	keepOpening: () => undefined,
+	project: emptyProject(),
+	returnToView: async () => undefined,
+};
+const [activeHost, otherHost] = [activeDesign.hostOf(studioMount), otherDesign.hostOf(studioMount)];
 check(
-	"a studio with no design folder still says whose paste it is: only the active studio leaf takes one",
-	[activeDesign.ownsPaste(), otherDesign.ownsPaste(), activeDesign.obsidian === undefined],
-	[true, false, true],
+	"a studio with no design folder still says whose paste it is: only the active studio leaf takes one, and it draws the project",
+	[
+		activeHost.platform === "obsidian" && activeHost.canvas.ownsPaste(),
+		otherHost.platform === "obsidian" && otherHost.canvas.ownsPaste(),
+		activeHost.platform === "obsidian" && activeHost.canvas.design.kind,
+	],
+	[true, false, "project"],
 );
 
 if (failed > 0) {

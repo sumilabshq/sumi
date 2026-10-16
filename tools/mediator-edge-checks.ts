@@ -1,11 +1,11 @@
-import { MemoryDoneKeys, app } from "../packages/core/src/mediator/index.ts";
+import { MemoryDoneKeys } from "../packages/core/src/mediator/index.ts";
 import type { CommandAnswer } from "../packages/core/src/mediator/index.ts";
 import { check } from "./mediator-check.ts";
 import * as ex from "./mediator-edge-fixture.ts";
-import { hostOn } from "./mediator-fixture.ts";
+import { appOn } from "./mediator-fixture.ts";
 
 const { edge } = ex;
-const edged = app({ modules: [ex.edgeModule], host: hostOn("web") });
+const edged = appOn("web", [ex.edgeModule]);
 
 check("a throw inside the handler is ran: true", await edged.send(ex.WriteThenThrow, { id: "a" }), {
 	ok: false,

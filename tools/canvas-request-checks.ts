@@ -1,17 +1,16 @@
-import { app, module, provided } from "../packages/core/src/mediator/index.ts";
+import type { App as ObsidianApp } from "obsidian";
+import { module, provided } from "../packages/core/src/mediator/index.ts";
 import type { App as MediatorApp } from "../packages/core/src/mediator/index.ts";
 import { canvasModule } from "../packages/canvas/canvas.module.ts";
-import { canvasHost } from "../packages/canvas/ports/canvas-host.ts";
-import { DesignSource } from "../packages/canvas/ports/design-source.port.ts";
-import { whileAgentLooks } from "../packages/canvas/requests/agent/agent-looks.ts";
-import { ShowAgentPageCommand } from "../packages/canvas/requests/agent/show-agent-page.ts";
-import { PageTabsQuery } from "../packages/canvas/requests/pages/page-tabs.ts";
-import { PickVariantCommand } from "../packages/canvas/requests/pages/pick-variant.ts";
-import { PastePhotosCommand } from "../packages/canvas/requests/photos/paste-photos.ts";
-import { CanvasStore, createCanvasStore } from "../packages/canvas/requests/view/canvas-store.ts";
-import type { DrawnDesign } from "../packages/canvas/schema/design.ts";
-import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
-import type { StartedProject } from "../packages/core/src/app/widgetarium-app.js";
+import { DesignSource } from "../packages/canvas/adapters/design-source/design-source.adapter.ts";
+import { whileAgentLooks } from "../packages/canvas/lib/agent/agent-looks.ts";
+import { ShowAgentPageCommand } from "../packages/canvas/requests/show-agent-page.command.ts";
+import { PageTabsQuery } from "../packages/canvas/requests/page-tabs.query.ts";
+import { PickVariantCommand } from "../packages/canvas/requests/pick-variant.command.ts";
+import { PastePhotosCommand } from "../packages/canvas/requests/paste-photos.command.ts";
+import { CanvasStore, createCanvasStore } from "../packages/canvas/lib/view/canvas-store.ts";
+import type { DrawnDesign } from "../packages/canvas/schema/design.schema.ts";
+import { FARM_OPENED, canvasAppOn, emptyProject, obsidianCanvasHostOf, webCanvasHostOf } from "./canvas-hosts.ts";
 import { standIn } from "./stand-in.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;
@@ -41,27 +40,18 @@ export async function checkCanvasRequests(check: Check): Promise<void> {
 }
 
 async function checkObsidianBuildOverProject(check: Check): Promise<void> {
-	const project = standIn<StartedProject>(
-		{ registry: new ModuleRegistry({}), routes: [], hostOf: () => ({}) },
-		["registry", "routes", "hostOf"],
-		"project",
+	const opened = { ...FARM_OPENED, page: "" };
+	const vault = standIn<ObsidianApp>({}, [], "app");
+	const host = obsidianCanvasHostOf({ opened }, { kind: "project", project: emptyProject() }, vault);
+	const trailing = async (): Promise<unknown> => {
+		const tabs = await canvasAppOn(host, [canvasModule]).send(PageTabsQuery, undefined);
+		return tabs.ok ? tabs.output.trailing : tabs.reason;
+	};
+	check(
+		"built for Obsidian, a canvas over a project with no design folder reads the project's design",
+		await trailing().catch((failure: unknown) => (failure instanceof Error ? failure.message : String(failure))),
+		["Components"],
 	);
-	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
-	const host = canvasHost({ platform: "web", opened, project, ownsPaste: () => false });
-	Reflect.set(globalThis, "__WG_PLATFORM__", "obsidian");
-	try {
-		const trailing = async (): Promise<unknown> => {
-			const tabs = await app({ modules: [canvasModule], host }).send(PageTabsQuery, undefined);
-			return tabs.ok ? tabs.output.trailing : tabs.reason;
-		};
-		check(
-			"built for Obsidian, a canvas over a project with no design folder reads the project's design",
-			await trailing().catch((failure: unknown) => (failure instanceof Error ? failure.message : String(failure))),
-			["Components"],
-		);
-	} finally {
-		Reflect.deleteProperty(globalThis, "__WG_PLATFORM__");
-	}
 }
 
 async function checkPickAfterPageTurn(check: Check): Promise<void> {
@@ -108,15 +98,11 @@ async function checkPasteOwner(check: Check): Promise<void> {
 
 function canvasOver(source: DesignSource, reasons: string[], ownsPaste = (): boolean => false): MediatorApp {
 	const provide = canvasModule.provide.map((pair) => {
-		if (pair.token === DesignSource) return provided(DesignSource, () => source);
+		if (pair.token === DesignSource) return provided(DesignSource, { web: () => source });
 		if (pair.token !== CanvasStore) return pair;
-		return provided(CanvasStore, () => recordingStore(reasons));
+		return provided(CanvasStore, { web: () => recordingStore(reasons) });
 	});
-	const opened = { app: "Farm", page: "Home", isLayersOpen: false, mode: "hand" as const };
-	return app({
-		modules: [module({ ...canvasModule, provide })],
-		host: canvasHost({ platform: "web", opened, ownsPaste }),
-	});
+	return canvasAppOn(webCanvasHostOf({ opened: FARM_OPENED, ownsPaste }), [module({ ...canvasModule, provide })]);
 }
 
 function recordingStore(reasons: string[]): CanvasStore {

@@ -2,9 +2,9 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useQuery } from "@widgetarium/core/mediator";
 import type { InputOf } from "@widgetarium/core/mediator";
-import { ShotPartQuery } from "../../requests/shots/shot-part.js";
+import { ShotPartQuery } from "../../requests/shot-part.query.js";
 import { RegionDrawn } from "../canvas-field/region-drawn.js";
-import { DRAWS_AT_ONCE } from "../state-drawing/draw-contexts.js";
+import { DRAWS_AT_ONCE } from "../../lib/state-drawing/draw-contexts.js";
 
 export interface CanvasShotProps {
 	readonly asked: InputOf<typeof ShotPartQuery>;

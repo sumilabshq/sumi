@@ -5,11 +5,11 @@ import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/mediator";
 import { treeRowProps } from "@widgetarium/behaviors";
 import type { TreeDrag } from "@widgetarium/behaviors";
-import { PickLayerCommand } from "../../requests/layers/pick-layer.js";
-import { ToggleLayerFoldCommand } from "../../requests/layers/toggle-layer-fold.js";
-import type { LayerRow as Row } from "../../requests/layers/layer-rows.js";
+import { PickLayerCommand } from "../../requests/pick-layer.command.js";
+import { ToggleLayerFoldCommand } from "../../requests/toggle-layer-fold.command.js";
+import type { LayerRow as Row } from "../../lib/layers/layer-rows.js";
 import { LayerName } from "./layer-name.js";
-import { KIND_ICON, OPENER, ROW } from "./layer-row-look.js";
+import { KIND_ICON, OPENER, ROW } from "../../lib/layers/layer-row-look.js";
 
 export interface LayerRowProps {
 	readonly row: Row;

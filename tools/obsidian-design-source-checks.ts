@@ -2,17 +2,17 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { App, DataAdapter, Stat, WorkspaceLeaf } from "obsidian";
 import { render } from "../packages/core/src/engine/render.js";
-import { AppProvider, OnRefused, app, useCommand } from "../packages/core/src/mediator/index.ts";
+import { AppProvider, OnRefused, useCommand } from "../packages/core/src/mediator/index.ts";
 import type { CommandHandle, CommandRefusal } from "../packages/core/src/mediator/index.ts";
 import type { WidgetRegistry } from "../packages/core/src/registry.ts";
 import { canvasModule } from "../packages/canvas/canvas.module.ts";
-import { canvasHost } from "../packages/canvas/ports/canvas-host.ts";
-import { polledChanges } from "../packages/canvas/ports/obsidian/design-changes.ts";
-import { shownWidgetsOf } from "../packages/canvas/requests/design/shown-widgets.ts";
-import { AddPhotosCommand } from "../packages/canvas/requests/photos/add-photos.ts";
+import { canvasAppOn, obsidianCanvasHostOf } from "./canvas-hosts.ts";
+import { polledChanges } from "../packages/canvas/adapters/design-source/obsidian/design-changes.ts";
+import { shownWidgetsOf } from "../packages/canvas/lib/design/shown-widgets.ts";
+import { AddPhotosCommand } from "../packages/canvas/requests/add-photos.command.ts";
 import { normalizeBoard } from "../packages/core/src/model.ts";
 import type { WidgetDefinition } from "../packages/core/src/registry.ts";
-import type { Drawing } from "../packages/canvas/schema/drawing.ts";
+import type { Drawing } from "../packages/canvas/schema/drawing.schema.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -30,8 +30,7 @@ export async function checkDesignSource(check: Check, settle: () => Promise<void
 async function checkFailedWrite(check: Check, settle: () => Promise<void>): Promise<void> {
 	const failing = (): Promise<never> => Promise.reject(new Error(WRITE_FAILED));
 	const adapter = { exists: failing, mkdir: failing, writeBinary: failing, write: failing, process: failing };
-	const obsidian = {
-		obsidian: standIn<App>({ vault: { adapter } }, ["vault"], "app"),
+	const held = {
 		registry: standIn<WidgetRegistry>({ get: () => null }, ["get"], "registry"),
 		host: standIn<Drawing["host"]>({}, [], "host"),
 		jobs: { jobsOf: () => [], liveOf: () => null, stop: async () => undefined, watch: () => () => undefined },
@@ -39,10 +38,9 @@ async function checkFailedWrite(check: Check, settle: () => Promise<void>): Prom
 		fetchUrl: () => Promise.reject(new Error("no network here")),
 	};
 	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
-	const canvasApp = app({
-		modules: [canvasModule],
-		host: canvasHost({ platform: "obsidian", opened, obsidian, ownsPaste: () => true }),
-	});
+	const vault = standIn<App>({ vault: { adapter } }, ["vault"], "app");
+	const host = obsidianCanvasHostOf({ opened, ownsPaste: () => true }, { kind: "vault", held }, vault);
+	const canvasApp = canvasAppOn(host, [canvasModule]);
 	const heard: CommandRefusal[] = [];
 	const node = document.createElement("div");
 	document.body.append(node);

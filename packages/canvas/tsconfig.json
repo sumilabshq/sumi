@@ -27,9 +27,10 @@
 	"include": [
 		"*.ts",
 		"schema/**/*.ts",
-		"ports/**/*.ts",
+		"adapters/**/*.ts",
 		"requests/**/*.ts",
-		"ui/**/*.ts",
+		"client/**/*.ts",
+		"lib/**/*.ts",
 		"ui/**/*.tsx",
 		"../core/src/*.d.ts",
 		"../kit/src/jsx-namespace.d.ts"

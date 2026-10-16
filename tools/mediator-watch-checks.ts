@@ -1,19 +1,20 @@
 import { z } from "zod";
-import { app, handlerOf, module, query } from "../packages/core/src/mediator/index.ts";
+import { handlerOf, module, query } from "../packages/core/src/mediator/index.ts";
+import type { Watching } from "../packages/core/src/mediator/index.ts";
 import { sharedWith } from "../packages/core/src/mediator/shared-with.ts";
 import { check, waitFor } from "./mediator-check.ts";
-import { hostOn } from "./mediator-fixture.ts";
+import { appOn } from "./mediator-fixture.ts";
 
 const counter = { value: 1, listeners: new Set<() => void>(), stopped: 0 };
 
-const GetCounted = query("watched/get-counted").output(z.object({ value: z.number(), tags: z.array(z.string()) }));
+const CountedQuery = query("watched/counted").output(z.object({ value: z.number(), tags: z.array(z.string()) }));
 
-class GetCountedHandler extends handlerOf(GetCounted) {
+class CountedQueryHandler extends handlerOf(CountedQuery) {
 	override async handle(): Promise<{ value: number; tags: string[] }> {
 		return { value: counter.value, tags: ["same"] };
 	}
 
-	watch(_input: void, changed: () => void): () => void {
+	override watch({ changed }: Watching<typeof CountedQuery>): () => void {
 		counter.listeners.add(changed);
 		return () => {
 			counter.stopped += 1;
@@ -24,23 +25,36 @@ class GetCountedHandler extends handlerOf(GetCounted) {
 
 const fresh = { value: 1 };
 
-const GetFresh = query("watched/get-fresh").output(z.object({ value: z.number() }));
+const FreshQuery = query("watched/fresh").output(z.object({ value: z.number() }));
 
-class GetFreshHandler extends handlerOf(GetFresh) {
+class FreshQueryHandler extends handlerOf(FreshQuery) {
 	override async handle(): Promise<{ value: number }> {
 		return { value: fresh.value };
 	}
 
-	watch(): () => void {
+	override watch(): () => void {
 		return () => undefined;
 	}
 }
 
-const watchedModule = module({ name: "watched", handlers: [GetCountedHandler, GetFreshHandler] });
-const running = app({ modules: [watchedModule], host: hostOn("web") });
-const key = running.queries.keyOf(GetCounted, undefined);
+const Unwatched = query("watched/unwatched").output(z.number());
+
+class UnwatchedHandler extends handlerOf(Unwatched) {
+	override async handle(): Promise<number> {
+		return 1;
+	}
+}
+
+const watchedModule = module({ name: "watched", handlers: [CountedQueryHandler, FreshQueryHandler, UnwatchedHandler] });
+const running = appOn("web", [watchedModule]);
+check(
+	"a handler that does not override watch is not watched: the base answers the not-watched stop",
+	running.watch(Unwatched, undefined, () => undefined) === running.watch(Unwatched, undefined, () => undefined),
+	true,
+);
+const key = running.queries.keyOf(CountedQuery, undefined);
 let heard = 0;
-const stop = running.queries.subscribe(GetCounted, undefined, () => (heard += 1));
+const stop = running.queries.subscribe(CountedQuery, undefined, () => (heard += 1));
 await waitFor(() => running.queries.peek(key)?.status === "ready");
 const first = running.queries.peek(key)?.data;
 check("a query whose handler watches is watched while someone listens", counter.listeners.size, 1);
@@ -79,10 +93,10 @@ check(
 	[false, true],
 );
 
-const freshKey = running.queries.keyOf(GetFresh, undefined);
-await running.queries.start(GetFresh, undefined).read;
+const freshKey = running.queries.keyOf(FreshQuery, undefined);
+await running.queries.start(FreshQuery, undefined).read;
 fresh.value = 2;
-const stopFresh = running.queries.subscribe(GetFresh, undefined, () => undefined);
+const stopFresh = running.queries.subscribe(FreshQuery, undefined, () => undefined);
 await waitFor(() => JSON.stringify(running.queries.peek(freshKey)?.data) === '{"value":2}');
 check(
 	"a change between the first read and the watch attaching is read once the watch attaches",

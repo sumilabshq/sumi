@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { RegionOf } from "../../../schema/regions.js";
+import type { RegionOf } from "../../../schema/regions.schema.js";
 import { NotedPicture } from "../frames/noted-picture.js";
 import { Group } from "./group.js";
 import { Region } from "./region.js";

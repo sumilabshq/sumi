@@ -1,8 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { canvasHost } from "@widgetarium/canvas";
-import type { CanvasHostParts, CanvasOpening, FrameSize } from "@widgetarium/canvas";
-import type { Module } from "@widgetarium/core/mediator";
+import type { CanvasOpened, CanvasOpening, FrameSize } from "@widgetarium/canvas";
+import type { AnyHost, Module } from "@widgetarium/core/mediator";
 import { CanvasPage } from "./canvas-page.js";
 import type { CanvasCorners } from "./canvas-page.js";
 import type { CanvasHandle } from "./use-hands-canvas.js";
@@ -13,9 +12,15 @@ export interface CanvasShell {
 	readonly corners: CanvasCorners;
 }
 
-export interface DesignStageProps extends Omit<CanvasHostParts, "opened" | "keepOpening"> {
+export interface StageMount {
+	readonly opened: CanvasOpened;
+	readonly keepOpening: (kept: CanvasOpening) => void;
+}
+
+export interface DesignStageProps {
 	readonly app: string;
 	readonly opening: CanvasOpening;
+	readonly hostOf: (mount: StageMount) => AnyHost;
 	readonly onKept?: ((kept: CanvasOpening) => void) | undefined;
 	readonly onCanvas?: ((canvas: CanvasHandle) => void) | undefined;
 	readonly size: FrameSize;
@@ -36,12 +41,14 @@ export function DesignStage({
 	app,
 	opening,
 	onKept,
-	...parts
+	hostOf,
 }: DesignStageProps): ReactElement {
-	const [host] = useState(() => canvasHost({ ...parts, opened: { ...opening, app }, keepOpening: onKept }));
+	const [host] = useState(() => hostOf({ opened: { ...opening, app }, keepOpening: onKept ?? keepsNothing }));
 	return h(
 		"div",
 		{ className: STAGE, style: { width: size.width, height: size.height }, "data-canvas-stage": "" },
 		h(CanvasPage, { host, corners: shell?.corners ?? NO_CORNERS, modules, onCanvas }),
 	);
 }
+
+function keepsNothing(): void {}

@@ -1,8 +1,8 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import type { Drawing } from "../../../schema/drawing.js";
-import type { Frame } from "../../../schema/regions.js";
-import { useGpuFrame } from "./use-gpu-frame.js";
+import type { Drawing } from "../../../schema/drawing.schema.js";
+import type { Frame } from "../../../schema/regions.schema.js";
+import { useGpuFrame } from "../../../lib/field/frames/use-gpu-frame.js";
 
 export interface GpuScreenProps {
 	readonly frame: Frame;

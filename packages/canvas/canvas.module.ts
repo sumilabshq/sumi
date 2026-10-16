@@ -1,59 +1,56 @@
 import { module, provided } from "@widgetarium/core/mediator";
-import type { AppHost } from "@widgetarium/core/mediator";
-import { CanvasHost, canvasHostOf } from "./ports/canvas-host.js";
-import { DesignSource } from "./ports/design-source.port.js";
-import { ObsidianDesignSource } from "./ports/design-source-obsidian.js";
-import { WebDesignSource } from "./ports/design-source-web.js";
-import { CachedDesignReads, DesignReads } from "./requests/design/design-reads.js";
-import { FramePictureTaker, QueuedFramePictures } from "./requests/pictures/frame-picture-taker.js";
-import { CanvasStore, createCanvasStore } from "./requests/view/canvas-store.js";
-import { AgentLookQueryHandler } from "./requests/agent/agent-look.js";
-import { ShowAgentPageCommandHandler } from "./requests/agent/show-agent-page.js";
-import { DrawingQueryHandler } from "./requests/field/drawing.js";
-import { FieldRegionsQueryHandler } from "./requests/field/field-regions.js";
-import { FieldStateQueryHandler } from "./requests/field/field-state.js";
-import { PickSpotCommandHandler } from "./requests/field/pick-spot.js";
-import { ResolveSpotCommandHandler } from "./requests/field/resolve-spot.js";
-import { JobStatusQueryHandler } from "./requests/jobs/job-status.js";
-import { StopJobCommandHandler } from "./requests/jobs/stop-job.js";
-import { LayersPanelQueryHandler } from "./requests/layers/layers-panel.js";
-import { LayersToggleQueryHandler } from "./requests/layers/layers-toggle.js";
-import { KeepSeenLayersCommandHandler } from "./requests/layers/keep-seen-layers.js";
-import { MoveLayerCommandHandler } from "./requests/layers/move-layer.js";
-import { PickLayerCommandHandler } from "./requests/layers/pick-layer.js";
-import { ToggleLayerFoldCommandHandler } from "./requests/layers/toggle-layer-fold.js";
-import { ToggleLayersCommandHandler } from "./requests/layers/toggle-layers.js";
-import { ToggleLayoutLockCommandHandler } from "./requests/layers/toggle-layout-lock.js";
-import { LookPanelQueryHandler } from "./requests/look/look-panel.js";
-import { PickLookCommandHandler } from "./requests/look/pick-look.js";
-import { FinishFlightCommandHandler } from "./requests/pages/finish-flight.js";
-import { FocusWidgetCommandHandler } from "./requests/pages/focus-widget.js";
-import { DesignSummaryQueryHandler } from "./requests/pages/design-summary.js";
-import { PageTabsQueryHandler } from "./requests/pages/page-tabs.js";
-import { VariantsQueryHandler } from "./requests/pages/variants.js";
-import { PickVariantCommandHandler } from "./requests/pages/pick-variant.js";
-import { ReturnToViewCommandHandler } from "./requests/pages/return-to-view.js";
-import { DesignSourceViewReturn, HostViewReturn, ViewReturn } from "./requests/pages/view-return.js";
-import { ShowPageCommandHandler } from "./requests/pages/show-page.js";
-import { AddPhotosCommandHandler } from "./requests/photos/add-photos.js";
-import { PastePhotosCommandHandler } from "./requests/photos/paste-photos.js";
-import { AskForPictureCommandHandler } from "./requests/pictures/ask-for-picture.js";
-import { FramePictureQueryHandler } from "./requests/pictures/frame-picture.js";
-import { PicturesProgressQueryHandler } from "./requests/pictures/pictures-progress.js";
-import { NoteBoardQueryHandler } from "./requests/shots/note-board.js";
-import { ShotCountQueryHandler } from "./requests/shots/shot-count.js";
-import { ShotPartQueryHandler } from "./requests/shots/shot-part.js";
-import { ChooseRendererCommandHandler } from "./requests/view/choose-renderer.js";
-import { CameraQueryHandler } from "./requests/view/camera.js";
-import { ModeQueryHandler } from "./requests/view/mode.js";
-import { RendererSwitchQueryHandler } from "./requests/view/renderer-switch.js";
-import { KeepCameraCommandHandler } from "./requests/view/keep-camera.js";
-import { SetModeCommandHandler } from "./requests/view/set-mode.js";
-
-declare const __WG_PLATFORM__: string | undefined;
-
-const NO_DESIGN_SOURCE = "the canvas host names {platform} but hands no design to read";
-const NOT_BUILT_FOR_OBSIDIAN = "this build of the canvas carries no Obsidian design source";
+import type { Inject, ObsidianHost } from "@widgetarium/core/mediator";
+import { CanvasHost } from "./adapters/canvas-host/canvas-host.adapter.js";
+import type { CanvasMount } from "./adapters/canvas-host/canvas-host.adapter.js";
+import { MountedCanvasHost } from "./adapters/canvas-host/mounted.adapter.js";
+import { DesignSource } from "./adapters/design-source/design-source.adapter.js";
+import { ObsidianDesignSource } from "./adapters/design-source/obsidian/obsidian.adapter.js";
+import { ProjectDesignSource } from "./adapters/design-source/project.adapter.js";
+import { CachedDesignReads, DesignReads } from "./lib/design/design-reads.js";
+import { DesignSourceViewReturn, HostViewReturn, ViewReturn } from "./lib/pages/view-return.js";
+import { FramePictureTaker, QueuedFramePictures } from "./lib/pictures/frame-picture-taker.js";
+import { CanvasStore, createCanvasStore } from "./lib/view/canvas-store.js";
+import { AgentLookQueryHandler } from "./client/agent/agent-look.handler.js";
+import { ShowAgentPageCommandHandler } from "./client/agent/show-agent-page.handler.js";
+import { DrawingQueryHandler } from "./client/field/drawing.handler.js";
+import { FieldRegionsQueryHandler } from "./client/field/field-regions.handler.js";
+import { FieldStateQueryHandler } from "./client/field/field-state.handler.js";
+import { PickSpotCommandHandler } from "./client/field/pick-spot.handler.js";
+import { ResolveSpotCommandHandler } from "./client/field/resolve-spot.handler.js";
+import { JobStatusQueryHandler } from "./client/jobs/job-status.handler.js";
+import { StopJobCommandHandler } from "./client/jobs/stop-job.handler.js";
+import { LayersPanelQueryHandler } from "./client/layers/layers-panel.handler.js";
+import { LayersToggleQueryHandler } from "./client/layers/layers-toggle.handler.js";
+import { KeepSeenLayersCommandHandler } from "./client/layers/keep-seen-layers.handler.js";
+import { MoveLayerCommandHandler } from "./client/layers/move-layer.handler.js";
+import { PickLayerCommandHandler } from "./client/layers/pick-layer.handler.js";
+import { ToggleLayerFoldCommandHandler } from "./client/layers/toggle-layer-fold.handler.js";
+import { ToggleLayersCommandHandler } from "./client/layers/toggle-layers.handler.js";
+import { ToggleLayoutLockCommandHandler } from "./client/layers/toggle-layout-lock.handler.js";
+import { LookPanelQueryHandler } from "./client/look/look-panel.handler.js";
+import { PickLookCommandHandler } from "./client/look/pick-look.handler.js";
+import { FinishFlightCommandHandler } from "./client/pages/finish-flight.handler.js";
+import { FocusWidgetCommandHandler } from "./client/pages/focus-widget.handler.js";
+import { DesignSummaryQueryHandler } from "./client/pages/design-summary.handler.js";
+import { PageTabsQueryHandler } from "./client/pages/page-tabs.handler.js";
+import { VariantsQueryHandler } from "./client/pages/variants.handler.js";
+import { PickVariantCommandHandler } from "./client/pages/pick-variant.handler.js";
+import { ReturnToViewCommandHandler } from "./client/pages/return-to-view.handler.js";
+import { ShowPageCommandHandler } from "./client/pages/show-page.handler.js";
+import { AddPhotosCommandHandler } from "./client/photos/add-photos.handler.js";
+import { PastePhotosCommandHandler } from "./client/photos/paste-photos.handler.js";
+import { AskForPictureCommandHandler } from "./client/pictures/ask-for-picture.handler.js";
+import { FramePictureQueryHandler } from "./client/pictures/frame-picture.handler.js";
+import { PicturesProgressQueryHandler } from "./client/pictures/pictures-progress.handler.js";
+import { NoteBoardQueryHandler } from "./client/shots/note-board.handler.js";
+import { ShotCountQueryHandler } from "./client/shots/shot-count.handler.js";
+import { ShotPartQueryHandler } from "./client/shots/shot-part.handler.js";
+import { ChooseRendererCommandHandler } from "./client/view/choose-renderer.handler.js";
+import { CameraQueryHandler } from "./client/view/camera.handler.js";
+import { ModeQueryHandler } from "./client/view/mode.handler.js";
+import { RendererSwitchQueryHandler } from "./client/view/renderer-switch.handler.js";
+import { KeepCameraCommandHandler } from "./client/view/keep-camera.handler.js";
+import { SetModeCommandHandler } from "./client/view/set-mode.handler.js";
 
 export const canvasModule = module({
 	name: "canvas",
@@ -101,35 +98,48 @@ export const canvasModule = module({
 		SetModeCommandHandler,
 	],
 	provide: [
-		provided(CanvasHost, canvasHostOf),
-		provided(DesignSource, designSourceOf),
-		provided(CanvasStore, (host) => {
-			const { opened, keepOpening } = canvasHostOf(host);
-			return createCanvasStore(opened, keepOpening);
+		provided(CanvasHost, {
+			obsidian: canvasHostOf,
+			web: canvasHostOf,
 		}),
-		provided(DesignReads, () => new CachedDesignReads()),
-		provided(FramePictureTaker, () => new QueuedFramePictures()),
-		provided(ViewReturn, viewReturnOf),
+		provided(DesignSource, {
+			obsidian: obsidianDesignSourceOf,
+			web: (host) => new ProjectDesignSource(host.project),
+		}),
+		provided(CanvasStore, { obsidian: canvasStoreOf, web: canvasStoreOf }),
+		provided(DesignReads, { obsidian: designReadsOf, web: designReadsOf }),
+		provided(FramePictureTaker, { obsidian: framePicturesOf, web: framePicturesOf }),
+		provided(ViewReturn, {
+			obsidian: obsidianViewReturnOf,
+			web: (host) => new HostViewReturn(host.canvas.returnToView),
+		}),
 	],
 });
 
-function designSourceOf(host: AppHost): DesignSource {
-	const { obsidian, project } = canvasHostOf(host);
-	if (!host.is("obsidian")) return new WebDesignSource(project ?? refusedWithout("web"));
-	return typeof __WG_PLATFORM__ === "string" && __WG_PLATFORM__ === "web"
-		? refusedOffBuild()
-		: new ObsidianDesignSource(obsidian ?? refusedWithout("obsidian"));
+function canvasHostOf({ canvas }: { readonly canvas: CanvasMount }): CanvasHost {
+	return new MountedCanvasHost(canvas);
 }
 
-function refusedOffBuild(): never {
-	throw new Error(NOT_BUILT_FOR_OBSIDIAN);
+function obsidianDesignSourceOf({ app, canvas }: ObsidianHost): DesignSource {
+	const { design } = canvas;
+	return design.kind === "vault" ? new ObsidianDesignSource(app, design.held) : new ProjectDesignSource(design.project);
 }
 
-function viewReturnOf(host: AppHost): ViewReturn {
-	const { returnToView } = canvasHostOf(host);
-	return returnToView ? new HostViewReturn(returnToView) : new DesignSourceViewReturn();
+function obsidianViewReturnOf({ canvas }: ObsidianHost, inject: Inject): ViewReturn {
+	const { returnTo } = canvas;
+	if (returnTo !== "app-note") return new HostViewReturn(returnTo);
+	return new DesignSourceViewReturn(inject(DesignReads), inject(DesignSource), inject(CanvasStore));
 }
 
-function refusedWithout(platform: string): never {
-	throw new Error(NO_DESIGN_SOURCE.replace("{platform}", platform));
+function canvasStoreOf(_host: unknown, inject: Inject): CanvasStore {
+	const canvasHost = inject(CanvasHost);
+	return createCanvasStore(canvasHost.opened, (kept) => canvasHost.keepOpening(kept));
+}
+
+function designReadsOf(_host: unknown, inject: Inject): DesignReads {
+	return new CachedDesignReads(inject(DesignSource));
+}
+
+function framePicturesOf(): FramePictureTaker {
+	return new QueuedFramePictures();
 }

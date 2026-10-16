@@ -2,13 +2,13 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/mediator";
 import { useMarkedLayers } from "@widgetarium/behaviors";
-import { DrawingQuery } from "../../requests/field/drawing.js";
-import { KeepSeenLayersCommand } from "../../requests/layers/keep-seen-layers.js";
-import type { StatePicture } from "../../schema/design.js";
-import { DESKTOP_FRAME } from "../../schema/frame-size.js";
-import { LIVE_SCREEN } from "../canvas-field/field-marks.js";
-import { DRAWS_AT_ONCE } from "../state-drawing/draw-contexts.js";
-import { SCREEN } from "../state-drawing/screen-class.js";
+import { DrawingQuery } from "../../requests/drawing.query.js";
+import { KeepSeenLayersCommand } from "../../requests/keep-seen-layers.command.js";
+import type { StatePicture } from "../../schema/design.schema.js";
+import { DESKTOP_FRAME } from "../../schema/frame-size.schema.js";
+import { LIVE_SCREEN } from "../../lib/field/field-marks.js";
+import { DRAWS_AT_ONCE } from "../../lib/state-drawing/draw-contexts.js";
+import { SCREEN } from "../../lib/state-drawing/screen-class.js";
 import { StateDrawing } from "../state-drawing/state-drawing.js";
 
 export function LiveScreen({ picture }: { readonly picture: StatePicture }): ReactElement {
