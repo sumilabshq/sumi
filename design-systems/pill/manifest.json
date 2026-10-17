@@ -1,0 +1,36 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "pill",
+	"name": "Pill",
+	"category": "Product",
+	"description": "Pills on every control, tight grey containers around big white plates, and one loud blue card beside a black one for the answer that matters.",
+	"source": {
+		"type": "authored",
+		"origin": "the approved Widgetarium studio chat mockups (Loud, Calm, Menus, Messages, Text), 2026-10-17",
+		"credit": "Widgetarium studio design; Geist by Vercel and basement.studio, SIL OFL 1.1"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["function", "journey"],
+		"activity": ["create", "operate", "track"],
+		"photogenic": ["no", "user-photos"],
+		"session": ["long-work", "browse"],
+		"density": ["low", "medium"],
+		"tone": ["loud", "confident", "friendly"],
+		"device": ["desktop", "both"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

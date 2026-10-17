@@ -10,6 +10,7 @@ interface Block {
 
 const STUDIO_CLASS = /\.wg-(?:studio|design-)/;
 const STUDIO_KEYFRAMES = /^@keyframes\s+wg-(?:studio|design-)/;
+const STUDIO_LAYER = /^@layer\s+wg-studio-/;
 const NESTING_AT_RULE = /^@(?:media|supports|container|layer)\b/;
 const COMMENT = /\/\*[\s\S]*?\*\//g;
 const QUOTES = new Set(['"', "'"]);
@@ -22,6 +23,7 @@ export function studioSplitOf(css: string): SplitSheet {
 function splitBlock(block: Block): SplitSheet {
 	if (block.body === null) return { app: block.prelude, studio: "" };
 	const opening = block.prelude.replace(COMMENT, "").trim();
+	if (STUDIO_LAYER.test(opening)) return { app: "", studio: `${opening} {${block.body}}\n\n` };
 	if (NESTING_AT_RULE.test(opening)) return splitNested(block.prelude, block.body);
 	if (STUDIO_KEYFRAMES.test(opening)) return { app: "", studio: `${opening} {${block.body}}\n\n` };
 	if (opening.startsWith("@")) return { app: `${block.prelude}{${block.body}}`, studio: "" };
@@ -81,7 +83,7 @@ function closingOf(css: string, opening: number): number {
 	throw new Error(`a block opened at ${opening} never closes`);
 }
 
-function splitAtTopCommas(selectorList: string): string[] {
+export function splitAtTopCommas(selectorList: string): string[] {
 	const selectors: string[] = [];
 	let depth = 0;
 	let from = 0;

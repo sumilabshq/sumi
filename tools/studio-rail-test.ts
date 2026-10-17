@@ -26,7 +26,6 @@ const TILES = `(() => { ${TILE_NAMED} return [...document.querySelectorAll(".wg-
 	label: nameOf(tile),
 	letter: tile.textContent.slice(0, tile.textContent.length - (nameOf(tile) ?? "").length).trim(),
 	isCurrent: tile.getAttribute("aria-current") === "true",
-	ring: getComputedStyle(tile).boxShadow,
 	fill: getComputedStyle(tile).backgroundColor,
 	ink: getComputedStyle(tile).color,
 	ariaLabel: tile.getAttribute("aria-label"),
@@ -36,11 +35,14 @@ const TOOLTIPS = `[...document.querySelectorAll('[role="tooltip"]')].filter((tip
 
 const TOKENS = `(() => {
 	const probe = document.createElement("span");
-	probe.style.background = "var(--wg-kit-fill)";
-	probe.style.color = "var(--wg-kit-text)";
 	document.querySelector(".wg-studio-rail").append(probe);
-	const style = getComputedStyle(probe);
-	const tokens = { fill: style.backgroundColor, ink: style.color };
+	const paintOf = (fill, ink) => {
+		probe.style.background = "var(" + fill + ")";
+		probe.style.color = "var(" + ink + ")";
+		const style = getComputedStyle(probe);
+		return { fill: style.backgroundColor, ink: style.color };
+	};
+	const tokens = { rest: paintOf("--wg-kit-fill", "--wg-kit-text"), open: paintOf("--primary", "--primary-foreground") };
 	probe.remove();
 	return tokens;
 })()`;
@@ -64,13 +66,16 @@ interface Tile {
 	readonly label: string;
 	readonly letter: string;
 	readonly isCurrent: boolean;
-	readonly ring: string;
 	readonly fill: string;
 	readonly ink: string;
 	readonly ariaLabel: string | null;
 }
 
 let failed = 0;
+function isPainted(tile: Tile, painted: unknown): boolean {
+	return tile.fill === Reflect.get(Object(painted), "fill") && tile.ink === Reflect.get(Object(painted), "ink");
+}
+
 function check(what: string, isOk: boolean, got: unknown): void {
 	if (!isOk) failed += 1;
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
@@ -141,23 +146,18 @@ try {
 		tiles.map(({ label, letter }) => [label, letter]),
 	);
 	const tokens = await page.ask(TOKENS);
-	const farm = tiles[0];
+	const [farm, ...rest] = tiles;
 	check(
 		"a tile is the kit's grey fill with the kit's text ink",
-		typeof tokens === "object" &&
-			tokens !== null &&
-			farm !== undefined &&
-			farm.fill === Reflect.get(tokens, "fill") &&
-			farm.ink === Reflect.get(tokens, "ink"),
-		{ tile: farm && [farm.fill, farm.ink], tokens },
+		rest.length > 0 && rest.every((tile) => isPainted(tile, Reflect.get(Object(tokens), "rest"))),
+		{ tiles: rest.map((tile) => [tile.fill, tile.ink]), tokens },
 	);
 	check(
-		"only the open workspace is marked, by a ring",
+		"only the open workspace is marked, by the primary fill",
 		tiles.map(({ isCurrent }) => isCurrent).join() === "true,false,false" &&
 			farm !== undefined &&
-			farm.ring !== "none" &&
-			tiles.slice(1).every(({ ring }) => ring === "none"),
-		tiles.map(({ isCurrent, ring }) => [isCurrent, ring]),
+			isPainted(farm, Reflect.get(Object(tokens), "open")),
+		{ open: farm && [farm.fill, farm.ink], tokens },
 	);
 
 	const labelled = await page.ask(

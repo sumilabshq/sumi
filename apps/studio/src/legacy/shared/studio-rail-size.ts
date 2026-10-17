@@ -1,1 +1,1 @@
-export const STUDIO_RAIL_PX = 52;
+export const STUDIO_RAIL_PX = 72;

@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
 import { format, resolveConfig } from "prettier";
 import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
-import { systemTokensOf, withSystemTokens } from "../../tools/system-sheet.mts";
+import { studioSystemLayerOf, systemTokensOf, withStudioSystem, withSystemTokens } from "../../tools/system-sheet.mts";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
 import { layGpuFiles } from "./gpu-files.mts";
@@ -251,7 +251,10 @@ function runGates(): void {
 
 async function layCanvasSheet(): Promise<void> {
 	const authored = readFileSync(PLUGIN_SHEET, "utf8");
-	const withTokens = withSystemTokens(authored, systemTokensOf(process.cwd()));
+	const withTokens = withSystemTokens(
+		withStudioSystem(authored, studioSystemLayerOf(process.cwd())),
+		systemTokensOf(process.cwd()),
+	);
 	const laid = await formattedAsRepo(withCanvasSheet(withTokens, await canvasSheet(process.cwd())), PLUGIN_SHEET);
 	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
 }

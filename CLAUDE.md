@@ -583,8 +583,10 @@ read as `--wg-studio-inset-left|right`, and the apps; a host without them answer
 the shell stays. The catalogue reaches the studio as a `CataloguePort` in `StudioStart`: Obsidian lends
 its own; a browser gets `browserCataloguePort`, the project's widgets as installed, every install and
 place answering "not available". App mode ships none of its code or CSS (`test:studio-render`).
-The studio opens on the canvas. The chat is a column that never closes, left of the outlet; the outlet is a card (plate radius, hairline,
-inset on the tinted shell). The app menu lives only in the chat's header. The edge between them drags
+The studio opens on the canvas. The chat is a column that never closes, left of the outlet; the outlet is a card (a group plate with no edge, padded
+by the plate pad, its corner the plate radius plus that pad). The studio wears the `pill` design system
+(`@layer wg-studio-system`, laid by `tools/system-sheet.mts` with bundled Geist), the app's pictures and
+route re-wear `default`, and inside Obsidian `--brand` is the host's accent. The app menu lives only in the chat's header. The edge between them drags
 the width (`chatWidth` in `StudioState`, ≥300px with no cap, card ≥240px, double press → 380px; the
 chat's content stays a centred 800px column, `--wg-studio-chat-content`), remembered per
 viewer in local storage, never in a note; `test:studio-layout` measures it in Chrome. The chat is the

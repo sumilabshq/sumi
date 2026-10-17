@@ -1,0 +1,11 @@
+Geist-Regular.woff2, Geist-Medium.woff2 and Geist-SemiBold.woff2 are Geist
+(https://github.com/vercel/geist-font), Copyright (c) 2023 Vercel, in
+collaboration with basement.studio, licensed under the SIL Open Font License,
+Version 1.1, a copy of which sits beside this file.
+
+Taken unmodified from the npm package geist@1.8.1
+(dist/fonts/geist-sans/), integrity
+sha512-oSBhuzTvwZqGAZVC4swTRo61G/JHojtEVNR3DCToU+4nUBkG48ndKNvj4Ma7zZ+OlJkYDLT66HS+hrFszkovTg==
+
+The plugin build inlines them into the studio's sheet as @font-face rules
+(tools/system-sheet.mts); they draw the studio only.

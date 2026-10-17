@@ -15,6 +15,7 @@ interface Layout {
 	readonly side: number;
 	readonly radius: string;
 	readonly plate: string;
+	readonly platePad: string;
 	readonly edge: string;
 	readonly edgeColour: string;
 	readonly menuInHead: boolean;
@@ -59,11 +60,12 @@ const LAYOUT_OF = `(() => {
 		side: document.querySelector(".wg-studio-sidebar")?.getBoundingClientRect().width ?? 0,
 		radius: style.borderTopLeftRadius,
 		plate: style.getPropertyValue("--wg-kit-plate").trim(),
+		platePad: style.getPropertyValue("--wg-kit-plate-pad").trim(),
 		edge: style.borderTopWidth + " " + style.borderTopStyle,
 		edgeColour: style.borderTopColor,
 		menuInHead: document.querySelector('.wg-studio-chat .wg-studio-ai-head [aria-label$=" menu"]') !== null,
 		stage: stage ? stage.getBoundingClientRect().width : null,
-		cardInner: outlet.clientWidth,
+		cardInner: outlet.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
 		kept: localStorage.getItem(${JSON.stringify(KEPT_KEY)}),
 		handle: [handle.left + handle.width / 2, handle.top + handle.height / 2],
 	};
@@ -83,12 +85,44 @@ const SEND_MINE = `(() => {
 	return true;
 })()`;
 
+const PAINT_OF = `(parent, token, property) => {
+	const probe = parent.appendChild(document.createElement("i"));
+	probe.style[property] = "var(" + token + ")";
+	const painted = getComputedStyle(probe)[property];
+	probe.remove();
+	return painted;
+}`;
+
 const SHELL_PAINT = `(() => {
+	const studio = document.querySelector(".wg-studio");
+	const paintOf = (token) => (${PAINT_OF})(studio, token, "backgroundColor");
 	return {
-		shell: getComputedStyle(document.querySelector(".wg-studio")).backgroundColor,
-		page: getComputedStyle(document.querySelector(".wg-studio-outlet")).backgroundColor,
+		shell: getComputedStyle(studio).backgroundColor,
+		page: paintOf("--wg-kit-page"),
+		card: getComputedStyle(document.querySelector(".wg-studio-outlet")).backgroundColor,
+		group: paintOf("--wg-kit-group-fill"),
 	};
 })()`;
+
+const HOST_ACCENT = "rgb(255, 0, 128)";
+const HOST_ON_ACCENT = "rgb(0, 0, 0)";
+
+const ACCENT_PAINT_OF = `((isInObsidian) => {
+	const studio = document.querySelector(".wg-studio");
+	document.body.style.setProperty("--interactive-accent", ${JSON.stringify(HOST_ACCENT)});
+	document.body.style.setProperty("--interactive-accent-hover", ${JSON.stringify(HOST_ACCENT)});
+	document.body.style.setProperty("--text-on-accent", ${JSON.stringify(HOST_ON_ACCENT)});
+	studio.parentElement.classList.toggle("wg-studio-view", isInObsidian);
+	const chat = document.querySelector(".wg-studio-chat .wg-root");
+	const paintOf = (token, property) => (${PAINT_OF})(chat, token, property);
+	const painted = {
+		accent: paintOf("--wg-kit-accent", "backgroundColor"),
+		onAccent: paintOf("--brand-foreground", "color"),
+		ring: paintOf("--ring", "backgroundColor"),
+	};
+	studio.parentElement.classList.remove("wg-studio-view");
+	return painted;
+})`;
 
 const CONTENT_COLUMN = `(() => {
 	const chat = document.querySelector(".wg-studio-chat .wg-studio-ai").getBoundingClientRect();
@@ -100,6 +134,7 @@ const CONTENT_COLUMN = `(() => {
 		scroll: Math.round(scroll.width),
 		scrollRightPastCentre: Math.round(scroll.right - (chat.left + chat.width / 2)),
 		chat: Math.round(chat.width),
+		edge: parseFloat(getComputedStyle(document.querySelector(".wg-studio-chat")).paddingLeft),
 		composer: Math.round(composer.width),
 		composerGutters: gutters(composer),
 		turn: Math.round(turn.width),
@@ -144,13 +179,22 @@ async function draggedEdge(page: AskedPage, byPx: number): Promise<Layout> {
 	return layoutOf(page);
 }
 
-function isShellPlain(paint: unknown): boolean {
+function isShellPageAndCardGroup(paint: unknown): boolean {
 	if (typeof paint !== "object" || paint === null) {
 		return false;
 	}
 
-	const { shell, page } = Object.fromEntries(Object.entries(paint));
-	return shell === page;
+	const { shell, page, card, group } = Object.fromEntries(Object.entries(paint));
+	return shell === page && card === group && card !== shell;
+}
+
+function isPaintedAs(painted: unknown, wanted: Readonly<Record<string, string>>): boolean {
+	if (typeof painted !== "object" || painted === null) {
+		return false;
+	}
+
+	const held = Object.fromEntries(Object.entries(painted));
+	return Object.entries(wanted).every(([name, colour]) => held[name] === colour);
 }
 
 function isCentredColumn(column: unknown): boolean {
@@ -158,14 +202,13 @@ function isCentredColumn(column: unknown): boolean {
 		return false;
 	}
 
-	const { chat, composer, composerGutters, turn, turnGutters, scroll, scrollRightPastCentre } = Object.fromEntries(
-		Object.entries(column),
-	);
+	const { chat, edge, composer, composerGutters, turn, turnGutters, scroll, scrollRightPastCentre } =
+		Object.fromEntries(Object.entries(column));
 	return (
 		typeof scroll === "number" &&
 		scroll <= CONTENT_PX &&
 		isNear(Number(scrollRightPastCentre), CONTENT_PX / 2) &&
-		chat === WIDE_CHAT_PX - 2 * 8 &&
+		chat === WIDE_CHAT_PX - 2 * Number(edge) &&
 		composer === CONTENT_PX &&
 		typeof turn === "number" &&
 		turn <= CONTENT_PX &&
@@ -205,15 +248,12 @@ try {
 		{ rail: opened.rail, chat: opened.chat, card: opened.card },
 	);
 	check("the chat opens at its usual width", isNear(opened.chat.width, CHAT_USUAL_PX), opened.chat.width);
-	check("the card is rounded by the kit's plate radius", opened.radius !== "0px" && opened.radius === opened.plate, {
-		radius: opened.radius,
-		plate: opened.plate,
-	});
 	check(
-		"and outlined by a 1px kit hairline",
-		opened.edge === "1px solid" && !/(,|\/)\s*0\)$/.test(opened.edgeColour) && opened.edgeColour !== "transparent",
-		{ edge: opened.edge, colour: opened.edgeColour },
+		"the card is rounded concentric around the kit's plate, by its plate pad",
+		parseFloat(opened.radius) === parseFloat(opened.plate) + parseFloat(opened.platePad) && opened.radius !== "0px",
+		{ radius: opened.radius, plate: opened.plate, platePad: opened.platePad },
 	);
+	check("and carries no outline: the group fill sets it apart", opened.edge.startsWith("0px"), { edge: opened.edge });
 	check("the app menu stands in the chat's header", opened.menuInHead, opened.menuInHead);
 
 	const widened = await draggedEdge(page, DRAG_PX);
@@ -279,7 +319,23 @@ try {
 	await page.ask(SEND_MINE);
 	await untilAnswered(page, `document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said") !== null`);
 	const shell = await page.ask(SHELL_PAINT);
-	check("the studio behind the chat and the card is the page colour, not a tint", isShellPlain(shell), shell);
+	check(
+		"the studio behind the chat is the page colour and the card the group plate",
+		isShellPageAndCardGroup(shell),
+		shell,
+	);
+	const hosted = await page.ask(`${ACCENT_PAINT_OF}(true)`);
+	check(
+		"inside Obsidian the studio's accent, ring and text on the accent are the host's",
+		isPaintedAs(hosted, { accent: HOST_ACCENT, onAccent: HOST_ON_ACCENT, ring: HOST_ACCENT }),
+		hosted,
+	);
+	const hostless = await page.ask(`${ACCENT_PAINT_OF}(false)`);
+	check(
+		"and outside Obsidian the system's own accent stays",
+		!isPaintedAs(hostless, { accent: HOST_ACCENT }),
+		hostless,
+	);
 	await draggedEdge(page, WIDE_CHAT_PX - CHAT_USUAL_PX);
 	const column = await page.ask(CONTENT_COLUMN);
 	check(
