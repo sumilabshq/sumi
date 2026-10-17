@@ -466,6 +466,7 @@ const allBroken = {
 	styles: '@import "tailwindcss/base";\n@import "tailwindcss";\n.bad { font-family: Inter; }',
 	card: {},
 	surface,
+	modules: { "widget.tsx": "window.addEventListener('keydown', go);" },
 };
 check(
 	"every rule that judges no role can fire at once",
@@ -479,8 +480,20 @@ check(
 );
 check(
 	"the report names the rule and the widget",
-	saidWidgetCheck(checkWidget(allBroken)).split("\n")[0]?.startsWith("@x/bad colour:"),
+	saidWidgetCheck(checkWidget(allBroken)).split("\n")[0]?.startsWith("@x/bad escapes: widget.tsx:1 window"),
 	true,
+);
+check(
+	"a module that reaches past its ports is named with its file and line",
+	checkWidget({ ...clean, modules: { "widget.tsx": "", "drag.ts": "\nconst at = document.body;" } })
+		.filter((one) => one.rule === "escapes")
+		.map((one) => `${one.rule} ${one.message.split(" ").slice(0, 2).join(" ")}`),
+	["escapes drag.ts:2 document"],
+);
+check(
+	"a module staying inside its ports is not",
+	rulesIn(checkWidget({ ...clean, modules: { "widget.tsx": "const parent = 1;\nparent.toString();" } })),
+	[],
 );
 
 console.log(`\n${checks - failed}/${checks} checks passed`);

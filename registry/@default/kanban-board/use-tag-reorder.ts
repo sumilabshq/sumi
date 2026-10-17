@@ -1,4 +1,5 @@
 import { useState, type PointerEvent as ReactPointerEvent, type RefObject } from "react";
+import { listenToWindow } from "widgetarium/kit";
 import type { TagRowProps, Tones } from "./types";
 
 type TagDrag = { at: number; list: string[]; isDragging: boolean };
@@ -33,17 +34,19 @@ export function useTagReorder(
 			setDragged({ ...drag });
 		};
 
+		const on = { of: event.currentTarget };
 		const stop = () => {
-			window.removeEventListener("pointermove", move);
-			window.removeEventListener("pointerup", stop);
+			for (const unlisten of listening) {
+				unlisten();
+			}
+
 			setDragged(null);
 			if (!drag.isDragging) return;
-			swallowNextClick();
+			swallowNextClick(on.of);
 			if (drag.list.join("\n") !== tags.join("\n")) onWrite(drag.list, tones);
 		};
 
-		window.addEventListener("pointermove", move);
-		window.addEventListener("pointerup", stop);
+		const listening = [listenToWindow("pointermove", move, on), listenToWindow("pointerup", stop, on)];
 	};
 
 	return { dragged, grab };
@@ -71,13 +74,12 @@ function moveWithin(list: string[], from: number, to: number): string[] {
 	return next;
 }
 
-function swallowNextClick() {
+function swallowNextClick(of: Element) {
 	const swallow = (event: Event) => {
 		event.stopPropagation();
 		event.preventDefault();
 		release();
 	};
-	const release = () => window.removeEventListener("click", swallow, true);
-	window.addEventListener("click", swallow, true);
+	const release = listenToWindow("click", swallow, { of, capture: true });
 	setTimeout(release, 0);
 }

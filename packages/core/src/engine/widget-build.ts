@@ -1,5 +1,6 @@
 import { transform } from "sucrase";
 import { isPageFolder, withNodeMarks } from "./node-marks.js";
+import { reachFindingsIn, reachFindingsOfFolder, reachRefusal } from "./widget-reach/reach-scan.js";
 import type { Transform } from "sucrase";
 
 export type FolderFiles = Readonly<Record<string, string>>;
@@ -81,6 +82,15 @@ export function compileWidget(source: string, filePath: string): string {
 	}).code;
 }
 
+export function compileCheckedWidget(source: string, filePath: string): string {
+	const refusal = reachRefusal(reachFindingsIn(source, filePath), filePath);
+	if (refusal !== null) {
+		throw new Error(refusal);
+	}
+
+	return compileWidget(source, filePath);
+}
+
 export function sourceFileIn(files: Readonly<Record<string, unknown>> | null | undefined): string | null {
 	return SOURCE_FILES.find((name) => typeof files?.[name] === "string") ?? null;
 }
@@ -111,6 +121,11 @@ export function compileWidgetFolder(files: FolderFiles, folder: string): string 
 	const entry = sourceFileIn(files);
 	if (entry === null) throw new Error(missingSourceRefusal(Object.keys(files), folder));
 	const modules = modulesIn(files);
+	const refusal = reachRefusal(reachFindingsOfFolder(files, modules), folder);
+	if (refusal !== null) {
+		throw new Error(refusal);
+	}
+
 	const sourceToCompile = (name: string): string =>
 		isPageFolder(folder) ? withNodeMarks(sourceOf(files, name), name) : sourceOf(files, name);
 	if (modules.length <= 1) return compileWidget(sourceToCompile(entry), `${folder}/${entry}`);

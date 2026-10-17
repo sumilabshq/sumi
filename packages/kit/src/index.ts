@@ -226,6 +226,9 @@ export { useScrollFog } from "./hooks/use-scroll-fog";
 export type { ScrollEdges } from "./hooks/use-scroll-fog";
 export { usePortalContainer } from "./hooks/use-portal-container";
 export { portalLayer } from "./utils/portal-layer";
+export { listenToWindow } from "./utils/window-listen";
+export type { WindowEventName, WindowListening } from "./utils/window-listen";
+export { copyText } from "./utils/copy-text";
 export { useShown } from "./hooks/use-shown";
 export { useWhenSeen } from "./hooks/use-when-seen";
 

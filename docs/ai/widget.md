@@ -4,7 +4,8 @@ Only when `find` offers nothing close. A near neighbour with different controls 
 
 **What a widget draws, it draws itself on Radix** (brief law 9, `components.md`). Where this page
 names a kit component to draw with, that describes the widgets already shipped; a widget you write
-takes only `usePortalContainer`, the hooks and `widgetarium/kit/charts` from the kit.
+takes only `usePortalContainer`, `portalLayer`, `listenToWindow`, `copyText`, the hooks and
+`widgetarium/kit/charts` from the kit.
 
 **One widget draws one thing.** A total with its bar, a chart, a list of rows: each is a widget of
 its own, and a section places them together. When the design asks for a figure over a list, write
@@ -95,6 +96,40 @@ modules it imports relatively, nested folders included. A `widget.jsx` or `widge
 draws the rename that fixes it. The engine compiles everything into `build/` beside it: **never write
 anything in `build/`.** Save and it appears — no publish, no reload. The plugin lays `tsconfig.json`
 and `types/` beside the widgets so an editor types every port instead of handing you `any`.
+
+## A widget stays inside its ports
+
+A widget runs in the same window as Obsidian, so the build reads every source and refuses one that
+reaches past its ports: `window`, `globalThis`, `self`, `top`, `parent`, `document`, `app`,
+`activeWindow`, `localStorage`, `sessionStorage`, `indexedDB`, `process`, `require`, `eval`,
+`Function`, a dynamic `import()`, `.ownerDocument`, `.defaultView`, `.getRootNode`, `.constructor`,
+a timer handed text, and a webview. A name built from strings (`host["win" + "dow"]`) is read the
+same way. The tile, `install`, `publish` and `check` (rule `escapes`) name the file, the line and
+what to use instead. A local of the same name is yours and passes.
+
+| You wanted                          | Use                                                    |
+| ----------------------------------- | ------------------------------------------------------ |
+| pointer or key events past the tile | `listenToWindow(type, listener, { of: element })`      |
+| something floating over the page    | `usePortalContainer()` for Radix, `portalLayer()` else |
+| the clipboard                       | `await copyText(text)`, `true` once it is there        |
+| a timer                             | `setTimeout(fn, ms)` with a function, never text       |
+
+```ts
+import { listenToWindow } from "widgetarium/kit";
+
+export function followPointer(grabbed: HTMLElement, onMove: (x: number, y: number) => void): void {
+	const on = { of: grabbed };
+	const stopMoving = listenToWindow("pointermove", (moved) => onMove(moved.clientX, moved.clientY), on);
+	const stopListening = listenToWindow(
+		"pointerup",
+		() => {
+			stopMoving();
+			stopListening();
+		},
+		on,
+	);
+}
+```
 
 ## Ports: what a widget reads and writes
 

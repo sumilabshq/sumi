@@ -1,4 +1,5 @@
 import { useState, type PointerEvent as ReactPointerEvent } from "react";
+import { listenToWindow } from "widgetarium/kit";
 import type { CardRow, Carry, Target } from "./types";
 
 const TAP_SLOP_PX = 4;
@@ -34,18 +35,22 @@ export function useDragging(
 			setTarget(aimed);
 		};
 		const stop = () => {
-			window.removeEventListener("pointermove", follow);
-			window.removeEventListener("pointerup", stop);
-			window.removeEventListener("pointercancel", stop);
+			for (const unlisten of listening) {
+				unlisten();
+			}
+
 			setCarry(null);
 			setTarget(null);
 			if (held.isDragging && aimed) onDrop(row, aimed);
 		};
 
 		setCarry(held);
-		window.addEventListener("pointermove", follow);
-		window.addEventListener("pointerup", stop);
-		window.addEventListener("pointercancel", stop);
+		const on = { of: event.currentTarget };
+		const listening = [
+			listenToWindow("pointermove", follow, on),
+			listenToWindow("pointerup", stop, on),
+			listenToWindow("pointercancel", stop, on),
+		];
 	};
 
 	return { carry, target, grab };

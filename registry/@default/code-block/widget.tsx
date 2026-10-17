@@ -1,11 +1,13 @@
 import { IContent, IHere, IHost, IQuery, IReader, createWidget, defineLayout, defineMetadata } from "widgetarium";
 import { z } from "zod";
-import { Button, Icon, IconButton, Card } from "widgetarium/kit";
+import { Button, Icon, IconButton, Card, copyText } from "widgetarium/kit";
 import { useEffect, useState } from "react";
 import { LanguagePicker } from "./language-picker";
 import { Painted } from "./painted";
 import { Refusal } from "./refusal";
 import { STYLE } from "./style";
+
+const COPIED_MS = 1200;
 
 const BY_EXTENSION: Record<string, string> = {
 	bash: "bash",
@@ -165,10 +167,9 @@ const CodeBlock = createWidget({
 			if (here?.canUpdate) here.update(`${request.link} | ${next}`);
 		};
 
-		const copy = () => {
-			window.navigator?.clipboard?.writeText?.(file.text)?.catch?.(() => {});
-			setCopied(true);
-			window.setTimeout(() => setCopied(false), 1200);
+		const copy = async () => {
+			setCopied(await copyText(file.text));
+			setTimeout(() => setCopied(false), COPIED_MS);
 		};
 
 		return (

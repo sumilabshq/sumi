@@ -94,6 +94,7 @@ never restyled through its `className`.
 | `<Shape name seed tones />`, `<PhotoStack photos isRound />`                   | a 3D Material shape on a number or a record without a picture; overlapping faces at a card's corner                                 |
 | `isLoading`, `isDone` on `Button` and `IconButton`                             | a press that is working, then done, drawn on the button itself                                                                      |
 | `brand`, `tone`                                                                | the person's accent, and the state colours a plate or a badge can wear                                                              |
+| `listenToWindow(type, listener, { of })`, `copyText(text)`, `portalLayer()`    | a drag past the tile, the clipboard, a layer over the page: a widget never names `window` or `document` itself                      |
 
 These are visual: they take any data you hand them. Draw them from rows with `map`.
 

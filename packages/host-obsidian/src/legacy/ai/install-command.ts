@@ -8,6 +8,7 @@ import {
 	javascriptSourceRefusal,
 	widgetModulesUnder,
 } from "@widgetarium/core/engine/widget-build.js";
+import { reachFindingsOfFolder, reachRefusal } from "@widgetarium/core/engine/widget-reach/reach-scan.js";
 import { listFolder } from "./vault-files.js";
 import { SCOPE_FILES, WIDGET_FILES, stampOf } from "@widgetarium/core/engine/widget-source.js";
 import { apiRefusal } from "@widgetarium/core/version.js";
@@ -85,6 +86,8 @@ async function whatWouldBeWritten(entry: InstallableEntry, widgetsDir: string): 
 	const modules = await widgetModulesUnder(entry.folder, listFolder);
 	const taken = await readFrom(entry.folder, [...new Set([...WIDGET_FILES, ...modules])]);
 	if (!SOURCE_FILES.some((file) => file in taken)) return { failure: await sourceMissingFailure(entry, taken) };
+	const reaching = reachRefusal(reachFindingsOfFolder(taken, modules), entry.folder);
+	if (reaching !== null) return { failure: `${reaching}\n${entry.id} was not installed.` };
 
 	const [scope = "", name = ""] = entry.id.split("/");
 	const scopeAt = join(widgetsDir, scope);

@@ -1,4 +1,4 @@
-import { toneClass } from "widgetarium/kit";
+import { portalLayer, toneClass } from "widgetarium/kit";
 import { createPortal } from "react-dom";
 import { nameOf } from "./cards";
 import { toneForSeed } from "./tones";
@@ -20,6 +20,6 @@ export function Carried({ carry, size }: { carry: Carry; size: number }) {
 		>
 			<Face card={carry.row} />
 		</div>,
-		document.body,
+		portalLayer(),
 	);
 }

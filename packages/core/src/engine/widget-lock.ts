@@ -1,6 +1,7 @@
 import { contentHash } from "./content-hash.js";
 import { nameIn } from "./modules.js";
 import { isWidgetModule } from "./widget-build.js";
+import { REACH_SCAN_VERSION } from "./widget-reach/reach-scan.js";
 import { isObject } from "./is-object.js";
 import type { Fields } from "./catalogue-index.js";
 
@@ -11,6 +12,7 @@ export interface BuildRecord {
 	readonly from: string;
 	readonly compiler: unknown;
 	readonly inputs: Fields;
+	readonly reachScan: unknown;
 }
 
 export interface WidgetLock {
@@ -99,7 +101,12 @@ export function lockEntry({
 }
 
 export function buildRecord({ from, compiler, inputs }: BuildInput): BuildRecord {
-	return { from, compiler: compiler ?? null, inputs: hashesOf(inputs) };
+	return {
+		from,
+		compiler: compiler ?? null,
+		inputs: hashesOf(inputs),
+		reachScan: REACH_SCAN_VERSION,
+	};
 }
 
 export function buildMatchesSources(
@@ -107,7 +114,10 @@ export function buildMatchesSources(
 	folder: string,
 	sources: Readonly<Record<string, string>>,
 ): boolean {
-	if (!record?.inputs) return false;
+	if (!record?.inputs || record.reachScan !== REACH_SCAN_VERSION) {
+		return false;
+	}
+
 	const inputs = record.inputs;
 	const recorded = Object.keys(inputs).filter(
 		(path) => path.startsWith(`${folder}/`) && isWidgetModule(path.slice(folder.length + 1)),
@@ -120,7 +130,10 @@ export function buildMatchesSources(
 }
 
 export function buildIsCurrent(record: BuildRecord | null | undefined, inputs: Texts | null | undefined): boolean {
-	if (!record?.inputs) return false;
+	if (!record?.inputs || record.reachScan !== REACH_SCAN_VERSION) {
+		return false;
+	}
+
 	return Object.entries(record.inputs).every(([path, hash]) => contentHash(inputs?.[path]) === hash);
 }
 
@@ -195,7 +208,12 @@ function buildsIn(parsed: Fields): Record<string, BuildRecord> {
 
 function readBuild(record: unknown): BuildRecord {
 	const held = fieldsOf(record);
-	return { from: String(held["from"] ?? ""), compiler: held["compiler"] ?? null, inputs: fieldsOf(held["inputs"]) };
+	return {
+		from: String(held["from"] ?? ""),
+		compiler: held["compiler"] ?? null,
+		inputs: fieldsOf(held["inputs"]),
+		reachScan: held["reachScan"] ?? null,
+	};
 }
 
 function hashesOf(texts: Texts | null | undefined): Record<string, string> {

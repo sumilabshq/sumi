@@ -12,18 +12,22 @@ export type WidgetFindings = ReturnType<typeof checkWidget>;
 
 export async function checkedWidget(entry: WidgetEntry, surface: readonly string[]): Promise<WidgetFindings> {
 	const card = await cardIn(entry.folder);
+	const modules = await textsOf(entry, isWidgetModule);
 	return checkWidget({
 		id: entry.id,
-		source: await joinFiles(entry, isWidgetModule),
-		styles: await joinFiles(entry, (name) => STYLE_FILES.includes(name)),
+		source: Object.values(modules).join("\n"),
+		styles: Object.values(await textsOf(entry, (name) => STYLE_FILES.includes(name))).join("\n"),
 		card: isObject(card) ? card : null,
 		surface,
+		modules,
 	});
 }
 
-async function joinFiles(entry: WidgetEntry, isWanted: (name: string) => boolean): Promise<string> {
-	const named = (entry.files ?? []).filter(isWanted);
-	const texts: string[] = [];
-	for (const name of named) texts.push(await readFile(join(entry.folder ?? "", name), "utf8").catch(() => ""));
-	return texts.join("\n");
+async function textsOf(entry: WidgetEntry, isWanted: (name: string) => boolean): Promise<Record<string, string>> {
+	const texts: Record<string, string> = {};
+	for (const name of (entry.files ?? []).filter(isWanted)) {
+		texts[name] = await readFile(join(entry.folder ?? "", name), "utf8").catch(() => "");
+	}
+
+	return texts;
 }

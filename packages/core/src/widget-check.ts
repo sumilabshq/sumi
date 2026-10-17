@@ -1,6 +1,8 @@
 import { SHADCN_TOKENS } from "@widgetarium/kit";
 import { TAILWIND_PALETTE_CLASS, draftBlockFindings, sheetFindings } from "./widget-check-tailwind.js";
 import { inlineInjectFindings } from "./widget-check-inject.js";
+import { reachCheckFindings } from "./widget-check-reach.js";
+import type { CheckedModules } from "./widget-check-reach.js";
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
 const FUNCTIONAL_COLOUR = /\b(?:rgba?|hsla?|oklch|lab|lch)\s*\(/g;
@@ -38,6 +40,7 @@ export const WIDGET_CHECK_RULES = [
 	"states",
 	"renamed",
 	"inline-inject",
+	"escapes",
 ] as const;
 
 const COLLECTION_TITLE = /<LayoutTitle\b|<LayoutHeader\b[^>]*\btitle=/;
@@ -77,6 +80,7 @@ interface WidgetCheckInput {
 	readonly styles?: string;
 	readonly card?: CheckedCard | null;
 	readonly surface?: readonly unknown[] | null;
+	readonly modules?: CheckedModules;
 }
 
 interface WidgetFinding {
@@ -93,9 +97,11 @@ export function checkWidget({
 	styles = "",
 	card = null,
 	surface = null,
+	modules = {},
 }: WidgetCheckInput): WidgetFinding[] {
 	const text = `${source}\n${styles}`;
 	return [
+		...reachCheckFindings(modules),
 		...colourFindings(text),
 		...fontFindings(text),
 		...sheetFindings(id, styles),

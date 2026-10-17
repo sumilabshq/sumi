@@ -5,7 +5,7 @@ import { EMPTY_LOCK, INSTALL_PENDING, modulesByWidget, buildMatchesSources, comm
 import type { WidgetLock } from "./engine/widget-lock.js";
 import { generationOf, widgetKeyOf, widgetRef } from "./engine/widget-ref.js";
 import { WHAT_A_FOLDER_WAS_STAMPED_BEFORE_STAMPS } from "./engine/widget-source.js";
-import { compileWidget, compileWidgetFolder } from "./engine/widget-build.js";
+import { compileCheckedWidget, compileWidgetFolder } from "./engine/widget-build.js";
 import { contentHash } from "./engine/content-hash.js";
 import { isPageFolder } from "./engine/node-marks.js";
 import type { FolderFiles } from "./engine/widget-build.js";
@@ -85,8 +85,8 @@ export function buildWidget({ manifest, code, path, sources, lib, libPath, scope
 	if (refusal) throw new Error(refusal);
 
 	const libs = new Map<string, unknown>();
-	if (lib && scope) libs.set(`${scope}/lib`, runModule(lib, libPath ?? "", libs));
-	const compiled = sources ? compileWidgetFolder(sources, path) : compileWidget(code ?? "", path);
+	if (lib && scope) libs.set(`${scope}/lib`, runCode(compileCheckedWidget(lib, libPath ?? ""), libs));
+	const compiled = sources ? compileWidgetFolder(sources, path) : compileCheckedWidget(code ?? "", path);
 	return componentIn(runCode(compiled, libs), path);
 }
 
@@ -250,7 +250,7 @@ export class WidgetRegistry implements WidgetLookup {
 
 		const name = `${scope.slice(scope.lastIndexOf("/") + 1)}/lib`;
 		try {
-			this.libs.set(name, runModule(source, path ?? "", this.libs));
+			this.libs.set(name, runCode(compileCheckedWidget(source, path ?? ""), this.libs));
 		} catch (failure) {
 			console.error(
 				`[widgetarium] failed to load ${String(path)}, and every widget importing it goes with it`,
