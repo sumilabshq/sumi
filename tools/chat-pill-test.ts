@@ -201,8 +201,7 @@ const HEAD_SEEN = `(() => {
 	return head ? {
 		order: [...head.children].map((child) => child.className.split(" ")[0] || child.tagName),
 		title: head.querySelector(".wg-studio-ai-title")?.textContent ?? null,
-		who: head.querySelector(".wg-studio-ai-who")?.textContent ?? null,
-		provider: head.querySelector(".wg-studio-ai-provider")?.textContent ?? null,
+		saysProvider: /Claude Code|helpers (on|off)/.test(head.textContent),
 	} : null;
 })()`;
 
@@ -284,11 +283,10 @@ for (const theme of THEMES) {
 		if (theme === "light") {
 			const closed = recordOf(await page.ask(CLOSED_HEAD));
 			holds("the closed head is never centred", closed["saidFromLeft"] === 10, closed);
-			check("the chat head reads Ink, the app, the provider pill, the menu", recordOf(await page.ask(HEAD_SEEN)), {
-				order: ["wg-mascot", "wg-studio-ai-named", "wg-kit-anchor"],
+			check("the chat head reads Ink and the app, and names no provider", recordOf(await page.ask(HEAD_SEEN)), {
+				order: ["wg-mascot", "wg-studio-ai-named"],
 				title: "Untitled app",
-				who: "Claude Code · helpers on",
-				provider: "Claude Code",
+				saysProvider: false,
 			});
 		}
 		await page.ask(OPEN_TOOLS);

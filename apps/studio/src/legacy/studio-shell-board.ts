@@ -1,5 +1,6 @@
 import { createElement as h, useMemo, useState } from "react";
 import type { ReactElement } from "react";
+import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import type { ModuleRegistry } from "@widgetarium/core/engine/module-registry.js";
@@ -17,11 +18,23 @@ export interface StudioShellBoardProps {
 	readonly host: SurfaceHost;
 	readonly studio: StudioHostPort;
 	readonly state: StudioState;
+	readonly assistant: AssistantPort;
 }
 
-export function StudioShellBoard({ app, place, registry, host, studio, state }: StudioShellBoardProps): ReactElement {
+export function StudioShellBoard({
+	app,
+	place,
+	registry,
+	host,
+	studio,
+	state,
+	assistant,
+}: StudioShellBoardProps): ReactElement {
 	const [board, setBoard] = useState(() => normalizeBoard(shellBoardOf(app, place)));
-	const studioHost = useMemo(() => ({ ...host, studio, studioState: state }), [host, studio, state]);
+	const studioHost = useMemo(
+		() => ({ ...host, studio, studioState: state, assistant }),
+		[host, studio, state, assistant],
+	);
 	return h(
 		"div",
 		{ className: `wg-studio-shell-board is-${place}` },

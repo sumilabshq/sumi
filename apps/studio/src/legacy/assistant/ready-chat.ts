@@ -15,7 +15,7 @@ import { JobsStrip } from "./cards/jobs-strip.js";
 import { scrollToCard } from "./cards/pinned-run.js";
 import { cardsAround, pinnedCardOf } from "./cards/turn-cards.js";
 import type { CardAsks } from "./cards/turn-cards.js";
-import { ChatHead } from "./chat-head.js";
+import { ChatLeadHead } from "./chat-lead.js";
 import { Composer } from "./composer.js";
 import { EmptyChat } from "./empty-chat.js";
 import { FailureCard } from "./failure-card.js";
@@ -43,6 +43,7 @@ interface ScrollDraw {
 	readonly asks: CardAsks;
 }
 
+const TITLE = "Widgetarium AI";
 const RETRY = "Try again";
 const RUN_FAILED = "The answer did not finish";
 const NOT_SENT = "the message could not be sent";
@@ -62,7 +63,7 @@ export function ReadyChat({ port, setup, setupFailure, lead, title }: ReadyChatP
 	const pinned = pinnedCardOf(cards.pinned, { port, openByBuild, showCard });
 	const typed = useTellsAgentActivity(session, cards);
 	return h("div", { className: "wg-studio-ai", ref: chatRoot }, [
-		h(ChatHead, { key: "head", port, setup, report, lead, title }),
+		h(ChatLeadHead, { key: "head", lead, title: title ?? TITLE }),
 		h("div", { className: "wg-studio-ai-scroll-frame", key: "scroll" }, [
 			h(
 				"div",

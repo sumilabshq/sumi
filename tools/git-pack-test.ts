@@ -1,5 +1,6 @@
 import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
 import { NO_STUDIO_STATE } from "../packages/core/src/engine/studio-state-port.ts";
+import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
 import { NO_CATALOGUE_PORT } from "../packages/core/src/engine/catalogue-port.ts";
 import { execFile } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -53,6 +54,7 @@ const ports: ImplementationPorts = {
 	catalogue: NO_CATALOGUE_PORT,
 	studio: NO_STUDIO_HOST,
 	studioState: NO_STUDIO_STATE,
+	assistant: NO_ASSISTANT,
 	network: { can: false, request: () => Promise.reject(new Error("no network")) },
 	vault: {
 		can: false,

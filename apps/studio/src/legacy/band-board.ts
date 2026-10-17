@@ -94,6 +94,11 @@ function controlMenuOf(app: string): Mounted {
 			editInCanvas: bound("@studio/edit-in-canvas"),
 			getIsInCanvas: bound("@studio/is-in-canvas"),
 			backToView: bound("@studio/back-to-view"),
+			getAgentSetup: bound("@studio/agent-setup"),
+			chooseProvider: bound("@studio/choose-provider"),
+			setHelperAgents: bound("@studio/set-helper-agents"),
+			openProviders: bound("@studio/open-providers"),
+			clearChat: bound("@studio/clear-chat"),
 		},
 	};
 }

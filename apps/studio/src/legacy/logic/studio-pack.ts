@@ -11,6 +11,13 @@ import {
 	RenameAppCommand,
 } from "./studio-commands.js";
 import { IsInCanvasQuery } from "./studio-state-queries.js";
+import { AgentSetupQuery } from "./agent-queries.js";
+import {
+	ChooseProviderCommand,
+	ClearChatCommand,
+	OpenProvidersCommand,
+	SetHelperAgentsCommand,
+} from "./agent-commands.js";
 import { AppFieldsSchema, NoFieldsSchema } from "./studio-fields.js";
 
 const RESOURCE = "Apps";
@@ -38,6 +45,13 @@ export const studioPack = definePack({
 			title: "In the canvas",
 			resource: RESOURCE,
 			description: "Whether the studio shows the app's canvas instead of the app.",
+			fields: NoFieldsSchema,
+		}),
+		defineGatewayMetadata(AgentSetupQuery, {
+			id: "@studio/agent-setup",
+			title: "Agent setup",
+			resource: RESOURCE,
+			description: "The providers the chat can use, the chosen one and whether helper agents are on.",
 			fields: NoFieldsSchema,
 		}),
 	],
@@ -79,6 +93,38 @@ export const studioPack = definePack({
 			title: "Back to view",
 			resource: RESOURCE,
 			description: "Leaves the canvas for the app.",
+			fields: NoFieldsSchema,
+			consent: "free",
+		}),
+		defineCommandMetadata(ChooseProviderCommand, {
+			id: "@studio/choose-provider",
+			title: "Choose a provider",
+			resource: RESOURCE,
+			description: "Makes the provider the one the chat talks to.",
+			fields: NoFieldsSchema,
+			consent: "free",
+		}),
+		defineCommandMetadata(SetHelperAgentsCommand, {
+			id: "@studio/set-helper-agents",
+			title: "Use helper agents",
+			resource: RESOURCE,
+			description: "Switches the agent's helper agents on or off.",
+			fields: NoFieldsSchema,
+			consent: "free",
+		}),
+		defineCommandMetadata(OpenProvidersCommand, {
+			id: "@studio/open-providers",
+			title: "Configure providers",
+			resource: RESOURCE,
+			description: "Opens the providers' settings.",
+			fields: NoFieldsSchema,
+			consent: "free",
+		}),
+		defineCommandMetadata(ClearChatCommand, {
+			id: "@studio/clear-chat",
+			title: "Clear context",
+			resource: RESOURCE,
+			description: "Clears the chat's conversation.",
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),

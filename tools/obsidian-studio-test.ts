@@ -532,12 +532,15 @@ const pressIn = (node: HTMLElement, label: string): void =>
 	node.querySelector<HTMLElement>(`button[aria-label="${label}"]`)?.click();
 await settledUntil(() => studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine") !== null);
 check(
-	"the studio's chat column draws the chat over the assistant the plugin lends",
+	"the studio's chat column draws the chat over the assistant the plugin lends, its header naming no provider",
 	[
-		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-who")?.textContent ?? null,
+		/helpers (on|off)/.test(studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? "") ||
+			(studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? "").includes(
+				checkedAssistant.providerLabel,
+			),
 		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine")?.textContent ?? null,
 	],
-	[`${checkedAssistant.providerLabel} · helpers off`, checkedAssistant.asked],
+	[false, checkedAssistant.asked],
 );
 await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
 check(
@@ -564,7 +567,7 @@ check(
 	[
 		studioNode.querySelectorAll(".wg-studio-sidebar").length,
 		studioNode.querySelector('.wg-studio-sidebar[data-panel="catalogue"] .wg-studio-catalogue-host .wg-board') !== null,
-		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-who") !== null,
+		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head") !== null,
 		studioNode.querySelectorAll(".wg-studio-band button").length,
 	],
 	[1, true, true, 0],
@@ -575,6 +578,17 @@ const besideNode = await drawnFor(APP_NOTE);
 await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
 pressIn(studioNode, "Farm Stand menu");
 await settledUntil(() => document.querySelector(".wg-studio-action-said") !== null);
+await settledUntil(() => document.querySelector("[data-agent-helpers]") !== null);
+check(
+	"the chat's … menu holds the provider choice, the chosen one ticked, and the helper agents switch",
+	[
+		[...document.querySelectorAll("[data-agent-provider][aria-checked=true] .wg-studio-ai-menu-said")].map(
+			(said) => said.textContent,
+		),
+		document.querySelector("[data-agent-helpers]")?.getAttribute("aria-checked") ?? null,
+	],
+	[[checkedAssistant.providerLabel], "false"],
+);
 [...document.querySelectorAll(".wg-studio-action-said")]
 	.find((said) => said.textContent === "Back to view")
 	?.closest<HTMLElement>('[role="button"]')
@@ -896,19 +910,22 @@ drawInto(
 	designNode,
 );
 await settledUntil(() => handed.length > 0);
-await settledUntil(() => designNode.querySelector("[data-canvas-title] b")?.textContent === "Pages");
+const pickerSaid = (node: Element): string | null | undefined =>
+	node.querySelector("[data-canvas-page-picker] button > span")?.textContent;
+await settledUntil(() => pickerSaid(designNode) === "Pages");
 check(
 	"every block of the canvas top bar reads its own requests and draws, none falls to its slot's error",
-	[designNode.querySelector("[data-canvas-title] b")?.textContent, designNode.textContent?.includes("Could not load")],
+	[pickerSaid(designNode), designNode.textContent?.includes("Could not load")],
 	["Pages", false],
 );
 check(
-	"the title names the shown page and counts no states while none is drawn",
+	"a canvas no host frames draws its own top bar: its app zone, then its own Back to view",
 	[
-		designNode.querySelector("[data-canvas-states]"),
-		/screens|frames|read only/.test(designNode.querySelector("[data-canvas-topbar]")?.textContent ?? ""),
+		designNode.querySelector("[data-canvas-topbar] [data-canvas-app-zone]") !== null,
+		designNode.querySelector("[data-canvas-topbar] [data-canvas-close]")?.getAttribute("aria-label"),
+		designNode.querySelector("[data-app-host-bar]"),
 	],
-	[null, false],
+	[true, "Back to view", null],
 );
 handed.at(-1)?.showPage("References");
 await settledUntil(() => keptPages.includes("References"));
@@ -950,19 +967,22 @@ const pickedPages = (): (string | null)[] =>
 	pageRows()
 		.filter((row) => row.hasAttribute("data-picked"))
 		.map((row) => row.getAttribute("data-canvas-page"));
-const switchTabs = (): (string | null)[] =>
-	[...pagedNode.querySelectorAll("[data-canvas-page-switch] [role=tab]")].map((tab) => tab.textContent);
-await settledUntil(() => pageRows().length === 2 && switchTabs().length > 0);
+const pageChoices = (): (string | null)[] =>
+	[...document.querySelectorAll("[data-canvas-page-choice]")].map((choice) => choice.textContent);
+await settledUntil(() => pageRows().length === 2 && pickerSaid(pagedNode) === "Home");
+pagedNode.querySelector("[data-canvas-page-picker] button")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+await settledUntil(() => pageChoices().length > 0);
 check(
-	"the pages stand first in the left sidebar as a list, the shown page picked, and the top switcher picks Pages for them",
+	"the pages stand first in the left sidebar as a list, the shown page picked, and the top picker offers every page and Components",
 	[
 		pagedNode.querySelector("[data-canvas-sidebar] > section")?.hasAttribute("data-canvas-pages"),
 		pageRows().map((row) => row.textContent),
 		pickedPages(),
-		switchTabs(),
+		pageChoices(),
 	],
-	[true, ["Home", "Barn"], ["Home"], ["Pages", "Components"]],
+	[true, ["Home", "Barn"], ["Home"], ["Home", "Barn", "Components"]],
 );
+pagedNode.querySelector("[data-canvas-page-picker] button")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 pageRows()[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 await settledUntil(() => pickedPages()[0] === "Barn");
 check(
@@ -970,11 +990,7 @@ check(
 	[pagedKept.at(-1), pickedPages()],
 	["Barn", ["Barn"]],
 );
-check(
-	"while a page of the app is shown, the view switch picks Pages",
-	pagedNode.querySelector("[data-canvas-page-switch] [role=tab][aria-selected=true]")?.textContent,
-	"Pages",
-);
+check("while a page of the app is shown, the picker names that page", pickerSaid(pagedNode), "Barn");
 const sidebarOf = (): Element | null => pagedNode.querySelector("[data-canvas-sidebar]");
 const sidebarShown = (): unknown[] => [
 	sidebarOf()?.getAttribute("data-canvas-sidebar"),

@@ -5,6 +5,8 @@ import type { FileHost, FolderHost, VaultSlot } from "../gateway/obsidian.js";
 import type { NeedOfField } from "../gateway/props.js";
 import type { RefDescription, ViewCell } from "../gateway/refs.js";
 import type { CommandInputDeclared, commandInput, commandOutput } from "../gateway/declared-types.js";
+import { NO_ASSISTANT } from "./assistant-port.js";
+import type { AssistantPort } from "./assistant-port.js";
 import { NO_CATALOGUE_PORT } from "./catalogue-port.js";
 import type { CataloguePort } from "./catalogue-port.js";
 import { NO_STUDIO_HOST } from "./studio-host.js";
@@ -76,6 +78,7 @@ export interface ImplementationPorts extends HandlerHost {
 	readonly catalogue: CataloguePort;
 	readonly studio: StudioHostPort;
 	readonly studioState: StudioState;
+	readonly assistant: AssistantPort;
 }
 
 export interface PropPort {
@@ -133,6 +136,7 @@ export interface PortsHost {
 	readonly catalogue?: CataloguePort | undefined;
 	readonly studio?: StudioHostPort | undefined;
 	readonly studioState?: StudioState | undefined;
+	readonly assistant?: AssistantPort | undefined;
 	readonly confirm?: ((said: string) => Promise<boolean>) | undefined;
 	readonly notePath?: string | undefined;
 	readonly pageParamsKey?: string | undefined;
@@ -212,6 +216,7 @@ export function portsOf(host: PortsHost, refs: RefsPort, self: string): Implemen
 		catalogue: host.catalogue ?? NO_CATALOGUE_PORT,
 		studio: host.studio ?? NO_STUDIO_HOST,
 		studioState: host.studioState ?? NO_STUDIO_STATE,
+		assistant: host.assistant ?? NO_ASSISTANT,
 		confirm: host.confirm ?? (async () => false),
 	};
 }

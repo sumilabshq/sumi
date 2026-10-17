@@ -6162,15 +6162,6 @@ body.wg-tree-carrying .wg-tile-body {
 	color: var(--wg-kit-text);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-who {
-	flex: none;
-	font-size: var(--font-ui-smaller, 12px);
-	color: var(--text-faint);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-scroll-frame {
 	position: relative;
 	flex: 1;
@@ -13112,33 +13103,9 @@ body.wg-studio-in-front .status-bar {
 	white-space: nowrap;
 }
 
-.wg-studio .wg-studio-ai-who {
-	flex: none;
-	font-size: 12px;
-	color: var(--wg-kit-text-muted);
-}
-
-.wg-studio .wg-studio-ai-provider {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	height: 40px;
-	padding: 0 14px 0 16px;
-	border: none;
-	border-radius: var(--wg-kit-pill);
-	background: var(--primary);
-	box-shadow: none;
-	color: var(--primary-foreground);
-	font-family: inherit;
-	font-size: 13px;
-	font-weight: var(--font-medium, 500);
-	white-space: nowrap;
-	cursor: pointer;
-}
-
 .wg-studio .wg-studio-menu-trigger.wg-kit-btn {
-	width: 40px;
-	height: 40px;
+	width: 48px;
+	height: 48px;
 	color: var(--wg-kit-text);
 }
 
@@ -13525,6 +13492,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:h-9 {
 		height: calc(var(--cv-spacing) * 9) !important;
 	}
+	.cv\:h-10 {
+		height: calc(var(--cv-spacing) * 10) !important;
+	}
 	.cv\:h-12 {
 		height: calc(var(--cv-spacing) * 12) !important;
 	}
@@ -13596,6 +13566,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:min-w-0 {
 		min-width: 0px !important;
+	}
+	.cv\:min-w-10 {
+		min-width: calc(var(--cv-spacing) * 10) !important;
 	}
 	.cv\:flex-1 {
 		flex: 1 !important;
@@ -13918,6 +13891,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:px-3 {
 		padding-inline: calc(var(--cv-spacing) * 3) !important;
 	}
+	.cv\:px-3\.5 {
+		padding-inline: calc(var(--cv-spacing) * 3.5) !important;
+	}
 	.cv\:px-4 {
 		padding-inline: calc(var(--cv-spacing) * 4) !important;
 	}
@@ -14019,6 +13995,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-medium, 500) !important;
 		font-weight: var(--font-medium, 500) !important;
 	}
+	.cv\:font-normal {
+		--tw-font-weight: var(--font-normal, 400) !important;
+		font-weight: var(--font-normal, 400) !important;
+	}
 	.cv\:font-semibold {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
@@ -14054,6 +14034,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:uppercase {
 		text-transform: uppercase !important;
+	}
+	.cv\:italic {
+		font-style: italic !important;
 	}
 	.cv\:tabular-nums {
 		--tw-numeric-spacing: tabular-nums !important;
@@ -14307,6 +14290,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		cursor: default !important;
 	}
 	.cv\:disabled\:opacity-50:disabled {
+		opacity: 50% !important;
+	}
+	.cv\:aria-disabled\:cursor-default[aria-disabled="true"] {
+		cursor: default !important;
+	}
+	.cv\:aria-disabled\:opacity-50[aria-disabled="true"] {
 		opacity: 50% !important;
 	}
 	.cv\:data-\[dragging\]\:cursor-grabbing[data-dragging] {
