@@ -24,6 +24,7 @@ import type { StudioShellBoardProps } from "./studio-shell-board.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import type { CanvasShell } from "../canvas/design-stage.js";
+import { studioAppHostParts } from "@widgetarium/app-host/gateways";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioRail } from "./studio-rail.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -106,6 +107,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		host,
 		studio,
 		state,
+		assistant,
 	});
 	const isCanvas = view === "canvas";
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
@@ -135,10 +137,8 @@ function shellBoardsOf(shell: ShellBoardAsk): ShellBoards {
 		menu: h(StudioShellBoard, { key: `menu ${shell.app}`, place: "menu", ...shell }),
 		rail: h(StudioShellBoard, { key: `rail ${shell.app}`, place: "rail", ...shell }),
 		canvasShell: {
-			corners: {
-				start: null,
-				end: corners.end,
-			},
+			hostParts: studioAppHostParts(shell.state),
+			cornerEnd: corners.end,
 		},
 	};
 }

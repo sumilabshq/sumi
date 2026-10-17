@@ -5,6 +5,24 @@ const leafNamed = (said, under = document) => [...under.querySelectorAll("*")].f
 const boxOf = (node) => { if (!node) return null; const box = node.getBoundingClientRect(); return { x: Math.round(box.left), y: Math.round(box.top), w: Math.round(box.width), h: Math.round(box.height), right: Math.round(innerWidth - box.right) }; };
 const triggerHitIn = (selector) => { const trigger = document.querySelector(selector); if (!trigger) return null; const box = trigger.getBoundingClientRect(); return trigger.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)); };
 const menuButton = () => document.querySelector('[aria-label$=" menu"]');
+const roundOf = (node, pseudo) => { if (!node) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
+const inDomOrder = (selectors) => selectors.map((selector) => [selector, document.querySelector(selector)]).filter(([, node]) => node).sort(([, one], [, two]) => (one.compareDocumentPosition(two) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)).map(([selector]) => selector);
+const headerOf = () => ({
+	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-add]", "[data-host-zone] [data-host-close]"]),
+	appBeforeHost: (document.querySelector("[data-app-zone]")?.getBoundingClientRect().right ?? Infinity) <= (document.querySelector("[data-host-zone]")?.getBoundingClientRect().left ?? -Infinity),
+	tabs: [...document.querySelectorAll("[data-host-tab]")].map((tab) => ({ selected: tab.getAttribute("aria-selected"), label: tab.getAttribute("aria-label"), text: tab.textContent.trim(), h: Math.round(tab.getBoundingClientRect().height) })),
+	tabsPill: Math.round(document.querySelector("[data-host-tabs]")?.getBoundingClientRect().height ?? 0),
+	appOrder: inDomOrder(["[data-app-zone] [data-canvas-sidebar-toggle]", "[data-app-zone] [data-canvas-page-picker]", "[data-app-zone] [data-canvas-zoom]"]),
+	picker: Math.round(document.querySelector("[data-app-zone] [data-canvas-title]")?.getBoundingClientRect().height ?? 0),
+	picture: roundOf(document.querySelector("[data-app-zone] [data-canvas-title] [aria-label='Add photo']")),
+	toggle: roundOf(document.querySelector("[data-app-zone] [data-canvas-sidebar-toggle]")),
+	add: roundOf(document.querySelector("[data-host-add]")),
+	addDisabled: document.querySelector("[data-host-add]")?.getAttribute("aria-disabled") ?? null,
+	close: roundOf(document.querySelector("[data-host-close]")),
+	closeLabel: document.querySelector("[data-host-close]")?.getAttribute("aria-label") ?? null,
+	chatMenu: roundOf(menuButton()?.matches(".wg-kit-btn") ? menuButton() : null, "::before"),
+	chatHead: document.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? null,
+});
 const outletBox = () => boxOf(document.querySelector(".wg-studio-outlet"));
 const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(box, said); box.dispatchEvent(new Event("input", { bubbles: true })); };
 (async () => {
@@ -13,7 +31,9 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	await until(() => window.__MODE__ === "app" || menuButton());
 	if (window.__MODE__ !== "app") {
 		seen.openedOnCanvas = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
-		(await until(() => document.querySelector("[data-canvas-topbar] [aria-label='Back to view']")))?.click();
+		await until(() => document.querySelector("[data-app-zone] [data-canvas-zoom]"));
+		seen.header = headerOf();
+		(await until(() => document.querySelector("[data-app-host-bar] [data-host-close]")))?.click();
 	}
 	await until(() => document.querySelector(window.__MODE__ === "app" ? "[data-task]" : ".wg-studio-outlet [data-task]"));
 	await wait(300);
@@ -107,9 +127,9 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	(await until(() => leafNamed("Edit in canvas")))?.click();
 	seen.canvasShown = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
 	seen.taskGoneInCanvas = document.querySelectorAll(".wg-studio-outlet > :not([data-canvas-studio])").length === 0;
-	seen.topBar = (await until(() => document.querySelector("[data-canvas-topbar]")))?.textContent ?? null;
+	seen.topBar = (await until(() => document.querySelector("[data-app-host-bar]")))?.textContent ?? null;
 	seen.bandsInCanvas = document.querySelectorAll(".wg-studio-band").length;
-	seen.topBarsInCanvas = document.querySelectorAll("[data-canvas-topbar]").length;
+	seen.topBarsInCanvas = document.querySelectorAll("[data-app-host-bar], [data-canvas-topbar]").length;
 	seen.menuInChatInCanvas = Boolean(menuButton()?.closest(".wg-studio-chat .wg-studio-ai-head"));
 	seen.frames = [...document.querySelectorAll(".wg-design-frame .wg-design-name")].map((name) => name.textContent);
 	seen.frameDrawsRoute = Boolean(await until(() => document.querySelector(".wg-design-frame [data-task]")));
@@ -128,9 +148,11 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	await wait(200);
 	seen.transformPanned = layer?.style.transform ?? "";
 	seen.locationInCanvas = location.pathname;
-	const topButton = (said) => [...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === said || one.getAttribute("aria-label") === said);
-	seen.topButtons = [...document.querySelectorAll("[data-canvas-topbar] button")].map((one) => one.textContent.trim() || one.getAttribute("aria-label"));
-	topButton("Components")?.click();
+	const topButton = (said) => [...document.querySelectorAll("[data-app-host-bar] button")].find((one) => one.textContent.trim() === said || one.getAttribute("aria-label") === said);
+	seen.topButtons = [...document.querySelectorAll("[data-app-host-bar] button")].map((one) => one.getAttribute("aria-label") || one.textContent.trim());
+	document.querySelector("[data-canvas-page-picker] button")?.click();
+	seen.pageChoices = (await until(() => document.querySelectorAll("[data-canvas-page-choice]").length > 0 && [...document.querySelectorAll("[data-canvas-page-choice]")]))?.map((one) => one.textContent.trim()) ?? [];
+	[...document.querySelectorAll("[data-canvas-page-choice]")].find((one) => one.textContent.trim() === "Components")?.click();
 	await until(() => document.querySelector("[data-canvas-card]"));
 	seen.cards = [...document.querySelectorAll("[data-canvas-card] [data-canvas-card-name]")].map((name) => name.textContent);
 	seen.cardNotDrawn = (await until(() => document.querySelector("[data-canvas-card] [data-canvas-not-drawn]")))?.dataset.canvasNotDrawn ?? null;

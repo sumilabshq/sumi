@@ -8,6 +8,8 @@ import esbuild from "esbuild";
 import { NOT_AVAILABLE_ON_HOST } from "../packages/core/src/engine/studio-host.ts";
 import { ASSISTANT_NOT_AVAILABLE } from "../packages/core/src/engine/assistant-port.ts";
 import { STUDIO_BAND_PX } from "../apps/studio/src/legacy/shared/studio-band-size.ts";
+import { checkStudioHeader } from "./studio-render-header.ts";
+import type { StudioHeader } from "./studio-render-header.ts";
 import { STUDIO_RAIL_PX } from "../apps/studio/src/legacy/shared/studio-rail-size.ts";
 import { NO_GPU } from "../packages/canvas/shared/lib/field/frames/use-gpu-frame.ts";
 import {
@@ -66,6 +68,8 @@ interface Seen extends CatalogueSeen {
 	readonly transformPanned?: string;
 	readonly locationInCanvas?: string;
 	readonly cards?: readonly string[];
+	readonly pageChoices?: readonly string[];
+	readonly header?: StudioHeader;
 	readonly routeTriggerHit?: boolean | null;
 	readonly frameTriggerHit?: boolean | null;
 	readonly frameTriggerFocused?: boolean | null;
@@ -87,7 +91,7 @@ interface Seen extends CatalogueSeen {
 type Mode = "app" | "studio" | "studio-mac" | "studio-memory";
 
 const VIEW = { width: 1280, height: 800 };
-const MENU_BUTTON_PX = 40;
+const MENU_BUTTON_PX = 48;
 const MAC_SAFE_AREA_PX = 76;
 const REACT_ID = /«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g;
 const REGION_WIDTH = /flex: 0 0 \d+px/g;
@@ -216,7 +220,8 @@ const studio = await seenIn("studio");
 const { menu } = studio.seen;
 check("studio drew without a failure", studio.reported === "", studio.reported);
 check("the studio opens on the canvas", studio.seen.openedOnCanvas === true, studio.seen.openedOnCanvas);
-check("the menu button is the pill header's round 40px", menu?.w === MENU_BUTTON_PX && menu.h === MENU_BUTTON_PX, menu);
+checkStudioHeader(studio.seen.header, check);
+check("the menu button is the pill header's round 48px", menu?.w === MENU_BUTTON_PX && menu.h === MENU_BUTTON_PX, menu);
 check("the menu stands in the chat's header", studio.seen.menuInChatHead === true, studio.seen.menuInChatHead);
 check("and below the band", (menu?.y ?? -1) >= STUDIO_BAND_PX, menu);
 check("the band carries no catalogue button", studio.seen.bandButtons === 0, studio.seen.bandButtons);
@@ -284,11 +289,11 @@ checkCataloguePanel(studio.seen, check);
 check("Edit in canvas swaps the route for the canvas", studio.seen.canvasShown === true, studio.seen.canvasShown);
 check("and the route leaves the outlet", studio.seen.taskGoneInCanvas === true, studio.seen.taskGoneInCanvas);
 check(
-	"the canvas is the design canvas: its top bar switches Pages and Components and leaves by a labelled round button",
-	["Pages", "Components"].every((said) => studio.seen.topBar?.includes(said)) &&
+	"the canvas is the design canvas: its page picker holds every route page and Components, and the host leaves by a labelled round button",
+	sameList(studio.seen.pageChoices, ["/", "/done/:id", "Components"]) &&
 		studio.seen.topButtons?.includes("Back to view") === true &&
 		studio.seen.topBar?.includes("Back to view") === false,
-	{ topBar: studio.seen.topBar, buttons: studio.seen.topButtons },
+	{ choices: studio.seen.pageChoices, topBar: studio.seen.topBar, buttons: studio.seen.topButtons },
 );
 check(
 	"the canvas draws one header row: no band above it",
