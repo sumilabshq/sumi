@@ -1,12 +1,19 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { PACKED_INTO, packEngine } from "./pack-engine.mts";
+import { bodyLockFindingsOf, leavesWindowAlone, type BodyLockFindings } from "./body-lock-checks.ts";
+import { paged, waited, type AskedPage } from "./chrome-ask.ts";
 import { findBrowser } from "./harness.ts";
 import { installOfflineFirst, md5Of, ran, runnerWithTheCli } from "./packed-project.mts";
+
+interface PictureLook {
+	readonly isDrawn: boolean;
+	readonly found: BodyLockFindings;
+}
 
 interface Drawn {
 	readonly dom: string;
@@ -18,6 +25,11 @@ const TITLES = ["Water the ferns", "Mend the fence"];
 const SCHEMA_FILE = "src/shared/schemas/task.ts";
 const HANDLER_FILE = "src/logic/tasks/tasks-query.ts";
 const WIDGET_FILE = "src/widgets/tasks/task-list/widget.tsx";
+const DIALOG_WIDGET_FILE = "src/widgets/tasks/rename-dialog/widget.tsx";
+const DIALOG_DRAWN = `document.getElementById("wg-picture-dialog") !== null`;
+const PICTURE_WAIT_MS = 20000;
+const PICTURE_POLL_MS = 250;
+const DEV_START_MS = 30000;
 const BOARD_FILE = "src/app/routes/board.json";
 const ERRORS_ATTRIBUTE = "data-wg-console-errors";
 const ERRORS_HELD = new RegExp(`${ERRORS_ATTRIBUTE}="([^"]*)"`);
@@ -83,13 +95,50 @@ export const states = defineStates(TaskList, {
 export default TaskList;
 `;
 
+const DIALOG_WIDGET = `import { createWidget, defineLayout, defineMetadata } from "@widgetarium/core";
+import { PictureContext } from "@widgetarium/core/engine/picture-scope.js";
+import { Dialog } from "radix-ui";
+
+const RenameDialog = createWidget({
+	draw: () => (
+		<PictureContext.Provider value={true}>
+			<Dialog.Root open>
+				<Dialog.Portal>
+					<Dialog.Overlay />
+					<Dialog.Content id="wg-picture-dialog">
+						<Dialog.Title>Rename</Dialog.Title>
+						<Dialog.Description>The task's new name</Dialog.Description>
+					</Dialog.Content>
+				</Dialog.Portal>
+			</Dialog.Root>
+		</PictureContext.Provider>
+	),
+});
+
+export const metadata = defineMetadata(RenameDialog, {
+	title: "Rename dialog",
+	description: "What should the task be called?",
+	keywords: ["rename", "dialog"],
+	props: {},
+});
+
+export const layout = defineLayout({ role: "control", size: { preferredWidth: 360, preferredHeight: "auto" } });
+
+export default RenameDialog;
+`;
+
 const TASKS_TILE = {
 	id: "tasks",
 	widget: "task-list",
 	props: { getTasks: { implementation: "TasksQuery", fields: {}, allow: ["query"] } },
 };
 
-const BOARD = { v: 2, tiles: [TASKS_TILE], layout: { dir: "column", of: [{ id: "tasks" }] } };
+const DIALOG_TILE = { id: "rename", widget: "rename-dialog", props: {} };
+const BOARD = {
+	v: 2,
+	tiles: [TASKS_TILE, DIALOG_TILE],
+	layout: { dir: "column", of: [{ id: "tasks" }, { id: "rename" }] },
+};
 const UNBOUND_TILE = {
 	...TASKS_TILE,
 	props: { getTasks: { ...TASKS_TILE.props.getTasks, implementation: "NoSuchQuery" } },
@@ -220,6 +269,76 @@ function titlesDrawnInBoard({ dom }: Drawn): boolean {
 	return board >= 0 && TITLES.every((title) => dom.indexOf(title, board) > board);
 }
 
+async function pictureLooked(dist: string): Promise<PictureLook> {
+	const server = await serve(dist);
+	try {
+		return await pictureLookedAt(`http://127.0.0.1:${portOf(server.address())}/`);
+	} finally {
+		server.close();
+	}
+}
+
+async function devPictureLooked(app: string): Promise<PictureLook> {
+	const port = await freePort();
+	const url = `http://127.0.0.1:${port}/`;
+	const dev = spawn("npx", ["vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
+		cwd: app,
+		stdio: "ignore",
+	});
+	try {
+		await answering(url);
+		return await pictureLookedAt(url);
+	} finally {
+		dev.kill();
+	}
+}
+
+async function pictureLookedAt(url: string): Promise<PictureLook> {
+	const page = await paged(url, "project render picture", { size: [1280, 900] });
+	try {
+		const isDrawn = await drawnWithin(page, PICTURE_WAIT_MS);
+		return { isDrawn, found: await bodyLockFindingsOf(page) };
+	} finally {
+		page.close();
+	}
+}
+
+async function drawnWithin(page: AskedPage, ms: number): Promise<boolean> {
+	for (let left = ms; left > 0; left -= PICTURE_POLL_MS) {
+		if ((await page.ask(DIALOG_DRAWN)) === true) {
+			return true;
+		}
+
+		await waited(PICTURE_POLL_MS);
+	}
+
+	return false;
+}
+
+async function answering(url: string): Promise<void> {
+	for (let left = DEV_START_MS; left > 0; left -= PICTURE_POLL_MS) {
+		const isUp = await fetch(url).then(
+			(response) => response.ok,
+			() => false,
+		);
+		if (isUp) {
+			return;
+		}
+
+		await waited(PICTURE_POLL_MS);
+	}
+
+	throw new Error(`vite dev never answered at ${url}`);
+}
+
+async function freePort(): Promise<number> {
+	const server = http.createServer();
+	await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
+	const port = portOf(server.address());
+	server.close();
+	return port;
+}
+
 function typecheckSaid(app: string): string {
 	const typecheck = ran(app, "npm", ["run", "typecheck"]);
 	return typecheck.ok ? "" : typecheck.said;
@@ -253,6 +372,7 @@ try {
 	writeIn(app, SCHEMA_FILE, SCHEMA);
 	writeIn(app, HANDLER_FILE, HANDLER);
 	writeIn(app, WIDGET_FILE, WIDGET);
+	writeIn(app, DIALOG_WIDGET_FILE, DIALOG_WIDGET);
 	writeBoard(app, BOARD);
 	installOfflineFirst(app);
 
@@ -263,6 +383,20 @@ try {
 	const drawn = await builtAndDrawn(app);
 	check("the route's board draws both task titles the handler answered", titlesDrawnInBoard(drawn), true);
 	check("and the page logs no console error", drawn.errors.join("\n"), "");
+	const picture = await pictureLooked(path.join(app, "dist"));
+	check("an open Radix dialog drawn inside a picture is on the page", picture.isDrawn, true);
+	check(
+		`and leaves the window's scroll, pointer, focus and readers alone — ${JSON.stringify(picture.found)}`,
+		leavesWindowAlone(picture.found),
+		true,
+	);
+	const devPicture = await devPictureLooked(app);
+	check("vite dev draws the picture's open dialog too", devPicture.isDrawn, true);
+	check(
+		`and its pre-bundled Radix leaves the window alone — ${JSON.stringify(devPicture.found)}`,
+		leavesWindowAlone(devPicture.found),
+		true,
+	);
 	check("app mode ships no studio code", scriptsUnder(path.join(app, "dist")).includes(STUDIO_MARK), false);
 	check(
 		"and no studio rule or studio keyframes in its CSS",

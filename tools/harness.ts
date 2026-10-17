@@ -7,6 +7,7 @@ import esbuild from "esbuild";
 import type { Plugin } from "esbuild";
 import { isObject } from "../packages/core/src/engine/is-object.js";
 import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { radixInPictures } from "../packages/host-obsidian/radix-in-pictures.mts";
 
 export type Theme = "light" | "dark";
 
@@ -149,7 +150,7 @@ export const OBSIDIAN_STUB: Plugin = {
 export async function bundleOf(entry: string, plugins: readonly Plugin[] = []): Promise<string> {
 	const built = await esbuild.build({
 		entryPoints: [entry],
-		plugins: [...plugins],
+		plugins: [radixInPictures(), ...plugins],
 		bundle: true,
 		conditions: ["source"],
 		loader: TEXT_LOADERS,

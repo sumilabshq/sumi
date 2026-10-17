@@ -1,4 +1,4 @@
-import { widgetsCliBundleSync } from "../../packages/host-obsidian/build.mts";
+import { projectSeedText, widgetsCliBundleSync } from "../../packages/host-obsidian/build.mts";
 import { widgetTypeFiles } from "../widget-types.mts";
 import { packedModuleSource } from "../packed-module.mts";
 
@@ -7,6 +7,7 @@ const VIRTUAL_MODULES: ReadonlyMap<string, () => string> = new Map([
 	["widgetarium:widgets-cli", () => packedModuleSource(widgetsCliBundleSync())],
 	["widgetarium:widget-types", () => packedModuleSource(widgetTypeFiles())],
 	["widgetarium:build-stamp", () => 'export const BUILD_STAMP = "under-test";\n'],
+	["widgetarium:project-seed", () => packedModuleSource(projectSeedText())],
 ]);
 
 const built = new Map<string, string>();

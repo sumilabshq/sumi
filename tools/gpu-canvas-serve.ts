@@ -3,6 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import esbuild from "esbuild";
 import { THEMES } from "./harness.ts";
+import { radixInPictures } from "../packages/host-obsidian/radix-in-pictures.mts";
 
 export interface ServedPages {
 	readonly origin: string;
@@ -50,6 +51,7 @@ export async function servedGpuPages(
 
 async function bundled(entry: string): Promise<Buffer> {
 	const built = await esbuild.build({
+		plugins: [radixInPictures()],
 		entryPoints: [entry],
 		bundle: true,
 		conditions: ["source"],

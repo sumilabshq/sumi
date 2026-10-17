@@ -3,9 +3,11 @@ import { readFileSync, writeFileSync } from "node:fs";
 import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
 import { format, resolveConfig } from "prettier";
 import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
+import { systemTokensOf, withSystemTokens } from "../../tools/system-sheet.mts";
 import { widgetTypeFiles } from "../../tools/widget-types.mts";
 import { packedModuleSource } from "../../tools/packed-module.mts";
 import { layGpuFiles } from "./gpu-files.mts";
+import { radixInPictures } from "./radix-in-pictures.mts";
 
 export interface SurfaceAsk {
 	readonly minify?: boolean;
@@ -24,6 +26,9 @@ const WIDGETS_CLI_SOURCE = "packages/host-obsidian/src/legacy/ai/widgets-cli.ts"
 const WIDGET_TYPES_SPECIFIER = "widgetarium:widget-types";
 const CATALOGUE_WIDGETS_FOLDER = "apps/studio/src/legacy/catalogue/widgets";
 const BUILD_STAMP_SPECIFIER = "widgetarium:build-stamp";
+const PROJECT_SEED_SPECIFIER = "widgetarium:project-seed";
+const PROJECT_SEED_TOOL = "tools/project-seed.mts";
+const SEED_OUTPUT_BYTES = 64 * 1024 * 1024;
 const PLUGIN_SHEET = "packages/host-obsidian/styles.css";
 
 const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
@@ -73,7 +78,14 @@ export function bundleOptions({
 	sourcemap = false,
 }: BundleAsk = {}): BuildOptions {
 	return {
-		plugins: [surfaceSource(minify), widgetsCliSource(), widgetTypesSource(), buildStampSource()],
+		plugins: [
+			surfaceSource(minify),
+			widgetsCliSource(),
+			widgetTypesSource(),
+			projectSeedSource(),
+			buildStampSource(),
+			radixInPictures(),
+		],
 		entryPoints: ["packages/host-obsidian/src/main.ts"],
 		bundle: true,
 		conditions: ["source"],
@@ -131,6 +143,30 @@ function widgetsCliSource(): Plugin {
 			}));
 		},
 	};
+}
+
+function projectSeedSource(): Plugin {
+	return {
+		name: "widgetarium-project-seed",
+		setup(build) {
+			build.onResolve({ filter: new RegExp(`^${PROJECT_SEED_SPECIFIER}$`) }, (found) => ({
+				path: found.path,
+				namespace: "wg-project-seed",
+			}));
+			build.onLoad({ filter: /.*/, namespace: "wg-project-seed" }, () => ({
+				contents: packedModuleSource(projectSeedText()),
+				loader: "js",
+				watchFiles: [PROJECT_SEED_TOOL],
+			}));
+		},
+	};
+}
+
+export function projectSeedText(): string {
+	return execFileSync("node", ["--single-threaded", "--import", "./tools/loader/register.mts", PROJECT_SEED_TOOL], {
+		encoding: "utf8",
+		maxBuffer: SEED_OUTPUT_BYTES,
+	});
 }
 
 function widgetTypesSource(): Plugin {
@@ -215,7 +251,8 @@ function runGates(): void {
 
 async function layCanvasSheet(): Promise<void> {
 	const authored = readFileSync(PLUGIN_SHEET, "utf8");
-	const laid = await formattedAsRepo(withCanvasSheet(authored, await canvasSheet(process.cwd())), PLUGIN_SHEET);
+	const withTokens = withSystemTokens(authored, systemTokensOf(process.cwd()));
+	const laid = await formattedAsRepo(withCanvasSheet(withTokens, await canvasSheet(process.cwd())), PLUGIN_SHEET);
 	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
 }
 
