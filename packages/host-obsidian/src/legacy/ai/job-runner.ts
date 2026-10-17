@@ -4,7 +4,8 @@ import { CLI, briefGoesInTheMessage } from "./providers.js";
 import type { AiSettings } from "./settings.js";
 import type { Runner } from "./run.js";
 import type { StreamPart } from "./stream.js";
-import { hintOf, titleOf } from "./tools.js";
+import { doingTextOf } from "@widgetarium/core/engine/assistant-port.js";
+import { callFaceOf } from "./call-face.js";
 import { startIn } from "./builds.js";
 import { JOB_ENV } from "./job-command.js";
 import type { JobFiles } from "./job-store.js";
@@ -331,12 +332,12 @@ function heard(state: JobsHeld, key: string, event: StreamPart): void {
 
 function heardCall(state: JobsHeld, key: string, live: Running, call: Call): void {
 	const at = state.doors.now();
-	const hint = hintOf(call);
-	live.activity = hint ? `${titleOf(call)} — ${hint}` : titleOf(call);
+	const heard = { ...call, answered: false, output: "", failed: false, at };
+	live.activity = doingTextOf(callFaceOf(heard));
 	live.text = "";
 	live.unsaved.push(`${new Date(at).toISOString()} ${live.activity}`);
 	state.lines.set(key, [...(state.lines.get(key) ?? []), live.activity].slice(-LINES_KEPT));
-	const started = startIn({ ...call, answered: false, output: "", failed: false, at });
+	const started = startIn(heard);
 	const job = state.held.get(key);
 	if (started && job && !job.widgets.includes(started.id))
 		void save(state, { ...job, widgets: [...job.widgets, started.id] });

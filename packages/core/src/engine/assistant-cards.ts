@@ -48,10 +48,34 @@ export interface BuildRunCard {
 	readonly isRunning: boolean;
 }
 
+export interface Tally {
+	readonly passed: number;
+	readonly all: number;
+}
+
+export interface FailedCheck {
+	readonly step: string;
+	readonly reason: string;
+}
+
+export interface Blocker {
+	readonly feature: string;
+	readonly why: string;
+}
+
+export interface TurnResult {
+	readonly changedFiles: number;
+	readonly checks: Tally | null;
+	readonly features: Tally | null;
+	readonly blockedBy: Blocker | null;
+	readonly failedCheck: FailedCheck | null;
+}
+
 export interface TurnCards {
 	readonly build: BuildRunCard | null;
 	readonly specApp: string | null;
 	readonly designApp: string | null;
+	readonly result: TurnResult | null;
 }
 
 export type PinnedCard =

@@ -16,7 +16,7 @@ import type { Fold } from "./spec-rows.js";
 import type { AppFiles } from "./card-ports.js";
 import { SpecTitle } from "./spec-title.js";
 import { FeatureRow } from "./feature-row.js";
-import { ChoiceRow } from "./choice-row.js";
+import { QuestionCard } from "./question-card.js";
 import { RecordRow } from "./record-row.js";
 import { ResearchRow } from "./research-row.js";
 
@@ -107,14 +107,19 @@ function referenceRows({ spec, held }: CardSpec, isLocked: boolean, fold: Fold):
 
 function choiceRows({ spec, held }: CardSpec, details: Fold, fold: Fold): ReactElement {
 	const pick = (name: string) => (picked: string) => held.change((text) => withChoicePicked(text, name, picked));
-	const rows = [
-		...spec.choices.map((choice) => h(ChoiceRow, { key: choice.name, choice, onPick: pick(choice.name) })),
-		pressableRow({ ...details, className: "is-details" }, [
-			h("span", { key: "tile", className: "wg-studio-ai-spec-tile" }, h(Icon, { name: "list", size: 16 })),
-			rowText(DETAILS, detailsSaidOf(spec)),
-		]),
-	];
-	return spec.choices.length > 0 ? foldedRows("choices", CHOSEN, rows, fold) : platedRows("choices", null, rows);
+	const questions = spec.choices.map((choice) =>
+		h(QuestionCard, { key: choice.name, choice, onPick: pick(choice.name) }),
+	);
+	const detailsRow = pressableRow({ ...details, className: "is-details" }, [
+		h("span", { key: "tile", className: "wg-studio-ai-spec-tile" }, h(Icon, { name: "list", size: 16 })),
+		rowText(DETAILS, detailsSaidOf(spec)),
+	]);
+	if (questions.length === 0) {
+		return platedRows("choices", null, [detailsRow]);
+	}
+
+	const asked = h("div", { key: "questions", className: "wg-studio-ai-questions" }, questions);
+	return foldedRows("choices", CHOSEN, [asked, detailsRow], fold);
 }
 
 function detailsSaidOf(spec: AppSpec): string {

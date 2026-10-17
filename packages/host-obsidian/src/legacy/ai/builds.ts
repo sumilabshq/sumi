@@ -1,5 +1,4 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { argumentsIn, clipLine, ourCallOf } from "./tools.js";
+import { argumentsIn, changedPathOf, clipLine, ourCallOf } from "./tools.js";
 import type { AssistantCall } from "@widgetarium/core/engine/assistant-port.js";
 import type { Build, BuildStep, StepStatus } from "@widgetarium/core/engine/assistant-cards.js";
 
@@ -33,7 +32,6 @@ const PLACING = "Placing it on the board";
 const LINTING = "Checking the board";
 const CLEAN = "No problems found";
 const LONGEST_HINT = 100;
-const WRITING_TOOLS = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
 const NOTE_FILE = /\.md$/;
 const SHELL_VARIABLE = /\$(?:\w|\{)/;
 const TITLE_OPTION = /--title\s+(?:"([^"]*)"|'([^']*)'|(\S+))/;
@@ -195,9 +193,7 @@ function writesInto(call: AssistantCall, id: string): boolean {
 }
 
 function writtenPathOf(call: AssistantCall | null | undefined): string {
-	if (!call || !WRITING_TOOLS.has(call.name)) return "";
-	const input = isObject(call.input) ? call.input : {};
-	return String(input["file_path"] ?? input["path"] ?? "");
+	return changedPathOf(call) ?? "";
 }
 
 function ourVerbOf(call: AssistantCall): string | null {

@@ -1,11 +1,10 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { Segmented } from "../packages/kit/src/index.ts";
 import { JobSchema } from "../packages/core/src/app-jobs.ts";
 import type { Job } from "../packages/core/src/app-jobs.ts";
 import { AppProvider, app } from "../packages/core/src/requests/index.ts";
 import { PlannedPageRegion } from "../packages/canvas/shared/ui/canvas-field/regions/planned-page-region.tsx";
-import { PageLabel } from "../packages/canvas/features/pages/ui/pages-list/page-label.tsx";
+import { PageRow } from "../packages/canvas/features/pages/ui/pages-list/page-row.tsx";
 import { JobLine } from "../packages/canvas/features/jobs/ui/job-status/job-line.tsx";
 import { ReferencesRegion } from "../packages/canvas/shared/ui/canvas-field/regions/references-region.tsx";
 
@@ -87,13 +86,17 @@ createRoot(host).render(
 		AppProvider,
 		{ app: app({ modules: [] }) },
 		h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
-			h(Segmented<string>, {
-				key: "tabs",
-				size: "s",
-				items: pages.map((page) => ({ value: page, label: h(PageLabel, { page, isRunning: isRunning(page) }) })),
-				value: "Ideas",
-				onValueChange: () => undefined,
-			}),
+			h(
+				"div",
+				{ key: "pages", style: { width: "200px" } },
+				pages.map((page) =>
+					h(PageRow, {
+						key: page,
+						row: { page, isRunning: isRunning(page), isShown: page === "Ideas" },
+						onPick: () => undefined,
+					}),
+				),
+			),
 			h(
 				"div",
 				{

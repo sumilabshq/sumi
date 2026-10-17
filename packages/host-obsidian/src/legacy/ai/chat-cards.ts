@@ -9,6 +9,7 @@ import type {
 import { buildsIn } from "./builds.js";
 import { buildRunIn, buildSpanOf, buildStartedIn, installsIn, lastDesignAppIn, lastSpecAppIn } from "./spec-calls.js";
 import type { BuildSpan } from "./spec-calls.js";
+import { turnResultOf } from "./turn-result.js";
 
 interface HeldCalls {
 	readonly calls: AssistantCall[];
@@ -34,7 +35,12 @@ export function chatCardsOf(session: AssistantSession): ChatCards {
 
 function turnCardsOf(held: SessionBuilds, at: number): TurnCards {
 	const calls = held.session.turns[at]?.calls ?? [];
-	return { build: buildCardOf(held, at), specApp: lastSpecAppIn(calls), designApp: lastDesignAppIn(calls) };
+	return {
+		build: buildCardOf(held, at),
+		specApp: lastSpecAppIn(calls),
+		designApp: lastDesignAppIn(calls),
+		result: turnResultOf(calls),
+	};
 }
 
 function buildCardOf(held: SessionBuilds, at: number): BuildRunCard | null {

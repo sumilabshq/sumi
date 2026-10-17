@@ -1,10 +1,8 @@
 import type {
 	AppJobs,
-	AssistantCall,
 	AssistantPort,
 	AssistantSession,
 	AssistantSetup,
-	CallFace,
 	ProgressWidget,
 	RenderMarkdown,
 } from "@widgetarium/core/engine/assistant-port.js";
@@ -16,7 +14,7 @@ import type { Session } from "./session.js";
 import type { AiSettings } from "./settings.js";
 import { askedForApp } from "./spec-calls.js";
 import type { SpecPort } from "./spec-port.js";
-import { glyphOf, hintOf, titleOf } from "./tools.js";
+import { callFaceOf } from "./call-face.js";
 
 export interface ObsidianAssistantPort extends AssistantPort {
 	setupChanged(): void;
@@ -100,10 +98,6 @@ export function assistantSetupOf(state: SetupSource): AssistantSetup {
 		helperAgents: state.helperAgents,
 		renderMarkdown: canRenderMarkdown(state.host) ? state.host.ui.renderMarkdown : null,
 	};
-}
-
-export function callFaceOf(call: AssistantCall): CallFace {
-	return { glyph: glyphOf(call), title: titleOf(call), hint: hintOf(call) };
 }
 
 export function canRenderMarkdown(host: MarkdownHost | null | undefined): host is MarkdownHost & RenderingHost {

@@ -64,7 +64,7 @@ function sessionOf(state: SessionState): Session {
 	};
 }
 
-const QUIET = { phase: null, spent: 0, startedAt: 0 };
+const QUIET = { phase: null, spent: 0 };
 
 const EMPTY: SessionState = { turns: [], busy: false, failure: null, session: null, tool: null, ...QUIET };
 
@@ -129,7 +129,6 @@ const TALKING: SessionState = {
 	tool: "Edit",
 	phase: "tools",
 	spent: 1340,
-	startedAt: Date.now() - 63000,
 };
 
 const BROKEN: SessionState = {
@@ -222,7 +221,6 @@ const BUILDING: SessionState = {
 	tool: "Bash",
 	phase: "tools",
 	spent: 2210,
-	startedAt: STARTED - 70000,
 };
 
 const BUILT: SessionState = { ...BUILDING, busy: false, tool: null, phase: null };

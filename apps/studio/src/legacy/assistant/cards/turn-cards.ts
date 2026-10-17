@@ -1,7 +1,14 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { ChatCards, PinnedCard } from "@widgetarium/core/engine/assistant-cards.js";
+import type {
+	Blocker,
+	ChatCards,
+	FailedCheck,
+	PinnedCard,
+	TurnCards,
+} from "@widgetarium/core/engine/assistant-cards.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
+import { FailureCard } from "../failure-card.js";
 import type { Report } from "../failure-line.js";
 import { BuildProgress } from "./build-progress.js";
 import type { OpenByBuild } from "./build-progress.js";
@@ -10,11 +17,13 @@ import { changeAttachmentOf } from "./change-attachment.js";
 import type { Attachment } from "./change-attachment.js";
 import { DesignCard } from "./design-card.js";
 import { PinnedRun } from "./pinned-run.js";
+import { ResultPair } from "./result-pair.js";
 import { SpecCard } from "./spec-card.js";
 
 export interface CardAsks {
 	readonly port: AssistantPort;
 	readonly report: Report;
+	send(said: string): Promise<boolean>;
 	buildIt(app: string): void;
 	approveDesign(app: string): void;
 	attach(attachment: Attachment): void;
@@ -34,23 +43,28 @@ export interface CardsAround {
 export interface TurnAt {
 	readonly at: number;
 	readonly isAnswerable: boolean;
+	readonly isLive: boolean;
 }
 
 const NOT_OPENED = "the design of {app} could not be opened";
+const CHECK_FAILED = "A check failed";
+const FIX_IT = "Fix it";
+const FIX_IT_ASKED = "Fix it: `{step}` failed with: {reason}";
+const FIX_BLOCKER_ASKED = "Fix it: {feature} is blocked: {why}";
 const NO_CARDS_AROUND: CardsAround = { before: [], after: [] };
 
-export function cardsAround(cards: ChatCards, { at, isAnswerable }: TurnAt, asks: CardAsks): CardsAround {
+export function cardsAround(cards: ChatCards, { at, isAnswerable, isLive }: TurnAt, asks: CardAsks): CardsAround {
 	const turn = cards.ofTurns[at];
 	if (!turn) return NO_CARDS_AROUND;
-	const { port, report } = asks;
-	const build = turn.build
-		? h(BuildRunCard, { key: `${turn.build.run.key}-${at}`, card: turn.build, files: port, jobs: port, report })
-		: null;
 	return {
-		before: [build],
+		before: [buildRunCardOf(turn, at, asks)],
 		after: [
 			specCardOf(turn.specApp, { at, isAnswerable }, asks),
 			designCardOf(turn.designApp, { at, isAnswerable }, asks),
+			turn.result && !isLive
+				? h(ResultPair, { key: `result-${at}`, result: turn.result, onFix: fixBlockerOf(asks) })
+				: null,
+			isAnswerable ? failedCheckCardOf(turn.result?.failedCheck ?? null, asks) : null,
 		],
 	};
 }
@@ -64,7 +78,35 @@ export function pinnedCardOf(
 	return h(BuildProgress, { key: pinned.build.key, build: pinned.build, progress: port.progressWidget(), openByBuild });
 }
 
-function specCardOf(app: string | null, { at, isAnswerable }: TurnAt, asks: CardAsks): ReactElement | null {
+function buildRunCardOf(turn: TurnCards, at: number, asks: CardAsks): ReactElement | null {
+	if (!turn.build) return null;
+	const { port, report } = asks;
+	return h(BuildRunCard, { key: `${turn.build.run.key}-${at}`, card: turn.build, files: port, jobs: port, report });
+}
+
+function fixBlockerOf(asks: CardAsks): (blocker: Blocker) => void {
+	return ({ feature, why }) => void asks.send(FIX_BLOCKER_ASKED.replace("{feature}", feature).replace("{why}", why));
+}
+
+function failedCheckCardOf(failed: FailedCheck | null, asks: CardAsks): ReactElement | null {
+	if (!failed) {
+		return null;
+	}
+
+	const asked = FIX_IT_ASKED.replace("{step}", failed.step).replace("{reason}", failed.reason);
+	return h(FailureCard, {
+		key: "failed-check",
+		title: CHECK_FAILED,
+		reason: failed.reason,
+		action: { said: FIX_IT, run: () => void asks.send(asked) },
+	});
+}
+
+function specCardOf(
+	app: string | null,
+	{ at, isAnswerable }: Omit<TurnAt, "isLive">,
+	asks: CardAsks,
+): ReactElement | null {
 	if (!app) return null;
 	return h(SpecCard, {
 		key: `spec-${at}-${app}`,
@@ -76,7 +118,11 @@ function specCardOf(app: string | null, { at, isAnswerable }: TurnAt, asks: Card
 	});
 }
 
-function designCardOf(app: string | null, { at, isAnswerable }: TurnAt, asks: CardAsks): ReactElement | null {
+function designCardOf(
+	app: string | null,
+	{ at, isAnswerable }: Omit<TurnAt, "isLive">,
+	asks: CardAsks,
+): ReactElement | null {
 	if (!app) return null;
 	return h(DesignCard, {
 		key: `design-${at}-${app}`,

@@ -4,7 +4,7 @@ import { withResult } from "./tools.js";
 import type { AiSettings, AiState } from "./settings.js";
 import type { ChatTurn, Run, Runner, RunAsk } from "./run.js";
 import type { Phase, StreamPart } from "./stream.js";
-import type { AssistantCall, AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantCall, AssistantTurn, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 
 export interface SessionState {
@@ -15,7 +15,6 @@ export interface SessionState {
 	readonly tool: string | null;
 	readonly phase: Phase | null;
 	readonly spent: number;
-	readonly startedAt: number;
 }
 
 export type SessionWatcher = (state: SessionState) => void;
@@ -83,6 +82,10 @@ export function createSession(doors: SessionDoors): Session {
 			store.activeRun?.stop();
 			store.activeRun = null;
 			cancelDraw(store);
+			if (store.state.busy) {
+				endLastTurn(store, "stopped");
+			}
+
 			patchState(store, { busy: false, tool: null, phase: null, failure: STOPPED });
 			notifyWatchers(store);
 			void keep(doors, store);
@@ -106,7 +109,7 @@ interface SessionStore {
 }
 
 function emptyState(): SessionState {
-	return { turns: [], busy: false, failure: null, session: null, tool: null, phase: null, spent: 0, startedAt: 0 };
+	return { turns: [], busy: false, failure: null, session: null, tool: null, phase: null, spent: 0 };
 }
 
 function notifyWatchers(store: SessionStore): void {
@@ -186,16 +189,24 @@ function askOf(
 }
 
 function startTurn(store: SessionStore, asked: string): void {
+	const startedAt = Date.now();
+	const answer: AssistantTurn = { role: "agent", text: "", calls: [], startedAt };
 	patchState(store, {
-		turns: [...store.state.turns, { role: "user", text: asked, calls: [] }, { role: "agent", text: "", calls: [] }],
+		turns: [...store.state.turns, { role: "user", text: asked, calls: [] }, answer],
 		busy: true,
 		failure: null,
 		tool: null,
 		phase: "thinking",
 		spent: 0,
-		startedAt: Date.now(),
 	});
 	notifyWatchers(store);
+}
+
+function endLastTurn(store: SessionStore, outcome: TurnOutcome): void {
+	const endedAt = Date.now();
+	intoLastTurn(store, (turn) =>
+		turn.role === "agent" && turn.endedAt === undefined ? { ...turn, endedAt, outcome } : turn,
+	);
 }
 
 function sendThrough(doors: SessionDoors, store: SessionStore, said: unknown): Promise<void> {
@@ -229,6 +240,7 @@ function failTurn(store: SessionStore, said: string, failed: unknown): void {
 	console.error(`[widgetarium] ${failure}`, failed);
 	store.activeRun = null;
 	cancelDraw(store);
+	endLastTurn(store, "failed");
 	patchState(store, { busy: false, tool: null, phase: null, failure });
 	notifyWatchers(store);
 }
@@ -248,6 +260,7 @@ function settleRun(store: SessionStore, provider: Provider, failure: string | nu
 	// TRADE-OFF: a marker, because a CLI that resumes its own last conversation names no id to carry
 	const carried =
 		store.state.session ?? (failure === null && resumesWithoutAnId(provider) ? RESUMES_ITS_OWN_LAST : null);
+	endLastTurn(store, failure === null ? "done" : "failed");
 	patchState(store, {
 		busy: false,
 		tool: null,

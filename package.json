@@ -130,6 +130,7 @@
 		"test:drawer": "node --single-threaded --import ./tools/loader/register.mts tools/drawer-test.ts",
 		"test:ai": "node --single-threaded --import ./tools/loader/register.mts tools/ai-test.ts",
 		"test:spec": "node --single-threaded --import ./tools/loader/register.mts tools/spec-test.ts",
+		"test:chat-pill": "node --single-threaded --import ./tools/loader/register.mts tools/chat-pill-test.ts",
 		"test:jobs": "node --single-threaded --import ./tools/loader/register.mts tools/jobs-test.ts",
 		"test:install": "node --single-threaded --import ./tools/loader/register.mts tools/install-test.ts",
 		"test:docs": "node --single-threaded --import ./tools/loader/register.mts tools/docs-test.ts",

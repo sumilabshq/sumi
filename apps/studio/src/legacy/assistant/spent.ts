@@ -1,4 +1,4 @@
-import type { AssistantPhase } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantCall, AssistantPhase, AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
 
 export interface PhaseSeen {
 	readonly phase: AssistantPhase | null;
@@ -21,10 +21,27 @@ const PHASE_SAID: Readonly<Record<AssistantPhase, string>> = {
 
 const RUNNING = "Working";
 
+const SECONDS = "{s} s";
+const MINUTES = "{m} m {s} s";
+
 export function saidElapsed(ms: number): string {
 	const whole = Math.max(0, Math.floor(ms / 1000));
-	if (ms < A_MINUTE) return `${whole}s`;
-	return `${Math.floor(whole / 60)}m ${whole % 60}s`;
+	if (ms < A_MINUTE) return SECONDS.replace("{s}", String(whole));
+	return MINUTES.replace("{m}", String(Math.floor(whole / 60))).replace("{s}", String(whole % 60));
+}
+
+export function callsSpanMs(calls: readonly AssistantCall[]): number | null {
+	const isTimed = calls.every((call) => call.answered && call.at > 0 && (call.answeredAt ?? 0) >= call.at);
+	if (calls.length === 0 || !isTimed) {
+		return null;
+	}
+
+	const started = Math.min(...calls.map((call) => call.at));
+	return Math.max(...calls.map((call) => call.answeredAt ?? call.at)) - started;
+}
+
+export function turnSpanMs({ startedAt, endedAt }: AssistantTurn): number | null {
+	return startedAt !== undefined && endedAt !== undefined && endedAt >= startedAt ? endedAt - startedAt : null;
 }
 
 export function saidTokens(spent: number): string {

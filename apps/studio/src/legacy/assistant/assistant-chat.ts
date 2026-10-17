@@ -9,20 +9,21 @@ export interface AssistantChatProps {
 	readonly port: AssistantPort;
 	readonly setup?: AssistantSetup | undefined;
 	readonly lead?: ReactNode;
+	readonly title?: string | undefined;
 }
 
-export function AssistantChat({ port, setup, lead }: AssistantChatProps): ReactElement {
+export function AssistantChat({ port, setup, lead, title }: AssistantChatProps): ReactElement {
 	const read = useAssistantSetup(port, setup ?? null);
 	if (read.state === "failed") {
 		return h("div", { className: "wg-studio-ai" }, [
-			h(ChatLeadHead, { key: "head", lead }),
+			h(ChatLeadHead, { key: "head", lead, title }),
 			h("p", { key: "quiet", className: "wg-studio-ai-quiet" }, read.failure),
 		]);
 	}
 
 	if (read.state === "reading") {
-		return h("div", { className: "wg-studio-ai" }, h(ChatLeadHead, { lead }));
+		return h("div", { className: "wg-studio-ai" }, h(ChatLeadHead, { lead, title }));
 	}
 
-	return h(ReadyChat, { port, setup: read.setup, setupFailure: read.failure, lead });
+	return h(ReadyChat, { port, setup: read.setup, setupFailure: read.failure, lead, title });
 }

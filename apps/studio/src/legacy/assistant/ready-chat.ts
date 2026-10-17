@@ -1,6 +1,5 @@
 import { createElement as h, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Button } from "@widgetarium/kit";
 import type { ChatCards } from "@widgetarium/core/engine/assistant-cards.js";
 import type {
 	AssistantCall,
@@ -19,8 +18,11 @@ import type { CardAsks } from "./cards/turn-cards.js";
 import { ChatHead } from "./chat-head.js";
 import { Composer } from "./composer.js";
 import { EmptyChat } from "./empty-chat.js";
+import { FailureCard } from "./failure-card.js";
 import { FailureSaid, useFailureLine } from "./failure-line.js";
+import { FinishLine } from "./finish-line.js";
 import type { Report } from "./failure-line.js";
+import { RunningCall, runningCallOf } from "./running-call.js";
 import { ToEndButton, useStuckToEnd } from "./stuck-scroll.js";
 import { Turn } from "./turn.js";
 import { Working } from "./working.js";
@@ -30,10 +32,7 @@ export interface ReadyChatProps {
 	readonly setup: AssistantSetup;
 	readonly setupFailure: string | null;
 	readonly lead?: ReactNode;
-}
-
-interface ChatAsks extends CardAsks {
-	send(said: string): Promise<boolean>;
+	readonly title?: string | undefined;
 }
 
 interface ScrollDraw {
@@ -45,11 +44,12 @@ interface ScrollDraw {
 }
 
 const RETRY = "Try again";
+const RUN_FAILED = "The answer did not finish";
 const NOT_SENT = "the message could not be sent";
 const NOT_BUILT = "the build could not be started";
 const NOT_APPROVED = "the design could not be approved";
 
-export function ReadyChat({ port, setup, setupFailure, lead }: ReadyChatProps): ReactElement {
+export function ReadyChat({ port, setup, setupFailure, lead, title }: ReadyChatProps): ReactElement {
 	const session = useSyncExternalStore(port.onSession, port.session);
 	const cards = useMemo(() => port.cardsOf(session), [port, session]);
 	const { scroller, isStuck, onScroll, toEnd } = useStuckToEnd([session.turns, session.busy]);
@@ -62,7 +62,7 @@ export function ReadyChat({ port, setup, setupFailure, lead }: ReadyChatProps): 
 	const pinned = pinnedCardOf(cards.pinned, { port, openByBuild, showCard });
 	const typed = useTellsAgentActivity(session, cards);
 	return h("div", { className: "wg-studio-ai", ref: chatRoot }, [
-		h(ChatHead, { key: "head", port, setup, report, lead }),
+		h(ChatHead, { key: "head", port, setup, report, lead, title }),
 		h("div", { className: "wg-studio-ai-scroll-frame", key: "scroll" }, [
 			h(
 				"div",
@@ -92,7 +92,7 @@ interface AskHolder {
 	readonly setAttachment: (next: (held: Attachment | null) => Attachment | null) => void;
 }
 
-function chatAsksOf({ port, report, attachment, setAttachment }: AskHolder): ChatAsks {
+function chatAsksOf({ port, report, attachment, setAttachment }: AskHolder): CardAsks {
 	const detached = (running: () => Promise<void>, said: string): void => {
 		setAttachment(() => null);
 		void report(running(), said).then((isDone) => {
@@ -117,22 +117,54 @@ function chatAsksOf({ port, report, attachment, setAttachment }: AskHolder): Cha
 function scrollOf({ port, session, setup, cards, asks }: ScrollDraw): ReactNode {
 	if (session.turns.length === 0)
 		return h(EmptyChat, { key: "empty", setup, onOpenProviders: () => port.openProviders() });
-	const lastAt = session.turns.length - 1;
-	const describe = (call: AssistantCall): CallFace => port.describeCall(call);
 	return [
-		...session.turns.flatMap((turn, at) => {
-			const { before, after } = cardsAround(cards, { at, isAnswerable: at === lastAt && !session.busy }, asks);
-			const live = session.busy && at === lastAt;
-			return [...before, h(Turn, { key: at, turn, render: setup.renderMarkdown, describe, live }), ...after];
-		}),
-		session.busy ? h(Working, { key: "busy", session }) : null,
-		session.failure ? failureOf(port, session.failure) : null,
+		...session.turns.flatMap((_turn, at) => turnNodesOf({ port, session, setup, cards, asks }, at)),
+		busyLineOf(port, session),
+		endLineOf(port, session),
 	];
 }
 
-function failureOf(port: AssistantPort, failure: string): ReactElement {
-	return h("div", { className: "wg-studio-ai-failure", key: "failure" }, [
-		h("span", { className: "wg-studio-ai-failure-said", key: "said" }, failure),
-		h(Button, { key: "retry", variant: "neutral", size: "s", onClick: () => port.retry() }, RETRY),
-	]);
+function turnNodesOf({ port, session, setup, cards, asks }: ScrollDraw, at: number): ReactNode[] {
+	const turn = session.turns[at];
+	if (!turn) return [];
+	const isLast = at === session.turns.length - 1;
+	const isLive = session.busy && isLast;
+	const { before, after } = cardsAround(cards, { at, isAnswerable: isLast && !session.busy, isLive }, asks);
+	const describe = (call: AssistantCall): CallFace => port.describeCall(call);
+	return [...before, h(Turn, { key: at, turn, render: setup.renderMarkdown, describe, live: isLive }), ...after];
+}
+
+function busyLineOf(port: AssistantPort, session: AssistantSession): ReactElement | null {
+	if (!session.busy) {
+		return null;
+	}
+
+	const running = runningCallOf(session);
+	if (!running) {
+		return h(Working, { key: "busy", session });
+	}
+
+	return h(RunningCall, { key: "busy", call: running, face: port.describeCall(running), onStop: () => port.stop() });
+}
+
+function endLineOf(port: AssistantPort, session: AssistantSession): ReactElement | null {
+	if (session.failure) {
+		return h(FailureCard, {
+			key: "failure",
+			title: RUN_FAILED,
+			reason: session.failure,
+			action: { said: RETRY, run: () => port.retry() },
+		});
+	}
+
+	const last = session.turns.at(-1);
+	if (session.busy || last?.role !== "agent" || !last.outcome) {
+		return null;
+	}
+
+	return h(FinishLine, { key: "finish", turn: last, outcome: last.outcome, copyText: copiedToClipboard });
+}
+
+function copiedToClipboard(text: string): Promise<void> {
+	return navigator.clipboard.writeText(text);
 }

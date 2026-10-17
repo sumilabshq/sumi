@@ -83,6 +83,8 @@ Weight, not colour, ranks text: a value is 500 or 600, its label 400 and ink-mut
 - **Gaps step down with depth:** 8px between messages, 6px between plates in a container, 2px between rows of a list.
 - **One loud thing per turn:** a brand card stands for the result; everything else is plate and raise.
 - **A container is a column or a row of plates, never a plate of plates of plates:** two levels at most, container then plate.
+- **A card has a shape and fills its row:** `wide` is 3 / 2 (`--shape-wide`), `square` 1 / 1 (`--shape-square`), `band` 5 / 2 (`--shape-band`), `strip` one row as tall as a large control plus two frames (`--shape-strip`) with its eyebrow, headline and action inline. Cards always fill the column; the shape comes from how the width is split and from the ratio, never from a cap or from the content. Where the card space is 560px or wider, a pair splits 3fr / 2fr, so the hero is `wide` and the side card `square` at the same height; a card alone is a `band`. Narrower, cards stack at full width: the hero `wide`, the side card a `strip`. A plate is exactly as wide as its cards, never a lone card beside empty space. The space is measured by a container query, never the viewport, and the headline follows the card in container units.
+- **A second card carries a decision:** only a blocker or a failure stands beside the hero. A tally that needs no answer folds into the hero's chip.
 - **A region is a card:** the canvas or any second region sits in a 34px plate container inset from the window, the chat stands on the page.
 
 ## Depth & Elevation

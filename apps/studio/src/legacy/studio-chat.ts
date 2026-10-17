@@ -14,15 +14,20 @@ export interface StudioChatProps {
 	readonly menu: ReactNode;
 	readonly chatWidth: ChatWidth;
 	readonly frame: RefObject<HTMLDivElement | null>;
+	readonly appName: string | null;
 }
 
 const CHAT_LABEL = "AI assistant";
 
-export function StudioChat({ assistant, mascot, menu, chatWidth, frame }: StudioChatProps): ReactElement {
+export function StudioChat({ assistant, mascot, menu, chatWidth, frame, appName }: StudioChatProps): ReactElement {
 	const column = useRef<HTMLElement | null>(null);
 	const [mascotApp] = useState(() => app({ modules: [MascotClientModule.with(mascot)] }));
 	return h("aside", { ref: column, className: "wg-studio-chat", "aria-label": CHAT_LABEL }, [
-		h(AppProvider, { key: "chat", app: mascotApp }, h(AssistantPanel, { assistant, lead: menu })),
+		h(
+			AppProvider,
+			{ key: "chat", app: mascotApp },
+			h(AssistantPanel, { assistant, lead: menu, title: appName ?? undefined }),
+		),
 		h(ChatEdge, { key: "edge", chatWidth, column, frame }),
 	]);
 }

@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
-import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import type { ReactElement, ReactNode } from "react";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { CallDetail } from "./call-detail.js";
-import { Chevron } from "./chevron.js";
+import { CallHead } from "./call-head.js";
+import { DiffCard } from "./diff-card.js";
 
 export interface CallRowProps {
 	readonly call: AssistantCall;
@@ -14,28 +14,28 @@ export interface CallRowProps {
 
 const INPUT = "Input";
 const OUTPUT = "Output";
+const NO_INPUT = "{}";
 
 export function CallRow({ call, face, isOpen, onToggle }: CallRowProps): ReactElement {
-	const shown = JSON.stringify(call.input, null, "\t");
-	const canOpen = shown !== "{}" || call.output !== "";
+	const opened = openedOf(call, face);
 	return h("div", { className: call.failed ? "wg-studio-ai-call is-failed" : "wg-studio-ai-call" }, [
-		h("span", { className: "wg-studio-ai-call-rail", key: "rail" }, h(Icon, { name: face.glyph, size: 14 })),
-		h("div", { className: "wg-studio-ai-call-body", key: "body" }, [
-			h(
-				"button",
-				{ className: "wg-studio-ai-call-head", key: "head", type: "button", disabled: !canOpen, onClick: onToggle },
-				[
-					h("span", { className: "wg-studio-ai-call-name", key: "name" }, face.title),
-					canOpen ? h(Chevron, { key: "mark", isOpen }) : null,
-				],
-			),
-			face.hint === "" ? null : h("p", { className: "wg-studio-ai-call-hint", key: "hint" }, face.hint),
-			isOpen && canOpen
-				? h("div", { className: "wg-studio-ai-call-open", key: "open" }, [
-						shown === "{}" ? null : h(CallDetail, { key: "in", label: INPUT, said: shown }),
-						call.output === "" ? null : h(CallDetail, { key: "out", label: OUTPUT, said: call.output }),
-					])
-				: null,
-		]),
+		h(CallHead, { key: "head", call, face, canOpen: opened !== null, isOpen, onToggle }),
+		isOpen && opened ? h("div", { className: "wg-studio-ai-call-open", key: "open" }, opened) : null,
 	]);
+}
+
+function openedOf(call: AssistantCall, face: CallFace): ReactNode | null {
+	if (face.change) {
+		return h(DiffCard, { change: face.change });
+	}
+
+	const shown = JSON.stringify(call.input, null, "\t");
+	if (shown === NO_INPUT && call.output === "") {
+		return null;
+	}
+
+	return [
+		shown === NO_INPUT ? null : h(CallDetail, { key: "in", label: INPUT, said: shown }),
+		call.output === "" ? null : h(CallDetail, { key: "out", label: OUTPUT, said: call.output }),
+	];
 }

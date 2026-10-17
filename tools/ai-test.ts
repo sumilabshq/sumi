@@ -36,10 +36,12 @@ const { turnsToKeep } = await import("../packages/host-obsidian/src/legacy/ai/tr
 const { HANDBOOK_DIR } = await import("../packages/core/src/paths.js");
 const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } =
 	await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
-const { argumentsIn, glyphForTool, glyphOf, hintOf, titleOf, ourCallIn, withResult } =
+const { argumentsIn, changedPathOf, glyphForTool, glyphOf, isFileChange, ourCallIn, withResult } =
 	await import("../packages/host-obsidian/src/legacy/ai/tools.js");
-const { failuresIn, firstGlyphsOf } = await import("../apps/studio/src/legacy/assistant/tool-calls.js");
+const { failuresIn } = await import("../apps/studio/src/legacy/assistant/tools-head.js");
 const { canRenderMarkdown } = await import("../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js");
+const { callFaceOf } = await import("../packages/host-obsidian/src/legacy/ai/call-face.js");
+const { doingTextOf } = await import("../packages/core/src/engine/assistant-port.js");
 const { settledPart, Said } = await import("../apps/studio/src/legacy/assistant/said.js");
 const { saidElapsed, saidTokens, saidPhase, saidProgress } =
 	await import("../apps/studio/src/legacy/assistant/spent.js");
@@ -331,44 +333,105 @@ check(
 );
 
 check("a shell call is drawn as a terminal", glyphForTool("Bash"), "terminal");
-check("a file read is drawn as a folder", glyphForTool("Read"), "folder");
+check("a file read is drawn as a file", glyphForTool("Read"), "file");
 check("a tool nobody mapped still gets a mark", glyphForTool("SomethingNew"), "widget");
-check("the command is what the row shows", hintOf({ input: { command: "ls -la", description: "list" } }), "ls -la");
-check("a path is shown when there is no command", hintOf({ input: { file_path: "Tasks/Today.md" } }), "Tasks/Today.md");
-check("only the first line of a long input is shown", hintOf({ input: { command: "one\ntwo" } }), "one");
-check("a call with nothing to show shows nothing", hintOf({ input: {} }), "");
-
+const answeredCall = (name: string, input: Readonly<Record<string, unknown>>, output: string): AssistantCall =>
+	at(
+		withResult([{ ref: "c", name, input, output: "", answered: false, failed: false, at: 1 }], {
+			ref: "c",
+			output,
+			failed: false,
+			at: 2,
+		}),
+		0,
+	);
+const READ_FIXTURE = "1\tconst a = 1;\n2\tconst b = 2;\n3\t";
+const OLD_READ_FIXTURE = "     1→one\n     2→two";
+const GREP_FIXTURE_FROM_MEMORY = "Found 5 files\n/a.ts\n/b.ts\n/c.ts\n/d.ts\n/e.ts";
+const GLOB_FIXTURE_FROM_MEMORY = "/a/widget.tsx\n/b/widget.tsx";
 check(
-	"the model's own description is what the row is called",
-	titleOf({ name: "Bash", input: { command: "cat sample.txt", description: "Read the sample file" } }),
+	"a Read output is counted by its numbered lines",
+	answeredCall("Read", { file_path: "a.md" }, READ_FIXTURE).outputCounts,
+	{ lines: 3 },
+);
+check(
+	"the arrow-numbered Read output counts too",
+	answeredCall("Read", { file_path: "a.md" }, OLD_READ_FIXTURE).outputCounts,
+	{ lines: 2 },
+);
+check(
+	"a Read with no numbered line has no count",
+	answeredCall("Read", { file_path: "a.png" }, "").outputCounts,
+	undefined,
+);
+check(
+	"a Grep saying Found N has N hits",
+	answeredCall("Grep", { pattern: "x" }, GREP_FIXTURE_FROM_MEMORY).outputCounts,
+	{ hits: 5 },
+);
+check(
+	"a Grep saying anything else has no count",
+	answeredCall("Grep", { pattern: "x" }, "a.ts:1: x").outputCounts,
+	undefined,
+);
+check(
+	"a Glob counts the paths it found",
+	answeredCall("Glob", { pattern: "*" }, GLOB_FIXTURE_FROM_MEMORY).outputCounts,
+	{ hits: 2 },
+);
+check("a Glob that found nothing has 0 hits", answeredCall("Glob", { pattern: "*" }, "No files found").outputCounts, {
+	hits: 0,
+});
+check(
+	"a tool named like an object member is not counted",
+	answeredCall("constructor", {}, "Found 3 files").outputCounts,
+	undefined,
+);
+const REPORT_COMMAND = { command: "node .widgetarium/bin/widgets.mjs report App" };
+check(
+	"a report is tallied when it lands",
+	answeredCall("Bash", REPORT_COMMAND, "9 of 12 features are not done:\n  ✗ a").outputCounts,
+	{ features: { passed: 3, all: 12 } },
+);
+check(
+	"a report saying more left than it has is not tallied",
+	answeredCall("Bash", REPORT_COMMAND, "13 of 12 features are not done:").outputCounts,
+	undefined,
+);
+check(
+	"an all-done report counts its ticked rows",
+	answeredCall("Bash", REPORT_COMMAND, "Every kept feature is built, checked and placed.\n  ✓ a\n  ✓ b").outputCounts,
+	{ features: { passed: 2, all: 2 } },
+);
+check(
+	"a file change is one decision, and its path one reading",
+	[
+		[isFileChange({ name: "Edit" }), changedPathOf({ name: "Edit", input: { file_path: "a.md" } })],
+		[
+			isFileChange({ name: "NotebookEdit" }),
+			changedPathOf({ name: "NotebookEdit", input: { notebook_path: "n.ipynb" } }),
+		],
+		[isFileChange({ name: "Read" }), changedPathOf({ name: "Read", input: { file_path: "a.md" } })],
+	],
+	[
+		[true, "a.md"],
+		[true, "n.ipynb"],
+		[false, null],
+	],
+);
+check(
+	"a job's activity is the call's face, our own tool by name",
+	doingTextOf(
+		callFaceOf(
+			answeredCall("Bash", { command: "node /Users/me/Vault/.widgetarium/bin/widgets.mjs list --search kanban" }, ""),
+		),
+	),
+	"Running widgets.mjs list --search kanban",
+);
+check(
+	"and a described call by the model's own words",
+	doingTextOf(callFaceOf(answeredCall("Bash", { command: "cat x", description: "Read the sample file" }, ""))),
 	"Read the sample file",
-);
-check(
-	"a call that described nothing falls back to its name",
-	titleOf({ name: "Read", input: { file_path: "a.md" } }),
-	"Read",
-);
-check(
-	"a blank description is not a title",
-	titleOf({ name: "Bash", input: { command: "ls", description: "   " } }),
-	"Bash",
-);
-
-check(
-	"running our own tool reads as our own tool, not as a shell command",
-	titleOf({
-		name: "Bash",
-		input: { command: "node /Users/me/Vault/.widgetarium/bin/widgets.mjs list --search kanban" },
-	}),
-	"Widgetarium · list",
-);
-check(
-	"and the row shows what was asked of it, not the path it lives at",
-	hintOf({
-		name: "Bash",
-		input: { command: "node /Users/me/Vault/.widgetarium/bin/widgets.mjs list --search kanban" },
-	}),
-	"--search kanban",
 );
 check(
 	"our own tool is drawn as a widget, not as a terminal",
@@ -537,33 +600,7 @@ check(
 	at(statusesOf(buildsIn([started, { ...wrote, answered: false }], false)[0]), 0),
 	"failed",
 );
-check(
-	"a description on our own call does not outrank knowing it is ours",
-	titleOf({
-		name: "Bash",
-		input: { command: "node .widgetarium/bin/widgets.mjs packs", description: "List the packs" },
-	}),
-	"Widgetarium · packs",
-);
 
-const many = [
-	{ name: "Bash" },
-	{ name: "Bash" },
-	{ name: "Read" },
-	{ name: "Edit" },
-	{ name: "Grep" },
-	{ name: "WebFetch" },
-];
-const glyphsOf = (calls: readonly { readonly name: string }[], most: number): string[] =>
-	firstGlyphsOf(calls.map(glyphOf), most);
-check("the marks are one per kind, not one per call", glyphsOf(many, 10), [
-	"terminal",
-	"folder",
-	"pencil",
-	"search",
-	"link",
-]);
-check("no more marks are drawn than there is room for", glyphsOf(many, 2), ["terminal", "folder"]);
 check("the failures are counted", failuresIn([{ failed: true }, { failed: false }, { failed: true }]), 2);
 
 check(
@@ -609,10 +646,10 @@ check(
 );
 check("nothing at all settles nothing", settledPart(""), { settled: "", tail: "" });
 
-check("under a minute reads in seconds", saidElapsed(25000), "25s");
-check("over a minute reads in minutes and seconds", saidElapsed(63000), "1m 3s");
-check("a whole minute keeps its zero seconds", saidElapsed(120000), "2m 0s");
-check("no time yet is still a number", saidElapsed(0), "0s");
+check("under a minute reads in seconds", saidElapsed(25000), "25 s");
+check("over a minute reads in minutes and seconds", saidElapsed(63000), "1 m 3 s");
+check("a whole minute keeps its zero seconds", saidElapsed(120000), "2 m 0 s");
+check("no time yet is still a number", saidElapsed(0), "0 s");
 check("a few tokens are counted plainly", saidTokens(130), "130 tokens");
 check("many tokens are rounded to thousands", saidTokens(1234), "1.2k tokens");
 check("a provider that reports no tokens shows no token part", saidTokens(0), "");
@@ -622,12 +659,12 @@ check("a phase nobody reported still says something", saidPhase({ phase: null, t
 check(
 	"the three parts read as one line",
 	saidProgress({ ms: 63000, spent: 130, phase: "tools", tool: "Read" }),
-	"1m 3s \u00b7 130 tokens \u00b7 Running Read",
+	"1 m 3 s \u00b7 130 tokens \u00b7 Running Read",
 );
 check(
 	"a provider with no token count leaves no gap where the number would be",
 	saidProgress({ ms: 4000, spent: 0, phase: "writing", tool: null }),
-	"4s \u00b7 Writing",
+	"4 s \u00b7 Writing",
 );
 
 const progressed: StreamPart[] = [];
@@ -1411,8 +1448,13 @@ check(
 stubbornSession.stop();
 check(
 	"stop ends the run at once, though the process has not answered yet",
-	[stubborn.stopped, stubbornSession.now().busy, stubbornSession.now().failure],
-	[1, false, "Stopped."],
+	[
+		stubborn.stopped,
+		stubbornSession.now().busy,
+		stubbornSession.now().failure,
+		at(stubbornSession.now().turns, 1).outcome,
+	],
+	[1, false, "Stopped.", "stopped"],
 );
 stubborn.emit({ text: "still talking after the stop" });
 stubborn.finish({ failure: null });
@@ -1460,6 +1502,34 @@ check(
 	"a conversation is still there after the plugin is loaded again",
 	carriedOver.now().turns.map((turn) => turn.text),
 	session.now().turns.map((turn) => turn.text),
+);
+const keptBeforeOutcomes = createSession({
+	settings: createAiSettings({
+		read: async () => ({
+			ai: {
+				provider: "claude-code",
+				transcript: {
+					turns: [
+						{ role: "user", text: "say hi" },
+						{ role: "agent", text: "hi" },
+					],
+				},
+			},
+		}),
+		write: async () => {},
+	}),
+	runner: sessionRunner,
+	briefNow: async () => ({ brief: "BRIEF", helpers: null }),
+});
+await keptBeforeOutcomes.restore();
+keptBeforeOutcomes.stop();
+check(
+	"stopping an idle chat, as unloading the plugin does, marks no kept turn as stopped",
+	keptBeforeOutcomes.now().turns.map((turn) => [turn.text, turn.outcome]),
+	[
+		["say hi", undefined],
+		["hi", undefined],
+	],
 );
 check("the provider's session is read back with it", carriedOver.now().session, session.now().session);
 check("nothing is left running by a conversation that was only read back", carriedOver.now().busy, false);
@@ -1544,6 +1614,34 @@ check(
 	"a stored conversation of the wrong shape is read as an empty one",
 	[turnsToKeep("not a list").length, turnsToKeep([{ role: 7, calls: "no" }])[0]],
 	[0, { role: "agent", text: "", calls: [] }],
+);
+check(
+	"a saved turn that is not an object is dropped, not drawn as an empty answer",
+	turnsToKeep(["oops", { role: "user", text: "kept" }]).map((turn) => turn.text),
+	["kept"],
+);
+check(
+	"how a turn ended is kept, and an unknown ending is not",
+	[
+		turnsToKeep([{ role: "agent", startedAt: 10, endedAt: 20, outcome: "stopped" }])[0]?.outcome,
+		turnsToKeep([{ role: "agent", outcome: "exploded" }])[0]?.outcome,
+	],
+	["stopped", undefined],
+);
+check(
+	"only a whole, non-negative number is a moment",
+	[-5, 1.5, 7].map((startedAt) => turnsToKeep([{ role: "agent", startedAt, endedAt: 9 }])[0]?.startedAt),
+	[undefined, undefined, 7],
+);
+check(
+	"a kept tally outside 0 to its total is dropped",
+	[
+		{ passed: 3, all: 12 },
+		{ passed: 13, all: 12 },
+	].map(
+		(features) => turnsToKeep([{ role: "agent", calls: [{ outputCounts: { features } }] }])[0]?.calls[0]?.outputCounts,
+	),
+	[{ features: { passed: 3, all: 12 } }, undefined],
 );
 const tooMuch = turnsToKeep(
 	Array.from({ length: 200 }, (_unused, index) => ({

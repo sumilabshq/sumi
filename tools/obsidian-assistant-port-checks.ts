@@ -41,7 +41,6 @@ const NO_TURNS: SessionState = {
 	tool: null,
 	phase: null,
 	spent: 0,
-	startedAt: 0,
 };
 
 export async function checkedAssistantPort(check: Check): Promise<CheckedAssistant> {
@@ -191,7 +190,16 @@ function checkCallFace(check: Check, port: ObsidianAssistantPort): void {
 			failed: false,
 			at: 0,
 		}),
-		{ glyph: "widget", title: "Widgetarium · find", hint: "kanban" },
+		{
+			kind: "run",
+			glyph: "widget",
+			verb: "Ran",
+			doing: "Running",
+			object: "widgets.mjs find kanban",
+			isCodeObject: true,
+			meta: { kind: "verdict", passed: true },
+			change: null,
+		},
 	);
 }
 

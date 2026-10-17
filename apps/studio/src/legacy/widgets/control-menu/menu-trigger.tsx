@@ -15,9 +15,10 @@ export function MenuTrigger({ app, isOpen }: MenuTriggerProps): ReactElement {
 		<Button
 			variant={isOpen ? "secondary" : "ghost"}
 			size="icon-sm"
+			className="wg-studio-menu-trigger"
 			aria-label={app ? `${app.name} menu` : UNREAD_LABEL}
 		>
-			<Icon name="layout-grid" />
+			<Icon name="ellipsis" />
 		</Button>
 	);
 }

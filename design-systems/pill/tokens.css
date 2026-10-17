@@ -92,6 +92,11 @@
 	--type-l: 15px;
 	--gap-section: 32px;
 	--gap-plate: 6px;
+	--control-lg: 52px;
+	--shape-wide: 3 / 2;
+	--shape-square: 1 / 1;
+	--shape-band: 5 / 2;
+	--shape-strip: calc(var(--control-lg) + 2 * var(--gap-plate));
 }
 
 .dark,

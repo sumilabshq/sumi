@@ -397,7 +397,15 @@ check(
 	[names()[3], host.querySelector(".wg-studio-ai-spec-record .wg-studio-ai-spec-sub")?.textContent],
 	["Word", "Cannot delete"],
 );
-check("then a choice and the details", names().slice(4), ["Review", "Details"]);
+check("then the details", names().slice(4), ["Details"]);
+check(
+	"and a choice is a question card whose picked option says so",
+	[
+		host.querySelector(".wg-studio-ai-question-said")?.textContent,
+		host.querySelector(".wg-studio-ai-question-option.is-picked")?.textContent,
+	],
+	["Review", "SpacedPicked"],
+);
 check(
 	"the products looked at stand first, each with what it gave and a link to the page read",
 	[

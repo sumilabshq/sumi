@@ -5,6 +5,7 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { lintBoard } from "@widgetarium/core/board-lint.js";
 import { rawBoardOfNote } from "./board-note.js";
 import { checkedWidget } from "./widget-checking.js";
+import { reportText } from "./report-said.js";
 import { actionProblemsOf } from "./action-wiring.js";
 import type { FeatureAction, PlacedTile } from "./action-wiring.js";
 import { cardIn } from "./entries.js";
@@ -38,8 +39,6 @@ const UNLINTED = "{note} does not lint: {first}";
 const GATED_STAGES: readonly string[] = ["widgets", "pages"];
 const STAGE_REFUSED =
 	"The {stage} stage is not done until every kept feature below says ✓. Finish them, then say the stage again.";
-const ALL_DONE = "Every kept feature is built, checked and placed.";
-const SOME_LEFT = "{left} of {all} features are not done:";
 
 export async function reportOfApp(place: ReportPlace, app: unknown): Promise<Told<ReportRow[]>> {
 	const read = await specOfApp(place.vault, app);
@@ -156,21 +155,6 @@ async function othersOn(place: ReportPlace, tiles: readonly unknown[], feature: 
 			return { tile, card: entry ? await cardIn(entry.folder) : null };
 		}),
 	);
-}
-
-function reportText(rows: readonly ReportRow[]): string {
-	const left = rows.filter((row) => row.problems.length > 0);
-	const head =
-		left.length === 0
-			? ALL_DONE
-			: SOME_LEFT.replace("{left}", String(left.length)).replace("{all}", String(rows.length));
-	return [head, ...rows.map(rowText)].join("\n");
-}
-
-function rowText(row: ReportRow): string {
-	const where = row.widget && row.note ? ` — ${row.widget} on ${row.note}` : "";
-	if (row.problems.length === 0) return `  ✓ ${row.feature}${where}`;
-	return [`  ✗ ${row.feature}${where}`, ...row.problems.map((problem) => `      ${problem}`)].join("\n");
 }
 
 function textOf(held: unknown): string | null {

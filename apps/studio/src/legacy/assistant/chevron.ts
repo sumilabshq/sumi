@@ -2,7 +2,11 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 
-export function Chevron({ isOpen }: { readonly isOpen: boolean }): ReactElement {
+export interface ChevronProps {
+	readonly isOpen: boolean;
+}
+
+export function Chevron({ isOpen }: ChevronProps): ReactElement {
 	return h(Icon, {
 		name: "chevron",
 		size: 12,

@@ -1,7 +1,7 @@
 import type { Job } from "../app-jobs.js";
 import type { WidgetDefinition } from "../registry.js";
 import { NO_CHAT_CARDS } from "./assistant-cards.js";
-import type { ChatCards } from "./assistant-cards.js";
+import type { Blocker, ChatCards, Tally } from "./assistant-cards.js";
 
 export type AssistantPhase = "thinking" | "tools" | "writing";
 
@@ -14,12 +14,25 @@ export interface AssistantCall {
 	readonly failed: boolean;
 	readonly at: number;
 	readonly answeredAt?: number;
+	readonly outputCounts?: CallOutputCounts;
 }
+
+export interface CallOutputCounts {
+	readonly lines?: number;
+	readonly hits?: number;
+	readonly features?: Tally;
+	readonly blockedBy?: Blocker;
+}
+
+export type TurnOutcome = "done" | "stopped" | "failed";
 
 export interface AssistantTurn {
 	readonly role: "user" | "agent";
 	readonly text: string;
 	readonly calls: AssistantCall[];
+	readonly startedAt?: number;
+	readonly endedAt?: number;
+	readonly outcome?: TurnOutcome;
 }
 
 export interface AssistantSession {
@@ -29,13 +42,44 @@ export interface AssistantSession {
 	readonly tool: string | null;
 	readonly phase: AssistantPhase | null;
 	readonly spent: number;
-	readonly startedAt: number;
 }
 
+export type CallKind = "search" | "read" | "edit" | "run" | "other";
+
+export type DiffSign = "added" | "removed" | "kept";
+
+export interface DiffLine {
+	readonly sign: DiffSign;
+	readonly text: string;
+}
+
+export interface CallChange {
+	readonly file: string;
+	readonly added: number;
+	readonly removed: number;
+	readonly lines: readonly DiffLine[];
+}
+
+export type CallMeta =
+	| { readonly kind: "count"; readonly said: string }
+	| { readonly kind: "change"; readonly added: number; readonly removed: number }
+	| { readonly kind: "verdict"; readonly passed: boolean };
+
 export interface CallFace {
+	readonly kind: CallKind;
 	readonly glyph: string;
-	readonly title: string;
-	readonly hint: string;
+	readonly verb: string;
+	readonly doing: string;
+	readonly object: string;
+	readonly isCodeObject: boolean;
+	readonly meta: CallMeta | null;
+	readonly change: CallChange | null;
+}
+
+const DOING_TEXT = "{doing} {object}";
+
+export function doingTextOf({ doing, object }: CallFace): string {
+	return doing === "" ? object : DOING_TEXT.replace("{doing}", doing).replace("{object}", object);
 }
 
 export interface AssistantProvider {
@@ -102,7 +146,6 @@ const NO_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
-	startedAt: 0,
 };
 
 const NO_JOBS: readonly AppJobs[] = [];
@@ -124,7 +167,16 @@ export const NO_ASSISTANT: AssistantPort = {
 	chooseProvider: refused,
 	setHelperAgents: refused,
 	openProviders: () => undefined,
-	describeCall: (call) => ({ glyph: "widget", title: call.name, hint: "" }),
+	describeCall: (call) => ({
+		kind: "other",
+		glyph: "widget",
+		verb: "",
+		doing: "",
+		object: call.name,
+		isCodeObject: false,
+		meta: null,
+		change: null,
+	}),
 	cardsOf: () => NO_CHAT_CARDS,
 	readAppFile: async () => null,
 	onAppFile: unwatched,

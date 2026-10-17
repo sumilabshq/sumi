@@ -45,6 +45,8 @@ const TYPE_TOKENS: readonly string[] = ["type-xs", "type-s", "type-m", "type-l"]
 
 const GAP_TOKENS: readonly string[] = ["gap-section", "gap-plate"];
 
+const SHAPE_TOKENS: readonly string[] = ["control-lg", "shape-wide", "shape-square", "shape-band", "shape-strip"];
+
 export const KIT_ROLE_TOKENS: readonly string[] = [
 	"group",
 	"group-inset",
@@ -89,6 +91,7 @@ export const NON_COLOUR_TOKENS: ReadonlySet<string> = new Set([
 	...FONT_TOKENS,
 	...TYPE_TOKENS,
 	...GAP_TOKENS,
+	...SHAPE_TOKENS,
 ]);
 
 export const CONTRACT_TOKENS: readonly string[] = [
@@ -96,6 +99,7 @@ export const CONTRACT_TOKENS: readonly string[] = [
 	...SHADCN_EXPECTED_TOKENS,
 	...KIT_ROLE_TOKENS,
 	...BRAND_EXTENSION_TOKENS,
+	...SHAPE_TOKENS,
 ];
 
 const FOREGROUND_SUFFIX = "-foreground";

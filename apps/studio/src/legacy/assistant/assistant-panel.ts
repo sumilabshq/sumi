@@ -8,13 +8,14 @@ import { ChatLeadHead } from "./chat-lead.js";
 export interface AssistantPanelProps {
 	readonly assistant: AssistantPort;
 	readonly lead?: ReactNode;
+	readonly title?: string | undefined;
 }
 
-export function AssistantPanel({ assistant, lead }: AssistantPanelProps): ReactElement {
+export function AssistantPanel({ assistant, lead, title }: AssistantPanelProps): ReactElement {
 	const shown = assistant.can
-		? h(AssistantChat, { port: assistant, lead })
+		? h(AssistantChat, { port: assistant, lead, title })
 		: h("div", { className: "wg-studio-ai" }, [
-				h(ChatLeadHead, { key: "head", lead }),
+				h(ChatLeadHead, { key: "head", lead, title }),
 				h("p", { key: "quiet", className: "wg-studio-ai-quiet" }, ASSISTANT_NOT_AVAILABLE),
 			]);
 	return h("div", { className: "wg-root wg-studio-ai-host" }, shown);

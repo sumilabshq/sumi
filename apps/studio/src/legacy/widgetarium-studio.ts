@@ -29,6 +29,8 @@ import { StudioRail } from "./studio-rail.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
 import { STUDIO_WIDGETS } from "./studio-widgets.js";
+import { useAppName } from "./use-app-name.js";
+import { useStudioPortalClass } from "./use-studio-portal-class.js";
 import { useWritesChatWidth } from "./use-writes-chat-width.js";
 import { useWritesHostInsets } from "./use-writes-host-insets.js";
 
@@ -93,6 +95,8 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	const { view, panel } = useSyncExternalStore(state.subscribe, state.now);
 	const host = useMemo(() => project.hostOf(pathname), [project, pathname]);
 	const frame = useRef<HTMLDivElement | null>(null);
+	const appName = useAppName(studio, appId);
+	useStudioPortalClass();
 	useWritesHostInsets(frame, studio);
 	useWritesChatWidth(frame, state.chatWidth);
 	const catalogueAsk = useTakesCatalogueAsks(frame, catalogue.requests, state);
@@ -107,7 +111,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),
 		h(StudioRail, { key: "rail", children: rail }),
-		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame }),
+		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame, appName }),
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
 		panel === "none"
 			? null

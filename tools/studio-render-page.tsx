@@ -130,6 +130,7 @@ function fakeCardsOf(session: AssistantSession): ChatCards {
 			build: null,
 			specApp: turn.role === "agent" ? "Farm" : null,
 			designApp: null,
+			result: null,
 		})),
 		pinned: null,
 	};

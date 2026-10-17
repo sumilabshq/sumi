@@ -1,4 +1,8 @@
 import { isObject } from "@widgetarium/core/engine/is-object.js";
+import type { CallOutputCounts } from "@widgetarium/core/engine/assistant-port.js";
+import { outputCountsOf } from "./call-output-counts.js";
+import { featuresAllDoneIn, featuresLeftIn, firstBlockerIn } from "./report-said.js";
+import type { Tally } from "@widgetarium/core/engine/assistant-cards.js";
 
 export interface CallSeen {
 	readonly name?: unknown;
@@ -7,6 +11,7 @@ export interface CallSeen {
 
 export interface AnswerableCall {
 	readonly ref: string;
+	readonly name: string;
 	readonly answered: boolean;
 	readonly failed: boolean;
 }
@@ -26,8 +31,8 @@ export interface OurCall {
 const GLYPH_FOR_TOOL: Readonly<Record<string, string>> = {
 	Bash: "terminal",
 	BashOutput: "terminal",
-	Read: "folder",
-	NotebookRead: "folder",
+	Read: "file",
+	NotebookRead: "file",
 	Write: "pencil",
 	Edit: "pencil",
 	NotebookEdit: "pencil",
@@ -40,10 +45,11 @@ const GLYPH_FOR_TOOL: Readonly<Record<string, string>> = {
 	SlashCommand: "menu",
 };
 
-const HINT_FIELDS = ["command", "file_path", "path", "pattern", "query", "url", "description", "prompt"];
-const LONGEST_HINT = 120;
-
-export const OUR_NAME = "Widgetarium";
+const OUR_TOOL = "widgets.mjs";
+const PATH_SEGMENTS_SHOWN = 2;
+const REPORT_VERB = "report";
+const FILE_CHANGING_TOOLS: ReadonlySet<string> = new Set(["Write", "Edit", "MultiEdit", "NotebookEdit"]);
+const CHANGED_PATH_FIELDS = ["file_path", "notebook_path", "path"];
 const OUR_TOOL_CALL = /widgets\.mjs\s+([a-z][a-z-]*)((?:"[^"]*"|'[^']*'|\\.|[^;&|<>\n"'])*)/;
 const REDIRECTED_STREAM = /\s\d+$/;
 const SHELL_ASSIGNMENT = /(?:^|[;&\n]|\s)([A-Za-z_]\w*)=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))/g;
@@ -63,6 +69,14 @@ export function ourCallIn(command: unknown): OurCall | null {
 	return { verb: found[1] ?? "", said: words.trim() };
 }
 
+export function ourStepOf({ verb, said }: OurCall): string {
+	return `${OUR_TOOL} ${verb} ${said}`.trim();
+}
+
+export function shortPathOf(path: string): string {
+	return path.split("/").filter(Boolean).slice(-PATH_SEGMENTS_SHOWN).join("/");
+}
+
 export function argumentsIn(said: string): string[] {
 	return [...said.matchAll(ARGUMENT)].map((found) => found[1] ?? found[2] ?? (found[3] ?? "").replace(/\\(.)/g, "$1"));
 }
@@ -74,35 +88,39 @@ export function glyphOf(call: CallSeen | null | undefined): string {
 	return ourCallOf(call) ? "widget" : glyphForTool(call?.name);
 }
 
-// TRADE-OFF: the model's own description is taken as written, because a title we compose here would be a second opinion about work we did not do
-export function titleOf(call: CallSeen | null | undefined): string {
-	const ours = ourCallOf(call);
-	if (ours) return `${OUR_NAME} · ${ours.verb}`;
-	const described = inputOf(call)["description"];
-	if (typeof described === "string" && described.trim() !== "") return described.trim();
-	return String(call?.name ?? "");
-}
-
-export function hintOf(call: CallSeen | null | undefined): string {
-	const ours = ourCallOf(call);
-	if (ours) return ours.said;
-	const input = inputOf(call);
-	for (const field of HINT_FIELDS) {
-		const held = input[field];
-		if (typeof held !== "string" || held.trim() === "") continue;
-		return clipLine(held, LONGEST_HINT);
-	}
-	return "";
-}
-
 export function withResult<Call extends AnswerableCall>(calls: Call[], result: CallResult): Call[] {
 	let landed = false;
 	const held = calls.map((call) => {
 		if (call.ref !== result.ref || call.answered) return call;
 		landed = true;
-		return { ...call, answered: true, output: result.output, failed: result.failed, answeredAt: result.at ?? 0 };
+		return answeredWith(call, result);
 	});
 	return landed ? held : calls;
+}
+
+// TRADE-OFF: a report kept before it was counted is counted once on read, from the head line alone, since the rest may be cut
+export function reportHeadCountsOf(call: CallSeen, output: string): CallOutputCounts | null {
+	const features = isReportCall(call) ? featuresLeftIn(output) : null;
+	if (!features) {
+		return null;
+	}
+
+	const blockedBy = firstBlockerIn(output);
+	return blockedBy ? { features, blockedBy } : { features };
+}
+
+export function isFileChange(call: CallSeen | null | undefined): boolean {
+	return typeof call?.name === "string" && FILE_CHANGING_TOOLS.has(call.name);
+}
+
+export function changedPathOf(call: CallSeen | null | undefined): string | null {
+	if (!isFileChange(call)) {
+		return null;
+	}
+
+	const input = inputOf(call);
+	const path = CHANGED_PATH_FIELDS.map((field) => input[field]).find((held) => typeof held === "string");
+	return typeof path === "string" ? path : null;
 }
 
 export function clipLine(text: unknown, longest: number): string {
@@ -129,4 +147,25 @@ function withShellVariablesExpanded(command: string): string {
 		if (value === undefined) return whole;
 		return quoted === undefined ? value : `"${value}"`;
 	});
+}
+
+function answeredWith<Call extends AnswerableCall>(call: Call, result: CallResult): Call {
+	const outputCounts = result.failed
+		? null
+		: (outputCountsOf(call.name, result.output) ?? reportCountsOf(call, result.output));
+	const answeredAt = result.at ?? 0;
+	const answered = { ...call, answered: true, output: result.output, failed: result.failed, answeredAt };
+	return outputCounts ? { ...answered, outputCounts } : answered;
+}
+
+function reportCountsOf(call: CallSeen, output: string): CallOutputCounts | null {
+	return reportHeadCountsOf(call, output) ?? (isReportCall(call) ? featuresFoundOf(featuresAllDoneIn(output)) : null);
+}
+
+function isReportCall(call: CallSeen): boolean {
+	return ourCallOf(call)?.verb === REPORT_VERB;
+}
+
+function featuresFoundOf(features: Tally | null): CallOutputCounts | null {
+	return features ? { features } : null;
 }
