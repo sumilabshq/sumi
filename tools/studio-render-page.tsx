@@ -79,7 +79,6 @@ const FAKE_SETUP: AssistantSetup = {
 	providers: [{ id: "fake", label: "Fake provider", canEdit: true }],
 	chosen: "fake",
 	helperAgents: false,
-	note: null,
 	renderMarkdown: null,
 };
 

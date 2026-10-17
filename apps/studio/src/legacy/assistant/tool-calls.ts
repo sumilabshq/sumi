@@ -28,7 +28,7 @@ export function ToolCalls({ calls, describe }: ToolCallsProps): ReactElement {
 	const [openCalls, setOpenCalls] = useState<ReadonlySet<number>>(() => new Set());
 	const faces = calls.map(describe);
 	const toggleCall = (at: number): void => setOpenCalls((held) => withToggled(held, at));
-	return h("div", { className: "wg-studio-ai-tools" }, [
+	return h("div", { className: isOpen ? "wg-studio-ai-tools is-open" : "wg-studio-ai-tools" }, [
 		h(
 			"button",
 			{ className: "wg-studio-ai-tools-head", key: "head", type: "button", onClick: () => setOpen(!isOpen) },

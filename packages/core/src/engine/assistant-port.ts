@@ -44,11 +44,6 @@ export interface AssistantProvider {
 	readonly canEdit: boolean;
 }
 
-export interface AssistantNote {
-	readonly path: string;
-	readonly hasBoard: boolean;
-}
-
 export type RenderMarkdown = (element: HTMLElement, markdown: string) => () => void;
 
 export interface AssistantSetup {
@@ -57,7 +52,6 @@ export interface AssistantSetup {
 	readonly providers: readonly AssistantProvider[];
 	readonly chosen: string;
 	readonly helperAgents: boolean;
-	readonly note: AssistantNote | null;
 	readonly renderMarkdown: RenderMarkdown | null;
 }
 

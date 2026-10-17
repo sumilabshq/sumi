@@ -31,10 +31,7 @@ interface RenderingHost {
 	readonly ui: { readonly renderMarkdown: RenderMarkdown };
 }
 
-export type SetupSource = Pick<
-	AssistantState,
-	"ready" | "provider" | "providers" | "chosen" | "helperAgents" | "note"
-> & {
+export type SetupSource = Pick<AssistantState, "ready" | "provider" | "providers" | "chosen" | "helperAgents"> & {
 	readonly host: MarkdownHost | null;
 };
 
@@ -101,7 +98,6 @@ export function assistantSetupOf(state: SetupSource): AssistantSetup {
 		providers: state.providers.map(({ id, label, canEdit }) => ({ id, label, canEdit })),
 		chosen: state.chosen,
 		helperAgents: state.helperAgents,
-		note: state.note ? { path: state.note.path, hasBoard: state.note.hasBoard } : null,
 		renderMarkdown: canRenderMarkdown(state.host) ? state.host.ui.renderMarkdown : null,
 	};
 }

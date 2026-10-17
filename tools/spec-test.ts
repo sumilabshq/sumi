@@ -36,7 +36,6 @@ const { specOfApp, stageOfApp } = await import("../packages/host-obsidian/src/le
 const { SpecCard } = await import("../apps/studio/src/legacy/assistant/cards/spec-card.js");
 const { BuildRunCard } = await import("../apps/studio/src/legacy/assistant/cards/build-run-card.js");
 const { briefFor } = await import("../packages/host-obsidian/src/legacy/ai/brief.js");
-const { noteNameOf } = await import("../apps/studio/src/legacy/assistant/target-note.js");
 const { HANDBOOK } = await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
 import type { AssistantCall } from "../packages/core/src/engine/assistant-port.js";
 import type { AppFiles, JobsPort } from "../apps/studio/src/legacy/assistant/cards/card-ports.js";
@@ -1112,8 +1111,6 @@ render(null, host);
 const prompt = briefFor({ paths: { vault: "/v", plugin: "/p", widgets: "/w", handbook: "/h", tool: "/t" } });
 check("the spec page is laid on disk", Object.keys(HANDBOOK).includes("spec.md"), true);
 check("and left out of the prompt, which only points at it", prompt.includes("=== HANDBOOK PAGE: spec.md ==="), false);
-
-check("the open note is named by its name alone", noteNameOf("Widgetarium agents/Shell demo/Flow.md"), "Flow");
 
 const { reportOfApp, refuseStage, isReportClean } =
 	await import("../packages/host-obsidian/src/legacy/ai/report-command.js");

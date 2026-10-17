@@ -64,7 +64,6 @@ function fakeAssistant(): FakeAssistant {
 		providers: [first, second],
 		chosen: first.id,
 		helperAgents: false,
-		note: { path: "Apps/Farm.md", hasBoard: true },
 		host: { can: { renderMarkdown: true }, ui: { renderMarkdown: renderMarkdownNowhere } },
 	};
 	const settingAsked = (said: string): Promise<AiState> => {
@@ -153,13 +152,12 @@ async function checkSetupDoors(check: Check, { port, asked, second }: FakeAssist
 async function checkSetupShape(check: Check, { port, source, first }: FakeAssistant): Promise<void> {
 	const setup = await port.setup();
 	check(
-		"the setup carries the provider, the choices, the note and the host's markdown",
+		"the setup carries the provider, the choices and the host's markdown",
 		[
 			setup.isReady,
 			setup.providerLabel,
 			setup.providers.map((provider) => Object.keys(provider)),
 			setup.chosen,
-			setup.note,
 			setup.renderMarkdown === renderMarkdownNowhere,
 		],
 		[
@@ -170,7 +168,6 @@ async function checkSetupShape(check: Check, { port, source, first }: FakeAssist
 				["id", "label", "canEdit"],
 			],
 			first.id,
-			{ path: "Apps/Farm.md", hasBoard: true },
 			true,
 		],
 	);
