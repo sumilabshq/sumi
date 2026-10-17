@@ -2,6 +2,9 @@ import "./packs-registered.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AssistantChat } from "../apps/studio/src/legacy/assistant/assistant-chat.js";
+import { AppProvider, app } from "../packages/core/src/requests/index.ts";
+import { MascotClientModule } from "../packages/mascot/generated/module.ts";
+import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
 import { obsidianAssistantPort } from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js";
 import { DEFAULT_PRESET, PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.js";
 import type { AssistantCall, ProgressWidget } from "../packages/core/src/engine/assistant-port.js";
@@ -258,4 +261,5 @@ const port = obsidianAssistantPort({
 	openProviders: () => {},
 	openDesign: async () => {},
 });
-createRoot(holder).render(h(AssistantChat, { port }));
+const mascotApp = app({ modules: [MascotClientModule.with(memoryMascotParts())] });
+createRoot(holder).render(h(AppProvider, { app: mascotApp }, h(AssistantChat, { port })));

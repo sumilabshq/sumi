@@ -1,6 +1,8 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type { AssistantPort, AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
+import { Mascot } from "@widgetarium/mascot";
+import { CHAT_MASCOT_PX } from "./chat-lead.js";
 import { ProviderMenu } from "./provider-menu.js";
 import type { Report } from "./failure-line.js";
 
@@ -18,6 +20,7 @@ const NOT_CLEARED = "the conversation could not be cleared";
 
 export function ChatHead({ port, setup, report, lead }: ChatHeadProps): ReactElement {
 	return h("header", { className: "wg-studio-ai-head" }, [
+		h(Mascot, { key: "mascot", size: CHAT_MASCOT_PX }),
 		lead ? h(Fragment, { key: "lead" }, lead) : null,
 		h("span", { className: "wg-studio-ai-title", key: "title" }, TITLE),
 		h("span", { className: "wg-studio-ai-who", key: "who" }, setup.providerLabel),

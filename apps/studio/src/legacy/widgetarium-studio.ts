@@ -10,6 +10,8 @@ import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js"
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
+import { memoryMascotParts } from "@widgetarium/mascot/gateways";
+import type { MascotParts } from "@widgetarium/mascot/gateways";
 import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
@@ -39,6 +41,7 @@ export interface StartedStudio {
 	readonly shellRegistry: ModuleRegistry;
 	readonly state: StudioState;
 	readonly design: StudioDesign;
+	readonly mascot: MascotParts;
 }
 
 export interface StudioStart extends ProjectStart {
@@ -48,6 +51,7 @@ export interface StudioStart extends ProjectStart {
 	readonly appId?: string;
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
+	readonly mascot?: MascotParts;
 }
 
 type ShellBoardAsk = Omit<StudioShellBoardProps, "place">;
@@ -79,11 +83,12 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state: start.state ?? createStudioState(),
 		design: start.design ?? webStudioDesign(opened.app.name),
+		mascot: start.mascot ?? memoryMascotParts(),
 	};
 }
 
 export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactElement {
-	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design } = started;
+	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design, mascot } = started;
 	const pathname = useSyncExternalStore(project.router.subscribe, project.router.pathname);
 	const { view, panel } = useSyncExternalStore(state.subscribe, state.now);
 	const host = useMemo(() => project.hostOf(pathname), [project, pathname]);
@@ -102,7 +107,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),
 		h(StudioRail, { key: "rail", children: rail }),
-		h(StudioChat, { key: "chat", assistant, menu, chatWidth: state.chatWidth, frame }),
+		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame }),
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
 		panel === "none"
 			? null

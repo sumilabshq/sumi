@@ -9,6 +9,7 @@ import type {
 	AssistantSetup,
 	CallFace,
 } from "@widgetarium/core/engine/assistant-port.js";
+import { useTellsAgentActivity } from "./agent-activity.js";
 import type { OpenByBuild } from "./cards/build-progress.js";
 import type { Attachment } from "./cards/change-attachment.js";
 import { JobsStrip } from "./cards/jobs-strip.js";
@@ -59,6 +60,7 @@ export function ReadyChat({ port, setup, setupFailure, lead }: ReadyChatProps): 
 	const chatRoot = useRef<HTMLDivElement>(null);
 	const showCard = (key: string): void => scrollToCard(chatRoot.current, key);
 	const pinned = pinnedCardOf(cards.pinned, { port, openByBuild, showCard });
+	const typed = useTellsAgentActivity(session, cards);
 	return h("div", { className: "wg-studio-ai", ref: chatRoot }, [
 		h(ChatHead, { key: "head", port, setup, report, lead }),
 		h("div", { className: "wg-studio-ai-scroll-frame", key: "scroll" }, [
@@ -75,10 +77,10 @@ export function ReadyChat({ port, setup, setupFailure, lead }: ReadyChatProps): 
 		h(Composer, {
 			key: "composer",
 			busy: session.busy,
-			note: setup.note,
 			attached: attachment ? { label: attachment.label, onClear: () => setAttachment(null) } : null,
 			onSend: asks.send,
 			onStop: () => port.stop(),
+			onTyped: typed,
 		}),
 	]);
 }

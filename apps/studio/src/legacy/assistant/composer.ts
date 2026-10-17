@@ -1,19 +1,17 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent, ReactElement, RefObject } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import type { AssistantNote } from "@widgetarium/core/engine/assistant-port.js";
 import { AttachedChip } from "./attached-chip.js";
 import type { Attached } from "./attached-chip.js";
-import { TargetNote } from "./target-note.js";
 
 export type SendState = "streaming" | "typing" | "idle";
 
 export interface ComposerProps {
 	readonly busy: boolean;
-	readonly note: AssistantNote | null;
 	readonly attached: Attached | null;
 	readonly onSend: (said: string) => Promise<boolean>;
 	readonly onStop: () => void;
+	readonly onTyped: () => void;
 }
 
 const PLACEHOLDER = "Ask for a screen, a widget, or a change to this note.";
@@ -27,7 +25,7 @@ export function sendState({ busy, hasInput }: { readonly busy: boolean; readonly
 	return hasInput ? "typing" : "idle";
 }
 
-export function Composer({ busy, note, attached, onSend, onStop }: ComposerProps): ReactElement {
+export function Composer({ busy, attached, onSend, onStop, onTyped }: ComposerProps): ReactElement {
 	const [draft, setDraft] = useState("");
 	const composerBox = useRef<HTMLTextAreaElement>(null);
 	const state = sendState({ busy, hasInput: draft.trim() !== "" });
@@ -65,11 +63,14 @@ export function Composer({ busy, note, attached, onSend, onStop }: ComposerProps
 				rows: 1,
 				value: draft,
 				placeholder: PLACEHOLDER,
-				onChange: (event) => setDraft(event.target.value),
+				onChange: (event) => {
+					setDraft(event.target.value);
+					onTyped();
+				},
 				onKeyDown,
 			}),
 			h("div", { className: "wg-studio-ai-bar", key: "bar" }, [
-				attached ? h(AttachedChip, { key: "attached", attached }) : h(TargetNote, { key: "target", note }),
+				attached ? h(AttachedChip, { key: "attached", attached }) : null,
 				h(
 					IconButton,
 					{
