@@ -8,15 +8,11 @@ export const FocusWidgetCommand = command("canvas/focus-widget")
 	.input(z.object({ widget: z.string() }))
 	.idempotencyKey(Repeatable);
 
-export const PageTabsQuery = query("canvas/page-tabs").output(
+export const PageChoicesQuery = query("canvas/page-choices").output(
 	z.object({
-		tabs: z.array(z.object({ name: z.string(), opens: z.string() })).readonly(),
 		shown: z.string(),
+		groups: z.array(z.array(z.string()).readonly()).readonly(),
 	}),
-);
-
-export const PageTitleQuery = query("canvas/page-title").output(
-	z.object({ page: z.string(), states: z.number().nullable() }),
 );
 
 export const PagesQuery = query("canvas/pages")

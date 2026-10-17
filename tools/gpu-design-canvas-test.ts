@@ -208,8 +208,10 @@ function fpsIn(label: unknown): number | null {
 }
 
 async function componentCard(): Promise<void> {
+	await page.ask(`document.querySelector("[data-canvas-page-picker] button")?.click()`);
+	await until(`document.querySelector("[data-canvas-page-choice]") !== null`);
 	await page.ask(
-		`[...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === "Components")?.click()`,
+		`[...document.querySelectorAll("[data-canvas-page-choice]")].find((one) => one.textContent.trim() === "Components")?.click()`,
 	);
 	await until(`${PAGES}.textIn(${CARD_FRAME}, "beans") !== null`);
 	const drawn = await page.ask(`${PAGES}.textIn(${CARD_FRAME}, "beans")`);

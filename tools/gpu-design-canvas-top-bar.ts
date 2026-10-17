@@ -2,12 +2,12 @@ import type { AskedPage } from "./chrome-ask.ts";
 import type { Check } from "./gpu-design-canvas-probe.ts";
 
 const FOCUS_RING_PX = 2;
-const MODE_SWITCHES = `[...document.querySelectorAll("[data-canvas-topbar] .wg-kit-seg")].filter((seg) => [...seg.querySelectorAll("button")].every((one) => one.textContent.trim() === "" && one.querySelector("svg"))).length`;
+const MODE_SWITCHES = `[...document.querySelectorAll("[data-app-host-bar] .wg-kit-seg")].filter((seg) => [...seg.querySelectorAll("button")].every((one) => one.textContent.trim() === "" && one.querySelector("svg"))).length`;
 const FIELD_CURSOR = `getComputedStyle(document.querySelector("[data-canvas-field]")).cursor`;
 const TOGGLE_INSETS = `(() => {
 	const card = document.querySelector("[data-canvas-view]").getBoundingClientRect();
 	const toggle = document.querySelector("[data-canvas-sidebar-toggle]").getBoundingClientRect();
-	const back = document.querySelector("[data-canvas-topbar] [aria-label='Back to view']").getBoundingClientRect();
+	const back = document.querySelector("[data-app-host-bar] [data-host-close]").getBoundingClientRect();
 	return { left: toggle.left - card.left, top: toggle.top - card.top, backRight: card.right - back.right };
 })()`;
 

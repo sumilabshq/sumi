@@ -52,13 +52,12 @@ const PILL_LOOK = `(() => {
 		tokens: { ink: tone("--primary"), onInk: tone("--primary-foreground"), raise: tone("--raise"), plate: tone("--group"), line: tone("--group-line"), brand: tone("--brand"), muted: tone("--muted-foreground"), radius: getComputedStyle(view).getPropertyValue("--radius").trim() },
 		toggle: look(document.querySelector("[data-canvas-sidebar-toggle]")),
 		togglePressed: document.querySelector("[data-canvas-sidebar-toggle]")?.getAttribute("aria-pressed"),
-		close: look(document.querySelector("[data-canvas-close]")),
-		closeLabel: document.querySelector("[data-canvas-close]")?.getAttribute("aria-label"),
+		close: look(document.querySelector("[data-host-close]")),
+		closeLabel: document.querySelector("[data-host-close]")?.getAttribute("aria-label"),
 		title: look(document.querySelector("[data-canvas-title]")),
-		picture: look(document.querySelector("[data-canvas-title] button")),
-		views: look(document.querySelector("[data-canvas-page-switch] [role=tablist]")),
-		pickedView: look(document.querySelector("[data-canvas-page-switch] [role=tab][aria-selected=true]")),
-		thumb: look(document.querySelector("[data-canvas-page-switch] .wg-kit-seg-thumb")),
+		picture: look(document.querySelector("[data-canvas-title] [aria-label='Add photo']")),
+		views: look(document.querySelector("[data-host-tabs]")),
+		pickedView: look(document.querySelector("[data-host-tab][aria-selected=true]")),
 		eyebrows: [...view.querySelectorAll("[data-canvas-eyebrow]")].map((node) => look(node)),
 		sidebar: look(document.querySelector("[data-canvas-sidebar]")),
 		hairline: look(document.querySelector("[data-canvas-layers] [role=separator]")),
@@ -97,7 +96,6 @@ interface PillLook {
 	readonly picture: Look | null;
 	readonly views: Look | null;
 	readonly pickedView: Look | null;
-	readonly thumb: Look | null;
 	readonly eyebrows: readonly Look[];
 	readonly sidebar: Look | null;
 	readonly hairline: Look | null;
@@ -112,6 +110,7 @@ interface PillLook {
 
 const ROUND_PX = 48;
 const PICTURE_PX = 36;
+const TAB_PX = 40;
 const PAGE_ROW_PX = 36;
 const EYEBROW_PX = "11px";
 const EYEBROW_TRACKING_PX = 0.66;
@@ -153,9 +152,9 @@ const PILL_LAWS: readonly PillLaw[] = [
 		shown: ({ picture }) => picture,
 	},
 	{
-		said: "pill: the view switch is a 48px raise pill whose chosen tab is filled ink with on-ink text",
+		said: "pill: the host's tabs are a 48px raise pill whose shown tab is a 40px ink fill with on-ink text",
 		holds: isInkPickedView,
-		shown: ({ views, thumb, pickedView }) => ({ views, thumb, pickedView }),
+		shown: ({ views, pickedView }) => ({ views, pickedView }),
 	},
 	{
 		said: "pill: the sidebar is a raise plate with the plate radius, and so is the board",
@@ -203,12 +202,13 @@ function isTitlePill({ title, tokens }: PillLook): boolean {
 	return title?.height === ROUND_PX && title.isRound && title.fill === tokens.raise && title.text.length > 0;
 }
 
-function isInkPickedView({ views, thumb, pickedView, tokens }: PillLook): boolean {
+function isInkPickedView({ views, pickedView, tokens }: PillLook): boolean {
 	return (
 		views?.height === ROUND_PX &&
 		views.fill === tokens.raise &&
-		thumb?.fill === tokens.ink &&
-		pickedView?.ink === tokens.onInk
+		pickedView?.height === TAB_PX &&
+		pickedView.fill === tokens.ink &&
+		pickedView.ink === tokens.onInk
 	);
 }
 

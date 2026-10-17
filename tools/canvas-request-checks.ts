@@ -1,7 +1,7 @@
 import type { SpecRead } from "../packages/core/src/app-spec.ts";
 import { CanvasHost, DesignFilesGateway, detachedHostOf } from "../packages/canvas/generated/gateways.ts";
 import type { ReturnTo } from "../packages/canvas/generated/gateways.ts";
-import { PageTabsQuery, ReturnToViewCommand } from "../packages/canvas/features/pages/contract.ts";
+import { PageChoicesQuery, ReturnToViewCommand } from "../packages/canvas/features/pages/contract.ts";
 import { PickVariantCommandHandler, ShowPageCommandHandler } from "../packages/canvas/features/pages/handlers.ts";
 import { PastePhotosCommand } from "../packages/canvas/features/photos/contract.ts";
 import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
@@ -116,11 +116,11 @@ async function checkReturnTo(check: Check): Promise<void> {
 }
 
 async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
-	const tabs = await canvasAppOver(canvasPartsOver({ opened: { ...FARM_OPENED, page: "" } })).send(PageTabsQuery);
+	const choices = await canvasAppOver(canvasPartsOver({ opened: { ...FARM_OPENED, page: "" } })).send(PageChoicesQuery);
 	check(
 		"a canvas over a project with no design folder reads the project's design",
-		tabs.ok ? tabs.output.tabs.map((tab) => tab.name) : tabs.reason,
-		["Pages", "Components"],
+		choices.ok ? choices.output.groups : choices.reason,
+		[["Pages"], ["Components"]],
 	);
 }
 
@@ -140,9 +140,9 @@ async function checkPickAfterPageTurn(check: Check): Promise<void> {
 async function checkWatchStopsOnce(check: Check): Promise<void> {
 	const held = heldFolder();
 	const canvas = canvasAppOver(canvasPartsOver({ opened: FARM_OPENED }, { designFolderGateway: held.folder }));
-	const stopFirst = canvas.watches.watch(PageTabsQuery, undefined);
+	const stopFirst = canvas.watches.watch(PageChoicesQuery, undefined);
 	stopFirst();
-	const stopSecond = canvas.watches.watch(PageTabsQuery, undefined);
+	const stopSecond = canvas.watches.watch(PageChoicesQuery, undefined);
 	stopFirst();
 	check("a watch stopped twice stops its own watch once and leaves the next one", held.watching, {
 		started: 2,

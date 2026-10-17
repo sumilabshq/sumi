@@ -3,7 +3,7 @@ import { DrawingQueryHandler, FieldRegionsQueryHandler, FieldStateQueryHandler, 
 import { JobStatusQueryHandler, StopJobCommandHandler } from "../features/jobs/handlers.js";
 import { KeepSeenLayersCommandHandler, LayersPanelQueryHandler, MoveLayerCommandHandler, PickLayerCommandHandler, ResetSidebarWidthCommandHandler, ResizeSidebarWidthCommandHandler, SidebarQueryHandler, ToggleLayerFoldCommandHandler, ToggleLayoutLockCommandHandler, ToggleSidebarCommandHandler } from "../features/layers/handlers.js";
 import { LookPanelQueryHandler, PickLookCommandHandler } from "../features/look/handlers.js";
-import { FinishFlightCommandHandler, FocusWidgetCommandHandler, PageTabsQueryHandler, PageTitleQueryHandler, PagesQueryHandler, PickVariantCommandHandler, ReturnToViewCommandHandler, ShowPageCommandHandler, VariantsQueryHandler } from "../features/pages/handlers.js";
+import { FinishFlightCommandHandler, FocusWidgetCommandHandler, PageChoicesQueryHandler, PagesQueryHandler, PickVariantCommandHandler, ReturnToViewCommandHandler, ShowPageCommandHandler, VariantsQueryHandler } from "../features/pages/handlers.js";
 import { AddPhotosCommandHandler, PastePhotosCommandHandler } from "../features/photos/handlers.js";
 import { CameraQueryHandler, KeepCameraCommandHandler, ModeQueryHandler, SetModeCommandHandler } from "../features/view/handlers.js";
 import { CanvasClientModule as CanvasClientModuleDefinition } from "../module.js";
@@ -23,8 +23,7 @@ export const CanvasClientModule = CanvasClientModuleDefinition.handlers([
 	LookPanelQueryHandler,
 	ModeQueryHandler,
 	MoveLayerCommandHandler,
-	PageTabsQueryHandler,
-	PageTitleQueryHandler,
+	PageChoicesQueryHandler,
 	PagesQueryHandler,
 	PastePhotosCommandHandler,
 	PickLayerCommandHandler,

@@ -5,15 +5,13 @@ import { DesignReads } from "../../shared/lib/design/design-reads.js";
 import { noteToReturnTo } from "./lib/note-to-return-to.js";
 import { pagesNow, watchPages } from "../../shared/lib/pages/pages-now.js";
 import { pagesStill } from "../../shared/lib/pages/pages-still.js";
-import { pageTabsOf } from "../../shared/lib/pages/page-tabs.js";
-import { statesShownOf } from "../../shared/lib/layers/shown-screen.js";
+import { pageChoicesOf } from "../../shared/lib/pages/page-choices.js";
 import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import {
 	FinishFlightCommand,
 	FocusWidgetCommand,
-	PageTabsQuery,
-	PageTitleQuery,
+	PageChoicesQuery,
 	PagesQuery,
 	PickVariantCommand,
 	ReturnToViewCommand,
@@ -37,20 +35,12 @@ export const FocusWidgetCommandHandler = handler(FocusWidgetCommand, CanvasClien
 		canvasStore.changeOpening({ page: COMPONENTS_PAGE, focusedWidget: widget }, `open ${widget}`);
 	});
 
-export const PageTabsQueryHandler = handler(PageTabsQuery, CanvasClientModule)
+export const PageChoicesQueryHandler = handler(PageChoicesQuery, CanvasClientModule)
 	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
 	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
 	.handle(async (_input, { designReads, canvasStore }) => {
 		const { pages } = await pagesNow(designReads, canvasStore);
-		return pageTabsOf(pages);
-	});
-
-export const PageTitleQueryHandler = handler(PageTitleQuery, CanvasClientModule)
-	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
-	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
-	.handle(async (_input, { designReads, canvasStore }) => {
-		const now = await pagesNow(designReads, canvasStore);
-		return { page: now.pages.shown, states: statesShownOf(now) };
+		return pageChoicesOf(pages);
 	});
 
 export const PagesQueryHandler = handler(PagesQuery, CanvasClientModule)
