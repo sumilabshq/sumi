@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { AppHostBar } from "@widgetarium/app-host";
+import { AppHostBar, AppHostFrame } from "@widgetarium/app-host";
 import { AppHostClientModule } from "@widgetarium/app-host/module";
 import type { AppHostParts } from "@widgetarium/app-host/gateways";
 import { Canvas, CanvasAppZone } from "@widgetarium/canvas";
@@ -31,7 +31,13 @@ export function CanvasPage({ parts, shell, onCanvas }: CanvasPageProps): ReactEl
 		<AppProvider app={canvasApp}>
 			<OnRefused value={toastRefusal}>
 				<Toaster />
-				<Canvas header={header} />
+				{shell ? (
+					<AppHostFrame>
+						<Canvas header={header} />
+					</AppHostFrame>
+				) : (
+					<Canvas header={header} />
+				)}
 			</OnRefused>
 		</AppProvider>
 	);

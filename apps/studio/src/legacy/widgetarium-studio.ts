@@ -24,7 +24,10 @@ import type { StudioShellBoardProps } from "./studio-shell-board.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import type { CanvasShell } from "../canvas/design-stage.js";
-import { studioAppHostParts } from "@widgetarium/app-host/gateways";
+import type { AppHostParts } from "@widgetarium/app-host/gateways";
+import { startedAppHostParts } from "../tabs/studio-app-host.js";
+import { webBrowserParts } from "@widgetarium/browser/gateways";
+import type { BrowserParts } from "@widgetarium/browser/gateways";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioRail } from "./studio-rail.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -45,6 +48,8 @@ export interface StartedStudio {
 	readonly state: StudioState;
 	readonly design: StudioDesign;
 	readonly mascot: MascotParts;
+	readonly browser: BrowserParts;
+	readonly appHost: AppHostParts;
 }
 
 export interface StudioStart extends ProjectStart {
@@ -55,6 +60,8 @@ export interface StudioStart extends ProjectStart {
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
 	readonly mascot?: MascotParts;
+	readonly browser?: BrowserParts;
+	readonly appHost?: AppHostParts;
 }
 
 type ShellBoardAsk = Omit<StudioShellBoardProps, "place">;
@@ -63,7 +70,6 @@ interface ShellBoards {
 	readonly corners: TopBarCorners;
 	readonly menu: ReactElement;
 	readonly rail: ReactElement;
-	readonly canvasShell: CanvasShell;
 }
 
 export interface WidgetariumStudioProps {
@@ -77,21 +83,27 @@ export function startStudio(project: WidgetariumProject, start: StudioStart = {}
 
 export function startOpenedStudio(opened: OpenedApp, start: StudioStart): StartedStudio {
 	const project = startOpenedProject(opened, start);
+	const state = start.state ?? createStudioState();
+	const browser = start.browser ?? webBrowserParts();
+	const appId = start.appId ?? opened.app.name;
 	return {
 		project,
 		studio: start.studio ?? browserStudioHost(opened.app, opened.routes),
 		assistant: start.assistant ?? NO_ASSISTANT,
 		catalogue: start.catalogue ?? browserCataloguePort(opened.registry),
-		appId: start.appId ?? opened.app.name,
+		appId,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
-		state: start.state ?? createStudioState(),
+		state,
 		design: start.design ?? webStudioDesign(opened.app.name),
 		mascot: start.mascot ?? memoryMascotParts(),
+		browser,
+		appHost: start.appHost ?? startedAppHostParts({ state, browser, workspace: appId }),
 	};
 }
 
 export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactElement {
-	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design, mascot } = started;
+	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design, mascot, browser, appHost } =
+		started;
 	const pathname = useSyncExternalStore(project.router.subscribe, project.router.pathname);
 	const { view, panel } = useSyncExternalStore(state.subscribe, state.now);
 	const host = useMemo(() => project.hostOf(pathname), [project, pathname]);
@@ -101,7 +113,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	useWritesHostInsets(frame, studio);
 	useWritesChatWidth(frame, state.chatWidth);
 	const catalogueAsk = useTakesCatalogueAsks(frame, catalogue.requests, state);
-	const { corners, menu, rail, canvasShell } = shellBoardsOf({
+	const { corners, menu, rail } = shellBoardsOf({
 		app: appId,
 		registry: shellRegistry,
 		host,
@@ -109,12 +121,13 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		state,
 		assistant,
 	});
-	const isCanvas = view === "canvas";
-	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
-		isCanvas ? null : h(StudioBand, { key: "band", corners }),
+	const canvasShell: CanvasShell = { hostParts: appHost, cornerEnd: corners.end };
+	const hidesBand = view !== "app";
+	return h("div", { ref: frame, className: `wg-studio${hidesBand ? " is-canvas" : ""}` }, [
+		hidesBand ? null : h(StudioBand, { key: "band", corners }),
 		h(StudioRail, { key: "rail", children: rail }),
 		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame, appName }),
-		h(StudioOutlet, { key: "outlet", project, pathname, view, design, shell: canvasShell }),
+		h(StudioOutlet, { key: "outlet", project, pathname, view, design, shell: canvasShell, browser }),
 		panel === "none"
 			? null
 			: h(StudioSidebar, {
@@ -136,9 +149,5 @@ function shellBoardsOf(shell: ShellBoardAsk): ShellBoards {
 		corners,
 		menu: h(StudioShellBoard, { key: `menu ${shell.app}`, place: "menu", ...shell }),
 		rail: h(StudioShellBoard, { key: `rail ${shell.app}`, place: "rail", ...shell }),
-		canvasShell: {
-			hostParts: studioAppHostParts(shell.state),
-			cornerEnd: corners.end,
-		},
 	};
 }

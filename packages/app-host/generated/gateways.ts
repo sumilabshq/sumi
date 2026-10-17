@@ -3,3 +3,7 @@ export * from "../gateways/app-host-parts/app-host-parts.gateway.js";
 export * from "../gateways/app-host-parts/studio.gateway.js";
 export * from "../gateways/app-tabs/app-tabs.gateway.js";
 export * from "../gateways/app-tabs/studio-state.gateway.js";
+export * from "../gateways/page-facts/none.gateway.js";
+export * from "../gateways/page-facts/page-facts.gateway.js";
+export * from "../gateways/tabs-column/local-storage.gateway.js";
+export * from "../gateways/tabs-column/tabs-column.gateway.js";

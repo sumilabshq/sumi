@@ -1,4 +1,4 @@
-import { FileView } from "obsidian";
+import { FileView, Scope } from "obsidian";
 import type { Menu, TFile, WorkspaceLeaf } from "obsidian";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
@@ -16,6 +16,7 @@ const MARKDOWN_ICON = "file-text";
 const STUDIO_ICON = "layout-dashboard";
 const NOTE_EXTENSION = "md";
 const UNNAMED_APP = "App";
+const TAB_KEYS_THE_STUDIO_ANSWERS = ["w", "\\"];
 
 export class StudioView extends FileView {
 	private node: HTMLElement | null = null;
@@ -32,6 +33,7 @@ export class StudioView extends FileView {
 	) {
 		super(leaf);
 		this.navigation = true;
+		this.scope = studioKeysScope(this.app.scope);
 	}
 
 	getViewType(): string {
@@ -109,4 +111,13 @@ export class StudioView extends FileView {
 		this.shownNote = null;
 		if (this.node) render(null, this.node);
 	}
+}
+
+function studioKeysScope(appScope: Scope): Scope {
+	const scope = new Scope(appScope);
+	for (const key of TAB_KEYS_THE_STUDIO_ANSWERS) {
+		scope.register(["Mod"], key, () => false);
+	}
+
+	return scope;
 }

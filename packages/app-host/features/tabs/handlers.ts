@@ -1,28 +1,113 @@
 import { handler, refuse } from "@widgetarium/core/requests";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
-import { AppTabsQuery, ShowAppCommand } from "./contract.js";
+import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
+import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
+import {
+	AppTabsQuery,
+	CloseShownTabCommand,
+	CloseTabCommand,
+	MoveTabCommand,
+	OpenTabCommand,
+	ShowTabCommand,
+} from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
+import { closeTab } from "./lib/close-tab.js";
+import { showTab } from "./lib/show-tab.js";
+import { freePageOf } from "./lib/tab-pages.js";
+import { APP_CHOICES, shownTabIdOf, tabRowsOf } from "./lib/tab-rows.js";
 
-const NOT_HELD = 'the host holds no app "{id}"';
+const NOT_HELD = 'the host holds no tab "{id}"';
+const NO_FREE_PAGE = "every page the browser holds is shown by a browser tab already";
+const TABS = {
+	appTabsGateway: AppTabsGateway,
+	pageFactsGateway: PageFactsGateway,
+	hostTabs: HostTabs,
+};
 
 export const AppTabsQueryHandler = handler(AppTabsQuery, AppHostClientModule)
-	.inject({ appTabsGateway: AppTabsGateway })
-	.watch((_input, { appTabsGateway }, changed) => appTabsGateway.watch(changed))
-	.handle((_input, { appTabsGateway }) => {
-		const shownId = appTabsGateway.shownId();
-		return {
-			tabs: appTabsGateway.tabs().map((tab) => ({ ...tab, isShown: tab.id === shownId })),
-			// TODO: the chat opens a preview here; nothing does yet
-			preview: null,
-		};
-	});
+	.inject(TABS)
+	.watch((_input, parts, changed) => watchTabs(parts, changed))
+	.handle((_input, { appTabsGateway, pageFactsGateway, hostTabs }) => ({
+		tabs: tabRowsOf(hostTabs.now(), pageFactsGateway.pages(), appTabsGateway.shownApp()),
+		apps: APP_CHOICES,
+		// TODO: the chat opens a preview here; nothing does yet
+		preview: null,
+	}));
 
-export const ShowAppCommandHandler = handler(ShowAppCommand, AppHostClientModule)
-	.inject({ appTabsGateway: AppTabsGateway })
-	.handle(({ id }, { appTabsGateway }) => {
-		if (!appTabsGateway.tabs().some((tab) => tab.id === id)) {
+export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle(({ id }, { hostTabs, ...showing }) => {
+		const tab = hostTabs.now().tabs.find((held) => held.id === id);
+
+		if (!tab) {
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		appTabsGateway.show(id);
+		hostTabs.show(id);
+		showTab(tab, hostTabs.now().tabs, showing);
 	});
+
+export const OpenTabCommandHandler = handler(OpenTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle(({ app }, { hostTabs, ...showing }) => {
+		const pages = showing.pageFactsGateway.pages();
+		const page = app === "browser" ? freePageOf(hostTabs.now().tabs, pages) : null;
+
+		if (app === "browser" && pages.length > 0 && page === null) {
+			return refuse(NO_FREE_PAGE);
+		}
+
+		const tab = hostTabs.open({
+			app,
+			pageId: page?.pageId ?? null,
+			isPinned: false,
+		});
+		showTab(tab, hostTabs.now().tabs, showing);
+	});
+
+export const CloseTabCommandHandler = handler(CloseTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle(({ id }, { hostTabs, ...showing }) => {
+		if (!hostTabs.now().tabs.some((tab) => tab.id === id)) {
+			return refuse(NOT_HELD.replace("{id}", id));
+		}
+
+		closeTab(id, hostTabs, showing);
+	});
+
+export const CloseShownTabCommandHandler = handler(CloseShownTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle((_input, { hostTabs, ...showing }) => {
+		const shownId = shownTabIdOf(hostTabs.now(), showing.appTabsGateway.shownApp());
+
+		if (shownId === null) {
+			return refuse("no tab is shown");
+		}
+
+		closeTab(shownId, hostTabs, showing);
+	});
+
+export const MoveTabCommandHandler = handler(MoveTabCommand, AppHostClientModule)
+	.inject({ hostTabs: HostTabs })
+	.handle(({ id, before }, { hostTabs }) => {
+		const held = new Set(hostTabs.now().tabs.map((tab) => tab.id));
+
+		const missing = [id, before].find((asked) => asked !== null && !held.has(asked));
+
+		if (missing !== undefined && missing !== null) {
+			return refuse(NOT_HELD.replace("{id}", missing));
+		}
+
+		hostTabs.move(id, before);
+	});
+
+interface WatchedTabs {
+	readonly appTabsGateway: AppTabsGateway;
+	readonly pageFactsGateway: PageFactsGateway;
+	readonly hostTabs: HostTabs;
+}
+
+function watchTabs({ appTabsGateway, pageFactsGateway, hostTabs }: WatchedTabs, changed: () => void): () => void {
+	const stops = [appTabsGateway.watch(changed), pageFactsGateway.watch(changed), hostTabs.watch(changed)];
+	return () => stops.forEach((stop) => stop());
+}

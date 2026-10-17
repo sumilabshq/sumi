@@ -12157,7 +12157,8 @@ body.wg-studio-in-front .status-bar {
 	touch-action: none;
 }
 
-.wg-studio-chat-edge::after {
+.wg-studio-chat-edge::after,
+.wg-studio-edge-line::after {
 	content: "";
 	position: absolute;
 	inset: 0;
@@ -12167,7 +12168,7 @@ body.wg-studio-in-front .status-bar {
 	transition: background-color 120ms ease-out;
 }
 
-.wg-studio-chat-edge:is(:hover, :active, :focus-visible)::after {
+:is(.wg-studio-chat-edge, .wg-studio-edge-line):is(:hover, :active, :focus-visible)::after {
 	background: var(--wg-kit-accent);
 }
 
@@ -13118,8 +13119,10 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop {
+	--wg-studio-menu-corner: 20px;
+	--wg-studio-menu-pad: 6px;
 	min-width: 300px;
-	border-radius: 20px;
+	border-radius: var(--wg-studio-menu-corner);
 	background: var(--wg-kit-raise);
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
@@ -13129,7 +13132,7 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-inner {
-	padding: 6px;
+	padding: var(--wg-studio-menu-pad);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item {
@@ -13141,7 +13144,7 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item::before {
-	border-radius: 12px;
+	border-radius: calc(var(--wg-studio-menu-corner) - var(--wg-studio-menu-pad));
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:hover::before {
@@ -13395,11 +13398,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:inset-x-0 {
 		inset-inline: 0px !important;
 	}
+	.cv\:inset-x-2 {
+		inset-inline: calc(var(--cv-spacing) * 2) !important;
+	}
 	.cv\:inset-y-0 {
 		inset-block: 0px !important;
 	}
 	.cv\:inset-y-1\.5 {
 		inset-block: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:start-0 {
+		inset-inline-start: calc(var(--cv-spacing) * 0) !important;
 	}
 	.cv\:top-0 {
 		top: 0px !important;
@@ -13419,6 +13428,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bottom-4 {
 		bottom: calc(var(--cv-spacing) * 4) !important;
 	}
+	.cv\:bottom-6 {
+		bottom: calc(var(--cv-spacing) * 6) !important;
+	}
 	.cv\:left-0 {
 		left: 0px !important;
 	}
@@ -13436,6 +13448,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:z-\[2\] {
 		z-index: 2 !important;
+	}
+	.cv\:z-\[3\] {
+		z-index: 3 !important;
 	}
 	.cv\:z-\[var\(--layer-tooltip\)\] {
 		z-index: var(--layer-tooltip) !important;
@@ -13458,6 +13473,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:my-1 {
 		margin-block: var(--cv-spacing) !important;
 	}
+	.cv\:ms-1\.5 {
+		margin-inline-start: calc(var(--cv-spacing) * 1.5) !important;
+	}
 	.cv\:mt-1 {
 		margin-top: var(--cv-spacing) !important;
 	}
@@ -13476,6 +13494,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:grid {
 		display: grid !important;
 	}
+	.cv\:hidden {
+		display: none !important;
+	}
 	.cv\:inline-flex {
 		display: inline-flex !important;
 	}
@@ -13483,13 +13504,39 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: calc(var(--cv-spacing) * 1.5) !important;
 		height: calc(var(--cv-spacing) * 1.5) !important;
 	}
+	.cv\:size-2\.5 {
+		width: calc(var(--cv-spacing) * 2.5) !important;
+		height: calc(var(--cv-spacing) * 2.5) !important;
+	}
 	.cv\:size-3 {
 		width: calc(var(--cv-spacing) * 3) !important;
 		height: calc(var(--cv-spacing) * 3) !important;
 	}
+	.cv\:size-7 {
+		width: calc(var(--cv-spacing) * 7) !important;
+		height: calc(var(--cv-spacing) * 7) !important;
+	}
+	.cv\:size-8 {
+		width: calc(var(--cv-spacing) * 8) !important;
+		height: calc(var(--cv-spacing) * 8) !important;
+	}
 	.cv\:size-9 {
 		width: calc(var(--cv-spacing) * 9) !important;
 		height: calc(var(--cv-spacing) * 9) !important;
+	}
+	.cv\:size-10 {
+		width: calc(var(--cv-spacing) * 10) !important;
+		height: calc(var(--cv-spacing) * 10) !important;
+	}
+	.cv\:size-full {
+		width: 100% !important;
+		height: 100% !important;
+	}
+	.cv\:h-0\.5 {
+		height: calc(var(--cv-spacing) * 0.5) !important;
+	}
+	.cv\:h-8 {
+		height: calc(var(--cv-spacing) * 8) !important;
 	}
 	.cv\:h-9 {
 		height: calc(var(--cv-spacing) * 9) !important;
@@ -13500,6 +13547,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:h-12 {
 		height: calc(var(--cv-spacing) * 12) !important;
 	}
+	.cv\:h-13 {
+		height: calc(var(--cv-spacing) * 13) !important;
+	}
 	.cv\:h-\[30px\] {
 		height: 30px !important;
 	}
@@ -13508,6 +13558,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:h-\[var\(--wg-studio-band\,50px\)\] {
 		height: var(--wg-studio-band, 50px) !important;
+	}
+	.cv\:h-auto {
+		height: auto !important;
 	}
 	.cv\:h-full {
 		height: 100% !important;
@@ -13527,6 +13580,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:min-h-9 {
 		min-height: calc(var(--cv-spacing) * 9) !important;
 	}
+	.cv\:min-h-10 {
+		min-height: calc(var(--cv-spacing) * 10) !important;
+	}
+	.cv\:min-h-12 {
+		min-height: calc(var(--cv-spacing) * 12) !important;
+	}
+	.cv\:w-3 {
+		width: calc(var(--cv-spacing) * 3) !important;
+	}
+	.cv\:w-6 {
+		width: calc(var(--cv-spacing) * 6) !important;
+	}
 	.cv\:w-12 {
 		width: calc(var(--cv-spacing) * 12) !important;
 	}
@@ -13536,8 +13601,20 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:w-\[960px\] {
 		width: 960px !important;
 	}
+	.cv\:w-\[min\(26rem\,90vw\)\] {
+		width: min(26rem, 90vw) !important;
+	}
+	.cv\:w-\[min\(32rem\,calc\(100\%-2rem\)\)\] {
+		width: min(32rem, calc(100% - 2rem)) !important;
+	}
+	.cv\:w-\[min\(36rem\,42vw\)\] {
+		width: min(36rem, 42vw) !important;
+	}
 	.cv\:w-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		width: var(--wg-kit-plate-pad, 6px) !important;
+	}
+	.cv\:w-\[var\(--wg-studio-edge\,6px\)\] {
+		width: var(--wg-studio-edge, 6px) !important;
 	}
 	.cv\:w-auto {
 		width: auto !important;
@@ -13548,8 +13625,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:w-max {
 		width: max-content !important;
 	}
+	.cv\:max-w-56 {
+		max-width: calc(var(--cv-spacing) * 56) !important;
+	}
+	.cv\:max-w-72 {
+		max-width: calc(var(--cv-spacing) * 72) !important;
+	}
 	.cv\:max-w-80 {
 		max-width: calc(var(--cv-spacing) * 80) !important;
+	}
+	.cv\:max-w-\[34cqw\] {
+		max-width: 34cqw !important;
 	}
 	.cv\:max-w-\[80\%\] {
 		max-width: 80% !important;
@@ -13572,8 +13658,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:min-w-10 {
 		min-width: calc(var(--cv-spacing) * 10) !important;
 	}
+	.cv\:min-w-40 {
+		min-width: calc(var(--cv-spacing) * 40) !important;
+	}
 	.cv\:flex-1 {
 		flex: 1 !important;
+	}
+	.cv\:flex-\[1\.6\] {
+		flex: 1.6 !important;
 	}
 	.cv\:flex-initial {
 		flex: 0 auto !important;
@@ -13581,11 +13673,22 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:flex-none {
 		flex: none !important;
 	}
+	.cv\:shrink {
+		flex-shrink: 1 !important;
+	}
 	.cv\:origin-top-left {
 		transform-origin: 0 0 !important;
 	}
 	.cv\:-translate-x-1\/2 {
 		--tw-translate-x: calc(calc(1 / 2 * 100%) * -1) !important;
+		translate: var(--tw-translate-x) var(--tw-translate-y) !important;
+	}
+	.cv\:-translate-x-full {
+		--tw-translate-x: -100% !important;
+		translate: var(--tw-translate-x) var(--tw-translate-y) !important;
+	}
+	.cv\:translate-x-full {
+		--tw-translate-x: 100% !important;
 		translate: var(--tw-translate-x) var(--tw-translate-y) !important;
 	}
 	.cv\:-translate-y-1\/2 {
@@ -13682,6 +13785,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:gap-14 {
 		gap: calc(var(--cv-spacing) * 14) !important;
 	}
+	.cv\:gap-\[3px\] {
+		gap: 3px !important;
+	}
 	.cv\:gap-\[13px\] {
 		gap: 13px !important;
 	}
@@ -13697,6 +13803,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:self-start {
 		align-self: flex-start !important;
 	}
+	.cv\:self-stretch {
+		align-self: stretch !important;
+	}
 	.cv\:truncate {
 		overflow: hidden !important;
 		text-overflow: ellipsis !important;
@@ -13711,6 +13820,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:overflow-visible {
 		overflow: visible !important;
 	}
+	.cv\:overflow-x-auto {
+		overflow-x: auto !important;
+	}
 	.cv\:overflow-x-hidden {
 		overflow-x: hidden !important;
 	}
@@ -13719,6 +13831,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:rounded-2xl {
 		border-radius: var(--cv-radius-2xl) !important;
+	}
+	.cv\:rounded-\[18px\] {
+		border-radius: 18px !important;
+	}
+	.cv\:rounded-\[28px\] {
+		border-radius: 28px !important;
 	}
 	.cv\:rounded-\[calc\(var\(--radius\)-var\(--wg-kit-plate-pad\,6px\)\)\] {
 		border-radius: calc(var(--radius) - var(--wg-kit-plate-pad, 6px)) !important;
@@ -13735,8 +13853,15 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:rounded-plate {
 		border-radius: var(--radius) !important;
 	}
+	.cv\:rounded-sm {
+		border-radius: calc(var(--radius) - 4px) !important;
+	}
 	.cv\:rounded-xl {
 		border-radius: calc(var(--radius) + 4px) !important;
+	}
+	.cv\:border {
+		border-style: var(--tw-border-style) !important;
+		border-width: 1px !important;
 	}
 	.cv\:border-0 {
 		border-style: var(--tw-border-style) !important;
@@ -13752,6 +13877,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:border-\[var\(--wg-kit-error-ink\)\] {
 		border-color: var(--wg-kit-error-ink) !important;
+	}
+	.cv\:border-edge {
+		border-color: var(--border) !important;
+	}
+	.cv\:border-line {
+		border-color: var(--group-line) !important;
 	}
 	.cv\:bg-\[color-mix\(in_srgb\,var\(--wg-kit-accent\)_8\%\,transparent\)\] {
 		background-color: var(--wg-kit-accent) !important;
@@ -13780,6 +13911,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-brand {
 		background-color: var(--brand) !important;
 	}
+	.cv\:bg-brand-wash {
+		background-color: var(--accent-wash) !important;
+	}
 	.cv\:bg-error-wash {
 		background-color: var(--wg-kit-error-wash) !important;
 	}
@@ -13789,6 +13923,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-group {
 		background-color: var(--group) !important;
 	}
+	.cv\:bg-info {
+		background-color: var(--info) !important;
+	}
 	.cv\:bg-info-wash {
 		background-color: var(--wg-kit-info-wash) !important;
 	}
@@ -13797,6 +13934,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-line {
 		background-color: var(--group-line) !important;
+	}
+	.cv\:bg-muted-foreground {
+		background-color: var(--muted-foreground) !important;
 	}
 	.cv\:bg-page {
 		background-color: var(--background) !important;
@@ -13810,6 +13950,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-primary {
 		background-color: var(--primary) !important;
 	}
+	.cv\:bg-primary-foreground\/15 {
+		background-color: var(--primary-foreground) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			background-color: color-mix(in oklab, var(--primary-foreground) 15%, transparent) !important;
+		}
+	}
 	.cv\:bg-raise {
 		background-color: var(--raise) !important;
 	}
@@ -13818,6 +13964,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-transparent {
 		background-color: transparent !important;
+	}
+	.cv\:bg-warning {
+		background-color: var(--warning) !important;
 	}
 	.cv\:bg-warning-wash {
 		background-color: var(--wg-kit-warning-wash) !important;
@@ -13869,6 +14018,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:p-3 {
 		padding: calc(var(--cv-spacing) * 3) !important;
 	}
+	.cv\:p-5 {
+		padding: calc(var(--cv-spacing) * 5) !important;
+	}
 	.cv\:p-6 {
 		padding: calc(var(--cv-spacing) * 6) !important;
 	}
@@ -13883,6 +14035,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:p-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding: var(--wg-kit-plate-pad, 6px) !important;
+	}
+	.cv\:px-1 {
+		padding-inline: var(--cv-spacing) !important;
+	}
+	.cv\:px-1\.5 {
+		padding-inline: calc(var(--cv-spacing) * 1.5) !important;
 	}
 	.cv\:px-2 {
 		padding-inline: calc(var(--cv-spacing) * 2) !important;
@@ -13899,6 +14057,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:px-4 {
 		padding-inline: calc(var(--cv-spacing) * 4) !important;
 	}
+	.cv\:px-5 {
+		padding-inline: calc(var(--cv-spacing) * 5) !important;
+	}
+	.cv\:py-0 {
+		padding-block: 0px !important;
+	}
 	.cv\:py-0\.5 {
 		padding-block: calc(var(--cv-spacing) * 0.5) !important;
 	}
@@ -13907,6 +14071,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:py-1\.5 {
 		padding-block: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:py-2 {
+		padding-block: calc(var(--cv-spacing) * 2) !important;
 	}
 	.cv\:py-2\.5 {
 		padding-block: calc(var(--cv-spacing) * 2.5) !important;
@@ -13917,20 +14084,47 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:py-\[3px\] {
 		padding-block: 3px !important;
 	}
+	.cv\:py-\[var\(--wg-kit-plate-pad\,6px\)\] {
+		padding-block: var(--wg-kit-plate-pad, 6px) !important;
+	}
 	.cv\:ps-1\.5 {
 		padding-inline-start: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:ps-3 {
+		padding-inline-start: calc(var(--cv-spacing) * 3) !important;
+	}
+	.cv\:ps-3\.5 {
+		padding-inline-start: calc(var(--cv-spacing) * 3.5) !important;
 	}
 	.cv\:ps-4 {
 		padding-inline-start: calc(var(--cv-spacing) * 4) !important;
 	}
+	.cv\:ps-5 {
+		padding-inline-start: calc(var(--cv-spacing) * 5) !important;
+	}
 	.cv\:ps-\[31px\] {
 		padding-inline-start: 31px !important;
+	}
+	.cv\:pe-1 {
+		padding-inline-end: var(--cv-spacing) !important;
 	}
 	.cv\:pe-1\.5 {
 		padding-inline-end: calc(var(--cv-spacing) * 1.5) !important;
 	}
+	.cv\:pe-4 {
+		padding-inline-end: calc(var(--cv-spacing) * 4) !important;
+	}
+	.cv\:pt-1 {
+		padding-top: var(--cv-spacing) !important;
+	}
 	.cv\:pt-2 {
 		padding-top: calc(var(--cv-spacing) * 2) !important;
+	}
+	.cv\:pt-2\.5 {
+		padding-top: calc(var(--cv-spacing) * 2.5) !important;
+	}
+	.cv\:pt-\[9px\] {
+		padding-top: 9px !important;
 	}
 	.cv\:pr-3 {
 		padding-right: calc(var(--cv-spacing) * 3) !important;
@@ -13938,8 +14132,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:pb-1 {
 		padding-bottom: var(--cv-spacing) !important;
 	}
+	.cv\:pb-1\.5 {
+		padding-bottom: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:pb-2\.5 {
+		padding-bottom: calc(var(--cv-spacing) * 2.5) !important;
+	}
 	.cv\:text-center {
 		text-align: center !important;
+	}
+	.cv\:text-start {
+		text-align: start !important;
 	}
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
@@ -13974,6 +14177,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-xs {
 		font-size: var(--type-xs) !important;
 	}
+	.cv\:leading-4 {
+		--tw-leading: calc(var(--cv-spacing) * 4) !important;
+		line-height: calc(var(--cv-spacing) * 4) !important;
+	}
 	.cv\:leading-\[1\.4\] {
 		--tw-leading: 1.4 !important;
 		line-height: 1.4 !important;
@@ -13985,6 +14192,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:leading-\[1\.55\] {
 		--tw-leading: 1.55 !important;
 		line-height: 1.55 !important;
+	}
+	.cv\:leading-\[17px\] {
+		--tw-leading: 17px !important;
+		line-height: 17px !important;
+	}
+	.cv\:leading-\[18px\] {
+		--tw-leading: 18px !important;
+		line-height: 18px !important;
 	}
 	.cv\:font-bold {
 		--tw-font-weight: var(--font-bold, 700) !important;
@@ -14002,6 +14217,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
+	.cv\:break-all {
+		word-break: break-all !important;
+	}
 	.cv\:whitespace-nowrap {
 		white-space: nowrap !important;
 	}
@@ -14011,17 +14229,32 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
 	}
+	.cv\:text-brand {
+		color: var(--brand) !important;
+	}
+	.cv\:text-info {
+		color: var(--info) !important;
+	}
 	.cv\:text-ink {
 		color: var(--foreground) !important;
 	}
 	.cv\:text-muted-foreground {
 		color: var(--muted-foreground) !important;
 	}
+	.cv\:text-muted-foreground\/70 {
+		color: var(--muted-foreground) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in oklab, var(--muted-foreground) 70%, transparent) !important;
+		}
+	}
 	.cv\:text-page {
 		color: var(--background) !important;
 	}
 	.cv\:text-primary-foreground {
 		color: var(--primary-foreground) !important;
+	}
+	.cv\:text-warning {
+		color: var(--warning) !important;
 	}
 	.cv\:italic {
 		font-style: italic !important;
@@ -14033,6 +14266,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:opacity-0 {
 		opacity: 0% !important;
+	}
+	.cv\:opacity-70 {
+		opacity: 70% !important;
 	}
 	.cv\:opacity-100 {
 		opacity: 100% !important;
@@ -14062,11 +14298,39 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:ring-2 {
+		--tw-ring-shadow: var(--tw-ring-inset,) 0 0 0 calc(2px + var(--tw-ring-offset-width))
+			var(--tw-ring-color, currentcolor) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
 	.cv\:ring-edge {
 		--tw-ring-color: var(--border) !important;
 	}
+	.cv\:ring-group {
+		--tw-ring-color: var(--group) !important;
+	}
+	.cv\:ring-info {
+		--tw-ring-color: var(--info) !important;
+	}
+	.cv\:outline-2 {
+		outline-style: var(--tw-outline-style) !important;
+		outline-width: 2px !important;
+	}
+	.cv\:outline-offset-\[-2px\] {
+		outline-offset: -2px !important;
+	}
+	.cv\:outline-brand {
+		outline-color: var(--brand) !important;
+	}
 	.cv\:transition-\[background-color\,color\] {
 		transition-property: background-color, color !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
+	.cv\:transition-\[background-color\,opacity\] {
+		transition-property: background-color, opacity !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
@@ -14134,6 +14398,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		-webkit-user-select: text !important;
 		user-select: text !important;
 	}
+	.cv\:\[--no-tooltip\:true\] {
+		--no-tooltip: true !important;
+	}
 	.cv\:\[--wg-board-pad\:0px\] {
 		--wg-board-pad: 0px !important;
 	}
@@ -14153,6 +14420,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		stroke-dasharray: 4 4 !important;
 	}
 	@media (hover: hover) {
+		.cv\:group-hover\:flex:is(:where(.cv\:group):hover *) {
+			display: flex !important;
+		}
+		.cv\:group-hover\:opacity-100:is(:where(.cv\:group):hover *) {
+			opacity: 100% !important;
+		}
 		.cv\:group-hover\/row\:opacity-100:is(:where(.cv\:group\/row):hover *) {
 			opacity: 100% !important;
 		}
@@ -14164,6 +14437,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-property: transform, translate, scale, rotate !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
+	.cv\:placeholder\:text-muted-foreground::placeholder {
+		color: var(--muted-foreground) !important;
 	}
 	.cv\:after\:absolute::after {
 		content: var(--tw-content);
@@ -14277,6 +14553,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:disabled\:cursor-default:disabled {
 		cursor: default !important;
 	}
+	.cv\:disabled\:bg-transparent:disabled {
+		background-color: transparent !important;
+	}
+	.cv\:disabled\:opacity-40:disabled {
+		opacity: 40% !important;
+	}
 	.cv\:disabled\:opacity-50:disabled {
 		opacity: 50% !important;
 	}
@@ -14348,8 +14630,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			transition-property: none !important;
 		}
 	}
-	@container app-host-bar (width < 480px) {
-		.cv\:\@max-\[480px\]\/app-host-bar\:hidden {
+	@container app-host-bar (width < 560px) {
+		.cv\:\@max-\[560px\]\/app-host-bar\:hidden {
 			display: none !important;
 		}
 	}
@@ -14385,6 +14667,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:\[\&_\[data-host-tab-subtitle\]\]\:opacity-65 [data-host-tab-subtitle] {
+		opacity: 65% !important;
+	}
 	.cv\:\[\&_\[role\=tab\]\]\:h-10 [role="tab"] {
 		height: calc(var(--cv-spacing) * 10) !important;
 	}
@@ -14408,6 +14693,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[\&_\[role\=tab\]\[aria-selected\=true\]\]\:text-primary-foreground [role="tab"][aria-selected="true"] {
 		color: var(--primary-foreground) !important;
 	}
+	.cv\:\[\&_span\]\:text-primary-foreground span {
+		color: var(--primary-foreground) !important;
+	}
 	.cv\:\[\&\>\.wg-page\]\:relative > .wg-page {
 		position: relative !important;
 	}
@@ -14428,6 +14716,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:\[\&\>\.wg-page\>\.wg-root\]\:flex-\[1_0_auto\] > .wg-page > .wg-root {
 		flex: 1 0 auto !important;
+	}
+	.cv\:\[\&\>aside\[data-host-column-side\=start\]\]\:order-first > aside[data-host-column-side="start"] {
+		order: -9999 !important;
+	}
+	@media (hover: hover) {
+		.theme-dark .cv\:\[\.theme-dark_\&\]\:hover\:bg-input:hover {
+			background-color: var(--input) !important;
+		}
 	}
 }
 @property --scroll-fade-t {
@@ -14845,6 +15141,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	inherits: false;
 	initial-value: 0 0 #0000;
 }
+@property --tw-outline-style {
+	syntax: "*";
+	inherits: false;
+	initial-value: solid;
+}
 @property --tw-duration {
 	syntax: "*";
 	inherits: false;
@@ -14857,11 +15158,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	syntax: "*";
 	initial-value: "";
 	inherits: false;
-}
-@property --tw-outline-style {
-	syntax: "*";
-	inherits: false;
-	initial-value: solid;
 }
 @keyframes canvas-fold-open {
 	from {
@@ -14935,10 +15231,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-ring-offset-width: 0px;
 			--tw-ring-offset-color: #fff;
 			--tw-ring-offset-shadow: 0 0 #0000;
+			--tw-outline-style: solid;
 			--tw-duration: initial;
 			--tw-ease: initial;
 			--tw-content: "";
-			--tw-outline-style: solid;
 			--scroll-fade-t: 0px;
 			--scroll-fade-b: 0px;
 			--scroll-fade-s: 0px;

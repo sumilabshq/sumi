@@ -13,6 +13,7 @@ import {
 	emptyProject,
 } from "./canvas-hosts.ts";
 import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
+import { webBrowserParts } from "../packages/browser/generated/gateways.ts";
 import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
@@ -344,6 +345,7 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 		standIn<WidgetariumPlugin>(plugin, ["app", "host", "registerView", "registerEvent", "register"], "plugin"),
 		countedProjects,
 		NO_ASSISTANT,
+		webBrowserParts(),
 	);
 	return {
 		fileOpened: () => handlers.get("file-open")?.(),
@@ -492,6 +494,7 @@ const place = standIn<StudioPlace>(
 		projects: createAppProjects(adapter),
 		viewType: STUDIO_VIEW_TYPE,
 		assistant: checkedAssistant.port,
+		browser: webBrowserParts(),
 		hostOf: () => host,
 		openAsMarkdown: async () => undefined,
 		showAsMarkdown: async () => undefined,
@@ -500,7 +503,7 @@ const place = standIn<StudioPlace>(
 			partsOf: (mount: StudioMount) => webCanvasParts(mount.project, canvasHostOf(mount)),
 		}),
 	},
-	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
+	["app", "projects", "viewType", "assistant", "browser", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
 	"place",
 );
 async function drawnFor(file: NoteFile): Promise<HTMLElement> {

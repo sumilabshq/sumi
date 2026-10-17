@@ -25,7 +25,10 @@ registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
 const NOT_HERE = "not on this test page";
-const STUDIO_SHELL = { hostParts: studioAppHostParts(createStudioState()), cornerEnd: h("span") };
+const STUDIO_SHELL = {
+	hostParts: studioAppHostParts({ studioState: createStudioState(), workspace: "gpu" }),
+	cornerEnd: h("span"),
+};
 const registry = new ModuleRegistry({
 	"fixture-tags": tags,
 	[TASKS_WIDGET]: taskList,

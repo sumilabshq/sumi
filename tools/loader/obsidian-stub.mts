@@ -34,8 +34,15 @@ export class SuggestModal extends Modal {
 	setPlaceholder(): void {}
 	open(): void {}
 }
+export class Scope {
+	register(): object {
+		return {};
+	}
+}
 export class ItemView {
 	leaf: unknown;
+	app: { readonly scope?: unknown } = {};
+	scope: unknown = null;
 	constructor(leaf: unknown) {
 		this.leaf = leaf;
 	}

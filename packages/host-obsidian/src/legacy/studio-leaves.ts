@@ -1,4 +1,5 @@
 import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
+import type { BrowserParts } from "@widgetarium/browser/gateways";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
@@ -30,7 +31,12 @@ const MARKDOWN_VIEW_TYPE = "markdown";
 const AS_MARKDOWN = "asMarkdown";
 const STUDIO_IN_FRONT = "wg-studio-in-front";
 
-export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProjects, assistant: AssistantPort): void {
+export function registerStudioView(
+	plugin: WidgetariumPlugin,
+	projects: AppProjects,
+	assistant: AssistantPort,
+	browser: BrowserParts,
+): void {
 	registerPacks(...STUDIO_PACKS);
 	const choices = createMarkdownChoices();
 	const place: StudioPlace = {
@@ -38,6 +44,7 @@ export function registerStudioView(plugin: WidgetariumPlugin, projects: AppProje
 		projects,
 		viewType: STUDIO_VIEW_TYPE,
 		assistant,
+		browser,
 		hostOf: (notePath) => bindNote(plugin.host, notePath),
 		designFor: (app, leaf) => studioDesignOf(plugin, app, leaf),
 		openAsMarkdown: (leaf, file) => {

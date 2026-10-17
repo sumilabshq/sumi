@@ -24,6 +24,7 @@ export interface StudioHeader {
 	readonly toggle: Round | null;
 	readonly add: Round | null;
 	readonly addDisabled: string | null;
+	readonly allTabs: Round | null;
 	readonly close: Round | null;
 	readonly closeLabel: string | null;
 	readonly chatMenu: Round | null;
@@ -35,6 +36,7 @@ export const INNER_PX = 40;
 export const NESTED_PX = 36;
 const HOST_ORDER = [
 	"[data-host-zone] [data-host-tabs]",
+	"[data-host-zone] [data-host-all-tabs]",
 	"[data-host-zone] [data-host-add]",
 	"[data-host-zone] [data-host-close]",
 ];
@@ -58,7 +60,7 @@ const HEADER_LAWS: readonly HeaderLaw[] = [
 		shown: ({ appBeforeHost }) => appBeforeHost,
 	},
 	{
-		said: "header: the host zone reads tabs, then +, then ×",
+		said: "header: the host zone reads tabs, then ⌄ all tabs, then +, then ×",
 		holds: ({ hostOrder }) => isSameOrder(hostOrder, HOST_ORDER),
 		shown: ({ hostOrder }) => hostOrder,
 	},
@@ -83,13 +85,14 @@ const HEADER_LAWS: readonly HeaderLaw[] = [
 		shown: ({ picker, picture }) => ({ picker, picture }),
 	},
 	{
-		said: "header: the sidebar toggle, + and × are 48px circles",
-		holds: ({ toggle, add, close }) => [toggle, add, close].every((round) => isCircleOf(round, HEADER_PX)),
-		shown: ({ toggle, add, close }) => ({ toggle, add, close }),
+		said: "header: the sidebar toggle, + and × are 48px circles, ⌄ a 40px one in the tabs pill",
+		holds: ({ toggle, allTabs, add, close }) =>
+			[toggle, add, close].every((round) => isCircleOf(round, HEADER_PX)) && isCircleOf(allTabs, INNER_PX),
+		shown: ({ toggle, allTabs, add, close }) => ({ toggle, allTabs, add, close }),
 	},
 	{
-		said: "header: + waits for the catalogue, × is labelled Back to view",
-		holds: ({ addDisabled, closeLabel }) => addDisabled === "true" && closeLabel === "Back to view",
+		said: "header: + opens a new tab, × is labelled Back to view",
+		holds: ({ addDisabled, closeLabel }) => addDisabled === null && closeLabel === "Back to view",
 		shown: ({ addDisabled, closeLabel }) => ({ add: addDisabled, close: closeLabel }),
 	},
 	{

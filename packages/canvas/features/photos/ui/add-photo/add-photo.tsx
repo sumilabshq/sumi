@@ -5,7 +5,6 @@ import { useCommand } from "@widgetarium/core/requests";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
 import { AddPhotosCommand } from "../../contract.js";
 import { PastePhotosCommand } from "../../contract.js";
-import { Tip } from "../../../../shared/ui/tip/tip.js";
 import { RoundButton } from "../../../../shared/ui/round-button/round-button.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../../../shared/lib/top-bar/app-zone-steps.js";
 
@@ -24,18 +23,17 @@ export function AddPhoto(): ReactElement {
 	useDroppedFiles(anchor, { scope: DROPPED_ON, typePrefix: IMAGES, onFiles: (photos) => void add.run({ photos }) });
 	return (
 		<span ref={anchor} className={PHOTO_HOLDER}>
-			<Tip label={ADD_PHOTO_SAID}>
-				<RoundButton
-					label={ADD_PHOTO}
-					tone="plate"
-					size="m"
-					disabled={!add.can}
-					isBusy={add.isRunning}
-					onClick={() => picker.current?.click()}
-				>
-					<Icon name="image-plus" size={15} />
-				</RoundButton>
-			</Tip>
+			<RoundButton
+				label={ADD_PHOTO}
+				tip={ADD_PHOTO_SAID}
+				tone="plate"
+				size="m"
+				disabled={!add.can}
+				isBusy={add.isRunning}
+				onClick={() => picker.current?.click()}
+			>
+				<Icon name="image-plus" size={15} />
+			</RoundButton>
 			<input
 				ref={picker}
 				type="file"

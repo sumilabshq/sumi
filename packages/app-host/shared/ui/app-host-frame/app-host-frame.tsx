@@ -1,0 +1,27 @@
+import { createElement as h, useRef } from "react";
+import type { ReactElement, ReactNode } from "react";
+import { Slot } from "@widgetarium/core/requests";
+import { TabsColumn } from "../../../features/column/ui/tabs-column/tabs-column.js";
+import { ToggleShortcut } from "../../../features/column/ui/toggle-shortcut/toggle-shortcut.js";
+import { CloseShortcut } from "../../../features/tabs/ui/close-shortcut/close-shortcut.js";
+import { TabList } from "../../../features/tabs/ui/tab-list/tab-list.js";
+import { TabRail } from "../../../features/tabs/ui/tab-rail/tab-rail.js";
+import { TabsCount } from "../../../features/tabs/ui/tabs-count/tabs-count.js";
+
+const FRAME =
+	"cv:flex cv:h-full cv:w-full cv:flex-row cv:overflow-hidden cv:bg-group cv:[&>aside[data-host-column-side=start]]:order-first";
+const APP = "cv:h-full cv:min-w-0 cv:flex-1";
+
+export function AppHostFrame({ children }: { readonly children: ReactNode }): ReactElement {
+	const frame = useRef<HTMLDivElement | null>(null);
+	return (
+		<div ref={frame} className={FRAME} data-app-host-frame="">
+			<div className={APP}>{children}</div>
+			<Slot loading={null}>
+				<TabsColumn title={<TabsCount />} icons={<TabRail tipSide="left" />} full={<TabList />} />
+				<CloseShortcut frame={frame} />
+				<ToggleShortcut frame={frame} />
+			</Slot>
+		</div>
+	);
+}

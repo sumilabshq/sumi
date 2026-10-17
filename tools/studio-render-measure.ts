@@ -8,7 +8,7 @@ const menuButton = () => document.querySelector('[aria-label$=" menu"]');
 const roundOf = (node, pseudo) => { if (!node) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
 const inDomOrder = (selectors) => selectors.map((selector) => [selector, document.querySelector(selector)]).filter(([, node]) => node).sort(([, one], [, two]) => (one.compareDocumentPosition(two) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)).map(([selector]) => selector);
 const headerOf = () => ({
-	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-add]", "[data-host-zone] [data-host-close]"]),
+	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-all-tabs]", "[data-host-zone] [data-host-add]", "[data-host-zone] [data-host-close]"]),
 	appBeforeHost: (document.querySelector("[data-app-zone]")?.getBoundingClientRect().right ?? Infinity) <= (document.querySelector("[data-host-zone]")?.getBoundingClientRect().left ?? -Infinity),
 	tabs: [...document.querySelectorAll("[data-host-tab]")].map((tab) => ({ selected: tab.getAttribute("aria-selected"), label: tab.getAttribute("aria-label"), text: tab.textContent.trim(), h: Math.round(tab.getBoundingClientRect().height) })),
 	tabsPill: Math.round(document.querySelector("[data-host-tabs]")?.getBoundingClientRect().height ?? 0),
@@ -18,6 +18,7 @@ const headerOf = () => ({
 	toggle: roundOf(document.querySelector("[data-app-zone] [data-canvas-sidebar-toggle]")),
 	add: roundOf(document.querySelector("[data-host-add]")),
 	addDisabled: document.querySelector("[data-host-add]")?.getAttribute("aria-disabled") ?? null,
+	allTabs: roundOf(document.querySelector("[data-host-all-tabs]")),
 	close: roundOf(document.querySelector("[data-host-close]")),
 	closeLabel: document.querySelector("[data-host-close]")?.getAttribute("aria-label") ?? null,
 	chatMenu: roundOf(menuButton()?.matches(".wg-kit-btn") ? menuButton() : null, "::before"),
@@ -196,11 +197,13 @@ export const ADAPTIVE_HEADER_OF = `(() => {
 			tabsPill: isShown(at("[data-host-tabs]")) ? Math.round(at("[data-host-tabs]").getBoundingClientRect().height) : 0,
 			tabs: shownIn("[data-host-tab]").map((tab) => Math.round(tab.getBoundingClientRect().height)),
 			add: roundOf(at("[data-host-add]")),
+			allTabs: roundOf(at("[data-host-all-tabs]")),
 			close: roundOf(at("[data-host-close]")),
 		},
 		step: {
 			zoom: isShown(at("[data-canvas-zoom]")),
 			add: isShown(at("[data-host-add]")),
+			allTabs: isShown(at("[data-host-all-tabs]")),
 			tabLabel: isShown(at("[data-host-tab][aria-selected='true'] span")),
 			pageName: isShown(at("[data-canvas-page-name]")),
 			photo: isShown(at("[data-canvas-title] [aria-label='Add photo']")),

@@ -1,0 +1,36 @@
+import { createElement as h } from "react";
+import type { ReactElement } from "react";
+import type { AppTab } from "../../schema/app-tab.schema.js";
+import { STATUS_MARK } from "../../lib/tab-status/tab-status.js";
+import { TabGlyph } from "./tab-glyph.js";
+
+export type TabIconLook = "row" | "rail" | "rail-shown";
+
+export interface TabIconProps {
+	readonly tab: AppTab;
+	readonly look: TabIconLook;
+}
+
+const ICON =
+	"cv:relative cv:grid cv:flex-none cv:place-items-center cv:rounded-full cv:transition-[background-color,color] cv:duration-150 cv:ease-standard";
+const BOX: Readonly<Record<TabIconLook, string>> = {
+	row: `${ICON} cv:size-7 cv:text-ink`,
+	rail: `${ICON} cv:size-10 cv:text-ink`,
+	"rail-shown": `${ICON} cv:size-10 cv:bg-primary cv:text-primary-foreground`,
+};
+const GLYPH_PX: Readonly<Record<TabIconLook, number>> = {
+	row: 17,
+	rail: 18,
+	"rail-shown": 18,
+};
+
+export function TabIcon({ tab, look }: TabIconProps): ReactElement {
+	return (
+		<span className={BOX[look]} data-host-tab-icon="">
+			<TabGlyph tab={tab} px={GLYPH_PX[look]} />
+			{tab.status === null ? null : (
+				<span aria-hidden="true" className={STATUS_MARK[tab.status]} data-host-tab-status={tab.status} />
+			)}
+		</span>
+	);
+}

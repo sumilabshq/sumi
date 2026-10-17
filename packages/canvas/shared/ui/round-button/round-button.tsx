@@ -1,12 +1,14 @@
 import { createElement as h } from "react";
 import type { ButtonHTMLAttributes, ReactElement } from "react";
 import { TOP_BAR_HEIGHT } from "../../lib/top-bar/top-bar-look.js";
+import { Tip } from "../tip/tip.js";
 
 export type RoundTone = "ink" | "raise" | "plate";
 export type RoundSize = "l" | "m";
 
 export interface RoundButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "type"> {
 	readonly label: string;
+	readonly tip?: string;
 	readonly tone: RoundTone;
 	readonly size: RoundSize;
 	readonly isBusy?: boolean;
@@ -27,16 +29,26 @@ const SIZE: Readonly<Record<RoundSize, string>> = {
 };
 
 // TRADE-OFF: not the kit IconButton, it paints its fill on ::before
-export function RoundButton({ label, tone, size, isBusy = false, children, ...rest }: RoundButtonProps): ReactElement {
+export function RoundButton({
+	label,
+	tip = label,
+	tone,
+	size,
+	isBusy = false,
+	children,
+	...rest
+}: RoundButtonProps): ReactElement {
 	return (
-		<button
-			type="button"
-			aria-label={label}
-			aria-busy={isBusy || undefined}
-			className={`${ROUND} ${TONE[tone]} ${SIZE[size]}`}
-			{...rest}
-		>
-			{children}
-		</button>
+		<Tip label={tip}>
+			<button
+				type="button"
+				aria-label={label}
+				aria-busy={isBusy || undefined}
+				className={`${ROUND} ${TONE[tone]} ${SIZE[size]}`}
+				{...rest}
+			>
+				{children}
+			</button>
+		</Tip>
 	);
 }

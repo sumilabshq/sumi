@@ -13,6 +13,7 @@ interface Edges {
 export interface HeaderStep {
 	readonly zoom: boolean;
 	readonly add: boolean;
+	readonly allTabs: boolean;
 	readonly tabLabel: boolean;
 	readonly pageName: boolean;
 	readonly photo: boolean;
@@ -38,6 +39,7 @@ export interface AdaptiveHeader {
 		readonly tabsPill: number;
 		readonly tabs: readonly number[];
 		readonly add: Round | null;
+		readonly allTabs: Round | null;
 		readonly close: Round | null;
 	};
 	readonly step: HeaderStep;
@@ -47,6 +49,7 @@ export interface AdaptiveHeader {
 const FULL: HeaderStep = {
 	zoom: true,
 	add: true,
+	allTabs: true,
 	tabLabel: true,
 	pageName: true,
 	photo: true,
@@ -54,10 +57,20 @@ const FULL: HeaderStep = {
 
 export const HEADER_STEP_AT: ReadonlyMap<number, HeaderStep> = new Map([
 	[1200, FULL],
-	[720, FULL],
-	[480, { ...FULL, zoom: false }],
-	[320, { ...FULL, zoom: false, add: false, tabLabel: false }],
-	[240, { zoom: false, add: false, tabLabel: false, pageName: false, photo: false }],
+	[720, { ...FULL, zoom: false }],
+	[480, { ...FULL, zoom: false, add: false }],
+	[320, { ...FULL, zoom: false, add: false, allTabs: false, tabLabel: false }],
+	[
+		240,
+		{
+			zoom: false,
+			add: false,
+			allTabs: false,
+			tabLabel: false,
+			pageName: false,
+			photo: false,
+		},
+	],
 ]);
 
 const BAR_SLACK_PX = 2;
@@ -85,7 +98,7 @@ const ADAPTIVE_LAWS: readonly AdaptiveLaw[] = [
 		shown: ({ sizes }) => sizes.close,
 	},
 	{
-		said: "every control keeps its size: 48px toggle, pills and +, 40px tabs, 36px picture",
+		said: "every control keeps its size: 48px toggle, pills and +, 40px tabs and ⌄, 36px picture",
 		holds: ({ sizes }) => keepsSizes(sizes),
 		shown: ({ sizes }) => sizes,
 	},
@@ -117,13 +130,14 @@ export function checkChatHead(chatPx: number, header: AdaptiveHeader, check: Che
 }
 
 function keepsSizes(sizes: AdaptiveHeader["sizes"]): boolean {
-	const { toggle, title, picture, add } = sizes;
+	const { toggle, title, picture, add, allTabs } = sizes;
 
 	return (
 		isCircleOf(toggle, HEADER_PX) &&
 		title === HEADER_PX &&
 		keepsTabSizes(sizes) &&
 		(add === null || isCircleOf(add, HEADER_PX)) &&
+		(allTabs === null || isCircleOf(allTabs, INNER_PX)) &&
 		(picture === null || isCircleOf(picture, NESTED_PX))
 	);
 }
