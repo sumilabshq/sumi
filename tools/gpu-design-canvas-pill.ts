@@ -113,7 +113,6 @@ const PICTURE_PX = 36;
 const TAB_PX = 40;
 const PAGE_ROW_PX = 36;
 const EYEBROW_PX = "11px";
-const EYEBROW_TRACKING_PX = 0.66;
 const EYEBROWS = ["Pages", "Layers"];
 const LEAST_DOT_STEP = 0.1;
 
@@ -162,7 +161,7 @@ const PILL_LAWS: readonly PillLaw[] = [
 		shown: ({ sidebar, board, tokens }) => ({ sidebar, board, radius: tokens.radius }),
 	},
 	{
-		said: "pill: Pages and Layers are 11px uppercase muted eyebrows, a hairline between them",
+		said: "pill: Pages and Layers are 11px sentence-case muted eyebrows, a hairline between them",
 		holds: areEyebrows,
 		shown: ({ eyebrows, hairline }) => ({ eyebrows, hairline }),
 	},
@@ -238,8 +237,8 @@ function isRoundOf(look: Look | null, px: number): boolean {
 function isEyebrow(look: Look, muted: string): boolean {
 	return (
 		look.size === EYEBROW_PX &&
-		look.case === "uppercase" &&
-		Math.abs(parseFloat(look.tracking) - EYEBROW_TRACKING_PX) < 0.05 &&
+		look.case === "none" &&
+		(look.tracking === "normal" || parseFloat(look.tracking) === 0) &&
 		look.ink === muted
 	);
 }

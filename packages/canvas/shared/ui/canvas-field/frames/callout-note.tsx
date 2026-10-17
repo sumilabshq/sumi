@@ -39,9 +39,7 @@ export function CalloutNote({ callout, at, place, side }: CalloutNoteProps): Rea
 			{...{ [CALLOUT]: at }}
 			style={place ? { top: place.top } : { visibility: "hidden" }}
 		>
-			<b className="cv:text-base cv:uppercase cv:tracking-[0.04em] cv:text-muted-foreground">
-				{TONE_SAID[callout.tone]}
-			</b>
+			<b className="cv:text-base cv:text-muted-foreground">{TONE_SAID[callout.tone]}</b>
 			<span>{callout.text}</span>
 			{callout.widget ? (
 				<button

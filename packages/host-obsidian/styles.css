@@ -13169,8 +13169,6 @@ body.wg-studio-in-front .status-bar {
 	padding: 8px 10px 4px;
 	font-size: 11px;
 	font-weight: var(--font-medium, 500);
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
 	color: var(--wg-kit-text-muted);
 }
 
@@ -13363,6 +13361,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 }
 @layer utilities {
+	.cv\:\@container\/app-host-bar {
+		container-type: inline-size !important;
+		container-name: app-host-bar !important;
+	}
 	.cv\:\@container {
 		container-type: inline-size !important;
 	}
@@ -13942,9 +13944,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
 	}
-	.cv\:text-\[11px\] {
-		font-size: 11px !important;
-	}
 	.cv\:text-\[15px\] {
 		font-size: 15px !important;
 	}
@@ -14003,14 +14002,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
-	.cv\:tracking-\[0\.04em\] {
-		--tw-tracking: 0.04em !important;
-		letter-spacing: 0.04em !important;
-	}
-	.cv\:tracking-\[0\.06em\] {
-		--tw-tracking: 0.06em !important;
-		letter-spacing: 0.06em !important;
-	}
 	.cv\:whitespace-nowrap {
 		white-space: nowrap !important;
 	}
@@ -14031,9 +14022,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-primary-foreground {
 		color: var(--primary-foreground) !important;
-	}
-	.cv\:uppercase {
-		text-transform: uppercase !important;
 	}
 	.cv\:italic {
 		font-style: italic !important;
@@ -14358,6 +14346,31 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	@media (prefers-reduced-motion: reduce) {
 		.cv\:motion-reduce\:transition-none {
 			transition-property: none !important;
+		}
+	}
+	@container app-host-bar (width < 480px) {
+		.cv\:\@max-\[480px\]\/app-host-bar\:hidden {
+			display: none !important;
+		}
+	}
+	@container (width < 420px) {
+		.cv\:\@max-\[420px\]\:hidden {
+			display: none !important;
+		}
+	}
+	@container app-host-bar (width < 400px) {
+		.cv\:\@max-\[400px\]\/app-host-bar\:hidden {
+			display: none !important;
+		}
+	}
+	@container (width < 380px) {
+		.cv\:\@max-\[380px\]\:hidden {
+			display: none !important;
+		}
+	}
+	@container (width < 190px) {
+		.cv\:\@max-\[190px\]\:hidden {
+			display: none !important;
 		}
 	}
 	.cv\:\[\&_\.wg-kit-seg-thumb\]\:inset-y-1 .wg-kit-seg-thumb {
@@ -14747,10 +14760,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	syntax: "*";
 	inherits: false;
 }
-@property --tw-tracking {
-	syntax: "*";
-	inherits: false;
-}
 @property --tw-ordinal {
 	syntax: "*";
 	inherits: false;
@@ -14907,7 +14916,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-border-style: solid;
 			--tw-leading: initial;
 			--tw-font-weight: initial;
-			--tw-tracking: initial;
 			--tw-ordinal: initial;
 			--tw-slashed-zero: initial;
 			--tw-numeric-figure: initial;

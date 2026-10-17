@@ -49,17 +49,17 @@ Three fills carry a screen: the plate (grey container), raise (the white plate i
 
 Geist 400, 500 and 600, bundled; the host's interface font behind it.
 
-| Step       | Size / weight | Tracking  | Use                                         |
-| ---------- | ------------- | --------- | ------------------------------------------- |
-| Display    | 34–36 / 500   | −0.03em   | the one figure on a brand card              |
-| Card title | 22 / 500      | −0.02em   | a black card's statement                    |
-| Heading    | 20–22 / 600   | −0.02em   | a heading inside an answer                  |
-| Subheading | 16 / 600      | 0         | a section of an answer                      |
-| Body       | 14 / 400      | line 1.55 | messages, rows                              |
-| Secondary  | 13 / 400      | 0         | tabs, menu rows, hints                      |
-| Meta       | 12 / 400      | 0         | counts, durations, file names, ink-muted    |
-| Label      | 11 / 500 caps | +0.06em   | a section label in a sidebar or menu, faint |
-| Code       | 12.5 / mono   | 0         | inline on the plate fill, 6px corners       |
+| Step       | Size / weight | Tracking  | Use                                                        |
+| ---------- | ------------- | --------- | ---------------------------------------------------------- |
+| Display    | 34–36 / 500   | −0.03em   | the one figure on a brand card                             |
+| Card title | 22 / 500      | −0.02em   | a black card's statement                                   |
+| Heading    | 20–22 / 600   | −0.02em   | a heading inside an answer                                 |
+| Subheading | 16 / 600      | 0         | a section of an answer                                     |
+| Body       | 14 / 400      | line 1.55 | messages, rows                                             |
+| Secondary  | 13 / 400      | 0         | tabs, menu rows, hints                                     |
+| Meta       | 12 / 400      | 0         | counts, durations, file names, ink-muted                   |
+| Label      | 11 / 500      | 0         | a section label in a sidebar or menu, faint, sentence case |
+| Code       | 12.5 / mono   | 0         | inline on the plate fill, 6px corners                      |
 
 Weight, not colour, ranks text: a value is 500 or 600, its label 400 and ink-muted.
 
@@ -156,3 +156,4 @@ OKLCH. Every neutral carries the brand hue at a whisper of chroma (`--neutral-ch
 - a gradient, a violet accent nobody chose
 - a hardcoded colour instead of a token
 - a grey card inside a grey card inside a grey card
+- uppercase text: a label, a group heading or a section title is sentence case
