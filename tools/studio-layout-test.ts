@@ -6,6 +6,7 @@ import { CARD_LEAST_PX, CHAT_LEAST_PX, CHAT_USUAL_PX } from "../packages/core/sr
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { isRecord } from "./page-dom.ts";
 
 interface Layout {
 	readonly rail: { readonly left: number; readonly right: number };
@@ -39,10 +40,19 @@ const bundle = await bundleOf("tools/studio-render-page.tsx");
 const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
-const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style></head>
+const OBSIDIAN_MAC_CORNERS = "button { corner-shape: superellipse(1.33); }";
+const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${OBSIDIAN_MAC_CORNERS}</style><style>${sheets}</style></head>
 <body><div id="root"></div><pre id="boom"></pre>
 <script>if (location.hash !== "#kept") localStorage.clear(); window.__MODE__ = "studio";</script>
 <script>${bundle}</script></body></html>`;
+
+const SQUIRCLED_BUTTONS = `(() => ({
+	isSupported: CSS.supports("corner-shape", "round"),
+	buttons: document.querySelectorAll(".wg-studio button").length,
+	squircled: [...document.querySelectorAll(".wg-studio button")]
+		.map((button) => getComputedStyle(button).getPropertyValue("corner-shape"))
+		.filter((shape) => shape !== "round" && shape !== "superellipse(1)"),
+}))()`;
 
 const LAYOUT_OF = `(() => {
 	const chat = document.querySelector(".wg-studio-chat").getBoundingClientRect();
@@ -362,6 +372,17 @@ try {
 		{ staged, before: canvasBefore.stage, after: canvasAfter.stage, card: canvasAfter.cardInner },
 	);
 	check("and the menu stays in the chat's header", canvasAfter.menuInHead, canvasAfter.menuInHead);
+	const corners = await page.ask(SQUIRCLED_BUTTONS);
+	check(
+		"Obsidian's macOS superellipse leaves every studio button round",
+		isRecord(corners) &&
+			corners["isSupported"] === true &&
+			typeof corners["buttons"] === "number" &&
+			corners["buttons"] > 0 &&
+			Array.isArray(corners["squircled"]) &&
+			corners["squircled"].length === 0,
+		corners,
+	);
 	const boom = await page.ask(`document.getElementById("boom").textContent`);
 	check("the studio drew without a failure", boom === "", boom);
 	await page.ask(REMEMBER_WIDE);
