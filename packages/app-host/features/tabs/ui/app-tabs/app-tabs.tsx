@@ -8,6 +8,7 @@ import { AppTabButton } from "./app-tab-button.js";
 const APPS = "Apps";
 const TABS_PILL = `${RAISED_PILL} cv:flex cv:flex-none cv:items-center cv:gap-0.5 cv:p-1`;
 
+// TODO: resting tabs into an overflow menu once a second app exists
 export function AppTabs(): ReactElement {
 	const { tabs, preview } = useQuery(AppTabsQuery).data;
 	const showApp = useCommand(ShowAppCommand);

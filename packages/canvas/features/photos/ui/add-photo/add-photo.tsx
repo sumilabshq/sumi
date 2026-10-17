@@ -7,11 +7,13 @@ import { AddPhotosCommand } from "../../contract.js";
 import { PastePhotosCommand } from "../../contract.js";
 import { Tip } from "../../../../shared/ui/tip/tip.js";
 import { RoundButton } from "../../../../shared/ui/round-button/round-button.js";
+import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../../../shared/lib/top-bar/app-zone-steps.js";
 
 const ADD_PHOTO = "Add photo";
 const ADD_PHOTO_SAID = "Add a reference photo, or drop or paste one on the canvas";
 const IMAGES = "image/";
 const DROPPED_ON = "[data-canvas-view]";
+const PHOTO_HOLDER = `cv:inline-flex cv:items-center cv:gap-1.5 ${PAGE_NAME_AND_PHOTO_LEAVE}`;
 
 export function AddPhoto(): ReactElement {
 	const picker = useRef<HTMLInputElement | null>(null);
@@ -21,7 +23,7 @@ export function AddPhoto(): ReactElement {
 	usePastedFiles(IMAGES, (photos) => void paste.run({ photos }));
 	useDroppedFiles(anchor, { scope: DROPPED_ON, typePrefix: IMAGES, onFiles: (photos) => void add.run({ photos }) });
 	return (
-		<span ref={anchor} className="cv:inline-flex cv:items-center cv:gap-1.5">
+		<span ref={anchor} className={PHOTO_HOLDER}>
 			<Tip label={ADD_PHOTO_SAID}>
 				<RoundButton
 					label={ADD_PHOTO}

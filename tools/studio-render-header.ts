@@ -1,6 +1,6 @@
-type Check = (what: string, isOk: boolean, got: unknown) => void;
+export type Check = (what: string, isOk: boolean, got: unknown) => void;
 
-interface Round {
+export interface Round {
 	readonly w: number;
 	readonly h: number;
 	readonly isCircle: boolean;
@@ -30,9 +30,9 @@ export interface StudioHeader {
 	readonly chatHead: string | null;
 }
 
-const HEADER_PX = 48;
-const INNER_PX = 40;
-const NESTED_PX = 36;
+export const HEADER_PX = 48;
+export const INNER_PX = 40;
+export const NESTED_PX = 36;
 const HOST_ORDER = [
 	"[data-host-zone] [data-host-tabs]",
 	"[data-host-zone] [data-host-add]",
@@ -115,13 +115,13 @@ export function checkStudioHeader(header: StudioHeader | undefined, check: Check
 	}
 }
 
+export function isCircleOf(round: Round | null, px: number): boolean {
+	return round !== null && round.w === px && round.h === px && round.isCircle;
+}
+
 function isLabelledOnlyWhenShown({ selected, label, text }: HeaderTab): boolean {
 	const said = selected === "true" ? label : "";
 	return label !== null && text === said;
-}
-
-function isCircleOf(round: Round | null, px: number): boolean {
-	return round !== null && round.w === px && round.h === px && round.isCircle;
 }
 
 function isSameOrder(seen: readonly string[], wanted: readonly string[]): boolean {

@@ -168,3 +168,49 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	seen.refusal = document.querySelector('.wg-studio-rail [data-name="Refusal"]')?.textContent ?? null;
 	report();
 })();`;
+
+export const ADAPTIVE_HEADER_OF = `(() => {
+	const isShown = (node) => node !== null && node.getClientRects().length > 0;
+	const shownIn = (selector) => [...document.querySelectorAll(selector)].filter(isShown);
+	const drawnIn = (selector) => shownIn(selector).filter((node) => node.getBoundingClientRect().width > 0);
+	const boxOf = (node) => { const box = node.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, w: Math.round(box.width), h: Math.round(box.height) }; };
+	const roundOf = (node, pseudo) => { if (!isShown(node)) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
+	const bar = boxOf(document.querySelector("[data-app-host-bar]"));
+	const appParts = drawnIn("[data-app-zone] *").map(boxOf);
+	const hostParts = drawnIn("[data-host-zone] *").map(boxOf);
+	const outside = [...appParts, ...hostParts].filter((part) => part.left < bar.left - 0.5 || part.right > bar.right + 0.5 || part.top < bar.top - 0.5 || part.bottom > bar.bottom + 0.5);
+	const at = (selector) => document.querySelector(selector);
+	const head = at(".wg-studio-chat .wg-studio-ai-head");
+	const menu = head?.querySelector('[aria-label$=" menu"]') ?? null;
+	const title = head?.querySelector(".wg-studio-ai-named") ?? null;
+	const mascot = head?.firstElementChild ?? null;
+	return {
+		bar,
+		appRight: Math.max(...appParts.map((part) => part.right)),
+		hostLeft: Math.min(...hostParts.map((part) => part.left)),
+		outside: outside.length,
+		sizes: {
+			toggle: roundOf(at("[data-app-zone] [data-canvas-sidebar-toggle]")),
+			title: isShown(at("[data-canvas-title]")) ? Math.round(at("[data-canvas-title]").getBoundingClientRect().height) : 0,
+			picture: roundOf(at("[data-canvas-title] [aria-label='Add photo']")),
+			tabsPill: isShown(at("[data-host-tabs]")) ? Math.round(at("[data-host-tabs]").getBoundingClientRect().height) : 0,
+			tabs: shownIn("[data-host-tab]").map((tab) => Math.round(tab.getBoundingClientRect().height)),
+			add: roundOf(at("[data-host-add]")),
+			close: roundOf(at("[data-host-close]")),
+		},
+		step: {
+			zoom: isShown(at("[data-canvas-zoom]")),
+			add: isShown(at("[data-host-add]")),
+			tabLabel: isShown(at("[data-host-tab][aria-selected='true'] span")),
+			pageName: isShown(at("[data-canvas-page-name]")),
+			photo: isShown(at("[data-canvas-title] [aria-label='Add photo']")),
+		},
+		chat: head === null || menu === null || title === null || mascot === null ? null : {
+			head: boxOf(head),
+			mascot: boxOf(mascot),
+			title: boxOf(title),
+			menu: roundOf(menu, "::before"),
+			menuBox: boxOf(menu),
+		},
+	};
+})()`;

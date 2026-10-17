@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
+import { SHOWN_TAB_LABEL_LEAVES } from "../../../../shared/lib/host-bar-steps/host-bar-steps.js";
 import type { AppTab } from "../../../../shared/schema/app-tab.schema.js";
 
 export type TabLook = "shown" | "resting" | "preview";
@@ -32,7 +33,7 @@ export function AppTabButton({ tab, look, onPick }: AppTabButtonProps): ReactEle
 			data-host-tab={tab.id}
 		>
 			<Icon name={tab.icon} size={16} />
-			{look === "resting" ? null : <span>{tab.label}</span>}
+			{look === "resting" ? null : <span className={SHOWN_TAB_LABEL_LEAVES}>{tab.label}</span>}
 		</button>
 	);
 }
