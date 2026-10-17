@@ -141,10 +141,10 @@ check("and the note it opens names the app", files.get("Shop.md"), '---\nwidgeta
 
 await commands.get("create-app")?.callback();
 await new Promise((settle) => setTimeout(settle, 50));
-check("Create new app lays a project", files.has("Untitled app/widgetarium.json"), true);
+check("Create new app lays a project", files.has("Untitled workspace/widgetarium.json"), true);
 check("and opens it in the studio view", viewStates.at(-1), {
 	type: "widgetarium-studio",
-	state: { file: "Untitled app.md" },
+	state: { file: "Untitled workspace.md" },
 	active: true,
 });
 

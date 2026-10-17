@@ -8,10 +8,10 @@ import {
 	CreateAppCommand,
 	EditInCanvasCommand,
 	OpenAppCommand,
-	TogglePanelCommand,
+	RenameAppCommand,
 } from "./studio-commands.js";
-import { IsInCanvasQuery, IsPanelOpenQuery } from "./studio-state-queries.js";
-import { AppFieldsSchema, NoFieldsSchema, PanelFieldsSchema } from "./studio-fields.js";
+import { IsInCanvasQuery } from "./studio-state-queries.js";
+import { AppFieldsSchema, NoFieldsSchema } from "./studio-fields.js";
 
 const RESOURCE = "Apps";
 
@@ -21,9 +21,9 @@ export const studioPack = definePack({
 	queries: [
 		defineGatewayMetadata(AppsQuery, {
 			id: "@studio/apps",
-			title: "Apps",
+			title: "Workspaces",
 			resource: RESOURCE,
-			description: "Every app the host holds, each with its mark and how many pages it has.",
+			description: "Every workspace the host holds, each with its mark and how many pages it has.",
 			fields: NoFieldsSchema,
 		}),
 		defineGatewayMetadata(CurrentAppQuery, {
@@ -40,28 +40,29 @@ export const studioPack = definePack({
 			description: "Whether the studio shows the app's canvas instead of the app.",
 			fields: NoFieldsSchema,
 		}),
-		defineGatewayMetadata(IsPanelOpenQuery, {
-			id: "@studio/is-panel-open",
-			title: "Panel open",
-			resource: RESOURCE,
-			description: "Whether the panel, the AI assistant or the widget catalogue, stands beside the app.",
-			fields: PanelFieldsSchema,
-		}),
 	],
 	commands: [
 		defineCommandMetadata(OpenAppCommand, {
 			id: "@studio/open-app",
-			title: "Open an app",
+			title: "Open a workspace",
 			resource: RESOURCE,
-			description: "Opens the app on its first page.",
+			description: "Opens the workspace on its first page.",
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
 		defineCommandMetadata(CreateAppCommand, {
 			id: "@studio/create-app",
-			title: "New app",
+			title: "New workspace",
 			resource: RESOURCE,
-			description: "Starts a new app.",
+			description: "Starts a new workspace and opens it.",
+			fields: NoFieldsSchema,
+			consent: "free",
+		}),
+		defineCommandMetadata(RenameAppCommand, {
+			id: "@studio/rename-app",
+			title: "Rename a workspace",
+			resource: RESOURCE,
+			description: "Renames the workspace and its folder; notes naming it follow.",
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
@@ -79,14 +80,6 @@ export const studioPack = definePack({
 			resource: RESOURCE,
 			description: "Leaves the canvas for the app.",
 			fields: NoFieldsSchema,
-			consent: "free",
-		}),
-		defineCommandMetadata(TogglePanelCommand, {
-			id: "@studio/toggle-panel",
-			title: "Side panel",
-			resource: RESOURCE,
-			description: "Opens the panel beside the app, or closes it when it already stands there.",
-			fields: PanelFieldsSchema,
 			consent: "free",
 		}),
 	],

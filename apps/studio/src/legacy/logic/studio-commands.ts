@@ -1,8 +1,8 @@
 import type { z } from "zod";
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { ICommand } from "@widgetarium/core/gateway/queries.js";
-import { AppAskedSchema } from "../shared/studio-app.js";
-import type { NoFields, PanelFields } from "./studio-fields.js";
+import { AppAskedSchema, AppRenamedSchema } from "../shared/studio-app.js";
+import type { NoFields } from "./studio-fields.js";
 
 export class OpenAppCommand extends ICommand.input(AppAskedSchema) {
 	constructor(
@@ -30,6 +30,19 @@ export class CreateAppCommand extends ICommand {
 	}
 }
 
+export class RenameAppCommand extends ICommand.input(AppRenamedSchema) {
+	constructor(
+		readonly fields: NoFields,
+		private readonly ports: ImplementationPorts,
+	) {
+		super();
+	}
+
+	run({ id, name }: z.output<typeof AppRenamedSchema>): Promise<void> {
+		return this.ports.studio.renameApp(id, name);
+	}
+}
+
 export class EditInCanvasCommand extends ICommand {
 	constructor(
 		readonly fields: NoFields,
@@ -53,18 +66,5 @@ export class BackToViewCommand extends ICommand {
 
 	async run(): Promise<void> {
 		this.ports.studioState.show("app");
-	}
-}
-
-export class TogglePanelCommand extends ICommand {
-	constructor(
-		readonly fields: PanelFields,
-		private readonly ports: ImplementationPorts,
-	) {
-		super();
-	}
-
-	async run(): Promise<void> {
-		this.ports.studioState.togglePanel(this.fields.panel);
 	}
 }

@@ -1,7 +1,7 @@
 import { NO_INSETS } from "@widgetarium/core/engine/studio-host.js";
 import type { ChromeInsets } from "@widgetarium/core/engine/studio-host.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { PROJECT_CONFIG_FILE, ROUTE_FILE, baseNameOf } from "@widgetarium/core/project/index.js";
+import { PROJECT_CONFIG_FILE } from "@widgetarium/core/project/index.js";
 
 export const APP_KEY = "widgetarium-app";
 export const ROUTE_KEY = "widgetarium-route";
@@ -26,11 +26,6 @@ export interface WindowChrome {
 	readonly isHiddenFrameless: boolean;
 }
 
-export interface LaidFile {
-	readonly path: string;
-	readonly text: string;
-}
-
 const ROOT_ROUTE = "/";
 const NOTE_EXTENSION = "md";
 const UNSAFE_IN_NAME = /[/\\:]/g;
@@ -38,7 +33,6 @@ const NAME_STAND_IN = "-";
 const EDGE_SLASHES = /^\/+|\/+$/g;
 const TRAFFIC_LIGHTS = { reachPx: 80, bottomPx: 32, insetPx: 76 };
 const CAPTION_BUTTONS = { reachPx: 140, bottomPx: 32, insetPx: 138 };
-const EMPTY_ROUTE_BOARD = { v: 2, layout: { dir: "column", of: [] } };
 
 export function studioNoteOf(frontmatter: unknown): StudioNote | null {
 	if (!isObject(frontmatter)) return null;
@@ -75,6 +69,11 @@ export function renamedFolderOf(named: string, was: string, now: string): string
 	return named.startsWith(`${was}/`) ? `${now}${named.slice(was.length)}` : null;
 }
 
+export function renamedPathOf(folder: string, name: string): string {
+	const parentEnd = folder.lastIndexOf("/") + 1;
+	return `${folder.slice(0, parentEnd)}${numberedName(name.trim(), 1)}`;
+}
+
 export function studioParamsKeyOf(notePath: string, leafKey: string, pathname: string): string {
 	return `${notePath}#${leafKey}${pathname}`;
 }
@@ -94,24 +93,8 @@ export function appNoteText(folder: string): string {
 	return `---\n${APP_KEY}: ${JSON.stringify(folder)}\n---\n`;
 }
 
-export function newAppFilesOf(folder: string): readonly LaidFile[] {
-	return [
-		{ path: `${folder}/${PROJECT_CONFIG_FILE}`, text: jsonText({ app: { name: baseNameOf(folder) } }) },
-		{ path: `${folder}/src/app/routes/${ROUTE_FILE}`, text: jsonText(EMPTY_ROUTE_BOARD) },
-	];
-}
-
-export function foldersAlong(path: string): string[] {
-	const segments = path.split("/");
-	return segments.slice(0, -1).map((_segment, at) => segments.slice(0, at + 1).join("/"));
-}
-
 function routeOf(held: unknown): string {
 	if (typeof held !== "string" || held.trim() === "") return ROOT_ROUTE;
 	const route = held.trim();
 	return route.startsWith(ROOT_ROUTE) ? route : `${ROOT_ROUTE}${route}`;
-}
-
-function jsonText(value: unknown): string {
-	return `${JSON.stringify(value, null, "\t")}\n`;
 }

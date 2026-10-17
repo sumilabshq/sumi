@@ -1,18 +1,18 @@
-import { Platform, TFile } from "obsidian";
+import { Platform, TFile, TFolder } from "obsidian";
 import type { App, Vault, WorkspaceLeaf } from "obsidian";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import { PROJECT_CONFIG_FILE, baseNameOf, readProjectConfig } from "@widgetarium/core/project/index.js";
+import { PROJECT_CONFIG_FILE, baseNameOf, readProjectConfig, withAppName } from "@widgetarium/core/project/index.js";
 import { discoverRoutes } from "@widgetarium/core/project/project-routes.js";
 import { vaultProjectFiles } from "./project-files-vault.js";
+import { layNewApp } from "../new-app.js";
 import {
 	appNotePathOf,
 	appNoteText,
 	chromeInsetsOf,
-	foldersAlong,
-	newAppFilesOf,
 	numberedName,
 	projectFoldersOf,
+	renamedPathOf,
 	studioNoteOf,
 } from "./studio-note.js";
 import type { WindowChrome, WindowSystem } from "./studio-note.js";
@@ -24,12 +24,15 @@ export interface StudioHostPlace {
 	readonly viewType: string;
 }
 
-const NEW_APP = "Untitled app";
+const NEW_APP = "Untitled workspace";
 const MOST_UNTITLED_APPS = 1000;
 const HIDDEN_FRAMELESS = "is-hidden-frameless";
 const ALREADY_EXISTS = /already exists/i;
-const OPEN_FAILED = "The app {id} did not open";
-const CREATE_FAILED = "The new app was not created";
+const OPEN_FAILED = "The workspace {id} did not open";
+const CREATE_FAILED = "The new workspace was not created";
+const RENAME_FAILED = "The workspace {id} was not renamed";
+const NO_FOLDER = "no folder {folder} in the vault";
+const NO_CONFIG = `no ${PROJECT_CONFIG_FILE} in {folder}`;
 const NO_FREE_NAME = `every name from "${NEW_APP}" to "${NEW_APP} ${MOST_UNTITLED_APPS}" is taken`;
 
 export function obsidianStudioHost(place: StudioHostPlace): StudioHostPort {
@@ -39,6 +42,7 @@ export function obsidianStudioHost(place: StudioHostPlace): StudioHostPort {
 		apps: () => vaultAppsOf(place.app),
 		openApp: (id) => runNamingFailure(OPEN_FAILED.replace("{id}", id), () => openApp(place, id)),
 		createApp: () => runNamingFailure(CREATE_FAILED, () => createApp(place)),
+		renameApp: (id, name) => runNamingFailure(RENAME_FAILED.replace("{id}", id), () => renameApp(place.app, id, name)),
 	};
 }
 
@@ -145,7 +149,7 @@ async function isFolderClaimed(vault: Vault, folder: string): Promise<boolean> {
 
 async function layAppFiles(vault: Vault, folder: string): Promise<void> {
 	try {
-		for (const file of newAppFilesOf(folder)) await layFile(vault, file.path, file.text);
+		await layNewApp(vault, folder);
 	} catch (failure) {
 		console.info(`[widgetarium] new app ${folder} → removed, a file was not written`);
 		await vault.adapter.rmdir(folder, true);
@@ -153,10 +157,54 @@ async function layAppFiles(vault: Vault, folder: string): Promise<void> {
 	}
 }
 
-async function layFile(vault: Vault, path: string, text: string): Promise<void> {
-	for (const folder of foldersAlong(path))
-		if (vault.getAbstractFileByPath(folder) === null) await vault.createFolder(folder);
-	await vault.create(path, text);
+async function renameApp(app: App, folder: string, name: string): Promise<void> {
+	const renamed = renamedPathOf(folder, name);
+	const config = heldConfig(app.vault, folder);
+	const namedBefore = await nameInConfig(app.vault, config, name.trim());
+	try {
+		await moveFolder(app, folder, renamed);
+	} catch (failure) {
+		console.info(`[widgetarium] workspace ${folder} → name restored, the folder did not move`);
+		await app.vault.modify(config, namedBefore);
+		throw failure;
+	}
+
+	console.info(`[widgetarium] workspace ${folder} → ${renamed}, named ${name.trim()}`);
+}
+
+async function nameInConfig(vault: Vault, config: TFile, name: string): Promise<string> {
+	let namedBefore = "";
+	await vault.process(config, (text) => {
+		namedBefore = text;
+		return withAppName(text, name);
+	});
+	return namedBefore;
+}
+
+async function moveFolder(app: App, folder: string, renamed: string): Promise<void> {
+	if (renamed === folder) {
+		return;
+	}
+
+	await app.fileManager.renameFile(heldFolder(app.vault, folder), renamed);
+}
+
+function heldFolder(vault: Vault, folder: string): TFolder {
+	const held = vault.getAbstractFileByPath(folder);
+	if (held instanceof TFolder) {
+		return held;
+	}
+
+	throw new Error(NO_FOLDER.replace("{folder}", folder));
+}
+
+function heldConfig(vault: Vault, folder: string): TFile {
+	const held = vault.getAbstractFileByPath(`${folder}/${PROJECT_CONFIG_FILE}`);
+	if (held instanceof TFile) {
+		return held;
+	}
+
+	throw new Error(NO_CONFIG.replace("{folder}", folder));
 }
 
 async function runNamingFailure(said: string, run: () => Promise<void>): Promise<void> {

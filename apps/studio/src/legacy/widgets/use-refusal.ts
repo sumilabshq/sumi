@@ -1,10 +1,11 @@
 import { useState } from "react";
 
-type Answer = { readonly ok: true } | { readonly ok: false; readonly reason: string };
+export type Answer = { readonly ok: true } | { readonly ok: false; readonly reason: string };
 
 export interface Refusal {
 	readonly refusal: string | null;
 	readonly isAnsweredOk: (answer: Promise<Answer>) => Promise<boolean>;
+	readonly dismiss: () => void;
 }
 
 export function useRefusal(): Refusal {
@@ -14,5 +15,5 @@ export function useRefusal(): Refusal {
 		setRefusal(heard.ok ? null : heard.reason);
 		return heard.ok;
 	};
-	return { refusal, isAnsweredOk };
+	return { refusal, isAnsweredOk, dismiss: () => setRefusal(null) };
 }

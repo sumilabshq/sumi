@@ -17,6 +17,7 @@ export interface StudioHostPort {
 	apps(): Promise<readonly HostApp[]>;
 	openApp(id: string): Promise<void>;
 	createApp(): Promise<void>;
+	renameApp(id: string, name: string): Promise<void>;
 }
 
 export const NOT_AVAILABLE_ON_HOST = "not available on this host";
@@ -29,4 +30,5 @@ export const NO_STUDIO_HOST: StudioHostPort = {
 	apps: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),
 	openApp: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),
 	createApp: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),
+	renameApp: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),
 };
