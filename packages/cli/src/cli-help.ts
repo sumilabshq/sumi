@@ -1,8 +1,14 @@
 export const CLI_HELP = `widgetarium <command>
 
-  create <dir> [--name <app>] [--engine <folder>] [--no-git] [--no-install]
+  create <dir> [--name <app>] [--system <id>] [--engine <folder>] [--no-git] [--no-install]
       a new app in an empty folder: Vite, React, TypeScript, Tailwind, zod and the kit copied in;
+      --system picks the design system whose tokens.css lands in src/styles/tokens.css (default);
       --engine names the folder holding the engine tarballs (inside the repo it is packed for you)
+
+  system check <id> | use <id> [--dir <app>]
+      check: the guard over a design system package (files, sections, the token contract, 4.5:1
+      contrast in both themes across every hue); use: rewrites the app's tokens.css and design docs
+      from that system and names it in widgetarium.json
 
   check [dir]
       reads widgetarium.json and checks every layer: duplicate names, refused widgets, unreadable

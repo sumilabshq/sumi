@@ -1,0 +1,37 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "minimal",
+	"name": "Minimal",
+	"category": "Product",
+	"description": "A working product that looks expensive because nothing on it is decoration: content on the page, a card only where it groups, type for hierarchy, one button per region.",
+	"source": {
+		"type": "authored",
+		"origin": "the person's own direction; app references: Zite's open-source CRM and Issue Tracker, Aira",
+		"credit": "Zite CRM, MIT, Restly Inc. DBA Zite: github.com/zite/crm (refs 5–8); Zite Issue Tracker: zite.com/marketplace/issue-tracker (ref 9). Aira: [AUTHOR — add link before anything is published] (refs 10–11). AI UX Playground, aiuxplayground.com (refs 12–15). Ref 4: [AUTHOR — add]"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css",
+		"settings": "settings.json"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["function", "information"],
+		"activity": ["track", "edit", "operate", "browse"],
+		"photogenic": ["no", "user-photos"],
+		"session": ["long-work", "browse"],
+		"density": ["medium", "high"],
+		"tone": ["calm", "plain", "serious"],
+		"device": ["desktop", "both"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

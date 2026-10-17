@@ -1,0 +1,36 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "default",
+	"name": "Quiet and strict",
+	"category": "Starter",
+	"description": "The Widgetarium kit's own look, given to every app and to the Obsidian plugin when no system is chosen: the theme's page, faint grey plates with no edge, big controls and motion that answers a press.",
+	"source": {
+		"type": "authored",
+		"origin": "the Widgetarium kit: docs/ai/design-system.md, docs/ai/clean-ui.md, docs/ai/surfaces.md; practice from Material 3 Expressive and Apple",
+		"credit": "Widgetarium kit, MIT (packages/kit); Microsoft Fluent Emoji, MIT; Lucide icons, ISC; Material shapes, Apache-2.0"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["function", "information", "object"],
+		"activity": ["track", "edit", "browse", "operate", "create"],
+		"photogenic": ["no", "user-photos"],
+		"session": ["glance", "browse", "long-work"],
+		"density": ["medium"],
+		"tone": ["quiet", "plain", "strict"],
+		"device": ["desktop", "both"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

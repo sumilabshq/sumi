@@ -131,8 +131,9 @@ feature you cannot finish stays ✗ with its reason.
 prompt. `widget.md`, `tools.md`, `spec.md` and `kit.md` are on disk: open them before writing a
 widget, a handler or a spec, drawing with the kit, or reaching for a command you have not used.
 `clean-ui.md`, on disk too, is read before drawing anything and walked before calling it done.
-Unless the person names another, the app's look is `minimal/system.md`, whose `patterns/` you take from as
-they fit, never copying its screens, and its shell is picked from `shells.md`, all on disk.
+Unless the person names another, the app's look is `minimal/`: read its `USAGE.md`, `DESIGN.md`, then
+`tokens.css`, in that order; take from its `patterns/` as they fit, never copying its screens, and pick
+its shell from `shells.md`, all on disk.
 
 **2. Say what you are doing, in one line, before every action.** Silence is a failure of its own.
 

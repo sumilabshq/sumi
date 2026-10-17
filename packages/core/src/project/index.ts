@@ -1,6 +1,26 @@
 export { checkDiscovered, checkProject } from "./check-project.js";
 export { discoverProject, type ProjectMap } from "./discover-project.js";
 export {
+	CONFIG_SCHEMA_URL,
+	HANDBOOK_FOLDER,
+	SYSTEM_DOCS_FOLDER,
+	VENDOR_FOLDER,
+	engineDependenciesOf,
+	filled,
+	layProject,
+	packageNameOf,
+	projectFilesOf,
+	systemFilesOf,
+	systemSeedOf,
+	unknownSystemSaying,
+	withAppName,
+	type ProjectToLay,
+} from "./lay-project.js";
+export { ProjectSeedSchema, type DesignSystemSeed, type EnginePackage, type ProjectSeed } from "./project-seed.js";
+export { nodeProjectWriter, type NodeFileWriter, type ProjectWriter } from "./project-writer.js";
+export {
+	DEFAULT_DESIGN_SYSTEM,
+	DESIGN_SYSTEM_SLUG,
 	PROJECT_CONFIG_FILE,
 	ProjectConfigSchema,
 	defaultAliasesOf,
@@ -10,6 +30,7 @@ export {
 	type ProjectApp,
 	type ProjectConfig,
 	type ProjectConfigReading,
+	type ProjectDesign,
 	type ProjectPaths,
 } from "./project-config.js";
 export type { ProjectEntry, ProjectRoute } from "./project-entry.js";

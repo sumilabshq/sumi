@@ -4,6 +4,7 @@ import path from "node:path";
 import { paged } from "./chrome-ask.ts";
 import { commandAccordionTwinChecks } from "./twins-command-accordion-paint.ts";
 import { dialogTwinChecks } from "./twins-dialog-paint.ts";
+import { withColourBytes } from "./colour-bytes.ts";
 import { drawerPaintChecks } from "./drawer-paint.ts";
 import { twinChecks } from "./twins-paint.ts";
 import { tabsTwinChecks } from "./twins-tabs-paint.ts";
@@ -36,7 +37,7 @@ const ASK = `(() => {
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
-	const ok = JSON.stringify(got) === JSON.stringify(wanted);
+	const ok = JSON.stringify(withColourBytes(got)) === JSON.stringify(withColourBytes(wanted));
 	if (!ok) failed += 1;
 	console.log(
 		`${ok ? "OK  " : "!!  "}${what}${ok ? "" : `  got ${JSON.stringify(got)}, want ${JSON.stringify(wanted)}`}`,

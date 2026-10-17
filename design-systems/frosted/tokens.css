@@ -1,0 +1,179 @@
+:root {
+	--hue: 125;
+	--chroma: 0.2;
+	--neutral-hue: 250;
+	--neutral-chroma: 0.006;
+	--l-ground: 0.96;
+	--l-glass: 0.99;
+	--glass-alpha: 0.78;
+	--l-lift: 1;
+	--l-pill: 0.93;
+	--l-pill-hover: 0.9;
+	--l-line: 0.9;
+	--l-ink: 0.15;
+	--l-ink-2: 0.5;
+	--l-ink-3: 0.62;
+	--l-chosen-text: 1;
+	--l-neon: 0.9;
+	--l-violet: 0.5;
+	--c-violet: 0.25;
+	--l-wash: 0.78;
+	--c-wash: 0.11;
+
+	--background: oklch(var(--l-ground) var(--neutral-chroma) var(--neutral-hue));
+	--foreground: oklch(var(--l-ink) var(--neutral-chroma) var(--neutral-hue));
+	--card: oklch(var(--l-glass) var(--neutral-chroma) var(--neutral-hue) / var(--glass-alpha));
+	--card-foreground: var(--foreground);
+	--popover: oklch(var(--l-lift) var(--neutral-chroma) var(--neutral-hue));
+	--popover-foreground: var(--foreground);
+	--primary: var(--foreground);
+	--primary-foreground: oklch(var(--l-chosen-text) var(--neutral-chroma) var(--neutral-hue));
+	--secondary: oklch(var(--l-pill) var(--neutral-chroma) var(--neutral-hue));
+	--secondary-foreground: var(--foreground);
+	--muted: var(--secondary);
+	--muted-foreground: oklch(var(--l-ink-2) var(--neutral-chroma) var(--neutral-hue));
+	--accent: oklch(var(--l-pill-hover) var(--neutral-chroma) var(--neutral-hue));
+	--accent-foreground: var(--foreground);
+	--destructive: var(--foreground);
+	--border: oklch(var(--l-line) var(--neutral-chroma) var(--neutral-hue));
+	--input: var(--secondary);
+	--ring: var(--foreground);
+	--radius: 28px;
+
+	--chart-1: oklch(var(--l-neon) var(--chroma) var(--hue));
+	--chart-2: var(--foreground);
+	--chart-3: var(--muted-foreground);
+	--chart-4: var(--neutral);
+	--chart-5: var(--border);
+
+	--sidebar: var(--background);
+	--sidebar-foreground: var(--foreground);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--accent);
+	--sidebar-accent-foreground: var(--foreground);
+	--sidebar-border: var(--border);
+	--sidebar-ring: var(--ring);
+
+	--brand: var(--primary);
+	--brand-foreground: var(--primary-foreground);
+	--brand-hover: var(--muted-foreground);
+	--neutral: oklch(var(--l-ink-3) var(--neutral-chroma) var(--neutral-hue));
+
+	--group: var(--card);
+	--group-inset: var(--popover);
+	--group-line: var(--border);
+	--raise: var(--popover);
+	--fill: var(--secondary);
+	--fill-hover: var(--accent);
+	--ink-muted: var(--muted-foreground);
+	--accent-wash: oklch(var(--l-wash) var(--c-wash) var(--hue));
+	--accent-wash-hover: oklch(var(--l-wash) var(--c-wash) calc(var(--hue) + 30));
+
+	--success: var(--chart-1);
+	--warning: var(--foreground);
+	--info: oklch(var(--l-violet) var(--c-violet) calc(var(--hue) + 170));
+	--note: var(--info);
+	--standout: var(--chart-1);
+	--highlight: var(--chart-1);
+	--red: oklch(var(--l-wash) var(--c-wash) 25);
+	--orange: oklch(var(--l-wash) var(--c-wash) 55);
+	--yellow: oklch(var(--l-wash) var(--c-wash) 90);
+	--green: oklch(var(--l-wash) var(--c-wash) 150);
+	--cyan: oklch(var(--l-wash) var(--c-wash) 195);
+	--blue: oklch(var(--l-wash) var(--c-wash) 250);
+	--purple: oklch(var(--l-wash) var(--c-wash) 300);
+	--pink: oklch(var(--l-wash) var(--c-wash) 350);
+
+	--font-sans: Urbanist, Outfit, Manrope, var(--font-interface, ui-sans-serif), sans-serif;
+	--font-serif: ui-serif, Georgia, serif;
+	--font-mono: var(--font-monospace, ui-monospace, Menlo, monospace);
+	--type-xs: 12px;
+	--type-s: 13px;
+	--type-m: 15px;
+	--type-l: 17px;
+	--gap-section: 48px;
+	--gap-plate: 12px;
+}
+
+.dark,
+.theme-dark {
+	--l-ground: 0.17;
+	--l-glass: 0.22;
+	--l-lift: 0.25;
+	--l-pill: 0.23;
+	--l-pill-hover: 0.26;
+	--l-line: 0.27;
+	--l-ink: 0.95;
+	--l-ink-2: 0.7;
+	--l-ink-3: 0.58;
+	--l-chosen-text: 0.15;
+	--l-neon: 0.85;
+	--l-violet: 0.45;
+	--l-wash: 0.48;
+
+	--background: oklch(var(--l-ground) var(--neutral-chroma) var(--neutral-hue));
+	--foreground: oklch(var(--l-ink) var(--neutral-chroma) var(--neutral-hue));
+	--card: oklch(var(--l-glass) var(--neutral-chroma) var(--neutral-hue) / var(--glass-alpha));
+	--card-foreground: var(--foreground);
+	--popover: oklch(var(--l-lift) var(--neutral-chroma) var(--neutral-hue));
+	--popover-foreground: var(--foreground);
+	--primary: var(--foreground);
+	--primary-foreground: oklch(var(--l-chosen-text) var(--neutral-chroma) var(--neutral-hue));
+	--secondary: oklch(var(--l-pill) var(--neutral-chroma) var(--neutral-hue));
+	--secondary-foreground: var(--foreground);
+	--muted: var(--secondary);
+	--muted-foreground: oklch(var(--l-ink-2) var(--neutral-chroma) var(--neutral-hue));
+	--accent: oklch(var(--l-pill-hover) var(--neutral-chroma) var(--neutral-hue));
+	--accent-foreground: var(--foreground);
+	--destructive: var(--foreground);
+	--border: oklch(var(--l-line) var(--neutral-chroma) var(--neutral-hue));
+	--input: var(--secondary);
+	--ring: var(--foreground);
+	--radius: 28px;
+
+	--chart-1: oklch(var(--l-neon) var(--chroma) var(--hue));
+	--chart-2: var(--foreground);
+	--chart-3: var(--muted-foreground);
+	--chart-4: var(--neutral);
+	--chart-5: var(--border);
+
+	--sidebar: var(--background);
+	--sidebar-foreground: var(--foreground);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--accent);
+	--sidebar-accent-foreground: var(--foreground);
+	--sidebar-border: var(--border);
+	--sidebar-ring: var(--ring);
+
+	--brand: var(--primary);
+	--brand-foreground: var(--primary-foreground);
+	--brand-hover: var(--muted-foreground);
+	--neutral: oklch(var(--l-ink-3) var(--neutral-chroma) var(--neutral-hue));
+
+	--group: var(--card);
+	--group-inset: var(--popover);
+	--group-line: var(--border);
+	--raise: var(--popover);
+	--fill: var(--secondary);
+	--fill-hover: var(--accent);
+	--ink-muted: var(--muted-foreground);
+	--accent-wash: oklch(var(--l-wash) var(--c-wash) var(--hue));
+	--accent-wash-hover: oklch(var(--l-wash) var(--c-wash) calc(var(--hue) + 30));
+
+	--success: var(--chart-1);
+	--warning: var(--foreground);
+	--info: oklch(var(--l-violet) var(--c-violet) calc(var(--hue) + 170));
+	--note: var(--info);
+	--standout: var(--chart-1);
+	--highlight: var(--chart-1);
+	--red: oklch(var(--l-wash) var(--c-wash) 25);
+	--orange: oklch(var(--l-wash) var(--c-wash) 55);
+	--yellow: oklch(var(--l-wash) var(--c-wash) 90);
+	--green: oklch(var(--l-wash) var(--c-wash) 150);
+	--cyan: oklch(var(--l-wash) var(--c-wash) 195);
+	--blue: oklch(var(--l-wash) var(--c-wash) 250);
+	--purple: oklch(var(--l-wash) var(--c-wash) 300);
+	--pink: oklch(var(--l-wash) var(--c-wash) 350);
+}

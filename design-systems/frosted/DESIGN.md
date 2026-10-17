@@ -1,21 +1,6 @@
----
-id: frosted
-title: Frosted
-source: "the person's own reading of one studio's dashboards and mobile apps (audit log, credit, cash management, health)"
-credit: "[AUTHOR — add the studio and links before anything is published] (refs 1–15)"
-kit: "@widgetarium/kit — every element is a kit component; the pill and blur parts this system needs are TODO in the kit"
-centre: [information, function]
-activity: [track, browse, operate]
-photogenic: [no, objects]
-session: [glance, browse]
-density: [low, medium]
-tone: [calm, premium, quiet]
-device: [desktop, phone, both]
----
-
 # Frosted
 
-## Idea
+## Visual Theme & Atmosphere
 
 A quiet product where **only the chosen thing has a body**. Everything at rest is grey text on a soft ground; the one item that is selected — a page, a tab, a filter, an opened record — turns black, gets a pill or a card, and is the only filled shape in its row. Hierarchy is carried by type size and the black/grey step, never by colour and rarely by lines.
 
@@ -23,13 +8,9 @@ The material is **frost**: soft grey grounds, blurred plates, and, as an option,
 
 For products a person glances at and drills into: overviews, logs, trackers, money, health. A dense all-day work tool is better in Minimal.
 
-## How to use this system
+### References
 
-This file is the look. Take what fits the person's task; where nothing fits, design your own piece in the same look. Every system is built on the kit; `clean-ui.md` holds under all of it, except where this file says otherwise about plates **and lines**: here no line stands inside a plate or between rows, and a strip of figures is figures spaced apart, never split by lines.
-
-## References
-
-Take the feel, never the page.
+The pictures in `references/`. Take the feel, never the page.
 
 | File                             | Read it for                                                                                                |
 | -------------------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -61,9 +42,9 @@ Built in this system for other products (`tests/`) — proof the rules travel to
 | `21-built-phone-tile-wash.png`       | a tile opened over the grid with a wash, figures by air, never by lines                                       |
 | `22-built-record-cards.png`          | a record page under a rail: one white card for the next deadline, the rest frosted                            |
 
-## Settings
+### Settings
 
-Values the agent picks for a product and the person may change later with one switch. They hold for the whole app; only `plates` may differ by page kind, and then by kind, never by screen (overviews `none`, collections of objects `cards`). `settings.json` beside this file lists them for the canvas.
+Values the agent picks for a product and the person may change later with one switch. They hold for the whole app; only `plates` may differ by page kind, and then by kind, never by screen (overviews `none`, collections of objects `cards`). `settings.json` lists them for the canvas.
 
 | Setting  | Values            | Default    | What changes                                                                                                     |
 | -------- | ----------------- | ---------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -75,9 +56,52 @@ Values the agent picks for a product and the person may change later with one sw
 
 **Choosing `plates`:** `none` when the page leads with one figure, a chart or a table (an overview, a log); `cards` when the page is a set of separate objects the person opens one by one (accounts, medicines, loans, sessions on a phone).
 
-## Navigation and selection
+## Color Palette & Roles
 
-The rule that makes this look: **at rest, nothing has a background.**
+Each role is the token name the system binds, and the step of the Colour algorithm it takes.
+
+| Role                                                                                                | Step                                                                                                                          |
+| --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `background`, `sidebar`                                                                             | ground                                                                                                                        |
+| `foreground`, `card-foreground`, `popover-foreground`, `sidebar-foreground`, `secondary-foreground` | ink                                                                                                                           |
+| `card`, `group`                                                                                     | glass                                                                                                                         |
+| `popover`, `raise`, `group-inset`                                                                   | white card, L 1.00: something opened over the page, the one lift; the source leaves its dark step open, so it is glass + 0.03 |
+| `muted`, `secondary`, `fill`, `input`                                                               | pill: a control at rest, no outline                                                                                           |
+| `accent`, `fill-hover`, `sidebar-accent`                                                            | pill moved a further 0.03 from the ground; the source draws no hover, so this is the pill step repeated                       |
+| `primary`, `brand`, `ring`, `sidebar-primary`, `sidebar-ring`                                       | chosen: ink; black is the primary, no hue does that job                                                                       |
+| `primary-foreground`, `sidebar-primary-foreground`                                                  | the chosen item's text: white light, black dark                                                                               |
+| `muted-foreground`, `ink-muted`                                                                     | ink-2                                                                                                                         |
+| `neutral`                                                                                           | ink-3: labels                                                                                                                 |
+| `border`, `group-line`, `sidebar-border`                                                            | line: only the few screen dividers                                                                                            |
+| `success`                                                                                           | neon lime: done, up, good                                                                                                     |
+| `info`, `note`                                                                                      | neon violet: in progress, down, needs a look                                                                                  |
+| `warning`, `destructive`                                                                            | ink, drawn as a black triangle; never red                                                                                     |
+| `standout`, `highlight`                                                                             | neon: the one chart series that is the page's subject and the range it highlights                                             |
+| `accent-wash`                                                                                       | wash                                                                                                                          |
+| `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`                                | wash hues only: a wash is two neighbouring ones; no tone fills anything else                                                  |
+| `chart-1`                                                                                           | neon: the one series that is the subject                                                                                      |
+| `chart-2`, `chart-3`, `chart-4`, `chart-5`                                                          | ink, ink-2, ink-3, line                                                                                                       |
+
+## Typography Rules
+
+One geometric sans (Urbanist, Outfit, Manrope class). Light weights carry size; regular carries reading.
+
+| Role    | Weight | Sizes        | Carries                                                  |
+| ------- | ------ | ------------ | -------------------------------------------------------- |
+| figure  | 300    | 96 · 120     | the one leading number of a page                         |
+| display | 300    | 40 · 56      | page and record titles                                   |
+| heading | 400    | 20 · 24      | a tab row on a phone, a card title                       |
+| reading | 300    | 20 · 28 · 34 | the text the page exists for (a translation, an article) |
+| text    | 400    | 13 · 15 · 17 | everything else                                          |
+
+- Labels are small and ink-3; values beside them are ink and larger.
+- Figures are tabular and never bold.
+
+## Component Stylings
+
+Kit: `@widgetarium/kit` — every element is a kit component; the pill and blur parts this system needs are TODO in the kit.
+
+**Navigation and selection.** The rule that makes this look: **at rest, nothing has a background.**
 
 - **Top navigation** is a row of words in ink-2 with no plates; the current page is a black pill with white text (ref 1). Only one item in the row has a body.
 - **A sidebar or rail** follows the same rule: items are an icon in a thin circle or a grey word; the current one is filled black (ref 11). A word sidebar opens from the menu button (ref 12).
@@ -88,22 +112,45 @@ The rule that makes this look: **at rest, nothing has a background.**
 - **The rule is for rows of choices** (navigation, tabs, filters, periods, list rows). Under `plates: cards` the tiles are content and carry their frosted plate at rest; the chosen tile is told apart by turning **white** (ref 10) or, with `wash: on`, by being the washed one (ref 7). Never by a border.
 - **Buttons at rest are grey pills.** There is no colour primary: the strongest button is black. Use it for the one action that commits; everything else is a grey pill or a circled icon.
 
-## Page hero and layout
+**Controls**
+
+- Pills everywhere: height 40–48px on desktop, 44–56px on a phone; fully round.
+- An icon-only control is an icon in a thin 1px circle, 44–56px.
+- A count is a pill with the number in ink and its word in ink-3 (`237 Items`).
+- A status is a small filled circle with an icon (green check, violet clock, black warning) then the word in ink.
+- TODO: the kit's pill button, circled icon button, frosted plate and wash plate are needed before this system draws in the kit; until then the canvas draws them by the rules above.
+
+## Layout Principles
 
 Principles, not a page. The structure of every page comes from what the person does on it; the references show the feel of these principles, never a layout to fill with other nouns.
 
 - **One thing leads each page, and it is chosen by the page's job:** the text being worked on, a figure, a chart, a picture, a list. It takes the space and the largest light type; everything else is visibly smaller.
 - **A page opens with a light title and at most one quiet line**, and ends its head with the one full-width hairline when content follows.
 - **Space separates, type ranks:** groups stand apart by air, and inside them size and the black/grey step say what matters.
-- **The chosen state is the only body on a page** (Navigation and selection); a page with three filled shapes has lost its hierarchy.
-- **Phone:** the same principles on one column; the leading thing first, controls as large pills and circles within reach of the thumb.
+- **The chosen state is the only body on a page** (Component Stylings, Navigation and selection); a page with three filled shapes has lost its hierarchy.
 
-## Lines and plates
+## Depth & Elevation
+
+`docs/ai/clean-ui.md` holds under this system except where this section says otherwise about plates **and lines**: here no line stands inside a plate or between rows, and a strip of figures is figures spaced apart, never split by lines.
 
 - **Lines are rare and only divide screens:** the sidebar from the content, the hero from the content, and one screen split into halves that face different people or tasks (two sides of a conversation). Inside a strip of figures, air replaces the line. A table has no row lines and no outer border; spacing is the row (ref 4).
 - **`plates: none`:** groups are made by space and a small grey label. No plate around figures, no plate around the chart.
 - **`plates: cards`:** a group sits on a frosted plate — the ground lightened 4–6% with a backdrop blur of 24–40px, radius 24–32px, no border, no shadow (refs 6, 8). A white card on a frosted ground is the one allowed lift (ref 10). Cards are tiles of a grid; one tile opens into the full record over the grid.
 - **`wash: on`:** a plate shows a blurred gradient of two neighbouring hues behind its glass (ref 9). At most two washed plates per screen, never behind a table. A wash belongs to one plate, inside its edges; the ground never glows.
+
+## Do's and Don'ts
+
+- Suits: overviews and logs, money and credit, health, trackers glanced at daily, phone-first apps of a few kinds of record.
+- Weak for: dense all-day tables of many columns (Minimal), long documents read for an hour, products with many simultaneous actions per screen. Short texts read at a glance — a translation, a message, a phrase — suit it.
+- The rules a copy most often breaks are under Never.
+
+## Responsive Behavior
+
+**Phone:** the same principles on one column; the leading thing first, controls as large pills and circles within reach of the thumb. Pills grow from 40–48px to 44–56px; under `plates: cards` the tiles form a grid and the chosen one opens over it (refs 6, 7).
+
+## Agent Prompt Guide
+
+This file is the look. Take what fits the person's task; where nothing fits, design your own piece in the same look. Every system is built on the kit; `docs/ai/clean-ui.md` holds under all of it, except where Depth & Elevation says otherwise about plates and lines. Pick `plates` per page kind first, then build the page from its one leading thing.
 
 ## Colour algorithm
 
@@ -125,42 +172,20 @@ OKLCH. Light first; dark beside it.
 - **What each hue means:** lime = done, up, good; violet = in progress, down, needs a look; a warning is a black triangle, never red. The chosen one among alternatives is black, like every other choice, not a hue.
 - **The black/grey step is the hierarchy:** what is chosen or a value is ink; what is at rest or a label is ink-2 or ink-3. Never fade text with opacity.
 
-## Type
+`tokens.css` declares the parameters (`--hue`, `--chroma`, lightness steps per theme, `--neutral-chroma` for the tint) and every colour as an `oklch()` formula of them in `:root` and in `.dark, .theme-dark`; changing `--hue` re-derives every colour in both themes. The shipped values are an example.
 
-One geometric sans (Urbanist, Outfit, Manrope class). Light weights carry size; regular carries reading.
+## Imagery
 
-| Role    | Weight | Sizes        | Carries                                                  |
-| ------- | ------ | ------------ | -------------------------------------------------------- |
-| figure  | 300    | 96 · 120     | the one leading number of a page                         |
-| display | 300    | 40 · 56      | page and record titles                                   |
-| heading | 400    | 20 · 24      | a tab row on a phone, a card title                       |
-| reading | 300    | 20 · 28 · 34 | the text the page exists for (a translation, an article) |
-| text    | 400    | 13 · 15 · 17 | everything else                                          |
-
-- Labels are small and ink-3; values beside them are ink and larger.
-- Figures are tabular and never bold.
-
-## Controls
-
-- Pills everywhere: height 40–48px on desktop, 44–56px on a phone; fully round.
-- An icon-only control is an icon in a thin 1px circle, 44–56px.
-- A count is a pill with the number in ink and its word in ink-3 (`237 Items`).
-- A status is a small filled circle with an icon (green check, violet clock, black warning) then the word in ink.
-- TODO: the kit's pill button, circled icon button, frosted plate and wash plate are needed before this system draws in the kit; until then the canvas draws them by the rules above.
+- **Role:** an object of the domain, found, standing on a soft round plate (ref 14); most pages carry none, and lead with type or a figure.
+- A wash is colour behind glass, never a picture.
+- Pictures are found, never drawn (`design-catalogue/README.md`).
 
 ## Behaviour
 
 - A row or a tile opens its record **over the list**, as a frosted plate with a close circle (ref 7); the list stays visible behind the blur.
 - Period and filter pills redraw the chart in place; nothing reloads the page.
 
-## Motion
-
-Soft and physical: plates fade and blur in over 220ms, a chosen pill slides to its new place, an opened tile grows from where it stood. Reduced motion keeps only the fades.
-
-## Fit
-
-- Suits: overviews and logs, money and credit, health, trackers glanced at daily, phone-first apps of a few kinds of record.
-- Weak for: dense all-day tables of many columns (Minimal), long documents read for an hour, products with many simultaneous actions per screen. Short texts read at a glance — a translation, a message, a phrase — suit it.
+**Motion.** Soft and physical: plates fade and blur in over 220ms, a chosen pill slides to its new place, an opened tile grows from where it stood. Reduced motion keeps only the fades.
 
 ## Never
 

@@ -1,4 +1,5 @@
 export { WidgetariumApp, startProject } from "./app/widgetarium-app.js";
+export { followColourScheme } from "./app/colour-scheme.js";
 export type { ProjectStart, StartedProject, WidgetariumAppProps } from "./app/widgetarium-app.js";
 export type { ProjectRouteBoard, WidgetariumAppIdentity, WidgetariumProject } from "./app/widgetarium-project.js";
 export { createBrowserRouter } from "./app/browser-router.js";

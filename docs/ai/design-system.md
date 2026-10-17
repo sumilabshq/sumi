@@ -22,7 +22,7 @@ Tables and text without an id are reference, read but not checked.
 
 ## The style in one line
 
-The look is `minimal/system.md` and the shell is picked from `shells.md`, both in the agent's
+The look is `minimal/` (`USAGE.md`, `DESIGN.md`, then `tokens.css`) and the shell is picked from `shells.md`, both in the agent's
 handbook, unless you name another here. The rules below are checked on top of it.
 
 ## App shell

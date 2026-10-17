@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -6,6 +7,7 @@ import { fieldOf } from "./export-source.mts";
 import { installOfflineFirst, md5Of, ran, runnerWithTheCli } from "./packed-project.mts";
 
 const APP = "shop";
+const SEED_OUTPUT_BYTES = 64 * 1024 * 1024;
 const KIT_ALIAS = "@widgetarium/kit";
 const ALIAS_PROBE = "src/shared/kit/alias-probe.ts";
 const KIT_CONSUMER = "src/widgets/greeting/widget.tsx";
@@ -100,6 +102,30 @@ function retargeted(at: string, text: string): string {
 	return JSON.stringify(json);
 }
 
+function engineDependenciesOfSeed(): Record<string, string> {
+	const seed: unknown = JSON.parse(
+		execFileSync("node", ["--single-threaded", "--import", "./tools/loader/register.mts", "tools/project-seed.mts"], {
+			encoding: "utf8",
+			maxBuffer: SEED_OUTPUT_BYTES,
+		}),
+	);
+	const engine = fieldOf(seed, "engine");
+	const packages = Array.isArray(engine) ? engine : [];
+	return Object.fromEntries(
+		packages
+			.map((held) => [String(fieldOf(held, "name")), `file:vendor/engine/${String(fieldOf(held, "file"))}`])
+			.sort(),
+	);
+}
+
+function vendoredDependenciesOf(app: string): Record<string, string> {
+	const dependencies = fieldOf(JSON.parse(fs.readFileSync(path.join(app, "package.json"), "utf8")), "dependencies");
+	const vendored = Object.entries(typeof dependencies === "object" && dependencies !== null ? dependencies : {}).filter(
+		([, spec]) => String(spec).startsWith("file:"),
+	);
+	return Object.fromEntries(vendored.map(([name, spec]) => [name, String(spec)]).sort());
+}
+
 const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "wg-create-project-"));
 try {
 	const packed = await packEngine();
@@ -115,6 +141,11 @@ try {
 	]);
 	check("the packed CLI creates the app", created.ok, true);
 	if (!created.ok) throw new Error(created.said);
+	check(
+		"the engine Obsidian's new app names is the closure the packed CLI vendored",
+		JSON.stringify(engineDependenciesOfSeed()),
+		JSON.stringify(vendoredDependenciesOf(app)),
+	);
 	fs.mkdirSync(path.dirname(path.join(app, KIT_CONSUMER)), { recursive: true });
 	fs.writeFileSync(path.join(app, KIT_CONSUMER), KIT_CONSUMER_SOURCE);
 	installOfflineFirst(app);

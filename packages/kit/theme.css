@@ -1,13 +1,13 @@
 @theme inline {
-	--color-page: var(--wg-kit-page);
-	--color-group: var(--wg-kit-group-fill);
-	--color-group-inset: var(--wg-kit-group-inset);
-	--color-line: var(--wg-kit-group-line);
-	--color-fill: var(--wg-kit-fill);
-	--color-fill-hover: var(--wg-kit-fill-hover);
-	--color-raise: var(--wg-kit-raise);
-	--color-edge: var(--wg-kit-card-edge);
-	--color-ink: var(--wg-kit-text);
+	--color-page: var(--background);
+	--color-group: var(--group);
+	--color-group-inset: var(--group-inset);
+	--color-line: var(--group-line);
+	--color-fill: var(--fill);
+	--color-fill-hover: var(--fill-hover);
+	--color-raise: var(--raise);
+	--color-edge: var(--border);
+	--color-ink: var(--foreground);
 
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -39,16 +39,16 @@
 	--color-brand: var(--brand);
 	--color-brand-foreground: var(--brand-foreground);
 
-	--color-success: var(--wg-kit-success);
-	--color-warning: var(--wg-kit-warning);
-	--color-error: var(--wg-kit-error);
-	--color-info: var(--wg-kit-info);
-	--color-note: var(--wg-kit-note);
-	--color-standout: var(--wg-kit-standout);
-	--color-highlight: var(--wg-kit-highlight);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-error: var(--destructive);
+	--color-info: var(--info);
+	--color-note: var(--note);
+	--color-standout: var(--standout);
+	--color-highlight: var(--highlight);
 
-	--color-brand-wash: var(--wg-kit-accent-wash);
-	--color-accent-wash: var(--wg-kit-accent-wash);
+	--color-brand-wash: var(--accent-wash);
+	--color-accent-wash: var(--accent-wash);
 	--color-success-wash: var(--wg-kit-success-wash);
 	--color-warning-wash: var(--wg-kit-warning-wash);
 	--color-error-wash: var(--wg-kit-error-wash);
@@ -57,14 +57,14 @@
 	--color-standout-wash: var(--wg-kit-standout-wash);
 	--color-highlight-wash: var(--wg-kit-highlight-wash);
 
-	--color-red: var(--wg-kit-red);
-	--color-orange: var(--wg-kit-orange);
-	--color-yellow: var(--wg-kit-yellow);
-	--color-green: var(--wg-kit-green);
-	--color-cyan: var(--wg-kit-cyan);
-	--color-blue: var(--wg-kit-blue);
-	--color-purple: var(--wg-kit-purple);
-	--color-pink: var(--wg-kit-pink);
+	--color-red: var(--red);
+	--color-orange: var(--orange);
+	--color-yellow: var(--yellow);
+	--color-green: var(--green);
+	--color-cyan: var(--cyan);
+	--color-blue: var(--blue);
+	--color-purple: var(--purple);
+	--color-pink: var(--pink);
 
 	--color-chart-1: var(--chart-1);
 	--color-chart-2: var(--chart-2);
@@ -73,10 +73,10 @@
 	--color-chart-5: var(--chart-5);
 
 	--text-*: initial;
-	--text-xs: var(--wg-kit-text-xs);
-	--text-sm: var(--wg-kit-text-s);
-	--text-base: var(--wg-kit-text-m);
-	--text-lg: var(--wg-kit-text-l);
+	--text-xs: var(--type-xs);
+	--text-sm: var(--type-s);
+	--text-base: var(--type-m);
+	--text-lg: var(--type-l);
 	--text-h6: var(--wg-kit-h6-size);
 	--text-h6--line-height: var(--wg-kit-h6-line);
 	--text-h5: var(--wg-kit-h5-size);
@@ -101,14 +101,14 @@
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
-	--radius-plate: var(--wg-kit-plate);
+	--radius-plate: var(--radius);
 	--radius-item: var(--wg-kit-item);
 	--radius-pill: var(--wg-kit-pill);
 
 	--spacing-items: var(--wg-gap-items);
 	--spacing-parts: var(--wg-gap-parts);
 	--spacing-cards: var(--wg-gap-cards);
-	--spacing-sections: var(--wg-kit-section-gap);
+	--spacing-sections: var(--gap-section);
 	--spacing-plate: var(--wg-group-pad);
 
 	--shadow-raise: var(--wg-kit-shadow);
@@ -573,7 +573,7 @@
 @utility shimmer {
 	--_spread: var(--shimmer-spread, calc(3ch + 40px));
 	--_base: currentColor;
-	--_highlight: var(--shimmer-color, color-mix(in oklch, currentColor 30%, var(--wg-kit-page)));
+	--_highlight: var(--shimmer-color, color-mix(in oklch, currentColor 30%, var(--background)));
 
 	background-image: var(
 		--shimmer-image,

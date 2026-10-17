@@ -8,6 +8,13 @@ import { runCli } from "../packages/cli/src/run-cli.js";
 import { HANDBOOK_PAGES } from "../packages/cli/src/handbook-copy.js";
 import type { CliOutput } from "../packages/cli/src/cli-output.js";
 import { z } from "zod";
+import type { TFile, TFolder } from "obsidian";
+import { layProject } from "../packages/core/src/project/index.js";
+import { engineClosureIn, enginePackagesOf, type EngineTarball } from "../packages/cli/src/engine-tarballs.js";
+import { formatProject } from "../packages/cli/src/project-format.js";
+import { vaultProjectWriter, type ProjectVault } from "../packages/host-obsidian/src/vault-project-writer.js";
+import { pluginProjectSeed } from "./project-seed.mts";
+import { standIn } from "./stand-in.ts";
 import { fieldOf } from "./export-source.mts";
 import { fakeEngine } from "./fake-engine.ts";
 import {
@@ -34,7 +41,7 @@ const TEMPLATE_MANIFEST = path.join(REPO, "packages/cli/templates/project/packag
 const PRETTIER = path.join(REPO, "node_modules/.bin/prettier");
 const WRITE_SCHEMA = process.argv.includes("--write-schema");
 const HANDBOOK_FOLDER = "docs/widgetarium";
-const UNFILLED = /\{(?:name|handbook|paths\.[a-z]+)\}/;
+const UNFILLED = /\{(?:name|package|handbook|paths\.[a-z]+|design\.[a-z]+)\}/;
 const RecordSchema = z.record(z.string(), z.unknown()).catch({});
 const ICON = "public/icon.svg";
 const DUPLICATE_WIDGET = 'widget id "tasks" is declared 2 times';
@@ -53,6 +60,8 @@ const EXPECTED_FILES = [
 	".prettierignore",
 	"AGENTS.md",
 	"CLAUDE.md",
+	"docs/design-system/DESIGN.md",
+	"docs/design-system/USAGE.md",
 	"docs/references/.gitkeep",
 	"eslint.config.js",
 	"index.html",
@@ -65,6 +74,7 @@ const EXPECTED_FILES = [
 	"src/shared/schemas/.gitkeep",
 	"src/shared/sources/.gitkeep",
 	"src/styles.css",
+	"src/styles/tokens.css",
 	"src/widgets/.gitkeep",
 	"tsconfig.json",
 	"tsconfig.node.json",
@@ -96,6 +106,42 @@ async function cli(argv: readonly string[]): Promise<CliRun> {
 	const output: CliOutput = { out: (text) => lines.push(text), err: (text) => lines.push(text) };
 	const code = await runCli(argv, output);
 	return { code, said: lines.join("\n") };
+}
+
+function systemFile(system: string, file: string): string {
+	return fs.readFileSync(path.join(REPO, "design-systems", system, file), "utf8");
+}
+
+function agentReadOrderIn(agents: string): string[] {
+	const look = agents.slice(agents.indexOf("## The look"));
+	return [...new Set([...look.matchAll(/(USAGE\.md|DESIGN\.md|src\/styles\/tokens\.css)/g)].map(([found]) => found))];
+}
+
+async function layOverVault(folder: string, closure: readonly EngineTarball[]): Promise<void> {
+	const seed = { ...pluginProjectSeed(), engine: enginePackagesOf(closure) };
+	fs.mkdirSync(path.dirname(folder), { recursive: true });
+	const vault = folderBackedVault(path.dirname(folder));
+	await layProject(vaultProjectWriter(vault, path.basename(folder)), { name: "shop", system: "default", seed });
+}
+
+function folderBackedVault(root: string): ProjectVault {
+	const entry = standIn<TFolder>({}, [], "vault entry");
+	return standIn<ProjectVault>(
+		{
+			getAbstractFileByPath: (at: string) => (fs.existsSync(path.join(root, at)) ? entry : null),
+			createFolder: async (at: string) => {
+				fs.mkdirSync(path.join(root, at));
+				return entry;
+			},
+			create: async (at: string, text: string) => {
+				if (fs.existsSync(path.join(root, at))) throw new Error(`${at} already exists`);
+				fs.writeFileSync(path.join(root, at), text);
+				return standIn<TFile>({}, [], "vault file");
+			},
+		},
+		["getAbstractFileByPath", "createFolder", "create"],
+		"folder-backed vault",
+	);
 }
 
 function jsonAt(at: string): unknown {
@@ -302,6 +348,88 @@ try {
 	const badName = await cli(["create", path.join(scratch, "My App"), "--engine", engine, "--no-install", "--no-git"]);
 	check("create refuses a folder name npm would refuse", [badName.code, badName.said.includes("--name")], [1, true]);
 	check("help answers 0", (await cli(["--help"])).code, 0);
+
+	check(
+		"a created app holds the default system's tokens and names it",
+		[
+			fs.readFileSync(path.join(project, "src/styles/tokens.css"), "utf8") === systemFile("default", "tokens.css"),
+			fieldOf(fieldOf(jsonAt(path.join(project, "widgetarium.json")), "design"), "system"),
+		],
+		[true, "default"],
+	);
+	check(
+		"and its agent reads the system's USAGE.md before its DESIGN.md",
+		[
+			fs.readFileSync(path.join(project, "docs/design-system/USAGE.md"), "utf8") === systemFile("default", "USAGE.md"),
+			agentReadOrderIn(fs.readFileSync(path.join(project, "AGENTS.md"), "utf8")),
+		],
+		[true, ["USAGE.md", "DESIGN.md", "src/styles/tokens.css"]],
+	);
+	const minimal = path.join(scratch, "minimal-app");
+	const pickedMinimal = await cli([
+		"create",
+		minimal,
+		"--system",
+		"minimal",
+		"--engine",
+		engine,
+		"--no-install",
+		"--no-git",
+	]);
+	check(
+		"--system minimal lays Minimal's tokens and names Minimal",
+		[
+			pickedMinimal.code,
+			fs.readFileSync(path.join(minimal, "src/styles/tokens.css"), "utf8") === systemFile("minimal", "tokens.css"),
+			fieldOf(fieldOf(jsonAt(path.join(minimal, "widgetarium.json")), "design"), "system"),
+		],
+		[0, true, "minimal"],
+	);
+	const swapped = await cli(["system", "use", "frosted", "--dir", minimal]);
+	check(
+		"system use frosted rewrites the tokens and the docs and names Frosted, leaving the rest of the config",
+		[
+			swapped.code,
+			fs.readFileSync(path.join(minimal, "src/styles/tokens.css"), "utf8") === systemFile("frosted", "tokens.css"),
+			fs.readFileSync(path.join(minimal, "docs/design-system/DESIGN.md"), "utf8") ===
+				systemFile("frosted", "DESIGN.md"),
+			fieldOf(fieldOf(jsonAt(path.join(minimal, "widgetarium.json")), "design"), "system"),
+			fieldOf(fieldOf(jsonAt(path.join(minimal, "widgetarium.json")), "app"), "name"),
+		],
+		[0, true, true, "frosted", "minimal-app"],
+	);
+	const unknown = await cli([
+		"create",
+		path.join(scratch, "nowhere"),
+		"--system",
+		"nope",
+		"--engine",
+		engine,
+		"--no-install",
+		"--no-git",
+	]);
+	check(
+		"create refuses a system nobody shipped, before it writes anything",
+		[unknown.code, unknown.said.includes("no design system named nope"), fs.existsSync(path.join(scratch, "nowhere"))],
+		[1, true, false],
+	);
+	check("system check passes the shipped default", (await cli(["system", "check", "default"])).code, 0);
+
+	const cliTwin = path.join(scratch, "by-cli", "shop");
+	await cli(["create", cliTwin, "--engine", engine, "--no-install", "--no-git"]);
+	const vaultTwin = path.join(scratch, "by-vault", "shop");
+	await layOverVault(vaultTwin, engineClosureIn(engine));
+	await formatProject(vaultTwin);
+	const vaulted = filesIn(vaultTwin);
+	const createdByCli = filesIn(cliTwin).filter((at) => !at.startsWith("vendor/"));
+	check("Obsidian's new app holds the very files create lays, the engine tarballs aside", vaulted, createdByCli);
+	check(
+		"and each holds the same text once both are formatted",
+		createdByCli.filter(
+			(at) => fs.readFileSync(path.join(cliTwin, at), "utf8") !== fs.readFileSync(path.join(vaultTwin, at), "utf8"),
+		),
+		[],
+	);
 } finally {
 	fs.rmSync(scratch, { recursive: true, force: true });
 }

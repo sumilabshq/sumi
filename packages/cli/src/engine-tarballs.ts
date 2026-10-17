@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { VENDOR_FOLDER, type EnginePackage } from "@widgetarium/core/project/index.js";
 import { z } from "zod";
 import { CliRefusal } from "./cli-output.js";
 import { outputOf, runIn } from "./run-process.js";
@@ -16,7 +17,6 @@ const INTERNAL_PACKAGE = /^@widgetarium\/.+$/;
 const TARBALL = /\.tgz$/;
 const PACKED_MANIFEST = "package/package.json";
 const REPO_PACKED_INTO = "dist-packages";
-const VENDOR_FOLDER = "vendor/engine";
 
 const TarballManifestSchema = z.object({
 	name: z.string(),
@@ -44,15 +44,14 @@ export function engineClosureIn(folder: string): EngineTarball[] {
 	return [...held.values()];
 }
 
-export function vendorEngine(closure: readonly EngineTarball[], project: string): Record<string, string> {
+export function vendorEngine(closure: readonly EngineTarball[], project: string): void {
 	const vendor = path.join(project, VENDOR_FOLDER);
 	fs.mkdirSync(vendor, { recursive: true });
-	return Object.fromEntries(
-		closure.map(({ name, file }) => {
-			fs.copyFileSync(file, path.join(vendor, path.basename(file)));
-			return [name, `file:${VENDOR_FOLDER}/${path.basename(file)}`];
-		}),
-	);
+	for (const { file } of closure) fs.copyFileSync(file, path.join(vendor, path.basename(file)));
+}
+
+export function enginePackagesOf(closure: readonly EngineTarball[]): EnginePackage[] {
+	return closure.map(({ name, file }) => ({ name, file: path.basename(file) }));
 }
 
 function tarballsIn(folder: string): EngineTarball[] {

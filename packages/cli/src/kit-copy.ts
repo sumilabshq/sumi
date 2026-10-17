@@ -4,7 +4,6 @@ import { z } from "zod";
 import { type KitLayout, groupFileOf, kitLayoutOf, groupSpecifierOf } from "./kit-layout.js";
 import { mergeGroup } from "./kit-merge.js";
 import { type KitModule, type SourceRange, kitModuleOf } from "./kit-source.js";
-import { writeFile } from "./template-files.js";
 
 const KIT_SOURCE = "src";
 const KIT_THEME = "theme.css";
@@ -17,11 +16,10 @@ const KitExportsSchema = z.object({
 	exports: z.record(z.string(), z.union([z.string(), z.object({ source: z.string() })])),
 });
 
-export function copyKit(kitRoot: string, target: string): void {
-	for (const [relative, text] of mergeKit(kitSourcesIn(path.join(kitRoot, KIT_SOURCE)))) {
-		writeFile(path.join(target, relative), text);
-	}
-	fs.copyFileSync(path.join(kitRoot, KIT_THEME), path.join(target, KIT_THEME));
+export function mergedKitIn(kitRoot: string): Map<string, string> {
+	const merged = mergeKit(kitSourcesIn(path.join(kitRoot, KIT_SOURCE)));
+	merged.set(KIT_THEME, fs.readFileSync(path.join(kitRoot, KIT_THEME), "utf8"));
+	return merged;
 }
 
 export function mergeKit(sources: ReadonlyMap<string, string>): Map<string, string> {
@@ -35,13 +33,13 @@ export function mergeKit(sources: ReadonlyMap<string, string>): Map<string, stri
 	return new Map([...alone, ...merged].sort(([left], [right]) => (left < right ? -1 : 1)));
 }
 
-export function kitAliasesOf(kitRoot: string, kitPath: string): Record<string, string> {
+export function kitEntriesOf(kitRoot: string): Record<string, string> {
 	const manifest: unknown = JSON.parse(fs.readFileSync(path.join(kitRoot, "package.json"), "utf8"));
 	const { exports } = KitExportsSchema.parse(manifest);
 	return Object.fromEntries(
 		Object.entries(exports).map(([subpath, target]) => {
 			const source = typeof target === "string" ? target : target.source;
-			return [`${KIT_PACKAGE}${subpath.slice(1)}`, `${kitPath}/${source.replace(SOURCE_PREFIX, "")}`];
+			return [`${KIT_PACKAGE}${subpath.slice(1)}`, source.replace(SOURCE_PREFIX, "")];
 		}),
 	);
 }

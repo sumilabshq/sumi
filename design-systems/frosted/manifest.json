@@ -1,0 +1,37 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "frosted",
+	"name": "Frosted",
+	"category": "Product",
+	"description": "A quiet product where only the chosen thing has a body: grey text on a soft frosted ground, and the one selected item turns black, gets a pill or a card.",
+	"source": {
+		"type": "authored",
+		"origin": "the person's own reading of one studio's dashboards and mobile apps (audit log, credit, cash management, health)",
+		"credit": "[AUTHOR — add the studio and links before anything is published] (refs 1–15)"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css",
+		"settings": "settings.json"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["information", "function"],
+		"activity": ["track", "browse", "operate"],
+		"photogenic": ["no", "objects"],
+		"session": ["glance", "browse"],
+		"density": ["low", "medium"],
+		"tone": ["calm", "premium", "quiet"],
+		"device": ["desktop", "phone", "both"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

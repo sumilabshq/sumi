@@ -12,7 +12,7 @@ const STYLE = `
 
 .wg-tabs-tab.is-editing { outline: none; cursor: text; }
 .wg-tabs-tab.is-editing::before,
-.wg-tabs-tab.is-editing:focus-visible::before { box-shadow: inset 0 0 0 2px var(--interactive-accent); }
+.wg-tabs-tab.is-editing:focus-visible::before { box-shadow: inset 0 0 0 2px var(--ring); }
 
 .wg-tabs-more svg { width: 15px; height: 15px; }
 

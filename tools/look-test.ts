@@ -108,10 +108,10 @@ check("grey ground paints the page grey and the plates white", Object.keys(liveT
 check("the shell is drawn by the assistant, not by tokens", isSettingDrawnLive("shell"), false);
 
 const GOOD_ENTRY = { name: "ground", options: ["white", "grey"], default: "white" };
-const SHIPPED = readSystemSettings(readFileSync("design-catalogue/systems/minimal/settings.json", "utf8"));
+const SHIPPED = readSystemSettings(readFileSync("design-systems/minimal/settings.json", "utf8"));
 if (SHIPPED.refusal !== undefined) throw new Error(`minimal/settings.json: ${SHIPPED.refusal}`);
 check("the shipped Minimal settings.json offers its settings", SHIPPED.value.length > 0, true);
-const SYSTEMS_FOLDER = "design-catalogue/systems";
+const SYSTEMS_FOLDER = "design-systems";
 const unreadableSettings = readdirSync(SYSTEMS_FOLDER)
 	.filter((system) => existsSync(join(SYSTEMS_FOLDER, system, "settings.json")))
 	.flatMap((system) => {

@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { TONE_NAMES, toneClass } from "../packages/kit/src/index.ts";
+import { colorOf } from "../packages/core/src/color-math.ts";
 import { fieldIn, itemsIn } from "./held-fields.ts";
 import { isRecord, present } from "./page-dom.ts";
 
@@ -21,7 +22,7 @@ const THEMES: Readonly<Record<Theme, string>> = {
 const TONES = TONE_NAMES.map((name) => [name, toneClass(name)] as const);
 
 const SURFACES = [
-	["page", "var(--background-primary)"],
+	["page", "var(--wg-kit-page)"],
 	["grid", "var(--wg-cell-fill)"],
 	["column", "var(--wg-kit-fill)"],
 	["card", "var(--wg-kit-raise)"],
@@ -35,23 +36,16 @@ function levels(theme: Theme): unknown {
 	writeFileSync(
 		file,
 		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
-<style>body{margin:0;${THEMES[theme]}}</style></head><body class="wg-root"><pre id="out"></pre><script>
+<style>body{margin:0;${THEMES[theme]}}</style></head><body class="wg-root theme-${theme}"><pre id="out"></pre><script>
 window.addEventListener('load',()=>{
 	const probe=(value)=>{const node=document.createElement('div');node.style.cssText='width:10px;height:10px;background:'+value;
 		document.body.appendChild(node);const seen=getComputedStyle(node).backgroundColor;node.remove();return seen;};
-	const lum=(colour)=>{const parts=String(colour).match(/[\\d.]+/g).map(Number);
-		const scale=String(colour).startsWith('color(')?255:1;
-		const [red,green,blue]=parts.slice(0,3).map((v)=>v*scale);
-		const alpha=parts.length>3?parts[3]:1;
-		const own=0.2126*red+0.7152*green+0.0722*blue;
-		const ground=${theme === "light" ? 255 : 30};
-		return alpha===1?own:own*alpha+ground*(1-alpha);};
 	const rows=${JSON.stringify(SURFACES)};
 	const pill=(cls)=>{const node=document.createElement('span');node.className=('wg-kit-pill '+cls).trim();node.textContent='tag';
 		document.body.appendChild(node);const style=getComputedStyle(node);const seen=[style.backgroundColor,style.color];node.remove();return seen;};
 	const tones=${JSON.stringify(TONES)};
 	out.textContent=JSON.stringify(Object.assign(
-		Object.fromEntries(rows.map(([name,value])=>[name,Math.round(lum(probe(value))*10)/10])),
+		Object.fromEntries(rows.map(([name,value])=>[name,probe(value)])),
 		{tones:Object.fromEntries(tones.map(([name,cls])=>[name,pill(cls)]))}));
 });</script></body></html>`,
 	);
@@ -61,16 +55,26 @@ window.addEventListener('load',()=>{
 		{ encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
 	);
 	const out = present(/<pre id="out">(.*?)<\/pre>/s.exec(dom)?.[1], "the measured levels");
-	return JSON.parse(out.replace(/&quot;/g, '"'));
+	const measured: unknown = JSON.parse(out.replace(/&quot;/g, '"'));
+	return isRecord(measured) ? withLevels(measured, GROUND[theme]) : measured;
 }
 
 const GROUND: Readonly<Record<Theme, number>> = { light: 255, dark: 30 };
 
 function paint(colour: unknown, ground: number): Channels {
-	const parts = present(String(colour).match(/[\d.]+/g), `the channels of ${String(colour)}`).map(Number);
-	const scale = String(colour).startsWith("color(") ? 255 : 1;
-	const alpha = parts.length > 3 ? (parts[3] ?? 1) : 1;
-	return parts.slice(0, 3).map((channel) => channel * scale * alpha + ground * (1 - alpha));
+	const rgba = present(colorOf(String(colour)), `the channels of ${String(colour)}`);
+	return [rgba.r, rgba.g, rgba.b].map((channel) => channel * 255 * rgba.a + ground * (1 - rgba.a));
+}
+
+function levelOf(colour: unknown, ground: number): number {
+	const [red = 0, green = 0, blue = 0] = paint(colour, ground);
+	return Math.round((0.2126 * red + 0.7152 * green + 0.0722 * blue) * 10) / 10;
+}
+
+function withLevels(measured: Readonly<Record<string, unknown>>, ground: number): Record<string, unknown> {
+	return Object.fromEntries(
+		Object.entries(measured).map(([name, held]) => [name, name === "tones" ? held : levelOf(held, ground)]),
+	);
 }
 
 function relativeLuminance([red = 0, green = 0, blue = 0]: Channels): number {

@@ -20,8 +20,8 @@ Today the agent builds every app in the same look, because the brief says "the l
 
 ### 1. The catalogue reaches the agent
 
-- `layAgentFiles` lays `design-catalogue/` (README, `systems/*/system.md`, `systems/*/references/` without `more/`, `patterns/`) into the vault's handbook folder, read-only, with the `.laid-by-plugin` mark the other laid files use.
-- The tool gets `node {tool} systems [--centre …] [--activity …] [--density …]`: lists systems ranked by matched front-matter parameters, each with its idea line.
+- `layAgentFiles` lays `design-catalogue/` (README, `patterns/`) and `design-systems/` (`*/DESIGN.md`, `*/USAGE.md`, `*/manifest.json`, `*/tokens.css`, `*/references/` without `more/`) into the vault's handbook folder, read-only, with the `.laid-by-plugin` mark the other laid files use.
+- The tool gets `node {tool} systems [--centre …] [--activity …] [--density …]`: lists systems ranked by matched `manifest.json` `fit` parameters, each with its `description`.
 
 ### 2. A new stage, "Design system", after the spec
 
@@ -30,7 +30,7 @@ Stages become: 1 spec → **2 design system** → 3 domain → 4 design → 5 da
 1. From the spec, the agent fills the app's fit (centre, activity, density, tone, device).
 2. `systems` ranks the catalogue; the agent reads the top entries in full and proposes **up to three** to the person, each as one line: the idea, why it fits this app, and its first reference picture.
 3. The person picks one, or asks for another round. **This is the second place the agent waits**, after the spec.
-4. The agent writes the app's own system to `docs/design-system.md`: the chosen `system.md` adapted to the app — the tint chosen by its colour algorithm, the imagery kinds of this domain, light and dark. The chosen system's reference pictures are copied to `docs/references/design/`.
+4. The agent writes the app's own system to `docs/design-system.md`: the chosen `DESIGN.md` adapted to the app — the tint chosen by its colour algorithm, the imagery kinds of this domain, light and dark. The chosen system's reference pictures are copied to `docs/references/design/`.
 5. The agent changes the app's kit (`src/shared/kit`) to that system: tokens first, then each component whose look the system defines. Behaviour stays.
 
 _Over when `docs/design-system.md` exists, the person picked it, and the kit's tokens match it._

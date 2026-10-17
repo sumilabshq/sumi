@@ -54,6 +54,8 @@ const DECLARATION = /\.d\.ts$/;
 const NODE_TARGET = "node20";
 const BUILT_BIN = /^\.\/dist\/(.+)\.js$/;
 const HANDBOOK = { from: path.join(REPO, "docs/ai"), into: path.join(REPO, "packages/cli/dist/handbook") };
+const SYSTEMS = { from: path.join(REPO, "design-systems"), into: path.join(REPO, "packages/cli/dist/design-systems") };
+const UNSHIPPED_SYSTEM_FOLDER = /\/(?:references|tests)(?:\/|$)/;
 const BROWSER_STYLES = {
 	host: path.join(REPO, "packages/core/browser-host.css"),
 	board: path.join(REPO, "packages/host-obsidian/styles.css"),
@@ -79,6 +81,10 @@ async function buildEach(folders: readonly string[]): Promise<void> {
 	for (const folder of folders) await bundleEntries(folder, builtIn(folder));
 	for (const folder of folders) await bundleNodeEntries(folder, builtIn(folder));
 	fs.cpSync(HANDBOOK.from, HANDBOOK.into, { recursive: true });
+	fs.cpSync(SYSTEMS.from, SYSTEMS.into, {
+		recursive: true,
+		filter: (from) => !UNSHIPPED_SYSTEM_FOLDER.test(from.slice(SYSTEMS.from.length)),
+	});
 	writeBrowserStyles();
 	for (const folder of folders) {
 		copyHandWrittenDeclarations(folder, builtIn(folder));

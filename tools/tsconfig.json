@@ -48,6 +48,7 @@
 		"loader/**/*.ts",
 		"lint/**/*.ts",
 		"../packages/host-obsidian/src/legacy/build-modules.d.ts",
+		"../packages/host-obsidian/src/project-seed-module.d.ts",
 		"../packages/core/src/*.d.ts",
 		"../packages/kit/src/jsx-namespace.d.ts"
 	]

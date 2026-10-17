@@ -1,6 +1,19 @@
 import type { DataAdapter } from "obsidian";
 import { HANDBOOK_DIR, ROOT } from "@widgetarium/core/paths.js";
-import MINIMAL_CHOICES from "../../../../../design-catalogue/systems/minimal/settings.json";
+import MINIMAL_CHOICES from "../../../../../design-systems/minimal/settings.json";
+import FROSTED_CHOICES from "../../../../../design-systems/frosted/settings.json";
+import DEFAULT_USAGE from "../../../../../design-systems/default/USAGE.md";
+import DEFAULT_DESIGN from "../../../../../design-systems/default/DESIGN.md";
+import DEFAULT_TOKENS from "../../../../../design-systems/default/tokens.css";
+import MINIMAL_USAGE from "../../../../../design-systems/minimal/USAGE.md";
+import MINIMAL_DESIGN from "../../../../../design-systems/minimal/DESIGN.md";
+import MINIMAL_TOKENS from "../../../../../design-systems/minimal/tokens.css";
+import MINIMAL_LANDING_USAGE from "../../../../../design-systems/minimal-landing/USAGE.md";
+import MINIMAL_LANDING_DESIGN from "../../../../../design-systems/minimal-landing/DESIGN.md";
+import MINIMAL_LANDING_TOKENS from "../../../../../design-systems/minimal-landing/tokens.css";
+import FROSTED_USAGE from "../../../../../design-systems/frosted/USAGE.md";
+import FROSTED_DESIGN from "../../../../../design-systems/frosted/DESIGN.md";
+import FROSTED_TOKENS from "../../../../../design-systems/frosted/tokens.css";
 import { DESIGN_SYSTEM_PATH } from "@widgetarium/core/design-rules.js";
 import HANDBOOK_BOARD from "../../../../../docs/ai/board.md";
 import HANDBOOK_SURFACES from "../../../../../docs/ai/surfaces.md";
@@ -11,26 +24,25 @@ import HANDBOOK_SPEC from "../../../../../docs/ai/spec.md";
 import HANDBOOK_KIT from "../../../../../docs/ai/kit.md";
 import HANDBOOK_CLEAN_UI from "../../../../../docs/ai/clean-ui.md";
 import HANDBOOK_COMPONENTS from "../../../../../docs/ai/components.md";
-import MINIMAL_COLLECTIONS from "../../../../../design-catalogue/systems/minimal/patterns/collections.md";
-import MINIMAL_MOTION from "../../../../../design-catalogue/systems/minimal/patterns/motion.md";
-import MINIMAL from "../../../../../design-catalogue/systems/minimal/system.md";
-import MINIMAL_ASIDE from "../../../../../design-catalogue/systems/minimal/patterns/aside.md";
-import MINIMAL_BREADCRUMBS from "../../../../../design-catalogue/systems/minimal/patterns/breadcrumbs.md";
-import MINIMAL_CARDS from "../../../../../design-catalogue/systems/minimal/patterns/cards.md";
-import MINIMAL_COLOUR_ART from "../../../../../design-catalogue/systems/minimal/patterns/colour-art.md";
-import MINIMAL_COLOUR_MONOCHROME from "../../../../../design-catalogue/systems/minimal/patterns/colour-monochrome.md";
-import MINIMAL_COLOUR_SPOT from "../../../../../design-catalogue/systems/minimal/patterns/colour-spot.md";
-import MINIMAL_TYPOGRAPHY from "../../../../../design-catalogue/systems/minimal/patterns/typography.md";
-import MINIMAL_FOOTER from "../../../../../design-catalogue/systems/minimal/patterns/footer.md";
-import MINIMAL_IN_PAGE_NAVIGATION from "../../../../../design-catalogue/systems/minimal/patterns/in-page-navigation.md";
-import MINIMAL_NAVIGATION_HEADER from "../../../../../design-catalogue/systems/minimal/patterns/navigation-header.md";
-import MINIMAL_NAVIGATION_LOGIC from "../../../../../design-catalogue/systems/minimal/patterns/navigation-logic.md";
-import MINIMAL_NAVIGATION_SIDEBAR from "../../../../../design-catalogue/systems/minimal/patterns/navigation-sidebar.md";
-import MINIMAL_NOTIFICATIONS from "../../../../../design-catalogue/systems/minimal/patterns/notifications.md";
-import MINIMAL_PAGE_HEADER from "../../../../../design-catalogue/systems/minimal/patterns/page-header.md";
-import MINIMAL_PAGE_WIDTHS from "../../../../../design-catalogue/systems/minimal/patterns/page-widths.md";
-import MINIMAL_SEARCH from "../../../../../design-catalogue/systems/minimal/patterns/search.md";
-import MINIMAL_SETTINGS from "../../../../../design-catalogue/systems/minimal/patterns/settings.md";
+import MINIMAL_COLLECTIONS from "../../../../../design-systems/minimal/patterns/collections.md";
+import MINIMAL_MOTION from "../../../../../design-systems/minimal/patterns/motion.md";
+import MINIMAL_ASIDE from "../../../../../design-systems/minimal/patterns/aside.md";
+import MINIMAL_BREADCRUMBS from "../../../../../design-systems/minimal/patterns/breadcrumbs.md";
+import MINIMAL_CARDS from "../../../../../design-systems/minimal/patterns/cards.md";
+import MINIMAL_COLOUR_ART from "../../../../../design-systems/minimal/patterns/colour-art.md";
+import MINIMAL_COLOUR_MONOCHROME from "../../../../../design-systems/minimal/patterns/colour-monochrome.md";
+import MINIMAL_COLOUR_SPOT from "../../../../../design-systems/minimal/patterns/colour-spot.md";
+import MINIMAL_TYPOGRAPHY from "../../../../../design-systems/minimal/patterns/typography.md";
+import MINIMAL_FOOTER from "../../../../../design-systems/minimal/patterns/footer.md";
+import MINIMAL_IN_PAGE_NAVIGATION from "../../../../../design-systems/minimal/patterns/in-page-navigation.md";
+import MINIMAL_NAVIGATION_HEADER from "../../../../../design-systems/minimal/patterns/navigation-header.md";
+import MINIMAL_NAVIGATION_LOGIC from "../../../../../design-systems/minimal/patterns/navigation-logic.md";
+import MINIMAL_NAVIGATION_SIDEBAR from "../../../../../design-systems/minimal/patterns/navigation-sidebar.md";
+import MINIMAL_NOTIFICATIONS from "../../../../../design-systems/minimal/patterns/notifications.md";
+import MINIMAL_PAGE_HEADER from "../../../../../design-systems/minimal/patterns/page-header.md";
+import MINIMAL_PAGE_WIDTHS from "../../../../../design-systems/minimal/patterns/page-widths.md";
+import MINIMAL_SEARCH from "../../../../../design-systems/minimal/patterns/search.md";
+import MINIMAL_SETTINGS from "../../../../../design-systems/minimal/patterns/settings.md";
 import SHELLS from "../../../../../design-catalogue/shells/README.md";
 import SHELL_SIDEBAR from "../../../../../design-catalogue/shells/sidebar.md";
 import SHELL_TOP_BAR from "../../../../../design-catalogue/shells/top-bar.md";
@@ -54,6 +66,12 @@ const TYPES_MARK_TEXT = laidMarkTextOf("These types are", WIDGET_TYPES_HASH);
 
 export type AgentFilesAdapter = Pick<DataAdapter, "exists" | "mkdir" | "list" | "rmdir" | "remove" | "read" | "write">;
 
+interface SystemPages {
+	readonly usage: string;
+	readonly design: string;
+	readonly tokens: string;
+}
+
 export const HANDBOOK: Readonly<Record<string, string>> = {
 	"board.md": HANDBOOK_BOARD,
 	"surfaces.md": HANDBOOK_SURFACES,
@@ -66,8 +84,16 @@ export const HANDBOOK: Readonly<Record<string, string>> = {
 	"components.md": HANDBOOK_COMPONENTS,
 	"minimal/patterns/collections.md": MINIMAL_COLLECTIONS,
 	"minimal/patterns/motion.md": MINIMAL_MOTION,
-	"minimal/system.md": MINIMAL,
+	...systemPagesOf("default", { usage: DEFAULT_USAGE, design: DEFAULT_DESIGN, tokens: DEFAULT_TOKENS }),
+	...systemPagesOf("minimal", { usage: MINIMAL_USAGE, design: MINIMAL_DESIGN, tokens: MINIMAL_TOKENS }),
+	...systemPagesOf("minimal-landing", {
+		usage: MINIMAL_LANDING_USAGE,
+		design: MINIMAL_LANDING_DESIGN,
+		tokens: MINIMAL_LANDING_TOKENS,
+	}),
+	...systemPagesOf("frosted", { usage: FROSTED_USAGE, design: FROSTED_DESIGN, tokens: FROSTED_TOKENS }),
 	"minimal/settings.json": `${JSON.stringify(MINIMAL_CHOICES, null, "\t")}\n`,
+	"frosted/settings.json": `${JSON.stringify(FROSTED_CHOICES, null, "\t")}\n`,
 	"minimal/patterns/aside.md": MINIMAL_ASIDE,
 	"minimal/patterns/breadcrumbs.md": MINIMAL_BREADCRUMBS,
 	"minimal/patterns/cards.md": MINIMAL_CARDS,
@@ -97,6 +123,7 @@ export const HANDBOOK: Readonly<Record<string, string>> = {
 };
 
 const PAGES_LAID_BEFORE = `${HANDBOOK_DIR}/patterns`;
+const SYSTEM_PAGE_LAID_BEFORE = `${HANDBOOK_DIR}/minimal/system.md`;
 
 export async function layAgentFiles(adapter: AgentFilesAdapter): Promise<string[]> {
 	const written: string[] = [];
@@ -139,6 +166,14 @@ export function readLaidMark(adapter: AgentFilesAdapter, path: string): Promise<
 	return adapter.read(path).catch(() => null);
 }
 
+function systemPagesOf(system: string, { usage, design, tokens }: SystemPages): Record<string, string> {
+	return {
+		[`${system}/USAGE.md`]: usage,
+		[`${system}/DESIGN.md`]: design,
+		[`${system}/tokens.css`]: tokens,
+	};
+}
+
 async function layFoldersOf(adapter: AgentFilesAdapter, pageName: string): Promise<void> {
 	const folders = pageName.split("/").slice(0, -1);
 	for (let depth = 1; depth <= folders.length; depth++) {
@@ -161,6 +196,10 @@ async function sweepPagesNoLongerLaid(adapter: AgentFilesAdapter): Promise<strin
 	if (await adapter.exists(PAGES_LAID_BEFORE)) {
 		await adapter.rmdir(PAGES_LAID_BEFORE, true);
 		gone.push("patterns/");
+	}
+	if (await adapter.exists(SYSTEM_PAGE_LAID_BEFORE)) {
+		await adapter.remove(SYSTEM_PAGE_LAID_BEFORE);
+		gone.push("minimal/system.md");
 	}
 	const held = await adapter.list(HANDBOOK_DIR);
 	for (const at of held?.files ?? []) {

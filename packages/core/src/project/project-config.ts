@@ -5,6 +5,9 @@ import { parseJson } from "./project-json.js";
 export const PROJECT_CONFIG_FILE = "widgetarium.json";
 
 export const DEFAULT_APP_ICON = "public/icon.svg";
+export const DEFAULT_DESIGN_SYSTEM = "default";
+export const DEFAULT_TOKENS_PATH = "src/styles/tokens.css";
+export const DESIGN_SYSTEM_SLUG = /^[a-z0-9][a-z0-9-]*$/;
 
 const MISSING_CONFIG = `missing at the project root; create ${PROJECT_CONFIG_FILE} holding {"app": {"name": "<app>"}}, every path has a default`;
 const APP_NAME_MISSING = 'app.name: the app has no name; write {"app": {"name": "<app>"}}';
@@ -34,6 +37,11 @@ const CatalogueSchema = z.strictObject({
 	registries: z.array(z.string().min(1)).default([]),
 });
 
+const DesignSchema = z.strictObject({
+	system: z.string().regex(DESIGN_SYSTEM_SLUG).default(DEFAULT_DESIGN_SYSTEM),
+	tokens: ProjectPathSchema.default(DEFAULT_TOKENS_PATH),
+});
+
 const AppSchema = z.strictObject({
 	name: z.string().min(1).optional(),
 	icon: ProjectPathSchema.default(DEFAULT_APP_ICON),
@@ -46,6 +54,7 @@ export const ProjectConfigSchema = z.strictObject({
 	paths: ProjectPathsSchema.prefault({}),
 	aliases: AliasesSchema.optional(),
 	catalogue: CatalogueSchema.optional(),
+	design: DesignSchema.prefault({}),
 });
 
 // TRADE-OFF: editors are told app.name is required while the parser still reads a top-level name.
@@ -55,6 +64,7 @@ const REQUIRED_WHEN_WRITTEN = new Map<z.core.$ZodType, string[]>([
 ]);
 
 export type ProjectPaths = z.output<typeof ProjectPathsSchema>;
+export type ProjectDesign = z.output<typeof DesignSchema>;
 export type ProjectAliases = z.output<typeof AliasesSchema>;
 export interface ProjectApp {
 	readonly name: string;

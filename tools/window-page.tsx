@@ -177,11 +177,11 @@ const DARK: ThemeTokens = {
 	"--interactive-accent": "#8b6cef",
 };
 
-const LEVELS = ["--background-primary", "--wg-cell-fill", "--wg-kit-fill", "--wg-kit-raise"];
+const LEVELS = ["--wg-kit-page", "--wg-cell-fill", "--wg-kit-fill", "--wg-kit-raise"];
 
 function levelsUnder(theme: ThemeTokens): Record<string, string> {
 	const under = document.createElement("div");
-	under.className = "wg-root";
+	under.className = theme === DARK ? "wg-root theme-dark" : "wg-root";
 	under.style.cssText = "position:absolute;left:-4000px;top:0;width:200px;";
 	for (const [name, value] of Object.entries(theme)) under.style.setProperty(name, value);
 	document.body.appendChild(under);

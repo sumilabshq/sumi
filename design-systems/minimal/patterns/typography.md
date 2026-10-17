@@ -1,6 +1,6 @@
 # Typography
 
-Font pairs this system offers. One pair per product, chosen once; the roles (display, heading, text) and sizes stay as `system.md` sets them. All are free Google Fonts under the Open Font License.
+Font pairs this system offers. One pair per product, chosen once; the roles (display, heading, text) and sizes stay as `DESIGN.md` sets them. All are free Google Fonts under the Open Font License.
 
 | Pair          | Display                             | Text                      | Mono (ids only)      | Feels                      | For                                             |
 | ------------- | ----------------------------------- | ------------------------- | -------------------- | -------------------------- | ----------------------------------------------- |

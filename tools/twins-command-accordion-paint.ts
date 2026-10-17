@@ -21,7 +21,7 @@ const OBSIDIAN_FOCUS_OUTLINE = `input[type='text']:focus-visible, input[type='se
 
 const FOCUS_RINGS = `(async () => {
 	const probe = document.createElement("i");
-	probe.style.color = "var(--interactive-accent)";
+	probe.style.color = "var(--ring)";
 	document.body.append(probe);
 	const accent = getComputedStyle(probe).color;
 	probe.remove();

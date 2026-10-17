@@ -180,6 +180,15 @@ export {
 
 export { LAYOUT_KINDS } from "./constants/layout";
 export { SHADCN_TOKENS } from "./constants/shadcn-tokens";
+export {
+	BRAND_EXTENSION_TOKENS,
+	CONTRACT_TOKENS,
+	FOREGROUND_PAIRS,
+	KIT_ROLE_TOKENS,
+	NON_COLOUR_TOKENS,
+	SHADCN_EXPECTED_TOKENS,
+	SHADCN_REQUIRED_TOKENS,
+} from "./constants/token-contract";
 export { MARK_SHAPE_NAMES, MARK_TONE_NAMES } from "./constants/marks";
 export { APPROVAL_TONES, BADGE_COLORS, BADGE_VARIANTS, PRIORITY_TONES, TONE_NAMES } from "./constants/tones";
 export { useRoomForLabel } from "./hooks/use-room-for-label";

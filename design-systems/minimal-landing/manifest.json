@@ -1,0 +1,36 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "minimal-landing",
+	"name": "Minimal Landing",
+	"category": "Landing",
+	"description": "Minimal's marketing sibling: a page that sells by white space, one big action per screen and cards that each prove one claim.",
+	"source": {
+		"type": "authored",
+		"origin": "the person's own direction: Minimal's landing sibling; references: a fintech landing page shot and Aira's pricing page",
+		"credit": "webdesignssphere, watermark on refs 1–3: [AUTHOR — add link before anything is published]. Aira: [AUTHOR — add link before anything is published] (ref 12)"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["information", "object"],
+		"activity": ["browse"],
+		"photogenic": ["yes", "user-photos"],
+		"session": ["glance", "browse"],
+		"density": ["low"],
+		"tone": ["calm", "plain", "premium"],
+		"device": ["both", "desktop"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

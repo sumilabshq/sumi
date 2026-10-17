@@ -26,7 +26,7 @@ Two questions settle almost every case:
 ## Table
 
 - Three or more fields worth comparing. With one or two fields it is a list.
-- Edge to edge in its region, no card around it; rows, header and sorting as `system.md` § Data display.
+- Edge to edge in its region, no card around it; rows, header and sorting as `DESIGN.md` § Component Stylings, Data display.
 - The toolbar above it holds search, filter chips, sort and, where it fits, the view switch.
 
 ## List

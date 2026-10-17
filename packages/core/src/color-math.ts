@@ -1,3 +1,5 @@
+import { rgbaOfOklch } from "./design-system/oklch.js";
+
 export interface Rgba {
 	readonly r: number;
 	readonly g: number;
@@ -7,12 +9,14 @@ export interface Rgba {
 
 const CLEAR: Rgba = { r: 0, g: 0, b: 0, a: 0 };
 const SRGB_PREFIX = "color(srgb ";
+const OKLCH_PREFIX = "oklch(";
 const BYTE_MAX = 255;
 
 export function colorOf(text: string | null | undefined): Rgba | null {
 	const value = String(text ?? "").trim();
 	if (value === "transparent") return CLEAR;
 	if (value.startsWith(SRGB_PREFIX)) return channelsOf(numbersIn(value.slice(SRGB_PREFIX.length)), 1);
+	if (value.startsWith(OKLCH_PREFIX)) return oklchColourOf(value.slice(OKLCH_PREFIX.length).replace("none", "0"));
 	if (!/^rgba?\(/.test(value)) return null;
 	return channelsOf(numbersIn(value), BYTE_MAX);
 }
@@ -52,4 +56,10 @@ function luminanceOf({ r, g, b }: Rgba): number {
 
 function linear(channel: number): number {
 	return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+}
+
+function oklchColourOf(channels: string): Rgba | null {
+	const [l, c, h, alpha = 1] = numbersIn(channels);
+	if (l === undefined || c === undefined || h === undefined) return null;
+	return rgbaOfOklch({ l, c, h, alpha });
 }

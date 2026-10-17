@@ -33,6 +33,10 @@ widget; both import the schema in `{paths.schemas}`.
 4. A board is a tree of boxes and tiles, and every node carries its surface: [board.md]({handbook}/board.md), [surfaces.md]({handbook}/surfaces.md), [examples.md]({handbook}/examples.md).
 5. You draw every element yourself on Radix (`radix-ui`), with Tailwind on the kit's tokens and motion from `motion/react` where CSS cannot: [components.md]({handbook}/components.md), [design-system.md]({handbook}/design-system.md).
 
+## The look
+
+`widgetarium.json` names the design system (`design.system`). Read it in this order: [USAGE.md]({paths.docs}/design-system/USAGE.md), [DESIGN.md]({paths.docs}/design-system/DESIGN.md), then `{design.tokens}`. Change a parameter there, never a formula; `npx widgetarium system use <id>` swaps the system.
+
 A command written `node {tool} …` in the handbook belongs to the Obsidian plugin and does not run here.
 
 ## Catalogue code is a starting point

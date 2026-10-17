@@ -5,6 +5,8 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
 import { isObject } from "../packages/core/src/engine/is-object.js";
+import { colorOf } from "../packages/core/src/color-math.js";
+import { withColourBytes } from "./colour-bytes.ts";
 import { findBrowser } from "./harness.ts";
 
 const work = mkdtempSync(path.join(tmpdir(), "wg-window-"));
@@ -180,7 +182,7 @@ check("the grid does not run away at the floor zoom", num(floor, "grid.count") <
 
 console.log("\n— three levels, and the top one is the canvas —");
 for (const [theme, read] of Object.entries(isObject(levels) ? levels : {})) {
-	const canvas = level(at(read, "--background-primary"), null);
+	const canvas = level(at(read, "--wg-kit-page"), null);
 	const ground = level(at(read, "--wg-cell-fill"), canvas);
 	const control = level(at(read, "--wg-kit-fill"), canvas);
 	const card = level(at(read, "--wg-kit-raise"), canvas);
@@ -199,8 +201,8 @@ for (const [theme, read] of Object.entries(isObject(levels) ? levels : {})) {
 }
 check(
 	"the window's own ground is the canvas colour",
-	at(arrival, "canvasFill"),
-	at(at(levels, "light"), "--background-primary"),
+	withColourBytes(at(arrival, "canvasFill")),
+	withColourBytes(at(at(levels, "light"), "--wg-kit-page")),
 );
 
 console.log("\n— the glass survives, because nothing above it is transformed —");
@@ -346,16 +348,10 @@ console.log("\n— the wheel drives the playground, and a pinch zooms about the 
 }
 
 function level(colour: unknown, fallback: number | null): number {
-	const numbers =
-		String(colour)
-			.match(/[\d.]+/g)
-			?.map(Number) ?? [];
-	if (numbers.length < 3) return NaN;
-	const scale = String(colour).startsWith("color(") ? 255 : 1;
-	const [red = NaN, green = NaN, blue = NaN] = numbers.slice(0, 3).map((value) => value * scale);
-	const alpha = numbers.length > 3 ? (numbers[3] ?? NaN) : 1;
-	const own = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
-	return fallback === null || alpha === 1 ? own : own * alpha + fallback * (1 - alpha);
+	const rgba = colorOf(String(colour));
+	if (rgba === null) return NaN;
+	const own = (0.2126 * rgba.r + 0.7152 * rgba.g + 0.0722 * rgba.b) * 255;
+	return fallback === null || rgba.a === 1 ? own : own * rgba.a + fallback * (1 - rgba.a);
 }
 
 console.log(

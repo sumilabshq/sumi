@@ -6,8 +6,15 @@ import { filesUnder } from "./template-files.js";
 const PRETTIER_IGNORE = ".prettierignore";
 
 export async function formatProject(target: string): Promise<void> {
+	await formatFiles(
+		target,
+		filesUnder(target, () => true),
+	);
+}
+
+export async function formatFiles(target: string, relatives: readonly string[]): Promise<void> {
 	const ignorePath = path.join(target, PRETTIER_IGNORE);
-	for (const relative of filesUnder(target, () => true)) await formatFile(path.join(target, relative), ignorePath);
+	for (const relative of relatives) await formatFile(path.join(target, relative), ignorePath);
 }
 
 async function formatFile(file: string, ignorePath: string): Promise<void> {

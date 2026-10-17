@@ -154,7 +154,7 @@ while you design: a widget shows a photo by its literal `https://` address, and 
 `photos <app>` before it places the page.
 
 **The look before anything is drawn.** The app's design system ships its settings beside its
-`system.md` (`minimal/settings.json` for Minimal): the choices a person may make about its look (corners and motion, how much colour, the
+`DESIGN.md` (`minimal/settings.json` for Minimal): the choices a person may make about its look (corners and motion, how much colour, the
 ground, density, fonts) with what each offers. Offer them on the canvas, then shape the offer to this
 app: drop a setting the domain has no use for and one that changes nothing on its pages (how plates stand
 apart when the pages draw no plates), narrow its options, recommend the one you would pick
@@ -169,6 +169,16 @@ node {tool} look <app>
 
 The person picks on the canvas; the screens redraw at once for what tokens can show, and the rest
 you draw. Read the picks with `look <app>` before every page and draw in exactly what they say.
+
+**The systems on disk**, each read in this order — usage, design, then the tokens, whose parameters
+you may change and whose formulas you never do:
+
+| System            | Read                                                                                   |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| `default`         | `default/USAGE.md`, `default/DESIGN.md`, `default/tokens.css`                          |
+| `minimal`         | `minimal/USAGE.md`, `minimal/DESIGN.md`, `minimal/tokens.css`, `minimal/settings.json` |
+| `minimal-landing` | `minimal-landing/USAGE.md`, `minimal-landing/DESIGN.md`, `minimal-landing/tokens.css`  |
+| `frosted`         | `frosted/USAGE.md`, `frosted/DESIGN.md`, `frosted/tokens.css`, `frosted/settings.json` |
 
 **Three directions first.** Pick the shell from the App shell table in `design-system.md`, then draw
 the opening page three ways that differ in structure — what leads, how the page is cut — as

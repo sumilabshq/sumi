@@ -91,20 +91,26 @@ same("field gap", px(ours, ".wg-kit-field", "gap"), px(ref, ".search", "gap"));
 same("pill padding", px(ours, ".wg-kit-pill", "padding"), px(ref, ".pilltag", "padding"));
 
 console.log("\n— the tokens —");
-const tok = (css: string, name: string): string | null =>
+const ALIAS = /^var\((--[a-z0-9-]+)\)$/;
+const declared = (css: string, name: string): string | null =>
 	(css.match(new RegExp(`\\n\\s*${name}:\\s*([^;]+);`)) ?? [])[1]?.trim() ?? null;
+const tok = (css: string, name: string): string | null => {
+	const value = declared(css, name);
+	const alias = ALIAS.exec(value ?? "")?.[1];
+	return alias === undefined ? value : (tok(css, alias) ?? value);
+};
 same("plate radius", tok(ours, "--wg-kit-plate"), "14px");
 same("plate padding (tight)", tok(ours, "--wg-kit-plate-pad"), "8px");
 const relational = (name: string, toward: string): number => {
 	const value = tok(ours, name) ?? "";
-	const mixed = value.match(/^color-mix\(in srgb,\s*(.+?)\s+([\d.]+)%,\s*var\(--background-primary\)\)$/);
+	const mixed = value.match(/^color-mix\(in srgb,\s*(.+?)\s+([\d.]+)%,\s*var\(--background\)\)$/);
 	same(`${name} is ${toward} into the surface`, mixed?.[1] ?? value, toward);
 	same(`${name} names no ramp step`, /--color-base-\d/.test(value) ? value : 0, 0);
 	return mixed ? Number(mixed[2]) : 0;
 };
-const restPercent = relational("--wg-kit-fill", "var(--text-normal)");
-const hoverPercent = relational("--wg-kit-fill-hover", "var(--text-normal)");
-const raisePercent = relational("--wg-kit-raise", "#ffffff");
+const restPercent = relational("--wg-kit-fill", "var(--foreground)");
+const hoverPercent = relational("--wg-kit-fill-hover", "var(--foreground)");
+const raisePercent = relational("--wg-kit-raise", "oklch(1 0 0)");
 
 same("hover travels further toward the ink than rest", hoverPercent > restPercent, true);
 same("and by a step that can be seen", hoverPercent - restPercent >= 5, true);
