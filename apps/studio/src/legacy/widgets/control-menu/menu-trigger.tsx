@@ -9,7 +9,7 @@ export interface MenuTriggerProps {
 	readonly isOpen: boolean;
 }
 
-const UNREAD_LABEL = "Apps menu";
+const UNREAD_LABEL = "Workspace menu";
 
 export function MenuTrigger({ app, isOpen }: MenuTriggerProps): ReactElement {
 	return (

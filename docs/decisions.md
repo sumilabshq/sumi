@@ -229,8 +229,9 @@ itself built from `@studio` widgets and a pack. Replaced: `@chrome` widgets in t
   `defineStates`. Pan, zoom and the camera latch live there once, and the Obsidian design view
   imports them through `@widgetarium/studio`.
 - **The catalogue is the engine's, behind one right panel.** `STUDIO_STATE.panel` is `none |
-assistant | catalogue`: the band's Widgets and AI buttons toggle it, so two panels never stand side
-  by side and the outlet narrows by one column. The `@catalogue` widgets moved from the registry into
+catalogue`: a catalogue request opens it, its answer or its close press shuts it, and the band has no
+  button for it; the chat is a column of its own left of the outlet
+  and never closes, so the catalogue opens on the right beside it and the outlet narrows by one column. The `@catalogue` widgets moved from the registry into
   `@widgetarium/studio` as static widgets and their two boards became typed constants; Obsidian's
   sidebar views draw the same `CatalogueBoard` over the plugin's port. Replaced: a read-only system
   scope (`widgetarium-plugin/widgets`) compiled at runtime from files bundled into the plugin, with

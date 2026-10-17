@@ -31,7 +31,32 @@ export function useTakesCatalogueAsks(
 			stopListening();
 		};
 	}, [frame, requests, state]);
+	useShutsPanelOnceAnswered({ requests, state, taken, setTaken });
 	return taken;
+}
+
+interface AnsweredAsk {
+	readonly requests: CatalogueRequests;
+	readonly state: StudioState;
+	readonly taken: number | null;
+	readonly setTaken: (taken: null) => void;
+}
+
+function useShutsPanelOnceAnswered({ requests, state, taken, setTaken }: AnsweredAsk): void {
+	useEffect(() => {
+		if (taken === null) {
+			return undefined;
+		}
+
+		return requests.subscribe(() => {
+			if (requests.current()?.id === taken) {
+				return;
+			}
+
+			setTaken(null);
+			state.closePanel("catalogue");
+		});
+	}, [requests, state, taken, setTaken]);
 }
 
 function isOnScreen(node: HTMLElement): boolean {

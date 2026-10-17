@@ -4,6 +4,7 @@ import { parse } from "yaml";
 import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
 import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
+import { CATALOGUE_REQUESTS } from "../packages/core/src/engine/catalogue-requests.ts";
 import {
 	FixedWidgetDrawingGateway,
 	FixedDesignFolderGateway,
@@ -12,6 +13,7 @@ import {
 	emptyProject,
 } from "./canvas-hosts.ts";
 import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
+import { LOOK_ROOM } from "../packages/canvas/shared/lib/field/field-marks.ts";
 import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
@@ -19,14 +21,15 @@ import {
 	appNotePathOf,
 	appNoteText,
 	chromeInsetsOf,
-	foldersAlong,
-	newAppFilesOf,
 	numberedName,
 	projectFoldersOf,
 	renamedFolderOf,
+	renamedPathOf,
 	studioNoteOf,
 } from "../packages/host-obsidian/src/legacy/studio-note.ts";
 import type { WindowChrome } from "../packages/host-obsidian/src/legacy/studio-note.ts";
+import { layNewApp } from "../packages/host-obsidian/src/new-app.ts";
+import type { ProjectVault } from "../packages/host-obsidian/src/vault-project-writer.ts";
 import type { StudioMount } from "../apps/studio/src/canvas/studio-canvas.ts";
 import type { StageMount } from "../apps/studio/src/canvas/design-stage.ts";
 
@@ -79,8 +82,8 @@ check(
 
 check(
 	"the first name is kept as it is, the next ones numbered",
-	[numberedName("Untitled app", 1), numberedName("Untitled app", 3)],
-	["Untitled app", "Untitled app 3"],
+	[numberedName("Untitled workspace", 1), numberedName("Untitled workspace", 3)],
+	["Untitled workspace", "Untitled workspace 3"],
 );
 check("a name never carries a slash, a backslash or a colon", numberedName("a/b\\c:d", 1), "a-b-c-d");
 check("an app's note stands beside its folder, never inside it", appNotePathOf("Apps/Farm"), "Apps/Farm.md");
@@ -93,16 +96,55 @@ check(
 	],
 	["Apps/Ranch", "Projects/Farm", null],
 );
-
 check(
-	"a new app lays its config and an empty root route",
-	newAppFilesOf("Untitled app 2").map(({ path, text }) => [path, JSON.parse(text)]),
-	[
-		["Untitled app 2/widgetarium.json", { app: { name: "Untitled app 2" } }],
-		["Untitled app 2/src/app/routes/board.json", { v: 2, layout: { dir: "column", of: [] } }],
-	],
+	"a renamed workspace keeps its parent folder and a name safe for a folder",
+	[renamedPathOf("Apps/Farm", " Ranch "), renamedPathOf("Farm", "North/South")],
+	["Apps/Ranch", "North-South"],
 );
-check("every folder above a file is made first", foldersAlong("A/src/app/board.json"), ["A", "A/src", "A/src/app"]);
+
+const laidByVault = new Map<string, string>();
+const madeFolders = new Set<string>();
+const VAULT_ENTRY = standIn<TFolder>({}, [], "vault entry");
+await layNewApp(
+	standIn<ProjectVault>(
+		{
+			getAbstractFileByPath: (at: string) => (madeFolders.has(at) || laidByVault.has(at) ? VAULT_ENTRY : null),
+			createFolder: async (at: string) => {
+				madeFolders.add(at);
+				return VAULT_ENTRY;
+			},
+			create: async (at: string, text: string) => {
+				laidByVault.set(at, text);
+				return standIn<TFile>({}, [], "vault file");
+			},
+		},
+		["getAbstractFileByPath", "createFolder", "create"],
+		"project vault",
+	),
+	"Untitled app 2",
+);
+const laidConfig: unknown = JSON.parse(laidByVault.get("Untitled app 2/widgetarium.json") ?? "null");
+check(
+	"a new app is laid by the one creator: its config names the app and the default system",
+	[fieldOfJson(laidConfig, "app", "name"), fieldOfJson(laidConfig, "design", "system")],
+	["Untitled app 2", "default"],
+);
+check(
+	"beside an empty root route and the system's tokens, every folder made before its file",
+	[
+		laidByVault.has("Untitled app 2/src/app/routes/board.json"),
+		laidByVault.has("Untitled app 2/src/styles/tokens.css"),
+		madeFolders.has("Untitled app 2/src/app/routes"),
+	],
+	[true, true, true],
+);
+
+function fieldOfJson(value: unknown, ...keys: readonly string[]): unknown {
+	return keys.reduce<unknown>(
+		(held, key) => (typeof held === "object" && held !== null ? Reflect.get(held, key) : undefined),
+		value,
+	);
+}
 
 check("a frameless mac window's corner leaves the traffic lights room", chromeInsetsOf(chrome({})), {
 	left: 76,
@@ -480,55 +522,75 @@ async function drawnFor(file: NoteFile): Promise<HTMLElement> {
 }
 const studioNode = await drawnFor(APP_NOTE);
 check(
-	"an app note draws the studio: the band over the route",
-	[".wg-studio-band", ".wg-studio-outlet .wg-root"].map((selector) => studioNode.querySelector(selector) !== null),
-	[true, true],
+	"an app note opens the studio on its canvas, with no band above it",
+	[".wg-studio-outlet [data-canvas-studio]", ".wg-studio-band"].map(
+		(selector) => studioNode.querySelector(selector) !== null,
+	),
+	[true, false],
 );
 check("and no refusal", studioNode.querySelector(".wg-app-refusal")?.textContent ?? null, null);
 const pressIn = (node: HTMLElement, label: string): void =>
 	node.querySelector<HTMLElement>(`button[aria-label="${label}"]`)?.click();
-pressIn(studioNode, "AI assistant");
-await settledUntil(() => studioNode.querySelector(".wg-studio-sidebar .wg-studio-ai-turn.is-mine") !== null);
+await settledUntil(() => studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine") !== null);
 check(
-	"the studio's sidebar draws the chat over the assistant the plugin lends",
+	"the studio's chat column draws the chat over the assistant the plugin lends",
 	[
-		studioNode.querySelector(".wg-studio-sidebar .wg-studio-ai-who")?.textContent ?? null,
-		studioNode.querySelector(".wg-studio-sidebar .wg-studio-ai-turn.is-mine")?.textContent ?? null,
+		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-who")?.textContent ?? null,
+		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine")?.textContent ?? null,
 	],
 	[checkedAssistant.providerLabel, checkedAssistant.asked],
 );
-pressIn(studioNode, "Widgets");
+await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
+check(
+	"the app menu stands in the chat's header, and nowhere else",
+	[
+		studioNode.querySelectorAll('button[aria-label="Farm Stand menu"]').length,
+		studioNode.querySelector('.wg-studio-chat .wg-studio-ai-head button[aria-label="Farm Stand menu"]') !== null,
+	],
+	[1, true],
+);
+const askCatalogueIn = (node: HTMLElement): void => {
+	const frame = node.querySelector<HTMLElement>(".wg-studio");
+	if (!frame) {
+		return;
+	}
+
+	frame.getClientRects = (): DOMRectList => standIn<DOMRectList>({ length: 1 }, ["length"], "rects");
+	void CATALOGUE_REQUESTS.ask({ mode: "place", asker: frame });
+};
+askCatalogueIn(studioNode);
 await settledUntil(() => studioNode.querySelector('.wg-studio-sidebar[data-panel="catalogue"] .wg-board') !== null);
 check(
-	"the Widgets panel takes the assistant's place and draws the catalogue board",
+	"a widget asked for opens the catalogue beside the chat, and the band holds no button to open it or close the chat",
 	[
 		studioNode.querySelectorAll(".wg-studio-sidebar").length,
 		studioNode.querySelector('.wg-studio-sidebar[data-panel="catalogue"] .wg-studio-catalogue-host .wg-board') !== null,
-		studioNode.querySelector(".wg-studio-sidebar .wg-studio-ai-who") === null,
+		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-who") !== null,
+		studioNode.querySelectorAll(".wg-studio-band button").length,
 	],
-	[1, true, true],
+	[1, true, true, 0],
 );
-pressIn(studioNode, "Widgets");
+pressIn(studioNode, "Close the catalogue");
 await settledUntil(() => studioNode.querySelector(".wg-studio-sidebar") === null);
 const besideNode = await drawnFor(APP_NOTE);
 await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
 pressIn(studioNode, "Farm Stand menu");
 await settledUntil(() => document.querySelector(".wg-studio-action-said") !== null);
 [...document.querySelectorAll(".wg-studio-action-said")]
-	.find((said) => said.textContent === "Edit in canvas")
+	.find((said) => said.textContent === "Back to view")
 	?.closest<HTMLElement>('[role="button"]')
 	?.click();
-await settledUntil(() => studioNode.querySelector("[data-canvas-studio]") !== null);
+await settledUntil(() => studioNode.querySelector(".wg-studio-outlet .wg-root") !== null);
 check(
-	"Edit in canvas in one studio shows its canvas and leaves the studio beside it on its route",
+	"Back to view in one studio shows its route and leaves the studio beside it on its canvas",
 	[
+		studioNode.querySelector(".wg-studio-outlet .wg-root") !== null,
 		studioNode.querySelector("[data-canvas-studio]") !== null,
 		besideNode.querySelector("[data-canvas-studio]") !== null,
-		besideNode.querySelector(".wg-studio-outlet .wg-root") !== null,
 	],
 	[true, false, true],
 );
-pressIn(besideNode, "Widgets");
+askCatalogueIn(besideNode);
 await settledUntil(() => besideNode.querySelector(".wg-studio-sidebar") !== null);
 check(
 	"and a panel opened in the one beside it stays there",
@@ -653,8 +715,8 @@ check(
 
 await Promise.all([studioHost.createApp(), studioHost.createApp()]);
 check(
-	"two new apps at once take two folders, each with its config and its note",
-	["Untitled app", "Untitled app 2"].map((folder) => [
+	"two new workspaces at once take two folders, each with its config and its note",
+	["Untitled workspace", "Untitled workspace 2"].map((folder) => [
 		fakeVault.files.has(`${folder}/widgetarium.json`),
 		fakeVault.files.has(`${folder}/src/app/routes/board.json`),
 		fakeVault.files.has(`${folder}.md`),
@@ -664,15 +726,101 @@ check(
 		[true, true, true],
 	],
 );
-fakeVault.failOn = "Untitled app 3/src/app/routes/board.json";
+check("and each new workspace is opened in the leaf", shownIn.splice(0).sort(), [
+	"Untitled workspace 2.md",
+	"Untitled workspace.md",
+]);
+fakeVault.failOn = "Untitled workspace 3/src/app/routes/board.json";
 const refused = await studioHost.createApp().then(
 	() => "created",
 	(failure: unknown) => (failure instanceof Error ? failure.message : String(failure)),
 );
 check(
 	"a failed write removes the folder it made and says why",
-	[refused, fakeVault.folders.has("Untitled app 3"), fakeVault.files.has("Untitled app 3/widgetarium.json")],
-	["The new app was not created: disk full", false, false],
+	[
+		refused,
+		fakeVault.folders.has("Untitled workspace 3"),
+		fakeVault.files.has("Untitled workspace 3/widgetarium.json"),
+	],
+	["The new workspace was not created: disk full", false, false],
+);
+
+const FARM_CONFIG =
+	'{\n\t"name": "Farm",\n\t"app": {\n\t\t"name": "Farm"\n\t},\n\t"design": {\n\t\t"system": "default"\n\t}\n}\n';
+const renameVault: FakeVault = {
+	files: new Map([["Apps/Farm/widgetarium.json", FARM_CONFIG]]),
+	folders: new Set(["Apps", "Apps/Farm", "Apps/Barn"]),
+	failOn: null,
+};
+
+function renameVaultEntryAt(path: string): TFile | TFolder | null {
+	if (renameVault.files.has(path)) return noteFileAt(path);
+	return renameVault.folders.has(path) ? Object.assign(new TFolder(), { path }) : null;
+}
+
+function movedPath(path: string, was: string, now: string): string {
+	return renamedFolderOf(path, was, now) ?? path;
+}
+
+const renamingHost = obsidianStudioHost({
+	app: standIn<App>(
+		{
+			vault: {
+				getAbstractFileByPath: renameVaultEntryAt,
+				process: async (file: TFile, change: (text: string) => string) => {
+					const text = change(renameVault.files.get(file.path) ?? "");
+					renameVault.files.set(file.path, text);
+					return text;
+				},
+				modify: async (file: TFile, text: string) => void renameVault.files.set(file.path, text),
+			},
+			fileManager: {
+				renameFile: async (folder: TFolder, now: string) => {
+					if (renameVaultEntryAt(now) !== null) throw new Error("Destination file already exists!");
+					const was = folder.path;
+					const folders = [...renameVault.folders].map((path) => movedPath(path, was, now));
+					const files = [...renameVault.files].map(([path, text]): [string, string] => [
+						movedPath(path, was, now),
+						text,
+					]);
+					renameVault.folders.clear();
+					for (const path of folders) renameVault.folders.add(path);
+					renameVault.files.clear();
+					for (const [path, text] of files) renameVault.files.set(path, text);
+				},
+			},
+		},
+		["vault", "fileManager"],
+		"renaming app",
+	),
+	leaf: hostLeaf,
+	frame: document.createElement("div"),
+	viewType: STUDIO_VIEW_TYPE,
+});
+await renamingHost.renameApp("Apps/Farm", "Ranch");
+const renamedConfig: unknown = JSON.parse(renameVault.files.get("Apps/Ranch/widgetarium.json") ?? "null");
+check(
+	"renaming a workspace moves its folder beside the old one and names it in its config, dropping a legacy root name",
+	[
+		renameVault.folders.has("Apps/Farm"),
+		renameVault.folders.has("Apps/Ranch"),
+		fieldOfJson(renamedConfig, "app", "name"),
+		fieldOfJson(renamedConfig, "design", "system"),
+		fieldOfJson(renamedConfig, "name"),
+	],
+	[false, true, "Ranch", "default", undefined],
+);
+const renameRefused = await renamingHost.renameApp("Apps/Ranch", "Barn").then(
+	() => "renamed",
+	(failure: unknown) => (failure instanceof Error ? failure.message : String(failure)),
+);
+check(
+	"a name another folder holds is refused with the reason, and the workspace stays as it was",
+	[
+		renameRefused,
+		fieldOfJson(JSON.parse(renameVault.files.get("Apps/Ranch/widgetarium.json") ?? "null"), "app", "name"),
+	],
+	["The workspace Apps/Ranch was not renamed: Destination file already exists!", "Ranch"],
 );
 
 const renamedFront: Record<string, Record<string, unknown>> = {
@@ -752,11 +900,13 @@ await settledUntil(() => handed.length > 0);
 await settledUntil(() => designNode.querySelector("[data-canvas-topbar]")?.textContent?.includes("Farm") === true);
 check(
 	"every block of the canvas top bar reads its own requests and draws, none falls to its slot's error",
-	[
-		designNode.querySelector("[data-canvas-topbar]")?.textContent?.includes("Farm0 screens"),
-		designNode.textContent?.includes("Could not load"),
-	],
-	[true, false],
+	[designNode.querySelector("[data-canvas-topbar] b")?.textContent, designNode.textContent?.includes("Could not load")],
+	["Farm", false],
+);
+check(
+	"the top bar names the app and nothing else: no count of screens or frames beside it",
+	/screens|frames|read only/.test(designNode.querySelector("[data-canvas-topbar]")?.textContent ?? ""),
+	false,
 );
 handed.at(-1)?.showPage("References");
 await settledUntil(() => keptPages.includes("References"));
@@ -817,6 +967,27 @@ check(
 	"clicking a page row turns the canvas to that page through the page writer, and the list picks it",
 	[pagedKept.at(-1), pickedPages()],
 	["Barn", ["Barn"]],
+);
+const sidebarOf = (): Element | null => pagedNode.querySelector("[data-canvas-sidebar]");
+const sidebarShown = (): unknown[] => [
+	sidebarOf()?.getAttribute("data-canvas-sidebar"),
+	sidebarOf()?.getAttribute("aria-hidden"),
+	sidebarOf()?.classList.contains("cv:invisible"),
+];
+check("a fresh canvas opens with its sidebar, Pages and Layers both, open", sidebarShown(), ["open", "false", false]);
+pagedNode.querySelector("[data-canvas-sidebar-toggle]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+await settledUntil(() => sidebarOf()?.getAttribute("data-canvas-sidebar") === "shut");
+check(
+	"the sidebar toggle closes the whole sidebar, Pages with it: hidden, out of the accessibility tree, and not fitted around",
+	[...sidebarShown(), pagedNode.querySelector(LOOK_ROOM.coveredBy) === null],
+	["shut", "true", true, true],
+);
+pagedNode.querySelector("[data-canvas-sidebar-toggle]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+await settledUntil(() => sidebarOf()?.getAttribute("data-canvas-sidebar") === "open");
+check(
+	"the same toggle opens it again, and a look fits beside it",
+	[...sidebarShown(), pagedNode.querySelector(LOOK_ROOM.coveredBy) === sidebarOf()],
+	["open", "false", false, true],
 );
 drawInto(null, pagedNode);
 

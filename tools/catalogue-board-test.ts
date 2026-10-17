@@ -320,9 +320,7 @@ const panelsNow = (): string[] => [shownState.now().panel, hiddenState.now().pan
 drawStudio(shownStudio);
 drawStudio(hiddenStudio);
 await settled();
-const closePanel = (): void => {
-	if (shownState.now().panel === "catalogue") shownState.togglePanel("catalogue");
-};
+const closePanel = (): void => shownState.closePanel("catalogue");
 
 void CATALOGUE_REQUESTS.ask({ mode: "place", asker: note });
 await settled();

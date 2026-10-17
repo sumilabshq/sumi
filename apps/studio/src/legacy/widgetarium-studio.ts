@@ -14,15 +14,20 @@ import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { StudioBand } from "./studio-band.js";
-import { StudioCorner } from "./studio-corner.js";
 import type { TopBarCorners } from "./studio-band.js";
+import { StudioChat } from "./studio-chat.js";
 import { StudioOutlet } from "./studio-outlet.js";
+import { StudioShellBoard } from "./studio-shell-board.js";
+import type { StudioShellBoardProps } from "./studio-shell-board.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
+import type { CanvasShell } from "../canvas/design-stage.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
+import { StudioRail } from "./studio-rail.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
 import { STUDIO_WIDGETS } from "./studio-widgets.js";
+import { useWritesChatWidth } from "./use-writes-chat-width.js";
 import { useWritesHostInsets } from "./use-writes-host-insets.js";
 
 export interface StartedStudio {
@@ -43,6 +48,15 @@ export interface StudioStart extends ProjectStart {
 	readonly appId?: string;
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
+}
+
+type ShellBoardAsk = Omit<StudioShellBoardProps, "place">;
+
+interface ShellBoards {
+	readonly corners: TopBarCorners;
+	readonly menu: ReactElement;
+	readonly rail: ReactElement;
+	readonly canvasShell: CanvasShell;
 }
 
 export interface WidgetariumStudioProps {
@@ -75,17 +89,47 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	const host = useMemo(() => project.hostOf(pathname), [project, pathname]);
 	const frame = useRef<HTMLDivElement | null>(null);
 	useWritesHostInsets(frame, studio);
+	useWritesChatWidth(frame, state.chatWidth);
 	const catalogueAsk = useTakesCatalogueAsks(frame, catalogue.requests, state);
-	const shell = { app: appId, registry: shellRegistry, host, studio, state };
-	const corners = {
-		start: h(StudioCorner, { key: `start ${appId}`, corner: "start", ...shell }),
-		end: h(StudioCorner, { key: `end ${appId}`, corner: "end", ...shell }),
-	} satisfies TopBarCorners;
-	const canvasShell = { corners };
+	const { corners, menu, rail, canvasShell } = shellBoardsOf({
+		app: appId,
+		registry: shellRegistry,
+		host,
+		studio,
+		state,
+	});
 	const isCanvas = view === "canvas";
 	return h("div", { ref: frame, className: `wg-studio${isCanvas ? " is-canvas" : ""}` }, [
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),
+		h(StudioRail, { key: "rail", children: rail }),
+		h(StudioChat, { key: "chat", assistant, menu, chatWidth: state.chatWidth, frame }),
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
-		panel === "none" ? null : h(StudioSidebar, { key: "sidebar", panel, assistant, catalogue, host, catalogueAsk }),
+		panel === "none"
+			? null
+			: h(StudioSidebar, {
+					key: "sidebar",
+					catalogue,
+					host,
+					catalogueAsk,
+					onClose: () => state.closePanel("catalogue"),
+				}),
 	]);
+}
+
+function shellBoardsOf(shell: ShellBoardAsk): ShellBoards {
+	const corners = {
+		start: h(StudioShellBoard, { key: `start ${shell.app}`, place: "start", ...shell }),
+		end: h(StudioShellBoard, { key: `end ${shell.app}`, place: "end", ...shell }),
+	} satisfies TopBarCorners;
+	return {
+		corners,
+		menu: h(StudioShellBoard, { key: `menu ${shell.app}`, place: "menu", ...shell }),
+		rail: h(StudioShellBoard, { key: `rail ${shell.app}`, place: "rail", ...shell }),
+		canvasShell: {
+			corners: {
+				start: null,
+				end: corners.end,
+			},
+		},
+	};
 }

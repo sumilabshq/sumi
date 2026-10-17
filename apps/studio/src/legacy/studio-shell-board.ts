@@ -7,24 +7,24 @@ import { normalizeBoard } from "@widgetarium/core/model.js";
 import { WidgetSurface } from "@widgetarium/core/surface.js";
 import { MIN_LAID_OUT_BOARD_PX } from "@widgetarium/core/surface/use-board-width.js";
 import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.js";
-import { cornerBoardOf } from "./band-board.js";
-import type { BandCorner } from "./band-board.js";
+import { shellBoardOf } from "./band-board.js";
+import type { ShellPlace } from "./band-board.js";
 
-export interface StudioCornerProps {
+export interface StudioShellBoardProps {
 	readonly app: string;
-	readonly corner: BandCorner;
+	readonly place: ShellPlace;
 	readonly registry: ModuleRegistry;
 	readonly host: SurfaceHost;
 	readonly studio: StudioHostPort;
 	readonly state: StudioState;
 }
 
-export function StudioCorner({ app, corner, registry, host, studio, state }: StudioCornerProps): ReactElement {
-	const [board, setBoard] = useState(() => normalizeBoard(cornerBoardOf(app, corner)));
+export function StudioShellBoard({ app, place, registry, host, studio, state }: StudioShellBoardProps): ReactElement {
+	const [board, setBoard] = useState(() => normalizeBoard(shellBoardOf(app, place)));
 	const studioHost = useMemo(() => ({ ...host, studio, studioState: state }), [host, studio, state]);
 	return h(
 		"div",
-		{ className: `wg-studio-corner-board is-${corner}` },
+		{ className: `wg-studio-shell-board is-${place}` },
 		h(WidgetSurface, {
 			board,
 			registry,

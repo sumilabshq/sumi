@@ -1,29 +1,31 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
+import { Button, Icon } from "@widgetarium/kit";
 import type { CataloguePort } from "@widgetarium/core/engine/catalogue-port.js";
 import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.js";
-import { AssistantPanel } from "./assistant/assistant-panel.js";
 import { StudioCatalogue } from "./catalogue/studio-catalogue.js";
-import type { OpenablePanel } from "@widgetarium/core/engine/studio-state-port.js";
 
 export interface StudioSidebarProps {
-	readonly panel: OpenablePanel;
-	readonly assistant: AssistantPort;
 	readonly catalogue: CataloguePort;
 	readonly host: SurfaceHost;
 	readonly catalogueAsk: number | null;
+	readonly onClose: () => void;
 }
 
-const SIDEBAR_LABEL: Readonly<Record<OpenablePanel, string>> = {
-	assistant: "AI assistant",
-	catalogue: "Widget catalogue",
-};
+const SIDEBAR_LABEL = "Widget catalogue";
+const CLOSE_LABEL = "Close the catalogue";
 
-export function StudioSidebar({ panel, assistant, catalogue, host, catalogueAsk }: StudioSidebarProps): ReactElement {
-	const shown =
-		panel === "catalogue"
-			? h(StudioCatalogue, { port: catalogue, host, openedBy: catalogueAsk })
-			: h(AssistantPanel, { assistant });
-	return h("aside", { className: "wg-studio-sidebar", "aria-label": SIDEBAR_LABEL[panel], "data-panel": panel }, shown);
+export function StudioSidebar({ catalogue, host, catalogueAsk, onClose }: StudioSidebarProps): ReactElement {
+	return h("aside", { className: "wg-studio-sidebar", "aria-label": SIDEBAR_LABEL, "data-panel": "catalogue" }, [
+		h(
+			"header",
+			{ key: "head", className: "wg-studio-sidebar-head" },
+			h(
+				Button,
+				{ variant: "ghost", size: "icon-sm", "aria-label": CLOSE_LABEL, title: CLOSE_LABEL, onClick: onClose },
+				h(Icon, { name: "x" }),
+			),
+		),
+		h(StudioCatalogue, { key: "catalogue", port: catalogue, host, openedBy: catalogueAsk }),
+	]);
 }

@@ -2,9 +2,7 @@ import { NOT_AVAILABLE_ON_HOST } from "./studio-host.js";
 
 export type StudioView = "app" | "canvas";
 
-export const OPENABLE_PANELS = ["assistant", "catalogue"] as const;
-
-export type OpenablePanel = (typeof OPENABLE_PANELS)[number];
+export type OpenablePanel = "catalogue";
 
 export type StudioPanel = "none" | OpenablePanel;
 
@@ -13,15 +11,37 @@ export interface StudioMoment {
 	readonly panel: StudioPanel;
 }
 
+export interface ChatWidth {
+	now(): number;
+	subscribe(changed: () => void): () => void;
+	resize(px: number, roomPx: number): void;
+	reset(): void;
+}
+
 export interface StudioState {
 	now(): StudioMoment;
 	subscribe(changed: () => void): () => void;
 	show(view: StudioView): void;
-	togglePanel(panel: OpenablePanel): void;
 	openPanel(panel: OpenablePanel): void;
+	closePanel(panel: OpenablePanel): void;
+	readonly chatWidth: ChatWidth;
 }
 
-export const STUDIO_OPENED_ON: StudioMoment = { view: "app", panel: "none" };
+export const STUDIO_OPENED_ON: StudioMoment = { view: "canvas", panel: "none" };
+
+export const CHAT_LEAST_PX = 300;
+
+export const CHAT_USUAL_PX = 380;
+
+export const CARD_LEAST_PX = 240;
+
+export function chatPxWithin(px: number, roomPx: number): number {
+	return chatPxFloored(Math.min(px, roomPx - CARD_LEAST_PX));
+}
+
+export function chatPxFloored(px: number): number {
+	return Math.round(Math.max(CHAT_LEAST_PX, px));
+}
 
 const refuseOutsideAStudio = (): never => {
 	throw new Error(NOT_AVAILABLE_ON_HOST);
@@ -31,6 +51,12 @@ export const NO_STUDIO_STATE: StudioState = {
 	now: () => STUDIO_OPENED_ON,
 	subscribe: () => () => undefined,
 	show: refuseOutsideAStudio,
-	togglePanel: refuseOutsideAStudio,
 	openPanel: refuseOutsideAStudio,
+	closePanel: refuseOutsideAStudio,
+	chatWidth: {
+		now: () => CHAT_USUAL_PX,
+		subscribe: () => () => undefined,
+		resize: refuseOutsideAStudio,
+		reset: refuseOutsideAStudio,
+	},
 };

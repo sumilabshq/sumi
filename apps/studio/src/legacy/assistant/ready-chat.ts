@@ -28,6 +28,7 @@ export interface ReadyChatProps {
 	readonly port: AssistantPort;
 	readonly setup: AssistantSetup;
 	readonly setupFailure: string | null;
+	readonly lead?: ReactNode;
 }
 
 interface ChatAsks extends CardAsks {
@@ -47,7 +48,7 @@ const NOT_SENT = "the message could not be sent";
 const NOT_BUILT = "the build could not be started";
 const NOT_APPROVED = "the design could not be approved";
 
-export function ReadyChat({ port, setup, setupFailure }: ReadyChatProps): ReactElement {
+export function ReadyChat({ port, setup, setupFailure, lead }: ReadyChatProps): ReactElement {
 	const session = useSyncExternalStore(port.onSession, port.session);
 	const cards = useMemo(() => port.cardsOf(session), [port, session]);
 	const { scroller, isStuck, onScroll, toEnd } = useStuckToEnd([session.turns, session.busy]);
@@ -59,7 +60,7 @@ export function ReadyChat({ port, setup, setupFailure }: ReadyChatProps): ReactE
 	const showCard = (key: string): void => scrollToCard(chatRoot.current, key);
 	const pinned = pinnedCardOf(cards.pinned, { port, openByBuild, showCard });
 	return h("div", { className: "wg-studio-ai", ref: chatRoot }, [
-		h(ChatHead, { key: "head", port, setup, report }),
+		h(ChatHead, { key: "head", port, setup, report, lead }),
 		h("div", { className: "wg-studio-ai-scroll-frame", key: "scroll" }, [
 			h(
 				"div",

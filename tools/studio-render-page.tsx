@@ -8,6 +8,7 @@ import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { pageParamCell } from "../packages/core/src/engine/page-params.js";
 import { projectPackOf } from "../packages/core/src/engine/project-pack.js";
 import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.js";
+import type { HostApp, StudioHostPort } from "../packages/core/src/engine/studio-host.js";
 import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.js";
 import type {
 	AssistantPort,
@@ -178,7 +179,35 @@ function fakeAssistant(): AssistantPort {
 	};
 }
 
+const FARM_FOLDER = "Apps/Farm";
+
+function workspaceOf(id: string, name: string): HostApp {
+	return { id, name, pages: 1, firstPage: "/" };
+}
+
+function workspacesHost(): StudioHostPort {
+	const held: HostApp[] = [workspaceOf(FARM_FOLDER, "Farm"), workspaceOf("Apps/Barn", "Barn")];
+	const opened: string[] = [];
+	const renamed: string[] = [];
+	Object.assign(window, { __OPENED__: opened, __RENAMED__: renamed });
+	return {
+		...NO_STUDIO_HOST,
+		apps: async () => [...held],
+		openApp: async (id) => void opened.push(id),
+		createApp: async () => {
+			held.push(workspaceOf("Untitled workspace", "Untitled workspace"));
+			opened.push("Untitled workspace");
+		},
+		renameApp: async (id, name) => {
+			renamed.push(`${id} → ${name}`);
+			const at = held.findIndex((one) => one.id === id);
+			held.splice(at, 1, workspaceOf(id, name));
+		},
+	};
+}
+
 function studioStartOf(mode: unknown): StudioStart {
+	if (mode === "studio-workspaces") return { studio: workspacesHost(), appId: FARM_FOLDER };
 	if (mode === "studio-mac") return { studio: { ...NO_STUDIO_HOST, insets: () => MAC_INSETS } };
 	return { assistant: fakeAssistant() };
 }

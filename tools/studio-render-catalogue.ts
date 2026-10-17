@@ -11,16 +11,14 @@ interface ImportsOf {
 
 export interface CatalogueSeen {
 	readonly catalogueElements?: number;
-	readonly widgetsPressed?: string | null;
-	readonly widgetsLeftOfAi?: boolean;
 	readonly outletBefore?: Width | null;
 	readonly outletCatalogue?: Width | null;
 	readonly sidebarCatalogue?: Width | null;
 	readonly listed?: readonly string[];
 	readonly installSaid?: string | null;
-	readonly pressSaid?: string | null;
-	readonly panelsAfterAi?: readonly string[];
-	readonly widgetsPressedAfterAi?: string | null;
+	readonly closeAnswered?: string | null;
+	readonly chatBesideCatalogue?: boolean;
+	readonly catalogueShut?: boolean;
 	readonly askOpened?: boolean;
 	readonly picked?: string | null;
 	readonly catalogueClosed?: boolean;
@@ -28,7 +26,6 @@ export interface CatalogueSeen {
 
 const CATALOGUE_PACK = "@widgetarium/pack-catalogue";
 const CATALOGUE_CLASS = ".wg-studio-catalogue-";
-const PICK_SAID = "Nothing is waiting for a widget";
 const PROJECT_WIDGET = { id: "task-list", title: "Task list" };
 
 export function catalogueImportsIn(inputs: Readonly<Record<string, ImportsOf>>): string[] {
@@ -38,12 +35,11 @@ export function catalogueImportsIn(inputs: Readonly<Record<string, ImportsOf>>):
 }
 
 export function checkCatalogueAbsentInApp(seen: CatalogueSeen, check: Check): void {
-	check("and no catalogue element or Widgets button", seen.catalogueElements === 0, seen.catalogueElements);
+	check("and no catalogue element", seen.catalogueElements === 0, seen.catalogueElements);
 }
 
 export function checkCataloguePanel(seen: CatalogueSeen, check: Check): void {
-	check("Widgets presses the catalogue panel open", seen.widgetsPressed === "true", seen.widgetsPressed);
-	check("and stands left of the AI button", seen.widgetsLeftOfAi === true, seen.widgetsLeftOfAi);
+	check("a widget asked for opens the catalogue panel", seen.askOpened === true, seen.askOpened);
 	check("the catalogue panel narrows the outlet by its own width", isNarrowedByPanel(seen), {
 		before: seen.outletBefore,
 		outlet: seen.outletCatalogue,
@@ -51,19 +47,11 @@ export function checkCataloguePanel(seen: CatalogueSeen, check: Check): void {
 	});
 	check("it lists the project's own widgets", sameList(seen.listed, [PROJECT_WIDGET.title]), seen.listed);
 	check("an install on this host answers not available", seen.installSaid === NOT_AVAILABLE_ON_HOST, seen.installSaid);
-	check(
-		"a card pressed with nothing asked says so on its line",
-		(seen.pressSaid ?? "").startsWith(PICK_SAID),
-		seen.pressSaid,
-	);
-	check(
-		"AI swaps the catalogue for the assistant: one panel at a time",
-		sameList(seen.panelsAfterAi, ["assistant"]) && seen.widgetsPressedAfterAi === "false",
-		{ panels: seen.panelsAfterAi, widgets: seen.widgetsPressedAfterAi },
-	);
-	check("a widget asked for opens the catalogue panel", seen.askOpened === true, seen.askOpened);
-	check("and the card pressed answers the ask", seen.picked === PROJECT_WIDGET.id, seen.picked);
-	check("a second Widgets press closes the panel", seen.catalogueClosed === true, seen.catalogueClosed);
+	check("the chat stays on screen beside the catalogue", seen.chatBesideCatalogue === true, seen.chatBesideCatalogue);
+	check("the catalogue's close press shuts it", seen.catalogueShut === true, seen.catalogueShut);
+	check("and answers the ask it was opened for with nothing", seen.closeAnswered === null, seen.closeAnswered);
+	check("a card pressed answers the next ask", seen.picked === PROJECT_WIDGET.id, seen.picked);
+	check("and the answered ask closes the panel", seen.catalogueClosed === true, seen.catalogueClosed);
 }
 
 export function checkCatalogueSheetSplit(sheets: string, check: Check): void {

@@ -570,8 +570,9 @@ studio. `test:studio-render` measures both in Chrome and proves the app entry bu
 **The studio is a Widgetarium app.** Its band is a board of `@studio/*` widgets
 (`apps/studio/src/legacy/widgets`) over the `@studio` pack; the route is drawn below it by the
 same `routeElementOf` app mode calls, never merged into the band's tree, because a route nested one
-level down stops being regions and changes its spacing. The outlet's view and the one right panel —
-`none | assistant | catalogue`, toggled by the band's Widgets and AI buttons — live in the studio's own
+level down stops being regions and changes its spacing. The outlet's view, the one right panel —
+`none | catalogue`, opened by a catalogue request and shut by its close press or its answer — and the
+chat's width live in the studio's own
 `StudioState`, made by `createStudioState` (`studio/studio-state.ts`) for each `StartedStudio`, one per leaf
 in Obsidian. That object is the one writer: `@studio` commands reach it as `ports.studioState`, and a
 catalogue ask opens the panel through its `openPanel`. The canvas view is the engine's `ProjectCanvas`
@@ -582,10 +583,15 @@ read as `--wg-studio-inset-left|right`, and the apps; a host without them answer
 the shell stays. The catalogue reaches the studio as a `CataloguePort` in `StudioStart`: Obsidian lends
 its own; a browser gets `browserCataloguePort`, the project's widgets as installed, every install and
 place answering "not available". App mode ships none of its code or CSS (`test:studio-render`).
-The AI sidebar is the engine's too: `studio/assistant` draws the chat, 380px beside the outlet, over
+The studio opens on the canvas. The chat is a column that never closes, left of the outlet; the outlet is a card (plate radius, hairline,
+inset on the tinted shell). The app menu lives only in the chat's header. The edge between them drags
+the width (`chatWidth` in `StudioState`, ≥300px with no cap, card ≥240px, double press → 380px; the
+chat's content stays a centred 800px column, `--wg-studio-chat-content`), remembered per
+viewer in local storage, never in a note; `test:studio-layout` measures it in Chrome. The chat is the
+engine's too: `studio/assistant` draws it over
 `AssistantPort` (`packages/core/src/engine/assistant-port.ts`, `ports.assistant`). Obsidian lends its
 session through `ai/assistant-port-obsidian.ts` and its old AI view draws the same `AssistantChat`; a
-browser gets `NO_ASSISTANT` and the sidebar says so. Spec, build, design and jobs cards are still
+browser gets `NO_ASSISTANT` and the chat says so. Spec, build, design and jobs cards are still
 Obsidian's, handed in as `AssistantCards` by that view alone (TODO in `assistant-cards.ts`).
 
 **In Obsidian an app note opens in the studio view, and Obsidian draws nothing of its own over it.** A
@@ -720,9 +726,15 @@ answered to nothing, three 11px and one 9px among them, are on the scale.
 
 ## Design systems from references
 
-When the person sends pictures and describes a design, write it as a system in
-`design-catalogue/systems/<id>/` — `system.md` plus the pictures under `references/` — by the format
-in `design-catalogue/README.md`. What cost the most to learn:
+When the person sends pictures and describes a design, write it as an OpenDesign package in
+`design-systems/<id>/` — `manifest.json`, `USAGE.md`, `DESIGN.md`, `tokens.css`, `preview/` and the
+pictures under `references/` — by the format in `design-catalogue/README.md`, and run
+`widgetarium system check <id>` (`npm run test:design-systems` checks every one). **The token contract is
+shadcn's names** (`packages/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
+parameters and every colour as an `oklch()` formula of them, in `:root` and in `.dark, .theme-dark`, so
+`--hue` re-derives both themes; the kit reads those names and `--wg-kit-*` are aliases onto them. The
+plugin's sheet carries `design-systems/default/tokens.css`, laid as `@layer wg-system` by the build,
+and `npm run test:system-tokens` holds it to the colours Obsidian drew before the flip. What cost the most to learn:
 
 - **A system is not the product it came from.** The domain, data and screens stay behind; a build
   that reuses them is a copy and is rejected.

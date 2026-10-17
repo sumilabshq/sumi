@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
+import { markLetterOf } from "../../shared/studio-app.js";
 import type { StudioApp } from "../../shared/studio-app.js";
 
 export const MARK_PX = { s: 22, m: 28 } as const;
@@ -18,7 +19,7 @@ export function AppMark({ app, px }: AppMarkProps): ReactElement {
 			style={{ width: px, height: px, borderRadius: Math.round(px * MARK_CORNER) }}
 			aria-hidden="true"
 		>
-			{app.name.slice(0, 1).toUpperCase()}
+			{markLetterOf(app)}
 		</span>
 	);
 }

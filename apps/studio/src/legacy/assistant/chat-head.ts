@@ -1,5 +1,5 @@
-import { createElement as h } from "react";
-import type { ReactElement } from "react";
+import { Fragment, createElement as h } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { AssistantPort, AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
 import { ProviderMenu } from "./provider-menu.js";
 import type { Report } from "./failure-line.js";
@@ -8,6 +8,7 @@ export interface ChatHeadProps {
 	readonly port: AssistantPort;
 	readonly setup: AssistantSetup;
 	readonly report: Report;
+	readonly lead?: ReactNode;
 }
 
 const TITLE = "Widgetarium AI";
@@ -15,8 +16,9 @@ const NOT_CHOSEN = "the provider {id} could not be chosen";
 const HELPERS_NOT_SWITCHED = "helper agents could not be switched";
 const NOT_CLEARED = "the conversation could not be cleared";
 
-export function ChatHead({ port, setup, report }: ChatHeadProps): ReactElement {
+export function ChatHead({ port, setup, report, lead }: ChatHeadProps): ReactElement {
 	return h("header", { className: "wg-studio-ai-head" }, [
+		lead ? h(Fragment, { key: "lead" }, lead) : null,
 		h("span", { className: "wg-studio-ai-title", key: "title" }, TITLE),
 		h("span", { className: "wg-studio-ai-who", key: "who" }, setup.providerLabel),
 		h(ProviderMenu, {
