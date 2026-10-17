@@ -5,13 +5,15 @@ import { DesignReads } from "../../shared/lib/design/design-reads.js";
 import { noteToReturnTo } from "./lib/note-to-return-to.js";
 import { pagesNow, watchPages } from "../../shared/lib/pages/pages-now.js";
 import { pagesStill } from "../../shared/lib/pages/pages-still.js";
+import { pageTabsOf } from "../../shared/lib/pages/page-tabs.js";
+import { statesShownOf } from "../../shared/lib/layers/shown-screen.js";
 import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import {
-	AppNameQuery,
 	FinishFlightCommand,
 	FocusWidgetCommand,
 	PageTabsQuery,
+	PageTitleQuery,
 	PagesQuery,
 	PickVariantCommand,
 	ReturnToViewCommand,
@@ -22,10 +24,6 @@ import { CanvasClientModule } from "../../module.js";
 
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const PICKED = "Picked";
-
-export const AppNameQueryHandler = handler(AppNameQuery, CanvasClientModule)
-	.inject({ canvasStore: CanvasStore })
-	.handle((_input, { canvasStore }) => ({ app: canvasStore.now().app }));
 
 export const FinishFlightCommandHandler = handler(FinishFlightCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
@@ -44,7 +42,15 @@ export const PageTabsQueryHandler = handler(PageTabsQuery, CanvasClientModule)
 	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
 	.handle(async (_input, { designReads, canvasStore }) => {
 		const { pages } = await pagesNow(designReads, canvasStore);
-		return { tabs: [...pages.leading, ...pages.trailing], shown: pages.shown };
+		return pageTabsOf(pages);
+	});
+
+export const PageTitleQueryHandler = handler(PageTitleQuery, CanvasClientModule)
+	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
+	.watch((_input, { designReads, canvasStore }, changed) => watchPages(designReads, canvasStore, changed))
+	.handle(async (_input, { designReads, canvasStore }) => {
+		const now = await pagesNow(designReads, canvasStore);
+		return { page: now.pages.shown, states: statesShownOf(now) };
 	});
 
 export const PagesQueryHandler = handler(PagesQuery, CanvasClientModule)

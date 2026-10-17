@@ -2,6 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Slot } from "@widgetarium/core/requests";
 import { Corner } from "./corner.js";
+import { TOP_BAR_HEIGHT } from "../../lib/top-bar/top-bar-look.js";
 
 export interface CanvasTopBarProps {
 	readonly cornersStart?: ReactNode;
@@ -10,23 +11,19 @@ export interface CanvasTopBarProps {
 	readonly cornersEnd?: ReactNode;
 }
 
-const BAR =
-	"cv:pointer-events-none cv:absolute cv:inset-x-0 cv:top-0 cv:z-[2] cv:flex cv:flex-row cv:items-center cv:justify-between cv:gap-4 cv:pb-10 cv:before:absolute cv:before:inset-0 cv:before:backdrop-blur-[14px] cv:before:content-[''] cv:before:[mask-image:linear-gradient(to_bottom,black_45%,transparent)] cv:*:pointer-events-auto cv:*:relative cv:[--wg-gap-parts:8px]";
-const START_SIDE = "cv:flex cv:min-w-0 cv:items-center cv:gap-2";
-const START_SIDE_OFF_EDGE = `${START_SIDE} cv:ps-parts`;
+const BAR = `${TOP_BAR_HEIGHT} cv:flex cv:flex-none cv:flex-row cv:items-center cv:justify-between cv:gap-1.5`;
+const SIDE = "cv:flex cv:min-w-0 cv:items-center cv:gap-1.5";
+const START_SIDE_OFF_EDGE = `${SIDE} cv:ps-1.5`;
 
 export function CanvasTopBar({ cornersStart, start, end, cornersEnd }: CanvasTopBarProps): ReactElement {
-	const hasCorners = Boolean(cornersStart) || Boolean(cornersEnd);
-	const isStartOnCardEdge = hasCorners && !cornersStart;
+	const isStartOnCardEdge = !cornersStart && Boolean(cornersEnd);
 	return (
-		<div className={hasCorners ? BAR : `${BAR} cv:px-4 cv:pt-4`} data-canvas-topbar="">
-			<div className={isStartOnCardEdge ? START_SIDE_OFF_EDGE : START_SIDE}>
+		<div className={BAR} data-canvas-topbar="">
+			<div className={isStartOnCardEdge ? START_SIDE_OFF_EDGE : SIDE}>
 				<Corner>{cornersStart}</Corner>
-				<div className="cv:relative cv:flex cv:items-center cv:gap-2 cv:py-1.5 cv:text-base">
-					<Slot loading={null}>{start}</Slot>
-				</div>
+				<Slot loading={null}>{start}</Slot>
 			</div>
-			<div className="cv:flex cv:items-center cv:gap-parts">
+			<div className={SIDE}>
 				<Slot loading={null}>{end}</Slot>
 				<Corner>{cornersEnd}</Corner>
 			</div>

@@ -13,7 +13,6 @@ import {
 	emptyProject,
 } from "./canvas-hosts.ts";
 import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
-import { LOOK_ROOM } from "../packages/canvas/shared/lib/field/field-marks.ts";
 import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
@@ -538,7 +537,7 @@ check(
 		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-who")?.textContent ?? null,
 		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine")?.textContent ?? null,
 	],
-	[checkedAssistant.providerLabel, checkedAssistant.asked],
+	[`${checkedAssistant.providerLabel} · helpers off`, checkedAssistant.asked],
 );
 await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
 check(
@@ -897,16 +896,19 @@ drawInto(
 	designNode,
 );
 await settledUntil(() => handed.length > 0);
-await settledUntil(() => designNode.querySelector("[data-canvas-topbar]")?.textContent?.includes("Farm") === true);
+await settledUntil(() => designNode.querySelector("[data-canvas-title] b")?.textContent === "Pages");
 check(
 	"every block of the canvas top bar reads its own requests and draws, none falls to its slot's error",
-	[designNode.querySelector("[data-canvas-topbar] b")?.textContent, designNode.textContent?.includes("Could not load")],
-	["Farm", false],
+	[designNode.querySelector("[data-canvas-title] b")?.textContent, designNode.textContent?.includes("Could not load")],
+	["Pages", false],
 );
 check(
-	"the top bar names the app and nothing else: no count of screens or frames beside it",
-	/screens|frames|read only/.test(designNode.querySelector("[data-canvas-topbar]")?.textContent ?? ""),
-	false,
+	"the title names the shown page and counts no states while none is drawn",
+	[
+		designNode.querySelector("[data-canvas-states]"),
+		/screens|frames|read only/.test(designNode.querySelector("[data-canvas-topbar]")?.textContent ?? ""),
+	],
+	[null, false],
 );
 handed.at(-1)?.showPage("References");
 await settledUntil(() => keptPages.includes("References"));
@@ -952,14 +954,14 @@ const switchTabs = (): (string | null)[] =>
 	[...pagedNode.querySelectorAll("[data-canvas-page-switch] [role=tab]")].map((tab) => tab.textContent);
 await settledUntil(() => pageRows().length === 2 && switchTabs().length > 0);
 check(
-	"the pages stand first in the left sidebar as a list, the shown page picked, and the top switcher holds no Pages tab",
+	"the pages stand first in the left sidebar as a list, the shown page picked, and the top switcher picks Pages for them",
 	[
 		pagedNode.querySelector("[data-canvas-sidebar] > section")?.hasAttribute("data-canvas-pages"),
 		pageRows().map((row) => row.textContent),
 		pickedPages(),
 		switchTabs(),
 	],
-	[true, ["Home", "Barn"], ["Home"], ["Components"]],
+	[true, ["Home", "Barn"], ["Home"], ["Pages", "Components"]],
 );
 pageRows()[1]?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 await settledUntil(() => pickedPages()[0] === "Barn");
@@ -967,6 +969,11 @@ check(
 	"clicking a page row turns the canvas to that page through the page writer, and the list picks it",
 	[pagedKept.at(-1), pickedPages()],
 	["Barn", ["Barn"]],
+);
+check(
+	"while a page of the app is shown, the view switch picks Pages",
+	pagedNode.querySelector("[data-canvas-page-switch] [role=tab][aria-selected=true]")?.textContent,
+	"Pages",
 );
 const sidebarOf = (): Element | null => pagedNode.querySelector("[data-canvas-sidebar]");
 const sidebarShown = (): unknown[] => [
@@ -978,17 +985,13 @@ check("a fresh canvas opens with its sidebar, Pages and Layers both, open", side
 pagedNode.querySelector("[data-canvas-sidebar-toggle]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 await settledUntil(() => sidebarOf()?.getAttribute("data-canvas-sidebar") === "shut");
 check(
-	"the sidebar toggle closes the whole sidebar, Pages with it: hidden, out of the accessibility tree, and not fitted around",
-	[...sidebarShown(), pagedNode.querySelector(LOOK_ROOM.coveredBy) === null],
-	["shut", "true", true, true],
+	"the sidebar toggle closes the whole sidebar, Pages with it: hidden and out of the accessibility tree",
+	sidebarShown(),
+	["shut", "true", true],
 );
 pagedNode.querySelector("[data-canvas-sidebar-toggle]")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 await settledUntil(() => sidebarOf()?.getAttribute("data-canvas-sidebar") === "open");
-check(
-	"the same toggle opens it again, and a look fits beside it",
-	[...sidebarShown(), pagedNode.querySelector(LOOK_ROOM.coveredBy) === sidebarOf()],
-	["open", "false", false, true],
-);
+check("the same toggle opens it again", sidebarShown(), ["open", "false", false]);
 drawInto(null, pagedNode);
 
 const { checkVaultDesign } = await import("./vault-design-checks.ts");

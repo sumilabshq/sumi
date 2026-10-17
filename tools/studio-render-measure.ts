@@ -13,7 +13,7 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	await until(() => window.__MODE__ === "app" || menuButton());
 	if (window.__MODE__ !== "app") {
 		seen.openedOnCanvas = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
-		(await until(() => [...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === "Back to view")))?.click();
+		(await until(() => document.querySelector("[data-canvas-topbar] [aria-label='Back to view']")))?.click();
 	}
 	await until(() => document.querySelector(window.__MODE__ === "app" ? "[data-task]" : ".wg-studio-outlet [data-task]"));
 	await wait(300);
@@ -128,8 +128,8 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	await wait(200);
 	seen.transformPanned = layer?.style.transform ?? "";
 	seen.locationInCanvas = location.pathname;
-	const topButton = (said) => [...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === said);
-	seen.topButtons = [...document.querySelectorAll("[data-canvas-topbar] button")].map((one) => one.textContent.trim());
+	const topButton = (said) => [...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === said || one.getAttribute("aria-label") === said);
+	seen.topButtons = [...document.querySelectorAll("[data-canvas-topbar] button")].map((one) => one.textContent.trim() || one.getAttribute("aria-label"));
 	topButton("Components")?.click();
 	await until(() => document.querySelector("[data-canvas-card]"));
 	seen.cards = [...document.querySelectorAll("[data-canvas-card] [data-canvas-card-name]")].map((name) => name.textContent);

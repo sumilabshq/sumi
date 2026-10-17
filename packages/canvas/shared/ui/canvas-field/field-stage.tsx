@@ -12,9 +12,10 @@ import { Highlight } from "./highlight.js";
 import { useFieldPointing } from "../../lib/field/use-field-pointing.js";
 import { useGpuStage } from "../../lib/field/use-gpu-stage.js";
 import { FrameRateLabel } from "./frame-rate-label.js";
+import { useGridFollowsCamera } from "../../lib/field/use-grid-follows-camera.js";
 
 const FIELD =
-	"cv:relative cv:h-full cv:touch-none cv:overflow-hidden cv:bg-group cv:bg-[radial-gradient(var(--wg-kit-group-line)_1px,transparent_1px)] cv:bg-[length:20px_20px]";
+	"cv:relative cv:h-full cv:touch-none cv:overflow-hidden cv:bg-board cv:bg-[radial-gradient(var(--border)_var(--canvas-grid-dot,1px),transparent_var(--canvas-grid-dot,1px))] cv:bg-[length:var(--canvas-grid-pitch,18px)_var(--canvas-grid-pitch,18px)] cv:bg-[position:var(--canvas-grid-x,0px)_var(--canvas-grid-y,0px)]";
 const LAYER =
 	"cv:absolute cv:top-0 cv:left-0 cv:flex cv:w-max cv:origin-top-left cv:flex-col cv:items-start cv:gap-[120px] cv:p-20 cv:motion-safe:animate-canvas-fade-in";
 
@@ -29,6 +30,7 @@ export function FieldStage(): ReactElement {
 		camera,
 		onKept: (kept) => void keepCamera.run({ camera: kept }),
 	});
+	useGridFollowsCamera(pan, pan.fieldRef);
 	const pointed = useFieldPointing(layerRef, pan, state);
 	const gpu = useGpuStage(state.gpu, layerRef, pan);
 	return (

@@ -21,7 +21,7 @@ export const LayersPanelQuery = query("canvas/layers-panel").output(
 	}),
 );
 
-export const SidebarQuery = query("canvas/sidebar").output(z.object({ isOpen: z.boolean() }));
+export const SidebarQuery = query("canvas/sidebar").output(z.object({ isOpen: z.boolean(), px: z.number() }));
 
 export const MoveLayerCommand = command("canvas/move-layer")
 	.input(z.object({ dragged: z.string(), parent: z.string(), before: z.string().nullable() }))
@@ -34,6 +34,12 @@ export const PickLayerCommand = command("canvas/pick-layer")
 export const ToggleLayerFoldCommand = command("canvas/toggle-layer-fold")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
+
+export const ResizeSidebarWidthCommand = command("canvas/resize-sidebar-width")
+	.input(z.object({ px: z.number(), roomPx: z.number() }))
+	.idempotencyKey(Repeatable);
+
+export const ResetSidebarWidthCommand = command("canvas/reset-sidebar-width").idempotencyKey(Repeatable);
 
 export const ToggleSidebarCommand = command("canvas/toggle-sidebar").idempotencyKey(Repeatable);
 

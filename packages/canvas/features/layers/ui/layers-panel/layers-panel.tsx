@@ -13,8 +13,9 @@ import { LiveCopy } from "./live-copy.js";
 const NOT_A_PAGE = "This screen is not drawn by a page widget, so it has no layers to show.";
 const LAYERS =
 	"cv:flex cv:min-h-0 cv:flex-initial cv:flex-col cv:transition-[opacity,visibility] cv:duration-200 cv:ease-standard cv:motion-reduce:transition-none";
+const HAIRLINE = "cv:-mx-2 cv:mt-2 cv:h-px cv:flex-none cv:bg-line";
 const TREE =
-	"cv:group/tree cv:relative cv:min-h-0 cv:flex-initial cv:overflow-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in";
+	"cv:group/tree cv:relative cv:min-h-0 cv:flex-initial cv:overflow-x-hidden cv:overflow-y-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in";
 
 export function LayersPanel(): ReactElement | null {
 	const panel = useQuery(LayersPanelQuery).data;
@@ -33,6 +34,7 @@ export function LayersPanel(): ReactElement | null {
 			aria-hidden={!panel.isShown}
 			data-canvas-layers={panel.isShown ? "open" : "shut"}
 		>
+			<div className={HAIRLINE} role="separator" />
 			<LayersHeader />
 			<div key={panel.treeKey} className={TREE} ref={scroller}>
 				{panel.hasPicture ? (

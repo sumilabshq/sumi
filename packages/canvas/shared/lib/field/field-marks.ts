@@ -10,12 +10,12 @@ export const POINTING: PointingMarks = {
 };
 
 export const LOOK_ROOM: LookRoom = {
-	top: 80,
+	top: 0,
 	margin: 48,
 	least: 0.6,
 	most: 1,
 	view: "[data-canvas-view]",
-	coveredBy: "[data-canvas-sidebar=open]",
+	coveredBy: null,
 };
 
 export const PRESSABLE = "button, input, textarea, [role=radio], [role=tab], [role=switch], [data-wg-job]";

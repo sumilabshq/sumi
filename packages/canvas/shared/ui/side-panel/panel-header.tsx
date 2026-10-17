@@ -6,10 +6,13 @@ export interface PanelHeaderProps {
 	readonly children?: ReactNode;
 }
 
+const EYEBROW =
+	"cv:box-border cv:flex cv:min-h-7 cv:flex-none cv:items-center cv:justify-between cv:px-2.5 cv:pt-2 cv:pb-1 cv:text-[11px] cv:font-medium cv:tracking-[0.06em] cv:text-muted-foreground cv:uppercase";
+
 export function PanelHeader({ title, children }: PanelHeaderProps): ReactElement {
 	return (
-		<header className="cv:flex cv:min-h-[var(--wg-kit-control-s)] cv:items-center cv:justify-between cv:px-1.5 cv:pb-1.5 cv:text-base cv:text-muted-foreground">
-			<b>{title}</b>
+		<header className={EYEBROW} data-canvas-eyebrow="">
+			<span>{title}</span>
 			{children}
 		</header>
 	);

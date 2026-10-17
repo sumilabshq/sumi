@@ -119,8 +119,8 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 	const tabs = await canvasAppOver(canvasPartsOver({ opened: { ...FARM_OPENED, page: "" } })).send(PageTabsQuery);
 	check(
 		"a canvas over a project with no design folder reads the project's design",
-		tabs.ok ? tabs.output.tabs : tabs.reason,
-		["Components"],
+		tabs.ok ? tabs.output.tabs.map((tab) => tab.name) : tabs.reason,
+		["Pages", "Components"],
 	);
 }
 

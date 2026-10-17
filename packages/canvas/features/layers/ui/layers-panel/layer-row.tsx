@@ -4,16 +4,15 @@ import { Collapsible } from "radix-ui";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
 import { treeRowProps } from "@widgetarium/behaviors";
-import type { LayerKind, TreeDrag } from "@widgetarium/behaviors";
+import type { TreeDrag } from "@widgetarium/behaviors";
 import { PickLayerCommand } from "../../contract.js";
 import { ToggleLayerFoldCommand } from "../../contract.js";
 import type { LayerRow as Row } from "../../../../shared/schema/layer-row.schema.js";
 import { LayerName } from "./layer-name.js";
 import {
-	PANEL_ROW,
+	LAYER_ROW_BASE,
 	PANEL_ROW_INDENT_PX,
 	PANEL_ROW_INSET_PX,
-	PANEL_ROW_OPENER,
 } from "../../../../shared/lib/side-panel/panel-row-look.js";
 
 export interface LayerRowProps {
@@ -22,19 +21,9 @@ export interface LayerRowProps {
 	readonly onHover: (depth: number) => void;
 }
 
-const KIND_ICON: Readonly<Record<LayerKind, string>> = {
-	widget: "puzzle",
-	row: "columns-3",
-	column: "rows-3",
-	grid: "grid-2x2",
-	group: "square",
-	input: "text-cursor-input",
-	button: "mouse-pointer-click",
-	text: "type",
-	picture: "image",
-};
-
-const LAYER_ROW = `${PANEL_ROW} cv:data-[kind=widget]:cursor-grab cv:data-[kind=widget]:text-brand cv:group-data-[dragging]/tree:transition-transform cv:data-[lifted]:relative cv:data-[lifted]:z-[2] cv:data-[lifted]:bg-raise cv:data-[lifted]:shadow-[inset_0_0_0_1px_var(--wg-kit-card-edge),0_8px_20px_-8px_var(--wg-overlay-scrim)] cv:data-[lifted]:transition-none`;
+const LAYER_ROW = `${LAYER_ROW_BASE} cv:data-[kind=widget]:cursor-grab cv:data-[kind=widget]:text-brand cv:group-data-[dragging]/tree:transition-transform cv:data-[lifted]:z-[2] cv:data-[lifted]:bg-group cv:data-[lifted]:shadow-[0_8px_20px_-8px_var(--wg-overlay-scrim)] cv:data-[lifted]:transition-none`;
+const OPENER =
+	"cv:absolute cv:top-1/2 cv:grid cv:size-3 cv:-translate-y-1/2 cv:cursor-pointer cv:place-items-center cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:opacity-0 cv:shadow-none cv:transition-opacity cv:group-hover/row:opacity-100 cv:hover:text-ink cv:focus-visible:opacity-100 cv:data-[state=closed]:opacity-100";
 
 export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 	const pick = useCommand(PickLayerCommand);
@@ -56,7 +45,8 @@ export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 			>
 				{hasChildren ? (
 					<Collapsible.Trigger
-						className={`${PANEL_ROW_OPENER} cv:cursor-pointer cv:hover:bg-raise cv:hover:text-ink cv:hover:shadow-[inset_0_0_0_1px_var(--wg-kit-card-edge)]`}
+						className={OPENER}
+						style={{ left: row.depth * PANEL_ROW_INDENT_PX }}
 						onPointerDown={(event: PointerEvent) => event.stopPropagation()}
 						onClick={(event: MouseEvent) => event.stopPropagation()}
 					>
@@ -66,15 +56,12 @@ export function LayerRow({ row, drag, onHover }: LayerRowProps): ReactElement {
 							className={`cv:transition-[rotate] cv:duration-200 cv:ease-spring ${row.isOpen ? "" : "cv:-rotate-90"}`}
 						/>
 					</Collapsible.Trigger>
-				) : (
-					<span className={PANEL_ROW_OPENER} />
-				)}
-				<Icon name={KIND_ICON[row.kind]} size={14} />
+				) : null}
 				<LayerName title={row.title} isHeld={row.isHeld} />
 				{row.repeats > 1 ? <span className="cv:text-sm cv:text-muted-foreground">{`×${row.repeats}`}</span> : null}
 			</div>
 			{hasChildren ? (
-				<Collapsible.Content className="cv:w-max cv:min-w-full cv:overflow-hidden cv:group-data-[dragging]/tree:overflow-visible cv:data-[state=open]:animate-canvas-fold-open cv:data-[state=closed]:animate-canvas-fold-shut">
+				<Collapsible.Content className="cv:w-full cv:overflow-hidden cv:group-data-[dragging]/tree:overflow-visible cv:data-[state=open]:animate-canvas-fold-open cv:data-[state=closed]:animate-canvas-fold-shut">
 					{row.children.map((child) => (
 						<LayerRow key={child.id} row={child} drag={drag} onHover={onHover} />
 					))}

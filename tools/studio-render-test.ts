@@ -57,6 +57,7 @@ interface Seen extends CatalogueSeen {
 	readonly frames?: readonly string[];
 	readonly frameDrawsRoute?: boolean;
 	readonly topBar?: string | null;
+	readonly topButtons?: readonly (string | null)[];
 	readonly bandsInCanvas?: number;
 	readonly topBarsInCanvas?: number;
 	readonly menuInChatInCanvas?: boolean;
@@ -86,7 +87,7 @@ interface Seen extends CatalogueSeen {
 type Mode = "app" | "studio" | "studio-mac" | "studio-memory";
 
 const VIEW = { width: 1280, height: 800 };
-const BUTTON_PX = 34;
+const MENU_BUTTON_PX = 40;
 const MAC_SAFE_AREA_PX = 76;
 const REACT_ID = /«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g;
 const REGION_WIDTH = /flex: 0 0 \d+px/g;
@@ -215,7 +216,7 @@ const studio = await seenIn("studio");
 const { menu } = studio.seen;
 check("studio drew without a failure", studio.reported === "", studio.reported);
 check("the studio opens on the canvas", studio.seen.openedOnCanvas === true, studio.seen.openedOnCanvas);
-check("the menu button is the small size", menu?.w === BUTTON_PX && menu.h === BUTTON_PX, menu);
+check("the menu button is the pill header's round 40px", menu?.w === MENU_BUTTON_PX && menu.h === MENU_BUTTON_PX, menu);
 check("the menu stands in the chat's header", studio.seen.menuInChatHead === true, studio.seen.menuInChatHead);
 check("and below the band", (menu?.y ?? -1) >= STUDIO_BAND_PX, menu);
 check("the band carries no catalogue button", studio.seen.bandButtons === 0, studio.seen.bandButtons);
@@ -283,10 +284,11 @@ checkCataloguePanel(studio.seen, check);
 check("Edit in canvas swaps the route for the canvas", studio.seen.canvasShown === true, studio.seen.canvasShown);
 check("and the route leaves the outlet", studio.seen.taskGoneInCanvas === true, studio.seen.taskGoneInCanvas);
 check(
-	"the canvas is the design canvas: its top bar names the app, the routes as screens, and Components, and no Pages tab",
-	["Farm", "2 screens", "Components", "Back to view"].every((said) => studio.seen.topBar?.includes(said)) &&
-		studio.seen.topBar?.includes("Pages") === false,
-	studio.seen.topBar,
+	"the canvas is the design canvas: its top bar switches Pages and Components and leaves by a labelled round button",
+	["Pages", "Components"].every((said) => studio.seen.topBar?.includes(said)) &&
+		studio.seen.topButtons?.includes("Back to view") === true &&
+		studio.seen.topBar?.includes("Back to view") === false,
+	{ topBar: studio.seen.topBar, buttons: studio.seen.topButtons },
 );
 check(
 	"the canvas draws one header row: no band above it",

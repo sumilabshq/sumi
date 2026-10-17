@@ -2,15 +2,15 @@ import { waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import type { Check } from "./gpu-design-canvas-probe.ts";
 
-const BESIDE_LIST: PagePoint = [130, 720];
-const PANNED_TO: PagePoint = [250, 720];
+const BESIDE_SIDEBAR: PagePoint = [400, 720];
+const PANNED_TO: PagePoint = [520, 720];
 const SETTLE_TRIES = 30;
 const SIDEBAR_STATE = `document.querySelector("[data-canvas-sidebar]").dataset.canvasSidebar`;
 const PAGES_VISIBILITY = `getComputedStyle(document.querySelector("[data-canvas-pages]")).visibility`;
 const LAYER_LEFT = `document.querySelector("[data-canvas-layer]").getBoundingClientRect().left`;
 const TOGGLE = `document.querySelector("[data-canvas-sidebar-toggle]").click()`;
 const LAYERS_STATE = `document.querySelector("[data-canvas-layers]")?.dataset.canvasLayers ?? null`;
-const REACHES_FIELD = `(() => { const hit = document.elementFromPoint(${BESIDE_LIST.join(", ")}); return hit?.closest("[data-canvas-chrome]") === null && hit?.closest("[data-canvas-field]") !== null; })()`;
+const REACHES_FIELD = `(() => { const hit = document.elementFromPoint(${BESIDE_SIDEBAR.join(", ")}); return hit?.closest("[data-canvas-chrome]") === null && hit?.closest("[data-canvas-field]") !== null; })()`;
 
 export async function checkSidebar(page: AskedPage, check: Check): Promise<void> {
 	await openSidebarPassesThrough(page, check);
@@ -34,19 +34,19 @@ async function openSidebarPassesThrough(page: AskedPage, check: Check): Promise<
 	);
 	const layers = await settled(page, LAYERS_STATE, "open");
 	const reachesField = await page.ask(REACHES_FIELD);
-	const moved = await pannedBesideList(page);
+	const moved = await panDistanceBesideSidebar(page);
 	check(
-		"sidebar: with it open, a drag on the empty canvas beside its lists reaches the field and pans the camera",
-		reachesField === true && Math.abs(moved - (PANNED_TO[0] - BESIDE_LIST[0])) < 2,
+		"sidebar: with it open, a drag on the board beside it reaches the field and pans the camera",
+		reachesField === true && Math.abs(moved - (PANNED_TO[0] - BESIDE_SIDEBAR[0])) < 2,
 		{ layers, reachesField, moved },
 	);
 }
 
-async function pannedBesideList(page: AskedPage): Promise<number> {
+async function panDistanceBesideSidebar(page: AskedPage): Promise<number> {
 	const before = Number(await page.ask(LAYER_LEFT));
-	await dragged(page, BESIDE_LIST, PANNED_TO);
+	await dragged(page, BESIDE_SIDEBAR, PANNED_TO);
 	const moved = Number(await page.ask(LAYER_LEFT)) - before;
-	await dragged(page, PANNED_TO, BESIDE_LIST);
+	await dragged(page, PANNED_TO, BESIDE_SIDEBAR);
 	return moved;
 }
 

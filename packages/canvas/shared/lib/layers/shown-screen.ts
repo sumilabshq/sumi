@@ -7,9 +7,25 @@ export interface ShownScreen {
 	readonly key: string;
 }
 
-export function pictureWidgetsShownOf({ pages, design }: PagesNow): string[] {
-	const shown = design.screens.filter((screen) => pages.shownScreens.includes(screen.name));
-	return shown.flatMap((screen) => screen.states.flatMap((state) => (state.picture ? [state.picture.widget] : [])));
+type ShownPages = Pick<PagesNow, "pages" | "design">;
+
+export function screensShownOf({ pages, design }: ShownPages): DrawnScreen[] {
+	return design.screens.filter((screen) => pages.shownScreens.includes(screen.name));
+}
+
+export function statesShownOf(now: ShownPages): number | null {
+	const shown = screensShownOf(now);
+	if (shown.length === 0) {
+		return null;
+	}
+
+	return shown.reduce((count, screen) => count + screen.states.length, 0);
+}
+
+export function pictureWidgetsShownOf(now: PagesNow): string[] {
+	return screensShownOf(now).flatMap((screen) =>
+		screen.states.flatMap((state) => (state.picture ? [state.picture.widget] : [])),
+	);
 }
 
 export function shownScreenOf({ pages, design }: PagesNow): ShownScreen | null {

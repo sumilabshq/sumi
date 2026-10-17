@@ -1,3 +1,4 @@
+import { EdgeWidth } from "@widgetarium/behaviors";
 import { movedNode } from "@widgetarium/core/engine/node-moves.js";
 import { handler, refuse } from "@widgetarium/core/requests";
 import { WidgetDrawingGateway } from "../../gateways/widget-drawing/widget-drawing.gateway.js";
@@ -17,6 +18,8 @@ import {
 	LayersPanelQuery,
 	MoveLayerCommand,
 	PickLayerCommand,
+	ResetSidebarWidthCommand,
+	ResizeSidebarWidthCommand,
 	SidebarQuery,
 	ToggleLayerFoldCommand,
 	ToggleSidebarCommand,
@@ -79,10 +82,28 @@ export const PickLayerCommandHandler = handler(PickLayerCommand, CanvasClientMod
 		pickIn(canvasStore, isPicked ? null : { widget, mark: id, spot: null });
 	});
 
+export const ResetSidebarWidthCommandHandler = handler(ResetSidebarWidthCommand, CanvasClientModule)
+	.inject({ sidebarWidth: EdgeWidth })
+	.handle((_input, { sidebarWidth }) => sidebarWidth.reset());
+
+export const ResizeSidebarWidthCommandHandler = handler(ResizeSidebarWidthCommand, CanvasClientModule)
+	.inject({ sidebarWidth: EdgeWidth })
+	.handle(({ px, roomPx }, { sidebarWidth }) => sidebarWidth.resize(px, roomPx));
+
 export const SidebarQueryHandler = handler(SidebarQuery, CanvasClientModule)
-	.inject({ canvasStore: CanvasStore })
-	.watch((_input, { canvasStore }, changed) => canvasStore.watch(["isLayersOpen"], changed))
-	.handle((_input, { canvasStore }) => ({ isOpen: canvasStore.now().isLayersOpen }));
+	.inject({ canvasStore: CanvasStore, sidebarWidth: EdgeWidth })
+	.watch((_input, { canvasStore, sidebarWidth }, changed) => {
+		const stopOpen = canvasStore.watch(["isLayersOpen"], changed);
+		const stopWidth = sidebarWidth.subscribe(changed);
+		return () => {
+			stopOpen();
+			stopWidth();
+		};
+	})
+	.handle((_input, { canvasStore, sidebarWidth }) => ({
+		isOpen: canvasStore.now().isLayersOpen,
+		px: sidebarWidth.now(),
+	}));
 
 export const ToggleLayerFoldCommandHandler = handler(ToggleLayerFoldCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })

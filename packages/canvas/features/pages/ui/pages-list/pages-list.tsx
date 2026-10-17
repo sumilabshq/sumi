@@ -5,12 +5,12 @@ import { PAGE_UNASKED } from "@widgetarium/core/gateway/page.js";
 import { PagesQuery } from "../../contract.js";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PanelHeader } from "../../../../shared/ui/side-panel/panel-header.js";
-import { PANEL_ROW, PANEL_ROW_INSET_PX } from "../../../../shared/lib/side-panel/panel-row-look.js";
+import { PAGE_ROW_SHAPE } from "../../../../shared/lib/side-panel/panel-row-look.js";
 import { PageRow } from "./page-row.js";
 
 const TITLE = "Pages";
 const MORE = "More pages";
-const LIST = "cv:flex cv:flex-col cv:overflow-auto cv:[scrollbar-width:none]";
+const LIST = "cv:flex cv:flex-col cv:gap-0.5 cv:overflow-auto cv:[scrollbar-width:none]";
 
 export function PagesList(): ReactElement {
 	const [limit, setLimit] = useState(PAGE_UNASKED);
@@ -26,8 +26,8 @@ export function PagesList(): ReactElement {
 				))}
 				{pages.next === null ? null : (
 					<div
-						className={`${PANEL_ROW} cv:text-muted-foreground`}
-						style={{ paddingLeft: PANEL_ROW_INSET_PX }}
+						className={PAGE_ROW_SHAPE}
+						data-quiet=""
 						role="button"
 						onClick={() => startTransition(() => setLimit(limit + PAGE_UNASKED))}
 					>

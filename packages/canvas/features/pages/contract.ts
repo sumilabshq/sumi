@@ -2,8 +2,6 @@ import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
 import { PageInputSchema, PageOf } from "@widgetarium/core/gateway/page.js";
 
-export const AppNameQuery = query("canvas/app-name").output(z.object({ app: z.string() }));
-
 export const FinishFlightCommand = command("canvas/finish-flight").idempotencyKey(Repeatable);
 
 export const FocusWidgetCommand = command("canvas/focus-widget")
@@ -11,7 +9,14 @@ export const FocusWidgetCommand = command("canvas/focus-widget")
 	.idempotencyKey(Repeatable);
 
 export const PageTabsQuery = query("canvas/page-tabs").output(
-	z.object({ tabs: z.array(z.string()).readonly(), shown: z.string() }),
+	z.object({
+		tabs: z.array(z.object({ name: z.string(), opens: z.string() })).readonly(),
+		shown: z.string(),
+	}),
+);
+
+export const PageTitleQuery = query("canvas/page-title").output(
+	z.object({ page: z.string(), states: z.number().nullable() }),
 );
 
 export const PagesQuery = query("canvas/pages")

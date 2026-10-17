@@ -12,6 +12,9 @@ import { BROKEN_FRAME, DESIGN_FRAMES, KIT_FRAME, TAGS_FRAME, TASKS_FRAME } from 
 import { BROKEN_SAID } from "./gpu-design-fixture-broken.tsx";
 import { checkSidebar } from "./gpu-design-canvas-sidebar.ts";
 import { checkTopBar } from "./gpu-design-canvas-top-bar.ts";
+import { checkPillChrome } from "./gpu-design-canvas-pill.ts";
+import { checkGridFollowsCamera } from "./gpu-design-canvas-grid.ts";
+import { checkLayerRowsInside, checkSidebarWidth } from "./gpu-design-canvas-sidebar-width.ts";
 import { HARVEST_TITLE, HOVERED_CROP } from "./gpu-design-fixture-tags.tsx";
 
 const VIEW: readonly [number, number] = [1280, 800];
@@ -80,8 +83,13 @@ async function gpuRun(): Promise<void> {
 		await page.ask(`${PAGES}.textIn(${idOf(TASKS_FRAME)}, "beans")`),
 	);
 	await checkTopBar(page, check);
+	await checkPillChrome(page, check);
 	await checkSidebar(page, check);
+	await checkLayerRowsInside(page, check);
+	await checkGridFollowsCamera(page, check, indexOf(TAGS_FRAME));
+	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);
 	await clicked();
+	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);
 	await hovered();
 	await failedFrame();
 	await dialogFrame();
@@ -94,10 +102,12 @@ async function gpuRun(): Promise<void> {
 	await benched();
 	await frameRateShown();
 	await componentCard();
+	await checkSidebarWidth(page, check);
 }
 
 async function clicked(): Promise<void> {
 	const before = await page.ask(`${PAGES}.textIn(${idOf(TAGS_FRAME)}, "Picked")`);
+	await centreOn(TAGS_FRAME, "Picked 0");
 	const point = await pointOf(TAGS_FRAME, "Picked 0");
 	if (point) await page.press(point[0], point[1]);
 	await waited(500);
@@ -107,6 +117,13 @@ async function clicked(): Promise<void> {
 		before,
 		after,
 	});
+}
+
+async function centreOn(state: string, text: string): Promise<void> {
+	await page.ask(
+		`(() => { const at = ${PAGES}.locateText(${idOf(state)}, ${JSON.stringify(text)}); const field = document.querySelector("[data-canvas-field]"); field.dispatchEvent(new WheelEvent("wheel", { deltaX: at.x - field.clientWidth / 2, deltaY: 0, cancelable: true })); })()`,
+	);
+	await waited(300);
 }
 
 async function hovered(): Promise<void> {

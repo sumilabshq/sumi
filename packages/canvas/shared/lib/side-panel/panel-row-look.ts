@@ -1,9 +1,12 @@
-export const PANEL_ROW =
-	"cv:flex cv:h-[26px] cv:w-max cv:min-w-full cv:cursor-pointer cv:items-center cv:gap-1.5 cv:whitespace-nowrap cv:rounded-md cv:pr-2 cv:text-base cv:text-ink cv:transition-[background-color,box-shadow] cv:hover:bg-raise cv:hover:shadow-[inset_0_0_0_1px_var(--wg-kit-card-edge)] cv:data-[picked]:bg-raise cv:data-[picked]:shadow-[inset_0_0_0_1px_var(--wg-kit-card-edge)]";
+export const PANEL_ROW_PICKABLE =
+	"cv:flex cv:cursor-pointer cv:items-center cv:whitespace-nowrap cv:rounded-full cv:text-sm cv:text-ink cv:data-[quiet]:text-muted-foreground cv:transition-[background-color] cv:hover:bg-group/60 cv:data-[picked]:bg-group";
 
-export const PANEL_ROW_OPENER =
-	"cv:grid cv:size-[18px] cv:flex-none cv:place-items-center cv:rounded-[5px] cv:border-0 cv:bg-transparent cv:p-0 cv:text-muted-foreground cv:shadow-none cv:transition-[background-color,box-shadow]";
+export const PAGE_ROW_SHAPE = `${PANEL_ROW_PICKABLE} cv:h-9 cv:flex-none cv:gap-2 cv:px-3`;
 
-export const PANEL_ROW_INSET_PX = 6;
+export const PAGE_ROW = `${PAGE_ROW_SHAPE} cv:data-[picked]:font-medium`;
+
+export const LAYER_ROW_BASE = `${PANEL_ROW_PICKABLE} cv:group/row cv:relative cv:box-border cv:h-[30px] cv:w-full cv:min-w-0 cv:gap-1.5 cv:pr-3`;
+
+export const PANEL_ROW_INSET_PX = 12;
 
 export const PANEL_ROW_INDENT_PX = 14;

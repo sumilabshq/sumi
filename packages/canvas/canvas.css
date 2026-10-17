@@ -1,3 +1,8 @@
+@theme inline {
+	--color-board: color-mix(in oklch, var(--background) 62%, var(--group));
+	--color-page-dot: color-mix(in oklch, var(--muted-foreground) 30%, var(--raise));
+}
+
 @theme {
 	--animate-canvas-fade-in: canvas-fade-in var(--wg-quick) var(--wg-ease);
 	--animate-canvas-pulse: canvas-pulse 1.4s ease-in-out infinite;

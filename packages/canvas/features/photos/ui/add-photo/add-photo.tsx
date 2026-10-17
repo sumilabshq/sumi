@@ -1,11 +1,12 @@
 import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
-import { Icon, IconButton } from "@widgetarium/kit";
+import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
 import { AddPhotosCommand } from "../../contract.js";
 import { PastePhotosCommand } from "../../contract.js";
 import { Tip } from "../../../../shared/ui/tip/tip.js";
+import { RoundButton } from "../../../../shared/ui/round-button/round-button.js";
 
 const ADD_PHOTO = "Add photo";
 const ADD_PHOTO_SAID = "Add a reference photo, or drop or paste one on the canvas";
@@ -22,16 +23,16 @@ export function AddPhoto(): ReactElement {
 	return (
 		<span ref={anchor} className="cv:inline-flex cv:items-center cv:gap-1.5">
 			<Tip label={ADD_PHOTO_SAID}>
-				<IconButton
-					size="s"
-					variant="ghost"
+				<RoundButton
 					label={ADD_PHOTO}
+					tone="plate"
+					size="m"
 					disabled={!add.can}
-					isLoading={add.isRunning}
+					isBusy={add.isRunning}
 					onClick={() => picker.current?.click()}
 				>
-					<Icon name="image-plus" size={16} />
-				</IconButton>
+					<Icon name="image-plus" size={15} />
+				</RoundButton>
 			</Tip>
 			<input
 				ref={picker}

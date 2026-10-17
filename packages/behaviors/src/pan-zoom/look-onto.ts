@@ -6,12 +6,11 @@ export interface LookRoom {
 	readonly least: number;
 	readonly most: number;
 	readonly view: string;
-	readonly coveredBy: string;
+	readonly coveredBy: string | null;
 }
 
 export function lookOnto(target: Box, field: HTMLElement | null, room: LookRoom): StageLook {
-	const panel = field?.closest(room.view)?.querySelector(room.coveredBy);
-	const left = panel instanceof HTMLElement ? panel.offsetWidth : 0;
+	const left = coverWidthOf(field, room);
 	const width = (field?.clientWidth ?? 0) - left - 2 * room.margin;
 	const height = (field?.clientHeight ?? 0) - room.top - 2 * room.margin;
 	const fitted = Math.min(width / target.width, height / target.height);
@@ -38,4 +37,13 @@ export function boxInLayer(layer: HTMLElement, element: HTMLElement): Box {
 function placedOn(start: number, room: number, at: number, size: number, scale: number): number {
 	if (size * scale > room) return start - at * scale;
 	return start + room / 2 - (at + size / 2) * scale;
+}
+
+function coverWidthOf(field: HTMLElement | null, { view, coveredBy }: LookRoom): number {
+	if (coveredBy === null) {
+		return 0;
+	}
+
+	const panel = field?.closest(view)?.querySelector(coveredBy);
+	return panel instanceof HTMLElement ? panel.offsetWidth : 0;
 }

@@ -7,7 +7,7 @@ const FIELD_CURSOR = `getComputedStyle(document.querySelector("[data-canvas-fiel
 const TOGGLE_INSETS = `(() => {
 	const card = document.querySelector("[data-canvas-view]").getBoundingClientRect();
 	const toggle = document.querySelector("[data-canvas-sidebar-toggle]").getBoundingClientRect();
-	const back = [...document.querySelectorAll("[data-canvas-topbar] button")].find((one) => one.textContent.trim() === "Back to view").getBoundingClientRect();
+	const back = document.querySelector("[data-canvas-topbar] [aria-label='Back to view']").getBoundingClientRect();
 	return { left: toggle.left - card.left, top: toggle.top - card.top, backRight: card.right - back.right };
 })()`;
 

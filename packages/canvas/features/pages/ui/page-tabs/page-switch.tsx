@@ -1,26 +1,30 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Segmented } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/core/requests";
 import { PageTabsQuery } from "../../contract.js";
+import { PillSwitch } from "../../../../shared/ui/pill-switch/pill-switch.js";
 
 export interface PageSwitchProps {
 	readonly onPage: (page: string) => void;
 }
 
-const SWITCH =
-	"cv:rounded-full cv:bg-page cv:shadow-[0_0_0_1px_var(--wg-kit-card-edge)] cv:[&_button]:h-[calc(var(--wg-kit-control-s)-4px)]";
-
 export function PageSwitch({ onPage }: PageSwitchProps): ReactElement {
 	const { tabs, shown } = useQuery(PageTabsQuery).data;
+	const turnTo = (name: string): void => {
+		const tab = tabs.find((one) => one.name === name);
+		if (!tab) {
+			return;
+		}
+
+		onPage(tab.opens);
+	};
+
 	return (
 		<span className="cv:inline-flex" data-canvas-page-switch="">
-			<Segmented<string>
-				items={tabs.map((page) => ({ value: page, label: page }))}
+			<PillSwitch<string>
+				items={tabs.map(({ name }) => ({ value: name, label: name }))}
 				value={shown}
-				onValueChange={onPage}
-				size="s"
-				className={SWITCH}
+				onValueChange={turnTo}
 			/>
 		</span>
 	);
