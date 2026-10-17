@@ -18,7 +18,7 @@ export function moduleRoutesOf(module: ReadyModule, side: Runs, hostProvided: Pr
 	const routes = module.handlers.map((handler) => ({
 		handler,
 		provided,
-		steps: side === "server" ? serverStepsOf([...module.definition.steps, ...handler.steps]) : [],
+		steps: side === "server" ? serverStepsOf([...module.definition.steps, ...handler.steps]) : handler.steps,
 	}));
 	return { module, provides, routes };
 }

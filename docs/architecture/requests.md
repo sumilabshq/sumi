@@ -61,7 +61,7 @@ export const ChargeCommandHandler = handler(ChargeCommand, BillingServerModule)
 	);
 ```
 
-**The module decides what the builder offers.** A guarded server module gives `.handle` at once, the context carrying `user: User` and what its guards add. A server module with no guard gives a draft whose `.handle` is not callable until `PublicGuard` or a guard needing a user is added; tsc names the fix: `Add .guard(AuthenticatedGuard) or .guard(PublicGuard) before .handle(), or guard its server module`. A client module gives `.handle` at once and no `.guard`.
+**The module decides what the builder offers.** A guarded server module gives `.handle` at once, the context carrying `user: User` and what its guards add. A server module with no guard gives a draft whose `.handle` is not callable until `PublicGuard` or a guard needing a user is added; tsc names the fix: `Add .guard(AuthenticatedGuard) or .guard(PublicGuard) before .handle(), or guard its server module`. A client module gives `.handle` at once, and `.guard` only for input guards (`guard<In>()` with no `.needsUser()`), since a client has no user.
 
 - `.guard(G)` is the one access verb: who may call. A guard that only checks the input covers nothing alone; after `PublicGuard` only such guards follow.
 - `.use(M)` adds a middleware, which never decides access. Module steps run first, then the handler's, as written, after the input is validated and before the idempotency key and `.handle`.
@@ -72,7 +72,7 @@ export const ChargeCommandHandler = handler(ChargeCommand, BillingServerModule)
 
 ### Guards and middleware
 
-Both run **only on the server**. Types, then `server()`, refuse a handler that neither `PublicGuard` nor a guard needing a user covers, on its module or itself, naming it.
+Module steps, middleware and guards needing a user run **only on the server**; a client handler runs its own input guards, in order, before `.handle`. Types, then `server()`, refuse a handler that neither `PublicGuard` nor a guard needing a user covers, on its module or itself, naming it.
 
 | Step                                                  | Does                                                                                         |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |

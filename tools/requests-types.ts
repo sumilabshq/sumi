@@ -52,6 +52,11 @@ export function typedOnly(): void {
 	draft.guard(SignedOnlyGuard).handle(() => "");
 	// @ts-expect-error
 	handler(Plain, PlainClientModule).guard(PublicGuard);
+	handler(Plain, PlainClientModule)
+		.guard(InputOnlyGuard)
+		.handle(() => "");
+	// @ts-expect-error
+	handler(Plain, PlainClientModule).guard(SignedOnlyGuard);
 	// @ts-expect-error
 	handler(Plain, PlainClientModule).use(TimedMiddleware);
 

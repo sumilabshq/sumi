@@ -132,18 +132,22 @@ export class GuardedHandlerBuilder<R extends AnyRequest, P, D extends Inject, S 
 	}
 }
 
-export class ClientHandlerBuilder<R extends AnyRequest, P, D extends Inject> {
+export class ClientHandlerBuilder<R extends AnyRequest, P, D extends Inject, C extends Added = NothingAdded> {
 	constructor(private readonly plan: Plan<R, D>) {}
 
-	inject<const N extends Inject>(inject: N & Fitting<P, N>): ClientHandlerBuilder<R, P, N> {
+	guard<A extends Added>(step: Guard<InputOf<R>, A, Inject, false>): ClientHandlerBuilder<R, P, D, C & A> {
+		return new ClientHandlerBuilder(withStep(this.plan, step));
+	}
+
+	inject<const N extends Inject>(inject: N & Fitting<P, N>): ClientHandlerBuilder<R, P, N, C> {
 		return new ClientHandlerBuilder({ ...this.plan, inject, watch: null });
 	}
 
-	watch(watch: Watch<R, D>): ClientHandlerBuilder<R, P, D> {
+	watch(watch: Watch<R, D>): ClientHandlerBuilder<R, P, D, C> {
 		return new ClientHandlerBuilder({ ...this.plan, watch });
 	}
 
-	handle(handle: Handle<R, D>): Handler<R, D, "client"> {
+	handle(handle: Handle<R, D, C>): Handler<R, D, "client", C> {
 		return handlerOf(this.plan, "client", handle);
 	}
 }

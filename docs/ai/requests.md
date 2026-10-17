@@ -4,7 +4,7 @@ Logic lives in handlers. A request is a contract (`query` or `command`), a handl
 
 **A module is named `<Domain><Side>Module`, and a handler names its module**: `handler(PricesQuery, ShopServerModule)` shows in the handler file that it runs on the server. `module.ts` holds only the definition; `widgetarium generate` joins it with every exported `*Handler` into `generated/module.ts`.
 
-**`.handle` exists only once something decides who may call.** A handler of a server module with no guard is a draft: it must pass `.guard(PublicGuard)`, `AuthenticatedGuard`, `HasPermissionGuard` or a guard that `.needsUser()` before `.handle()`, and tsc says so. A guard that only checks the input (`guard<In>()`) is not enough on its own. A server module that guards itself covers every handler it defines; a client module's handlers take no guard.
+**`.handle` exists only once something decides who may call.** A handler of a server module with no guard is a draft: it must pass `.guard(PublicGuard)`, `AuthenticatedGuard`, `HasPermissionGuard` or a guard that `.needsUser()` before `.handle()`, and tsc says so. A guard that only checks the input (`guard<In>()`) is not enough on its own. A server module that guards itself covers every handler it defines; a client module's handlers take only input guards.
 
 ## Public
 
