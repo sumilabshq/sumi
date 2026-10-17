@@ -2,7 +2,6 @@ import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { CanvasHost, detachedHostOf, webCanvasParts } from "@widgetarium/canvas/gateways";
 import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
@@ -10,7 +9,6 @@ import type { CanvasShell, StageMount } from "./design-stage.js";
 
 export interface StudioMount extends StageMount {
 	readonly project: StartedProject;
-	readonly returnToView: () => Promise<void>;
 }
 
 export interface StudioDesign {
@@ -21,20 +19,18 @@ export interface StudioDesign {
 export interface StudioCanvasProps {
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
-	readonly state: StudioState;
 	readonly shell: CanvasShell;
 }
 
-export function StudioCanvas({ design, project, state, shell }: StudioCanvasProps): ReactElement {
+export function StudioCanvas({ design, project, shell }: StudioCanvasProps): ReactElement {
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<FrameSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
-	const returnToView = async (): Promise<void> => state.show("app");
 	const stage = size
 		? h(DesignStage, {
 				app: design.app,
 				opening: CANVAS_OPENED_ON,
-				partsOf: (mount) => design.partsOf({ ...mount, project, returnToView }),
+				partsOf: (mount) => design.partsOf({ ...mount, project }),
 				size,
 				shell,
 			})
@@ -45,13 +41,12 @@ export function StudioCanvas({ design, project, state, shell }: StudioCanvasProp
 export function webStudioDesign(app: string): StudioDesign {
 	return {
 		app,
-		partsOf: ({ project, returnToView, ...mount }) =>
+		partsOf: ({ project, ...mount }) =>
 			webCanvasParts(
 				project,
 				new CanvasHost({
 					...detachedHostOf(mount.opened),
 					...mount,
-					returnTo: { kind: "view", open: returnToView },
 					ownsPaste: ownsEveryPasteInItsTab,
 					gpu: null,
 				}),

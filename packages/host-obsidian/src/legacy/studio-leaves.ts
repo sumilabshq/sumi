@@ -59,14 +59,9 @@ export async function studioDesignOf(
 	const ownsPaste = (): boolean => plugin.app.workspace.getActiveViewOfType(StudioView)?.leaf === leaf;
 	const hasDesign = await plugin.app.vault.adapter.exists(designFolderOf(app));
 	const gpu = hasDesign ? obsidianGpuSupply(plugin) : null;
-	const partsOf: StudioDesign["partsOf"] = ({ project, returnToView, ...mount }) => {
+	const partsOf: StudioDesign["partsOf"] = ({ project, ...mount }) => {
 		const held: DesignHeld = hasDesign ? HELD_IN_VAULT : { kind: "project", project };
-		const returnTo = { kind: "view", open: returnToView } as const;
-		return partsFor(
-			plugin,
-			held,
-			new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu, returnTo }),
-		);
+		return partsFor(plugin, held, new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu }));
 	};
 	return { app, partsOf };
 }

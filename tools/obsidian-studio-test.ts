@@ -1038,7 +1038,6 @@ const studioMount = {
 	opened: { ...CANVAS_OPENED_ON, app: "Farm" },
 	keepOpening: () => undefined,
 	project: emptyProject(),
-	returnToView: async () => undefined,
 };
 const [activeParts, otherParts] = [activeDesign.partsOf(studioMount), otherDesign.partsOf(studioMount)];
 check(

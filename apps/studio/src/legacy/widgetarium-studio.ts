@@ -114,7 +114,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		isCanvas ? null : h(StudioBand, { key: "band", corners }),
 		h(StudioRail, { key: "rail", children: rail }),
 		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame, appName }),
-		h(StudioOutlet, { key: "outlet", project, pathname, view, design, state, shell: canvasShell }),
+		h(StudioOutlet, { key: "outlet", project, pathname, view, design, shell: canvasShell }),
 		panel === "none"
 			? null
 			: h(StudioSidebar, {

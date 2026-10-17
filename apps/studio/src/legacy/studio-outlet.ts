@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
+import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
@@ -12,12 +12,10 @@ export interface StudioOutletProps {
 	readonly pathname: string;
 	readonly view: StudioView;
 	readonly design: StudioDesign;
-	readonly state: StudioState;
 	readonly shell: CanvasShell;
 }
 
-export function StudioOutlet({ project, pathname, view, design, state, shell }: StudioOutletProps): ReactElement {
-	const shown =
-		view === "canvas" ? h(StudioCanvas, { design, project, state, shell }) : routeElementOf(project, pathname);
+export function StudioOutlet({ project, pathname, view, design, shell }: StudioOutletProps): ReactElement {
+	const shown = view === "canvas" ? h(StudioCanvas, { design, project, shell }) : routeElementOf(project, pathname);
 	return h("main", { className: "wg-studio-outlet" }, shown);
 }

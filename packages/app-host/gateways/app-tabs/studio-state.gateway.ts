@@ -2,11 +2,12 @@ import type { StudioState, StudioView } from "@widgetarium/core/engine/studio-st
 import type { AppTab } from "../../shared/schema/app-tab.schema.js";
 import { AppTabsGateway } from "./app-tabs.gateway.js";
 
-const STUDIO_APPS: readonly AppTab[] = [
+const STUDIO_APPS: readonly (AppTab & { readonly view: StudioView })[] = [
 	{
 		id: "canvas",
 		label: "Canvas",
 		icon: "pen-tool",
+		view: "canvas",
 	},
 ];
 
@@ -32,18 +33,16 @@ export class StudioStateAppTabsGateway extends AppTabsGateway {
 	}
 
 	show(id: string): void {
-		this.studioState.show(studioViewOf(id));
+		const app = STUDIO_APPS.find((held) => held.id === id);
+
+		if (!app) {
+			throw new Error(NOT_AN_APP.replace("{id}", id));
+		}
+
+		this.studioState.show(app.view);
 	}
 
 	closePanel(): void {
 		this.studioState.show(APP_VIEW);
 	}
-}
-
-function studioViewOf(id: string): StudioView {
-	if (id === "canvas" || id === "app") {
-		return id;
-	}
-
-	throw new Error(NOT_AN_APP.replace("{id}", id));
 }
