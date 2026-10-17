@@ -1,21 +1,19 @@
-export interface ChatWidthMemory {
+export interface PxMemory {
 	read(): number | null;
 	write(px: number): void;
 }
 
-const CHAT_WIDTH_KEY = "widgetarium-studio-chat-px";
-
-export function localChatWidthMemory(): ChatWidthMemory {
+export function localPxMemory(key: string): PxMemory {
 	return {
 		read: () => {
-			const kept = Number(storageOrNull()?.getItem(CHAT_WIDTH_KEY) ?? Number.NaN);
+			const kept = Number(storageOrNull()?.getItem(key) ?? Number.NaN);
 			return Number.isFinite(kept) ? kept : null;
 		},
 		write: (px) => {
 			try {
-				storageOrNull()?.setItem(CHAT_WIDTH_KEY, String(px));
+				storageOrNull()?.setItem(key, String(px));
 			} catch (failure: unknown) {
-				console.warn("[widgetarium] the studio chat width could not be remembered", failure);
+				console.warn(`[widgetarium] ${key} could not be remembered`, failure);
 			}
 		},
 	};

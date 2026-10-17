@@ -2,7 +2,7 @@ import { createElement as h, useSyncExternalStore } from "react";
 import type { ReactElement, RefObject } from "react";
 import { CHAT_LEAST_PX } from "@widgetarium/core/engine/studio-state-port.js";
 import type { ChatWidth } from "@widgetarium/core/engine/studio-state-port.js";
-import { useEdgeResize } from "./use-edge-resize.js";
+import { useEdgeResize } from "@widgetarium/behaviors";
 
 export interface ChatEdgeProps {
 	readonly chatWidth: ChatWidth;

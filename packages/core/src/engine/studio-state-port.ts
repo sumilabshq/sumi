@@ -35,14 +35,6 @@ export const CHAT_USUAL_PX = 380;
 
 export const CARD_LEAST_PX = 240;
 
-export function chatPxWithin(px: number, roomPx: number): number {
-	return chatPxFloored(Math.min(px, roomPx - CARD_LEAST_PX));
-}
-
-export function chatPxFloored(px: number): number {
-	return Math.round(Math.max(CHAT_LEAST_PX, px));
-}
-
 const refuseOutsideAStudio = (): never => {
 	throw new Error(NOT_AVAILABLE_ON_HOST);
 };
