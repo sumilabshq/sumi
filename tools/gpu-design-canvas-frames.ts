@@ -11,6 +11,7 @@ export const TAGS_FRAME = "Log 1";
 export const TASKS_FRAME = "Tasks 1";
 export const KIT_FRAME = "Seeds 1";
 export const BROKEN_FRAME = "Broken";
+export const DIALOG_FRAME = "Dialog";
 export const TASKS_WIDGET = "task-list";
 export const TASKS_CARD = "Full";
 
@@ -20,6 +21,7 @@ export const DESIGN_FRAMES: readonly DesignFrame[] = [
 	...copiesOf("Log", COPIES.log, "fixture-tags", () => ({})),
 	...copiesOf("Tasks", COPIES.tasks, "task-list", (at) => (at % 2 === 0 ? taskStates.Full : taskStates.Empty)),
 	...copiesOf("Seeds", COPIES.seeds, "kit-panel", () => ({})),
+	{ state: DIALOG_FRAME, widget: "dialog-open", props: {} },
 	{ state: BROKEN_FRAME, widget: "broken", props: {} },
 ];
 

@@ -27,7 +27,7 @@ export interface DesignStageProps {
 	readonly shell?: CanvasShell | undefined;
 }
 
-export const CANVAS_OPENED_ON: CanvasOpening = { page: "", isLayersOpen: false, mode: "hand" };
+export const CANVAS_OPENED_ON: CanvasOpening = { page: "", isLayersOpen: true, mode: "hand" };
 
 const NO_CORNERS: CanvasCorners = { start: null, end: null };
 const STAGE = "wg-root cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0px] cv:[--wg-root-head:0px]";

@@ -1,6 +1,7 @@
 import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import { Contained } from "@widgetarium/core/catalogue-contained.js";
+import { PictureContext } from "@widgetarium/core/engine/picture-scope.js";
 import { leaseFor } from "@widgetarium/core/engine/render.js";
 import type { MountEntry } from "@widgetarium/core";
 import type { MountPicture, StatePicture } from "../../schema/design.schema.js";
@@ -34,7 +35,7 @@ export function StateDrawing({ picture, registry }: StateDrawingProps): ReactEle
 	return (
 		<Contained instead={instead}>
 			<div className="wg-studio-drawn cv:@container cv:min-w-0 cv:[--wg-gap-cards:8px] cv:[--wg-gap-items:16px] cv:[--wg-gap-parts:8px]">
-				{h(component, props)}
+				<PictureContext.Provider value={true}>{h(component, props)}</PictureContext.Provider>
 			</div>
 		</Contained>
 	);

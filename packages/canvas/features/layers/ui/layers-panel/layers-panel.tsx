@@ -12,9 +12,9 @@ import { LiveCopy } from "./live-copy.js";
 
 const NOT_A_PAGE = "This screen is not drawn by a page widget, so it has no layers to show.";
 const LAYERS =
-	"cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:transition-[opacity,visibility] cv:duration-200 cv:ease-standard cv:motion-reduce:transition-none";
+	"cv:flex cv:min-h-0 cv:flex-initial cv:flex-col cv:transition-[opacity,visibility] cv:duration-200 cv:ease-standard cv:motion-reduce:transition-none";
 const TREE =
-	"cv:group/tree cv:relative cv:flex-1 cv:overflow-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in";
+	"cv:group/tree cv:relative cv:min-h-0 cv:flex-initial cv:overflow-auto cv:[scrollbar-width:none] cv:data-[dragging]:cursor-grabbing cv:motion-safe:animate-canvas-fade-in";
 
 export function LayersPanel(): ReactElement | null {
 	const panel = useQuery(LayersPanelQuery).data;

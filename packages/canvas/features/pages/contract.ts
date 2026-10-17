@@ -2,9 +2,7 @@ import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
 import { PageInputSchema, PageOf } from "@widgetarium/core/gateway/page.js";
 
-export const DesignSummaryQuery = query("canvas/design-summary").output(
-	z.object({ app: z.string(), said: z.string() }),
-);
+export const AppNameQuery = query("canvas/app-name").output(z.object({ app: z.string() }));
 
 export const FinishFlightCommand = command("canvas/finish-flight").idempotencyKey(Repeatable);
 

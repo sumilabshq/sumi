@@ -11,19 +11,22 @@ export interface CanvasTopBarProps {
 }
 
 const BAR =
-	"cv:pointer-events-none cv:absolute cv:inset-x-0 cv:top-0 cv:z-[2] cv:flex cv:flex-row cv:items-center cv:justify-between cv:gap-4 cv:pb-10 cv:before:absolute cv:before:inset-0 cv:before:backdrop-blur-[14px] cv:before:content-[''] cv:before:[mask-image:linear-gradient(to_bottom,black_45%,transparent)] cv:*:pointer-events-auto cv:*:relative";
+	"cv:pointer-events-none cv:absolute cv:inset-x-0 cv:top-0 cv:z-[2] cv:flex cv:flex-row cv:items-center cv:justify-between cv:gap-4 cv:pb-10 cv:before:absolute cv:before:inset-0 cv:before:backdrop-blur-[14px] cv:before:content-[''] cv:before:[mask-image:linear-gradient(to_bottom,black_45%,transparent)] cv:*:pointer-events-auto cv:*:relative cv:[--wg-gap-parts:8px]";
+const START_SIDE = "cv:flex cv:min-w-0 cv:items-center cv:gap-2";
+const START_SIDE_OFF_EDGE = `${START_SIDE} cv:ps-parts`;
 
 export function CanvasTopBar({ cornersStart, start, end, cornersEnd }: CanvasTopBarProps): ReactElement {
 	const hasCorners = Boolean(cornersStart) || Boolean(cornersEnd);
+	const isStartOnCardEdge = hasCorners && !cornersStart;
 	return (
 		<div className={hasCorners ? BAR : `${BAR} cv:px-4 cv:pt-4`} data-canvas-topbar="">
-			<div className="cv:flex cv:min-w-0 cv:items-center cv:gap-2">
+			<div className={isStartOnCardEdge ? START_SIDE_OFF_EDGE : START_SIDE}>
 				<Corner>{cornersStart}</Corner>
 				<div className="cv:relative cv:flex cv:items-center cv:gap-2 cv:py-1.5 cv:text-base">
 					<Slot loading={null}>{start}</Slot>
 				</div>
 			</div>
-			<div className="cv:flex cv:items-center cv:gap-2">
+			<div className="cv:flex cv:items-center cv:gap-parts">
 				<Slot loading={null}>{end}</Slot>
 				<Corner>{cornersEnd}</Corner>
 			</div>

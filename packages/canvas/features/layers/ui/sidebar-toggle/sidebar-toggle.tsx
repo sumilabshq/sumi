@@ -2,22 +2,21 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { LayersToggleQuery } from "../../contract.js";
-import { ToggleLayersCommand } from "../../contract.js";
+import { SidebarQuery, ToggleSidebarCommand } from "../../contract.js";
 
-const LAYERS_SAID = "Layers";
+const SIDEBAR_SAID = "Pages and layers";
 
-export function LayersToggle(): ReactElement | null {
-	const { isShown, isOpen } = useQuery(LayersToggleQuery).data;
-	const toggle = useCommand(ToggleLayersCommand);
-	if (!isShown) return null;
+export function SidebarToggle(): ReactElement {
+	const { isOpen } = useQuery(SidebarQuery).data;
+	const toggle = useCommand(ToggleSidebarCommand);
 	return (
 		<IconButton
 			size="s"
 			variant={isOpen ? "raised" : "ghost"}
-			label={LAYERS_SAID}
+			label={SIDEBAR_SAID}
 			disabled={!toggle.can}
 			onClick={() => void toggle.run()}
+			data-canvas-sidebar-toggle=""
 		>
 			<Icon name="panel-left" size={16} />
 		</IconButton>

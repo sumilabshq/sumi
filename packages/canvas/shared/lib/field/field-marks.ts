@@ -15,7 +15,7 @@ export const LOOK_ROOM: LookRoom = {
 	least: 0.6,
 	most: 1,
 	view: "[data-canvas-view]",
-	coveredBy: "[data-canvas-sidebar]",
+	coveredBy: "[data-canvas-sidebar=open]",
 };
 
 export const PRESSABLE = "button, input, textarea, [role=radio], [role=tab], [role=switch], [data-wg-job]";

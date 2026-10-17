@@ -62,7 +62,7 @@ export class DesignView extends ItemView {
 		this.fromNote = textIn(state, "fromNote");
 		this.view = {
 			page: textIn(state, "page"),
-			isLayersOpen: isObject(state) && state["layers"] === true,
+			isLayersOpen: !isObject(state) || state["layers"] !== false,
 			mode: isObject(state) && state["mode"] === "pointer" ? "pointer" : "hand",
 		};
 		if (isDrawn && this.view.page) this.canvas?.showPage(this.view.page);

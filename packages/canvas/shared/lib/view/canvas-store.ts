@@ -1,4 +1,4 @@
-import type { CanvasOpened, CanvasOpening } from "../../schema/canvas-view.schema.js";
+import type { CanvasMode, CanvasOpened, CanvasOpening } from "../../schema/canvas-view.schema.js";
 import type { CanvasChange, CanvasField, CanvasMoment, MomentChange, OpeningChange } from "./canvas-moment.js";
 
 export type KeepOpening = (kept: CanvasOpening) => void;
@@ -17,6 +17,8 @@ interface Watcher {
 }
 
 const QUIET_FIELDS: ReadonlySet<CanvasField> = new Set(["camera", "selection", "seenLayers", "closedLayers"]);
+// TODO: open in the kept mode once the switch is back
+const MODE_WHILE_SWITCH_HIDDEN: CanvasMode = "hand";
 const OPENING_KEYS = ["page", "isLayersOpen", "mode"] as const satisfies readonly (keyof CanvasOpening)[];
 
 export class MomentCanvasStore extends CanvasStore {
@@ -86,6 +88,7 @@ export class MomentCanvasStore extends CanvasStore {
 function momentOpened(opened: CanvasOpened): CanvasMoment {
 	return {
 		...opened,
+		mode: MODE_WHILE_SWITCH_HIDDEN,
 		keptPage: "",
 		camera: null,
 		selection: null,

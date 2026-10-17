@@ -8,7 +8,6 @@ import { NOT_DRAWN, layersPanelOf } from "./lib/layers-panel.js";
 import { pickIn } from "../../shared/lib/layers/pick.js";
 import { pickedMarkOf } from "../../shared/lib/layers/picked-mark.js";
 import { shownScreenOf } from "../../shared/lib/layers/shown-screen.js";
-import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import type { LayerMove } from "../../shared/schema/layer-move.schema.js";
 import { pagesNow, watchPages } from "../../shared/lib/pages/pages-now.js";
 import { pagesStill } from "../../shared/lib/pages/pages-still.js";
@@ -16,11 +15,11 @@ import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
 import {
 	KeepSeenLayersCommand,
 	LayersPanelQuery,
-	LayersToggleQuery,
 	MoveLayerCommand,
 	PickLayerCommand,
+	SidebarQuery,
 	ToggleLayerFoldCommand,
-	ToggleLayersCommand,
+	ToggleSidebarCommand,
 	ToggleLayoutLockCommand,
 } from "./contract.js";
 import { CanvasClientModule } from "../../module.js";
@@ -45,16 +44,6 @@ export const LayersPanelQueryHandler = handler(LayersPanelQuery, CanvasClientMod
 		const shown = shownScreenOf(await pagesNow(designReads, canvasStore));
 		if (!shown) return NOT_DRAWN;
 		return layersPanelOf(shown, canvasStore.now(), widgetDrawingGateway.drawing().registry);
-	});
-
-export const LayersToggleQueryHandler = handler(LayersToggleQuery, CanvasClientModule)
-	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
-	.watch((_input, { designReads, canvasStore }, changed) =>
-		watchPages(designReads, canvasStore, changed, ["isLayersOpen"]),
-	)
-	.handle(async (_input, { designReads, canvasStore }) => {
-		const { pages } = await pagesNow(designReads, canvasStore);
-		return { isShown: pages.shown !== COMPONENTS_PAGE, isOpen: canvasStore.now().isLayersOpen };
 	});
 
 export const MoveLayerCommandHandler = handler(MoveLayerCommand, CanvasClientModule)
@@ -90,6 +79,11 @@ export const PickLayerCommandHandler = handler(PickLayerCommand, CanvasClientMod
 		pickIn(canvasStore, isPicked ? null : { widget, mark: id, spot: null });
 	});
 
+export const SidebarQueryHandler = handler(SidebarQuery, CanvasClientModule)
+	.inject({ canvasStore: CanvasStore })
+	.watch((_input, { canvasStore }, changed) => canvasStore.watch(["isLayersOpen"], changed))
+	.handle((_input, { canvasStore }) => ({ isOpen: canvasStore.now().isLayersOpen }));
+
 export const ToggleLayerFoldCommandHandler = handler(ToggleLayerFoldCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
 	.handle(({ id }, { canvasStore }) => {
@@ -98,10 +92,11 @@ export const ToggleLayerFoldCommandHandler = handler(ToggleLayerFoldCommand, Can
 		canvasStore.change({ closedLayers }, `fold ${id}`);
 	});
 
-export const ToggleLayersCommandHandler = handler(ToggleLayersCommand, CanvasClientModule)
+export const ToggleSidebarCommandHandler = handler(ToggleSidebarCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
 	.handle((_input, { canvasStore }) => {
-		canvasStore.changeOpening({ isLayersOpen: !canvasStore.now().isLayersOpen }, "toggle layers");
+		const isLayersOpen = !canvasStore.now().isLayersOpen;
+		canvasStore.changeOpening({ isLayersOpen }, isLayersOpen ? "open the sidebar" : "close the sidebar");
 	});
 
 export const ToggleLayoutLockCommandHandler = handler(ToggleLayoutLockCommand, CanvasClientModule)

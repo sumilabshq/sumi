@@ -16,7 +16,7 @@ const HarvestLog = createWidget({
 	draw: () => {
 		const [picked, setPicked] = useState(0);
 		return (
-			<section className="flex flex-col gap-4 p-6">
+			<section className="flex flex-col gap-4 p-6" data-wg-node="widget.tsx:19">
 				<header className="flex flex-row items-center justify-between">
 					<h2 className="text-lg font-semibold">{HARVEST_TITLE}</h2>
 					<span className="text-xs text-muted-foreground">Week 32</span>

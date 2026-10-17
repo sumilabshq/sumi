@@ -76,6 +76,17 @@ export async function checkCanvasRequests(check: Check): Promise<void> {
 	await checkPasteOwner(check);
 	await checkProjectWithNoDesignFolder(check);
 	await checkReturnTo(check);
+	checkOpensInHand(check);
+}
+
+function checkOpensInHand(check: Check): void {
+	const fresh = new MomentCanvasStore(FARM_OPENED, () => undefined);
+	const keptPointer = new MomentCanvasStore({ ...FARM_OPENED, mode: "pointer" }, () => undefined);
+	check(
+		"a canvas opens in hand mode, fresh and from a kept opening that says pointer",
+		[fresh.now().mode, keptPointer.now().mode],
+		["hand", "hand"],
+	);
 }
 
 async function checkReturnTo(check: Check): Promise<void> {

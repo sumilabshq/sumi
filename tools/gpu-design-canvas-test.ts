@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { bodyLockFindingsOf, leavesWindowAlone } from "./body-lock-checks.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import { commonColourOnRow } from "./gpu-canvas-measure.ts";
 import { colourShareIn, distinctColoursIn } from "./gpu-design-canvas-measure.ts";
@@ -9,6 +10,8 @@ import { pageHtml } from "./gpu-design-canvas-html.ts";
 import { PAGES, idOf, indexOf, probeOf } from "./gpu-design-canvas-probe.ts";
 import { BROKEN_FRAME, DESIGN_FRAMES, KIT_FRAME, TAGS_FRAME, TASKS_FRAME } from "./gpu-design-canvas-frames.ts";
 import { BROKEN_SAID } from "./gpu-design-fixture-broken.tsx";
+import { checkSidebar } from "./gpu-design-canvas-sidebar.ts";
+import { checkTopBar } from "./gpu-design-canvas-top-bar.ts";
 import { HARVEST_TITLE, HOVERED_CROP } from "./gpu-design-fixture-tags.tsx";
 
 const VIEW: readonly [number, number] = [1280, 800];
@@ -76,9 +79,12 @@ async function gpuRun(): Promise<void> {
 		(await page.ask(`${PAGES}.textIn(${idOf(TASKS_FRAME)}, "beans")`)) === "Sow the beans",
 		await page.ask(`${PAGES}.textIn(${idOf(TASKS_FRAME)}, "beans")`),
 	);
+	await checkTopBar(page, check);
+	await checkSidebar(page, check);
 	await clicked();
 	await hovered();
 	await failedFrame();
+	await dialogFrame();
 	await page.ask(`window.designPage.lookAtFrame(${indexOf(KIT_FRAME)}, 1)`);
 	await waited(800);
 	await shot("gpu-kit");
@@ -138,6 +144,16 @@ async function failedFrame(): Promise<void> {
 		"gpu: the other frames still draw",
 		(await page.ask(`document.querySelectorAll("[data-canvas-gpu-frame]").length`)) === GPU_FRAMES,
 		await page.ask(`document.querySelectorAll("[data-canvas-gpu-frame]").length`),
+	);
+}
+
+async function dialogFrame(): Promise<void> {
+	await waited(800);
+	const found = await bodyLockFindingsOf(page);
+	check(
+		"gpu: an open dialog state leaves the window's pointer, scroll, focus and readers alone",
+		leavesWindowAlone(found),
+		found,
 	);
 }
 

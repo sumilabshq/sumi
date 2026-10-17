@@ -12,6 +12,7 @@ import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx
 import { DESIGN_FRAMES, DESIGN_SCREEN, TASKS_CARD, TASKS_WIDGET } from "./gpu-design-canvas-frames.ts";
 import { benchedPan, lookedAtFrame } from "./gpu-design-canvas-moves.ts";
 import * as broken from "./gpu-design-fixture-broken.tsx";
+import * as dialogOpen from "./gpu-design-fixture-dialog.tsx";
 import * as kitPanel from "./gpu-design-fixture-kit.tsx";
 import * as tags from "./gpu-design-fixture-tags.tsx";
 import * as taskList from "./studio-fixture-widget.tsx";
@@ -22,7 +23,14 @@ registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
 const NOT_HERE = "not on this test page";
-const registry = new ModuleRegistry({ "fixture-tags": tags, [TASKS_WIDGET]: taskList, "kit-panel": kitPanel, broken });
+const STUDIO_SHELL = { corners: { start: null, end: h("span") } };
+const registry = new ModuleRegistry({
+	"fixture-tags": tags,
+	[TASKS_WIDGET]: taskList,
+	"kit-panel": kitPanel,
+	"dialog-open": dialogOpen,
+	broken,
+});
 const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 	name: state,
 	board: null,
@@ -55,8 +63,9 @@ function draw(): void {
 	reactRoot?.render(
 		h(DesignStage, {
 			app: "Farm",
-			opening: CANVAS_OPENED_ON,
+			opening: { ...CANVAS_OPENED_ON, mode: "pointer" },
 			size: VIEW,
+			shell: STUDIO_SHELL,
 			partsOf: ({ opened }) => canvasPartsOver({ opened, gpu: supply }, { designFolderGateway, widgetDrawingGateway }),
 		}),
 	);

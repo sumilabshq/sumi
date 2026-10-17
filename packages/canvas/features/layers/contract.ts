@@ -21,9 +21,7 @@ export const LayersPanelQuery = query("canvas/layers-panel").output(
 	}),
 );
 
-export const LayersToggleQuery = query("canvas/layers-toggle").output(
-	z.object({ isShown: z.boolean(), isOpen: z.boolean() }),
-);
+export const SidebarQuery = query("canvas/sidebar").output(z.object({ isOpen: z.boolean() }));
 
 export const MoveLayerCommand = command("canvas/move-layer")
 	.input(z.object({ dragged: z.string(), parent: z.string(), before: z.string().nullable() }))
@@ -37,6 +35,6 @@ export const ToggleLayerFoldCommand = command("canvas/toggle-layer-fold")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 
-export const ToggleLayersCommand = command("canvas/toggle-layers").idempotencyKey(Repeatable);
+export const ToggleSidebarCommand = command("canvas/toggle-sidebar").idempotencyKey(Repeatable);
 
 export const ToggleLayoutLockCommand = command("canvas/toggle-layout-lock").idempotencyKey(Repeatable);

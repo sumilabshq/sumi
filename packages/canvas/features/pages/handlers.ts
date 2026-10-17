@@ -8,7 +8,7 @@ import { pagesStill } from "../../shared/lib/pages/pages-still.js";
 import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
 import {
-	DesignSummaryQuery,
+	AppNameQuery,
 	FinishFlightCommand,
 	FocusWidgetCommand,
 	PageTabsQuery,
@@ -20,19 +20,12 @@ import {
 } from "./contract.js";
 import { CanvasClientModule } from "../../module.js";
 
-const SCREENS_SAID = "{count} screens · {frames} frames · read only";
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const PICKED = "Picked";
 
-export const DesignSummaryQueryHandler = handler(DesignSummaryQuery, CanvasClientModule)
-	.inject({ designReads: DesignReads, canvasStore: CanvasStore })
-	.watch((_input, { designReads, canvasStore }, changed) => designReads.watch(canvasStore.now().app, changed))
-	.handle(async (_input, { designReads, canvasStore }) => {
-		const { app } = canvasStore.now();
-		const { screens } = await designReads.design(app);
-		const frames = screens.reduce((count, screen) => count + screen.states.length, 0);
-		return { app, said: SCREENS_SAID.replace("{count}", String(screens.length)).replace("{frames}", String(frames)) };
-	});
+export const AppNameQueryHandler = handler(AppNameQuery, CanvasClientModule)
+	.inject({ canvasStore: CanvasStore })
+	.handle((_input, { canvasStore }) => ({ app: canvasStore.now().app }));
 
 export const FinishFlightCommandHandler = handler(FinishFlightCommand, CanvasClientModule)
 	.inject({ canvasStore: CanvasStore })
