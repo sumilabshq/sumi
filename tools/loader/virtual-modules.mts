@@ -6,7 +6,10 @@ const VIRTUAL_MODULES: ReadonlyMap<string, () => string> = new Map([
 	["widgetarium:surface", () => "export const REACT_SURFACE_SOURCE = null;\n"],
 	["widgetarium:widgets-cli", () => packedModuleSource(widgetsCliBundleSync())],
 	["widgetarium:widget-types", () => packedModuleSource(widgetTypeFiles())],
-	["widgetarium:build-stamp", () => 'export const BUILD_STAMP = "under-test";\n'],
+	[
+		"widgetarium:build-stamp",
+		() => 'export const BUILD_STAMP = "under-test";\nexport const IS_PRODUCTION_BUILD = false;\n',
+	],
 	["widgetarium:project-seed", () => packedModuleSource(projectSeedText())],
 ]);
 

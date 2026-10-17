@@ -17,6 +17,7 @@ export interface BundleAsk {
 	readonly outfile?: string;
 	readonly minify?: boolean;
 	readonly sourcemap?: boolean | "inline";
+	readonly isProduction?: boolean;
 }
 
 export const TEXT_LOADERS: Readonly<Record<string, Loader>> = { ".md": "text", ".css": "text" };
@@ -37,6 +38,7 @@ const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
 	"node:fs",
 	"node:fs/promises",
 	"node:path",
+	"node:os",
 	"node:child_process",
 	"fs",
 	"path",
@@ -76,6 +78,7 @@ export function bundleOptions({
 	outfile = "packages/host-obsidian/main.js",
 	minify = false,
 	sourcemap = false,
+	isProduction = false,
 }: BundleAsk = {}): BuildOptions {
 	return {
 		plugins: [
@@ -83,7 +86,7 @@ export function bundleOptions({
 			widgetsCliSource(),
 			widgetTypesSource(),
 			projectSeedSource(),
-			buildStampSource(),
+			buildStampSource(isProduction),
 			radixInPictures(),
 		],
 		entryPoints: ["packages/host-obsidian/src/main.ts"],
@@ -190,7 +193,7 @@ function widgetTypesSource(): Plugin {
 	};
 }
 
-function buildStampSource(): Plugin {
+function buildStampSource(isProduction: boolean): Plugin {
 	return {
 		name: "widgetarium-build-stamp",
 		setup(build) {
@@ -199,7 +202,7 @@ function buildStampSource(): Plugin {
 				namespace: "wg-build-stamp",
 			}));
 			build.onLoad({ filter: /.*/, namespace: "wg-build-stamp" }, () => ({
-				contents: `export const BUILD_STAMP = ${JSON.stringify(new Date().toISOString())};`,
+				contents: `export const BUILD_STAMP = ${JSON.stringify(new Date().toISOString())};\nexport const IS_PRODUCTION_BUILD = ${String(isProduction)};`,
 				loader: "js",
 			}));
 		},
@@ -272,5 +275,7 @@ if (import.meta.main) {
 	await layCanvasSheet();
 	runGates();
 	layGpuFiles();
-	await esbuild.build(bundleOptions({ minify: production, sourcemap: production ? false : "inline" }));
+	await esbuild.build(
+		bundleOptions({ minify: production, sourcemap: production ? false : "inline", isProduction: production }),
+	);
 }

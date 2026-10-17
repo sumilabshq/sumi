@@ -14,4 +14,5 @@ declare module "widgetarium:widget-types" {
 
 declare module "widgetarium:build-stamp" {
 	export const BUILD_STAMP: string;
+	export const IS_PRODUCTION_BUILD: boolean;
 }

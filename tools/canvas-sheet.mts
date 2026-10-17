@@ -4,7 +4,14 @@ import { compile } from "tailwindcss";
 
 export const TAILWIND_BANNER = "/*! tailwindcss";
 
-const SOURCES = ["packages/canvas", "packages/mascot", "packages/app-host", "apps/studio/src/canvas"];
+const SOURCES = [
+	"packages/canvas",
+	"packages/mascot",
+	"packages/app-host",
+	"packages/browser",
+	"apps/studio/src/canvas",
+	"apps/studio/src/browser",
+];
 const SCANNED = /\.(ts|tsx)$/;
 const CANDIDATE = /[^\s"'`]+/g;
 const NAMED_SHEETS: Readonly<Record<string, string>> = {

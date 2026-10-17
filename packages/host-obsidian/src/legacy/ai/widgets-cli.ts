@@ -29,6 +29,7 @@ import { SOURCE_FILES, isWidgetModule } from "@widgetarium/core/engine/widget-bu
 import { VAULT, WIDGETS_DIR } from "./cli-paths.js";
 import { configuredSources, entryById, everyWidget, installedWidgets } from "./catalogue-entries.js";
 import { refuseCatalogueVerb } from "./catalogue-switch.js";
+import { browserAsked } from "../../browser/browser-cli-command.js";
 
 type Options = FindOptions & { readonly _: string[]; readonly [flag: string]: unknown };
 
@@ -85,6 +86,10 @@ const COMMANDS: Readonly<Record<string, Command>> = {
 	job: { run: (argument, options) => runJob(argument, options) },
 	report: { run: (argument, options) => runReport(argument, options) },
 	shot: { run: (argument, options) => runShot(argument, options) },
+	browser: {
+		run: async (argument, options) =>
+			tell(asText(options), await browserAsked(VAULT, argument, { url: options._[2], region: options["region"] })),
+	},
 	new: { run: async (argument, options) => tell(asText(options), await newWidgetAsked(argument, options)) },
 };
 

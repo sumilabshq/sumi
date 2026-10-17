@@ -1,0 +1,41 @@
+{
+	"name": "@widgetarium/browser",
+	"version": "0.1.0",
+	"description": "The browser: web pages in the studio, the sites Ink may read, and the guarded requests it reads them through",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./generated/index.ts",
+			"types": "./dist/generated/index.d.ts",
+			"default": "./dist/generated/index.js"
+		},
+		"./module": {
+			"source": "./generated/module.ts",
+			"types": "./dist/generated/module.d.ts",
+			"default": "./dist/generated/module.js"
+		},
+		"./gateways": {
+			"source": "./generated/gateways.ts",
+			"types": "./dist/generated/gateways.d.ts",
+			"default": "./dist/generated/gateways.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/canvas": "0.1.0",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/kit": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

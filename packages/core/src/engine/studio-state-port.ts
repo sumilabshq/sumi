@@ -1,6 +1,6 @@
 import { NOT_AVAILABLE_ON_HOST } from "./studio-host.js";
 
-export type StudioView = "app" | "canvas";
+export type StudioView = "app" | "canvas" | "browser";
 
 export type OpenablePanel = "catalogue";
 
