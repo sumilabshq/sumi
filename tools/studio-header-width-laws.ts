@@ -116,16 +116,20 @@ export function checkChatHead(chatPx: number, header: AdaptiveHeader, check: Che
 	);
 }
 
-function keepsSizes({ toggle, title, picture, tabsPill, tabs, add }: AdaptiveHeader["sizes"]): boolean {
+function keepsSizes(sizes: AdaptiveHeader["sizes"]): boolean {
+	const { toggle, title, picture, add } = sizes;
+
 	return (
 		isCircleOf(toggle, HEADER_PX) &&
 		title === HEADER_PX &&
-		tabsPill === HEADER_PX &&
-		tabs.length > 0 &&
-		tabs.every((tab) => tab === INNER_PX) &&
+		keepsTabSizes(sizes) &&
 		(add === null || isCircleOf(add, HEADER_PX)) &&
 		(picture === null || isCircleOf(picture, NESTED_PX))
 	);
+}
+
+function keepsTabSizes({ tabsPill, tabs }: AdaptiveHeader["sizes"]): boolean {
+	return tabsPill === HEADER_PX && tabs.length > 0 && tabs.every((tab) => tab === INNER_PX);
 }
 
 function keepsChatHead({ head, mascot, title, menu, menuBox }: ChatHead): boolean {
