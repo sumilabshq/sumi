@@ -2,19 +2,27 @@ import { handler, refuse } from "@widgetarium/core/requests";
 import { BrowserGrantReadsGateway } from "../../gateways/browser-grant-reads/browser-grant-reads.gateway.js";
 import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
+import { ChatComposerGateway } from "../../gateways/chat-composer/chat-composer.gateway.js";
+import { RecentSitesGateway } from "../../gateways/recent-sites/recent-sites.gateway.js";
 import { InkActivityStore } from "../../shared/lib/ink-activity-store.js";
 import { OnceAllowancesStore } from "../../shared/lib/once-allowances-store.js";
 import { effectiveGrants } from "../../shared/lib/once-grants.js";
 import { SENSITIVE_SITES } from "../../shared/lib/sensitive-sites.js";
 import { decideBrowserAccess, refuseUrlShape } from "../../shared/lib/decide-browser-access.js";
 import { urlOf } from "../../shared/lib/site-key.js";
+import { askInkPromptOf } from "../../shared/lib/ask-ink-prompt.js";
+import { nearMatchOf } from "../../shared/lib/near-match.js";
+import { searchAddressOf } from "../../shared/lib/search-address.js";
+import type { BrowserTab, RecentSite } from "../../shared/schema/browser-tab.schema.js";
 import { BrowserClientModule } from "../../module.js";
 import {
+	AskInkCommand,
 	AttachPagesCommand,
 	BrowserTabsQuery,
 	DetachPagesCommand,
 	GoBackCommand,
 	GoForwardCommand,
+	LeaveFailureCommand,
 	OpenAddressCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
@@ -22,8 +30,9 @@ import {
 
 const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 const LOOKS_LIKE_A_HOST = /^[^\s/]+\.[^\s/]+(\/.*)?$|^localhost(:\d+)?(\/.*)?$/i;
-const SEARCH_AT = "https://duckduckgo.com/?q=";
 const NOT_OPENED = "the browser opens only web pages: {reason}";
+const SCHEME_NOT_ALLOWED = "scheme-not-allowed";
+const NO_TAB = "the browser holds no such tab";
 
 export const BrowserTabsQueryHandler = handler(BrowserTabsQuery, BrowserClientModule)
 	.inject({
@@ -32,22 +41,23 @@ export const BrowserTabsQueryHandler = handler(BrowserTabsQuery, BrowserClientMo
 		onceAllowancesStore: OnceAllowancesStore,
 		inkActivityStore: InkActivityStore,
 		clockGateway: ClockGateway,
+		recentSitesGateway: RecentSitesGateway,
 	})
-	.watch(
-		(_input, { browserPagesGateway, browserGrantReadsGateway, onceAllowancesStore, inkActivityStore }, changed) => {
-			const stops = [
-				browserPagesGateway.watch(changed),
-				browserGrantReadsGateway.watch(changed),
-				onceAllowancesStore.watch(changed),
-				inkActivityStore.watch(changed),
-			];
-			return () => stops.forEach((stop) => stop());
-		},
-	)
+	.watch((_input, parts, changed) => {
+		const stops = [
+			parts.browserPagesGateway.watch(changed),
+			parts.browserGrantReadsGateway.watch(changed),
+			parts.onceAllowancesStore.watch(changed),
+			parts.inkActivityStore.watch(changed),
+			parts.recentSitesGateway.watch(changed),
+		];
+		return () => stops.forEach((stop) => stop());
+	})
 	.handle((_input, parts) => {
 		const { browserPagesGateway, browserGrantReadsGateway, onceAllowancesStore, inkActivityStore, clockGateway } =
 			parts;
 		const shownId = browserPagesGateway.shownId();
+		const recentSites = parts.recentSitesGateway.sites();
 		const grants = effectiveGrants(
 			browserGrantReadsGateway.readGrants(),
 			onceAllowancesStore.allowances(),
@@ -58,10 +68,13 @@ export const BrowserTabsQueryHandler = handler(BrowserTabsQuery, BrowserClientMo
 			tabs: browserPagesGateway.tabs().map((tab) => ({
 				...tab,
 				isShown: tab.id === shownId,
-				access:
-					tab.url === "" ? null : decideBrowserAccess({ address: tab.url, tabId: tab.id }, grants, SENSITIVE_SITES),
+				access: hasNoPage(tab)
+					? null
+					: decideBrowserAccess({ address: tab.url, tabId: tab.id }, grants, SENSITIVE_SITES),
+				nearMatch: nearMatchFor(tab, recentSites),
 			})),
 			inkReading: inkActivityStore.now().reading,
+			recentSites,
 		};
 	});
 
@@ -71,12 +84,46 @@ export const OpenAddressCommandHandler = handler(OpenAddressCommand, BrowserClie
 		const url = urlOf(webAddressOf(address));
 		const refusal = refuseUrlShape(url);
 
+		if (refusal === SCHEME_NOT_ALLOWED) {
+			browserPagesGateway.show(tabId);
+			browserPagesGateway.showRefused(tabId, address.trim());
+			return;
+		}
+
 		if (url === null || refusal !== null) {
 			return refuse(NOT_OPENED.replace("{reason}", refusal ?? "not-a-url"));
 		}
 
 		browserPagesGateway.show(tabId);
 		browserPagesGateway.open(tabId, url.href);
+	});
+
+export const AskInkCommandHandler = handler(AskInkCommand, BrowserClientModule)
+	.inject({
+		browserPagesGateway: BrowserPagesGateway,
+		chatComposerGateway: ChatComposerGateway,
+	})
+	.handle(async ({ tabId }, { browserPagesGateway, chatComposerGateway }) => {
+		const tab = browserPagesGateway.tabs().find(({ id }) => id === tabId);
+
+		if (tab === undefined) {
+			return refuse(NO_TAB);
+		}
+
+		await chatComposerGateway.prefill(askInkPromptOf(tab));
+	});
+
+export const LeaveFailureCommandHandler = handler(LeaveFailureCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle(({ tabId }, { browserPagesGateway }) => {
+		const tab = browserPagesGateway.tabs().find(({ id }) => id === tabId);
+
+		if (tab?.failure?.kind !== "scheme" && tab?.canGoBack === true) {
+			browserPagesGateway.back(tabId);
+			return;
+		}
+
+		browserPagesGateway.dismissFailure(tabId);
 	});
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, BrowserClientModule)
@@ -114,5 +161,22 @@ export function webAddressOf(typed: string): string {
 		return `https://${address}`;
 	}
 
-	return `${SEARCH_AT}${encodeURIComponent(address)}`;
+	return searchAddressOf(address);
+}
+
+function hasNoPage(tab: BrowserTab): boolean {
+	return tab.url === "" || tab.failure?.kind === "scheme";
+}
+
+function nearMatchFor(tab: BrowserTab, recentSites: readonly RecentSite[]): string | null {
+	const host = tab.failure?.kind === "not-found" ? urlOf(tab.failure.address)?.hostname : undefined;
+
+	if (host === undefined) {
+		return null;
+	}
+
+	return nearMatchOf(
+		host,
+		recentSites.map((site) => site.host),
+	);
 }

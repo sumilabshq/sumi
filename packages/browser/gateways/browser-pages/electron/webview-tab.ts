@@ -1,8 +1,9 @@
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
+import type { BrowserTab, PageFailure } from "../../../shared/schema/browser-tab.schema.js";
 import type { CommittedPage, PageContent, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
 import type { ElectronRemote } from "./electron-remote.js";
 import { regionWithin } from "../../../shared/lib/region-within.js";
+import { loadFailureKindOf } from "../../../shared/lib/load-failure.js";
 import { FIND_SECRET_FIELD, READ_PAGE } from "./page-scripts.js";
 import { createPageView, fieldOfEvent, isCapturedImage } from "./page-view.js";
 import type { PageView } from "./page-view.js";
@@ -38,6 +39,7 @@ export class WebviewTab {
 			isLoading: false,
 			canGoBack: false,
 			canGoForward: false,
+			failure: null,
 		};
 	}
 
@@ -65,7 +67,10 @@ export class WebviewTab {
 	}
 
 	open(url: string): void {
-		this.update({ url });
+		this.update({
+			url,
+			failure: null,
+		});
 
 		if (this.view && this.isReady) {
 			this.update({ isLoading: true });
@@ -90,6 +95,40 @@ export class WebviewTab {
 
 	reload(): void {
 		this.readyView()?.reload();
+	}
+
+	showRefused(address: string): void {
+		this.update({
+			url: address,
+			failure: {
+				kind: "scheme",
+				address,
+				code: "",
+			},
+		});
+	}
+
+	dismissFailure(): void {
+		if (this.state.failure?.kind === "scheme") {
+			this.update({
+				url: this.readyView()?.getURL() ?? "",
+				failure: null,
+			});
+			return;
+		}
+
+		this.view?.remove();
+		this.view = null;
+		this.isReady = false;
+		this.update({
+			url: "",
+			title: NEW_TAB_TITLE,
+			favicon: null,
+			isLoading: false,
+			canGoBack: false,
+			canGoForward: false,
+			failure: null,
+		});
 	}
 
 	settled(): Promise<void> {
@@ -217,7 +256,8 @@ export class WebviewTab {
 		});
 		view.addEventListener("did-start-loading", () => this.update({ isLoading: true }));
 		view.addEventListener("did-stop-loading", () => this.finishLoading(view));
-		view.addEventListener("did-navigate", () => this.noteNavigation(view));
+		view.addEventListener("did-navigate", () => this.noteNewPage(view));
+		view.addEventListener("did-fail-load", (event) => this.noteFailure(event));
 		view.addEventListener("did-navigate-in-page", (event) => this.noteInPageNavigation(view, event));
 		view.addEventListener("did-start-navigation", (event) => this.refuseOtherSchemes(view, event));
 		view.addEventListener("page-title-updated", (event) =>
@@ -235,10 +275,48 @@ export class WebviewTab {
 		}
 	}
 
+	private noteNewPage(view: PageView): void {
+		this.update({
+			failure: null,
+			favicon: null,
+		});
+		this.noteNavigation(view);
+	}
+
 	private noteNavigation(view: PageView): void {
 		this.entry += 1;
 		this.syncFrom(view);
 	}
+
+	private noteFailure(event: Event): void {
+		const kind = loadFailureKindOf(Number(fieldOfEvent(event, "errorCode")));
+
+		if (fieldOfEvent(event, "isMainFrame") !== true || kind === null) {
+			return;
+		}
+
+		const failure: PageFailure = {
+			kind,
+			address: String(fieldOfEvent(event, "validatedURL")),
+			code: String(fieldOfEvent(event, "errorDescription")),
+		};
+		this.update({
+			url: failure.address,
+			failure,
+		});
+
+		if (kind === "offline") {
+			window.addEventListener("online", this.reloadIfStillOffline, { once: true });
+		}
+	}
+
+	private readonly reloadIfStillOffline = (): void => {
+		if (this.state.failure?.kind !== "offline") {
+			return;
+		}
+
+		this.reload();
+	};
 
 	private noteInPageNavigation(view: PageView, event: Event): void {
 		if (fieldOfEvent(event, "isMainFrame") !== true) {
@@ -271,7 +349,7 @@ export class WebviewTab {
 		}
 
 		this.update({
-			url: view.getURL(),
+			url: this.state.failure === null ? view.getURL() : this.state.url,
 			title: view.getTitle() || this.state.title,
 			canGoBack: view.canGoBack(),
 			canGoForward: view.canGoForward(),

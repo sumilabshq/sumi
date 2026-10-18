@@ -3,6 +3,7 @@ import type { CommittedPage, PageContent, PageRegion, PageShot } from "../../../
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
 import { ElectronRemote } from "./electron-remote.js";
 import { partitionOfProfile } from "../../../shared/lib/browser-profile.js";
+import { isLaidOnScreen } from "../../../shared/lib/is-laid-on-screen.js";
 import { WebviewTab } from "./webview-tab.js";
 
 const FIRST_TAB = "tab-1";
@@ -36,14 +37,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	isOnScreen(): boolean {
-		const { container } = this;
-
-		return (
-			container !== null &&
-			container.isConnected &&
-			container.getClientRects().length > 0 &&
-			document.visibilityState === "visible"
-		);
+		return isLaidOnScreen(this.container) && document.visibilityState === "visible";
 	}
 
 	watch(changed: () => void): () => void {
@@ -101,6 +95,14 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	reload(tabId: string): void {
 		this.tabOf(tabId).reload();
+	}
+
+	showRefused(tabId: string, address: string): void {
+		this.tabOf(tabId).showRefused(address);
+	}
+
+	dismissFailure(tabId: string): void {
+		this.tabOf(tabId).dismissFailure();
 	}
 
 	settled(tabId: string): Promise<void> {

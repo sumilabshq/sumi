@@ -14,6 +14,8 @@ export abstract class BrowserPagesGateway {
 	abstract back(tabId: string): void;
 	abstract forward(tabId: string): void;
 	abstract reload(tabId: string): void;
+	abstract showRefused(tabId: string, address: string): void;
+	abstract dismissFailure(tabId: string): void;
 	abstract settled(tabId: string): Promise<void>;
 	abstract committed(tabId: string): CommittedPage | null;
 	abstract frameUrls(tabId: string): Promise<readonly string[]>;

@@ -6,5 +6,6 @@ export * from "../features/tabs/contract.js";
 export * from "../shared/schema/access-ask.schema.js";
 export * from "../shared/schema/browser-tab.schema.js";
 export * from "../shared/schema/page-read.schema.js";
+export * from "../shared/schema/search-web.schema.js";
 export * from "../shared/schema/site-access.schema.js";
 export * from "../shared/ui/index.js";

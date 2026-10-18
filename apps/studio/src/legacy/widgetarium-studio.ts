@@ -16,6 +16,7 @@ import { webAssistantGateways } from "@widgetarium/assistant/gateways";
 import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { chatAppOf } from "../assistant/chat-app.js";
+import { withChatComposer } from "../browser/chat-app-composer.gateway.js";
 import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
@@ -95,7 +96,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		mascot,
 		gateways: start.assistantGateways ?? webAssistantGateways(start.assistant),
 	});
-	const browser = start.browser ?? webBrowserParts();
+	const browser = withChatComposer(start.browser ?? webBrowserParts(), chatApp);
 	const appId = start.appId ?? opened.app.name;
 	const studio = start.studio ?? browserStudioHost(opened.app, opened.routes);
 	return {

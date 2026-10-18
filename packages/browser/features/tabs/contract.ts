@@ -34,6 +34,13 @@ export const ReloadPageCommand = command("browser/reload-page")
 	.idempotencyKey(Repeatable)
 	.invalidates([BrowserTabsQuery]);
 
+export const AskInkCommand = command("browser/ask-ink").input(TabSchema).idempotencyKey(PerCall);
+
+export const LeaveFailureCommand = command("browser/leave-failure")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([BrowserTabsQuery]);
+
 export const AttachPagesCommand = command("browser/attach-pages")
 	.input(z.object({ into: ElementSchema }))
 	.idempotencyKey(Repeatable)

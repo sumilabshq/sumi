@@ -48,6 +48,14 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		throw new Error(NOT_AVAILABLE_ON_HOST);
 	}
 
+	showRefused(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	dismissFailure(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
 	settled(): Promise<void> {
 		return Promise.reject(new Error(NOT_AVAILABLE_ON_HOST));
 	}

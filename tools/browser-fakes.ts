@@ -4,6 +4,8 @@ import { MemoryBrowserGrantsGateway } from "../packages/browser/gateways/browser
 import { browserPartsOf } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import type { BrowserParts } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import { ClockGateway } from "../packages/browser/gateways/clock/clock.gateway.ts";
+import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-sites/memory.gateway.ts";
+import { ChatComposerGateway } from "../packages/browser/gateways/chat-composer/chat-composer.gateway.ts";
 import type { BrowserTab } from "../packages/browser/shared/schema/browser-tab.schema.ts";
 import type { CommittedPage, PageContent, PageShot } from "../packages/browser/shared/schema/page-read.schema.ts";
 
@@ -16,6 +18,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		isLoading: false,
 		canGoBack: false,
 		canGoForward: true,
+		failure: null,
 	};
 	isShownOnScreen = true;
 	entry = 1;
@@ -86,6 +89,28 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		this.moves.push("reload");
 	}
 
+	showRefused(_tabId: string, address: string): void {
+		this.tab = {
+			...this.tab,
+			url: address,
+			failure: {
+				kind: "scheme",
+				address,
+				code: "",
+			},
+		};
+		this.told();
+	}
+
+	dismissFailure(): void {
+		this.moves.push("dismiss");
+		this.tab = {
+			...this.tab,
+			failure: null,
+		};
+		this.told();
+	}
+
 	settled(): Promise<void> {
 		return Promise.resolve();
 	}
@@ -140,6 +165,15 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	}
 }
 
+export class FakeChatComposerGateway extends ChatComposerGateway {
+	readonly prefilled: string[] = [];
+
+	prefill(text: string): Promise<void> {
+		this.prefilled.push(text);
+		return Promise.resolve();
+	}
+}
+
 const LONGEST_WAIT_MS = 1000;
 
 export class HurriedClockGateway extends ClockGateway {
@@ -157,6 +191,8 @@ export interface FakeBrowser {
 	readonly pages: FakeBrowserPagesGateway;
 	readonly audit: MemoryBrowserAuditGateway;
 	readonly grants: MemoryBrowserGrantsGateway;
+	readonly recentSites: MemoryRecentSitesGateway;
+	readonly chatComposer: FakeChatComposerGateway;
 	readonly parts: BrowserParts;
 }
 
@@ -164,15 +200,21 @@ export function fakeBrowser(): FakeBrowser {
 	const pages = new FakeBrowserPagesGateway();
 	const audit = new MemoryBrowserAuditGateway();
 	const grants = new MemoryBrowserGrantsGateway();
+	const recentSites = new MemoryRecentSitesGateway();
+	const chatComposer = new FakeChatComposerGateway();
 	return {
 		pages,
 		audit,
 		grants,
+		recentSites,
+		chatComposer,
 		parts: browserPartsOf({
 			browserPagesGateway: pages,
 			browserGrantsGateway: grants,
 			browserAuditGateway: audit,
 			clockGateway: new HurriedClockGateway(),
+			recentSitesGateway: recentSites,
+			chatComposerGateway: chatComposer,
 		}),
 	};
 }

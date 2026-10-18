@@ -8,6 +8,7 @@ await import("./browser-store-checks.ts");
 await import("./browser-gate-checks.ts");
 await import("./browser-desk-checks.ts");
 await import("./browser-tab-ui-checks.ts");
+await import("./browser-state-checks.ts");
 
 console.log(tally.failed ? `browser: ${tally.failed} check(s) failed` : "browser: all checks passed");
 process.exit(tally.failed ? 1 : 0);

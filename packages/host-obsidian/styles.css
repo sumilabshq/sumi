@@ -12188,8 +12188,34 @@ body.wg-studio-in-front .status-bar {
 	background: var(--wg-kit-group-fill);
 }
 
-.wg-studio-outlet > * {
+.wg-studio-outlet > *,
+.wg-studio-kept > * {
 	border-radius: var(--wg-studio-plate-corner);
+}
+
+.wg-studio-kept {
+	position: absolute;
+	inset: 0;
+}
+
+[data-host-column] {
+	--wg-studio-tabs-faint: color-mix(in srgb, var(--muted-foreground) 67%, var(--background));
+	--wg-studio-tabs-wait: oklch(from var(--warning) calc(l - 0.2403) calc(c - 0.043) calc(h - 8.74));
+	--wg-studio-tabs-lift-edge: color-mix(in srgb, var(--muted-foreground) 19%, var(--background));
+	--wg-studio-tabs-lift-shadow: color-mix(in srgb, var(--foreground) 14%, transparent);
+}
+
+:is(.dark, .theme-dark) [data-host-column] {
+	--wg-studio-tabs-faint: color-mix(in srgb, var(--muted-foreground) 75%, var(--background));
+	--wg-studio-tabs-wait: oklch(from var(--warning) calc(l - 0.0339) calc(c - 0.0132) calc(h - 3.18));
+	--wg-studio-tabs-lift-edge: color-mix(in srgb, var(--muted-foreground) 28%, var(--background));
+	--wg-studio-tabs-lift-shadow: color-mix(in srgb, oklch(0 0 0) 50%, transparent);
+	--raise: color-mix(in srgb, var(--foreground) 12.6%, var(--background));
+}
+
+.wg-studio-kept[data-studio-kept="hidden"] {
+	visibility: hidden;
+	pointer-events: none;
 }
 
 .wg-studio.is-canvas > .wg-studio-outlet {
@@ -13095,6 +13121,11 @@ body.wg-studio-in-front .status-bar {
 	padding-inline-start: 6px;
 }
 
+.wg-studio .wg-studio-ai-head > .wg-mascot {
+	flex: none;
+	margin-block-end: 7px;
+}
+
 .wg-studio .wg-studio-ai-title {
 	overflow: hidden;
 	font-size: 15px;
@@ -13353,6 +13384,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	:root,
 	:host {
 		--cv-spacing: 0.25rem;
+		--cv-leading-tight: 1.25;
+		--cv-leading-normal: 1.5;
 		--cv-radius-2xl: 1rem;
 		--cv-default-transition-duration: 150ms;
 		--cv-default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -13367,6 +13400,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\@container\/app-host-bar {
 		container-type: inline-size !important;
 		container-name: app-host-bar !important;
+	}
+	.cv\:\@container\/page {
+		container-type: inline-size !important;
+		container-name: page !important;
 	}
 	.cv\:\@container {
 		container-type: inline-size !important;
@@ -13398,8 +13435,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:inset-x-0 {
 		inset-inline: 0px !important;
 	}
-	.cv\:inset-x-2 {
-		inset-inline: calc(var(--cv-spacing) * 2) !important;
+	.cv\:inset-x-3 {
+		inset-inline: calc(var(--cv-spacing) * 3) !important;
+	}
+	.cv\:inset-x-3\.5 {
+		inset-inline: calc(var(--cv-spacing) * 3.5) !important;
 	}
 	.cv\:inset-y-0 {
 		inset-block: 0px !important;
@@ -13407,17 +13447,38 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:inset-y-1\.5 {
 		inset-block: calc(var(--cv-spacing) * 1.5) !important;
 	}
-	.cv\:start-0 {
-		inset-inline-start: calc(var(--cv-spacing) * 0) !important;
+	.cv\:start-1\.5 {
+		inset-inline-start: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:end-0\.5 {
+		inset-inline-end: calc(var(--cv-spacing) * 0.5) !important;
+	}
+	.cv\:end-1\.5 {
+		inset-inline-end: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:-top-px {
+		top: -1px !important;
 	}
 	.cv\:top-0 {
 		top: 0px !important;
 	}
+	.cv\:top-0\.5 {
+		top: calc(var(--cv-spacing) * 0.5) !important;
+	}
 	.cv\:top-1\/2 {
 		top: calc(1 / 2 * 100%) !important;
 	}
+	.cv\:top-3 {
+		top: calc(var(--cv-spacing) * 3) !important;
+	}
+	.cv\:-right-px {
+		right: -1px !important;
+	}
 	.cv\:right-0 {
 		right: 0px !important;
+	}
+	.cv\:right-0\.5 {
+		right: calc(var(--cv-spacing) * 0.5) !important;
 	}
 	.cv\:right-1\.5 {
 		right: calc(var(--cv-spacing) * 1.5) !important;
@@ -13461,11 +13522,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-mx-2 {
 		margin-inline: calc(var(--cv-spacing) * -2) !important;
 	}
-	.cv\:-mx-\[var\(--wg-kit-plate-pad\,6px\)\] {
-		margin-inline: calc(var(--wg-kit-plate-pad, 6px) * -1) !important;
+	.cv\:-mx-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\] {
+		margin-inline: calc(calc((var(--wg-studio-edge, 6px) - 1px) / 2) * -1) !important;
 	}
 	.cv\:mx-1\.5 {
 		margin-inline: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:mx-auto {
+		margin-inline: auto !important;
+	}
+	.cv\:-my-0\.5 {
+		margin-block: calc(var(--cv-spacing) * -0.5) !important;
 	}
 	.cv\:-my-\[3px\] {
 		margin-block: calc(3px * -1) !important;
@@ -13476,17 +13543,53 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ms-1\.5 {
 		margin-inline-start: calc(var(--cv-spacing) * 1.5) !important;
 	}
+	.cv\:ms-auto {
+		margin-inline-start: auto !important;
+	}
+	.cv\:ms-px {
+		margin-inline-start: 1px !important;
+	}
+	.cv\:-me-1\.5 {
+		margin-inline-end: calc(var(--cv-spacing) * -1.5) !important;
+	}
+	.cv\:me-0\.5 {
+		margin-inline-end: calc(var(--cv-spacing) * 0.5) !important;
+	}
 	.cv\:mt-1 {
 		margin-top: var(--cv-spacing) !important;
 	}
+	.cv\:mt-1\.5 {
+		margin-top: calc(var(--cv-spacing) * 1.5) !important;
+	}
 	.cv\:mt-2 {
 		margin-top: calc(var(--cv-spacing) * 2) !important;
+	}
+	.cv\:mt-6 {
+		margin-top: calc(var(--cv-spacing) * 6) !important;
+	}
+	.cv\:mt-\[14px\] {
+		margin-top: 14px !important;
+	}
+	.cv\:mt-\[18px\] {
+		margin-top: 18px !important;
+	}
+	.cv\:mt-\[22px\] {
+		margin-top: 22px !important;
+	}
+	.cv\:mt-\[26px\] {
+		margin-top: 26px !important;
+	}
+	.cv\:mb-0\.5 {
+		margin-bottom: calc(var(--cv-spacing) * 0.5) !important;
 	}
 	.cv\:box-border {
 		box-sizing: border-box !important;
 	}
 	.cv\:block {
 		display: block !important;
+	}
+	.cv\:contents {
+		display: contents !important;
 	}
 	.cv\:flex {
 		display: flex !important;
@@ -13512,6 +13615,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: calc(var(--cv-spacing) * 3) !important;
 		height: calc(var(--cv-spacing) * 3) !important;
 	}
+	.cv\:size-4 {
+		width: calc(var(--cv-spacing) * 4) !important;
+		height: calc(var(--cv-spacing) * 4) !important;
+	}
+	.cv\:size-5 {
+		width: calc(var(--cv-spacing) * 5) !important;
+		height: calc(var(--cv-spacing) * 5) !important;
+	}
+	.cv\:size-6 {
+		width: calc(var(--cv-spacing) * 6) !important;
+		height: calc(var(--cv-spacing) * 6) !important;
+	}
 	.cv\:size-7 {
 		width: calc(var(--cv-spacing) * 7) !important;
 		height: calc(var(--cv-spacing) * 7) !important;
@@ -13528,12 +13643,27 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: calc(var(--cv-spacing) * 10) !important;
 		height: calc(var(--cv-spacing) * 10) !important;
 	}
+	.cv\:size-11 {
+		width: calc(var(--cv-spacing) * 11) !important;
+		height: calc(var(--cv-spacing) * 11) !important;
+	}
+	.cv\:size-\[7px\] {
+		width: 7px !important;
+		height: 7px !important;
+	}
+	.cv\:size-\[150px\] {
+		width: 150px !important;
+		height: 150px !important;
+	}
 	.cv\:size-full {
 		width: 100% !important;
 		height: 100% !important;
 	}
-	.cv\:h-0\.5 {
-		height: calc(var(--cv-spacing) * 0.5) !important;
+	.cv\:h-0 {
+		height: 0px !important;
+	}
+	.cv\:h-6 {
+		height: calc(var(--cv-spacing) * 6) !important;
 	}
 	.cv\:h-8 {
 		height: calc(var(--cv-spacing) * 8) !important;
@@ -13550,8 +13680,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:h-13 {
 		height: calc(var(--cv-spacing) * 13) !important;
 	}
+	.cv\:h-\[3px\] {
+		height: 3px !important;
+	}
+	.cv\:h-\[22px\] {
+		height: 22px !important;
+	}
 	.cv\:h-\[30px\] {
 		height: 30px !important;
+	}
+	.cv\:h-\[52px\] {
+		height: 52px !important;
 	}
 	.cv\:h-\[540px\] {
 		height: 540px !important;
@@ -13571,6 +13710,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:max-h-\[40\%\] {
 		max-height: 40% !important;
 	}
+	.cv\:max-h-\[70vh\] {
+		max-height: 70vh !important;
+	}
+	.cv\:max-h-\[min\(780px\,calc\(100vh-180px\)\)\] {
+		max-height: min(780px, calc(100vh - 180px)) !important;
+	}
 	.cv\:min-h-0 {
 		min-height: 0px !important;
 	}
@@ -13586,8 +13731,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:min-h-12 {
 		min-height: calc(var(--cv-spacing) * 12) !important;
 	}
-	.cv\:w-3 {
-		width: calc(var(--cv-spacing) * 3) !important;
+	.cv\:min-h-\[60px\] {
+		min-height: 60px !important;
+	}
+	.cv\:w-3\.5 {
+		width: calc(var(--cv-spacing) * 3.5) !important;
 	}
 	.cv\:w-6 {
 		width: calc(var(--cv-spacing) * 6) !important;
@@ -13597,6 +13745,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:w-\[248px\] {
 		width: 248px !important;
+	}
+	.cv\:w-\[560px\] {
+		width: 560px !important;
+	}
+	.cv\:w-\[580px\] {
+		width: 580px !important;
 	}
 	.cv\:w-\[960px\] {
 		width: 960px !important;
@@ -13609,9 +13763,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:w-\[min\(36rem\,42vw\)\] {
 		width: min(36rem, 42vw) !important;
-	}
-	.cv\:w-\[var\(--wg-kit-plate-pad\,6px\)\] {
-		width: var(--wg-kit-plate-pad, 6px) !important;
 	}
 	.cv\:w-\[var\(--wg-studio-edge\,6px\)\] {
 		width: var(--wg-studio-edge, 6px) !important;
@@ -13640,11 +13791,20 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:max-w-\[80\%\] {
 		max-width: 80% !important;
 	}
+	.cv\:max-w-\[240px\] {
+		max-width: 240px !important;
+	}
+	.cv\:max-w-\[540px\] {
+		max-width: 540px !important;
+	}
 	.cv\:max-w-\[5300px\] {
 		max-width: 5300px !important;
 	}
 	.cv\:max-w-\[5500px\] {
 		max-width: 5500px !important;
+	}
+	.cv\:max-w-\[calc\(100vw-16px\)\] {
+		max-width: calc(100vw - 16px) !important;
 	}
 	.cv\:max-w-full {
 		max-width: 100% !important;
@@ -13746,6 +13906,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:justify-center {
 		justify-content: center !important;
 	}
+	.cv\:justify-end {
+		justify-content: flex-end !important;
+	}
+	.cv\:justify-start {
+		justify-content: flex-start !important;
+	}
 	.cv\:gap-0\.5 {
 		gap: calc(var(--cv-spacing) * 0.5) !important;
 	}
@@ -13788,6 +13954,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:gap-\[3px\] {
 		gap: 3px !important;
 	}
+	.cv\:gap-\[5px\] {
+		gap: 5px !important;
+	}
 	.cv\:gap-\[13px\] {
 		gap: 13px !important;
 	}
@@ -13799,6 +13968,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:gap-parts {
 		gap: var(--wg-gap-parts) !important;
+	}
+	.cv\:gap-px {
+		gap: 1px !important;
 	}
 	.cv\:self-start {
 		align-self: flex-start !important;
@@ -13832,11 +14004,20 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:rounded-2xl {
 		border-radius: var(--cv-radius-2xl) !important;
 	}
+	.cv\:rounded-\[6px\] {
+		border-radius: 6px !important;
+	}
 	.cv\:rounded-\[18px\] {
 		border-radius: 18px !important;
 	}
 	.cv\:rounded-\[28px\] {
 		border-radius: 28px !important;
+	}
+	.cv\:rounded-\[30px\] {
+		border-radius: 30px !important;
+	}
+	.cv\:rounded-\[34px\] {
+		border-radius: 34px !important;
 	}
 	.cv\:rounded-\[calc\(var\(--radius\)-var\(--wg-kit-plate-pad\,6px\)\)\] {
 		border-radius: calc(var(--radius) - var(--wg-kit-plate-pad, 6px)) !important;
@@ -13849,6 +14030,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:rounded-md {
 		border-radius: calc(var(--radius) - 2px) !important;
+	}
+	.cv\:rounded-none {
+		border-radius: 0 !important;
 	}
 	.cv\:rounded-plate {
 		border-radius: var(--radius) !important;
@@ -13902,6 +14086,15 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			background-color: color-mix(in srgb, var(--wg-kit-accent) 16%, transparent) !important;
 		}
 	}
+	.cv\:bg-\[var\(--wg-studio-tabs-faint\)\] {
+		background-color: var(--wg-studio-tabs-faint) !important;
+	}
+	.cv\:bg-\[var\(--wg-studio-tabs-wait\)\] {
+		background-color: var(--wg-studio-tabs-wait) !important;
+	}
+	.cv\:bg-accent-wash {
+		background-color: var(--accent-wash) !important;
+	}
 	.cv\:bg-board {
 		background-color: var(--background) !important;
 		@supports (color: color-mix(in lab, red, red)) {
@@ -13923,9 +14116,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-group {
 		background-color: var(--group) !important;
 	}
-	.cv\:bg-info {
-		background-color: var(--info) !important;
-	}
 	.cv\:bg-info-wash {
 		background-color: var(--wg-kit-info-wash) !important;
 	}
@@ -13934,9 +14124,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-line {
 		background-color: var(--group-line) !important;
-	}
-	.cv\:bg-muted-foreground {
-		background-color: var(--muted-foreground) !important;
 	}
 	.cv\:bg-page {
 		background-color: var(--background) !important;
@@ -13950,23 +14137,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-primary {
 		background-color: var(--primary) !important;
 	}
-	.cv\:bg-primary-foreground\/15 {
-		background-color: var(--primary-foreground) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			background-color: color-mix(in oklab, var(--primary-foreground) 15%, transparent) !important;
-		}
-	}
 	.cv\:bg-raise {
 		background-color: var(--raise) !important;
+	}
+	.cv\:bg-success {
+		background-color: var(--success) !important;
 	}
 	.cv\:bg-success-wash {
 		background-color: var(--wg-kit-success-wash) !important;
 	}
 	.cv\:bg-transparent {
 		background-color: transparent !important;
-	}
-	.cv\:bg-warning {
-		background-color: var(--warning) !important;
 	}
 	.cv\:bg-warning-wash {
 		background-color: var(--wg-kit-warning-wash) !important;
@@ -14006,6 +14187,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[stroke-width\:1\.5\] {
 		stroke-width: 1.5 !important;
 	}
+	.cv\:object-contain {
+		object-fit: contain !important;
+	}
+	.cv\:object-cover {
+		object-fit: cover !important;
+	}
 	.cv\:p-0 {
 		padding: 0px !important;
 	}
@@ -14027,6 +14214,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:p-7 {
 		padding: calc(var(--cv-spacing) * 7) !important;
 	}
+	.cv\:p-10 {
+		padding: calc(var(--cv-spacing) * 10) !important;
+	}
 	.cv\:p-12 {
 		padding: calc(var(--cv-spacing) * 12) !important;
 	}
@@ -14038,9 +14228,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:px-1 {
 		padding-inline: var(--cv-spacing) !important;
-	}
-	.cv\:px-1\.5 {
-		padding-inline: calc(var(--cv-spacing) * 1.5) !important;
 	}
 	.cv\:px-2 {
 		padding-inline: calc(var(--cv-spacing) * 2) !important;
@@ -14059,6 +14246,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:px-5 {
 		padding-inline: calc(var(--cv-spacing) * 5) !important;
+	}
+	.cv\:px-6 {
+		padding-inline: calc(var(--cv-spacing) * 6) !important;
+	}
+	.cv\:px-\[9px\] {
+		padding-inline: 9px !important;
 	}
 	.cv\:py-0 {
 		padding-block: 0px !important;
@@ -14081,14 +14274,26 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:py-3\.5 {
 		padding-block: calc(var(--cv-spacing) * 3.5) !important;
 	}
+	.cv\:py-4 {
+		padding-block: calc(var(--cv-spacing) * 4) !important;
+	}
 	.cv\:py-\[3px\] {
 		padding-block: 3px !important;
+	}
+	.cv\:py-\[7px\] {
+		padding-block: 7px !important;
 	}
 	.cv\:py-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding-block: var(--wg-kit-plate-pad, 6px) !important;
 	}
+	.cv\:ps-1 {
+		padding-inline-start: var(--cv-spacing) !important;
+	}
 	.cv\:ps-1\.5 {
 		padding-inline-start: calc(var(--cv-spacing) * 1.5) !important;
+	}
+	.cv\:ps-2\.5 {
+		padding-inline-start: calc(var(--cv-spacing) * 2.5) !important;
 	}
 	.cv\:ps-3 {
 		padding-inline-start: calc(var(--cv-spacing) * 3) !important;
@@ -14102,8 +14307,17 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ps-5 {
 		padding-inline-start: calc(var(--cv-spacing) * 5) !important;
 	}
+	.cv\:ps-\[7px\] {
+		padding-inline-start: 7px !important;
+	}
+	.cv\:ps-\[18px\] {
+		padding-inline-start: 18px !important;
+	}
 	.cv\:ps-\[31px\] {
 		padding-inline-start: 31px !important;
+	}
+	.cv\:ps-\[var\(--wg-kit-plate-pad\,6px\)\] {
+		padding-inline-start: var(--wg-kit-plate-pad, 6px) !important;
 	}
 	.cv\:pe-1 {
 		padding-inline-end: var(--cv-spacing) !important;
@@ -14111,8 +14325,23 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:pe-1\.5 {
 		padding-inline-end: calc(var(--cv-spacing) * 1.5) !important;
 	}
+	.cv\:pe-2 {
+		padding-inline-end: calc(var(--cv-spacing) * 2) !important;
+	}
+	.cv\:pe-3 {
+		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
+	}
 	.cv\:pe-4 {
 		padding-inline-end: calc(var(--cv-spacing) * 4) !important;
+	}
+	.cv\:pe-5 {
+		padding-inline-end: calc(var(--cv-spacing) * 5) !important;
+	}
+	.cv\:pe-8 {
+		padding-inline-end: calc(var(--cv-spacing) * 8) !important;
+	}
+	.cv\:pe-\[var\(--wg-kit-plate-pad\,6px\)\] {
+		padding-inline-end: var(--wg-kit-plate-pad, 6px) !important;
 	}
 	.cv\:pt-1 {
 		padding-top: var(--cv-spacing) !important;
@@ -14141,14 +14370,38 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-center {
 		text-align: center !important;
 	}
+	.cv\:text-left {
+		text-align: left !important;
+	}
 	.cv\:text-start {
 		text-align: start !important;
+	}
+	.cv\:font-\[family-name\:var\(--font-sans\)\] {
+		font-family: var(--font-sans) !important;
 	}
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
 	}
+	.cv\:font-mono {
+		font-family: var(--font-monospace) !important;
+	}
+	.cv\:text-\[11px\] {
+		font-size: 11px !important;
+	}
+	.cv\:text-\[12px\] {
+		font-size: 12px !important;
+	}
+	.cv\:text-\[13px\] {
+		font-size: 13px !important;
+	}
+	.cv\:text-\[14px\] {
+		font-size: 14px !important;
+	}
 	.cv\:text-\[15px\] {
 		font-size: 15px !important;
+	}
+	.cv\:text-\[16px\] {
+		font-size: 16px !important;
 	}
 	.cv\:text-\[19px\] {
 		font-size: 19px !important;
@@ -14158,6 +14411,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-\[24px\] {
 		font-size: 24px !important;
+	}
+	.cv\:text-\[30px\] {
+		font-size: 30px !important;
 	}
 	.cv\:text-\[40px\] {
 		font-size: 40px !important;
@@ -14185,6 +14441,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-leading: 1.4 !important;
 		line-height: 1.4 !important;
 	}
+	.cv\:leading-\[1\.15\] {
+		--tw-leading: 1.15 !important;
+		line-height: 1.15 !important;
+	}
 	.cv\:leading-\[1\.35\] {
 		--tw-leading: 1.35 !important;
 		line-height: 1.35 !important;
@@ -14200,6 +14460,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:leading-\[18px\] {
 		--tw-leading: 18px !important;
 		line-height: 18px !important;
+	}
+	.cv\:leading-\[normal\] {
+		--tw-leading: normal !important;
+		line-height: normal !important;
+	}
+	.cv\:leading-normal {
+		--tw-leading: var(--cv-leading-normal) !important;
+		line-height: var(--cv-leading-normal) !important;
+	}
+	.cv\:leading-tight {
+		--tw-leading: var(--cv-leading-tight) !important;
+		line-height: var(--cv-leading-tight) !important;
 	}
 	.cv\:font-bold {
 		--tw-font-weight: var(--font-bold, 700) !important;
@@ -14217,6 +14489,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
+	.cv\:tracking-\[-0\.01em\] {
+		--tw-tracking: -0.01em !important;
+		letter-spacing: -0.01em !important;
+	}
+	.cv\:tracking-\[-0\.03em\] {
+		--tw-tracking: -0.03em !important;
+		letter-spacing: -0.03em !important;
+	}
 	.cv\:break-all {
 		word-break: break-all !important;
 	}
@@ -14226,14 +14506,23 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:whitespace-pre-wrap {
 		white-space: pre-wrap !important;
 	}
+	.cv\:text-\[color-mix\(in_srgb\,var\(--brand\)_60\%\,var\(--foreground\)\)\] {
+		color: var(--brand) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in srgb, var(--brand) 60%, var(--foreground)) !important;
+		}
+	}
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
 	}
+	.cv\:text-\[var\(--wg-studio-tabs-faint\)\] {
+		color: var(--wg-studio-tabs-faint) !important;
+	}
+	.cv\:text-\[var\(--wg-studio-tabs-wait\)\] {
+		color: var(--wg-studio-tabs-wait) !important;
+	}
 	.cv\:text-brand {
 		color: var(--brand) !important;
-	}
-	.cv\:text-info {
-		color: var(--info) !important;
 	}
 	.cv\:text-ink {
 		color: var(--foreground) !important;
@@ -14241,10 +14530,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-muted-foreground {
 		color: var(--muted-foreground) !important;
 	}
-	.cv\:text-muted-foreground\/70 {
+	.cv\:text-muted-foreground\/65 {
 		color: var(--muted-foreground) !important;
 		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in oklab, var(--muted-foreground) 70%, transparent) !important;
+			color: color-mix(in oklab, var(--muted-foreground) 65%, transparent) !important;
 		}
 	}
 	.cv\:text-page {
@@ -14252,6 +14541,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-primary-foreground {
 		color: var(--primary-foreground) !important;
+	}
+	.cv\:text-primary-foreground\/65 {
+		color: var(--primary-foreground) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in oklab, var(--primary-foreground) 65%, transparent) !important;
+		}
 	}
 	.cv\:text-warning {
 		color: var(--warning) !important;
@@ -14264,8 +14559,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		font-variant-numeric: var(--tw-ordinal,) var(--tw-slashed-zero,) var(--tw-numeric-figure,)
 			var(--tw-numeric-spacing,) var(--tw-numeric-fraction,) !important;
 	}
+	.cv\:caret-brand {
+		caret-color: var(--brand) !important;
+	}
 	.cv\:opacity-0 {
 		opacity: 0% !important;
+	}
+	.cv\:opacity-45 {
+		opacity: 45% !important;
 	}
 	.cv\:opacity-70 {
 		opacity: 70% !important;
@@ -14273,8 +14574,44 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:opacity-100 {
 		opacity: 100% !important;
 	}
+	.cv\:shadow-\[0_0_0_1px_var\(--border\)\,0_10px_28px_color-mix\(in_srgb\,var\(--foreground\)_14\%\,transparent\)\] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 10px 28px var(--tw-shadow-color, var(--foreground)) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			--tw-shadow:
+				0 0 0 1px var(--tw-shadow-color, var(--border)),
+				0 10px 28px var(--tw-shadow-color, color-mix(in srgb, var(--foreground) 14%, transparent)) !important;
+		}
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
+	.cv\:shadow-\[0_0_0_1px_var\(--border\)\,0_24px_64px_color-mix\(in_srgb\,var\(--foreground\)_14\%\,transparent\)\] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 24px 64px var(--tw-shadow-color, var(--foreground)) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			--tw-shadow:
+				0 0 0 1px var(--tw-shadow-color, var(--border)),
+				0 24px 64px var(--tw-shadow-color, color-mix(in srgb, var(--foreground) 14%, transparent)) !important;
+		}
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
+	.cv\:shadow-\[0_0_0_1px_var\(--border\)\] {
+		--tw-shadow: 0 0 0 1px var(--tw-shadow-color, var(--border)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
 	.cv\:shadow-\[0_0_0_1px_var\(--wg-kit-card-edge\)\] {
 		--tw-shadow: 0 0 0 1px var(--tw-shadow-color, var(--wg-kit-card-edge)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
+	.cv\:shadow-\[inset_0_0_0_1px_var\(--border\)\] {
+		--tw-shadow: inset 0 0 0 1px var(--tw-shadow-color, var(--border)) !important;
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
@@ -14305,14 +14642,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:ring-brand {
+		--tw-ring-color: var(--brand) !important;
+	}
 	.cv\:ring-edge {
 		--tw-ring-color: var(--border) !important;
 	}
 	.cv\:ring-group {
 		--tw-ring-color: var(--group) !important;
-	}
-	.cv\:ring-info {
-		--tw-ring-color: var(--info) !important;
 	}
 	.cv\:outline-2 {
 		outline-style: var(--tw-outline-style) !important;
@@ -14323,6 +14660,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:outline-brand {
 		outline-color: var(--brand) !important;
+	}
+	.cv\:transition-\[background-color\,color\,opacity\] {
+		transition-property: background-color, color, opacity !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
 	.cv\:transition-\[background-color\,color\] {
 		transition-property: background-color, color !important;
@@ -14356,6 +14698,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:transition-\[top\,left\,height\] {
 		transition-property: top, left, height !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
+	.cv\:transition-\[top\] {
+		transition-property: top !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
@@ -14423,12 +14770,36 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		.cv\:group-hover\:flex:is(:where(.cv\:group):hover *) {
 			display: flex !important;
 		}
+		.cv\:group-hover\:bg-primary:is(:where(.cv\:group):hover *) {
+			background-color: var(--primary) !important;
+		}
+		.cv\:group-hover\:bg-raise:is(:where(.cv\:group):hover *) {
+			background-color: var(--raise) !important;
+		}
+		.cv\:group-hover\:text-primary-foreground:is(:where(.cv\:group):hover *) {
+			color: var(--primary-foreground) !important;
+		}
 		.cv\:group-hover\:opacity-100:is(:where(.cv\:group):hover *) {
 			opacity: 100% !important;
 		}
 		.cv\:group-hover\/row\:opacity-100:is(:where(.cv\:group\/row):hover *) {
 			opacity: 100% !important;
 		}
+		.cv\:group-hover\/tab\:pointer-events-auto:is(:where(.cv\:group\/tab):hover *) {
+			pointer-events: auto !important;
+		}
+		.cv\:group-hover\/tab\:opacity-100:is(:where(.cv\:group\/tab):hover *) {
+			opacity: 100% !important;
+		}
+	}
+	.cv\:group-data-\[dragging\]\/tabs\:transition-transform:is(:where(.cv\:group\/tabs)[data-dragging] *) {
+		transition-property: transform, translate, scale, rotate !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
+	.cv\:group-data-\[dragging\]\/tabs\:duration-150:is(:where(.cv\:group\/tabs)[data-dragging] *) {
+		--tw-duration: 150ms !important;
+		transition-duration: 150ms !important;
 	}
 	.cv\:group-data-\[dragging\]\/tree\:overflow-visible:is(:where(.cv\:group\/tree)[data-dragging] *) {
 		overflow: visible !important;
@@ -14438,47 +14809,82 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
+	.cv\:group-data-\[lifted\]\:flex:is(:where(.cv\:group)[data-lifted] *) {
+		display: flex !important;
+	}
 	.cv\:placeholder\:text-muted-foreground::placeholder {
 		color: var(--muted-foreground) !important;
 	}
-	.cv\:after\:absolute::after {
+	.cv\:placeholder\:text-muted-foreground\/65::placeholder {
+		color: var(--muted-foreground) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in oklab, var(--muted-foreground) 65%, transparent) !important;
+		}
+	}
+	.cv\:placeholder\:text-muted-foreground\/67::placeholder {
+		color: var(--muted-foreground) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in oklab, var(--muted-foreground) 67%, transparent) !important;
+		}
+	}
+	.cv\:before\:absolute::before {
 		content: var(--tw-content);
 		position: absolute !important;
 	}
-	.cv\:after\:inset-y-4::after {
+	.cv\:before\:inset-y-0::before {
 		content: var(--tw-content);
-		inset-block: calc(var(--cv-spacing) * 4) !important;
+		inset-block: 0px !important;
 	}
-	.cv\:after\:left-1\/2::after {
+	.cv\:before\:-start-1::before {
 		content: var(--tw-content);
-		left: calc(1 / 2 * 100%) !important;
+		inset-inline-start: calc(var(--cv-spacing) * -1) !important;
 	}
-	.cv\:after\:w-0\.5::after {
+	.cv\:before\:top-1\/2::before {
 		content: var(--tw-content);
-		width: calc(var(--cv-spacing) * 0.5) !important;
+		top: calc(1 / 2 * 100%) !important;
 	}
-	.cv\:after\:-translate-x-1\/2::after {
+	.cv\:before\:left-\[calc\(\(var\(--wg-studio-edge\,6px\)_-_1px\)_\/_2\)\]::before {
 		content: var(--tw-content);
-		--tw-translate-x: calc(calc(1 / 2 * 100%) * -1) !important;
+		left: calc((var(--wg-studio-edge, 6px) - 1px) / 2) !important;
+	}
+	.cv\:before\:size-\[9px\]::before {
+		content: var(--tw-content);
+		width: 9px !important;
+		height: 9px !important;
+	}
+	.cv\:before\:w-px::before {
+		content: var(--tw-content);
+		width: 1px !important;
+	}
+	.cv\:before\:-translate-y-1\/2::before {
+		content: var(--tw-content);
+		--tw-translate-y: calc(calc(1 / 2 * 100%) * -1) !important;
 		translate: var(--tw-translate-x) var(--tw-translate-y) !important;
 	}
-	.cv\:after\:rounded-full::after {
+	.cv\:before\:rounded-full::before {
 		content: var(--tw-content);
 		border-radius: calc(infinity * 1px) !important;
 	}
-	.cv\:after\:transition-colors::after {
+	.cv\:before\:bg-brand::before {
 		content: var(--tw-content);
-		transition-property:
-			color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, --tw-gradient-from,
-			--tw-gradient-via, --tw-gradient-to !important;
-		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
-		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+		background-color: var(--brand) !important;
+	}
+	.cv\:before\:bg-line::before {
+		content: var(--tw-content);
+		background-color: var(--group-line) !important;
 	}
 	.cv\:odd\:-rotate-1:nth-child(odd) {
 		rotate: calc(1deg * -1) !important;
 	}
 	.cv\:even\:rotate-1:nth-child(even) {
 		rotate: 1deg !important;
+	}
+	.cv\:focus-within\:shadow-\[0_0_0_2px_var\(--brand\)\,0_0_0_6px_var\(--accent-wash\)\]:focus-within {
+		--tw-shadow:
+			0 0 0 2px var(--tw-shadow-color, var(--brand)), 0 0 0 6px var(--tw-shadow-color, var(--accent-wash)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
 	}
 	@media (hover: hover) {
 		.cv\:hover\:bg-fill:hover {
@@ -14495,6 +14901,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 				background-color: color-mix(in oklab, var(--group) 60%, transparent) !important;
 			}
 		}
+		.cv\:hover\:bg-primary-foreground\/15:hover {
+			background-color: var(--primary-foreground) !important;
+		}
+		@supports (color: color-mix(in lab, red, red)) {
+			.cv\:hover\:bg-primary-foreground\/15:hover {
+				background-color: color-mix(in oklab, var(--primary-foreground) 15%, transparent) !important;
+			}
+		}
 		.cv\:hover\:bg-primary\/85:hover {
 			background-color: var(--primary) !important;
 		}
@@ -14502,6 +14916,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			.cv\:hover\:bg-primary\/85:hover {
 				background-color: color-mix(in oklab, var(--primary) 85%, transparent) !important;
 			}
+		}
+		.cv\:hover\:bg-raise:hover {
+			background-color: var(--raise) !important;
 		}
 		.cv\:hover\:bg-raise\/70:hover {
 			background-color: var(--raise) !important;
@@ -14514,10 +14931,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		.cv\:hover\:text-ink:hover {
 			color: var(--foreground) !important;
 		}
-		.cv\:hover\:after\:bg-brand:hover::after {
-			content: var(--tw-content);
-			background-color: var(--brand) !important;
+		.cv\:hover\:text-primary-foreground:hover {
+			color: var(--primary-foreground) !important;
 		}
+		.cv\:not-data-\[lifted\]\:hover\:bg-fill-hover:not([data-lifted]):hover {
+			background-color: var(--fill-hover) !important;
+		}
+	}
+	.cv\:focus\:shadow-none:focus {
+		--tw-shadow: 0 0 #0000 !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
 	}
 	.cv\:focus-visible\:bg-fill:focus-visible {
 		background-color: var(--fill) !important;
@@ -14539,16 +14964,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-outline-style: none !important;
 		outline-style: none !important;
 	}
-	.cv\:focus-visible\:after\:bg-brand:focus-visible::after {
-		content: var(--tw-content);
-		background-color: var(--brand) !important;
-	}
 	.cv\:active\:scale-\[0\.96\]:active {
 		scale: 0.96 !important;
-	}
-	.cv\:active\:after\:bg-brand:active::after {
-		content: var(--tw-content);
-		background-color: var(--brand) !important;
 	}
 	.cv\:disabled\:cursor-default:disabled {
 		cursor: default !important;
@@ -14561,6 +14978,16 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:disabled\:opacity-50:disabled {
 		opacity: 50% !important;
+	}
+	:where([data-state="open"]) .cv\:in-data-\[state\=open\]\:opacity-100 {
+		opacity: 100% !important;
+	}
+	.cv\:has-\[\:focus-visible\]\:outline-2:has(:is(:focus-visible)) {
+		outline-style: var(--tw-outline-style) !important;
+		outline-width: 2px !important;
+	}
+	.cv\:has-\[\:focus-visible\]\:outline-ring:has(:is(:focus-visible)) {
+		outline-color: var(--ring) !important;
 	}
 	.cv\:aria-disabled\:cursor-default[aria-disabled="true"] {
 		cursor: default !important;
@@ -14580,8 +15007,29 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:data-\[lifted\]\:z-\[2\][data-lifted] {
 		z-index: 2 !important;
 	}
+	.cv\:data-\[lifted\]\:z-\[3\][data-lifted] {
+		z-index: 3 !important;
+	}
+	.cv\:data-\[lifted\]\:-translate-x-2\.5[data-lifted] {
+		--tw-translate-x: calc(var(--cv-spacing) * -2.5) !important;
+		translate: var(--tw-translate-x) var(--tw-translate-y) !important;
+	}
+	.cv\:data-\[lifted\]\:-rotate-\[1\.2deg\][data-lifted] {
+		rotate: calc(1.2deg * -1) !important;
+	}
 	.cv\:data-\[lifted\]\:bg-group[data-lifted] {
 		background-color: var(--group) !important;
+	}
+	.cv\:data-\[lifted\]\:bg-raise[data-lifted] {
+		background-color: var(--raise) !important;
+	}
+	.cv\:data-\[lifted\]\:shadow-\[0_0_0_1px_var\(--wg-studio-tabs-lift-edge\)\,0_14px_32px_var\(--wg-studio-tabs-lift-shadow\)\][data-lifted] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--wg-studio-tabs-lift-edge)),
+			0 14px 32px var(--tw-shadow-color, var(--wg-studio-tabs-lift-shadow)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
 	}
 	.cv\:data-\[lifted\]\:shadow-\[0_8px_20px_-8px_var\(--wg-overlay-scrim\)\][data-lifted] {
 		--tw-shadow: 0 8px 20px -8px var(--tw-shadow-color, var(--wg-overlay-scrim)) !important;
@@ -14630,6 +15078,40 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			transition-property: none !important;
 		}
 	}
+	@container page (width < 600px) {
+		.cv\:\@max-\[600px\]\/page\:mt-1\.5 {
+			margin-top: calc(var(--cv-spacing) * 1.5) !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:mt-\[14px\] {
+			margin-top: 14px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:mt-\[18px\] {
+			margin-top: 18px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:size-\[92px\] {
+			width: 92px !important;
+			height: 92px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:max-w-\[380px\] {
+			max-width: 380px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:scale-\[0\.6133\] {
+			scale: 0.6133 !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:p-5 {
+			padding: calc(var(--cv-spacing) * 5) !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:text-\[13px\] {
+			font-size: 13px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:text-\[21px\] {
+			font-size: 21px !important;
+		}
+		.cv\:\@max-\[600px\]\/page\:tracking-\[-0\.02em\] {
+			--tw-tracking: -0.02em !important;
+			letter-spacing: -0.02em !important;
+		}
+	}
 	@container app-host-bar (width < 560px) {
 		.cv\:\@max-\[560px\]\/app-host-bar\:hidden {
 			display: none !important;
@@ -14643,6 +15125,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	@container app-host-bar (width < 400px) {
 		.cv\:\@max-\[400px\]\/app-host-bar\:hidden {
 			display: none !important;
+		}
+		.cv\:\@max-\[400px\]\/app-host-bar\:pe-3 {
+			padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 		}
 	}
 	@container (width < 380px) {
@@ -14666,6 +15151,13 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
+	}
+	.cv\:\[\&_\[data-host-tab-status-said\=reading\]\]\:text-\[color-mix\(in_srgb\,var\(--brand\)_50\%\,var\(--primary-foreground\)\)\]
+		[data-host-tab-status-said="reading"] {
+		color: var(--brand) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in srgb, var(--brand) 50%, var(--primary-foreground)) !important;
+		}
 	}
 	.cv\:\[\&_\[data-host-tab-subtitle\]\]\:opacity-65 [data-host-tab-subtitle] {
 		opacity: 65% !important;
@@ -14696,6 +15188,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[\&_span\]\:text-primary-foreground span {
 		color: var(--primary-foreground) !important;
 	}
+	.cv\:\[\&\>\.wg-kit-anchor\]\:pointer-events-none > .wg-kit-anchor {
+		pointer-events: none !important;
+	}
+	.cv\:\[\&\>\.wg-kit-anchor\]\:absolute > .wg-kit-anchor {
+		position: absolute !important;
+	}
+	.cv\:\[\&\>\.wg-kit-anchor\]\:inset-0 > .wg-kit-anchor {
+		inset: 0px !important;
+	}
+	.cv\:\[\&\>\.wg-kit-pop-inner\]\:p-2 > .wg-kit-pop-inner {
+		padding: calc(var(--cv-spacing) * 2) !important;
+	}
 	.cv\:\[\&\>\.wg-page\]\:relative > .wg-page {
 		position: relative !important;
 	}
@@ -14720,8 +15224,30 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[\&\>aside\[data-host-column-side\=start\]\]\:order-first > aside[data-host-column-side="start"] {
 		order: -9999 !important;
 	}
+	.theme-dark
+		.cv\:\[\.theme-dark_\&\]\:shadow-\[0_0_0_1px_var\(--border\)\,0_10px_28px_color-mix\(in_srgb\,oklch\(0_0_0\)_50\%\,transparent\)\] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--border)),
+			0 10px 28px var(--tw-shadow-color, color-mix(in srgb, oklch(0 0 0) 50%, transparent)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
+	.theme-dark
+		.cv\:\[\.theme-dark_\&\]\:shadow-\[0_0_0_1px_var\(--border\)\,0_24px_64px_color-mix\(in_srgb\,var\(--background\)_60\%\,transparent\)\] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 24px 64px var(--tw-shadow-color, var(--background)) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			--tw-shadow:
+				0 0 0 1px var(--tw-shadow-color, var(--border)),
+				0 24px 64px var(--tw-shadow-color, color-mix(in srgb, var(--background) 60%, transparent)) !important;
+		}
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
 	@media (hover: hover) {
-		.theme-dark .cv\:\[\.theme-dark_\&\]\:hover\:bg-input:hover {
+		.theme-dark .cv\:\[\.theme-dark_\&\]\:not-data-\[lifted\]\:hover\:bg-input:not([data-lifted]):hover {
 			background-color: var(--input) !important;
 		}
 	}
@@ -15056,6 +15582,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	syntax: "*";
 	inherits: false;
 }
+@property --tw-tracking {
+	syntax: "*";
+	inherits: false;
+}
 @property --tw-ordinal {
 	syntax: "*";
 	inherits: false;
@@ -15212,6 +15742,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-border-style: solid;
 			--tw-leading: initial;
 			--tw-font-weight: initial;
+			--tw-tracking: initial;
 			--tw-ordinal: initial;
 			--tw-slashed-zero: initial;
 			--tw-numeric-figure: initial;

@@ -1,6 +1,30 @@
 import { z } from "zod";
 import { AccessDecisionSchema, ReadKindSchema } from "./site-access.schema.js";
 
+export const LoadFailureKindSchema = z.enum(["not-found", "offline", "refused", "timed-out", "certificate"]);
+
+export type LoadFailureKind = z.infer<typeof LoadFailureKindSchema>;
+
+export const PageFailureKindSchema = z.enum([...LoadFailureKindSchema.options, "scheme"]);
+
+export type PageFailureKind = z.infer<typeof PageFailureKindSchema>;
+
+export const PageFailureSchema = z.object({
+	kind: PageFailureKindSchema,
+	address: z.string(),
+	code: z.string(),
+});
+
+export type PageFailure = z.infer<typeof PageFailureSchema>;
+
+export const RecentSiteSchema = z.object({
+	host: z.string(),
+	address: z.string(),
+	favicon: z.string().nullable(),
+});
+
+export type RecentSite = z.infer<typeof RecentSiteSchema>;
+
 export const BrowserTabSchema = z.object({
 	id: z.string(),
 	url: z.string(),
@@ -9,6 +33,7 @@ export const BrowserTabSchema = z.object({
 	isLoading: z.boolean(),
 	canGoBack: z.boolean(),
 	canGoForward: z.boolean(),
+	failure: PageFailureSchema.nullable(),
 });
 
 export type BrowserTab = z.infer<typeof BrowserTabSchema>;
@@ -23,6 +48,7 @@ export type InkReading = z.infer<typeof InkReadingSchema>;
 export const BrowserTabStateSchema = BrowserTabSchema.extend({
 	isShown: z.boolean(),
 	access: AccessDecisionSchema.nullable(),
+	nearMatch: z.string().nullable(),
 });
 
 export type BrowserTabState = z.infer<typeof BrowserTabStateSchema>;
@@ -31,6 +57,7 @@ export const BrowserTabsSchema = z.object({
 	isAvailable: z.boolean(),
 	tabs: z.array(BrowserTabStateSchema).readonly(),
 	inkReading: InkReadingSchema.nullable(),
+	recentSites: z.array(RecentSiteSchema).readonly(),
 });
 
 export type BrowserTabs = z.infer<typeof BrowserTabsSchema>;

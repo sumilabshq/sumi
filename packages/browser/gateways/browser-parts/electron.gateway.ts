@@ -2,7 +2,9 @@ import { DEFAULT_BROWSER_PROFILE } from "../../shared/lib/browser-profile.js";
 import { LocalStorageBrowserAuditGateway } from "../browser-audit/local-storage.gateway.js";
 import { LocalStorageBrowserGrantsGateway } from "../browser-grants/local-storage.gateway.js";
 import { ElectronBrowserPagesGateway } from "../browser-pages/electron/electron.gateway.js";
+import { NoChatComposerGateway } from "../chat-composer/none.gateway.js";
 import { SystemClockGateway } from "../clock/system.gateway.js";
+import { LocalStorageRecentSitesGateway } from "../recent-sites/local-storage.gateway.js";
 import { browserPartsOf } from "./browser-parts.gateway.js";
 import type { BrowserParts } from "./browser-parts.gateway.js";
 
@@ -22,5 +24,7 @@ export function electronBrowserParts({
 		browserGrantsGateway: new LocalStorageBrowserGrantsGateway(machineStorage, profileId),
 		browserAuditGateway: new LocalStorageBrowserAuditGateway(machineStorage, profileId),
 		clockGateway: new SystemClockGateway(),
+		chatComposerGateway: new NoChatComposerGateway(),
+		recentSitesGateway: new LocalStorageRecentSitesGateway(machineStorage, profileId),
 	});
 }

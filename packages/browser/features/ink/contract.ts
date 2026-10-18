@@ -6,6 +6,7 @@ import {
 	PageRegionSchema,
 	PageShotSchema,
 } from "../../shared/schema/page-read.schema.js";
+import { SearchWebSchema } from "../../shared/schema/search-web.schema.js";
 
 export const ReadPageContentCommand = command("browser/read-page-content")
 	.output(PageContentSchema)
@@ -20,5 +21,7 @@ export const InkOpenAddressCommand = command("browser/ink-open-address")
 	.input(z.object({ url: z.string() }))
 	.output(OpenedPageSchema)
 	.idempotencyKey(PerCall);
+
+export const SearchWebCommand = command("browser/search-web").input(SearchWebSchema).idempotencyKey(PerCall);
 
 export const INK_REQUESTS = [ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand] as const;

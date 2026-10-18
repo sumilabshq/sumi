@@ -7,7 +7,7 @@ import { BrowserAsksStore } from "../../shared/lib/browser-asks-store.js";
 import { InkActivityStore } from "../../shared/lib/ink-activity-store.js";
 import { OnceAllowancesStore } from "../../shared/lib/once-allowances-store.js";
 import { BrowserClientModule } from "../../module.js";
-import { CapturePageCommand, InkOpenAddressCommand, ReadPageContentCommand } from "./contract.js";
+import { CapturePageCommand, InkOpenAddressCommand, ReadPageContentCommand, SearchWebCommand } from "./contract.js";
 import { InkGate } from "./lib/ink-gate.js";
 import { fadeReading } from "./lib/ink-turn.js";
 
@@ -92,3 +92,10 @@ export const InkOpenAddressCommandHandler = handler(InkOpenAddressCommand, Brows
 			fadeReading(inkActivityStore, clockGateway);
 		}
 	});
+
+export const SearchWebCommandHandler = handler(SearchWebCommand, BrowserClientModule)
+	.guard(BrowserNavigationGuard)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle((_input, { browserPagesGateway, browserNavigation }) =>
+		browserPagesGateway.open(browserNavigation.tabId, browserNavigation.url),
+	);

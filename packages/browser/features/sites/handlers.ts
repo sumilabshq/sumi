@@ -32,7 +32,8 @@ export const SiteAccessQueryHandler = handler(SiteAccessQuery, BrowserClientModu
 	.handle((_input, { browserGrantReadsGateway, onceAllowancesStore, browserPagesGateway, clockGateway }) => {
 		const persisted = browserGrantReadsGateway.readGrants();
 		const shownId = browserPagesGateway.shownId();
-		const shownUrl = browserPagesGateway.tabs().find((tab) => tab.id === shownId)?.url ?? "";
+		const shownTab = browserPagesGateway.tabs().find((tab) => tab.id === shownId);
+		const shownUrl = shownTab?.failure === null ? shownTab.url : "";
 		const grants = effectiveGrants(persisted, onceAllowancesStore.allowances(), clockGateway.now());
 		return {
 			shown:
