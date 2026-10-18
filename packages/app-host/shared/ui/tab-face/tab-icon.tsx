@@ -23,13 +23,27 @@ const GLYPH_PX: Readonly<Record<TabIconLook, number>> = {
 	rail: 18,
 	"rail-shown": 18,
 };
+const FAVICON_PX: Readonly<Record<TabIconLook, number>> = {
+	row: 21,
+	rail: 22,
+	"rail-shown": 22,
+};
+const MARK_AT: Readonly<Record<TabIconLook, string>> = {
+	row: "cv:-top-px cv:-right-px",
+	rail: "cv:top-0.5 cv:right-0.5",
+	"rail-shown": "cv:top-0.5 cv:right-0.5",
+};
 
 export function TabIcon({ tab, look }: TabIconProps): ReactElement {
 	return (
 		<span className={BOX[look]} data-host-tab-icon="">
-			<TabGlyph tab={tab} px={GLYPH_PX[look]} />
+			<TabGlyph tab={tab} px={GLYPH_PX[look]} faviconPx={FAVICON_PX[look]} />
 			{tab.status === null ? null : (
-				<span aria-hidden="true" className={STATUS_MARK[tab.status]} data-host-tab-status={tab.status} />
+				<span
+					aria-hidden="true"
+					className={tab.status === "reading" ? STATUS_MARK.reading : `${STATUS_MARK[tab.status]} ${MARK_AT[look]}`}
+					data-host-tab-status={tab.status}
+				/>
 			)}
 		</span>
 	);

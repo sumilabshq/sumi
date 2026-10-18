@@ -31,6 +31,10 @@ export function useShortcut(frame: RefObject<HTMLElement | null>, { key, onPress
 }
 
 function answersFor(frame: HTMLElement, event: KeyboardEvent): boolean {
+	if (getComputedStyle(frame).visibility !== "visible") {
+		return false;
+	}
+
 	if (event.target instanceof Node && frame.contains(event.target)) {
 		return true;
 	}

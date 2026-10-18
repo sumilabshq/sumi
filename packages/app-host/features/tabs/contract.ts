@@ -26,6 +26,11 @@ export const CloseShownTabCommand = command("app-host/close-shown-tab")
 	.invalidates([AppTabsQuery]);
 
 export const MoveTabCommand = command("app-host/move-tab")
-	.input(TabSchema.extend({ before: z.string().nullable() }))
+	.input(TabSchema.extend({ before: z.string().nullable(), isPinned: z.boolean() }))
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const PinTabCommand = command("app-host/pin-tab")
+	.input(TabSchema.extend({ isPinned: z.boolean() }))
 	.idempotencyKey(Repeatable)
 	.invalidates([AppTabsQuery]);

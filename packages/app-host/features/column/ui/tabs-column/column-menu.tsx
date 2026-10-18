@@ -24,7 +24,7 @@ export function ColumnMenu({ side }: { readonly side: ColumnSide }): ReactElemen
 	};
 	const trigger = (
 		<RoundButton label={MENU} tone="raise" size="l" data-host-column-menu="">
-			<Icon name="ellipsis" size={18} />
+			<Icon name="ellipsis" size={16} />
 		</RoundButton>
 	);
 	return (

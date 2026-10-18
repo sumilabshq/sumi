@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { RAISED_PILL } from "@widgetarium/canvas";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { AppTabsQuery, ShowTabCommand } from "../../contract.js";
+import { AppTabsQuery, CloseTabCommand, ShowTabCommand } from "../../contract.js";
 import { AppTabButton } from "./app-tab-button.js";
 import { useKeepsShownInView } from "../../lib/use-keeps-shown-in-view.js";
 
@@ -14,6 +14,7 @@ const TAB_ROW =
 export function AppTabs({ end }: { readonly end: ReactNode }): ReactElement {
 	const { tabs, preview } = useQuery(AppTabsQuery).data;
 	const showTab = useCommand(ShowTabCommand);
+	const closeTab = useCommand(CloseTabCommand);
 	const row = useKeepsShownInView(tabs.find((tab) => tab.isShown)?.id ?? null);
 	return (
 		<div className={TABS_PILL} data-host-tabs="">
@@ -24,10 +25,16 @@ export function AppTabs({ end }: { readonly end: ReactNode }): ReactElement {
 						tab={tab}
 						look={tab.isShown ? "shown" : "resting"}
 						onPick={() => void showTab.run({ id: tab.id })}
+						onClose={() => void closeTab.run({ id: tab.id })}
 					/>
 				))}
 				{preview ? (
-					<AppTabButton tab={preview} look="preview" onPick={() => void showTab.run({ id: preview.id })} />
+					<AppTabButton
+						tab={preview}
+						look="preview"
+						onPick={() => void showTab.run({ id: preview.id })}
+						onClose={() => void closeTab.run({ id: preview.id })}
+					/>
 				) : null}
 			</div>
 			{end}

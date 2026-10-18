@@ -27,6 +27,8 @@ import type { StartedStudio, StudioStart } from "../apps/studio/src/legacy/widge
 import { STUDIO_PACKS } from "../apps/studio/src/legacy/logic/studio-pack.js";
 import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
+import { EXACT_WORKSPACE, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { boom, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -206,9 +208,15 @@ function workspacesHost(): StudioHostPort {
 	};
 }
 
+function exactStudioStart(): StudioStart {
+	const state = createStudioState();
+	return { assistant: fakeAssistant(), state, appId: EXACT_WORKSPACE, appHost: exactAppHostParts(state) };
+}
+
 function studioStartOf(mode: unknown): StudioStart {
 	if (mode === "studio-workspaces") return { studio: workspacesHost(), appId: FARM_FOLDER };
 	if (mode === "studio-mac") return { studio: { ...NO_STUDIO_HOST, insets: () => MAC_INSETS } };
+	if (mode === "studio-exact") return exactStudioStart();
 	return { assistant: fakeAssistant() };
 }
 

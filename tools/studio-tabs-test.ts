@@ -3,21 +3,29 @@ import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { paged, waitUntil, waited } from "./chrome-ask.ts";
-import type { AskedPage, PagePoint } from "./chrome-ask.ts";
+import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { isRecord } from "./page-dom.ts";
 import type { Theme } from "./harness.ts";
-import { TABS_SEEN } from "./studio-tabs-seen.ts";
-import { checkTabsSeen, isTabsSeen } from "./studio-tabs-laws.ts";
-import type { TabsSeen } from "./studio-tabs-laws.ts";
+import { checkTabsSeen } from "./studio-tabs-laws.ts";
+import { exactTabsReport } from "./studio-tabs-exact.ts";
+import { check, draggedEdgeBy, failedChecks, keyed, openedTabs, pointOf, pressed, seenOf } from "./studio-tabs-page.ts";
+import {
+	checksBoardSizes,
+	checksDragReorders,
+	checksMenuPins,
+	checksOrderKept,
+	checksRailDrag,
+} from "./studio-tabs-column-checks.ts";
+import { checksHeaderClose } from "./studio-tabs-header-checks.ts";
+import { KEPT_PATH, checksKeptAlive, checksOneShownTab } from "./studio-tabs-kept-checks.ts";
+import { listOrderOf } from "./studio-tabs-rows.ts";
 
 const VIEW: readonly [number, number] = [1800, 900];
 const THEMES: readonly Theme[] = ["light", "dark"];
 const TABS_WANTED = 20;
 const DRAWN = `document.querySelector("[data-app-host-bar] [data-host-tabs]") !== null`;
 const THEMED = `((theme) => { document.body.classList.toggle("theme-dark", theme === "dark"); document.body.classList.toggle("theme-light", theme === "light"); return true; })`;
-const CENTER_OF = `((selector) => { const node = [...document.querySelectorAll(selector)].find((one) => one.getClientRects().length > 0); if (!node) return null; const box = node.getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })`;
-const KEYED = `((key) => { document.activeElement?.blur?.(); document.body.dispatchEvent(new KeyboardEvent("keydown", { key, metaKey: true, bubbles: true, cancelable: true })); return true; })`;
 const POPPED = `document.querySelectorAll("[data-slot=popover-content][data-state=open], [data-host-all-tabs-list]").length`;
 const TOOLTIP_OFFENDERS = `[...document.querySelectorAll("[data-app-host-bar] button, [data-host-column] button")].filter((one) => one.getClientRects().length > 0).flatMap((control) => { const name = control.getAttribute("aria-label") ?? control.textContent.trim(); const isIconOnly = control.textContent.trim() === ""; const hasTip = control.matches("[data-tip]") || control.parentElement?.matches("[data-tip]") === true; const said = []; if (control.closest("[title]")) said.push(name + ": a native title"); if (isIconOnly && !hasTip) said.push(name + ": no studio tip"); if (hasTip && getComputedStyle(control).getPropertyValue("--no-tooltip").trim() !== "true") said.push(name + ": Obsidian tooltips its aria-label too"); return said; })`;
 const ROW_HEIGHTS = `[...document.querySelectorAll("[data-host-list-tab]")].filter((row) => row.querySelector("[data-host-tab-status]") === null).map((row) => Math.round(row.getBoundingClientRect().height))`;
@@ -29,7 +37,7 @@ const MENU_ICON_FROM_LEFT_PX = 12;
 const OBSIDIAN_BUTTON =
 	"button { display: inline-flex; width: auto; height: 30px; padding: 4px 12px; justify-content: center; align-items: center; border-radius: 8px; white-space: nowrap; }";
 const ROW_ALIGNMENT = `[...document.querySelectorAll("[data-host-list-tab]")].map((row) => { const middleOf = (box) => box.top + box.height / 2; const box = row.getBoundingClientRect(); const words = row.querySelector("button > span:last-child").getBoundingClientRect(); const icon = row.querySelector("[data-host-tab-icon]").getBoundingClientRect(); const close = row.querySelector("[data-host-close-tab]").getBoundingClientRect(); return { wordsOff: Math.round(middleOf(words) - middleOf(box)), iconOff: Math.round(middleOf(icon) - middleOf(box)), closeOff: Math.round(middleOf(close) - middleOf(box)), iconLeft: Math.round(icon.left - box.left) }; })`;
-const RAIL_SLOTS = `(() => { const slots = [...document.querySelectorAll("[data-host-rail-tab]")].filter((one) => one.getClientRects().length > 0); const boxes = slots.map((slot) => { const box = slot.getBoundingClientRect(); const icon = slot.querySelector("[data-host-tab-icon]").getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), iconW: Math.round(icon.width), iconH: Math.round(icon.height), middle: Math.round(box.left + box.width / 2), iconMiddle: Math.round(icon.left + icon.width / 2), top: box.top, bottom: box.bottom, isNext: slot.nextElementSibling?.matches("[data-host-rail-tab]") === true }; }); const gaps = boxes.flatMap((one, at) => one.isNext && boxes[at + 1] ? [Math.round(boxes[at + 1].top - one.bottom)] : []); return { sizes: [...new Set(boxes.map((one) => [one.w, one.h, one.iconW, one.iconH].join("x")))], middles: [...new Set(boxes.flatMap((one) => [one.middle, one.iconMiddle]))], gaps: [...new Set(gaps)] }; })()`;
+const RAIL_SLOTS = `(() => { const isShown = (one) => one.getClientRects().length > 0 && getComputedStyle(one).visibility === "visible"; const slots = [...document.querySelectorAll("[data-host-rail-tab]")].filter(isShown); const divider = [...document.querySelectorAll("[data-host-rail-divider]")].find(isShown); const isAcross = (one, two) => divider !== undefined && divider.getBoundingClientRect().height > 0 && (one.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0 && (divider.compareDocumentPosition(two) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0; const boxes = slots.map((slot) => { const box = slot.getBoundingClientRect(); const icon = slot.querySelector("[data-host-tab-icon]").getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), iconW: Math.round(icon.width), iconH: Math.round(icon.height), middle: Math.round(box.left + box.width / 2), iconMiddle: Math.round(icon.left + icon.width / 2), top: box.top, bottom: box.bottom }; }); const gaps = boxes.flatMap((one, at) => boxes[at + 1] && !isAcross(slots[at], slots[at + 1]) ? [Math.round(boxes[at + 1].top - one.bottom)] : []); const add = [...document.querySelectorAll("[data-host-column] [data-host-column-add]")].find(isShown); const addBox = add?.getBoundingClientRect(); const addSlot = add === undefined ? null : { w: Math.round(addBox.width), h: Math.round(addBox.height), isRound: parseFloat(getComputedStyle(add).borderTopLeftRadius) >= addBox.height / 2, middle: Math.round(addBox.left + addBox.width / 2), fill: getComputedStyle(add).backgroundColor }; return { sizes: [...new Set(boxes.map((one) => [one.w, one.h, one.iconW, one.iconH].join("x")))], middles: [...new Set(boxes.flatMap((one) => [one.middle, one.iconMiddle]))], gaps: [...new Set(gaps)], add: addSlot }; })()`;
 const MENU_ITEMS = `(() => { const list = document.querySelector("[data-host-column-menu-list]"); if (!list) return null; const items = [...list.querySelectorAll(":scope > button")]; const inner = list.getBoundingClientRect(); const pop = list.closest(".wg-kit-pop"); const pad = parseFloat(getComputedStyle(list.parentElement).paddingLeft); return { items: items.map((item) => { const box = item.getBoundingClientRect(); const icon = item.querySelector("svg").getBoundingClientRect(); return { fullWidth: Math.abs(box.width - inner.width) <= 1, iconFromLeft: Math.round(icon.left - box.left), radius: parseFloat(getComputedStyle(item, "::before").borderTopLeftRadius) }; }), plate: parseFloat(getComputedStyle(pop).borderTopLeftRadius), pad }; })()`;
 const SCROLLED = `(() => { const scroller = [...document.querySelectorAll("[data-host-column-scroll]")].find((one) => one.getClientRects().length > 0); if (!scroller) return null; scroller.scrollTop = scroller.scrollHeight; return { overflows: scroller.scrollHeight > scroller.clientHeight, scrolledTo: Math.round(scroller.scrollTop) }; })()`;
 
@@ -40,58 +48,12 @@ const bundle = await bundleOf("tools/studio-render-page.tsx");
 const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
-const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${OBSIDIAN_BUTTON}</style><style>${sheets}</style></head>
+const pageOf = (
+	mode: string,
+): string => `<!doctype html><html><head><meta charset="utf-8"><style>${OBSIDIAN_BUTTON}</style><style>${sheets}</style></head>
 <body class="theme-light"><div id="root"></div><pre id="boom"></pre>
-<script>localStorage.clear(); window.__MODE__ = "studio";</script>
+<script>localStorage.clear(); window.__MODE__ = ${JSON.stringify(mode)};</script>
 <script>${bundle}</script></body></html>`;
-
-let failed = 0;
-function check(what: string, isOk: boolean, got: unknown): void {
-	if (!isOk) failed += 1;
-	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
-}
-
-function isPoint(value: unknown): value is PagePoint {
-	return Array.isArray(value) && value.length === 2 && value.every((held) => typeof held === "number");
-}
-
-async function seenOf(page: AskedPage): Promise<TabsSeen> {
-	const asked = await page.ask(TABS_SEEN);
-	if (!isTabsSeen(asked)) throw new Error(`the studio drew no tabs: ${JSON.stringify(asked)}`);
-	return asked;
-}
-
-async function pointOf(page: AskedPage, selector: string): Promise<PagePoint> {
-	const asked = await page.ask(`${CENTER_OF}(${JSON.stringify(selector)})`);
-	if (!isPoint(asked)) throw new Error(`nothing on screen answers ${selector}`);
-	return asked;
-}
-
-async function pressed(page: AskedPage, selector: string): Promise<void> {
-	const [x, y] = await pointOf(page, selector);
-	await page.press(x, y);
-	await waited(150);
-}
-
-async function keyed(page: AskedPage, key: string): Promise<void> {
-	await page.ask(`${KEYED}(${JSON.stringify(key)})`);
-	await waited(150);
-}
-
-async function draggedEdgeBy(page: AskedPage, byPx: number): Promise<void> {
-	const from = await pointOf(page, "[data-host-column-edge]");
-	const to: PagePoint = [from[0] + byPx, from[1]];
-	await page.drag({ from, to, steps: 10, stepMs: 16 });
-	await page.release(to);
-	await waited(200);
-}
-
-async function openedTabs(page: AskedPage, count: number): Promise<void> {
-	for (let opened = 0; opened < count; opened += 1) {
-		await pressed(page, "[data-host-add]");
-		await pressed(page, '[data-host-new-tab="canvas"]');
-	}
-}
 
 async function shotsOf(page: AskedPage, name: string): Promise<void> {
 	for (const theme of THEMES) {
@@ -144,6 +106,19 @@ async function checksRailSlots(page: AskedPage): Promise<void> {
 			Array.isArray(slots["gaps"]) &&
 			slots["gaps"].length === 1,
 		slots,
+	);
+	const add = isRecord(slots) && isRecord(slots["add"]) ? slots["add"] : null;
+	check(
+		`the rail's New tab is a ${RAIL_SLOT_PX}px round plate on the tabs' axis`,
+		add !== null &&
+			add["w"] === RAIL_SLOT_PX &&
+			add["h"] === RAIL_SLOT_PX &&
+			add["isRound"] === true &&
+			add["fill"] !== "rgba(0, 0, 0, 0)" &&
+			isRecord(slots) &&
+			Array.isArray(slots["middles"]) &&
+			slots["middles"][0] === add["middle"],
+		add,
 	);
 }
 
@@ -207,6 +182,7 @@ async function checksHidden(page: AskedPage): Promise<void> {
 	const seen = await seenOf(page);
 	checkTabsSeen("hidden", seen, check);
 	await checksOneTooltip(page, "hidden");
+	await checksHeaderClose(page);
 	await shotsOf(page, "hidden");
 	await pressed(page, "[data-host-all-tabs]");
 	const opened = await seenOf(page);
@@ -222,6 +198,7 @@ async function checksIcons(page: AskedPage): Promise<void> {
 	checkTabsSeen("icons", seen, check);
 	await checksOneTooltip(page, "icons");
 	await checksRailSlots(page);
+	await checksRailDrag(page);
 	await checksEdgeLine(page);
 	const scrolled = await page.ask(SCROLLED);
 	check(
@@ -232,9 +209,10 @@ async function checksIcons(page: AskedPage): Promise<void> {
 	await page.ask(
 		`(() => { const scroller = document.querySelector("[data-host-column-scroll]"); scroller.scrollTop = 0; return true; })()`,
 	);
-	const target = seen.columnTabs.find((tab) => !tab.isShown);
+	const target = seen.columnTabs.find((tab) => !tab.isShown && tab.title === "Canvas");
 	await pressed(page, `[data-host-rail-tab="${target?.id ?? ""}"]`);
 	const after = await seenOf(page);
+	await checksOneShownTab(page, "icons, an icon pressed");
 	check(
 		"a press on an icon switches the tab and leaves the column as icons",
 		after.look === "icons" && after.columnTabs.some((tab) => tab.id === target?.id && tab.isShown),
@@ -250,15 +228,25 @@ async function checksFull(page: AskedPage): Promise<void> {
 	await checksOneTooltip(page, "full");
 	await checksRowFace(page);
 	await checksMenuItems(page);
+	await checksBoardSizes(page);
+	await checksDragReorders(page);
+	await checksMenuPins(page);
 	await shotsOf(page, "full");
+	const listed = (await listOrderOf(page)).map((row) => row.id);
 	const before = seen.tabCount;
 	await keyed(page, "w");
 	const closed = await seenOf(page);
+	await checksOneShownTab(page, "full, ⌘W closed the shown tab");
 	check("⌘W closes the shown tab", closed.tabCount === before - 1 && closed.columnTabs.some((tab) => tab.isShown), {
 		was: before,
 		now: closed.tabCount,
 	});
 	await draggedEdgeBy(page, 160);
+	const left = new Set(closed.columnTabs.map((tab) => tab.id));
+	await checksOrderKept(
+		page,
+		listed.filter((id) => left.has(id)),
+	);
 	check(
 		"dragging the edge narrow snaps the column to icons",
 		(await seenOf(page)).look === "icons",
@@ -275,9 +263,9 @@ async function checksFull(page: AskedPage): Promise<void> {
 	check("⌘\\ shows the column again", (await seenOf(page)).look === "icons", (await seenOf(page)).look);
 }
 
-const server = http.createServer((_request, response) => {
+const server = http.createServer((request, response) => {
 	response.setHeader("content-type", "text/html");
-	response.end(PAGE);
+	response.end(pageOf(request.url === KEPT_PATH ? "studio-kept" : "studio"));
 });
 await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
 const address = server.address();
@@ -297,9 +285,29 @@ try {
 	check("the studio drew without a failure", boom === "", boom);
 } finally {
 	page.close();
+}
+
+const keptPage = await paged(`${origin}${KEPT_PATH.slice(1)}`, "studio tabs kept", { size: VIEW });
+
+try {
+	await waitUntil(async () => (await keptPage.ask(DRAWN)) === true, 5000, 50);
+	await keptPage.reduceMotion();
+	await checksKeptAlive(keptPage);
+	const boom = await keptPage.ask(`document.getElementById("boom").textContent`);
+	check("the kept studio drew without a failure", boom === "", boom);
+} finally {
+	keptPage.close();
 	server.close();
 }
 
+const exact = await exactTabsReport();
+check(
+	"the column measures as the board's column block in light and dark: the diff is empty",
+	exact.differences === 0,
+	[...exact.light, ...exact.dark].slice(0, 6),
+);
+
 console.log(`shots in ${shotsAt}`);
+const failed = failedChecks();
 console.log(failed === 0 ? "studio tabs: clean" : `studio tabs: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

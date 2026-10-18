@@ -601,8 +601,8 @@ check(
 	"Back to view in one studio shows its route and leaves the studio beside it on its canvas",
 	[
 		studioNode.querySelector(".wg-studio-outlet .wg-root") !== null,
-		studioNode.querySelector("[data-canvas-studio]") !== null,
-		besideNode.querySelector("[data-canvas-studio]") !== null,
+		studioNode.querySelector("[data-studio-kept=shown] [data-canvas-studio]") !== null,
+		besideNode.querySelector("[data-studio-kept=shown] [data-canvas-studio]") !== null,
 	],
 	[true, false, true],
 );

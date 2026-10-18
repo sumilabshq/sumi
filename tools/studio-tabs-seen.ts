@@ -1,14 +1,14 @@
 export const TABS_SEEN = `(() => {
-	const isShown = (node) => node !== null && node.getClientRects().length > 0;
-	const at = (selector) => document.querySelector(selector);
+	const isShown = (node) => node !== null && node !== undefined && node.getClientRects().length > 0 && getComputedStyle(node).visibility === "visible";
 	const shownAll = (selector) => [...document.querySelectorAll(selector)].filter(isShown);
+	const at = (selector) => shownAll(selector)[0] ?? null;
 	const column = at("[data-host-column]");
 	const frame = at("[data-app-host-frame]")?.getBoundingClientRect() ?? null;
 	const columnBox = column?.getBoundingClientRect() ?? null;
 	const close = at("[data-host-close]");
 	const railTabs = shownAll("[data-host-rail-tab]").map((tab) => ({ id: tab.dataset.hostRailTab, title: tab.getAttribute("aria-label"), isShown: tab.getAttribute("aria-current") === "true", w: Math.round(tab.getBoundingClientRect().width), h: Math.round(tab.getBoundingClientRect().height), words: "" }));
 	const listTabs = shownAll("[data-host-list-tab]").map((tab) => ({ id: tab.dataset.hostListTab, title: tab.querySelector("button")?.textContent.trim() ?? "", isShown: tab.querySelector("[aria-current]") !== null, w: Math.round(tab.getBoundingClientRect().width), h: Math.round(tab.getBoundingClientRect().height), words: tab.textContent.trim() }));
-	const headerTabs = [...document.querySelectorAll("[data-host-zone] [data-host-tab]")];
+	const headerTabs = shownAll("[data-host-zone] [data-host-tab]");
 	const columnTabs = [...railTabs, ...listTabs];
 	return {
 		look: column?.dataset.hostColumn ?? "hidden",

@@ -1,35 +1,26 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useTreeDrag } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { Icon } from "@widgetarium/kit";
-import { AppTabsQuery, CloseTabCommand, MoveTabCommand, ShowTabCommand } from "../../contract.js";
-import { NewTabMenu } from "../new-tab/new-tab-menu.js";
+import type { AppTabState } from "../../../../shared/schema/app-tab.schema.js";
+import { DRAG_HOLDER } from "../../../../shared/lib/tab-drag/tab-drag-look.js";
+import { AppTabsQuery, CloseTabCommand, ShowTabCommand } from "../../contract.js";
+import { useTabDrag } from "../../lib/use-tab-drag.js";
+import { ColumnNewTab } from "../column-new-tab/column-new-tab.js";
+import { TabDropLine } from "../tab-drop-line/tab-drop-line.js";
+import { TabGroupHeading } from "../tab-group-heading/tab-group-heading.js";
 import { TabListRow } from "./tab-list-row.js";
 
 const LIST = "cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-1";
-const SCROLLER = "cv:relative cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-0.5 cv:overflow-y-auto cv:px-1";
-const GROUP = "cv:m-0 cv:px-3.5 cv:pt-2.5 cv:pb-1 cv:text-sm cv:leading-[17px] cv:font-medium cv:text-muted-foreground";
-const SLOT = "cv:pointer-events-none cv:absolute cv:inset-x-2 cv:h-0.5 cv:rounded-full cv:bg-info";
-const ADD =
-	"cv:flex cv:h-12 cv:w-full cv:cursor-pointer cv:items-center cv:gap-2.5 cv:rounded-full cv:border-0 cv:bg-transparent cv:py-0 cv:ps-3.5 cv:pe-4 cv:font-[inherit] cv:text-sm cv:font-medium cv:text-muted-foreground cv:shadow-none cv:hover:bg-fill-hover cv:focus-visible:outline-2 cv:focus-visible:outline-ring";
-const PINNED = "Pinned apps";
-const OPEN = "Open tabs";
-const NEW_TAB = "New tab";
-const AT_ONE_LEVEL_PX = 1000;
+const SCROLLER = `${DRAG_HOLDER} cv:relative cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-0.5 cv:overflow-y-auto`;
+const FOOT = "cv:flex-none";
 
 export function TabList(): ReactElement {
 	const { tabs } = useQuery(AppTabsQuery).data;
 	const showTab = useCommand(ShowTabCommand);
 	const closeTab = useCommand(CloseTabCommand);
-	const moveTab = useCommand(MoveTabCommand);
 	const holder = useRef<HTMLDivElement | null>(null);
-	const drag = useTreeDrag(holder, {
-		indent: AT_ONE_LEVEL_PX,
-		rebuilt: tabs,
-		onDrop: ({ dragged, before }) => void moveTab.run({ id: dragged, before }),
-	});
-	const rowOf = (tab: (typeof tabs)[number]): ReactElement => (
+	const drag = useTabDrag(holder, tabs);
+	const rowOf = (tab: AppTabState): ReactElement => (
 		<TabListRow
 			key={tab.id}
 			tab={tab}
@@ -42,22 +33,18 @@ export function TabList(): ReactElement {
 	);
 	const pinned = tabs.filter((tab) => tab.isPinned);
 	const open = tabs.filter((tab) => !tab.isPinned);
-	const trigger = (
-		<button type="button" className={ADD} data-host-column-add="">
-			<Icon name="plus" size={16} />
-			{NEW_TAB}
-		</button>
-	);
 	return (
 		<div className={LIST} data-host-tab-list="">
 			<div ref={holder} className={SCROLLER} data-host-column-scroll="">
-				{pinned.length > 0 ? <p className={GROUP}>{PINNED}</p> : null}
+				{pinned.length > 0 ? <TabGroupHeading group="pinned" /> : null}
 				{pinned.map(rowOf)}
-				{open.length > 0 ? <p className={GROUP}>{OPEN}</p> : null}
+				{open.length > 0 ? <TabGroupHeading group="open" /> : null}
 				{open.map(rowOf)}
-				{drag.slot ? <span className={SLOT} style={{ top: drag.slot.top }} /> : null}
+				<TabDropLine slot={drag.slot} inset="row" />
 			</div>
-			<NewTabMenu trigger={trigger} placement="over" />
+			<div className={FOOT}>
+				<ColumnNewTab />
+			</div>
 		</div>
 	);
 }

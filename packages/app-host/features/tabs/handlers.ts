@@ -8,6 +8,7 @@ import {
 	CloseTabCommand,
 	MoveTabCommand,
 	OpenTabCommand,
+	PinTabCommand,
 	ShowTabCommand,
 } from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
@@ -89,7 +90,7 @@ export const CloseShownTabCommandHandler = handler(CloseShownTabCommand, AppHost
 
 export const MoveTabCommandHandler = handler(MoveTabCommand, AppHostClientModule)
 	.inject({ hostTabs: HostTabs })
-	.handle(({ id, before }, { hostTabs }) => {
+	.handle(({ id, before, isPinned }, { hostTabs }) => {
 		const held = new Set(hostTabs.now().tabs.map((tab) => tab.id));
 
 		const missing = [id, before].find((asked) => asked !== null && !held.has(asked));
@@ -98,7 +99,17 @@ export const MoveTabCommandHandler = handler(MoveTabCommand, AppHostClientModule
 			return refuse(NOT_HELD.replace("{id}", missing));
 		}
 
-		hostTabs.move(id, before);
+		hostTabs.move(id, before, isPinned);
+	});
+
+export const PinTabCommandHandler = handler(PinTabCommand, AppHostClientModule)
+	.inject({ hostTabs: HostTabs })
+	.handle(({ id, isPinned }, { hostTabs }) => {
+		if (!hostTabs.now().tabs.some((tab) => tab.id === id)) {
+			return refuse(NOT_HELD.replace("{id}", id));
+		}
+
+		hostTabs.pin(id, isPinned);
 	});
 
 interface WatchedTabs {
@@ -108,6 +119,23 @@ interface WatchedTabs {
 }
 
 function watchTabs({ appTabsGateway, pageFactsGateway, hostTabs }: WatchedTabs, changed: () => void): () => void {
-	const stops = [appTabsGateway.watch(changed), pageFactsGateway.watch(changed), hostTabs.watch(changed)];
+	const settled = onceWritesSettle(changed);
+	const stops = [appTabsGateway.watch(settled), pageFactsGateway.watch(settled), hostTabs.watch(settled)];
 	return () => stops.forEach((stop) => stop());
+}
+
+// TRADE-OFF: one read per command, because a query read while one runs answers that run's stale result
+function onceWritesSettle(changed: () => void): () => void {
+	let isQueued = false;
+	return () => {
+		if (isQueued) {
+			return;
+		}
+
+		isQueued = true;
+		queueMicrotask(() => {
+			isQueued = false;
+			changed();
+		});
+	};
 }

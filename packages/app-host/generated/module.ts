@@ -2,7 +2,7 @@
 import { AppPickerQueryHandler } from "../features/app-picker/handlers.js";
 import { MoveColumnCommandHandler, ResizeColumnCommandHandler, ShowColumnIconsCommandHandler, TabsColumnQueryHandler, ToggleColumnCommandHandler } from "../features/column/handlers.js";
 import { ClosePanelCommandHandler } from "../features/panel/handlers.js";
-import { AppTabsQueryHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, MoveTabCommandHandler, OpenTabCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
+import { AppTabsQueryHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, MoveTabCommandHandler, OpenTabCommandHandler, PinTabCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
 import { AppHostClientModule as AppHostClientModuleDefinition } from "../module.js";
 
 export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
@@ -14,6 +14,7 @@ export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
 	MoveColumnCommandHandler,
 	MoveTabCommandHandler,
 	OpenTabCommandHandler,
+	PinTabCommandHandler,
 	ResizeColumnCommandHandler,
 	ShowColumnIconsCommandHandler,
 	ShowTabCommandHandler,

@@ -22,7 +22,9 @@ export function TabWords({ tab }: { readonly tab: AppTab }): ReactElement {
 				)}
 			</span>
 			{tab.status === null ? null : (
-				<span className={`${STATUS} ${STATUS_TONE[tab.status]}`}>{STATUS_SAID[tab.status]}</span>
+				<span className={`${STATUS} ${STATUS_TONE[tab.status]}`} data-host-tab-status-said={tab.status}>
+					{STATUS_SAID[tab.status]}
+				</span>
 			)}
 		</span>
 	);

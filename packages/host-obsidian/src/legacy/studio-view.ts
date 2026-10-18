@@ -16,7 +16,7 @@ const MARKDOWN_ICON = "file-text";
 const STUDIO_ICON = "layout-dashboard";
 const NOTE_EXTENSION = "md";
 const UNNAMED_APP = "App";
-const TAB_KEYS_THE_STUDIO_ANSWERS = ["w", "\\"];
+const TAB_KEYS_THE_STUDIO_ANSWERS = ["w", "t", "\\"];
 
 export class StudioView extends FileView {
 	private node: HTMLElement | null = null;

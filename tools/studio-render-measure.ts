@@ -25,6 +25,13 @@ const headerOf = () => ({
 	chatHead: document.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? null,
 });
 const outletBox = () => boxOf(document.querySelector(".wg-studio-outlet"));
+const outletRouteDom = () => {
+	const outlet = document.querySelector(".wg-studio-outlet");
+	if (!outlet) return null;
+	const route = outlet.cloneNode(true);
+	route.querySelectorAll(":scope > .wg-studio-kept").forEach((kept) => kept.remove());
+	return route.innerHTML;
+};
 const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(box, said); box.dispatchEvent(new Event("input", { bubbles: true })); };
 (async () => {
 	const seen = {};
@@ -38,9 +45,8 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	}
 	await until(() => document.querySelector(window.__MODE__ === "app" ? "[data-task]" : ".wg-studio-outlet [data-task]"));
 	await wait(300);
-	const routeHolder = document.querySelector(window.__MODE__ === "app" ? "#root" : ".wg-studio-outlet");
-	seen.routeDom = routeHolder ? routeHolder.innerHTML : null;
-	const routeBoard = routeHolder ? routeHolder.querySelector(".wg-root") : null;
+	seen.routeDom = window.__MODE__ === "app" ? (document.querySelector("#root")?.innerHTML ?? null) : outletRouteDom();
+	const routeBoard = document.querySelector(window.__MODE__ === "app" ? "#root .wg-root" : ".wg-studio-outlet > .wg-root");
 	seen.routeTop = routeBoard ? Math.round(routeBoard.getBoundingClientRect().top) : null;
 	seen.studioElements = document.querySelectorAll('[class*="wg-studio"]').length;
 	seen.catalogueElements = document.querySelectorAll('[class*="catalogue"]').length;
@@ -127,7 +133,7 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	menuButton().click();
 	(await until(() => leafNamed("Edit in canvas")))?.click();
 	seen.canvasShown = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
-	seen.taskGoneInCanvas = document.querySelectorAll(".wg-studio-outlet > :not([data-canvas-studio])").length === 0;
+	seen.taskGoneInCanvas = document.querySelectorAll(".wg-studio-outlet > :not(.wg-studio-kept)").length === 0;
 	seen.topBar = (await until(() => document.querySelector("[data-app-host-bar]")))?.textContent ?? null;
 	seen.bandsInCanvas = document.querySelectorAll(".wg-studio-band").length;
 	seen.topBarsInCanvas = document.querySelectorAll("[data-app-host-bar], [data-canvas-topbar]").length;
@@ -161,7 +167,7 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	topButton("Back to view")?.click();
 	seen.backShowsRoute = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-task]")));
 	await wait(300);
-	seen.routeDomBack = document.querySelector(".wg-studio-outlet")?.innerHTML ?? null;
+	seen.routeDomBack = outletRouteDom();
 	await wait(300);
 	(await until(() => [...document.querySelectorAll(".wg-studio-rail button")].find((tile) => tile.textContent.trim() === "New workspace")))?.click();
 	await wait(500);

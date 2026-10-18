@@ -55,7 +55,7 @@ export class HostTabs {
 		};
 		this.become(
 			{
-				tabs: [...this.moment.tabs, tab],
+				tabs: placedIn(this.moment.tabs, tab, groupEndOf(this.moment.tabs, tab.isPinned)),
 				shownId: tab.id,
 				minted,
 			},
@@ -93,21 +93,34 @@ export class HostTabs {
 		);
 	}
 
-	move(id: string, beforeId: string | null): void {
+	move(id: string, beforeId: string | null, isPinned: boolean): void {
 		const moved = this.tabOf(id);
 		const before = beforeId === null ? null : this.tabOf(beforeId);
 		const rest = this.moment.tabs.filter((tab) => tab.id !== id);
-		const at = before === null ? rest.length : rest.indexOf(before);
-		const placed = {
-			...moved,
-			isPinned: before?.isPinned ?? false,
-		};
+		const at = before !== null && before.isPinned === isPinned ? rest.indexOf(before) : groupEndOf(rest, isPinned);
 		this.become(
 			{
 				...this.moment,
-				tabs: [...rest.slice(0, at), placed, ...rest.slice(at)],
+				tabs: placedIn(rest, { ...moved, isPinned }, at),
 			},
-			`move ${id} before ${beforeId ?? "the end"}`,
+			`move ${id} before ${beforeId ?? "the end"}, ${pinnedSaid(moved.isPinned)} → ${pinnedSaid(isPinned)}`,
+		);
+	}
+
+	pin(id: string, isPinned: boolean): void {
+		const pinned = this.tabOf(id);
+
+		if (pinned.isPinned === isPinned) {
+			return;
+		}
+
+		const rest = this.moment.tabs.filter((tab) => tab.id !== id);
+		this.become(
+			{
+				...this.moment,
+				tabs: placedIn(rest, { ...pinned, isPinned }, groupEndOf(rest, true)),
+			},
+			`pin ${id}, ${pinnedSaid(pinned.isPinned)} → ${pinnedSaid(isPinned)}`,
 		);
 	}
 
@@ -125,4 +138,16 @@ export class HostTabs {
 		this.moment = next;
 		this.watchers.tell();
 	}
+}
+
+function groupEndOf(tabs: readonly HostTab[], isPinned: boolean): number {
+	return isPinned ? tabs.filter((tab) => tab.isPinned).length : tabs.length;
+}
+
+function placedIn(tabs: readonly HostTab[], tab: HostTab, at: number): readonly HostTab[] {
+	return [...tabs.slice(0, at), tab, ...tabs.slice(at)];
+}
+
+function pinnedSaid(isPinned: boolean): string {
+	return isPinned ? "pinned" : "open";
 }

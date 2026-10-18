@@ -4,6 +4,7 @@ import { Slot } from "@widgetarium/core/requests";
 import { TabsColumn } from "../../../features/column/ui/tabs-column/tabs-column.js";
 import { ToggleShortcut } from "../../../features/column/ui/toggle-shortcut/toggle-shortcut.js";
 import { CloseShortcut } from "../../../features/tabs/ui/close-shortcut/close-shortcut.js";
+import { NewTabShortcut } from "../../../features/tabs/ui/new-tab-shortcut/new-tab-shortcut.js";
 import { TabList } from "../../../features/tabs/ui/tab-list/tab-list.js";
 import { TabRail } from "../../../features/tabs/ui/tab-rail/tab-rail.js";
 import { TabsCount } from "../../../features/tabs/ui/tabs-count/tabs-count.js";
@@ -21,6 +22,7 @@ export function AppHostFrame({ children }: { readonly children: ReactNode }): Re
 				<TabsColumn title={<TabsCount />} icons={<TabRail tipSide="left" />} full={<TabList />} />
 				<CloseShortcut frame={frame} />
 				<ToggleShortcut frame={frame} />
+				<NewTabShortcut frame={frame} />
 			</Slot>
 		</div>
 	);
