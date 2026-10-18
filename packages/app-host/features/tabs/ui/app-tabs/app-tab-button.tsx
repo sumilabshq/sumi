@@ -14,6 +14,7 @@ export interface AppTabButtonProps {
 	readonly look: TabLook;
 	readonly onPick: () => void;
 	readonly onClose: () => void;
+	readonly onMenu?: (event: MouseEvent<HTMLElement>) => void;
 }
 
 const HOLD = "cv:group/tab cv:relative cv:flex cv:min-w-0 cv:flex-none";
@@ -45,7 +46,7 @@ const LABEL = `${SHOWN_TAB_LABEL_LEAVES} cv:truncate`;
 const CLOSE_TAB = "Close {title}";
 const MIDDLE_BUTTON = 1;
 
-export function AppTabButton({ tab, look, onPick, onClose }: AppTabButtonProps): ReactElement {
+export function AppTabButton({ tab, look, onPick, onClose, onMenu }: AppTabButtonProps): ReactElement {
 	const closeSaid = CLOSE_TAB.replace("{title}", tab.title);
 	const closeOnMiddle = (event: MouseEvent): void => {
 		if (event.button === MIDDLE_BUTTON) {
@@ -67,6 +68,7 @@ export function AppTabButton({ tab, look, onPick, onClose }: AppTabButtonProps):
 						if (event.button === MIDDLE_BUTTON) event.preventDefault();
 					}}
 					onAuxClick={closeOnMiddle}
+					onContextMenu={onMenu}
 					data-host-tab={tab.id}
 					data-host-tab-app={tab.app}
 				>

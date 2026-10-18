@@ -9,6 +9,7 @@ export function ToggleShortcut({ frame }: { readonly frame: RefObject<HTMLElemen
 	const toggleColumn = useCommand(ToggleColumnCommand);
 	useShortcut(frame, {
 		key: TOGGLE_KEY,
+		isShifted: false,
 		onPress: () => void toggleColumn.run(),
 	});
 	return null;

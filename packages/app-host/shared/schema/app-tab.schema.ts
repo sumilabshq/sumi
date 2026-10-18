@@ -17,6 +17,8 @@ export const AppTabSchema = z.object({
 	favicon: z.string().nullable(),
 	status: TabStatusSchema.nullable(),
 	isPinned: z.boolean(),
+	label: z.string().nullable(),
+	address: z.string().nullable(),
 });
 
 export type AppTab = z.infer<typeof AppTabSchema>;
@@ -37,6 +39,8 @@ export const AppTabsSchema = z.object({
 	tabs: z.array(AppTabStateSchema).readonly(),
 	apps: z.array(AppChoiceSchema).readonly(),
 	preview: AppTabSchema.nullable(),
+	canReopen: z.boolean(),
+	canOpenBrowser: z.boolean(),
 });
 
 export type AppTabs = z.infer<typeof AppTabsSchema>;

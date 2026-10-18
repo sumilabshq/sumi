@@ -4,5 +4,7 @@ export abstract class PageFactsGateway {
 	abstract pages(): readonly PageFacts[];
 	abstract watch(changed: () => void): () => void;
 	abstract showPage(pageId: string): void;
+	abstract openAddress(pageId: string, address: string): void;
+	abstract reloadPage(pageId: string): void;
 	abstract stop(): void;
 }

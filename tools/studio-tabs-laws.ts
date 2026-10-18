@@ -65,9 +65,9 @@ const LAWS: Readonly<Record<ColumnLook, readonly TabsLaw[]>> = {
 	hidden: [
 		IN_ONE_PLACE,
 		{
-			said: "the header holds the tab pill, ⌄ and +, no column toggle, and no column stands",
+			said: "the header holds the tab pill and ⌄, no + and no column toggle, and no column stands",
 			holds: ({ headerAllTabs, headerAdd, headerColumnToggle, columnWidth }) =>
-				headerAllTabs && headerAdd && !headerColumnToggle && columnWidth === 0,
+				headerAllTabs && !headerAdd && !headerColumnToggle && columnWidth === 0,
 			shown: ({ headerAllTabs, headerAdd, headerColumnToggle, columnWidth }) => ({
 				headerAllTabs,
 				headerAdd,

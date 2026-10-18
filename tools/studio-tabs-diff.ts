@@ -14,7 +14,8 @@ export const UNJUDGED = [
 	"brand: the accent is the host's; the board's is pinned on the built column so everything drawn from it is compared",
 	"rows[DRAGGED] at rest: the board draws it lifted, so it is judged in the drag phase",
 	"rows[HOVERED] fill and x positions at rest: the board draws it hovered with its grip in the flow; its fill is judged in the hover phase",
-	"newTab.y: the board column is 764px tall, the built one fills its window; newTab.fromBottom is judged",
+	"newTab.y: the board column is 764px tall, the built one fills its window",
+	"newTab.fromBottom: Open app… stands under New tab now, a row the board does not draw",
 	"hovered.icon: the board's grip pushes the icon right; the person asked for a grip that moves nothing",
 ];
 
@@ -36,7 +37,7 @@ export function withoutUnjudged(seen: Record<string, unknown>): Record<string, u
 		...seen,
 		brand: null,
 		rows,
-		newTab: withField(seen["newTab"], "y"),
+		newTab: withField(withField(seen["newTab"], "y"), "fromBottom"),
 		hovered: withField(seen["hovered"], "icon"),
 	};
 }

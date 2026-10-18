@@ -2,19 +2,25 @@
 import { AppPickerQueryHandler } from "../features/app-picker/handlers.js";
 import { MoveColumnCommandHandler, ResizeColumnCommandHandler, ShowColumnIconsCommandHandler, TabsColumnQueryHandler, ToggleColumnCommandHandler } from "../features/column/handlers.js";
 import { ClosePanelCommandHandler } from "../features/panel/handlers.js";
-import { AppTabsQueryHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, MoveTabCommandHandler, OpenTabCommandHandler, PinTabCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
+import { AppTabsQueryHandler, CloseOtherTabsCommandHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, DuplicateTabCommandHandler, MoveTabCommandHandler, OpenTabBelowCommandHandler, OpenTabCommandHandler, PinTabCommandHandler, ReloadTabCommandHandler, RenameTabCommandHandler, ReopenClosedTabCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
 import { AppHostClientModule as AppHostClientModuleDefinition } from "../module.js";
 
 export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
 	AppPickerQueryHandler,
 	AppTabsQueryHandler,
+	CloseOtherTabsCommandHandler,
 	ClosePanelCommandHandler,
 	CloseShownTabCommandHandler,
 	CloseTabCommandHandler,
+	DuplicateTabCommandHandler,
 	MoveColumnCommandHandler,
 	MoveTabCommandHandler,
+	OpenTabBelowCommandHandler,
 	OpenTabCommandHandler,
 	PinTabCommandHandler,
+	ReloadTabCommandHandler,
+	RenameTabCommandHandler,
+	ReopenClosedTabCommandHandler,
 	ResizeColumnCommandHandler,
 	ShowColumnIconsCommandHandler,
 	ShowTabCommandHandler,

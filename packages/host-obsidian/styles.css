@@ -13149,17 +13149,42 @@ body.wg-studio-in-front .status-bar {
 	background: var(--wg-kit-fill-hover);
 }
 
+:is(.wg-studio, .wg-studio-chat, .wg-kit-portal-layer.is-studio) {
+	--wg-studio-glass: color-mix(in oklch, var(--background) 72%, transparent);
+	--wg-studio-glass-edge: color-mix(in oklch, var(--foreground) 9%, transparent);
+	--wg-studio-glass-hover: color-mix(in oklch, var(--brand) 13%, transparent);
+	--wg-studio-glass-line: color-mix(in oklch, var(--foreground) 9%, transparent);
+	--wg-studio-glass-faint: color-mix(in oklch, var(--muted-foreground) 72%, var(--background));
+	--wg-studio-glass-shadow: oklch(0.2 0.01 var(--hue, 266) / 0.09);
+	--wg-studio-glass-shadow-near: oklch(0.2 0.01 var(--hue, 266) / 0.06);
+	--wg-studio-glass-blur: blur(26px) saturate(1.7);
+}
+
+:is(.theme-dark, .dark) :is(.wg-studio, .wg-studio-chat, .wg-kit-portal-layer.is-studio),
+:is(.theme-dark, .dark).wg-kit-portal-layer.is-studio {
+	--wg-studio-glass: color-mix(in oklch, oklch(0.2 0.012 var(--hue, 266)) 66%, transparent);
+	--wg-studio-glass-edge: color-mix(in oklch, var(--foreground) 12%, transparent);
+	--wg-studio-glass-hover: color-mix(in oklch, var(--brand) 30%, transparent);
+	--wg-studio-glass-shadow: oklch(0.2 0.01 var(--hue, 266) / 0.55);
+	--wg-studio-glass-shadow-near: oklch(0.2 0.01 var(--hue, 266) / 0.4);
+}
+
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop {
-	--wg-studio-menu-corner: 20px;
+	--wg-studio-menu-corner: 24px;
 	--wg-studio-menu-pad: 6px;
-	min-width: 300px;
+	min-width: 232px;
 	border-radius: var(--wg-studio-menu-corner);
-	background: var(--wg-kit-raise);
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
+	background: var(--wg-studio-glass);
+	backdrop-filter: var(--wg-studio-glass-blur);
+	-webkit-backdrop-filter: var(--wg-studio-glass-blur);
 	box-shadow:
-		0 0 0 1px var(--border),
-		0 12px 32px -16px color-mix(in srgb, var(--foreground) 18%, transparent);
+		0 0 0 1px var(--wg-studio-glass-edge),
+		0 24px 56px -14px var(--wg-studio-glass-shadow),
+		0 6px 16px -8px var(--wg-studio-glass-shadow-near);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop.wg-host-app-picker {
+	width: 300px;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-inner {
@@ -13167,19 +13192,39 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item {
-	gap: 10px;
-	min-height: 36px;
-	padding: 0 10px;
-	font-size: 13px;
+	gap: 12px;
+	min-height: 40px;
+	padding: 0 14px 0 13px;
+	font-size: 14px;
 	font-weight: var(--font-normal, 400);
+	white-space: nowrap;
+	color: var(--wg-kit-text);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item > svg {
+	flex: none;
+	color: var(--wg-kit-text-muted);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item::before {
-	border-radius: calc(var(--wg-studio-menu-corner) - var(--wg-studio-menu-pad));
+	border-radius: 999px;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:hover::before {
-	background: var(--wg-kit-group-fill);
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:not([disabled]):hover::before {
+	background: var(--wg-studio-glass-hover);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:not([disabled]):hover > svg {
+	color: var(--brand);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:is([disabled], [data-disabled]) {
+	color: var(--wg-studio-glass-faint);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item:is([disabled], [data-disabled]) svg {
+	color: var(--wg-studio-glass-faint);
+	opacity: 0.7;
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item[aria-checked="true"]:not(.is-switch) {
@@ -13187,16 +13232,22 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-item[aria-checked="true"]:not(.is-switch)::before {
-	background: var(--wg-kit-group-fill);
+	background: var(--wg-studio-glass-hover);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-tick {
 	color: var(--wg-kit-text);
 }
 
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-menu-shortcut {
+	font-size: 12.5px;
+	color: var(--wg-studio-glass-faint);
+}
+
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio) .wg-kit-pop-sep {
-	margin: 4px 6px;
-	background: var(--wg-kit-group-line);
+	height: 1px;
+	margin: 5px 14px;
+	background: var(--wg-studio-glass-line);
 }
 
 .wg-studio-ai-menu .wg-studio-ai-menu-eyebrow {
@@ -13540,14 +13591,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:my-1 {
 		margin-block: var(--cv-spacing) !important;
 	}
+	.cv\:-ms-1\.5 {
+		margin-inline-start: calc(var(--cv-spacing) * -1.5) !important;
+	}
 	.cv\:ms-1\.5 {
 		margin-inline-start: calc(var(--cv-spacing) * 1.5) !important;
 	}
 	.cv\:ms-auto {
 		margin-inline-start: auto !important;
-	}
-	.cv\:ms-px {
-		margin-inline-start: 1px !important;
 	}
 	.cv\:-me-1\.5 {
 		margin-inline-end: calc(var(--cv-spacing) * -1.5) !important;
@@ -13582,14 +13633,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:mb-0\.5 {
 		margin-bottom: calc(var(--cv-spacing) * 0.5) !important;
 	}
+	.cv\:mb-1 {
+		margin-bottom: var(--cv-spacing) !important;
+	}
 	.cv\:box-border {
 		box-sizing: border-box !important;
 	}
 	.cv\:block {
 		display: block !important;
-	}
-	.cv\:contents {
-		display: contents !important;
 	}
 	.cv\:flex {
 		display: flex !important;
@@ -13602,6 +13653,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:inline-flex {
 		display: inline-flex !important;
+	}
+	.cv\:size-0 {
+		width: 0px !important;
+		height: 0px !important;
 	}
 	.cv\:size-1\.5 {
 		width: calc(var(--cv-spacing) * 1.5) !important;
@@ -13643,14 +13698,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: calc(var(--cv-spacing) * 10) !important;
 		height: calc(var(--cv-spacing) * 10) !important;
 	}
-	.cv\:size-11 {
-		width: calc(var(--cv-spacing) * 11) !important;
-		height: calc(var(--cv-spacing) * 11) !important;
-	}
-	.cv\:size-\[7px\] {
-		width: 7px !important;
-		height: 7px !important;
-	}
 	.cv\:size-\[150px\] {
 		width: 150px !important;
 		height: 150px !important;
@@ -13661,9 +13708,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:h-0 {
 		height: 0px !important;
-	}
-	.cv\:h-6 {
-		height: calc(var(--cv-spacing) * 6) !important;
 	}
 	.cv\:h-8 {
 		height: calc(var(--cv-spacing) * 8) !important;
@@ -13682,9 +13726,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:h-\[3px\] {
 		height: 3px !important;
-	}
-	.cv\:h-\[22px\] {
-		height: 22px !important;
 	}
 	.cv\:h-\[30px\] {
 		height: 30px !important;
@@ -13713,8 +13754,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:max-h-\[70vh\] {
 		max-height: 70vh !important;
 	}
-	.cv\:max-h-\[min\(780px\,calc\(100vh-180px\)\)\] {
-		max-height: min(780px, calc(100vh - 180px)) !important;
+	.cv\:max-h-\[min\(520px\,calc\(var\(--wg-kit-pop-available-height\,100vh\)-148px\)\)\] {
+		max-height: min(520px, calc(var(--wg-kit-pop-available-height, 100vh) - 148px)) !important;
 	}
 	.cv\:min-h-0 {
 		min-height: 0px !important;
@@ -13731,9 +13772,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:min-h-12 {
 		min-height: calc(var(--cv-spacing) * 12) !important;
 	}
-	.cv\:min-h-\[60px\] {
-		min-height: 60px !important;
-	}
 	.cv\:w-3\.5 {
 		width: calc(var(--cv-spacing) * 3.5) !important;
 	}
@@ -13743,14 +13781,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:w-12 {
 		width: calc(var(--cv-spacing) * 12) !important;
 	}
+	.cv\:w-60 {
+		width: calc(var(--cv-spacing) * 60) !important;
+	}
 	.cv\:w-\[248px\] {
 		width: 248px !important;
 	}
 	.cv\:w-\[560px\] {
 		width: 560px !important;
-	}
-	.cv\:w-\[580px\] {
-		width: 580px !important;
 	}
 	.cv\:w-\[960px\] {
 		width: 960px !important;
@@ -13802,9 +13840,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:max-w-\[5500px\] {
 		max-width: 5500px !important;
-	}
-	.cv\:max-w-\[calc\(100vw-16px\)\] {
-		max-width: calc(100vw - 16px) !important;
 	}
 	.cv\:max-w-full {
 		max-width: 100% !important;
@@ -13954,9 +13989,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:gap-\[3px\] {
 		gap: 3px !important;
 	}
-	.cv\:gap-\[5px\] {
-		gap: 5px !important;
-	}
 	.cv\:gap-\[13px\] {
 		gap: 13px !important;
 	}
@@ -14013,12 +14045,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:rounded-\[28px\] {
 		border-radius: 28px !important;
 	}
-	.cv\:rounded-\[30px\] {
-		border-radius: 30px !important;
-	}
-	.cv\:rounded-\[34px\] {
-		border-radius: 34px !important;
-	}
 	.cv\:rounded-\[calc\(var\(--radius\)-var\(--wg-kit-plate-pad\,6px\)\)\] {
 		border-radius: calc(var(--radius) - var(--wg-kit-plate-pad, 6px)) !important;
 	}
@@ -14068,6 +14094,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:border-line {
 		border-color: var(--group-line) !important;
 	}
+	.cv\:bg-\[color-mix\(in_srgb\,var\(--success\)_14\%\,var\(--background\)\)\] {
+		background-color: var(--success) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			background-color: color-mix(in srgb, var(--success) 14%, var(--background)) !important;
+		}
+	}
 	.cv\:bg-\[color-mix\(in_srgb\,var\(--wg-kit-accent\)_8\%\,transparent\)\] {
 		background-color: var(--wg-kit-accent) !important;
 		@supports (color: color-mix(in lab, red, red)) {
@@ -14086,14 +14118,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			background-color: color-mix(in srgb, var(--wg-kit-accent) 16%, transparent) !important;
 		}
 	}
+	.cv\:bg-\[var\(--wg-studio-glass\,var\(--popover\)\)\] {
+		background-color: var(--wg-studio-glass, var(--popover)) !important;
+	}
 	.cv\:bg-\[var\(--wg-studio-tabs-faint\)\] {
 		background-color: var(--wg-studio-tabs-faint) !important;
 	}
 	.cv\:bg-\[var\(--wg-studio-tabs-wait\)\] {
 		background-color: var(--wg-studio-tabs-wait) !important;
-	}
-	.cv\:bg-accent-wash {
-		background-color: var(--accent-wash) !important;
 	}
 	.cv\:bg-board {
 		background-color: var(--background) !important;
@@ -14139,9 +14171,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-raise {
 		background-color: var(--raise) !important;
-	}
-	.cv\:bg-success {
-		background-color: var(--success) !important;
 	}
 	.cv\:bg-success-wash {
 		background-color: var(--wg-kit-success-wash) !important;
@@ -14250,9 +14279,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:px-6 {
 		padding-inline: calc(var(--cv-spacing) * 6) !important;
 	}
-	.cv\:px-\[9px\] {
-		padding-inline: 9px !important;
-	}
 	.cv\:py-0 {
 		padding-block: 0px !important;
 	}
@@ -14271,17 +14297,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:py-2\.5 {
 		padding-block: calc(var(--cv-spacing) * 2.5) !important;
 	}
+	.cv\:py-3 {
+		padding-block: calc(var(--cv-spacing) * 3) !important;
+	}
 	.cv\:py-3\.5 {
 		padding-block: calc(var(--cv-spacing) * 3.5) !important;
 	}
-	.cv\:py-4 {
-		padding-block: calc(var(--cv-spacing) * 4) !important;
-	}
 	.cv\:py-\[3px\] {
 		padding-block: 3px !important;
-	}
-	.cv\:py-\[7px\] {
-		padding-block: 7px !important;
 	}
 	.cv\:py-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding-block: var(--wg-kit-plate-pad, 6px) !important;
@@ -14307,11 +14330,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ps-5 {
 		padding-inline-start: calc(var(--cv-spacing) * 5) !important;
 	}
-	.cv\:ps-\[7px\] {
-		padding-inline-start: 7px !important;
-	}
-	.cv\:ps-\[18px\] {
-		padding-inline-start: 18px !important;
+	.cv\:ps-\[19px\] {
+		padding-inline-start: 19px !important;
 	}
 	.cv\:ps-\[31px\] {
 		padding-inline-start: 31px !important;
@@ -14325,9 +14345,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:pe-1\.5 {
 		padding-inline-end: calc(var(--cv-spacing) * 1.5) !important;
 	}
-	.cv\:pe-2 {
-		padding-inline-end: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:pe-3 {
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
 	}
@@ -14339,6 +14356,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:pe-8 {
 		padding-inline-end: calc(var(--cv-spacing) * 8) !important;
+	}
+	.cv\:pe-\[5px\] {
+		padding-inline-end: 5px !important;
+	}
+	.cv\:pe-\[18px\] {
+		padding-inline-end: 18px !important;
 	}
 	.cv\:pe-\[var\(--wg-kit-plate-pad\,6px\)\] {
 		padding-inline-end: var(--wg-kit-plate-pad, 6px) !important;
@@ -14384,9 +14407,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:font-mono {
 		font-family: var(--font-monospace) !important;
-	}
-	.cv\:text-\[11px\] {
-		font-size: 11px !important;
 	}
 	.cv\:text-\[12px\] {
 		font-size: 12px !important;
@@ -14489,10 +14509,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
-	.cv\:tracking-\[-0\.01em\] {
-		--tw-tracking: -0.01em !important;
-		letter-spacing: -0.01em !important;
-	}
 	.cv\:tracking-\[-0\.03em\] {
 		--tw-tracking: -0.03em !important;
 		letter-spacing: -0.03em !important;
@@ -14515,6 +14531,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
 	}
+	.cv\:text-\[var\(--wg-studio-glass-faint\,var\(--muted-foreground\)\)\] {
+		color: var(--wg-studio-glass-faint, var(--muted-foreground)) !important;
+	}
 	.cv\:text-\[var\(--wg-studio-tabs-faint\)\] {
 		color: var(--wg-studio-tabs-faint) !important;
 	}
@@ -14524,17 +14543,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-brand {
 		color: var(--brand) !important;
 	}
+	.cv\:text-error {
+		color: var(--destructive) !important;
+	}
 	.cv\:text-ink {
 		color: var(--foreground) !important;
 	}
 	.cv\:text-muted-foreground {
 		color: var(--muted-foreground) !important;
-	}
-	.cv\:text-muted-foreground\/65 {
-		color: var(--muted-foreground) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in oklab, var(--muted-foreground) 65%, transparent) !important;
-		}
 	}
 	.cv\:text-page {
 		color: var(--background) !important;
@@ -14547,6 +14563,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		@supports (color: color-mix(in lab, red, red)) {
 			color: color-mix(in oklab, var(--primary-foreground) 65%, transparent) !important;
 		}
+	}
+	.cv\:text-success {
+		color: var(--success) !important;
 	}
 	.cv\:text-warning {
 		color: var(--warning) !important;
@@ -14564,9 +14583,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:opacity-0 {
 		opacity: 0% !important;
-	}
-	.cv\:opacity-45 {
-		opacity: 45% !important;
 	}
 	.cv\:opacity-70 {
 		opacity: 70% !important;
@@ -14586,18 +14602,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
-	.cv\:shadow-\[0_0_0_1px_var\(--border\)\,0_24px_64px_color-mix\(in_srgb\,var\(--foreground\)_14\%\,transparent\)\] {
-		--tw-shadow:
-			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 24px 64px var(--tw-shadow-color, var(--foreground)) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			--tw-shadow:
-				0 0 0 1px var(--tw-shadow-color, var(--border)),
-				0 24px 64px var(--tw-shadow-color, color-mix(in srgb, var(--foreground) 14%, transparent)) !important;
-		}
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
-	}
 	.cv\:shadow-\[0_0_0_1px_var\(--border\)\] {
 		--tw-shadow: 0 0 0 1px var(--tw-shadow-color, var(--border)) !important;
 		box-shadow:
@@ -14610,6 +14614,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:shadow-\[0_0_0_1px_var\(--wg-studio-glass-edge\,var\(--border\)\)\,0_18px_40px_-12px_var\(--wg-studio-glass-shadow\,transparent\)\] {
+		--tw-shadow:
+			0 0 0 1px var(--tw-shadow-color, var(--wg-studio-glass-edge, var(--border))),
+			0 18px 40px -12px var(--tw-shadow-color, var(--wg-studio-glass-shadow, transparent)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
 	.cv\:shadow-\[inset_0_0_0_1px_var\(--border\)\] {
 		--tw-shadow: inset 0 0 0 1px var(--tw-shadow-color, var(--border)) !important;
 		box-shadow:
@@ -14618,6 +14630,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:shadow-\[inset_0_0_0_1px_var\(--wg-kit-card-edge\)\] {
 		--tw-shadow: inset 0 0 0 1px var(--tw-shadow-color, var(--wg-kit-card-edge)) !important;
+		box-shadow:
+			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
+			var(--tw-shadow) !important;
+	}
+	.cv\:shadow-\[inset_0_0_0_1px_var\(--wg-studio-glass-edge\,var\(--border\)\)\] {
+		--tw-shadow: inset 0 0 0 1px var(--tw-shadow-color, var(--wg-studio-glass-edge, var(--border))) !important;
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
@@ -14660,6 +14678,24 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:outline-brand {
 		outline-color: var(--brand) !important;
+	}
+	.cv\:backdrop-blur-\[26px\] {
+		--tw-backdrop-blur: blur(26px) !important;
+		-webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,)
+			var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
+			var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,) !important;
+		backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,)
+			var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
+			var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,) !important;
+	}
+	.cv\:backdrop-saturate-\[1\.7\] {
+		--tw-backdrop-saturate: saturate(1.7) !important;
+		-webkit-backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,)
+			var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
+			var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,) !important;
+		backdrop-filter: var(--tw-backdrop-blur,) var(--tw-backdrop-brightness,) var(--tw-backdrop-contrast,)
+			var(--tw-backdrop-grayscale,) var(--tw-backdrop-hue-rotate,) var(--tw-backdrop-invert,)
+			var(--tw-backdrop-opacity,) var(--tw-backdrop-saturate,) var(--tw-backdrop-sepia,) !important;
 	}
 	.cv\:transition-\[background-color\,color\,opacity\] {
 		transition-property: background-color, color, opacity !important;
@@ -14770,15 +14806,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		.cv\:group-hover\:flex:is(:where(.cv\:group):hover *) {
 			display: flex !important;
 		}
-		.cv\:group-hover\:bg-primary:is(:where(.cv\:group):hover *) {
-			background-color: var(--primary) !important;
-		}
-		.cv\:group-hover\:bg-raise:is(:where(.cv\:group):hover *) {
-			background-color: var(--raise) !important;
-		}
-		.cv\:group-hover\:text-primary-foreground:is(:where(.cv\:group):hover *) {
-			color: var(--primary-foreground) !important;
-		}
 		.cv\:group-hover\:opacity-100:is(:where(.cv\:group):hover *) {
 			opacity: 100% !important;
 		}
@@ -14812,14 +14839,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:group-data-\[lifted\]\:flex:is(:where(.cv\:group)[data-lifted] *) {
 		display: flex !important;
 	}
+	.cv\:placeholder\:text-\[var\(--wg-studio-glass-faint\,var\(--muted-foreground\)\)\]::placeholder {
+		color: var(--wg-studio-glass-faint, var(--muted-foreground)) !important;
+	}
 	.cv\:placeholder\:text-muted-foreground::placeholder {
 		color: var(--muted-foreground) !important;
-	}
-	.cv\:placeholder\:text-muted-foreground\/65::placeholder {
-		color: var(--muted-foreground) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in oklab, var(--muted-foreground) 65%, transparent) !important;
-		}
 	}
 	.cv\:placeholder\:text-muted-foreground\/67::placeholder {
 		color: var(--muted-foreground) !important;
@@ -14917,9 +14941,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 				background-color: color-mix(in oklab, var(--primary) 85%, transparent) !important;
 			}
 		}
-		.cv\:hover\:bg-raise:hover {
-			background-color: var(--raise) !important;
-		}
 		.cv\:hover\:bg-raise\/70:hover {
 			background-color: var(--raise) !important;
 		}
@@ -14978,9 +14999,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:disabled\:opacity-50:disabled {
 		opacity: 50% !important;
-	}
-	:where([data-state="open"]) .cv\:in-data-\[state\=open\]\:opacity-100 {
-		opacity: 100% !important;
 	}
 	.cv\:has-\[\:focus-visible\]\:outline-2:has(:is(:focus-visible)) {
 		outline-style: var(--tw-outline-style) !important;
@@ -15112,11 +15130,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			letter-spacing: -0.02em !important;
 		}
 	}
-	@container app-host-bar (width < 560px) {
-		.cv\:\@max-\[560px\]\/app-host-bar\:hidden {
-			display: none !important;
-		}
-	}
 	@container (width < 420px) {
 		.cv\:\@max-\[420px\]\:hidden {
 			display: none !important;
@@ -15188,18 +15201,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:\[\&_span\]\:text-primary-foreground span {
 		color: var(--primary-foreground) !important;
 	}
-	.cv\:\[\&\>\.wg-kit-anchor\]\:pointer-events-none > .wg-kit-anchor {
-		pointer-events: none !important;
-	}
-	.cv\:\[\&\>\.wg-kit-anchor\]\:absolute > .wg-kit-anchor {
-		position: absolute !important;
-	}
-	.cv\:\[\&\>\.wg-kit-anchor\]\:inset-0 > .wg-kit-anchor {
-		inset: 0px !important;
-	}
-	.cv\:\[\&\>\.wg-kit-pop-inner\]\:p-2 > .wg-kit-pop-inner {
-		padding: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:\[\&\>\.wg-page\]\:relative > .wg-page {
 		position: relative !important;
 	}
@@ -15229,19 +15230,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-shadow:
 			0 0 0 1px var(--tw-shadow-color, var(--border)),
 			0 10px 28px var(--tw-shadow-color, color-mix(in srgb, oklch(0 0 0) 50%, transparent)) !important;
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
-	}
-	.theme-dark
-		.cv\:\[\.theme-dark_\&\]\:shadow-\[0_0_0_1px_var\(--border\)\,0_24px_64px_color-mix\(in_srgb\,var\(--background\)_60\%\,transparent\)\] {
-		--tw-shadow:
-			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 24px 64px var(--tw-shadow-color, var(--background)) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			--tw-shadow:
-				0 0 0 1px var(--tw-shadow-color, var(--border)),
-				0 24px 64px var(--tw-shadow-color, color-mix(in srgb, var(--background) 60%, transparent)) !important;
-		}
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
@@ -15676,6 +15664,42 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	inherits: false;
 	initial-value: solid;
 }
+@property --tw-backdrop-blur {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-brightness {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-contrast {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-grayscale {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-hue-rotate {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-invert {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-opacity {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-saturate {
+	syntax: "*";
+	inherits: false;
+}
+@property --tw-backdrop-sepia {
+	syntax: "*";
+	inherits: false;
+}
 @property --tw-duration {
 	syntax: "*";
 	inherits: false;
@@ -15763,6 +15787,15 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-ring-offset-color: #fff;
 			--tw-ring-offset-shadow: 0 0 #0000;
 			--tw-outline-style: solid;
+			--tw-backdrop-blur: initial;
+			--tw-backdrop-brightness: initial;
+			--tw-backdrop-contrast: initial;
+			--tw-backdrop-grayscale: initial;
+			--tw-backdrop-hue-rotate: initial;
+			--tw-backdrop-invert: initial;
+			--tw-backdrop-opacity: initial;
+			--tw-backdrop-saturate: initial;
+			--tw-backdrop-sepia: initial;
 			--tw-duration: initial;
 			--tw-ease: initial;
 			--tw-content: "";

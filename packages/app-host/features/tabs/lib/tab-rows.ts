@@ -42,16 +42,24 @@ export function tabRowsOf(
 
 function faceOf(tab: HostTab, page: PageFacts | null, ordinal: number): AppTab {
 	const choice = choiceOf(tab.app);
+	const title = page === null ? choice.label : page.title || NEW_PAGE;
+	const subtitle = page === null ? ordinalSaid(ordinal) : hostOf(page.url);
 	return {
 		id: tab.id,
 		app: tab.app,
-		title: page === null ? choice.label : page.title || NEW_PAGE,
-		subtitle: page === null ? ordinalSaid(ordinal) : hostOf(page.url),
+		title: tab.label ?? title,
+		subtitle: tab.label === null ? subtitle : (hostOfPage(page) ?? choice.label),
 		icon: choice.icon,
 		favicon: page?.favicon ?? null,
 		status: page === null ? null : statusOf(page),
 		isPinned: tab.isPinned,
+		label: tab.label,
+		address: page?.url || null,
 	};
+}
+
+function hostOfPage(page: PageFacts | null): string | null {
+	return page === null ? null : hostOf(page.url);
 }
 
 function choiceOf(app: AppKind): AppChoice {

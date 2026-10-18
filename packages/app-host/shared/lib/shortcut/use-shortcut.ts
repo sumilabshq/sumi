@@ -3,10 +3,11 @@ import type { RefObject } from "react";
 
 export interface Shortcut {
 	readonly key: string;
+	readonly isShifted: boolean;
 	readonly onPress: () => void;
 }
 
-export function useShortcut(frame: RefObject<HTMLElement | null>, { key, onPress }: Shortcut): void {
+export function useShortcut(frame: RefObject<HTMLElement | null>, { key, isShifted, onPress }: Shortcut): void {
 	const latest = useRef(onPress);
 	latest.current = onPress;
 	useEffect(() => {
@@ -14,6 +15,10 @@ export function useShortcut(frame: RefObject<HTMLElement | null>, { key, onPress
 			const held = frame.current;
 
 			if (held === null || event.key.toLowerCase() !== key || !isWithTheCommandKey(event) || event.altKey) {
+				return;
+			}
+
+			if (event.shiftKey !== isShifted) {
 				return;
 			}
 
@@ -27,7 +32,7 @@ export function useShortcut(frame: RefObject<HTMLElement | null>, { key, onPress
 		};
 		window.addEventListener("keydown", onKey, true);
 		return () => window.removeEventListener("keydown", onKey, true);
-	}, [frame, key]);
+	}, [frame, key, isShifted]);
 }
 
 function answersFor(frame: HTMLElement, event: KeyboardEvent): boolean {

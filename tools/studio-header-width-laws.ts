@@ -48,7 +48,7 @@ export interface AdaptiveHeader {
 
 const FULL: HeaderStep = {
 	zoom: true,
-	add: true,
+	add: false,
 	allTabs: true,
 	tabLabel: true,
 	pageName: true,
@@ -57,7 +57,7 @@ const FULL: HeaderStep = {
 
 export const HEADER_STEP_AT: ReadonlyMap<number, HeaderStep> = new Map([
 	[1200, FULL],
-	[720, { ...FULL, zoom: false }],
+	[720, FULL],
 	[480, { ...FULL, zoom: false, add: false }],
 	[320, { ...FULL, zoom: false, add: false, allTabs: false, tabLabel: false }],
 	[

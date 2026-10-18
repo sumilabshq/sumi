@@ -1,6 +1,12 @@
 import { PageFactsGateway } from "@widgetarium/app-host/gateways";
 import type { PageFacts } from "@widgetarium/app-host";
-import { AccessAsksQuery, BrowserTabsQuery, ShowTabCommand } from "@widgetarium/browser";
+import {
+	AccessAsksQuery,
+	BrowserTabsQuery,
+	OpenAddressCommand,
+	ReloadPageCommand,
+	ShowTabCommand,
+} from "@widgetarium/browser";
 import type { AccessAsk, BrowserTabState, InkReading } from "@widgetarium/browser";
 import { BrowserClientModule } from "@widgetarium/browser/module";
 import type { BrowserParts } from "@widgetarium/browser/gateways";
@@ -41,8 +47,24 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		void this.browserApp.send(ShowTabCommand, { tabId: pageId });
 	}
 
+	openAddress(pageId: string, address: string): void {
+		void this.sent("open an address in", pageId, this.browserApp.send(OpenAddressCommand, { tabId: pageId, address }));
+	}
+
+	reloadPage(pageId: string): void {
+		void this.sent("reload", pageId, this.browserApp.send(ReloadPageCommand, { tabId: pageId }));
+	}
+
 	stop(): void {
 		this.stops.forEach((stop) => stop());
+	}
+
+	private async sent(what: string, pageId: string, answer: Promise<{ readonly ok: boolean }>): Promise<void> {
+		const answered = await answer;
+
+		if (!answered.ok) {
+			console.error(`[widgetarium] the host tabs could not ${what} the browser page ${pageId}`, answered);
+		}
 	}
 
 	private async refresh(): Promise<void> {

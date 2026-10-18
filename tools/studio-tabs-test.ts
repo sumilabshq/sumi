@@ -9,6 +9,7 @@ import { isRecord } from "./page-dom.ts";
 import type { Theme } from "./harness.ts";
 import { checkTabsSeen } from "./studio-tabs-laws.ts";
 import { exactTabsReport } from "./studio-tabs-exact.ts";
+import { exactMenuReport } from "./tab-menu-exact.ts";
 import { check, draggedEdgeBy, failedChecks, keyed, openedTabs, pointOf, pressed, seenOf } from "./studio-tabs-page.ts";
 import {
 	checksBoardSizes,
@@ -20,6 +21,20 @@ import {
 import { checksHeaderClose } from "./studio-tabs-header-checks.ts";
 import { KEPT_PATH, checksKeptAlive, checksOneShownTab } from "./studio-tabs-kept-checks.ts";
 import { listOrderOf } from "./studio-tabs-rows.ts";
+import { checksTabCommands } from "./studio-tabs-command-checks.ts";
+import {
+	checksCloseOthersAndReopen,
+	checksCopiedLink,
+	checksMenuAtPointer,
+	checksMenuFlips,
+	checksMenuOpens,
+	checksMenuRows,
+	checksNewTabActions,
+	checksNoMoreButton,
+	checksRename,
+	menuDismissed,
+	menuShown,
+} from "./studio-tabs-menu-checks.ts";
 
 const VIEW: readonly [number, number] = [1800, 900];
 const THEMES: readonly Theme[] = ["light", "dark"];
@@ -27,13 +42,14 @@ const TABS_WANTED = 20;
 const DRAWN = `document.querySelector("[data-app-host-bar] [data-host-tabs]") !== null`;
 const THEMED = `((theme) => { document.body.classList.toggle("theme-dark", theme === "dark"); document.body.classList.toggle("theme-light", theme === "light"); return true; })`;
 const POPPED = `document.querySelectorAll("[data-slot=popover-content][data-state=open], [data-host-all-tabs-list]").length`;
-const TOOLTIP_OFFENDERS = `[...document.querySelectorAll("[data-app-host-bar] button, [data-host-column] button")].filter((one) => one.getClientRects().length > 0).flatMap((control) => { const name = control.getAttribute("aria-label") ?? control.textContent.trim(); const isIconOnly = control.textContent.trim() === ""; const hasTip = control.matches("[data-tip]") || control.parentElement?.matches("[data-tip]") === true; const said = []; if (control.closest("[title]")) said.push(name + ": a native title"); if (isIconOnly && !hasTip) said.push(name + ": no studio tip"); if (hasTip && getComputedStyle(control).getPropertyValue("--no-tooltip").trim() !== "true") said.push(name + ": Obsidian tooltips its aria-label too"); return said; })`;
+const TOOLTIP_OFFENDERS = `[...document.querySelectorAll("[data-app-host-bar] button, [data-host-column] button")].filter((one) => one.getClientRects().length > 0 && getComputedStyle(one).visibility === "visible").flatMap((control) => { const name = control.getAttribute("aria-label") ?? control.textContent.trim(); const isIconOnly = control.textContent.trim() === ""; const hasTip = control.matches("[data-tip]") || control.parentElement?.matches("[data-tip]") === true; const said = []; if (control.closest("[title]")) said.push(name + ": a native title"); if (isIconOnly && !hasTip) said.push(name + ": no studio tip"); if (hasTip && getComputedStyle(control).getPropertyValue("--no-tooltip").trim() !== "true") said.push(name + ": Obsidian tooltips its aria-label too"); return said; })`;
 const ROW_HEIGHTS = `[...document.querySelectorAll("[data-host-list-tab]")].filter((row) => row.querySelector("[data-host-tab-status]") === null).map((row) => Math.round(row.getBoundingClientRect().height))`;
 const SHOWN_CLOSE_PAINT = `(() => { const paint = (selector) => { const node = document.querySelector(selector); return node === null ? null : getComputedStyle(node).backgroundColor; }; return { shown: paint("[data-host-list-tab]:has([aria-current]) [data-host-close-tab]"), resting: paint("[data-host-list-tab]:not(:has([aria-current])) [data-host-close-tab]") }; })()`;
 const ONE_LINE_ROW_PX = 40;
 const RAIL_SLOT_PX = 40;
 const EDGE_LINE_OF = `((selector) => { const edge = document.querySelector(selector); if (!edge) return null; const line = getComputedStyle(edge, "::after"); return { box: Math.round(edge.getBoundingClientRect().width), line: line.width, paint: line.backgroundColor }; })`;
-const MENU_ICON_FROM_LEFT_PX = 12;
+const MENU_ICON_FROM_LEFT_PX = 13;
+const PILL_LEAST_RADIUS_PX = 20;
 const OBSIDIAN_BUTTON =
 	"button { display: inline-flex; width: auto; height: 30px; padding: 4px 12px; justify-content: center; align-items: center; border-radius: 8px; white-space: nowrap; }";
 const ROW_ALIGNMENT = `[...document.querySelectorAll("[data-host-list-tab]")].map((row) => { const middleOf = (box) => box.top + box.height / 2; const box = row.getBoundingClientRect(); const words = row.querySelector("button > span:last-child").getBoundingClientRect(); const icon = row.querySelector("[data-host-tab-icon]").getBoundingClientRect(); const close = row.querySelector("[data-host-close-tab]").getBoundingClientRect(); return { wordsOff: Math.round(middleOf(words) - middleOf(box)), iconOff: Math.round(middleOf(icon) - middleOf(box)), closeOff: Math.round(middleOf(close) - middleOf(box)), iconLeft: Math.round(icon.left - box.left) }; })`;
@@ -144,16 +160,15 @@ async function checksMenuItems(page: AskedPage): Promise<void> {
 	const menu = await page.ask(MENU_ITEMS);
 	await pressed(page, "[data-host-column-menu]");
 	const items = isRecord(menu) && Array.isArray(menu["items"]) ? menu["items"] : [];
-	const concentric = isRecord(menu) ? Number(menu["plate"]) - Number(menu["pad"]) : null;
 	check(
-		"every column menu item spans the menu, starts with its icon at the left, and its corner nests in the plate",
+		"every column menu item spans the menu, starts with its icon at the left, and is a pill on the glass",
 		items.length > 0 &&
 			items.every(
 				(item) =>
 					isRecord(item) &&
 					item["fullWidth"] === true &&
 					Number(item["iconFromLeft"]) <= MENU_ICON_FROM_LEFT_PX &&
-					item["radius"] === concentric,
+					Number(item["radius"]) >= PILL_LEAST_RADIUS_PX,
 			),
 		menu,
 	);
@@ -198,6 +213,9 @@ async function checksIcons(page: AskedPage): Promise<void> {
 	checkTabsSeen("icons", seen, check);
 	await checksOneTooltip(page, "icons");
 	await checksRailSlots(page);
+	await checksNoMoreButton(page, "icons");
+	await checksMenuAtPointer(page, "[data-host-rail-tab]", "icons");
+	await checksMenuFlips(page, "[data-host-rail-tab]", "icons");
 	await checksRailDrag(page);
 	await checksEdgeLine(page);
 	const scrolled = await page.ask(SCROLLED);
@@ -219,6 +237,22 @@ async function checksIcons(page: AskedPage): Promise<void> {
 		{ look: after.look, shown: after.columnTabs.filter((tab) => tab.isShown).map((tab) => tab.id), wanted: target?.id },
 	);
 	await shotsOf(page, "icons");
+	await checksNewTabActions(page, "icons");
+}
+
+async function checksMenuActions(page: AskedPage): Promise<void> {
+	await checksNoMoreButton(page, "full");
+	await checksMenuAtPointer(page, "[data-host-list-tab]", "full");
+	await checksMenuFlips(page, "[data-host-list-tab]", "full");
+	const canvasRow = (await listOrderOf(page)).find((row) => !row.isPinned)?.id ?? "";
+	await checksMenuRows(page, canvasRow);
+	await menuShown(page, canvasRow);
+	await shotsOf(page, "menu");
+	await menuDismissed(page);
+	await checksMenuOpens(page);
+	await checksRename(page, canvasRow);
+	await checksNewTabActions(page, "full");
+	await checksCloseOthersAndReopen(page, canvasRow);
 }
 
 async function checksFull(page: AskedPage): Promise<void> {
@@ -231,9 +265,10 @@ async function checksFull(page: AskedPage): Promise<void> {
 	await checksBoardSizes(page);
 	await checksDragReorders(page);
 	await checksMenuPins(page);
+	await checksMenuActions(page);
 	await shotsOf(page, "full");
 	const listed = (await listOrderOf(page)).map((row) => row.id);
-	const before = seen.tabCount;
+	const before = (await seenOf(page)).tabCount;
 	await keyed(page, "w");
 	const closed = await seenOf(page);
 	await checksOneShownTab(page, "full, ⌘W closed the shown tab");
@@ -272,6 +307,8 @@ const address = server.address();
 const origin = typeof address === "object" && address !== null ? `http://127.0.0.1:${address.port}/` : "";
 const page = await paged(origin, "studio tabs", { size: VIEW });
 
+await checksTabCommands(check);
+
 try {
 	const drawn = await waitUntil(async () => (await page.ask(DRAWN)) === true, 5000, 50);
 	check("the studio drew the tabs header", drawn, drawn);
@@ -292,6 +329,8 @@ const keptPage = await paged(`${origin}${KEPT_PATH.slice(1)}`, "studio tabs kept
 try {
 	await waitUntil(async () => (await keptPage.ask(DRAWN)) === true, 5000, 50);
 	await keptPage.reduceMotion();
+	await checksMenuAtPointer(keptPage, "[data-studio-kept=shown] [data-host-zone] [data-host-tab]", "header");
+	await checksCopiedLink(keptPage, '[data-studio-kept=shown] [data-host-zone] [data-host-tab="tab-2"]');
 	await checksKeptAlive(keptPage);
 	const boom = await keptPage.ask(`document.getElementById("boom").textContent`);
 	check("the kept studio drew without a failure", boom === "", boom);
@@ -305,6 +344,14 @@ check(
 	"the column measures as the board's column block in light and dark: the diff is empty",
 	exact.differences === 0,
 	[...exact.light, ...exact.dark].slice(0, 6),
+);
+
+const exactMenu = await exactMenuReport();
+const measuredMenu = JSON.stringify(exactMenu.measured);
+check(
+	"the tab menu measures as the approved board's glass menu in light and dark: the diff is empty",
+	exactMenu.differences === 0 && measuredMenu.includes('"board":{"width"') && measuredMenu.includes('"built":{"width"'),
+	[...exactMenu.light, ...exactMenu.dark].slice(0, 6),
 );
 
 console.log(`shots in ${shotsAt}`);

@@ -82,5 +82,9 @@ class BoardPageFactsGateway extends PageFactsGateway {
 
 	showPage(): void {}
 
+	openAddress(): void {}
+
+	reloadPage(): void {}
+
 	stop(): void {}
 }

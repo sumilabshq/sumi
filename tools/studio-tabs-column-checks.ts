@@ -1,7 +1,7 @@
 import { waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { isRecord } from "./page-dom.ts";
-import { check, pointOf, pressed } from "./studio-tabs-page.ts";
+import { check, contextPressed, pointOf, pressed } from "./studio-tabs-page.ts";
 import { DROP_INSIDE_PX, draggedRow, listOrderOf, railOrderOf } from "./studio-tabs-rows.ts";
 import type { ListRow } from "./studio-tabs-rows.ts";
 
@@ -105,10 +105,10 @@ export async function checksRailDrag(page: AskedPage): Promise<void> {
 }
 
 async function pinnedFromMenu(page: AskedPage, id: string, choice: "pin" | "unpin"): Promise<readonly ListRow[]> {
-	const [x, y] = await pointOf(page, `[data-host-list-tab="${id}"]`);
-	await page.hover(x, y);
-	await waited(150);
-	await pressed(page, `[data-host-tab-more="${id}"]`);
-	await pressed(page, `[data-host-pin-tab="${choice}"]`);
+	await contextPressed(page, await pointOf(page, `[data-host-list-tab="${id}"]`));
+	const said = await page.ask(`document.querySelector("[data-host-tab-action=pin]")?.textContent.trim() ?? null`);
+	if (said !== (choice === "pin" ? "Pin tab" : "Unpin tab"))
+		throw new Error(`the menu offers "${String(said)}" for ${id}`);
+	await pressed(page, "[data-host-tab-action=pin]");
 	return listOrderOf(page);
 }

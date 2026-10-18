@@ -37,7 +37,6 @@ export const NESTED_PX = 36;
 const HOST_ORDER = [
 	"[data-host-zone] [data-host-tabs]",
 	"[data-host-zone] [data-host-all-tabs]",
-	"[data-host-zone] [data-host-add]",
 	"[data-host-zone] [data-host-close]",
 ];
 const APP_ORDER = [
@@ -85,15 +84,15 @@ const HEADER_LAWS: readonly HeaderLaw[] = [
 		shown: ({ picker, picture }) => ({ picker, picture }),
 	},
 	{
-		said: "header: the sidebar toggle, + and × are 48px circles, ⌄ a 40px one in the tabs pill",
-		holds: ({ toggle, allTabs, add, close }) =>
-			[toggle, add, close].every((round) => isCircleOf(round, HEADER_PX)) && isCircleOf(allTabs, INNER_PX),
-		shown: ({ toggle, allTabs, add, close }) => ({ toggle, allTabs, add, close }),
+		said: "header: the sidebar toggle and × are 48px circles, ⌄ a 40px one in the tabs pill",
+		holds: ({ toggle, allTabs, close }) =>
+			[toggle, close].every((round) => isCircleOf(round, HEADER_PX)) && isCircleOf(allTabs, INNER_PX),
+		shown: ({ toggle, allTabs, close }) => ({ toggle, allTabs, close }),
 	},
 	{
-		said: "header: + opens a new tab, × is labelled Back to view",
-		holds: ({ addDisabled, closeLabel }) => addDisabled === null && closeLabel === "Back to view",
-		shown: ({ addDisabled, closeLabel }) => ({ add: addDisabled, close: closeLabel }),
+		said: "header: no + stands in the header, × is labelled Back to view",
+		holds: ({ add, closeLabel }) => add === null && closeLabel === "Back to view",
+		shown: ({ add, closeLabel }) => ({ add, close: closeLabel }),
 	},
 	{
 		said: "header: the chat's … is a 48px circle",

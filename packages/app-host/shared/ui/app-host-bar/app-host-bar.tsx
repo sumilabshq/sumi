@@ -7,7 +7,6 @@ import { ColumnOpener } from "../../../features/column/ui/column-opener/column-o
 import { WhileColumnHidden } from "../../../features/column/ui/while-hidden/while-column-hidden.js";
 import { ClosePanelButton } from "../../../features/panel/ui/close-panel/close-panel.js";
 import { HOST_BAR_CONTAINER } from "../../lib/host-bar-steps/host-bar-steps.js";
-import { HeaderAdd } from "../header-add/header-add.js";
 
 export interface AppHostBarProps {
 	readonly appZone: ReactNode;
@@ -29,7 +28,6 @@ export function AppHostBar({ appZone, cornerEnd }: AppHostBarProps): ReactElemen
 				<Slot loading={null}>
 					<WhileColumnHidden>
 						<AppTabs end={<ColumnOpener />} />
-						<HeaderAdd />
 					</WhileColumnHidden>
 				</Slot>
 				<ClosePanelButton />

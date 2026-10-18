@@ -9,14 +9,15 @@ import { isRecord } from "./page-dom.ts";
 import type { Theme } from "./harness.ts";
 import {
 	BOARD,
-	OBSIDIAN_CONTROLS,
-	PLANNED,
 	DRAWN,
+	GLASS,
 	HOVER_PAINT,
 	KEYED,
 	METRICS,
+	OBSIDIAN_CONTROLS,
+	PLANNED,
 	THEMED,
-	TOOLTIP_OFFENDERS,
+	columnShown,
 	isOpen,
 	opened,
 	pickedOf,
@@ -25,9 +26,13 @@ import {
 	rowOf,
 	searched,
 } from "./app-picker-page.ts";
+import { contextPressed, draggedEdgeBy } from "./studio-tabs-page.ts";
 
 const VIEW: readonly [number, number] = [1800, 1000];
 const THEMES: readonly Theme[] = ["light", "dark"];
+const GLASS_BLUR = "blur(26px) saturate(1.7)";
+const GLASS_CORNER_PX = 24;
+const MENU_PX = 232;
 const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-app-picker"));
 mkdirSync(shotsAt, { recursive: true });
 
@@ -48,81 +53,72 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
 }
 
-async function checksGroupsAndRows(page: AskedPage): Promise<void> {
+async function checksRows(page: AskedPage): Promise<void> {
+	const hasHeaderAdd = await page.ask(`document.querySelector("[data-host-add]") !== null`);
 	await opened(page);
-	check("+ in the header opens the app picker", await isOpen(page), await isOpen(page));
-	await waitUntil(async () => (await pickedOf(page)).groups.length === 2, 2000, 50);
+	check("Open app at the column's bottom opens the picker, and the header holds no +", await isOpen(page), {
+		isOpen: await isOpen(page),
+		hasHeaderAdd,
+	});
+	await waitUntil(async () => (await pickedOf(page)).rows.some((row) => row.kind === "mine"), 2000, 50);
 	const picked = await pickedOf(page);
+	const kinds = picked.rows.map((row) => row.kind);
 	check(
-		"My apps lists the host's apps, then Built in",
-		JSON.stringify(picked.groups) === JSON.stringify(["My apps", "Built in"]) &&
-			rowOf(picked, "Apps/Barn")?.kind === "mine" &&
-			rowOf(picked, "Apps/Barn")?.isOpenDisabled === true,
-		picked.groups,
+		"the picker reads Open an app, then built-in apps, the person's own, the planned ones, and Browse the catalogue after a line",
+		picked.heading === "Open an app" &&
+			hasHeaderAdd === false &&
+			kinds.indexOf("mine") > kinds.lastIndexOf("built-in") &&
+			kinds.indexOf("planned") > kinds.lastIndexOf("mine") &&
+			picked.lastIsBrowse &&
+			picked.browse === "Browse the catalogue",
+		{ heading: picked.heading, kinds, browse: picked.browse },
 	);
-	const browser = rowOf(picked, "browser");
-	const canvas = rowOf(picked, "canvas");
 	check(
-		"Browser and Canvas carry a description, their permission chips and an Add",
-		browser !== undefined &&
-			browser.description.length > 0 &&
-			JSON.stringify(browser.chips) === JSON.stringify(["Networkany site", "Inkread only"]) &&
-			canvas !== undefined &&
-			JSON.stringify(canvas.chips) === JSON.stringify(["Filesdesign/"]) &&
-			browser.hasAdd &&
-			canvas.hasAdd,
-		{ browser, canvas },
+		"Browser and Canvas are Built in, the person's apps say You, and no row names the product",
+		rowOf(picked, "browser")?.source === "Built in" &&
+			rowOf(picked, "canvas")?.source === "Built in" &&
+			rowOf(picked, "Apps/Barn")?.source === "You" &&
+			!picked.said.includes("Widgetarium"),
+		picked.rows.map((row) => `${row.id}:${row.source}`),
 	);
-	const planned = picked.rows.filter((row) => row.kind === "planned");
 	check(
-		"every planned app is a disabled row with no Add, at the bottom",
-		JSON.stringify(planned.map((row) => row.id)) === JSON.stringify(PLANNED) &&
-			planned.every((row) => row.isDisabled && !row.hasAdd) &&
-			picked.rows.slice(-PLANNED.length).every((row) => row.kind === "planned"),
-		planned.map((row) => [row.id, row.isDisabled, row.hasAdd]),
+		"every planned app is listed, disabled, and says Later",
+		PLANNED.every((id) => rowOf(picked, id)?.isDisabled === true && rowOf(picked, id)?.source === "Later") &&
+			rowOf(picked, "browser")?.isDisabled === false,
+		picked.rows.filter((row) => row.kind === "planned").map((row) => `${row.id}:${row.source}:${row.isDisabled}`),
 	);
 }
 
 async function checksMetrics(page: AskedPage): Promise<void> {
 	const metrics = await page.ask(METRICS);
-	const wanted = {
-		...BOARD,
-		discPx: [BOARD.discPx, BOARD.discPx],
-	};
-	const differing = Object.entries(wanted).filter(
-		([key, value]) => !isRecord(metrics) || JSON.stringify(metrics[key]) !== JSON.stringify(value),
-	);
 	check(
-		"the picker's rows, disc, type, chips and Add measure as the board does",
-		differing.length === 0 && isRecord(metrics) && metrics["isInView"] === true,
-		{ metrics, differing: differing.map(([key]) => key) },
+		"the picker is the board's: 300px glass, 40px heading, search and rows, 28px round icons, 14px names, the source at the end",
+		isRecord(metrics) &&
+			metrics["panelPx"] === BOARD.panelPx &&
+			metrics["panelCornerPx"] === BOARD.panelCornerPx &&
+			metrics["headingPx"] === BOARD.headingPx &&
+			metrics["searchPx"] === BOARD.searchPx &&
+			metrics["rowPx"] === BOARD.rowPx &&
+			JSON.stringify(metrics["discPx"]) === JSON.stringify([BOARD.discPx, BOARD.discPx]) &&
+			metrics["rowFont"] === BOARD.rowFont &&
+			metrics["sourceFont"] === BOARD.sourceFont &&
+			metrics["sourceAtEnd"] === true &&
+			metrics["isInView"] === true,
+		metrics,
 	);
 }
 
 async function checksSearch(page: AskedPage): Promise<void> {
-	const byName = await searched(page, "term");
-	const byDescription = await searched(page, "phone simulator");
-	const mine = await searched(page, "barn");
-	const none = await searched(page, "nothing like this");
+	const narrowed = await searched(page, "brow");
+	const none = await searched(page, "zzzz");
 	await searched(page, "");
 	check(
-		"search filters by name and by description, and hides an emptied group",
-		JSON.stringify(byName.rows.map((row) => row.id)) === JSON.stringify(["terminal"]) &&
-			JSON.stringify(byDescription.rows.map((row) => row.id)) === JSON.stringify(["ios-viewer"]) &&
-			JSON.stringify(mine.groups) === JSON.stringify(["My apps"]) &&
-			none.rows.length === 0,
-		{
-			byName: byName.rows.map((row) => row.id),
-			byDescription: byDescription.rows.map((row) => row.id),
-			mine: mine.groups,
-		},
-	);
-	await page.ask(`${KEYED}("k", null)`);
-	await waited(100);
-	check(
-		"⌘K focuses the search while the picker is open",
-		(await page.ask(`document.activeElement?.matches("[data-host-picker-field]") === true`)) === true,
-		await page.ask(`document.activeElement?.outerHTML.slice(0, 80) ?? null`),
+		"search narrows the rows, and a search nothing answers says so",
+		narrowed.rows.length === 1 &&
+			narrowed.rows[0]?.id === "browser" &&
+			none.rows.length === 0 &&
+			none.said.includes("No app matches"),
+		{ narrowed: narrowed.rows.map((row) => row.id), none: none.rows.length },
 	);
 }
 
@@ -133,33 +129,38 @@ async function checksHover(page: AskedPage): Promise<void> {
 	await waited(200);
 	const hovered = await page.ask(`${HOVER_PAINT}("canvas")`);
 	check(
-		"a hovered row takes the row fill and its Add turns dark",
-		isRecord(rest) &&
-			isRecord(hovered) &&
-			rest["row"] !== hovered["row"] &&
-			hovered["add"] === hovered["primary"] &&
-			rest["add"] !== hovered["add"],
+		"a hovered row takes the brand-tinted glass hover",
+		typeof hovered === "string" && hovered !== rest && hovered !== "rgba(0, 0, 0, 0)",
 		{ rest, hovered },
-	);
-	const offenders = await page.ask(TOOLTIP_OFFENDERS);
-	check(
-		"every picker control has one tooltip and no native title",
-		Array.isArray(offenders) && offenders.length === 0,
-		offenders,
 	);
 }
 
 async function checksAdd(page: AskedPage): Promise<void> {
-	const before = rowOf(await pickedOf(page), "browser")?.count ?? -1;
-	await pressed(page, '[data-host-new-tab="browser"]');
+	const before = Number(
+		await page.ask(
+			`[...document.querySelectorAll("[data-host-rail-tab], [data-host-list-tab]")].filter((one) => one.getClientRects().length > 0 && getComputedStyle(one).visibility === "visible").length`,
+		),
+	);
+	await pressed(page, '[data-host-picker-row="browser"]');
 	const closedOnAdd = !(await isOpen(page));
-	await opened(page);
-	const after = rowOf(await pickedOf(page), "browser")?.count ?? -1;
-	check("Add on Browser opens a new browser tab and its count goes up by one", closedOnAdd && after === before + 1, {
-		before,
-		after,
-		closedOnAdd,
-	});
+	const after = Number(
+		await page.ask(
+			`[...document.querySelectorAll("[data-host-rail-tab], [data-host-list-tab]")].filter((one) => one.getClientRects().length > 0 && getComputedStyle(one).visibility === "visible").length`,
+		),
+	);
+	const shownApp = await page.ask(
+		`[...document.querySelectorAll("[data-host-rail-tab][aria-current]")].find((one) => getComputedStyle(one).visibility === "visible")?.dataset.hostTabApp ?? null`,
+	);
+	check(
+		"choosing Browser opens a new browser tab and closes the picker",
+		closedOnAdd && after === before + 1 && shownApp === "browser",
+		{
+			before,
+			after,
+			closedOnAdd,
+			shownApp,
+		},
+	);
 }
 
 async function checksClosing(page: AskedPage): Promise<void> {
@@ -170,15 +171,66 @@ async function checksClosing(page: AskedPage): Promise<void> {
 	await opened(page);
 	await page.press(40, VIEW[1] - 40);
 	await waited(300);
-	check("Escape and a press outside close the picker", !afterEscape && !(await isOpen(page)), {
-		afterEscape,
-		afterOutside: await isOpen(page),
-	});
+	const afterOutside = await isOpen(page);
+	await opened(page);
+	await pressed(page, "[data-host-picker-browse]");
+	check(
+		"Escape, a press outside and Browse the catalogue each close the picker",
+		!afterEscape && !afterOutside && !(await isOpen(page)),
+		{
+			afterEscape,
+			afterOutside,
+			afterBrowse: await isOpen(page),
+		},
+	);
+}
+
+async function glassOf(page: AskedPage, name: string, minWidth: number): Promise<void> {
+	await waited(250);
+	const glass = await page.ask(GLASS);
+	check(
+		`${name} wears the studio glass: translucent fill, ${GLASS_BLUR}, a hairline edge, ${GLASS_CORNER_PX}px corners`,
+		isRecord(glass) &&
+			glass["filter"] === GLASS_BLUR &&
+			typeof glass["alpha"] === "number" &&
+			glass["alpha"] < 1 &&
+			glass["alpha"] > 0.5 &&
+			glass["edge"] === true &&
+			glass["corner"] === GLASS_CORNER_PX &&
+			Number(glass["width"]) >= minWidth,
+		glass,
+	);
+}
+
+async function closedPopovers(page: AskedPage): Promise<void> {
+	await page.ask(`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`);
+	await waited(250);
+}
+
+async function checksGlassEverywhere(page: AskedPage): Promise<void> {
+	await opened(page);
+	await glassOf(page, "the app picker", BOARD.panelPx);
+	await closedPopovers(page);
+	await columnShown(page);
+	await contextPressed(page, await pointOf(page, "[data-host-rail-tab]"));
+	await glassOf(page, "the tab menu", MENU_PX);
+	await closedPopovers(page);
+	await pressed(page, '[data-host-rail-tab][data-host-tab-app="canvas"]');
+	await pressed(page, "[data-canvas-page-name]");
+	await glassOf(page, "the page picker", MENU_PX);
+	await closedPopovers(page);
+	await pressed(page, ".wg-studio-menu-trigger");
+	await glassOf(page, "the chat's … menu", MENU_PX);
+	await closedPopovers(page);
+	await draggedEdgeBy(page, -200);
+	await pressed(page, "[data-host-column-menu]");
+	await glassOf(page, "the column menu", MENU_PX);
+	await closedPopovers(page);
 }
 
 async function shotsOf(page: AskedPage): Promise<void> {
 	await opened(page);
-	const [x, y] = await pointOf(page, '[data-host-picker-row="browser"] [data-host-picker-name]');
+	const [x, y] = await pointOf(page, '[data-host-picker-row="canvas"] [data-host-picker-name]');
 	await page.ask("document.activeElement?.blur?.(); true");
 	for (const theme of THEMES) {
 		await page.ask(`${THEMED}(${JSON.stringify(theme)})`);
@@ -187,15 +239,16 @@ async function shotsOf(page: AskedPage): Promise<void> {
 		writeFileSync(path.join(shotsAt, `picker-${theme}.png`), await page.shoot());
 	}
 	await page.ask(`${THEMED}("light")`);
+	await closedPopovers(page);
 }
 
 async function checksNoHostApps(page: AskedPage): Promise<void> {
 	await opened(page);
 	const picked = await pickedOf(page);
 	check(
-		"with no apps from the host, My apps is not drawn",
-		JSON.stringify(picked.groups) === JSON.stringify(["Built in"]),
-		picked.groups,
+		"with no apps from the host, no row says You",
+		picked.rows.every((row) => row.kind !== "mine"),
+		picked.rows.map((row) => row.kind),
 	);
 }
 
@@ -210,7 +263,7 @@ const origin = typeof address === "object" && address !== null ? `http://127.0.0
 async function drawnPage(url: string, gate: string): Promise<AskedPage> {
 	const page = await paged(url, gate, { size: VIEW });
 	const drawn = await waitUntil(async () => (await page.ask(DRAWN)) === true, 5000, 50);
-	check(`${gate}: the studio drew the header +`, drawn, drawn);
+	check(`${gate}: the studio drew the header`, drawn, drawn);
 	await page.reduceMotion();
 	await waited(300);
 	return page;
@@ -219,13 +272,15 @@ async function drawnPage(url: string, gate: string): Promise<AskedPage> {
 const page = await drawnPage(origin, "app picker");
 
 try {
-	await checksGroupsAndRows(page);
+	await checksRows(page);
 	await checksMetrics(page);
 	await checksSearch(page);
 	await checksHover(page);
 	await shotsOf(page);
+	await opened(page);
 	await checksAdd(page);
 	await checksClosing(page);
+	await checksGlassEverywhere(page);
 	const boom = await page.ask(`document.getElementById("boom").textContent`);
 	check("the studio drew without a failure", boom === "", boom);
 } finally {

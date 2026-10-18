@@ -8,7 +8,7 @@ const menuButton = () => document.querySelector('[aria-label$=" menu"]');
 const roundOf = (node, pseudo) => { if (!node) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
 const inDomOrder = (selectors) => selectors.map((selector) => [selector, document.querySelector(selector)]).filter(([, node]) => node).sort(([, one], [, two]) => (one.compareDocumentPosition(two) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)).map(([selector]) => selector);
 const headerOf = () => ({
-	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-all-tabs]", "[data-host-zone] [data-host-add]", "[data-host-zone] [data-host-close]"]),
+	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-all-tabs]", "[data-host-zone] [data-host-close]"]),
 	appBeforeHost: (document.querySelector("[data-app-zone]")?.getBoundingClientRect().right ?? Infinity) <= (document.querySelector("[data-host-zone]")?.getBoundingClientRect().left ?? -Infinity),
 	tabs: [...document.querySelectorAll("[data-host-tab]")].map((tab) => ({ selected: tab.getAttribute("aria-selected"), label: tab.getAttribute("aria-label"), text: tab.textContent.trim(), h: Math.round(tab.getBoundingClientRect().height) })),
 	tabsPill: Math.round(document.querySelector("[data-host-tabs]")?.getBoundingClientRect().height ?? 0),

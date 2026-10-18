@@ -1,17 +1,20 @@
 import { createElement as h, useRef } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import type { AppTabState } from "../../../../shared/schema/app-tab.schema.js";
 import { DRAG_HOLDER } from "../../../../shared/lib/tab-drag/tab-drag-look.js";
 import { groupRowProps } from "../../../../shared/lib/tab-drag/tab-groups.js";
 import { AppTabsQuery, ShowTabCommand } from "../../contract.js";
+import { usePointerMenu } from "../../lib/use-pointer-menu.js";
 import { useTabDrag } from "../../lib/use-tab-drag.js";
 import { RailNewTab } from "../rail-new-tab/rail-new-tab.js";
 import { TabDropLine } from "../tab-drop-line/tab-drop-line.js";
+import { TabMenu } from "../tab-menu/tab-menu.js";
 import { TabRailIcon } from "./tab-rail-icon.js";
 
 export interface TabRailProps {
 	readonly tipSide: "left" | "right";
+	readonly openApp: ReactNode;
 }
 
 const RAIL = "cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:items-center cv:gap-1 cv:pb-1";
@@ -19,8 +22,9 @@ const SCROLLER = `${DRAG_HOLDER} cv:relative cv:flex cv:min-h-0 cv:w-full cv:fle
 const UNSEEN_HOLDER = "cv:-my-0.5 cv:h-0 cv:w-full cv:flex-none";
 const DIVIDER = "cv:my-1 cv:h-px cv:w-6 cv:flex-none cv:bg-line";
 
-export function TabRail({ tipSide }: TabRailProps): ReactElement {
+export function TabRail({ tipSide, openApp }: TabRailProps): ReactElement {
 	const { tabs } = useQuery(AppTabsQuery).data;
+	const menu = usePointerMenu();
 	const showTab = useCommand(ShowTabCommand);
 	const holder = useRef<HTMLDivElement | null>(null);
 	const drag = useTabDrag(holder, tabs);
@@ -35,6 +39,7 @@ export function TabRail({ tipSide }: TabRailProps): ReactElement {
 			onShow={() => {
 				if (!drag.wasDragged()) void showTab.run({ id: tab.id });
 			}}
+			onMenu={(event) => menu.openFor(tab.id, event)}
 		/>
 	);
 	return (
@@ -52,6 +57,8 @@ export function TabRail({ tipSide }: TabRailProps): ReactElement {
 				<TabDropLine slot={drag.slot} inset="rail" />
 			</div>
 			<RailNewTab />
+			{openApp}
+			<TabMenu tabs={tabs} menu={menu} />
 		</div>
 	);
 }

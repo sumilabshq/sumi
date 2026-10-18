@@ -5,6 +5,8 @@ import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { AppTabsQuery, CloseTabCommand, ShowTabCommand } from "../../contract.js";
 import { AppTabButton } from "./app-tab-button.js";
 import { useKeepsShownInView } from "../../lib/use-keeps-shown-in-view.js";
+import { usePointerMenu } from "../../lib/use-pointer-menu.js";
+import { TabMenu } from "../tab-menu/tab-menu.js";
 
 const TABS = "Tabs";
 const TABS_PILL = `${RAISED_PILL} cv:flex cv:min-w-0 cv:shrink cv:items-center cv:gap-0.5 cv:p-1`;
@@ -16,6 +18,7 @@ export function AppTabs({ end }: { readonly end: ReactNode }): ReactElement {
 	const showTab = useCommand(ShowTabCommand);
 	const closeTab = useCommand(CloseTabCommand);
 	const row = useKeepsShownInView(tabs.find((tab) => tab.isShown)?.id ?? null);
+	const menu = usePointerMenu();
 	return (
 		<div className={TABS_PILL} data-host-tabs="">
 			<div ref={row} role="tablist" aria-label={TABS} className={TAB_ROW}>
@@ -26,6 +29,7 @@ export function AppTabs({ end }: { readonly end: ReactNode }): ReactElement {
 						look={tab.isShown ? "shown" : "resting"}
 						onPick={() => void showTab.run({ id: tab.id })}
 						onClose={() => void closeTab.run({ id: tab.id })}
+						onMenu={(event) => menu.openFor(tab.id, event)}
 					/>
 				))}
 				{preview ? (
@@ -38,6 +42,7 @@ export function AppTabs({ end }: { readonly end: ReactNode }): ReactElement {
 				) : null}
 			</div>
 			{end}
+			<TabMenu tabs={tabs} menu={menu} />
 		</div>
 	);
 }

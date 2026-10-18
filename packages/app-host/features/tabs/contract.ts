@@ -34,3 +34,32 @@ export const PinTabCommand = command("app-host/pin-tab")
 	.input(TabSchema.extend({ isPinned: z.boolean() }))
 	.idempotencyKey(Repeatable)
 	.invalidates([AppTabsQuery]);
+
+export const OpenTabBelowCommand = command("app-host/open-tab-below")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const DuplicateTabCommand = command("app-host/duplicate-tab")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const ReloadTabCommand = command("app-host/reload-tab")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const RenameTabCommand = command("app-host/rename-tab")
+	.input(TabSchema.extend({ label: z.string() }))
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const CloseOtherTabsCommand = command("app-host/close-other-tabs")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
+
+export const ReopenClosedTabCommand = command("app-host/reopen-closed-tab")
+	.idempotencyKey(Repeatable)
+	.invalidates([AppTabsQuery]);
