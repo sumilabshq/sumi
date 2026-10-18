@@ -16,9 +16,9 @@ import type {
 	InstallRow,
 	StageRow,
 } from "@widgetarium/core/engine/assistant-cards.js";
-import type { Report } from "../failure-line.js";
+import type { Report } from "@widgetarium/assistant";
 import type { AppFiles, JobsPort } from "./card-ports.js";
-import { Chevron } from "../chevron.js";
+import { Chevron } from "@widgetarium/assistant";
 import { jobRow, jobStagesOf, preparingRow } from "./build-job-rows.js";
 import type { JobStage } from "./build-job-rows.js";
 

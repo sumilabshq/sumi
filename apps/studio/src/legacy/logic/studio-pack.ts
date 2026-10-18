@@ -11,13 +11,13 @@ import {
 	RenameAppCommand,
 } from "./studio-commands.js";
 import { IsInCanvasQuery } from "./studio-state-queries.js";
-import { AgentSetupQuery } from "./agent-queries.js";
 import {
-	ChooseProviderCommand,
-	ClearChatCommand,
-	OpenProvidersCommand,
-	SetHelperAgentsCommand,
-} from "./agent-commands.js";
+	MenuAgentSetupQuery,
+	MenuChooseProviderCommand,
+	MenuClearChatCommand,
+	MenuOpenProvidersCommand,
+	MenuSetHelperAgentsCommand,
+} from "./agent-seam.js";
 import { AppFieldsSchema, NoFieldsSchema } from "./studio-fields.js";
 
 const RESOURCE = "Apps";
@@ -47,7 +47,7 @@ export const studioPack = definePack({
 			description: "Whether the studio shows the app's canvas instead of the app.",
 			fields: NoFieldsSchema,
 		}),
-		defineGatewayMetadata(AgentSetupQuery, {
+		defineGatewayMetadata(MenuAgentSetupQuery, {
 			id: "@studio/agent-setup",
 			title: "Agent setup",
 			resource: RESOURCE,
@@ -96,7 +96,7 @@ export const studioPack = definePack({
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
-		defineCommandMetadata(ChooseProviderCommand, {
+		defineCommandMetadata(MenuChooseProviderCommand, {
 			id: "@studio/choose-provider",
 			title: "Choose a provider",
 			resource: RESOURCE,
@@ -104,7 +104,7 @@ export const studioPack = definePack({
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
-		defineCommandMetadata(SetHelperAgentsCommand, {
+		defineCommandMetadata(MenuSetHelperAgentsCommand, {
 			id: "@studio/set-helper-agents",
 			title: "Use helper agents",
 			resource: RESOURCE,
@@ -112,7 +112,7 @@ export const studioPack = definePack({
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
-		defineCommandMetadata(OpenProvidersCommand, {
+		defineCommandMetadata(MenuOpenProvidersCommand, {
 			id: "@studio/open-providers",
 			title: "Configure providers",
 			resource: RESOURCE,
@@ -120,7 +120,7 @@ export const studioPack = definePack({
 			fields: NoFieldsSchema,
 			consent: "free",
 		}),
-		defineCommandMetadata(ClearChatCommand, {
+		defineCommandMetadata(MenuClearChatCommand, {
 			id: "@studio/clear-chat",
 			title: "Clear context",
 			resource: RESOURCE,

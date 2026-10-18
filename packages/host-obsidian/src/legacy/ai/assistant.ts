@@ -14,6 +14,7 @@ import type { createWantedWidgets } from "@widgetarium/core/engine/widgets-wante
 import { createAiSettings } from "./settings.js";
 import type { AiSettings, AiState } from "./settings.js";
 import { createRunner } from "./run.js";
+import { attachmentsFolder } from "../../attachments-folder.js";
 import type { KillGroup, Spawn } from "./run.js";
 import { createSession } from "./session.js";
 import type { BriefNow, Session } from "./session.js";
@@ -109,6 +110,7 @@ export function createAssistant(app: App, plugin: AssistantPlugin): Assistant {
 		fetchStream: (url, init) => fetch(url, init),
 		vaultPath,
 		pluginPath: paths.pluginPath,
+		attachmentsPath: attachmentsFolder(),
 		env: doors.env,
 	});
 

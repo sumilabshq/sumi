@@ -13,7 +13,7 @@ import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/host-ob
 import type { AssistantCall } from "../packages/core/src/engine/assistant-port.ts";
 import type { RunAnswer } from "../packages/host-obsidian/src/legacy/ai/run.ts";
 import type { Build, StepStatus } from "../packages/core/src/engine/assistant-cards.ts";
-import type { SaidProps } from "../apps/studio/src/legacy/assistant/said.ts";
+import type { SaidProps } from "../packages/assistant/features/chat/ui/turn/said.tsx";
 import type { Spawn, SpawnAsk } from "../packages/host-obsidian/src/legacy/ai/run.ts";
 import type { AssistantPlugin } from "../packages/host-obsidian/src/legacy/ai/assistant.ts";
 import type { AgentFilesAdapter } from "../packages/host-obsidian/src/legacy/ai/agent-files.ts";
@@ -38,17 +38,18 @@ const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } =
 	await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
 const { argumentsIn, changedPathOf, glyphForTool, glyphOf, isFileChange, ourCallIn, withResult } =
 	await import("../packages/host-obsidian/src/legacy/ai/tools.js");
-const { failuresIn } = await import("../apps/studio/src/legacy/assistant/tools-head.js");
+const { failuresIn } = await import("../packages/assistant/features/chat/lib/failures-in.ts");
 const { canRenderMarkdown } = await import("../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js");
 const { callFaceOf } = await import("../packages/host-obsidian/src/legacy/ai/call-face.js");
 const { doingTextOf } = await import("../packages/core/src/engine/assistant-port.js");
-const { settledPart, Said } = await import("../apps/studio/src/legacy/assistant/said.js");
+const { settledPart } = await import("../packages/assistant/features/chat/lib/settled-part.ts");
+const { Said } = await import("../packages/assistant/features/chat/ui/turn/said.tsx");
 const { saidElapsed, saidTokens, saidPhase, saidProgress } =
-	await import("../apps/studio/src/legacy/assistant/spent.js");
+	await import("../packages/assistant/features/chat/lib/spent.ts");
 const { createElement } = await import("react");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { briefGoesInTheMessage } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");
-const { sendState } = await import("../apps/studio/src/legacy/assistant/composer.js");
+const { sendState } = await import("../packages/assistant/features/composer/lib/send-state.ts");
 const { buildsIn, startIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");
 
 let failed = 0;
@@ -1169,6 +1170,7 @@ const runner = createRunner({
 	spawn: fakeSpawn(['{"type":"assistant","message":{"content":[{"type":"text","text":"done"}]}}']),
 	vaultPath: "/v",
 	pluginPath: "/p",
+	attachmentsPath: "/a",
 	env: {},
 });
 const ran = await runner.run(
@@ -1179,7 +1181,13 @@ const ran = await runner.run(
 check("a clean run reports no failure", ran, { failure: null });
 check("what the agent said reached the caller", gathered, [{ text: "done" }]);
 
-const wentWrong = createRunner({ spawn: fakeSpawn([], { code: 1 }), vaultPath: "/v", pluginPath: "/p", env: {} });
+const wentWrong = createRunner({
+	spawn: fakeSpawn([], { code: 1 }),
+	vaultPath: "/v",
+	pluginPath: "/p",
+	attachmentsPath: "/a",
+	env: {},
+});
 const badly = await wentWrong.run(
 	claude,
 	{ prompt: "hi", brief: "B", history: [], session: null, skipPermissions: true },
@@ -1195,6 +1203,7 @@ const missing = createRunner({
 	spawn: fakeSpawn([], { failure: Object.assign(new Error("spawn claude ENOENT"), { code: "ENOENT" }) }),
 	vaultPath: "/v",
 	pluginPath: "/p",
+	attachmentsPath: "/a",
 	env: {},
 });
 const absent = await missing.run(
@@ -1208,7 +1217,7 @@ check(
 	"claude is not installed on this machine, or is not on the plugin's PATH.",
 );
 
-const noProcesses = createRunner({ spawn: null, vaultPath: "/v", pluginPath: "/p", env: {} });
+const noProcesses = createRunner({ spawn: null, vaultPath: "/v", pluginPath: "/p", attachmentsPath: "/a", env: {} });
 const refused = await noProcesses.run(
 	claude,
 	{ prompt: "hi", brief: "B", history: [], session: null, skipPermissions: true },
@@ -1220,7 +1229,13 @@ check(
 	true,
 );
 
-const nameless = createRunner({ spawn: fakeSpawn([]), vaultPath: "/v", pluginPath: "/p", env: {} });
+const nameless = createRunner({
+	spawn: fakeSpawn([]),
+	vaultPath: "/v",
+	pluginPath: "/p",
+	attachmentsPath: "/a",
+	env: {},
+});
 const unnamed = await nameless.run(
 	{ ...claude, command: "" },
 	{ prompt: "hi", brief: "B", history: [], session: null, skipPermissions: true },
@@ -1247,6 +1262,7 @@ const refusedOnStdout = createRunner({
 	}),
 	vaultPath: "/v",
 	pluginPath: "/p",
+	attachmentsPath: "/a",
 	env: {},
 });
 const refusedRun = await refusedOnStdout.run(
@@ -1260,6 +1276,7 @@ const asking = createRunner({
 	spawn: fakeSpawn(["Do you want to continue? [Y/n]: "], { code: 0 }),
 	vaultPath: "/v",
 	pluginPath: "/p",
+	attachmentsPath: "/a",
 	env: {},
 });
 const asked = await asking.run(
@@ -1282,6 +1299,7 @@ const ollama = presetNamed("ollama");
 const unreachable = createRunner({
 	vaultPath: "",
 	pluginPath: "",
+	attachmentsPath: "/a",
 	fetchStream: async () => {
 		throw new Error("ECONNREFUSED");
 	},
@@ -1300,6 +1318,7 @@ check(
 const noModel = createRunner({
 	vaultPath: "",
 	pluginPath: "",
+	attachmentsPath: "/a",
 	fetchStream: async () => new Response('{"error":"model \'llama3.2\' not found"}', { status: 404 }),
 });
 const missingModel = await noModel.run(
@@ -1317,6 +1336,7 @@ let reached = false;
 const notAWebAddress = createRunner({
 	vaultPath: "",
 	pluginPath: "",
+	attachmentsPath: "/a",
 	fetchStream: async () => {
 		reached = true;
 		return new Response();
@@ -1347,6 +1367,7 @@ const sessionRunner = createRunner({
 	]),
 	vaultPath: "/v",
 	pluginPath: "/p",
+	attachmentsPath: "/a",
 	env: {},
 });
 const session = createSession({
@@ -1385,7 +1406,7 @@ const continuing = createAiSettings({ read: async () => ({ ai: { provider: "open
 const opencodeSpawn = fakeSpawn(["READY"]);
 const opencodeSession = createSession({
 	settings: continuing,
-	runner: createRunner({ spawn: opencodeSpawn, vaultPath: "/v", pluginPath: "/p", env: {} }),
+	runner: createRunner({ spawn: opencodeSpawn, vaultPath: "/v", pluginPath: "/p", attachmentsPath: "/a", env: {} }),
 	briefNow: async () => ({ brief: "BRIEF", helpers: null }),
 });
 await opencodeSession.send("first");

@@ -9,6 +9,7 @@ const SOURCES = [
 	"packages/mascot",
 	"packages/app-host",
 	"packages/browser",
+	"packages/assistant",
 	"apps/studio/src/canvas",
 	"apps/studio/src/browser",
 ];

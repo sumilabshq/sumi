@@ -163,8 +163,8 @@ async function checkSetupShape(check: Check, { port, source, first }: FakeAssist
 			true,
 			first.label,
 			[
-				["id", "label", "canEdit"],
-				["id", "label", "canEdit"],
+				["id", "label", "canEdit", "reads"],
+				["id", "label", "canEdit", "reads"],
 			],
 			first.id,
 			true,

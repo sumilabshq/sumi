@@ -82,10 +82,18 @@ export function doingTextOf({ doing, object }: CallFace): string {
 	return doing === "" ? object : DOING_TEXT.replace("{doing}", doing).replace("{object}", object);
 }
 
+export type AttachedFilesReach = "path" | "inline" | "none";
+
+export interface ProviderReads {
+	readonly images: boolean;
+	readonly files: AttachedFilesReach;
+}
+
 export interface AssistantProvider {
 	readonly id: string;
 	readonly label: string;
 	readonly canEdit: boolean;
+	readonly reads?: ProviderReads;
 }
 
 export type RenderMarkdown = (element: HTMLElement, markdown: string) => () => void;

@@ -146,6 +146,8 @@ function keepsTabSizes({ tabsPill, tabs }: AdaptiveHeader["sizes"]): boolean {
 	return tabsPill === HEADER_PX && tabs.length > 0 && tabs.every((tab) => tab === INNER_PX);
 }
 
+const INK_ROOM_BELOW_PX = 7;
+
 function keepsChatHead({ head, mascot, title, menu, menuBox }: ChatHead): boolean {
 	return (
 		isCircleOf(menu, HEADER_PX) &&
@@ -154,6 +156,6 @@ function keepsChatHead({ head, mascot, title, menu, menuBox }: ChatHead): boolea
 		mascot.right <= title.left &&
 		title.right <= menuBox.left &&
 		menuBox.right <= head.right &&
-		Math.abs(mascot.top + mascot.h / 2 - (menuBox.top + menuBox.h / 2)) <= 1
+		Math.abs(mascot.top + (mascot.h + INK_ROOM_BELOW_PX) / 2 - (menuBox.top + menuBox.h / 2)) <= 1
 	);
 }

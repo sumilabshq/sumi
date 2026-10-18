@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { List, Row } from "@widgetarium/kit";
-import { Chevron } from "../chevron.js";
+import { Chevron } from "@widgetarium/assistant";
 
 export interface PressableRow {
 	readonly isOpen: boolean;

@@ -28,13 +28,6 @@ export function PinnedRun({ run, builds, showCard }: PinnedRunProps): ReactEleme
 	);
 }
 
-export function scrollToCard(chatRoot: HTMLElement | null, key: string): void {
-	const card = [...(chatRoot?.querySelectorAll<HTMLElement>("[data-build-key]") ?? [])].find(
-		(node) => node.dataset["buildKey"] === key,
-	);
-	card?.scrollIntoView({ behavior: "smooth", block: "start" });
-}
-
 function doingOf(run: BuildRun, builds: readonly Build[], activeAt: number): string | null {
 	const row = run.rows[activeAt];
 	if (!row) return null;

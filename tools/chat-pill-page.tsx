@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../apps/studio/src/legacy/assistant/assistant-panel.js";
-import { AppProvider, app } from "../packages/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
+import { AssistantPanel } from "../packages/assistant/generated/index.ts";
+import { chatCardsOver } from "../apps/studio/src/assistant/chat-cards.tsx";
+import { AppProvider } from "../packages/core/src/requests/index.ts";
+import { chatAppOver } from "./assistant-chat-app.ts";
 import { obsidianAssistantPort } from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js";
 import { DEFAULT_PRESET, PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.js";
 import { withResult } from "../packages/host-obsidian/src/legacy/ai/tools.js";
@@ -322,7 +322,6 @@ const port = obsidianAssistantPort({
 });
 const holder = document.getElementById("chat");
 if (!holder) throw new Error("chat pill page: no #chat");
-const mascotApp = app({ modules: [MascotClientModule.with(memoryMascotParts())] });
 createRoot(holder).render(
-	h(AppProvider, { app: mascotApp }, h(AssistantPanel, { assistant: port, title: "Untitled app" })),
+	h(AppProvider, { app: chatAppOver(port) }, h(AssistantPanel, { title: "Untitled app", cards: chatCardsOver(port) })),
 );

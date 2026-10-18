@@ -51,6 +51,7 @@ const SAMPLE = {
 	brief: "<brief>",
 	vaultPath: "<vault>",
 	pluginPath: "<plugin>",
+	attachmentsPath: "<attachments>",
 	session: "",
 };
 

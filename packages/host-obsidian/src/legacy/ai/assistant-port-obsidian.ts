@@ -15,6 +15,7 @@ import type { AiSettings } from "./settings.js";
 import { askedForApp } from "./spec-calls.js";
 import type { SpecPort } from "./spec-port.js";
 import { callFaceOf } from "./call-face.js";
+import { readsOf } from "./providers.js";
 
 export interface ObsidianAssistantPort extends AssistantPort {
 	setupChanged(): void;
@@ -93,7 +94,12 @@ export function assistantSetupOf(state: SetupSource): AssistantSetup {
 	return {
 		isReady: state.ready,
 		providerLabel: state.provider.label,
-		providers: state.providers.map(({ id, label, canEdit }) => ({ id, label, canEdit })),
+		providers: state.providers.map((provider) => ({
+			id: provider.id,
+			label: provider.label,
+			canEdit: provider.canEdit,
+			reads: readsOf(provider),
+		})),
 		chosen: state.chosen,
 		helperAgents: state.helperAgents,
 		renderMarkdown: canRenderMarkdown(state.host) ? state.host.ui.renderMarkdown : null,

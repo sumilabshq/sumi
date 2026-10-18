@@ -6,7 +6,7 @@ import { ICommand, IQuery } from "@widgetarium/core/gateway/queries.js";
 import { useData } from "@widgetarium/core/gateway/use-data.js";
 import { ASSISTANT_NOT_AVAILABLE } from "@widgetarium/core/engine/assistant-port.js";
 import { createWidget } from "@widgetarium/core/widget-api.js";
-import { HelperAgentsAskedSchema, ProviderAskedSchema, AgentSetupSchema } from "../../shared/agent-setup.js";
+import { HelperAgentsAskedSchema, ProviderAskedSchema, AgentSetupSchema } from "@widgetarium/assistant";
 import { NOTHING_ASKED, NothingAskedSchema, StudioAppSchema } from "../../shared/studio-app.js";
 import { QuietLine } from "../quiet-line.js";
 import { useRefusal } from "../use-refusal.js";

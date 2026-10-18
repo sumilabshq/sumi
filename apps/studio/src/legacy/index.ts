@@ -10,7 +10,6 @@ export { studioFrameOf } from "./studio-on-screen.js";
 export { createStudioState } from "./studio-state.js";
 export type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-export { AssistantChat } from "./assistant/assistant-chat.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
 export type {
 	CanvasDoc,

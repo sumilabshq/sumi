@@ -1,5 +1,6 @@
 import type { App, TFile, WorkspaceLeaf } from "obsidian";
 import type { BrowserParts } from "@widgetarium/browser/gateways";
+import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { AppHostParts } from "@widgetarium/app-host/gateways";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
@@ -22,6 +23,7 @@ export interface StudioPlace {
 	readonly projects: AppProjects;
 	readonly viewType: string;
 	readonly assistant: AssistantPort;
+	readonly assistantGateways: AssistantGateways;
 	readonly browser: BrowserParts;
 	hostOf(notePath: string): SurfaceHost;
 	designFor(app: string, leaf: WorkspaceLeaf): Promise<StudioDesign>;
@@ -115,6 +117,7 @@ function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: Stu
 			studio,
 			state,
 			assistant: place.assistant,
+			assistantGateways: place.assistantGateways,
 			browser: place.browser,
 			appHost,
 			appId: note.folder,

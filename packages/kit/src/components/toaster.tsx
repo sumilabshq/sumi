@@ -2,6 +2,7 @@ import { createElement as h } from "react";
 import type { ReactPortal } from "react";
 import { createPortal } from "react-dom";
 import { TOAST_DURATION_MS, TOAST_VISIBLE } from "../constants/overlays";
+import { useOwnsToasterRegion } from "../hooks/use-owns-toaster-region";
 import { useToasterStack } from "../hooks/use-toaster-stack";
 import { portalLayer } from "../utils/portal-layer";
 import { ToastList } from "./toast-list";
@@ -25,8 +26,14 @@ export function Toaster({
 	duration = TOAST_DURATION_MS,
 	visibleToasts = TOAST_VISIBLE,
 	...look
-}: ToasterProps): ReactPortal {
+}: ToasterProps): ReactPortal | null {
 	const toaster = useToasterStack({ durationMs: duration, visibleCount: visibleToasts });
+	const ownsRegion = useOwnsToasterRegion();
+
+	if (!ownsRegion) {
+		return null;
+	}
+
 	return createPortal(
 		<section aria-label={REGION_LABEL} aria-live="polite" className="wg-kit-toaster-region">
 			<ToastList {...look} toaster={toaster} />

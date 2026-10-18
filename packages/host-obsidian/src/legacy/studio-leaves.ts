@@ -1,5 +1,6 @@
 import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
 import type { BrowserParts } from "@widgetarium/browser/gateways";
+import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
@@ -34,7 +35,7 @@ const STUDIO_IN_FRONT = "wg-studio-in-front";
 export function registerStudioView(
 	plugin: WidgetariumPlugin,
 	projects: AppProjects,
-	assistant: AssistantPort,
+	assistant: { readonly port: AssistantPort; readonly gateways: AssistantGateways },
 	browser: BrowserParts,
 ): void {
 	registerPacks(...STUDIO_PACKS);
@@ -43,7 +44,8 @@ export function registerStudioView(
 		app: plugin.app,
 		projects,
 		viewType: STUDIO_VIEW_TYPE,
-		assistant,
+		assistant: assistant.port,
+		assistantGateways: assistant.gateways,
 		browser,
 		hostOf: (notePath) => bindNote(plugin.host, notePath),
 		designFor: (app, leaf) => studioDesignOf(plugin, app, leaf),

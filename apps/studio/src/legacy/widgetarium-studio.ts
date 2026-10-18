@@ -12,6 +12,10 @@ import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { memoryMascotParts } from "@widgetarium/mascot/gateways";
 import type { MascotParts } from "@widgetarium/mascot/gateways";
+import { webAssistantGateways } from "@widgetarium/assistant/gateways";
+import type { AssistantGateways } from "@widgetarium/assistant/gateways";
+import type { StartedApp } from "@widgetarium/core/requests";
+import { chatAppOf } from "../assistant/chat-app.js";
 import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
@@ -47,7 +51,7 @@ export interface StartedStudio {
 	readonly shellRegistry: ModuleRegistry;
 	readonly state: StudioState;
 	readonly design: StudioDesign;
-	readonly mascot: MascotParts;
+	readonly chatApp: StartedApp;
 	readonly browser: BrowserParts;
 	readonly appHost: AppHostParts;
 }
@@ -60,6 +64,7 @@ export interface StudioStart extends ProjectStart {
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
 	readonly mascot?: MascotParts;
+	readonly assistantGateways?: AssistantGateways;
 	readonly browser?: BrowserParts;
 	readonly appHost?: AppHostParts;
 }
@@ -84,6 +89,12 @@ export function startStudio(project: WidgetariumProject, start: StudioStart = {}
 export function startOpenedStudio(opened: OpenedApp, start: StudioStart): StartedStudio {
 	const project = startOpenedProject(opened, start);
 	const state = start.state ?? createStudioState();
+	const mascot = start.mascot ?? memoryMascotParts();
+	const chatApp = chatAppOf({
+		state,
+		mascot,
+		gateways: start.assistantGateways ?? webAssistantGateways(start.assistant),
+	});
 	const browser = start.browser ?? webBrowserParts();
 	const appId = start.appId ?? opened.app.name;
 	const studio = start.studio ?? browserStudioHost(opened.app, opened.routes);
@@ -96,14 +107,14 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		state,
 		design: start.design ?? webStudioDesign(opened.app.name),
-		mascot: start.mascot ?? memoryMascotParts(),
+		chatApp,
 		browser,
 		appHost: start.appHost ?? startedAppHostParts({ state, browser, workspace: appId, studio }),
 	};
 }
 
 export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactElement {
-	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design, mascot, browser, appHost } =
+	const { project, studio, assistant, catalogue, appId, shellRegistry, state, design, chatApp, browser, appHost } =
 		started;
 	const pathname = useSyncExternalStore(project.router.subscribe, project.router.pathname);
 	const { view, panel } = useSyncExternalStore(state.subscribe, state.now);
@@ -127,7 +138,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	return h("div", { ref: frame, className: `wg-studio${hidesBand ? " is-canvas" : ""}` }, [
 		hidesBand ? null : h(StudioBand, { key: "band", corners }),
 		h(StudioRail, { key: "rail", children: rail }),
-		h(StudioChat, { key: "chat", assistant, mascot, menu, chatWidth: state.chatWidth, frame, appName }),
+		h(StudioChat, { key: "chat", assistant, chatApp, menu, chatWidth: state.chatWidth, frame, appName }),
 		h(StudioOutlet, { key: "outlet", project, pathname, view, design, shell: canvasShell, browser }),
 		panel === "none"
 			? null

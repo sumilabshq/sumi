@@ -5,6 +5,7 @@ export interface ArgsGiven {
 	readonly brief: string;
 	readonly vaultPath: string;
 	readonly pluginPath: string;
+	readonly attachmentsPath?: string | undefined;
 	readonly session?: string | null | undefined;
 	readonly skipPermissions?: boolean | undefined;
 	readonly helpers?: string | null | undefined;
@@ -20,6 +21,7 @@ export function expandArgs(provider: ProviderArgs, given: ArgsGiven): string[] {
 		"{brief}": [given.brief],
 		"{vault}": [given.vaultPath],
 		"{plugin}": [given.pluginPath],
+		"{attachments}": given.attachmentsPath ? [given.attachmentsPath] : [],
 		"{model}": fillTemplate(provider.modelArgs, provider.model),
 		"{resume}": fillTemplate(provider.resumeArgs, given.session),
 		"{yolo}": given.skipPermissions === false ? [] : tokensOf(provider.bypassArgs),

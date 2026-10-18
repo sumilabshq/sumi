@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { PopoverItem, PopoverSeparator } from "@widgetarium/kit";
-import type { AgentSetup } from "../../shared/agent-setup.js";
+import type { AgentSetup } from "@widgetarium/assistant";
 
 export interface AgentItemHandlers {
 	readonly onChoose: (id: string) => void;

@@ -30,7 +30,8 @@ const { readSpec, withFeatureToggled, withChoicePicked, specPathOf, BUILD_STAGES
 const { specAppIn, lastSpecAppIn, buildRunIn, buildStartedIn, installsIn } =
 	await import("../packages/host-obsidian/src/legacy/ai/spec-calls.js");
 const { buildsIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");
-const { PinnedRun, scrollToCard } = await import("../apps/studio/src/legacy/assistant/cards/pinned-run.js");
+const { PinnedRun } = await import("../apps/studio/src/legacy/assistant/cards/pinned-run.js");
+const { scrollToCard } = await import("../packages/assistant/shared/lib/scroll-to-card.ts");
 const { argumentsIn } = await import("../packages/host-obsidian/src/legacy/ai/tools.js");
 const { specOfApp, stageOfApp } = await import("../packages/host-obsidian/src/legacy/ai/spec-command.js");
 const { SpecCard } = await import("../apps/studio/src/legacy/assistant/cards/spec-card.js");
@@ -39,7 +40,7 @@ const { briefFor } = await import("../packages/host-obsidian/src/legacy/ai/brief
 const { HANDBOOK } = await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
 import type { AssistantCall } from "../packages/core/src/engine/assistant-port.js";
 import type { AppFiles, JobsPort } from "../apps/studio/src/legacy/assistant/cards/card-ports.js";
-import type { Report } from "../apps/studio/src/legacy/assistant/failure-line.js";
+import type { Report } from "../packages/assistant/shared/lib/failure-line.ts";
 import type { Job } from "../packages/core/src/app-jobs.js";
 
 let failed = 0;

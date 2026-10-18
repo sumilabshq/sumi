@@ -64,6 +64,7 @@ export interface RunnerDoors {
 	readonly fetchStream?: FetchStream;
 	readonly vaultPath: string;
 	readonly pluginPath: string;
+	readonly attachmentsPath: string | null;
 	readonly env?: Environment;
 }
 
@@ -226,8 +227,8 @@ interface ChildStart {
 }
 
 function startChild({ doors, provider, ask, emit, state, settle }: ChildStart): void {
-	const { spawn, killGroup, vaultPath, pluginPath, env = {} } = doors;
-	const argv = expandArgs(provider, { ...ask, vaultPath, pluginPath });
+	const { spawn, killGroup, vaultPath, pluginPath, attachmentsPath, env = {} } = doors;
+	const argv = expandArgs(provider, { ...ask, vaultPath, pluginPath, attachmentsPath: attachmentsPath ?? undefined });
 	const withCommandName = (said: string): string => said.replace("{command}", provider.command);
 	const wentQuiet = withCommandName(WENT_QUIET).replace("{minutes}", String(Math.round(IDLE_MS / 60000)));
 	const stderr: string[] = [];

@@ -590,11 +590,21 @@ route re-wear `default`, and inside Obsidian `--brand` is the host's accent. The
 the width (`chatWidth` in `StudioState`, ≥300px with no cap, card ≥240px, double press → 380px; the
 chat's content stays a centred 800px column, `--wg-studio-chat-content`), remembered per
 viewer in local storage, never in a note; `test:studio-layout` measures it in Chrome. The chat is the
-engine's too: `studio/assistant` draws it over
-`AssistantPort` (`packages/core/src/engine/assistant-port.ts`, `ports.assistant`). Obsidian lends its
-session through `ai/assistant-port-obsidian.ts` and its old AI view draws the same `AssistantChat`; a
-browser gets `NO_ASSISTANT` and the chat says so. Spec, build, design and jobs cards are still
-Obsidian's, handed in as `AssistantCards` by that view alone (TODO in `assistant-cards.ts`).
+`assistant` domain, `packages/assistant` (`AssistantClientModule`): features `chat` (the session read
+as `ChatQuery`, retry, stop), `composer` (attach, remove, send, sweep) and `agent` (setup, provider,
+helper agents, clear), over `AssistantSessionGateway` and `AssistantSetupGateway` (adapters of the core
+`AssistantPort`), `AttachmentFilesGateway` and two stores, the draft and the sent attachments. The
+studio starts it in `apps/studio/src/assistant/chat-app.ts` (Obsidian hands
+`obsidianAssistantGateways`, a browser gets `webAssistantGateways` over `NO_ASSISTANT` and the chat
+says not available). The spec, build, design and jobs cards are still legacy
+(`apps/studio/src/legacy/assistant/cards`) and reach the chat through the `ChatCardsSlot` built in
+`apps/studio/src/assistant/chat-cards.tsx`; the control menu's agent items answer through forwarders in
+`legacy/logic/agent-seam.ts`. **An attachment is data, never an instruction**: images (png, jpg, gif,
+webp, 10 MB) and text files (md, txt, json, ts, tsx, js, css, html, csv, 1 MB) are written 0600 into a
+private temp folder and named by path in a trailer of the message; what a provider can read is its
+`reads` (`readsOf` in `ai/providers.ts`: a CLI line naming `{attachments}` reads files, Claude Code
+images too, an endpoint gets text inline), and the files are swept when the turn ends or after an
+hour. `test:assistant` pins it.
 
 **In Obsidian an app note opens in the studio view, and Obsidian draws nothing of its own over it.** A
 markdown note whose front matter holds `widgetarium-app: <project folder>` (and optionally

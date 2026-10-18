@@ -1,3 +1,5 @@
+import type { ProviderReads } from "@widgetarium/core/engine/assistant-port.js";
+
 export const CLI = "cli";
 export const HTTP = "http";
 
@@ -19,7 +21,20 @@ export interface Provider {
 }
 
 // TRADE-OFF: a whitespace-split template, not a shell line; no quoting rules, no shell
-export const PLACEHOLDERS = ["{prompt}", "{brief}", "{vault}", "{plugin}", "{model}", "{resume}", "{yolo}"];
+export const ATTACHMENTS = "{attachments}";
+
+export const PLACEHOLDERS = [
+	"{prompt}",
+	"{brief}",
+	"{vault}",
+	"{plugin}",
+	ATTACHMENTS,
+	"{model}",
+	"{resume}",
+	"{yolo}",
+];
+
+const CLAUDE_STREAM = "claude-stream";
 
 export const DEFAULT_PRESET: Provider = {
 	id: "claude-code",
@@ -27,11 +42,11 @@ export const DEFAULT_PRESET: Provider = {
 	kind: CLI,
 	canEdit: true,
 	command: "claude",
-	args: "-p --output-format stream-json --verbose --include-partial-messages --setting-sources project,local --add-dir {vault} --add-dir {plugin} --append-system-prompt {brief} {agents} {model} {yolo} {resume} {prompt}",
+	args: "-p --output-format stream-json --verbose --include-partial-messages --setting-sources project,local --add-dir {vault} --add-dir {plugin} --add-dir {attachments} --append-system-prompt {brief} {agents} {model} {yolo} {resume} {prompt}",
 	modelArgs: "--model {value}",
 	resumeArgs: "--resume {value}",
 	bypassArgs: "--permission-mode bypassPermissions",
-	outputFormat: "claude-stream",
+	outputFormat: CLAUDE_STREAM,
 	model: "",
 	endpoint: "",
 };
@@ -72,7 +87,7 @@ export const PRESETS: readonly Provider[] = [
 		kind: CLI,
 		canEdit: true,
 		command: "gemini",
-		args: "--prompt {prompt} --include-directories {vault} {model} {yolo} {resume}",
+		args: "--prompt {prompt} --include-directories {vault} --include-directories {attachments} {model} {yolo} {resume}",
 		modelArgs: "--model {value}",
 		resumeArgs: "--resume latest",
 		bypassArgs: "--approval-mode yolo",
@@ -143,4 +158,29 @@ export function briefGoesInTheMessage(provider: ProviderTemplate | null | undefi
 export function resumesWithoutAnId(provider: ProviderTemplate | null | undefined): boolean {
 	const resumeArgs = String(provider?.resumeArgs ?? "");
 	return resumeArgs !== "" && !resumeArgs.includes("{value}");
+}
+
+const INLINE_ONLY: ProviderReads = {
+	images: false,
+	files: "inline",
+};
+
+const READS_NOTHING: ProviderReads = {
+	images: false,
+	files: "none",
+};
+
+export function readsOf(provider: Pick<Provider, "kind" | "args" | "outputFormat">): ProviderReads {
+	if (provider.kind === HTTP) {
+		return INLINE_ONLY;
+	}
+
+	if (!provider.args.split(/\s+/).includes(ATTACHMENTS)) {
+		return READS_NOTHING;
+	}
+
+	return {
+		images: provider.outputFormat === CLAUDE_STREAM,
+		files: "path",
+	};
 }

@@ -14,6 +14,7 @@ import {
 } from "./canvas-hosts.ts";
 import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
 import { webBrowserParts } from "../packages/browser/generated/gateways.ts";
+import { webAssistantGateways } from "../packages/assistant/generated/gateways.ts";
 import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
@@ -344,7 +345,10 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 	registerStudioView(
 		standIn<WidgetariumPlugin>(plugin, ["app", "host", "registerView", "registerEvent", "register"], "plugin"),
 		countedProjects,
-		NO_ASSISTANT,
+		{
+			port: NO_ASSISTANT,
+			gateways: webAssistantGateways(),
+		},
 		webBrowserParts(),
 	);
 	return {

@@ -40,6 +40,34 @@ const TEXT_BOX_OF = `(node) => {
 	return range.getBoundingClientRect();
 }`;
 
+const BOARD_INK = {
+	w: 29.34,
+	h: 28.67,
+	gapToTitle: 15.33,
+	centreVsTitleBlock: -0.5,
+};
+const INK_SLACK_PX = 0.5;
+
+const INK_SEEN = `(() => {
+	document.getAnimations().forEach((running) => {
+		running.pause();
+		running.currentTime = 0;
+	});
+	const head = document.querySelector(".wg-studio-ai-head");
+	const drawing = head.querySelector(".wg-mascot-svg").getScreenCTM();
+	const corner = new DOMPoint(16, 26).matrixTransform(drawing);
+	const across = new DOMPoint(104, 112).matrixTransform(drawing);
+	const title = head.querySelector(".wg-studio-ai-title").getBoundingClientRect();
+	const named = head.querySelector(".wg-studio-ai-named").getBoundingClientRect();
+	const rounded = (value) => Math.round(value * 100) / 100;
+	return {
+		w: rounded(across.x - corner.x),
+		h: rounded(across.y - corner.y),
+		gapToTitle: rounded(title.left - across.x),
+		centreVsTitleBlock: rounded((corner.y + across.y) / 2 - (named.top + named.height / 2)),
+	};
+})()`;
+
 const OPEN_TOOLS = `(() => {
 	document.querySelector(".wg-studio-ai-tools-head").click();
 	return true;
@@ -288,6 +316,12 @@ for (const theme of THEMES) {
 				title: "Untitled app",
 				saysProvider: false,
 			});
+			const ink = recordOf(await page.ask(INK_SEEN));
+			holds(
+				"the header Ink box equals the boards', its size, its gap to the title and its centring, within half a pixel",
+				Object.entries(BOARD_INK).every(([key, board]) => Math.abs(Number(ink[key]) - board) <= INK_SLACK_PX),
+				{ seen: ink, board: BOARD_INK },
+			);
 		}
 		await page.ask(OPEN_TOOLS);
 		await waited(200);
