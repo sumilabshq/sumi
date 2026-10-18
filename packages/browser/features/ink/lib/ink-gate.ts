@@ -10,9 +10,12 @@ import { effectiveGrants } from "../../../shared/lib/once-grants.js";
 import { SENSITIVE_SITES } from "../../../shared/lib/sensitive-sites.js";
 import { decideBrowserAccess, refuseUrlShape, siteKeyOfAddress } from "../../../shared/lib/decide-browser-access.js";
 import { urlOf } from "../../../shared/lib/site-key.js";
+import { loggedAddressOf, loggedOf } from "./logged-read.js";
+import type { Logged } from "./logged-read.js";
 import type { AccessAsk } from "../../../shared/schema/access-ask.schema.js";
 import type { AccessDecision, ReadKind } from "../../../shared/schema/site-access.schema.js";
-import type { CommittedPage } from "../../../shared/schema/page-read.schema.js";
+import type { CommittedPage, PageContent, PageContentRead, PageShot } from "../../../shared/schema/page-read.schema.js";
+import { refuseSecretContent } from "../../../shared/lib/secret-content.js";
 import { hasReadContentThisTurn, isStopped } from "./ink-turn.js";
 import { UNSEEN_PAGES, refuseClosedFrame, refusePaymentFrame } from "./page-exposure.js";
 
@@ -39,17 +42,13 @@ export interface BrowserNavigation {
 	readonly siteKey: string;
 }
 
-interface Logged {
-	readonly tab: string;
-	readonly siteKey: string;
-	readonly kind: ReadKind;
-	readonly finalUrl: string;
-}
-
 const ALLOWED = "allowed";
+const UNCHANGED_AFTER_READ = "unchanged-after-read";
+const NO_SECRET_IN_CONTENT = "no-secret-in-content";
+const SECRET_FIELD_ON_PAGE = "secret-field-on-page";
+const CHANGED_DURING_CAPTURE = "changed-during-capture";
 const LEFT_FOR = "about:blank";
 const UNANSWERED_AFTER_MS = 2 * 60 * 1000;
-const WEB_PROTOCOL = /^https?:$/;
 const REFUSAL_OF_OUTCOME: Readonly<Record<AskOutcome, string | null>> = {
 	site: null,
 	once: null,
@@ -79,7 +78,7 @@ export class InkGate {
 		}
 
 		await this.passAccess(logged);
-		await this.refuseExposedPage(logged, page);
+		await this.passExposure(logged, page);
 		this.logDecision(logged, "allow", ALLOWED);
 		inkActivityStore.change(
 			{
@@ -155,16 +154,45 @@ export class InkGate {
 		return arrived.url;
 	}
 
-	stillAllowed(read: BrowserRead): void {
-		const after = this.parts.browserPagesGateway.committed(read.tabId);
-		const reason = this.changeAfterRead(read, after);
+	async contentReleased(read: BrowserRead, captured: PageContentRead): Promise<PageContent> {
+		const { url, title, text } = captured;
+		await this.stillAllowed(read, refuseReportedRead(read, captured));
+		this.passInspection(read, `${url}\n${title}\n${text}`);
+		return {
+			url,
+			title,
+			text,
+		};
+	}
 
-		if (reason === null) {
-			return;
+	async shotReleased(read: BrowserRead, shot: PageShot): Promise<PageShot> {
+		// TRADE-OFF: no OCR; an image is judged only by the field probe right after capture.
+		await this.stillAllowed(read, null);
+		return shot;
+	}
+
+	private async stillAllowed(read: BrowserRead, reportedRefusal: string | null): Promise<void> {
+		const after = this.parts.browserPagesGateway.committed(read.tabId);
+		const logged = loggedOf(read.tabId, read.kind, after?.url ?? "");
+		const reason =
+			this.changeAfterRead(read, after) ?? reportedRefusal ?? (await this.exposureRefusal(logged, read.page));
+
+		if (reason !== null) {
+			this.refusedAfterRead(logged, reason);
 		}
 
-		this.logDecision(loggedOf(read.tabId, read.kind, after?.url ?? ""), "deny", reason);
-		refuse(reason);
+		this.logDecision(logged, "allow", UNCHANGED_AFTER_READ);
+	}
+
+	private passInspection(read: BrowserRead, text: string): void {
+		const logged = loggedOf(read.tabId, read.kind, read.page.url);
+		const reason = refuseSecretContent(text);
+
+		if (reason !== null) {
+			this.refusedAfterRead(logged, reason);
+		}
+
+		this.logDecision(logged, "allow", NO_SECRET_IN_CONTENT);
 	}
 
 	private changeAfterRead(read: BrowserRead, after: CommittedPage | null): string | null {
@@ -177,7 +205,7 @@ export class InkGate {
 		}
 
 		if (after === null || after.entry !== read.page.entry || after.url !== read.page.url) {
-			return "changed-during-capture";
+			return CHANGED_DURING_CAPTURE;
 		}
 
 		const { decision, reason } = this.decided(loggedOf(read.tabId, read.kind, after.url));
@@ -261,11 +289,19 @@ export class InkGate {
 		return refuse("redirected-to-closed-site");
 	}
 
-	private async refuseExposedPage(logged: Logged, page: CommittedPage): Promise<void> {
+	private async passExposure(logged: Logged, page: CommittedPage): Promise<void> {
+		const refusal = await this.exposureRefusal(logged, page);
+
+		if (refusal !== null) {
+			this.refused(logged, refusal);
+		}
+	}
+
+	private async exposureRefusal(logged: Logged, page: CommittedPage): Promise<string | null> {
 		const frames = await this.parts.browserPagesGateway.frameUrls(logged.tab).catch(() => null);
 
 		if (frames === null) {
-			this.refused(logged, "frames-unreadable");
+			return "frames-unreadable";
 		}
 
 		const isAllowed = (url: string): boolean =>
@@ -278,11 +314,8 @@ export class InkGate {
 						isAllowed,
 					})
 				: null;
-		const refusal = frameRefusal ?? refusePaymentFrame(frames) ?? (await this.refuseSecretField(logged));
 
-		if (refusal !== null) {
-			this.refused(logged, refusal);
-		}
+		return frameRefusal ?? refusePaymentFrame(frames) ?? (await this.refuseSecretField(logged));
 	}
 
 	private async refuseSecretField(logged: Logged): Promise<string | null> {
@@ -292,7 +325,7 @@ export class InkGate {
 			return "page-unreadable";
 		}
 
-		return hasSecretField ? "secret-field-on-page" : null;
+		return hasSecretField ? SECRET_FIELD_ON_PAGE : null;
 	}
 
 	private decided(logged: Logged): AccessDecision {
@@ -318,6 +351,11 @@ export class InkGate {
 		return deny(reason);
 	}
 
+	private refusedAfterRead(logged: Logged, reason: string): never {
+		this.logDecision(logged, "deny", reason);
+		return refuse(reason);
+	}
+
 	private logDecision(logged: Logged, decision: "allow" | "deny", reason: string): void {
 		this.parts.browserAuditGateway.appendAccess({
 			at: this.parts.clockGateway.now(),
@@ -329,25 +367,10 @@ export class InkGate {
 	}
 }
 
-function loggedOf(tabId: string | null, kind: ReadKind, address: string): Logged {
-	return {
-		tab: tabId ?? "",
-		siteKey: siteKeyOfAddress(address),
-		kind,
-		finalUrl: address,
-	};
-}
-
-function loggedAddressOf(address: string): string {
-	const url = urlOf(address);
-
-	if (url === null) {
-		return "";
+function refuseReportedRead(read: BrowserRead, captured: PageContentRead): string | null {
+	if (captured.url !== read.page.url) {
+		return CHANGED_DURING_CAPTURE;
 	}
 
-	if (!WEB_PROTOCOL.test(url.protocol)) {
-		return url.protocol;
-	}
-
-	return `${url.origin}${url.pathname}`;
+	return captured.hasSecretField ? SECRET_FIELD_ON_PAGE : null;
 }

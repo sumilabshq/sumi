@@ -67,6 +67,7 @@ export const STATES_PROBE = `(async (root, parts, many) => {
 		const style = getComputedStyle(node);
 		return { ...box(node, from), radius: radiusOf(node), fill: seenFill(node), colour: textOn(node, style.color), size: parseFloat(style.fontSize), weight: Number(style.fontWeight), lineHeight: style.lineHeight === "normal" ? "normal" : parseFloat(style.lineHeight), tracking: style.letterSpacing === "normal" ? 0 : parseFloat(style.letterSpacing), padding: [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft].map(parseFloat), gap: style.columnGap === "normal" ? 0 : parseFloat(style.columnGap), shadows: shadowsOf(node) };
 	};
+	const borderOf = (node) => { const style = getComputedStyle(node); const width = parseFloat(style.borderTopWidth); return { width, colour: width > 0 ? over(bytes(style.borderTopColor), seenFill(node)) : null }; };
 	const placeholderOf = (node) => { if (node.tagName !== "INPUT") return { colour: textOn(node, getComputedStyle(node).color), size: parseFloat(getComputedStyle(node).fontSize) }; const style = getComputedStyle(node, "::placeholder"); return { colour: textOn(node, style.color), size: parseFloat(style.fontSize) }; };
 	const area = document.querySelectorAll(root.selector)[root.at];
 	if (!area) return null;
@@ -74,6 +75,7 @@ export const STATES_PROBE = `(async (root, parts, many) => {
 	const out = { area: { w: from.width, h: from.height, fill: seenFill(area) } };
 	for (const [name, selector] of Object.entries(parts)) {
 		const found = [...area.querySelectorAll(selector)].filter((node) => node.getClientRects().length > 0);
+		if (name === "field") { out[name] = found[0] ? { ...lookOf(found[0], from), border: borderOf(found[0]) } : null; continue; }
 		if (name === "fieldWords") { out[name] = found[0] ? placeholderOf(found[0]) : null; continue; }
 		if (name === "favicons") { out[name] = found.map((node) => ({ ...box(node, from), radius: parseFloat(getComputedStyle(node).borderTopLeftRadius) })); continue; }
 		if (name === "ink" || name === "askInk" || name === "bannerInk" || name === "fieldIcon") { const shown = many.includes(name) ? found : found.slice(0, 1); const sized = shown.map((node) => box(node, from)); out[name] = many.includes(name) ? sized : sized[0] ?? null; continue; }

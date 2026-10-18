@@ -3,4 +3,4 @@ export const BUTTON_RESET =
 
 export const WASH_INK = "cv:bg-brand-wash cv:text-[color-mix(in_srgb,var(--brand)_60%,var(--foreground))]";
 
-export const EDGED = "cv:bg-transparent cv:text-ink cv:shadow-[inset_0_0_0_1px_var(--border)]";
+export const EDGED = "cv:bg-transparent cv:shadow-[inset_0_0_0_1px_var(--border)]";

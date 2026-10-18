@@ -1,6 +1,6 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
 import type { BrowserTab, PageFailure } from "../../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContent, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
+import { PageContentReadSchema } from "../../../shared/schema/page-read.schema.js";
+import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
 import type { ElectronRemote } from "./electron-remote.js";
 import { regionWithin } from "../../../shared/lib/region-within.js";
 import { loadFailureKindOf } from "../../../shared/lib/load-failure.js";
@@ -173,19 +173,14 @@ export class WebviewTab {
 		return inMainFrame === true || answers.some((answer) => answer === true);
 	}
 
-	async content(): Promise<PageContent> {
-		const read: unknown = await this.contents().runIsolated(READ_PAGE);
+	async content(): Promise<PageContentRead> {
+		const read = PageContentReadSchema.safeParse(await this.contents().runIsolated(READ_PAGE));
 
-		if (!isObject(read)) {
+		if (!read.success) {
 			throw new Error(UNREADABLE);
 		}
 
-		return {
-			url: this.committed()?.url ?? "",
-			title: String(read["title"] ?? ""),
-			text: String(read["text"] ?? ""),
-			html: String(read["html"] ?? ""),
-		};
+		return read.data;
 	}
 
 	async capture(region: PageRegion | null): Promise<PageShot> {

@@ -3,6 +3,7 @@ import { tally } from "./check-helpers.ts";
 
 layJsdomGlobals();
 await import("./browser-access-checks.ts");
+await import("./browser-secret-content-checks.ts");
 await import("./browser-guard-checks.ts");
 await import("./browser-store-checks.ts");
 await import("./browser-gate-checks.ts");

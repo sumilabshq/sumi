@@ -4,10 +4,15 @@ export const PageContentSchema = z.object({
 	url: z.string(),
 	title: z.string(),
 	text: z.string(),
-	html: z.string(),
 });
 
 export type PageContent = z.infer<typeof PageContentSchema>;
+
+export const PageContentReadSchema = PageContentSchema.extend({
+	hasSecretField: z.boolean(),
+});
+
+export type PageContentRead = z.infer<typeof PageContentReadSchema>;
 
 export const PageRegionSchema = z.object({
 	x: z.number().int().min(0),

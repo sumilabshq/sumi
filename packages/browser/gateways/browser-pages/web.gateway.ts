@@ -1,6 +1,6 @@
 import { NOT_AVAILABLE_ON_HOST } from "@widgetarium/core/engine/studio-host.js";
 import type { BrowserTab } from "../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContent, PageShot } from "../../shared/schema/page-read.schema.js";
+import type { CommittedPage, PageContentRead, PageShot } from "../../shared/schema/page-read.schema.js";
 import { BrowserPagesGateway } from "./browser-pages.gateway.js";
 
 export class WebBrowserPagesGateway extends BrowserPagesGateway {
@@ -72,7 +72,7 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		return Promise.reject(new Error(NOT_AVAILABLE_ON_HOST));
 	}
 
-	content(): Promise<PageContent> {
+	content(): Promise<PageContentRead> {
 		return Promise.reject(new Error(NOT_AVAILABLE_ON_HOST));
 	}
 

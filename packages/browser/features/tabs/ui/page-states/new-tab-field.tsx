@@ -7,7 +7,7 @@ export interface NewTabFieldProps {
 }
 
 const FIELD =
-	"cv:mt-[26px] cv:box-border cv:flex cv:h-[52px] cv:w-[560px] cv:max-w-full cv:flex-none cv:items-center cv:gap-3 cv:rounded-full cv:bg-raise cv:ps-5 cv:pe-1.5 cv:text-[16px] cv:text-muted-foreground cv:focus-within:shadow-[0_0_0_2px_var(--brand),0_0_0_6px_var(--accent-wash)]";
+	"cv:mt-[26px] cv:box-border cv:flex cv:h-[52px] cv:w-[560px] cv:max-w-full cv:flex-none cv:items-center cv:gap-3 cv:rounded-full cv:border cv:border-edge cv:bg-raise cv:ps-[19px] cv:pe-[5px] cv:text-[16px] cv:text-muted-foreground cv:focus-within:shadow-[0_0_0_2px_var(--brand),0_0_0_6px_var(--accent-wash)]";
 const INPUT =
 	"cv:h-10 cv:min-w-0 cv:flex-1 cv:border-0 cv:bg-transparent cv:p-0 cv:font-[inherit] cv:text-[16px] cv:text-ink cv:caret-brand cv:shadow-none cv:outline-none cv:placeholder:text-muted-foreground/67";
 const GO =

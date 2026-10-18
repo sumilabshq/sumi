@@ -39,8 +39,8 @@ export const ReadPageContentCommandHandler = handler(ReadPageContentCommand, Bro
 		const { browserPagesGateway, inkActivityStore, clockGateway, browserRead } = parts;
 
 		try {
-			const content = await browserPagesGateway.content(browserRead.tabId);
-			new InkGate(parts).stillAllowed(browserRead);
+			const captured = await browserPagesGateway.content(browserRead.tabId);
+			const content = await new InkGate(parts).contentReleased(browserRead, captured);
 			inkActivityStore.change({ contentReadAt: clockGateway.now() }, CONTENT_READ);
 			return content;
 		} finally {
@@ -55,8 +55,8 @@ export const CapturePageCommandHandler = handler(CapturePageCommand, BrowserClie
 		const { browserPagesGateway, inkActivityStore, clockGateway, browserRead } = parts;
 
 		try {
-			const shot = await browserPagesGateway.capture(browserRead.tabId, region);
-			new InkGate(parts).stillAllowed(browserRead);
+			const captured = await browserPagesGateway.capture(browserRead.tabId, region);
+			const shot = await new InkGate(parts).shotReleased(browserRead, captured);
 			inkActivityStore.change({ contentReadAt: clockGateway.now() }, CONTENT_READ);
 			return shot;
 		} finally {

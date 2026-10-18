@@ -191,6 +191,40 @@ check(
 	"javascript: links don't open here",
 );
 check("nothing was opened for it", shown.pages.opened, [`${SEARCH_ENGINE}test.co`]);
+
+const COPY_SHOWN_FOR_MS = 2500;
+const copied: string[] = [];
+const copyButtonText = (): string | null | undefined => host.querySelector("[data-browser-quiet-action]")?.textContent;
+const clipboardAnswers = (write: (text: string) => Promise<void>): void => {
+	Object.defineProperty(navigator, "clipboard", {
+		value: { writeText: write },
+		configurable: true,
+	});
+};
+clipboardAnswers((text) => {
+	copied.push(text);
+	return Promise.resolve();
+});
+host.querySelector<HTMLButtonElement>("[data-browser-quiet-action]")?.click();
+check("Copy link copies the refused address", (await waitFor(() => copied.length === 1)) && copied, [
+	"javascript:open()",
+]);
+check("and says it copied", await waitFor(() => copyButtonText() === "Copied"), true);
+check(
+	"in the success token",
+	host.querySelector("[data-browser-quiet-action]")?.classList.contains("cv:text-success"),
+	true,
+);
+check("then turns back", await waitFor(() => copyButtonText() === "Copy link", COPY_SHOWN_FOR_MS), true);
+clipboardAnswers(() => Promise.reject(new Error("denied")));
+host.querySelector<HTMLButtonElement>("[data-browser-quiet-action]")?.click();
+check("a failed copy says so", await waitFor(() => copyButtonText() === "Couldn't copy"), true);
+check(
+	"in the error token",
+	host.querySelector("[data-browser-quiet-action]")?.classList.contains("cv:text-error"),
+	true,
+);
+check("and turns back too", await waitFor(() => copyButtonText() === "Copy link", COPY_SHOWN_FOR_MS), true);
 await shownApp.send(LeaveFailureCommand, { tabId: "tab-1" });
 check("going back from a refused scheme dismisses it", shown.pages.moves.at(-1), "dismiss");
 

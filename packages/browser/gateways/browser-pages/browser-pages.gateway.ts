@@ -1,5 +1,5 @@
 import type { BrowserTab } from "../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContent, PageRegion, PageShot } from "../../shared/schema/page-read.schema.js";
+import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../shared/schema/page-read.schema.js";
 
 export abstract class BrowserPagesGateway {
 	abstract isAvailable(): boolean;
@@ -20,6 +20,6 @@ export abstract class BrowserPagesGateway {
 	abstract committed(tabId: string): CommittedPage | null;
 	abstract frameUrls(tabId: string): Promise<readonly string[]>;
 	abstract hasSecretField(tabId: string): Promise<boolean>;
-	abstract content(tabId: string): Promise<PageContent>;
+	abstract content(tabId: string): Promise<PageContentRead>;
 	abstract capture(tabId: string, region: PageRegion | null): Promise<PageShot>;
 }

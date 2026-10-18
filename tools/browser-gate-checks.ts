@@ -127,7 +127,7 @@ await started(queried).send(ReadPageContentCommand);
 check(
 	"the access log keeps origin and path only",
 	queried.audit.access.map(({ finalUrl }) => finalUrl),
-	["https://example.com/board"],
+	["https://example.com/board", "https://example.com/board", "https://example.com/board"],
 );
 
 const kept = new Map<string, string>();

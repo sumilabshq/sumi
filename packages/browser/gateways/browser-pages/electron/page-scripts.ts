@@ -1,13 +1,6 @@
 export const TEXT_KEPT = 200_000;
-export const HTML_KEPT = 500_000;
 
-export const READ_PAGE = `(() => ({
-	title: document.title,
-	text: document.body ? document.body.innerText.slice(0, ${TEXT_KEPT}) : "",
-	html: document.documentElement.outerHTML.slice(0, ${HTML_KEPT}),
-}))()`;
-
-export const FIND_SECRET_FIELD = `(() => {
+const SECRET_FIELD_SHOWN = `const secretFieldShown = () => {
 	const shown = (field) => {
 		const box = field.getBoundingClientRect();
 		const look = getComputedStyle(field);
@@ -22,4 +15,19 @@ export const FIND_SECRET_FIELD = `(() => {
 	);
 	const typed = Array.from(document.querySelectorAll("input, textarea")).filter(masked);
 	return [...Array.from(named), ...typed].some(shown);
+};`;
+
+export const READ_PAGE = `(() => {
+	${SECRET_FIELD_SHOWN}
+	return {
+		hasSecretField: secretFieldShown(),
+		url: location.href,
+		title: document.title,
+		text: document.body ? document.body.innerText.slice(0, ${TEXT_KEPT}) : "",
+	};
+})()`;
+
+export const FIND_SECRET_FIELD = `(() => {
+	${SECRET_FIELD_SHOWN}
+	return secretFieldShown();
 })()`;

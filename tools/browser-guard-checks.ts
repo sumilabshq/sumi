@@ -60,7 +60,11 @@ check("an allowed, visible page is read", read.ok && read.output.text, "Sprint 7
 check(
 	"the read is logged without page content",
 	allowed.audit.access.map(({ kind, decision, reason, siteKey }) => `${kind} ${decision} ${reason} ${siteKey}`),
-	["content allow allowed example.com"],
+	[
+		"content allow allowed example.com",
+		"content allow unchanged-after-read example.com",
+		"content allow no-secret-in-content example.com",
+	],
 );
 check("the log line holds no page text", JSON.stringify(allowed.audit.access).includes("Sprint 7"), false);
 
@@ -82,6 +86,54 @@ check(
 	"a page showing a password field is not read",
 	said(await started(secret).send(ReadPageContentCommand)),
 	"secret-field-on-page",
+);
+
+const revealing = fakeBrowser();
+revealing.pages.duringRead = () => {
+	revealing.pages.hasSecret = true;
+};
+const revealed = await started(revealing).send(ReadPageContentCommand);
+check("a field shown during the text read is refused on the way out", said(revealed), "secret-field-on-page");
+check("and the text never reaches the agent", JSON.stringify(revealed).includes("Sprint 7"), false);
+check(
+	"the refusal is logged after the allowed way in",
+	revealing.audit.access.map(({ decision, reason }) => `${decision} ${reason}`),
+	["allow allowed", "deny secret-field-on-page"],
+);
+
+const flashing = fakeBrowser();
+flashing.pages.isFieldShownOnlyToRead = true;
+check(
+	"a field the read itself saw is refused though no probe saw it",
+	said(await started(flashing).send(ReadPageContentCommand)),
+	"secret-field-on-page",
+);
+
+const drifting = fakeBrowser();
+drifting.pages.readsAt = "https://example.com/elsewhere";
+check(
+	"a read whose page names another address than the committed one is refused",
+	said(await started(drifting).send(ReadPageContentCommand)),
+	"changed-during-capture",
+);
+
+const shooting = fakeBrowser();
+shooting.pages.duringRead = () => {
+	shooting.pages.hasSecret = true;
+};
+const shot = await started(shooting).send(CapturePageCommand, { region: null });
+check("a field shown during the capture discards the image", said(shot), "secret-field-on-page");
+check("and the image never reaches the agent", JSON.stringify(shot).includes("iVBORw0KGgo"), false);
+
+const carded = fakeBrowser();
+carded.pages.text = "Paid with 4111 1111 1111 1111 yesterday";
+const cardRead = await started(carded).send(ReadPageContentCommand);
+check("a card number in the page text is refused", said(cardRead), "secret-in-content");
+check("and the number never reaches the agent", JSON.stringify(cardRead).includes("4111"), false);
+check(
+	"the inspection logs its refusal",
+	carded.audit.access.map(({ decision, reason }) => `${decision} ${reason}`),
+	["allow allowed", "allow unchanged-after-read", "deny secret-in-content"],
 );
 
 const bank = fakeBrowser();

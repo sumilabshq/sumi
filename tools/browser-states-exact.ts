@@ -14,6 +14,7 @@ import type { StateScene } from "./browser-states-page.tsx";
 export interface ExactStatesReport {
 	readonly differences: number;
 	readonly unjudged: readonly string[];
+	readonly deliberate: readonly string[];
 	readonly found: Readonly<Record<string, readonly Difference[]>>;
 	readonly measured: Readonly<Record<string, unknown>>;
 }
@@ -64,6 +65,7 @@ const BOARD_PALETTE_DELTAS: Readonly<Record<string, Palette>> = {
 	},
 };
 const PALETTE_TOLERANCE = 1;
+const FIELD_BORDER_PX = 1;
 export const UNJUDGED = [
 	"brand: the accent is the host's; the board's is pinned on the outlet so everything drawn from it is compared",
 	"palette deltas: where the board's hand-picked hex and the studio design system disagree (light edge and faint, dark raise, wash and faint), the built must wear the system token the board's colour stands for: raise, accent-wash, border, muted-foreground at 67%",
@@ -71,6 +73,10 @@ export const UNJUDGED = [
 	"timed-out reason x and width: the board's second sentence is a design note, the built copy says only what happened, in two lines too",
 	"favicon fill: the board paints made-up brand colours; a real chip shows the site's own favicon",
 	"Ink's eye pose: it follows the pointer or the state's own gaze, so only Ink's box is judged",
+];
+
+export const DELIBERATE = [
+	"new tab field border: the board's field has none; the person asked for a 1px resting border in the input token (--border), so the board is judged as if it wore one, its side padding 1px less so everything inside stands where the board puts it",
 ];
 
 export async function exactStatesReport(): Promise<ExactStatesReport> {
@@ -85,7 +91,10 @@ export async function exactStatesReport(): Promise<ExactStatesReport> {
 
 		for (const { scene } of shown) {
 			const at = `${theme}.${scene.id}`;
-			const board = withSystemPalette(withoutUnjudged(scene.id, boards[scene.id]), deltas, palette);
+			const board = withDeliberate(
+				withSystemPalette(withoutUnjudged(scene.id, boards[scene.id]), deltas, palette),
+				palette,
+			);
 			found[at] = differences(board, withoutUnjudged(scene.id, seen[scene.id]), at);
 			measured[at] = {
 				board: boards[scene.id],
@@ -98,6 +107,7 @@ export async function exactStatesReport(): Promise<ExactStatesReport> {
 	return {
 		differences: Object.values(found).reduce((total, one) => total + one.length, 0),
 		unjudged: UNJUDGED,
+		deliberate: DELIBERATE,
 		found,
 		measured,
 	};
@@ -324,6 +334,27 @@ function withSystemPalette(seen: unknown, deltas: Palette, palette: Palette): un
 	}
 
 	return seen;
+}
+
+function withDeliberate(board: unknown, palette: Palette): unknown {
+	if (!isRecord(board) || !isRecord(board["field"])) {
+		return board;
+	}
+
+	const padding = Array.isArray(board["field"]["padding"]) ? board["field"]["padding"].map(Number) : [];
+	const [top, right, bottom, left] = padding;
+
+	return {
+		...board,
+		field: {
+			...board["field"],
+			padding: [top, Number(right) - FIELD_BORDER_PX, bottom, Number(left) - FIELD_BORDER_PX],
+			border: {
+				width: FIELD_BORDER_PX,
+				colour: palette["edge"] ?? null,
+			},
+		},
+	};
 }
 
 function isColour(value: unknown): value is readonly number[] {

@@ -1,5 +1,5 @@
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContent, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
+import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
 import { ElectronRemote } from "./electron-remote.js";
 import { partitionOfProfile } from "../../../shared/lib/browser-profile.js";
@@ -121,7 +121,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return this.tabOf(tabId).hasSecretField();
 	}
 
-	content(tabId: string): Promise<PageContent> {
+	content(tabId: string): Promise<PageContentRead> {
 		return this.tabOf(tabId).content();
 	}
 

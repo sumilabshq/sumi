@@ -7,7 +7,7 @@ import { ClockGateway } from "../packages/browser/gateways/clock/clock.gateway.t
 import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-sites/memory.gateway.ts";
 import { ChatComposerGateway } from "../packages/browser/gateways/chat-composer/chat-composer.gateway.ts";
 import type { BrowserTab } from "../packages/browser/shared/schema/browser-tab.schema.ts";
-import type { CommittedPage, PageContent, PageShot } from "../packages/browser/shared/schema/page-read.schema.ts";
+import type { CommittedPage, PageContentRead, PageShot } from "../packages/browser/shared/schema/page-read.schema.ts";
 
 export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	tab: BrowserTab = {
@@ -24,6 +24,9 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	entry = 1;
 	frames: readonly string[] = ["https://example.com/board"];
 	hasSecret = false;
+	isFieldShownOnlyToRead = false;
+	text = "Sprint 7";
+	readsAt: string | null = null;
 	navigatesWhileReading = false;
 	redirectTo: string | null = null;
 	duringRead: () => void = () => undefined;
@@ -130,13 +133,13 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		return Promise.resolve(this.hasSecret);
 	}
 
-	content(): Promise<PageContent> {
+	content(): Promise<PageContentRead> {
 		this.moveIfAsked();
 		return Promise.resolve({
-			url: this.tab.url,
+			url: this.readsAt ?? this.tab.url,
 			title: this.tab.title,
-			text: "Sprint 7",
-			html: "<p>Sprint 7</p>",
+			text: this.text,
+			hasSecretField: this.hasSecret || this.isFieldShownOnlyToRead,
 		});
 	}
 
