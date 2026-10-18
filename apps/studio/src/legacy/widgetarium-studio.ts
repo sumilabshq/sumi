@@ -86,9 +86,10 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const state = start.state ?? createStudioState();
 	const browser = start.browser ?? webBrowserParts();
 	const appId = start.appId ?? opened.app.name;
+	const studio = start.studio ?? browserStudioHost(opened.app, opened.routes);
 	return {
 		project,
-		studio: start.studio ?? browserStudioHost(opened.app, opened.routes),
+		studio,
 		assistant: start.assistant ?? NO_ASSISTANT,
 		catalogue: start.catalogue ?? browserCataloguePort(opened.registry),
 		appId,
@@ -97,7 +98,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		design: start.design ?? webStudioDesign(opened.app.name),
 		mascot: start.mascot ?? memoryMascotParts(),
 		browser,
-		appHost: start.appHost ?? startedAppHostParts({ state, browser, workspace: appId }),
+		appHost: start.appHost ?? startedAppHostParts({ state, browser, workspace: appId, studio }),
 	};
 }
 

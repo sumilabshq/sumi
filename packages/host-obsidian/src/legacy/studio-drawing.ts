@@ -63,7 +63,7 @@ export function drawStudio(place: StudioPlace, shown: ShownNote, routing: Studio
 	}
 	const studio = obsidianStudioHost({ app: place.app, leaf: shown.leaf, frame: shown.frame, viewType: place.viewType });
 	const state = createStudioState();
-	const appHost = startedAppHostParts({ state, browser: place.browser, workspace: note.folder });
+	const appHost = startedAppHostParts({ state, browser: place.browser, workspace: note.folder, studio });
 	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, appHost, routing });
 	return () => {
 		stopDrawing();
