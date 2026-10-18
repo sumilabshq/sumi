@@ -4,11 +4,11 @@ import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { ResetSidebarWidthCommand, ResizeSidebarWidthCommand, SidebarQuery } from "../../contract.js";
-import { SIDEBAR_BOUNDS } from "../../../../shared/lib/view/sidebar-width.js";
+import { SIDEBAR_BOUNDS, SIDEBAR_HAIRLINE_PX } from "../../../../shared/lib/view/sidebar-width.js";
 
 const EDGE_LABEL = "Sidebar width";
 const EDGE =
-	"cv:relative cv:-mx-[var(--wg-kit-plate-pad,6px)] cv:w-[var(--wg-kit-plate-pad,6px)] cv:flex-none cv:cursor-col-resize cv:touch-none cv:outline-none cv:after:absolute cv:after:inset-y-4 cv:after:left-1/2 cv:after:w-0.5 cv:after:-translate-x-1/2 cv:after:rounded-full cv:after:transition-colors cv:after:content-[''] cv:hover:after:bg-brand cv:active:after:bg-brand cv:focus-visible:after:bg-brand";
+	"wg-studio-edge-line cv:relative cv:z-[2] cv:-mx-[calc((var(--wg-studio-edge,6px)_-_1px)_/_2)] cv:w-[var(--wg-studio-edge,6px)] cv:flex-none cv:cursor-col-resize cv:touch-none cv:outline-none cv:before:absolute cv:before:inset-y-0 cv:before:left-[calc((var(--wg-studio-edge,6px)_-_1px)_/_2)] cv:before:w-px cv:before:bg-line cv:before:content-['']";
 
 export function SidebarEdge(): ReactElement | null {
 	const edge = useRef<HTMLDivElement | null>(null);
@@ -45,10 +45,10 @@ function useSidebarEdgeResize(edge: RefObject<HTMLDivElement | null>, px: number
 }
 
 function roomBesideOf(edge: HTMLElement | null): number {
-	const row = edge?.parentElement;
-	if (!row) {
+	const plate = edge?.parentElement;
+	if (!plate) {
 		return 0;
 	}
 
-	return row.clientWidth - (parseFloat(getComputedStyle(row).columnGap) || 0);
+	return plate.clientWidth - SIDEBAR_HAIRLINE_PX;
 }

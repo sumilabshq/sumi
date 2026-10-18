@@ -11,6 +11,7 @@ import { PAGES, idOf, indexOf, probeOf } from "./gpu-design-canvas-probe.ts";
 import { BROKEN_FRAME, DESIGN_FRAMES, KIT_FRAME, TAGS_FRAME, TASKS_FRAME } from "./gpu-design-canvas-frames.ts";
 import { BROKEN_SAID } from "./gpu-design-fixture-broken.tsx";
 import { checkSidebar } from "./gpu-design-canvas-sidebar.ts";
+import { checkOnePlate } from "./gpu-design-canvas-plate.ts";
 import { checkTopBar } from "./gpu-design-canvas-top-bar.ts";
 import { checkPillChrome } from "./gpu-design-canvas-pill.ts";
 import { checkGridFollowsCamera } from "./gpu-design-canvas-grid.ts";
@@ -85,6 +86,7 @@ async function gpuRun(): Promise<void> {
 	await checkTopBar(page, check);
 	await checkPillChrome(page, check);
 	await checkSidebar(page, check);
+	await checkOnePlate(page, check);
 	await checkLayerRowsInside(page, check);
 	await checkGridFollowsCamera(page, check, indexOf(TAGS_FRAME));
 	await page.ask(`window.designPage.lookAtFrame(${indexOf(TAGS_FRAME)}, 1)`);

@@ -7,6 +7,8 @@ export const SIDEBAR_BOUNDS: EdgeBounds = {
 	keptBesidePx: 320,
 };
 
+export const SIDEBAR_HAIRLINE_PX = 1;
+
 const SIDEBAR_WIDTH_KEY = "widgetarium-canvas-sidebar-px";
 
 export function createSidebarWidth(): EdgeWidth {

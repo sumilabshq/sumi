@@ -60,6 +60,7 @@ const PILL_LOOK = `(() => {
 		pickedView: look(document.querySelector("[data-host-tab][aria-selected=true]")),
 		eyebrows: [...view.querySelectorAll("[data-canvas-eyebrow]")].map((node) => look(node)),
 		sidebar: look(document.querySelector("[data-canvas-sidebar]")),
+		plate: look(document.querySelector("[data-canvas-plate]")),
 		hairline: look(document.querySelector("[data-canvas-layers] [role=separator]")),
 		pickedPage: look(picked),
 		pickedDot: look(picked?.querySelector("[data-canvas-page-dot]")),
@@ -98,6 +99,7 @@ interface PillLook {
 	readonly pickedView: Look | null;
 	readonly eyebrows: readonly Look[];
 	readonly sidebar: Look | null;
+	readonly plate: Look | null;
 	readonly hairline: Look | null;
 	readonly pickedPage: Look | null;
 	readonly pickedDot: Look | null;
@@ -156,9 +158,9 @@ const PILL_LAWS: readonly PillLaw[] = [
 		shown: ({ views, pickedView }) => ({ views, pickedView }),
 	},
 	{
-		said: "pill: the sidebar is a raise plate with the plate radius, and so is the board",
-		holds: isPlateSidebar,
-		shown: ({ sidebar, board, tokens }) => ({ sidebar, board, radius: tokens.radius }),
+		said: "pill: the sidebar and the board stand on one raise plate with the plate radius, neither rounded on its own",
+		holds: isOnePlate,
+		shown: ({ plate, sidebar, board, tokens }) => ({ plate, sidebar, board, radius: tokens.radius }),
 	},
 	{
 		said: "pill: Pages and Layers are 11px sentence-case muted eyebrows, a hairline between them",
@@ -211,8 +213,13 @@ function isInkPickedView({ views, pickedView, tokens }: PillLook): boolean {
 	);
 }
 
-function isPlateSidebar({ sidebar, board, tokens }: PillLook): boolean {
-	return sidebar?.fill === tokens.raise && sidebar.radius === tokens.radius && board?.radius === tokens.radius;
+function isOnePlate({ plate, sidebar, board, tokens }: PillLook): boolean {
+	return (
+		plate?.fill === tokens.raise &&
+		plate.radius === tokens.radius &&
+		sidebar?.radius === "0px" &&
+		board?.radius === "0px"
+	);
 }
 
 function areEyebrows({ eyebrows, hairline, tokens }: PillLook): boolean {
