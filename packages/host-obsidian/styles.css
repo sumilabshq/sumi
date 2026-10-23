@@ -17774,6 +17774,13 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-plate-crumb.is-pressable {
 	cursor: pointer;
 }
+.wg-pane[data-pane-dimmed] .wg-plate-head,
+.wg-pane[data-pane-dimmed] .wg-plate-head :is(.wg-plate-crumb, .wg-plate-crumb-first, .wg-plate-button) {
+	color: var(--sumi-text-3);
+}
+.wg-pane[data-pane-dimmed] .wg-plate-head img {
+	opacity: 0.5;
+}
 .wg-plate-crumb.is-pressable:hover {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;

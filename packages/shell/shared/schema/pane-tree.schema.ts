@@ -56,6 +56,7 @@ export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
 export const PaneTreeSchema = z.object({
 	root: PaneNodeSchema.nullable(),
 	minted: z.number().int().nonnegative(),
+	targetId: z.string().nullable(),
 });
 
 export type PaneTree = z.infer<typeof PaneTreeSchema>;

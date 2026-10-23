@@ -36,6 +36,7 @@ export const FIRST_PANES: PaneTree = {
 		],
 	},
 	minted: 0,
+	targetId: null,
 };
 
 export function shellPartsOf(memories: FrameMemories): ShellParts {

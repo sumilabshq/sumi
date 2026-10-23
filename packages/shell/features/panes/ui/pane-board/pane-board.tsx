@@ -29,12 +29,13 @@ const PREVIEW_ID = "pane-preview";
 const EDGE_SLACK_PX = 1;
 
 export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & PaneBoardFrame): ReactElement {
-	const { root } = useQuery(PaneTreeQuery).data;
+	const { root, targetId } = useQuery(PaneTreeQuery).data;
 	const board = useRef<HTMLDivElement | null>(null);
 	const box = useBoardBox(board);
 	const resting = paneLayoutOf(root, box, GAP_PX);
 	useOpensChatAt(chatPx, resting.edges);
 	const leaves = leavesOf(root);
+	const dimmedIds = dimmedIdsOf(leaves, targetId);
 	const aim = usePaneDrop({ board, rects: resting.rects, leaves });
 	const shown = shownLayoutOf(root, aim, box) ?? resting;
 	const moving = aim === null ? undefined : leaves.find((leaf) => isSameView(leaf.view, aim.view));
@@ -53,6 +54,7 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 					leaf={leaf}
 					rect={shown.rects.get(leaf.id) ?? preview ?? box}
 					isAtTopRight={isAtTopRight(resting.rects.get(leaf.id), box)}
+					isDimmed={dimmedIds.has(leaf.id)}
 					drawn={drawn}
 				/>
 			))}
@@ -79,6 +81,20 @@ function shownLayoutOf(root: PaneNode | null, aim: PaneAim | null, box: PaneRect
 
 	const previewed = withPlaced(root, aim, previewOf(aim));
 	return previewed === null ? null : paneLayoutOf(previewed, box, GAP_PX);
+}
+
+function dimmedIdsOf(leaves: readonly PaneLeaf[], targetId: string | null): ReadonlySet<string> {
+	const apps = leaves.filter((leaf) => leaf.view.kind === "app");
+	const target =
+		apps.find((leaf) => leaf.id === targetId) ??
+		apps.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null) ??
+		apps[0];
+
+	if (apps.length < 2 || target === undefined) {
+		return new Set();
+	}
+
+	return new Set(apps.filter((leaf) => leaf.id !== target.id).map((leaf) => leaf.id));
 }
 
 function isAtTopRight(rect: PaneRect | undefined, box: PaneRect): boolean {

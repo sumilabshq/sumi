@@ -30,3 +30,8 @@ export const ResizePaneSplitCommand = command("shell/resize-pane-split")
 	)
 	.idempotencyKey(Repeatable)
 	.invalidates([PaneTreeQuery]);
+
+export const AimPaneCommand = command("shell/aim-pane")
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable)
+	.invalidates([PaneTreeQuery]);

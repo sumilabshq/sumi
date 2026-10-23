@@ -52,6 +52,21 @@ export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | n
 	return splitOf(node, kept);
 }
 
+export function withView(node: PaneNode | null, paneId: string, view: PaneView): PaneNode | null {
+	if (node === null) {
+		return null;
+	}
+
+	if (node.kind === "pane") {
+		return node.id === paneId ? { ...node, view } : node;
+	}
+
+	return {
+		...node,
+		children: node.children.flatMap((child) => withView(child, paneId, view) ?? []),
+	};
+}
+
 export function withShare(node: PaneNode, splitId: string, at: number, share: number): PaneNode {
 	if (node.kind === "pane") {
 		return node;
