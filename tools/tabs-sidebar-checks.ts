@@ -512,35 +512,125 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	);
 }
 
-async function checksTearOut(page: AskedPage, folder: string): Promise<void> {
-	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
-	const id = String(await page.ask(`document.querySelector('${row}')?.dataset.tabsId ?? ""`));
+const CARRY_HEARD = `(() => { window.__carried = []; const heard = (event) => { window.__carried.push(event.detail.phase); event.detail.isTaken = true; }; document.addEventListener("wg-carry", heard); window.__stopCarry = () => document.removeEventListener("wg-carry", heard); return true; })()`;
+const CARRIED = `window.__carried.join(" ")`;
+const OWN_WINDOW_CARD = `(() => { const ghost = document.querySelector("[data-tabs-ghost]"); const caption = ghost?.querySelector("[data-tabs-ghost-caption]"); const box = ghost?.getBoundingClientRect(); const words = caption?.getBoundingClientRect(); const look = caption ? getComputedStyle(caption) : null; return { width: Math.round(box?.width ?? 0), height: Math.round(box?.height ?? 0), caption: caption?.textContent ?? "", shown: look?.display ?? "none", fill: look?.backgroundColor ?? "", edge: look?.borderTopWidth ?? "", inside: words !== undefined && box !== undefined && words.left >= box.left && words.right <= box.right && words.top >= box.top + box.height / 2 && words.bottom <= box.bottom && box.bottom - words.bottom <= 12 }; })()`;
+
+function isOwnWindowCard(card: unknown): boolean {
+	return (
+		typeof card === "object" &&
+		card !== null &&
+		Reflect.get(card, "width") === 208 &&
+		Reflect.get(card, "height") === 156 &&
+		Reflect.get(card, "caption") === "Release to open in a new window" &&
+		Reflect.get(card, "shown") === "block"
+	);
+}
+
+function isQuietFooter(card: unknown): boolean {
+	return (
+		typeof card === "object" &&
+		card !== null &&
+		Reflect.get(card, "inside") === true &&
+		Reflect.get(card, "fill") === "rgba(0, 0, 0, 0)" &&
+		Reflect.get(card, "edge") === "0px"
+	);
+}
+
+async function carriedOutside(page: AskedPage, id: string): Promise<readonly [number, number]> {
 	const from = await centreOf(page, `[data-tabs-id="${id}"]`);
 	const outside = [-40, from[1]] as const;
 	await page.drag({ from, to: outside, steps: 14, stepMs: 16 });
 	await waited(300);
-	const card = await page.ask(
-		`(() => { const ghost = document.querySelector("[data-tabs-ghost]"); const box = ghost?.getBoundingClientRect(); return { width: Math.round(box?.width ?? 0), height: Math.round(box?.height ?? 0), caption: ghost?.querySelector("[data-tabs-ghost-caption]")?.textContent ?? "", shown: ghost ? getComputedStyle(ghost.querySelector("[data-tabs-ghost-caption]")).display : "none" }; })()`,
+	return outside;
+}
+
+async function checksOwnWindowRefusedOutsideBrowser(page: AskedPage): Promise<void> {
+	const id = String(
+		await page.ask(
+			`document.querySelector('[data-tabs-list] > [data-tabs-item=tab]:not([data-host-tab-app="browser"])')?.dataset.tabsId ?? ""`,
+		),
 	);
-	writeFileSync(path.join(folder, "tear-out-card.png"), await page.shoot());
+	const outside = await carriedOutside(page, id);
+	const card = await page.ask(OWN_WINDOW_CARD);
+	await page.release(outside);
+	await waited(SETTLED_MS);
+	check(
+		"a tab that is not a browser page never becomes the own-window card, even outside the window",
+		id !== "" && !isOwnWindowCard(card) && Reflect.get(Object(card), "shown") === "none",
+		[id, card],
+	);
+}
+
+const TEAR_OFF_ASKED = `window.__SIDEBAR__.tearOffAsked()`;
+
+async function checksTearOffWatch(page: AskedPage): Promise<void> {
+	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
+	const from = await centreOf(page, row);
+	const before = String(await page.ask(TEAR_OFF_ASKED));
+	await page.drag({ from, to: [from[0], from[1] + 40], steps: 6, stepMs: 16 });
+	await waited(200);
+	const lifted = String(await page.ask(TEAR_OFF_ASKED)).slice(before.length);
+	await page.release([from[0], from[1] + 40]);
+	await waited(SETTLED_MS);
+	const released = String(await page.ask(TEAR_OFF_ASKED)).slice(before.length);
+	check(
+		"lifting a browser tab asks the host to watch it leave the window, and a release inside stops the watch",
+		lifted.includes("watch ") && released.endsWith("stop"),
+		[lifted, released],
+	);
+	const beforeBlur = String(await page.ask(TEAR_OFF_ASKED));
+	await page.drag({ from, to: [from[0], from[1] + 30], steps: 6, stepMs: 16 });
+	await waited(200);
+	await page.ask(`window.dispatchEvent(new Event("blur")); true`);
+	await waited(SETTLED_MS);
+	const handed = String(await page.ask(TEAR_OFF_ASKED)).slice(beforeBlur.length);
+	const ghostGone = (await page.ask(`document.querySelector("[data-tabs-ghost]") === null`)) === true;
+	await page.release([from[0], from[1] + 30]);
+	await waited(SETTLED_MS);
+	check(
+		"when the tab's own window takes focus the drag hands over: the ghost goes and the watch keeps running",
+		ghostGone && handed.includes("watch ") && !handed.includes("stop"),
+		[ghostGone, handed],
+	);
+}
+
+async function checksOwnWindow(page: AskedPage, folder: string): Promise<void> {
+	await page.ask(CARRY_HEARD);
+	await checksTearOffWatch(page);
+	await checksOwnWindowRefusedOutsideBrowser(page);
+	await page.ask(`window.__carried = []; true`);
+	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
+	const id = String(await page.ask(`document.querySelector('${row}')?.dataset.tabsId ?? ""`));
+	const outside = await carriedOutside(page, id);
+	const card = await page.ask(OWN_WINDOW_CARD);
+	const carriedBeforeRelease = String(await page.ask(CARRIED));
+	writeFileSync(path.join(folder, "own-window-card.png"), await page.shoot());
 	check(
 		"a row carried out of the window becomes a 4:3 window card that says what release does",
-		typeof card === "object" &&
-			card !== null &&
-			Reflect.get(card, "width") === 208 &&
-			Reflect.get(card, "height") === 156 &&
-			Reflect.get(card, "caption") === "Release to open in a new window" &&
-			Reflect.get(card, "shown") === "block",
+		isOwnWindowCard(card),
 		card,
+	);
+	check("the card says it as quiet text in its own footer, with no plate of its own", isQuietFooter(card), card);
+	check(
+		"the board the row crossed is told the carry left once the card shows",
+		carriedBeforeRelease.startsWith("over") && carriedBeforeRelease.endsWith("leave"),
+		carriedBeforeRelease,
 	);
 	await page.release(outside);
 	await waited(SETTLED_MS);
 	check(
-		"releasing it outside tears the tab out and its row shows the window mark",
+		"releasing it outside opens the tab in its own window and its row shows the window mark",
 		(await page.ask(`document.querySelector('[data-tabs-id="${id}"] [data-tabs-own-window]') !== null`)) === true &&
 			(await page.ask(`document.querySelector("[data-tabs-ghost]") === null`)) === true,
 		id,
 	);
+	check(
+		"the own-window drop is never also a drop on the board",
+		String(await page.ask(CARRIED)).endsWith("leave"),
+		await page.ask(CARRIED),
+	);
+	await page.ask(`window.__stopCarry(); true`);
 }
 
 export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
@@ -551,7 +641,7 @@ export async function checksSidebar(page: AskedPage, folder: string): Promise<nu
 	await checksRename(page);
 	await checksDrag(page, folder);
 	await checksSections(page, folder);
-	await checksTearOut(page, folder);
+	await checksOwnWindow(page, folder);
 	await checksKitMotion(page);
 	await checksOneForm(page);
 	await checksEssentialsWidth(page);

@@ -2,7 +2,7 @@ import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { TabsSidebarColumn } from "../apps/studio/src/tabs/tabs-sidebar-column.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
-import { SwitchedChat, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { SwitchedChat, TEAR_OFF_ASKED, exactAppHostParts } from "./studio-exact-fixture.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -18,6 +18,7 @@ const hostParts = exactAppHostParts(state, chat);
 
 Reflect.set(window, "__SIDEBAR__", {
 	counted,
+	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
 	switchChat: (id: string) => chat.switchTo(id),
 	moment: () => hostParts.hostTabs.now(),
 	essentials: () => hostParts.essentials.now(),

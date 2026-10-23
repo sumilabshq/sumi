@@ -153,6 +153,16 @@ function laidAt(element: HTMLElement, box: Box): void {
 	});
 }
 
+async function resizedTo(container: HTMLElement, box: Box): Promise<void> {
+	laidAt(container, box);
+
+	for (const resized of resizeCallbacks) {
+		resized();
+	}
+
+	await settledTicks();
+}
+
 async function settledTicks(): Promise<void> {
 	for (let tick = 0; tick < 5; tick += 1) {
 		await new Promise((done) => setTimeout(done, 0));
@@ -263,11 +273,10 @@ async function checksPlacement(
 		],
 	});
 
-	box.width = 600;
-	for (const resized of resizeCallbacks) {
-		resized();
-	}
-	await settledTicks();
+	await resizedTo(container, {
+		...box,
+		width: 600,
+	});
 	check("a resized card moves the page", rust.named("place").at(-1)?.args, {
 		page: FIRST,
 		x: 320,
@@ -291,11 +300,15 @@ async function checksPlacement(
 	check("switching tabs never recreates a page", rust.named("create").length, 1);
 }
 
-async function checksTearing(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+async function checksOwnWindow(
+	rust: FakeRust,
+	gateway: TauriBrowserPagesGateway,
+	container: HTMLElement,
+): Promise<void> {
 	gateway.openInOwnWindow(FIRST);
 	await settledTicks();
 	check(
-		"tearing a tab out asks Rust for its own window, titled by the page",
+		"opening a tab in its own window asks Rust for that window, titled by the page",
 		rust.named("open_own_window").at(-1)?.args,
 		{
 			page: FIRST,
@@ -309,6 +322,20 @@ async function checksTearing(rust: FakeRust, gateway: TauriBrowserPagesGateway):
 		[gateway.isInOwnWindow(FIRST), rust.named("show").at(-1)?.args],
 		[true, { frames: [] }],
 	);
+	const placedBefore = rust.named("place").length;
+	await resizedTo(container, {
+		left: 300,
+		top: 90,
+		width: 700,
+		height: 600,
+	});
+	check("a resized card never moves a page that lives in its own window", rust.named("place").length, placedBefore);
+	await resizedTo(container, {
+		left: 320,
+		top: 100,
+		width: 600,
+		height: 640,
+	});
 	gateway.focusOwnWindow(FIRST);
 	await settledTicks();
 	check("a press on a tab in its own window brings its window forward", rust.named("focus_own_window").at(-1)?.args, {
@@ -320,6 +347,39 @@ async function checksTearing(rust: FakeRust, gateway: TauriBrowserPagesGateway):
 		"a returned page is drawn in the studio again",
 		[gateway.isInOwnWindow(FIRST), JSON.stringify(rust.named("show").at(-1)?.args).includes(`"page":"${FIRST}"`)],
 		[false, true],
+	);
+	await checksClosingOwnWindow(rust, gateway);
+	await checksFreshTabOwnWindow(rust, gateway);
+}
+
+async function checksFreshTabOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const fresh = "tab-4";
+	gateway.create(fresh);
+	gateway.openInOwnWindow(fresh);
+	await settledTicks();
+	const asked = rust.calls
+		.filter((call) => call.args?.["page"] === fresh)
+		.map((call) => call.command.replace("plugin:browser|", ""));
+	check("a fresh tab gets its native page before Rust is asked for its own window", asked, [
+		"create",
+		"open_own_window",
+	]);
+}
+
+async function checksClosingOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const apart = "tab-3";
+	gateway.create(apart);
+	gateway.open(apart, "https://example.com/");
+	await settledTicks();
+	gateway.openInOwnWindow(apart);
+	rust.send({ page: apart, kind: "own-window-opened", facts: facts("https://example.com/", "Example"), failure: null });
+	await settledTicks();
+	gateway.close(apart);
+	await settledTicks();
+	check(
+		"closing a tab in its own window asks Rust to close its page and the studio forgets the window",
+		[rust.named("close").at(-1)?.args, gateway.isInOwnWindow(apart)],
+		[{ page: apart }, false],
 	);
 }
 
@@ -355,6 +415,35 @@ async function checksCover(rust: FakeRust): Promise<void> {
 	await settledTicks();
 	check("a tooltip away from the card leaves the page", rust.named("cover").length, 2);
 	aside.remove();
+}
+
+async function checksCoverFollowsShownPage(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const next = "tab-2";
+	const covers = (): string => JSON.stringify(rust.named("cover").map((call) => call.args));
+	gateway.open(next, "https://example.org/");
+	await settledTicks();
+	const menu = document.createElement("div");
+	menu.setAttribute("role", "menu");
+	laidAt(menu, {
+		left: 600,
+		top: 110,
+		width: 280,
+		height: 300,
+	});
+	document.body.append(menu);
+	await waitFor(() => covers().endsWith(`{"page":"${FIRST}","covered":true}]`));
+	gateway.show(next);
+	await waitFor(() => covers().includes(`{"page":"${next}","covered":true}`));
+	await settledTicks();
+	check(
+		"switching the shown tab under an open menu covers the new page and brings the old one back",
+		covers().endsWith(`{"page":"${next}","covered":true},{"page":"${FIRST}","covered":false}]`),
+		true,
+	);
+	menu.remove();
+	gateway.show(FIRST);
+	await waitFor(() => covers().endsWith(`{"page":"${next}","covered":false}]`));
+	await settledTicks();
 }
 
 async function checksReads(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
@@ -397,7 +486,8 @@ export async function checksTauriPages(): Promise<void> {
 		await checksFailures(rust, gateway);
 		await checksPlacement(rust, gateway, container);
 		await checksCover(rust);
-		await checksTearing(rust, gateway);
+		await checksCoverFollowsShownPage(rust, gateway);
+		await checksOwnWindow(rust, gateway, container);
 		await checksReads(rust, gateway);
 		gateway.detach(container);
 		await settledTicks();
