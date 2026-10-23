@@ -10,15 +10,27 @@ import {
 } from "@widgetarium/core/project/index.js";
 import { appHeadTagsOf, type AppHeadTag } from "./app-head.js";
 import { PROJECT_MODULE_ID, projectModuleSourceOf } from "./project-module-source.js";
+import {
+	radixInPictures,
+	type RadixInPicturesPlugin,
+	type ResolveContext,
+	type ResolvedModule,
+} from "./radix-in-pictures.js";
 import { START_MODULE_ID, startModuleSourceOf } from "./start-module-source.js";
 
 export interface WidgetariumVitePlugin {
 	readonly name: string;
-	config(): Promise<{ resolve: { alias: ResolvedAlias[] } }>;
+	readonly enforce: "pre";
+	config(): Promise<WidgetariumConfig>;
 	configResolved(resolved: ResolvedMode): void;
-	resolveId(id: string): string | null;
+	resolveId(this: ResolveContext, id: string, importer?: string): Promise<string | ResolvedModule | null>;
 	load(id: string): Promise<string | null>;
 	transformIndexHtml: { readonly order: "pre"; readonly handler: () => Promise<AppHeadTag[]> };
+}
+
+interface WidgetariumConfig {
+	readonly resolve: { alias: ResolvedAlias[] };
+	readonly optimizeDeps: { rolldownOptions: { plugins: RadixInPicturesPlugin[] } };
 }
 
 interface ResolvedMode {
@@ -40,15 +52,20 @@ const VIRTUAL_MODULES: ReadonlyMap<string, string> = new Map([
 // TODO: refresh the project module in dev when a widget, handler or route is added or removed
 export function widgetarium(root: string = process.cwd()): WidgetariumVitePlugin {
 	const resolved = { mode: "" };
+	const radixInPicturesPlugin = radixInPictures(root);
 	return {
 		name: "widgetarium",
+		enforce: "pre",
 		config: async () => ({
 			resolve: { alias: viteAliasesOf((await projectIn(root)).config.aliases, root) },
+			optimizeDeps: { rolldownOptions: { plugins: [radixInPicturesPlugin] } },
 		}),
 		configResolved: ({ mode }) => {
 			resolved.mode = mode;
 		},
-		resolveId: (id) => VIRTUAL_MODULES.get(id) ?? null,
+		async resolveId(id, importer) {
+			return VIRTUAL_MODULES.get(id) ?? radixInPicturesPlugin.resolveId.call(this, id, importer);
+		},
 		load: async (id) => {
 			if (id === RESOLVED_START_MODULE) return startModuleSourceOf(resolved.mode);
 			if (id !== RESOLVED_PROJECT_MODULE) return null;

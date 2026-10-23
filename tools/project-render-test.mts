@@ -6,7 +6,7 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { PACKED_INTO, packEngine } from "./pack-engine.mts";
 import { bodyLockFindingsOf, leavesWindowAlone, type BodyLockFindings } from "./body-lock-checks.ts";
-import { paged, waited, type AskedPage } from "./chrome-ask.ts";
+import { paged, waitUntil } from "./chrome-ask.ts";
 import { findBrowser } from "./harness.ts";
 import { installOfflineFirst, md5Of, ran, runnerWithTheCli } from "./packed-project.mts";
 
@@ -269,69 +269,64 @@ function titlesDrawnInBoard({ dom }: Drawn): boolean {
 	return board >= 0 && TITLES.every((title) => dom.indexOf(title, board) > board);
 }
 
-async function pictureLooked(dist: string): Promise<PictureLook> {
+async function lookAtPicture(dist: string): Promise<PictureLook> {
 	const server = await serve(dist);
 	try {
-		return await pictureLookedAt(`http://127.0.0.1:${portOf(server.address())}/`);
+		return await lookAtPictureOn(`http://127.0.0.1:${portOf(server.address())}/`);
 	} finally {
 		server.close();
 	}
 }
 
-async function devPictureLooked(app: string): Promise<PictureLook> {
-	const port = await freePort();
+async function lookAtDevPicture(app: string): Promise<PictureLook> {
+	const port = await findFreePort();
 	const url = `http://127.0.0.1:${port}/`;
-	const dev = spawn("npx", ["vite", "--host", "127.0.0.1", "--port", String(port), "--strictPort"], {
-		cwd: app,
-		stdio: "ignore",
-	});
+	const dev = spawn(
+		path.join(app, "node_modules/.bin/vite"),
+		["--host", "127.0.0.1", "--port", String(port), "--strictPort"],
+		{
+			cwd: app,
+			stdio: "ignore",
+		},
+	);
 	try {
-		await answering(url);
-		return await pictureLookedAt(url);
+		await waitUntilAnswering(url);
+		return await lookAtPictureOn(url);
 	} finally {
 		dev.kill();
 	}
 }
 
-async function pictureLookedAt(url: string): Promise<PictureLook> {
+async function lookAtPictureOn(url: string): Promise<PictureLook> {
 	const page = await paged(url, "project render picture", { size: [1280, 900] });
 	try {
-		const isDrawn = await drawnWithin(page, PICTURE_WAIT_MS);
+		const isDrawn = await waitUntil(
+			async () => (await page.ask(DIALOG_DRAWN)) === true,
+			PICTURE_WAIT_MS,
+			PICTURE_POLL_MS,
+		);
 		return { isDrawn, found: await bodyLockFindingsOf(page) };
 	} finally {
 		page.close();
 	}
 }
 
-async function drawnWithin(page: AskedPage, ms: number): Promise<boolean> {
-	for (let left = ms; left > 0; left -= PICTURE_POLL_MS) {
-		if ((await page.ask(DIALOG_DRAWN)) === true) {
-			return true;
-		}
-
-		await waited(PICTURE_POLL_MS);
+async function waitUntilAnswering(url: string): Promise<void> {
+	const isUp = await waitUntil(
+		() =>
+			fetch(url).then(
+				(response) => response.ok,
+				() => false,
+			),
+		DEV_START_MS,
+		PICTURE_POLL_MS,
+	);
+	if (!isUp) {
+		throw new Error(`vite dev never answered at ${url}`);
 	}
-
-	return false;
 }
 
-async function answering(url: string): Promise<void> {
-	for (let left = DEV_START_MS; left > 0; left -= PICTURE_POLL_MS) {
-		const isUp = await fetch(url).then(
-			(response) => response.ok,
-			() => false,
-		);
-		if (isUp) {
-			return;
-		}
-
-		await waited(PICTURE_POLL_MS);
-	}
-
-	throw new Error(`vite dev never answered at ${url}`);
-}
-
-async function freePort(): Promise<number> {
+async function findFreePort(): Promise<number> {
 	const server = http.createServer();
 	await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
 	const port = portOf(server.address());
@@ -383,14 +378,14 @@ try {
 	const drawn = await builtAndDrawn(app);
 	check("the route's board draws both task titles the handler answered", titlesDrawnInBoard(drawn), true);
 	check("and the page logs no console error", drawn.errors.join("\n"), "");
-	const picture = await pictureLooked(path.join(app, "dist"));
+	const picture = await lookAtPicture(path.join(app, "dist"));
 	check("an open Radix dialog drawn inside a picture is on the page", picture.isDrawn, true);
 	check(
 		`and leaves the window's scroll, pointer, focus and readers alone — ${JSON.stringify(picture.found)}`,
 		leavesWindowAlone(picture.found),
 		true,
 	);
-	const devPicture = await devPictureLooked(app);
+	const devPicture = await lookAtDevPicture(app);
 	check("vite dev draws the picture's open dialog too", devPicture.isDrawn, true);
 	check(
 		`and its pre-bundled Radix leaves the window alone — ${JSON.stringify(devPicture.found)}`,
