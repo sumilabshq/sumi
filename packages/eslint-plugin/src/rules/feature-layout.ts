@@ -1,7 +1,7 @@
 import path from "node:path";
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { CONTRACT_FILE, FEATURES, domainFileOf, featureFolderOf } from "../domain-file.js";
+import { CONTRACT_FILE, FEATURES, REQUESTS_FILE, domainFileOf, featureFolderOf } from "../domain-file.js";
 import type { DomainFile } from "../domain-file.js";
 import { importListener } from "../imports.js";
 import { placementOf } from "./feature-placement.js";
@@ -50,7 +50,9 @@ interface RootCall {
 }
 
 function checkFeatureFile(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {
-	if (file.folder === FEATURES && file.inside.at(-1) === CONTRACT_FILE) checkContract(context, file, program);
+	const name = file.inside.at(-1);
+	if (file.folder === FEATURES && (name === CONTRACT_FILE || name === REQUESTS_FILE))
+		checkContract(context, file, program);
 }
 
 function checkContract(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {

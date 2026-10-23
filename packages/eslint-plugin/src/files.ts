@@ -9,6 +9,11 @@ export interface FoundEntry {
 	readonly isFolder: boolean;
 }
 
+export interface ParsedSource {
+	readonly text: string;
+	readonly body: Statement[];
+}
+
 const SKIPPED_FOLDERS: ReadonlySet<string> = new Set(["node_modules", "dist", "generated"]);
 
 export function entriesUnder(root: string): FoundEntry[] {
@@ -26,7 +31,15 @@ export function entriesUnder(root: string): FoundEntry[] {
 		});
 }
 
-export function babelBodyOf(file: string): Statement[] {
+export function parsedSourceOf(file: string): ParsedSource {
+	const text = fs.readFileSync(file, "utf8");
 	const plugins: ParserPlugin[] = file.endsWith(".tsx") ? ["typescript", "jsx"] : ["typescript"];
-	return parse(fs.readFileSync(file, "utf8"), { sourceType: "module", plugins }).program.body;
+	return {
+		text,
+		body: parse(text, { sourceType: "module", plugins }).program.body,
+	};
+}
+
+export function babelBodyOf(file: string): Statement[] {
+	return parsedSourceOf(file).body;
 }

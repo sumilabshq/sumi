@@ -27,6 +27,10 @@ const SERVER_MODULE =
 const CLIENT_MODULE =
 	'import { clientModule } from "@widgetarium/core/requests";\nexport const NotesClientModule = clientModule("notes");\n';
 
+const TALLY_MODULE =
+	'import { module } from "@widgetarium/core/requests";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").queries(CountQuery);\n';
+const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
+
 const WORKSPACE: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "fixture", workspaces: ["apps/*", "packages/*"] }),
 	"packages/notes/package.json": JSON.stringify({ name: "@fixture/notes", widgetarium: { level: "domain" } }),
@@ -61,6 +65,14 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	}),
 	"packages/leaky/module.ts": SERVER_MODULE,
 	"packages/leaky/shared/ui/index.ts": "",
+	"packages/tally/package.json": JSON.stringify({ name: "@fixture/tally", widgetarium: { level: "domain" } }),
+	"packages/tally/module.ts": TALLY_MODULE,
+	"packages/tally/features/count/requests.ts": "",
+	"packages/tally/features/mixed/requests.ts": "",
+	"packages/tally/features/mixed/contract.ts": "",
+	"packages/tally/shared/schema/count.schema.ts": "",
+	"packages/tally/shared/lib/bounds.ts": "",
+	"packages/tally/shared/lib/index.ts": 'export { bounds } from "./bounds.js";\n',
 	"packages/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
 	"apps/web/package.json": JSON.stringify({ name: "@fixture/web" }),
 	"apps/web/tsconfig.json": JSON.stringify({ compilerOptions: { customConditions: ["source"] } }),
@@ -107,6 +119,7 @@ function tested(id: string, cases: Cases): void {
 
 tested("building-block-names", {
 	valid: [
+		ok(TALLY_MODULE, "packages/tally/module.ts"),
 		ok(`${REQUESTS}export const PagesQuery = query("notes/pages");`),
 		ok(`${REQUESTS}export const PagesQueryHandler = handler(PagesQuery, NotesClientModule).handle(() => 1);`),
 		ok(`${REQUESTS}export const OwnsNoteGuard = guard().handle(() => undefined);`),
@@ -114,6 +127,7 @@ tested("building-block-names", {
 		ok('import { query } from "./elsewhere.js";\nconst pages = query("x");'),
 	],
 	invalid: [
+		bad('import { module } from "@widgetarium/core/requests";\nexport const Tally = module("tally");', "wrongSuffix"),
 		bad(`${REQUESTS}export const Pages = query("notes/pages");`, "wrongSuffix"),
 		bad(`${REQUESTS}const PagesQuery = query("notes/pages");`, "unnamed"),
 		bad(`${REQUESTS}export const listed = [query("notes/pages")];`, "unnamed"),
@@ -133,6 +147,7 @@ tested("building-block-names", {
 
 tested("no-choice-strings", {
 	valid: [
+		ok(TALLY_MODULE, "packages/tally/module.ts"),
 		ok(`${REQUESTS}export const PagesQuery = query("notes/pages").cache({ freshFor: minutes(5) });`),
 		ok(`${REQUESTS}export const H = handler(PagesQuery, M).handle(() => "a string is data here");`),
 	],
@@ -192,7 +207,11 @@ tested("module-imports", {
 });
 
 tested("module-definition", {
-	valid: [ok(CLIENT_MODULE, "packages/notes/module.ts"), ok(SERVER_MODULE, "packages/billing/module.ts")],
+	valid: [
+		ok(CLIENT_MODULE, "packages/notes/module.ts"),
+		ok(SERVER_MODULE, "packages/billing/module.ts"),
+		ok(TALLY_MODULE, "packages/tally/module.ts"),
+	],
 	invalid: [
 		bad(`${CLIENT_MODULE}export function notesPartsOf() {}`, "notTheModule", "packages/notes/module.ts"),
 		bad(`${CLIENT_MODULE}export { clock } from "./shared/lib/clock.js";`, "notTheModule", "packages/notes/module.ts"),
@@ -213,6 +232,10 @@ tested("server-module", {
 
 tested("feature-layout", {
 	valid: [
+		ok(
+			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("tally/count").handle(() => 1);',
+			COUNT_REQUESTS,
+		),
 		ok("export const SearchQuery = 1;", SEARCH_CONTRACT),
 		ok(
 			'import { query } from "@widgetarium/core/requests";\nexport const SearchQuery = query("notes/search");',
@@ -230,6 +253,13 @@ tested("feature-layout", {
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
 	],
 	invalid: [
+		bad(
+			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("tally/counting").handle(() => 1);',
+			"wrongName",
+			COUNT_REQUESTS,
+		),
+		bad("export const a = 1;", "misplaced", "packages/tally/features/mixed/requests.ts"),
+		bad("export const CountView = 1;", "misplaced", "packages/tally/features/count/ui/count-view.tsx"),
 		bad("export const a = 1;", "misplaced", "packages/notes/features/search/helpers.ts"),
 		bad("export const a = 1;", "misplaced", "packages/notes/features/search/util/split.ts"),
 		bad("export const a = 1;", "misplaced", "packages/notes/features/search/ui/search-box.ts"),
@@ -280,6 +310,7 @@ const SEARCH_HANDLERS = "packages/notes/features/search/handlers.ts";
 const STORE_GATEWAY = "packages/notes/gateways/store/store.gateway.ts";
 tested("layer-order", {
 	valid: [
+		ok('import { CountQuery } from "./features/count/requests.js";', "packages/tally/module.ts"),
 		ok('import type { Note } from "../schema/note.schema.js";'),
 		ok('import { clock } from "../../shared/lib/clock.js";', STORE_GATEWAY),
 		ok('import { Store } from "../store/obsidian/obsidian.gateway.js";', STORE_GATEWAY),
@@ -293,6 +324,7 @@ tested("layer-order", {
 		ok('import { anything } from "../../features/search/contract.js";', "apps/web/src/main.ts"),
 	],
 	invalid: [
+		bad('import { count } from "./features/count/lib/count.js";', "upward", "packages/tally/module.ts"),
 		bad('import { SearchQuery } from "../../features/search/contract.js";', "upward"),
 		bad('import type { Store } from "../../gateways/store/store.gateway.js";', "upward"),
 		bad('import { SearchQuery } from "../../features/search/contract.js";', "upward", STORE_GATEWAY),
@@ -334,6 +366,7 @@ tested("single-use-lib", {
 		ok("export const split = 1;", "packages/notes/shared/lib/words.ts"),
 		ok("export const unused = 1;", "packages/notes/shared/lib/words.ts"),
 		ok("export const join = 1;", "packages/notes/shared/schema/note.schema.ts"),
+		ok("export const bounds = 1;", "packages/tally/shared/lib/bounds.ts"),
 	],
 	invalid: [
 		bad("export const split = 1;\nexport const join = 2;", "singleUse", "packages/notes/shared/lib/words.ts"),

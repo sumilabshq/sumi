@@ -10,11 +10,13 @@ export interface WorkspacePackage {
 
 const ANY_FOLDER = "/*";
 const DOMAIN_LEVEL = "domain";
+const CLIENT_LEVEL = "client";
+const GENERATED_LEVELS: ReadonlySet<string> = new Set([DOMAIN_LEVEL, CLIENT_LEVEL]);
 const NOT_JSON = "{file} is not plain JSON, so the Widgetarium lint rules cannot read it";
 
-export function domainModulesIn(cwd: string): string[] {
+export function generatedPackagesIn(cwd: string): string[] {
 	return workspacePackagesIn(cwd)
-		.filter(({ level }) => level === DOMAIN_LEVEL)
+		.filter(({ level }) => GENERATED_LEVELS.has(level))
 		.map(({ folder }) => folder);
 }
 
