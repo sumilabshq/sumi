@@ -8,6 +8,7 @@ export class DragFollow {
 		window.addEventListener("pointerup", this.onUp);
 		window.addEventListener("pointercancel", this.onCancel);
 		window.addEventListener("keydown", this.onKey, true);
+		window.addEventListener("selectstart", preventSelection, true);
 	}
 
 	private readonly onMove = (event: PointerEvent): void => this.drag.move(event.clientX, event.clientY);
@@ -41,7 +42,12 @@ export class DragFollow {
 		window.removeEventListener("pointerup", this.onUp);
 		window.removeEventListener("pointercancel", this.onCancel);
 		window.removeEventListener("keydown", this.onKey, true);
+		window.removeEventListener("selectstart", preventSelection, true);
 	}
+}
+
+function preventSelection(event: Event): void {
+	event.preventDefault();
 }
 
 function swallowNextClick(): void {
