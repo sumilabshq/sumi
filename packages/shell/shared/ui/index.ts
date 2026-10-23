@@ -1,0 +1,18 @@
+export { StudioFrame } from "./studio-frame/studio-frame.js";
+export type { StudioFrameProps } from "./studio-frame/studio-frame.js";
+export { Plate } from "./plate/plate.js";
+export type { PlateProps } from "./plate/plate.js";
+export type { PlateSide } from "./plate-header/plate-header.js";
+export { HeaderButton } from "./plate-header/header-button.js";
+export type { HeaderButtonProps } from "./plate-header/header-button.js";
+export { PlateCrumb } from "./plate-header/plate-crumb.js";
+export type { CrumbWords, PlateCrumbProps } from "./plate-header/plate-crumb.js";
+export { PlateHeaderPart } from "./plate-header/plate-header-part.js";
+export type { PlateHeaderPartProps } from "./plate-header/plate-header-part.js";
+export { PlateMore } from "./plate-header/plate-more.js";
+export type { PlateMoreItem, PlateMoreProps } from "./plate-header/plate-more.js";
+export { PlateShown } from "./plate-header/plate-shown.js";
+export type { PlateShownProps } from "./plate-header/plate-shown.js";
+export { PlateTint } from "./plate-header/plate-tint.js";
+export type { PlateTintProps } from "./plate-header/plate-tint.js";
+export type { PlateHeaderPlace, PlateLook } from "../lib/plate-header-store.js";

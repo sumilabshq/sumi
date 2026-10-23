@@ -7,7 +7,7 @@ export function localPxMemory(key: string): PxMemory {
 	return {
 		read: () => {
 			const kept = Number(storageOrNull()?.getItem(key) ?? Number.NaN);
-			return Number.isFinite(kept) ? kept : null;
+			return Number.isFinite(kept) && kept > 0 ? kept : null;
 		},
 		write: (px) => {
 			try {
