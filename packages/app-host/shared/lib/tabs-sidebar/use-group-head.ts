@@ -1,0 +1,14 @@
+import { useLayoutEffect, useState } from "react";
+import type { RefObject } from "react";
+import type { SidebarEntry } from "../../schema/app-tab.schema.js";
+import { groupHeadOf } from "./pointed-of.js";
+
+export function useGroupHead(
+	holder: RefObject<HTMLElement | null>,
+	groupMenuId: string | null,
+	entries: readonly SidebarEntry[],
+): HTMLElement | null {
+	const [groupHead, setGroupHead] = useState<HTMLElement | null>(null);
+	useLayoutEffect(() => setGroupHead(groupHeadOf(holder.current, groupMenuId)), [holder, groupMenuId, entries]);
+	return groupHead;
+}

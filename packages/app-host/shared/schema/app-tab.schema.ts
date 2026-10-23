@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { GroupHueSchema } from "./tab-group.schema.js";
 
 export const AppKindSchema = z.enum(["canvas", "browser"]);
 
@@ -8,15 +9,34 @@ export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
 
 export type TabStatus = z.infer<typeof TabStatusSchema>;
 
+export const TabArtSchema = z.enum([
+	"canvas",
+	"browser",
+	"git",
+	"files",
+	"routines",
+	"settings",
+	"note",
+	"table",
+	"code-ts",
+	"code-js",
+	"code-py",
+	"code-css",
+	"image",
+	"built-app",
+	"site",
+]);
+
+export type TabArt = z.infer<typeof TabArtSchema>;
+
 export const AppTabSchema = z.object({
 	id: z.string(),
 	app: AppKindSchema,
 	title: z.string(),
 	subtitle: z.string().nullable(),
-	icon: z.string(),
+	icon: TabArtSchema,
 	favicon: z.string().nullable(),
 	status: TabStatusSchema.nullable(),
-	isPinned: z.boolean(),
 	label: z.string().nullable(),
 	address: z.string().nullable(),
 });
@@ -27,19 +47,53 @@ export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
 
-export const AppChoiceSchema = z.object({
-	app: AppKindSchema,
-	label: z.string(),
-	icon: z.string(),
-});
-
-export type AppChoice = z.infer<typeof AppChoiceSchema>;
-
 export const AppTabsSchema = z.object({
 	tabs: z.array(AppTabStateSchema).readonly(),
-	apps: z.array(AppChoiceSchema).readonly(),
-	preview: AppTabSchema.nullable(),
 	canReopen: z.boolean(),
 });
 
-export type AppTabs = z.infer<typeof AppTabsSchema>;
+export const EssentialTileSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	icon: TabArtSchema,
+	favicon: z.string().nullable(),
+	isShown: z.boolean(),
+	isLive: z.boolean(),
+});
+
+export type EssentialTile = z.infer<typeof EssentialTileSchema>;
+
+export const GroupStateSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	hue: GroupHueSchema.nullable(),
+	isOpen: z.boolean(),
+	tabs: z.array(AppTabStateSchema).readonly(),
+});
+
+export type GroupState = z.infer<typeof GroupStateSchema>;
+
+export const SidebarEntrySchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("tab"),
+		tab: AppTabStateSchema,
+	}),
+	z.object({
+		kind: z.literal("group"),
+		group: GroupStateSchema,
+	}),
+]);
+
+export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
+
+export const TabsSidebarSchema = z.object({
+	chat: z.object({
+		id: z.string(),
+		title: z.string(),
+	}),
+	essentials: z.array(EssentialTileSchema).readonly(),
+	entries: z.array(SidebarEntrySchema).readonly(),
+	isListOpen: z.boolean(),
+});
+
+export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;

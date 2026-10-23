@@ -1,32 +1,8 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
 import type { AppTab } from "../../schema/app-tab.schema.js";
+import { TabArt } from "./tab-art.js";
 
-export interface TabGlyphProps {
-	readonly tab: AppTab;
-	readonly px?: number;
-	readonly faviconPx?: number;
-}
-
-const FAVICON = "cv:flex-none cv:rounded-sm";
-
-export function TabGlyph({ tab, px = 16, faviconPx = px }: TabGlyphProps): ReactElement {
-	const [failedFavicon, setFailedFavicon] = useState<string | null>(null);
-
-	if (tab.favicon === null || tab.favicon === failedFavicon) {
-		return <Icon name={tab.icon} size={px} className="cv:flex-none" />;
-	}
-
-	return (
-		<img
-			src={tab.favicon}
-			alt=""
-			width={faviconPx}
-			height={faviconPx}
-			className={FAVICON}
-			onError={() => setFailedFavicon(tab.favicon)}
-			data-host-tab-favicon=""
-		/>
-	);
+export function TabGlyph({ tab }: { readonly tab: AppTab }): ReactElement {
+	return <TabArt icon={tab.icon} favicon={tab.favicon} title={tab.title} address={tab.address} size="row" />;
 }

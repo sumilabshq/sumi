@@ -1,64 +1,59 @@
 import type { AppKind } from "../../schema/app-tab.schema.js";
+import type { ListEntry } from "../../schema/tab-group.schema.js";
+import type { KeptTabs } from "../../schema/tabs-session.schema.js";
+import { shownTabIdOf } from "../tab-showing/show-tab.js";
 import { Watchers } from "../watchers/watchers.js";
+import {
+	chatOfGroup,
+	flatTabIdsOf,
+	freeGroupNameOf,
+	findGroup,
+	placeAfterOf,
+	locationOf,
+	withEntryBefore,
+	withTabAt,
+	withoutTab,
+} from "./tab-lists.js";
+import type { TabGroup, TabLayout, TabPlace } from "./tab-lists.js";
+import {
+	closedPlaceOf,
+	emptyMoment,
+	groupChangeSaid,
+	isSameGroupFace,
+	keptClosed,
+	labelSaid,
+	lastShownWith,
+	momentOfKept,
+	reopenPlaceOf,
+	withoutGroup,
+} from "./host-tabs-moment.js";
+import type { ClosedTab, GroupChange, HostTab, HostTabsMoment, OpenedTab, TabPage } from "./host-tabs-moment.js";
 
-export interface OpenedTab {
-	readonly app: AppKind;
-	readonly pageId: string | null;
-	readonly isPinned: boolean;
-}
+export type { TabGroup, TabPlace } from "./tab-lists.js";
 
-export interface HostTab extends OpenedTab {
-	readonly id: string;
-	readonly label: string | null;
-}
-
-export interface TabPage {
-	readonly pageId: string;
-	readonly address: string;
-}
-
-export interface ClosedTab {
-	readonly tab: HostTab;
-	readonly at: number;
-	readonly address: string;
-}
-
-export interface HostTabsMoment {
-	readonly tabs: readonly HostTab[];
-	readonly shownId: string | null;
-	readonly minted: number;
-	readonly closed: readonly ClosedTab[];
-}
-
-export const CLOSED_KEPT = 20;
+export type { ClosedTab, GroupChange, HostTab, HostTabsMoment, OpenedTab, TabPage } from "./host-tabs-moment.js";
+export { CLOSED_KEPT } from "./host-tabs-moment.js";
 
 const NO_TAB = 'the host holds no tab "{id}"';
+const NO_GROUP = 'the host holds no group "{id}"';
 
 export class HostTabs {
 	private readonly watchers = new Watchers();
-	private moment: HostTabsMoment = {
-		tabs: [],
-		shownId: null,
-		minted: 0,
-		closed: [],
-	};
+	private moment: HostTabsMoment;
 
-	constructor(opened: readonly OpenedTab[], kept: HostTabsMoment | null = null) {
-		if (kept !== null && kept.tabs.length > 0) {
-			this.moment = kept;
-			return;
-		}
-
-		for (const tab of opened) {
-			this.open(tab);
-		}
+	constructor(kept: KeptTabs | null, chatId: string) {
+		this.moment = kept === null ? emptyMoment() : momentOfKept(kept, chatId);
 	}
 
 	now = (): HostTabsMoment => this.moment;
 
 	watch = (changed: () => void): (() => void) => this.watchers.watch(changed);
 
-	private tabOf(id: string): HostTab {
+	shownIdFor(shownApp: AppKind | null): string | null {
+		return shownTabIdOf(this.moment, shownApp);
+	}
+
+	tabOf(id: string): HostTab {
 		const found = this.moment.tabs.find((tab) => tab.id === id);
 
 		if (!found) {
@@ -68,23 +63,49 @@ export class HostTabs {
 		return found;
 	}
 
-	open(opened: OpenedTab): HostTab {
-		return this.openAt(opened, groupEndOf(this.moment.tabs, opened.isPinned));
+	open(opened: OpenedTab, place: TabPlace): HostTab {
+		const tab = this.mintTab(opened, null);
+		this.become(
+			{
+				...this.moment,
+				...withTabAt(this.moment, tab.id, place),
+				tabs: [...this.moment.tabs, tab],
+				shownId: tab.id,
+				lastShown: lastShownWith(this.moment.lastShown, place.chatId, tab.id),
+				minted: this.moment.minted + 1,
+			},
+			`open ${tab.id} (${tab.app}) in ${place.chatId}${place.groupId === null ? "" : `/${place.groupId}`}`,
+		);
+		return tab;
 	}
 
-	openAfter(afterId: string, opened: Omit<OpenedTab, "isPinned">): HostTab {
-		const after = this.tabOf(afterId);
-		return this.openAt(
+	openAfter(afterId: string, opened: OpenedTab): HostTab {
+		const place = placeAfterOf(this.moment, afterId);
+
+		if (place === null) {
+			throw new Error(NO_TAB.replace("{id}", afterId));
+		}
+
+		return this.open(opened, place);
+	}
+
+	openEssential(essentialId: string, opened: OpenedTab): HostTab {
+		const tab = this.mintTab(opened, essentialId);
+		this.become(
 			{
-				...opened,
-				isPinned: after.isPinned,
+				...this.moment,
+				tabs: [...this.moment.tabs, tab],
+				shownId: tab.id,
+				minted: this.moment.minted + 1,
 			},
-			this.moment.tabs.indexOf(after) + 1,
+			`open ${tab.id} for essential ${essentialId}`,
 		);
+		return tab;
 	}
 
 	show(id: string): void {
 		this.tabOf(id);
+		const chatId = locationOf(this.moment, id)?.chatId ?? null;
 
 		if (this.moment.shownId === id) {
 			return;
@@ -94,65 +115,38 @@ export class HostTabs {
 			{
 				...this.moment,
 				shownId: id,
+				lastShown: chatId === null ? this.moment.lastShown : lastShownWith(this.moment.lastShown, chatId, id),
 			},
 			`show ${id}`,
 		);
 	}
 
-	close(id: string, page: TabPage | null): void {
-		const closing = this.tabOf(id);
+	close(ids: readonly string[], pages: ReadonlyMap<string, TabPage>, reason: string): void {
+		this.become(this.closedMoment(ids, pages), reason);
+	}
+
+	closeGroup(groupId: string, pages: ReadonlyMap<string, TabPage>): void {
+		const group = this.heldGroupOf(groupId);
+		const closed = this.closedMoment(group.tabIds, pages);
 		this.become(
 			{
-				...this.moment,
-				tabs: this.moment.tabs.filter((tab) => tab.id !== id),
-				shownId: this.moment.shownId === id ? this.neighbourOf(id) : this.moment.shownId,
-				closed: keptClosed(this.moment.closed, [this.closedOf(closing, page)]),
+				...closed,
+				...withoutGroup(closed, groupId, []),
 			},
-			`close ${id}`,
+			`close group ${groupId} with ${group.tabIds.length} tabs`,
 		);
 	}
 
-	closeOthers(keptId: string, pages: ReadonlyMap<string, TabPage>): void {
-		this.tabOf(keptId);
-		const closing = this.moment.tabs.filter((tab) => tab.id !== keptId && !tab.isPinned);
-
-		if (closing.length === 0) {
-			return;
-		}
-
-		const closingIds = new Set(closing.map((tab) => tab.id));
-		const { shownId } = this.moment;
-		this.become(
-			{
-				...this.moment,
-				tabs: this.moment.tabs.filter((tab) => !closingIds.has(tab.id)),
-				shownId: shownId !== null && closingIds.has(shownId) ? keptId : shownId,
-				closed: keptClosed(
-					this.moment.closed,
-					closing.map((tab) => this.closedOf(tab, pages.get(tab.id) ?? null)).reverse(),
-				),
-			},
-			`close ${closing.length} tabs beside ${keptId}`,
-		);
-	}
-
-	reopenClosed(): ClosedTab | null {
+	reopenClosed(chatId: string): ClosedTab | null {
 		const last = this.moment.closed.at(-1);
 
 		if (!last) {
 			return null;
 		}
 
-		const { tab } = last;
-		const at = Math.min(last.at, this.moment.tabs.length);
 		this.become(
-			{
-				...this.moment,
-				tabs: placedIn(this.moment.tabs, tab, at),
-				shownId: tab.id,
-				closed: this.moment.closed.slice(0, -1),
-			},
-			`reopen ${tab.id} at ${at}`,
+			this.reopenedMoment(last, chatId),
+			`reopen ${last.tab.id} in ${last.tab.essentialId === null ? chatId : "essentials"}`,
 		);
 		return last;
 	}
@@ -168,60 +162,159 @@ export class HostTabs {
 		this.become(
 			{
 				...this.moment,
-				tabs: this.moment.tabs.map((tab) => (tab.id === id ? { ...tab, label } : tab)),
+				tabs: this.withTab(id, { label }),
 			},
 			`rename ${id}, ${labelSaid(renamed.label)} → ${labelSaid(label)}`,
 		);
 	}
 
-	move(id: string, beforeId: string | null, isPinned: boolean): void {
+	place(id: string, place: TabPlace): void {
 		const moved = this.tabOf(id);
-		const before = beforeId === null ? null : this.tabOf(beforeId);
-		const rest = this.moment.tabs.filter((tab) => tab.id !== id);
-		const at = before !== null && before.isPinned === isPinned ? rest.indexOf(before) : groupEndOf(rest, isPinned);
-		this.become(
-			{
-				...this.moment,
-				tabs: placedIn(rest, { ...moved, isPinned }, at),
-			},
-			`move ${id} before ${beforeId ?? "the end"}, ${pinnedSaid(moved.isPinned)} → ${pinnedSaid(isPinned)}`,
-		);
-	}
 
-	pin(id: string, isPinned: boolean): void {
-		const pinned = this.tabOf(id);
-
-		if (pinned.isPinned === isPinned) {
+		if (place.before === id) {
 			return;
 		}
 
-		const rest = this.moment.tabs.filter((tab) => tab.id !== id);
 		this.become(
 			{
 				...this.moment,
-				tabs: placedIn(rest, { ...pinned, isPinned }, groupEndOf(rest, true)),
+				...withTabAt(withoutTab(this.moment, id), id, place),
+				tabs: this.withTab(id, { essentialId: null }),
 			},
-			`pin ${id}, ${pinnedSaid(pinned.isPinned)} → ${pinnedSaid(isPinned)}`,
+			`place ${id} in ${place.chatId}/${place.groupId ?? "list"} before ${place.before ?? "the end"}${moved.essentialId === null ? "" : `, was essential ${moved.essentialId}`}`,
 		);
 	}
 
-	private openAt(opened: OpenedTab, at: number): HostTab {
-		const minted = this.moment.minted + 1;
-		const tab = {
-			...opened,
-			id: `tab-${minted}`,
-			label: null,
-		};
+	makeEssential(id: string, essentialId: string): void {
+		this.tabOf(id);
 		this.become(
 			{
 				...this.moment,
-				tabs: placedIn(this.moment.tabs, tab, at),
-				shownId: tab.id,
-				minted,
+				...withoutTab(this.moment, id),
+				tabs: this.withTab(id, { essentialId }),
 			},
-			`open ${tab.id} (${tab.app}) at ${at}`,
+			`${id} becomes essential ${essentialId}`,
 		);
-		return tab;
+	}
+
+	newGroup(chatId: string, withTabId: string | null): string {
+		const group = this.mintGroup(chatId, withTabId);
+		this.become(
+			this.groupedMoment(group, chatId, withTabId),
+			`new group ${group.id} "${group.name}" in ${chatId}${withTabId === null ? "" : ` with ${withTabId}`}`,
+		);
+		return group.id;
+	}
+
+	changeGroup(groupId: string, change: GroupChange): void {
+		const group = this.heldGroupOf(groupId);
+		const next = {
+			...group,
+			...change,
+		};
+
+		if (isSameGroupFace(next, group)) {
+			return;
+		}
+
+		this.becomeLayout(this.layoutWithGroup(next), groupChangeSaid(group, next));
+	}
+
+	ungroup(groupId: string): void {
+		const group = this.heldGroupOf(groupId);
+		this.becomeLayout(
+			withoutGroup(this.moment, groupId, group.tabIds),
+			`ungroup ${groupId}, ${group.tabIds.length} tabs`,
+		);
+	}
+
+	private heldGroupOf(groupId: string): TabGroup {
+		const group = findGroup(this.moment.groups, groupId);
+
+		if (!group) {
+			throw new Error(NO_GROUP.replace("{id}", groupId));
+		}
+
+		return group;
+	}
+
+	private mintTab(opened: OpenedTab, essentialId: string | null): HostTab {
+		return {
+			...opened,
+			id: `tab-${this.moment.minted + 1}`,
+			label: null,
+			essentialId,
+		};
+	}
+
+	private withTab(id: string, change: Partial<HostTab>): readonly HostTab[] {
+		return this.moment.tabs.map((tab) =>
+			tab.id === id
+				? {
+						...tab,
+						...change,
+					}
+				: tab,
+		);
+	}
+
+	private reopenedMoment(last: ClosedTab, chatId: string): HostTabsMoment {
+		return {
+			...this.moment,
+			...this.reopenedLayoutOf(last, chatId),
+			tabs: [...this.moment.tabs, last.tab],
+			shownId: last.tab.id,
+			closed: this.moment.closed.slice(0, -1),
+		};
+	}
+
+	private reopenedLayoutOf(last: ClosedTab, chatId: string): TabLayout {
+		if (last.tab.essentialId !== null) {
+			return this.moment;
+		}
+
+		return withTabAt(this.moment, last.tab.id, reopenPlaceOf(this.moment, last, chatId));
+	}
+
+	private mintGroup(chatId: string, withTabId: string | null): TabGroup {
+		return {
+			id: `group-${this.moment.minted + 1}`,
+			name: freeGroupNameOf(this.moment, chatId),
+			hue: null,
+			isOpen: true,
+			tabIds: withTabId === null ? [] : [withTabId],
+		};
+	}
+
+	private groupedMoment(group: TabGroup, chatId: string, withTabId: string | null): HostTabsMoment {
+		const layout = withTabId === null ? this.moment : withoutTab(this.moment, withTabId);
+		const entry: ListEntry = {
+			kind: "group",
+			id: group.id,
+		};
+		return {
+			...this.moment,
+			lists: withEntryBefore(layout.lists, chatId, entry, this.groupBeforeOf(chatId, withTabId)),
+			groups: [...layout.groups, group],
+			minted: this.moment.minted + 1,
+		};
+	}
+
+	private groupBeforeOf(chatId: string, withTabId: string | null): string | null {
+		const location = withTabId === null ? null : locationOf(this.moment, withTabId);
+
+		if (location === null || location.groupId !== null) {
+			return null;
+		}
+
+		return this.moment.lists[chatId]?.[location.at + 1]?.id ?? null;
+	}
+
+	private layoutWithGroup(next: TabGroup): TabLayout {
+		return {
+			...this.moment,
+			groups: this.moment.groups.map((one) => (one.id === next.id ? next : one)),
+		};
 	}
 
 	private closedOf(tab: HostTab, page: TabPage | null): ClosedTab {
@@ -230,43 +323,72 @@ export class HostTabs {
 				...tab,
 				pageId: page?.pageId ?? tab.pageId,
 			},
-			at: this.moment.tabs.indexOf(tab),
+			...closedPlaceOf(locationOf(this.moment, tab.id)),
 			address: page?.address ?? "",
 		};
 	}
 
-	private neighbourOf(id: string): string | null {
-		const { tabs } = this.moment;
-		const at = tabs.findIndex((tab) => tab.id === id);
-		return (tabs[at + 1] ?? tabs[at - 1])?.id ?? null;
+	private closedMoment(ids: readonly string[], pages: ReadonlyMap<string, TabPage>): HostTabsMoment {
+		const closing = ids.map((id) => this.tabOf(id));
+		const closingIds = new Set(ids);
+		const layout = closing.reduce<TabLayout>((kept, tab) => withoutTab(kept, tab.id), this.moment);
+		return {
+			...this.moment,
+			...layout,
+			tabs: this.moment.tabs.filter((tab) => !closingIds.has(tab.id)),
+			shownId: this.shownAfterClosing(closingIds),
+			closed: keptClosed(
+				this.moment.closed,
+				closing.map((tab) => this.closedOf(tab, pages.get(tab.id) ?? null)),
+			),
+		};
+	}
+
+	private shownAfterClosing(closingIds: ReadonlySet<string>): string | null {
+		const { shownId } = this.moment;
+
+		if (shownId === null || !closingIds.has(shownId)) {
+			return shownId;
+		}
+
+		return this.neighbourOf(shownId, closingIds);
+	}
+
+	private neighbourOf(id: string, leaving: ReadonlySet<string>): string | null {
+		const chatId = locationOf(this.moment, id)?.chatId;
+
+		if (chatId === undefined) {
+			return null;
+		}
+
+		const ids = flatTabIdsOf(this.moment, chatId);
+		const at = ids.indexOf(id);
+		const isStaying = (one: string): boolean => !leaving.has(one);
+		return ids.slice(at + 1).find(isStaying) ?? ids.slice(0, at).reverse().find(isStaying) ?? null;
+	}
+
+	private becomeLayout(layout: TabLayout, reason: string): void {
+		this.become(
+			{
+				...this.moment,
+				...layout,
+			},
+			reason,
+		);
 	}
 
 	private become(next: HostTabsMoment, reason: string): void {
 		const was = this.moment;
 		console.info(
-			`[widgetarium] host tabs ${was.tabs.length} tabs, shown ${was.shownId}, ${was.closed.length} closed → ${next.tabs.length} tabs, shown ${next.shownId}, ${next.closed.length} closed (${reason})`,
+			`[widgetarium] host tabs ${was.tabs.length} tabs, ${was.groups.length} groups, shown ${was.shownId} → ${next.tabs.length} tabs, ${next.groups.length} groups, shown ${next.shownId} (${reason})`,
 		);
 		this.moment = next;
 		this.watchers.tell();
 	}
 }
 
-function groupEndOf(tabs: readonly HostTab[], isPinned: boolean): number {
-	return isPinned ? tabs.filter((tab) => tab.isPinned).length : tabs.length;
+export function chatOfTab(moment: HostTabsMoment, tabId: string): string | null {
+	return locationOf(moment, tabId)?.chatId ?? null;
 }
 
-function placedIn(tabs: readonly HostTab[], tab: HostTab, at: number): readonly HostTab[] {
-	return [...tabs.slice(0, at), tab, ...tabs.slice(at)];
-}
-
-function keptClosed(closed: readonly ClosedTab[], closing: readonly ClosedTab[]): readonly ClosedTab[] {
-	return [...closed, ...closing].slice(-CLOSED_KEPT);
-}
-
-function pinnedSaid(isPinned: boolean): string {
-	return isPinned ? "pinned" : "open";
-}
-
-function labelSaid(label: string | null): string {
-	return label === null ? "no label" : `"${label}"`;
-}
+export { chatOfGroup, flatTabIdsOf };

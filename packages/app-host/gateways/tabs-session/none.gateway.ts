@@ -1,8 +1,8 @@
-import type { HostTabsMoment } from "../../shared/lib/host-tabs/host-tabs.js";
+import type { KeptTabs } from "../../shared/schema/tabs-session.schema.js";
 import { TabsSessionGateway } from "./tabs-session.gateway.js";
 
 export class NoTabsSessionGateway extends TabsSessionGateway {
-	kept(): HostTabsMoment | null {
+	kept(): KeptTabs | null {
 		return null;
 	}
 

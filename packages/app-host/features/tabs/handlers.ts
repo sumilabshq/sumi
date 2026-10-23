@@ -1,29 +1,37 @@
 import { handler, refuse } from "@widgetarium/core/requests";
+import { ActiveChatGateway } from "../../gateways/active-chat/active-chat.gateway.js";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
-import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
+import { essentialFaceOf } from "../../shared/lib/essentials/essential-face.js";
+import { Essentials } from "../../shared/lib/essentials/essentials.js";
+import { HostTabs, chatOfTab } from "../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab } from "../../shared/lib/host-tabs/host-tabs.js";
+import { listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
+import { showChatTab } from "../../shared/lib/tab-showing/chat-tabs.js";
+import { closeTabs } from "../../shared/lib/tab-showing/close-tab.js";
+import { newTabPageOf } from "../../shared/lib/tab-showing/new-tab-page.js";
+import { openTabPage, showTab, shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
+import { tabPagesOf } from "../../shared/lib/tab-showing/tab-pages.js";
+import { TabsColumnStore } from "../../shared/lib/tabs-column/tabs-column-store.js";
 import {
 	AppTabsQuery,
 	CloseOtherTabsCommand,
 	CloseShownTabCommand,
 	CloseTabCommand,
 	DuplicateTabCommand,
-	MoveTabCommand,
 	OpenTabBelowCommand,
 	OpenTabCommand,
-	PinTabCommand,
+	PlaceTabCommand,
 	ReloadTabCommand,
 	RenameTabCommand,
 	ReopenClosedTabCommand,
+	ShowChatTabCommand,
 	ShowTabCommand,
+	TabsSidebarQuery,
 } from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
-import { closeOtherTabs, closeTab } from "./lib/close-tab.js";
-import { newTabPageOf } from "./lib/new-tab-page.js";
-import { openTabPage, showTab } from "./lib/show-tab.js";
-import { tabPagesOf } from "./lib/tab-pages.js";
-import { APP_CHOICES, shownTabIdOf, tabRowsOf } from "./lib/tab-rows.js";
+import { chatTabRowsOf, sidebarOf } from "./lib/tab-rows.js";
+import { watchTabs } from "./lib/watch-tabs.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const NO_PAGE = 'the tab "{id}" shows no browser page';
@@ -32,23 +40,46 @@ const TABS = {
 	appTabsGateway: AppTabsGateway,
 	pageFactsGateway: PageFactsGateway,
 	hostTabs: HostTabs,
+	essentials: Essentials,
+	activeChatGateway: ActiveChatGateway,
+	tabsColumnStore: TabsColumnStore,
 };
 
 export const AppTabsQueryHandler = handler(AppTabsQuery, AppHostClientModule)
 	.inject(TABS)
 	.watch((_input, parts, changed) => watchTabs(parts, changed))
-	.handle((_input, { appTabsGateway, pageFactsGateway, hostTabs }) => ({
-		tabs: tabRowsOf(hostTabs.now(), pageFactsGateway.pages(), appTabsGateway.shownApp()),
-		apps: APP_CHOICES,
-		// TODO: the chat opens a preview here; nothing does yet
-		preview: null,
+	.handle((_input, { appTabsGateway, pageFactsGateway, hostTabs, activeChatGateway }) => ({
+		tabs: chatTabRowsOf(
+			hostTabs.now(),
+			pageFactsGateway.pages(),
+			appTabsGateway.shownApp(),
+			activeChatGateway.now().id,
+		),
 		canReopen: hostTabs.now().closed.length > 0,
 	}));
+
+export const TabsSidebarQueryHandler = handler(TabsSidebarQuery, AppHostClientModule)
+	.inject(TABS)
+	.watch((_input, parts, changed) => watchTabs(parts, changed))
+	.handle((_input, { appTabsGateway, pageFactsGateway, hostTabs, essentials, activeChatGateway, tabsColumnStore }) => {
+		const chat = activeChatGateway.now();
+		return sidebarOf({
+			moment: hostTabs.now(),
+			essentials: essentials.now().essentials,
+			pages: pageFactsGateway.pages(),
+			shownApp: appTabsGateway.shownApp(),
+			chat: {
+				id: chat.id,
+				title: chat.title,
+			},
+			isListOpen: tabsColumnStore.now().isListOpen,
+		});
+	});
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule)
 	.inject(TABS)
 	.handle(({ id }, { hostTabs, ...showing }) => {
-		const tab = hostTabs.now().tabs.find((held) => held.id === id);
+		const tab = heldTabOf(hostTabs, id);
 
 		if (!tab) {
 			return refuse(NOT_HELD.replace("{id}", id));
@@ -58,14 +89,26 @@ export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule
 		showTab(tab, hostTabs.now().tabs, showing);
 	});
 
+export const ShowChatTabCommandHandler = handler(ShowChatTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle((_input, { hostTabs, activeChatGateway, ...showing }) =>
+		showChatTab(hostTabs, activeChatGateway.now().id, showing),
+	);
+
 export const OpenTabCommandHandler = handler(OpenTabCommand, AppHostClientModule)
 	.inject(TABS)
-	.handle(({ app }, { hostTabs, ...showing }) => {
-		const tab = hostTabs.open({
-			app,
-			pageId: newTabPageOf(app, showing.pageFactsGateway.isAvailable()),
-			isPinned: false,
-		});
+	.handle(({ app }, { hostTabs, activeChatGateway, ...showing }) => {
+		const tab = hostTabs.open(
+			{
+				app,
+				pageId: newTabPageOf(app, showing.pageFactsGateway.isAvailable()),
+			},
+			{
+				chatId: activeChatGateway.now().id,
+				groupId: null,
+				before: null,
+			},
+		);
 		openTabPage(tab, "", showing);
 		showTab(tab, hostTabs.now().tabs, showing);
 	});
@@ -127,25 +170,24 @@ export const RenameTabCommandHandler = handler(RenameTabCommand, AppHostClientMo
 
 export const CloseOtherTabsCommandHandler = handler(CloseOtherTabsCommand, AppHostClientModule)
 	.inject(TABS)
-	.handle(({ id }, { hostTabs, ...showing }) => {
+	.handle(({ id }, { hostTabs, activeChatGateway, ...showing }) => {
 		const kept = heldTabOf(hostTabs, id);
 
 		if (!kept) {
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		const shownId = shownTabIdOf(hostTabs.now(), showing.appTabsGateway.shownApp());
-		closeOtherTabs(id, hostTabs, showing);
-
-		if (shownId !== null && !heldTabOf(hostTabs, shownId)) {
-			showTab(kept, hostTabs.now().tabs, showing);
-		}
+		const chatId = chatOfTab(hostTabs.now(), id) ?? activeChatGateway.now().id;
+		const others = chatTabRowsOf(hostTabs.now(), [], null, chatId)
+			.map((row) => row.id)
+			.filter((other) => other !== id);
+		closeTabs(others, hostTabs, showing, `close ${others.length} tabs beside ${id}`);
 	});
 
 export const ReopenClosedTabCommandHandler = handler(ReopenClosedTabCommand, AppHostClientModule)
 	.inject(TABS)
-	.handle((_input, { hostTabs, ...showing }) => {
-		const reopened = hostTabs.reopenClosed();
+	.handle((_input, { hostTabs, activeChatGateway, ...showing }) => {
+		const reopened = hostTabs.reopenClosed(activeChatGateway.now().id);
 
 		if (!reopened) {
 			return refuse(NOTHING_CLOSED);
@@ -162,7 +204,7 @@ export const CloseTabCommandHandler = handler(CloseTabCommand, AppHostClientModu
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		closeTab(id, hostTabs, showing);
+		closeTabs([id], hostTabs, showing, `close ${id}`);
 	});
 
 export const CloseShownTabCommandHandler = handler(CloseShownTabCommand, AppHostClientModule)
@@ -174,61 +216,27 @@ export const CloseShownTabCommandHandler = handler(CloseShownTabCommand, AppHost
 			return refuse("no tab is shown");
 		}
 
-		closeTab(shownId, hostTabs, showing);
+		closeTabs([shownId], hostTabs, showing, `close the shown ${shownId}`);
 	});
 
-export const MoveTabCommandHandler = handler(MoveTabCommand, AppHostClientModule)
-	.inject({ hostTabs: HostTabs })
-	.handle(({ id, before, isPinned }, { hostTabs }) => {
-		const held = new Set(hostTabs.now().tabs.map((tab) => tab.id));
+export const PlaceTabCommandHandler = handler(PlaceTabCommand, AppHostClientModule)
+	.inject(TABS)
+	.handle(({ id, to }, { hostTabs, essentials, activeChatGateway, pageFactsGateway }) => {
+		const tab = heldTabOf(hostTabs, id);
 
-		const missing = [id, before].find((asked) => asked !== null && !held.has(asked));
-
-		if (missing !== undefined && missing !== null) {
-			return refuse(NOT_HELD.replace("{id}", missing));
-		}
-
-		hostTabs.move(id, before, isPinned);
-	});
-
-export const PinTabCommandHandler = handler(PinTabCommand, AppHostClientModule)
-	.inject({ hostTabs: HostTabs })
-	.handle(({ id, isPinned }, { hostTabs }) => {
-		if (!heldTabOf(hostTabs, id)) {
+		if (!tab) {
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		hostTabs.pin(id, isPinned);
+		if (to.kind === "list") {
+			hostTabs.place(id, listPlaceOf(to, activeChatGateway.now().id));
+			return;
+		}
+
+		const essentialId = essentials.add(essentialFaceOf(tab, hostTabs.now().tabs, pageFactsGateway.pages()), to.at);
+		hostTabs.makeEssential(id, essentialId);
 	});
 
 function heldTabOf(hostTabs: HostTabs, id: string): HostTab | undefined {
 	return hostTabs.now().tabs.find((tab) => tab.id === id);
-}
-
-interface WatchedTabs {
-	readonly appTabsGateway: AppTabsGateway;
-	readonly pageFactsGateway: PageFactsGateway;
-	readonly hostTabs: HostTabs;
-}
-
-function watchTabs({ appTabsGateway, pageFactsGateway, hostTabs }: WatchedTabs, changed: () => void): () => void {
-	const settled = onceWritesSettle(changed);
-	const stops = [appTabsGateway.watch(settled), pageFactsGateway.watch(settled), hostTabs.watch(settled)];
-	return () => stops.forEach((stop) => stop());
-}
-
-// TRADE-OFF: one read per command, because a query read while one runs answers that run's stale result
-function onceWritesSettle(changed: () => void): () => void {
-	let isQueued = false;
-	return () => {
-		if (isQueued) {
-			return;
-		}
-
-		isQueued = true;
-		queueMicrotask(() => {
-			isQueued = false;
-			changed();
-		});
-	};
 }

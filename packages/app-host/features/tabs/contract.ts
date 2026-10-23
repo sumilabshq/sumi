@@ -1,65 +1,65 @@
 import { z } from "zod";
 import { Repeatable, command, query } from "@widgetarium/core/requests";
-import { AppKindSchema, AppTabsSchema } from "../../shared/schema/app-tab.schema.js";
+import { AppKindSchema, AppTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
+import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 
 const TabSchema = z.object({ id: z.string() });
 
 export const AppTabsQuery = query("app-host/app-tabs").output(AppTabsSchema).settlesNow();
 
+export const TabsSidebarQuery = query("app-host/tabs-sidebar").output(TabsSidebarSchema).settlesNow();
+
+const SHOWN = [AppTabsQuery, TabsSidebarQuery] as const;
+
 export const ShowTabCommand = command("app-host/show-tab")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const OpenTabCommand = command("app-host/open-tab")
 	.input(z.object({ app: AppKindSchema }))
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const CloseTabCommand = command("app-host/close-tab")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
-export const CloseShownTabCommand = command("app-host/close-shown-tab")
-	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+export const CloseShownTabCommand = command("app-host/close-shown-tab").idempotencyKey(Repeatable).invalidates(SHOWN);
 
-export const MoveTabCommand = command("app-host/move-tab")
-	.input(TabSchema.extend({ before: z.string().nullable(), isPinned: z.boolean() }))
+export const PlaceTabCommand = command("app-host/place-tab")
+	.input(TabSchema.extend({ to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
-
-export const PinTabCommand = command("app-host/pin-tab")
-	.input(TabSchema.extend({ isPinned: z.boolean() }))
-	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const OpenTabBelowCommand = command("app-host/open-tab-below")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const DuplicateTabCommand = command("app-host/duplicate-tab")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const ReloadTabCommand = command("app-host/reload-tab")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const RenameTabCommand = command("app-host/rename-tab")
 	.input(TabSchema.extend({ label: z.string() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
 
 export const CloseOtherTabsCommand = command("app-host/close-other-tabs")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);
+
+export const ShowChatTabCommand = command("app-host/show-chat-tab").idempotencyKey(Repeatable).invalidates(SHOWN);
 
 export const ReopenClosedTabCommand = command("app-host/reopen-closed-tab")
 	.idempotencyKey(Repeatable)
-	.invalidates([AppTabsQuery]);
+	.invalidates(SHOWN);

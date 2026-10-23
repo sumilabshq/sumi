@@ -1,12 +1,16 @@
+import { ONE_CHAT } from "@widgetarium/core/engine/active-chat-port.js";
+import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
-import { NO_STUDIO_HOST } from "@widgetarium/core/engine/studio-host.js";
-import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
+import { Essentials } from "../../shared/lib/essentials/essentials.js";
+import { shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
 import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
-import type { OpenedTab } from "../../shared/lib/host-tabs/host-tabs.js";
 import { COLUMN_OPENED_ON } from "../../shared/lib/tabs-column/column-look.js";
 import { TabsColumnStore } from "../../shared/lib/tabs-column/tabs-column-store.js";
+import type { AppKind } from "../../shared/schema/app-tab.schema.js";
+import { PortActiveChatGateway } from "../active-chat/port.gateway.js";
 import { StudioStateAppTabsGateway } from "../app-tabs/studio-state.gateway.js";
-import { StudioHostAppsGateway } from "../host-apps/studio-host.gateway.js";
+import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
+import { LocalStorageEssentialsGateway } from "../essentials/local-storage.gateway.js";
 import { NoPageFactsGateway } from "../page-facts/none.gateway.js";
 import type { PageFactsGateway } from "../page-facts/page-facts.gateway.js";
 import { LocalStorageTabsColumnGateway } from "../tabs-column/local-storage.gateway.js";
@@ -15,52 +19,78 @@ import { NoTabsSessionGateway } from "../tabs-session/none.gateway.js";
 import type { TabsSessionGateway } from "../tabs-session/tabs-session.gateway.js";
 import type { AppHostParts } from "./app-host-parts.gateway.js";
 
-const FIRST_TABS: readonly OpenedTab[] = [
-	{
-		app: "canvas",
-		pageId: null,
-		isPinned: true,
-	},
-	{
-		app: "browser",
-		pageId: null,
-		isPinned: true,
-	},
-];
-
 export interface StudioAppHost {
 	readonly studioState: StudioState;
 	readonly workspace: string;
 	readonly pageFactsGateway?: PageFactsGateway;
-	readonly studioHost?: StudioHostPort;
 	readonly tabsColumnGateway?: TabsColumnGateway;
 	readonly tabsSessionGateway?: TabsSessionGateway;
+	readonly essentialsGateway?: EssentialsGateway;
+	readonly activeChat?: ActiveChatPort;
 }
 
-export function studioAppHostParts({
-	studioState,
-	workspace,
-	pageFactsGateway = new NoPageFactsGateway(),
-	studioHost = NO_STUDIO_HOST,
-	tabsColumnGateway = new LocalStorageTabsColumnGateway(workspace),
-	tabsSessionGateway = new NoTabsSessionGateway(),
-}: StudioAppHost): AppHostParts {
-	const appTabsGateway = new StudioStateAppTabsGateway(studioState);
-	const hostTabs = new HostTabs(FIRST_TABS, tabsSessionGateway.kept());
-	hostTabs.watch(() => tabsSessionGateway.keep(hostTabs.now()));
-	const shownApp = appTabsGateway.shownApp();
-	const shownFirst = hostTabs.now().tabs.find((tab) => tab.app === shownApp);
+interface StudioGateways {
+	readonly appTabsGateway: StudioStateAppTabsGateway;
+	readonly pageFactsGateway: PageFactsGateway;
+	readonly tabsColumnGateway: TabsColumnGateway;
+	readonly tabsSessionGateway: TabsSessionGateway;
+	readonly essentialsGateway: EssentialsGateway;
+	readonly activeChat: ActiveChatPort;
+}
 
-	if (shownFirst) {
-		hostTabs.show(shownFirst.id);
+export function studioAppHostParts(host: StudioAppHost): AppHostParts {
+	const gateways = studioGatewaysOf(host);
+	const hostTabs = keptHostTabsOf(gateways.tabsSessionGateway, gateways.activeChat.now().id);
+	const essentials = keptEssentialsOf(gateways.essentialsGateway);
+	showsFirstTab(hostTabs, essentials, gateways.appTabsGateway.shownApp());
+	return {
+		appTabsGateway: gateways.appTabsGateway,
+		pageFactsGateway: gateways.pageFactsGateway,
+		tabsColumnGateway: gateways.tabsColumnGateway,
+		hostTabs,
+		essentials,
+		activeChatGateway: new PortActiveChatGateway(gateways.activeChat),
+		tabsColumnStore: new TabsColumnStore(gateways.tabsColumnGateway.kept() ?? COLUMN_OPENED_ON),
+	};
+}
+
+function studioGatewaysOf(host: StudioAppHost): StudioGateways {
+	return {
+		appTabsGateway: new StudioStateAppTabsGateway(host.studioState),
+		pageFactsGateway: host.pageFactsGateway ?? new NoPageFactsGateway(),
+		tabsColumnGateway: host.tabsColumnGateway ?? new LocalStorageTabsColumnGateway(host.workspace),
+		tabsSessionGateway: host.tabsSessionGateway ?? new NoTabsSessionGateway(),
+		essentialsGateway: host.essentialsGateway ?? new LocalStorageEssentialsGateway(),
+		activeChat: host.activeChat ?? ONE_CHAT,
+	};
+}
+
+function keptHostTabsOf(gateway: TabsSessionGateway, chatId: string): HostTabs {
+	const hostTabs = new HostTabs(gateway.kept(), chatId);
+	hostTabs.watch(() => gateway.keep(hostTabs.now()));
+	return hostTabs;
+}
+
+function keptEssentialsOf(gateway: EssentialsGateway): Essentials {
+	const essentials = new Essentials(gateway.kept());
+	essentials.watch(() => gateway.keep(essentials.now()));
+	return essentials;
+}
+
+function showsFirstTab(hostTabs: HostTabs, essentials: Essentials, shownApp: AppKind | null): void {
+	const shownId = shownTabIdOf(hostTabs.now(), shownApp);
+
+	if (shownId !== null) {
+		hostTabs.show(shownId);
+		return;
 	}
 
-	return {
-		appTabsGateway,
-		pageFactsGateway,
-		hostAppsGateway: new StudioHostAppsGateway(studioHost),
-		tabsColumnGateway,
-		hostTabs,
-		tabsColumnStore: new TabsColumnStore(tabsColumnGateway.kept() ?? COLUMN_OPENED_ON),
-	};
+	const essential = essentials.now().essentials.find((one) => one.app === shownApp);
+
+	if (essential) {
+		hostTabs.openEssential(essential.id, {
+			app: essential.app,
+			pageId: null,
+		});
+	}
 }

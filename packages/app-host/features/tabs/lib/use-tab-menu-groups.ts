@@ -7,14 +7,13 @@ import {
 	CloseTabCommand,
 	DuplicateTabCommand,
 	OpenTabBelowCommand,
-	PinTabCommand,
 	ReloadTabCommand,
 	ReopenClosedTabCommand,
 } from "../contract.js";
 import { CLOSE_KEY, REOPEN_KEY } from "./tab-keys.js";
 
 export type TabActionKey =
-	"new-below" | "duplicate" | "reload" | "rename" | "pin" | "copy-link" | "close" | "close-others" | "reopen";
+	"new-below" | "duplicate" | "reload" | "rename" | "copy-link" | "close" | "close-others" | "reopen";
 
 export interface TabMenuAction {
 	readonly key: TabActionKey;
@@ -51,7 +50,7 @@ export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuA
 		run: ran,
 	});
 	const address = tab.address;
-	const hasOthers = tabs.some((other) => other.id !== tab.id && !other.isPinned);
+	const hasOthers = tabs.some((other) => other.id !== tab.id);
 	return [
 		[
 			action("new-below", { label: "New tab below", icon: "plus" }, run.openBelow),
@@ -62,7 +61,6 @@ export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuA
 			// TODO: mute tab once the browser package reports a page's audio
 			action("rename", { label: "Rename tab…", icon: "pencil" }, onRename),
 		],
-		[action("pin", { label: tab.isPinned ? "Unpin tab" : "Pin tab", icon: tab.isPinned ? "pin-off" : "pin" }, run.pin)],
 		[
 			action("copy-link", { label: "Copy link", icon: "link", isDisabled: address === null }, () => {
 				if (address !== null) onCopyLink(address);
@@ -82,7 +80,6 @@ interface TabRuns {
 	readonly openBelow: () => void;
 	readonly duplicate: () => void;
 	readonly reload: () => void;
-	readonly pin: () => void;
 	readonly close: () => void;
 	readonly closeOthers: () => void;
 	readonly reopen: () => void;
@@ -92,7 +89,6 @@ function useTabRuns(tab: AppTab): TabRuns {
 	const openBelow = useCommand(OpenTabBelowCommand);
 	const duplicate = useCommand(DuplicateTabCommand);
 	const reload = useCommand(ReloadTabCommand);
-	const pin = useCommand(PinTabCommand);
 	const close = useCommand(CloseTabCommand);
 	const closeOthers = useCommand(CloseOtherTabsCommand);
 	const reopen = useCommand(ReopenClosedTabCommand);
@@ -101,11 +97,6 @@ function useTabRuns(tab: AppTab): TabRuns {
 		openBelow: () => void openBelow.run(id),
 		duplicate: () => void duplicate.run(id),
 		reload: () => void reload.run(id),
-		pin: () =>
-			void pin.run({
-				...id,
-				isPinned: !tab.isPinned,
-			}),
 		close: () => void close.run(id),
 		closeOthers: () => void closeOthers.run(id),
 		reopen: () => void reopen.run(),
