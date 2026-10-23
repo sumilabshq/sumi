@@ -1,3 +1,5 @@
+export { ShellAppProvider } from "./shell-app-provider/shell-app-provider.js";
+export type { ShellAppProviderProps } from "./shell-app-provider/shell-app-provider.js";
 export { StudioFrame } from "./studio-frame/studio-frame.js";
 export type { StudioFrameProps } from "./studio-frame/studio-frame.js";
 export { Plate } from "./plate/plate.js";
@@ -16,5 +18,7 @@ export type { PlateShownProps } from "./plate-header/plate-shown.js";
 export { PlateTint } from "./plate-header/plate-tint.js";
 export type { PlateTintProps } from "./plate-header/plate-tint.js";
 export type { PlateHeaderPlace, PlateLook } from "../lib/plate-header-store.js";
+export { FrameSideToggle } from "../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
+export type { FrameSideToggleProps } from "../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
 export { PaneBoard } from "../../features/panes/ui/pane-board/pane-board.js";
 export type { PaneBoardProps } from "../../features/panes/ui/pane-board/pane-board.js";

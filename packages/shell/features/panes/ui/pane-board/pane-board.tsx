@@ -48,16 +48,20 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	return (
 		<div ref={board} className="wg-pane-board">
 			{leaves.length === 0 && aim === null ? <div className="wg-pane-empty">{empty}</div> : null}
-			{leaves.map((leaf) => (
-				<PaneSlot
-					key={leaf.id}
-					leaf={leaf}
-					rect={shown.rects.get(leaf.id) ?? preview ?? box}
-					isAtTopRight={isAtTopRight(resting.rects.get(leaf.id), box)}
-					isDimmed={dimmedIds.has(leaf.id)}
-					drawn={drawn}
-				/>
-			))}
+			{leaves.map((leaf) => {
+				const restingRect = resting.rects.get(leaf.id);
+				return (
+					<PaneSlot
+						key={leaf.id}
+						leaf={leaf}
+						rect={shown.rects.get(leaf.id) ?? preview ?? box}
+						isAtTopLeft={isAtTopLeft(restingRect)}
+						isAtTopRight={isAtTopRight(restingRect, box)}
+						isDimmed={dimmedIds.has(leaf.id)}
+						drawn={drawn}
+					/>
+				);
+			})}
 			{aim === null
 				? resting.edges.map((edge) => (
 						<PaneSplitEdge
@@ -95,6 +99,10 @@ function dimmedIdsOf(leaves: readonly PaneLeaf[], targetId: string | null): Read
 	}
 
 	return new Set(apps.filter((leaf) => leaf.id !== target.id).map((leaf) => leaf.id));
+}
+
+function isAtTopLeft(rect: PaneRect | undefined): boolean {
+	return rect !== undefined && rect.top <= EDGE_SLACK_PX && rect.left <= EDGE_SLACK_PX;
 }
 
 function isAtTopRight(rect: PaneRect | undefined, box: PaneRect): boolean {

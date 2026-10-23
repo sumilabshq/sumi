@@ -144,6 +144,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 	return h(StudioLayout, {
 		frame: screen.frame,
 		shellApp: started.shellApp,
+		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
 			drawn: (view: PaneView) => paneOf(started, screen, view),

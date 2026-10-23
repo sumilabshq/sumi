@@ -23,6 +23,7 @@ import type { HeldEssentials } from "../session/tauri-essentials.js";
 import { TauriTabsColumnGateway, TauriTabsSessionGateway, readSession } from "../session/tauri-session.js";
 import type { HeldSession } from "../session/tauri-session.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
+import { settingsFlagMemory } from "../settings/settings-flag-memory.js";
 import { settingsPxMemory } from "../settings/settings-px-memory.js";
 import { shellPartsOf } from "@widgetarium/shell/gateways";
 import type { ShellParts } from "@widgetarium/shell/gateways";
@@ -162,10 +163,16 @@ function studioHostOf(
 }
 
 function shellPartsInSettings(settings: HeldSettings): ShellParts {
-	return shellPartsOf({
-		left: settingsPxMemory(settings, "leftWidthPx"),
-		chat: settingsPxMemory(settings, "chatWidthPx"),
-	});
+	return shellPartsOf(
+		{
+			left: settingsPxMemory(settings, "leftWidthPx"),
+			chat: settingsPxMemory(settings, "chatWidthPx"),
+		},
+		{
+			left: settingsFlagMemory(settings, "leftHidden"),
+			right: settingsFlagMemory(settings, "rightHidden"),
+		},
+	);
 }
 
 function keptGatewaysOf(docs: WorkspaceDocs, workspacesParts: WorkspacesParts) {

@@ -7,7 +7,7 @@ import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import { useQuery } from "@widgetarium/core/requests";
-import { HeaderButton, Plate, PlateCrumb, PlateMore, PlateShown } from "@widgetarium/shell";
+import { FrameSideToggle, Plate, PlateCrumb, PlateMore, PlateShown } from "@widgetarium/shell";
 import type { CrumbWords, PlateMoreItem } from "@widgetarium/shell";
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
@@ -36,7 +36,6 @@ interface KeptAppPages {
 const IN_PLATE = { isInPlate: true } as const;
 const ROOT_PATH = "/";
 const BACK_TO = "Back to {app}";
-const HIDE_TABS = "Hide tabs";
 
 export function WorkspaceAppPlate({
 	project,
@@ -61,7 +60,7 @@ export function WorkspaceAppPlate({
 			lead={<MovesUnheld />}
 			crumb={<PlateCrumb words={crumbOf(view, appName, pathname)} isPressable />}
 			more={<PlateMore items={moreItems} />}
-			edgeEnd={<HeaderButton label={HIDE_TABS} icon="panel-right" isInert />}
+			edgeEnd={<FrameSideToggle side="right" />}
 		>
 			{view === "app" ? <div className="wg-shell-route">{routeElementOf(project, pathname)}</div> : null}
 			<KeptApps shown={shownApp} hostTabs={hostTabs} drawnOf={drawnOf} />

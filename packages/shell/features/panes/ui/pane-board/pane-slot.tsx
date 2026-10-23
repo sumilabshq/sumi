@@ -9,6 +9,7 @@ import { AimPaneCommand, ClosePaneCommand } from "../../contract.js";
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly rect: PaneRect;
+	readonly isAtTopLeft: boolean;
 	readonly isAtTopRight: boolean;
 	readonly isDimmed: boolean;
 	readonly drawn: (view: PaneView) => ReactNode;
@@ -17,6 +18,7 @@ export interface PaneSlotProps {
 export const PaneSlot = memo(function PaneSlot({
 	leaf,
 	rect,
+	isAtTopLeft,
 	isAtTopRight,
 	isDimmed,
 	drawn,
@@ -26,10 +28,11 @@ export const PaneSlot = memo(function PaneSlot({
 	const closing = useMemo(
 		() => ({
 			paneId: leaf.id,
+			isAtTopLeft,
 			isAtTopRight,
 			close: () => void closePane.run({ id: leaf.id }),
 		}),
-		[closePane, leaf.id, isAtTopRight],
+		[closePane, leaf.id, isAtTopLeft, isAtTopRight],
 	);
 	return (
 		<div
