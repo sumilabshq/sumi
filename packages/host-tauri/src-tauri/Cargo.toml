@@ -24,6 +24,11 @@ path = "tests/browser_shown_pages.rs"
 harness = false
 
 [[test]]
+name = "browser_event_kinds"
+path = "tests/browser_event_kinds.rs"
+harness = false
+
+[[test]]
 name = "store_rules"
 path = "tests/store_rules.rs"
 harness = false
@@ -42,5 +47,10 @@ block2 = "0.6"
 objc2-foundation = { version = "0.3", features = ["NSData", "NSError", "NSString", "NSDictionary", "NSURL", "NSURLError", "NSURLRequest"] }
 objc2-core-foundation = { version = "0.3", features = ["CFCGTypes"] }
 objc2-app-kit = { version = "0.3", features = ["NSImage", "NSBitmapImageRep", "NSImageRep", "NSGraphics", "NSResponder", "NSWindow", "objc2-core-graphics"] }
-objc2-core-graphics = { version = "0.3", features = ["CGImage", "CGWindow", "CGGeometry"] }
+objc2-core-graphics = { version = "0.3", features = ["CGImage", "CGWindow", "CGGeometry", "CGEventSource", "CGEventTypes"] }
 objc2-web-kit = { version = "0.3", features = ["WKWebView", "WKSnapshotConfiguration", "WKContentWorld", "WKFrameInfo", "WKNavigationAction", "WKNavigationDelegate", "block2", "objc2-app-kit"] }
+
+[[test]]
+name = "browser_tear_off"
+path = "tests/browser_tear_off.rs"
+harness = false

@@ -85,6 +85,8 @@ fn answer_of(pages: &Arc<Pages>, call: &Call) -> Answer {
         "open_own_window" => pages.open_own_window(app, call.page()?, call.text("title")?),
         "focus_own_window" => pages.focus_own_window(app, call.page()?),
         "own_windows" => pages.own_windows(),
+        "watch_tear_off" => pages.watch_tear_off(app, call.page()?, call.text("title")?),
+        "stop_tear_off" => pages.stop_tear_off(),
         "evaluate" => pages.evaluate(app, call.page()?, call.text("script")?.to_string()),
         "evaluate_frames" => pages.evaluate_in_frames(app, call.page()?, call.text("script")?.to_string()),
         command if drive::is_drive_command(command) => drive::answer(app, command, &call.args),

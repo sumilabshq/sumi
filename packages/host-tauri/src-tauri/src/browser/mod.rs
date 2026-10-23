@@ -3,6 +3,7 @@ pub mod drive;
 pub mod navigation_proxy;
 pub mod pages;
 pub mod policy;
+pub mod tear_off;
 pub mod webkit;
 
 use pages::Pages;
