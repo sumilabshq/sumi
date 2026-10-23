@@ -14,6 +14,7 @@ import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { KeptApps } from "../tabs/kept-apps.js";
+import { APP_CRUMB_WORD } from "./app-crumb-words.js";
 import { MovesUnheld } from "./moves-unheld.js";
 
 export interface WorkspaceAppPlateProps {
@@ -78,11 +79,11 @@ function keptAppPageOf(app: AppKind, pages: KeptAppPages): ReactElement {
 
 function crumbOf(view: StudioView, appName: string, pathname: string): CrumbWords {
 	if (view === "canvas") {
-		return { first: "Canvas", second: appName };
+		return { first: APP_CRUMB_WORD.canvas, second: appName };
 	}
 
 	if (view === "browser") {
-		return { first: "Browser", second: null };
+		return { first: APP_CRUMB_WORD.browser, second: null };
 	}
 
 	return { first: appName, second: pathname === ROOT_PATH ? null : pathname };
