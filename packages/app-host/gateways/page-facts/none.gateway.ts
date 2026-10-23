@@ -24,9 +24,17 @@ export class NoPageFactsGateway extends PageFactsGateway {
 
 	reloadPage(): void {}
 
+	canOpenOwnWindow(): boolean {
+		return false;
+	}
+
 	openPageInOwnWindow(): void {}
 
 	focusPageWindow(): void {}
+
+	watchTearOff(): void {}
+
+	stopTearOff(): void {}
 
 	stop(): void {}
 }

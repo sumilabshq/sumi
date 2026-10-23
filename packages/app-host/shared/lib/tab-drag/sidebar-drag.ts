@@ -14,9 +14,17 @@ import type { SidebarLayout, Rect } from "./sidebar-layout.js";
 
 export type OnTabDrop = (source: DragSource, drop: TabDrop) => Promise<boolean>;
 
+export interface TearOffWatch {
+	watch(): void;
+	stop(): void;
+}
+
 export interface PickedItem {
 	readonly element: HTMLElement;
 	readonly source: DragSource;
+	readonly pointerId: number;
+	readonly opensOwnWindow: boolean;
+	readonly tearOff: TearOffWatch | null;
 }
 
 interface Lifted {
@@ -29,11 +37,10 @@ interface Lifted {
 }
 
 const START_PX = 4;
-const WINDOW_DROP: TabDrop = { kind: "window" };
-const WINDOW_CARD_WIDTH_PX = 208;
-const WINDOW_CARD_HEIGHT_PX = 156;
-const WINDOW_MARGIN_PX = 8;
-const WINDOW_CAPTION_PX = 36;
+const OWN_WINDOW_DROP: TabDrop = { kind: "own-window" };
+const OWN_WINDOW_CARD_WIDTH_PX = 208;
+const OWN_WINDOW_CARD_HEIGHT_PX = 156;
+const OWN_WINDOW_MARGIN_PX = 8;
 const SETTLE_MS = 200;
 const COMMIT_WAIT_MS = 400;
 const COMMIT_WATCH: MutationObserverInit = {
@@ -78,6 +85,7 @@ export class SidebarDrag {
 	}
 
 	async end(): Promise<void> {
+		this.picked.tearOff?.stop();
 		cancelAnimationFrame(this.frame);
 		const lifted = this.lifted;
 
@@ -100,7 +108,7 @@ export class SidebarDrag {
 	}
 
 	private async endedOutside(lifted: Lifted): Promise<boolean> {
-		if (lifted.drop.kind === "window") {
+		if (lifted.drop.kind === "own-window") {
 			this.release(lifted);
 			await this.onDrop(this.picked.source, lifted.drop);
 			return true;
@@ -115,13 +123,32 @@ export class SidebarDrag {
 		return true;
 	}
 
-	cancel(): void {
-		cancelAnimationFrame(this.frame);
-
-		if (this.isCarriedOut) {
-			this.carry("leave");
-			this.isCarriedOut = false;
+	endOnPointerLost(): void {
+		if (this.lifted?.drop.kind !== "own-window") {
+			this.cancel();
+			return;
 		}
+
+		console.info("[widgetarium] tab drag pointer cancelled → own-window drop (the card promised it)");
+		void this.end();
+	}
+
+	letGoForOwnWindow(): void {
+		cancelAnimationFrame(this.frame);
+		this.leaveCarry();
+
+		if (this.lifted !== null) {
+			console.info(
+				`[widgetarium] tab drag of ${this.picked.source.id} → handed to its own window (the studio lost focus)`,
+			);
+			this.release(this.lifted);
+		}
+	}
+
+	cancel(): void {
+		this.picked.tearOff?.stop();
+		cancelAnimationFrame(this.frame);
+		this.leaveCarry();
 
 		if (this.lifted !== null) {
 			this.giveBack(this.lifted);
@@ -137,6 +164,8 @@ export class SidebarDrag {
 		const layout = measuredLayoutOf(this.holder);
 		const from = rectOf(this.picked.element);
 		const ghost = ghostOf(this.picked, from);
+		capturePointer(this.picked);
+		this.picked.tearOff?.watch();
 		this.hidePicked();
 		new LayoutShifts(layout).animate();
 		return {
@@ -153,11 +182,8 @@ export class SidebarDrag {
 		this.lifted ??= this.lift();
 		const lifted = this.lifted;
 		const [x, y] = this.pointer;
-		this.followCarry(x, y);
-		const drop =
-			isOutsideWindow(x, y) && canOwnWindow(this.picked)
-				? WINDOW_DROP
-				: dropOf(lifted.layout, this.picked.source, x, y);
+		const drop = this.dropAt(lifted.layout, x, y);
+		this.followCarry(drop, x, y);
 		const size = sizeOf(lifted, this.picked.source, drop);
 		lifted.ghost.morph(shapeOf(drop), size);
 		lifted.ghost.place(...ghostSpotOf(drop, size, [x - lifted.grab[0] * size.width, y - lifted.grab[1] * size.height]));
@@ -171,18 +197,32 @@ export class SidebarDrag {
 		new LayoutShifts(lifted.layout).paint(lifted.shifts);
 	}
 
-	private followCarry(x: number, y: number): void {
-		const isOut = !isPointInBox(this.holder.getBoundingClientRect(), x, y);
+	private dropAt(layout: SidebarLayout, x: number, y: number): TabDrop {
+		if (this.picked.opensOwnWindow && isOutsideWindow(x, y)) {
+			return OWN_WINDOW_DROP;
+		}
 
-		if (isOut) {
+		return dropOf(layout, this.picked.source, x, y);
+	}
+
+	private followCarry(drop: TabDrop, x: number, y: number): void {
+		const isOverAnotherBoard = drop.kind !== "own-window" && !isPointInBox(this.holder.getBoundingClientRect(), x, y);
+
+		if (isOverAnotherBoard) {
 			this.isCarriedOut = this.carry("over");
 			return;
 		}
 
-		if (this.isCarriedOut) {
-			this.carry("leave");
-			this.isCarriedOut = false;
+		this.leaveCarry();
+	}
+
+	private leaveCarry(): void {
+		if (!this.isCarriedOut) {
+			return;
 		}
+
+		this.carry("leave");
+		this.isCarriedOut = false;
 	}
 
 	private carry(phase: CarryPhase): boolean {
@@ -247,6 +287,7 @@ export class SidebarDrag {
 	}
 
 	private release(lifted: Lifted): void {
+		releasePointer(this.picked);
 		new LayoutShifts(lifted.layout).clear();
 		lifted.ghost.remove();
 		this.showPicked();
@@ -280,26 +321,42 @@ function restingShapeOf(source: DragSource): GhostShape {
 }
 
 function shapeOf(drop: TabDrop): GhostShape {
-	if (drop.kind === "window") {
-		return "window";
+	if (drop.kind === "own-window") {
+		return "own-window";
 	}
 
 	return drop.kind === "essentials" ? "tile" : "row";
 }
 
 function isOutsideWindow(x: number, y: number): boolean {
-	return x <= 0 || y <= 0 || x >= window.innerWidth - 1 || y >= window.innerHeight - 1;
+	return x < 0 || y < 0 || x >= window.innerWidth || y >= window.innerHeight;
+}
+
+function capturePointer({ element, pointerId }: PickedItem): void {
+	try {
+		element.setPointerCapture(pointerId);
+	} catch (failure) {
+		console.warn("[widgetarium] tab drag pointer capture → none (a release outside the window may be lost)", failure);
+	}
+}
+
+function releasePointer({ element, pointerId }: PickedItem): void {
+	if (!element.hasPointerCapture(pointerId)) {
+		return;
+	}
+
+	element.releasePointerCapture(pointerId);
 }
 
 function ghostSpotOf(drop: TabDrop, size: Rect, at: readonly [number, number]): readonly [number, number] {
-	if (drop.kind !== "window") {
+	if (drop.kind !== "own-window") {
 		return at;
 	}
 
 	const [left, top] = at;
 	return [
-		Math.min(Math.max(left, WINDOW_MARGIN_PX), window.innerWidth - size.width - WINDOW_MARGIN_PX),
-		Math.min(Math.max(top, WINDOW_MARGIN_PX), window.innerHeight - size.height - WINDOW_CAPTION_PX),
+		Math.min(Math.max(left, OWN_WINDOW_MARGIN_PX), window.innerWidth - size.width - OWN_WINDOW_MARGIN_PX),
+		Math.min(Math.max(top, OWN_WINDOW_MARGIN_PX), window.innerHeight - size.height - OWN_WINDOW_MARGIN_PX),
 	];
 }
 
@@ -314,11 +371,11 @@ function sizeOf(lifted: Lifted, source: DragSource, drop: TabDrop): Rect {
 		};
 	}
 
-	if (drop.kind === "window") {
+	if (drop.kind === "own-window") {
 		return {
 			...from,
-			width: WINDOW_CARD_WIDTH_PX,
-			height: WINDOW_CARD_HEIGHT_PX,
+			width: OWN_WINDOW_CARD_WIDTH_PX,
+			height: OWN_WINDOW_CARD_HEIGHT_PX,
 		};
 	}
 
@@ -331,8 +388,4 @@ function sizeOf(lifted: Lifted, source: DragSource, drop: TabDrop): Rect {
 
 function waited(ms: number): Promise<void> {
 	return new Promise((done) => setTimeout(done, ms));
-}
-
-function canOwnWindow({ source, element }: PickedItem): boolean {
-	return source.kind === "tab" && element.dataset["hostTabApp"] === "browser";
 }

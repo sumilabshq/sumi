@@ -1,6 +1,6 @@
 import type { Rect } from "./sidebar-layout.js";
 
-export type GhostShape = "row" | "tile" | "window";
+export type GhostShape = "row" | "tile" | "own-window";
 
 const MOTION = "var(--sumi-dur-base) var(--sumi-ease-out)";
 const SHAPE_MOTION = ["width", "height", "border-radius", "padding", "gap", "background-color"]
@@ -10,9 +10,9 @@ const ROW_PAD_PX = 8;
 const ROW_GAP_PX = 10;
 const ROW_RADIUS_PX = 10;
 const TILE_RADIUS_PX = 14;
-const WINDOW_RADIUS_PX = 10;
-const WINDOW_PAD_PX = 10;
-const RELEASE_FOR_WINDOW = "Release to open in a new window";
+const OWN_WINDOW_RADIUS_PX = 10;
+const OWN_WINDOW_PAD_PX = 10;
+const RELEASE_FOR_OWN_WINDOW = "Release to open in a new window";
 const ART_GROWTH = 20 / 18;
 const FALLBACK_ART_PX = 18;
 const GHOST_STYLE: Partial<CSSStyleDeclaration> = {
@@ -99,10 +99,10 @@ export class DragGhost {
 	}
 
 	private paint(shape: GhostShape, size: Rect): void {
-		this.caption.style.display = shape === "window" ? "block" : "none";
+		this.caption.style.display = shape === "own-window" ? "block" : "none";
 
-		if (shape === "window") {
-			Object.assign(this.element.style, windowStyleOf(size));
+		if (shape === "own-window") {
+			Object.assign(this.element.style, ownWindowStyleOf(size));
 			Object.assign(this.words.style, shownWordsOf(size));
 			this.scaleArt(1);
 			return;
@@ -159,35 +159,31 @@ function artCloneOf(art: Element): GhostArt | null {
 
 function captionOf(): HTMLElement {
 	const caption = document.createElement("span");
-	caption.textContent = RELEASE_FOR_WINDOW;
+	caption.textContent = RELEASE_FOR_OWN_WINDOW;
 	caption.dataset["tabsGhostCaption"] = "";
 	Object.assign(caption.style, {
 		position: "absolute",
-		left: "50%",
-		top: "calc(100% + 8px)",
-		transform: "translateX(-50%)",
+		left: `${OWN_WINDOW_PAD_PX}px`,
+		right: `${OWN_WINDOW_PAD_PX}px`,
+		bottom: `${OWN_WINDOW_PAD_PX}px`,
 		display: "none",
-		padding: "6px 10px",
-		borderRadius: "9px",
-		whiteSpace: "nowrap",
+		whiteSpace: "normal",
 		fontSize: "var(--sumi-fs-12)",
 		fontWeight: "var(--sumi-fw-regular)",
-		color: "var(--sumi-text-2)",
-		background: "var(--sumi-overlay)",
-		boxShadow: "var(--sumi-shadow-pop)",
+		color: "var(--sumi-text-3)",
 	});
 	return caption;
 }
 
-function windowStyleOf(size: Rect): Partial<CSSStyleDeclaration> {
+function ownWindowStyleOf(size: Rect): Partial<CSSStyleDeclaration> {
 	return {
 		width: `${size.width}px`,
 		height: `${size.height}px`,
-		borderRadius: `${WINDOW_RADIUS_PX}px`,
-		padding: `${WINDOW_PAD_PX}px`,
+		borderRadius: `${OWN_WINDOW_RADIUS_PX}px`,
+		padding: `${OWN_WINDOW_PAD_PX}px`,
 		gap: `${ROW_GAP_PX}px`,
 		alignItems: "flex-start",
-		overflow: "visible",
+		overflow: "hidden",
 		background: "var(--sumi-plate)",
 	};
 }

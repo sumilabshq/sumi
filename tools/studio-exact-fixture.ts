@@ -11,6 +11,7 @@ import type { StudioState } from "../packages/core/src/engine/studio-state-port.
 
 export const EXACT_WORKSPACE = "Exact tabs";
 export const EXACT_COLUMN_PX = 240;
+export const TEAR_OFF_ASKED: string[] = [];
 
 const CHATS: readonly ActiveChat[] = [
 	{
@@ -195,6 +196,10 @@ class BoardPageFactsGateway extends PageFactsGateway {
 
 	showPage(): void {}
 
+	canOpenOwnWindow(): boolean {
+		return true;
+	}
+
 	openPageInOwnWindow(pageId: string): void {
 		this.change(
 			this.facts.map((page) =>
@@ -209,6 +214,14 @@ class BoardPageFactsGateway extends PageFactsGateway {
 	}
 
 	focusPageWindow(): void {}
+
+	watchTearOff(pageId: string): void {
+		TEAR_OFF_ASKED.push(`watch ${pageId}`);
+	}
+
+	stopTearOff(): void {
+		TEAR_OFF_ASKED.push("stop");
+	}
 
 	openAddress(pageId: string, address: string): void {
 		this.change(

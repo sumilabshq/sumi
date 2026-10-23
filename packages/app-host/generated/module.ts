@@ -2,11 +2,12 @@
 import { FoldTabListCommandHandler, ResizeColumnCommandHandler, TabsColumnQueryHandler } from "../features/column/handlers.js";
 import { CloseEssentialCommandHandler, PlaceEssentialCommandHandler, RemoveEssentialCommandHandler, ShowEssentialCommandHandler } from "../features/essentials/handlers.js";
 import { CloseGroupCommandHandler, CreateGroupCommandHandler, FoldGroupCommandHandler, RenameGroupCommandHandler, SetGroupHueCommandHandler, UngroupCommandHandler } from "../features/groups/handlers.js";
-import { AppTabsQueryHandler, CloseOtherTabsCommandHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, DuplicateTabCommandHandler, MoveTabToListCommandHandler, OpenTabBelowCommandHandler, OpenTabCommandHandler, PlaceTabCommandHandler, ReloadTabCommandHandler, RenameTabCommandHandler, ReopenClosedTabCommandHandler, ShowChatTabCommandHandler, ShowTabCommandHandler, TabsSidebarQueryHandler } from "../features/tabs/handlers.js";
+import { AppTabsQueryHandler, CanOpenOwnWindowQueryHandler, CloseOtherTabsCommandHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, DuplicateTabCommandHandler, MoveTabToListCommandHandler, OpenTabBelowCommandHandler, OpenTabCommandHandler, PlaceTabCommandHandler, ReloadTabCommandHandler, RenameTabCommandHandler, ReopenClosedTabCommandHandler, ShowChatTabCommandHandler, ShowTabCommandHandler, StopTabTearOffCommandHandler, TabsSidebarQueryHandler, WatchTabTearOffCommandHandler } from "../features/tabs/handlers.js";
 import { AppHostClientModule as AppHostClientModuleDefinition } from "../module.js";
 
 export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
 	AppTabsQueryHandler,
+	CanOpenOwnWindowQueryHandler,
 	CloseEssentialCommandHandler,
 	CloseGroupCommandHandler,
 	CloseOtherTabsCommandHandler,
@@ -31,7 +32,9 @@ export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
 	ShowChatTabCommandHandler,
 	ShowEssentialCommandHandler,
 	ShowTabCommandHandler,
+	StopTabTearOffCommandHandler,
 	TabsColumnQueryHandler,
 	TabsSidebarQueryHandler,
 	UngroupCommandHandler,
+	WatchTabTearOffCommandHandler,
 ]);

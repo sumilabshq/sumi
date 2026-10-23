@@ -7,7 +7,7 @@ export const TabDropSchema = z.discriminatedUnion("kind", [
 		groupId: z.string().nullable(),
 		before: z.string().nullable(),
 	}),
-	z.object({ kind: z.literal("window") }),
+	z.object({ kind: z.literal("own-window") }),
 	z.object({
 		kind: z.literal("essentials"),
 		at: z.number().int().nonnegative(),

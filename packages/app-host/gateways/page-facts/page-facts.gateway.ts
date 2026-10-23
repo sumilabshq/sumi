@@ -9,7 +9,10 @@ export abstract class PageFactsGateway {
 	abstract showPage(pageId: string): void;
 	abstract openAddress(pageId: string, address: string): void;
 	abstract reloadPage(pageId: string): void;
+	abstract canOpenOwnWindow(): boolean;
 	abstract openPageInOwnWindow(pageId: string): void;
 	abstract focusPageWindow(pageId: string): void;
+	abstract watchTearOff(pageId: string): void;
+	abstract stopTearOff(): void;
 	abstract stop(): void;
 }

@@ -93,7 +93,7 @@ export const PlaceEssentialCommandHandler = handler(PlaceEssentialCommand, AppHo
 			return;
 		}
 
-		if (to.kind === "window") {
+		if (to.kind === "own-window") {
 			return refuse(NO_OWN_WINDOW.replace("{id}", id));
 		}
 

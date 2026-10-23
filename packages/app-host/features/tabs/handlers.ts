@@ -16,6 +16,7 @@ import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
 import { TabsColumnStore } from "../../shared/lib/tabs-column/tabs-column-store.js";
 import {
 	AppTabsQuery,
+	CanOpenOwnWindowQuery,
 	CloseOtherTabsCommand,
 	CloseShownTabCommand,
 	CloseTabCommand,
@@ -29,6 +30,8 @@ import {
 	ReopenClosedTabCommand,
 	ShowChatTabCommand,
 	ShowTabCommand,
+	StopTabTearOffCommand,
+	WatchTabTearOffCommand,
 	TabsSidebarQuery,
 } from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
@@ -39,6 +42,7 @@ const NOT_HELD = 'the host holds no tab "{id}"';
 const NO_PAGE = 'the tab "{id}" shows no browser page';
 const UNKNOWN_LIST = 'no tab list "{list}" is on screen';
 const NO_OWN_WINDOW = 'the tab "{id}" holds no page that can open in its own window';
+const NO_OWN_WINDOWS = "this host cannot open a page in its own window";
 const NOTHING_CLOSED = "no closed tab is left to reopen";
 const TABS = {
 	appTabsGateway: AppTabsGateway,
@@ -79,6 +83,10 @@ export const TabsSidebarQueryHandler = handler(TabsSidebarQuery, AppHostClientMo
 			inPanes: parts.paneTabsGateway.tabIdsInPanes(),
 		});
 	});
+
+export const CanOpenOwnWindowQueryHandler = handler(CanOpenOwnWindowQuery, AppHostClientModule)
+	.inject({ pageFactsGateway: PageFactsGateway })
+	.handle((_input, { pageFactsGateway }) => pageFactsGateway.canOpenOwnWindow());
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule)
 	.inject(TABS)
@@ -242,7 +250,7 @@ export const PlaceTabCommandHandler = handler(PlaceTabCommand, AppHostClientModu
 				: refuse(UNKNOWN_LIST.replace("{list}", to.list));
 		}
 
-		if (to.kind === "window") {
+		if (to.kind === "own-window") {
 			return openInOwnWindow(tab, hostTabs, pageFactsGateway);
 		}
 
@@ -267,6 +275,25 @@ export const MoveTabToListCommandHandler = handler(MoveTabToListCommand, AppHost
 			before: null,
 		});
 	});
+
+export const WatchTabTearOffCommandHandler = handler(WatchTabTearOffCommand, AppHostClientModule)
+	.inject({
+		hostTabs: HostTabs,
+		pageFactsGateway: PageFactsGateway,
+	})
+	.handle(({ id }, { hostTabs, pageFactsGateway }) => {
+		const pageId = tabPageOf(hostTabs, pageFactsGateway, id)?.pageId ?? null;
+
+		if (pageId === null) {
+			return refuse(NO_OWN_WINDOW.replace("{id}", id));
+		}
+
+		pageFactsGateway.watchTearOff(pageId);
+	});
+
+export const StopTabTearOffCommandHandler = handler(StopTabTearOffCommand, AppHostClientModule)
+	.inject({ pageFactsGateway: PageFactsGateway })
+	.handle((_input, { pageFactsGateway }) => pageFactsGateway.stopTearOff());
 
 interface ApartShowing {
 	readonly hostTabs: HostTabs;
@@ -303,10 +330,18 @@ function openInOwnWindow(
 	hostTabs: HostTabs,
 	pageFactsGateway: PageFactsGateway,
 ): ReturnType<typeof refuse> | undefined {
+	if (!pageFactsGateway.canOpenOwnWindow()) {
+		return refuse(NO_OWN_WINDOWS);
+	}
+
 	const pageId = tabPageOf(hostTabs, pageFactsGateway, tab.id)?.pageId ?? null;
 
 	if (tab.app !== "browser" || pageId === null) {
 		return refuse(NO_OWN_WINDOW.replace("{id}", tab.id));
+	}
+
+	if (!pageFactsGateway.pages().some((page) => page.pageId === pageId)) {
+		pageFactsGateway.openPage(pageId);
 	}
 
 	pageFactsGateway.openPageInOwnWindow(pageId);

@@ -19,7 +19,7 @@ export function landingOf(layout: SidebarLayout, source: DragSource, drop: TabDr
 		return cellRectOf(layout.grid, drop.at, shifts.columns);
 	}
 
-	if (drop.kind === "window") {
+	if (drop.kind === "own-window") {
 		return listRectOf(layout);
 	}
 

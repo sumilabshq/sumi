@@ -4,7 +4,7 @@ import { useQuery } from "@widgetarium/core/requests";
 import { ContextMenu, ContextMenuTrigger } from "@widgetarium/kit";
 import { EssentialsGrid } from "../../../features/essentials/ui/essentials-grid/essentials-grid.js";
 import { GroupMenu } from "../../../features/groups/ui/group-menu/group-menu.js";
-import { TabsSidebarQuery } from "../../../features/tabs/contract.js";
+import { CanOpenOwnWindowQuery, TabsSidebarQuery } from "../../../features/tabs/contract.js";
 import type { GroupState, TabSection } from "../../schema/app-tab.schema.js";
 import { NewTabRow } from "./new-tab-row.js";
 import { PointerMenu } from "./pointer-menu.js";
@@ -25,7 +25,7 @@ export function TabsSidebar(): ReactElement {
 	const { pointed, groupMenuId, openGroupMenu, onContextMenu } = usePointedMenus();
 	const [renamingId, setRenamingId] = useState<string | null>(null);
 	const onRenamed = useCallback(() => setRenamingId(null), []);
-	useDropPlacing(holder);
+	useDropPlacing(holder, useQuery(CanOpenOwnWindowQuery).data);
 	const groupHead = useGroupHead(holder, groupMenuId, sections);
 	const menuGroup = groupStateOf(sections, groupMenuId);
 	return (

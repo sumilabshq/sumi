@@ -5,6 +5,8 @@ import {
 	BrowserTabsQuery,
 	ClosePageCommand,
 	FocusOwnWindowCommand,
+	StopTearOffCommand,
+	WatchTearOffCommand,
 	OpenAddressCommand,
 	OpenPageCommand,
 	ReloadPageCommand,
@@ -22,6 +24,7 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 	private readonly browserApp: StartedApp;
 	private readonly stops: readonly (() => void)[];
 	private readonly isBrowserAvailable: boolean;
+	private readonly opensOwnWindows: boolean;
 	private sends: Promise<void> = Promise.resolve();
 	private facts: readonly PageFacts[] = [];
 	private latestRead = 0;
@@ -30,6 +33,7 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		super();
 		this.browserApp = app({ modules: [BrowserClientModule.with(parts)] });
 		this.isBrowserAvailable = parts.browserPagesGateway.isAvailable();
+		this.opensOwnWindows = parts.browserPagesGateway.canOpenOwnWindow();
 		const refresh = (): void => void this.refresh();
 		this.stops = [
 			parts.browserPagesGateway.watch(refresh),
@@ -80,8 +84,22 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		this.sendInOrder("reload", pageId, () => this.browserApp.send(ReloadPageCommand, { tabId: pageId }));
 	}
 
+	canOpenOwnWindow(): boolean {
+		return this.opensOwnWindows;
+	}
+
 	openPageInOwnWindow(pageId: string): void {
-		this.sendInOrder("tear out", pageId, () => this.browserApp.send(OpenTabInOwnWindowCommand, { tabId: pageId }));
+		this.sendInOrder("open in its own window", pageId, () =>
+			this.browserApp.send(OpenTabInOwnWindowCommand, { tabId: pageId }),
+		);
+	}
+
+	watchTearOff(pageId: string): void {
+		this.sendInOrder("watch the drag of", pageId, () => this.browserApp.send(WatchTearOffCommand, { tabId: pageId }));
+	}
+
+	stopTearOff(): void {
+		void this.browserApp.send(StopTearOffCommand, {});
 	}
 
 	focusPageWindow(pageId: string): void {

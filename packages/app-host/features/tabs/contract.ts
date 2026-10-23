@@ -9,6 +9,8 @@ export const AppTabsQuery = query("app-host/app-tabs").output(AppTabsSchema).set
 
 export const TabsSidebarQuery = query("app-host/tabs-sidebar").output(TabsSidebarSchema).settlesNow();
 
+export const CanOpenOwnWindowQuery = query("app-host/can-open-own-window").output(z.boolean()).settlesNow();
+
 const SHOWN = [AppTabsQuery, TabsSidebarQuery] as const;
 
 export const ShowTabCommand = command("app-host/show-tab")
@@ -68,3 +70,11 @@ export const ShowChatTabCommand = command("app-host/show-chat-tab").idempotencyK
 export const ReopenClosedTabCommand = command("app-host/reopen-closed-tab")
 	.idempotencyKey(Repeatable)
 	.invalidates(SHOWN);
+
+export const WatchTabTearOffCommand = command("app-host/watch-tab-tear-off")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable);
+
+export const StopTabTearOffCommand = command("app-host/stop-tab-tear-off")
+	.input(z.object({}))
+	.idempotencyKey(Repeatable);

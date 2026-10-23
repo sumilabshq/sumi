@@ -8,6 +8,7 @@ export class DragFollow {
 		window.addEventListener("pointerup", this.onUp);
 		window.addEventListener("pointercancel", this.onCancel);
 		window.addEventListener("keydown", this.onKey, true);
+		window.addEventListener("blur", this.onBlur);
 		window.addEventListener("selectstart", preventSelection, true);
 	}
 
@@ -32,9 +33,18 @@ export class DragFollow {
 		void this.drag.end();
 	};
 
+	private readonly onBlur = (): void => {
+		if (!this.drag.isLifted()) {
+			return;
+		}
+
+		this.stop();
+		this.drag.letGoForOwnWindow();
+	};
+
 	private readonly onCancel = (): void => {
 		this.stop();
-		this.drag.cancel();
+		this.drag.endOnPointerLost();
 	};
 
 	private stop(): void {
@@ -42,6 +52,7 @@ export class DragFollow {
 		window.removeEventListener("pointerup", this.onUp);
 		window.removeEventListener("pointercancel", this.onCancel);
 		window.removeEventListener("keydown", this.onKey, true);
+		window.removeEventListener("blur", this.onBlur);
 		window.removeEventListener("selectstart", preventSelection, true);
 	}
 }
