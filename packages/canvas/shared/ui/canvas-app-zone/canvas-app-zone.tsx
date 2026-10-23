@@ -7,22 +7,33 @@ import { SidebarToggle } from "../../../features/layers/ui/sidebar-toggle/sideba
 import { VariantSwitch } from "../../../features/pages/ui/variant-switch/variant-switch.js";
 import { ZoomLabel } from "../../../features/view/ui/zoom-label/zoom-label.js";
 import { TitlePill } from "../title-pill/title-pill.js";
+import { TopBarLookContext } from "../../lib/top-bar/top-bar-look-context.js";
+import type { TopBarLook } from "../../lib/top-bar/top-bar-look-context.js";
 
-const ZONE = "cv:flex cv:min-w-0 cv:items-center cv:gap-1.5";
+export interface CanvasAppZoneProps {
+	readonly look?: TopBarLook;
+}
 
-export function CanvasAppZone(): ReactElement {
+const ZONE: Readonly<Record<TopBarLook, string>> = {
+	raised: "cv:flex cv:min-w-0 cv:items-center cv:gap-1.5",
+	ghost: "cv:flex cv:min-w-0 cv:shrink-[100] cv:items-center cv:gap-[var(--sumi-sp-1)] cv:overflow-hidden",
+};
+
+export function CanvasAppZone({ look = "raised" }: CanvasAppZoneProps): ReactElement {
 	return (
-		<Slot loading={null}>
-			<span className={ZONE} data-canvas-app-zone="">
-				<SidebarToggle />
-				<TitlePill>
-					<PagePicker />
-					<AddPhoto />
-				</TitlePill>
-				<VariantSwitch />
-				<ZoomLabel />
-				{/* TODO: bring the mode switch back */}
-			</span>
-		</Slot>
+		<TopBarLookContext.Provider value={look}>
+			<Slot loading={null}>
+				<span className={ZONE[look]} data-canvas-app-zone="">
+					<SidebarToggle />
+					<TitlePill>
+						<PagePicker />
+						<AddPhoto />
+					</TitlePill>
+					<VariantSwitch />
+					<ZoomLabel />
+					{/* TODO: bring the mode switch back */}
+				</span>
+			</Slot>
+		</TopBarLookContext.Provider>
 	);
 }

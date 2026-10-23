@@ -1,7 +1,9 @@
 import { createElement as h } from "react";
 import type { ButtonHTMLAttributes, ReactElement } from "react";
 import { TOP_BAR_HEIGHT } from "../../lib/top-bar/top-bar-look.js";
+import { useTopBarLook } from "../../lib/top-bar/top-bar-look-context.js";
 import { Tip } from "../tip/tip.js";
+import { HeaderRoundButton } from "./header-round-button.js";
 
 export type RoundTone = "ink" | "raise" | "plate";
 export type RoundSize = "l" | "m";
@@ -14,8 +16,11 @@ export interface RoundButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonEl
 	readonly isBusy?: boolean;
 }
 
+const BUTTON =
+	"cv:grid cv:flex-none cv:cursor-pointer cv:place-items-center cv:border-0 cv:p-0 cv:shadow-none cv:focus-visible:outline-2 cv:disabled:cursor-default cv:disabled:opacity-50 cv:aria-disabled:cursor-default cv:aria-disabled:opacity-50 cv:aria-busy:motion-safe:animate-canvas-pulse";
+
 const ROUND =
-	"cv:grid cv:flex-none cv:cursor-pointer cv:place-items-center cv:rounded-full cv:border-0 cv:p-0 cv:shadow-none cv:transition-[background-color,color] cv:duration-150 cv:ease-standard cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring cv:disabled:cursor-default cv:disabled:opacity-50 cv:aria-disabled:cursor-default cv:aria-disabled:opacity-50 cv:aria-busy:motion-safe:animate-canvas-pulse";
+	"cv:rounded-full cv:transition-[background-color,color] cv:duration-150 cv:ease-standard cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
 
 const TONE: Readonly<Record<RoundTone, string>> = {
 	ink: "cv:bg-primary cv:text-primary-foreground cv:hover:bg-primary/85",
@@ -38,13 +43,17 @@ export function RoundButton({
 	children,
 	...rest
 }: RoundButtonProps): ReactElement {
+	if (useTopBarLook() === "ghost") {
+		return <HeaderRoundButton label={label} tip={tip} isBusy={isBusy} face={children} {...rest} />;
+	}
+
 	return (
 		<Tip label={tip}>
 			<button
 				type="button"
 				aria-label={label}
 				aria-busy={isBusy || undefined}
-				className={`${ROUND} ${TONE[tone]} ${SIZE[size]}`}
+				className={`${BUTTON} ${ROUND} ${TONE[tone]} ${SIZE[size]}`}
 				{...rest}
 			>
 				{children}

@@ -13,15 +13,17 @@ import { ReturnButton } from "../../../features/pages/ui/return-button/return-bu
 
 export interface CanvasProps {
 	readonly header?: ReactNode;
+	readonly isInPlate?: boolean;
 }
 
-export function Canvas({ header }: CanvasProps): ReactElement {
+export function Canvas({ header, isInPlate = false }: CanvasProps): ReactElement {
 	return (
 		<CanvasLayout
 			header={header ?? <CanvasTopBar start={<CanvasAppZone />} end={<ReturnButton />} />}
 			start={<CanvasSidebar top={<PagesList />} bottom={<LayersPanel />} />}
 			end={<LookPanel />}
 			bottom={<JobStatus />}
+			isInPlate={isInPlate}
 		>
 			<CanvasField />
 		</CanvasLayout>
