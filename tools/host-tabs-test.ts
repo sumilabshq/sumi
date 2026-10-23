@@ -1,5 +1,9 @@
 import { HostTabs, flatTabIdsOf } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
+import { NoPaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/none.gateway.ts";
+import { PaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
+import { closeTabs } from "../packages/app-host/shared/lib/tab-showing/close-tab.ts";
+import { showFreeTabBesidePanes } from "../packages/app-host/shared/lib/tab-showing/show-tab.ts";
 import { Essentials } from "../packages/app-host/shared/lib/essentials/essentials.ts";
 import { KeptTabsSchema } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
 import { chatTabToShow, showChatTab } from "../packages/app-host/shared/lib/tab-showing/chat-tabs.ts";
@@ -139,6 +143,7 @@ const showing = {
 		closePage: () => undefined,
 		openAddress: () => undefined,
 	},
+	paneTabsGateway: new NoPaneTabsGateway(),
 };
 showChatTab(followed, TWO, showing);
 check("switching chats shows the new chat's tab", followed.now().shownId, "tab-4");
@@ -148,6 +153,57 @@ check(
 	[followed.now().shownId, chatTabToShow(followed, ONE)],
 	["tab-2", "tab-2"],
 );
+
+class RecordedPanes extends PaneTabsGateway {
+	closedFor: readonly string[] = [];
+	isShownTabPaneOpen = true;
+
+	constructor(private readonly paned: readonly string[]) {
+		super();
+	}
+
+	tabIdsInPanes(): readonly string[] {
+		return this.paned;
+	}
+
+	reveal(): void {}
+
+	closePanesOf(tabIds: readonly string[]): void {
+		this.closedFor = tabIds;
+	}
+
+	openShownTabPane(): void {
+		this.isShownTabPaneOpen = true;
+	}
+
+	closeShownTabPane(): void {
+		this.isShownTabPaneOpen = false;
+	}
+
+	watch(): () => void {
+		return () => undefined;
+	}
+}
+
+const paned = threeTabs();
+const panes = new RecordedPanes(["tab-3"]);
+closeTabs(["tab-3"], paned, { ...showing, paneTabsGateway: panes }, "close a tab standing in a pane");
+check("closing a tab closes the pane holding it in the same action", panes.closedFor, ["tab-3"]);
+
+const moved = threeTabs();
+moved.show("tab-2");
+showFreeTabBesidePanes(moved, { ...showing, paneTabsGateway: new RecordedPanes(["tab-2"]) });
+check(
+	"a shown tab dragged into a pane leaves the shown-tab pane to a free tab",
+	moved.now().shownId === "tab-2",
+	false,
+);
+
+const allPaned = threeTabs();
+allPaned.show("tab-1");
+const everyPane = new RecordedPanes(allPaned.now().tabs.map((tab) => tab.id));
+showFreeTabBesidePanes(allPaned, { ...showing, paneTabsGateway: everyPane });
+check("with no free tab left the shown-tab pane closes", everyPane.isShownTabPaneOpen, false);
 
 console.info = quiet;
 console.log(failed === 0 ? "host tabs: all checks pass" : `host tabs: ${failed} failed`);

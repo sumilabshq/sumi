@@ -6,7 +6,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { PaneTreeStore } from "../packages/shell/shared/lib/pane-tree-store.ts";
 import { leavesOf } from "../packages/shell/shared/lib/pane-tree.ts";
-import { paneRectsOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
+import { paneLayoutOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
 import { FIRST_PANES } from "../packages/shell/gateways/shell-parts/shell-parts.gateway.ts";
 import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
@@ -75,26 +75,78 @@ function checksTree(): void {
 		JSON.stringify(rows) === '[["tab-1",true],["tab-2",false]]',
 		rows,
 	);
+	checksShares();
 	console.info = quiet;
-	const rects = paneRectsOf(FIRST_PANES.root, { left: 0, top: 0, width: 1000, height: 800 }, { gap: 8, chatPx: 560 });
+	const halves = paneLayoutOf(FIRST_PANES.root, { left: 0, top: 0, width: 1008, height: 800 }, 8).rects;
 	check(
-		"the chat keeps its width and the app takes the rest",
-		rects.get("pane-chat")?.width === 560 && rects.get("pane-app")?.width === 432,
-		[...rects],
+		"the first two panes share the board in halves",
+		halves.get("pane-chat")?.width === 500 && halves.get("pane-app")?.width === 500,
+		[...halves],
 	);
-	const narrow = paneRectsOf(FIRST_PANES.root, { left: 0, top: 0, width: 700, height: 800 }, { gap: 8, chatPx: 560 });
-	check("a narrow board gives the chat up so the app keeps 320", narrow.get("pane-app")?.width === 320, [...narrow]);
+	const narrow = paneLayoutOf(
+		{
+			...FIRST_PANES.root,
+			kind: "split",
+			id: "root",
+			dir: "row",
+			children: FIRST_PANES.root?.kind === "split" ? FIRST_PANES.root.children : [],
+			shares: [0.9, 0.1],
+		},
+		{ left: 0, top: 0, width: 1008, height: 800 },
+		8,
+	).rects;
+	check("a pane never gets less than 320 while the board has room", narrow.get("pane-app")?.width === 320, [...narrow]);
 	const pane = { left: 0, top: 0, width: 400, height: 400 };
 	check(
 		"the pointer's nearest edge picks the side, the middle replaces",
 		JSON.stringify([
-			sideAt(pane, 20, 200),
-			sideAt(pane, 390, 200),
-			sideAt(pane, 200, 10),
-			sideAt(pane, 200, 395),
-			sideAt(pane, 200, 200),
+			sideAt(pane, 20, 200, true),
+			sideAt(pane, 390, 200, true),
+			sideAt(pane, 200, 10, true),
+			sideAt(pane, 200, 395, true),
+			sideAt(pane, 200, 200, true),
 		]) === '["left","right","top","bottom","center"]',
 		null,
+	);
+	const chatSide = sideAt(pane, 230, 200, false);
+	check("a pane with no centre, the chat, takes its nearest edge", chatSide === "right", chatSide);
+}
+
+function sharesOf(store: PaneTreeStore): readonly number[] {
+	const root = store.now().root;
+	return root?.kind === "split" ? root.shares.map((share) => Math.round(share * 1000) / 1000) : [];
+}
+
+function checksShares(): void {
+	const even = new PaneTreeStore(FIRST_PANES);
+	even.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+	check(
+		"a pane dropped between halves gives every pane a third",
+		JSON.stringify(sharesOf(even)) === "[0.333,0.333,0.333]",
+		sharesOf(even),
+	);
+	const uneven = new PaneTreeStore(FIRST_PANES);
+	uneven.resize("pane-root", 0, 2 / 3);
+	uneven.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+	check(
+		"a new pane takes a third and the others shrink in proportion",
+		JSON.stringify(sharesOf(uneven)) === "[0.444,0.333,0.222]",
+		sharesOf(uneven),
+	);
+	uneven.close("pane-1");
+	check(
+		"closing a pane gives its share back in proportion",
+		JSON.stringify(sharesOf(uneven)) === "[0.667,0.333]",
+		sharesOf(uneven),
+	);
+	const nested = new PaneTreeStore(FIRST_PANES);
+	nested.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
+	nested.place({ kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
+	nested.close("pane-app");
+	check(
+		"a split left alone in a split of its direction folds into it",
+		JSON.stringify(shapeOf(nested)) === '["chat","tab-3","tab-4"]' && sharesOf(nested).length === 3,
+		[shapeOf(nested), sharesOf(nested)],
 	);
 }
 
@@ -123,8 +175,47 @@ async function centreRightOf(page: AskedPage, paneId: string): Promise<readonly 
 	return Array.isArray(point) ? [Number(point[0]), Number(point[1])] : [0, 0];
 }
 
+async function checksEdgeDrag(page: AskedPage): Promise<void> {
+	const edge = await page.ask(
+		`(() => { const box = document.querySelector("[data-pane-edge]").getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })()`,
+	);
+	const [x, y] = Array.isArray(edge) ? [Number(edge[0]), Number(edge[1])] : [0, 0];
+	const widthOf = `Math.round(document.querySelector('[data-pane-id="pane-chat"]').getBoundingClientRect().width)`;
+	const before = Number(await page.ask(widthOf));
+	await page.drag({
+		from: [x, y],
+		to: [x + 120, y],
+		steps: 6,
+		stepMs: 16,
+	});
+	await page.release([x + 120, y]);
+	await waited(400);
+	const after = Number(await page.ask(widthOf));
+	const boardPx = Number(await page.ask(`document.querySelector(".wg-pane-board").clientWidth`));
+	const wanted = Math.min(before + 120, boardPx - 8 - 320);
+	check(
+		"dragging the edge moves it under the pointer until the other pane reaches 320",
+		Math.abs(after - wanted) <= 2,
+		{
+			before,
+			after,
+			wanted,
+		},
+	);
+	await page.ask(
+		`document.querySelector("[data-pane-edge]").dispatchEvent(new MouseEvent("dblclick", { bubbles: true })); true`,
+	);
+	await waited(400);
+	const reset = Number(await page.ask(widthOf));
+	check("a double press on the chat edge puts the chat back to its usual width", Math.abs(reset - before) <= 2, {
+		before,
+		reset,
+	});
+}
+
 async function checksBoard(folder: string): Promise<void> {
 	const page = await pageOf(folder);
+	await checksEdgeDrag(page);
 	const before = await page.ask(PANES);
 	const [x, y] = await centreRightOf(page, "pane-app");
 	const taken = await page.ask(`${CARRY}("over", ${x}, ${y})`);
