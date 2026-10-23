@@ -37,8 +37,6 @@ export const OpenedPageSchema = z.object({
 	url: z.string(),
 });
 
-export type OpenedPage = z.infer<typeof OpenedPageSchema>;
-
 export const CommittedPageSchema = z.object({
 	url: z.string(),
 	entry: z.number(),

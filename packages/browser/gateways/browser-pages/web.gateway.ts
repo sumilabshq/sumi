@@ -92,6 +92,14 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		return Promise.reject(new Error(NOT_AVAILABLE_ON_HOST));
 	}
 
+	look(): null {
+		return null;
+	}
+
+	watchLook(): () => void {
+		return () => undefined;
+	}
+
 	capture(): Promise<PageShot> {
 		return Promise.reject(new Error(NOT_AVAILABLE_ON_HOST));
 	}

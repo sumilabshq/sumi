@@ -25,6 +25,14 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		this.create(FIRST_TAB);
 	}
 
+	look(): null {
+		return null;
+	}
+
+	watchLook(): () => void {
+		return () => undefined;
+	}
+
 	isAvailable(): boolean {
 		return true;
 	}

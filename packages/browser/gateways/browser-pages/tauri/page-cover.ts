@@ -10,7 +10,12 @@ const OVERLAYS = [
 	".wg-portal:not(.wg-kit-portal-layer)",
 	"[data-browser-page-area] > :not([data-browser-pages])",
 ].join(", ");
-const WATCHED_ATTRIBUTES = ["class", "style", "hidden", "open", "data-state"];
+const WATCHED_CHANGES: MutationObserverInit = {
+	childList: true,
+	subtree: true,
+	attributes: true,
+	attributeFilter: ["class", "style", "hidden", "open", "data-state"],
+};
 const SNAPSHOT_FORMAT = "jpeg";
 const SNAPSHOT_TYPE = "image/jpeg";
 
@@ -25,6 +30,7 @@ export class PageCover {
 	private turn = 0;
 	private framePending = false;
 	private picture: HTMLImageElement | null = null;
+	private isFollowing = false;
 	private readonly watched: MutationObserver;
 	private readonly container: HTMLElement;
 	private readonly bridge: PagesBridge;
@@ -35,12 +41,22 @@ export class PageCover {
 		this.bridge = bridge;
 		this.drawnPage = drawnPage;
 		this.watched = new MutationObserver(this.recheckSoon);
-		this.watched.observe(document.body, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: WATCHED_ATTRIBUTES,
-		});
+	}
+
+	follow(isDrawn: boolean): void {
+		if (isDrawn === this.isFollowing) {
+			return;
+		}
+
+		this.isFollowing = isDrawn;
+		this.recheckSoon();
+
+		if (!isDrawn) {
+			this.watched.disconnect();
+			return;
+		}
+
+		this.watched.observe(document.body, WATCHED_CHANGES);
 	}
 
 	covers(): boolean {
@@ -49,6 +65,7 @@ export class PageCover {
 
 	stop(): void {
 		this.watched.disconnect();
+		this.isFollowing = false;
 		this.turn += 1;
 		this.dropPicture();
 

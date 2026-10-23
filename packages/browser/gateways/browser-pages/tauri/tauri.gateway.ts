@@ -3,7 +3,9 @@ import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../..
 import { isLaidOnScreen } from "../../../shared/lib/is-laid-on-screen.js";
 import { regionWithin } from "../../../shared/lib/region-within.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
+import type { PageLook } from "../../../shared/schema/page-look.schema.js";
 import { PageCover } from "./page-cover.js";
+import { PageLooks } from "./page-looks.js";
 import { PagePlacementWatch } from "./page-placement.js";
 import type { PageEvent, PagePlacement, PagesBridge } from "./pages-bridge.js";
 import { TauriPage } from "./tauri-page.js";
@@ -12,6 +14,7 @@ const FIRST_TAB = "tab-1";
 const NO_TAB = 'the browser holds no tab "{tabId}"';
 const OUTSIDE_THE_PAGE = "the asked region lies outside the page on screen";
 const IN_PAGE_CHECK_MS = 1000;
+const LOOK_CHANGING_EVENTS: ReadonlySet<PageEvent["kind"]> = new Set(["committed", "finished", "title"]);
 
 interface Attached {
 	readonly container: HTMLElement;
@@ -26,19 +29,29 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private shown: string | null = FIRST_TAB;
 	private attached: Attached | null = null;
 	private nativeShown: string | null = null;
+	private readonly looks: PageLooks;
 
 	constructor(
 		private readonly bridge: PagesBridge,
 		private readonly profileId: string,
 	) {
 		super();
-		void bridge
+		this.looks = new PageLooks({
+			bridge,
+			drawnPage: () => this.drawnPage(),
+			stripWidth: () => this.attached?.placement.current().width ?? 0,
+		});
+		this.listen();
+		this.create(FIRST_TAB);
+	}
+
+	private listen(): void {
+		void this.bridge
 			.open((event) => this.apply(event))
 			.catch((failure: unknown) => {
 				console.error("[widgetarium] the browser could not listen to its pages", failure);
 			});
 		document.addEventListener("visibilitychange", () => this.syncNative());
-		this.create(FIRST_TAB);
 	}
 
 	isAvailable(): boolean {
@@ -70,17 +83,21 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		}
 
 		this.stopAttached();
-		this.attached = {
-			container: into,
-			placement: new PagePlacementWatch(into, (placement) => this.place(placement)),
-			cover: new PageCover({
-				container: into,
-				bridge: this.bridge,
-				drawnPage: () => this.drawnPage(),
-			}),
+		this.attached = this.attachedTo(into);
+		this.told();
+	}
+
+	private attachedTo(container: HTMLElement): Attached {
+		return {
+			container,
+			placement: new PagePlacementWatch(
+				container,
+				(placement) => this.place(placement),
+				() => this.syncNative(),
+			),
+			cover: new PageCover({ container, bridge: this.bridge, drawnPage: () => this.drawnPage() }),
 			inPageCheck: setInterval(() => this.checkInPageNavigation(), IN_PAGE_CHECK_MS),
 		};
-		this.told();
 	}
 
 	detach(from: HTMLElement): void {
@@ -114,6 +131,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		}
 
 		page.destroy();
+		this.looks.forget(tabId);
 
 		if (this.shown === tabId) {
 			this.shown = null;
@@ -142,6 +160,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.pageOf(tabId);
 		this.shown = tabId;
 		this.told();
+		void this.looks.reread();
 	}
 
 	back(tabId: string): void {
@@ -184,6 +203,14 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		return this.pageOf(tabId).content();
 	}
 
+	look(tabId: string): PageLook | null {
+		return this.looks.lookOf(tabId);
+	}
+
+	watchLook(changed: () => void): () => void {
+		return this.looks.watch(changed);
+	}
+
 	capture(tabId: string, region: PageRegion | null): Promise<PageShot> {
 		return this.pageOf(tabId).capture(this.clampedRegion(region));
 	}
@@ -205,6 +232,10 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	private apply(event: PageEvent): void {
 		this.held.find((page) => page.now().id === event.page)?.apply(event);
+
+		if (event.page === this.shown && LOOK_CHANGING_EVENTS.has(event.kind)) {
+			void this.looks.reread();
+		}
 	}
 
 	private place(placement: PagePlacement): void {
@@ -227,7 +258,9 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	private syncNative(): void {
 		const drawn = this.drawnPage();
+		this.attached?.cover.follow(drawn !== null);
 		this.attached?.cover.recheckSoon();
+		this.followLooks(drawn !== null);
 
 		if (drawn === this.nativeShown) {
 			return;
@@ -238,6 +271,15 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		void this.bridge.show(drawn).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser could not show its page", failure);
 		});
+	}
+
+	private followLooks(isDrawn: boolean): void {
+		if (isDrawn) {
+			this.looks.start();
+			return;
+		}
+
+		this.looks.stop();
 	}
 
 	private checkInPageNavigation(): void {
@@ -263,6 +305,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 		attached.placement.stop();
 		attached.cover.stop();
+		this.looks.stop();
 		clearInterval(attached.inPageCheck);
 		this.attached = null;
 	}

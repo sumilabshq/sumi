@@ -11,8 +11,7 @@ export interface BrowserProps {
 	readonly header?: ReactNode;
 }
 
-const VIEW =
-	"cv:flex cv:h-full cv:w-full cv:flex-col cv:gap-[var(--wg-kit-plate-pad,6px)] cv:overflow-hidden cv:bg-group cv:p-[var(--wg-kit-plate-pad,6px)]";
+const VIEW = "cv:flex cv:h-full cv:w-full cv:flex-col cv:overflow-hidden";
 
 export function Browser({ header }: BrowserProps): ReactElement {
 	return (

@@ -1,4 +1,5 @@
 import type { BrowserTab } from "../../shared/schema/browser-tab.schema.js";
+import type { PageLook } from "../../shared/schema/page-look.schema.js";
 import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../shared/schema/page-read.schema.js";
 
 export abstract class BrowserPagesGateway {
@@ -25,5 +26,7 @@ export abstract class BrowserPagesGateway {
 	abstract frameUrls(tabId: string): Promise<readonly string[]>;
 	abstract hasSecretField(tabId: string): Promise<boolean>;
 	abstract content(tabId: string): Promise<PageContentRead>;
+	abstract look(tabId: string): PageLook | null;
+	abstract watchLook(changed: () => void): () => void;
 	abstract capture(tabId: string, region: PageRegion | null): Promise<PageShot>;
 }

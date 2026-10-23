@@ -6,11 +6,7 @@ export type AccessLevel = z.infer<typeof AccessLevelSchema>;
 
 export const GrantSourceSchema = z.enum(["default", "person", "ask"]);
 
-export type GrantSource = z.infer<typeof GrantSourceSchema>;
-
 export const GrantScopeSchema = z.enum(["host", "domain"]);
-
-export type GrantScope = z.infer<typeof GrantScopeSchema>;
 
 export const SiteGrantSchema = z.object({
 	siteKey: z.string(),
@@ -55,8 +51,6 @@ export const SiteAccessSchema = z.object({
 	shown: AccessDecisionSchema.nullable(),
 	rows: z.array(SiteRowSchema).readonly(),
 });
-
-export type SiteAccess = z.infer<typeof SiteAccessSchema>;
 
 export const ReadKindSchema = z.enum(["content", "screenshot", "navigate"]);
 

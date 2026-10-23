@@ -1,3 +1,4 @@
+import { isLaidOnScreen } from "../../../shared/lib/is-laid-on-screen.js";
 import type { PagePlacement } from "./pages-bridge.js";
 
 const RECHECK_MS = 250;
@@ -10,18 +11,20 @@ export function placementOf(container: HTMLElement): PagePlacement {
 		y: box.top,
 		width: box.width,
 		height: box.height,
-		corner: cornerOf(container),
+		corner: bottomCornerOf(container),
 	};
 }
 
 export class PagePlacementWatch {
 	private last: PagePlacement | null = null;
+	private wasLaidOnScreen = false;
 	private readonly resized: ResizeObserver;
 	private readonly timer: ReturnType<typeof setInterval>;
 
 	constructor(
 		private readonly container: HTMLElement,
 		private readonly placed: (placement: PagePlacement) => void,
+		private readonly laidOnScreenChanged: () => void,
 	) {
 		this.resized = new ResizeObserver(this.measure);
 		this.resized.observe(container);
@@ -42,6 +45,13 @@ export class PagePlacementWatch {
 	}
 
 	private readonly measure = (): void => {
+		const isLaid = isLaidOnScreen(this.container);
+
+		if (isLaid !== this.wasLaidOnScreen) {
+			this.wasLaidOnScreen = isLaid;
+			this.laidOnScreenChanged();
+		}
+
 		const placement = placementOf(this.container);
 
 		if (isSamePlacement(this.last, placement)) {
@@ -53,10 +63,10 @@ export class PagePlacementWatch {
 	};
 }
 
-function cornerOf(container: HTMLElement): number {
+function bottomCornerOf(container: HTMLElement): number {
 	const rounded = container.parentElement ?? container;
 
-	return Number.parseFloat(getComputedStyle(rounded).borderTopLeftRadius) || 0;
+	return Number.parseFloat(getComputedStyle(rounded).borderBottomLeftRadius) || 0;
 }
 
 function isSamePlacement(left: PagePlacement | null, right: PagePlacement): boolean {
