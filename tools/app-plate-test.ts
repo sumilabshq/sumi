@@ -177,6 +177,54 @@ function checkNewTab(width: number, when: string, plate: Plate, pageId: string):
 	check(`${width} ${when}: the browser shows the tab's own page`, plate.browserShown === pageId, plate.browserShown);
 }
 
+const PANE = `[data-pane-id]:not([data-pane-id="pane-app"]):not([data-pane-id="pane-chat"])`;
+const PANE_HEAD = `(() => {
+	const head = document.querySelector('${PANE} .wg-plate-head');
+	const labels = [...(head?.querySelectorAll("button[aria-label]") ?? [])].map((button) => button.getAttribute("aria-label"));
+	return { labels, crumb: head?.querySelector("[data-plate-place=crumb] .wg-plate-target")?.textContent ?? "" };
+})()`;
+const PANE_HEAD_SCHEMA = z.object({ labels: z.array(z.string()), crumb: z.string() });
+const TYPED_IN_PANE = `(() => {
+	const field = document.querySelector('${PANE} [data-browser-new-tab-field]');
+	const input = field?.querySelector("input");
+	if (!input) return false;
+	Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, "example.org");
+	input.dispatchEvent(new Event("input", { bubbles: true }));
+	field.requestSubmit();
+	return true;
+})()`;
+const PANE_PAGE = "page-restarted-b";
+const MAIN_PAGE = "page-restarted-a";
+
+async function checksBrowserPane(page: AskedPage, width: number): Promise<void> {
+	await pressed(page, '[data-tabs-list] [data-tabs-id="tab-8"]');
+	await page.ask(`window.__PLACE_TAB_IN_PANE__("tab-10"); true`);
+	const isDrawn = await until(page, `document.querySelector('${PANE} [data-browser-new-tab-field]') !== null`);
+	const head = PANE_HEAD_SCHEMA.parse(await page.ask(PANE_HEAD));
+	writeFileSync(path.join(shotsAt, `pane-browser-${width}.png`), await page.shoot());
+	check(
+		`${width}: a browser tab in its own pane draws the new-tab card and the browser header`,
+		isDrawn && ["Back", "Forward", "More", "Close pane"].every((label) => head.labels.includes(label)),
+		head,
+	);
+	check(`${width}: the pane's crumb names its page`, head.crumb === "New tab", head.crumb);
+	const typed = await page.ask(TYPED_IN_PANE);
+	await waited(400);
+	const addresses = z.record(z.string(), z.string()).parse(await page.ask(`window.__BROWSER_ADDRESSES__()`));
+	check(
+		`${width}: an address typed in the pane opens in the pane's page, not the shown tab's`,
+		typed === true && addresses[PANE_PAGE] === "https://example.org/" && addresses[MAIN_PAGE] === "",
+		{ typed, addresses },
+	);
+	const opened = PANE_HEAD_SCHEMA.parse(await page.ask(PANE_HEAD));
+	check(`${width}: the pane's crumb follows its own page`, opened.crumb.startsWith("example.org"), opened.crumb);
+	check(
+		`${width}: the main plate keeps showing its own page`,
+		(await page.ask(`window.__BROWSER_SHOWN__()`)) === MAIN_PAGE,
+		await page.ask(`window.__BROWSER_SHOWN__()`),
+	);
+}
+
 async function plateOf(page: AskedPage): Promise<Plate> {
 	return PlateSchema.parse(await page.ask(PLATE));
 }
@@ -213,6 +261,7 @@ async function walk(width: number): Promise<void> {
 
 		await pressed(page, '[data-tabs-item=essential][data-tabs-id="essential-1"]');
 		checkCanvas(width, "back on the Canvas essential", await plateOf(page));
+		await checksBrowserPane(page, width);
 		const boom = await page.ask(`document.getElementById("boom").textContent`);
 		check(`${width}: nothing failed on the page`, boom === "", boom);
 	} finally {

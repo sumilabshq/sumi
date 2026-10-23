@@ -137,7 +137,10 @@ function pageOf(id: string): BrowserTab {
 
 function restartedBrowserParts(): BrowserParts {
 	const pages = new RestartedPagesGateway();
-	Object.assign(window, { __BROWSER_SHOWN__: () => pages.shownId() });
+	Object.assign(window, {
+		__BROWSER_SHOWN__: () => pages.shownId(),
+		__BROWSER_ADDRESSES__: () => Object.fromEntries(pages.tabs().map((page) => [page.id, page.url])),
+	});
 	return browserPartsOf({
 		browserPagesGateway: pages,
 		browserGrantsGateway: new MemoryBrowserGrantsGateway(),
@@ -152,6 +155,10 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	const state = createStudioState();
 	const browser = restartedBrowserParts();
 	const shell = webShellParts();
+	Object.assign(window, {
+		__PLACE_TAB_IN_PANE__: (tabId: string) =>
+			shell.paneTreeStore.place({ kind: "app", tabId }, { targetId: "pane-app", side: "right" }),
+	});
 	state.show("canvas");
 	return {
 		assistant,
