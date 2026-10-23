@@ -177,6 +177,10 @@ class RecordedPanes extends PaneTabsGateway {
 		this.isShownTabPaneOpen = true;
 	}
 
+	showInTargetPane(): boolean {
+		return false;
+	}
+
 	closeShownTabPane(): void {
 		this.isShownTabPaneOpen = false;
 	}

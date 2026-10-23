@@ -76,6 +76,7 @@ function checksTree(): void {
 		rows,
 	);
 	checksShares();
+	checksTarget();
 	console.info = quiet;
 	const halves = paneLayoutOf(FIRST_PANES.root, { left: 0, top: 0, width: 1008, height: 800 }, 8).rects;
 	check(
@@ -114,6 +115,29 @@ function checksTree(): void {
 function sharesOf(store: PaneTreeStore): readonly number[] {
 	const root = store.now().root;
 	return root?.kind === "split" ? root.shares.map((share) => Math.round(share * 1000) / 1000) : [];
+}
+
+function checksTarget(): void {
+	const store = new PaneTreeStore(FIRST_PANES);
+	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	const afterDrop = store.now().targetId;
+	store.aimAt("pane-chat");
+	const afterChat = store.now().targetId;
+	store.aimAt("pane-app");
+	const afterApp = store.now().targetId;
+	store.aimAt("pane-1");
+	store.showIn("pane-1", "tab-9");
+	const shownIn = store.leaves().find((leaf) => leaf.id === "pane-1")?.view;
+	store.close("pane-1");
+	check(
+		"a dropped tab's pane becomes the target, the chat never does, a press aims a pane, and showing replaces the target's tab",
+		afterDrop === "pane-1" &&
+			afterChat === "pane-1" &&
+			afterApp === "pane-app" &&
+			JSON.stringify(shownIn) === '{"kind":"app","tabId":"tab-9"}' &&
+			store.now().targetId === null,
+		[afterDrop, afterChat, afterApp, shownIn, store.now().targetId],
+	);
 }
 
 function checksShares(): void {
@@ -275,6 +299,21 @@ async function checksBoard(folder: string): Promise<void> {
 		"the drop makes a third pane and the preview leaves",
 		after.length === 3 && (await page.ask(`document.querySelector(".wg-pane-preview") === null`)) === true,
 		after,
+	);
+	const dimmed = await page.ask(
+		`[...document.querySelectorAll("[data-pane-dimmed]")].map((pane) => pane.dataset.paneId)`,
+	);
+	await page.ask(
+		`document.querySelector('[data-pane-id="pane-app"]').dispatchEvent(new PointerEvent("pointerdown", { bubbles: true })); true`,
+	);
+	await waited(200);
+	const dimmedAfterPress = await page.ask(
+		`[...document.querySelectorAll("[data-pane-dimmed]")].map((pane) => pane.dataset.paneId)`,
+	);
+	check(
+		"the pane a tab was dropped into is the target and the other app pane dims; a press moves the target",
+		JSON.stringify(dimmed) === '["pane-app"]' && JSON.stringify(dimmedAfterPress) === '["pane-1"]',
+		[dimmed, dimmedAfterPress],
 	);
 	const keptAsPreviewed = after.filter((pane) => JSON.stringify(during).includes(JSON.stringify(pane)));
 	check(

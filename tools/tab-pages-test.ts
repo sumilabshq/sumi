@@ -111,6 +111,10 @@ class PlacedPanes extends PaneTabsGateway {
 
 	closeShownTabPane(): void {}
 
+	showInTargetPane(): boolean {
+		return false;
+	}
+
 	watch(changed: () => void): () => void {
 		this.watchers.add(changed);
 		return () => this.watchers.delete(changed);
