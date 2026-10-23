@@ -1,7 +1,17 @@
 import type { AppKind } from "../../schema/app-tab.schema.js";
-import type { GroupHue } from "../../schema/tab-group.schema.js";
+import type { GroupHue, ListEntry } from "../../schema/tab-group.schema.js";
 import type { KeptTabs } from "../../schema/tabs-session.schema.js";
-import { WORKSPACE_LIST, chatOfGroup, findGroup, placeOfLocation, tabEntryOf } from "./tab-lists.js";
+import {
+	WORKSPACE_LIST,
+	chatOfGroup,
+	findGroup,
+	freeGroupNameOf,
+	locationOf,
+	placeOfLocation,
+	tabEntryOf,
+	withEntryBefore,
+	withoutTab,
+} from "./tab-lists.js";
 import type { ChatLists, TabGroup, TabLayout, TabLocation, TabPlace } from "./tab-lists.js";
 
 export interface OpenedTab {
@@ -136,6 +146,35 @@ export function closedPlaceOf(location: TabLocation | null): Pick<ClosedTab, "ch
 	};
 }
 
+export interface GroupBirth {
+	readonly chatId: string;
+	readonly withTabId: string | null;
+}
+
+export function newGroupOf(moment: HostTabsMoment, { chatId, withTabId }: GroupBirth): TabGroup {
+	return {
+		id: `group-${moment.minted + 1}`,
+		name: freeGroupNameOf(moment, chatId),
+		hue: null,
+		isOpen: true,
+		tabIds: withTabId === null ? [] : [withTabId],
+	};
+}
+
+export function groupedMoment(moment: HostTabsMoment, group: TabGroup, birth: GroupBirth): HostTabsMoment {
+	const layout = birth.withTabId === null ? moment : withoutTab(moment, birth.withTabId);
+	const entry: ListEntry = {
+		kind: "group",
+		id: group.id,
+	};
+	return {
+		...moment,
+		lists: withEntryBefore(layout.lists, birth.chatId, entry, groupBeforeOf(moment, birth)),
+		groups: [...layout.groups, group],
+		minted: moment.minted + 1,
+	};
+}
+
 export function isSameGroupFace(one: TabGroup, other: TabGroup): boolean {
 	return one.name === other.name && one.hue === other.hue && one.isOpen === other.isOpen;
 }
@@ -146,4 +185,14 @@ export function groupChangeSaid(group: TabGroup, next: TabGroup): string {
 
 function groupFaceSaid(group: TabGroup): string {
 	return `${group.hue ?? "grey"} ${group.isOpen ? "open" : "shut"}`;
+}
+
+function groupBeforeOf(moment: HostTabsMoment, { chatId, withTabId }: GroupBirth): string | null {
+	const location = withTabId === null ? null : locationOf(moment, withTabId);
+
+	if (location === null || location.groupId !== null) {
+		return null;
+	}
+
+	return moment.lists[chatId]?.[location.at + 1]?.id ?? null;
 }

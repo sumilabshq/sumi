@@ -43,7 +43,7 @@ export const ShowEssentialCommandHandler = handler(ShowEssentialCommand, AppHost
 
 		if (live) {
 			parts.hostTabs.show(live.id);
-			showTab(live, parts.hostTabs.now().tabs, parts);
+			showTab(live, parts.hostTabs, parts);
 			return;
 		}
 
@@ -131,7 +131,7 @@ function freshTabOf(essential: Essential, pageFactsGateway: PageFactsGateway): O
 
 function showOpened(opened: HostTab, essential: Essential, parts: EssentialParts): void {
 	openTabPage(opened, essential.address ?? "", parts);
-	showTab(opened, parts.hostTabs.now().tabs, parts);
+	showTab(opened, parts.hostTabs, parts);
 }
 
 function findEssential(essentials: Essentials, id: string): Essential | undefined {

@@ -80,7 +80,7 @@
 		"test:shell-board-diff": "node --single-threaded --import ./tools/loader/register.mts tools/shell-board-diff.ts",
 		"test:page-colours": "node --single-threaded --import ./tools/loader/register.mts tools/page-colours-test.ts",
 		"test:studio-layout": "node --single-threaded --import ./tools/loader/register.mts tools/studio-layout-test.ts",
-		"test:studio-tabs": "node --single-threaded --import ./tools/loader/register.mts tools/host-tabs-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/tabs-sidebar-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/canvas-tabs-test.ts",
+		"test:studio-tabs": "node --single-threaded --import ./tools/loader/register.mts tools/host-tabs-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/tab-pages-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/tabs-sidebar-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/canvas-tabs-test.ts",
 		"test:studio-host": "node --single-threaded --import ./tools/loader/register.mts tools/studio-host-test.ts",
 		"test:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-test.ts",
 		"diff:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-diff.ts",

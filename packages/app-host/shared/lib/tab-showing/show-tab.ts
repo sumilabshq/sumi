@@ -1,7 +1,7 @@
 import type { HostTab, HostTabs, HostTabsMoment } from "../host-tabs/host-tabs.js";
 import type { AppKind } from "../../schema/app-tab.schema.js";
-import type { PageFacts } from "../../schema/page-facts.schema.js";
-import { tabPagesOf } from "./tab-pages.js";
+import { ensureTabPage } from "./ensure-tab-page.js";
+import type { PageMaking } from "./ensure-tab-page.js";
 
 export interface TabShowing {
 	readonly appTabsGateway: {
@@ -9,10 +9,8 @@ export interface TabShowing {
 		show(app: AppKind): void;
 		closePanel(): void;
 	};
-	readonly pageFactsGateway: {
-		pages(): readonly PageFacts[];
+	readonly pageFactsGateway: PageMaking & {
 		showPage(pageId: string): void;
-		openPage(pageId: string): void;
 		closePage(pageId: string): void;
 		openAddress(pageId: string, address: string): void;
 	};
@@ -36,7 +34,7 @@ export function shownTabIdOf({ tabs, shownId }: HostTabsMoment, shownApp: AppKin
 
 export function showTab(
 	tab: HostTab,
-	tabs: readonly HostTab[],
+	hostTabs: HostTabs,
 	{ appTabsGateway, pageFactsGateway, paneTabsGateway }: TabShowing,
 ): void {
 	if (paneTabsGateway.tabIdsInPanes().includes(tab.id)) {
@@ -46,10 +44,10 @@ export function showTab(
 
 	paneTabsGateway.openShownTabPane();
 	appTabsGateway.show(tab.app);
-	const page = tabPagesOf(tabs, pageFactsGateway.pages()).get(tab.id);
+	const pageId = ensureTabPage(hostTabs, pageFactsGateway, tab.id, "shown");
 
-	if (page) {
-		pageFactsGateway.showPage(page.pageId);
+	if (pageId !== null) {
+		pageFactsGateway.showPage(pageId);
 	}
 }
 
@@ -82,5 +80,5 @@ export function showFreeTabBesidePanes(hostTabs: HostTabs, showing: TabShowing):
 	}
 
 	hostTabs.show(free.id);
-	showTab(free, hostTabs.now().tabs, showing);
+	showTab(free, hostTabs, showing);
 }

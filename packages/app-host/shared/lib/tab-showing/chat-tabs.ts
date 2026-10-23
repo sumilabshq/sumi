@@ -26,5 +26,5 @@ export function showChatTab(hostTabs: HostTabs, chatId: string, showing: TabShow
 	}
 
 	hostTabs.show(shownNext);
-	showTab(hostTabs.tabOf(shownNext), hostTabs.now().tabs, showing);
+	showTab(hostTabs.tabOf(shownNext), hostTabs, showing);
 }

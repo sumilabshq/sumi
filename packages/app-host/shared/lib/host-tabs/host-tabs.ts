@@ -1,24 +1,15 @@
 import type { AppKind } from "../../schema/app-tab.schema.js";
-import type { ListEntry } from "../../schema/tab-group.schema.js";
 import type { KeptTabs } from "../../schema/tabs-session.schema.js";
 import { shownTabIdOf } from "../tab-showing/show-tab.js";
 import { Watchers } from "../watchers/watchers.js";
-import {
-	chatOfGroup,
-	flatTabIdsOf,
-	freeGroupNameOf,
-	findGroup,
-	placeAfterOf,
-	locationOf,
-	withEntryBefore,
-	withTabAt,
-	withoutTab,
-} from "./tab-lists.js";
+import { chatOfGroup, flatTabIdsOf, findGroup, placeAfterOf, locationOf, withTabAt, withoutTab } from "./tab-lists.js";
 import type { TabGroup, TabLayout, TabPlace } from "./tab-lists.js";
 import {
 	closedPlaceOf,
 	emptyMoment,
 	groupChangeSaid,
+	groupedMoment,
+	newGroupOf,
 	isSameGroupFace,
 	keptClosed,
 	labelSaid,
@@ -36,6 +27,8 @@ export { CLOSED_KEPT } from "./host-tabs-moment.js";
 
 const NO_TAB = 'the host holds no tab "{id}"';
 const NO_GROUP = 'the host holds no group "{id}"';
+const PAGE_HELD = 'the browser page "{page}" already belongs to the tab "{id}"';
+const PAGE_GIVEN = 'the tab "{id}" already has the browser page "{page}"';
 
 export class HostTabs {
 	private readonly watchers = new Watchers();
@@ -185,6 +178,31 @@ export class HostTabs {
 		);
 	}
 
+	givePage(id: string, pageId: string, reason: string): void {
+		const tab = this.tabOf(id);
+		const holder = this.moment.tabs.find((one) => one.pageId === pageId && one.id !== id);
+
+		if (holder) {
+			throw new Error(PAGE_HELD.replace("{page}", pageId).replace("{id}", holder.id));
+		}
+
+		if (tab.pageId === pageId) {
+			return;
+		}
+
+		if (tab.pageId !== null) {
+			throw new Error(PAGE_GIVEN.replace("{id}", id).replace("{page}", tab.pageId));
+		}
+
+		this.become(
+			{
+				...this.moment,
+				tabs: this.withTab(id, { pageId }),
+			},
+			`${id} page ${tab.pageId ?? "none"} → ${pageId}, ${reason}`,
+		);
+	}
+
 	makeEssential(id: string, essentialId: string): void {
 		this.tabOf(id);
 		this.become(
@@ -198,9 +216,13 @@ export class HostTabs {
 	}
 
 	newGroup(chatId: string, withTabId: string | null): string {
-		const group = this.mintGroup(chatId, withTabId);
+		const birth = {
+			chatId,
+			withTabId,
+		};
+		const group = newGroupOf(this.moment, birth);
 		this.become(
-			this.groupedMoment(group, chatId, withTabId),
+			groupedMoment(this.moment, group, birth),
 			`new group ${group.id} "${group.name}" in ${chatId}${withTabId === null ? "" : ` with ${withTabId}`}`,
 		);
 		return group.id;
@@ -274,40 +296,6 @@ export class HostTabs {
 		}
 
 		return withTabAt(this.moment, last.tab.id, reopenPlaceOf(this.moment, last, chatId));
-	}
-
-	private mintGroup(chatId: string, withTabId: string | null): TabGroup {
-		return {
-			id: `group-${this.moment.minted + 1}`,
-			name: freeGroupNameOf(this.moment, chatId),
-			hue: null,
-			isOpen: true,
-			tabIds: withTabId === null ? [] : [withTabId],
-		};
-	}
-
-	private groupedMoment(group: TabGroup, chatId: string, withTabId: string | null): HostTabsMoment {
-		const layout = withTabId === null ? this.moment : withoutTab(this.moment, withTabId);
-		const entry: ListEntry = {
-			kind: "group",
-			id: group.id,
-		};
-		return {
-			...this.moment,
-			lists: withEntryBefore(layout.lists, chatId, entry, this.groupBeforeOf(chatId, withTabId)),
-			groups: [...layout.groups, group],
-			minted: this.moment.minted + 1,
-		};
-	}
-
-	private groupBeforeOf(chatId: string, withTabId: string | null): string | null {
-		const location = withTabId === null ? null : locationOf(this.moment, withTabId);
-
-		if (location === null || location.groupId !== null) {
-			return null;
-		}
-
-		return this.moment.lists[chatId]?.[location.at + 1]?.id ?? null;
 	}
 
 	private layoutWithGroup(next: TabGroup): TabLayout {

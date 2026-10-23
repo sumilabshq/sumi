@@ -2,6 +2,7 @@ import { ONE_CHAT } from "@widgetarium/core/engine/active-chat-port.js";
 import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { Essentials } from "../../shared/lib/essentials/essentials.js";
+import { ensureTabPage } from "../../shared/lib/tab-showing/ensure-tab-page.js";
 import { showFreeTabBesidePanes, showTab, shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
 import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
 import type { TabShowing } from "../../shared/lib/tab-showing/show-tab.js";
@@ -53,7 +54,10 @@ export function studioAppHostParts(host: StudioAppHost): AppHostParts {
 		paneTabsGateway,
 	};
 	showsFirstTab(hostTabs, essentials, showing);
-	paneTabsGateway.watch(() => showFreeTabBesidePanes(hostTabs, showing));
+	paneTabsGateway.watch(() => {
+		ensurePanePages(hostTabs, showing);
+		showFreeTabBesidePanes(hostTabs, showing);
+	});
 	return {
 		appTabsGateway: gateways.appTabsGateway,
 		pageFactsGateway: gateways.pageFactsGateway,
@@ -116,6 +120,14 @@ function showsFirstTab(hostTabs: HostTabs, essentials: Essentials, showing: TabS
 
 	if (first) {
 		hostTabs.show(first.id);
-		showTab(first, hostTabs.now().tabs, showing);
+		showTab(first, hostTabs, showing);
+	}
+}
+
+function ensurePanePages(hostTabs: HostTabs, showing: TabShowing): void {
+	const held = new Set(hostTabs.now().tabs.map((tab) => tab.id));
+
+	for (const tabId of showing.paneTabsGateway.tabIdsInPanes().filter((id) => held.has(id))) {
+		ensureTabPage(hostTabs, showing.pageFactsGateway, tabId, "placed in a pane");
 	}
 }

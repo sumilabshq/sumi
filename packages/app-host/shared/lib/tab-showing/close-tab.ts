@@ -46,5 +46,5 @@ function showNextTab(hostTabs: HostTabs, showing: TabShowing): void {
 		return;
 	}
 
-	showTab(next, tabs, showing);
+	showTab(next, hostTabs, showing);
 }

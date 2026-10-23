@@ -10,6 +10,7 @@ import type { HostTab } from "../../shared/lib/host-tabs/host-tabs.js";
 import { WORKSPACE_LIST, isKnownList, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
 import { showChatTab } from "../../shared/lib/tab-showing/chat-tabs.js";
 import { closeTabs } from "../../shared/lib/tab-showing/close-tab.js";
+import { ensureTabPage } from "../../shared/lib/tab-showing/ensure-tab-page.js";
 import { newTabPageOf } from "../../shared/lib/tab-showing/new-tab-page.js";
 import { openTabPage, showTab, shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
 import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
@@ -102,7 +103,7 @@ export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule
 		}
 
 		hostTabs.show(id);
-		showTab(tab, hostTabs.now().tabs, showing);
+		showTab(tab, hostTabs, showing);
 	});
 
 export const ShowChatTabCommandHandler = handler(ShowChatTabCommand, AppHostClientModule)
@@ -126,7 +127,7 @@ export const OpenTabCommandHandler = handler(OpenTabCommand, AppHostClientModule
 			},
 		);
 		openTabPage(tab, "", showing);
-		showTab(tab, hostTabs.now().tabs, showing);
+		showTab(tab, hostTabs, showing);
 	});
 
 export const OpenTabBelowCommandHandler = handler(OpenTabBelowCommand, AppHostClientModule)
@@ -141,7 +142,7 @@ export const OpenTabBelowCommandHandler = handler(OpenTabBelowCommand, AppHostCl
 			pageId: newTabPageOf("browser", showing.pageFactsGateway.isAvailable()),
 		});
 		openTabPage(tab, "", showing);
-		showTab(tab, hostTabs.now().tabs, showing);
+		showTab(tab, hostTabs, showing);
 	});
 
 export const DuplicateTabCommandHandler = handler(DuplicateTabCommand, AppHostClientModule)
@@ -159,7 +160,7 @@ export const DuplicateTabCommandHandler = handler(DuplicateTabCommand, AppHostCl
 			pageId: newTabPageOf(source.app, showing.pageFactsGateway.isAvailable()),
 		});
 		openTabPage(tab, address, showing);
-		showTab(tab, hostTabs.now().tabs, showing);
+		showTab(tab, hostTabs, showing);
 	});
 
 export const ReloadTabCommandHandler = handler(ReloadTabCommand, AppHostClientModule)
@@ -210,7 +211,7 @@ export const ReopenClosedTabCommandHandler = handler(ReopenClosedTabCommand, App
 		}
 
 		openTabPage(reopened.tab, reopened.address, showing);
-		showTab(reopened.tab, hostTabs.now().tabs, showing);
+		showTab(reopened.tab, hostTabs, showing);
 	});
 
 export const CloseTabCommandHandler = handler(CloseTabCommand, AppHostClientModule)
@@ -282,7 +283,11 @@ export const WatchTabTearOffCommandHandler = handler(WatchTabTearOffCommand, App
 		pageFactsGateway: PageFactsGateway,
 	})
 	.handle(({ id }, { hostTabs, pageFactsGateway }) => {
-		const pageId = tabPageOf(hostTabs, pageFactsGateway, id)?.pageId ?? null;
+		if (!heldTabOf(hostTabs, id)) {
+			return refuse(NOT_HELD.replace("{id}", id));
+		}
+
+		const pageId = ensureTabPage(hostTabs, pageFactsGateway, id, "dragged toward its own window");
 
 		if (pageId === null) {
 			return refuse(NO_OWN_WINDOW.replace("{id}", id));
@@ -334,14 +339,10 @@ function openInOwnWindow(
 		return refuse(NO_OWN_WINDOWS);
 	}
 
-	const pageId = tabPageOf(hostTabs, pageFactsGateway, tab.id)?.pageId ?? null;
+	const pageId = ensureTabPage(hostTabs, pageFactsGateway, tab.id, "dropped outside the studio");
 
-	if (tab.app !== "browser" || pageId === null) {
+	if (pageId === null) {
 		return refuse(NO_OWN_WINDOW.replace("{id}", tab.id));
-	}
-
-	if (!pageFactsGateway.pages().some((page) => page.pageId === pageId)) {
-		pageFactsGateway.openPage(pageId);
 	}
 
 	pageFactsGateway.openPageInOwnWindow(pageId);
