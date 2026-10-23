@@ -26,5 +26,6 @@
 	},
 	"widgetarium": {
 		"level": "common"
-	}
+	},
+	"sideEffects": false
 }

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, SyntheticEvent } from "react";
-import { declaredLabel, declaredName } from "../registry.js";
+import { declaredLabel, declaredName } from "../widget-listing.js";
 import { heldKey, keepNamedRecords, mountList, mountRows, mountRowToStore, uniqueName, withoutKey } from "../model.js";
 import type { HeldRecord, Tile } from "../model.js";
 import type { MountRow, MountRowLike } from "../held-records.js";

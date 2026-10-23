@@ -1,4 +1,4 @@
-import { createElement as h } from "react";
+import { Fragment, createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Button, CodeArea, Icon, Row, RowLabel, RowValue, SidebarGroup } from "@widgetarium/kit";
 import type { TileProp } from "../model.js";
@@ -6,12 +6,21 @@ import { declaredOf, describedFields, typedIn, withTyped } from "../gateway/prop
 import type { DescribedField, PropBinding } from "../gateway/props.js";
 import { isObject } from "../engine/is-object.js";
 import { readYaml, yamlOf } from "./item-yaml.js";
-import type { Item } from "./item-yaml.js";
+import type { Item, ReadItem } from "./item-yaml.js";
+import { useYamlParse } from "./yaml-parse.js";
 import { FIELDS_SHOWN, writeProp, writtenText } from "./prop-writing.js";
 import { draftOnInput, shownValue } from "./settings-rows.js";
 import type { SettingsSpec, SettingsState } from "./settings-state.js";
 
 const ITEM_IS_YAML = "YAML, one field per line. A field marked optional may stay empty.";
+
+interface ItemEditorProps {
+	readonly state: SettingsState;
+	readonly propKey: string;
+	readonly spec: SettingsSpec;
+	readonly config: TileProp;
+	readonly index: number;
+}
 
 interface WrappedRow {
 	readonly id: unknown;
@@ -30,35 +39,15 @@ export function itemBody(
 	config: TileProp,
 	index: number,
 ): ReactNode[] {
-	const fields = itemFields(spec) ?? [];
-	const rows = listedItems(spec, config);
-	const isExisting = index < rows.length;
-	const read = readYaml(state.draft, fields);
-	const write = (next: readonly unknown[]): void => {
-		writeProp(state, key, spec, withTyped(spec, config, next));
-		state.openEditor(`prop:${key}`, writtenText(spec, next));
-	};
-	const apply = (): void => {
-		if (read.failure !== undefined) return;
-		write(isExisting ? rows.map((row, at) => (at === index ? rowWith(row, read.item) : row)) : [...rows, read.item]);
-	};
 	return [
-		h(CodeArea, { key: "yaml", value: state.draft ?? "", onInput: draftOnInput(state) }),
-		h(
-			"p",
-			{ className: read.failure ? "wg-set-pop-error" : "wg-set-pop-note", key: "note" },
-			read.failure ?? ITEM_IS_YAML,
-		),
-		h("div", { className: "wg-set-pop-foot", key: "foot" }, [
-			isExisting
-				? h(Button, { size: "s", key: "remove", onClick: () => write(rows.filter((_, at) => at !== index)) }, "Remove")
-				: h(Button, { size: "s", key: "back", onClick: () => state.openEditor(`prop:${key}`, "") }, "Back"),
-			h(
-				Button,
-				{ size: "s", variant: "accent", key: "apply", disabled: Boolean(read.failure), onClick: apply },
-				"Apply",
-			),
-		]),
+		h(ItemEditor, {
+			key: "item",
+			state,
+			propKey: key,
+			spec,
+			config,
+			index,
+		}),
 	];
 }
 
@@ -86,6 +75,63 @@ export function collectionFields(spec: SettingsSpec): readonly DescribedField[] 
 
 export function listedFields(spec: SettingsSpec, binding: PropBinding): readonly DescribedField[] | null {
 	return binding === "hardcode" ? collectionFields(spec) : null;
+}
+
+function ItemEditor({ state, propKey, spec, config, index }: ItemEditorProps): ReactElement {
+	const parseYaml = useYamlParse();
+	const fields = itemFields(spec) ?? [];
+	const rows = listedItems(spec, config);
+	const isExisting = index < rows.length;
+	const read = parseYaml === null ? null : readYaml(state.draft, fields, parseYaml);
+	const write = (next: readonly unknown[]): void => {
+		writeProp(state, propKey, spec, withTyped(spec, config, next));
+		state.openEditor(`prop:${propKey}`, writtenText(spec, next));
+	};
+	const apply = (item: Item): void =>
+		write(isExisting ? rows.map((row, at) => (at === index ? rowWith(row, item) : row)) : [...rows, item]);
+	return h(Fragment, null, [
+		h(CodeArea, { key: "yaml", value: state.draft ?? "", onInput: draftOnInput(state) }),
+		h(
+			"p",
+			{ className: read?.failure ? "wg-set-pop-error" : "wg-set-pop-note", key: "note" },
+			read?.failure ?? ITEM_IS_YAML,
+		),
+		itemFoot({
+			read,
+			isExisting,
+			apply,
+			remove: () => write(rows.filter((_, at) => at !== index)),
+			back: () => state.openEditor(`prop:${propKey}`, ""),
+		}),
+	]);
+}
+
+interface ItemFoot {
+	readonly read: ReadItem | null;
+	readonly isExisting: boolean;
+	readonly apply: (item: Item) => void;
+	readonly remove: () => void;
+	readonly back: () => void;
+}
+
+function itemFoot({ read, isExisting, apply, remove, back }: ItemFoot): ReactElement {
+	const item = read === null || read.failure !== undefined ? undefined : read.item;
+	return h("div", { className: "wg-set-pop-foot", key: "foot" }, [
+		isExisting
+			? h(Button, { size: "s", key: "remove", onClick: remove }, "Remove")
+			: h(Button, { size: "s", key: "back", onClick: back }, "Back"),
+		h(
+			Button,
+			{
+				size: "s",
+				variant: "accent",
+				key: "apply",
+				disabled: item === undefined,
+				onClick: () => item && apply(item),
+			},
+			"Apply",
+		),
+	]);
 }
 
 function itemFields(spec: SettingsSpec): readonly DescribedField[] | null {

@@ -1,6 +1,5 @@
 import { apiRefusal } from "./version.js";
 import type { VersionedManifest } from "./version.js";
-import { CATALOGUE_COPY_DIR } from "./paths.js";
 import { EMPTY_LOCK, INSTALL_PENDING, modulesByWidget, buildMatchesSources, commitsOf } from "./engine/widget-lock.js";
 import type { WidgetLock } from "./engine/widget-lock.js";
 import { generationOf, widgetKeyOf, widgetRef } from "./engine/widget-ref.js";
@@ -10,7 +9,7 @@ import { contentHash } from "./engine/content-hash.js";
 import { isPageFolder } from "./engine/node-marks.js";
 import type { FolderFiles } from "./engine/widget-build.js";
 import { readRecord } from "./engine/catalogue-index.js";
-import type { EngineManifest, Fields, WidgetRecord } from "./engine/catalogue-index.js";
+import type { EngineManifest, WidgetRecord } from "./engine/catalogue-index.js";
 import { idOfFolder } from "./engine/github.js";
 import { isObject } from "./engine/is-object.js";
 import {
@@ -32,6 +31,7 @@ import type { GivenProps } from "./declared-widget.js";
 import type { ReactNode } from "react";
 
 export { ENGINE_SCOPE };
+export { boardWidgets, declaredLabel, declaredName, inlineWidgets } from "./widget-listing.js";
 
 export interface WidgetDefinition {
 	readonly manifest: EngineManifest;
@@ -72,11 +72,6 @@ interface HeldPackage {
 	readonly exports: Map<unknown, unknown>;
 }
 
-interface ManifestHolder {
-	readonly manifest?: Fields | null | undefined;
-	readonly folder?: string | null | undefined;
-}
-
 const INSTALL_UNFINISHED = "{widget} did not finish installing, so it is not run — install it again from the catalogue";
 const REACT_NOT_LOADED = "the React this widget declared did not load";
 
@@ -88,23 +83,6 @@ export function buildWidget({ manifest, code, path, sources, lib, libPath, scope
 	if (lib && scope) libs.set(`${scope}/lib`, runCode(compileCheckedWidget(lib, libPath ?? ""), libs));
 	const compiled = sources ? compileWidgetFolder(sources, path) : compileCheckedWidget(code ?? "", path);
 	return componentIn(runCode(compiled, libs), path);
-}
-
-export function boardWidgets<Entry extends ManifestHolder>(entries: readonly Entry[]): Entry[] {
-	return entries.filter((entry) => !isInlineOnly(entry) && !isCatalogueCopy(entry));
-}
-
-export function inlineWidgets<Entry extends ManifestHolder>(entries: readonly Entry[]): Entry[] {
-	return entries.filter((entry) => entry.manifest?.["inline"] === true && !isCatalogueCopy(entry));
-}
-
-export function declaredName(registry: WidgetLookup | null | undefined, id: string): unknown {
-	const manifest = registry?.get(id)?.manifest;
-	return manifest?.["view"] ?? manifest?.["title"] ?? id;
-}
-
-export function declaredLabel(registry: WidgetLookup | null | undefined, id: string): string {
-	return String(declaredName(registry, id));
 }
 
 export class WidgetRegistry implements WidgetLookup {
@@ -369,10 +347,6 @@ interface WidgetRun {
 	readonly uses: Set<string>;
 }
 
-function isInlineOnly(entry: ManifestHolder): boolean {
-	return entry.manifest?.["inline"] === true && !entry.manifest["defaultSize"];
-}
-
 function stateOf(entry: unknown): unknown {
 	return isObject(entry) ? entry["state"] : undefined;
 }
@@ -380,8 +354,4 @@ function stateOf(entry: unknown): unknown {
 function namesItWas(record: WidgetRecord): readonly unknown[] {
 	const was = record["was"] ?? [];
 	return Array.isArray(was) ? was : [was];
-}
-
-function isCatalogueCopy(entry: ManifestHolder): boolean {
-	return entry.folder?.startsWith(`${CATALOGUE_COPY_DIR}/`) === true;
 }

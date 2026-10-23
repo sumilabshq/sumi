@@ -18,7 +18,7 @@ import type { Job } from "../packages/core/src/app-jobs.js";
 import type { Drawing } from "../packages/canvas/shared/schema/drawing.schema.ts";
 import { standIn } from "./stand-in.ts";
 import type { JobAdapter } from "../packages/host-obsidian/src/legacy/ai/job-store.js";
-import type { Emit } from "../packages/host-obsidian/src/legacy/ai/stream.js";
+import type { Emit } from "../packages/core/src/engine/provider-stream.js";
 import type { RunAsk, RunAnswer } from "../packages/host-obsidian/src/legacy/ai/run.js";
 
 let failed = 0;

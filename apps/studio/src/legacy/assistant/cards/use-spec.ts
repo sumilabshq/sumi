@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MutableRefObject } from "react";
-import { readSpec, specPathOf } from "@widgetarium/core/app-spec.js";
+import { specPathOf } from "@widgetarium/core/app-spec.js";
+import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import type { SpecRead } from "@widgetarium/core/app-spec.js";
 import type { AppFiles } from "./card-ports.js";
 

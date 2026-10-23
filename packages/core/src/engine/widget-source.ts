@@ -1,6 +1,6 @@
 import { readRecord, recordIn } from "./catalogue-index.js";
 import type { Fields, WidgetRecord } from "./catalogue-index.js";
-import { SOURCE_FILES, javascriptSourceRefusal, missingSourceRefusal, sourceFileIn } from "./widget-build.js";
+import { SOURCE_FILES, javascriptSourceRefusal, missingSourceRefusal, sourceFileIn } from "./widget-files.js";
 import {
 	idOfFolder,
 	isCleanRepositoryPath,

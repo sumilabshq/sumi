@@ -1,13 +1,13 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
+import { keptFeaturesOf } from "@widgetarium/core/app-spec.js";
 import {
-	keptFeaturesOf,
 	withChoicePicked,
 	withFeatureToggled,
 	withRecordVerbToggled,
 	withReferenceToggled,
-} from "@widgetarium/core/app-spec.js";
+} from "@widgetarium/core/app-spec-text.js";
 import type { AppSpec, RecordVerb } from "@widgetarium/core/app-spec.js";
 import { useSpec } from "./use-spec.js";
 import type { HeldSpec } from "./use-spec.js";

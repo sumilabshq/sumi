@@ -2,7 +2,8 @@ import { boardIn, boardOrRefused } from "../../../shared/lib/design/board-in-not
 import { textAt, textOrRefused } from "../../../shared/lib/files/text-at.js";
 import type { ReadingAdapter } from "../../../shared/lib/files/text-at.js";
 import { readLock } from "@widgetarium/core/engine/widget-lock.js";
-import { readSpec, specPathOf } from "@widgetarium/core/app-spec.js";
+import { specPathOf } from "@widgetarium/core/app-spec.js";
+import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import { LOCK_PATH } from "@widgetarium/core/paths.js";
 
 const LOCK_REFUSED = "{path} cannot be read: {why}";

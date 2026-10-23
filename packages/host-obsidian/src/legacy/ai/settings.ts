@@ -1,8 +1,8 @@
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { DEFAULT_PRESET, EDITABLE_FIELDS, PRESETS, presetById } from "./providers.js";
 import type { EditableField, Provider } from "./providers.js";
-import { READER_NAMES } from "./stream.js";
-import type { Held } from "./stream.js";
+import { READER_NAMES } from "@widgetarium/core/engine/provider-stream.js";
+import type { Held } from "@widgetarium/core/engine/provider-stream.js";
 import { sessionToKeep, turnsToKeep } from "./transcript.js";
 import type { AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
 

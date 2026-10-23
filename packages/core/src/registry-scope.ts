@@ -15,10 +15,14 @@ import { moduleFromCompiled } from "./engine/compiled-module.js";
 import type { RequireModule } from "./engine/compiled-module.js";
 import { isObject } from "./engine/is-object.js";
 import { HELD_MARK, NODE_MARK, SCOPE_MARK, WIDGET_MARK } from "./engine/node-marks.js";
-import { declareProps, isDeclaredProps, manifestOfModule } from "./gateway/declared";
-import type { DeclaredModule, DeclaredProps } from "./gateway/declared";
+import { declareProps } from "./gateway/declared";
+import type { DeclaredProps } from "./gateway/declared";
 import type { GivenProps } from "./declared-widget.js";
 import type { DrawWidget } from "./mounted.js";
+import type { WidgetComponent } from "./widget-shell.js";
+
+export { blocksIn, componentIn, statesIn } from "./widget-shell.js";
+export type { WidgetComponent, WidgetStates } from "./widget-shell.js";
 
 interface ReactLike {
 	readonly version?: unknown;
@@ -42,12 +46,6 @@ export interface WidgetScope {
 	readonly radix: unknown;
 	readonly motion: unknown;
 	readonly draw: DrawWidget<GivenProps> | null;
-}
-
-export interface WidgetComponent {
-	(given: GivenProps): ReactNode;
-	readonly declared?: unknown;
-	manifest?: unknown;
 }
 
 export interface PackageTaker {
@@ -122,31 +120,6 @@ export function foreignScope(
 	};
 }
 
-export function componentIn(shell: unknown, at: string): WidgetComponent {
-	const exported = defaultIn(shell) ?? shell;
-	if (!isWidgetComponent(exported)) throw new Error(`${at}: the file must "export default createWidget(...)"`);
-	if (exported.declared) exported.manifest = isDeclaredModule(shell) ? manifestOfModule(shell) : null;
-	return exported;
-}
-
-export function blocksIn(shell: unknown): Readonly<Record<string, WidgetComponent>> {
-	const held: unknown = isObject(shell) ? Reflect.get(shell, "blocks") : undefined;
-	if (!isObject(held)) return {};
-	return Object.fromEntries(
-		Object.entries(held).filter((entry): entry is [string, WidgetComponent] => isWidgetComponent(entry[1])),
-	);
-}
-
-export type WidgetStates = Readonly<Record<string, Readonly<Record<string, unknown>>>>;
-
-export function statesIn(shell: unknown): WidgetStates {
-	const held = statesHeldIn(shell) ?? statesHeldIn(defaultIn(shell));
-	if (!held) return {};
-	return Object.fromEntries(
-		Object.entries(held).filter((entry): entry is [string, Readonly<Record<string, unknown>>] => isObject(entry[1])),
-	);
-}
-
 export interface WidgetImports {
 	take(name: string): unknown;
 }
@@ -205,27 +178,8 @@ export function isReactLike(held: unknown): held is ReactLike {
 	return isObject(held) && typeof held["createElement"] === "function";
 }
 
-function isWidgetComponent(held: unknown): held is WidgetComponent {
-	return typeof held === "function";
-}
-
 function isDrawWidget(held: unknown): held is DrawWidget<GivenProps> {
 	return typeof held === "function";
-}
-
-function isDeclaredModule(shell: unknown): shell is DeclaredModule {
-	const exported = defaultIn(shell);
-	return isObject(shell) && typeof exported === "function" && isDeclaredProps(Reflect.get(exported, "declared"));
-}
-
-function statesHeldIn(shell: unknown): Readonly<Record<string, unknown>> | null {
-	const held: unknown = isObject(shell) || typeof shell === "function" ? Reflect.get(shell, "states") : undefined;
-	return isObject(held) ? held : null;
-}
-
-function defaultIn(shell: unknown): unknown {
-	if (!isObject(shell) && typeof shell !== "function") return undefined;
-	return Reflect.get(shell, "default");
 }
 
 function fieldsOf(held: unknown): Readonly<Record<string, unknown>> {

@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { ModuleRegistry } from "../engine/module-registry.js";
 import { registerPacks } from "../engine/packs.js";
 import { projectPackOf } from "../engine/project-pack.js";
-import { matchProjectRoute } from "../project/index.js";
+import { matchProjectRoute } from "../project/project-route-match.js";
 import type { SurfaceHost } from "../surface/use-surface-shared.js";
 import { browserHostOf } from "./browser-host.js";
 import { createBrowserRouter } from "./browser-router.js";

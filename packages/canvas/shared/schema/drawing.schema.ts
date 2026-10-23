@@ -18,5 +18,10 @@ function isDrawing(held: unknown): held is Drawing {
 }
 
 function isGpuSupply(held: unknown): held is GpuSupply {
-	return typeof held === "object" && held !== null && typeof Reflect.get(held, "loadCanvasKit") === "function";
+	return (
+		typeof held === "object" &&
+		held !== null &&
+		typeof Reflect.get(held, "startCanvas") === "function" &&
+		typeof Reflect.get(held, "loadCanvasKit") === "function"
+	);
 }

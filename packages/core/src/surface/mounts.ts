@@ -4,7 +4,7 @@ import { PLATES_ABOVE } from "@widgetarium/kit/surface";
 import { heldKey, heldTile, mountList, mountRows } from "../model.js";
 import type { Tile } from "../model.js";
 import type { MountRow } from "../held-records.js";
-import { declaredLabel } from "../registry.js";
+import { declaredLabel } from "../widget-listing.js";
 import type { WidgetDefinition } from "../registry.js";
 import type { EngineManifest } from "../engine/catalogue-index.js";
 import { failureMessage } from "../engine/failure-message.js";

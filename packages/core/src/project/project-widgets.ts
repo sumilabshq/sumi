@@ -1,4 +1,4 @@
-import { EVERY_SOURCE_FILE, javascriptSourceRefusal } from "../engine/widget-build.js";
+import { EVERY_SOURCE_FILE, javascriptSourceRefusal } from "../engine/widget-files.js";
 import type { ProjectEntry } from "./project-entry.js";
 import type { ProjectFinding } from "./project-finding.js";
 import { baseNameOf, type ProjectFiles } from "./project-files.js";

@@ -4,8 +4,8 @@ import type { Provider } from "./providers.js";
 import { expandArgs } from "./command.js";
 import { environmentFor } from "./path.js";
 import type { Environment } from "./path.js";
-import { createLineSplitter, plainText, readerNamed } from "./stream.js";
-import type { Emit, LineSplitter } from "./stream.js";
+import { createLineSplitter, plainText, readerNamed } from "@widgetarium/core/engine/provider-stream.js";
+import type { Emit, LineSplitter } from "@widgetarium/core/engine/provider-stream.js";
 
 export interface ChatTurn {
 	readonly role: string;

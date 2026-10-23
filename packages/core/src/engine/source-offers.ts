@@ -1,6 +1,6 @@
 import { RECORD_FILES, readRecord } from "./catalogue-index.js";
 import type { Fields, WidgetRecord } from "./catalogue-index.js";
-import { LIB_FILES, SOURCE_FILES, sourceFileIn } from "./widget-build.js";
+import { LIB_FILES, SOURCE_FILES, sourceFileIn } from "./widget-files.js";
 import { commitUrl, idOfFolder, isCleanRepositoryPath, rawUrl, readRepository, scopedName, treeUrl } from "./github.js";
 import type { Repository } from "./github.js";
 import { REGISTRY_FILE, readRegistry } from "./registry-file.js";

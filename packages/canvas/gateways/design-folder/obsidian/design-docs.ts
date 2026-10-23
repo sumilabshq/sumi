@@ -1,5 +1,6 @@
 import type { DataAdapter } from "obsidian";
-import { readSpec, specPathOf, SPEC_FOLDER } from "@widgetarium/core/app-spec.js";
+import { specPathOf, SPEC_FOLDER } from "@widgetarium/core/app-spec.js";
+import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import { ROOT } from "@widgetarium/core/paths.js";
 import type { CanvasDoc } from "../../../shared/schema/doc.schema.js";
 import { specMarkdownOf } from "../../../shared/lib/design/spec-markdown.js";

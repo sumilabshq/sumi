@@ -1,4 +1,5 @@
 import CanvasKitInit from "canvaskit-wasm";
+import { startGpuCanvas } from "@widgetarium/gpu";
 import type { GpuSupply } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 
@@ -15,6 +16,7 @@ export function obsidianGpuSupply(plugin: WidgetariumPlugin): GpuSupply {
 	const { adapter } = plugin.app.vault;
 	const pathOf = (file: string): string => `${plugin.manifest.dir ?? ""}/${GPU_FILES_FOLDER}/${file}`;
 	return {
+		startCanvas: startGpuCanvas,
 		loadCanvasKit: () => CanvasKitInit({ locateFile: (file) => adapter.getResourcePath(pathOf(file)) }),
 		loadFonts: () =>
 			Promise.all(

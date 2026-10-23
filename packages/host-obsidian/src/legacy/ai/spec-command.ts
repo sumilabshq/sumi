@@ -1,13 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import {
-	BUILD_STAGES,
-	SPEC_FOLDER,
-	isBuildStage,
-	readSpec,
-	specPathOf,
-	specSummaryOf,
-} from "@widgetarium/core/app-spec.js";
+import { BUILD_STAGES, SPEC_FOLDER, isBuildStage, specPathOf, specSummaryOf } from "@widgetarium/core/app-spec.js";
+import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import type { AppSpec, BuildStage } from "@widgetarium/core/app-spec.js";
 import type { Told } from "./shape-command.js";
 

@@ -1,3 +1,4 @@
+import { sourceKeyOf } from "./node-marks.js";
 import {
 	functionsIn,
 	isSourceNode,
@@ -6,9 +7,8 @@ import {
 	jsxHoldersIn,
 	parsedSource,
 	scopeOf,
-	sourceKeyOf,
-} from "./node-marks.js";
-import type { SourceNode } from "./node-marks.js";
+} from "./source-nodes.js";
+import type { SourceNode } from "./source-nodes.js";
 
 export interface NodeMove {
 	readonly from: number;

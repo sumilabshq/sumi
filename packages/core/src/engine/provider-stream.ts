@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { isObject } from "./is-object.js";
 
 export type Held = Readonly<Record<string, unknown>>;
 
@@ -16,14 +16,26 @@ export interface ToolResult {
 	readonly failed: boolean;
 }
 
+export interface UsageWindow {
+	readonly used: number;
+	readonly resetsAt: number;
+}
+
+export interface PlanUsage {
+	readonly fiveHour: UsageWindow | null;
+	readonly week: UsageWindow | null;
+}
+
 export type StreamPart =
 	| { readonly session: string }
+	| { readonly usage: PlanUsage }
 	| { readonly phase: Phase }
 	| { readonly spentMore: number }
 	| { readonly spent: number }
 	| { readonly text: string }
 	| { readonly call: ToolCall }
 	| { readonly result: ToolResult }
+	| { readonly compacted: string }
 	| { readonly failure: string };
 
 export type Emit = (part: StreamPart) => void;
@@ -80,106 +92,22 @@ export function createLineSplitter(onLine: (line: string) => void): LineSplitter
 	};
 }
 
-function jsonIn(line: string): Held | null {
-	const trimmed = line.trim();
-	if (!trimmed.startsWith("{")) return null;
-	try {
-		const parsed: unknown = JSON.parse(trimmed);
-		return isObject(parsed) ? parsed : null;
-	} catch {
-		return null;
-	}
-}
-
-function objectAt(held: Held | null | undefined, key: string): Held | null {
-	const inner = held?.[key];
-	return isObject(inner) ? inner : null;
-}
-
-function spokenTokensIn(usage: Held | null): number | null {
-	const spoken = usage?.["output_tokens"];
-	return typeof spoken === "number" && Number.isFinite(spoken) ? spoken : null;
-}
-
-function partsOf(event: Held): unknown[] {
-	const content = objectAt(event, "message")?.["content"];
-	return Array.isArray(content) ? content : [];
-}
-
-function resultText(content: unknown): string {
-	if (typeof content === "string") return content;
-	if (!Array.isArray(content)) return "";
-	return content
-		.filter(isPlainObject)
-		.map((part) => (part["type"] === "text" && typeof part["text"] === "string" ? part["text"] : null))
-		.filter((text): text is string => text !== null)
-		.join("\n");
-}
-
-function textDeltaIn(event: Held): string | null {
-	if (event["type"] !== "stream_event") return null;
-	const inner = objectAt(event, "event");
-	const delta = objectAt(inner, "delta");
-	if (inner?.["type"] !== "content_block_delta" || delta?.["type"] !== "text_delta") return null;
-	const text = delta["text"];
-	return typeof text === "string" ? text : null;
-}
-
 interface ClaudeStreamState {
 	streamed: boolean;
 	said: boolean;
 	turned: boolean;
+	compacted: boolean;
 }
 
-// TRADE-OFF: a block arrives whole after its own deltas, so once one delta lands the block's text is dropped rather than shown twice
-function createClaudeStream(): LineReader {
-	const state: ClaudeStreamState = { streamed: false, said: false, turned: false };
-	return (line, emit) => {
-		const event = jsonIn(line);
-		if (!event) return;
-		emitSignals(event, state, emit);
+const COMPACT_SUMMARY_LEAD = /^[\s\S]*?Summary:\s*\n/;
 
-		const delta = textDeltaIn(event);
-		if (delta !== null) {
-			emitDelta(delta, state, emit);
-			return;
-		}
-		if (event["type"] === "assistant") {
-			emitAssistantParts(event, state, emit);
-			return;
-		}
-		if (event["type"] === "user") {
-			emitToolResults(event, emit);
-			return;
-		}
-		if (event["type"] !== "result") return;
-		if (event["is_error"] === true)
-			emit({ failure: String(event["result"] ?? event["subtype"] ?? "the agent reported an error") });
-	};
-}
+const MS_PER_SECOND = 1000;
 
-function emitSignals(event: Held, state: ClaudeStreamState, emit: Emit): void {
-	const session = event["session_id"];
-	if (typeof session === "string" && session !== "") emit({ session });
-
-	const inner = event["type"] === "stream_event" ? objectAt(event, "event") : null;
-	// TRADE-OFF: the break waits for the next word rather than landing on the boundary, because most turns of a long run speak no text at all and would each leave a blank line behind
-	if (inner?.["type"] === "message_start" && state.said) state.turned = true;
-
-	if (inner?.["type"] === "content_block_start") {
-		const blockType = objectAt(inner, "content_block")?.["type"];
-		const phase = typeof blockType === "string" ? PHASE_OF_BLOCK[blockType] : undefined;
-		if (phase) emit({ phase });
-	}
-	// TRADE-OFF: each turn reports its own total, so the turns are added up rather than read as one running number
-	if (inner?.["type"] === "message_delta") {
-		const spoken = spokenTokensIn(objectAt(inner, "usage"));
-		if (spoken !== null) emit({ spentMore: spoken });
-	}
-	if (event["type"] === "result") {
-		const spoken = spokenTokensIn(objectAt(event, "usage"));
-		if (spoken !== null) emit({ spent: spoken });
-	}
+export function planUsageIn(info: Held | null): PlanUsage | null {
+	const windows = objectAt(info, "unifiedWindows");
+	const fiveHour = usageWindowIn(objectAt(windows, "five_hour"));
+	const week = usageWindowIn(objectAt(windows, "seven_day"));
+	return fiveHour === null && week === null ? null : { fiveHour, week };
 }
 
 function emitDelta(delta: string, state: ClaudeStreamState, emit: Emit): void {
@@ -242,4 +170,129 @@ function createLooseText(): LineReader {
 		if (said.trim() === "" || SPINNER.test(said)) return;
 		emit({ text: `${said}\n` });
 	};
+}
+
+function jsonIn(line: string): Held | null {
+	const trimmed = line.trim();
+	if (!trimmed.startsWith("{")) return null;
+	try {
+		const parsed: unknown = JSON.parse(trimmed);
+		return isObject(parsed) ? parsed : null;
+	} catch {
+		return null;
+	}
+}
+
+function objectAt(held: Held | null | undefined, key: string): Held | null {
+	const inner = held?.[key];
+	return isObject(inner) ? inner : null;
+}
+
+function spokenTokensIn(usage: Held | null): number | null {
+	const spoken = usage?.["output_tokens"];
+	return typeof spoken === "number" && Number.isFinite(spoken) ? spoken : null;
+}
+
+function partsOf(event: Held): unknown[] {
+	const content = objectAt(event, "message")?.["content"];
+	return Array.isArray(content) ? content : [];
+}
+
+function resultText(content: unknown): string {
+	if (typeof content === "string") return content;
+	if (!Array.isArray(content)) return "";
+	return content
+		.filter(isPlainObject)
+		.map((part) => (part["type"] === "text" && typeof part["text"] === "string" ? part["text"] : null))
+		.filter((text): text is string => text !== null)
+		.join("\n");
+}
+
+function textDeltaIn(event: Held): string | null {
+	if (event["type"] !== "stream_event") return null;
+	const inner = objectAt(event, "event");
+	const delta = objectAt(inner, "delta");
+	if (inner?.["type"] !== "content_block_delta" || delta?.["type"] !== "text_delta") return null;
+	const text = delta["text"];
+	return typeof text === "string" ? text : null;
+}
+
+// TRADE-OFF: a block arrives whole after its own deltas, so once one delta lands the block's text is dropped rather than shown twice
+function createClaudeStream(): LineReader {
+	const state: ClaudeStreamState = { streamed: false, said: false, turned: false, compacted: false };
+	return (line, emit) => {
+		const event = jsonIn(line);
+		if (!event) return;
+		emitSignals(event, state, emit);
+
+		if (event["type"] === "system" && event["subtype"] === "compact_boundary") {
+			state.compacted = true;
+			emit({ compacted: "" });
+			return;
+		}
+		const summary = state.compacted ? compactSummaryIn(event) : null;
+		if (summary !== null) {
+			state.compacted = false;
+			emit({ compacted: summary });
+			return;
+		}
+
+		const delta = textDeltaIn(event);
+		if (delta !== null) {
+			emitDelta(delta, state, emit);
+			return;
+		}
+		if (event["type"] === "assistant") {
+			emitAssistantParts(event, state, emit);
+			return;
+		}
+		if (event["type"] === "user") {
+			emitToolResults(event, emit);
+			return;
+		}
+		if (event["type"] !== "result") return;
+		if (event["is_error"] === true)
+			emit({ failure: String(event["result"] ?? event["subtype"] ?? "the agent reported an error") });
+	};
+}
+
+function compactSummaryIn(event: Held): string | null {
+	const content = objectAt(event, "message")?.["content"];
+	if (event["type"] !== "user" || event["isSynthetic"] !== true || typeof content !== "string") return null;
+	return content.replace(COMPACT_SUMMARY_LEAD, "").trim();
+}
+
+function emitSignals(event: Held, state: ClaudeStreamState, emit: Emit): void {
+	const session = event["session_id"];
+	if (typeof session === "string" && session !== "") emit({ session });
+
+	const inner = event["type"] === "stream_event" ? objectAt(event, "event") : null;
+	// TRADE-OFF: the break waits for the next word rather than landing on the boundary, because most turns of a long run speak no text at all and would each leave a blank line behind
+	if (inner?.["type"] === "message_start" && state.said) state.turned = true;
+
+	if (inner?.["type"] === "content_block_start") {
+		const blockType = objectAt(inner, "content_block")?.["type"];
+		const phase = typeof blockType === "string" ? PHASE_OF_BLOCK[blockType] : undefined;
+		if (phase) emit({ phase });
+	}
+	// TRADE-OFF: each turn reports its own total, so the turns are added up rather than read as one running number
+	if (inner?.["type"] === "message_delta") {
+		const spoken = spokenTokensIn(objectAt(inner, "usage"));
+		if (spoken !== null) emit({ spentMore: spoken });
+	}
+	if (event["type"] === "result") {
+		const spoken = spokenTokensIn(objectAt(event, "usage"));
+		if (spoken !== null) emit({ spent: spoken });
+	}
+	if (event["type"] === "rate_limit_event") {
+		const usage = planUsageIn(objectAt(event, "rate_limit_info"));
+		if (usage !== null) emit({ usage });
+	}
+}
+
+function usageWindowIn(held: Held | null): UsageWindow | null {
+	const used = held?.["utilization"];
+	const resetsAt = held?.["resetsAt"];
+	if (typeof used !== "number" || !Number.isFinite(used) || typeof resetsAt !== "number") return null;
+	return { used: Math.max(0, used), resetsAt: resetsAt * MS_PER_SECOND };
 }

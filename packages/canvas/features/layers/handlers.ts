@@ -1,5 +1,4 @@
 import { EdgeWidth } from "@widgetarium/behaviors";
-import { movedNode } from "@widgetarium/core/engine/node-moves.js";
 import { handler, refuse } from "@widgetarium/core/requests";
 import { WidgetDrawingGateway } from "../../gateways/widget-drawing/widget-drawing.gateway.js";
 import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
@@ -9,7 +8,6 @@ import { NOT_DRAWN, layersPanelOf } from "./lib/layers-panel.js";
 import { pickIn } from "../../shared/lib/layers/pick.js";
 import { pickedMarkOf } from "../../shared/lib/layers/picked-mark.js";
 import { shownScreenOf } from "../../shared/lib/layers/shown-screen.js";
-import type { LayerMove } from "../../shared/schema/layer-move.schema.js";
 import { pagesNow, watchPages } from "../../shared/lib/pages/pages-now.js";
 import { pagesStill } from "../../shared/lib/pages/pages-still.js";
 import { CanvasStore } from "../../shared/lib/view/canvas-store.js";
@@ -30,7 +28,6 @@ import { CanvasClientModule } from "../../module.js";
 const NOT_MOVABLE = "That place is outside the page's own code, so nothing was moved.";
 const NOT_A_PAGE = "This screen is not drawn by a page widget, so its layers cannot be moved.";
 const NOT_A_PICKABLE_PAGE = "This screen is not drawn by a page widget, so a layer of it cannot be picked.";
-const NOT_MOVED = "Nothing was moved: {why}";
 const NO_PAGE_FOLDER = "{widget} has no folder here, so its layout cannot be changed.";
 const PANEL_FIELDS = ["isLayersOpen", "isLayoutLocked", "mode", "selection", "seenLayers", "closedLayers"] as const;
 export const KeepSeenLayersCommandHandler = handler(KeepSeenLayersCommand, CanvasClientModule)
@@ -66,6 +63,7 @@ export const MoveLayerCommandHandler = handler(MoveLayerCommand, CanvasClientMod
 			if (!move) return refuse(NOT_MOVABLE);
 			const folder = widgetDrawingGateway.drawing().registry.get(widget)?.folder;
 			if (!folder) return refuse(NO_PAGE_FOLDER.replace("{widget}", widget));
+			const { sourceMoved } = await import("./lib/source-moved.js");
 			await designFilesGateway.changeText(`${folder}/${move.file}`, (source) => sourceMoved(source, move));
 			designReads.changed(now.app);
 		},
@@ -126,9 +124,3 @@ export const ToggleLayoutLockCommandHandler = handler(ToggleLayoutLockCommand, C
 		const isLayoutLocked = !canvasStore.now().isLayoutLocked;
 		canvasStore.change({ isLayoutLocked }, isLayoutLocked ? "lock the layout" : "unlock the layout");
 	});
-
-export function sourceMoved(source: string, move: LayerMove): string {
-	const moved = movedNode(source, move);
-	if ("refusal" in moved) return refuse(NOT_MOVED.replace("{why}", moved.refusal));
-	return moved.source;
-}

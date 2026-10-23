@@ -25,8 +25,8 @@ Object.assign(globalThis, {
 
 const { createElement: h } = await import("react");
 const { render } = await import("../packages/core/src/engine/render.js");
-const { readSpec, withFeatureToggled, withChoicePicked, specPathOf, BUILD_STAGES } =
-	await import("../packages/core/src/app-spec.js");
+const { specPathOf, BUILD_STAGES } = await import("../packages/core/src/app-spec.js");
+const { readSpec, withFeatureToggled, withChoicePicked } = await import("../packages/core/src/app-spec-text.js");
 const { specAppIn, lastSpecAppIn, buildRunIn, buildStartedIn, installsIn } =
 	await import("../packages/host-obsidian/src/legacy/ai/spec-calls.js");
 const { buildsIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");

@@ -1,6 +1,6 @@
 import { uniqueName, VIEW_GROUP } from "../model.js";
 import type { Tile } from "../model.js";
-import { declaredName } from "../registry.js";
+import { declaredName } from "../widget-listing.js";
 import type { WidgetLookup } from "../registry.js";
 import type { StandingTile } from "../engine/wiring.js";
 import {

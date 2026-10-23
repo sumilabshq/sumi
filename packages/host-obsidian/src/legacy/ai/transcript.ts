@@ -7,7 +7,7 @@ import type {
 	TurnOutcome,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { isPlainObject } from "./stream.js";
+import { isPlainObject } from "@widgetarium/core/engine/provider-stream.js";
 
 const OUTPUT_KEPT = 2000;
 const TRANSCRIPT_KEPT_BYTES = 262144;

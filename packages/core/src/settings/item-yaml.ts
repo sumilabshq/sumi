@@ -1,5 +1,5 @@
-import { parse as parseYaml } from "yaml";
 import type { DescribedField } from "../gateway/props.js";
+import type { ParseYaml } from "./yaml-parse.js";
 
 const BAD_YAML = "That is not valid YAML, so nothing was kept.";
 
@@ -39,8 +39,8 @@ export function yamlOf(fields: readonly ItemField[], item: Item): string {
 		.join("\n");
 }
 
-export function readYaml(text: unknown, fields: readonly ItemField[]): ReadItem {
-	const parsed = parsedYaml(text);
+export function readYaml(text: unknown, fields: readonly ItemField[], parseYaml: ParseYaml): ReadItem {
+	const parsed = parsedYaml(text, parseYaml);
 	if (parsed === UNPARSED) return { failure: BAD_YAML };
 	if (!isMap(parsed)) return { failure: NOT_A_MAP };
 	const known = new Set(fields.map((field) => field.key));
@@ -61,7 +61,7 @@ export function readYaml(text: unknown, fields: readonly ItemField[]): ReadItem 
 	return { item };
 }
 
-function parsedYaml(text: unknown): unknown {
+function parsedYaml(text: unknown, parseYaml: ParseYaml): unknown {
 	try {
 		return parseYaml(String(text ?? "")) ?? {};
 	} catch {

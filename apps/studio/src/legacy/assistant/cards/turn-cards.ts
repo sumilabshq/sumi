@@ -1,4 +1,4 @@
-import { createElement as h } from "react";
+import { Suspense, createElement as h, lazy } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type {
 	Blocker,
@@ -12,13 +12,11 @@ import { FailureCard } from "@widgetarium/assistant";
 import type { Report } from "@widgetarium/assistant";
 import { BuildProgress } from "./build-progress.js";
 import type { OpenByBuild } from "./build-progress.js";
-import { BuildRunCard } from "./build-run-card.js";
 import { changeAttachmentOf } from "./change-attachment.js";
 import type { Attachment } from "./change-attachment.js";
 import { DesignCard } from "./design-card.js";
 import { PinnedRun } from "./pinned-run.js";
 import { ResultPair } from "./result-pair.js";
-import { SpecCard } from "./spec-card.js";
 
 export interface CardAsks {
 	readonly port: AssistantPort;
@@ -81,7 +79,14 @@ export function pinnedCardOf(
 function buildRunCardOf(turn: TurnCards, at: number, asks: CardAsks): ReactElement | null {
 	if (!turn.build) return null;
 	const { port, report } = asks;
-	return h(BuildRunCard, { key: `${turn.build.run.key}-${at}`, card: turn.build, files: port, jobs: port, report });
+	return h(
+		Suspense,
+		{
+			key: `${turn.build.run.key}-${at}`,
+			fallback: null,
+		},
+		h(BuildRunCard, { card: turn.build, files: port, jobs: port, report }),
+	);
 }
 
 function fixBlockerOf(asks: CardAsks): (blocker: Blocker) => void {
@@ -108,14 +113,20 @@ function specCardOf(
 	asks: CardAsks,
 ): ReactElement | null {
 	if (!app) return null;
-	return h(SpecCard, {
-		key: `spec-${at}-${app}`,
-		app,
-		files: asks.port,
-		isAnswerable,
-		onBuild: () => asks.buildIt(app),
-		onChange: () => asks.attach(changeAttachmentOf(app, "spec")),
-	});
+	return h(
+		Suspense,
+		{
+			key: `spec-${at}-${app}`,
+			fallback: null,
+		},
+		h(SpecCard, {
+			app,
+			files: asks.port,
+			isAnswerable,
+			onBuild: () => asks.buildIt(app),
+			onChange: () => asks.attach(changeAttachmentOf(app, "spec")),
+		}),
+	);
 }
 
 function designCardOf(
@@ -134,3 +145,6 @@ function designCardOf(
 		onChange: () => asks.attach(changeAttachmentOf(app, "design")),
 	});
 }
+
+const BuildRunCard = lazy(() => import("./build-run-card.js").then(({ BuildRunCard: card }) => ({ default: card })));
+const SpecCard = lazy(() => import("./spec-card.js").then(({ SpecCard: card }) => ({ default: card })));

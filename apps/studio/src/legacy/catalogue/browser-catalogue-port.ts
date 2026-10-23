@@ -4,7 +4,7 @@ import type { CataloguePort } from "@widgetarium/core/engine/catalogue-port.js";
 import type { CatalogueKind } from "@widgetarium/core/engine/catalogue-requests.js";
 import type { InstallOutcome } from "@widgetarium/core/engine/install-jobs.js";
 import { NOT_AVAILABLE_ON_HOST } from "@widgetarium/core/engine/studio-host.js";
-import { boardWidgets, inlineWidgets } from "@widgetarium/core/registry.js";
+import { boardWidgets, inlineWidgets } from "@widgetarium/core/widget-listing.js";
 import type { WidgetLookup } from "@widgetarium/core/registry.js";
 
 const NOT_AVAILABLE: InstallOutcome = { ok: false, failure: NOT_AVAILABLE_ON_HOST };

@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { findBrowser } from "./harness.ts";
@@ -56,19 +56,40 @@ export async function paged(file: string, gate: string, asked: PageAsk): Promise
 	const chrome = spawned(browser, file, asked, profile);
 	const socketUrl = await socketFor(profile);
 	if (!socketUrl) {
-		chrome.kill();
+		closeChrome(chrome, profile);
 		throw new Error(`chrome never opened a page for ${file}`);
 	}
 	const socket = await talking(socketUrl);
 	await socket.viewportSetTo(asked.size);
-	return handled(socket, chrome);
+	return handled(socket, chrome, profile);
 }
 
 export function waited(ms: number): Promise<void> {
 	return new Promise((done) => setTimeout(done, ms));
 }
 
-function handled(socket: PageSocket, chrome: ChildProcess): AskedPage {
+export async function waitUntil(check: () => Promise<boolean>, ms: number, stepMs: number): Promise<boolean> {
+	for (let leftMs = ms; leftMs > 0; leftMs -= stepMs) {
+		if (await check()) {
+			return true;
+		}
+
+		await waited(stepMs);
+	}
+
+	return false;
+}
+
+function closeChrome(chrome: ChildProcess, profile: string): void {
+	chrome.kill();
+	rmSync(profile, {
+		recursive: true,
+		force: true,
+		maxRetries: 3,
+	});
+}
+
+function handled(socket: PageSocket, chrome: ChildProcess, profile: string): AskedPage {
 	return {
 		ask: socket.ask,
 		press: socket.press,
@@ -79,7 +100,7 @@ function handled(socket: PageSocket, chrome: ChildProcess): AskedPage {
 		shoot: socket.shoot,
 		close: () => {
 			socket.close();
-			chrome.kill();
+			closeChrome(chrome, profile);
 		},
 	};
 }

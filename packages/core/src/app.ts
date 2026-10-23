@@ -7,5 +7,5 @@ export { createMemoryRouter } from "./app/memory-router.js";
 export { hostOverRouter } from "./app/host-over-router.js";
 export type { MemoryRouterStart } from "./app/memory-router.js";
 export type { ProjectRouter } from "./app/project-router.js";
-export { matchProjectRoute } from "./project/index.js";
-export type { RouteMatch, RoutePattern } from "./project/index.js";
+export { matchProjectRoute } from "./project/project-route-match.js";
+export type { RouteMatch, RoutePattern } from "./project/project-route-match.js";

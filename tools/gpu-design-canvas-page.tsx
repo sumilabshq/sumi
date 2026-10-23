@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
+import { startGpuCanvas } from "../packages/gpu/index.ts";
 import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/core/src/engine/host-none.js";
@@ -59,7 +60,7 @@ const designFolderGateway = new FixedDesignFolderGateway(async () => ({
 	],
 }));
 const widgetDrawingGateway = new FixedWidgetDrawingGateway({ registry, host: TEST_HOST });
-const supply = { loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
+const supply = { startCanvas: startGpuCanvas, loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
 
 const root = document.getElementById("root");
 const reactRoot = root ? createRoot(root) : null;

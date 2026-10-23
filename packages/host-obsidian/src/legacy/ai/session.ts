@@ -3,7 +3,7 @@ import type { Provider } from "./providers.js";
 import { withResult } from "./tools.js";
 import type { AiSettings, AiState } from "./settings.js";
 import type { ChatTurn, Run, Runner, RunAsk } from "./run.js";
-import type { Phase, StreamPart } from "./stream.js";
+import type { Phase, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantCall, AssistantTurn, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 

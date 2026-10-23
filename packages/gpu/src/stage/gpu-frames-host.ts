@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { FrameRate } from "../engine/frame-rate.js";
-import { startGpuCanvas } from "../engine/start-gpu-canvas.js";
 import type { GpuCanvas } from "../engine/gpu-canvas.js";
 import type { LookWatcher, StageLook } from "./stage-look.js";
 import { reasonOf } from "./gpu-frames.js";
@@ -43,7 +42,7 @@ export class GpuFramesHost implements GpuFrames {
 	async start(canvas: HTMLCanvasElement): Promise<void> {
 		try {
 			const fonts = await this.supply.loadFonts();
-			const gpu = await startGpuCanvas(canvas, {
+			const gpu = await this.supply.startCanvas(canvas, {
 				loadCanvasKit: this.supply.loadCanvasKit,
 				fonts,
 				switches: SWITCHES,

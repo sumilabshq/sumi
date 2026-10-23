@@ -6,7 +6,7 @@ import {
 	SOURCE_FILES,
 	javascriptSourceRefusal,
 	widgetModulesUnder,
-} from "./widget-build.js";
+} from "./widget-files.js";
 import { contentHash } from "./content-hash.js";
 
 export interface SourceDisk {

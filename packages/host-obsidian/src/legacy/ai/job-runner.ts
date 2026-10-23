@@ -3,7 +3,7 @@ import type { Job, JobAsk, JobMove } from "@widgetarium/core/app-jobs.js";
 import { CLI, briefGoesInTheMessage } from "./providers.js";
 import type { AiSettings } from "./settings.js";
 import type { Runner } from "./run.js";
-import type { StreamPart } from "./stream.js";
+import type { StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import { doingTextOf } from "@widgetarium/core/engine/assistant-port.js";
 import { callFaceOf } from "./call-face.js";
 import { startIn } from "./builds.js";

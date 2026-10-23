@@ -1,4 +1,4 @@
-import { isSourceNode, parsedSource, type SourceNode } from "../engine/node-marks.js";
+import { isSourceNode, parsedSource, type SourceNode } from "../engine/source-nodes.js";
 import type { ProjectEntry } from "./project-entry.js";
 import type { ProjectFinding } from "./project-finding.js";
 import { isAuthoredModule, type ProjectFiles } from "./project-files.js";

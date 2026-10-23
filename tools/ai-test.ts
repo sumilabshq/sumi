@@ -9,7 +9,7 @@ import { widgetsCliBundle } from "../packages/host-obsidian/build.mts";
 import { standIn } from "./stand-in.ts";
 import type { ArgsGiven } from "../packages/host-obsidian/src/legacy/ai/command.ts";
 import type { Provider } from "../packages/host-obsidian/src/legacy/ai/providers.ts";
-import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/host-obsidian/src/legacy/ai/stream.ts";
+import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/core/src/engine/provider-stream.ts";
 import type { AssistantCall } from "../packages/core/src/engine/assistant-port.ts";
 import type { RunAnswer } from "../packages/host-obsidian/src/legacy/ai/run.ts";
 import type { Build, StepStatus } from "../packages/core/src/engine/assistant-cards.ts";
@@ -23,8 +23,7 @@ process.env["WIDGETARIUM_CATALOGUE"] = "on";
 const WIDGETS_CLI = await widgetsCliBundle();
 
 const { expandArgs, commandLineOf } = await import("../packages/host-obsidian/src/legacy/ai/command.js");
-const { readerNamed, plainText, createLineSplitter } =
-	await import("../packages/host-obsidian/src/legacy/ai/stream.js");
+const { readerNamed, plainText, createLineSplitter } = await import("../packages/core/src/engine/provider-stream.js");
 const { aiStateOf, createAiSettings, changedFrom, providerFrom } =
 	await import("../packages/host-obsidian/src/legacy/ai/settings.js");
 const { PRESETS, presetById, DEFAULT_PROVIDER } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");

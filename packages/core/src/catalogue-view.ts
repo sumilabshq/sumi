@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
-import { boardWidgets, inlineWidgets } from "./registry.js";
+import { boardWidgets, inlineWidgets } from "./widget-listing.js";
 import type { WidgetLookup } from "./registry.js";
 import { isInstalled, mergeCatalogue } from "./engine/catalogue-index.js";
 import type { Fields } from "./engine/catalogue-index.js";

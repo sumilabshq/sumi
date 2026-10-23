@@ -1,6 +1,6 @@
 import { manifestOf } from "./engine/catalogue-index.js";
 import type { WidgetRecord } from "./engine/catalogue-index.js";
-import { blocksIn, componentIn, statesIn } from "./registry-scope.js";
+import { blocksIn, componentIn, statesIn } from "./widget-shell.js";
 import type { WidgetDefinition } from "./registry.js";
 
 export function refusedDefinitionOf(id: string, failure: unknown, folder: string): WidgetDefinition {

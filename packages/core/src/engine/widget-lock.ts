@@ -1,6 +1,6 @@
 import { contentHash } from "./content-hash.js";
 import { nameIn } from "./modules.js";
-import { isWidgetModule } from "./widget-build.js";
+import { isWidgetModule } from "./widget-files.js";
 import { REACH_SCAN_VERSION } from "./widget-reach/reach-scan.js";
 import { isObject } from "./is-object.js";
 import type { Fields } from "./catalogue-index.js";

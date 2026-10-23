@@ -1,11 +1,5 @@
-import {
-	jsxElementsIn,
-	parsedSource,
-	sourceKeyOf,
-	withNodeMarks,
-	HELD_MARK,
-	NODE_MARK,
-} from "../packages/core/src/engine/node-marks.ts";
+import { sourceKeyOf, HELD_MARK, NODE_MARK } from "../packages/core/src/engine/node-marks.ts";
+import { jsxElementsIn, parsedSource, withNodeMarks } from "../packages/core/src/engine/source-nodes.ts";
 import { movedNode } from "../packages/core/src/engine/node-moves.ts";
 
 let failed = 0;

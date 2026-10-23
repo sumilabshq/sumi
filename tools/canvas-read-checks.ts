@@ -1,7 +1,7 @@
 import { screenPathOf } from "../packages/core/src/app-design.ts";
 import { sourceKeyOf } from "../packages/core/src/engine/node-marks.ts";
 import { ObsidianDesignFilesGateway } from "../packages/canvas/gateways/design-files/obsidian.gateway.ts";
-import { sourceMoved } from "../packages/canvas/features/layers/handlers.ts";
+import { sourceMoved } from "../packages/canvas/features/layers/lib/source-moved.ts";
 import { boardIn } from "../packages/canvas/shared/lib/design/board-in-note.ts";
 import { readDrawnState } from "../packages/canvas/gateways/design-folder/obsidian/drawn-state.ts";
 
