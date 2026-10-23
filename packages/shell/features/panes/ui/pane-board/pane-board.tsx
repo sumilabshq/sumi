@@ -34,7 +34,7 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	const resting = paneLayoutOf(root, box, GAP_PX);
 	useOpensChatAt(chatPx, resting.edges);
 	const leaves = leavesOf(root);
-	const aim = usePaneDrop({ board, rects: resting.rects, leaves });
+	const aim = usePaneDrop({ board, rects: resting.rects });
 	const shown = shownLayoutOf(root, aim, box) ?? resting;
 	const preview = shown.rects.get(PREVIEW_ID);
 	const drawDrag = (edge: PaneEdge, share: number): void => {

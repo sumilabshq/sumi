@@ -5,7 +5,7 @@ import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "../../../shared/lib/pane-layout.js";
 import type { PaneRect } from "../../../shared/lib/pane-layout.js";
-import type { PaneLeaf, PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
 import { PlacePaneCommand } from "../contract.js";
 
 export interface PaneAim {
@@ -17,25 +17,13 @@ export interface PaneAim {
 export interface PaneDropAsk {
 	readonly board: RefObject<HTMLElement | null>;
 	readonly rects: ReadonlyMap<string, PaneRect>;
-	readonly leaves: readonly PaneLeaf[];
 }
 
-interface Aimed {
-	readonly rects: ReadonlyMap<string, PaneRect>;
-	readonly leaves: readonly PaneLeaf[];
-}
-
-export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PaneAim | null {
+export function usePaneDrop({ board, rects }: PaneDropAsk): PaneAim | null {
 	const placePane = useCommand(PlacePaneCommand);
 	const [aim, setAim] = useState<PaneAim | null>(null);
-	const latest = useRef<Aimed>({
-		rects,
-		leaves,
-	});
-	latest.current = {
-		rects,
-		leaves,
-	};
+	const latest = useRef(rects);
+	latest.current = rects;
 	useEffect(
 		() =>
 			listenToCarry((moment) => {
@@ -61,7 +49,7 @@ export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PaneAim | nu
 	return aim;
 }
 
-function aimOf(board: HTMLElement | null, aimed: Aimed, moment: CarryMoment): PaneAim | null {
+function aimOf(board: HTMLElement | null, rects: ReadonlyMap<string, PaneRect>, moment: CarryMoment): PaneAim | null {
 	const view = viewOf(moment.item);
 
 	if (board === null || view === null || moment.phase === "leave") {
@@ -76,10 +64,10 @@ function aimOf(board: HTMLElement | null, aimed: Aimed, moment: CarryMoment): Pa
 		return null;
 	}
 
-	return aimAt(aimed, x, y, view);
+	return aimAt(rects, x, y, view);
 }
 
-function aimAt({ rects, leaves }: Aimed, x: number, y: number, view: PaneView): PaneAim {
+function aimAt(rects: ReadonlyMap<string, PaneRect>, x: number, y: number, view: PaneView): PaneAim {
 	const nearest = [...rects].sort((one, other) => distanceTo(one[1], x, y) - distanceTo(other[1], x, y))[0];
 
 	if (nearest === undefined) {
@@ -91,10 +79,9 @@ function aimAt({ rects, leaves }: Aimed, x: number, y: number, view: PaneView): 
 	}
 
 	const [targetId, rect] = nearest;
-	const isChat = leaves.some((leaf) => leaf.id === targetId && leaf.view.kind === "chat");
 	return {
 		targetId,
-		side: sideAt(rect, clamped(x, rect.left, rect.width), clamped(y, rect.top, rect.height), !isChat),
+		side: sideAt(rect, clamped(x, rect.left, rect.width), clamped(y, rect.top, rect.height)),
 		view,
 	};
 }

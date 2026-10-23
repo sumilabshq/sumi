@@ -24,8 +24,6 @@ export interface PaneLayout {
 	readonly edges: readonly PaneEdge[];
 }
 
-const EDGE_SHARE = 0.25;
-
 export function paneLayoutOf(node: PaneNode | null, box: PaneRect, gap: number): PaneLayout {
 	const rects = new Map<string, PaneRect>();
 	const edges: PaneEdge[] = [];
@@ -40,7 +38,7 @@ export function paneLayoutOf(node: PaneNode | null, box: PaneRect, gap: number):
 	};
 }
 
-export function sideAt(rect: PaneRect, x: number, y: number, hasCenter: boolean): PaneSide {
+export function sideAt(rect: PaneRect, x: number, y: number): PaneSide {
 	const across = (x - rect.left) / rect.width;
 	const down = (y - rect.top) / rect.height;
 	const edges: (readonly [PaneSide, number])[] = [
@@ -49,13 +47,7 @@ export function sideAt(rect: PaneRect, x: number, y: number, hasCenter: boolean)
 		["top", down],
 		["bottom", 1 - down],
 	];
-	const nearest = edges.sort((one, other) => one[1] - other[1])[0];
-
-	if (nearest === undefined) {
-		return "right";
-	}
-
-	return nearest[1] < EDGE_SHARE || !hasCenter ? nearest[0] : "center";
+	return edges.sort((one, other) => one[1] - other[1])[0]?.[0] ?? "right";
 }
 
 interface Laying {

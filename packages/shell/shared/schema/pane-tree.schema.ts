@@ -10,7 +10,7 @@ export const PaneViewSchema = z.discriminatedUnion("kind", [
 
 export type PaneView = z.infer<typeof PaneViewSchema>;
 
-export const PaneSideSchema = z.enum(["left", "right", "top", "bottom", "center"]);
+export const PaneSideSchema = z.enum(["left", "right", "top", "bottom"]);
 
 export type PaneSide = z.infer<typeof PaneSideSchema>;
 

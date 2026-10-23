@@ -89,10 +89,6 @@ function withPane(node: PaneNode | null, { targetId, side }: PanePlace, leaf: Pa
 		return placeAtEdge(node, side, leaf);
 	}
 
-	if (side === "center") {
-		return replacePane(node, targetId, leaf);
-	}
-
 	return placeBeside(node, targetId, side, leaf);
 }
 
@@ -122,21 +118,6 @@ function placeBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: Pan
 	return {
 		...node,
 		children: node.children.map((child) => placeBeside(child, targetId, side, leaf)),
-	};
-}
-
-function replacePane(node: PaneNode, targetId: string, leaf: PaneLeaf): PaneNode {
-	if (node.id === targetId) {
-		return leaf;
-	}
-
-	if (node.kind === "pane") {
-		return node;
-	}
-
-	return {
-		...node,
-		children: node.children.map((child) => replacePane(child, targetId, leaf)),
 	};
 }
 

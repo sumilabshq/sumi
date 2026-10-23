@@ -49,7 +49,6 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 					<span className="wg-plate-target" ref={targets.controls} />
 				</span>
 				{more}
-				{edgeEnd}
 				{paneClosing === null ? null : (
 					<HeaderButton
 						label={CLOSE_PANE}
@@ -59,6 +58,7 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 						data-pane-close={paneClosing.paneId}
 					/>
 				)}
+				{edgeEnd}
 			</div>
 		</header>
 	);

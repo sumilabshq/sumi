@@ -97,19 +97,18 @@ function checksTree(): void {
 	).rects;
 	check("a pane never gets less than 320 while the board has room", narrow.get("pane-app")?.width === 320, [...narrow]);
 	const pane = { left: 0, top: 0, width: 400, height: 400 };
+	const sides = [
+		sideAt(pane, 20, 200),
+		sideAt(pane, 390, 200),
+		sideAt(pane, 200, 10),
+		sideAt(pane, 200, 395),
+		sideAt(pane, 230, 200),
+	];
 	check(
-		"the pointer's nearest edge picks the side, the middle replaces",
-		JSON.stringify([
-			sideAt(pane, 20, 200, true),
-			sideAt(pane, 390, 200, true),
-			sideAt(pane, 200, 10, true),
-			sideAt(pane, 200, 395, true),
-			sideAt(pane, 200, 200, true),
-		]) === '["left","right","top","bottom","center"]',
-		null,
+		"the pointer's nearest edge picks the side, even in the middle: a pane never lands on a pane",
+		JSON.stringify(sides) === '["left","right","top","bottom","right"]',
+		sides,
 	);
-	const chatSide = sideAt(pane, 230, 200, false);
-	check("a pane with no centre, the chat, takes its nearest edge", chatSide === "right", chatSide);
 }
 
 function sharesOf(store: PaneTreeStore): readonly number[] {

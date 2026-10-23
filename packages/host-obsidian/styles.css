@@ -17968,14 +17968,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	border-radius: var(--sumi-r-group);
 	background: var(--sumi-sunken);
 }
-.wg-plate-head .wg-pane-close {
-	opacity: 0;
-	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
-}
-.wg-plate-head:is(:hover, :focus-within) .wg-pane-close {
-	opacity: 1;
-	transition-duration: 0ms;
-}
 .wg-pane-empty-actions {
 	display: flex;
 	gap: var(--sumi-sp-4);
