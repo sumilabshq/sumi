@@ -7,13 +7,12 @@ export type WorkspaceApps = Pick<StudioHostPort, "apps" | "openApp" | "createApp
 export interface WorkspaceAppsAsk {
 	readonly workspaces: WorkspaceClient;
 	readonly reopen: () => Promise<void>;
+	readonly nextName: () => string;
 }
-
-export const NEW_WORKSPACE_NAME = "Untitled workspace";
 
 export const FOLDER_NOT_FOUND = "folder not found · Locate";
 
-export function tauriWorkspaceApps({ workspaces, reopen }: WorkspaceAppsAsk): WorkspaceApps {
+export function tauriWorkspaceApps({ workspaces, reopen, nextName }: WorkspaceAppsAsk): WorkspaceApps {
 	return {
 		apps: async () => (await workspaces.list()).map(hostAppOf),
 		openApp: async (id) => {
@@ -25,7 +24,7 @@ export function tauriWorkspaceApps({ workspaces, reopen }: WorkspaceAppsAsk): Wo
 			await reopen();
 		},
 		createApp: async () => {
-			await workspaces.create(NEW_WORKSPACE_NAME);
+			await workspaces.create(nextName());
 			await reopen();
 		},
 		renameApp: (id, name) => workspaces.rename(id, name),

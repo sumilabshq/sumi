@@ -27,6 +27,10 @@ pub enum ShotFormat {
 
 pub type Answer<T> = Result<T, String>;
 
+pub fn view_of(platform: &tauri::webview::PlatformWebview) -> &WKWebView {
+    unsafe { &*(platform.inner() as *const WKWebView) }
+}
+
 fn text_of(held: Option<Retained<NSString>>) -> String {
     held.map(|text| text.to_string()).unwrap_or_default()
 }
@@ -54,11 +58,17 @@ pub fn reload(view: &WKWebView) {
     let _ = unsafe { view.reload() };
 }
 
-pub fn round_corners(view: &WKWebView, radius: f64) {
+const MIN_Y_CORNERS: usize = 1 | 2;
+const MAX_Y_CORNERS: usize = 4 | 8;
+
+pub fn round_bottom_corners(view: &WKWebView, radius: f64) {
     let _: () = unsafe { msg_send![view, setWantsLayer: Bool::YES] };
     let layer: *mut AnyObject = unsafe { msg_send![view, layer] };
     let Some(layer) = (unsafe { layer.as_ref() }) else { return };
+    let is_flipped: Bool = unsafe { msg_send![layer, isGeometryFlipped] };
+    let bottom = if is_flipped.as_bool() { MAX_Y_CORNERS } else { MIN_Y_CORNERS };
     let _: () = unsafe { msg_send![layer, setCornerRadius: radius as CGFloat] };
+    let _: () = unsafe { msg_send![layer, setMaskedCorners: bottom] };
     let _: () = unsafe { msg_send![layer, setMasksToBounds: Bool::YES] };
 }
 

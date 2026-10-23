@@ -1,6 +1,6 @@
 use super::navigation_proxy::{self, FailedLoad, NavigationHooks, SubFrame};
 use super::policy::{self, PAGE_LABEL_PREFIX};
-use super::webkit::{self, Answer, ShotFormat, ShotRegion};
+use super::webkit::{self, view_of, Answer, ShotFormat, ShotRegion};
 use objc2_web_kit::WKWebView;
 use serde_json::{json, Value};
 use std::rc::Rc;
@@ -60,10 +60,6 @@ pub struct Pages {
 
 fn page_id_of(label: &str) -> &str {
     label.strip_prefix(PAGE_LABEL_PREFIX).unwrap_or(label)
-}
-
-fn view_of(platform: &tauri::webview::PlatformWebview) -> &WKWebView {
-    unsafe { &*(platform.inner() as *const WKWebView) }
 }
 
 fn failure_text(failure: tauri::Error) -> String {
@@ -159,6 +155,7 @@ impl Pages {
         let opened_label = label.to_string();
         Ok(WebviewBuilder::new(label, WebviewUrl::External(blank))
             .data_store_identifier(policy::data_store_of(profile_id)?)
+            .accept_first_mouse(true)
             .on_navigation(|url| policy::may_navigate(url.as_str()))
             .on_page_load(move |webview, payload| loaded.tell_load(&webview, payload.event()))
             .on_document_title_changed(move |webview, _title| titled.tell_facts(&webview, "title"))
@@ -173,7 +170,7 @@ impl Pages {
         let started_page = page_id.to_string();
         let failed_page = page_id.to_string();
         on_main_thread(webview, move |view, answer| {
-            webkit::round_corners(view, corner);
+            webkit::round_bottom_corners(view, corner);
             let hooks = NavigationHooks {
                 started: Rc::new(move |view| started.told(&started_page, "started", webkit::facts_of(view), Value::Null)),
                 failed: Rc::new(move |view, load| failed.tell_failure(&failed_page, view, load)),
@@ -253,7 +250,7 @@ impl Pages {
         for webview in browser_webviews(app) {
             webview.set_position(placement.position()).map_err(failure_text)?;
             webview.set_size(placement.size()).map_err(failure_text)?;
-            let _ = webview.with_webview(move |platform| webkit::round_corners(view_of(&platform), placement.corner));
+            let _ = webview.with_webview(move |platform| webkit::round_bottom_corners(view_of(&platform), placement.corner));
         }
 
         Ok(Value::Null)

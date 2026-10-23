@@ -1,125 +1,185 @@
 import { z } from "zod";
-import type { AssistantSession, AssistantTurn, TurnRole } from "@widgetarium/core/engine/assistant-port.js";
-import type { ChatHistory } from "../assistant/turn-session.js";
+import { AssistantTurnSchema } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantSession, AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
+import type { ChatHistory, KeptChat } from "../assistant/turn-session.js";
 import { EMPTY_SESSION } from "../assistant/session-steps.js";
 import { HeldDoc } from "../store/held-doc.js";
+import { validValuesOf } from "../store/valid-entries.js";
 import { workspaceRootOf } from "../store/store-client.js";
 import type { DocKind, StoreClient, WorkspaceRoot } from "../store/store-client.js";
 
 const TURNS_REOPENED = 400;
 
-const KEPT_ROLES: readonly TurnRole[] = ["user", "agent", "compact"];
-
-const ChatIndexSchema = z.looseObject({
+const LegacyIndexSchema = z.looseObject({
 	currentId: z.string().nullable().catch(null),
 	resumes: z.record(z.string(), z.string()).catch({}),
 });
 
-type ChatIndex = z.infer<typeof ChatIndexSchema>;
+type LegacyIndex = z.infer<typeof LegacyIndexSchema>;
 
-const CHAT_INDEX: DocKind<ChatIndex> = {
+const LEGACY_INDEX: DocKind<LegacyIndex> = {
 	file: "chat/index.json",
 	v: 1,
-	schema: ChatIndexSchema,
+	schema: LegacyIndexSchema,
+};
+
+const ChatSessionRecordSchema = z.object({
+	logId: z.string().min(1),
+	resumes: z.record(z.string(), z.string()).default({}),
+});
+
+type ChatSessionRecord = z.infer<typeof ChatSessionRecordSchema>;
+
+const ChatSessionsDocSchema = z.looseObject({
+	sessions: z.record(z.string(), ChatSessionRecordSchema).default({}),
+});
+
+type ChatSessionsDoc = z.infer<typeof ChatSessionsDocSchema>;
+
+const CHAT_SESSIONS: DocKind<ChatSessionsDoc> = {
+	file: "chat/sessions.json",
+	v: 1,
+	schema: ChatSessionsDocSchema,
+	salvage: ChatSessionsDocSchema.extend({
+		sessions: validValuesOf(
+			ChatSessionRecordSchema.extend({
+				resumes: z.record(z.string(), z.string()).catch({}),
+			}),
+		),
+	}),
 };
 
 const TurnLineSchema = z.object({
 	id: z.string().regex(/^\d+$/),
-	turn: z.custom<AssistantTurn>(isTurn),
+	turn: AssistantTurnSchema,
 });
 
 type TurnLine = z.infer<typeof TurnLineSchema>;
 
-export interface TauriChatHistory extends ChatHistory {
-	readonly index: HeldDoc<ChatIndex>;
+export interface LegacyChat {
+	readonly id: string;
 }
 
-export async function readChatHistory(store: StoreClient, workspaceId: string): Promise<TauriChatHistory> {
-	const root = workspaceRootOf(workspaceId);
-	const index = await HeldDoc.read({
-		store,
-		root,
-		kind: CHAT_INDEX,
-		empty: ChatIndexSchema.parse({}),
-	});
-	const sessionId = index.now().currentId ?? crypto.randomUUID();
-	const turns = await keptTurns(store, root, sessionId);
-	return chatHistoryOf({ store, root, index, sessionId, turns });
+export interface TauriChatLogs {
+	readonly sessions: HeldDoc<ChatSessionsDoc>;
+	readonly legacyChat: LegacyChat | null;
+	readonly historyOf: (chatId: string) => Promise<ChatHistory>;
 }
 
-interface ChatLog {
+interface ChatLogsAt {
 	readonly store: StoreClient;
 	readonly root: WorkspaceRoot;
-	readonly index: HeldDoc<ChatIndex>;
-	readonly sessionId: string;
+	readonly sessions: HeldDoc<ChatSessionsDoc>;
+}
+
+interface ChatLog extends ChatLogsAt {
+	readonly chatId: string;
 	readonly turns: readonly AssistantTurn[];
 }
 
-function chatHistoryOf(log: ChatLog): TauriChatHistory {
-	const held = {
-		sessionId: log.sessionId,
-		written: log.turns,
-	};
+export async function readChatLogs(store: StoreClient, workspaceId: string): Promise<TauriChatLogs> {
+	const root = workspaceRootOf(workspaceId);
+	const [sessions, legacy] = await Promise.all([
+		HeldDoc.read({ store, root, kind: CHAT_SESSIONS, empty: ChatSessionsDocSchema.parse({}) }),
+		store.readDoc(root, LEGACY_INDEX),
+	]);
 	return {
-		index: log.index,
-		kept: {
+		sessions,
+		legacyChat: legacyChatOf(sessions, legacy.doc),
+		historyOf: (chatId) => readChatHistory({ store, root, sessions }, chatId),
+	};
+}
+
+async function readChatHistory(logs: ChatLogsAt, chatId: string): Promise<ChatHistory> {
+	const turns = await readKeptTurns(logs.store, logs.root, sessionOf(logs.sessions, chatId).logId);
+	return new KeptChatHistory({ ...logs, chatId, turns });
+}
+
+function legacyChatOf(sessions: HeldDoc<ChatSessionsDoc>, legacy: LegacyIndex | null): LegacyChat | null {
+	const id = legacy?.currentId ?? null;
+	if (id === null || Object.keys(sessions.now().sessions).length > 0) {
+		return null;
+	}
+
+	sessions.change(
+		{ sessions: { [id]: { logId: id, resumes: legacy?.resumes ?? {} } } },
+		`chat ${id} carried over from chat/index.json`,
+	);
+	return { id };
+}
+
+function sessionOf(sessions: HeldDoc<ChatSessionsDoc>, chatId: string): ChatSessionRecord {
+	return sessions.now().sessions[chatId] ?? { logId: chatId, resumes: {} };
+}
+
+class KeptChatHistory implements ChatHistory {
+	readonly kept: KeptChat;
+	private logId: string;
+	private written: readonly AssistantTurn[];
+
+	constructor(private readonly log: ChatLog) {
+		const session = sessionOf(log.sessions, log.chatId);
+		this.logId = session.logId;
+		this.written = log.turns;
+		this.kept = {
 			session: {
 				...EMPTY_SESSION,
 				turns: log.turns,
 			},
-			resumes: new Map(Object.entries(log.index.now().resumes)),
-		},
-		settled: (session, resumes) => {
-			writeChangedTurns(log, held.sessionId, held.written, session);
-			held.written = session.turns;
-			log.index.change(
-				{
-					currentId: held.sessionId,
-					resumes: Object.fromEntries(resumes),
-				},
-				`chat ${held.sessionId} at ${session.turns.length} turns`,
-			);
-		},
-		cleared: () => {
-			held.sessionId = crypto.randomUUID();
-			held.written = [];
-			log.index.change({ currentId: held.sessionId, resumes: {} }, "chat cleared");
-		},
-	};
-}
-
-function writeChangedTurns(
-	log: ChatLog,
-	sessionId: string,
-	written: readonly AssistantTurn[],
-	session: AssistantSession,
-): void {
-	if (session.busy) {
-		return;
+			resumes: new Map(Object.entries(session.resumes)),
+		};
 	}
 
-	session.turns.forEach((turn, at) => {
-		if (written[at] === turn) {
+	settled(session: AssistantSession, resumes: ReadonlyMap<string, string>): void {
+		this.appendChangedTurns(session);
+		this.written = session.turns;
+		this.keepSession(
+			{ logId: this.logId, resumes: Object.fromEntries(resumes) },
+			`chat ${this.log.chatId} at ${session.turns.length} turns`,
+		);
+	}
+
+	cleared(): void {
+		this.logId = crypto.randomUUID();
+		this.written = [];
+		this.keepSession({ logId: this.logId, resumes: {} }, `chat ${this.log.chatId} cleared`);
+	}
+
+	private appendChangedTurns(session: AssistantSession): void {
+		if (session.busy) {
 			return;
 		}
 
+		session.turns.forEach((turn, at) => {
+			if (this.written[at] !== turn) {
+				this.appendTurn(turn, at);
+			}
+		});
+	}
+
+	private appendTurn(turn: AssistantTurn, at: number): void {
 		const line = {
 			id: String(at),
 			turn,
 		};
-		log.store.appendLine(log.root, chatFileOf(sessionId), line).catch((failure: unknown) => {
-			console.error(`[ink] chat ${sessionId} lost turn ${at}`, failure);
+		this.log.store.appendLine(this.log.root, chatFileOf(this.logId), line).catch((failure: unknown) => {
+			console.error(`[ink] chat ${this.log.chatId} lost turn ${at}`, failure);
 		});
-	});
+	}
+
+	private keepSession(session: ChatSessionRecord, reason: string): void {
+		const { sessions, chatId } = this.log;
+		sessions.change({ sessions: { ...sessions.now().sessions, [chatId]: session } }, reason);
+	}
 }
 
-async function keptTurns(
+async function readKeptTurns(
 	store: StoreClient,
 	root: WorkspaceRoot,
-	sessionId: string,
+	logId: string,
 ): Promise<readonly AssistantTurn[]> {
 	const page = await store.readLines(root, {
-		file: chatFileOf(sessionId),
+		file: chatFileOf(logId),
 		schema: TurnLineSchema,
 		before: null,
 		limit: TURNS_REOPENED,
@@ -131,17 +191,6 @@ function byTurnIndex(one: TurnLine, other: TurnLine): number {
 	return Number(one.id) - Number(other.id);
 }
 
-function chatFileOf(sessionId: string): string {
-	return `chat/${sessionId}.jsonl`;
-}
-
-function isTurn(held: unknown): held is AssistantTurn {
-	if (typeof held !== "object" || held === null) {
-		return false;
-	}
-
-	const role: unknown = Reflect.get(held, "role");
-	const text: unknown = Reflect.get(held, "text");
-	const calls: unknown = Reflect.get(held, "calls");
-	return KEPT_ROLES.some((kept) => kept === role) && typeof text === "string" && Array.isArray(calls);
+function chatFileOf(logId: string): string {
+	return `chat/${logId}.jsonl`;
 }

@@ -5,13 +5,13 @@ import { NO_INSETS } from "@widgetarium/core/engine/studio-host.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { WorkspaceApps } from "./workspace/tauri-workspace-apps.js";
 
-const TRAFFIC_LIGHTS_REACH_PX = 76;
-const RAIL_BELOW_TRAFFIC_LIGHTS_PX = 35;
+const TRAFFIC_LIGHTS_RIGHT_EDGE_PX = 76;
+const TRAFFIC_LIGHTS_BOTTOM_EDGE_PX = 37;
 
-const BESIDE_TRAFFIC_LIGHTS: ChromeInsets = {
-	left: TRAFFIC_LIGHTS_REACH_PX,
+export const BESIDE_TRAFFIC_LIGHTS: ChromeInsets = {
+	left: TRAFFIC_LIGHTS_RIGHT_EDGE_PX,
 	right: 0,
-	top: RAIL_BELOW_TRAFFIC_LIGHTS_PX,
+	top: TRAFFIC_LIGHTS_BOTTOM_EDGE_PX,
 };
 
 export function tauriStudioHost(project: WidgetariumProject, workspaceApps: WorkspaceApps): StudioHostPort {

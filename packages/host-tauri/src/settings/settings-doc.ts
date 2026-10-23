@@ -5,6 +5,7 @@ import type { DocKind, StoreClient } from "../store/store-client.js";
 
 export const SettingsSchema = z.looseObject({
 	chatWidthPx: z.number().positive().nullable().catch(null),
+	leftWidthPx: z.number().positive().nullable().catch(null),
 	trace: z.boolean().catch(false),
 });
 

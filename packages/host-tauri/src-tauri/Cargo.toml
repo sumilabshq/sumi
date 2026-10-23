@@ -36,6 +36,6 @@ objc2 = "0.6"
 block2 = "0.6"
 objc2-foundation = { version = "0.3", features = ["NSData", "NSError", "NSString", "NSDictionary", "NSURL", "NSURLError", "NSURLRequest"] }
 objc2-core-foundation = { version = "0.3", features = ["CFCGTypes"] }
-objc2-app-kit = { version = "0.3", features = ["NSImage", "NSBitmapImageRep", "NSImageRep", "NSGraphics", "NSResponder", "NSWindow", "objc2-core-graphics"] }
+objc2-app-kit = { version = "0.3", features = ["NSImage", "NSBitmapImageRep", "NSImageRep", "NSGraphics", "NSResponder", "NSEvent", "NSTrackingArea", "NSView", "NSWindow", "objc2-core-graphics"] }
 objc2-core-graphics = { version = "0.3", features = ["CGImage", "CGWindow", "CGGeometry"] }
 objc2-web-kit = { version = "0.3", features = ["WKWebView", "WKSnapshotConfiguration", "WKContentWorld", "WKFrameInfo", "WKNavigationAction", "WKNavigationDelegate", "block2", "objc2-app-kit"] }

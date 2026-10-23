@@ -2,18 +2,18 @@ import { Channel, invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { ClaudeOptionsHeld, tauriAssistantGateways } from "@widgetarium/assistant/gateways";
 import type { AssistantGateways, FolderPicker, WorkingFolderGateway } from "@widgetarium/assistant/gateways";
-import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { tauriAssistantBridge } from "./assistant-bridge.js";
 import type { AssistantBridge, TauriIpc } from "./assistant-bridge.js";
 import type { LentFolders } from "./tauri-assistant-port.js";
 import { tauriAssistantPort } from "./tauri-assistant-port.js";
+import type { TauriAssistantPort } from "./tauri-assistant-port.js";
 import { TauriFileDropGateway } from "./tauri-file-drop.js";
 import type { ChatSpot, WebviewDragSource } from "./tauri-file-drop.js";
 import { tauriPrivateFolder } from "./tauri-private-folder.js";
-import type { ChatHistory } from "./turn-session.js";
+import type { ChatsLink } from "./chat-sessions.js";
 
 export interface TauriAssistant {
-	readonly port: AssistantPort;
+	readonly port: TauriAssistantPort;
 	readonly gateways: AssistantGateways;
 }
 
@@ -48,7 +48,7 @@ export interface TauriAssistantAsk {
 	readonly workingFolderGateway: WorkingFolderGateway;
 	readonly ipc?: TauriIpc;
 	readonly page?: object;
-	readonly history?: ChatHistory;
+	readonly chats?: ChatsLink;
 	readonly drags?: WebviewDragSource;
 	readonly chat?: ChatSpot;
 }
@@ -57,7 +57,7 @@ export function startTauriAssistant({
 	workingFolderGateway,
 	ipc = tauriIpc,
 	page = window,
-	history,
+	chats,
 	drags = webviewDrags,
 	chat = chatColumn,
 }: TauriAssistantAsk): TauriAssistant {
@@ -70,7 +70,7 @@ export function startTauriAssistant({
 		attachments: privateFolder,
 		folders,
 		claude: claudeOptions,
-		...(history === undefined ? {} : { history }),
+		...(chats === undefined ? {} : { chats }),
 	});
 	const folder = attachmentsFolderIn(page);
 	return {

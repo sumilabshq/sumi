@@ -16,11 +16,14 @@
 				"title": "Widgetarium",
 				"width": 1440,
 				"height": 900,
+				"minWidth": 1128,
+				"minHeight": 560,
 				"titleBarStyle": "Overlay",
 				"hiddenTitle": true,
+				"acceptFirstMouse": true,
 				"trafficLightPosition": {
-					"x": 6,
-					"y": 18
+					"x": 16,
+					"y": 32
 				}
 			}
 		],

@@ -15,6 +15,7 @@ export interface DocKind<Doc> {
 	readonly file: string;
 	readonly v: number;
 	readonly schema: ZodType<Doc>;
+	readonly salvage?: ZodType<Doc>;
 }
 
 export interface DocState<Doc> {
@@ -68,6 +69,13 @@ const LinesReadSchema = z.object({
 const VersionSchema = z.object({
 	v: z.number().int().positive(),
 });
+
+type DocRead<Doc> = Pick<DocState<Doc>, "doc" | "isReadOnly">;
+
+const NOTHING_READ: DocRead<never> = {
+	doc: null,
+	isReadOnly: false,
+};
 
 export function workspaceRootOf(id: string): WorkspaceRoot {
 	return `workspace:${id}`;
@@ -141,33 +149,47 @@ export class StoreClient {
 }
 
 function docStateOf<Doc>(answer: z.infer<typeof DocReadSchema>, kind: DocKind<Doc>, label: string): DocState<Doc> {
-	const kept = {
+	return {
 		rev: answer.rev,
 		quarantined: answer.quarantined,
+		...(answer.doc === null ? NOTHING_READ : parsedReadOf(kind, answer.doc, label)),
 	};
-	if (answer.doc === null) {
-		return {
-			...kept,
-			doc: null,
-			isReadOnly: false,
-		};
-	}
+}
 
-	const parsed = kind.schema.safeParse(answer.doc);
-	if (!parsed.success) {
-		console.warn(`[ink] ${label} does not match its shape, read-only until fixed`, parsed.error.issues);
+function parsedReadOf<Doc>(kind: DocKind<Doc>, raw: Record<string, unknown>, label: string): DocRead<Doc> {
+	const parsed = kind.schema.safeParse(raw);
+	if (parsed.success) {
 		return {
-			...kept,
-			doc: null,
-			isReadOnly: true,
+			doc: parsed.data,
+			isReadOnly: isNewerThan(raw, kind.v),
 		};
 	}
 
 	return {
-		...kept,
-		doc: parsed.data,
-		isReadOnly: isNewerThan(answer.doc, kind.v),
+		doc: salvagedOf(kind, { raw, label, issues: parsed.error.issues }),
+		isReadOnly: true,
 	};
+}
+
+interface UnmatchedDoc {
+	readonly raw: unknown;
+	readonly label: string;
+	readonly issues: readonly z.core.$ZodIssue[];
+}
+
+function salvagedOf<Doc>(kind: DocKind<Doc>, { raw, label, issues }: UnmatchedDoc): Doc | null {
+	const salvaged = kind.salvage?.safeParse(raw);
+	if (salvaged === undefined || !salvaged.success) {
+		console.warn(`[ink] ${label} writable → read-only: it does not match its shape`, issues);
+		return null;
+	}
+
+	const dropped = issues.map((issue) => issue.path.map(String).join(".")).join(", ");
+	console.warn(
+		`[ink] ${label} writable → read-only: dropped ${dropped}, of another shape; the file stays as it is`,
+		issues,
+	);
+	return salvaged.data;
 }
 
 function isNewerThan(doc: unknown, knownV: number): boolean {

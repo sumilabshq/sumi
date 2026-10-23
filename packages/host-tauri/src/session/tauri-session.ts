@@ -1,12 +1,12 @@
 import { z } from "zod";
 import { KeptColumnSchema, KeptTabsSchema } from "@widgetarium/app-host";
-import type { KeptColumn } from "@widgetarium/app-host";
+import type { KeptColumn, KeptTabs } from "@widgetarium/app-host";
 import { TabsColumnGateway, TabsSessionGateway } from "@widgetarium/app-host/gateways";
 import { HeldDoc } from "../store/held-doc.js";
 import { workspaceRootOf } from "../store/store-client.js";
 import type { DocKind, StoreClient } from "../store/store-client.js";
 
-type HostTabsMoment = NonNullable<ReturnType<TabsSessionGateway["kept"]>>;
+type HostTabsMoment = Parameters<TabsSessionGateway["keep"]>[0];
 
 const SessionSchema = z.looseObject({
 	tabs: KeptTabsSchema.nullable().catch(null),
@@ -37,7 +37,7 @@ export class TauriTabsSessionGateway extends TabsSessionGateway {
 		super();
 	}
 
-	kept(): HostTabsMoment | null {
+	kept(): KeptTabs | null {
 		const tabs = this.session.now().tabs;
 		if (tabs === null) {
 			return null;
@@ -72,6 +72,6 @@ export class TauriTabsColumnGateway extends TabsColumnGateway {
 	}
 
 	keep(column: KeptColumn): void {
-		this.session.change({ column }, `column ${column.isShown ? "shown" : "hidden"}`);
+		this.session.change({ column }, `column ${column.fullPx}px, list ${column.isListOpen ? "open" : "folded"}`);
 	}
 }

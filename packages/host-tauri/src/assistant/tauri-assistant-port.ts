@@ -4,8 +4,9 @@ import type { ClaudeOptions, PlanUsage } from "@widgetarium/assistant";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
 import { runTurn } from "./turn-run.js";
-import { NO_CHAT_HISTORY, createTurnSession } from "./turn-session.js";
-import type { ChatHistory, StartTurn, TurnSession } from "./turn-session.js";
+import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
+import type { ChatsLink } from "./chat-sessions.js";
+import type { StartTurn } from "./turn-session.js";
 
 export interface PendingWrites {
 	settled(): Promise<void>;
@@ -25,7 +26,7 @@ export interface TauriAssistantDoors {
 	readonly attachments: PendingWrites;
 	readonly folders: LentFolders;
 	readonly claude: ClaudeChoices;
-	readonly history?: ChatHistory;
+	readonly chats?: ChatsLink;
 }
 
 export const PREFERRED_PROVIDER = "claude-code";
@@ -39,6 +40,17 @@ export const CANNOT_COMPACT = "{label} cannot compact a conversation.";
 
 const NO_PROVIDER_LABEL = "No provider";
 
+export interface TauriAssistantPort extends AssistantPort {
+	readonly shownRead: () => Promise<void>;
+}
+
+type SessionDoors = Pick<
+	TauriAssistantPort,
+	"shownRead" | "session" | "onSession" | "send" | "retry" | "stop" | "clear" | "compact"
+>;
+
+type SetupDoors = Pick<AssistantPort, "setup" | "onSetup" | "chooseProvider" | "setHelperAgents">;
+
 interface PortHeld {
 	answer: Promise<ProvidersAnswer> | null;
 	chosen: string | null;
@@ -47,24 +59,37 @@ interface PortHeld {
 }
 
 // TODO: the brief, the helper agents, persisted transcripts, call faces and chat cards from the Obsidian session are not wired in Tauri yet
-export function tauriAssistantPort(doors: TauriAssistantDoors): AssistantPort {
+export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPort {
 	const held: PortHeld = { answer: null, chosen: null, helperAgents: false, setupWatchers: new Set() };
-	const session = createTurnSession(turnStarter(doors, held), Date.now, doors.history ?? NO_CHAT_HISTORY);
+	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, held));
 	return {
 		...NO_ASSISTANT,
 		can: true,
-		session: () => session.now(),
-		onSession: (changed) => session.watch(changed),
+		...sessionDoorsOf(sessions, doors, held),
+		...setupDoorsOf(doors, held),
+	};
+}
+
+function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held: PortHeld): SessionDoors {
+	return {
+		shownRead: async () => void (await sessions.shownSession()),
+		session: sessions.now,
+		onSession: sessions.watch,
+		send: async (said) => (await sessions.shownSession()).send(said),
+		retry: () => sessions.shownIfReady()?.retry(),
+		stop: () => sessions.shownIfReady()?.stop(),
+		clear: async () => (await sessions.shownSession()).clear(),
+		compact: () => compact(doors, held, sessions),
+	};
+}
+
+function setupDoorsOf(doors: TauriAssistantDoors, held: PortHeld): SetupDoors {
+	return {
 		setup: async () => setupOf(await freshProviders(doors.bridge, held), held),
 		onSetup: (changed) => {
 			held.setupWatchers.add(changed);
 			return () => void held.setupWatchers.delete(changed);
 		},
-		send: (said) => session.send(said),
-		retry: () => session.retry(),
-		stop: () => session.stop(),
-		clear: () => session.clear(),
-		compact: () => compact(doors, held, session),
 		chooseProvider: (id) => choose(doors, held, id),
 		setHelperAgents: async (on) => {
 			held.helperAgents = on;
@@ -92,13 +117,13 @@ async function refuseCompact(bridge: AssistantBridge, held: PortHeld): Promise<s
 	return provider.compacts ? null : CANNOT_COMPACT.replace("{label}", provider.label);
 }
 
-async function compact(doors: TauriAssistantDoors, held: PortHeld, session: TurnSession): Promise<void> {
+async function compact(doors: TauriAssistantDoors, held: PortHeld, sessions: ChatSessions): Promise<void> {
 	const refusal = await refuseCompact(doors.bridge, held);
 	if (refusal !== null) {
 		throw new Error(refusal);
 	}
 
-	await session.compact();
+	await (await sessions.shownSession()).compact();
 }
 
 function shownProvider(facts: ProviderFacts): AssistantProvider {
