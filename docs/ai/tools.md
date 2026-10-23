@@ -30,7 +30,7 @@
 | `layout <note>`                       | the real width of every region and tile on a drawn board                                                                                |
 | `lint <note>`                         | what is wrong with the board; exits 1 until it is valid                                                                                 |
 | `surfaces <note>`                     | which plates look wrong beside each other, on a **drawn** board                                                                         |
-| `browser read`, `browser shot`        | the page in the studio's Browser tab, if the person lets Ink read that site: its content, or a screenshot (`--region x,y,w,h`)          |
+| `browser read`, `browser shot`        | the page in the studio's Browser tab, if the person lets Sumi read that site: its content, or a screenshot (`--region x,y,w,h`)         |
 | `browser open <https address>`        | opens a page in the Browser tab; never clicks, types or submits                                                                         |
 
 ## Finding a widget

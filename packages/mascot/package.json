@@ -1,7 +1,7 @@
 {
 	"name": "@widgetarium/mascot",
 	"version": "0.1.0",
-	"description": "Ink, the agent's mascot: drawn wherever the agent is, answering what the agent does",
+	"description": "Sumi, the agent's mascot: drawn wherever the agent is, answering what the agent does",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"files": [

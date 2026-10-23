@@ -47,7 +47,7 @@ function openedDesk(plugin: WidgetariumPlugin, parts: BrowserParts): ReturnType<
 	try {
 		return openBrowserDesk(plugin.app.vault.adapter, parts);
 	} catch (failure) {
-		console.error("[widgetarium] the browser desk is not private, so Ink cannot reach the browser", failure);
+		console.error("[widgetarium] the browser desk is not private, so Sumi cannot reach the browser", failure);
 		return null;
 	}
 }

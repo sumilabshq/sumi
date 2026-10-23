@@ -32,7 +32,7 @@ export const INK_BODY_PATH =
 
 // TRADE-OFF: outfit colours are hex, not kit tokens: every facet is shaded from the hex
 export const OUTFITS: Readonly<Record<OutfitId, Outfit>> = {
-	bare: { name: "Ink", job: "No workspace yet", isSwaying: false, dress: dressNothing },
+	bare: { name: "Sumi", job: "No workspace yet", isSwaying: false, dress: dressNothing },
 	party: { name: "Default", job: "Party hat", isSwaying: false, dress: dressParty },
 	dev: { name: "Development", job: "Headset", isSwaying: false, dress: dressDev },
 	propeller: { name: "Development", job: "Propeller cap", isSwaying: true, dress: dressPropeller },
