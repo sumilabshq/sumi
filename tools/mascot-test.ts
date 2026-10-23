@@ -223,7 +223,7 @@ const dressed = OutfitIdSchema.options.map((outfit) => {
 	};
 });
 check(
-	"bare Ink wears nothing; every other outfit draws parts at every look",
+	"bare Sumi wears nothing; every other outfit draws parts at every look",
 	dressed.filter((one) => one.hasParts === (one.outfit === "bare")).map((one) => one.outfit),
 	[],
 );
@@ -372,20 +372,20 @@ try {
 	const partCounts = typeof outfitParts === "object" && outfitParts !== null ? Object.entries(outfitParts) : [];
 	const bareParts = Number(Object.fromEntries(partCounts)["bare"]);
 	check(
-		"every outfit draws on the page, more than bare Ink",
+		"every outfit draws on the page, more than bare Sumi",
 		partCounts.filter(([outfit, count]) => outfit !== "bare" && Number(count) <= bareParts).map(([outfit]) => outfit),
 		[],
 	);
 	const themed = await page.ask(
 		`(() => { const of = (root) => [getComputedStyle(root.querySelector(".wg-mascot-body-base")).stopColor, getComputedStyle(root.querySelector(".wg-mascot-eye")).stroke]; return [of(document.querySelector("[data-row=idle]")), of(document.querySelector("#dark"))]; })()`,
 	);
-	check("Ink is black with white eyes, and white with black eyes in a dark theme", themed, [
+	check("Sumi is black with white eyes, and white with black eyes in a dark theme", themed, [
 		["rgb(23, 24, 27)", "rgb(255, 255, 255)"],
 		["rgb(241, 241, 238)", "rgb(23, 24, 27)"],
 	]);
 	await page.ask(`location.hash = "quiet"; location.reload(); true`);
 	await waited(1500);
-	check("at rest, bare Ink asks for no frames", await page.ask(FRAMES_IN_A_SECOND), 0);
+	check("at rest, bare Sumi asks for no frames", await page.ask(FRAMES_IN_A_SECOND), 0);
 	await page.ask(`window.__WEAR__("sprout"); true`);
 	await waited(300);
 	check("a swaying sprout keeps the frames coming", Number(await page.ask(FRAMES_IN_A_SECOND)) > 20, true);

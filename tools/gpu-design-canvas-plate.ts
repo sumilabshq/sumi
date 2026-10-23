@@ -49,7 +49,7 @@ const TRANSPARENT = "rgba(0, 0, 0, 0)";
 export async function checkOnePlate(page: AskedPage, check: Check): Promise<void> {
 	const open = await plateSettled(page, "open");
 	check(
-		"plate: the sidebar and the board share one plate, the sidebar flush to its left edge with no fill or corner of its own",
+		"plate: the sidebar and the board fill the app plate bare, no inner plate, fill or corner of their own",
 		isSharedPlate(open),
 		open,
 	);
@@ -78,8 +78,8 @@ export async function checkOnePlate(page: AskedPage, check: Check): Promise<void
 
 function isSharedPlate({ plate, sidebar }: PlateSeen): boolean {
 	return (
-		plate.fill !== TRANSPARENT &&
-		parseFloat(plate.radius) > 0 &&
+		plate.fill === TRANSPARENT &&
+		plate.radius === "0px" &&
 		sidebar.fill === TRANSPARENT &&
 		sidebar.radius === "0px" &&
 		isNear(sidebar.left, plate.left)

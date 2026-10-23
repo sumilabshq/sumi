@@ -14,7 +14,11 @@ import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.t
 async function settingsChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const settings = await readSettings(new StoreClient(fake.invoke));
-	check("a missing settings.json reads as the defaults", settings.now(), { chatWidthPx: null, trace: false });
+	check("a missing settings.json reads as the defaults", settings.now(), {
+		chatWidthPx: null,
+		leftWidthPx: null,
+		trace: false,
+	});
 
 	const memory = settingsPxMemory(settings, "chatWidthPx");
 	for (const px of [400, 420, 440]) {
@@ -25,7 +29,7 @@ async function settingsChecks(): Promise<void> {
 	check(
 		"three writes while dragging become one replace from rev 0",
 		[fake.commandsCalled(), fake.calls[1]?.args["baseRev"], fake.files.get("global:settings.json")],
-		[["read", "replace"], 0, { chatWidthPx: 440, trace: false, v: 1, rev: 1 }],
+		[["read", "replace"], 0, { chatWidthPx: 440, leftWidthPx: null, trace: false, v: 1, rev: 1 }],
 	);
 }
 
@@ -38,7 +42,7 @@ async function staleRevChecks(): Promise<void> {
 	check(
 		"a stale rev re-reads, keeps the other writer's field and writes on top",
 		[fake.commandsCalled(), fake.files.get("global:settings.json")],
-		[["read", "replace", "read", "replace"], { chatWidthPx: 500, trace: true, v: 1, rev: 6 }],
+		[["read", "replace", "read", "replace"], { chatWidthPx: 500, leftWidthPx: null, trace: true, v: 1, rev: 6 }],
 	);
 }
 
@@ -194,5 +198,6 @@ await unopenedChecks();
 await lastWorkspaceChecks();
 await workspaceCommandChecks();
 await import("./host-tauri-phase2-checks.ts");
+await import("./host-tauri-chats-checks.ts");
 console.log(tally.failed ? `host-tauri-store: ${tally.failed} check(s) failed` : "host-tauri-store: all checks passed");
 process.exit(tally.failed ? 1 : 0);

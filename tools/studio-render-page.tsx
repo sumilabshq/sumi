@@ -29,6 +29,7 @@ import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
 import { keptBrowserParts } from "./studio-kept-browser.ts";
 import { EXACT_WORKSPACE, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { tauriLikeStudioStart } from "./app-plate-fixture.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { boom, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
@@ -73,6 +74,7 @@ const PROJECT: WidgetariumProject = {
 };
 
 const MAC_INSETS = { left: 76, right: 0, top: 35 };
+Object.assign(window, { __INSETS__: MAC_INSETS });
 
 const MEMORY_PARAMS_KEY = "Apps/Farm.md";
 
@@ -219,6 +221,7 @@ function studioStartOf(mode: unknown): StudioStart {
 	if (mode === "studio-mac") return { studio: { ...NO_STUDIO_HOST, insets: () => MAC_INSETS } };
 	if (mode === "studio-kept") return { assistant: fakeAssistant(), browser: keptBrowserParts() };
 	if (mode === "studio-exact") return exactStudioStart();
+	if (mode === "studio-tauri") return tauriLikeStudioStart(fakeAssistant());
 	return { assistant: fakeAssistant() };
 }
 

@@ -34,7 +34,7 @@ const BOARD_FILE = "src/app/routes/board.json";
 const ERRORS_ATTRIBUTE = "data-wg-console-errors";
 const ERRORS_HELD = new RegExp(`${ERRORS_ATTRIBUTE}="([^"]*)"`);
 const RENDER_BUDGET_MS = 9000;
-const STUDIO_MARK = "wg-studio-band";
+const STUDIO_MARK = "wg-shell-left";
 const STUDIO_RULE = /\.wg-studio|@keyframes\s+wg-studio/;
 const STUDIO_OUT = "dist-studio";
 

@@ -9,8 +9,7 @@ import { frameIdOf } from "../packages/canvas/shared/lib/field/frame-keys.ts";
 import { FixedWidgetDrawingGateway, FixedDesignFolderGateway, canvasPartsOver } from "./canvas-hosts.ts";
 import { corePack } from "../packages/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
-import { studioAppHostParts } from "../packages/app-host/generated/gateways.ts";
-import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
+import { Plate, PlateCrumb } from "@widgetarium/shell";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 import { DESIGN_FRAMES, DESIGN_SCREEN, TASKS_CARD, TASKS_WIDGET } from "./gpu-design-canvas-frames.ts";
 import { benchedPan, lookedAtFrame } from "./gpu-design-canvas-moves.ts";
@@ -26,10 +25,8 @@ registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
 const NOT_HERE = "not on this test page";
-const STUDIO_SHELL = {
-	hostParts: studioAppHostParts({ studioState: createStudioState(), workspace: "gpu" }),
-	cornerEnd: h("span"),
-};
+const IN_PLATE = { isInPlate: true };
+const PLATE_CRUMB = { first: "Canvas", second: "Farm" };
 const registry = new ModuleRegistry({
 	"fixture-tags": tags,
 	[TASKS_WIDGET]: taskList,
@@ -67,12 +64,22 @@ const reactRoot = root ? createRoot(root) : null;
 
 function draw(): void {
 	reactRoot?.render(
-		h(DesignStage, {
-			app: "Farm",
-			opening: { ...CANVAS_OPENED_ON, mode: "pointer" },
-			size: VIEW,
-			shell: STUDIO_SHELL,
-			partsOf: ({ opened }) => canvasPartsOver({ opened, gpu: supply }, { designFolderGateway, widgetDrawingGateway }),
+		h(Plate, {
+			side: "app",
+			label: "Farm",
+			edgeStart: null,
+			lead: null,
+			crumb: h(PlateCrumb, { words: PLATE_CRUMB, isPressable: false }),
+			more: null,
+			edgeEnd: null,
+			children: h(DesignStage, {
+				app: "Farm",
+				opening: { ...CANVAS_OPENED_ON, mode: "pointer" },
+				size: VIEW,
+				shell: IN_PLATE,
+				partsOf: ({ opened }) =>
+					canvasPartsOver({ opened, gpu: supply }, { designFolderGateway, widgetDrawingGateway }),
+			}),
 		}),
 	);
 }

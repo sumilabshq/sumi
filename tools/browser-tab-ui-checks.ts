@@ -2,49 +2,48 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/core/src/requests/index.ts";
 import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { Browser, BrowserAppZone } from "../packages/browser/generated/index.ts";
 import { ReadPageContentCommand } from "../packages/browser/features/ink/contract.ts";
 import { check, waitFor } from "./check-helpers.ts";
+import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
 const browser = fakeBrowser();
 const browserApp = app({ modules: [BrowserClientModule.with(browser.parts)] });
 const host = document.createElement("div");
 document.body.append(host);
-createRoot(host).render(h(AppProvider, { app: browserApp }, h(Browser, { header: h(BrowserAppZone) })));
+createRoot(host).render(h(AppProvider, { app: browserApp }, inBrowserPlate()));
 
-await waitFor(() => host.querySelector("[data-browser-nav]") !== null);
+await waitFor(() => host.querySelector('[data-plate-place="lead"] button[aria-label="Back"]') !== null);
 
 check(
-	"the app zone draws no tab of its own: the host tab names the page",
+	"the browser draws no tab of its own: the host tab names the page",
 	host.querySelector("[data-browser-tab]"),
 	null,
 );
 
 function navButton(label: string): HTMLButtonElement | null {
-	return host.querySelector(`[data-browser-nav] button[aria-label="${label}"]`);
+	return host.querySelector(`[data-plate-head="app"] button[aria-label="${label}"]`);
 }
 
-check("back is off with no history", navButton("Back")?.disabled, true);
-check("forward is on", navButton("Forward")?.disabled, false);
-check("reload is on for a page", navButton("Reload")?.disabled, false);
+check("back is off with no history", navButton("Back")?.getAttribute("aria-disabled"), "true");
+check("forward is on", navButton("Forward")?.getAttribute("aria-disabled"), null);
+navButton("Back")?.click();
 navButton("Forward")?.click();
-navButton("Reload")?.click();
-await waitFor(() => browser.pages.moves.length === 2);
-check("the nav buttons move the page", browser.pages.moves, ["forward", "reload"]);
-
-const address = host.querySelector<HTMLInputElement>("[data-browser-address] input");
-check("the address field shows the page address", address?.value, "https://example.com/board");
-check("the access chip says what Ink can see", host.querySelector("[data-browser-access]")?.textContent, "Read only");
+await waitFor(() => browser.pages.moves.length === 1);
+check("the plate header's back and forward move the page, an off one does nothing", browser.pages.moves, ["forward"]);
+check(
+	"the plate header's crumb reads site / title",
+	host.querySelector('[data-plate-place="crumb"] .wg-plate-crumb')?.textContent,
+	"example.com/Example board",
+);
 check("the pages are attached to the page area", browser.pages.attached[0]?.hasAttribute("data-browser-pages"), true);
 
 const reading = browserApp.send(ReadPageContentCommand);
 await reading;
 browser.pages.told();
-await waitFor(() => host.querySelector('[data-browser-access="reading"]') !== null);
-check("a read marks the address field", host.querySelector("[data-browser-access]")?.textContent, "Ink is reading");
+await waitFor(() => host.querySelector("[data-browser-ink-reading]") !== null);
 check(
-	"and outlines the page",
+	"a read outlines the page",
 	host.querySelector("[data-browser-page-area]")?.className.includes("cv:outline-brand"),
 	true,
 );

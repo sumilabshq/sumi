@@ -252,7 +252,7 @@ function runGates(): void {
 	}
 }
 
-async function layCanvasSheet(): Promise<void> {
+export async function layCanvasSheet(): Promise<void> {
 	const authored = readFileSync(PLUGIN_SHEET, "utf8");
 	const withTokens = withSystemTokens(
 		withStudioSystem(authored, studioSystemLayerOf(process.cwd())),

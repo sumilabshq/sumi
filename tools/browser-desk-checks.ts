@@ -105,7 +105,7 @@ check(
 		(await asked(production, { verb: "open", url: "https://example.org/" })),
 	{
 		ok: false,
-		reason: "Ink's browser access is off until the widget code scanner ships",
+		reason: "Sumi's browser access is off until the widget code scanner ships",
 	},
 );
 check("a development build answers", (await asked(opened(`${scratch}/dev`), { verb: "read" })).ok, true);

@@ -4,64 +4,40 @@ const until = async (find) => { for (let at = 0; at < 80; at += 1) { const found
 const leafNamed = (said, under = document) => [...under.querySelectorAll("*")].find((one) => one.children.length === 0 && one.textContent.trim() === said);
 const boxOf = (node) => { if (!node) return null; const box = node.getBoundingClientRect(); return { x: Math.round(box.left), y: Math.round(box.top), w: Math.round(box.width), h: Math.round(box.height), right: Math.round(innerWidth - box.right) }; };
 const triggerHitIn = (selector) => { const trigger = document.querySelector(selector); if (!trigger) return null; const box = trigger.getBoundingClientRect(); return trigger.contains(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)); };
+const APP_PLATE = '[data-shell-plate="app"]';
 const menuButton = () => document.querySelector('[aria-label$=" menu"]');
-const roundOf = (node, pseudo) => { if (!node) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
-const inDomOrder = (selectors) => selectors.map((selector) => [selector, document.querySelector(selector)]).filter(([, node]) => node).sort(([, one], [, two]) => (one.compareDocumentPosition(two) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)).map(([selector]) => selector);
-const headerOf = () => ({
-	hostOrder: inDomOrder(["[data-host-zone] [data-host-tabs]", "[data-host-zone] [data-host-all-tabs]", "[data-host-zone] [data-host-close]"]),
-	appBeforeHost: (document.querySelector("[data-app-zone]")?.getBoundingClientRect().right ?? Infinity) <= (document.querySelector("[data-host-zone]")?.getBoundingClientRect().left ?? -Infinity),
-	tabs: [...document.querySelectorAll("[data-host-tab]")].map((tab) => ({ selected: tab.getAttribute("aria-selected"), label: tab.getAttribute("aria-label"), text: tab.textContent.trim(), h: Math.round(tab.getBoundingClientRect().height) })),
-	tabsPill: Math.round(document.querySelector("[data-host-tabs]")?.getBoundingClientRect().height ?? 0),
-	appOrder: inDomOrder(["[data-app-zone] [data-canvas-sidebar-toggle]", "[data-app-zone] [data-canvas-page-picker]", "[data-app-zone] [data-canvas-zoom]"]),
-	picker: Math.round(document.querySelector("[data-app-zone] [data-canvas-title]")?.getBoundingClientRect().height ?? 0),
-	picture: roundOf(document.querySelector("[data-app-zone] [data-canvas-title] [aria-label='Add photo']")),
-	toggle: roundOf(document.querySelector("[data-app-zone] [data-canvas-sidebar-toggle]")),
-	add: roundOf(document.querySelector("[data-host-add]")),
-	addDisabled: document.querySelector("[data-host-add]")?.getAttribute("aria-disabled") ?? null,
-	allTabs: roundOf(document.querySelector("[data-host-all-tabs]")),
-	close: roundOf(document.querySelector("[data-host-close]")),
-	closeLabel: document.querySelector("[data-host-close]")?.getAttribute("aria-label") ?? null,
-	chatMenu: roundOf(menuButton()?.matches(".wg-kit-btn") ? menuButton() : null, "::before"),
-	chatHead: document.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? null,
-});
-const outletBox = () => boxOf(document.querySelector(".wg-studio-outlet"));
-const outletRouteDom = () => {
-	const outlet = document.querySelector(".wg-studio-outlet");
-	if (!outlet) return null;
-	const route = outlet.cloneNode(true);
-	route.querySelectorAll(":scope > .wg-studio-kept").forEach((kept) => kept.remove());
-	return route.innerHTML;
-};
+const moreButton = () => document.querySelector('[data-plate-head="app"] button[aria-label="More"]');
+const moreItems = async () => { moreButton()?.click(); const items = await until(() => { const found = [...document.querySelectorAll('.wg-plate-menu [role="menuitem"]')]; return found.length > 0 && found; }); return items ?? []; };
+const backToView = async () => { const back = (await moreItems()).find((item) => item.textContent.trim().startsWith("Back to ")); back?.click(); return back?.textContent.trim() ?? null; };
+const routeDomOf = () => document.querySelector(APP_PLATE + " .wg-shell-route")?.innerHTML ?? null;
+const appPlateBox = () => boxOf(document.querySelector(APP_PLATE));
 const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set.call(box, said); box.dispatchEvent(new Event("input", { bubbles: true })); };
+const underSystemButtons = (insets) => [...document.querySelectorAll(".wg-shell button")].filter((one) => { const box = one.getBoundingClientRect(); return box.width > 0 && box.left < insets.left && box.top < insets.top; }).map((one) => one.getAttribute("aria-label") || one.textContent.trim());
 (async () => {
 	const seen = {};
 	const report = () => (document.getElementById("seen").textContent = JSON.stringify(seen));
 	await until(() => window.__MODE__ === "app" || menuButton());
 	if (window.__MODE__ !== "app") {
-		seen.openedOnCanvas = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
-		await until(() => document.querySelector("[data-app-zone] [data-canvas-zoom]"));
-		seen.header = headerOf();
-		(await until(() => document.querySelector("[data-app-host-bar] [data-host-close]")))?.click();
+		seen.openedOnCanvas = Boolean(await until(() => document.querySelector(APP_PLATE + " [data-canvas-studio] [data-canvas-field]")));
+		await backToView();
 	}
-	await until(() => document.querySelector(window.__MODE__ === "app" ? "[data-task]" : ".wg-studio-outlet [data-task]"));
+	await until(() => document.querySelector(window.__MODE__ === "app" ? "[data-task]" : APP_PLATE + " .wg-shell-route [data-task]"));
 	await wait(300);
-	seen.routeDom = window.__MODE__ === "app" ? (document.querySelector("#root")?.innerHTML ?? null) : outletRouteDom();
-	const routeBoard = document.querySelector(window.__MODE__ === "app" ? "#root .wg-root" : ".wg-studio-outlet > .wg-root");
+	seen.routeDom = window.__MODE__ === "app" ? (document.querySelector("#root")?.innerHTML ?? null) : routeDomOf();
+	const routeBoard = document.querySelector(window.__MODE__ === "app" ? "#root .wg-root" : APP_PLATE + " .wg-shell-route > .wg-root");
 	seen.routeTop = routeBoard ? Math.round(routeBoard.getBoundingClientRect().top) : null;
+	const appHead = boxOf(document.querySelector('[data-plate-head="app"]'));
+	seen.appHeadBottom = appHead ? appHead.y + appHead.h : null;
 	seen.studioElements = document.querySelectorAll('[class*="wg-studio"]').length;
 	seen.catalogueElements = document.querySelectorAll('[class*="catalogue"]').length;
 	seen.routeTriggerHit = triggerHitIn('[aria-label="Task options"]');
-	seen.menu = boxOf(menuButton());
-	seen.menuInChatHead = Boolean(menuButton()?.closest(".wg-studio-chat .wg-studio-ai-head"));
-	seen.bandButtons = document.querySelectorAll(".wg-studio-band button").length;
+	seen.menuInChatHead = Boolean(menuButton()?.closest('[data-plate-head="chat"]'));
 	seen.aiButtons = document.querySelectorAll('button[aria-label="AI assistant"]').length;
-	seen.leftSafeArea = boxOf(document.querySelector(".wg-studio-band .wg-studio-safe-area.is-left"))?.w ?? null;
-	seen.bandHeight = boxOf(document.querySelector(".wg-studio-band"))?.h ?? null;
 	report();
 	if (window.__MODE__ === "studio-mac") {
 		seen.quietSaid = (await until(() => document.querySelector(".wg-studio-chat .wg-studio-ai-quiet")))?.textContent ?? null;
-		seen.bandWithQuiet = Boolean(document.querySelector(".wg-studio-band") && menuButton());
-		seen.appsFailure = (await until(() => document.querySelector('.wg-studio-rail [data-name="Workspaces failure"]')))?.textContent ?? null;
+		seen.frameWithQuiet = Boolean(document.querySelector("[data-shell-frame]") && menuButton());
+		seen.underSystemButtons = underSystemButtons(window.__INSETS__);
 		report();
 	}
 	if (window.__MODE__ === "studio-memory") {
@@ -74,12 +50,8 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 		report();
 	}
 	if (window.__MODE__ !== "studio") return;
-	seen.outletBefore = outletBox();
 	const composerBox = await until(() => document.querySelector(".wg-studio-chat .wg-studio-ai-box"));
 	await wait(100);
-	seen.chatBox = boxOf(document.querySelector(".wg-studio-chat"));
-	seen.cardBox = outletBox();
-	seen.bandOpen = boxOf(document.querySelector(".wg-studio-band"));
 	if (composerBox) typeInto(composerBox, "Plant the beans");
 	await wait(100);
 	document.querySelector('.wg-studio-chat button[aria-label="Send"]')?.click();
@@ -115,8 +87,10 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	seen.askOpened = Boolean(catalogueSidebar);
 	await until(() => document.querySelector(".wg-studio-sidebar .wg-studio-catalogue-card-name"));
 	await wait(100);
-	seen.outletCatalogue = outletBox();
+	seen.appCatalogue = appPlateBox();
+	seen.chatCatalogue = boxOf(document.querySelector('[data-shell-plate="chat"]'));
 	seen.sidebarCatalogue = boxOf(catalogueSidebar);
+	seen.frameOverflow = (() => { const frame = document.querySelector("[data-shell-frame]"); return frame ? frame.scrollWidth - frame.clientWidth : null; })();
 	seen.listed = [...document.querySelectorAll(".wg-studio-sidebar .wg-studio-catalogue-card-name")].map((name) => name.textContent);
 	seen.chatBesideCatalogue = Boolean(document.querySelector(".wg-studio-chat .wg-studio-ai-box"));
 	report();
@@ -132,18 +106,13 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	report();
 	menuButton().click();
 	(await until(() => leafNamed("Edit in canvas")))?.click();
-	seen.canvasShown = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-canvas-studio] [data-canvas-field]")));
-	seen.taskGoneInCanvas = document.querySelectorAll(".wg-studio-outlet > :not(.wg-studio-kept)").length === 0;
-	seen.topBar = (await until(() => document.querySelector("[data-app-host-bar]")))?.textContent ?? null;
-	seen.bandsInCanvas = document.querySelectorAll(".wg-studio-band").length;
-	seen.topBarsInCanvas = document.querySelectorAll("[data-app-host-bar], [data-canvas-topbar]").length;
-	seen.menuInChatInCanvas = Boolean(menuButton()?.closest(".wg-studio-chat .wg-studio-ai-head"));
+	seen.canvasShown = Boolean(await until(() => document.querySelector(APP_PLATE + " [data-canvas-studio] [data-canvas-field]")));
+	seen.taskGoneInCanvas = document.querySelectorAll(APP_PLATE + " .wg-shell-route").length === 0;
+	seen.canvasTopBars = document.querySelectorAll(APP_PLATE + " [data-canvas-topbar]").length;
+	seen.zoneInAppHead = Boolean(await until(() => document.querySelector('[data-plate-head="app"] [data-canvas-app-zone] [data-canvas-sidebar-toggle]')));
+	seen.menuInChatInCanvas = Boolean(menuButton()?.closest('[data-plate-head="chat"]'));
 	seen.frames = [...document.querySelectorAll(".wg-design-frame .wg-design-name")].map((name) => name.textContent);
-	seen.frameDrawsRoute = Boolean(await until(() => document.querySelector(".wg-design-frame [data-task]")));
-	const frameTrigger = '.wg-design-frame [aria-label="Task options"]';
-	seen.frameTriggerHit = triggerHitIn(frameTrigger);
-	document.querySelector(frameTrigger)?.focus();
-	seen.frameTriggerFocused = document.activeElement === document.querySelector(frameTrigger);
+	seen.frameNotDrawn = (await until(() => document.querySelector(".wg-design-frame [data-canvas-not-drawn]")))?.dataset.canvasNotDrawn ?? null;
 	await wait(400);
 	const layer = document.querySelector("[data-canvas-layer]");
 	const field = document.querySelector("[data-canvas-field]");
@@ -155,8 +124,6 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	await wait(200);
 	seen.transformPanned = layer?.style.transform ?? "";
 	seen.locationInCanvas = location.pathname;
-	const topButton = (said) => [...document.querySelectorAll("[data-app-host-bar] button")].find((one) => one.textContent.trim() === said || one.getAttribute("aria-label") === said);
-	seen.topButtons = [...document.querySelectorAll("[data-app-host-bar] button")].map((one) => one.getAttribute("aria-label") || one.textContent.trim());
 	document.querySelector("[data-canvas-page-picker] button")?.click();
 	seen.pageChoices = (await until(() => document.querySelectorAll("[data-canvas-page-choice]").length > 0 && [...document.querySelectorAll("[data-canvas-page-choice]")]))?.map((one) => one.textContent.trim()) ?? [];
 	[...document.querySelectorAll("[data-canvas-page-choice]")].find((one) => one.textContent.trim() === "Components")?.click();
@@ -164,62 +131,9 @@ const typeInto = (box, said) => { Object.getOwnPropertyDescriptor(HTMLTextAreaEl
 	seen.cards = [...document.querySelectorAll("[data-canvas-card] [data-canvas-card-name]")].map((name) => name.textContent);
 	seen.cardNotDrawn = (await until(() => document.querySelector("[data-canvas-card] [data-canvas-not-drawn]")))?.dataset.canvasNotDrawn ?? null;
 	report();
-	topButton("Back to view")?.click();
-	seen.backShowsRoute = Boolean(await until(() => document.querySelector(".wg-studio-outlet [data-task]")));
+	seen.backSaid = await backToView();
+	seen.backShowsRoute = Boolean(await until(() => document.querySelector(APP_PLATE + " .wg-shell-route [data-task]")));
 	await wait(300);
-	seen.routeDomBack = outletRouteDom();
-	await wait(300);
-	(await until(() => [...document.querySelectorAll(".wg-studio-rail button")].find((tile) => tile.textContent.trim() === "New workspace")))?.click();
-	await wait(500);
-	seen.bandAfterRefusal = Boolean(document.querySelector(".wg-studio-band") && menuButton());
-	seen.refusal = document.querySelector('.wg-studio-rail [data-name="Refusal"]')?.textContent ?? null;
+	seen.routeDomBack = routeDomOf();
 	report();
 })();`;
-
-export const ADAPTIVE_HEADER_OF = `(() => {
-	const isShown = (node) => node !== null && node.getClientRects().length > 0;
-	const shownIn = (selector) => [...document.querySelectorAll(selector)].filter(isShown);
-	const drawnIn = (selector) => shownIn(selector).filter((node) => node.getBoundingClientRect().width > 0);
-	const boxOf = (node) => { const box = node.getBoundingClientRect(); return { left: box.left, right: box.right, top: box.top, bottom: box.bottom, w: Math.round(box.width), h: Math.round(box.height) }; };
-	const roundOf = (node, pseudo) => { if (!isShown(node)) return null; const box = node.getBoundingClientRect(); return { w: Math.round(box.width), h: Math.round(box.height), isCircle: Math.round(box.width) === Math.round(box.height) && parseFloat(getComputedStyle(node, pseudo).borderTopLeftRadius) >= box.height / 2 }; };
-	const bar = boxOf(document.querySelector("[data-app-host-bar]"));
-	const appParts = drawnIn("[data-app-zone] *").map(boxOf);
-	const hostParts = drawnIn("[data-host-zone] *").map(boxOf);
-	const outside = [...appParts, ...hostParts].filter((part) => part.left < bar.left - 0.5 || part.right > bar.right + 0.5 || part.top < bar.top - 0.5 || part.bottom > bar.bottom + 0.5);
-	const at = (selector) => document.querySelector(selector);
-	const head = at(".wg-studio-chat .wg-studio-ai-head");
-	const menu = head?.querySelector('[aria-label$=" menu"]') ?? null;
-	const title = head?.querySelector(".wg-studio-ai-named") ?? null;
-	const mascot = head?.firstElementChild ?? null;
-	return {
-		bar,
-		appRight: Math.max(...appParts.map((part) => part.right)),
-		hostLeft: Math.min(...hostParts.map((part) => part.left)),
-		outside: outside.length,
-		sizes: {
-			toggle: roundOf(at("[data-app-zone] [data-canvas-sidebar-toggle]")),
-			title: isShown(at("[data-canvas-title]")) ? Math.round(at("[data-canvas-title]").getBoundingClientRect().height) : 0,
-			picture: roundOf(at("[data-canvas-title] [aria-label='Add photo']")),
-			tabsPill: isShown(at("[data-host-tabs]")) ? Math.round(at("[data-host-tabs]").getBoundingClientRect().height) : 0,
-			tabs: shownIn("[data-host-tab]").map((tab) => Math.round(tab.getBoundingClientRect().height)),
-			add: roundOf(at("[data-host-add]")),
-			allTabs: roundOf(at("[data-host-all-tabs]")),
-			close: roundOf(at("[data-host-close]")),
-		},
-		step: {
-			zoom: isShown(at("[data-canvas-zoom]")),
-			add: isShown(at("[data-host-add]")),
-			allTabs: isShown(at("[data-host-all-tabs]")),
-			tabLabel: isShown(at("[data-host-tab][aria-selected='true'] span")),
-			pageName: isShown(at("[data-canvas-page-name]")),
-			photo: isShown(at("[data-canvas-title] [aria-label='Add photo']")),
-		},
-		chat: head === null || menu === null || title === null || mascot === null ? null : {
-			head: boxOf(head),
-			mascot: boxOf(mascot),
-			title: boxOf(title),
-			menu: roundOf(menu, "::before"),
-			menuBox: boxOf(menu),
-		},
-	};
-})()`;

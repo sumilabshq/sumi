@@ -26,6 +26,16 @@ const PILL_LOOK = `(() => {
 		const [red, green, blue] = pen.getImageData(0, 0, 1, 1).data;
 		return (red + green + blue) / 765;
 	};
+	const sumi = (token) => {
+		const probe = document.createElement("i");
+		probe.style.background = "var(" + token + ")";
+		probe.style.borderRadius = "var(" + token + ")";
+		document.querySelector(".wg-plate-head").append(probe);
+		const style = getComputedStyle(probe);
+		const read = { fill: style.backgroundColor, radius: style.borderTopLeftRadius };
+		probe.remove();
+		return read;
+	};
 	const look = (node, pseudo) => {
 		if (!node) return null;
 		const style = getComputedStyle(node, pseudo);
@@ -49,15 +59,15 @@ const PILL_LOOK = `(() => {
 		(node) => getComputedStyle(node).backdropFilter !== "none" || getComputedStyle(node, "::before").backdropFilter !== "none",
 	).length;
 	return {
+		header: { active: sumi("--sumi-active").fill, rest: "rgba(0, 0, 0, 0)", corner: sumi("--sumi-r-sm").radius },
+		toggleFill: look(document.querySelector("[data-canvas-sidebar-toggle]"), "::before"),
+		pictureFill: look(document.querySelector("[data-canvas-title] [aria-label='Add photo']"), "::before"),
+		view: getComputedStyle(view).padding,
 		tokens: { ink: tone("--primary"), onInk: tone("--primary-foreground"), raise: tone("--raise"), plate: tone("--group"), line: tone("--group-line"), brand: tone("--brand"), muted: tone("--muted-foreground"), radius: getComputedStyle(view).getPropertyValue("--radius").trim() },
 		toggle: look(document.querySelector("[data-canvas-sidebar-toggle]")),
 		togglePressed: document.querySelector("[data-canvas-sidebar-toggle]")?.getAttribute("aria-pressed"),
-		close: look(document.querySelector("[data-host-close]")),
-		closeLabel: document.querySelector("[data-host-close]")?.getAttribute("aria-label"),
 		title: look(document.querySelector("[data-canvas-title]")),
 		picture: look(document.querySelector("[data-canvas-title] [aria-label='Add photo']")),
-		views: look(document.querySelector("[data-host-tabs]")),
-		pickedView: look(document.querySelector("[data-host-tab][aria-selected=true]")),
 		eyebrows: [...view.querySelectorAll("[data-canvas-eyebrow]")].map((node) => look(node)),
 		sidebar: look(document.querySelector("[data-canvas-sidebar]")),
 		plate: look(document.querySelector("[data-canvas-plate]")),
@@ -86,17 +96,17 @@ interface Look {
 }
 
 interface PillLook {
+	readonly header: { readonly active: string; readonly rest: string; readonly corner: string };
+	readonly toggleFill: Look | null;
+	readonly pictureFill: Look | null;
+	readonly view: string;
 	readonly tokens: Readonly<
 		Record<"ink" | "onInk" | "raise" | "plate" | "line" | "brand" | "muted" | "radius", string>
 	>;
 	readonly toggle: Look | null;
 	readonly togglePressed: string | null;
-	readonly close: Look | null;
-	readonly closeLabel: string | null;
 	readonly title: Look | null;
 	readonly picture: Look | null;
-	readonly views: Look | null;
-	readonly pickedView: Look | null;
 	readonly eyebrows: readonly Look[];
 	readonly sidebar: Look | null;
 	readonly plate: Look | null;
@@ -110,9 +120,7 @@ interface PillLook {
 	readonly pageDotStep: number;
 }
 
-const ROUND_PX = 48;
-const PICTURE_PX = 36;
-const TAB_PX = 40;
+const HEADER_BUTTON_PX = 28;
 const PAGE_ROW_PX = 36;
 const EYEBROW_PX = "11px";
 const EYEBROWS = ["Pages", "Layers"];
@@ -133,34 +141,28 @@ interface PillLaw {
 
 const PILL_LAWS: readonly PillLaw[] = [
 	{
-		said: "pill: the sidebar toggle is a round 48px ink button while the sidebar is open",
-		holds: isInkToggle,
-		shown: ({ toggle, togglePressed }) => ({ toggle, togglePressed }),
+		said: "header: the sidebar toggle is a 28px ghost header button wearing the active fill while the sidebar is open",
+		holds: isPressedHeaderToggle,
+		shown: ({ toggle, toggleFill, togglePressed, header }) => ({ toggle, toggleFill, togglePressed, header }),
 	},
 	{
-		said: "pill: Back to view is a round 48px raise button with a label and no text",
-		holds: isRoundClose,
-		shown: ({ close, closeLabel }) => ({ close, closeLabel }),
-	},
-	{
-		said: "pill: the title is a 48px raise pill holding the page name",
-		holds: isTitlePill,
+		said: "header: the title is a bare 28px row holding the page name, no pill",
+		holds: ({ title }) =>
+			title?.height === HEADER_BUTTON_PX && title.fill === "rgba(0, 0, 0, 0)" && title.text.length > 0,
 		shown: ({ title }) => title,
 	},
 	{
-		said: "pill: the add-picture button inside the title is a round 36px plate button",
-		holds: ({ picture, tokens }) => isRoundOf(picture, PICTURE_PX) && picture?.fill === tokens.plate,
-		shown: ({ picture }) => picture,
+		said: "header: the add-picture button is a 28px ghost header button with no fill at rest",
+		holds: ({ picture, pictureFill, header }) =>
+			isSquareOf(picture, HEADER_BUTTON_PX) &&
+			pictureFill?.fill === header.rest &&
+			pictureFill.radius === header.corner,
+		shown: ({ picture, pictureFill }) => ({ picture, pictureFill }),
 	},
 	{
-		said: "pill: the host's tabs are a 48px raise pill whose shown tab is a 40px ink fill with on-ink text",
-		holds: isInkPickedView,
-		shown: ({ views, pickedView }) => ({ views, pickedView }),
-	},
-	{
-		said: "pill: the sidebar and the board stand on one raise plate with the plate radius, neither rounded on its own",
-		holds: isOnePlate,
-		shown: ({ plate, sidebar, board, tokens }) => ({ plate, sidebar, board, radius: tokens.radius }),
+		said: "plate: the sidebar and the board fill the app plate bare, no padding ring, inner fill or corner",
+		holds: isBareInPlate,
+		shown: ({ view, plate, sidebar, board }) => ({ view, plate, sidebar, board }),
 	},
 	{
 		said: "pill: Pages and Layers are 11px sentence-case muted eyebrows, a hairline between them",
@@ -184,39 +186,20 @@ const PILL_LAWS: readonly PillLaw[] = [
 	},
 ];
 
-function isInkToggle({ toggle, togglePressed, tokens }: PillLook): boolean {
+function isPressedHeaderToggle({ toggle, toggleFill, togglePressed, header }: PillLook): boolean {
 	return (
-		isRoundOf(toggle, ROUND_PX) &&
-		toggle?.fill === tokens.ink &&
-		toggle.ink === tokens.onInk &&
+		isSquareOf(toggle, HEADER_BUTTON_PX) &&
+		toggleFill?.fill === header.active &&
+		toggleFill.radius === header.corner &&
 		togglePressed === "true"
 	);
 }
 
-function isRoundClose({ close, closeLabel, tokens }: PillLook): boolean {
+function isBareInPlate({ view, plate, sidebar, board }: PillLook): boolean {
 	return (
-		isRoundOf(close, ROUND_PX) && close?.fill === tokens.raise && close.text === "" && closeLabel === "Back to view"
-	);
-}
-
-function isTitlePill({ title, tokens }: PillLook): boolean {
-	return title?.height === ROUND_PX && title.isRound && title.fill === tokens.raise && title.text.length > 0;
-}
-
-function isInkPickedView({ views, pickedView, tokens }: PillLook): boolean {
-	return (
-		views?.height === ROUND_PX &&
-		views.fill === tokens.raise &&
-		pickedView?.height === TAB_PX &&
-		pickedView.fill === tokens.ink &&
-		pickedView.ink === tokens.onInk
-	);
-}
-
-function isOnePlate({ plate, sidebar, board, tokens }: PillLook): boolean {
-	return (
-		plate?.fill === tokens.raise &&
-		plate.radius === tokens.radius &&
+		view === "0px" &&
+		plate?.fill === "rgba(0, 0, 0, 0)" &&
+		plate.radius === "0px" &&
 		sidebar?.radius === "0px" &&
 		board?.radius === "0px"
 	);
@@ -237,8 +220,8 @@ function isCurrentPagePill({ pickedPage, pickedDot, restingDot, pageDot, tokens 
 	return isPill && pickedDot?.fill === tokens.brand && (restingDot === null || restingDot.fill === pageDot);
 }
 
-function isRoundOf(look: Look | null, px: number): boolean {
-	return look !== null && look.width === px && look.height === px && look.isRound;
+function isSquareOf(look: Look | null, px: number): boolean {
+	return look !== null && look.width === px && look.height === px;
 }
 
 function isEyebrow(look: Look, muted: string): boolean {

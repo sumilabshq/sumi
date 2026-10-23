@@ -95,7 +95,7 @@ async function buildEach(folders: readonly string[]): Promise<void> {
 const builtIn = (folder: string): string => path.join(folder, BUILT_TO);
 
 // TRADE-OFF: the engine package's sheet is cut from the app's styles.css; moving that owner into core touches every paint gate
-function writeBrowserStyles(): void {
+export function writeBrowserStyles(): void {
 	const [host = "", board = ""] = [BROWSER_STYLES.host, BROWSER_STYLES.board].map((at) => fs.readFileSync(at, "utf8"));
 	const [authored = "", canvas = ""] = board.split(TAILWIND_BANNER);
 	const { app, studio } = studioSplitOf(`${host}\n${authored}`);

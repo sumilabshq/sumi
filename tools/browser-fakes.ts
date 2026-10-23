@@ -8,6 +8,7 @@ import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-si
 import { ChatComposerGateway } from "../packages/browser/gateways/chat-composer/chat-composer.gateway.ts";
 import type { BrowserTab } from "../packages/browser/shared/schema/browser-tab.schema.ts";
 import type { CommittedPage, PageContentRead, PageShot } from "../packages/browser/shared/schema/page-read.schema.ts";
+import type { PageLook } from "../packages/browser/shared/schema/page-look.schema.ts";
 
 export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	tab: BrowserTab = {
@@ -34,6 +35,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	readonly moves: string[] = [];
 	readonly attached: HTMLElement[] = [];
 	readonly frozen = new Set<string>();
+	pageLook: PageLook | null = null;
 	private readonly watchers = new Set<() => void>();
 
 	isAvailable(): boolean {
@@ -50,6 +52,19 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 
 	isOnScreen(_tabId: string): boolean {
 		return this.isShownOnScreen;
+	}
+
+	look(): PageLook | null {
+		return this.pageLook;
+	}
+
+	watchLook(changed: () => void): () => void {
+		return this.watch(changed);
+	}
+
+	showLook(look: PageLook | null): void {
+		this.pageLook = look;
+		this.told();
 	}
 
 	watch(changed: () => void): () => void {

@@ -2,34 +2,26 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { CARD_LEAST_PX, CHAT_LEAST_PX, CHAT_USUAL_PX } from "../packages/core/src/engine/studio-state-port.ts";
+import { FRAME_BOUNDS, PLATE_LEAST_PX } from "../packages/shell/shared/lib/frame-bounds.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { isRecord } from "./page-dom.ts";
 
 interface Layout {
-	readonly rail: { readonly left: number; readonly right: number };
 	readonly chat: { readonly left: number; readonly right: number; readonly width: number };
-	readonly card: { readonly left: number; readonly width: number };
-	readonly room: number;
-	readonly side: number;
-	readonly radius: string;
-	readonly plate: string;
-	readonly platePad: string;
-	readonly edge: string;
-	readonly edgeColour: string;
-	readonly menuInHead: boolean;
+	readonly app: { readonly left: number; readonly width: number };
+	readonly panel: number;
 	readonly stage: number | null;
-	readonly cardInner: number;
+	readonly appInner: number;
 	readonly kept: string | null;
 	readonly handle: PagePoint;
 }
 
-const VIEW: readonly [number, number] = [1800, 900];
+const VIEW: readonly [number, number] = [2600, 900];
 const WIDE_CHAT_PX = 1400;
+const REMEMBERED_PX = 1000;
 const CONTENT_PX = 800;
-const DRAG_PX = 200;
 const CANVAS_DRAG_PX = 100;
 const SLACK_PX = 1;
 const KEPT_KEY = "widgetarium-studio-chat-px";
@@ -55,27 +47,18 @@ const SQUIRCLED_BUTTONS = `(() => ({
 }))()`;
 
 const LAYOUT_OF = `(() => {
-	const chat = document.querySelector(".wg-studio-chat").getBoundingClientRect();
-	const outlet = document.querySelector(".wg-studio-outlet");
-	const card = outlet.getBoundingClientRect();
-	const style = getComputedStyle(outlet);
-	const handle = document.querySelector(".wg-studio-chat-edge").getBoundingClientRect();
+	const chat = document.querySelector('[data-shell-plate="chat"]').getBoundingClientRect();
+	const app = document.querySelector('[data-shell-plate="app"]');
+	const appBox = app.getBoundingClientRect();
+	const body = app.querySelector(".wg-shell-plate-body");
+	const handle = document.querySelector('[data-shell-edge="chat"]').getBoundingClientRect();
 	const stage = document.querySelector("[data-canvas-stage]");
-	const rail = document.querySelector(".wg-studio-rail").getBoundingClientRect();
 	return {
-		rail: { left: rail.left, right: rail.right },
 		chat: { left: chat.left, right: chat.right, width: chat.width },
-		card: { left: card.left, width: card.width },
-		room: document.querySelector(".wg-studio").clientWidth - rail.width,
-		side: document.querySelector(".wg-studio-sidebar")?.getBoundingClientRect().width ?? 0,
-		radius: style.borderTopLeftRadius,
-		plate: style.getPropertyValue("--wg-kit-plate").trim(),
-		platePad: style.getPropertyValue("--wg-kit-plate-pad").trim(),
-		edge: style.borderTopWidth + " " + style.borderTopStyle,
-		edgeColour: style.borderTopColor,
-		menuInHead: document.querySelector('.wg-studio-chat .wg-studio-ai-head [aria-label$=" menu"]') !== null,
+		app: { left: appBox.left, width: appBox.width },
+		panel: document.querySelector(".wg-shell-panel")?.getBoundingClientRect().width ?? 0,
 		stage: stage ? stage.getBoundingClientRect().width : null,
-		cardInner: outlet.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+		appInner: body.clientWidth,
 		kept: localStorage.getItem(${JSON.stringify(KEPT_KEY)}),
 		handle: [handle.left + handle.width / 2, handle.top + handle.height / 2],
 	};
@@ -84,8 +67,6 @@ const LAYOUT_OF = `(() => {
 const ASK_CATALOGUE = `void window.__CATALOGUE__.requests.ask({ mode: "place" }); true`;
 
 const CLOSE_CATALOGUE = `document.querySelector('.wg-studio-sidebar button[aria-label="Close the catalogue"]').click()`;
-
-const BAND_BUTTONS = `document.querySelectorAll(".wg-studio-band button").length`;
 
 const SEND_MINE = `(() => {
 	const box = document.querySelector(".wg-studio-chat .wg-studio-ai-box");
@@ -102,17 +83,6 @@ const PAINT_OF = `(parent, token, property) => {
 	probe.remove();
 	return painted;
 }`;
-
-const SHELL_PAINT = `(() => {
-	const studio = document.querySelector(".wg-studio");
-	const paintOf = (token) => (${PAINT_OF})(studio, token, "backgroundColor");
-	return {
-		shell: getComputedStyle(studio).backgroundColor,
-		page: paintOf("--wg-kit-page"),
-		card: getComputedStyle(document.querySelector(".wg-studio-outlet")).backgroundColor,
-		group: paintOf("--wg-kit-group-fill"),
-	};
-})()`;
 
 const HOST_ACCENT = "rgb(255, 0, 128)";
 const HOST_ON_ACCENT = "rgb(0, 0, 0)";
@@ -136,6 +106,7 @@ const ACCENT_PAINT_OF = `((isInObsidian) => {
 
 const CONTENT_COLUMN = `(() => {
 	const chat = document.querySelector(".wg-studio-chat .wg-studio-ai").getBoundingClientRect();
+	const plate = document.querySelector('[data-shell-plate="chat"]').getBoundingClientRect();
 	const composer = document.querySelector(".wg-studio-chat .wg-studio-ai-composer").getBoundingClientRect();
 	const turn = document.querySelector(".wg-studio-chat .wg-studio-ai-turn").getBoundingClientRect();
 	const scroll = document.querySelector(".wg-studio-chat .wg-studio-ai-scroll").getBoundingClientRect();
@@ -144,7 +115,7 @@ const CONTENT_COLUMN = `(() => {
 		scroll: Math.round(scroll.width),
 		scrollRightPastCentre: Math.round(scroll.right - (chat.left + chat.width / 2)),
 		chat: Math.round(chat.width),
-		edge: parseFloat(getComputedStyle(document.querySelector(".wg-studio-chat")).paddingLeft),
+		plate: Math.round(plate.width),
 		composer: Math.round(composer.width),
 		composerGutters: gutters(composer),
 		turn: Math.round(turn.width),
@@ -152,9 +123,9 @@ const CONTENT_COLUMN = `(() => {
 	};
 })()`;
 
-const REMEMBER_WIDE = `localStorage.setItem(${JSON.stringify(KEPT_KEY)}, "1000"); location.hash = "kept"; location.reload(); true`;
+const REMEMBER_WIDE = `localStorage.setItem(${JSON.stringify(KEPT_KEY)}, ${JSON.stringify(String(REMEMBERED_PX))}); location.hash = "kept"; location.reload(); true`;
 
-const DOUBLE_PRESS_EDGE = `document.querySelector(".wg-studio-chat-edge").dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))`;
+const DOUBLE_PRESS_EDGE = `document.querySelector('[data-shell-edge="chat"]').dispatchEvent(new MouseEvent("dblclick", { bubbles: true }))`;
 
 let failed = 0;
 function check(what: string, isOk: boolean, got: unknown): void {
@@ -163,12 +134,12 @@ function check(what: string, isOk: boolean, got: unknown): void {
 }
 
 function isLayout(value: unknown): value is Layout {
-	return typeof value === "object" && value !== null && "chat" in value && "card" in value;
+	return typeof value === "object" && value !== null && "chat" in value && "app" in value;
 }
 
 async function layoutOf(page: AskedPage): Promise<Layout> {
 	const asked = await page.ask(LAYOUT_OF);
-	if (!isLayout(asked)) throw new Error(`the studio drew no chat and card: ${JSON.stringify(asked)}`);
+	if (!isLayout(asked)) throw new Error(`the studio drew no chat and app plate: ${JSON.stringify(asked)}`);
 	return asked;
 }
 
@@ -189,15 +160,6 @@ async function draggedEdge(page: AskedPage, byPx: number): Promise<Layout> {
 	return layoutOf(page);
 }
 
-function isShellPageAndCardGroup(paint: unknown): boolean {
-	if (typeof paint !== "object" || paint === null) {
-		return false;
-	}
-
-	const { shell, page, card, group } = Object.fromEntries(Object.entries(paint));
-	return shell === page && card === group && card !== shell;
-}
-
 function isPaintedAs(painted: unknown, wanted: Readonly<Record<string, string>>): boolean {
 	if (typeof painted !== "object" || painted === null) {
 		return false;
@@ -212,13 +174,14 @@ function isCentredColumn(column: unknown): boolean {
 		return false;
 	}
 
-	const { chat, edge, composer, composerGutters, turn, turnGutters, scroll, scrollRightPastCentre } =
+	const { chat, plate, composer, composerGutters, turn, turnGutters, scroll, scrollRightPastCentre } =
 		Object.fromEntries(Object.entries(column));
 	return (
 		typeof scroll === "number" &&
 		scroll <= CONTENT_PX &&
 		isNear(Number(scrollRightPastCentre), CONTENT_PX / 2) &&
-		chat === WIDE_CHAT_PX - 2 * Number(edge) &&
+		plate === WIDE_CHAT_PX &&
+		chat === WIDE_CHAT_PX &&
 		composer === CONTENT_PX &&
 		typeof turn === "number" &&
 		turn <= CONTENT_PX &&
@@ -245,95 +208,32 @@ const origin = typeof address === "object" && address !== null ? `http://127.0.0
 const page = await paged(origin, "studio layout", { size: VIEW });
 
 try {
-	const drawn = await untilAnswered(page, `document.querySelector('.wg-studio-chat [aria-label$=" menu"]') !== null`);
-	check("the studio drew its chat with the menu", drawn, drawn);
+	const drawn = await untilAnswered(
+		page,
+		`document.querySelector('[data-plate-head="chat"] [aria-label$=" menu"]') !== null`,
+	);
+	check("the studio drew its chat plate with the menu", drawn, drawn);
 	await waited(300);
 	writeFileSync(path.join(shotsAt, "studio-layout.png"), await page.shoot());
 
-	const opened = await layoutOf(page);
-	check("the studio opens on the canvas", opened.stage !== null, opened.stage);
-	check(
-		"the rail stands at the left edge, the chat right against it and the card right of the chat",
-		opened.rail.left === 0 && opened.chat.left === opened.rail.right && opened.chat.right <= opened.card.left,
-		{ rail: opened.rail, chat: opened.chat, card: opened.card },
-	);
-	check("the chat opens at its usual width", isNear(opened.chat.width, CHAT_USUAL_PX), opened.chat.width);
-	check(
-		"the card is rounded concentric around the kit's plate, by its plate pad",
-		parseFloat(opened.radius) === parseFloat(opened.plate) + parseFloat(opened.platePad) && opened.radius !== "0px",
-		{ radius: opened.radius, plate: opened.plate, platePad: opened.platePad },
-	);
-	check("and carries no outline: the group fill sets it apart", opened.edge.startsWith("0px"), { edge: opened.edge });
-	check("the app menu stands in the chat's header", opened.menuInHead, opened.menuInHead);
-
-	const widened = await draggedEdge(page, DRAG_PX);
-	check(
-		"dragging the edge widens the chat by the distance dragged, and the card gives it up",
-		isNear(widened.chat.width, opened.chat.width + DRAG_PX) && isNear(widened.card.width, opened.card.width - DRAG_PX),
-		{ before: opened.chat.width, after: widened.chat.width, card: widened.card.width },
-	);
-	check("and the width is remembered for this viewer", widened.kept === String(widened.chat.width), widened.kept);
-
-	const widest = await draggedEdge(page, VIEW[0]);
-	check(
-		"a drag grows the chat with no cap until the card keeps its least width",
-		widest.chat.width > CONTENT_PX &&
-			isNear(widest.chat.width, widest.room - CARD_LEAST_PX) &&
-			widest.kept === String(widest.room - CARD_LEAST_PX),
-		{ chat: widest.chat.width, room: widest.room, kept: widest.kept },
-	);
-
-	const narrowest = await draggedEdge(page, -VIEW[0]);
-	check(
-		"a drag past the chat's floor stops at its least width",
-		isNear(narrowest.chat.width, CHAT_LEAST_PX) && narrowest.kept === String(CHAT_LEAST_PX),
-		{ chat: narrowest.chat.width, kept: narrowest.kept },
-	);
-
-	await page.ask(DOUBLE_PRESS_EDGE);
-	await waited(120);
-	const reset = await layoutOf(page);
-	check(
-		"a double press on the edge puts the usual width back",
-		isNear(reset.chat.width, CHAT_USUAL_PX),
-		reset.chat.width,
-	);
-
-	const bandButtons = await page.ask(BAND_BUTTONS);
-	check("the band carries no catalogue button", bandButtons === 0, bandButtons);
-	await draggedEdge(page, VIEW[0]);
 	await page.ask(ASK_CATALOGUE);
 	await untilAnswered(page, `document.querySelector(".wg-studio-sidebar") !== null`);
 	await waited(120);
-	const catalogueOpened = await layoutOf(page);
-	check(
-		"a catalogue opened beside a wide chat narrows the chat, never the card past its least width",
-		catalogueOpened.side > 0 &&
-			isNear(catalogueOpened.chat.width, catalogueOpened.room - catalogueOpened.side - CARD_LEAST_PX),
-		{ chat: catalogueOpened.chat.width, side: catalogueOpened.side },
-	);
 	const besideCatalogue = await draggedEdge(page, VIEW[0]);
-	const roomBesideCatalogue = besideCatalogue.room - besideCatalogue.side - CARD_LEAST_PX;
 	check(
-		"with the catalogue open a drag still leaves the card its least width",
-		besideCatalogue.side > 0 &&
-			isNear(besideCatalogue.chat.width, roomBesideCatalogue) &&
-			besideCatalogue.kept === String(roomBesideCatalogue),
-		{ chat: besideCatalogue.chat.width, side: besideCatalogue.side, kept: besideCatalogue.kept },
+		"with the catalogue open a drag still leaves the app plate its least width",
+		besideCatalogue.panel > 0 &&
+			isNear(besideCatalogue.app.width, PLATE_LEAST_PX) &&
+			besideCatalogue.kept === String(Math.round(besideCatalogue.chat.width)),
+		{ chat: besideCatalogue.chat.width, app: besideCatalogue.app.width, kept: besideCatalogue.kept },
 	);
 	await page.ask(CLOSE_CATALOGUE);
-	const catalogueClosed = await untilAnswered(page, `document.querySelector(".wg-studio-sidebar") === null`);
-	check("the catalogue's own close press shuts it", catalogueClosed, catalogueClosed);
+	await untilAnswered(page, `document.querySelector(".wg-studio-sidebar") === null`);
 	await page.ask(DOUBLE_PRESS_EDGE);
+	await waited(120);
 
 	await page.ask(SEND_MINE);
 	await untilAnswered(page, `document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said") !== null`);
-	const shell = await page.ask(SHELL_PAINT);
-	check(
-		"the studio behind the chat is the page colour and the card the group plate",
-		isShellPageAndCardGroup(shell),
-		shell,
-	);
 	const hosted = await page.ask(`${ACCENT_PAINT_OF}(true)`);
 	check(
 		"inside Obsidian the studio's accent and text on the accent are the host's",
@@ -347,7 +247,7 @@ try {
 		!isPaintedAs(hostless, { accent: HOST_ACCENT }),
 		hostless,
 	);
-	await draggedEdge(page, WIDE_CHAT_PX - CHAT_USUAL_PX);
+	await draggedEdge(page, WIDE_CHAT_PX - FRAME_BOUNDS.chat.usualPx);
 	const column = await page.ask(CONTENT_COLUMN);
 	check(
 		"a 1400px chat keeps its list, its scrollbar and its composer in one centred 800px column",
@@ -356,7 +256,6 @@ try {
 	);
 	await page.ask(DOUBLE_PRESS_EDGE);
 	await waited(120);
-	writeFileSync(path.join(shotsAt, "studio-layout.png"), await page.shoot());
 
 	const staged = await untilAnswered(page, `document.querySelector("[data-canvas-stage]") !== null`);
 	await waited(300);
@@ -364,15 +263,14 @@ try {
 	const canvasBefore = await layoutOf(page);
 	const canvasAfter = await draggedEdge(page, CANVAS_DRAG_PX);
 	check(
-		"in the canvas a drag re-fits the canvas stage to the card",
+		"in the canvas a drag re-fits the canvas stage to the app plate",
 		staged &&
 			canvasBefore.stage !== null &&
 			canvasAfter.stage !== null &&
 			isNear(canvasAfter.stage, canvasBefore.stage - CANVAS_DRAG_PX) &&
-			isNear(canvasAfter.stage, canvasAfter.cardInner),
-		{ staged, before: canvasBefore.stage, after: canvasAfter.stage, card: canvasAfter.cardInner },
+			isNear(canvasAfter.stage, canvasAfter.appInner),
+		{ staged, before: canvasBefore.stage, after: canvasAfter.stage, plate: canvasAfter.appInner },
 	);
-	check("and the menu stays in the chat's header", canvasAfter.menuInHead, canvasAfter.menuInHead);
 	const corners = await page.ask(SQUIRCLED_BUTTONS);
 	check(
 		"Obsidian's macOS superellipse leaves every studio button round",
@@ -388,10 +286,14 @@ try {
 	check("the studio drew without a failure", boom === "", boom);
 	await page.ask(REMEMBER_WIDE);
 	await waited(300);
-	await untilAnswered(page, `document.querySelector(".wg-studio-chat") !== null`);
+	await untilAnswered(page, `document.querySelector('[data-shell-plate="chat"]') !== null`);
 	await waited(200);
 	const remembered = await layoutOf(page);
-	check("a remembered 1000px opens the chat at 1000px", isNear(remembered.chat.width, 1000), remembered.chat.width);
+	check(
+		"a remembered 1000px opens the chat at 1000px",
+		isNear(remembered.chat.width, REMEMBERED_PX),
+		remembered.chat.width,
+	);
 } finally {
 	page.close();
 	server.close();

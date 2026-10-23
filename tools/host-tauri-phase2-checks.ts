@@ -2,7 +2,7 @@ import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts
 import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { createTurnSession } from "../packages/host-tauri/src/assistant/turn-session.ts";
-import { readChatHistory } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
+import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
 import { DEFAULT_PROFILE, profileFilesOf, readProfile } from "../packages/host-tauri/src/profile/profile-docs.ts";
 import { tauriProfileGateways } from "../packages/host-tauri/src/profile/tauri-profile-gateways.ts";
 import { TauriTabsSessionGateway, readSession } from "../packages/host-tauri/src/session/tauri-session.ts";
@@ -52,6 +52,7 @@ async function railChecks(): Promise<void> {
 	const apps = tauriWorkspaceApps({
 		workspaces: new WorkspaceClient(fake.invoke),
 		reopen: async () => void reopened.push("reopen"),
+		nextName: () => "Untitled 1",
 	});
 	const listed = await apps.apps();
 	check(
@@ -71,9 +72,9 @@ async function railChecks(): Promise<void> {
 	);
 	await apps.createApp();
 	check(
-		"+ creates a workspace and reopens on it",
-		[fake.commandsCalled().at(-1), reopened.length],
-		["create_workspace", 2],
+		"+ creates a workspace named by the untitled rule and reopens on it",
+		[fake.commandsCalled().at(-1), fake.calls.at(-1)?.args["name"], reopened.length],
+		["create_workspace", "Untitled 1", 2],
 	);
 }
 
@@ -84,22 +85,29 @@ async function tabsSessionChecks(): Promise<void> {
 	const session = await readSession(store, DEFAULT.id);
 	const kept = { tabsSessionGateway: new TauriTabsSessionGateway(session) };
 	const parts = studioAppHostParts({ studioState: createStudioState(), workspace: DEFAULT.id, ...kept });
-	const browserTab = parts.hostTabs.now().tabs.find((tab) => tab.app === "browser");
-	const opened = parts.hostTabs.openAfter(browserTab?.id ?? "", { app: "browser", pageId: "page-9" });
+	const chatId = "chat-1";
+	const first = parts.hostTabs.open({ app: "browser", pageId: "page-8" }, { chatId, groupId: null, before: null });
+	const opened = parts.hostTabs.openAfter(first.id, { app: "browser", pageId: "page-9" });
+	parts.hostTabs.newGroup(chatId, first.id);
 	parts.hostTabs.show(opened.id);
 	await session.flush();
 
 	const reopened = await readSession(store, DEFAULT.id);
-	const restored = new HostTabs([], new TauriTabsSessionGateway(reopened).kept());
+	const restored = new HostTabs(new TauriTabsSessionGateway(reopened).kept(), chatId);
 	check(
-		"session.json brings the tabs back with the shown one, dead page ids dropped",
-		[restored.now().tabs.map((tab) => [tab.app, tab.pageId]), restored.now().shownId === opened.id],
+		"session.json brings the tabs, their groups and the shown one back, dead page ids dropped",
+		[
+			restored.now().tabs.map((tab) => [tab.app, tab.pageId, tab.essentialId === null]),
+			restored.now().groups.map((group) => [group.name, group.tabIds]),
+			restored.now().shownId === opened.id,
+		],
 		[
 			[
-				["canvas", null],
-				["browser", null],
-				["browser", null],
+				["canvas", null, false],
+				["browser", null, true],
+				["browser", null, true],
 			],
+			[["New group", [first.id]]],
 			true,
 		],
 	);
@@ -114,12 +122,20 @@ async function chatChecks(): Promise<void> {
 		resumes: { "claude-code": "s-1" },
 	});
 	const store = new StoreClient(fake.invoke);
-	const history = await readChatHistory(store, DEFAULT.id);
+	const logs = await readChatLogs(store, DEFAULT.id);
+	check("the chat chat/index.json named is carried over as a chat of its own", logs.legacyChat, { id: "c1" });
+	const history = await logs.historyOf("c1");
+	check("and keeps its agent session to resume", [...history.kept.resumes], [["claude-code", "s-1"]]);
 	history.settled({ ...history.kept.session, turns: [ASKED, ANSWERED] }, new Map([["claude-code", "s-2"]]));
 	history.settled({ ...history.kept.session, turns: [ASKED, { ...ANSWERED, text: "hello again" }] }, new Map());
-	await quietly(() => history.index.flush());
+	await quietly(() => logs.sessions.flush());
+	check(
+		"chat/sessions.json keeps each chat's log and resumes by chat id",
+		fake.files.get(`workspace:${DEFAULT.id}:chat/sessions.json`)?.["sessions"],
+		{ c1: { logId: "c1", resumes: {} } },
+	);
 
-	const reopened = await readChatHistory(store, DEFAULT.id);
+	const reopened = await (await readChatLogs(store, DEFAULT.id)).historyOf("c1");
 	const session = createTurnSession(async () => Promise.reject(new Error("no provider")), Date.now, reopened);
 	check(
 		"the chat reopens with its history, a rewritten turn read once, newest copy",

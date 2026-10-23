@@ -1,76 +1,176 @@
 import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts/studio.gateway.ts";
 import type { AppHostParts } from "../packages/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
+import { EssentialsGateway } from "../packages/app-host/gateways/essentials/essentials.gateway.ts";
 import { PageFactsGateway } from "../packages/app-host/gateways/page-facts/page-facts.gateway.ts";
+import { TabsSessionGateway } from "../packages/app-host/gateways/tabs-session/tabs-session.gateway.ts";
+import type { KeptEssentials } from "../packages/app-host/shared/schema/essential.schema.ts";
 import type { PageFacts } from "../packages/app-host/shared/schema/page-facts.schema.ts";
+import type { KeptTabs } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
+import type { ActiveChat, ActiveChatPort } from "../packages/core/src/engine/active-chat-port.ts";
 import type { StudioState } from "../packages/core/src/engine/studio-state-port.ts";
 
 export const EXACT_WORKSPACE = "Exact tabs";
 export const EXACT_COLUMN_PX = 240;
-export const EXACT_SHOWN_AT = 6;
-export const EXACT_HOVERED_AT = 5;
-export const EXACT_DRAGGED_AT = 8;
 
-export function exactAppHostParts(state: StudioState): AppHostParts {
+const CHATS: readonly ActiveChat[] = [
+	{
+		id: "chat-release",
+		title: "Release plan",
+	},
+	{
+		id: "chat-translator",
+		title: "Translator",
+	},
+];
+
+interface BoardPage {
+	readonly id: string;
+	readonly title: string;
+	readonly url: string;
+}
+
+const PAGES: readonly BoardPage[] = [
+	{ id: "page-2", title: "Release plan.md", url: "https://files.local/notes/Release%20plan.md" },
+	{ id: "page-3", title: "widget.tsx", url: "https://files.local/src/widget.tsx" },
+	{ id: "page-4", title: "ginetik/widgetarium", url: "https://github.com/ginetik/widgetarium" },
+	{ id: "page-5", title: "Material 3 Expressive", url: "https://m3.material.io/" },
+	{ id: "page-7", title: "Invoices.csv", url: "https://files.local/Invoices.csv" },
+	{ id: "page-8", title: "MON-1445 Translation gadget", url: "https://jira.local/browse/MON-1445" },
+	{ id: "page-10", title: "Phrasebook.md", url: "https://files.local/Phrasebook.md" },
+	{ id: "page-11", title: "DeepL API docs", url: "https://developers.deepl.com/" },
+];
+
+const SITE_ESSENTIALS: readonly (readonly [string, string])[] = [
+	["GitHub", "https://github.com/"],
+	["Files", "https://files.local/"],
+	["Routines", "https://routines.local/"],
+	["Mail", "https://mail.google.com/"],
+	["Calendar", "https://calendar.google.com/"],
+	["Figma", "https://figma.com/"],
+	["Jira", "https://jira.local/"],
+];
+
+const KEPT_ESSENTIALS: KeptEssentials = {
+	essentials: [
+		{ id: "essential-1", app: "canvas", address: null, title: "Canvas", favicon: null },
+		...SITE_ESSENTIALS.map(([title, address], at) => ({
+			id: `essential-${at + 2}`,
+			app: "browser" as const,
+			address,
+			title,
+			favicon: null,
+		})),
+	],
+	minted: 8,
+};
+
+const browserTab = (id: string, pageId: string): KeptTabs["tabs"][number] => ({
+	id,
+	app: "browser",
+	pageId,
+	label: null,
+	essentialId: null,
+});
+
+const KEPT_TABS: KeptTabs = {
+	tabs: [
+		{ id: "tab-1", app: "canvas", pageId: null, label: null, essentialId: "essential-1" },
+		browserTab("tab-2", "page-2"),
+		browserTab("tab-3", "page-3"),
+		browserTab("tab-4", "page-4"),
+		browserTab("tab-5", "page-5"),
+		{ id: "tab-6", app: "canvas", pageId: null, label: "Canvas · Release board", essentialId: null },
+		browserTab("tab-7", "page-7"),
+		browserTab("tab-8", "page-8"),
+		{ id: "tab-9", app: "canvas", pageId: null, label: "Translator", essentialId: null },
+		browserTab("tab-10", "page-10"),
+		browserTab("tab-11", "page-11"),
+	],
+	lists: {
+		"chat-release": [
+			{ kind: "group", id: "group-12" },
+			{ kind: "group", id: "group-13" },
+			{ kind: "tab", id: "tab-7" },
+			{ kind: "tab", id: "tab-8" },
+		],
+		"chat-translator": [
+			{ kind: "tab", id: "tab-9" },
+			{ kind: "tab", id: "tab-10" },
+			{ kind: "tab", id: "tab-11" },
+		],
+	},
+	groups: [
+		{ id: "group-12", name: "Ship", hue: null, isOpen: true, tabIds: ["tab-2", "tab-3", "tab-4"] },
+		{ id: "group-13", name: "Research", hue: "blue", isOpen: true, tabIds: ["tab-5", "tab-6"] },
+	],
+	shownId: "tab-2",
+	lastShown: { "chat-release": "tab-2" },
+	minted: 13,
+	closed: [],
+};
+
+export class SwitchedChat implements ActiveChatPort {
+	private chat: ActiveChat = CHATS[0] ?? { id: "chat-release", title: "Release plan" };
+	private readonly listeners = new Set<() => void>();
+
+	now = (): ActiveChat => this.chat;
+
+	watch = (listener: () => void): (() => void) => {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
+	};
+
+	switchTo(id: string): void {
+		this.chat = CHATS.find((chat) => chat.id === id) ?? this.chat;
+		this.listeners.forEach((listener) => listener());
+	}
+}
+
+class KeptTabsGateway extends TabsSessionGateway {
+	kept(): KeptTabs {
+		return KEPT_TABS;
+	}
+
+	keep(): void {}
+}
+
+export const NO_ESSENTIALS: KeptEssentials = { essentials: [], minted: 0 };
+
+class KeptEssentialsGateway extends EssentialsGateway {
+	constructor(private readonly held: KeptEssentials) {
+		super();
+	}
+
+	kept(): KeptEssentials {
+		return this.held;
+	}
+
+	keep(): void {}
+}
+
+export function exactAppHostParts(
+	state: StudioState,
+	activeChat: ActiveChatPort = new SwitchedChat(),
+	essentials: KeptEssentials = KEPT_ESSENTIALS,
+): AppHostParts {
 	localStorage.setItem(
 		`widgetarium-studio-tabs-column:${EXACT_WORKSPACE}`,
-		JSON.stringify({ isShown: true, isFull: true, fullPx: EXACT_COLUMN_PX, side: "end" }),
+		JSON.stringify({ fullPx: EXACT_COLUMN_PX, side: "end", isListOpen: true }),
 	);
 	state.show("browser");
-	const parts = studioAppHostParts({
+	return studioAppHostParts({
 		studioState: state,
 		workspace: EXACT_WORKSPACE,
 		pageFactsGateway: new BoardPageFactsGateway(),
+		tabsSessionGateway: new KeptTabsGateway(),
+		essentialsGateway: new KeptEssentialsGateway(essentials),
+		activeChat,
 	});
-	const { hostTabs } = parts;
-	const first = hostTabs.now().tabs.map((tab) => tab.id);
-	const opened = BOARD_TABS.map((tab, at) =>
-		hostTabs.open({ app: "browser", pageId: `page-${at + 1}`, isPinned: tab.isPinned }),
-	);
-	first.forEach((id) => hostTabs.close(id, null));
-	const shown = opened[EXACT_SHOWN_AT];
-
-	if (shown) {
-		hostTabs.show(shown.id);
-	}
-
-	return parts;
 }
-
-interface BoardTab {
-	readonly title: string;
-	readonly host: string | null;
-	readonly favicon: string | null;
-	readonly isPinned: boolean;
-	readonly status: "reading" | "waiting" | "cannot-look" | null;
-}
-
-const FAVICON_OF = (fill: string): string =>
-	`data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="21" height="21"><rect width="21" height="21" rx="6" fill="${fill}"/></svg>`)}`;
-
-const BOARD_TABS: readonly BoardTab[] = [
-	{ title: "Canvas", host: "app", favicon: null, isPinned: true, status: null },
-	{ title: "Canvas", host: "design", favicon: null, isPinned: true, status: null },
-	{ title: "Code", host: "web", favicon: null, isPinned: true, status: null },
-	{ title: "Code", host: "api", favicon: null, isPinned: true, status: null },
-	{ title: "Diff", host: null, favicon: null, isPinned: true, status: null },
-	{ title: "Terminal", host: "web", favicon: null, isPinned: false, status: null },
-	{ title: "Jira", host: "sprint-14-board", favicon: FAVICON_OF("#1868DB"), isPinned: false, status: "reading" },
-	{ title: "Slack", host: "design-review", favicon: FAVICON_OF("#4A154B"), isPinned: false, status: "waiting" },
-	{ title: "Vite docs", host: "config-reference", favicon: FAVICON_OF("#7C5CFC"), isPinned: false, status: null },
-	{ title: "GitHub", host: "pull-request-412", favicon: FAVICON_OF("#1F2328"), isPinned: false, status: "cannot-look" },
-	{ title: "Linear", host: "inbox", favicon: FAVICON_OF("#5E6AD2"), isPinned: false, status: null },
-];
 
 class BoardPageFactsGateway extends PageFactsGateway {
-	private readonly facts: readonly PageFacts[] = BOARD_TABS.map((tab, at) => ({
-		pageId: `page-${at + 1}`,
-		title: tab.title,
-		url: tab.host === null ? "" : `https://${tab.host}/`,
-		favicon: tab.favicon,
-		isInkReading: tab.status === "reading",
-		isAskWaiting: tab.status === "waiting",
-		isClosedToInk: tab.status === "cannot-look",
-	}));
+	private facts: readonly PageFacts[] = PAGES.map((page) => factsOf(page.id, page.title, page.url));
+	private readonly watchers = new Set<() => void>();
 
 	isAvailable(): boolean {
 		return true;
@@ -80,19 +180,53 @@ class BoardPageFactsGateway extends PageFactsGateway {
 		return this.facts;
 	}
 
-	watch(): () => void {
-		return () => undefined;
+	watch(changed: () => void): () => void {
+		this.watchers.add(changed);
+		return () => void this.watchers.delete(changed);
 	}
 
-	openPage(): void {}
+	openPage(pageId: string): void {
+		this.change([...this.facts, factsOf(pageId, "New tab", "")]);
+	}
 
-	closePage(): void {}
+	closePage(pageId: string): void {
+		this.change(this.facts.filter((page) => page.pageId !== pageId));
+	}
 
 	showPage(): void {}
 
-	openAddress(): void {}
+	openAddress(pageId: string, address: string): void {
+		this.change(
+			this.facts.map((page) =>
+				page.pageId === pageId
+					? {
+							...page,
+							url: address,
+							title: new URL(address).host,
+						}
+					: page,
+			),
+		);
+	}
 
 	reloadPage(): void {}
 
 	stop(): void {}
+
+	private change(next: readonly PageFacts[]): void {
+		this.facts = next;
+		this.watchers.forEach((changed) => changed());
+	}
+}
+
+function factsOf(pageId: string, title: string, url: string): PageFacts {
+	return {
+		pageId,
+		title,
+		url,
+		favicon: null,
+		isInkReading: false,
+		isAskWaiting: false,
+		isClosedToInk: false,
+	};
 }

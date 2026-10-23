@@ -28,7 +28,7 @@ import {
 	createTurnSession,
 } from "../packages/host-tauri/src/assistant/turn-session.ts";
 import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../packages/host-tauri/src/assistant/tauri-assistant-port.ts";
-import { readChatHistory } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
+import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
 import { StoreClient } from "../packages/host-tauri/src/store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { startTauriAssistant } from "../packages/host-tauri/src/assistant/tauri-assistant.ts";
@@ -718,7 +718,8 @@ async function clearChecks(): Promise<void> {
 		resumes: { "claude-code": "s-1" },
 	});
 	const store = new StoreClient(fake.invoke);
-	const history = await readChatHistory(store, DEFAULT.id);
+	const logs = await readChatLogs(store, DEFAULT.id);
+	const history = await logs.historyOf("c1");
 	const started: unknown[] = [];
 	const session = createTurnSession(
 		async (asked, resumeOf) => {
@@ -739,11 +740,15 @@ async function clearChecks(): Promise<void> {
 		new Map([["claude-code", "s-1"]]),
 	);
 	await session.clear();
-	await quietly(() => history.index.flush());
-	const index = fake.files.get(`workspace:${DEFAULT.id}:chat/index.json`);
+	await quietly(() => logs.sessions.flush());
+	const sessions: unknown = fake.files.get(`workspace:${DEFAULT.id}:chat/sessions.json`)?.["sessions"];
+	const cleared: unknown = typeof sessions === "object" && sessions !== null ? Reflect.get(sessions, "c1") : null;
+	const clearedLog: unknown = typeof cleared === "object" && cleared !== null ? Reflect.get(cleared, "logId") : null;
+	const clearedResumes: unknown =
+		typeof cleared === "object" && cleared !== null ? Reflect.get(cleared, "resumes") : null;
 	check(
-		"/clear empties the chat and names a new session in the index, with no resume",
-		[session.now().turns.length, index?.["currentId"] !== "c1", index?.["resumes"]],
+		"/clear empties the chat and gives it a new log, with no resume",
+		[session.now().turns.length, typeof clearedLog === "string" && clearedLog !== "c1", clearedResumes],
 		[0, true, {}],
 	);
 	check(

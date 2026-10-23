@@ -3,7 +3,6 @@ import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/core/src/requests/index.ts";
 import type { Answer } from "../packages/core/src/requests/index.ts";
 import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { Browser, BrowserAppZone } from "../packages/browser/generated/index.ts";
 import { SearchWebCommand } from "../packages/browser/features/ink/contract.ts";
 import { BrowserNavigationGuard } from "../packages/browser/features/ink/handlers.ts";
 import { LeaveFailureCommand, OpenAddressCommand } from "../packages/browser/features/tabs/contract.ts";
@@ -11,7 +10,9 @@ import { loadFailureKindOf } from "../packages/browser/shared/lib/load-failure.t
 import { nearMatchOf } from "../packages/browser/shared/lib/near-match.ts";
 import { SEARCH_ENGINE } from "../packages/browser/shared/lib/search-address.ts";
 import type { PageFailure } from "../packages/browser/shared/schema/browser-tab.schema.ts";
+import { Browser } from "../packages/browser/generated/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
+import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 import { exactStatesReport } from "./browser-states-exact.ts";
@@ -113,7 +114,7 @@ shown.pages.tab = {
 const shownApp = started(shown);
 const host = document.createElement("div");
 document.body.append(host);
-createRoot(host).render(h(AppProvider, { app: shownApp }, h(Browser, { header: h(BrowserAppZone) })));
+createRoot(host).render(h(AppProvider, { app: shownApp }, inBrowserPlate()));
 await waitFor(() => host.querySelector("[data-browser-page-state]") !== null);
 
 check(
@@ -131,10 +132,11 @@ check(
 	host.querySelector("[data-browser-near-match]")?.textContent,
 	"Did you mean test.com?",
 );
+await waitFor(() => host.querySelector('[data-plate-place="crumb"] .wg-plate-crumb-first') !== null);
 check(
-	"the address pill keeps the typed address",
-	host.querySelector<HTMLInputElement>("[data-browser-address] input")?.value,
-	NOT_FOUND.address,
+	"the plate header's crumb names the site that didn't answer",
+	host.querySelector('[data-plate-place="crumb"] .wg-plate-crumb-first')?.textContent,
+	"test.co",
 );
 const searchPress = [...host.querySelectorAll<HTMLButtonElement>("[data-browser-primary-action]")].find(
 	(button) => button.textContent === "Search for test.co",

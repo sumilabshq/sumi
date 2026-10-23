@@ -30,7 +30,7 @@ import {
 	CompactChatCommand,
 	SlashCommandsQuery,
 } from "../packages/assistant/generated/index.ts";
-import { slashMatchesOf } from "../packages/assistant/features/slash/lib/slash-matches.ts";
+import { slashMatchesOf } from "../packages/assistant/features/composer/lib/slash-matches.ts";
 import {
 	AssistantSessionGateway,
 	AssistantSetupGateway,

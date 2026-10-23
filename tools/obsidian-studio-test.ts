@@ -236,8 +236,6 @@ const { createStudioRouting } = await import("../packages/host-obsidian/src/lega
 const { STUDIO_VIEW_TYPE, StudioView } = await import("../packages/host-obsidian/src/legacy/studio-view.js");
 const { checkedAssistantPort } = await import("./obsidian-assistant-port-checks.ts");
 const { NO_ASSISTANT } = await import("../packages/core/src/engine/assistant-port.js");
-const { shutPortsOf } = await import("../packages/core/src/engine/packs.js");
-const { AppsQuery } = await import("../apps/studio/src/legacy/logic/apps-queries.js");
 registerPacks(corePack);
 
 const APP_NOTE = { path: "Apps/Farm.md", basename: "Farm" };
@@ -533,21 +531,19 @@ async function drawnFor(file: NoteFile): Promise<HTMLElement> {
 }
 const studioNode = await drawnFor(APP_NOTE);
 check(
-	"an app note opens the studio on its canvas, with no band above it",
-	[".wg-studio-outlet [data-canvas-studio]", ".wg-studio-band"].map(
-		(selector) => studioNode.querySelector(selector) !== null,
-	),
-	[true, false],
+	"an app note opens the studio on its canvas",
+	studioNode.querySelector('[data-shell-plate="app"] [data-canvas-studio]') !== null,
+	true,
 );
 check("and no refusal", studioNode.querySelector(".wg-app-refusal")?.textContent ?? null, null);
 const pressIn = (node: HTMLElement, label: string): void =>
 	node.querySelector<HTMLElement>(`button[aria-label="${label}"]`)?.click();
 await settledUntil(() => studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine") !== null);
 check(
-	"the studio's chat column draws the chat over the assistant the plugin lends, its header naming no provider",
+	"the studio's chat plate draws the chat over the assistant the plugin lends, its header naming no provider",
 	[
-		/helpers (on|off)/.test(studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? "") ||
-			(studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head")?.textContent ?? "").includes(
+		/helpers (on|off)/.test(studioNode.querySelector('[data-plate-head="chat"]')?.textContent ?? "") ||
+			(studioNode.querySelector('[data-plate-head="chat"]')?.textContent ?? "").includes(
 				checkedAssistant.providerLabel,
 			),
 		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine")?.textContent ?? null,
@@ -556,10 +552,10 @@ check(
 );
 await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
 check(
-	"the app menu stands in the chat's header, and nowhere else",
+	"the app menu stands in the chat plate's header, and nowhere else",
 	[
 		studioNode.querySelectorAll('button[aria-label="Farm Stand menu"]').length,
-		studioNode.querySelector('.wg-studio-chat .wg-studio-ai-head button[aria-label="Farm Stand menu"]') !== null,
+		studioNode.querySelector('[data-plate-head="chat"] button[aria-label="Farm Stand menu"]') !== null,
 	],
 	[1, true],
 );
@@ -575,12 +571,12 @@ const askCatalogueIn = (node: HTMLElement): void => {
 askCatalogueIn(studioNode);
 await settledUntil(() => studioNode.querySelector('.wg-studio-sidebar[data-panel="catalogue"] .wg-board') !== null);
 check(
-	"a widget asked for opens the catalogue beside the chat, and the band holds no button to open it or close the chat",
+	"a widget asked for opens the catalogue beside the chat, and no button stands to close the chat",
 	[
 		studioNode.querySelectorAll(".wg-studio-sidebar").length,
 		studioNode.querySelector('.wg-studio-sidebar[data-panel="catalogue"] .wg-studio-catalogue-host .wg-board') !== null,
-		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-head") !== null,
-		studioNode.querySelectorAll(".wg-studio-band button").length,
+		studioNode.querySelector('[data-shell-plate="chat"] .wg-studio-chat') !== null,
+		studioNode.querySelectorAll('button[aria-label="AI assistant"]').length,
 	],
 	[1, true, true, 0],
 );
@@ -605,11 +601,11 @@ check(
 	.find((said) => said.textContent === "Back to view")
 	?.closest<HTMLElement>('[role="button"]')
 	?.click();
-await settledUntil(() => studioNode.querySelector(".wg-studio-outlet .wg-root") !== null);
+await settledUntil(() => studioNode.querySelector('[data-shell-plate="app"] .wg-shell-route .wg-root') !== null);
 check(
 	"Back to view in one studio shows its route and leaves the studio beside it on its canvas",
 	[
-		studioNode.querySelector(".wg-studio-outlet .wg-root") !== null,
+		studioNode.querySelector('[data-shell-plate="app"] .wg-shell-route .wg-root') !== null,
 		studioNode.querySelector("[data-studio-kept=shown] [data-canvas-studio]") !== null,
 		besideNode.querySelector("[data-studio-kept=shown] [data-canvas-studio]") !== null,
 	],
@@ -628,21 +624,15 @@ check(
 	opening.ok ? opening.app : opening.findings,
 	{ name: "Farm Stand", iconHref: "app://vault/Apps/Farm/public/icon.svg" },
 );
-const appRows = await new AppsQuery(
-	{},
-	{
-		...shutPortsOf("apps"),
-		studio: obsidianStudioHost({
-			app: place.app,
-			leaf: standIn<WorkspaceLeaf>({}, [], "leaf"),
-			frame: studioNode,
-			viewType: STUDIO_VIEW_TYPE,
-		}),
-	},
-).query({ cursor: null, limit: 10 });
+const hostApps = await obsidianStudioHost({
+	app: place.app,
+	leaf: standIn<WorkspaceLeaf>({}, [], "leaf"),
+	frame: studioNode,
+	viewType: STUDIO_VIEW_TYPE,
+}).apps();
 check(
-	"a project its widgetarium.json refuses is listed with the refusal as its line",
-	appRows.items.map(({ id, line }) => [id, line.startsWith("widgetarium.json: ")]),
+	"a project its widgetarium.json refuses is listed with the refusal it was given",
+	hostApps.map(({ id, refusal }) => [id, (refusal ?? "").startsWith("widgetarium.json: ")]),
 	[
 		["Apps/Broken", true],
 		["Apps/Farm", false],
