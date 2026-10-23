@@ -1,9 +1,12 @@
 import type { Guard, OpenGuard } from "./guard";
-import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
+import type { AnyHandledRequest, HandledRequest } from "./handled-request";
+import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
-import type { AnyRequest } from "./request";
+import type { AnyCommand, AnyQuery, AnyRequest } from "./request";
 
-export type Runs = "client" | "server";
+export type Side = "client" | "server";
+
+export type Runs = Side | "anywhere";
 
 export type Provided = Readonly<Record<string, object>>;
 
@@ -112,6 +115,68 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	handlers(handlers: readonly ClientHandler[]): HandledModule<Q> {
 		return new HandledModule(this, handlers, this.provider);
 	}
+}
+
+type HandledQuery = HandledRequest<AnyQuery, Inject, Added>;
+
+type HandledCommand = HandledRequest<AnyCommand, Inject, Added>;
+
+type InjectedBy<T> = T extends { readonly inject: infer D extends Inject } ? Injected<D> : never;
+
+type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
+
+export type NeedsOf<H extends readonly AnyHandledRequest[]> = Provided & IntersectionOf<InjectedBy<H[number]>>;
+
+const NOT_A_QUERY = 'module "{module}" lists {request} under .queries(), but it is a command';
+const NOT_A_COMMAND = 'module "{module}" lists {request} under .commands(), but it is a query';
+
+export class RequestsModule<H extends readonly AnyHandledRequest[]> implements ModuleDefinition {
+	readonly runs = "anywhere";
+
+	constructor(
+		readonly name: string,
+		readonly listed: H,
+		readonly steps: readonly Step[],
+	) {}
+
+	queries<const Q extends readonly HandledQuery[]>(...queries: Q): RequestsModule<[...H, ...Q]> {
+		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(queries, "query")], this.steps);
+	}
+
+	commands<const M extends readonly HandledCommand[]>(...commands: M): RequestsModule<[...H, ...M]> {
+		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(commands, "command")], this.steps);
+	}
+
+	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H> {
+		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	}
+
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H> {
+		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	}
+
+	provide<Q = void>(provide: (parts: Q) => NeedsOf<H>): HandledModule<Q> {
+		const handlers = this.listed.map((listed) => ({
+			...listed,
+			module: this,
+		}));
+		return new HandledModule(this, handlers, provide);
+	}
+
+	private refuseWrongKind<L extends readonly AnyHandledRequest[]>(listed: L, kind: AnyRequest["kind"]): L {
+		const wrong = listed.find(({ request }) => request.kind !== kind);
+
+		if (wrong === undefined) {
+			return listed;
+		}
+
+		const template = kind === "query" ? NOT_A_QUERY : NOT_A_COMMAND;
+		throw new Error(template.replace("{module}", this.name).replace("{request}", wrong.request.name));
+	}
+}
+
+export function module(name: string): RequestsModule<[]> {
+	return new RequestsModule(name, [], []);
 }
 
 export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;

@@ -29,7 +29,7 @@ export type {
 	Token,
 } from "./handler";
 export type { Sending } from "./mediator";
-export { ClientModule, HandledModule, ServerModule, clientModule, serverModule } from "./module";
+export { ClientModule, HandledModule, ServerModule, clientModule, module, serverModule } from "./module";
 export type {
 	Cover,
 	ModuleDefinition,

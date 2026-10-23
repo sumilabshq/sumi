@@ -176,8 +176,14 @@ export function handler(
 	return module.cover === "unguarded" ? new HandlerDraft(plan) : new GuardedHandlerBuilder(plan, module.cover);
 }
 
-function withStep<R extends AnyRequest, D extends Inject>(plan: Plan<R, D>, step: Step): Plan<R, D> {
+export function withStep<P extends { readonly steps: readonly Step[] }>(plan: P, step: Step): P {
 	return { ...plan, steps: [...plan.steps, step] };
+}
+
+export function withDefaultCallFacts<R extends AnyRequest, D extends Inject, C extends Added>(
+	handle: Handle<R, D, C>,
+): Handler<R, D, HandlerState, C>["handle"] {
+	return (input, context) => handle(input, { idempotencyKey: null, signal: NEVER_ABORTED, user: null, ...context });
 }
 
 function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerState, C extends Added>(
@@ -191,7 +197,7 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		inject,
 		steps,
 		state,
-		handle: (input, context) => handle(input, { idempotencyKey: null, signal: NEVER_ABORTED, user: null, ...context }),
+		handle: withDefaultCallFacts(handle),
 		watch,
 	};
 }

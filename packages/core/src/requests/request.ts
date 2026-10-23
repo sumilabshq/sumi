@@ -1,5 +1,10 @@
 import { z } from "zod";
 import type { Duration } from "./duration";
+import type { Guard } from "./guard";
+import type { Handle, Inject } from "./handler";
+import { handlingOf } from "./handled-request";
+import type { HandledRequest, RequestHandlerBuilder } from "./handled-request";
+import type { Added, Middleware, NothingAdded } from "./middleware";
 
 type RequestKind = "query" | "command";
 type KeyStage = "unkeyed" | "keyed";
@@ -83,10 +88,38 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 		return new Contract({ ...this.definition, settlesNow: true }, this.keyStage);
 	}
 
-	invalidates(this: Contract<"command", I, O, Key>, queries: readonly AnyQuery[]): Contract<"command", I, O, Key> {
-		return new Contract({ ...this.definition, invalidates: queries }, this.keyStage);
+	invalidates(this: Contract<"command", I, O, Key>, queries: readonly ListedQuery[]): Contract<"command", I, O, Key> {
+		const invalidates = queries.map((listed) => (listed instanceof Contract ? listed : listed.request));
+		return new Contract({ ...this.definition, invalidates }, this.keyStage);
+	}
+
+	guard<R extends AnyRequest, A extends Added>(
+		this: R,
+		step: Guard<InputOf<R>, A, Inject>,
+	): RequestHandlerBuilder<R, NothingAdded, A> {
+		return handlingOf(this).guard(step);
+	}
+
+	use<R extends AnyRequest, A extends Added>(
+		this: R,
+		step: Middleware<InputOf<R>, A, Inject>,
+	): RequestHandlerBuilder<R, NothingAdded, A> {
+		return handlingOf(this).use(step);
+	}
+
+	inject<R extends AnyRequest, const N extends Inject>(this: R, inject: N): RequestHandlerBuilder<R, N, NothingAdded> {
+		return handlingOf(this).inject(inject);
+	}
+
+	handle<R extends AnyRequest>(
+		this: R,
+		handle: Handle<R, NothingAdded>,
+	): HandledRequest<R, NothingAdded, NothingAdded> {
+		return handlingOf(this).handle(handle);
 	}
 }
+
+type ListedQuery = AnyQuery | HandledRequest<AnyQuery, Inject, Added>;
 
 export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, KeyStage>;
 export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, "keyed">;
