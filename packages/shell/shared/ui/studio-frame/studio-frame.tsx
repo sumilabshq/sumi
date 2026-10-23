@@ -1,15 +1,22 @@
-import { createElement as h } from "react";
+import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { FrameSidesQuery } from "../../../features/frame-sides/contract.js";
+import { FrameSideReveal } from "../../../features/frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
+import { FrameSideToggle } from "../../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
 import { FrameWidthsQuery, ResizeFrameEdgeCommand } from "../../../features/frame-widths/contract.js";
 import { FrameEdgeHandle } from "../../../features/frame-widths/ui/frame-edge/frame-edge.js";
 import { PaneBoard } from "../../../features/panes/ui/pane-board/pane-board.js";
 import type { PaneBoardProps } from "../../../features/panes/ui/pane-board/pane-board.js";
+import { useWritesChromeLeft } from "../../lib/use-writes-chrome-left.js";
 import { useWritesFrameWidths } from "../../lib/use-writes-frame-widths.js";
+import { useWritesRightSideWidth } from "../../lib/use-writes-right-side-width.js";
+import { FrameSideColumn } from "./frame-side-column.js";
 
 export interface StudioFrameProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
+	readonly chromeLeftPx: number;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
@@ -18,18 +25,24 @@ export interface StudioFrameProps {
 
 const FRAME_CLASS = "wg-studio wg-shell";
 
-export function StudioFrame({ frame, left, panes, panel, right }: StudioFrameProps): ReactElement {
+export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: StudioFrameProps): ReactElement {
 	const widths = useQuery(FrameWidthsQuery).data;
+	const sides = useQuery(FrameSidesQuery).data;
 	const resizeEdge = useCommand(ResizeFrameEdgeCommand);
+	const appZone = useRef<HTMLDivElement | null>(null);
+	const leftSide = useRef<HTMLDivElement | null>(null);
+	const rightSide = useRef<HTMLDivElement | null>(null);
 	useWritesFrameWidths(frame, widths);
+	useWritesChromeLeft(frame, chromeLeftPx);
+	useWritesRightSideWidth(rightSide);
 	return (
 		<IsTooltipHosted.Provider value={true}>
 			<div ref={frame} className={FRAME_CLASS} data-shell-frame="">
-				<div className="wg-shell-left" data-shell-column="left">
+				<FrameSideColumn side="left" look={sides.left} panel={leftSide}>
 					{left}
-				</div>
-				<FrameEdgeHandle edge="left" px={widths.left} />
-				<div className="wg-shell-app-zone">
+				</FrameSideColumn>
+				<FrameEdgeHandle edge="left" px={widths.left} isReachable={sides.left === "docked"} />
+				<div ref={appZone} className="wg-shell-app-zone">
 					<PaneBoard
 						{...panes}
 						chatPx={widths.chat}
@@ -43,9 +56,19 @@ export function StudioFrame({ frame, left, panes, panel, right }: StudioFramePro
 					/>
 					{panel === null ? null : <div className="wg-shell-panel">{panel}</div>}
 				</div>
-				<div className="wg-shell-right" data-shell-column="right">
+				<FrameSideColumn side="right" look={sides.right} panel={rightSide}>
 					{right}
-				</div>
+				</FrameSideColumn>
+				<FrameSideReveal
+					frame={frame}
+					content={appZone}
+					panels={{
+						left: leftSide,
+						right: rightSide,
+					}}
+				/>
+				<FrameSideToggle side="left" />
+				<FrameSideToggle side="right" />
 				<TooltipHost />
 			</div>
 		</IsTooltipHosted.Provider>

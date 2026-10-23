@@ -9,6 +9,7 @@ const OVERLAYS = [
 	".wg-kit-portal-layer > *",
 	".wg-portal:not(.wg-kit-portal-layer)",
 	"[data-browser-page-area] > :not([data-browser-pages])",
+	"[data-covers-pages]",
 ].join(", ");
 const WATCHED_CHANGES: MutationObserverInit = {
 	childList: true,

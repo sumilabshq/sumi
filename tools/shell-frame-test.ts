@@ -37,12 +37,19 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
 }
 
-function pageFileOf(theme: Theme): string {
+const TRAFFIC_LIGHTS = `<div style="position:fixed;inset:0;z-index:99999;pointer-events:none">${[16, 39, 62]
+	.map(
+		(left, index) =>
+			`<i style="position:absolute;left:${left}px;top:23px;width:14px;height:14px;border-radius:7px;background:${["#ff5f57", "#febc2e", "#28c840"][index] ?? ""}"></i>`,
+	)
+	.join("")}</div>`;
+
+function pageFileOf(theme: Theme, query: "" | "?lights" = ""): string {
 	const html = `<!doctype html><html class="${theme === "dark" ? "dark" : ""}"><head><meta charset="utf-8"><style>${sheets}</style>
 <style>html,body,#root{height:100%;margin:0}</style></head>
-<body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script><script>${spyScript}</script>
+<body><div id="root"></div>${query === "?lights" ? TRAFFIC_LIGHTS : ""}<pre id="boom"></pre><script>localStorage.clear();history.replaceState(null, "", "${query}" || location.pathname);</script><script>${spyScript}</script>
 <script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
-	const file = path.join(shotsAt, `shell-frame-${theme}.html`);
+	const file = path.join(shotsAt, `shell-frame-${theme}${query === "" ? "" : "-lights"}.html`);
 	writeFileSync(file, html);
 	return file;
 }
@@ -83,8 +90,6 @@ const LAYOUT = `(() => {
 		appHead: boxOf(".wg-plate-head.is-app"),
 		chatRow: boxOf(".wg-plate-head.is-chat .wg-plate-head-row"),
 		appRow: boxOf(".wg-plate-head.is-app .wg-plate-head-row"),
-		hideChats: boxOf('.wg-plate-head.is-chat button[aria-label="Hide chats"]'),
-		hideTabs: boxOf('.wg-plate-head.is-app button[aria-label="Hide tabs"]'),
 		chatCrumb: boxOf(".wg-plate-head.is-chat .wg-plate-crumb"),
 		chatCrumbFirst: boxOf(".wg-plate-head.is-chat .wg-plate-crumb-first"),
 		chatCrumbSecond: boxOf(".wg-plate-head.is-chat .wg-plate-crumb-second"),
@@ -143,6 +148,66 @@ const timedUntilPainted = (act: string, until: string): string => `new Promise((
 	};
 	seen();
 })`;
+
+const SIDES = `(() => {
+	const centre = (selector) => {
+		const box = document.querySelector(selector).getBoundingClientRect();
+		return [Math.round(box.left + box.width / 2), Math.round(box.top + box.height / 2)];
+	};
+	return {
+		left: document.querySelector('[data-shell-column="left"]').dataset.state,
+		right: document.querySelector('[data-shell-column="right"]').dataset.state,
+		leftWidth: Math.round(document.querySelector(".wg-shell-left").getBoundingClientRect().width),
+		zoneLeft: Math.round(document.querySelector(".wg-shell-app-zone").getBoundingClientRect().left),
+		leftToggle: centre('[data-side-toggle="left"]'),
+		rightToggle: centre('[data-side-toggle="right"]'),
+		isLeftToggleOnTop: (() => {
+			const toggle = document.querySelector('[data-side-toggle="left"]');
+			const box = toggle.getBoundingClientRect();
+			const found = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+			return found !== null && toggle.contains(found) && getComputedStyle(toggle.querySelector("svg")).fill === "none";
+		})(),
+		leftSaid: document.querySelector('[data-side-toggle="left"]').getAttribute("data-tip-said"),
+		leftKeys: document.querySelector('[data-side-toggle="left"]').getAttribute("data-tip-keys"),
+		leftToggles: document.querySelectorAll('[data-side-toggle="left"]').length,
+		togglesInHeaders: document.querySelectorAll(".wg-plate-head [data-side-toggle]").length,
+	};
+})()`;
+
+const REVEAL_DELAY_PROBE = `new Promise((done) => {
+	let reached = null;
+	document.addEventListener("pointermove", (event) => {
+		if (reached === null && (event.clientX <= 1 || event.clientX >= innerWidth - 2)) reached = performance.now();
+	}, { capture: true });
+	const side = document.querySelector('[data-shell-side="left"]');
+	const tick = () => {
+		const look = getComputedStyle(side).transform;
+		if (reached !== null && side.parentElement.dataset.state === "peeking" && (look === "none" || look === "matrix(1, 0, 0, 1, 0, 0)")) {
+			done(Math.round(performance.now() - reached));
+			return;
+		}
+		requestAnimationFrame(tick);
+	};
+	tick();
+	setTimeout(() => done(-1), 3000);
+})`;
+
+const keydownScriptOf = (hasAlt: boolean): string =>
+	`(document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent("keydown", { code: "KeyB", key: "b", metaKey: true, altKey: ${String(hasAlt)}, bubbles: true, cancelable: true }))`;
+
+const SidesSchema = z.object({
+	left: z.string(),
+	right: z.string(),
+	leftWidth: z.number(),
+	zoneLeft: z.number(),
+	leftToggle: z.tuple([z.number(), z.number()]),
+	rightToggle: z.tuple([z.number(), z.number()]),
+	isLeftToggleOnTop: z.boolean(),
+	leftSaid: z.string().nullable(),
+	leftKeys: z.string().nullable(),
+	leftToggles: z.number(),
+	togglesInHeaders: z.number(),
+});
 
 const HEAD_INK = `(() => {
 	const head = document.querySelector(".wg-plate-head.is-app");
@@ -296,13 +361,13 @@ async function walk(theme: Theme): Promise<void> {
 		);
 		check(`${theme}: the chat header reads workspace / chat`, String(opened.chatWords).includes("/"), opened.chatWords);
 		check(
-			`${theme}: the chat header starts with an inert sidebar toggle`,
-			JSON.stringify(opened.chatButtons).startsWith('[["Hide chats","true"]'),
+			`${theme}: the chat header holds no sidebar toggle, the frame does`,
+			!JSON.stringify(opened.chatButtons).includes("Hide sidebar"),
 			opened.chatButtons,
 		);
 		check(
-			`${theme}: the app header ends with more and an inert tabs toggle`,
-			JSON.stringify(opened.appButtons).endsWith('["More",null],["Hide tabs","true"]]'),
+			`${theme}: the app header ends with more, the tabs toggle stands in the frame`,
+			JSON.stringify(opened.appButtons).endsWith('["More",null]]'),
 			opened.appButtons,
 		);
 		check(`${theme}: no mascot and no workspace rail`, opened.mascots === 0 && opened.rail === 0, [
@@ -474,8 +539,246 @@ async function walk(theme: Theme): Promise<void> {
 	}
 }
 
+const SLIDE_FRAMES_PROBE = `new Promise((done) => {
+	const frames = [];
+	const started = performance.now();
+	const sample = () => {
+		const zone = document.querySelector(".wg-shell-app-zone").getBoundingClientRect();
+		const panes = [...document.querySelectorAll(".wg-pane")].map((pane) => pane.getBoundingClientRect());
+		frames.push({
+			zoneLeft: Math.round(zone.left),
+			leftGap: Math.round(Math.min(...panes.map((box) => box.left)) - zone.left),
+			rightGap: Math.round(zone.right - Math.max(...panes.map((box) => box.right))),
+		});
+		if (performance.now() - started < 450) requestAnimationFrame(sample);
+		else done(frames);
+	};
+	requestAnimationFrame(sample);
+})`;
+
+const SlideFramesSchema = z.array(
+	z.object({
+		zoneLeft: z.number(),
+		leftGap: z.number(),
+		rightGap: z.number(),
+	}),
+);
+
+const SLIDE_LEAST_STEPS = 5;
+const SLIDE_SLACK_PX = 1;
+
+function checkSlide(what: string, frames: z.infer<typeof SlideFramesSchema>): void {
+	const spreadOf = (values: readonly number[]): number => Math.max(...values) - Math.min(...values);
+	const steps = new Set(frames.map((frame) => frame.zoneLeft)).size;
+	check(`${what} slides over several frames`, steps >= SLIDE_LEAST_STEPS, steps);
+	check(
+		`${what} moves the cards with the sidebar on every frame, never past either side`,
+		spreadOf(frames.map((frame) => frame.leftGap)) <= SLIDE_SLACK_PX &&
+			spreadOf(frames.map((frame) => frame.rightGap)) <= SLIDE_SLACK_PX,
+		frames.map((frame) => [frame.zoneLeft, frame.leftGap, frame.rightGap]),
+	);
+}
+
+async function walkSides(theme: Theme): Promise<void> {
+	const page = await paged(pageFileOf(theme), "shell-frame", { size: VIEW });
+	try {
+		await page.ask(FIRST_PAINT);
+		await waited(300);
+		const sidesAt = async (): Promise<z.infer<typeof SidesSchema>> => SidesSchema.parse(await page.ask(SIDES));
+		const docked = await sidesAt();
+		check(
+			`${theme}: one left toggle stands in the frame, none in a header`,
+			docked.leftToggles === 1 && docked.togglesInHeaders === 0,
+			docked,
+		);
+		await page.ask(`window.__SYNC__ = ${SLIDE_FRAMES_PROBE}; true`);
+		await page.press(...docked.leftToggle);
+		const hideFrames = SlideFramesSchema.parse(await page.ask("window.__SYNC__"));
+		const hidden = await sidesAt();
+		check(
+			`${theme}: Hide sidebar folds the chats away and the app zone takes the room`,
+			hidden.left === "hidden" && hidden.leftWidth === 0 && hidden.zoneLeft < docked.zoneLeft,
+			hidden,
+		);
+		checkSlide(`${theme}: closing the sidebar`, hideFrames);
+		check(
+			`${theme}: the left toggle stays where it was when the sidebar closes`,
+			JSON.stringify(hidden.leftToggle) === JSON.stringify(docked.leftToggle),
+			[docked.leftToggle, hidden.leftToggle],
+		);
+		await page.hover(400, 400);
+		await page.ask(`window.__REVEAL__ = ${REVEAL_DELAY_PROBE}; true`);
+		await page.hover(1, 400);
+		const revealMs = z.number().parse(await page.ask("window.__REVEAL__"));
+		check(
+			`${theme}: the edge shows the chats within 200ms, slide included`,
+			revealMs >= 0 && revealMs <= 200,
+			revealMs,
+		);
+		await waited(200);
+		const edgeOpened = await sidesAt();
+		check(
+			`${theme}: resting at the left edge peeks the chats over the content without moving it`,
+			edgeOpened.left === "peeking" && edgeOpened.zoneLeft === hidden.zoneLeft,
+			edgeOpened,
+		);
+		await page.hover(1, 2);
+		await waited(300);
+		const outside = await sidesAt();
+		check(`${theme}: the window's padding keeps the peek open`, outside.left === "peeking", outside);
+		await page.hover(700, 400);
+		await waited(400);
+		const closed = await sidesAt();
+		check(`${theme}: entering the content folds the peek away`, closed.left === "hidden", closed);
+		await waited(700);
+		await page.hover(60, 400);
+		await page.hover(-40, 400);
+		await waited(300);
+		const overshot = await sidesAt();
+		check(
+			`${theme}: a pointer that overshoots past the window's left edge peeks the chats`,
+			overshot.left === "peeking",
+			overshot,
+		);
+		await page.hover(700, 400);
+		await waited(900);
+		await page.hover(...closed.leftToggle);
+		await waited(300);
+		const hovered = await sidesAt();
+		check(
+			`${theme}: hovering Show sidebar peeks the chats and the same button stays on top in its place, saying Show sidebar ⌘B`,
+			hovered.left === "peeking" &&
+				hovered.isLeftToggleOnTop &&
+				hovered.leftSaid === "Show sidebar" &&
+				hovered.leftKeys === "⌘B" &&
+				JSON.stringify(hovered.leftToggle) === JSON.stringify(docked.leftToggle),
+			hovered,
+		);
+		await page.press(...hovered.leftToggle);
+		await waited(400);
+		const pinned = await sidesAt();
+		check(`${theme}: pressing it docks the chats again`, pinned.left === "docked", pinned);
+		await page.press(...pinned.rightToggle);
+		await waited(400);
+		const tabsHidden = await sidesAt();
+		check(`${theme}: Hide tabs folds the tabs away`, tabsHidden.right === "hidden", tabsHidden);
+		await page.press(...tabsHidden.rightToggle);
+		await waited(400);
+		const tabsBack = await sidesAt();
+		check(`${theme}: Show tabs brings the tabs back`, tabsBack.right === "docked", tabsBack);
+		check(
+			`${theme}: the tabs toggle stays at the right edge whether the tabs are shown or not`,
+			JSON.stringify(tabsHidden.rightToggle) === JSON.stringify(pinned.rightToggle) &&
+				JSON.stringify(tabsBack.rightToggle) === JSON.stringify(pinned.rightToggle) &&
+				(pinned.rightToggle[0] ?? 0) === VIEW[0] - 30,
+			[pinned.rightToggle, tabsHidden.rightToggle, tabsBack.rightToggle],
+		);
+		await page.ask(keydownScriptOf(false));
+		await waited(400);
+		const keyHidden = await sidesAt();
+		check(`${theme}: ⌘B hides the sidebar`, keyHidden.left === "hidden", keyHidden);
+		await page.ask(`window.__SYNC__ = ${SLIDE_FRAMES_PROBE}; true`);
+		await page.ask(keydownScriptOf(false));
+		checkSlide(`${theme}: opening the sidebar`, SlideFramesSchema.parse(await page.ask("window.__SYNC__")));
+		const keyShown = await sidesAt();
+		check(`${theme}: ⌘B again docks it`, keyShown.left === "docked", keyShown);
+		await page.hover(700, 400);
+		await page.ask(keydownScriptOf(true));
+		await waited(400);
+		const tabsKeyHidden = await sidesAt();
+		check(
+			`${theme}: ⌥⌘B hides the tabs`,
+			tabsKeyHidden.right === "hidden" && tabsKeyHidden.left === "docked",
+			tabsKeyHidden,
+		);
+		await page.hover(700, 400);
+		await page.hover(1300, 400);
+		await page.hover(1500, 400);
+		await waited(300);
+		const tabsOvershot = await sidesAt();
+		check(`${theme}: overshooting the right edge peeks the tabs`, tabsOvershot.right === "peeking", tabsOvershot);
+		const bad = await page.ask(`document.getElementById("boom").textContent`);
+		check(`${theme}: nothing failed while the sides moved`, bad === "", bad);
+	} finally {
+		page.close();
+	}
+}
+
+const TRAFFIC_LIGHTS_RIGHT_EDGE_PX = 76;
+
+const HEADER_TEXT_LEFT = `(() => {
+	const row = document.querySelector(".wg-plate-head.is-chat .wg-plate-head-row");
+	const walk = document.createTreeWalker(row, NodeFilter.SHOW_TEXT);
+	for (let node = walk.nextNode(); node !== null; node = walk.nextNode()) {
+		if (node.textContent.trim() === "") continue;
+		const range = document.createRange();
+		range.selectNodeContents(node);
+		return Math.round(range.getBoundingClientRect().left);
+	}
+	return null;
+})()`;
+
+async function walkLights(): Promise<void> {
+	const page = await paged(pageFileOf("light", "?lights"), "shell-frame", { size: VIEW });
+	try {
+		await page.ask(FIRST_PAINT);
+		await waited(300);
+		const boxOfSelector = async (selector: string): Promise<readonly [number, number, number, number]> =>
+			z
+				.tuple([z.number(), z.number(), z.number(), z.number()])
+				.parse(
+					await page.ask(
+						`(() => { const b = document.querySelector('${selector}').getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })()`,
+					),
+				);
+		const docked = await boxOfSelector('[data-side-toggle="left"]');
+		await page.press(docked[0] + docked[2] / 2, docked[1] + docked[3] / 2);
+		await page.hover(700, 400);
+		await waited(500);
+		const hidden = await boxOfSelector('[data-side-toggle="left"]');
+		const hiddenIcon = await boxOfSelector('[data-side-toggle="left"] svg');
+		const headerTextLeft = z.number().parse(await page.ask(HEADER_TEXT_LEFT));
+		const headerGap = headerTextLeft - (hiddenIcon[0] + hiddenIcon[2]);
+		const lightsGap = hiddenIcon[0] - TRAFFIC_LIGHTS_RIGHT_EDGE_PX;
+		check(
+			"lights: the toggle stands as far from the traffic lights as the header text stands from the toggle",
+			Math.abs(lightsGap - headerGap) <= 1,
+			[lightsGap, headerGap],
+		);
+		await page.hover(hidden[0] + hidden[2] / 2, hidden[1] + hidden[3] / 2);
+		await waited(400);
+		const peeking = await boxOfSelector('[data-side-toggle="left"]');
+		check(
+			"lights: the toggle keeps one place docked, hidden and over the floating sidebar",
+			JSON.stringify(peeking) === JSON.stringify(hidden) && JSON.stringify(docked) === JSON.stringify(hidden),
+			[docked, hidden, peeking],
+		);
+		await page.hover(700, 400);
+		await waited(400);
+		await page.hover(0, 400);
+		await waited(400);
+		const panel = await boxOfSelector('[data-shell-side="left"]');
+		const content = await boxOfSelector('[data-shell-side="left"] > *');
+		const insets = [
+			content[0] - panel[0],
+			panel[0] + panel[2] - (content[0] + content[2]),
+			panel[1] + panel[3] - (content[1] + content[3]),
+		];
+		check(
+			"lights: the floating sidebar keeps 8px between its edges and its content, left, right and bottom",
+			JSON.stringify(insets) === "[8,8,8]" && panel[0] === 8 && panel[1] === 8,
+			[panel, insets],
+		);
+	} finally {
+		page.close();
+	}
+}
+
+await walkLights();
 await walk("light");
 await walk("dark");
+await walkSides("light");
+await walkSides("dark");
 console.log("\naction | ms | commits");
 for (const row of timings) console.log(`${row.action} | ${row.ms} | ${row.commits}`);
 console.log(`\nscreenshots in ${shotsAt}`);

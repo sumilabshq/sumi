@@ -237,7 +237,7 @@ async function checksEdgeDrag(page: AskedPage): Promise<void> {
 }
 
 const ORDER = `[...document.querySelectorAll("[data-pane-id]")].sort((one, other) => one.getBoundingClientRect().left - other.getBoundingClientRect().left).map((pane) => pane.dataset.paneId)`;
-const TOGGLES = `[...document.querySelectorAll('[aria-label="Hide tabs"]')].map((button) => button.closest("[data-pane-id]")?.dataset.paneId ?? "outside")`;
+const TOGGLES = `[...document.querySelectorAll(".wg-plate-head[data-at-top-right]")].map((head) => head.closest("[data-pane-id]")?.dataset.paneId ?? "outside")`;
 
 async function checksHeaderMove(page: AskedPage): Promise<void> {
 	const before = await page.ask(ORDER);
@@ -263,7 +263,7 @@ async function checksHeaderMove(page: AskedPage): Promise<void> {
 		},
 	);
 	check(
-		"only the top-right pane carries the sidebar toggle, before and after the move",
+		"only the top-right pane keeps room for the tabs toggle, before and after the move",
 		JSON.stringify(togglesBefore) === '["pane-app"]' && JSON.stringify(await page.ask(TOGGLES)) === '["pane-chat"]',
 		[togglesBefore, await page.ask(TOGGLES)],
 	);

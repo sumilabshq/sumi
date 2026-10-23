@@ -9,7 +9,6 @@ import { HeaderButton } from "./header-button.js";
 import { PlateStrip } from "./plate-strip.js";
 
 const CLOSE_PANE = "Close pane";
-const HIDE_TABS = "Hide tabs";
 const PRIMARY_BUTTON = 0;
 const NOT_A_HANDLE = "button, input, textarea, a, [contenteditable]";
 
@@ -42,11 +41,13 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 			className={`wg-plate-head is-${side}`}
 			data-plate-head={side}
 			data-pane-handle={paneClosing === null ? undefined : paneClosing.paneId}
+			data-at-top-left={paneClosing?.isAtTopLeft === true ? "" : undefined}
+			data-at-top-right={paneClosing?.isAtTopRight === true ? "" : undefined}
 			onPointerDown={paneClosing === null ? undefined : (event) => carryPane(event, paneClosing.paneId)}
 		>
 			<PlateStrip />
 			<div className="wg-plate-head-row wg-root">
-				{edgeStart}
+				{edgeStartOf(paneClosing, edgeStart)}
 				<span className="wg-plate-slot" data-plate-place="lead">
 					<span className="wg-plate-target" ref={targets.lead} />
 					<span className="wg-plate-default">{lead}</span>
@@ -87,6 +88,18 @@ function targetRefsOf(store: PlateHeaderStore | null): TargetRefs {
 	};
 }
 
+function edgeStartOf(paneClosing: PaneClosing | null, edgeStart: ReactNode): ReactNode {
+	if (paneClosing === null) {
+		return edgeStart;
+	}
+
+	if (!paneClosing.isAtTopLeft) {
+		return null;
+	}
+
+	return edgeStart;
+}
+
 function edgeEndOf(paneClosing: PaneClosing | null, edgeEnd: ReactNode): ReactNode {
 	if (paneClosing === null) {
 		return edgeEnd;
@@ -96,7 +109,7 @@ function edgeEndOf(paneClosing: PaneClosing | null, edgeEnd: ReactNode): ReactNo
 		return null;
 	}
 
-	return edgeEnd ?? <HeaderButton label={HIDE_TABS} icon="panel-right" isInert />;
+	return edgeEnd;
 }
 
 function carryPane(event: PointerEvent<HTMLElement>, paneId: string): void {

@@ -20,7 +20,7 @@ export function localPxMemory(key: string): PxMemory {
 }
 
 // TRADE-OFF: blocked site data throws on reading localStorage; Node hands a stub without methods
-function storageOrNull(): Storage | null {
+export function storageOrNull(): Storage | null {
 	try {
 		const storage: Storage | undefined = globalThis.localStorage;
 		return typeof storage?.getItem === "function" ? storage : null;

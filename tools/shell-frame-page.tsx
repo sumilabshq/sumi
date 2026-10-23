@@ -4,6 +4,7 @@ import type { Page, PageInput } from "../packages/core/src/gateway/page.js";
 import { PageInputSchema, PageOf } from "../packages/core/src/gateway/page.js";
 import { IQuery } from "../packages/core/src/gateway/queries.js";
 import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.js";
+import type { StudioHostPort } from "../packages/core/src/engine/studio-host.js";
 import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.js";
 import type { AssistantPort, AssistantSession, AssistantSetup } from "../packages/core/src/engine/assistant-port.js";
 import { corePack } from "../packages/packs/core/src/index.js";
@@ -23,6 +24,15 @@ import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 reportsFailures();
 
 const STARTED_AT = performance.now();
+const HAS_TRAFFIC_LIGHTS = new URLSearchParams(location.search).has("lights");
+const TAURI_LIKE_HOST: StudioHostPort = {
+	...NO_STUDIO_HOST,
+	insets: () => ({
+		left: 76,
+		right: 0,
+		top: 37,
+	}),
+};
 
 type FixtureTask = { readonly id: string; readonly title: string };
 
@@ -136,7 +146,12 @@ if (root === null) throw new Error("the page holds no #root");
 
 try {
 	const assistant = new URLSearchParams(location.search).has("quiet") ? NO_ASSISTANT : ASSISTANT;
-	const started = startStudio(PROJECT, { assistant, browser, studio: NO_STUDIO_HOST, appId: "Default" });
+	const started = startStudio(PROJECT, {
+		assistant,
+		browser,
+		studio: HAS_TRAFFIC_LIGHTS ? TAURI_LIKE_HOST : NO_STUDIO_HOST,
+		appId: "Default",
+	});
 	Object.assign(window, {
 		__STUDIO__: started,
 		__PAGES__: pages,

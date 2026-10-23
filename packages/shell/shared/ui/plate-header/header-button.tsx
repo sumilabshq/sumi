@@ -5,12 +5,13 @@ import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
 export interface HeaderButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 	readonly label: string;
 	readonly icon: string;
+	readonly keys?: string;
 	readonly isOff?: boolean;
 	readonly isInert?: boolean;
 }
 
 export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(function HeaderButton(
-	{ label, icon, isOff = false, isInert = false, ...pressed },
+	{ label, icon, keys, isOff = false, isInert = false, ...pressed },
 	ref,
 ) {
 	return (
@@ -20,7 +21,10 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 			size="xs"
 			className="wg-plate-button"
 			label={label}
-			{...tooltipMarks({ said: label })}
+			{...tooltipMarks({
+				said: label,
+				keys: keys ?? null,
+			})}
 			aria-disabled={isOff || isInert ? true : undefined}
 			data-off={isOff ? "" : undefined}
 			{...pressed}

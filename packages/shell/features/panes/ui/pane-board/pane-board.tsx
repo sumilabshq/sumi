@@ -1,8 +1,8 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useQuery } from "@widgetarium/core/requests";
-import { paneLayoutOf } from "../../../../shared/lib/pane-layout.js";
-import type { PaneEdge, PaneLayout, PaneRect } from "../../../../shared/lib/pane-layout.js";
+import { fixedPlaceOf, paneLayoutOf, panePlacesOf } from "../../../../shared/lib/pane-layout.js";
+import type { PaneEdge, PaneLayout, PanePlace, PaneRect } from "../../../../shared/lib/pane-layout.js";
 import { isSameView, leavesOf, withPlaced, withShare } from "../../../../shared/lib/pane-tree.js";
 import type { PaneLeaf, PaneNode, PaneView } from "../../../../shared/schema/pane-tree.schema.js";
 import { PaneTreeQuery } from "../../contract.js";
@@ -40,6 +40,14 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	const shown = shownLayoutOf(root, aim, box) ?? resting;
 	const moving = aim === null ? undefined : leaves.find((leaf) => isSameView(leaf.view, aim.view));
 	const preview = shown === resting ? undefined : shown.rects.get(moving?.id ?? PREVIEW_ID);
+	const places = panePlacesOf(root, box, GAP_PX);
+	const placeOfLeaf = (id: string): PanePlace => {
+		if (shown === resting) {
+			return places.get(id) ?? fixedPlaceOf(box);
+		}
+
+		return fixedPlaceOf(shown.rects.get(id) ?? preview ?? box);
+	};
 	const drawDrag = (edge: PaneEdge, share: number): void => {
 		if (root !== null && board.current !== null) {
 			drawLayout(board.current, paneLayoutOf(withShare(root, edge.splitId, edge.at, share), box, GAP_PX));
@@ -48,16 +56,20 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	return (
 		<div ref={board} className="wg-pane-board">
 			{leaves.length === 0 && aim === null ? <div className="wg-pane-empty">{empty}</div> : null}
-			{leaves.map((leaf) => (
-				<PaneSlot
-					key={leaf.id}
-					leaf={leaf}
-					rect={shown.rects.get(leaf.id) ?? preview ?? box}
-					isAtTopRight={isAtTopRight(resting.rects.get(leaf.id), box)}
-					isDimmed={dimmedIds.has(leaf.id)}
-					drawn={drawn}
-				/>
-			))}
+			{leaves.map((leaf) => {
+				const restingRect = resting.rects.get(leaf.id);
+				return (
+					<PaneSlot
+						key={leaf.id}
+						leaf={leaf}
+						place={placeOfLeaf(leaf.id)}
+						isAtTopLeft={isAtTopLeft(restingRect)}
+						isAtTopRight={isAtTopRight(restingRect, box)}
+						isDimmed={dimmedIds.has(leaf.id)}
+						drawn={drawn}
+					/>
+				);
+			})}
 			{aim === null
 				? resting.edges.map((edge) => (
 						<PaneSplitEdge
@@ -95,6 +107,10 @@ function dimmedIdsOf(leaves: readonly PaneLeaf[], targetId: string | null): Read
 	}
 
 	return new Set(apps.filter((leaf) => leaf.id !== target.id).map((leaf) => leaf.id));
+}
+
+function isAtTopLeft(rect: PaneRect | undefined): boolean {
+	return rect !== undefined && rect.top <= EDGE_SLACK_PX && rect.left <= EDGE_SLACK_PX;
 }
 
 function isAtTopRight(rect: PaneRect | undefined, box: PaneRect): boolean {

@@ -7,6 +7,7 @@ import { useFrameEdge } from "../../lib/use-frame-edge.js";
 export interface FrameEdgeHandleProps {
 	readonly edge: FrameEdge;
 	readonly px: number;
+	readonly isReachable: boolean;
 }
 
 const EDGE_LABEL: Readonly<Record<FrameEdge, string>> = {
@@ -14,12 +15,17 @@ const EDGE_LABEL: Readonly<Record<FrameEdge, string>> = {
 	chat: "Chat width",
 };
 
-export const FrameEdgeHandle = memo(function FrameEdgeHandle({ edge, px }: FrameEdgeHandleProps): ReactElement {
+export const FrameEdgeHandle = memo(function FrameEdgeHandle({
+	edge,
+	px,
+	isReachable,
+}: FrameEdgeHandleProps): ReactElement {
 	const handlers = useFrameEdge(edge, px);
 	return (
 		<div
 			role="separator"
-			tabIndex={0}
+			tabIndex={isReachable ? 0 : -1}
+			aria-hidden={isReachable ? undefined : true}
 			aria-label={EDGE_LABEL[edge]}
 			aria-orientation="vertical"
 			aria-valuenow={px}
