@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { MouseEvent, ReactElement } from "react";
 import { Popover } from "@widgetarium/kit";
-import { markLetterOf } from "../../shared/studio-app.js";
+import { markLetterOf, tileLabelOf } from "../../shared/studio-app.js";
 import type { StudioApp } from "../../shared/studio-app.js";
 import { QuietLine } from "../quiet-line.js";
 import { useRefusal } from "../use-refusal.js";
@@ -29,7 +29,7 @@ export function WorkspaceTile({ app, isCurrent, onOpen, onRename }: WorkspaceTil
 	};
 	const tile = (
 		<RailTile
-			label={app.name}
+			label={tileLabelOf(app)}
 			isCurrent={isCurrent}
 			onPress={isCurrent ? undefined : () => void isAnsweredOk(onOpen())}
 			onContextMenu={startRenaming}

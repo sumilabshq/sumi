@@ -72,7 +72,7 @@ const PROJECT: WidgetariumProject = {
 	packs: [corePack],
 };
 
-const MAC_INSETS = { left: 76, right: 0 };
+const MAC_INSETS = { left: 76, right: 0, top: 35 };
 
 const MEMORY_PARAMS_KEY = "Apps/Farm.md";
 

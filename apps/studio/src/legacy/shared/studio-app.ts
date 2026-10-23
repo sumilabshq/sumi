@@ -4,6 +4,7 @@ export const StudioAppSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	line: z.string().default(""),
+	notice: z.string().default(""),
 });
 
 export type StudioApp = z.infer<typeof StudioAppSchema>;
@@ -29,7 +30,18 @@ export const DRAFT_APP: StudioApp = {
 	id: "new-app",
 	name: "Default workspace",
 	line: "Not created yet",
+	notice: "",
 };
+
+const NAME_WITH_NOTICE = "{name} · {notice}";
+
+export function tileLabelOf(app: StudioApp): string {
+	if (app.notice === "") {
+		return app.name;
+	}
+
+	return NAME_WITH_NOTICE.replace("{name}", app.name).replace("{notice}", app.notice);
+}
 
 export function markLetterOf(app: StudioApp): string {
 	return (Array.from(app.name)[0] ?? "").toUpperCase();

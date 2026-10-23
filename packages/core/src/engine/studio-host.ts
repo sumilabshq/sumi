@@ -9,6 +9,7 @@ export interface HostApp {
 export interface ChromeInsets {
 	readonly left: number;
 	readonly right: number;
+	readonly top: number;
 }
 
 export interface StudioHostPort {
@@ -22,7 +23,11 @@ export interface StudioHostPort {
 
 export const NOT_AVAILABLE_ON_HOST = "not available on this host";
 
-export const NO_INSETS: ChromeInsets = { left: 0, right: 0 };
+export const NO_INSETS: ChromeInsets = {
+	left: 0,
+	right: 0,
+	top: 0,
+};
 
 export const NO_STUDIO_HOST: StudioHostPort = {
 	insets: () => NO_INSETS,

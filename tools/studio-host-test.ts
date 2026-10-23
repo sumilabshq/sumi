@@ -2,7 +2,9 @@ import { browserStudioHost } from "../apps/studio/src/legacy/browser-studio-host
 
 interface TitlebarRect {
 	readonly x: number;
+	readonly y: number;
 	readonly width: number;
+	readonly height: number;
 }
 
 class FakeControlsOverlay extends EventTarget {
@@ -19,8 +21,18 @@ class FakeControlsOverlay extends EventTarget {
 }
 
 const WINDOW_PX = 1000;
-const MAC_RECT = { x: 76, width: 800 };
-const WIDER_RECT = { x: 90, width: 700 };
+const MAC_RECT = {
+	x: 76,
+	y: 0,
+	width: 800,
+	height: 32,
+};
+const WIDER_RECT = {
+	x: 90,
+	y: 0,
+	width: 700,
+	height: 32,
+};
 
 let failed = 0;
 function check(what: string, held: unknown, wanted: unknown): void {
@@ -37,13 +49,13 @@ function hostOver(overlay: FakeControlsOverlay): ReturnType<typeof browserStudio
 
 const shown = new FakeControlsOverlay(true, MAC_RECT);
 const host = hostOver(shown);
-check("a visible overlay leaves its titlebar's sides as insets", host.insets(), { left: 76, right: 124 });
+check("a visible overlay leaves its titlebar's sides as insets", host.insets(), { left: 76, right: 124, top: 32 });
 
 const heard: unknown[] = [];
 const stop = host.onInsets(() => heard.push(host.insets()));
 shown.rect = WIDER_RECT;
 shown.dispatchEvent(new Event("geometrychange"));
-check("a geometrychange re-reads the insets", heard, [{ left: 90, right: 210 }]);
+check("a geometrychange re-reads the insets", heard, [{ left: 90, right: 210, top: 32 }]);
 stop();
 shown.dispatchEvent(new Event("geometrychange"));
 check("a stopped listener hears no more changes", heard.length, 1);
@@ -51,6 +63,7 @@ check("a stopped listener hears no more changes", heard.length, 1);
 check("a hidden overlay keeps no inset", hostOver(new FakeControlsOverlay(false, MAC_RECT)).insets(), {
 	left: 0,
 	right: 0,
+	top: 0,
 });
 
 if (failed > 0) {

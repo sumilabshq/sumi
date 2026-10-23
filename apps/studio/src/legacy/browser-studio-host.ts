@@ -27,7 +27,11 @@ function overlayInsets(): ChromeInsets {
 	const overlay = controlsOverlay();
 	if (!overlay?.visible) return NO_INSETS;
 	const titlebar = overlay.getTitlebarAreaRect();
-	return { left: titlebar.x, right: window.innerWidth - titlebar.x - titlebar.width };
+	return {
+		left: titlebar.x,
+		right: window.innerWidth - titlebar.x - titlebar.width,
+		top: titlebar.x > 0 ? titlebar.y + titlebar.height : 0,
+	};
 }
 
 function controlsOverlay(): ControlsOverlay | null {

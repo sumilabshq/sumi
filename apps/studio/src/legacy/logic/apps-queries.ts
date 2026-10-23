@@ -51,7 +51,7 @@ async function studioAppsOf(ports: ImplementationPorts): Promise<readonly Studio
 }
 
 function studioAppOf({ id, name, pages, firstPage, refusal }: HostApp): StudioApp {
-	return { id, name, line: refusal ?? lineOf(pages, firstPage) };
+	return { id, name, line: refusal ?? lineOf(pages, firstPage), notice: refusal ?? "" };
 }
 
 function lineOf(pages: number, firstPage: string | null): string {

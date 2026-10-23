@@ -150,15 +150,17 @@ function fieldOfJson(value: unknown, ...keys: readonly string[]): unknown {
 check("a frameless mac window's corner leaves the traffic lights room", chromeInsetsOf(chrome({})), {
 	left: 76,
 	right: 0,
+	top: 40,
 });
 check("a mac window with its frame keeps no inset", chromeInsetsOf(chrome({ isHiddenFrameless: false })), {
 	left: 0,
 	right: 0,
+	top: 0,
 });
 check(
 	"a view away from the corner keeps no inset",
 	chromeInsetsOf(chrome({ rect: { left: 300, top: 0, right: 1200 } })),
-	{ left: 0, right: 0 },
+	{ left: 0, right: 0, top: 0 },
 );
 check(
 	"a view below the title bar keeps no inset",
@@ -166,27 +168,30 @@ check(
 	{
 		left: 0,
 		right: 0,
+		top: 0,
 	},
 );
 check("a hidden view of no width keeps no inset", chromeInsetsOf(chrome({ rect: { left: 0, top: 0, right: 0 } })), {
 	left: 0,
 	right: 0,
+	top: 0,
 });
 check(
 	"a view starting at the tab bar's bottom edge keeps no inset",
 	chromeInsetsOf(chrome({ rect: { left: 44, top: 39.98, right: 2804 } })),
-	{ left: 0, right: 0 },
+	{ left: 0, right: 0, top: 0 },
 );
 check("a windows view under the caption buttons leaves them room", chromeInsetsOf(chrome({ system: "windows" })), {
 	left: 0,
 	right: 138,
+	top: 0,
 });
 check(
 	"a windows view short of the right edge keeps no inset",
 	chromeInsetsOf(chrome({ system: "windows", rect: { left: 0, top: 0, right: 900 } })),
-	{ left: 0, right: 0 },
+	{ left: 0, right: 0, top: 0 },
 );
-check("another system keeps no inset", chromeInsetsOf(chrome({ system: "other" })), { left: 0, right: 0 });
+check("another system keeps no inset", chromeInsetsOf(chrome({ system: "other" })), { left: 0, right: 0, top: 0 });
 
 const { JSDOM } = await import("jsdom");
 const dom = new JSDOM("<!doctype html><body></body>", { pretendToBeVisual: true });

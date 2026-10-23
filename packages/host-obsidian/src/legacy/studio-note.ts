@@ -31,7 +31,7 @@ const NOTE_EXTENSION = "md";
 const UNSAFE_IN_NAME = /[/\\:]/g;
 const NAME_STAND_IN = "-";
 const EDGE_SLASHES = /^\/+|\/+$/g;
-const TRAFFIC_LIGHTS = { reachPx: 80, bottomPx: 32, insetPx: 76 };
+const TRAFFIC_LIGHTS = { reachPx: 80, bottomPx: 32, insetPx: 76, railTopPx: 40 };
 const CAPTION_BUTTONS = { reachPx: 140, bottomPx: 32, insetPx: 138 };
 
 export function studioNoteOf(frontmatter: unknown): StudioNote | null {
@@ -82,10 +82,24 @@ export function chromeInsetsOf({ rect, innerWidth, system, isHiddenFrameless }: 
 	if (rect.right <= rect.left) return NO_INSETS;
 	const top = Math.round(rect.top);
 	const touchesTrafficLights = Math.round(rect.left) < TRAFFIC_LIGHTS.reachPx && top < TRAFFIC_LIGHTS.bottomPx;
-	if (system === "mac" && isHiddenFrameless && touchesTrafficLights) return { left: TRAFFIC_LIGHTS.insetPx, right: 0 };
+	if (system === "mac" && isHiddenFrameless && touchesTrafficLights) {
+		return {
+			left: TRAFFIC_LIGHTS.insetPx,
+			right: 0,
+			top: TRAFFIC_LIGHTS.railTopPx,
+		};
+	}
+
 	const touchesCaptionButtons =
 		Math.round(rect.right) > innerWidth - CAPTION_BUTTONS.reachPx && top < CAPTION_BUTTONS.bottomPx;
-	if (system === "windows" && touchesCaptionButtons) return { left: 0, right: CAPTION_BUTTONS.insetPx };
+	if (system === "windows" && touchesCaptionButtons) {
+		return {
+			left: 0,
+			right: CAPTION_BUTTONS.insetPx,
+			top: 0,
+		};
+	}
+
 	return NO_INSETS;
 }
 
