@@ -37,12 +37,12 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what} — ${JSON.stringify(got)}`);
 }
 
-function pageFileOf(theme: Theme): string {
+function pageFileOf(theme: Theme, query: "" | "?lights" = ""): string {
 	const html = `<!doctype html><html class="${theme === "dark" ? "dark" : ""}"><head><meta charset="utf-8"><style>${sheets}</style>
 <style>html,body,#root{height:100%;margin:0}</style></head>
-<body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script><script>${spyScript}</script>
+<body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();history.replaceState(null, "", "${query}" || location.pathname);</script><script>${spyScript}</script>
 <script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
-	const file = path.join(shotsAt, `shell-frame-${theme}.html`);
+	const file = path.join(shotsAt, `shell-frame-${theme}${query === "" ? "" : "-lights"}.html`);
 	writeFileSync(file, html);
 	return file;
 }
@@ -83,7 +83,7 @@ const LAYOUT = `(() => {
 		appHead: boxOf(".wg-plate-head.is-app"),
 		chatRow: boxOf(".wg-plate-head.is-chat .wg-plate-head-row"),
 		appRow: boxOf(".wg-plate-head.is-app .wg-plate-head-row"),
-		hideChats: boxOf('.wg-plate-head.is-chat button[aria-label="Hide chats"]'),
+		hideChats: boxOf('.wg-plate-head.is-chat button[aria-label="Hide sidebar"]'),
 		hideTabs: boxOf('.wg-plate-head.is-app button[aria-label="Hide tabs"]'),
 		chatCrumb: boxOf(".wg-plate-head.is-chat .wg-plate-crumb"),
 		chatCrumbFirst: boxOf(".wg-plate-head.is-chat .wg-plate-crumb-first"),
@@ -143,6 +143,70 @@ const timedUntilPainted = (act: string, until: string): string => `new Promise((
 	};
 	seen();
 })`;
+
+const SIDES = `(() => {
+	const centre = (selector) => {
+		const box = document.querySelector(selector).getBoundingClientRect();
+		return [Math.round(box.left + box.width / 2), Math.round(box.top + box.height / 2)];
+	};
+	return {
+		left: document.querySelector('[data-shell-column="left"]').dataset.state,
+		right: document.querySelector('[data-shell-column="right"]').dataset.state,
+		leftWidth: Math.round(document.querySelector(".wg-shell-left").getBoundingClientRect().width),
+		zoneLeft: Math.round(document.querySelector(".wg-shell-app-zone").getBoundingClientRect().left),
+		leftToggle: centre('[data-side-toggle="left"]'),
+		rightToggle: centre('[data-side-toggle="right"]'),
+		pins: document.querySelectorAll("[data-side-pin]").length,
+		isPinOnTop: (() => {
+			const toggle = document.querySelector('[data-side-toggle="left"]').getBoundingClientRect();
+			const found = document.elementFromPoint(toggle.left + toggle.width / 2, toggle.top + toggle.height / 2);
+			const pin = document.querySelector('[data-side-pin="left"]');
+			if (found === null || pin === null) return false;
+			const pinBox = pin.getBoundingClientRect();
+			return pin.contains(found) && pinBox.width === toggle.width && pinBox.left === toggle.left && getComputedStyle(pin.querySelector("svg")).fill === "none";
+		})(),
+		pinSaid: document.querySelector('[data-side-pin="left"]')?.getAttribute("data-tip-said") ?? null,
+		pinKeys: document.querySelector('[data-side-pin="left"]')?.getAttribute("data-tip-keys") ?? null,
+		leftToggles: document.querySelectorAll('[data-side-toggle="left"]').length,
+		isLeftToggleOnTopLeftChat: document.querySelector('.wg-plate-head.is-chat[data-at-top-left] [data-side-toggle="left"]') !== null,
+	};
+})()`;
+
+const REVEAL_DELAY_PROBE = `new Promise((done) => {
+	let reached = null;
+	document.addEventListener("pointermove", (event) => {
+		if (reached === null && (event.clientX <= 1 || event.clientX >= innerWidth - 2)) reached = performance.now();
+	}, { capture: true });
+	const side = document.querySelector('[data-shell-side="left"]');
+	const tick = () => {
+		const look = getComputedStyle(side).transform;
+		if (reached !== null && side.parentElement.dataset.state === "peeking" && (look === "none" || look === "matrix(1, 0, 0, 1, 0, 0)")) {
+			done(Math.round(performance.now() - reached));
+			return;
+		}
+		requestAnimationFrame(tick);
+	};
+	tick();
+	setTimeout(() => done(-1), 3000);
+})`;
+
+const keydownScriptOf = (hasAlt: boolean): string =>
+	`(document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent("keydown", { code: "KeyB", key: "b", metaKey: true, altKey: ${String(hasAlt)}, bubbles: true, cancelable: true }))`;
+
+const SidesSchema = z.object({
+	left: z.string(),
+	right: z.string(),
+	leftWidth: z.number(),
+	zoneLeft: z.number(),
+	leftToggle: z.tuple([z.number(), z.number()]),
+	rightToggle: z.tuple([z.number(), z.number()]),
+	pins: z.number(),
+	isPinOnTop: z.boolean(),
+	pinSaid: z.string().nullable(),
+	pinKeys: z.string().nullable(),
+	leftToggles: z.number(),
+	isLeftToggleOnTopLeftChat: z.boolean(),
+});
 
 const HEAD_INK = `(() => {
 	const head = document.querySelector(".wg-plate-head.is-app");
@@ -297,12 +361,12 @@ async function walk(theme: Theme): Promise<void> {
 		check(`${theme}: the chat header reads workspace / chat`, String(opened.chatWords).includes("/"), opened.chatWords);
 		check(
 			`${theme}: the chat header starts with an inert sidebar toggle`,
-			JSON.stringify(opened.chatButtons).startsWith('[["Hide chats","true"]'),
+			JSON.stringify(opened.chatButtons).startsWith('[["Hide sidebar",null]'),
 			opened.chatButtons,
 		);
 		check(
 			`${theme}: the app header ends with more and an inert tabs toggle`,
-			JSON.stringify(opened.appButtons).endsWith('["More",null],["Hide tabs","true"]]'),
+			JSON.stringify(opened.appButtons).endsWith('["More",null],["Hide tabs",null]]'),
 			opened.appButtons,
 		);
 		check(`${theme}: no mascot and no workspace rail`, opened.mascots === 0 && opened.rail === 0, [
@@ -474,8 +538,160 @@ async function walk(theme: Theme): Promise<void> {
 	}
 }
 
+async function walkSides(theme: Theme): Promise<void> {
+	const page = await paged(pageFileOf(theme), "shell-frame", { size: VIEW });
+	try {
+		await page.ask(FIRST_PAINT);
+		await waited(300);
+		const sidesAt = async (): Promise<z.infer<typeof SidesSchema>> => SidesSchema.parse(await page.ask(SIDES));
+		const docked = await sidesAt();
+		check(
+			`${theme}: with the chat pane at the top left the left toggle stands there and nowhere else`,
+			docked.leftToggles === 1 && docked.isLeftToggleOnTopLeftChat,
+			docked,
+		);
+		await page.press(...docked.leftToggle);
+		await waited(400);
+		const hidden = await sidesAt();
+		check(
+			`${theme}: Hide chats folds the chats away and the app zone takes the room`,
+			hidden.left === "hidden" && hidden.leftWidth === 0 && hidden.zoneLeft < docked.zoneLeft,
+			hidden,
+		);
+		await page.hover(400, 400);
+		await page.ask(`window.__REVEAL__ = ${REVEAL_DELAY_PROBE}; true`);
+		await page.hover(1, 400);
+		const revealMs = z.number().parse(await page.ask("window.__REVEAL__"));
+		check(
+			`${theme}: the edge shows the chats within 200ms, slide included`,
+			revealMs >= 0 && revealMs <= 200,
+			revealMs,
+		);
+		await waited(200);
+		const edgeOpened = await sidesAt();
+		check(
+			`${theme}: resting at the left edge peeks the chats over the content without moving it`,
+			edgeOpened.left === "peeking" && edgeOpened.zoneLeft === hidden.zoneLeft,
+			edgeOpened,
+		);
+		await page.hover(1, 2);
+		await waited(300);
+		const outside = await sidesAt();
+		check(`${theme}: the window's padding keeps the peek open`, outside.left === "peeking", outside);
+		await page.hover(700, 400);
+		await waited(400);
+		const closed = await sidesAt();
+		check(`${theme}: entering the content folds the peek away`, closed.left === "hidden", closed);
+		await waited(700);
+		await page.hover(60, 400);
+		await page.hover(-40, 400);
+		await waited(300);
+		const overshot = await sidesAt();
+		check(
+			`${theme}: a pointer that overshoots past the window's left edge peeks the chats`,
+			overshot.left === "peeking",
+			overshot,
+		);
+		await page.hover(700, 400);
+		await waited(900);
+		await page.hover(...closed.leftToggle);
+		await waited(300);
+		const hovered = await sidesAt();
+		check(
+			`${theme}: hovering Show sidebar peeks the chats and the same button stays on top, saying Show sidebar ⌘B`,
+			hovered.left === "peeking" &&
+				hovered.pins === 1 &&
+				hovered.isPinOnTop &&
+				hovered.pinSaid === "Show sidebar" &&
+				hovered.pinKeys === "⌘B",
+			hovered,
+		);
+		await page.press(...hovered.leftToggle);
+		await waited(400);
+		const pinned = await sidesAt();
+		check(`${theme}: pressing the pin docks the chats again`, pinned.left === "docked" && pinned.pins === 0, pinned);
+		await page.press(...pinned.rightToggle);
+		await waited(400);
+		const tabsHidden = await sidesAt();
+		check(`${theme}: Hide tabs folds the tabs away`, tabsHidden.right === "hidden", tabsHidden);
+		await page.press(...tabsHidden.rightToggle);
+		await waited(400);
+		const tabsBack = await sidesAt();
+		check(`${theme}: Show tabs brings the tabs back`, tabsBack.right === "docked", tabsBack);
+		await page.ask(keydownScriptOf(false));
+		await waited(400);
+		const keyHidden = await sidesAt();
+		check(`${theme}: ⌘B hides the sidebar`, keyHidden.left === "hidden", keyHidden);
+		await page.ask(keydownScriptOf(false));
+		await waited(400);
+		const keyShown = await sidesAt();
+		check(`${theme}: ⌘B again docks it`, keyShown.left === "docked", keyShown);
+		await page.hover(700, 400);
+		await page.ask(keydownScriptOf(true));
+		await waited(400);
+		const tabsKeyHidden = await sidesAt();
+		check(
+			`${theme}: ⌥⌘B hides the tabs`,
+			tabsKeyHidden.right === "hidden" && tabsKeyHidden.left === "docked",
+			tabsKeyHidden,
+		);
+		await page.hover(700, 400);
+		await page.hover(1300, 400);
+		await page.hover(1500, 400);
+		await waited(300);
+		const tabsOvershot = await sidesAt();
+		check(`${theme}: overshooting the right edge peeks the tabs`, tabsOvershot.right === "peeking", tabsOvershot);
+		const bad = await page.ask(`document.getElementById("boom").textContent`);
+		check(`${theme}: nothing failed while the sides moved`, bad === "", bad);
+	} finally {
+		page.close();
+	}
+}
+
+const TRAFFIC_LIGHTS_RIGHT_EDGE_PX = 76;
+const TRAFFIC_LIGHTS_CLEARANCE_PX = 4;
+
+async function walkLights(): Promise<void> {
+	const page = await paged(pageFileOf("light", "?lights"), "shell-frame", { size: VIEW });
+	try {
+		await page.ask(FIRST_PAINT);
+		await waited(300);
+		const boxOfSelector = async (selector: string): Promise<readonly [number, number, number, number]> =>
+			z
+				.tuple([z.number(), z.number(), z.number(), z.number()])
+				.parse(
+					await page.ask(
+						`(() => { const b = document.querySelector('${selector}').getBoundingClientRect(); return [Math.round(b.left), Math.round(b.top), Math.round(b.width), Math.round(b.height)]; })()`,
+					),
+				);
+		const docked = await boxOfSelector('[data-side-toggle="left"]');
+		await page.press(docked[0] + docked[2] / 2, docked[1] + docked[3] / 2);
+		await page.hover(700, 400);
+		await waited(500);
+		const hidden = await boxOfSelector('[data-side-toggle="left"]');
+		check(
+			"lights: with the sidebar hidden the toggle stands clear of the traffic lights",
+			hidden[0] >= TRAFFIC_LIGHTS_RIGHT_EDGE_PX + TRAFFIC_LIGHTS_CLEARANCE_PX,
+			hidden,
+		);
+		await page.hover(hidden[0] + hidden[2] / 2, hidden[1] + hidden[3] / 2);
+		await waited(400);
+		const pin = await boxOfSelector('[data-side-pin="left"]');
+		check(
+			"lights: over the floating sidebar the toggle keeps its place",
+			JSON.stringify(pin) === JSON.stringify(hidden),
+			pin,
+		);
+	} finally {
+		page.close();
+	}
+}
+
+await walkLights();
 await walk("light");
 await walk("dark");
+await walkSides("light");
+await walkSides("dark");
 console.log("\naction | ms | commits");
 for (const row of timings) console.log(`${row.action} | ${row.ms} | ${row.commits}`);
 console.log(`\nscreenshots in ${shotsAt}`);
