@@ -25,6 +25,7 @@
 		}
 	},
 	"dependencies": {
+		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/kit": "0.1.0"
 	},
