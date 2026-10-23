@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { AppHostBar, AppHostFrame } from "@widgetarium/app-host";
 import { AppHostClientModule } from "@widgetarium/app-host/module";
 import { Browser, BrowserAppZone } from "@widgetarium/browser";
+import { TipSurface } from "@widgetarium/canvas";
 import { BrowserClientModule } from "@widgetarium/browser/module";
 import type { BrowserParts } from "@widgetarium/browser/gateways";
 import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
@@ -24,9 +25,11 @@ export function BrowserPage({ parts, shell }: BrowserPageProps): ReactElement {
 			<AppProvider app={browserApp}>
 				<OnRefused value={toastRefusal}>
 					<Toaster />
-					<AppHostFrame>
-						<Browser header={<AppHostBar appZone={<BrowserAppZone />} cornerEnd={shell.cornerEnd} />} />
-					</AppHostFrame>
+					<TipSurface>
+						<AppHostFrame>
+							<Browser header={<AppHostBar appZone={<BrowserAppZone />} cornerEnd={shell.cornerEnd} />} />
+						</AppHostFrame>
+					</TipSurface>
 				</OnRefused>
 			</AppProvider>
 		</div>

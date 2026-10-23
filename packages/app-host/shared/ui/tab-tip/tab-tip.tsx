@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Tooltip } from "radix-ui";
+import { TipProviderWhenAlone } from "@widgetarium/canvas";
 import type { AppTab } from "../../schema/app-tab.schema.js";
 import { STATUS_SAID, STATUS_TONE } from "../../lib/tab-status/tab-status.js";
 
@@ -20,8 +21,8 @@ const SUBTITLE = "cv:opacity-70";
 
 export function TabTip({ tab, side, children }: TabTipProps): ReactElement {
 	return (
-		<Tooltip.Provider delayDuration={SHOWN_AFTER_MS}>
-			<Tooltip.Root>
+		<TipProviderWhenAlone>
+			<Tooltip.Root delayDuration={SHOWN_AFTER_MS}>
 				<Tooltip.Trigger asChild className={TRIGGER} data-tip="">
 					{children}
 				</Tooltip.Trigger>
@@ -43,6 +44,6 @@ export function TabTip({ tab, side, children }: TabTipProps): ReactElement {
 					</Tooltip.Content>
 				</Tooltip.Portal>
 			</Tooltip.Root>
-		</Tooltip.Provider>
+		</TipProviderWhenAlone>
 	);
 }

@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 import { AppHostBar, AppHostFrame } from "@widgetarium/app-host";
 import { AppHostClientModule } from "@widgetarium/app-host/module";
 import type { AppHostParts } from "@widgetarium/app-host/gateways";
-import { Canvas, CanvasAppZone } from "@widgetarium/canvas";
+import { Canvas, CanvasAppZone, TipSurface } from "@widgetarium/canvas";
 import { CanvasClientModule } from "@widgetarium/canvas/module";
 import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
@@ -31,13 +31,15 @@ export function CanvasPage({ parts, shell, onCanvas }: CanvasPageProps): ReactEl
 		<AppProvider app={canvasApp}>
 			<OnRefused value={toastRefusal}>
 				<Toaster />
-				{shell ? (
-					<AppHostFrame>
+				<TipSurface>
+					{shell ? (
+						<AppHostFrame>
+							<Canvas header={header} />
+						</AppHostFrame>
+					) : (
 						<Canvas header={header} />
-					</AppHostFrame>
-				) : (
-					<Canvas header={header} />
-				)}
+					)}
+				</TipSurface>
 			</OnRefused>
 		</AppProvider>
 	);

@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Tooltip } from "radix-ui";
+import { TipProviderWhenAlone } from "../tip-surface/tip-provider-when-alone.js";
 
 const SHOWN_AFTER_MS = 400;
 const BELOW_PX = 10;
@@ -11,8 +12,8 @@ const BUBBLE =
 
 export function Tip({ label, children }: { readonly label: string; readonly children?: ReactNode }): ReactElement {
 	return (
-		<Tooltip.Provider delayDuration={SHOWN_AFTER_MS}>
-			<Tooltip.Root>
+		<TipProviderWhenAlone>
+			<Tooltip.Root delayDuration={SHOWN_AFTER_MS}>
 				<Tooltip.Trigger asChild>
 					<span className={TRIGGER} data-tip="">
 						{children}
@@ -24,6 +25,6 @@ export function Tip({ label, children }: { readonly label: string; readonly chil
 					</Tooltip.Content>
 				</Tooltip.Portal>
 			</Tooltip.Root>
-		</Tooltip.Provider>
+		</TipProviderWhenAlone>
 	);
 }
