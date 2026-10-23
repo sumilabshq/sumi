@@ -1,6 +1,6 @@
 use super::navigation_proxy::{self, FailedLoad, NavigationHooks, SubFrame};
 use super::policy::{self, PAGE_LABEL_PREFIX};
-use super::tear_off::{TearOff, TornPage};
+use super::tear_off::{self, TornWindow};
 use super::webkit::{self, view_of, Answer, ShotFormat, ShotRegion};
 use objc2_web_kit::WKWebView;
 use serde_json::{json, Value};
@@ -24,6 +24,7 @@ const OWN_WINDOW_WIDTH: f64 = 960.0;
 const OWN_WINDOW_HEIGHT: f64 = 720.0;
 const OWN_WINDOW_FALLBACK_AT: f64 = 120.0;
 const OWN_WINDOW_GRAB_TOP: f64 = 20.0;
+const TORN_WINDOW: TornWindow = TornWindow { width: OWN_WINDOW_WIDTH, height: OWN_WINDOW_HEIGHT, grab_top: OWN_WINDOW_GRAB_TOP };
 const BLANK: &str = "about:blank";
 pub const OWN_WINDOW_OPENED: &str = "own-window-opened";
 pub const OWN_WINDOW_CLOSED: &str = "own-window-closed";
@@ -86,7 +87,6 @@ pub fn uncovered_pages(shown: &[String], covered: &HashSet<String>) -> HashSet<S
 pub struct Pages {
     sink: Mutex<Option<Channel<Value>>>,
     shown: Mutex<Shown>,
-    tear_off: Arc<TearOff>,
 }
 
 fn page_id_of(label: &str) -> &str {
@@ -136,23 +136,7 @@ impl Pages {
         Pages {
             sink: Mutex::new(None),
             shown: Mutex::new(Shown::empty()),
-            tear_off: Arc::new(TearOff::new()),
         }
-    }
-
-    pub fn watch_tear_off(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str) -> Answer<Value> {
-        self.webview(app, page_id)?;
-        self.tear_off.watch(self, app, TornPage { page_id: page_id.to_string(), title: title.to_string() });
-        Ok(Value::Null)
-    }
-
-    pub fn stop_tear_off(&self) -> Answer<Value> {
-        self.tear_off.stop();
-        Ok(Value::Null)
-    }
-
-    pub fn own_window_label(&self, page_id: &str) -> Option<String> {
-        self.shown.lock().expect("the shown pages").own_windows.get(page_id).cloned()
     }
 
     pub fn open(&self, sink: Channel<Value>) {
@@ -361,6 +345,21 @@ impl Pages {
     }
 
     pub fn open_own_window(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str) -> Answer<Value> {
+        self.open_own_window_from(app, page_id, title, own_window_origin(app))
+    }
+
+    pub fn open_own_window_at_cursor(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str) -> Answer<Value> {
+        let Some(origin) = tear_off::origin_at_cursor(app, &TORN_WINDOW)? else {
+            eprintln!("[browser] page {page_id} studio → studio (the drag ended inside the studio window)");
+            return Ok(Value::Bool(false));
+        };
+
+        self.open_own_window_from(app, page_id, title, origin)?;
+        eprintln!("[browser] page {page_id} studio → own window at {:.0},{:.0} (released outside the studio)", origin.x, origin.y);
+        Ok(Value::Bool(true))
+    }
+
+    fn open_own_window_from(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str, origin: LogicalPosition<f64>) -> Answer<Value> {
         let webview = self.webview(app, page_id)?;
         let label = format!("{OWN_WINDOW_LABEL_PREFIX}{}", policy::label_of(page_id)?);
 
@@ -371,7 +370,7 @@ impl Pages {
 
         self.shown.lock().expect("the shown pages").own_windows.insert(page_id.to_string(), label.clone());
 
-        match move_into_own_window(app, &webview, &label, title) {
+        match move_into_own_window(app, &webview, OwnWindowLaid { label: &label, title, origin }) {
             Ok(window) => {
                 self.follow_own_window(app, &window, page_id);
                 self.tell_facts(&webview, OWN_WINDOW_OPENED);
@@ -496,12 +495,17 @@ impl Pages {
     }
 }
 
-fn move_into_own_window(app: &AppHandle<Wry>, webview: &Webview<Wry>, label: &str, title: &str) -> Answer<Window<Wry>> {
-    let (x, y) = own_window_origin(app);
-    let window = Window::builder(app, label)
-        .title(title)
+struct OwnWindowLaid<'a> {
+    label: &'a str,
+    title: &'a str,
+    origin: LogicalPosition<f64>,
+}
+
+fn move_into_own_window(app: &AppHandle<Wry>, webview: &Webview<Wry>, laid: OwnWindowLaid) -> Answer<Window<Wry>> {
+    let window = Window::builder(app, laid.label)
+        .title(laid.title)
         .inner_size(OWN_WINDOW_WIDTH, OWN_WINDOW_HEIGHT)
-        .position(x, y)
+        .position(laid.origin.x, laid.origin.y)
         .build()
         .map_err(failure_text)?;
     webview.reparent(&window).map_err(failure_text)?;
@@ -514,10 +518,10 @@ fn blank_facts() -> Value {
     json!({ "url": BLANK, "title": "", "canGoBack": false, "canGoForward": false, "isLoading": false })
 }
 
-fn own_window_origin(app: &AppHandle<Wry>) -> (f64, f64) {
+fn own_window_origin(app: &AppHandle<Wry>) -> LogicalPosition<f64> {
     let scale = app.get_window(MAIN_WINDOW).and_then(|window| window.scale_factor().ok()).unwrap_or(1.0);
-    let Ok(cursor) = app.cursor_position() else { return (OWN_WINDOW_FALLBACK_AT, OWN_WINDOW_FALLBACK_AT) };
-    (cursor.x / scale - OWN_WINDOW_WIDTH / 2.0, cursor.y / scale - OWN_WINDOW_GRAB_TOP)
+    let Ok(cursor) = app.cursor_position() else { return LogicalPosition::new(OWN_WINDOW_FALLBACK_AT, OWN_WINDOW_FALLBACK_AT) };
+    LogicalPosition::new(cursor.x / scale - OWN_WINDOW_WIDTH / 2.0, cursor.y / scale - OWN_WINDOW_GRAB_TOP)
 }
 
 fn fill_window(webview: &Webview<Wry>, width: f64, height: f64) -> Answer<Value> {

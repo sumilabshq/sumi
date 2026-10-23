@@ -1,91 +1,8 @@
-use super::pages::Pages;
-use objc2_core_graphics::{CGEventSource, CGEventSourceStateID, CGMouseButton};
-use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-use tauri::{AppHandle, Manager, PhysicalPosition, Wry};
+use tauri::{AppHandle, LogicalPosition, Manager, Monitor, Window, Wry};
 
-const POLL: Duration = Duration::from_millis(16);
 const MAIN_WINDOW: &str = "main";
-const GRAB_TOP_PX: f64 = 20.0;
-
-pub struct TearOff {
-    watch: AtomicU64,
-}
-
-pub struct TornPage {
-    pub page_id: String,
-    pub title: String,
-}
-
-impl TearOff {
-    pub fn new() -> Self {
-        TearOff { watch: AtomicU64::new(0) }
-    }
-
-    pub fn stop(&self) {
-        self.watch.fetch_add(1, Ordering::SeqCst);
-    }
-
-    pub fn watch(self: &Arc<Self>, pages: &Arc<Pages>, app: &AppHandle<Wry>, page: TornPage) {
-        let watch = self.watch.fetch_add(1, Ordering::SeqCst) + 1;
-        let tear_off = self.clone();
-        let pages = pages.clone();
-        let app = app.clone();
-        thread::spawn(move || tear_off.follow(watch, &pages, &app, &page));
-    }
-
-    fn is_current(&self, watch: u64) -> bool {
-        self.watch.load(Ordering::SeqCst) == watch
-    }
-
-    fn follow(&self, watch: u64, pages: &Arc<Pages>, app: &AppHandle<Wry>, page: &TornPage) {
-        eprintln!("[browser] page {} lifted → watching the cursor for the studio edge", page.page_id);
-
-        if !self.waits_to_leave(watch, app) {
-            eprintln!("[browser] page {} stays in the studio (released inside it)", page.page_id);
-            return;
-        }
-
-        eprintln!("[browser] page {} studio → own window (dragged out of the studio)", page.page_id);
-
-        if let Err(failure) = pages.open_own_window(app, &page.page_id, &page.title) {
-            eprintln!("[browser] page {} could not leave the studio: {failure}", page.page_id);
-            return;
-        }
-
-        while self.is_current(watch) && is_mouse_down() {
-            move_under_cursor(pages, app, &page.page_id);
-            thread::sleep(POLL);
-        }
-    }
-
-    fn waits_to_leave(&self, watch: u64, app: &AppHandle<Wry>) -> bool {
-        loop {
-            thread::sleep(POLL);
-
-            if !self.is_current(watch) || !is_mouse_down() {
-                return false;
-            }
-
-            if is_outside_studio(app) {
-                return true;
-            }
-        }
-    }
-}
-
-fn is_mouse_down() -> bool {
-    CGEventSource::button_state(CGEventSourceStateID::CombinedSessionState, CGMouseButton::Left)
-}
-
-fn is_outside_studio(app: &AppHandle<Wry>) -> bool {
-    let Some(main) = app.get_window(MAIN_WINDOW) else { return false };
-    let (Ok(at), Ok(size), Ok(cursor)) = (main.outer_position(), main.outer_size(), app.cursor_position()) else { return false };
-    let frame = Frame { left: f64::from(at.x), top: f64::from(at.y), width: f64::from(size.width), height: f64::from(size.height) };
-    is_outside(&frame, cursor.x, cursor.y)
-}
+const NO_STUDIO: &str = "The studio window is not open, so a dragged tab has no window to leave.";
+const NO_SCREEN: &str = "No screen holds the cursor, so a torn-off window has nowhere to stand.";
 
 pub struct Frame {
     pub left: f64,
@@ -94,17 +11,66 @@ pub struct Frame {
     pub height: f64,
 }
 
+pub struct TornWindow {
+    pub width: f64,
+    pub height: f64,
+    pub grab_top: f64,
+}
+
+pub struct OwnWindowAsk<'a> {
+    pub studio: &'a Frame,
+    pub screen: &'a Frame,
+    pub cursor: (f64, f64),
+    pub window: &'a TornWindow,
+}
+
 pub fn is_outside(frame: &Frame, x: f64, y: f64) -> bool {
     x < frame.left || y < frame.top || x > frame.left + frame.width || y > frame.top + frame.height
 }
 
-fn move_under_cursor(pages: &Pages, app: &AppHandle<Wry>, page_id: &str) {
-    let Some(window) = pages.own_window_label(page_id).and_then(|label| app.get_window(&label)) else { return };
-    let (Ok(size), Ok(scale), Ok(cursor)) = (window.outer_size(), window.scale_factor(), app.cursor_position()) else { return };
-    let x = cursor.x - f64::from(size.width) / 2.0;
-    let y = cursor.y - GRAB_TOP_PX * scale;
+pub fn own_window_spot(ask: &OwnWindowAsk) -> Option<(f64, f64)> {
+    let (x, y) = ask.cursor;
 
-    if let Err(failure) = window.set_position(PhysicalPosition::new(x, y)) {
-        eprintln!("[browser] own window of {page_id} could not follow the cursor: {failure}");
+    if !is_outside(ask.studio, x, y) {
+        return None;
+    }
+
+    let OwnWindowAsk { screen, window, .. } = ask;
+    let left = kept_between(x - window.width / 2.0, screen.left, screen.left + screen.width - window.width);
+    let top = kept_between(y - window.grab_top, screen.top, screen.top + screen.height - window.height);
+    Some((left, top))
+}
+
+fn kept_between(value: f64, lowest: f64, highest: f64) -> f64 {
+    value.min(highest).max(lowest)
+}
+
+pub fn origin_at_cursor(app: &AppHandle<Wry>, window: &TornWindow) -> Result<Option<LogicalPosition<f64>>, String> {
+    let main = app.get_window(MAIN_WINDOW).ok_or(NO_STUDIO)?;
+    let cursor = app.cursor_position().map_err(|failure| failure.to_string())?;
+    let monitor = screen_under(app, &main, cursor.x, cursor.y).ok_or(NO_SCREEN)?;
+    let scale = monitor.scale_factor();
+    let physical = TornWindow { width: window.width * scale, height: window.height * scale, grab_top: window.grab_top * scale };
+    let ask = OwnWindowAsk { studio: &frame_of(&main)?, screen: &work_area_of(&monitor), cursor: (cursor.x, cursor.y), window: &physical };
+    Ok(own_window_spot(&ask).map(|(x, y)| LogicalPosition::new(x / scale, y / scale)))
+}
+
+fn screen_under(app: &AppHandle<Wry>, main: &Window<Wry>, x: f64, y: f64) -> Option<Monitor> {
+    app.monitor_from_point(x, y).ok().flatten().or_else(|| main.current_monitor().ok().flatten())
+}
+
+fn frame_of(window: &Window<Wry>) -> Result<Frame, String> {
+    let at = window.outer_position().map_err(|failure| failure.to_string())?;
+    let size = window.outer_size().map_err(|failure| failure.to_string())?;
+    Ok(Frame { left: f64::from(at.x), top: f64::from(at.y), width: f64::from(size.width), height: f64::from(size.height) })
+}
+
+fn work_area_of(monitor: &Monitor) -> Frame {
+    let area = monitor.work_area();
+    Frame {
+        left: f64::from(area.position.x),
+        top: f64::from(area.position.y),
+        width: f64::from(area.size.width),
+        height: f64::from(area.size.height),
     }
 }
