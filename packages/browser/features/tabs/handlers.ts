@@ -30,6 +30,8 @@ import {
 	ReloadPageCommand,
 	ShowTabCommand,
 	FocusOwnWindowCommand,
+	StopTearOffCommand,
+	WatchTearOffCommand,
 	OpenTabInOwnWindowCommand,
 } from "./contract.js";
 
@@ -176,8 +178,12 @@ export const ReloadPageCommandHandler = handler(ReloadPageCommand, BrowserClient
 export const OpenTabInOwnWindowCommandHandler = handler(OpenTabInOwnWindowCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPagesGateway }) => {
-		if (!browserPagesGateway.isAvailable()) {
+		if (!browserPagesGateway.canOpenOwnWindow()) {
 			return refuse(NO_OWN_WINDOWS);
+		}
+
+		if (!browserPagesGateway.tabs().some(({ id }) => id === tabId)) {
+			return refuse(NO_TAB);
 		}
 
 		browserPagesGateway.openInOwnWindow(tabId);
@@ -194,6 +200,24 @@ export const AttachPagesCommandHandler = handler(AttachPagesCommand, BrowserClie
 export const DetachPagesCommandHandler = handler(DetachPagesCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })
 	.handle(({ from }, { browserPagesGateway }) => browserPagesGateway.detach(from));
+
+export const WatchTearOffCommandHandler = handler(WatchTearOffCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle(({ tabId }, { browserPagesGateway }) => {
+		if (!browserPagesGateway.canOpenOwnWindow()) {
+			return refuse(NO_OWN_WINDOWS);
+		}
+
+		if (!browserPagesGateway.tabs().some(({ id }) => id === tabId)) {
+			return refuse(NO_TAB);
+		}
+
+		browserPagesGateway.watchTearOff(tabId);
+	});
+
+export const StopTearOffCommandHandler = handler(StopTearOffCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle((_input, { browserPagesGateway }) => browserPagesGateway.stopTearOff());
 
 export function webAddressOf(typed: string): string {
 	const address = typed.trim();

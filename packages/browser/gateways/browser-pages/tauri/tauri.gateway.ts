@@ -10,14 +10,15 @@ import type { Attached } from "./page-attachment.js";
 import { PageCover } from "./page-cover.js";
 import { PageLooks } from "./page-looks.js";
 import { PagePlacementWatch } from "./page-placement.js";
-import type { PageEvent, PageFrame, PagePlacement, PagesBridge } from "./pages-bridge.js";
+import { isOwnWindowEvent } from "./pages-bridge.js";
+import type { PageEvent, PageFrame, PageLoadEvent, PagePlacement, PagesBridge } from "./pages-bridge.js";
 import { PanePages } from "./pane-pages.js";
 import { TauriPage } from "./tauri-page.js";
 
 const FIRST_TAB = "tab-1";
 const NO_TAB = 'the browser holds no tab "{tabId}"';
 const IN_PAGE_CHECK_MS = 1000;
-const LOOK_CHANGING_EVENTS: ReadonlySet<PageEvent["kind"]> = new Set(["committed", "finished", "title"]);
+const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly watchers = new Set<() => void>();
@@ -114,16 +115,28 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.told();
 	}
 
+	canOpenOwnWindow(): boolean {
+		return true;
+	}
+
 	isInOwnWindow(tabId: string): boolean {
 		return this.ownWindows.has(tabId);
 	}
 
 	openInOwnWindow(tabId: string): void {
-		this.ownWindows.open(tabId, this.pageOf(tabId).now().title);
+		this.ownWindows.open(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
 	}
 
 	focusOwnWindow(tabId: string): void {
 		this.ownWindows.focus(tabId);
+	}
+
+	watchTearOff(tabId: string): void {
+		this.ownWindows.watchTearOff(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
+	}
+
+	stopTearOff(): void {
+		this.ownWindows.stopTearOff();
 	}
 
 	attachInPane(tabId: string, into: HTMLElement): void {
@@ -161,6 +174,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 		page.destroy();
 		this.looks.forget(tabId);
+		this.ownWindows.forget(tabId);
 
 		if (this.shown === tabId) {
 			this.shown = null;
@@ -245,7 +259,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private apply(event: PageEvent): void {
-		if (this.ownWindows.applyEvent(event)) {
+		if (isOwnWindowEvent(event)) {
+			this.ownWindows.applyEvent(event);
 			return;
 		}
 
@@ -257,20 +272,21 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private place(placement: PagePlacement): void {
-		const page = this.shown;
-
-		if (page === null || this.inPanes.has(page)) {
+		if (this.shown === null || this.inPanes.has(this.shown)) {
 			this.syncNative();
 			return;
 		}
 
-		this.placeTab(page, placement);
+		this.placeTab(this.shown, placement);
 	}
 
 	private placeTab(page: string, placement: PagePlacement): void {
-		void this.bridge.place(page, placement).catch((failure: unknown) => {
-			console.error("[widgetarium] the browser page could not follow its card", failure);
-		});
+		if (!this.ownWindows.has(page)) {
+			void this.bridge.place(page, placement).catch((failure: unknown) => {
+				console.error("[widgetarium] the browser page could not follow its card", failure);
+			});
+		}
+
 		this.syncNative();
 	}
 
@@ -334,16 +350,10 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	private checkInPageNavigation(): void {
 		const drawn = this.drawnPage();
-		const page = drawn === null ? undefined : this.heldPageOf(drawn);
 
-		if (drawn === null || page === undefined || page.now().isLoading) {
-			return;
+		if (drawn !== null) {
+			this.heldPageOf(drawn)?.checkInPageNavigation();
 		}
-
-		void this.bridge
-			.facts(drawn)
-			.then((facts) => page.noteFacts(facts))
-			.catch(() => undefined);
 	}
 
 	private stopAttached(): void {

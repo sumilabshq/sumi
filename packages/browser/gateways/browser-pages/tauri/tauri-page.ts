@@ -1,6 +1,6 @@
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
 import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
-import type { PageEvent, PageFacts, PagesBridge } from "./pages-bridge.js";
+import type { PageFacts, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
 import { base64Of, contentOf, faviconOf, frameUrlsOf, hasSecretFieldIn, pngSizeOf } from "./page-reads.js";
 
 const NEW_TAB_TITLE = "New tab";
@@ -151,18 +151,27 @@ export class TauriPage {
 		};
 	}
 
-	apply(event: PageEvent): void {
-		const reactions: Record<PageEvent["kind"], () => void> = {
+	apply(event: PageLoadEvent): void {
+		const reactions: Record<PageLoadEvent["kind"], () => void> = {
 			started: () => this.update({ isLoading: true }),
 			committed: () => this.noteCommit(event.facts),
 			finished: () => this.noteFinish(event.facts),
 			title: () => this.noteFacts(event.facts),
 			failed: () => this.noteFailure(event),
 			stopped: () => this.noteStop(event.facts),
-			"own-window-opened": () => this.noteFacts(event.facts),
-			"own-window-closed": () => this.noteFacts(event.facts),
 		};
 		reactions[event.kind]();
+	}
+
+	checkInPageNavigation(): void {
+		if (this.state.isLoading) {
+			return;
+		}
+
+		void this.bridge
+			.facts(this.state.id)
+			.then((facts) => this.noteFacts(facts))
+			.catch(() => undefined);
 	}
 
 	noteFacts(facts: PageFacts): void {
@@ -210,7 +219,7 @@ export class TauriPage {
 		this.releaseSettledWaiters();
 	}
 
-	private noteFailure(event: PageEvent): void {
+	private noteFailure(event: PageLoadEvent): void {
 		if (event.failure === null) {
 			return;
 		}
@@ -245,7 +254,7 @@ export class TauriPage {
 		this.noteFacts(await this.bridge.facts(this.state.id));
 	}
 
-	private ensureCreated(): Promise<void> {
+	ensureCreated(): Promise<void> {
 		this.created ??= this.bridge.create(this.state.id, this.profileId);
 		return this.created;
 	}

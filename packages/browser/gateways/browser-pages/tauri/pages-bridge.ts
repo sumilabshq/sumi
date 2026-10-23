@@ -17,23 +17,29 @@ export const PageFactsSchema = z.object({
 
 export type PageFacts = z.infer<typeof PageFactsSchema>;
 
-export const PageEventSchema = z.object({
+const PageEventBaseSchema = z.object({
 	page: z.string(),
-	kind: z.enum([
-		"started",
-		"committed",
-		"finished",
-		"title",
-		"failed",
-		"stopped",
-		"own-window-opened",
-		"own-window-closed",
-	]),
 	facts: PageFactsSchema,
 	failure: PageFailureSchema.nullable(),
 });
 
-export type PageEvent = z.infer<typeof PageEventSchema>;
+const PageLoadEventSchema = PageEventBaseSchema.extend({
+	kind: z.enum(["started", "committed", "finished", "title", "failed", "stopped"]),
+});
+
+const OwnWindowEventSchema = PageEventBaseSchema.extend({
+	kind: z.enum(["own-window-opened", "own-window-closed"]),
+});
+
+export const PageEventSchema = z.union([PageLoadEventSchema, OwnWindowEventSchema]);
+
+export type PageLoadEvent = z.infer<typeof PageLoadEventSchema>;
+export type OwnWindowEvent = z.infer<typeof OwnWindowEventSchema>;
+export type PageEvent = PageLoadEvent | OwnWindowEvent;
+
+export function isOwnWindowEvent(event: PageEvent): event is OwnWindowEvent {
+	return OwnWindowEventSchema.shape.kind.safeParse(event.kind).success;
+}
 
 const FrameAnswersSchema = z.array(
 	z.object({
@@ -74,6 +80,8 @@ export interface PagesBridge {
 	cover(page: string, covered: boolean): Promise<void>;
 	openInOwnWindow(page: string, title: string): Promise<void>;
 	focusOwnWindow(page: string): Promise<void>;
+	watchTearOff(page: string, title: string): Promise<void>;
+	stopTearOff(): Promise<void>;
 	ownWindows(): Promise<readonly string[]>;
 	snapshot(page: string, region: PageRegion | null, format: ShotFormat): Promise<Uint8Array>;
 	evaluate(page: string, script: string): Promise<string>;
@@ -106,6 +114,8 @@ export function tauriPagesBridge(ipc: BrowserPagesIpc): PagesBridge {
 		cover: (page, covered) => done("cover", { page, covered }),
 		openInOwnWindow: (page, title) => done("open_own_window", { page, title }),
 		focusOwnWindow: (page) => done("focus_own_window", { page }),
+		watchTearOff: (page, title) => done("watch_tear_off", { page, title }),
+		stopTearOff: () => done("stop_tear_off", {}),
 		ownWindows: async () => OwnWindowsSchema.parse(await call("own_windows")),
 		snapshot: async (page, region, format) => bytesOf(await call("snapshot", { page, region, format })),
 		evaluate: async (page, script) => textOf(await call("evaluate", { page, script })),

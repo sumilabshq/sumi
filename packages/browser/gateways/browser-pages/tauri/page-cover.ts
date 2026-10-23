@@ -26,7 +26,7 @@ export interface PageCoverHold {
 }
 
 export class PageCover {
-	private isCovered = false;
+	private wantedPage: string | null = null;
 	private coveredPage: string | null = null;
 	private turn = 0;
 	private framePending = false;
@@ -60,10 +60,6 @@ export class PageCover {
 		this.watched.observe(document.body, WATCHED_CHANGES);
 	}
 
-	covers(): boolean {
-		return this.isCovered;
-	}
-
 	stop(): void {
 		this.watched.disconnect();
 		this.isFollowing = false;
@@ -71,9 +67,10 @@ export class PageCover {
 		this.dropPicture();
 
 		const page = this.coveredPage;
+		this.wantedPage = null;
+		this.coveredPage = null;
 
-		if (this.isCovered && page !== null) {
-			this.isCovered = false;
+		if (page !== null) {
 			void this.bridge.cover(page, false).catch((failure: unknown) => {
 				console.error("[widgetarium] the browser page could not come back after its card left", failure);
 			});
@@ -103,16 +100,17 @@ export class PageCover {
 
 	private recheck(): void {
 		const page = this.drawnPage();
-		const isWanted = page !== null && this.hasOverlay();
+		const wanted = page !== null && this.hasOverlay() ? page : null;
 
-		if (isWanted === this.isCovered) {
+		if (wanted === this.wantedPage) {
 			return;
 		}
 
-		this.isCovered = isWanted;
-		void (page !== null && isWanted ? this.cover(page) : this.uncover()).catch((failure: unknown) => {
+		console.info(`[widgetarium] browser page cover ${this.wantedPage ?? "none"} → ${wanted ?? "none"}`);
+		this.wantedPage = wanted;
+		void (wanted === null ? this.uncover() : this.cover(wanted)).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser page could not step aside for an overlay", failure);
-			return this.isCovered && page !== null ? this.bridge.cover(page, true) : undefined;
+			return wanted !== null && this.wantedPage === wanted ? this.bridge.cover(wanted, true) : undefined;
 		});
 	}
 
@@ -145,8 +143,19 @@ export class PageCover {
 			return;
 		}
 
+		const previous = this.coveredPage;
 		this.coveredPage = page;
 		await this.bridge.cover(page, true);
+
+		if (previous !== null && previous !== page) {
+			await this.bridge.cover(previous, false).catch((failure: unknown) => {
+				console.error(
+					`[widgetarium] browser page ${previous} stays hidden: it could not come back after the cover moved`,
+					failure,
+				);
+			});
+		}
+
 		console.info(`[widgetarium] browser page ${page} shown → picture (${Math.round(performance.now() - started)} ms)`);
 	}
 
@@ -156,6 +165,10 @@ export class PageCover {
 
 		if (page !== null) {
 			await this.bridge.cover(page, false);
+
+			if (this.coveredPage === page) {
+				this.coveredPage = null;
+			}
 		}
 
 		requestAnimationFrame(() => {

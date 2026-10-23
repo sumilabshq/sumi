@@ -47,6 +47,10 @@ export class PaneBrowserPagesGateway extends BrowserPagesGateway {
 		this.shared.detachFromPane(tabId, from);
 	}
 
+	canOpenOwnWindow(): boolean {
+		return this.shared.canOpenOwnWindow();
+	}
+
 	isInOwnWindow(tabId: string): boolean {
 		return this.shared.isInOwnWindow(tabId);
 	}
@@ -57,6 +61,14 @@ export class PaneBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(tabId: string): void {
 		this.shared.focusOwnWindow(tabId);
+	}
+
+	watchTearOff(tabId: string): void {
+		this.shared.watchTearOff(tabId);
+	}
+
+	stopTearOff(): void {
+		this.shared.stopTearOff();
 	}
 
 	create(tabId: string): void {

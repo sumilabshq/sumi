@@ -32,6 +32,10 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	detachFromPane(): void {}
 
+	canOpenOwnWindow(): boolean {
+		return false;
+	}
+
 	isInOwnWindow(): boolean {
 		return false;
 	}
@@ -41,6 +45,10 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	focusOwnWindow(): void {}
+
+	watchTearOff(): void {}
+
+	stopTearOff(): void {}
 
 	create(): void {
 		throw new Error(NOT_AVAILABLE_ON_HOST);

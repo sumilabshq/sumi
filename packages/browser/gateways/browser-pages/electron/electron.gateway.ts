@@ -85,6 +85,10 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	detachFromPane(): void {}
 
+	canOpenOwnWindow(): boolean {
+		return false;
+	}
+
 	isInOwnWindow(): boolean {
 		return false;
 	}
@@ -95,6 +99,10 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	focusOwnWindow(): void {}
+
+	watchTearOff(): void {}
+
+	stopTearOff(): void {}
 
 	create(tabId: string): void {
 		if (this.held.some((tab) => tab.now().id === tabId)) {

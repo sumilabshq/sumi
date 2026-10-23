@@ -12,9 +12,12 @@ export abstract class BrowserPagesGateway {
 	abstract detach(from: HTMLElement): void;
 	abstract attachInPane(tabId: string, into: HTMLElement): void;
 	abstract detachFromPane(tabId: string, from: HTMLElement): void;
+	abstract canOpenOwnWindow(): boolean;
 	abstract isInOwnWindow(tabId: string): boolean;
 	abstract openInOwnWindow(tabId: string): void;
 	abstract focusOwnWindow(tabId: string): void;
+	abstract watchTearOff(tabId: string): void;
+	abstract stopTearOff(): void;
 	abstract create(tabId: string): void;
 	abstract close(tabId: string): void;
 	abstract freeze(tabId: string): void;

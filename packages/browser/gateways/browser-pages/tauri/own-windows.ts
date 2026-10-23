@@ -1,4 +1,4 @@
-import type { PageEvent, PagesBridge } from "./pages-bridge.js";
+import type { OwnWindowEvent, PagesBridge } from "./pages-bridge.js";
 
 export class OwnWindows {
 	private readonly pages = new Set<string>();
@@ -12,9 +12,25 @@ export class OwnWindows {
 		return this.pages.has(tabId);
 	}
 
-	open(tabId: string, title: string): void {
-		void this.bridge.openInOwnWindow(tabId, title).catch((failure: unknown) => {
-			console.error(`[widgetarium] the browser page ${tabId} could not open in its own window`, failure);
+	open(tabId: string, title: string, created: Promise<void>): void {
+		void created
+			.then(() => this.bridge.openInOwnWindow(tabId, title))
+			.catch((failure: unknown) => {
+				console.error(`[widgetarium] the browser page ${tabId} could not open in its own window`, failure);
+			});
+	}
+
+	watchTearOff(tabId: string, title: string, created: Promise<void>): void {
+		void created
+			.then(() => this.bridge.watchTearOff(tabId, title))
+			.catch((failure: unknown) => {
+				console.error(`[widgetarium] the browser page ${tabId} cannot be dragged out of the studio`, failure);
+			});
+	}
+
+	stopTearOff(): void {
+		void this.bridge.stopTearOff().catch((failure: unknown) => {
+			console.error("[widgetarium] the browser could not stop watching a dragged tab", failure);
 		});
 	}
 
@@ -38,9 +54,18 @@ export class OwnWindows {
 		this.changed();
 	}
 
-	applyEvent(event: PageEvent): boolean {
-		if (event.kind !== "own-window-opened" && event.kind !== "own-window-closed") {
-			return false;
+	forget(tabId: string): void {
+		if (!this.pages.delete(tabId)) {
+			return;
+		}
+
+		console.info(`[widgetarium] browser page ${tabId} own window → none (the page closed)`);
+		this.changed();
+	}
+
+	applyEvent(event: OwnWindowEvent): void {
+		if (event.kind === "own-window-closed" && !this.pages.has(event.page)) {
+			return;
 		}
 
 		console.info(
@@ -54,6 +79,5 @@ export class OwnWindows {
 		}
 
 		this.changed();
-		return true;
 	}
 }
