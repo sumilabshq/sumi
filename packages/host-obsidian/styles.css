@@ -14591,6 +14591,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:block {
 		display: block !important;
 	}
+	.cv\:contents {
+		display: contents !important;
+	}
 	.cv\:flex {
 		display: flex !important;
 	}
@@ -15519,6 +15522,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			color: color-mix(in srgb, var(--brand) 60%, var(--foreground)) !important;
 		}
 	}
+	.cv\:text-\[color-mix\(in_srgb\,var\(--sumi-text\)_38\%\,var\(--sumi-frame\)\)\] {
+		color: var(--sumi-text) !important;
+		@supports (color: color-mix(in lab, red, red)) {
+			color: color-mix(in srgb, var(--sumi-text) 38%, var(--sumi-frame)) !important;
+		}
+	}
 	.cv\:text-\[var\(--sumi-text\)\] {
 		color: var(--sumi-text) !important;
 	}
@@ -15854,6 +15863,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			transform var(--wg-press) var(--wg-ease) !important;
 	}
 	@media (hover: hover) {
+		.cv\:group-hover\/row\:hidden:is(:where(.cv\:group\/row):hover *) {
+			display: none !important;
+		}
 		.cv\:group-hover\/row\:inline-flex:is(:where(.cv\:group\/row):hover *) {
 			display: inline-flex !important;
 		}
@@ -16006,6 +16018,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:even\:rotate-1:nth-child(even) {
 		rotate: 1deg !important;
+	}
+	.cv\:empty\:hidden:empty {
+		display: none !important;
 	}
 	.cv\:empty\:pb-0:empty {
 		padding-bottom: 0px !important;
@@ -17894,6 +17909,76 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	width: var(--sumi-tip-arrow);
 	height: var(--sumi-tip-arrow);
 	background: var(--sumi-text);
+}
+.wg-pane-board {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+}
+.wg-pane {
+	position: absolute;
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out);
+}
+.wg-pane > .wg-shell-plate {
+	flex: 1 1 0;
+	width: auto;
+	min-width: 0;
+}
+.wg-pane-preview {
+	position: absolute;
+	box-sizing: border-box;
+	border-radius: var(--sumi-r-group);
+	background: var(--sumi-accent-soft);
+	pointer-events: none;
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out);
+}
+.wg-pane-edge {
+	position: absolute;
+	display: flex;
+	width: var(--sumi-gap);
+}
+.wg-pane-edge > .wg-shell-edge {
+	flex: 1;
+}
+.wg-pane-empty {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-group);
+	background: var(--sumi-sunken);
+}
+.wg-plate-head .wg-pane-close {
+	opacity: 0;
+	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
+}
+.wg-plate-head:is(:hover, :focus-within) .wg-pane-close {
+	opacity: 1;
+	transition-duration: 0ms;
+}
+.wg-pane-empty-actions {
+	display: flex;
+	gap: var(--sumi-sp-4);
+}
+.wg-pane-note {
+	margin: auto;
+	color: var(--sumi-text-3);
+}
+.wg-pane-board[data-following-edge] > .wg-pane {
+	transition: none;
 }
 @property --tw-translate-x {
 	syntax: "*";

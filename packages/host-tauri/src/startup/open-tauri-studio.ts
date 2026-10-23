@@ -133,15 +133,16 @@ function startedStudioOf(opening: StudioOpening, docs: WorkspaceDocs, started: S
 	const studio = studioHostOf(opening, docs, started.workspacesParts);
 	const state = createStudioState();
 	const browser = startTauriBrowser(tauriProfileGateways(docs.profile));
+	const shell = shellPartsInSettings(opening.settings);
 	const kept = keptGatewaysOf(docs, started.workspacesParts);
 	return startStudio(opening.project, {
 		appId: opening.workspace.id,
 		studio,
 		state,
-		shell: shellPartsInSettings(opening.settings),
+		shell,
 		browser,
 		...startedPartsFieldsOf(started),
-		appHost: startedAppHostParts({ state, browser, workspace: opening.workspace.id, studio, kept }),
+		appHost: startedAppHostParts({ state, browser, shell, workspace: opening.workspace.id, studio, kept }),
 	});
 }
 

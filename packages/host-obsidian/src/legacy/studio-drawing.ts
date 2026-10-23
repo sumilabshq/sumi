@@ -2,6 +2,8 @@ import type { App, TFile, WorkspaceLeaf } from "obsidian";
 import type { BrowserParts } from "@widgetarium/browser/gateways";
 import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { AppHostParts } from "@widgetarium/app-host/gateways";
+import { webShellParts } from "@widgetarium/shell/gateways";
+import type { ShellParts } from "@widgetarium/shell/gateways";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
@@ -46,6 +48,7 @@ interface StudioDrawing {
 	readonly studio: StudioHostPort;
 	readonly state: StudioState;
 	readonly appHost: AppHostParts;
+	readonly shell: ShellParts;
 	readonly routing: StudioRouting;
 }
 
@@ -65,8 +68,9 @@ export function drawStudio(place: StudioPlace, shown: ShownNote, routing: Studio
 	}
 	const studio = obsidianStudioHost({ app: place.app, leaf: shown.leaf, frame: shown.frame, viewType: place.viewType });
 	const state = createStudioState();
-	const appHost = startedAppHostParts({ state, browser: place.browser, workspace: note.folder, studio });
-	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, appHost, routing });
+	const shell = webShellParts();
+	const appHost = startedAppHostParts({ state, browser: place.browser, shell, workspace: note.folder, studio });
+	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, appHost, shell, routing });
 	return () => {
 		stopDrawing();
 		appHost.pageFactsGateway.stop();
@@ -105,7 +109,7 @@ async function openingElementOf(drawing: StudioDrawing, opening: AppOpening): Pr
 }
 
 function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: StudioDesign): StartedStudio {
-	const { place, shown, note, studio, state, appHost } = drawing;
+	const { place, shown, note, studio, state, appHost, shell } = drawing;
 	const notePath = shown.file.path;
 	const router = drawing.routing.routerFor(note, opening.routes);
 	const hostOf = hostOverRouter(() => place.hostOf(notePath), router);
@@ -120,6 +124,7 @@ function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: Stu
 			assistantGateways: place.assistantGateways,
 			browser: place.browser,
 			appHost,
+			shell,
 			appId: note.folder,
 			design,
 		},

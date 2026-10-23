@@ -20,6 +20,7 @@ import { app } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { ShellClientModule } from "@widgetarium/shell/module";
 import { webShellParts } from "@widgetarium/shell/gateways";
+import type { PaneView } from "@widgetarium/shell";
 import type { ShellParts } from "@widgetarium/shell/gateways";
 import { chatAppOf } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -29,6 +30,8 @@ import type { WorkspacesParts } from "@widgetarium/workspaces/gateways";
 import { withChatComposer } from "../browser/chat-app-composer.gateway.js";
 import { AppPlate } from "../frame/app-plate.js";
 import { ChatPlate } from "../frame/chat-plate.js";
+import { EmptyPanes } from "../frame/empty-panes.js";
+import { PaneAppPlate } from "../frame/pane-app-plate.js";
 import { StudioLayout } from "../frame/studio-layout.js";
 import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
@@ -91,6 +94,7 @@ interface TabsAsk {
 	readonly appId: string;
 	readonly appName: string;
 	readonly studio: StudioHostPort;
+	readonly shell: ShellParts;
 }
 
 interface StudioScreen {
@@ -113,11 +117,12 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const state = start.state ?? createStudioState();
 	const chat = startedChatOf(start, state);
 	const lent = lentPortsOf(opened, start);
+	const shell = start.shell ?? webShellParts();
 	return {
 		...chat,
 		...lent,
-		...startedTabsOf(start, { ...lent, state, browser: chat.browser, appName: opened.app.name }),
-		...startedShellOf(start),
+		...startedTabsOf(start, { ...lent, state, browser: chat.browser, appName: opened.app.name, shell }),
+		...startedShellOf(shell),
 		project,
 		state,
 	};
@@ -140,10 +145,30 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		frame: screen.frame,
 		shellApp: started.shellApp,
 		left: started.chatsColumn.column,
-		chat: chatPlateOf(started, screen.host),
-		app: appPlateOf(started, screen),
+		panes: {
+			drawn: (view: PaneView) => paneOf(started, screen, view),
+			empty: h(EmptyPanes),
+		},
 		panel: cataloguePanelOf(started, screen),
 		right: h(TabsSidebarColumn, { hostParts: started.appHost }),
+	});
+}
+
+function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): ReactElement {
+	if (view.kind === "chat") {
+		return chatPlateOf(started, screen.host);
+	}
+
+	if (view.tabId === null) {
+		return appPlateOf(started, screen);
+	}
+
+	return h(PaneAppPlate, {
+		tabId: view.tabId,
+		hostTabs: started.appHost.hostTabs,
+		browser: started.browser,
+		design: started.design,
+		project: started.project,
 	});
 }
 
@@ -208,16 +233,19 @@ function lentPortsOf(opened: OpenedApp, start: StudioStart): Pick<StartedStudio,
 function startedTabsOf(start: StudioStart, tabs: TabsAsk): Pick<StartedStudio, "appHost" | "chatsColumn"> {
 	const { state, browser, studio } = tabs;
 	const chatsColumn = createChatsColumnApp(start.workspaces ?? webWorkspacesParts(tabs.appName));
-	const kept = { activeChat: start.activeChat ?? chatsColumn.activeChat };
+	const kept = {
+		activeChat: start.activeChat ?? chatsColumn.activeChat,
+	};
 	return {
 		chatsColumn,
-		appHost: start.appHost ?? startedAppHostParts({ state, browser, workspace: tabs.appId, studio, kept }),
+		appHost:
+			start.appHost ?? startedAppHostParts({ state, browser, shell: tabs.shell, workspace: tabs.appId, studio, kept }),
 	};
 }
 
-function startedShellOf(start: StudioStart): Pick<StartedStudio, "shellApp" | "shellRegistry"> {
+function startedShellOf(shell: ShellParts): Pick<StartedStudio, "shellApp" | "shellRegistry"> {
 	return {
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
-		shellApp: app({ modules: [ShellClientModule.with(start.shell ?? webShellParts())] }),
+		shellApp: app({ modules: [ShellClientModule.with(shell)] }),
 	};
 }
