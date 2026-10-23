@@ -10,9 +10,17 @@ import { TauriOpening } from "./startup/tauri-opening.js";
 import { TauriStartup } from "./startup/tauri-startup.js";
 import { StoreClient } from "./store/store-client.js";
 import { WorkspaceClient } from "./workspace/workspace-client.js";
+import { forwardStudioLogs } from "./studio-log.js";
 import { followWindowDrag } from "./window-drag.js";
 
+const STUDIO_LOG_LINE = "plugin:studio-log|line";
+
 export function startTauriStudio(project: WidgetariumProject): ReactElement {
+	forwardStudioLogs({
+		send: (level, line) => invoke(STUDIO_LOG_LINE, { level, line }),
+		logged: console,
+		page: window,
+	});
 	followColourScheme();
 	followWindowDrag();
 	const store = new StoreClient(tauriInvoke);

@@ -9,6 +9,7 @@
 		"core:window:allow-is-fullscreen",
 		"core:window:allow-destroy",
 		"assistant:default",
-		"browser:default"
+		"browser:default",
+		"studio-log:default"
 	]
 }

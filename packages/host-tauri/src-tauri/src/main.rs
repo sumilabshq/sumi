@@ -4,6 +4,7 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(widgetarium_host_tauri_lib::store::init())
         .plugin(widgetarium_host_tauri_lib::browser::init())
+        .plugin(widgetarium_host_tauri_lib::studio_log::init())
         .run(tauri::generate_context!())
         .expect("the Widgetarium window failed to start");
 }
