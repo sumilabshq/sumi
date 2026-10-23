@@ -1,8 +1,9 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { waitUntil, waited } from "./chrome-ask.ts";
-import type { AskedPage } from "./chrome-ask.ts";
+import type { AskedPage, NativeDrag, PagePoint } from "./chrome-ask.ts";
 import { centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
+import { checksNativeDrag } from "./tabs-sidebar-drag-checks.ts";
 
 interface Measured {
 	readonly ms: number | null;
@@ -50,6 +51,16 @@ async function timed(page: AskedPage, action: string, act: () => Promise<void>):
 		measured.ms !== null && measured.ms < PAINT_BUDGET_MS,
 		measured,
 	);
+}
+
+async function lifted(page: AskedPage, from: PagePoint, to: PagePoint, steps = 14): Promise<NativeDrag> {
+	const drag = await page.lift({ from, to, steps, stepMs: 16 });
+
+	if (!drag.isLifted) {
+		check(`a press at ${from.join(",")} lifts a native drag`, false, from);
+	}
+
+	return drag;
 }
 
 async function idsOf(page: AskedPage, expression: string): Promise<readonly string[]> {
@@ -249,8 +260,7 @@ async function checksWobblyPress(page: AskedPage): Promise<void> {
 	);
 	const from = Array.isArray(bottom) ? ([Number(bottom[0]), Number(bottom[1])] as const) : ([0, 0] as const);
 	const to = [from[0], from[1] + 9] as const;
-	await page.drag({ from, to, steps: 3, stepMs: 16 });
-	await page.release(to);
+	await (await lifted(page, from, to, 3)).drop(to);
 	await waited(SETTLED_MS);
 	check(
 		"a press on an Essential that wobbles below it keeps it an Essential and adds no row",
@@ -287,24 +297,21 @@ async function checksEssentialsWidth(page: AskedPage): Promise<void> {
 
 	const tile = await centreOf(page, "[data-tabs-item=essential]");
 	const start = await centreOf(page, "[data-tabs-list] > [data-tabs-item=tab]");
-	await page.drag({ from: start, to: tile, steps: 16, stepMs: 16 });
+	const drag = await lifted(page, start, tile, 16);
 	await waited(300);
 	const room = await page.ask(
-		`(() => { const grid = document.querySelector("[data-tabs-essentials]").getBoundingClientRect(); const ghost = document.querySelector("[data-tabs-ghost]").getBoundingClientRect(); const tile = document.querySelector("[data-tabs-item=essential]").getBoundingClientRect(); return { half: Math.round((grid.width - 6) / 2), ghost: Math.round(ghost.width), tile: Math.round(tile.width) }; })()`,
+		`(() => { const grid = document.querySelector("[data-tabs-essentials]").getBoundingClientRect(); const tile = document.querySelector("[data-tabs-item=essential]").getBoundingClientRect(); return { half: Math.round((grid.width - 6) / 2), tile: Math.round(tile.width) }; })()`,
 	);
 	writeFileSync(
 		path.join(path.dirname(String(await page.ask("location.pathname"))), "drag-into-one-essential.png"),
 		await page.shoot(),
 	);
 	check(
-		"a row carried over one Essential halves the row: the tile and the ghost each take half",
-		typeof room === "object" &&
-			room !== null &&
-			Reflect.get(room, "ghost") === Reflect.get(room, "half") &&
-			Reflect.get(room, "tile") === Reflect.get(room, "half"),
+		"a row carried over one Essential halves the row: the tile gives the drop the other half",
+		typeof room === "object" && room !== null && Reflect.get(room, "tile") === Reflect.get(room, "half"),
 		room,
 	);
-	await page.release(tile);
+	await drag.drop(tile);
 	await waited(SETTLED_MS);
 	const two = await essentialsFitOf(page);
 	check("dropping it there leaves two Essentials that fill the row", two["tiles"] === 2 && isFilledRow(two, 2), two);
@@ -376,9 +383,9 @@ async function checksOneForm(page: AskedPage): Promise<void> {
 async function dragged(page: AskedPage, action: string, from: string, to: readonly [number, number]): Promise<void> {
 	const start = await centreOf(page, from);
 	await timed(page, action, async () => {
-		await page.drag({ from: start, to, steps: 14, stepMs: 16 });
+		const drag = await lifted(page, start, to);
 		await waited(260);
-		await page.release(to);
+		await drag.drop(to);
 	});
 }
 
@@ -408,23 +415,21 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 	const tile = await centreOf(page, '[data-tabs-item=essential][data-tabs-id="essential-3"]');
 	const start = await centreOf(page, '[data-tabs-id="tab-5"]');
 	await page.ask(`window.__arm()`);
-	await page.drag({ from: start, to: tile, steps: 16, stepMs: 16 });
+	const drag = await lifted(page, start, tile, 16);
 	await waited(300);
-	const ghost = await page.ask(
-		`(() => { const ghost = document.querySelector("[data-tabs-ghost]"); const box = ghost.getBoundingClientRect(); const cell = document.querySelector("[data-tabs-item=essential]").getBoundingClientRect(); const shifted = [...document.querySelectorAll("[data-tabs-item=essential]")].filter((one) => one.style.transform !== "").length; return { width: Math.round(box.width), height: Math.round(box.height), cell: Math.round(cell.width), radius: getComputedStyle(ghost).borderRadius, words: getComputedStyle(ghost.lastElementChild).opacity, shifted }; })()`,
+	const room = await page.ask(
+		`(() => { const row = document.querySelector('[data-tabs-id="tab-5"]'); const shifted = [...document.querySelectorAll("[data-tabs-item=essential]")].filter((one) => one.style.transform !== "").length; return { shifted, rowHidden: getComputedStyle(row).visibility === "hidden" }; })()`,
 	);
 	writeFileSync(path.join(folder, "drag-into-essentials.png"), await page.shoot());
 	check(
-		"over Essentials the dragged row is a square tile with no label and the tiles make room",
-		typeof ghost === "object" &&
-			ghost !== null &&
-			Reflect.get(ghost, "width") === Reflect.get(ghost, "cell") &&
-			Reflect.get(ghost, "height") === 46 &&
-			Reflect.get(ghost, "words") === "0" &&
-			Number(Reflect.get(ghost, "shifted")) > 0,
-		ghost,
+		"over Essentials the tiles make room and the dragged row leaves its place in the list",
+		typeof room === "object" &&
+			room !== null &&
+			Number(Reflect.get(room, "shifted")) > 0 &&
+			Reflect.get(room, "rowHidden") === true,
+		room,
 	);
-	await page.release(tile);
+	await drag.drop(tile);
 	await waited(SETTLED_MS);
 	const into = (await page.ask(`window.__result()`)) as Measured;
 	timings.push({ action: "drag a row into Essentials", measured: into });
@@ -512,127 +517,6 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	);
 }
 
-const CARRY_HEARD = `(() => { window.__carried = []; const heard = (event) => { window.__carried.push(event.detail.phase); event.detail.isTaken = true; }; document.addEventListener("wg-carry", heard); window.__stopCarry = () => document.removeEventListener("wg-carry", heard); return true; })()`;
-const CARRIED = `window.__carried.join(" ")`;
-const OWN_WINDOW_CARD = `(() => { const ghost = document.querySelector("[data-tabs-ghost]"); const caption = ghost?.querySelector("[data-tabs-ghost-caption]"); const box = ghost?.getBoundingClientRect(); const words = caption?.getBoundingClientRect(); const look = caption ? getComputedStyle(caption) : null; return { width: Math.round(box?.width ?? 0), height: Math.round(box?.height ?? 0), caption: caption?.textContent ?? "", shown: look?.display ?? "none", fill: look?.backgroundColor ?? "", edge: look?.borderTopWidth ?? "", inside: words !== undefined && box !== undefined && words.left >= box.left && words.right <= box.right && words.top >= box.top + box.height / 2 && words.bottom <= box.bottom && box.bottom - words.bottom <= 12 }; })()`;
-
-function isOwnWindowCard(card: unknown): boolean {
-	return (
-		typeof card === "object" &&
-		card !== null &&
-		Reflect.get(card, "width") === 208 &&
-		Reflect.get(card, "height") === 156 &&
-		Reflect.get(card, "caption") === "Release to open in a new window" &&
-		Reflect.get(card, "shown") === "block"
-	);
-}
-
-function isQuietFooter(card: unknown): boolean {
-	return (
-		typeof card === "object" &&
-		card !== null &&
-		Reflect.get(card, "inside") === true &&
-		Reflect.get(card, "fill") === "rgba(0, 0, 0, 0)" &&
-		Reflect.get(card, "edge") === "0px"
-	);
-}
-
-async function carriedOutside(page: AskedPage, id: string): Promise<readonly [number, number]> {
-	const from = await centreOf(page, `[data-tabs-id="${id}"]`);
-	const outside = [-40, from[1]] as const;
-	await page.drag({ from, to: outside, steps: 14, stepMs: 16 });
-	await waited(300);
-	return outside;
-}
-
-async function checksOwnWindowRefusedOutsideBrowser(page: AskedPage): Promise<void> {
-	const id = String(
-		await page.ask(
-			`document.querySelector('[data-tabs-list] > [data-tabs-item=tab]:not([data-host-tab-app="browser"])')?.dataset.tabsId ?? ""`,
-		),
-	);
-	const outside = await carriedOutside(page, id);
-	const card = await page.ask(OWN_WINDOW_CARD);
-	await page.release(outside);
-	await waited(SETTLED_MS);
-	check(
-		"a tab that is not a browser page never becomes the own-window card, even outside the window",
-		id !== "" && !isOwnWindowCard(card) && Reflect.get(Object(card), "shown") === "none",
-		[id, card],
-	);
-}
-
-const TEAR_OFF_ASKED = `window.__SIDEBAR__.tearOffAsked()`;
-
-async function checksTearOffWatch(page: AskedPage): Promise<void> {
-	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
-	const from = await centreOf(page, row);
-	const before = String(await page.ask(TEAR_OFF_ASKED));
-	await page.drag({ from, to: [from[0], from[1] + 40], steps: 6, stepMs: 16 });
-	await waited(200);
-	const lifted = String(await page.ask(TEAR_OFF_ASKED)).slice(before.length);
-	await page.release([from[0], from[1] + 40]);
-	await waited(SETTLED_MS);
-	const released = String(await page.ask(TEAR_OFF_ASKED)).slice(before.length);
-	check(
-		"lifting a browser tab asks the host to watch it leave the window, and a release inside stops the watch",
-		lifted.includes("watch ") && released.endsWith("stop"),
-		[lifted, released],
-	);
-	const beforeBlur = String(await page.ask(TEAR_OFF_ASKED));
-	await page.drag({ from, to: [from[0], from[1] + 30], steps: 6, stepMs: 16 });
-	await waited(200);
-	await page.ask(`window.dispatchEvent(new Event("blur")); true`);
-	await waited(SETTLED_MS);
-	const handed = String(await page.ask(TEAR_OFF_ASKED)).slice(beforeBlur.length);
-	const ghostGone = (await page.ask(`document.querySelector("[data-tabs-ghost]") === null`)) === true;
-	await page.release([from[0], from[1] + 30]);
-	await waited(SETTLED_MS);
-	check(
-		"when the tab's own window takes focus the drag hands over: the ghost goes and the watch keeps running",
-		ghostGone && handed.includes("watch ") && !handed.includes("stop"),
-		[ghostGone, handed],
-	);
-}
-
-async function checksOwnWindow(page: AskedPage, folder: string): Promise<void> {
-	await page.ask(CARRY_HEARD);
-	await checksTearOffWatch(page);
-	await checksOwnWindowRefusedOutsideBrowser(page);
-	await page.ask(`window.__carried = []; true`);
-	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
-	const id = String(await page.ask(`document.querySelector('${row}')?.dataset.tabsId ?? ""`));
-	const outside = await carriedOutside(page, id);
-	const card = await page.ask(OWN_WINDOW_CARD);
-	const carriedBeforeRelease = String(await page.ask(CARRIED));
-	writeFileSync(path.join(folder, "own-window-card.png"), await page.shoot());
-	check(
-		"a row carried out of the window becomes a 4:3 window card that says what release does",
-		isOwnWindowCard(card),
-		card,
-	);
-	check("the card says it as quiet text in its own footer, with no plate of its own", isQuietFooter(card), card);
-	check(
-		"the board the row crossed is told the carry left once the card shows",
-		carriedBeforeRelease.startsWith("over") && carriedBeforeRelease.endsWith("leave"),
-		carriedBeforeRelease,
-	);
-	await page.release(outside);
-	await waited(SETTLED_MS);
-	check(
-		"releasing it outside opens the tab in its own window and its row shows the window mark",
-		(await page.ask(`document.querySelector('[data-tabs-id="${id}"] [data-tabs-own-window]') !== null`)) === true &&
-			(await page.ask(`document.querySelector("[data-tabs-ghost]") === null`)) === true,
-		id,
-	);
-	check(
-		"the own-window drop is never also a drop on the board",
-		String(await page.ask(CARRIED)).endsWith("leave"),
-		await page.ask(CARRIED),
-	);
-	await page.ask(`window.__stopCarry(); true`);
-}
-
 export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
 	await checksPressing(page);
 	await checksChats(page);
@@ -641,7 +525,7 @@ export async function checksSidebar(page: AskedPage, folder: string): Promise<nu
 	await checksRename(page);
 	await checksDrag(page, folder);
 	await checksSections(page, folder);
-	await checksOwnWindow(page, folder);
+	failures += await checksNativeDrag(page, folder);
 	await checksKitMotion(page);
 	await checksOneForm(page);
 	await checksEssentialsWidth(page);

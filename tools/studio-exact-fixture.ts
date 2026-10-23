@@ -215,12 +215,8 @@ class BoardPageFactsGateway extends PageFactsGateway {
 
 	focusPageWindow(): void {}
 
-	watchTearOff(pageId: string): void {
-		TEAR_OFF_ASKED.push(`watch ${pageId}`);
-	}
-
-	stopTearOff(): void {
-		TEAR_OFF_ASKED.push("stop");
+	tearOffPage(pageId: string): void {
+		TEAR_OFF_ASKED.push(`tear off ${pageId}`);
 	}
 
 	openAddress(pageId: string, address: string): void {

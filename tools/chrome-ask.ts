@@ -20,8 +20,16 @@ export interface PointerPath {
 	readonly stepMs: number;
 }
 
+export interface NativeDrag {
+	readonly isLifted: boolean;
+	readonly over: (at: PagePoint) => Promise<void>;
+	readonly drop: (at: PagePoint) => Promise<void>;
+	readonly releaseOutside: () => Promise<void>;
+}
+
 export interface AskedPage {
 	readonly ask: (expression: string) => Promise<unknown>;
+	readonly lift: (path: PointerPath) => Promise<NativeDrag>;
 	readonly press: (x: number, y: number) => Promise<void>;
 	readonly hover: (x: number, y: number) => Promise<void>;
 	readonly drag: (path: PointerPath) => Promise<void>;
@@ -34,6 +42,7 @@ export interface AskedPage {
 interface PageSocket {
 	readonly close: () => void;
 	readonly ask: (expression: string) => Promise<unknown>;
+	readonly lift: (path: PointerPath) => Promise<NativeDrag>;
 	readonly press: (x: number, y: number) => Promise<void>;
 	readonly hover: (x: number, y: number) => Promise<void>;
 	readonly drag: (path: PointerPath) => Promise<void>;
@@ -49,6 +58,15 @@ interface Waiting {
 }
 
 type Send = (method: string, params: Readonly<Record<string, unknown>>) => Promise<unknown>;
+
+type Heard = (method: string, params: unknown) => void;
+
+const DRAG_INTERCEPTED = "Input.dragIntercepted";
+const LIFT_STEPS = 6;
+const LIFT_STEP_PX = 2;
+const LIFT_WAIT_MS = 1000;
+const OUTSIDE_X = -40;
+const DROP_SETTLE_MS = 50;
 
 export async function paged(file: string, gate: string, asked: PageAsk): Promise<AskedPage> {
 	const browser = findBrowser(gate);
@@ -92,6 +110,7 @@ function closeChrome(chrome: ChildProcess, profile: string): void {
 function handled(socket: PageSocket, chrome: ChildProcess, profile: string): AskedPage {
 	return {
 		ask: socket.ask,
+		lift: socket.lift,
 		press: socket.press,
 		hover: socket.hover,
 		drag: socket.drag,
@@ -174,10 +193,12 @@ function pageSocketOf(entry: unknown): string | null {
 async function talking(socketUrl: string): Promise<PageSocket> {
 	const socket = new WebSocket(socketUrl);
 	await opening(socket);
-	const send = sender(socket);
+	const heard = new Set<Heard>();
+	const send = sender(socket, heard);
 	return {
 		close: () => socket.close(),
 		ask: (expression) => answered(send, expression),
+		lift: (path) => lifted(send, heard, path),
 		press: (x, y) => pressedAt(send, x, y),
 		hover: async (x, y) => {
 			await send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
@@ -212,6 +233,112 @@ async function draggedAlong(send: Send, { from, to, steps, stepMs }: PointerPath
 	}
 }
 
+const NOT_LIFTED: NativeDrag = {
+	isLifted: false,
+	over: async () => undefined,
+	drop: async () => undefined,
+	releaseOutside: async () => undefined,
+};
+
+class InterceptedDrag {
+	private last: PagePoint;
+
+	constructor(
+		private readonly send: Send,
+		private readonly data: unknown,
+		from: PagePoint,
+	) {
+		this.last = from;
+	}
+
+	async move(type: string, at: PagePoint): Promise<void> {
+		this.last = at;
+		await this.send("Input.dispatchDragEvent", { type, x: at[0], y: at[1], data: this.data, modifiers: 0 });
+	}
+
+	async drop(at: PagePoint): Promise<void> {
+		await this.move("dragOver", at);
+		await waited(DROP_SETTLE_MS);
+		await this.move("drop", at);
+		await this.end();
+	}
+
+	releaseOutside(): Promise<void> {
+		return this.drop([OUTSIDE_X, this.last[1]]);
+	}
+
+	async end(): Promise<void> {
+		const [x, y] = this.last;
+		await this.send("Input.dispatchMouseEvent", { type: "mouseReleased", x, y, button: "left", clickCount: 1 });
+		await this.send("Input.setInterceptDrags", { enabled: false });
+	}
+}
+
+async function pressedUntilLifted(send: Send, heard: Set<Heard>, [x, y]: PagePoint): Promise<unknown> {
+	const intercepted = interceptedDrag(heard);
+	await send("Input.setInterceptDrags", { enabled: true });
+	await send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y });
+	await send("Input.dispatchMouseEvent", { type: "mousePressed", x, y, button: "left", clickCount: 1 });
+
+	for (let step = 1; step <= LIFT_STEPS; step += 1) {
+		await send("Input.dispatchMouseEvent", {
+			type: "mouseMoved",
+			x,
+			y: y + step * LIFT_STEP_PX,
+			button: "left",
+			buttons: 1,
+		});
+	}
+
+	return intercepted;
+}
+
+async function lifted(send: Send, heard: Set<Heard>, path: PointerPath): Promise<NativeDrag> {
+	const data = await pressedUntilLifted(send, heard, path.from);
+	const drag = new InterceptedDrag(send, data, path.from);
+
+	if (data === null) {
+		await drag.end();
+		return NOT_LIFTED;
+	}
+
+	await drag.move("dragEnter", path.from);
+	await draggedOver(path, (point) => drag.move("dragOver", point));
+	return {
+		isLifted: true,
+		over: (point) => drag.move("dragOver", point),
+		drop: (point) => drag.drop(point),
+		releaseOutside: () => drag.releaseOutside(),
+	};
+}
+
+function interceptedDrag(heard: Set<Heard>): Promise<unknown> {
+	return new Promise((done) => {
+		const timer = setTimeout(() => finish(null), LIFT_WAIT_MS);
+		const hear: Heard = (method, params) => {
+			if (method === DRAG_INTERCEPTED) {
+				finish(fieldOf(params, "data") ?? null);
+			}
+		};
+		const finish = (data: unknown): void => {
+			clearTimeout(timer);
+			heard.delete(hear);
+			done(data);
+		};
+		heard.add(hear);
+	});
+}
+
+async function draggedOver(
+	{ from, to, steps, stepMs }: PointerPath,
+	over: (at: PagePoint) => Promise<void>,
+): Promise<void> {
+	for (let step = 1; step <= steps; step += 1) {
+		await waited(stepMs);
+		await over([from[0] + ((to[0] - from[0]) * step) / steps, from[1] + ((to[1] - from[1]) * step) / steps]);
+	}
+}
+
 function opening(socket: WebSocket): Promise<unknown> {
 	return new Promise((done, fail) => {
 		socket.addEventListener("open", done, { once: true });
@@ -219,10 +346,10 @@ function opening(socket: WebSocket): Promise<unknown> {
 	});
 }
 
-function sender(socket: WebSocket): Send {
+function sender(socket: WebSocket, heard: ReadonlySet<Heard>): Send {
 	const pending = new Map<unknown, Waiting>();
 	let ticket = 0;
-	pumping(socket, pending);
+	pumping(socket, pending, heard);
 	return (method, params) =>
 		new Promise((done, fail) => {
 			const id = (ticket += 1);
@@ -231,9 +358,16 @@ function sender(socket: WebSocket): Send {
 		});
 }
 
-function pumping(socket: WebSocket, pending: Map<unknown, Waiting>): void {
+function pumping(socket: WebSocket, pending: Map<unknown, Waiting>, heard: ReadonlySet<Heard>): void {
 	socket.addEventListener("message", (event: MessageEvent<unknown>) => {
 		const message: unknown = JSON.parse(String(event.data));
+		const method = fieldOf(message, "method");
+
+		if (typeof method === "string") {
+			heard.forEach((hear) => hear(method, fieldOf(message, "params")));
+			return;
+		}
+
 		const id = fieldOf(message, "id");
 		pending.get(id)?.done(message);
 		pending.delete(id);

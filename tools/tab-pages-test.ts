@@ -2,7 +2,7 @@ import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts
 import { PageFactsGateway } from "../packages/app-host/gateways/page-facts/page-facts.gateway.ts";
 import { PaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
 import { TabsSessionGateway } from "../packages/app-host/gateways/tabs-session/tabs-session.gateway.ts";
-import { PlaceTabCommand, ShowTabCommand, WatchTabTearOffCommand } from "../packages/app-host/generated/index.ts";
+import { PlaceTabCommand, ShowTabCommand, TearOffTabCommand } from "../packages/app-host/generated/index.ts";
 import { AppHostClientModule } from "../packages/app-host/generated/module.ts";
 import type { KeptTabs } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
 import type { PageFacts } from "../packages/app-host/shared/schema/page-facts.schema.ts";
@@ -38,8 +38,8 @@ class RecordedPages extends PageFactsGateway {
 		this.calls.push(`show ${pageId}`);
 	}
 
-	watchTearOff(pageId: string): void {
-		this.calls.push(`watch ${pageId}`);
+	tearOffPage(pageId: string): void {
+		this.calls.push(`tear off ${pageId}`);
 	}
 
 	openPageInOwnWindow(pageId: string): void {
@@ -57,8 +57,6 @@ class RecordedPages extends PageFactsGateway {
 	reloadPage(): void {}
 
 	focusPageWindow(): void {}
-
-	stopTearOff(): void {}
 
 	stop(): void {}
 }
@@ -161,19 +159,19 @@ function restoredStudio() {
 
 async function tearOffChecks(): Promise<void> {
 	const { pages, parts, host } = restoredStudio();
-	const watched = await host.send(WatchTabTearOffCommand, { id: "tab-12" });
+	const torn = await host.send(TearOffTabCommand, { id: "tab-12" });
 	const pageId = parts.tabPageIdOf("tab-12");
 	check(
-		"a restored tab with no page is given one before its tear-off is watched",
-		[watched.ok, pageId?.startsWith("page-"), pages.calls.slice(-2)],
-		[true, true, [`open ${pageId}`, `watch ${pageId}`]],
+		"a restored tab with no page is given one before the host is asked to tear it off",
+		[torn.ok, pageId?.startsWith("page-"), pages.calls.slice(-2)],
+		[true, true, [`open ${pageId}`, `tear off ${pageId}`]],
 	);
 	const callsBefore = pages.calls.length;
-	await host.send(WatchTabTearOffCommand, { id: "tab-12" });
+	await host.send(TearOffTabCommand, { id: "tab-12" });
 	check(
-		"a second lift keeps the page the tab was given and opens nothing new",
+		"a second drag keeps the page the tab was given and opens nothing new",
 		[pageId !== null, parts.tabPageIdOf("tab-12") === pageId, pages.calls.slice(callsBefore)],
-		[true, true, [`watch ${pageId}`]],
+		[true, true, [`tear off ${pageId}`]],
 	);
 	check(
 		"no tab takes a page another tab holds, and no tab trades its page",

@@ -356,18 +356,22 @@ async function checksOwnWindow(
 async function checksFreshTabTearOff(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const lifted = "page-lifted";
 	gateway.create(lifted);
-	gateway.watchTearOff(lifted);
+	gateway.tearOff(lifted);
 	await settledTicks();
 	const asked = rust.calls
 		.filter((call) => call.args?.["page"] === lifted)
 		.map((call) => call.command.replace("plugin:browser|", ""));
-	check("a lifted tab's native page exists before Rust watches it leave the studio", asked, [
-		"create",
-		"watch_tear_off",
-	]);
-	gateway.stopTearOff();
-	await settledTicks();
-	check("a release inside the studio stops the Rust watch", rust.named("stop_tear_off").length, 1);
+	check(
+		"a dragged tab's native page exists before Rust is asked, once, to open it where the drag ended",
+		[asked, rust.named("open_own_window_at_cursor").at(-1)?.args],
+		[
+			["create", "open_own_window_at_cursor"],
+			{
+				page: lifted,
+				title: gateway.tabs().find((tab) => tab.id === lifted)?.title,
+			},
+		],
+	);
 	rust.send({
 		page: lifted,
 		kind: "own-window-opened",
@@ -472,6 +476,39 @@ async function checksCoverFollowsShownPage(rust: FakeRust, gateway: TauriBrowser
 	await settledTicks();
 }
 
+function bubblingEvent(type: string): Event {
+	const event = document.createEvent("Event");
+	event.initEvent(type, true);
+	return event;
+}
+
+async function checksCoverDuringDrag(rust: FakeRust): Promise<void> {
+	const covers = (): string => JSON.stringify(rust.named("cover").map((call) => call.args));
+	const row = document.createElement("div");
+	document.body.append(row);
+	row.dispatchEvent(bubblingEvent("dragstart"));
+	await waitFor(() => covers().endsWith(`{"page":"${FIRST}","covered":true}]`));
+	check(
+		"a drag that starts in the studio pictures the native page and steps it aside, so the studio hears the drag over it",
+		[rust.named("snapshot").at(-1)?.args, covers().endsWith(`{"page":"${FIRST}","covered":true}]`)],
+		[{ page: FIRST, region: null, format: "jpeg" }, true],
+	);
+	row.dispatchEvent(bubblingEvent("dragend"));
+	await waitFor(() => covers().endsWith(`{"page":"${FIRST}","covered":false}]`));
+	check("the drag's end brings the native page back", covers().endsWith(`{"page":"${FIRST}","covered":false}]`), true);
+	row.dispatchEvent(bubblingEvent("dragstart"));
+	await waitFor(() => covers().endsWith(`{"page":"${FIRST}","covered":true}]`));
+	document.dispatchEvent(bubblingEvent("pointermove"));
+	await waitFor(() => covers().endsWith(`{"page":"${FIRST}","covered":false}]`));
+	check(
+		"a drag whose end never reached the document ends at the next pointer move",
+		covers().endsWith(`{"page":"${FIRST}","covered":false}]`),
+		true,
+	);
+	row.remove();
+	await settledTicks();
+}
+
 async function checksReads(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const content = await gateway.content(FIRST);
 	check("a read answers the page's text", content.text, "Hello");
@@ -513,6 +550,7 @@ export async function checksTauriPages(): Promise<void> {
 		await checksPlacement(rust, gateway, container);
 		await checksCover(rust);
 		await checksCoverFollowsShownPage(rust, gateway);
+		await checksCoverDuringDrag(rust);
 		await checksOwnWindow(rust, gateway, container);
 		await checksReads(rust, gateway);
 		gateway.detach(container);
