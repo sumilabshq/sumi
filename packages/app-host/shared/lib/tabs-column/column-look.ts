@@ -7,7 +7,7 @@ const FULL_MOST_PX = 420;
 export const COLUMN_OPENED_ON: KeptColumn = {
 	fullPx: FULL_USUAL_PX,
 	side: "end",
-	isListOpen: true,
+	shutLists: [],
 };
 
 export function columnOf(kept: KeptColumn): TabsColumn {

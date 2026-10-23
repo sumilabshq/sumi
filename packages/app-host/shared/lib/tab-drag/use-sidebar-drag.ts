@@ -4,6 +4,7 @@ import { DragFollow } from "./drag-follow.js";
 import { SidebarDrag } from "./sidebar-drag.js";
 import type { OnTabDrop, PickedItem } from "./sidebar-drag.js";
 import type { DragSource } from "./sidebar-drop-plan.js";
+import { tabRefOf } from "../tabs-sidebar/pointed-of.js";
 
 const PRIMARY_BUTTON = 0;
 const NOT_A_HANDLE = "button:not([data-tabs-item]), input";
@@ -66,8 +67,7 @@ function sourceOf(holder: HTMLElement, element: HTMLElement, id: string): DragSo
 	if (element.dataset["tabsItem"] === "tab") {
 		return {
 			kind: "tab",
-			id,
-			groupId: element.dataset["tabsGroup"] ?? null,
+			...tabRefOf(element, id),
 		};
 	}
 

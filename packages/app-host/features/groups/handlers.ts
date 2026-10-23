@@ -1,9 +1,9 @@
 import { handler, refuse } from "@widgetarium/core/requests";
-import { ActiveChatGateway } from "../../gateways/active-chat/active-chat.gateway.js";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
-import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
-import { findGroup } from "../../shared/lib/host-tabs/tab-lists.js";
+import { HostTabs, chatOfTab } from "../../shared/lib/host-tabs/host-tabs.js";
+import { findGroup, isKnownList } from "../../shared/lib/host-tabs/tab-lists.js";
+import { ActiveChatGateway } from "../../gateways/active-chat/active-chat.gateway.js";
 import type { TabGroup } from "../../shared/lib/host-tabs/tab-lists.js";
 import { closeGroupTabs } from "../../shared/lib/tab-showing/close-tab.js";
 import {
@@ -17,7 +17,8 @@ import {
 import { AppHostClientModule } from "../../module.js";
 
 const NO_GROUP = 'no group "{id}"';
-const NOT_HELD = 'the host holds no tab "{id}"';
+const NOT_LISTED = 'the tab "{id}" stands in no list';
+const UNKNOWN_LIST = 'no tab list "{list}" is on screen';
 const NAMELESS = "a group needs a name";
 
 export const CreateGroupCommandHandler = handler(CreateGroupCommand, AppHostClientModule)
@@ -25,12 +26,20 @@ export const CreateGroupCommandHandler = handler(CreateGroupCommand, AppHostClie
 		hostTabs: HostTabs,
 		activeChatGateway: ActiveChatGateway,
 	})
-	.handle(({ withTabId }, { hostTabs, activeChatGateway }) => {
-		if (withTabId !== null && !hostTabs.now().tabs.some((tab) => tab.id === withTabId)) {
-			return refuse(NOT_HELD.replace("{id}", withTabId));
+	.handle((asked, { hostTabs, activeChatGateway }) => {
+		if ("list" in asked) {
+			return isKnownList(hostTabs.now(), asked.list, activeChatGateway.now().id)
+				? { id: hostTabs.newGroup(asked.list, null) }
+				: refuse(UNKNOWN_LIST.replace("{list}", asked.list));
 		}
 
-		return { id: hostTabs.newGroup(activeChatGateway.now().id, withTabId) };
+		const listId = chatOfTab(hostTabs.now(), asked.withTabId);
+
+		if (listId === null) {
+			return refuse(NOT_LISTED.replace("{id}", asked.withTabId));
+		}
+
+		return { id: hostTabs.newGroup(listId, asked.withTabId) };
 	});
 
 export const RenameGroupCommandHandler = handler(RenameGroupCommand, AppHostClientModule)

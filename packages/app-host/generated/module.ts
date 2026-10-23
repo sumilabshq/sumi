@@ -2,7 +2,7 @@
 import { FoldTabListCommandHandler, ResizeColumnCommandHandler, TabsColumnQueryHandler } from "../features/column/handlers.js";
 import { CloseEssentialCommandHandler, PlaceEssentialCommandHandler, RemoveEssentialCommandHandler, ShowEssentialCommandHandler } from "../features/essentials/handlers.js";
 import { CloseGroupCommandHandler, CreateGroupCommandHandler, FoldGroupCommandHandler, RenameGroupCommandHandler, SetGroupHueCommandHandler, UngroupCommandHandler } from "../features/groups/handlers.js";
-import { AppTabsQueryHandler, CloseOtherTabsCommandHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, DuplicateTabCommandHandler, OpenTabBelowCommandHandler, OpenTabCommandHandler, PlaceTabCommandHandler, ReloadTabCommandHandler, RenameTabCommandHandler, ReopenClosedTabCommandHandler, ShowChatTabCommandHandler, ShowTabCommandHandler, TabsSidebarQueryHandler } from "../features/tabs/handlers.js";
+import { AppTabsQueryHandler, CloseOtherTabsCommandHandler, CloseShownTabCommandHandler, CloseTabCommandHandler, DuplicateTabCommandHandler, MoveTabToListCommandHandler, OpenTabBelowCommandHandler, OpenTabCommandHandler, PlaceTabCommandHandler, ReloadTabCommandHandler, RenameTabCommandHandler, ReopenClosedTabCommandHandler, ShowChatTabCommandHandler, ShowTabCommandHandler, TabsSidebarQueryHandler } from "../features/tabs/handlers.js";
 import { AppHostClientModule as AppHostClientModuleDefinition } from "../module.js";
 
 export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
@@ -16,6 +16,7 @@ export const AppHostClientModule = AppHostClientModuleDefinition.handlers([
 	DuplicateTabCommandHandler,
 	FoldGroupCommandHandler,
 	FoldTabListCommandHandler,
+	MoveTabToListCommandHandler,
 	OpenTabBelowCommandHandler,
 	OpenTabCommandHandler,
 	PlaceEssentialCommandHandler,

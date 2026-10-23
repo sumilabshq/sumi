@@ -1,8 +1,17 @@
+import { WORKSPACE_LIST } from "../host-tabs/tab-lists.js";
+
+export interface TabRef {
+	readonly id: string;
+	readonly groupId: string | null;
+	readonly list: string;
+}
+
 export type PointedItem =
 	| {
 			readonly kind: "tab";
 			readonly id: string;
 			readonly groupId: string | null;
+			readonly list: string;
 	  }
 	| {
 			readonly kind: "essential";
@@ -13,21 +22,25 @@ export type PointedItem =
 			readonly id: string;
 			readonly head: HTMLElement;
 	  }
-	| { readonly kind: "space" };
-
-const SPACE: PointedItem = {
-	kind: "space",
-};
+	| {
+			readonly kind: "space";
+			readonly list: string;
+	  };
 
 export function pointedOf(target: EventTarget | null): PointedItem {
-	const item = target instanceof Element ? target.closest<HTMLElement>("[data-tabs-item]") : null;
+	const element = target instanceof Element ? target : null;
+	const item = element?.closest<HTMLElement>("[data-tabs-item]") ?? null;
 	const id = item?.dataset["tabsId"];
 
 	if (item === null || id === undefined) {
-		return SPACE;
+		return spaceIn(listIdOf(element));
 	}
 
 	return pointedItemOf(item, id);
+}
+
+export function listIdOf(element: Element | null): string {
+	return element?.closest<HTMLElement>("[data-tabs-in]")?.dataset["tabsIn"] ?? WORKSPACE_LIST;
 }
 
 export function groupHeadOf(holder: HTMLElement | null, groupId: string | null): HTMLElement | null {
@@ -36,6 +49,21 @@ export function groupHeadOf(holder: HTMLElement | null, groupId: string | null):
 	}
 
 	return holder.querySelector<HTMLElement>(`[data-tabs-item="group"][data-tabs-id="${CSS.escape(groupId)}"]`);
+}
+
+export function tabRefOf(item: HTMLElement, id: string): TabRef {
+	return {
+		id,
+		groupId: item.dataset["tabsGroup"] ?? null,
+		list: listIdOf(item),
+	};
+}
+
+function spaceIn(list: string): PointedItem {
+	return {
+		kind: "space",
+		list,
+	};
 }
 
 function pointedItemOf(item: HTMLElement, id: string): PointedItem {
@@ -53,13 +81,12 @@ function pointedItemOf(item: HTMLElement, id: string): PointedItem {
 		};
 	}
 
-	return kind === "essential" ? { kind, id } : SPACE;
+	return kind === "essential" ? { kind, id } : spaceIn(listIdOf(item));
 }
 
 function pointedTabOf(item: HTMLElement, id: string): PointedItem {
 	return {
 		kind: "tab",
-		id,
-		groupId: item.dataset["tabsGroup"] ?? null,
+		...tabRefOf(item, id),
 	};
 }

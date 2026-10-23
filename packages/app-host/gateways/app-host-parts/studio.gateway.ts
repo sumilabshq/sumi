@@ -13,6 +13,8 @@ import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
 import { LocalStorageEssentialsGateway } from "../essentials/local-storage.gateway.js";
 import { NoPageFactsGateway } from "../page-facts/none.gateway.js";
 import type { PageFactsGateway } from "../page-facts/page-facts.gateway.js";
+import { NoPaneTabsGateway } from "../pane-tabs/none.gateway.js";
+import type { PaneTabsGateway } from "../pane-tabs/pane-tabs.gateway.js";
 import { LocalStorageTabsColumnGateway } from "../tabs-column/local-storage.gateway.js";
 import type { TabsColumnGateway } from "../tabs-column/tabs-column.gateway.js";
 import { NoTabsSessionGateway } from "../tabs-session/none.gateway.js";
@@ -27,6 +29,7 @@ export interface StudioAppHost {
 	readonly tabsSessionGateway?: TabsSessionGateway;
 	readonly essentialsGateway?: EssentialsGateway;
 	readonly activeChat?: ActiveChatPort;
+	readonly paneTabsGateway?: PaneTabsGateway;
 }
 
 interface StudioGateways {
@@ -51,6 +54,7 @@ export function studioAppHostParts(host: StudioAppHost): AppHostParts {
 		essentials,
 		activeChatGateway: new PortActiveChatGateway(gateways.activeChat),
 		tabsColumnStore: new TabsColumnStore(gateways.tabsColumnGateway.kept() ?? COLUMN_OPENED_ON),
+		paneTabsGateway: host.paneTabsGateway ?? new NoPaneTabsGateway(),
 	};
 }
 

@@ -2,7 +2,13 @@ import type { TabDrop } from "../../schema/tab-drop.schema.js";
 import { columnsDuring, scrollerShiftOf } from "./sidebar-drop-plan.js";
 import type { DragSource, ListDrop } from "./sidebar-drop-plan.js";
 import { cellRectOf, rowStepOf } from "./sidebar-layout.js";
-import type { MeasuredGroup, SidebarLayout } from "./sidebar-layout.js";
+import type { MeasuredGroup, MeasuredList, SidebarLayout } from "./sidebar-layout.js";
+
+interface FlowItem {
+	readonly element: HTMLElement;
+	readonly unitId: string | null;
+	readonly list: string;
+}
 
 export interface Shifts {
 	readonly moves: ReadonlyMap<HTMLElement, readonly [number, number]>;
@@ -28,6 +34,7 @@ class DropShifts {
 	readonly moves = new Map<HTMLElement, readonly [number, number]>();
 	readonly grows = new Map<HTMLElement, number>();
 	private readonly step: number;
+	private readonly flow: readonly FlowItem[];
 
 	constructor(
 		private readonly layout: SidebarLayout,
@@ -35,20 +42,23 @@ class DropShifts {
 		private readonly drop: TabDrop,
 	) {
 		this.step = rowStepOf(layout);
+		this.flow = flowOf(layout);
 	}
 
 	shiftUnits(): void {
-		const sourceTop = this.source.kind === "tab" ? this.topIndexOf(this.source.groupId ?? this.source.id) : -1;
-		const dropTop = this.drop.kind === "list" ? this.dropTopIndexOf(this.drop) : -1;
-		this.layout.units.forEach((unit, at) => {
+		const sourceTop = this.source.kind === "tab" ? this.flowIndexOf(this.source.groupId ?? this.source.id) : -1;
+		const dropTop = this.drop.kind === "list" ? this.dropFlowIndexOf(this.drop) : -1;
+		this.flow.forEach((item, at) => {
 			const removed = this.source.kind === "tab" && at > sourceTop ? -this.step : 0;
 			const added = dropTop !== -1 && at >= dropTop ? this.step : 0;
-			this.moves.set(unit.element, [0, removed + added]);
+			this.moves.set(item.element, [0, removed + added]);
+		});
 
+		for (const unit of this.layout.units) {
 			if (unit.kind === "group") {
 				this.shiftGroupRows(unit);
 			}
-		});
+		}
 	}
 
 	shiftTiles(columns: number): void {
@@ -99,15 +109,37 @@ class DropShifts {
 		return this.drop.kind === "essentials" && kept >= this.drop.at ? kept + 1 : kept;
 	}
 
-	private topIndexOf(id: string): number {
-		return this.layout.units.findIndex((unit) => unit.id === id);
+	private flowIndexOf(unitId: string): number {
+		return this.flow.findIndex((item) => item.unitId === unitId);
 	}
 
-	private dropTopIndexOf(drop: ListDrop): number {
+	private dropFlowIndexOf(drop: ListDrop): number {
 		if (drop.groupId !== null) {
-			return this.topIndexOf(drop.groupId) + 1;
+			return this.flowIndexOf(drop.groupId) + 1;
 		}
 
-		return drop.before === null ? -1 : this.topIndexOf(drop.before);
+		if (drop.before !== null) {
+			return this.flowIndexOf(drop.before);
+		}
+
+		const after = this.flow.map((item) => item.list === drop.list).lastIndexOf(true) + 1;
+		return after === 0 || after === this.flow.length ? -1 : after;
 	}
+}
+
+function flowOf(layout: SidebarLayout): readonly FlowItem[] {
+	return layout.lists.flatMap((list) => listFlowOf(list));
+}
+
+function listFlowOf(list: MeasuredList): readonly FlowItem[] {
+	const head = list.head === null ? [] : [flowItemOf(list.head.element, null, list.id)];
+	return [...head, ...list.units.map((unit) => flowItemOf(unit.element, unit.id, list.id))];
+}
+
+function flowItemOf(element: HTMLElement, unitId: string | null, list: string): FlowItem {
+	return {
+		element,
+		unitId,
+		list,
+	};
 }

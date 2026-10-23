@@ -33,6 +33,11 @@ export const PlaceTabCommand = command("app-host/place-tab")
 	.idempotencyKey(Repeatable)
 	.invalidates(SHOWN);
 
+export const MoveTabToListCommand = command("app-host/move-tab-to-list")
+	.input(TabSchema.extend({ list: z.string() }))
+	.idempotencyKey(Repeatable)
+	.invalidates(SHOWN);
+
 export const OpenTabBelowCommand = command("app-host/open-tab-below")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)

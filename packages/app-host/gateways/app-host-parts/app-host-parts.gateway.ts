@@ -4,6 +4,7 @@ import type { TabsColumnStore } from "../../shared/lib/tabs-column/tabs-column-s
 import type { ActiveChatGateway } from "../active-chat/active-chat.gateway.js";
 import type { AppTabsGateway } from "../app-tabs/app-tabs.gateway.js";
 import type { PageFactsGateway } from "../page-facts/page-facts.gateway.js";
+import type { PaneTabsGateway } from "../pane-tabs/pane-tabs.gateway.js";
 import type { TabsColumnGateway } from "../tabs-column/tabs-column.gateway.js";
 
 export interface AppHostParts {
@@ -14,4 +15,5 @@ export interface AppHostParts {
 	readonly essentials: Essentials;
 	readonly activeChatGateway: ActiveChatGateway;
 	readonly tabsColumnStore: TabsColumnStore;
+	readonly paneTabsGateway: PaneTabsGateway;
 }

@@ -8,10 +8,11 @@ import type { GroupState } from "../../schema/app-tab.schema.js";
 
 export interface MoveToGroupMenuProps {
 	readonly tabId: string;
+	readonly list: string;
 	readonly groups: readonly GroupState[];
 }
 
-export function MoveToGroupMenu({ tabId, groups }: MoveToGroupMenuProps): ReactElement {
+export function MoveToGroupMenu({ tabId, list, groups }: MoveToGroupMenuProps): ReactElement {
 	const placeTab = useCommand(PlaceTabCommand);
 	return (
 		<ContextMenuSub>
@@ -33,6 +34,7 @@ export function MoveToGroupMenu({ tabId, groups }: MoveToGroupMenuProps): ReactE
 								id: tabId,
 								to: {
 									kind: "list",
+									list,
 									groupId: group.id,
 									before: null,
 								},

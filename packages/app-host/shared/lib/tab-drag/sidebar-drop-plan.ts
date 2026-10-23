@@ -7,15 +7,18 @@ import {
 	columnsOf,
 	gridHeightOf,
 	groupUnitOf,
+	findMeasuredList,
+	listTopOf,
 	middleOf,
 } from "./sidebar-layout.js";
-import type { Measured, MeasuredGroup, MeasuredUnit, SidebarLayout } from "./sidebar-layout.js";
+import type { Measured, MeasuredGroup, MeasuredList, MeasuredUnit, SidebarLayout } from "./sidebar-layout.js";
 
 export type DragSource =
 	| {
 			readonly kind: "tab";
 			readonly id: string;
 			readonly groupId: string | null;
+			readonly list: string;
 	  }
 	| {
 			readonly kind: "essential";
@@ -26,15 +29,18 @@ export type DragSource =
 export type ListDrop = Extract<TabDrop, { kind: "list" }>;
 
 export function dropOf(layout: SidebarLayout, source: DragSource, x: number, y: number): TabDrop {
-	if (layout.list === null || y < listTopOf(layout, source)) {
+	const first = layout.lists[0];
+
+	if (first === undefined || y < firstListDropLineOf(layout, first, source)) {
 		return {
 			kind: "essentials",
 			at: cellAtOf(layout, source, x, y),
 		};
 	}
 
-	const listed = listDrop(null, null);
-	return listDropOf(layout, source, y - scrollerShiftOf(layout, source, listed));
+	const listedY = y - scrollerShiftOf(layout, source, listDrop(first.id, null, null));
+	const list = listAtY(layout, listedY) ?? first;
+	return listDropOf(list, source, listedY);
 }
 
 export function stillDropOf(layout: SidebarLayout, source: DragSource): TabDrop {
@@ -45,8 +51,8 @@ export function stillDropOf(layout: SidebarLayout, source: DragSource): TabDrop 
 		};
 	}
 
-	const siblings = siblingIdsOf(layout, source.groupId);
-	return listDrop(source.groupId, siblings[siblings.indexOf(source.id) + 1] ?? null);
+	const siblings = siblingIdsOf(layout, source);
+	return listDrop(source.list, source.groupId, siblings[siblings.indexOf(source.id) + 1] ?? null);
 }
 
 export function isStill(layout: SidebarLayout, source: DragSource, drop: TabDrop): boolean {
@@ -54,11 +60,15 @@ export function isStill(layout: SidebarLayout, source: DragSource, drop: TabDrop
 }
 
 export function isSameDrop(one: TabDrop, other: TabDrop): boolean {
-	if (one.kind === "essentials" || other.kind === "essentials") {
-		return one.kind === other.kind && one.kind === "essentials" && other.kind === "essentials" && one.at === other.at;
+	if (one.kind === "essentials" && other.kind === "essentials") {
+		return one.at === other.at;
 	}
 
-	return one.groupId === other.groupId && one.before === other.before;
+	if (one.kind !== "list" || other.kind !== "list") {
+		return one.kind === other.kind;
+	}
+
+	return one.list === other.list && one.groupId === other.groupId && one.before === other.before;
 }
 
 export function isDraggedRow(source: DragSource, row: Measured): boolean {
@@ -91,21 +101,25 @@ function cellAtOf(layout: SidebarLayout, source: DragSource, x: number, y: numbe
 	return Math.min(count, row * columns + column);
 }
 
-function listTopOf(layout: SidebarLayout, source: DragSource): number {
-	if (source.kind === "tab" || layout.sectionHead === null) {
+function firstListDropLineOf(layout: SidebarLayout, first: MeasuredList, source: DragSource): number {
+	if (source.kind === "tab" || first.head === null) {
 		return layout.scrollerRect.top;
 	}
 
-	return middleOf(layout.sectionHead);
+	return middleOf(first.head.rect);
 }
 
-function listDropOf(layout: SidebarLayout, source: DragSource, y: number): ListDrop {
-	return groupTailDropOf(layout, source, y) ?? beforeUnitDropOf(layout, source, y) ?? listDrop(null, null);
+function listAtY(layout: SidebarLayout, y: number): MeasuredList | undefined {
+	return layout.lists.filter((list) => listTopOf(list) <= y).at(-1);
 }
 
-function groupTailDropOf(layout: SidebarLayout, source: DragSource, y: number): ListDrop | null {
-	const group = layout.units.find((unit) => unit.kind === "group" && isInGroupTail(unit, source, y));
-	return group === undefined ? null : listDrop(group.id, null);
+function listDropOf(list: MeasuredList, source: DragSource, y: number): ListDrop {
+	return groupTailDropOf(list, source, y) ?? beforeUnitDropOf(list, source, y) ?? listDrop(list.id, null, null);
+}
+
+function groupTailDropOf(list: MeasuredList, source: DragSource, y: number): ListDrop | null {
+	const group = list.units.find((unit) => unit.kind === "group" && isInGroupTail(unit, source, y));
+	return group === undefined ? null : listDrop(list.id, group.id, null);
 }
 
 function isInGroupTail(group: MeasuredGroup, source: DragSource, y: number): boolean {
@@ -114,20 +128,20 @@ function isInGroupTail(group: MeasuredGroup, source: DragSource, y: number): boo
 	return y > floor && y <= bottomOf(group.rect);
 }
 
-function beforeUnitDropOf(layout: SidebarLayout, source: DragSource, y: number): ListDrop | null {
-	for (const unit of layout.units) {
+function beforeUnitDropOf(list: MeasuredList, source: DragSource, y: number): ListDrop | null {
+	for (const unit of list.units) {
 		if (isDraggedRow(source, unit)) {
 			continue;
 		}
 
 		if (y < middleOf(unit.kind === "group" ? unit.head : unit.rect)) {
-			return listDrop(null, unit.id);
+			return listDrop(list.id, null, unit.id);
 		}
 
 		const row = openRowBelowOf(unit, source, y);
 
 		if (row !== undefined) {
-			return listDrop(unit.id, row.id);
+			return listDrop(list.id, unit.id, row.id);
 		}
 	}
 
@@ -142,18 +156,19 @@ function openRowBelowOf(unit: MeasuredUnit, source: DragSource, y: number): Meas
 	return unit.rows.find((row) => !isDraggedRow(source, row) && y < middleOf(row.rect));
 }
 
-function listDrop(groupId: string | null, before: string | null): ListDrop {
+function listDrop(list: string, groupId: string | null, before: string | null): ListDrop {
 	return {
 		kind: "list",
+		list,
 		groupId,
 		before,
 	};
 }
 
-function siblingIdsOf(layout: SidebarLayout, groupId: string | null): readonly string[] {
-	if (groupId === null) {
-		return layout.units.map((unit) => unit.id);
+function siblingIdsOf(layout: SidebarLayout, source: Extract<DragSource, { kind: "tab" }>): readonly string[] {
+	if (source.groupId === null) {
+		return (findMeasuredList(layout, source.list)?.units ?? []).map((unit) => unit.id);
 	}
 
-	return groupUnitOf(layout, groupId)?.rows.map((row) => row.id) ?? [];
+	return groupUnitOf(layout, source.groupId)?.rows.map((row) => row.id) ?? [];
 }

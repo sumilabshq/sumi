@@ -9,4 +9,6 @@ export const ResizeColumnCommand = command("app-host/resize-column")
 	.idempotencyKey(Repeatable)
 	.invalidates([TabsColumnQuery]);
 
-export const FoldTabListCommand = command("app-host/fold-tab-list").idempotencyKey(Repeatable);
+export const FoldTabListCommand = command("app-host/fold-tab-list")
+	.input(z.object({ list: z.string() }))
+	.idempotencyKey(Repeatable);

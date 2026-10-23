@@ -9,6 +9,8 @@ export * from "../gateways/essentials/essentials.gateway.js";
 export * from "../gateways/essentials/local-storage.gateway.js";
 export * from "../gateways/page-facts/none.gateway.js";
 export * from "../gateways/page-facts/page-facts.gateway.js";
+export * from "../gateways/pane-tabs/none.gateway.js";
+export * from "../gateways/pane-tabs/pane-tabs.gateway.js";
 export * from "../gateways/tabs-column/local-storage.gateway.js";
 export * from "../gateways/tabs-column/tabs-column.gateway.js";
 export * from "../gateways/tabs-session/none.gateway.js";

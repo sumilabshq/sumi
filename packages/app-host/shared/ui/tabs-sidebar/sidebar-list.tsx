@@ -2,22 +2,23 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { GroupBox } from "../../../features/groups/ui/group-box/group-box.js";
 import { TabRow } from "../../../features/tabs/ui/tab-row/tab-row.js";
-import type { AppTabState, SidebarEntry } from "../../schema/app-tab.schema.js";
+import type { AppTabState, TabSection } from "../../schema/app-tab.schema.js";
 
 export interface SidebarListProps {
-	readonly entries: readonly SidebarEntry[];
+	readonly section: TabSection;
 	readonly renamingId: string | null;
 	readonly onRenamed: () => void;
 }
 
-const LIST = "cv:flex cv:flex-col cv:gap-px";
+const LIST = "cv:flex cv:flex-col cv:gap-px cv:empty:hidden";
 
-export function SidebarList({ entries, renamingId, onRenamed }: SidebarListProps): ReactElement {
+export function SidebarList({ section, renamingId, onRenamed }: SidebarListProps): ReactElement {
 	const rowOf = (tab: AppTabState, groupId: string | null): ReactElement => (
 		<TabRow key={tab.id} tab={tab} groupId={groupId} isRenaming={renamingId === tab.id} onRenamed={onRenamed} />
 	);
+	const entries = section.isOpen ? section.entries : [];
 	return (
-		<div className={LIST} data-tabs-list="">
+		<div className={LIST} data-tabs-list={section.list}>
 			{entries.map((entry) =>
 				entry.kind === "tab" ? (
 					rowOf(entry.tab, null)

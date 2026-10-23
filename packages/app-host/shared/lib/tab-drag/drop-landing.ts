@@ -8,19 +8,35 @@ import {
 	bottomOf,
 	cellRectOf,
 	groupUnitOf,
+	findMeasuredList,
 	listRectOf,
 	rowStepOf,
 } from "./sidebar-layout.js";
-import type { Measured, MeasuredGroup, MeasuredUnit, Rect, SidebarLayout } from "./sidebar-layout.js";
+import type { Measured, MeasuredGroup, MeasuredList, MeasuredUnit, Rect, SidebarLayout } from "./sidebar-layout.js";
 
 export function landingOf(layout: SidebarLayout, source: DragSource, drop: TabDrop, shifts: Shifts): Rect {
 	if (drop.kind === "essentials") {
 		return cellRectOf(layout.grid, drop.at, shifts.columns);
 	}
 
+	if (drop.kind === "window") {
+		return listRectOf(layout);
+	}
+
 	const landing = new ListLanding(layout, source, shifts);
 	const group = drop.groupId === null ? undefined : groupUnitOf(layout, drop.groupId);
-	return group === undefined ? landing.inList(drop.before) : landing.inGroup(group, drop.before);
+
+	if (group !== undefined) {
+		return landing.inGroup(group, drop.before);
+	}
+
+	const list = findMeasuredList(layout, drop.list);
+
+	if (list === undefined) {
+		return rowRectAt(listRectOf(layout), layout.scrollerRect.top);
+	}
+
+	return landing.inList(list, drop.before);
 }
 
 class ListLanding {
@@ -44,10 +60,10 @@ class ListLanding {
 		return rowRectAt(group.head, top);
 	}
 
-	inList(beforeId: string | null): Rect {
-		const units = this.layout.units.filter((unit) => !isDraggedRow(this.source, unit));
+	inList(list: MeasuredList, beforeId: string | null): Rect {
+		const units = list.units.filter((unit) => !isDraggedRow(this.source, unit));
 		const before = units.find((unit) => unit.id === beforeId);
-		const top = before === undefined ? this.listTailTopOf(units) : this.topBefore(before);
+		const top = before === undefined ? this.listTailTopOf(list, units) : this.topBefore(before);
 		return rowRectAt(listRectOf(this.layout), top);
 	}
 
@@ -62,11 +78,15 @@ class ListLanding {
 		return before.rect.top - margin + this.shiftOf(before.element) - this.step;
 	}
 
-	private listTailTopOf(units: readonly MeasuredUnit[]): number {
+	private listTailTopOf(list: MeasuredList, units: readonly MeasuredUnit[]): number {
 		const last = units.at(-1);
 
+		if (last === undefined && list.head !== null) {
+			return bottomOf(list.head.rect) + this.shiftOf(list.head.element) + ROW_GAP_PX;
+		}
+
 		if (last === undefined) {
-			return (this.layout.list?.top ?? 0) + this.shifts.scroller;
+			return list.rect.top + this.shifts.scroller;
 		}
 
 		return bottomOf(last.rect) + this.shiftOf(last.element) + ROW_GAP_PX;

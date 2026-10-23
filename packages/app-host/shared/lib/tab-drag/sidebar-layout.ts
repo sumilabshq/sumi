@@ -25,12 +25,23 @@ export interface MeasuredGrid {
 	readonly tiles: readonly Measured[];
 }
 
+export interface MeasuredHead {
+	readonly element: HTMLElement;
+	readonly rect: Rect;
+}
+
+export interface MeasuredList {
+	readonly id: string;
+	readonly rect: Rect;
+	readonly head: MeasuredHead | null;
+	readonly units: readonly MeasuredUnit[];
+}
+
 export interface SidebarLayout {
 	readonly grid: MeasuredGrid;
 	readonly scroller: HTMLElement | null;
 	readonly scrollerRect: Rect;
-	readonly list: Rect | null;
-	readonly sectionHead: Rect | null;
+	readonly lists: readonly MeasuredList[];
 	readonly units: readonly MeasuredUnit[];
 	readonly groupMargin: number;
 }
@@ -60,21 +71,31 @@ export function rectOf(element: Element): Rect {
 
 export function measuredLayoutOf(holder: HTMLElement): SidebarLayout {
 	const scroller = holder.querySelector<HTMLElement>("[data-host-column-scroll]");
-	const listElement = holder.querySelector<HTMLElement>("[data-tabs-list]");
-	const units = listElement === null ? [] : [...listElement.children].flatMap((child) => unitsOf(child));
+	const lists = [...holder.querySelectorAll<HTMLElement>("[data-tabs-list]")].flatMap((element) =>
+		measuredListsOf(holder, element),
+	);
+	const units = lists.flatMap((list) => list.units);
 	return {
 		grid: measuredGridOf(holder.querySelector<HTMLElement>("[data-tabs-essentials]")),
 		scroller,
 		scrollerRect: rectOrNullOf(scroller) ?? NOWHERE,
-		list: rectOrNullOf(listElement),
-		sectionHead: rectOrNullOf(holder.querySelector("[data-tabs-section]")),
+		lists,
 		units,
 		groupMargin: groupMarginOf(units),
 	};
 }
 
 export function listRectOf(layout: SidebarLayout): Rect {
-	return layout.list ?? layout.scrollerRect;
+	const drawn = layout.lists.find((list) => list.rect.width > 0);
+	return drawn?.rect ?? layout.lists[0]?.head?.rect ?? layout.scrollerRect;
+}
+
+export function findMeasuredList(layout: SidebarLayout, id: string): MeasuredList | undefined {
+	return layout.lists.find((list) => list.id === id);
+}
+
+export function listTopOf(list: MeasuredList): number {
+	return list.head?.rect.top ?? list.rect.top;
 }
 
 export function rowStepOf(layout: SidebarLayout): number {
@@ -146,6 +167,36 @@ function measuredGridOf(element: HTMLElement | null): MeasuredGrid {
 		element,
 		rect: rectOf(element),
 		tiles: measuredOf(element.querySelectorAll<HTMLElement>('[data-tabs-item="essential"]')),
+	};
+}
+
+function measuredListsOf(holder: HTMLElement, element: HTMLElement): readonly MeasuredList[] {
+	const id = element.dataset["tabsList"];
+
+	if (id === undefined) {
+		return [];
+	}
+
+	return [
+		{
+			id,
+			rect: rectOf(element),
+			head: measuredHeadOf(holder, id),
+			units: [...element.children].flatMap((child) => unitsOf(child)),
+		},
+	];
+}
+
+function measuredHeadOf(holder: HTMLElement, listId: string): MeasuredHead | null {
+	const head = holder.querySelector<HTMLElement>(`[data-tabs-section="${CSS.escape(listId)}"]`);
+
+	if (head === null) {
+		return null;
+	}
+
+	return {
+		element: head,
+		rect: rectOf(head),
 	};
 }
 

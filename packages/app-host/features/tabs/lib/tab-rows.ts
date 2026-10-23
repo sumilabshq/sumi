@@ -1,6 +1,6 @@
 import { flatTabIdsOf } from "../../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, TabGroup } from "../../../shared/lib/host-tabs/host-tabs.js";
-import { findGroup } from "../../../shared/lib/host-tabs/tab-lists.js";
+import { WORKSPACE_LIST, findGroup } from "../../../shared/lib/host-tabs/tab-lists.js";
 import { hostOf, tabArtOf } from "../../../shared/lib/tab-art/tab-art-of.js";
 import { shownTabIdOf } from "../../../shared/lib/tab-showing/show-tab.js";
 import { pagesOfTabs } from "../../../shared/lib/tab-showing/tab-pages.js";
@@ -9,7 +9,9 @@ import type {
 	AppTab,
 	AppTabState,
 	EssentialTile,
+	ListTarget,
 	SidebarEntry,
+	TabSection,
 	TabStatus,
 	TabsSidebar,
 } from "../../../shared/schema/app-tab.schema.js";
@@ -30,40 +32,80 @@ export interface SidebarAsk {
 	readonly pages: readonly PageFacts[];
 	readonly shownApp: AppKind | null;
 	readonly chat: TabsSidebar["chat"];
-	readonly isListOpen: boolean;
+	readonly shutLists: readonly string[];
+	readonly inPanes: readonly string[];
 }
 
-export function chatTabRowsOf(
+export function tabRowsOf(
 	moment: HostTabsMoment,
 	pages: readonly PageFacts[],
 	shownApp: AppKind | null,
-	chatId: string,
+	listIds: readonly string[],
 ): readonly AppTabState[] {
-	const rows = new TabRows(moment, pages, shownApp);
-	return flatTabIdsOf(moment, chatId).flatMap((id) => rows.rowsOf(id));
+	const rows = new TabRows(moment, pages, shownIdsOf(moment, shownApp, []));
+	return listIds.flatMap((listId) => flatTabIdsOf(moment, listId).flatMap((id) => rows.rowsOf(id)));
 }
 
-export function sidebarOf({ moment, essentials, pages, shownApp, chat, isListOpen }: SidebarAsk): TabsSidebar {
-	const rows = new TabRows(moment, pages, shownApp);
+const WORKSPACE_FACE: ListTarget = {
+	list: WORKSPACE_LIST,
+	owner: "workspace",
+	title: WORKSPACE_LIST,
+};
+
+export function sidebarOf(ask: SidebarAsk): TabsSidebar {
+	const rows = new TabRows(ask.moment, ask.pages, shownIdsOf(ask.moment, ask.shownApp, ask.inPanes));
+	const listTargets = [WORKSPACE_FACE, chatFaceOf(ask.chat)] as const;
 	return {
-		chat,
-		essentials: essentials.map((essential) => rows.tileOf(essential)),
-		entries: (moment.lists[chat.id] ?? []).flatMap((entry) => rows.entriesOf(entry)),
-		isListOpen,
+		chat: ask.chat,
+		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
+		sections: sectionsOf(rows, listTargets, ask.shutLists),
+		listTargets,
 	};
 }
 
+function chatFaceOf(chat: SidebarAsk["chat"]): ListTarget {
+	return {
+		list: chat.id,
+		owner: "chat",
+		title: chat.title,
+	};
+}
+
+function sectionsOf(
+	rows: TabRows,
+	[workspaceFace, chatFace]: readonly [ListTarget, ListTarget],
+	shutLists: readonly string[],
+): readonly TabSection[] {
+	const workspace = sectionOf(rows, workspaceFace, shutLists);
+	const filledSections = [workspace, sectionOf(rows, chatFace, shutLists)].filter(
+		(section) => section.entries.length > 0,
+	);
+	return filledSections.length === 0 ? [workspace] : filledSections;
+}
+
+function sectionOf(rows: TabRows, face: ListTarget, shutLists: readonly string[]): TabSection {
+	return {
+		...face,
+		isOpen: !shutLists.includes(face.list),
+		count: rows.countOf(face.list),
+		entries: rows.listEntriesOf(face.list),
+	};
+}
+
+function shownIdsOf(moment: HostTabsMoment, shownApp: AppKind | null, inPanes: readonly string[]): ReadonlySet<string> {
+	const shownId = shownTabIdOf(moment, shownApp);
+	return new Set(shownId === null ? inPanes : [shownId, ...inPanes]);
+}
+
 class TabRows {
-	private readonly shownId: string | null;
 	private readonly pageOf: ReadonlyMap<string, PageFacts>;
 	private readonly tabOf: ReadonlyMap<string, HostTab>;
 
 	constructor(
 		private readonly moment: HostTabsMoment,
 		pages: readonly PageFacts[],
-		shownApp: AppKind | null,
+		private readonly shownIds: ReadonlySet<string>,
 	) {
-		this.shownId = shownTabIdOf(moment, shownApp);
 		this.pageOf = pagesOfTabs(moment.tabs, pages);
 		this.tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
 	}
@@ -78,9 +120,17 @@ class TabRows {
 		return [
 			{
 				...faceOf(tab, this.pageOf.get(tab.id) ?? null),
-				isShown: tab.id === this.shownId,
+				isShown: this.shownIds.has(tab.id),
 			},
 		];
+	}
+
+	listEntriesOf(list: string): readonly SidebarEntry[] {
+		return (this.moment.lists[list] ?? []).flatMap((entry) => this.entriesOf(entry));
+	}
+
+	countOf(list: string): number {
+		return flatTabIdsOf(this.moment, list).length;
 	}
 
 	entriesOf(entry: ListEntry): SidebarEntry[] {
@@ -108,7 +158,7 @@ class TabRows {
 			title: live.label ?? essential.title,
 			icon: tabArtOf(essential.app, page?.url || essential.address),
 			favicon: page?.favicon ?? essential.favicon,
-			isShown: live.id === this.shownId,
+			isShown: this.shownIds.has(live.id),
 			isLive: true,
 		};
 	}
@@ -153,6 +203,7 @@ function idleFaceOf(tab: HostTab): AppTab {
 		status: null,
 		label: tab.label,
 		address: null,
+		isInOwnWindow: false,
 	};
 }
 
@@ -168,6 +219,7 @@ function pageFaceOf(tab: HostTab, page: PageFacts): AppTab {
 		status: statusOf(page),
 		label: tab.label,
 		address,
+		isInOwnWindow: page.isInOwnWindow,
 	};
 }
 

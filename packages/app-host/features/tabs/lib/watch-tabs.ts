@@ -9,6 +9,7 @@ export interface WatchedTabs {
 	readonly essentials: Watched;
 	readonly activeChatGateway: Watched;
 	readonly tabsColumnStore: Watched;
+	readonly paneTabsGateway: Watched;
 }
 
 export function watchTabs(parts: WatchedTabs, changed: () => void): () => void {
@@ -20,6 +21,7 @@ export function watchTabs(parts: WatchedTabs, changed: () => void): () => void {
 		parts.essentials,
 		parts.activeChatGateway,
 		parts.tabsColumnStore,
+		parts.paneTabsGateway,
 	];
 	const stops = watched.map((part) => part.watch(settled));
 	return () => stops.forEach((stop) => stop());

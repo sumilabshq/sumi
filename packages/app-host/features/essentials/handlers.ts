@@ -1,11 +1,10 @@
 import { handler, refuse } from "@widgetarium/core/requests";
-import { ActiveChatGateway } from "../../gateways/active-chat/active-chat.gateway.js";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
 import { Essentials } from "../../shared/lib/essentials/essentials.js";
 import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, OpenedTab } from "../../shared/lib/host-tabs/host-tabs.js";
-import { listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
+import { WORKSPACE_LIST, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
 import { closeTabs } from "../../shared/lib/tab-showing/close-tab.js";
 import { newTabPageOf } from "../../shared/lib/tab-showing/new-tab-page.js";
 import { openTabPage, showTab } from "../../shared/lib/tab-showing/show-tab.js";
@@ -20,13 +19,13 @@ import {
 import { AppHostClientModule } from "../../module.js";
 
 const NO_ESSENTIAL = 'no essential "{id}"';
+const NO_OWN_WINDOW = 'the essential "{id}" opens in its own window only as a tab';
 const NOT_OPEN = 'the essential "{id}" is not open';
 const ESSENTIALS = {
 	appTabsGateway: AppTabsGateway,
 	pageFactsGateway: PageFactsGateway,
 	hostTabs: HostTabs,
 	essentials: Essentials,
-	activeChatGateway: ActiveChatGateway,
 };
 
 export const ShowEssentialCommandHandler = handler(ShowEssentialCommand, AppHostClientModule)
@@ -60,6 +59,7 @@ export const RemoveEssentialCommandHandler = handler(RemoveEssentialCommand, App
 			id,
 			{
 				kind: "list",
+				list: WORKSPACE_LIST,
 				groupId: null,
 				before: null,
 			},
@@ -91,20 +91,23 @@ export const PlaceEssentialCommandHandler = handler(PlaceEssentialCommand, AppHo
 			return;
 		}
 
+		if (to.kind === "window") {
+			return refuse(NO_OWN_WINDOW.replace("{id}", id));
+		}
+
 		releaseEssential(id, to, parts);
 	});
 
 interface EssentialParts {
 	readonly hostTabs: HostTabs;
 	readonly essentials: Essentials;
-	readonly activeChatGateway: ActiveChatGateway;
 	readonly pageFactsGateway: PageFactsGateway;
 	readonly appTabsGateway: AppTabsGateway;
 }
 
 function releaseEssential(id: string, to: Extract<TabDrop, { kind: "list" }>, parts: EssentialParts): void {
 	const essential = parts.essentials.heldEssentialOf(id);
-	const place = listPlaceOf(to, parts.activeChatGateway.now().id);
+	const place = listPlaceOf(to);
 	const live = liveTabOf(parts.hostTabs, id);
 	parts.essentials.remove(id);
 

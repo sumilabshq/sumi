@@ -1,7 +1,7 @@
 import type { AppKind } from "../../schema/app-tab.schema.js";
 import type { GroupHue } from "../../schema/tab-group.schema.js";
 import type { KeptTabs } from "../../schema/tabs-session.schema.js";
-import { chatOfGroup, findGroup, placeOfLocation, tabEntryOf } from "./tab-lists.js";
+import { WORKSPACE_LIST, chatOfGroup, findGroup, placeOfLocation, tabEntryOf } from "./tab-lists.js";
 import type { ChatLists, TabGroup, TabLayout, TabLocation, TabPlace } from "./tab-lists.js";
 
 export interface OpenedTab {
@@ -85,9 +85,9 @@ export function withoutGroup(layout: TabLayout, groupId: string, spilled: readon
 }
 
 export function reopenPlaceOf(layout: TabLayout, closed: ClosedTab, chatId: string): TabPlace {
-	if (closed.chatId !== chatId) {
+	if (closed.chatId !== chatId && closed.chatId !== WORKSPACE_LIST) {
 		return {
-			chatId,
+			chatId: WORKSPACE_LIST,
 			groupId: null,
 			before: null,
 		};
@@ -95,7 +95,7 @@ export function reopenPlaceOf(layout: TabLayout, closed: ClosedTab, chatId: stri
 
 	const isGroupKept = closed.groupId !== null && findGroup(layout.groups, closed.groupId) !== undefined;
 	return placeOfLocation(layout, {
-		chatId,
+		chatId: closed.chatId,
 		groupId: isGroupKept ? closed.groupId : null,
 		at: closed.at,
 	});

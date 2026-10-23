@@ -4,10 +4,12 @@ import {
 	AccessAsksQuery,
 	BrowserTabsQuery,
 	ClosePageCommand,
+	FocusOwnWindowCommand,
 	OpenAddressCommand,
 	OpenPageCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
+	OpenTabInOwnWindowCommand,
 } from "@widgetarium/browser";
 import type { AccessAsk, BrowserTabState, InkReading } from "@widgetarium/browser";
 import { BrowserClientModule } from "@widgetarium/browser/module";
@@ -78,6 +80,16 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		this.sendInOrder("reload", pageId, () => this.browserApp.send(ReloadPageCommand, { tabId: pageId }));
 	}
 
+	openPageInOwnWindow(pageId: string): void {
+		this.sendInOrder("tear out", pageId, () => this.browserApp.send(OpenTabInOwnWindowCommand, { tabId: pageId }));
+	}
+
+	focusPageWindow(pageId: string): void {
+		this.sendInOrder("focus the window of", pageId, () =>
+			this.browserApp.send(FocusOwnWindowCommand, { tabId: pageId }),
+		);
+	}
+
 	stop(): void {
 		this.stops.forEach((stop) => stop());
 	}
@@ -126,5 +138,6 @@ function factsOf(tab: BrowserTabState, inkReading: InkReading | null, asks: read
 		isInkReading: inkReading?.tabId === tab.id,
 		isAskWaiting: asks.some((ask) => ask.tabId === tab.id),
 		isClosedToInk: tab.access?.decision === "deny",
+		isInOwnWindow: tab.isInOwnWindow,
 	};
 }

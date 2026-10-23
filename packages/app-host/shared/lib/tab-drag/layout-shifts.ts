@@ -33,6 +33,7 @@ export class LayoutShifts {
 	private movedElements(): readonly HTMLElement[] {
 		return [
 			...this.layout.grid.tiles.map((tile) => tile.element),
+			...this.layout.lists.flatMap((list) => list.head?.element ?? []),
 			...this.layout.units.flatMap((unit) => [
 				unit.element,
 				...(unit.kind === "group" ? unit.rows.map((row) => row.element) : []),

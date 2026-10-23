@@ -7,6 +7,7 @@ import { TabArt } from "../../../../shared/ui/tab-face/tab-art.js";
 import { CloseTabCommand, ShowTabCommand } from "../../contract.js";
 import { RenameField } from "../rename-field/rename-field.js";
 import { TabRowClose } from "./tab-row-close.js";
+import { TabRowOwnWindow } from "./tab-row-own-window.js";
 
 export interface TabRowProps {
 	readonly tab: AppTabState;
@@ -56,6 +57,7 @@ export const TabRow = memo(function TabRow({ tab, groupId, isRenaming, onRenamed
 					{tab.title}
 				</span>
 			)}
+			{tab.isInOwnWindow ? <TabRowOwnWindow /> : null}
 			<TabRowClose title={tab.title} tabId={tab.id} onClose={close} />
 		</div>
 	);

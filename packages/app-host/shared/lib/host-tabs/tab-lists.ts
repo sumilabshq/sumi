@@ -17,6 +17,7 @@ export interface TabLayout {
 }
 
 export interface TabPlace {
+	// TODO: rename chatId → listId, the workspace owns a list too
 	readonly chatId: string;
 	readonly groupId: string | null;
 	readonly before: string | null;
@@ -27,6 +28,8 @@ export interface TabLocation {
 	readonly groupId: string | null;
 	readonly at: number;
 }
+
+export const WORKSPACE_LIST = "workspace";
 
 const NEW_GROUP = "New group";
 
@@ -80,9 +83,13 @@ export function withTabAt(layout: TabLayout, tabId: string, place: TabPlace): Ta
 	};
 }
 
-export function listPlaceOf(drop: Extract<TabDrop, { kind: "list" }>, chatId: string): TabPlace {
+export function isKnownList({ lists }: TabLayout, listId: string, chatId: string): boolean {
+	return listId === WORKSPACE_LIST || listId === chatId || lists[listId] !== undefined;
+}
+
+export function listPlaceOf(drop: Extract<TabDrop, { kind: "list" }>): TabPlace {
 	return {
-		chatId,
+		chatId: drop.list,
 		groupId: drop.groupId,
 		before: drop.before,
 	};

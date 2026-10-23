@@ -6,12 +6,14 @@ import { CreateGroupCommand } from "../../../features/groups/contract.js";
 import { CloseTabCommand, PlaceTabCommand } from "../../../features/tabs/contract.js";
 import { POINTER_LINE } from "../../lib/menu-look/menu-look.js";
 import { MoveToGroupMenu } from "./move-to-group-menu.js";
+import { MoveToSectionMenu } from "./move-to-section-menu.js";
 import { PointerItem } from "./pointer-item.js";
 import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
 
 export function TabItems({
 	pointed,
-	entries,
+	sections,
+	listTargets,
 	essentials,
 	onRename,
 	onGroupMade,
@@ -19,7 +21,8 @@ export function TabItems({
 	const placeTab = useCommand(PlaceTabCommand);
 	const newGroup = useCommand(CreateGroupCommand);
 	const closeTab = useCommand(CloseTabCommand);
-	const groups = entries.flatMap((entry) =>
+	const section = sections.find((one) => one.list === pointed.list);
+	const groups = (section?.entries ?? []).flatMap((entry) =>
 		entry.kind === "group" && entry.group.id !== pointed.groupId ? [entry.group] : [],
 	);
 	const groupWithTab = async (): Promise<void> => {
@@ -44,8 +47,9 @@ export function TabItems({
 					})
 				}
 			/>
+			<MoveToSectionMenu tabId={pointed.id} list={pointed.list} targets={listTargets} />
 			<PointerItem icon="folder-plus" label="New group with this tab" onSelect={() => void groupWithTab()} />
-			<MoveToGroupMenu tabId={pointed.id} groups={groups} />
+			<MoveToGroupMenu tabId={pointed.id} list={pointed.list} groups={groups} />
 			<PointerItem icon="pencil" label="Rename" onSelect={() => onRename(pointed.id)} />
 			<ContextMenuSeparator className={POINTER_LINE} />
 			<PointerItem icon="x" label="Close" onSelect={() => void closeTab.run({ id: pointed.id })} />

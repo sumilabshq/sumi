@@ -39,6 +39,7 @@ export const AppTabSchema = z.object({
 	status: TabStatusSchema.nullable(),
 	label: z.string().nullable(),
 	address: z.string().nullable(),
+	isInOwnWindow: z.boolean(),
 });
 
 export type AppTab = z.infer<typeof AppTabSchema>;
@@ -86,14 +87,34 @@ export const SidebarEntrySchema = z.discriminatedUnion("kind", [
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
+export const ListOwnerSchema = z.enum(["workspace", "chat"]);
+
+export type ListOwner = z.infer<typeof ListOwnerSchema>;
+
+export const ListTargetSchema = z.object({
+	list: z.string(),
+	owner: ListOwnerSchema,
+	title: z.string(),
+});
+
+export type ListTarget = z.infer<typeof ListTargetSchema>;
+
+export const TabSectionSchema = ListTargetSchema.extend({
+	isOpen: z.boolean(),
+	count: z.number().int().nonnegative(),
+	entries: z.array(SidebarEntrySchema).readonly(),
+});
+
+export type TabSection = z.infer<typeof TabSectionSchema>;
+
 export const TabsSidebarSchema = z.object({
 	chat: z.object({
 		id: z.string(),
 		title: z.string(),
 	}),
 	essentials: z.array(EssentialTileSchema).readonly(),
-	entries: z.array(SidebarEntrySchema).readonly(),
-	isListOpen: z.boolean(),
+	sections: z.array(TabSectionSchema).readonly(),
+	listTargets: z.array(ListTargetSchema).readonly(),
 });
 
 export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;

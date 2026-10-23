@@ -5,7 +5,7 @@ import { GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
 const GroupIdSchema = z.object({ id: z.string() });
 
 export const CreateGroupCommand = command("app-host/create-group")
-	.input(z.object({ withTabId: z.string().nullable() }))
+	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]))
 	.output(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 

@@ -27,14 +27,15 @@ export const ResizeColumnCommandHandler = handler(ResizeColumnCommand, AppHostCl
 
 export const FoldTabListCommandHandler = handler(FoldTabListCommand, AppHostClientModule)
 	.inject(COLUMN)
-	.handle((_input, parts) => {
+	.handle(({ list }, parts) => {
 		const kept = parts.tabsColumnStore.now();
+		const isShut = kept.shutLists.includes(list);
 		keepColumn(
 			{
 				...kept,
-				isListOpen: !kept.isListOpen,
+				shutLists: isShut ? kept.shutLists.filter((one) => one !== list) : [...kept.shutLists, list],
 			},
-			kept.isListOpen ? "fold the tab list" : "unfold the tab list",
+			isShut ? `unfold the tab list ${list}` : `fold the tab list ${list}`,
 			parts,
 		);
 	});

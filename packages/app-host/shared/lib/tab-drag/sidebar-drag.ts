@@ -1,3 +1,5 @@
+import { CARRIED_TAB, announceCarry, isPointInBox } from "@widgetarium/behaviors";
+import type { CarryPhase } from "@widgetarium/behaviors";
 import type { TabDrop } from "../../schema/tab-drop.schema.js";
 import { DragGhost } from "./drag-ghost.js";
 import type { GhostShape } from "./drag-ghost.js";
@@ -27,6 +29,11 @@ interface Lifted {
 }
 
 const START_PX = 4;
+const WINDOW_DROP: TabDrop = { kind: "window" };
+const WINDOW_CARD_WIDTH_PX = 208;
+const WINDOW_CARD_HEIGHT_PX = 156;
+const WINDOW_MARGIN_PX = 8;
+const WINDOW_CAPTION_PX = 36;
 const SETTLE_MS = 200;
 const COMMIT_WAIT_MS = 400;
 const COMMIT_WATCH: MutationObserverInit = {
@@ -36,6 +43,7 @@ const COMMIT_WATCH: MutationObserverInit = {
 
 export class SidebarDrag {
 	private lifted: Lifted | null = null;
+	private isCarriedOut = false;
 	private frame = 0;
 	private pointer: readonly [number, number];
 
@@ -79,6 +87,10 @@ export class SidebarDrag {
 
 		this.follow();
 
+		if (await this.endedOutside(lifted)) {
+			return;
+		}
+
 		if (isStill(lifted.layout, this.picked.source, lifted.drop)) {
 			this.giveBack(lifted);
 			return;
@@ -87,8 +99,29 @@ export class SidebarDrag {
 		await this.land(lifted);
 	}
 
+	private async endedOutside(lifted: Lifted): Promise<boolean> {
+		if (lifted.drop.kind === "window") {
+			this.release(lifted);
+			await this.onDrop(this.picked.source, lifted.drop);
+			return true;
+		}
+
+		if (!this.isCarriedOut || !this.carry("drop")) {
+			return false;
+		}
+
+		this.isCarriedOut = false;
+		this.release(lifted);
+		return true;
+	}
+
 	cancel(): void {
 		cancelAnimationFrame(this.frame);
+
+		if (this.isCarriedOut) {
+			this.carry("leave");
+			this.isCarriedOut = false;
+		}
 
 		if (this.lifted !== null) {
 			this.giveBack(this.lifted);
@@ -120,10 +153,14 @@ export class SidebarDrag {
 		this.lifted ??= this.lift();
 		const lifted = this.lifted;
 		const [x, y] = this.pointer;
-		const drop = dropOf(lifted.layout, this.picked.source, x, y);
+		this.followCarry(x, y);
+		const drop =
+			isOutsideWindow(x, y) && canOwnWindow(this.picked)
+				? WINDOW_DROP
+				: dropOf(lifted.layout, this.picked.source, x, y);
 		const size = sizeOf(lifted, this.picked.source, drop);
 		lifted.ghost.morph(shapeOf(drop), size);
-		lifted.ghost.place(x - lifted.grab[0] * size.width, y - lifted.grab[1] * size.height);
+		lifted.ghost.place(...ghostSpotOf(drop, size, [x - lifted.grab[0] * size.width, y - lifted.grab[1] * size.height]));
 
 		if (lifted.shifts !== null && isSameDrop(drop, lifted.drop)) {
 			return;
@@ -132,6 +169,40 @@ export class SidebarDrag {
 		lifted.drop = drop;
 		lifted.shifts = shiftsOf(lifted.layout, this.picked.source, drop);
 		new LayoutShifts(lifted.layout).paint(lifted.shifts);
+	}
+
+	private followCarry(x: number, y: number): void {
+		const isOut = !isPointInBox(this.holder.getBoundingClientRect(), x, y);
+
+		if (isOut) {
+			this.isCarriedOut = this.carry("over");
+			return;
+		}
+
+		if (this.isCarriedOut) {
+			this.carry("leave");
+			this.isCarriedOut = false;
+		}
+	}
+
+	private carry(phase: CarryPhase): boolean {
+		const { source, element } = this.picked;
+
+		if (source.kind !== "tab") {
+			return false;
+		}
+
+		const [x, y] = this.pointer;
+		return announceCarry({
+			phase,
+			item: {
+				kind: CARRIED_TAB,
+				id: source.id,
+				title: element.textContent?.trim() ?? "",
+			},
+			x,
+			y,
+		});
 	}
 
 	private async land(lifted: Lifted): Promise<void> {
@@ -209,7 +280,27 @@ function restingShapeOf(source: DragSource): GhostShape {
 }
 
 function shapeOf(drop: TabDrop): GhostShape {
+	if (drop.kind === "window") {
+		return "window";
+	}
+
 	return drop.kind === "essentials" ? "tile" : "row";
+}
+
+function isOutsideWindow(x: number, y: number): boolean {
+	return x <= 0 || y <= 0 || x >= window.innerWidth - 1 || y >= window.innerHeight - 1;
+}
+
+function ghostSpotOf(drop: TabDrop, size: Rect, at: readonly [number, number]): readonly [number, number] {
+	if (drop.kind !== "window") {
+		return at;
+	}
+
+	const [left, top] = at;
+	return [
+		Math.min(Math.max(left, WINDOW_MARGIN_PX), window.innerWidth - size.width - WINDOW_MARGIN_PX),
+		Math.min(Math.max(top, WINDOW_MARGIN_PX), window.innerHeight - size.height - WINDOW_CAPTION_PX),
+	];
 }
 
 function sizeOf(lifted: Lifted, source: DragSource, drop: TabDrop): Rect {
@@ -223,6 +314,14 @@ function sizeOf(lifted: Lifted, source: DragSource, drop: TabDrop): Rect {
 		};
 	}
 
+	if (drop.kind === "window") {
+		return {
+			...from,
+			width: WINDOW_CARD_WIDTH_PX,
+			height: WINDOW_CARD_HEIGHT_PX,
+		};
+	}
+
 	return {
 		...from,
 		width: listRectOf(layout).width,
@@ -232,4 +331,8 @@ function sizeOf(lifted: Lifted, source: DragSource, drop: TabDrop): Rect {
 
 function waited(ms: number): Promise<void> {
 	return new Promise((done) => setTimeout(done, ms));
+}
+
+function canOwnWindow({ source, element }: PickedItem): boolean {
+	return source.kind === "tab" && element.dataset["hostTabApp"] === "browser";
 }

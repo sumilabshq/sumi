@@ -1,4 +1,4 @@
-import type { HostTab, TabPage } from "../host-tabs/host-tabs.js";
+import type { HostTab, HostTabs, TabPage } from "../host-tabs/host-tabs.js";
 import type { PageFacts } from "../../schema/page-facts.schema.js";
 
 export function pagesOfTabs(tabs: readonly HostTab[], pages: readonly PageFacts[]): ReadonlyMap<string, PageFacts> {
@@ -33,4 +33,12 @@ export function tabPagesOf(tabs: readonly HostTab[], pages: readonly PageFacts[]
 	}
 
 	return held;
+}
+
+export function tabPageOf(
+	hostTabs: Pick<HostTabs, "now">,
+	pageFacts: { pages(): readonly PageFacts[] },
+	tabId: string,
+): TabPage | undefined {
+	return tabPagesOf(hostTabs.now().tabs, pageFacts.pages()).get(tabId);
 }

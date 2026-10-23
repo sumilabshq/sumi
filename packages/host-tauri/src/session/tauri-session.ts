@@ -72,6 +72,9 @@ export class TauriTabsColumnGateway extends TabsColumnGateway {
 	}
 
 	keep(column: KeptColumn): void {
-		this.session.change({ column }, `column ${column.fullPx}px, list ${column.isListOpen ? "open" : "folded"}`);
+		this.session.change(
+			{ column: KeptColumnSchema.parse(column) },
+			`column ${column.fullPx}px, folded lists [${column.shutLists.join(", ")}]`,
+		);
 	}
 }

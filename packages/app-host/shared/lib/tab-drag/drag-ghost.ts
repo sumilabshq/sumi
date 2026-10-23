@@ -1,6 +1,6 @@
 import type { Rect } from "./sidebar-layout.js";
 
-export type GhostShape = "row" | "tile";
+export type GhostShape = "row" | "tile" | "window";
 
 const MOTION = "var(--sumi-dur-base) var(--sumi-ease-out)";
 const SHAPE_MOTION = ["width", "height", "border-radius", "padding", "gap", "background-color"]
@@ -10,6 +10,9 @@ const ROW_PAD_PX = 8;
 const ROW_GAP_PX = 10;
 const ROW_RADIUS_PX = 10;
 const TILE_RADIUS_PX = 14;
+const WINDOW_RADIUS_PX = 10;
+const WINDOW_PAD_PX = 10;
+const RELEASE_FOR_WINDOW = "Release to open in a new window";
 const ART_GROWTH = 20 / 18;
 const FALLBACK_ART_PX = 18;
 const GHOST_STYLE: Partial<CSSStyleDeclaration> = {
@@ -48,6 +51,7 @@ type GhostArt = HTMLElement | SVGElement;
 export class DragGhost {
 	readonly element: HTMLElement;
 	private readonly words: HTMLElement;
+	private readonly caption: HTMLElement;
 	private readonly art: GhostArt | null;
 	private readonly artPx: number;
 	private readonly rowScale: number;
@@ -59,7 +63,9 @@ export class DragGhost {
 		this.artPx = art === null ? FALLBACK_ART_PX : art.getBoundingClientRect().width;
 		this.rowScale = shape === "row" ? 1 : 1 / ART_GROWTH;
 		this.words = wordsOf(title);
+		this.caption = captionOf();
 		this.element = ghostElementOf(this.art, this.words);
+		this.element.prepend(this.caption);
 		this.shape = shape;
 		this.size = from;
 		this.paint(shape, from);
@@ -93,6 +99,15 @@ export class DragGhost {
 	}
 
 	private paint(shape: GhostShape, size: Rect): void {
+		this.caption.style.display = shape === "window" ? "block" : "none";
+
+		if (shape === "window") {
+			Object.assign(this.element.style, windowStyleOf(size));
+			Object.assign(this.words.style, shownWordsOf(size));
+			this.scaleArt(1);
+			return;
+		}
+
 		const isTile = shape === "tile";
 		const scale = this.rowScale * (isTile ? ART_GROWTH : 1);
 		Object.assign(this.element.style, isTile ? tileStyleOf(size, this.artPx * scale) : rowStyleOf(size));
@@ -142,6 +157,41 @@ function artCloneOf(art: Element): GhostArt | null {
 	return copy;
 }
 
+function captionOf(): HTMLElement {
+	const caption = document.createElement("span");
+	caption.textContent = RELEASE_FOR_WINDOW;
+	caption.dataset["tabsGhostCaption"] = "";
+	Object.assign(caption.style, {
+		position: "absolute",
+		left: "50%",
+		top: "calc(100% + 8px)",
+		transform: "translateX(-50%)",
+		display: "none",
+		padding: "6px 10px",
+		borderRadius: "9px",
+		whiteSpace: "nowrap",
+		fontSize: "var(--sumi-fs-12)",
+		fontWeight: "var(--sumi-fw-regular)",
+		color: "var(--sumi-text-2)",
+		background: "var(--sumi-overlay)",
+		boxShadow: "var(--sumi-shadow-pop)",
+	});
+	return caption;
+}
+
+function windowStyleOf(size: Rect): Partial<CSSStyleDeclaration> {
+	return {
+		width: `${size.width}px`,
+		height: `${size.height}px`,
+		borderRadius: `${WINDOW_RADIUS_PX}px`,
+		padding: `${WINDOW_PAD_PX}px`,
+		gap: `${ROW_GAP_PX}px`,
+		alignItems: "flex-start",
+		overflow: "visible",
+		background: "var(--sumi-plate)",
+	};
+}
+
 function tileStyleOf(size: Rect, artWidth: number): Partial<CSSStyleDeclaration> {
 	return {
 		width: `${size.width}px`,
@@ -150,6 +200,8 @@ function tileStyleOf(size: Rect, artWidth: number): Partial<CSSStyleDeclaration>
 		padding: `0 0 0 ${Math.max(0, (size.width - artWidth) / 2)}px`,
 		gap: "0px",
 		background: "color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-frame))",
+		alignItems: "center",
+		overflow: "hidden",
 	};
 }
 
@@ -161,6 +213,8 @@ function rowStyleOf(size: Rect): Partial<CSSStyleDeclaration> {
 		padding: `0 ${ROW_PAD_PX}px`,
 		gap: `${ROW_GAP_PX}px`,
 		background: "var(--sumi-selected)",
+		alignItems: "center",
+		overflow: "hidden",
 	};
 }
 

@@ -24,5 +24,9 @@ export class NoPageFactsGateway extends PageFactsGateway {
 
 	reloadPage(): void {}
 
+	openPageInOwnWindow(): void {}
+
+	focusPageWindow(): void {}
+
 	stop(): void {}
 }

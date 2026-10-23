@@ -8,6 +8,7 @@ export const PageFactsSchema = z.object({
 	isInkReading: z.boolean(),
 	isAskWaiting: z.boolean(),
 	isClosedToInk: z.boolean(),
+	isInOwnWindow: z.boolean(),
 });
 
 export type PageFacts = z.infer<typeof PageFactsSchema>;

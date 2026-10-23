@@ -7,7 +7,7 @@ export type ColumnSide = z.infer<typeof ColumnSideSchema>;
 export const KeptColumnSchema = z.object({
 	fullPx: z.number(),
 	side: ColumnSideSchema,
-	isListOpen: z.boolean().default(true),
+	shutLists: z.array(z.string()).default([]),
 });
 
 export type KeptColumn = z.infer<typeof KeptColumnSchema>;
