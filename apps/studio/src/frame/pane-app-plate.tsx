@@ -11,35 +11,41 @@ import type { StudioDesign } from "../canvas/studio-canvas.js";
 
 export interface PaneAppPlateProps {
 	readonly tabId: string;
-	readonly hostTabs: AppHostParts["hostTabs"];
+	readonly appHost: AppHostParts;
 	readonly browser: BrowserParts;
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
 }
 
-const IN_PLATE = { isInPlate: true } as const;
-const CLOSED_TAB = "This tab was closed";
-const NO_PAGE = "This tab has no page yet";
+type PaneTab = ReturnType<AppHostParts["hostTabs"]["now"]>["tabs"][number];
 
-export function PaneAppPlate({ tabId, hostTabs, browser, design, project }: PaneAppPlateProps): ReactElement {
-	const pinned = useSyncExternalStore(
+const IN_PLATE = { isInPlate: true } as const;
+const NO_TAB = "This tab was closed";
+const NO_PAGE = "This tab has no page yet";
+const CRUMB_OF_APP = {
+	browser: "Browser",
+	canvas: "Canvas",
+} as const;
+
+export function PaneAppPlate({ tabId, appHost, browser, design, project }: PaneAppPlateProps): ReactElement {
+	const { hostTabs } = appHost;
+	const paneTab = useSyncExternalStore(
 		hostTabs.watch,
 		() => hostTabs.now().tabs.find((tab) => tab.id === tabId) ?? null,
 	);
-	const pageId = pinned?.pageId ?? null;
+	const pageId = paneTab === null ? null : appHost.tabPageIdOf(paneTab.id);
 	const parts = useMemo(() => (pageId === null ? null : paneBrowserParts(browser, pageId)), [browser, pageId]);
-	const kind = pinned?.app ?? "browser";
 	return (
 		<Plate
 			side="app"
-			label={pinned?.label ?? kind}
+			label={paneTab?.label ?? NO_TAB}
 			edgeStart={null}
 			lead={null}
 			crumb={
 				<PlateCrumb
 					words={{
-						first: kind === "browser" ? "Browser" : "Canvas",
-						second: pinned?.label ?? null,
+						first: paneTab === null ? NO_TAB : CRUMB_OF_APP[paneTab.app],
+						second: paneTab?.label ?? null,
 					}}
 					isPressable={false}
 				/>
@@ -47,25 +53,23 @@ export function PaneAppPlate({ tabId, hostTabs, browser, design, project }: Pane
 			more={null}
 			edgeEnd={null}
 		>
-			{paneBodyOf({ isClosed: pinned === null, kind, parts, design, project })}
+			{paneBodyOf(paneTab, { parts, design, project })}
 		</Plate>
 	);
 }
 
-interface PaneBody {
-	readonly isClosed: boolean;
-	readonly kind: "browser" | "canvas";
+interface PaneBodyParts {
 	readonly parts: BrowserParts | null;
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
 }
 
-function paneBodyOf({ isClosed, kind, parts, design, project }: PaneBody): ReactElement {
-	if (isClosed) {
-		return <p className="wg-pane-note">{CLOSED_TAB}</p>;
+function paneBodyOf(paneTab: PaneTab | null, { parts, design, project }: PaneBodyParts): ReactElement {
+	if (paneTab === null) {
+		return <p className="wg-pane-note">{NO_TAB}</p>;
 	}
 
-	if (kind === "canvas") {
+	if (paneTab.app === "canvas") {
 		return <StudioCanvas design={design} project={project} shell={IN_PLATE} />;
 	}
 

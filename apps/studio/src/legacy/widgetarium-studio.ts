@@ -165,7 +165,7 @@ function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): R
 
 	return h(PaneAppPlate, {
 		tabId: view.tabId,
-		hostTabs: started.appHost.hostTabs,
+		appHost: started.appHost,
 		browser: started.browser,
 		design: started.design,
 		project: started.project,

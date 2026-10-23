@@ -38,7 +38,7 @@ function useKeptInstances(
 ): { readonly kept: KeptInstances; readonly shownKey: string | null } {
 	const { tabs } = useSyncExternalStore(hostTabs.watch, hostTabs.now);
 	const [kept, setKept] = useState<KeptInstances>(() => new Map());
-	const shownKey = shown === null ? null : instanceKeyOf(shown, hostTabs.shownIdFor(shown));
+	const shownKey = shownKeyOf(shown, hostTabs);
 	const open = new Set(tabs.map((tab) => instanceKeyOf(tab.app, tab.id)));
 	const shownEntry: readonly (readonly [string, AppKind])[] =
 		shown === null || shownKey === null ? [] : [[shownKey, shown]];
@@ -52,6 +52,20 @@ function useKeptInstances(
 		kept: next,
 		shownKey,
 	};
+}
+
+const HAS_EMPTY_PAGE: Readonly<Record<AppKind, boolean>> = {
+	browser: true,
+	canvas: false,
+};
+
+function shownKeyOf(shown: AppKind | null, hostTabs: AppHostParts["hostTabs"]): string | null {
+	if (shown === null) {
+		return null;
+	}
+
+	const tabId = hostTabs.shownIdFor(shown);
+	return tabId === null && !HAS_EMPTY_PAGE[shown] ? null : instanceKeyOf(shown, tabId);
 }
 
 // TRADE-OFF: the browser holds every page in one view, so it is kept once; a canvas is kept per tab
