@@ -18,6 +18,15 @@ import { chatAppFor } from "../../assistant/chat-app.js";
 import { NothingAskedSchema } from "../shared/studio-app.js";
 import type { NoFields } from "./studio-fields.js";
 
+const NO_AGENT: AgentSetup = {
+	isReady: false,
+	providerLabel: "",
+	providers: [],
+	chosen: "",
+	helperAgents: false,
+	renderMarkdown: null,
+};
+
 type Answered<Output> =
 	{ readonly ok: true; readonly output: Output } | { readonly ok: false; readonly reason: string };
 
@@ -30,6 +39,10 @@ export class MenuAgentSetupQuery extends IQuery.input(NothingAskedSchema).output
 	}
 
 	async query(): Promise<AgentSetup> {
+		if (!this.ports.assistant.can) {
+			return NO_AGENT;
+		}
+
 		return outputOf(await chatAppOf(this.ports).send(AgentSetupQuery));
 	}
 

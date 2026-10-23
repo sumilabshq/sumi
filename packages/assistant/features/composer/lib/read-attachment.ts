@@ -1,5 +1,5 @@
 import type { DraftAttachment } from "../../../shared/lib/draft-attachments-store.js";
-import type { AttachmentKind } from "../../../shared/schema/attachment.schema.js";
+import type { FileKind } from "../../../shared/schema/attachment.schema.js";
 import { IMAGE_TYPES } from "./attachment-rules.js";
 
 export interface ReadAttachment {
@@ -11,7 +11,7 @@ const NOT_TEXT = "{name} is not a text file";
 const TEXT_MIME = "text/plain";
 const CHUNK = 0x8000;
 
-export async function readAttachment(file: File, kind: AttachmentKind): Promise<ReadAttachment> {
+export async function readAttachment(file: File, kind: FileKind): Promise<ReadAttachment> {
 	const bytes = new Uint8Array(await file.arrayBuffer());
 
 	if (kind === "text" && !isUtf8(bytes)) {
@@ -30,6 +30,7 @@ export async function readAttachment(file: File, kind: AttachmentKind): Promise<
 			mime,
 			bytes,
 			preview: kind === "image" ? `data:${mime};base64,${base64Of(bytes)}` : null,
+			path: null,
 		},
 		refusal: null,
 	};

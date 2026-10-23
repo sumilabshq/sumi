@@ -8,7 +8,7 @@ export interface PrivateFolder {
 
 const SAFE_NAME = /[^A-Za-z0-9._-]/g;
 
-export class ObsidianAttachmentFilesGateway extends AttachmentFilesGateway {
+export class PrivateFolderAttachmentFilesGateway extends AttachmentFilesGateway {
 	constructor(
 		private readonly privateFolder: PrivateFolder,
 		private readonly folder: string,

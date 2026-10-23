@@ -16,20 +16,31 @@ import type { StartedApp } from "../packages/core/src/requests/index.ts";
 import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
 import {
 	AttachFilesCommand,
+	AttachFolderCommand,
+	AttachReachQuery,
 	ChatQuery,
+	ClaudeOptionsQuery,
 	ClearChatCommand,
 	DraftAttachmentsQuery,
+	FileDragQuery,
+	HearPageDragCommand,
 	RemoveAttachmentCommand,
 	SendMessageCommand,
 	SweepAttachmentsCommand,
+	CompactChatCommand,
+	SlashCommandsQuery,
 } from "../packages/assistant/generated/index.ts";
+import { slashMatchesOf } from "../packages/assistant/features/slash/lib/slash-matches.ts";
 import {
 	AssistantSessionGateway,
 	AssistantSetupGateway,
 	ClockGateway,
-	ObsidianAttachmentFilesGateway,
+	PrivateFolderAttachmentFilesGateway,
 	assistantPartsOf,
+	webAssistantGateways,
 } from "../packages/assistant/generated/gateways.ts";
+import { withStarter } from "../packages/assistant/features/composer/lib/starter-said.ts";
+import { shortPathOf } from "../packages/assistant/shared/lib/short-path.ts";
 import type { AssistantParts } from "../packages/assistant/generated/gateways.ts";
 import { MemoryDraftAttachmentsStore } from "../packages/assistant/shared/lib/draft-attachments-store.ts";
 import { MemorySentAttachmentsStore } from "../packages/assistant/shared/lib/sent-attachments-store.ts";
@@ -127,9 +138,17 @@ class FakeSessionGateway extends AssistantSessionGateway {
 	async clear(): Promise<void> {
 		this.sent.length = 0;
 	}
+
+	compacted = 0;
+
+	async compact(): Promise<void> {
+		this.compacted += 1;
+	}
 }
 
 class FakeSetupGateway extends AssistantSetupGateway {
+	compacts = false;
+
 	constructor(public reads: ProviderReads) {
 		super();
 	}
@@ -144,6 +163,7 @@ class FakeSetupGateway extends AssistantSetupGateway {
 					label: "Ollama",
 					canEdit: false,
 					reads: this.reads,
+					compacts: this.compacts,
 				},
 			],
 			chosen: "chosen",
@@ -189,7 +209,7 @@ function benchWith(reads: ProviderReads): Bench {
 	const parts = assistantPartsOf({
 		assistantSessionGateway: session,
 		assistantSetupGateway: setup,
-		attachmentFilesGateway: new ObsidianAttachmentFilesGateway(
+		attachmentFilesGateway: new PrivateFolderAttachmentFilesGateway(
 			new PrivateFiles(fs, process.getuid?.() ?? null),
 			folder,
 		),
@@ -223,6 +243,7 @@ const draft = {
 	mime: "image/png",
 	bytes: PNG_BYTES,
 	preview: null,
+	path: null,
 } as const;
 drafts.change([draft], "attached a.png");
 drafts.change([draft], "attached a.png again");
@@ -306,12 +327,44 @@ check(
 		true,
 		[
 			["shot.png", "image", "8 B", "data:image/png;base64,"],
-			["notes.md", "text", "8 B", null],
+			["notes.md", "text", "8 B · 2 lines", null],
 		],
 	],
 );
 
 await claude.chat.send(SendMessageCommand, { said: "What is on the screen?" });
+
+const webChat = app({ modules: [AssistantClientModule.with(assistantPartsOf(webAssistantGateways()))] });
+const webReach = await webChat.send(AttachReachQuery);
+check("the web host offers no folder to attach", webReach.ok ? webReach.output.canAttachFolders : null, false);
+check(
+	"the web host refuses a folder even when asked directly",
+	reasonOf(await webChat.send(AttachFolderCommand)),
+	"Folders cannot be attached on this host",
+);
+check(
+	"the web host offers no Claude options, so no strip is drawn",
+	await webChat.send(ClaudeOptionsQuery).then((answer) => (answer.ok ? answer.output : "refused")),
+	null,
+);
+check(
+	"a starter is said to the agent before the message and leaves after it",
+	withStarter("create", "A habit tracker").split("\n")[0],
+	"Create an app from this idea: plan it, write the code and run it.",
+);
+const folderTrailer = withAttachments("Read it", [
+	{ kind: "folder", name: "habits", size: "a folder you may read", path: "/Users/me/habits", text: null },
+]);
+check(
+	"a folder is named by its absolute path only and reads back as a folder",
+	[
+		folderTrailer.includes("absolute path only"),
+		attachmentsIn(folderTrailer).entries[0]?.kind,
+		attachmentsIn(folderTrailer).entries[0]?.path,
+	],
+	[true, "folder", "/Users/me/habits"],
+);
+check("a folder card shows its path from home", shortPathOf("/Users/me/Apps/habit-tracker"), "~/Apps/habit-tracker");
 const sent = claude.session.sent[0] ?? "";
 const read = attachmentsIn(sent);
 const written = read.entries.map((entry) => entry.path ?? "");
@@ -475,7 +528,58 @@ const argv = claudePreset
 	: [];
 check("Claude Code is given the attachments folder to read", argv[argv.indexOf("/att") - 1], "--add-dir");
 
-for (const bench of [claude, ollama, codex, switched, crowded, cleared]) {
+const pageDrag = app({ modules: [AssistantClientModule.with(assistantPartsOf(webAssistantGateways()))] });
+const isPageOver = async (): Promise<unknown> => {
+	const drag = await pageDrag.send(FileDragQuery);
+	return drag.ok ? drag.output.isOver : null;
+};
+check("no file drag, no drop zone", await isPageOver(), false);
+await pageDrag.send(HearPageDragCommand, { drag: "enter" });
+await pageDrag.send(HearPageDragCommand, { drag: "enter" });
+await pageDrag.send(HearPageDragCommand, { drag: "leave" });
+check("a drag that leaves a child of the chat but not the chat keeps the zone", await isPageOver(), true);
+await pageDrag.send(HearPageDragCommand, { drag: "leave" });
+check("a drag that leaves the chat hides the zone", await isPageOver(), false);
+await pageDrag.send(HearPageDragCommand, { drag: "enter" });
+await pageDrag.send(HearPageDragCommand, { drag: "drop" });
+const pageDropped = await pageDrag.send(FileDragQuery);
+check(
+	"a page drop hides the zone and leaves nothing for the host path to attach",
+	pageDropped.ok ? pageDropped.output : null,
+	{ isOver: false, dropped: null },
+);
+
+const slashed = benchWith(CLAUDE);
+const slashNames = async (): Promise<unknown> => {
+	const names = await slashed.chat.send(SlashCommandsQuery);
+	return names.ok ? names.output : names.reason;
+};
+check("a provider that cannot compact offers only /clear", await slashNames(), ["clear"]);
+slashed.setup.compacts = true;
+check("one that can offers /clear and /compact", await slashNames(), ["clear", "compact"]);
+check(
+	"“/” lists every command, letters filter by name or alias, anything else is no menu",
+	[
+		slashMatchesOf(["clear", "compact"], "/"),
+		slashMatchesOf(["clear", "compact"], "/co"),
+		slashMatchesOf(["clear", "compact"], "/NEW"),
+		slashMatchesOf(["clear", "compact"], "/sum"),
+		slashMatchesOf(["clear", "compact"], "/zz"),
+		slashMatchesOf(["clear"], "/comp"),
+		slashMatchesOf(["clear", "compact"], "say /clear"),
+		slashMatchesOf(["clear", "compact"], "/clear now"),
+	],
+	[["clear", "compact"], ["compact"], ["clear"], ["compact"], [], [], null, null],
+);
+await slashed.chat.send(CompactChatCommand);
+check("/compact asks the session to compact, once", slashed.session.compacted, 1);
+check(
+	"web has no session, so no commands",
+	await pageDrag.send(SlashCommandsQuery).then((names) => (names.ok ? names.output : names.reason)),
+	[],
+);
+
+for (const bench of [claude, ollama, codex, switched, crowded, cleared, slashed]) {
 	rmSync(bench.folder, { recursive: true, force: true });
 }
 

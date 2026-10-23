@@ -1,0 +1,217 @@
+import { createElement as h } from "react";
+import { createRoot } from "react-dom/client";
+import { AssistantPanel } from "../packages/assistant/generated/index.ts";
+import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
+import {
+	ClaudeOptionsHeld,
+	HeldClaudeOptionsGateway,
+	PickerAttachmentFolderGateway,
+	PortAssistantSessionGateway,
+	PortAssistantSetupGateway,
+	PrivateFolderAttachmentFilesGateway,
+	SystemClockGateway,
+	WorkingFolderGateway,
+	assistantPartsOf,
+} from "../packages/assistant/generated/gateways.ts";
+import type { WorkingFolders } from "../packages/assistant/generated/index.ts";
+import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
+import type {
+	AssistantPort,
+	AssistantProvider,
+	AssistantSession,
+	AssistantSetup,
+} from "../packages/core/src/engine/assistant-port.ts";
+import { AppProvider, app } from "../packages/core/src/requests/index.ts";
+import { MascotClientModule } from "../packages/mascot/generated/module.ts";
+import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
+import { memoryFolder } from "./assistant-chat-app.ts";
+
+declare global {
+	interface Window {
+		__SENT__?: string;
+	}
+}
+
+const HOUR_MS = 3600000;
+const USED_IN_FIVE_HOURS = 0.38;
+const USED_THIS_WEEK = 0.12;
+const PIXEL =
+	"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+const SPEC_LINES = 214;
+const SPEC_BYTES = 18 * 1024;
+
+const CLAUDE_CODE: AssistantProvider = {
+	id: "claude-code",
+	label: "Claude Code",
+	canEdit: true,
+	reads: {
+		images: true,
+		files: "path",
+	},
+};
+
+const SETUP: AssistantSetup = {
+	isReady: true,
+	providerLabel: "Claude Code",
+	providers: [CLAUDE_CODE],
+	chosen: "claude-code",
+	helperAgents: false,
+	renderMarkdown: null,
+};
+
+const CODEX_SETUP: AssistantSetup = {
+	...SETUP,
+	providerLabel: "Codex",
+	providers: [
+		CLAUDE_CODE,
+		{
+			id: "codex",
+			label: "Codex",
+			canEdit: true,
+			reads: {
+				images: false,
+				files: "none",
+			},
+		},
+	],
+	chosen: "codex",
+};
+
+const EMPTY: AssistantSession = {
+	turns: [],
+	busy: false,
+	failure: null,
+	tool: null,
+	phase: null,
+	spent: 0,
+};
+
+const TALKED: AssistantSession = {
+	...EMPTY,
+	turns: [
+		{
+			role: "user",
+			text: "Add a weekly view to the habits page",
+			calls: [],
+		},
+		{
+			role: "agent",
+			text: "Done. The habits page has a weekly grid now.",
+			calls: [],
+			startedAt: 0,
+			endedAt: 1000,
+			outcome: "done",
+		},
+	],
+};
+
+class ShownWorkingFolders extends WorkingFolderGateway {
+	folders(): Promise<WorkingFolders> {
+		return Promise.resolve({
+			workspace: "Personal",
+			current: null,
+			recent: ["/Users/me/Apps/habit-tracker", "/Users/me/Apps/recipes", "/Users/me/Apps/translator"],
+		});
+	}
+
+	watch(): () => void {
+		return () => undefined;
+	}
+
+	choose(): Promise<void> {
+		return Promise.resolve();
+	}
+
+	pickAnother(): Promise<void> {
+		return Promise.resolve();
+	}
+}
+
+function portOf(session: AssistantSession, setup: AssistantSetup): AssistantPort {
+	return {
+		...NO_ASSISTANT,
+		can: true,
+		session: () => session,
+		setup: async () => setup,
+		send: async (said) => {
+			window.__SENT__ = said;
+		},
+	};
+}
+
+function linesOf(count: number, bytes: number): Uint8Array {
+	const line = "x".repeat(Math.floor(bytes / count) - 1);
+	return new TextEncoder().encode(Array.from({ length: count }, () => line).join("\n"));
+}
+
+const which = location.hash.slice(1) || "empty";
+const port = portOf(which === "empty" ? EMPTY : TALKED, which === "codex" ? CODEX_SETUP : SETUP);
+const claudeOptions = new ClaudeOptionsHeld();
+claudeOptions.heardUsage({
+	fiveHour: {
+		used: USED_IN_FIVE_HOURS,
+		resetsAt: Date.now() + 2 * HOUR_MS,
+	},
+	week: {
+		used: USED_THIS_WEEK,
+		resetsAt: Date.now() + 100 * HOUR_MS,
+	},
+});
+const parts = assistantPartsOf({
+	assistantSessionGateway: new PortAssistantSessionGateway(port),
+	assistantSetupGateway: new PortAssistantSetupGateway(port),
+	attachmentFilesGateway: new PrivateFolderAttachmentFilesGateway(memoryFolder(), "/attachments"),
+	clockGateway: new SystemClockGateway(),
+	attachmentFolderGateway: new PickerAttachmentFolderGateway({
+		pick: async () => "/Users/me/Apps/habit-tracker",
+		lend: () => undefined,
+	}),
+	claudeOptionsGateway: new HeldClaudeOptionsGateway(claudeOptions),
+	workingFolderGateway: new ShownWorkingFolders(),
+});
+
+if (which === "attach") {
+	parts.draftAttachmentsStore.change(
+		[
+			{
+				id: "folder",
+				name: "habit-tracker",
+				kind: "folder",
+				mime: "inode/directory",
+				bytes: new Uint8Array(),
+				preview: null,
+				path: "/Users/me/Apps/habit-tracker",
+			},
+			{
+				id: "image",
+				name: "browser.png",
+				kind: "image",
+				mime: "image/png",
+				bytes: new Uint8Array(8),
+				preview: PIXEL,
+				path: null,
+			},
+			{
+				id: "text",
+				name: "habits-spec.md",
+				kind: "text",
+				mime: "text/plain",
+				bytes: linesOf(SPEC_LINES, SPEC_BYTES),
+				preview: null,
+				path: null,
+			},
+		],
+		"the composer page shows a folder, an image and a text file",
+	);
+}
+
+const chat = app({
+	modules: [MascotClientModule.with(memoryMascotParts()), AssistantClientModule.with(parts)],
+});
+const holder = document.getElementById("chat");
+
+if (!holder) {
+	throw new Error("chat composer page: no #chat");
+}
+
+createRoot(holder).render(h(AppProvider, { app: chat }, h(AssistantPanel, { title: "Habit tracker" })));

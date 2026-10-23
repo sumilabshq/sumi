@@ -15,6 +15,7 @@ export const AgentProviderSchema = z.object({
 	label: z.string(),
 	canEdit: z.boolean(),
 	reads: ProviderReadsSchema,
+	compacts: z.boolean(),
 });
 
 export type AgentProvider = z.infer<typeof AgentProviderSchema>;

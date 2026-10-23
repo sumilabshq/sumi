@@ -1,23 +1,21 @@
 import type { AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
 import { handler } from "@widgetarium/core/requests";
-import { AssistantSessionGateway } from "../../gateways/assistant-session/assistant-session.gateway.js";
 import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";
-import { AttachmentFilesGateway } from "../../gateways/attachment-files/attachment-files.gateway.js";
-import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
-import { sweepFolder } from "../../shared/lib/attachment-sweep.js";
-import { DraftAttachmentsStore } from "../../shared/lib/draft-attachments-store.js";
-import { SentAttachmentsStore } from "../../shared/lib/sent-attachments-store.js";
+import { ClaudeOptionsGateway } from "../../gateways/claude-options/claude-options.gateway.js";
+import { WorkingFolderGateway } from "../../gateways/working-folder/working-folder.gateway.js";
 import type { AgentSetup, ProviderReads } from "../../shared/schema/agent-setup.schema.js";
 import { AssistantClientModule } from "../../module.js";
 import {
 	AgentSetupQuery,
+	ChooseClaudeOptionCommand,
 	ChooseProviderCommand,
-	ClearChatCommand,
+	ChooseWorkingFolderCommand,
+	ClaudeOptionsQuery,
+	PickWorkingFolderCommand,
+	WorkingFoldersQuery,
 	OpenProvidersCommand,
 	SetHelperAgentsCommand,
 } from "./contract.js";
-
-const CLEARED = "the chat was cleared";
 
 const READS_NOTHING: ProviderReads = {
 	images: false,
@@ -41,22 +39,27 @@ export const OpenProvidersCommandHandler = handler(OpenProvidersCommand, Assista
 	.inject({ assistantSetupGateway: AssistantSetupGateway })
 	.handle((_input, { assistantSetupGateway }) => assistantSetupGateway.openProviders());
 
-export const ClearChatCommandHandler = handler(ClearChatCommand, AssistantClientModule)
-	.inject({
-		assistantSessionGateway: AssistantSessionGateway,
-		attachmentFilesGateway: AttachmentFilesGateway,
-		draftAttachmentsStore: DraftAttachmentsStore,
-		sentAttachmentsStore: SentAttachmentsStore,
-		clockGateway: ClockGateway,
-	})
-	.handle(async (_input, parts) => {
-		await parts.assistantSessionGateway.clear();
-		parts.draftAttachmentsStore.change([], CLEARED);
-		sweepFolder(parts, {
-			isBusy: false,
-			now: parts.clockGateway.now(),
-		});
-	});
+export const ClaudeOptionsQueryHandler = handler(ClaudeOptionsQuery, AssistantClientModule)
+	.inject({ claudeOptionsGateway: ClaudeOptionsGateway })
+	.watch((_input, { claudeOptionsGateway }, changed) => claudeOptionsGateway.watch(changed))
+	.handle((_input, { claudeOptionsGateway }) => claudeOptionsGateway.options());
+
+export const ChooseClaudeOptionCommandHandler = handler(ChooseClaudeOptionCommand, AssistantClientModule)
+	.inject({ claudeOptionsGateway: ClaudeOptionsGateway })
+	.handle((asked, { claudeOptionsGateway }) => claudeOptionsGateway.choose(asked));
+
+export const WorkingFoldersQueryHandler = handler(WorkingFoldersQuery, AssistantClientModule)
+	.inject({ workingFolderGateway: WorkingFolderGateway })
+	.watch((_input, { workingFolderGateway }, changed) => workingFolderGateway.watch(changed))
+	.handle((_input, { workingFolderGateway }) => workingFolderGateway.folders());
+
+export const ChooseWorkingFolderCommandHandler = handler(ChooseWorkingFolderCommand, AssistantClientModule)
+	.inject({ workingFolderGateway: WorkingFolderGateway })
+	.handle(({ path }, { workingFolderGateway }) => workingFolderGateway.choose(path));
+
+export const PickWorkingFolderCommandHandler = handler(PickWorkingFolderCommand, AssistantClientModule)
+	.inject({ workingFolderGateway: WorkingFolderGateway })
+	.handle((_input, { workingFolderGateway }) => workingFolderGateway.pickAnother());
 
 function agentSetupOf(setup: AssistantSetup): AgentSetup {
 	return {
@@ -67,6 +70,7 @@ function agentSetupOf(setup: AssistantSetup): AgentSetup {
 			label: provider.label,
 			canEdit: provider.canEdit,
 			reads: provider.reads ?? READS_NOTHING,
+			compacts: provider.compacts ?? false,
 		})),
 		chosen: setup.chosen,
 		helperAgents: setup.helperAgents,

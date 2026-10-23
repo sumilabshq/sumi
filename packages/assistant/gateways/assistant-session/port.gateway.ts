@@ -47,4 +47,8 @@ export class PortAssistantSessionGateway extends AssistantSessionGateway {
 	clear(): Promise<void> {
 		return this.port.clear();
 	}
+
+	compact(): Promise<void> {
+		return this.port.compact();
+	}
 }

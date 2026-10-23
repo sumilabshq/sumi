@@ -1,16 +1,18 @@
 import { createElement as h } from "react";
-import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
+import type { ReactElement, ReactNode } from "react";
+import { Mascot } from "@widgetarium/mascot";
 
-const EMPTY_LEAD = "Tell me what this screen should do.";
-const EMPTY_SAID = "I will find the widgets, put them on the board one at a time, and bind them to your notes.";
+const GREETING = "What are we building?";
+const SUB = "Ink makes apps on this computer, in a folder you choose.";
+const MASCOT_PX = 120;
 
-export function ReadyEmptyChat(): ReactElement {
+export function ReadyEmptyChat({ starters }: { readonly starters: ReactNode }): ReactElement {
 	return (
-		<div className="wg-studio-ai-empty">
-			<Icon name="sparkle" size={28} />
-			<p className="wg-studio-ai-empty-lead">{EMPTY_LEAD}</p>
-			<p className="wg-studio-ai-empty-said">{EMPTY_SAID}</p>
+		<div className="wg-studio-ai-welcome">
+			<Mascot size={MASCOT_PX} />
+			<h2 className="wg-studio-ai-greet">{GREETING}</h2>
+			<p className="wg-studio-ai-greet-said">{SUB}</p>
+			{starters}
 		</div>
 	);
 }

@@ -1,6 +1,6 @@
 import type { AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
 import type { ProviderReads } from "../../../shared/schema/agent-setup.schema.js";
-import type { AttachmentKind } from "../../../shared/schema/attachment.schema.js";
+import type { AttachmentKind, FileKind } from "../../../shared/schema/attachment.schema.js";
 import { sizeSaid } from "../../../shared/lib/size-said.js";
 
 export interface ChosenProvider {
@@ -39,8 +39,9 @@ const A_TEXT_FILE = "a text file";
 const TOO_MANY = "At most {count} files can be attached to one message";
 const NO_FILES = "{label} can't read attached files";
 const NO_IMAGES = "{label} can't read images";
+const NO_FOLDERS = "{label} can't read attached folders";
 
-export function kindOf(name: string): AttachmentKind | null {
+export function kindOf(name: string): FileKind | null {
 	const extension = name.split(".").at(-1)?.toLowerCase() ?? "";
 
 	if (extension in IMAGE_TYPES) {
@@ -59,6 +60,10 @@ export function chosenOf(setup: Pick<AssistantSetup, "providers" | "chosen" | "p
 }
 
 export function refusalOfReach(kind: AttachmentKind, { label, reads }: ChosenProvider): string | null {
+	if (kind === "folder" && reads.files !== "path") {
+		return NO_FOLDERS.replace("{label}", label);
+	}
+
 	if (reads.files === "none") {
 		return NO_FILES.replace("{label}", label);
 	}

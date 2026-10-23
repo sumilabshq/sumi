@@ -8,22 +8,22 @@ import { FailureCard } from "../failure-card/failure-card.js";
 
 const RETRY = "Try again";
 const RUN_FAILED = "The answer did not finish";
+const NOT_COMPACTED = "The chat was not compacted";
 
 export function EndLine({ chat }: { readonly chat: Chat }): ReactNode {
 	const retryTurn = useCommand(RetryTurnCommand);
 	const { session } = chat;
+	const last = session.turns.at(-1);
 
 	if (session.failure) {
 		return (
 			<FailureCard
-				title={RUN_FAILED}
+				title={last?.role === "compact" ? NOT_COMPACTED : RUN_FAILED}
 				reason={session.failure}
 				action={{ said: RETRY, run: () => void retryTurn.run() }}
 			/>
 		);
 	}
-
-	const last = session.turns.at(-1);
 
 	if (session.busy || last?.role !== "agent" || !last.outcome) {
 		return null;

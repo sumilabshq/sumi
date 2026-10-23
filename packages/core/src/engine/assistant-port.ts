@@ -26,8 +26,10 @@ export interface CallOutputCounts {
 
 export type TurnOutcome = "done" | "stopped" | "failed";
 
+export type TurnRole = "user" | "agent" | "compact";
+
 export interface AssistantTurn {
-	readonly role: "user" | "agent";
+	readonly role: TurnRole;
 	readonly text: string;
 	readonly calls: AssistantCall[];
 	readonly startedAt?: number;
@@ -94,6 +96,7 @@ export interface AssistantProvider {
 	readonly label: string;
 	readonly canEdit: boolean;
 	readonly reads?: ProviderReads;
+	readonly compacts?: boolean;
 }
 
 export type RenderMarkdown = (element: HTMLElement, markdown: string) => () => void;
@@ -127,6 +130,7 @@ export interface AssistantPort {
 	retry(): void;
 	stop(): void;
 	clear(): Promise<void>;
+	compact(): Promise<void>;
 	chooseProvider(id: string): Promise<void>;
 	setHelperAgents(on: boolean): Promise<void>;
 	openProviders(): void;
@@ -172,6 +176,7 @@ export const NO_ASSISTANT: AssistantPort = {
 	retry: () => undefined,
 	stop: () => undefined,
 	clear: refused,
+	compact: refused,
 	chooseProvider: refused,
 	setHelperAgents: refused,
 	openProviders: () => undefined,

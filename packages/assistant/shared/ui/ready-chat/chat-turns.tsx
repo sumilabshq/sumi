@@ -3,7 +3,9 @@ import type { ReactElement } from "react";
 import type { AgentSetup } from "../../schema/agent-setup.schema.js";
 import type { Chat } from "../../schema/chat.schema.js";
 import { EmptyChat } from "../../../features/agent/ui/empty-chat/empty-chat.js";
+import { CompactLine } from "../../../features/chat/ui/compact-line/compact-line.js";
 import { Turn } from "../../../features/chat/ui/turn/turn.js";
+import { Starters } from "../../../features/composer/ui/starters/starters.js";
 import type { CardAsks, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { BusyLine } from "./busy-line.js";
 import { EndLine } from "./end-line.js";
@@ -19,7 +21,7 @@ export function ChatTurns({ chat, setup, cards, asks }: ChatTurnsProps): ReactEl
 	const { session } = chat;
 
 	if (session.turns.length === 0) {
-		return <EmptyChat />;
+		return <EmptyChat starters={<Starters />} />;
 	}
 
 	return (
@@ -32,7 +34,11 @@ export function ChatTurns({ chat, setup, cards, asks }: ChatTurnsProps): ReactEl
 				return (
 					<Fragment key={at}>
 						{before}
-						<Turn shown={shown} render={setup.renderMarkdown} live={isLive} />
+						{shown.turn.role === "compact" ? (
+							<CompactLine turn={shown.turn} render={setup.renderMarkdown} live={isLive} />
+						) : (
+							<Turn shown={shown} render={setup.renderMarkdown} live={isLive} />
+						)}
 						{after}
 					</Fragment>
 				);

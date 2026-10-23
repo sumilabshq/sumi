@@ -11,4 +11,5 @@ export abstract class AssistantSessionGateway {
 	abstract retry(): void;
 	abstract stop(): void;
 	abstract clear(): Promise<void>;
+	abstract compact(): Promise<void>;
 }

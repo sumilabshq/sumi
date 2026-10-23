@@ -7,6 +7,7 @@ export interface DraftAttachment {
 	readonly mime: string;
 	readonly bytes: Uint8Array;
 	readonly preview: string | null;
+	readonly path: string | null;
 }
 
 export abstract class DraftAttachmentsStore {

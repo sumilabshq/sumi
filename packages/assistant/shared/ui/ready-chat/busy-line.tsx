@@ -11,7 +11,7 @@ export function BusyLine({ chat }: { readonly chat: Chat }): ReactNode {
 	const stopTurn = useCommand(StopTurnCommand);
 	const running = runningCallOf(chat.session);
 
-	if (!chat.session.busy) {
+	if (!chat.session.busy || chat.session.turns.at(-1)?.role === "compact") {
 		return null;
 	}
 

@@ -6,6 +6,8 @@ import { sizeSaid } from "../../../shared/lib/size-said.js";
 import type { ProviderReads } from "../../../shared/schema/agent-setup.schema.js";
 import { textOf } from "./read-attachment.js";
 
+export const FOLDER_SAID = "a folder you may read";
+
 export interface WrittenAttachment {
 	readonly path: string;
 	readonly preview: string | null;
@@ -23,6 +25,16 @@ export function writtenOf(
 ): WrittenAttachments {
 	const files: WrittenAttachment[] = [];
 	const entries = drafts.map((draft): TrailerEntry => {
+		if (draft.kind === "folder") {
+			return {
+				kind: draft.kind,
+				name: draft.name,
+				size: FOLDER_SAID,
+				path: draft.path,
+				text: null,
+			};
+		}
+
 		const said = {
 			kind: draft.kind,
 			name: draft.name,

@@ -1,6 +1,7 @@
 import type { AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantSessionGateway } from "../../../gateways/assistant-session/assistant-session.gateway.js";
 import { attachmentsIn } from "../../../shared/lib/attachment-trailer.js";
+import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import type { AttachmentChip } from "../../../shared/schema/attachment.schema.js";
 import type { Chat, ShownTurn } from "../../../shared/schema/chat.schema.js";
@@ -53,6 +54,8 @@ function chipOf(entry: TrailerEntry, id: string, previews: ReadonlyMap<string, s
 		name: entry.name,
 		kind: entry.kind,
 		size: entry.size,
+		bytes: 0,
 		preview: entry.path === null ? null : (previews.get(entry.path) ?? null),
+		where: entry.kind === "folder" ? shortPathOf(entry.path ?? "") : null,
 	};
 }

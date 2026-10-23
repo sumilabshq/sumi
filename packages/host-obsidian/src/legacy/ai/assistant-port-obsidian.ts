@@ -21,6 +21,8 @@ export interface ObsidianAssistantPort extends AssistantPort {
 	setupChanged(): void;
 }
 
+const NO_COMPACT_HERE = "Compacting a chat is not available in Obsidian.";
+
 export interface MarkdownHost {
 	readonly can?: { readonly renderMarkdown?: boolean } | null;
 	readonly ui?: { readonly renderMarkdown?: RenderMarkdown } | null;
@@ -70,6 +72,7 @@ export function obsidianAssistantPort(assistant: AssistantDoors): ObsidianAssist
 		retry: () => session.retry(),
 		stop: () => session.stop(),
 		clear: () => session.clear(),
+		compact: () => Promise.reject(new Error(NO_COMPACT_HERE)),
 		chooseProvider: (id) => changingSetup(assistant.settings.choose(id)),
 		setHelperAgents: (on) => changingSetup(assistant.settings.setHelperAgents(on)),
 		openProviders: () => assistant.openProviders(),
