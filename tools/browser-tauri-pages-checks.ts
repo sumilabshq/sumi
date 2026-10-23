@@ -350,6 +350,32 @@ async function checksOwnWindow(
 	);
 	await checksClosingOwnWindow(rust, gateway);
 	await checksFreshTabOwnWindow(rust, gateway);
+	await checksFreshTabTearOff(rust, gateway);
+}
+
+async function checksFreshTabTearOff(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const lifted = "page-lifted";
+	gateway.create(lifted);
+	gateway.watchTearOff(lifted);
+	await settledTicks();
+	const asked = rust.calls
+		.filter((call) => call.args?.["page"] === lifted)
+		.map((call) => call.command.replace("plugin:browser|", ""));
+	check("a lifted tab's native page exists before Rust watches it leave the studio", asked, [
+		"create",
+		"watch_tear_off",
+	]);
+	gateway.stopTearOff();
+	await settledTicks();
+	check("a release inside the studio stops the Rust watch", rust.named("stop_tear_off").length, 1);
+	rust.send({
+		page: lifted,
+		kind: "own-window-opened",
+		facts: facts("https://example.com/", "Example"),
+		failure: null,
+	});
+	await settledTicks();
+	check("the window Rust tore off marks the page as living in its own window", gateway.isInOwnWindow(lifted), true);
 }
 
 async function checksFreshTabOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {

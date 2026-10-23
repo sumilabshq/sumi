@@ -137,6 +137,7 @@ const showing = {
 		closePanel: () => undefined,
 	},
 	pageFactsGateway: {
+		isAvailable: () => false,
 		pages: (): readonly PageFacts[] => [],
 		showPage: () => undefined,
 		openPage: () => undefined,
