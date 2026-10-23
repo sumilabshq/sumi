@@ -14,6 +14,13 @@ export const OpenAddressCommand = command("browser/open-address")
 	.idempotencyKey(PerCall)
 	.invalidates([BrowserTabsQuery]);
 
+export const OpenTabInOwnWindowCommand = command("browser/open-tab-in-own-window")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([BrowserTabsQuery]);
+
+export const FocusOwnWindowCommand = command("browser/focus-own-window").input(TabSchema).idempotencyKey(Repeatable);
+
 export const ShowTabCommand = command("browser/show-tab")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)

@@ -19,7 +19,16 @@ export type PageFacts = z.infer<typeof PageFactsSchema>;
 
 export const PageEventSchema = z.object({
 	page: z.string(),
-	kind: z.enum(["started", "committed", "finished", "title", "failed", "stopped"]),
+	kind: z.enum([
+		"started",
+		"committed",
+		"finished",
+		"title",
+		"failed",
+		"stopped",
+		"own-window-opened",
+		"own-window-closed",
+	]),
 	facts: PageFactsSchema,
 	failure: PageFailureSchema.nullable(),
 });
@@ -33,6 +42,8 @@ const FrameAnswersSchema = z.array(
 	}),
 );
 
+const OwnWindowsSchema = z.array(z.string()).readonly();
+
 export type FrameAnswer = z.infer<typeof FrameAnswersSchema>[number];
 
 export interface PagePlacement {
@@ -41,6 +52,10 @@ export interface PagePlacement {
 	readonly width: number;
 	readonly height: number;
 	readonly corner: number;
+}
+
+export interface PageFrame extends PagePlacement {
+	readonly page: string;
 }
 
 export type ShotFormat = "png" | "jpeg";
@@ -54,9 +69,12 @@ export interface PagesBridge {
 	forward(page: string): Promise<void>;
 	reload(page: string): Promise<void>;
 	facts(page: string): Promise<PageFacts>;
-	place(placement: PagePlacement): Promise<void>;
-	show(page: string | null): Promise<void>;
-	cover(covered: boolean): Promise<void>;
+	place(page: string, placement: PagePlacement): Promise<void>;
+	show(frames: readonly PageFrame[]): Promise<void>;
+	cover(page: string, covered: boolean): Promise<void>;
+	openInOwnWindow(page: string, title: string): Promise<void>;
+	focusOwnWindow(page: string): Promise<void>;
+	ownWindows(): Promise<readonly string[]>;
 	snapshot(page: string, region: PageRegion | null, format: ShotFormat): Promise<Uint8Array>;
 	evaluate(page: string, script: string): Promise<string>;
 	evaluateInFrames(page: string, script: string): Promise<readonly FrameAnswer[]>;
@@ -83,9 +101,12 @@ export function tauriPagesBridge(ipc: BrowserPagesIpc): PagesBridge {
 		forward: (page) => done("forward", { page }),
 		reload: (page) => done("reload", { page }),
 		facts: async (page) => PageFactsSchema.parse(await call("facts", { page })),
-		place: (placement) => done("place", { ...placement }),
-		show: (page) => done("show", { page }),
-		cover: (covered) => done("cover", { covered }),
+		place: (page, placement) => done("place", { page, ...placement }),
+		show: (frames) => done("show", { frames }),
+		cover: (page, covered) => done("cover", { page, covered }),
+		openInOwnWindow: (page, title) => done("open_own_window", { page, title }),
+		focusOwnWindow: (page) => done("focus_own_window", { page }),
+		ownWindows: async () => OwnWindowsSchema.parse(await call("own_windows")),
 		snapshot: async (page, region, format) => bytesOf(await call("snapshot", { page, region, format })),
 		evaluate: async (page, script) => textOf(await call("evaluate", { page, script })),
 		evaluateInFrames: async (page, script) => FrameAnswersSchema.parse(await call("evaluate_frames", { page, script })),

@@ -159,6 +159,8 @@ export class TauriPage {
 			title: () => this.noteFacts(event.facts),
 			failed: () => this.noteFailure(event),
 			stopped: () => this.noteStop(event.facts),
+			"own-window-opened": () => this.noteFacts(event.facts),
+			"own-window-closed": () => this.noteFacts(event.facts),
 		};
 		reactions[event.kind]();
 	}

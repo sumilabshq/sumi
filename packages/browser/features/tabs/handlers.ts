@@ -29,6 +29,8 @@ import {
 	OpenPageCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
+	FocusOwnWindowCommand,
+	OpenTabInOwnWindowCommand,
 } from "./contract.js";
 
 const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
@@ -36,6 +38,7 @@ const LOOKS_LIKE_A_HOST = /^[^\s/]+\.[^\s/]+(\/.*)?$|^localhost(:\d+)?(\/.*)?$/i
 const NOT_OPENED = "the browser opens only web pages: {reason}";
 const SCHEME_NOT_ALLOWED = "scheme-not-allowed";
 const NO_TAB = "the browser holds no such tab";
+const NO_OWN_WINDOWS = "this host cannot open a page in its own window";
 
 export const BrowserTabsQueryHandler = handler(BrowserTabsQuery, BrowserClientModule)
 	.inject({
@@ -71,6 +74,7 @@ export const BrowserTabsQueryHandler = handler(BrowserTabsQuery, BrowserClientMo
 			tabs: browserPagesGateway.tabs().map((tab) => ({
 				...tab,
 				isShown: tab.id === shownId,
+				isInOwnWindow: browserPagesGateway.isInOwnWindow(tab.id),
 				access: hasNoPage(tab)
 					? null
 					: decideBrowserAccess({ address: tab.url, tabId: tab.id }, grants, SENSITIVE_SITES),
@@ -168,6 +172,20 @@ export const GoForwardCommandHandler = handler(GoForwardCommand, BrowserClientMo
 export const ReloadPageCommandHandler = handler(ReloadPageCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPagesGateway }) => browserPagesGateway.reload(tabId));
+
+export const OpenTabInOwnWindowCommandHandler = handler(OpenTabInOwnWindowCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle(({ tabId }, { browserPagesGateway }) => {
+		if (!browserPagesGateway.isAvailable()) {
+			return refuse(NO_OWN_WINDOWS);
+		}
+
+		browserPagesGateway.openInOwnWindow(tabId);
+	});
+
+export const FocusOwnWindowCommandHandler = handler(FocusOwnWindowCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle(({ tabId }, { browserPagesGateway }) => browserPagesGateway.focusOwnWindow(tabId));
 
 export const AttachPagesCommandHandler = handler(AttachPagesCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })

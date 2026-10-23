@@ -8,6 +8,7 @@ export * from "../gateways/browser-grants/local-storage.gateway.js";
 export * from "../gateways/browser-grants/memory.gateway.js";
 export * from "../gateways/browser-pages/browser-pages.gateway.js";
 export * from "../gateways/browser-pages/electron/electron.gateway.js";
+export * from "../gateways/browser-pages/pane.gateway.js";
 export * from "../gateways/browser-pages/tauri/tauri.gateway.js";
 export * from "../gateways/browser-pages/web.gateway.js";
 export * from "../gateways/browser-parts/browser-parts.gateway.js";

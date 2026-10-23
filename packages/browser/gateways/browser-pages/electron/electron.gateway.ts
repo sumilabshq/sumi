@@ -1,3 +1,4 @@
+import { NOT_AVAILABLE_ON_HOST } from "@widgetarium/core/engine/studio-host.js";
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
 import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
@@ -78,6 +79,22 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		this.detachAll();
 		this.told();
 	}
+
+	// TODO: panes in Obsidian's webviews, one container per tab
+	attachInPane(): void {}
+
+	detachFromPane(): void {}
+
+	isInOwnWindow(): boolean {
+		return false;
+	}
+
+	// TODO: tear a webview out into its own Obsidian window
+	openInOwnWindow(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	focusOwnWindow(): void {}
 
 	create(tabId: string): void {
 		if (this.held.some((tab) => tab.now().id === tabId)) {

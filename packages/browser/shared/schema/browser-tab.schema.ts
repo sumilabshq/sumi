@@ -47,6 +47,7 @@ export type InkReading = z.infer<typeof InkReadingSchema>;
 
 export const BrowserTabStateSchema = BrowserTabSchema.extend({
 	isShown: z.boolean(),
+	isInOwnWindow: z.boolean(),
 	access: AccessDecisionSchema.nullable(),
 	nearMatch: z.string().nullable(),
 });

@@ -27,6 +27,7 @@ export interface PageCoverHold {
 
 export class PageCover {
 	private isCovered = false;
+	private coveredPage: string | null = null;
 	private turn = 0;
 	private framePending = false;
 	private picture: HTMLImageElement | null = null;
@@ -69,9 +70,11 @@ export class PageCover {
 		this.turn += 1;
 		this.dropPicture();
 
-		if (this.isCovered) {
+		const page = this.coveredPage;
+
+		if (this.isCovered && page !== null) {
 			this.isCovered = false;
-			void this.bridge.cover(false).catch((failure: unknown) => {
+			void this.bridge.cover(page, false).catch((failure: unknown) => {
 				console.error("[widgetarium] the browser page could not come back after its card left", failure);
 			});
 		}
@@ -109,7 +112,7 @@ export class PageCover {
 		this.isCovered = isWanted;
 		void (page !== null && isWanted ? this.cover(page) : this.uncover()).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser page could not step aside for an overlay", failure);
-			return this.isCovered ? this.bridge.cover(true) : undefined;
+			return this.isCovered && page !== null ? this.bridge.cover(page, true) : undefined;
 		});
 	}
 
@@ -142,13 +145,18 @@ export class PageCover {
 			return;
 		}
 
-		await this.bridge.cover(true);
+		this.coveredPage = page;
+		await this.bridge.cover(page, true);
 		console.info(`[widgetarium] browser page ${page} shown → picture (${Math.round(performance.now() - started)} ms)`);
 	}
 
 	private async uncover(): Promise<void> {
 		const turn = ++this.turn;
-		await this.bridge.cover(false);
+		const page = this.coveredPage;
+
+		if (page !== null) {
+			await this.bridge.cover(page, false);
+		}
 
 		requestAnimationFrame(() => {
 			if (turn !== this.turn || this.picture === null) {

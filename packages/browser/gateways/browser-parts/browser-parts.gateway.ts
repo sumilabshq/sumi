@@ -10,6 +10,7 @@ import type { BrowserAuditGateway } from "../browser-audit/browser-audit.gateway
 import type { BrowserGrantReadsGateway } from "../browser-grant-reads/browser-grant-reads.gateway.js";
 import type { BrowserGrantsGateway } from "../browser-grants/browser-grants.gateway.js";
 import type { BrowserPagesGateway } from "../browser-pages/browser-pages.gateway.js";
+import { PaneBrowserPagesGateway } from "../browser-pages/pane.gateway.js";
 import type { ClockGateway } from "../clock/clock.gateway.js";
 import type { ChatComposerGateway } from "../chat-composer/chat-composer.gateway.js";
 import type { RecentSitesGateway } from "../recent-sites/recent-sites.gateway.js";
@@ -49,6 +50,13 @@ export function browserPartsOf(gateways: BrowserGateways): BrowserParts {
 		onceAllowancesStore,
 		browserAsksStore: new MemoryBrowserAsksStore(),
 		inkActivityStore: new MemoryInkActivityStore(),
+	};
+}
+
+export function paneBrowserParts(parts: BrowserParts, tabId: string): BrowserParts {
+	return {
+		...parts,
+		browserPagesGateway: new PaneBrowserPagesGateway(parts.browserPagesGateway, tabId),
 	};
 }
 

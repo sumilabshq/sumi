@@ -28,6 +28,20 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	detach(): void {}
 
+	attachInPane(): void {}
+
+	detachFromPane(): void {}
+
+	isInOwnWindow(): boolean {
+		return false;
+	}
+
+	openInOwnWindow(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	focusOwnWindow(): void {}
+
 	create(): void {
 		throw new Error(NOT_AVAILABLE_ON_HOST);
 	}
