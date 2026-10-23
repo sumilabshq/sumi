@@ -1,0 +1,14 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"webviews": ["main"],
+	"permissions": [
+		"core:default",
+		"core:window:allow-start-dragging",
+		"core:window:allow-toggle-maximize",
+		"core:window:allow-is-fullscreen",
+		"core:window:allow-destroy",
+		"assistant:default",
+		"browser:default"
+	]
+}

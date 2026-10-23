@@ -1,0 +1,36 @@
+{
+	"name": "@widgetarium/host-tauri",
+	"version": "0.1.0",
+	"private": true,
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"dev": "tauri dev",
+		"build:frontend": "node build-frontend.mts",
+		"build": "tauri build --bundles app --no-sign",
+		"start": "tauri build --debug --bundles app --no-sign && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^2.12.4",
+		"@widgetarium/assistant": "0.1.0",
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/browser": "0.1.0",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/studio": "0.1.0",
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"devDependencies": {
+		"@tauri-apps/cli": "^2.12.3"
+	},
+	"widgetarium": {
+		"level": "host"
+	}
+}

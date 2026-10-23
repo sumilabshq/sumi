@@ -9,7 +9,7 @@ interface ForeignLine {
 
 const CYRILLIC = /[\u0400-\u04FF\u0500-\u052F]/;
 const ROOTS = process.argv.slice(2);
-const SKIP = new Set(["node_modules", ".git", "main.js"]);
+const SKIP = new Set(["node_modules", ".git", "main.js", "target"]);
 const EXTENSIONS = new Set([".js", ".jsx", ".mjs", ".mts", ".ts", ".tsx", ".css", ".json"]);
 const SHOWN_AT_MOST = 40;
 

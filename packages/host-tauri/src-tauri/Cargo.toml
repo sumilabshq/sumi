@@ -1,0 +1,41 @@
+[package]
+name = "widgetarium-host-tauri"
+version = "0.1.0"
+edition = "2021"
+license = "FSL-1.1-ALv2"
+
+[lib]
+name = "widgetarium_host_tauri_lib"
+path = "src/lib.rs"
+
+[[test]]
+name = "assistant_rules"
+path = "tests/assistant_rules.rs"
+harness = false
+
+[[test]]
+name = "browser_url_policy"
+path = "tests/browser_url_policy.rs"
+harness = false
+
+[[test]]
+name = "store_rules"
+path = "tests/store_rules.rs"
+harness = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["unstable"] }
+serde_json = "1"
+libc = "0.2"
+uuid = { version = "1", features = ["v4", "v5"] }
+tauri-plugin-dialog = "2"
+objc2 = "0.6"
+block2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSData", "NSError", "NSString", "NSDictionary", "NSURL", "NSURLError", "NSURLRequest"] }
+objc2-core-foundation = { version = "0.3", features = ["CFCGTypes"] }
+objc2-app-kit = { version = "0.3", features = ["NSImage", "NSBitmapImageRep", "NSImageRep", "NSGraphics", "NSResponder", "NSWindow", "objc2-core-graphics"] }
+objc2-core-graphics = { version = "0.3", features = ["CGImage", "CGWindow", "CGGeometry"] }
+objc2-web-kit = { version = "0.3", features = ["WKWebView", "WKSnapshotConfiguration", "WKContentWorld", "WKFrameInfo", "WKNavigationAction", "WKNavigationDelegate", "block2", "objc2-app-kit"] }

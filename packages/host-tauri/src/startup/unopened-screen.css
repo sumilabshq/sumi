@@ -1,0 +1,28 @@
+.ink-unopened {
+	display: grid;
+	place-items: center;
+	height: 100%;
+	box-sizing: border-box;
+	padding: 16px;
+	background: var(--wg-kit-page);
+	color: var(--wg-kit-text);
+}
+
+.ink-unopened-card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 16px;
+	max-width: 420px;
+}
+
+.ink-unopened-title {
+	margin: 0;
+	font-size: var(--wg-kit-text-l);
+}
+
+.ink-unopened-text {
+	margin: 0;
+	font-size: var(--wg-kit-text-m);
+	color: var(--wg-kit-text-muted);
+}
