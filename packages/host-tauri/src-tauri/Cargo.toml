@@ -19,6 +19,11 @@ path = "tests/browser_url_policy.rs"
 harness = false
 
 [[test]]
+name = "browser_shown_pages"
+path = "tests/browser_shown_pages.rs"
+harness = false
+
+[[test]]
 name = "store_rules"
 path = "tests/store_rules.rs"
 harness = false

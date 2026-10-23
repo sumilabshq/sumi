@@ -3,12 +3,14 @@ use super::policy::{self, PAGE_LABEL_PREFIX};
 use super::webkit::{self, view_of, Answer, ShotFormat, ShotRegion};
 use objc2_web_kit::WKWebView;
 use serde_json::{json, Value};
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 use tauri::ipc::Channel;
 use tauri::webview::{DownloadEvent, NewWindowResponse, PageLoadEvent, PermissionResponse};
-use tauri::{AppHandle, LogicalPosition, LogicalSize, Manager, Webview, WebviewBuilder, WebviewUrl, Wry};
+use tauri::window::Window;
+use tauri::{AppHandle, LogicalPosition, LogicalSize, Manager, Webview, WebviewBuilder, WebviewUrl, WindowEvent, Wry};
 
 pub const NO_WINDOW: &str = "The studio window is not open, so the browser has nowhere to draw a page.";
 pub const NO_PAGE: &str = "The browser holds no page \"{id}\".";
@@ -16,6 +18,11 @@ pub const REFUSED_ADDRESS: &str = "The browser opens only web pages, and \"{addr
 pub const NO_ANSWER: &str = "The page did not answer.";
 
 const MAIN_WINDOW: &str = "main";
+const OWN_WINDOW_LABEL_PREFIX: &str = "own-window-";
+const OWN_WINDOW_WIDTH: f64 = 960.0;
+const OWN_WINDOW_HEIGHT: f64 = 720.0;
+const OWN_WINDOW_FALLBACK_AT: f64 = 120.0;
+const OWN_WINDOW_GRAB_TOP: f64 = 20.0;
 const BLANK: &str = "about:blank";
 const SMALLEST_SIDE: f64 = 1.0;
 
@@ -47,14 +54,34 @@ impl Placement {
     }
 }
 
+pub struct Frame {
+    pub page: String,
+    pub placement: Placement,
+}
+
 struct Shown {
-    page: Option<String>,
-    is_covered: bool,
+    placed: HashMap<String, Placement>,
+    pages: Vec<String>,
+    covered: HashSet<String>,
+    own_windows: HashMap<String, String>,
+}
+
+impl Shown {
+    fn empty() -> Self {
+        Shown { placed: HashMap::new(), pages: Vec::new(), covered: HashSet::new(), own_windows: HashMap::new() }
+    }
+
+    fn placement_of(&self, page_id: &str) -> Placement {
+        self.placed.get(page_id).copied().unwrap_or(UNPLACED)
+    }
+}
+
+pub fn uncovered_pages(shown: &[String], covered: &HashSet<String>) -> HashSet<String> {
+    shown.iter().filter(|page| !covered.contains(*page)).cloned().collect()
 }
 
 pub struct Pages {
     sink: Mutex<Option<Channel<Value>>>,
-    placement: Mutex<Placement>,
     shown: Mutex<Shown>,
 }
 
@@ -104,8 +131,7 @@ impl Pages {
     pub fn new() -> Self {
         Pages {
             sink: Mutex::new(None),
-            placement: Mutex::new(UNPLACED),
-            shown: Mutex::new(Shown { page: None, is_covered: false }),
+            shown: Mutex::new(Shown::empty()),
         }
     }
 
@@ -126,9 +152,8 @@ impl Pages {
         app.get_webview(&label).ok_or_else(|| NO_PAGE.replace("{id}", page_id))
     }
 
-    fn placement(&self) -> Placement {
-        let held = self.placement.lock().expect("the page placement");
-        Placement { ..*held }
+    fn placement_of(&self, page_id: &str) -> Placement {
+        self.shown.lock().expect("the shown pages").placement_of(page_id)
     }
 
     pub fn create(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, profile_id: &str) -> Answer<Value> {
@@ -140,7 +165,7 @@ impl Pages {
 
         let window = app.get_window(MAIN_WINDOW).ok_or(NO_WINDOW)?;
         let builder = self.builder(app, &label, profile_id)?;
-        let placement = self.placement();
+        let placement = self.placement_of(page_id);
         let webview = window.add_child(builder, placement.position(), placement.size()).map_err(failure_text)?;
         webview.hide().map_err(failure_text)?;
         self.watch_navigation(&webview, page_id, placement.corner)?;
@@ -211,6 +236,7 @@ impl Pages {
     }
 
     pub fn close(&self, app: &AppHandle<Wry>, page_id: &str) -> Answer<Value> {
+        self.forget(page_id);
         let Ok(webview) = self.webview(app, page_id) else { return Ok(Value::Null) };
         let _ = on_main_thread(&webview, |view, answer| {
             navigation_proxy::forget(view);
@@ -243,29 +269,116 @@ impl Pages {
         })
     }
 
-    pub fn place(&self, app: &AppHandle<Wry>, placement: Placement) -> Answer<Value> {
-        let mut held = self.placement.lock().expect("the page placement");
-        let _ = std::mem::replace(&mut *held, placement);
+    fn forget(&self, page_id: &str) {
+        let mut shown = self.shown.lock().expect("the shown pages");
+        shown.placed.remove(page_id);
+        shown.pages.retain(|page| page != page_id);
+        shown.covered.remove(page_id);
+    }
 
-        for webview in browser_webviews(app) {
-            webview.set_position(placement.position()).map_err(failure_text)?;
-            webview.set_size(placement.size()).map_err(failure_text)?;
-            let _ = webview.with_webview(move |platform| webkit::round_bottom_corners(view_of(&platform), placement.corner));
+    pub fn place(&self, app: &AppHandle<Wry>, page_id: &str, placement: Placement) -> Answer<Value> {
+        self.shown.lock().expect("the shown pages").placed.insert(page_id.to_string(), placement);
+        let Ok(webview) = self.webview(app, page_id) else { return Ok(Value::Null) };
+        place_webview(&webview, placement)
+    }
+
+    pub fn show(&self, app: &AppHandle<Wry>, frames: Vec<Frame>) -> Answer<Value> {
+        let mut shown = self.shown.lock().expect("the shown pages");
+        shown.pages = frames.iter().map(|frame| frame.page.clone()).collect();
+
+        for frame in frames {
+            if let Ok(webview) = self.webview(app, &frame.page) {
+                place_webview(&webview, frame.placement)?;
+            }
+
+            shown.placed.insert(frame.page, frame.placement);
         }
 
+        apply_shown(app, &shown)
+    }
+
+    pub fn cover(&self, app: &AppHandle<Wry>, page_id: &str, is_covered: bool) -> Answer<Value> {
+        let mut shown = self.shown.lock().expect("the shown pages");
+
+        if is_covered {
+            shown.covered.insert(page_id.to_string());
+        } else {
+            shown.covered.remove(page_id);
+        }
+
+        apply_shown(app, &shown)
+    }
+
+    pub fn open_own_window(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str, title: &str) -> Answer<Value> {
+        let webview = self.webview(app, page_id)?;
+        let label = format!("{OWN_WINDOW_LABEL_PREFIX}{}", policy::label_of(page_id)?);
+
+        if let Some(window) = app.get_window(&label) {
+            window.set_focus().map_err(failure_text)?;
+            return Ok(Value::Null);
+        }
+
+        let (x, y) = own_window_origin(app);
+        let window = Window::builder(app, &label)
+            .title(title)
+            .inner_size(OWN_WINDOW_WIDTH, OWN_WINDOW_HEIGHT)
+            .position(x, y)
+            .build()
+            .map_err(failure_text)?;
+        webview.reparent(&window).map_err(failure_text)?;
+        fill_window(&webview, OWN_WINDOW_WIDTH, OWN_WINDOW_HEIGHT)?;
+        webview.show().map_err(failure_text)?;
+        self.shown.lock().expect("the shown pages").own_windows.insert(page_id.to_string(), label);
+        self.follow_own_window(app, &window, page_id);
+        self.tell_facts(&webview, "own-window-opened");
         Ok(Value::Null)
     }
 
-    pub fn show(&self, app: &AppHandle<Wry>, page_id: Option<String>) -> Answer<Value> {
-        let mut shown = self.shown.lock().expect("the shown page");
-        shown.page = page_id;
-        apply_shown(app, &shown)
+    pub fn own_windows(&self) -> Answer<Value> {
+        let shown = self.shown.lock().expect("the shown pages");
+        Ok(json!(shown.own_windows.keys().collect::<Vec<_>>()))
     }
 
-    pub fn cover(&self, app: &AppHandle<Wry>, is_covered: bool) -> Answer<Value> {
-        let mut shown = self.shown.lock().expect("the shown page");
-        shown.is_covered = is_covered;
-        apply_shown(app, &shown)
+    pub fn focus_own_window(&self, app: &AppHandle<Wry>, page_id: &str) -> Answer<Value> {
+        let label = self.shown.lock().expect("the shown pages").own_windows.get(page_id).cloned();
+        let Some(window) = label.and_then(|label| app.get_window(&label)) else { return Ok(Value::Null) };
+        window.set_focus().map(|_| Value::Null).map_err(failure_text)
+    }
+
+    fn follow_own_window(self: &Arc<Self>, app: &AppHandle<Wry>, window: &Window<Wry>, page_id: &str) {
+        let pages = self.clone();
+        let app = app.clone();
+        let page = page_id.to_string();
+        let held = window.clone();
+        window.on_window_event(move |event| match event {
+            WindowEvent::Resized(size) => {
+                let scale = held.scale_factor().unwrap_or(1.0);
+                if let Ok(webview) = pages.webview(&app, &page) {
+                    let _ = fill_window(&webview, f64::from(size.width) / scale, f64::from(size.height) / scale);
+                }
+            }
+            WindowEvent::CloseRequested { .. } => {
+                let _ = pages.bring_home(&app, &page);
+            }
+            _ => {}
+        });
+    }
+
+    fn bring_home(self: &Arc<Self>, app: &AppHandle<Wry>, page_id: &str) -> Answer<Value> {
+        let mut shown = self.shown.lock().expect("the shown pages");
+
+        if shown.own_windows.remove(page_id).is_none() {
+            return Ok(Value::Null);
+        }
+
+        let webview = self.webview(app, page_id)?;
+        let main = app.get_window(MAIN_WINDOW).ok_or(NO_WINDOW)?;
+        webview.reparent(&main).map_err(failure_text)?;
+        place_webview(&webview, shown.placement_of(page_id))?;
+        apply_shown(app, &shown)?;
+        drop(shown);
+        self.tell_facts(&webview, "own-window-closed");
+        Ok(Value::Null)
     }
 
     pub fn snapshot(&self, app: &AppHandle<Wry>, page_id: &str, region: Option<ShotRegion>, format: ShotFormat) -> Answer<Vec<u8>> {
@@ -302,19 +415,31 @@ impl Pages {
     }
 }
 
-fn visible_label(shown: &Shown) -> Answer<Option<String>> {
-    if shown.is_covered {
-        return Ok(None);
-    }
+fn own_window_origin(app: &AppHandle<Wry>) -> (f64, f64) {
+    let scale = app.get_window(MAIN_WINDOW).and_then(|window| window.scale_factor().ok()).unwrap_or(1.0);
+    let Ok(cursor) = app.cursor_position() else { return (OWN_WINDOW_FALLBACK_AT, OWN_WINDOW_FALLBACK_AT) };
+    (cursor.x / scale - OWN_WINDOW_WIDTH / 2.0, cursor.y / scale - OWN_WINDOW_GRAB_TOP)
+}
 
-    shown.page.as_deref().map(policy::label_of).transpose()
+fn fill_window(webview: &Webview<Wry>, width: f64, height: f64) -> Answer<Value> {
+    place_webview(webview, Placement { x: 0.0, y: 0.0, width, height, corner: 0.0 })
+}
+
+fn place_webview(webview: &Webview<Wry>, placement: Placement) -> Answer<Value> {
+    webview.set_position(placement.position()).map_err(failure_text)?;
+    webview.set_size(placement.size()).map_err(failure_text)?;
+    let _ = webview.with_webview(move |platform| webkit::round_bottom_corners(view_of(&platform), placement.corner));
+    Ok(Value::Null)
 }
 
 fn apply_shown(app: &AppHandle<Wry>, shown: &Shown) -> Answer<Value> {
-    let visible_label = visible_label(shown)?;
+    let visible_labels: HashSet<String> =
+        uncovered_pages(&shown.pages, &shown.covered).iter().map(|page| policy::label_of(page)).collect::<Answer<_>>()?;
 
-    for webview in browser_webviews(app) {
-        let is_visible = visible_label.as_deref() == Some(webview.label());
+    let own_window_labels: HashSet<String> = shown.own_windows.keys().map(|page| policy::label_of(page)).collect::<Answer<_>>()?;
+
+    for webview in browser_webviews(app).into_iter().filter(|webview| !own_window_labels.contains(webview.label())) {
+        let is_visible = visible_labels.contains(webview.label());
         let result = if is_visible { webview.show() } else { webview.hide() };
         result.map_err(failure_text)?;
     }

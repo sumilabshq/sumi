@@ -1,5 +1,5 @@
 use super::drive;
-use super::pages::{Pages, Placement};
+use super::pages::{Frame, Pages, Placement};
 use super::webkit::{self, ShotFormat, ShotRegion};
 use serde_json::Value;
 use std::str::FromStr;
@@ -31,10 +31,6 @@ impl Call {
         self.argument(name)?.as_str().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", name))
     }
 
-    fn number(&self, name: &str) -> Result<f64, String> {
-        self.argument(name)?.as_f64().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", name))
-    }
-
     fn flag(&self, name: &str) -> Result<bool, String> {
         self.argument(name)?.as_bool().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", name))
     }
@@ -44,14 +40,18 @@ impl Call {
     }
 }
 
-fn placement_of(call: &Call) -> Result<Placement, String> {
-    Ok(Placement {
-        x: call.number("x")?,
-        y: call.number("y")?,
-        width: call.number("width")?,
-        height: call.number("height")?,
-        corner: call.number("corner")?,
-    })
+fn placement_in(held: &Value) -> Result<Placement, String> {
+    let side = |name: &str| held.get(name).and_then(Value::as_f64).ok_or_else(|| MISSING_ARGUMENT.replace("{name}", name));
+    Ok(Placement { x: side("x")?, y: side("y")?, width: side("width")?, height: side("height")?, corner: side("corner")? })
+}
+
+fn frames_of(call: &Call) -> Result<Vec<Frame>, String> {
+    let frames = call.argument("frames")?.as_array().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", "frames"))?;
+    let frame_of = |held: &Value| -> Result<Frame, String> {
+        let page = held.get("page").and_then(Value::as_str).ok_or_else(|| MISSING_ARGUMENT.replace("{name}", "page"))?;
+        Ok(Frame { page: page.to_string(), placement: placement_in(held)? })
+    };
+    frames.iter().map(frame_of).collect()
 }
 
 fn region_of(call: &Call) -> Result<Option<ShotRegion>, String> {
@@ -68,10 +68,6 @@ fn format_of(call: &Call) -> Result<ShotFormat, String> {
     }
 }
 
-fn shown_page_of(call: &Call) -> Option<String> {
-    call.args.get("page").and_then(Value::as_str).map(str::to_string)
-}
-
 fn answer_of(pages: &Arc<Pages>, call: &Call) -> Answer {
     let app = &call.app;
 
@@ -83,9 +79,12 @@ fn answer_of(pages: &Arc<Pages>, call: &Call) -> Answer {
         "forward" => pages.step(app, call.page()?, webkit::go_forward),
         "reload" => pages.step(app, call.page()?, webkit::reload),
         "facts" => pages.facts(app, call.page()?),
-        "place" => pages.place(app, placement_of(call)?),
-        "show" => pages.show(app, shown_page_of(call)),
-        "cover" => pages.cover(app, call.flag("covered")?),
+        "place" => pages.place(app, call.page()?, placement_in(&call.args)?),
+        "show" => pages.show(app, frames_of(call)?),
+        "cover" => pages.cover(app, call.page()?, call.flag("covered")?),
+        "open_own_window" => pages.open_own_window(app, call.page()?, call.text("title")?),
+        "focus_own_window" => pages.focus_own_window(app, call.page()?),
+        "own_windows" => pages.own_windows(),
         "evaluate" => pages.evaluate(app, call.page()?, call.text("script")?.to_string()),
         "evaluate_frames" => pages.evaluate_in_frames(app, call.page()?, call.text("script")?.to_string()),
         command if drive::is_drive_command(command) => drive::answer(app, command, &call.args),
