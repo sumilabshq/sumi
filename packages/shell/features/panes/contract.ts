@@ -19,3 +19,14 @@ export const ClosePaneCommand = command("shell/close-pane")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.invalidates([PaneTreeQuery]);
+
+export const ResizePaneSplitCommand = command("shell/resize-pane-split")
+	.input(
+		z.object({
+			splitId: z.string(),
+			at: z.number().int().nonnegative(),
+			share: z.number().nonnegative(),
+		}),
+	)
+	.idempotencyKey(Repeatable)
+	.invalidates([PaneTreeQuery]);

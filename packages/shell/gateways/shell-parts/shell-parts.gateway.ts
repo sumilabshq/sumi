@@ -18,6 +18,7 @@ export const FIRST_PANES: PaneTree = {
 		kind: "split",
 		id: "pane-root",
 		dir: "row",
+		shares: [0.5, 0.5],
 		children: [
 			{
 				kind: "pane",

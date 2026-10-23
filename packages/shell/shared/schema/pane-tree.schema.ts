@@ -29,6 +29,7 @@ export interface PaneSplit {
 	readonly id: string;
 	readonly dir: SplitDir;
 	readonly children: readonly PaneNode[];
+	readonly shares: readonly number[];
 }
 
 export type PaneNode = PaneLeaf | PaneSplit;
@@ -47,6 +48,7 @@ export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
 			id: z.string(),
 			dir: SplitDirSchema,
 			children: z.array(PaneNodeSchema).readonly(),
+			shares: z.array(z.number().nonnegative()).readonly(),
 		}),
 	]),
 );

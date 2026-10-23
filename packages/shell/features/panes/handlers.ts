@@ -1,7 +1,7 @@
 import { handler, refuse } from "@widgetarium/core/requests";
 import { PaneTreeStore } from "../../shared/lib/pane-tree-store.js";
 import { ShellClientModule } from "../../module.js";
-import { ClosePaneCommand, PaneTreeQuery, PlacePaneCommand } from "./contract.js";
+import { ClosePaneCommand, PaneTreeQuery, PlacePaneCommand, ResizePaneSplitCommand } from "./contract.js";
 
 const NO_PANE = 'no pane "{id}" stands on the board';
 
@@ -31,4 +31,10 @@ export const ClosePaneCommandHandler = handler(ClosePaneCommand, ShellClientModu
 		}
 
 		paneTreeStore.close(id);
+	});
+
+export const ResizePaneSplitCommandHandler = handler(ResizePaneSplitCommand, ShellClientModule)
+	.inject({ paneTreeStore: PaneTreeStore })
+	.handle(({ splitId, at, share }, { paneTreeStore }) => {
+		paneTreeStore.resize(splitId, at, share);
 	});

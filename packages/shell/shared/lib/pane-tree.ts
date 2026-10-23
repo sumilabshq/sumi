@@ -1,4 +1,16 @@
-import type { PaneLeaf, PaneNode, PaneSide, PaneView, SplitDir } from "../schema/pane-tree.schema.js";
+import type { PaneLeaf, PaneNode, PaneSide, PaneSplit, PaneView, SplitDir } from "../schema/pane-tree.schema.js";
+
+export interface PanePlace {
+	readonly targetId: string | null;
+	readonly side: PaneSide;
+}
+
+interface PanePart {
+	readonly node: PaneNode;
+	readonly share: number;
+}
+
+const HALVES = [0.5, 0.5] as const;
 
 export function leavesOf(node: PaneNode | null): readonly PaneLeaf[] {
 	if (node === null) {
@@ -8,12 +20,7 @@ export function leavesOf(node: PaneNode | null): readonly PaneLeaf[] {
 	return node.kind === "pane" ? [node] : node.children.flatMap((child) => leavesOf(child));
 }
 
-export interface PanePlace {
-	readonly targetId: string | null;
-	readonly side: PaneSide;
-}
-
-export function placedRoot(root: PaneNode | null, at: PanePlace, leaf: PaneLeaf): PaneNode | null {
+export function withPlaced(root: PaneNode | null, at: PanePlace, leaf: PaneLeaf): PaneNode | null {
 	const standing = leavesOf(root).find((placed) => isSameView(placed.view, leaf.view));
 
 	if (standing !== undefined && standing.id === at.targetId) {
@@ -21,15 +28,7 @@ export function placedRoot(root: PaneNode | null, at: PanePlace, leaf: PaneLeaf)
 	}
 
 	const cleared = standing === undefined ? root : withoutPane(root, standing.id);
-	return withPane(cleared, at.targetId, at.side, leaf);
-}
-
-export function isSameView(one: PaneView, other: PaneView): boolean {
-	if (one.kind === "chat" || other.kind === "chat") {
-		return one.kind === other.kind;
-	}
-
-	return one.tabId === other.tabId;
+	return withPane(cleared, at, leaf);
 }
 
 export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | null {
@@ -41,25 +40,73 @@ export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | n
 		return node;
 	}
 
-	const children = node.children.flatMap((child) => withoutPane(child, paneId) ?? []);
-	return children.length === 1 ? (children[0] ?? null) : childrenWith(node, children);
+	const kept = partsOf(node).flatMap(({ node: child, share }) => {
+		const left = withoutPane(child, paneId);
+		return left === null ? [] : [{ node: left, share }];
+	});
+
+	if (kept.length < 2) {
+		return kept[0]?.node ?? null;
+	}
+
+	return splitOf(node, kept);
 }
 
-export function withPane(node: PaneNode | null, targetId: string | null, side: PaneSide, leaf: PaneLeaf): PaneNode {
-	if (node === null || targetId === null) {
-		return node === null ? leaf : besideOf(node, side, leaf, `${leaf.id}-around`);
+export function withShare(node: PaneNode, splitId: string, at: number, share: number): PaneNode {
+	if (node.kind === "pane") {
+		return node;
+	}
+
+	if (node.id !== splitId) {
+		return {
+			...node,
+			children: node.children.map((child) => withShare(child, splitId, at, share)),
+		};
+	}
+
+	const pair = (node.shares[at] ?? 0) + (node.shares[at + 1] ?? 0);
+	const kept = Math.min(Math.max(share, 0), pair);
+	return {
+		...node,
+		shares: node.shares.map((one, index) => pairShareOf(index, at, [kept, pair - kept]) ?? one),
+	};
+}
+
+function isSameView(one: PaneView, other: PaneView): boolean {
+	if (one.kind === "chat" || other.kind === "chat") {
+		return one.kind === other.kind;
+	}
+
+	return one.tabId === other.tabId;
+}
+
+function withPane(node: PaneNode | null, { targetId, side }: PanePlace, leaf: PaneLeaf): PaneNode {
+	if (node === null) {
+		return leaf;
+	}
+
+	if (targetId === null) {
+		return placeAtEdge(node, side, leaf);
 	}
 
 	if (side === "center") {
-		return replaced(node, targetId, leaf);
+		return replacePane(node, targetId, leaf);
 	}
 
-	return placedBeside(node, targetId, side, leaf);
+	return placeBeside(node, targetId, side, leaf);
 }
 
-function placedBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: PaneLeaf): PaneNode {
+function placeAtEdge(node: PaneNode, side: PaneSide, leaf: PaneLeaf): PaneNode {
+	if (node.kind === "split" && node.dir === dirOf(side)) {
+		return withInserted(node, isBefore(side) ? 0 : node.children.length, leaf);
+	}
+
+	return besideOf(node, side, leaf);
+}
+
+function placeBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: PaneLeaf): PaneNode {
 	if (node.id === targetId) {
-		return besideOf(node, side, leaf, `${leaf.id}-around`);
+		return besideOf(node, side, leaf);
 	}
 
 	if (node.kind === "pane") {
@@ -69,17 +116,16 @@ function placedBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: Pa
 	const at = node.children.findIndex((child) => child.id === targetId);
 
 	if (at !== -1 && node.dir === dirOf(side)) {
-		const cut = isBefore(side) ? at : at + 1;
-		return childrenWith(node, [...node.children.slice(0, cut), leaf, ...node.children.slice(cut)]);
+		return withInserted(node, isBefore(side) ? at : at + 1, leaf);
 	}
 
-	return childrenWith(
-		node,
-		node.children.map((child) => placedBeside(child, targetId, side, leaf)),
-	);
+	return {
+		...node,
+		children: node.children.map((child) => placeBeside(child, targetId, side, leaf)),
+	};
 }
 
-function replaced(node: PaneNode, targetId: string, leaf: PaneLeaf): PaneNode {
+function replacePane(node: PaneNode, targetId: string, leaf: PaneLeaf): PaneNode {
 	if (node.id === targetId) {
 		return leaf;
 	}
@@ -88,26 +134,74 @@ function replaced(node: PaneNode, targetId: string, leaf: PaneLeaf): PaneNode {
 		return node;
 	}
 
-	return childrenWith(
-		node,
-		node.children.map((child) => replaced(child, targetId, leaf)),
-	);
-}
-
-function besideOf(node: PaneNode, side: PaneSide, leaf: PaneLeaf, splitId: string): PaneNode {
-	return {
-		kind: "split",
-		id: splitId,
-		dir: dirOf(side),
-		children: isBefore(side) ? [leaf, node] : [node, leaf],
-	};
-}
-
-function childrenWith(node: Extract<PaneNode, { kind: "split" }>, children: readonly PaneNode[]): PaneNode {
 	return {
 		...node,
-		children,
+		children: node.children.map((child) => replacePane(child, targetId, leaf)),
 	};
+}
+
+function withInserted(split: PaneSplit, cut: number, leaf: PaneLeaf): PaneSplit {
+	const count = split.children.length + 1;
+	const parts = partsOf(split).map(({ node, share }) => ({
+		node,
+		share: (share * (count - 1)) / count,
+	}));
+	return splitOf(split, [
+		...parts.slice(0, cut),
+		{
+			node: leaf,
+			share: 1 / count,
+		},
+		...parts.slice(cut),
+	]);
+}
+
+function besideOf(node: PaneNode, side: PaneSide, leaf: PaneLeaf): PaneSplit {
+	return {
+		kind: "split",
+		id: `${leaf.id}-around`,
+		dir: dirOf(side),
+		children: isBefore(side) ? [leaf, node] : [node, leaf],
+		shares: HALVES,
+	};
+}
+
+function splitOf(split: PaneSplit, parts: readonly PanePart[]): PaneSplit {
+	const flat = parts.flatMap((part) =>
+		isSplitAlong(part.node, split.dir) ? partsScaled(part.node, part.share) : [part],
+	);
+	const total = flat.reduce((sum, part) => sum + part.share, 0);
+	return {
+		...split,
+		children: flat.map((part) => part.node),
+		shares: flat.map((part) => part.share / total),
+	};
+}
+
+function partsScaled(split: PaneSplit, by: number): readonly PanePart[] {
+	return partsOf(split).map(({ node, share }) => ({
+		node,
+		share: share * by,
+	}));
+}
+
+function partsOf(split: PaneSplit): readonly PanePart[] {
+	return split.children.map((node, at) => ({
+		node,
+		share: split.shares[at] ?? 1 / split.children.length,
+	}));
+}
+
+function isSplitAlong(node: PaneNode, dir: SplitDir): node is PaneSplit {
+	return node.kind === "split" && node.dir === dir;
+}
+
+function pairShareOf(index: number, at: number, [first, second]: readonly [number, number]): number | null {
+	if (index === at) {
+		return first;
+	}
+
+	return index === at + 1 ? second : null;
 }
 
 function dirOf(side: PaneSide): SplitDir {

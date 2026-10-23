@@ -1,5 +1,5 @@
 import type { PaneLeaf, PaneNode, PaneTree, PaneView } from "../schema/pane-tree.schema.js";
-import { leavesOf, placedRoot, withoutPane } from "./pane-tree.js";
+import { leavesOf, withPlaced, withShare, withoutPane } from "./pane-tree.js";
 import type { PanePlace } from "./pane-tree.js";
 
 const NO_PANE = 'no pane "{id}"';
@@ -23,9 +23,16 @@ export class PaneTreeStore {
 	}
 
 	place(view: PaneView, at: PanePlace): void {
-		const root = placedRoot(this.tree.root, at, this.mintLeaf(view));
+		if (at.targetId !== null && !this.hasPane(at.targetId)) {
+			throw new Error(NO_PANE.replace("{id}", at.targetId));
+		}
+
+		const root = withPlaced(this.tree.root, at, this.mintLeaf(view));
 
 		if (root === null) {
+			console.info(
+				`[widgetarium] place ${viewWords(view)} skipped: it already stands in ${at.targetId ?? "the board"}`,
+			);
 			return;
 		}
 
@@ -34,7 +41,24 @@ export class PaneTreeStore {
 				root,
 				minted: this.tree.minted + 1,
 			},
-			`place ${viewSaid(view)} ${at.side} of ${at.targetId ?? "the board"}`,
+			`place ${viewWords(view)} ${at.side} of ${at.targetId ?? "the board"}`,
+		);
+	}
+
+	resize(splitId: string, at: number, share: number): void {
+		const { root } = this.tree;
+
+		if (root === null) {
+			throw new Error(NO_PANE.replace("{id}", splitId));
+		}
+
+		this.become(
+			{
+				...this.tree,
+				root: withShare(root, splitId, at, share),
+			},
+			`resize ${splitId} at ${at} to ${share.toFixed(3)}`,
+			false,
 		);
 	}
 
@@ -60,8 +84,11 @@ export class PaneTreeStore {
 		};
 	}
 
-	private become(next: PaneTree, reason: string): void {
-		console.info(`[widgetarium] panes ${shapeSaid(this.tree.root)} → ${shapeSaid(next.root)} (${reason})`);
+	private become(next: PaneTree, reason: string, isLogged = true): void {
+		if (isLogged) {
+			console.info(`[widgetarium] panes ${shapeWords(this.tree.root)} → ${shapeWords(next.root)} (${reason})`);
+		}
+
 		this.tree = next;
 
 		for (const changed of this.watchers) {
@@ -70,18 +97,18 @@ export class PaneTreeStore {
 	}
 }
 
-function viewSaid(view: PaneView): string {
+function viewWords(view: PaneView): string {
 	return view.kind === "chat" ? "the chat" : `tab ${view.tabId ?? "shown"}`;
 }
 
-function shapeSaid(node: PaneNode | null): string {
+function shapeWords(node: PaneNode | null): string {
 	if (node === null) {
 		return "empty";
 	}
 
 	if (node.kind === "pane") {
-		return `${node.id}(${viewSaid(node.view)})`;
+		return `${node.id}(${viewWords(node.view)})`;
 	}
 
-	return `${node.dir}[${node.children.map(shapeSaid).join(", ")}]`;
+	return `${node.dir}[${node.children.map(shapeWords).join(", ")}]`;
 }

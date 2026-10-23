@@ -17946,11 +17946,18 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-pane-edge {
 	position: absolute;
-	display: flex;
-	width: var(--sumi-gap);
+	z-index: 1;
+	touch-action: none;
 }
-.wg-pane-edge > .wg-shell-edge {
-	flex: 1;
+.wg-pane-edge[data-pane-edge-dir="row"] {
+	width: var(--sumi-gap);
+	margin-left: calc(var(--sumi-gap) / -2);
+	cursor: col-resize;
+}
+.wg-pane-edge[data-pane-edge-dir="column"] {
+	height: var(--sumi-gap);
+	margin-top: calc(var(--sumi-gap) / -2);
+	cursor: row-resize;
 }
 .wg-pane-empty {
 	position: absolute;
@@ -17977,7 +17984,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	margin: auto;
 	color: var(--sumi-text-3);
 }
-.wg-pane-board[data-following-edge] > .wg-pane {
+.wg-pane-board:has(> .wg-pane-edge:active) > .wg-pane {
 	transition: none;
 }
 @property --tw-translate-x {

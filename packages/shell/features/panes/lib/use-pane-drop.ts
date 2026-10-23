@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import { CARRIED_CHAT, CARRIED_TAB, isPointInBox, listenToCarry } from "@widgetarium/behaviors";
+import { CARRIED_CHAT, CARRIED_TAB, listenToCarry } from "@widgetarium/behaviors";
 import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "../../../shared/lib/pane-layout.js";
 import type { PaneRect } from "../../../shared/lib/pane-layout.js";
-import type { PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneLeaf, PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
 import { PlacePaneCommand } from "../contract.js";
 
 export interface PaneAim {
@@ -17,31 +17,51 @@ export interface PaneAim {
 export interface PaneDropAsk {
 	readonly board: RefObject<HTMLElement | null>;
 	readonly rects: ReadonlyMap<string, PaneRect>;
+	readonly leaves: readonly PaneLeaf[];
 }
 
-export function usePaneDrop({ board, rects }: PaneDropAsk): PaneAim | null {
+interface Aimed {
+	readonly rects: ReadonlyMap<string, PaneRect>;
+	readonly leaves: readonly PaneLeaf[];
+}
+
+export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PaneAim | null {
 	const placePane = useCommand(PlacePaneCommand);
 	const [aim, setAim] = useState<PaneAim | null>(null);
-	const latestRects = useRef(rects);
-	latestRects.current = rects;
+	const latest = useRef<Aimed>({
+		rects,
+		leaves,
+	});
+	latest.current = {
+		rects,
+		leaves,
+	};
 	useEffect(
 		() =>
 			listenToCarry((moment) => {
-				const aimed = aimOf(board.current, latestRects.current, moment);
+				const aimed = aimOf(board.current, latest.current, moment);
 				setAim(moment.phase === "over" ? aimed : null);
-				return aimed !== null && (moment.phase !== "drop" || placed(placePane, aimed));
+
+				if (aimed === null) {
+					return false;
+				}
+
+				if (moment.phase === "drop") {
+					void placePane.run(aimed).then((answer) => {
+						if (!answer.ok) {
+							console.error(`[widgetarium] drop on the pane board refused: ${answer.reason}`);
+						}
+					});
+				}
+
+				return true;
 			}),
 		[board, placePane],
 	);
 	return aim;
 }
 
-function placed(placePane: { run(aim: PaneAim): Promise<unknown> }, aim: PaneAim): true {
-	void placePane.run(aim);
-	return true;
-}
-
-function aimOf(board: HTMLElement | null, rects: ReadonlyMap<string, PaneRect>, moment: CarryMoment): PaneAim | null {
+function aimOf(board: HTMLElement | null, aimed: Aimed, moment: CarryMoment): PaneAim | null {
 	const view = viewOf(moment.item);
 
 	if (board === null || view === null || moment.phase === "leave") {
@@ -56,13 +76,13 @@ function aimOf(board: HTMLElement | null, rects: ReadonlyMap<string, PaneRect>, 
 		return null;
 	}
 
-	return aimAt(rects, x, y, view);
+	return aimAt(aimed, x, y, view);
 }
 
-function aimAt(rects: ReadonlyMap<string, PaneRect>, x: number, y: number, view: PaneView): PaneAim {
-	const hit = [...rects].find(([, rect]) => isPointInBox(rect, x, y));
+function aimAt({ rects, leaves }: Aimed, x: number, y: number, view: PaneView): PaneAim {
+	const nearest = [...rects].sort((one, other) => distanceTo(one[1], x, y) - distanceTo(other[1], x, y))[0];
 
-	if (hit === undefined) {
+	if (nearest === undefined) {
 		return {
 			targetId: null,
 			side: "right",
@@ -70,11 +90,23 @@ function aimAt(rects: ReadonlyMap<string, PaneRect>, x: number, y: number, view:
 		};
 	}
 
+	const [targetId, rect] = nearest;
+	const isChat = leaves.some((leaf) => leaf.id === targetId && leaf.view.kind === "chat");
 	return {
-		targetId: hit[0],
-		side: sideAt(hit[1], x, y),
+		targetId,
+		side: sideAt(rect, clamped(x, rect.left, rect.width), clamped(y, rect.top, rect.height), !isChat),
 		view,
 	};
+}
+
+function distanceTo(rect: PaneRect, x: number, y: number): number {
+	const across = Math.max(rect.left - x, 0, x - rect.left - rect.width);
+	const down = Math.max(rect.top - y, 0, y - rect.top - rect.height);
+	return Math.hypot(across, down);
+}
+
+function clamped(value: number, start: number, length: number): number {
+	return Math.min(Math.max(value, start), start + length);
 }
 
 function viewOf(item: CarriedItem): PaneView | null {
