@@ -1,0 +1,44 @@
+import { z } from "zod";
+
+export const KeptChatSchema = z.object({
+	id: z.string().min(1),
+	title: z.string().nullable(),
+	isPinned: z.boolean(),
+	createdAt: z.number().nonnegative(),
+	lastAt: z.number().nonnegative(),
+});
+
+export type KeptChat = z.infer<typeof KeptChatSchema>;
+
+export const KeptChatsSchema = z.object({
+	chats: z.array(KeptChatSchema),
+	activeId: z.string().nullable(),
+});
+
+export type KeptChats = z.infer<typeof KeptChatsSchema>;
+
+export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+
+export type ChatMarkKind = z.infer<typeof ChatMarkSchema>;
+
+export const ChatRowSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	isPinned: z.boolean(),
+	isActive: z.boolean(),
+	mark: ChatMarkSchema,
+});
+
+export type ChatRowData = z.infer<typeof ChatRowSchema>;
+
+export const ChatListSchema = z.object({
+	pinned: z.array(ChatRowSchema),
+	recents: z.array(ChatRowSchema),
+});
+
+export type ChatListData = z.infer<typeof ChatListSchema>;
+
+export const ChatCrumbSchema = z.object({
+	workspace: z.string(),
+	chat: z.string(),
+});
