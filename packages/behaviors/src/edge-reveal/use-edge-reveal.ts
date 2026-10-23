@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { EdgeIntent } from "./edge-intent.js";
-import type { EdgeMove, EdgeSide } from "./edge-intent.js";
+import type { EdgePoint, EdgeSide } from "./edge-intent.js";
 
 export type EdgeLook = "fixed" | "tucked" | "out";
 
@@ -28,18 +28,17 @@ export function useEdgeReveal(ask: EdgeRevealAsk): void {
 
 function followPointer(driver: EdgeRevealDriver): () => void {
 	const onMove = (event: PointerEvent): void => driver.readMove(event);
-	const onLeave = (event: PointerEvent): void => driver.readWindowLeave(event);
+	const onLeave = (event: MouseEvent): void => driver.readWindowLeave(event);
 	document.addEventListener("pointermove", onMove, { passive: true });
-	document.documentElement.addEventListener("pointerleave", onLeave);
+	document.documentElement.addEventListener("mouseleave", onLeave);
 	return () => {
 		document.removeEventListener("pointermove", onMove);
-		document.documentElement.removeEventListener("pointerleave", onLeave);
+		document.documentElement.removeEventListener("mouseleave", onLeave);
 		driver.stop();
 	};
 }
 
 class EdgeRevealDriver {
-	private dwellTimer: number | null = null;
 	private readonly concealTimers = new Map<EdgeSide, number>();
 
 	constructor(
@@ -56,27 +55,20 @@ class EdgeRevealDriver {
 		}
 
 		this.concealOnContent(ask, event);
-		const now = performance.now();
-		this.intent.readMove(edgeMoveOf(event, frame.getBoundingClientRect(), now));
-		this.armDwell(now);
+		this.revealIfTucked(this.intent.sideOnMove(edgePointOf(event, frame)));
 	}
 
-	readWindowLeave(event: PointerEvent): void {
+	readWindowLeave(event: MouseEvent): void {
 		const frame = this.latest.current.frame.current;
-		this.stop();
 
 		if (frame === null) {
 			return;
 		}
 
-		this.revealIfTucked(
-			this.intent.sideOnWindowLeave(edgeMoveOf(event, frame.getBoundingClientRect(), performance.now())),
-		);
+		this.revealIfTucked(this.intent.sideOnWindowLeave(edgePointOf(event, frame)));
 	}
 
 	stop(): void {
-		this.clearDwell();
-
 		for (const side of SIDES) {
 			this.cancelConceal(side);
 		}
@@ -94,13 +86,13 @@ class EdgeRevealDriver {
 			if (!this.concealTimers.has(side)) {
 				this.concealTimers.set(
 					side,
-					window.setTimeout(() => this.conceal(side), CONCEAL_MS),
+					window.setTimeout(() => this.concealIfStillOut(side), CONCEAL_MS),
 				);
 			}
 		}
 	}
 
-	private conceal(side: EdgeSide): void {
+	private concealIfStillOut(side: EdgeSide): void {
 		this.concealTimers.delete(side);
 		const ask = this.latest.current;
 
@@ -108,7 +100,6 @@ class EdgeRevealDriver {
 			return;
 		}
 
-		this.intent.startQuietPeriod(performance.now());
 		ask.conceal(side);
 	}
 
@@ -130,68 +121,20 @@ class EdgeRevealDriver {
 
 		this.latest.current.reveal(side);
 	}
-
-	private armDwell(now: number): void {
-		this.clearDwell();
-		const due = this.intent.dueAt();
-
-		if (due === null) {
-			return;
-		}
-
-		if (due <= now) {
-			this.revealDueSide();
-			return;
-		}
-
-		this.dwellTimer = window.setTimeout(() => {
-			this.dwellTimer = null;
-			this.revealDueSide();
-		}, due - now);
-	}
-
-	private revealDueSide(): void {
-		this.revealIfTucked(this.intent.takeDueSide(performance.now()));
-	}
-
-	private clearDwell(): void {
-		if (this.dwellTimer === null) {
-			return;
-		}
-
-		window.clearTimeout(this.dwellTimer);
-		this.dwellTimer = null;
-	}
 }
 
-function edgeMoveOf(event: PointerEvent, box: DOMRect, now: number): EdgeMove {
+function edgePointOf(event: MouseEvent, frame: HTMLElement): EdgePoint {
+	const box = frame.getBoundingClientRect();
 	return {
-		t: now,
 		x: event.clientX - box.left,
 		y: event.clientY - box.top,
-		pushX: event.movementX,
-		pushY: event.movementY,
 		widthPx: box.width,
+		heightPx: box.height,
 		isButtonHeld: event.buttons !== NO_BUTTON,
-		flushSides: readFlushSides(),
 	};
 }
 
 function isKeyboardFocusIn(panel: HTMLElement | null): boolean {
 	const focused = document.activeElement;
 	return panel !== null && focused !== null && panel.contains(focused) && focused.matches(KEYBOARD_FOCUS);
-}
-
-function readFlushSides(): Readonly<Record<EdgeSide, boolean>> {
-	const screenLeft = availLeftOf(window.screen);
-	const screenRight = screenLeft + window.screen.availWidth;
-
-	return {
-		left: window.screenX <= screenLeft + 1,
-		right: window.screenX + window.outerWidth >= screenRight - 1,
-	};
-}
-
-function availLeftOf(screen: Screen): number {
-	return "availLeft" in screen && typeof screen.availLeft === "number" ? screen.availLeft : 0;
 }
