@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 import { useQuery } from "@widgetarium/core/requests";
 import { paneLayoutOf } from "../../../../shared/lib/pane-layout.js";
 import type { PaneEdge, PaneLayout, PaneRect } from "../../../../shared/lib/pane-layout.js";
-import { leavesOf, withPlaced, withShare } from "../../../../shared/lib/pane-tree.js";
+import { isSameView, leavesOf, withPlaced, withShare } from "../../../../shared/lib/pane-tree.js";
 import type { PaneLeaf, PaneNode, PaneView } from "../../../../shared/schema/pane-tree.schema.js";
 import { PaneTreeQuery } from "../../contract.js";
 import { drawLayout } from "../../lib/draw-layout.js";
@@ -26,6 +26,7 @@ export interface PaneBoardFrame {
 
 const GAP_PX = 8;
 const PREVIEW_ID = "pane-preview";
+const EDGE_SLACK_PX = 1;
 
 export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & PaneBoardFrame): ReactElement {
 	const { root } = useQuery(PaneTreeQuery).data;
@@ -34,9 +35,10 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	const resting = paneLayoutOf(root, box, GAP_PX);
 	useOpensChatAt(chatPx, resting.edges);
 	const leaves = leavesOf(root);
-	const aim = usePaneDrop({ board, rects: resting.rects });
+	const aim = usePaneDrop({ board, rects: resting.rects, leaves });
 	const shown = shownLayoutOf(root, aim, box) ?? resting;
-	const preview = shown.rects.get(PREVIEW_ID);
+	const moving = aim === null ? undefined : leaves.find((leaf) => isSameView(leaf.view, aim.view));
+	const preview = shown === resting ? undefined : shown.rects.get(moving?.id ?? PREVIEW_ID);
 	const drawDrag = (edge: PaneEdge, share: number): void => {
 		if (root !== null && board.current !== null) {
 			drawLayout(board.current, paneLayoutOf(withShare(root, edge.splitId, edge.at, share), box, GAP_PX));
@@ -46,7 +48,13 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 		<div ref={board} className="wg-pane-board">
 			{leaves.length === 0 && aim === null ? <div className="wg-pane-empty">{empty}</div> : null}
 			{leaves.map((leaf) => (
-				<PaneSlot key={leaf.id} leaf={leaf} rect={shown.rects.get(leaf.id) ?? preview ?? box} drawn={drawn} />
+				<PaneSlot
+					key={leaf.id}
+					leaf={leaf}
+					rect={shown.rects.get(leaf.id) ?? preview ?? box}
+					isAtTopRight={isAtTopRight(resting.rects.get(leaf.id), box)}
+					drawn={drawn}
+				/>
 			))}
 			{aim === null
 				? resting.edges.map((edge) => (
@@ -71,6 +79,10 @@ function shownLayoutOf(root: PaneNode | null, aim: PaneAim | null, box: PaneRect
 
 	const previewed = withPlaced(root, aim, previewOf(aim));
 	return previewed === null ? null : paneLayoutOf(previewed, box, GAP_PX);
+}
+
+function isAtTopRight(rect: PaneRect | undefined, box: PaneRect): boolean {
+	return rect !== undefined && rect.top <= EDGE_SLACK_PX && rect.left + rect.width >= box.width - EDGE_SLACK_PX;
 }
 
 function previewOf(aim: PaneAim): PaneLeaf {

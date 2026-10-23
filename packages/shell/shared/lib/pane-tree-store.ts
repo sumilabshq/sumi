@@ -1,5 +1,5 @@
 import type { PaneLeaf, PaneNode, PaneTree, PaneView } from "../schema/pane-tree.schema.js";
-import { leavesOf, withPlaced, withShare, withoutPane } from "./pane-tree.js";
+import { isSameView, leavesOf, withPlaced, withShare, withoutPane } from "./pane-tree.js";
 import type { PanePlace } from "./pane-tree.js";
 
 const NO_PANE = 'no pane "{id}"';
@@ -36,10 +36,11 @@ export class PaneTreeStore {
 			return;
 		}
 
+		const isMove = this.leaves().some((leaf) => isSameView(leaf.view, view));
 		this.become(
 			{
 				root,
-				minted: this.tree.minted + 1,
+				minted: isMove ? this.tree.minted : this.tree.minted + 1,
 			},
 			`place ${viewWords(view)} ${at.side} of ${at.targetId ?? "the board"}`,
 		);

@@ -9,17 +9,19 @@ import { ClosePaneCommand } from "../../contract.js";
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly rect: PaneRect;
+	readonly isAtTopRight: boolean;
 	readonly drawn: (view: PaneView) => ReactNode;
 }
 
-export const PaneSlot = memo(function PaneSlot({ leaf, rect, drawn }: PaneSlotProps): ReactElement {
+export const PaneSlot = memo(function PaneSlot({ leaf, rect, isAtTopRight, drawn }: PaneSlotProps): ReactElement {
 	const closePane = useCommand(ClosePaneCommand);
 	const closing = useMemo(
 		() => ({
 			paneId: leaf.id,
+			isAtTopRight,
 			close: () => void closePane.run({ id: leaf.id }),
 		}),
-		[closePane, leaf.id],
+		[closePane, leaf.id, isAtTopRight],
 	);
 	return (
 		<div className="wg-pane" style={rectStyleOf(rect)} data-pane-id={leaf.id} data-pane-view={leaf.view.kind}>

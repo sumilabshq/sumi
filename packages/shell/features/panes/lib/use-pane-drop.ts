@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
-import { CARRIED_CHAT, CARRIED_TAB, listenToCarry } from "@widgetarium/behaviors";
+import { CARRIED_CHAT, CARRIED_PANE, CARRIED_TAB, listenToCarry } from "@widgetarium/behaviors";
 import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "../../../shared/lib/pane-layout.js";
 import type { PaneRect } from "../../../shared/lib/pane-layout.js";
-import type { PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneLeaf, PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
 import { PlacePaneCommand } from "../contract.js";
 
 export interface PaneAim {
@@ -17,13 +17,14 @@ export interface PaneAim {
 export interface PaneDropAsk {
 	readonly board: RefObject<HTMLElement | null>;
 	readonly rects: ReadonlyMap<string, PaneRect>;
+	readonly leaves: readonly PaneLeaf[];
 }
 
-export function usePaneDrop({ board, rects }: PaneDropAsk): PaneAim | null {
+export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PaneAim | null {
 	const placePane = useCommand(PlacePaneCommand);
 	const [aim, setAim] = useState<PaneAim | null>(null);
-	const latest = useRef(rects);
-	latest.current = rects;
+	const latest = useRef({ rects, leaves });
+	latest.current = { rects, leaves };
 	useEffect(
 		() =>
 			listenToCarry((moment) => {
@@ -49,8 +50,12 @@ export function usePaneDrop({ board, rects }: PaneDropAsk): PaneAim | null {
 	return aim;
 }
 
-function aimOf(board: HTMLElement | null, rects: ReadonlyMap<string, PaneRect>, moment: CarryMoment): PaneAim | null {
-	const view = viewOf(moment.item);
+function aimOf(
+	board: HTMLElement | null,
+	{ rects, leaves }: Omit<PaneDropAsk, "board">,
+	moment: CarryMoment,
+): PaneAim | null {
+	const view = viewOf(moment.item, leaves);
 
 	if (board === null || view === null || moment.phase === "leave") {
 		return null;
@@ -96,7 +101,11 @@ function clamped(value: number, start: number, length: number): number {
 	return Math.min(Math.max(value, start), start + length);
 }
 
-function viewOf(item: CarriedItem): PaneView | null {
+function viewOf(item: CarriedItem, leaves: readonly PaneLeaf[]): PaneView | null {
+	if (item.kind === CARRIED_PANE) {
+		return leaves.find((leaf) => leaf.id === item.id)?.view ?? null;
+	}
+
 	if (item.kind === CARRIED_TAB) {
 		return {
 			kind: "app",

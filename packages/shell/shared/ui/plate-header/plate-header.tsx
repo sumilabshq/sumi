@@ -1,12 +1,17 @@
 import { createElement as h, forwardRef, useContext, useMemo } from "react";
-import type { ReactNode } from "react";
+import type { PointerEvent, ReactNode } from "react";
+import { CARRIED_PANE, PointerCarry } from "@widgetarium/behaviors";
 import { PaneCloseContext } from "../../lib/pane-close-context.js";
+import type { PaneClosing } from "../../lib/pane-close-context.js";
 import { PlateHeaderContext } from "../../lib/plate-header-context.js";
 import type { PlateHeaderPlace, PlateHeaderStore } from "../../lib/plate-header-store.js";
 import { HeaderButton } from "./header-button.js";
 import { PlateStrip } from "./plate-strip.js";
 
 const CLOSE_PANE = "Close pane";
+const HIDE_TABS = "Hide tabs";
+const PRIMARY_BUTTON = 0;
+const NOT_A_HANDLE = "button, input, textarea, a, [contenteditable]";
 
 export type PlateSide = "chat" | "app";
 
@@ -32,7 +37,13 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 	const paneClosing = useContext(PaneCloseContext);
 	const targets = useMemo(() => targetRefsOf(store), [store]);
 	return (
-		<header ref={ref} className={`wg-plate-head is-${side}`} data-plate-head={side}>
+		<header
+			ref={ref}
+			className={`wg-plate-head is-${side}`}
+			data-plate-head={side}
+			data-pane-handle={paneClosing === null ? undefined : paneClosing.paneId}
+			onPointerDown={paneClosing === null ? undefined : (event) => carryPane(event, paneClosing.paneId)}
+		>
 			<PlateStrip />
 			<div className="wg-plate-head-row wg-root">
 				{edgeStart}
@@ -58,7 +69,7 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 						data-pane-close={paneClosing.paneId}
 					/>
 				)}
-				{edgeEnd}
+				{edgeEndOf(paneClosing, edgeEnd)}
 			</div>
 		</header>
 	);
@@ -74,4 +85,36 @@ function targetRefsOf(store: PlateHeaderStore | null): TargetRefs {
 		crumb: placed("crumb"),
 		controls: placed("controls"),
 	};
+}
+
+function edgeEndOf(paneClosing: PaneClosing | null, edgeEnd: ReactNode): ReactNode {
+	if (paneClosing === null) {
+		return edgeEnd;
+	}
+
+	if (!paneClosing.isAtTopRight) {
+		return null;
+	}
+
+	return edgeEnd ?? <HeaderButton label={HIDE_TABS} icon="panel-right" isInert />;
+}
+
+function carryPane(event: PointerEvent<HTMLElement>, paneId: string): void {
+	if (
+		event.button !== PRIMARY_BUTTON ||
+		(event.target instanceof Element && event.target.closest(NOT_A_HANDLE) !== null)
+	) {
+		return;
+	}
+
+	new PointerCarry({
+		item: {
+			kind: CARRIED_PANE,
+			id: paneId,
+			title: "",
+		},
+		start: [event.clientX, event.clientY],
+		isHome: () => false,
+		onTaken: () => undefined,
+	}).listen();
 }

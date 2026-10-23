@@ -28,7 +28,7 @@ export function withPlaced(root: PaneNode | null, at: PanePlace, leaf: PaneLeaf)
 	}
 
 	const cleared = standing === undefined ? root : withoutPane(root, standing.id);
-	return withPane(cleared, at, leaf);
+	return withPane(cleared, at, standing ?? leaf);
 }
 
 export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | null {
@@ -72,7 +72,7 @@ export function withShare(node: PaneNode, splitId: string, at: number, share: nu
 	};
 }
 
-function isSameView(one: PaneView, other: PaneView): boolean {
+export function isSameView(one: PaneView, other: PaneView): boolean {
 	if (one.kind === "chat" || other.kind === "chat") {
 		return one.kind === other.kind;
 	}
