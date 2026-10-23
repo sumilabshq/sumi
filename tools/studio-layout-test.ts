@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { FRAME_BOUNDS, PLATE_LEAST_PX } from "../packages/shell/shared/lib/frame-bounds.ts";
+import { PLATE_LEAST_PX } from "../packages/shell/shared/lib/frame-bounds.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
@@ -247,7 +247,7 @@ try {
 		!isPaintedAs(hostless, { accent: HOST_ACCENT }),
 		hostless,
 	);
-	await draggedEdge(page, WIDE_CHAT_PX - FRAME_BOUNDS.chat.usualPx);
+	await draggedEdge(page, WIDE_CHAT_PX - (await layoutOf(page)).chat.width);
 	const column = await page.ask(CONTENT_COLUMN);
 	check(
 		"a 1400px chat keeps its list, its scrollbar and its composer in one centred 800px column",

@@ -212,9 +212,46 @@ async function checksEdgeDrag(page: AskedPage): Promise<void> {
 	});
 }
 
+const ORDER = `[...document.querySelectorAll("[data-pane-id]")].sort((one, other) => one.getBoundingClientRect().left - other.getBoundingClientRect().left).map((pane) => pane.dataset.paneId)`;
+const TOGGLES = `[...document.querySelectorAll('[aria-label="Hide tabs"]')].map((button) => button.closest("[data-pane-id]")?.dataset.paneId ?? "outside")`;
+
+async function checksHeaderMove(page: AskedPage): Promise<void> {
+	const before = await page.ask(ORDER);
+	const togglesBefore = await page.ask(TOGGLES);
+	const from = await page.ask(
+		`(() => { const box = document.querySelector('[data-pane-handle="pane-chat"]').getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })()`,
+	);
+	const [fromX, fromY] = Array.isArray(from) ? [Number(from[0]), Number(from[1])] : [0, 0];
+	const [toX, toY] = await centreRightOf(page, "pane-app");
+	await page.drag({ from: [fromX, fromY], to: [toX, toY], steps: 10, stepMs: 16 });
+	await waited(300);
+	const preview = await page.ask(`document.querySelector(".wg-pane-preview") !== null`);
+	await page.release([toX, toY]);
+	await waited(400);
+	const after = await page.ask(ORDER);
+	check(
+		"dragging a pane by its header previews and moves it to the side it was dropped on",
+		preview === true && JSON.stringify(after) === '["pane-app","pane-chat"]',
+		{
+			before,
+			preview,
+			after,
+		},
+	);
+	check(
+		"only the top-right pane carries the sidebar toggle, before and after the move",
+		JSON.stringify(togglesBefore) === '["pane-app"]' && JSON.stringify(await page.ask(TOGGLES)) === '["pane-chat"]',
+		[togglesBefore, await page.ask(TOGGLES)],
+	);
+	await page.drag({ from: [toX - 300, fromY], to: [8, toY], steps: 10, stepMs: 16 });
+	await page.release([8, toY]);
+	await waited(400);
+}
+
 async function checksBoard(folder: string): Promise<void> {
 	const page = await pageOf(folder);
 	await checksEdgeDrag(page);
+	await checksHeaderMove(page);
 	const before = await page.ask(PANES);
 	const [x, y] = await centreRightOf(page, "pane-app");
 	const taken = await page.ask(`${CARRY}("over", ${x}, ${y})`);
