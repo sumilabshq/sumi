@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { layCanvasSheet } from "../packages/host-obsidian/build.mts";
-import { REPO, writeBrowserStyles } from "./pack-engine.mts";
+import { layStudioSheets } from "./lay-studio-sheets.mts";
+import { REPO } from "./pack-engine.mts";
 
 const PREVIEW_APP = path.join(REPO, ".preview/default-app");
 const LEFT_OUT_OF_DEMO: ReadonlySet<string> = new Set(["node_modules", ".omc"]);
@@ -16,8 +16,7 @@ const SHEET = /\.css$/;
 export const TAURI_DEMO = path.join(tmpdir(), "wg-tauri-demo");
 
 export async function tauriFrontendSheet(): Promise<string> {
-	await layCanvasSheet();
-	writeBrowserStyles();
+	await layStudioSheets();
 	layTauriDemo(TAURI_DEMO);
 	const outDir = fs.mkdtempSync(path.join(tmpdir(), "wg-tauri-frontend-"));
 	try {

@@ -5,6 +5,9 @@ import path from "node:path";
 const PROJECT_VARIABLE = "WIDGETARIUM_PROJECT";
 const PROJECT_VITE = "node_modules/vite/bin/vite.js";
 const TAURI_CONFIG = path.join(import.meta.dirname, "vite.tauri.config.ts");
+const REPO = path.resolve(import.meta.dirname, "../..");
+const SHEETS_LAYER = "tools/lay-studio-sheets.mts";
+const TOOL_LOADER = "./tools/loader/register.mts";
 const NO_PROJECT = `set ${PROJECT_VARIABLE} to the Widgetarium project the window draws, e.g. ${PROJECT_VARIABLE}=~/apps/farm npm run build`;
 const NO_VITE = "{project} has no {vite}: run npm install there first";
 
@@ -17,6 +20,15 @@ if (!project) {
 if (!existsSync(path.join(project, PROJECT_VITE))) {
 	console.error(NO_VITE.replace("{project}", project).replace("{vite}", PROJECT_VITE));
 	process.exit(1);
+}
+
+const laid = spawnSync(process.execPath, ["--single-threaded", "--import", TOOL_LOADER, SHEETS_LAYER], {
+	cwd: REPO,
+	stdio: "inherit",
+	env: process.env,
+});
+if (laid.status !== 0) {
+	process.exit(laid.status ?? 1);
 }
 
 const built = spawnSync(
