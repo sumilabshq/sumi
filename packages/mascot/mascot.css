@@ -78,7 +78,6 @@
 	stroke: var(--wg-mascot-eye);
 	stroke-linecap: round;
 	stroke-width: 8.5px;
-	d: path("M0 -9 Q0 0 0 9");
 	transform-box: fill-box;
 	transform-origin: 50% 50%;
 	transition:
@@ -92,7 +91,6 @@
 	stroke: var(--wg-mascot-eye);
 	stroke-linecap: round;
 	stroke-width: 0;
-	d: path("M-3.5 0 Q0 0 3.5 0");
 	transition:
 		d 0.5s var(--wg-mascot-spring),
 		stroke-width 0.35s var(--wg-mascot-spring);
@@ -202,10 +200,6 @@
 	animation: wg-mascot-sway 2.6s ease-in-out infinite;
 }
 
-.wg-mascot.is-thinking .wg-mascot-eye {
-	d: path("M0 -5 Q0 0 0 5");
-}
-
 .wg-mascot:is(.is-thinking, .is-working, .is-done, .is-pleased, .is-error, .is-sleep, .is-surprised, .is-question)
 	.wg-mascot-lid {
 	animation: none;
@@ -215,18 +209,12 @@
 	animation: wg-mascot-bob 0.55s ease-in-out infinite;
 }
 
-.wg-mascot.is-working .wg-mascot-eye {
-	d: path("M0 0.5 Q0 2 0 3.5");
-}
-
 .wg-mascot:is(.is-done, .is-pleased) .wg-mascot-eye {
 	stroke-width: 3.25px;
-	d: path("M-4.5 3 Q0 -6 4.5 3");
 }
 
 .wg-mascot.is-done .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-4 -2.5 Q0 2.5 4 -2.5");
 }
 
 .wg-mascot.is-done .wg-mascot-pose {
@@ -239,12 +227,10 @@
 
 .wg-mascot.is-question .wg-mascot-eye {
 	stroke-width: 9.5px;
-	d: path("M0 -1.5 Q0 0 0 1.5");
 }
 
 .wg-mascot.is-question .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-1.5 0 Q0 -1.5 1.5 0");
 }
 
 .wg-mascot.is-question .wg-mascot-q {
@@ -254,10 +240,6 @@
 
 .wg-mascot.is-error .wg-mascot-pose {
 	transform: translateY(7px) scale(1.02, 0.96);
-}
-
-.wg-mascot.is-error .wg-mascot-eye {
-	d: path("M0 -6 Q0 0.5 0 7");
 }
 
 .wg-mascot.is-error .wg-mascot-eye.is-left {
@@ -270,12 +252,10 @@
 
 .wg-mascot.is-error .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-4 2.5 Q0 -2.5 4 2.5");
 }
 
 .wg-mascot.is-sleep .wg-mascot-eye {
 	stroke-width: 2.75px;
-	d: path("M-4 3 Q0 6 4 3");
 }
 
 .wg-mascot.is-sleep .wg-mascot-breath {
@@ -293,7 +273,6 @@
 
 .wg-mascot.is-surprised .wg-mascot-eye {
 	stroke-width: 10px;
-	d: path("M0 -13 Q0 0 0 12");
 }
 
 .wg-mascot.is-surprised .wg-mascot-pose {
@@ -302,7 +281,6 @@
 
 .wg-mascot.is-surprised .wg-mascot-mouth {
 	stroke-width: 4.5px;
-	d: path("M0 -1 Q0 0 0 1");
 }
 
 @media (prefers-reduced-motion: reduce) {

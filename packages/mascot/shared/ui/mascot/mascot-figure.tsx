@@ -45,7 +45,7 @@ export function MascotFigure({ outfit, size, state, touchHandlers }: MascotFigur
 					<div className="wg-mascot-layer wg-mascot-pose">
 						<div className="wg-mascot-layer wg-mascot-sway">
 							<div className="wg-mascot-layer wg-mascot-breath">
-								<MascotDrawing scene={scene} ids={ids} frame={frame} />
+								<MascotDrawing scene={scene} ids={ids} frame={frame} state={state} />
 								<span className="wg-mascot-z">z</span>
 								<span className="wg-mascot-q">?</span>
 							</div>
