@@ -18,6 +18,8 @@ const WATCHED_CHANGES: MutationObserverInit = {
 };
 const SNAPSHOT_FORMAT = "jpeg";
 const SNAPSHOT_TYPE = "image/jpeg";
+const CAPTURED = true;
+const DRAG_ENDS = ["dragend", "drop", "pointermove"] as const;
 
 export interface PageCoverHold {
 	readonly container: HTMLElement;
@@ -32,6 +34,7 @@ export class PageCover {
 	private framePending = false;
 	private picture: HTMLImageElement | null = null;
 	private isFollowing = false;
+	private isDragging = false;
 	private readonly watched: MutationObserver;
 	private readonly container: HTMLElement;
 	private readonly bridge: PagesBridge;
@@ -42,6 +45,7 @@ export class PageCover {
 		this.bridge = bridge;
 		this.drawnPage = drawnPage;
 		this.watched = new MutationObserver(this.recheckSoon);
+		document.addEventListener("dragstart", this.onDragStart, CAPTURED);
 	}
 
 	follow(isDrawn: boolean): void {
@@ -61,6 +65,8 @@ export class PageCover {
 	}
 
 	stop(): void {
+		document.removeEventListener("dragstart", this.onDragStart, CAPTURED);
+		this.stopWatchingDragEnd();
 		this.watched.disconnect();
 		this.isFollowing = false;
 		this.turn += 1;
@@ -75,6 +81,22 @@ export class PageCover {
 				console.error("[widgetarium] the browser page could not come back after its card left", failure);
 			});
 		}
+	}
+
+	private readonly onDragStart = (): void => {
+		this.isDragging = true;
+		DRAG_ENDS.forEach((kind) => document.addEventListener(kind, this.onDragEnd, CAPTURED));
+		this.recheckSoon();
+	};
+
+	private readonly onDragEnd = (): void => {
+		this.isDragging = false;
+		this.stopWatchingDragEnd();
+		this.recheckSoon();
+	};
+
+	private stopWatchingDragEnd(): void {
+		DRAG_ENDS.forEach((kind) => document.removeEventListener(kind, this.onDragEnd, CAPTURED));
 	}
 
 	private dropPicture(): void {
@@ -100,7 +122,7 @@ export class PageCover {
 
 	private recheck(): void {
 		const page = this.drawnPage();
-		const wanted = page !== null && this.hasOverlay() ? page : null;
+		const wanted = page !== null && (this.isDragging || this.hasOverlay()) ? page : null;
 
 		if (wanted === this.wantedPage) {
 			return;

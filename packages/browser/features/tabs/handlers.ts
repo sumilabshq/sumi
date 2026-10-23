@@ -30,9 +30,8 @@ import {
 	ReloadPageCommand,
 	ShowTabCommand,
 	FocusOwnWindowCommand,
-	StopTearOffCommand,
-	WatchTearOffCommand,
 	OpenTabInOwnWindowCommand,
+	TearOffCommand,
 } from "./contract.js";
 
 const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
@@ -201,7 +200,7 @@ export const DetachPagesCommandHandler = handler(DetachPagesCommand, BrowserClie
 	.inject({ browserPagesGateway: BrowserPagesGateway })
 	.handle(({ from }, { browserPagesGateway }) => browserPagesGateway.detach(from));
 
-export const WatchTearOffCommandHandler = handler(WatchTearOffCommand, BrowserClientModule)
+export const TearOffCommandHandler = handler(TearOffCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPagesGateway }) => {
 		if (!browserPagesGateway.canOpenOwnWindow()) {
@@ -212,12 +211,8 @@ export const WatchTearOffCommandHandler = handler(WatchTearOffCommand, BrowserCl
 			return refuse(NO_TAB);
 		}
 
-		browserPagesGateway.watchTearOff(tabId);
+		browserPagesGateway.tearOff(tabId);
 	});
-
-export const StopTearOffCommandHandler = handler(StopTearOffCommand, BrowserClientModule)
-	.inject({ browserPagesGateway: BrowserPagesGateway })
-	.handle((_input, { browserPagesGateway }) => browserPagesGateway.stopTearOff());
 
 export function webAddressOf(typed: string): string {
 	const address = typed.trim();

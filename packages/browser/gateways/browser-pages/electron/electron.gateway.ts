@@ -100,9 +100,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(): void {}
 
-	watchTearOff(): void {}
-
-	stopTearOff(): void {}
+	tearOff(): void {}
 
 	create(tabId: string): void {
 		if (this.held.some((tab) => tab.now().id === tabId)) {

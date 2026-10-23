@@ -131,12 +131,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.ownWindows.focus(tabId);
 	}
 
-	watchTearOff(tabId: string): void {
-		this.ownWindows.watchTearOff(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
-	}
-
-	stopTearOff(): void {
-		this.ownWindows.stopTearOff();
+	tearOff(tabId: string): void {
+		this.ownWindows.tearOff(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
 	}
 
 	attachInPane(tabId: string, into: HTMLElement): void {

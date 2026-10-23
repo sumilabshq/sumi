@@ -46,9 +46,7 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(): void {}
 
-	watchTearOff(): void {}
-
-	stopTearOff(): void {}
+	tearOff(): void {}
 
 	create(): void {
 		throw new Error(NOT_AVAILABLE_ON_HOST);

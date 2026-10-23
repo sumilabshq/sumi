@@ -80,8 +80,7 @@ export interface PagesBridge {
 	cover(page: string, covered: boolean): Promise<void>;
 	openInOwnWindow(page: string, title: string): Promise<void>;
 	focusOwnWindow(page: string): Promise<void>;
-	watchTearOff(page: string, title: string): Promise<void>;
-	stopTearOff(): Promise<void>;
+	openOwnWindowAtCursor(page: string, title: string): Promise<boolean>;
 	ownWindows(): Promise<readonly string[]>;
 	snapshot(page: string, region: PageRegion | null, format: ShotFormat): Promise<Uint8Array>;
 	evaluate(page: string, script: string): Promise<string>;
@@ -114,8 +113,7 @@ export function tauriPagesBridge(ipc: BrowserPagesIpc): PagesBridge {
 		cover: (page, covered) => done("cover", { page, covered }),
 		openInOwnWindow: (page, title) => done("open_own_window", { page, title }),
 		focusOwnWindow: (page) => done("focus_own_window", { page }),
-		watchTearOff: (page, title) => done("watch_tear_off", { page, title }),
-		stopTearOff: () => done("stop_tear_off", {}),
+		openOwnWindowAtCursor: async (page, title) => (await call("open_own_window_at_cursor", { page, title })) === true,
 		ownWindows: async () => OwnWindowsSchema.parse(await call("own_windows")),
 		snapshot: async (page, region, format) => bytesOf(await call("snapshot", { page, region, format })),
 		evaluate: async (page, script) => textOf(await call("evaluate", { page, script })),

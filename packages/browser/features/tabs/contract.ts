@@ -21,9 +21,7 @@ export const OpenTabInOwnWindowCommand = command("browser/open-tab-in-own-window
 
 export const FocusOwnWindowCommand = command("browser/focus-own-window").input(TabSchema).idempotencyKey(Repeatable);
 
-export const WatchTearOffCommand = command("browser/watch-tear-off").input(TabSchema).idempotencyKey(Repeatable);
-
-export const StopTearOffCommand = command("browser/stop-tear-off").input(z.object({})).idempotencyKey(Repeatable);
+export const TearOffCommand = command("browser/tear-off").input(TabSchema).idempotencyKey(Repeatable);
 
 export const ShowTabCommand = command("browser/show-tab")
 	.input(TabSchema)

@@ -20,18 +20,13 @@ export class OwnWindows {
 			});
 	}
 
-	watchTearOff(tabId: string, title: string, created: Promise<void>): void {
+	tearOff(tabId: string, title: string, created: Promise<void>): void {
 		void created
-			.then(() => this.bridge.watchTearOff(tabId, title))
+			.then(() => this.bridge.openOwnWindowAtCursor(tabId, title))
+			.then((isOpened) => logTearOff(tabId, isOpened))
 			.catch((failure: unknown) => {
-				console.error(`[widgetarium] the browser page ${tabId} cannot be dragged out of the studio`, failure);
+				console.error(`[widgetarium] the browser page ${tabId} could not be torn off into its own window`, failure);
 			});
-	}
-
-	stopTearOff(): void {
-		void this.bridge.stopTearOff().catch((failure: unknown) => {
-			console.error("[widgetarium] the browser could not stop watching a dragged tab", failure);
-		});
 	}
 
 	focus(tabId: string): void {
@@ -80,4 +75,13 @@ export class OwnWindows {
 
 		this.changed();
 	}
+}
+
+function logTearOff(tabId: string, isOpened: boolean): void {
+	if (!isOpened) {
+		console.info(`[widgetarium] browser page ${tabId} studio → studio (the drag ended inside the studio window)`);
+		return;
+	}
+
+	console.info(`[widgetarium] browser page ${tabId} studio → own window (the drag ended outside the studio)`);
 }

@@ -63,12 +63,8 @@ export class PaneBrowserPagesGateway extends BrowserPagesGateway {
 		this.shared.focusOwnWindow(tabId);
 	}
 
-	watchTearOff(tabId: string): void {
-		this.shared.watchTearOff(tabId);
-	}
-
-	stopTearOff(): void {
-		this.shared.stopTearOff();
+	tearOff(tabId: string): void {
+		this.shared.tearOff(tabId);
 	}
 
 	create(tabId: string): void {

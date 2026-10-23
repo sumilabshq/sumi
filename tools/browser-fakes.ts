@@ -104,9 +104,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(): void {}
 
-	watchTearOff(): void {}
-
-	stopTearOff(): void {}
+	tearOff(): void {}
 
 	create(_tabId: string): void {}
 

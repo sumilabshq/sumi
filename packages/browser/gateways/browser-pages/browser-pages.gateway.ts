@@ -16,8 +16,7 @@ export abstract class BrowserPagesGateway {
 	abstract isInOwnWindow(tabId: string): boolean;
 	abstract openInOwnWindow(tabId: string): void;
 	abstract focusOwnWindow(tabId: string): void;
-	abstract watchTearOff(tabId: string): void;
-	abstract stopTearOff(): void;
+	abstract tearOff(tabId: string): void;
 	abstract create(tabId: string): void;
 	abstract close(tabId: string): void;
 	abstract freeze(tabId: string): void;
