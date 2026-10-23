@@ -16,4 +16,5 @@ export interface AppHostParts {
 	readonly activeChatGateway: ActiveChatGateway;
 	readonly tabsColumnStore: TabsColumnStore;
 	readonly paneTabsGateway: PaneTabsGateway;
+	readonly tabPageIdOf: (tabId: string) => string | null;
 }

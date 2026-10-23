@@ -1,6 +1,7 @@
 import { handler, refuse } from "@widgetarium/core/requests";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
+import { PaneTabsGateway } from "../../gateways/pane-tabs/pane-tabs.gateway.js";
 import { Essentials } from "../../shared/lib/essentials/essentials.js";
 import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, OpenedTab } from "../../shared/lib/host-tabs/host-tabs.js";
@@ -24,6 +25,7 @@ const NOT_OPEN = 'the essential "{id}" is not open';
 const ESSENTIALS = {
 	appTabsGateway: AppTabsGateway,
 	pageFactsGateway: PageFactsGateway,
+	paneTabsGateway: PaneTabsGateway,
 	hostTabs: HostTabs,
 	essentials: Essentials,
 };
@@ -103,6 +105,7 @@ interface EssentialParts {
 	readonly essentials: Essentials;
 	readonly pageFactsGateway: PageFactsGateway;
 	readonly appTabsGateway: AppTabsGateway;
+	readonly paneTabsGateway: PaneTabsGateway;
 }
 
 function releaseEssential(id: string, to: Extract<TabDrop, { kind: "list" }>, parts: EssentialParts): void {

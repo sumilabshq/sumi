@@ -82,14 +82,14 @@ export const TabsSidebarQueryHandler = handler(TabsSidebarQuery, AppHostClientMo
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule)
 	.inject(TABS)
-	.handle(({ id }, { hostTabs, paneTabsGateway, ...showing }) => {
+	.handle(({ id }, { hostTabs, ...showing }) => {
 		const tab = heldTabOf(hostTabs, id);
 
 		if (!tab) {
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		if (isShownApart(tab, { hostTabs, paneTabsGateway, pageFactsGateway: showing.pageFactsGateway })) {
+		if (focusWhereShownApart(tab, { hostTabs, ...showing })) {
 			return;
 		}
 
@@ -274,8 +274,9 @@ interface ApartShowing {
 	readonly pageFactsGateway: PageFactsGateway;
 }
 
-function isShownApart(tab: HostTab, { hostTabs, paneTabsGateway, pageFactsGateway }: ApartShowing): boolean {
+function focusWhereShownApart(tab: HostTab, { hostTabs, paneTabsGateway, pageFactsGateway }: ApartShowing): boolean {
 	if (paneTabsGateway.tabIdsInPanes().includes(tab.id)) {
+		console.info(`[widgetarium] show ${tab.id}: reveal the pane holding it`);
 		paneTabsGateway.reveal(tab.id);
 		return true;
 	}
@@ -286,6 +287,7 @@ function isShownApart(tab: HostTab, { hostTabs, paneTabsGateway, pageFactsGatewa
 		return false;
 	}
 
+	console.info(`[widgetarium] show ${tab.id}: focus its own window`);
 	pageFactsGateway.focusPageWindow(ownWindowPage);
 	return true;
 }

@@ -1,4 +1,4 @@
-import type { HostTab, HostTabsMoment } from "../host-tabs/host-tabs.js";
+import type { HostTab, HostTabs, HostTabsMoment } from "../host-tabs/host-tabs.js";
 import type { AppKind } from "../../schema/app-tab.schema.js";
 import type { PageFacts } from "../../schema/page-facts.schema.js";
 import { tabPagesOf } from "./tab-pages.js";
@@ -16,6 +16,13 @@ export interface TabShowing {
 		closePage(pageId: string): void;
 		openAddress(pageId: string, address: string): void;
 	};
+	readonly paneTabsGateway: {
+		tabIdsInPanes(): readonly string[];
+		reveal(tabId: string): void;
+		closePanesOf(tabIds: readonly string[]): void;
+		openShownTabPane(): void;
+		closeShownTabPane(): void;
+	};
 }
 
 export function shownTabIdOf({ tabs, shownId }: HostTabsMoment, shownApp: AppKind | null): string | null {
@@ -30,8 +37,14 @@ export function shownTabIdOf({ tabs, shownId }: HostTabsMoment, shownApp: AppKin
 export function showTab(
 	tab: HostTab,
 	tabs: readonly HostTab[],
-	{ appTabsGateway, pageFactsGateway }: TabShowing,
+	{ appTabsGateway, pageFactsGateway, paneTabsGateway }: TabShowing,
 ): void {
+	if (paneTabsGateway.tabIdsInPanes().includes(tab.id)) {
+		paneTabsGateway.reveal(tab.id);
+		return;
+	}
+
+	paneTabsGateway.openShownTabPane();
 	appTabsGateway.show(tab.app);
 	const page = tabPagesOf(tabs, pageFactsGateway.pages()).get(tab.id);
 
@@ -50,4 +63,24 @@ export function openTabPage(tab: HostTab, address: string, showing: TabShowing):
 	if (address !== "") {
 		showing.pageFactsGateway.openAddress(tab.pageId, address);
 	}
+}
+
+export function showFreeTabBesidePanes(hostTabs: HostTabs, showing: TabShowing): void {
+	const inPanes = showing.paneTabsGateway.tabIdsInPanes();
+	const shownId = shownTabIdOf(hostTabs.now(), showing.appTabsGateway.shownApp());
+
+	if (shownId === null || !inPanes.includes(shownId)) {
+		return;
+	}
+
+	const free = hostTabs.now().tabs.find((tab) => !inPanes.includes(tab.id));
+	console.info(`[widgetarium] shown tab ${shownId} → ${free?.id ?? "none"} (${shownId} stands in its own pane now)`);
+
+	if (!free) {
+		showing.paneTabsGateway.closeShownTabPane();
+		return;
+	}
+
+	hostTabs.show(free.id);
+	showTab(free, hostTabs.now().tabs, showing);
 }

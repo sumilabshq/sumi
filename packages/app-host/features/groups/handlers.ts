@@ -1,6 +1,7 @@
 import { handler, refuse } from "@widgetarium/core/requests";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { PageFactsGateway } from "../../gateways/page-facts/page-facts.gateway.js";
+import { PaneTabsGateway } from "../../gateways/pane-tabs/pane-tabs.gateway.js";
 import { HostTabs, chatOfTab } from "../../shared/lib/host-tabs/host-tabs.js";
 import { findGroup, isKnownList } from "../../shared/lib/host-tabs/tab-lists.js";
 import { ActiveChatGateway } from "../../gateways/active-chat/active-chat.gateway.js";
@@ -93,6 +94,7 @@ export const CloseGroupCommandHandler = handler(CloseGroupCommand, AppHostClient
 		hostTabs: HostTabs,
 		appTabsGateway: AppTabsGateway,
 		pageFactsGateway: PageFactsGateway,
+		paneTabsGateway: PaneTabsGateway,
 	})
 	.handle(({ id }, { hostTabs, ...showing }) => {
 		if (!findGroupIn(hostTabs, id)) {

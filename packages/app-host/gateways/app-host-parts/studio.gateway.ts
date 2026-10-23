@@ -2,11 +2,12 @@ import { ONE_CHAT } from "@widgetarium/core/engine/active-chat-port.js";
 import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { Essentials } from "../../shared/lib/essentials/essentials.js";
-import { shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
+import { showFreeTabBesidePanes, showTab, shownTabIdOf } from "../../shared/lib/tab-showing/show-tab.js";
+import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
+import type { TabShowing } from "../../shared/lib/tab-showing/show-tab.js";
 import { HostTabs } from "../../shared/lib/host-tabs/host-tabs.js";
 import { COLUMN_OPENED_ON } from "../../shared/lib/tabs-column/column-look.js";
 import { TabsColumnStore } from "../../shared/lib/tabs-column/tabs-column-store.js";
-import type { AppKind } from "../../shared/schema/app-tab.schema.js";
 import { PortActiveChatGateway } from "../active-chat/port.gateway.js";
 import { StudioStateAppTabsGateway } from "../app-tabs/studio-state.gateway.js";
 import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
@@ -45,7 +46,14 @@ export function studioAppHostParts(host: StudioAppHost): AppHostParts {
 	const gateways = studioGatewaysOf(host);
 	const hostTabs = keptHostTabsOf(gateways.tabsSessionGateway, gateways.activeChat.now().id);
 	const essentials = keptEssentialsOf(gateways.essentialsGateway);
-	showsFirstTab(hostTabs, essentials, gateways.appTabsGateway.shownApp());
+	const paneTabsGateway = host.paneTabsGateway ?? new NoPaneTabsGateway();
+	const showing = {
+		appTabsGateway: gateways.appTabsGateway,
+		pageFactsGateway: gateways.pageFactsGateway,
+		paneTabsGateway,
+	};
+	showsFirstTab(hostTabs, essentials, showing);
+	paneTabsGateway.watch(() => showFreeTabBesidePanes(hostTabs, showing));
 	return {
 		appTabsGateway: gateways.appTabsGateway,
 		pageFactsGateway: gateways.pageFactsGateway,
@@ -54,7 +62,8 @@ export function studioAppHostParts(host: StudioAppHost): AppHostParts {
 		essentials,
 		activeChatGateway: new PortActiveChatGateway(gateways.activeChat),
 		tabsColumnStore: new TabsColumnStore(gateways.tabsColumnGateway.kept() ?? COLUMN_OPENED_ON),
-		paneTabsGateway: host.paneTabsGateway ?? new NoPaneTabsGateway(),
+		paneTabsGateway,
+		tabPageIdOf: (tabId) => tabPageOf(hostTabs, gateways.pageFactsGateway, tabId)?.pageId ?? null,
 	};
 }
 
@@ -81,7 +90,8 @@ function keptEssentialsOf(gateway: EssentialsGateway): Essentials {
 	return essentials;
 }
 
-function showsFirstTab(hostTabs: HostTabs, essentials: Essentials, shownApp: AppKind | null): void {
+function showsFirstTab(hostTabs: HostTabs, essentials: Essentials, showing: TabShowing): void {
+	const shownApp = showing.appTabsGateway.shownApp();
 	const shownId = shownTabIdOf(hostTabs.now(), shownApp);
 
 	if (shownId !== null) {
@@ -96,5 +106,16 @@ function showsFirstTab(hostTabs: HostTabs, essentials: Essentials, shownApp: App
 			app: essential.app,
 			pageId: null,
 		});
+		return;
+	}
+
+	const first = hostTabs.now().tabs[0];
+	console.info(
+		`[widgetarium] studio opened on ${shownApp ?? "no app"} → ${first?.id ?? "nothing"} (no ${shownApp ?? ""} tab to show)`,
+	);
+
+	if (first) {
+		hostTabs.show(first.id);
+		showTab(first, hostTabs.now().tabs, showing);
 	}
 }

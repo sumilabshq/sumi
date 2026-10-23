@@ -16,8 +16,10 @@ type TabPages = ReturnType<typeof tabPagesOf>;
 function closeWith(hostTabs: HostTabs, showing: TabShowing, closing: (pages: TabPages) => void): void {
 	const shownId = shownTabIdOf(hostTabs.now(), showing.appTabsGateway.shownApp());
 	const pages = tabPagesOf(hostTabs.now().tabs, showing.pageFactsGateway.pages());
+	const before = hostTabs.now().tabs.map((tab) => tab.id);
 	closing(pages);
 	const held = new Set(hostTabs.now().tabs.map((tab) => tab.id));
+	showing.paneTabsGateway.closePanesOf(before.filter((id) => !held.has(id)));
 	closeReleasedPages(pages, held, showing);
 
 	if (shownId === null || held.has(shownId)) {

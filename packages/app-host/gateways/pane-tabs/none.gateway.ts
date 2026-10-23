@@ -7,6 +7,12 @@ export class NoPaneTabsGateway extends PaneTabsGateway {
 
 	reveal(): void {}
 
+	closePanesOf(): void {}
+
+	openShownTabPane(): void {}
+
+	closeShownTabPane(): void {}
+
 	watch(): () => void {
 		return () => undefined;
 	}
