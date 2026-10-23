@@ -69,7 +69,7 @@ export class InkGate {
 			return this.refused(logged, "stopped-by-person");
 		}
 
-		if (tabId === null || !browserPagesGateway.isOnScreen()) {
+		if (tabId === null || !browserPagesGateway.isOnScreen(tabId)) {
 			return this.refused(logged, "tab-not-visible");
 		}
 
@@ -116,7 +116,7 @@ export class InkGate {
 			return this.refused(logged, "no-tab");
 		}
 
-		if (!browserPagesGateway.isOnScreen()) {
+		if (!browserPagesGateway.isOnScreen(tabId)) {
 			return this.refused(logged, "tab-not-visible");
 		}
 
@@ -200,7 +200,7 @@ export class InkGate {
 			return "stopped-by-person";
 		}
 
-		if (!this.parts.browserPagesGateway.isOnScreen()) {
+		if (!this.parts.browserPagesGateway.isOnScreen(read.tabId)) {
 			return "tab-not-visible";
 		}
 

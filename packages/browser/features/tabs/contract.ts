@@ -19,6 +19,16 @@ export const ShowTabCommand = command("browser/show-tab")
 	.idempotencyKey(Repeatable)
 	.invalidates([BrowserTabsQuery]);
 
+export const OpenPageCommand = command("browser/open-page")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([BrowserTabsQuery]);
+
+export const ClosePageCommand = command("browser/close-page")
+	.input(TabSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([BrowserTabsQuery]);
+
 export const GoBackCommand = command("browser/go-back")
 	.input(TabSchema)
 	.idempotencyKey(Repeatable)

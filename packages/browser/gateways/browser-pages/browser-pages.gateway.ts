@@ -5,10 +5,14 @@ export abstract class BrowserPagesGateway {
 	abstract isAvailable(): boolean;
 	abstract tabs(): readonly BrowserTab[];
 	abstract shownId(): string | null;
-	abstract isOnScreen(): boolean;
+	abstract isOnScreen(tabId: string): boolean;
 	abstract watch(changed: () => void): () => void;
 	abstract attach(into: HTMLElement): void;
 	abstract detach(from: HTMLElement): void;
+	abstract create(tabId: string): void;
+	abstract close(tabId: string): void;
+	abstract freeze(tabId: string): void;
+	abstract thaw(tabId: string): void;
 	abstract open(tabId: string, url: string): void;
 	abstract show(tabId: string): void;
 	abstract back(tabId: string): void;

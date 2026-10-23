@@ -28,6 +28,22 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	detach(): void {}
 
+	create(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	close(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	freeze(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
+	thaw(): void {
+		throw new Error(NOT_AVAILABLE_ON_HOST);
+	}
+
 	open(): void {
 		throw new Error(NOT_AVAILABLE_ON_HOST);
 	}

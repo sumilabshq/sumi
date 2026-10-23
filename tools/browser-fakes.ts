@@ -33,6 +33,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	readonly opened: string[] = [];
 	readonly moves: string[] = [];
 	readonly attached: HTMLElement[] = [];
+	readonly frozen = new Set<string>();
 	private readonly watchers = new Set<() => void>();
 
 	isAvailable(): boolean {
@@ -47,7 +48,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		return this.tab.id;
 	}
 
-	isOnScreen(): boolean {
+	isOnScreen(_tabId: string): boolean {
 		return this.isShownOnScreen;
 	}
 
@@ -62,6 +63,18 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 
 	detach(): void {}
 
+	create(_tabId: string): void {}
+
+	close(_tabId: string): void {}
+
+	freeze(tabId: string): void {
+		this.frozen.add(tabId);
+	}
+
+	thaw(tabId: string): void {
+		this.frozen.delete(tabId);
+	}
+
 	open(_tabId: string, url: string): void {
 		this.opened.push(url);
 		this.tab = {
@@ -73,7 +86,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		this.told();
 	}
 
-	show(): void {}
+	show(_tabId: string): void {}
 
 	back(): void {
 		this.moves.push("back");
@@ -118,7 +131,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		return Promise.resolve();
 	}
 
-	committed(): CommittedPage | null {
+	committed(_tabId: string): CommittedPage | null {
 		return {
 			url: this.tab.url,
 			entry: this.entry,
@@ -199,8 +212,7 @@ export interface FakeBrowser {
 	readonly parts: BrowserParts;
 }
 
-export function fakeBrowser(): FakeBrowser {
-	const pages = new FakeBrowserPagesGateway();
+export function fakeBrowser(pages = new FakeBrowserPagesGateway()): FakeBrowser {
 	const audit = new MemoryBrowserAuditGateway();
 	const grants = new MemoryBrowserGrantsGateway();
 	const recentSites = new MemoryRecentSitesGateway();

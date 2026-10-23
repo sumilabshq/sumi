@@ -2,7 +2,7 @@
 import { AccessAsksQueryHandler, AnswerAskCommandHandler, InkReadingQueryHandler, StopInkCommandHandler } from "../features/asks/handlers.js";
 import { CapturePageCommandHandler, InkOpenAddressCommandHandler, ReadPageContentCommandHandler, SearchWebCommandHandler } from "../features/ink/handlers.js";
 import { SetSiteLevelCommandHandler, SiteAccessQueryHandler } from "../features/sites/handlers.js";
-import { AskInkCommandHandler, AttachPagesCommandHandler, BrowserTabsQueryHandler, DetachPagesCommandHandler, GoBackCommandHandler, GoForwardCommandHandler, LeaveFailureCommandHandler, OpenAddressCommandHandler, ReloadPageCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
+import { AskInkCommandHandler, AttachPagesCommandHandler, BrowserTabsQueryHandler, ClosePageCommandHandler, DetachPagesCommandHandler, GoBackCommandHandler, GoForwardCommandHandler, LeaveFailureCommandHandler, OpenAddressCommandHandler, OpenPageCommandHandler, ReloadPageCommandHandler, ShowTabCommandHandler } from "../features/tabs/handlers.js";
 import { BrowserClientModule as BrowserClientModuleDefinition } from "../module.js";
 
 export const BrowserClientModule = BrowserClientModuleDefinition.handlers([
@@ -12,6 +12,7 @@ export const BrowserClientModule = BrowserClientModuleDefinition.handlers([
 	AttachPagesCommandHandler,
 	BrowserTabsQueryHandler,
 	CapturePageCommandHandler,
+	ClosePageCommandHandler,
 	DetachPagesCommandHandler,
 	GoBackCommandHandler,
 	GoForwardCommandHandler,
@@ -19,6 +20,7 @@ export const BrowserClientModule = BrowserClientModuleDefinition.handlers([
 	InkReadingQueryHandler,
 	LeaveFailureCommandHandler,
 	OpenAddressCommandHandler,
+	OpenPageCommandHandler,
 	ReadPageContentCommandHandler,
 	ReloadPageCommandHandler,
 	SearchWebCommandHandler,

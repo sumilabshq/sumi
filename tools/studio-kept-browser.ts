@@ -23,7 +23,7 @@ export function keptBrowserParts(): BrowserParts {
 	});
 	const browserApp = app({ modules: [BrowserClientModule.with(parts)] });
 	Object.assign(window, {
-		__PAGE_ON_SCREEN__: () => parts.browserPagesGateway.isOnScreen(),
+		__PAGE_ON_SCREEN__: () => parts.browserPagesGateway.isOnScreen("tab-1"),
 		__INK_READ__: async () => {
 			const answer = await browserApp.send(ReadPageContentCommand);
 			return answer.ok ? "ok" : answer.reason;

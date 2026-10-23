@@ -12,16 +12,17 @@ const NO_TAB = 'the browser holds no tab "{tabId}"';
 export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly watchers = new Set<() => void>();
 	private readonly remote: ElectronRemote;
-	private readonly held: readonly WebviewTab[];
-	private shown = FIRST_TAB;
+	private readonly partition: string;
+	private held: readonly WebviewTab[] = [];
+	private shown: string | null = FIRST_TAB;
 	private container: HTMLElement | null = null;
 
 	constructor(remote: unknown, profileId: string) {
 		super();
-		const partition = partitionOfProfile(profileId);
+		this.partition = partitionOfProfile(profileId);
 		this.remote = new ElectronRemote(remote);
-		this.remote.hardenPartition(partition);
-		this.held = [new WebviewTab(FIRST_TAB, this.remote, partition, () => this.told())];
+		this.remote.hardenPartition(this.partition);
+		this.create(FIRST_TAB);
 	}
 
 	isAvailable(): boolean {
@@ -36,8 +37,8 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return this.shown;
 	}
 
-	isOnScreen(): boolean {
-		return isLaidOnScreen(this.container) && document.visibilityState === "visible";
+	isOnScreen(tabId: string): boolean {
+		return tabId === this.shown && isLaidOnScreen(this.container) && document.visibilityState === "visible";
 	}
 
 	watch(changed: () => void): () => void {
@@ -68,6 +69,48 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 		this.detachAll();
 		this.told();
+	}
+
+	create(tabId: string): void {
+		if (this.held.some((tab) => tab.now().id === tabId)) {
+			return;
+		}
+
+		const page = new WebviewTab(tabId, this.remote, this.partition, () => this.told());
+
+		if (this.container) {
+			page.mountIn(this.container);
+		}
+
+		page.setShown(tabId === this.shown);
+		this.becomeHeld([...this.held, page], `open ${tabId}`);
+	}
+
+	close(tabId: string): void {
+		const page = this.held.find((tab) => tab.now().id === tabId);
+
+		if (!page) {
+			return;
+		}
+
+		page.destroy();
+
+		if (this.shown === tabId) {
+			this.shown = null;
+		}
+
+		this.becomeHeld(
+			this.held.filter((tab) => tab !== page),
+			`close ${tabId}`,
+		);
+	}
+
+	freeze(tabId: string): void {
+		this.tabOf(tabId).setFrozen(true);
+	}
+
+	thaw(tabId: string): void {
+		this.tabOf(tabId).setFrozen(false);
 	}
 
 	open(tabId: string, url: string): void {
@@ -127,6 +170,12 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	capture(tabId: string, region: PageRegion | null): Promise<PageShot> {
 		return this.tabOf(tabId).capture(region);
+	}
+
+	private becomeHeld(next: readonly WebviewTab[], reason: string): void {
+		console.info(`[widgetarium] browser pages ${this.held.length} → ${next.length}, shown ${this.shown} (${reason})`);
+		this.held = next;
+		this.told();
 	}
 
 	private detachAll(): void {

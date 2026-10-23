@@ -4,6 +4,7 @@ import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
 import { ChatComposerGateway } from "../../gateways/chat-composer/chat-composer.gateway.js";
 import { RecentSitesGateway } from "../../gateways/recent-sites/recent-sites.gateway.js";
+import { BrowserAsksStore } from "../../shared/lib/browser-asks-store.js";
 import { InkActivityStore } from "../../shared/lib/ink-activity-store.js";
 import { OnceAllowancesStore } from "../../shared/lib/once-allowances-store.js";
 import { effectiveGrants } from "../../shared/lib/once-grants.js";
@@ -19,11 +20,13 @@ import {
 	AskInkCommand,
 	AttachPagesCommand,
 	BrowserTabsQuery,
+	ClosePageCommand,
 	DetachPagesCommand,
 	GoBackCommand,
 	GoForwardCommand,
 	LeaveFailureCommand,
 	OpenAddressCommand,
+	OpenPageCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
 } from "./contract.js";
@@ -128,7 +131,31 @@ export const LeaveFailureCommandHandler = handler(LeaveFailureCommand, BrowserCl
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })
-	.handle(({ tabId }, { browserPagesGateway }) => browserPagesGateway.show(tabId));
+	.handle(({ tabId }, { browserPagesGateway }) => {
+		browserPagesGateway.show(tabId);
+		browserPagesGateway.thaw(tabId);
+
+		for (const hidden of browserPagesGateway.tabs().filter(({ id }) => id !== tabId)) {
+			browserPagesGateway.freeze(hidden.id);
+		}
+	});
+
+export const OpenPageCommandHandler = handler(OpenPageCommand, BrowserClientModule)
+	.inject({ browserPagesGateway: BrowserPagesGateway })
+	.handle(({ tabId }, { browserPagesGateway }) => browserPagesGateway.create(tabId));
+
+export const ClosePageCommandHandler = handler(ClosePageCommand, BrowserClientModule)
+	.inject({
+		browserPagesGateway: BrowserPagesGateway,
+		browserAsksStore: BrowserAsksStore,
+	})
+	.handle(({ tabId }, { browserPagesGateway, browserAsksStore }) => {
+		for (const ask of browserAsksStore.asks().filter((asked) => asked.tabId === tabId)) {
+			browserAsksStore.settle(ask.id, "unanswered");
+		}
+
+		browserPagesGateway.close(tabId);
+	});
 
 export const GoBackCommandHandler = handler(GoBackCommand, BrowserClientModule)
 	.inject({ browserPagesGateway: BrowserPagesGateway })

@@ -7,6 +7,7 @@ import { loadFailureKindOf } from "../../../shared/lib/load-failure.js";
 import { FIND_SECRET_FIELD, READ_PAGE } from "./page-scripts.js";
 import { createPageView, fieldOfEvent, isCapturedImage } from "./page-view.js";
 import type { PageView } from "./page-view.js";
+import { PageFreezer } from "./page-freezer.js";
 
 const NEW_TAB_TITLE = "New tab";
 const SETTLE_AT_MOST_MS = 20_000;
@@ -20,10 +21,12 @@ const PNG_PREFIX = /^data:image\/png;base64,/;
 export class WebviewTab {
 	private view: PageView | null = null;
 	private isReady = false;
+	private isShown = false;
 	private container: HTMLElement | null = null;
 	private entry = 0;
 	private settledWaiters: (() => void)[] = [];
 	private state: BrowserTab;
+	private readonly freezer: PageFreezer;
 
 	constructor(
 		id: string,
@@ -41,6 +44,7 @@ export class WebviewTab {
 			canGoForward: false,
 			failure: null,
 		};
+		this.freezer = new PageFreezer(remote, id);
 	}
 
 	now(): BrowserTab {
@@ -62,8 +66,23 @@ export class WebviewTab {
 		this.container = null;
 	}
 
+	destroy(): void {
+		this.unmount();
+		window.removeEventListener("online", this.reloadIfStillOffline);
+		this.releaseSettledWaiters();
+	}
+
 	setShown(isShown: boolean): void {
-		this.view?.toggleAttribute("hidden", !isShown);
+		if (this.isShown === isShown) {
+			return;
+		}
+
+		this.isShown = isShown;
+		this.view?.style.setProperty("visibility", visibilityOf(isShown));
+	}
+
+	setFrozen(wantsFrozen: boolean): void {
+		this.freezer.request(wantsFrozen, this.readyContentsId());
 	}
 
 	open(url: string): void {
@@ -232,14 +251,20 @@ export class WebviewTab {
 		return view;
 	}
 
+	private readyContentsId(): number | null {
+		return this.readyView()?.getWebContentsId() ?? null;
+	}
+
 	private readyView(): PageView | null {
 		return this.isReady ? this.view : null;
 	}
 
 	private createView(url: string): void {
 		const view = createPageView(url, this.partition);
+		view.style.setProperty("visibility", visibilityOf(this.isShown));
 		this.view = view;
 		this.isReady = false;
+		this.freezer.resetForNewView();
 		this.listenTo(view);
 		this.container?.append(view);
 	}
@@ -248,6 +273,7 @@ export class WebviewTab {
 		view.addEventListener("dom-ready", () => {
 			this.isReady = true;
 			this.syncFrom(view);
+			this.freezer.apply(this.readyContentsId());
 		});
 		view.addEventListener("did-start-loading", () => this.update({ isLoading: true }));
 		view.addEventListener("did-stop-loading", () => this.finishLoading(view));
@@ -264,7 +290,10 @@ export class WebviewTab {
 	private finishLoading(view: PageView): void {
 		this.syncFrom(view);
 		this.update({ isLoading: false });
+		this.releaseSettledWaiters();
+	}
 
+	private releaseSettledWaiters(): void {
 		for (const settledWaiter of this.settledWaiters.splice(0)) {
 			settledWaiter();
 		}
@@ -358,4 +387,8 @@ export class WebviewTab {
 		};
 		this.changed();
 	}
+}
+
+function visibilityOf(isShown: boolean): string {
+	return isShown ? "visible" : "hidden";
 }

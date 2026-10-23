@@ -12,7 +12,11 @@ export interface RemoteContents {
 	frames(): readonly RemoteFrame[];
 }
 
+export type PageFreeze = "lifecycle" | "throttling";
+
 const ISOLATED_WORLD = 1999;
+const PROTOCOL_VERSION = "1.3";
+const SET_LIFECYCLE = "Page.setWebLifecycleState";
 const NO_REMOTE = "Electron's remote module is not reachable, so the browser cannot read pages";
 const NOT_HARDENED = "the browser's session cannot be locked down, so the browser stays off";
 
@@ -20,11 +24,10 @@ export class ElectronRemote {
 	constructor(private readonly remote: unknown) {}
 
 	contentsOf(webContentsId: number): RemoteContents {
-		const fromId = methodOf(Reflect.get(this.held(), "webContents"), "fromId");
-		const contents = fromId?.(webContentsId);
+		const contents = this.rawContentsOf(webContentsId);
 		const runIsolated = methodOf(contents, "executeJavaScriptInIsolatedWorld");
 
-		if (!isObject(contents) || !runIsolated) {
+		if (!runIsolated) {
 			throw new Error(NO_REMOTE);
 		}
 
@@ -32,6 +35,14 @@ export class ElectronRemote {
 			runIsolated: (code) => Promise.resolve(runIsolated(ISOLATED_WORLD, [{ code }])),
 			frames: () => framesOf(contents),
 		};
+	}
+
+	async freeze(webContentsId: number, isFrozen: boolean): Promise<PageFreeze> {
+		const contents = this.rawContentsOf(webContentsId);
+		methodOf(contents, "setBackgroundThrottling")?.(true);
+		const isSent = await lifecycleSent(contents, isFrozen ? "frozen" : "active");
+
+		return isSent ? "lifecycle" : "throttling";
 	}
 
 	hardenPartition(partition: string): void {
@@ -50,12 +61,42 @@ export class ElectronRemote {
 		on("will-download", cancelDownload);
 	}
 
+	private rawContentsOf(webContentsId: number): object {
+		const contents = methodOf(Reflect.get(this.held(), "webContents"), "fromId")?.(webContentsId);
+
+		if (!isObject(contents)) {
+			throw new Error(NO_REMOTE);
+		}
+
+		return contents;
+	}
+
 	private held(): object {
 		if (!isObject(this.remote)) {
 			throw new Error(NO_REMOTE);
 		}
 
 		return this.remote;
+	}
+}
+
+async function lifecycleSent(contents: object, state: "frozen" | "active"): Promise<boolean> {
+	const debuggerOf: unknown = Reflect.get(contents, "debugger");
+	const send = methodOf(debuggerOf, "sendCommand");
+
+	if (!send) {
+		return false;
+	}
+
+	try {
+		if (methodOf(debuggerOf, "isAttached")?.() !== true) {
+			methodOf(debuggerOf, "attach")?.(PROTOCOL_VERSION);
+		}
+
+		await send(SET_LIFECYCLE, { state });
+		return true;
+	} catch {
+		return false;
 	}
 }
 
