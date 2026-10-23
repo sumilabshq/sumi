@@ -20,6 +20,7 @@ export interface TabShowing {
 		closePanesOf(tabIds: readonly string[]): void;
 		openShownTabPane(): void;
 		closeShownTabPane(): void;
+		showInTargetPane(tabId: string): boolean;
 	};
 }
 
@@ -39,6 +40,11 @@ export function showTab(
 ): void {
 	if (paneTabsGateway.tabIdsInPanes().includes(tab.id)) {
 		paneTabsGateway.reveal(tab.id);
+		return;
+	}
+
+	if (paneTabsGateway.showInTargetPane(tab.id)) {
+		ensureTabPage(hostTabs, pageFactsGateway, tab.id, "shown in the target pane");
 		return;
 	}
 

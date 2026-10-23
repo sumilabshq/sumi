@@ -60,6 +60,18 @@ export class ShellPaneTabsGateway extends PaneTabsGateway {
 		}
 	}
 
+	showInTargetPane(tabId: string): boolean {
+		const { targetId } = this.paneTreeStore.now();
+		const target = this.paneTreeStore.leaves().find((leaf) => leaf.id === targetId);
+
+		if (target === undefined || target.view.kind !== "app" || target.view.tabId === null) {
+			return false;
+		}
+
+		this.paneTreeStore.showIn(target.id, tabId);
+		return true;
+	}
+
 	watch(changed: () => void): () => void {
 		return this.paneTreeStore.watch(changed);
 	}

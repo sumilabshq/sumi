@@ -13,6 +13,10 @@ export class NoPaneTabsGateway extends PaneTabsGateway {
 
 	closeShownTabPane(): void {}
 
+	showInTargetPane(): boolean {
+		return false;
+	}
+
 	watch(): () => void {
 		return () => undefined;
 	}
