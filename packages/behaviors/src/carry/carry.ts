@@ -1,7 +1,8 @@
 export const CARRIED_TAB = "tab";
 export const CARRIED_CHAT = "chat";
+export const CARRIED_PANE = "pane";
 
-const CARRIED_KINDS = [CARRIED_TAB, CARRIED_CHAT] as const;
+const CARRIED_KINDS = [CARRIED_TAB, CARRIED_CHAT, CARRIED_PANE] as const;
 const CARRY_PHASES = ["over", "leave", "drop"] as const;
 
 export type CarriedKind = (typeof CARRIED_KINDS)[number];

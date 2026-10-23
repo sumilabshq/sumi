@@ -38,5 +38,14 @@ export { localPxMemory } from "./src/edge-width/px-memory.js";
 export type { PxMemory } from "./src/edge-width/px-memory.js";
 export { useEdgeResize } from "./src/edge-width/use-edge-resize.js";
 export type { EdgeResizeAsk, EdgeResizeHandlers, ResizedEdge } from "./src/edge-width/use-edge-resize.js";
-export { CARRIED_CHAT, CARRIED_TAB, announceCarry, isPointInBox, listenToCarry } from "./src/carry/carry.js";
+export {
+	CARRIED_CHAT,
+	CARRIED_PANE,
+	CARRIED_TAB,
+	announceCarry,
+	isPointInBox,
+	listenToCarry,
+} from "./src/carry/carry.js";
+export { PointerCarry } from "./src/carry/pointer-carry.js";
+export type { PointerCarryAsk } from "./src/carry/pointer-carry.js";
 export type { CarriedItem, CarriedKind, CarryMoment, CarryPhase, PointBox } from "./src/carry/carry.js";
