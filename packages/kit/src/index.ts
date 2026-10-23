@@ -52,6 +52,7 @@ export type { SectionMore, SectionProps } from "./components/section";
 export {
 	Popover,
 	PopoverAnchor,
+	PopoverAnchorAt,
 	PopoverContent,
 	PopoverItem,
 	PopoverSearch,

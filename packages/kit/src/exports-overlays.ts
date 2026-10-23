@@ -1,4 +1,7 @@
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/tooltip";
+export { TooltipHost } from "./components/tooltip-host";
+export { IsTooltipHosted } from "./components/tooltip-hosted-context";
+export { tooltipMarks } from "./utils/tooltip-marks";
 export { HoverCard, HoverCardContent, HoverCardTrigger } from "./components/hover-card";
 export {
 	DropdownMenu,

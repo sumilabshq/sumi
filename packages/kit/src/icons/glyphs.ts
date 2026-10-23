@@ -10,6 +10,8 @@ export const GLYPHS: Readonly<Record<string, string>> = {
 	curve: '<path d="M3.6 13.2l3.5-4.3 3 2.6 3.2-4.6 3.1 3"/>',
 	bars: '<path d="M5 14.4V9.8M10 14.4V5.6M15 14.4v-2.9"/>',
 	plus: '<path d="M10 4.9v10.2M4.9 10h10.2"/>',
+	"grid-plus": '<path d="M3.6 3.6h5v5h-5zM11.4 3.6h5v5h-5zM3.6 11.4h5v5h-5zM13.9 11.4v5M11.4 13.9h5"/>',
+	"grid-minus": '<path d="M3.6 3.6h5v5h-5zM11.4 3.6h5v5h-5zM3.6 11.4h5v5h-5zM11.4 13.9h5"/>',
 	"arrow-up": '<path d="M10 15.4V5.5M5.7 9.8L10 5.5l4.3 4.3"/>',
 	download: '<path d="M10 4.6v7.6M6.4 8.8L10 12.4l3.6-3.6"/><path d="M4.9 15.4h10.2"/>',
 	update: '<path d="M15.6 9.4a5.7 5.7 0 10-1.6 3.8"/><path d="M15.6 5v4.4h-4.4"/>',

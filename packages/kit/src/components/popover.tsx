@@ -14,6 +14,7 @@ export { PopoverItem } from "./popover-item";
 export { PopoverSeparator } from "./popover-separator";
 export { PopoverSearch } from "./popover-search";
 export { PopoverAnchor } from "./popover-anchor";
+export { PopoverAnchorAt } from "./popover-anchor-at";
 
 export interface PopoverProps {
 	readonly trigger?: ReactNode;

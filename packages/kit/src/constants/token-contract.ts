@@ -47,6 +47,15 @@ const GAP_TOKENS: readonly string[] = ["gap-section", "gap-plate"];
 
 const SHAPE_TOKENS: readonly string[] = ["control-lg", "shape-wide", "shape-square", "shape-band", "shape-strip"];
 
+export const CONTROL_TOKENS: readonly string[] = [
+	"control-rest",
+	"control-hover",
+	"control-open",
+	"control-ink",
+	"control-ink-on",
+	"control-radius",
+];
+
 export const KIT_ROLE_TOKENS: readonly string[] = [
 	"group",
 	"group-inset",
@@ -96,6 +105,7 @@ export const NON_COLOUR_TOKENS: ReadonlySet<string> = new Set([
 	...TYPE_TOKENS,
 	...GAP_TOKENS,
 	...SHAPE_TOKENS,
+	"control-radius",
 ]);
 
 export const CONTRACT_TOKENS: readonly string[] = [
@@ -104,6 +114,7 @@ export const CONTRACT_TOKENS: readonly string[] = [
 	...KIT_ROLE_TOKENS,
 	...BRAND_EXTENSION_TOKENS,
 	...SHAPE_TOKENS,
+	...CONTROL_TOKENS,
 ];
 
 const FOREGROUND_SUFFIX = "-foreground";

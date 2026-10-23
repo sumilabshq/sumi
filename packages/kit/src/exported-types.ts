@@ -47,6 +47,7 @@ export type {
 	DialogTriggerProps,
 } from "./components/dialog";
 export type { PopoverAnchorProps } from "./components/popover-anchor";
+export type { PopoverAnchorAtProps } from "./components/popover-anchor-at";
 export type { PopoverAlign, PopoverSide } from "./constants/popover";
 export type { FlameProps } from "./components/flame";
 export type { HeadingLevel, HeadingProps } from "./components/heading";

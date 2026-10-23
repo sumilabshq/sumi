@@ -11,6 +11,12 @@ export const TOOLTIP_DELAY_MS = 0;
 
 export const TOOLTIP_SKIP_DELAY_MS = 300;
 
+export const TOOLTIP_HOSTED_DELAY_MS = 500;
+
+export const TOOLTIP_HELD_AFTER_LEAVE_MS = 80;
+
+export const TOOLTIP_FADE_OUT_MS = 100;
+
 export const HOVER_CARD_OPEN_MS = 700;
 
 export const HOVER_CARD_CLOSE_MS = 300;

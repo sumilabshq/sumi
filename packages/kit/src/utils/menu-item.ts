@@ -61,7 +61,13 @@ function focusUnderPointer(menu: MenuState, event: PointerEvent<HTMLElement>, di
 }
 
 function focusMenuOnLeave(event: PointerEvent<HTMLElement>): void {
-	focusQuietly(event.currentTarget.closest('[role="menu"]'));
+	const menu = event.currentTarget.closest<HTMLElement>('[role="menu"]');
+
+	if (menu?.dataset["state"] === "closed") {
+		return;
+	}
+
+	focusQuietly(menu);
 }
 
 function pressOnEnterOrSpace(event: KeyboardEvent<HTMLElement>): void {
