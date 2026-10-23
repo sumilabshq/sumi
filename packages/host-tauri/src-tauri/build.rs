@@ -39,6 +39,10 @@ const BROWSER_COMMANDS: &[&str] = &[
     "place",
     "show",
     "cover",
+    "open_own_window",
+    "open_own_window_at_cursor",
+    "focus_own_window",
+    "own_windows",
     "snapshot",
     "evaluate",
     "evaluate_frames",
@@ -46,6 +50,8 @@ const BROWSER_COMMANDS: &[&str] = &[
     "drive_log",
     "drive_front",
 ];
+
+const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
 fn main() {
     let assistant = InlinedPlugin::new()
@@ -57,6 +63,10 @@ fn main() {
     let browser = InlinedPlugin::new()
         .commands(BROWSER_COMMANDS)
         .default_permission(DefaultPermissionRule::AllowAllCommands);
-    tauri_build::try_build(Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser))
+    let studio_log = InlinedPlugin::new()
+        .commands(STUDIO_LOG_COMMANDS)
+        .default_permission(DefaultPermissionRule::AllowAllCommands);
+    let plugins = Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser);
+    tauri_build::try_build(plugins.plugin("studio-log", studio_log))
         .expect("the Tauri build step failed")
 }
