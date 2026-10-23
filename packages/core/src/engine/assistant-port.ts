@@ -1,41 +1,52 @@
 import type { Job } from "../app-jobs.js";
 import type { WidgetDefinition } from "../registry.js";
-import { NO_CHAT_CARDS } from "./assistant-cards.js";
-import type { Blocker, ChatCards, Tally } from "./assistant-cards.js";
+import { z } from "zod";
+import { BlockerSchema, NO_CHAT_CARDS, TallySchema } from "./assistant-cards.js";
+import type { ChatCards } from "./assistant-cards.js";
 
 export type AssistantPhase = "thinking" | "tools" | "writing";
 
-export interface AssistantCall {
-	readonly ref: string;
-	readonly name: string;
-	readonly input: Readonly<Record<string, unknown>>;
-	readonly output: string;
-	readonly answered: boolean;
-	readonly failed: boolean;
-	readonly at: number;
-	readonly answeredAt?: number;
-	readonly outputCounts?: CallOutputCounts;
-}
+export const CallOutputCountsSchema = z.object({
+	lines: z.number().optional(),
+	hits: z.number().optional(),
+	features: TallySchema.optional(),
+	blockedBy: BlockerSchema.optional(),
+});
 
-export interface CallOutputCounts {
-	readonly lines?: number;
-	readonly hits?: number;
-	readonly features?: Tally;
-	readonly blockedBy?: Blocker;
-}
+export type CallOutputCounts = z.infer<typeof CallOutputCountsSchema>;
 
-export type TurnOutcome = "done" | "stopped" | "failed";
+export const AssistantCallSchema = z.object({
+	ref: z.string(),
+	name: z.string(),
+	input: z.record(z.string(), z.unknown()),
+	output: z.string(),
+	answered: z.boolean(),
+	failed: z.boolean(),
+	at: z.number(),
+	answeredAt: z.number().optional(),
+	outputCounts: CallOutputCountsSchema.optional(),
+});
 
-export type TurnRole = "user" | "agent" | "compact";
+export type AssistantCall = z.infer<typeof AssistantCallSchema>;
 
-export interface AssistantTurn {
-	readonly role: TurnRole;
-	readonly text: string;
-	readonly calls: AssistantCall[];
-	readonly startedAt?: number;
-	readonly endedAt?: number;
-	readonly outcome?: TurnOutcome;
-}
+export const TurnOutcomeSchema = z.enum(["done", "stopped", "failed"]);
+
+export type TurnOutcome = z.infer<typeof TurnOutcomeSchema>;
+
+export const TurnRoleSchema = z.enum(["user", "agent", "compact"]);
+
+export type TurnRole = z.infer<typeof TurnRoleSchema>;
+
+export const AssistantTurnSchema = z.object({
+	role: TurnRoleSchema,
+	text: z.string(),
+	calls: z.array(AssistantCallSchema),
+	startedAt: z.number().optional(),
+	endedAt: z.number().optional(),
+	outcome: TurnOutcomeSchema.optional(),
+});
+
+export type AssistantTurn = z.infer<typeof AssistantTurnSchema>;
 
 export interface AssistantSession {
 	readonly turns: readonly AssistantTurn[];

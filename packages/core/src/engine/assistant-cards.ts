@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { BuildStage } from "../app-spec.js";
 
 export type StepStatus = "pending" | "failed" | "active" | "done";
@@ -48,20 +49,24 @@ export interface BuildRunCard {
 	readonly isRunning: boolean;
 }
 
-export interface Tally {
-	readonly passed: number;
-	readonly all: number;
-}
+export const TallySchema = z.object({
+	passed: z.number(),
+	all: z.number(),
+});
+
+export type Tally = z.infer<typeof TallySchema>;
 
 export interface FailedCheck {
 	readonly step: string;
 	readonly reason: string;
 }
 
-export interface Blocker {
-	readonly feature: string;
-	readonly why: string;
-}
+export const BlockerSchema = z.object({
+	feature: z.string(),
+	why: z.string(),
+});
+
+export type Blocker = z.infer<typeof BlockerSchema>;
 
 export interface TurnResult {
 	readonly changedFiles: number;
