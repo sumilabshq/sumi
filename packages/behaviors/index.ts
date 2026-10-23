@@ -36,6 +36,8 @@ export { EdgeWidth } from "./src/edge-width/edge-width.js";
 export type { EdgeBounds } from "./src/edge-width/edge-width.js";
 export { localPxMemory } from "./src/edge-width/px-memory.js";
 export type { PxMemory } from "./src/edge-width/px-memory.js";
+export { localJsonMemory } from "./src/edge-width/json-memory.js";
+export type { JsonMemory } from "./src/edge-width/json-memory.js";
 export { useEdgeResize } from "./src/edge-width/use-edge-resize.js";
 export type { EdgeResizeAsk, EdgeResizeHandlers, ResizedEdge } from "./src/edge-width/use-edge-resize.js";
 export {
