@@ -77,7 +77,7 @@ function sectionsOf(
 	shutLists: readonly string[],
 ): readonly TabSection[] {
 	const workspace = sectionOf(rows, workspaceFace, shutLists);
-	const filledSections = [sectionOf(rows, chatFace, shutLists), workspace].filter(
+	const filledSections = [workspace, sectionOf(rows, chatFace, shutLists)].filter(
 		(section) => section.entries.length > 0,
 	);
 	return filledSections.length === 0 ? [workspace] : filledSections;

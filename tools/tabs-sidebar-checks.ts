@@ -87,12 +87,11 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	await timed(page, "new tab row", () => pressOn(page, "[data-host-column-add]"));
 	const workspace = await idsOf(page, WORKSPACE_IDS);
 	check(
-		"New tab lands as the shown row of Tabs in workspace, the bottom section",
+		"New tab lands as the shown row of Tabs in workspace, above the chat's tabs",
 		workspace.length === 1 &&
 			workspace[0] === (await page.ask(SHOWN_ID)) &&
 			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before) &&
-			(await page.ask(`[...document.querySelectorAll("[data-tabs-section]")].at(-1)?.dataset.tabsSection`)) ===
-				"workspace",
+			(await page.ask(`document.querySelector("[data-tabs-section]")?.dataset.tabsSection`)) === "workspace",
 		[workspace, await idsOf(page, CHAT_IDS)],
 	);
 }
@@ -152,7 +151,7 @@ async function checksEssentialsMenu(page: AskedPage): Promise<void> {
 }
 
 async function checksGroups(page: AskedPage): Promise<void> {
-	await page.ask(pointedAt(`[data-tabs-list="workspace"]`));
+	await page.ask(pointedAt("[data-tabs-list]"));
 	await waited(250);
 	await timed(page, "new group", () => menuPick(page, "New group"));
 	await waited(200);
