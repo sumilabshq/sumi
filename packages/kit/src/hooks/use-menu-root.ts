@@ -20,6 +20,8 @@ interface RootBounds {
 	readonly isAlsoInside: ((node: Node) => boolean) | undefined;
 }
 
+const NO_TRIGGER: RefObject<HTMLElement | null> = { current: null };
+
 export function useMenuRoot(ask: MenuRootAsk): MenuState {
 	const { closeSelf, ...node } = useMenuNode(ask);
 	const ownIntent = useRef<FocusIntent>("panel");
@@ -31,7 +33,11 @@ export function useMenuRoot(ask: MenuRootAsk): MenuState {
 		closeTree: closeSelf,
 		anchorBox: ask.anchorBox ?? boxOf(node.triggerRef),
 		focusIntent: ask.focusIntent ?? ownIntent,
-		isInside: isInsideRootMenuOf({ treeId, triggerRef: node.triggerRef, isAlsoInside: ask.isAlsoInside }),
+		isInside: isInsideRootMenuOf({
+			treeId,
+			triggerRef: ask.family === "context-menu" ? NO_TRIGGER : node.triggerRef,
+			isAlsoInside: ask.isAlsoInside,
+		}),
 		parent: null,
 	};
 }
