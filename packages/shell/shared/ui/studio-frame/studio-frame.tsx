@@ -4,6 +4,7 @@ import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { FrameSidesQuery } from "../../../features/frame-sides/contract.js";
 import { FrameSideReveal } from "../../../features/frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
+import { FrameSideToggle } from "../../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
 import { FrameWidthsQuery, ResizeFrameEdgeCommand } from "../../../features/frame-widths/contract.js";
 import { FrameEdgeHandle } from "../../../features/frame-widths/ui/frame-edge/frame-edge.js";
 import { PaneBoard } from "../../../features/panes/ui/pane-board/pane-board.js";
@@ -66,6 +67,8 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: 
 						right: rightSide,
 					}}
 				/>
+				<FrameSideToggle side="left" />
+				<FrameSideToggle side="right" />
 				<TooltipHost />
 			</div>
 		</IsTooltipHosted.Provider>

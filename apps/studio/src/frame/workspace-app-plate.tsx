@@ -7,7 +7,7 @@ import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import { useQuery } from "@widgetarium/core/requests";
-import { FrameSideToggle, Plate, PlateCrumb, PlateMore, PlateShown } from "@widgetarium/shell";
+import { Plate, PlateCrumb, PlateMore, PlateShown } from "@widgetarium/shell";
 import type { CrumbWords, PlateMoreItem } from "@widgetarium/shell";
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
@@ -60,7 +60,7 @@ export function WorkspaceAppPlate({
 			lead={<MovesUnheld />}
 			crumb={<PlateCrumb words={crumbOf(view, appName, pathname)} isPressable />}
 			more={<PlateMore items={moreItems} />}
-			edgeEnd={<FrameSideToggle side="right" />}
+			edgeEnd={null}
 		>
 			{view === "app" ? <div className="wg-shell-route">{routeElementOf(project, pathname)}</div> : null}
 			<KeptApps shown={shownApp} hostTabs={hostTabs} drawnOf={drawnOf} />

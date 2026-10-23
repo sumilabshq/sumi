@@ -1,8 +1,9 @@
 import { createElement as h, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
+import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { ShellAppProvider, StudioFrame } from "@widgetarium/shell";
+import { StudioFrame } from "@widgetarium/shell";
 import type { PaneBoardProps } from "@widgetarium/shell";
 
 export interface StudioLayoutProps {
@@ -18,8 +19,8 @@ export interface StudioLayoutProps {
 export function StudioLayout({ frame, shellApp, studio, left, panes, panel, right }: StudioLayoutProps): ReactElement {
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
-		<ShellAppProvider app={shellApp}>
+		<AppProvider app={shellApp}>
 			<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} right={right} />
-		</ShellAppProvider>
+		</AppProvider>
 	);
 }

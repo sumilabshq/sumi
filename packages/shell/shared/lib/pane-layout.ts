@@ -38,6 +38,38 @@ export function paneLayoutOf(node: PaneNode | null, box: PaneRect, gap: number):
 	};
 }
 
+export interface PanePlace {
+	readonly left: string;
+	readonly top: string;
+	readonly width: string;
+	readonly height: string;
+}
+
+const PROBE_PX = 1;
+
+export function panePlacesOf(node: PaneNode | null, box: PaneRect, gap: number): ReadonlyMap<string, PanePlace> {
+	const here = paneLayoutOf(node, box, gap).rects;
+	const grown = paneLayoutOf(
+		node,
+		{
+			...box,
+			width: box.width + PROBE_PX,
+			height: box.height + PROBE_PX,
+		},
+		gap,
+	).rects;
+	return new Map(Array.from(here, ([id, rect]) => [id, placeOf(rect, grown.get(id) ?? rect, box)]));
+}
+
+export function fixedPlaceOf(rect: PaneRect): PanePlace {
+	return {
+		left: `${rect.left}px`,
+		top: `${rect.top}px`,
+		width: `${rect.width}px`,
+		height: `${rect.height}px`,
+	};
+}
+
 export function sideAt(rect: PaneRect, x: number, y: number): PaneSide {
 	const across = (x - rect.left) / rect.width;
 	const down = (y - rect.top) / rect.height;
@@ -48,6 +80,26 @@ export function sideAt(rect: PaneRect, x: number, y: number): PaneSide {
 		["bottom", 1 - down],
 	];
 	return edges.sort((one, other) => one[1] - other[1])[0]?.[0] ?? "right";
+}
+
+function placeOf(rect: PaneRect, grown: PaneRect, box: PaneRect): PanePlace {
+	return {
+		left: lengthOf(rect.left, grown.left, box.width),
+		top: lengthOf(rect.top, grown.top, box.height),
+		width: lengthOf(rect.width, grown.width, box.width),
+		height: lengthOf(rect.height, grown.height, box.height),
+	};
+}
+
+function lengthOf(px: number, grownPx: number, boxPx: number): string {
+	const share = (grownPx - px) / PROBE_PX;
+	const fixedPx = px - share * boxPx;
+	return `calc(${roundedTo(share * 100, 4)}% + ${roundedTo(fixedPx, 2)}px)`;
+}
+
+function roundedTo(value: number, digits: number): number {
+	const scale = 10 ** digits;
+	return Math.round(value * scale) / scale;
 }
 
 interface Laying {

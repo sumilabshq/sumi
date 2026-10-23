@@ -1,7 +1,6 @@
 import { createElement as h, forwardRef, useContext, useMemo } from "react";
 import type { PointerEvent, ReactNode } from "react";
 import { CARRIED_PANE, PointerCarry } from "@widgetarium/behaviors";
-import { FrameSideToggle } from "../../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
 import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import type { PaneClosing } from "../../lib/pane-close-context.js";
 import { PlateHeaderContext } from "../../lib/plate-header-context.js";
@@ -43,6 +42,7 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 			data-plate-head={side}
 			data-pane-handle={paneClosing === null ? undefined : paneClosing.paneId}
 			data-at-top-left={paneClosing?.isAtTopLeft === true ? "" : undefined}
+			data-at-top-right={paneClosing?.isAtTopRight === true ? "" : undefined}
 			onPointerDown={paneClosing === null ? undefined : (event) => carryPane(event, paneClosing.paneId)}
 		>
 			<PlateStrip />
@@ -97,7 +97,7 @@ function edgeStartOf(paneClosing: PaneClosing | null, edgeStart: ReactNode): Rea
 		return null;
 	}
 
-	return edgeStart ?? <FrameSideToggle side="left" />;
+	return edgeStart;
 }
 
 function edgeEndOf(paneClosing: PaneClosing | null, edgeEnd: ReactNode): ReactNode {
@@ -109,7 +109,7 @@ function edgeEndOf(paneClosing: PaneClosing | null, edgeEnd: ReactNode): ReactNo
 		return null;
 	}
 
-	return edgeEnd ?? <FrameSideToggle side="right" />;
+	return edgeEnd;
 }
 
 function carryPane(event: PointerEvent<HTMLElement>, paneId: string): void {

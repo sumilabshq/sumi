@@ -20,11 +20,16 @@ export function useWritesRightSideWidth(side: RefObject<HTMLElement | null>): vo
 
 function writeWidthOnResize(element: HTMLElement, frame: HTMLElement, column: HTMLElement): () => void {
 	const write = (): void => {
-		frame.style.setProperty(RIGHT_SIDE_WIDTH_VAR, `${element.offsetWidth}px`);
+		frame.style.setProperty(RIGHT_SIDE_WIDTH_VAR, `${contentWidthOf(element)}px`);
 		column.dataset["sized"] = "";
 	};
 	const watched = new ResizeObserver(write);
 	write();
 	watched.observe(element);
 	return () => watched.disconnect();
+}
+
+function contentWidthOf(element: HTMLElement): number {
+	const look = getComputedStyle(element);
+	return element.clientWidth - parseFloat(look.paddingLeft) - parseFloat(look.paddingRight);
 }

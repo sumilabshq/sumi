@@ -1,5 +1,11 @@
 .wg-studio.wg-shell {
 	--wg-shell-left-w: max(var(--sumi-sidebar-min), var(--wg-shell-left, var(--sumi-chats-w)));
+	--wg-shell-float-pad: var(--sumi-sp-4);
+	--wg-shell-slide: var(--sumi-dur-slow) var(--sumi-ease-out);
+	--wg-shell-toggle-left: max(
+		calc(var(--sumi-gap) + var(--sumi-sp-4)),
+		calc(var(--wg-shell-chrome-left, 0px) + var(--sumi-sp-3) + var(--sumi-sp-4))
+	);
 	position: relative;
 	display: flex;
 	flex-direction: row;
@@ -26,8 +32,8 @@
 	min-width: var(--sumi-sidebar-min);
 	min-height: 0;
 	transition:
-		width var(--sumi-dur-slow) var(--sumi-ease-out),
-		min-width var(--sumi-dur-slow) var(--sumi-ease-out);
+		width var(--wg-shell-slide),
+		min-width var(--wg-shell-slide);
 }
 
 .wg-shell-right {
@@ -38,8 +44,8 @@
 	min-height: 0;
 	margin-left: var(--sumi-gap);
 	transition:
-		width var(--sumi-dur-slow) var(--sumi-ease-out),
-		margin-left var(--sumi-dur-slow) var(--sumi-ease-out);
+		width var(--wg-shell-slide),
+		margin-left var(--wg-shell-slide);
 }
 
 .wg-shell-left:not([data-state="docked"]),
@@ -64,7 +70,7 @@
 	overflow: hidden;
 	border-radius: var(--sumi-r-group);
 	transition:
-		transform var(--sumi-dur-slow) var(--sumi-ease-out),
+		transform var(--wg-shell-slide),
 		box-shadow var(--sumi-dur-base) var(--sumi-ease),
 		background-color var(--sumi-dur-base) var(--sumi-ease);
 }
@@ -87,16 +93,11 @@
 }
 
 .wg-shell-left[data-state="docked"] > .wg-shell-side {
-	width: 100%;
-	transition:
-		width 0s linear var(--sumi-dur-slow),
-		transform var(--sumi-dur-slow) var(--sumi-ease-out),
-		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		background-color var(--sumi-dur-base) var(--sumi-ease);
+	min-width: 100%;
 }
 
 [data-state="peeking"] > .wg-shell-side {
-	bottom: var(--sumi-sp-2);
+	padding: 0 var(--wg-shell-float-pad) var(--wg-shell-float-pad);
 	background-color: var(--sumi-frame);
 	box-shadow: var(--sumi-shadow-pop);
 	transition:
@@ -105,16 +106,20 @@
 		background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
-.wg-shell-right[data-state="peeking"] > .wg-shell-side {
-	right: var(--sumi-sp-2);
+.wg-shell-left[data-state="peeking"] > .wg-shell-side {
+	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
+}
+
+.wg-shell-right > .wg-shell-side {
+	padding-top: var(--sumi-header-h);
 }
 
 [data-state="hidden"] > .wg-shell-side {
 	visibility: hidden;
 	transition:
-		transform var(--sumi-dur-base) var(--sumi-ease),
+		transform var(--wg-shell-slide),
 		box-shadow var(--sumi-dur-base) var(--sumi-ease),
-		visibility 0s linear var(--sumi-dur-base);
+		visibility 0s linear var(--sumi-dur-slow);
 }
 
 .wg-shell-left[data-state="hidden"] > .wg-shell-side {
@@ -135,28 +140,37 @@
 	transition: none;
 }
 
-.wg-shell .wg-shell-side-pin {
+.wg-shell .wg-shell-toggle {
 	position: absolute;
+	top: calc(var(--sumi-gap) + (var(--sumi-header-h) - var(--sumi-h-sm)) / 2);
 	z-index: 4;
 	display: flex;
 	width: auto;
 }
 
+.wg-shell .wg-shell-toggle[data-side="left"] {
+	left: var(--wg-shell-toggle-left);
+}
+
+.wg-shell .wg-shell-toggle[data-side="right"] {
+	right: calc(var(--sumi-gap) + var(--sumi-sp-4));
+}
+
 .wg-shell-side-footprint {
 	position: absolute;
 	top: var(--sumi-gap);
-	bottom: calc(var(--sumi-gap) + var(--sumi-sp-2));
+	bottom: var(--sumi-gap);
 	pointer-events: none;
 }
 
 .wg-shell-side-footprint[data-side="left"] {
 	left: var(--sumi-gap);
-	width: var(--wg-shell-left-w);
+	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
 }
 
 .wg-shell-side-footprint[data-side="right"] {
-	right: calc(var(--sumi-gap) + var(--sumi-sp-2));
-	width: var(--wg-shell-right, 0);
+	right: var(--sumi-gap);
+	width: calc(var(--wg-shell-right, 0px) + 2 * var(--wg-shell-float-pad));
 }
 
 .wg-shell-app-zone {
@@ -201,7 +215,7 @@
 	cursor: col-resize;
 	touch-action: none;
 	outline: none;
-	transition: width var(--sumi-dur-slow) var(--sumi-ease-out);
+	transition: width var(--wg-shell-slide);
 }
 
 .wg-shell-edge::after {
@@ -299,11 +313,17 @@
 	height: 100%;
 	padding: 0 var(--sumi-sp-4);
 	gap: var(--sumi-sp-1);
-	transition: padding-left var(--sumi-dur-slow) var(--sumi-ease-out);
+	transition:
+		padding-left var(--wg-shell-slide),
+		padding-right var(--wg-shell-slide);
 }
 
 .wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
-	padding-left: max(var(--sumi-sp-4), calc(var(--wg-shell-chrome-left, 0px) - var(--sumi-gap) + var(--sumi-sp-2)));
+	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));
+}
+
+.wg-shell:has(> .wg-shell-right:not([data-state="docked"])) .wg-plate-head[data-at-top-right] .wg-plate-head-row {
+	padding-right: calc(var(--sumi-sp-4) + var(--sumi-h-sm) + var(--sumi-sp-1));
 }
 
 .wg-plate-head-row.wg-root {
@@ -333,7 +353,7 @@
 	min-width: 0;
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon {
 	width: var(--sumi-h-sm);
 	height: var(--sumi-h-sm);
 	margin: 0;
@@ -342,36 +362,36 @@
 	font: inherit;
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon::before {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon::before {
 	border-radius: var(--sumi-r-sm);
 	background: transparent;
 	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon:not([data-off]):hover::before {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon:not([data-off]):hover::before {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon[aria-pressed="true"] {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"] {
 	color: var(--sumi-text);
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon[aria-pressed="true"]::before {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[aria-pressed="true"]::before {
 	background: var(--sumi-active);
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon svg {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon svg {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon[data-off] {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off] {
 	color: var(--sumi-text-3);
 	cursor: default;
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button.wg-kit-icon[data-off]:active {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button.wg-kit-icon[data-off]:active {
 	transform: none;
 }
 
@@ -381,7 +401,7 @@
 	outline-offset: -2px;
 }
 
-:is(.wg-plate-head, .wg-shell-side-pin) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
+:is(.wg-plate-head, .wg-shell-toggle) .wg-plate-button .wg-kit-icon-glyph.is-lucide {
 	width: var(--sumi-icon);
 	height: var(--sumi-icon);
 	stroke-width: 1.6;
@@ -596,11 +616,6 @@
 	display: flex;
 	min-width: 0;
 	min-height: 0;
-	transition:
-		left var(--sumi-dur-base) var(--sumi-ease-out),
-		top var(--sumi-dur-base) var(--sumi-ease-out),
-		width var(--sumi-dur-base) var(--sumi-ease-out),
-		height var(--sumi-dur-base) var(--sumi-ease-out);
 }
 
 .wg-pane > .wg-shell-plate {
