@@ -82,6 +82,10 @@ export const BRAND_EXTENSION_TOKENS: readonly string[] = [
 	"brand",
 	"brand-foreground",
 	"brand-hover",
+	"tint",
+	"on-wash",
+	"faint",
+	"field",
 	"neutral",
 	...TONE_TOKENS,
 ];

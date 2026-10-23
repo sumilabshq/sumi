@@ -18,7 +18,7 @@ Settings a product picks once and a person may switch later:
 
 | Setting | Values          | Default | What changes                                             |
 | ------- | --------------- | ------- | -------------------------------------------------------- |
-| `hue`   | any             | 266     | the brand card, the send button, washes, rings           |
+| `hue`   | any             | 266     | the tint behind every wash                               |
 | `voice` | `loud`, `calm`  | `loud`  | `loud` lets one result per turn stand as a brand card    |
 | `font`  | `geist`, `host` | `geist` | `host` takes the host's interface font on the same scale |
 
@@ -26,24 +26,28 @@ Everything else is fixed.
 
 ## Color Palette & Roles
 
-| Role                                                                                                                     | Step                                                |
-| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------- |
-| `background`, `sidebar`                                                                                                  | page                                                |
-| `foreground`, `card-foreground`, `popover-foreground`, `secondary-foreground`, `accent-foreground`, `sidebar-foreground` | ink                                                 |
-| `muted-foreground`, `ink-muted`, `neutral`                                                                               | ink-muted                                           |
-| `group`, `card`, `secondary`, `muted`, `fill`, `sidebar-accent`                                                          | plate                                               |
-| `accent`, `fill-hover`                                                                                                   | plate stepped                                       |
-| `raise`, `group-inset`, `popover`                                                                                        | raise: white in light, a lifted grey in dark        |
-| `group-line`, `sidebar-border`                                                                                           | line                                                |
-| `border`, `input`                                                                                                        | edge                                                |
-| `primary`, `sidebar-primary`                                                                                             | contrast: near-black in light, near-white in dark   |
-| `primary-foreground`, `sidebar-primary-foreground`                                                                       | on-contrast                                         |
-| `brand`, `ring`, `sidebar-ring`, `chart-1`                                                                               | brand                                               |
-| `brand-foreground`                                                                                                       | white, in both themes                               |
-| `accent-wash`, `accent-wash-hover`                                                                                       | brand mixed into the page                           |
-| `red` … `pink`; `destructive`, `success`, `warning`, `info`, `note`, `standout`, `highlight`                             | tones: red, green, yellow, blue, cyan, pink, yellow |
+| Role                                                                                                                     | Step                                                      |
+| ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| `background`, `sidebar`                                                                                                  | page                                                      |
+| `foreground`, `card-foreground`, `popover-foreground`, `secondary-foreground`, `accent-foreground`, `sidebar-foreground` | ink                                                       |
+| `muted-foreground`, `ink-muted`, `neutral`                                                                               | ink-muted                                                 |
+| `group`, `card`, `secondary`, `muted`, `fill`, `sidebar-accent`                                                          | plate                                                     |
+| `accent`, `fill-hover`                                                                                                   | plate stepped                                             |
+| `raise`, `group-inset`, `popover`                                                                                        | raise: white in light, a lifted grey in dark              |
+| `field`                                                                                                                  | a text field: white in light, just above the page in dark |
+| `faint`                                                                                                                  | placeholders, key hints, chevrons                         |
+| `group-line`, `sidebar-border`                                                                                           | line                                                      |
+| `border`, `input`                                                                                                        | edge                                                      |
+| `primary`, `sidebar-primary`                                                                                             | contrast: near-black in light, near-white in dark         |
+| `primary-foreground`, `sidebar-primary-foreground`                                                                       | on-contrast                                               |
+| `brand`, `chart-1`                                                                                                       | contrast: the studio is monochrome                        |
+| `ring`, `sidebar-ring`                                                                                                   | a neutral grey, darker than edge                          |
+| `brand-foreground`                                                                                                       | on-contrast: white in light, near-black in dark           |
+| `tint`                                                                                                                   | the hue at full chroma, never painted alone               |
+| `accent-wash`, `accent-wash-hover`, `on-wash`                                                                            | tint mixed into the page, and text on it                  |
+| `red` … `pink`; `destructive`, `success`, `warning`, `info`, `note`, `standout`, `highlight`                             | tones: red, green, yellow, blue, cyan, pink, yellow       |
 
-Three fills carry a screen: the plate (grey container), raise (the white plate inside it) and contrast (the black card, the chosen tab, the current workspace). The brand is spent once per turn.
+Three fills carry a screen: the plate (grey container), raise (the white plate inside it) and contrast (the black card, the chosen tab, the current workspace). Blue appears only as a translucent wash behind a zone or a chosen row; nothing is filled or outlined in it.
 
 ## Typography Rules
 
@@ -69,8 +73,8 @@ Weight, not colour, ranks text: a value is 500 or 600, its label 400 and ink-mut
 - **Containers are tight, plates are big:** a container is the plate fill, 34px corners, 6px padding; the plates inside it are 28px; rows inside a container are white pills.
 - **Primary** is contrast with on-contrast text: the agent picker, the chosen tab, the current workspace, a black card's button in dark.
 - **Secondary** is the plate fill with ink; on a plate it is raise (white).
-- **The send button** is the brand, round, 52px; the composer is a plate pill with the field bare inside it.
-- **A brand card** is the brand with white text, a translucent chip (white at 18%) for its label, white round buttons (52px) with brand-coloured glyphs.
+- **The send button** is the contrast, round, 52px; the composer is a white field with an edge hairline that darkens to the ring grey on focus.
+- **A brand card** is the brand (the contrast) with on-contrast text, a translucent chip (on-contrast at 18%) for its label, on-contrast round buttons (52px) with contrast glyphs.
 - **A contrast card** is primary with on-contrast text and one on-contrast pill button.
 - **A tool row** is a white pill on the plate: a 40px round mark (wash with a brand glyph for a read, brand for a write, contrast for a run), the sentence, a meta value or a tone chip at its end.
 - **Tone chips** are 24–26px pills: the tone's wash with the tone's ink. A failure is a tone container (error wash, 30px corners) with a 52px round tone mark and a white action pill.

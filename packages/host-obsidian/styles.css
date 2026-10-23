@@ -198,7 +198,7 @@
 	.wg-kit-portal-layer.is-studio {
 		--hue: 266;
 		--chroma: 0.2471;
-		--neutral-chroma: 0.006;
+		--neutral-chroma: 0;
 		--l-page: 1;
 		--l-plate: 0.9614;
 		--l-step: -0.03;
@@ -207,20 +207,24 @@
 		--l-edge: 0.8976;
 		--l-ink: 0.1959;
 		--l-ink-muted: 0.5383;
+		--l-faint: 0.66;
+		--l-field: 1;
 		--l-contrast: 0.2937;
 		--l-on-contrast: 1;
-		--l-brand: 0.49;
-		--l-brand-hover: 0.44;
-		--l-on-brand: 1;
+		--l-tint: 0.49;
+		--l-ring: 0.62;
 		--l-tone: 0.58;
 		--c-tone: 0.16;
 
 		--background: oklch(var(--l-page) 0 var(--hue));
 		--foreground: oklch(var(--l-ink) var(--neutral-chroma) var(--hue));
 		--neutral: oklch(var(--l-ink-muted) calc(var(--neutral-chroma) * 2) var(--hue));
-		--brand: oklch(var(--l-brand) var(--chroma) var(--hue));
-		--brand-hover: oklch(var(--l-brand-hover) var(--chroma) var(--hue));
-		--brand-foreground: oklch(var(--l-on-brand) 0 var(--hue));
+		--faint: oklch(var(--l-faint) calc(var(--neutral-chroma) * 2) var(--hue));
+		--field: oklch(var(--l-field) calc(var(--neutral-chroma) / 3) var(--hue));
+		--tint: oklch(var(--l-tint) var(--chroma) var(--hue));
+		--brand: var(--primary);
+		--brand-hover: oklch(calc(var(--l-contrast) + 0.08) 0 var(--hue));
+		--brand-foreground: var(--primary-foreground);
 
 		--group: oklch(var(--l-plate) calc(var(--neutral-chroma) / 3) var(--hue));
 		--group-line: oklch(var(--l-line) calc(var(--neutral-chroma) / 2) var(--hue));
@@ -228,8 +232,9 @@
 		--group-inset: var(--raise);
 		--fill: var(--group);
 		--fill-hover: oklch(calc(var(--l-plate) + var(--l-step)) calc(var(--neutral-chroma) / 2) var(--hue));
-		--accent-wash: color-mix(in srgb, var(--brand) 12%, var(--background));
-		--accent-wash-hover: color-mix(in srgb, var(--brand) 20%, var(--background));
+		--accent-wash: color-mix(in srgb, var(--tint) 12%, var(--background));
+		--accent-wash-hover: color-mix(in srgb, var(--tint) 20%, var(--background));
+		--on-wash: color-mix(in oklch, var(--tint) 72%, var(--foreground));
 
 		--card: var(--group);
 		--card-foreground: var(--foreground);
@@ -247,7 +252,7 @@
 		--destructive: var(--red);
 		--border: oklch(var(--l-edge) calc(var(--neutral-chroma) * 0.7) var(--hue));
 		--input: var(--border);
-		--ring: var(--brand);
+		--ring: oklch(var(--l-ring) 0 var(--hue));
 		--radius: 28px;
 
 		--chart-1: var(--brand);
@@ -263,7 +268,7 @@
 		--sidebar-accent: var(--group);
 		--sidebar-accent-foreground: var(--foreground);
 		--sidebar-border: var(--group-line);
-		--sidebar-ring: var(--brand);
+		--sidebar-ring: var(--ring);
 
 		--red: oklch(calc(var(--l-tone) - 0.0257) calc(var(--c-tone) + 0.01) 32.08);
 		--orange: oklch(calc(var(--l-tone) + 0.08) calc(var(--c-tone) + 0.01) 52);
@@ -300,27 +305,31 @@
 	.dark .wg-kit-portal-layer.is-studio,
 	.theme-dark .wg-studio,
 	.theme-dark .wg-kit-portal-layer.is-studio {
-		--l-page: 0.16;
-		--l-plate: 0.215;
+		--neutral-chroma: 0;
+		--l-page: 0.13;
+		--l-plate: 0.18;
 		--l-step: 0.04;
-		--l-raise: 0.265;
-		--l-line: 0.255;
-		--l-edge: 0.33;
+		--l-raise: 0.225;
+		--l-line: 0.22;
+		--l-edge: 0.3;
 		--l-ink: 0.965;
 		--l-ink-muted: 0.72;
+		--l-faint: 0.55;
+		--l-field: 0.155;
 		--l-contrast: 0.965;
 		--l-on-contrast: 0.1959;
-		--l-brand: 0.49;
-		--l-brand-hover: 0.55;
+		--l-ring: 0.55;
 		--l-tone: 0.68;
 		--c-tone: 0.15;
 
 		--background: oklch(var(--l-page) var(--neutral-chroma) var(--hue));
 		--foreground: oklch(var(--l-ink) calc(var(--neutral-chroma) / 3) var(--hue));
 		--neutral: oklch(var(--l-ink-muted) calc(var(--neutral-chroma) * 2) var(--hue));
-		--brand: oklch(var(--l-brand) var(--chroma) var(--hue));
-		--brand-hover: oklch(var(--l-brand-hover) var(--chroma) var(--hue));
-		--brand-foreground: oklch(var(--l-on-brand) 0 var(--hue));
+		--faint: oklch(var(--l-faint) calc(var(--neutral-chroma) * 2) var(--hue));
+		--field: oklch(var(--l-field) var(--neutral-chroma) var(--hue));
+		--brand: var(--primary);
+		--brand-hover: oklch(calc(var(--l-contrast) - 0.08) 0 var(--hue));
+		--brand-foreground: var(--primary-foreground);
 
 		--group: oklch(var(--l-plate) var(--neutral-chroma) var(--hue));
 		--group-line: oklch(var(--l-line) var(--neutral-chroma) var(--hue));
@@ -328,8 +337,9 @@
 		--group-inset: var(--raise);
 		--fill: var(--group);
 		--fill-hover: oklch(calc(var(--l-plate) + var(--l-step)) var(--neutral-chroma) var(--hue));
-		--accent-wash: color-mix(in srgb, var(--brand) 22%, var(--background));
-		--accent-wash-hover: color-mix(in srgb, var(--brand) 30%, var(--background));
+		--accent-wash: color-mix(in srgb, var(--tint) 16%, var(--background));
+		--accent-wash-hover: color-mix(in srgb, var(--tint) 24%, var(--background));
+		--on-wash: color-mix(in oklch, var(--tint) 72%, var(--foreground));
 
 		--card: var(--group);
 		--card-foreground: var(--foreground);
@@ -347,7 +357,7 @@
 		--destructive: var(--red);
 		--border: oklch(var(--l-edge) var(--neutral-chroma) var(--hue));
 		--input: var(--border);
-		--ring: var(--brand);
+		--ring: oklch(var(--l-ring) 0 var(--hue));
 		--radius: 28px;
 
 		--chart-1: var(--brand);
@@ -363,7 +373,7 @@
 		--sidebar-accent: var(--group);
 		--sidebar-accent-foreground: var(--foreground);
 		--sidebar-border: var(--group-line);
-		--sidebar-ring: var(--brand);
+		--sidebar-ring: var(--ring);
 
 		--red: oklch(calc(var(--l-tone) - 0.0257) calc(var(--c-tone) + 0.03) 30);
 		--orange: oklch(calc(var(--l-tone) + 0.04) calc(var(--c-tone) + 0.01) 55);
@@ -832,6 +842,15 @@ pre:has(> :is(.block-language-widgetarium, .block-language-widgetarium-app)),
 	font-family: var(--font-interface);
 	color: var(--wg-kit-text);
 	width: 100%;
+}
+
+.wg-portal.wg-kit-portal-layer {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	padding: 0;
 }
 
 body {
@@ -7359,38 +7378,6 @@ body.wg-tree-carrying .wg-tile-body {
 	line-height: 1.5;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-composer {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 4px var(--wg-ai-gutter) var(--wg-ai-gutter);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-risk {
-	margin: 0;
-	padding: 0 4px;
-	font-size: var(--font-ui-smaller, 12px);
-	line-height: 1.4;
-	color: var(--text-faint);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-well {
-	position: relative;
-	display: flex;
-	flex-direction: column;
-	cursor: text;
-	padding: 10px 6px 6px 12px;
-	border: 1px solid var(--wg-kit-card-edge);
-	border-radius: 16px;
-	background: var(--background);
-	box-shadow: none;
-	transition: border-color 140ms ease;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-well:focus-within {
-	border-color: var(--wg-kit-accent);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-box {
 	min-height: 24px;
 	max-height: 120px;
@@ -7417,14 +7404,6 @@ body.wg-tree-carrying .wg-tile-body {
 	box-shadow: none;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-bar {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-	padding-top: 6px;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-target {
 	display: inline-flex;
 	align-items: center;
@@ -7435,20 +7414,6 @@ body.wg-tree-carrying .wg-tile-body {
 	background: var(--wg-kit-fill);
 	color: var(--wg-kit-text-muted);
 	font-size: var(--font-ui-smaller, 12px);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-bar > :last-child {
-	margin-inline-start: auto;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-bar button:disabled {
-	cursor: default;
-	color: var(--text-faint);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-bar button:disabled::before,
-:is(.wg-root, .wg-portal) .wg-studio-ai-bar button:disabled:hover::before {
-	background: var(--wg-kit-fill-hover);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-head .wg-kit-icon::before {
@@ -11955,6 +11920,7 @@ body.wg-tree-carrying .wg-tile-body {
 	--wg-studio-edge: var(--wg-kit-plate-pad);
 	--wg-studio-inset-left: 0px;
 	--wg-studio-inset-right: 0px;
+	--wg-studio-inset-top: 0px;
 	--wg-studio-sidebar: 380px;
 	--wg-studio-side: 0px;
 	--wg-studio-rail: 72px;
@@ -12006,8 +11972,12 @@ body.wg-studio-in-front .status-bar {
 	--wg-studio-side: min(var(--wg-studio-sidebar), 100vw);
 }
 
-.wg-studio.is-canvas > :is(.wg-studio-rail, .wg-studio-chat, .wg-studio-sidebar) {
+.wg-studio.is-canvas > :is(.wg-studio-chat, .wg-studio-sidebar) {
 	padding-top: var(--wg-studio-edge);
+}
+
+.wg-studio > .wg-studio-rail {
+	padding-top: max(var(--wg-studio-edge), var(--wg-studio-inset-top));
 }
 
 .wg-studio-chat .wg-studio-ai > * {
@@ -12015,10 +11985,6 @@ body.wg-studio-in-front .status-bar {
 	width: 100%;
 	max-width: var(--wg-studio-chat-content);
 	margin-inline: auto;
-}
-
-.wg-studio.is-canvas > .wg-studio-chat .wg-studio-ai-head {
-	padding-inline-start: max(var(--wg-ai-gutter), var(--wg-studio-inset-left));
 }
 
 .wg-studio-band {
@@ -12066,7 +12032,6 @@ body.wg-studio-in-front .status-bar {
 	min-height: 0;
 	overflow-x: hidden;
 	overflow-y: auto;
-	border-right: 1px solid var(--wg-kit-group-line);
 }
 
 .wg-studio-rail-label {
@@ -13069,45 +13034,707 @@ body.wg-studio-in-front .status-bar {
 	padding: 12px 12px 6px;
 }
 
-.wg-studio .wg-studio-ai-composer {
-	gap: var(--wg-studio-edge);
-}
-
-.wg-studio .wg-studio-ai-risk {
-	padding: 0 var(--wg-studio-edge);
-	color: var(--wg-kit-text-muted);
-}
-
-.wg-studio .wg-studio-ai-well {
-	padding: 14px var(--wg-studio-edge) var(--wg-studio-edge) 22px;
-	border: none;
-	border-radius: calc(var(--wg-kit-control-l) / 2 + var(--wg-studio-edge));
-	background: var(--wg-kit-group-fill);
-	transition: box-shadow var(--wg-quick) var(--wg-ease);
-}
-
-.wg-studio .wg-studio-ai-well:focus-within {
-	box-shadow: inset 0 0 0 2px var(--wg-kit-accent-wash-hover);
-}
-
-.wg-studio .wg-studio-ai-box {
-	font-size: var(--wg-kit-text-l);
-}
-
-.wg-studio .wg-studio-ai-bar .wg-kit-icon {
-	width: var(--wg-kit-control-l);
-	height: var(--wg-kit-control-l);
-}
-
-.wg-studio .wg-studio-ai-bar button:disabled::before,
-.wg-studio .wg-studio-ai-bar button:disabled:hover::before {
-	background: var(--wg-kit-raise);
-}
-
 .wg-studio .wg-studio-ai-target {
 	height: 32px;
 	padding: 0 12px;
 	background: var(--wg-kit-raise);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-composer {
+	--wg-studio-ai-field: var(--field, var(--background));
+	--wg-studio-ai-faint: var(--faint, var(--text-faint));
+	--wg-studio-ai-step: var(--fill-hover, var(--wg-kit-fill-hover));
+	position: relative;
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	padding: 0 var(--wg-ai-gutter) var(--wg-ai-gutter);
+	font-family: var(--font-sans, inherit);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	padding: 6px;
+	border-radius: 24px;
+	background: var(--wg-studio-ai-field);
+	box-shadow: inset 0 0 0 1px var(--border);
+	cursor: text;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field.is-focused {
+	box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box {
+	box-sizing: border-box;
+	min-height: 30px;
+	max-height: 240px;
+	padding: 6px 10px 2px;
+	color: var(--foreground);
+	font: 400 15px / 22px var(--font-sans, inherit);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box::placeholder {
+	color: var(--wg-studio-ai-faint);
+	opacity: 1;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	height: 36px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-bar-space,
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip-space {
+	flex: 1;
+	min-width: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: transparent;
+	box-shadow: inset 0 0 0 1px var(--border);
+	color: var(--foreground);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus:hover {
+	background: var(--wg-studio-ai-step);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus.is-on {
+	background: var(--primary);
+	box-shadow: none;
+	color: var(--primary-foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-ready {
+	display: inline-block;
+	flex: none;
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--green);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-ready.is-off {
+	background: var(--wg-studio-ai-faint, var(--faint));
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
+	display: inline-flex;
+	color: var(--wg-studio-ai-faint, var(--faint));
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-hint {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 5px;
+	color: var(--wg-studio-ai-faint);
+	font: 400 12px var(--font-sans, inherit);
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-hint kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 20px;
+	min-width: 20px;
+	padding: 0 5px;
+	border: none;
+	border-radius: 6px;
+	background: none;
+	box-shadow: inset 0 0 0 1px var(--border);
+	color: var(--muted-foreground);
+	font:
+		500 12px system-ui,
+		-apple-system,
+		sans-serif;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: var(--brand);
+	box-shadow: none;
+	color: var(--brand-foreground);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send:hover {
+	background: var(--brand-hover);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle,
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle:hover {
+	background: color-mix(in srgb, var(--primary) 9%, var(--wg-studio-ai-field));
+	color: var(--muted-foreground);
+	cursor: default;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-tip {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 999px;
+	background: var(--primary);
+	color: var(--primary-foreground);
+	font: 500 12px var(--font-sans, inherit);
+	white-space: nowrap;
+	box-shadow: 0 8px 20px -6px var(--wg-studio-glass-shadow);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-tip kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 20px;
+	min-width: 20px;
+	padding: 0 5px;
+	border: none;
+	border-radius: 6px;
+	background: color-mix(in srgb, var(--primary-foreground) 18%, transparent);
+	box-shadow: none;
+	color: var(--primary-foreground);
+	font:
+		500 12px system-ui,
+		-apple-system,
+		sans-serif;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-chip {
+	display: inline-flex;
+	flex: none;
+	align-self: flex-start;
+	align-items: center;
+	gap: 7px;
+	height: 32px;
+	margin: 6px 0 0 6px;
+	padding: 0 4px 0 10px;
+	border-radius: 999px;
+	background: var(--group);
+	color: var(--foreground);
+	font: 500 13px var(--font-sans, inherit);
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-chip button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: none;
+	box-shadow: none;
+	color: var(--muted-foreground);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 2px;
+	height: 32px;
+	margin-top: 6px;
+	padding: 0 4px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip-button {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 6px;
+	height: 32px;
+	padding: 0 8px 0 10px;
+	border: none;
+	border-radius: 999px;
+	background: none;
+	box-shadow: none;
+	color: var(--muted-foreground);
+	font: 500 13px var(--font-sans, inherit);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip-button.is-outlined {
+	box-shadow: inset 0 0 0 1px var(--border);
+	color: var(--foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip-button:hover,
+:is(.wg-root, .wg-portal) .wg-studio-ai-strip-button.is-on {
+	background: var(--wg-studio-ai-step);
+	color: var(--foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring circle {
+	fill: none;
+	stroke-width: 3;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring .is-track {
+	stroke: color-mix(in oklch, var(--foreground) 24%, transparent);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring .is-used {
+	stroke: var(--foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments {
+	position: relative;
+	flex: none;
+	margin-bottom: 8px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-track {
+	display: flex;
+	gap: 8px;
+	padding: 8px 8px 2px 0;
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-track::-webkit-scrollbar {
+	display: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments.is-over .wg-studio-ai-attachments-track {
+	mask-image: linear-gradient(to right, black 78%, transparent 97%);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card {
+	position: relative;
+	box-sizing: border-box;
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 12px;
+	height: 76px;
+	border-radius: 16px;
+	outline: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-file {
+	width: 216px;
+	padding: 0 14px 0 12px;
+	background: var(--group);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image {
+	width: 112px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	border-radius: inherit;
+	object-fit: cover;
+	object-position: left top;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image::after {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
+	content: "";
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card:hover,
+:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within,
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image:hover::after,
+:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image:focus-within::after {
+	box-shadow: inset 0 0 0 2px var(--ring);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-glyph {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border-radius: 999px;
+	background: var(--raise);
+	color: var(--foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-words {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-words b {
+	overflow: hidden;
+	color: var(--foreground);
+	font: 500 13px var(--font-sans, inherit);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-words span {
+	overflow: hidden;
+	color: var(--wg-studio-ai-faint);
+	font: 400 12px var(--font-sans, inherit);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove {
+	position: absolute;
+	top: -7px;
+	right: -7px;
+	z-index: 3;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: var(--primary);
+	box-shadow: 0 0 0 2px var(--background);
+	color: var(--primary-foreground);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card:hover .wg-studio-ai-card-remove,
+:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within .wg-studio-ai-card-remove {
+	display: inline-flex;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-more {
+	position: absolute;
+	top: 44px;
+	right: 0;
+	z-index: 4;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	background: var(--wg-studio-glass, var(--background));
+	backdrop-filter: blur(20px);
+	box-shadow:
+		0 0 0 1px var(--wg-studio-glass-edge, var(--border)),
+		0 6px 16px -6px var(--wg-studio-glass-shadow);
+	color: var(--foreground);
+	transform: translateY(-50%);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-meta {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+	padding-right: 2px;
+	color: var(--wg-studio-ai-faint);
+	font: 400 12px var(--font-sans, inherit);
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-bar {
+	position: relative;
+	flex: 1;
+	height: 3px;
+	border-radius: 999px;
+	background: var(--group-line);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-attachments-bar i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+	background: var(--wg-studio-ai-faint);
+}
+
+.wg-studio-ai-menu-point {
+	position: fixed;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+.wg-kit-pop.wg-studio-ai-menu {
+	--wg-studio-ai-row-hover: color-mix(in oklch, var(--foreground) 4%, transparent);
+	min-width: 0;
+	padding: 6px;
+	border-radius: 24px;
+	background: var(--wg-studio-glass, var(--popover));
+	backdrop-filter: var(--wg-studio-glass-blur, blur(26px) saturate(1.7));
+	-webkit-backdrop-filter: var(--wg-studio-glass-blur, blur(26px) saturate(1.7));
+	box-shadow:
+		0 0 0 1px var(--wg-studio-glass-edge, var(--border)),
+		0 24px 56px -14px var(--wg-studio-glass-shadow, transparent),
+		0 6px 16px -8px var(--wg-studio-glass-shadow-near, transparent);
+	color: var(--foreground);
+	font-family: var(--font-sans, inherit);
+}
+
+:is(.theme-dark, .dark) .wg-kit-pop.wg-studio-ai-menu {
+	--wg-studio-ai-row-hover: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
+	.wg-kit-pop.wg-studio-ai-menu
+	.wg-kit-pop-inner {
+	padding: 0;
+}
+
+.wg-studio-ai-menu-body {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.wg-studio-ai-menu-label {
+	padding: 8px 12px 4px;
+	color: var(--muted-foreground);
+	font: 500 12px var(--font-sans, inherit);
+}
+
+.wg-studio-ai-menu-label.is-note {
+	padding: 6px 12px 8px;
+}
+
+.wg-studio-ai-menu-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 40px;
+	padding: 0 12px;
+	border: none;
+	border-radius: 18px;
+	background: none;
+	box-shadow: none;
+	color: var(--foreground);
+	font: 400 14px var(--font-sans, inherit);
+	text-align: start;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.wg-studio-ai-menu-row.is-two {
+	min-height: 52px;
+	padding: 6px 12px;
+}
+
+.wg-studio-ai-menu-row:hover,
+.wg-studio-ai-menu-row:focus-visible {
+	background: var(--wg-studio-ai-row-hover);
+	outline: none;
+}
+
+.wg-studio-ai-menu-mark {
+	display: inline-flex;
+	flex: none;
+	justify-content: center;
+	width: 20px;
+	color: var(--foreground);
+}
+
+.wg-studio-ai-menu-words {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+}
+
+.wg-studio-ai-menu-words small {
+	color: var(--muted-foreground);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.wg-studio-ai-menu-end {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	margin-left: auto;
+	color: var(--muted-foreground);
+}
+
+.wg-studio-ai-menu-end .wg-kit-icon-glyph {
+	stroke-width: 1.5;
+}
+
+.wg-studio-ai-menu-line {
+	flex: none;
+	height: 1px;
+	margin: 4px 12px;
+	background: var(--wg-studio-glass-line, var(--group-line));
+}
+
+.wg-studio-ai-meter {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 12px 10px;
+}
+
+.wg-studio-ai-meter-head {
+	display: flex;
+	justify-content: space-between;
+	font: 400 13px var(--font-sans, inherit);
+}
+
+.wg-studio-ai-meter-head b {
+	font-weight: 500;
+}
+
+.wg-studio-ai-meter-head span {
+	color: var(--muted-foreground);
+}
+
+.wg-studio-ai-meter-bar {
+	position: relative;
+	height: 6px;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--wg-studio-glass-line, var(--group-line));
+}
+
+.wg-studio-ai-meter-bar i {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	border-radius: inherit;
+	background: var(--foreground);
+}
+
+.wg-studio-ai-meter small {
+	color: var(--faint, var(--text-faint));
+	font-size: 12px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-scroll {
+	justify-content: center;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-head.is-bare {
+	justify-content: flex-end;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-welcome {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: auto 0;
+	padding-top: 20px;
+	color: var(--foreground);
+	font-family: var(--font-sans, inherit);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-greet {
+	margin: 14px 0 0;
+	font: 500 28px / 1.15 var(--font-sans, inherit);
+	letter-spacing: -0.03em;
+	text-align: center;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-greet-said {
+	margin: 6px 0 0;
+	color: var(--muted-foreground);
+	font: 400 14px var(--font-sans, inherit);
+	text-align: center;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starters {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	width: 100%;
+	max-width: 620px;
+	margin-top: 28px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	height: auto;
+	padding: 14px 18px 18px 14px;
+	border: none;
+	border-radius: 28px;
+	background: var(--group);
+	box-shadow: none;
+	color: var(--foreground);
+	text-align: start;
+	white-space: normal;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter:hover {
+	background: var(--fill-hover, var(--wg-kit-fill-hover));
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 999px;
+	background: var(--raise);
+	color: var(--foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding-left: 4px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words b {
+	font: 600 16px var(--font-sans, inherit);
+	letter-spacing: -0.01em;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words span {
+	color: var(--muted-foreground);
+	font: 400 13px / 1.45 var(--font-sans, inherit);
 }
 
 .wg-studio .wg-studio-ai-to-end {
@@ -13426,6 +14053,108 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 
 .wg-studio :is(.wg-kit-btn, .wg-kit-icon).is-accent {
 	color: var(--brand-foreground);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai {
+	position: relative;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-drop {
+	position: absolute;
+	inset: 8px;
+	z-index: 5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 24px;
+	background: var(--accent-wash);
+	outline: 1.5px dashed var(--ring);
+	outline-offset: -1.5px;
+	font: 500 15px var(--font-sans);
+	color: var(--wg-kit-text);
+	pointer-events: none;
+}
+
+.wg-studio-ai-menu-row.is-active {
+	background: var(--wg-studio-ai-row-hover);
+}
+
+.wg-studio-ai-compact-block {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.wg-studio-ai-compact {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 var(--wg-studio-edge, 8px);
+	color: var(--muted-foreground);
+	font: 500 13px var(--font-sans, inherit);
+}
+
+.wg-studio-ai-compact::before,
+.wg-studio-ai-compact::after {
+	content: "";
+	flex: 1;
+	height: 1px;
+	background: var(--group-line);
+}
+
+.wg-studio-ai-compact-said {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 12px;
+	border: none;
+	border-radius: 999px;
+	background: none;
+	box-shadow: none;
+	color: inherit;
+	font: inherit;
+	white-space: nowrap;
+}
+
+.wg-studio-ai-compact-said.is-button {
+	padding: 0 10px 0 12px;
+	cursor: pointer;
+}
+
+.wg-studio-ai-compact-said.is-button:hover,
+.wg-studio-ai-compact-said.is-button:focus-visible {
+	background: var(--wg-kit-group-fill);
+	color: var(--foreground);
+	outline: none;
+}
+
+.wg-studio-ai-compact-spin {
+	width: 14px;
+	height: 14px;
+	border: 2px solid var(--group-line);
+	border-top-color: var(--muted-foreground);
+	border-radius: 999px;
+	animation: wg-studio-ai-compact-spin 0.9s linear infinite;
+}
+
+@keyframes wg-studio-ai-compact-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.wg-studio-ai-compact-summary {
+	margin: 0 var(--wg-studio-edge, 8px);
+	padding: 14px 18px;
+	border-radius: var(--wg-studio-bubble-corner, 22px);
+	background: var(--wg-kit-group-fill);
+	font-size: 13px;
+}
+
+.wg-studio-ai-compact-summary .wg-studio-ai-said {
+	padding: 0;
+	font-size: 13px;
 }
 
 /*! tailwindcss v4.3.3 | MIT License | https://tailwindcss.com */
@@ -15344,7 +16073,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	stroke: var(--wg-mascot-eye);
 	stroke-linecap: round;
 	stroke-width: 8.5px;
-	d: path("M0 -9 Q0 0 0 9");
 	transform-box: fill-box;
 	transform-origin: 50% 50%;
 	transition:
@@ -15357,7 +16085,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	stroke: var(--wg-mascot-eye);
 	stroke-linecap: round;
 	stroke-width: 0;
-	d: path("M-3.5 0 Q0 0 3.5 0");
 	transition:
 		d 0.5s var(--wg-mascot-spring),
 		stroke-width 0.35s var(--wg-mascot-spring);
@@ -15455,9 +16182,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-mascot.is-thinking .wg-mascot-sway {
 	animation: wg-mascot-sway 2.6s ease-in-out infinite;
 }
-.wg-mascot.is-thinking .wg-mascot-eye {
-	d: path("M0 -5 Q0 0 0 5");
-}
 .wg-mascot:is(.is-thinking, .is-working, .is-done, .is-pleased, .is-error, .is-sleep, .is-surprised, .is-question)
 	.wg-mascot-lid {
 	animation: none;
@@ -15465,16 +16189,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-mascot.is-working .wg-mascot-breath {
 	animation: wg-mascot-bob 0.55s ease-in-out infinite;
 }
-.wg-mascot.is-working .wg-mascot-eye {
-	d: path("M0 0.5 Q0 2 0 3.5");
-}
 .wg-mascot:is(.is-done, .is-pleased) .wg-mascot-eye {
 	stroke-width: 3.25px;
-	d: path("M-4.5 3 Q0 -6 4.5 3");
 }
 .wg-mascot.is-done .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-4 -2.5 Q0 2.5 4 -2.5");
 }
 .wg-mascot.is-done .wg-mascot-pose {
 	transform: scale(1.04);
@@ -15484,11 +16203,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-mascot.is-question .wg-mascot-eye {
 	stroke-width: 9.5px;
-	d: path("M0 -1.5 Q0 0 0 1.5");
 }
 .wg-mascot.is-question .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-1.5 0 Q0 -1.5 1.5 0");
 }
 .wg-mascot.is-question .wg-mascot-q {
 	opacity: 1;
@@ -15496,9 +16213,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-mascot.is-error .wg-mascot-pose {
 	transform: translateY(7px) scale(1.02, 0.96);
-}
-.wg-mascot.is-error .wg-mascot-eye {
-	d: path("M0 -6 Q0 0.5 0 7");
 }
 .wg-mascot.is-error .wg-mascot-eye.is-left {
 	transform: rotate(-18deg);
@@ -15508,11 +16222,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-mascot.is-error .wg-mascot-mouth {
 	stroke-width: 2.5px;
-	d: path("M-4 2.5 Q0 -2.5 4 2.5");
 }
 .wg-mascot.is-sleep .wg-mascot-eye {
 	stroke-width: 2.75px;
-	d: path("M-4 3 Q0 6 4 3");
 }
 .wg-mascot.is-sleep .wg-mascot-breath {
 	animation-duration: 5.5s;
@@ -15526,14 +16238,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-mascot.is-surprised .wg-mascot-eye {
 	stroke-width: 10px;
-	d: path("M0 -13 Q0 0 0 12");
 }
 .wg-mascot.is-surprised .wg-mascot-pose {
 	transform: translateY(-5px) scale(0.98, 1.04);
 }
 .wg-mascot.is-surprised .wg-mascot-mouth {
 	stroke-width: 4.5px;
-	d: path("M0 -1 Q0 0 0 1");
 }
 @media (prefers-reduced-motion: reduce) {
 	.wg-mascot,

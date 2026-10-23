@@ -336,10 +336,11 @@ try {
 	);
 	const hosted = await page.ask(`${ACCENT_PAINT_OF}(true)`);
 	check(
-		"inside Obsidian the studio's accent, ring and text on the accent are the host's",
-		isPaintedAs(hosted, { accent: HOST_ACCENT, onAccent: HOST_ON_ACCENT, ring: HOST_ACCENT }),
+		"inside Obsidian the studio's accent and text on the accent are the host's",
+		isPaintedAs(hosted, { accent: HOST_ACCENT, onAccent: HOST_ON_ACCENT }),
 		hosted,
 	);
+	check("and the focus ring stays the system's neutral grey", !isPaintedAs(hosted, { ring: HOST_ACCENT }), hosted);
 	const hostless = await page.ask(`${ACCENT_PAINT_OF}(false)`);
 	check(
 		"and outside Obsidian the system's own accent stays",
