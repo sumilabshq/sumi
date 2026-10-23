@@ -20,6 +20,9 @@ interface Timed {
 const PAINT_BUDGET_MS = 100;
 const SETTLED_MS = 450;
 const LIST_IDS = `[...document.querySelectorAll("[data-tabs-list] [data-tabs-item=tab]")].map((row) => row.dataset.tabsId)`;
+const WORKSPACE_IDS = `[...document.querySelectorAll('[data-tabs-list="workspace"] [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
+const CHAT_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
+const CHAT_TOP_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) > [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
 const TILE_IDS = `[...document.querySelectorAll("[data-tabs-item=essential]")].map((tile) => tile.dataset.tabsId)`;
 const GROUP_NAMES = `[...document.querySelectorAll("[data-tabs-item=group] > span:first-of-type")].map((name) => name.textContent)`;
 const SHOWN_ID = `document.querySelector("[data-tabs-item=tab][data-shown]")?.dataset.tabsId ?? null`;
@@ -80,13 +83,16 @@ async function checksPressing(page: AskedPage): Promise<void> {
 		await idsOf(page, LIST_IDS),
 	);
 	await checksWobblyPress(page);
-	const before = await idsOf(page, LIST_IDS);
+	const before = await idsOf(page, CHAT_IDS);
 	await timed(page, "new tab row", () => pressOn(page, "[data-host-column-add]"));
-	const after = await idsOf(page, LIST_IDS);
+	const workspace = await idsOf(page, WORKSPACE_IDS);
 	check(
-		"New tab adds a shown row at the end of this chat's list",
-		after.length === before.length + 1 && after.at(-1) === (await page.ask(SHOWN_ID)),
-		after,
+		"New tab lands as the shown row of Tabs in workspace, above the chat's tabs",
+		workspace.length === 1 &&
+			workspace[0] === (await page.ask(SHOWN_ID)) &&
+			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before) &&
+			(await page.ask(`document.querySelector("[data-tabs-section]")?.dataset.tabsSection`)) === "workspace",
+		[workspace, await idsOf(page, CHAT_IDS)],
 	);
 }
 
@@ -104,8 +110,9 @@ async function checksChats(page: AskedPage): Promise<void> {
 	check(
 		"switching chats swaps the list and the title",
 		(await page.ask(TITLE)) === "Translator" &&
-			JSON.stringify(await idsOf(page, LIST_IDS)) === JSON.stringify(["tab-9", "tab-10", "tab-11"]),
-		await idsOf(page, LIST_IDS),
+			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(["tab-9", "tab-10", "tab-11"]) &&
+			(await idsOf(page, WORKSPACE_IDS)).length === 1,
+		[await idsOf(page, CHAT_IDS), await idsOf(page, WORKSPACE_IDS)],
 	);
 	check(
 		"Essentials stay the same in another chat",
@@ -137,9 +144,9 @@ async function checksEssentialsMenu(page: AskedPage): Promise<void> {
 	await waited(250);
 	await timed(page, "remove from Essentials", () => menuPick(page, "Remove from Essentials"));
 	check(
-		"Remove from Essentials puts the live tab back at the end of the list",
-		(await idsOf(page, LIST_IDS)).at(-1) === "tab-7" && (await idsOf(page, TILE_IDS)).length === 8,
-		await idsOf(page, LIST_IDS),
+		"Remove from Essentials puts the live tab back at the end of Tabs in workspace",
+		(await idsOf(page, WORKSPACE_IDS)).at(-1) === "tab-7" && (await idsOf(page, TILE_IDS)).length === 8,
+		await idsOf(page, WORKSPACE_IDS),
 	);
 }
 
@@ -174,9 +181,11 @@ async function checksGroups(page: AskedPage): Promise<void> {
 	await timed(page, "new group with this tab", () => menuPick(page, "New group with this tab"));
 	await waited(200);
 	check(
-		"a second new group is New group 2 and holds the tab",
-		JSON.stringify(await idsOf(page, GROUP_NAMES)).includes('"New group 2"') &&
-			(await page.ask(`document.querySelector('[data-tabs-box] [data-tabs-id="tab-8"]') !== null`)) === true,
+		"a group made with a chat's tab is that list's own New group and holds the tab",
+		(await idsOf(page, GROUP_NAMES)).filter((name) => name === "New group").length === 2 &&
+			(await page.ask(
+				`document.querySelector('[data-tabs-list]:not([data-tabs-list="workspace"]) [data-tabs-box] [data-tabs-id="tab-8"]') !== null`,
+			)) === true,
 		await idsOf(page, GROUP_NAMES),
 	);
 	const isMenuOpen = await waitUntil(
@@ -193,7 +202,7 @@ async function checksGroups(page: AskedPage): Promise<void> {
 	check(
 		"Close 1 tab closes the tab and drops the group",
 		!(await idsOf(page, LIST_IDS)).includes("tab-8") &&
-			!JSON.stringify(await idsOf(page, GROUP_NAMES)).includes("New group 2"),
+			(await idsOf(page, GROUP_NAMES)).filter((name) => name === "New group").length === 1,
 		await idsOf(page, GROUP_NAMES),
 	);
 	await timed(page, "fold a group", () => pressOn(page, '[data-tabs-item=group][data-tabs-id="group-12"]'));
@@ -446,6 +455,94 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 	);
 }
 
+async function checksSections(page: AskedPage, folder: string): Promise<void> {
+	const target = await centreOf(page, '[data-tabs-list="workspace"] > [data-tabs-item=tab]');
+	const moved = (await idsOf(page, CHAT_TOP_IDS)).find((id) => id !== "tab-5") ?? "";
+	await dragged(page, "drag a row into another section", `[data-tabs-list] > [data-tabs-id="${moved}"]`, [
+		target[0],
+		target[1] - 10,
+	]);
+	check(
+		"dragging a chat's row onto Tabs in workspace moves it there, first",
+		(await idsOf(page, WORKSPACE_IDS))[0] === moved && !(await idsOf(page, CHAT_IDS)).includes(moved),
+		[await idsOf(page, WORKSPACE_IDS), await idsOf(page, CHAT_IDS)],
+	);
+	await page.ask(pointedAt(`[data-tabs-id="${moved}"]`));
+	await waited(250);
+	await menuPick(page, "Move to section");
+	await waited(250);
+	await timed(page, "move to the chat's section", () =>
+		pressOn(page, '[data-tabs-move-to-list]:not([data-tabs-move-to-list="workspace"])'),
+	);
+	check(
+		"Move to section → the chat puts a workspace tab at the end of the chat's tabs",
+		(await idsOf(page, CHAT_IDS)).at(-1) === moved && !(await idsOf(page, WORKSPACE_IDS)).includes(moved),
+		await idsOf(page, CHAT_IDS),
+	);
+	await page.hover(5, 5);
+	await waited(300);
+	writeFileSync(path.join(folder, "tabs-sections.png"), await page.shoot());
+	await page.ask(pointedAt(`[data-tabs-id="${moved}"]`));
+	await waited(250);
+	const isOpen = (await page.ask(`document.querySelector("[data-tabs-pointer-menu]") !== null`)) === true;
+	const empty = await centreOf(page, "[data-host-column-add]");
+	await page.press(empty[0], empty[1] - 40);
+	await waited(300);
+	check(
+		"a press on empty sidebar space closes the tab menu",
+		isOpen && (await page.ask(`document.querySelector("[data-tabs-pointer-menu]") === null`)) === true,
+		isOpen,
+	);
+	await page.hover(...(await centreOf(page, '[data-tabs-section="workspace"]')));
+	await waited(300);
+	await timed(page, "fold Tabs in workspace", () => pressOn(page, '[data-tabs-section="workspace"] [data-tabs-fold]'));
+	check(
+		"folding Tabs in workspace hides only its rows",
+		(await idsOf(page, WORKSPACE_IDS)).length === 0 && (await idsOf(page, CHAT_IDS)).length > 0,
+		await idsOf(page, CHAT_IDS),
+	);
+	await pressOn(page, '[data-tabs-section="workspace"] [data-tabs-fold]');
+	await waited(SETTLED_MS);
+	check(
+		"no transform is left behind after a drop between sections",
+		(await page.ask(
+			`[...document.querySelectorAll("[data-tabs-sidebar] [style*=transform]")].filter((one) => one.style.transform !== "").length`,
+		)) === 0,
+		null,
+	);
+}
+
+async function checksTearOut(page: AskedPage, folder: string): Promise<void> {
+	const row = '[data-tabs-list] > [data-tabs-item=tab][data-host-tab-app="browser"]';
+	const id = String(await page.ask(`document.querySelector('${row}')?.dataset.tabsId ?? ""`));
+	const from = await centreOf(page, `[data-tabs-id="${id}"]`);
+	const outside = [-40, from[1]] as const;
+	await page.drag({ from, to: outside, steps: 14, stepMs: 16 });
+	await waited(300);
+	const card = await page.ask(
+		`(() => { const ghost = document.querySelector("[data-tabs-ghost]"); const box = ghost?.getBoundingClientRect(); return { width: Math.round(box?.width ?? 0), height: Math.round(box?.height ?? 0), caption: ghost?.querySelector("[data-tabs-ghost-caption]")?.textContent ?? "", shown: ghost ? getComputedStyle(ghost.querySelector("[data-tabs-ghost-caption]")).display : "none" }; })()`,
+	);
+	writeFileSync(path.join(folder, "tear-out-card.png"), await page.shoot());
+	check(
+		"a row carried out of the window becomes a 4:3 window card that says what release does",
+		typeof card === "object" &&
+			card !== null &&
+			Reflect.get(card, "width") === 208 &&
+			Reflect.get(card, "height") === 156 &&
+			Reflect.get(card, "caption") === "Release to open in a new window" &&
+			Reflect.get(card, "shown") === "block",
+		card,
+	);
+	await page.release(outside);
+	await waited(SETTLED_MS);
+	check(
+		"releasing it outside tears the tab out and its row shows the window mark",
+		(await page.ask(`document.querySelector('[data-tabs-id="${id}"] [data-tabs-own-window]') !== null`)) === true &&
+			(await page.ask(`document.querySelector("[data-tabs-ghost]") === null`)) === true,
+		id,
+	);
+}
+
 export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
 	await checksPressing(page);
 	await checksChats(page);
@@ -453,6 +550,8 @@ export async function checksSidebar(page: AskedPage, folder: string): Promise<nu
 	await checksGroups(page);
 	await checksRename(page);
 	await checksDrag(page, folder);
+	await checksSections(page, folder);
+	await checksTearOut(page, folder);
 	await checksKitMotion(page);
 	await checksOneForm(page);
 	await checksEssentialsWidth(page);

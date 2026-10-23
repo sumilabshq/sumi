@@ -15,6 +15,7 @@ import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
 import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { startedAppHostParts } from "../apps/studio/src/tabs/studio-app-host.ts";
+import { webShellParts } from "../packages/shell/gateways/shell-parts/web.gateway.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 
 export const TAURI_WORKSPACE = "Untitled workspace";
@@ -150,6 +151,7 @@ function restartedBrowserParts(): BrowserParts {
 export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	const state = createStudioState();
 	const browser = restartedBrowserParts();
+	const shell = webShellParts();
 	state.show("canvas");
 	return {
 		assistant,
@@ -157,9 +159,11 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 		appId: TAURI_WORKSPACE,
 		browser,
 		activeChat: NEW_CHAT,
+		shell,
 		appHost: startedAppHostParts({
 			state,
 			browser,
+			shell,
 			workspace: TAURI_WORKSPACE,
 			studio: NO_STUDIO_HOST,
 			kept: {

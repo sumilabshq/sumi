@@ -23,6 +23,7 @@ class FakeRust implements BrowserPagesIpc {
 	readonly calls: Called[] = [];
 	readonly evaluated: string[] = [];
 	frameAnswers: { url: string; answer: string | null }[] = [];
+	ownWindows: string[] = [];
 	pageText = { url: "https://example.com/", title: "Example", text: "Hello", hasSecretField: false };
 	private listener: ((message: unknown) => void) | null = null;
 
@@ -40,6 +41,10 @@ class FakeRust implements BrowserPagesIpc {
 
 		if (name === "evaluate_frames") {
 			return Promise.resolve(this.frameAnswers);
+		}
+
+		if (name === "own_windows") {
+			return Promise.resolve(this.ownWindows);
 		}
 
 		if (name === "facts") {
@@ -237,14 +242,26 @@ async function checksPlacement(
 	laidAt(container, box);
 	gateway.attach(container);
 	await settledTicks();
-	check("attaching sends the card's rect", rust.named("place").at(-1)?.args, {
+	check("attaching sends the card's rect for the shown page", rust.named("place").at(-1)?.args, {
+		page: FIRST,
 		x: 320,
 		y: 100,
 		width: 840,
 		height: 640,
 		corner: 0,
 	});
-	check("a drawn page is shown natively", rust.named("show").at(-1)?.args, { page: FIRST });
+	check("a drawn page is shown natively in the card's rect", rust.named("show").at(-1)?.args, {
+		frames: [
+			{
+				page: FIRST,
+				x: 320,
+				y: 100,
+				width: 840,
+				height: 640,
+				corner: 0,
+			},
+		],
+	});
 
 	box.width = 600;
 	for (const resized of resizeCallbacks) {
@@ -252,6 +269,7 @@ async function checksPlacement(
 	}
 	await settledTicks();
 	check("a resized card moves the page", rust.named("place").at(-1)?.args, {
+		page: FIRST,
 		x: 320,
 		y: 100,
 		width: 600,
@@ -262,11 +280,47 @@ async function checksPlacement(
 	gateway.create("tab-2");
 	gateway.show("tab-2");
 	await settledTicks();
-	check("a new tab hides the native page for its own new-tab card", rust.named("show").at(-1)?.args, { page: null });
+	check("a new tab hides the native page for its own new-tab card", rust.named("show").at(-1)?.args, { frames: [] });
 	gateway.show(FIRST);
 	await settledTicks();
-	check("switching back shows the kept page again", rust.named("show").at(-1)?.args, { page: FIRST });
+	check(
+		"switching back shows the kept page again",
+		JSON.stringify(rust.named("show").at(-1)?.args).includes(`"page":"${FIRST}"`),
+		true,
+	);
 	check("switching tabs never recreates a page", rust.named("create").length, 1);
+}
+
+async function checksTearing(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	gateway.openInOwnWindow(FIRST);
+	await settledTicks();
+	check(
+		"tearing a tab out asks Rust for its own window, titled by the page",
+		rust.named("open_own_window").at(-1)?.args,
+		{
+			page: FIRST,
+			title: gateway.tabs()[0]?.title,
+		},
+	);
+	rust.send({ page: FIRST, kind: "own-window-opened", facts: facts("https://example.com/", "Example"), failure: null });
+	await settledTicks();
+	check(
+		"a page in its own window is marked so and leaves the frames the studio shows",
+		[gateway.isInOwnWindow(FIRST), rust.named("show").at(-1)?.args],
+		[true, { frames: [] }],
+	);
+	gateway.focusOwnWindow(FIRST);
+	await settledTicks();
+	check("a press on a tab in its own window brings its window forward", rust.named("focus_own_window").at(-1)?.args, {
+		page: FIRST,
+	});
+	rust.send({ page: FIRST, kind: "own-window-closed", facts: facts("https://example.com/", "Example"), failure: null });
+	await settledTicks();
+	check(
+		"a returned page is drawn in the studio again",
+		[gateway.isInOwnWindow(FIRST), JSON.stringify(rust.named("show").at(-1)?.args).includes(`"page":"${FIRST}"`)],
+		[false, true],
+	);
 }
 
 async function checksCover(rust: FakeRust): Promise<void> {
@@ -280,11 +334,11 @@ async function checksCover(rust: FakeRust): Promise<void> {
 		region: null,
 		format: "jpeg",
 	});
-	check("then steps the native page aside", rust.named("cover").at(-1)?.args, { covered: true });
+	check("then steps the native page aside", rust.named("cover").at(-1)?.args, { page: FIRST, covered: true });
 	check("the picture stands in the card", document.querySelectorAll("[data-browser-page-cover]").length, 1);
 	menu.remove();
 	await waitFor(() => rust.named("cover").length > 1);
-	check("a closed menu brings the page back", rust.named("cover").at(-1)?.args, { covered: false });
+	check("a closed menu brings the page back", rust.named("cover").at(-1)?.args, { page: FIRST, covered: false });
 
 	const anchor = document.createElement("div");
 	anchor.className = "wg-portal";
@@ -343,17 +397,31 @@ export async function checksTauriPages(): Promise<void> {
 		await checksFailures(rust, gateway);
 		await checksPlacement(rust, gateway, container);
 		await checksCover(rust);
+		await checksTearing(rust, gateway);
 		await checksReads(rust, gateway);
 		gateway.detach(container);
 		await settledTicks();
-		check("detaching hides every native page", rust.named("show").at(-1)?.args, { page: null });
+		check("detaching hides every native page", rust.named("show").at(-1)?.args, { frames: [] });
 		gateway.close(FIRST);
 		await settledTicks();
 		check("closing a tab closes its page in Rust", rust.named("close").at(-1)?.args, { page: FIRST });
+		await checksReloadKeepsOwnWindows();
 	} finally {
 		container.remove();
 		restore();
 	}
+}
+
+async function checksReloadKeepsOwnWindows(): Promise<void> {
+	const rust = new FakeRust();
+	rust.ownWindows = ["tab-7"];
+	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default");
+	await settledTicks();
+	check(
+		"after a reload the studio asks Rust which pages have their own window and marks them",
+		[rust.named("own_windows").length, gateway.isInOwnWindow("tab-7"), gateway.isInOwnWindow(FIRST)],
+		[1, true, false],
+	);
 }
 
 await checksTauriPages();

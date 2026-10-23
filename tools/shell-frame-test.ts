@@ -90,7 +90,7 @@ const LAYOUT = `(() => {
 		chatCrumbSecond: boxOf(".wg-plate-head.is-chat .wg-plate-crumb-second"),
 		chatWords: document.querySelector(".wg-plate-head.is-chat [data-plate-place=crumb]")?.textContent ?? null,
 		appWords: [...document.querySelectorAll(".wg-plate-head.is-app .wg-plate-crumb")].filter((crumb) => crumb.getClientRects().length > 0).map((crumb) => crumb.textContent),
-		appButtons: [...document.querySelectorAll(".wg-plate-head.is-app button")].filter((button) => button.getClientRects().length > 0).map((button) => [button.getAttribute("aria-label"), button.getAttribute("aria-disabled")]),
+		appButtons: [...document.querySelectorAll(".wg-plate-head.is-app button:not([data-pane-close])")].filter((button) => button.getClientRects().length > 0).map((button) => [button.getAttribute("aria-label"), button.getAttribute("aria-disabled")]),
 		chatButtons: [...document.querySelectorAll(".wg-plate-head.is-chat button")].map((button) => [button.getAttribute("aria-label"), button.getAttribute("aria-disabled")]),
 		menuOffset: (() => { const menu = document.querySelector(".wg-plate-head.is-chat .wg-studio-menu-trigger")?.getBoundingClientRect(); const head = document.querySelector(".wg-plate-head.is-chat").getBoundingClientRect(); return menu ? Math.round(menu.top + menu.height / 2 - (head.top + head.height / 2)) : null; })(),
 		mascots: document.querySelectorAll(".wg-shell .wg-plate-head [data-mascot], .wg-shell .wg-studio-ai-head").length,

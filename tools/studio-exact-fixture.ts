@@ -155,7 +155,7 @@ export function exactAppHostParts(
 ): AppHostParts {
 	localStorage.setItem(
 		`widgetarium-studio-tabs-column:${EXACT_WORKSPACE}`,
-		JSON.stringify({ fullPx: EXACT_COLUMN_PX, side: "end", isListOpen: true }),
+		JSON.stringify({ fullPx: EXACT_COLUMN_PX, side: "end", shutLists: [] }),
 	);
 	state.show("browser");
 	return studioAppHostParts({
@@ -195,6 +195,21 @@ class BoardPageFactsGateway extends PageFactsGateway {
 
 	showPage(): void {}
 
+	openPageInOwnWindow(pageId: string): void {
+		this.change(
+			this.facts.map((page) =>
+				page.pageId === pageId
+					? {
+							...page,
+							isInOwnWindow: true,
+						}
+					: page,
+			),
+		);
+	}
+
+	focusPageWindow(): void {}
+
 	openAddress(pageId: string, address: string): void {
 		this.change(
 			this.facts.map((page) =>
@@ -228,5 +243,6 @@ function factsOf(pageId: string, title: string, url: string): PageFacts {
 		isInkReading: false,
 		isAskWaiting: false,
 		isClosedToInk: false,
+		isInOwnWindow: false,
 	};
 }

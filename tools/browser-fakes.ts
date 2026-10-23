@@ -78,6 +78,28 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 
 	detach(): void {}
 
+	readonly pinnedInto = new Map<string, HTMLElement>();
+
+	readonly tornOut = new Set<string>();
+
+	attachInPane(tabId: string, into: HTMLElement): void {
+		this.pinnedInto.set(tabId, into);
+	}
+
+	detachFromPane(tabId: string): void {
+		this.pinnedInto.delete(tabId);
+	}
+
+	isInOwnWindow(tabId: string): boolean {
+		return this.tornOut.has(tabId);
+	}
+
+	openInOwnWindow(tabId: string): void {
+		this.tornOut.add(tabId);
+	}
+
+	focusOwnWindow(): void {}
+
 	create(_tabId: string): void {}
 
 	close(_tabId: string): void {}

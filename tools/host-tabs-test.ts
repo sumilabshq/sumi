@@ -1,4 +1,5 @@
 import { HostTabs, flatTabIdsOf } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
 import { Essentials } from "../packages/app-host/shared/lib/essentials/essentials.ts";
 import { KeptTabsSchema } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
 import { chatTabToShow, showChatTab } from "../packages/app-host/shared/lib/tab-showing/chat-tabs.ts";
@@ -86,7 +87,18 @@ check(
 	[1 - 1, ["tab-3", "tab-2"]],
 );
 grouped.reopenClosed(TWO);
-check("a closed tab reopens in the chat on screen when its own is not", flatTabIdsOf(grouped.now(), TWO), ["tab-1"]);
+check(
+	"a closed tab whose chat is not on screen reopens in the workspace",
+	[flatTabIdsOf(grouped.now(), TWO), flatTabIdsOf(grouped.now(), WORKSPACE_LIST)],
+	[[], ["tab-1"]],
+);
+const kept = new HostTabs(null, ONE);
+kept.open(browser, atEnd(WORKSPACE_LIST));
+kept.close(["tab-1"], new Map(), "close the workspace tab");
+kept.reopenClosed(TWO);
+check("a closed workspace tab reopens in the workspace in any chat", flatTabIdsOf(kept.now(), WORKSPACE_LIST), [
+	"tab-1",
+]);
 
 const essentials = new Essentials(null);
 const shared = threeTabs();
