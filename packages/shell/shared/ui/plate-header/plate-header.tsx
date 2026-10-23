@@ -1,8 +1,12 @@
 import { createElement as h, forwardRef, useContext, useMemo } from "react";
 import type { ReactNode } from "react";
+import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import { PlateHeaderContext } from "../../lib/plate-header-context.js";
 import type { PlateHeaderPlace, PlateHeaderStore } from "../../lib/plate-header-store.js";
+import { HeaderButton } from "./header-button.js";
 import { PlateStrip } from "./plate-strip.js";
+
+const CLOSE_PANE = "Close pane";
 
 export type PlateSide = "chat" | "app";
 
@@ -25,6 +29,7 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 	ref,
 ) {
 	const store = useContext(PlateHeaderContext);
+	const paneClosing = useContext(PaneCloseContext);
 	const targets = useMemo(() => targetRefsOf(store), [store]);
 	return (
 		<header ref={ref} className={`wg-plate-head is-${side}`} data-plate-head={side}>
@@ -45,6 +50,15 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 				</span>
 				{more}
 				{edgeEnd}
+				{paneClosing === null ? null : (
+					<HeaderButton
+						label={CLOSE_PANE}
+						icon="x"
+						className="wg-plate-button wg-pane-close"
+						onClick={paneClosing.close}
+						data-pane-close={paneClosing.paneId}
+					/>
+				)}
 			</div>
 		</header>
 	);

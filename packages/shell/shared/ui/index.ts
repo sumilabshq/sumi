@@ -16,3 +16,5 @@ export type { PlateShownProps } from "./plate-header/plate-shown.js";
 export { PlateTint } from "./plate-header/plate-tint.js";
 export type { PlateTintProps } from "./plate-header/plate-tint.js";
 export type { PlateHeaderPlace, PlateLook } from "../lib/plate-header-store.js";
+export { PaneBoard } from "../../features/panes/ui/pane-board/pane-board.js";
+export type { PaneBoardProps } from "../../features/panes/ui/pane-board/pane-board.js";

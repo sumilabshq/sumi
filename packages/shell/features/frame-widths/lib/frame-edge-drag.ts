@@ -66,7 +66,7 @@ export class FrameEdgeDrag {
 
 function dragFrom(edge: FrameEdge, edgeElement: HTMLElement, px: number): EdgeDrag | null {
 	const frame = edgeElement.closest<HTMLElement>(FRAME);
-	const sized = edgeElement.previousElementSibling;
+	const sized = edgeElement.previousElementSibling ?? edgeElement.parentElement?.previousElementSibling ?? null;
 	if (frame === null || sized === null) {
 		return null;
 	}

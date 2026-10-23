@@ -4,20 +4,21 @@ import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import { useQuery } from "@widgetarium/core/requests";
 import { FrameWidthsQuery } from "../../../features/frame-widths/contract.js";
 import { FrameEdgeHandle } from "../../../features/frame-widths/ui/frame-edge/frame-edge.js";
+import { PaneBoard } from "../../../features/panes/ui/pane-board/pane-board.js";
+import type { PaneBoardProps } from "../../../features/panes/ui/pane-board/pane-board.js";
 import { useWritesFrameWidths } from "../../lib/use-writes-frame-widths.js";
 
 export interface StudioFrameProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
 	readonly left: ReactNode;
-	readonly chat: ReactNode;
-	readonly app: ReactNode;
+	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
 	readonly right: ReactNode;
 }
 
 const FRAME_CLASS = "wg-studio wg-shell";
 
-export function StudioFrame({ frame, left, chat, app, panel, right }: StudioFrameProps): ReactElement {
+export function StudioFrame({ frame, left, panes, panel, right }: StudioFrameProps): ReactElement {
 	const widths = useQuery(FrameWidthsQuery).data;
 	useWritesFrameWidths(frame, widths);
 	return (
@@ -27,10 +28,8 @@ export function StudioFrame({ frame, left, chat, app, panel, right }: StudioFram
 					{left}
 				</div>
 				<FrameEdgeHandle edge="left" px={widths.left} />
-				{chat}
-				<FrameEdgeHandle edge="chat" px={widths.chat} />
 				<div className="wg-shell-app-zone">
-					{app}
+					<PaneBoard {...panes} chatPx={widths.chat} chatEdge={<FrameEdgeHandle edge="chat" px={widths.chat} />} />
 					{panel === null ? null : <div className="wg-shell-panel">{panel}</div>}
 				</div>
 				<div className="wg-shell-right" data-shell-column="right">

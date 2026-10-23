@@ -444,3 +444,85 @@
 	height: var(--sumi-tip-arrow);
 	background: var(--sumi-text);
 }
+
+.wg-pane-board {
+	position: relative;
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+}
+
+.wg-pane {
+	position: absolute;
+	display: flex;
+	min-width: 0;
+	min-height: 0;
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out);
+}
+
+.wg-pane > .wg-shell-plate {
+	flex: 1 1 0;
+	width: auto;
+	min-width: 0;
+}
+
+.wg-pane-preview {
+	position: absolute;
+	box-sizing: border-box;
+	border-radius: var(--sumi-r-group);
+	background: var(--sumi-accent-soft);
+	pointer-events: none;
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out);
+}
+
+.wg-pane-edge {
+	position: absolute;
+	display: flex;
+	width: var(--sumi-gap);
+}
+
+.wg-pane-edge > .wg-shell-edge {
+	flex: 1;
+}
+
+.wg-pane-empty {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-group);
+	background: var(--sumi-sunken);
+}
+
+.wg-plate-head .wg-pane-close {
+	opacity: 0;
+	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
+}
+
+.wg-plate-head:is(:hover, :focus-within) .wg-pane-close {
+	opacity: 1;
+	transition-duration: 0ms;
+}
+
+.wg-pane-empty-actions {
+	display: flex;
+	gap: var(--sumi-sp-4);
+}
+
+.wg-pane-note {
+	margin: auto;
+	color: var(--sumi-text-3);
+}
+
+.wg-pane-board[data-following-edge] > .wg-pane {
+	transition: none;
+}
