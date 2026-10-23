@@ -1,23 +1,8 @@
-import { EdgeWidth, localPxMemory } from "@widgetarium/behaviors";
-import type { EdgeBounds, PxMemory } from "@widgetarium/behaviors";
-import {
-	CARD_LEAST_PX,
-	CHAT_LEAST_PX,
-	CHAT_USUAL_PX,
-	STUDIO_OPENED_ON,
-} from "@widgetarium/core/engine/studio-state-port.js";
+import { STUDIO_OPENED_ON } from "@widgetarium/core/engine/studio-state-port.js";
 import type { StudioMoment, StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { createListeners } from "./listeners.js";
 
-const CHAT_WIDTH_KEY = "widgetarium-studio-chat-px";
-
-const CHAT_BOUNDS: EdgeBounds = {
-	leastPx: CHAT_LEAST_PX,
-	usualPx: CHAT_USUAL_PX,
-	keptBesidePx: CARD_LEAST_PX,
-};
-
-export function createStudioState(memory: PxMemory = localPxMemory(CHAT_WIDTH_KEY)): StudioState {
+export function createStudioState(): StudioState {
 	const listeners = createListeners();
 	let moment = STUDIO_OPENED_ON;
 	const become = (next: StudioMoment, reason: string): void => {
@@ -37,6 +22,5 @@ export function createStudioState(memory: PxMemory = localPxMemory(CHAT_WIDTH_KE
 		closePanel: (panel) => {
 			if (moment.panel === panel) become({ ...moment, panel: "none" }, `close ${panel}`);
 		},
-		chatWidth: new EdgeWidth("studio chat", CHAT_BOUNDS, memory),
 	};
 }

@@ -1,32 +1,15 @@
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import type { HostApp } from "@widgetarium/core/engine/studio-host.js";
-import { PageInputSchema, PageOf, offsetOfCursor, pageAt } from "@widgetarium/core/gateway/page.js";
-import type { Page, PageInput } from "@widgetarium/core/gateway/page.js";
 import { IQuery } from "@widgetarium/core/gateway/queries.js";
 import { DRAFT_APP, NothingAskedSchema, StudioAppSchema } from "../shared/studio-app.js";
 import type { StudioApp } from "../shared/studio-app.js";
-import type { AppFields, NoFields } from "./studio-fields.js";
+import type { AppFields } from "./studio-fields.js";
 
 const ONE_PAGE = "1 page";
 const PAGES = "{count} pages";
 const ON_PAGE = "{pages} · on {page}";
 const NO_PAGES = "No pages yet";
 const NOT_ON_HOST = 'the host holds no app "{app}"';
-
-export class AppsQuery extends IQuery.input(PageInputSchema).output(PageOf(StudioAppSchema)) {
-	constructor(
-		readonly fields: NoFields,
-		private readonly ports: ImplementationPorts,
-	) {
-		super();
-	}
-
-	async query({ cursor, limit }: PageInput): Promise<Page<StudioApp>> {
-		const apps = await studioAppsOf(this.ports);
-		const offset = offsetOfCursor(cursor);
-		return pageAt(apps.slice(offset, offset + limit), offset, apps.length);
-	}
-}
 
 export class CurrentAppQuery extends IQuery.input(NothingAskedSchema).output(StudioAppSchema) {
 	constructor(
@@ -43,11 +26,6 @@ export class CurrentAppQuery extends IQuery.input(NothingAskedSchema).output(Stu
 		if (!current) throw new Error(NOT_ON_HOST.replace("{app}", this.fields.app));
 		return studioAppOf(current);
 	}
-}
-
-async function studioAppsOf(ports: ImplementationPorts): Promise<readonly StudioApp[]> {
-	const held = await ports.studio.apps();
-	return held.length === 0 ? [DRAFT_APP] : held.map(studioAppOf);
 }
 
 function studioAppOf({ id, name, pages, firstPage, refusal }: HostApp): StudioApp {

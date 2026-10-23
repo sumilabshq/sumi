@@ -9,19 +9,6 @@ export const StudioAppSchema = z.object({
 
 export type StudioApp = z.infer<typeof StudioAppSchema>;
 
-export const AppAskedSchema = z.object({ id: z.string() });
-
-const NAME_STARTS_WITH_DOT = "a workspace name cannot start with a dot";
-
-export const AppRenamedSchema = z.object({
-	id: z.string(),
-	name: z
-		.string()
-		.trim()
-		.min(1)
-		.refine((name) => !name.startsWith("."), NAME_STARTS_WITH_DOT),
-});
-
 export const NothingAskedSchema = z.object({});
 
 export const NOTHING_ASKED = {};
@@ -32,16 +19,6 @@ export const DRAFT_APP: StudioApp = {
 	line: "Not created yet",
 	notice: "",
 };
-
-const NAME_WITH_NOTICE = "{name} · {notice}";
-
-export function tileLabelOf(app: StudioApp): string {
-	if (app.notice === "") {
-		return app.name;
-	}
-
-	return NAME_WITH_NOTICE.replace("{name}", app.name).replace("{notice}", app.notice);
-}
 
 export function markLetterOf(app: StudioApp): string {
 	return (Array.from(app.name)[0] ?? "").toUpperCase();

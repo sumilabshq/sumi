@@ -61,6 +61,7 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 	}
 
 	showPage(pageId: string): void {
+		this.sendInOrder("hold", pageId, () => this.browserApp.send(OpenPageCommand, { tabId: pageId }));
 		this.sendInOrder("show", pageId, () => this.browserApp.send(ShowTabCommand, { tabId: pageId }));
 	}
 

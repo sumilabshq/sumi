@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Button, Icon } from "@widgetarium/kit";
+import { Button, Icon, tooltipMarks } from "@widgetarium/kit";
 import type { CataloguePort } from "@widgetarium/core/engine/catalogue-port.js";
 import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.js";
 import { StudioCatalogue } from "./catalogue/studio-catalogue.js";
@@ -22,7 +22,13 @@ export function StudioSidebar({ catalogue, host, catalogueAsk, onClose }: Studio
 			{ key: "head", className: "wg-studio-sidebar-head" },
 			h(
 				Button,
-				{ variant: "ghost", size: "icon-sm", "aria-label": CLOSE_LABEL, title: CLOSE_LABEL, onClick: onClose },
+				{
+					variant: "ghost",
+					size: "icon-sm",
+					"aria-label": CLOSE_LABEL,
+					...tooltipMarks({ said: CLOSE_LABEL }),
+					onClick: onClose,
+				},
 				h(Icon, { name: "x" }),
 			),
 		),

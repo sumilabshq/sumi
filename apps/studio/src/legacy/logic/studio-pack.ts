@@ -2,14 +2,8 @@ import { definePack } from "@widgetarium/core/engine/packs.js";
 import type { Pack } from "@widgetarium/core/engine/packs.js";
 import { cataloguePack } from "@widgetarium/pack-catalogue";
 import { defineCommandMetadata, defineGatewayMetadata } from "@widgetarium/core/gateway/implementation-metadata.js";
-import { AppsQuery, CurrentAppQuery } from "./apps-queries.js";
-import {
-	BackToViewCommand,
-	CreateAppCommand,
-	EditInCanvasCommand,
-	OpenAppCommand,
-	RenameAppCommand,
-} from "./studio-commands.js";
+import { CurrentAppQuery } from "./apps-queries.js";
+import { BackToViewCommand, EditInCanvasCommand } from "./studio-commands.js";
 import { IsInCanvasQuery } from "./studio-state-queries.js";
 import {
 	MenuAgentSetupQuery,
@@ -26,13 +20,6 @@ export const studioPack = definePack({
 	id: "@studio",
 	title: "Studio",
 	queries: [
-		defineGatewayMetadata(AppsQuery, {
-			id: "@studio/apps",
-			title: "Workspaces",
-			resource: RESOURCE,
-			description: "Every workspace the host holds, each with its mark and how many pages it has.",
-			fields: NoFieldsSchema,
-		}),
 		defineGatewayMetadata(CurrentAppQuery, {
 			id: "@studio/current-app",
 			title: "This app",
@@ -56,30 +43,6 @@ export const studioPack = definePack({
 		}),
 	],
 	commands: [
-		defineCommandMetadata(OpenAppCommand, {
-			id: "@studio/open-app",
-			title: "Open a workspace",
-			resource: RESOURCE,
-			description: "Opens the workspace on its first page.",
-			fields: NoFieldsSchema,
-			consent: "free",
-		}),
-		defineCommandMetadata(CreateAppCommand, {
-			id: "@studio/create-app",
-			title: "New workspace",
-			resource: RESOURCE,
-			description: "Starts a new workspace and opens it.",
-			fields: NoFieldsSchema,
-			consent: "free",
-		}),
-		defineCommandMetadata(RenameAppCommand, {
-			id: "@studio/rename-app",
-			title: "Rename a workspace",
-			resource: RESOURCE,
-			description: "Renames the workspace and its folder; notes naming it follow.",
-			fields: NoFieldsSchema,
-			consent: "free",
-		}),
 		defineCommandMetadata(EditInCanvasCommand, {
 			id: "@studio/edit-in-canvas",
 			title: "Edit in canvas",

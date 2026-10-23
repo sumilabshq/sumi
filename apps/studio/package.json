@@ -32,7 +32,9 @@
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/mascot": "0.1.0",
-		"@widgetarium/pack-catalogue": "0.1.0"
+		"@widgetarium/pack-catalogue": "0.1.0",
+		"@widgetarium/shell": "0.1.0",
+		"@widgetarium/workspaces": "0.1.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",

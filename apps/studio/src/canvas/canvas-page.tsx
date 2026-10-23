@@ -1,20 +1,17 @@
 import { createElement as h, useState } from "react";
-import type { ReactElement, ReactNode } from "react";
-import { AppHostBar, AppHostFrame } from "@widgetarium/app-host";
-import { AppHostClientModule } from "@widgetarium/app-host/module";
-import type { AppHostParts } from "@widgetarium/app-host/gateways";
+import type { ReactElement } from "react";
 import { Canvas, CanvasAppZone, TipSurface } from "@widgetarium/canvas";
 import { CanvasClientModule } from "@widgetarium/canvas/module";
 import type { CanvasParts } from "@widgetarium/canvas/gateways";
 import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
+import { PlateHeaderPart } from "@widgetarium/shell";
 import { useHandsCanvas } from "./use-hands-canvas.js";
 import type { CanvasHandle } from "./use-hands-canvas.js";
 
 export interface CanvasShell {
-	readonly hostParts: AppHostParts;
-	readonly cornerEnd: ReactNode;
+	readonly isInPlate: boolean;
 }
 
 export interface CanvasPageProps {
@@ -24,32 +21,32 @@ export interface CanvasPageProps {
 }
 
 export function CanvasPage({ parts, shell, onCanvas }: CanvasPageProps): ReactElement {
-	const [canvasApp] = useState(() => createCanvasApp(parts, shell));
+	const [canvasApp] = useState(() => createCanvasApp(parts));
 	useHandsCanvas(canvasApp, onCanvas);
-	const header = shell ? <AppHostBar appZone={<CanvasAppZone />} cornerEnd={shell.cornerEnd} /> : undefined;
 	return (
 		<AppProvider app={canvasApp}>
 			<OnRefused value={toastRefusal}>
 				<Toaster />
 				<TipSurface>
-					{shell ? (
-						<AppHostFrame>
-							<Canvas header={header} />
-						</AppHostFrame>
-					) : (
-						<Canvas header={header} />
-					)}
+					<Canvas header={plateControlsOf(shell)} isInPlate={shell?.isInPlate ?? false} />
 				</TipSurface>
 			</OnRefused>
 		</AppProvider>
 	);
 }
 
-function createCanvasApp(parts: CanvasParts, shell: CanvasShell | undefined): StartedApp {
-	const canvas = CanvasClientModule.with(parts);
-	if (!shell) {
-		return app({ modules: [canvas] });
+function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefined {
+	if (shell?.isInPlate !== true) {
+		return undefined;
 	}
 
-	return app({ modules: [canvas, AppHostClientModule.with(shell.hostParts)] });
+	return (
+		<PlateHeaderPart place="controls">
+			<CanvasAppZone look="ghost" />
+		</PlateHeaderPart>
+	);
+}
+
+function createCanvasApp(parts: CanvasParts): StartedApp {
+	return app({ modules: [CanvasClientModule.with(parts)] });
 }

@@ -9,16 +9,16 @@ export interface StudioAppHostAsk {
 	readonly state: StudioState;
 	readonly browser: BrowserParts;
 	readonly workspace: string;
+	// TODO: drop studio, no reader since the app picker left
 	readonly studio: StudioHostPort;
-	readonly kept?: Pick<StudioAppHost, "tabsColumnGateway" | "tabsSessionGateway">;
+	readonly kept?: Pick<StudioAppHost, "tabsColumnGateway" | "tabsSessionGateway" | "essentialsGateway" | "activeChat">;
 }
 
-export function startedAppHostParts({ state, browser, workspace, studio, kept = {} }: StudioAppHostAsk): AppHostParts {
+export function startedAppHostParts({ state, browser, workspace, kept = {} }: StudioAppHostAsk): AppHostParts {
 	return studioAppHostParts({
 		...kept,
 		studioState: state,
 		workspace,
 		pageFactsGateway: new BrowserAppPageFactsGateway(browser),
-		studioHost: studio,
 	});
 }
