@@ -32,9 +32,7 @@ export class NoPageFactsGateway extends PageFactsGateway {
 
 	focusPageWindow(): void {}
 
-	watchTearOff(): void {}
-
-	stopTearOff(): void {}
+	tearOffPage(): void {}
 
 	stop(): void {}
 }

@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { PlaceEssentialCommand } from "../../../features/essentials/contract.js";
-import { PlaceTabCommand, StopTabTearOffCommand, WatchTabTearOffCommand } from "../../../features/tabs/contract.js";
+import { PlaceTabCommand, TearOffTabCommand } from "../../../features/tabs/contract.js";
 import type { DragSource } from "../tab-drag/sidebar-drop-plan.js";
 import { useSidebarDrag } from "../tab-drag/use-sidebar-drag.js";
 import { TabDropSchema } from "../../schema/tab-drop.schema.js";
@@ -9,14 +9,15 @@ import { TabDropSchema } from "../../schema/tab-drop.schema.js";
 export function useDropPlacing(holder: RefObject<HTMLElement | null>, opensOwnWindows: boolean): void {
 	const placeTab = useCommand(PlaceTabCommand);
 	const placeEssential = useCommand(PlaceEssentialCommand);
-	const watchTearOff = useCommand(WatchTabTearOffCommand);
-	const stopTearOff = useCommand(StopTabTearOffCommand);
+	const tearOff = useCommand(TearOffTabCommand);
 	useSidebarDrag(holder, {
 		opensOwnWindows,
-		tearOffOf: (tabId) => ({
-			watch: () => void watchTearOff.run({ id: tabId }),
-			stop: () => void stopTearOff.run({}),
-		}),
+		onTearOff: (tabId) =>
+			void tearOff.run({ id: tabId }).then((answer) => {
+				if (!answer.ok) {
+					console.warn(`[widgetarium] tab ${tabId} lifted → resting (tear-off refused: ${answer.reason})`);
+				}
+			}),
 		onDrop: async (source, drop) => {
 			const to = TabDropSchema.safeParse(drop);
 

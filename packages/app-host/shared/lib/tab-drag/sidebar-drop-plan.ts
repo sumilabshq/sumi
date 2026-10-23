@@ -71,10 +71,6 @@ export function isSameDrop(one: TabDrop, other: TabDrop): boolean {
 	return one.list === other.list && one.groupId === other.groupId && one.before === other.before;
 }
 
-export function isDraggedRow(source: DragSource, row: Measured): boolean {
-	return source.kind === "tab" && row.id === source.id;
-}
-
 export function columnsDuring(layout: SidebarLayout, source: DragSource, drop: TabDrop): number {
 	const count = layout.grid.tiles.length;
 	return columnsOf(source.kind === "tab" && drop.kind === "essentials" ? count + 1 : count);
@@ -171,4 +167,8 @@ function siblingIdsOf(layout: SidebarLayout, source: Extract<DragSource, { kind:
 	}
 
 	return groupUnitOf(layout, source.groupId)?.rows.map((row) => row.id) ?? [];
+}
+
+function isDraggedRow(source: DragSource, row: Measured): boolean {
+	return source.kind === "tab" && row.id === source.id;
 }

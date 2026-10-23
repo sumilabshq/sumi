@@ -71,10 +71,4 @@ export const ReopenClosedTabCommand = command("app-host/reopen-closed-tab")
 	.idempotencyKey(Repeatable)
 	.invalidates(SHOWN);
 
-export const WatchTabTearOffCommand = command("app-host/watch-tab-tear-off")
-	.input(TabSchema)
-	.idempotencyKey(Repeatable);
-
-export const StopTabTearOffCommand = command("app-host/stop-tab-tear-off")
-	.input(z.object({}))
-	.idempotencyKey(Repeatable);
+export const TearOffTabCommand = command("app-host/tear-off-tab").input(TabSchema).idempotencyKey(Repeatable);

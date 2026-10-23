@@ -12,7 +12,6 @@ export abstract class PageFactsGateway {
 	abstract canOpenOwnWindow(): boolean;
 	abstract openPageInOwnWindow(pageId: string): void;
 	abstract focusPageWindow(pageId: string): void;
-	abstract watchTearOff(pageId: string): void;
-	abstract stopTearOff(): void;
+	abstract tearOffPage(pageId: string): void;
 	abstract stop(): void;
 }

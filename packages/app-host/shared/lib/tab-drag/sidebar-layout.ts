@@ -49,8 +49,8 @@ export interface SidebarLayout {
 export const GRID_COLUMNS = 4;
 export const GRID_GAP_PX = 6;
 export const TILE_HEIGHT_PX = 46;
-export const ROW_GAP_PX = 1;
-export const ROW_HEIGHT_PX = 34;
+const ROW_GAP_PX = 1;
+const ROW_HEIGHT_PX = 34;
 
 const NOWHERE: Rect = {
 	left: 0,
@@ -83,11 +83,6 @@ export function measuredLayoutOf(holder: HTMLElement): SidebarLayout {
 		units,
 		groupMargin: groupMarginOf(units),
 	};
-}
-
-export function listRectOf(layout: SidebarLayout): Rect {
-	const drawn = layout.lists.find((list) => list.rect.width > 0);
-	return drawn?.rect ?? layout.lists[0]?.head?.rect ?? layout.scrollerRect;
 }
 
 export function findMeasuredList(layout: SidebarLayout, id: string): MeasuredList | undefined {

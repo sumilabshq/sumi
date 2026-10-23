@@ -31,8 +31,7 @@ import {
 	ReopenClosedTabCommand,
 	ShowChatTabCommand,
 	ShowTabCommand,
-	StopTabTearOffCommand,
-	WatchTabTearOffCommand,
+	TearOffTabCommand,
 	TabsSidebarQuery,
 } from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
@@ -277,7 +276,7 @@ export const MoveTabToListCommandHandler = handler(MoveTabToListCommand, AppHost
 		});
 	});
 
-export const WatchTabTearOffCommandHandler = handler(WatchTabTearOffCommand, AppHostClientModule)
+export const TearOffTabCommandHandler = handler(TearOffTabCommand, AppHostClientModule)
 	.inject({
 		hostTabs: HostTabs,
 		pageFactsGateway: PageFactsGateway,
@@ -293,12 +292,8 @@ export const WatchTabTearOffCommandHandler = handler(WatchTabTearOffCommand, App
 			return refuse(NO_OWN_WINDOW.replace("{id}", id));
 		}
 
-		pageFactsGateway.watchTearOff(pageId);
+		pageFactsGateway.tearOffPage(pageId);
 	});
-
-export const StopTabTearOffCommandHandler = handler(StopTabTearOffCommand, AppHostClientModule)
-	.inject({ pageFactsGateway: PageFactsGateway })
-	.handle((_input, { pageFactsGateway }) => pageFactsGateway.stopTearOff());
 
 interface ApartShowing {
 	readonly hostTabs: HostTabs;

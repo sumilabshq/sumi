@@ -5,13 +5,12 @@ import {
 	BrowserTabsQuery,
 	ClosePageCommand,
 	FocusOwnWindowCommand,
-	StopTearOffCommand,
-	WatchTearOffCommand,
 	OpenAddressCommand,
 	OpenPageCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
 	OpenTabInOwnWindowCommand,
+	TearOffCommand,
 } from "@widgetarium/browser";
 import type { AccessAsk, BrowserTabState, InkReading } from "@widgetarium/browser";
 import { BrowserClientModule } from "@widgetarium/browser/module";
@@ -94,12 +93,8 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		);
 	}
 
-	watchTearOff(pageId: string): void {
-		this.sendInOrder("watch the drag of", pageId, () => this.browserApp.send(WatchTearOffCommand, { tabId: pageId }));
-	}
-
-	stopTearOff(): void {
-		void this.browserApp.send(StopTearOffCommand, {});
+	tearOffPage(pageId: string): void {
+		this.sendInOrder("tear off", pageId, () => this.browserApp.send(TearOffCommand, { tabId: pageId }));
 	}
 
 	focusPageWindow(pageId: string): void {
