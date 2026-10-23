@@ -47,5 +47,10 @@ export {
 	listenToCarry,
 } from "./src/carry/carry.js";
 export { PointerCarry } from "./src/carry/pointer-carry.js";
+export { useEdgeReveal } from "./src/edge-reveal/use-edge-reveal.js";
+export type { EdgeLook } from "./src/edge-reveal/use-edge-reveal.js";
+export { useHoverIntent } from "./src/edge-reveal/use-hover-intent.js";
+export { localFlagMemory } from "./src/edge-reveal/flag-memory.js";
+export type { FlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { PointerCarryAsk } from "./src/carry/pointer-carry.js";
 export type { CarriedItem, CarriedKind, CarryMoment, CarryPhase, PointBox } from "./src/carry/carry.js";
