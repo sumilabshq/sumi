@@ -40,7 +40,7 @@ interface Said {
 }
 
 export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuAsks): TabMenuGroups {
-	const { tabs, canReopen, canOpenBrowser } = useQuery(AppTabsQuery).data;
+	const { tabs, canReopen } = useQuery(AppTabsQuery).data;
 	const run = useTabRuns(tab);
 	const action = (key: TabActionKey, said: Said, ran: () => void): TabMenuAction => ({
 		key,
@@ -54,12 +54,8 @@ export function useTabMenuGroups(tab: AppTab, { onRename, onCopyLink }: TabMenuA
 	const hasOthers = tabs.some((other) => other.id !== tab.id && !other.isPinned);
 	return [
 		[
-			action("new-below", { label: "New tab below", icon: "plus", isDisabled: !canOpenBrowser }, run.openBelow),
-			action(
-				"duplicate",
-				{ label: "Duplicate tab", icon: "copy-plus", isDisabled: tab.app === "browser" && !canOpenBrowser },
-				run.duplicate,
-			),
+			action("new-below", { label: "New tab below", icon: "plus" }, run.openBelow),
+			action("duplicate", { label: "Duplicate tab", icon: "copy-plus" }, run.duplicate),
 		],
 		[
 			action("reload", { label: "Reload tab", icon: "rotate-cw", isDisabled: address === null }, run.reload),

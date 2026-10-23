@@ -26,7 +26,7 @@ export function exactAppHostParts(state: StudioState): AppHostParts {
 	const opened = BOARD_TABS.map((tab, at) =>
 		hostTabs.open({ app: "browser", pageId: `page-${at + 1}`, isPinned: tab.isPinned }),
 	);
-	first.forEach((id) => hostTabs.close(id));
+	first.forEach((id) => hostTabs.close(id, null));
 	const shown = opened[EXACT_SHOWN_AT];
 
 	if (shown) {
@@ -72,6 +72,10 @@ class BoardPageFactsGateway extends PageFactsGateway {
 		isClosedToInk: tab.status === "cannot-look",
 	}));
 
+	isAvailable(): boolean {
+		return true;
+	}
+
 	pages(): readonly PageFacts[] {
 		return this.facts;
 	}
@@ -79,6 +83,10 @@ class BoardPageFactsGateway extends PageFactsGateway {
 	watch(): () => void {
 		return () => undefined;
 	}
+
+	openPage(): void {}
+
+	closePage(): void {}
 
 	showPage(): void {}
 

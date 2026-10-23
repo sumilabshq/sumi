@@ -5,6 +5,8 @@ import { AppHostClientModule } from "../packages/app-host/generated/module.ts";
 import {
 	AppTabsQuery,
 	CloseOtherTabsCommand,
+	OpenTabCommand,
+	ShowTabCommand,
 	CloseTabCommand,
 	DuplicateTabCommand,
 	OpenTabBelowCommand,
@@ -31,6 +33,7 @@ export async function checksTabCommands(check: Check): Promise<void> {
 	await checksCloseAndReopen(check);
 	await checksClosedKept(check);
 	await checksReload(check);
+	await checksManyPages(check);
 }
 
 type Check = (what: string, isOk: boolean, got: unknown) => void;
@@ -57,18 +60,28 @@ class ShownAppGateway extends AppTabsGateway {
 	}
 }
 
-class TwoPagesGateway extends PageFactsGateway {
-	readonly opened: string[] = [];
-	readonly reloaded: string[] = [];
-	private readonly facts: readonly PageFacts[] = ["page-1", "page-2"].map((pageId) => ({
+function pageAt(pageId: string, url: string): PageFacts {
+	return {
 		pageId,
-		title: pageId === "page-1" ? "Board" : "",
-		url: pageId === "page-1" ? SITE : "",
+		title: url === "" ? "" : "Board",
+		url,
 		favicon: null,
 		isInkReading: false,
 		isAskWaiting: false,
 		isClosedToInk: false,
-	}));
+	};
+}
+
+class ManyPagesGateway extends PageFactsGateway {
+	readonly opened: string[] = [];
+	readonly reloaded: string[] = [];
+	readonly closed: string[] = [];
+	shown: string | null = null;
+	private facts: readonly PageFacts[] = [pageAt("page-1", SITE)];
+
+	isAvailable(): boolean {
+		return true;
+	}
 
 	pages(): readonly PageFacts[] {
 		return this.facts;
@@ -78,10 +91,26 @@ class TwoPagesGateway extends PageFactsGateway {
 		return () => undefined;
 	}
 
-	showPage(): void {}
+	openPage(pageId: string): void {
+		if (this.facts.some((page) => page.pageId === pageId)) {
+			return;
+		}
+
+		this.facts = [...this.facts, pageAt(pageId, "")];
+	}
+
+	closePage(pageId: string): void {
+		this.closed.push(pageId);
+		this.facts = this.facts.filter((page) => page.pageId !== pageId);
+	}
+
+	showPage(pageId: string): void {
+		this.shown = pageId;
+	}
 
 	openAddress(pageId: string, address: string): void {
 		this.opened.push(`${pageId} ${address}`);
+		this.facts = this.facts.map((page) => (page.pageId === pageId ? pageAt(pageId, address) : page));
 	}
 
 	reloadPage(pageId: string): void {
@@ -101,11 +130,11 @@ class NoKeptColumnGateway extends TabsColumnGateway {
 
 interface Started {
 	readonly host: StartedApp;
-	readonly pages: TwoPagesGateway;
+	readonly pages: ManyPagesGateway;
 }
 
 function started(): Started {
-	const pages = new TwoPagesGateway();
+	const pages = new ManyPagesGateway();
 	const hostTabs = new HostTabs([
 		{
 			app: "canvas",
@@ -152,10 +181,15 @@ async function checksDuplicate(check: Check): Promise<void> {
 	await host.send(DuplicateTabCommand, { id: "tab-2" });
 	const tabs = await tabsOf(host);
 	const copy = tabs[2];
+	const copyPage = pages.pages().at(-1)?.pageId ?? "";
 	check(
-		"Duplicate tab opens the same kind of app right after the tab, on a free page, at the same address",
-		copy?.app === "browser" && tabs[1]?.id === "tab-2" && pages.opened.join() === `page-2 ${SITE}`,
-		{ order: tabs.map((tab) => `${tab.id}:${tab.app}`), opened: pages.opened },
+		"Duplicate tab opens a new page right after the tab, at the same address, and shows it",
+		copy?.app === "browser" &&
+			tabs[1]?.id === "tab-2" &&
+			pages.pages().length === 2 &&
+			pages.opened.join() === `${copyPage} ${SITE}` &&
+			pages.shown === copyPage,
+		{ order: tabs.map((tab) => `${tab.id}:${tab.app}`), opened: pages.opened, shown: pages.shown },
 	);
 	await host.send(DuplicateTabCommand, { id: "tab-3" });
 	const canvas = await tabsOf(host);
@@ -167,14 +201,19 @@ async function checksDuplicate(check: Check): Promise<void> {
 }
 
 async function checksNewTabBelow(check: Check): Promise<void> {
-	const { host } = started();
+	const { host, pages } = started();
 	const before = await idsOf(host);
+	await host.send(OpenTabBelowCommand, { id: "tab-1" });
 	await host.send(OpenTabBelowCommand, { id: "tab-1" });
 	const after = await tabsOf(host);
 	check(
-		"New tab below opens a browser tab at the next index, in the pressed tab's group",
-		after[1]?.app === "browser" && after[1]?.isPinned === true && !before.includes(after[1]?.id ?? "tab-1"),
-		after.map((tab) => `${tab.id}:${tab.app}${tab.isPinned ? "*" : ""}`),
+		"New tab below opens a browser tab on a new page at the next index, in the pressed tab's group, every time",
+		after[1]?.app === "browser" &&
+			after[1]?.isPinned === true &&
+			!before.includes(after[1]?.id ?? "tab-1") &&
+			after[1]?.title === "New tab" &&
+			pages.pages().length === 3,
+		after.map((tab) => `${tab.id}:${tab.app}${tab.isPinned ? "*" : ""}:${tab.title}`),
 	);
 }
 
@@ -225,7 +264,7 @@ async function checksClosedKept(check: Check): Promise<void> {
 			isPinned: false,
 		}),
 	);
-	opened.forEach((tab) => hostTabs.close(tab.id));
+	opened.forEach((tab) => hostTabs.close(tab.id, null));
 	const { closed } = hostTabs.now();
 	check(
 		`the closed-tabs stack keeps the last ${CLOSED_KEPT}`,
@@ -257,5 +296,39 @@ async function checksTabsParse(check: Check): Promise<void> {
 			fresh: fresh.ok ? fresh.output.canReopen : fresh.reason,
 			closed: closed.ok ? closed.output.canReopen : closed.reason,
 		},
+	);
+}
+
+async function checksManyPages(check: Check): Promise<void> {
+	const { host, pages } = started();
+	await host.send(OpenTabCommand, { app: "browser" });
+	await host.send(OpenTabCommand, { app: "browser" });
+	await host.send(OpenTabCommand, { app: "browser" });
+	const opened = await tabsOf(host);
+	const browserTabs = opened.filter((tab) => tab.app === "browser");
+	check(
+		"New tab opens as many browser tabs as asked, each on its own page in the new-tab state",
+		browserTabs.length === 4 &&
+			pages.pages().length === 4 &&
+			browserTabs.slice(1).every((tab) => tab.title === "New tab"),
+		{ tabs: browserTabs.map((tab) => tab.title), pages: pages.pages().map((page) => page.pageId) },
+	);
+	await host.send(ShowTabCommand, { id: "tab-2" });
+	check("showing a tab shows its own page", pages.shown === "page-1", pages.shown);
+	const third = browserTabs[2]?.id ?? "";
+	const thirdPage = pages.pages()[2]?.pageId ?? "";
+	await host.send(CloseTabCommand, { id: third });
+	check(
+		"closing a browser tab closes its page and keeps the others",
+		pages.closed.join() === thirdPage && pages.pages().length === 3,
+		{ closed: pages.closed, pages: pages.pages().length },
+	);
+	await host.send(CloseTabCommand, { id: "tab-2" });
+	await host.send(ReopenClosedTabCommand);
+	const reopened = (await tabsOf(host)).find((tab) => tab.id === "tab-2");
+	check(
+		"Reopen closed tab opens a page again at its last address",
+		reopened?.address === SITE && pages.opened.includes(`page-1 ${SITE}`) && pages.shown === "page-1",
+		{ reopened, opened: pages.opened },
 	);
 }

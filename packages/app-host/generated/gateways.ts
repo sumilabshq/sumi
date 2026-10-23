@@ -9,3 +9,5 @@ export * from "../gateways/page-facts/none.gateway.js";
 export * from "../gateways/page-facts/page-facts.gateway.js";
 export * from "../gateways/tabs-column/local-storage.gateway.js";
 export * from "../gateways/tabs-column/tabs-column.gateway.js";
+export * from "../gateways/tabs-session/none.gateway.js";
+export * from "../gateways/tabs-session/tabs-session.gateway.js";

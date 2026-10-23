@@ -6,4 +6,5 @@ export * from "../features/tabs/contract.js";
 export * from "../shared/schema/app-tab.schema.js";
 export * from "../shared/schema/page-facts.schema.js";
 export * from "../shared/schema/tabs-column.schema.js";
+export * from "../shared/schema/tabs-session.schema.js";
 export * from "../shared/ui/index.js";

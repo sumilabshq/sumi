@@ -3,7 +3,9 @@ import type { PageFacts } from "@widgetarium/app-host";
 import {
 	AccessAsksQuery,
 	BrowserTabsQuery,
+	ClosePageCommand,
 	OpenAddressCommand,
+	OpenPageCommand,
 	ReloadPageCommand,
 	ShowTabCommand,
 } from "@widgetarium/browser";
@@ -17,12 +19,15 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 	private readonly watchers = new Set<() => void>();
 	private readonly browserApp: StartedApp;
 	private readonly stops: readonly (() => void)[];
+	private readonly isBrowserAvailable: boolean;
+	private sends: Promise<void> = Promise.resolve();
 	private facts: readonly PageFacts[] = [];
 	private latestRead = 0;
 
 	constructor(parts: BrowserParts) {
 		super();
 		this.browserApp = app({ modules: [BrowserClientModule.with(parts)] });
+		this.isBrowserAvailable = parts.browserPagesGateway.isAvailable();
 		const refresh = (): void => void this.refresh();
 		this.stops = [
 			parts.browserPagesGateway.watch(refresh),
@@ -34,6 +39,10 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		refresh();
 	}
 
+	isAvailable(): boolean {
+		return this.isBrowserAvailable;
+	}
+
 	pages(): readonly PageFacts[] {
 		return this.facts;
 	}
@@ -43,20 +52,37 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 		return () => void this.watchers.delete(changed);
 	}
 
+	openPage(pageId: string): void {
+		this.sendInOrder("open", pageId, () => this.browserApp.send(OpenPageCommand, { tabId: pageId }));
+	}
+
+	closePage(pageId: string): void {
+		this.sendInOrder("close", pageId, () => this.browserApp.send(ClosePageCommand, { tabId: pageId }));
+	}
+
 	showPage(pageId: string): void {
-		void this.browserApp.send(ShowTabCommand, { tabId: pageId });
+		this.sendInOrder("show", pageId, () => this.browserApp.send(ShowTabCommand, { tabId: pageId }));
 	}
 
 	openAddress(pageId: string, address: string): void {
-		void this.sent("open an address in", pageId, this.browserApp.send(OpenAddressCommand, { tabId: pageId, address }));
+		this.sendInOrder("open an address in", pageId, () =>
+			this.browserApp.send(OpenAddressCommand, {
+				tabId: pageId,
+				address,
+			}),
+		);
 	}
 
 	reloadPage(pageId: string): void {
-		void this.sent("reload", pageId, this.browserApp.send(ReloadPageCommand, { tabId: pageId }));
+		this.sendInOrder("reload", pageId, () => this.browserApp.send(ReloadPageCommand, { tabId: pageId }));
 	}
 
 	stop(): void {
 		this.stops.forEach((stop) => stop());
+	}
+
+	private sendInOrder(what: string, pageId: string, send: () => Promise<{ readonly ok: boolean }>): void {
+		this.sends = this.sends.then(() => this.sent(what, pageId, send()));
 	}
 
 	private async sent(what: string, pageId: string, answer: Promise<{ readonly ok: boolean }>): Promise<void> {

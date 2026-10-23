@@ -40,7 +40,6 @@ export const AppTabsSchema = z.object({
 	apps: z.array(AppChoiceSchema).readonly(),
 	preview: AppTabSchema.nullable(),
 	canReopen: z.boolean(),
-	canOpenBrowser: z.boolean(),
 });
 
 export type AppTabs = z.infer<typeof AppTabsSchema>;

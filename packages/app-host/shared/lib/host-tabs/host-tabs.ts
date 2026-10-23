@@ -12,9 +12,15 @@ export interface HostTab extends OpenedTab {
 	readonly label: string | null;
 }
 
+export interface TabPage {
+	readonly pageId: string;
+	readonly address: string;
+}
+
 export interface ClosedTab {
 	readonly tab: HostTab;
 	readonly at: number;
+	readonly address: string;
 }
 
 export interface HostTabsMoment {
@@ -37,7 +43,12 @@ export class HostTabs {
 		closed: [],
 	};
 
-	constructor(opened: readonly OpenedTab[]) {
+	constructor(opened: readonly OpenedTab[], kept: HostTabsMoment | null = null) {
+		if (kept !== null && kept.tabs.length > 0) {
+			this.moment = kept;
+			return;
+		}
+
 		for (const tab of opened) {
 			this.open(tab);
 		}
@@ -88,20 +99,20 @@ export class HostTabs {
 		);
 	}
 
-	close(id: string): void {
+	close(id: string, page: TabPage | null): void {
 		const closing = this.tabOf(id);
 		this.become(
 			{
 				...this.moment,
 				tabs: this.moment.tabs.filter((tab) => tab.id !== id),
 				shownId: this.moment.shownId === id ? this.neighbourOf(id) : this.moment.shownId,
-				closed: keptClosed(this.moment.closed, [this.closedOf(closing)]),
+				closed: keptClosed(this.moment.closed, [this.closedOf(closing, page)]),
 			},
 			`close ${id}`,
 		);
 	}
 
-	closeOthers(keptId: string): void {
+	closeOthers(keptId: string, pages: ReadonlyMap<string, TabPage>): void {
 		this.tabOf(keptId);
 		const closing = this.moment.tabs.filter((tab) => tab.id !== keptId && !tab.isPinned);
 
@@ -116,24 +127,23 @@ export class HostTabs {
 				...this.moment,
 				tabs: this.moment.tabs.filter((tab) => !closingIds.has(tab.id)),
 				shownId: shownId !== null && closingIds.has(shownId) ? keptId : shownId,
-				closed: keptClosed(this.moment.closed, closing.map((tab) => this.closedOf(tab)).reverse()),
+				closed: keptClosed(
+					this.moment.closed,
+					closing.map((tab) => this.closedOf(tab, pages.get(tab.id) ?? null)).reverse(),
+				),
 			},
 			`close ${closing.length} tabs beside ${keptId}`,
 		);
 	}
 
-	reopenClosed(): HostTab | null {
+	reopenClosed(): ClosedTab | null {
 		const last = this.moment.closed.at(-1);
 
 		if (!last) {
 			return null;
 		}
 
-		const isPageTaken = this.moment.tabs.some((tab) => last.tab.pageId !== null && tab.pageId === last.tab.pageId);
-		const tab = {
-			...last.tab,
-			pageId: isPageTaken ? null : last.tab.pageId,
-		};
+		const { tab } = last;
 		const at = Math.min(last.at, this.moment.tabs.length);
 		this.become(
 			{
@@ -144,7 +154,7 @@ export class HostTabs {
 			},
 			`reopen ${tab.id} at ${at}`,
 		);
-		return tab;
+		return last;
 	}
 
 	rename(id: string, typed: string): void {
@@ -214,10 +224,14 @@ export class HostTabs {
 		return tab;
 	}
 
-	private closedOf(tab: HostTab): ClosedTab {
+	private closedOf(tab: HostTab, page: TabPage | null): ClosedTab {
 		return {
-			tab,
+			tab: {
+				...tab,
+				pageId: page?.pageId ?? tab.pageId,
+			},
 			at: this.moment.tabs.indexOf(tab),
+			address: page?.address ?? "",
 		};
 	}
 

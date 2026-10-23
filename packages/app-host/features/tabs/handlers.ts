@@ -19,10 +19,10 @@ import {
 	ShowTabCommand,
 } from "./contract.js";
 import { AppHostClientModule } from "../../module.js";
-import { closeTab } from "./lib/close-tab.js";
+import { closeOtherTabs, closeTab } from "./lib/close-tab.js";
 import { newTabPageOf } from "./lib/new-tab-page.js";
-import { showTab } from "./lib/show-tab.js";
-import { pagesOfTabs } from "./lib/tab-pages.js";
+import { openTabPage, showTab } from "./lib/show-tab.js";
+import { tabPagesOf } from "./lib/tab-pages.js";
 import { APP_CHOICES, shownTabIdOf, tabRowsOf } from "./lib/tab-rows.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
@@ -43,7 +43,6 @@ export const AppTabsQueryHandler = handler(AppTabsQuery, AppHostClientModule)
 		// TODO: the chat opens a preview here; nothing does yet
 		preview: null,
 		canReopen: hostTabs.now().closed.length > 0,
-		canOpenBrowser: !("refusal" in newTabPageOf("browser", hostTabs.now().tabs, pageFactsGateway.pages())),
 	}));
 
 export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule)
@@ -62,17 +61,12 @@ export const ShowTabCommandHandler = handler(ShowTabCommand, AppHostClientModule
 export const OpenTabCommandHandler = handler(OpenTabCommand, AppHostClientModule)
 	.inject(TABS)
 	.handle(({ app }, { hostTabs, ...showing }) => {
-		const page = newTabPageOf(app, hostTabs.now().tabs, showing.pageFactsGateway.pages());
-
-		if ("refusal" in page) {
-			return refuse(page.refusal);
-		}
-
 		const tab = hostTabs.open({
 			app,
-			pageId: page.pageId,
+			pageId: newTabPageOf(app, showing.pageFactsGateway.isAvailable()),
 			isPinned: false,
 		});
+		openTabPage(tab, "", showing);
 		showTab(tab, hostTabs.now().tabs, showing);
 	});
 
@@ -83,16 +77,11 @@ export const OpenTabBelowCommandHandler = handler(OpenTabBelowCommand, AppHostCl
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		const page = newTabPageOf("browser", hostTabs.now().tabs, showing.pageFactsGateway.pages());
-
-		if ("refusal" in page) {
-			return refuse(page.refusal);
-		}
-
 		const tab = hostTabs.openAfter(id, {
 			app: "browser",
-			pageId: page.pageId,
+			pageId: newTabPageOf("browser", showing.pageFactsGateway.isAvailable()),
 		});
+		openTabPage(tab, "", showing);
 		showTab(tab, hostTabs.now().tabs, showing);
 	});
 
@@ -105,29 +94,19 @@ export const DuplicateTabCommandHandler = handler(DuplicateTabCommand, AppHostCl
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		const pages = showing.pageFactsGateway.pages();
-		const page = newTabPageOf(source.app, hostTabs.now().tabs, pages);
-
-		if ("refusal" in page) {
-			return refuse(page.refusal);
-		}
-
-		const address = pagesOfTabs(hostTabs.now().tabs, pages).get(id)?.url ?? "";
+		const address = tabPagesOf(hostTabs.now().tabs, showing.pageFactsGateway.pages()).get(id)?.address ?? "";
 		const tab = hostTabs.openAfter(id, {
 			app: source.app,
-			pageId: page.pageId,
+			pageId: newTabPageOf(source.app, showing.pageFactsGateway.isAvailable()),
 		});
+		openTabPage(tab, address, showing);
 		showTab(tab, hostTabs.now().tabs, showing);
-
-		if (page.pageId !== null && address !== "") {
-			showing.pageFactsGateway.openAddress(page.pageId, address);
-		}
 	});
 
 export const ReloadTabCommandHandler = handler(ReloadTabCommand, AppHostClientModule)
 	.inject(TABS)
 	.handle(({ id }, { hostTabs, pageFactsGateway }) => {
-		const page = pagesOfTabs(hostTabs.now().tabs, pageFactsGateway.pages()).get(id);
+		const page = tabPagesOf(hostTabs.now().tabs, pageFactsGateway.pages()).get(id);
 
 		if (!page) {
 			return refuse(NO_PAGE.replace("{id}", id));
@@ -156,7 +135,7 @@ export const CloseOtherTabsCommandHandler = handler(CloseOtherTabsCommand, AppHo
 		}
 
 		const shownId = shownTabIdOf(hostTabs.now(), showing.appTabsGateway.shownApp());
-		hostTabs.closeOthers(id);
+		closeOtherTabs(id, hostTabs, showing);
 
 		if (shownId !== null && !heldTabOf(hostTabs, shownId)) {
 			showTab(kept, hostTabs.now().tabs, showing);
@@ -166,13 +145,14 @@ export const CloseOtherTabsCommandHandler = handler(CloseOtherTabsCommand, AppHo
 export const ReopenClosedTabCommandHandler = handler(ReopenClosedTabCommand, AppHostClientModule)
 	.inject(TABS)
 	.handle((_input, { hostTabs, ...showing }) => {
-		const tab = hostTabs.reopenClosed();
+		const reopened = hostTabs.reopenClosed();
 
-		if (!tab) {
+		if (!reopened) {
 			return refuse(NOTHING_CLOSED);
 		}
 
-		showTab(tab, hostTabs.now().tabs, showing);
+		openTabPage(reopened.tab, reopened.address, showing);
+		showTab(reopened.tab, hostTabs.now().tabs, showing);
 	});
 
 export const CloseTabCommandHandler = handler(CloseTabCommand, AppHostClientModule)

@@ -1,4 +1,4 @@
-import type { HostTab } from "../../../shared/lib/host-tabs/host-tabs.js";
+import type { HostTab, TabPage } from "../../../shared/lib/host-tabs/host-tabs.js";
 import type { PageFacts } from "../../../shared/schema/page-facts.schema.js";
 
 export function pagesOfTabs(tabs: readonly HostTab[], pages: readonly PageFacts[]): ReadonlyMap<string, PageFacts> {
@@ -17,7 +17,20 @@ export function pagesOfTabs(tabs: readonly HostTab[], pages: readonly PageFacts[
 	return held;
 }
 
-export function freePageOf(tabs: readonly HostTab[], pages: readonly PageFacts[]): PageFacts | null {
-	const held = new Set([...pagesOfTabs(tabs, pages).values()].map((page) => page.pageId));
-	return pages.find((page) => !held.has(page.pageId)) ?? null;
+export function tabPagesOf(tabs: readonly HostTab[], pages: readonly PageFacts[]): ReadonlyMap<string, TabPage> {
+	const facts = pagesOfTabs(tabs, pages);
+	const held = new Map<string, TabPage>();
+
+	for (const tab of tabs) {
+		const pageId = tab.pageId ?? facts.get(tab.id)?.pageId ?? null;
+
+		if (pageId !== null) {
+			held.set(tab.id, {
+				pageId,
+				address: facts.get(tab.id)?.url ?? "",
+			});
+		}
+	}
+
+	return held;
 }

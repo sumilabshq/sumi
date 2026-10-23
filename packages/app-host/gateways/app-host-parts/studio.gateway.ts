@@ -10,6 +10,9 @@ import { StudioHostAppsGateway } from "../host-apps/studio-host.gateway.js";
 import { NoPageFactsGateway } from "../page-facts/none.gateway.js";
 import type { PageFactsGateway } from "../page-facts/page-facts.gateway.js";
 import { LocalStorageTabsColumnGateway } from "../tabs-column/local-storage.gateway.js";
+import type { TabsColumnGateway } from "../tabs-column/tabs-column.gateway.js";
+import { NoTabsSessionGateway } from "../tabs-session/none.gateway.js";
+import type { TabsSessionGateway } from "../tabs-session/tabs-session.gateway.js";
 import type { AppHostParts } from "./app-host-parts.gateway.js";
 
 const FIRST_TABS: readonly OpenedTab[] = [
@@ -30,6 +33,8 @@ export interface StudioAppHost {
 	readonly workspace: string;
 	readonly pageFactsGateway?: PageFactsGateway;
 	readonly studioHost?: StudioHostPort;
+	readonly tabsColumnGateway?: TabsColumnGateway;
+	readonly tabsSessionGateway?: TabsSessionGateway;
 }
 
 export function studioAppHostParts({
@@ -37,10 +42,12 @@ export function studioAppHostParts({
 	workspace,
 	pageFactsGateway = new NoPageFactsGateway(),
 	studioHost = NO_STUDIO_HOST,
+	tabsColumnGateway = new LocalStorageTabsColumnGateway(workspace),
+	tabsSessionGateway = new NoTabsSessionGateway(),
 }: StudioAppHost): AppHostParts {
 	const appTabsGateway = new StudioStateAppTabsGateway(studioState);
-	const tabsColumnGateway = new LocalStorageTabsColumnGateway(workspace);
-	const hostTabs = new HostTabs(FIRST_TABS);
+	const hostTabs = new HostTabs(FIRST_TABS, tabsSessionGateway.kept());
+	hostTabs.watch(() => tabsSessionGateway.keep(hostTabs.now()));
 	const shownApp = appTabsGateway.shownApp();
 	const shownFirst = hostTabs.now().tabs.find((tab) => tab.app === shownApp);
 
