@@ -1,0 +1,10 @@
+InterVariable-latin.woff2 is Inter (https://github.com/rsms/inter), Copyright 2016
+The Inter Project Authors, licensed under the SIL Open Font License, Version 1.1,
+a copy of which sits beside this file.
+
+Taken unmodified from the npm package @fontsource-variable/inter@5.3.0
+(files/inter-latin-opsz-normal.woff2: the opsz and wght axes), integrity
+sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==
+
+The plugin build inlines it into the studio's sheet as an @font-face rule
+(tools/system-sheet.mts); it draws the studio's chrome in the Sumi system.

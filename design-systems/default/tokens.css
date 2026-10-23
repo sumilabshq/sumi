@@ -27,6 +27,11 @@
 	--fill-hover: color-mix(in srgb, var(--foreground) 10.5%, var(--background));
 	--accent-wash: color-mix(in srgb, var(--brand) 12%, var(--background));
 	--accent-wash-hover: color-mix(in srgb, var(--brand) 20%, var(--background));
+	--control-rest: var(--fill);
+	--control-hover: var(--fill-hover);
+	--control-open: var(--fill-hover);
+	--control-ink: var(--foreground);
+	--control-ink-on: var(--foreground);
 
 	--card: var(--group);
 	--card-foreground: var(--foreground);
@@ -46,6 +51,7 @@
 	--input: var(--border);
 	--ring: var(--brand);
 	--radius: 14px;
+	--control-radius: 999px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--blue);
@@ -113,6 +119,11 @@
 	--fill-hover: color-mix(in srgb, var(--foreground) 10.5%, var(--background));
 	--accent-wash: color-mix(in srgb, var(--brand) 12%, var(--background));
 	--accent-wash-hover: color-mix(in srgb, var(--brand) 20%, var(--background));
+	--control-rest: var(--fill);
+	--control-hover: var(--fill-hover);
+	--control-open: var(--fill-hover);
+	--control-ink: var(--foreground);
+	--control-ink-on: var(--foreground);
 
 	--card: var(--group);
 	--card-foreground: var(--foreground);
@@ -132,6 +143,7 @@
 	--input: var(--border);
 	--ring: var(--brand);
 	--radius: 14px;
+	--control-radius: 999px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--blue);

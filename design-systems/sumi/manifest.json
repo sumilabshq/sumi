@@ -1,0 +1,36 @@
+{
+	"schemaVersion": "od-design-system-project/v1",
+	"id": "sumi",
+	"name": "Sumi",
+	"category": "Product",
+	"description": "Quiet UI: hierarchy from text and spacing, ghost controls until touched, white plates on a pale frame, one loud thing per view and blue only as a wash.",
+	"source": {
+		"type": "authored",
+		"origin": "the approved Quiet UI brief and the Studio two layers canvas boards, 2026-10-22",
+		"credit": "Widgetarium studio design; Inter by The Inter Project Authors, Spectral by Production Type, JetBrains Mono by JetBrains, all SIL OFL 1.1"
+	},
+	"files": {
+		"design": "DESIGN.md",
+		"tokens": "tokens.css"
+	},
+	"usage": "USAGE.md",
+	"fit": {
+		"centre": ["function", "information"],
+		"activity": ["create", "operate", "edit"],
+		"photogenic": ["no", "user-photos"],
+		"session": ["long-work", "browse"],
+		"density": ["medium", "high"],
+		"tone": ["quiet", "calm", "precise"],
+		"device": ["desktop"]
+	},
+	"preview": {
+		"dir": "preview",
+		"pages": [
+			{
+				"path": "preview/colors.html",
+				"role": "colors",
+				"title": "Colours"
+			}
+		]
+	}
+}

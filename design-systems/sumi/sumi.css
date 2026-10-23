@@ -1,0 +1,192 @@
+:root {
+	--sumi-frame: #f7f7f7;
+	--sumi-plate: #ffffff;
+	--sumi-soft: #f7f7f7;
+	--sumi-sunken: rgba(0, 0, 0, 0.035);
+	--sumi-overlay: rgba(255, 255, 255, 0.9);
+	--sumi-text: #1d1d1f;
+	--sumi-text-2: rgba(0, 0, 0, 0.6);
+	--sumi-text-3: rgba(0, 0, 0, 0.4);
+	--sumi-hover: rgba(0, 0, 0, 0.035);
+	--sumi-active: rgba(0, 0, 0, 0.06);
+	--sumi-line: rgba(0, 0, 0, 0.08);
+	--sumi-line-strong: rgba(0, 0, 0, 0.11);
+	--sumi-group-plain: rgba(0, 0, 0, 0.04);
+	--sumi-essential: rgba(0, 0, 0, 0.045);
+	--sumi-essential-hover: rgba(0, 0, 0, 0.07);
+	--sumi-essential-on: rgba(0, 0, 0, 0.09);
+	--sumi-accent: #3b5bfd;
+	--sumi-on-accent: #ffffff;
+	--sumi-accent-soft: rgba(59, 91, 253, 0.1);
+	--sumi-focus-ring: rgba(59, 91, 253, 0.55);
+	--sumi-success: #2f8f5b;
+	--sumi-warning: #c98a00;
+	--sumi-danger: #d93f2e;
+	--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
+	--sumi-shadow-pop: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.12);
+	--sumi-blur-pop: saturate(1.6) blur(20px);
+
+	--sumi-hue-red: #dc2626;
+	--sumi-hue-orange: #ea580c;
+	--sumi-hue-amber: #b45309;
+	--sumi-hue-green: #15803d;
+	--sumi-hue-teal: #0f766e;
+	--sumi-hue-blue: #2563eb;
+	--sumi-hue-purple: #7c3aed;
+	--sumi-hue-pink: #db2777;
+	--sumi-hue-slate: #64748b;
+	--sumi-group-tint: 9%;
+	--sumi-icon-tint: 15%;
+
+	--sumi-font-ui: "Inter Variable", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+	--sumi-font-accent: Spectral, Georgia, serif;
+	--sumi-font-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+	--sumi-font-features: "cv11", "ss03";
+	--sumi-fs-11: 11px;
+	--sumi-fs-12: 12px;
+	--sumi-fs-13: 13px;
+	--sumi-fs-14: 14px;
+	--sumi-fs-16: 16px;
+	--sumi-fs-20: 20px;
+	--sumi-fs-28: 28px;
+	--sumi-fw-regular: 400;
+	--sumi-fw-medium: 500;
+	--sumi-fw-semi: 600;
+
+	--sumi-sp-1: 2px;
+	--sumi-sp-2: 4px;
+	--sumi-sp-3: 6px;
+	--sumi-sp-4: 8px;
+	--sumi-sp-5: 12px;
+	--sumi-sp-6: 16px;
+	--sumi-sp-7: 20px;
+	--sumi-sp-8: 24px;
+	--sumi-sp-9: 32px;
+
+	--sumi-r-xs: 4px;
+	--sumi-r-sm: 6px;
+	--sumi-r-md: 8px;
+	--sumi-r-lg: 12px;
+	--sumi-r-group: 14px;
+	--sumi-r-xl: 14px;
+	--sumi-r-full: 999px;
+
+	--sumi-h-xs: 24px;
+	--sumi-h-sm: 28px;
+	--sumi-h-row: 32px;
+	--sumi-h-md: 32px;
+	--sumi-h-lg: 36px;
+	--sumi-icon: 16px;
+	--sumi-icon-sm: 14px;
+	--sumi-header-h: 44px;
+	--sumi-sidebar-w: 248px;
+	--sumi-sidebar-min: 200px;
+	--sumi-sidebar-max: 420px;
+	--sumi-gap: 8px;
+
+	--sumi-dur-instant: 0ms;
+	--sumi-dur-hover: 60ms;
+	--sumi-dur-fast: 120ms;
+	--sumi-dur-base: 180ms;
+	--sumi-dur-slow: 240ms;
+	--sumi-ease: cubic-bezier(0.2, 0, 0, 1);
+	--sumi-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+	--sumi-selected: #ffffff;
+	--sumi-glyph-rest: rgba(0, 0, 0, 0.28);
+	--sumi-glyph-hover: rgba(0, 0, 0, 0.45);
+	--sumi-glyph-on: rgba(0, 0, 0, 0.78);
+	--sumi-menu-glyph: rgba(0, 0, 0, 0.3);
+	--sumi-menu-glyph-on: rgba(0, 0, 0, 0.6);
+	--sumi-pick: rgb(255 255 255 / 0.92);
+	--sumi-pick-edge: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+	--sumi-blur-pick: saturate(1.15) blur(32px);
+	--sumi-tip-kbd: rgba(127, 127, 127, 0.35);
+	--sumi-fs-tip: 12.5px;
+	--sumi-h-tip: 30px;
+	--sumi-r-tip: 9px;
+	--sumi-tip-arrow: 8px;
+	--sumi-dur-out: 100ms;
+	--sumi-fs-15: 15px;
+	--sumi-fs-glyph: 18px;
+	--sumi-fs-glyph-lg: 22px;
+	--sumi-fs-17: 17px;
+
+	--sumi-chats-w: 268px;
+	--sumi-chat-w: 560px;
+	--sumi-plate-min: 320px;
+	--sumi-strip-blur-near: 2px;
+	--sumi-strip-blur-mid: 6px;
+	--sumi-strip-blur-far: 16px;
+	--sumi-strip-veil: 40%;
+}
+
+:root.dark,
+.dark,
+.theme-dark {
+	--sumi-frame: #141414;
+	--sumi-plate: #1f1f1f;
+	--sumi-soft: #262626;
+	--sumi-sunken: rgba(255, 255, 255, 0.05);
+	--sumi-overlay: rgba(38, 38, 38, 0.92);
+	--sumi-text: #ededed;
+	--sumi-text-2: rgba(255, 255, 255, 0.62);
+	--sumi-text-3: rgba(255, 255, 255, 0.4);
+	--sumi-hover: rgba(255, 255, 255, 0.05);
+	--sumi-active: rgba(255, 255, 255, 0.09);
+	--sumi-line: rgba(255, 255, 255, 0.08);
+	--sumi-line-strong: rgba(255, 255, 255, 0.14);
+	--sumi-group-plain: rgba(255, 255, 255, 0.05);
+	--sumi-essential: rgba(255, 255, 255, 0.06);
+	--sumi-essential-hover: rgba(255, 255, 255, 0.09);
+	--sumi-essential-on: rgba(255, 255, 255, 0.12);
+	--sumi-accent-soft: rgba(91, 120, 255, 0.18);
+	--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
+	--sumi-shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 28px rgba(0, 0, 0, 0.5);
+
+	--sumi-hue-red: #f87171;
+	--sumi-hue-orange: #fb923c;
+	--sumi-hue-amber: #fbbf24;
+	--sumi-hue-green: #4ade80;
+	--sumi-hue-teal: #2dd4bf;
+	--sumi-hue-blue: #60a5fa;
+	--sumi-hue-purple: #a78bfa;
+	--sumi-hue-pink: #f472b6;
+	--sumi-hue-slate: #94a3b8;
+	--sumi-group-tint: 13%;
+
+	--sumi-selected: #2a2a2a;
+	--sumi-glyph-rest: rgba(255, 255, 255, 0.3);
+	--sumi-glyph-hover: rgba(255, 255, 255, 0.5);
+	--sumi-glyph-on: rgba(255, 255, 255, 0.85);
+	--sumi-menu-glyph: rgba(255, 255, 255, 0.32);
+	--sumi-menu-glyph-on: rgba(255, 255, 255, 0.65);
+	--sumi-pick: rgb(30 30 30 / 0.92);
+	--sumi-pick-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.sumi-ink-dark {
+	--sumi-text: #1d1d1f;
+	--sumi-text-2: rgba(0, 0, 0, 0.6);
+	--sumi-text-3: rgba(0, 0, 0, 0.4);
+	--sumi-hover: rgba(0, 0, 0, 0.035);
+	--sumi-active: rgba(0, 0, 0, 0.06);
+}
+
+.sumi-ink-light {
+	--sumi-text: #ededed;
+	--sumi-text-2: rgba(255, 255, 255, 0.62);
+	--sumi-text-3: rgba(255, 255, 255, 0.4);
+	--sumi-hover: rgba(255, 255, 255, 0.05);
+	--sumi-active: rgba(255, 255, 255, 0.09);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--sumi-dur-hover: 0ms;
+		--sumi-dur-fast: 0ms;
+		--sumi-dur-base: 0ms;
+		--sumi-dur-slow: 0ms;
+		--sumi-dur-out: 0ms;
+	}
+}
