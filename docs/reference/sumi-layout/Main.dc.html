@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Studio, two layers</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#2E5BFF}a:hover{color:#1F45D6}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="position: relative; width: {{w}}px; height: {{h}}px; box-sizing: border-box; display: flex; gap: var(--g); padding: var(--g); background: var(--shell); color: var(--ink); font-family: Geist, system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 21px; overflow: hidden; {{vars}}">
+
+  <sc-if value="{{mac}}" hint-placeholder-val="{{true}}">
+    <div aria-hidden="true" style="position: absolute; top: 18px; left: 20px; display: flex; gap: 8px;">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{winNative}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; top: 0; right: 0; display: flex; color: var(--ink);">
+      <button aria-label="Minimize" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10" stroke="currentColor" stroke-width="1"></path></svg></button>
+      <button aria-label="Maximize" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"></rect></svg></button>
+      <button aria-label="Close window" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1"></path></svg></button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{linux}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 8px;">
+      <button aria-label="Minimize" style="width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--field); color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 6h8" stroke="currentColor" stroke-width="1.5"></path></svg></button>
+      <button aria-label="Close window" style="width: 22px; height: 22px; border: 0; border-radius: 50%; background: var(--field); color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="10" height="10" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5l7 7M9.5 2.5l-7 7" stroke="currentColor" stroke-width="1.5"></path></svg></button>
+    </div>
+  </sc-if>
+
+  <div style="{{leftFloat}}">
+  <sc-if value="{{hasRail}}" hint-placeholder-val="{{true}}">
+    <nav aria-label="Workspaces" style="width: 52px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: {{railTop}};">
+      <sc-if value="{{showChatsBtn}}" hint-placeholder-val="{{false}}">
+        <button aria-label="Show chats" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+        <span aria-hidden="true" style="width: 24px; height: 1px; background: var(--line-soft);"></span>
+      </sc-if>
+      <sc-for list="{{workspaces}}" as="ws" hint-placeholder-count="3">
+        <button aria-label="{{ws.name}}" style="width: 36px; height: 36px; border: 0; border-radius: 50%; font-size: 13px; font-weight: 600; {{ws.circleStyle}}">{{ws.letter}}</button>
+      </sc-for>
+      <button aria-label="New workspace" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{hasChats}}" hint-placeholder-val="{{false}}">
+    <nav aria-label="Chats" style="width: {{chatsW}}px; flex: none; display: flex; flex-direction: column; gap: 2px; min-height: 0;">
+      <div style="height: 32px; flex: none; display: flex; align-items: center; gap: 2px; padding-left: {{colTopPad}}; margin-top: 4px;">
+        <sc-if value="{{isSlack}}" hint-placeholder-val="{{false}}">
+          <span style="font-weight: 600; padding-left: 8px;">Default</span>
+        </sc-if>
+        <span style="flex: 1;"></span>
+        <button aria-label="Hide chats" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+        <button aria-label="New chat" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.38 3.62a1 1 0 0 1 3 3L7.37 18.64a2 2 0 0 1-.86.5l-2.87.84a.5.5 0 0 1-.62-.62l.84-2.87a2 2 0 0 1 .5-.86z"></path></svg></button>
+      </div>
+
+      <sc-if value="{{isSwitcher}}" hint-placeholder-val="{{false}}">
+        <button style="height: 40px; flex: none; border: 0; border-radius: 999px; background: var(--chip); color: var(--ink); display: flex; align-items: center; gap: 10px; padding: 0 14px 0 8px; margin-top: 4px; font-size: 13px; font-weight: 500;">
+          <span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: var(--fill); color: var(--onfill); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">D</span>
+          <span style="flex: 1; text-align: left;">Default</span>
+          <span style="color: var(--muted); font-weight: 400;">7 workspaces</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{isStrip}}" hint-placeholder-val="{{false}}">
+        <div style="flex: none; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 4px 0; -webkit-mask-image: linear-gradient(to right, #000 82%, transparent); mask-image: linear-gradient(to right, #000 82%, transparent);">
+          <sc-for list="{{workspaces}}" as="ws" hint-placeholder-count="5">
+            <button aria-label="{{ws.name}}" style="flex: none; height: 32px; border: 0; border-radius: 999px; display: flex; align-items: center; gap: 6px; padding: 0 12px 0 4px; font-size: 13px; font-weight: 500; {{ws.pillStyle}}"><span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; {{ws.dotStyle}}">{{ws.letter}}</span>{{ws.short}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isPins}}" hint-placeholder-val="{{false}}">
+        <div style="flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 4px 0;">
+          <sc-for list="{{workspaces}}" as="ws" hint-placeholder-count="7">
+            <button aria-label="{{ws.name}}" style="height: 44px; border: 0; border-radius: 999px; color: var(--ink); font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; {{ws.tileStyle}}">{{ws.letter}}</button>
+          </sc-for>
+          <button aria-label="New workspace" style="height: 44px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center; outline: 1px dashed var(--line); outline-offset: -1px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+        </div>
+      </sc-if>
+
+      <div style="height: 32px; flex: none; border-radius: 999px; background: var(--field); display: flex; align-items: center; gap: 8px; padding: 0 12px; margin: 4px 0 6px; color: var(--muted); font-size: 13px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <span>Search chats</span>
+      </div>
+
+      <div style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 2px;">
+        <sc-for list="{{groups}}" as="group" hint-placeholder-count="3">
+          <div style="height: 28px; flex: none; border-radius: 999px; display: flex; align-items: center; gap: 2px; padding: 0 4px 0 12px; margin-top: 8px; {{group.headStyle}}">
+            <span style="flex: 1; font-size: 12px; font-weight: 500; color: var(--muted);">{{group.label}}</span>
+            <sc-if value="{{group.hovered}}" hint-placeholder-val="{{false}}">
+              <button aria-label="New chat in this group" style="width: 24px; height: 24px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+              <button aria-label="Group options" style="width: 24px; height: 24px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="19" cy="12" r="1.8"></circle></svg></button>
+            </sc-if>
+          </div>
+          <sc-for list="{{group.chats}}" as="chat" hint-placeholder-count="2">
+            <button style="height: 32px; flex: none; border: 0; border-radius: 999px; color: var(--ink); display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 13px; text-align: left; {{chat.rowStyle}}"><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{chat.title}}</span><sc-if value="{{chat.running}}" hint-placeholder-val="{{false}}"><span aria-label="Running" style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent);"></span></sc-if></button>
+          </sc-for>
+        </sc-for>
+      </div>
+
+      <div style="height: 40px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 6px;">
+        <span aria-hidden="true" style="width: 24px; height: 24px; border-radius: 50%; background: var(--chip); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">D</span>
+        <span style="font-size: 13px; font-weight: 500;">Denis</span><span style="font-size: 12px; color: var(--muted);">Max</span>
+      </div>
+    </nav>
+  </sc-if>
+
+  </div>
+  <section aria-label="Chat" style="width: {{chatW}}px; flex: none; display: flex; flex-direction: column; background: var(--chat-bg); border-radius: var(--r); padding: 10px 18px 14px; box-sizing: border-box;">
+    <div style="height: 36px; display: flex; align-items: center; gap: 10px; padding-left: {{chatHeadPad}};">
+      <span aria-hidden="true" style="position: relative; width: 24px; height: 24px; border-radius: 50%; background: var(--fill); display: inline-block;">
+        <span style="position: absolute; left: 7px; top: 7px; width: 3px; height: 8px; border-radius: 2px; background: var(--onfill);"></span>
+        <span style="position: absolute; left: 12px; top: 7px; width: 3px; height: 8px; border-radius: 2px; background: var(--onfill);"></span>
+      </span>
+      <span style="font-weight: 600; flex: 1;">Layout redesign and accessibility</span>
+      <button aria-label="Chat menu" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding-top: 16px; min-height: 0;">
+      <div style="align-self: flex-end; max-width: 380px; background: var(--bubble); border-radius: 18px; padding: 8px 14px;">Remove the app header and move its controls into the tab sidebar.</div>
+      <div style="max-width: 480px;">The sidebar keeps the tabs: pinned apps, open tabs, New tab and Open app. The app you are on adds one block of its own controls to it, and the plate under it holds only the app.</div>
+      <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; line-height: 16px; color: var(--muted);">
+        <span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: var(--success);"></span>
+        <span>Done · 11 s</span>
+      </div>
+    </div>
+
+    <div style="background: var(--surface); border: 1px solid var(--composer-edge); border-radius: var(--r-c); padding: 12px 8px 8px 14px; display: flex; flex-direction: column; gap: 10px;">
+      <label for="composer" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Message</label>
+      <input id="composer" placeholder="Describe what to build or change" style="border: 0; outline: none; background: transparent; font: inherit; color: var(--ink); padding: 0;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <button aria-label="Attach" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--bubble); color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+        <button style="height: 32px; border: 0; border-radius: 999px; background: var(--bubble); color: var(--ink); padding: 0 10px; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500;"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: var(--success);"></span>Claude Code<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <span style="flex: 1;"></span>
+        <button style="height: 32px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); padding: 0 8px; font-size: 12px;">Opus · Medium</button>
+        <button aria-label="Send" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--accent); color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7M12 19V5"></path></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+  <sc-if value="{{band}}" hint-placeholder-val="{{false}}">
+    <div style="height: 26px; flex: none; display: flex; align-items: center; padding: 0 8px 8px; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden;">{{bandTitle}}</div>
+  </sc-if>
+  <main aria-label="{{appName}}" style="flex: 1; min-height: 0; min-width: 0; background: var(--surface); border-radius: var(--r); display: flex; flex-direction: column; overflow: hidden;">
+    <sc-if value="{{plateBar}}" hint-placeholder-val="{{false}}">
+      <div style="height: 48px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px;">
+        <button aria-label="Back" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7M19 12H5"></path></svg></button>
+        <button aria-label="Forward" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7"></path></svg></button>
+        <button aria-label="Reload" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg></button>
+        <span style="flex: 1;"></span>
+        <div style="width: 100%; max-width: 520px; height: 32px; border-radius: 999px; background: var(--bubble); display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path></svg>
+          <span>{{address}}</span>
+        </div>
+        <span style="flex: 1;"></span>
+        <button aria-label="Page menu" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showHome}}" hint-placeholder-val="{{true}}">
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;">
+        <span aria-hidden="true" style="position: relative; width: 88px; height: 88px; border-radius: 50%; background: var(--fill); display: inline-block;">
+          <span style="position: absolute; left: 26px; top: 26px; width: 8px; height: 28px; border-radius: 4px; background: var(--onfill);"></span>
+          <span style="position: absolute; left: 42px; top: 26px; width: 8px; height: 28px; border-radius: 4px; background: var(--onfill);"></span>
+        </span>
+        <h1 style="margin: 0; font-size: 26px; line-height: 30px; font-weight: 600; letter-spacing: -0.02em;">Where to?</h1>
+        <div style="width: 440px; max-width: 80%; height: 44px; box-sizing: border-box; border-radius: 999px; background: var(--bubble); display: flex; align-items: center; gap: 10px; padding: 0 6px 0 16px; color: var(--muted);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <span style="flex: 1;">Search or type an address</span>
+          <button aria-label="Go" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: var(--fill); color: var(--onfill); display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 4v7a4 4 0 0 1-4 4H4"></path><path d="m9 10-5 5 5 5"></path></svg></button>
+        </div>
+        <button style="height: 36px; border: 0; border-radius: 999px; background: var(--soft); color: var(--soft-text); padding: 0 14px; font-size: 13px; font-weight: 500;">Ask Ink to find it</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showSite}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1; display: flex; flex-direction: column; background: #16171B; color: #F4F4F5;">
+        <div style="height: 56px; flex: none; display: flex; align-items: center; gap: 16px; padding: 0 20px; border-bottom: 1px solid #2E2F35;">
+          <span style="width: 96px; height: 20px; border-radius: 999px; background: #3A3B42;"></span>
+          <span style="flex: 1;"></span>
+          <span style="width: 360px; height: 36px; border-radius: 999px; background: #26272C; display: flex; align-items: center; padding: 0 14px; color: #A3A6AE; font-size: 13px;">The site's own header and search</span>
+          <span style="flex: 1;"></span>
+          <span style="width: 32px; height: 32px; border-radius: 50%; background: #3A3B42;"></span>
+        </div>
+        <div style="flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 20px; align-content: start;">
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C; display: flex; align-items: center; justify-content: center; color: #A3A6AE; font-size: 13px;">[Website content]</div>
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C;"></div>
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C;"></div>
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C;"></div>
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C;"></div>
+          <div style="aspect-ratio: 16 / 9; border-radius: 12px; background: #26272C;"></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showCanvas}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1; display: flex; min-height: 0;">
+        <div style="width: 200px; flex: none; border-right: 1px solid var(--line-soft); padding: 12px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+          <span style="font-size: 12px; font-weight: 500; color: var(--muted); padding: 0 8px 4px;">Pages</span>
+          <button style="height: 32px; border: 0; border-radius: 999px; background: var(--bubble); color: var(--ink); display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: 13px; font-weight: 500;"><span aria-hidden="true" style="width: 5px; height: 5px; border-radius: 50%; background: var(--ink);"></span>/</button>
+          <span style="font-size: 12px; font-weight: 500; color: var(--muted); padding: 16px 8px 4px;">Layers</span>
+          <span style="font-size: 12px; line-height: 17px; color: var(--muted); padding: 0 8px;">This screen is not drawn by a page widget, so it has no layers to show.</span>
+        </div>
+        <div style="flex: 1; position: relative; background-color: var(--surface); background-image: radial-gradient(var(--line-soft) 1px, transparent 1px); background-size: 16px 16px; padding: 64px 48px; box-sizing: border-box;">
+          <div style="font-size: 26px; line-height: 30px; font-weight: 600; letter-spacing: -0.02em;">Pages · 1</div>
+          <div style="margin-top: 40px; font-size: 12px; color: var(--muted);">/ · 1 state</div>
+          <div style="margin-top: 8px; height: 420px; border-radius: 16px; background: var(--bubble); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px;">[Route / drawn here]</div>
+        </div>
+      </div>
+    </sc-if>
+  </main>
+  </div>
+
+  <sc-if value="{{tabsOpen}}" hint-placeholder-val="{{true}}">
+  <aside aria-label="Tabs" style="width: 232px; flex: none; display: flex; flex-direction: column; gap: 2px; padding-top: {{sideTop}}; box-sizing: border-box; {{asideFloat}}">
+    <div style="height: 32px; flex: none; display: flex; align-items: center; gap: 6px; margin: 4px 0 6px;">
+      <button aria-label="Hide sidebar" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg></button>
+      <span style="font-weight: 600; font-size: 13px;">Tabs</span><span style="color: var(--muted); font-size: 13px;">{{tabCount}}</span>
+      <span style="flex: 1;"></span>
+      <button aria-label="Tabs menu" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+    </div>
+
+    <sc-if value="{{zoneTop}}" hint-placeholder-val="{{true}}">
+      <div style="padding-bottom: 6px;">
+        <dc-import name="AppZone" app="{{app}}" page="{{page}}" nested="no" hint-size="232px,76px"></dc-import>
+      </div>
+    </sc-if>
+
+    <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--muted); padding: 10px 12px 4px;">Workspace</div>
+    <sc-for list="{{pinnedHead}}" as="t" hint-placeholder-count="1">
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; color: var(--ink); display: flex; align-items: center; gap: 10px; padding: 0 8px 0 12px; font-size: 13px; text-align: left; {{t.style}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{t.d}}"></path></svg><span style="flex: 1;">{{t.label}}</span><sc-if value="{{t.active}}" hint-placeholder-val="{{false}}"><span aria-label="Close tab" style="width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></span></sc-if></button>
+    </sc-for>
+    <sc-if value="{{zoneInPinned}}" hint-placeholder-val="{{false}}">
+      <dc-import name="AppZone" app="{{app}}" page="{{page}}" nested="yes" hint-size="232px,84px"></dc-import>
+    </sc-if>
+
+    <div style="font-size: 12px; line-height: 16px; font-weight: 500; color: var(--muted); padding: 10px 12px 4px;">This chat</div>
+    <sc-for list="{{tabsHead}}" as="t" hint-placeholder-count="1">
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; color: var(--ink); display: flex; align-items: center; gap: 10px; padding: 0 8px 0 12px; font-size: 13px; text-align: left; {{t.style}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{t.d}}"></path></svg><span style="flex: 1;">{{t.label}}</span><sc-if value="{{t.active}}" hint-placeholder-val="{{false}}"><span aria-label="Close tab" style="width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--muted);"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></span></sc-if></button>
+    </sc-for>
+    <sc-if value="{{zoneInTabs}}" hint-placeholder-val="{{false}}">
+      <dc-import name="AppZone" app="{{app}}" page="{{page}}" nested="yes" hint-size="232px,84px"></dc-import>
+    </sc-if>
+    <sc-for list="{{tabsTail}}" as="t" hint-placeholder-count="1">
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; color: var(--ink); display: flex; align-items: center; gap: 10px; padding: 0 8px 0 12px; font-size: 13px; text-align: left; {{t.style}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{t.d}}"></path></svg><span style="flex: 1;">{{t.label}}</span></button>
+    </sc-for>
+
+    <span style="flex: 1;"></span>
+    <sc-if value="{{zoneBottom}}" hint-placeholder-val="{{false}}">
+      <div style="padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line-soft);">
+        <dc-import name="AppZone" app="{{app}}" page="{{page}}" nested="no" hint-size="232px,76px"></dc-import>
+      </div>
+    </sc-if>
+    <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" style="flex: none;"><path d="M5 12h14M12 5v14"></path></svg><span style="flex: 1;">New tab</span><span style="font-size: 12px; color: var(--muted);">⌘T</span></button>
+    <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true" style="flex: none;"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg><span style="flex: 1;">Open app</span></button>
+  </aside>
+  </sc-if>
+
+  <sc-if value="{{tabsCollapsed}}" hint-placeholder-val="{{false}}">
+  <aside aria-label="Tabs" style="width: {{railW}}px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: {{railTopR}}; box-sizing: border-box;">
+    <sc-if value="{{ownButtons}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; gap: 0; height: 28px; align-items: center; padding-bottom: 4px; margin-bottom: 2px; border-bottom: 1px solid var(--line-soft);">
+        <button aria-label="Minimize" style="width: 16px; height: 24px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--shell); display: flex; align-items: center; justify-content: center;"><svg width="8" height="8" viewBox="0 0 12 12"><path d="M2 6h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg></span></button>
+        <button aria-label="Maximize" style="width: 16px; height: 24px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--shell); display: flex; align-items: center; justify-content: center;"><svg width="8" height="8" viewBox="0 0 12 12"><rect x="2.5" y="2.5" width="7" height="7" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"></rect></svg></span></button>
+        <button aria-label="Close window" style="width: 16px; height: 24px; border: 0; padding: 0; background: transparent; display: flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 50%; background: var(--muted); color: var(--shell); display: flex; align-items: center; justify-content: center;"><svg width="8" height="8" viewBox="0 0 12 12"><path d="M3 3l6 6M9 3l-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span></button>
+      </div>
+    </sc-if>
+    <button aria-label="Show tabs" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg></button>
+    <div style="width: 100%; display: grid; grid-template-columns: repeat({{railCols}}, 36px); gap: 4px; justify-content: center; padding-top: 6px;">
+      <sc-for list="{{workspaceIcons}}" as="t" hint-placeholder-count="1">
+        <button aria-label="{{t.label}}" style="width: 36px; height: 36px; border: 0; border-radius: 50%; color: var(--ink); display: flex; align-items: center; justify-content: center; {{t.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg></button>
+      </sc-for>
+    </div>
+    <span aria-hidden="true" style="width: 24px; height: 1px; background: var(--line-soft); margin: 4px 0;"></span>
+    <div style="width: 100%; display: grid; grid-template-columns: repeat({{railCols}}, 36px); gap: 4px; justify-content: center;">
+      <sc-for list="{{chatIcons}}" as="t" hint-placeholder-count="2">
+        <button aria-label="{{t.label}}" style="width: 36px; height: 36px; border: 0; border-radius: 50%; color: var(--ink); display: flex; align-items: center; justify-content: center; {{t.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg></button>
+      </sc-for>
+    </div>
+    <span style="flex: 1;"></span>
+    <div style="width: 100%; display: grid; grid-template-columns: repeat({{railCols}}, 36px); gap: 4px; justify-content: center;">
+      <sc-for list="{{appIcons}}" as="t" hint-placeholder-count="4">
+        <button aria-label="{{t.label}}" style="width: 36px; height: 36px; border: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; {{t.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg></button>
+      </sc-for>
+    </div>
+    <span aria-hidden="true" style="width: 24px; height: 1px; background: var(--line-soft); margin: 4px 0;"></span>
+    <div style="width: 100%; display: grid; grid-template-columns: repeat({{railCols}}, 36px); gap: 4px; justify-content: center;">
+      <button aria-label="New tab" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+      <button aria-label="Open app" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg></button>
+    </div>
+  </aside>
+  </sc-if>
+
+  <sc-if value="{{popOpen}}" hint-placeholder-val="{{false}}">
+    <div role="dialog" aria-label="{{popLabel}}" style="position: absolute; z-index: 5; right: 4px; bottom: {{popBottom}}; width: 520px; box-sizing: border-box; background: var(--surface); border-radius: 22px; box-shadow: 0 0 0 1px var(--line-soft), 0 18px 48px rgba(20, 21, 24, 0.18); padding: 6px; display: flex; flex-direction: column; gap: 2px;">
+      <sc-for list="{{popRows}}" as="o" hint-placeholder-count="3">
+        <button style="height: 40px; flex: none; border: 0; border-radius: 999px; color: var(--ink); display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; text-align: left; {{o.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none;"><path d="{{o.d}}"></path></svg><span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{o.label}}</span><span style="font-size: 12px; color: var(--muted);">{{o.meta}}</span></button>
+      </sc-for>
+      <span aria-hidden="true" style="height: 1px; background: var(--line-soft); margin: 4px 10px;"></span>
+      <label style="height: 44px; flex: none; border-radius: 999px; background: var(--bubble); display: flex; align-items: center; gap: 10px; padding: 0 16px; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" style="color: var(--muted); flex: none;"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <span style="flex: 1;"><span style="{{popValueStyle}}">{{popValue}}</span></span>
+        <span style="font-size: 12px; color: var(--muted);">esc to close</span>
+      </label>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"app":{"editor":"enum","options":["browser","canvas"],"default":"browser","section":"App"},"page":{"editor":"enum","options":["home","site"],"default":"home","section":"App"},"zone":{"editor":"enum","options":["top","tab","bottom"],"default":"bottom","section":"App"},"tabsCollapsed":{"editor":"enum","options":["no","yes"],"default":"no","section":"Collapse"},"chatsCollapsed":{"editor":"enum","options":["no","yes"],"default":"no","section":"Collapse"},"winFit":{"editor":"enum","options":["band","wide","own"],"default":"band","section":"Collapse"},"open":{"editor":"enum","options":["none","address","route"],"default":"none","section":"Collapse"},"tabsHidden":{"editor":"enum","options":["no","yes","peek"],"default":"no","section":"Collapse"},"chatsHidden":{"editor":"enum","options":["no","yes","peek"],"default":"no","section":"Collapse"},"shell":{"editor":"color","default":"#F2F2F3","options":["#F4F4F5","#F2F2F3","#EDEDEF","#E6ECE7"],"section":"Shell"},"chatPlate":{"editor":"enum","options":["yes","no"],"default":"yes","section":"Shell"},"left":{"editor":"enum","options":["rail","slack","switcher","strip","pins"],"default":"rail","section":"Left column"},"controls":{"editor":"enum","options":["sidebar","plate"],"default":"sidebar","section":"Browser controls"},"radius":{"editor":"range","min":6,"max":34,"step":1,"unit":"px","default":16,"section":"Shape"},"gap":{"editor":"range","min":4,"max":16,"step":1,"unit":"px","default":8,"section":"Shape"},"os":{"editor":"enum","options":["mac","windows","linux"],"default":"mac","section":"Window"},"theme":{"editor":"enum","options":["light","dark"],"default":"light","section":"Window"},"width":{"editor":"int","default":1440,"section":"Window"},"height":{"editor":"int","default":900,"section":"Window"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const dark = (p.theme ?? 'light') === 'dark';
+    const plate = (p.chatPlate ?? 'yes') !== 'no';
+    const r = Number(p.radius ?? 16);
+    const g = Number(p.gap ?? 8);
+    const os = p.os ?? 'mac';
+    const left = p.left ?? 'rail';
+    const app = p.app === 'canvas' ? 'canvas' : 'browser';
+    const page = p.page ?? 'home';
+    const zone = p.zone ?? 'bottom';
+    const browser = app === 'browser';
+    const plateBar = browser && (p.controls ?? 'sidebar') === 'plate';
+    const shell = dark ? '#0F1013' : (p.shell ?? '#F2F2F3');
+    const c = dark
+      ? { surface: '#1C1D21', ink: '#F4F4F5', muted: '#A3A6AE', bubble: '#26272C', line: '#3A3B42', lineSoft: '#2E2F35', fill: '#F4F4F5', onfill: '#141518', chip: '#26272C', field: 'rgba(255,255,255,0.07)', accent: '#3D63FF', soft: '#1A2350', softText: '#8FA6FF', success: '#4BD08A' }
+      : { surface: '#FFFFFF', ink: '#141518', muted: '#5F626A', bubble: '#F2F2F3', line: '#C9CACF', lineSoft: '#E3E3E6', fill: '#141518', onfill: '#FFFFFF', chip: '#FFFFFF', field: 'rgba(20,21,24,0.055)', accent: '#2E5BFF', soft: '#E6ECFF', softText: '#2448D8', success: '#12804A' };
+    const vars = [
+      '--shell:' + shell, '--surface:' + c.surface, '--ink:' + c.ink, '--muted:' + c.muted,
+      '--bubble:' + (plate ? c.bubble : c.surface), '--fill:' + c.fill, '--onfill:' + c.onfill, '--chip:' + c.chip,
+      '--field:' + c.field, '--line:' + c.line, '--line-soft:' + c.lineSoft,
+      '--accent:' + c.accent, '--soft:' + c.soft, '--soft-text:' + c.softText, '--success:' + c.success,
+      '--chat-bg:' + (plate ? c.surface : 'transparent'),
+      '--composer-edge:' + (plate ? (dark ? '#2E2F35' : '#E6E6E9') : 'transparent'),
+      '--r:' + r + 'px', '--g:' + g + 'px', '--r-c:' + Math.min(22, r + 6) + 'px'
+    ].join(';');
+
+    const names = [['D', 'Default', 'Default'], ['W', 'Widgetarium', 'Widgetarium'], ['U', 'Urcraft', 'Urcraft'], ['L', 'Light agency', 'Light'], ['M', 'Myth hunters', 'Myth'], ['O', 'Oneroad', 'Oneroad'], ['S', 'Shido app', 'Shido']];
+    const workspaces = names.map(([letter, name, short], i) => {
+      const on = i === 0;
+      return {
+        letter, name, short,
+        circleStyle: on ? 'background: var(--fill); color: var(--onfill);' : 'background: var(--chip); color: var(--ink);',
+        pillStyle: on ? 'background: var(--chip); color: var(--ink);' : 'background: transparent; color: var(--ink);',
+        dotStyle: on ? 'background: var(--fill); color: var(--onfill);' : 'background: var(--field); color: var(--ink);',
+        tileStyle: on ? 'background: var(--chip);' : 'background: var(--field);'
+      };
+    });
+    const chatOf = (title, extra) => Object.assign({ title, running: false, rowStyle: 'background: transparent;' }, extra || {});
+    const groups = [
+      { label: 'Today', chats: [chatOf('Layout redesign and accessibility', { rowStyle: 'background: var(--chip); font-weight: 500;' }), chatOf('Browse catalogue screen', { running: true })] },
+      { label: 'Yesterday', hovered: true, chats: [chatOf('White and grey background in the design system'), chatOf('Inline translation placement'), chatOf('Glossary manager UI design')] },
+      { label: 'Previous 7 days', chats: [chatOf('Apply picture Radix shims in the Vite plugin'), chatOf('Weekly work log'), chatOf('Token spend analysis'), chatOf('Translations')] }
+    ].map((grp) => Object.assign({ hovered: false }, grp, { headStyle: grp.hovered ? 'background: var(--field);' : '' }));
+
+    const pen = 'M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z';
+    const globe = 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20';
+    const tabOf = (label, d, active) => ({ label, d, active, style: active ? 'background: var(--chip); font-weight: 500;' : 'background: transparent;' });
+    const pinned = [tabOf('Canvas', pen, app === 'canvas')];
+    const tabs = [tabOf(page === 'site' && browser ? 'Video site' : 'New tab', globe, browser)];
+    const fileD = 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6';
+    const tail = [tabOf('Docs', fileD, false)];
+    const atTab = zone === 'tab' && !plateBar;
+    const tabsCollapsed = p.tabsCollapsed === 'yes';
+    const chatsCollapsed = p.chatsCollapsed === 'yes';
+    const winFit = p.winFit ?? 'band';
+    const isWin = os === 'windows';
+    const own = isWin && tabsCollapsed && winFit === 'own';
+    const wide = isWin && tabsCollapsed && winFit === 'wide';
+    const tabsHidden = p.tabsHidden ?? 'no';
+    const chatsHidden = p.chatsHidden ?? 'no';
+    const floatShadow = 'background: var(--shell); border-radius: var(--r); box-shadow: 0 0 0 1px var(--line-soft), 0 18px 48px rgba(20, 21, 24, 0.18);';
+    const hasChats = left !== 'rail' && !chatsCollapsed && chatsHidden !== 'yes';
+    const hasRail = (left === 'rail' || left === 'slack') && chatsHidden !== 'yes';
+    const leftFloat = chatsHidden === 'peek'
+      ? 'position: absolute; z-index: 4; top: 8px; left: 8px; bottom: 8px; display: flex; gap: 8px; padding: 0 10px 8px 4px; ' + floatShadow
+      : 'display: contents;';
+    const asideFloat = tabsHidden === 'peek'
+      ? 'position: absolute; z-index: 4; top: 8px; right: 8px; bottom: 8px; width: 248px; padding: 4px 10px 8px; ' + floatShadow
+      : '';
+    const iconOf = (label, d, active) => ({ label, d, style: active ? 'background: var(--chip);' : 'background: transparent;' });
+    const toolOf = (label, d, muted) => ({ label, d, style: 'background: transparent; color: ' + (muted ? 'var(--muted)' : 'var(--ink)') + ';' });
+    const appIcons = browser
+      ? [toolOf('Back', 'm12 19-7-7 7-7M19 12H5'), toolOf('Forward', 'M5 12h14m-7-7 7 7-7 7', true), toolOf('Reload', 'M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8M21 3v5h-5'), toolOf('Address', globe)]
+      : [toolOf('Pages and layers panel', 'M3 3h18v18H3zM9 3v18'), toolOf('Route', 'M3 6h18M3 12h18M3 18h12'), toolOf('Add a state', 'M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7M16 5h6M19 2v6M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21'), toolOf('Zoom', 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3M11 8v6M8 11h6')];
+    const open = p.open ?? 'none';
+    const searchD = 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3';
+    const plain = 'background: transparent;';
+    const picked = 'background: var(--bubble); font-weight: 500;';
+    const opt = (label, meta, d, style) => ({ label, meta, d, style: style || plain });
+    const popAddress = open === 'address' && browser;
+    const popRoute = open === 'route' && app === 'canvas';
+    const popRows = popAddress
+      ? [opt('Video site', 'video.example.com · Switch to tab', globe), opt('Docs', 'docs.example.com · Switch to tab', fileD), opt('Search the web for video.example.com', '', searchD, picked)]
+      : [opt('/', 'Home · 1 state', 'M20 6 9 17l-5-5', picked), opt('/settings', '2 states', 'M4 4h16v16H4z'), opt('/tasks/:id', '3 states', 'M4 4h16v16H4z'), opt('New route', '', 'M5 12h14M12 5v14')];
+    const popBottom = tabsCollapsed ? (popRoute ? '177px' : '97px') : '85px';
+    return {
+      vars, workspaces, groups, app, page,
+      popOpen: popAddress || popRoute,
+      popLabel: popAddress ? 'Address' : 'Route',
+      popRows, popBottom,
+      popValue: popAddress ? 'video.example.com' : 'Find a route',
+      popValueStyle: popAddress ? 'background: var(--soft); color: var(--soft-text); border-radius: 4px; padding: 1px 2px;' : 'color: var(--muted);',
+      winNative: isWin && !own,
+      band: isWin && tabsCollapsed && winFit === 'band',
+      bandTitle: browser ? (page === 'site' ? 'Video site · video.example.com' : 'New tab') : 'Canvas · /',
+      tabsOpen: !tabsCollapsed && tabsHidden !== 'yes',
+      leftFloat, asideFloat,
+      chatHeadPad: os === 'mac' && chatsHidden !== 'no' ? '64px' : '0px',
+      tabsCollapsed,
+      ownButtons: own,
+      railW: wide ? 138 : 52,
+      railCols: wide ? 3 : 1,
+      railTopR: own ? '4px' : (isWin ? '30px' : (os === 'linux' ? '32px' : '4px')),
+      workspaceIcons: [iconOf('Canvas', pen, app === 'canvas')],
+      chatIcons: [iconOf(page === 'site' && browser ? 'Video site' : 'New tab', globe, browser), iconOf('Docs', fileD, false)],
+      appIcons,
+      showChatsBtn: chatsCollapsed && hasRail,
+      tabCount: 3,
+      tabsTail: tail,
+      w: Number(p.width ?? 1440),
+      h: Number(p.height ?? 900),
+      mac: os === 'mac', win: os === 'windows', linux: os === 'linux',
+      hasRail,
+      hasChats,
+      isSlack: left === 'slack', isSwitcher: left === 'switcher', isStrip: left === 'strip', isPins: left === 'pins',
+      chatsW: left === 'slack' ? 232 : 256,
+      chatW: hasChats ? 480 : 560,
+      colTopPad: os === 'mac' && left !== 'slack' ? '68px' : '0px',
+      railTop: os === 'mac' ? '40px' : '4px',
+      sideTop: os === 'windows' ? '30px' : (os === 'linux' ? '32px' : '0px'),
+      appName: browser ? 'Browser' : 'Canvas',
+      plateBar,
+      address: page === 'site' ? 'video.example.com' : 'Search or type an address',
+      zoneTop: zone === 'top' && !plateBar,
+      zoneBottom: zone === 'bottom' && !plateBar,
+      zoneInPinned: atTab && app === 'canvas',
+      zoneInTabs: atTab && browser,
+      pinnedHead: pinned,
+      tabsHead: tabs,
+      showHome: browser && page === 'home',
+      showSite: browser && page === 'site',
+      showCanvas: app === 'canvas'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Studio, Dia direction</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;display=swap">
+<style>body{margin:0}button{font-family:inherit}</style>
+</helmet>
+<div style="position: relative; width: 1600px; height: 1000px; box-sizing: border-box; display: flex; gap: 8px; padding: 8px; background: #F2F2F3; color: #141518; font-family: Geist, system-ui, -apple-system, sans-serif; font-size: 14px; line-height: 21px; overflow: hidden;">
+
+  <sc-if value="{{mac}}" hint-placeholder-val="{{true}}">
+    <div aria-hidden="true" style="position: absolute; z-index: 3; top: 26px; left: 16px; display: flex; gap: 8px;">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{leftOpen}}" hint-placeholder-val="{{true}}">
+    <nav aria-label="Workspaces" style="width: 72px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 8px; padding-top: {{railTop}};">
+      <button aria-label="Default" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: #141518; color: #FFFFFF; font-size: 13px; font-weight: 600;">D</button>
+      <button aria-label="Widgetarium" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: #FFFFFF; color: #141518; font-size: 13px; font-weight: 600;">W</button>
+      <button aria-label="Urcraft" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: #FFFFFF; color: #141518; font-size: 13px; font-weight: 600;">U</button>
+      <button aria-label="Light agency" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: #FFFFFF; color: #141518; font-size: 13px; font-weight: 600;">L</button>
+      <button aria-label="New workspace" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: #5F626A; display: flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+    </nav>
+    <nav aria-label="Chats" style="width: 232px; flex: none; display: flex; flex-direction: column; gap: 2px;">
+      <div style="height: 48px; flex: none; display: flex; align-items: center; padding-left: 12px;">
+        <span style="font-weight: 600; flex: 1;">Default</span>
+        <button aria-label="New chat" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.38 3.62a1 1 0 0 1 3 3L7.37 18.64a2 2 0 0 1-.86.5l-2.87.84a.5.5 0 0 1-.62-.62l.84-2.87a2 2 0 0 1 .5-.86z"></path></svg></button>
+      </div>
+      <div style="height: 32px; flex: none; border-radius: 999px; background: rgba(20,21,24,0.055); display: flex; align-items: center; gap: 8px; padding: 0 12px; margin-bottom: 6px; color: #5F626A; font-size: 13px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>Search chats</div>
+      <span style="font-size: 12px; font-weight: 500; color: #5F626A; padding: 8px 12px 4px;">Today</span>
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: #FFFFFF; color: #141518; padding: 0 12px; font-size: 13px; font-weight: 500; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Layout redesign and accessibility</button>
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 12px; font-size: 13px; text-align: left;">Browse catalogue screen</button>
+      <span style="font-size: 12px; font-weight: 500; color: #5F626A; padding: 12px 12px 4px;">Yesterday</span>
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 12px; font-size: 13px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">White and grey background in the design system</button>
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 12px; font-size: 13px; text-align: left;">Inline translation placement</button>
+      <button style="height: 32px; flex: none; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 12px; font-size: 13px; text-align: left;">Glossary manager UI design</button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{chatOpen}}" hint-placeholder-val="{{true}}">
+    <section aria-label="Chat" style="{{chatSize}} display: flex; flex-direction: column; background: #FFFFFF; border-radius: 16px; overflow: hidden;">
+      <header style="height: 48px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 {{chatHeadPad}};">
+        <button aria-label="{{leftToggleLabel}}" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+        <button style="height: 32px; min-width: 0; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 10px; font-size: 13px; line-height: 18px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden;"><span style="color: #5F626A;">Default</span><span style="color: #5F626A;">/</span><span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis;">Layout redesign and accessibility</span></button>
+        <span style="flex: 1;"></span>
+        <button aria-label="Chat menu" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="19" cy="12" r="1.6"></circle></svg></button>
+        <sc-if value="{{browserControlsInChat}}" hint-placeholder-val="{{false}}">
+          <button aria-label="Open the browser" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg></button>
+          <sc-if value="{{win}}" hint-placeholder-val="{{false}}">
+            <span style="display: flex; margin: 0 -8px 0 6px; align-self: center;">
+              <button aria-label="Minimize" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10" stroke="currentColor" stroke-width="1"></path></svg></button>
+              <button aria-label="Maximize" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"></rect></svg></button>
+              <button aria-label="Close window" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1"></path></svg></button>
+            </span>
+          </sc-if>
+        </sc-if>
+      </header>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 16px 24px; max-width: 720px; box-sizing: border-box; width: 100%; align-self: center;">
+        <div style="align-self: flex-end; max-width: 360px; background: #F2F2F3; border-radius: 18px; padding: 8px 14px;">Make it like Dia: the header lives on the page and takes its colour.</div>
+        <div>Each plate now carries its own header: a sidebar button, then for the app back, forward and reload, then a path you press to search. The tab sidebar keeps only tabs.</div>
+      </div>
+      <div style="padding: 0 18px 14px; max-width: 720px; box-sizing: border-box; width: 100%; align-self: center;">
+        <div style="border: 1px solid #E6E6E9; border-radius: 22px; padding: 12px 8px 8px 14px; display: flex; flex-direction: column; gap: 10px;">
+          <span style="color: #5F626A;">Describe what to build or change</span>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <button aria-label="Attach" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: #F2F2F3; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+            <span style="flex: 1;"></span>
+            <button aria-label="Send" style="width: 36px; height: 36px; border: 0; border-radius: 50%; background: #2E5BFF; color: #FFFFFF; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 7-7 7 7M12 19V5"></path></svg></button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{browserOpen}}" hint-placeholder-val="{{true}}">
+    <main aria-label="{{appName}}" style="position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; background: {{bodyBg}}; border-radius: 16px; overflow: hidden;">
+      <header style="height: 48px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px 0 {{browserHeadPad}}; background: {{headBg}}; color: {{headInk}}; transition: background 240ms ease, color 240ms ease;">
+        <sc-if value="{{chatControlsInBrowser}}" hint-placeholder-val="{{false}}">
+          <button aria-label="Show chats" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M9 3v18"></path></svg></button>
+          <button aria-label="Open the AI chat" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path></svg></button>
+          <span aria-hidden="true" style="width: 1px; height: 16px; background: currentColor; opacity: 0.2; margin: 0 4px;"></span>
+        </sc-if>
+        <button aria-label="Back" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+        <button aria-label="Forward" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; opacity: 0.45; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <button aria-label="Reload" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg></button>
+        <button aria-label="Search or type an address" style="height: 32px; min-width: 0; border: 0; border-radius: 999px; background: {{crumbBg}}; color: inherit; padding: 0 12px; margin-left: 4px; font-size: 13px; line-height: 18px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden;"><span style="opacity: 0.62;">{{crumbHost}}</span><span style="opacity: 0.62;">/</span><span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis;">{{crumbPage}}</span></button>
+        <span style="flex: 1;"></span>
+        <sc-if value="{{isCanvas}}" hint-placeholder-val="{{false}}">
+          <button style="height: 28px; border: 0; border-radius: 999px; background: rgba(20,21,24,0.06); color: inherit; padding: 0 10px; font-size: 12px; font-weight: 500;">71%</button>
+        </sc-if>
+        <button aria-label="Share" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"></path></svg></button>
+        <button aria-label="{{rightToggleLabel}}" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M15 3v18"></path></svg></button>
+        <sc-if value="{{winInBrowser}}" hint-placeholder-val="{{false}}">
+          <span style="display: flex; margin: 0 -8px 0 6px; align-self: center;">
+            <button aria-label="Minimize" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10" stroke="currentColor" stroke-width="1"></path></svg></button>
+            <button aria-label="Maximize" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"></rect></svg></button>
+            <button aria-label="Close window" style="width: 46px; height: 34px; border: 0; background: transparent; color: inherit; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1"></path></svg></button>
+          </span>
+        </sc-if>
+      </header>
+
+      <sc-if value="{{isSite}}" hint-placeholder-val="{{true}}">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 8px 28px 28px; color: {{headInk}};">
+          <div style="height: 40px; display: flex; align-items: center; gap: 20px; font-size: 13px;">
+            <span style="width: 88px; height: 18px; border-radius: 999px; background: {{cardBg}};"></span>
+            <span style="opacity: 0.7;">[The site's own navigation]</span>
+          </div>
+          <div style="height: 300px; border-radius: 16px; background: {{cardBg}}; display: flex; align-items: center; justify-content: center; font-size: 13px; opacity: 0.85;">[Site hero: {{siteLabel}}]</div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+            <div style="height: 150px; border-radius: 14px; background: {{cardBg}};"></div>
+            <div style="height: 150px; border-radius: 14px; background: {{cardBg}};"></div>
+            <div style="height: 150px; border-radius: 14px; background: {{cardBg}};"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isCanvas}}" hint-placeholder-val="{{false}}">
+        <div style="flex: 1; display: flex; min-height: 0;">
+          <div style="width: 200px; flex: none; border-right: 1px solid #ECECEE; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px; font-size: 13px;">
+            <span style="font-size: 12px; font-weight: 500; color: #5F626A; padding: 0 8px 4px;">Pages</span>
+            <button style="height: 32px; border: 0; border-radius: 999px; background: #F2F2F3; color: #141518; padding: 0 12px; font-size: 13px; font-weight: 500; text-align: left;">Home · /</button>
+            <button style="height: 32px; border: 0; border-radius: 999px; background: transparent; color: #141518; padding: 0 12px; font-size: 13px; text-align: left;">Settings · /settings</button>
+          </div>
+          <div style="flex: 1; background-color: #FFFFFF; background-image: radial-gradient(#E3E3E6 1px, transparent 1px); background-size: 16px 16px; padding: 48px; box-sizing: border-box;">
+            <div style="height: 460px; border-radius: 16px; background: #F2F2F3; display: flex; align-items: center; justify-content: center; color: #5F626A; font-size: 13px;">[Route / drawn here]</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{searchOpen}}" hint-placeholder-val="{{false}}">
+        <div role="dialog" aria-label="Search" style="position: absolute; z-index: 5; top: 6px; left: {{searchLeft}}; width: calc(100% - {{searchLeft}} - 8px); max-width: 600px; box-sizing: border-box; background: #FFFFFF; color: #141518; border-radius: 22px; box-shadow: 0 0 0 1px #ECECEE, 0 18px 48px rgba(20,21,24,0.2); padding: 6px; display: flex; flex-direction: column; gap: 2px;">
+          <label style="height: 40px; border-radius: 999px; background: #F2F2F3; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 14px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" style="color: #5F626A;"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+            <span style="flex: 1;"><span style="background: #E6ECFF; color: #2448D8; border-radius: 4px; padding: 1px 2px;">video.example.com</span></span>
+            <span style="font-size: 12px; color: #5F626A;">esc</span>
+          </label>
+          <span aria-hidden="true" style="height: 1px; background: #ECECEE; margin: 4px 10px;"></span>
+          <button style="height: 40px; border: 0; border-radius: 999px; background: #F2F2F3; color: #141518; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; text-align: left;"><span aria-hidden="true" style="position: relative; width: 16px; height: 16px; border-radius: 50%; background: #141518;"><span style="position: absolute; left: 5px; top: 4px; width: 2px; height: 6px; border-radius: 1px; background: #FFFFFF;"></span><span style="position: absolute; left: 9px; top: 4px; width: 2px; height: 6px; border-radius: 1px; background: #FFFFFF;"></span></span><span style="flex: 1;">Ask Ink about this page</span><span style="font-size: 12px; color: #5F626A;">AI</span></button>
+          <button style="height: 40px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; text-align: left;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg><span style="flex: 1;">Canvas</span><span style="font-size: 12px; color: #5F626A;">Open app</span></button>
+          <button style="height: 40px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; text-align: left;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><span style="flex: 1;">Docs</span><span style="font-size: 12px; color: #5F626A;">Switch to tab</span></button>
+          <button style="height: 40px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 12px; padding: 0 14px; font-size: 13px; text-align: left;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path></svg><span style="flex: 1;">Search the web for video.example.com</span></button>
+        </div>
+      </sc-if>
+    </main>
+  </sc-if>
+
+  <sc-if value="{{rightOpen}}" hint-placeholder-val="{{true}}">
+    <aside aria-label="Tabs" style="width: 216px; flex: none; display: flex; flex-direction: column; gap: 2px; padding-top: {{sideTop}}; box-sizing: border-box;">
+      <sc-if value="{{win}}" hint-placeholder-val="{{false}}">
+        <div style="position: absolute; top: 0; right: 0; display: flex;">
+          <button aria-label="Minimize" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 6h10" stroke="currentColor" stroke-width="1"></path></svg></button>
+          <button aria-label="Maximize" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"></rect></svg></button>
+          <button aria-label="Close window" style="width: 46px; height: 34px; border: 0; background: transparent; color: #141518; display: flex; align-items: center; justify-content: center;"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9" stroke="currentColor" stroke-width="1"></path></svg></button>
+        </div>
+      </sc-if>
+      <span style="font-size: 12px; font-weight: 500; color: #5F626A; padding: 10px 12px 4px;">Workspace</span>
+      <button style="height: 32px; border: 0; border-radius: 999px; color: #141518; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left; {{canvasRow}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"></path></svg>Canvas</button>
+      <span style="font-size: 12px; font-weight: 500; color: #5F626A; padding: 12px 12px 4px;">This chat</span>
+      <button style="height: 32px; border: 0; border-radius: 999px; color: #141518; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left; {{siteRow}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path></svg>Video site</button>
+      <button style="height: 32px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg>Docs</button>
+      <span style="flex: 1;"></span>
+      <button style="height: 32px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg><span style="flex: 1;">New tab</span><span style="font-size: 12px; color: #5F626A;">⌘T</span></button>
+      <button style="height: 32px; border: 0; border-radius: 999px; background: transparent; color: #141518; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px; text-align: left;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>Open app</button>
+    </aside>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"site":{"editor":"enum","options":["dark","light","warm","canvas"],"default":"dark"},"left":{"editor":"enum","options":["open","closed"],"default":"open"},"chat":{"editor":"enum","options":["open","closed"],"default":"open"},"browser":{"editor":"enum","options":["open","closed"],"default":"open"},"right":{"editor":"enum","options":["open","closed"],"default":"open"},"search":{"editor":"enum","options":["no","yes"],"default":"no"},"os":{"editor":"enum","options":["mac","windows"],"default":"mac"},"$preview":{"width":1600,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const os = p.os ?? 'mac';
+    const mac = os === 'mac';
+    const win = os === 'windows';
+    const site = p.site ?? 'dark';
+    const leftOpen = (p.left ?? 'open') === 'open';
+    const chatOpen = (p.chat ?? 'open') === 'open';
+    const browserOpen = (p.browser ?? 'open') === 'open';
+    const rightOpen = browserOpen && (p.right ?? 'open') === 'open';
+    const looks = {
+      dark: { head: '#16171B', ink: '#F4F4F5', body: '#16171B', card: '#26272C', crumb: 'rgba(255,255,255,0.08)', label: 'dark page' },
+      light: { head: '#FFFFFF', ink: '#141518', body: '#FFFFFF', card: '#F2F2F3', crumb: 'rgba(20,21,24,0.05)', label: 'scrolled to a white section' },
+      warm: { head: '#F7E3A1', ink: '#2B2410', body: '#F7E3A1', card: '#EFD27A', crumb: 'rgba(43,36,16,0.07)', label: 'a yellow page' },
+      canvas: { head: '#FFFFFF', ink: '#141518', body: '#FFFFFF', card: '#F2F2F3', crumb: 'rgba(20,21,24,0.05)', label: 'Canvas app' }
+    };
+    const look = looks[site] || looks.dark;
+    const isCanvas = site === 'canvas';
+    const firstInRow = !leftOpen;
+    return {
+      mac, win, leftOpen, chatOpen, browserOpen, rightOpen, isCanvas,
+      isSite: !isCanvas,
+      siteLabel: look.label,
+      headBg: look.head, headInk: look.ink, bodyBg: look.body, cardBg: look.card, crumbBg: look.crumb,
+      appName: isCanvas ? 'Canvas' : 'Browser',
+      crumbHost: isCanvas ? 'Canvas' : 'video.example.com',
+      crumbPage: isCanvas ? 'Untitled app / Home' : 'Trending this week',
+      railTop: mac ? '44px' : '8px',
+      sideTop: win ? '38px' : '8px',
+      chatSize: browserOpen ? 'width: 520px; flex: none;' : 'flex: 1; min-width: 0;',
+      chatHeadPad: mac && firstInRow ? '76px' : '8px',
+      browserHeadPad: mac && firstInRow && !chatOpen ? '76px' : '8px',
+      leftToggleLabel: leftOpen ? 'Hide chats' : 'Show chats',
+      rightToggleLabel: rightOpen ? 'Hide tabs' : 'Show tabs',
+      browserControlsInChat: chatOpen && !browserOpen,
+      chatControlsInBrowser: browserOpen && !chatOpen,
+      winInBrowser: win && browserOpen && !rightOpen,
+      searchOpen: browserOpen && (p.search ?? 'no') === 'yes',
+      searchLeft: chatOpen ? '104px' : '176px',
+      canvasRow: isCanvas ? 'background: #FFFFFF; font-weight: 500;' : 'background: transparent;',
+      siteRow: isCanvas ? 'background: transparent;' : 'background: #FFFFFF; font-weight: 500;'
+    };
+  }
+}
+</script>
+</body>
+</html>

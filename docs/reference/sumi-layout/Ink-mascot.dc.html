@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ink states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.ink{--frame-tinted:#F2F2F3;--plate:#FFFFFF;--text:#1F1E1C;--text-2:rgba(31,30,28,.66);--text-3:rgba(31,30,28,.42);--line:rgba(31,30,28,.08);--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame-tinted:#141416;--plate:#1F1F21;--text:#EDECE8;--text-2:rgba(237,236,232,.66);--text-3:rgba(237,236,232,.40);--line:rgba(237,236,232,.08)}
+.ink *{box-sizing:border-box}
+.m circle{fill:var(--text)}.m .e{fill:var(--plate)}.m .s{fill:none;stroke:var(--plate);stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.half{flex:1;border-radius:14px;padding:28px;background:var(--plate);box-shadow:var(--shadow-plate);display:flex;flex-direction:column;gap:20px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px 12px}
+.st{display:flex;flex-direction:column;gap:6px}
+.st b{font-weight:500}
+.st span{font-size:12px;color:var(--text-2)}
+.st svg{width:56px;height:56px;margin-bottom:6px}
+</style>
+</helmet>
+<div class="ink" style="width: 1440px; height: 760px; padding: 48px; background: #F2F2F3; display: flex; flex-direction: column; gap: 28px;">
+  <div style="display: flex; align-items: flex-end; gap: 48px;">
+    <div style="flex: 1;">
+      <div style="font-size: 12px; color: var(--text-2);">Ink · the mascot</div>
+      <h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600; line-height: 1.25;">One face, eight states</h1>
+    </div>
+    <p style="margin: 0; max-width: 520px; font-size: 12px; color: var(--text-2);">Ink's state lives in its eyes, never in a spinner. The circle is the text colour and the eyes the plate colour, so it flips with the theme by itself. 64px on an empty chat, 48 on a new tab, 14–16 beside a status line or a chat row.</p>
+  </div>
+  <div style="flex: 1; display: flex; gap: 16px;">
+    <sc-for list="{{themes}}" as="th" hint-placeholder-count="2">
+      <div class="ink {{th.cls}}" style="flex: 1; display: flex;">
+        <div class="half">
+          <div style="font-size: 12px; color: var(--text-2);">{{th.name}}</div>
+          <div class="grid">
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="21" y="19" width="7" height="20" rx="3.5"></rect><rect class="e" x="36" y="19" width="7" height="20" rx="3.5"></rect></svg><b>Idle</b><span>Waiting for you.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="20" y="16" width="8" height="25" rx="4"></rect><rect class="e" x="36" y="16" width="8" height="25" rx="4"></rect></svg><b>Listening</b><span>You are typing.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="27" y="14" width="6" height="14" rx="3"></rect><rect class="e" x="40" y="14" width="6" height="14" rx="3"></rect></svg><b>Thinking</b><span>Reading and planning.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="16" y="27" width="13" height="6" rx="3"></rect><rect class="e" x="35" y="27" width="13" height="6" rx="3"></rect></svg><b>Working</b><span>Making changes.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><path class="s" d="M18 34q6-8 12 0M34 34q6-8 12 0"></path></svg><b>Done</b><span>Finished, nothing waits.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="21" y="19" width="7" height="20" rx="3.5"></rect><rect class="e" x="36" y="15" width="7" height="13" rx="3.5"></rect></svg><b>Question</b><span>Needs your answer.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><path class="s" d="M19 22l9 10M28 22l-9 10M36 22l9 10M45 22l-9 10" style="stroke-width: 4;"></path></svg><b>Error</b><span>Something failed; it says what.</span></div>
+            <div class="st"><svg class="m" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="17" y="33" width="12" height="4" rx="2"></rect><rect class="e" x="35" y="33" width="12" height="4" rx="2"></rect></svg><b>Sleeping</b><span>No activity in this chat for an hour.</span></div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 20px; padding-top: 16px; border-top: 1px solid var(--line);">
+            <span style="font-size: 12px; color: var(--text-2);">Per workspace</span>
+            <svg viewBox="0 0 64 64" aria-label="Blue workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#3B5BFD"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Violet workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#7A5AF8"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Rose workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#E0567A"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Orange workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#E5793A"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Green workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#2F9E6E"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Teal workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#1F9BB5"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+            <svg viewBox="0 0 64 64" aria-label="Graphite workspace" style="width: 28px; height: 28px;"><circle cx="32" cy="32" r="32" fill="#6B6B66"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect><rect x="36" y="19" width="7" height="20" rx="3.5" fill="#FFFFFF"></rect></svg>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themes: [{ name: 'Light', cls: '' }, { name: 'Dark', cls: 'dark' }] };
+  }
+}
+</script>
+</body>
+</html>

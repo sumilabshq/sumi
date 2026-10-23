@@ -584,8 +584,9 @@ the shell stays. The catalogue reaches the studio as a `CataloguePort` in `Studi
 its own; a browser gets `browserCataloguePort`, the project's widgets as installed, every install and
 place answering "not available". App mode ships none of its code or CSS (`test:studio-render`).
 The studio opens on the canvas. The chat is a column that never closes, left of the outlet; the outlet is a card (a group plate with no edge, padded
-by the plate pad, its corner the plate radius plus that pad). The studio wears the `pill` design system
-(`@layer wg-studio-system`, laid by `tools/system-sheet.mts` with bundled Geist), the app's pictures and
+by the plate pad, its corner the plate radius plus that pad). The studio wears the `sumi` design system
+(`@layer wg-studio-system`, laid by `tools/system-sheet.mts` with `sumi.css`'s `--sumi-*` and bundled Inter, Spectral
+and JetBrains Mono), the app's pictures and
 route re-wear `default`, and inside Obsidian `--brand` is the host's accent. The app menu lives only in the chat's header. The edge between them drags
 the width (`chatWidth` in `StudioState`, ≥300px with no cap, card ≥240px, double press → 380px; the
 chat's content stays a centred 800px column, `--wg-studio-chat-content`), remembered per
@@ -735,6 +736,27 @@ transparent (measured in Chrome: `rgba(0, 0, 0, 0)` plain, the token's colour in
 stylesheet reads the same tokens directly, and its four text sizes — `--wg-kit-text-xs|s|m|l`, 11px
 and the host's three UI steps — are what both sides now name: the five hand-written sizes that
 answered to nothing, three 11px and one 9px among them, are on the scale.
+
+## Sumi — the studio's design system
+
+**Sumi ("Quiet UI") is the one design system of the studio and the Tauri app.** The package is
+`design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every `--sumi-*` token), the
+approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the boards are the canvas
+"Studio two layers" (https://claude.ai/artifact/4YPtzqciNLEEfHLBeJZePw), copied as artboards into
+`docs/reference/sumi-layout/`. Sumi is also the mascot's name (once Ink).
+
+- **The design is the single source of truth.** A component — kit included — that does not render like the
+  board at rest, hover, pressed, open and selected, light and dark, is changed until it does; the kit gives
+  behaviour and motion, never its own look. A component that differs from the design is not accepted.
+  Check it on the real studio build, never only on a test page.
+- **Exactness: everything stands on shared lines.** Neighbouring blocks align on common guides even when they
+  are different plates: the sidebar's top-row icons sit on the same line as the plate headers' icons (the
+  sidebar takes the top padding that puts them there), list icons share one size and one left edge, text in
+  neighbouring rows starts on one axis, and every gap is a step of the 4px scale, the same wherever the same
+  relation repeats. The boards keep this; an implementation that breaks it is wrong even when each block
+  alone matches.
+- Quiet: hierarchy from text and spacing, controls ghost until hovered, one loud thing per view, monochrome
+  with blue only as a wash, no borders and no inner plate around app content, no uppercase labels.
 
 ## Design systems from references
 

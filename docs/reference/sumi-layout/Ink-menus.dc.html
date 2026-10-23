@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Menus and tooltips</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.ink{--frame:#F2F2F3;--frame-tinted:#F2F2F3;--plate:#FFFFFF;--sunken:#EAEAED;--overlay:rgba(255,255,255,.86);--text:#1F1E1C;--text-2:rgba(31,30,28,.66);--text-3:rgba(31,30,28,.42);--hover:rgba(31,30,28,.05);--active:rgba(31,30,28,.08);--line:rgba(31,30,28,.08);--line-strong:rgba(31,30,28,.14);--success:#2F8F5B;--warning:#C98A1A;--danger:#D93F2E;--accent:#3B5BFD;--accent-text:#2E4FE6;--on-accent:#FFFFFF;--focus-ring:rgba(59,91,253,.55);--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.12);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame:#141416;--frame-tinted:#141416;--plate:#1F1F21;--sunken:#2B2B2E;--overlay:rgba(44,44,47,.88);--text:#EDECE8;--text-2:rgba(237,236,232,.66);--text-3:rgba(237,236,232,.40);--hover:rgba(237,236,232,.06);--active:rgba(237,236,232,.10);--line:rgba(237,236,232,.08);--line-strong:rgba(237,236,232,.16);--accent-text:#8EA2FF;--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.45)}
+.ink *{box-sizing:border-box}
+:where(.ink) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer}
+.ink svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ink svg.s12{width:12px;height:12px}
+.ib{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.chip{height:24px;padding:0 8px;border-radius:999px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:var(--hover)}
+.chip.open{background:var(--active)}
+.gt{height:24px;padding:0 6px;border-radius:6px;font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:4px}
+.gt.hov{background:var(--hover);color:var(--text)}
+.gt.open{background:var(--active);color:var(--text)}
+.kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
+.plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
+.menu{background:var(--overlay);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);border-radius:12px;box-shadow:var(--shadow-popover);padding:4px;width:248px;display:flex;flex-direction:column;gap:1px}
+.mh{font-size:12px;color:var(--text-2);padding:6px 8px 4px}
+.mi{min-height:28px;width:100%;border-radius:6px;display:flex;align-items:center;gap:8px;padding:4px 8px;text-align:left;font-size:13px}
+.mi .w{flex:1;min-width:0}
+.mi .d{display:block;font-size:12px;color:var(--text-2)}
+.mi.sel{background:var(--active)}
+.mi.hov{background:var(--hover)}
+.mi.off{color:var(--text-3)}
+.mi.off .d{color:var(--text-3)}
+.mi .chk{color:var(--accent-text)}
+.mi .ic{color:var(--text-2)}
+.sep{height:1px;background:var(--line);margin:4px 8px}
+.tip{background:var(--text);color:var(--plate);font-size:12px;border-radius:6px;padding:4px 8px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.tip .k{font-size:11px;opacity:.6}
+.cell{height:340px;padding:16px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
+.cap h3{margin:0 0 4px;font-size:13px;font-weight:600}
+.cap p{margin:0;font-size:12px;color:var(--text-2);line-height:1.45}
+.bar{height:4px;border-radius:999px;background:var(--active);position:relative;margin:6px 0 4px}
+.bar span{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--text)}
+</style>
+</helmet>
+<div class="ink {{themeCls}}" style="width: 1440px; height: 1240px; padding: 48px; background: var(--frame-tinted); display: flex; flex-direction: column; gap: 32px; overflow: hidden;">
+  <div style="display: flex; align-items: flex-end; gap: 48px;">
+    <div style="flex: 1;">
+      <div style="font-size: 12px; color: var(--text-2);">Chat · menus</div>
+      <h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600; line-height: 1.25;">One menu, every dropdown</h1>
+    </div>
+    <p style="margin: 0; max-width: 520px; font-size: 12px; color: var(--text-2);">Glass over the page: overlay fill with blur, 12px corners, 4px inside, rows 28px with 6px corners. Selected is a tint and a check in the workspace colour, hover is a lighter tint. It opens from the trigger it belongs to, never from the middle of the screen.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 300px 1fr; gap: 40px; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="cap"><h3>Anatomy</h3><p>Every kind of row a menu may hold. A menu holds at most one heading per group and one selected row per choice.</p></div>
+      <div class="menu" role="menu" aria-label="Anatomy">
+        <div class="mh">Heading</div>
+        <button class="mi" role="menuitem"><span class="w">Plain row</span></button>
+        <button class="mi hov" role="menuitem"><span class="w">Hovered row</span><span class="kbd">⌘D</span></button>
+        <button class="mi sel" role="menuitemradio" aria-checked="true"><span class="w">Selected row</span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+        <button class="mi" role="menuitem"><span class="w">Two lines<span class="d">One line on what it does</span></span></button>
+        <button class="mi" role="menuitem"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><span class="w">With an icon</span></button>
+        <button class="mi" role="menuitem" aria-haspopup="menu"><span class="w">Opens more</span><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <button class="mi off" role="menuitem" aria-disabled="true"><span class="w">Not available<span class="d">Says why, in one line</span></span></button>
+        <div class="sep"></div>
+        <button class="mi" role="menuitem" style="color: var(--danger);"><span class="w">Delete chat</span></button>
+      </div>
+      <div class="cap" style="margin-top: 8px;"><h3>Tooltips</h3><p>After 500ms on any icon-only control, with its shortcut at 60%.</p></div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;"><span class="tip">Send<span class="k">↵</span></span><span class="tip">Attach<span class="k">⌘U</span></span><span class="tip">New chat<span class="k">⌘N</span></span><span class="tip">Hide chats<span class="k">⌘\</span></span></div>
+      <div class="cap" style="margin-top: 8px;"><h3>Trigger</h3><p>A ghost text button: rest, hovered, open.</p></div>
+      <div style="display: flex; gap: 8px;"><button class="gt">Medium<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button class="gt hov">Medium<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button class="gt open">Medium<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button></div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Mode</h3><p>How much Ink may do without asking.</p></div>
+        <div class="plate cell">
+          <div class="menu" role="menu" aria-label="Permission mode">
+            <div class="mh">Permission mode</div>
+            <button class="mi"><span class="w">Ask first<span class="d">Asks before every edit and command</span></span></button>
+            <button class="mi hov"><span class="w">Accept edits<span class="d">Edits files, asks before commands</span></span></button>
+            <button class="mi"><span class="w">Plan<span class="d">Reads and plans, changes nothing</span></span></button>
+            <button class="mi sel"><span class="w">Auto<span class="d">Edits and runs, stops on risky steps</span></span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px;"><button class="gt open">Auto<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button><span style="flex: 1;"></span><button class="gt">38%</button><button class="gt">Opus</button><button class="gt">Medium</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Model</h3><p>The models the agent accepts, a line on each.</p></div>
+        <div class="plate cell" style="align-items: flex-end;">
+          <div class="menu" role="menu" aria-label="Model" style="margin-right: 40px;">
+            <div class="mh">Model</div>
+            <button class="mi sel"><span class="w">Opus<span class="d">Most capable</span></span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+            <button class="mi hov"><span class="w">Sonnet<span class="d">Fast for everyday work</span></span></button>
+            <button class="mi"><span class="w">Haiku<span class="d">Quickest, lightest</span></span></button>
+            <button class="mi"><span class="w">Fable<span class="d">Newest</span></span></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px; width: 100%;"><button class="gt">Auto</button><span style="flex: 1;"></span><button class="gt">38%</button><button class="gt open">Opus<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button><button class="gt">Medium</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Effort</h3><p>How long the model thinks. A step up uses more of the limit.</p></div>
+        <div class="plate cell" style="align-items: flex-end;">
+          <div class="menu" role="menu" aria-label="Effort">
+            <div class="mh">Effort</div>
+            <button class="mi"><span class="w">Low<span class="d">Answers fast</span></span></button>
+            <button class="mi sel"><span class="w">Medium</span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+            <button class="mi hov"><span class="w">High</span></button>
+            <button class="mi"><span class="w">Extra high</span></button>
+            <button class="mi"><span class="w">Max<span class="d">Thinks longest, uses the most</span></span></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px; width: 100%;"><button class="gt">Auto</button><span style="flex: 1;"></span><button class="gt">38%</button><button class="gt">Opus</button><button class="gt open">Medium<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Usage</h3><p>The ring is the share of the 5-hour window. Pressed, it shows the numbers and when each resets.</p></div>
+        <div class="plate cell" style="align-items: flex-end;">
+          <div class="menu" role="dialog" aria-label="Usage" style="margin-right: 72px; padding: 8px 12px 10px;">
+            <div style="font-size: 12px; color: var(--text-2); margin-bottom: 8px;">Usage</div>
+            <div style="display: flex; justify-content: space-between;"><span>This 5-hour window</span><span style="color: var(--text-2);">38%</span></div>
+            <div class="bar"><span style="width: 38%;"></span></div>
+            <div style="font-size: 12px; color: var(--text-3); margin-bottom: 10px;">Resets at 16:40</div>
+            <div style="display: flex; justify-content: space-between;"><span>This week</span><span style="color: var(--text-2);">12%</span></div>
+            <div class="bar"><span style="width: 12%;"></span></div>
+            <div style="font-size: 12px; color: var(--text-3);">Resets Monday</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px; width: 100%;"><button class="gt">Auto</button><span style="flex: 1;"></span><button class="gt open"><svg viewBox="0 0 14 14" aria-hidden="true" style="width: 12px; height: 12px;"><circle cx="7" cy="7" r="5.5" fill="none" stroke="var(--line-strong)" stroke-width="2"></circle><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="13.1 34.6" transform="rotate(-90 7 7)"></circle></svg>38%</button><button class="gt">Opus</button><button class="gt">Medium</button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Agent</h3><p>Which agent answers. One that is not signed in stays listed and says so.</p></div>
+        <div class="plate cell">
+          <div class="menu" role="menu" aria-label="Agent">
+            <div class="mh">Agent</div>
+            <button class="mi sel"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span><span class="w">Claude Code<span class="d">Signed in</span></span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+            <button class="mi off" aria-disabled="true"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--text-3);"></span><span class="w">Another agent<span class="d">Not signed in</span></span><span style="font-size: 12px; color: var(--accent-text);">Set up</span></button>
+            <div class="sep"></div>
+            <button class="mi"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span class="w">Add an agent…</span></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 4px;"><button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button><button class="chip open"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Attach</h3><p>The + in the composer. Files, the page on screen, or tabs of this chat.</p></div>
+        <div class="plate cell">
+          <div class="menu" role="menu" aria-label="Attach">
+            <button class="mi"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><span class="w">Add files…</span><span class="kbd">⌘U</span></button>
+            <button class="mi hov"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21"></path></svg><span class="w">Screenshot of the page</span></button>
+            <button class="mi" aria-haspopup="menu"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"></path></svg><span class="w">A tab of this chat</span><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="m9 18 6-6-6-6"></path></svg></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 4px;"><button class="ib" aria-label="Attach" style="background: var(--active); color: var(--text);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button><button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeCls: (this.props.theme ?? 'light') === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

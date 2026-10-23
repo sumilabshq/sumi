@@ -1,0 +1,794 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sumi, settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;overflow:hidden}
+.ink{box-sizing:border-box}
+.ink{--frame-tinted:#F7F7F7;--plate:#FFFFFF;--sunken:#F0F0F0;--overlay:rgba(255,255,255,.86);--text:#1D1D1F;--text-2:rgba(0,0,0,.66);--text-3:rgba(0,0,0,.42);--hover:rgba(0,0,0,.035);--active:rgba(0,0,0,.06);--line:rgba(0,0,0,.08);--line-strong:rgba(0,0,0,.11);--success:#2F8F5B;--danger:#D93F2E;--accent:#3B5BFD;--on-accent:#FFFFFF;--accent-soft:rgba(59,91,253,.12);--focus-ring:rgba(59,91,253,.55);--ink:#1D1D1F;--on-ink:#FFFFFF;--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.12);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame-tinted:#141414;--plate:#1F1F1F;--sunken:#2A2A2A;--overlay:rgba(38,38,38,.86);--text:#EDEDED;--text-2:rgba(255,255,255,.66);--text-3:rgba(255,255,255,.40);--hover:rgba(255,255,255,.06);--active:rgba(255,255,255,.10);--line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.16);--danger:#F0705F;--ink:#EDEDED;--on-ink:#1F1F1F;--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.45)}
+.ink *{box-sizing:border-box}
+:where(.ink) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer;text-align:left}
+.ink svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ib{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.ib.off{color:var(--text-3)}
+.row{height:28px;width:100%;border-radius:6px;display:flex;align-items:center;gap:8px;padding:0 8px;font-size:13px;white-space:nowrap}
+.row .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row .ic{color:var(--text-2)}
+.row.sel{background:var(--active);font-weight:500}
+.lbl{font-size:12px;color:var(--text-2);padding:0 8px;margin:16px 0 4px}
+.field{height:32px;border-radius:8px;background:var(--sunken);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--text-3);font-size:13px}
+.kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
+.plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
+.crumb{height:28px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
+.btn{height:30px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none}
+.btn.ik{background:var(--ink);color:var(--on-ink)}
+.btn.onwell{background:var(--plate)}
+.btn.outline{box-shadow:inset 0 0 0 1px var(--line-strong)}
+.btn.gh{color:var(--text-2)}
+.btn.bad{color:var(--danger)}
+.nav{width:248px;flex:none;display:flex;flex-direction:column;padding:4px 12px 16px;gap:1px}
+.nrow{height:32px;width:100%;border-radius:8px;display:flex;align-items:center;gap:10px;padding:0 8px;font-size:13px;white-space:nowrap;color:var(--text)}
+.nrow svg.i{color:var(--text-2)}
+.nrow.sel{background:var(--active);font-weight:500}
+.nrow.dd svg.i{color:var(--text)}
+.nrow .h{font-size:12px;color:var(--text-3);font-weight:400}
+.ng{font-size:12px;color:var(--text-2);padding:0 8px;margin:14px 0 4px}
+.cnt{position:relative;flex:1;min-width:0;overflow:hidden auto;scrollbar-width:none;padding:8px 48px 48px 32px}
+.cin{max-width:760px;display:flex;flex-direction:column}
+.cin h1{margin:0;font-size:28px;font-weight:600;line-height:1.2}
+.ink.ty-sp{font-feature-settings:"cv11","ss03";letter-spacing:-.006em}
+.ink.ty-sp h1{font-family:Spectral,Georgia,serif;font-weight:500;font-size:32px;line-height:1.15;letter-spacing:-.025em}
+.lead{margin:6px 0 0;color:var(--text-2);max-width:620px}
+.jump{display:flex;gap:4px;margin:16px 0 4px}
+.jump button{height:24px;padding:0 10px;border-radius:999px;font-size:12px;background:var(--hover);color:var(--text-2)}
+.gl{display:flex;align-items:baseline;gap:8px;margin:28px 0 8px;padding:0}
+.gl b{font-size:13px;font-weight:600}
+.gl span{font-size:12px;color:var(--text-2)}
+.well{border-radius:12px;background:var(--hover);display:flex;flex-direction:column;overflow:hidden}
+.well > * + *{border-top:1px solid var(--plate)}
+.sr{min-height:54px;display:flex;align-items:center;gap:16px;padding:9px 12px 9px 14px}
+.sr .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.sr .t b{font-weight:500}
+.sr .t span{font-size:12px;color:var(--text-2)}
+.dd{height:30px;padding:0 8px 0 10px;border-radius:8px;background:var(--plate);display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;flex:none}
+.dd svg.i{width:12px;height:12px;color:var(--text-2)}
+.sw{width:36px;height:22px;border-radius:999px;background:var(--line-strong);position:relative;flex:none;transition:background 180ms cubic-bezier(.2,0,0,1)}
+.sw i{position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:999px;background:#FFFFFF;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left 180ms cubic-bezier(.2,0,0,1)}
+.sw.on{background:var(--accent)}
+.sw.on i{left:17px}
+.sw.lock{opacity:.55;cursor:default}
+.seg{display:inline-flex;padding:2px;border-radius:999px;background:var(--active);flex:none}
+.seg button{height:26px;padding:0 12px;border-radius:999px;font-size:12px;color:var(--text-2);white-space:nowrap}
+.seg button.on{background:var(--plate);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,.08);font-weight:500}
+.kc{min-width:24px;height:24px;padding:0 6px;border-radius:6px;background:var(--plate);box-shadow:0 0 0 1px var(--line-strong),0 1px 0 var(--line-strong);font-size:12px;display:inline-flex;align-items:center;justify-content:center;flex:none}
+.keys{display:flex;gap:4px;flex:none}
+.mcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.mcards.fit{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.mcards.fit .pv{height:104px}
+.gsh{position:absolute;border-radius:7px}
+.gmn{position:absolute;left:22%;right:22%;top:24%;bottom:18%;border-radius:8px;box-shadow:0 0 0 .5px rgba(0,0,0,.08),0 6px 16px rgba(0,0,0,.14);padding:9px;display:flex;flex-direction:column;gap:5px}
+.gmn i{height:4px;border-radius:999px;background:rgba(127,127,127,.35)}
+.gvl{position:absolute;inset:0}
+.gtrk{width:auto;flex:0 1 260px;min-width:110px}
+.sr .seg + .gtrk{margin-left:4px}
+.sr.off{opacity:.45;pointer-events:none}
+.mcard{display:flex;flex-direction:column;gap:8px}
+.pv{position:relative;height:128px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line);transition:box-shadow 120ms}
+.mcard.on .pv{box-shadow:0 0 0 2px var(--plate),0 0 0 4px var(--accent)}
+.pv-in{position:absolute;inset:0}
+.pv-rail{position:absolute;left:9px;top:22px;display:flex;flex-direction:column;gap:5px}
+.pv-rail i{width:9px;height:9px;border-radius:999px}
+.pv-p{position:absolute;top:12px;bottom:12px;border-radius:7px;padding:10px 9px;display:flex;flex-direction:column;gap:5px}
+.pv-p i{height:5px;border-radius:999px}
+.pv-half{position:absolute;top:0;bottom:0;left:50%;right:0;overflow:hidden}
+.pv-half .pv-in{left:-100%;right:0}
+.mname b{font-weight:500}
+.mname span{font-size:12px;color:var(--text-2);margin-left:6px}
+.pick{border-radius:16px;background:var(--hover);padding:8px;display:flex;flex-direction:column;gap:8px}
+.fld{position:relative;height:250px;border-radius:12px;overflow:hidden;background:var(--plate);box-shadow:0 0 0 1px var(--line);cursor:crosshair}
+.spec{position:absolute;inset:0;opacity:.34;background:linear-gradient(90deg,hsl(0 85% 65%),hsl(40 90% 60%),hsl(90 70% 55%),hsl(150 65% 50%),hsl(195 75% 55%),hsl(230 85% 65%),hsl(275 75% 65%),hsl(330 80% 65%),hsl(360 85% 65%))}
+.fade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 0%,var(--plate) 100%)}
+.fdots{position:absolute;inset:0;background-image:radial-gradient(var(--line) 1px,transparent 1.2px);background-size:16px 16px}
+.blob{position:absolute;width:220px;height:220px;border-radius:999px;transform:translate(-50%,-50%);filter:blur(34px);opacity:.42;pointer-events:none;transition:left 240ms cubic-bezier(.2,0,0,1),top 240ms cubic-bezier(.2,0,0,1)}
+.hdl{position:absolute;border-radius:999px;transform:translate(-50%,-50%);box-shadow:0 0 0 3px #FFFFFF,0 4px 14px rgba(0,0,0,.22);transition:left 240ms cubic-bezier(.2,0,0,1),top 240ms cubic-bezier(.2,0,0,1)}
+.ftools{position:absolute;right:8px;top:8px;padding:2px;border-radius:9px;background:var(--overlay);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);box-shadow:0 0 0 1px var(--line);display:flex;flex-direction:column;gap:1px}
+.ftools .ib{width:26px;height:26px;border-radius:7px}
+.ftools .ib svg.i{width:14px;height:14px}
+.cin > *{animation:fi 200ms cubic-bezier(.2,0,0,1)}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}}
+@media (prefers-reduced-motion: reduce){.cin > *{animation:none}}
+.secbtn{height:28px;padding:0 10px 0 8px;border-radius:8px;background:var(--hover);display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;color:var(--text-2);align-self:flex-start;margin-bottom:12px}
+.lrow{min-height:48px;width:100%;display:flex;align-items:center;gap:12px;padding:8px 10px 8px 10px}
+.lrow .tile{width:30px;height:30px;border-radius:8px;background:var(--plate);box-shadow:0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;flex:none}
+.lrow.cur{background:var(--active)}
+.lt{flex:1;font-weight:500}
+.mlist{display:flex;flex-direction:column;gap:2px;margin:0}
+.mlist .lrow{min-height:40px;padding:0 12px;border-radius:8px}
+.mlist .tile{display:none}
+.mlist .lt{font-weight:400;font-size:14px}
+.mlist .lrow.cur .lt{font-weight:500}
+.gl.quiet{margin:24px 0 4px;padding:0 12px}
+.cin > .field{padding:0 12px}
+.gl.quiet b{font-size:12px;font-weight:400;color:var(--text-2)}
+.rail{width:56px;flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 16px}
+.rail button{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--text-2)}
+.rail button.sel{background:var(--active);color:var(--text)}
+.rail button{position:relative}
+.rail button::after{content:attr(aria-label);position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);padding:4px 8px;border-radius:6px;background:var(--text);color:var(--plate);font-size:12px;line-height:1.4;white-space:nowrap;pointer-events:none;opacity:0;z-index:10}
+.rail button:hover::after,.rail button:focus-visible::after{opacity:1}
+.chiprow{display:flex;gap:4px;overflow:hidden;margin:0 -24px 16px;padding:0 24px;-webkit-mask-image:linear-gradient(90deg,#000 85%,transparent);mask-image:linear-gradient(90deg,#000 85%,transparent)}
+.chiprow button{height:30px;padding:0 12px;border-radius:999px;font-size:12px;white-space:nowrap;background:var(--hover);color:var(--text-2);display:inline-flex;align-items:center;gap:6px;flex:none}
+.chiprow button.sel{background:var(--ink);color:var(--on-ink);font-weight:500}
+.sws{display:flex;align-items:center;gap:6px;padding:4px 2px}
+.swc{width:32px;height:32px;border-radius:999px;flex:none;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);transition:box-shadow 120ms}
+.swc.on{box-shadow:0 0 0 2px var(--plate),0 0 0 4px var(--text)}
+.inner{border-radius:12px;background:var(--plate);display:flex;flex-direction:column;overflow:hidden}
+.inner > * + *{border-top:1px solid var(--line)}
+.wave{position:relative;width:260px;height:28px;flex:none}
+.wave svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.wave .w0{fill:none;stroke:var(--line-strong);stroke-width:4;stroke-linecap:round}
+.wave .w1{fill:none;stroke:var(--text);stroke-width:4;stroke-linecap:round}
+.rng{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
+.trk{position:relative;width:260px;height:28px;flex:none}
+.trk .bar{position:absolute;left:0;right:0;top:12px;height:4px;border-radius:999px;background:var(--line-strong)}
+.trk .fill{position:absolute;left:0;top:12px;height:4px;border-radius:999px;background:var(--text)}
+.trk .knob{position:absolute;top:4px;width:20px;height:20px;margin-left:-10px;border-radius:999px;background:#FFFFFF;box-shadow:0 0 0 1px var(--line-strong),0 2px 6px rgba(0,0,0,.18)}
+.val{width:40px;text-align:right;font-size:12px;color:var(--text-2);flex:none;font-variant-numeric:tabular-nums}
+.wsc{display:flex;flex-direction:column;gap:8px;padding:14px;border-radius:12px;background:var(--hover)}
+.wsc.on{box-shadow:0 0 0 2px var(--accent);background:var(--plate)}
+.av{width:36px;height:36px;border-radius:999px;color:#FFFFFF;font-weight:600;display:flex;align-items:center;justify-content:center}
+.tl{width:28px;height:28px;border-radius:8px;background:var(--plate);box-shadow:0 0 0 1px var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex:none}
+.chip{height:22px;padding:0 8px;border-radius:999px;font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:4px;background:var(--plate);color:var(--text-2);flex:none;white-space:nowrap}
+.ink.edge-none .plate{box-shadow:none}
+.ink.edge-soft .plate{box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05)}
+.ink.dark.edge-soft .plate{box-shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3)}
+</style>
+</helmet>
+<div class="ink {{themeCls}} {{edgeCls}} {{typeCls}}" style="position: relative; width: 1728px; height: 1280px; overflow: hidden; {{rootVars}}">
+  <sc-if value="{{blurOn}}" hint-placeholder-val="{{false}}">
+    <div aria-hidden="true" style="position: absolute; inset: 0; background: radial-gradient(circle at 18% 22%, #F4A66B 0, transparent 34%), radial-gradient(circle at 78% 30%, #7EA6F7 0, transparent 38%), radial-gradient(circle at 46% 84%, #9C7BEA 0, transparent 40%), #D8D4CF;"></div>
+  </sc-if>
+  <div aria-hidden="true" style="position: absolute; inset: 0; background: {{frameBg}}; -webkit-backdrop-filter: blur({{blurPx}}px); backdrop-filter: blur({{blurPx}}px);"></div>
+  <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; opacity: {{grainOp}}; background-image: radial-gradient(rgba(0,0,0,.55) .6px, transparent .9px), radial-gradient(rgba(255,255,255,.6) .6px, transparent .9px); background-size: 3px 3px, 4px 4px; background-position: 0 0, 1px 2px; mix-blend-mode: overlay;"></div>
+
+  <div style="position: relative; height: 100%; display: flex; gap: 8px; padding: 8px;">
+    <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 82px; width: 1px; background: var(--line-strong);"></span>
+    <div aria-hidden="true" style="position: absolute; top: 24px; left: 16px; display: flex; gap: 8px;">
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></span>
+      <span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></span>
+    </div>
+
+    <nav aria-label="Workspaces" style="width: 72px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 52px 0 12px;">
+      <button aria-label="Default, ⌘1" style="width: 32px; height: 32px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 13px; font-weight: 600; text-align: center;">D</button>
+      <button aria-label="Widgetarium, ⌘2" style="width: 32px; height: 32px; border-radius: 999px; background: var(--hover); color: var(--text-2); font-size: 13px; font-weight: 600; text-align: center;">W</button>
+      <button aria-label="Urcraft, ⌘3" style="width: 32px; height: 32px; border-radius: 999px; background: var(--hover); color: var(--text-2); font-size: 13px; font-weight: 600; text-align: center;">U</button>
+      <button class="ib" aria-label="New workspace" style="width: 32px; height: 32px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-strong);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <span style="flex: 1;"></span>
+      <button class="ib" aria-label="Routines" title="Routines" style="width: 32px; height: 32px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line-strong);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"></path></svg></button>
+      <button class="ib" aria-label="Settings" aria-current="page" style="width: 32px; height: 32px; border-radius: 999px; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-strong);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
+    </nav>
+
+    <nav aria-label="Chats" style="width: 240px; flex: none; display: flex; flex-direction: column; min-height: 0;">
+      <div style="height: 44px; flex: none; display: flex; align-items: center; padding-left: 8px;">
+        <span style="flex: 1; font-weight: 600;">Default</span>
+        <button class="ib" aria-label="New chat, ⌘N"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.4 2.6a2 2 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg></button>
+      </div>
+      <div class="field"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>Search chats<span style="flex: 1;"></span><span class="kbd">⌘K</span></div>
+      <div class="lbl">Today</div>
+      <button class="row"><span class="t">Translator</span></button>
+      <button class="row"><span class="t">Browse catalogue screen</span></button>
+      <button class="row"><span class="t">Glossary manager UI design</span></button>
+      <div class="lbl">Yesterday</div>
+      <button class="row"><span class="t">White and grey background in the design system</span></button>
+      <button class="row"><span class="t">Inline translation placement</span></button>
+      <div class="lbl">Previous 7 days</div>
+      <button class="row"><span class="t">Weekly work log</span></button>
+    </nav>
+    <sc-if value="{{compact}}" hint-placeholder-val="{{false}}">
+    <section aria-label="Chat" class="plate" style="width: 560px; flex: none; display: flex; flex-direction: column; overflow: hidden;">
+      <header style="height: 44px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px;">
+        <button class="ib" aria-label="Hide chats"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9 3v18"></path></svg></button>
+        <button class="crumb"><span style="color: var(--text-2);">Default</span><span style="color: var(--text-3);">/</span><span style="font-weight: 500;">Translator</span></button>
+        <span style="flex: 1;"></span>
+        <button class="ib" aria-label="Chat menu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.4;"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+      </header>
+      <div style="flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; padding: 14px 24px 12px; font-size: 14px; line-height: 1.55;">
+        <div style="align-self: flex-end; max-width: 400px; background: var(--sunken); border-radius: 12px; padding: 8px 12px;">Make the window calmer, and let me pick its colour.</div>
+        <p style="margin: 0;">Done. Settings has an Appearance page now: one colour tints the whole window, and it stays quieter in dark.</p>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2);"><svg viewBox="0 0 64 64" aria-hidden="true" style="width: 14px; height: 14px;"><circle cx="32" cy="32" r="32" style="fill: var(--text);"></circle><path d="M18 34q6-8 12 0M34 34q6-8 12 0" style="fill: none; stroke: var(--plate); stroke-width: 5; stroke-linecap: round;"></path></svg>Done · 9 s</div>
+      </div>
+      <div style="padding: 0 16px 14px;">
+        <div style="background: var(--plate); border: 1px solid var(--line-strong); border-radius: 12px; min-height: 88px; padding: 12px; display: flex; flex-direction: column;">
+          <span style="font-size: 14px; color: var(--text-3);">Ask for the next change</span>
+          <span style="flex: 1;"></span>
+          <div style="display: flex; align-items: center; gap: 4px;"><button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button><span style="flex: 1;"></span><span style="width: 32px; height: 32px; border-radius: 999px; background: var(--active); color: var(--text-3); display: inline-flex; align-items: center; justify-content: center;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></span></div>
+        </div>
+      </div>
+    </section>
+    </sc-if>
+
+    <main aria-label="Settings" class="plate" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden;">
+      <header style="height: 44px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px;">
+        <sc-if value="{{isWide}}" hint-placeholder-val="{{true}}"><button class="ib" aria-label="Show the chat"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></button></sc-if>
+        <button class="ib" aria-label="Back"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+        <button class="ib off" aria-label="Forward" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+        <button class="crumb" style="margin-left: 4px;" onClick="{{openList}}" aria-label="All settings"><span style="color: var(--text-2);">Settings</span><sc-if value="{{showPage}}" hint-placeholder-val="{{true}}"><span style="color: var(--text-3);">/</span><span style="font-weight: 500;">{{pageName}}</span></sc-if><sc-if value="{{isMenu}}" hint-placeholder-val="{{false}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px; color: var(--text-2);"><path d="{{crumbChev}}"></path></svg></sc-if></button>
+        <span style="flex: 1;"></span>
+        <button class="ib" aria-label="Page menu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.4;"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+        <button class="ib" aria-label="Hide tabs"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM15 3v18"></path></svg></button>
+      </header>
+      <div style="flex: 1; min-height: 0; display: flex;">
+        <sc-if value="{{isWide}}" hint-placeholder-val="{{true}}">
+        <nav class="nav" aria-label="Settings sections">
+          <div class="field" style="margin-bottom: 6px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>Search settings<span style="flex: 1;"></span><span class="kbd">⌘F</span></div>
+          <div class="ng">Sumi</div>
+          <sc-for list="{{navInk}}" as="n" hint-placeholder-count="5">
+            <button class="{{n.cls}}" onClick="{{n.pick}}" aria-current="{{n.cur}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.icon}}"></path></svg><span style="flex: 1;">{{n.label}}</span><sc-if value="{{n.isDot}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 0 2px var(--plate), 0 0 0 3px var(--line-strong);"></span></sc-if><span class="h">{{n.hint}}</span></button>
+          </sc-for>
+          <div class="ng">Browser</div>
+          <sc-for list="{{navBrowser}}" as="n" hint-placeholder-count="3">
+            <button class="{{n.cls}}" onClick="{{n.pick}}" aria-current="{{n.cur}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.icon}}"></path></svg><span style="flex: 1;">{{n.label}}</span><span class="h">{{n.hint}}</span></button>
+          </sc-for>
+          <span style="flex: 1;"></span>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px; font-size: 12px; color: var(--text-3);"><svg viewBox="0 0 64 64" aria-hidden="true" style="width: 16px; height: 16px;"><circle cx="32" cy="32" r="32" style="fill: var(--text);"></circle><path d="M18 34q6-8 12 0M34 34q6-8 12 0" style="fill: none; stroke: var(--plate); stroke-width: 5; stroke-linecap: round;"></path></svg>Sumi 0.4.2 · up to date</div>
+        </nav>
+        </sc-if>
+        <sc-if value="{{isRail}}" hint-placeholder-val="{{false}}">
+          <nav class="rail" aria-label="Settings sections">
+            <sc-for list="{{navAll}}" as="n" hint-placeholder-count="8">
+              <button class="{{n.rcls}}" aria-label="{{n.label}}" onClick="{{n.pick}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.icon}}"></path></svg></button>
+            </sc-for>
+          </nav>
+        </sc-if>
+
+        <div class="cnt" style="{{cntPad}}" ref="{{cntRef}}">
+          <sc-if value="{{showList}}" hint-placeholder-val="{{false}}">
+            <div style="position: absolute; left: 36px; bottom: 20px; font-size: 12px; color: var(--text-3);">Sumi 0.4.2 · up to date</div>
+          </sc-if>
+          <div class="cin">
+            <sc-if value="{{isChips}}" hint-placeholder-val="{{false}}">
+              <div class="chiprow" role="tablist" aria-label="Settings sections">
+                <sc-for list="{{navAll}}" as="n" hint-placeholder-count="8">
+                  <button class="{{n.ccls}}" role="tab" onClick="{{n.pick}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="{{n.icon}}"></path></svg>{{n.label}}</button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{showList}}" hint-placeholder-val="{{false}}">
+              <h1>Settings</h1>
+              <div class="field" style="margin-top: 14px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>Search settings</div>
+              <div class="{{glCls}}"><b>Sumi</b></div>
+              <div class="{{listCls}}">
+                <sc-for list="{{listInk}}" as="n" hint-placeholder-count="5">
+                  <button class="{{n.lcls}}" onClick="{{n.go}}"><span class="tile"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.icon}}"></path></svg></span><span class="lt">{{n.label}}</span><span style="font-size: 12px; color: var(--text-3);">{{n.hint}}</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-3);"><path d="m9 18 6-6-6-6"></path></svg></button>
+                </sc-for>
+              </div>
+              <div class="{{glCls}}"><b>Browser</b></div>
+              <div class="{{listCls}}">
+                <sc-for list="{{listBrowser}}" as="n" hint-placeholder-count="3">
+                  <button class="{{n.lcls}}" onClick="{{n.go}}"><span class="tile"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="{{n.icon}}"></path></svg></span><span class="lt">{{n.label}}</span><span style="font-size: 12px; color: var(--text-3);">{{n.hint}}</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-3);"><path d="m9 18 6-6-6-6"></path></svg></button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{showPage}}" hint-placeholder-val="{{true}}">
+
+            <sc-if value="{{isAppearance}}" hint-placeholder-val="{{true}}">
+              <h1>Appearance</h1>
+              <p class="lead">One colour, picked once, tints the whole window. It is softer in dark, and the pages stay white unless you ask.</p>
+              <div class="jump"><button>Mode</button><button>Colour</button><button onClick="{{toGlass}}">Glass</button><button>Interface</button></div>
+
+              <div class="gl"><b>Mode</b></div>
+              <div class="mcards" role="radiogroup" aria-label="Mode">
+                <sc-for list="{{modes}}" as="m" hint-placeholder-count="3">
+                  <button class="{{m.cls}}" role="radio" aria-checked="{{m.on}}" onClick="{{m.pick}}">
+                    <div class="pv">
+                      <div class="pv-in" style="background: {{pvL.frame}};">
+                        <span class="pv-rail"><i style="background: {{pvL.acc}};"></i><i style="background: {{pvL.dim}};"></i><i style="background: {{pvL.dim}};"></i></span>
+                        <span class="pv-p" style="left: 26px; width: 34%; background: {{pvL.plate}};"><i style="width: 70%; background: {{pvL.dim}};"></i><i style="width: 90%; background: {{pvL.dim}};"></i><i style="width: 50%; background: {{pvL.dim}};"></i><span style="flex: 1;"></span><i style="height: 16px; border-radius: 5px; background: {{pvL.dim}};"></i></span>
+                        <span class="pv-p" style="left: calc(34% + 34px); right: 10px; background: {{pvL.plate}};"><i style="width: 40%; background: {{pvL.dim}};"></i><i style="width: 22px; height: 22px; border-radius: 999px; margin: 14px auto 0; background: {{pvL.ink}};"></i></span>
+                      </div>
+                      <sc-if value="{{m.split}}" hint-placeholder-val="{{false}}">
+                        <div class="pv-half">
+                          <div class="pv-in" style="background: {{pvD.frame}};">
+                            <span class="pv-rail"><i style="background: {{pvD.acc}};"></i><i style="background: {{pvD.dim}};"></i><i style="background: {{pvD.dim}};"></i></span>
+                            <span class="pv-p" style="left: 26px; width: 34%; background: {{pvD.plate}};"><i style="width: 70%; background: {{pvD.dim}};"></i></span>
+                            <span class="pv-p" style="left: calc(34% + 34px); right: 10px; background: {{pvD.plate}};"><i style="width: 40%; background: {{pvD.dim}};"></i><i style="width: 22px; height: 22px; border-radius: 999px; margin: 14px auto 0; background: {{pvD.ink}};"></i></span>
+                          </div>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{m.dark}}" hint-placeholder-val="{{false}}">
+                        <div class="pv-in" style="background: {{pvD.frame}};">
+                          <span class="pv-rail"><i style="background: {{pvD.acc}};"></i><i style="background: {{pvD.dim}};"></i><i style="background: {{pvD.dim}};"></i></span>
+                          <span class="pv-p" style="left: 26px; width: 34%; background: {{pvD.plate}};"><i style="width: 70%; background: {{pvD.dim}};"></i><i style="width: 90%; background: {{pvD.dim}};"></i><i style="width: 50%; background: {{pvD.dim}};"></i><span style="flex: 1;"></span><i style="height: 16px; border-radius: 5px; background: {{pvD.dim}};"></i></span>
+                          <span class="pv-p" style="left: calc(34% + 34px); right: 10px; background: {{pvD.plate}};"><i style="width: 40%; background: {{pvD.dim}};"></i><i style="width: 22px; height: 22px; border-radius: 999px; margin: 14px auto 0; background: {{pvD.ink}};"></i></span>
+                        </div>
+                      </sc-if>
+                    </div>
+                    <div class="mname"><b>{{m.name}}</b><span>{{m.sub}}</span></div>
+                  </button>
+                </sc-for>
+              </div>
+
+              <div class="gl"><b>Colour</b><span>{{colourName}} · adapts to light and dark by itself</span></div>
+              <div class="pick">
+                <div class="fld" aria-label="Colour field: left to right is the hue, up is more colour">
+                  <div class="spec"></div>
+                  <div class="fade"></div>
+                  <div class="fdots"></div>
+                  <sc-for list="{{handles}}" as="h" hint-placeholder-count="1">
+                    <span class="blob" style="left: {{h.x}}%; top: {{h.y}}%; background: {{h.c}};"></span>
+                  </sc-for>
+                  <sc-for list="{{handles}}" as="h" hint-placeholder-count="1">
+                    <button class="hdl" aria-label="{{h.label}}" style="left: {{h.x}}%; top: {{h.y}}%; width: {{h.size}}px; height: {{h.size}}px; background: {{h.c}};"></button>
+                  </sc-for>
+                  <sc-if value="{{noColour}}" hint-placeholder-val="{{false}}">
+                    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-weight: 500;">Press anywhere to add a colour</div>
+                  </sc-if>
+                  <div style="position: absolute; left: 12px; bottom: 10px; font-size: 12px; color: var(--text-3);">Drag a dot · up is more colour</div>
+                  <div class="ftools">
+                    <button class="ib" aria-label="Add a colour to the gradient" onClick="{{addColour}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+                    <button class="ib" aria-label="Remove a colour" onClick="{{removeColour}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+                    <button class="ib" aria-label="Pick matching colours" onClick="{{harmonise}}"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM17 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path></svg></button>
+                  </div>
+                </div>
+                <div class="sws" role="radiogroup" aria-label="Preset colours">
+                  <button class="ib" aria-label="Earlier presets"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+                  <span style="flex: 1; display: flex; justify-content: space-between;">
+                    <sc-for list="{{presets}}" as="p" hint-placeholder-count="8">
+                      <button class="{{p.cls}}" role="radio" aria-checked="{{p.on}}" aria-label="{{p.name}}" onClick="{{p.pick}}" style="background: {{p.bg}};"></button>
+                    </sc-for>
+                  </span>
+                  <button class="ib" aria-label="More presets"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+                </div>
+                <div class="inner">
+                  <div class="sr"><span class="t"><b>Gradient</b><span>{{gradSub}}</span></span><div class="seg" role="radiogroup" aria-label="Colours in the gradient"><sc-for list="{{counts}}" as="k" hint-placeholder-count="3"><button class="{{k.cls}}" onClick="{{k.pick}}">{{k.label}}</button></sc-for></div></div>
+                  <div class="sr"><span class="t"><b>Colour the pages too</b><span>Chat and pages take a whisper of the colour instead of plain white</span></span><button class="{{tintCls}}" role="switch" aria-checked="{{tint}}" aria-label="Colour the pages too" onClick="{{toggleTint}}"><i></i></button></div>
+                  <div class="sr"><span class="t"><b>Grain</b><span>A fine paper texture over the frame</span></span><div class="wave"><svg viewBox="0 0 290 28" preserveAspectRatio="none" aria-hidden="true"><path class="w0" pathLength="100" d="M2 14 q12 -11 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0"></path><path class="w1" pathLength="100" stroke-dasharray="{{grainDash}}" d="M2 14 q12 -11 24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0 t24 0"></path></svg><input class="rng" type="range" min="0" max="100" value="{{grain}}" onChange="{{onGrain}}" aria-label="Grain"></div><span class="val">{{grain}}%</span></div>
+                  <div class="sr"><span class="t"><b>Blur</b><span>Lets the desktop show through the frame</span></span><div class="trk"><span class="bar"></span><span class="fill" style="width: {{blur}}%;"></span><span class="knob" style="left: {{blur}}%;"></span><input class="rng" type="range" min="0" max="100" value="{{blur}}" onChange="{{onBlur}}" aria-label="Blur"></div><span class="val">{{blur}}%</span></div>
+                </div>
+              </div>
+
+              <div class="gl" data-sec="glass"><b>Command menu</b><span>{{gLookNote}}</span></div>
+              <div class="mcards fit" role="radiogroup" aria-label="Command menu glass">
+                <sc-for list="{{gLooks}}" as="g" hint-placeholder-count="3">
+                  <button class="{{g.cls}}" role="radio" aria-checked="{{g.on}}" onClick="{{g.pick}}">
+                    <div class="pv"><div class="pv-in" style="background: {{pvCur.frame}};">
+                      <span class="gsh" style="left: 10%; top: 14%; width: 30%; height: 40%; background: #7A5AF8;"></span>
+                      <span class="gsh" style="left: 52%; top: 10%; width: 24%; height: 44%; border-radius: 999px; background: #E5793A;"></span>
+                      <span class="gsh" style="left: 28%; top: 62%; width: 46%; height: 26%; background: #2F9E6E;"></span>
+                      <span class="gmn" style="background: {{g.bg}}; -webkit-backdrop-filter: {{g.f}}; backdrop-filter: {{g.f}};"><i style="width: 70%;"></i><i style="width: 50%;"></i><i style="width: 60%;"></i></span>
+                    </div></div>
+                    <div class="mname"><b>{{g.name}}</b><span>{{g.sub}}</span></div>
+                  </button>
+                </sc-for>
+              </div>
+              <div class="well" style="margin-top: 12px;">
+                <div class="{{gMenuRow}}"><span class="t"><b>Blur</b></span><div class="trk gtrk"><span class="bar"></span><span class="fill" style="width: {{gMbP}}%;"></span><span class="knob" style="left: {{gMbP}}%;"></span><input class="rng" type="range" min="0" max="40" value="{{gMb}}" onChange="{{onGMb}}" aria-label="Menu blur"></div><span class="val">{{gMb}} px</span></div>
+                <div class="{{gMenuRow}}"><span class="t"><b>Whiteness</b><span>Lower lets more of the page through</span></span><div class="trk gtrk"><span class="bar"></span><span class="fill" style="width: {{gMwP}}%;"></span><span class="knob" style="left: {{gMwP}}%;"></span><input class="rng" type="range" min="50" max="100" value="{{gMw}}" onChange="{{onGMw}}" aria-label="Menu whiteness"></div><span class="val">{{gMw}}%</span></div>
+              </div>
+
+              <div class="gl"><b>Behind menus and dialogs</b><span>{{gBackNote}}</span></div>
+              <div class="mcards fit" role="radiogroup" aria-label="The window behind">
+                <sc-for list="{{gBacks}}" as="g" hint-placeholder-count="4">
+                  <button class="{{g.cls}}" role="radio" aria-checked="{{g.on}}" onClick="{{g.pick}}">
+                    <div class="pv"><div class="pv-in" style="background: {{pvCur.frame}};">
+                      <span class="gsh" style="left: 8%; top: 14%; width: 38%; height: 36%; background: #3B5BFD;"></span>
+                      <span class="gsh" style="left: 58%; top: 18%; width: 32%; height: 58%; background: #E0567A;"></span>
+                      <span class="gsh" style="left: 14%; top: 62%; width: 30%; height: 26%; background: #1F9BB5;"></span>
+                      <span class="gvl" style="background: {{g.bg}}; -webkit-backdrop-filter: {{g.f}}; backdrop-filter: {{g.f}};"></span>
+                      <span class="gmn" style="left: 28%; right: 28%; top: 30%; bottom: 26%; background: {{pvCur.plate}};"><i style="width: 70%;"></i><i style="width: 50%;"></i></span>
+                    </div></div>
+                    <div class="mname"><b>{{g.name}}</b></div>
+                  </button>
+                </sc-for>
+              </div>
+              <div class="well" style="margin-top: 12px;">
+                <div class="sr"><span class="t"><b>Blur</b><span>The window softens</span></span><div class="trk gtrk"><span class="bar"></span><span class="fill" style="width: {{gObP}}%;"></span><span class="knob" style="left: {{gObP}}%;"></span><input class="rng" type="range" min="0" max="20" value="{{gOb}}" onChange="{{onGOb}}" aria-label="Window blur"></div><span class="val">{{gOb}} px</span></div>
+                <div class="sr"><span class="t"><b>Veil</b><span>How much the window fades</span></span><div class="seg" role="radiogroup" aria-label="Veil colour"><button class="{{gTintLightCls}}" role="radio" aria-checked="{{gTintLight}}" onClick="{{gSetLight}}">Light</button><button class="{{gTintDarkCls}}" role="radio" aria-checked="{{gTintDark}}" onClick="{{gSetDark}}">Dark</button></div><div class="trk gtrk"><span class="bar"></span><span class="fill" style="width: {{gWashP}}%;"></span><span class="knob" style="left: {{gWashP}}%;"></span><input class="rng" type="range" min="0" max="60" value="{{gWash}}" onChange="{{onGWash}}" aria-label="Veil"></div><span class="val">{{gWash}}%</span></div>
+              </div>
+
+              <div class="gl"><b>Interface</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Tabs sidebar</b><span>Icons only gives the page 200px more</span></span><div class="seg"><button class="on">Expanded</button><button>Icons</button></div></div>
+                <div class="sr"><span class="t"><b>Sumi's face in the menu bar</b><span>Shows what Sumi is doing while the window is hidden</span></span><span class="sw on"><i></i></span></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isGeneral}}" hint-placeholder-val="{{false}}">
+              <h1>General</h1>
+              <p class="lead">Language, what Sumi opens with, and where things go.</p>
+              <div class="gl"><b>Language</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Interface language</b><span>Menus, buttons and these settings</span></span><span class="dd">English<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Sumi answers in</b><span>Sumi can always answer in another language if you ask</span></span><span class="dd">The language you write in<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Spell check</b></span><span class="dd">English, Ukrainian<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+              </div>
+              <div class="gl"><b>Starting Sumi</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Open with</b></span><span class="dd">Last chats and tabs<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Default workspace</b><span>Where links from other apps and new chats land</span></span><span class="dd"><span style="width: 14px; height: 14px; border-radius: 999px; background: var(--accent);"></span>Default<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Open Sumi when the computer starts</b></span><span class="sw"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Browser</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Search engine</b><span>Used when the bar holds words, not an address</span></span><span class="dd">Google<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Make Sumi the default browser</b><span>Links from other apps open in a tab here</span></span><button class="btn onwell">Make default</button></div>
+                <div class="sr"><span class="t"><b>Downloads</b><span>~/Downloads · ask where to save each file: off</span></span><button class="btn onwell">Change</button></div>
+              </div>
+              <div class="gl"><b>Updates</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Sumi 0.4.2</b><span>Up to date · checked today at 9:02</span></span><button class="btn onwell">Check now</button></div>
+                <div class="sr"><span class="t"><b>Early versions</b><span>New features a week sooner, a little less polished</span></span><span class="sw"><i></i></span></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isWorkspaces}}" hint-placeholder-val="{{false}}">
+              <h1>Workspaces</h1>
+              <p class="lead">Each workspace is its own room: its colour, folder, agent, sign-ins and memory. Pick one to change it.</p>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; margin-top: 20px;">
+                <button class="wsc on"><span class="av" style="background: #3B5BFD;">D</span><b style="font-weight: 500;">Default</b><span style="font-size: 12px; color: var(--text-2);">12 chats · 3 apps</span></button>
+                <button class="wsc"><span class="av" style="background: #7A5AF8;">W</span><b style="font-weight: 500;">Widgetarium</b><span style="font-size: 12px; color: var(--text-2);">31 chats · 5 apps</span></button>
+                <button class="wsc"><span class="av" style="background: #E0567A;">U</span><b style="font-weight: 500;">Urcraft</b><span style="font-size: 12px; color: var(--text-2);">8 chats · 1 app</span></button>
+                <button class="wsc"><span class="av" style="background: #2F9E6E;">H</span><b style="font-weight: 500;">Home</b><span style="font-size: 12px; color: var(--text-2);">4 chats · calendar</span></button>
+                <button class="wsc" style="background: none; box-shadow: inset 0 0 0 1px var(--line-strong); color: var(--text-2);"><span class="av" style="background: var(--hover); color: var(--text-2);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></span><b style="font-weight: 500;">New workspace</b><span style="font-size: 12px;">Empty, or copy one</span></button>
+              </div>
+              <div class="gl"><b>Default</b><span>⌘1</span></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Name</b></span><span class="dd" style="width: 240px;">Default</span></div>
+                <div class="sr"><span class="t"><b>Colour</b><span>Tints this workspace's frame, its circle and Sumi</span></span><span style="display: flex; gap: 6px;"><span class="swc on" style="width: 22px; height: 22px; background: #3B5BFD;"></span><span class="swc" style="width: 22px; height: 22px; background: #7A5AF8;"></span><span class="swc" style="width: 22px; height: 22px; background: #E0567A;"></span><span class="swc" style="width: 22px; height: 22px; background: #E5793A;"></span><span class="swc" style="width: 22px; height: 22px; background: #2F9E6E;"></span><span class="swc" style="width: 22px; height: 22px; background: #1F9BB5;"></span></span></div>
+                <div class="sr"><span class="t"><b>Folder</b><span class="mono" style="font-family: 'JetBrains Mono', ui-monospace, monospace;">~/Sumi/Default</span></span><button class="btn onwell">Change</button></div>
+                <div class="sr"><span class="t"><b>Agent and model</b><span>New chats here start with these</span></span><span class="dd">Claude Code · Opus · Medium<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+              </div>
+              <div class="gl"><b>Between workspaces</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Connections</b><span>What this workspace can use</span></span><span style="display: flex; gap: 6px;"><span class="chip"><span style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>DeepL</span><span class="chip">Calendar · via Home</span></span></div>
+                <div class="sr"><span class="t"><b>Other workspaces may ask this one</b><span>Each ask still shows you its scope first</span></span><span class="sw on"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Separate browsing data</b><span>Its own cookies, sign-ins and history</span></span><span class="sw on"><i></i></span></div>
+              </div>
+              <div class="well" style="margin-top: 16px;">
+                <div class="sr"><span class="t"><b>Delete Default</b><span>Its chats go to the archive for 30 days; its folder stays on disk</span></span><button class="btn bad">Delete…</button></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isNotifications}}" hint-placeholder-val="{{false}}">
+              <h1>Notifications</h1>
+              <p class="lead">Sumi taps you only when something is yours to do. Everything else waits in the chat.</p>
+              <div style="margin-top: 20px; display: flex; align-items: center; gap: 12px; padding: 12px 12px 12px 14px; border-radius: 14px; background: var(--overlay); box-shadow: var(--shadow-popover); max-width: 420px;">
+                <svg viewBox="0 0 64 64" aria-hidden="true" style="width: 32px; height: 32px; flex: none;"><circle cx="32" cy="32" r="32" style="fill: var(--text);"></circle><rect x="21" y="19" width="7" height="20" rx="3.5" style="fill: var(--plate);"></rect><rect x="36" y="15" width="7" height="13" rx="3.5" style="fill: var(--plate);"></rect></svg>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><b style="font-weight: 600;">Translator is blocked</b><span style="font-size: 12px; color: var(--text-2);">Connect DeepL to carry on · Default</span></span>
+                <button class="btn ik">Resolve</button>
+              </div>
+              <div style="font-size: 12px; color: var(--text-3); margin: 6px 2px 0;">How a notification from Sumi looks</div>
+              <div class="gl"><b>When Sumi tells you</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Sumi needs you</b><span>A blocker, a question, a permission</span></span><div class="seg"><button class="on">Always</button><button>When hidden</button><button>Never</button></div></div>
+                <div class="sr"><span class="t"><b>A turn finished</b></span><div class="seg"><button>Always</button><button class="on">When hidden</button><button>Never</button></div></div>
+                <div class="sr"><span class="t"><b>A build finished</b><span>Long jobs that run on their own</span></span><div class="seg"><button class="on">Always</button><button>When hidden</button><button>Never</button></div></div>
+                <div class="sr"><span class="t"><b>Sound</b></span><span class="sw on"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Count on the app icon</b><span>Things waiting for you, across workspaces</span></span><span class="sw on"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Quiet hours</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Quiet hours</b></span><span class="dd">22:00 – 08:00<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span class="sw on"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Blockers still come through</b></span><span class="sw"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Per workspace</b></div>
+              <div class="well">
+                <div class="sr"><span class="av" style="width: 24px; height: 24px; font-size: 11px; background: #3B5BFD;">D</span><span class="t"><b>Default</b></span><span class="dd">Everything<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="av" style="width: 24px; height: 24px; font-size: 11px; background: #7A5AF8;">W</span><span class="t"><b>Widgetarium</b></span><span class="dd">Only when Sumi needs me<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="av" style="width: 24px; height: 24px; font-size: 11px; background: #2F9E6E;">H</span><span class="t"><b>Home</b></span><span class="dd">Off<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isKeyboard}}" hint-placeholder-val="{{false}}">
+              <h1>Keyboard</h1>
+              <p class="lead">Shortcuts that work anywhere on this computer, even with Sumi hidden, and the ones inside Sumi.</p>
+              <div class="field" style="margin-top: 16px; max-width: 360px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>Search shortcuts, or press one</div>
+              <div class="gl"><b>Anywhere on this computer</b><span>Sumi opens straight onto what you asked for</span></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>New chat with Sumi</b><span>Opens over whatever you are doing</span></span><span class="keys"><span class="kc">⌥</span><span class="kc">Space</span></span></div>
+                <div class="sr"><span class="t"><b>Open Translator</b><span>The app on its Translate page, the language pair kept</span></span><span class="keys"><span class="kc">⌘</span><span class="kc">⇧</span><span class="kc">T</span></span></div>
+                <div class="sr"><span class="t"><b>Ask about the selection</b><span>Sends the text selected in any app to a new chat</span></span><span class="keys"><span class="kc">⌘</span><span class="kc">⇧</span><span class="kc">A</span></span></div>
+                <div class="sr"><span class="t"><b>Open Phrasebook</b><span>Press the keys you want</span></span><span style="height: 30px; padding: 0 12px; border-radius: 8px; box-shadow: 0 0 0 2px var(--focus-ring); display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2);"><span class="kc">⌘</span><span class="kc">⇧</span>…</span><button class="btn gh">Cancel</button></div>
+                <button class="sr" style="width: 100%; color: var(--text-2);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span class="t"><b style="font-weight: 400;">Add a shortcut for an app or an action</b></span></button>
+              </div>
+              <div class="gl"><b>Inside Sumi</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>New chat</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">N</span></span></div>
+                <div class="sr"><span class="t"><b>Search chats</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">K</span></span></div>
+                <div class="sr"><span class="t"><b>Search, address or ask</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">L</span></span></div>
+                <div class="sr"><span class="t"><b>Show or hide the chat</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">\</span></span></div>
+                <div class="sr"><span class="t"><b>Switch workspace</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">1–9</span></span></div>
+                <div class="sr"><span class="t"><b>Resolve blockers</b></span><span class="keys"><span class="kc">⌘</span><span class="kc">⇧</span><span class="kc">B</span></span></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isPrivacy}}" hint-placeholder-val="{{false}}">
+              <h1>Privacy and security</h1>
+              <p class="lead">What Sumi may read, what sites may track, and what leaves this computer.</p>
+              <div class="gl"><b>Sumi and the pages you open</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Sumi reads a page when you ask</b><span>Before the first read of a site</span></span><div class="seg"><button class="on">Ask each site</button><button>Always</button><button>Never</button></div></div>
+                <div class="sr"><span class="t"><b>Sites Sumi may read</b><span>tracker.example.com, docs.deepl.com and 4 more</span></span><button class="btn onwell">Manage</button></div>
+                <div class="sr"><span class="t"><b>Sumi never clicks or types on a page without asking</b><span>Always on</span></span><span class="sw on lock" aria-disabled="true"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Tracking</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Block trackers</b><span>Strict can break some sign-ins</span></span><div class="seg"><button class="on">Standard</button><button>Strict</button></div></div>
+                <div class="sr"><span class="t"><b>Open sites over HTTPS only</b><span>Asks before opening a page that is not secure</span></span><span class="sw on"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Warn about dangerous sites and downloads</b></span><span class="sw on"><i></i></span></div>
+              </div>
+              <div class="gl"><b>What leaves this computer</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Chats</b><span>Sent only to your AI provider, Claude Code, when you send a message</span></span><span class="chip">Fixed</span></div>
+                <div class="sr"><span class="t"><b>Crash reports</b><span>No chat text and no page content</span></span><span class="sw on"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Usage counts</b><span>Which features are used, never what for</span></span><span class="sw"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Keys and passwords</b><span>Kept in the macOS keychain, never in a note</span></span><button class="btn onwell">Open Keychain</button></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isPermissions}}" hint-placeholder-val="{{false}}">
+              <h1>Permissions and data</h1>
+              <p class="lead">What sites and apps may use by default, the exceptions, and the space Sumi takes.</p>
+              <div class="gl"><b>For new sites and apps</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Camera</b></span><span class="dd">Ask<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Microphone</b></span><span class="dd">Ask<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Location</b></span><span class="dd">Block<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Notifications</b></span><span class="dd">Ask<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Clipboard</b><span>Reading what you copied</span></span><span class="dd">Ask<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+              </div>
+              <div class="gl"><b>Exceptions</b></div>
+              <div class="well">
+                <div class="sr"><span class="tl">T</span><span class="t"><b>Translator</b><span>App · Default</span></span><span class="chip">Microphone allowed</span></div>
+                <div class="sr"><span class="tl">m</span><span class="t"><b>meet.google.com</b></span><span class="chip">Camera allowed</span><span class="chip">Microphone allowed</span></div>
+                <div class="sr"><span class="tl">n</span><span class="t"><b>news.example.com</b></span><span class="chip">Notifications blocked</span></div>
+              </div>
+              <div class="gl"><b>Storage</b><span>1.6 GB on this computer</span></div>
+              <div class="well">
+                <div class="sr" style="flex-direction: column; align-items: stretch; gap: 10px;">
+                  <div style="display: flex; height: 8px; border-radius: 999px; overflow: hidden; gap: 2px;"><span style="flex: 12; background: var(--accent);"></span><span style="flex: 3.4; background: var(--text-2);"></span><span style="flex: .8; background: var(--text-3);"></span><span style="flex: 4; background: var(--active);"></span></div>
+                  <div style="display: flex; gap: 16px; font-size: 12px; color: var(--text-2);"><span><b style="color: var(--text); font-weight: 500;">Apps</b> 1.2 GB</span><span><b style="color: var(--text); font-weight: 500;">Browsing</b> 340 MB</span><span><b style="color: var(--text); font-weight: 500;">Chats</b> 80 MB</span></div>
+                </div>
+                <div class="sr"><span class="t"><b>Clear browsing data</b><span>History, cookies and cache; apps and chats stay</span></span><button class="btn onwell">Clear…</button></div>
+                <div class="sr"><span class="t"><b>Clear cookies when Sumi quits</b></span><span class="sw"><i></i></span></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{isAccess}}" hint-placeholder-val="{{false}}">
+              <h1>Accessibility</h1>
+              <p class="lead">Type, zoom, contrast and motion, for Sumi and for the pages it opens.</p>
+              <div class="gl"><b>Text</b></div>
+              <div class="well">
+                <div class="sr" style="flex-direction: column; align-items: stretch; gap: 12px;">
+                  <div style="display: flex; align-items: center; gap: 16px;"><span class="t" style="flex: 1;"><b>Text size</b><span>The whole interface follows</span></span><span style="font-size: 11px; color: var(--text-2);">A</span><div class="trk"><span class="bar"></span><span class="fill" style="width: 33%;"></span><span class="knob" style="left: 33%;"></span></div><span style="font-size: 17px; color: var(--text-2);">A</span><span class="val">13 px</span></div>
+                  <div style="padding: 12px 14px; border-radius: 10px; background: var(--plate); font-size: 14px; line-height: 1.55;">Three are yours. DeepL key is the only one already moving.</div>
+                </div>
+                <div class="sr"><span class="t"><b>Interface font</b></span><span class="dd">Inter<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Bolder text</b></span><span class="sw"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Pages</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>Default zoom</b></span><span class="dd">100%<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Smallest font on a page</b></span><span class="dd">No limit<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></div>
+                <div class="sr"><span class="t"><b>Underline links</b></span><span class="sw"><i></i></span></div>
+              </div>
+              <div class="gl"><b>Contrast and motion</b></div>
+              <div class="well">
+                <div class="sr"><span class="t"><b>More contrast</b><span>Darker lines and secondary text, stronger plates</span></span><span class="sw"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Reduce motion</b><span>Slides and springs become fades; Sumi's eyes stop moving</span></span><span class="sw"><i></i></span></div>
+                <div class="sr"><span class="t"><b>Always show the focus ring</b><span>Not only when you use the keyboard</span></span><span class="sw on"><i></i></span></div>
+              </div>
+            </sc-if>
+            </sc-if>
+
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside aria-label="Tabs" style="width: 240px; flex: none; display: flex; flex-direction: column; padding: 0 0 4px;">
+      <div class="lbl" style="margin-top: 14px;">Workspace</div>
+      <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg><span class="t">Canvas</span></button>
+      <div class="lbl">This chat</div>
+      <button class="row sel"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg><span class="t">Settings</span></button>
+      <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg><span class="t">Code</span></button>
+      <span style="flex: 1;"></span>
+      <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span class="t">New tab</span><span class="kbd">⌘T</span></button>
+      <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path></svg><span class="t">Open app</span></button>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"edge":{"editor":"enum","options":["ring","none","soft"],"default":"soft"},"page":{"editor":"enum","options":["appearance","general","workspaces","notifications","keyboard","privacy","permissions","accessibility"],"default":"appearance"},"colour":{"editor":"enum","options":["none","blue","violet","rose","orange","green","teal","graphite"],"default":"none"},"colours":{"editor":"int","min":1,"max":3,"default":1},"tint":{"editor":"boolean","default":false},"grain":{"editor":"range","min":0,"max":100,"default":0},"blur":{"editor":"range","min":0,"max":100,"default":0},"list":{"editor":"enum","options":["minimal","plates"],"default":"minimal"},"layout":{"editor":"enum","options":["wide","menu","rail","chips"],"default":"wide"},"view":{"editor":"enum","options":["page","list"],"default":"page"},"scrollTo":{"editor":"enum","options":["top","glass"],"default":"top"},"type":{"editor":"enum","options":["inter","spectral"],"default":"inter"},"$preview":{"width":1728,"height":1280}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const pick = (k, d) => (s[k] !== undefined ? s[k] : (this.props[k] !== undefined ? this.props[k] : d));
+    const mode = pick('mode', (this.props.theme ?? 'light') === 'dark' ? 'dark' : 'light');
+    const dark = mode === 'dark';
+    const page = pick('page', 'appearance');
+    const colour = pick('colour', 'none');
+    const n = Number(pick('colours', 1));
+    const tint = !!pick('tint', false);
+    const grain = Number(pick('grain', 0));
+    const blur = Number(pick('blur', 0));
+    const P = {
+      none: { name: 'No colour', c: [['#8E8E93', 200]] },
+      blue: { name: 'Blue', c: [['#3B5BFD', 228], ['#7A5AF8', 255], ['#1F9BB5', 191]] },
+      violet: { name: 'Violet', c: [['#7A5AF8', 255], ['#E0567A', 335], ['#3B5BFD', 228]] },
+      rose: { name: 'Rose', c: [['#E0567A', 340], ['#E5793A', 22], ['#7A5AF8', 262]] },
+      orange: { name: 'Orange', c: [['#E5793A', 22], ['#E0B43A', 44], ['#E0567A', 340]] },
+      green: { name: 'Green', c: [['#2F9E6E', 153], ['#1F9BB5', 191], ['#9BBF3A', 82]] },
+      teal: { name: 'Teal', c: [['#1F9BB5', 191], ['#3B5BFD', 228], ['#2F9E6E', 153]] },
+      graphite: { name: 'Graphite', c: [['#6B6B66', 50], ['#8A8A84', 70], ['#4A4A46', 30]] }
+    };
+    const pre = P[colour] || P.none;
+    const none = colour === 'none';
+    const cols = none ? [] : pre.c.slice(0, Math.max(1, Math.min(3, n)));
+    const c0 = none ? '#3B5BFD' : cols[0][0];
+    const baseF = dark ? '#141414' : '#F7F7F7';
+    const baseP = dark ? '#1F1F1F' : '#FFFFFF';
+    const baseS = dark ? '#2A2A2A' : '#F0F0F0';
+    const fAmt = dark ? 90 : 84;
+    const mixF = (c) => `color-mix(in oklab, ${baseF} ${fAmt}%, ${c})`;
+    const alpha = 100 - Math.round(blur * 0.45);
+    const withA = (x) => (alpha >= 100 ? x : `color-mix(in oklab, ${x} ${alpha}%, transparent)`);
+    let frameBg = withA(baseF);
+    if (!none && cols.length === 1) frameBg = withA(mixF(cols[0][0]));
+    if (!none && cols.length > 1) frameBg = `linear-gradient(135deg, ${cols.map((c, i) => withA(mixF(c[0])) + ' ' + Math.round(i / (cols.length - 1) * 100) + '%').join(', ')})`;
+    const frameVar = none ? baseF : mixF(c0);
+    const plate = !none && tint ? `color-mix(in oklab, ${baseP} ${dark ? 95 : 95}%, ${c0})` : baseP;
+    const sunken = !none && tint ? `color-mix(in oklab, ${baseS} 90%, ${c0})` : baseS;
+    const rootVars = `--frame-tinted: ${frameVar}; --plate: ${plate}; --sunken: ${sunken}; --accent: ${c0}; --accent-soft: color-mix(in oklab, ${c0} 14%, transparent); --focus-ring: color-mix(in oklab, ${c0} 55%, transparent);`;
+    const set = (o) => this.setState(o);
+    const pages = [
+      ['appearance', 'Appearance', 'M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A2 2 0 0 1 12 22zM7.5 10.5h.01M10.5 7.5h.01M15.5 8.5h.01', ''],
+      ['general', 'General', 'M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6', 'English'],
+      ['workspaces', 'Workspaces', 'm12 2 10 5-10 5L2 7zM2 17l10 5 10-5M2 12l10 5 10-5', '4'],
+      ['notifications', 'Notifications', 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0', 'On'],
+      ['keyboard', 'Keyboard', 'M2 6h20v12H2zM6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10', '9'],
+      ['privacy', 'Privacy and security', 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z', ''],
+      ['permissions', 'Permissions and data', 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4', ''],
+      ['accessibility', 'Accessibility', 'M12 3a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM5 9l7 1.5L19 9M12 10.5V15l-3 6M12 15l3 6', '']
+    ];
+    const layout = pick('layout', 'wide');
+    const view = pick('view', 'page');
+    const compact = layout !== 'wide';
+    const isMenu = layout === 'menu';
+    const showList = isMenu && view === 'list';
+    const navOf = (p) => {
+      const on = page === p[0];
+      return { label: p[1], icon: p[2], hint: p[3], isDot: p[0] === 'appearance' && !none, cls: on ? 'nrow sel' : 'nrow', rcls: on ? 'sel' : '', ccls: on ? 'sel' : '', lcls: on ? 'lrow cur' : 'lrow', cur: on ? 'page' : 'false', pick: () => set({ page: p[0] }), go: () => set({ page: p[0], view: 'page' }) };
+    };
+    const pName = (pages.find((p) => p[0] === page) || pages[0])[1];
+    const pvOf = (d) => {
+      const f = d ? '#141414' : '#F7F7F7';
+      const pl = d ? '#1F1F1F' : '#FFFFFF';
+      return {
+        frame: none ? f : `color-mix(in oklab, ${f} ${d ? 90 : 84}%, ${c0})`,
+        plate: !none && tint ? `color-mix(in oklab, ${pl} 95%, ${c0})` : pl,
+        acc: c0,
+        dim: d ? 'rgba(255,255,255,.14)' : 'rgba(0,0,0,.10)',
+        ink: d ? '#EDEDED' : '#1D1D1F'
+      };
+    };
+    const sysMode = pick('sys', false);
+    const modes = [['light', 'Light', 'White pages', false, false], ['dark', 'Dark', 'Quieter colour', false, true], ['system', 'System', 'Follows macOS', true, false]].map((m) => {
+      const on = m[0] === 'system' ? sysMode : (!sysMode && mode === m[0]);
+      return { name: m[1], sub: m[2], split: m[3], dark: m[4], on, cls: on ? 'mcard on' : 'mcard', pick: () => (m[0] === 'system' ? set({ sys: true, mode: 'light' }) : set({ sys: false, mode: m[0] })) };
+    });
+    const ys = [42, 56, 64];
+    const handles = cols.map((c, i) => ({ c: c[0], x: Math.max(4, Math.min(96, c[1] / 360 * 100)), y: colour === 'graphite' ? 78 + i * 4 : ys[i], size: i === 0 ? 34 : 26, label: i === 0 ? 'Main colour' : 'Gradient colour ' + (i + 1) }));
+    const presets = Object.keys(P).map((k) => ({
+      name: P[k].name,
+      on: colour === k,
+      cls: colour === k ? 'swc on' : 'swc',
+      bg: k === 'none' ? `linear-gradient(135deg, ${baseF} 0 47%, rgba(0,0,0,.35) 47% 53%, ${baseF} 53% 100%)` : P[k].c[0][0],
+      pick: () => set({ colour: k })
+    }));
+    const counts = [1, 2, 3].map((k) => ({ label: k === 1 ? 'One colour' : k + ' colours', cls: n === k ? 'on' : '', pick: () => set({ colours: k }) }));
+    const LOOKS = [['tinted', 'Tinted', 'The page shows as colour', 28, 80], ['soft', 'Soft', 'A hint of the page', 32, 92], ['solid', 'Solid', 'Plain white', 0, 100]];
+    const BACKS = [['sharp', 'Sharp', 0, 0, 'light', 'The window stays as it is'], ['frosted', 'Frosted', 8, 18, 'light', 'Softly blurred and lightened'], ['misty', 'Misty', 3, 40, 'light', 'Faded'], ['dim', 'Dim', 0, 30, 'dark', 'Darkened']];
+    const gMb = Number(pick('gMb', 32));
+    const gMw = Number(pick('gMw', 92));
+    const gOb = Number(pick('gOb', 0));
+    const gWash = Number(pick('gWash', 0));
+    const gTint = pick('gTint', 'light');
+    const gLook = LOOKS.find((l) => l[3] === gMb && l[4] === gMw);
+    const gBack = BACKS.find((b) => b[2] === gOb && b[3] === gWash && b[4] === gTint);
+    const glassOf = (w) => (dark ? 'rgba(30,30,30,' : 'rgba(255,255,255,') + (w / 100) + ')';
+    const veilOf = (a, tn) => (tn === 'dark' ? 'rgba(0,0,0,' : dark ? 'rgba(20,20,20,' : 'rgba(247,247,247,') + (a / 100) + ')';
+    const glassVals = {
+      gLooks: LOOKS.map((l) => { const on = gLook === l; return { name: l[1], sub: l[2] + (l[0] === 'soft' ? ' · default' : ''), on, cls: on ? 'mcard on' : 'mcard', bg: glassOf(l[4]), f: l[3] > 0 ? 'blur(' + Math.round(l[3] / 4) + 'px)' : 'none', pick: () => set({ gMb: l[3], gMw: l[4] }) }; }),
+      gBacks: BACKS.map((b) => { const on = gBack === b; return { name: b[1], on, cls: on ? 'mcard on' : 'mcard', bg: veilOf(b[3], b[4]), f: b[2] > 0 ? 'blur(' + Math.max(1, Math.round(b[2] / 3)) + 'px)' : 'none', pick: () => set({ gOb: b[2], gWash: b[3], gTint: b[4] }) }; }),
+      gLookNote: gLook ? gLook[1] + (gLook[0] === 'soft' ? ', the default' : '') : 'Custom',
+      gBackNote: gBack ? gBack[5] + (gBack[0] === 'sharp' ? ', the default' : '') : 'Custom',
+      gMenuRow: gLook && gLook[0] === 'solid' ? 'sr off' : 'sr',
+      gMb, gMw, gOb, gWash,
+      gMbP: gMb / 40 * 100, gMwP: (gMw - 50) / 50 * 100, gObP: gOb / 20 * 100, gWashP: gWash / 60 * 100,
+      onGMb: (e) => set({ gMb: Number(e.target.value) }),
+      onGMw: (e) => set({ gMw: Number(e.target.value) }),
+      onGOb: (e) => set({ gOb: Number(e.target.value) }),
+      onGWash: (e) => set({ gWash: Number(e.target.value) }),
+      gTintLight: gTint === 'light', gTintDark: gTint === 'dark',
+      gTintLightCls: gTint === 'light' ? 'on' : '',
+      gTintDarkCls: gTint === 'dark' ? 'on' : '',
+      gSetLight: () => set({ gTint: 'light' }),
+      gSetDark: () => set({ gTint: 'dark' }),
+      pvCur: pvOf(dark),
+      cntRef: (el) => { this._cnt = el; if (el && !this._scrolled && (this.props.scrollTo ?? 'top') === 'glass') { const g = el.querySelector('[data-sec=glass]'); if (g) { el.scrollTop = g.offsetTop - 24; this._scrolled = true; } } },
+      toGlass: () => { const el = this._cnt; const g = el && el.querySelector('[data-sec=glass]'); if (g) el.scrollTo({ top: g.offsetTop - 24, behavior: 'smooth' }); }
+    };
+    return {
+      typeCls: (this.props.type ?? 'inter') === 'spectral' ? 'ty-sp' : '',
+      ...glassVals,
+      themeCls: dark ? 'dark' : '',
+      edgeCls: 'edge-' + (this.props.edge ?? 'soft'),
+      rootVars,
+      frameBg,
+      blurOn: blur > 0,
+      blurPx: Math.round(blur * 0.5),
+      grainOp: (grain / 100 * 0.5).toFixed(2),
+      pageName: pName,
+      navInk: pages.slice(0, 5).map(navOf),
+      navAll: pages.map(navOf),
+      listInk: pages.slice(0, 5).map(navOf),
+      listBrowser: pages.slice(5).map(navOf),
+      compact,
+      isWide: !compact,
+      isMenu,
+      isRail: layout === 'rail',
+      isChips: layout === 'chips',
+      showList,
+      showPage: !showList,
+      showSecBtn: isMenu && !showList,
+      listCls: (this.props.list ?? 'minimal') === 'minimal' ? 'mlist' : 'well',
+      glCls: (this.props.list ?? 'minimal') === 'minimal' ? 'gl quiet' : 'gl',
+      crumbChev: showList ? 'm18 15-6-6-6 6' : 'm6 9 6 6 6-6',
+      cntPad: compact ? 'padding: 8px 24px 40px;' : '',
+      openList: () => { if (isMenu) set({ view: showList ? 'page' : 'list' }); },
+      navBrowser: pages.slice(5).map(navOf),
+      isAppearance: page === 'appearance',
+      isGeneral: page === 'general',
+      isWorkspaces: page === 'workspaces',
+      isNotifications: page === 'notifications',
+      isKeyboard: page === 'keyboard',
+      isPrivacy: page === 'privacy',
+      isPermissions: page === 'permissions',
+      isAccess: page === 'accessibility',
+      modes,
+      pvL: pvOf(false),
+      pvD: pvOf(true),
+      colourName: pre.name,
+      handles,
+      noColour: none,
+      presets,
+      counts,
+      gradSub: n > 1 ? `${n} matching colours blend across the frame` : 'Add colours with + to blend them across the frame',
+      tint,
+      tintCls: tint ? 'sw on' : 'sw',
+      toggleTint: () => set({ tint: !tint }),
+      grain,
+      grainDash: `${grain} 100`,
+      blur,
+      onGrain: (e) => set({ grain: Number(e.target.value) }),
+      onBlur: (e) => set({ blur: Number(e.target.value) }),
+      addColour: () => set({ colours: Math.min(3, n + 1), colour: none ? 'blue' : colour }),
+      removeColour: () => set({ colours: Math.max(1, n - 1) }),
+      harmonise: () => set({ colours: 3, colour: none ? 'blue' : colour })
+    };
+  }
+}
+</script>
+</body>
+</html>

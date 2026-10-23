@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canvas, phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;overflow:hidden}
+.sm{box-sizing:border-box;--frame:#F7F7F7;--plate:#FFFFFF;--soft:#F7F7F7;--overlay:rgba(255,255,255,.9);--text:#1D1D1F;--text-2:rgba(0,0,0,.6);--text-3:rgba(0,0,0,.4);--hover:rgba(0,0,0,.035);--active:rgba(0,0,0,.06);--line:rgba(0,0,0,.08);--line-strong:rgba(0,0,0,.11);--accent:#3B5BFD;--accent-soft:rgba(59,91,253,.10);--accent-wash:rgba(59,91,253,.07);--success:#2F8F5B;--guide:rgba(0,0,0,.09);--shadow-plate:0 1px 2px rgba(0,0,0,.04),0 8px 24px rgba(0,0,0,.05);--shadow-pop:0 0 0 1px rgba(0,0,0,.06),0 10px 28px rgba(0,0,0,.12);--shadow-bar:0 0 0 1px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06);--scrim:rgba(0,0,0,.18);--mock:#F2F2F3;--mock-2:#E8E8EA;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.sm.dark{--frame:#141414;--plate:#1F1F1F;--soft:#191919;--overlay:rgba(38,38,38,.92);--text:#EDEDED;--text-2:rgba(255,255,255,.62);--text-3:rgba(255,255,255,.4);--hover:rgba(255,255,255,.05);--active:rgba(255,255,255,.09);--line:rgba(255,255,255,.08);--line-strong:rgba(255,255,255,.14);--accent-soft:rgba(91,120,255,.18);--accent-wash:rgba(91,120,255,.14);--guide:rgba(255,255,255,.08);--shadow-plate:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.3);--shadow-pop:0 0 0 1px rgba(255,255,255,.08),0 10px 28px rgba(0,0,0,.5);--shadow-bar:0 0 0 1px rgba(255,255,255,.08),0 4px 14px rgba(0,0,0,.4);--scrim:rgba(0,0,0,.45);--mock:#2A2A2C;--mock-2:#333336}
+.sm *{box-sizing:border-box}
+:where(.sm) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer;text-align:left}
+.sm svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.app{position:relative;display:flex;gap:8px;padding:8px;background:var(--frame);overflow:hidden}
+.plate{flex:1;min-width:0;position:relative;display:flex;background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate);overflow:hidden}
+.rail{width:44px;flex:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:2px}
+.rail .x-ib{width:36px;height:36px;border-radius:999px}
+.rail .sep{width:20px;height:1px;background:var(--line);margin:4px 0}
+.x-ib{width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.x-ib.on{background:var(--active);color:var(--text)}
+.x-ib.wash{background:var(--accent-soft);color:var(--accent)}
+.x-ib.dark{background:var(--text);color:var(--plate)}
+.x-kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
+.side{width:252px;flex:none;margin:6px 0 6px 6px;border-radius:12px;background:var(--soft);padding:4px 6px 6px;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.side.float{position:absolute;z-index:4;left:10px;top:58px;bottom:10px;margin:0;background:var(--overlay);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);box-shadow:var(--shadow-pop);border-radius:14px}
+.sh{height:32px;width:100%;flex:none;display:flex;align-items:center;gap:6px;padding:0 4px 0 10px;margin-top:6px;border-radius:10px;font-size:12px;color:var(--text-2)}
+.sh b{font-weight:600;color:var(--text)}
+.sh .n{color:var(--text-3)}
+.sh .acts{margin-left:auto;display:flex;gap:2px}
+.sh .x-ib{width:26px;height:26px}
+.sh .x-ib svg.i{width:14px;height:14px}
+.sh.hov{background:var(--hover)}
+.row{height:34px;width:100%;flex:none;border-radius:10px;display:flex;align-items:center;gap:10px;padding:0 8px;white-space:nowrap;font-size:13px;position:relative}
+.row .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row .m{font-size:12px;color:var(--text-3)}
+.row.lift{background:var(--plate);box-shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.05);font-weight:500}
+.sm.dark .row.lift{background:#2A2A2A;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.row.hov{background:var(--hover)}
+.row .grip{opacity:.5;margin-left:auto}
+.row svg.i{color:var(--text-2)}
+.dot{width:7px;height:7px;border-radius:999px;background:var(--text-3);flex:none;margin:0 4px}
+.dot.on{background:var(--accent)}
+.dot.run{background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.cv{width:12px;height:12px;flex:none;display:inline-flex;align-items:center;justify-content:center;color:var(--text-3)}
+.cv svg.i{width:12px;height:12px;stroke-width:2.2}
+.tile{width:20px;height:20px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:#FFFFFF;background:var(--c)}
+.tile svg.i{width:12px;height:12px;stroke-width:2;color:#FFFFFF!important}
+.box svg.i{color:var(--text-3)}
+.tree{flex:1;min-height:0;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.lock-note{font-size:12px;color:var(--text-3);padding:2px 10px 6px}
+.empty{margin:4px 4px 0;padding:14px 12px;border-radius:10px;background:var(--hover);display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-2)}
+.empty b{font-size:13px;font-weight:600;color:var(--text)}
+.foot{margin-top:auto;padding-top:6px;display:flex;flex-direction:column;gap:1px}
+.sw{display:inline-flex;margin-left:auto}
+.sw span{width:12px;height:12px;border-radius:999px;box-shadow:0 0 0 2px var(--soft);margin-left:-3px}
+.field{flex:1;min-width:0;position:relative;overflow:hidden;background-color:var(--plate);background-image:radial-gradient(var(--guide) 1px,transparent 1px);background-size:18px 18px}
+.bar{height:40px;display:inline-flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--plate);box-shadow:var(--shadow-bar)}
+.bar .x-ib{width:32px;height:32px;border-radius:999px}
+.bar .vr{width:1px;height:18px;background:var(--line);margin:0 4px}
+.pick{height:32px;padding:0 8px 0 12px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;white-space:nowrap}
+.pick .cv{color:var(--text-2)}
+.pick.on{background:var(--active)}
+.pick .sub{font-weight:400;color:var(--text-3)}
+.x-seg{display:inline-flex;padding:2px;border-radius:999px;background:var(--active);gap:2px}
+.x-seg button{height:28px;padding:0 12px;border-radius:999px;font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px;justify-content:center}
+.x-seg button.on{background:var(--plate);color:var(--text);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.sm.dark .x-seg button.on{background:#333}
+.top{position:absolute;z-index:3;left:10px;right:10px;top:10px;display:flex;align-items:center;gap:8px;pointer-events:none}
+.top > *{pointer-events:auto}
+.top .sp{flex:1}
+.low{position:absolute;z-index:3;left:0;right:0;bottom:12px;display:flex;justify-content:center;gap:8px}
+.job{height:40px;display:inline-flex;align-items:center;gap:10px;padding:0 4px 0 14px;border-radius:999px;background:var(--plate);box-shadow:var(--shadow-bar);font-size:13px;white-space:nowrap}
+.job .m{color:var(--text-3)}
+.job .pulse{width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.stage{position:absolute;transform-origin:0 0}
+.ttl{font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.02em}
+.ttl span{color:var(--text-3);font-weight:500}
+.lbl{display:flex;align-items:baseline;gap:8px;font-size:14px;font-weight:600;margin:28px 0 10px}
+.lbl span{font-size:12px;font-weight:400;color:var(--text-3)}
+.frames{display:flex;gap:28px}
+.fr{display:flex;flex-direction:column;gap:8px}
+.fr .cap{font-size:12px;color:var(--text-2);display:flex;gap:6px;align-items:center}
+.fr .cap .chip{height:20px;padding:0 8px;border-radius:999px;background:var(--active);font-size:11px;font-weight:500;color:var(--text);display:inline-flex;align-items:center}
+.scr{border-radius:16px;background:var(--plate);box-shadow:0 0 0 1px var(--line),0 12px 32px rgba(0,0,0,.06);overflow:hidden;position:relative;display:flex;gap:14px;padding:18px}
+.mk{border-radius:10px;background:var(--mock)}
+.mk2{border-radius:6px;background:var(--mock-2)}
+.col{display:flex;flex-direction:column;gap:10px}
+.sel{position:absolute;border-radius:12px;background:var(--accent-wash)}
+.sel .tag{position:absolute;right:8px;top:8px;height:22px;padding:0 8px;border-radius:999px;background:var(--text);color:var(--plate);font-size:11px;font-weight:500;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hover-tag{position:absolute;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line-strong)}
+.ref{border-radius:14px;background:var(--mock);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px;text-align:center;padding:12px}
+.x-pop{position:absolute;z-index:6;background:var(--overlay);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);border-radius:14px;box-shadow:var(--shadow-pop);padding:4px;font-size:13px}
+.mi{height:34px;width:100%;border-radius:10px;display:flex;align-items:center;gap:10px;padding:0 10px;white-space:nowrap}
+.mi svg.i{width:15px;height:15px;color:var(--text-2)}
+.mi.on{background:var(--active)}
+.mi .k{margin-left:auto;color:var(--text-3);font-size:12px}
+.mi .ck{width:15px;color:var(--text)}
+.msep{height:1px;background:var(--line);margin:4px 8px}
+.mlab{font-size:12px;color:var(--text-3);padding:6px 10px 2px}
+.mfield{height:34px;margin:2px 2px 4px;border-radius:10px;background:var(--hover);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--text-3)}
+.look{position:absolute;z-index:3;right:10px;top:58px;width:268px;padding:6px;border-radius:14px;background:var(--overlay);-webkit-backdrop-filter:saturate(1.6) blur(20px);backdrop-filter:saturate(1.6) blur(20px);box-shadow:var(--shadow-pop);display:flex;flex-direction:column;gap:2px}
+.look .lh{height:34px;display:flex;align-items:center;gap:8px;padding:0 4px 0 10px}
+.look .lh b{font-weight:600}
+.look .lh span{color:var(--text-3);font-size:12px}
+.look .lr{display:flex;flex-direction:column;gap:6px;padding:8px 10px}
+.look .lr .l{font-size:12px;color:var(--text-2)}
+.look .sel2{height:32px;border-radius:10px;background:var(--hover);display:flex;align-items:center;padding:0 10px;gap:8px}
+.look .sel2 .cv{margin-left:auto}
+.look .said{font-size:12px;color:var(--text-3)}
+.phone{width:390px;height:844px;flex:none;border-radius:44px;overflow:hidden;position:relative;background:var(--frame);box-shadow:0 0 0 1px var(--line-strong),0 30px 60px rgba(0,0,0,.12);display:flex;flex-direction:column}
+.status{height:50px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 34px;font-size:15px;font-weight:600}
+.status .bat{width:26px;height:12px;border-radius:4px;box-shadow:inset 0 0 0 1.5px var(--text-2);position:relative}
+.status .bat:after{content:"";position:absolute;left:3px;top:3px;width:16px;height:6px;border-radius:2px;background:var(--text)}
+.phone .plate{margin:0 6px 6px;border-radius:30px}
+.phone .bar{height:48px;padding:4px}
+.phone .bar .x-ib{width:40px;height:40px}
+.phone .pick{height:40px;font-size:15px;padding:0 10px 0 14px}
+.phone .top{left:12px;right:12px;top:12px}
+.phone .low{bottom:20px}
+.home{position:absolute;z-index:9;left:50%;bottom:8px;width:134px;height:5px;margin-left:-67px;border-radius:999px;background:var(--text)}
+.scrim{position:absolute;z-index:7;inset:0;background:var(--scrim)}
+.sheet{position:absolute;z-index:8;left:6px;right:6px;bottom:6px;height:560px;border-radius:30px;background:var(--plate);box-shadow:var(--shadow-pop);display:flex;flex-direction:column;padding:8px 10px 26px}
+.grab{width:40px;height:5px;border-radius:999px;background:var(--line-strong);margin:2px auto 10px;flex:none}
+.sheet .x-seg{display:flex;margin:0 4px 6px}
+.sheet .x-seg button{flex:1;height:34px;font-size:13px}
+.sheet .row{height:44px;font-size:15px;border-radius:14px}
+.sheet .row.lift{background:var(--active);box-shadow:none}
+.side.float .row.lift{background:var(--active);box-shadow:none}
+.sm.dark .sheet .row.lift{background:#2A2A2A}
+.sheet .sh{height:36px;font-size:13px}
+.board{display:flex;gap:40px;align-items:flex-start}
+.board-cap{font-size:13px;color:var(--text-2);margin:0 0 12px 8px}
+</style>
+</helmet>
+<div class="sm {{themeCls}}" style="width:900px;height:980px;background:var(--frame);padding:30px 40px;box-sizing:border-box">
+<div class="board"><div><div class="board-cap">Canvas, closed</div><div class="phone"><div class="status"><span>9:41</span><span class="bat"></span></div>
+<main class="plate" aria-label="Canvas"><div class="field" data-canvas-view="">
+<div class="stage" style="left:18px;top:86px;transform:scale(0.42)"><div class="ttl">Pages <span>· 3</span></div><div class="lbl">/settings<span>2 states</span></div><div class="frames"><div class="fr"><div class="cap"><span class="chip">Empty</span></div><div class="scr" style="width:620px;height:390px"><div class="col" style="width:150px"><div class="mk" style="height:28px;width:96px"></div><div class="mk2" style="height:26px"></div><div class="mk2" style="height:26px;opacity:.6"></div><div class="mk2" style="height:26px;opacity:.6"></div></div><div class="col" style="flex:1;position:relative"><div class="mk2" style="height:22px;width:140px;background:transparent;font-size:15px;font-weight:600;color:var(--text)">Settings</div><div class="mk" style="height:150px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px">Nothing to do</div><div class="mk" style="height:120px"></div></div><div class="col" style="width:130px"><div class="mk" style="height:100px"></div><div class="mk" style="height:70px"></div></div></div></div><div class="fr"><div class="cap"><span class="chip" style="background:var(--text);color:var(--plate)">Filled</span>shown</div><div class="scr" style="width:620px;height:390px"><div class="col" style="width:150px"><div class="mk" style="height:28px;width:96px"></div><div class="mk2" style="height:26px"></div><div class="mk2" style="height:26px;opacity:.6"></div><div class="mk2" style="height:26px;opacity:.6"></div></div><div class="col" style="flex:1;position:relative"><div class="mk2" style="height:22px;width:140px;background:transparent;font-size:15px;font-weight:600;color:var(--text)">Settings</div><div class="mk" style="height:150px;padding:12px;display:flex;flex-direction:column;gap:8px"><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px;width:60%"></div></div><div class="mk" style="height:120px;display:flex;align-items:flex-end;gap:8px;padding:14px"><div class="mk2" style="flex:1;height:40%"></div><div class="mk2" style="flex:1;height:70%"></div><div class="mk2" style="flex:1;height:55%"></div><div class="mk2" style="flex:1;height:90%"></div><div class="mk2" style="flex:1;height:65%"></div></div></div><div class="col" style="width:130px"><div class="mk" style="height:100px"></div><div class="mk" style="height:70px"></div></div><div class="sel" style="left:186px;top:50px;width:270px;height:150px"><span class="tag"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Task list</span></div><div class="hover-tag" style="left:186px;top:210px;width:270px;height:120px"></div></div></div></div><div class="lbl">References<span>2 photos</span></div><div style="display:flex;gap:16px"><div class="ref" style="width:240px;height:160px">[Photo: a settings screen the person liked]</div><div class="ref" style="width:180px;height:160px">[Photo: chart style]</div></div></div>
+<div class="top"><div class="bar"><button class="x-ib " aria-label="Show pages and layers"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M9 3v18"></path></svg></button><span class="vr"></span><button class="pick " aria-label="Pick a page, /settings shown">/settings<span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div><span class="sp"></span><div class="bar"><button class="pick" style="font-weight:500">42%</button></div></div>
+<div class="low" style="bottom:22px"><div class="bar"><button class="x-ib wash" aria-label="Select"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.04 4.69a.5.5 0 0 1 .65-.65l16 6.5a.5.5 0 0 1-.06.95l-6.13 1.58a2 2 0 0 0-1.43 1.43l-1.58 6.13a.5.5 0 0 1-.95.06z"></path></svg></button><button class="x-ib " aria-label="Hand"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-6-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"></path></svg></button><span class="vr"></span><button class="x-ib " aria-label="Add photo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M16 5h6M19 2v6M21 11.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7.5M21 15l-3.1-3.1a2 2 0 0 0-2.8 0L6 21"></path><circle cx="9" cy="9" r="2"></circle></svg></button><span class="vr"></span><button class="pick" style="font-weight:500">Filled<span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div></div>
+</div></main><span class="home"></span></div></div><div><div class="board-cap">Pages and layers, a sheet</div><div class="phone"><div class="status"><span>9:41</span><span class="bat"></span></div>
+<main class="plate" aria-label="Canvas"><div class="field" data-canvas-view="">
+<div class="stage" style="left:18px;top:86px;transform:scale(0.42)"><div class="ttl">Pages <span>· 3</span></div><div class="lbl">/settings<span>2 states</span></div><div class="frames"><div class="fr"><div class="cap"><span class="chip">Empty</span></div><div class="scr" style="width:620px;height:390px"><div class="col" style="width:150px"><div class="mk" style="height:28px;width:96px"></div><div class="mk2" style="height:26px"></div><div class="mk2" style="height:26px;opacity:.6"></div><div class="mk2" style="height:26px;opacity:.6"></div></div><div class="col" style="flex:1;position:relative"><div class="mk2" style="height:22px;width:140px;background:transparent;font-size:15px;font-weight:600;color:var(--text)">Settings</div><div class="mk" style="height:150px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:12px">Nothing to do</div><div class="mk" style="height:120px"></div></div><div class="col" style="width:130px"><div class="mk" style="height:100px"></div><div class="mk" style="height:70px"></div></div></div></div><div class="fr"><div class="cap"><span class="chip" style="background:var(--text);color:var(--plate)">Filled</span>shown</div><div class="scr" style="width:620px;height:390px"><div class="col" style="width:150px"><div class="mk" style="height:28px;width:96px"></div><div class="mk2" style="height:26px"></div><div class="mk2" style="height:26px;opacity:.6"></div><div class="mk2" style="height:26px;opacity:.6"></div></div><div class="col" style="flex:1;position:relative"><div class="mk2" style="height:22px;width:140px;background:transparent;font-size:15px;font-weight:600;color:var(--text)">Settings</div><div class="mk" style="height:150px;padding:12px;display:flex;flex-direction:column;gap:8px"><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px"></div><div class="mk2" style="height:22px;width:60%"></div></div><div class="mk" style="height:120px;display:flex;align-items:flex-end;gap:8px;padding:14px"><div class="mk2" style="flex:1;height:40%"></div><div class="mk2" style="flex:1;height:70%"></div><div class="mk2" style="flex:1;height:55%"></div><div class="mk2" style="flex:1;height:90%"></div><div class="mk2" style="flex:1;height:65%"></div></div></div><div class="col" style="width:130px"><div class="mk" style="height:100px"></div><div class="mk" style="height:70px"></div></div><div class="sel" style="left:186px;top:50px;width:270px;height:150px"><span class="tag"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:12px;height:12px"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg>Task list</span></div><div class="hover-tag" style="left:186px;top:210px;width:270px;height:120px"></div></div></div></div><div class="lbl">References<span>2 photos</span></div><div style="display:flex;gap:16px"><div class="ref" style="width:240px;height:160px">[Photo: a settings screen the person liked]</div><div class="ref" style="width:180px;height:160px">[Photo: chart style]</div></div></div>
+<div class="top"><div class="bar"><button class="x-ib on" aria-label="Hide pages and layers"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M9 3v18"></path></svg></button><span class="vr"></span><button class="pick " aria-label="Pick a page, /settings shown">/settings<span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span></button></div><span class="sp"></span><div class="bar"><button class="pick" style="font-weight:500">42%</button></div></div>
+</div></main>
+<div class="scrim"></div>
+<section class="sheet" aria-label="Pages and layers"><span class="grab"></span>
+<div class="x-seg" role="tablist"><button>Pages <span style="color:var(--text-3)">3</span></button><button class="on">Layers</button></div>
+<div class="sh"><b>/settings</b><span class="n">· Filled</span><span class="acts"><button class="x-ib on" aria-label="Layout locked"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></button></span></div>
+<div class="tree"><button class="row " style="padding-left:6px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg></span><span class="t" style="margin-left:4px">Settings page</span></button><button class="row " style="padding-left:22px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M12 3v18"></path></svg></span><span class="t" style="margin-left:4px">Row</span></button><button class="row " style="padding-left:38px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 12h18"></path></svg></span><span class="t" style="margin-left:4px">Navigation</span><span class="m">3</span></button><button class="row " style="padding-left:38px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 12h18"></path></svg></span><span class="t" style="margin-left:4px">Main</span></button><button class="row " style="padding-left:54px;gap:6px"><span class="cv"></span><span class="tile" style="--c:#64748B"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V4h16v3M9 20h6M12 4v16"></path></svg></span><span class="t" style="margin-left:4px">Section heading</span></button><button class="row lift" style="padding-left:54px;gap:6px" aria-current="true"><span class="cv"></span><span class="tile" style="--c:#2563EB"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path></svg></span><span class="t" style="margin-left:4px">Task list</span></button><button class="row " style="padding-left:54px;gap:6px"><span class="cv"></span><span class="tile" style="--c:#0F766E"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18M7 16v-5M12 16V8M17 16v-8"></path></svg></span><span class="t" style="margin-left:4px">Weekly chart</span></button><button class="row " style="padding-left:54px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 7l3-3M4 7l3 3M20 17H4M20 17l-3-3M20 17l-3 3"></path></svg></span><span class="t" style="margin-left:4px">Views</span><span class="m">2</span></button><button class="row " style="padding-left:38px;gap:6px"><span class="cv"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"></rect><path d="M3 12h18"></path></svg></span><span class="t" style="margin-left:4px">Details</span><span class="m">4</span></button></div>
+<div class="foot"><button class="row"><span class="box"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 1 10-10 4 4 0 0 1-4 4h-2a2 2 0 0 0-1.5 3.3A1.6 1.6 0 0 1 12 22z"></path><circle cx="7.5" cy="11" r="1"></circle><circle cx="10.5" cy="7" r="1"></circle><circle cx="15" cy="7.5" r="1"></circle></svg></span><span class="t">Look</span><span class="m">Pill</span><span class="sw" aria-hidden="true" style="margin-left:6px"><span style="background:#1D1D1F"></span><span style="background:#3B5BFD"></span><span style="background:#E8E8EA"></span></span></button></div>
+</section><span class="home"></span></div></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":900,"height":980}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeCls: (this.props.theme ?? 'light') === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>
