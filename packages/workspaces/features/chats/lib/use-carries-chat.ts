@@ -4,8 +4,10 @@ import { CARRIED_CHAT, announceCarry, isPointInBox } from "@widgetarium/behavior
 import type { CarriedItem, CarryPhase } from "@widgetarium/behaviors";
 
 const PRIMARY_BUTTON = 0;
+const NO_BUTTONS = 0;
 const START_PX = 6;
 const COLUMN = "[data-shell-column]";
+const NOT_A_HANDLE = "input, textarea, button, [contenteditable]";
 const ESCAPE = "Escape";
 
 export function useCarriesChat(
@@ -20,7 +22,10 @@ export function useCarriesChat(
 }
 
 function startCarry(event: ReactPointerEvent, item: CarriedItem, onTaken: () => void): void {
-	if (event.button !== PRIMARY_BUTTON) {
+	if (
+		event.button !== PRIMARY_BUTTON ||
+		(event.target instanceof Element && event.target.closest(NOT_A_HANDLE) !== null)
+	) {
 		return;
 	}
 
@@ -56,6 +61,11 @@ class ChatCarry {
 	}
 
 	private readonly moved = (event: PointerEvent): void => {
+		if (event.buttons === NO_BUTTONS) {
+			this.cancelled();
+			return;
+		}
+
 		this.last = [event.clientX, event.clientY];
 		const [startX, startY] = this.ask.start;
 		const isFar = Math.hypot(this.last[0] - startX, this.last[1] - startY) >= START_PX;
