@@ -12,6 +12,8 @@ a review that finds one sends the change back. These are definitions, not advice
 | **Module** (`module.ts`)                                             | Wiring: lists its requests, provides its gateways                                                                                                                                                                                                                                  | Logic of any kind                                                                                                                                             |
 | **View** (a client package)                                          | Draws, keeps short-lived UI state (hover, drag, animation), reads with `useQuery`, writes with `useCommand`                                                                                                                                                                        | A business rule, a storage call, state that must survive a restart                                                                                            |
 
+Heavy CPU work never runs in a handler or a subscriber on the main thread: it stands behind a gateway that hands it to a Web Worker, Rust (a Tauri command) or the server, and the handler awaits the result. Awaiting I/O does not block the UI.
+
 When two handlers of one feature need the same computation, it is a pure function in that feature's `lib/`
 (`features/frame-sides/lib/side-looks.ts`, used by toggle, peek and conceal), never repeated in each handler
 nor hidden in a gateway; `shared/lib/` holds what two features use.

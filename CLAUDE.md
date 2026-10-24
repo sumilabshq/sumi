@@ -48,8 +48,6 @@ apps/host-obsidian       FSL  the Obsidian plugin host
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-packages/client/*             views of data modules: shell (and mascot, older shape)
-      ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas (older shape)
 packages/state/*              app-state data modules: layout
       ↓

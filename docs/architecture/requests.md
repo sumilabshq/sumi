@@ -4,22 +4,21 @@ Logic lives only in handlers. A view or another module reaches logic by sending 
 
 ## A request handles itself
 
-A request and its handler are one chain in `features/<feature>/requests.ts`. The chain up to the first `.inject`, `.guard`, `.use`, `.watch`, `.sends` or `.handle` is the **contract**; the rest is the **handling**.
+A request and its handler are one chain in `features/<feature>/requests.ts`. The chain up to the first `.inject`, `.guard`, `.use`, `.emits`, `.sends` or `.handle` is the **contract**; the rest is the **handling**.
 
 ```ts skip-check
 export const FrameSidesQuery = query("frame-sides")
 	.output(FrameSidesSchema)
 	.settlesNow()
 	.inject({ frameSides: FrameSidesGateway })
-	.watch((_input, { frameSides }, changed) => frameSides.sidesChanged(changed))
 	.handle((_input, { frameSides }) => frameSides.sides());
 
 export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([FrameSidesQuery])
 	.inject({ frameSides: FrameSidesGateway })
-	.handle(({ side }, { frameSides }) => {
+	.handle(({ side }, { frameSides, invalidate }) => {
+		invalidate(FrameSidesQuery);
 		const sides = frameSides.sides();
 		const was = sides[side];
 		const next = toggledLook(was);
@@ -37,14 +36,13 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 
 ### The contract
 
-| Declaration                                    | On      | Means                                                                         |
-| ---------------------------------------------- | ------- | ----------------------------------------------------------------------------- |
-| `query("<short>")`, `command("<short>")`       | both    | the short kebab name: the constant without its suffix                         |
-| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`                        |
-| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error                           |
-| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)                       |
-| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module                    |
-| `.invalidates([Query, …])`                     | command | the queries re-read after it ran; without it every query on screen is re-read |
+| Declaration                                    | On      | Means                                                      |
+| ---------------------------------------------- | ------- | ---------------------------------------------------------- |
+| `query("<short>")`, `command("<short>")`       | both    | the short kebab name: the constant without its suffix      |
+| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`     |
+| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error        |
+| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)    |
+| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module |
 
 **Strings only for free-form data** (request names, reasons). Every other choice is a typed value: a guard, a `permission("…")` constant, `PerCall` / `Repeatable`, a `Duration` (`seconds(n)`, `minutes(n)`, `hours(n)`).
 
@@ -54,11 +52,64 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 | ---------------------- | ----------------------------------------------------------------------------------------- |
 | `.inject({ key: C })`  | what the handler needs, each an abstract class; the module's `provide` must return it     |
 | `.guard(G)`, `.use(M)` | who may call, and what wraps the call ([Guards and middleware](#guards-and-middleware))   |
-| `.watch(fn)`           | a query whose data changes outside a command ([Live data](#live-data-watch))              |
+| `.emits(Event, …)`     | the events this handler may emit ([Events](#events-and-subscribers))                      |
 | `.sends(Other.X, …)`   | the other modules' requests this handler may send ([Sending](#sending-to-another-module)) |
 | `.handle(fn)`          | ends the chain; typed to take the contract's input and return its output                  |
 
-`.handle` receives `(input, context)`; the context holds the injected keys, what guards and middleware added, `idempotencyKey`, `signal`, `user`, and `send` when the request declared `.sends`. A handler that refuses before writing calls `refuse(reason)` ([ran](#ran)).
+`.handle` receives `(input, context)`; the context holds the injected keys, what guards and middleware added, `idempotencyKey`, `signal`, `user`, `send` when the request declared `.sends`, `emit` when it declared `.emits`, and, in a command, `invalidate` ([Re-reading](#re-reading-invalidate)). A handler that refuses before writing calls `refuse(reason)` ([ran](#ran)).
+
+## Re-reading: `invalidate`
+
+A command or a subscriber calls `invalidate(Query, input?)` for each query its work made stale: the own module's queries, or those of a module in `.imports` (anything else fails the call, naming the fix). With an input, only that read re-reads; without one, every read of the query. Prior art: `revalidatePath` / `revalidateTag` in Next.js server actions, `invalidateQueries` in TanStack's `onSuccess`.
+
+- Invalidations are collected during the call and applied only after a successful answer; a refused, thrown or failed call applies none. A subscriber's apply after it returns without throwing.
+- No default: a command that invalidates nothing re-reads nothing. A query has no `invalidate`.
+- Over the network the names ride in the answer body (`invalidated: [...]`) and the client engine re-reads them. A change on the server that no call of this client caused (another user, a cron, a webhook) needs a push channel (SSE or WebSocket) carrying `invalidated: [...]` and, later, events: **planned**.
+- A command sending another command adds what that one invalidated to its own answer.
+
+## Events and subscribers
+
+An event is a fact in the past tense with an input schema, and it lives only inside modules:
+
+```ts skip-check
+export const PanesChangedEvent = event("panes-changed").from(
+	gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)),
+);
+
+export const PanesOnPanesChangedSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(PaneTreeQuery);
+	invalidate(PlacementPreviewQuery);
+});
+```
+
+- **Two sources.** A handler emits it (`.emits(Event)`, then `emit(Event, input)`, which returns nothing to await), or it comes from outside with `.from(...)`: one source for every platform, or a record keyed by platform (a missing platform never fires). Sources: `gatewayEvent(Gateway, (gateway, fire) => gateway.xChanged(fire))` for a gateway's own listener in the process, `tauriEvent(name)` (Tauri's `listen`, loaded lazily), `windowEvent(type)` (`window.addEventListener`, the payload of a `MessageEvent` or `CustomEvent`). A payload the event's schema refuses is reported and dropped, never delivered.
+- **The module lists it.** `.emits(...)` names every event the module produces, emitted or sourced; a handler emitting an event its module does not list is refused at start. The app starts a source only while some subscriber listens, and stops it with `stop()`.
+- **Subscribers.** `subscriber(Event).inject({...}).sends(...).emits(...).handle((input, { invalidate, send, emit }) => ...)`, listed with `.subscribers(...)`; many per event are normal. A subscriber of another module's event needs that module in `.imports()`; events do not cross the network yet, so an event of a module imported from an address is refused at start.
+- **After the answer, each on its own.** Subscribers run after the emitting handler has answered (scheduled, never inline); one throwing or rejecting is reported once and touches neither the emitter nor the other subscribers.
+- **Views never touch events.** A view reads with `useQuery` and acts with `useCommand`; events are inside modules: subscribers handle them and call `invalidate` to re-read queries. A view never emits or subscribes to an event.
+- **Where it lives.** An event a gateway is the source of lives beside it, `gateways/<gateway>/<gateway>.events.ts`; an emitted event in the feature that emits it, or `shared/events/<topic>.events.ts` when two features use it.
+
+## What a module needs from the host
+
+`module("canvas").on(Device).needs({ vault: Vault })` names live objects only the host has (an Obsidian vault, a running agent); `provide(({ platform, scope, env, host }) => ...)` gets `host` typed to them, and `app()...start({ platform, scope, host: { vault } })` must give them: a missing one is a type error and a start refusal ("canvas needs vault: the host did not provide it as a Vault"). The host lends raw system objects only, never a module's gateway; the module builds its gateways on them.
+
+**An object with no runtime class is a `hostObject`.** An abstract class is checked by `instanceof`; an interface (Obsidian's `DataAdapter`, a `StartedProject`) has nothing to check, so the module names it with a guard, in its own `shared/host/<x>.host.ts`, and `module.ts` re-exports it so a host imports it from the `"./module"` entry (never from `"."`). A value the guard refuses is refused at start with the module, the key and the token's name.
+
+```ts skip-check
+export const AdapterHost = hostObject("DataAdapter", isDataAdapter);
+module("canvas").on(Device).needs({ adapter: AdapterHost });
+```
+
+**One of several sets is `oneOf`.** `provide` gets `host` as a union tagged by the set's name, and `start({ host })` must lend exactly one set: lending parts of two, or none, is a type error and a start refusal ("canvas needs one of: vault {adapter, registry}, project {project}; the host lent parts of vault and project"); a set with a key missing names that key.
+
+```ts skip-check
+module("canvas")
+	.on(Device)
+	.needs(oneOf({ vault: { adapter: AdapterHost, registry: WidgetRegistry }, project: { project: ProjectHost } }))
+	.provide(({ host }) =>
+		host.kind === "vault" ? vaultParts(host.adapter, host.registry) : projectParts(host.project),
+	);
+```
 
 ## A module
 
@@ -78,10 +129,10 @@ export const BillingModule = module("billing")
 	.provide((facts) => billingPartsOn(facts));
 ```
 
-- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
+- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.needs`, `.emits`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
 - **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries and commands are listed together. A request named twice is refused when the module is defined.
-- **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `invalidates` and `sends` lists too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
-- **`.provide((facts) => parts)`** receives `{ platform, scope, env }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
+- **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `sends` and `emits` lists and its module's events too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
+- **`.provide((facts) => parts)`** receives `{ platform, scope, env, host }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
 - **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app().modules(LayoutModule.with(fakes)).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
 
 ## Sending to another module
@@ -105,7 +156,7 @@ export const BuyCommand = command("buy")
 
 ## The generated contract
 
-`npm run generate` reads each `module.ts`, finds the listed requests and writes `generated/contract.ts`: each public chain up to its first handling step, with every schema it uses copied in, transitively, ordered so a referenced request comes first, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`); a public contract naming a server-only request is refused.
+`npm run generate` reads each `module.ts`, finds the listed requests and events and writes `generated/contract.ts`: each public chain and each event in `.emits` up to its first handling step (an event's `.from(...)` is cut, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`). The contract carries no invalidation.
 
 - The contract imports only `zod` and `@widgetarium/core/requests`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
@@ -143,10 +194,6 @@ export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
 		return { invoice };
 	});
 ```
-
-## Live data: `watch`
-
-A query whose data changes outside a command (a file edited on disk, another window writing the same setting) declares `.watch((input, injected, changed) => unsubscribe)`. The app calls it while someone reads the query, once per query key however many read it, and re-reads on `changed()`. The gateway offers the listener as an operation named for its data (`sidesChanged`). **planned**: the same `watch` over the wire as a live subscription.
 
 ## Policy order
 
@@ -205,7 +252,7 @@ const served = server().modules(BillingModule, UsersModule).start({ env: process
 
 ## Cache and re-read
 
-TanStack Query is the cache under the hooks; a component never touches it. A local query gets no retry and no re-read on focus; a remote one retries an unreachable server and re-reads on focus. After a command that ran, its `invalidates` list, or every query on screen, is read again; a re-read keeps the previous data on screen and every unchanged part by identity.
+TanStack Query is the cache under the hooks; a component never touches it. A local query gets no retry and no re-read on focus; a remote one retries an unreachable server and re-reads on focus. After a successful command, exactly what it invalidated is read again ([Re-reading](#re-reading-invalidate)); a re-read keeps the previous data on screen and every unchanged part by identity. Data changing outside any command (a file edited on disk, another window) re-reads through an event from that source and a subscriber that invalidates.
 
 ## Data
 
@@ -217,4 +264,4 @@ TanStack Query is the cache under the hooks; a component never touches it. A loc
 
 ## Background work and webhooks
 
-**planned.** `cron`, `worker` and `loop` are handlers declared in a module, with idempotency on every job. A webhook lands on a server route, is verified, **stored raw first**, answered `2xx`, then applied by a command keyed by the provider's event id; a periodic job compares our rows with the provider and repairs drift.
+**planned.** Scheduled and long-running jobs are handlers declared in a module, with idempotency on every job. A webhook lands on a server route, is verified, **stored raw first**, answered `2xx`, then applied by a command keyed by the provider's event id; a periodic job compares our rows with the provider and repairs drift.

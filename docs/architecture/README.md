@@ -38,6 +38,24 @@ export const BillingModule = module("billing")
 - `.public(...)`: the module's commands and queries any caller may use: views, other modules, the network.
 - `.serverOnly(...)`: the module's commands and queries that never cross the network. On a server, other server modules in the process may use them; on a device (an `Anywhere` module run in an app), only the module's own handlers. Not on a `Device` module: a type error says why.
 - `.imports(...)`: the other modules whose commands and queries this module's handlers send: their public ones always, their server-only ones when this module runs on a server too.
+- `.emits(...)`, `.subscribers(...)`: the events this module produces and the subscribers that handle events (below).
+- `.needs({ vault: Vault })`: live objects the host lends (an Obsidian vault, a running agent); `provide` receives them as `host`, and the app's `start({ host })` must give them.
+
+**Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(Query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
+
+**Events.** An event is a fact in the past tense (`PanesChangedEvent`), with an input schema. A handler emits it (`emit(PanesChangedEvent)`, declared with `.emits`); or it comes from outside: `event("panes-changed").from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)))`, `tauriEvent(name)`, `windowEvent(type)`, per platform or for all. A subscriber handles it: `subscriber(PanesChangedEvent).handle((input, { invalidate, send }) => ...)`. Subscribers run after the emitter has answered, each on its own: one failing is reported and touches nothing else. **A view reads with useQuery and acts with useCommand; events are inside modules: subscribers handle them and call invalidate to re-read queries. A view never emits or subscribes to an event.**
+
+```mermaid
+flowchart LR
+	view["View"] -->|useCommand| command["Command handler"]
+	command -->|"emit(Event)"| event(("Event"))
+	outside["Gateway, Tauri or window source"] -->|fires| event
+	event --> subscriber["Subscribers, after the answer"]
+	command -->|"invalidate(Query)"| reread["Query re-read"]
+	subscriber -->|"invalidate(Query)"| reread
+	subscriber -->|"send(Command)"| command
+	reread -->|useQuery| view
+```
 
 **Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module.at(url))` are reached over the network, by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported at its URL. The module's code does not change.
 

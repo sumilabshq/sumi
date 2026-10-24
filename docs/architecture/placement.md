@@ -14,7 +14,8 @@ features/<feature>/requests.ts   the feature's requests, each with its handler
 features/<feature>/lib/          pure functions the feature's handlers share
 shared/lib/                      pure functions two features use
 shared/schema/<record>.schema.ts zod shapes and their inferred types
-gateways/<gateway>/              <gateway>.gateway.ts (the abstract class), one <storage>.gateway.ts per implementation
+gateways/<gateway>/              <gateway>.gateway.ts (the abstract class), one <storage>.gateway.ts per implementation, <gateway>.events.ts for the events it is the source of
+shared/events/<topic>.events.ts  emitted events two features use
 gateways/<module>-parts/         the picker: which implementation each platform gets (layoutPartsOn)
 generated/contract.ts            generated, self-contained: every public request up to its first handling step, and the module's descriptor
 generated/server.ts              generated: the server-only requests

@@ -18,7 +18,11 @@ export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): Started
 }
 ```
 
-A host never builds a module's gateway, never passes a store, a file handle or a "parts" object. What a module needs from the platform it reaches itself, through its gateways (the Tauri store client is `@widgetarium/behaviors/tauri-store`).
+A host never builds a module's gateway, never passes a store or a "parts" object. What a module needs from the platform it reaches itself, through its gateways (the Tauri store client is `@widgetarium/behaviors/tauri-store`).
+
+**Host objects, through `.needs`.** A live object only the host has (an Obsidian vault, its widget registry, a running agent) is lent raw: the module declares `.needs({ vault: Vault })`, the host passes `start({ platform, scope, host: { vault } })`, and `provide` builds the module's gateways on it. A missing or wrongly typed one is a type error and a start refusal naming the module and the key.
+
+An interface the host lends (Obsidian's `DataAdapter`) is a `hostObject("DataAdapter", isDataAdapter)` token the module re-exports from `module.ts`; the host imports it from the module's `"./module"` entry. A module mounted two ways declares `oneOf`, and each host lends one set: Obsidian's vault mount `start({ ..., host: { adapter, registry } })`, a project mount `start({ ..., host: { project } })`.
 
 `app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys`, `rateLimits` and `reportFailure`.
 
