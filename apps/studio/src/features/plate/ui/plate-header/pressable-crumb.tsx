@@ -1,13 +1,13 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useOpensMenuOnShown } from "../../../command-menu/lib/use-opens-menu-on-shown.js";
+import { useTogglesMenuOnShown } from "../../../command-menu/lib/use-toggles-menu-on-shown.js";
 import { CrumbSaid } from "./crumb-said.js";
 import type { CrumbWords } from "./plate-crumb.js";
 
 const CRUMB_LABEL = "Go to";
 
 export function PressableCrumb({ words }: { readonly words: CrumbWords }): ReactElement {
-	const openMenuOnShown = useOpensMenuOnShown(words.first);
+	const openMenuOnShown = useTogglesMenuOnShown(words.first);
 	return (
 		<button
 			type="button"

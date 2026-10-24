@@ -42,6 +42,9 @@ const ESCAPE_ONCE = `(() => {
 	return document.querySelector(".wg-cm-layer") === null;
 })()`;
 const MOST_ESCAPES = 4;
+const INTO_FIELD = (key: string, mods: string): string =>
+	`(() => { const field = document.querySelector(".wg-cm-input"); field?.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, code: ${JSON.stringify(key.length === 1 ? `Key${key.toUpperCase()}` : key)}, bubbles: true, cancelable: true, ${mods} })); return true; })()`;
+const PICKED = `document.querySelector('.wg-cm-row[aria-selected="true"]')?.textContent ?? null`;
 const PRESS_KEY = (key: string): string =>
 	`(() => { document.activeElement?.blur(); window.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, code: ${JSON.stringify(`Key${key.toUpperCase()}`)}, metaKey: true, bubbles: true })); return true; })()`;
 
@@ -115,6 +118,44 @@ try {
 
 	await page.ask(PRESS_KEY("k"));
 	check("⌘K opens it from anywhere", (await menuAfter(page)) !== null, "open");
+	const glass = await page.ask(
+		`(() => { const look = getComputedStyle(document.querySelector(".wg-cm-panel")); return { blur: look.backdropFilter, background: look.backgroundColor }; })()`,
+	);
+	check(
+		"the glass lets the blur through: blurred, and the plate is clearly see-through",
+		JSON.stringify(glass).includes("blur(32px)") && /0\.7\d?\)|oklab|color\(srgb/.test(JSON.stringify(glass)),
+		glass,
+	);
+	await page.ask(INTO_FIELD("Tab", ""));
+	const before = await page.ask(PICKED);
+	await page.ask(INTO_FIELD("ArrowDown", ""));
+	await waited(SETTLE_MS);
+	const after = await page.ask(PICKED);
+	check(
+		"after Tab the arrows still move the pick and the field keeps the focus",
+		before !== after && (await page.ask(`document.activeElement?.className`)) === "wg-cm-input",
+		[before, after],
+	);
+	await page.ask(INTO_FIELD("k", "metaKey: true"));
+	await waited(SETTLE_MS);
+	check("⌘K again closes it", (await page.ask(`document.querySelector(".wg-cm-layer") === null`)) === true, "shut");
+
+	await page.ask(PRESS_KEY("k"));
+	await waited(60);
+	await page.ask(`window.__menuPanel = document.querySelector(".wg-cm-panel"); true`);
+	await page.ask(INTO_FIELD("k", "metaKey: true"));
+	await waited(40);
+	const leaving = await page.ask(`Number(getComputedStyle(document.querySelector(".wg-cm-panel")).opacity)`);
+	await page.ask(PRESS_KEY("k"));
+	await waited(SETTLE_MS);
+	const reversed = await page.ask(
+		`document.querySelector(".wg-cm-panel") === window.__menuPanel && getComputedStyle(window.__menuPanel).opacity === "1"`,
+	);
+	check(
+		"a close in the middle of opening turns back at once, and opening again reverses the same panel",
+		typeof leaving === "number" && leaving < 1 && reversed === true,
+		[leaving, reversed],
+	);
 	await escapedAll(page);
 
 	const pressedNewTab = await pressOn(page, "[data-host-column-add]");
@@ -144,6 +185,14 @@ try {
 			JSON.stringify(fromCrumb).includes('"text":"Canvas"') &&
 			JSON.stringify(fromCrumb).includes("Top hit"),
 		fromCrumb,
+	);
+	const icons = await page.ask(
+		`[...document.querySelectorAll('.wg-cm-row:is([data-cm-row="tab"], [data-cm-row="app"]) .wg-cm-icon')].map((icon) => icon.querySelector("img, svg")?.getAttribute("class") ?? "")`,
+	);
+	check(
+		"tab and app rows draw the sidebar's tab art, never the plain kit glyph",
+		Array.isArray(icons) && icons.length > 0 && icons.every((name) => !String(name).includes("wg-kit-icon")),
+		icons,
 	);
 	writeFileSync(path.join(shotsAt, "03-studio-header.png"), await page.shoot());
 	await escapedAll(page);

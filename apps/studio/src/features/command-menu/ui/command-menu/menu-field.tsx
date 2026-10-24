@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import type { KeyboardEvent, ReactElement } from "react";
+import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { Icon } from "@widgetarium/kit";
 import { ChangeMenuDoorCommand } from "@widgetarium/command-menu";
@@ -11,7 +11,6 @@ export interface MenuFieldProps {
 	readonly text: string;
 	readonly ghost: string;
 	readonly onText: (text: string) => void;
-	readonly onKey: (event: KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const PLACEHOLDER: Readonly<Record<Door, string>> = {
@@ -27,7 +26,7 @@ const TOKEN: Readonly<Record<Door, string>> = {
 const SEARCH_EVERYTHING = "Remove, search everything";
 const FIELD_LABEL = "Search tabs, chats, apps and the web";
 
-export function MenuField({ door, text, ghost, onText, onKey }: MenuFieldProps): ReactElement {
+export function MenuField({ door, text, ghost, onText }: MenuFieldProps): ReactElement {
 	const field = useSelectsFieldOnMount();
 	const changeDoor = useCommand(ChangeMenuDoorCommand);
 	return (
@@ -63,7 +62,6 @@ export function MenuField({ door, text, ghost, onText, onKey }: MenuFieldProps):
 					aria-label={FIELD_LABEL}
 					spellCheck={false}
 					onChange={(event) => onText(event.currentTarget.value)}
-					onKeyDown={onKey}
 				/>
 			</span>
 		</div>

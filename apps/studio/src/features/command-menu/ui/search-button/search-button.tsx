@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
-import { OpenCommandMenuCommand } from "@widgetarium/command-menu";
+import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 import { OPEN_MENU_KEYS } from "../../lib/menu-key-labels.js";
 
 export interface SearchButtonProps {
@@ -13,7 +13,7 @@ export interface SearchButtonProps {
 const SEARCH = "Search";
 
 export function SearchButton({ className, iconPx }: SearchButtonProps): ReactElement {
-	const openMenu = useCommand(OpenCommandMenuCommand);
+	const openMenu = useCommand(ToggleCommandMenuCommand);
 	return (
 		<IconButton
 			variant="ghost"

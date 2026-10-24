@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { useOpensNewTabMenu } from "../../../command-menu/lib/use-opens-new-tab-menu.js";
+import { useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";
 import { keyHintOf } from "../../lib/shortcut/key-hint.js";
 import { KEY_HINT, ROW_WORDS, SIDEBAR_ROW } from "../../lib/tabs-look/tabs-look.js";
 
@@ -9,7 +9,7 @@ const NEW_TAB = "New tab";
 const NEW_TAB_KEY = "t";
 
 export function NewTabRow(): ReactElement {
-	const openNewTabMenu = useOpensNewTabMenu();
+	const openNewTabMenu = useTogglesNewTabMenu();
 	return (
 		<button
 			type="button"

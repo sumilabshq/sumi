@@ -31,14 +31,8 @@ export function MenuPanel({ door, startText }: MenuPanelProps): ReactElement {
 	const moves = useMenuMoves(results);
 	const onKey = useMenuKeys({ door, text, setText, setScope, results, moves });
 	return (
-		<div className="wg-cm-panel" role="dialog" aria-modal="true" aria-label="Command menu">
-			<MenuField
-				door={door}
-				text={text}
-				ghost={results.ghost}
-				onText={(typed) => moves.typed(() => setText(typed))}
-				onKey={onKey}
-			/>
+		<div className="wg-cm-body" onKeyDown={onKey}>
+			<MenuField door={door} text={text} ghost={results.ghost} onText={(typed) => moves.typed(() => setText(typed))} />
 			{door === "anywhere" ? (
 				<MenuScopes scope={scope} onScope={(picked) => moves.typed(() => setScope(picked))} />
 			) : null}

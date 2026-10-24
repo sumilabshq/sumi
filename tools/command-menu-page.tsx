@@ -12,8 +12,8 @@ import { DoRowCommand } from "../packages/domain/command-menu/index.ts";
 import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
 import { CommandMenuKeys } from "../apps/studio/src/features/command-menu/ui/command-menu-keys/command-menu-keys.tsx";
 import { SearchButton } from "../apps/studio/src/features/command-menu/ui/search-button/search-button.tsx";
-import { useOpensMenuOnShown } from "../apps/studio/src/features/command-menu/lib/use-opens-menu-on-shown.ts";
-import { useOpensNewTabMenu } from "../apps/studio/src/features/command-menu/lib/use-opens-new-tab-menu.ts";
+import { useTogglesMenuOnShown } from "../apps/studio/src/features/command-menu/lib/use-toggles-menu-on-shown.ts";
+import { useTogglesNewTabMenu } from "../apps/studio/src/features/command-menu/lib/use-toggles-new-tab-menu.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
@@ -110,8 +110,8 @@ const studio = app()
 void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 
 function Demo(): ReturnType<typeof h> {
-	const openNewTab = useOpensNewTabMenu();
-	const openHere = useOpensMenuOnShown("Canvas");
+	const openNewTab = useTogglesNewTabMenu();
+	const openHere = useTogglesMenuOnShown("Canvas");
 	return (
 		<IsTooltipHosted.Provider value={true}>
 			<div className="wg-cm-demo">

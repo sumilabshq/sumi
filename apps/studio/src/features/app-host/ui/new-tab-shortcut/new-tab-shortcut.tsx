@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useOpensNewTabMenu } from "../../../command-menu/lib/use-opens-new-tab-menu.js";
+import { useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";
 import { useShortcut } from "../../lib/shortcut/use-shortcut.js";
 import { NEW_TAB_KEY } from "../../lib/tab-keys.js";
 
@@ -7,7 +7,7 @@ export function NewTabShortcut({ frame }: { readonly frame: RefObject<HTMLElemen
 	useShortcut(frame, {
 		key: NEW_TAB_KEY,
 		isShifted: false,
-		onPress: useOpensNewTabMenu(),
+		onPress: useTogglesNewTabMenu(),
 	});
 	return null;
 }

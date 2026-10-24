@@ -13,7 +13,7 @@ export interface KeyedMenu {
 	readonly close: () => void;
 }
 
-type MenuKey = KeyboardEvent<HTMLInputElement>;
+type MenuKey = KeyboardEvent<HTMLElement>;
 
 type KeyAct = (event: MenuKey, menu: KeyedMenu) => boolean;
 
@@ -67,11 +67,14 @@ function entered(event: MenuKey, { results, moves }: KeyedMenu): boolean {
 }
 
 function completed(event: MenuKey, { text, setText, results, moves }: KeyedMenu): boolean {
-	if (event.key !== "Tab" || results.ghost === "") {
+	if (event.key !== "Tab") {
 		return false;
 	}
 
-	moves.typed(() => setText(text + results.ghost));
+	if (results.ghost !== "") {
+		moves.typed(() => setText(text + results.ghost));
+	}
+
 	return true;
 }
 
@@ -81,7 +84,7 @@ function actionsToggled(event: MenuKey, { text, moves }: KeyedMenu): boolean {
 		return true;
 	}
 
-	if (event.key !== "ArrowRight" || !moves.hasActions || event.currentTarget.selectionStart !== text.length) {
+	if (event.key !== "ArrowRight" || !moves.hasActions || !isCaretAtEnd(event, text)) {
 		return false;
 	}
 
@@ -124,14 +127,19 @@ function scoped(event: MenuKey, { setScope, moves, toDoor }: KeyedMenu): boolean
 	return true;
 }
 
-function doorChanged(event: MenuKey, { toDoor }: KeyedMenu): boolean {
+function doorChanged(event: MenuKey, menu: KeyedMenu): boolean {
 	const door = isCommand(event) ? DOOR_KEYS[event.key.toLowerCase()] : undefined;
 
 	if (door === undefined) {
 		return false;
 	}
 
-	toDoor(door);
+	if (door === menu.door) {
+		menu.close();
+		return true;
+	}
+
+	menu.toDoor(door);
 	return true;
 }
 
@@ -178,6 +186,10 @@ function enteredIntentOf(event: MenuKey, results: Results, moves: MenuMoves): In
 	}
 
 	return moves.picked?.intent ?? null;
+}
+
+function isCaretAtEnd(event: MenuKey, text: string): boolean {
+	return !(event.target instanceof HTMLInputElement) || event.target.selectionStart === text.length;
 }
 
 function isCommandWith(event: MenuKey, letter: string): boolean {

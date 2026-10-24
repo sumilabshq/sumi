@@ -7,7 +7,7 @@ import type { KeyedMenu } from "./menu-key-acts.js";
 
 type MenuKeysAsk = Omit<KeyedMenu, "toDoor" | "close">;
 
-export function useMenuKeys(ask: MenuKeysAsk): (event: KeyboardEvent<HTMLInputElement>) => void {
+export function useMenuKeys(ask: MenuKeysAsk): (event: KeyboardEvent<HTMLElement>) => void {
 	const changeDoor = useCommand(ChangeMenuDoorCommand);
 	const close = useCommand(CloseCommandMenuCommand);
 	const menu: KeyedMenu = {

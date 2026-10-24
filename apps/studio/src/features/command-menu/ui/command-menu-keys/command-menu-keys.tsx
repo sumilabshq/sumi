@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/core/requests";
-import { OpenCommandMenuCommand } from "@widgetarium/command-menu";
+import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 import type { Door } from "@widgetarium/command-menu";
 
 const DOOR_OF_KEY: Readonly<Record<string, Door>> = {
@@ -9,7 +9,7 @@ const DOOR_OF_KEY: Readonly<Record<string, Door>> = {
 };
 
 export function CommandMenuKeys(): null {
-	const { run } = useCommand(OpenCommandMenuCommand);
+	const { run } = useCommand(ToggleCommandMenuCommand);
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
 			const door = DOOR_OF_KEY[event.code];
