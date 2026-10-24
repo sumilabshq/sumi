@@ -5,7 +5,7 @@ a review that finds one sends the change back. These are definitions, not advice
 
 | Layer                                                                | Its job                                                                                                                                                                                                                                                                            | Never                                                                                                                                                         |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Handler** (`features/<f>/requests.ts`, the `.handle` of a request) | The business logic of one request: decides, checks the transition, refuses with a reason, computes through `lib`, reads and writes through gateways, logs `was → now`                                                                                                              | A command that forwards one call to a gateway. Rules kept anywhere else. (A query that only reads may return the gateway's answer as it is)                   |
+| **Handler** (`features/<f>/requests.ts`, the `.handle` of a request) | The business logic of one request: decides, checks the transition, refuses with a reason, computes through `lib`, reads and writes through gateways, logs `was → now`                                                                                                              | Its rules kept anywhere else: in a gateway, in a lib object with state. (A one-line handler is fine when there is no rule to apply)                           |
 | **Gateway** (`gateways/<g>/`)                                        | Dumb access to one storage or outside system. Its operations are named for the data they read or write: `profile(userId)`, `saveProfile(profile)`, `settingsOf(userId)`, `tabsChanged(listener)`. May map, serialize, translate a storage error, handle a `null` the storage needs | A business rule, a transition, a choice of what to do, a call to another gateway. A generic `get`/`set`/`watch` API standing in for the data's own operations |
 | **lib** (`features/<f>/lib/`, `shared/lib/`)                         | Pure functions: algorithms, transitions computed as values, filtering, formatting. Local variables and collections inside one call are fine                                                                                                                                        | State that outlives a call: a module-level or instance field, watchers, a cache. I/O. A gateway. A class holding data. The word `Store`                       |
 | **Schema** (`shared/schema/`)                                        | zod shapes and the types inferred from them                                                                                                                                                                                                                                        | Logic, defaults with business meaning, I/O                                                                                                                    |
@@ -106,9 +106,13 @@ export abstract class UsersGateway {
 }
 ```
 
-**A query that only reads may return what its gateway answers**, with no rule in between:
-`.handle((_input, { frameSides }) => frameSides.sides())` is a correct read. **A command never forwards**:
-it always reads, decides, refuses or saves, and logs.
+**The test is where the business logic lives, never how many lines a handler has.** When a request
+only reads or only keeps a value, with no rule to apply, a one-line handler is correct:
+`.handle((_input, { frameSides }) => frameSides.sides())` and
+`.handle(({ note }, { notes }) => notes.saveNote(note))` are both fine, as long as the gateway behind
+them only stores. A handler is wrong when the rule it owns sits somewhere else: a gateway method
+that decides (`pickAnother`), or a lib object that keeps state and checks transitions (the old
+`FrameSidesStore.toggle`).
 
-Before writing a command, read it back: if its body is one call to an injected part with the same
-arguments, the logic is somewhere it must not be.
+Before writing a handler, read the method it calls: if that method decides anything, the logic is
+somewhere it must not be.
