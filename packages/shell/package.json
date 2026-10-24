@@ -9,9 +9,9 @@
 	],
 	"exports": {
 		".": {
-			"source": "./generated/index.ts",
-			"types": "./dist/generated/index.d.ts",
-			"default": "./dist/generated/index.js"
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		}
 	},
 	"dependencies": {
