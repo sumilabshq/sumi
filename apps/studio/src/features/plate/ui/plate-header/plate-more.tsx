@@ -26,6 +26,7 @@ export function PlateMore({ items }: PlateMoreProps): ReactElement {
 			open={isOpen}
 			onOpenChange={setOpen}
 			placement="below"
+			isPortaled
 			trigger={<HeaderButton label={MORE_LABEL} icon="ellipsis" aria-haspopup="menu" aria-expanded={isOpen} />}
 		>
 			<div role="menu" className="wg-plate-menu">
