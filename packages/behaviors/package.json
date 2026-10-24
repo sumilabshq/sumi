@@ -12,6 +12,11 @@
 			"source": "./index.ts",
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
+		},
+		"./tauri-store": {
+			"source": "./tauri-store.ts",
+			"types": "./dist/tauri-store.d.ts",
+			"default": "./dist/tauri-store.js"
 		}
 	},
 	"dependencies": {
@@ -19,7 +24,8 @@
 		"@widgetarium/gpu": "0.1.0"
 	},
 	"peerDependencies": {
-		"react": "^19.2.8"
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
 	},
 	"widgetarium": {
 		"level": "common"
