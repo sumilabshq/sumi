@@ -1,19 +1,22 @@
 import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import type { AppKind } from "@widgetarium/app-host";
-import type { AppHostParts } from "@widgetarium/app-host/gateways";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
+import type { StudioBrowser } from "../browser/browser-app.js";
 import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import { useQuery } from "@widgetarium/core/requests";
-import { Plate, PlateCrumb, PlateMore, PlateShown } from "@widgetarium/shell";
-import type { CrumbWords, PlateMoreItem } from "@widgetarium/shell";
+import { Plate } from "../features/plate/ui/plate/plate.js";
+import { PlateCrumb } from "../features/plate/ui/plate-header/plate-crumb.js";
+import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";
+import { PlateShown } from "../features/plate/ui/plate-header/plate-shown.js";
+import type { CrumbWords } from "../features/plate/ui/plate-header/plate-crumb.js";
+import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more.js";
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { KeptApps } from "../tabs/kept-apps.js";
+import { KeptApps } from "../features/app-host/ui/kept-apps/kept-apps.js";
 import { APP_CRUMB_WORD } from "./app-crumb-words.js";
 import { MovesUnheld } from "./moves-unheld.js";
 
@@ -22,13 +25,12 @@ export interface WorkspaceAppPlateProps {
 	readonly pathname: string;
 	readonly view: StudioView;
 	readonly design: StudioDesign;
-	readonly browser: BrowserParts;
-	readonly hostTabs: AppHostParts["hostTabs"];
+	readonly browser: StudioBrowser;
 	readonly backToView: () => void;
 }
 
 interface KeptAppPages {
-	readonly browser: BrowserParts;
+	readonly browser: StudioBrowser;
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
 }
@@ -43,7 +45,6 @@ export function WorkspaceAppPlate({
 	view,
 	design,
 	browser,
-	hostTabs,
 	backToView,
 }: WorkspaceAppPlateProps): ReactElement {
 	const appName = useQuery(WorkspacesQuery).data.current.name;
@@ -63,14 +64,14 @@ export function WorkspaceAppPlate({
 			edgeEnd={null}
 		>
 			{view === "app" ? <div className="wg-shell-route">{routeElementOf(project, pathname)}</div> : null}
-			<KeptApps shown={shownApp} hostTabs={hostTabs} drawnOf={drawnOf} />
+			<KeptApps shown={shownApp} drawnOf={drawnOf} />
 		</Plate>
 	);
 }
 
 function keptAppPageOf(app: AppKind, pages: KeptAppPages): ReactElement {
 	if (app === "browser") {
-		return <BrowserPage parts={pages.browser} />;
+		return <BrowserPage browser={pages.browser} heldTabId={null} />;
 	}
 
 	return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />;

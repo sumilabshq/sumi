@@ -1,19 +1,34 @@
-import { studioAppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/studio.gateway.ts";
-import type { AppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
-import { EssentialsGateway } from "../packages/domain/app-host/gateways/essentials/essentials.gateway.ts";
-import { PageFactsGateway } from "../packages/domain/app-host/gateways/page-facts/page-facts.gateway.ts";
-import { TabsSessionGateway } from "../packages/domain/app-host/gateways/tabs-session/tabs-session.gateway.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { AppHostModule } from "../packages/domain/app-host/module.ts";
+import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
+import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
+import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
+import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
+import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
-import type { PageFacts } from "../packages/domain/app-host/shared/schema/page-facts.schema.ts";
 import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
-import type { ActiveChat, ActiveChatPort } from "../packages/shared/core/src/engine/active-chat-port.ts";
-import type { StudioState } from "../packages/shared/core/src/engine/studio-state-port.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
+import { LayoutModule } from "../packages/state/layout/module.ts";
+import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { SelectChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
+import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
+import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
+import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 
 export const EXACT_WORKSPACE = "Exact tabs";
 export const EXACT_COLUMN_PX = 240;
 export const TEAR_OFF_ASKED: string[] = [];
 
-const CHATS: readonly ActiveChat[] = [
+const RELEASE_CHAT = "chat-release";
+
+interface BoardChat {
+	readonly id: string;
+	readonly title: string;
+}
+
+const CHATS: readonly BoardChat[] = [
 	{
 		id: "chat-release",
 		title: "Release plan",
@@ -65,14 +80,6 @@ const KEPT_ESSENTIALS: KeptEssentials = {
 	minted: 8,
 };
 
-const browserTab = (id: string, pageId: string): KeptTabs["tabs"][number] => ({
-	id,
-	app: "browser",
-	pageId,
-	label: null,
-	essentialId: null,
-});
-
 const KEPT_TABS: KeptTabs = {
 	tabs: [
 		{ id: "tab-1", app: "canvas", pageId: null, label: null, essentialId: "essential-1" },
@@ -110,148 +117,153 @@ const KEPT_TABS: KeptTabs = {
 	closed: [],
 };
 
-export class SwitchedChat implements ActiveChatPort {
-	private chat: ActiveChat = CHATS[0] ?? { id: "chat-release", title: "Release plan" };
-	private readonly listeners = new Set<() => void>();
-
-	now = (): ActiveChat => this.chat;
-
-	watch = (listener: () => void): (() => void) => {
-		this.listeners.add(listener);
-		return () => void this.listeners.delete(listener);
-	};
-
-	switchTo(id: string): void {
-		this.chat = CHATS.find((chat) => chat.id === id) ?? this.chat;
-		this.listeners.forEach((listener) => listener());
-	}
-}
-
-class KeptTabsGateway extends TabsSessionGateway {
-	kept(): KeptTabs {
-		return KEPT_TABS;
-	}
-
-	keep(): void {}
-}
-
 export const NO_ESSENTIALS: KeptEssentials = { essentials: [], minted: 0 };
 
-class KeptEssentialsGateway extends EssentialsGateway {
-	constructor(private readonly held: KeptEssentials) {
-		super();
-	}
-
-	kept(): KeptEssentials {
-		return this.held;
-	}
-
-	keep(): void {}
+export interface ExactStudioAsk {
+	readonly essentials?: KeptEssentials;
+	readonly workspaces?: WorkspacesParts;
+	readonly releaseChatId?: string;
 }
 
-export function exactAppHostParts(
-	state: StudioState,
-	activeChat: ActiveChatPort = new SwitchedChat(),
-	essentials: KeptEssentials = KEPT_ESSENTIALS,
-): AppHostParts {
-	localStorage.setItem(
-		`widgetarium-studio-tabs-column:${EXACT_WORKSPACE}`,
-		JSON.stringify({ fullPx: EXACT_COLUMN_PX, side: "end", shutLists: [] }),
-	);
-	state.show("browser");
-	return studioAppHostParts({
-		studioState: state,
-		workspace: EXACT_WORKSPACE,
-		pageFactsGateway: new BoardPageFactsGateway(),
-		tabsSessionGateway: new KeptTabsGateway(),
-		essentialsGateway: new KeptEssentialsGateway(essentials),
-		activeChat,
+export interface ExactStudio {
+	readonly studioApp: StartedApp;
+	readonly hostTabs: MemoryHostTabsGateway;
+	readonly essentials: MemoryEssentialsGateway;
+	readonly switchChat: (id: string) => void;
+}
+
+export function exactStudio({
+	essentials = KEPT_ESSENTIALS,
+	workspaces = boardChats(),
+	releaseChatId = RELEASE_CHAT,
+}: ExactStudioAsk = {}): ExactStudio {
+	const hostTabs = new MemoryHostTabsGateway(keptTabsIn(releaseChatId));
+	const keptEssentials = new MemoryEssentialsGateway(essentials);
+	const studioApp = app()
+		.modules(
+			AppHostModule.with({
+				hostTabs,
+				essentials: keptEssentials,
+				tabsColumn: new MemoryTabsColumnGateway({ fullPx: EXACT_COLUMN_PX, side: "end", shutLists: [] }),
+				shownView: new MemoryShownViewGateway("browser"),
+				paneFlash: new NoPaneFlashGateway(),
+			}),
+			BrowserModule.with(fakeBrowser(new BoardPagesGateway()).parts),
+			LayoutModule,
+			WorkspacesModule.with(workspaces),
+		)
+		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
+	return {
+		studioApp,
+		hostTabs,
+		essentials: keptEssentials,
+		switchChat: (id) => void studioApp.send(SelectChatCommand, { id }),
+	};
+}
+
+function keptTabsIn(releaseChatId: string): KeptTabs {
+	const { [RELEASE_CHAT]: release = [], ...otherLists } = KEPT_TABS.lists ?? {};
+	return {
+		...KEPT_TABS,
+		lists: {
+			...otherLists,
+			[releaseChatId]: release,
+		},
+		lastShown: { [releaseChatId]: "tab-2" },
+	};
+}
+
+function boardChats(): WorkspacesParts {
+	return memoryWorkspacesParts({
+		workspaces: [
+			{
+				id: "exact",
+				name: EXACT_WORKSPACE,
+				icon: null,
+			},
+		],
+		currentId: "exact",
+		chats: {
+			chats: CHATS.map((chat, at) => ({
+				id: chat.id,
+				title: chat.title,
+				isPinned: false,
+				createdAt: at + 1,
+				lastAt: at + 1,
+			})),
+			activeId: CHATS[0]?.id ?? "chat-release",
+		},
+		marks: {},
 	});
 }
 
-class BoardPageFactsGateway extends PageFactsGateway {
-	private facts: readonly PageFacts[] = PAGES.map((page) => factsOf(page.id, page.title, page.url));
-	private readonly watchers = new Set<() => void>();
+class BoardPagesGateway extends FakeBrowserPagesGateway {
+	private held: readonly BrowserTab[] = PAGES.map((page) => this.boardTabOf(page.id, page.title, page.url));
 
-	isAvailable(): boolean {
-		return true;
+	override tabs(): readonly BrowserTab[] {
+		return this.held;
 	}
 
-	pages(): readonly PageFacts[] {
-		return this.facts;
+	override create(tabId: string): void {
+		if (this.held.some((page) => page.id === tabId)) {
+			return;
+		}
+
+		this.change([...this.held, this.boardTabOf(tabId, "New tab", "")]);
 	}
 
-	watch(changed: () => void): () => void {
-		this.watchers.add(changed);
-		return () => void this.watchers.delete(changed);
+	override close(tabId: string): void {
+		this.change(this.held.filter((page) => page.id !== tabId));
 	}
 
-	openPage(pageId: string): void {
-		this.change([...this.facts, factsOf(pageId, "New tab", "")]);
+	override show(): void {}
+
+	override tearOff(tabId = ""): void {
+		TEAR_OFF_ASKED.push(`tear off ${tabId}`);
 	}
 
-	closePage(pageId: string): void {
-		this.change(this.facts.filter((page) => page.pageId !== pageId));
+	override openInOwnWindow(tabId: string): void {
+		super.openInOwnWindow(tabId);
+		this.told();
 	}
 
-	showPage(): void {}
-
-	canOpenOwnWindow(): boolean {
-		return true;
-	}
-
-	openPageInOwnWindow(pageId: string): void {
+	override open(tabId: string, url: string): void {
 		this.change(
-			this.facts.map((page) =>
-				page.pageId === pageId
+			this.held.map((page) =>
+				page.id === tabId
 					? {
 							...page,
-							isInOwnWindow: true,
+							url,
+							title: new URL(url).host,
 						}
 					: page,
 			),
 		);
 	}
 
-	focusPageWindow(): void {}
-
-	tearOffPage(pageId: string): void {
-		TEAR_OFF_ASKED.push(`tear off ${pageId}`);
+	private change(next: readonly BrowserTab[]): void {
+		this.held = next;
+		this.told();
 	}
 
-	openAddress(pageId: string, address: string): void {
-		this.change(
-			this.facts.map((page) =>
-				page.pageId === pageId
-					? {
-							...page,
-							url: address,
-							title: new URL(address).host,
-						}
-					: page,
-			),
-		);
-	}
-
-	reloadPage(): void {}
-
-	stop(): void {}
-
-	private change(next: readonly PageFacts[]): void {
-		this.facts = next;
-		this.watchers.forEach((changed) => changed());
+	private boardTabOf(id: string, title: string, url: string): BrowserTab {
+		return {
+			...this.tab,
+			id,
+			title,
+			url,
+			favicon: null,
+			failure: null,
+		};
 	}
 }
 
-function factsOf(pageId: string, title: string, url: string): PageFacts {
+function browserTab(id: string, pageId: string): KeptTabs["tabs"][number] {
 	return {
+		id,
+		app: "browser",
 		pageId,
-		title,
-		url,
-		favicon: null,
-		isInkReading: false,
-		isAskWaiting: false,
-		isClosedToInk: false,
-		isInOwnWindow: false,
+		label: null,
+		essentialId: null,
 	};
 }

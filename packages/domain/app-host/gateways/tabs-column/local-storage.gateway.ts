@@ -6,23 +6,36 @@ const KEY_OF_WORKSPACE = "widgetarium-studio-tabs-column:{workspace}";
 
 export class LocalStorageTabsColumnGateway extends TabsColumnGateway {
 	private readonly key: string;
+	private readonly listeners = new Set<() => void>();
 
-	constructor(workspace: string) {
+	constructor(
+		workspace: string,
+		private readonly first: KeptColumn,
+	) {
 		super();
-		this.key = KEY_OF_WORKSPACE.replace("{workspace}", workspace);
+		this.key = KEY_OF_WORKSPACE.replace("{workspace}", () => workspace);
 	}
 
-	kept(): KeptColumn | null {
+	column(): KeptColumn {
 		const said = storageOrNull()?.getItem(this.key) ?? null;
-		return said === null ? null : keptColumnOf(said);
+		return (said === null ? null : keptColumnOf(said)) ?? this.first;
 	}
 
-	keep(column: KeptColumn): void {
+	saveColumn(column: KeptColumn): void {
 		try {
 			storageOrNull()?.setItem(this.key, JSON.stringify(column));
 		} catch (failure: unknown) {
 			console.warn(`[widgetarium] ${this.key} could not be remembered`, failure);
 		}
+
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
+	}
+
+	columnChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 }
 

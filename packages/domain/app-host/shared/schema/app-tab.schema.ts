@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GroupHueSchema } from "./tab-group.schema.js";
+import { GroupHueSchema, WorkspaceListSchema } from "./tab-group.schema.js";
 
 export const AppKindSchema = z.enum(["canvas", "browser"]);
 
@@ -115,6 +115,23 @@ export const TabsSidebarSchema = z.object({
 	essentials: z.array(EssentialTileSchema).readonly(),
 	sections: z.array(TabSectionSchema).readonly(),
 	listTargets: z.array(ListTargetSchema).readonly(),
+	workspaceList: WorkspaceListSchema,
 });
 
 export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;
+
+export const HeldTabSchema = z.object({
+	id: z.string(),
+	app: AppKindSchema,
+	label: z.string().nullable(),
+	pageId: z.string().nullable(),
+});
+
+export type HeldTab = z.infer<typeof HeldTabSchema>;
+
+export const HeldTabsSchema = z.object({
+	tabs: z.array(HeldTabSchema).readonly(),
+	shownTabId: z.string().nullable(),
+});
+
+export type HeldTabs = z.infer<typeof HeldTabsSchema>;

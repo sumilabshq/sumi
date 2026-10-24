@@ -27,8 +27,8 @@ import type { StartedStudio, StudioStart } from "../apps/studio/src/legacy/widge
 import { STUDIO_PACKS } from "../apps/studio/src/legacy/logic/studio-pack.js";
 import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
-import { keptBrowserParts } from "./studio-kept-browser.ts";
-import { EXACT_WORKSPACE, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { keptStudioApp } from "./studio-kept-browser.ts";
+import { EXACT_WORKSPACE, exactStudio } from "./studio-exact-fixture.ts";
 import { tauriLikeStudioStart } from "./app-plate-fixture.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { boom, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
@@ -212,14 +212,14 @@ function workspacesHost(): StudioHostPort {
 }
 
 function exactStudioStart(): StudioStart {
-	const state = createStudioState();
-	return { assistant: fakeAssistant(), state, appId: EXACT_WORKSPACE, appHost: exactAppHostParts(state) };
+	const { studioApp } = exactStudio();
+	return { assistant: fakeAssistant(), state: createStudioState(studioApp), appId: EXACT_WORKSPACE, studioApp };
 }
 
 function studioStartOf(mode: unknown): StudioStart {
 	if (mode === "studio-workspaces") return { studio: workspacesHost(), appId: FARM_FOLDER };
 	if (mode === "studio-mac") return { studio: { ...NO_STUDIO_HOST, insets: () => MAC_INSETS } };
-	if (mode === "studio-kept") return { assistant: fakeAssistant(), browser: keptBrowserParts() };
+	if (mode === "studio-kept") return { assistant: fakeAssistant(), studioApp: keptStudioApp() };
 	if (mode === "studio-exact") return exactStudioStart();
 	if (mode === "studio-tauri") return tauriLikeStudioStart(fakeAssistant());
 	return { assistant: fakeAssistant() };

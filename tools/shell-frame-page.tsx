@@ -16,12 +16,13 @@ import type { WidgetariumProject } from "../packages/shared/core/src/app/widgeta
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
-import { NoChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/none.gateway.ts";
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
-import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import type { PageLook } from "../packages/domain/browser/shared/schema/page-look.schema.ts";
 import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
+import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
+import { studioAppOf } from "./studio-app-fixture.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
@@ -134,14 +135,19 @@ class PaintedPagesGateway extends FakeBrowserPagesGateway {
 }
 
 const pages = new PaintedPagesGateway();
-const browser = browserPartsOf({
-	browserPagesGateway: pages,
-	browserGrantsGateway: new MemoryBrowserGrantsGateway(),
-	browserAuditGateway: new MemoryBrowserAuditGateway(),
-	clockGateway: new HurriedClockGateway(),
-	recentSitesGateway: new MemoryRecentSitesGateway(),
-	chatComposerGateway: new NoChatComposerGateway(),
+const studioApp = studioAppOf({
+	browser: browserPartsOf(
+		{
+			browserPages: pages,
+			browserGrants: new MemoryBrowserGrantsGateway(),
+			browserAudit: new MemoryBrowserAuditGateway(),
+			recentSites: new MemoryRecentSitesGateway(),
+		},
+		new HurriedClockGateway(),
+	),
+	workspaceId: "Default",
 });
+void restoreTabs(studioApp);
 
 const commits = { frame: 0 };
 
@@ -152,7 +158,7 @@ try {
 	const assistant = new URLSearchParams(location.search).has("quiet") ? NO_ASSISTANT : ASSISTANT;
 	const started = startStudio(PROJECT, {
 		assistant,
-		browser,
+		studioApp,
 		studio: HAS_TRAFFIC_LIGHTS ? TAURI_LIKE_HOST : NO_STUDIO_HOST,
 		appId: "Default",
 	});

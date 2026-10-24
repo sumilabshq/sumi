@@ -280,6 +280,8 @@ render(null, node);
 const { useTakesCatalogueAsks } = await import("../apps/studio/src/legacy/studio-on-screen.ts");
 const { StudioCatalogue } = await import("../apps/studio/src/legacy/catalogue/studio-catalogue.ts");
 const { createStudioState } = await import("../apps/studio/src/legacy/studio-state.ts");
+const { studioAppOf } = await import("./studio-app-fixture.ts");
+const catalogueStudioApp = studioAppOf({});
 const { Board } = await import("../packages/shared/core/src/surface/board.ts");
 const { CatalogueAsk } = await import("../packages/shared/core/src/catalogue-ask.ts");
 const placed = (className: string, isShown: boolean): HTMLElement => {
@@ -308,14 +310,19 @@ function StudioFrame({ frame }: { readonly frame: HeldFrame }): ReturnType<typeo
 			: null,
 	]);
 }
-const shownState = createStudioState();
-const hiddenState = createStudioState();
+const shownState = createStudioState(catalogueStudioApp);
+const hiddenState = createStudioState(catalogueStudioApp);
 const framesHeld = new Map<HTMLElement, HeldFrame>([
 	[shownStudio, { current: shownStudio, state: shownState }],
 	[hiddenStudio, { current: hiddenStudio, state: hiddenState }],
 ]);
 const drawStudio = (frame: HTMLElement): void =>
-	render(h(StudioFrame, { frame: framesHeld.get(frame) ?? { current: frame, state: createStudioState() } }), frame);
+	render(
+		h(StudioFrame, {
+			frame: framesHeld.get(frame) ?? { current: frame, state: createStudioState(catalogueStudioApp) },
+		}),
+		frame,
+	);
 const panelsNow = (): string[] => [shownState.now().panel, hiddenState.now().panel];
 drawStudio(shownStudio);
 drawStudio(hiddenStudio);

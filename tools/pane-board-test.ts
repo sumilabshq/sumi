@@ -7,7 +7,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
 import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
-import { paneLayoutOf, sideAt } from "../packages/client/shell/shared/lib/pane-layout.ts";
+import { paneLayoutOf, sideAt } from "../apps/studio/src/features/panes/lib/pane-layout.ts";
 import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
@@ -27,7 +27,7 @@ import {
 } from "../packages/state/layout/features/frame-sides/requests.ts";
 import { ResizeFrameEdgeCommand } from "../packages/state/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { HostTabs } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { emptyMoment, openTab } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
 import { sidebarOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
 
@@ -92,11 +92,11 @@ function checksTree(): void {
 		parts.paneTree.tree().root?.kind === "pane",
 		parts.paneTree.tree().root,
 	);
-	const tabs = new HostTabs(null, "chat-1");
-	tabs.open({ app: "browser", pageId: null }, { chatId: WORKSPACE_LIST, groupId: null, before: null });
-	tabs.open({ app: "browser", pageId: null }, { chatId: WORKSPACE_LIST, groupId: null, before: null });
+	const workspaceEnd = { chatId: WORKSPACE_LIST, groupId: null, before: null };
+	const oneTab = openTab(emptyMoment(), { app: "browser", pageId: null }, workspaceEnd).moment;
+	const twoTabs = openTab(oneTab, { app: "browser", pageId: null }, workspaceEnd).moment;
 	const sidebar = sidebarOf({
-		moment: tabs.now(),
+		moment: twoTabs,
 		essentials: [],
 		pages: [],
 		shownApp: null,

@@ -5,9 +5,6 @@
 		"moduleResolution": "bundler",
 		"customConditions": ["source"],
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
-		"jsx": "react",
-		"jsxFactory": "h",
-		"jsxFragmentFactory": "Fragment",
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
@@ -23,16 +20,17 @@
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/core" }],
+	"references": [
+		{
+			"path": "../../shared/core"
+		}
+	],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",
 		"features/**/*.ts",
-		"features/**/*.tsx",
 		"shared/**/*.ts",
-		"shared/**/*.tsx",
 		"generated/**/*.ts",
-		"../../shared/core/src/*.d.ts",
-		"../../shared/kit/src/jsx-namespace.d.ts"
+		"../../shared/core/src/*.d.ts"
 	]
 }

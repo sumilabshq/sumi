@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const WorkspaceListSchema = z.literal("workspace");
+
 export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
 
 export type GroupHue = z.infer<typeof GroupHueSchema>;

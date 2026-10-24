@@ -2,7 +2,7 @@ import { flatTabIdsOf } from "../../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, TabGroup } from "../../../shared/lib/host-tabs/host-tabs.js";
 import { WORKSPACE_LIST, findGroup } from "../../../shared/lib/host-tabs/tab-lists.js";
 import { hostOf, tabArtOf } from "../../../shared/lib/tab-art/tab-art-of.js";
-import { shownTabIdOf } from "../../../shared/lib/tab-showing/show-tab.js";
+import { shownTabIdOf } from "../../../shared/lib/tab-showing/showing.js";
 import { pagesOfTabs } from "../../../shared/lib/tab-showing/tab-pages.js";
 import type {
 	AppKind,
@@ -60,6 +60,7 @@ export function sidebarOf(ask: SidebarAsk): TabsSidebar {
 		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
 		sections: sectionsOf(rows, listTargets, ask.shutLists),
 		listTargets,
+		workspaceList: WORKSPACE_LIST,
 	};
 }
 

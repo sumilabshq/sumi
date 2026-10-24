@@ -1,6 +1,6 @@
 import type { KeptColumn, TabsColumn } from "../../schema/tabs-column.schema.js";
 
-export const FULL_USUAL_PX = 240;
+const FULL_USUAL_PX = 240;
 const FULL_LEAST_PX = 200;
 const FULL_MOST_PX = 420;
 
@@ -22,4 +22,20 @@ export function columnDraggedTo(kept: KeptColumn, askedPx: number): KeptColumn {
 		...kept,
 		fullPx: Math.round(Math.min(FULL_MOST_PX, Math.max(FULL_LEAST_PX, askedPx))),
 	};
+}
+
+export function columnReset(kept: KeptColumn): KeptColumn {
+	return columnDraggedTo(kept, FULL_USUAL_PX);
+}
+
+export function columnWithListFolded(kept: KeptColumn, list: string): KeptColumn {
+	const isShut = kept.shutLists.includes(list);
+	return {
+		...kept,
+		shutLists: isShut ? kept.shutLists.filter((one) => one !== list) : [...kept.shutLists, list],
+	};
+}
+
+export function columnSaid(kept: KeptColumn): string {
+	return `${kept.fullPx}px ${kept.side}, folded lists [${kept.shutLists.join(", ")}]`;
 }

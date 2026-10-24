@@ -1,4 +1,5 @@
 import type { TabDrop } from "../../schema/tab-drop.schema.js";
+import { WorkspaceListSchema } from "../../schema/tab-group.schema.js";
 import type { GroupHue, ListEntry } from "../../schema/tab-group.schema.js";
 
 export interface TabGroup {
@@ -29,7 +30,13 @@ export interface TabLocation {
 	readonly at: number;
 }
 
-export const WORKSPACE_LIST = "workspace";
+export const WORKSPACE_LIST = WorkspaceListSchema.value;
+
+export const WORKSPACE_END: TabPlace = {
+	chatId: WORKSPACE_LIST,
+	groupId: null,
+	before: null,
+};
 
 const NEW_GROUP = "New group";
 

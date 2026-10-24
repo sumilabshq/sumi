@@ -1,36 +1,30 @@
-import { EssentialsGateway } from "../packages/domain/app-host/gateways/essentials/essentials.gateway.ts";
-import { TabsSessionGateway } from "../packages/domain/app-host/gateways/tabs-session/tabs-session.gateway.ts";
+import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
+import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
+import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
+import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
+import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
+import { COLUMN_OPENED_ON } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
-import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import { NoChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/none.gateway.ts";
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
-import type { ActiveChatPort } from "../packages/shared/core/src/engine/active-chat-port.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
 import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
-import { startedAppHostParts } from "../apps/studio/src/tabs/studio-app-host.ts";
-import { startLayoutApp } from "../apps/studio/src/tabs/layout-app.ts";
+import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
+import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
+import { studioAppOf } from "./studio-app-fixture.ts";
 
 export const TAURI_WORKSPACE = "Untitled workspace";
 const CHAT_ID = "chat-new";
 const BROWSER_FIRST_PAGE = "tab-1";
 const NO_PAGE = 'the browser holds no tab "{tabId}"';
-
-const NEW_CHAT: ActiveChatPort = {
-	now: () => ({
-		id: CHAT_ID,
-		title: "New chat",
-	}),
-	watch: () => () => undefined,
-};
 
 const KEPT_ESSENTIALS: KeptEssentials = {
 	essentials: [{ id: "essential-1", app: "canvas", address: null, title: "Canvas", favicon: null }],
@@ -55,20 +49,91 @@ const KEPT_TABS: KeptTabs = {
 	closed: [],
 };
 
-class KeptTabsGateway extends TabsSessionGateway {
-	kept(): KeptTabs {
-		return KEPT_TABS;
-	}
-
-	keep(): void {}
+export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
+	const studioApp = studioAppOf({
+		browser: restartedBrowserParts(),
+		appHost: {
+			hostTabs: new MemoryHostTabsGateway(KEPT_TABS),
+			essentials: new MemoryEssentialsGateway(KEPT_ESSENTIALS),
+			tabsColumn: new MemoryTabsColumnGateway(COLUMN_OPENED_ON),
+			shownView: new MemoryShownViewGateway("canvas"),
+			paneFlash: new NoPaneFlashGateway(),
+		},
+		workspaces: newChatWorkspaces(),
+		workspaceId: TAURI_WORKSPACE,
+	});
+	void restoreTabs(studioApp);
+	Object.assign(window, {
+		__PLACE_TAB_IN_PANE__: (tabId: string) =>
+			studioApp.send(PlacePaneCommand, {
+				view: { kind: "app", tabId },
+				targetId: "pane-app",
+				side: "right",
+			}),
+	});
+	return {
+		assistant,
+		state: createStudioState(studioApp),
+		appId: TAURI_WORKSPACE,
+		studioApp,
+	};
 }
 
-class KeptEssentialsGateway extends EssentialsGateway {
-	kept(): KeptEssentials {
-		return KEPT_ESSENTIALS;
-	}
+function newChatWorkspaces(): ReturnType<typeof memoryWorkspacesParts> {
+	return memoryWorkspacesParts({
+		workspaces: [
+			{
+				id: TAURI_WORKSPACE,
+				name: TAURI_WORKSPACE,
+				icon: null,
+			},
+		],
+		currentId: TAURI_WORKSPACE,
+		chats: {
+			chats: [
+				{
+					id: CHAT_ID,
+					title: null,
+					isPinned: false,
+					createdAt: 1,
+					lastAt: 1,
+				},
+			],
+			activeId: CHAT_ID,
+		},
+		marks: {},
+	});
+}
 
-	keep(): void {}
+function pageOf(id: string): BrowserTab {
+	return {
+		id,
+		url: "",
+		title: "New tab",
+		favicon: null,
+		isLoading: false,
+		canGoBack: false,
+		canGoForward: false,
+		failure: null,
+	};
+}
+
+function restartedBrowserParts(): BrowserParts {
+	const pages = new RestartedPagesGateway();
+	Object.assign(window, {
+		__BROWSER_SHOWN__: () => pages.shownId(),
+		__BROWSER_ADDRESSES__: () => Object.fromEntries(pages.tabs().map((page) => [page.id, page.url])),
+	});
+	return browserPartsOf(
+		{
+			browserPages: pages,
+			browserGrants: new MemoryBrowserGrantsGateway(),
+			browserAudit: new MemoryBrowserAuditGateway(),
+
+			recentSites: new MemoryRecentSitesGateway(),
+		},
+		new HurriedClockGateway(),
+	);
 }
 
 class RestartedPagesGateway extends FakeBrowserPagesGateway {
@@ -121,68 +186,4 @@ class RestartedPagesGateway extends FakeBrowserPagesGateway {
 
 		return page;
 	}
-}
-
-function pageOf(id: string): BrowserTab {
-	return {
-		id,
-		url: "",
-		title: "New tab",
-		favicon: null,
-		isLoading: false,
-		canGoBack: false,
-		canGoForward: false,
-		failure: null,
-	};
-}
-
-function restartedBrowserParts(): BrowserParts {
-	const pages = new RestartedPagesGateway();
-	Object.assign(window, {
-		__BROWSER_SHOWN__: () => pages.shownId(),
-		__BROWSER_ADDRESSES__: () => Object.fromEntries(pages.tabs().map((page) => [page.id, page.url])),
-	});
-	return browserPartsOf({
-		browserPagesGateway: pages,
-		browserGrantsGateway: new MemoryBrowserGrantsGateway(),
-		browserAuditGateway: new MemoryBrowserAuditGateway(),
-		clockGateway: new HurriedClockGateway(),
-		recentSitesGateway: new MemoryRecentSitesGateway(),
-		chatComposerGateway: new NoChatComposerGateway(),
-	});
-}
-
-export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
-	const state = createStudioState();
-	const browser = restartedBrowserParts();
-	const layoutApp = startLayoutApp({ platform: "browser", workspaceId: TAURI_WORKSPACE });
-	Object.assign(window, {
-		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			layoutApp.send(PlacePaneCommand, {
-				view: { kind: "app", tabId },
-				targetId: "pane-app",
-				side: "right",
-			}),
-	});
-	state.show("canvas");
-	return {
-		assistant,
-		state,
-		appId: TAURI_WORKSPACE,
-		browser,
-		activeChat: NEW_CHAT,
-		layoutApp,
-		appHost: startedAppHostParts({
-			state,
-			browser,
-			layoutApp,
-			workspace: TAURI_WORKSPACE,
-			studio: NO_STUDIO_HOST,
-			kept: {
-				tabsSessionGateway: new KeptTabsGateway(),
-				essentialsGateway: new KeptEssentialsGateway(),
-				activeChat: NEW_CHAT,
-			},
-		}),
-	};
 }

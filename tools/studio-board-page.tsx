@@ -7,10 +7,8 @@ import { corePack } from "../packages/shared/packs/core/src/index.js";
 import { BESIDE_TRAFFIC_LIGHTS } from "../apps/host-tauri/src/tauri-studio-host.js";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
-import { NO_ESSENTIALS, SwitchedChat, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { NO_ESSENTIALS, exactStudio } from "./studio-exact-fixture.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
-import { app } from "../packages/shared/core/src/requests/index.js";
-import { WorkspacesModule } from "../packages/domain/workspaces/module.js";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -23,17 +21,17 @@ const PROJECT: WidgetariumProject = {
 	packs: [corePack],
 };
 
-const state = createStudioState();
 const workspaces = boardWorkspacesParts("board");
+const exact = new URLSearchParams(location.search).has("bare")
+	? exactStudio({ essentials: NO_ESSENTIALS, workspaces, releaseChatId: "release" })
+	: exactStudio({ workspaces, releaseChatId: "release" });
+const state = createStudioState(exact.studioApp);
 const started = startStudio(PROJECT, {
 	assistant: { ...NO_ASSISTANT, can: true },
 	state,
 	appId: "Default",
 	studio: { ...NO_STUDIO_HOST, insets: () => BESIDE_TRAFFIC_LIGHTS },
-	appHost: new URLSearchParams(location.search).has("bare")
-		? exactAppHostParts(state, new SwitchedChat(), NO_ESSENTIALS)
-		: exactAppHostParts(state),
-	workspacesApp: app().modules(WorkspacesModule.with(workspaces)).start(),
+	studioApp: exact.studioApp,
 });
 Reflect.set(window, "__studio", { workspaces, state });
 

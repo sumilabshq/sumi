@@ -5,17 +5,32 @@ import { EssentialsGateway } from "./essentials.gateway.js";
 const ESSENTIALS_KEY = "widgetarium-studio-essentials";
 
 export class LocalStorageEssentialsGateway extends EssentialsGateway {
-	kept(): KeptEssentials | null {
+	private readonly listeners = new Set<() => void>();
+
+	essentialsLoaded(): Promise<void> {
+		return Promise.resolve();
+	}
+
+	essentials(): KeptEssentials | null {
 		const said = storageOrNull()?.getItem(ESSENTIALS_KEY) ?? null;
 		return said === null ? null : keptEssentialsOf(said);
 	}
 
-	keep(essentials: KeptEssentials): void {
+	saveEssentials(essentials: KeptEssentials): void {
 		try {
 			storageOrNull()?.setItem(ESSENTIALS_KEY, JSON.stringify(essentials));
 		} catch (failure: unknown) {
 			console.warn(`[widgetarium] ${ESSENTIALS_KEY} could not be remembered`, failure);
 		}
+
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
+	}
+
+	essentialsChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 }
 

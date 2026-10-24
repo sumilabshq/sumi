@@ -2,7 +2,8 @@ import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { TabsSidebarColumn } from "../apps/studio/src/tabs/tabs-sidebar-column.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
-import { SwitchedChat, TEAR_OFF_ASKED, exactAppHostParts } from "./studio-exact-fixture.ts";
+import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
+import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -12,22 +13,23 @@ interface Counted {
 }
 
 const counted: Counted = { commits: 0 };
-const chat = new SwitchedChat();
-const state = createStudioState();
-const hostParts = exactAppHostParts(state, chat);
+const exact = exactStudio();
+const state = createStudioState(exact.studioApp);
 
 Reflect.set(window, "__SIDEBAR__", {
 	counted,
 	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
-	switchChat: (id: string) => chat.switchTo(id),
-	moment: () => hostParts.hostTabs.now(),
-	essentials: () => hostParts.essentials.now(),
+	switchChat: exact.switchChat,
+	moment: () => exact.hostTabs.tabs(),
+	essentials: () => exact.essentials.essentials(),
 	shownView: () => state.now().view,
-	keepEssentials: (count: number) =>
-		hostParts.essentials
-			.now()
-			.essentials.slice(count)
-			.forEach((essential) => hostParts.essentials.remove(essential.id)),
+	keepEssentials: (count: number) => {
+		const kept = exact.essentials.essentials();
+
+		if (kept !== null) {
+			exact.essentials.saveEssentials({ ...kept, essentials: kept.essentials.slice(0, count) });
+		}
+	},
 });
 
 const FRAME =
@@ -46,24 +48,26 @@ try {
 	studioLayer.className = "wg-root wg-portal wg-kit-portal-layer is-studio";
 	document.body.appendChild(studioLayer);
 	createRoot(root).render(
-		<Profiler
-			id="tabs"
-			onRender={() => {
-				counted.commits += 1;
-			}}
-		>
-			<main
-				style={{
-					flex: 1,
-					minWidth: 0,
-					background: "var(--sumi-plate)",
-					borderRadius: 14,
-					boxShadow: "var(--sumi-shadow-plate)",
+		<AppProvider app={exact.studioApp}>
+			<Profiler
+				id="tabs"
+				onRender={() => {
+					counted.commits += 1;
 				}}
-				data-exact-plate=""
-			/>
-			<TabsSidebarColumn hostParts={hostParts} />
-		</Profiler>,
+			>
+				<main
+					style={{
+						flex: 1,
+						minWidth: 0,
+						background: "var(--sumi-plate)",
+						borderRadius: 14,
+						boxShadow: "var(--sumi-shadow-plate)",
+					}}
+					data-exact-plate=""
+				/>
+				<TabsSidebarColumn />
+			</Profiler>
+		</AppProvider>,
 	);
 } catch (failure: unknown) {
 	boom(stackOf(failure));

@@ -1,12 +1,31 @@
-import { studioAppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/studio.gateway.ts";
-import { HostTabs } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
+import {
+	KeptTabsDocSchema,
+	TauriHostTabsGateway,
+} from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
+import type { KeptTabsDoc } from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
+import {
+	CreateGroupCommand,
+	OpenTabCommand,
+	RestoreTabsCommand,
+	ShowTabCommand,
+} from "../packages/domain/app-host/generated/contract.ts";
 import { createTurnSession } from "../apps/host-tauri/src/assistant/turn-session.ts";
 import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
-import { DEFAULT_PROFILE, profileFilesOf, readProfile } from "../apps/host-tauri/src/profile/profile-docs.ts";
-import { tauriProfileGateways } from "../apps/host-tauri/src/profile/tauri-profile-gateways.ts";
-import { TauriTabsSessionGateway, readSession } from "../apps/host-tauri/src/session/tauri-session.ts";
-import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import { profileFilesOf } from "../packages/domain/browser/gateways/browser-parts/tauri.gateway.ts";
+import {
+	KeptGrantsSchema,
+	TauriBrowserGrantsGateway,
+	keptGrantsKind,
+} from "../packages/domain/browser/gateways/browser-grants/tauri.gateway.ts";
+import { DEFAULT_BROWSER_PROFILE } from "../packages/domain/browser/shared/lib/browser-profile.ts";
+import type { GrantChange, SiteGrant } from "../packages/domain/browser/shared/schema/site-access.schema.ts";
+import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
+import {
+	GLOBAL_ROOT,
+	StoreClient,
+	workspaceRootOf,
+} from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/host-tauri/src/workspace/tauri-workspace-apps.ts";
 import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
 import { reopensOnWorkspaceSwitch } from "../apps/host-tauri/src/workspace/workspace-switch.ts";
@@ -14,9 +33,15 @@ import { app } from "../packages/shared/core/src/requests/index.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
-import type { GrantChange, SiteGrant } from "../packages/domain/browser/generated/index.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
+import { studioFakesOf } from "./app-host-fixture.ts";
+
+const SESSION_TABS: DocKind<KeptTabsDoc> = {
+	file: "session.json",
+	v: 1,
+	schema: KeptTabsDocSchema,
+};
 
 const GRANT: SiteGrant = {
 	siteKey: "https://example.com",
@@ -86,34 +111,50 @@ async function tabsSessionChecks(): Promise<void> {
 	const fake = new FakeStore();
 	fake.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1 });
 	const store = new StoreClient(fake.invoke);
-	const session = await readSession(store, DEFAULT.id);
-	const kept = { tabsSessionGateway: new TauriTabsSessionGateway(session) };
-	const parts = studioAppHostParts({ studioState: createStudioState(), workspace: DEFAULT.id, ...kept });
-	const chatId = "chat-1";
-	const first = parts.hostTabs.open({ app: "browser", pageId: "page-8" }, { chatId, groupId: null, before: null });
-	const opened = parts.hostTabs.openAfter(first.id, { app: "browser", pageId: "page-9" });
-	parts.hostTabs.newGroup(chatId, first.id);
-	parts.hostTabs.show(opened.id);
-	await session.flush();
+	const sessionTabs = (): TauriHostTabsGateway =>
+		new TauriHostTabsGateway(
+			HeldDoc.read({
+				store,
+				root: workspaceRootOf(DEFAULT.id),
+				kind: SESSION_TABS,
+				empty: KeptTabsDocSchema.parse({}),
+			}),
+		);
+	const { studioApp } = studioFakesOf({ hostTabs: sessionTabs(), view: "canvas" });
+	await studioApp.send(RestoreTabsCommand);
+	await studioApp.send(OpenTabCommand, { app: "browser" });
+	await studioApp.send(OpenTabCommand, { app: "browser" });
+	await studioApp.send(CreateGroupCommand, { withTabId: "tab-2" });
+	await studioApp.send(ShowTabCommand, { id: "tab-3" });
+	const keptTabsOnDisk = (): unknown => fake.files.get(`workspace:${DEFAULT.id}:session.json`)?.["tabs"];
+	await waitFor(() => JSON.stringify(keptTabsOnDisk() ?? null).includes('"shownId":"tab-3"'));
 
-	const reopened = await readSession(store, DEFAULT.id);
-	const restored = new HostTabs(new TauriTabsSessionGateway(reopened).kept(), chatId);
+	const reopened = sessionTabs();
+	await reopened.tabsLoaded();
+	const kept = reopened.tabs();
 	check(
-		"session.json brings the tabs, their groups and the shown one back, dead page ids dropped",
+		"session.json brings the tabs, their groups and the shown one back",
 		[
-			restored.now().tabs.map((tab) => [tab.app, tab.pageId, tab.essentialId === null]),
-			restored.now().groups.map((group) => [group.name, group.tabIds]),
-			restored.now().shownId === opened.id,
+			kept?.tabs.map((tab) => [tab.app, tab.pageId !== null, tab.essentialId === null]),
+			kept?.groups.map((group) => [group.name, group.tabIds]),
+			kept?.shownId,
 		],
 		[
 			[
-				["canvas", null, false],
-				["browser", null, true],
-				["browser", null, true],
+				["canvas", false, false],
+				["browser", true, true],
+				["browser", true, true],
 			],
-			[["New group", [first.id]]],
-			true,
+			[["New group", ["tab-2"]]],
+			"tab-3",
 		],
+	);
+	const restarted = studioFakesOf({ hostTabs: reopened, view: "browser", isBrowserAvailable: false });
+	await restarted.studioApp.send(RestoreTabsCommand);
+	check(
+		"a restart drops the dead page ids the last start gave",
+		reopened.tabs()?.tabs.map((tab) => tab.pageId),
+		[null, null, null],
 	);
 }
 
@@ -158,11 +199,15 @@ async function chatChecks(): Promise<void> {
 async function profileChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const store = new StoreClient(fake.invoke);
-	const profile = await readProfile(store, DEFAULT_PROFILE);
-	const gateways = tauriProfileGateways(profile);
-	gateways.browserGrantsGateway.writeGrantChange([GRANT], CHANGE);
-	await profile.grants.flush();
-	const files = profileFilesOf(DEFAULT_PROFILE);
+	const files = profileFilesOf(DEFAULT_BROWSER_PROFILE);
+	const grants = await HeldDoc.read({
+		store,
+		root: GLOBAL_ROOT,
+		kind: keptGrantsKind(files),
+		empty: KeptGrantsSchema.parse({}),
+	});
+	new TauriBrowserGrantsGateway(grants, store, files).saveGrants([GRANT], CHANGE);
+	await grants.flush();
 	check(
 		"a grant lands in profiles/<id>/grants.json and its change in grant-changes.jsonl",
 		[fake.files.get(`global:${files.grants}`)?.["grants"], fake.lines.get(`global:${files.grantChanges}`)?.length],

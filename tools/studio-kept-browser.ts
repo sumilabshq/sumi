@@ -1,35 +1,37 @@
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
-import { NoChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/none.gateway.ts";
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
-import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { isLaidOnScreen } from "../packages/domain/browser/shared/lib/is-laid-on-screen.ts";
-import { app } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/core/requests";
+import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
+import { studioAppOf } from "./studio-app-fixture.ts";
 
 export const KEPT_PAGE = "data-kept-page";
 
-export function keptBrowserParts(): BrowserParts {
-	const parts = browserPartsOf({
-		browserPagesGateway: new LaidPagesGateway(),
-		browserGrantsGateway: new MemoryBrowserGrantsGateway(),
-		browserAuditGateway: new MemoryBrowserAuditGateway(),
-		clockGateway: new HurriedClockGateway(),
-		recentSitesGateway: new MemoryRecentSitesGateway(),
-		chatComposerGateway: new NoChatComposerGateway(),
-	});
-	const browserApp = app({ modules: [BrowserClientModule.with(parts)] });
+export function keptStudioApp(): StartedApp {
+	const parts = browserPartsOf(
+		{
+			browserPages: new LaidPagesGateway(),
+			browserGrants: new MemoryBrowserGrantsGateway(),
+			browserAudit: new MemoryBrowserAuditGateway(),
+
+			recentSites: new MemoryRecentSitesGateway(),
+		},
+		new HurriedClockGateway(),
+	);
+	const browserApp = studioAppOf({ browser: parts, workspaceId: "kept" });
+	void restoreTabs(browserApp);
 	Object.assign(window, {
-		__PAGE_ON_SCREEN__: () => parts.browserPagesGateway.isOnScreen("tab-1"),
+		__PAGE_ON_SCREEN__: () => parts.browserPages.isOnScreen("tab-1"),
 		__INK_READ__: async () => {
 			const answer = await browserApp.send(ReadPageContentCommand);
 			return answer.ok ? "ok" : answer.reason;
 		},
 	});
-	return parts;
+	return browserApp;
 }
 
 class LaidPagesGateway extends FakeBrowserPagesGateway {
