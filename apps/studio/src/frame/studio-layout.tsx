@@ -3,8 +3,8 @@ import type { ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { StudioFrame } from "@widgetarium/shell";
-import type { PaneBoardProps } from "@widgetarium/shell";
+import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";
+import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.js";
 
 export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;

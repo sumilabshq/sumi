@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Browser } from "../packages/domain/browser/generated/index.ts";
-import { Plate } from "../packages/client/shell/index.ts";
+import { Browser } from "../apps/studio/src/features/browser/ui/browser/browser.tsx";
+import { Plate } from "../apps/studio/src/features/plate/ui/plate/plate.js";
 import { BrowserPlateHeader } from "../apps/studio/src/browser/browser-plate-header.tsx";
 
 export function inBrowserPlate(): ReactElement {

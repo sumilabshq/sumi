@@ -2,10 +2,14 @@ import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { GoBackCommand, GoForwardCommand, PageHeadQuery } from "@widgetarium/browser";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { HeaderButton, PlateCrumb, PlateHeaderPart, PlateTint } from "@widgetarium/shell";
+import { useHeldTab } from "../features/browser/lib/held-tab.js";
+import { HeaderButton } from "../features/plate/ui/plate-header/header-button.js";
+import { PlateCrumb } from "../features/plate/ui/plate-header/plate-crumb.js";
+import { PlateHeaderPart } from "../features/plate/ui/plate-header/plate-header-part.js";
+import { PlateTint } from "../features/plate/ui/plate-header/plate-tint.js";
 
 export function BrowserPlateHeader(): ReactElement | null {
-	const head = useQuery(PageHeadQuery).data;
+	const head = useQuery(PageHeadQuery, { heldTabId: useHeldTab() }).data;
 	const goBack = useCommand(GoBackCommand);
 	const goForward = useCommand(GoForwardCommand);
 

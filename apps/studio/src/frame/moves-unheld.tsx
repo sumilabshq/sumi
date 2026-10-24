@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { HeaderButton } from "@widgetarium/shell";
+import { HeaderButton } from "../features/plate/ui/plate-header/header-button.js";
 
 export function MovesUnheld(): ReactElement {
 	return (
