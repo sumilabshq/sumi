@@ -2,6 +2,8 @@ import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest, HandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
+import { PlatformModule } from "./platform-module";
+import type { AnyPlatformModule, ModuleFacts } from "./platform-module";
 import type { AnyCommand, AnyQuery, AnyRequest } from "./request";
 
 export type Side = "client" | "server";
@@ -55,9 +57,9 @@ export class HandledModule<Q> {
 	}
 }
 
-export type StartableModule = HandledModule<void> | ReadyModule;
+export type StartableModule = HandledModule<void> | ReadyModule | AnyPlatformModule;
 
-export type StartableServerModule = HandledModule<ServerParts> | ReadyModule;
+export type StartableServerModule = HandledModule<ServerParts> | ReadyModule | AnyPlatformModule;
 
 export class ServerModule<
 	P extends Provided = NothingProvided,
@@ -127,6 +129,8 @@ type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extend
 
 export type NeedsOf<H extends readonly AnyHandledRequest[]> = Provided & IntersectionOf<InjectedBy<H[number]>>;
 
+const NO_FACTS =
+	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
 const NOT_A_QUERY = 'module "{module}" lists {request} under .queries(), but it is a command';
 const NOT_A_COMMAND = 'module "{module}" lists {request} under .commands(), but it is a query';
 
@@ -155,12 +159,14 @@ export class RequestsModule<H extends readonly AnyHandledRequest[]> implements M
 		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
 	}
 
-	provide<Q = void>(provide: (parts: Q) => NeedsOf<H>): HandledModule<Q> {
+	provide(provide: (facts: ModuleFacts) => NeedsOf<H>): PlatformModule<NeedsOf<H>> {
 		const handlers = this.listed.map((listed) => ({
 			...listed,
+			request: listed.request.inModule(this.name),
+			sends: listed.sends.map((sent) => sent.inModule(this.name)),
 			module: this,
 		}));
-		return new HandledModule(this, handlers, provide);
+		return new PlatformModule(this, handlers, provide);
 	}
 
 	private refuseWrongKind<L extends readonly AnyHandledRequest[]>(listed: L, kind: AnyRequest["kind"]): L {
@@ -189,8 +195,24 @@ export function clientModule(name: string): ClientModule {
 	return new ClientModule(name, () => NOTHING_PROVIDED);
 }
 
-export function readyModuleOf<Q>(module: HandledModule<Q> | ReadyModule, parts: Q): ReadyModule {
+export function readyModuleOf<Q>(
+	module: HandledModule<Q> | ReadyModule | AnyPlatformModule,
+	parts: Q,
+	facts: ModuleFacts | null,
+): ReadyModule {
+	if (module instanceof PlatformModule) {
+		return module.startedOn(factsFor(module.definition, facts));
+	}
+
 	return module instanceof HandledModule ? module.with(parts) : module;
+}
+
+function factsFor(definition: ModuleDefinition, facts: ModuleFacts | null): ModuleFacts {
+	if (facts === null) {
+		throw new Error(NO_FACTS.replace("{module}", definition.name));
+	}
+
+	return facts;
 }
 
 function coverAfter(cover: Cover, step: Step): Cover {

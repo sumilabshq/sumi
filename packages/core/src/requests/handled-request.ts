@@ -3,6 +3,7 @@ import { withDefaultCallFacts, withStep } from "./handler";
 import type { Handle, Handler, Inject, Watch } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { AnyRequest, InputOf } from "./request";
+import type { Sender } from "./send";
 
 export type HandledRequest<R extends AnyRequest, D extends Inject = Inject, C extends Added = NothingAdded> = Omit<
 	Handler<R, D, "client", C>,
@@ -16,12 +17,20 @@ interface HandlingPlan<R extends AnyRequest, D extends Inject> {
 	readonly inject: D;
 	readonly steps: readonly Step[];
 	readonly watch: Watch<R, D> | null;
+	readonly sends: readonly AnyRequest[];
 }
 
 const NOTHING_INJECTED: NothingAdded = Object.freeze({});
 
 export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C extends Added> {
 	constructor(private readonly plan: HandlingPlan<R, D>) {}
+
+	sends<const S extends readonly AnyRequest[]>(...requests: S): RequestHandlerBuilder<R, D, C & Sender<S[number]>> {
+		return new RequestHandlerBuilder({
+			...this.plan,
+			sends: [...this.plan.sends, ...requests],
+		});
+	}
 
 	guard<A extends Added>(step: Guard<InputOf<R>, A, Inject>): RequestHandlerBuilder<R, D, C & A> {
 		return new RequestHandlerBuilder(withStep(this.plan, step));
@@ -47,7 +56,7 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 	}
 
 	handle(handle: Handle<R, D, C>): HandledRequest<R, D, C> {
-		const { request, inject, steps, watch } = this.plan;
+		const { request, inject, steps, watch, sends } = this.plan;
 		return {
 			request,
 			inject,
@@ -55,6 +64,7 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 			state: "client",
 			handle: withDefaultCallFacts(handle),
 			watch,
+			sends,
 		};
 	}
 }
@@ -65,5 +75,6 @@ export function handlingOf<R extends AnyRequest>(request: R): RequestHandlerBuil
 		inject: NOTHING_INJECTED,
 		steps: [],
 		watch: null,
+		sends: [],
 	});
 }

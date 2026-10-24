@@ -5,6 +5,7 @@ import type { Handle, Inject } from "./handler";
 import { handlingOf } from "./handled-request";
 import type { HandledRequest, RequestHandlerBuilder } from "./handled-request";
 import type { Added, Middleware, NothingAdded } from "./middleware";
+import type { Sender } from "./send";
 
 type RequestKind = "query" | "command";
 type KeyStage = "unkeyed" | "keyed";
@@ -27,7 +28,7 @@ export interface CachePolicy {
 interface Definition<K extends RequestKind, I extends z.ZodType, O extends z.ZodType> {
 	readonly kind: K;
 	readonly name: string;
-	readonly module: string;
+	readonly module: string | null;
 	readonly input: I;
 	readonly output: O;
 	readonly idempotencyKey: IdempotencyKey<unknown> | null;
@@ -36,13 +37,14 @@ interface Definition<K extends RequestKind, I extends z.ZodType, O extends z.Zod
 	readonly invalidates: readonly AnyQuery[] | null;
 }
 
-const REQUEST_NAME = /^([a-z][a-z0-9-]*)\/[a-z][a-z0-9-]*$/;
-const BAD_NAME = 'a request is named "<module>/<name>" in kebab case, got "{name}"';
+const REQUEST_NAME = /^(?:([a-z][a-z0-9-]*)\/)?[a-z][a-z0-9-]*$/;
+const BAD_NAME =
+	'a request is named in kebab case, "<name>" in a module(...) or "<module>/<name>" in a contract, got "{name}"';
 
 export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.ZodType, Key extends KeyStage> {
 	readonly kind: K;
 	readonly name: string;
-	readonly module: string;
+	readonly module: string | null;
 	readonly inputSchema: I;
 	readonly outputSchema: O;
 	readonly keyPolicy: IdempotencyKey<unknown> | null;
@@ -91,6 +93,22 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 	invalidates(this: Contract<"command", I, O, Key>, queries: readonly ListedQuery[]): Contract<"command", I, O, Key> {
 		const invalidates = queries.map((listed) => (listed instanceof Contract ? listed : listed.request));
 		return new Contract({ ...this.definition, invalidates }, this.keyStage);
+	}
+
+	inModule(module: string): Contract<K, I, O, Key> {
+		if (this.module !== null) {
+			return this;
+		}
+
+		const invalidates = this.invalidated?.map((listed) => listed.inModule(module)) ?? null;
+		return new Contract({ ...this.definition, name: `${module}/${this.name}`, module, invalidates }, this.keyStage);
+	}
+
+	sends<R extends AnyRequest, const S extends readonly AnyRequest[]>(
+		this: R,
+		...requests: S
+	): RequestHandlerBuilder<R, NothingAdded, Sender<S[number]>> {
+		return handlingOf(this).sends(...requests);
 	}
 
 	guard<R extends AnyRequest, A extends Added>(
@@ -160,8 +178,12 @@ function definitionOf<K extends RequestKind>(kind: K, name: string): Definition<
 	};
 }
 
-function moduleOf(name: string): string {
-	const module = REQUEST_NAME.exec(name)?.[1];
-	if (module === undefined) throw new Error(BAD_NAME.replace("{name}", name));
-	return module;
+function moduleOf(name: string): string | null {
+	const matched = REQUEST_NAME.exec(name);
+
+	if (matched === null) {
+		throw new Error(BAD_NAME.replace("{name}", name));
+	}
+
+	return matched[1] ?? null;
 }

@@ -12,6 +12,7 @@ interface Starting {
 	readonly modules: readonly ReadyModule[];
 	readonly hasAuthenticate: boolean;
 	readonly hostProvided: Provided;
+	readonly reachesServer: boolean;
 }
 
 const REFUSED = "{starter} refused:\n{findings}";
@@ -32,6 +33,8 @@ const UNGUARDED =
 	"{request} runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
 const GUARD_AT = "guard #{at}";
 const MIDDLEWARE_AT = "middleware #{at}";
+const UNROUTED_SEND =
+	"{request} sends {sent}, which no module started by {starter} handles, and no server is configured";
 const STEP_NOT_PROVIDED = "{step} of {request} injects {key}, which its module does not provide as a {token}";
 
 export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
@@ -42,6 +45,7 @@ export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
 		...held.flatMap((one) => hostKeyFindings(one, starting.hostProvided)),
 		...held.flatMap(({ module, routes: routed }) => routed.flatMap((route) => routeFindings(module, route, starting))),
 		...duplicateFindings(routes.map((route) => route.handler)),
+		...unroutedSendFindings(routes, starting),
 	]);
 	return new Map(routes.map((route) => [route.handler.request.name, route]));
 }
@@ -66,7 +70,8 @@ function hostKeyFindings({ module, provides }: ModuleRoutes, hostProvided: Provi
 function routeFindings(module: ReadyModule, route: Route, starting: Starting): string[] {
 	const { request } = route.handler;
 	const { definition } = module;
-	const named = request.module === definition.name ? [] : [wrongModule(request.name, definition.name, request.module)];
+	const named =
+		request.module === definition.name ? [] : [wrongModule(request.name, definition.name, request.module ?? "none")];
 	const built = route.handler.module === definition ? [] : [builtFor(route.handler, definition.name)];
 	const injected = missingOf(route.handler.inject, route.provided).map(([key, token]) =>
 		fill(NOT_PROVIDED, request.name).replace("{key}", key).replace("{token}", token),
@@ -110,6 +115,21 @@ function missingOf(inject: Inject, provided: Provided): [string, string][] {
 	return Object.entries(inject)
 		.filter(([key, token]) => !(provided[key] instanceof token))
 		.map(([key, token]) => [key, token.name]);
+}
+
+function unroutedSendFindings(routes: readonly Route[], { side, reachesServer }: Starting): string[] {
+	if (reachesServer) {
+		return [];
+	}
+
+	const handled = new Set(routes.map(({ handler }) => handler.request.name));
+	return routes.flatMap(({ handler }) =>
+		handler.sends
+			.filter(({ name }) => !handled.has(name))
+			.map(({ name }) =>
+				fill(UNROUTED_SEND, handler.request.name).replace("{sent}", name).replace("{starter}", STARTERS[side]),
+			),
+	);
 }
 
 function duplicateFindings(handlers: readonly AnyHandler[]): string[] {

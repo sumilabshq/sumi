@@ -10,6 +10,7 @@ import type { Route } from "../local-routes";
 import { Mediator } from "../mediator";
 import { readyModuleOf } from "../module";
 import type { ServerParts, StartableServerModule } from "../module";
+import type { ModuleFacts, ModuleScope } from "../platform-module";
 import { MemoryRateLimits } from "../rate-limits";
 import type { RateLimits } from "../rate-limits";
 import { reportToConsole } from "../report-failure";
@@ -29,6 +30,7 @@ interface ServerHost {
 interface ServerStart {
 	readonly modules: readonly StartableServerModule[];
 	readonly env: ServerParts["env"];
+	readonly scope?: ModuleScope;
 	readonly host?: ServerHost;
 }
 
@@ -43,12 +45,14 @@ interface WireContext {
 const NOT_A_CALL = "the body is not a widgetarium call";
 const NOT_HERE = "{name} runs on no module of this server";
 
-export function server({ modules, env, host = {} }: ServerStart): StartedServer {
+export function server({ modules, env, scope, host = {} }: ServerStart): StartedServer {
+	const facts: ModuleFacts | null = scope === undefined ? null : { platform: "server", scope, env };
 	const routes = routesOf({
 		side: "server",
-		modules: modules.map((module) => readyModuleOf(module, { env })),
+		modules: modules.map((module) => readyModuleOf(module, { env }, facts)),
 		hasAuthenticate: host.authenticate !== undefined,
 		hostProvided: { rateLimits: host.rateLimits ?? new MemoryRateLimits() },
+		reachesServer: false,
 	});
 	const handler = new RPCHandler<WireContext>(routerOf(routes, serverMediatorOf(routes, host)));
 	const hono = new Hono();

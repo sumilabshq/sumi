@@ -60,6 +60,7 @@ export interface Handler<
 	readonly state: S;
 	handle(input: InputOf<R>, context: Injected<D> & Partial<CallFacts> & C): Returned<R>;
 	readonly watch: Bivariant<Watch<R, D>> | null;
+	readonly sends: readonly AnyRequest[];
 }
 
 export type AnyHandler = Handler<AnyRequest, Inject>;
@@ -199,5 +200,6 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		state,
 		handle: withDefaultCallFacts(handle),
 		watch,
+		sends: [],
 	};
 }

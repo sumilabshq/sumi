@@ -7,7 +7,8 @@ import { LocalRoutes } from "./local-routes";
 import { Mediator } from "./mediator";
 import type { Sending } from "./mediator";
 import { readyModuleOf } from "./module";
-import type { StartableModule } from "./module";
+import type { ServerParts, StartableModule } from "./module";
+import type { ModuleFacts, ModuleScope, Platform } from "./platform-module";
 import { QueryWatches } from "./query-watches";
 import { RemoteServer } from "./remote-server";
 import { reportToConsole } from "./report-failure";
@@ -25,6 +26,9 @@ export interface AppHost extends WireHost {
 
 export interface AppStart {
 	readonly modules: readonly StartableModule[];
+	readonly platform?: Platform;
+	readonly scope?: ModuleScope;
+	readonly env?: ServerParts["env"];
 	readonly server?: string | undefined;
 	readonly host?: AppHost;
 }
@@ -39,9 +43,10 @@ export interface StartedApp {
 
 const NO_SERVER = "{name} runs on no module of this app, and no server is configured";
 
-export function app({ modules, server, host = {} }: AppStart): StartedApp {
+export function app(start: AppStart): StartedApp {
+	const { server, host = {} } = start;
 	const reportFailure = host.reportFailure ?? reportToConsole;
-	const local = clientRoutesOf(modules, host);
+	const local = clientRoutesOf(start, server !== undefined);
 	const remote = server === undefined ? null : new RemoteServer(remoteOver(server, host));
 	const mediator = new Mediator({ local, remote, keyMinting: "client-mints", missing: noServer, reportFailure });
 	const routes = new RouteQueries({ local, reachesServer: remote !== null, missing: noServer, reportFailure });
@@ -79,12 +84,21 @@ function noServer(request: AnyRequest): Refusal {
 	return refusalOf("no-server", NO_SERVER.replace("{name}", request.name));
 }
 
-function clientRoutesOf(modules: readonly StartableModule[], host: AppHost): LocalRoutes {
-	const ready = modules.map((module) => readyModuleOf(module, undefined));
+function clientRoutesOf(start: AppStart, reachesServer: boolean): LocalRoutes {
+	const facts = factsOf(start);
+	const ready = start.modules.map((module) => readyModuleOf(module, undefined, facts));
 	return new LocalRoutes({
-		routes: routesOf({ side: "client", modules: ready, hasAuthenticate: false, hostProvided: {} }),
+		routes: routesOf({ side: "client", modules: ready, hasAuthenticate: false, hostProvided: {}, reachesServer }),
 		authenticate: null,
-		doneKeys: host.doneKeys ?? new MemoryDoneKeys(),
+		doneKeys: start.host?.doneKeys ?? new MemoryDoneKeys(),
 		callers: "one",
 	});
+}
+
+function factsOf({ platform, scope, env = {} }: AppStart): ModuleFacts | null {
+	if (platform === undefined || scope === undefined) {
+		return null;
+	}
+
+	return { platform, scope, env };
 }
