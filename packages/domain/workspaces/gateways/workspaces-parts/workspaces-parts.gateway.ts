@@ -2,11 +2,13 @@ import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
 import type { ChatMarksGateway } from "../chat-marks/chat-marks.gateway.js";
 import type { ChatsGateway } from "../chats/chats.gateway.js";
 import type { CurrentWorkspaceGateway } from "../current-workspace/current-workspace.gateway.js";
+import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";
 import type { WorkspacesGateway } from "../workspaces/workspaces.gateway.js";
 import { tauriInvoke, tauriWorkspacesParts } from "./tauri.gateway.js";
 import { webWorkspacesParts } from "./web.gateway.js";
 
 export type WorkspacesParts = {
+	readonly workspaceChats: WorkspaceChatsGateway;
 	readonly workspaces: WorkspacesGateway;
 	readonly currentWorkspace: CurrentWorkspaceGateway;
 	readonly chats: ChatsGateway;

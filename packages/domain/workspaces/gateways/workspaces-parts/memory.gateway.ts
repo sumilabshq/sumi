@@ -3,6 +3,7 @@ import type { Workspace } from "../../shared/schema/workspace.schema.js";
 import { MemoryChatMarksGateway } from "../chat-marks/memory.gateway.js";
 import { MemoryChatsGateway } from "../chats/memory.gateway.js";
 import { MemoryCurrentWorkspaceGateway } from "../current-workspace/memory.gateway.js";
+import { MemoryWorkspaceChatsGateway } from "../workspace-chats/memory.gateway.js";
 import { MemoryWorkspacesGateway } from "../workspaces/memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
 
@@ -11,10 +12,18 @@ export interface WorkspacesSeed {
 	readonly currentId: string;
 	readonly chats: KeptChats;
 	readonly marks: ChatMarks;
+	readonly chatsElsewhere?: Readonly<Record<string, KeptChats>>;
 }
 
-export function memoryWorkspacesParts({ workspaces, currentId, chats, marks }: WorkspacesSeed): WorkspacesParts {
+export function memoryWorkspacesParts({
+	workspaces,
+	currentId,
+	chats,
+	marks,
+	chatsElsewhere = {},
+}: WorkspacesSeed): WorkspacesParts {
 	return {
+		workspaceChats: new MemoryWorkspaceChatsGateway(chatsElsewhere),
 		workspaces: new MemoryWorkspacesGateway(workspaces),
 		currentWorkspace: new MemoryCurrentWorkspaceGateway({
 			currentId,

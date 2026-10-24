@@ -55,6 +55,22 @@ export const ActiveChatSchema = z.object({
 	title: z.string(),
 });
 
+export const ChatElsewhereRowSchema = z.object({
+	workspaceId: z.string().min(1),
+	workspaceName: z.string(),
+	chatId: z.string().min(1),
+	title: z.string(),
+});
+
+export type ChatElsewhereRow = z.infer<typeof ChatElsewhereRowSchema>;
+
+export const ChatsElsewhereSchema = z.object({ rows: z.array(ChatElsewhereRowSchema) });
+
+export const ChatElsewhereSchema = z.object({
+	workspaceId: z.string().min(1),
+	chatId: z.string().min(1),
+});
+
 export const WorkspaceIconSchema = z.discriminatedUnion("kind", [
 	z.object({
 		kind: z.literal("icon"),
@@ -123,8 +139,13 @@ export const ChatCrumbQuery = query("workspaces/chat-crumb")
 export const ActiveChatQuery = query("workspaces/active-chat")
 	.output(ActiveChatSchema)
 	.settlesNow();
+export const ChatsElsewhereQuery = query("workspaces/chats-elsewhere")
+	.output(ChatsElsewhereSchema);
 export const OpenWorkspaceCommand = command("workspaces/open-workspace")
 	.input(WorkspaceIdSchema)
+	.idempotencyKey(Repeatable);
+export const OpenChatElsewhereCommand = command("workspaces/open-chat-elsewhere")
+	.input(ChatElsewhereSchema)
 	.idempotencyKey(Repeatable);
 export const OpenWorkspaceByPositionCommand = command("workspaces/open-workspace-by-position")
 	.input(WorkspacePositionSchema)
@@ -153,4 +174,4 @@ export const RecordChatTurnCommand = command("workspaces/record-chat-turn")
 	.idempotencyKey(Repeatable);
 export const ChatsChangedEvent = event("workspaces/chats-changed");
 
-export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatListQuery, ChatCrumbQuery, ActiveChatQuery, OpenWorkspaceCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, SelectChatCommand, PinChatCommand, RenameChatCommand, RecordChatTurnCommand]);
+export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatListQuery, ChatCrumbQuery, ActiveChatQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, SelectChatCommand, PinChatCommand, RenameChatCommand, RecordChatTurnCommand]);

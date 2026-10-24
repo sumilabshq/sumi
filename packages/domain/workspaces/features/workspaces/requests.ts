@@ -3,7 +3,10 @@ import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.eve
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
+import { WorkspaceChatsGateway } from "../../gateways/workspace-chats/workspace-chats.gateway.js";
+import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
+import { ChatElsewhereSchema, ChatsElsewhereSchema } from "../../shared/schema/chat.schema.js";
 import {
 	WorkspaceIconChoiceSchema,
 	WorkspaceIdSchema,
@@ -53,6 +56,55 @@ export const OpenWorkspaceCommand = command("open-workspace")
 	.handle(({ id }, opening) => {
 		opening.invalidate(WorkspacesQuery);
 		return openWorkspace(id, opening);
+	});
+
+export const ChatsElsewhereQuery = query("chats-elsewhere")
+	.output(ChatsElsewhereSchema)
+	.inject({
+		...OPENING,
+		workspaceChats: WorkspaceChatsGateway,
+	})
+	.handle(async (_input, { workspaces, currentWorkspace, workspaceChats }) => {
+		const currentId = currentWorkspace.currentWorkspace().currentId;
+		const others = workspaces.workspaces().filter((workspace) => workspace.id !== currentId);
+		const rows = await Promise.all(
+			others.map(async (workspace) =>
+				(await workspaceChats.chatsIn(workspace.id)).chats.map((chat) => ({
+					workspaceId: workspace.id,
+					workspaceName: workspace.name,
+					chatId: chat.id,
+					title: titleOf(chat),
+				})),
+			),
+		);
+		return { rows: rows.flat() };
+	});
+
+export const OpenChatElsewhereCommand = command("open-chat-elsewhere")
+	.input(ChatElsewhereSchema)
+	.idempotencyKey(Repeatable)
+	.inject({
+		...OPENING,
+		workspaceChats: WorkspaceChatsGateway,
+	})
+	.handle(async ({ workspaceId, chatId }, { workspaceChats, ...opening }) => {
+		opening.invalidate(WorkspacesQuery);
+		const workspace = workspaceIn(opening.workspaces.workspaces(), workspaceId);
+
+		if (workspace.id === opening.currentWorkspace.currentWorkspace().currentId) {
+			return refuse(`workspace ${workspace.name} is already open: pick the chat in its own list`);
+		}
+
+		const kept = await workspaceChats.chatsIn(workspace.id);
+
+		if (!kept.chats.some((chat) => chat.id === chatId)) {
+			return refuse(`workspace ${workspace.name} has no chat ${chatId}`);
+		}
+
+		const reason = `workspace ${workspace.id} active chat ${kept.activeId ?? "none"} → ${chatId} (opened from elsewhere)`;
+		await workspaceChats.saveActiveChatIn(workspace.id, chatId, reason);
+		console.info(`[widgetarium] ${reason}`);
+		await openWorkspace(workspace.id, opening);
 	});
 
 export const OpenWorkspaceByPositionCommand = command("open-workspace-by-position")

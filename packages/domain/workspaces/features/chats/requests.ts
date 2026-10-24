@@ -1,4 +1,3 @@
-import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/active-chat-port.js";
 import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
 import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
@@ -8,6 +7,7 @@ import { ChatMarksGateway } from "../../gateways/chat-marks/chat-marks.gateway.j
 import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
+import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import {
 	ActiveChatSchema,
@@ -299,10 +299,6 @@ function withChat(kept: KeptChats, changed: KeptChat): KeptChats {
 		chats: kept.chats.map((chat) => (chat.id === changed.id ? changed : chat)),
 		activeId: activeChatOf(kept).id,
 	};
-}
-
-function titleOf(chat: KeptChat): string {
-	return chat.title ?? NEW_CHAT_TITLE;
 }
 
 function markOf(marks: ChatMarks, id: string): ChatMarkKind {

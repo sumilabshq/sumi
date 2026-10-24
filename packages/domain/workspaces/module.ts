@@ -16,7 +16,9 @@ import {
 	SelectChatCommand,
 } from "./features/chats/requests.js";
 import {
+	ChatsElsewhereQuery,
 	CreateWorkspaceCommand,
+	OpenChatElsewhereCommand,
 	OpenWorkspaceByPositionCommand,
 	OpenWorkspaceCommand,
 	RenameWorkspaceCommand,
@@ -41,7 +43,9 @@ export const WorkspacesModule = module("workspaces")
 		ChatListQuery,
 		ChatCrumbQuery,
 		ActiveChatQuery,
+		ChatsElsewhereQuery,
 		OpenWorkspaceCommand,
+		OpenChatElsewhereCommand,
 		OpenWorkspaceByPositionCommand,
 		CreateWorkspaceCommand,
 		RenameWorkspaceCommand,

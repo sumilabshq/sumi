@@ -73,3 +73,19 @@ export const ActiveChatSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 });
+
+export const ChatElsewhereRowSchema = z.object({
+	workspaceId: z.string().min(1),
+	workspaceName: z.string(),
+	chatId: z.string().min(1),
+	title: z.string(),
+});
+
+export type ChatElsewhereRow = z.infer<typeof ChatElsewhereRowSchema>;
+
+export const ChatsElsewhereSchema = z.object({ rows: z.array(ChatElsewhereRowSchema) });
+
+export const ChatElsewhereSchema = z.object({
+	workspaceId: z.string().min(1),
+	chatId: z.string().min(1),
+});

@@ -10,6 +10,7 @@ import {
 	TauriChatsGateway,
 } from "../chats/tauri.gateway.js";
 import { MemoryCurrentWorkspaceGateway } from "../current-workspace/memory.gateway.js";
+import { TauriWorkspaceChatsGateway } from "../workspace-chats/tauri.gateway.js";
 import { TauriWorkspacesGateway } from "../workspaces/tauri.gateway.js";
 import { firstChats } from "./memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
@@ -19,6 +20,7 @@ export function tauriWorkspacesParts(workspaceId: string, tauriCall: Invoke): Wo
 	const store = new StoreClient(tauriCall);
 	const root = workspaceRootOf(workspaceId);
 	return {
+		workspaceChats: new TauriWorkspaceChatsGateway(store),
 		workspaces: new TauriWorkspacesGateway(tauriCall, store),
 		currentWorkspace: new MemoryCurrentWorkspaceGateway({
 			currentId: workspaceId,
