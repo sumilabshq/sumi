@@ -9,6 +9,7 @@ export function useHoldsPages(isAvailable: boolean): RefObject<HTMLDivElement | 
 	const heldTabId = useHeldTab();
 	const attachPages = useCommand(AttachPagesCommand);
 	const detachPages = useCommand(DetachPagesCommand);
+	const hostCallsInOrder = useRef<Promise<unknown>>(Promise.resolve());
 
 	useEffect(() => {
 		const held = pages.current;
@@ -17,15 +18,14 @@ export function useHoldsPages(isAvailable: boolean): RefObject<HTMLDivElement | 
 			return undefined;
 		}
 
-		void attachPages.run({
+		const asked = {
 			host: held,
 			heldTabId,
-		});
-		return () =>
-			void detachPages.run({
-				host: held,
-				heldTabId,
-			});
+		};
+		hostCallsInOrder.current = hostCallsInOrder.current.then(() => attachPages.run(asked));
+		return () => {
+			hostCallsInOrder.current = hostCallsInOrder.current.then(() => detachPages.run(asked));
+		};
 	}, [isAvailable, heldTabId, attachPages.run, detachPages.run]);
 
 	return pages;
