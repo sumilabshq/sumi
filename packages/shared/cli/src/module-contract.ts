@@ -32,6 +32,7 @@ interface ListingModule {
 interface Listing {
 	readonly public: readonly string[];
 	readonly serverOnly: readonly string[];
+	readonly emits: readonly string[];
 }
 
 interface CutAsk {
@@ -54,29 +55,23 @@ interface PublicContract {
 
 const PUBLIC_METHOD = "public";
 const SERVER_ONLY_METHOD = "serverOnly";
+const EMITS_METHOD = "emits";
 const PLACEMENT_METHOD = "on";
 const PLACEMENTS: ReadonlySet<string> = new Set(["Server", "Device", "Anywhere"]);
 const CORE_REQUESTS = "@widgetarium/core/requests";
 const PUBLIC_CONTRACT_SPECIFIER = "./contract.js";
-const CONTRACT_STEPS: ReadonlySet<string> = new Set([
-	"input",
-	"output",
-	"idempotencyKey",
-	"cache",
-	"settlesNow",
-	"invalidates",
-]);
+const CONTRACT_STEPS: ReadonlySet<string> = new Set(["input", "output", "idempotencyKey", "cache", "settlesNow"]);
 const NOTHING_BOUND: ReadonlySet<string> = new Set();
 const MODULE_FILE = "module.ts";
-const NOT_LISTED_BY_NAME = "{module}: .public() and .serverOnly() take request constants by name, never an expression";
+const NOT_LISTED_BY_NAME =
+	"{module}: .public(), .serverOnly() and .emits() take constants by name, never an expression";
 const LISTED_TWICE = "{module}: {name} is listed twice; a request stands in exactly one of .public() and .serverOnly()";
 const NO_PLACEMENT = "{module}: module(...).on() takes Server, Device or Anywhere by name";
-const PUBLIC_NAMES_SERVER_ONLY =
-	"{module}: the public contract of {name} names {other}, which is server-only; a public contract never names a server-only request";
 const NOT_IMPORTED = "{module}: {name} is listed but not imported by name from a file of this module";
 const UNREADABLE = "{file} cannot be read: {reason}";
 const NOT_EXPORTED = "{file} exports no const {name}, which {module} lists";
-const NOT_A_REQUEST = "{file}: {name} starts with {root}(...); a listed request starts with query(...) or command(...)";
+const NOT_A_REQUEST =
+	"{file}: {name} starts with {root}(...); a listed request starts with query(...) or command(...), a listed event with event(...)";
 const NO_POSITION = "{file}: the chain of {name} carries no source position, so its contract cannot be cut from it";
 const NO_MODULE_NAME = "{module}: module(...) takes its name as a string literal";
 const CYCLE = "the contracts of {names} name each other in a cycle";
@@ -88,10 +83,15 @@ export function moduleContractsOf(folder: string, moduleName: string): ModuleCon
 	const names = listingOf(init, moduleName);
 	const publicListed = names.public.map((name) => listedRequestOf(folder, listing, name));
 	const serverListed = names.serverOnly.map((name) => listedRequestOf(folder, listing, name));
-	const listedNames = refuseListedTwice([...publicListed, ...serverListed], moduleName);
-	refusePublicNamingServerOnly(publicListed, new Set(names.serverOnly), moduleName);
+	const emittedListed = names.emits.map((name) => listedRequestOf(folder, listing, name));
+	const listedNames = refuseListedTwice([...publicListed, ...serverListed, ...emittedListed], moduleName);
 	const descriptor = descriptorOf(moduleName, listing.tag, placementOf(init, moduleName), publicListed);
-	const contract = cutOf({ folder, listed: publicListed, listedNames, extraImports: descriptor.imports });
+	const contract = cutOf({
+		folder,
+		listed: [...emittedListed, ...publicListed],
+		listedNames,
+		extraImports: descriptor.imports,
+	});
 	const publicContract = {
 		requestNames: new Set(names.public),
 		schemaNames: contract.exportedSchemaNames,
@@ -167,20 +167,6 @@ function namedImportOf(specifier: string, name: string): Imported {
 	};
 }
 
-function refusePublicNamingServerOnly(
-	publicListed: readonly ListedRequest[],
-	serverOnly: ReadonlySet<string>,
-	moduleName: string,
-): void {
-	for (const { name, uses } of publicListed) {
-		const other = uses.find((used) => serverOnly.has(used.name));
-
-		if (other !== undefined) {
-			throw new CliRefusal(fillTemplate(PUBLIC_NAMES_SERVER_ONLY, { module: moduleName, name, other: other.name }));
-		}
-	}
-}
-
 function placementOf(init: Expression | undefined, moduleName: string): string {
 	const placed = init === undefined ? undefined : chainOf(init).find(({ method }) => method === PLACEMENT_METHOD);
 	const [argument] = placed?.call.arguments ?? [];
@@ -209,6 +195,7 @@ function listingOf(init: Expression | undefined, moduleName: string): Listing {
 		serverOnly: steps
 			.filter(({ method }) => method === SERVER_ONLY_METHOD)
 			.flatMap((step) => namesListedBy(step, moduleName)),
+		emits: steps.filter(({ method }) => method === EMITS_METHOD).flatMap((step) => namesListedBy(step, moduleName)),
 	};
 }
 

@@ -84,7 +84,6 @@ const COUNT_REQUESTS = [
 	'export const BumpCommand = command("bump")',
 	"\t.input(z.object({ by: z.number() }))",
 	"\t.idempotencyKey((input) => `${input.by}`)",
-	"\t.invalidates([CountQuery])",
 	"\t.inject({ counter: Counter })",
 	"\t.handle(({ by }, { counter }) => counter.add(by));",
 	"",
@@ -123,8 +122,7 @@ const REQUESTS_CONTRACT = [
 	"\t.settlesNow();",
 	'export const BumpCommand = command("tally/bump")',
 	"\t.input(z.object({ by: z.number() }))",
-	"\t.idempotencyKey((input) => `${input.by}`)",
-	"\t.invalidates([CountQuery]);",
+	"\t.idempotencyKey((input) => `${input.by}`);",
 	"",
 	'export const TallyModule = moduleContract("tally", Device, [CountQuery, BumpCommand]);',
 	"",
@@ -134,14 +132,12 @@ const SERVER_CONTRACT = "generated/server.ts";
 
 const SERVING_SERVER = [
 	GENERATED_HEADER.trimEnd(),
-	'import { CountQuery } from "./contract.js";',
 	'import { command } from "@widgetarium/core/requests";',
 	'import { z } from "zod";',
 	"",
 	'export const BumpCommand = command("tally/bump")',
 	"\t.input(z.object({ by: z.number() }))",
-	"\t.idempotencyKey((input) => `${input.by}`)",
-	"\t.invalidates([CountQuery]);",
+	"\t.idempotencyKey((input) => `${input.by}`);",
 	"",
 ].join("\n");
 
@@ -300,6 +296,17 @@ function newShapePackagesOf(root: string): string[] {
 			const kind = packageKindOf(folder);
 			return kind?.kind === "client-package" || kind?.module.runs === "anywhere";
 		});
+}
+
+function generatedFilesOf(root: string): string[] {
+	const packages = path.join(root, "packages");
+	return fs
+		.readdirSync(packages)
+		.flatMap((layer) =>
+			fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name, "generated")),
+		)
+		.filter((generated) => fs.existsSync(generated))
+		.flatMap((generated) => fs.readdirSync(generated).map((name) => path.join(generated, name)));
 }
 
 function reExportsUnder(folder: string): string[] {
@@ -709,15 +716,6 @@ try {
 		[0, true, SHARING_SERVER],
 	);
 
-	const leaking = await generatedIn("leaking", {
-		"module.ts": moduleListing(".on(Server).public(BumpCommand).serverOnly(CountQuery)"),
-	});
-	check(
-		"a public contract naming a server-only request is refused by name",
-		refusedWith(leaking, "TallyModule: the public contract of BumpCommand names CountQuery, which is server-only"),
-		[1, true],
-	);
-
 	const split = await generatedIn("split", {
 		"module.ts": [
 			'import { Device, module } from "@widgetarium/core/requests";',
@@ -764,13 +762,6 @@ try {
 		[1, true],
 	);
 
-	const unlisted = await generatedIn("unlisted", { "module.ts": moduleListing(".public(BumpCommand)") });
-	check(
-		"a contract using a request of its own file the module does not list says to list it",
-		refusedWith(unlisted, "uses CountQuery, a request of that file that module.ts does not list"),
-		[1, true],
-	);
-
 	const scoped = await generatedIn("scoped", {
 		"features/count/requests.ts": COUNT_REQUESTS.replace("(input) => `${input.by}`", "({ by = fallback }) => `${by}`"),
 	});
@@ -791,8 +782,11 @@ try {
 }
 
 const repo = await cli(["--check"], REPO);
-const generatedFiles = ["canvas"].flatMap((module) =>
-	[ENTRY, JOINED].map((entry) => path.join(REPO, "packages", "domain", module, entry)),
+const generatedFiles = generatedFilesOf(REPO);
+check(
+	"this repository has generated files to hold to the header, the canvas contract among them",
+	generatedFiles.some((file) => file.endsWith("packages/domain/canvas/generated/contract.ts")),
+	true,
 );
 check(
 	"every generated file of this repository opens with the generated header",
@@ -802,12 +796,12 @@ check(
 check("every domain of this repository has a fresh generated entry", repo.code === 0 ? 0 : repo.said, 0);
 const newShapes = newShapePackagesOf(REPO);
 check(
-	"this repository has module(...) and client packages to hold to the generated/ law",
+	"this repository has module(...) packages to hold to the generated/ law",
 	newShapes
 		.map((folder) => path.basename(folder))
-		.filter((name) => ["layout", "shell"].includes(name))
+		.filter((name) => ["layout", "mascot"].includes(name))
 		.sort(),
-	["layout", "shell"],
+	["layout", "mascot"],
 );
 check(
 	"no generated/ of a module(...) or client package re-exports: export * from and export { } from live only in the root index.ts",
@@ -815,16 +809,16 @@ check(
 	[],
 );
 
-const shellInputs = await bundledInputsOf("packages/client/shell/index.ts");
+const frameInputs = await bundledInputsOf("apps/studio/src/features/frame/ui/studio-frame/studio-frame.tsx");
 const startedInputs = await bundledInputsOf("packages/state/layout/module.ts");
 check(
-	"the shell's bundle reads layout through its contract: it holds the generated contract",
-	shellInputs.some((input) => input.endsWith("packages/state/layout/generated/contract.ts")),
+	"the studio frame's bundle reads layout through its contract: it holds the generated contract",
+	frameInputs.some((input) => input.endsWith("packages/state/layout/generated/contract.ts")),
 	true,
 );
 check(
 	"and pulls no layout handler or gateway, which only the app starting LayoutModule bundles",
-	layoutHandlingOf(shellInputs),
+	layoutHandlingOf(frameInputs),
 	[],
 );
 check(

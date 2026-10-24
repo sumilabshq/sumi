@@ -30,7 +30,7 @@ export interface RequestImports {
 export type ContractNeed =
 	{ readonly kind: "import"; readonly imported: Imported } | { readonly kind: "schema"; readonly root: SchemaRoot };
 
-export const REQUEST_ROOTS: ReadonlySet<string> = new Set(["query", "command"]);
+export const REQUEST_ROOTS: ReadonlySet<string> = new Set(["query", "command", "event"]);
 const KNOWN_GLOBALS: ReadonlySet<string> = new Set([
 	"undefined",
 	"NaN",
