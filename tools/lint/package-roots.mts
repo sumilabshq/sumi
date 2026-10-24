@@ -5,7 +5,6 @@ const PACKAGE_FOLDERS: readonly string[] = [
 	"apps",
 	"packages/domain",
 	"packages/state",
-	"packages/client",
 	"packages/shared",
 	"packages/shared/packs",
 ];
