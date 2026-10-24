@@ -15,13 +15,19 @@ const client = app()
 
 const first = await client.send(ChargeCommand, { amount: 10 });
 const second = await client.send(ChargeCommand, { amount: 15 });
-check("a charge adds its amount to the total and counts one charge", second, {
+check("a charge adds its amount to the total and counts one charge, and names the query it invalidated", second, {
 	ok: true,
 	output: {
 		currency: "USD",
 		total: 25,
 		charges: 2,
 	},
+	invalidated: [
+		{
+			query: "fixture-billing/balance",
+			inputKey: null,
+		},
+	],
 });
 check("the first charge answered the balance it saved", first.ok ? first.output.total : first.reason, 10);
 check("the handler saved what it answered through the ledger gateway", ledger.balance(), {

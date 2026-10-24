@@ -15,7 +15,6 @@ export const BalanceQuery = query("fixture-billing/balance")
 export const ChargeCommand = command("fixture-billing/charge")
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)
-	.idempotencyKey(PerCall)
-	.invalidates([BalanceQuery]);
+	.idempotencyKey(PerCall);
 
 export const FixtureBillingModule = moduleContract("fixture-billing", Server, [BalanceQuery, ChargeCommand]);

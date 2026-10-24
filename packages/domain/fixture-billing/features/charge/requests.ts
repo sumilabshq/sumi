@@ -22,10 +22,10 @@ export const ChargeCommand = command("charge")
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)
 	.idempotencyKey(PerCall)
-	.invalidates([BalanceQuery])
 	.guard(WithinLimitGuard)
 	.inject({ ledger: LedgerGateway })
-	.handle(({ amount }, { ledger }) => {
+	.handle(({ amount }, { ledger, invalidate }) => {
+		invalidate(BalanceQuery);
 		const was = ledger.balance();
 		const now = balanceAfterCharge(was, amount);
 		const reason = `ledger total ${was.total} → ${now.total}, charges ${was.charges} → ${now.charges} (charge ${amount})`;
