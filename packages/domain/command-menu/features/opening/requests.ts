@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
 import { AppTabsQuery } from "@widgetarium/app-host";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
@@ -12,15 +12,29 @@ export const CommandMenuQuery = query("command-menu")
 	.inject({ commandMenu: CommandMenuGateway })
 	.handle((_input, { commandMenu }) => commandMenu.menu());
 
-export const OpenCommandMenuCommand = command("open-command-menu")
+export const ToggleCommandMenuCommand = command("toggle-command-menu")
 	.input(OpenMenuSchema)
-	.idempotencyKey(Repeatable)
+	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
 	.sends(AppTabsQuery)
 	.handle(async ({ door, text, shownName }, { commandMenu, send, invalidate }) => {
 		invalidate(CommandMenuQuery);
 		const was = commandMenu.menu();
 		const filled = text === null ? filledWithShown((await send(AppTabsQuery)).tabs, shownName) : { door, text };
+
+		if (was.isOpen && (was.door === door || was.door === filled.door)) {
+			const shut = `command menu open at ${was.door} → shut (the same opener again)`;
+			commandMenu.saveMenu(
+				{
+					...was,
+					isOpen: false,
+				},
+				shut,
+			);
+			console.info(`[widgetarium] ${shut}`);
+			return;
+		}
+
 		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}"`;
 		commandMenu.saveMenu(
 			{

@@ -124,13 +124,11 @@ export const RowGlyphSchema = z.enum(["search", "globe", "plus", "chat", "reopen
 
 export const RowIconSchema = z.discriminatedUnion("kind", [
 	z.object({
-		kind: z.literal("art"),
+		kind: z.literal("tab"),
 		art: z.string(),
-	}),
-	z.object({
-		kind: z.literal("favicon"),
-		src: z.string(),
-		letter: z.string(),
+		favicon: z.string().nullable(),
+		title: z.string(),
+		address: z.string().nullable(),
 	}),
 	z.object({
 		kind: z.literal("letter"),
@@ -231,9 +229,9 @@ export const CommandMenuQuery = query("command-menu/command-menu")
 export const CommandMenuResultsQuery = query("command-menu/command-menu-results")
 	.input(ResultsAskSchema)
 	.output(ResultsSchema);
-export const OpenCommandMenuCommand = command("command-menu/open-command-menu")
+export const ToggleCommandMenuCommand = command("command-menu/toggle-command-menu")
 	.input(OpenMenuSchema)
-	.idempotencyKey(Repeatable);
+	.idempotencyKey(PerCall);
 export const ChangeMenuDoorCommand = command("command-menu/change-menu-door")
 	.input(z.object({ door: DoorSchema }))
 	.idempotencyKey(Repeatable);
@@ -248,4 +246,4 @@ export const RenameRowCommand = command("command-menu/rename-row")
 	.output(DoneSchema)
 	.idempotencyKey(Repeatable);
 
-export const CommandMenuModule = moduleContract("command-menu", Device, [CommandMenuQuery, CommandMenuResultsQuery, OpenCommandMenuCommand, ChangeMenuDoorCommand, CloseCommandMenuCommand, DoRowCommand, RenameRowCommand]);
+export const CommandMenuModule = moduleContract("command-menu", Device, [CommandMenuQuery, CommandMenuResultsQuery, ToggleCommandMenuCommand, ChangeMenuDoorCommand, CloseCommandMenuCommand, DoRowCommand, RenameRowCommand]);

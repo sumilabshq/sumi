@@ -1,5 +1,6 @@
 import type { RowKind } from "../../../shared/schema/command-menu.schema.js";
 import type { Found } from "./found.js";
+import { isNearTitle } from "./typo.js";
 
 const WORD_EDGE = /[\s·/._-]+/;
 const NO_MATCH = -1;
@@ -47,7 +48,11 @@ function scoreOf(found: Found, typed: string): number {
 		return 2;
 	}
 
-	return found.haystack.toLowerCase().includes(typed) ? 3 : NO_MATCH;
+	if (found.haystack.toLowerCase().includes(typed)) {
+		return 3;
+	}
+
+	return isNearTitle(typed, found.title) ? 4 : NO_MATCH;
 }
 
 function kindRankOf(found: Found): number {

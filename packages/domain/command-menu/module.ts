@@ -9,7 +9,7 @@ import {
 	CloseCommandMenuCommand,
 	CommandMenuQuery,
 	MenuOnMenuChangedSubscriber,
-	OpenCommandMenuCommand,
+	ToggleCommandMenuCommand,
 } from "./features/opening/requests.js";
 import {
 	CommandMenuResultsQuery,
@@ -30,7 +30,7 @@ export const CommandMenuModule = module("command-menu")
 	.public(
 		CommandMenuQuery,
 		CommandMenuResultsQuery,
-		OpenCommandMenuCommand,
+		ToggleCommandMenuCommand,
 		ChangeMenuDoorCommand,
 		CloseCommandMenuCommand,
 		DoRowCommand,

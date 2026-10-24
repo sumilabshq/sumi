@@ -17,7 +17,7 @@ import {
 	CommandMenuQuery,
 	CommandMenuResultsQuery,
 	DoRowCommand,
-	OpenCommandMenuCommand,
+	ToggleCommandMenuCommand,
 	RenameRowCommand,
 } from "../packages/domain/command-menu/index.ts";
 import type { Intent, Results, ResultsAsk } from "../packages/domain/command-menu/index.ts";
@@ -30,12 +30,26 @@ const studio = app()
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 
 await check("opens anywhere and the door changes", async () => {
-	ok(await studio.send(OpenCommandMenuCommand, { door: "anywhere", text: "" }));
+	ok(await studio.send(ToggleCommandMenuCommand, { door: "anywhere", text: "" }));
 	const opened = ok(await studio.send(CommandMenuQuery));
 	assert.equal(opened.isOpen, true);
 	assert.equal(opened.door, "anywhere");
 	ok(await studio.send(ChangeMenuDoorCommand, { door: "new-tab" }));
 	assert.equal(ok(await studio.send(CommandMenuQuery)).door, "new-tab");
+});
+
+await check("the same opener twice closes the menu, another door switches it", async () => {
+	ok(await studio.send(ToggleCommandMenuCommand, { door: "anywhere", text: "" }));
+	assert.equal(ok(await studio.send(CommandMenuQuery)).isOpen, true);
+	ok(await studio.send(ToggleCommandMenuCommand, { door: "anywhere", text: "" }));
+	assert.equal(ok(await studio.send(CommandMenuQuery)).isOpen, false);
+});
+
+await check("a typo still finds the row", async () => {
+	const found = await results({ text: "reopne closde", scope: "all", door: "anywhere" });
+	assert.equal(found.sections[0]?.rows[0]?.title, "Reopen closed tab");
+	const none = await results({ text: "zzqx", scope: "all", door: "anywhere" });
+	assert.equal(none.sections[0]?.label, "Make new");
 });
 
 await check("empty text in All lists commands", async () => {
@@ -140,7 +154,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 
 await check("the header door fills the text with what is shown", async () => {
 	ok(await studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } }));
-	ok(await studio.send(OpenCommandMenuCommand, { door: "this-tab", text: null }));
+	ok(await studio.send(ToggleCommandMenuCommand, { door: "this-tab", text: null }));
 	const menu = ok(await studio.send(CommandMenuQuery));
 	assert.equal(menu.door, "anywhere");
 	assert.equal(menu.text, "Canvas");

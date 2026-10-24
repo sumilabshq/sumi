@@ -122,13 +122,11 @@ export const RowGlyphSchema = z.enum(["search", "globe", "plus", "chat", "reopen
 
 export const RowIconSchema = z.discriminatedUnion("kind", [
 	z.object({
-		kind: z.literal("art"),
+		kind: z.literal("tab"),
 		art: z.string(),
-	}),
-	z.object({
-		kind: z.literal("favicon"),
-		src: z.string(),
-		letter: z.string(),
+		favicon: z.string().nullable(),
+		title: z.string(),
+		address: z.string().nullable(),
 	}),
 	z.object({
 		kind: z.literal("letter"),

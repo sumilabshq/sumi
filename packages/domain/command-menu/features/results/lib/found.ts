@@ -82,10 +82,7 @@ export function appsFoundOf(): readonly Found[] {
 			title: "Canvas",
 			meta: APP,
 			haystack: "canvas design board",
-			icon: {
-				kind: "art",
-				art: "canvas",
-			},
+			icon: tabIconOf("canvas", null, "Canvas", null),
 			intent,
 			shortcut: null,
 			renames: null,
@@ -129,10 +126,7 @@ export function closedFoundOf(closed: readonly ClosedTabRow[]): readonly Found[]
 		title: row.title,
 		meta: hostOf(row.address),
 		haystack: row.address,
-		icon: {
-			kind: "art",
-			art: row.app,
-		},
+		icon: tabIconOf(row.app, null, row.title, row.address),
 		intent: {
 			do: "reopen-closed",
 			tabId: row.tabId,
@@ -159,7 +153,7 @@ export function sitesFoundOf(sites: readonly RecentSite[]): readonly Found[] {
 			title: site.host.replace(/^www\./, ""),
 			meta: site.host,
 			haystack: site.address,
-			icon: iconOfSite(site.favicon, site.host),
+			icon: tabIconOf("site", site.favicon, site.host, site.address),
 			intent,
 			shortcut: null,
 			renames: null,
@@ -179,7 +173,7 @@ function tabFoundOf(tab: AppTabState, listTitle: string): Found {
 		title: tab.title,
 		meta: where.join(" · "),
 		haystack: [tab.address ?? "", tab.subtitle ?? "", tab.label ?? "", listTitle].join(" "),
-		icon: tab.favicon === null ? { kind: "art", art: tab.icon } : iconOfSite(tab.favicon, tab.title),
+		icon: tabIconOf(tab.icon, tab.favicon, tab.title, tab.address),
 		intent: {
 			do: "show-tab",
 			id: tab.id,
@@ -203,7 +197,7 @@ function essentialFoundOf(tile: EssentialTile): Found {
 		title: tile.title,
 		meta: tile.isShown ? `${ESSENTIALS} · ${ON_SCREEN}` : ESSENTIALS,
 		haystack: ESSENTIALS,
-		icon: tile.favicon === null ? { kind: "art", art: tile.icon } : iconOfSite(tile.favicon, tile.title),
+		icon: tabIconOf(tile.icon, tile.favicon, tile.title, null),
 		intent: {
 			do: "show-essential",
 			id: tile.id,
@@ -254,19 +248,13 @@ function chatMetaOf(row: ChatRowData): string {
 	return said.filter((part) => part !== "").join(" · ");
 }
 
-function iconOfSite(favicon: string | null, name: string): RowIcon {
-	if (favicon === null) {
-		return {
-			kind: "letter",
-			letter: letterOf(name),
-			shape: "square",
-		};
-	}
-
+function tabIconOf(art: string, favicon: string | null, title: string, address: string | null): RowIcon {
 	return {
-		kind: "favicon",
-		src: favicon,
-		letter: letterOf(name),
+		kind: "tab",
+		art,
+		favicon,
+		title,
+		address,
 	};
 }
 
