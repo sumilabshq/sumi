@@ -100,8 +100,6 @@ export const ConcealFrameSideCommand = command("conceal-frame-side")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const FrameSidesOnFrameSidesChangedSubscriber = subscriber(FrameSidesChangedEvent).handle(
-	(_input, { invalidate }) => {
-		invalidate(FrameSidesQuery);
-	},
-);
+export const RereadSidesSubscriber = subscriber(FrameSidesChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(FrameSidesQuery);
+});

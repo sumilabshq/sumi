@@ -73,8 +73,6 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const FrameWidthsOnFrameWidthsChangedSubscriber = subscriber(FrameWidthsChangedEvent).handle(
-	(_input, { invalidate }) => {
-		invalidate(FrameWidthsQuery);
-	},
-);
+export const RereadFrameWidthsSubscriber = subscriber(FrameWidthsChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(FrameWidthsQuery);
+});

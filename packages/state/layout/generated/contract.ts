@@ -136,9 +136,6 @@ export const PlacementPreviewSchema = z.object({
 
 export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;
 
-export const FrameSidesChangedEvent = event("layout/frame-sides-changed");
-export const FrameWidthsChangedEvent = event("layout/frame-widths-changed");
-export const PanesChangedEvent = event("layout/panes-changed");
 export const FrameSidesQuery = query("layout/frame-sides")
 	.output(FrameSidesSchema)
 	.settlesNow();
@@ -209,5 +206,6 @@ export const ClosePanesOfTabsCommand = command("layout/close-panes-of-tabs")
 export const DropGoneTabsCommand = command("layout/drop-gone-tabs")
 	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable);
+export const PanesChangedEvent = event("layout/panes-changed");
 
 export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowTabInTargetPaneCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand]);

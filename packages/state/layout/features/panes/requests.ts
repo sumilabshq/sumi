@@ -149,7 +149,7 @@ export const AimPaneCommand = command("aim-pane")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const PanesOnPanesChangedSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
+export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(PaneTreeQuery);
 	invalidate(PlacementPreviewQuery);
 });
