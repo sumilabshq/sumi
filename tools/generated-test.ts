@@ -508,6 +508,34 @@ try {
 		[0, TYPED_CONTRACT],
 	);
 
+	const evented = await generatedIn("evented", {
+		"module.ts": [
+			'import { Device, module } from "@widgetarium/core/requests";',
+			'import { BumpCommand, CountQuery } from "./features/count/requests.js";',
+			'import { CountedEvent } from "./shared/events/count.events.js";',
+			"",
+			'export const TallyModule = module("tally").on(Device).public(CountQuery, BumpCommand, CountedEvent).provide((parts: TallyParts) => ({ ...parts }));',
+			"",
+		].join("\n"),
+		"shared/events/count.events.ts": [
+			'import { event } from "@widgetarium/core/requests";',
+			'export const CountedEvent = event("counted");',
+			'export const RecountedEvent = event("recounted");',
+			"",
+		].join("\n"),
+	});
+	const eventedContract = entryIn(path.join(scratch, "packages/evented"), "generated/contract.ts");
+	check(
+		"the contract holds the events .public() lists, never a private one, and the module descriptor lists requests only",
+		[
+			evented.code,
+			eventedContract.includes('export const CountedEvent = event("tally/counted");'),
+			eventedContract.includes("Recounted"),
+			eventedContract.includes('moduleContract("tally", Device, [CountQuery, BumpCommand])'),
+		],
+		[0, true, false, true],
+	);
+
 	const forest = await generatedIn("forest", {
 		"module.ts": moduleListing(".public(ForestQuery)", "./features/forest/requests.js"),
 		"features/forest/requests.ts": FOREST_REQUESTS,

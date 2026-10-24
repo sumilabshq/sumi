@@ -17,6 +17,7 @@ export interface ListedRequest {
 	readonly name: string;
 	readonly file: SourceFile;
 	readonly chain: string;
+	readonly root: string;
 	readonly uses: readonly NameUse[];
 }
 

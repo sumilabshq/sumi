@@ -32,7 +32,6 @@ interface ListingModule {
 interface Listing {
 	readonly public: readonly string[];
 	readonly serverOnly: readonly string[];
-	readonly emits: readonly string[];
 }
 
 interface CutAsk {
@@ -55,7 +54,7 @@ interface PublicContract {
 
 const PUBLIC_METHOD = "public";
 const SERVER_ONLY_METHOD = "serverOnly";
-const EMITS_METHOD = "emits";
+const EVENT_ROOT = "event";
 const PLACEMENT_METHOD = "on";
 const PLACEMENTS: ReadonlySet<string> = new Set(["Server", "Device", "Anywhere"]);
 const CORE_REQUESTS = "@widgetarium/core/requests";
@@ -63,8 +62,7 @@ const PUBLIC_CONTRACT_SPECIFIER = "./contract.js";
 const CONTRACT_STEPS: ReadonlySet<string> = new Set(["input", "output", "idempotencyKey", "cache", "settlesNow"]);
 const NOTHING_BOUND: ReadonlySet<string> = new Set();
 const MODULE_FILE = "module.ts";
-const NOT_LISTED_BY_NAME =
-	"{module}: .public(), .serverOnly() and .emits() take constants by name, never an expression";
+const NOT_LISTED_BY_NAME = "{module}: .public() and .serverOnly() take constants by name, never an expression";
 const LISTED_TWICE = "{module}: {name} is listed twice; a request stands in exactly one of .public() and .serverOnly()";
 const NO_PLACEMENT = "{module}: module(...).on() takes Server, Device or Anywhere by name";
 const NOT_IMPORTED = "{module}: {name} is listed but not imported by name from a file of this module";
@@ -83,12 +81,12 @@ export function moduleContractsOf(folder: string, moduleName: string): ModuleCon
 	const names = listingOf(init, moduleName);
 	const publicListed = names.public.map((name) => listedRequestOf(folder, listing, name));
 	const serverListed = names.serverOnly.map((name) => listedRequestOf(folder, listing, name));
-	const emittedListed = names.emits.map((name) => listedRequestOf(folder, listing, name));
-	const listedNames = refuseListedTwice([...publicListed, ...serverListed, ...emittedListed], moduleName);
-	const descriptor = descriptorOf(moduleName, listing.tag, placementOf(init, moduleName), publicListed);
+	const listedNames = refuseListedTwice([...publicListed, ...serverListed], moduleName);
+	const publicRequests = publicListed.filter(({ root }) => root !== EVENT_ROOT);
+	const descriptor = descriptorOf(moduleName, listing.tag, placementOf(init, moduleName), publicRequests);
 	const contract = cutOf({
 		folder,
-		listed: [...emittedListed, ...publicListed],
+		listed: publicListed,
 		listedNames,
 		extraImports: descriptor.imports,
 	});
@@ -195,7 +193,6 @@ function listingOf(init: Expression | undefined, moduleName: string): Listing {
 		serverOnly: steps
 			.filter(({ method }) => method === SERVER_ONLY_METHOD)
 			.flatMap((step) => namesListedBy(step, moduleName)),
-		emits: steps.filter(({ method }) => method === EMITS_METHOD).flatMap((step) => namesListedBy(step, moduleName)),
 	};
 }
 
@@ -249,6 +246,7 @@ function contractOfChain(file: SourceFile, name: string, init: Expression, tag: 
 		name,
 		file,
 		chain: withFullName(chainTextOf(file, name, [root, kept.at(-1) ?? root]), root, tag),
+		root: root.method,
 		uses: kept.flatMap(usesInStep),
 	};
 }
