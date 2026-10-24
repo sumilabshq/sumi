@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useOptionalQuery, useQuery } from "@widgetarium/core/requests";
-import { draggedLayoutOf, fixedPlaceOf, paneLayoutOf, panePlacesOf } from "../../lib/pane-layout.js";
+import { fixedPlaceOf, paneLayoutOf, panePlacesOf } from "../../lib/pane-layout.js";
 import type { PaneEdge, PaneLayout, PanePlace, PaneRect, PaneSpacing } from "../../lib/pane-layout.js";
 import type { FrameBounds, PaneLeaf, PaneView, PlacementPreview } from "@widgetarium/layout";
 import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
@@ -41,7 +41,12 @@ export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardP
 	const previewed = useOptionalQuery(PlacementPreviewQuery, aim).data;
 	const shown = shownLayoutOf(previewed, box, spacing) ?? resting;
 	const preview = previewed === null || shown === resting ? undefined : shown.rects.get(previewed.placedId);
-	const places = panePlacesOf(root, box, spacing);
+	const places = panePlacesOf({
+		node: root,
+		box,
+		spacing,
+		dragged: null,
+	});
 	const placeOfLeaf = (id: string): PanePlace => {
 		if (shown === resting) {
 			return places.get(id) ?? fixedPlaceOf(box);
@@ -51,19 +56,16 @@ export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardP
 	};
 	const drawDrag = (edge: PaneEdge, share: number): void => {
 		if (root !== null && board.current !== null) {
-			drawLayout(
-				board.current,
-				draggedLayoutOf({
-					node: root,
-					box,
-					spacing,
-					dragged: {
-						splitId: edge.splitId,
-						at: edge.at,
-						share,
-					},
-				}),
-			);
+			drawLayout(board.current, {
+				node: root,
+				box,
+				spacing,
+				dragged: {
+					splitId: edge.splitId,
+					at: edge.at,
+					share,
+				},
+			});
 		}
 	};
 	return (

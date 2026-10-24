@@ -414,6 +414,26 @@ async function centreRightOf(page: AskedPage, paneId: string): Promise<readonly 
 	return Array.isArray(point) ? [Number(point[0]), Number(point[1])] : [0, 0];
 }
 
+const BOARD_GROWN_PX = 200;
+const BOARD_CHAIN = `(() => { const chain = []; let node = document.querySelector(".wg-pane-board"); while (node !== null && node !== document.documentElement) { chain.push(node); node = node.parentElement; } return chain; })()`;
+const PANE_AND_BOARD_HEIGHTS = `[document.querySelector(".wg-pane-board").clientHeight, ...[...document.querySelectorAll("[data-pane-id]")].map((pane) => Math.round(pane.getBoundingClientRect().height))]`;
+
+async function checksPanesFollowBoardAfterDrag(page: AskedPage): Promise<void> {
+	await page.ask(
+		`(() => { const grown = document.querySelector(".wg-pane-board").clientHeight + ${BOARD_GROWN_PX}; for (const node of ${BOARD_CHAIN}) { node.style.height = grown + "px"; } return true; })()`,
+	);
+	await waited(400);
+	const heights = await page.ask(PANE_AND_BOARD_HEIGHTS);
+	await page.ask(`(() => { for (const node of ${BOARD_CHAIN}) { node.style.height = ""; } return true; })()`);
+	await waited(400);
+	const [boardPx, ...panePx] = Array.isArray(heights) ? heights.map(Number) : [];
+	check(
+		"after an edge drag every pane still follows the board when it grows",
+		panePx.length > 0 && panePx.every((px) => Math.abs(px - (boardPx ?? 0)) <= 1),
+		heights,
+	);
+}
+
 async function checksEdgeDrag(page: AskedPage): Promise<void> {
 	const edge = await page.ask(
 		`(() => { const box = document.querySelector("[data-pane-edge]").getBoundingClientRect(); return [box.left + box.width / 2, box.top + box.height / 2]; })()`,
@@ -441,6 +461,7 @@ async function checksEdgeDrag(page: AskedPage): Promise<void> {
 			wanted,
 		},
 	);
+	await checksPanesFollowBoardAfterDrag(page);
 	await page.ask(
 		`document.querySelector("[data-pane-edge]").dispatchEvent(new MouseEvent("dblclick", { bubbles: true })); true`,
 	);

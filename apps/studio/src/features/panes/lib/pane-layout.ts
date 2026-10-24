@@ -34,7 +34,7 @@ export interface DraggedShare {
 	readonly share: number;
 }
 
-interface LayoutAsk {
+export interface LayoutAsk {
 	readonly node: PaneNode | null;
 	readonly box: PaneRect;
 	readonly spacing: PaneSpacing;
@@ -67,22 +67,17 @@ export interface PanePlace {
 
 const PROBE_PX = 1;
 
-export function panePlacesOf(
-	node: PaneNode | null,
-	box: PaneRect,
-	spacing: PaneSpacing,
-): ReadonlyMap<string, PanePlace> {
-	const here = paneLayoutOf(node, box, spacing).rects;
-	const grown = paneLayoutOf(
-		node,
-		{
-			...box,
-			width: box.width + PROBE_PX,
-			height: box.height + PROBE_PX,
+export function panePlacesOf(ask: LayoutAsk): ReadonlyMap<string, PanePlace> {
+	const here = laidOut(ask).rects;
+	const grown = laidOut({
+		...ask,
+		box: {
+			...ask.box,
+			width: ask.box.width + PROBE_PX,
+			height: ask.box.height + PROBE_PX,
 		},
-		spacing,
-	).rects;
-	return new Map(Array.from(here, ([id, rect]) => [id, placeOf(rect, grown.get(id) ?? rect, box)]));
+	}).rects;
+	return new Map(Array.from(here, ([id, rect]) => [id, placeOf(rect, grown.get(id) ?? rect, ask.box)]));
 }
 
 export function fixedPlaceOf(rect: PaneRect): PanePlace {
