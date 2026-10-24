@@ -1,6 +1,6 @@
 # Views
 
-A page is a composition of blocks, all under `ui/`. A block is a plain React component that reads its own requests; a layout is a block that places slots and reads nothing; a domain exports one root view (`Canvas`) composing them. A view decides nothing about data.
+Views live in client packages (`packages/client/<name>`, `"level": "client"`). A page is a composition of blocks; a block is a plain React component that reads its own requests; a layout is a block that places slots and reads nothing; a package exports its root views from `shared/ui/index.ts`. A view decides nothing about data.
 
 ## Four rules
 
@@ -13,9 +13,23 @@ A page is a composition of blocks, all under `ui/`. A block is a plain React com
 
    Toggling the pick is the handler's rule, not the view's.
 
-2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/shared/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding (**planned**).
+2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/shared/behaviors`. Hand-written pointer math in a block is a lint finding (**planned**).
 3. **A block owns its data; a layout passes none.** A layout only says where blocks stand. Swapping a block is one line.
-4. **State lives where it is needed.** Only this block, only for a moment (hover, an open popover) → the primitive's own state. Another block needs it, or it survives navigation → a query and a command over a client store.
+4. **Not all state is data.** State that must survive a restart, or that another part of the screen reads (a sidebar shown, pane shares, the chosen chat), is data: a query and a command of a data module. State of one block for a moment (hover, an animation frame, the pointer during a drag, scroll) stays in the view. A drag lives in the view while it moves and becomes a command when it is released.
+
+## Reaching the data
+
+The app starts the modules and gives the views their app:
+
+```tsx skip-check
+const layoutApp = startLayoutApp({ platform, workspaceId });
+
+<AppProvider app={layoutApp}>
+	<StudioFrame />
+</AppProvider>;
+```
+
+A block imports requests from the data module's `"."` and reads them through the hooks; it never imports `"./module"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.
 
 ## Reading and writing
 
@@ -40,31 +54,17 @@ export function TaskList() {
 
 The second argument is always the request's input. Choose by one question: can the block draw anything meaningful without this data? No → `useQuery`.
 
-A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause`, and `with(input)` bound to one input. `can` / `cannotBecause` say only whether the request can be routed (a local module runs it or a server is configured); they never evaluate guards, which run only on the server. Every refusal goes to the app's one refusal handler (`OnRefused`, `toastRefusal` by default); a block shows `refusal` inline only where it fits. A second run of an input still running is refused to the caller (`… is already running`).
+A command handle has `run(input)`, `isRunning`, `refusal`, `can`, `cannotBecause`, and `with(input)` bound to one input. `can` / `cannotBecause` say only whether the request can be routed; they never evaluate guards. Every refusal goes to the app's one refusal handler (`OnRefused`, `toastRefusal` by default); a block shows `refusal` inline only where it fits.
 
 ## Layouts and slots
 
-```tsx skip-check
-export function Canvas() {
-	return (
-		<CanvasLayout
-			header={<PageTabs />}
-			start={<CanvasSidebar top={<PagesList />} bottom={<LayersPanel />} />}
-			end={<LookPanel />}
-		>
-			<CanvasField />
-		</CanvasLayout>
-	);
-}
-```
+A layout is built from `<Slot>`, and a slot is a boundary: Suspense for a block's required data and an error boundary for its failures. Both have defaults from the kit; a block that needs its own passes them: `<Slot loading={<TasksSkeleton />} error={(refusal) => <TasksFailed reason={refusal} />}>`. Inside a block, `<Section>` is the same boundary around one part. `useQuery` suspends only on its first read of an input.
 
-`Canvas` lives in `packages/domain/canvas/shared/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [CanvasClientModule.with(parts)] })}><Canvas /></AppProvider>`.
+**Empty is a design decision, not a rule.** The design canvas draws every block with empty answers (a fake mediator answers the requests), so a person sees the empty look and decides.
 
-A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md#live-data-watch)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
+## View-only state shared between blocks
 
-A layout is built from `<Slot>`, and a slot is a boundary: Suspense for a block's required data and an error boundary for its failures. Both have defaults from the kit; a block that needs its own passes them: `<Slot loading={<TasksSkeleton />} error={(refusal) => <TasksFailed reason={refusal} />}>`. Inside a block, `<Section>` is the same boundary around one part, so a failing column does not break the block. A block that reads no required data needs nothing.
-
-**Empty is a design decision, not a rule.** Drawing nothing for zero items is often right. The design canvas draws every block with empty answers (a fake mediator answers the requests), so a person sees the empty look and decides.
+When two mounted blocks share something that is not data (a DOM node a header portals into, the look a mounted plate paints), it is a small object in the client package's `lib/`, provided through React context and read with `useSyncExternalStore`: `PlateHeaderStore` in `client/shell`. It holds nothing that must survive a restart and no rule about data.
 
 ## Size
 

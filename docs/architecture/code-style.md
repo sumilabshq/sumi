@@ -6,90 +6,95 @@ How code is written inside the architecture. The rules hold in any project built
 
 **A name ends with its kind**, and every declared building block is PascalCase, so a later move to classes renames nothing. camelCase is for ordinary values and functions only.
 
-| Thing              | Rule                                                                    | Example                                               |
-| ------------------ | ----------------------------------------------------------------------- | ----------------------------------------------------- |
-| a query            | noun phrase + `Query`, no `Get`                                         | `PagesQuery`                                          |
-| a command          | verb phrase + `Command`                                                 | `AddPhotosCommand`                                    |
-| a handler          | its request's name + `Handler`                                          | `AddPhotosCommandHandler`, `PagesQueryHandler`        |
-| a guard            | what it checks + `Guard`                                                | `AuthenticatedGuard`, `OwnsInvoiceGuard`              |
-| a middleware       | what it does + `Middleware`                                             | `TimingLoggerMiddleware`                              |
-| a module           | its domain + its side + `Module`                                        | `CanvasClientModule`, `BillingServerModule`           |
-| a request's string | `<module>/<name without the suffix, kebab case>`                        | `canvas/add-photos`                                   |
-| a gateway          | what it reaches + `Gateway`, an `abstract class` that is also its token | `abstract class DesignFilesGateway`                   |
-| its implementation | `<Platform><Name>Gateway`                                               | `ObsidianDesignFilesGateway`, `WebDesignFilesGateway` |
-| a file             | kebab-case; a feature holds `contract.ts` and `handlers.ts`             | `obsidian.gateway.ts`, `design-reads.ts`              |
+| Thing              | Rule                                                                     | Example                                                         |
+| ------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| a query            | noun phrase + `Query`, no `Get`                                          | `FrameSidesQuery`                                               |
+| a command          | verb phrase + `Command`                                                  | `ToggleFrameSideCommand`                                        |
+| a request's string | the constant without its suffix, kebab case; the module adds `<module>/` | `"toggle-frame-side"` → `layout/toggle-frame-side`              |
+| a module           | its area + `Module`                                                      | `LayoutModule`                                                  |
+| a guard            | what it checks + `Guard`                                                 | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
+| a middleware       | what it does + `Middleware`                                              | `TimingLoggerMiddleware`                                        |
+| a gateway          | its data + `Gateway`, an `abstract class` that is also its token         | `FrameSidesGateway`, `PaneTreeGateway`                          |
+| its implementation | `<Storage><Name>Gateway`: what it stores in                              | `TauriFrameSidesGateway`, `FlagMemoryFrameSidesGateway`         |
+| a gateway method   | the data it reads or writes, never a generic verb                        | `sides()`, `saveSides(sides, reason)`, `sidesChanged(listener)` |
+| a storage shape    | `Kept<Name>Schema`, beside its gateway                                   | `KeptPaneTreeSchema`                                            |
+| a file             | kebab-case                                                               | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
 
-**A module is named `<Domain><Side>Module`; a handler names its module**, so its side is visible in the handler file: `handler(ChargeCommand, BillingServerModule)`. `building-block-names` enforces every row above but the files.
+`building-block-names` enforces the PascalCase and suffix rows; `feature-layout` the request string.
 
 ## The fluent chain
 
-The fluent chain is this project's one declaration pattern: requests, handlers, guards, middleware and modules are all declared by it, as zod schemas already are.
+The fluent chain is this project's one declaration pattern: requests, modules, guards and middleware are all declared by it, as zod schemas already are.
 
 - **One concern per call**, read top to bottom in the order it runs.
-- **Every behaviour ends in `.handle()`**: a handler, a guard, a middleware. A server handler's `.handle` exists only once a guard covers it, on its module or itself; a client handler's at once.
+- **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
 - **`.guard` decides who may call, `.use` wraps the call**: two verbs, never one for both.
 - **Never an options object.** A declaration that takes `{ inject, run, … }` is the shape this rule replaced.
 
 ```ts skip-check
-export const ChargeCommandHandler = handler(ChargeCommand, BillingServerModule)
+export const PayInvoiceCommand = command("pay-invoice")
+	.input(PayInvoiceInputSchema)
+	.idempotencyKey((input) => input.invoiceId)
 	.guard(AuthenticatedGuard)
 	.guard(OwnsInvoiceGuard)
 	.use(TimingLoggerMiddleware)
-	.inject({ billingDb: BillingDb })
-	.handle((input, { billingDb, user, invoice, idempotencyKey }) =>
-		billingDb.insertCharge(input, invoice, user.id, idempotencyKey),
-	);
-```
+	.inject({ invoices: InvoicesGateway })
+	.handle((input, { invoices, invoice, user, idempotencyKey }) => {
+		const refusal = refusePayment(invoice);
 
-The guard checks the user, the next one finds the invoice and adds it, the middleware times the rest, `.inject` names the module's dependencies, `.handle` decides: the order on the page is the order of the call.
+		if (refusal !== null) {
+			return refuse(refusal);
+		}
 
-**An injected key is named exactly like its class, in camelCase.** Never shortened, never generic:
-
-```ts skip-check
-inject: { designFilesGateway: DesignFilesGateway, designReads: DesignReads, canvasStore: CanvasStore },
-```
-
-Not `photos`, `reads`, `store`: a second store would force renaming the first. The name of a thing is the same everywhere it appears.
-
-## A contract and its handlers
-
-`features/photos/contract.ts`:
-
-```ts skip-check
-export const AddPhotosCommand = command("canvas/add-photos")
-	.input(z.object({ photos: z.array(z.instanceof(File)) }))
-	.idempotencyKey(PerCall);
-```
-
-`features/photos/handlers.ts`:
-
-```ts skip-check
-export const AddPhotosCommandHandler = handler(AddPhotosCommand, CanvasClientModule)
-	.inject({ designReads: DesignReads, designFilesGateway: DesignFilesGateway, canvasStore: CanvasStore })
-	.handle(async ({ photos }, { designReads, designFilesGateway, canvasStore }) => {
-		const { app } = canvasStore.now();
-		await addPhotos(designFilesGateway, app, photos);
-		designReads.changed(app);
+		return invoices.savePayment(paymentOf(invoice, user.id, idempotencyKey));
 	});
 ```
 
-- A contract imports only zod, the engine's builder and `shared/schema`: never a guard, a handler, a store or a gateway (`contract-imports`). Guards are the handler's steps, or its module's.
-- `contract.ts` and `handlers.ts` stay ≤ 400 lines each. No file of a module keeps top-level state: no `let`, no writable `Map`, `Set` or array (`module-state`); state is a store the module provides. A store is storage only: one writer, a `was → became` log, its watchers told, an early exit when nothing changed. Which page a turn clears, what is persisted and when a look fades are decisions, so they live in handlers, and persistence goes through a gateway (`RendererPreferenceGateway`, `CanvasHost.keepOpening`). A feature that outgrows that splits into two features.
-- **No reach-through.** A handler calls what it injected: `designFilesGateway.writeText(…)`, never `designReads.folder.write(…)`. If it needs it, it injects it.
-- A handler that refuses before writing calls `refuse(reason)` rather than throwing ([requests.md](requests.md#ran)).
+## Injected keys
+
+**An injected key is the data's name: the class name without `Gateway`, in camelCase.** `frameSides: FrameSidesGateway`, `paneTree: PaneTreeGateway`, `invoices: InvoicesGateway`. Never shortened further, never generic (`store`, `data`, `gw`). The name of a thing is the same everywhere it appears: the key in `.inject`, the field in `provide`, the parameter in `.handle`.
+
+## A request
+
+- `requests.ts` imports only `@widgetarium/core/requests`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
+- Its schemas live in `shared/schema/`, never beside the request: the generator refuses one declared there.
+- **No reach-through.** A handler calls what it injected: `frameSides.saveSides(…)`, never `layout.frameSides.saveSides(…)`. If it needs it, it injects it.
+- A handler that refuses before writing calls `refuse(reason)` rather than throwing.
+- `requests.ts` stays ≤ 400 lines. A feature that outgrows it splits into two features.
+- No file of a data module keeps top-level state: no `let`, no writable `Map`, `Set` or array (`module-state`). State lives behind a gateway.
+
+## Logging
+
+A command that changes state logs the transition, never the event: `was → now` and why.
+
+```ts skip-check
+const reason = `frame side ${side} ${was} → ${next} (toggle)`;
+frameSides.saveSides(next, reason);
+console.info(`[widgetarium] ${reason}`);
+```
+
+- The same `reason` string goes to the gateway (the storage may keep it) and to the log.
+- Every early exit logs why: `frame side left peek skipped: docked`.
+- A refusal carries its reason in `refuse(…)`; the app reports it once to the developer and once to the person.
+- The prefix is `[widgetarium]`. TODO: a project logger in place of `console`.
 
 ## A module and what it provides
 
-A class built in `provide` takes its dependencies as constructor arguments:
-
 ```ts skip-check
-export const CanvasClientModule = clientModule("canvas").provide((parts: CanvasParts) => ({
-	...parts,
-	designReads: new CachedDesignReads(parts.designFolderGateway, parts.agentJobsGateway, parts.designFilesGateway),
-}));
+const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => LayoutParts>> = {
+	browser: ({ scope }) => webLayoutParts(scope.workspaceId),
+	tauri: ({ scope }) => tauriLayoutParts(scope.workspaceId),
+	server: () => serverLayoutParts(),
+};
+
+export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
+	return PARTS_ON[facts.platform](facts);
+}
 ```
 
-The host builds the parts once per mount, one factory per platform in `gateways/canvas-parts/`: `webCanvasParts(project, canvasHost)`, `obsidianCanvasParts(obsidianDesign, canvasHost)`, both from `"./gateways"`.
+- One picker per module in `gateways/<module>-parts/`: a record keyed by `Platform`, so a new platform is a type error until every module answers it.
+- A class built there takes its dependencies as constructor arguments.
+- `module.ts` holds only `module(...)…provide((facts) => ({ ...layoutPartsOn(facts) }))`.
 
 ## A block
 
@@ -100,18 +105,10 @@ The host builds the parts once per mount, one factory per platform in `gateways/
 
 ## A gateway
 
-- Declared as an `abstract class` with abstract methods; that class is what `inject` names.
-- Every implementation sits beside it, named for its platform (`obsidian.gateway.ts`, `web.gateway.ts`); one with private parts gets its own folder (`obsidian/obsidian.gateway.ts` and its parts).
-- Only calls its system, by path; its methods return typed results and throw only refusals from its closed list.
-- **One area per class, split by area, never by line count.** Method names repeating one noun (`jobs`, `onJobs`, `liveJob`, `stopJob`) mean that noun is a class of its own. Moving bodies into free-function files to shorten a class is not a split: it adds a hop and keeps every job in one place. The `cohesion-reviewer` agent checks this.
-
-| Before: one `DesignSource` (15 members)      | After: one class per area                                                 |
-| -------------------------------------------- | ------------------------------------------------------------------------- |
-| `design`, `docs`, `onChanged`, `noteBoard`   | `DesignFolderGateway`                                                     |
-| `jobs`, `onJobs`, `liveJob`, `stopJob`       | `AgentJobsGateway`                                                        |
-| `drawing`                                    | `WidgetDrawingGateway`                                                    |
-| `addPhotos`, `moveLayer`, `look`, `pickLook` | `DesignFilesGateway`: one system, the design's files, whoever writes them |
-| `returnToView`                               | `CanvasHost`                                                              |
+- Declared as an `abstract class` with abstract methods; that class is what `.inject` names.
+- Every implementation sits beside it, named for its storage (`tauri.gateway.ts`, `px-memory.gateway.ts`); one with private parts gets its own folder.
+- Stores and hands back, nothing else ([layers.md](layers.md)): it may map, serialize, check a stored shape and translate a storage error; it never decides, never calls another gateway.
+- **One area per class, split by area, never by line count.** Method names repeating one noun (`jobs`, `onJobs`, `liveJob`, `stopJob`) mean that noun is a class of its own. Moving bodies into free-function files to shorten a class is not a split. The `cohesion-reviewer` agent checks this.
 
 ## Comments
 

@@ -1,96 +1,108 @@
 # Where a file goes
 
-A file's place is decided by **what it is** and **who uses it**: a feature's own code stays in the feature; what two features use moves to `shared/`.
+A file's place is decided by **what it is** and **who uses it**: a feature's own code stays in the feature; what two features use moves to `shared/`. There are two package shapes: a data module and a client package.
 
-## Inside a module
+## A data module
+
+`packages/domain/<name>/` or `packages/state/<name>/`, `"widgetarium": { "level": "domain" }`. Reference: `packages/state/layout`.
 
 ```
-packages/<layer>/<module>/
-  package.json                 name, "widgetarium": { "level": "domain" }, the three entries
-  module.ts                    only the serverModule(...) or clientModule(...) definition
-  features/<feature>/          contract.ts, handlers.ts, ui/ (the feature's blocks), lib/ (feature-only code)
-  features/<group>/<feature>/  a group holds only feature folders; two levels at most
-  shared/ui/                   blocks two features use, and the module's root views (composition); ui/index.ts is the public ui
-  shared/lib/                  code two features use
-  shared/schema/               <record>.schema.ts: zod shapes (and Drizzle tables, when the module has a database)
-  gateways/<gateway>/          <gateway>.gateway.ts (abstract) and one <platform>.gateway.ts per platform
-  gateways/<gateway>/<platform>/ an implementation with private parts: <platform>.gateway.ts is its one entry
-  generated/                   index.ts, module.ts, gateways.ts: written by `widgetarium generate`, never by hand
+index.ts                         generated: export * from "./generated/contract.js"; the "." entry
+module.ts                        module("<name>").queries(…).commands(…).provide(…); the "./module" entry
+features/<feature>/requests.ts   the feature's requests, each with its handler
+features/<feature>/lib/          pure functions the feature's handlers share
+shared/lib/                      pure functions two features use
+shared/schema/<record>.schema.ts zod shapes and their inferred types
+gateways/<gateway>/              <gateway>.gateway.ts (the abstract class), one <storage>.gateway.ts per implementation
+gateways/<module>-parts/         the picker: which implementation each platform gets (layoutPartsOn)
+generated/contract.ts            generated, self-contained: every listed request up to its first handling step
 ```
 
-A server module has no `ui/`. No empty folder is created ahead. The top holds nothing else but `package.json`, `tsconfig*.json`, `LICENSE` and a stylesheet.
+No `ui/`, no `.tsx`, no React. No empty folder is created ahead. The top holds nothing else but `package.json`, `tsconfig*.json`, `LICENSE`.
 
-A data module (`module(...)`, [requests.md](requests.md#a-data-module-requests-that-handle-themselves)) holds `features/<feature>/requests.ts` instead of `contract.ts` and `handlers.ts`, no `ui/` and no `.tsx`, and may expose pure helpers its views use through `shared/lib/index.ts`. Its `module.ts` imports the features' `requests.ts` to list them; nothing imports `module.ts` back. Its views live in a client package (`"level": "client"`, `index.ts` as its one entry), which reaches the module only through its `"."` entry.
+## A client package
+
+`packages/client/<name>/`, `"widgetarium": { "level": "client" }`. Reference: `packages/client/shell`.
+
+```
+index.ts                         generated: export * from "./shared/ui/index.js"; the "." entry
+features/<feature>/ui/<block>/   the feature's blocks, .tsx only
+features/<feature>/lib/          hooks and helpers the feature's blocks use, .ts
+shared/ui/                       blocks two features use, the root views; shared/ui/index.ts names what is public
+shared/lib/                      hooks and helpers two features use
+```
+
+No `requests.ts`, no `gateways/`, no `module.ts`, no `generated/`. A client package names a data module only as a dependency in `package.json` and imports only its `"."`.
 
 ## The layer order
 
-A module has four layers, and imports point one way, the right one importing the left:
+Inside a data module imports point one way, the right one importing the left:
 
 ```
 shared → gateways → features → module.ts
 ```
 
-| Layer       | Imports                                                                   |
-| ----------- | ------------------------------------------------------------------------- |
-| `shared/`   | `shared/` only                                                            |
-| `gateways/` | `shared/` and `gateways/`                                                 |
-| `features/` | `shared/`, `gateways/` and its own folder; `handlers.ts` also `module.ts` |
-| `module.ts` | `shared/` and `gateways/`                                                 |
+| Layer       | Imports                                                    |
+| ----------- | ---------------------------------------------------------- |
+| `shared/`   | `shared/` only                                             |
+| `gateways/` | `shared/` and `gateways/`                                  |
+| `features/` | `shared/`, `gateways/` and its own folder                  |
+| `module.ts` | `gateways/` (the picker) and every feature's `requests.ts` |
 
-`handlers.ts` imports `module.ts` only to name it, `handler(X, CanvasClientModule)`; `module.ts` imports no feature, so no cycle forms. `generated/` is written by the generator and stands outside the order. A gateway is the module's access to data or an outside system (Fowler's Gateway): an abstract class and one implementation per platform. `layer-order` checks the table.
+Nothing imports `module.ts` inside the package. `generated/` is written by the generator and stands outside the order. `layer-order` checks the table.
 
-## The three entries
+## The entries
 
-| Entry          | Points at               | Holds                                                                                                                | Imported by                                                                                                           |
-| -------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `"."`          | `generated/index.ts`    | every contract, every `shared/schema`, and `shared/ui/index.ts`                                                      | anyone                                                                                                                |
-| `"./module"`   | `generated/module.ts`   | the definition joined with every exported `*Handler`                                                                 | a starter: a client app or host for a client module; a server app for a server module (behind the `server` condition) |
-| `"./gateways"` | `generated/gateways.ts` | every gateway, every platform implementation, the parts type and factories (`obsidianCanvasParts`, `webCanvasParts`) | a starter or host; a web build keeps only what it uses (`sideEffects: false`)                                         |
+| Package     | Entry        | Points at       | Holds                                                   | Imported by                    |
+| ----------- | ------------ | --------------- | ------------------------------------------------------- | ------------------------------ |
+| data module | `"."`        | root `index.ts` | the generated contract: requests and their schemas only | anyone                         |
+| data module | `"./module"` | `module.ts`     | the module with every handler and every gateway         | only the app that starts it    |
+| client      | `"."`        | root `index.ts` | `shared/ui/index.ts`                                    | an app, another client package |
 
-A `module(...)` package has two entries: `"."` is the root `index.ts`, which only re-exports `generated/contract.ts`, and `"./module"` is `module.ts`, imported by the app that starts it. It has no `"./gateways"`: the module picks its gateways from the platform. A client package's `"."` is a root `index.ts` re-exporting `shared/ui/index.ts` and `shared/lib/index.ts`. In both, `generated/` holds only generated code, never a re-export; the generator refuses to write one there.
+There is no `"./gateways"`: the module picks its gateways from the facts it is given. **`generated/` holds only generated code, never a re-export**: re-exporting `module.ts` from a generated entry would drag every handler and gateway into each client bundle; the generator refuses to write one. Every generated file opens with `// @generated by widgetarium generate. Do not edit`.
 
 ## The table
 
-| The file is…                                              | It goes to                                                   |
-| --------------------------------------------------------- | ------------------------------------------------------------ |
-| what a view or another module may ask                     | `features/<feature>/contract.ts`                             |
-| the logic answering it                                    | `features/<feature>/handlers.ts`                             |
-| a block one feature draws                                 | `features/<feature>/ui/`                                     |
-| code one feature uses                                     | `features/<feature>/lib/`                                    |
-| a block or code two features use, a root view             | `shared/ui/`, `shared/lib/`                                  |
-| a record's shape                                          | `shared/schema/<record>.schema.ts`                           |
-| where the module runs and what its handlers share         | `module.ts`                                                  |
-| data or an outside system (the vault, a database, Stripe) | `gateways/<gateway>/`: the gateway and one file per platform |
-| the parts one platform builds                             | `gateways/<module>-parts/<platform>.gateway.ts`              |
-| behavior with no domain (drag, scroll, focus)             | `packages/shared/behaviors`                                  |
-| a drawn part with no domain                               | the kit                                                      |
-| a route, a page, the modules an app starts                | `apps/<product>/`                                            |
-| what runs the apps inside another program                 | `apps/host-<name>/`                                          |
+| The file is…                                                    | It goes to                                                                |
+| --------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| a request a view or another module may send, with its handler   | `features/<feature>/requests.ts`                                          |
+| a pure computation one feature's handlers share                 | `features/<feature>/lib/`                                                 |
+| a pure computation two features use                             | `shared/lib/`                                                             |
+| a record's shape                                                | `shared/schema/<record>.schema.ts`                                        |
+| a storage-only shape (what is kept on disk, its check)          | beside its gateway (`KeptPaneTreeSchema` in `gateways/pane-tree/`)        |
+| storage or an outside system (memory, a file, Tauri, Stripe)    | `gateways/<gateway>/`: the abstract class and one file per implementation |
+| which implementation a platform gets                            | `gateways/<module>-parts/`                                                |
+| the list of a module's requests and its `provide`               | `module.ts`                                                               |
+| a block, a layout, a root view                                  | a client package's `ui/`                                                  |
+| a hook or helper a block uses                                   | a client package's `lib/`                                                 |
+| behavior with no domain (drag, scroll, focus)                   | `packages/shared/behaviors`                                               |
+| a drawn part with no domain                                     | the kit                                                                   |
+| a route, a page, the modules an app starts, the facts it passes | `apps/<product>/`                                                         |
+| what runs the apps inside another program                       | `apps/host-<name>/`                                                       |
 
 ## Questions an agent asks, answered
 
-**Another module needs this request.** Its contract is in the `"."` entry already; the other module declares the dependency and sends it. It never imports the handler or the module.
+**Another module needs this request.** Import its contract from that module's `"."`, name it in `.sends(...)`, and call `send(Request, input)` in the handler ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
 
-**Two features need the same helper.** It moves to `shared/lib/`. A feature never imports another feature's `ui/` or `lib/`.
+**Two handlers of one feature compute the same thing.** It is a pure function in that feature's `lib/`. Two features → `shared/lib/`. A feature never imports another feature's `lib/`.
 
-**Where does this handler get X?** It names `x: X` in `inject`. The module's `provide` returns it, built from the host's parts.
+**Where does this handler get X?** It names `x: XGateway` in `.inject`. The module's `provide` returns it, built from the facts.
 
-**A decision about data in a gateway?** It moves to a handler or `lib/`. A gateway holds only the calls to its system.
+**A decision in a gateway?** It moves to the handler, or to a pure function in `lib/` the handler calls ([layers.md](layers.md)).
 
-**What does an app import from a module?** The root view from `"."`, the assembled module from `"./module"`, the parts factory from `"./gateways"`: `app({ modules: [CanvasClientModule.with(webCanvasParts(project, host))] })`.
+**What does an app import?** The module from `"./module"` to start it, the views from the client package's `"."`: `app({ modules: [LayoutModule], platform, scope })` and `<AppProvider app={…}><StudioFrame /></AppProvider>`.
 
-**One platform's gateway in another's bundle?** Never: the browser studio imports `webCanvasParts` from `"./gateways"`, and tree-shaking leaves every Obsidian implementation out. `npm run test:web-canvas-bundle` proves it from the esbuild metafile.
+**One platform's gateway in another's bundle?** Today the picker imports every implementation, so a browser bundle carries Tauri's gateway code (a `TRADE-OFF:` in `tauri.gateway.ts`, guarded at run time). **planned**: a build-time platform condition.
 
 ## File names
 
-| Name                    | Kind                                         |
-| ----------------------- | -------------------------------------------- |
-| `contract.ts`           | a feature's requests                         |
-| `handlers.ts`           | their handlers                               |
-| `module.ts`             | the module definition                        |
-| `<gateway>.gateway.ts`  | the abstract class of a gateway              |
-| `<platform>.gateway.ts` | one implementation of it (`obsidian`, `web`) |
-| `<record>.schema.ts`    | zod shapes                                   |
-| `<block>.tsx`           | a block or a part, TSX + Tailwind            |
+| Name                   | Kind                                                                            |
+| ---------------------- | ------------------------------------------------------------------------------- |
+| `requests.ts`          | a feature's requests and their handlers                                         |
+| `module.ts`            | the module definition                                                           |
+| `<gateway>.gateway.ts` | the abstract class of a gateway                                                 |
+| `<storage>.gateway.ts` | one implementation of it (`tauri`, `web`, `px-memory`, `json-memory`, `server`) |
+| `<record>.schema.ts`   | zod shapes                                                                      |
+| `<block>.tsx`          | a block or a part, TSX + Tailwind                                               |
 
 Files are kebab-case; exports are named.
