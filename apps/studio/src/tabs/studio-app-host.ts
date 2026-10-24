@@ -3,9 +3,12 @@ import type { AppHostParts, StudioAppHost, TabsSessionGateway } from "@widgetari
 import type { BrowserParts } from "@widgetarium/browser/gateways";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
+import { app } from "@widgetarium/core/requests";
+import { DropGoneTabsCommand } from "@widgetarium/layout";
+import { LayoutModule } from "@widgetarium/layout/module";
 import type { LayoutParts } from "@widgetarium/layout/gateways";
 import { BrowserAppPageFactsGateway } from "./browser-page-facts.gateway.js";
-import { LayoutPaneTabsGateway } from "./layout-pane-tabs.gateway.js";
+import { LayoutPaneTabsGateway, reportRefused } from "./layout-pane-tabs.gateway.js";
 
 export interface StudioAppHostAsk {
 	readonly state: StudioState;
@@ -18,13 +21,15 @@ export interface StudioAppHostAsk {
 }
 
 export function startedAppHostParts({ state, browser, layout, workspace, kept = {} }: StudioAppHostAsk): AppHostParts {
-	layout.paneTreeStore.dropGoneTabs(new Set(keptTabIdsOf(kept.tabsSessionGateway)));
+	const layoutApp = app({ modules: [LayoutModule.with(layout)] });
+	const heldTabIds = keptTabIdsOf(kept.tabsSessionGateway);
+	void reportRefused("drop the panes of gone tabs", layoutApp.send(DropGoneTabsCommand, { heldTabIds }));
 	return studioAppHostParts({
 		...kept,
 		studioState: state,
 		workspace,
 		pageFactsGateway: new BrowserAppPageFactsGateway(browser),
-		paneTabsGateway: new LayoutPaneTabsGateway(layout.paneTreeStore),
+		paneTabsGateway: new LayoutPaneTabsGateway(layoutApp),
 	});
 }
 

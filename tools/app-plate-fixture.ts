@@ -16,6 +16,9 @@ import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.t
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { startedAppHostParts } from "../apps/studio/src/tabs/studio-app-host.ts";
 import { webLayoutParts } from "../packages/layout/gateways/layout-parts/web.gateway.ts";
+import { PlacePaneCommand } from "../packages/layout/generated/contract.ts";
+import { LayoutModule } from "../packages/layout/module.ts";
+import { app } from "../packages/core/src/requests/index.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 
 export const TAURI_WORKSPACE = "Untitled workspace";
@@ -157,7 +160,11 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	const layout = webLayoutParts(TAURI_WORKSPACE);
 	Object.assign(window, {
 		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			layout.paneTreeStore.place({ kind: "app", tabId }, { targetId: "pane-app", side: "right" }),
+			app({ modules: [LayoutModule.with(layout)] }).send(PlacePaneCommand, {
+				view: { kind: "app", tabId },
+				targetId: "pane-app",
+				side: "right",
+			}),
 	});
 	state.show("canvas");
 	return {
