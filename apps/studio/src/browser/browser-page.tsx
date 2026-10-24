@@ -32,5 +32,5 @@ export function BrowserPage({ parts }: BrowserPageProps): ReactElement {
 }
 
 function createBrowserApp(parts: BrowserParts): StartedApp {
-	return app({ modules: [BrowserClientModule.with(parts)] });
+	return app().modules(BrowserClientModule.with(parts)).start();
 }

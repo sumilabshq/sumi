@@ -30,7 +30,7 @@ export class BrowserAppPageFactsGateway extends PageFactsGateway {
 
 	constructor(parts: BrowserParts) {
 		super();
-		this.browserApp = app({ modules: [BrowserClientModule.with(parts)] });
+		this.browserApp = app().modules(BrowserClientModule.with(parts)).start();
 		this.isBrowserAvailable = parts.browserPagesGateway.isAvailable();
 		this.opensOwnWindows = parts.browserPagesGateway.canOpenOwnWindow();
 		const refresh = (): void => void this.refresh();

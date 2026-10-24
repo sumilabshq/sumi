@@ -1,4 +1,4 @@
-import { module } from "@widgetarium/core/requests";
+import { Device, module } from "@widgetarium/core/requests";
 import { layoutPartsOn } from "./gateways/layout-parts/layout-parts.gateway.js";
 import {
 	ClosePanesOfTabsCommand,
@@ -24,8 +24,12 @@ import {
 import { FrameWidthsQuery, ResetFrameEdgeCommand, ResizeFrameEdgeCommand } from "./features/frame-widths/requests.js";
 
 export const LayoutModule = module("layout")
-	.queries(FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery)
-	.commands(
+	.on(Device)
+	.public(
+		FrameSidesQuery,
+		FrameWidthsQuery,
+		PaneTreeQuery,
+		PlacementPreviewQuery,
 		ToggleFrameSideCommand,
 		PeekFrameSideCommand,
 		ConcealFrameSideCommand,

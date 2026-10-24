@@ -15,7 +15,7 @@ export interface ChatsColumnApp {
 }
 
 export function createChatsColumnApp(parts: WorkspacesParts): ChatsColumnApp {
-	const started = app({ modules: [WorkspacesClientModule.with(parts)] });
+	const started = app().modules(WorkspacesClientModule.with(parts)).start();
 	return {
 		activeChat: parts.activeChat,
 		column: h(AppProvider, { app: started }, h(ChatsColumn)),

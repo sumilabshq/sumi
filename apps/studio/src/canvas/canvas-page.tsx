@@ -48,5 +48,5 @@ function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefin
 }
 
 function createCanvasApp(parts: CanvasParts): StartedApp {
-	return app({ modules: [CanvasClientModule.with(parts)] });
+	return app().modules(CanvasClientModule.with(parts)).start();
 }

@@ -17,9 +17,9 @@ export interface ChatAppAsk {
 const CHAT_APPS = new WeakMap<StudioState, StartedApp>();
 
 export function chatAppOf({ state, mascot, gateways }: ChatAppAsk): StartedApp {
-	const chatApp = app({
-		modules: [MascotClientModule.with(mascot), AssistantClientModule.with(assistantPartsOf(gateways))],
-	});
+	const chatApp = app()
+		.modules(MascotClientModule.with(mascot), AssistantClientModule.with(assistantPartsOf(gateways)))
+		.start();
 	CHAT_APPS.set(state, chatApp);
 	return chatApp;
 }

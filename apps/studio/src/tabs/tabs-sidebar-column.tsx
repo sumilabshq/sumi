@@ -9,7 +9,7 @@ import { AppProvider, app } from "@widgetarium/core/requests";
 const COLUMN = "cv:flex cv:h-full cv:min-h-0";
 
 export function TabsSidebarColumn({ hostParts }: { readonly hostParts: AppHostParts }): ReactElement {
-	const [hostApp] = useState(() => app({ modules: [AppHostClientModule.with(hostParts)] }));
+	const [hostApp] = useState(() => app().modules(AppHostClientModule.with(hostParts)).start());
 	const column = useRef<HTMLDivElement | null>(null);
 	return (
 		<AppProvider app={hostApp}>

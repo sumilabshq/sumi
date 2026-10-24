@@ -248,7 +248,11 @@ async function checksPreview(check: Check): Promise<void> {
 
 function checksTabsClient(check: Check): void {
 	const parts = partsOf();
-	const tabs = new LayoutPaneTabsGateway(app({ modules: [LayoutModule.with({ ...parts })] }));
+	const tabs = new LayoutPaneTabsGateway(
+		app()
+			.modules(LayoutModule.with({ ...parts }))
+			.start(),
+	);
 	const beforeDrop = tabs.showInTargetPane("tab-1");
 	placeTab(parts, "tab-3", "pane-app");
 	const shown = tabs.showInTargetPane("tab-5");
@@ -259,7 +263,9 @@ function checksTabsClient(check: Check): void {
 		!beforeDrop && shown && JSON.stringify(inPanes) === '["tab-5"]' && tabs.tabIdsInPanes().length === 0,
 		{ beforeDrop, shown, inPanes, after: tabs.tabIdsInPanes() },
 	);
-	const layoutApp = app({ modules: [LayoutModule.with({ ...parts })] });
+	const layoutApp = app()
+		.modules(LayoutModule.with({ ...parts }))
+		.start();
 	placeTab(parts, "tab-8", "pane-app");
 	void layoutApp.send(DropGoneTabsCommand, { heldTabIds: [] });
 	check(

@@ -8,5 +8,5 @@ export interface LayoutAppAsk {
 }
 
 export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): StartedApp {
-	return app({ modules: [LayoutModule], platform, scope: { workspaceId } });
+	return app().modules(LayoutModule).start({ platform, scope: { workspaceId } });
 }

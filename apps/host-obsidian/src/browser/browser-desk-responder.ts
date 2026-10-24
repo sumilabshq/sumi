@@ -70,7 +70,7 @@ export function openDeskAt(opening: DeskOpening): Desk {
 		fs: opening.fs,
 		files,
 		folders,
-		deskApp: app({ modules: [BrowserClientModule.with(opening.parts)] }),
+		deskApp: app().modules(BrowserClientModule.with(opening.parts)).start(),
 		token: randomHex(),
 		refusal: refuseInkBrowser(opening.isProductionBuild),
 	};
