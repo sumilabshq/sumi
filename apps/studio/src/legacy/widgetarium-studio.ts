@@ -20,9 +20,8 @@ import type { StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
 import { chatAppOf } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
+import { startWorkspacesApp } from "../chats-column/workspaces-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
-import { webWorkspacesParts } from "@widgetarium/workspaces/gateways";
-import type { WorkspacesParts } from "@widgetarium/workspaces/gateways";
 import { withChatComposer } from "../browser/chat-app-composer.gateway.js";
 import { AppPlate } from "../frame/app-plate.js";
 import { ChatPlate } from "../frame/chat-plate.js";
@@ -76,7 +75,7 @@ export interface StudioStart extends ProjectStart {
 	readonly appHost?: AppHostParts;
 	readonly activeChat?: ActiveChatPort;
 	readonly layoutApp?: StartedApp;
-	readonly workspaces?: WorkspacesParts;
+	readonly workspacesApp?: StartedApp;
 }
 
 export interface WidgetariumStudioProps {
@@ -231,7 +230,9 @@ function lentPortsOf(opened: OpenedApp, start: StudioStart): Pick<StartedStudio,
 
 function startedTabsOf(start: StudioStart, tabs: TabsAsk): Pick<StartedStudio, "appHost" | "chatsColumn"> {
 	const { state, browser, studio } = tabs;
-	const chatsColumn = createChatsColumnApp(start.workspaces ?? webWorkspacesParts(tabs.appName));
+	const chatsColumn = createChatsColumnApp(
+		start.workspacesApp ?? startWorkspacesApp({ platform: "browser", workspaceId: tabs.appName }),
+	);
 	const kept = {
 		activeChat: start.activeChat ?? chatsColumn.activeChat,
 	};

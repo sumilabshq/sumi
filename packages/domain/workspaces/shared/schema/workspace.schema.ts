@@ -21,12 +21,37 @@ export const WorkspaceSchema = z.object({
 
 export type Workspace = z.infer<typeof WorkspaceSchema>;
 
-export const KeptWorkspacesSchema = z.object({
-	workspaces: z.array(WorkspaceSchema).min(1),
+export const CurrentWorkspaceSchema = z.object({
 	currentId: z.string().min(1),
+	openingId: z.string().nullable(),
 });
 
-export type KeptWorkspaces = z.infer<typeof KeptWorkspacesSchema>;
+export type CurrentWorkspace = z.infer<typeof CurrentWorkspaceSchema>;
+
+export const WorkspaceFolderSchema = z.object({
+	folder: z.string().nullable(),
+	isFolderFound: z.boolean(),
+});
+
+export type WorkspaceFolder = z.infer<typeof WorkspaceFolderSchema>;
+
+export const WorkspaceIdSchema = z.object({
+	id: z.string().min(1),
+});
+
+export const WorkspacePositionSchema = z.object({
+	position: z.number().int().nonnegative(),
+});
+
+export const WorkspaceNameSchema = z.object({
+	id: z.string().min(1),
+	name: z.string(),
+});
+
+export const WorkspaceIconChoiceSchema = z.object({
+	id: z.string().min(1),
+	icon: WorkspaceIconSchema.nullable(),
+});
 
 export const WorkspaceRowSchema = WorkspaceSchema.extend({
 	isCurrent: z.boolean(),

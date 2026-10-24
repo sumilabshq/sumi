@@ -1,0 +1,199 @@
+import { PerCall, Repeatable, command, query, refuse } from "@widgetarium/core/requests";
+import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
+import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
+import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
+import { watchedTogether } from "../../shared/lib/watched-together.js";
+import {
+	WorkspaceIconChoiceSchema,
+	WorkspaceIdSchema,
+	WorkspaceNameSchema,
+	WorkspacePositionSchema,
+	WorkspacesSchema,
+} from "../../shared/schema/workspace.schema.js";
+import type {
+	CurrentWorkspace,
+	Workspace,
+	WorkspaceFolder,
+	WorkspaceRow,
+	WorkspacesView,
+} from "../../shared/schema/workspace.schema.js";
+
+const KEYED_WORKSPACES = 9;
+const KEY_HINT = "⌘{n}";
+const NO_WORKSPACE_AT = "There is no workspace at ⌘{n}.";
+const STRIP_FROM = 2;
+const NO_NAME = "A workspace needs a name.";
+const UNKNOWN = "There is no workspace {id}.";
+const UNTITLED = "Untitled {n}";
+const UNTITLED_NAME = /^Untitled (\d+)$/;
+
+const OPENING = {
+	workspaces: WorkspacesGateway,
+	currentWorkspace: CurrentWorkspaceGateway,
+};
+
+interface OpeningParts {
+	readonly workspaces: WorkspacesGateway;
+	readonly currentWorkspace: CurrentWorkspaceGateway;
+}
+
+export const WorkspacesQuery = query("workspaces")
+	.output(WorkspacesSchema)
+	.settlesNow()
+	.inject(OPENING)
+	.watch((_input, { workspaces, currentWorkspace }, changed) =>
+		watchedTogether([workspaces.workspacesChanged(changed), currentWorkspace.currentWorkspaceChanged(changed)]),
+	)
+	.handle((_input, { workspaces, currentWorkspace }) =>
+		workspacesViewOf(workspaces.workspaces(), currentWorkspace.currentWorkspace()),
+	);
+
+export const OpenWorkspaceCommand = command("open-workspace")
+	.input(WorkspaceIdSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([WorkspacesQuery])
+	.inject(OPENING)
+	.handle(({ id }, opening) => openWorkspace(id, opening));
+
+export const OpenWorkspaceByPositionCommand = command("open-workspace-by-position")
+	.input(WorkspacePositionSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([WorkspacesQuery])
+	.inject(OPENING)
+	.handle(async ({ position }, opening) => {
+		const workspace = opening.workspaces.workspaces()[position];
+
+		if (workspace === undefined || position >= KEYED_WORKSPACES) {
+			console.info(`[widgetarium] workspaces: ${NO_WORKSPACE_AT.replace("{n}", String(position + 1))}`);
+			return;
+		}
+
+		await openWorkspace(workspace.id, opening);
+	});
+
+export const CreateWorkspaceCommand = command("create-workspace")
+	.idempotencyKey(PerCall)
+	.invalidates([WorkspacesQuery])
+	.inject(OPENING)
+	.handle(async (_input, opening) => {
+		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
+		const created = await opening.workspaces.createWorkspace(name);
+		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
+		await openWorkspace(created.id, opening);
+	});
+
+export const RenameWorkspaceCommand = command("rename-workspace")
+	.input(WorkspaceNameSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([WorkspacesQuery])
+	.inject({ workspaces: WorkspacesGateway })
+	.handle(async ({ id, name }, { workspaces }) => {
+		const trimmed = name.trim();
+
+		if (trimmed === "") {
+			return refuse(NO_NAME);
+		}
+
+		const was = workspaceIn(workspaces.workspaces(), id);
+
+		if (was.name === trimmed) {
+			console.info(`[widgetarium] workspace ${id} rename skipped: already ${trimmed}`);
+			return;
+		}
+
+		const reason = `workspace ${id} name ${was.name} → ${trimmed}`;
+		await workspaces.saveWorkspaceName(id, trimmed, reason);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const SetWorkspaceIconCommand = command("set-workspace-icon")
+	.input(WorkspaceIconChoiceSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([WorkspacesQuery])
+	.inject({ workspaces: WorkspacesGateway })
+	.handle(async ({ id, icon }, { workspaces }) => {
+		const was = workspaceIn(workspaces.workspaces(), id);
+		const reason = `workspace ${id} icon ${JSON.stringify(was.icon)} → ${JSON.stringify(icon)}`;
+		await workspaces.saveWorkspaceIcon(id, icon, reason);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+async function openWorkspace(id: string, { workspaces, currentWorkspace }: OpeningParts): Promise<void> {
+	const current = currentWorkspace.currentWorkspace();
+
+	if (id === current.currentId) {
+		console.info(`[widgetarium] open workspace ${id} skipped: it is the current one`);
+		return;
+	}
+
+	workspaceIn(workspaces.workspaces(), id);
+	currentWorkspace.saveCurrentWorkspace(
+		{
+			...current,
+			openingId: id,
+		},
+		`workspace opening ${current.openingId ?? "none"} → ${id}`,
+	);
+	const folder = await workspaces.markWorkspaceOpened(id);
+
+	if (isFolderMissing(folder)) {
+		console.info(`[widgetarium] workspace ${id} lost its folder ${folder.folder ?? ""}: asking for it`);
+		await workspaces.attachWorkspaceFolder(id);
+	}
+
+	const reason = `workspace current ${current.currentId} → ${id} (opened)`;
+	currentWorkspace.saveCurrentWorkspace(
+		{
+			currentId: id,
+			openingId: null,
+		},
+		reason,
+	);
+	console.info(`[widgetarium] ${reason}`);
+}
+
+function workspaceIn(workspaces: readonly Workspace[], id: string): Workspace {
+	const found = workspaces.find((workspace) => workspace.id === id);
+	return found ?? refuse(UNKNOWN.replace("{id}", id));
+}
+
+function isFolderMissing({ folder, isFolderFound }: WorkspaceFolder): boolean {
+	return folder !== null && !isFolderFound;
+}
+
+function untitledNameAfter(names: readonly string[]): string {
+	const taken = new Set(names.flatMap((name) => untitledNumberIn(name)));
+	const free = Array.from({ length: taken.size + 1 }, (_, at) => at + 1).find((n) => !taken.has(n)) ?? 1;
+	return UNTITLED.replace("{n}", String(free));
+}
+
+function untitledNumberIn(name: string): number[] {
+	const found = UNTITLED_NAME.exec(name.trim());
+	return found?.[1] === undefined ? [] : [Number(found[1])];
+}
+
+function workspacesViewOf(workspaces: readonly Workspace[], current: CurrentWorkspace): WorkspacesView {
+	const rows = workspaceRowsOf(workspaces, current);
+	return {
+		current: rows.find((row) => row.isCurrent) ?? rowOf(currentWorkspaceOf(workspaces, current.currentId), current),
+		rows,
+		isOpening: current.openingId !== null,
+		hasStrip: rows.length >= STRIP_FROM,
+	};
+}
+
+function workspaceRowsOf(workspaces: readonly Workspace[], current: CurrentWorkspace): WorkspaceRow[] {
+	return workspaces.map((workspace, at) => ({
+		...rowOf(workspace, current),
+		keyHint: at < KEYED_WORKSPACES ? KEY_HINT.replace("{n}", String(at + 1)) : null,
+	}));
+}
+
+function rowOf(workspace: Workspace, { currentId, openingId }: CurrentWorkspace): WorkspaceRow {
+	return {
+		...workspace,
+		isCurrent: workspace.id === currentId,
+		isOpening: workspace.id === openingId,
+		keyHint: null,
+	};
+}

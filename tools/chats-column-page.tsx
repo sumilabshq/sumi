@@ -1,9 +1,9 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.js";
-import { ChatsColumn } from "../packages/domain/workspaces/shared/ui/chats-column/chats-column.js";
-import { ChatCrumb } from "../packages/domain/workspaces/shared/ui/chat-crumb/chat-crumb.js";
-import { WorkspacesClientModule } from "../packages/domain/workspaces/generated/module.js";
+import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-column/chats-column.js";
+import { ChatCrumb } from "../apps/studio/src/features/workspaces/ui/chat-crumb/chat-crumb.js";
+import { WorkspacesModule } from "../packages/domain/workspaces/module.js";
 import { TooltipHost } from "../packages/shared/kit/src/index.js";
 import { reportsFailures } from "./page-harness.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
@@ -30,7 +30,7 @@ if (asked.get("theme") === "dark") {
 const commits: { count: number; ms: number } = { count: 0, ms: 0 };
 Reflect.set(window, "__chats", { parts, commits });
 
-const started = app({ modules: [WorkspacesClientModule.with(parts)] });
+const started = app().modules(WorkspacesModule.with(parts)).start();
 const FRAME_STYLE = {
 	position: "relative",
 	width: "1440px",

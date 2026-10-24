@@ -21,6 +21,32 @@ export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
 export type ChatMarkKind = z.infer<typeof ChatMarkSchema>;
 
+export const ChatMarksSchema = z.record(z.string(), ChatMarkSchema);
+
+export type ChatMarks = z.infer<typeof ChatMarksSchema>;
+
+export const ChatIdSchema = z.object({
+	id: z.string().min(1),
+});
+
+export const ChatPinSchema = z.object({
+	id: z.string().min(1),
+	isPinned: z.boolean(),
+});
+
+export const ChatTitleSchema = z.object({
+	id: z.string().min(1),
+	title: z.string(),
+});
+
+export const ChatTurnSchema = z.object({
+	chatId: z.string().min(1),
+	isBusy: z.boolean(),
+	firstAsked: z.string().nullable(),
+});
+
+export type ChatTurn = z.infer<typeof ChatTurnSchema>;
+
 export const ChatRowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
@@ -41,4 +67,9 @@ export type ChatListData = z.infer<typeof ChatListSchema>;
 export const ChatCrumbSchema = z.object({
 	workspace: z.string(),
 	chat: z.string(),
+});
+
+export const ActiveChatSchema = z.object({
+	id: z.string(),
+	title: z.string(),
 });

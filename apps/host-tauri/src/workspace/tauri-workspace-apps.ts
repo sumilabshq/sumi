@@ -1,4 +1,6 @@
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
+import type { StartedApp } from "@widgetarium/core/requests";
+import { CreateWorkspaceCommand, OpenWorkspaceCommand } from "@widgetarium/workspaces";
 import type { WorkspaceClient } from "./workspace-client.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";
 
@@ -6,26 +8,19 @@ export type WorkspaceApps = Pick<StudioHostPort, "apps" | "openApp" | "createApp
 
 export interface WorkspaceAppsAsk {
 	readonly workspaces: WorkspaceClient;
-	readonly reopen: () => Promise<void>;
-	readonly nextName: () => string;
+	readonly workspacesApp: StartedApp;
 }
 
 export const FOLDER_NOT_FOUND = "folder not found · Locate";
 
-export function tauriWorkspaceApps({ workspaces, reopen, nextName }: WorkspaceAppsAsk): WorkspaceApps {
+export function tauriWorkspaceApps({ workspaces, workspacesApp }: WorkspaceAppsAsk): WorkspaceApps {
 	return {
 		apps: async () => (await workspaces.list()).map(hostAppOf),
 		openApp: async (id) => {
-			const opened = await workspaces.markOpened(id);
-			if (isFolderMissing(opened)) {
-				await workspaces.attachFolder(id);
-			}
-
-			await reopen();
+			await workspacesApp.send(OpenWorkspaceCommand, { id });
 		},
 		createApp: async () => {
-			await workspaces.create(nextName());
-			await reopen();
+			await workspacesApp.send(CreateWorkspaceCommand);
 		},
 		renameApp: (id, name) => workspaces.rename(id, name),
 	};

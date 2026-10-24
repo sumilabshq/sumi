@@ -3,3 +3,6 @@ export { startedAppHostParts } from "./tabs/studio-app-host.js";
 export type { StudioAppHostAsk } from "./tabs/studio-app-host.js";
 export { startLayoutApp } from "./tabs/layout-app.js";
 export type { LayoutAppAsk } from "./tabs/layout-app.js";
+export { startWorkspacesApp } from "./chats-column/workspaces-app.js";
+export type { WorkspacesAppAsk } from "./chats-column/workspaces-app.js";
+export { activeChatPortOf } from "./chats-column/workspaces-active-chat.js";

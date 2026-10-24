@@ -4,7 +4,7 @@ import { format, resolveConfig } from "prettier";
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const BOARD = path.join(REPO, "docs/reference/sumi-layout/Ws-pick-icons.dc.html");
-const TABLE = path.join(REPO, "packages/domain/workspaces/shared/lib/filled-icons.ts");
+const TABLE = path.join(REPO, "apps/studio/src/features/workspaces/lib/filled-icons.ts");
 const PICKED_ICON = /<button aria-label="([a-z0-9-]+)"[^>]*><svg class="i lf"[^>]*><mask [^>]*>(.*?)<\/mask>/g;
 const MASK_GROUND = /^<rect x="0" y="0" width="24" height="24" fill="#000000"><\/rect>/;
 

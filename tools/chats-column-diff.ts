@@ -56,7 +56,7 @@ const sheets =
 		"packages/shared/core/browser-host.css",
 		"apps/host-obsidian/styles.css",
 		"design-systems/sumi/sumi.css",
-		"packages/domain/workspaces/workspaces.css",
+		"apps/studio/src/features/workspaces/workspaces.css",
 		"packages/client/shell/shell.css",
 	]
 		.map((at) => readFileSync(at, "utf8").split(TAILWIND_BANNER)[0])
@@ -239,7 +239,9 @@ const SCENES: readonly Scene[] = [
 	{
 		board: "Ws-pick-emoji",
 		before: async (page) => {
-			await page.ask(`window.__chats.parts.workspacesStore.finishOpening("widgetarium"); true`);
+			await page.ask(
+				`window.__chats.parts.currentWorkspace.saveCurrentWorkspace({ currentId: "widgetarium", openingId: null }, "board scene"); true`,
+			);
 			await pressing(page, "[data-ws-name]");
 			await pressing(page, "[data-ws-item=look]");
 		},

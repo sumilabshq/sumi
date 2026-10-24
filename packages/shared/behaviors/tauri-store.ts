@@ -13,3 +13,4 @@ export type {
 } from "./src/tauri-store/store-client.js";
 export { StoreRefusedError, callStore } from "./src/tauri-store/store-invoke.js";
 export type { Invoke, StoreCommand, StoreRefusal } from "./src/tauri-store/store-invoke.js";
+export { validEntriesOf, validValuesOf } from "./src/tauri-store/valid-entries.js";

@@ -2,15 +2,25 @@ import type { KeptChats } from "../../shared/schema/chat.schema.js";
 import { ChatsGateway } from "./chats.gateway.js";
 
 export class MemoryChatsGateway extends ChatsGateway {
-	constructor(private held: KeptChats | null = null) {
+	private readonly listeners = new Set<() => void>();
+
+	constructor(private held: KeptChats) {
 		super();
 	}
 
-	kept(): KeptChats | null {
+	chats(): KeptChats {
 		return this.held;
 	}
 
-	keep(chats: KeptChats): void {
+	saveChats(chats: KeptChats): void {
 		this.held = chats;
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
+	}
+
+	chatsChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 }

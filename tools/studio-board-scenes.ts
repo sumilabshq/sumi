@@ -585,13 +585,17 @@ export const SCENES: readonly Scene[] = [
 			{ name: "cell", board: ".pick .gr button:not(.on)", built: '.wg-ws-pick-cell[aria-selected="false"]' },
 		],
 		enter: async (page) => {
-			await page.ask(`window.__studio.workspaces.workspacesStore.finishOpening("widgetarium"); true`);
+			await page.ask(
+				`window.__studio.workspaces.currentWorkspace.saveCurrentWorkspace({ currentId: "widgetarium", openingId: null }, "board scene"); true`,
+			);
 			await pressing(page, "[data-ws-name]");
 			await pressing(page, "[data-ws-item=look]");
 		},
 		leave: async (page) => {
 			await rested(page);
-			await page.ask(`window.__studio.workspaces.workspacesStore.finishOpening("default"); true`);
+			await page.ask(
+				`window.__studio.workspaces.currentWorkspace.saveCurrentWorkspace({ currentId: "default", openingId: null }, "board scene"); true`,
+			);
 			await waited(SETTLE_MS);
 		},
 	},

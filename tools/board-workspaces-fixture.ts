@@ -1,6 +1,4 @@
-import { MemoryChatsGateway } from "../packages/domain/workspaces/gateways/chats/memory.gateway.js";
-import { MemoryWorkspacesGateway } from "../packages/domain/workspaces/gateways/workspaces/memory.gateway.js";
-import { workspacesPartsOf } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
+import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.js";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
 import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.schema.js";
 import type { Workspace } from "../packages/domain/workspaces/shared/schema/workspace.schema.js";
@@ -52,12 +50,10 @@ function workspacesOf(count: WorkspacesCount): readonly Workspace[] {
 }
 
 export function boardWorkspacesParts(count: WorkspacesCount): WorkspacesParts {
-	const parts = workspacesPartsOf({
-		workspacesGateway: new MemoryWorkspacesGateway({ workspaces: [...workspacesOf(count)], currentId: "default" }),
-		chatsGateway: new MemoryChatsGateway({ chats: [...BOARD_CHATS], activeId: "release" }),
+	return memoryWorkspacesParts({
+		workspaces: workspacesOf(count),
+		currentId: "default",
+		chats: { chats: [...BOARD_CHATS], activeId: "release" },
+		marks: { checks: "unread", deepl: "running" },
 	});
-	parts.chatsStore.recordTurnState("checks", { isBusy: true, firstAsked: null });
-	parts.chatsStore.recordTurnState("checks", { isBusy: false, firstAsked: null });
-	parts.chatsStore.recordTurnState("deepl", { isBusy: true, firstAsked: null });
-	return parts;
 }

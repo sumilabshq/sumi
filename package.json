@@ -87,6 +87,7 @@
 		"test:studio-layout": "node --single-threaded --import ./tools/loader/register.mts tools/studio-layout-test.ts",
 		"test:studio-tabs": "node --single-threaded --import ./tools/loader/register.mts tools/host-tabs-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/tab-pages-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/tabs-sidebar-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/canvas-tabs-test.ts",
 		"test:studio-host": "node --single-threaded --import ./tools/loader/register.mts tools/studio-host-test.ts",
+		"test:workspaces": "node --single-threaded --import ./tools/loader/register.mts tools/workspaces-rules-test.ts",
 		"test:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-test.ts",
 		"diff:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-diff.ts",
 		"test:tip": "node --single-threaded --import ./tools/loader/register.mts tools/tip-test.ts",

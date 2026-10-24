@@ -21,7 +21,7 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/kit/theme.css": "packages/shared/kit/theme.css",
 	"@widgetarium/canvas/canvas.css": "packages/domain/canvas/canvas.css",
 	"@widgetarium/mascot/mascot.css": "packages/client/mascot/mascot.css",
-	"@widgetarium/workspaces/workspaces.css": "packages/domain/workspaces/workspaces.css",
+	"@widgetarium/studio/workspaces.css": "apps/studio/src/features/workspaces/workspaces.css",
 	"@widgetarium/shell/shell.css": "packages/client/shell/shell.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
@@ -31,7 +31,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@widgetarium/kit/theme.css";
 @import "@widgetarium/canvas/canvas.css";
 @import "@widgetarium/mascot/mascot.css";
-@import "@widgetarium/workspaces/workspaces.css";
+@import "@widgetarium/studio/workspaces.css";
 @import "@widgetarium/shell/shell.css";
 `;
 

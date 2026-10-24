@@ -1,9 +1,14 @@
 import { ONE_CHAT } from "@widgetarium/core/engine/active-chat-port.js";
+import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
-import type { ChatSessionLink } from "@widgetarium/workspaces/gateways";
 import { EMPTY_SESSION } from "./session-steps.js";
 import { NO_CHAT_HISTORY, createTurnSession } from "./turn-session.js";
 import type { ChatHistory, StartTurn, TurnSession } from "./turn-session.js";
+
+export interface ChatSessionLink {
+	readonly activeChat: ActiveChatPort;
+	readonly onSessionChanged: (chatId: string, session: AssistantSession) => void;
+}
 
 export interface ChatsLink extends ChatSessionLink {
 	readonly historyOf: (chatId: string) => Promise<ChatHistory>;

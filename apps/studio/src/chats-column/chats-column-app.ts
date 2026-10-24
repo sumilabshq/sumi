@@ -1,11 +1,11 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
-import { AppProvider, app } from "@widgetarium/core/requests";
+import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { ChatCrumb, ChatsColumn } from "@widgetarium/workspaces";
-import { WorkspacesClientModule } from "@widgetarium/workspaces/module";
-import type { WorkspacesParts } from "@widgetarium/workspaces/gateways";
+import { ChatCrumb } from "../features/workspaces/ui/chat-crumb/chat-crumb.js";
+import { ChatsColumn } from "../features/workspaces/ui/chats-column/chats-column.js";
+import { activeChatPortOf } from "./workspaces-active-chat.js";
 
 export interface ChatsColumnApp {
 	readonly activeChat: ActiveChatPort;
@@ -14,12 +14,11 @@ export interface ChatsColumnApp {
 	readonly workspaces: StartedApp;
 }
 
-export function createChatsColumnApp(parts: WorkspacesParts): ChatsColumnApp {
-	const started = app().modules(WorkspacesClientModule.with(parts)).start();
+export function createChatsColumnApp(workspacesApp: StartedApp): ChatsColumnApp {
 	return {
-		activeChat: parts.activeChat,
-		column: h(AppProvider, { app: started }, h(ChatsColumn)),
-		crumb: h(AppProvider, { app: started }, h(ChatCrumb)),
-		workspaces: started,
+		activeChat: activeChatPortOf(workspacesApp),
+		column: h(AppProvider, { app: workspacesApp }, h(ChatsColumn)),
+		crumb: h(AppProvider, { app: workspacesApp }, h(ChatCrumb)),
+		workspaces: workspacesApp,
 	};
 }

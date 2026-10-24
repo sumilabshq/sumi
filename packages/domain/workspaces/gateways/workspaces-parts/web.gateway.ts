@@ -1,20 +1,17 @@
-import { MemoryChatsGateway } from "../chats/memory.gateway.js";
-import { MemoryWorkspacesGateway } from "../workspaces/memory.gateway.js";
-import { workspacesPartsOf } from "./workspaces-parts.gateway.js";
+import { firstChats, memoryWorkspacesParts } from "./memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
 
-export function webWorkspacesParts(name: string): WorkspacesParts {
-	return workspacesPartsOf({
-		workspacesGateway: new MemoryWorkspacesGateway({
-			workspaces: [
-				{
-					id: name,
-					name,
-					icon: null,
-				},
-			],
-			currentId: name,
-		}),
-		chatsGateway: new MemoryChatsGateway(),
+export function webWorkspacesParts(workspaceId: string): WorkspacesParts {
+	return memoryWorkspacesParts({
+		workspaces: [
+			{
+				id: workspaceId,
+				name: workspaceId,
+				icon: null,
+			},
+		],
+		currentId: workspaceId,
+		chats: firstChats(),
+		marks: {},
 	});
 }

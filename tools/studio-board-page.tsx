@@ -9,6 +9,8 @@ import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widget
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { NO_ESSENTIALS, SwitchedChat, exactAppHostParts } from "./studio-exact-fixture.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { app } from "../packages/shared/core/src/requests/index.js";
+import { WorkspacesModule } from "../packages/domain/workspaces/module.js";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -31,7 +33,7 @@ const started = startStudio(PROJECT, {
 	appHost: new URLSearchParams(location.search).has("bare")
 		? exactAppHostParts(state, new SwitchedChat(), NO_ESSENTIALS)
 		: exactAppHostParts(state),
-	workspaces,
+	workspacesApp: app().modules(WorkspacesModule.with(workspaces)).start(),
 });
 Reflect.set(window, "__studio", { workspaces, state });
 

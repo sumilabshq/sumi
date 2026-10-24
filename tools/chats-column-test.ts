@@ -35,7 +35,7 @@ const sheets =
 		"packages/shared/core/browser-host.css",
 		"apps/host-obsidian/styles.css",
 		"design-systems/sumi/sumi.css",
-		"packages/domain/workspaces/workspaces.css",
+		"apps/studio/src/features/workspaces/workspaces.css",
 		"packages/client/shell/shell.css",
 	]
 		.map((at) => readFileSync(at, "utf8").split(TAILWIND_BANNER)[0])

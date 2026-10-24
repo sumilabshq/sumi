@@ -1,22 +1,32 @@
 import { ChatSessions } from "../apps/host-tauri/src/assistant/chat-sessions.ts";
+import { chatSessionLinkOf } from "../apps/host-tauri/src/assistant/chat-session-link.ts";
 import type { RunAnswer, TurnRun } from "../apps/host-tauri/src/assistant/turn-run.ts";
 import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
-import { TauriChatsGateway, readChats } from "../apps/host-tauri/src/chat/tauri-chats.ts";
+import { activeChatPortOf } from "../apps/studio/src/chats-column/workspaces-active-chat.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { TauriWorkspacesGateway } from "../apps/host-tauri/src/workspace/tauri-workspaces.ts";
-import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
-import { readWorkspaceLooks } from "../apps/host-tauri/src/workspace/workspace-looks.ts";
-import { MemoryWorkspacesGateway } from "../packages/domain/workspaces/gateways/workspaces/memory.gateway.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
-	chatSessionLinkOf,
-	workspacesPartsOf,
-} from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
+	CreateChatCommand,
+	SelectChatCommand,
+	SetWorkspaceIconCommand,
+	WorkspacesQuery,
+} from "../packages/domain/workspaces/generated/contract.ts";
+import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
+import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
+import type { Doc } from "./host-tauri-fake-store.ts";
 
 interface HeldRun {
 	readonly run: TurnRun;
 	readonly finish: () => void;
+}
+
+interface TauriWorkspaces {
+	readonly parts: WorkspacesParts;
+	readonly started: StartedApp;
 }
 
 function heldRun(): HeldRun {
@@ -30,21 +40,34 @@ function heldRun(): HeldRun {
 	};
 }
 
+function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
+	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
+	return { parts, started: app().modules(WorkspacesModule.with(parts)).start() };
+}
+
+function markOf({ parts }: TauriWorkspaces, id: string): string {
+	return parts.chatMarks.chatMarks()[id] ?? "none";
+}
+
+function keptChatsIn(fake: FakeStore): unknown[] | null {
+	const kept: unknown = fake.files.get(`workspace:${DEFAULT.id}:chats.json`)?.["chats"];
+	return Array.isArray(kept) ? kept : null;
+}
+
+function titlesIn(chats: readonly unknown[] | null): unknown[] | null {
+	return chats === null ? null : chats.map((chat: unknown) => Reflect.get(Object(chat), "title"));
+}
+
 async function perChatChecks(): Promise<void> {
 	const fake = new FakeStore();
-	const store = new StoreClient(fake.invoke);
-	const [logs, chats] = await Promise.all([readChatLogs(store, DEFAULT.id), readChats(store, DEFAULT.id)]);
-	const parts = workspacesPartsOf({
-		workspacesGateway: new MemoryWorkspacesGateway({
-			workspaces: [{ id: DEFAULT.id, name: DEFAULT.name, icon: null }],
-			currentId: DEFAULT.id,
-		}),
-		chatsGateway: new TauriChatsGateway(chats, logs.legacyChat),
-	});
+	fake.known.set(DEFAULT.id, DEFAULT);
+	const logs = await readChatLogs(new StoreClient(fake.invoke), DEFAULT.id);
+	const workspaces = tauriWorkspacesOf(fake);
+	const activeChat = activeChatPortOf(workspaces.started);
 	const runs: HeldRun[] = [];
 	const sessions = new ChatSessions(
 		{
-			...chatSessionLinkOf(parts),
+			...chatSessionLinkOf(workspaces.started),
 			historyOf: logs.historyOf,
 		},
 		async () => {
@@ -53,85 +76,105 @@ async function perChatChecks(): Promise<void> {
 			return { run: held.run, providerId: "claude-code", resumesWithoutAnId: false };
 		},
 	);
-	const firstId = parts.chatsStore.activeChat().id;
+	const firstId = activeChat.now().id;
 	await quietly(async () => {
 		await (await sessions.shownSession()).send("Plan the release");
-		await waitFor(() => runs.length === 1);
+		await waitFor(() => runs.length === 1 && markOf(workspaces, firstId) === "running");
 	});
-	check("a first ask names the chat", parts.chatsStore.activeChat().title, "Plan the release");
-	check("and marks it running", parts.chatsStore.markOf(firstId), "running");
+	check("a first ask names the chat", activeChat.now().title, "Plan the release");
+	check("and marks it running", markOf(workspaces, firstId), "running");
 
-	const secondId = await quietly(async () => parts.chatsStore.create()).then(({ answer }) => answer);
+	await quietly(() => workspaces.started.send(CreateChatCommand));
+	const secondId = activeChat.now().id;
 	await waitFor(() => sessions.now().turns.length === 0);
 	check("a new chat shows its own empty conversation", sessions.now().turns.length, 0);
 	await quietly(async () => {
 		runs[0]?.finish();
-		await waitFor(() => parts.chatsStore.markOf(firstId) === "unread");
+		await waitFor(() => markOf(workspaces, firstId) === "unread");
 	});
-	check("the first chat finishing while unseen is unread", parts.chatsStore.markOf(firstId), "unread");
+	check("the first chat finishing while unseen is unread", markOf(workspaces, firstId), "unread");
 	check("the shown chat is untouched by it", sessions.now().turns.length, 0);
 
-	await quietly(async () => parts.chatsStore.select(firstId));
+	await quietly(() => workspaces.started.send(SelectChatCommand, { id: firstId }));
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(
 		"selecting the first chat shows its conversation again and clears unread",
-		[sessions.now().turns.map((turn) => turn.role), parts.chatsStore.markOf(firstId)],
+		[sessions.now().turns.map((turn) => turn.role), markOf(workspaces, firstId)],
 		[["user", "agent"], "none"],
 	);
 
-	await quietly(() => Promise.all([chats.flush(), logs.sessions.flush()]));
-	const keptChats = fake.files.get(`workspace:${DEFAULT.id}:chats.json`)?.["chats"];
-	check(
-		"chats.json keeps both chats, the untitled one titled null",
-		Array.isArray(keptChats) ? keptChats.map((chat: unknown) => Reflect.get(Object(chat), "title")) : null,
-		["Plan the release", null],
-	);
+	await quietly(async () => {
+		await logs.sessions.flush();
+		await waitFor(
+			() => keptChatsIn(fake)?.length === 2 && fake.lines.has(`workspace:${DEFAULT.id}:chat/${firstId}.jsonl`),
+		);
+	});
+	check("chats.json keeps both chats, the untitled one titled null", titlesIn(keptChatsIn(fake)), [
+		"Plan the release",
+		null,
+	]);
 	check("each chat writes its own log", fake.lines.get(`workspace:${DEFAULT.id}:chat/${firstId}.jsonl`)?.length, 2);
 	check("the empty chat writes no log", fake.lines.has(`workspace:${DEFAULT.id}:chat/${secondId}.jsonl`), false);
+}
+
+async function legacyChatChecks(): Promise<void> {
+	const fake = new FakeStore();
+	fake.put(`workspace:${DEFAULT.id}:chat/index.json`, {
+		v: 1,
+		rev: 1,
+		currentId: "c1",
+		resumes: {},
+	});
+	const workspaces = tauriWorkspacesOf(fake);
+	const activeChat = activeChatPortOf(workspaces.started);
+	await waitFor(() => activeChat.now().id === "c1");
+	check("the chat chat/index.json named is carried over as a chat of its own", activeChat.now().id, "c1");
+}
+
+function rowsIn({ started }: TauriWorkspaces): readonly { readonly id: string; readonly name: string }[] {
+	const read = started.routes.readNow(WorkspacesQuery);
+	return read === null ? [] : WorkspacesQuery.outputSchema.parse(read.output).rows;
+}
+
+function iconsIn(fake: FakeStore): unknown {
+	return fake.files.get("global:workspace-looks.json")?.["icons"];
 }
 
 async function workspaceLookChecks(): Promise<void> {
 	const fake = new FakeStore();
 	fake.known.set(DEFAULT.id, DEFAULT);
 	fake.known.set(RESEARCH.id, RESEARCH);
-	const store = new StoreClient(fake.invoke);
-	const looks = await readWorkspaceLooks(store);
-	const gateway = new TauriWorkspacesGateway({
-		workspaces: new WorkspaceClient(fake.invoke),
-		looks,
-		entries: [RESEARCH, DEFAULT],
-		currentId: DEFAULT.id,
-		reopen: () => Promise.resolve(),
-	});
+	const workspaces = tauriWorkspacesOf(fake);
+	await quietly(() => waitFor(() => rowsIn(workspaces).length === 2));
 	check(
 		"the strip order is the order first seen, oldest opened first, kept from then on",
-		gateway.kept().workspaces.map((workspace) => workspace.name),
+		rowsIn(workspaces).map((workspace) => workspace.name),
 		["Default", "Research"],
 	);
-	await gateway.keepIcon(RESEARCH.id, { kind: "emoji", emoji: "🧪" });
-	await Promise.all([
-		gateway.rename(DEFAULT.id, "Home"),
-		gateway.rename(DEFAULT.id, "Home b"),
-		gateway.rename(DEFAULT.id, "Home base"),
-	]);
-	await quietly(() => looks.flush());
-	check(
-		"an icon is kept in workspace-looks.json by workspace id",
-		fake.files.get("global:workspace-looks.json")?.["icons"],
-		{ [RESEARCH.id]: { kind: "emoji", emoji: "🧪" } },
+	await quietly(() =>
+		workspaces.started.send(SetWorkspaceIconCommand, { id: RESEARCH.id, icon: { kind: "emoji", emoji: "🧪" } }),
 	);
+	await quietly(() =>
+		Promise.all([
+			workspaces.parts.workspaces.saveWorkspaceName(DEFAULT.id, "Home", "rename"),
+			workspaces.parts.workspaces.saveWorkspaceName(DEFAULT.id, "Home b", "rename"),
+			workspaces.parts.workspaces.saveWorkspaceName(DEFAULT.id, "Home base", "rename"),
+		]),
+	);
+	check("an icon is kept in workspace-looks.json by workspace id", iconsIn(fake), {
+		[RESEARCH.id]: { kind: "emoji", emoji: "🧪" },
+	});
 	check(
 		"a burst of renames writes only the latest name",
 		fake.calls.filter((call) => call.command.endsWith("rename_workspace")).map((call) => call.args["name"]),
 		["Home base"],
 	);
-	await gateway.keepIcon(RESEARCH.id, null);
-	check("Remove icon drops it", looks.now().icons, {});
+	await quietly(() => workspaces.started.send(SetWorkspaceIconCommand, { id: RESEARCH.id, icon: null }));
+	check("Remove icon drops it", iconsIn(fake), {});
 }
 
-async function entryOfAnotherShapeChecks(): Promise<void> {
-	const fake = new FakeStore();
-	const goodChat = {
+function anotherShapeFiles(fake: FakeStore): void {
+	const goodChat: Doc = {
 		id: "good",
 		title: "Kept",
 		isPinned: false,
@@ -161,39 +204,33 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 			bad: { logId: "" },
 		},
 	});
+}
+
+async function entryOfAnotherShapeChecks(): Promise<void> {
+	const fake = new FakeStore();
+	fake.known.set(DEFAULT.id, DEFAULT);
+	anotherShapeFiles(fake);
 	const filesBefore = JSON.stringify([...fake.files]);
-	const store = new StoreClient(fake.invoke);
 	const { answer } = await quietly(async () => {
-		const [chats, looks, logs] = await Promise.all([
-			readChats(store, DEFAULT.id),
-			readWorkspaceLooks(store),
-			readChatLogs(store, DEFAULT.id),
-		]);
-		const parts = workspacesPartsOf({
-			workspacesGateway: new TauriWorkspacesGateway({
-				workspaces: new WorkspaceClient(fake.invoke),
-				looks,
-				entries: [DEFAULT],
-				currentId: DEFAULT.id,
-				reopen: () => Promise.resolve(),
-			}),
-			chatsGateway: new TauriChatsGateway(chats, logs.legacyChat),
-		});
-		parts.chatsStore.create();
-		const iconsRead = Object.keys(looks.now().icons);
-		await parts.workspacesGateway.keepIcon(DEFAULT.id, null);
-		await Promise.all([chats.flush(), looks.flush(), logs.sessions.flush()]);
-		return { parts, looks, logs, iconsRead };
+		const logs = await readChatLogs(new StoreClient(fake.invoke), DEFAULT.id);
+		const workspaces = tauriWorkspacesOf(fake);
+		await waitFor(() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().activeId === "good");
+		await workspaces.started.send(CreateChatCommand);
+		const read = workspaces.started.routes.readNow(WorkspacesQuery);
+		const rows = read === null ? [] : WorkspacesQuery.outputSchema.parse(read.output).rows;
+		await workspaces.started.send(SetWorkspaceIconCommand, { id: DEFAULT.id, icon: null });
+		await logs.sessions.flush();
+		return { workspaces, logs, rows };
 	});
 	check(
 		"a chat of another shape leaves the other chats in view",
-		answer.parts.chatsStore.now().chats.map((chat) => chat.title),
+		answer.workspaces.parts.chats.chats().chats.map((chat) => chat.title),
 		["Kept", null],
 	);
 	check(
 		"an icon of another shape leaves the others, and the order keeps its good ids",
-		[answer.iconsRead, answer.looks.now().order],
-		[[DEFAULT.id], [DEFAULT.id]],
+		answer.rows.map((row) => [row.id, row.icon]),
+		[[DEFAULT.id, { kind: "emoji", emoji: "🧪" }]],
 	);
 	check("a session of another shape leaves the others", Object.keys(answer.logs.sessions.now().sessions), ["good"]);
 	check(
@@ -204,5 +241,6 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 }
 
 await perChatChecks();
+await legacyChatChecks();
 await workspaceLookChecks();
 await entryOfAnotherShapeChecks();

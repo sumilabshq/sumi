@@ -9,9 +9,13 @@ import { TauriTabsSessionGateway, readSession } from "../apps/host-tauri/src/ses
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/host-tauri/src/workspace/tauri-workspace-apps.ts";
 import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
+import { reopensOnWorkspaceSwitch } from "../apps/host-tauri/src/workspace/workspace-switch.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
+import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
+import { check, waitFor } from "./check-helpers.ts";
 import type { GrantChange, SiteGrant } from "../packages/domain/browser/generated/index.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { check } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 
 const GRANT: SiteGrant = {
@@ -49,11 +53,11 @@ async function railChecks(): Promise<void> {
 	fake.known.set(DEFAULT.id, DEFAULT);
 	fake.known.set(RESEARCH.id, RESEARCH);
 	const reopened: string[] = [];
-	const apps = tauriWorkspaceApps({
-		workspaces: new WorkspaceClient(fake.invoke),
-		reopen: async () => void reopened.push("reopen"),
-		nextName: () => "Untitled 1",
-	});
+	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
+	const workspacesApp = app().modules(WorkspacesModule.with(parts)).start();
+	reopensOnWorkspaceSwitch(workspacesApp, DEFAULT.id, async () => void reopened.push("reopen"));
+	await quietly(() => waitFor(() => parts.workspaces.workspaces().length === 2));
+	const apps = tauriWorkspaceApps({ workspaces: new WorkspaceClient(fake.invoke), workspacesApp });
 	const listed = await apps.apps();
 	check(
 		"the rail lists every workspace, a missing folder flagged",
@@ -64,17 +68,17 @@ async function railChecks(): Promise<void> {
 		],
 	);
 
-	await apps.openApp(RESEARCH.id);
+	await quietly(() => apps.openApp(RESEARCH.id));
 	check(
 		"opening a workspace whose folder is gone asks to locate it, then reopens",
 		[fake.commandsCalled().slice(-2), reopened],
 		[["mark_workspace_opened", "attach_workspace_folder"], ["reopen"]],
 	);
-	await apps.createApp();
+	await quietly(() => apps.createApp());
 	check(
 		"+ creates a workspace named by the untitled rule and reopens on it",
-		[fake.commandsCalled().at(-1), fake.calls.at(-1)?.args["name"], reopened.length],
-		["create_workspace", "Untitled 1", 2],
+		[fake.calls.find((call) => call.command.endsWith("create_workspace"))?.args["name"], reopened.length],
+		["Untitled 1", 2],
 	);
 }
 
@@ -123,7 +127,9 @@ async function chatChecks(): Promise<void> {
 	});
 	const store = new StoreClient(fake.invoke);
 	const logs = await readChatLogs(store, DEFAULT.id);
-	check("the chat chat/index.json named is carried over as a chat of its own", logs.legacyChat, { id: "c1" });
+	check("the chat chat/index.json named is carried over with its session", Object.keys(logs.sessions.now().sessions), [
+		"c1",
+	]);
 	const history = await logs.historyOf("c1");
 	check("and keeps its agent session to resume", [...history.kept.resumes], [["claude-code", "s-1"]]);
 	history.settled({ ...history.kept.session, turns: [ASKED, ANSWERED] }, new Map([["claude-code", "s-2"]]));

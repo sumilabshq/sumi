@@ -4,7 +4,7 @@ import type { AssistantSession, AssistantTurn } from "@widgetarium/core/engine/a
 import type { ChatHistory, KeptChat } from "../assistant/turn-session.js";
 import { EMPTY_SESSION } from "../assistant/session-steps.js";
 import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
-import { validValuesOf } from "../store/valid-entries.js";
+import { validValuesOf } from "@widgetarium/behaviors/tauri-store";
 import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient, WorkspaceRoot } from "@widgetarium/behaviors/tauri-store";
 
@@ -56,13 +56,8 @@ const TurnLineSchema = z.object({
 
 type TurnLine = z.infer<typeof TurnLineSchema>;
 
-export interface LegacyChat {
-	readonly id: string;
-}
-
 export interface TauriChatLogs {
 	readonly sessions: HeldDoc<ChatSessionsDoc>;
-	readonly legacyChat: LegacyChat | null;
 	readonly historyOf: (chatId: string) => Promise<ChatHistory>;
 }
 
@@ -83,9 +78,9 @@ export async function readChatLogs(store: StoreClient, workspaceId: string): Pro
 		HeldDoc.read({ store, root, kind: CHAT_SESSIONS, empty: ChatSessionsDocSchema.parse({}) }),
 		store.readDoc(root, LEGACY_INDEX),
 	]);
+	carryLegacySession(sessions, legacy.doc);
 	return {
 		sessions,
-		legacyChat: legacyChatOf(sessions, legacy.doc),
 		historyOf: (chatId) => readChatHistory({ store, root, sessions }, chatId),
 	};
 }
@@ -95,17 +90,16 @@ async function readChatHistory(logs: ChatLogsAt, chatId: string): Promise<ChatHi
 	return new KeptChatHistory({ ...logs, chatId, turns });
 }
 
-function legacyChatOf(sessions: HeldDoc<ChatSessionsDoc>, legacy: LegacyIndex | null): LegacyChat | null {
+function carryLegacySession(sessions: HeldDoc<ChatSessionsDoc>, legacy: LegacyIndex | null): void {
 	const id = legacy?.currentId ?? null;
 	if (id === null || Object.keys(sessions.now().sessions).length > 0) {
-		return null;
+		return;
 	}
 
 	sessions.change(
 		{ sessions: { [id]: { logId: id, resumes: legacy?.resumes ?? {} } } },
 		`chat ${id} carried over from chat/index.json`,
 	);
-	return { id };
 }
 
 function sessionOf(sessions: HeldDoc<ChatSessionsDoc>, chatId: string): ChatSessionRecord {
