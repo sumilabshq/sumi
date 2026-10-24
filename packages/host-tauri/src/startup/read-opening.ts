@@ -1,8 +1,8 @@
 import { SETTINGS, readSettings } from "../settings/settings-doc.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
-import { GLOBAL_ROOT } from "../store/store-client.js";
-import type { StoreClient } from "../store/store-client.js";
-import { StoreRefusedError } from "../store/store-invoke.js";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
+import { StoreRefusedError } from "@widgetarium/behaviors/tauri-store";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import { WORKSPACE_FILE, WORKSPACES } from "../workspace/workspace-docs.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";

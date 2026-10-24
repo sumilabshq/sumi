@@ -1,9 +1,14 @@
 import type { Guard, OpenGuard } from "./guard";
-import type { AnyHandler, GuardedState, Handler, Inject } from "./handler";
+import type { AnyHandledRequest, HandledRequest } from "./handled-request";
+import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
-import type { AnyRequest } from "./request";
+import { PlatformModule } from "./platform-module";
+import type { AnyPlatformModule, ModuleFacts } from "./platform-module";
+import type { AnyCommand, AnyQuery, AnyRequest } from "./request";
 
-export type Runs = "client" | "server";
+export type Side = "client" | "server";
+
+export type Runs = Side | "anywhere";
 
 export type Provided = Readonly<Record<string, object>>;
 
@@ -52,9 +57,9 @@ export class HandledModule<Q> {
 	}
 }
 
-export type StartableModule = HandledModule<void> | ReadyModule;
+export type StartableModule = HandledModule<void> | ReadyModule | AnyPlatformModule;
 
-export type StartableServerModule = HandledModule<ServerParts> | ReadyModule;
+export type StartableServerModule = HandledModule<ServerParts> | ReadyModule | AnyPlatformModule;
 
 export class ServerModule<
 	P extends Provided = NothingProvided,
@@ -114,6 +119,72 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	}
 }
 
+type HandledQuery = HandledRequest<AnyQuery, Inject, Added>;
+
+type HandledCommand = HandledRequest<AnyCommand, Inject, Added>;
+
+type InjectedBy<T> = T extends { readonly inject: infer D extends Inject } ? Injected<D> : never;
+
+type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
+
+export type NeedsOf<H extends readonly AnyHandledRequest[]> = Provided & IntersectionOf<InjectedBy<H[number]>>;
+
+const NO_FACTS =
+	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
+const NOT_A_QUERY = 'module "{module}" lists {request} under .queries(), but it is a command';
+const NOT_A_COMMAND = 'module "{module}" lists {request} under .commands(), but it is a query';
+
+export class RequestsModule<H extends readonly AnyHandledRequest[]> implements ModuleDefinition {
+	readonly runs = "anywhere";
+
+	constructor(
+		readonly name: string,
+		readonly listed: H,
+		readonly steps: readonly Step[],
+	) {}
+
+	queries<const Q extends readonly HandledQuery[]>(...queries: Q): RequestsModule<[...H, ...Q]> {
+		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(queries, "query")], this.steps);
+	}
+
+	commands<const M extends readonly HandledCommand[]>(...commands: M): RequestsModule<[...H, ...M]> {
+		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(commands, "command")], this.steps);
+	}
+
+	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H> {
+		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	}
+
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H> {
+		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	}
+
+	provide(provide: (facts: ModuleFacts) => NeedsOf<H>): PlatformModule<NeedsOf<H>> {
+		const handlers = this.listed.map((listed) => ({
+			...listed,
+			request: listed.request.inModule(this.name),
+			sends: listed.sends.map((sent) => sent.inModule(this.name)),
+			module: this,
+		}));
+		return new PlatformModule(this, handlers, provide);
+	}
+
+	private refuseWrongKind<L extends readonly AnyHandledRequest[]>(listed: L, kind: AnyRequest["kind"]): L {
+		const wrong = listed.find(({ request }) => request.kind !== kind);
+
+		if (wrong === undefined) {
+			return listed;
+		}
+
+		const template = kind === "query" ? NOT_A_QUERY : NOT_A_COMMAND;
+		throw new Error(template.replace("{module}", this.name).replace("{request}", wrong.request.name));
+	}
+}
+
+export function module(name: string): RequestsModule<[]> {
+	return new RequestsModule(name, [], []);
+}
+
 export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;
 
 export function serverModule(name: string): ServerModule {
@@ -124,8 +195,24 @@ export function clientModule(name: string): ClientModule {
 	return new ClientModule(name, () => NOTHING_PROVIDED);
 }
 
-export function readyModuleOf<Q>(module: HandledModule<Q> | ReadyModule, parts: Q): ReadyModule {
+export function readyModuleOf<Q>(
+	module: HandledModule<Q> | ReadyModule | AnyPlatformModule,
+	parts: Q,
+	facts: ModuleFacts | null,
+): ReadyModule {
+	if (module instanceof PlatformModule) {
+		return module.startedOn(factsFor(module.definition, facts));
+	}
+
 	return module instanceof HandledModule ? module.with(parts) : module;
+}
+
+function factsFor(definition: ModuleDefinition, facts: ModuleFacts | null): ModuleFacts {
+	if (facts === null) {
+		throw new Error(NO_FACTS.replace("{module}", definition.name));
+	}
+
+	return facts;
 }
 
 function coverAfter(cover: Cover, step: Step): Cover {

@@ -1,7 +1,7 @@
 import type { Route } from "./local-routes";
 import { rateLimit } from "./middleware";
 import type { Step } from "./middleware";
-import type { Provided, ReadyModule, Runs } from "./module";
+import type { Provided, ReadyModule, Side } from "./module";
 import { SERVER_RATE_LIMIT } from "./rate-limits";
 
 export interface ModuleRoutes {
@@ -12,14 +12,17 @@ export interface ModuleRoutes {
 
 const SERVER_DEFAULT_LIMIT = rateLimit(SERVER_RATE_LIMIT);
 
-export function moduleRoutesOf(module: ReadyModule, side: Runs, hostProvided: Provided): ModuleRoutes {
+export function moduleRoutesOf(module: ReadyModule, side: Side, hostProvided: Provided): ModuleRoutes {
 	const provides = module.provide();
 	const provided = { ...provides, ...hostProvided };
-	const routes = module.handlers.map((handler) => ({
-		handler,
-		provided,
-		steps: side === "server" ? serverStepsOf([...module.definition.steps, ...handler.steps]) : handler.steps,
-	}));
+	const routes = module.handlers.map((handler) => {
+		const declared = [...module.definition.steps, ...handler.steps];
+		return {
+			handler,
+			provided,
+			steps: side === "server" ? serverStepsOf(declared) : declared,
+		};
+	});
 	return { module, provides, routes };
 }
 

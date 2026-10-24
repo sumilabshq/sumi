@@ -1,7 +1,8 @@
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
 
-export type Builder = "query" | "command" | "guard" | "middleware" | "serverModule" | "clientModule" | "handler";
+export type Builder =
+	"query" | "command" | "guard" | "middleware" | "serverModule" | "clientModule" | "module" | "handler";
 
 export interface BuilderCall {
 	readonly builder: Builder;
@@ -15,6 +16,7 @@ const BUILDERS: ReadonlySet<string> = new Set([
 	"middleware",
 	"serverModule",
 	"clientModule",
+	"module",
 	"handler",
 ]);
 const FRAMEWORK_SOURCE = /^@widgetarium\/core\/requests$|\/requests\/index(\.[jt]s)?$/;

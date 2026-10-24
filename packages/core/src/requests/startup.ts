@@ -3,15 +3,16 @@ import type { AnyHandler, Inject } from "./handler";
 import type { Route } from "./local-routes";
 import { isGuardStep } from "./middleware";
 import type { Step } from "./middleware";
-import type { Provided, ReadyModule, Runs } from "./module";
+import type { Provided, ReadyModule, Side } from "./module";
 import { moduleRoutesOf } from "./routes-of-module";
 import type { ModuleRoutes } from "./routes-of-module";
 
 interface Starting {
-	readonly side: Runs;
+	readonly side: Side;
 	readonly modules: readonly ReadyModule[];
 	readonly hasAuthenticate: boolean;
 	readonly hostProvided: Provided;
+	readonly reachesServer: boolean;
 }
 
 const REFUSED = "{starter} refused:\n{findings}";
@@ -26,10 +27,14 @@ const TWO_HANDLERS = "{request} has {count} handlers";
 const NOT_PROVIDED = "the handler of {request} injects {key}, which its module does not provide as a {token}";
 const HOST_KEY = 'module "{module}" provides {key}, which the host provides';
 const NEEDS_AUTHENTICATE = "{request} is guarded by {guard}, which needs an Authenticate in the starter's host";
+const NEEDS_USER_ON_CLIENT =
+	"{request} is guarded by {guard}, which needs a user, and app() has no Authenticate: guard it where its server handles it";
 const UNGUARDED =
 	"{request} runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
 const GUARD_AT = "guard #{at}";
 const MIDDLEWARE_AT = "middleware #{at}";
+const UNROUTED_SEND =
+	"{request} sends {sent}, which no module started by {starter} handles, and no server is configured";
 const STEP_NOT_PROVIDED = "{step} of {request} injects {key}, which its module does not provide as a {token}";
 
 export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
@@ -40,18 +45,19 @@ export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
 		...held.flatMap((one) => hostKeyFindings(one, starting.hostProvided)),
 		...held.flatMap(({ module, routes: routed }) => routed.flatMap((route) => routeFindings(module, route, starting))),
 		...duplicateFindings(routes.map((route) => route.handler)),
+		...unroutedSendFindings(routes, starting),
 	]);
 	return new Map(routes.map((route) => [route.handler.request.name, route]));
 }
 
-function refuseOn(side: Runs, findings: readonly string[]): void {
+function refuseOn(side: Side, findings: readonly string[]): void {
 	if (findings.length === 0) return;
 	throw new Error(REFUSED.replace("{starter}", STARTERS[side]).replace("{findings}", findings.join("\n")));
 }
 
 function sideFindings({ side, modules }: Starting): string[] {
 	return modules
-		.filter(({ definition }) => definition.runs !== side)
+		.filter(({ definition }) => definition.runs !== side && definition.runs !== "anywhere")
 		.map(({ definition }) => WRONG_SIDE[side].replace("{module}", definition.name));
 }
 
@@ -64,23 +70,28 @@ function hostKeyFindings({ module, provides }: ModuleRoutes, hostProvided: Provi
 function routeFindings(module: ReadyModule, route: Route, starting: Starting): string[] {
 	const { request } = route.handler;
 	const { definition } = module;
-	const named = request.module === definition.name ? [] : [wrongModule(request.name, definition.name, request.module)];
+	const named =
+		request.module === definition.name ? [] : [wrongModule(request.name, definition.name, request.module ?? "none")];
 	const built = route.handler.module === definition ? [] : [builtFor(route.handler, definition.name)];
 	const injected = missingOf(route.handler.inject, route.provided).map(([key, token]) =>
 		fill(NOT_PROVIDED, request.name).replace("{key}", key).replace("{token}", token),
 	);
-	const stepped = starting.side === "server" ? serverStepFindings(module, route, starting) : [];
-	return [...named, ...built, ...injected, ...stepped];
+	return [...named, ...built, ...injected, ...stepFindings(module, route, starting)];
 }
 
-function serverStepFindings(module: ReadyModule, route: Route, { hasAuthenticate }: Starting): string[] {
-	const { request } = route.handler;
+function stepFindings(module: ReadyModule, route: Route, { side, hasAuthenticate }: Starting): string[] {
 	const declared = [...module.definition.steps, ...route.handler.steps];
-	if (!declared.some(isCovering)) return [fill(UNGUARDED, request.name)];
-	const needing = hasAuthenticate ? [] : route.steps.filter((step) => step.needsUser);
-	const authenticate = needing
-		.slice(0, 1)
-		.map((step) => fill(NEEDS_AUTHENTICATE, request.name).replace("{guard}", stepNameOf(declared, step)));
+
+	if (side === "server" && !declared.some(isCovering)) {
+		return [fill(UNGUARDED, route.handler.request.name)];
+	}
+
+	const needing = hasAuthenticate ? undefined : route.steps.find((step) => step.needsUser);
+	const template = side === "server" ? NEEDS_AUTHENTICATE : NEEDS_USER_ON_CLIENT;
+	const authenticate =
+		needing === undefined
+			? []
+			: [fill(template, route.handler.request.name).replace("{guard}", stepNameOf(declared, needing))];
 	return [...unprovidedStepFindings(route, declared), ...authenticate];
 }
 
@@ -104,6 +115,21 @@ function missingOf(inject: Inject, provided: Provided): [string, string][] {
 	return Object.entries(inject)
 		.filter(([key, token]) => !(provided[key] instanceof token))
 		.map(([key, token]) => [key, token.name]);
+}
+
+function unroutedSendFindings(routes: readonly Route[], { side, reachesServer }: Starting): string[] {
+	if (reachesServer) {
+		return [];
+	}
+
+	const handled = new Set(routes.map(({ handler }) => handler.request.name));
+	return routes.flatMap(({ handler }) =>
+		handler.sends
+			.filter(({ name }) => !handled.has(name))
+			.map(({ name }) =>
+				fill(UNROUTED_SEND, handler.request.name).replace("{sent}", name).replace("{starter}", STARTERS[side]),
+			),
+	);
 }
 
 function duplicateFindings(handlers: readonly AnyHandler[]): string[] {

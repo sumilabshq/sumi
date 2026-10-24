@@ -2,9 +2,9 @@ import { z } from "zod";
 import { KeptColumnSchema, KeptTabsSchema } from "@widgetarium/app-host";
 import type { KeptColumn, KeptTabs } from "@widgetarium/app-host";
 import { TabsColumnGateway, TabsSessionGateway } from "@widgetarium/app-host/gateways";
-import { HeldDoc } from "../store/held-doc.js";
-import { workspaceRootOf } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
+import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 type HostTabsMoment = Parameters<TabsSessionGateway["keep"]>[0];
 

@@ -10,6 +10,7 @@ const SUFFIX: Readonly<Record<Exclude<Builder, "handler">, string>> = {
 	middleware: "Middleware",
 	serverModule: "ServerModule",
 	clientModule: "ClientModule",
+	module: "Module",
 };
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
 const REQUEST_NAME = /(Command|Query)$/;

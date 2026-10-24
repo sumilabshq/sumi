@@ -2,9 +2,9 @@ import { z } from "zod";
 import { KeptEssentialsSchema } from "@widgetarium/app-host";
 import type { KeptEssentials } from "@widgetarium/app-host";
 import { EssentialsGateway } from "@widgetarium/app-host/gateways";
-import { HeldDoc } from "../store/held-doc.js";
-import { GLOBAL_ROOT } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 const EssentialsDocSchema = z.looseObject({
 	essentials: KeptEssentialsSchema.nullable().catch(null),

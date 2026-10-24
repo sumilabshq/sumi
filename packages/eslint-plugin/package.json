@@ -22,6 +22,26 @@
 			"source": "./src/workspace.ts",
 			"types": "./dist/workspace.d.ts",
 			"default": "./dist/workspace.js"
+		},
+		"./files": {
+			"source": "./src/files.ts",
+			"types": "./dist/files.d.ts",
+			"default": "./dist/files.js"
+		},
+		"./babel-chain": {
+			"source": "./src/babel-chain.ts",
+			"types": "./dist/babel-chain.d.ts",
+			"default": "./dist/babel-chain.js"
+		},
+		"./fill-template": {
+			"source": "./src/fill-template.ts",
+			"types": "./dist/fill-template.d.ts",
+			"default": "./dist/fill-template.js"
+		},
+		"./domain-file": {
+			"source": "./src/domain-file.ts",
+			"types": "./dist/domain-file.d.ts",
+			"default": "./dist/domain-file.js"
 		}
 	},
 	"dependencies": {

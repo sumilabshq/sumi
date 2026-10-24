@@ -3,8 +3,8 @@ import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { PaneCloseContext } from "../../../../shared/lib/pane-close-context.js";
 import type { PanePlace, PaneRect } from "../../../../shared/lib/pane-layout.js";
-import type { PaneLeaf, PaneView } from "../../../../shared/schema/pane-tree.schema.js";
-import { AimPaneCommand, ClosePaneCommand } from "../../contract.js";
+import type { PaneLeaf, PaneView } from "@widgetarium/layout";
+import { AimPaneCommand, ClosePaneCommand } from "@widgetarium/layout";
 
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;

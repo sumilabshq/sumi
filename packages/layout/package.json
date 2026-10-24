@@ -1,0 +1,34 @@
+{
+	"name": "@widgetarium/layout",
+	"version": "0.1.0",
+	"description": "The studio's layout as data: which sides are shown, the widths between them and the tree of panes, kept between starts",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./module": {
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
+		}
+	},
+	"dependencies": {
+		"@tauri-apps/api": "^2.12.4",
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/core": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

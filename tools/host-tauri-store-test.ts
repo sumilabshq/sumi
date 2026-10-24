@@ -1,12 +1,11 @@
 import { z } from "zod";
 import { check, tally } from "./check-helpers.ts";
 import { SETTINGS, readSettings } from "../packages/host-tauri/src/settings/settings-doc.ts";
-import { settingsPxMemory } from "../packages/host-tauri/src/settings/settings-px-memory.ts";
 
 import { TauriOpening } from "../packages/host-tauri/src/startup/tauri-opening.ts";
-import { GLOBAL_ROOT, StoreClient, folderRootOf } from "../packages/host-tauri/src/store/store-client.ts";
-import { StoreRefusedError } from "../packages/host-tauri/src/store/store-invoke.ts";
-import type { Invoke } from "../packages/host-tauri/src/store/store-invoke.ts";
+import { GLOBAL_ROOT, StoreClient, folderRootOf } from "../packages/behaviors/src/tauri-store/store-client.ts";
+import { StoreRefusedError } from "../packages/behaviors/src/tauri-store/store-invoke.ts";
+import type { Invoke } from "../packages/behaviors/src/tauri-store/store-invoke.ts";
 import { WorkspaceClient } from "../packages/host-tauri/src/workspace/workspace-client.ts";
 import type { WorkspaceEntry } from "../packages/host-tauri/src/workspace/workspace-docs.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
@@ -15,49 +14,46 @@ async function settingsChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const settings = await readSettings(new StoreClient(fake.invoke));
 	check("a missing settings.json reads as the defaults", settings.now(), {
-		chatWidthPx: null,
-		leftWidthPx: null,
 		trace: false,
 	});
 
-	const memory = settingsPxMemory(settings, "chatWidthPx");
-	for (const px of [400, 420, 440]) {
-		memory.write(px);
+	for (const trace of [true, false, true]) {
+		settings.change({ trace }, "trace");
 	}
-	check("a dragged width reads back at once", memory.read(), 440);
+	check("a changed setting reads back at once", settings.now().trace, true);
 	await settings.flush();
 	check(
-		"three writes while dragging become one replace from rev 0",
+		"three quick changes become one replace from rev 0",
 		[fake.commandsCalled(), fake.calls[1]?.args["baseRev"], fake.files.get("global:settings.json")],
-		[["read", "replace"], 0, { chatWidthPx: 440, leftWidthPx: null, trace: false, v: 1, rev: 1 }],
+		[["read", "replace"], 0, { trace: true, v: 1, rev: 1 }],
 	);
 }
 
 async function staleRevChecks(): Promise<void> {
 	const fake = new FakeStore();
 	const settings = await readSettings(new StoreClient(fake.invoke));
-	fake.put("global:settings.json", { v: 1, rev: 5, chatWidthPx: null, trace: true });
-	settings.change({ chatWidthPx: 500 }, "resize");
+	fake.put("global:settings.json", { v: 1, rev: 5, chatWidthPx: 320, trace: false });
+	settings.change({ trace: true }, "trace");
 	await quietly(() => settings.flush());
 	check(
 		"a stale rev re-reads, keeps the other writer's field and writes on top",
 		[fake.commandsCalled(), fake.files.get("global:settings.json")],
-		[["read", "replace", "read", "replace"], { chatWidthPx: 500, leftWidthPx: null, trace: true, v: 1, rev: 6 }],
+		[["read", "replace", "read", "replace"], { trace: true, v: 1, rev: 6, chatWidthPx: 320 }],
 	);
 }
 
 async function versionChecks(): Promise<void> {
 	const fake = new FakeStore();
-	fake.put("global:settings.json", { v: 2, rev: 3, chatWidthPx: 300, trace: false });
+	fake.put("global:settings.json", { v: 2, rev: 3, trace: false });
 	const store = new StoreClient(fake.invoke);
 	const read = await store.readDoc(GLOBAL_ROOT, SETTINGS);
 	const settings = await readSettings(store);
-	settings.change({ chatWidthPx: 610 }, "resize");
+	settings.change({ trace: true }, "trace");
 	await quietly(() => settings.flush());
 	check(
 		"a newer v is read-only: read, never replaced",
-		[read.isReadOnly, fake.commandsCalled(), fake.files.get("global:settings.json")?.["chatWidthPx"]],
-		[true, ["read", "read"], 300],
+		[read.isReadOnly, fake.commandsCalled(), fake.files.get("global:settings.json")?.["trace"]],
+		[true, ["read", "read"], false],
 	);
 }
 

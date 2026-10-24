@@ -2,16 +2,16 @@ import type { Rule } from "eslint";
 import type * as ESTree from "estree";
 import { MODULE_FILE, domainFileOf } from "../domain-file.js";
 
-const STARTERS: ReadonlySet<string> = new Set(["serverModule", "clientModule"]);
+const STARTERS: ReadonlySet<string> = new Set(["serverModule", "clientModule", "module"]);
 
 export const moduleDefinition: Rule.RuleModule = {
 	meta: {
 		type: "problem",
-		docs: { description: "module.ts holds only the serverModule(...) or clientModule(...) definition" },
+		docs: { description: "module.ts holds only the module(...), serverModule(...) or clientModule(...) definition" },
 		schema: [],
 		messages: {
 			notTheModule:
-				"module.ts exports only its serverModule(...) or clientModule(...) const; move this export to gateways/, shared/ or a feature",
+				"module.ts exports only its module(...), serverModule(...) or clientModule(...) const; move this export to gateways/, shared/ or a feature",
 		},
 	},
 	create(context) {

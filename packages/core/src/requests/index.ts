@@ -29,7 +29,9 @@ export type {
 	Token,
 } from "./handler";
 export type { Sending } from "./mediator";
-export { ClientModule, HandledModule, ServerModule, clientModule, serverModule } from "./module";
+export { ClientModule, HandledModule, ServerModule, clientModule, module, serverModule } from "./module";
+export { PlatformModule } from "./platform-module";
+export type { AnyPlatformModule, ModuleFacts, ModuleScope, Platform } from "./platform-module";
 export type {
 	Cover,
 	ModuleDefinition,
@@ -65,6 +67,7 @@ export type {
 	SentOf,
 } from "./request";
 export { Refused, refuse } from "./refused";
+export type { Send, Sender } from "./send";
 export { RequestFailed } from "./request-failed";
 export type { FailedView } from "./request-boundary";
 export { Slot } from "./slot";

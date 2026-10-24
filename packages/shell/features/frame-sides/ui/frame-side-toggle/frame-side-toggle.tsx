@@ -3,8 +3,8 @@ import type { ReactElement } from "react";
 import { useHoverIntent } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { HeaderButton } from "../../../../shared/ui/plate-header/header-button.js";
-import type { FrameSide } from "../../../../shared/schema/frame-sides.schema.js";
-import { FrameSidesQuery, PeekFrameSideCommand, ToggleFrameSideCommand } from "../../contract.js";
+import type { FrameSide } from "@widgetarium/layout";
+import { FrameSidesQuery, PeekFrameSideCommand, ToggleFrameSideCommand } from "@widgetarium/layout";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideToggleProps {

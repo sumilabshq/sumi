@@ -1,7 +1,7 @@
 import path from "node:path";
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { FEATURES, HANDLERS_FILE, MODULE_FILE, domainFileOf } from "../domain-file.js";
+import { FEATURES, HANDLERS_FILE, MODULE_FILE, REQUESTS_FILE, domainFileOf } from "../domain-file.js";
 import type { DomainFile } from "../domain-file.js";
 import { importListener } from "../imports.js";
 
@@ -42,10 +42,11 @@ interface Importing {
 
 function checkImport(context: Rule.RuleContext, { file, importer, node, specifier }: Importing): void {
 	if (!specifier.startsWith(".")) return;
-	const target = layerAt(insideOf(file.root, path.resolve(path.dirname(context.filename), specifier)));
+	const inside = insideOf(file.root, path.resolve(path.dirname(context.filename), specifier));
+	const target = layerAt(inside);
 	if (target === null) return;
 	const allowed = IMPORTS[importer];
-	if (allowed.includes(target) || isHandlerBinding(file, target)) {
+	if (allowed.includes(target) || isHandlerBinding(file, target) || isRequestsListing(importer, inside)) {
 		return;
 	}
 
@@ -58,6 +59,12 @@ function checkImport(context: Rule.RuleContext, { file, importer, node, specifie
 
 function isHandlerBinding(file: DomainFile, target: Layer): boolean {
 	return file.folder === FEATURES && file.inside.at(-1) === HANDLERS_FILE && target === MODULE_FILE;
+}
+
+function isRequestsListing(importer: Layer, inside: readonly string[]): boolean {
+	return (
+		importer === MODULE_FILE && inside[0] === FEATURES && inside.at(-1)?.replace(/\.[jt]s$/, ".ts") === REQUESTS_FILE
+	);
 }
 
 function insideOf(root: string, file: string): readonly string[] {

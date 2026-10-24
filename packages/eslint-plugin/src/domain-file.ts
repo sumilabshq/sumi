@@ -16,10 +16,20 @@ export interface DomainFile {
 export const MODULE_FILE = "module.ts";
 export const CONTRACT_FILE = "contract.ts";
 export const HANDLERS_FILE = "handlers.ts";
+export const REQUESTS_FILE = "requests.ts";
 export const FEATURES = "features";
 export const FEATURE_FILES: readonly string[] = [CONTRACT_FILE, HANDLERS_FILE];
+export const LEAF_FILES: readonly string[] = [...FEATURE_FILES, REQUESTS_FILE];
+
+export type PackageKind =
+	| { readonly kind: "client-package" }
+	| {
+			readonly kind: "module";
+			readonly module: DeclaredModule;
+	  };
 
 const DOMAIN_LEVEL = "domain";
+const CLIENT_LEVEL = "client";
 const ROOTS = new Map<string, DomainRoot | null>();
 
 interface DomainRoot {
@@ -40,8 +50,22 @@ export function moduleOfDomain(root: string): DeclaredModule | null {
 	return moduleDeclaredIn(babelBodyOf(file));
 }
 
+export function packageKindOf(root: string): PackageKind | null {
+	if (levelOf(jsonAt(path.join(root, "package.json"))) === CLIENT_LEVEL) {
+		return { kind: "client-package" };
+	}
+
+	const module = moduleOfDomain(root);
+	return module === null
+		? null
+		: {
+				kind: "module",
+				module,
+			};
+}
+
 export function isFeatureFolder(folder: string): boolean {
-	return FEATURE_FILES.some((name) => fs.existsSync(path.join(folder, name)));
+	return LEAF_FILES.some((name) => fs.existsSync(path.join(folder, name)));
 }
 
 export function featureFolderOf(root: string, inside: readonly string[]): string | null {

@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { createStudioState, startStudio, startedAppHostParts } from "@widgetarium/studio";
+import { createStudioState, startLayoutApp, startStudio, startedAppHostParts } from "@widgetarium/studio";
 import type { StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
@@ -23,12 +23,8 @@ import type { HeldEssentials } from "../session/tauri-essentials.js";
 import { TauriTabsColumnGateway, TauriTabsSessionGateway, readSession } from "../session/tauri-session.js";
 import type { HeldSession } from "../session/tauri-session.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
-import { settingsFlagMemory } from "../settings/settings-flag-memory.js";
-import { settingsPxMemory } from "../settings/settings-px-memory.js";
-import { shellPartsOf } from "@widgetarium/shell/gateways";
-import type { ShellParts } from "@widgetarium/shell/gateways";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import type { StoreClient } from "../store/store-client.js";
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { tauriStudioHost } from "../tauri-studio-host.js";
 import { TauriWorkingFolderGateway } from "../workspace/tauri-working-folder.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
@@ -134,16 +130,16 @@ function startedStudioOf(opening: StudioOpening, docs: WorkspaceDocs, started: S
 	const studio = studioHostOf(opening, docs, started.workspacesParts);
 	const state = createStudioState();
 	const browser = startTauriBrowser(tauriProfileGateways(docs.profile));
-	const shell = shellPartsInSettings(opening.settings);
+	const layoutApp = startLayoutApp({ platform: "tauri", workspaceId: opening.workspace.id });
 	const kept = keptGatewaysOf(docs, started.workspacesParts);
 	return startStudio(opening.project, {
 		appId: opening.workspace.id,
 		studio,
 		state,
-		shell,
+		layoutApp,
 		browser,
 		...startedPartsFieldsOf(started),
-		appHost: startedAppHostParts({ state, browser, shell, workspace: opening.workspace.id, studio, kept }),
+		appHost: startedAppHostParts({ state, browser, layoutApp, workspace: opening.workspace.id, studio, kept }),
 	});
 }
 
@@ -159,19 +155,6 @@ function studioHostOf(
 			reopen: () => reopenWindow(docs),
 			nextName: () => workspacesParts.workspacesStore.nextUntitledName(),
 		}),
-	);
-}
-
-function shellPartsInSettings(settings: HeldSettings): ShellParts {
-	return shellPartsOf(
-		{
-			left: settingsPxMemory(settings, "leftWidthPx"),
-			chat: settingsPxMemory(settings, "chatWidthPx"),
-		},
-		{
-			left: settingsFlagMemory(settings, "leftHidden"),
-			right: settingsFlagMemory(settings, "rightHidden"),
-		},
 	);
 }
 

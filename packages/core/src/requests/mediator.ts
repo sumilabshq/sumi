@@ -27,6 +27,7 @@ export interface Settle {
 	held(request: AnyRequest, returned: unknown, ran?: boolean): Answer<unknown>;
 	refuse(request: AnyRequest, refusal: Refusal, thrown?: unknown): Refusal;
 	shared(key: string, run: () => Promise<Answer<unknown>>): Promise<Answer<unknown>>;
+	send(request: AnyRequest, sent: unknown, sending?: Sending): Promise<Answer<unknown>>;
 }
 
 interface MediatorParts {

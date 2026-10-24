@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { AccessLogEntrySchema, RecentSiteSchema, SiteGrantSchema } from "@widgetarium/browser";
 import type { AccessLogEntry } from "@widgetarium/browser";
-import { HeldDoc } from "../store/held-doc.js";
-import { GLOBAL_ROOT } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 export const DEFAULT_PROFILE = "default";
 

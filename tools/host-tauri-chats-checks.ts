@@ -2,7 +2,7 @@ import { ChatSessions } from "../packages/host-tauri/src/assistant/chat-sessions
 import type { RunAnswer, TurnRun } from "../packages/host-tauri/src/assistant/turn-run.ts";
 import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
 import { TauriChatsGateway, readChats } from "../packages/host-tauri/src/chat/tauri-chats.ts";
-import { StoreClient } from "../packages/host-tauri/src/store/store-client.ts";
+import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
 import { TauriWorkspacesGateway } from "../packages/host-tauri/src/workspace/tauri-workspaces.ts";
 import { WorkspaceClient } from "../packages/host-tauri/src/workspace/workspace-client.ts";
 import { readWorkspaceLooks } from "../packages/host-tauri/src/workspace/workspace-looks.ts";

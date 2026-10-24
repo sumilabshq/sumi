@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { WorkspaceIconSchema } from "@widgetarium/workspaces";
-import { HeldDoc } from "../store/held-doc.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { validEntriesOf, validValuesOf } from "../store/valid-entries.js";
-import { GLOBAL_ROOT } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 const WorkspaceLooksSchema = z.looseObject({
 	order: z.array(z.string()).default([]),

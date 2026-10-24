@@ -1,8 +1,9 @@
-import fs from "node:fs";
 import path from "node:path";
-import { parse } from "@babel/parser";
-import type { Expression, ImportDeclaration, Node, Statement } from "@babel/types";
+import type { ImportDeclaration, Node, Statement } from "@babel/types";
 import { CliRefusal } from "./cli-output.js";
+import { exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
+import type { ExportedConst } from "@widgetarium/eslint-plugin/babel-chain";
+import { babelBodyOf } from "@widgetarium/eslint-plugin/files";
 import type { DeclaredModule } from "@widgetarium/eslint-plugin/module-declared";
 
 export const JOINED_ENTRY = "generated/module.ts";
@@ -34,36 +35,26 @@ export function joinedTextOf(folder: string, declared: DeclaredModule, handlersF
 }
 
 function parsedHandlers(folder: string, relative: string): HandlersFile {
-	const text = fs.readFileSync(path.join(folder, relative), "utf8");
-	return { relative, body: parse(text, { sourceType: "module", plugins: ["typescript"] }).program.body };
+	return { relative, body: babelBodyOf(path.join(folder, relative)) };
 }
 
 function handlersIn(file: HandlersFile, folder: string, declared: DeclaredModule): FoundHandler[] {
-	return file.body
-		.flatMap((statement) => exportedHandlers(statement))
-		.map(({ name, init }) => {
-			const named = moduleNamedBy(init);
-			if (named !== declared.name || !importsDefinition(file, folder, named))
-				throw new CliRefusal(otherModule(file.relative, name, named, declared.name));
-			return { name, file: file.relative };
-		});
+	return exportedHandlersOf(file.body).map(({ name, init }) => {
+		const named = moduleNamedBy(init);
+		if (named !== declared.name || !importsDefinition(file, folder, named))
+			throw new CliRefusal(otherModule(file.relative, name, named, declared.name));
+		return { name, file: file.relative };
+	});
 }
 
-function exportedHandlers(statement: Statement): { readonly name: string; readonly init: Expression }[] {
-	if (statement.type !== "ExportNamedDeclaration" || statement.declaration?.type !== "VariableDeclaration") return [];
-	return statement.declaration.declarations.flatMap((declarator) =>
-		declarator.id.type === "Identifier" && HANDLER_NAME.test(declarator.id.name) && declarator.init != null
-			? [{ name: declarator.id.name, init: declarator.init }]
-			: [],
-	);
+function exportedHandlersOf(body: readonly Statement[]): ExportedConst[] {
+	return exportedConstsOf(body).filter(({ name }) => HANDLER_NAME.test(name));
 }
 
 function moduleNamedBy(node: Node): string {
-	if (node.type === "MemberExpression") return moduleNamedBy(node.object);
-	if (node.type !== "CallExpression") return "";
-	if (node.callee.type !== "Identifier") return moduleNamedBy(node.callee);
-	const [, module] = node.arguments;
-	return node.callee.name === "handler" && module?.type === "Identifier" ? module.name : "";
+	const root = rootCallOf(node);
+	const [, module] = root?.call.arguments ?? [];
+	return root?.method === "handler" && module?.type === "Identifier" ? module.name : "";
 }
 
 function importsDefinition(file: HandlersFile, folder: string, name: string): boolean {

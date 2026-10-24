@@ -1,16 +1,14 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useQuery } from "@widgetarium/core/requests";
-import { fixedPlaceOf, paneLayoutOf, panePlacesOf } from "../../../../shared/lib/pane-layout.js";
-import type { PaneEdge, PaneLayout, PanePlace, PaneRect } from "../../../../shared/lib/pane-layout.js";
-import { isSameView, leavesOf, withPlaced, withShare } from "../../../../shared/lib/pane-tree.js";
-import type { PaneLeaf, PaneNode, PaneView } from "../../../../shared/schema/pane-tree.schema.js";
-import { PaneTreeQuery } from "../../contract.js";
+import { useOptionalQuery, useQuery } from "@widgetarium/core/requests";
+import { draggedLayoutOf, fixedPlaceOf, paneLayoutOf, panePlacesOf } from "../../../../shared/lib/pane-layout.js";
+import type { PaneEdge, PaneLayout, PanePlace, PaneRect, PaneSpacing } from "../../../../shared/lib/pane-layout.js";
+import type { FrameBounds, PaneLeaf, PaneView, PlacementPreview } from "@widgetarium/layout";
+import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
 import { drawLayout } from "../../lib/draw-layout.js";
 import { useBoardBox } from "../../lib/use-board-box.js";
 import { useOpensChatAt } from "../../lib/use-opens-chat-at.js";
 import { usePaneDrop } from "../../lib/use-pane-drop.js";
-import type { PaneAim } from "../../lib/use-pane-drop.js";
 import { PaneSlot, rectStyleOf } from "./pane-slot.js";
 import { PaneSplitEdge } from "./pane-split-edge.js";
 
@@ -21,26 +19,29 @@ export interface PaneBoardProps {
 
 export interface PaneBoardFrame {
 	readonly chatPx: number;
+	readonly bounds: FrameBounds;
 	readonly onChatPx: (px: number, mostPx: number) => void;
 }
 
 const GAP_PX = 8;
-const PREVIEW_ID = "pane-preview";
 const EDGE_SLACK_PX = 1;
 
-export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & PaneBoardFrame): ReactElement {
-	const { root, targetId } = useQuery(PaneTreeQuery).data;
+export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardProps & PaneBoardFrame): ReactElement {
+	const { root, targetId, leaves } = useQuery(PaneTreeQuery).data;
 	const board = useRef<HTMLDivElement | null>(null);
 	const box = useBoardBox(board);
-	const resting = paneLayoutOf(root, box, GAP_PX);
-	useOpensChatAt(chatPx, resting.edges);
-	const leaves = leavesOf(root);
+	const spacing: PaneSpacing = {
+		gapPx: GAP_PX,
+		leastPx: bounds.plateLeastPx,
+	};
+	const resting = paneLayoutOf(root, box, spacing);
+	useOpensChatAt(chatPx, resting.edges, bounds.plateLeastPx);
 	const dimmedIds = dimmedIdsOf(leaves, targetId);
 	const aim = usePaneDrop({ board, rects: resting.rects, leaves });
-	const shown = shownLayoutOf(root, aim, box) ?? resting;
-	const moving = aim === null ? undefined : leaves.find((leaf) => isSameView(leaf.view, aim.view));
-	const preview = shown === resting ? undefined : shown.rects.get(moving?.id ?? PREVIEW_ID);
-	const places = panePlacesOf(root, box, GAP_PX);
+	const previewed = useOptionalQuery(PlacementPreviewQuery, aim).data;
+	const shown = shownLayoutOf(previewed, box, spacing) ?? resting;
+	const preview = previewed === null || shown === resting ? undefined : shown.rects.get(previewed.placedId);
+	const places = panePlacesOf(root, box, spacing);
 	const placeOfLeaf = (id: string): PanePlace => {
 		if (shown === resting) {
 			return places.get(id) ?? fixedPlaceOf(box);
@@ -50,7 +51,19 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	};
 	const drawDrag = (edge: PaneEdge, share: number): void => {
 		if (root !== null && board.current !== null) {
-			drawLayout(board.current, paneLayoutOf(withShare(root, edge.splitId, edge.at, share), box, GAP_PX));
+			drawLayout(
+				board.current,
+				draggedLayoutOf({
+					node: root,
+					box,
+					spacing,
+					dragged: {
+						splitId: edge.splitId,
+						at: edge.at,
+						share,
+					},
+				}),
+			);
 		}
 	};
 	return (
@@ -76,6 +89,7 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 							key={`${edge.splitId}:${edge.at}`}
 							edge={edge}
 							gap={GAP_PX}
+							bounds={bounds}
 							onDrag={drawDrag}
 							onChatPx={onChatPx}
 						/>
@@ -86,13 +100,8 @@ export function PaneBoard({ drawn, empty, chatPx, onChatPx }: PaneBoardProps & P
 	);
 }
 
-function shownLayoutOf(root: PaneNode | null, aim: PaneAim | null, box: PaneRect): PaneLayout | null {
-	if (aim === null) {
-		return null;
-	}
-
-	const previewed = withPlaced(root, aim, previewOf(aim));
-	return previewed === null ? null : paneLayoutOf(previewed, box, GAP_PX);
+function shownLayoutOf(previewed: PlacementPreview | null, box: PaneRect, spacing: PaneSpacing): PaneLayout | null {
+	return previewed === null ? null : paneLayoutOf(previewed.root, box, spacing);
 }
 
 function dimmedIdsOf(leaves: readonly PaneLeaf[], targetId: string | null): ReadonlySet<string> {
@@ -115,12 +124,4 @@ function isAtTopLeft(rect: PaneRect | undefined): boolean {
 
 function isAtTopRight(rect: PaneRect | undefined, box: PaneRect): boolean {
 	return rect !== undefined && rect.top <= EDGE_SLACK_PX && rect.left + rect.width >= box.width - EDGE_SLACK_PX;
-}
-
-function previewOf(aim: PaneAim): PaneLeaf {
-	return {
-		kind: "pane",
-		id: PREVIEW_ID,
-		view: aim.view,
-	};
 }

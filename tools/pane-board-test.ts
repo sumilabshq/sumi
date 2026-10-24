@@ -1,19 +1,36 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
-import { PaneTreeStore } from "../packages/shell/shared/lib/pane-tree-store.ts";
-import { leavesOf } from "../packages/shell/shared/lib/pane-tree.ts";
+import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
+import { leavesOf } from "../packages/layout/shared/lib/pane-nodes.ts";
 import { paneLayoutOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
-import { FIRST_PANES } from "../packages/shell/gateways/shell-parts/shell-parts.gateway.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import {
+	AimPaneCommand,
+	ClosePaneCommand,
+	PlacePaneCommand,
+	ResizePaneSplitCommand,
+} from "../packages/layout/features/panes/requests.ts";
+import { DropGoneTabsCommand, ShowTabInTargetPaneCommand } from "../packages/layout/features/pane-tabs/requests.ts";
+import { PeekFrameSideCommand, ToggleFrameSideCommand } from "../packages/layout/features/frame-sides/requests.ts";
+import { ResizeFrameEdgeCommand } from "../packages/layout/features/frame-widths/requests.ts";
+import type { PaneSide, PaneTree, PaneView } from "../packages/layout/shared/schema/pane-tree.schema.ts";
 import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
 import { sidebarOf } from "../packages/app-host/features/tabs/lib/tab-rows.ts";
 
 let failed = 0;
 const quiet = console.info;
+const SPACING = {
+	gapPx: 8,
+	leastPx: 320,
+};
 
 function check(what: string, isOk: boolean, got: unknown): void {
 	if (!isOk) {
@@ -23,37 +40,52 @@ function check(what: string, isOk: boolean, got: unknown): void {
 	console.log(`${isOk ? "ok  " : "FAIL"} ${what}${isOk ? "" : ` — ${JSON.stringify(got)}`}`);
 }
 
-function shapeOf(store: PaneTreeStore): readonly string[] {
-	return leavesOf(store.now().root).map((leaf) => (leaf.view.kind === "chat" ? "chat" : (leaf.view.tabId ?? "shown")));
+function place(
+	parts: LayoutParts,
+	view: PaneView,
+	at: { readonly targetId: string | null; readonly side: PaneSide },
+): void {
+	PlacePaneCommand.handle({ view, ...at }, parts);
+}
+
+function closeAll(parts: LayoutParts): void {
+	leavesOf(parts.paneTree.tree().root).forEach((leaf) => ClosePaneCommand.handle({ id: leaf.id }, parts));
+}
+
+function resize(parts: LayoutParts, share: number): void {
+	ResizePaneSplitCommand.handle({ splitId: "pane-root", at: 0, share }, parts);
 }
 
 function checksTree(): void {
 	console.info = () => undefined;
-	const store = new PaneTreeStore(FIRST_PANES);
-	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	const parts = partsOf();
+	place(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
 	check(
 		"a tab dropped on the right of the app pane stands after it",
-		JSON.stringify(shapeOf(store)) === '["chat","shown","tab-3"]',
-		shapeOf(store),
+		JSON.stringify(shapeOf(parts)) === '["chat","shown","tab-3"]',
+		shapeOf(parts),
 	);
-	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "left" });
+	place(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "left" });
 	check(
 		"placing a tab that already stands moves it, never copies it",
-		JSON.stringify(shapeOf(store)) === '["tab-3","chat","shown"]',
-		shapeOf(store),
+		JSON.stringify(shapeOf(parts)) === '["tab-3","chat","shown"]',
+		shapeOf(parts),
 	);
-	store.place({ kind: "app", tabId: "tab-4" }, { targetId: "pane-app", side: "bottom" });
-	const root = store.now().root;
+	place(parts, { kind: "app", tabId: "tab-4" }, { targetId: "pane-app", side: "bottom" });
+	const root = parts.paneTree.tree().root;
 	check(
 		"a drop on the bottom edge wraps the pane in a column",
 		root?.kind === "split" && JSON.stringify(root.children.map((child) => child.kind)) === '["pane","pane","split"]',
 		root,
 	);
-	const leafIds = leavesOf(store.now().root).map((leaf) => leaf.id);
-	leafIds.forEach((id) => store.close(id));
-	check("closing every pane leaves an empty board", store.now().root === null, store.now().root);
-	store.place({ kind: "chat" }, { targetId: null, side: "right" });
-	check("a pane placed on an empty board is the whole board", store.now().root?.kind === "pane", store.now().root);
+	closeAll(parts);
+	check("closing every pane leaves an empty board", parts.paneTree.tree().root === null, parts.paneTree.tree().root);
+	place(parts, { kind: "chat" }, { targetId: null, side: "right" });
+	check(
+		"a pane placed on an empty board is the whole board",
+		parts.paneTree.tree().root?.kind === "pane",
+		parts.paneTree.tree().root,
+	);
 	const tabs = new HostTabs(null, "chat-1");
 	tabs.open({ app: "browser", pageId: null }, { chatId: WORKSPACE_LIST, groupId: null, before: null });
 	tabs.open({ app: "browser", pageId: null }, { chatId: WORKSPACE_LIST, groupId: null, before: null });
@@ -78,7 +110,7 @@ function checksTree(): void {
 	checksShares();
 	checksTarget();
 	console.info = quiet;
-	const halves = paneLayoutOf(FIRST_PANES.root, { left: 0, top: 0, width: 1008, height: 800 }, 8).rects;
+	const halves = paneLayoutOf(FIRST_PANES.root, { left: 0, top: 0, width: 1008, height: 800 }, SPACING).rects;
 	check(
 		"the first two panes share the board in halves",
 		halves.get("pane-chat")?.width === 500 && halves.get("pane-app")?.width === 500,
@@ -94,7 +126,7 @@ function checksTree(): void {
 			shares: [0.9, 0.1],
 		},
 		{ left: 0, top: 0, width: 1008, height: 800 },
-		8,
+		SPACING,
 	).rects;
 	check("a pane never gets less than 320 while the board has room", narrow.get("pane-app")?.width === 320, [...narrow]);
 	const pane = { left: 0, top: 0, width: 400, height: 400 };
@@ -112,60 +144,60 @@ function checksTree(): void {
 	);
 }
 
-function sharesOf(store: PaneTreeStore): readonly number[] {
-	const root = store.now().root;
+function sharesOf(parts: LayoutParts): readonly number[] {
+	const root = parts.paneTree.tree().root;
 	return root?.kind === "split" ? root.shares.map((share) => Math.round(share * 1000) / 1000) : [];
 }
 
 function checksTarget(): void {
-	const store = new PaneTreeStore(FIRST_PANES);
-	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
-	const afterDrop = store.now().targetId;
-	store.aimAt("pane-chat");
-	const afterChat = store.now().targetId;
-	store.aimAt("pane-app");
-	const afterApp = store.now().targetId;
-	store.aimAt("pane-1");
-	store.showIn("pane-1", "tab-9");
-	const shownIn = store.leaves().find((leaf) => leaf.id === "pane-1")?.view;
-	store.close("pane-1");
+	const parts = partsOf();
+	place(parts, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	const afterDrop = parts.paneTree.tree().targetId;
+	AimPaneCommand.handle({ id: "pane-chat" }, parts);
+	const afterChat = parts.paneTree.tree().targetId;
+	AimPaneCommand.handle({ id: "pane-app" }, parts);
+	const afterApp = parts.paneTree.tree().targetId;
+	AimPaneCommand.handle({ id: "pane-1" }, parts);
+	ShowTabInTargetPaneCommand.handle({ tabId: "tab-9" }, parts);
+	const shownIn = leavesOf(parts.paneTree.tree().root).find((leaf) => leaf.id === "pane-1")?.view;
+	ClosePaneCommand.handle({ id: "pane-1" }, parts);
 	check(
 		"a dropped tab's pane becomes the target, the chat never does, a press aims a pane, and showing replaces the target's tab",
 		afterDrop === "pane-1" &&
 			afterChat === "pane-1" &&
 			afterApp === "pane-app" &&
 			JSON.stringify(shownIn) === '{"kind":"app","tabId":"tab-9"}' &&
-			store.now().targetId === null,
-		[afterDrop, afterChat, afterApp, shownIn, store.now().targetId],
+			parts.paneTree.tree().targetId === null,
+		[afterDrop, afterChat, afterApp, shownIn, parts.paneTree.tree().targetId],
 	);
 }
 
 function checksShares(): void {
-	const even = new PaneTreeStore(FIRST_PANES);
-	even.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+	const even = partsOf();
+	place(even, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
 		"a pane dropped between halves gives every pane a third",
 		JSON.stringify(sharesOf(even)) === "[0.333,0.333,0.333]",
 		sharesOf(even),
 	);
-	const uneven = new PaneTreeStore(FIRST_PANES);
-	uneven.resize("pane-root", 0, 2 / 3);
-	uneven.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
+	const uneven = partsOf();
+	resize(uneven, 2 / 3);
+	place(uneven, { kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
 		"a new pane takes a third and the others shrink in proportion",
 		JSON.stringify(sharesOf(uneven)) === "[0.444,0.333,0.222]",
 		sharesOf(uneven),
 	);
-	uneven.close("pane-1");
+	ClosePaneCommand.handle({ id: "pane-1" }, uneven);
 	check(
 		"closing a pane gives its share back in proportion",
 		JSON.stringify(sharesOf(uneven)) === "[0.667,0.333]",
 		sharesOf(uneven),
 	);
-	const nested = new PaneTreeStore(FIRST_PANES);
-	nested.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
-	nested.place({ kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
-	nested.close("pane-app");
+	const nested = partsOf();
+	place(nested, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
+	place(nested, { kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
+	ClosePaneCommand.handle({ id: "pane-app" }, nested);
 	check(
 		"a split left alone in a split of its direction folds into it",
 		JSON.stringify(shapeOf(nested)) === '["chat","tab-3","tab-4"]' && sharesOf(nested).length === 3,
@@ -176,6 +208,184 @@ function checksShares(): void {
 const CARRY = `((phase, x, y) => { const detail = { phase, item: { kind: "tab", id: "tab-9", title: "Docs" }, x, y, isTaken: false }; document.dispatchEvent(new CustomEvent("wg-carry", { detail })); return detail.isTaken; })`;
 const PANES = `[...document.querySelectorAll("[data-pane-id]")].map((pane) => [pane.dataset.paneId, Math.round(pane.getBoundingClientRect().width)])`;
 
+function checksKept(): void {
+	console.info = () => undefined;
+	const panes = memoryOf<unknown>();
+	const memories = memoriesOf(panes);
+	const first = layoutPartsOf(memories);
+	place(first, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	resize(first, 0.25);
+	const again = layoutPartsOf(memories).paneTree.tree();
+	check(
+		"a restart draws the panes as they were left: the same tree, the same shares",
+		isDeepStrictEqual(again, first.paneTree.tree()),
+		again,
+	);
+	panes.write({ root: "torn" });
+	let refused: PaneTree | null = null;
+	warnsOf(() => {
+		refused = layoutPartsOf(memories).paneTree.tree();
+	});
+	check("a kept tree the schema refuses starts from the first panes", isDeepStrictEqual(refused, FIRST_PANES), refused);
+	console.info = quiet;
+}
+
+const BROKEN_TREES: readonly (readonly [string, unknown])[] = [
+	["shares that do not match the children", { ...FIRST_PANES, root: { ...FIRST_PANES.root, shares: [1] } }],
+	[
+		"a split of one child",
+		{
+			...FIRST_PANES,
+			root: {
+				kind: "split",
+				id: "pane-root",
+				dir: "row",
+				shares: [1],
+				children: [{ kind: "pane", id: "pane-chat", view: { kind: "chat" } }],
+			},
+		},
+	],
+	["shares summing to nothing", { ...FIRST_PANES, root: { ...FIRST_PANES.root, shares: [0, 0] } }],
+	[
+		"an id standing twice",
+		{
+			...FIRST_PANES,
+			root: {
+				...FIRST_PANES.root,
+				children: [
+					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+					{ kind: "pane", id: "pane-chat", view: { kind: "app", tabId: null } },
+				],
+			},
+		},
+	],
+	[
+		"minted below a held pane-N",
+		{
+			...FIRST_PANES,
+			root: {
+				...FIRST_PANES.root,
+				children: [
+					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+					{ kind: "pane", id: "pane-4", view: { kind: "app", tabId: "tab-1" } },
+				],
+			},
+			minted: 2,
+		},
+	],
+	["a target naming no pane", { ...FIRST_PANES, targetId: "pane-9" }],
+];
+
+function warnsOf(run: () => void): unknown[][] {
+	const said: unknown[][] = [];
+	const wasWarn = console.warn;
+	console.warn = (...args: unknown[]) => {
+		said.push(args);
+	};
+	run();
+	console.warn = wasWarn;
+	return said;
+}
+
+function checksKeptRefusals(): void {
+	console.info = () => undefined;
+
+	for (const [what, tree] of BROKEN_TREES) {
+		const panes = memoryOf<unknown>();
+		panes.write(tree);
+		let started: PaneTree | null = null;
+		const warned = warnsOf(() => {
+			started = layoutPartsOf(memoriesOf(panes)).paneTree.tree();
+		});
+		check(
+			`a kept tree with ${what} starts from the first panes and says why`,
+			isDeepStrictEqual(started, FIRST_PANES) && warned.length === 1,
+			{ started, warned },
+		);
+	}
+
+	const torn = memoryOf<unknown>();
+	const unreadable = { read: () => JSON.parse("{torn"), write: torn.write };
+	const unread = warnsOf(() => layoutPartsOf(memoriesOf(unreadable)));
+	check("kept panes that are not JSON warn with the parse error", unread[0]?.[1] instanceof SyntaxError, unread);
+	console.info = quiet;
+}
+
+function checksGoneTabs(): void {
+	console.info = () => undefined;
+	const beside = partsOf();
+	place(beside, { kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	DropGoneTabsCommand.handle({ heldTabIds: [] }, beside);
+	check(
+		"a pane whose kept tab the host no longer holds is closed",
+		JSON.stringify(shapeOf(beside)) === '["chat","shown"]',
+		shapeOf(beside),
+	);
+
+	const alone = partsOf();
+	AimPaneCommand.handle({ id: "pane-app" }, alone);
+	alone.paneTree.saveTree(
+		{
+			...alone.paneTree.tree(),
+			root: {
+				kind: "split",
+				id: "pane-root",
+				dir: "row",
+				shares: [0.5, 0.5],
+				children: [
+					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+					{ kind: "pane", id: "pane-app", view: { kind: "app", tabId: "tab-5" } },
+				],
+			},
+		},
+		"a kept tab in the only app pane",
+	);
+	const said = infosOf(() => DropGoneTabsCommand.handle({ heldTabIds: ["tab-1"] }, alone));
+	check(
+		"the only app pane keeps its place and shows no tab, logged as one transition",
+		JSON.stringify(shapeOf(alone)) === '["chat","shown"]' &&
+			said.length === 1 &&
+			said[0]?.endsWith("(kept tab tab-5 is gone)") === true,
+		{ shape: shapeOf(alone), said },
+	);
+
+	const held = partsOf();
+	place(held, { kind: "app", tabId: "tab-5" }, { targetId: "pane-app", side: "right" });
+	const before = held.paneTree.tree();
+	DropGoneTabsCommand.handle({ heldTabIds: ["tab-5"] }, held);
+	check("a pane whose tab the host holds is left alone", held.paneTree.tree() === before, shapeOf(held));
+	console.info = quiet;
+}
+
+function checksGatewaysKeep(): void {
+	console.info = () => undefined;
+	const reasons: string[] = [];
+	const memories: LayoutMemories = {
+		...memoriesOf(),
+		panes: { read: () => null, write: (_tree, reason) => reasons.push(reason) },
+	};
+	const parts = layoutPartsOf(memories);
+	ToggleFrameSideCommand.handle({ side: "left" }, parts);
+	ResizeFrameEdgeCommand.handle({ edge: "chat", px: 640, mostPx: 2000 }, parts);
+	const resized = infosOf(() => resize(parts, 0.25));
+	check(
+		"each gateway keeps its own transitions: the hidden side, the width, the pane tree with its reason",
+		memories.sides.left.read() === true &&
+			memories.sides.right.read() === null &&
+			memories.widths.chat.read() === 640 &&
+			JSON.stringify(reasons) === '["split pane-root edge 0 0.500 → 0.250 (drag)"]',
+		{ left: memories.sides.left.read(), chat: memories.widths.chat.read(), reasons },
+	);
+	check("a pane resize stays quiet in the console", resized.length === 0, resized);
+	PeekFrameSideCommand.handle({ side: "left" }, parts);
+	check(
+		"a peek keeps the side hidden between starts",
+		parts.frameSides.sides().left === "peeking" && memories.sides.left.read() === true,
+		memories.sides.left.read(),
+	);
+	console.info = quiet;
+}
+
 async function pageOf(folder: string): Promise<AskedPage> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
 	const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
@@ -184,7 +394,7 @@ async function pageOf(folder: string): Promise<AskedPage> {
 	const file = path.join(folder, "pane-board.html");
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>html,body,#root{height:100%;margin:0}</style></head><body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`,
+		`<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>html,body,#root{height:100%;margin:0}</style></head><body><div id="root"></div><pre id="boom"></pre><script>if (sessionStorage.getItem("wg-pane-board") === null) { localStorage.clear(); sessionStorage.setItem("wg-pane-board", "1"); }</script><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`,
 	);
 	const page = await paged(file, "test:pane-board", { size: [1440, 900] });
 	await waited(1500);
@@ -322,11 +532,21 @@ async function checksBoard(folder: string): Promise<void> {
 		{ during, after },
 	);
 	writeFileSync(path.join(folder, "pane-dropped.png"), await page.shoot());
+	await page.ask(`location.reload(); true`);
+	await waited(1500);
+	const reloaded = (await page.ask(PANES)) as unknown[];
+	const idsOf = (panes: readonly unknown[]): string =>
+		JSON.stringify(panes.map((pane) => (Array.isArray(pane) ? pane[0] : null)));
+	check(
+		"a web reload keeps the pane tree but closes the pane whose tab the host no longer holds",
+		idsOf(reloaded) === idsOf(after.filter((pane) => Array.isArray(pane) && pane[0] !== "pane-1")),
+		[after, reloaded],
+	);
 	const outside = await page.ask(`${CARRY}("over", 5, 5)`);
 	check("a carry outside the board is not taken", outside === false, outside);
 	await page.ask(`${CARRY}("leave", 5, 5)`);
 
-	for (const id of ["pane-1", "pane-app", "pane-chat"]) {
+	for (const id of ["pane-app", "pane-chat"]) {
 		await page.ask(`document.querySelector('[data-pane-close="${id}"]').click(); true`);
 		await waited(250);
 	}
@@ -351,6 +571,11 @@ async function checksBoard(folder: string): Promise<void> {
 const folder = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-pane-board"));
 mkdirSync(folder, { recursive: true });
 checksTree();
+checksKept();
+checksKeptRefusals();
+checksGoneTabs();
+checksGatewaysKeep();
+await checksLayoutRules(check);
 await checksBoard(folder);
 console.log(failed === 0 ? "pane board: all checks pass" : `pane board: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

@@ -11,6 +11,7 @@ import type { Provided } from "./module";
 import { callerKeyOf, isKeyReplayed, keyRead } from "./policies";
 import type { Callers } from "./policies";
 import type { AnyRequest } from "./request";
+import { Refused } from "./refused";
 import type { Authenticate } from "./server/authenticate";
 
 export interface Route {
@@ -43,6 +44,8 @@ const CALL_FACT_KEYS: readonly (keyof CallFacts)[] = ["user", "idempotencyKey", 
 const ANSWERED_FOR_HANDLER = "{step} of {request} answered without next(): a step may only refuse";
 const REPLACED_FACT = "{step} of {request} replaced {fact}, which only the server sets";
 const STEP_AT = "step #{at}";
+const UNDECLARED_SEND = "{request} sends {sent}, which it does not declare in .sends()";
+const SENT_FAILED = "{sent} answered {code}: {reason}";
 
 export class LocalRoutes {
 	constructor(private readonly parts: LocalParts) {}
@@ -111,7 +114,7 @@ export class LocalRoutes {
 		const read = keyRead(request, input, givenKey);
 		if ("refusal" in read) return Promise.resolve(walk.settle.refuse(request, read.refusal));
 		const signal = sending.signal ?? NEVER_ABORTED;
-		const run = () => this.runHandler(walk, input, { ...context, idempotencyKey: read.key, signal });
+		const run = () => this.runHandler(walk, input, { ...context, idempotencyKey: read.key, signal }, read.key);
 		const minted = sending.idempotencyKey === undefined ? givenKey : undefined;
 		const keyed = { input, user: context.user, key: read.key === minted ? null : read.key };
 		return this.runDeduped(walk, keyed, run);
@@ -135,16 +138,42 @@ export class LocalRoutes {
 		return answer;
 	}
 
-	private async runHandler(walk: Walk, input: unknown, facts: CallFacts & Added): Promise<Answer<unknown>> {
+	private async runHandler(
+		walk: Walk,
+		input: unknown,
+		facts: CallFacts & Added,
+		key: string | null,
+	): Promise<Answer<unknown>> {
 		const { route, asked, settle } = walk;
 		const ran = asked.request.kind === "command";
 		try {
-			const returned = await route.handler.handle(input, { ...route.provided, ...facts });
+			const send = sendOf(walk, facts.signal, key);
+			const returned = await route.handler.handle(input, { ...route.provided, ...facts, send });
 			return settle.held(asked.request, returned, ran);
 		} catch (thrown) {
 			return settle.refuse(asked.request, refusalOfThrown(thrown, ran), thrown);
 		}
 	}
+}
+
+function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string | null) {
+	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
+		if (!route.handler.sends.some(({ name }) => name === sent.name)) {
+			throw new Error(UNDECLARED_SEND.replace("{request}", asked.request.name).replace("{sent}", sent.name));
+		}
+
+		const idempotencyKey = key === null ? undefined : `${key}:${sent.name}`;
+		const answer = await settle.send(sent, input, { headers: asked.sending.headers, signal, idempotencyKey });
+
+		if (answer.ok) {
+			return answer.output;
+		}
+
+		const reason = SENT_FAILED.replace("{sent}", sent.name)
+			.replace("{code}", answer.code)
+			.replace("{reason}", answer.reason);
+		throw answer.ran ? new Error(reason) : new Refused(reason);
+	};
 }
 
 function replacedFactOf(context: StepContext, added: Added): string | null {

@@ -2,10 +2,10 @@ import { z } from "zod";
 import { KeptChatSchema } from "@widgetarium/workspaces";
 import type { KeptChats } from "@widgetarium/workspaces";
 import { ChatsGateway } from "@widgetarium/workspaces/gateways";
-import { HeldDoc } from "../store/held-doc.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { validEntriesOf } from "../store/valid-entries.js";
-import { workspaceRootOf } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { LegacyChat } from "./tauri-chat-history.js";
 
 const ChatsDocSchema = z.looseObject({

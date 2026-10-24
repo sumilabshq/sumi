@@ -2,10 +2,10 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { FrameSidesQuery } from "../../../features/frame-sides/contract.js";
+import { FrameSidesQuery } from "@widgetarium/layout";
 import { FrameSideReveal } from "../../../features/frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
 import { FrameSideToggle } from "../../../features/frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
-import { FrameWidthsQuery, ResizeFrameEdgeCommand } from "../../../features/frame-widths/contract.js";
+import { FrameWidthsQuery, ResizeFrameEdgeCommand } from "@widgetarium/layout";
 import { FrameEdgeHandle } from "../../../features/frame-widths/ui/frame-edge/frame-edge.js";
 import { PaneBoard } from "../../../features/panes/ui/pane-board/pane-board.js";
 import type { PaneBoardProps } from "../../../features/panes/ui/pane-board/pane-board.js";
@@ -41,11 +41,18 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: 
 				<FrameSideColumn side="left" look={sides.left} panel={leftSide}>
 					{left}
 				</FrameSideColumn>
-				<FrameEdgeHandle edge="left" px={widths.left} isReachable={sides.left === "docked"} />
+				<FrameEdgeHandle
+					edge="left"
+					px={widths.left}
+					leastPx={widths.bounds.left.leastPx}
+					plateLeastPx={widths.bounds.plateLeastPx}
+					isReachable={sides.left === "docked"}
+				/>
 				<div ref={appZone} className="wg-shell-app-zone">
 					<PaneBoard
 						{...panes}
 						chatPx={widths.chat}
+						bounds={widths.bounds}
 						onChatPx={(px, mostPx) =>
 							void resizeEdge.run({
 								edge: "chat",

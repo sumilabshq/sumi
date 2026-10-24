@@ -1,6 +1,6 @@
 import { BrowserAuditGateway, BrowserGrantsGateway, RecentSitesGateway } from "@widgetarium/browser/gateways";
 import type { AccessLogEntry, GrantChange, RecentSite, SiteGrant } from "@widgetarium/browser";
-import { GLOBAL_ROOT } from "../store/store-client.js";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
 import type { TauriProfile } from "./profile-docs.js";
 
 const RECENT_ACCESS_KEPT = 200;

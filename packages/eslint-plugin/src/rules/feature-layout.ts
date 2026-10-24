@@ -1,7 +1,7 @@
 import path from "node:path";
 import type { Rule } from "eslint";
 import type * as ESTree from "estree";
-import { CONTRACT_FILE, FEATURES, domainFileOf, featureFolderOf } from "../domain-file.js";
+import { CONTRACT_FILE, FEATURES, REQUESTS_FILE, domainFileOf, featureFolderOf } from "../domain-file.js";
 import type { DomainFile } from "../domain-file.js";
 import { importListener } from "../imports.js";
 import { placementOf } from "./feature-placement.js";
@@ -19,6 +19,8 @@ export const featureLayout: Rule.RuleModule = {
 				"a handler lives in handlers.ts beside its contract, never in contract.ts: move {{name}} there",
 			wrongName:
 				'request {{constant}} is named "{{name}}"; name it "{{wanted}}": <module>/<the constant without its suffix, in kebab case>',
+			wrongShortName:
+				'request {{constant}} is named "{{name}}"; name it "{{wanted}}": the constant without its suffix, in kebab case, since the module adds its own name',
 			otherFeature:
 				"a feature imports only its own folder; {{specifier}} is another feature: move what both use to shared/",
 			gatewayPart:
@@ -50,7 +52,9 @@ interface RootCall {
 }
 
 function checkFeatureFile(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {
-	if (file.folder === FEATURES && file.inside.at(-1) === CONTRACT_FILE) checkContract(context, file, program);
+	const name = file.inside.at(-1);
+	if (file.folder === FEATURES && (name === CONTRACT_FILE || name === REQUESTS_FILE))
+		checkContract(context, file, program);
 }
 
 function checkContract(context: Rule.RuleContext, file: DomainFile, program: ESTree.Program): void {
@@ -70,9 +74,16 @@ function checkDeclarator(context: Rule.RuleContext, file: DomainFile, declarator
 	if (root.name === "handler")
 		return context.report({ node: declarator, messageId: "handlerInContract", data: { name: constant } });
 	const named = requestNameOf(root, constant);
-	const wanted = `${path.basename(file.root)}/${kebabOf(constant.replace(REQUEST_SUFFIX, ""))}`;
-	if (named !== null && named !== wanted)
-		context.report({ node: declarator, messageId: "wrongName", data: { constant, name: named, wanted } });
+	const short = kebabOf(constant.replace(REQUEST_SUFFIX, ""));
+	const isRequestsFile = file.inside.at(-1) === REQUESTS_FILE;
+	const wanted = isRequestsFile ? short : `${path.basename(file.root)}/${short}`;
+
+	if (named === null || named === wanted) {
+		return;
+	}
+
+	const messageId = isRequestsFile ? "wrongShortName" : "wrongName";
+	context.report({ node: declarator, messageId, data: { constant, name: named, wanted } });
 }
 
 function requestNameOf(root: RootCall, constant: string): string | null {

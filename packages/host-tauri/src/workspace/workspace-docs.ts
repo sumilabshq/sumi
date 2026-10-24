@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { DocKind } from "../store/store-client.js";
+import type { DocKind } from "@widgetarium/behaviors/tauri-store";
 
 export const WorkspaceEntrySchema = z.object({
 	id: z.uuid(),
