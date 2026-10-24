@@ -1,11 +1,14 @@
 import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/active-chat-port.js";
-import { PerCall, Repeatable, command, query, refuse } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
+import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
+import { ChatsChangedEvent } from "../../gateways/chats/chats.events.js";
+import { ChatMarksChangedEvent } from "../../gateways/chat-marks/chat-marks.events.js";
 import { ChatMarksGateway } from "../../gateways/chat-marks/chat-marks.gateway.js";
 import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
-import { watchedTogether } from "../../shared/lib/watched-together.js";
 import {
 	ActiveChatSchema,
 	ChatCrumbSchema,
@@ -36,16 +39,12 @@ export const ChatListQuery = query("chat-list")
 		chats: ChatsGateway,
 		chatMarks: ChatMarksGateway,
 	})
-	.watch((_input, { chats, chatMarks }, changed) =>
-		watchedTogether([chats.chatsChanged(changed), chatMarks.chatMarksChanged(changed)]),
-	)
 	.handle((_input, { chats, chatMarks }) => chatListOf(chats.chats(), chatMarks.chatMarks()));
 
 export const ActiveChatQuery = query("active-chat")
 	.output(ActiveChatSchema)
 	.settlesNow()
 	.inject({ chats: ChatsGateway })
-	.watch((_input, { chats }, changed) => chats.chatsChanged(changed))
 	.handle((_input, { chats }) => {
 		const active = activeChatOf(chats.chats());
 		return {
@@ -62,13 +61,6 @@ export const ChatCrumbQuery = query("chat-crumb")
 		workspaces: WorkspacesGateway,
 		currentWorkspace: CurrentWorkspaceGateway,
 	})
-	.watch((_input, { chats, workspaces, currentWorkspace }, changed) =>
-		watchedTogether([
-			chats.chatsChanged(changed),
-			workspaces.workspacesChanged(changed),
-			currentWorkspace.currentWorkspaceChanged(changed),
-		]),
-	)
 	.handle((_input, { chats, workspaces, currentWorkspace }) => ({
 		workspace: currentWorkspaceOf(workspaces.workspaces(), currentWorkspace.currentWorkspace().currentId).name,
 		chat: titleOf(activeChatOf(chats.chats())),
@@ -76,9 +68,11 @@ export const ChatCrumbQuery = query("chat-crumb")
 
 export const CreateChatCommand = command("create-chat")
 	.idempotencyKey(PerCall)
-	.invalidates([ChatListQuery, ChatCrumbQuery, ActiveChatQuery])
 	.inject({ chats: ChatsGateway })
-	.handle((_input, { chats }) => {
+	.handle((_input, { chats, invalidate }) => {
+		invalidate(ChatListQuery);
+		invalidate(ChatCrumbQuery);
+		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		const at = Date.now();
 		const chat: KeptChat = {
@@ -102,12 +96,14 @@ export const CreateChatCommand = command("create-chat")
 export const SelectChatCommand = command("select-chat")
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([ChatListQuery, ChatCrumbQuery, ActiveChatQuery])
 	.inject({
 		chats: ChatsGateway,
 		chatMarks: ChatMarksGateway,
 	})
-	.handle(({ id }, { chats, chatMarks }) => {
+	.handle(({ id }, { chats, chatMarks, invalidate }) => {
+		invalidate(ChatListQuery);
+		invalidate(ChatCrumbQuery);
+		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		chatIn(kept, id);
 		clearMark(chatMarks, id);
@@ -132,9 +128,11 @@ export const SelectChatCommand = command("select-chat")
 export const PinChatCommand = command("pin-chat")
 	.input(ChatPinSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([ChatListQuery, ChatCrumbQuery, ActiveChatQuery])
 	.inject({ chats: ChatsGateway })
-	.handle(({ id, isPinned }, { chats }) => {
+	.handle(({ id, isPinned }, { chats, invalidate }) => {
+		invalidate(ChatListQuery);
+		invalidate(ChatCrumbQuery);
+		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		const was = chatIn(kept, id);
 
@@ -157,9 +155,11 @@ export const PinChatCommand = command("pin-chat")
 export const RenameChatCommand = command("rename-chat")
 	.input(ChatTitleSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([ChatListQuery, ChatCrumbQuery, ActiveChatQuery])
 	.inject({ chats: ChatsGateway })
-	.handle(({ id, title }, { chats }) => {
+	.handle(({ id, title }, { chats, invalidate }) => {
+		invalidate(ChatListQuery);
+		invalidate(ChatCrumbQuery);
+		invalidate(ActiveChatQuery);
 		const trimmed = title.trim();
 
 		if (trimmed === "") {
@@ -188,12 +188,14 @@ export const RenameChatCommand = command("rename-chat")
 export const RecordChatTurnCommand = command("record-chat-turn")
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([ChatListQuery, ChatCrumbQuery, ActiveChatQuery])
 	.inject({
 		chats: ChatsGateway,
 		chatMarks: ChatMarksGateway,
 	})
-	.handle((turn, { chats, chatMarks }) => {
+	.handle((turn, { chats, chatMarks, invalidate }) => {
+		invalidate(ChatListQuery);
+		invalidate(ChatCrumbQuery);
+		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		const was = kept.chats.find((chat) => chat.id === turn.chatId);
 
@@ -218,6 +220,28 @@ export const RecordChatTurnCommand = command("record-chat-turn")
 			console.info(`[widgetarium] ${reason}`);
 		}
 	});
+
+export const RereadChatsSubscriber = subscriber(ChatsChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(ChatListQuery);
+	invalidate(ActiveChatQuery);
+	invalidate(ChatCrumbQuery);
+});
+
+export const RereadChatListSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(ChatListQuery);
+});
+
+export const RereadChatCrumbForWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle(
+	(_input, { invalidate }) => {
+		invalidate(ChatCrumbQuery);
+	},
+);
+
+export const RereadChatCrumbForCurrentSubscriber = subscriber(CurrentWorkspaceChangedEvent).handle(
+	(_input, { invalidate }) => {
+		invalidate(ChatCrumbQuery);
+	},
+);
 
 function clearMark(chatMarks: ChatMarksGateway, id: string): void {
 	const marks = chatMarks.chatMarks();

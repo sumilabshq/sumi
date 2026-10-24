@@ -1,8 +1,9 @@
-import { PerCall, Repeatable, command, query, refuse } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
+import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
-import { watchedTogether } from "../../shared/lib/watched-together.js";
 import {
 	WorkspaceIconChoiceSchema,
 	WorkspaceIdSchema,
@@ -41,9 +42,6 @@ export const WorkspacesQuery = query("workspaces")
 	.output(WorkspacesSchema)
 	.settlesNow()
 	.inject(OPENING)
-	.watch((_input, { workspaces, currentWorkspace }, changed) =>
-		watchedTogether([workspaces.workspacesChanged(changed), currentWorkspace.currentWorkspaceChanged(changed)]),
-	)
 	.handle((_input, { workspaces, currentWorkspace }) =>
 		workspacesViewOf(workspaces.workspaces(), currentWorkspace.currentWorkspace()),
 	);
@@ -51,16 +49,18 @@ export const WorkspacesQuery = query("workspaces")
 export const OpenWorkspaceCommand = command("open-workspace")
 	.input(WorkspaceIdSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([WorkspacesQuery])
 	.inject(OPENING)
-	.handle(({ id }, opening) => openWorkspace(id, opening));
+	.handle(({ id }, opening) => {
+		opening.invalidate(WorkspacesQuery);
+		return openWorkspace(id, opening);
+	});
 
 export const OpenWorkspaceByPositionCommand = command("open-workspace-by-position")
 	.input(WorkspacePositionSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([WorkspacesQuery])
 	.inject(OPENING)
 	.handle(async ({ position }, opening) => {
+		opening.invalidate(WorkspacesQuery);
 		const workspace = opening.workspaces.workspaces()[position];
 
 		if (workspace === undefined || position >= KEYED_WORKSPACES) {
@@ -73,9 +73,9 @@ export const OpenWorkspaceByPositionCommand = command("open-workspace-by-positio
 
 export const CreateWorkspaceCommand = command("create-workspace")
 	.idempotencyKey(PerCall)
-	.invalidates([WorkspacesQuery])
 	.inject(OPENING)
 	.handle(async (_input, opening) => {
+		opening.invalidate(WorkspacesQuery);
 		const name = untitledNameAfter(opening.workspaces.workspaces().map((workspace) => workspace.name));
 		const created = await opening.workspaces.createWorkspace(name);
 		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
@@ -85,9 +85,9 @@ export const CreateWorkspaceCommand = command("create-workspace")
 export const RenameWorkspaceCommand = command("rename-workspace")
 	.input(WorkspaceNameSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([WorkspacesQuery])
 	.inject({ workspaces: WorkspacesGateway })
-	.handle(async ({ id, name }, { workspaces }) => {
+	.handle(async ({ id, name }, { workspaces, invalidate }) => {
+		invalidate(WorkspacesQuery);
 		const trimmed = name.trim();
 
 		if (trimmed === "") {
@@ -109,14 +109,24 @@ export const RenameWorkspaceCommand = command("rename-workspace")
 export const SetWorkspaceIconCommand = command("set-workspace-icon")
 	.input(WorkspaceIconChoiceSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([WorkspacesQuery])
 	.inject({ workspaces: WorkspacesGateway })
-	.handle(async ({ id, icon }, { workspaces }) => {
+	.handle(async ({ id, icon }, { workspaces, invalidate }) => {
+		invalidate(WorkspacesQuery);
 		const was = workspaceIn(workspaces.workspaces(), id);
 		const reason = `workspace ${id} icon ${JSON.stringify(was.icon)} → ${JSON.stringify(icon)}`;
 		await workspaces.saveWorkspaceIcon(id, icon, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
+
+export const RereadWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(WorkspacesQuery);
+});
+
+export const RereadWorkspacesForCurrentSubscriber = subscriber(CurrentWorkspaceChangedEvent).handle(
+	(_input, { invalidate }) => {
+		invalidate(WorkspacesQuery);
+	},
+);
 
 async function openWorkspace(id: string, { workspaces, currentWorkspace }: OpeningParts): Promise<void> {
 	const current = currentWorkspace.currentWorkspace();

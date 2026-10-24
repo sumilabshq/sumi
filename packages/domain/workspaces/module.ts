@@ -1,9 +1,14 @@
 import { Device, module } from "@widgetarium/core/requests";
+import { ChatsChangedEvent } from "./gateways/chats/chats.events.js";
 import { workspacesPartsOn } from "./gateways/workspaces-parts/workspaces-parts.gateway.js";
 import {
 	ActiveChatQuery,
 	ChatCrumbQuery,
 	ChatListQuery,
+	RereadChatListSubscriber,
+	RereadChatsSubscriber,
+	RereadChatCrumbForCurrentSubscriber,
+	RereadChatCrumbForWorkspacesSubscriber,
 	CreateChatCommand,
 	PinChatCommand,
 	RecordChatTurnCommand,
@@ -16,11 +21,21 @@ import {
 	OpenWorkspaceCommand,
 	RenameWorkspaceCommand,
 	SetWorkspaceIconCommand,
+	RereadWorkspacesForCurrentSubscriber,
+	RereadWorkspacesSubscriber,
 	WorkspacesQuery,
 } from "./features/workspaces/requests.js";
 
 export const WorkspacesModule = module("workspaces")
 	.on(Device)
+	.subscribers(
+		RereadChatsSubscriber,
+		RereadChatListSubscriber,
+		RereadChatCrumbForWorkspacesSubscriber,
+		RereadChatCrumbForCurrentSubscriber,
+		RereadWorkspacesSubscriber,
+		RereadWorkspacesForCurrentSubscriber,
+	)
 	.public(
 		WorkspacesQuery,
 		ChatListQuery,
@@ -36,5 +51,6 @@ export const WorkspacesModule = module("workspaces")
 		PinChatCommand,
 		RenameChatCommand,
 		RecordChatTurnCommand,
+		ChatsChangedEvent,
 	)
 	.provide((facts) => workspacesPartsOn(facts));
