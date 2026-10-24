@@ -67,11 +67,12 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/leaky/shared/ui/index.ts": "",
 	"packages/tally/package.json": JSON.stringify({ name: "@fixture/tally", widgetarium: { level: "domain" } }),
 	"packages/tally/module.ts": TALLY_MODULE,
-	"packages/tally/features/count/requests.ts": "",
+	"packages/tally/features/count/requests.ts": 'import { cap } from "../../shared/lib/rules.js";\n',
 	"packages/tally/features/mixed/requests.ts": "",
 	"packages/tally/features/mixed/contract.ts": "",
 	"packages/tally/shared/schema/count.schema.ts": "",
 	"packages/tally/shared/lib/bounds.ts": "",
+	"packages/tally/shared/lib/rules.ts": "export const cap = 1;\n",
 	"packages/tally/shared/lib/index.ts": 'export { bounds } from "./bounds.js";\n',
 	"packages/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
 	"apps/web/package.json": JSON.stringify({ name: "@fixture/web" }),
@@ -183,6 +184,7 @@ tested("module-imports", {
 		ok('import { webNotesParts } from "@fixture/notes/gateways";', "packages/host-web/src/start.ts"),
 		ok('import { BillingServerModule } from "@fixture/billing/module";', "apps/api/src/main.ts"),
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
+		ok('import { TallyModule } from "@fixture/tally/module";', "apps/web/src/main.ts"),
 	],
 	invalid: [
 		bad('import { BillingServerModule } from "@fixture/billing/module";', "serverWiring", "apps/web/src/main.ts"),
@@ -198,6 +200,8 @@ tested("module-imports", {
 			"packages/billing/features/charge/handlers.ts",
 		),
 		bad('import { charge } from "@fixture/billing/features/charge/handlers";', "noSuchEntry", "apps/api/src/main.ts"),
+		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "packages/host-web/src/start.ts"),
+		bad('import { TallyModule } from "@fixture/tally/module";', "clientWiring", "packages/notes/shared/lib/clock.ts"),
 		bad(
 			'import { clock } from "../../../notes/shared/lib/clock.js";',
 			"acrossPackages",
@@ -233,9 +237,10 @@ tested("server-module", {
 tested("feature-layout", {
 	valid: [
 		ok(
-			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("tally/count").handle(() => 1);',
+			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("count").handle(() => 1);',
 			COUNT_REQUESTS,
 		),
+		ok('export * from "./generated/contract.js";', "packages/tally/index.ts"),
 		ok("export const SearchQuery = 1;", SEARCH_CONTRACT),
 		ok(
 			'import { query } from "@widgetarium/core/requests";\nexport const SearchQuery = query("notes/search");',
@@ -254,8 +259,13 @@ tested("feature-layout", {
 	],
 	invalid: [
 		bad(
-			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("tally/counting").handle(() => 1);',
-			"wrongName",
+			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("counting").handle(() => 1);',
+			"wrongShortName",
+			COUNT_REQUESTS,
+		),
+		bad(
+			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("tally/count").handle(() => 1);',
+			"wrongShortName",
 			COUNT_REQUESTS,
 		),
 		bad("export const a = 1;", "misplaced", "packages/tally/features/mixed/requests.ts"),
@@ -367,6 +377,7 @@ tested("single-use-lib", {
 		ok("export const unused = 1;", "packages/notes/shared/lib/words.ts"),
 		ok("export const join = 1;", "packages/notes/shared/schema/note.schema.ts"),
 		ok("export const bounds = 1;", "packages/tally/shared/lib/bounds.ts"),
+		ok("export const cap = 1;", "packages/tally/shared/lib/rules.ts"),
 	],
 	invalid: [
 		bad("export const split = 1;\nexport const join = 2;", "singleUse", "packages/notes/shared/lib/words.ts"),

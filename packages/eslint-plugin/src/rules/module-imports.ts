@@ -23,6 +23,7 @@ interface Importing {
 
 const DOMAIN_LEVEL = "domain";
 const WIRING_ENTRIES: ReadonlySet<string> = new Set(["module", "gateways"]);
+const REQUESTS_MODULE_ENTRIES: ReadonlySet<string> = new Set(["module"]);
 const SERVER_CONDITION = "server";
 const DECLARATION_FILE = /\.d\.ts$/;
 const CLIENT_STARTER = /^(apps\/[^/]+|packages\/host-[^/]+)$/;
@@ -38,7 +39,8 @@ export const moduleImports: Rule.RuleModule = {
 				'{{specifier}} wires a server module: only a server app imports it (a package whose tsconfig sets customConditions ["server"], today apps/server)',
 			clientWiring:
 				"{{specifier}} wires a client module: only a client app starter (apps/*, not a server app) or a host (packages/host-*) imports it",
-			noSuchEntry: '{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways"',
+			noSuchEntry:
+				'{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways", a module(...) only "." and "./module"',
 		},
 	},
 	create(context) {
@@ -64,9 +66,13 @@ function findingOf(importing: Importing, specifier: string): Said | null {
 	}
 	const domain = packages.find((one) => one.level === DOMAIN_LEVEL && specifier.startsWith(`${one.name}/`));
 	if (domain === undefined || domain === owner) return null;
-	if (!WIRING_ENTRIES.has(specifier.slice(domain.name.length + 1)))
+	if (!wiringEntriesOf(importing.cwd, domain).has(specifier.slice(domain.name.length + 1)))
 		return { messageId: "noSuchEntry", data: { specifier, name: domain.name } };
 	return wiringFinding(importing, domain, specifier);
+}
+
+function wiringEntriesOf(cwd: string, domain: WorkspacePackage): ReadonlySet<string> {
+	return moduleOfDomain(path.join(cwd, domain.folder))?.runs === "anywhere" ? REQUESTS_MODULE_ENTRIES : WIRING_ENTRIES;
 }
 
 function wiringFinding({ place, cwd }: Importing, domain: WorkspacePackage, specifier: string): Said | null {

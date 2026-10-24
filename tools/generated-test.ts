@@ -4,6 +4,9 @@ import path from "node:path";
 import { GENERATED_HEADER } from "../packages/cli/src/module-entry.js";
 import { runCli } from "../packages/cli/src/run-cli.js";
 import type { CliOutput } from "../packages/cli/src/cli-output.js";
+import esbuild from "esbuild";
+import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { packageKindOf } from "../packages/eslint-plugin/src/domain-file.ts";
 import { check, tally } from "./check-helpers.ts";
 
 interface CliRun {
@@ -14,6 +17,10 @@ interface CliRun {
 const REPO = path.resolve(import.meta.dirname, "..");
 const ENTRY = "generated/index.ts";
 const JOINED = "generated/module.ts";
+const ROOT = "index.ts";
+const IMPORTED_FROM = /^import .* from "([^"]+)";$/gm;
+const RE_EXPORT = /export\s+(\*|\{[^}]*\})\s+from\s/;
+const LAYOUT_HANDLING = /packages\/layout\/(features\/.+\/requests\.ts|gateways\/)/;
 
 const CLIENT_FILES: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "@fixture/notes", widgetarium: { level: "domain" } }),
@@ -74,14 +81,14 @@ const COUNT_REQUESTS = [
 	'import { CountSchema } from "../../shared/schema/count.schema.js";',
 	'import { Counter } from "../../gateways/counter/counter.gateway.js";',
 	"",
-	'export const BumpCommand = command("tally/bump")',
+	'export const BumpCommand = command("bump")',
 	"\t.input(z.object({ by: z.number() }))",
-	"\t.idempotencyKey((input) => String(input.by))",
+	"\t.idempotencyKey((input) => `${input.by}`)",
 	"\t.invalidates([CountQuery])",
 	"\t.inject({ counter: Counter })",
 	"\t.handle(({ by }, { counter }) => counter.add(by));",
 	"",
-	'export const CountQuery = query("tally/count")',
+	'export const CountQuery = query("count")',
 	"\t.output(CountSchema)",
 	"\t.settlesNow()",
 	"\t.inject({ counter: Counter })",
@@ -106,16 +113,17 @@ const REQUESTS_FILES: Readonly<Record<string, string>> = {
 
 const REQUESTS_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import { CountSchema } from "../shared/schema/count.schema.js";',
 	'import { command, query } from "@widgetarium/core/requests";',
 	'import { z } from "zod";',
+	"",
+	"export const CountSchema = 1;",
 	"",
 	'export const CountQuery = query("tally/count")',
 	"\t.output(CountSchema)",
 	"\t.settlesNow();",
 	'export const BumpCommand = command("tally/bump")',
 	"\t.input(z.object({ by: z.number() }))",
-	"\t.idempotencyKey((input) => String(input.by))",
+	"\t.idempotencyKey((input) => `${input.by}`)",
 	"\t.invalidates([CountQuery]);",
 	"",
 ].join("\n");
@@ -127,54 +135,78 @@ const CLIENT_PACKAGE_FILES: Readonly<Record<string, string>> = {
 	"features/edges/ui/edge.tsx": "export const Edge = 1;\n",
 };
 
-const CLIENT_PACKAGE_ENTRY = `${GENERATED_HEADER}export * from "../shared/ui/index.js";\nexport * from "../shared/lib/index.js";\n`;
+const CLIENT_PACKAGE_ENTRY = `${GENERATED_HEADER}export * from "./shared/ui/index.js";\nexport * from "./shared/lib/index.js";\n`;
 
-const REQUESTS_ENTRY = `${GENERATED_HEADER}export * from "./contract.js";\nexport * from "../shared/schema/count.schema.js";\nexport * from "../shared/lib/index.js";\n`;
+const REQUESTS_ENTRY = `${GENERATED_HEADER}export * from "./generated/contract.js";\n`;
 
-const FORMS_REQUESTS = [
-	'import * as schemas from "../../shared/schema/count.schema.js";',
-	'import z from "zod";',
-	'import { command, query } from "@widgetarium/core/requests";',
+const TYPED_REQUESTS = [
+	'import { z } from "zod";',
+	'import { query } from "@widgetarium/core/requests";',
 	'import type { Count } from "../../shared/schema/count.schema.js";',
 	'import { Counter } from "../../gateways/counter/counter.gateway.js";',
 	"",
-	'export const CountQuery = query("tally/count")',
-	"\t.output(schemas.CountSchema)",
+	'export const CountQuery = query("count")',
+	"\t.output(z.custom<Count>())",
 	"\t.settlesNow()",
 	"\t.inject({ counter: Counter })",
 	"\t.handle((_input, { counter }) => counter.value);",
 	"",
-	'export const SetCommand = command("tally/set")',
-	"\t.input(z.object({ to: z.number() }))",
-	"\t.idempotencyKey((input: { readonly to: Count }, step = 1) => {",
-	"\t\tconst doubled = input?.to * step;",
-	"\t\treturn String({ key() { return doubled; } }.key());",
-	"\t})",
-	"\t.invalidates([CountQuery])",
-	"\t.inject({ counter: Counter })",
-	"\t.handle(() => undefined);",
+].join("\n");
+
+const TYPED_SCHEMA = [
+	'import { z } from "zod";',
+	"",
+	"export const CountSchema = z.number();",
+	"",
+	"export type Count = z.infer<typeof CountSchema>;",
+	"",
+	"export const UnusedSchema = z.string();",
 	"",
 ].join("\n");
 
-const FORMS_CONTRACT = [
+const TYPED_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import * as schemas from "../shared/schema/count.schema.js";',
-	'import type { Count } from "../shared/schema/count.schema.js";',
-	'import { command, query } from "@widgetarium/core/requests";',
-	'import z from "zod";',
+	'import { query } from "@widgetarium/core/requests";',
+	'import { z } from "zod";',
+	"",
+	"export const CountSchema = z.number();",
+	"",
+	"export type Count = z.infer<typeof CountSchema>;",
 	"",
 	'export const CountQuery = query("tally/count")',
-	"\t.output(schemas.CountSchema)",
+	"\t.output(z.custom<Count>())",
 	"\t.settlesNow();",
-	'export const SetCommand = command("tally/set")',
-	"\t.input(z.object({ to: z.number() }))",
-	"\t.idempotencyKey((input: { readonly to: Count }, step = 1) => {",
-	"\t\tconst doubled = input?.to * step;",
-	"\t\treturn String({ key() { return doubled; } }.key());",
-	"\t})",
-	"\t.invalidates([CountQuery]);",
 	"",
 ].join("\n");
+
+const FOREST_REQUESTS = [
+	'import { query } from "@widgetarium/core/requests";',
+	'import { ForestSchema } from "../../shared/schema/forest.schema.js";',
+	"",
+	'export const ForestQuery = query("forest").output(ForestSchema).handle(() => ({ trees: [] }));',
+	"",
+].join("\n");
+
+const FOREST_SCHEMA = [
+	'import { z } from "zod";',
+	'import { LabelSchema } from "./label.schema.js";',
+	"",
+	"export interface Branch {",
+	"\treadonly label: string;",
+	"\treadonly children: readonly Branch[];",
+	"}",
+	"",
+	"export const BranchSchema: z.ZodType<Branch> = z.lazy(() =>",
+	"\tz.object({ label: LabelSchema, children: z.array(BranchSchema).readonly() }),",
+	");",
+	"",
+	"export const ForestSchema = z.object({ name: LabelSchema, trees: z.array(BranchSchema) });",
+	"",
+	"export type Forest = z.infer<typeof ForestSchema>;",
+	"",
+].join("\n");
+
+const LABEL_SCHEMA = 'import { z } from "zod";\n\nexport const LabelSchema = z.string().min(1);\n';
 
 function moduleListing(listing: string, from = "./features/count/requests.js"): string {
 	const names = [...new Set(listing.match(/[A-Z]\w+(Query|Command)/g) ?? [])].join(", ");
@@ -194,6 +226,54 @@ async function generatedIn(name: string, files: Readonly<Record<string, string>>
 		...files,
 	});
 	return cli([`packages/${name}`], scratch);
+}
+
+function importedFrom(text: string): string[] {
+	return [...text.matchAll(IMPORTED_FROM)].map(([, specifier]) => specifier ?? "").sort();
+}
+
+function newShapePackagesOf(root: string): string[] {
+	return fs
+		.readdirSync(path.join(root, "packages"))
+		.map((name) => path.join(root, "packages", name))
+		.filter((folder) => {
+			const kind = packageKindOf(folder);
+			return kind?.kind === "client-package" || kind?.module.runs === "anywhere";
+		});
+}
+
+function reExportsUnder(folder: string): string[] {
+	const generated = path.join(folder, "generated");
+
+	if (!fs.existsSync(generated)) {
+		return [];
+	}
+
+	return fs
+		.readdirSync(generated)
+		.filter((name) => RE_EXPORT.test(fs.readFileSync(path.join(generated, name), "utf8")))
+		.map((name) => path.join(path.basename(folder), "generated", name));
+}
+
+async function bundledInputsOf(entry: string): Promise<string[]> {
+	const built = await esbuild.build({
+		entryPoints: [path.join(REPO, entry)],
+		bundle: true,
+		conditions: ["source"],
+		loader: TEXT_LOADERS,
+		write: false,
+		metafile: true,
+		format: "esm",
+		platform: "browser",
+		jsxFactory: "h",
+		jsxFragment: "Fragment",
+		logLevel: "silent",
+	});
+	return Object.keys(built.metafile.inputs);
+}
+
+function layoutHandlingOf(inputs: readonly string[]): string[] {
+	return inputs.filter((input) => LAYOUT_HANDLING.test(input));
 }
 
 function refusedWith(run: CliRun, words: string): readonly [number, boolean] {
@@ -291,15 +371,21 @@ try {
 		entryIn(tally, "generated/contract.ts"),
 		REQUESTS_CONTRACT,
 	);
+	check("its public entry is the root index.ts, re-exporting the contract alone", entryIn(tally, ROOT), REQUESTS_ENTRY);
 	check(
-		"its entry exports the contract, the schemas and the pure helpers of shared/lib/index.ts",
-		entryIn(tally),
-		REQUESTS_ENTRY,
+		"its generated/ holds the contract alone: no index.ts, no module.ts, no gateways.ts",
+		fs.readdirSync(path.join(tally, "generated")),
+		["contract.ts"],
 	);
 	check(
-		"its ./module entry is the module.ts const itself",
-		entryIn(tally, JOINED),
-		`${GENERATED_HEADER}export { TallyModule } from "../module.js";\n`,
+		"the contract is self-contained: it imports only zod and @widgetarium/core/requests",
+		importedFrom(entryIn(tally, "generated/contract.ts")),
+		["@widgetarium/core/requests", "zod"],
+	);
+	check(
+		"a short request name reaches the contract as <module>/<short>",
+		["tally/count", "tally/bump"].every((name) => entryIn(tally, "generated/contract.ts").includes(`("${name}")`)),
+		true,
 	);
 	check(
 		"the contract carries no handler code: no gateway import, no inject, no handle",
@@ -314,7 +400,7 @@ try {
 	const framed = await cli(["packages/frame"], scratch);
 	check(
 		"a client package, with no module.ts, gets a generated entry of its public ui and lib",
-		[framed.code, entryIn(frame), fs.existsSync(path.join(frame, JOINED))],
+		[framed.code, entryIn(frame, ROOT), fs.existsSync(path.join(frame, "generated"))],
 		[0, CLIENT_PACKAGE_ENTRY, false],
 	);
 
@@ -344,14 +430,110 @@ try {
 		[1, true],
 	);
 
-	const forms = await generatedIn("forms", {
-		"module.ts": moduleListing(".queries(CountQuery).commands(SetCommand)"),
-		"features/count/requests.ts": FORMS_REQUESTS,
+	const typed = await generatedIn("typed", {
+		"module.ts": moduleListing(".queries(CountQuery)"),
+		"features/count/requests.ts": TYPED_REQUESTS,
+		"shared/schema/count.schema.ts": TYPED_SCHEMA,
 	});
 	check(
-		"namespace, default and type imports reach the contract in their own form, a name used only as a type as import type",
-		[forms.code, entryIn(path.join(scratch, "packages/forms"), "generated/contract.ts")],
-		[0, FORMS_CONTRACT],
+		"a type used by a contract is copied with its schema, and an unused schema stays behind",
+		[typed.code, entryIn(path.join(scratch, "packages/typed"), "generated/contract.ts")],
+		[0, TYPED_CONTRACT],
+	);
+
+	const forest = await generatedIn("forest", {
+		"module.ts": moduleListing(".queries(ForestQuery)", "./features/forest/requests.js"),
+		"features/forest/requests.ts": FOREST_REQUESTS,
+		"shared/schema/forest.schema.ts": FOREST_SCHEMA,
+		"shared/schema/label.schema.ts": LABEL_SCHEMA,
+	});
+	const forestContract = entryIn(path.join(scratch, "packages/forest"), "generated/contract.ts");
+	check(
+		"schemas are copied across schema files and through z.lazy, each before its first eager use, with their interfaces and inferred types",
+		[
+			forest.code,
+			importedFrom(forestContract),
+			["interface Branch", "type Forest ="].every((word) => forestContract.includes(word)),
+			forestContract.indexOf("LabelSchema =") < forestContract.indexOf("ForestSchema ="),
+			forestContract.indexOf("BranchSchema:") < forestContract.indexOf("ForestSchema ="),
+		],
+		[0, ["@widgetarium/core/requests", "zod"], true, true, true],
+	);
+	check("every copied declaration appears once", forestContract.split("export const LabelSchema").length, 2);
+
+	const refined = await generatedIn("refined", {
+		"shared/schema/count.schema.ts":
+			'import { z } from "zod";\nexport const CountSchema = z.number().refine((n) => n > 0);\n',
+	});
+	check(
+		"a copied schema built with a function is refused by name",
+		refusedWith(
+			refined,
+			"shared/schema/count.schema.ts: CountSchema is built with a function; move it out of the shape: refinements and helpers belong to the handler or the gateway",
+		),
+		[1, true],
+	);
+
+	const helped = await generatedIn("helped", {
+		"shared/schema/count.schema.ts": 'import { z } from "zod";\nexport const CountSchema = z.number().max(mostOf());\n',
+	});
+	check(
+		"a copied schema calling a helper is refused by name",
+		refusedWith(helped, "CountSchema is built with a call of a helper; move it out of the shape"),
+		[1, true],
+	);
+
+	const foreign = await generatedIn("foreign", {
+		"shared/schema/count.schema.ts":
+			'import { z } from "zod";\nimport { MOST } from "../lib/limits.js";\nexport const CountSchema = z.number().max(MOST);\n',
+		"shared/lib/limits.ts": "export const MOST = 9;\n",
+	});
+	check(
+		"a copied schema reading a foreign import is refused by name",
+		refusedWith(
+			foreign,
+			"shared/schema/count.schema.ts: MOST comes from ../lib/limits.js; a schema copied into the contract reads only zod and shared/schema",
+		),
+		[1, true],
+	);
+
+	const packaged = await generatedIn("packaged", {
+		"features/count/requests.ts": `import { Shape } from "some-package";\n${COUNT_REQUESTS.replace(".output(CountSchema)", ".output(Shape)")}`,
+	});
+	check(
+		"a contract using a package other than zod and core is refused",
+		refusedWith(
+			packaged,
+			"uses Shape from some-package; a contract imports only zod, @widgetarium/core/requests and shared/schema",
+		),
+		[1, true],
+	);
+
+	const keyed = await generatedIn("keyed", {
+		"features/count/requests.ts": COUNT_REQUESTS.replace("(input) => `${input.by}`", "(input) => String(input.by)"),
+	});
+	check(
+		"a key function doing more than reading its input is refused",
+		refusedWith(
+			keyed,
+			"features/count/requests.ts: the idempotency key of BumpCommand is a function a client cannot carry",
+		),
+		[1, true],
+	);
+
+	const strays = path.join(scratch, "packages/strays");
+	layFiles(strays, { ...REQUESTS_FILES, "generated/index.ts": 'export * from "./contract.js";\n' });
+	const strayCheck = await cli(["--check", "packages/strays"], scratch);
+	const strayRun = await cli(["packages/strays"], scratch);
+	check(
+		"--check names a file under generated/ that generate no longer writes, and generate removes it",
+		[
+			strayCheck.code,
+			strayCheck.said.includes("generated/index.ts is a file generate no longer writes"),
+			strayRun.code,
+			fs.existsSync(path.join(strays, "generated/index.ts")),
+		],
+		[1, true, 0, false],
 	);
 
 	const viewed = await generatedIn("viewed", {
@@ -396,11 +578,8 @@ try {
 		"shared/schema/bump.schema.ts": "export const BumpSchema = 1;\n",
 	});
 	check(
-		"two request files binding one local name to different imports are refused, naming both",
-		refusedWith(
-			split,
-			'the contracts bind Shape to two imports, CountSchema from "../shared/schema/count.schema.js" and BumpSchema from "../shared/schema/bump.schema.js"',
-		),
+		"a schema imported under another name is refused: the contract copies it by its own name",
+		refusedWith(split, "the contract of CountQuery uses Shape; import a schema by its own name from shared/schema"),
 		[1, true],
 	);
 
@@ -437,14 +616,11 @@ try {
 	);
 
 	const scoped = await generatedIn("scoped", {
-		"features/count/requests.ts": COUNT_REQUESTS.replace(
-			"(input) => String(input.by)",
-			"({ by = fallback }) => String(by)",
-		),
+		"features/count/requests.ts": COUNT_REQUESTS.replace("(input) => `${input.by}`", "({ by = fallback }) => `${by}`"),
 	});
 	check(
-		"a parameter default is read in the scope around the function",
-		refusedWith(scoped, "the contract of BumpCommand uses fallback, which that file neither imports nor declares"),
+		"a key function destructuring its input is refused before its default is read",
+		refusedWith(scoped, "the idempotency key of BumpCommand is a function a client cannot carry"),
 		[1, true],
 	);
 
@@ -468,6 +644,35 @@ check(
 	[],
 );
 check("every domain of this repository has a fresh generated entry", repo.code === 0 ? 0 : repo.said, 0);
+const newShapes = newShapePackagesOf(REPO);
+check(
+	"this repository has module(...) and client packages to hold to the generated/ law",
+	newShapes.map((folder) => path.basename(folder)).filter((name) => ["layout", "shell"].includes(name)),
+	["layout", "shell"],
+);
+check(
+	"no generated/ of a module(...) or client package re-exports: export * from and export { } from live only in the root index.ts",
+	newShapes.flatMap(reExportsUnder),
+	[],
+);
+
+const shellInputs = await bundledInputsOf("packages/shell/index.ts");
+const startedInputs = await bundledInputsOf("packages/layout/module.ts");
+check(
+	"the shell's bundle reads layout through its contract: it holds the generated contract",
+	shellInputs.some((input) => input.endsWith("packages/layout/generated/contract.ts")),
+	true,
+);
+check(
+	"and pulls no layout handler or gateway, which only the app starting LayoutModule bundles",
+	layoutHandlingOf(shellInputs),
+	[],
+);
+check(
+	"the module's own bundle does carry its handlers and gateways, so the check can fail",
+	layoutHandlingOf(startedInputs).length > 0,
+	true,
+);
 
 console.log(tally.failed ? `generated: ${tally.failed} check(s) failed` : "generated: all checks passed");
 process.exit(tally.failed ? 1 : 0);

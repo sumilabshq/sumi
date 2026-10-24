@@ -1,9 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { Expression, Statement } from "@babel/types";
+import type { Expression } from "@babel/types";
 import { CliRefusal } from "./cli-output.js";
 import { importLinesOf, importsIn, withoutRepeats } from "./contract-imports.js";
-import type { Imported } from "./contract-imports.js";
+import { REQUEST_ROOTS, needsOfRequest, relativeOf } from "./contract-needs.js";
+import type { ListedRequest, SourceFile } from "./contract-needs.js";
+import { copiedSchemasOf } from "./contract-schemas.js";
+import { refuseKeyFunction } from "./contract-key.js";
 import { usesOf } from "./free-names.js";
 import type { NameUse } from "./free-names.js";
 import { chainOf, exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
@@ -13,28 +16,12 @@ import { parsedSourceOf } from "@widgetarium/eslint-plugin/files";
 
 export const CONTRACT_ENTRY = "generated/contract.ts";
 
-interface SourceFile {
-	readonly relative: string;
-	readonly text: string;
-	readonly body: readonly Statement[];
-}
-
-interface ListedRequest {
-	readonly name: string;
+interface ListingModule {
 	readonly file: SourceFile;
-	readonly chain: string;
-	readonly uses: readonly NameUse[];
-}
-
-interface RequestImports {
-	readonly folder: string;
-	readonly request: ListedRequest;
-	readonly imports: readonly Imported[];
-	readonly listed: ReadonlySet<string>;
+	readonly tag: string;
 }
 
 const LISTING_METHODS: ReadonlySet<string> = new Set(["queries", "commands"]);
-const ROOTS: ReadonlySet<string> = new Set(["query", "command"]);
 const CONTRACT_STEPS: ReadonlySet<string> = new Set([
 	"input",
 	"output",
@@ -43,46 +30,8 @@ const CONTRACT_STEPS: ReadonlySet<string> = new Set([
 	"settlesNow",
 	"invalidates",
 ]);
-const KNOWN_GLOBALS: ReadonlySet<string> = new Set([
-	"undefined",
-	"NaN",
-	"Infinity",
-	"globalThis",
-	"Object",
-	"Array",
-	"String",
-	"Number",
-	"Boolean",
-	"BigInt",
-	"Symbol",
-	"Date",
-	"Math",
-	"JSON",
-	"RegExp",
-	"Error",
-	"Promise",
-	"Map",
-	"Set",
-	"URL",
-	"Record",
-	"Readonly",
-	"ReadonlyArray",
-	"Partial",
-	"Required",
-	"Pick",
-	"Omit",
-	"Exclude",
-	"Extract",
-	"NonNullable",
-	"ReturnType",
-	"Parameters",
-	"Awaited",
-]);
 const NOTHING_BOUND: ReadonlySet<string> = new Set();
-const SCHEMAS = "shared/schema/";
-const SCRIPT = /\.[jt]s$/;
 const MODULE_FILE = "module.ts";
-
 const NOT_LISTED_BY_NAME = "{module}: .queries() and .commands() take request constants by name, never an expression";
 const LISTED_TWICE = "{module}: {name} is listed twice; a module lists each request once";
 const NOT_IMPORTED = "{module}: {name} is listed but not imported by name from a file of this module";
@@ -90,36 +39,48 @@ const UNREADABLE = "{file} cannot be read: {reason}";
 const NOT_EXPORTED = "{file} exports no const {name}, which {module} lists";
 const NOT_A_REQUEST = "{file}: {name} starts with {root}(...); a listed request starts with query(...) or command(...)";
 const NO_POSITION = "{file}: the chain of {name} carries no source position, so its contract cannot be cut from it";
-const DECLARED_BESIDE =
-	"{file}: the contract of {name} uses {used}, declared in that file; a contract reads only imports, so move {used} to shared/schema";
-const UNLISTED_BESIDE =
-	"{file}: the contract of {name} uses {used}, a request of that file that module.ts does not list; list {used} in module.ts";
-const NOT_DECLARED = "{file}: the contract of {name} uses {used}, which that file neither imports nor declares";
-const NOT_A_SCHEMA =
-	"{file}: the contract of {name} uses {used} from {specifier}; a contract imports only shared/schema and packages, so no handler code reaches a client";
+const NO_MODULE_NAME = "{module}: module(...) takes its name as a string literal";
 const CYCLE = "the contracts of {names} name each other in a cycle";
 
 export function contractTextOf(folder: string, moduleName: string): string {
 	const moduleFile = sourceOf(folder, MODULE_FILE);
-	const listed = listedNamesOf(moduleFile, moduleName).map((name) => listedRequestOf(folder, moduleFile, name));
-	const names = refuseListedTwice(listed, moduleName);
-	const imports = listed.flatMap((request) =>
-		importsOfRequest({
+	const init = exportedConstsOf(moduleFile.body).find(({ name }) => name === moduleName)?.init;
+	const listing = { file: moduleFile, tag: moduleTagOf(init, moduleName) };
+	const names = listedNamesOf(init, moduleName);
+	const listed = names.map((name) => listedRequestOf(folder, listing, name));
+	const held = refuseListedTwice(listed, moduleName);
+	const needs = listed.flatMap((request) =>
+		needsOfRequest({
 			folder,
 			request,
 			imports: importsIn(request.file.body),
-			listed: names,
+			listed: held,
 		}),
 	);
+	const copied = copiedSchemasOf(
+		folder,
+		needs.flatMap((need) => (need.kind === "schema" ? [need.root] : [])),
+	);
+	const imports = [...needs.flatMap((need) => (need.kind === "import" ? [need.imported] : [])), ...copied.imports];
 	return [
 		importLinesOf(withoutRepeats(imports)),
 		"\n",
+		copied.text === "" ? "" : `${copied.text}\n`,
 		...orderByUse(listed).map(({ name, chain }) => `export const ${name} = ${chain};\n`),
 	].join("");
 }
 
-function listedNamesOf(moduleFile: SourceFile, moduleName: string): string[] {
-	const init = exportedConstsOf(moduleFile.body).find(({ name }) => name === moduleName)?.init;
+function moduleTagOf(init: Expression | undefined, moduleName: string): string {
+	const named = init === undefined ? undefined : rootCallOf(init)?.call.arguments[0];
+
+	if (named?.type !== "StringLiteral") {
+		throw new CliRefusal(fillTemplate(NO_MODULE_NAME, { module: moduleName }));
+	}
+
+	return named.value;
+}
+
+function listedNamesOf(init: Expression | undefined, moduleName: string): string[] {
 	return init === undefined ? [] : chainOf(init).flatMap((step) => namesListedBy(step, moduleName));
 }
 
@@ -151,7 +112,7 @@ function refuseListedTwice(listed: readonly ListedRequest[], moduleName: string)
 	return names;
 }
 
-function listedRequestOf(folder: string, moduleFile: SourceFile, name: string): ListedRequest {
+function listedRequestOf(folder: string, { file: moduleFile, tag }: ListingModule, name: string): ListedRequest {
 	const from = importsIn(moduleFile.body).find(({ local }) => local === name);
 
 	if (from === undefined || from.form !== "named" || !from.specifier.startsWith(".")) {
@@ -165,25 +126,39 @@ function listedRequestOf(folder: string, moduleFile: SourceFile, name: string): 
 		throw new CliRefusal(fillTemplate(NOT_EXPORTED, { file: file.relative, name: from.imported, module: MODULE_FILE }));
 	}
 
-	return contractOfChain(file, from.imported, init);
+	return contractOfChain(file, from.imported, init, tag);
 }
 
-function contractOfChain(file: SourceFile, name: string, init: Expression): ListedRequest {
+function contractOfChain(file: SourceFile, name: string, init: Expression, tag: string): ListedRequest {
 	const chain = chainOf(init);
 	const root = requestRootOf(file, name, chain);
 	const kept = contractStepsOf(chain);
+	kept.forEach((step) => refuseKeyFunction(step, { file: file.relative, name }));
 	return {
 		name,
 		file,
-		chain: chainTextOf(file, name, [root, kept.at(-1) ?? root]),
+		chain: withFullName(chainTextOf(file, name, [root, kept.at(-1) ?? root]), root, tag),
 		uses: kept.flatMap(usesInStep),
 	};
+}
+
+function withFullName(chain: string, root: ChainStep, tag: string): string {
+	const [named] = root.call.arguments;
+	const { start } = root.call;
+
+	if (named?.type !== "StringLiteral" || named.value.includes("/") || named.start == null || start == null) {
+		return chain;
+	}
+
+	const from = named.start - start;
+	const to = (named.end ?? named.start) - start;
+	return `${chain.slice(0, from)}${JSON.stringify(`${tag}/${named.value}`)}${chain.slice(to)}`;
 }
 
 function requestRootOf(file: SourceFile, name: string, chain: readonly ChainStep[]): ChainStep {
 	const [root] = chain;
 
-	if (root === undefined || root.call.callee.type !== "Identifier" || !ROOTS.has(root.method)) {
+	if (root === undefined || root.call.callee.type !== "Identifier" || !REQUEST_ROOTS.has(root.method)) {
 		throw new CliRefusal(fillTemplate(NOT_A_REQUEST, { file: file.relative, name, root: root?.method ?? "nothing" }));
 	}
 
@@ -212,75 +187,6 @@ function usesInStep({ call }: ChainStep): NameUse[] {
 	return [...callee, ...typeArguments, ...call.arguments.flatMap((argument) => usesOf(argument, NOTHING_BOUND))];
 }
 
-function importsOfRequest(asked: RequestImports): Imported[] {
-	return usedNamesOf(asked.request.uses)
-		.filter(({ name }) => !asked.listed.has(name))
-		.flatMap((use) => importOfUse(asked, use));
-}
-
-function usedNamesOf(uses: readonly NameUse[]): NameUse[] {
-	const isOnlyType = new Map<string, boolean>();
-
-	for (const { name, isType } of uses) {
-		isOnlyType.set(name, (isOnlyType.get(name) ?? true) && isType);
-	}
-
-	return [...isOnlyType].map(([name, isType]) => ({
-		name,
-		isType,
-	}));
-}
-
-function importOfUse({ folder, request, imports }: RequestImports, use: NameUse): Imported[] {
-	const from = imports.find(({ local }) => local === use.name);
-
-	if (from !== undefined) {
-		return [
-			importForContract(folder, request, {
-				...from,
-				isType: from.isType || use.isType,
-			}),
-		];
-	}
-
-	refuseDeclaredBeside(request, use.name);
-
-	if (KNOWN_GLOBALS.has(use.name)) {
-		return [];
-	}
-
-	throw new CliRefusal(fillTemplate(NOT_DECLARED, { file: request.file.relative, name: request.name, used: use.name }));
-}
-
-function refuseDeclaredBeside(request: ListedRequest, used: string): void {
-	const { body } = request.file;
-
-	if (!isDeclaredIn(body, used)) {
-		return;
-	}
-
-	const message = isRequestDeclaredIn(body, used) ? UNLISTED_BESIDE : DECLARED_BESIDE;
-	throw new CliRefusal(fillTemplate(message, { file: request.file.relative, name: request.name, used }));
-}
-
-function importForContract(folder: string, request: ListedRequest, from: Imported): Imported {
-	if (!from.specifier.startsWith(".")) {
-		return from;
-	}
-
-	const target = relativeOf(folder, request.file.relative, from.specifier);
-
-	if (!target.startsWith(SCHEMAS)) {
-		const data = { file: request.file.relative, name: request.name, used: from.local, specifier: from.specifier };
-		throw new CliRefusal(fillTemplate(NOT_A_SCHEMA, data));
-	}
-
-	return {
-		...from,
-		specifier: `../${target.replace(SCRIPT, ".js")}`,
-	};
-}
-
 function orderByUse(listed: readonly ListedRequest[]): ListedRequest[] {
 	const done: ListedRequest[] = [];
 	let left = [...listed];
@@ -299,28 +205,6 @@ function orderByUse(listed: readonly ListedRequest[]): ListedRequest[] {
 	return done;
 }
 
-function isDeclaredIn(body: readonly Statement[], name: string): boolean {
-	return body.some((statement) => {
-		const declared = statement.type === "ExportNamedDeclaration" ? statement.declaration : statement;
-
-		if (declared?.type === "VariableDeclaration") {
-			return declared.declarations.some(
-				(declarator) => declarator.id.type === "Identifier" && declarator.id.name === name,
-			);
-		}
-
-		return (
-			(declared?.type === "FunctionDeclaration" || declared?.type === "ClassDeclaration") && declared.id?.name === name
-		);
-	});
-}
-
-function isRequestDeclaredIn(body: readonly Statement[], name: string): boolean {
-	return exportedConstsOf(body).some(
-		(declared) => declared.name === name && ROOTS.has(rootCallOf(declared.init)?.method ?? ""),
-	);
-}
-
 function sourceOf(folder: string, relative: string): SourceFile {
 	try {
 		return {
@@ -337,9 +221,4 @@ function requestFileOf(folder: string, fromRelative: string, specifier: string):
 	const relative = relativeOf(folder, fromRelative, specifier);
 	const asTsx = `${relative}x`;
 	return !fs.existsSync(path.join(folder, relative)) && fs.existsSync(path.join(folder, asTsx)) ? asTsx : relative;
-}
-
-function relativeOf(folder: string, fromRelative: string, specifier: string): string {
-	const resolved = path.resolve(path.dirname(path.join(folder, fromRelative)), specifier).replace(SCRIPT, ".ts");
-	return path.relative(folder, resolved).split(path.sep).join("/");
 }
