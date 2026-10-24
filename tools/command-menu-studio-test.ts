@@ -217,6 +217,34 @@ try {
 	);
 	await escapedAll(page);
 
+	await page.ask(`(() => {
+		const field = document.createElement("input");
+		field.setAttribute("data-under-menu", "");
+		field.style.cssText = "position:fixed;left:620px;top:840px;width:200px;height:30px;z-index:1";
+		document.body.append(field);
+		return true;
+	})()`);
+	await page.ask(PRESS_KEY("k"));
+	await menuAfter(page);
+	await pressOn(page, "[data-under-menu]");
+	await waited(SETTLE_MS);
+	const underneath = await page.ask(
+		`[document.activeElement?.hasAttribute("data-under-menu") ?? false, document.querySelector(".wg-cm-layer") === null]`,
+	);
+	check(
+		"a press below the open menu reaches the field there and shuts the menu",
+		JSON.stringify(underneath) === JSON.stringify([true, true]),
+		underneath,
+	);
+	await page.ask(`document.querySelector("[data-under-menu]")?.remove(); true`);
+
+	await pressOn(page, "[data-cm-search]");
+	await menuAfter(page);
+	await pressOn(page, "[data-cm-search]");
+	const searchAgain = await menuAfter(page);
+	check("the Search button pressed while the menu is open shuts it", searchAgain === null, searchAgain);
+	await escapedAll(page);
+
 	const pressedNewTab = await pressOn(page, "[data-host-column-add]");
 	const fromNewTab = await menuAfter(page);
 	check(

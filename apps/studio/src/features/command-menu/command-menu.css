@@ -9,6 +9,7 @@
 	letter-spacing: -0.006em;
 	color: var(--sumi-text);
 	-webkit-font-smoothing: antialiased;
+	pointer-events: none;
 }
 
 .wg-cm-layer * {
@@ -26,12 +27,8 @@
 	text-align: left;
 }
 
-.wg-cm-outside {
-	position: absolute;
-	inset: 0;
-}
-
 .wg-cm-panel {
+	pointer-events: auto;
 	position: absolute;
 	left: 50%;
 	top: 116px;
