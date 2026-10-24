@@ -21,7 +21,7 @@ import {
 	RowSupporting,
 	RowText,
 	RowValue,
-} from "../packages/kit/src/index";
+} from "../packages/shared/kit/src/index";
 
 const NAMES = ["Inbox", "Drafts", "Archive"];
 

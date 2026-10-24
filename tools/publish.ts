@@ -5,8 +5,8 @@ import * as prettier from "prettier";
 import * as react from "react";
 import * as reactDom from "react-dom";
 import * as zod from "zod";
-import { RECORD_FILE, RECORD_FILES, cardOf } from "../packages/core/src/engine/catalogue-index.ts";
-import { WIDGET_API } from "../packages/core/src/version.ts";
+import { RECORD_FILE, RECORD_FILES, cardOf } from "../packages/shared/core/src/engine/catalogue-index.ts";
+import { WIDGET_API } from "../packages/shared/core/src/version.ts";
 import {
 	EVERY_SOURCE_FILE,
 	LIB_FILES,
@@ -17,15 +17,15 @@ import {
 	isWidgetModule,
 	missingSourceRefusal,
 	type FolderFiles,
-} from "../packages/core/src/engine/widget-build.ts";
-import { ANSWERED_BY_THE_ENGINE, facadeUrl, realPathIn } from "../packages/core/src/engine/modules.ts";
-import { idOfFolder } from "../packages/core/src/engine/github.ts";
-import * as declaredBuilders from "../packages/core/src/gateway/declared.ts";
-import * as queryBuilders from "../packages/core/src/gateway/queries.ts";
-import { PageInputSchema, PageOf } from "../packages/core/src/gateway/page.ts";
-import type { DeclaredModule, DeclaredProps } from "../packages/core/src/gateway/declared-types.ts";
-import type { ModuleManifest } from "../packages/core/src/gateway/manifest.ts";
-import { isPropsToDefine } from "../packages/core/src/widget-api.ts";
+} from "../packages/shared/core/src/engine/widget-build.ts";
+import { ANSWERED_BY_THE_ENGINE, facadeUrl, realPathIn } from "../packages/shared/core/src/engine/modules.ts";
+import { idOfFolder } from "../packages/shared/core/src/engine/github.ts";
+import * as declaredBuilders from "../packages/shared/core/src/gateway/declared.ts";
+import * as queryBuilders from "../packages/shared/core/src/gateway/queries.ts";
+import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.ts";
+import type { DeclaredModule, DeclaredProps } from "../packages/shared/core/src/gateway/declared-types.ts";
+import type { ModuleManifest } from "../packages/shared/core/src/gateway/manifest.ts";
+import { isPropsToDefine } from "../packages/shared/core/src/widget-api.ts";
 import { isRecord } from "./page-dom.ts";
 
 export interface ScopeLib {

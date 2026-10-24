@@ -18,16 +18,16 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const kit = await import("../packages/kit/src/index.ts");
-const { layPanelSizes, stepPanelSizes } = await import("../packages/kit/src/utils/resizable.ts");
-const { distinctSnaps, nearestSnap, steppedSnap } = await import("../packages/kit/src/utils/carousel.ts");
-const { thumbOf } = await import("../packages/kit/src/utils/scroll-thumb.ts");
-const { toggleOpened } = await import("../packages/kit/src/utils/accordion.ts");
-const { chartColorOf } = await import("../packages/kit/src/utils/chart-colors.ts");
-const { clamp } = await import("../packages/kit/src/utils/clamp.ts");
-const { focusStepped } = await import("../packages/kit/src/utils/focus-step.ts");
-const { stepKeysOf } = await import("../packages/kit/src/utils/roving.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { layPanelSizes, stepPanelSizes } = await import("../packages/shared/kit/src/utils/resizable.ts");
+const { distinctSnaps, nearestSnap, steppedSnap } = await import("../packages/shared/kit/src/utils/carousel.ts");
+const { thumbOf } = await import("../packages/shared/kit/src/utils/scroll-thumb.ts");
+const { toggleOpened } = await import("../packages/shared/kit/src/utils/accordion.ts");
+const { chartColorOf } = await import("../packages/shared/kit/src/utils/chart-colors.ts");
+const { clamp } = await import("../packages/shared/kit/src/utils/clamp.ts");
+const { focusStepped } = await import("../packages/shared/kit/src/utils/focus-step.ts");
+const { stepKeysOf } = await import("../packages/shared/kit/src/utils/roving.ts");
 
 let failed = 0;
 let checks = 0;

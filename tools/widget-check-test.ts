@@ -1,6 +1,7 @@
 export {};
 
-const { checkWidget, saidWidgetCheck, WIDGET_CHECK_RULES } = await import("../packages/core/src/widget-check.js");
+const { checkWidget, saidWidgetCheck, WIDGET_CHECK_RULES } =
+	await import("../packages/shared/core/src/widget-check.js");
 
 let failed = 0;
 let checks = 0;

@@ -13,7 +13,7 @@ A page is a composition of blocks, all under `ui/`. A block is a plain React com
 
    Toggling the pick is the handler's rule, not the view's.
 
-2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding (**planned**).
+2. **Behavior comes from primitives.** Scroll into view, drag to reorder, collapse, focus and keyboard come from Radix or `packages/shared/behaviors` (headless, tested). Hand-written pointer math in a block is a lint finding (**planned**).
 3. **A block owns its data; a layout passes none.** A layout only says where blocks stand. Swapping a block is one line.
 4. **State lives where it is needed.** Only this block, only for a moment (hover, an open popover) → the primitive's own state. Another block needs it, or it survives navigation → a query and a command over a client store.
 
@@ -58,7 +58,7 @@ export function Canvas() {
 }
 ```
 
-`Canvas` lives in `packages/canvas/shared/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [CanvasClientModule.with(parts)] })}><Canvas /></AppProvider>`.
+`Canvas` lives in `packages/domain/canvas/shared/ui/canvas/`; an app draws it inside its app: `<AppProvider app={app({ modules: [CanvasClientModule.with(parts)] })}><Canvas /></AppProvider>`.
 
 A query whose data changes outside a command declares `watch` on its handler ([requests.md](requests.md#live-data-watch)). `useQuery` suspends only on its first read of an input: a part that can draw without its data (a picture still being taken) reads with `useOptionalQuery`, so a new input does not hide the whole slot behind its loading view.
 

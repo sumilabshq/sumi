@@ -4,8 +4,8 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import { LIB_FILES } from "../packages/core/src/engine/widget-build.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { LIB_FILES } from "../packages/shared/core/src/engine/widget-build.js";
 import type { Theme } from "./harness.ts";
 import { TEXT_LOADERS } from "./text-loaders.ts";
 
@@ -47,7 +47,7 @@ for (const [name, given] of Object.entries(recordAt(recordAt(manifest, "preview"
 
 const aliasEveryScopeLib: Record<string, string> = {
 	widgetarium: "./tools/fill-shim.ts",
-	"widgetarium/kit": "./packages/kit/src/index.ts",
+	"widgetarium/kit": "./packages/shared/kit/src/index.ts",
 };
 for (const scope of fs.readdirSync("registry").filter((name) => name.startsWith("@"))) {
 	const lib = LIB_FILES.map((name) => path.join("registry", scope, name)).find((at) => fs.existsSync(at));
@@ -65,7 +65,7 @@ const slotMap = `{ ${fedSlotsFromManifestDefaults.map(([name], at) => `${name}: 
 
 const PAGE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./${widgetFile(folder)}";
 ${slotImports}
 
@@ -113,7 +113,7 @@ const bundled = bundle.outputFiles[0]?.text ?? "";
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${fs.readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${fs.readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 ${fs.existsSync(scopeSheet) ? `<style>${fs.readFileSync(scopeSheet, "utf8")}</style>` : ""}
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;

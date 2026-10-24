@@ -2,10 +2,10 @@ import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirS
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { bundleOf, shoot, shotPage, type ShotSize, type Theme } from "./harness.ts";
 
-const { WIDGETS_DIR, GRID, spanToPixels } = await import("../packages/core/src/paths.js");
+const { WIDGETS_DIR, GRID, spanToPixels } = await import("../packages/shared/core/src/paths.js");
 
 const SOURCE = "registry";
 const THEMES: readonly Theme[] = ["light", "dark"];
@@ -87,7 +87,7 @@ export function shotBox(manifest: unknown): ShotSize {
 	};
 }
 
-const { contentHash } = await import("../packages/core/src/engine/content-hash.js");
+const { contentHash } = await import("../packages/shared/core/src/engine/content-hash.js");
 
 const WIDGET_SOURCES = ["widget.tsx", "widget.ts", "widget.jsx", "widget.js", "widget.css"];
 

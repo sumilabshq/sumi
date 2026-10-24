@@ -4,10 +4,10 @@ import { JSDOM } from "jsdom";
 import type { App } from "obsidian";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
-import type { Board } from "../packages/core/src/model.js";
-import type { BoardNode, BoxNode } from "../packages/core/src/tree-nodes.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import type { BoardNode, BoxNode } from "../packages/shared/core/src/tree-nodes.js";
 
 const VAULT = "tools/fixture-records";
 const KANBAN = "@default/kanban-board";
@@ -41,13 +41,13 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { swapBoxes } = await import("../packages/core/src/tree.js");
-const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalogue-requests.js");
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { swapBoxes } = await import("../packages/shared/core/src/tree.js");
+const { CATALOGUE_REQUESTS } = await import("../packages/shared/core/src/engine/catalogue-requests.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
 const { TFile, TFolder } = await import("obsidian");
 
 const pathIn = (value: unknown, ...keys: readonly string[]): unknown =>

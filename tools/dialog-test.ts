@@ -6,9 +6,9 @@ import type { ReactElement } from "react";
 import type { App, TFile as ObsidianFile } from "obsidian";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
-import type { Board } from "../packages/core/src/model.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.js";
+import type { Board } from "../packages/shared/core/src/model.js";
 const EVERY_VERB = ["list", "get", "create", "update", "remove", "replace", "repairIds"];
 
 const VAULT = process.env["WG_VAULT"] ?? "tools/fixture";
@@ -42,14 +42,14 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
 const { TFile, TFolder, MarkdownRenderer } = await import("obsidian");
-const { readBody } = await import("../packages/core/src/block-writer.js");
-const { TONE_NAMES } = await import("../packages/kit/src/index.ts");
+const { readBody } = await import("../packages/shared/core/src/block-writer.js");
+const { TONE_NAMES } = await import("../packages/shared/kit/src/index.ts");
 
 type NoteProps = Record<string, unknown>;
 type NoteFile = ObsidianFile & { props: NoteProps };

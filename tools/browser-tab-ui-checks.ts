@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/browser/features/ink/contract.ts";
+import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";

@@ -1,4 +1,4 @@
-import { flightBetween } from "../packages/gpu/index.ts";
+import { flightBetween } from "../packages/shared/gpu/index.ts";
 
 let failed = 0;
 function check(what: string, ok: boolean, got: unknown): void {

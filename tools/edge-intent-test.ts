@@ -1,5 +1,5 @@
-import { EdgeIntent } from "../packages/behaviors/src/edge-reveal/edge-intent.ts";
-import type { EdgePoint, EdgeSide } from "../packages/behaviors/src/edge-reveal/edge-intent.ts";
+import { EdgeIntent } from "../packages/shared/behaviors/src/edge-reveal/edge-intent.ts";
+import type { EdgePoint, EdgeSide } from "../packages/shared/behaviors/src/edge-reveal/edge-intent.ts";
 import { check, tally } from "./check-helpers.ts";
 
 interface Step {

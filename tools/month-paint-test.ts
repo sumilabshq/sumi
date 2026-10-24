@@ -4,9 +4,9 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { LIB_FILES } from "../packages/core/src/engine/widget-build.js";
-import { z } from "../packages/core/src/gateway/declared.ts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { LIB_FILES } from "../packages/shared/core/src/engine/widget-build.js";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
 
 const ClearancesSchema = z.object({
@@ -41,10 +41,10 @@ const FOLDER = "registry/@default/month";
 
 const PAGE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { previewProps } from "./packages/core/src/preview.js";
-import { rootWidget } from "./packages/core/src/widget-root.js";
-import { manifestOf } from "./packages/core/src/engine/catalogue-index.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { previewProps } from "./packages/shared/core/src/preview.js";
+import { rootWidget } from "./packages/shared/core/src/widget-root.js";
+import { manifestOf } from "./packages/shared/core/src/engine/catalogue-index.js";
 import Widget from "./${FOLDER}/widget.tsx";
 
 const manifest = manifestOf(${readFileSync(path.join(FOLDER, "manifest.generated.json"), "utf8")}, Widget);
@@ -114,7 +114,7 @@ window.__measure = () => [...document.querySelectorAll(".wg-root")].map(clearanc
 
 const alias: Record<string, string> = {
 	widgetarium: "./tools/fill-shim.ts",
-	"widgetarium/kit": "./packages/kit/src/index.ts",
+	"widgetarium/kit": "./packages/shared/kit/src/index.ts",
 	obsidian: "./tools/obsidian-shim.ts",
 };
 for (const scope of fs.readdirSync("registry").filter((name) => name.startsWith("@"))) {
@@ -157,7 +157,7 @@ const boxes = tiles
 	.join("");
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>${HOST_RULES}</style>
 <style>body { margin: 0; padding: 8px; ${THEME}

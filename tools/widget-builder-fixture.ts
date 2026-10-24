@@ -1,14 +1,14 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { z } from "zod";
-import { ISlot } from "../packages/core/src/gateway/declared.ts";
-import { ICommand, IQuery } from "../packages/core/src/gateway/queries.ts";
-import { PageInputSchema, PageOf, pageAt, offsetOfCursor } from "../packages/core/src/gateway/page.ts";
-import type { Page } from "../packages/core/src/gateway/page.ts";
-import { rowOf } from "../packages/core/src/gateway/create.ts";
-import type { RecordRef } from "../packages/core/src/gateway/declared.ts";
-import type { FailedViewProps, InjectProps } from "../packages/core/src/widget-builder-types.ts";
-import { inject } from "../packages/core/src/widget-builder.ts";
+import { ISlot } from "../packages/shared/core/src/gateway/declared.ts";
+import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import { PageInputSchema, PageOf, pageAt, offsetOfCursor } from "../packages/shared/core/src/gateway/page.ts";
+import type { Page } from "../packages/shared/core/src/gateway/page.ts";
+import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
+import type { RecordRef } from "../packages/shared/core/src/gateway/declared.ts";
+import type { FailedViewProps, InjectProps } from "../packages/shared/core/src/widget-builder-types.ts";
+import { inject } from "../packages/shared/core/src/widget-builder.ts";
 
 export const TaskSchema = z.object({ id: z.string(), title: z.string(), done: z.boolean() });
 export type Task = z.output<typeof TaskSchema>;

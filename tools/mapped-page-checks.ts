@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { collectionGateway, applyQuery } from "../packages/core/src/gateway/create.ts";
-import type { Query } from "../packages/core/src/gateway/contract.ts";
-import { fieldsOf } from "../packages/core/src/gateway/fields.ts";
-import { mapCollection } from "../packages/core/src/gateway/mapped.ts";
-import { parseReadsBy } from "../packages/core/src/gateway/parsed.ts";
-import { createProblems, UnansweredFilterError } from "../packages/core/src/gateway/problems.ts";
-import type { DeclaredNeeds } from "../packages/core/src/gateway/resolve-needs.ts";
+import { collectionGateway, applyQuery } from "../packages/shared/core/src/gateway/create.ts";
+import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
+import { fieldsOf } from "../packages/shared/core/src/gateway/fields.ts";
+import { mapCollection } from "../packages/shared/core/src/gateway/mapped.ts";
+import { parseReadsBy } from "../packages/shared/core/src/gateway/parsed.ts";
+import { createProblems, UnansweredFilterError } from "../packages/shared/core/src/gateway/problems.ts";
+import type { DeclaredNeeds } from "../packages/shared/core/src/gateway/resolve-needs.ts";
 
 type Check = (name: string, ok: unknown, detail?: string) => void;
 

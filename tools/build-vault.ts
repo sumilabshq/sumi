@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { InstallerAdapter } from "../packages/core/src/installer-context.js";
+import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.js";
 
-const { createInstaller } = await import("../packages/core/src/installer.js");
+const { createInstaller } = await import("../packages/shared/core/src/installer.js");
 
 const VAULT = process.env["WG_VAULT"] ?? `${process.env["HOME"] ?? ""}/Documents/Obsidian/Personal/Personal`;
 

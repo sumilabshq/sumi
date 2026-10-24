@@ -1,4 +1,4 @@
-import type { DeclaredProp } from "../packages/core/src/gateway/props.js";
+import type { DeclaredProp } from "../packages/shared/core/src/gateway/props.js";
 import { isRecord } from "./page-dom.ts";
 
 export function declaredPropIn(held: unknown, what: string): DeclaredProp {

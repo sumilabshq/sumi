@@ -1,4 +1,8 @@
 {
 	"extends": "./tsconfig.client.json",
-	"include": ["unguarded-handle.ts", "../../packages/core/src/*.d.ts", "../../packages/kit/src/jsx-namespace.d.ts"]
+	"include": [
+		"unguarded-handle.ts",
+		"../../packages/shared/core/src/*.d.ts",
+		"../../packages/shared/kit/src/jsx-namespace.d.ts"
+	]
 }

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { transform } from "sucrase";
 import { createElement as h, Fragment, type ReactElement, type ReactNode } from "react";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 type Held<T> = T | null | undefined;
 
@@ -345,7 +345,7 @@ const widgetItems = PIECES.map((piece) => {
 	);
 }).join("\n");
 
-const css = fs.readFileSync("packages/host-obsidian/styles.css", "utf8");
+const css = fs.readFileSync("apps/host-obsidian/styles.css", "utf8");
 
 fs.writeFileSync(
 	OUT,

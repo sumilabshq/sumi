@@ -18,8 +18,8 @@ mkdirSync(shotsAt, { recursive: true });
 const [bundle, canvas] = await Promise.all([bundleOf("tools/studio-render-page.tsx"), canvasSheet(process.cwd())]);
 const sheets = [
 	readFileSync("design-systems/sumi/sumi.css", "utf8"),
-	readFileSync("packages/core/browser-host.css", "utf8"),
-	withCanvasSheet(readFileSync("packages/host-obsidian/styles.css", "utf8"), canvas),
+	readFileSync("packages/shared/core/browser-host.css", "utf8"),
+	withCanvasSheet(readFileSync("apps/host-obsidian/styles.css", "utf8"), canvas),
 ].join("\n");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style>
 <style>html,body,#root{height:100%;margin:0}</style></head>

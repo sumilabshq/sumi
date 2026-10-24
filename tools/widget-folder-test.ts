@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import { drawnTextOf } from "./drawn-text.ts";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -14,12 +14,12 @@ Object.assign(globalThis, {
 	getComputedStyle: dom.window.getComputedStyle,
 });
 
-const { createInstaller } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
+const { createInstaller } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
 const { builtCodePath, compileWidget, compileWidgetFolder } =
-	await import("../packages/core/src/engine/widget-build.js");
-const { readRegistry } = await import("../packages/core/src/engine/registry-file.js");
+	await import("../packages/shared/core/src/engine/widget-build.js");
+const { readRegistry } = await import("../packages/shared/core/src/engine/registry-file.js");
 const { publishWidget } = await import("./publish.ts");
 
 let failed = 0;

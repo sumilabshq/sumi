@@ -1,8 +1,8 @@
-import type { ViewHost } from "../packages/core/src/gateway/host.js";
-import { NO_HOST } from "../packages/core/src/engine/host-none.js";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { FolderListing } from "../packages/core/src/engine/widget-build.js";
-import type { RegistryAdapter } from "../packages/core/src/registry-reading.js";
+import type { ViewHost } from "../packages/shared/core/src/gateway/host.js";
+import { NO_HOST } from "../packages/shared/core/src/engine/host-none.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { FolderListing } from "../packages/shared/core/src/engine/widget-build.js";
+import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
 
 export type PageFiles = Readonly<Record<string, string>>;
 

@@ -1,11 +1,11 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent, ReactElement } from "react";
-import type { CollectionGateway, Query } from "../packages/core/src/gateway/contract.ts";
+import type { CollectionGateway, Query } from "../packages/shared/core/src/gateway/contract.ts";
 import { byId, found } from "./dom-find.ts";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { runWidgetSource } from "./run-widget-source.ts";
-import type { SlotDraw } from "../packages/core/src/widget-root.js";
+import type { SlotDraw } from "../packages/shared/core/src/widget-root.js";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });
 Object.assign(globalThis, {
@@ -25,12 +25,12 @@ Object.assign(globalThis, {
 
 const react = await import("react");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const { collectionGateway, soloGateway, valueGateway } = await import("../packages/core/src/gateway/create.ts");
-const { withSlotSurface } = await import("../packages/core/src/widget-root.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { collectionGateway, soloGateway, valueGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { withSlotSurface } = await import("../packages/shared/core/src/widget-root.js");
 
 type ListProps = Readonly<Record<string, unknown>>;
 

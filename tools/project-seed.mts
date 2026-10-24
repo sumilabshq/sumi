@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { z } from "zod";
-import type { EnginePackage, ProjectSeed } from "../packages/core/src/project/index.js";
-import { projectSeedOf, systemsIn } from "../packages/cli/src/project-seed-read.js";
-import type { PackageLocations } from "../packages/cli/src/package-locations.js";
+import type { EnginePackage, ProjectSeed } from "../packages/shared/core/src/project/index.js";
+import { projectSeedOf, systemsIn } from "../packages/shared/cli/src/project-seed-read.js";
+import type { PackageLocations } from "../packages/shared/cli/src/package-locations.js";
 import { ENGINE_PACKAGES, REPO } from "./pack-engine.mts";
 
 const CLOSURE_SEEDS: readonly string[] = ["@widgetarium/cli", "@widgetarium/vite"];
@@ -18,8 +18,8 @@ const ManifestSchema = z.object({
 type Manifest = z.output<typeof ManifestSchema>;
 
 export const REPO_LOCATIONS: PackageLocations = {
-	templates: path.join(REPO, "packages/cli/templates/project"),
-	kit: path.join(REPO, "packages/kit"),
+	templates: path.join(REPO, "packages/shared/cli/templates/project"),
+	kit: path.join(REPO, "packages/shared/kit"),
 	handbook: path.join(REPO, "docs/ai"),
 	systems: path.join(REPO, "design-systems"),
 	repo: REPO,

@@ -1,17 +1,17 @@
 import type {
 	ObsidianAssistantPort,
 	SetupSource,
-} from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
+} from "../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
 import { PROGRESS, checkCardDoors, fakeJobs, fakeSpecs } from "./obsidian-assistant-card-checks.ts";
 import type { FakeJobs } from "./obsidian-assistant-card-checks.ts";
 import {
 	assistantSetupOf,
 	obsidianAssistantPort,
-} from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
-import { PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.ts";
-import type { Provider } from "../packages/host-obsidian/src/legacy/ai/providers.ts";
-import type { Session, SessionState } from "../packages/host-obsidian/src/legacy/ai/session.ts";
-import type { AiState } from "../packages/host-obsidian/src/legacy/ai/settings.ts";
+} from "../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
+import { PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
+import type { Provider } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
+import type { Session, SessionState } from "../apps/host-obsidian/src/legacy/ai/session.ts";
+import type { AiState } from "../apps/host-obsidian/src/legacy/ai/settings.ts";
 import { standIn } from "./stand-in.ts";
 
 export interface CheckedAssistant {

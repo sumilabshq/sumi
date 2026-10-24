@@ -1,11 +1,8 @@
-import type {
-	JobsDoor,
-	ObsidianAssistantPort,
-} from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
-import type { SpecPort } from "../packages/host-obsidian/src/legacy/ai/spec-port.ts";
-import type { AssistantSession, ProgressWidget } from "../packages/core/src/engine/assistant-port.ts";
-import { JobSchema } from "../packages/core/src/app-jobs.ts";
-import type { Job } from "../packages/core/src/app-jobs.ts";
+import type { JobsDoor, ObsidianAssistantPort } from "../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.ts";
+import type { SpecPort } from "../apps/host-obsidian/src/legacy/ai/spec-port.ts";
+import type { AssistantSession, ProgressWidget } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { JobSchema } from "../packages/shared/core/src/app-jobs.ts";
+import type { Job } from "../packages/shared/core/src/app-jobs.ts";
 
 export interface FakeJobs extends JobsDoor {
 	bump(): void;

@@ -1,10 +1,10 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { Catalogue } from "../packages/core/src/catalogue.js";
-import type { WidgetLookup } from "../packages/core/src/registry.js";
-import { TEMPLATES } from "../packages/core/src/templates.js";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { Catalogue } from "../packages/shared/core/src/catalogue.js";
+import type { WidgetLookup } from "../packages/shared/core/src/registry.js";
+import { TEMPLATES } from "../packages/shared/core/src/templates.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { PAGE_HOST, pageGlobal, reportsFailures } from "./page-harness.ts";
 
 const titles = pageGlobal("__TITLES__");

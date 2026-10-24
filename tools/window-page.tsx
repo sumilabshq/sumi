@@ -1,13 +1,13 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { WidgetSurface } from "../packages/core/src/surface.js";
-import { normalizeBoard } from "../packages/core/src/model.js";
-import type { Board } from "../packages/core/src/model.js";
-import { GRID, measureGrid } from "../packages/core/src/paths.js";
-import type { BoardRegistry, SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
-import type { VaultSlot } from "../packages/core/src/gateway/obsidian.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "../packages/shared/core/src/surface.js";
+import { normalizeBoard } from "../packages/shared/core/src/model.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import { GRID, measureGrid } from "../packages/shared/core/src/paths.js";
+import type { BoardRegistry, SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
+import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
 import { PROBE_VIEW } from "./vault-fixture.ts";
 import { elementAt, elementsAt, present, stackOf } from "./page-dom.ts";
 

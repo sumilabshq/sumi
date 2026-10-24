@@ -1,17 +1,17 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { DataAdapter, Stat } from "obsidian";
-import { render } from "../packages/core/src/engine/render.js";
-import { AppProvider, OnRefused, useCommand } from "../packages/core/src/requests/index.ts";
-import type { CommandHandle, CommandRefusal } from "../packages/core/src/requests/index.ts";
-import type { WidgetRegistry } from "../packages/core/src/registry.ts";
-import { ObsidianDesignFilesGateway } from "../packages/canvas/gateways/design-files/obsidian.gateway.ts";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { AppProvider, OnRefused, useCommand } from "../packages/shared/core/src/requests/index.ts";
+import type { CommandHandle, CommandRefusal } from "../packages/shared/core/src/requests/index.ts";
+import type { WidgetRegistry } from "../packages/shared/core/src/registry.ts";
+import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/obsidian.gateway.ts";
 import { canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
-import { polledChanges } from "../packages/canvas/gateways/design-folder/obsidian/design-changes.ts";
-import { shownWidgetsOf } from "../packages/canvas/shared/lib/design/shown-widgets.ts";
-import { AddPhotosCommand } from "../packages/canvas/features/photos/contract.ts";
-import { normalizeBoard } from "../packages/core/src/model.ts";
-import type { WidgetDefinition } from "../packages/core/src/registry.ts";
+import { polledChanges } from "../packages/domain/canvas/gateways/design-folder/obsidian/design-changes.ts";
+import { shownWidgetsOf } from "../packages/domain/canvas/shared/lib/design/shown-widgets.ts";
+import { AddPhotosCommand } from "../packages/domain/canvas/features/photos/contract.ts";
+import { normalizeBoard } from "../packages/shared/core/src/model.ts";
+import type { WidgetDefinition } from "../packages/shared/core/src/registry.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
 

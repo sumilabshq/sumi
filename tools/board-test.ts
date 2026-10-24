@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createGatewayRefs, createViewCells, resolveWhere } from "../packages/core/src/gateway/refs.ts";
-import { isMatch, KNOWN_OPERATORS } from "../packages/core/src/gateway/match.ts";
-import type { FilterRow } from "../packages/core/src/gateway/contract.ts";
-import type { GatewayRefs } from "../packages/core/src/gateway/refs.ts";
+import { createGatewayRefs, createViewCells, resolveWhere } from "../packages/shared/core/src/gateway/refs.ts";
+import { isMatch, KNOWN_OPERATORS } from "../packages/shared/core/src/gateway/match.ts";
+import type { FilterRow } from "../packages/shared/core/src/gateway/contract.ts";
+import type { GatewayRefs } from "../packages/shared/core/src/gateway/refs.ts";
 
 type Props = Record<string, string | string[]>;
 

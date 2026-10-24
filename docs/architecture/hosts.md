@@ -1,6 +1,6 @@
 # Hosts
 
-A host is the framework code that runs apps inside another program: `packages/host-obsidian` (the Obsidian plugin), the browser host inside `@widgetarium/vite`. A project writes no host code.
+A host is the framework code that runs apps inside another program: `apps/host-obsidian` (the Obsidian plugin), the browser host inside `@widgetarium/vite`. A project writes no host code.
 
 ## What a host hands a module
 
@@ -17,7 +17,7 @@ A server module's `provide` takes `{ env }` from `server({ modules, env })`. The
 
 ## One host's code stays out of another's bundle
 
-There is no build-time platform switch. Every platform's implementations sit behind one `./gateways` entry, and `sideEffects: false` lets a bundler keep only what is used: the browser studio imports `webCanvasParts` and carries no Obsidian implementation. Only `apps/server` imports `@widgetarium/core/requests/server` (Hono, the oRPC server). `npm run test:web-canvas-bundle` builds the browser studio and fails if it carries an Obsidian implementation, any `packages/host-obsidian` code, Hono, the oRPC server or `obsidian`; it proves each check can fail by building the whole `./gateways` entry and the server entry.
+There is no build-time platform switch. Every platform's implementations sit behind one `./gateways` entry, and `sideEffects: false` lets a bundler keep only what is used: the browser studio imports `webCanvasParts` and carries no Obsidian implementation. Only `apps/server` imports `@widgetarium/core/requests/server` (Hono, the oRPC server). `npm run test:web-canvas-bundle` builds the browser studio and fails if it carries an Obsidian implementation, any `apps/host-obsidian` code, Hono, the oRPC server or `obsidian`; it proves each check can fail by building the whole `./gateways` entry and the server entry.
 
 ## The Obsidian host
 

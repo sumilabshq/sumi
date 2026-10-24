@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuText, GpuView } from "../packages/gpu/index.ts";
+import { GpuText, GpuView } from "../packages/shared/gpu/index.ts";
 import type { Recent } from "./gpu-fixture-copy.ts";
 import { RecentRow } from "./gpu-fixture-recent-row.tsx";
 

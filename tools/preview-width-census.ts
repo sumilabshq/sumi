@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-const { GRID } = await import("../packages/core/src/paths.js");
+const { GRID } = await import("../packages/shared/core/src/paths.js");
 
 const ROOT = "registry";
 const widthOf = (cells: number): number => cells * GRID.cellPx + (cells - 1) * GRID.gapPx;

@@ -13,7 +13,7 @@ The rules every developer and every agent follows when writing code in this repo
 | [lint.md](lint.md)             | the checks that hold every rule here                                                             |
 | [legacy.md](legacy.md)         | code written before these rules, and how it leaves                                               |
 
-> Status: the canvas (`packages/canvas`) and the engine's request layer (`packages/core/src/requests`) follow these pages; the rest still runs on the earlier widget builder and moves domain by domain. A rule marked **planned** is not built or not checked by a tool yet.
+> Status: the canvas (`packages/domain/canvas`) and the engine's request layer (`packages/shared/core/src/requests`) follow these pages; the rest still runs on the earlier widget builder and moves domain by domain. A rule marked **planned** is not built or not checked by a tool yet.
 
 ## Three rules
 
@@ -42,19 +42,19 @@ Every declared building block is PascalCase and ends with its kind; every declar
 ## Two levels
 
 ```
-apps/        a product you deploy: studio (the app); server (Hono, serves /rpc)
+apps/        a product you deploy: studio (the app); server (Hono, serves /rpc); the hosts (host-obsidian, host-tauri)
    ↓
-packages/    domains (business areas), common code, and the hosts (packages/host-obsidian, …)
+packages/    domain/ (business areas), state/ (data modules), client/ (their views), shared/ (common code)
 ```
 
-A host is framework code, not a project's: `packages/host-obsidian` is the Obsidian plugin that runs the apps. A module never asks which host it runs on; the host hands it implementations ([hosts.md](hosts.md)).
+A host is framework code, not a project's: `apps/host-obsidian` is the Obsidian plugin that runs the apps. A module never asks which host it runs on; the host hands it implementations ([hosts.md](hosts.md)).
 
 ## Domains
 
 A domain is a business area: `video`, `billing`; for this repository `canvas`, `assistant`, `catalogue`. Named by its area, never by the product that uses it first.
 
 ```
-packages/<domain>/
+packages/domain/<domain>/
   generated/index.ts           the public entry, written by `widgetarium generate`: every contract, every schema, ui/index.ts
   module.ts                    the one module: runs, handlers, provide; imported only by a starter
   features/<feature>/          contract.ts (requests) + handlers.ts (their handlers); or features/<group>/<feature>/

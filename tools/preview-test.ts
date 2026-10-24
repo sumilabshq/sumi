@@ -1,10 +1,10 @@
 import { JSDOM } from "jsdom";
 import type { ReactElement } from "react";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import { rowOf } from "../packages/core/src/gateway/create.js";
-import type { CollectionGateway, ValueGateway } from "../packages/core/src/gateway/contract.js";
-import type { HostConsole, ViewHost } from "../packages/core/src/gateway/host.js";
-import type { EveryValueVerb } from "../packages/core/src/gateway/needs.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { rowOf } from "../packages/shared/core/src/gateway/create.js";
+import type { CollectionGateway, ValueGateway } from "../packages/shared/core/src/gateway/contract.js";
+import type { HostConsole, ViewHost } from "../packages/shared/core/src/gateway/host.js";
+import type { EveryValueVerb } from "../packages/shared/core/src/gateway/needs.js";
 import { byId } from "./dom-find.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });
@@ -31,10 +31,10 @@ Object.assign(globalThis, {
 Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
 const { previewProps, previewGateways, previewSize, previewReader, previewHost } =
-	await import("../packages/core/src/preview.js");
-const { GRID } = await import("../packages/core/src/paths.js");
+	await import("../packages/shared/core/src/preview.js");
+const { GRID } = await import("../packages/shared/core/src/paths.js");
 const { manifestOfEveryShippedWidget } = await import("./widget-props.ts");
 
 let failed = 0;
@@ -206,7 +206,7 @@ render(h(Leaf, previewProps({ manifest: kanban }, {})), mount);
 check("the widget is handed the sample rows", mount.textContent?.includes("4 rows"), true);
 
 console.log("\n— the catalogue is a switch, not a fact about the build —");
-const { widgetCatalogue } = await import("../packages/core/src/engine/widget-catalogue.js");
+const { widgetCatalogue } = await import("../packages/shared/core/src/engine/widget-catalogue.js");
 const hostWithCatalogue = (catalogue: boolean): ViewHost => ({ ...REAL_HOST, can: { ...REAL_HOST.can, catalogue } });
 const hostSilentOnCatalogue = hostWithCatalogue(true);
 Reflect.deleteProperty(hostSilentOnCatalogue.can, "catalogue");

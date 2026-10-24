@@ -1,11 +1,11 @@
-import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
-import { assistantPartsOf, obsidianAssistantGateways } from "../packages/assistant/generated/gateways.ts";
-import type { PrivateFolder } from "../packages/assistant/generated/gateways.ts";
-import type { AssistantPort } from "../packages/core/src/engine/assistant-port.ts";
-import { app } from "../packages/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
+import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
+import { assistantPartsOf, obsidianAssistantGateways } from "../packages/domain/assistant/generated/gateways.ts";
+import type { PrivateFolder } from "../packages/domain/assistant/generated/gateways.ts";
+import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
+import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
 
 export interface MemoryFolder extends PrivateFolder {
 	readonly files: Map<string, Uint8Array>;

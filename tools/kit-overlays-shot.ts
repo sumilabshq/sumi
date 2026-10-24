@@ -24,7 +24,7 @@ const script = await bundleOf("tools/kit-overlays-shot-page.tsx");
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; padding: 32px; ${THEMES[theme]} ${HOST} color-scheme: ${theme};
 	background: var(--wg-kit-page); color: var(--wg-kit-text); font-family: var(--font-interface); }
 :is(*) { transition: none !important; animation: none !important; }</style>

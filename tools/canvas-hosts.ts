@@ -1,21 +1,21 @@
-import { app } from "../packages/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/core/src/requests/index.ts";
-import type { SpecRead } from "../packages/core/src/app-spec.ts";
-import type { StartedProject } from "../packages/core/src/app/widgetarium-app.js";
-import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
-import { CanvasClientModule } from "../packages/canvas/generated/module.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
+import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
+import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
+import { CanvasClientModule } from "../packages/domain/canvas/generated/module.ts";
 import {
 	CanvasHost,
 	WidgetDrawingGateway,
 	DesignFolderGateway,
 	detachedHostOf,
 	webCanvasParts,
-} from "../packages/canvas/generated/gateways.ts";
-import type { CanvasParts } from "../packages/canvas/generated/gateways.ts";
-import type { CanvasOpened, CanvasOpening } from "../packages/canvas/shared/schema/canvas-view.schema.ts";
-import type { CanvasDoc } from "../packages/canvas/shared/schema/doc.schema.ts";
-import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
-import type { GpuSupply } from "../packages/gpu/index.ts";
+} from "../packages/domain/canvas/generated/gateways.ts";
+import type { CanvasParts } from "../packages/domain/canvas/generated/gateways.ts";
+import type { CanvasOpened, CanvasOpening } from "../packages/domain/canvas/shared/schema/canvas-view.schema.ts";
+import type { CanvasDoc } from "../packages/domain/canvas/shared/schema/doc.schema.ts";
+import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/design.schema.ts";
+import type { GpuSupply } from "../packages/shared/gpu/index.ts";
 import { standIn } from "./stand-in.ts";
 
 export interface CanvasAsk {

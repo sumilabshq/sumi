@@ -9,17 +9,21 @@ import {
 	readSystemSettings,
 	withOptionPicked,
 	withSettingsOffered,
-} from "../packages/core/src/app-look.ts";
-import type { Look, OfferedSetting } from "../packages/core/src/app-look.ts";
-import { systemSettingsPathOf } from "../packages/core/src/paths.ts";
-import { fontsUrlOf, isSettingDrawnLive, liveTokensOf } from "../packages/canvas/features/look/lib/look-tokens.ts";
-import { runLookCommand } from "../packages/host-obsidian/src/legacy/ai/look-command.ts";
-import type { Told } from "../packages/host-obsidian/src/legacy/ai/shape-command.ts";
-import { ObsidianDesignFilesGateway } from "../packages/canvas/gateways/design-files/obsidian.gateway.ts";
-import { WebAgentJobsGateway } from "../packages/canvas/gateways/agent-jobs/web.gateway.ts";
-import { PickLookCommandHandler } from "../packages/canvas/features/look/handlers.ts";
-import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
-import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
+} from "../packages/shared/core/src/app-look.ts";
+import type { Look, OfferedSetting } from "../packages/shared/core/src/app-look.ts";
+import { systemSettingsPathOf } from "../packages/shared/core/src/paths.ts";
+import {
+	fontsUrlOf,
+	isSettingDrawnLive,
+	liveTokensOf,
+} from "../packages/domain/canvas/features/look/lib/look-tokens.ts";
+import { runLookCommand } from "../apps/host-obsidian/src/legacy/ai/look-command.ts";
+import type { Told } from "../apps/host-obsidian/src/legacy/ai/shape-command.ts";
+import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/obsidian.gateway.ts";
+import { WebAgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/web.gateway.ts";
+import { PickLookCommandHandler } from "../packages/domain/canvas/features/look/handlers.ts";
+import { CachedDesignReads } from "../packages/domain/canvas/shared/lib/design/design-reads.ts";
+import { MomentCanvasStore } from "../packages/domain/canvas/shared/lib/view/canvas-store.ts";
 import { FARM_OPENED, FixedDesignFolderGateway } from "./canvas-hosts.ts";
 
 let failures = 0;

@@ -24,24 +24,24 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { specPathOf, BUILD_STAGES } = await import("../packages/core/src/app-spec.js");
-const { readSpec, withFeatureToggled, withChoicePicked } = await import("../packages/core/src/app-spec-text.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { specPathOf, BUILD_STAGES } = await import("../packages/shared/core/src/app-spec.js");
+const { readSpec, withFeatureToggled, withChoicePicked } = await import("../packages/shared/core/src/app-spec-text.js");
 const { specAppIn, lastSpecAppIn, buildRunIn, buildStartedIn, installsIn } =
-	await import("../packages/host-obsidian/src/legacy/ai/spec-calls.js");
-const { buildsIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");
+	await import("../apps/host-obsidian/src/legacy/ai/spec-calls.js");
+const { buildsIn } = await import("../apps/host-obsidian/src/legacy/ai/builds.js");
 const { PinnedRun } = await import("../apps/studio/src/legacy/assistant/cards/pinned-run.js");
-const { scrollToCard } = await import("../packages/assistant/shared/lib/scroll-to-card.ts");
-const { argumentsIn } = await import("../packages/host-obsidian/src/legacy/ai/tools.js");
-const { specOfApp, stageOfApp } = await import("../packages/host-obsidian/src/legacy/ai/spec-command.js");
+const { scrollToCard } = await import("../packages/domain/assistant/shared/lib/scroll-to-card.ts");
+const { argumentsIn } = await import("../apps/host-obsidian/src/legacy/ai/tools.js");
+const { specOfApp, stageOfApp } = await import("../apps/host-obsidian/src/legacy/ai/spec-command.js");
 const { SpecCard } = await import("../apps/studio/src/legacy/assistant/cards/spec-card.js");
 const { BuildRunCard } = await import("../apps/studio/src/legacy/assistant/cards/build-run-card.js");
-const { briefFor } = await import("../packages/host-obsidian/src/legacy/ai/brief.js");
-const { HANDBOOK } = await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
-import type { AssistantCall } from "../packages/core/src/engine/assistant-port.js";
+const { briefFor } = await import("../apps/host-obsidian/src/legacy/ai/brief.js");
+const { HANDBOOK } = await import("../apps/host-obsidian/src/legacy/ai/agent-files.js");
+import type { AssistantCall } from "../packages/shared/core/src/engine/assistant-port.js";
 import type { AppFiles, JobsPort } from "../apps/studio/src/legacy/assistant/cards/card-ports.js";
-import type { Report } from "../packages/assistant/shared/lib/failure-line.ts";
-import type { Job } from "../packages/core/src/app-jobs.js";
+import type { Report } from "../packages/domain/assistant/shared/lib/failure-line.ts";
+import type { Job } from "../packages/shared/core/src/app-jobs.js";
 
 let failed = 0;
 let checks = 0;
@@ -271,7 +271,7 @@ check(
 	buildStartedIn(namedTurns, 3, "Build it"),
 	"Garden",
 );
-const { buildSpanOf } = await import("../packages/host-obsidian/src/legacy/ai/spec-calls.js");
+const { buildSpanOf } = await import("../apps/host-obsidian/src/legacy/ai/spec-calls.js");
 const approvedTurns = [
 	...builtTurns,
 	{ role: "user" as const, text: "Approve design", calls: [] },
@@ -694,7 +694,7 @@ check(
 );
 const scrolledTo: string[] = [];
 {
-	const { JobSchema } = await import("../packages/core/src/app-jobs.js");
+	const { JobSchema } = await import("../packages/shared/core/src/app-jobs.js");
 	const planned = (fields: Partial<Job> & Pick<Job, "id" | "page" | "phase">): Job =>
 		JobSchema.parse({ app: "Vocabulary", title: `${fields.phase} ${fields.page}`, says: "x", ...fields });
 	const held = [
@@ -782,8 +782,8 @@ check(
 );
 render(null, host);
 
-const { readDesign, designPathOf, isNothingDrawn } = await import("../packages/core/src/app-design.ts");
-const { lastDesignAppIn } = await import("../packages/host-obsidian/src/legacy/ai/spec-calls.js");
+const { readDesign, designPathOf, isNothingDrawn } = await import("../packages/shared/core/src/app-design.ts");
+const { lastDesignAppIn } = await import("../apps/host-obsidian/src/legacy/ai/spec-calls.js");
 const { DesignCard } = await import("../apps/studio/src/legacy/assistant/cards/design-card.js");
 const DESIGN = JSON.stringify({
 	app: "Vocabulary",
@@ -817,7 +817,7 @@ check(
 	],
 	[true, true],
 );
-const { statesOf } = await import("../packages/core/src/app-design.ts");
+const { statesOf } = await import("../packages/shared/core/src/app-design.ts");
 const STATED = JSON.stringify({
 	screens: [
 		{
@@ -839,7 +839,7 @@ check(
 	readDesign(STATED.replace('"states"', '"file":"Inbox.md","states"')).refusal !== undefined,
 	true,
 );
-const { designOfApp } = await import("../packages/host-obsidian/src/legacy/ai/design-command.js");
+const { designOfApp } = await import("../apps/host-obsidian/src/legacy/ai/design-command.js");
 const designVault = await mkdtemp(join(tmpdir(), "wg-design-"));
 const designFolder = join(designVault, ".widgetarium", "apps", "Inbox", "design");
 await mkdir(designFolder, { recursive: true });
@@ -854,7 +854,7 @@ check(
 );
 await writeFile(join(designFolder, "Inbox.md"), screenNote("@core/typed-rows"));
 check("and one drawn on sample rows is shown", (await designOfApp(designVault, "Inbox")).refusal, undefined);
-const { withReferencesAdded, referenceFileOf } = await import("../packages/core/src/app-design.ts");
+const { withReferencesAdded, referenceFileOf } = await import("../packages/shared/core/src/app-design.ts");
 const refsOnly = withReferencesAdded(null, [{ file: "a1-hotel.webp" }]);
 check(
 	"a photo dropped on a canvas that has no design yet starts one holding the photo",
@@ -893,8 +893,8 @@ check(
 	readDesign(withReferencesAdded(DESIGN, [{ url: "http://cdn.example/hotel.webp" }])).refusal?.includes("https"),
 	true,
 );
-const { referenceOfApp } = await import("../packages/host-obsidian/src/legacy/ai/reference-command.js");
-const { photosOfApp, photoKeyOf } = await import("../packages/host-obsidian/src/legacy/ai/photos-command.js");
+const { referenceOfApp } = await import("../apps/host-obsidian/src/legacy/ai/reference-command.js");
+const { photosOfApp, photoKeyOf } = await import("../apps/host-obsidian/src/legacy/ai/photos-command.js");
 const referenceVault = await mkdtemp(join(tmpdir(), "wg-reference-"));
 const referenced = await referenceOfApp(referenceVault, "Trips", "https://cdn.example/a.png", { why: "the list rows" });
 check(
@@ -920,7 +920,7 @@ check(
 		photoKeyOf("https://cdn.example/a.png") !== photoKeyOf("https://cdn.example/b.png"),
 	true,
 );
-const { rulesIn, rulesInForce } = await import("../packages/core/src/design-rules.ts");
+const { rulesIn, rulesInForce } = await import("../packages/shared/core/src/design-rules.ts");
 const { readFileSync } = await import("node:fs");
 const shippedRules = rulesIn(readFileSync("docs/ai/design-system.md", "utf8"), "vault");
 check(
@@ -955,7 +955,7 @@ check(
 	rulesIn("- **Add your own** under the heading.\n| a | table |\n", "vault"),
 	[],
 );
-const { screenOfApp } = await import("../packages/host-obsidian/src/legacy/ai/screen-command.js");
+const { screenOfApp } = await import("../apps/host-obsidian/src/legacy/ai/screen-command.js");
 const screenVault = await mkdtemp(join(tmpdir(), "wg-screen-"));
 const firstScreen = await screenOfApp(screenVault, "Trips", "People", {
 	widget: "@draft/trips",
@@ -1122,7 +1122,7 @@ check("the spec page is laid on disk", Object.keys(HANDBOOK).includes("spec.md")
 check("and left out of the prompt, which only points at it", prompt.includes("=== HANDBOOK PAGE: spec.md ==="), false);
 
 const { reportOfApp, refuseStage, isReportClean } =
-	await import("../packages/host-obsidian/src/legacy/ai/report-command.js");
+	await import("../apps/host-obsidian/src/legacy/ai/report-command.js");
 const reportVault = await mkdtemp(join(tmpdir(), "wg-report-"));
 const appFolder = join(reportVault, ".widgetarium", "apps", "Garden");
 const widgetFolder = join(reportVault, ".widgetarium", "widgets", "@you", "word-list");
@@ -1303,10 +1303,10 @@ check(
 	[],
 );
 
-const { helpersFor } = await import("../packages/host-obsidian/src/legacy/ai/brief.js");
-const { PRESETS: PRESETS_ALL } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");
-const { expandArgs } = await import("../packages/host-obsidian/src/legacy/ai/command.js");
-const { createAiSettings } = await import("../packages/host-obsidian/src/legacy/ai/settings.js");
+const { helpersFor } = await import("../apps/host-obsidian/src/legacy/ai/brief.js");
+const { PRESETS: PRESETS_ALL } = await import("../apps/host-obsidian/src/legacy/ai/providers.js");
+const { expandArgs } = await import("../apps/host-obsidian/src/legacy/ai/command.js");
+const { createAiSettings } = await import("../apps/host-obsidian/src/legacy/ai/settings.js");
 const helperPaths = { vault: "/v", plugin: "/p", widgets: "/w", handbook: "/h", tool: "/t" };
 const withHelpers = briefFor({ paths: helperPaths, helpers: true });
 const alone = briefFor({ paths: helperPaths, helpers: false });
@@ -1341,13 +1341,13 @@ check("and nothing is passed when they are off", argsWith(null).includes("--agen
 const freshSettings = createAiSettings({ read: async () => ({}), write: async () => {} });
 check("helper agents are on until the person turns them off", (await freshSettings.state()).helperAgents, true);
 
-const { PRESETS } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");
+const { PRESETS } = await import("../apps/host-obsidian/src/legacy/ai/providers.js");
 check(
 	"the vault agent loads no setting of the person's own Claude, so their hooks, skills and memory stay out",
 	PRESETS.find((preset) => preset.id === "claude-code")?.args.includes("--setting-sources project,local"),
 	true,
 );
-const { writeBuiltCards } = await import("../packages/host-obsidian/src/legacy/built-cards.js");
+const { writeBuiltCards } = await import("../apps/host-obsidian/src/legacy/built-cards.js");
 const disk = new Map<string, string>([[".widgetarium/widgets/@shipped/list/manifest.generated.json", "{}"]]);
 const cardAdapter = {
 	exists: async (path: string) => disk.has(path) || [...disk.keys()].some((key) => key.startsWith(`${path}/`)),
@@ -1375,7 +1375,7 @@ check(
 );
 check("an unchanged card is not written again", await writeBuiltCards(cardAdapter, lookup), []);
 
-const { appWidgetsOf } = await import("../packages/core/src/app-widgets.ts");
+const { appWidgetsOf } = await import("../packages/shared/core/src/app-widgets.ts");
 check(
 	"a canvas splits an app's widgets into the catalogue's and its own, by the scopes the catalogue installed",
 	appWidgetsOf(
@@ -1385,7 +1385,7 @@ check(
 	{ fromCatalogue: ["@default/hero", "@flow/git-tree"], made: ["@agent-desk/project-grid"] },
 );
 
-const { frameSizeIn, framePixelsOf, withScreenAdded } = await import("../packages/core/src/app-design.ts");
+const { frameSizeIn, framePixelsOf, withScreenAdded } = await import("../packages/shared/core/src/app-design.ts");
 check("a frame size is a named device", frameSizeIn("Phone"), "phone");
 check("or width by height in pixels", frameSizeIn("375x667"), { width: 375, height: 667 });
 check("a size past the canvas's bounds is refused", frameSizeIn("100x9000"), null);

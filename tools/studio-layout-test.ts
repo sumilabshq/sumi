@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { PLATE_LEAST_PX } from "../packages/layout/shared/lib/frame-bounds.ts";
+import { PLATE_LEAST_PX } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
@@ -29,7 +29,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-l
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/studio-render-page.tsx");
-const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
 const OBSIDIAN_MAC_CORNERS = "button { corner-shape: superellipse(1.33); }";

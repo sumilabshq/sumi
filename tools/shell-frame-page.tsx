@@ -1,21 +1,25 @@
 import { createElement as h, Profiler } from "react";
 import { createRoot } from "react-dom/client";
-import type { Page, PageInput } from "../packages/core/src/gateway/page.js";
-import { PageInputSchema, PageOf } from "../packages/core/src/gateway/page.js";
-import { IQuery } from "../packages/core/src/gateway/queries.js";
-import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.js";
-import type { StudioHostPort } from "../packages/core/src/engine/studio-host.js";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.js";
-import type { AssistantPort, AssistantSession, AssistantSetup } from "../packages/core/src/engine/assistant-port.js";
-import { corePack } from "../packages/packs/core/src/index.js";
-import type { WidgetariumProject } from "../packages/core/src/app/widgetarium-project.js";
+import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.js";
+import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.js";
+import { IQuery } from "../packages/shared/core/src/gateway/queries.js";
+import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.js";
+import type { StudioHostPort } from "../packages/shared/core/src/engine/studio-host.js";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.js";
+import type {
+	AssistantPort,
+	AssistantSession,
+	AssistantSetup,
+} from "../packages/shared/core/src/engine/assistant-port.js";
+import { corePack } from "../packages/shared/packs/core/src/index.js";
+import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.js";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
-import { MemoryBrowserAuditGateway } from "../packages/browser/gateways/browser-audit/memory.gateway.ts";
-import { MemoryBrowserGrantsGateway } from "../packages/browser/gateways/browser-grants/memory.gateway.ts";
-import { NoChatComposerGateway } from "../packages/browser/gateways/chat-composer/none.gateway.ts";
-import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-sites/memory.gateway.ts";
-import { browserPartsOf } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import type { PageLook } from "../packages/browser/shared/schema/page-look.schema.ts";
+import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
+import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
+import { NoChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/none.gateway.ts";
+import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import type { PageLook } from "../packages/domain/browser/shared/schema/page-look.schema.ts";
 import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";

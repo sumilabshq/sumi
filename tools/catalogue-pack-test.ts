@@ -1,20 +1,20 @@
-import type { ImplementationPorts } from "../packages/core/src/engine/packs.ts";
-import type { CataloguePort } from "../packages/core/src/engine/catalogue-port.ts";
-import { NO_CATALOGUE_PORT } from "../packages/core/src/engine/catalogue-port.ts";
-import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
-import { NO_STUDIO_STATE } from "../packages/core/src/engine/studio-state-port.ts";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
-import type { MergedEntry } from "../packages/core/src/catalogue-entries.ts";
-import { createInstallJobs, INSTALL_JOBS } from "../packages/core/src/engine/install-jobs.ts";
-import type { RunInstall } from "../packages/core/src/engine/install-jobs.ts";
-import { CATALOGUE_REQUESTS } from "../packages/core/src/engine/catalogue-requests.ts";
-import { placeWidget, receiveDrops } from "../packages/core/src/surface/drop-receivers.ts";
-import type { PlaceAt } from "../packages/core/src/surface/drop-receivers.ts";
-import { placeInto } from "../packages/core/src/tree-drop.ts";
-import type { BoxNode } from "../packages/core/src/tree-nodes.ts";
-import { normalizeBoard } from "../packages/core/src/model.ts";
-import { TEMPLATES } from "../packages/core/src/templates.ts";
-import { DOC_PAGES } from "../packages/core/src/docs.ts";
+import type { ImplementationPorts } from "../packages/shared/core/src/engine/packs.ts";
+import type { CataloguePort } from "../packages/shared/core/src/engine/catalogue-port.ts";
+import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
+import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
+import { NO_STUDIO_STATE } from "../packages/shared/core/src/engine/studio-state-port.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import type { MergedEntry } from "../packages/shared/core/src/catalogue-entries.ts";
+import { createInstallJobs, INSTALL_JOBS } from "../packages/shared/core/src/engine/install-jobs.ts";
+import type { RunInstall } from "../packages/shared/core/src/engine/install-jobs.ts";
+import { CATALOGUE_REQUESTS } from "../packages/shared/core/src/engine/catalogue-requests.ts";
+import { placeWidget, receiveDrops } from "../packages/shared/core/src/surface/drop-receivers.ts";
+import type { PlaceAt } from "../packages/shared/core/src/surface/drop-receivers.ts";
+import { placeInto } from "../packages/shared/core/src/tree-drop.ts";
+import type { BoxNode } from "../packages/shared/core/src/tree-nodes.ts";
+import { normalizeBoard } from "../packages/shared/core/src/model.ts";
+import { TEMPLATES } from "../packages/shared/core/src/templates.ts";
+import { DOC_PAGES } from "../packages/shared/core/src/docs.ts";
 import {
 	ClearFiltersCommand,
 	CountQuery,
@@ -30,7 +30,7 @@ import {
 	ShowingQuery,
 	TemplatesQuery,
 	cataloguePack,
-} from "../packages/packs/catalogue/src/index.ts";
+} from "../packages/shared/packs/catalogue/src/index.ts";
 
 let failed = 0;
 let checks = 0;

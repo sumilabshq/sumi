@@ -1,9 +1,9 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent, ReactElement, ReactNode } from "react";
-import type { Query } from "../packages/core/src/gateway/contract.ts";
-import { offsetOfCursor, pageAt } from "../packages/core/src/gateway/page.ts";
-import type { PageInput } from "../packages/core/src/gateway/page.ts";
-import type { WidgetComponent } from "../packages/core/src/registry-scope.js";
+import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
+import { offsetOfCursor, pageAt } from "../packages/shared/core/src/gateway/page.ts";
+import type { PageInput } from "../packages/shared/core/src/gateway/page.ts";
+import type { WidgetComponent } from "../packages/shared/core/src/registry-scope.js";
 import { byId } from "./dom-find.ts";
 import { collectionOf, valueGatewayOf } from "./gateway-kinds.ts";
 import { fieldIn } from "./held-fields.ts";
@@ -51,15 +51,15 @@ Object.assign(globalThis, { IntersectionObserver: WatchedEnd });
 
 const react = await import("react");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const { arrayGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { slotDefaults } = await import("../packages/core/src/gateway/props.js");
-const { applyQuery, toRows } = await import("../packages/core/src/gateway/create.ts");
-const { withSlotSurface } = await import("../packages/core/src/widget-root.js");
-const { previewProps } = await import("../packages/core/src/preview.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { arrayGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { slotDefaults } = await import("../packages/shared/core/src/gateway/props.js");
+const { applyQuery, toRows } = await import("../packages/shared/core/src/gateway/create.ts");
+const { withSlotSurface } = await import("../packages/shared/core/src/widget-root.js");
+const { previewProps } = await import("../packages/shared/core/src/preview.js");
 const { manifestOfEveryShippedWidget } = await import("./widget-props.ts");
 
 type FeedProps = Readonly<Record<string, unknown>>;

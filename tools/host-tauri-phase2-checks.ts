@@ -1,16 +1,16 @@
-import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts/studio.gateway.ts";
-import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { studioAppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/studio.gateway.ts";
+import { HostTabs } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
-import { createTurnSession } from "../packages/host-tauri/src/assistant/turn-session.ts";
-import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
-import { DEFAULT_PROFILE, profileFilesOf, readProfile } from "../packages/host-tauri/src/profile/profile-docs.ts";
-import { tauriProfileGateways } from "../packages/host-tauri/src/profile/tauri-profile-gateways.ts";
-import { TauriTabsSessionGateway, readSession } from "../packages/host-tauri/src/session/tauri-session.ts";
-import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
-import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../packages/host-tauri/src/workspace/tauri-workspace-apps.ts";
-import { WorkspaceClient } from "../packages/host-tauri/src/workspace/workspace-client.ts";
-import type { GrantChange, SiteGrant } from "../packages/browser/generated/index.ts";
-import type { AssistantTurn } from "../packages/core/src/engine/assistant-port.ts";
+import { createTurnSession } from "../apps/host-tauri/src/assistant/turn-session.ts";
+import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+import { DEFAULT_PROFILE, profileFilesOf, readProfile } from "../apps/host-tauri/src/profile/profile-docs.ts";
+import { tauriProfileGateways } from "../apps/host-tauri/src/profile/tauri-profile-gateways.ts";
+import { TauriTabsSessionGateway, readSession } from "../apps/host-tauri/src/session/tauri-session.ts";
+import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/host-tauri/src/workspace/tauri-workspace-apps.ts";
+import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
+import type { GrantChange, SiteGrant } from "../packages/domain/browser/generated/index.ts";
+import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { check } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 

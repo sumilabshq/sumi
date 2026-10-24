@@ -1,9 +1,9 @@
 import fs from "node:fs";
 import { parse } from "yaml";
-import type { LaidNode } from "../packages/core/src/tree.js";
+import type { LaidNode } from "../packages/shared/core/src/tree.js";
 
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { columnsOf, keptAt, layNode, sideOf, REGION_PAD_PX } = await import("../packages/core/src/tree.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { columnsOf, keptAt, layNode, sideOf, REGION_PAD_PX } = await import("../packages/shared/core/src/tree.js");
 
 const FENCE = String.fromCharCode(96, 96, 96);
 const AT = process.argv[2] ?? "";

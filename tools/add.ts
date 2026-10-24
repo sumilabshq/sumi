@@ -2,17 +2,17 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import type { WidgetRecord } from "../packages/core/src/engine/catalogue-index.js";
-import type { WidgetFiles, WidgetOffer, WidgetSourcePlace } from "../packages/core/src/engine/widget-source.js";
-import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
+import type { WidgetRecord } from "../packages/shared/core/src/engine/catalogue-index.js";
+import type { WidgetFiles, WidgetOffer, WidgetSourcePlace } from "../packages/shared/core/src/engine/widget-source.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
 import { isRecord } from "./page-dom.ts";
 import { widgetDependenciesIn } from "./publish.ts";
 import { rangesAgree } from "./version-range.ts";
 
-const { RECORD_FILES } = await import("../packages/core/src/engine/catalogue-index.js");
-const { createWidgetSource } = await import("../packages/core/src/engine/widget-source.js");
-const { scopedName } = await import("../packages/core/src/engine/github.js");
-const { declaredDependencies } = await import("../packages/core/src/engine/modules.js");
+const { RECORD_FILES } = await import("../packages/shared/core/src/engine/catalogue-index.js");
+const { createWidgetSource } = await import("../packages/shared/core/src/engine/widget-source.js");
+const { scopedName } = await import("../packages/shared/core/src/engine/github.js");
+const { declaredDependencies } = await import("../packages/shared/core/src/engine/modules.js");
 
 const CONFIG_FILE = "widgetarium.json";
 

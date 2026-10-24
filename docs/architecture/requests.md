@@ -37,7 +37,7 @@ export const LayoutModule = module("layout")
 - The package's `"."` is the root `index.ts`, `export * from "./generated/contract.js"`; `"./module"` is `module.ts`, imported only by the app that starts the module. There is no `"./gateways"`.
 - The mediator routes by request name, so the generated contract and the request that handles itself meet without sharing an object.
 - A module's `.guard()` and `.use()` run before every listed request on either side; `app()` refuses at start a step that needs a user, since a client has no Authenticate, and a step injecting what the module does not provide.
-- A data module holds no view. Its views live in a client package (`"level": "client"`), which imports the module's `"."` entry. `packages/layout` and its views in `packages/shell` are the first pair written this way; the sections below describe the earlier shape every other module still has.
+- A data module holds no view. Its views live in a client package (`"level": "client"`), which imports the module's `"."` entry. `packages/state/layout` and its views in `packages/client/shell` are the first pair written this way; the sections below describe the earlier shape every other module still has.
 
 ## A contract
 

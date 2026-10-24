@@ -1,5 +1,5 @@
-import { defineLayout, defineMetadata, defineStates } from "../packages/core/src/gateway/declared.js";
-import { createWidget } from "../packages/core/src/widget-api.js";
+import { defineLayout, defineMetadata, defineStates } from "../packages/shared/core/src/gateway/declared.js";
+import { createWidget } from "../packages/shared/core/src/widget-api.js";
 
 export const BROKEN_SAID = "the fixture widget breaks on purpose";
 

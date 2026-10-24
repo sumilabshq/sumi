@@ -1,6 +1,6 @@
-import type { BoardMeasure, MeasureApp } from "../packages/core/src/surface-measure.js";
+import type { BoardMeasure, MeasureApp } from "../packages/shared/core/src/surface-measure.js";
 
-const { writeMeasured } = await import("../packages/core/src/surface-measure.js");
+const { writeMeasured } = await import("../packages/shared/core/src/surface-measure.js");
 
 let failed = 0;
 let checks = 0;

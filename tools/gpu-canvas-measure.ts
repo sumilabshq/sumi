@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { COLOUR_WORDS, LENGTH_WORDS } from "../packages/gpu/src/style/gpu-tokens.ts";
+import { COLOUR_WORDS, LENGTH_WORDS } from "../packages/shared/gpu/src/style/gpu-tokens.ts";
 import type { Colour, Pixels } from "./png-pixels.ts";
 
 export interface Region {
@@ -56,7 +56,7 @@ export function edgeSharpness(pixels: Pixels, region: Region): number {
 
 export function themeWordsMissing(): string[] {
 	const missing: string[] = [];
-	for (const line of readFileSync("packages/kit/theme.css", "utf8").split("\n")) {
+	for (const line of readFileSync("packages/shared/kit/theme.css", "utf8").split("\n")) {
 		const [, namespace, word = "", expression = ""] = THEME_LINE.exec(line) ?? [];
 		if (!namespace || word.includes("--") || expression === "initial") continue;
 		const ours = namespace === "color" ? COLOUR_WORDS[word] : LENGTH_WORDS[`${namespace}-${word}`];

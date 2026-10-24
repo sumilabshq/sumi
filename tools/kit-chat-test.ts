@@ -22,8 +22,8 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.ts");
-const kit = await import("../packages/kit/src/index.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.ts");
+const kit = await import("../packages/shared/kit/src/index.ts");
 
 let failed = 0;
 let checks = 0;
@@ -439,7 +439,7 @@ async function openedChatPage(): Promise<AskedPage> {
 	const script = await bundleOf("tools/kit-chat-page.tsx");
 	const html = `<!doctype html><html><head><meta charset="utf-8">
 <style>:root { ${THEMES.light} }</style>
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; } #host { height: 300px; width: 400px; display: flex; flex-direction: column; }</style>
 </head><body class="wg-root"><div id="host"></div><script>${script}</script></body></html>`;
 	const file = path.join(mkdtempSync(path.join(tmpdir(), "wg-kit-chat-")), "chat.html");

@@ -1,8 +1,8 @@
 export {};
 
-const { createWantedWidgets } = await import("../packages/core/src/engine/widgets-wanted.js");
-const { widgetsNamedBy } = await import("../packages/core/src/templates.js");
-const { widgetKeyOf } = await import("../packages/core/src/engine/widget-ref.js");
+const { createWantedWidgets } = await import("../packages/shared/core/src/engine/widgets-wanted.js");
+const { widgetsNamedBy } = await import("../packages/shared/core/src/templates.js");
+const { widgetKeyOf } = await import("../packages/shared/core/src/engine/widget-ref.js");
 
 let failed = 0;
 let checks = 0;

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { GpuIcon, GpuText, GpuView } from "../packages/gpu/index.ts";
+import { GpuIcon, GpuText, GpuView } from "../packages/shared/gpu/index.ts";
 import { NavWord } from "./gpu-fixture-nav-word.tsx";
 
 export function TopBar(): ReactElement {

@@ -1,9 +1,9 @@
 import type * as FsPromises from "node:fs/promises";
 import type { PlatformPath } from "node:path";
 import type { Component, TFile as ObsidianFile } from "obsidian";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.ts";
-import type { SourceDisk } from "../packages/core/src/engine/source-disk.ts";
-import type { DeclaredNeeds } from "../packages/core/src/gateway/resolve-needs.ts";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.ts";
+import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.ts";
+import type { DeclaredNeeds } from "../packages/shared/core/src/gateway/resolve-needs.ts";
 
 Object.assign(globalThis, { window: { setTimeout, clearTimeout, queueMicrotask } });
 

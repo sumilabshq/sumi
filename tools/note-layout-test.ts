@@ -1,5 +1,5 @@
-import { placedNotes } from "../packages/behaviors/src/callouts/placed-notes.ts";
-import type { NoteBox, PlacedNote } from "../packages/behaviors/src/callouts/placed-notes.ts";
+import { placedNotes } from "../packages/shared/behaviors/src/callouts/placed-notes.ts";
+import type { NoteBox, PlacedNote } from "../packages/shared/behaviors/src/callouts/placed-notes.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

@@ -1,21 +1,21 @@
-import { definePack, registerPacks, registeredQueries } from "../packages/core/src/engine/packs.ts";
-import type { HandlerContext } from "../packages/core/src/gateway/handler-context.ts";
-import { PageInputSchema, PageOf, pageAt } from "../packages/core/src/gateway/page.ts";
-import type { Page, PageInput } from "../packages/core/src/gateway/page.ts";
-import { IQuery } from "../packages/core/src/gateway/queries.ts";
+import { definePack, registerPacks, registeredQueries } from "../packages/shared/core/src/engine/packs.ts";
+import type { HandlerContext } from "../packages/shared/core/src/gateway/handler-context.ts";
+import { PageInputSchema, PageOf, pageAt } from "../packages/shared/core/src/gateway/page.ts";
+import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.ts";
+import { IQuery } from "../packages/shared/core/src/gateway/queries.ts";
 import { present } from "./page-dom.ts";
-import { hostGatewayFor, resolveHostGateway, sourcesFor } from "../packages/core/src/engine/host-gateways.js";
-import { createGatewayRefs, createViewCells } from "../packages/core/src/gateway/refs.ts";
-import { arrayGateway, soloGateway } from "../packages/core/src/gateway/create.ts";
-import { defineGatewayMetadata } from "../packages/core/src/gateway/implementation-metadata.ts";
-import { IValueGateway, z } from "../packages/core/src/gateway/declared.ts";
-import type { HostGatewayContext } from "../packages/core/src/engine/host-context.ts";
-import type { Patch } from "../packages/core/src/gateway/contract.ts";
+import { hostGatewayFor, resolveHostGateway, sourcesFor } from "../packages/shared/core/src/engine/host-gateways.js";
+import { createGatewayRefs, createViewCells } from "../packages/shared/core/src/gateway/refs.ts";
+import { arrayGateway, soloGateway } from "../packages/shared/core/src/gateway/create.ts";
+import { defineGatewayMetadata } from "../packages/shared/core/src/gateway/implementation-metadata.ts";
+import { IValueGateway, z } from "../packages/shared/core/src/gateway/declared.ts";
+import type { HostGatewayContext } from "../packages/shared/core/src/engine/host-context.ts";
+import type { Patch } from "../packages/shared/core/src/gateway/contract.ts";
 import { collectionOf, updateOf, valueGatewayOf } from "./gateway-kinds.ts";
 import { fieldIn } from "./held-fields.ts";
 import { createRowSlot } from "./vault-fixture.ts";
-import { withPageParams } from "../packages/core/src/engine/page-params.ts";
-import { todayIso } from "../packages/core/src/today.ts";
+import { withPageParams } from "../packages/shared/core/src/engine/page-params.ts";
+import { todayIso } from "../packages/shared/core/src/today.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

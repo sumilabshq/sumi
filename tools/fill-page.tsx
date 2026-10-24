@@ -1,14 +1,14 @@
 import "./packs-registered.ts";
 import type { ReactElement } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { rootWidget } from "../packages/core/src/widget-root.js";
-import { arrayGateway, soloGateway } from "../packages/core/src/gateway/create";
-import { createViewCells } from "../packages/core/src/gateway/refs.js";
-import { selectionGateway } from "../packages/packs/core/src/picked.ts";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { rootWidget } from "../packages/shared/core/src/widget-root.js";
+import { arrayGateway, soloGateway } from "../packages/shared/core/src/gateway/create";
+import { createViewCells } from "../packages/shared/core/src/gateway/refs.js";
+import { selectionGateway } from "../packages/shared/packs/core/src/picked.ts";
 import ViewTabs from "../registry/@default/view-tabs/widget.tsx";
 import FilterPanel from "../registry/@default/filter-panel/widget.tsx";
-import { spanToPixels } from "../packages/core/src/paths.js";
-import { GRID } from "../packages/core/src/paths.js";
+import { spanToPixels } from "../packages/shared/core/src/paths.js";
+import { GRID } from "../packages/shared/core/src/paths.js";
 
 interface FillCase {
 	readonly name: string;

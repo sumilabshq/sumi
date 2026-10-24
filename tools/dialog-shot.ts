@@ -23,14 +23,14 @@ const built = await esbuild.build({
 	jsxFactory: "h",
 	jsxFragment: "Fragment",
 	inject: ["tools/fill-inject.ts"],
-	alias: { widgetarium: "./tools/fill-shim.ts", "widgetarium/kit": "./packages/kit/src/index.ts" },
+	alias: { widgetarium: "./tools/fill-shim.ts", "widgetarium/kit": "./packages/shared/kit/src/index.ts" },
 	logLevel: "warning",
 });
 const bundle = built.outputFiles[0]?.text ?? "";
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;

@@ -5,11 +5,11 @@ import type { App } from "obsidian";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
-import type { Board } from "../packages/core/src/model.js";
-import type { Tile } from "../packages/core/src/board-tiles.js";
-import { surfaceOptions } from "../packages/host-obsidian/build.mts";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import type { Tile } from "../packages/shared/core/src/board-tiles.js";
+import { surfaceOptions } from "../apps/host-obsidian/build.mts";
 
 const dom = new JSDOM(`<!doctype html><body><div class="view-content"><div id="host"></div></div></body>`, {
 	pretendToBeVisual: true,
@@ -39,16 +39,16 @@ Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configu
 
 const { createElement: h } = await import("react");
 const engineReact = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface, resolveSlots } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry, ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
-const { gatewayCache } = await import("../packages/core/src/gateway/cache.ts");
-const { reactClash, slotFit } = await import("../packages/core/src/fit.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface, resolveSlots } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry, ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
+const { gatewayCache } = await import("../packages/shared/core/src/gateway/cache.ts");
+const { reactClash, slotFit } = await import("../packages/shared/core/src/fit.js");
 const { keyFor, modulePath, createModuleSpace, HELD_BY_THE_ENGINE } =
-	await import("../packages/core/src/engine/modules.js");
-const { WIDGETS_DIR, LOCK_PATH } = await import("../packages/core/src/paths.js");
+	await import("../packages/shared/core/src/engine/modules.js");
+const { WIDGETS_DIR, LOCK_PATH } = await import("../packages/shared/core/src/paths.js");
 
 const OWN = "@two/own";
 const HOSTED = "@two/hosted";
@@ -281,7 +281,7 @@ for (const name of HELD_BY_THE_ENGINE) {
 }
 
 console.log("\n— the surface takes the core, it does not carry one —");
-const coreExports = await import("../packages/core/src/api-core.js");
+const coreExports = await import("../packages/shared/core/src/api-core.js");
 const coreHolders = [...SURFACE_SOURCE.matchAll(/var (\w+) = require\("widgetarium\/core"\)/g)].map(
 	(found) => found[1] ?? "",
 );

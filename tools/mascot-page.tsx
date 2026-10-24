@@ -1,16 +1,16 @@
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
+import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
+import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
 import {
 	Mascot,
 	MascotFigure,
 	MascotStateSchema,
 	OutfitIdSchema,
 	RecordAgentEventsCommand,
-} from "../packages/mascot/generated/index.ts";
-import type { AgentEvent, OutfitId } from "../packages/mascot/generated/index.ts";
+} from "../packages/client/mascot/generated/index.ts";
+import type { AgentEvent, OutfitId } from "../packages/client/mascot/generated/index.ts";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();

@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
-import type { SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
-import type { VaultSlot } from "../packages/core/src/gateway/obsidian.js";
-import { refusingConsole } from "../packages/core/src/engine/host-console.js";
+import type { SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
+import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
+import { refusingConsole } from "../packages/shared/core/src/engine/host-console.js";
 import { byId, found } from "./dom-find.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div class="view-content"><div id="host"></div></div></body>`, {
@@ -30,12 +30,12 @@ Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetRoot } = await import("../packages/core/src/widget-root.js");
-const { drawWidget } = await import("../packages/core/src/widget-api.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetRoot } = await import("../packages/shared/core/src/widget-root.js");
+const { drawWidget } = await import("../packages/shared/core/src/widget-api.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
 
 const settle = async (times = 20): Promise<void> => {
 	for (let i = 0; i < times; i += 1) await new Promise((resolve) => setTimeout(resolve, 1));
@@ -60,7 +60,7 @@ check(
 );
 
 const { useWidgetRounded, useBackgroundType, AppearanceOverride, ROUNDED, BACKGROUND } =
-	await import("../packages/core/src/widget-root.js");
+	await import("../packages/shared/core/src/widget-root.js");
 function OldWidget(): ReturnType<typeof h> {
 	return h(
 		AppearanceOverride,

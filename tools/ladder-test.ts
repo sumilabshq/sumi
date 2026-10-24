@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { TONE_NAMES, toneClass } from "../packages/kit/src/index.ts";
-import { colorOf } from "../packages/core/src/color-math.ts";
+import { TONE_NAMES, toneClass } from "../packages/shared/kit/src/index.ts";
+import { colorOf } from "../packages/shared/core/src/color-math.ts";
 import { fieldIn, itemsIn } from "./held-fields.ts";
 import { isRecord, present } from "./page-dom.ts";
 
@@ -35,7 +35,7 @@ function levels(theme: Theme): unknown {
 	const file = path.join(work, `${theme}.html`);
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>body{margin:0;${THEMES[theme]}}</style></head><body class="wg-root theme-${theme}"><pre id="out"></pre><script>
 window.addEventListener('load',()=>{
 	const probe=(value)=>{const node=document.createElement('div');node.style.cssText='width:10px;height:10px;background:'+value;

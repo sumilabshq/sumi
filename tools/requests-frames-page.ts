@@ -2,8 +2,16 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import { z } from "zod";
-import { AppProvider, Slot, app, clientModule, handler, query, useQuery } from "../packages/core/src/requests/index.ts";
-import type { AnyQuery } from "../packages/core/src/requests/index.ts";
+import {
+	AppProvider,
+	Slot,
+	app,
+	clientModule,
+	handler,
+	query,
+	useQuery,
+} from "../packages/shared/core/src/requests/index.ts";
+import type { AnyQuery } from "../packages/shared/core/src/requests/index.ts";
 
 const RUNS = 12;
 const READY_FRAMES_SEEN = 2;

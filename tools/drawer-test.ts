@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
-import type { BoxAction } from "../packages/core/src/surface/box-actions.js";
-import type { WidgetSurfaceProps } from "../packages/core/src/surface/widget-surface.js";
-import type { BoardNode } from "../packages/core/src/tree-nodes.js";
+import type { BoxAction } from "../packages/shared/core/src/surface/box-actions.js";
+import type { WidgetSurfaceProps } from "../packages/shared/core/src/surface/widget-surface.js";
+import type { BoardNode } from "../packages/shared/core/src/tree-nodes.js";
 import { byId, found, foundAs } from "./dom-find.ts";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
@@ -42,9 +42,9 @@ Object.assign(dom.window, { ResizeObserver: WatchedSize });
 Object.assign(globalThis, { CSS: { escape: (value: unknown) => String(value).replace(/["\\]/g, "\\$&") } });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
 
 const plainWidget = {
 	manifest: { id: "w", minSize: { w: 2, h: 2 }, maxSize: { w: 14, h: 10 } },

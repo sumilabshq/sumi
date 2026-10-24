@@ -1,7 +1,7 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { IsTooltipHosted, TooltipHost, tooltipMarks } from "../packages/kit/src/index.js";
-import { HeaderButton } from "../packages/shell/shared/ui/plate-header/header-button.js";
+import { IsTooltipHosted, TooltipHost, tooltipMarks } from "../packages/shared/kit/src/index.js";
+import { HeaderButton } from "../packages/client/shell/shared/ui/plate-header/header-button.js";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();

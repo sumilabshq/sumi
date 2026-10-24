@@ -1,9 +1,9 @@
 import { JSDOM } from "jsdom";
 import { byId } from "./dom-find.ts";
 import { present } from "./page-dom.ts";
-import type { Board, Tile } from "../packages/core/src/model.js";
-import type { Command, RecordRef } from "../packages/core/src/gateway/declared.ts";
-import type { BoardRegistry, SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
+import type { Board, Tile } from "../packages/shared/core/src/model.js";
+import type { Command, RecordRef } from "../packages/shared/core/src/gateway/declared.ts";
+import type { BoardRegistry, SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
 import { standIn } from "./stand-in.ts";
 import { StatusSchema, TaskSchema, packMoves, packStamps, registerTestPack } from "./command-board-pack.ts";
 
@@ -34,13 +34,13 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createWidget } = await import("../packages/core/src/widget-api.js");
-const { useData } = await import("../packages/core/src/gateway/use-data.ts");
-const { manifestOfModule, RecordRefSchema, z } = await import("../packages/core/src/gateway/declared.ts");
-const { ICommand, IQuery } = await import("../packages/core/src/gateway/queries.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { createWidget } = await import("../packages/shared/core/src/widget-api.js");
+const { useData } = await import("../packages/shared/core/src/gateway/use-data.ts");
+const { manifestOfModule, RecordRefSchema, z } = await import("../packages/shared/core/src/gateway/declared.ts");
+const { ICommand, IQuery } = await import("../packages/shared/core/src/gateway/queries.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

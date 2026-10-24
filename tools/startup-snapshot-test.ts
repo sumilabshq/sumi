@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import nodePath from "node:path";
-import type { FileStat, RegistryAdapter } from "../packages/core/src/registry-reading.js";
-import type { StartupSnapshot, StartupSnapshotStore } from "../packages/core/src/startup-snapshot.js";
+import type { FileStat, RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
+import type { StartupSnapshot, StartupSnapshotStore } from "../packages/shared/core/src/startup-snapshot.js";
 
 Object.assign(globalThis, {
 	window: { setTimeout, clearTimeout, queueMicrotask },
@@ -11,9 +11,9 @@ Object.assign(globalThis, {
 	},
 });
 
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { StartupCache } = await import("../packages/core/src/startup-snapshot.js");
-const { boardWidgets, inlineWidgets } = await import("../packages/core/src/registry.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { StartupCache } = await import("../packages/shared/core/src/startup-snapshot.js");
+const { boardWidgets, inlineWidgets } = await import("../packages/shared/core/src/registry.js");
 
 const SOURCE = nodePath.resolve("registry");
 const FETCH_MS = Number(process.env["FETCH_MS"] ?? 20);

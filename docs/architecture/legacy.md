@@ -1,6 +1,6 @@
 # Legacy
 
-Code written before these rules lives in a `legacy/` folder inside the app or host that runs it: `apps/studio/src/legacy/`, `packages/host-obsidian/src/legacy/`. It works as it does today; it is moved there, not changed.
+Code written before these rules lives in a `legacy/` folder inside the app or host that runs it: `apps/studio/src/legacy/`, `apps/host-obsidian/src/legacy/`. It works as it does today; it is moved there, not changed.
 
 | Rule                                                                             | Why                                                  |
 | -------------------------------------------------------------------------------- | ---------------------------------------------------- |

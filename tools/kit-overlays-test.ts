@@ -33,11 +33,11 @@ const TRIGGER_AT: Readonly<Record<string, string>> = { [RECT_ATTRIBUTE]: "300,30
 Object.assign(dom.window.Element.prototype, { getBoundingClientRect: stubbedRect });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.ts");
-const kit = await import("../packages/kit/src/index.ts");
-const { placeFloating } = await import("../packages/kit/src/utils/floating-placement.ts");
-const { openLayerCount } = await import("../packages/kit/src/utils/layer-stack.ts");
-const snaps = await import("../packages/kit/src/utils/drawer-snaps.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.ts");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { placeFloating } = await import("../packages/shared/kit/src/utils/floating-placement.ts");
+const { openLayerCount } = await import("../packages/shared/kit/src/utils/layer-stack.ts");
+const snaps = await import("../packages/shared/kit/src/utils/drawer-snaps.ts");
 
 const host = found(document, "#host");
 const outside = found(document, "#outside");

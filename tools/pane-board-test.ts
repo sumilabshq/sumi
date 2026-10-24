@@ -6,24 +6,30 @@ import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
-import { leavesOf } from "../packages/layout/shared/lib/pane-nodes.ts";
-import { paneLayoutOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
+import { paneLayoutOf, sideAt } from "../packages/client/shell/shared/lib/pane-layout.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import {
 	AimPaneCommand,
 	ClosePaneCommand,
 	PlacePaneCommand,
 	ResizePaneSplitCommand,
-} from "../packages/layout/features/panes/requests.ts";
-import { DropGoneTabsCommand, ShowTabInTargetPaneCommand } from "../packages/layout/features/pane-tabs/requests.ts";
-import { PeekFrameSideCommand, ToggleFrameSideCommand } from "../packages/layout/features/frame-sides/requests.ts";
-import { ResizeFrameEdgeCommand } from "../packages/layout/features/frame-widths/requests.ts";
-import type { PaneSide, PaneTree, PaneView } from "../packages/layout/shared/schema/pane-tree.schema.ts";
-import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
-import { sidebarOf } from "../packages/app-host/features/tabs/lib/tab-rows.ts";
+} from "../packages/state/layout/features/panes/requests.ts";
+import {
+	DropGoneTabsCommand,
+	ShowTabInTargetPaneCommand,
+} from "../packages/state/layout/features/pane-tabs/requests.ts";
+import {
+	PeekFrameSideCommand,
+	ToggleFrameSideCommand,
+} from "../packages/state/layout/features/frame-sides/requests.ts";
+import { ResizeFrameEdgeCommand } from "../packages/state/layout/features/frame-widths/requests.ts";
+import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
+import { HostTabs } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
+import { sidebarOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
 
 let failed = 0;
 const quiet = console.info;
@@ -388,7 +394,7 @@ function checksGatewaysKeep(): void {
 
 async function pageOf(folder: string): Promise<AskedPage> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
-	const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 		.map((at) => readFileSync(at, "utf8"))
 		.join("\n");
 	const file = path.join(folder, "pane-board.html");

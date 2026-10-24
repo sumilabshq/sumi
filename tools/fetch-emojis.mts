@@ -24,8 +24,8 @@ interface EmojiEntry {
 	readonly subgroup: number;
 }
 
-const TABLE_FILE = path.join(process.cwd(), "packages", "kit", "src", "emojis", "emoji-table.ts");
-const NOTICE_DIR = path.join(process.cwd(), "packages", "kit", "assets", "emojis");
+const TABLE_FILE = path.join(process.cwd(), "packages", "shared", "kit", "src", "emojis", "emoji-table.ts");
+const NOTICE_DIR = path.join(process.cwd(), "packages", "shared", "kit", "assets", "emojis");
 
 const MIT = `MIT License
 
@@ -50,7 +50,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 `;
 
-const NOTICE = `The emoji drawings in packages/kit/src/emojis/emoji-table.ts are Microsoft Fluent Emoji
+const NOTICE = `The emoji drawings in packages/shared/kit/src/emojis/emoji-table.ts are Microsoft Fluent Emoji
 (https://github.com/microsoft/fluentui-emoji), Flat style, licensed under the
 MIT License, a copy of which sits beside this file.
 
@@ -110,7 +110,7 @@ writeFileSync(path.join(NOTICE_DIR, "LICENSE"), MIT);
 writeFileSync(path.join(NOTICE_DIR, "NOTICE"), NOTICE);
 
 for (const held of undrawn) console.log(`no Fluent drawing for ${held.entry.emoji} ${held.entry.label}`);
-console.log(`${Object.keys(table).length} emojis -> packages/kit/src/emojis/emoji-table.ts`);
+console.log(`${Object.keys(table).length} emojis -> packages/shared/kit/src/emojis/emoji-table.ts`);
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);

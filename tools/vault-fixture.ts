@@ -1,10 +1,10 @@
-import { fieldsOf } from "../packages/core/src/gateway/fields.js";
-import { refusingConsole } from "../packages/core/src/engine/host-console.js";
-import type { NoteAddress, NoteRecord, VaultSlot } from "../packages/core/src/gateway/obsidian.js";
-import type { ViewHost } from "../packages/core/src/gateway/host.js";
-import type { FolderListing } from "../packages/core/src/engine/widget-build.js";
-import type { RegistryAdapter } from "../packages/core/src/registry-reading.js";
-import type { SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
+import { fieldsOf } from "../packages/shared/core/src/gateway/fields.js";
+import { refusingConsole } from "../packages/shared/core/src/engine/host-console.js";
+import type { NoteAddress, NoteRecord, VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
+import type { ViewHost } from "../packages/shared/core/src/gateway/host.js";
+import type { FolderListing } from "../packages/shared/core/src/engine/widget-build.js";
+import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
+import type { SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
 
 export type FileMap = Readonly<Record<string, string>>;
 

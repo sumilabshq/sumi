@@ -2,22 +2,22 @@ import esbuild from "esbuild";
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { collectionOf } from "./gateway-kinds.ts";
-import type * as Parsed from "../packages/core/src/gateway/parsed.js";
-import type * as Problems from "../packages/core/src/gateway/problems.js";
+import type * as Parsed from "../packages/shared/core/src/gateway/parsed.js";
+import type * as Problems from "../packages/shared/core/src/gateway/problems.js";
 import { propsOfEveryShippedWidget } from "./widget-props.ts";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type * as Create from "../packages/core/src/gateway/create.js";
-import type * as Fields from "../packages/core/src/gateway/fields.js";
-import type * as ResolveNeeds from "../packages/core/src/gateway/resolve-needs.js";
-import type * as Mapped from "../packages/core/src/gateway/mapped.js";
-import type { needsOf } from "../packages/core/src/gateway/props.js";
-import type { DeclaredNeeds } from "../packages/core/src/gateway/resolve-needs.js";
-import type { Query } from "../packages/core/src/gateway/contract.js";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type * as Create from "../packages/shared/core/src/gateway/create.js";
+import type * as Fields from "../packages/shared/core/src/gateway/fields.js";
+import type * as ResolveNeeds from "../packages/shared/core/src/gateway/resolve-needs.js";
+import type * as Mapped from "../packages/shared/core/src/gateway/mapped.js";
+import type { needsOf } from "../packages/shared/core/src/gateway/props.js";
+import type { DeclaredNeeds } from "../packages/shared/core/src/gateway/resolve-needs.js";
+import type { Query } from "../packages/shared/core/src/gateway/contract.js";
 
 const built = await esbuild.build({
 	stdin: {
-		contents: `export * from "./packages/core/src/gateway/create"; export * from "./packages/core/src/gateway/fields"; export * from "./packages/core/src/gateway/resolve-needs"; export * from "./packages/core/src/gateway/mapped"; export { needsOf } from "./packages/core/src/gateway/props.js"; export { parseReadsBy } from "./packages/core/src/gateway/parsed"; export { createProblems, UnansweredFilterError } from "./packages/core/src/gateway/problems";`,
+		contents: `export * from "./packages/shared/core/src/gateway/create"; export * from "./packages/shared/core/src/gateway/fields"; export * from "./packages/shared/core/src/gateway/resolve-needs"; export * from "./packages/shared/core/src/gateway/mapped"; export { needsOf } from "./packages/shared/core/src/gateway/props.js"; export { parseReadsBy } from "./packages/shared/core/src/gateway/parsed"; export { createProblems, UnansweredFilterError } from "./packages/shared/core/src/gateway/problems";`,
 		resolveDir: process.cwd(),
 		loader: "js",
 	},

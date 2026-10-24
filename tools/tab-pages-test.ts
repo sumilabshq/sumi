@@ -1,13 +1,13 @@
-import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts/studio.gateway.ts";
-import { PageFactsGateway } from "../packages/app-host/gateways/page-facts/page-facts.gateway.ts";
-import { PaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
-import { TabsSessionGateway } from "../packages/app-host/gateways/tabs-session/tabs-session.gateway.ts";
-import { PlaceTabCommand, ShowTabCommand, TearOffTabCommand } from "../packages/app-host/generated/index.ts";
-import { AppHostClientModule } from "../packages/app-host/generated/module.ts";
-import type { KeptTabs } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
-import type { PageFacts } from "../packages/app-host/shared/schema/page-facts.schema.ts";
+import { studioAppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/studio.gateway.ts";
+import { PageFactsGateway } from "../packages/domain/app-host/gateways/page-facts/page-facts.gateway.ts";
+import { PaneTabsGateway } from "../packages/domain/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
+import { TabsSessionGateway } from "../packages/domain/app-host/gateways/tabs-session/tabs-session.gateway.ts";
+import { PlaceTabCommand, ShowTabCommand, TearOffTabCommand } from "../packages/domain/app-host/generated/index.ts";
+import { AppHostClientModule } from "../packages/domain/app-host/generated/module.ts";
+import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
+import type { PageFacts } from "../packages/domain/app-host/shared/schema/page-facts.schema.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
-import { app } from "../packages/core/src/requests/index.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";

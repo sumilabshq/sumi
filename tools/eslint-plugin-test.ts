@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { RuleTester } from "eslint";
 import type { Rule } from "eslint";
-import widgetarium, { parser } from "../packages/eslint-plugin/src/index.ts";
+import widgetarium, { parser } from "../packages/shared/eslint-plugin/src/index.ts";
 import { check, tally } from "./check-helpers.ts";
 
 interface Case {
@@ -74,7 +74,7 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/tally/shared/lib/bounds.ts": "",
 	"packages/tally/shared/lib/rules.ts": "export const cap = 1;\n",
 	"packages/tally/shared/lib/index.ts": 'export { bounds } from "./bounds.js";\n',
-	"packages/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
+	"apps/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
 	"apps/web/package.json": JSON.stringify({ name: "@fixture/web" }),
 	"apps/web/tsconfig.json": JSON.stringify({ compilerOptions: { customConditions: ["source"] } }),
 	"apps/api/package.json": JSON.stringify({ name: "@fixture/api" }),
@@ -180,8 +180,8 @@ tested("contract-imports", {
 tested("module-imports", {
 	valid: [
 		ok('import { NotesClientModule } from "@fixture/notes/module";', "apps/web/src/main.ts"),
-		ok('import { NotesClientModule } from "@fixture/notes/module";', "packages/host-web/src/start.ts"),
-		ok('import { webNotesParts } from "@fixture/notes/gateways";', "packages/host-web/src/start.ts"),
+		ok('import { NotesClientModule } from "@fixture/notes/module";', "apps/host-web/src/start.ts"),
+		ok('import { webNotesParts } from "@fixture/notes/gateways";', "apps/host-web/src/start.ts"),
 		ok('import { BillingServerModule } from "@fixture/billing/module";', "apps/api/src/main.ts"),
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
 		ok('import { TallyModule } from "@fixture/tally/module";', "apps/web/src/main.ts"),
@@ -200,7 +200,7 @@ tested("module-imports", {
 			"packages/billing/features/charge/handlers.ts",
 		),
 		bad('import { charge } from "@fixture/billing/features/charge/handlers";', "noSuchEntry", "apps/api/src/main.ts"),
-		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "packages/host-web/src/start.ts"),
+		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "apps/host-web/src/start.ts"),
 		bad('import { TallyModule } from "@fixture/tally/module";', "clientWiring", "packages/notes/shared/lib/clock.ts"),
 		bad(
 			'import { clock } from "../../../notes/shared/lib/clock.js";',

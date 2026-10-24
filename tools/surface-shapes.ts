@@ -1,7 +1,7 @@
-import type { BoardNode, BoxNode } from "../packages/core/src/tree.js";
-import type { TileWidget } from "../packages/core/src/surface-laws.js";
+import type { BoardNode, BoxNode } from "../packages/shared/core/src/tree.js";
+import type { TileWidget } from "../packages/shared/core/src/surface-laws.js";
 
-const { withDefaultSurfaces, surfacesWritten } = await import("../packages/core/src/surface-default.js");
+const { withDefaultSurfaces, surfacesWritten } = await import("../packages/shared/core/src/surface-default.js");
 
 const ROLE_OF: Readonly<Record<string, string>> = {
 	"@x/list": "collection",

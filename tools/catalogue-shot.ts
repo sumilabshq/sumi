@@ -1,8 +1,8 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { WIDGETS_DIR } from "../packages/core/src/paths.js";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { WIDGETS_DIR } from "../packages/shared/core/src/paths.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { bundleOf, shoot, shotPage } from "./harness.ts";
 import type { Theme } from "./harness.ts";
 import { collectFiles } from "./registry-files.ts";

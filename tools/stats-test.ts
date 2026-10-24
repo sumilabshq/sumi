@@ -1,8 +1,8 @@
 export {};
 
-const { statOf, statGateway } = await import("../packages/packs/stats/src/stat-of.ts");
-const { todayIso } = await import("../packages/core/src/today.ts");
-const { arrayGateway } = await import("../packages/core/src/gateway/create.ts");
+const { statOf, statGateway } = await import("../packages/shared/packs/stats/src/stat-of.ts");
+const { todayIso } = await import("../packages/shared/core/src/today.ts");
+const { arrayGateway } = await import("../packages/shared/core/src/gateway/create.ts");
 
 let failed = 0;
 function check(label: string, got: unknown, want: unknown): void {

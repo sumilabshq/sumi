@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { shapeTableOf } from "./shape-points.mts";
 
-const ASSETS = path.join(process.cwd(), "packages", "kit", "assets", "shapes", "shapes.json");
-const TABLE = path.join(process.cwd(), "packages", "kit", "src", "shapes", "shape-table.ts");
+const ASSETS = path.join(process.cwd(), "packages", "shared", "kit", "assets", "shapes", "shapes.json");
+const TABLE = path.join(process.cwd(), "packages", "shared", "kit", "src", "shapes", "shape-table.ts");
 
 const drawn: unknown = JSON.parse(readFileSync(ASSETS, "utf8"));
 if (typeof drawn !== "object" || drawn === null) throw new Error(`${ASSETS} holds no shape outlines`);

@@ -5,8 +5,8 @@ import { paged, waited } from "./chrome-ask.ts";
 import {
 	PageColoursReadSchema,
 	READ_PAGE_COLOURS,
-} from "../packages/browser/gateways/browser-pages/tauri/page-look-script.ts";
-import { pageFillOf, wantsStrip } from "../packages/browser/shared/lib/page-fill.ts";
+} from "../packages/domain/browser/gateways/browser-pages/tauri/page-look-script.ts";
+import { pageFillOf, wantsStrip } from "../packages/domain/browser/shared/lib/page-fill.ts";
 
 interface Sample {
 	readonly name: string;

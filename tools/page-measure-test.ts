@@ -4,8 +4,8 @@ layJsdomGlobals();
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 const { act, createElement: h } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { measuredFindingsIn } = await import("../packages/core/src/page-measure.js");
-const { Page, Section, Button, Hero } = await import("../packages/kit/src/index.js");
+const { measuredFindingsIn } = await import("../packages/shared/core/src/page-measure.js");
+const { Page, Section, Button, Hero } = await import("../packages/shared/kit/src/index.js");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

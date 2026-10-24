@@ -1,16 +1,16 @@
-import { ChatSessions } from "../packages/host-tauri/src/assistant/chat-sessions.ts";
-import type { RunAnswer, TurnRun } from "../packages/host-tauri/src/assistant/turn-run.ts";
-import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
-import { TauriChatsGateway, readChats } from "../packages/host-tauri/src/chat/tauri-chats.ts";
-import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
-import { TauriWorkspacesGateway } from "../packages/host-tauri/src/workspace/tauri-workspaces.ts";
-import { WorkspaceClient } from "../packages/host-tauri/src/workspace/workspace-client.ts";
-import { readWorkspaceLooks } from "../packages/host-tauri/src/workspace/workspace-looks.ts";
-import { MemoryWorkspacesGateway } from "../packages/workspaces/gateways/workspaces/memory.gateway.ts";
+import { ChatSessions } from "../apps/host-tauri/src/assistant/chat-sessions.ts";
+import type { RunAnswer, TurnRun } from "../apps/host-tauri/src/assistant/turn-run.ts";
+import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+import { TauriChatsGateway, readChats } from "../apps/host-tauri/src/chat/tauri-chats.ts";
+import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import { TauriWorkspacesGateway } from "../apps/host-tauri/src/workspace/tauri-workspaces.ts";
+import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
+import { readWorkspaceLooks } from "../apps/host-tauri/src/workspace/workspace-looks.ts";
+import { MemoryWorkspacesGateway } from "../packages/domain/workspaces/gateways/workspaces/memory.gateway.ts";
 import {
 	chatSessionLinkOf,
 	workspacesPartsOf,
-} from "../packages/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
+} from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 

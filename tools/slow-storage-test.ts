@@ -1,9 +1,9 @@
 import type { App } from "obsidian";
 import { NO_PLUGIN, fakeTaskVault, type TaskApp, type TaskFile } from "./perf-fixture.ts";
 import { standIn } from "./stand-in.ts";
-import type { FolderSlot } from "../packages/host-obsidian/src/legacy/folder-slot.js";
+import type { FolderSlot } from "../apps/host-obsidian/src/legacy/folder-slot.js";
 
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
 
 const FOLDER = "Tasks";
 const CACHE_STAYS_SILENT = 100000;

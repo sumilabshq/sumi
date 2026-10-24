@@ -3,9 +3,9 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { GRID, spanToPixels } from "../packages/core/src/paths.js";
-import { z } from "../packages/core/src/gateway/declared.ts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { GRID, spanToPixels } from "../packages/shared/core/src/paths.js";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
 
 const BoxSchema = z.object({ left: z.number(), right: z.number(), width: z.number(), height: z.number() });
@@ -59,12 +59,12 @@ const bundle = await esbuild.build({
 	jsxFactory: "h",
 	jsxFragment: "Fragment",
 	inject: ["tools/fill-inject.ts"],
-	alias: { widgetarium: "./tools/fill-shim.ts", "widgetarium/kit": "./packages/kit/src/index.ts" },
+	alias: { widgetarium: "./tools/fill-shim.ts", "widgetarium/kit": "./packages/shared/kit/src/index.ts" },
 	logLevel: "warning",
 });
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; font-family: -apple-system, "Segoe UI", sans-serif; }</style>
 </head><body><div class="wg-root"></div><script id="wg-measure" type="application/json"></script>

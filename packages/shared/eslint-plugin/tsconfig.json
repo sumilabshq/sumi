@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"customConditions": ["source"],
+		"lib": ["ES2022"],
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"tsBuildInfoFile": "../../../node_modules/.cache/widgetarium/eslint-plugin.tsbuildinfo",
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+		"composite": true,
+		"emitDeclarationOnly": true,
+		"rootDir": "./src",
+		"outDir": "../../../node_modules/.cache/widgetarium/eslint-plugin-declarations",
+		"types": ["node"]
+	},
+	"include": ["src/**/*.ts"]
+}

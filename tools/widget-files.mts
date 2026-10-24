@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-// TODO: read the folder and source names from packages/core/src/engine/widget-build.ts once natively run tools can import it
+// TODO: read the folder and source names from packages/shared/core/src/engine/widget-build.ts once natively run tools can import it
 const BUILT_INTO = "build";
 const A_WIDGET_SOURCE = /^widget\.(jsx|tsx|js|ts)$/;
 

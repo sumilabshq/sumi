@@ -4,7 +4,7 @@ import { byId } from "./dom-find.ts";
 const dom = new JSDOM("<!doctype html><div id=editor><div id=block></div></div>");
 Object.assign(globalThis, { window: dom.window, document: dom.window.document, Node: dom.window.Node });
 
-const { shieldFromEditor } = await import("../packages/core/src/editor-shield.js");
+const { shieldFromEditor } = await import("../packages/shared/core/src/editor-shield.js");
 
 const editor = byId(document, "editor");
 const block = byId(document, "block");

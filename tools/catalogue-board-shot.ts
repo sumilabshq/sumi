@@ -111,7 +111,7 @@ measureOnceDrawn();`;
 
 function pageAt(widthPx: number, isAnnotated: boolean): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>
 body { margin: 0; ${THEMES.light} background: var(--background-secondary); color: var(--text-normal);
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif; font-family: var(--font-interface);

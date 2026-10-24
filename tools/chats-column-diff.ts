@@ -53,15 +53,15 @@ const bundle = await bundleOf("tools/chats-column-page.tsx");
 const sheets =
 	`${kitTooltipSheet()}\n` +
 	[
-		"packages/core/browser-host.css",
-		"packages/host-obsidian/styles.css",
+		"packages/shared/core/browser-host.css",
+		"apps/host-obsidian/styles.css",
 		"design-systems/sumi/sumi.css",
-		"packages/workspaces/workspaces.css",
-		"packages/shell/shell.css",
+		"packages/domain/workspaces/workspaces.css",
+		"packages/client/shell/shell.css",
 	]
 		.map((at) => readFileSync(at, "utf8").split(TAILWIND_BANNER)[0])
 		.join("\n");
-const font = readFileSync("packages/kit/assets/fonts/inter/InterVariable-latin.woff2");
+const font = readFileSync("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const FONT_FACE = `@font-face { font-family: "Inter Variable"; src: url(/inter.woff2) format("woff2"); font-weight: 100 900; }`;
 const BUILT = `<!doctype html><html><head><meta charset="utf-8"><style>${FONT_FACE}</style><style>${sheets}</style>
 <style>body { margin: 0; }</style></head><body><div id="root"></div><script>${INSTRUMENT}</script><script>${bundle}</script></body></html>`;

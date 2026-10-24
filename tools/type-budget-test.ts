@@ -13,7 +13,7 @@ const RECORD = process.argv.includes("--record");
 const INSTANTIATIONS = /^Instantiations:\s+(\d+)/m;
 const CHECK_TIME = /^Check time:\s+([\d.]+)s/m;
 const FAILURE_SHOWN = 2000;
-const SHARED_DECLARATIONS = ["packages/core/src/*.d.ts", "packages/kit/src/jsx-namespace.d.ts"];
+const SHARED_DECLARATIONS = ["packages/shared/core/src/*.d.ts", "packages/shared/kit/src/jsx-namespace.d.ts"];
 
 const BudgetSchema = z.object({ handlers: z.number(), instantiations: z.number(), checkSeconds: z.number() });
 
@@ -74,7 +74,7 @@ function layFixture(count: number): string {
 	const handlers = Array.from({ length: count }, (_unused, at) => handlerSource(at)).join("");
 	fs.writeFileSync(path.join(LAID, source), PREAMBLE + handlers + moduleSource(count));
 	const config = {
-		extends: path.relative(LAID, path.join(REPO, "packages/fixture-billing/tsconfig.json")),
+		extends: path.relative(LAID, path.join(REPO, "packages/domain/fixture-billing/tsconfig.json")),
 		compilerOptions: { tsBuildInfoFile: null, noEmit: true, noUnusedLocals: false },
 		references: [],
 		include: [source, ...SHARED_DECLARATIONS.map((at) => path.relative(LAID, path.join(REPO, at)))],

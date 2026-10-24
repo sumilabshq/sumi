@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import path from "node:path";
-import { app } from "../packages/core/src/requests/index.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
 import { BalanceQuery, ChargeCommand } from "@widgetarium/fixture-billing";
 import { check } from "./check-helpers.ts";
 

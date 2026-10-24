@@ -1,4 +1,4 @@
-import { ElectronBrowserPagesGateway } from "../packages/browser/gateways/browser-pages/electron/electron.gateway.ts";
+import { ElectronBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/electron/electron.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
 interface FakeContents {

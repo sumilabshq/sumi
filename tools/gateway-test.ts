@@ -1,29 +1,29 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 import { fieldAt, fieldIn, itemsIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
 import { callAsUntypedSource } from "./untyped-source.ts";
-import type { ActionMeta } from "../packages/core/src/gateway/create.ts";
-import type { FieldType } from "../packages/core/src/gateway/fields.ts";
-import type { FileHost } from "../packages/core/src/gateway/obsidian.ts";
+import type { ActionMeta } from "../packages/shared/core/src/gateway/create.ts";
+import type { FieldType } from "../packages/shared/core/src/gateway/fields.ts";
+import type { FileHost } from "../packages/shared/core/src/gateway/obsidian.ts";
 
-type GatewayBundle = typeof import("../packages/core/src/gateway/create.ts") &
-	typeof import("../packages/core/src/gateway/refs.ts") &
-	typeof import("../packages/core/src/gateway/cache.ts") &
-	typeof import("../packages/core/src/gateway/props.ts") &
-	typeof import("../packages/core/src/gateway/kept-in-tile.ts") &
-	typeof import("../packages/core/src/gateway/narrow.ts") &
-	typeof import("../packages/core/src/gateway/match.ts") &
-	typeof import("../packages/core/src/gateway/fields.ts") &
-	typeof import("../packages/core/src/gateway/operators.ts") &
-	typeof import("../packages/core/src/gateway/obsidian.ts") &
-	typeof import("../packages/packs/core/src/picked.ts") &
-	typeof import("../packages/packs/obsidian/src/file-gateway.ts");
+type GatewayBundle = typeof import("../packages/shared/core/src/gateway/create.ts") &
+	typeof import("../packages/shared/core/src/gateway/refs.ts") &
+	typeof import("../packages/shared/core/src/gateway/cache.ts") &
+	typeof import("../packages/shared/core/src/gateway/props.ts") &
+	typeof import("../packages/shared/core/src/gateway/kept-in-tile.ts") &
+	typeof import("../packages/shared/core/src/gateway/narrow.ts") &
+	typeof import("../packages/shared/core/src/gateway/match.ts") &
+	typeof import("../packages/shared/core/src/gateway/fields.ts") &
+	typeof import("../packages/shared/core/src/gateway/operators.ts") &
+	typeof import("../packages/shared/core/src/gateway/obsidian.ts") &
+	typeof import("../packages/shared/packs/core/src/picked.ts") &
+	typeof import("../packages/shared/packs/obsidian/src/file-gateway.ts");
 
 const built = await esbuild.build({
 	stdin: {
-		contents: `export * from "./packages/core/src/gateway/create"; export * from "./packages/core/src/gateway/refs"; export * from "./packages/core/src/gateway/cache"; export * from "./packages/core/src/gateway/props.js"; export * from "./packages/core/src/gateway/kept-in-tile.js"; export * from "./packages/core/src/gateway/narrow"; export * from "./packages/core/src/gateway/match"; export * from "./packages/core/src/gateway/fields"; export * from "./packages/core/src/gateway/operators"; export * from "./packages/core/src/gateway/obsidian.js"; export * from "./packages/packs/core/src/picked.ts"; export * from "./packages/packs/obsidian/src/file-gateway.ts";`,
+		contents: `export * from "./packages/shared/core/src/gateway/create"; export * from "./packages/shared/core/src/gateway/refs"; export * from "./packages/shared/core/src/gateway/cache"; export * from "./packages/shared/core/src/gateway/props.js"; export * from "./packages/shared/core/src/gateway/kept-in-tile.js"; export * from "./packages/shared/core/src/gateway/narrow"; export * from "./packages/shared/core/src/gateway/match"; export * from "./packages/shared/core/src/gateway/fields"; export * from "./packages/shared/core/src/gateway/operators"; export * from "./packages/shared/core/src/gateway/obsidian.js"; export * from "./packages/shared/packs/core/src/picked.ts"; export * from "./packages/shared/packs/obsidian/src/file-gateway.ts";`,
 		resolveDir: process.cwd(),
 		loader: "js",
 	},
@@ -691,7 +691,7 @@ if (failed > 0) {
 	process.exit(1);
 }
 
-const { pageOf } = await import("../packages/core/src/gateway/match.ts");
+const { pageOf } = await import("../packages/shared/core/src/gateway/match.ts");
 const many = Array.from({ length: 250 }, (_, at) => at);
 checkEqual("a list with no limit stops at a hundred rows", pageOf(many).length, 100);
 checkEqual("an asked limit is honoured above it", pageOf(many, { limit: 200 }).length, 200);

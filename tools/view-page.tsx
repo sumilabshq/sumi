@@ -1,11 +1,11 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { WidgetSurface } from "../packages/core/src/surface.js";
-import { normalizeBoard } from "../packages/core/src/model.js";
-import type { Board } from "../packages/core/src/model.js";
-import { leavesOf, swapBoxes } from "../packages/core/src/tree.js";
-import { declaredName, WidgetRegistry } from "../packages/core/src/registry.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "../packages/shared/core/src/surface.js";
+import { normalizeBoard } from "../packages/shared/core/src/model.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import { leavesOf, swapBoxes } from "../packages/shared/core/src/tree.js";
+import { declaredName, WidgetRegistry } from "../packages/shared/core/src/registry.js";
 import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
 import {
 	elementAt,

@@ -1,14 +1,14 @@
 import "./packs-registered.ts";
 import { createElement as h, useEffect, useState } from "react";
 import type { ReactElement } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { Catalogue } from "../packages/core/src/catalogue.js";
-import type { CatalogueHost } from "../packages/core/src/catalogue-preview.js";
-import type { CatalogueMode } from "../packages/core/src/catalogue-install-press.js";
-import type { RankEntry } from "../packages/core/src/catalogue-view.js";
-import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { slotFit } from "../packages/core/src/fit.js";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { Catalogue } from "../packages/shared/core/src/catalogue.js";
+import type { CatalogueHost } from "../packages/shared/core/src/catalogue-preview.js";
+import type { CatalogueMode } from "../packages/shared/core/src/catalogue-install-press.js";
+import type { RankEntry } from "../packages/shared/core/src/catalogue-view.js";
+import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
+import { slotFit } from "../packages/shared/core/src/fit.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { PAGE_HOST, boom, filesAdapter, pageFiles, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
 interface AskedSlot {

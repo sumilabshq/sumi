@@ -1,7 +1,14 @@
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-const PACKAGE_FOLDERS: readonly string[] = ["packages", "packages/packs"];
+const PACKAGE_FOLDERS: readonly string[] = [
+	"apps",
+	"packages/domain",
+	"packages/state",
+	"packages/client",
+	"packages/shared",
+	"packages/shared/packs",
+];
 const SOURCE = /\.(ts|tsx|mts|js|jsx|mjs)$/;
 
 export function packagesWithCodeOutsideSrc(cwd: string): string[] {

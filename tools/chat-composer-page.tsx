@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../packages/assistant/generated/index.ts";
-import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
+import { AssistantPanel } from "../packages/domain/assistant/generated/index.ts";
+import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
 import {
 	ClaudeOptionsHeld,
 	HeldClaudeOptionsGateway,
@@ -12,18 +12,18 @@ import {
 	SystemClockGateway,
 	WorkingFolderGateway,
 	assistantPartsOf,
-} from "../packages/assistant/generated/gateways.ts";
-import type { WorkingFolders } from "../packages/assistant/generated/index.ts";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
+} from "../packages/domain/assistant/generated/gateways.ts";
+import type { WorkingFolders } from "../packages/domain/assistant/generated/index.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type {
 	AssistantPort,
 	AssistantProvider,
 	AssistantSession,
 	AssistantSetup,
-} from "../packages/core/src/engine/assistant-port.ts";
-import { AppProvider, app } from "../packages/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/mascot/generated/gateways.ts";
+} from "../packages/shared/core/src/engine/assistant-port.ts";
+import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
+import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 
 declare global {

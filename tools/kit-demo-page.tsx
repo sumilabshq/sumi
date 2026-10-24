@@ -1,8 +1,16 @@
 import "./packs-registered.ts";
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { Heading, Layout, LayoutActions, LayoutHeader, Tabs, TabsList, TabsTrigger } from "../packages/kit/src/index";
-import { SHOWCASE, openedFromHash } from "../packages/kit/src/showcase/index";
+import {
+	Heading,
+	Layout,
+	LayoutActions,
+	LayoutHeader,
+	Tabs,
+	TabsList,
+	TabsTrigger,
+} from "../packages/shared/kit/src/index";
+import { SHOWCASE, openedFromHash } from "../packages/shared/kit/src/showcase/index";
 import { ShowcaseSections } from "./kit-demo-sections.tsx";
 
 const THEMES = [

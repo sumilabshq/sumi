@@ -1,15 +1,15 @@
 import { JSDOM } from "jsdom";
-import { declarationIn, manifestOfModule, z } from "../packages/core/src/gateway/declared.ts";
-import { ICommand, IQuery } from "../packages/core/src/gateway/queries.ts";
-import type { Command } from "../packages/core/src/gateway/declared.ts";
-import type { CommandAnswer } from "../packages/core/src/gateway/run-handler.ts";
-import type { Query, RowsResult } from "../packages/core/src/gateway/contract.ts";
-import type { HandlerContext } from "../packages/core/src/gateway/handler-context.ts";
-import { defineCommandMetadata } from "../packages/core/src/gateway/implementation-metadata.ts";
-import { definePack, registerPacks } from "../packages/core/src/engine/packs.ts";
-import { canOf, rowOf } from "../packages/core/src/gateway/create.ts";
-import { commandBindingOf } from "../packages/core/src/surface/command-binding.ts";
-import { normalizeBoard } from "../packages/core/src/model.ts";
+import { declarationIn, manifestOfModule, z } from "../packages/shared/core/src/gateway/declared.ts";
+import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import type { Command } from "../packages/shared/core/src/gateway/declared.ts";
+import type { CommandAnswer } from "../packages/shared/core/src/gateway/run-handler.ts";
+import type { Query, RowsResult } from "../packages/shared/core/src/gateway/contract.ts";
+import type { HandlerContext } from "../packages/shared/core/src/gateway/handler-context.ts";
+import { defineCommandMetadata } from "../packages/shared/core/src/gateway/implementation-metadata.ts";
+import { definePack, registerPacks } from "../packages/shared/core/src/engine/packs.ts";
+import { canOf, rowOf } from "../packages/shared/core/src/gateway/create.ts";
+import { commandBindingOf } from "../packages/shared/core/src/surface/command-binding.ts";
+import { normalizeBoard } from "../packages/shared/core/src/model.ts";
 import { byId } from "./dom-find.ts";
 import { present } from "./page-dom.ts";
 
@@ -26,11 +26,11 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { useData } = await import("../packages/core/src/gateway/use-data.ts");
-const { createWidget } = await import("../packages/core/src/widget-api.js");
-const { useHostCommands } = await import("../packages/core/src/surface/host-commands.ts");
-const { createGatewayRefs } = await import("../packages/core/src/gateway/refs.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { useData } = await import("../packages/shared/core/src/gateway/use-data.ts");
+const { createWidget } = await import("../packages/shared/core/src/widget-api.js");
+const { useHostCommands } = await import("../packages/shared/core/src/surface/host-commands.ts");
+const { createGatewayRefs } = await import("../packages/shared/core/src/gateway/refs.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

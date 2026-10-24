@@ -1,15 +1,15 @@
-import { app } from "../packages/core/src/requests/index.ts";
-import type { Answer, StartedApp } from "../packages/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
 import {
 	CapturePageCommand,
 	InkOpenAddressCommand,
 	ReadPageContentCommand,
-} from "../packages/browser/features/ink/contract.ts";
-import { LocalStorageBrowserGrantsGateway } from "../packages/browser/gateways/browser-grants/local-storage.gateway.ts";
-import { StopInkCommandHandler } from "../packages/browser/features/asks/handlers.ts";
-import { SetSiteLevelCommandHandler } from "../packages/browser/features/sites/handlers.ts";
-import { hasReadContentThisTurn } from "../packages/browser/features/ink/lib/ink-turn.ts";
+} from "../packages/domain/browser/features/ink/contract.ts";
+import { LocalStorageBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/local-storage.gateway.ts";
+import { StopInkCommandHandler } from "../packages/domain/browser/features/asks/handlers.ts";
+import { SetSiteLevelCommandHandler } from "../packages/domain/browser/features/sites/handlers.ts";
+import { hasReadContentThisTurn } from "../packages/domain/browser/features/ink/lib/ink-turn.ts";
 import { check, thrownBy, waitFor } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";

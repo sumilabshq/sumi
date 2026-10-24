@@ -1,6 +1,6 @@
 import { fakeVault } from "./fake-vault.ts";
-import { generationOf, widgetKeyOf, widgetRef } from "../packages/core/src/engine/widget-ref.js";
-import { compatibility, moveTileProps, propChanges } from "../packages/core/src/engine/compatibility.js";
+import { generationOf, widgetKeyOf, widgetRef } from "../packages/shared/core/src/engine/widget-ref.js";
+import { compatibility, moveTileProps, propChanges } from "../packages/shared/core/src/engine/compatibility.js";
 import {
 	ICrudGateway,
 	IListGateway,
@@ -8,17 +8,17 @@ import {
 	declareProps,
 	manifestOfModule,
 	z,
-} from "../packages/core/src/gateway/declared.ts";
-import { cardOf, RECORD_FILE } from "../packages/core/src/engine/catalogue-index.js";
-import { createInstaller } from "../packages/core/src/installer.js";
-import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { readRegistry } from "../packages/core/src/engine/registry-file.js";
-import { INSTALL_PENDING } from "../packages/core/src/engine/widget-lock.js";
+} from "../packages/shared/core/src/gateway/declared.ts";
+import { cardOf, RECORD_FILE } from "../packages/shared/core/src/engine/catalogue-index.js";
+import { createInstaller } from "../packages/shared/core/src/installer.js";
+import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
+import { readRegistry } from "../packages/shared/core/src/engine/registry-file.js";
+import { INSTALL_PENDING } from "../packages/shared/core/src/engine/widget-lock.js";
 import { fieldAt, fieldIn } from "./held-fields.ts";
-import type { WidgetOffer } from "../packages/core/src/engine/source-offers.js";
-import type { ModuleManifest } from "../packages/core/src/gateway/manifest.ts";
-import type { DeclaredProps, PropMetadata, WidgetProp } from "../packages/core/src/gateway/declared-types.ts";
-import type { TileProp } from "../packages/core/src/model.js";
+import type { WidgetOffer } from "../packages/shared/core/src/engine/source-offers.js";
+import type { ModuleManifest } from "../packages/shared/core/src/gateway/manifest.ts";
+import type { DeclaredProps, PropMetadata, WidgetProp } from "../packages/shared/core/src/gateway/declared-types.ts";
+import type { TileProp } from "../packages/shared/core/src/model.js";
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {

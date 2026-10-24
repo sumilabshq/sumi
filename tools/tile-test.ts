@@ -5,12 +5,12 @@ import type { App } from "obsidian";
 import type { ReactElement } from "react";
 import { standIn } from "./stand-in.ts";
 import { byId } from "./dom-find.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
-import type { Board } from "../packages/core/src/model.js";
-import type { GivenProps } from "../packages/core/src/declared-widget.js";
-import type { ValueGateway } from "../packages/core/src/gateway/contract.js";
-import type { EveryValueVerb } from "../packages/core/src/gateway/needs.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import type { GivenProps } from "../packages/shared/core/src/declared-widget.js";
+import type { ValueGateway } from "../packages/shared/core/src/gateway/contract.js";
+import type { EveryValueVerb } from "../packages/shared/core/src/gateway/needs.js";
 
 const VAULT = "tools/fixture-records";
 const COUNTER = "@probe/counter";
@@ -43,14 +43,14 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h, useEffect, useState } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { movesFrom, positionsWithin } = await import("../packages/core/src/flip.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { movesFrom, positionsWithin } = await import("../packages/shared/core/src/flip.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
 const { TFile } = await import("obsidian");
-const { useData } = await import("../packages/core/src/gateway/use-data.ts");
+const { useData } = await import("../packages/shared/core/src/gateway/use-data.ts");
 
 const isValueGateway = (value: unknown): value is ValueGateway<unknown, EveryValueVerb> =>
 	isObject(value) && value["kind"] === "value" && typeof value["get"] === "function";

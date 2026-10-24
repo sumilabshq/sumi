@@ -3,12 +3,12 @@ import os from "node:os";
 import path from "node:path";
 
 const { reachFindingsIn, reachFindingsOfFolder, reachRefusal } =
-	await import("../packages/core/src/engine/widget-reach/reach-scan.js");
+	await import("../packages/shared/core/src/engine/widget-reach/reach-scan.js");
 const { compileCheckedWidget, compileWidgetFolder, modulesIn, LIB_FILES } =
-	await import("../packages/core/src/engine/widget-build.js");
-const { buildRecord, buildMatchesSources } = await import("../packages/core/src/engine/widget-lock.js");
-const { installWidget } = await import("../packages/host-obsidian/src/legacy/ai/install-command.js");
-const { cardFrom } = await import("../packages/host-obsidian/src/legacy/ai/widget-entry.js");
+	await import("../packages/shared/core/src/engine/widget-build.js");
+const { buildRecord, buildMatchesSources } = await import("../packages/shared/core/src/engine/widget-lock.js");
+const { installWidget } = await import("../apps/host-obsidian/src/legacy/ai/install-command.js");
+const { cardFrom } = await import("../apps/host-obsidian/src/legacy/ai/widget-entry.js");
 
 let failed = 0;
 let checks = 0;

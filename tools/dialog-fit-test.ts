@@ -3,8 +3,8 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { z } from "../packages/core/src/gateway/declared.ts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
 
 const BoxSchema = z.object({
@@ -94,14 +94,14 @@ const bundle = await esbuild.build({
 	inject: ["tools/fill-inject.ts"],
 	alias: {
 		widgetarium: "./tools/fill-shim.ts",
-		"widgetarium/kit": "./packages/kit/src/index.ts",
+		"widgetarium/kit": "./packages/shared/kit/src/index.ts",
 		"@default/lib": "./registry/@default/lib.ts",
 	},
 	logLevel: "warning",
 });
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body {
 	margin: 0;

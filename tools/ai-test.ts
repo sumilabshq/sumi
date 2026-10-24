@@ -5,51 +5,52 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { EventEmitter } from "node:events";
 import type { App } from "obsidian";
-import { widgetsCliBundle } from "../packages/host-obsidian/build.mts";
+import { widgetsCliBundle } from "../apps/host-obsidian/build.mts";
 import { standIn } from "./stand-in.ts";
-import type { ArgsGiven } from "../packages/host-obsidian/src/legacy/ai/command.ts";
-import type { Provider } from "../packages/host-obsidian/src/legacy/ai/providers.ts";
-import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/core/src/engine/provider-stream.ts";
-import type { AssistantCall } from "../packages/core/src/engine/assistant-port.ts";
-import type { RunAnswer } from "../packages/host-obsidian/src/legacy/ai/run.ts";
-import type { Build, StepStatus } from "../packages/core/src/engine/assistant-cards.ts";
-import type { SaidProps } from "../packages/assistant/features/chat/ui/turn/said.tsx";
-import type { Spawn, SpawnAsk } from "../packages/host-obsidian/src/legacy/ai/run.ts";
-import type { AssistantPlugin } from "../packages/host-obsidian/src/legacy/ai/assistant.ts";
-import type { AgentFilesAdapter } from "../packages/host-obsidian/src/legacy/ai/agent-files.ts";
+import type { ArgsGiven } from "../apps/host-obsidian/src/legacy/ai/command.ts";
+import type { Provider } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
+import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/shared/core/src/engine/provider-stream.ts";
+import type { AssistantCall } from "../packages/shared/core/src/engine/assistant-port.ts";
+import type { RunAnswer } from "../apps/host-obsidian/src/legacy/ai/run.ts";
+import type { Build, StepStatus } from "../packages/shared/core/src/engine/assistant-cards.ts";
+import type { SaidProps } from "../packages/domain/assistant/features/chat/ui/turn/said.tsx";
+import type { Spawn, SpawnAsk } from "../apps/host-obsidian/src/legacy/ai/run.ts";
+import type { AssistantPlugin } from "../apps/host-obsidian/src/legacy/ai/assistant.ts";
+import type { AgentFilesAdapter } from "../apps/host-obsidian/src/legacy/ai/agent-files.ts";
 
 process.env["WIDGETARIUM_CATALOGUE"] = "on";
 
 const WIDGETS_CLI = await widgetsCliBundle();
 
-const { expandArgs, commandLineOf } = await import("../packages/host-obsidian/src/legacy/ai/command.js");
-const { readerNamed, plainText, createLineSplitter } = await import("../packages/core/src/engine/provider-stream.js");
+const { expandArgs, commandLineOf } = await import("../apps/host-obsidian/src/legacy/ai/command.js");
+const { readerNamed, plainText, createLineSplitter } =
+	await import("../packages/shared/core/src/engine/provider-stream.js");
 const { aiStateOf, createAiSettings, changedFrom, providerFrom } =
-	await import("../packages/host-obsidian/src/legacy/ai/settings.js");
-const { PRESETS, presetById, DEFAULT_PROVIDER } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");
-const { searchPath, whereCommandIs, environmentFor } = await import("../packages/host-obsidian/src/legacy/ai/path.js");
-const { briefFor, templatePlaceholders } = await import("../packages/host-obsidian/src/legacy/ai/brief.js");
-const { createRunner } = await import("../packages/host-obsidian/src/legacy/ai/run.js");
-const { createSession, STILL_ANSWERING } = await import("../packages/host-obsidian/src/legacy/ai/session.js");
-const { turnsToKeep } = await import("../packages/host-obsidian/src/legacy/ai/transcript.js");
-const { HANDBOOK_DIR } = await import("../packages/core/src/paths.js");
+	await import("../apps/host-obsidian/src/legacy/ai/settings.js");
+const { PRESETS, presetById, DEFAULT_PROVIDER } = await import("../apps/host-obsidian/src/legacy/ai/providers.js");
+const { searchPath, whereCommandIs, environmentFor } = await import("../apps/host-obsidian/src/legacy/ai/path.js");
+const { briefFor, templatePlaceholders } = await import("../apps/host-obsidian/src/legacy/ai/brief.js");
+const { createRunner } = await import("../apps/host-obsidian/src/legacy/ai/run.js");
+const { createSession, STILL_ANSWERING } = await import("../apps/host-obsidian/src/legacy/ai/session.js");
+const { turnsToKeep } = await import("../apps/host-obsidian/src/legacy/ai/transcript.js");
+const { HANDBOOK_DIR } = await import("../packages/shared/core/src/paths.js");
 const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } =
-	await import("../packages/host-obsidian/src/legacy/ai/agent-files.js");
+	await import("../apps/host-obsidian/src/legacy/ai/agent-files.js");
 const { argumentsIn, changedPathOf, glyphForTool, glyphOf, isFileChange, ourCallIn, withResult } =
-	await import("../packages/host-obsidian/src/legacy/ai/tools.js");
-const { failuresIn } = await import("../packages/assistant/features/chat/lib/failures-in.ts");
-const { canRenderMarkdown } = await import("../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js");
-const { callFaceOf } = await import("../packages/host-obsidian/src/legacy/ai/call-face.js");
-const { doingTextOf } = await import("../packages/core/src/engine/assistant-port.js");
-const { settledPart } = await import("../packages/assistant/features/chat/lib/settled-part.ts");
-const { Said } = await import("../packages/assistant/features/chat/ui/turn/said.tsx");
+	await import("../apps/host-obsidian/src/legacy/ai/tools.js");
+const { failuresIn } = await import("../packages/domain/assistant/features/chat/lib/failures-in.ts");
+const { canRenderMarkdown } = await import("../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.js");
+const { callFaceOf } = await import("../apps/host-obsidian/src/legacy/ai/call-face.js");
+const { doingTextOf } = await import("../packages/shared/core/src/engine/assistant-port.js");
+const { settledPart } = await import("../packages/domain/assistant/features/chat/lib/settled-part.ts");
+const { Said } = await import("../packages/domain/assistant/features/chat/ui/turn/said.tsx");
 const { saidElapsed, saidTokens, saidPhase, saidProgress } =
-	await import("../packages/assistant/features/chat/lib/spent.ts");
+	await import("../packages/domain/assistant/features/chat/lib/spent.ts");
 const { createElement } = await import("react");
 const { renderToStaticMarkup } = await import("react-dom/server");
-const { briefGoesInTheMessage } = await import("../packages/host-obsidian/src/legacy/ai/providers.js");
-const { sendState } = await import("../packages/assistant/features/composer/lib/send-state.ts");
-const { buildsIn, startIn } = await import("../packages/host-obsidian/src/legacy/ai/builds.js");
+const { briefGoesInTheMessage } = await import("../apps/host-obsidian/src/legacy/ai/providers.js");
+const { sendState } = await import("../packages/domain/assistant/features/composer/lib/send-state.ts");
+const { buildsIn, startIn } = await import("../apps/host-obsidian/src/legacy/ai/builds.js");
 
 let failed = 0;
 let checks = 0;
@@ -1578,7 +1579,7 @@ const afterClearing = createSession({
 await afterClearing.restore();
 check("clearing the context forgets it for the next load too", afterClearing.now().turns.length, 0);
 
-const { createAssistant } = await import("../packages/host-obsidian/src/legacy/ai/assistant.js");
+const { createAssistant } = await import("../apps/host-obsidian/src/legacy/ai/assistant.js");
 let vaultData: unknown = { ai: { transcript: { turns: [{ role: "user", text: "kept", calls: [] }], session: "s-1" } } };
 const assistantApp = standIn<App>(
 	{

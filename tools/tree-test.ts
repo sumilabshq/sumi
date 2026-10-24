@@ -5,11 +5,11 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { parse } from "yaml";
 import { findBrowser, widgetFiles } from "./harness.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { standIn } from "./stand-in.ts";
-import type { BoardNode, BoxNode, PreferredSize } from "../packages/core/src/tree-nodes.js";
-import type { Spot } from "../packages/core/src/tree-drop.js";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import type { BoardNode, BoxNode, PreferredSize } from "../packages/shared/core/src/tree-nodes.js";
+import type { Spot } from "../packages/shared/core/src/tree-drop.js";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 
 const {
 	targetAt,
@@ -32,7 +32,7 @@ const {
 	SIDEBAR_PX,
 	widenBox,
 	withoutLeaf,
-} = await import("../packages/core/src/tree.js");
+} = await import("../packages/shared/core/src/tree.js");
 
 const ONE_CELL = [{ id: "x", ratio: 1 }];
 const rootOf = (of: readonly BoardNode[]): BoxNode => ({ dir: "row", of });
@@ -46,8 +46,8 @@ const side = (of: readonly BoardNode[] | Partial<BoxNode> = ONE_CELL, flags: Par
 const kept = (of: readonly BoardNode[] = ONE_CELL): BoxNode => ({ dir: "column", keep: true, of });
 const THREE = rootOf([side(), kept(), side()]);
 const sideName = (at: number): string => (at === 1 ? "main" : at === 0 ? "left" : "right");
-const { GIVE_PX } = await import("../packages/core/src/give.js");
-const { millisecondsAcross } = await import("../packages/core/src/flip.js");
+const { GIVE_PX } = await import("../packages/shared/core/src/give.js");
+const { millisecondsAcross } = await import("../packages/shared/core/src/flip.js");
 
 const FIXTURE = "tools/fixture/Orbitask/Board.md";
 const FENCE = String.fromCharCode(96, 96, 96);
@@ -125,7 +125,7 @@ const HOST_BUTTON_PAINT_COPIED_VERBATIM = `button:not(.clickable-icon) {
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
 <style>${HOST_BUTTON_PAINT_COPIED_VERBATIM}</style>
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --background-modifier-hover: #ededed; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;

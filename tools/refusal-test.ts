@@ -29,9 +29,9 @@ function saidBy(file: string): string {
 	writeFileSync(
 		CONFIG_AT,
 		JSON.stringify({
-			extends: "../../../packages/sdk/tsconfig.widgets.json",
-			compilerOptions: { paths: { widgetarium: ["../../../packages/sdk/types/widgetarium.d.ts"] } },
-			include: ["../../../packages/sdk/types/**/*.d.ts", `./${file}`],
+			extends: "../../../packages/shared/sdk/tsconfig.widgets.json",
+			compilerOptions: { paths: { widgetarium: ["../../../packages/shared/sdk/types/widgetarium.d.ts"] } },
+			include: ["../../../packages/shared/sdk/types/**/*.d.ts", `./${file}`],
 		}),
 	);
 	const run = spawnSync("npx", ["--no-install", "tsc", "-p", CONFIG_AT], { encoding: "utf8" });

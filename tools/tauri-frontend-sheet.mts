@@ -8,9 +8,9 @@ import { REPO } from "./pack-engine.mts";
 const PREVIEW_APP = path.join(REPO, ".preview/default-app");
 const LEFT_OUT_OF_DEMO: ReadonlySet<string> = new Set(["node_modules", ".omc"]);
 const LEFT_OUT_OF_LINKS: ReadonlySet<string> = new Set([".bin", ".package-lock.json"]);
-const TAURI_CONFIG = path.join(REPO, "packages/host-tauri/vite.tauri.config.ts");
+const TAURI_CONFIG = path.join(REPO, "apps/host-tauri/vite.tauri.config.ts");
 const DEMO_VITE = "node_modules/vite/bin/vite.js";
-const SHIPPED_ASSETS = path.join(REPO, "packages/host-tauri/dist/assets");
+const SHIPPED_ASSETS = path.join(REPO, "apps/host-tauri/dist/assets");
 const SHEET = /\.css$/;
 
 export const TAURI_DEMO = path.join(tmpdir(), "wg-tauri-demo");
@@ -82,7 +82,7 @@ function layTauriDemo(demo: string): void {
 	linkModules(path.join(PREVIEW_APP, "node_modules"), modules);
 	const kit = path.join(demo, "src/shared/kit");
 	fs.rmSync(kit, { recursive: true, force: true });
-	fs.symlinkSync(path.join(REPO, "packages/kit/src"), kit);
+	fs.symlinkSync(path.join(REPO, "packages/shared/kit/src"), kit);
 	withoutKitAliases(path.join(demo, "widgetarium.json"));
 }
 

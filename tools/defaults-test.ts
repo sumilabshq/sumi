@@ -1,13 +1,13 @@
-import { ICrudGateway, IValueGateway, z } from "../packages/core/src/gateway/declared.ts";
+import { ICrudGateway, IValueGateway, z } from "../packages/shared/core/src/gateway/declared.ts";
 import {
 	RowsInMemoryGateway,
 	ValueInMemoryGateway,
 	defaultImplementationFor,
 	defineDefaultImplementation,
-} from "../packages/core/src/gateway/defaults.ts";
-import { gatewayOverImplementation } from "../packages/core/src/gateway/adapted.js";
-import { shutHostFor } from "../packages/core/src/gateway/handler-context.ts";
-import { declarationIn } from "../packages/core/src/gateway/declaration.ts";
+} from "../packages/shared/core/src/gateway/defaults.ts";
+import { gatewayOverImplementation } from "../packages/shared/core/src/gateway/adapted.js";
+import { shutHostFor } from "../packages/shared/core/src/gateway/handler-context.ts";
+import { declarationIn } from "../packages/shared/core/src/gateway/declaration.ts";
 import { present } from "./page-dom.ts";
 import { collectionOf, valueGatewayOf } from "./gateway-kinds.ts";
 import { fieldIn } from "./held-fields.ts";

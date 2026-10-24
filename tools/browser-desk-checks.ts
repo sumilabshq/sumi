@@ -11,12 +11,12 @@ import {
 } from "node:fs";
 import * as nodeFs from "node:fs";
 import { tmpdir } from "node:os";
-import { answerPendingAsks, openDeskAt } from "../packages/host-obsidian/src/browser/browser-desk-responder.ts";
-import type { Desk } from "../packages/host-obsidian/src/browser/browser-desk-responder.ts";
-import { sentToObsidian, toldOf } from "../packages/host-obsidian/src/browser/browser-cli-command.ts";
-import { deskFoldersOf } from "../packages/host-obsidian/src/browser/browser-desk.ts";
-import type { DeskAnswer } from "../packages/host-obsidian/src/browser/browser-desk.ts";
-import { PrivateFiles } from "../packages/host-obsidian/src/browser/private-files.ts";
+import { answerPendingAsks, openDeskAt } from "../apps/host-obsidian/src/browser/browser-desk-responder.ts";
+import type { Desk } from "../apps/host-obsidian/src/browser/browser-desk-responder.ts";
+import { sentToObsidian, toldOf } from "../apps/host-obsidian/src/browser/browser-cli-command.ts";
+import { deskFoldersOf } from "../apps/host-obsidian/src/browser/browser-desk.ts";
+import type { DeskAnswer } from "../apps/host-obsidian/src/browser/browser-desk.ts";
+import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 

@@ -10,8 +10,8 @@ interface SurfacePair {
 }
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const CORE = path.join(REPO, "packages/core");
-const SDK_SURFACE = path.join(REPO, "packages/sdk/types/widgetarium.d.ts");
+const CORE = path.join(REPO, "packages/shared/core");
+const SDK_SURFACE = path.join(REPO, "packages/shared/sdk/types/widgetarium.d.ts");
 const WIDGET_API_ENTRY = ".";
 const PROBE = "probe.ts";
 const PROBE_OPTIONS = {
@@ -45,7 +45,7 @@ function exportSourcesOf(folder: string): Map<string, string> {
 
 function surfacePairs(): SurfacePair[] {
 	const shipped = exportSourcesOf(CORE).get(WIDGET_API_ENTRY);
-	if (shipped === undefined) throw new Error("packages/core exports no widget API entry");
+	if (shipped === undefined) throw new Error("packages/shared/core exports no widget API entry");
 	return [{ shipped, typedAgainst: SDK_SURFACE }];
 }
 

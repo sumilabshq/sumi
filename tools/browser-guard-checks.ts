@@ -1,19 +1,19 @@
-import { app } from "../packages/core/src/requests/index.ts";
-import type { Answer, StartedApp } from "../packages/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
 import {
 	CapturePageCommand,
 	INK_REQUESTS,
 	InkOpenAddressCommand,
 	ReadPageContentCommand,
-} from "../packages/browser/features/ink/contract.ts";
-import { BrowserNavigationGuard, BrowserReadGuard } from "../packages/browser/features/ink/handlers.ts";
-import { AnswerAskCommand } from "../packages/browser/features/asks/contract.ts";
-import { SetSiteLevelCommand } from "../packages/browser/features/sites/contract.ts";
-import { BrowserGrantsGateway } from "../packages/browser/gateways/browser-grants/browser-grants.gateway.ts";
-import { decideBrowserAccess } from "../packages/browser/shared/lib/decide-browser-access.ts";
-import { effectiveGrants } from "../packages/browser/shared/lib/once-grants.ts";
-import { SENSITIVE_SITES } from "../packages/browser/shared/lib/sensitive-sites.ts";
+} from "../packages/domain/browser/features/ink/contract.ts";
+import { BrowserNavigationGuard, BrowserReadGuard } from "../packages/domain/browser/features/ink/handlers.ts";
+import { AnswerAskCommand } from "../packages/domain/browser/features/asks/contract.ts";
+import { SetSiteLevelCommand } from "../packages/domain/browser/features/sites/contract.ts";
+import { BrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/browser-grants.gateway.ts";
+import { decideBrowserAccess } from "../packages/domain/browser/shared/lib/decide-browser-access.ts";
+import { effectiveGrants } from "../packages/domain/browser/shared/lib/once-grants.ts";
+import { SENSITIVE_SITES } from "../packages/domain/browser/shared/lib/sensitive-sites.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";

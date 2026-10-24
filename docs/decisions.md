@@ -184,7 +184,7 @@ The decisions, each with what it replaced:
 
 `packages/widgetarium` held five jobs — the widget API facade, app mode, the studio, the CLI and the
 Vite plugin — and was split so each has one owner: app mode and the routers moved into core
-(`@widgetarium/core/app`), the CLI into `packages/cli`, the plugin into `packages/vite`, the studio into
+(`@widgetarium/core/app`), the CLI into `packages/shared/cli`, the plugin into `packages/shared/vite`, the studio into
 `packages/studio` as `@widgetarium/studio`, and the facade was deleted. Files moved as they were; only
 imports and package wiring changed.
 

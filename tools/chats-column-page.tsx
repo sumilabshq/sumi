@@ -1,10 +1,10 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/core/src/requests/index.js";
-import { ChatsColumn } from "../packages/workspaces/shared/ui/chats-column/chats-column.js";
-import { ChatCrumb } from "../packages/workspaces/shared/ui/chat-crumb/chat-crumb.js";
-import { WorkspacesClientModule } from "../packages/workspaces/generated/module.js";
-import { TooltipHost } from "../packages/kit/src/index.js";
+import { AppProvider, app } from "../packages/shared/core/src/requests/index.js";
+import { ChatsColumn } from "../packages/domain/workspaces/shared/ui/chats-column/chats-column.js";
+import { ChatCrumb } from "../packages/domain/workspaces/shared/ui/chat-crumb/chat-crumb.js";
+import { WorkspacesClientModule } from "../packages/domain/workspaces/generated/module.js";
+import { TooltipHost } from "../packages/shared/kit/src/index.js";
 import { reportsFailures } from "./page-harness.ts";
 import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import type { WorkspacesCount } from "./board-workspaces-fixture.ts";

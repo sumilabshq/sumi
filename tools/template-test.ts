@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { Template } from "../packages/core/src/templates.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { Template } from "../packages/shared/core/src/templates.js";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });
 const JSDOM_POINTER_EVENT: unknown = Reflect.get(dom.window, "PointerEvent");
@@ -30,9 +30,10 @@ Object.assign(globalThis, {
 Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
-const { TEMPLATES, templateWidgets, templateBoard, templateSketch } = await import("../packages/core/src/templates.js");
-const { VIEW_GROUP } = await import("../packages/core/src/model.js");
-const { swapBoxes } = await import("../packages/core/src/tree.js");
+const { TEMPLATES, templateWidgets, templateBoard, templateSketch } =
+	await import("../packages/shared/core/src/templates.js");
+const { VIEW_GROUP } = await import("../packages/shared/core/src/model.js");
+const { swapBoxes } = await import("../packages/shared/core/src/tree.js");
 
 let failed = 0;
 const pathIn = (value: unknown, ...keys: readonly string[]): unknown =>

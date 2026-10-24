@@ -1,4 +1,4 @@
-import { refuseSecretContent } from "../packages/browser/shared/lib/secret-content.ts";
+import { refuseSecretContent } from "../packages/domain/browser/shared/lib/secret-content.ts";
 import { check } from "./check-helpers.ts";
 
 const REFUSED = "secret-in-content";

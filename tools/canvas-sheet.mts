@@ -5,11 +5,11 @@ import { compile } from "tailwindcss";
 export const TAILWIND_BANNER = "/*! tailwindcss";
 
 const SOURCES = [
-	"packages/canvas",
-	"packages/mascot",
-	"packages/app-host",
-	"packages/browser",
-	"packages/assistant",
+	"packages/domain/canvas",
+	"packages/client/mascot",
+	"packages/domain/app-host",
+	"packages/domain/browser",
+	"packages/domain/assistant",
 	"apps/studio/src/canvas",
 	"apps/studio/src/browser",
 ];
@@ -18,11 +18,11 @@ const CANDIDATE = /[^\s"'`]+/g;
 const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"tailwindcss/theme.css": "node_modules/tailwindcss/theme.css",
 	"tailwindcss/utilities.css": "node_modules/tailwindcss/utilities.css",
-	"@widgetarium/kit/theme.css": "packages/kit/theme.css",
-	"@widgetarium/canvas/canvas.css": "packages/canvas/canvas.css",
-	"@widgetarium/mascot/mascot.css": "packages/mascot/mascot.css",
-	"@widgetarium/workspaces/workspaces.css": "packages/workspaces/workspaces.css",
-	"@widgetarium/shell/shell.css": "packages/shell/shell.css",
+	"@widgetarium/kit/theme.css": "packages/shared/kit/theme.css",
+	"@widgetarium/canvas/canvas.css": "packages/domain/canvas/canvas.css",
+	"@widgetarium/mascot/mascot.css": "packages/client/mascot/mascot.css",
+	"@widgetarium/workspaces/workspaces.css": "packages/domain/workspaces/workspaces.css",
+	"@widgetarium/shell/shell.css": "packages/client/shell/shell.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;

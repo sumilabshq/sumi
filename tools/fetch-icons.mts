@@ -8,10 +8,10 @@ type IconElement = readonly [tag: string, attributes: Readonly<Record<string, un
 const PACKAGE = "lucide-static@1.47.0";
 const VIEW_BOX = "0 0 24 24";
 
-const TABLE_FILE = path.join(process.cwd(), "packages", "kit", "src", "icons", "icon-table.ts");
-const NOTICE_DIR = path.join(process.cwd(), "packages", "kit", "assets", "icons");
+const TABLE_FILE = path.join(process.cwd(), "packages", "shared", "kit", "src", "icons", "icon-table.ts");
+const NOTICE_DIR = path.join(process.cwd(), "packages", "shared", "kit", "assets", "icons");
 
-const NOTICE = `The icon drawings in packages/kit/src/icons/icon-table.ts are Lucide
+const NOTICE = `The icon drawings in packages/shared/kit/src/icons/icon-table.ts are Lucide
 (https://github.com/lucide-icons/lucide), licensed under the ISC License, a copy
 of which sits beside this file.
 
@@ -50,7 +50,7 @@ mkdirSync(NOTICE_DIR, { recursive: true });
 writeFileSync(path.join(NOTICE_DIR, "NOTICE"), NOTICE);
 writeFileSync(path.join(NOTICE_DIR, "LICENSE"), read("LICENSE"));
 
-console.log(`${Object.keys(table).length} icons -> packages/kit/src/icons/icon-table.ts`);
+console.log(`${Object.keys(table).length} icons -> packages/shared/kit/src/icons/icon-table.ts`);
 
 function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -14,13 +14,13 @@ Object.assign(globalThis, {
 	getComputedStyle: dom.window.getComputedStyle,
 });
 
-const { createInstaller, LOCK_PATH } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
-const { facadeUrl } = await import("../packages/core/src/engine/modules.js");
-const { builtSheetPath } = await import("../packages/core/src/engine/widget-build.js");
-const { gapVarsOf } = await import("../packages/core/src/tree.js");
-const KIT_THEME_FILE = readFileSync("packages/kit/theme.css", "utf8");
+const { createInstaller, LOCK_PATH } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
+const { facadeUrl } = await import("../packages/shared/core/src/engine/modules.js");
+const { builtSheetPath } = await import("../packages/shared/core/src/engine/widget-build.js");
+const { gapVarsOf } = await import("../packages/shared/core/src/tree.js");
+const KIT_THEME_FILE = readFileSync("packages/shared/kit/theme.css", "utf8");
 
 let failed = 0;
 let checks = 0;
@@ -243,7 +243,7 @@ check(
 	true,
 );
 {
-	const { THEME_SCALES } = await import("../packages/kit/src/constants/theme-scales.ts");
+	const { THEME_SCALES } = await import("../packages/shared/kit/src/constants/theme-scales.ts");
 	const declared: Record<string, string[]> = {};
 	for (const [, scale, name] of KIT_THEME_FILE.matchAll(
 		/--(color|text|radius|spacing|shadow|ease|font-weight|font)-([a-z0-9-]+):/g,

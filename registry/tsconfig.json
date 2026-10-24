@@ -1,14 +1,14 @@
 {
-	"extends": "../packages/sdk/tsconfig.widgets.json",
+	"extends": "../packages/shared/sdk/tsconfig.widgets.json",
 	"compilerOptions": {
 		"paths": {
-			"widgetarium": ["../packages/sdk/types/widgetarium.d.ts"],
-			"widgetarium/kit": ["../packages/kit/src/index.ts"],
-			"widgetarium/kit/emojis": ["../packages/kit/src/emojis/emoji.tsx"],
-			"widgetarium/kit/charts": ["../packages/kit/src/charts/index.ts"],
+			"widgetarium": ["../packages/shared/sdk/types/widgetarium.d.ts"],
+			"widgetarium/kit": ["../packages/shared/kit/src/index.ts"],
+			"widgetarium/kit/emojis": ["../packages/shared/kit/src/emojis/emoji.tsx"],
+			"widgetarium/kit/charts": ["../packages/shared/kit/src/charts/index.ts"],
 			"@*/lib": ["./@*/lib"]
 		}
 	},
-	"references": [{ "path": "../packages/kit" }, { "path": "../packages/core" }],
-	"include": ["../packages/sdk/types/**/*.d.ts", "./**/*.ts", "./**/*.tsx"]
+	"references": [{ "path": "../packages/shared/kit" }, { "path": "../packages/shared/core" }],
+	"include": ["../packages/shared/sdk/types/**/*.d.ts", "./**/*.ts", "./**/*.tsx"]
 }

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { SHOWCASE } from "../packages/kit/src/showcase/index";
-import type { ShowcaseId } from "../packages/kit/src/showcase/index";
+import { SHOWCASE } from "../packages/shared/kit/src/showcase/index";
+import type { ShowcaseId } from "../packages/shared/kit/src/showcase/index";
 import { ShowcaseSections } from "./kit-demo-sections.tsx";
 
 const OPEN_DELAY_MS = 600;

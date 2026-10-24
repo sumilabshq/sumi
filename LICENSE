@@ -3,10 +3,10 @@ full text of its own.
 
 MIT — use it for anything, including a commercial product:
 
-  packages/kit/   the component kit every widget and screen is drawn with
-                  packages/kit/LICENSE
-  packages/packs/ the query and command implementations, one folder per pack
-                  packages/packs/<pack>/LICENSE
+  packages/shared/kit/   the component kit every widget and screen is drawn with
+                  packages/shared/kit/LICENSE
+  packages/shared/packs/ the query and command implementations, one folder per pack
+                  packages/shared/packs/<pack>/LICENSE
   registry/       the widget library
                   registry/LICENSE
 
@@ -15,27 +15,27 @@ use, change and share it for any purpose except offering it, or something
 substantially similar built from it, as a competing commercial product or
 service. Each version becomes Apache 2.0 two years after its release:
 
-  packages/core/  the engine that lays out and renders boards
-                  packages/core/LICENSE
-  packages/sdk/   the types a widget is written against
-                  packages/sdk/LICENSE
-  packages/cli/   the widgetarium command
-                  packages/cli/LICENSE
-  packages/vite/  the Vite plugin a project builds with
-                  packages/vite/LICENSE
-  packages/gpu/   the renderer that draws widget trees on the GPU
-                  packages/gpu/LICENSE
-  packages/canvas/ the design canvas: pages, states, references
-                  packages/canvas/LICENSE
-  packages/behaviors/ headless behaviours: pan and zoom, tree drag, pointing
-                  packages/behaviors/LICENSE
+  packages/shared/core/  the engine that lays out and renders boards
+                  packages/shared/core/LICENSE
+  packages/shared/sdk/   the types a widget is written against
+                  packages/shared/sdk/LICENSE
+  packages/shared/cli/   the widgetarium command
+                  packages/shared/cli/LICENSE
+  packages/shared/vite/  the Vite plugin a project builds with
+                  packages/shared/vite/LICENSE
+  packages/shared/gpu/   the renderer that draws widget trees on the GPU
+                  packages/shared/gpu/LICENSE
+  packages/domain/canvas/ the design canvas: pages, states, references
+                  packages/domain/canvas/LICENSE
+  packages/shared/behaviors/ headless behaviours: pan and zoom, tree drag, pointing
+                  packages/shared/behaviors/LICENSE
   apps/studio/    the studio drawn around an app
                   apps/studio/LICENSE
-  packages/host-obsidian/  the Obsidian plugin
-                  packages/host-obsidian/LICENSE
+  apps/host-obsidian/  the Obsidian plugin
+                  apps/host-obsidian/LICENSE
 
 Anything outside these folders (tools, docs) is under FSL-1.1-ALv2 as in
-packages/core/LICENSE. REUSE.toml maps every path to its licence.
+packages/shared/core/LICENSE. REUSE.toml maps every path to its licence.
 
 For a commercial licence to build a competing product, contact the author.
 

@@ -8,18 +8,18 @@ Today every app gets the same "quiet and strict" look, because the brief says th
 
 ## What exists today (verified 2026-10-10)
 
-| Fact                                                                                          | Where                                                                                                         |
-| --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Stage 1 says "the look is always the kit's and copy is rewritten"                             | `docs/ai/brief.md` Stage 1                                                                                    |
-| One vault-wide design system is laid once, with the style line "Quiet and strict"             | `docs/ai/design-system.md`, `layDesignSystemOnce` in `packages/host-obsidian/src/legacy/ai/agent-files.ts:55` |
-| Rules are parsed per id and checked by `rules <app>`; an app file overrides by id             | `packages/core/src/design-rules.ts`                                                                           |
-| Canvas tabs are Docs, References, Components; "Brief" and "Design system" are renamed to Docs | `TABS_RENAMED` in `packages/host-obsidian/src/legacy/design-canvas-page.ts`                                   |
-| Jobs with phase, page and `--after` run stages 2–5 a page at a time                           | `brief.md` "Then plan the build as jobs"; `packages/host-obsidian/src/legacy/ai/job-*.ts`                     |
-| A provider takes `{model}`; there is no effort setting                                        | `packages/host-obsidian/src/legacy/ai/providers.ts`                                                           |
-| Vault widgets draw with the plugin's kit, not a project copy (a TODO)                         | CLAUDE.md, "In Obsidian"                                                                                      |
-| A project made by `create` gets its own kit copy and aliases                                  | `packages/widgetarium/src/cli/create-command.ts:46`                                                           |
-| Reference pictures and notes on the canvas: `reference`, `note`                               | `packages/host-obsidian/src/legacy/ai/reference-command.ts`                                                   |
-| Trait-format systems, fit profiles and merge rules                                            | `docs/design-systems/{verdant,gallery,cloud,merging}.md`                                                      |
+| Fact                                                                                          | Where                                                                                                     |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Stage 1 says "the look is always the kit's and copy is rewritten"                             | `docs/ai/brief.md` Stage 1                                                                                |
+| One vault-wide design system is laid once, with the style line "Quiet and strict"             | `docs/ai/design-system.md`, `layDesignSystemOnce` in `apps/host-obsidian/src/legacy/ai/agent-files.ts:55` |
+| Rules are parsed per id and checked by `rules <app>`; an app file overrides by id             | `packages/shared/core/src/design-rules.ts`                                                                |
+| Canvas tabs are Docs, References, Components; "Brief" and "Design system" are renamed to Docs | `TABS_RENAMED` in `apps/host-obsidian/src/legacy/design-canvas-page.ts`                                   |
+| Jobs with phase, page and `--after` run stages 2–5 a page at a time                           | `brief.md` "Then plan the build as jobs"; `apps/host-obsidian/src/legacy/ai/job-*.ts`                     |
+| A provider takes `{model}`; there is no effort setting                                        | `apps/host-obsidian/src/legacy/ai/providers.ts`                                                           |
+| Vault widgets draw with the plugin's kit, not a project copy (a TODO)                         | CLAUDE.md, "In Obsidian"                                                                                  |
+| A project made by `create` gets its own kit copy and aliases                                  | `packages/widgetarium/src/cli/create-command.ts:46`                                                       |
+| Reference pictures and notes on the canvas: `reference`, `note`                               | `apps/host-obsidian/src/legacy/ai/reference-command.ts`                                                   |
+| Trait-format systems, fit profiles and merge rules                                            | `docs/design-systems/{verdant,gallery,cloud,merging}.md`                                                  |
 
 ## Prior art
 
@@ -48,11 +48,11 @@ Each stage ends green on its checks before the next one starts.
 ### Stage 1: the catalogue
 
 - **Format.** One folder per system: `catalogue/design-systems/<id>/system.md` (fit profile, conditional traits, traits in the ten categories, token table), `references/*.webp` (the source pictures with author credit), optional `book.dc.html`.
-- **Schema.** `DesignSystemSchema` in `packages/core/src/design-system-catalogue.ts` parses the front matter: `id`, `title`, `author`, `fit` (each parameter an **array** of values), `traits[]` (`id`, `category`, `text`, `needs?`), `tokens`. One reader, `readDesignSystems`. Nothing else parses these files.
+- **Schema.** `DesignSystemSchema` in `packages/shared/core/src/design-system-catalogue.ts` parses the front matter: `id`, `title`, `author`, `fit` (each parameter an **array** of values), `traits[]` (`id`, `category`, `text`, `needs?`), `tokens`. One reader, `readDesignSystems`. Nothing else parses these files.
 - **Shipping.** Laid read-only into the vault like `@catalogue`, with a `.laid-by-plugin` mark (`tools/system-widget-files.mts`).
 - **Command.** `widgets.mjs systems --centre function,information --tone calm …` returns systems ranked by matched parameters, each with its score and its conditional traits already filtered.
 - **Seed.** Verdant, Gallery, Cloud, converted from `docs/design-systems/`. The old "Quiet and strict" style becomes one more catalogue system, so the default is no longer special.
-- **Product patterns.** A second catalogue, `catalogue/patterns/<id>.md`, in the format of `docs/design-systems/patterns/README.md`: the structure of a product (what stands in the centre, which regions serve it, how they behave), independent of the look. Same fit parameters plus `object kind` and `activity`, so one filter serves both. Seed: `stage-inspector`, plus the fifteen bases of `packages/core/src/layouts.ts` rewritten as patterns. Command: `widgets.mjs patterns --…`.
+- **Product patterns.** A second catalogue, `catalogue/patterns/<id>.md`, in the format of `docs/design-systems/patterns/README.md`: the structure of a product (what stands in the centre, which regions serve it, how they behave), independent of the look. Same fit parameters plus `object kind` and `activity`, so one filter serves both. Seed: `stage-inspector`, plus the fifteen bases of `packages/shared/core/src/layouts.ts` rewritten as patterns. Command: `widgets.mjs patterns --…`.
 - **Checks.** The schema refuses a system with a missing category or a trait without an id; the ranking test pins the order for three briefs (kanban, delivery, sea-swim) and is falsified by swapping one fit value.
 
 ### Stage 2: the agent's grants and context

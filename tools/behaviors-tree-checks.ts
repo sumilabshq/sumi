@@ -2,7 +2,7 @@ import { boxed, drawn, pause } from "./behaviors-dom.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
 const { createElement: h, useRef, useState } = await import("react");
-const b = await import("../packages/behaviors/index.ts");
+const b = await import("../packages/shared/behaviors/index.ts");
 
 const ROWS = [
 	{ id: "a", depth: 0, canHold: true },

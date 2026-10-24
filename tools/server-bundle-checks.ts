@@ -9,12 +9,12 @@ const CLIENT_APP = `${PROBE}/client-app.ts`;
 const CLIENT_IMPORTS_MODULE = `${PROBE}/client-imports-module.ts`;
 const TSC = path.join(REPO, "node_modules/.bin/tsc");
 const MODULE_SPECIFIER = "@widgetarium/fixture-billing/module";
-const FIXTURE = /packages\/fixture-billing\//;
-const FIXTURE_CONTRACT = /packages\/fixture-billing\/features\/charge\/contract\.ts$/;
+const FIXTURE = /packages\/domain\/fixture-billing\//;
+const FIXTURE_CONTRACT = /packages\/domain\/fixture-billing\/features\/charge\/contract\.ts$/;
 const SERVER_ONLY_CODE =
-	/packages\/fixture-billing\/(module\.ts|generated\/module\.ts|features\/[^/]+\/handlers\.ts|gateways\/)|node_modules\/(hono|@orpc\/server)\//;
+	/packages\/domain\/fixture-billing\/(module\.ts|generated\/module\.ts|features\/[^/]+\/handlers\.ts|gateways\/)|node_modules\/(hono|@orpc\/server)\//;
 const SERVER_CONDITION = "server";
-const SERVER_MODULE = "packages/fixture-billing/generated/module.ts";
+const SERVER_MODULE = "packages/domain/fixture-billing/generated/module.ts";
 const GUARD_REASON = "a charge is at most";
 
 interface Bundled {

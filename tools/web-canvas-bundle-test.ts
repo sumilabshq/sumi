@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 
 interface Built {
 	readonly inputs: readonly string[];
@@ -7,15 +7,15 @@ interface Built {
 }
 
 const WEB_STUDIO = "apps/studio/src/index.ts";
-const GATEWAYS_ENTRY = "packages/canvas/generated/gateways.ts";
-const SERVER_ENTRY = "packages/core/src/requests/server/index.ts";
+const GATEWAYS_ENTRY = "packages/domain/canvas/generated/gateways.ts";
+const SERVER_ENTRY = "packages/shared/core/src/requests/server/index.ts";
 const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
 const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
 const SERVER_CONDITION = "server";
-const VAULT_CODE = /packages\/canvas\/gateways\/[^/]+\/(obsidian\.gateway\.ts|obsidian\/)/;
-const WEB_PARTS = /packages\/canvas\/gateways\/canvas-parts\/web\.gateway\.ts$/;
-const HOST_CODE = /packages\/host-obsidian\//;
-const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/core\/src\/requests\/server\//;
+const VAULT_CODE = /packages\/domain\/canvas\/gateways\/[^/]+\/(obsidian\.gateway\.ts|obsidian\/)/;
+const WEB_PARTS = /packages\/domain\/canvas\/gateways\/canvas-parts\/web\.gateway\.ts$/;
+const HOST_CODE = /apps\/host-obsidian\//;
+const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/shared\/core\/src\/requests\/server\//;
 let failed = 0;
 
 const BUILT_FOR_THE_BROWSER = {

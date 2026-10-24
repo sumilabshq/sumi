@@ -20,8 +20,13 @@ import {
 	RowLabel,
 	ItemGroup,
 	LayoutItem,
-} from "../packages/kit/src/index";
-import { InputGroup, InputGroupInput, NativeSelect, NativeSelectOption } from "../packages/kit/src/exports-inputs";
+} from "../packages/shared/kit/src/index";
+import {
+	InputGroup,
+	InputGroupInput,
+	NativeSelect,
+	NativeSelectOption,
+} from "../packages/shared/kit/src/exports-inputs";
 
 const QUESTIONS = ["How does sync work?", "Can I undo a delete?", "Where are widgets kept?"];
 

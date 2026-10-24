@@ -1,14 +1,18 @@
-import { BrowserPagesGateway } from "../packages/browser/gateways/browser-pages/browser-pages.gateway.ts";
-import { MemoryBrowserAuditGateway } from "../packages/browser/gateways/browser-audit/memory.gateway.ts";
-import { MemoryBrowserGrantsGateway } from "../packages/browser/gateways/browser-grants/memory.gateway.ts";
-import { browserPartsOf } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import type { BrowserParts } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import { ClockGateway } from "../packages/browser/gateways/clock/clock.gateway.ts";
-import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-sites/memory.gateway.ts";
-import { ChatComposerGateway } from "../packages/browser/gateways/chat-composer/chat-composer.gateway.ts";
-import type { BrowserTab } from "../packages/browser/shared/schema/browser-tab.schema.ts";
-import type { CommittedPage, PageContentRead, PageShot } from "../packages/browser/shared/schema/page-read.schema.ts";
-import type { PageLook } from "../packages/browser/shared/schema/page-look.schema.ts";
+import { BrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/browser-pages.gateway.ts";
+import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
+import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { ClockGateway } from "../packages/domain/browser/gateways/clock/clock.gateway.ts";
+import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
+import { ChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/chat-composer.gateway.ts";
+import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
+import type {
+	CommittedPage,
+	PageContentRead,
+	PageShot,
+} from "../packages/domain/browser/shared/schema/page-read.schema.ts";
+import type { PageLook } from "../packages/domain/browser/shared/schema/page-look.schema.ts";
 
 export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	tab: BrowserTab = {

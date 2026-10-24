@@ -1,19 +1,19 @@
 import { readFileSync } from "node:fs";
-import type { TabStep } from "../packages/core/src/tab-rows.ts";
-import type { TabStripFacts } from "../packages/core/src/tab-strip-verbs.ts";
-import type { CalendarPickProps as CalendarProps } from "../packages/kit/src/components/calendar.tsx";
-import type { PlacementName } from "../packages/kit/src/constants/popover.ts";
-import type { Mark } from "../packages/kit/src/utils/marks.ts";
-import type { PlaceholderMarkProps } from "../packages/kit/src/components/placeholder-mark.tsx";
-import type { SortOrder } from "../packages/kit/src/utils/data-table.ts";
+import type { TabStep } from "../packages/shared/core/src/tab-rows.ts";
+import type { TabStripFacts } from "../packages/shared/core/src/tab-strip-verbs.ts";
+import type { CalendarPickProps as CalendarProps } from "../packages/shared/kit/src/components/calendar.tsx";
+import type { PlacementName } from "../packages/shared/kit/src/constants/popover.ts";
+import type { Mark } from "../packages/shared/kit/src/utils/marks.ts";
+import type { PlaceholderMarkProps } from "../packages/shared/kit/src/components/placeholder-mark.tsx";
+import type { SortOrder } from "../packages/shared/kit/src/utils/data-table.ts";
 import { JSDOM } from "jsdom";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 import { byId, found, foundAs } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 import type { ReactNode } from "react";
-import type { PlatesAbove } from "../packages/kit/src/utils/surface.ts";
-import type { FieldRootProps } from "../packages/kit/src/components/field.tsx";
-import type { TabsRootProps } from "../packages/kit/src/components/tabs.tsx";
+import type { PlatesAbove } from "../packages/shared/kit/src/utils/surface.ts";
+import type { FieldRootProps } from "../packages/shared/kit/src/components/field.tsx";
+import type { TabsRootProps } from "../packages/shared/kit/src/components/tabs.tsx";
 
 const dom = new JSDOM('<!doctype html><body><div id="host"></div></body>', { pretendToBeVisual: true });
 Object.assign(globalThis, {
@@ -44,7 +44,7 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
 const {
 	Kit,
 	APPROVAL_TONES,
@@ -62,8 +62,8 @@ const {
 	cn,
 	cx,
 	ItemGroup,
-} = await import("../packages/kit/src/index.ts");
-const { PLATES_ABOVE } = await import("../packages/kit/src/utils/surface.ts");
+} = await import("../packages/shared/kit/src/index.ts");
+const { PLATES_ABOVE } = await import("../packages/shared/kit/src/utils/surface.ts");
 
 // preact defers useEffect a frame, so a test that acts immediately acts before the component
 // has finished listening. Wait for the frame rather than guessing at a sleep.
@@ -442,7 +442,7 @@ check("and a slotted anchor is given no button type", host.querySelector("a")?.h
 check("and keeps that element's own props", host.querySelector("a")?.getAttribute("href"), "#x");
 
 {
-	const { cn } = await import("../packages/kit/src/index.ts");
+	const { cn } = await import("../packages/shared/kit/src/index.ts");
 	check("CN, AS IN SHADCN: a caller's class wins a conflict with the kit's", cn("p-plate", "p-2"), "p-2");
 	check(
 		"and the kit's own sizes and colours are told apart",
@@ -453,7 +453,7 @@ check("and keeps that element's own props", host.querySelector("a")?.getAttribut
 }
 
 {
-	const { Slot, Slottable } = await import("../packages/kit/src/index.ts");
+	const { Slot, Slottable } = await import("../packages/shared/kit/src/index.ts");
 	const heard: string[] = [];
 	const slotRef = { current: null };
 	const childRef = { current: null };
@@ -495,7 +495,7 @@ check("and keeps that element's own props", host.querySelector("a")?.getAttribut
 }
 
 {
-	const kit = await import("../packages/kit/src/index.ts");
+	const kit = await import("../packages/shared/kit/src/index.ts");
 	const press = (node: Element | null | undefined, key: string) =>
 		node?.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true }));
 
@@ -892,8 +892,8 @@ check(
 	seededOutline,
 );
 check("every one of the 35 Material shapes is offered", Kit.SHAPE_NAMES.length, 35);
-const { lightSpotOf, pointsIn: shapePointsIn } = await import("../packages/kit/src/utils/shape-morph.ts");
-const { SHAPE_POINTS } = await import("../packages/kit/src/shapes/shape-table.ts");
+const { lightSpotOf, pointsIn: shapePointsIn } = await import("../packages/shared/kit/src/utils/shape-morph.ts");
+const { SHAPE_POINTS } = await import("../packages/shared/kit/src/shapes/shape-table.ts");
 const litCircle = lightSpotOf(shapePointsIn(SHAPE_POINTS.circle));
 const litHalf = lightSpotOf(shapePointsIn(SHAPE_POINTS["semi-circle"]));
 check(
@@ -1165,8 +1165,8 @@ check(
 render(null, host);
 
 {
-	const { diceBearUrl, diceBearVerdict } = await import("../packages/kit/src/utils/dicebear.ts");
-	const { DICEBEAR_STYLES, ALLOWED_LICENSES } = await import("../packages/kit/src/constants/dicebear.ts");
+	const { diceBearUrl, diceBearVerdict } = await import("../packages/shared/kit/src/utils/dicebear.ts");
+	const { DICEBEAR_STYLES, ALLOWED_LICENSES } = await import("../packages/shared/kit/src/constants/dicebear.ts");
 	check(
 		"a DiceBear address carries the style, the seed and every option, arrays joined",
 		diceBearUrl("notionists", "Anna Lee", { backgroundColor: ["b6e3f4", "c0aede"], flip: true }),
@@ -1324,7 +1324,7 @@ check("every piece is reachable from one object", surface.filter((name) => !memb
 
 // THE TWO SPECIFIERS, and what each one is FOR. A widget must have "widgetarium"; it may
 // take "widgetarium/kit". Proving them through the host's own resolver, not by reading api.js.
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium, kit: kitModule } = ENGINE_SCOPE;
 check(
 	'import { Button } from "widgetarium/kit" — flat, and it says where it came from',
@@ -1352,7 +1352,7 @@ check(
 // the measure returns early — which is why a render loop that froze the real app passed here.
 // Give the DOM believable rects and the loop becomes reproducible.
 {
-	const { useSegmentedThumb } = await import("../packages/kit/src/index.ts");
+	const { useSegmentedThumb } = await import("../packages/shared/kit/src/index.ts");
 	const { useState } = await import("react");
 	const was = Element.prototype.getBoundingClientRect;
 	Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
@@ -1485,7 +1485,7 @@ check(
 		true,
 	);
 
-	const strip = fs.readFileSync("packages/core/src/editable-tabs.ts", "utf8");
+	const strip = fs.readFileSync("packages/shared/core/src/editable-tabs.ts", "utf8");
 	check("the tab strip builds on the kit rather than restating it", /from "\.\/kit\.js"|wg-kit-/.test(strip), true);
 	check("the tab strip does not paint its own plate", /background:\s*var\(--orbi-plate\)/.test(strip), false);
 	check(
@@ -1507,7 +1507,7 @@ check(
 // source and drew Restore alone for a whole session — a declared control nobody can press.
 {
 	const { useState } = await import("react");
-	const { EditableTabs } = await import("../packages/core/src/editable-tabs.js");
+	const { EditableTabs } = await import("../packages/shared/core/src/editable-tabs.js");
 	const host = byId(document, "host");
 	render(null, host);
 
@@ -1609,7 +1609,7 @@ check(
 }
 
 // THE PANEL MUST BE CLOSABLE, and the press that closes it never reaches `document`.
-// packages/core/src/editor-shield.js wraps EVERY widget block and stops mousedown/pointerdown in the bubble
+// packages/shared/core/src/editor-shield.js wraps EVERY widget block and stops mousedown/pointerdown in the bubble
 // phase, so CodeMirror cannot move the caret under a live widget. A document-level bubble
 // listener is therefore never called for a press landing on any widget on the board.
 {
@@ -1987,7 +1987,7 @@ check(
 	// TRADE-OFF: the law's numbers are read off the source, so one changed there fails here
 	const { readFileSync: readSource } = await import("node:fs");
 	const source = ["constants/popover.ts", "utils/popover-motion.ts"]
-		.map((file) => readSource(`packages/kit/src/${file}`, "utf8"))
+		.map((file) => readSource(`packages/shared/kit/src/${file}`, "utf8"))
 		.join("\n");
 	const constant = (name: string) => Number(captured(new RegExp(`const ${name} = ([\\d.]+)`), source));
 	const growMs = constant("GROW_MS");
@@ -2086,7 +2086,7 @@ check(
 	check("nor the trigger touched, at any beat", beats.map((state) => state.rowTouched).join(""), "||||||||||||");
 
 	// TRADE-OFF: the peak is READ OFF the keyframes, because that is where it is authored
-	const css = (await import("node:fs")).readFileSync("packages/host-obsidian/styles.css", "utf8");
+	const css = (await import("node:fs")).readFileSync("apps/host-obsidian/styles.css", "utf8");
 	const frames = captured(/@keyframes wg-kit-pop-bloom \{([\s\S]*?)\n\}/, css);
 	const stopAt = (label: string) => numbers(captured(new RegExp(`${label}\\s*\\{\\s*scale:\\s*([^;]+);`), frames));
 	const peakStop = Number(captured(/(\d+)%\s*\{\s*scale:/, frames)) / 100;
@@ -2836,13 +2836,13 @@ check(
 	const UNBROKEN_PATH = "Orbitask/Tasks/Archive/Another-Very-Long-Folder-Segment-With-No-Spaces-At-All";
 
 	// TRADE-OFF: the numbers the page is measured against are read off the source, never guessed at
-	const KIT_SOURCE = readFileSync("packages/kit/src/constants/popover.ts", "utf8");
+	const KIT_SOURCE = readFileSync("packages/shared/kit/src/constants/popover.ts", "utf8");
 	const kitNumber = (name: string) => Number(captured(new RegExp(`const ${name} = ([\\d.]+)`), KIT_SOURCE));
 
 	const entry = [
 		'import { createElement as h } from "react";',
-		'import { render } from "./packages/core/src/engine/render.js";',
-		'import { Button, cardClass, Icon, MarkdownEditor, List, Plate, Popover, PopoverItem, Row, RowLabel, RowValue, Sidebar, SidebarGroup, SidebarRow, SidebarSheet } from "./packages/kit/src/index.ts";',
+		'import { render } from "./packages/shared/core/src/engine/render.js";',
+		'import { Button, cardClass, Icon, MarkdownEditor, List, Plate, Popover, PopoverItem, Row, RowLabel, RowValue, Sidebar, SidebarGroup, SidebarRow, SidebarSheet } from "./packages/shared/kit/src/index.ts";',
 		"const host = document.querySelector('.wg-root');",
 		`render(h(MarkdownEditor, { value: "${NOTE}" }), host);`,
 		"const mirror = host.querySelector('.wg-kit-md-mirror');",
@@ -2953,7 +2953,7 @@ check(
 	const file = nodePath.join(work, "mirror.html");
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>` +
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>` +
 			`<style>:root { --text-normal: #222; --text-muted: #707070; --text-faint: #ababab; --background-primary: #fff; --interactive-accent: #6d4ee0; --font-interface: -apple-system, "Segoe UI", sans-serif; --font-ui-small: 14px; --size-4-4: 16px; }` +
 			`body { margin: 0; } .wg-root { width: 380px; }</style>` +
 			`</head><body><div class="wg-root"></div><div class="wg-root wg-sides" style="width:300px"></div>` +
@@ -3311,7 +3311,7 @@ check(
 	const liftFile = nodePath.join(work, "lift.html");
 	writeFileSync(
 		liftFile,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>` +
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>` +
 			`<style>html, body { margin: 0; padding: 0; } body { width: 400px; height: ${pageHeight}px; }` +
 			`.wg-ground { position: absolute; left: 0; width: 400px; height: ${BLOCK.slot}px; background: var(--wg-kit-raise); }` +
 			`.wg-ground .wg-kit-side { position: absolute; left: ${BLOCK.left}px; top: ${BLOCK.top}px; width: ${BLOCK.width}px; height: ${BLOCK.height}px; }</style>` +
@@ -3719,8 +3719,8 @@ check(
 
 {
 	const { valuesOf, sparkSpots, linePath, areaPath, sparkBars, spotAt, highlightedIndex } =
-		await import("../packages/kit/src/utils/sparkline.ts");
-	const { chartColorOf, seriesColorName } = await import("../packages/kit/src/utils/chart-colors.ts");
+		await import("../packages/shared/kit/src/utils/sparkline.ts");
+	const { chartColorOf, seriesColorName } = await import("../packages/shared/kit/src/utils/chart-colors.ts");
 	check(
 		"A SPARKLINE READS NUMBERS AND NUMERIC TEXT, AND ANYTHING ELSE IS A GAP",
 		valuesOf([1, "2", "", "x", null, 3]),
@@ -3759,7 +3759,7 @@ check(
 	check("A HAND-WRITTEN COLOUR IS REFUSED FOR THE PLACE'S TOKEN", chartColorOf("#ff0000", 0), "var(--chart-1)");
 	check("A SERIES KEY BECOMES A SAFE PROPERTY NAME", seriesColorName("notes per day"), "--color-notes-per-day");
 
-	const { Sparkline, SparklineArea, SparklineLine, SparklineDot } = await import("../packages/kit/src/index.ts");
+	const { Sparkline, SparklineArea, SparklineLine, SparklineDot } = await import("../packages/shared/kit/src/index.ts");
 	render(
 		h(
 			Sparkline,
@@ -3789,7 +3789,7 @@ check(
 	);
 	render(null, host);
 
-	const charts = await import("../packages/kit/src/charts/index.ts");
+	const charts = await import("../packages/shared/kit/src/charts/index.ts");
 	const measured = HTMLElement.prototype.getBoundingClientRect;
 	HTMLElement.prototype.getBoundingClientRect = () => domRect(0, 0, 320, 180);
 	render(
@@ -3864,7 +3864,7 @@ check(
 
 {
 	const { paginationItems, PaginationLink, Skeleton, Table, TableBody, TableCaption, TableCell, TableRow } =
-		await import("../packages/kit/src/index.ts");
+		await import("../packages/shared/kit/src/index.ts");
 	const shownPages = (page: number, count: number) =>
 		paginationItems(page, count)
 			.map((entry) => (entry.kind === "gap" ? "…" : entry.page))
@@ -3888,7 +3888,7 @@ check(
 		["page", true],
 	);
 
-	const { Pagination } = await import("../packages/kit/src/index.ts");
+	const { Pagination } = await import("../packages/shared/kit/src/index.ts");
 	render(h(Pagination, { count: 1 }), host);
 	await settle();
 	check("A SINGLE PAGE DRAWS NO PAGINATION", host.querySelector("nav"), null);
@@ -3938,7 +3938,7 @@ check(
 	);
 	render(null, host);
 
-	const { DataTable } = await import("../packages/kit/src/index.ts");
+	const { DataTable } = await import("../packages/shared/kit/src/index.ts");
 	const invoices = [
 		{ ref: "a", client: "Halden & Co", amount: 1860 },
 		{ ref: "b", client: "Northwind", amount: null },
@@ -4029,7 +4029,7 @@ check(
 	);
 	render(null, host);
 
-	const { CodeBlock } = await import("../packages/kit/src/index.ts");
+	const { CodeBlock } = await import("../packages/shared/kit/src/index.ts");
 	render(h(CodeBlock, { code: "<Button />", label: "Usage" }), host);
 	await settle();
 	check(
@@ -4039,7 +4039,7 @@ check(
 	);
 	render(null, host);
 
-	const sheet = readFileSync("packages/host-obsidian/styles.css", "utf8");
+	const sheet = readFileSync("apps/host-obsidian/styles.css", "utf8");
 	const heightOf = (selector: string) =>
 		new RegExp(`${selector.replace(/[.[\]"=]/g, "\\$&")} \\{[^}]*height: ([^;]+);`).exec(sheet)?.[1];
 	check(
@@ -4126,7 +4126,7 @@ check(
 {
 	const host = byId(document, "host");
 	render(null, host);
-	const kit = await import("../packages/kit/src/index.ts");
+	const kit = await import("../packages/shared/kit/src/index.ts");
 	const FormField = (props: FieldRootProps): ReactNode => kit.Field(props);
 	const ShadcnTabs = (props: TabsRootProps): ReactNode => kit.Tabs(props);
 	const classOfButton = async (props: Record<string, unknown>): Promise<string> => {

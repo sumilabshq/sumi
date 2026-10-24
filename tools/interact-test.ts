@@ -7,12 +7,12 @@ import { createHash } from "node:crypto";
 import { JSDOM } from "jsdom";
 import { parse as parseYaml } from "yaml";
 import type { App, TFile as ObsidianFile } from "obsidian";
-import type { Board } from "../packages/core/src/model.ts";
-import type { GivenProps } from "../packages/core/src/declared-widget.ts";
-import type { EngineManifest } from "../packages/core/src/engine/catalogue-index.ts";
-import type { ResolvedMounts } from "../packages/core/src/surface/mounts.ts";
-import type { MountContext } from "../packages/core/src/surface/widget-host.ts";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.ts";
+import type { Board } from "../packages/shared/core/src/model.ts";
+import type { GivenProps } from "../packages/shared/core/src/declared-widget.ts";
+import type { EngineManifest } from "../packages/shared/core/src/engine/catalogue-index.ts";
+import type { ResolvedMounts } from "../packages/shared/core/src/surface/mounts.ts";
+import type { MountContext } from "../packages/shared/core/src/surface/widget-host.ts";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.ts";
 import { byId } from "./dom-find.ts";
 import { standIn } from "./stand-in.ts";
 
@@ -106,14 +106,14 @@ globalThis.window.ResizeObserver = globalThis.ResizeObserver;
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface, resolveMounts } = await import("../packages/core/src/surface.js");
-const { WidgetRegistry, declaredName } = await import("../packages/core/src/registry.js");
-const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalogue-requests.js");
-const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
-const { leavesOf } = await import("../packages/core/src/tree.js");
-const { findBlocks } = await import("../packages/core/src/block-writer.js");
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface, resolveMounts } = await import("../packages/shared/core/src/surface.js");
+const { WidgetRegistry, declaredName } = await import("../packages/shared/core/src/registry.js");
+const { CATALOGUE_REQUESTS } = await import("../packages/shared/core/src/engine/catalogue-requests.js");
+const { normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
+const { leavesOf } = await import("../packages/shared/core/src/tree.js");
+const { findBlocks } = await import("../packages/shared/core/src/block-writer.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
 const { TFile, TFolder } = await import("obsidian");
 
 const adapter = {
@@ -139,7 +139,7 @@ const adapter = {
 	stat: async () => ({ mtime: 1, size: 1 }),
 };
 
-// The slot comes from packages/host-obsidian/src/legacy/host.js — the adapter that ships. Building one here is how the
+// The slot comes from apps/host-obsidian/src/legacy/host.js — the adapter that ships. Building one here is how the
 // board passed this test while being dead in the app.
 const written: { created: Created[]; updated: Updated[] } = { created: [], updated: [] };
 const notices: string[] = [];
@@ -528,7 +528,7 @@ if (bare) {
 
 // TODO: restore the end-to-end fold test — the sidebar was the only widget that offered a fold
 // control, and it has been removed from the product. The engine still exposes size.collapse()
-// and size.expand() (packages/core/src/surface.js:238), so the capability is now WRITE-ONLY: nothing in the
+// and size.expand() (packages/shared/core/src/surface.js:238), so the capability is now WRITE-ONLY: nothing in the
 // product calls it and nothing proves it works. Either a widget takes it up again, or the
 // engine drops it, and nothing at the model level covers it either.
 

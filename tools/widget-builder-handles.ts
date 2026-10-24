@@ -1,15 +1,15 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { z } from "zod";
-import { render } from "../packages/core/src/engine/render.js";
-import { inject, widget } from "../packages/core/src/widget-builder.ts";
-import { OnRefused } from "../packages/core/src/command-refusals.ts";
-import { ICommand, IQuery } from "../packages/core/src/gateway/queries.ts";
-import { PageInputSchema, PageOf, pageAt } from "../packages/core/src/gateway/page.ts";
-import type { CanResult } from "../packages/core/src/gateway/contract.ts";
-import { useCommand } from "../packages/core/src/use-command.ts";
-import { useQuery } from "../packages/core/src/use-query.ts";
-import type { InjectProps } from "../packages/core/src/widget-builder-types.ts";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { inject, widget } from "../packages/shared/core/src/widget-builder.ts";
+import { OnRefused } from "../packages/shared/core/src/command-refusals.ts";
+import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import { PageInputSchema, PageOf, pageAt } from "../packages/shared/core/src/gateway/page.ts";
+import type { CanResult } from "../packages/shared/core/src/gateway/contract.ts";
+import { useCommand } from "../packages/shared/core/src/use-command.ts";
+import { useQuery } from "../packages/shared/core/src/use-query.ts";
+import type { InjectProps } from "../packages/shared/core/src/widget-builder-types.ts";
 import { present } from "./page-dom.ts";
 
 type Check = (what: string, got: unknown, wanted: unknown) => void;

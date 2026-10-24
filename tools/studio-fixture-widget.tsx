@@ -1,11 +1,11 @@
 import { createElement as h } from "react";
 import { z } from "zod";
 import { Button, Card, Popover } from "@widgetarium/kit";
-import { defineLayout, defineMetadata, defineStates } from "../packages/core/src/gateway/declared.js";
-import { PageInputSchema, PageOf } from "../packages/core/src/gateway/page.js";
-import { IQuery } from "../packages/core/src/gateway/queries.js";
-import { useData } from "../packages/core/src/gateway/use-data.js";
-import { createWidget } from "../packages/core/src/widget-api.js";
+import { defineLayout, defineMetadata, defineStates } from "../packages/shared/core/src/gateway/declared.js";
+import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.js";
+import { IQuery } from "../packages/shared/core/src/gateway/queries.js";
+import { useData } from "../packages/shared/core/src/gateway/use-data.js";
+import { createWidget } from "../packages/shared/core/src/widget-api.js";
 
 export const FixtureTaskSchema = z.object({ id: z.string(), title: z.string() });
 

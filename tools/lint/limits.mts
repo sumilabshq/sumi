@@ -15,17 +15,17 @@ export const LIMITS = {
 } as const;
 
 export const LINTED_ROOTS: readonly string[] = [
-	"packages/host-obsidian/src",
-	"packages/core/src",
-	"packages/kit/src",
-	"packages/sdk/types",
+	"apps/host-obsidian/src",
+	"packages/shared/core/src",
+	"packages/shared/kit/src",
+	"packages/shared/sdk/types",
 	"registry",
 ];
 
 export const SKIPPED_PATHS: readonly string[] = [
-	"packages/kit/src/emojis/emoji-table.ts",
-	"packages/kit/src/icons/icon-table.ts",
-	"packages/host-obsidian/main.js",
+	"packages/shared/kit/src/emojis/emoji-table.ts",
+	"packages/shared/kit/src/icons/icon-table.ts",
+	"apps/host-obsidian/main.js",
 ];
 
 export const ALLOWED_COMMENT_PREFIXES: readonly string[] = ["TODO:", "TRADE-OFF:"];

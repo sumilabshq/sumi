@@ -1,5 +1,5 @@
-import { NOT_AVAILABLE_ON_HOST } from "../packages/core/src/engine/studio-host.ts";
-import { PLATE_LEAST_PX } from "../packages/layout/shared/lib/frame-bounds.ts";
+import { NOT_AVAILABLE_ON_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
+import { PLATE_LEAST_PX } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import { studioSplitOf } from "./studio-sheet.mts";
 
 type Width = { readonly w: number; readonly right: number };

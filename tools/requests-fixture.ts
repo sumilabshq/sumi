@@ -17,9 +17,9 @@ import {
 	rateLimit,
 	refuse,
 	serverModule,
-} from "../packages/core/src/requests/index.ts";
-import type { AnyRequest, Handler, User } from "../packages/core/src/requests/index.ts";
-import { Authenticate } from "../packages/core/src/requests/server/index.ts";
+} from "../packages/shared/core/src/requests/index.ts";
+import type { AnyRequest, Handler, User } from "../packages/shared/core/src/requests/index.ts";
+import { Authenticate } from "../packages/shared/core/src/requests/server/index.ts";
 
 export const PagesPermissions = { rename: permission("pages.rename") };
 

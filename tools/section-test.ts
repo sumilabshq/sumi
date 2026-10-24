@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { DeclaredModule } from "../packages/core/src/gateway/declared-types.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { DeclaredModule } from "../packages/shared/core/src/gateway/declared-types.js";
 import { found } from "./dom-find.ts";
 import { runWidgetSource } from "./run-widget-source.ts";
 
@@ -28,13 +28,13 @@ Object.assign(globalThis, {
 
 const react = await import("react");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const { previewProps } = await import("../packages/core/src/preview.js");
-const { soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { previewProps } = await import("../packages/shared/core/src/preview.js");
+const { soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { manifestOfModule } = await import("../packages/shared/core/src/gateway/declared.ts");
 
 type SectionProps = Readonly<Record<string, unknown>>;
 

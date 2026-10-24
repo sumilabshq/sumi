@@ -1,12 +1,12 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { GENERATED_HEADER } from "../packages/cli/src/module-entry.js";
-import { runCli } from "../packages/cli/src/run-cli.js";
-import type { CliOutput } from "../packages/cli/src/cli-output.js";
+import { GENERATED_HEADER } from "../packages/shared/cli/src/module-entry.js";
+import { runCli } from "../packages/shared/cli/src/run-cli.js";
+import type { CliOutput } from "../packages/shared/cli/src/cli-output.js";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import { packageKindOf } from "../packages/eslint-plugin/src/domain-file.ts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { packageKindOf } from "../packages/shared/eslint-plugin/src/domain-file.ts";
 import { check, tally } from "./check-helpers.ts";
 
 interface CliRun {
@@ -20,7 +20,7 @@ const JOINED = "generated/module.ts";
 const ROOT = "index.ts";
 const IMPORTED_FROM = /^import .* from "([^"]+)";$/gm;
 const RE_EXPORT = /export\s+(\*|\{[^}]*\})\s+from\s/;
-const LAYOUT_HANDLING = /packages\/layout\/(features\/.+\/requests\.ts|gateways\/)/;
+const LAYOUT_HANDLING = /packages\/state\/layout\/(features\/.+\/requests\.ts|gateways\/)/;
 
 const CLIENT_FILES: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "@fixture/notes", widgetarium: { level: "domain" } }),
@@ -233,9 +233,10 @@ function importedFrom(text: string): string[] {
 }
 
 function newShapePackagesOf(root: string): string[] {
+	const packages = path.join(root, "packages");
 	return fs
-		.readdirSync(path.join(root, "packages"))
-		.map((name) => path.join(root, "packages", name))
+		.readdirSync(packages)
+		.flatMap((layer) => fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name)))
 		.filter((folder) => {
 			const kind = packageKindOf(folder);
 			return kind?.kind === "client-package" || kind?.module.runs === "anywhere";
@@ -636,7 +637,7 @@ try {
 
 const repo = await cli(["--check"], REPO);
 const generatedFiles = ["canvas", "fixture-billing"].flatMap((module) =>
-	[ENTRY, JOINED].map((entry) => path.join(REPO, "packages", module, entry)),
+	[ENTRY, JOINED].map((entry) => path.join(REPO, "packages", "domain", module, entry)),
 );
 check(
 	"every generated file of this repository opens with the generated header",
@@ -647,7 +648,10 @@ check("every domain of this repository has a fresh generated entry", repo.code =
 const newShapes = newShapePackagesOf(REPO);
 check(
 	"this repository has module(...) and client packages to hold to the generated/ law",
-	newShapes.map((folder) => path.basename(folder)).filter((name) => ["layout", "shell"].includes(name)),
+	newShapes
+		.map((folder) => path.basename(folder))
+		.filter((name) => ["layout", "shell"].includes(name))
+		.sort(),
 	["layout", "shell"],
 );
 check(
@@ -656,11 +660,11 @@ check(
 	[],
 );
 
-const shellInputs = await bundledInputsOf("packages/shell/index.ts");
-const startedInputs = await bundledInputsOf("packages/layout/module.ts");
+const shellInputs = await bundledInputsOf("packages/client/shell/index.ts");
+const startedInputs = await bundledInputsOf("packages/state/layout/module.ts");
 check(
 	"the shell's bundle reads layout through its contract: it holds the generated contract",
-	shellInputs.some((input) => input.endsWith("packages/layout/generated/contract.ts")),
+	shellInputs.some((input) => input.endsWith("packages/state/layout/generated/contract.ts")),
 	true,
 );
 check(

@@ -6,7 +6,7 @@ import { composerDiffReport } from "./chat-composer-diff.ts";
 import { bundleOf } from "./harness.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const SHEETS = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"];
+const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const SEEN = `(() => ({
 	header: document.querySelectorAll(".wg-studio-ai-head").length,
 	strip: document.querySelectorAll("[data-claude-strip]").length,

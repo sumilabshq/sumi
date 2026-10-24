@@ -1,9 +1,9 @@
-import { isBox, nodeAt } from "../packages/core/src/tree-nodes.js";
-import type { BoxNode } from "../packages/core/src/tree-nodes.js";
+import { isBox, nodeAt } from "../packages/shared/core/src/tree-nodes.js";
+import type { BoxNode } from "../packages/shared/core/src/tree-nodes.js";
 
-const { withDefaultSurfaces, surfacesWritten } = await import("../packages/core/src/surface-default.js");
-const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
-const { nestingFindings, widgetOfTiles } = await import("../packages/core/src/surface-laws.js");
+const { withDefaultSurfaces, surfacesWritten } = await import("../packages/shared/core/src/surface-default.js");
+const { normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
+const { nestingFindings, widgetOfTiles } = await import("../packages/shared/core/src/surface-laws.js");
 
 let failed = 0;
 let checks = 0;

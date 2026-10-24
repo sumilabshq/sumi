@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import esbuild, { type Plugin } from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
 import { TAILWIND_BANNER } from "./canvas-sheet.mts";
@@ -18,20 +18,20 @@ export interface PackedPackage {
 export const REPO = path.resolve(import.meta.dirname, "..");
 export const PACKED_INTO = path.join(REPO, "dist-packages");
 export const ENGINE_PACKAGES: readonly string[] = [
-	"packages/kit",
-	"packages/core",
-	"packages/packs/core",
-	"packages/packs/obsidian",
-	"packages/packs/stats",
-	"packages/packs/git",
-	"packages/packs/catalogue",
-	"packages/gpu",
-	"packages/behaviors",
-	"packages/canvas",
+	"packages/shared/kit",
+	"packages/shared/core",
+	"packages/shared/packs/core",
+	"packages/shared/packs/obsidian",
+	"packages/shared/packs/stats",
+	"packages/shared/packs/git",
+	"packages/shared/packs/catalogue",
+	"packages/shared/gpu",
+	"packages/shared/behaviors",
+	"packages/domain/canvas",
 	"apps/studio",
-	"packages/vite",
-	"packages/eslint-plugin",
-	"packages/cli",
+	"packages/shared/vite",
+	"packages/shared/eslint-plugin",
+	"packages/shared/cli",
 ];
 
 const NpmPackAnswerSchema = z.tuple([z.object({ name: z.string(), version: z.string(), filename: z.string() })]);
@@ -53,13 +53,16 @@ const ENTRY_SOURCE = /\.tsx?$/;
 const DECLARATION = /\.d\.ts$/;
 const NODE_TARGET = "node20";
 const BUILT_BIN = /^\.\/dist\/(.+)\.js$/;
-const HANDBOOK = { from: path.join(REPO, "docs/ai"), into: path.join(REPO, "packages/cli/dist/handbook") };
-const SYSTEMS = { from: path.join(REPO, "design-systems"), into: path.join(REPO, "packages/cli/dist/design-systems") };
+const HANDBOOK = { from: path.join(REPO, "docs/ai"), into: path.join(REPO, "packages/shared/cli/dist/handbook") };
+const SYSTEMS = {
+	from: path.join(REPO, "design-systems"),
+	into: path.join(REPO, "packages/shared/cli/dist/design-systems"),
+};
 const UNSHIPPED_SYSTEM_FOLDER = /\/(?:references|tests)(?:\/|$)/;
 const BROWSER_STYLES = {
-	host: path.join(REPO, "packages/core/browser-host.css"),
-	board: path.join(REPO, "packages/host-obsidian/styles.css"),
-	into: path.join(REPO, "packages/core/dist/styles.css"),
+	host: path.join(REPO, "packages/shared/core/browser-host.css"),
+	board: path.join(REPO, "apps/host-obsidian/styles.css"),
+	into: path.join(REPO, "packages/shared/core/dist/styles.css"),
 	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
 };
 
@@ -222,7 +225,7 @@ function kitThemeInlined(): Plugin {
 	return {
 		name: "widgetarium-kit-theme-inlined",
 		setup(build) {
-			build.onResolve({ filter: KIT_THEME }, () => ({ path: path.join(REPO, "packages/kit/theme.css") }));
+			build.onResolve({ filter: KIT_THEME }, () => ({ path: path.join(REPO, "packages/shared/kit/theme.css") }));
 		},
 	};
 }

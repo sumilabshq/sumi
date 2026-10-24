@@ -6,7 +6,7 @@ layJsdomGlobals();
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 const { act } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

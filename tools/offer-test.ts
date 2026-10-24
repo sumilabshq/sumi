@@ -3,8 +3,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { widgetsCliBundle } from "../packages/host-obsidian/build.mts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { widgetsCliBundle } from "../apps/host-obsidian/build.mts";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 const run = promisify(execFile);
 

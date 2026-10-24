@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
 import { parse as parseYaml } from "yaml";
-import { z } from "../packages/core/src/gateway/declared.ts";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { fieldIn, itemsIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 
@@ -37,10 +37,10 @@ Object.assign(globalThis, { ResizeObserver: InertResizeObserver });
 Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
-const { DOC_PAGES, pageAfter, pagesMatching } = await import("../packages/core/src/docs.js");
-const { SURFACES } = await import("../packages/core/src/tree.js");
-const { ROLES } = await import("../packages/core/src/surface-roles.js");
-const { lintBoard } = await import("../packages/core/src/board-lint.js");
+const { DOC_PAGES, pageAfter, pagesMatching } = await import("../packages/shared/core/src/docs.js");
+const { SURFACES } = await import("../packages/shared/core/src/tree.js");
+const { ROLES } = await import("../packages/shared/core/src/surface-roles.js");
+const { lintBoard } = await import("../packages/shared/core/src/board-lint.js");
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {

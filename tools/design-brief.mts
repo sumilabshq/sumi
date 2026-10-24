@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 
-const css = readFileSync("packages/host-obsidian/styles.css", "utf8");
+const css = readFileSync("apps/host-obsidian/styles.css", "utf8");
 
 const rootTokenBlock = /\.wg-root\s*\{([\s\S]*?)\n\}/.exec(css);
 const kitRules = [
@@ -9,7 +9,7 @@ const kitRules = [
 
 const LAWS = `# Widgetarium design system
 
-A brief, not the source. \`styles.css\` and \`packages/kit/src/index.ts\` are the source; this is what a design
+A brief, not the source. \`styles.css\` and \`packages/shared/kit/src/index.ts\` are the source; this is what a design
 decision needs to be right.
 
 ## The laws, each one measured
@@ -55,7 +55,7 @@ decision needs to be right.
 
 ## Components
 
-Class names are the contract; \`packages/kit/src/index.ts\` exports a component per class.
+Class names are the contract; \`packages/shared/kit/src/index.ts\` exports a component per class.
 
 \`\`\`css
 ${kitRules.join("\n\n")}

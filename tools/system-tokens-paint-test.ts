@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { z } from "zod";
-import { colorOf, type Rgba } from "../packages/core/src/color-math.js";
+import { colorOf, type Rgba } from "../packages/shared/core/src/color-math.js";
 import { findBrowser } from "./harness.ts";
 import { THEMES, type HostTheme } from "./host-themes.ts";
 
@@ -18,7 +18,7 @@ const BaselineSchema = z.object({
 });
 
 const baseline = BaselineSchema.parse(JSON.parse(readFileSync("tools/kit-tokens-obsidian.json", "utf8")));
-const sheet = readFileSync("packages/host-obsidian/styles.css", "utf8");
+const sheet = readFileSync("apps/host-obsidian/styles.css", "utf8");
 const chrome = findBrowser("system tokens");
 const work = mkdtempSync(path.join(tmpdir(), "wg-system-tokens-"));
 let failed = 0;

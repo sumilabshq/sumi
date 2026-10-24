@@ -1,27 +1,27 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import type { Page, PageInput } from "../packages/core/src/gateway/page.js";
-import { PageInputSchema, PageOf } from "../packages/core/src/gateway/page.js";
-import { IQuery } from "../packages/core/src/gateway/queries.js";
-import { ModuleRegistry } from "../packages/core/src/engine/module-registry.js";
-import { registerPacks } from "../packages/core/src/engine/packs.js";
-import { pageParamCell } from "../packages/core/src/engine/page-params.js";
-import { projectPackOf } from "../packages/core/src/engine/project-pack.js";
-import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.js";
-import type { HostApp, StudioHostPort } from "../packages/core/src/engine/studio-host.js";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.js";
+import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.js";
+import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.js";
+import { IQuery } from "../packages/shared/core/src/gateway/queries.js";
+import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
+import { registerPacks } from "../packages/shared/core/src/engine/packs.js";
+import { pageParamCell } from "../packages/shared/core/src/engine/page-params.js";
+import { projectPackOf } from "../packages/shared/core/src/engine/project-pack.js";
+import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.js";
+import type { HostApp, StudioHostPort } from "../packages/shared/core/src/engine/studio-host.js";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.js";
 import type {
 	AssistantPort,
 	AssistantSession,
 	AssistantSetup,
 	AssistantTurn,
-} from "../packages/core/src/engine/assistant-port.js";
-import type { ChatCards } from "../packages/core/src/engine/assistant-cards.js";
-import { JobSchema } from "../packages/core/src/app-jobs.js";
-import { corePack } from "../packages/packs/core/src/index.js";
-import { createMemoryRouter } from "../packages/core/src/app/memory-router.js";
-import { WidgetariumApp, startProject } from "../packages/core/src/app/widgetarium-app.js";
-import type { WidgetariumProject } from "../packages/core/src/app/widgetarium-project.js";
+} from "../packages/shared/core/src/engine/assistant-port.js";
+import type { ChatCards } from "../packages/shared/core/src/engine/assistant-cards.js";
+import { JobSchema } from "../packages/shared/core/src/app-jobs.js";
+import { corePack } from "../packages/shared/packs/core/src/index.js";
+import { createMemoryRouter } from "../packages/shared/core/src/app/memory-router.js";
+import { WidgetariumApp, startProject } from "../packages/shared/core/src/app/widgetarium-app.js";
+import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.js";
 import { WidgetariumStudio, startOpenedStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import type { StartedStudio, StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import { STUDIO_PACKS } from "../apps/studio/src/legacy/logic/studio-pack.js";

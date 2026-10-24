@@ -1,8 +1,8 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { arrayGateway, soloGateway } from "../packages/core/src/gateway/create";
-import { createViewCells } from "../packages/core/src/gateway/refs.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { arrayGateway, soloGateway } from "../packages/shared/core/src/gateway/create";
+import { createViewCells } from "../packages/shared/core/src/gateway/refs.js";
 import { PAGE_HOST } from "./page-harness.ts";
 import KanbanBoard from "../registry/@default/kanban-board/widget.tsx";
 

@@ -1,16 +1,16 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { WidgetSurface } from "../packages/core/src/surface.js";
-import { normalizeBoard } from "../packages/core/src/model.js";
-import type { Board } from "../packages/core/src/model.js";
-import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { measureTile } from "../packages/core/src/surface-measure.js";
-import { contentInsetsOf } from "../packages/core/src/content-insets.js";
-import { SlotList } from "../packages/kit/src/index.ts";
-import { gapVarsOf } from "../packages/core/src/tree.js";
-import { withSlotSurface } from "../packages/core/src/widget-root.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "../packages/shared/core/src/surface.js";
+import { normalizeBoard } from "../packages/shared/core/src/model.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
+import { measureTile } from "../packages/shared/core/src/surface-measure.js";
+import { contentInsetsOf } from "../packages/shared/core/src/content-insets.js";
+import { SlotList } from "../packages/shared/kit/src/index.ts";
+import { gapVarsOf } from "../packages/shared/core/src/tree.js";
+import { withSlotSurface } from "../packages/shared/core/src/widget-root.js";
 import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
 import { elementAt, elementsAt, present, stackOf } from "./page-dom.ts";
 

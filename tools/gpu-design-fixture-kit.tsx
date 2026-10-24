@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import { Badge, Button, Card, Input, Item, ItemGroup, Segmented } from "@widgetarium/kit";
-import { defineLayout, defineMetadata, defineStates } from "../packages/core/src/gateway/declared.js";
-import { createWidget } from "../packages/core/src/widget-api.js";
+import { defineLayout, defineMetadata, defineStates } from "../packages/shared/core/src/gateway/declared.js";
+import { createWidget } from "../packages/shared/core/src/widget-api.js";
 
 export const KIT_TITLE = "Seed orders";
 

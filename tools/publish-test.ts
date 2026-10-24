@@ -4,7 +4,7 @@ import path from "node:path";
 import { JSDOM } from "jsdom";
 import { drawnTextOf } from "./drawn-text.ts";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -20,12 +20,12 @@ Object.assign(globalThis, {
 const { declarationIn, dependenciesFrom, packageNames, publishWidget, widgetDependenciesIn, PUBLISHED_SHEET } =
 	await import("./publish.ts");
 const { writeEveryCard } = await import("./manifest.ts");
-const { ANSWERED_BY_THE_ENGINE } = await import("../packages/core/src/engine/modules.js");
-const { createInstaller } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
-const { RECORD_FILE } = await import("../packages/core/src/engine/catalogue-index.js");
-const { compileWidget } = await import("../packages/core/src/engine/widget-build.js");
+const { ANSWERED_BY_THE_ENGINE } = await import("../packages/shared/core/src/engine/modules.js");
+const { createInstaller } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
+const { RECORD_FILE } = await import("../packages/shared/core/src/engine/catalogue-index.js");
+const { compileWidget } = await import("../packages/shared/core/src/engine/widget-build.js");
 
 let failed = 0;
 let checks = 0;

@@ -1,14 +1,17 @@
-import type { SpecRead } from "../packages/core/src/app-spec.ts";
-import { CanvasHost, DesignFilesGateway, detachedHostOf } from "../packages/canvas/generated/gateways.ts";
-import type { ReturnTo } from "../packages/canvas/generated/gateways.ts";
-import { PageChoicesQuery, ReturnToViewCommand } from "../packages/canvas/features/pages/contract.ts";
-import { PickVariantCommandHandler, ShowPageCommandHandler } from "../packages/canvas/features/pages/handlers.ts";
-import { PastePhotosCommand } from "../packages/canvas/features/photos/contract.ts";
-import { CachedDesignReads } from "../packages/canvas/shared/lib/design/design-reads.ts";
-import { MomentCanvasStore } from "../packages/canvas/shared/lib/view/canvas-store.ts";
-import { WebDesignFilesGateway } from "../packages/canvas/gateways/design-files/web.gateway.ts";
-import { WebAgentJobsGateway } from "../packages/canvas/gateways/agent-jobs/web.gateway.ts";
-import type { DrawnDesign } from "../packages/canvas/shared/schema/design.schema.ts";
+import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
+import { CanvasHost, DesignFilesGateway, detachedHostOf } from "../packages/domain/canvas/generated/gateways.ts";
+import type { ReturnTo } from "../packages/domain/canvas/generated/gateways.ts";
+import { PageChoicesQuery, ReturnToViewCommand } from "../packages/domain/canvas/features/pages/contract.ts";
+import {
+	PickVariantCommandHandler,
+	ShowPageCommandHandler,
+} from "../packages/domain/canvas/features/pages/handlers.ts";
+import { PastePhotosCommand } from "../packages/domain/canvas/features/photos/contract.ts";
+import { CachedDesignReads } from "../packages/domain/canvas/shared/lib/design/design-reads.ts";
+import { MomentCanvasStore } from "../packages/domain/canvas/shared/lib/view/canvas-store.ts";
+import { WebDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/web.gateway.ts";
+import { WebAgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/web.gateway.ts";
+import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/design.schema.ts";
 import { FARM_OPENED, FixedDesignFolderGateway, canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
 
 type Check = (what: string, held: unknown, wanted: unknown) => void;

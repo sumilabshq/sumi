@@ -1,15 +1,15 @@
-import type { AssistantPort, AssistantSession } from "../packages/core/src/engine/assistant-port.ts";
-import type { IpcOptions, TauriIpc } from "../packages/host-tauri/src/assistant/assistant-bridge.ts";
+import type { AssistantPort, AssistantSession } from "../packages/shared/core/src/engine/assistant-port.ts";
+import type { IpcOptions, TauriIpc } from "../apps/host-tauri/src/assistant/assistant-bridge.ts";
 import {
 	ATTACHMENT_PATH_HEADER,
 	droppedBytesIn,
 	droppedEntriesIn,
 	pickedFolderIn,
 	providersAnswerIn,
-} from "../packages/host-tauri/src/assistant/assistant-bridge.ts";
-import { cssPointOf, dragStepOf, isInside } from "../packages/host-tauri/src/assistant/tauri-file-drop.ts";
-import type { ChatSpot, WebviewDragSource } from "../packages/host-tauri/src/assistant/tauri-file-drop.ts";
-import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
+} from "../apps/host-tauri/src/assistant/assistant-bridge.ts";
+import { cssPointOf, dragStepOf, isInside } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
+import type { ChatSpot, WebviewDragSource } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
+import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
 import {
 	AttachDroppedCommand,
 	AttachFolderCommand,
@@ -19,21 +19,21 @@ import {
 	DraftAttachmentsQuery,
 	FileDragQuery,
 	SendMessageCommand,
-} from "../packages/assistant/generated/index.ts";
-import { app } from "../packages/core/src/requests/index.ts";
+} from "../packages/domain/assistant/generated/index.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
 import {
 	COMPACT_PROMPT,
 	NOTHING_TO_COMPACT,
 	STOPPED,
 	createTurnSession,
-} from "../packages/host-tauri/src/assistant/turn-session.ts";
-import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../packages/host-tauri/src/assistant/tauri-assistant-port.ts";
-import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
-import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
+} from "../apps/host-tauri/src/assistant/turn-session.ts";
+import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../apps/host-tauri/src/assistant/tauri-assistant-port.ts";
+import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
-import { startTauriAssistant } from "../packages/host-tauri/src/assistant/tauri-assistant.ts";
-import type { TauriAssistant } from "../packages/host-tauri/src/assistant/tauri-assistant.ts";
-import { NoWorkingFolderGateway, assistantPartsOf } from "../packages/assistant/generated/gateways.ts";
+import { startTauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
+import type { TauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
+import { NoWorkingFolderGateway, assistantPartsOf } from "../packages/domain/assistant/generated/gateways.ts";
 
 let failed = 0;
 let checks = 0;

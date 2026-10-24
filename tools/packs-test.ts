@@ -1,14 +1,19 @@
-import type { ImplementationPorts, NetworkAsk, VaultNote } from "../packages/core/src/engine/packs.ts";
-import { definePack, registeredCommands, registeredQueries, shutPortsOf } from "../packages/core/src/engine/packs.ts";
-import { handlerContextOf } from "../packages/core/src/gateway/handler-context.ts";
-import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
-import { NO_STUDIO_STATE } from "../packages/core/src/engine/studio-state-port.ts";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
-import { NO_CATALOGUE_PORT } from "../packages/core/src/engine/catalogue-port.ts";
-import { sourcesFor } from "../packages/core/src/engine/host-gateways.ts";
-import { arrayGateway } from "../packages/core/src/gateway/create.ts";
-import type { VaultSlot } from "../packages/core/src/gateway/obsidian.ts";
-import { FetchRowsQuery, FetchSendCommand, FetchValueQuery } from "../packages/packs/core/src/index.ts";
+import type { ImplementationPorts, NetworkAsk, VaultNote } from "../packages/shared/core/src/engine/packs.ts";
+import {
+	definePack,
+	registeredCommands,
+	registeredQueries,
+	shutPortsOf,
+} from "../packages/shared/core/src/engine/packs.ts";
+import { handlerContextOf } from "../packages/shared/core/src/gateway/handler-context.ts";
+import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
+import { NO_STUDIO_STATE } from "../packages/shared/core/src/engine/studio-state-port.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
+import { sourcesFor } from "../packages/shared/core/src/engine/host-gateways.ts";
+import { arrayGateway } from "../packages/shared/core/src/gateway/create.ts";
+import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.ts";
+import { FetchRowsQuery, FetchSendCommand, FetchValueQuery } from "../packages/shared/packs/core/src/index.ts";
 import {
 	FileSetCommand,
 	FolderCreateCommand,
@@ -18,9 +23,9 @@ import {
 	OpenCommand,
 	SearchQuery,
 	TagQuery,
-} from "../packages/packs/obsidian/src/index.ts";
-import { BreakdownQuery, NumberQuery, SeriesQuery, StreakQuery } from "../packages/packs/stats/src/index.ts";
-import { PushCommand } from "../packages/packs/git/src/commands.ts";
+} from "../packages/shared/packs/obsidian/src/index.ts";
+import { BreakdownQuery, NumberQuery, SeriesQuery, StreakQuery } from "../packages/shared/packs/stats/src/index.ts";
+import { PushCommand } from "../packages/shared/packs/git/src/commands.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

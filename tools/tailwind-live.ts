@@ -1,12 +1,12 @@
-import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
 import { fakeVault } from "./fake-vault.ts";
 import { layJsdomGlobals } from "./jsdom-globals.ts";
 
 layJsdomGlobals();
 
-const { createInstaller } = await import("../packages/core/src/installer.js");
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
-const { builtSheetPath } = await import("../packages/core/src/engine/widget-build.js");
+const { createInstaller } = await import("../packages/shared/core/src/installer.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
+const { builtSheetPath } = await import("../packages/shared/core/src/engine/widget-build.js");
 
 let failed = 0;
 let checks = 0;

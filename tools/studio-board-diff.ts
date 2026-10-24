@@ -16,7 +16,7 @@ const VIEW: readonly [number, number] = [1440, 900];
 const BOARDS = "docs/reference/sumi-layout";
 const BOARD_FONT = `@font-face { font-family: "Inter"; src: url(/inter.woff2) format("woff2"); font-weight: 100 900; }`;
 const REST_POINT = 720;
-const TAURI_CONFIG = "packages/host-tauri/src-tauri/tauri.conf.json";
+const TAURI_CONFIG = "apps/host-tauri/src-tauri/tauri.conf.json";
 const LIGHT_TOP_UNDER_INSET_PX = 9;
 const LIGHT_PX = 14;
 const THEMES: readonly Theme[] = ["light", "dark"];
@@ -34,7 +34,7 @@ const [sheet, bundle] = await Promise.all([
 	isShipped ? shippedTauriSheet() : tauriFrontendSheet(),
 	bundleOf("tools/studio-board-page.tsx"),
 ]);
-const font = readFileSync("packages/kit/assets/fonts/inter/InterVariable-latin.woff2");
+const font = readFileSync("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const BUILT = `<!doctype html><html lang="en"><head><meta charset="utf-8"><style>${sheet}</style></head>
 <body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
 

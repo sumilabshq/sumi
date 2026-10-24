@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import type { ViewStateResult } from "obsidian";
-import { JobSchema } from "../packages/core/src/app-jobs.ts";
-import type { Job } from "../packages/core/src/app-jobs.ts";
+import { JobSchema } from "../packages/shared/core/src/app-jobs.ts";
+import type { Job } from "../packages/shared/core/src/app-jobs.ts";
 import { constructAsUntypedSource, callAsUntypedSource } from "./untyped-source.ts";
 import { PROBE_VIEW } from "./vault-fixture.ts";
 
@@ -78,12 +78,12 @@ Object.defineProperties(dom.window.HTMLElement.prototype, {
 
 const { ItemView } = await import("obsidian");
 Object.assign(ItemView.prototype, { setState: async () => undefined });
-const { DesignView } = await import("../packages/host-obsidian/src/legacy/design-view.ts");
+const { DesignView } = await import("../apps/host-obsidian/src/legacy/design-view.ts");
 const { answerShotRequests, SHOTS_DIR, SHOT_REQUESTS_DIR } =
-	await import("../packages/host-obsidian/src/legacy/shot-requests.ts");
-const { designPathOf } = await import("../packages/core/src/app-design.ts");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { AgentJobsGateway } = await import("../packages/canvas/generated/gateways.ts");
+	await import("../apps/host-obsidian/src/legacy/shot-requests.ts");
+const { designPathOf } = await import("../packages/shared/core/src/app-design.ts");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { AgentJobsGateway } = await import("../packages/domain/canvas/generated/gateways.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

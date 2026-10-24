@@ -1,8 +1,8 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { Grid } from "../packages/kit/src/index";
-import { OverlaysShowcase } from "../packages/kit/src/showcase/index";
-import type { OpenedOverlay, ShowcaseEntry, ShowcaseId } from "../packages/kit/src/showcase/index";
+import { Grid } from "../packages/shared/kit/src/index";
+import { OverlaysShowcase } from "../packages/shared/kit/src/showcase/index";
+import type { OpenedOverlay, ShowcaseEntry, ShowcaseId } from "../packages/shared/kit/src/showcase/index";
 import { Section, WideSection } from "./kit-demo-frame.tsx";
 import type { SectionProps } from "./kit-demo-frame.tsx";
 import { CHAT_USAGE } from "./kit-demo-chat-usage.ts";

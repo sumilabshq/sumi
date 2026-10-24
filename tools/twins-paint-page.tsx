@@ -33,7 +33,7 @@ import {
 	Toggle,
 	ToggleGroup,
 	ToggleGroupItem,
-} from "../packages/kit/src/index";
+} from "../packages/shared/kit/src/index";
 
 function Page() {
 	useEffect(() => {

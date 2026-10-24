@@ -95,7 +95,7 @@ The host builds the parts once per mount, one factory per platform in `gateways/
 
 - Reads its own requests with `useQuery` / `useOptionalQuery` / `useCommand`; gets no handlers or data through props from a parent.
 - Holds no decision about data. The query answers the shape it draws; the command decides.
-- Holds no pointer, scroll or drag math: a primitive from Radix or `packages/behaviors` does it.
+- Holds no pointer, scroll or drag math: a primitive from Radix or `packages/shared/behaviors` does it.
 - ≤ 80 lines per component; a part that grows becomes its own file beside it. A hook or helper it needs is a `.ts` file in its feature's `lib/` (or `shared/lib/` when two features use it), since `ui/` holds only `.tsx`.
 
 ## A gateway

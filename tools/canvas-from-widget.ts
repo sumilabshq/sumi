@@ -6,7 +6,7 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { findBrowser } from "./harness.ts";
 import { THEMES, HOST_FONTS, type HostTheme } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 
 interface CanvasFrame {
 	readonly file: string;
@@ -31,7 +31,7 @@ interface ArtboardPlace {
 
 const OUT = "docs/reference/metric-total";
 const SHEETS = [
-	"packages/host-obsidian/styles.css",
+	"apps/host-obsidian/styles.css",
 	"registry/@default/tokens.css",
 	"registry/@default/metric-total/widget.css",
 ];
@@ -108,9 +108,9 @@ const FRAMES: readonly CanvasFrame[] = [
 
 const PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./registry/@default/metric-total/widget.tsx";
-import { collectionGateway, soloGateway } from "./packages/core/src/gateway/create";
+import { collectionGateway, soloGateway } from "./packages/shared/core/src/gateway/create";
 
 const asked = window.__FRAME__;
 const DAY = 86400000;
@@ -198,9 +198,9 @@ async function bundled(): Promise<string> {
 		inject: ["tools/fill-inject.ts"],
 		alias: {
 			widgetarium: "./tools/fill-shim.ts",
-			"widgetarium/kit": "./packages/kit/src/index.ts",
-			"widgetarium/kit/emojis": "./packages/kit/src/emojis/emoji.tsx",
-			"widgetarium/kit/charts": "./packages/kit/src/charts/index.ts",
+			"widgetarium/kit": "./packages/shared/kit/src/index.ts",
+			"widgetarium/kit/emojis": "./packages/shared/kit/src/emojis/emoji.tsx",
+			"widgetarium/kit/charts": "./packages/shared/kit/src/charts/index.ts",
 			"@default/lib": "./registry/@default/lib.ts",
 			obsidian: "./tools/obsidian-shim.ts",
 		},

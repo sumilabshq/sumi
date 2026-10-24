@@ -1,10 +1,10 @@
 import type { Menu, Stat } from "obsidian";
-import type { AppProjectsAdapter } from "../packages/host-obsidian/src/legacy/app-projects.ts";
+import type { AppProjectsAdapter } from "../apps/host-obsidian/src/legacy/app-projects.ts";
 import { parse } from "yaml";
-import type WidgetariumPlugin from "../packages/host-obsidian/src/main.ts";
-import type { ShownNote, StudioPlace } from "../packages/host-obsidian/src/legacy/studio-drawing.ts";
+import type WidgetariumPlugin from "../apps/host-obsidian/src/main.ts";
+import type { ShownNote, StudioPlace } from "../apps/host-obsidian/src/legacy/studio-drawing.ts";
 import { standIn } from "./stand-in.ts";
-import { CATALOGUE_REQUESTS } from "../packages/core/src/engine/catalogue-requests.ts";
+import { CATALOGUE_REQUESTS } from "../packages/shared/core/src/engine/catalogue-requests.ts";
 import {
 	FixedWidgetDrawingGateway,
 	FixedDesignFolderGateway,
@@ -12,10 +12,10 @@ import {
 	canvasPartsOver,
 	emptyProject,
 } from "./canvas-hosts.ts";
-import { webCanvasParts } from "../packages/canvas/generated/gateways.ts";
-import { webBrowserParts } from "../packages/browser/generated/gateways.ts";
-import { webAssistantGateways } from "../packages/assistant/generated/gateways.ts";
-import { WebDesignFolderGateway } from "../packages/canvas/gateways/design-folder/web.gateway.ts";
+import { webCanvasParts } from "../packages/domain/canvas/generated/gateways.ts";
+import { webBrowserParts } from "../packages/domain/browser/generated/gateways.ts";
+import { webAssistantGateways } from "../packages/domain/assistant/generated/gateways.ts";
+import { WebDesignFolderGateway } from "../packages/domain/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -27,10 +27,10 @@ import {
 	renamedFolderOf,
 	renamedPathOf,
 	studioNoteOf,
-} from "../packages/host-obsidian/src/legacy/studio-note.ts";
-import type { WindowChrome } from "../packages/host-obsidian/src/legacy/studio-note.ts";
-import { layNewApp } from "../packages/host-obsidian/src/new-app.ts";
-import type { ProjectVault } from "../packages/host-obsidian/src/vault-project-writer.ts";
+} from "../apps/host-obsidian/src/legacy/studio-note.ts";
+import type { WindowChrome } from "../apps/host-obsidian/src/legacy/studio-note.ts";
+import { layNewApp } from "../apps/host-obsidian/src/new-app.ts";
+import type { ProjectVault } from "../apps/host-obsidian/src/vault-project-writer.ts";
 import type { StudioMount } from "../apps/studio/src/canvas/studio-canvas.ts";
 import type { StageMount } from "../apps/studio/src/canvas/design-stage.ts";
 
@@ -223,19 +223,19 @@ Object.assign(globalThis, {
 });
 Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 
-const { registerPacks } = await import("../packages/core/src/engine/packs.js");
-const { pageParamCell } = await import("../packages/core/src/engine/page-params.js");
-const { corePack } = await import("../packages/packs/core/src/index.js");
-const { createMemoryRouter } = await import("../packages/core/src/app/memory-router.js");
-const { createAppProjects } = await import("../packages/host-obsidian/src/legacy/app-projects.js");
-const { drawStudio } = await import("../packages/host-obsidian/src/legacy/studio-drawing.js");
-const { obsidianStudioHost } = await import("../packages/host-obsidian/src/legacy/studio-host-obsidian.js");
-const { registerStudioView } = await import("../packages/host-obsidian/src/legacy/studio-leaves.js");
-const { followAppFolderRename } = await import("../packages/host-obsidian/src/legacy/studio-renames.js");
-const { createStudioRouting } = await import("../packages/host-obsidian/src/legacy/studio-routing.js");
-const { STUDIO_VIEW_TYPE, StudioView } = await import("../packages/host-obsidian/src/legacy/studio-view.js");
+const { registerPacks } = await import("../packages/shared/core/src/engine/packs.js");
+const { pageParamCell } = await import("../packages/shared/core/src/engine/page-params.js");
+const { corePack } = await import("../packages/shared/packs/core/src/index.js");
+const { createMemoryRouter } = await import("../packages/shared/core/src/app/memory-router.js");
+const { createAppProjects } = await import("../apps/host-obsidian/src/legacy/app-projects.js");
+const { drawStudio } = await import("../apps/host-obsidian/src/legacy/studio-drawing.js");
+const { obsidianStudioHost } = await import("../apps/host-obsidian/src/legacy/studio-host-obsidian.js");
+const { registerStudioView } = await import("../apps/host-obsidian/src/legacy/studio-leaves.js");
+const { followAppFolderRename } = await import("../apps/host-obsidian/src/legacy/studio-renames.js");
+const { createStudioRouting } = await import("../apps/host-obsidian/src/legacy/studio-routing.js");
+const { STUDIO_VIEW_TYPE, StudioView } = await import("../apps/host-obsidian/src/legacy/studio-view.js");
 const { checkedAssistantPort } = await import("./obsidian-assistant-port-checks.ts");
-const { NO_ASSISTANT } = await import("../packages/core/src/engine/assistant-port.js");
+const { NO_ASSISTANT } = await import("../packages/shared/core/src/engine/assistant-port.js");
 registerPacks(corePack);
 
 const APP_NOTE = { path: "Apps/Farm.md", basename: "Farm" };
@@ -880,9 +880,9 @@ check(
 );
 
 const { DesignStage, CANVAS_OPENED_ON } = await import("../apps/studio/src/canvas/design-stage.js");
-const { ModuleRegistry } = await import("../packages/core/src/engine/module-registry.js");
-const { NO_HOST } = await import("../packages/core/src/engine/host-none.js");
-const { render: drawInto } = await import("../packages/core/src/engine/render.js");
+const { ModuleRegistry } = await import("../packages/shared/core/src/engine/module-registry.js");
+const { NO_HOST } = await import("../packages/shared/core/src/engine/host-none.js");
+const { render: drawInto } = await import("../packages/shared/core/src/engine/render.js");
 const { createElement } = await import("react");
 const stageDrawing = new FixedWidgetDrawingGateway({
 	registry: new ModuleRegistry({}),
@@ -1019,7 +1019,7 @@ await checkCanvasReads(check);
 const { checkCanvasRequests } = await import("./canvas-request-checks.ts");
 await checkCanvasRequests(check);
 
-const { studioDesignOf } = await import("../packages/host-obsidian/src/legacy/studio-leaves.js");
+const { studioDesignOf } = await import("../apps/host-obsidian/src/legacy/studio-leaves.js");
 const activeLeaf = standIn<WorkspaceLeaf>({}, [], "leaf");
 const otherLeaf = standIn<WorkspaceLeaf>({}, [], "leaf");
 const designPlugin = standIn<WidgetariumPlugin>(

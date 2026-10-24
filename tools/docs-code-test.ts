@@ -8,9 +8,9 @@ const SKIPPED_MARK = "skip-check";
 const FENCE = /^```(tsx|ts)(?![\w-])([^\n]*)\n([\s\S]*?)^```[ \t]*$/gm;
 const NAMED_FILE = /\bfile=(\S+)/;
 const DIAGNOSTIC = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
-const REFERENCED_PROJECTS = ["packages/kit", "packages/core"];
-const WIDGET_CONFIG = "packages/sdk/tsconfig.widgets.json";
-const WIDGET_DECLARATIONS = "packages/sdk/types/widgetarium.d.ts";
+const REFERENCED_PROJECTS = ["packages/shared/kit", "packages/shared/core"];
+const WIDGET_CONFIG = "packages/shared/sdk/tsconfig.widgets.json";
+const WIDGET_DECLARATIONS = "packages/shared/sdk/types/widgetarium.d.ts";
 
 interface Block {
 	readonly page: string;

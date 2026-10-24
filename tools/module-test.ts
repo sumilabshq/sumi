@@ -16,11 +16,11 @@ const {
 	versionIn,
 	declaredDependencies,
 	MODULES_DIR,
-} = await import("../packages/core/src/engine/modules.js");
+} = await import("../packages/shared/core/src/engine/modules.js");
 const { readLock, withModule, releaseModules, modulesByWidget } =
-	await import("../packages/core/src/engine/widget-lock.js");
-const { createInstaller, LOCK_PATH } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
+	await import("../packages/shared/core/src/engine/widget-lock.js");
+const { createInstaller, LOCK_PATH } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
 
 let failed = 0;
 let checks = 0;
@@ -323,8 +323,8 @@ check(
 	false,
 );
 
-const { createModuleSpace } = await import("../packages/core/src/engine/modules.js");
-const { contentHash } = await import("../packages/core/src/engine/content-hash.js");
+const { createModuleSpace } = await import("../packages/shared/core/src/engine/modules.js");
+const { contentHash } = await import("../packages/shared/core/src/engine/content-hash.js");
 
 interface Taken {
 	readonly hash: unknown;

@@ -1,5 +1,5 @@
 import { pathToFileURL } from "node:url";
-import type { EngineManifest, OrderedProps } from "../packages/core/src/engine/catalogue-index.js";
+import type { EngineManifest, OrderedProps } from "../packages/shared/core/src/engine/catalogue-index.js";
 import { fakeVault } from "./fake-vault.ts";
 import type { FakeVault } from "./fake-vault.ts";
 import { widgetFiles } from "./harness.ts";
@@ -8,7 +8,7 @@ import { isRecord } from "./page-dom.ts";
 
 if (typeof document === "undefined") layJsdomGlobals();
 
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
 
 type Files = Readonly<Record<string, string>>;
 

@@ -21,10 +21,10 @@ Object.assign(globalThis, {
 const react = await import("react");
 const { createElement: h, Fragment } = react;
 const { flushSync } = await import("react-dom");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
-const kit = await import("../packages/kit/src/index.ts");
-const { soloGateway } = await import("../packages/core/src/gateway/create.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
 
 interface SearchInputProps {
 	readonly getValue: unknown;

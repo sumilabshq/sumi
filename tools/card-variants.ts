@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { WIDGETS_DIR } from "../packages/core/src/paths.js";
+import { WIDGETS_DIR } from "../packages/shared/core/src/paths.js";
 import { collectFiles } from "./registry-files.ts";
 import { TEXT_LOADERS } from "./text-loaders.ts";
 
@@ -40,7 +40,7 @@ const LIGHT = `--background-primary:#ffffff;--background-secondary:#f6f6f6;--bac
 
 function pageFor(variant: string, title: string, said: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${readFileSync("tools/card-variants.css", "utf8")}</style>
 <style>
 body { margin: 0; padding: 28px 32px; ${LIGHT}

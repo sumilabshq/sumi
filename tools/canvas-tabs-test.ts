@@ -10,7 +10,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-canvas-t
 mkdirSync(shotsAt, { recursive: true });
 const bundle = await bundleOf("tools/studio-render-page.tsx");
 const sumi = readFileSync("design-systems/sumi/sumi.css", "utf8");
-const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sumi}\n${sheets}</style></head>

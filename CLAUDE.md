@@ -1,6 +1,6 @@
 # Widgetarium
 
-**New code follows [docs/architecture/](docs/architecture/README.md)**: apps → packages, hosts as `packages/host-*`,
+**New code follows [docs/architecture/](docs/architecture/README.md)**: apps → packages, hosts as `apps/host-*`,
 domains and common, placement by what a file is. Code under a `legacy/` folder predates it and leaves
 by rewrite ([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree for
 new code, those pages win.
@@ -27,14 +27,14 @@ stand around `if`/`for` blocks. `===`, `const` unless reassigned, no nested tern
 Prettier the rest; a hook formats every edit, and `npm test` fails on a violation.
 
 An Obsidian plugin: widget tiles in a nested layout inside a note, plus rules that substitute a
-widget for a line of text. **Everything is strict TypeScript**: `packages/kit` is TSX (JSX with the
-classic `h` factory, one component per file), `packages/core` and `packages/host-obsidian` are `.ts` React with
+widget for a line of text. **Everything is strict TypeScript**: `packages/shared/kit` is TSX (JSX with the
+classic `h` factory, one component per file), `packages/shared/core` and `apps/host-obsidian` are `.ts` React with
 `h()` hyperscript — **no JSX there** — and `tools/` is `.ts` too. `npm run test:types` gates it all
 (`tsc -b` over kit, core, the app and tools, then the `double-cast` lint): no `any`, no
 `as unknown as`, no `!`; data from outside arrives `unknown` and is narrowed by a guard. Widgets under
 `registry/` are `.tsx` compiled at runtime by sucrase (types stripped) and type-checked here against
-`packages/sdk/types/widgetarium.d.ts`, which only re-exports the real declarations of core and the kit.
-**A widget is TypeScript or it is refused.** `SOURCE_FILES` in `packages/core/src/engine/widget-build.ts`
+`packages/shared/sdk/types/widgetarium.d.ts`, which only re-exports the real declarations of core and the kit.
+**A widget is TypeScript or it is refused.** `SOURCE_FILES` in `packages/shared/core/src/engine/widget-build.ts`
 is `widget.tsx` and `widget.ts`; a folder holding only `widget.jsx` or `widget.js` is answered by
 `javascriptSourceRefusal` — on the tile, at install, in `publish`, `manifest` and `widgets.mjs` — with
 the rename that fixes it. A `widget.js` beside a TypeScript source is ignored, never read as a build.
@@ -42,19 +42,26 @@ the rename that fixes it. A `widget.js` beside a TypeScript source is ignored, n
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
 ```
-packages/host-obsidian     FSL  the host: mounts core in a note, hands it the vault through handlers
-apps/studio       FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
+apps/host-obsidian       FSL  the host: mounts core in a note, hands it the vault through handlers
+apps/host-tauri          FSL  the desktop host
+apps/studio              FSL  @widgetarium/studio: the band, canvas, AI chat and catalogue drawn around an app
       ↓
-packages/cli      FSL  @widgetarium/cli: the `widgetarium` bin (create, check, catalogue, add) and templates/project
-packages/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, apps/studio, so a project's `npm run studio` resolves it
+packages/domain/*             business areas: workspaces, app-host, browser, assistant, canvas
+packages/state/*              data modules: layout
+packages/client/*             views of a data module: shell, mascot
       ↓
-packages/core     FSL  the board builder: tree, engine, queries and commands, renderer, laws; `.` is the widget API, `./app` app mode and the routers
+packages/shared/cli      FSL  @widgetarium/cli: the `widgetarium` bin (create, check, catalogue, add) and templates/project
+packages/shared/vite     FSL  @widgetarium/vite: dev and build run the app, --mode studio the studio around it; the one package depending on an app, apps/studio, so a project's `npm run studio` resolves it
       ↓
-packages/packs/*  MIT  every query and command implementation, one workspace per pack (@core, @obsidian, @stats, @git): schemas, *Query, *Command; the host registers them
-packages/kit      MIT  everything drawn: TSX, one file per kit item in components/ (emblem, button, layout, popover, …); plate laws in utils/plate-laws.ts
-packages/sdk      FSL  what a widget author compiles against: types/widgetarium.d.ts
-registry/         MIT  the widget library everyone installs from: @default, @flow, @media
+packages/shared/core     FSL  the board builder: tree, engine, queries and commands, renderer, laws; `.` is the widget API, `./app` app mode and the routers
+      ↓
+packages/shared/packs/*  MIT  every query and command implementation, one workspace per pack (@core, @obsidian, @stats, @git): schemas, *Query, *Command; the host registers them
+packages/shared/kit      MIT  everything drawn: TSX, one file per kit item in components/ (emblem, button, layout, popover, …); plate laws in utils/plate-laws.ts
+packages/shared/sdk      FSL  what a widget author compiles against: types/widgetarium.d.ts
+registry/                MIT  the widget library everyone installs from: @default, @flow, @media
 ```
+
+`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps.
 
 Data reaches a widget only through `IQuery` and `ICommand`.
 
@@ -67,16 +74,16 @@ project outside the repo and type-checks a widget there. Widgets import `z` from
 hands `zod` to vault widgets like React.
 
 **An app is a project folder, and one reader decides what it holds.** `widgetarium.json` at its root
-(`ProjectConfigSchema`, `packages/core/src/project/project-config.ts`) requires only `name`: every
+(`ProjectConfigSchema`, `packages/shared/core/src/project/project-config.ts`) requires only `name`: every
 layer's path has a default, a path is project-relative with `/` and never `..`, and `aliases` adds to
 `@kit`, `@schemas`, `@libs`, `@logic` and `@widgets`. `discover-project.ts` walks every layer
 recursively through the `ProjectFiles` port — over Node (`project-files-node.ts`) and over the vault
-(`packages/host-obsidian/src/legacy/project-files-vault.ts`) — and finds a handler by parsing its class, never by
+(`apps/host-obsidian/src/legacy/project-files-vault.ts`) — and finds a handler by parsing its class, never by
 running it. `checkDiscovered` in `check-project.ts` is the one judge: the CLI's `check`, the Vite
 plugin and the Obsidian block all refuse a project through it, so a project one of them opens the
 others open too.
 
-- **The CLI** is `packages/cli`, `npx widgetarium create | check | catalogue | add`.
+- **The CLI** is `packages/shared/cli`, `npx widgetarium create | check | catalogue | add`.
   `create` vendors the engine tarballs into the app, copies the kit into `paths.kit` and writes
   aliases sending `@widgetarium/kit` and its subpaths there. `add` copies a catalogue widget, writes
   `origin.json` beside it and never writes over a widget of the same name: there are no widget
@@ -84,8 +91,8 @@ others open too.
 - **The standalone app** is `@widgetarium/core/app` (`startProject`, `WidgetariumApp`) fed by
   `virtual:widgetarium/project`, which the `@widgetarium/vite` plugin builds from discovery and fails
   the build on findings; the project hands its packs (`packs: [corePack]`), so core imports no pack.
-  `@widgetarium/core/styles.css` is cut at pack time from `packages/core/browser-host.css` and
-  `packages/host-obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
+  `@widgetarium/core/styles.css` is cut at pack time from `packages/shared/core/browser-host.css` and
+  `apps/host-obsidian/styles.css` (`tools/pack-engine.mts`), so a board style reaches an app only by a pack.
 - **In Obsidian** a `widgetarium-app` code block names `app: <folder>` and `route: <path>`
   (`app-block.ts`). `app-projects.ts` opens a project only when a block draws it — **a start reads no
   project file** — compiling its modules in memory (`project-program.ts`) into the module space vault
@@ -104,12 +111,12 @@ lays), `test:create` (a created app installs, type-checks, checks clean and buil
 
 **Kit imports nothing but React, tailwind-merge and, behind `/charts` and `/showcase` alone, Recharts; core never
 imports the app.** A plate law lives in
-`packages/kit/src/utils/plate-laws.ts` (the words in `constants/surfaces.ts`) because `Card` answers it, and `tree.js` and `surface-roles.js`
+`packages/shared/kit/src/utils/plate-laws.ts` (the words in `constants/surfaces.ts`) because `Card` answers it, and `tree.js` and `surface-roles.js`
 re-export it from there. The app reaches core as `@widgetarium/core/<file>` and the kit as
 `@widgetarium/kit[/surface|/plates|/icons|/emoji-table|/emojis|/charts|/shapes|/showcase]` — the kit's
 `package.json` `exports` is the one list of its entry points, and the test loader resolves
 `@widgetarium/*` through it. Every tool runs from the repo root. A second host (web, Tauri) is another
-`packages/host-*` beside `host-obsidian`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
+`apps/host-*` beside `host-obsidian`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
 map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths to them.
 
 **The handbook written for the in-app agent is your handbook too.** `docs/ai/` is the whole of it:
@@ -126,7 +133,7 @@ same change: a law that changed in code and not there is a law the next agent br
 are what they are lives in `docs/decisions.md`.
 
 **An app is built in five stages, and the order is the law.** `brief.md` holds them. Stage 1 is
-the spec: `.widgetarium/apps/<app>/spec.md`, whose front matter (`AppSpecSchema` in `packages/core/src/app-spec.ts`)
+the spec: `.widgetarium/apps/<app>/spec.md`, whose front matter (`AppSpecSchema` in `packages/shared/core/src/app-spec.ts`)
 holds the features in the person's words, the choices, the pages with their bodies and the checks,
 and below it, for the agent, what each list allows. `widgets.mjs spec <app>` draws it in the chat as
 a card the person answers on — unticking a feature or picking a choice writes the note through
@@ -198,7 +205,7 @@ record's address is `RecordRef`, one branded name.
 
 **Lists are pages.** A query answering rows takes `PageInputSchema` — `{ cursor?: string | null, limit }`,
 `limit` a hundred unless asked — and answers `PageOf(RowSchema)` — `{ items, next: string | null, total? }`, typed
-`Page<Row>` (`packages/core/src/gateway/page.ts`). The engine recognises a `PageOf` output: a read
+`Page<Row>` (`packages/shared/core/src/gateway/page.ts`). The engine recognises a `PageOf` output: a read
 naming no `limit` gets a hundred rows, an asked `limit` is honoured, and it hands the widget the items as `data`, with `hasMore` and `more()`, which
 reads `next`. A paged query's `defineStates` entry is its rows, a plain array.
 A filter is a plain zod field of the input, usually picked from the shared schema
@@ -219,9 +226,9 @@ options.
 `src/logic/<feature>` of a project and map a ready source (`src/shared/sources/<pack>`) to the shape a
 widget asks for; the widget and the handler meet only in `src/shared/schemas`, and imports point down,
 app → widgets → logic → shared. `widgetarium.json` names where each layer lives. Every built-in
-handler is a pack class built `new Class(fields, ports)` — the picking in `packages/packs/core`, file
-and folder reading in `packages/packs/obsidian`, the statistics in `packages/packs/stats` — while core
-holds only the contract: `QueryPorts` in `packages/core/src/engine/packs.ts`, built by `queryPortsOf`.
+handler is a pack class built `new Class(fields, ports)` — the picking in `packages/shared/packs/core`, file
+and folder reading in `packages/shared/packs/obsidian`, the statistics in `packages/shared/packs/stats` — while core
+holds only the contract: `QueryPorts` in `packages/shared/core/src/engine/packs.ts`, built by `queryPortsOf`.
 A widget's metadata names where a prop starts from, `props.<name>.source = { implementation, fields }`:
 `@core/selection` for which row is chosen and `@core/selected-row` for the row a sibling picks, with
 `fields` naming sibling props by their prop name. `keep: "screen"` in `props.<name>.keep` makes a value
@@ -243,7 +250,7 @@ The engine resolves each port to a handler from the binding the person chose —
 file, a value kept in the tile, another tile's ref, or a feature handler. The manifest carries no id,
 no version and no api: the id is the folder, the version is the commit, the api is stamped by the build.
 **A surface is written by whoever places the node, and nothing lays one for you.** `main.js` no
-longer hands `normalizeBoard` a `roleOf`, so `withDefaultSurfaces` in `packages/core/src/surface-default.ts` does
+longer hands `normalizeBoard` a `roleOf`, so `withDefaultSurfaces` in `packages/shared/core/src/surface-default.ts` does
 not run on a drawn board: it survives behind that switch, with `tools/surface-default-test.ts` as
 its only caller. Measured before the switch was thrown, by `tools/surface-probe.ts` over three real
 screens: the writer wrote `apart` on navigation columns and **nothing else**, because `wantsWriting`
@@ -255,7 +262,7 @@ parent. **The agent gives every node its surface as it places it**, guided by `d
 `widgets.mjs surfaces` reads a **drawn** board back and says which plates look wrong beside each
 other, and is never a source of surfaces to write.
 
-**A screen starts from a base, and the board remembers which one.** `packages/core/src/layouts.ts` holds the
+**A screen starts from a base, and the board remembers which one.** `packages/shared/core/src/layouts.ts` holds the
 fifteen page skeletons a screen may begin as — `page`, `page-composed`, `workspace`, `three-pane`,
 `supporting-pane`, `split`, `surface`, `journal`, `analytics`, `library`, `gallery`, `atlas`,
 `showcase`, `notebook`, `drill` — each cutting the page into regions that carry their `role`,
@@ -267,11 +274,11 @@ writes them into the note rather than competing with the laws at draw time. `bas
 `normalizeBoard` and `serializeBoard`, which is what lets `lint` hold a built screen against what was
 declared: a region count that does not match, a region holding the wrong role, a declared region left
 empty. A shell named only in the chat was thrown away, and that is why the same request produced a
-different screen every time. `packages/core/src/patterns.ts` is now only the card shapes — what a card wears alone
+different screen every time. `packages/shared/core/src/patterns.ts` is now only the card shapes — what a card wears alone
 and among peers — which is a different question from how a page is cut.
 
 **The agent sees the whole catalogue, not the vault.** `widgets.mjs find` merges what is installed
-with what every configured source offers, and `packages/core/src/engine/registry-file.ts` is the one reader of a
+with what every configured source offers, and `packages/shared/core/src/engine/registry-file.ts` is the one reader of a
 registry — a source naming a `path` on this machine is read off disk, one naming a `repository` is
 fetched, and both come back through `readRegistry`, which is what turns a registry's `scope` and a
 row's `name` into an id. An offered row carries its folder, so it is ranked by the role and the
@@ -280,12 +287,12 @@ it and its scope's shared files into the vault and records the install in the lo
 to the engine. Everything the plugin still owns is the remote fetch. A vault whose catalogue
 answers with only what it already holds is what makes an agent write a widget that exists.
 
-`manifestOf` in `packages/core/src/engine/catalogue-index.ts` is the one place a declaration becomes the manifest
+`manifestOf` in `packages/shared/core/src/engine/catalogue-index.ts` is the one place a declaration becomes the manifest
 the engine reads.
 
 **A widget folder is typed wherever it stands.** The repo has `registry/tsconfig.json`, so an editor
 opening a widget resolves `widgetarium` instead of reporting `TS2307` and handing every prop `any` —
-`packages/core/tsconfig.json` covers only core's TypeScript. The vault gets the same: `layAgentFiles` lays
+`packages/shared/core/tsconfig.json` covers only core's TypeScript. The vault gets the same: `layAgentFiles` lays
 `.widgetarium/widgets/tsconfig.json` and `types/` beside the widgets, built by `tools/widget-types.mts`
 from core's emitted declarations, so a widget written in a vault is typed by the same manifest
 the engine reads. `npm run test:vault-types` lays them into a temp folder and compiles a widget
@@ -302,7 +309,7 @@ paging is there from the first row rather than appearing at the thousandth; `nex
 widget did not get.
 
 **A widget is checked by the plugin, not by the person who wrote it.** `checkWidget` in
-`packages/core/src/widget-check.ts` reads a widget's own source, sheet and card and names six things a generated
+`packages/shared/core/src/widget-check.ts` reads a widget's own source, sheet and card and names six things a generated
 widget gets wrong: a colour written by hand instead of a `--wg-kit-*` token, type written by hand
 instead of taken from the host, rows drawn from a list read with no limit, a manifest naming no
 role, a name imported from `widgetarium` that its surface does not carry — the one defect that
@@ -340,8 +347,8 @@ switched-off command answers `{ ok: false, reason }`, and its widget hides the c
 
 **A tile names the version it was made with.** `widget: "@scope/name@<commit>"` for a widget installed
 from a repository, a bare id for one that lives in the vault; `widgetKeyOf` in
-`packages/core/src/engine/widget-ref.ts` is what every comparison of widget ids goes through. An update is compared
-with what is installed by `packages/core/src/engine/compatibility.ts`: a compatible one replaces the files in place
+`packages/shared/core/src/engine/widget-ref.ts` is what every comparison of widget ids goes through. An update is compared
+with what is installed by `packages/shared/core/src/engine/compatibility.ts`: a compatible one replaces the files in place
 and the generation absorbs its commit; one that breaks tiles — a removed or reshaped prop, a changed
 default, a rename without `aka` — installs beside it as `@scope/name@<commit>`. A tile moves to a
 newer generation only by a press, through the widget's `migrations` when one covers the old props. A
@@ -400,8 +407,8 @@ expressible, and the three named regions were not able to say it. Full decision 
 (pixels or `"full"`) and `size.preferredHeight` (pixels or `"auto"`) — `defineLayout` refuses one
 without — and may add `keepsRatio` and `at`, steps keyed by the width of the **region** it stands in
 (`regionPx` from `layRegion`), never the screen, switching at once like a `max-width` query.
-`preferredSizeAt` in `packages/core/src/tree.ts` picks the size for a region and `preferredSizeStyle` in
-`packages/core/src/surface.ts` draws it: the width as the cell's `max-inline-size`, the height as its `min-height`
+`preferredSizeAt` in `packages/shared/core/src/tree.ts` picks the size for a region and `preferredSizeStyle` in
+`packages/shared/core/src/surface.ts` draws it: the width as the cell's `max-inline-size`, the height as its `min-height`
 or, with `keepsRatio`, its `aspect-ratio`, each widened by the plate's padding when the cell wears one.
 A widget with more to draw grows past its preferred height; one that needs a hard size bounds its own
 container in its sheet. `tallestPx` and `shortestPx`, bounds the engine used to enforce, are gone.
@@ -433,14 +440,14 @@ person's own vault widgets import from `widgetarium` too. Removing `WidgetRoot` 
 no longer used it crashed `@you/habit-list` in a real vault on 2026-10-01.
 
 **The tile's plate is the node's, the plates under it are the widget's, and one component paints
-both kinds.** `Card` in `packages/kit/src/components/card.tsx` (once `Surface`, which stays as an alias for widgets published
+both kinds.** `Card` in `packages/shared/kit/src/components/card.tsx` (once `Surface`, which stays as an alias for widgets published
 before the rename) takes `type` — `group` by default, `none` for a widget that paints nothing — plus `tone` for a plate in a state and `side`/`across` for
-a divider. It reads `PLATES_ABOVE` (`packages/kit/src/utils/surface.ts`), seeded from the laid node's own `plates` and
+a divider. It reads `PLATES_ABOVE` (`packages/shared/kit/src/utils/surface.ts`), seeded from the laid node's own `plates` and
 `underSurface` — **inside the tree handed to the tile's shell, because a widget is drawn in its own
-render root** (`DrawnInShell` in `packages/core/src/mounted.ts`) and no context crosses that seam. Measured: a Provider
+render root** (`DrawnInShell` in `packages/shared/core/src/mounted.ts`) and no context crosses that seam. Measured: a Provider
 around the cell body left every widget counting from zero, and the third plate painted itself white
 on a drawn board while every jsdom check stayed green. Every plate under it provides the next level,
-so a widget's Surface is judged by the very laws the tree is judged by: `plateRefusal` in `packages/core/src/surface-roles.ts`
+so a widget's Surface is judged by the very laws the tree is judged by: `plateRefusal` in `packages/shared/core/src/surface-roles.ts`
 is the one function answering whether a plate may stand somewhere, asked by `nestingFindings` for the
 note and by the kit for the screen; `tone`, `side` and `across` are held to the kit's own words the
 same way, and a word the kit never had falls back and warns rather than reaching the DOM. A named
@@ -474,10 +481,10 @@ parent does not feed a slotted widget arrives as its declared default (`slotDefa
 and a list is read a page at a time (`pageOf`), which is how `@default/feed` loads
 ten more each time its end comes into view. A widget names its
 `role` in its manifest, a group names `role` and `purpose` on its box, and the role bounds how far it
-may be set apart. The nesting table in `packages/core/src/surface-roles.ts` is absolute: an `outline` is only ever
+may be set apart. The nesting table in `packages/shared/core/src/surface-roles.ts` is absolute: an `outline` is only ever
 the first plate from the region, a `fill` inside a `fill` is one step darker because the token is
 translucent, and a `divider` stands anywhere; a plate whose every child wears a plate is an error.
-The laws in `docs/ai/surfaces.md` are run by `packages/core/src/surface-laws.ts` over what `packages/core/src/surface-measure.ts`
+The laws in `docs/ai/surfaces.md` are run by `packages/shared/core/src/surface-laws.ts` over what `packages/shared/core/src/surface-measure.ts`
 read off the drawn board — never by eye, and when in doubt, none. **The laws the tree alone can
 answer — N, 5 and N2 — are a gate, not advice**: `wearSurfaceAt` decides and writes in one call, so a
 surface the laws refuse cannot be written at all, and the Design tab draws the refused ones disabled
@@ -489,10 +496,10 @@ stand 24px apart in a region, 16px one box down, 8px deeper, one step closer aft
 between repeats of one widget, and a `swap` adds no level. Each step is what the eye sees, never under
 8px: between two plates one plate's padding is taken off, so cards stand close at every level; from a
 plate to bare content the step is drawn in full; a bare widget is measured from its first content, the
-empty edge `packages/core/src/content-insets.ts` finds inside it taken off. So grouping is the only decision, and a box of its parent's direction with no
+empty edge `packages/shared/core/src/content-insets.ts` finds inside it taken off. So grouping is the only decision, and a box of its parent's direction with no
 surface and no heading is a phantom `lint` names. A `pad` in a note is read and dropped. A host may shrink every step at once with `--wg-gap-scale`; the catalogue sidebar sets `0.5`, measured against its canvas by `npm run test:catalogue-paint`. Corners are
 never written either: every plate is rounded concentric with the one around it, re-laid on every
-change. `packages/core/src/board-lint.ts`,
+change. `packages/shared/core/src/board-lint.ts`,
 run as `widgets.mjs lint <note>`, is the check the agent runs after every write. Inside a widget the
 same steps arrive as CSS: every cell carries `--wg-gap-items`, `--wg-gap-parts` and `--wg-gap-cards`
 from `gapVarsOf(level)`, and `SlotList` in the kit spaces a slot's items by the cards gap when the slot
@@ -530,7 +537,7 @@ and a resize that gives the box its place back never writes anything.
 of its own. `TreeBoard` hands `onActions` one action per box that names no `trigger`, keyed
 `box:<openKey>` so the button survives every change of state, with `isOn` while the box is shown; a
 `toggle: always` box has one on every screen (folding while docked, opening while collapsed), a
-`toggle: adaptive` box has one only while collapsed. `packages/host-obsidian/src/legacy/header-actions.ts` places them with `view.addAction`
+`toggle: adaptive` box has one only while collapsed. `apps/host-obsidian/src/legacy/header-actions.ts` places them with `view.addAction`
 beside the reading-mode button, next to the edit-mode pencil. A box naming `trigger: t1/open` reads that `@default/toggle` tile's memory cell
 instead, and no header button appears for it. The box reads the toggle; the toggle knows nothing of
 the box.
@@ -554,13 +561,13 @@ add: a press that named no box left the person guessing where the widget went.
 (`catalogue-boards.ts`) of static `@catalogue` widgets (`catalogue/widgets`) over the `@catalogue`
 pack and a `CataloguePort`; it is the one owner of that UI. The studio draws it in its panel, and
 Obsidian's two sidebar `ItemView`s draw the same component over the plugin's port. Nothing of it is
-in the vault or the registry, so an engine update is what changes it. The old catalogue dialog (`packages/core/src/catalogue-dialog.ts` and its parts) is kept
+in the vault or the registry, so an engine update is what changes it. The old catalogue dialog (`packages/shared/core/src/catalogue-dialog.ts` and its parts) is kept
 but hidden: nothing opens it. A box's add press, a slot, a view and a substitution each ask
-`CATALOGUE_REQUESTS` (`packages/core/src/engine/catalogue-requests.ts`), which opens the studio's
+`CATALOGUE_REQUESTS` (`packages/shared/core/src/engine/catalogue-requests.ts`), which opens the studio's
 catalogue panel while a studio is on screen (`studioFrameOf`), Obsidian's sidebar view otherwise, and
 answers the pick; a dialog that asked steps aside until it is answered. A card is carried onto a board
 or into a note by `ICarrier`: every board registers a drop receiver
-(`packages/core/src/surface/drop-receivers.ts`), and a drop on markdown writes a new board block under
+(`packages/shared/core/src/surface/drop-receivers.ts`), and a drop on markdown writes a new board block under
 the line. A widget placed before it is installed stands at once and draws the install ring, read from
 the one owner of install progress, `INSTALL_JOBS`.
 
@@ -582,7 +589,7 @@ in Obsidian. That object is the one writer: `@studio` commands reach it as `port
 catalogue ask opens the panel through its `openPanel`. The canvas view is the engine's `ProjectCanvas`
 (`apps/studio/src/legacy/canvas`): a frame per route on its own memory router and the
 widgets' `defineStates`, under the one pan-zoom the Obsidian design view imports too. What the host can do is its
-`StudioHostPort` (`packages/core/src/engine/studio-host.ts`): window-button insets, which the safe areas
+`StudioHostPort` (`packages/shared/core/src/engine/studio-host.ts`): window-button insets, which the safe areas
 read as `--wg-studio-inset-left|right`, and the apps; a host without them answers "not available" and
 the shell stays. The catalogue reaches the studio as a `CataloguePort` in `StudioStart`: Obsidian lends
 its own; a browser gets `browserCataloguePort`, the project's widgets as installed, every install and
@@ -595,7 +602,7 @@ route re-wear `default`, and inside Obsidian `--brand` is the host's accent. The
 the width (`chatWidth` in `StudioState`, ≥300px with no cap, card ≥240px, double press → 380px; the
 chat's content stays a centred 800px column, `--wg-studio-chat-content`), remembered per
 viewer in local storage, never in a note; `test:studio-layout` measures it in Chrome. The chat is the
-`assistant` domain, `packages/assistant` (`AssistantClientModule`): features `chat` (the session read
+`assistant` domain, `packages/domain/assistant` (`AssistantClientModule`): features `chat` (the session read
 as `ChatQuery`, retry, stop), `composer` (attach, remove, send, sweep) and `agent` (setup, provider,
 helper agents, clear), over `AssistantSessionGateway` and `AssistantSetupGateway` (adapters of the core
 `AssistantPort`), `AttachmentFilesGateway` and two stores, the draft and the sent attachments. The
@@ -614,7 +621,7 @@ hour. `test:assistant` pins it.
 **In Obsidian an app note opens in the studio view, and Obsidian draws nothing of its own over it.** A
 markdown note whose front matter holds `widgetarium-app: <project folder>` (and optionally
 `widgetarium-route: /path`, `/` by default) is switched, in whatever leaf opens it, to the
-`widgetarium-studio` `FileView` (`packages/host-obsidian/src/legacy/studio-view.ts`, switching in `studio-leaves.ts`),
+`widgetarium-studio` `FileView` (`apps/host-obsidian/src/legacy/studio-view.ts`, switching in `studio-leaves.ts`),
 which hides its own header and mounts `WidgetariumStudio` through `startOpenedStudio`, the one
 function the browser's `startStudio` calls too. Its pane menu's "Open as Markdown" switches that leaf
 back and is remembered for that leaf and note only. Inside Obsidian routing is a `createMemoryRouter`
@@ -650,7 +657,7 @@ thing.
 **A prop says for itself whether it is drawn.** `isVisible` on a prop, a slot or a mount entry is a
 function over every prop of the widget — `{ kind, control, binding, isSet, value }`, or `rows` for a
 collection — read from what the person typed, falling back to the default. `isShown` in
-`packages/core/src/prop-visibility.ts` is the one place that answers it, asked by the props group, the slot rows and
+`packages/shared/core/src/prop-visibility.ts` is the one place that answers it, asked by the props group, the slot rows and
 the mount groups alike, which is what lets **one switch** put a slot away and bring a mount list out.
 A rule that throws draws what it would have hidden and says so: a window with a prop missing and no
 reason is worse than a window with one prop too many. The function is code, so no card carries it,
@@ -686,11 +693,11 @@ Obsidian's business. The two that cost are `v:` stamped into every block written
 widget manifest against the range the plugin holds. Both read a missing number as 1, and both
 REFUSE rather than guess: a block from a newer plugin is not mounted and therefore never written
 back, and a widget outside the range does not mount, install or draw. The numbers and the rule for
-raising each are in `docs/decisions.md`; they live in `packages/core/src/version.ts`.
+raising each are in `docs/decisions.md`; they live in `packages/shared/core/src/version.ts`.
 
 **The build is the engine's, and it runs on the person's machine.** A widget folder holds only what
 its author wrote — `widget.tsx`, the entry, and any sibling `.ts`/`.tsx` modules it imports
-relatively, nested folders included (`compileWidgetFolder` in `packages/core/src/engine/widget-build.ts`
+relatively, nested folders included (`compileWidgetFolder` in `packages/shared/core/src/engine/widget-build.ts`
 makes them one program, and every one is a build input); everything the engine makes lands in `build/` beside it — `widget.js` from the TSX,
 `widget.css` when the sheet asked to be compiled — and a vault wears the built sheet in place of the
 author's. `tools/publish.ts` is the author's check that it all builds, not the thing that builds it.
@@ -703,8 +710,8 @@ terminal.
 
 **A start reads no widget file.** An iCloud vault on a full disk evicts `.widgetarium/`, and every
 read waited ~1.7 s for a download: 655 reads, ten minutes of an empty screen. The plugin now mounts
-from a snapshot kept on this machine in IndexedDB (`packages/core/src/startup-snapshot.ts`, the store
-in `packages/host-obsidian/src/legacy/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
+from a snapshot kept on this machine in IndexedDB (`packages/shared/core/src/startup-snapshot.ts`, the store
+in `apps/host-obsidian/src/legacy/startup-snapshot-store.ts`), never in the vault: what `readVault` read, the
 packages, the plugin stamp, and each file's `mtime:size` taken **before** it was read. A snapshot zod
 refuses is ignored and the vault is read; one from another plugin build mounts like any other, because
 it holds raw files and the fingerprint lists with the running build's own `listVault` — refusing it
@@ -727,7 +734,7 @@ over `--wg-kit-*`, in the widget's sheet or in a scope file it imports — so th
 outside the widget. Preflight is never imported: it restyles the host's own elements, and a sheet that
 asks for it is refused by name. A widget whose styling needs this declares `api: 2`.
 
-**The kit's tokens are one Tailwind theme, served by the plugin.** `packages/kit/theme.css` maps every
+**The kit's tokens are one Tailwind theme, served by the plugin.** `packages/shared/kit/theme.css` maps every
 `--wg-kit-*` token onto Tailwind's namespaces — `--color-group`, `--text-sm`, `--radius-plate`,
 `--spacing-cards` — and `serveToTailwind` answers `@import "widgetarium/theme.css"` with it, so a
 widget writes `bg-group rounded-plate text-sm` and repeats no variable. It is served out of the
@@ -768,7 +775,7 @@ When the person sends pictures and describes a design, write it as an OpenDesign
 `design-systems/<id>/` — `manifest.json`, `USAGE.md`, `DESIGN.md`, `tokens.css`, `preview/` and the
 pictures under `references/` — by the format in `design-catalogue/README.md`, and run
 `widgetarium system check <id>` (`npm run test:design-systems` checks every one). **The token contract is
-shadcn's names** (`packages/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
+shadcn's names** (`packages/shared/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
 parameters and every colour as an `oklch()` formula of them, in `:root` and in `.dark, .theme-dark`, so
 `--hue` re-derives both themes; the kit reads those names and `--wg-kit-*` are aliases onto them. The
 plugin's sheet carries `design-systems/default/tokens.css`, laid as `@layer wg-system` by the build,
@@ -812,11 +819,11 @@ along with whatever depends on it — rather than ship it.
 
 **Tests import the real sources; nothing is copied.** Every `node tools/…` script in `package.json`
 runs under `node --single-threaded --import ./tools/loader/register.mts`, an in-memory loader that compiles `.ts`,
-`.tsx` and `.jsx` with esbuild exactly as `packages/host-obsidian/build.mts` does (`h`/`Fragment`, the
+`.tsx` and `.jsx` with esbuild exactly as `apps/host-obsidian/build.mts` does (`h`/`Fragment`, the
 nearest `tsconfig.json`, `es2020`), resolves extensionless and `.js` specifiers to the `.ts` behind
 them and `@widgetarium/*` through each package's `exports`, reads `.md` and `.css` as text, answers
 `obsidian` with `tools/loader/obsidian-stub.mts` and the `widgetarium:*` specifiers the build
-provides. A test imports `../packages/core/src/<file>`; an edit shows in the next run with no
+provides. A test imports `../packages/shared/core/src/<file>`; an edit shows in the next run with no
 rebuild, and suites run side by side. A tool run by hand needs the same two flags.
 `--single-threaded` is not optional: under eight suites at once, Node 25 deadlocks in `process.exit()`
 when a background Sparkplug or Maglev compile job waits for a GC the exiting main thread never runs —
@@ -835,18 +842,18 @@ Obsidian plugin fights the host's theme and loses. What is taken is the practice
 the same on both sides: **maximalist, physical, answering.**
 
 - **Shape carries the accent, not only colour.** An element earns attention by having a form the ones
-  around it do not. The 35 outlines in `packages/kit/assets/shapes/` are the vocabulary; `node tools/fetch-shapes.mts`
+  around it do not. The 35 outlines in `packages/shared/kit/assets/shapes/` are the vocabulary; `node tools/fetch-shapes.mts`
   regenerates them. One unusual form per widget, on the thing the eye is looking for.
 - **An emoji is a drawing, not a character.** A typed emoji renders as whatever font the host has;
   `<Emoji name="smiling-face-with-halo"/>` from `widgetarium/kit/emojis` renders the same everywhere.
   The 129 Microsoft Fluent faces are the vocabulary — the Unicode group "Smileys & Emotion" up to the
-  monkeys, and nothing else. `node tools/fetch-emojis.mts` regenerates `packages/kit/src/emojis/emoji-table.ts`; the
-  licence sits in `packages/kit/assets/emojis/`. They cost 300kb of the bundle, so they hang off their own
+  monkeys, and nothing else. `node tools/fetch-emojis.mts` regenerates `packages/shared/kit/src/emojis/emoji-table.ts`; the
+  licence sits in `packages/shared/kit/assets/emojis/`. They cost 300kb of the bundle, so they hang off their own
   specifier and no widget pays for them unless it asks.
 - **An icon is a name the kit resolves, never an import.** `<Icon name="anchor"/>` from
   `widgetarium/kit` draws the kit's own 35 glyphs first and the whole of Lucide behind them — one
   name, one drawing, and a kit glyph wins a name Lucide also holds. `node tools/fetch-icons.mts`
-  regenerates `packages/kit/src/icons/icon-table.ts` from `lucide-static`; the licence sits in `packages/kit/assets/icons/`. Lucide
+  regenerates `packages/shared/kit/src/icons/icon-table.ts` from `lucide-static`; the licence sits in `packages/shared/kit/assets/icons/`. Lucide
   is drawn on its own 24 grid, so the kit scales its stroke to the weight of the 20 grid rather than
   letting two families sit at two weights. Obsidian's own set is refused: `setIcon` draws nothing in
   a catalogue shot or a paint test, and a drawing that only exists inside the host is not a drawing.
@@ -870,8 +877,8 @@ npm run dev            # build + install: the plugin as a symlink, for working
 npm run install-vault  # build --prod + install: a production copy, for using
 ```
 
-**The engine is copied, the widgets are symlinked — except where they are not.** `packages/host-obsidian/install.mts` copies
-`main.js`, `styles.css` and `manifest.json` from `packages/host-obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
+**The engine is copied, the widgets are symlinked — except where they are not.** `apps/host-obsidian/install.mts` copies
+`main.js`, `styles.css` and `manifest.json` from `apps/host-obsidian/` into `.obsidian/plugins/widgetarium`, so a change to a `src/`
 that was never installed leaves the vault running yesterday's engine. Under `.widgetarium/widgets` each
 scope is normally a symlink back to this repo, and for those a widget edit is live with no install at
 all. **A scope that is a real directory is a published copy and is frozen** — edits to the repo never

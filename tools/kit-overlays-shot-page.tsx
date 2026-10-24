@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { OverlaysShowcase, openedFromHash } from "../packages/kit/src/showcase/index";
+import { OverlaysShowcase, openedFromHash } from "../packages/shared/kit/src/showcase/index";
 
 const shotHost = document.getElementById("demo");
 if (!shotHost) throw new Error("overlay shot: the page has no #demo");

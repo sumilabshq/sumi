@@ -1,5 +1,5 @@
-import { startGpuCanvas, startGpuCanvasInWorker } from "../packages/gpu/index.ts";
-import type { Camera, GpuCanvas, GpuCanvasRemote, CanvasPoint, WorkSummary } from "../packages/gpu/index.ts";
+import { startGpuCanvas, startGpuCanvasInWorker } from "../packages/shared/gpu/index.ts";
+import type { Camera, GpuCanvas, GpuCanvasRemote, CanvasPoint, WorkSummary } from "../packages/shared/gpu/index.ts";
 import { addTranslators, loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 
 export interface GpuPage {

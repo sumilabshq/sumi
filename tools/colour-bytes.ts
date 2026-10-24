@@ -1,4 +1,4 @@
-import { colorOf } from "../packages/core/src/color-math.js";
+import { colorOf } from "../packages/shared/core/src/color-math.js";
 
 const COLOUR_FUNCTION = /(?:rgba?|oklch)\([^()]*\)|color\(srgb [^()]*\)/g;
 const BYTE = 255;

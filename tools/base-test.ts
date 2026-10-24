@@ -12,12 +12,12 @@ import {
 	PAGE_BASE_NAMES,
 	SHELL_ZONES,
 	refuseZones,
-} from "../packages/core/src/layouts.js";
-import { lintBoard } from "../packages/core/src/board-lint.js";
-import { CARDS, CARD_NAMES, cardNamed, cardNode } from "../packages/core/src/patterns.js";
-import { normalizeBoard, serializeBoard } from "../packages/core/src/model.js";
-import { nestingFindings } from "../packages/core/src/surface-laws.js";
-import type { BoardNode, BoxNode, LeafNode } from "../packages/core/src/tree-nodes.js";
+} from "../packages/shared/core/src/layouts.js";
+import { lintBoard } from "../packages/shared/core/src/board-lint.js";
+import { CARDS, CARD_NAMES, cardNamed, cardNode } from "../packages/shared/core/src/patterns.js";
+import { normalizeBoard, serializeBoard } from "../packages/shared/core/src/model.js";
+import { nestingFindings } from "../packages/shared/core/src/surface-laws.js";
+import type { BoardNode, BoxNode, LeafNode } from "../packages/shared/core/src/tree-nodes.js";
 import { fieldAt, fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 

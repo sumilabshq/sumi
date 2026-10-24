@@ -11,7 +11,7 @@ staged=$(git diff --cached --name-only --diff-filter=ACMR)
 echo "$staged" | xargs npx prettier --ignore-unknown --write >/dev/null 2>&1
 echo "$staged" | xargs git add
 
-sources=$(echo "$staged" | grep -E '^(packages/host-obsidian/src|apps/[a-z]+/src|packages|registry)/.*\.(js|jsx|ts|tsx|mjs)$')
+sources=$(echo "$staged" | grep -E '^(apps/host-obsidian/src|apps/[a-z]+/src|packages|registry)/.*\.(js|jsx|ts|tsx|mjs)$')
 [ -z "$sources" ] && exit 0
 
 echo "$sources" | xargs node tools/lint-code.mts || {

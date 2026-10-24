@@ -1,13 +1,13 @@
-import { studioAppHostParts } from "../packages/app-host/gateways/app-host-parts/studio.gateway.ts";
-import type { AppHostParts } from "../packages/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
-import { EssentialsGateway } from "../packages/app-host/gateways/essentials/essentials.gateway.ts";
-import { PageFactsGateway } from "../packages/app-host/gateways/page-facts/page-facts.gateway.ts";
-import { TabsSessionGateway } from "../packages/app-host/gateways/tabs-session/tabs-session.gateway.ts";
-import type { KeptEssentials } from "../packages/app-host/shared/schema/essential.schema.ts";
-import type { PageFacts } from "../packages/app-host/shared/schema/page-facts.schema.ts";
-import type { KeptTabs } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
-import type { ActiveChat, ActiveChatPort } from "../packages/core/src/engine/active-chat-port.ts";
-import type { StudioState } from "../packages/core/src/engine/studio-state-port.ts";
+import { studioAppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/studio.gateway.ts";
+import type { AppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
+import { EssentialsGateway } from "../packages/domain/app-host/gateways/essentials/essentials.gateway.ts";
+import { PageFactsGateway } from "../packages/domain/app-host/gateways/page-facts/page-facts.gateway.ts";
+import { TabsSessionGateway } from "../packages/domain/app-host/gateways/tabs-session/tabs-session.gateway.ts";
+import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
+import type { PageFacts } from "../packages/domain/app-host/shared/schema/page-facts.schema.ts";
+import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
+import type { ActiveChat, ActiveChatPort } from "../packages/shared/core/src/engine/active-chat-port.ts";
+import type { StudioState } from "../packages/shared/core/src/engine/studio-state-port.ts";
 
 export const EXACT_WORKSPACE = "Exact tabs";
 export const EXACT_COLUMN_PX = 240;

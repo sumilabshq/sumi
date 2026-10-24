@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import http from "node:http";
-import { agentEventsBetween } from "../packages/assistant/features/chat/lib/agent-activity.ts";
-import type { ChatMoment } from "../packages/assistant/features/chat/lib/agent-activity.ts";
+import { agentEventsBetween } from "../packages/domain/assistant/features/chat/lib/agent-activity.ts";
+import type { ChatMoment } from "../packages/domain/assistant/features/chat/lib/agent-activity.ts";
 import {
 	ASLEEP_AFTER_MS,
 	DONE_HELD_MS,
@@ -10,15 +10,18 @@ import {
 	SURPRISE_HELD_MS,
 	mascotStateOf,
 	nextDecisionAt,
-} from "../packages/mascot/features/activity/lib/mascot-state.ts";
-import type { MascotTouch } from "../packages/mascot/features/activity/lib/mascot-state.ts";
-import { MemoryAgentActivityStore, NO_AGENT_ACTIVITY } from "../packages/mascot/shared/lib/agent-activity-store.ts";
-import { bodyPoseOf, lookTargetOf, springStep } from "../packages/mascot/shared/lib/mascot-motion.ts";
-import { OUTFITS, sceneOf } from "../packages/mascot/shared/lib/wardrobe/outfits.ts";
-import { OutfitIdSchema } from "../packages/mascot/shared/schema/outfit.schema.ts";
-import type { Spring } from "../packages/mascot/shared/lib/mascot-motion.ts";
-import type { AgentEvent } from "../packages/mascot/shared/schema/agent-activity.schema.ts";
-import type { MascotState } from "../packages/mascot/shared/schema/mascot-state.schema.ts";
+} from "../packages/client/mascot/features/activity/lib/mascot-state.ts";
+import type { MascotTouch } from "../packages/client/mascot/features/activity/lib/mascot-state.ts";
+import {
+	MemoryAgentActivityStore,
+	NO_AGENT_ACTIVITY,
+} from "../packages/client/mascot/shared/lib/agent-activity-store.ts";
+import { bodyPoseOf, lookTargetOf, springStep } from "../packages/client/mascot/shared/lib/mascot-motion.ts";
+import { OUTFITS, sceneOf } from "../packages/client/mascot/shared/lib/wardrobe/outfits.ts";
+import { OutfitIdSchema } from "../packages/client/mascot/shared/schema/outfit.schema.ts";
+import type { Spring } from "../packages/client/mascot/shared/lib/mascot-motion.ts";
+import type { AgentEvent } from "../packages/client/mascot/shared/schema/agent-activity.schema.ts";
+import type { MascotState } from "../packages/client/mascot/shared/schema/mascot-state.schema.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
@@ -259,7 +262,7 @@ const EYE_PATHS: Readonly<Record<MascotState, string>> = {
 const tokensOf = (path: string): string => (path.match(/-?[\d.]+|[A-Z]/g) ?? []).join(" ");
 
 const bundle = await bundleOf("tools/mascot-page.tsx");
-const sheet = readFileSync("packages/host-obsidian/styles.css", "utf8");
+const sheet = readFileSync("apps/host-obsidian/styles.css", "utf8");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sheet}</style>
 <style>#live { position: absolute; left: 600px; top: 200px; } #states { display: flex; gap: 8px; }</style></head>
 <body><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;

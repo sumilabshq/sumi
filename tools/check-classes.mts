@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { widgetFiles } from "./widget-files.mts";
 
-const PLUGIN_SHEET = "packages/host-obsidian/styles.css";
-// TODO: read these from packages/core/src/engine/widget-build.ts once natively run tools can import it
+const PLUGIN_SHEET = "apps/host-obsidian/styles.css";
+// TODO: read these from packages/shared/core/src/engine/widget-build.ts once natively run tools can import it
 const SHEET_FILES = ["widget.css", "styles.css"];
 const CLASS_IN_A_RULE = /\.([a-z][\w-]*)/g;
 const CLASS_WORD = /^[a-z][\w-]*$/;

@@ -1,16 +1,16 @@
-import { app } from "../packages/core/src/requests/index.ts";
-import type { Answer, StartedApp } from "../packages/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/browser/features/ink/contract.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
 import {
 	BrowserTabsQuery,
 	ClosePageCommand,
 	OpenPageCommand,
 	ShowTabCommand,
-} from "../packages/browser/features/tabs/contract.ts";
-import { onceAllowanceOf } from "../packages/browser/shared/lib/once-grants.ts";
-import type { BrowserTab } from "../packages/browser/shared/schema/browser-tab.schema.ts";
-import type { CommittedPage } from "../packages/browser/shared/schema/page-read.schema.ts";
+} from "../packages/domain/browser/features/tabs/contract.ts";
+import { onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
+import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
+import type { CommittedPage } from "../packages/domain/browser/shared/schema/page-read.schema.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";

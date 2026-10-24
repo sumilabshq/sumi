@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { transform } from "sucrase";
 import { createElement as h, Fragment, type ReactElement, type ReactNode } from "react";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 type Held<T> = T | null | undefined;
 
@@ -334,7 +334,7 @@ const tiles = LAYOUT.map((entry) => {
 	return `<div class="wg-tile" style="transform:translate3d(${left}px,${top}px,0);width:${width}px;height:${height}px;font-size:${(scale * 16).toFixed(3)}px"><div class="wg-tile-body">${renderNode({ type: component, props })}</div></div>`;
 }).join("\n");
 
-const css = fs.readFileSync("packages/host-obsidian/styles.css", "utf8");
+const css = fs.readFileSync("apps/host-obsidian/styles.css", "utf8");
 fs.writeFileSync(
 	OUT,
 	`<!doctype html><html><head><meta charset="utf-8"><style>

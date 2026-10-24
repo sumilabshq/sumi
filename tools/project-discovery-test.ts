@@ -11,9 +11,9 @@ import {
 	readProjectConfig,
 	type ProjectConfig,
 	type ProjectFiles,
-} from "../packages/core/src/project/index.js";
+} from "../packages/shared/core/src/project/index.js";
 import { fieldOf } from "./export-source.mts";
-import { vaultProjectFiles, type ProjectAdapter } from "../packages/host-obsidian/src/legacy/project-files-vault.js";
+import { vaultProjectFiles, type ProjectAdapter } from "../apps/host-obsidian/src/legacy/project-files-vault.js";
 
 type FixtureFiles = Readonly<Record<string, string>>;
 

@@ -2,18 +2,18 @@ import { mkdtempSync, readFileSync, statSync, existsSync, rmSync } from "node:fs
 import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { NO_CHAT_CARDS } from "../packages/core/src/engine/assistant-cards.ts";
-import type { ChatCards } from "../packages/core/src/engine/assistant-cards.ts";
+import { NO_CHAT_CARDS } from "../packages/shared/core/src/engine/assistant-cards.ts";
+import type { ChatCards } from "../packages/shared/core/src/engine/assistant-cards.ts";
 import type {
 	AssistantCall,
 	AssistantSession,
 	AssistantSetup,
 	CallFace,
 	ProviderReads,
-} from "../packages/core/src/engine/assistant-port.ts";
-import { app } from "../packages/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/core/src/requests/index.ts";
-import { AssistantClientModule } from "../packages/assistant/generated/module.ts";
+} from "../packages/shared/core/src/engine/assistant-port.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
 import {
 	AttachFilesCommand,
 	AttachFolderCommand,
@@ -29,8 +29,8 @@ import {
 	SweepAttachmentsCommand,
 	CompactChatCommand,
 	SlashCommandsQuery,
-} from "../packages/assistant/generated/index.ts";
-import { slashMatchesOf } from "../packages/assistant/features/composer/lib/slash-matches.ts";
+} from "../packages/domain/assistant/generated/index.ts";
+import { slashMatchesOf } from "../packages/domain/assistant/features/composer/lib/slash-matches.ts";
 import {
 	AssistantSessionGateway,
 	AssistantSetupGateway,
@@ -38,17 +38,17 @@ import {
 	PrivateFolderAttachmentFilesGateway,
 	assistantPartsOf,
 	webAssistantGateways,
-} from "../packages/assistant/generated/gateways.ts";
-import { withStarter } from "../packages/assistant/features/composer/lib/starter-said.ts";
-import { shortPathOf } from "../packages/assistant/shared/lib/short-path.ts";
-import type { AssistantParts } from "../packages/assistant/generated/gateways.ts";
-import { MemoryDraftAttachmentsStore } from "../packages/assistant/shared/lib/draft-attachments-store.ts";
-import { MemorySentAttachmentsStore } from "../packages/assistant/shared/lib/sent-attachments-store.ts";
-import { attachmentsIn, withAttachments } from "../packages/assistant/shared/lib/attachment-trailer.ts";
-import { KEPT_AT_MOST_MS } from "../packages/assistant/shared/lib/attachment-sweep.ts";
-import { PrivateFiles } from "../packages/host-obsidian/src/browser/private-files.ts";
-import { readsOf, PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.ts";
-import { expandArgs } from "../packages/host-obsidian/src/legacy/ai/command.ts";
+} from "../packages/domain/assistant/generated/gateways.ts";
+import { withStarter } from "../packages/domain/assistant/features/composer/lib/starter-said.ts";
+import { shortPathOf } from "../packages/domain/assistant/shared/lib/short-path.ts";
+import type { AssistantParts } from "../packages/domain/assistant/generated/gateways.ts";
+import { MemoryDraftAttachmentsStore } from "../packages/domain/assistant/shared/lib/draft-attachments-store.ts";
+import { MemorySentAttachmentsStore } from "../packages/domain/assistant/shared/lib/sent-attachments-store.ts";
+import { attachmentsIn, withAttachments } from "../packages/domain/assistant/shared/lib/attachment-trailer.ts";
+import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/shared/lib/attachment-sweep.ts";
+import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
+import { readsOf, PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
+import { expandArgs } from "../apps/host-obsidian/src/legacy/ai/command.ts";
 
 let failed = 0;
 let checks = 0;

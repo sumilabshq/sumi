@@ -1,15 +1,15 @@
 import { THEMES } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
 import type { ChildProcess } from "node:child_process";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
-const { cornerOf } = await import("../packages/core/src/tree.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
+const { cornerOf } = await import("../packages/shared/core/src/tree.js");
 const CORNER_AT_DEPTH = [cornerOf(1), cornerOf(2)];
 
 const CHROME = process.env["WG_CHROME"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -60,9 +60,9 @@ async function bundle(source: string): Promise<string> {
 		inject: ["tools/fill-inject.ts"],
 		alias: {
 			widgetarium: "./tools/fill-shim.ts",
-			"widgetarium/kit": "./packages/kit/src/index.ts",
-			"widgetarium/kit/emojis": "./packages/kit/src/emojis/emoji.tsx",
-			"widgetarium/kit/charts": "./packages/kit/src/charts/index.ts",
+			"widgetarium/kit": "./packages/shared/kit/src/index.ts",
+			"widgetarium/kit/emojis": "./packages/shared/kit/src/emojis/emoji.tsx",
+			"widgetarium/kit/charts": "./packages/shared/kit/src/charts/index.ts",
 			"@default/lib": "./registry/@default/lib.ts",
 			obsidian: "./tools/obsidian-shim.ts",
 		},
@@ -75,7 +75,7 @@ async function bundle(source: string): Promise<string> {
 
 function pageFor(theme: keyof typeof THEMES, script: string, name: string, sheets: readonly string[] = []): string {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>${sheets.map((at) => readFileSync(at, "utf8")).join("\n")}</style>
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -143,10 +143,10 @@ const KIT_SURFACE_ASK = `(() => {
 
 const PLATE_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { WidgetSurface } from "./packages/core/src/surface.js";
-import { normalizeBoard } from "./packages/core/src/model.js";
-import { Card } from "./packages/kit/src/index.ts";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "./packages/shared/core/src/surface.js";
+import { normalizeBoard } from "./packages/shared/core/src/model.js";
+import { Card } from "./packages/shared/kit/src/index.ts";
 
 const WIDGET_ID = "@probe/plated";
 const Plated = () =>
@@ -385,8 +385,8 @@ function sideReach(value) {
 
 const KIT_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { Button, cardClass, Icon, IconButton, List, PlaceholderMark, Row, markOf } from "./packages/kit/src/index.ts";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { Button, cardClass, Icon, IconButton, List, PlaceholderMark, Row, markOf } from "./packages/shared/kit/src/index.ts";
 const MARK_SEED = "Kind of Blue";
 const marked = (id, props) => h("div", { key: id, id }, h(PlaceholderMark, { seed: MARK_SEED, ...props }));
 render(
@@ -426,10 +426,10 @@ render(
 
 const MOUNT_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { WidgetSurface } from "./packages/core/src/surface.js";
-import { normalizeBoard } from "./packages/core/src/model.js";
-import { CATALOGUE_REQUESTS } from "./packages/core/src/engine/catalogue-requests.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "./packages/shared/core/src/surface.js";
+import { normalizeBoard } from "./packages/shared/core/src/model.js";
+import { CATALOGUE_REQUESTS } from "./packages/shared/core/src/engine/catalogue-requests.js";
 
 window.__REQUESTS__ = CATALOGUE_REQUESTS;
 const GROUP_ID = "@default/view-group";
@@ -565,10 +565,10 @@ const MOUNT_ASK = `(async () => {
 
 const OVERLAY_PROBE = `
 import { createElement as h, useEffect, useState } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { WidgetSurface } from "./packages/core/src/surface.js";
-import { WidgetRegistry } from "./packages/core/src/registry.js";
-import { normalizeBoard } from "./packages/core/src/model.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { WidgetSurface } from "./packages/shared/core/src/surface.js";
+import { WidgetRegistry } from "./packages/shared/core/src/registry.js";
+import { normalizeBoard } from "./packages/shared/core/src/model.js";
 
 const GROUP_ID = "@default/view-group";
 const KANBAN_ID = "@default/kanban-board";
@@ -671,9 +671,9 @@ const STREAK_NATURAL_PX = 84;
 
 const STREAK_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./registry/@default/streak/widget.tsx";
-import { collectionGateway, soloGateway } from "./packages/core/src/gateway/create";
+import { collectionGateway, soloGateway } from "./packages/shared/core/src/gateway/create";
 
 const kept = ["2026-08-31", "2026-09-01", "2026-09-02"];
 const rows = kept.map((day) => ({ ref: "Habits/" + day + ".md", value: { name: day, done: 1, date: day } }));
@@ -756,10 +756,10 @@ const RANK_SHEETS = ["registry/@default/tokens.css", "registry/@default/tier-lis
 
 const RANK_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./registry/@default/tier-list/widget.tsx";
-import { TONE_NAMES } from "./packages/kit/src/index.ts";
-import { collectionGateway, soloGateway } from "./packages/core/src/gateway/create";
+import { TONE_NAMES } from "./packages/shared/kit/src/index.ts";
+import { collectionGateway, soloGateway } from "./packages/shared/core/src/gateway/create";
 
 const tierRows = TONE_NAMES.map((tone, at) => ({ ref: "t" + at, value: { label: tone, tone, order: at + 1 } }));
 const cardRows = TONE_NAMES.map((tone, at) => ({ ref: "c" + at, value: { name: "Card " + at, tier: tone, order: at + 1 } }));
@@ -830,9 +830,9 @@ const RANK_ASK = `(async () => {
 
 const CATALOGUE_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
-import { widgetPreview } from "./packages/core/src/surface/widget-preview.js";
-import { RegionDrawer } from "./packages/core/src/drawer.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
+import { widgetPreview } from "./packages/shared/core/src/surface/widget-preview.js";
+import { RegionDrawer } from "./packages/shared/core/src/drawer.js";
 
 const definition = {
 	manifest: { id: "@demo/clock", title: "Clock", defaultSize: { w: 3, h: 2 }, description: "A clock." },
@@ -896,9 +896,9 @@ const METRIC_SHEETS = ["registry/@default/tokens.css", "registry/@default/metric
 
 const METRIC_PROBE = `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./registry/@default/metric-total/widget.tsx";
-import { collectionGateway, soloGateway } from "./packages/core/src/gateway/create";
+import { collectionGateway, soloGateway } from "./packages/shared/core/src/gateway/create";
 
 const recordRows = [
 	{ ref: "r0", value: { path: "Metrics/a.md", name: "a", date: "2026-09-10", amount: 120 } },

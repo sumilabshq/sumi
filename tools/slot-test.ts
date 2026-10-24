@@ -1,5 +1,5 @@
 import { layJsdomGlobals } from "./jsdom-globals.ts";
-import type { InjectedWidget } from "../packages/core/src/declared-widget.ts";
+import type { InjectedWidget } from "../packages/shared/core/src/declared-widget.ts";
 
 const dom = layJsdomGlobals();
 Object.assign(globalThis, {
@@ -9,10 +9,10 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { createWidget } = await import("../packages/core/src/widget-api.ts");
-const { ISlot } = await import("../packages/core/src/gateway/declared.ts");
-const { manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { createWidget } = await import("../packages/shared/core/src/widget-api.ts");
+const { ISlot } = await import("../packages/shared/core/src/gateway/declared.ts");
+const { manifestOfModule } = await import("../packages/shared/core/src/gateway/declared.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -105,7 +105,7 @@ check(
 	true,
 );
 
-const { defineStates } = await import("../packages/core/src/gateway/declared.ts");
+const { defineStates } = await import("../packages/shared/core/src/gateway/declared.ts");
 const states = defineStates(Layout, {
 	Full: { hero: { widget: "@default/hero", state: "Full" }, main: [{ widget: "@crm/reach-out", surface: "group" }] },
 });

@@ -1,10 +1,10 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
-import type * as RefDraft from "../packages/core/src/ref-draft.js";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import type * as RefDraft from "../packages/shared/core/src/ref-draft.js";
 
 const built = await esbuild.build({
 	stdin: {
-		contents: `export * from "./packages/core/src/ref-draft.js";`,
+		contents: `export * from "./packages/shared/core/src/ref-draft.js";`,
 		resolveDir: process.cwd(),
 		loader: "js",
 	},

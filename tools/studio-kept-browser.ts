@@ -1,12 +1,12 @@
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/browser/features/ink/contract.ts";
-import { MemoryBrowserAuditGateway } from "../packages/browser/gateways/browser-audit/memory.gateway.ts";
-import { MemoryBrowserGrantsGateway } from "../packages/browser/gateways/browser-grants/memory.gateway.ts";
-import { NoChatComposerGateway } from "../packages/browser/gateways/chat-composer/none.gateway.ts";
-import { MemoryRecentSitesGateway } from "../packages/browser/gateways/recent-sites/memory.gateway.ts";
-import { browserPartsOf } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import type { BrowserParts } from "../packages/browser/gateways/browser-parts/browser-parts.gateway.ts";
-import { isLaidOnScreen } from "../packages/browser/shared/lib/is-laid-on-screen.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
+import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
+import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
+import { NoChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/none.gateway.ts";
+import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { isLaidOnScreen } from "../packages/domain/browser/shared/lib/is-laid-on-screen.ts";
 import { app } from "@widgetarium/core/requests";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 

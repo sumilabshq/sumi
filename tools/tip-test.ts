@@ -33,8 +33,8 @@ mkdirSync(shotsAt, { recursive: true });
 const bundle = await bundleOf("tools/tip-page.tsx");
 const sheets =
 	`${kitTooltipSheet()}\n` +
-	["design-systems/sumi/sumi.css", "packages/shell/shell.css"].map((at) => readFileSync(at, "utf8")).join("\n");
-const font = readFileSync("packages/kit/assets/fonts/inter/InterVariable-latin.woff2");
+	["design-systems/sumi/sumi.css", "packages/client/shell/shell.css"].map((at) => readFileSync(at, "utf8")).join("\n");
+const font = readFileSync("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const FONT_FACE = `@font-face { font-family: "Inter Variable"; src: url(/inter.woff2) format("woff2"); font-weight: 100 900; }`;
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${FONT_FACE}</style><style>${sheets}</style>
 <style>body { margin: 0; background: var(--sumi-frame); }</style></head><body><div id="root"></div><pre id="boom"></pre>

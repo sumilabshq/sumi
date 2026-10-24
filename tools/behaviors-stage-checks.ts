@@ -2,7 +2,7 @@ import { boxed, drawn, pause, redrawable } from "./behaviors-dom.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
 const { createElement: h, useRef } = await import("react");
-const b = await import("../packages/behaviors/index.ts");
+const b = await import("../packages/shared/behaviors/index.ts");
 
 const MARKS = { frame: "data-frame", screen: "data-screen", liveScreen: "data-live", chrome: "[data-chrome]" };
 const ROOM = { top: 0, margin: 0, least: 0.5, most: 1, view: "[data-view]", coveredBy: "[data-cover]" };

@@ -1,10 +1,10 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import type { ShotSize } from "./harness.ts";
 import { SHOT_NAMES, shotBox, shotInputHash, widgetFolders } from "./shot-widgets.ts";
 
-const { SHOT_BYTE_CAP } = await import("../packages/core/src/engine/shot.js");
+const { SHOT_BYTE_CAP } = await import("../packages/shared/core/src/engine/shot.js");
 
 const DEVICE_SCALE = 2;
 

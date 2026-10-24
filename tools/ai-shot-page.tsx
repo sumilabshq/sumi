@@ -1,21 +1,21 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../packages/assistant/generated/index.ts";
+import { AssistantPanel } from "../packages/domain/assistant/generated/index.ts";
 import { chatCardsOver } from "../apps/studio/src/assistant/chat-cards.tsx";
-import { AppProvider } from "../packages/core/src/requests/index.ts";
+import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
 import { chatAppOver } from "./assistant-chat-app.ts";
-import { obsidianAssistantPort } from "../packages/host-obsidian/src/legacy/ai/assistant-port-obsidian.js";
-import { DEFAULT_PRESET, PRESETS } from "../packages/host-obsidian/src/legacy/ai/providers.js";
-import type { AssistantCall, ProgressWidget } from "../packages/core/src/engine/assistant-port.js";
-import type { ObsidianHost } from "../packages/host-obsidian/src/legacy/host.js";
+import { obsidianAssistantPort } from "../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.js";
+import { DEFAULT_PRESET, PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.js";
+import type { AssistantCall, ProgressWidget } from "../packages/shared/core/src/engine/assistant-port.js";
+import type { ObsidianHost } from "../apps/host-obsidian/src/legacy/host.js";
 import { standIn } from "./stand-in.ts";
-import type { Session, SessionState } from "../packages/host-obsidian/src/legacy/ai/session.js";
-import { buildWidget } from "../packages/core/src/registry.js";
+import type { Session, SessionState } from "../apps/host-obsidian/src/legacy/ai/session.js";
+import { buildWidget } from "../packages/shared/core/src/registry.js";
 import taskProgressSource from "widget-source:@default/task-progress/widget.tsx";
 import taskProgressCard from "../registry/@default/task-progress/manifest.generated.json";
 
-import type { Jobs } from "../packages/host-obsidian/src/legacy/ai/job-runner.js";
+import type { Jobs } from "../apps/host-obsidian/src/legacy/ai/job-runner.js";
 
 const SHOWN_PROVIDERS = new Set(["claude-code", "opencode", "ollama"]);
 const PROVIDERS = PRESETS.filter((provider) => SHOWN_PROVIDERS.has(provider.id));

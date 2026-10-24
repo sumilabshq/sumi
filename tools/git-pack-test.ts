@@ -1,12 +1,12 @@
-import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
-import { NO_STUDIO_STATE } from "../packages/core/src/engine/studio-state-port.ts";
-import { NO_ASSISTANT } from "../packages/core/src/engine/assistant-port.ts";
-import { NO_CATALOGUE_PORT } from "../packages/core/src/engine/catalogue-port.ts";
+import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
+import { NO_STUDIO_STATE } from "../packages/shared/core/src/engine/studio-state-port.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
 import { execFile } from "node:child_process";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { CommandLinePort, ImplementationPorts } from "../packages/core/src/engine/packs.ts";
+import type { CommandLinePort, ImplementationPorts } from "../packages/shared/core/src/engine/packs.ts";
 import {
 	BranchesQuery,
 	CommitFilesQuery,
@@ -16,7 +16,7 @@ import {
 	TagsQuery,
 	WorktreesQuery,
 	gitPack,
-} from "../packages/packs/git/src/index.ts";
+} from "../packages/shared/packs/git/src/index.ts";
 import {
 	CheckoutCommand,
 	CommitCommand,
@@ -24,7 +24,7 @@ import {
 	StageCommand,
 	WorktreeAddCommand,
 	WorktreeRemoveCommand,
-} from "../packages/packs/git/src/commands.ts";
+} from "../packages/shared/packs/git/src/commands.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {

@@ -11,7 +11,7 @@ export default [
 			"**/generated/**",
 			"tools/**",
 			"registry/**",
-			"packages/core/src/requests/**",
+			"packages/shared/core/src/requests/**",
 		],
 	},
 	...widgetarium.configs.recommended,

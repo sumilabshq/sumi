@@ -10,17 +10,20 @@ import {
 	defineMetadata,
 	declareProps,
 	z,
-} from "../packages/core/src/gateway/declared.ts";
+} from "../packages/shared/core/src/gateway/declared.ts";
 import { byId } from "./dom-find.ts";
-import type { DeclaredProps, DrawnProps, WidgetLayout } from "../packages/core/src/gateway/declared-types.ts";
-import type { CreatedWidget } from "../packages/core/src/widget-api.js";
+import type { DeclaredProps, DrawnProps, WidgetLayout } from "../packages/shared/core/src/gateway/declared-types.ts";
+import type { CreatedWidget } from "../packages/shared/core/src/widget-api.js";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { callAsUntypedSource, constructAsUntypedSource } from "./untyped-source.ts";
-import type { Patch, RecordRef, Row, RowsResult } from "../packages/core/src/gateway/contract.ts";
-import { rowOf } from "../packages/core/src/gateway/create.ts";
-import { ICommand, IQuery } from "../packages/core/src/gateway/queries.ts";
-import { defineCommandMetadata, defineGatewayMetadata } from "../packages/core/src/gateway/implementation-metadata.ts";
+import type { Patch, RecordRef, Row, RowsResult } from "../packages/shared/core/src/gateway/contract.ts";
+import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
+import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import {
+	defineCommandMetadata,
+	defineGatewayMetadata,
+} from "../packages/shared/core/src/gateway/implementation-metadata.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });
 Object.assign(globalThis, {
@@ -35,10 +38,10 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { arrayGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { useData } = await import("../packages/core/src/gateway/use-data.ts");
-const { createWidget } = await import("../packages/core/src/widget-api.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { arrayGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { useData } = await import("../packages/shared/core/src/gateway/use-data.ts");
+const { createWidget } = await import("../packages/shared/core/src/widget-api.js");
 
 type ModuleParts = Parameters<typeof manifestOfModule>[0];
 

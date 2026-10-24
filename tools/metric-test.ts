@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import type { RecordRef } from "../packages/core/src/gateway/contract.ts";
+import type { RecordRef } from "../packages/shared/core/src/gateway/contract.ts";
 import { byId } from "./dom-find.ts";
 import { fieldAt } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
@@ -37,13 +37,13 @@ Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 
 const react = await import("react");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const { collectionGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { mapCollection } = await import("../packages/core/src/gateway/mapped.ts");
-const { needsOf } = await import("../packages/core/src/gateway/props.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const { collectionGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { mapCollection } = await import("../packages/shared/core/src/gateway/mapped.ts");
+const { needsOf } = await import("../packages/shared/core/src/gateway/props.js");
 
 const WIDGET = "registry/@default/metric-total/widget.tsx";
 const DECLARED: unknown = JSON.parse(fs.readFileSync("registry/@default/metric-total/manifest.generated.json", "utf8"));

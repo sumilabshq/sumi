@@ -10,9 +10,9 @@ import {
 	useCommand,
 	useOptionalQuery,
 	useQuery,
-} from "../packages/core/src/requests/index.ts";
-import type { CommandHandle, CommandRefusal, StartedApp } from "../packages/core/src/requests/index.ts";
-import { server } from "../packages/core/src/requests/server/index.ts";
+} from "../packages/shared/core/src/requests/index.ts";
+import type { CommandHandle, CommandRefusal, StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 

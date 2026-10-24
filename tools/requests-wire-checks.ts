@@ -1,5 +1,5 @@
-import { MemoryDoneKeys, MemoryRateLimits, app } from "../packages/core/src/requests/index.ts";
-import type { DoneKeys, RateLimit, RateLimits } from "../packages/core/src/requests/index.ts";
+import { MemoryDoneKeys, MemoryRateLimits, app } from "../packages/shared/core/src/requests/index.ts";
+import type { DoneKeys, RateLimit, RateLimits } from "../packages/shared/core/src/requests/index.ts";
 import {
 	PublicGuard,
 	Repeatable,
@@ -9,10 +9,10 @@ import {
 	handler,
 	query,
 	serverModule,
-} from "../packages/core/src/requests/index.ts";
-import { server } from "../packages/core/src/requests/server/index.ts";
+} from "../packages/shared/core/src/requests/index.ts";
+import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { z } from "zod";
-import { remoteOver } from "../packages/core/src/requests/wire-client.ts";
+import { remoteOver } from "../packages/shared/core/src/requests/wire-client.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 

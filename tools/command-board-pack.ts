@@ -1,8 +1,11 @@
-import { z } from "../packages/core/src/gateway/declared.ts";
-import { ICommand, IQuery } from "../packages/core/src/gateway/queries.ts";
-import { definePack, registerPacks } from "../packages/core/src/engine/packs.ts";
-import { defineCommandMetadata, defineGatewayMetadata } from "../packages/core/src/gateway/implementation-metadata.ts";
-import { rowOf } from "../packages/core/src/gateway/create.ts";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
+import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import { definePack, registerPacks } from "../packages/shared/core/src/engine/packs.ts";
+import {
+	defineCommandMetadata,
+	defineGatewayMetadata,
+} from "../packages/shared/core/src/gateway/implementation-metadata.ts";
+import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
 
 export const StatusSchema = z.enum(["todo", "doing", "done"]);
 export const TaskSchema = z.object({ title: z.string(), status: StatusSchema, id: z.string().optional() });

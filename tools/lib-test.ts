@@ -2,9 +2,9 @@ import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import nodePath from "node:path";
 import { pathToFileURL } from "node:url";
-import type { RecordRef } from "../packages/core/src/gateway/contract.ts";
-import { rowOf } from "../packages/core/src/gateway/create.ts";
-import type { RegistryAdapter } from "../packages/core/src/registry-reading.js";
+import type { RecordRef } from "../packages/shared/core/src/gateway/contract.ts";
+import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
+import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
 import { fieldAt } from "./held-fields.ts";
 import { layJsdomGlobals } from "./jsdom-globals.ts";
 import { present } from "./page-dom.ts";
@@ -16,7 +16,7 @@ type FileMap = Readonly<Record<string, string>>;
 
 layJsdomGlobals();
 
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
 
 const ROOT = ".widgetarium/widgets";
 
@@ -160,7 +160,7 @@ const check = (name: string, got: unknown, want: unknown): void => {
 	writeFileSync(
 		widgetariumAt,
 		["match.ts", "declared.ts"]
-			.map((file) => `export * from "${sourceAt(`packages/core/src/gateway/${file}`)}";\n`)
+			.map((file) => `export * from "${sourceAt(`packages/shared/core/src/gateway/${file}`)}";\n`)
 			.join(""),
 	);
 	writeFileSync(
@@ -254,7 +254,7 @@ const check = (name: string, got: unknown, want: unknown): void => {
 }
 
 {
-	const { buildWidget } = await import("../packages/core/src/registry.js");
+	const { buildWidget } = await import("../packages/shared/core/src/registry.js");
 	const { widgetModuleSources } = await import("./run-widget-source.ts");
 	const drawn = buildWidget({
 		sources: widgetModuleSources("registry/@default/heatmap"),

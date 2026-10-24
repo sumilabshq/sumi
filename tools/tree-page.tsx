@@ -1,19 +1,19 @@
 import "./packs-registered.ts";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { WidgetHost, WidgetSurface } from "../packages/core/src/surface.js";
-import { normalizeBoard, serializeBoard } from "../packages/core/src/model.js";
-import type { Board } from "../packages/core/src/model.js";
-import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { CATALOGUE_REQUESTS } from "../packages/core/src/engine/catalogue-requests.js";
-import { createGatewayRefs, createViewCells } from "../packages/core/src/gateway/refs.js";
-import type { GatewayRefs, ViewCell } from "../packages/core/src/gateway/refs.js";
-import { classOf, scaleOf } from "../packages/core/src/paths.js";
-import { isBox, layNode, leavesOf } from "../packages/core/src/tree.js";
-import type { BoardNode, BoxNode, LaidLeaf, LaidNode } from "../packages/core/src/tree.js";
-import { isDrawable } from "../packages/core/src/surface/is-drawable.js";
-import type { BoxAction } from "../packages/core/src/surface/box-actions.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { WidgetHost, WidgetSurface } from "../packages/shared/core/src/surface.js";
+import { normalizeBoard, serializeBoard } from "../packages/shared/core/src/model.js";
+import type { Board } from "../packages/shared/core/src/model.js";
+import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
+import { CATALOGUE_REQUESTS } from "../packages/shared/core/src/engine/catalogue-requests.js";
+import { createGatewayRefs, createViewCells } from "../packages/shared/core/src/gateway/refs.js";
+import type { GatewayRefs, ViewCell } from "../packages/shared/core/src/gateway/refs.js";
+import { classOf, scaleOf } from "../packages/shared/core/src/paths.js";
+import { isBox, layNode, leavesOf } from "../packages/shared/core/src/tree.js";
+import type { BoardNode, BoxNode, LaidLeaf, LaidNode } from "../packages/shared/core/src/tree.js";
+import { isDrawable } from "../packages/shared/core/src/surface/is-drawable.js";
+import type { BoxAction } from "../packages/shared/core/src/surface/box-actions.js";
 import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
 import {
 	elementAt,

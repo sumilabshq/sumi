@@ -7,7 +7,7 @@
 	"source": {
 		"type": "authored",
 		"origin": "the Widgetarium kit: docs/ai/design-system.md, docs/ai/clean-ui.md, docs/ai/surfaces.md; practice from Material 3 Expressive and Apple",
-		"credit": "Widgetarium kit, MIT (packages/kit); Microsoft Fluent Emoji, MIT; Lucide icons, ISC; Material shapes, Apache-2.0"
+		"credit": "Widgetarium kit, MIT (packages/shared/kit); Microsoft Fluent Emoji, MIT; Lucide icons, ISC; Material shapes, Apache-2.0"
 	},
 	"files": {
 		"design": "DESIGN.md",

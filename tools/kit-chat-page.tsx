@@ -11,7 +11,7 @@ import {
 	MessageScrollerViewport,
 	useMessageScroller,
 	useMessageScrollerVisibility,
-} from "../packages/kit/src/index";
+} from "../packages/shared/kit/src/index";
 
 interface Row {
 	readonly id: string;

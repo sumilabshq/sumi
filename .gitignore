@@ -1,11 +1,11 @@
 node_modules
-/packages/host-obsidian/main.js
-/packages/host-obsidian/main.js.map
-/packages/host-obsidian/gpu/
+/apps/host-obsidian/main.js
+/apps/host-obsidian/main.js.map
+/apps/host-obsidian/gpu/
 
 .DS_Store
 .obsidian/
-/packages/host-obsidian/data.json
+/apps/host-obsidian/data.json
 /export/
 /*.png
 .omc/
@@ -19,5 +19,5 @@ registry/*/*/build/
 /apps/**/dist/
 .playwright-mcp/
 
-packages/host-tauri/src-tauri/target/
-packages/host-tauri/src-tauri/gen/schemas/
+apps/host-tauri/src-tauri/target/
+apps/host-tauri/src-tauri/gen/schemas/

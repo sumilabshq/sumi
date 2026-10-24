@@ -21,7 +21,7 @@ const APP_SCOPES_IN_STUDIO: readonly string[] = [
 ];
 const STUDIO_TYPE_FEATURES = `${STUDIO_SHELL_SCOPES.join(",\n")} {\n\tfont-feature-settings: var(--sumi-font-features);\n}\n\n`;
 const TOKEN_RULE = /([^{}]+)\{([^{}]*)\}/g;
-const FONTS_FOLDER = "packages/kit/assets/fonts";
+const FONTS_FOLDER = "packages/shared/kit/assets/fonts";
 
 interface FontFace {
 	readonly family: string;

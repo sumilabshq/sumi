@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import type { Query } from "../packages/core/src/gateway/contract.ts";
+import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
 import { byId } from "./dom-find.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });
@@ -25,8 +25,8 @@ Object.assign(globalThis, {
 
 const react = await import("react");
 const { createElement: h } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { collectionGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { collectionGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
 
 type Props = Readonly<Record<string, unknown>>;
 

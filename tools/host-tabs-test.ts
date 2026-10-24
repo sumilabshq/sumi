@@ -1,14 +1,14 @@
-import { HostTabs, flatTabIdsOf } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
-import { NoPaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/none.gateway.ts";
-import { PaneTabsGateway } from "../packages/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
-import { closeTabs } from "../packages/app-host/shared/lib/tab-showing/close-tab.ts";
-import { showFreeTabBesidePanes } from "../packages/app-host/shared/lib/tab-showing/show-tab.ts";
-import { Essentials } from "../packages/app-host/shared/lib/essentials/essentials.ts";
-import { KeptTabsSchema } from "../packages/app-host/shared/schema/tabs-session.schema.ts";
-import { chatTabToShow, showChatTab } from "../packages/app-host/shared/lib/tab-showing/chat-tabs.ts";
-import type { AppKind } from "../packages/app-host/shared/schema/app-tab.schema.ts";
-import type { PageFacts } from "../packages/app-host/shared/schema/page-facts.schema.ts";
+import { HostTabs, flatTabIdsOf } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
+import { NoPaneTabsGateway } from "../packages/domain/app-host/gateways/pane-tabs/none.gateway.ts";
+import { PaneTabsGateway } from "../packages/domain/app-host/gateways/pane-tabs/pane-tabs.gateway.ts";
+import { closeTabs } from "../packages/domain/app-host/shared/lib/tab-showing/close-tab.ts";
+import { showFreeTabBesidePanes } from "../packages/domain/app-host/shared/lib/tab-showing/show-tab.ts";
+import { Essentials } from "../packages/domain/app-host/shared/lib/essentials/essentials.ts";
+import { KeptTabsSchema } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
+import { chatTabToShow, showChatTab } from "../packages/domain/app-host/shared/lib/tab-showing/chat-tabs.ts";
+import type { AppKind } from "../packages/domain/app-host/shared/schema/app-tab.schema.ts";
+import type { PageFacts } from "../packages/domain/app-host/shared/schema/page-facts.schema.ts";
 
 let failed = 0;
 const quiet = console.info;

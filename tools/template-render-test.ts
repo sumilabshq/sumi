@@ -1,8 +1,8 @@
 import { stage, TASK_ROWS } from "./harness.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
-const { TEMPLATES, templateBoard } = await import("../packages/core/src/templates.js");
-const { serializeBoard } = await import("../packages/core/src/model.js");
+const { TEMPLATES, templateBoard } = await import("../packages/shared/core/src/templates.js");
+const { serializeBoard } = await import("../packages/shared/core/src/model.js");
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {

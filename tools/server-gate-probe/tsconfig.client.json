@@ -6,5 +6,9 @@
 		"types": []
 	},
 	"references": [],
-	"include": ["client-imports-module.ts", "../../packages/core/src/*.d.ts", "../../packages/kit/src/jsx-namespace.d.ts"]
+	"include": [
+		"client-imports-module.ts",
+		"../../packages/shared/core/src/*.d.ts",
+		"../../packages/shared/kit/src/jsx-namespace.d.ts"
+	]
 }

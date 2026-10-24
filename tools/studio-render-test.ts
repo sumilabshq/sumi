@@ -5,8 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import esbuild from "esbuild";
-import { ASSISTANT_NOT_AVAILABLE } from "../packages/core/src/engine/assistant-port.ts";
-import { NO_GPU } from "../packages/canvas/shared/lib/field/frames/use-gpu-frame.ts";
+import { ASSISTANT_NOT_AVAILABLE } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { NO_GPU } from "../packages/domain/canvas/shared/lib/field/frames/use-gpu-frame.ts";
 import {
 	catalogueImportsIn,
 	checkCatalogueAbsentInApp,
@@ -68,14 +68,14 @@ type Mode = "app" | "studio" | "studio-mac" | "studio-memory";
 const VIEW = { width: 1800, height: 900 };
 const REACT_ID = /«[^»]*»|:r[0-9a-z]+:|_r_[0-9a-z]+_/g;
 const REGION_WIDTH = /flex: 0 0 \d+px/g;
-const APP_ENTRY = "packages/core/src/app.ts";
-const STUDIO_FOLDERS = ["apps/studio/", "packages/shell/", "packages/workspaces/"];
+const APP_ENTRY = "packages/shared/core/src/app.ts";
+const STUDIO_FOLDERS = ["apps/studio/", "packages/client/shell/", "packages/domain/workspaces/"];
 
 const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-render"));
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/studio-render-page.tsx");
-const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
 

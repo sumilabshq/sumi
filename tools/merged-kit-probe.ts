@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { mergeKit } from "../packages/cli/src/kit-copy.js";
+import { mergeKit } from "../packages/shared/cli/src/kit-copy.js";
 
 export const KIT_FOLDER = "src/shared/kit";
 export const COMPONENTS = "components/";
 
-const KIT_SOURCE = path.resolve(import.meta.dirname, "../packages/kit/src");
+const KIT_SOURCE = path.resolve(import.meta.dirname, "../packages/shared/kit/src");
 const MODULE_EXTENSION = /\.tsx?$/;
 const EXPORTED_DECLARATION = /^export (?:declare )?(?:async )?(?:function|const|let|class|interface|type|enum) (\w+)/gm;
 

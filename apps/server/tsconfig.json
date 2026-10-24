@@ -23,6 +23,10 @@
 		"skipLibCheck": true,
 		"types": ["node"]
 	},
-	"references": [{ "path": "../../packages/kit" }, { "path": "../../packages/core" }],
-	"include": ["src/**/*.ts", "../../packages/core/src/*.d.ts", "../../packages/kit/src/jsx-namespace.d.ts"]
+	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/core" }],
+	"include": [
+		"src/**/*.ts",
+		"../../packages/shared/core/src/*.d.ts",
+		"../../packages/shared/kit/src/jsx-namespace.d.ts"
+	]
 }

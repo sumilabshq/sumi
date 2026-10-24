@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
-import type { Board, HeldRecord, SlotRecord, Tile, TileProp, TileProps } from "../packages/core/src/model.js";
-import type { Seen } from "../packages/core/src/prop-visibility.js";
-import type { BoardNode, BoxNode } from "../packages/core/src/tree-nodes.js";
-import type { BoardRegistry, SurfaceHost } from "../packages/core/src/surface/use-surface-shared.js";
+import type { Board, HeldRecord, SlotRecord, Tile, TileProp, TileProps } from "../packages/shared/core/src/model.js";
+import type { Seen } from "../packages/shared/core/src/prop-visibility.js";
+import type { BoardNode, BoxNode } from "../packages/shared/core/src/tree-nodes.js";
+import type { BoardRegistry, SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
 import { byId, found } from "./dom-find.ts";
 import { fieldAt } from "./held-fields.ts";
 import { standIn } from "./stand-in.ts";
@@ -41,14 +41,14 @@ let boardWidthPx = 1340;
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => boardWidthPx });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { CATALOGUE_REQUESTS } = await import("../packages/core/src/engine/catalogue-requests.js");
-const { GRID } = await import("../packages/core/src/paths.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { CATALOGUE_REQUESTS } = await import("../packages/shared/core/src/engine/catalogue-requests.js");
+const { GRID } = await import("../packages/shared/core/src/paths.js");
 boardWidthPx = 20 * GRID.cellPx + 19 * GRID.gapPx + 2 * GRID.padPx;
 const { CHROME, barPlacement, dialogBox, freeArea, openingScale, openingPan, clampPan } =
-	await import("../packages/core/src/settings-fit.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { heldTile, normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
+	await import("../packages/shared/core/src/settings-fit.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { heldTile, normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
 
 let failed = 0;
 
@@ -293,7 +293,7 @@ console.log("\n— and the panel writes what it draws —");
 		title: "Kanban board",
 		collapseBelowPx: 240,
 
-		// CONTEXT: what the parent DECLARES it hands the slot — the shape packages/core/src/fit.js ranks against
+		// CONTEXT: what the parent DECLARES it hands the slot — the shape packages/shared/core/src/fit.js ranks against
 		slots: { card: { of: "widget", default: CARD_ID, gives: { task: ["title", "status"] } } },
 		props: {
 			groupBy: {
@@ -1003,7 +1003,7 @@ console.log("\n— an unfed child is a level of its own, and the trail is the wa
 
 	// THE AFFORDANCE IS NOT BEHIND A HOVER. Gutenberg shipped that, called it a mistake, and was
 	// still adding a back button to it five years later.
-	const sheet = readFileSync(new URL("../packages/host-obsidian/styles.css", import.meta.url), "utf8");
+	const sheet = readFileSync(new URL("../apps/host-obsidian/styles.css", import.meta.url), "utf8");
 	const hoverGated = sheet
 		.split("}")
 		.map((block) => present(block.split("{")[0], "selector"))

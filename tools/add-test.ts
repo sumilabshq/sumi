@@ -1,8 +1,8 @@
 import { addWidget } from "./add.ts";
 import type { AddProject, WantedPackage } from "./add.ts";
 import { rangesAgree } from "./version-range.ts";
-import { createWidgetSource } from "../packages/core/src/engine/widget-source.js";
-import type { SourceDisk } from "../packages/core/src/engine/widget-source.js";
+import { createWidgetSource } from "../packages/shared/core/src/engine/widget-source.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/widget-source.js";
 import { textIn } from "./held-fields.ts";
 
 let failed = 0;

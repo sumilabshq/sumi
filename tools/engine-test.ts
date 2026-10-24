@@ -1,11 +1,16 @@
-import { createGatewayRefs, createViewCells, narrowByRefs, refValue } from "../packages/core/src/gateway/refs.ts";
-import { createPickedGateway, selectionGateway } from "../packages/packs/core/src/picked.ts";
-import { arrayGateway } from "../packages/core/src/gateway/create.ts";
-import type { Patch } from "../packages/core/src/gateway/contract.ts";
-import { wireTiles } from "../packages/core/src/engine/wiring.js";
-import { mountKeyFor } from "../packages/core/src/mount-key.js";
-import { createWidthGate, createWidthWatcher } from "../packages/core/src/width-gate.js";
-import { isMatch } from "../packages/core/src/gateway/match.ts";
+import {
+	createGatewayRefs,
+	createViewCells,
+	narrowByRefs,
+	refValue,
+} from "../packages/shared/core/src/gateway/refs.ts";
+import { createPickedGateway, selectionGateway } from "../packages/shared/packs/core/src/picked.ts";
+import { arrayGateway } from "../packages/shared/core/src/gateway/create.ts";
+import type { Patch } from "../packages/shared/core/src/gateway/contract.ts";
+import { wireTiles } from "../packages/shared/core/src/engine/wiring.js";
+import { mountKeyFor } from "../packages/shared/core/src/mount-key.js";
+import { createWidthGate, createWidthWatcher } from "../packages/shared/core/src/width-gate.js";
+import { isMatch } from "../packages/shared/core/src/gateway/match.ts";
 import { fieldAt, fieldIn, itemsIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
@@ -212,7 +217,7 @@ const tick = (): Promise<unknown> => new Promise((resolve) => setTimeout(resolve
 	);
 }
 
-const { viewHost } = await import("../packages/core/src/engine/view-host.js");
+const { viewHost } = await import("../packages/shared/core/src/engine/view-host.js");
 const fullHost = standIn<Parameters<typeof viewHost>[0]>(
 	{
 		platform: "obsidian",
@@ -246,8 +251,8 @@ check("and which build of it, so `can` never has to be guessed from the family",
 check("a console crosses, and says what it may do here", Object.keys(exposed.console.can).sort(), ["log", "run"]);
 check("what it does get, in full", Object.keys(exposed).sort(), ["can", "console", "platform", "type", "ui"]);
 
-const { hostTypeOf } = await import("../packages/core/src/engine/host-type.js");
-const { createConsole, refusingConsole } = await import("../packages/core/src/engine/host-console.js");
+const { hostTypeOf } = await import("../packages/shared/core/src/engine/host-type.js");
+const { createConsole, refusingConsole } = await import("../packages/shared/core/src/engine/host-console.js");
 
 check("a desktop app is a desktop", hostTypeOf({ isDesktopApp: true }), "obsidian-desktop");
 check(
@@ -316,7 +321,7 @@ check(
 	[undefined, undefined, undefined],
 );
 
-const { resolveSlots } = await import("../packages/core/src/surface.js");
+const { resolveSlots } = await import("../packages/shared/core/src/surface.js");
 if (typeof resolveSlots === "function") {
 	const registry = {
 		get: (id: string) => (id === "@default/task-card" ? { component: () => null, manifest: {} } : null),

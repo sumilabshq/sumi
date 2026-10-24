@@ -1,21 +1,21 @@
 import type { z as Zod } from "zod";
-import type { HostGatewayContext, HostGatewayHost } from "../packages/core/src/engine/host-context.js";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { HostGateway } from "../packages/core/src/engine/host-context.js";
-import type { CollectionGateway } from "../packages/core/src/gateway/contract.js";
-import type { DeclaredModule, WidgetLayout } from "../packages/core/src/gateway/declared-types.js";
-import type { ActionMeta } from "../packages/core/src/gateway/create.js";
+import type { HostGatewayContext, HostGatewayHost } from "../packages/shared/core/src/engine/host-context.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { HostGateway } from "../packages/shared/core/src/engine/host-context.js";
+import type { CollectionGateway } from "../packages/shared/core/src/gateway/contract.js";
+import type { DeclaredModule, WidgetLayout } from "../packages/shared/core/src/gateway/declared-types.js";
+import type { ActionMeta } from "../packages/shared/core/src/gateway/create.js";
 import { runWidgetSource } from "./run-widget-source.ts";
 import { present } from "./page-dom.ts";
 
-const { resolveHostGateway } = await import("../packages/core/src/engine/host-gateways.js");
-const { createGatewayRefs, createViewCells } = await import("../packages/core/src/gateway/refs.ts");
-const { arrayGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { problemsOf } = await import("../packages/core/src/gateway/problems.ts");
-const { createGatewayCache } = await import("../packages/core/src/gateway/cache.ts");
+const { resolveHostGateway } = await import("../packages/shared/core/src/engine/host-gateways.js");
+const { createGatewayRefs, createViewCells } = await import("../packages/shared/core/src/gateway/refs.ts");
+const { arrayGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { problemsOf } = await import("../packages/shared/core/src/gateway/problems.ts");
+const { createGatewayCache } = await import("../packages/shared/core/src/gateway/cache.ts");
 const { ICrudGateway, IValueGateway, declareProps, manifestOfModule, z } =
-	await import("../packages/core/src/gateway/declared.ts");
-const { createDeclaredWidget } = await import("../packages/core/src/declared-widget.js");
+	await import("../packages/shared/core/src/gateway/declared.ts");
+const { createDeclaredWidget } = await import("../packages/shared/core/src/declared-widget.js");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -192,7 +192,7 @@ Object.assign(globalThis, {
 	getComputedStyle: page.window.getComputedStyle,
 });
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.ts");
 const KindSchema = z.enum(["area", "bar"]);
 const kindsDrawn: unknown[] = [];
 const KindProbe = createDeclaredWidget(
@@ -219,7 +219,7 @@ check(
 	[1],
 );
 
-const { gatewayCache } = await import("../packages/core/src/gateway/cache.ts");
+const { gatewayCache } = await import("../packages/shared/core/src/gateway/cache.ts");
 const { useState } = await import("react");
 const NOT_READ_NOTICE = "A prop could not be read";
 const flakyRead = { fails: false };
@@ -261,8 +261,8 @@ check(
 );
 check("and React counts the same hooks on every draw", afterFailure.hookErrors, 0);
 
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
-const { propSchemaOf } = await import("../packages/core/src/surface/prop-gateway.ts");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
+const { propSchemaOf } = await import("../packages/shared/core/src/surface/prop-gateway.ts");
 const DRAWS_NOTHING = new Proxy({}, { get: () => () => null });
 const FileRow = runWidgetSource(
 	"registry/@flow/file-row/widget.tsx",
@@ -354,7 +354,7 @@ check(
 	'prop "days" names aka for field "done" in metadata; other names belong to the schema: add .meta({ aka: [...] }) to the schema of done',
 );
 
-const { createWidget } = await import("../packages/core/src/widget-api.js");
+const { createWidget } = await import("../packages/shared/core/src/widget-api.js");
 check(
 	"createWidget takes what it injects and how it draws",
 	Object.keys(

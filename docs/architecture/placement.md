@@ -5,7 +5,7 @@ A file's place is decided by **what it is** and **who uses it**: a feature's own
 ## Inside a module
 
 ```
-packages/<module>/
+packages/<layer>/<module>/
   package.json                 name, "widgetarium": { "level": "domain" }, the three entries
   module.ts                    only the serverModule(...) or clientModule(...) definition
   features/<feature>/          contract.ts, handlers.ts, ui/ (the feature's blocks), lib/ (feature-only code)
@@ -62,10 +62,10 @@ A `module(...)` package has two entries: `"."` is the root `index.ts`, which onl
 | where the module runs and what its handlers share         | `module.ts`                                                  |
 | data or an outside system (the vault, a database, Stripe) | `gateways/<gateway>/`: the gateway and one file per platform |
 | the parts one platform builds                             | `gateways/<module>-parts/<platform>.gateway.ts`              |
-| behavior with no domain (drag, scroll, focus)             | `packages/behaviors`                                         |
+| behavior with no domain (drag, scroll, focus)             | `packages/shared/behaviors`                                  |
 | a drawn part with no domain                               | the kit                                                      |
 | a route, a page, the modules an app starts                | `apps/<product>/`                                            |
-| what runs the apps inside another program                 | `packages/host-<name>/`                                      |
+| what runs the apps inside another program                 | `apps/host-<name>/`                                          |
 
 ## Questions an agent asks, answered
 

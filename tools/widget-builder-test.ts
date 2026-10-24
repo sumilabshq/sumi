@@ -20,12 +20,12 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const { inject, widget } = await import("../packages/core/src/widget-builder.ts");
-const { manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
-const { statesIn } = await import("../packages/core/src/registry-scope.ts");
-const { checkWidget } = await import("../packages/core/src/widget-check.ts");
-const { offsetOfCursor, pageAt } = await import("../packages/core/src/gateway/page.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { inject, widget } = await import("../packages/shared/core/src/widget-builder.ts");
+const { manifestOfModule } = await import("../packages/shared/core/src/gateway/declared.ts");
+const { statesIn } = await import("../packages/shared/core/src/registry-scope.ts");
+const { checkWidget } = await import("../packages/shared/core/src/widget-check.ts");
+const { offsetOfCursor, pageAt } = await import("../packages/shared/core/src/gateway/page.ts");
 const fixture = await import("./widget-builder-fixture.ts");
 const { checkOutcomes } = await import("./widget-builder-outcomes.ts");
 const { checkHandles } = await import("./widget-builder-handles.ts");

@@ -9,7 +9,7 @@ import type { Theme } from "./harness.ts";
 export const SIDEBAR_GATE = "test:studio-tabs";
 export const BOARD_SIZE: readonly [number, number] = [420, 1000];
 
-const INTER = path.resolve("packages/kit/assets/fonts/inter/InterVariable-latin.woff2");
+const INTER = path.resolve("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const FONT_FACES = ["Inter Variable", "Inter"]
 	.map(
 		(family) =>
@@ -70,7 +70,7 @@ export async function sidebarPageFile(folder: string): Promise<string> {
 	mkdirSync(folder, { recursive: true });
 	const [bundle, sheet] = await Promise.all([bundleOf("tools/tabs-sidebar-page.tsx"), canvasSheet(process.cwd())]);
 	const sumi = readFileSync("design-systems/sumi/sumi.css", "utf8");
-	const kit = readFileSync("packages/host-obsidian/styles.css", "utf8");
+	const kit = readFileSync("apps/host-obsidian/styles.css", "utf8");
 	const file = path.join(folder, "tabs-sidebar.html");
 	writeFileSync(
 		file,

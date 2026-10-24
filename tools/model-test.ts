@@ -9,11 +9,11 @@ import {
 	propConfig,
 	rekey,
 	uniqueName,
-} from "../packages/core/src/model.js";
-import { leavesOf, nodeAt } from "../packages/core/src/tree.js";
-import { BLOCK_FORMAT } from "../packages/core/src/version.js";
-import { storedRows } from "../packages/core/src/gateway/kept-in-tile.js";
-import { measureGrid, GRID } from "../packages/core/src/paths.js";
+} from "../packages/shared/core/src/model.js";
+import { leavesOf, nodeAt } from "../packages/shared/core/src/tree.js";
+import { BLOCK_FORMAT } from "../packages/shared/core/src/version.js";
+import { storedRows } from "../packages/shared/core/src/gateway/kept-in-tile.js";
+import { measureGrid, GRID } from "../packages/shared/core/src/paths.js";
 import { fieldAt, fieldIn, itemsIn } from "./held-fields.ts";
 import { callAsUntypedSource } from "./untyped-source.ts";
 

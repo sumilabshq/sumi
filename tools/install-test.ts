@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import { fakeVault } from "./fake-vault.ts";
-import type { SourceDisk } from "../packages/core/src/engine/widget-source.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/widget-source.js";
 import { fieldAt, fieldIn, textIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { callAsUntypedSource } from "./untyped-source.ts";
@@ -30,13 +30,14 @@ Object.assign(globalThis, { ResizeObserver: InertResizeObserver });
 Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 Object.defineProperty(dom.window.HTMLElement.prototype, "clientWidth", { configurable: true, get: () => 1280 });
 
-const { contentHash } = await import("../packages/core/src/engine/content-hash.js");
-const { readIndex, mergeCatalogue, isInstalled } = await import("../packages/core/src/engine/catalogue-index.js");
+const { contentHash } = await import("../packages/shared/core/src/engine/content-hash.js");
+const { readIndex, mergeCatalogue, isInstalled } =
+	await import("../packages/shared/core/src/engine/catalogue-index.js");
 const { readLock, lockEntry, withEntry, withoutEntry, isEdited } =
-	await import("../packages/core/src/engine/widget-lock.js");
-const { readRepository, commitUrl, rawUrl, folderFor } = await import("../packages/core/src/engine/github.js");
-const { createInstaller, INDEX_PATH } = await import("../packages/core/src/installer.js");
-const { updateOffered } = await import("../packages/core/src/catalogue-entries.js");
+	await import("../packages/shared/core/src/engine/widget-lock.js");
+const { readRepository, commitUrl, rawUrl, folderFor } = await import("../packages/shared/core/src/engine/github.js");
+const { createInstaller, INDEX_PATH } = await import("../packages/shared/core/src/installer.js");
+const { updateOffered } = await import("../packages/shared/core/src/catalogue-entries.js");
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {

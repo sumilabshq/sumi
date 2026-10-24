@@ -1,9 +1,9 @@
-import { MemoryChatsGateway } from "../packages/workspaces/gateways/chats/memory.gateway.js";
-import { MemoryWorkspacesGateway } from "../packages/workspaces/gateways/workspaces/memory.gateway.js";
-import { workspacesPartsOf } from "../packages/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
-import type { WorkspacesParts } from "../packages/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
-import type { KeptChat } from "../packages/workspaces/shared/schema/chat.schema.js";
-import type { Workspace } from "../packages/workspaces/shared/schema/workspace.schema.js";
+import { MemoryChatsGateway } from "../packages/domain/workspaces/gateways/chats/memory.gateway.js";
+import { MemoryWorkspacesGateway } from "../packages/domain/workspaces/gateways/workspaces/memory.gateway.js";
+import { workspacesPartsOf } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
+import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
+import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.schema.js";
+import type { Workspace } from "../packages/domain/workspaces/shared/schema/workspace.schema.js";
 
 export type WorkspacesCount = "one" | "board" | "many";
 

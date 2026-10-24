@@ -1,11 +1,11 @@
 import { JSDOM } from "jsdom";
 import { createProbeHost, createRowSlot } from "./vault-fixture.ts";
-import type { MergedEntry } from "../packages/core/src/catalogue-entries.ts";
-import type { CataloguePort } from "../packages/core/src/engine/catalogue-port.ts";
-import { NO_CATALOGUE_PORT } from "../packages/core/src/engine/catalogue-port.ts";
-import { INSTALL_JOBS } from "../packages/core/src/engine/install-jobs.ts";
-import { CATALOGUE_REQUESTS } from "../packages/core/src/engine/catalogue-requests.ts";
-import { placeWidget } from "../packages/core/src/surface/drop-receivers.ts";
+import type { MergedEntry } from "../packages/shared/core/src/catalogue-entries.ts";
+import type { CataloguePort } from "../packages/shared/core/src/engine/catalogue-port.ts";
+import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
+import { INSTALL_JOBS } from "../packages/shared/core/src/engine/install-jobs.ts";
+import { CATALOGUE_REQUESTS } from "../packages/shared/core/src/engine/catalogue-requests.ts";
+import { placeWidget } from "../packages/shared/core/src/surface/drop-receivers.ts";
 import { standIn } from "./stand-in.ts";
 
 const dom = new JSDOM(
@@ -38,15 +38,15 @@ Object.assign(dom.window, { ResizeObserver: Reflect.get(globalThis, "ResizeObser
 
 const react = await import("react");
 const { createElement: h } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { WidgetSurface } = await import("../packages/core/src/surface.js");
-const { ModuleRegistry } = await import("../packages/core/src/engine/module-registry.js");
-const { normalizeBoard } = await import("../packages/core/src/model.js");
-const { boardEdits } = await import("../packages/core/src/surface/board-edits.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { WidgetSurface } = await import("../packages/shared/core/src/surface.js");
+const { ModuleRegistry } = await import("../packages/shared/core/src/engine/module-registry.js");
+const { normalizeBoard } = await import("../packages/shared/core/src/model.js");
+const { boardEdits } = await import("../packages/shared/core/src/surface/board-edits.js");
 const { CATALOGUE_BOARDS } = await import("../apps/studio/src/legacy/catalogue/catalogue-boards.ts");
 const { CATALOGUE_WIDGETS } = await import("../apps/studio/src/legacy/catalogue/catalogue-widgets.ts");
-const { DOC_PAGES } = await import("../packages/core/src/docs.js");
-const { TEMPLATES } = await import("../packages/core/src/templates.js");
+const { DOC_PAGES } = await import("../packages/shared/core/src/docs.js");
+const { TEMPLATES } = await import("../packages/shared/core/src/templates.js");
 
 let failed = 0;
 let checks = 0;
@@ -280,8 +280,8 @@ render(null, node);
 const { useTakesCatalogueAsks } = await import("../apps/studio/src/legacy/studio-on-screen.ts");
 const { StudioCatalogue } = await import("../apps/studio/src/legacy/catalogue/studio-catalogue.ts");
 const { createStudioState } = await import("../apps/studio/src/legacy/studio-state.ts");
-const { Board } = await import("../packages/core/src/surface/board.ts");
-const { CatalogueAsk } = await import("../packages/core/src/catalogue-ask.ts");
+const { Board } = await import("../packages/shared/core/src/surface/board.ts");
+const { CatalogueAsk } = await import("../packages/shared/core/src/catalogue-ask.ts");
 const placed = (className: string, isShown: boolean): HTMLElement => {
 	const made = document.createElement("div");
 	made.className = className;

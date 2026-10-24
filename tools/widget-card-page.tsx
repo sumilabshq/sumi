@@ -1,11 +1,11 @@
 import "./packs-registered.ts";
 import { createElement as h, useEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
-import { render } from "../packages/core/src/engine/render.js";
-import { WidgetRegistry } from "../packages/core/src/registry.js";
-import { drawWidget } from "../packages/core/src/mounted.js";
-import { previewProps, previewSize } from "../packages/core/src/preview.js";
-import { GRID } from "../packages/core/src/paths.js";
+import { render } from "../packages/shared/core/src/engine/render.js";
+import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
+import { drawWidget } from "../packages/shared/core/src/mounted.js";
+import { previewProps, previewSize } from "../packages/shared/core/src/preview.js";
+import { GRID } from "../packages/shared/core/src/paths.js";
 import { PAGE_HOST, boom, filesAdapter, pageFiles, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
 type LatticeStyle = CSSProperties & { readonly "--wg-cell": string; readonly "--wg-gap": string };

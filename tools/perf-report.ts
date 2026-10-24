@@ -5,29 +5,29 @@ import os from "node:os";
 import nodePath from "node:path";
 import vm from "node:vm";
 import type { App } from "obsidian";
-import { bundleOptions } from "../packages/host-obsidian/build.mts";
-import type { ObsidianHost } from "../packages/host-obsidian/src/legacy/host.ts";
-import type { ActionMeta } from "../packages/core/src/gateway/create.ts";
-import type { CollectionGateway, Query } from "../packages/core/src/gateway/contract.ts";
-import type { NoteRecord } from "../packages/core/src/gateway/obsidian.ts";
-import type { InstallerAdapter } from "../packages/core/src/installer-context.ts";
+import { bundleOptions } from "../apps/host-obsidian/build.mts";
+import type { ObsidianHost } from "../apps/host-obsidian/src/legacy/host.ts";
+import type { ActionMeta } from "../packages/shared/core/src/gateway/create.ts";
+import type { CollectionGateway, Query } from "../packages/shared/core/src/gateway/contract.ts";
+import type { NoteRecord } from "../packages/shared/core/src/gateway/obsidian.ts";
+import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.ts";
 import { NO_PLUGIN, TASK_NEEDS, catalogueAdapter, countingDisk, fakeTaskVault } from "./perf-fixture.ts";
 import type { TaskApp } from "./perf-fixture.ts";
 import { fakeVault } from "./fake-vault.ts";
 import type { FakeVault } from "./fake-vault.ts";
 import { standIn } from "./stand-in.ts";
 
-const { createHost } = await import("../packages/host-obsidian/src/legacy/host.js");
-const { folderGateway } = await import("../packages/packs/obsidian/src/folder-gateway.ts");
-const { mapCollection } = await import("../packages/core/src/gateway/mapped.ts");
-const { narrow } = await import("../packages/core/src/gateway/narrow.ts");
-const { gatewayCache } = await import("../packages/core/src/gateway/cache.ts");
-const { rowOf } = await import("../packages/core/src/gateway/create.ts");
-const { createInstaller, INDEX_PATH } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { WIDGETS_DIR, LOCK_PATH } = await import("../packages/core/src/paths.js");
-const { builtCodePath, compileWidget } = await import("../packages/core/src/engine/widget-build.js");
-const { lockEntry, withEntry, readLock } = await import("../packages/core/src/engine/widget-lock.js");
+const { createHost } = await import("../apps/host-obsidian/src/legacy/host.js");
+const { folderGateway } = await import("../packages/shared/packs/obsidian/src/folder-gateway.ts");
+const { mapCollection } = await import("../packages/shared/core/src/gateway/mapped.ts");
+const { narrow } = await import("../packages/shared/core/src/gateway/narrow.ts");
+const { gatewayCache } = await import("../packages/shared/core/src/gateway/cache.ts");
+const { rowOf } = await import("../packages/shared/core/src/gateway/create.ts");
+const { createInstaller, INDEX_PATH } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { WIDGETS_DIR, LOCK_PATH } = await import("../packages/shared/core/src/paths.js");
+const { builtCodePath, compileWidget } = await import("../packages/shared/core/src/engine/widget-build.js");
+const { lockEntry, withEntry, readLock } = await import("../packages/shared/core/src/engine/widget-lock.js");
 
 interface WidgetSourceFile {
 	readonly path: string;
@@ -46,7 +46,7 @@ const megabytes = (bytes: number): string => `${(bytes / 1048576).toFixed(2)} MB
 const isDevBuild = (source: string): boolean => source.includes("//# sourceMappingURL=");
 
 function startupSources(): string {
-	return ["packages/host-obsidian/src/main.ts", "packages/host-obsidian/src/vault-widgets.ts"]
+	return ["apps/host-obsidian/src/main.ts", "apps/host-obsidian/src/vault-widgets.ts"]
 		.map((file) => fs.readFileSync(file, "utf8"))
 		.join("\n");
 }
@@ -312,7 +312,7 @@ async function reportFirstPaint(): Promise<void> {
 
 async function reportEmojiTable(): Promise<void> {
 	heading("6 · emoji table");
-	const source = fs.readFileSync("packages/kit/src/emojis/emoji-table.ts", "utf8");
+	const source = fs.readFileSync("packages/shared/kit/src/emojis/emoji-table.ts", "utf8");
 	const asScript = source.replace(/^export const/gm, "var");
 	row("size", `${(source.length / 1024).toFixed(0)} kB`);
 	row("parse + evaluate", `${parseCost(asScript, "emoji").toFixed(1)} ms`);

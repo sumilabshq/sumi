@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { bundleOf, findBrowser } from "./harness.ts";
-import { isObject } from "../packages/core/src/engine/is-object.ts";
+import { isObject } from "../packages/shared/core/src/engine/is-object.ts";
 import type {
 	BoardNode,
 	BoxNode,
@@ -12,10 +12,10 @@ import type {
 	LaidChild,
 	LaidNode,
 	SurfaceWord,
-} from "../packages/core/src/tree.js";
-import type { Rgba } from "../packages/core/src/color-math.js";
+} from "../packages/shared/core/src/tree.js";
+import type { Rgba } from "../packages/shared/core/src/color-math.js";
 
-const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
+const { normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
 const {
 	allEdges,
 	layNode,
@@ -29,16 +29,17 @@ const {
 	regionSurfaceOf,
 	STEP_PX,
 	SURFACE_PAD_PX,
-} = await import("../packages/core/src/tree.js");
+} = await import("../packages/shared/core/src/tree.js");
 const { nestingFindings, surfaceChoicesAt, surfaceVerdicts, wearSurfaceAt } =
-	await import("../packages/core/src/surface-laws.js");
-const { isKnownRole, plateRefusal, ROLES, slotSurfaceOf } = await import("../packages/core/src/surface-roles.js");
-const { platesAtCell } = await import("../packages/kit/src/utils/surface.ts");
-const { gapVarsOf } = await import("../packages/core/src/tree.js");
+	await import("../packages/shared/core/src/surface-laws.js");
+const { isKnownRole, plateRefusal, ROLES, slotSurfaceOf } =
+	await import("../packages/shared/core/src/surface-roles.js");
+const { platesAtCell } = await import("../packages/shared/kit/src/utils/surface.ts");
+const { gapVarsOf } = await import("../packages/shared/core/src/tree.js");
 const { literalGapsIn } = await import("./gap-audit.ts");
-const { lintBoard } = await import("../packages/core/src/board-lint.js");
-const { measuredPathOf } = await import("../packages/core/src/surface-contract.js");
-const { colorOf, contrastOf, lightnessOf } = await import("../packages/core/src/color-math.js");
+const { lintBoard } = await import("../packages/shared/core/src/board-lint.js");
+const { measuredPathOf } = await import("../packages/shared/core/src/surface-contract.js");
+const { colorOf, contrastOf, lightnessOf } = await import("../packages/shared/core/src/color-math.js");
 
 let failed = 0;
 function check(label: string, got: unknown, want: unknown): void {
@@ -1058,7 +1059,7 @@ check(
 );
 check(
 	"the padding the stylesheet paints is the padding the layout subtracts",
-	Number(/--wg-group-pad:\s*(\d+)px/.exec(readFileSync("packages/host-obsidian/styles.css", "utf8"))?.[1]),
+	Number(/--wg-group-pad:\s*(\d+)px/.exec(readFileSync("apps/host-obsidian/styles.css", "utf8"))?.[1]),
 	SURFACE_PAD_PX,
 );
 
@@ -1103,7 +1104,7 @@ console.log("\n— painted in Chrome —\n");
 const script = await bundleOf("tools/surface-page.tsx");
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("packages/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;
 	--text-on-accent: #fff; --interactive-accent: #6d4ee0; }

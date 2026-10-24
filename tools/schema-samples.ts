@@ -1,4 +1,4 @@
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 export type SampleKind = "empty" | "minimal" | "nulls";
 type SchemaDef = Readonly<Record<string, unknown>>;

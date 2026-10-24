@@ -2,8 +2,8 @@ import { createElement as h, useEffect, useState } from "react";
 import type { ReactElement } from "react";
 import { createPortal } from "react-dom";
 import { Select, ToggleGroup } from "radix-ui";
-import { startGpuCanvas } from "../packages/gpu/index.ts";
-import type { CanvasPoint, GpuCanvas } from "../packages/gpu/index.ts";
+import { startGpuCanvas } from "../packages/shared/gpu/index.ts";
+import type { CanvasPoint, GpuCanvas } from "../packages/shared/gpu/index.ts";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 
 const STYLE_FRAME = "computed-style";

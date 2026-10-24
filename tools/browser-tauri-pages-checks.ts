@@ -1,6 +1,9 @@
-import { TauriBrowserPagesGateway } from "../packages/browser/gateways/browser-pages/tauri/tauri.gateway.ts";
-import { tauriPagesBridge } from "../packages/browser/gateways/browser-pages/tauri/pages-bridge.ts";
-import type { BrowserPagesIpc, PageFacts } from "../packages/browser/gateways/browser-pages/tauri/pages-bridge.ts";
+import { TauriBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/tauri/tauri.gateway.ts";
+import { tauriPagesBridge } from "../packages/domain/browser/gateways/browser-pages/tauri/pages-bridge.ts";
+import type {
+	BrowserPagesIpc,
+	PageFacts,
+} from "../packages/domain/browser/gateways/browser-pages/tauri/pages-bridge.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
 interface Called {

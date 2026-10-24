@@ -3,7 +3,7 @@ import { check, tally, waitFor } from "./check-helpers.ts";
 
 layBehaviorGlobals();
 const { createElement: h, useRef } = await import("react");
-const b = await import("../packages/behaviors/index.ts");
+const b = await import("../packages/shared/behaviors/index.ts");
 
 function EscapeProbe({ isActive, onEscape }: { isActive: boolean; onEscape: () => void }) {
 	b.useEscape(isActive, onEscape);

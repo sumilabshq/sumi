@@ -4,7 +4,7 @@ import { FIXTURE_UTILITIES } from "./gpu-design-fixture-sheet.ts";
 import { THEMES } from "./harness.ts";
 
 export function pageHtml(): string {
-	const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"].map((at) =>
+	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"].map((at) =>
 		readFileSync(at, "utf8"),
 	);
 	const fonts = [400, 500, 600].map(

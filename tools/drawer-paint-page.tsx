@@ -13,7 +13,7 @@ import {
 	SheetDescription,
 	SheetHeader,
 	SheetTitle,
-} from "../packages/kit/src/index";
+} from "../packages/shared/kit/src/index";
 
 type Shown = "sheet" | "drawer" | "plain";
 

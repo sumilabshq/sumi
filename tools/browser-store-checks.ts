@@ -1,13 +1,13 @@
 import { readFileSync } from "node:fs";
-import { MemoryOnceAllowancesStore } from "../packages/browser/shared/lib/once-allowances-store.ts";
-import { MemoryInkActivityStore } from "../packages/browser/shared/lib/ink-activity-store.ts";
-import { effectiveGrants, onceAllowanceOf } from "../packages/browser/shared/lib/once-grants.ts";
+import { MemoryOnceAllowancesStore } from "../packages/domain/browser/shared/lib/once-allowances-store.ts";
+import { MemoryInkActivityStore } from "../packages/domain/browser/shared/lib/ink-activity-store.ts";
+import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
 import { check } from "./check-helpers.ts";
 
 const STORES = [
-	"packages/browser/shared/lib/once-allowances-store.ts",
-	"packages/browser/shared/lib/browser-asks-store.ts",
-	"packages/browser/shared/lib/ink-activity-store.ts",
+	"packages/domain/browser/shared/lib/once-allowances-store.ts",
+	"packages/domain/browser/shared/lib/browser-asks-store.ts",
+	"packages/domain/browser/shared/lib/ink-activity-store.ts",
 ];
 const IMPORT_LINE = /^import .*$/gm;
 

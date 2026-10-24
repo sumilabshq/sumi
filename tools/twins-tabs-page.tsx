@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import { Tabs, TabsList, TabsTrigger } from "../packages/kit/src/index";
+import { Tabs, TabsList, TabsTrigger } from "../packages/shared/kit/src/index";
 
 const TRIGGERS = ["Overview", "Activity", "A much longer settings tab"];
 const VARIANTS = [

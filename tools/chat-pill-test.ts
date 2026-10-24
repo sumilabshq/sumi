@@ -16,7 +16,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-chat-pil
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/chat-pill-page.tsx");
-const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");
 const pageOf = (theme: Theme): string => `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}

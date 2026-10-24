@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
-const { fold, rankSearch, DEFAULT_FIELDS } = await import("../packages/core/src/engine/search.js");
+const { fold, rankSearch, DEFAULT_FIELDS } = await import("../packages/shared/core/src/engine/search.js");
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {

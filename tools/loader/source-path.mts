@@ -8,7 +8,10 @@ export const REPO = fileURLToPath(new URL("../../", import.meta.url));
 type WorkspacePackage = "core" | "kit";
 type ExportsMap = ReadonlyMap<string, string>;
 
-const WORKSPACE_FOLDERS: Readonly<Record<WorkspacePackage, string>> = { core: "packages/core", kit: "packages/kit" };
+const WORKSPACE_FOLDERS: Readonly<Record<WorkspacePackage, string>> = {
+	core: "packages/shared/core",
+	kit: "packages/shared/kit",
+};
 const WORKSPACE_SPECIFIER = /^@widgetarium\/(core|kit)(\/.*)?$/;
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts"];
 const COMPILED_TO_JS = /\.(js|mjs)$/;

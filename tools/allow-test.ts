@@ -1,7 +1,7 @@
-import { allowedVerbs, restrictToAllowed, type VerbDecision } from "../packages/core/src/gateway/props.js";
-import { arrayGateway, canDo } from "../packages/core/src/gateway/create.ts";
-import type { CanResult } from "../packages/core/src/gateway/contract.ts";
-import { ICrudGateway, declareProps, manifestOfModule, z } from "../packages/core/src/gateway/declared.ts";
+import { allowedVerbs, restrictToAllowed, type VerbDecision } from "../packages/shared/core/src/gateway/props.js";
+import { arrayGateway, canDo } from "../packages/shared/core/src/gateway/create.ts";
+import type { CanResult } from "../packages/shared/core/src/gateway/contract.ts";
+import { ICrudGateway, declareProps, manifestOfModule, z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
 
 const FOLDER = "@obsidian/folder";

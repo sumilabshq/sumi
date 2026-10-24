@@ -5,11 +5,11 @@ import path from "node:path";
 import { sourceOfExport } from "./export-source.mts";
 
 const REPO = process.cwd();
-const HANDED_TO_A_WIDGET = "packages/sdk/types/widgetarium.d.ts";
-const WIDGET_OPTIONS = "packages/sdk/tsconfig.widgets.json";
+const HANDED_TO_A_WIDGET = "packages/shared/sdk/types/widgetarium.d.ts";
+const WIDGET_OPTIONS = "packages/shared/sdk/tsconfig.widgets.json";
 const REPO_ONLY_OPTIONS: readonly string[] = ["customConditions"];
-const KIT = "packages/kit";
-const CORE = "packages/core";
+const KIT = "packages/shared/kit";
+const CORE = "packages/shared/core";
 const DECLARATIONS = "node_modules/.cache/widgetarium";
 const REACT_TYPES = ["node_modules/@types/react/index.d.ts", "node_modules/@types/react/jsx-runtime.d.ts"];
 const REACT_DOM_TYPES = ["node_modules/@types/react-dom/index.d.ts"];

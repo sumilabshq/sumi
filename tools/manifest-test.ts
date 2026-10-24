@@ -7,10 +7,14 @@ import {
 	declareProps,
 	manifestOfModule,
 	z,
-} from "../packages/core/src/gateway/declared.ts";
-import { migrationFrom } from "../packages/core/src/engine/compatibility.js";
-import type { DeclaredProps, WidgetLayout, WidgetMetadata } from "../packages/core/src/gateway/declared-types.ts";
-import type { ModuleManifest } from "../packages/core/src/gateway/manifest.ts";
+} from "../packages/shared/core/src/gateway/declared.ts";
+import { migrationFrom } from "../packages/shared/core/src/engine/compatibility.js";
+import type {
+	DeclaredProps,
+	WidgetLayout,
+	WidgetMetadata,
+} from "../packages/shared/core/src/gateway/declared-types.ts";
+import type { ModuleManifest } from "../packages/shared/core/src/gateway/manifest.ts";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { callAsUntypedSource } from "./untyped-source.ts";

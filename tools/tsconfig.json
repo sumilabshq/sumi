@@ -30,27 +30,27 @@
 		"checkJs": false,
 		"types": ["node"],
 		"paths": {
-			"widgetarium": ["../packages/sdk/types/widgetarium.d.ts"],
-			"widgetarium/kit": ["../packages/kit/src/index.ts"],
-			"widgetarium/kit/emojis": ["../packages/kit/src/emojis/emoji.tsx"],
-			"widgetarium/kit/charts": ["../packages/kit/src/charts/index.ts"],
+			"widgetarium": ["../packages/shared/sdk/types/widgetarium.d.ts"],
+			"widgetarium/kit": ["../packages/shared/kit/src/index.ts"],
+			"widgetarium/kit/emojis": ["../packages/shared/kit/src/emojis/emoji.tsx"],
+			"widgetarium/kit/charts": ["../packages/shared/kit/src/charts/index.ts"],
 			"@*/lib": ["../registry/@*/lib"]
 		}
 	},
-	"references": [{ "path": "../packages/kit" }, { "path": "../packages/core" }],
+	"references": [{ "path": "../packages/shared/kit" }, { "path": "../packages/shared/core" }],
 	"include": [
 		"*.ts",
 		"*.mts",
 		"*.tsx",
 		"loader/**/*.mts",
 		"lint/**/*.mts",
-		"../packages/host-obsidian/*.mts",
+		"../apps/host-obsidian/*.mts",
 		"loader/**/*.ts",
 		"lint/**/*.ts",
-		"../packages/host-obsidian/src/legacy/build-modules.d.ts",
-		"../packages/host-obsidian/src/project-seed-module.d.ts",
-		"../packages/core/src/*.d.ts",
-		"../packages/host-tauri/src/style-sheets.d.ts",
-		"../packages/kit/src/jsx-namespace.d.ts"
+		"../apps/host-obsidian/src/legacy/build-modules.d.ts",
+		"../apps/host-obsidian/src/project-seed-module.d.ts",
+		"../packages/shared/core/src/*.d.ts",
+		"../apps/host-tauri/src/style-sheets.d.ts",
+		"../packages/shared/kit/src/jsx-namespace.d.ts"
 	]
 }

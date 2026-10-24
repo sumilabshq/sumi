@@ -1,0 +1,281 @@
+import { execFileSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import esbuild, { type BuildOptions, type Loader, type OutputFile, type Plugin } from "esbuild";
+import { format, resolveConfig } from "prettier";
+import { canvasSheet, withCanvasSheet } from "../../tools/canvas-sheet.mts";
+import { studioSystemLayerOf, systemTokensOf, withStudioSystem, withSystemTokens } from "../../tools/system-sheet.mts";
+import { widgetTypeFiles } from "../../tools/widget-types.mts";
+import { packedModuleSource } from "../../tools/packed-module.mts";
+import { layGpuFiles } from "./gpu-files.mts";
+import { radixInPictures } from "./radix-in-pictures.mts";
+
+export interface SurfaceAsk {
+	readonly minify?: boolean;
+}
+
+export interface BundleAsk {
+	readonly outfile?: string;
+	readonly minify?: boolean;
+	readonly sourcemap?: boolean | "inline";
+	readonly isProduction?: boolean;
+}
+
+export const TEXT_LOADERS: Readonly<Record<string, Loader>> = { ".md": "text", ".css": "text" };
+
+const WIDGETS_CLI_SPECIFIER = "widgetarium:widgets-cli";
+const WIDGETS_CLI_SOURCE = "apps/host-obsidian/src/legacy/ai/widgets-cli.ts";
+const WIDGET_TYPES_SPECIFIER = "widgetarium:widget-types";
+const CATALOGUE_WIDGETS_FOLDER = "apps/studio/src/legacy/catalogue/widgets";
+const BUILD_STAMP_SPECIFIER = "widgetarium:build-stamp";
+const PROJECT_SEED_SPECIFIER = "widgetarium:project-seed";
+const PROJECT_SEED_TOOL = "tools/project-seed.mts";
+const SEED_OUTPUT_BYTES = 64 * 1024 * 1024;
+const PLUGIN_SHEET = "apps/host-obsidian/styles.css";
+
+const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
+	"obsidian",
+	"electron",
+	"node:fs",
+	"node:fs/promises",
+	"node:path",
+	"node:os",
+	"node:child_process",
+	"fs",
+	"path",
+];
+
+const HELD_BY_THE_ONE_CORE =
+	/^(\.\/(cache|create|narrow|(emoji|icon)-table(\.js)?)|@widgetarium\/kit\/(emoji-table|icons)|tailwind-merge)$/;
+
+export async function widgetsCliBundle(): Promise<string> {
+	const built = await esbuild.build(widgetsCliOptions());
+	return firstOutputText(built.outputFiles);
+}
+
+export function widgetsCliBundleSync(): string {
+	return firstOutputText(esbuild.buildSync(widgetsCliOptions()).outputFiles);
+}
+
+export function surfaceOptions({ minify = false }: SurfaceAsk = {}): BuildOptions {
+	return {
+		entryPoints: ["packages/shared/core/src/widget-api.ts"],
+		bundle: true,
+		conditions: ["source"],
+		write: false,
+		format: "cjs",
+		platform: "browser",
+		target: "es2020",
+		external: ["react", "react-dom", "react-dom/client", "widgetarium/core"],
+		plugins: [coreProvides()],
+		jsxFactory: "h",
+		jsxFragment: "Fragment",
+		minify,
+		logLevel: "warning",
+	};
+}
+
+export function bundleOptions({
+	outfile = "apps/host-obsidian/main.js",
+	minify = false,
+	sourcemap = false,
+	isProduction = false,
+}: BundleAsk = {}): BuildOptions {
+	return {
+		plugins: [
+			surfaceSource(minify),
+			widgetsCliSource(),
+			widgetTypesSource(),
+			projectSeedSource(),
+			buildStampSource(isProduction),
+			radixInPictures(),
+		],
+		entryPoints: ["apps/host-obsidian/src/main.ts"],
+		bundle: true,
+		conditions: ["source"],
+		outfile,
+		format: "cjs",
+		platform: "browser",
+		target: "es2020",
+		external: SUPPLIED_BY_ELECTRON_AT_RUNTIME,
+		loader: TEXT_LOADERS,
+		jsxFactory: "h",
+		jsxFragment: "Fragment",
+		sourcemap,
+		minify,
+		logLevel: "info",
+	};
+}
+
+function firstOutputText(files: readonly OutputFile[] | undefined): string {
+	const first = files?.[0];
+	if (!first) throw new Error("esbuild wrote no output file");
+	return first.text;
+}
+
+function widgetsCliOptions(): BuildOptions {
+	return {
+		entryPoints: [WIDGETS_CLI_SOURCE],
+		bundle: true,
+		conditions: ["source"],
+		write: false,
+		format: "esm",
+		platform: "node",
+		target: "node18",
+		charset: "utf8",
+		external: ["node:fs/promises", "node:path", "node:url", "node:module"],
+		// TRADE-OFF: a banner, because esbuild's own require shim throws for a dependency that still reaches for one
+		banner: {
+			js: 'import { createRequire as __needs } from "node:module";\nconst require = __needs(import.meta.url);',
+		},
+		logLevel: "warning",
+	};
+}
+
+function widgetsCliSource(): Plugin {
+	return {
+		name: "widgetarium-widgets-cli",
+		setup(build) {
+			build.onResolve({ filter: new RegExp(`^${WIDGETS_CLI_SPECIFIER}$`) }, (found) => ({
+				path: found.path,
+				namespace: "wg-cli",
+			}));
+			build.onLoad({ filter: /.*/, namespace: "wg-cli" }, async () => ({
+				contents: packedModuleSource(await widgetsCliBundle()),
+				loader: "js",
+				watchFiles: [WIDGETS_CLI_SOURCE],
+			}));
+		},
+	};
+}
+
+function projectSeedSource(): Plugin {
+	return {
+		name: "widgetarium-project-seed",
+		setup(build) {
+			build.onResolve({ filter: new RegExp(`^${PROJECT_SEED_SPECIFIER}$`) }, (found) => ({
+				path: found.path,
+				namespace: "wg-project-seed",
+			}));
+			build.onLoad({ filter: /.*/, namespace: "wg-project-seed" }, () => ({
+				contents: packedModuleSource(projectSeedText()),
+				loader: "js",
+				watchFiles: [PROJECT_SEED_TOOL],
+			}));
+		},
+	};
+}
+
+export function projectSeedText(): string {
+	return execFileSync("node", ["--single-threaded", "--import", "./tools/loader/register.mts", PROJECT_SEED_TOOL], {
+		encoding: "utf8",
+		maxBuffer: SEED_OUTPUT_BYTES,
+	});
+}
+
+function widgetTypesSource(): Plugin {
+	return {
+		name: "widgetarium-widget-types",
+		setup(build) {
+			build.onResolve({ filter: new RegExp(`^${WIDGET_TYPES_SPECIFIER}$`) }, (found) => ({
+				path: found.path,
+				namespace: "wg-types",
+			}));
+			build.onLoad({ filter: /.*/, namespace: "wg-types" }, () => ({
+				contents: packedModuleSource(widgetTypeFiles()),
+				loader: "js",
+				watchFiles: [
+					"packages/shared/sdk/types/widgetarium.d.ts",
+					"packages/shared/sdk/tsconfig.widgets.json",
+					"packages/shared/kit/package.json",
+				],
+			}));
+		},
+	};
+}
+
+function buildStampSource(isProduction: boolean): Plugin {
+	return {
+		name: "widgetarium-build-stamp",
+		setup(build) {
+			build.onResolve({ filter: new RegExp(`^${BUILD_STAMP_SPECIFIER}$`) }, (found) => ({
+				path: found.path,
+				namespace: "wg-build-stamp",
+			}));
+			build.onLoad({ filter: /.*/, namespace: "wg-build-stamp" }, () => ({
+				contents: `export const BUILD_STAMP = ${JSON.stringify(new Date().toISOString())};\nexport const IS_PRODUCTION_BUILD = ${String(isProduction)};`,
+				loader: "js",
+			}));
+		},
+	};
+}
+
+function coreProvides(): Plugin {
+	return {
+		name: "widgetarium-core-provides",
+		setup(build) {
+			build.onResolve({ filter: HELD_BY_THE_ONE_CORE }, () => ({ path: "widgetarium/core", external: true }));
+		},
+	};
+}
+
+function surfaceSource(minify: boolean): Plugin {
+	return {
+		name: "widgetarium-surface-source",
+		setup(build) {
+			build.onResolve({ filter: /^widgetarium:surface$/ }, (found) => ({ path: found.path, namespace: "wg-surface" }));
+			build.onLoad({ filter: /.*/, namespace: "wg-surface" }, async () => {
+				const built = await esbuild.build(surfaceOptions({ minify }));
+				return {
+					contents: `export const REACT_SURFACE_SOURCE = ${JSON.stringify(firstOutputText(built.outputFiles))};`,
+					loader: "js",
+				};
+			});
+		},
+	};
+}
+
+function runGates(): void {
+	const widgetsInVault = `${process.env["WG_VAULT"] ?? ""}/.widgetarium/widgets`;
+	const alsoInVault = process.env["WG_VAULT"] ? [widgetsInVault] : [];
+	const gateRoots = ["apps", "packages", "tools", ...alsoInVault];
+	try {
+		execFileSync("node", ["tools/lint-language.mts", ...gateRoots], { stdio: "inherit" });
+		execFileSync("node", ["tools/check-classes.mts", "registry", CATALOGUE_WIDGETS_FOLDER, ...alsoInVault], {
+			stdio: "inherit",
+		});
+		execFileSync("node", ["tools/check-adaptive.mts", "registry", CATALOGUE_WIDGETS_FOLDER, ...alsoInVault], {
+			stdio: "inherit",
+		});
+		execFileSync("node", ["tools/check-overrides.mts", "apps/host-obsidian/styles.css"], { stdio: "inherit" });
+	} catch {
+		process.exit(1);
+	}
+}
+
+export async function layCanvasSheet(): Promise<void> {
+	const authored = readFileSync(PLUGIN_SHEET, "utf8");
+	const withTokens = withSystemTokens(
+		withStudioSystem(authored, studioSystemLayerOf(process.cwd())),
+		systemTokensOf(process.cwd()),
+	);
+	const laid = await formattedAsRepo(withCanvasSheet(withTokens, await canvasSheet(process.cwd())), PLUGIN_SHEET);
+	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
+}
+
+async function formattedAsRepo(text: string, filepath: string): Promise<string> {
+	const config = await resolveConfig(filepath);
+	return format(text, {
+		...config,
+		filepath,
+	});
+}
+
+if (import.meta.main) {
+	const production = process.argv.includes("--prod");
+	await layCanvasSheet();
+	runGates();
+	layGpuFiles();
+	await esbuild.build(
+		bundleOptions({ minify: production, sourcemap: production ? false : "inline", isProduction: production }),
+	);
+}

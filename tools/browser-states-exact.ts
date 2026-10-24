@@ -43,9 +43,9 @@ interface Root {
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const BOARDS = path.join(REPO, "docs/reference/browser-states");
-const SHEETS = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"];
+const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const GEIST_FACES = (
-	readFileSync(path.join(REPO, "packages/host-obsidian/styles.css"), "utf8").match(
+	readFileSync(path.join(REPO, "apps/host-obsidian/styles.css"), "utf8").match(
 		/@font-face\s*\{[^}]*font-family:\s*"Geist"[^}]*\}/g,
 	) ?? []
 ).join("\n");

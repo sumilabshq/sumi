@@ -30,8 +30,8 @@ import {
 	ResizablePanel,
 	ResizablePanelGroup,
 	ScrollArea,
-} from "../packages/kit/src/index";
-import { ButtonGroup, Label, RadioGroup, RadioGroupItem, Slider } from "../packages/kit/src/exports-inputs";
+} from "../packages/shared/kit/src/index";
+import { ButtonGroup, Label, RadioGroup, RadioGroupItem, Slider } from "../packages/shared/kit/src/exports-inputs";
 
 const ROWS = Array.from({ length: 30 }, (_, at) => `Row ${at + 1}`);
 const SLIDES = ["One", "Two", "Three", "Four"];

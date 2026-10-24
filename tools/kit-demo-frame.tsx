@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Card, CodeBlock, LayoutHeader, LayoutItem } from "../packages/kit/src/index";
-import { NO_SURFACE } from "../packages/kit/src/utils/surface";
+import { Card, CodeBlock, LayoutHeader, LayoutItem } from "../packages/shared/kit/src/index";
+import { NO_SURFACE } from "../packages/shared/kit/src/utils/surface";
 
 export interface SectionProps {
 	readonly title: string;

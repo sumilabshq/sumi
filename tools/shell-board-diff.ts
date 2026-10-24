@@ -185,7 +185,7 @@ async function boardReads(board: Board, theme: Theme): Promise<unknown[]> {
 
 async function buildReads(theme: Theme): Promise<unknown[]> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
-	const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
+	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
 		.map((at) => readFileSync(at, "utf8"))
 		.join("\n");
 	const file = path.join(outAt, `build-${theme}.html`);

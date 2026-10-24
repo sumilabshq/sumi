@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import esbuild, { type BuildOptions } from "esbuild";
 import { THEMES, fontsOf, type HostTheme } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../packages/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 
 export interface V2Frame {
 	readonly theme: HostTheme;
@@ -22,7 +22,7 @@ export const FRAMES: Readonly<Record<string, V2Frame>> = {
 	RecordList: { theme: "dark", view: "curve", tile: [840, 480], window: [660, 700], opens: "list" },
 };
 
-export const SHEETS = ["packages/host-obsidian/styles.css", "registry/@default/tokens.css"];
+export const SHEETS = ["apps/host-obsidian/styles.css", "registry/@default/tokens.css"];
 
 export const SETTLED_AT = Date.parse("2026-09-13T09:00:00Z");
 
@@ -84,9 +84,9 @@ export const WIDGET_BY_DEFAULT = "registry/@default/metric-total";
 
 const probeFor = (widget: string): string => `
 import { createElement as h } from "react";
-import { render } from "./packages/core/src/engine/render.js";
+import { render } from "./packages/shared/core/src/engine/render.js";
 import Widget from "./${widget}/widget.tsx";
-import { collectionGateway, soloGateway } from "./packages/core/src/gateway/create";
+import { collectionGateway, soloGateway } from "./packages/shared/core/src/gateway/create";
 
 const asked = window.__FRAME__;
 const DAY = 86400000;
@@ -211,9 +211,9 @@ setTimeout(() => {
 
 const ALIASED: Readonly<Record<string, string>> = {
 	widgetarium: "./tools/fill-shim.ts",
-	"widgetarium/kit": "./packages/kit/src/index.ts",
-	"widgetarium/kit/emojis": "./packages/kit/src/emojis/emoji.tsx",
-	"widgetarium/kit/charts": "./packages/kit/src/charts/index.ts",
+	"widgetarium/kit": "./packages/shared/kit/src/index.ts",
+	"widgetarium/kit/emojis": "./packages/shared/kit/src/emojis/emoji.tsx",
+	"widgetarium/kit/charts": "./packages/shared/kit/src/charts/index.ts",
 	"@default/lib": "./registry/@default/lib.ts",
 	obsidian: "./tools/obsidian-shim.ts",
 };

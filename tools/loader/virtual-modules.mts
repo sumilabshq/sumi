@@ -1,4 +1,4 @@
-import { projectSeedText, widgetsCliBundleSync } from "../../packages/host-obsidian/build.mts";
+import { projectSeedText, widgetsCliBundleSync } from "../../apps/host-obsidian/build.mts";
 import { widgetTypeFiles } from "../widget-types.mts";
 import { packedModuleSource } from "../packed-module.mts";
 

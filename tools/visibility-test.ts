@@ -1,10 +1,10 @@
-import type { Seen } from "../packages/core/src/prop-visibility.js";
-import type { DeclaredProps } from "../packages/core/src/gateway/declared-types.js";
-import type { Described } from "../packages/core/src/gateway/written.js";
+import type { Seen } from "../packages/shared/core/src/prop-visibility.js";
+import type { DeclaredProps } from "../packages/shared/core/src/gateway/declared-types.js";
+import type { Described } from "../packages/shared/core/src/gateway/written.js";
 
-const { seenOf, isShown, shownEntries } = await import("../packages/core/src/prop-visibility.js");
+const { seenOf, isShown, shownEntries } = await import("../packages/shared/core/src/prop-visibility.js");
 const { IListGateway, ISlot, IRepeat, declareProps, manifestOfModule, z } =
-	await import("../packages/core/src/gateway/declared.ts");
+	await import("../packages/shared/core/src/gateway/declared.ts");
 
 let failed = 0;
 let checks = 0;

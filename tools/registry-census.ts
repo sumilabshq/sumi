@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-const { readRegistry, REGISTRY_FILE } = await import("../packages/core/src/engine/registry-file.js");
+const { readRegistry, REGISTRY_FILE } = await import("../packages/shared/core/src/engine/registry-file.js");
 
 const SOURCE = "registry";
 const at = path.join(SOURCE, REGISTRY_FILE);

@@ -1,8 +1,8 @@
 import { JSDOM } from "jsdom";
 import type { ReactElement, ReactNode } from "react";
 import { z } from "zod";
-import type { FieldRootProps } from "../packages/kit/src/components/field.tsx";
-import type { FormSchema, Matchers, UseFormReturn } from "../packages/kit/src/index.ts";
+import type { FieldRootProps } from "../packages/shared/kit/src/components/field.tsx";
+import type { FormSchema, Matchers, UseFormReturn } from "../packages/shared/kit/src/index.ts";
 import { byId, found } from "./dom-find.ts";
 
 const dom = new JSDOM('<!doctype html><body><div id="host"></div></body>', { pretendToBeVisual: true });
@@ -29,8 +29,8 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h } = await import("react");
-const { render } = await import("../packages/core/src/engine/render.js");
-const kit = await import("../packages/kit/src/index.ts");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
 const FieldRoot: (props: FieldRootProps) => ReactElement = kit.Field;
 
 const settle = (): Promise<void> => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));

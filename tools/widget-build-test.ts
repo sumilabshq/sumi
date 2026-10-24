@@ -1,7 +1,7 @@
 import { JSDOM } from "jsdom";
 import { drawnTextOf } from "./drawn-text.ts";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -14,10 +14,10 @@ Object.assign(globalThis, {
 	getComputedStyle: dom.window.getComputedStyle,
 });
 
-const { createInstaller, LOCK_PATH } = await import("../packages/core/src/installer.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { WIDGETS_DIR } = await import("../packages/core/src/paths.js");
-const { BUILD_FILE, builtCodePath } = await import("../packages/core/src/engine/widget-build.js");
+const { createInstaller, LOCK_PATH } = await import("../packages/shared/core/src/installer.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
+const { BUILD_FILE, builtCodePath } = await import("../packages/shared/core/src/engine/widget-build.js");
 
 const pathIn = (value: unknown, ...keys: readonly string[]): unknown =>
 	keys.reduce<unknown>((held, key) => (isObject(held) ? held[key] : undefined), value);
@@ -211,7 +211,7 @@ check(
 	true,
 );
 
-const { compileWidgetFolder } = await import("../packages/core/src/engine/widget-build.js");
+const { compileWidgetFolder } = await import("../packages/shared/core/src/engine/widget-build.js");
 function compileFailureOf(files: Readonly<Record<string, string>>): string | null {
 	try {
 		compileWidgetFolder(files, FOLDER);

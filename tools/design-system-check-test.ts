@@ -1,10 +1,10 @@
 import fs from "node:fs";
 import * as fileSystem from "node:fs/promises";
 import path from "node:path";
-import { checkDesignSystem } from "../packages/core/src/design-system/design-system-check.js";
-import { contrastAt } from "../packages/core/src/design-system/token-findings.js";
-import { parseTokenSheet } from "../packages/core/src/design-system/token-sheet.js";
-import { EMPTY_LISTING, nodeProjectFiles, type ProjectFiles } from "../packages/core/src/project/index.js";
+import { checkDesignSystem } from "../packages/shared/core/src/design-system/design-system-check.js";
+import { contrastAt } from "../packages/shared/core/src/design-system/token-findings.js";
+import { parseTokenSheet } from "../packages/shared/core/src/design-system/token-sheet.js";
+import { EMPTY_LISTING, nodeProjectFiles, type ProjectFiles } from "../packages/shared/core/src/project/index.js";
 
 const SYSTEMS = "design-systems";
 const SAMPLE = "default";

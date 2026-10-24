@@ -11,8 +11,8 @@ interface ShapesPackage {
 }
 
 const PACKAGE = "material-shapes-ts@0.3.0";
-const OUT = path.join(process.cwd(), "packages", "kit", "assets", "shapes");
-const TABLE = path.join(process.cwd(), "packages", "kit", "src", "shapes", "shape-table.ts");
+const OUT = path.join(process.cwd(), "packages", "shared", "kit", "assets", "shapes");
+const TABLE = path.join(process.cwd(), "packages", "shared", "kit", "src", "shapes", "shape-table.ts");
 
 const work = mkdtempSync(path.join(tmpdir(), "wg-shapes-"));
 writeFileSync(path.join(work, "package.json"), JSON.stringify({ name: "wg-shapes", private: true, type: "module" }));

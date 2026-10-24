@@ -41,14 +41,14 @@ Object.assign(dom.window, { ResizeObserver: RailWidthObserver });
 
 const react = await import("react");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const emojis = await import("../packages/kit/src/emojis/emoji.tsx");
-const { collectionGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
-const { mapCollection } = await import("../packages/core/src/gateway/mapped.ts");
-const { needsOf } = await import("../packages/core/src/gateway/props.js");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const emojis = await import("../packages/shared/kit/src/emojis/emoji.tsx");
+const { collectionGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
+const { mapCollection } = await import("../packages/shared/core/src/gateway/mapped.ts");
+const { needsOf } = await import("../packages/shared/core/src/gateway/props.js");
 
 const WIDGET = "registry/@default/streak/widget.tsx";
 const { propsOfEveryShippedWidget } = await import("./widget-props.ts");

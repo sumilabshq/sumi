@@ -5,7 +5,7 @@ import type * as TierCards from "../registry/@default/tier-list/cards.ts";
 import type * as TierOrdering from "../registry/@default/tier-list/ordering.ts";
 import type * as TierPresets from "../registry/@default/tier-list/presets.ts";
 import type { FunctionComponent } from "react";
-import { isObject } from "../packages/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { byId } from "./dom-find.ts";
 import { runWidgetSource } from "./run-widget-source.ts";
 
@@ -37,13 +37,13 @@ Object.assign(dom.window, { ResizeObserver: SilentResizeObserver });
 const react = await import("react");
 const reactDom = await import("react-dom");
 const { createElement: h, Fragment } = react;
-const { render } = await import("../packages/core/src/engine/render.js");
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
+const { render } = await import("../packages/shared/core/src/engine/render.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
 const { api: widgetarium } = ENGINE_SCOPE;
-const kit = await import("../packages/kit/src/index.ts");
-const emojis = await import("../packages/kit/src/emojis/emoji.tsx");
-const { EMOJI_TABLE } = await import("../packages/kit/src/emojis/emoji-table.ts");
-const { collectionGateway, soloGateway } = await import("../packages/core/src/gateway/create.ts");
+const kit = await import("../packages/shared/kit/src/index.ts");
+const emojis = await import("../packages/shared/kit/src/emojis/emoji.tsx");
+const { EMOJI_TABLE } = await import("../packages/shared/kit/src/emojis/emoji-table.ts");
+const { collectionGateway, soloGateway } = await import("../packages/shared/core/src/gateway/create.ts");
 
 const WIDGET = "registry/@default/tier-list/widget.tsx";
 const libs = new Map<string, unknown>();

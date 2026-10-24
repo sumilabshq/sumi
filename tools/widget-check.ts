@@ -4,8 +4,8 @@ import { transform } from "sucrase";
 import { act, createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import type { WidgetComponent } from "../packages/core/src/registry-scope.js";
-import type { DeclaredModule } from "../packages/core/src/gateway/declared.ts";
+import type { WidgetComponent } from "../packages/shared/core/src/registry-scope.js";
+import type { DeclaredModule } from "../packages/shared/core/src/gateway/declared.ts";
 import { layJsdomGlobals } from "./jsdom-globals.ts";
 import { isRecord } from "./page-dom.ts";
 import { SAMPLE_KINDS, rowsSample, sampleOf } from "./schema-samples.ts";
@@ -22,13 +22,14 @@ if (!("ResizeObserver" in globalThis))
 		},
 	});
 
-const { ENGINE_SCOPE } = await import("../packages/core/src/registry.js");
-const { previewProps } = await import("../packages/core/src/preview.js");
-const { manifestOf } = await import("../packages/core/src/engine/catalogue-index.js");
-const { isDeclaredProps, manifestOfModule } = await import("../packages/core/src/gateway/declared.ts");
-const { LIB_FILES, SOURCE_FILES, compileWidgetFolder } = await import("../packages/core/src/engine/widget-build.js");
+const { ENGINE_SCOPE } = await import("../packages/shared/core/src/registry.js");
+const { previewProps } = await import("../packages/shared/core/src/preview.js");
+const { manifestOf } = await import("../packages/shared/core/src/engine/catalogue-index.js");
+const { isDeclaredProps, manifestOfModule } = await import("../packages/shared/core/src/gateway/declared.ts");
+const { LIB_FILES, SOURCE_FILES, compileWidgetFolder } =
+	await import("../packages/shared/core/src/engine/widget-build.js");
 const { widgetModulesOnDisk } = await import("./publish.ts");
-const { declarationIn } = await import("../packages/core/src/gateway/declaration.ts");
+const { declarationIn } = await import("../packages/shared/core/src/gateway/declaration.ts");
 
 type Exports = Record<string, unknown>;
 

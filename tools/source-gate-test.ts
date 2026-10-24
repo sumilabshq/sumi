@@ -1,11 +1,11 @@
 import { catalogueAdapter } from "./perf-fixture.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
-import type { WidgetSourcePlace } from "../packages/core/src/engine/source-offers.js";
-import type { InstallerAdapter } from "../packages/core/src/installer-context.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
+import type { WidgetSourcePlace } from "../packages/shared/core/src/engine/source-offers.js";
+import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.js";
 import { standIn } from "./stand-in.ts";
 
-const { createInstaller, INDEX_PATH } = await import("../packages/core/src/installer.js");
+const { createInstaller, INDEX_PATH } = await import("../packages/shared/core/src/installer.js");
 
 const GOOD_FOLDER = "/tmp/good-widgets";
 
@@ -104,8 +104,8 @@ const javascriptOk = javascriptOffers.length === 0 && javascriptSaid;
 if (!javascriptOk) wrong += 1;
 console.log(`${javascriptOk ? "OK " : "BAD"} offered ${javascriptOffers.length}, refusal logged ${javascriptSaid}`);
 
-const { sourcesOf, identityOf } = await import("../packages/core/src/sources.js");
-const { SHIPPED_SOURCES } = await import("../packages/core/src/registries.js");
+const { sourcesOf, identityOf } = await import("../packages/shared/core/src/sources.js");
+const { SHIPPED_SOURCES } = await import("../packages/shared/core/src/registries.js");
 
 function same(label: string, found: unknown, wanted: unknown): void {
 	const ok = JSON.stringify(found) === JSON.stringify(wanted);
@@ -177,8 +177,8 @@ const offeredOnce = await installerOver({ sources: [{ path: OTHER_FOLDER }] }, s
 same("two sources offering one widget id answer once", offeredOnce.length, 1);
 same("and the one nearer the person is the answer", offeredOnce[0]?.origin, GOOD_FOLDER);
 
-const { createWidgetSource } = await import("../packages/core/src/engine/widget-source.js");
-const { REGISTRY_FORMAT } = await import("../packages/core/src/version.js");
+const { createWidgetSource } = await import("../packages/shared/core/src/engine/widget-source.js");
+const { REGISTRY_FORMAT } = await import("../packages/shared/core/src/version.js");
 
 const REPOSITORY = "https://github.com/acme/widgets";
 const SHA = "abc1234567";

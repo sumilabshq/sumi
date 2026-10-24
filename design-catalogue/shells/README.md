@@ -22,13 +22,13 @@ Every shell is a choice of which navigation levels the app has and where each on
 └────┴────────┴──────────────┴─────────────────────────────┴──────────┘
 ```
 
-| Level         | Holds                                                                   | Width                                                          | When an app needs it                                   |
-| ------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
-| L0 · switcher | other workspaces, apps or accounts, as marks with counts                | 64–72px                                                        | the person works in several separate spaces            |
-| L1 · sections | the app's top sections                                                  | rail 72–88px (icon + short word) · sidebar 232–256px · top bar | always: every app has sections                         |
-| L2 · list     | the items of the open section: channels, projects, folders, saved views | 240–300px                                                      | the section is a list the person moves through all day |
-| page          | the page header, then the page's base (`packages/core/src/layouts.ts`)  | flexible                                                       | always                                                 |
-| L3 · detail   | one item opened from the page: a thread, a record, a preview            | 320–480px                                                      | the person reads detail without leaving the list       |
+| Level         | Holds                                                                         | Width                                                          | When an app needs it                                   |
+| ------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
+| L0 · switcher | other workspaces, apps or accounts, as marks with counts                      | 64–72px                                                        | the person works in several separate spaces            |
+| L1 · sections | the app's top sections                                                        | rail 72–88px (icon + short word) · sidebar 232–256px · top bar | always: every app has sections                         |
+| L2 · list     | the items of the open section: channels, projects, folders, saved views       | 240–300px                                                      | the section is a list the person moves through all day |
+| page          | the page header, then the page's base (`packages/shared/core/src/layouts.ts`) | flexible                                                       | always                                                 |
+| L3 · detail   | one item opened from the page: a thread, a record, a preview                  | 320–480px                                                      | the person reads detail without leaving the list       |
 
 **Rules that hold in every shell:**
 

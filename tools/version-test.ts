@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { standIn } from "./stand-in.ts";
-import { isObject } from "../packages/core/src/engine/is-object.js";
-import type { SourceDisk } from "../packages/core/src/engine/source-disk.js";
-import type { InstallerAdapter } from "../packages/core/src/installer-context.js";
+import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
+import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {
@@ -18,10 +18,10 @@ Object.assign(globalThis, {
 });
 
 const { BLOCK_FORMAT, WIDGET_API, MIN_WIDGET_API, blockFormatOf, blockRefusal, widgetApiOf, apiRefusal } =
-	await import("../packages/core/src/version.js");
-const { normalizeBoard, serializeBoard } = await import("../packages/core/src/model.js");
-const { WidgetRegistry } = await import("../packages/core/src/registry.js");
-const { createInstaller } = await import("../packages/core/src/installer.js");
+	await import("../packages/shared/core/src/version.js");
+const { normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
+const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
+const { createInstaller } = await import("../packages/shared/core/src/installer.js");
 
 let failed = 0;
 let checks = 0;
@@ -288,7 +288,7 @@ const offer = {
 	check("and nothing of it reached the vault", vault.files.size, 0);
 }
 
-const { drawable } = await import("../packages/host-obsidian/src/legacy/widget-offers.js");
+const { drawable } = await import("../apps/host-obsidian/src/legacy/widget-offers.js");
 
 const offered = (api: unknown) =>
 	drawable({ manifest: { id: "@demo/clock", api }, sources: { "widget.tsx": WIDGET }, path: "@demo/clock" });

@@ -3,16 +3,20 @@ import fs from "node:fs";
 import * as fileSystem from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { nodeProjectFiles, projectConfigJsonSchema, readProjectConfig } from "../packages/core/src/project/index.js";
-import { runCli } from "../packages/cli/src/run-cli.js";
-import { HANDBOOK_PAGES } from "../packages/cli/src/handbook-copy.js";
-import type { CliOutput } from "../packages/cli/src/cli-output.js";
+import {
+	nodeProjectFiles,
+	projectConfigJsonSchema,
+	readProjectConfig,
+} from "../packages/shared/core/src/project/index.js";
+import { runCli } from "../packages/shared/cli/src/run-cli.js";
+import { HANDBOOK_PAGES } from "../packages/shared/cli/src/handbook-copy.js";
+import type { CliOutput } from "../packages/shared/cli/src/cli-output.js";
 import { z } from "zod";
 import type { TFile, TFolder } from "obsidian";
-import { layProject } from "../packages/core/src/project/index.js";
-import { engineClosureIn, enginePackagesOf, type EngineTarball } from "../packages/cli/src/engine-tarballs.js";
-import { formatProject } from "../packages/cli/src/project-format.js";
-import { vaultProjectWriter, type ProjectVault } from "../packages/host-obsidian/src/vault-project-writer.js";
+import { layProject } from "../packages/shared/core/src/project/index.js";
+import { engineClosureIn, enginePackagesOf, type EngineTarball } from "../packages/shared/cli/src/engine-tarballs.js";
+import { formatProject } from "../packages/shared/cli/src/project-format.js";
+import { vaultProjectWriter, type ProjectVault } from "../apps/host-obsidian/src/vault-project-writer.js";
 import { pluginProjectSeed } from "./project-seed.mts";
 import { standIn } from "./stand-in.ts";
 import { fieldOf } from "./export-source.mts";
@@ -36,8 +40,8 @@ interface CliRun {
 }
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const SCHEMA_FILE = path.join(REPO, "packages/cli/widgetarium.schema.json");
-const TEMPLATE_MANIFEST = path.join(REPO, "packages/cli/templates/project/package.json");
+const SCHEMA_FILE = path.join(REPO, "packages/shared/cli/widgetarium.schema.json");
+const TEMPLATE_MANIFEST = path.join(REPO, "packages/shared/cli/templates/project/package.json");
 const PRETTIER = path.join(REPO, "node_modules/.bin/prettier");
 const WRITE_SCHEMA = process.argv.includes("--write-schema");
 const HANDBOOK_FOLDER = "docs/widgetarium";
@@ -157,7 +161,7 @@ function templateDriftFrom(): string[] {
 	const runtime = fieldOf(template, "dependencies");
 	const tools = fieldOf(template, "devDependencies");
 	const declared = {
-		...RecordSchema.parse(fieldOf(jsonAt(path.join(REPO, "packages/kit/package.json")), "dependencies")),
+		...RecordSchema.parse(fieldOf(jsonAt(path.join(REPO, "packages/shared/kit/package.json")), "dependencies")),
 		...RecordSchema.parse(fieldOf(jsonAt(path.join(REPO, "apps/studio/package.json")), "peerDependencies")),
 	};
 	const runtimeDrift = Object.entries(declared).filter(([name, range]) => fieldOf(runtime, name) !== range);

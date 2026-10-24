@@ -9,9 +9,9 @@ import {
 	guard,
 	module,
 	query,
-} from "../packages/core/src/requests/index.ts";
-import type { ModuleFacts } from "../packages/core/src/requests/index.ts";
-import { server } from "../packages/core/src/requests/server/index.ts";
+} from "../packages/shared/core/src/requests/index.ts";
+import type { ModuleFacts } from "../packages/shared/core/src/requests/index.ts";
+import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
 class Counter {

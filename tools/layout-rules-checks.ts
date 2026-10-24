@@ -1,41 +1,41 @@
 import { isDeepStrictEqual } from "node:util";
-import { Refused, app } from "../packages/core/src/requests/index.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
-import type { LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
-import { JsonMemoryPaneTreeGateway } from "../packages/layout/gateways/pane-tree/json-memory.gateway.ts";
+import { Refused, app } from "../packages/shared/core/src/requests/index.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import { JsonMemoryPaneTreeGateway } from "../packages/state/layout/gateways/pane-tree/json-memory.gateway.ts";
 import {
 	concealedLook,
 	peekedLook,
 	refuseTurn,
 	toggledLook,
-} from "../packages/layout/features/frame-sides/lib/side-looks.ts";
-import { ToggleFrameSideCommand } from "../packages/layout/features/frame-sides/requests.ts";
-import { FrameWidthsQuery } from "../packages/layout/features/frame-widths/requests.ts";
-import { leavesOf } from "../packages/layout/shared/lib/pane-nodes.ts";
+} from "../packages/state/layout/features/frame-sides/lib/side-looks.ts";
+import { ToggleFrameSideCommand } from "../packages/state/layout/features/frame-sides/requests.ts";
+import { FrameWidthsQuery } from "../packages/state/layout/features/frame-widths/requests.ts";
+import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
 import {
 	goneTabPanesOf,
 	mintedLeafOf,
 	tabTargetOf,
 	treeWithoutGoneTabs,
-} from "../packages/layout/shared/lib/pane-trees.ts";
+} from "../packages/state/layout/shared/lib/pane-trees.ts";
 import {
 	AimPaneCommand,
 	ClosePaneCommand,
 	PlacePaneCommand,
 	PlacementPreviewQuery,
 	ResizePaneSplitCommand,
-} from "../packages/layout/features/panes/requests.ts";
+} from "../packages/state/layout/features/panes/requests.ts";
 import {
 	ClosePanesOfTabsCommand,
 	CloseShownTabPaneCommand,
 	OpenShownTabPaneCommand,
 	ShowTabInTargetPaneCommand,
-} from "../packages/layout/features/pane-tabs/requests.ts";
-import { DropGoneTabsCommand } from "../packages/layout/generated/contract.ts";
-import { LayoutModule } from "../packages/layout/module.ts";
-import { edgePxWithin, widthsWithin } from "../packages/layout/shared/lib/frame-bounds.ts";
-import type { PaneTree } from "../packages/layout/shared/schema/pane-tree.schema.ts";
+} from "../packages/state/layout/features/pane-tabs/requests.ts";
+import { DropGoneTabsCommand } from "../packages/state/layout/generated/contract.ts";
+import { LayoutModule } from "../packages/state/layout/module.ts";
+import { edgePxWithin, widthsWithin } from "../packages/state/layout/shared/lib/frame-bounds.ts";
+import type { PaneTree } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
 import { LayoutPaneTabsGateway } from "../apps/studio/src/tabs/layout-pane-tabs.gateway.ts";
 
 export type Check = (what: string, isOk: boolean, got: unknown) => void;

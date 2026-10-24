@@ -20,7 +20,7 @@ Object.assign(globalThis, {
 });
 
 const { createElement: h, useState } = await import("react");
-const { leaseFor } = await import("../packages/core/src/engine/render.js");
+const { leaseFor } = await import("../packages/shared/core/src/engine/render.js");
 
 const settle = async (times = 20): Promise<void> => {
 	for (let at = 0; at < times; at += 1) await new Promise((resolve) => setTimeout(resolve, 1));

@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { App } from "obsidian";
-import type { HostPlugin } from "../packages/host-obsidian/src/legacy/host.js";
+import type { HostPlugin } from "../apps/host-obsidian/src/legacy/host.js";
 import type { RenderCall } from "./loader/obsidian-stub.mts";
 import { fieldIn } from "./held-fields.ts";
 import { isRecord, present } from "./page-dom.ts";
@@ -11,7 +11,7 @@ import { standIn } from "./stand-in.ts";
 Object.assign(globalThis, { window: { setTimeout, clearTimeout } });
 
 const { TFile, TFolder, MarkdownRenderer, MarkdownRenderChild } = await import("./loader/obsidian-stub.mts");
-const { createHost, bindNote } = await import("../packages/host-obsidian/src/legacy/host.js");
+const { createHost, bindNote } = await import("../apps/host-obsidian/src/legacy/host.js");
 
 type Props = Record<string, unknown>;
 

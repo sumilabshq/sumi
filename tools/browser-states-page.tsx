@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/browser/generated/module.ts";
-import { Browser } from "../packages/browser/generated/index.ts";
-import type { BrowserTab, RecentSite } from "../packages/browser/shared/schema/browser-tab.schema.ts";
+import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
+import { Browser } from "../packages/domain/browser/generated/index.ts";
+import type { BrowserTab, RecentSite } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { pageGlobal, reportsFailures } from "./page-harness.ts";
 
