@@ -30,6 +30,13 @@ const CLIENT_MODULE =
 const TALLY_MODULE =
 	'import { Device, module } from "@widgetarium/core/requests";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").on(Device).public(CountQuery);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
+const NEEDING_MODULE = [
+	'import { Device, module, oneOf } from "@widgetarium/core/requests";',
+	'import { AdapterHost, ProjectHost, Registry } from "./shared/host/canvas.host.js";',
+	'export { AdapterHost, ProjectHost } from "./shared/host/canvas.host.js";',
+	'export const CanvasModule = module("canvas").on(Device).needs(oneOf({ vault: { adapter: AdapterHost, registry: Registry }, project: { project: ProjectHost } }));',
+	"",
+].join("\n");
 const PLACED_MODULE =
 	'import { {on}, module } from "@widgetarium/core/requests";\nexport const PlacedModule = module("{name}").on({on});\n';
 
@@ -129,6 +136,9 @@ function tested(id: string, cases: Cases): void {
 tested("building-block-names", {
 	valid: [
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
+		ok(
+			'import { event, subscriber } from "@widgetarium/core/requests";\nexport const PanesChangedEvent = event("panes-changed");\nexport const PanesReReadSubscriber = subscriber(PanesChangedEvent).handle(() => undefined);',
+		),
 		ok(`${REQUESTS}export const PagesQuery = query("notes/pages");`),
 		ok(`${REQUESTS}export const PagesQueryHandler = handler(PagesQuery, NotesClientModule).handle(() => 1);`),
 		ok(`${REQUESTS}export const OwnsNoteGuard = guard().handle(() => undefined);`),
@@ -137,6 +147,14 @@ tested("building-block-names", {
 	],
 	invalid: [
 		bad('import { module } from "@widgetarium/core/requests";\nexport const Tally = module("tally");', "wrongSuffix"),
+		bad(
+			'import { event } from "@widgetarium/core/requests";\nexport const PanesChanged = event("panes-changed");',
+			"wrongSuffix",
+		),
+		bad(
+			'import { event, subscriber } from "@widgetarium/core/requests";\nexport const PanesChangedEvent = event("panes-changed");\nexport const ReRead = subscriber(PanesChangedEvent).handle(() => undefined);',
+			"wrongSuffix",
+		),
 		bad(`${REQUESTS}export const Pages = query("notes/pages");`, "wrongSuffix"),
 		bad(`${REQUESTS}const PagesQuery = query("notes/pages");`, "unnamed"),
 		bad(`${REQUESTS}export const listed = [query("notes/pages")];`, "unnamed"),
@@ -236,8 +254,27 @@ tested("module-definition", {
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
 		ok(SERVER_MODULE, "packages/billing/module.ts"),
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
+		ok(NEEDING_MODULE, "packages/notes/module.ts"),
 	],
 	invalid: [
+		bad(
+			`${NEEDING_MODULE}export { StrayHost } from "./shared/host/canvas.host.js";`,
+			"notTheModule",
+			"packages/notes/module.ts",
+		),
+		bad(
+			NEEDING_MODULE.replace("export { AdapterHost, ProjectHost }", "export { StrayHost as AdapterHost, ProjectHost }"),
+			"notTheModule",
+			"packages/notes/module.ts",
+		),
+		bad(
+			NEEDING_MODULE.replace(
+				'export { AdapterHost, ProjectHost } from "./shared/host/canvas.host.js";',
+				"export { AdapterHost, ProjectHost };",
+			),
+			"notTheModule",
+			"packages/notes/module.ts",
+		),
 		bad(`${CLIENT_MODULE}export function notesPartsOf() {}`, "notTheModule", "packages/notes/module.ts"),
 		bad(`${CLIENT_MODULE}export { clock } from "./shared/lib/clock.js";`, "notTheModule", "packages/notes/module.ts"),
 		bad(`${CLIENT_MODULE}export type Notes = string;`, "notTheModule", "packages/notes/module.ts"),
@@ -277,8 +314,10 @@ tested("feature-layout", {
 		),
 		ok('import { paths } from "./paths.js";', "packages/notes/gateways/store/obsidian/obsidian.gateway.ts"),
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
+		ok("export const ClockHost = 1;", "packages/tally/shared/host/clock.host.ts"),
 	],
 	invalid: [
+		bad("export const ClockHost = 1;", "misplaced", "packages/tally/shared/host/clock.ts"),
 		bad(
 			'import { query } from "@widgetarium/core/requests";\nexport const CountQuery = query("counting").handle(() => 1);',
 			"wrongShortName",

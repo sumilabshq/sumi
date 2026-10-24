@@ -6,6 +6,8 @@ import type { Builder, BuilderCall } from "../builders.js";
 const SUFFIX: Readonly<Record<Exclude<Builder, "handler">, string>> = {
 	query: "Query",
 	command: "Command",
+	event: "Event",
+	subscriber: "Subscriber",
 	guard: "Guard",
 	middleware: "Middleware",
 	serverModule: "ServerModule",

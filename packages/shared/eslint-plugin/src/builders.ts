@@ -2,7 +2,16 @@ import type { Rule } from "eslint";
 import type * as ESTree from "estree";
 
 export type Builder =
-	"query" | "command" | "guard" | "middleware" | "serverModule" | "clientModule" | "module" | "handler";
+	| "query"
+	| "command"
+	| "event"
+	| "subscriber"
+	| "guard"
+	| "middleware"
+	| "serverModule"
+	| "clientModule"
+	| "module"
+	| "handler";
 
 export interface BuilderCall {
 	readonly builder: Builder;
@@ -12,6 +21,8 @@ export interface BuilderCall {
 const BUILDERS: ReadonlySet<string> = new Set([
 	"query",
 	"command",
+	"event",
+	"subscriber",
 	"guard",
 	"middleware",
 	"serverModule",

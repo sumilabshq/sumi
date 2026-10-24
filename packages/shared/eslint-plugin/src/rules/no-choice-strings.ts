@@ -3,7 +3,14 @@ import type * as ESTree from "estree";
 import { builderTracker, chainCallsOf } from "../builders.js";
 import type { BuilderCall } from "../builders.js";
 
-const NAMED_BY_STRING: ReadonlySet<string> = new Set(["query", "command", "serverModule", "clientModule", "module"]);
+const NAMED_BY_STRING: ReadonlySet<string> = new Set([
+	"query",
+	"command",
+	"event",
+	"serverModule",
+	"clientModule",
+	"module",
+]);
 
 export const noChoiceStrings: Rule.RuleModule = {
 	meta: {
