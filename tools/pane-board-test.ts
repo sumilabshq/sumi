@@ -1,19 +1,38 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
-import { PaneTreeStore } from "../packages/shell/shared/lib/pane-tree-store.ts";
-import { leavesOf } from "../packages/shell/shared/lib/pane-tree.ts";
+import { PaneTreeStore } from "../packages/layout/shared/lib/pane-tree-store.ts";
+import { leavesOf } from "../packages/layout/shared/lib/pane-tree.ts";
 import { paneLayoutOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
-import { FIRST_PANES } from "../packages/shell/gateways/shell-parts/shell-parts.gateway.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import type { PaneTree } from "../packages/layout/shared/schema/pane-tree.schema.ts";
 import { HostTabs } from "../packages/app-host/shared/lib/host-tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/app-host/shared/lib/host-tabs/tab-lists.ts";
 import { sidebarOf } from "../packages/app-host/features/tabs/lib/tab-rows.ts";
 
 let failed = 0;
 const quiet = console.info;
+const KEEP_NOTHING = (): void => undefined;
+
+interface Memory<T> {
+	read(): T | null;
+	write(value: T): void;
+}
+
+function memoryOf<T>(): Memory<T> {
+	let kept: string | null = null;
+	return {
+		read: () => (kept === null ? null : JSON.parse(kept)),
+		write: (value) => {
+			kept = JSON.stringify(value);
+		},
+	};
+}
 
 function check(what: string, isOk: boolean, got: unknown): void {
 	if (!isOk) {
@@ -29,7 +48,7 @@ function shapeOf(store: PaneTreeStore): readonly string[] {
 
 function checksTree(): void {
 	console.info = () => undefined;
-	const store = new PaneTreeStore(FIRST_PANES);
+	const store = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
 	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
 	check(
 		"a tab dropped on the right of the app pane stands after it",
@@ -118,7 +137,7 @@ function sharesOf(store: PaneTreeStore): readonly number[] {
 }
 
 function checksTarget(): void {
-	const store = new PaneTreeStore(FIRST_PANES);
+	const store = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
 	store.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
 	const afterDrop = store.now().targetId;
 	store.aimAt("pane-chat");
@@ -141,14 +160,14 @@ function checksTarget(): void {
 }
 
 function checksShares(): void {
-	const even = new PaneTreeStore(FIRST_PANES);
+	const even = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
 	even.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
 		"a pane dropped between halves gives every pane a third",
 		JSON.stringify(sharesOf(even)) === "[0.333,0.333,0.333]",
 		sharesOf(even),
 	);
-	const uneven = new PaneTreeStore(FIRST_PANES);
+	const uneven = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
 	uneven.resize("pane-root", 0, 2 / 3);
 	uneven.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-chat", side: "right" });
 	check(
@@ -162,7 +181,7 @@ function checksShares(): void {
 		JSON.stringify(sharesOf(uneven)) === "[0.667,0.333]",
 		sharesOf(uneven),
 	);
-	const nested = new PaneTreeStore(FIRST_PANES);
+	const nested = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
 	nested.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "bottom" });
 	nested.place({ kind: "app", tabId: "tab-4" }, { targetId: "pane-1", side: "right" });
 	nested.close("pane-app");
@@ -176,6 +195,192 @@ function checksShares(): void {
 const CARRY = `((phase, x, y) => { const detail = { phase, item: { kind: "tab", id: "tab-9", title: "Docs" }, x, y, isTaken: false }; document.dispatchEvent(new CustomEvent("wg-carry", { detail })); return detail.isTaken; })`;
 const PANES = `[...document.querySelectorAll("[data-pane-id]")].map((pane) => [pane.dataset.paneId, Math.round(pane.getBoundingClientRect().width)])`;
 
+function checksKept(): void {
+	console.info = () => undefined;
+	const panes = memoryOf<unknown>();
+	const memories: LayoutMemories = {
+		widths: {
+			left: memoryOf<number>(),
+			chat: memoryOf<number>(),
+		},
+		sides: {
+			left: memoryOf<boolean>(),
+			right: memoryOf<boolean>(),
+		},
+		panes,
+	};
+	const first = layoutPartsOf(memories);
+	first.paneTreeStore.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	first.paneTreeStore.resize("pane-root", 0, 0.25);
+	const again = layoutPartsOf(memories).paneTreeStore.now();
+	check(
+		"a restart draws the panes as they were left: the same tree, the same shares",
+		isDeepStrictEqual(again, first.paneTreeStore.now()),
+		again,
+	);
+	panes.write({ root: "torn" });
+	let refused: PaneTree | null = null;
+	warnsOf(() => {
+		refused = layoutPartsOf(memories).paneTreeStore.now();
+	});
+	check("a kept tree the schema refuses starts from the first panes", isDeepStrictEqual(refused, FIRST_PANES), refused);
+	console.info = quiet;
+}
+
+const BROKEN_TREES: readonly (readonly [string, unknown])[] = [
+	["shares that do not match the children", { ...FIRST_PANES, root: { ...FIRST_PANES.root, shares: [1] } }],
+	[
+		"a split of one child",
+		{
+			...FIRST_PANES,
+			root: {
+				kind: "split",
+				id: "pane-root",
+				dir: "row",
+				shares: [1],
+				children: [{ kind: "pane", id: "pane-chat", view: { kind: "chat" } }],
+			},
+		},
+	],
+	["shares summing to nothing", { ...FIRST_PANES, root: { ...FIRST_PANES.root, shares: [0, 0] } }],
+	[
+		"an id standing twice",
+		{
+			...FIRST_PANES,
+			root: {
+				...FIRST_PANES.root,
+				children: [
+					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+					{ kind: "pane", id: "pane-chat", view: { kind: "app", tabId: null } },
+				],
+			},
+		},
+	],
+	[
+		"minted below a held pane-N",
+		{
+			...FIRST_PANES,
+			root: {
+				...FIRST_PANES.root,
+				children: [
+					{ kind: "pane", id: "pane-chat", view: { kind: "chat" } },
+					{ kind: "pane", id: "pane-4", view: { kind: "app", tabId: "tab-1" } },
+				],
+			},
+			minted: 2,
+		},
+	],
+	["a target naming no pane", { ...FIRST_PANES, targetId: "pane-9" }],
+];
+
+function warnsOf(run: () => void): unknown[][] {
+	const said: unknown[][] = [];
+	const wasWarn = console.warn;
+	console.warn = (...args: unknown[]) => {
+		said.push(args);
+	};
+	run();
+	console.warn = wasWarn;
+	return said;
+}
+
+function checksKeptRefusals(): void {
+	console.info = () => undefined;
+
+	for (const [what, tree] of BROKEN_TREES) {
+		const panes = memoryOf<unknown>();
+		panes.write(tree);
+		const memories: LayoutMemories = {
+			widths: { left: memoryOf<number>(), chat: memoryOf<number>() },
+			sides: { left: memoryOf<boolean>(), right: memoryOf<boolean>() },
+			panes,
+		};
+		let started: PaneTree | null = null;
+		const warned = warnsOf(() => {
+			started = layoutPartsOf(memories).paneTreeStore.now();
+		});
+		check(
+			`a kept tree with ${what} starts from the first panes and says why`,
+			isDeepStrictEqual(started, FIRST_PANES) && warned.length === 1,
+			{ started, warned },
+		);
+	}
+
+	const torn = memoryOf<unknown>();
+	const unreadable = { read: () => JSON.parse("{torn"), write: torn.write };
+	const unread = warnsOf(() =>
+		layoutPartsOf({
+			widths: { left: memoryOf<number>(), chat: memoryOf<number>() },
+			sides: { left: memoryOf<boolean>(), right: memoryOf<boolean>() },
+			panes: unreadable,
+		}),
+	);
+	check("kept panes that are not JSON warn with the parse error", unread[0]?.[1] instanceof SyntaxError, unread);
+	console.info = quiet;
+}
+
+function checksGoneTabs(): void {
+	console.info = () => undefined;
+	const beside = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
+	beside.place({ kind: "app", tabId: "tab-3" }, { targetId: "pane-app", side: "right" });
+	beside.dropGoneTabs(new Set());
+	check(
+		"a pane whose kept tab the host no longer holds is closed",
+		JSON.stringify(shapeOf(beside)) === '["chat","shown"]',
+		shapeOf(beside),
+	);
+
+	const alone = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
+	alone.showIn("pane-app", "tab-5");
+	const said: string[] = [];
+	console.info = (line: string) => said.push(line);
+	alone.dropGoneTabs(new Set(["tab-1"]));
+	console.info = () => undefined;
+	check(
+		"the only app pane keeps its place and shows no tab, logged as one transition",
+		JSON.stringify(shapeOf(alone)) === '["chat","shown"]' &&
+			said.length === 1 &&
+			said[0]?.endsWith("(kept tab tab-5 is gone)") === true,
+		{ shape: shapeOf(alone), said },
+	);
+
+	const held = new PaneTreeStore(FIRST_PANES, KEEP_NOTHING);
+	held.showIn("pane-app", "tab-5");
+	held.dropGoneTabs(new Set(["tab-5"]));
+	check(
+		"a pane whose tab the host holds is left alone",
+		JSON.stringify(shapeOf(held)) === '["chat","tab-5"]',
+		shapeOf(held),
+	);
+	console.info = quiet;
+}
+
+function checksStoresKeep(): void {
+	console.info = () => undefined;
+	const reasons: string[] = [];
+	const memories: LayoutMemories = {
+		widths: { left: memoryOf<number>(), chat: memoryOf<number>() },
+		sides: { left: memoryOf<boolean>(), right: memoryOf<boolean>() },
+		panes: { read: () => null, write: (_tree, reason) => reasons.push(reason) },
+	};
+	const parts = layoutPartsOf(memories);
+	parts.frameSidesStore.toggle("left");
+	parts.frameWidthsStore.become({ ...parts.frameWidthsStore.now(), chat: 640 }, "chat drag");
+	parts.paneTreeStore.resize("pane-root", 0, 0.25);
+	check(
+		"each store keeps its own transitions: the hidden side, the width, the pane tree with its reason",
+		memories.sides.left.read() === true &&
+			memories.sides.right.read() === null &&
+			memories.widths.chat.read() === 640 &&
+			reasons.length === 1 &&
+			reasons[0]?.startsWith("resize pane-root") === true,
+		{ left: memories.sides.left.read(), chat: memories.widths.chat.read(), reasons },
+	);
+	parts.frameSidesStore.peek("left");
+	check("a peek keeps the side hidden between starts", memories.sides.left.read() === true, memories.sides.left.read());
+	console.info = quiet;
+}
+
 async function pageOf(folder: string): Promise<AskedPage> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
 	const sheets = ["packages/core/browser-host.css", "packages/host-obsidian/styles.css"]
@@ -184,7 +389,7 @@ async function pageOf(folder: string): Promise<AskedPage> {
 	const file = path.join(folder, "pane-board.html");
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>html,body,#root{height:100%;margin:0}</style></head><body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`,
+		`<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>html,body,#root{height:100%;margin:0}</style></head><body><div id="root"></div><pre id="boom"></pre><script>if (sessionStorage.getItem("wg-pane-board") === null) { localStorage.clear(); sessionStorage.setItem("wg-pane-board", "1"); }</script><script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`,
 	);
 	const page = await paged(file, "test:pane-board", { size: [1440, 900] });
 	await waited(1500);
@@ -322,11 +527,21 @@ async function checksBoard(folder: string): Promise<void> {
 		{ during, after },
 	);
 	writeFileSync(path.join(folder, "pane-dropped.png"), await page.shoot());
+	await page.ask(`location.reload(); true`);
+	await waited(1500);
+	const reloaded = (await page.ask(PANES)) as unknown[];
+	const idsOf = (panes: readonly unknown[]): string =>
+		JSON.stringify(panes.map((pane) => (Array.isArray(pane) ? pane[0] : null)));
+	check(
+		"a web reload keeps the pane tree but closes the pane whose tab the host no longer holds",
+		idsOf(reloaded) === idsOf(after.filter((pane) => Array.isArray(pane) && pane[0] !== "pane-1")),
+		[after, reloaded],
+	);
 	const outside = await page.ask(`${CARRY}("over", 5, 5)`);
 	check("a carry outside the board is not taken", outside === false, outside);
 	await page.ask(`${CARRY}("leave", 5, 5)`);
 
-	for (const id of ["pane-1", "pane-app", "pane-chat"]) {
+	for (const id of ["pane-app", "pane-chat"]) {
 		await page.ask(`document.querySelector('[data-pane-close="${id}"]').click(); true`);
 		await waited(250);
 	}
@@ -351,6 +566,10 @@ async function checksBoard(folder: string): Promise<void> {
 const folder = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-pane-board"));
 mkdirSync(folder, { recursive: true });
 checksTree();
+checksKept();
+checksKeptRefusals();
+checksGoneTabs();
+checksStoresKeep();
 await checksBoard(folder);
 console.log(failed === 0 ? "pane board: all checks pass" : `pane board: ${failed} failed`);
 process.exit(failed === 0 ? 0 : 1);

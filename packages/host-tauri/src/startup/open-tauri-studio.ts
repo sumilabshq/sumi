@@ -20,13 +20,17 @@ import type { TauriProfile } from "../profile/profile-docs.js";
 import { tauriProfileGateways } from "../profile/tauri-profile-gateways.js";
 import { TauriEssentialsGateway, readEssentials } from "../session/tauri-essentials.js";
 import type { HeldEssentials } from "../session/tauri-essentials.js";
-import { TauriTabsColumnGateway, TauriTabsSessionGateway, readSession } from "../session/tauri-session.js";
+import {
+	TauriTabsColumnGateway,
+	TauriTabsSessionGateway,
+	readSession,
+	sessionPanesMemory,
+} from "../session/tauri-session.js";
 import type { HeldSession } from "../session/tauri-session.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
-import { settingsFlagMemory } from "../settings/settings-flag-memory.js";
-import { settingsPxMemory } from "../settings/settings-px-memory.js";
-import { shellPartsOf } from "@widgetarium/shell/gateways";
-import type { ShellParts } from "@widgetarium/shell/gateways";
+import { settingsMemory } from "../settings/settings-memory.js";
+import { layoutPartsOf } from "@widgetarium/layout/gateways";
+import type { LayoutParts } from "@widgetarium/layout/gateways";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "../store/store-client.js";
 import { tauriStudioHost } from "../tauri-studio-host.js";
@@ -134,16 +138,16 @@ function startedStudioOf(opening: StudioOpening, docs: WorkspaceDocs, started: S
 	const studio = studioHostOf(opening, docs, started.workspacesParts);
 	const state = createStudioState();
 	const browser = startTauriBrowser(tauriProfileGateways(docs.profile));
-	const shell = shellPartsInSettings(opening.settings);
+	const layout = tauriLayoutParts(opening.settings, docs.session);
 	const kept = keptGatewaysOf(docs, started.workspacesParts);
 	return startStudio(opening.project, {
 		appId: opening.workspace.id,
 		studio,
 		state,
-		shell,
+		layout,
 		browser,
 		...startedPartsFieldsOf(started),
-		appHost: startedAppHostParts({ state, browser, shell, workspace: opening.workspace.id, studio, kept }),
+		appHost: startedAppHostParts({ state, browser, layout, workspace: opening.workspace.id, studio, kept }),
 	});
 }
 
@@ -162,17 +166,18 @@ function studioHostOf(
 	);
 }
 
-function shellPartsInSettings(settings: HeldSettings): ShellParts {
-	return shellPartsOf(
-		{
-			left: settingsPxMemory(settings, "leftWidthPx"),
-			chat: settingsPxMemory(settings, "chatWidthPx"),
+function tauriLayoutParts(settings: HeldSettings, session: HeldSession): LayoutParts {
+	return layoutPartsOf({
+		widths: {
+			left: settingsMemory(settings, "leftWidthPx"),
+			chat: settingsMemory(settings, "chatWidthPx"),
 		},
-		{
-			left: settingsFlagMemory(settings, "leftHidden"),
-			right: settingsFlagMemory(settings, "rightHidden"),
+		sides: {
+			left: settingsMemory(settings, "leftHidden"),
+			right: settingsMemory(settings, "rightHidden"),
 		},
-	);
+		panes: sessionPanesMemory(session),
+	});
 }
 
 function keptGatewaysOf(docs: WorkspaceDocs, workspacesParts: WorkspacesParts) {

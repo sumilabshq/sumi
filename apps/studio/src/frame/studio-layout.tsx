@@ -8,7 +8,7 @@ import type { PaneBoardProps } from "@widgetarium/shell";
 
 export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
-	readonly shellApp: StartedApp;
+	readonly layoutApp: StartedApp;
 	readonly studio: StudioHostPort;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
@@ -16,10 +16,10 @@ export interface StudioLayoutProps {
 	readonly right: ReactNode;
 }
 
-export function StudioLayout({ frame, shellApp, studio, left, panes, panel, right }: StudioLayoutProps): ReactElement {
+export function StudioLayout({ frame, layoutApp, studio, left, panes, panel, right }: StudioLayoutProps): ReactElement {
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
-		<AppProvider app={shellApp}>
+		<AppProvider app={layoutApp}>
 			<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} right={right} />
 		</AppProvider>
 	);

@@ -15,7 +15,7 @@ import { NO_STUDIO_HOST } from "../packages/core/src/engine/studio-host.ts";
 import type { StudioStart } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { startedAppHostParts } from "../apps/studio/src/tabs/studio-app-host.ts";
-import { webShellParts } from "../packages/shell/gateways/shell-parts/web.gateway.ts";
+import { webLayoutParts } from "../packages/layout/gateways/layout-parts/web.gateway.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 
 export const TAURI_WORKSPACE = "Untitled workspace";
@@ -154,10 +154,10 @@ function restartedBrowserParts(): BrowserParts {
 export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	const state = createStudioState();
 	const browser = restartedBrowserParts();
-	const shell = webShellParts();
+	const layout = webLayoutParts(TAURI_WORKSPACE);
 	Object.assign(window, {
 		__PLACE_TAB_IN_PANE__: (tabId: string) =>
-			shell.paneTreeStore.place({ kind: "app", tabId }, { targetId: "pane-app", side: "right" }),
+			layout.paneTreeStore.place({ kind: "app", tabId }, { targetId: "pane-app", side: "right" }),
 	});
 	state.show("canvas");
 	return {
@@ -166,11 +166,11 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 		appId: TAURI_WORKSPACE,
 		browser,
 		activeChat: NEW_CHAT,
-		shell,
+		layout,
 		appHost: startedAppHostParts({
 			state,
 			browser,
-			shell,
+			layout,
 			workspace: TAURI_WORKSPACE,
 			studio: NO_STUDIO_HOST,
 			kept: {

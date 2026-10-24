@@ -18,10 +18,10 @@ import { webAssistantGateways } from "@widgetarium/assistant/gateways";
 import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import { app } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { ShellClientModule } from "@widgetarium/shell/module";
-import { webShellParts } from "@widgetarium/shell/gateways";
-import type { PaneView } from "@widgetarium/shell";
-import type { ShellParts } from "@widgetarium/shell/gateways";
+import { LayoutModule } from "@widgetarium/layout/module";
+import { webLayoutParts } from "@widgetarium/layout/gateways";
+import type { PaneView } from "@widgetarium/layout";
+import type { LayoutParts } from "@widgetarium/layout/gateways";
 import { chatAppOf } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -62,7 +62,7 @@ export interface StartedStudio {
 	readonly chatApp: StartedApp;
 	readonly browser: BrowserParts;
 	readonly appHost: AppHostParts;
-	readonly shellApp: StartedApp;
+	readonly layoutApp: StartedApp;
 	readonly chatsColumn: ChatsColumnApp;
 }
 
@@ -78,7 +78,7 @@ export interface StudioStart extends ProjectStart {
 	readonly browser?: BrowserParts;
 	readonly appHost?: AppHostParts;
 	readonly activeChat?: ActiveChatPort;
-	readonly shell?: ShellParts;
+	readonly layout?: LayoutParts;
 	readonly workspaces?: WorkspacesParts;
 }
 
@@ -94,7 +94,7 @@ interface TabsAsk {
 	readonly appId: string;
 	readonly appName: string;
 	readonly studio: StudioHostPort;
-	readonly shell: ShellParts;
+	readonly layout: LayoutParts;
 }
 
 interface StudioScreen {
@@ -117,12 +117,13 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const state = start.state ?? createStudioState();
 	const chat = startedChatOf(start, state);
 	const lent = lentPortsOf(opened, start);
-	const shell = start.shell ?? webShellParts();
+	const layout = start.layout ?? webLayoutParts(lent.appId);
 	return {
 		...chat,
 		...lent,
-		...startedTabsOf(start, { ...lent, state, browser: chat.browser, appName: opened.app.name, shell }),
-		...startedShellOf(shell),
+		...startedTabsOf(start, { ...lent, state, browser: chat.browser, appName: opened.app.name, layout }),
+		layoutApp: app({ modules: [LayoutModule.with(layout)] }),
+		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		project,
 		state,
 	};
@@ -143,7 +144,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElement {
 	return h(StudioLayout, {
 		frame: screen.frame,
-		shellApp: started.shellApp,
+		layoutApp: started.layoutApp,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
@@ -240,13 +241,7 @@ function startedTabsOf(start: StudioStart, tabs: TabsAsk): Pick<StartedStudio, "
 	return {
 		chatsColumn,
 		appHost:
-			start.appHost ?? startedAppHostParts({ state, browser, shell: tabs.shell, workspace: tabs.appId, studio, kept }),
-	};
-}
-
-function startedShellOf(shell: ShellParts): Pick<StartedStudio, "shellApp" | "shellRegistry"> {
-	return {
-		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
-		shellApp: app({ modules: [ShellClientModule.with(shell)] }),
+			start.appHost ??
+			startedAppHostParts({ state, browser, layout: tabs.layout, workspace: tabs.appId, studio, kept }),
 	};
 }

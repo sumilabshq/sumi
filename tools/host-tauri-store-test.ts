@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { check, tally } from "./check-helpers.ts";
 import { SETTINGS, readSettings } from "../packages/host-tauri/src/settings/settings-doc.ts";
-import { settingsPxMemory } from "../packages/host-tauri/src/settings/settings-px-memory.ts";
+import { settingsMemory } from "../packages/host-tauri/src/settings/settings-memory.ts";
 
 import { TauriOpening } from "../packages/host-tauri/src/startup/tauri-opening.ts";
 import { GLOBAL_ROOT, StoreClient, folderRootOf } from "../packages/host-tauri/src/store/store-client.ts";
@@ -20,7 +20,7 @@ async function settingsChecks(): Promise<void> {
 		trace: false,
 	});
 
-	const memory = settingsPxMemory(settings, "chatWidthPx");
+	const memory = settingsMemory(settings, "chatWidthPx");
 	for (const px of [400, 420, 440]) {
 		memory.write(px);
 	}

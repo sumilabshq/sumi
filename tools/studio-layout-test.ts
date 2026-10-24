@@ -2,7 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { PLATE_LEAST_PX } from "../packages/shell/shared/lib/frame-bounds.ts";
+import { PLATE_LEAST_PX } from "../packages/layout/shared/lib/frame-bounds.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";

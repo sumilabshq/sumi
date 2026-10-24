@@ -1,12 +1,12 @@
 import { PaneTabsGateway } from "@widgetarium/app-host/gateways";
-import type { ShellParts } from "@widgetarium/shell/gateways";
+import type { LayoutParts } from "@widgetarium/layout/gateways";
 
-type PaneTreeStore = ShellParts["paneTreeStore"];
+type PaneTreeStore = LayoutParts["paneTreeStore"];
 
 const REVEAL: readonly Keyframe[] = [{ opacity: 1 }, { opacity: 0.55 }, { opacity: 1 }];
 const REVEAL_MS = 420;
 
-export class ShellPaneTabsGateway extends PaneTabsGateway {
+export class LayoutPaneTabsGateway extends PaneTabsGateway {
 	constructor(private readonly paneTreeStore: PaneTreeStore) {
 		super();
 	}
