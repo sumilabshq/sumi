@@ -23,6 +23,16 @@ export const CLI_HELP = `widgetarium <command>
       the imports rewritten to the alias, its npm dependencies into package.json, and origin.json
       beside it; never over a widget of the same name
 
+  add module <name> --on Server|Device|Anywhere [--in domain|state]
+      a data module in packages/<domain|state>/<name> (domain by default): package.json, tsconfig.json,
+      LICENSE, module.ts and its parts picker in gateways/<name>-parts/; registers the workspace and
+      test:types, then runs generate; never over an existing folder or package name
+
+  add feature <module>/<feature> [--query <Name>] [--command <Name>]
+      features/<feature>/requests.ts with an example query (the default) and/or command, its schema in
+      shared/schema/, a gateway with a memory implementation wired into the module's parts, the
+      requests listed in module.ts .public(...), tools/<module>-<feature>-checks.ts; then generate
+
   generate [module folder…] [--check]
       a module(...) package: generated/contract.ts (its listed requests up to their first handling
       step, with every schema they use) and the root index.ts; a client package: the root

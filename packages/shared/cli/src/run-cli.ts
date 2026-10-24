@@ -1,4 +1,6 @@
 import { runAdd } from "./add-command.js";
+import { runAddFeature } from "./add-feature-command.js";
+import { runAddModule } from "./add-module-command.js";
 import { runCatalogue } from "./catalogue-command.js";
 import {
 	parseAddArgs,
@@ -8,6 +10,7 @@ import {
 	parseGenerateArgs,
 	parseSystemArgs,
 } from "./cli-args.js";
+import { parseAddFeatureArgs, parseAddModuleArgs } from "./scaffold-args.js";
 import { CLI_HELP, HELP_WORDS } from "./cli-help.js";
 import { CliRefusal, type CliOutput } from "./cli-output.js";
 import { runCheck } from "./check-command.js";
@@ -39,7 +42,7 @@ async function runCommand(
 	if (command === "create") return runCreate(parseCreateArgs(rest), output);
 	if (command === "check") return runCheck(parseCheckArgs(rest), output);
 	if (command === "catalogue") return runCatalogue(parseCatalogueArgs(rest), output, cwd);
-	if (command === "add") return runAdd(parseAddArgs(rest), output, cwd);
+	if (command === "add") return runAddKind(rest, { output, cwd });
 	if (command === "generate") return runGenerate(parseGenerateArgs(rest), output, cwd);
 	if (command === "system") return runSystem(parseSystemArgs(rest), output, cwd);
 	if (command === undefined || HELP_WORDS.includes(command)) {
@@ -47,4 +50,18 @@ async function runCommand(
 		return 0;
 	}
 	throw new CliRefusal(`unknown command "${command}"\n\n${CLI_HELP}`);
+}
+
+async function runAddKind(rest: readonly string[], { output, cwd }: CommandContext): Promise<number> {
+	const [kind, ...named] = rest;
+
+	if (kind === "module") {
+		return runAddModule(parseAddModuleArgs(named), output, cwd);
+	}
+
+	if (kind === "feature") {
+		return runAddFeature(parseAddFeatureArgs(named), output, cwd);
+	}
+
+	return runAdd(parseAddArgs(rest), output, cwd);
 }

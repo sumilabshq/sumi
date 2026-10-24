@@ -94,6 +94,15 @@ flowchart TB
 
 **What a package exports.** `"."` holds the public contract and the module's descriptor, enough to call it at a URL and nothing that runs; `"./server"` holds the server-only contract, imported only by server modules; `"./module"` holds the module with its handlers and gateways, imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
 
+### Starting a module or a feature
+
+Always `widgetarium add module` and `widgetarium add feature` (in this repo `npm run widgetarium -- add …`), never by hand. The shapes they lay are the reference: replace the example data, keep the shape. What each lays is in [placement.md](placement.md#starting-a-module-or-a-feature).
+
+```sh
+widgetarium add module notes --on Device            # Server | Device | Anywhere; --in state for app state
+widgetarium add feature notes/tasks --command AddTask  # --query Tasks is the default; both may be given
+```
+
 ## Layers
 
 ```

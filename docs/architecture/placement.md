@@ -23,6 +23,17 @@ generated/server.ts              generated: the server-only requests
 
 No `ui/`, no `.tsx`, no React. No empty folder is created ahead. The top holds nothing else but `package.json`, `tsconfig*.json`, `LICENSE`.
 
+## Starting a module or a feature
+
+A data module and a feature are laid by the CLI, never by hand; what it lays is the reference shape.
+
+| Command                                                                            | Lays                                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `widgetarium add module <name> --on Server\|Device\|Anywhere [--in domain\|state]` | `packages/<layer>/<name>/` with `package.json` (`"."` and `"./module"`, the latter only under `"server"` for a server module), `tsconfig.json`, `LICENSE`, `module.ts` (a server module guarded by `AuthenticatedGuard`) and the picker `gateways/<name>-parts/`; adds the folder to the workspaces and `test:types`, runs `generate` |
+| `widgetarium add feature <module>/<feature> [--query <Name>] [--command <Name>]`   | `features/<feature>/requests.ts`, `shared/schema/<feature>.schema.ts`, `gateways/<feature>/` (the abstract class and `memory.gateway.ts`) wired into the picker, the requests in `.public(...)`, `tools/<module>-<feature>-checks.ts` starting the module `.with(fakes)`; runs `generate`                                             |
+
+Both refuse an existing folder, feature or package name and a bad name, writing nothing. Run the check the feature got with `node --single-threaded --import ./tools/loader/register.mts tools/<module>-<feature>-checks.ts`.
+
 ## A client package
 
 `packages/client/<name>/`, `"widgetarium": { "level": "client" }`. Reference: `packages/client/shell`.

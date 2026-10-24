@@ -2,6 +2,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { DEFAULT_DESIGN_SYSTEM, DESIGN_SYSTEM_SLUG } from "@widgetarium/core/project/index.js";
 import { z } from "zod";
+import { parsedArgs, parsedWith, refuseExtraPositionals } from "./arg-parsing.js";
 import { CliRefusal } from "./cli-output.js";
 
 const PACKAGE_NAME = /^[a-z0-9][a-z0-9._-]*$/;
@@ -146,23 +147,4 @@ export function parseGenerateArgs(argv: readonly string[]): GenerateArgs {
 		parseArgs({ args: [...argv], options: GENERATE_OPTIONS, allowPositionals: true }),
 	);
 	return { modules: positionals, check: values.check === true };
-}
-
-function parsedArgs<T>(parse: () => T): T {
-	try {
-		return parse();
-	} catch (error) {
-		throw new CliRefusal(error instanceof Error ? error.message : String(error));
-	}
-}
-
-function refuseExtraPositionals(positionals: readonly string[], allowed: number): void {
-	if (positionals.length <= allowed) return;
-	throw new CliRefusal(`unexpected arguments: ${positionals.slice(allowed).join(" ")}`);
-}
-
-function parsedWith<T>(schema: z.ZodType<T>, input: unknown): T {
-	const parsed = schema.safeParse(input);
-	if (parsed.success) return parsed.data;
-	throw new CliRefusal(parsed.error.issues.map(({ message }) => message).join("; "));
 }
