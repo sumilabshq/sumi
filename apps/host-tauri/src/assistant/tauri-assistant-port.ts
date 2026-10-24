@@ -1,6 +1,6 @@
 import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantPort, AssistantProvider, AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
-import type { ClaudeOptions, PlanUsage } from "@widgetarium/assistant";
+import type { ClaudeOptions } from "@widgetarium/assistant";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
 import { runTurn } from "./turn-run.js";
@@ -17,8 +17,8 @@ export interface LentFolders {
 }
 
 export interface ClaudeChoices {
-	now(): ClaudeOptions;
-	heardUsage(usage: PlanUsage): void;
+	value(): ClaudeOptions;
+	save(next: ClaudeOptions): void;
 }
 
 export interface TauriAssistantDoors {
@@ -181,7 +181,7 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartTurn {
 			provider,
 			prompt: asked,
 			resume: resumeOf(provider.id),
-			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.now()) : null,
+			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.value()) : null,
 			folders: doors.folders.take(),
 		};
 		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));
@@ -196,7 +196,11 @@ function claudeStartOf({ mode, model, effort }: ClaudeOptions): ClaudeStart {
 function hearingUsage(claude: ClaudeChoices, emit: Emit): Emit {
 	return (part) => {
 		if ("usage" in part) {
-			claude.heardUsage(part.usage);
+			const was = claude.value();
+			claude.save({ ...was, usage: part.usage });
+			console.debug(
+				`[widgetarium] claude usage ${JSON.stringify(was.usage)} → ${JSON.stringify(part.usage)} (the provider reported its plan usage)`,
+			);
 		}
 
 		emit(part);

@@ -5,11 +5,11 @@ import { compile } from "tailwindcss";
 export const TAILWIND_BANNER = "/*! tailwindcss";
 
 const SOURCES = [
-	"packages/domain/canvas",
-	"packages/client/mascot",
-	"packages/domain/app-host",
+	"apps/studio/src/features/canvas",
+	"apps/studio/src/features/mascot",
+	"apps/studio/src/features/app-host",
 	"packages/domain/browser",
-	"packages/domain/assistant",
+	"apps/studio/src/features/assistant",
 	"apps/studio/src/canvas",
 	"apps/studio/src/browser",
 ];
@@ -19,20 +19,20 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"tailwindcss/theme.css": "node_modules/tailwindcss/theme.css",
 	"tailwindcss/utilities.css": "node_modules/tailwindcss/utilities.css",
 	"@widgetarium/kit/theme.css": "packages/shared/kit/theme.css",
-	"@widgetarium/canvas/canvas.css": "packages/domain/canvas/canvas.css",
-	"@widgetarium/mascot/mascot.css": "packages/client/mascot/mascot.css",
+	"@widgetarium/studio/canvas.css": "apps/studio/src/features/canvas/canvas.css",
+	"@widgetarium/studio/mascot.css": "apps/studio/src/features/mascot/mascot.css",
 	"@widgetarium/studio/workspaces.css": "apps/studio/src/features/workspaces/workspaces.css",
-	"@widgetarium/shell/shell.css": "packages/client/shell/shell.css",
+	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme) prefix(cv);
 @import "tailwindcss/utilities.css" layer(utilities) important;
 @import "@widgetarium/kit/theme.css";
-@import "@widgetarium/canvas/canvas.css";
-@import "@widgetarium/mascot/mascot.css";
+@import "@widgetarium/studio/canvas.css";
+@import "@widgetarium/studio/mascot.css";
 @import "@widgetarium/studio/workspaces.css";
-@import "@widgetarium/shell/shell.css";
+@import "@widgetarium/studio/shell.css";
 `;
 
 export async function canvasSheet(repo: string): Promise<string> {

@@ -1,14 +1,14 @@
-import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
-import { assistantPartsOf, obsidianAssistantGateways } from "../packages/domain/assistant/generated/gateways.ts";
-import type { PrivateFolder } from "../packages/domain/assistant/generated/gateways.ts";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
+import { MascotModule } from "../packages/domain/mascot/module.ts";
 
-export interface MemoryFolder extends PrivateFolder {
+export interface MemoryFolder {
 	readonly files: Map<string, Uint8Array>;
+	write(path: string, data: Uint8Array): void;
+	remove(path: string): void;
+	removeOlderThan(folder: string, ageMs: number, now: number): void;
 }
 
 export const SHOT_ATTACHMENTS = "/attachments";
@@ -23,13 +23,20 @@ export function memoryFolder(): MemoryFolder {
 	};
 }
 
-export function chatAppOver(port: AssistantPort, privateFolder: PrivateFolder = memoryFolder()): StartedApp {
-	const gateways = obsidianAssistantGateways({
-		port,
-		privateFolder,
-		folder: SHOT_ATTACHMENTS,
-	});
-	return app({
-		modules: [MascotClientModule.with(memoryMascotParts()), AssistantClientModule.with(assistantPartsOf(gateways))],
-	});
+export function chatAppOver(port: AssistantPort, privateFolder: MemoryFolder = memoryFolder()): StartedApp {
+	return app()
+		.modules(MascotModule, AssistantModule)
+		.start({
+			platform: "browser",
+			scope: {
+				workspaceId: "assistant-chat",
+			},
+			host: {
+				obsidianAssistant: port,
+				attachments: {
+					folder: SHOT_ATTACHMENTS,
+					files: privateFolder,
+				},
+			},
+		});
 }

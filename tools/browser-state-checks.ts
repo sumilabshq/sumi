@@ -2,25 +2,26 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import { SearchWebCommand } from "../packages/domain/browser/features/ink/contract.ts";
-import { BrowserNavigationGuard } from "../packages/domain/browser/features/ink/handlers.ts";
-import { LeaveFailureCommand, OpenAddressCommand } from "../packages/domain/browser/features/tabs/contract.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { SearchWebCommand } from "../packages/domain/browser/index.ts";
+import { AskInkPromptQuery, LeaveFailureCommand, OpenAddressCommand } from "../packages/domain/browser/index.ts";
 import { loadFailureKindOf } from "../packages/domain/browser/shared/lib/load-failure.ts";
-import { nearMatchOf } from "../packages/domain/browser/shared/lib/near-match.ts";
+import { nearMatchOf } from "../packages/domain/browser/features/tabs/lib/near-match.ts";
 import { SEARCH_ENGINE } from "../packages/domain/browser/shared/lib/search-address.ts";
 import type { PageFailure } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
-import { Browser } from "../packages/domain/browser/generated/index.ts";
+import { Browser } from "../apps/studio/src/features/browser/ui/browser/browser.tsx";
 import { check, waitFor } from "./check-helpers.ts";
 import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 import { exactStatesReport } from "./browser-states-exact.ts";
-import { askInkPromptOf } from "../packages/domain/browser/shared/lib/ask-ink-prompt.ts";
-import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
-import { assistantPartsOf, webAssistantGateways } from "../packages/domain/assistant/generated/gateways.ts";
-import { Composer } from "../packages/domain/assistant/features/composer/ui/composer/composer.tsx";
-import { withChatComposer } from "../apps/studio/src/browser/chat-app-composer.gateway.ts";
+import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask-ink-prompt.ts";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { Composer } from "../apps/studio/src/features/assistant/ui/composer/composer.tsx";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { ChatBesideContext } from "../apps/studio/src/features/browser/lib/chat-beside.ts";
+
+const EVENT_DELIVERED_WITHIN_MS = 200;
 
 const STATE_OF_CODE: readonly (readonly [string, number, string | null])[] = [
 	["ERR_NAME_NOT_RESOLVED", -105, "not-found"],
@@ -66,22 +67,15 @@ for (const [host, recent, wanted] of NEAR) {
 }
 
 function started(browser: FakeBrowser) {
-	return app({ modules: [BrowserClientModule.with(browser.parts)] });
+	return app().modules(BrowserModule.with(browser.parts)).start();
 }
 
 function said(answer: Answer<unknown>): string {
 	return answer.ok ? "ok" : answer.reason;
 }
 
-const searchHandler = BrowserClientModule.handlers.find((one) => one.request === SearchWebCommand);
-check(
-	"search is handled behind the navigation guard",
-	searchHandler?.steps.some((step) => step === BrowserNavigationGuard),
-	true,
-);
-
 const searching = fakeBrowser();
-const searched = await started(searching).send(SearchWebCommand, { text: "test.co" });
+const searched = await started(searching).send(SearchWebCommand, { text: "test.co", heldTabId: null });
 check("a search answers", said(searched), "ok");
 check("a search opens the one engine in the same tab", searching.pages.opened, [`${SEARCH_ENGINE}test.co`]);
 check(
@@ -94,7 +88,7 @@ const hidden = fakeBrowser();
 hidden.pages.isShownOnScreen = false;
 check(
 	"the guard refuses a search into a tab that is not on screen",
-	said(await started(hidden).send(SearchWebCommand, { text: "test.co" })),
+	said(await started(hidden).send(SearchWebCommand, { text: "test.co", heldTabId: null })),
 	"tab-not-visible",
 );
 check("and nothing opens", hidden.pages.opened, []);
@@ -150,7 +144,7 @@ shown.pages.tab = {
 	url: "",
 	failure: null,
 };
-shown.recentSites.keep([
+shown.recentSites.saveRecentSites([
 	{
 		host: "github.com",
 		address: "https://github.com/",
@@ -180,11 +174,14 @@ check(
 	host.querySelector("[data-browser-recent-site]")?.getAttribute("data-browser-recent-site"),
 	"github.com",
 );
-host.querySelector<HTMLButtonElement>("[data-browser-ask-ink]")?.click();
-await waitFor(() => shown.chatComposer.prefilled.length === 1);
-check("asking Ink on a new tab hands the chat its prompt", shown.chatComposer.prefilled, ["Find a page for me"]);
+const newTabPrompt = await shownApp.send(AskInkPromptQuery, { tabId: "tab-1" });
+check("asking Ink on a new tab drafts its prompt", newTabPrompt.ok && newTabPrompt.output, "Find a page for me");
 
-const refused = await shownApp.send(OpenAddressCommand, { tabId: "tab-1", address: "javascript:open()" });
+const refused = await shownApp.send(OpenAddressCommand, {
+	tabId: "tab-1",
+	address: "javascript:open()",
+	heldTabId: null,
+});
 check("a refused scheme answers without a toast", said(refused), "ok");
 await waitFor(() => host.querySelector('[data-browser-page-state="error"]') !== null);
 check(
@@ -238,7 +235,8 @@ visiting.pages.tab = {
 	favicon: "https://vite.dev/logo.svg",
 };
 visiting.pages.told();
-check("a finished page is noted among recent sites", visiting.recentSites.sites(), [
+await waitFor(() => visiting.recentSites.recentSites().length > 0);
+check("a finished page is noted among recent sites", visiting.recentSites.recentSites(), [
 	{
 		host: "vite.dev",
 		address: "https://vite.dev/",
@@ -251,7 +249,8 @@ visiting.pages.tab = {
 	url: NOT_FOUND.address,
 };
 visiting.pages.told();
-check("a failed load is never noted", visiting.recentSites.sites().length, 1);
+await waitFor(() => visiting.recentSites.recentSites().length > 1, EVENT_DELIVERED_WITHIN_MS);
+check("a failed load is never noted", visiting.recentSites.recentSites().length, 1);
 
 const PROMPTED: readonly (readonly [string, PageFailure | null, string])[] = [
 	["a new tab", null, "Find a page for me"],
@@ -281,8 +280,17 @@ for (const [what, failure, prompt] of PROMPTED) {
 }
 
 const chatSent: string[] = [];
-const chatParts = assistantPartsOf(webAssistantGateways());
-const chatApp = app({ modules: [AssistantClientModule.with(chatParts)] });
+const chatApp = app()
+	.modules(AssistantModule)
+	.start({
+		platform: "browser",
+		scope: {
+			workspaceId: "browser-state",
+		},
+		host: {
+			webAssistant: NO_ASSISTANT,
+		},
+	});
 const chatHost = document.createElement("div");
 document.body.append(chatHost);
 createRoot(chatHost).render(
@@ -313,8 +321,8 @@ document.body.append(askingHost);
 createRoot(askingHost).render(
 	h(
 		AppProvider,
-		{ app: app({ modules: [BrowserClientModule.with(withChatComposer(asking.parts, chatApp))] }) },
-		h(Browser, {}),
+		{ app: app().modules(BrowserModule.with(asking.parts)).start() },
+		h(ChatBesideContext, { value: chatApp }, h(Browser, {})),
 	),
 );
 await waitFor(

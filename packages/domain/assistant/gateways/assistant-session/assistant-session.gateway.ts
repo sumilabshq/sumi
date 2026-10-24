@@ -4,9 +4,9 @@ import type { AssistantCall, AssistantSession, CallFace } from "@widgetarium/cor
 export abstract class AssistantSessionGateway {
 	abstract isAvailable(): boolean;
 	abstract session(): AssistantSession;
-	abstract watch(changed: () => void): () => void;
+	abstract sessionChanged(listener: () => void): () => void;
 	abstract cardsOf(session: AssistantSession): ChatCards;
-	abstract describeCall(call: AssistantCall): CallFace;
+	abstract faceOf(call: AssistantCall): CallFace;
 	abstract send(said: string): Promise<void>;
 	abstract retry(): void;
 	abstract stop(): void;

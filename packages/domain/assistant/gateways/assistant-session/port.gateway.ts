@@ -20,15 +20,15 @@ export class PortAssistantSessionGateway extends AssistantSessionGateway {
 		return this.port.session();
 	}
 
-	watch(changed: () => void): () => void {
-		return this.port.onSession(changed);
+	sessionChanged(listener: () => void): () => void {
+		return this.port.onSession(listener);
 	}
 
 	cardsOf(session: AssistantSession): ChatCards {
 		return this.port.cardsOf(session);
 	}
 
-	describeCall(call: AssistantCall): CallFace {
+	faceOf(call: AssistantCall): CallFace {
 		return this.port.describeCall(call);
 	}
 

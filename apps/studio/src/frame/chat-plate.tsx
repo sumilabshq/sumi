@@ -1,10 +1,10 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { AssistantPanel } from "@widgetarium/assistant";
+import { AssistantPanel } from "../features/assistant/ui/assistant-panel/assistant-panel.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { Plate } from "@widgetarium/shell";
+import { Plate } from "../features/plate/ui/plate/plate.js";
 import { chatCardsOver } from "../assistant/chat-cards.js";
 
 export interface ChatPlateProps {

@@ -1,5 +1,4 @@
-import { FileDropGateway } from "@widgetarium/assistant/gateways";
-import type { DroppedFile, FileDragEvent } from "@widgetarium/assistant/gateways";
+import type { DroppedFile, FileDragEvent } from "@widgetarium/assistant";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import type { AssistantBridge, DroppedEntry } from "./assistant-bridge.js";
 
@@ -92,16 +91,14 @@ export async function droppedEventOf(paths: readonly string[], bridge: DropReach
 	};
 }
 
-export class TauriFileDropGateway extends FileDropGateway {
+export class TauriFileDrops {
 	constructor(
 		private readonly source: WebviewDragSource,
 		private readonly spot: ChatSpot,
 		private readonly bridge: DropReach,
-	) {
-		super();
-	}
+	) {}
 
-	watch(heard: (event: FileDragEvent) => void): () => void {
+	fileDragged(heard: (event: FileDragEvent) => void): () => void {
 		const held: { stop: (() => void) | null; isStopped: boolean } = {
 			stop: null,
 			isStopped: false,

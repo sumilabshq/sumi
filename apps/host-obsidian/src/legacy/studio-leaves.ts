@@ -1,21 +1,23 @@
-import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
-import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { App, TFile, ViewState, WorkspaceLeaf } from "obsidian";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { STUDIO_PACKS } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 import type { AppProjects } from "./app-projects.js";
-import { HELD_IN_VAULT, partsFor } from "./design-held.js";
+import { HELD_IN_VAULT, hostsFor } from "./design-held.js";
 import type { DesignHeld } from "./design-held.js";
 import { bindNote } from "./host.js";
 import { designFolderOf } from "@widgetarium/core/app-design.js";
-import type { StudioDesign } from "@widgetarium/studio";
+import type { ReturnTo, StudioDesign } from "@widgetarium/studio";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
 import { studioNoteOfFile } from "./studio-drawing.js";
 import type { StudioPlace } from "./studio-drawing.js";
 import { STUDIO_VIEW_TYPE, StudioView } from "./studio-view.js";
+
+const STAYS_IN_THE_STUDIO: ReturnTo = {
+	kind: "view",
+	open: async () => undefined,
+};
 
 interface MarkdownChoices {
 	choose(leaf: WorkspaceLeaf, path: string): void;
@@ -35,8 +37,7 @@ const STUDIO_IN_FRONT = "wg-studio-in-front";
 export function registerStudioView(
 	plugin: WidgetariumPlugin,
 	projects: AppProjects,
-	assistant: { readonly port: AssistantPort; readonly gateways: AssistantGateways },
-	browser: BrowserParts,
+	assistant: { readonly port: AssistantPort; readonly host: StudioPlace["assistantHost"] },
 ): void {
 	registerPacks(...STUDIO_PACKS);
 	const choices = createMarkdownChoices();
@@ -45,8 +46,7 @@ export function registerStudioView(
 		projects,
 		viewType: STUDIO_VIEW_TYPE,
 		assistant: assistant.port,
-		assistantGateways: assistant.gateways,
-		browser,
+		assistantHost: assistant.host,
 		hostOf: (notePath) => bindNote(plugin.host, notePath),
 		designFor: (app, leaf) => studioDesignOf(plugin, app, leaf),
 		openAsMarkdown: (leaf, file) => {
@@ -68,11 +68,19 @@ export async function studioDesignOf(
 	const ownsPaste = (): boolean => plugin.app.workspace.getActiveViewOfType(StudioView)?.leaf === leaf;
 	const hasDesign = await plugin.app.vault.adapter.exists(designFolderOf(app));
 	const gpu = hasDesign ? obsidianGpuSupply(plugin) : null;
-	const partsOf: StudioDesign["partsOf"] = ({ project, ...mount }) => {
+	const hostsOf: StudioDesign["hostsOf"] = (project) => {
 		const held: DesignHeld = hasDesign ? HELD_IN_VAULT : { kind: "project", project };
-		return partsFor(plugin, held, new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu }));
+		return hostsFor(plugin, held);
 	};
-	return { app, partsOf };
+	return {
+		app,
+		hostsOf,
+		surroundings: {
+			gpu,
+			ownsPaste,
+			returnTo: STAYS_IN_THE_STUDIO,
+		},
+	};
 }
 
 function markdownStateOf(leaf: WorkspaceLeaf, state: Record<string, unknown>): ViewState {

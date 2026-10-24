@@ -1,12 +1,6 @@
-import type { AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
-import type { ProviderReads } from "../../../shared/schema/agent-setup.schema.js";
 import type { AttachmentKind, FileKind } from "../../../shared/schema/attachment.schema.js";
-import { sizeSaid } from "../../../shared/lib/size-said.js";
-
-export interface ChosenProvider {
-	readonly label: string;
-	readonly reads: ProviderReads;
-}
+import type { ChosenProvider } from "../../../shared/lib/chosen-provider.js";
+import { sizeSaid } from "./size-said.js";
 
 export interface OfferedFile {
 	readonly name: string;
@@ -27,10 +21,6 @@ export const LARGEST_IMAGE_BYTES = 10 * 1024 * 1024;
 export const LARGEST_TEXT_BYTES = 1024 * 1024;
 export const MOST_ATTACHED = 10;
 
-const READS_NOTHING: ProviderReads = {
-	images: false,
-	files: "none",
-};
 const NOT_ACCEPTED =
 	"{name} can't be attached: only images (png, jpg, gif, webp) and text files (md, txt, json, ts, tsx, js, css, html, csv) can";
 const TOO_LARGE = "{name} is {size}, over the {limit} limit for {what}";
@@ -49,14 +39,6 @@ export function kindOf(name: string): FileKind | null {
 	}
 
 	return TEXT_EXTENSIONS.includes(extension) ? "text" : null;
-}
-
-export function chosenOf(setup: Pick<AssistantSetup, "providers" | "chosen" | "providerLabel">): ChosenProvider {
-	const chosen = setup.providers.find(({ id }) => id === setup.chosen);
-	return {
-		label: chosen?.label ?? setup.providerLabel,
-		reads: chosen?.reads ?? READS_NOTHING,
-	};
 }
 
 export function refusalOfReach(kind: AttachmentKind, { label, reads }: ChosenProvider): string | null {
@@ -93,3 +75,5 @@ export function refusalOfFile(file: OfferedFile, provider: ChosenProvider): stri
 export function refusalOfCount(held: number, offered: number): string | null {
 	return held + offered > MOST_ATTACHED ? TOO_MANY.replace("{count}", String(MOST_ATTACHED)) : null;
 }
+
+export const ACCEPTED = [...Object.keys(IMAGE_TYPES), ...TEXT_EXTENSIONS].map((extension) => `.${extension}`).join(",");

@@ -13,7 +13,7 @@ import type { Held, StreamPart, ToolCall, ToolResult } from "../packages/shared/
 import type { AssistantCall } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type { RunAnswer } from "../apps/host-obsidian/src/legacy/ai/run.ts";
 import type { Build, StepStatus } from "../packages/shared/core/src/engine/assistant-cards.ts";
-import type { SaidProps } from "../packages/domain/assistant/features/chat/ui/turn/said.tsx";
+import type { SaidProps } from "../apps/studio/src/features/assistant/ui/turn/said.tsx";
 import type { Spawn, SpawnAsk } from "../apps/host-obsidian/src/legacy/ai/run.ts";
 import type { AssistantPlugin } from "../apps/host-obsidian/src/legacy/ai/assistant.ts";
 import type { AgentFilesAdapter } from "../apps/host-obsidian/src/legacy/ai/agent-files.ts";
@@ -38,18 +38,18 @@ const { layAgentFiles, TOOL_PATH, HANDBOOK, WIDGETS_DIR } =
 	await import("../apps/host-obsidian/src/legacy/ai/agent-files.js");
 const { argumentsIn, changedPathOf, glyphForTool, glyphOf, isFileChange, ourCallIn, withResult } =
 	await import("../apps/host-obsidian/src/legacy/ai/tools.js");
-const { failuresIn } = await import("../packages/domain/assistant/features/chat/lib/failures-in.ts");
+const { failuresIn } = await import("../apps/studio/src/features/assistant/lib/failures-in.ts");
 const { canRenderMarkdown } = await import("../apps/host-obsidian/src/legacy/ai/assistant-port-obsidian.js");
 const { callFaceOf } = await import("../apps/host-obsidian/src/legacy/ai/call-face.js");
 const { doingTextOf } = await import("../packages/shared/core/src/engine/assistant-port.js");
-const { settledPart } = await import("../packages/domain/assistant/features/chat/lib/settled-part.ts");
-const { Said } = await import("../packages/domain/assistant/features/chat/ui/turn/said.tsx");
+const { settledPart } = await import("../apps/studio/src/features/assistant/lib/settled-part.ts");
+const { Said } = await import("../apps/studio/src/features/assistant/ui/turn/said.tsx");
 const { saidElapsed, saidTokens, saidPhase, saidProgress } =
-	await import("../packages/domain/assistant/features/chat/lib/spent.ts");
+	await import("../apps/studio/src/features/assistant/lib/spent.ts");
 const { createElement } = await import("react");
 const { renderToStaticMarkup } = await import("react-dom/server");
 const { briefGoesInTheMessage } = await import("../apps/host-obsidian/src/legacy/ai/providers.js");
-const { sendState } = await import("../packages/domain/assistant/features/composer/lib/send-state.ts");
+const { sendState } = await import("../apps/studio/src/features/assistant/lib/send-state.ts");
 const { buildsIn, startIn } = await import("../apps/host-obsidian/src/legacy/ai/builds.js");
 
 let failed = 0;

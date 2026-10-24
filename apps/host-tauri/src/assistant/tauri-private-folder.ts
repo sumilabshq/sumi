@@ -1,8 +1,10 @@
-import type { PrivateFolder } from "@widgetarium/assistant/gateways";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import type { AssistantBridge } from "./assistant-bridge.js";
 
-export interface TauriPrivateFolder extends PrivateFolder {
+export interface TauriPrivateFolder {
+	write(path: string, data: Uint8Array): void;
+	remove(path: string): void;
+	removeOlderThan(folder: string, ageMs: number, now: number): void;
 	settled(): Promise<void>;
 }
 

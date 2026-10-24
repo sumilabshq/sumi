@@ -1,20 +1,45 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
-import { ClaudeOptionsHeld, tauriAssistantGateways } from "@widgetarium/assistant/gateways";
-import type { AssistantGateways, FolderPicker, WorkingFolderGateway } from "@widgetarium/assistant/gateways";
 import { tauriAssistantBridge } from "./assistant-bridge.js";
 import type { AssistantBridge, TauriIpc } from "./assistant-bridge.js";
 import type { LentFolders } from "./tauri-assistant-port.js";
 import { tauriAssistantPort } from "./tauri-assistant-port.js";
 import type { TauriAssistantPort } from "./tauri-assistant-port.js";
-import { TauriFileDropGateway } from "./tauri-file-drop.js";
+import { TauriFileDrops } from "./tauri-file-drop.js";
 import type { ChatSpot, WebviewDragSource } from "./tauri-file-drop.js";
 import { tauriPrivateFolder } from "./tauri-private-folder.js";
 import type { ChatsLink } from "./chat-sessions.js";
+import { claudeOptionsCell } from "./claude-options-cell.js";
+import type { ClaudeOptionsCell } from "./claude-options-cell.js";
+import type { TauriPrivateFolder } from "./tauri-private-folder.js";
+import type { WorkspaceClient } from "../workspace/workspace-client.js";
+import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
+
+export interface FolderPicker {
+	pick(): Promise<string | null>;
+	lend(paths: readonly string[]): void;
+}
+
+export interface TauriWorkspaceFolders {
+	readonly client: Pick<WorkspaceClient, "chooseFolder" | "attachFolder">;
+	readonly opened: WorkspaceEntry;
+}
+
+export type TauriAssistantHost = {
+	readonly tauriAssistant: TauriAssistantPort;
+	readonly tauriAttachments: {
+		readonly folder: string | null;
+		readonly files: TauriPrivateFolder;
+	};
+	readonly folders: FolderPicker;
+	readonly claudeOptions: ClaudeOptionsCell;
+	readonly drops: TauriFileDrops;
+	readonly workspace: TauriWorkspaceFolders;
+};
 
 export interface TauriAssistant {
 	readonly port: TauriAssistantPort;
-	readonly gateways: AssistantGateways;
+	readonly host: TauriAssistantHost;
 }
 
 const ATTACHMENTS_GLOBAL = "__WIDGETARIUM_ATTACHMENTS__";
@@ -45,7 +70,7 @@ export function attachmentsFolderIn(page: object): string | null {
 }
 
 export interface TauriAssistantAsk {
-	readonly workingFolderGateway: WorkingFolderGateway;
+	readonly workspace: TauriWorkspaceFolders;
 	readonly ipc?: TauriIpc;
 	readonly page?: object;
 	readonly chats?: ChatsLink;
@@ -54,7 +79,7 @@ export interface TauriAssistantAsk {
 }
 
 export function startTauriAssistant({
-	workingFolderGateway,
+	workspace,
 	ipc = tauriIpc,
 	page = window,
 	chats,
@@ -64,7 +89,7 @@ export function startTauriAssistant({
 	const bridge = tauriAssistantBridge(ipc);
 	const privateFolder = tauriPrivateFolder(bridge);
 	const folders = folderLending(bridge);
-	const claudeOptions = new ClaudeOptionsHeld();
+	const claudeOptions = claudeOptionsCell();
 	const port = tauriAssistantPort({
 		bridge,
 		attachments: privateFolder,
@@ -72,17 +97,19 @@ export function startTauriAssistant({
 		claude: claudeOptions,
 		...(chats === undefined ? {} : { chats }),
 	});
-	const folder = attachmentsFolderIn(page);
 	return {
 		port,
-		gateways: tauriAssistantGateways({
-			port,
-			attachments: folder === null ? null : { privateFolder, folder },
-			folderPicker: folders,
+		host: {
+			tauriAssistant: port,
+			tauriAttachments: {
+				folder: attachmentsFolderIn(page),
+				files: privateFolder,
+			},
+			folders,
 			claudeOptions,
-			workingFolderGateway,
-			fileDropGateway: new TauriFileDropGateway(drags, chat, bridge),
-		}),
+			drops: new TauriFileDrops(drags, chat, bridge),
+			workspace,
+		},
 	};
 }
 

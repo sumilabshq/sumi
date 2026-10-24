@@ -1,19 +1,9 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../packages/domain/assistant/generated/index.ts";
-import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
-import {
-	ClaudeOptionsHeld,
-	HeldClaudeOptionsGateway,
-	PickerAttachmentFolderGateway,
-	PortAssistantSessionGateway,
-	PortAssistantSetupGateway,
-	PrivateFolderAttachmentFilesGateway,
-	SystemClockGateway,
-	WorkingFolderGateway,
-	assistantPartsOf,
-} from "../packages/domain/assistant/generated/gateways.ts";
-import type { WorkingFolders } from "../packages/domain/assistant/generated/index.ts";
+import { AssistantPanel } from "../apps/studio/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
+import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type {
 	AssistantPort,
@@ -22,8 +12,7 @@ import type {
 	AssistantSetup,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
+import { MascotModule } from "../packages/domain/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 
 declare global {
@@ -105,27 +94,13 @@ const TALKED: AssistantSession = {
 	],
 };
 
-class ShownWorkingFolders extends WorkingFolderGateway {
-	folders(): Promise<WorkingFolders> {
-		return Promise.resolve({
-			workspace: "Personal",
-			current: null,
-			recent: ["/Users/me/Apps/habit-tracker", "/Users/me/Apps/recipes", "/Users/me/Apps/translator"],
-		});
-	}
-
-	watch(): () => void {
-		return () => undefined;
-	}
-
-	choose(): Promise<void> {
-		return Promise.resolve();
-	}
-
-	pickAnother(): Promise<void> {
-		return Promise.resolve();
-	}
-}
+const SHOWN_WORKSPACE = {
+	id: "personal",
+	name: "Personal",
+	folder: null,
+	folderFound: false,
+	recentFolders: ["/Users/me/Apps/habit-tracker", "/Users/me/Apps/recipes", "/Users/me/Apps/translator"],
+};
 
 function portOf(session: AssistantSession, setup: AssistantSetup): AssistantPort {
 	return {
@@ -146,68 +121,83 @@ function linesOf(count: number, bytes: number): Uint8Array {
 
 const which = location.hash.slice(1) || "empty";
 const port = portOf(which === "empty" ? EMPTY : TALKED, which === "codex" ? CODEX_SETUP : SETUP);
-const claudeOptions = new ClaudeOptionsHeld();
-claudeOptions.heardUsage({
-	fiveHour: {
-		used: USED_IN_FIVE_HOURS,
-		resetsAt: Date.now() + 2 * HOUR_MS,
-	},
-	week: {
-		used: USED_THIS_WEEK,
-		resetsAt: Date.now() + 100 * HOUR_MS,
+const claudeOptions = claudeOptionsCell({
+	...DEFAULT_CLAUDE_OPTIONS,
+	usage: {
+		fiveHour: {
+			used: USED_IN_FIVE_HOURS,
+			resetsAt: Date.now() + 2 * HOUR_MS,
+		},
+		week: {
+			used: USED_THIS_WEEK,
+			resetsAt: Date.now() + 100 * HOUR_MS,
+		},
 	},
 });
-const parts = assistantPartsOf({
-	assistantSessionGateway: new PortAssistantSessionGateway(port),
-	assistantSetupGateway: new PortAssistantSetupGateway(port),
-	attachmentFilesGateway: new PrivateFolderAttachmentFilesGateway(memoryFolder(), "/attachments"),
-	clockGateway: new SystemClockGateway(),
-	attachmentFolderGateway: new PickerAttachmentFolderGateway({
+const parts = tauriAssistantParts({
+	kind: "tauri",
+	tauriAssistant: port,
+	tauriAttachments: {
+		folder: "/attachments",
+		files: memoryFolder(),
+	},
+	folders: {
 		pick: async () => "/Users/me/Apps/habit-tracker",
 		lend: () => undefined,
-	}),
-	claudeOptionsGateway: new HeldClaudeOptionsGateway(claudeOptions),
-	workingFolderGateway: new ShownWorkingFolders(),
+	},
+	claudeOptions,
+	drops: {
+		fileDragged: () => () => undefined,
+	},
+	workspace: {
+		client: {
+			chooseFolder: async () => SHOWN_WORKSPACE,
+			attachFolder: async () => null,
+		},
+		opened: SHOWN_WORKSPACE,
+	},
 });
 
 if (which === "attach") {
-	parts.draftAttachmentsStore.change(
-		[
-			{
-				id: "folder",
-				name: "habit-tracker",
-				kind: "folder",
-				mime: "inode/directory",
-				bytes: new Uint8Array(),
-				preview: null,
-				path: "/Users/me/Apps/habit-tracker",
-			},
-			{
-				id: "image",
-				name: "browser.png",
-				kind: "image",
-				mime: "image/png",
-				bytes: new Uint8Array(8),
-				preview: PIXEL,
-				path: null,
-			},
-			{
-				id: "text",
-				name: "habits-spec.md",
-				kind: "text",
-				mime: "text/plain",
-				bytes: linesOf(SPEC_LINES, SPEC_BYTES),
-				preview: null,
-				path: null,
-			},
-		],
-		"the composer page shows a folder, an image and a text file",
-	);
+	parts.draftAttachments.saveDraftAttachments([
+		{
+			id: "folder",
+			name: "habit-tracker",
+			kind: "folder",
+			mime: "inode/directory",
+			bytes: new Uint8Array(),
+			preview: null,
+			path: "/Users/me/Apps/habit-tracker",
+		},
+		{
+			id: "image",
+			name: "browser.png",
+			kind: "image",
+			mime: "image/png",
+			bytes: new Uint8Array(8),
+			preview: PIXEL,
+			path: null,
+		},
+		{
+			id: "text",
+			name: "habits-spec.md",
+			kind: "text",
+			mime: "text/plain",
+			bytes: linesOf(SPEC_LINES, SPEC_BYTES),
+			preview: null,
+			path: null,
+		},
+	]);
 }
 
-const chat = app({
-	modules: [MascotClientModule.with(memoryMascotParts()), AssistantClientModule.with(parts)],
-});
+const chat = app()
+	.modules(MascotModule, AssistantModule.with(parts))
+	.start({
+		platform: "browser",
+		scope: {
+			workspaceId: "chat-composer",
+		},
+	});
 const holder = document.getElementById("chat");
 
 if (!holder) {

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import http from "node:http";
-import { agentEventsBetween } from "../packages/domain/assistant/features/chat/lib/agent-activity.ts";
-import type { ChatMoment } from "../packages/domain/assistant/features/chat/lib/agent-activity.ts";
+import { agentEventsBetween } from "../apps/studio/src/features/assistant/lib/agent-activity.ts";
+import type { ChatMoment } from "../apps/studio/src/features/assistant/lib/agent-activity.ts";
 import {
 	ASLEEP_AFTER_MS,
 	DONE_HELD_MS,
@@ -10,18 +10,19 @@ import {
 	SURPRISE_HELD_MS,
 	mascotStateOf,
 	nextDecisionAt,
-} from "../packages/client/mascot/features/activity/lib/mascot-state.ts";
-import type { MascotTouch } from "../packages/client/mascot/features/activity/lib/mascot-state.ts";
-import {
-	MemoryAgentActivityStore,
-	NO_AGENT_ACTIVITY,
-} from "../packages/client/mascot/shared/lib/agent-activity-store.ts";
-import { bodyPoseOf, lookTargetOf, springStep } from "../packages/client/mascot/shared/lib/mascot-motion.ts";
-import { OUTFITS, sceneOf } from "../packages/client/mascot/shared/lib/wardrobe/outfits.ts";
-import { OutfitIdSchema } from "../packages/client/mascot/shared/schema/outfit.schema.ts";
-import type { Spring } from "../packages/client/mascot/shared/lib/mascot-motion.ts";
-import type { AgentEvent } from "../packages/client/mascot/shared/schema/agent-activity.schema.ts";
-import type { MascotState } from "../packages/client/mascot/shared/schema/mascot-state.schema.ts";
+} from "../apps/studio/src/features/mascot/lib/mascot-state.ts";
+import type { MascotTouch } from "../apps/studio/src/features/mascot/lib/mascot-state.ts";
+import { bodyPoseOf, lookTargetOf, springStep } from "../apps/studio/src/features/mascot/lib/mascot-motion.ts";
+import type { Spring } from "../apps/studio/src/features/mascot/lib/mascot-motion.ts";
+import { OUTFITS, sceneOf } from "../apps/studio/src/features/mascot/lib/wardrobe/outfits.ts";
+import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
+import type { MascotState } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
+import { activityAfter } from "../packages/domain/mascot/features/activity/lib/activity-after.ts";
+import { MemoryAgentActivityGateway } from "../packages/domain/mascot/gateways/agent-activity/memory.gateway.ts";
+import { AgentActivityQuery, AgentActivitySchema, RecordAgentEventsCommand } from "../packages/domain/mascot/index.ts";
+import type { AgentActivity, AgentEvent } from "../packages/domain/mascot/index.ts";
+import { MascotModule } from "../packages/domain/mascot/module.ts";
+import { app } from "../packages/shared/core/src/requests/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
@@ -39,6 +40,7 @@ function check(what: string, got: unknown, want: unknown): void {
 }
 
 const T0 = 1_000_000;
+const NO_AGENT_ACTIVITY: AgentActivity = AgentActivitySchema.parse({});
 const AWAKE: MascotTouch = { isHovered: false, pokedAt: -Infinity, wokeAt: T0 };
 
 function stateAfter(steps: readonly (readonly [AgentEvent, number])[], at: number, touch = AWAKE): MascotState {
@@ -52,12 +54,8 @@ function stateAfter(steps: readonly (readonly [AgentEvent, number])[], at: numbe
 		[T0 + ASLEEP_AFTER_MS, T0 + DONE_HELD_MS, null],
 	);
 
-	const store = new MemoryAgentActivityStore();
-	for (const [event, eventAt] of steps) {
-		store.record([event], eventAt);
-	}
-
-	return mascotStateOf(store.now(), at, touch);
+	const activity = steps.reduce((was, [event, eventAt]) => activityAfter(was, [event], eventAt), NO_AGENT_ACTIVITY);
+	return mascotStateOf(activity, at, touch);
 }
 
 const quietly = console.debug;
@@ -136,13 +134,38 @@ check(
 	["surprised", "idle"],
 );
 
-const store = new MemoryAgentActivityStore();
+const mascotApp = app()
+	.modules(MascotModule)
+	.start({
+		platform: "browser",
+		scope: {
+			workspaceId: "mascot-test",
+		},
+	});
+await mascotApp.send(RecordAgentEventsCommand, {
+	events: ["sent", "toolStarted", "toolStarted", "toolFinished"],
+});
+const midRun = await mascotApp.send(AgentActivityQuery);
+await mascotApp.send(RecordAgentEventsCommand, {
+	events: ["runFinished"],
+});
+const afterRun = await mascotApp.send(AgentActivityQuery);
+check(
+	"the module counts tools through a run and ends it on runFinished",
+	[
+		midRun.ok && midRun.output.toolsRunning,
+		afterRun.ok && afterRun.output.isRunning,
+		afterRun.ok && afterRun.output.toolsRunning,
+	],
+	[1, false, 0],
+);
+const kept = new MemoryAgentActivityGateway();
 let told = 0;
-const stopWatching = store.watch(() => (told += 1));
-store.record(["sent", "toolStarted", "toolStarted", "toolFinished"], T0);
+const stopWatching = kept.agentActivityChanged(() => (told += 1));
+kept.saveAgentActivity(activityAfter(NO_AGENT_ACTIVITY, ["sent"], T0));
 stopWatching();
-store.record(["runFinished"], T0 + 1);
-check("tools are counted, and a watcher is told once per record", [store.now().toolsRunning, told], [0, 1]);
+kept.saveAgentActivity(activityAfter(NO_AGENT_ACTIVITY, ["runFinished"], T0 + 1));
+check("a watcher of the gateway is told once per save, and not after it stops", told, 1);
 console.debug = quietly;
 
 const calm: ChatMoment = { isBusy: false, failure: null, calls: new Map(), isAsking: false };

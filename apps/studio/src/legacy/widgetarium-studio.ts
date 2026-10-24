@@ -4,7 +4,6 @@ import { ModuleRegistry } from "@widgetarium/core/engine/module-registry.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
-import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
 import type { CataloguePort } from "@widgetarium/core/engine/catalogue-port.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StudioPanel, StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
@@ -12,17 +11,12 @@ import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.j
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import { memoryMascotParts } from "@widgetarium/mascot/gateways";
-import type { MascotParts } from "@widgetarium/mascot/gateways";
-import { webAssistantGateways } from "@widgetarium/assistant/gateways";
-import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import type { StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
 import { chatAppOf } from "../assistant/chat-app.js";
+import type { AssistantHostObjects } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
-import { startWorkspacesApp } from "../chats-column/workspaces-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
-import { withChatComposer } from "../browser/chat-app-composer.gateway.js";
 import { AppPlate } from "../frame/app-plate.js";
 import { ChatPlate } from "../frame/chat-plate.js";
 import { EmptyPanes } from "../frame/empty-panes.js";
@@ -34,12 +28,9 @@ import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { StudioShellBoard } from "./studio-shell-board.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import type { AppHostParts } from "@widgetarium/app-host/gateways";
-import { startLayoutApp } from "../tabs/layout-app.js";
-import { startedAppHostParts } from "../tabs/studio-app-host.js";
+import { startStudioApp } from "../tabs/studio-app.js";
 import { TabsSidebarColumn } from "../tabs/tabs-sidebar-column.js";
-import { webBrowserParts } from "@widgetarium/browser/gateways";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
+import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
@@ -56,9 +47,8 @@ export interface StartedStudio {
 	readonly state: StudioState;
 	readonly design: StudioDesign;
 	readonly chatApp: StartedApp;
-	readonly browser: BrowserParts;
-	readonly appHost: AppHostParts;
-	readonly layoutApp: StartedApp;
+	readonly browser: StudioBrowser;
+	readonly studioApp: StartedApp;
 	readonly chatsColumn: ChatsColumnApp;
 }
 
@@ -69,13 +59,8 @@ export interface StudioStart extends ProjectStart {
 	readonly appId?: string;
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
-	readonly mascot?: MascotParts;
-	readonly assistantGateways?: AssistantGateways;
-	readonly browser?: BrowserParts;
-	readonly appHost?: AppHostParts;
-	readonly activeChat?: ActiveChatPort;
-	readonly layoutApp?: StartedApp;
-	readonly workspacesApp?: StartedApp;
+	readonly assistantHost?: AssistantHostObjects;
+	readonly studioApp?: StartedApp;
 }
 
 export interface WidgetariumStudioProps {
@@ -83,15 +68,6 @@ export interface WidgetariumStudioProps {
 }
 
 type LentPort = "appId" | "studio" | "assistant" | "catalogue" | "design";
-
-interface TabsAsk {
-	readonly state: StudioState;
-	readonly browser: BrowserParts;
-	readonly appId: string;
-	readonly appName: string;
-	readonly studio: StudioHostPort;
-	readonly layoutApp: StartedApp;
-}
 
 interface StudioScreen {
 	readonly frame: RefObject<HTMLDivElement | null>;
@@ -110,15 +86,14 @@ export function startStudio(project: WidgetariumProject, start: StudioStart = {}
 
 export function startOpenedStudio(opened: OpenedApp, start: StudioStart): StartedStudio {
 	const project = startOpenedProject(opened, start);
-	const state = start.state ?? createStudioState();
-	const chat = startedChatOf(start, state);
 	const lent = lentPortsOf(opened, start);
-	const layoutApp = start.layoutApp ?? startLayoutApp({ platform: "browser", workspaceId: lent.appId });
+	const studioApp = start.studioApp ?? startStudioApp({ platform: "browser", workspaceId: lent.appId });
+	const state = start.state ?? createStudioState(studioApp);
 	return {
-		...chat,
+		...startedChatOf(start, state, lent.appId, studioApp),
 		...lent,
-		...startedTabsOf(start, { ...lent, state, browser: chat.browser, appName: opened.app.name, layoutApp }),
-		layoutApp,
+		chatsColumn: createChatsColumnApp(studioApp),
+		studioApp,
 		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		project,
 		state,
@@ -140,7 +115,7 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElement {
 	return h(StudioLayout, {
 		frame: screen.frame,
-		layoutApp: started.layoutApp,
+		layoutApp: started.studioApp,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
@@ -148,7 +123,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 			empty: h(EmptyPanes),
 		},
 		panel: cataloguePanelOf(started, screen),
-		right: h(TabsSidebarColumn, { hostParts: started.appHost }),
+		right: h(TabsSidebarColumn),
 	});
 }
 
@@ -163,7 +138,6 @@ function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): R
 
 	return h(PaneAppPlate, {
 		tabId: view.tabId,
-		appHost: started.appHost,
 		browser: started.browser,
 		design: started.design,
 		project: started.project,
@@ -191,7 +165,6 @@ function appPlateOf(started: StartedStudio, { pathname, view, backToView }: Stud
 		view,
 		design: started.design,
 		browser: started.browser,
-		hostTabs: started.appHost.hostTabs,
 		workspaces: started.chatsColumn.workspaces,
 		backToView,
 	});
@@ -206,15 +179,24 @@ function cataloguePanelOf(started: StartedStudio, { panel, host, catalogueAsk }:
 	return h(StudioSidebar, { catalogue, host, catalogueAsk, onClose: () => state.closePanel("catalogue") });
 }
 
-function startedChatOf(start: StudioStart, state: StudioState): Pick<StartedStudio, "chatApp" | "browser"> {
+function startedChatOf(
+	start: StudioStart,
+	state: StudioState,
+	workspaceId: string,
+	studioApp: StartedApp,
+): Pick<StartedStudio, "chatApp" | "browser"> {
 	const chatApp = chatAppOf({
 		state,
-		mascot: start.mascot ?? memoryMascotParts(),
-		gateways: start.assistantGateways ?? webAssistantGateways(start.assistant),
+		platform: "browser",
+		workspaceId,
+		host: start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT },
 	});
 	return {
 		chatApp,
-		browser: withChatComposer(start.browser ?? webBrowserParts(), chatApp),
+		browser: {
+			browserApp: studioApp,
+			chatApp,
+		},
 	};
 }
 
@@ -225,21 +207,5 @@ function lentPortsOf(opened: OpenedApp, start: StudioStart): Pick<StartedStudio,
 		assistant: start.assistant ?? NO_ASSISTANT,
 		catalogue: start.catalogue ?? browserCataloguePort(opened.registry),
 		design: start.design ?? webStudioDesign(opened.app.name),
-	};
-}
-
-function startedTabsOf(start: StudioStart, tabs: TabsAsk): Pick<StartedStudio, "appHost" | "chatsColumn"> {
-	const { state, browser, studio } = tabs;
-	const chatsColumn = createChatsColumnApp(
-		start.workspacesApp ?? startWorkspacesApp({ platform: "browser", workspaceId: tabs.appName }),
-	);
-	const kept = {
-		activeChat: start.activeChat ?? chatsColumn.activeChat,
-	};
-	return {
-		chatsColumn,
-		appHost:
-			start.appHost ??
-			startedAppHostParts({ state, browser, layoutApp: tabs.layoutApp, workspace: tabs.appId, studio, kept }),
 	};
 }

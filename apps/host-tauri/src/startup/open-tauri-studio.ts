@@ -1,34 +1,18 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import {
-	activeChatPortOf,
-	createStudioState,
-	startLayoutApp,
-	startStudio,
-	startWorkspacesApp,
-	startedAppHostParts,
-} from "@widgetarium/studio";
+import { startStudio, startStudioApp } from "@widgetarium/studio";
 import type { StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
-import { startTauriBrowser } from "../browser/tauri-browser.js";
 import { readChatLogs } from "../chat/tauri-chat-history.js";
 import type { TauriChatLogs } from "../chat/tauri-chat-history.js";
-import { DEFAULT_PROFILE, readProfile } from "../profile/profile-docs.js";
-import type { TauriProfile } from "../profile/profile-docs.js";
-import { tauriProfileGateways } from "../profile/tauri-profile-gateways.js";
-import { TauriEssentialsGateway, readEssentials } from "../session/tauri-essentials.js";
-import type { HeldEssentials } from "../session/tauri-essentials.js";
-import { TauriTabsColumnGateway, TauriTabsSessionGateway, readSession } from "../session/tauri-session.js";
-import type { HeldSession } from "../session/tauri-session.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { tauriStudioHost } from "../tauri-studio-host.js";
-import { TauriWorkingFolderGateway } from "../workspace/tauri-working-folder.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
 import { reopensOnWorkspaceSwitch } from "../workspace/workspace-switch.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
@@ -42,17 +26,14 @@ export interface StudioOpening {
 	readonly workspace: WorkspaceEntry;
 }
 
-type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantGateways" | "workspacesApp">;
+type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp">;
 
 interface StartedParts {
-	readonly workspacesApp: StartedApp;
+	readonly studioApp: StartedApp;
 	readonly assistant: TauriAssistant;
 }
 
 interface HeldWorkspaceDocs {
-	readonly session: HeldSession;
-	readonly essentials: HeldEssentials;
-	readonly profile: TauriProfile;
 	readonly logs: TauriChatLogs;
 }
 
@@ -68,17 +49,20 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	setTracing(opening.settings.now().trace);
 	const docs = await readWorkspaceDocs(opening);
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
-	const workspacesApp = startWorkspacesApp({ platform: "tauri", workspaceId: opening.workspace.id });
-	reopensOnWorkspaceSwitch(workspacesApp, opening.workspace.id, () => reopenWindow(docs));
+	const studioApp = startStudioApp({ platform: "tauri", workspaceId: opening.workspace.id });
+	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () => reopenWindow(docs));
 	const assistant = startTauriAssistant({
-		workingFolderGateway: new TauriWorkingFolderGateway(opening.workspaces, opening.workspace),
+		workspace: {
+			client: opening.workspaces,
+			opened: opening.workspace,
+		},
 		chats: {
-			...chatSessionLinkOf(workspacesApp),
+			...chatSessionLinkOf(studioApp),
 			historyOf: docs.logs.historyOf,
 		},
 	});
 	await assistant.port.shownRead();
-	return startedStudioOf(opening, docs, { workspacesApp, assistant });
+	return startedStudioOf(opening, { studioApp, assistant });
 }
 
 async function reopenWindow(docs: WorkspaceDocs): Promise<void> {
@@ -97,34 +81,18 @@ async function readWorkspaceDocs(opening: StudioOpening): Promise<WorkspaceDocs>
 }
 
 function flushedDocsOf(settings: HeldSettings, docs: HeldWorkspaceDocs): readonly Flushed[] {
-	const { session, essentials, profile, logs } = docs;
-	return [settings, session, essentials, profile.grants, profile.recentSites, logs.sessions];
+	return [settings, docs.logs.sessions];
 }
 
 async function readHeldDocs({ store, workspace }: StudioOpening): Promise<HeldWorkspaceDocs> {
-	const [session, essentials, profile, logs] = await Promise.all([
-		readSession(store, workspace.id),
-		readEssentials(store),
-		readProfile(store, DEFAULT_PROFILE),
-		readChatLogs(store, workspace.id),
-	]);
-	return { session, essentials, profile, logs };
+	return { logs: await readChatLogs(store, workspace.id) };
 }
 
-function startedStudioOf(opening: StudioOpening, docs: WorkspaceDocs, started: StartedParts): StartedStudio {
-	const studio = studioHostOf(opening, started.workspacesApp);
-	const state = createStudioState();
-	const browser = startTauriBrowser(tauriProfileGateways(docs.profile));
-	const layoutApp = startLayoutApp({ platform: "tauri", workspaceId: opening.workspace.id });
-	const kept = keptGatewaysOf(docs, started.workspacesApp);
+function startedStudioOf(opening: StudioOpening, started: StartedParts): StartedStudio {
 	return startStudio(opening.project, {
 		appId: opening.workspace.id,
-		studio,
-		state,
-		layoutApp,
-		browser,
+		studio: studioHostOf(opening, started.studioApp),
 		...startedPartsFieldsOf(started),
-		appHost: startedAppHostParts({ state, browser, layoutApp, workspace: opening.workspace.id, studio, kept }),
 	});
 }
 
@@ -132,19 +100,10 @@ function studioHostOf({ project, workspaces }: StudioOpening, workspacesApp: Sta
 	return tauriStudioHost(project, tauriWorkspaceApps({ workspaces, workspacesApp }));
 }
 
-function keptGatewaysOf(docs: WorkspaceDocs, workspacesApp: StartedApp) {
-	return {
-		tabsSessionGateway: new TauriTabsSessionGateway(docs.session),
-		tabsColumnGateway: new TauriTabsColumnGateway(docs.session),
-		essentialsGateway: new TauriEssentialsGateway(docs.essentials),
-		activeChat: activeChatPortOf(workspacesApp),
-	};
-}
-
-function startedPartsFieldsOf({ assistant, workspacesApp }: StartedParts): StudioStartedFields {
+function startedPartsFieldsOf({ assistant, studioApp }: StartedParts): StudioStartedFields {
 	return {
 		assistant: assistant.port,
-		assistantGateways: assistant.gateways,
-		workspacesApp,
+		assistantHost: assistant.host,
+		studioApp,
 	};
 }

@@ -1,7 +1,4 @@
 import type { App, TFile, WorkspaceLeaf } from "obsidian";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
-import type { AssistantGateways } from "@widgetarium/assistant/gateways";
-import type { AppHostParts } from "@widgetarium/app-host/gateways";
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
@@ -10,14 +7,8 @@ import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.js";
 import { hostOverRouter } from "@widgetarium/core/app";
 import type { StartedApp } from "@widgetarium/core/requests";
-import {
-	WidgetariumStudio,
-	createStudioState,
-	startLayoutApp,
-	startOpenedStudio,
-	startedAppHostParts,
-} from "@widgetarium/studio";
-import type { StartedStudio, StudioDesign, StudioState } from "@widgetarium/studio";
+import { WidgetariumStudio, createStudioState, startOpenedStudio, startStudioApp } from "@widgetarium/studio";
+import type { StartedStudio, StudioDesign, StudioStart, StudioState } from "@widgetarium/studio";
 import type { AppOpening, AppProjects } from "./app-projects.js";
 import { refusalOf, reportNotDrawn, reportRefused } from "./app-refusal.js";
 import { obsidianStudioHost } from "./studio-host-obsidian.js";
@@ -30,8 +21,7 @@ export interface StudioPlace {
 	readonly projects: AppProjects;
 	readonly viewType: string;
 	readonly assistant: AssistantPort;
-	readonly assistantGateways: AssistantGateways;
-	readonly browser: BrowserParts;
+	readonly assistantHost: NonNullable<StudioStart["assistantHost"]>;
 	hostOf(notePath: string): SurfaceHost;
 	designFor(app: string, leaf: WorkspaceLeaf): Promise<StudioDesign>;
 	openAsMarkdown(leaf: WorkspaceLeaf, file: TFile): Promise<void>;
@@ -52,8 +42,7 @@ interface StudioDrawing {
 	readonly note: StudioNote;
 	readonly studio: StudioHostPort;
 	readonly state: StudioState;
-	readonly appHost: AppHostParts;
-	readonly layoutApp: StartedApp;
+	readonly studioApp: StartedApp;
 	readonly routing: StudioRouting;
 }
 
@@ -72,13 +61,12 @@ export function drawStudio(place: StudioPlace, shown: ShownNote, routing: Studio
 		return () => undefined;
 	}
 	const studio = obsidianStudioHost({ app: place.app, leaf: shown.leaf, frame: shown.frame, viewType: place.viewType });
-	const state = createStudioState();
-	const layoutApp = startLayoutApp({ platform: "browser", workspaceId: note.folder });
-	const appHost = startedAppHostParts({ state, browser: place.browser, layoutApp, workspace: note.folder, studio });
-	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, appHost, layoutApp, routing });
+	const studioApp = startStudioApp({ platform: "browser", workspaceId: note.folder });
+	const state = createStudioState(studioApp);
+	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, studioApp, routing });
 	return () => {
 		stopDrawing();
-		appHost.pageFactsGateway.stop();
+		studioApp.stop();
 	};
 }
 
@@ -114,7 +102,7 @@ async function openingElementOf(drawing: StudioDrawing, opening: AppOpening): Pr
 }
 
 function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: StudioDesign): StartedStudio {
-	const { place, shown, note, studio, state, appHost, layoutApp } = drawing;
+	const { place, shown, note, studio, state, studioApp } = drawing;
 	const notePath = shown.file.path;
 	const router = drawing.routing.routerFor(note, opening.routes);
 	const hostOf = hostOverRouter(() => place.hostOf(notePath), router);
@@ -126,10 +114,8 @@ function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: Stu
 			studio,
 			state,
 			assistant: place.assistant,
-			assistantGateways: place.assistantGateways,
-			browser: place.browser,
-			appHost,
-			layoutApp,
+			assistantHost: place.assistantHost,
+			studioApp,
 			appId: note.folder,
 			design,
 		},

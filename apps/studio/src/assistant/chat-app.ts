@@ -1,25 +1,30 @@
-import { AssistantClientModule } from "@widgetarium/assistant/module";
-import { assistantPartsOf } from "@widgetarium/assistant/gateways";
-import type { AssistantGateways } from "@widgetarium/assistant/gateways";
+import { AssistantModule } from "@widgetarium/assistant/module";
 import type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 import { app } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
-import { MascotClientModule } from "@widgetarium/mascot/module";
-import type { MascotParts } from "@widgetarium/mascot/gateways";
+import type { Platform, PlatformModule, StartedApp } from "@widgetarium/core/requests";
+import { MascotModule } from "@widgetarium/mascot/module";
+
+export type AssistantHostObjects =
+	typeof AssistantModule extends PlatformModule<infer _Parts, infer _Runs, infer Lent> ? Lent : never;
 
 export interface ChatAppAsk {
 	readonly state: StudioState;
-	readonly mascot: MascotParts;
-	readonly gateways: AssistantGateways;
+	readonly platform: Platform;
+	readonly workspaceId: string;
+	readonly host: AssistantHostObjects;
 }
 
 // TRADE-OFF: kept by studio state, because the band's widgets draw in their own roots where no AppProvider reaches
 const CHAT_APPS = new WeakMap<StudioState, StartedApp>();
 
-export function chatAppOf({ state, mascot, gateways }: ChatAppAsk): StartedApp {
-	const chatApp = app()
-		.modules(MascotClientModule.with(mascot), AssistantClientModule.with(assistantPartsOf(gateways)))
-		.start();
+export function chatAppOf({ state, platform, workspaceId, host }: ChatAppAsk): StartedApp {
+	const chatApp = app().modules(MascotModule, AssistantModule).start({
+		platform,
+		scope: {
+			workspaceId,
+		},
+		host,
+	});
 	CHAT_APPS.set(state, chatApp);
 	return chatApp;
 }

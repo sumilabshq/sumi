@@ -13,9 +13,12 @@ import type {
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import {
 	AttachFilesCommand,
+	ChooseClaudeOptionCommand,
+	PickWorkingFolderCommand,
+	WorkingFoldersQuery,
 	AttachFolderCommand,
 	AttachReachQuery,
 	ChatQuery,
@@ -29,23 +32,24 @@ import {
 	SweepAttachmentsCommand,
 	CompactChatCommand,
 	SlashCommandsQuery,
-} from "../packages/domain/assistant/generated/index.ts";
-import { slashMatchesOf } from "../packages/domain/assistant/features/composer/lib/slash-matches.ts";
-import {
-	AssistantSessionGateway,
-	AssistantSetupGateway,
-	ClockGateway,
-	PrivateFolderAttachmentFilesGateway,
-	assistantPartsOf,
-	webAssistantGateways,
-} from "../packages/domain/assistant/generated/gateways.ts";
+} from "../packages/domain/assistant/index.ts";
+import { slashMatchesOf } from "../apps/studio/src/features/assistant/lib/slash-matches.ts";
+import { AssistantSessionGateway } from "../packages/domain/assistant/gateways/assistant-session/assistant-session.gateway.ts";
+import { AssistantSetupGateway } from "../packages/domain/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
+import { PrivateFolderAttachmentFilesGateway } from "../packages/domain/assistant/gateways/attachment-files/private-folder.gateway.ts";
+import { CellClaudeOptionsGateway } from "../packages/domain/assistant/gateways/claude-options/cell.gateway.ts";
+import { ClockGateway } from "../packages/domain/assistant/gateways/clock/clock.gateway.ts";
+import { ClientWorkingFoldersGateway } from "../packages/domain/assistant/gateways/working-folders/client.gateway.ts";
+import { portAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
+import type { AssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
+import type { WorkspaceFolder } from "../packages/domain/assistant/shared/host/workspace-folders.host.ts";
+import { isSameDrafts } from "../packages/domain/assistant/features/composer/lib/drafts.ts";
 import { withStarter } from "../packages/domain/assistant/features/composer/lib/starter-said.ts";
 import { shortPathOf } from "../packages/domain/assistant/shared/lib/short-path.ts";
-import type { AssistantParts } from "../packages/domain/assistant/generated/gateways.ts";
-import { MemoryDraftAttachmentsStore } from "../packages/domain/assistant/shared/lib/draft-attachments-store.ts";
-import { MemorySentAttachmentsStore } from "../packages/domain/assistant/shared/lib/sent-attachments-store.ts";
 import { attachmentsIn, withAttachments } from "../packages/domain/assistant/shared/lib/attachment-trailer.ts";
-import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/shared/lib/attachment-sweep.ts";
+import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/lib/attachment-sweep.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
 import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
 import { readsOf, PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
 import { expandArgs } from "../apps/host-obsidian/src/legacy/ai/command.ts";
@@ -100,7 +104,7 @@ class FakeSessionGateway extends AssistantSessionGateway {
 		};
 	}
 
-	watch(changed: () => void): () => void {
+	sessionChanged(changed: () => void): () => void {
 		this.watchers.add(changed);
 		return () => void this.watchers.delete(changed);
 	}
@@ -109,7 +113,7 @@ class FakeSessionGateway extends AssistantSessionGateway {
 		return NO_CHAT_CARDS;
 	}
 
-	describeCall(call: AssistantCall): CallFace {
+	faceOf(call: AssistantCall): CallFace {
 		return {
 			kind: "other",
 			glyph: "widget",
@@ -172,7 +176,7 @@ class FakeSetupGateway extends AssistantSetupGateway {
 		};
 	}
 
-	watch(): () => void {
+	setupChanged(): () => void {
 		return () => undefined;
 	}
 
@@ -206,23 +210,46 @@ function benchWith(reads: ProviderReads): Bench {
 	const session = new FakeSessionGateway();
 	const setup = new FakeSetupGateway(reads);
 	const clock = new FakeClock();
-	const parts = assistantPartsOf({
-		assistantSessionGateway: session,
-		assistantSetupGateway: setup,
-		attachmentFilesGateway: new PrivateFolderAttachmentFilesGateway(
-			new PrivateFiles(fs, process.getuid?.() ?? null),
-			folder,
-		),
-		clockGateway: clock,
-	});
+	const files = new PrivateFolderAttachmentFilesGateway(new PrivateFiles(fs, process.getuid?.() ?? null), folder);
+	const parts: AssistantParts = {
+		...portAssistantParts(NO_ASSISTANT, files),
+		assistantSession: session,
+		assistantSetup: setup,
+		clock,
+	};
 	return {
-		chat: app({ modules: [AssistantClientModule.with(parts)] }),
+		chat: chatOver(parts),
 		parts,
 		session,
 		setup,
 		clock,
 		folder,
 	};
+}
+
+function chatOver(parts: AssistantParts): StartedApp {
+	return app()
+		.modules(AssistantModule.with(parts))
+		.start({
+			platform: "browser",
+			scope: {
+				workspaceId: "assistant-test",
+			},
+		});
+}
+
+function webChatApp(): StartedApp {
+	return app()
+		.modules(AssistantModule)
+		.start({
+			platform: "browser",
+			scope: {
+				workspaceId: "assistant-web",
+			},
+			host: {
+				webAssistant: NO_ASSISTANT,
+			},
+		});
 }
 
 function fileOf(name: string, data: Uint8Array<ArrayBuffer> | string): File {
@@ -233,9 +260,6 @@ function reasonOf(answer: { readonly ok: boolean; readonly reason?: string }): s
 	return answer.ok ? null : (answer.reason ?? "");
 }
 
-const draftLog: string[] = [];
-const drafts = new MemoryDraftAttachmentsStore();
-drafts.watch(() => draftLog.push("changed"));
 const draft = {
 	id: "a",
 	name: "a.png",
@@ -245,17 +269,11 @@ const draft = {
 	preview: null,
 	path: null,
 } as const;
-drafts.change([draft], "attached a.png");
-drafts.change([draft], "attached a.png again");
-check("the draft store's writer tells its watchers once and exits early on an unchanged list", draftLog, ["changed"]);
-drafts.change([], "sent");
-check("and clearing it tells them again", [draftLog.length, drafts.now().length], [2, 0]);
-
-const sentLog: string[] = [];
-const sentStore = new MemorySentAttachmentsStore();
-sentStore.watch(() => sentLog.push("changed"));
-sentStore.change(sentStore.now(), "nothing");
-check("the sent store exits early when nothing changed", sentLog, []);
+check(
+	"a draft list holding the same drafts is the same, so its writer skips the write",
+	[isSameDrafts([draft], [draft]), isSameDrafts([draft], [])],
+	[true, false],
+);
 
 const roundTrip = attachmentsIn(
 	withAttachments("Look at these", [
@@ -307,7 +325,7 @@ check(
 );
 check(
 	"a refused drop attaches nothing",
-	(await claude.chat.send(DraftAttachmentsQuery)).ok && claude.parts.draftAttachmentsStore.now().length,
+	(await claude.chat.send(DraftAttachmentsQuery)).ok && claude.parts.draftAttachments.draftAttachments().length,
 	0,
 );
 
@@ -334,7 +352,7 @@ check(
 
 await claude.chat.send(SendMessageCommand, { said: "What is on the screen?" });
 
-const webChat = app({ modules: [AssistantClientModule.with(assistantPartsOf(webAssistantGateways()))] });
+const webChat = webChatApp();
 const webReach = await webChat.send(AttachReachQuery);
 check("the web host offers no folder to attach", webReach.ok ? webReach.output.canAttachFolders : null, false);
 check(
@@ -383,7 +401,7 @@ check(
 	written.map((at) => (statSync(at).mode & 0o777).toString(8)),
 	["600", "600"],
 );
-check("sending clears the draft", claude.parts.draftAttachmentsStore.now().length, 0);
+check("sending clears the draft", claude.parts.draftAttachments.draftAttachments().length, 0);
 const shownChat = await claude.chat.send(ChatQuery);
 check(
 	"the sent message shows its words without the trailer, and its attachments as chips with the image's thumbnail",
@@ -419,7 +437,10 @@ check(
 );
 check(
 	"and forgets them, keeping the thumbnails",
-	[claude.parts.sentAttachmentsStore.now().onDisk.length, claude.parts.sentAttachmentsStore.now().previews.size],
+	[
+		claude.parts.sentAttachments.sentAttachments().onDisk.length,
+		claude.parts.sentAttachments.sentAttachments().previews.size,
+	],
 	[0, 1],
 );
 
@@ -433,12 +454,12 @@ check("a file kept an hour is swept even while the turn runs", existsSync(again)
 claude.session.busy = false;
 
 await claude.chat.send(AttachFilesCommand, { files: [fileOf("kept.md", "kept")] });
-const draftId = claude.parts.draftAttachmentsStore.now()[0]?.id ?? "";
+const draftId = claude.parts.draftAttachments.draftAttachments()[0]?.id ?? "";
 check(
 	"removing a chip takes it off the draft",
 	[
 		(await claude.chat.send(RemoveAttachmentCommand, { id: draftId })).ok,
-		claude.parts.draftAttachmentsStore.now().length,
+		claude.parts.draftAttachments.draftAttachments().length,
 	],
 	[true, 0],
 );
@@ -456,7 +477,11 @@ claude.session.refusesWith = "The assistant is still answering";
 const refusedSend = await claude.chat.send(SendMessageCommand, { said: "now" });
 check(
 	"a send the session refuses keeps the draft and leaves no file behind",
-	[reasonOf(refusedSend), claude.parts.draftAttachmentsStore.now().length, fs.readdirSync(claude.folder).length],
+	[
+		reasonOf(refusedSend),
+		claude.parts.draftAttachments.draftAttachments().length,
+		fs.readdirSync(claude.folder).length,
+	],
 	["The assistant is still answering", 1, 0],
 );
 claude.session.refusesWith = null;
@@ -528,7 +553,7 @@ const argv = claudePreset
 	: [];
 check("Claude Code is given the attachments folder to read", argv[argv.indexOf("/att") - 1], "--add-dir");
 
-const pageDrag = app({ modules: [AssistantClientModule.with(assistantPartsOf(webAssistantGateways()))] });
+const pageDrag = webChatApp();
 const isPageOver = async (): Promise<unknown> => {
 	const drag = await pageDrag.send(FileDragQuery);
 	return drag.ok ? drag.output.isOver : null;
@@ -577,6 +602,66 @@ check(
 	"web has no session, so no commands",
 	await pageDrag.send(SlashCommandsQuery).then((names) => (names.ok ? names.output : names.reason)),
 	[],
+);
+
+const opened: WorkspaceFolder = {
+	id: "w1",
+	name: "Habits",
+	folder: "/Users/me/habits",
+	folderFound: true,
+	recentFolders: [],
+};
+const picks: (WorkspaceFolder | null)[] = [
+	null,
+	{ ...opened, folder: "/Users/me/other", recentFolders: ["/Users/me/other"] },
+];
+const folderChat = chatOver({
+	...portAssistantParts(NO_ASSISTANT, claude.parts.attachmentFiles),
+	workingFolders: new ClientWorkingFoldersGateway({
+		opened,
+		client: {
+			chooseFolder: async (_id, folder) => ({ ...opened, folder }),
+			attachFolder: async () => picks.shift() ?? null,
+		},
+	}),
+	claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
+});
+const currentFolder = async (): Promise<unknown> => {
+	const folders = await folderChat.send(WorkingFoldersQuery);
+	return folders.ok ? folders.output : folders.reason;
+};
+check("a working folder with no recent ones offers its current folder as the recent one", await currentFolder(), {
+	workspace: "Habits",
+	current: "/Users/me/habits",
+	recent: ["/Users/me/habits"],
+});
+await folderChat.send(PickWorkingFolderCommand);
+check("a pick the person cancels keeps the current folder", await currentFolder(), {
+	workspace: "Habits",
+	current: "/Users/me/habits",
+	recent: ["/Users/me/habits"],
+});
+await folderChat.send(PickWorkingFolderCommand);
+check("a picked folder becomes the current one", await currentFolder(), {
+	workspace: "Habits",
+	current: "/Users/me/other",
+	recent: ["/Users/me/other"],
+});
+check(
+	"the web host refuses a working folder pick before anything opens",
+	reasonOf(await webChat.send(PickWorkingFolderCommand)),
+	"A working folder cannot be chosen on this host",
+);
+await folderChat.send(ChooseClaudeOptionCommand, { model: "sonnet" });
+check(
+	"choosing a Claude option changes only that option",
+	await folderChat.send(ClaudeOptionsQuery).then((answer) => (answer.ok ? answer.output : answer.reason)),
+	{ mode: "auto", model: "sonnet", effort: "medium", usage: null },
+);
+check(
+	"the web host refuses a Claude option, for it offers none",
+	reasonOf(await webChat.send(ChooseClaudeOptionCommand, { model: "sonnet" })),
+	"Claude Code's options are not offered on this host",
 );
 
 for (const bench of [claude, ollama, codex, switched, crowded, cleared, slashed]) {

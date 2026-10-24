@@ -1,0 +1,126 @@
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { AssistantSetupChangedEvent } from "../../gateways/assistant-setup/assistant-setup.events.js";
+import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";
+import { ClaudeOptionsChangedEvent } from "../../gateways/claude-options/claude-options.events.js";
+import { ClaudeOptionsGateway } from "../../gateways/claude-options/claude-options.gateway.js";
+import { OPTIONS_NOT_HERE } from "../../gateways/claude-options/none.gateway.js";
+import { WORKING_FOLDER_NOT_HERE } from "../../gateways/working-folders/none.gateway.js";
+import { WorkingFoldersGateway } from "../../gateways/working-folders/working-folders.gateway.js";
+import {
+	AgentSetupSchema,
+	HelperAgentsAskedSchema,
+	ProviderAskedSchema,
+} from "../../shared/schema/agent-setup.schema.js";
+import { ClaudeOptionAskedSchema, ClaudeOptionsSchema } from "../../shared/schema/claude-options.schema.js";
+import { FolderAskedSchema, WorkingFoldersSchema } from "../../shared/schema/working-folder.schema.js";
+import { agentSetupOf, withOptionChosen, workingFoldersOf } from "./lib/agent-setup.js";
+
+export const AgentSetupQuery = query("agent-setup")
+	.output(AgentSetupSchema)
+	.inject({ assistantSetup: AssistantSetupGateway })
+	.handle(async (_input, { assistantSetup }) => agentSetupOf(await assistantSetup.setup()));
+
+export const ChooseProviderCommand = command("choose-provider")
+	.input(ProviderAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ assistantSetup: AssistantSetupGateway })
+	.handle(async ({ id }, { assistantSetup, invalidate }) => {
+		invalidate(AgentSetupQuery);
+		await assistantSetup.chooseProvider(id);
+	});
+
+export const SetHelperAgentsCommand = command("set-helper-agents")
+	.input(HelperAgentsAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ assistantSetup: AssistantSetupGateway })
+	.handle(async ({ on }, { assistantSetup, invalidate }) => {
+		invalidate(AgentSetupQuery);
+		await assistantSetup.setHelperAgents(on);
+	});
+
+export const OpenProvidersCommand = command("open-providers")
+	.idempotencyKey(Repeatable)
+	.inject({ assistantSetup: AssistantSetupGateway })
+	.handle((_input, { assistantSetup }) => assistantSetup.openProviders());
+
+export const ClaudeOptionsQuery = query("claude-options")
+	.output(ClaudeOptionsSchema.nullable())
+	.settlesNow()
+	.inject({ claudeOptions: ClaudeOptionsGateway })
+	.handle((_input, { claudeOptions }) => claudeOptions.claudeOptions());
+
+export const ChooseClaudeOptionCommand = command("choose-claude-option")
+	.input(ClaudeOptionAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ claudeOptions: ClaudeOptionsGateway })
+	.handle((asked, { claudeOptions, invalidate }) => {
+		const was = claudeOptions.claudeOptions();
+
+		if (was === null) {
+			return refuse(OPTIONS_NOT_HERE);
+		}
+
+		invalidate(ClaudeOptionsQuery);
+		const next = withOptionChosen(was, asked);
+		claudeOptions.saveClaudeOptions(next);
+		console.debug(
+			`[widgetarium] claude options ${JSON.stringify(was)} → ${JSON.stringify(next)} (chose ${JSON.stringify(asked)})`,
+		);
+	});
+
+export const WorkingFoldersQuery = query("working-folders")
+	.output(WorkingFoldersSchema.nullable())
+	.inject({ workingFolders: WorkingFoldersGateway })
+	.handle((_input, { workingFolders }) => {
+		const held = workingFolders.workspaceFolder();
+		return held === null ? null : workingFoldersOf(held);
+	});
+
+export const ChooseWorkingFolderCommand = command("choose-working-folder")
+	.input(FolderAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ workingFolders: WorkingFoldersGateway })
+	.handle(async ({ path }, { workingFolders, invalidate }) => {
+		const was = workingFolders.workspaceFolder();
+
+		if (was === null) {
+			return refuse(WORKING_FOLDER_NOT_HERE);
+		}
+
+		invalidate(WorkingFoldersQuery);
+		const next = await workingFolders.chosenFolder(was.id, path);
+		workingFolders.saveWorkspaceFolder(next);
+		console.info(`[widgetarium] working folder ${String(was.folder)} → ${String(next.folder)} (chose ${path})`);
+	});
+
+export const PickWorkingFolderCommand = command("pick-working-folder")
+	.idempotencyKey(PerCall)
+	.inject({ workingFolders: WorkingFoldersGateway })
+	.handle(async (_input, { workingFolders, invalidate }) => {
+		const was = workingFolders.workspaceFolder();
+
+		if (was === null) {
+			return refuse(WORKING_FOLDER_NOT_HERE);
+		}
+
+		const picked = await workingFolders.attachedPickedFolder(was.id);
+
+		if (picked === null) {
+			console.info(`[widgetarium] working folder kept ${String(was.folder)}: no folder was picked`);
+			return;
+		}
+
+		invalidate(WorkingFoldersQuery);
+		workingFolders.saveWorkspaceFolder(picked);
+		console.info(
+			`[widgetarium] working folder ${String(was.folder)} → ${String(picked.folder)} (picked another folder)`,
+		);
+	});
+
+export const RereadAgentSetupSubscriber = subscriber(AssistantSetupChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(AgentSetupQuery);
+});
+
+export const RereadClaudeOptionsSubscriber = subscriber(ClaudeOptionsChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(ClaudeOptionsQuery);
+});

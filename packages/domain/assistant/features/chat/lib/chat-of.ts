@@ -1,25 +1,48 @@
-import type { AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
-import type { AssistantSessionGateway } from "../../../gateways/assistant-session/assistant-session.gateway.js";
+import type { ChatCards } from "@widgetarium/core/engine/assistant-cards.js";
+import type {
+	AssistantCall,
+	AssistantSession,
+	AssistantTurn,
+	CallFace,
+} from "@widgetarium/core/engine/assistant-port.js";
 import { attachmentsIn } from "../../../shared/lib/attachment-trailer.js";
-import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
+import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { AttachmentChip } from "../../../shared/schema/attachment.schema.js";
 import type { Chat, ShownTurn } from "../../../shared/schema/chat.schema.js";
-import { chatMomentOf } from "./agent-activity.js";
-import { runningCallOf } from "./running-call-of.js";
 
-export function chatOf(gateway: AssistantSessionGateway, previews: ReadonlyMap<string, string>): Chat {
-	const session = gateway.session();
-	const cards = gateway.cardsOf(session);
-	const running = runningCallOf(session);
+export interface ChatSeen {
+	readonly isAvailable: boolean;
+	readonly session: AssistantSession;
+	readonly cards: ChatCards;
+	readonly faces: readonly (readonly CallFace[])[];
+	readonly previews: ReadonlyMap<string, string>;
+}
+
+export function chatOf({ isAvailable, session, cards, faces, previews }: ChatSeen): Chat {
+	const runningCall = runningCallOf(session);
 	return {
-		isAvailable: gateway.isAvailable(),
+		isAvailable,
 		session,
-		cards,
-		turns: session.turns.map((turn, at) => shownTurnOf(gateway, turn, { at, previews })),
-		runningFace: running ? gateway.describeCall(running) : null,
-		isAsking: chatMomentOf(session, cards).isAsking,
+		turns: session.turns.map((turn, at) => shownTurnOf(turn, faces[at] ?? [], { at, previews })),
+		runningCall,
+		runningFace: runningCall === null ? null : (faces.at(-1)?.at(-1) ?? null),
+		isAsking: isAskingOf(session, cards),
 	};
+}
+
+export function runningCallOf(session: AssistantSession): AssistantCall | null {
+	if (!session.busy) {
+		return null;
+	}
+
+	const last = session.turns.at(-1)?.calls.at(-1);
+	return last && !last.answered ? last : null;
+}
+
+function isAskingOf(session: AssistantSession, cards: ChatCards): boolean {
+	const lastCards = cards.ofTurns[session.turns.length - 1];
+	return !session.busy && Boolean(lastCards?.specApp ?? lastCards?.designApp);
 }
 
 interface TurnPlace {
@@ -27,14 +50,12 @@ interface TurnPlace {
 	readonly previews: ReadonlyMap<string, string>;
 }
 
-function shownTurnOf(gateway: AssistantSessionGateway, turn: AssistantTurn, place: TurnPlace): ShownTurn {
-	const faces = turn.calls.map((call) => gateway.describeCall(call));
-
+function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], place: TurnPlace): ShownTurn {
 	if (turn.role !== "user") {
 		return {
 			turn,
 			said: turn.text,
-			faces,
+			faces: [...faces],
 			attached: [],
 		};
 	}
@@ -43,7 +64,7 @@ function shownTurnOf(gateway: AssistantSessionGateway, turn: AssistantTurn, plac
 	return {
 		turn,
 		said,
-		faces,
+		faces: [...faces],
 		attached: entries.map((entry, entryAt) => chipOf(entry, `${place.at}-${entryAt}`, place.previews)),
 	};
 }

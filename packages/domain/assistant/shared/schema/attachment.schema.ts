@@ -22,12 +22,21 @@ export type AttachmentChip = z.infer<typeof AttachmentChipSchema>;
 
 export const DraftAttachmentsSchema = z.array(AttachmentChipSchema);
 
-export const AttachReachSchema = z.object({ canAttachFolders: z.boolean() });
+export const AttachReachSchema = z.object({
+	canAttachFolders: z.boolean(),
+	accepted: z.string(),
+});
 
 export type AttachReach = z.infer<typeof AttachReachSchema>;
 
-export const FilesAskedSchema = z.object({ files: z.array(z.instanceof(File)).min(1) });
+export const FilesAskedSchema = z.object({
+	files: z.array(z.custom<File>()).min(1),
+});
 
-export const AttachmentAskedSchema = z.object({ id: z.string() });
+export const AttachmentAskedSchema = z.object({
+	id: z.string(),
+});
 
-export const MessageAskedSchema = z.object({ said: z.string() });
+export const MessageAskedSchema = z.object({
+	said: z.string(),
+});

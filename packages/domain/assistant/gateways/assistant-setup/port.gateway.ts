@@ -10,8 +10,8 @@ export class PortAssistantSetupGateway extends AssistantSetupGateway {
 		return this.port.setup();
 	}
 
-	watch(changed: () => void): () => void {
-		return this.port.onSetup(changed);
+	setupChanged(listener: () => void): () => void {
+		return this.port.onSetup(listener);
 	}
 
 	chooseProvider(id: string): Promise<void> {

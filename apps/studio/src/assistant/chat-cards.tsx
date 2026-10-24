@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import type { CardAsks, ChatCardsSlot, PinnedCardProps } from "@widgetarium/assistant";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
+import type { CardAsks, ChatCardsSlot, PinnedCardProps } from "../features/assistant/lib/chat-cards-slot.js";
 import type { OpenByBuild } from "../legacy/assistant/cards/build-progress.js";
 import { JobsStrip } from "../legacy/assistant/cards/jobs-strip.js";
 import { cardsAround, pinnedCardOf } from "../legacy/assistant/cards/turn-cards.js";
@@ -12,7 +12,7 @@ const NOT_APPROVED = "the design could not be approved";
 
 export function chatCardsOver(port: AssistantPort): ChatCardsSlot {
 	return {
-		around: (cards, turn, asks) => cardsAround(cards, turn, legacyAsksOf(port, asks)),
+		around: (session, turn, asks) => cardsAround(port.cardsOf(session), turn, legacyAsksOf(port, asks)),
 		Pinned: (props) => <PinnedCard port={port} {...props} />,
 		Strip: ({ showCard }) => <JobsStrip jobs={port} showCard={showCard} />,
 	};
@@ -20,11 +20,11 @@ export function chatCardsOver(port: AssistantPort): ChatCardsSlot {
 
 function PinnedCard({
 	port,
-	cards,
+	session,
 	showCard,
 }: PinnedCardProps & { readonly port: AssistantPort }): ReactElement | null {
 	const [openByBuild] = useState<OpenByBuild>(() => new Map());
-	const pinned = pinnedCardOf(cards.pinned, { port, openByBuild, showCard });
+	const pinned = pinnedCardOf(port.cardsOf(session).pinned, { port, openByBuild, showCard });
 
 	if (!pinned) {
 		return null;

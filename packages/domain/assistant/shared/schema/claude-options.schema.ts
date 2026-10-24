@@ -40,10 +40,3 @@ export const ClaudeOptionAskedSchema = z.union([
 ]);
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
-
-export const DEFAULT_CLAUDE_OPTIONS: ClaudeOptions = {
-	mode: "auto",
-	model: "opus",
-	effort: "medium",
-	usage: null,
-};

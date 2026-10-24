@@ -7,9 +7,9 @@ export class NoAttachmentFolderGateway extends AttachmentFolderGateway {
 		return false;
 	}
 
-	pick(): Promise<string | null> {
+	pickedFolder(): Promise<string | null> {
 		return Promise.reject(new Error(FOLDERS_NOT_HERE));
 	}
 
-	lend(): void {}
+	lendFolders(): void {}
 }

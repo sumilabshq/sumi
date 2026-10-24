@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AssistantPanel } from "../packages/domain/assistant/generated/index.ts";
+import { AssistantPanel } from "../apps/studio/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
 import { chatCardsOver } from "../apps/studio/src/assistant/chat-cards.tsx";
 import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
 import { chatAppOver } from "./assistant-chat-app.ts";

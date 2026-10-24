@@ -8,8 +8,8 @@ import type {
 	TurnCards,
 } from "@widgetarium/core/engine/assistant-cards.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
-import { FailureCard } from "@widgetarium/assistant";
-import type { Report } from "@widgetarium/assistant";
+import { FailureCard } from "../../../features/assistant/ui/failure-card/failure-card.js";
+import type { Report } from "../../../features/assistant/lib/failure-line.js";
 import { BuildProgress } from "./build-progress.js";
 import type { OpenByBuild } from "./build-progress.js";
 import { changeAttachmentOf } from "./change-attachment.js";

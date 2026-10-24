@@ -8,14 +8,10 @@ import { CATALOGUE_REQUESTS } from "../packages/shared/core/src/engine/catalogue
 import {
 	FixedWidgetDrawingGateway,
 	FixedDesignFolderGateway,
-	canvasHostOf,
+	canvasAppOver,
 	canvasPartsOver,
 	emptyProject,
 } from "./canvas-hosts.ts";
-import { webCanvasParts } from "../packages/domain/canvas/generated/gateways.ts";
-import { webBrowserParts } from "../packages/domain/browser/generated/gateways.ts";
-import { webAssistantGateways } from "../packages/domain/assistant/generated/gateways.ts";
-import { WebDesignFolderGateway } from "../packages/domain/canvas/gateways/design-folder/web.gateway.ts";
 import { TFile, TFolder } from "obsidian";
 import type { App, ViewState, WorkspaceLeaf } from "obsidian";
 import {
@@ -31,8 +27,17 @@ import {
 import type { WindowChrome } from "../apps/host-obsidian/src/legacy/studio-note.ts";
 import { layNewApp } from "../apps/host-obsidian/src/new-app.ts";
 import type { ProjectVault } from "../apps/host-obsidian/src/vault-project-writer.ts";
-import type { StudioMount } from "../apps/studio/src/canvas/studio-canvas.ts";
-import type { StageMount } from "../apps/studio/src/canvas/design-stage.ts";
+import type { CanvasSurroundings } from "../apps/studio/src/canvas/design-stage.ts";
+import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
+
+const STAGE_SURROUNDINGS: CanvasSurroundings = {
+	gpu: null,
+	ownsPaste: () => false,
+	returnTo: {
+		kind: "view",
+		open: async () => undefined,
+	},
+};
 
 let failed = 0;
 function check(what: string, held: unknown, wanted: unknown): void {
@@ -350,9 +355,10 @@ function fakePluginOver(leaves: readonly FakeLeaf[]) {
 		countedProjects,
 		{
 			port: NO_ASSISTANT,
-			gateways: webAssistantGateways(),
+			host: {
+				webAssistant: NO_ASSISTANT,
+			},
 		},
-		webBrowserParts(),
 	);
 	return {
 		fileOpened: () => handlers.get("file-open")?.(),
@@ -501,16 +507,16 @@ const place = standIn<StudioPlace>(
 		projects: createAppProjects(adapter),
 		viewType: STUDIO_VIEW_TYPE,
 		assistant: checkedAssistant.port,
-		browser: webBrowserParts(),
 		hostOf: () => host,
 		openAsMarkdown: async () => undefined,
 		showAsMarkdown: async () => undefined,
 		designFor: async (app: string) => ({
 			app,
-			partsOf: (mount: StudioMount) => webCanvasParts(mount.project, canvasHostOf(mount)),
+			hostsOf: (project: StartedProject) => ({ project }),
+			surroundings: STAGE_SURROUNDINGS,
 		}),
 	},
-	["app", "projects", "viewType", "assistant", "browser", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
+	["app", "projects", "viewType", "assistant", "hostOf", "openAsMarkdown", "showAsMarkdown", "designFor"],
 	"place",
 );
 async function drawnFor(file: NoteFile): Promise<HTMLElement> {
@@ -903,8 +909,8 @@ drawInto(
 	createElement(DesignStage, {
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
-		partsOf: (mount: StageMount) =>
-			canvasPartsOver(mount, { designFolderGateway: stageFolder, widgetDrawingGateway: stageDrawing }),
+		canvasApp: canvasAppOver(canvasPartsOver({ designFolder: stageFolder, widgetDrawing: stageDrawing })),
+		surroundings: STAGE_SURROUNDINGS,
 		onKept: (kept: { readonly page: string }) => void keptPages.push(kept.page),
 		onCanvas: (canvas: { readonly showPage: (page: string) => void }) => void handed.push(canvas),
 		size: { width: 1200, height: 800 },
@@ -954,8 +960,8 @@ drawInto(
 	createElement(DesignStage, {
 		app: "Farm",
 		opening: CANVAS_OPENED_ON,
-		partsOf: (mount: StageMount) =>
-			canvasPartsOver(mount, { designFolderGateway: pagedFolder, widgetDrawingGateway: stageDrawing }),
+		canvasApp: canvasAppOver(canvasPartsOver({ designFolder: pagedFolder, widgetDrawing: stageDrawing })),
+		surroundings: STAGE_SURROUNDINGS,
 		onKept: (kept: { readonly page: string }) => void pagedKept.push(kept.page),
 		onCanvas: () => undefined,
 		size: { width: 1200, height: 800 },
@@ -1036,18 +1042,12 @@ const [activeDesign, otherDesign] = await Promise.all([
 	studioDesignOf(designPlugin, "Farm", activeLeaf),
 	studioDesignOf(designPlugin, "Farm", otherLeaf),
 ]);
-const studioMount = {
-	opened: { ...CANVAS_OPENED_ON, app: "Farm" },
-	keepOpening: () => undefined,
-	project: emptyProject(),
-};
-const [activeParts, otherParts] = [activeDesign.partsOf(studioMount), otherDesign.partsOf(studioMount)];
 check(
 	"a studio with no design folder still says whose paste it is: only the active studio leaf takes one, and it draws the project",
 	[
-		activeParts.canvasHost.ownsPaste(),
-		otherParts.canvasHost.ownsPaste(),
-		activeParts.designFolderGateway instanceof WebDesignFolderGateway,
+		activeDesign.surroundings.ownsPaste(),
+		otherDesign.surroundings.ownsPaste(),
+		"project" in activeDesign.hostsOf(emptyProject()),
 	],
 	[true, false, true],
 );

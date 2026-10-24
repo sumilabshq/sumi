@@ -1,7 +1,7 @@
-import type { ClaudeOptionAsked, ClaudeOptions } from "../../shared/schema/claude-options.schema.js";
+import type { ClaudeOptions } from "../../shared/schema/claude-options.schema.js";
 
 export abstract class ClaudeOptionsGateway {
-	abstract options(): ClaudeOptions | null;
-	abstract watch(changed: () => void): () => void;
-	abstract choose(asked: ClaudeOptionAsked): void;
+	abstract claudeOptions(): ClaudeOptions | null;
+	abstract saveClaudeOptions(next: ClaudeOptions): void;
+	abstract claudeOptionsChanged(listener: () => void): () => void;
 }

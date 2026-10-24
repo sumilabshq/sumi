@@ -3,15 +3,15 @@ import { ClaudeOptionsGateway } from "./claude-options.gateway.js";
 export const OPTIONS_NOT_HERE = "Claude Code's options are not offered on this host";
 
 export class NoClaudeOptionsGateway extends ClaudeOptionsGateway {
-	options(): null {
+	claudeOptions(): null {
 		return null;
 	}
 
-	watch(): () => void {
-		return () => undefined;
+	saveClaudeOptions(): void {
+		throw new Error(OPTIONS_NOT_HERE);
 	}
 
-	choose(): void {
-		throw new Error(OPTIONS_NOT_HERE);
+	claudeOptionsChanged(): () => void {
+		return () => undefined;
 	}
 }

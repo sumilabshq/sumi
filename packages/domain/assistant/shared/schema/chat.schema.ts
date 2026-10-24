@@ -1,21 +1,96 @@
 import { z } from "zod";
-import type { ChatCards } from "@widgetarium/core/engine/assistant-cards.js";
-import type { AssistantSession, AssistantTurn, CallFace } from "@widgetarium/core/engine/assistant-port.js";
-import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { AttachmentChipSchema } from "./attachment.schema.js";
 
-const SessionSchema = z.custom<AssistantSession>((value) => isObject(value) && Array.isArray(value["turns"]));
+export const TallySchema = z.object({
+	passed: z.number(),
+	all: z.number(),
+});
 
-const CardsSchema = z.custom<ChatCards>((value) => isObject(value) && Array.isArray(value["ofTurns"]));
+export const BlockerSchema = z.object({
+	feature: z.string(),
+	why: z.string(),
+});
 
-const TurnSchema = z.custom<AssistantTurn>((value) => isObject(value) && Array.isArray(value["calls"]));
+export const CallOutputCountsSchema = z.object({
+	lines: z.number().optional(),
+	hits: z.number().optional(),
+	features: TallySchema.optional(),
+	blockedBy: BlockerSchema.optional(),
+});
 
-const FaceSchema = z.custom<CallFace>((value) => isObject(value) && typeof value["kind"] === "string");
+export const AssistantCallSchema = z.object({
+	ref: z.string(),
+	name: z.string(),
+	input: z.record(z.string(), z.unknown()),
+	output: z.string(),
+	answered: z.boolean(),
+	failed: z.boolean(),
+	at: z.number(),
+	answeredAt: z.number().optional(),
+	outputCounts: CallOutputCountsSchema.optional(),
+});
+
+export const AssistantTurnSchema = z.object({
+	role: z.enum(["user", "agent", "compact"]),
+	text: z.string(),
+	calls: z.array(AssistantCallSchema),
+	startedAt: z.number().optional(),
+	endedAt: z.number().optional(),
+	outcome: z.enum(["done", "stopped", "failed"]).optional(),
+});
+
+export const AssistantSessionSchema = z.object({
+	turns: z.array(AssistantTurnSchema).readonly(),
+	busy: z.boolean(),
+	failure: z.string().nullable(),
+	tool: z.string().nullable(),
+	phase: z.enum(["thinking", "tools", "writing"]).nullable(),
+	spent: z.number(),
+});
+
+export const DiffLineSchema = z.object({
+	sign: z.enum(["added", "removed", "kept"]),
+	text: z.string(),
+});
+
+export const CallChangeSchema = z.object({
+	file: z.string(),
+	added: z.number(),
+	removed: z.number(),
+	lines: z.array(DiffLineSchema).readonly(),
+});
+
+export const CallMetaSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("count"),
+		said: z.string(),
+	}),
+	z.object({
+		kind: z.literal("change"),
+		added: z.number(),
+		removed: z.number(),
+	}),
+	z.object({
+		kind: z.literal("verdict"),
+		passed: z.boolean(),
+	}),
+]);
+
+export const CallFaceSchema = z.object({
+	kind: z.enum(["search", "read", "edit", "run", "other"]),
+	glyph: z.string(),
+	verb: z.string(),
+	doing: z.string(),
+	object: z.string(),
+	isCodeObject: z.boolean(),
+	meta: CallMetaSchema.nullable(),
+	change: CallChangeSchema.nullable(),
+});
 
 export const ShownTurnSchema = z.object({
-	turn: TurnSchema,
+	turn: AssistantTurnSchema,
 	said: z.string(),
-	faces: z.array(FaceSchema),
+	faces: z.array(CallFaceSchema),
 	attached: z.array(AttachmentChipSchema),
 });
 
@@ -23,10 +98,10 @@ export type ShownTurn = z.infer<typeof ShownTurnSchema>;
 
 export const ChatSchema = z.object({
 	isAvailable: z.boolean(),
-	session: SessionSchema,
-	cards: CardsSchema,
+	session: AssistantSessionSchema,
 	turns: z.array(ShownTurnSchema),
-	runningFace: FaceSchema.nullable(),
+	runningCall: AssistantCallSchema.nullable(),
+	runningFace: CallFaceSchema.nullable(),
 	isAsking: z.boolean(),
 });
 

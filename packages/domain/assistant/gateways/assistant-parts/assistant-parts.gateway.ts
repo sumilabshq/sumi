@@ -1,59 +1,73 @@
-import { MemoryComposerPrefillStore } from "../../shared/lib/composer-prefill-store.js";
-import type { ComposerPrefillStore } from "../../shared/lib/composer-prefill-store.js";
-import { MemoryFileDragStore } from "../../shared/lib/file-drag-store.js";
-import type { FileDragStore } from "../../shared/lib/file-drag-store.js";
-import { MemoryDraftAttachmentsStore } from "../../shared/lib/draft-attachments-store.js";
-import type { DraftAttachmentsStore } from "../../shared/lib/draft-attachments-store.js";
-import { MemorySentAttachmentsStore } from "../../shared/lib/sent-attachments-store.js";
-import type { SentAttachmentsStore } from "../../shared/lib/sent-attachments-store.js";
-import { MemoryStarterStore } from "../../shared/lib/starter-store.js";
-import type { StarterStore } from "../../shared/lib/starter-store.js";
+import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
+import type { AttachmentsFolder } from "../../shared/host/attachments-folder.host.js";
+import type { ClaudeOptionsCell } from "../../shared/host/claude-options.host.js";
+import type { FileDrops } from "../../shared/host/file-drops.host.js";
+import type { FolderLending } from "../../shared/host/folder-lending.host.js";
+import type { WorkspaceFolders } from "../../shared/host/workspace-folders.host.js";
 import type { AssistantSessionGateway } from "../assistant-session/assistant-session.gateway.js";
 import type { AssistantSetupGateway } from "../assistant-setup/assistant-setup.gateway.js";
 import type { AttachmentFilesGateway } from "../attachment-files/attachment-files.gateway.js";
 import type { AttachmentFolderGateway } from "../attachment-folder/attachment-folder.gateway.js";
-import { NoAttachmentFolderGateway } from "../attachment-folder/none.gateway.js";
 import type { ClaudeOptionsGateway } from "../claude-options/claude-options.gateway.js";
-import { NoClaudeOptionsGateway } from "../claude-options/none.gateway.js";
 import type { ClockGateway } from "../clock/clock.gateway.js";
+import type { ComposerPrefillGateway } from "../composer-prefill/composer-prefill.gateway.js";
+import type { DraftAttachmentsGateway } from "../draft-attachments/draft-attachments.gateway.js";
+import type { FileDragGateway } from "../file-drag/file-drag.gateway.js";
 import type { FileDropGateway } from "../file-drop/file-drop.gateway.js";
-import { NoFileDropGateway } from "../file-drop/none.gateway.js";
-import { NoWorkingFolderGateway } from "../working-folder/none.gateway.js";
-import type { WorkingFolderGateway } from "../working-folder/working-folder.gateway.js";
+import type { SentAttachmentsGateway } from "../sent-attachments/sent-attachments.gateway.js";
+import type { StarterGateway } from "../starter/starter.gateway.js";
+import type { WorkingFoldersGateway } from "../working-folders/working-folders.gateway.js";
+import { obsidianAssistantParts } from "./obsidian.gateway.js";
+import { tauriAssistantParts } from "./tauri.gateway.js";
+import { webAssistantParts } from "./web.gateway.js";
 
-export interface LocalReach {
-	readonly attachmentFolderGateway: AttachmentFolderGateway;
-	readonly claudeOptionsGateway: ClaudeOptionsGateway;
-	readonly workingFolderGateway: WorkingFolderGateway;
-	readonly fileDropGateway: FileDropGateway;
+export type AssistantParts = {
+	readonly assistantSession: AssistantSessionGateway;
+	readonly assistantSetup: AssistantSetupGateway;
+	readonly attachmentFiles: AttachmentFilesGateway;
+	readonly attachmentFolder: AttachmentFolderGateway;
+	readonly claudeOptions: ClaudeOptionsGateway;
+	readonly workingFolders: WorkingFoldersGateway;
+	readonly fileDrop: FileDropGateway;
+	readonly clock: ClockGateway;
+	readonly draftAttachments: DraftAttachmentsGateway;
+	readonly sentAttachments: SentAttachmentsGateway;
+	readonly composerPrefill: ComposerPrefillGateway;
+	readonly starter: StarterGateway;
+	readonly fileDrag: FileDragGateway;
+};
+
+export interface WebHosts {
+	readonly kind: "web";
+	readonly webAssistant: AssistantPort;
 }
 
-export interface AssistantGateways extends Partial<LocalReach> {
-	readonly assistantSessionGateway: AssistantSessionGateway;
-	readonly assistantSetupGateway: AssistantSetupGateway;
-	readonly attachmentFilesGateway: AttachmentFilesGateway;
-	readonly clockGateway: ClockGateway;
+export interface ObsidianHosts {
+	readonly kind: "obsidian";
+	readonly obsidianAssistant: AssistantPort;
+	readonly attachments: AttachmentsFolder;
 }
 
-export interface AssistantParts extends Required<AssistantGateways> {
-	readonly draftAttachmentsStore: DraftAttachmentsStore;
-	readonly sentAttachmentsStore: SentAttachmentsStore;
-	readonly composerPrefillStore: ComposerPrefillStore;
-	readonly starterStore: StarterStore;
-	readonly fileDragStore: FileDragStore;
+export interface TauriHosts {
+	readonly kind: "tauri";
+	readonly tauriAssistant: AssistantPort;
+	readonly tauriAttachments: AttachmentsFolder;
+	readonly folders: FolderLending;
+	readonly claudeOptions: ClaudeOptionsCell;
+	readonly drops: FileDrops;
+	readonly workspace: WorkspaceFolders;
 }
 
-export function assistantPartsOf(gateways: AssistantGateways): AssistantParts {
-	return {
-		...gateways,
-		attachmentFolderGateway: gateways.attachmentFolderGateway ?? new NoAttachmentFolderGateway(),
-		claudeOptionsGateway: gateways.claudeOptionsGateway ?? new NoClaudeOptionsGateway(),
-		workingFolderGateway: gateways.workingFolderGateway ?? new NoWorkingFolderGateway(),
-		fileDropGateway: gateways.fileDropGateway ?? new NoFileDropGateway(),
-		draftAttachmentsStore: new MemoryDraftAttachmentsStore(),
-		sentAttachmentsStore: new MemorySentAttachmentsStore(),
-		composerPrefillStore: new MemoryComposerPrefillStore(),
-		starterStore: new MemoryStarterStore(),
-		fileDragStore: new MemoryFileDragStore(),
-	};
+export type AssistantHosts = WebHosts | ObsidianHosts | TauriHosts;
+
+export function assistantPartsOn({ host }: { readonly host: AssistantHosts }): AssistantParts {
+	if (host.kind === "tauri") {
+		return tauriAssistantParts(host);
+	}
+
+	if (host.kind === "obsidian") {
+		return obsidianAssistantParts(host);
+	}
+
+	return webAssistantParts(host);
 }

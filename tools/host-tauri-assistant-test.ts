@@ -9,7 +9,8 @@ import {
 } from "../apps/host-tauri/src/assistant/assistant-bridge.ts";
 import { cssPointOf, dragStepOf, isInside } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
 import type { ChatSpot, WebviewDragSource } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
-import { AssistantClientModule } from "../packages/domain/assistant/generated/module.ts";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { attachmentFilesIn } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
 import {
 	AttachDroppedCommand,
 	AttachFolderCommand,
@@ -19,8 +20,9 @@ import {
 	DraftAttachmentsQuery,
 	FileDragQuery,
 	SendMessageCommand,
-} from "../packages/domain/assistant/generated/index.ts";
+} from "../packages/domain/assistant/index.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
 	COMPACT_PROMPT,
 	NOTHING_TO_COMPACT,
@@ -32,8 +34,7 @@ import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts"
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { startTauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
-import type { TauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
-import { NoWorkingFolderGateway, assistantPartsOf } from "../packages/domain/assistant/generated/gateways.ts";
+import type { TauriAssistant, TauriWorkspaceFolders } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
 
 let failed = 0;
 let checks = 0;
@@ -101,8 +102,37 @@ interface FakeIpc extends TauriIpc {
 	droppedBytes: ArrayBuffer;
 }
 
+const OPENED = {
+	id: "w1",
+	name: "Habits",
+	folder: null,
+	folderFound: false,
+	lastOpenedAt: 0,
+	recentFolders: [],
+};
+
+const NO_FOLDER_PICKS: TauriWorkspaceFolders = {
+	client: {
+		chooseFolder: async () => OPENED,
+		attachFolder: async () => null,
+	},
+	opened: OPENED,
+};
+
 function startedAssistant(ipc: FakeIpc, page: object): TauriAssistant {
-	return startTauriAssistant({ ipc, page, workingFolderGateway: new NoWorkingFolderGateway() });
+	return startTauriAssistant({ ipc, page, workspace: NO_FOLDER_PICKS, drags: fakeDrags(), chat: CHAT_SPOT });
+}
+
+function chatOver({ host }: TauriAssistant): StartedApp {
+	return app()
+		.modules(AssistantModule)
+		.start({
+			platform: "tauri",
+			scope: {
+				workspaceId: "w1",
+			},
+			host,
+		});
 }
 
 function fakeIpc(): FakeIpc {
@@ -293,8 +323,9 @@ async function failedWriteChecks(): Promise<void> {
 		if (command.endsWith("|write_attachment")) throw new Error("disk full");
 		return invoke(command, args, options);
 	};
-	const { port, gateways } = startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER });
-	gateways.attachmentFilesGateway.write("a.txt", new Uint8Array([1]));
+	const started = startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER });
+	const { port } = started;
+	attachmentFilesIn(started.host.tauriAttachments).saveAttachment("a.txt", new Uint8Array([1]));
 	await port.send("read the file");
 	await flush();
 	await flush();
@@ -364,8 +395,7 @@ async function errorChecks(): Promise<void> {
 async function folderAndOptionChecks(): Promise<void> {
 	const ipc = fakeIpc();
 	ipc.pickedFolder = "/Users/me/Apps/habits";
-	const { gateways } = startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER });
-	const chat = app({ modules: [AssistantClientModule.with(assistantPartsOf(gateways))] });
+	const chat = chatOver(startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER }));
 	const reach = await chat.send(AttachReachQuery);
 	check("Tauri offers folders to attach", reach.ok ? reach.output.canAttachFolders : null, true);
 	await chat.send(AttachFolderCommand);
@@ -421,8 +451,8 @@ async function folderAndOptionChecks(): Promise<void> {
 
 async function attachmentChecks(): Promise<void> {
 	const ipc = fakeIpc();
-	const { gateways } = startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER });
-	const path = gateways.attachmentFilesGateway.write("my shot.png", new Uint8Array([1, 2, 3]));
+	const files = attachmentFilesIn(startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER }).host.tauriAttachments);
+	const path = files.saveAttachment("my shot.png", new Uint8Array([1, 2, 3]));
 	check(
 		"an attachment is written inside the private folder with a safe name",
 		path.startsWith(`${FOLDER}/`) && path.endsWith("-my_shot.png"),
@@ -435,12 +465,12 @@ async function attachmentChecks(): Promise<void> {
 		[true, path],
 	);
 
-	gateways.attachmentFilesGateway.removeOlderThan(3600000, Date.now());
+	files.removeAttachmentsOlderThan(3600000, Date.now());
 	check("the folder is swept by the host", callsNamed(ipc, "sweep_attachments")[0]?.args, { ageMs: 3600000 });
 
 	const noFolder = startedAssistant(fakeIpc(), {});
 	const refused = await refusalOf(async () =>
-		noFolder.gateways.attachmentFilesGateway.write("a.txt", new Uint8Array()),
+		attachmentFilesIn(noFolder.host.tauriAttachments).saveAttachment("a.txt", new Uint8Array()),
 	);
 	check("without a private folder nothing is attached", refused, "Files cannot be attached on this host");
 }
@@ -537,22 +567,22 @@ async function fileDropChecks(): Promise<void> {
 	dragMappingChecks();
 	const ipc = fakeIpc();
 	const drags = fakeDrags();
-	const { gateways } = startTauriAssistant({
+	const assistant = startTauriAssistant({
 		ipc,
 		page: { __WIDGETARIUM_ATTACHMENTS__: FOLDER },
-		workingFolderGateway: new NoWorkingFolderGateway(),
+		workspace: NO_FOLDER_PICKS,
 		drags,
 		chat: CHAT_SPOT,
 	});
-	const chat = app({ modules: [AssistantClientModule.with(assistantPartsOf(gateways))] });
+	check("nothing listens for drops before the chat starts", drags.heard.length, 0);
+	const chat = chatOver(assistant);
 	const isOver = async (): Promise<unknown> => {
+		await flush();
 		const drag = await chat.send(FileDragQuery);
 		return drag.ok ? drag.output.isOver : null;
 	};
-	check("nothing listens for drops while the chat is not shown", drags.heard.length, 0);
-	const stopWatching = chat.watches.watch(FileDragQuery, undefined);
 	await flush();
-	check("the shown chat listens to the webview's drag events", drags.heard.length, 1);
+	check("the started chat listens to the webview's drag events", drags.heard.length, 1);
 	dragged(drags, { type: "enter", paths: ["/Users/me/notes.md"], position: INSIDE });
 	check("a file dragged over the chat shows the drop zone", await isOver(), true);
 	dragged(drags, { type: "over", position: OUTSIDE });
@@ -571,6 +601,8 @@ async function fileDropChecks(): Promise<void> {
 	check("the dropped paths go to Rust", callsNamed(ipc, "drop_paths")[0]?.args, {
 		paths: ["/Users/me/notes.md", "/Users/me/Apps/habits"],
 	});
+	await flush();
+	await flush();
 	const drag = await chat.send(FileDragQuery);
 	const dropped = drag.ok ? drag.output.dropped : null;
 	check(
@@ -594,8 +626,8 @@ async function fileDropChecks(): Promise<void> {
 	await chat.send(AttachDroppedCommand, { id: dropped ?? "" });
 	const again = await chat.send(DraftAttachmentsQuery);
 	check("one drop attaches once", again.ok ? again.output.length : null, 2);
-	stopWatching();
-	check("hiding the chat stops listening", drags.unlistened, 1);
+	chat.stop();
+	check("stopping the chat stops listening", drags.unlistened, 1);
 }
 
 const COMPACT_RUN = [

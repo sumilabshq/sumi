@@ -5,11 +5,10 @@ import { createAppProjects } from "./legacy/app-projects.js";
 import type { AppProjects } from "./legacy/app-projects.js";
 import { registerStudioView } from "./legacy/studio-leaves.js";
 import { followAppFolderRename } from "./legacy/studio-renames.js";
-import { obsidianAssistantGateways, webAssistantGateways } from "@widgetarium/assistant/gateways";
-import type { AssistantGateways } from "@widgetarium/assistant/gateways";
 import { startObsidianBrowser } from "./browser/obsidian-browser.js";
 import { openAttachmentsFolder } from "./attachments-folder.js";
 import type { WidgetariumPlugin } from "./main.js";
+import type { StudioPlace } from "./legacy/studio-drawing.js";
 
 const NOTES_NOT_RENAMED = "Widgetarium: the notes naming {was} were not renamed to {path} — the console says why";
 
@@ -19,23 +18,23 @@ export function registerStudio(plugin: WidgetariumPlugin, assistant: AssistantPo
 	reportVaultChangesTo(plugin, projects);
 	const studioAssistant = {
 		port: assistant,
-		gateways: assistantGatewaysOf(assistant),
+		host: assistantHostOf(assistant),
 	};
-	registerStudioView(plugin, projects, studioAssistant, startObsidianBrowser(plugin));
+	startObsidianBrowser(plugin);
+	registerStudioView(plugin, projects, studioAssistant);
 }
 
-function assistantGatewaysOf(port: AssistantPort): AssistantGateways {
-	const opened = openAttachmentsFolder();
+function assistantHostOf(port: AssistantPort): StudioPlace["assistantHost"] {
+	const attachments = openAttachmentsFolder();
 
-	if (!opened) {
-		return webAssistantGateways(port);
+	if (!attachments) {
+		return { webAssistant: port };
 	}
 
-	return obsidianAssistantGateways({
-		port,
-		privateFolder: opened.files,
-		folder: opened.folder,
-	});
+	return {
+		obsidianAssistant: port,
+		attachments,
+	};
 }
 
 function reportVaultChangesTo(plugin: WidgetariumPlugin, projects: AppProjects): void {
