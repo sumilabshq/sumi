@@ -7,6 +7,7 @@ import { SERVER_RATE_LIMIT } from "./rate-limits";
 export interface ModuleRoutes {
 	readonly module: ReadyModule;
 	readonly provides: Provided;
+	readonly provided: Provided;
 	readonly routes: readonly Route[];
 }
 
@@ -26,7 +27,7 @@ export function moduleRoutesOf(module: ReadyModule, side: Side, hostProvided: Pr
 			isOwnModuleOnly: isServerOnly && side === "client",
 		};
 	});
-	return { module, provides, routes };
+	return { module, provides, provided, routes };
 }
 
 // TODO: key the default limit by client address through Authenticate: every anonymous caller shares one bucket.

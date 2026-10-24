@@ -4,8 +4,9 @@ import type { Route } from "./local-routes";
 import { isGuardStep } from "./middleware";
 import type { Step } from "./middleware";
 import { RequestsModule } from "./module";
-import type { Provided, ReadyModule, Side } from "./module";
+import type { ModuleDefinition, Provided, ReadyModule, Side } from "./module";
 import type { ModuleReach } from "./remote-modules";
+import type { AnyEvent } from "./event";
 import type { AnyRequest } from "./request";
 import { moduleRoutesOf } from "./routes-of-module";
 import type { ModuleRoutes } from "./routes-of-module";
@@ -50,11 +51,21 @@ const REMOTE_SERVER_ONLY_SEND = {
 	server:
 		"{request} sends {sent}, which is server-only: server-only requests never cross the network; run {sentModule} in this server's .modules",
 } as const;
+const UNLISTED_EMIT = '{owner} emits {event}, which module "{module}" does not list in .emits()';
+const EVENT_NOT_IMPORTED =
+	'{owner} listens to {event}, but module "{module}" does not import {eventModule}: add .imports()';
+const EVENT_OVER_NETWORK =
+	"{owner} listens to {event}, and {eventModule} is imported from an address: events do not cross the network yet; run {eventModule} in .modules()";
 const RAN_AND_IMPORTED =
 	'module "{module}" is both run in .modules() and imported from an address in .imports(): keep exactly one';
 const IMPORTED_TWICE = 'module "{module}" is imported {count} times in .imports(): import it once';
 
-export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
+export interface StartedRoutes {
+	readonly routes: ReadonlyMap<string, Route>;
+	readonly modules: readonly ModuleRoutes[];
+}
+
+export function routesOf(starting: Starting): StartedRoutes {
 	refuseOn(starting.side, [
 		...sideFindings(starting),
 		...ranAndImportedFindings(starting),
@@ -71,8 +82,13 @@ export function routesOf(starting: Starting): ReadonlyMap<string, Route> {
 		...unroutedSendFindings(routes, starting),
 		...importFindings(starting),
 		...sendFindings(routes, starting),
+		...moduleRoutes.flatMap(({ module }) => emitFindings(module)),
+		...moduleRoutes.flatMap(({ module }) => listenFindings(module, starting)),
 	]);
-	return new Map(routes.map((route) => [route.handler.request.name, route]));
+	return {
+		routes: new Map(routes.map((route) => [route.handler.request.name, route])),
+		modules: moduleRoutes,
+	};
 }
 
 function refuseOn(side: Side, findings: readonly string[]): void {
@@ -230,6 +246,60 @@ function remoteSendFindings(sender: AnyRequest, sent: AnyRequest, { side, remote
 	return [
 		fill(REMOTE_SERVER_ONLY_SEND[side], sender.name).replace("{sent}", sent.name).replace("{sentModule}", sentModule),
 	];
+}
+
+function emitFindings({ definition, handlers }: ReadyModule): string[] {
+	const emitters = [
+		...handlers.map((handler) => ({ owner: handler.request.name, emits: handler.emits })),
+		...definition.listedSubscribers.map((listed) => ({
+			owner: `the subscriber of ${listed.event.name}`,
+			emits: listed.emits,
+		})),
+	];
+	return emitters.flatMap(({ owner, emits }) =>
+		emits
+			.filter(({ name }) => !definition.emittedEvents.some((listed) => listed.name === name))
+			.map(({ name }) =>
+				UNLISTED_EMIT.replace("{owner}", owner).replace("{event}", name).replace("{module}", definition.name),
+			),
+	);
+}
+
+function listenFindings({ definition }: ReadyModule, starting: Starting): string[] {
+	const listened = [
+		...definition.listedSubscribers.map((listed) => ({
+			owner: `the subscriber of ${listed.event.name}`,
+			event: listed.event,
+		})),
+	];
+	return listened.flatMap(({ owner, event }) => eventSourceFindings(definition, owner, event, starting));
+}
+
+function eventSourceFindings(
+	definition: ModuleDefinition,
+	owner: string,
+	event: AnyEvent,
+	{ modules, remote }: Starting,
+): string[] {
+	const eventModule = event.module ?? definition.name;
+
+	if (eventModule === definition.name) {
+		return [];
+	}
+
+	const said = (template: string): string =>
+		template
+			.replace("{owner}", owner)
+			.replace("{event}", event.name)
+			.replace("{module}", definition.name)
+			.replace(/\{eventModule\}/g, eventModule);
+
+	if (!definition.importedModuleNames.includes(eventModule)) {
+		return [said(EVENT_NOT_IMPORTED)];
+	}
+
+	const isRun = modules.some((ran) => ran.definition.name === eventModule);
+	return !isRun && remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
 }
 
 function duplicateFindings(handlers: readonly AnyHandler[]): string[] {

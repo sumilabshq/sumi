@@ -1,4 +1,5 @@
 import type { Guard, OpenGuard, User } from "./guard";
+import type { AnyEvent } from "./event";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { AnyModule, ClientModule, ModuleDefinition, Provided, ServerModule } from "./module";
 import type { AnyRequest, InputOf, ReturnedOf } from "./request";
@@ -61,6 +62,7 @@ export interface Handler<
 	handle(input: InputOf<R>, context: Injected<D> & Partial<CallFacts> & C): Returned<R>;
 	readonly watch: Bivariant<Watch<R, D>> | null;
 	readonly sends: readonly AnyRequest[];
+	readonly emits: readonly AnyEvent[];
 }
 
 export type AnyHandler = Handler<AnyRequest, Inject>;
@@ -184,7 +186,19 @@ export function withStep<P extends { readonly steps: readonly Step[] }>(plan: P,
 export function withDefaultCallFacts<R extends AnyRequest, D extends Inject, C extends Added>(
 	handle: Handle<R, D, C>,
 ): Handler<R, D, HandlerState, C>["handle"] {
-	return (input, context) => handle(input, { idempotencyKey: null, signal: NEVER_ABORTED, user: null, ...context });
+	return (input, context) =>
+		handle(input, {
+			idempotencyKey: null,
+			signal: NEVER_ABORTED,
+			user: null,
+			invalidate: callsNothing,
+			emit: callsNothing,
+			...context,
+		});
+}
+
+function callsNothing(): void {
+	return undefined;
 }
 
 function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerState, C extends Added>(
@@ -201,5 +215,6 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		handle: withDefaultCallFacts(handle),
 		watch,
 		sends: [],
+		emits: [],
 	};
 }

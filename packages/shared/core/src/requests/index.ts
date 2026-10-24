@@ -3,7 +3,13 @@ export { queryKeyOf } from "./query-key";
 export { QueryWatches } from "./query-watches";
 export { RouteQueries } from "./route-queries";
 export type { SettledNow } from "./route-queries";
-export type { AppStartOptions, AppHost, AppStart, DeviceModule, StartedApp } from "./app";
+export type { AppStartOptions, AppHost, AppStart, DeviceModule, HostObjects, StartedApp } from "./app";
+export { event } from "./event";
+export type { AnyEvent, Emit, Emitter, Event, EventArgs, EventInputOf } from "./event";
+export { subscriber } from "./subscriber";
+export type { AnySubscriber, Subscriber, SubscriberBuilder } from "./subscriber";
+export { gatewayEvent, tauriEvent, windowEvent } from "./event-source";
+export type { EventSource, Fire, SourceContext } from "./event-source";
 export { AppProvider } from "./app-provider";
 export type { AppProviderProps } from "./app-provider";
 export { REFUSAL_CODES, reasonOf } from "./answer";
@@ -29,6 +35,8 @@ export type {
 	Token,
 } from "./handler";
 export type { Sending } from "./mediator";
+export { HostObject, OneOf, hostObject, oneOf } from "./host-needs";
+export type { HeldBy, HostNeeds, Need, NeedSets, NeedsShape } from "./host-needs";
 export {
 	ClientModule,
 	HandledModule,
@@ -44,7 +52,7 @@ export type { RemoteModule } from "./module-contract";
 export { Anywhere, Device, Server } from "./placement";
 export type { DeviceRuns, OnServer, Placement, ServerRuns } from "./placement";
 export { PlatformModule } from "./platform-module";
-export type { AnyPlatformModule, ModuleFacts, ModuleScope, Platform } from "./platform-module";
+export type { AnyPlatformModule, HostFacts, ModuleFacts, ModuleScope, Platform } from "./platform-module";
 export type {
 	Cover,
 	ImportedModule,

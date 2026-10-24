@@ -5,12 +5,24 @@ import { refusalOf } from "../answer";
 import type { Refusal } from "../answer";
 import { MemoryDoneKeys } from "../done-keys";
 import type { DoneKeys } from "../done-keys";
+import { hostProvidedOf } from "../app";
+import type { NeedsBox, Unboxed } from "../host-needs";
+import type { HostObjects } from "../app";
+import { EventBus } from "../event-bus";
 import { LocalRoutes } from "../local-routes";
 import type { Route } from "../local-routes";
 import { Mediator } from "../mediator";
 import { readyModuleOf } from "../module";
-import type { HandledModule, Provided, ReadyModule, ServerParts, StartableServerModule } from "../module";
+import type {
+	HandledModule,
+	NothingProvided,
+	Provided,
+	ReadyModule,
+	ServerParts,
+	StartableServerModule,
+} from "../module";
 import type { RemoteModule } from "../module-contract";
+import { listenedEventNames, startModuleEvents } from "../module-events";
 import type { ServerRuns } from "../placement";
 import type { ModuleFacts, ModuleScope, PlatformModule } from "../platform-module";
 import { MemoryRateLimits } from "../rate-limits";
@@ -21,6 +33,7 @@ import { reportToConsole } from "../report-failure";
 import type { FailureReport } from "../report-failure";
 import type { AnyRequest } from "../request";
 import { routesOf } from "../startup";
+import type { StartedRoutes } from "../startup";
 import { WIRE_PREFIX, WireCallSchema, wirePathOf } from "../wire";
 import type { WireHost } from "../wire-client";
 import type { Authenticate } from "./authenticate";
@@ -36,16 +49,26 @@ interface ServerStart {
 	readonly modules: readonly StartableServerModule[];
 	readonly env: ServerParts["env"];
 	readonly scope?: ModuleScope;
-	readonly host?: ServerHost;
+	readonly host?: ServerHost & HostObjects;
 }
 
 interface ServerStartOptions {
 	readonly env: ServerParts["env"];
 	readonly scope?: ModuleScope;
-	readonly host?: ServerHost;
+	readonly host?: ServerHost & HostObjects;
 }
 
-export type ServerSideModule = PlatformModule<Provided, ServerRuns> | HandledModule<ServerParts> | ReadyModule;
+type ServerLentBy<N extends Provided> = keyof N extends never
+	? ServerStartOptions
+	: ServerStartOptions & { readonly host: ServerHost & N };
+
+type ServerHostNeedsOf<M> =
+	M extends PlatformModule<Provided, ServerRuns, infer N> ? NeedsBox<N> : NeedsBox<NothingProvided>;
+
+type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
+
+export type ServerSideModule =
+	PlatformModule<Provided, ServerRuns, NothingProvided> | HandledModule<ServerParts> | ReadyModule;
 
 interface StartedServer {
 	readonly fetch: (request: Request) => Promise<Response>;
@@ -58,21 +81,23 @@ interface WireContext {
 const NOT_A_CALL = "the body is not a widgetarium call";
 const NOT_HERE = "{name} runs on no module of this server";
 
-export class ServerBuilder {
+export class ServerBuilder<N extends Provided = NothingProvided> {
 	constructor(
 		private readonly ranModules: readonly ServerSideModule[],
 		private readonly remoteModules: readonly RemoteModule[],
 	) {}
 
-	modules(...modules: readonly ServerSideModule[]): ServerBuilder {
+	modules<const M extends readonly ServerSideModule[]>(
+		...modules: M
+	): ServerBuilder<N & Unboxed<IntersectionOf<ServerHostNeedsOf<M[number]>>>> {
 		return new ServerBuilder([...this.ranModules, ...modules], this.remoteModules);
 	}
 
-	imports(...modules: readonly RemoteModule[]): ServerBuilder {
+	imports(...modules: readonly RemoteModule[]): ServerBuilder<N> {
 		return new ServerBuilder(this.ranModules, [...this.remoteModules, ...modules]);
 	}
 
-	start({ env, scope, host = {} }: ServerStartOptions): StartedServer {
+	start({ env, scope, host = {} }: ServerLentBy<N>): StartedServer {
 		// TODO: service tokens for server-to-server identity
 		const remote = new RemoteModules(this.remoteModules, host, notHere);
 		return startServer({ modules: this.ranModules, env, ...(scope === undefined ? {} : { scope }), host }, remote);
@@ -90,15 +115,29 @@ export function server(start?: ServerStart): ServerBuilder | StartedServer {
 }
 
 function startServer({ modules, env, scope, host = {} }: ServerStart, remote: ModuleReach | null): StartedServer {
-	const facts: ModuleFacts | null = scope === undefined ? null : { platform: "server", scope, env };
-	const routes = routesOf({
+	const facts: ModuleFacts | null =
+		scope === undefined ? null : { platform: "server", scope, env, host: hostProvidedOf(host) };
+	const started = routesOf({
 		side: "server",
 		modules: modules.map((module) => readyModuleOf(module, { env }, facts)),
 		hasAuthenticate: host.authenticate !== undefined,
 		hostProvided: { rateLimits: host.rateLimits ?? new MemoryRateLimits() },
 		remote,
 	});
-	const handler = new RPCHandler<WireContext>(routerOf(routes, serverMediatorOf(routes, host, remote)));
+	const reportFailure = host.reportFailure ?? reportToConsole;
+	const bus = new EventBus(reportFailure);
+	const mediator = serverMediatorOf({ started, host, remote, bus });
+	const startedModules = started.modules.map(({ module, provided }) => ({ definition: module.definition, provided }));
+	startModuleEvents({
+		modules: startedModules,
+		listened: listenedEventNames(startedModules),
+		platform: "server",
+		bus,
+		sender: mediator,
+		reportFailure,
+		applyInvalidations: invalidatedWithNoPush,
+	});
+	const handler = new RPCHandler<WireContext>(routerOf(started.routes, mediator));
 	const hono = new Hono();
 	hono.all(`${WIRE_PREFIX}/*`, async (context) => {
 		const { headers } = context.req.raw;
@@ -108,12 +147,20 @@ function startServer({ modules, env, scope, host = {} }: ServerStart, remote: Mo
 	return { fetch: (request) => Promise.resolve(hono.fetch(request)) };
 }
 
-function serverMediatorOf(routes: ReadonlyMap<string, Route>, host: ServerHost, remote: ModuleReach | null): Mediator {
+interface ServerWiring {
+	readonly started: StartedRoutes;
+	readonly host: ServerHost;
+	readonly remote: ModuleReach | null;
+	readonly bus: EventBus;
+}
+
+function serverMediatorOf({ started, host, remote, bus }: ServerWiring): Mediator {
 	const local = new LocalRoutes({
-		routes,
+		routes: started.routes,
 		authenticate: host.authenticate ?? null,
 		doneKeys: host.doneKeys ?? new MemoryDoneKeys(),
 		callers: "many",
+		bus,
 	});
 	const reportFailure = host.reportFailure ?? reportToConsole;
 	return new Mediator({ local, remote, keyMinting: "caller-gives", missing: notHere, reportFailure });
@@ -152,4 +199,9 @@ function wireProcedureOf(request: AnyRequest, mediator: Mediator) {
 		const sending = { headers: context.headers, signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
 		return mediator.send(request, call.data.input, sending);
 	});
+}
+
+// TODO: carry invalidations no client's call caused to clients through a push channel (SSE or WebSocket)
+function invalidatedWithNoPush(): void {
+	return undefined;
 }

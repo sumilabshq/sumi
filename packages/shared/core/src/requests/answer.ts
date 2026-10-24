@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { InvalidationSchema } from "./invalidation";
+import type { Invalidation } from "./invalidation";
 import { Refused } from "./refused";
 
 export const REFUSAL_CODES = [
@@ -22,13 +24,21 @@ const RefusalSchema = z.object({
 	ran: z.boolean(),
 });
 
-export const AnswerSchema = z.union([z.object({ ok: z.literal(true), output: z.unknown() }), RefusalSchema]);
+export const AnswerSchema = z.union([
+	z.object({
+		ok: z.literal(true),
+		output: z.unknown(),
+		invalidated: z.array(InvalidationSchema).optional(),
+	}),
+	RefusalSchema,
+]);
 
 export type RefusalCode = (typeof REFUSAL_CODES)[number];
 
 export type Refusal = Readonly<z.output<typeof RefusalSchema>>;
 
-export type Answer<Output> = { readonly ok: true; readonly output: Output } | Refusal;
+export type Answer<Output> =
+	{ readonly ok: true; readonly output: Output; readonly invalidated?: readonly Invalidation[] | undefined } | Refusal;
 
 export function refusalOf(code: RefusalCode, reason: string, ran = false): Refusal {
 	return { ok: false, reason, code, ran };

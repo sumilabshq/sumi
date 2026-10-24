@@ -1,12 +1,16 @@
+import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
+import { NOTHING_NEEDED, lentFor, withNeeds } from "./host-needs";
+import type { HeldBy, HostNeeds, Lent, NeedSets, NeedsShape, OneOf, OneSetLent, OneSetTagged } from "./host-needs";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { ModuleContract } from "./module-contract";
 import { PlatformModule } from "./platform-module";
-import type { AnyPlatformModule, ModuleFacts } from "./platform-module";
+import type { AnyPlatformModule, HostFacts, ModuleFacts } from "./platform-module";
 import type { Placement } from "./placement";
 import type { AnyRequest } from "./request";
+import type { AnySubscriber } from "./subscriber";
 
 export type Side = "client" | "server";
 
@@ -28,6 +32,9 @@ export interface ModuleDefinition {
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[];
 	readonly importedModuleNames: readonly string[];
+	readonly emittedEvents: readonly AnyEvent[];
+	readonly listedSubscribers: readonly AnySubscriber[];
+	readonly hostNeeds: HostNeeds;
 }
 
 export type ImportedModule = ModuleContract | AnyPlatformModule;
@@ -77,6 +84,9 @@ export class ServerModule<
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[] = [];
 	readonly importedModuleNames: readonly string[] = [];
+	readonly emittedEvents: readonly AnyEvent[] = [];
+	readonly listedSubscribers: readonly AnySubscriber[] = [];
+	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
 	constructor(
 		private readonly plan: ServerPlan<P>,
@@ -114,6 +124,9 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	readonly steps: readonly Step[] = [];
 	readonly serverOnlyRequestNames: readonly string[] = [];
 	readonly importedModuleNames: readonly string[] = [];
+	readonly emittedEvents: readonly AnyEvent[] = [];
+	readonly listedSubscribers: readonly AnySubscriber[] = [];
+	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
 	constructor(
 		readonly name: string,
@@ -142,6 +155,9 @@ interface ModulePlan<R extends Runs> {
 	readonly serverOnly: readonly AnyHandledRequest[];
 	readonly imports: readonly string[];
 	readonly steps: readonly Step[];
+	readonly emits: readonly AnyEvent[];
+	readonly subscribers: readonly AnySubscriber[];
+	readonly needs: HostNeeds;
 }
 
 type ServerOnlyListed<R extends Runs, L> = R extends "client"
@@ -164,16 +180,27 @@ export class ModuleDraft {
 			serverOnly: [],
 			imports: [],
 			steps: [],
+			emits: [],
+			subscribers: [],
+			needs: NOTHING_NEEDED,
 		});
 	}
 }
 
-export class RequestsModule<H extends readonly AnyHandledRequest[], R extends Runs> implements ModuleDefinition {
+export class RequestsModule<
+	H extends readonly AnyHandledRequest[],
+	R extends Runs,
+	N extends Provided = NothingProvided,
+	G extends Lent = N,
+> implements ModuleDefinition {
 	readonly name: string;
 	readonly runs: R;
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[];
 	readonly importedModuleNames: readonly string[];
+	readonly emittedEvents: readonly AnyEvent[];
+	readonly listedSubscribers: readonly AnySubscriber[];
+	readonly hostNeeds: HostNeeds;
 
 	constructor(private readonly plan: ModulePlan<R>) {
 		this.name = plan.name;
@@ -181,9 +208,12 @@ export class RequestsModule<H extends readonly AnyHandledRequest[], R extends Ru
 		this.steps = plan.steps;
 		this.serverOnlyRequestNames = plan.serverOnly.map(({ request }) => request.inModule(plan.name).name);
 		this.importedModuleNames = plan.imports;
+		this.emittedEvents = plan.emits.map((emitted) => emitted.inModule(plan.name));
+		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, plan.name));
+		this.hostNeeds = plan.needs;
 	}
 
-	public<const L extends readonly AnyHandledRequest[]>(...requests: L): RequestsModule<[...H, ...L], R> {
+	public<const L extends readonly AnyHandledRequest[]>(...requests: L): RequestsModule<[...H, ...L], R, N, G> {
 		return new RequestsModule({
 			...this.plan,
 			listed: this.withListed(requests),
@@ -192,7 +222,7 @@ export class RequestsModule<H extends readonly AnyHandledRequest[], R extends Ru
 
 	serverOnly<const L extends readonly AnyHandledRequest[]>(
 		...listed: ServerOnlyListed<R, L>
-	): RequestsModule<[...H, ...L], R> {
+	): RequestsModule<[...H, ...L], R, N, G> {
 		const requests = listed.filter(isHandledRequest);
 		return new RequestsModule({
 			...this.plan,
@@ -201,35 +231,60 @@ export class RequestsModule<H extends readonly AnyHandledRequest[], R extends Ru
 		});
 	}
 
-	imports(...modules: readonly ImportedModule[]): RequestsModule<H, R> {
+	imports(...modules: readonly ImportedModule[]): RequestsModule<H, R, N, G> {
 		return new RequestsModule({
 			...this.plan,
 			imports: [...this.plan.imports, ...modules.map(nameOfImported)],
 		});
 	}
 
-	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H, R> {
+	emits(...events: readonly AnyEvent[]): RequestsModule<H, R, N, G> {
+		return new RequestsModule({
+			...this.plan,
+			emits: [...this.plan.emits, ...events],
+		});
+	}
+
+	subscribers(...subscribers: readonly AnySubscriber[]): RequestsModule<H, R, N, G> {
+		return new RequestsModule({
+			...this.plan,
+			subscribers: [...this.plan.subscribers, ...subscribers],
+		});
+	}
+
+	needs<const S extends NeedSets>(needs: OneOf<S>): RequestsModule<H, R, N & OneSetLent<S>, G & OneSetTagged<S>>;
+	needs<const M extends NeedsShape>(needs: M): RequestsModule<H, R, N & HeldBy<M>, G & HeldBy<M>>;
+	needs(needs: NeedsShape | OneOf<NeedSets>): RequestsModule<H, R, Provided, Lent> {
+		return new RequestsModule({
+			...this.plan,
+			needs: withNeeds(this.plan.name, this.plan.needs, needs),
+		});
+	}
+
+	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H, R, N, G> {
 		return new RequestsModule({
 			...this.plan,
 			steps: [...this.plan.steps, step],
 		});
 	}
 
-	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H, R> {
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H, R, N, G> {
 		return new RequestsModule({
 			...this.plan,
 			steps: [...this.plan.steps, step],
 		});
 	}
 
-	provide(provide: (facts: ModuleFacts) => NeedsOf<H>): PlatformModule<NeedsOf<H>, R> {
+	provide(provide: (facts: HostFacts<G>) => NeedsOf<H>): PlatformModule<NeedsOf<H>, R, N> {
+		const { name } = this.plan;
 		const handlers = this.plan.listed.map((listed) => ({
 			...listed,
-			request: listed.request.inModule(this.plan.name),
-			sends: listed.sends.map((sent) => sent.inModule(this.plan.name)),
+			request: listed.request.inModule(name),
+			sends: listed.sends.map((sent) => sent.inModule(name)),
+			emits: listed.emits.map((emitted) => emitted.inModule(name)),
 			module: this,
 		}));
-		return new PlatformModule(this, handlers, provide);
+		return new PlatformModule(this, handlers, { provide });
 	}
 
 	private withListed(requests: readonly AnyHandledRequest[]): readonly AnyHandledRequest[] {
@@ -279,7 +334,10 @@ function factsFor(definition: ModuleDefinition, facts: ModuleFacts | null): Modu
 		throw new Error(NO_FACTS.replace("{module}", definition.name));
 	}
 
-	return facts;
+	return {
+		...facts,
+		host: lentFor(definition.name, definition.hostNeeds, facts.host),
+	};
 }
 
 function coverAfter(cover: Cover, step: Step): Cover {
@@ -293,4 +351,13 @@ function isHandledRequest(listed: AnyHandledRequest | string): listed is AnyHand
 
 function nameOfImported(imported: ImportedModule): string {
 	return imported instanceof PlatformModule ? imported.definition.name : imported.name;
+}
+
+function subscriberInModule(listed: AnySubscriber, module: string): AnySubscriber {
+	return {
+		...listed,
+		event: listed.event.inModule(module),
+		sends: listed.sends.map((sent) => sent.inModule(module)),
+		emits: listed.emits.map((emitted) => emitted.inModule(module)),
+	};
 }

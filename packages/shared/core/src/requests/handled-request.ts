@@ -1,8 +1,10 @@
+import type { AnyEvent, Emitter } from "./event";
 import type { Guard } from "./guard";
 import { withDefaultCallFacts, withStep } from "./handler";
-import type { Handle, Handler, Inject, Watch } from "./handler";
+import type { Handle, Handler, Inject } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
-import type { AnyRequest, InputOf } from "./request";
+import type { AnyCommand, AnyRequest, InputOf } from "./request";
+import type { Invalidator } from "./invalidation";
 import type { Sender } from "./send";
 
 export type HandledRequest<R extends AnyRequest, D extends Inject = Inject, C extends Added = NothingAdded> = Omit<
@@ -12,12 +14,14 @@ export type HandledRequest<R extends AnyRequest, D extends Inject = Inject, C ex
 
 export type AnyHandledRequest = HandledRequest<AnyRequest, Inject, Added>;
 
+export type InvalidatorOf<R extends AnyRequest> = R extends AnyCommand ? Invalidator : NothingAdded;
+
 interface HandlingPlan<R extends AnyRequest, D extends Inject> {
 	readonly request: R;
 	readonly inject: D;
 	readonly steps: readonly Step[];
-	readonly watch: Watch<R, D> | null;
 	readonly sends: readonly AnyRequest[];
+	readonly emits: readonly AnyEvent[];
 }
 
 const NOTHING_INJECTED: NothingAdded = Object.freeze({});
@@ -29,6 +33,13 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 		return new RequestHandlerBuilder({
 			...this.plan,
 			sends: [...this.plan.sends, ...requests],
+		});
+	}
+
+	emits<const E extends readonly AnyEvent[]>(...events: E): RequestHandlerBuilder<R, D, C & Emitter<E[number]>> {
+		return new RequestHandlerBuilder({
+			...this.plan,
+			emits: [...this.plan.emits, ...events],
 		});
 	}
 
@@ -44,27 +55,20 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 		return new RequestHandlerBuilder({
 			...this.plan,
 			inject,
-			watch: null,
 		});
 	}
 
-	watch(watch: Watch<R, D>): RequestHandlerBuilder<R, D, C> {
-		return new RequestHandlerBuilder({
-			...this.plan,
-			watch,
-		});
-	}
-
-	handle(handle: Handle<R, D, C>): HandledRequest<R, D, C> {
-		const { request, inject, steps, watch, sends } = this.plan;
+	handle(handle: Handle<R, D, C & InvalidatorOf<R>>): HandledRequest<R, D, C> {
+		const { request, inject, steps, sends, emits } = this.plan;
 		return {
 			request,
 			inject,
 			steps,
 			state: "client",
 			handle: withDefaultCallFacts(handle),
-			watch,
+			watch: null,
 			sends,
+			emits,
 		};
 	}
 }
@@ -74,7 +78,7 @@ export function handlingOf<R extends AnyRequest>(request: R): RequestHandlerBuil
 		request,
 		inject: NOTHING_INJECTED,
 		steps: [],
-		watch: null,
 		sends: [],
+		emits: [],
 	});
 }

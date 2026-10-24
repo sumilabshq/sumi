@@ -1,5 +1,6 @@
 import type { Refusal } from "./answer";
 import { refusalOfThrown } from "./answer";
+import type { Invalidations } from "./invalidation";
 import { NEVER_ABORTED } from "./handler";
 import type { CallFacts } from "./handler";
 import { callerRefusalOf } from "./local-routes";
@@ -20,6 +21,7 @@ interface RouteQueriesParts {
 	readonly remote: ModuleReach | null;
 	readonly missing: Missing;
 	readonly reportFailure: FailureReport;
+	readonly invalidations: Invalidations;
 }
 
 const NO_FACTS: CallFacts = { idempotencyKey: null, signal: NEVER_ABORTED, user: null };
@@ -52,6 +54,15 @@ export class RouteQueries {
 	}
 
 	watch(request: AnyRequest, sent: unknown, changed: () => void): () => void {
+		const stopShown = this.watchWhileShown(request, sent, changed);
+		const stopInvalidated = this.parts.invalidations.watch(request.name, changed);
+		return () => {
+			stopShown();
+			stopInvalidated();
+		};
+	}
+
+	watchWhileShown(request: AnyRequest, sent: unknown, changed: () => void): () => void {
 		const route = this.viewRouteOf(request);
 		const input = request.inputSchema.safeParse(sent);
 		if (route?.handler.watch == null || !input.success) return NOT_WATCHED;

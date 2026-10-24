@@ -28,6 +28,8 @@ export class RemoteServer {
 
 	private async answerOf(call: RemoteCall, settle: Settle): Promise<Answer<unknown>> {
 		const answer = await this.remote(call);
-		return answer.ok ? settle.held(call.request, answer.output) : settle.refuse(call.request, answer);
+		return answer.ok
+			? settle.held(call.request, answer.output, false, answer.invalidated)
+			: settle.refuse(call.request, answer);
 	}
 }

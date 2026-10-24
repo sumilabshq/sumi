@@ -1,5 +1,6 @@
 import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
+import type { Invalidation } from "./invalidation";
 import type { LocalRoutes } from "./local-routes";
 import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
@@ -25,7 +26,7 @@ export interface Asked {
 }
 
 export interface Settle {
-	held(request: AnyRequest, returned: unknown, ran?: boolean): Answer<unknown>;
+	held(request: AnyRequest, returned: unknown, ran?: boolean, invalidated?: readonly Invalidation[]): Answer<unknown>;
 	refuse(request: AnyRequest, refusal: Refusal, thrown?: unknown): Refusal;
 	shared(key: string, run: () => Promise<Answer<unknown>>): Promise<Answer<unknown>>;
 	send(request: AnyRequest, sent: unknown, sending?: Sending): Promise<Answer<unknown>>;
@@ -55,9 +56,13 @@ export class Mediator implements Settle {
 		}
 	}
 
-	held(request: AnyRequest, returned: unknown, ran = false): Answer<unknown> {
+	held(request: AnyRequest, returned: unknown, ran = false, invalidated?: readonly Invalidation[]): Answer<unknown> {
 		const output = request.outputSchema.safeParse(returned);
-		if (output.success) return { ok: true, output: output.data };
+		if (output.success) {
+			return invalidated === undefined
+				? { ok: true, output: output.data }
+				: { ok: true, output: output.data, invalidated };
+		}
 		return this.refuse(request, refusalOf("invalid-output", issuesOf(request.name, "output", output.error), ran));
 	}
 

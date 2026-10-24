@@ -1,9 +1,10 @@
 import { z } from "zod";
 import type { Duration } from "./duration";
+import type { AnyEvent, Emitter } from "./event";
 import type { Guard } from "./guard";
 import type { Handle, Inject } from "./handler";
 import { handlingOf } from "./handled-request";
-import type { HandledRequest, RequestHandlerBuilder } from "./handled-request";
+import type { HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
 import type { Added, Middleware, NothingAdded } from "./middleware";
 import type { Sender } from "./send";
 
@@ -111,6 +112,13 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 		return handlingOf(this).sends(...requests);
 	}
 
+	emits<R extends AnyRequest, const E extends readonly AnyEvent[]>(
+		this: R,
+		...events: E
+	): RequestHandlerBuilder<R, NothingAdded, Emitter<E[number]>> {
+		return handlingOf(this).emits(...events);
+	}
+
 	guard<R extends AnyRequest, A extends Added>(
 		this: R,
 		step: Guard<InputOf<R>, A, Inject>,
@@ -131,7 +139,7 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 
 	handle<R extends AnyRequest>(
 		this: R,
-		handle: Handle<R, NothingAdded>,
+		handle: Handle<R, NothingAdded, InvalidatorOf<R>>,
 	): HandledRequest<R, NothingAdded, NothingAdded> {
 		return handlingOf(this).handle(handle);
 	}
@@ -164,21 +172,7 @@ export function isQuery(request: AnyRequest): request is AnyQuery {
 	return request.kind === "query";
 }
 
-function definitionOf<K extends RequestKind>(kind: K, name: string): Definition<K, z.ZodVoid, z.ZodVoid> {
-	return {
-		kind,
-		name,
-		module: moduleOf(name),
-		input: z.void(),
-		output: z.void(),
-		idempotencyKey: null,
-		freshFor: null,
-		settlesNow: false,
-		invalidates: null,
-	};
-}
-
-function moduleOf(name: string): string | null {
+export function moduleOfName(name: string): string | null {
 	const matched = REQUEST_NAME.exec(name);
 
 	if (matched === null) {
@@ -186,4 +180,18 @@ function moduleOf(name: string): string | null {
 	}
 
 	return matched[1] ?? null;
+}
+
+function definitionOf<K extends RequestKind>(kind: K, name: string): Definition<K, z.ZodVoid, z.ZodVoid> {
+	return {
+		kind,
+		name,
+		module: moduleOfName(name),
+		input: z.void(),
+		output: z.void(),
+		idempotencyKey: null,
+		freshFor: null,
+		settlesNow: false,
+		invalidates: null,
+	};
 }

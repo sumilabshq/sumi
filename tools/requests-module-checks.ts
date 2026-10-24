@@ -247,6 +247,7 @@ check("provide receives the platform and scope its starter was told", seenFacts,
 	platform: "tauri",
 	scope: { workspaceId: "w-1" },
 	env: {},
+	host: {},
 });
 
 check(

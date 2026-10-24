@@ -2,6 +2,11 @@ import { stableKey } from "../gateway/stable-key";
 import { reasonOf, refusalOf, refusalOfThrown } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { DoneKeys } from "./done-keys";
+import { emitOf } from "./event-bus";
+import { invalidateInto } from "./invalidation";
+import type { Invalidation } from "./invalidation";
+import type { EventBus } from "./event-bus";
+import type { AnyEvent } from "./event";
 import type { User } from "./guard";
 import { NEVER_ABORTED } from "./handler";
 import type { AnyHandler, CallFacts } from "./handler";
@@ -27,6 +32,7 @@ interface LocalParts {
 	readonly authenticate: Authenticate | null;
 	readonly doneKeys: DoneKeys;
 	readonly callers: Callers;
+	readonly bus: EventBus;
 }
 
 interface Walk {
@@ -170,16 +176,31 @@ export class LocalRoutes {
 		const { route, asked, settle } = walk;
 		const ran = asked.request.kind === "command";
 		try {
-			const send = sendOf(walk, facts.signal, key);
-			const returned = await route.handler.handle(input, { ...route.provided, ...facts, send });
-			return settle.held(asked.request, returned, ran);
+			const invalidated: Invalidation[] = [];
+			const send = sendOf(walk, facts.signal, key, invalidated);
+			const emitted: [AnyEvent, unknown][] = [];
+			const emitting = {
+				declared: route.handler.emits,
+				owner: asked.request.name,
+				module: route.handler.request.module ?? "",
+			};
+			const emit = emitOf(this.parts.bus, emitting, (event, emittedInput) => emitted.push([event, emittedInput]));
+			const invalidate = ran ? invalidateInto(invalidated, invalidatingOf(route, asked)) : undefined;
+			const returned = await route.handler.handle(input, { ...route.provided, ...facts, send, emit, invalidate });
+			const answer = settle.held(asked.request, returned, ran, invalidated.length === 0 ? undefined : invalidated);
+
+			for (const [event, emittedInput] of emitted) {
+				this.parts.bus.publish(event, emittedInput);
+			}
+
+			return answer;
 		} catch (thrown) {
 			return settle.refuse(asked.request, refusalOfThrown(thrown, ran), thrown);
 		}
 	}
 }
 
-function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string | null) {
+function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string | null, invalidated: Invalidation[]) {
 	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
 		if (!route.handler.sends.some(({ name }) => name === sent.name)) {
 			throw new Error(UNDECLARED_SEND.replace("{request}", asked.request.name).replace("{sent}", sent.name));
@@ -194,6 +215,7 @@ function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string
 		});
 
 		if (answer.ok) {
+			invalidated.push(...(answer.invalidated ?? []));
 			return answer.output;
 		}
 
@@ -201,6 +223,14 @@ function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string
 			.replace("{code}", answer.code)
 			.replace("{reason}", answer.reason);
 		throw answer.ran ? new Error(reason) : new Refused(reason);
+	};
+}
+
+function invalidatingOf({ handler }: Route, asked: Asked) {
+	return {
+		module: handler.request.module ?? "",
+		importedModuleNames: handler.module.importedModuleNames,
+		owner: asked.request.name,
 	};
 }
 

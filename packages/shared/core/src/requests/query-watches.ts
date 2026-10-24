@@ -20,7 +20,7 @@ export class QueryWatches {
 	}
 
 	private started(request: AnyQuery, sent: unknown, reRead: () => void): () => void {
-		const stop = this.routes.watch(request, sent, reRead);
+		const stop = this.routes.watchWhileShown(request, sent, reRead);
 		if (stop !== NOT_WATCHED) reRead();
 		return stop;
 	}
