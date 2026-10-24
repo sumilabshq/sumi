@@ -1,5 +1,5 @@
 import type { HeldSettings } from "../settings/settings-doc.js";
-import type { StoreClient } from "../store/store-client.js";
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
 import { readOpening } from "./read-opening.js";

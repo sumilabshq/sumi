@@ -8,7 +8,7 @@ import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-proje
 import { openTauriStudio } from "./startup/open-tauri-studio.js";
 import { TauriOpening } from "./startup/tauri-opening.js";
 import { TauriStartup } from "./startup/tauri-startup.js";
-import { StoreClient } from "./store/store-client.js";
+import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { WorkspaceClient } from "./workspace/workspace-client.js";
 import { followWindowDrag } from "./window-drag.js";
 

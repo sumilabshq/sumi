@@ -3,10 +3,10 @@ import { AssistantTurnSchema } from "@widgetarium/core/engine/assistant-port.js"
 import type { AssistantSession, AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
 import type { ChatHistory, KeptChat } from "../assistant/turn-session.js";
 import { EMPTY_SESSION } from "../assistant/session-steps.js";
-import { HeldDoc } from "../store/held-doc.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { validValuesOf } from "../store/valid-entries.js";
-import { workspaceRootOf } from "../store/store-client.js";
-import type { DocKind, StoreClient, WorkspaceRoot } from "../store/store-client.js";
+import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient, WorkspaceRoot } from "@widgetarium/behaviors/tauri-store";
 
 const TURNS_REOPENED = 400;
 

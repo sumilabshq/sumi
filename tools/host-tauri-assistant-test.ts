@@ -29,7 +29,7 @@ import {
 } from "../packages/host-tauri/src/assistant/turn-session.ts";
 import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../packages/host-tauri/src/assistant/tauri-assistant-port.ts";
 import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history.ts";
-import { StoreClient } from "../packages/host-tauri/src/store/store-client.ts";
+import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { startTauriAssistant } from "../packages/host-tauri/src/assistant/tauri-assistant.ts";
 import type { TauriAssistant } from "../packages/host-tauri/src/assistant/tauri-assistant.ts";

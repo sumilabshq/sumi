@@ -1,13 +1,9 @@
 import { z } from "zod";
-import { HeldDoc } from "../store/held-doc.js";
-import { GLOBAL_ROOT } from "../store/store-client.js";
-import type { DocKind, StoreClient } from "../store/store-client.js";
+import { HeldDoc } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 
 export const SettingsSchema = z.looseObject({
-	chatWidthPx: z.number().positive().nullable().catch(null),
-	leftWidthPx: z.number().positive().nullable().catch(null),
-	leftHidden: z.boolean().nullable().catch(null),
-	rightHidden: z.boolean().nullable().catch(null),
 	trace: z.boolean().catch(false),
 });
 

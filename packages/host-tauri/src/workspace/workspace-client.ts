@@ -1,5 +1,5 @@
-import { callStore } from "../store/store-invoke.js";
-import type { Invoke } from "../store/store-invoke.js";
+import { callStore } from "@widgetarium/behaviors/tauri-store";
+import type { Invoke } from "@widgetarium/behaviors/tauri-store";
 import { WorkspaceEntrySchema } from "./workspace-docs.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";
 

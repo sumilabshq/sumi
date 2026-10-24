@@ -6,7 +6,7 @@ import { readChatLogs } from "../packages/host-tauri/src/chat/tauri-chat-history
 import { DEFAULT_PROFILE, profileFilesOf, readProfile } from "../packages/host-tauri/src/profile/profile-docs.ts";
 import { tauriProfileGateways } from "../packages/host-tauri/src/profile/tauri-profile-gateways.ts";
 import { TauriTabsSessionGateway, readSession } from "../packages/host-tauri/src/session/tauri-session.ts";
-import { StoreClient } from "../packages/host-tauri/src/store/store-client.ts";
+import { StoreClient } from "../packages/behaviors/src/tauri-store/store-client.ts";
 import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../packages/host-tauri/src/workspace/tauri-workspace-apps.ts";
 import { WorkspaceClient } from "../packages/host-tauri/src/workspace/workspace-client.ts";
 import type { GrantChange, SiteGrant } from "../packages/browser/generated/index.ts";
