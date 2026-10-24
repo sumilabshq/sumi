@@ -10,15 +10,21 @@ interface PressOnEdge {
 	readonly currentTarget: HTMLElement;
 }
 
+export interface FrameEdgeAsk {
+	readonly edge: FrameEdge;
+	readonly px: number;
+	readonly plateLeastPx: number;
+}
+
 interface DragTrack {
 	readonly press: (edgeElement: HTMLElement) => void;
 	readonly settle: () => void;
 }
 
-export function useFrameEdge(edge: FrameEdge, px: number): EdgeResizeHandlers {
+export function useFrameEdge({ edge, px, plateLeastPx }: FrameEdgeAsk): EdgeResizeHandlers {
 	const resize = useCommand(ResizeFrameEdgeCommand);
 	const reset = useCommand(ResetFrameEdgeCommand);
-	const [drag] = useState(() => new FrameEdgeDrag());
+	const [drag] = useState(() => new FrameEdgeDrag(plateLeastPx));
 	const handlers = useEdgeResize({
 		widthOf: () => drag.widthOr(px),
 		edge: "end",

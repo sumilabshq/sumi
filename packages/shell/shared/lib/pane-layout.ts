@@ -1,5 +1,4 @@
 import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "@widgetarium/layout";
-import { PLATE_LEAST_PX } from "@widgetarium/layout";
 
 export interface PaneRect {
 	readonly left: number;
@@ -24,18 +23,39 @@ export interface PaneLayout {
 	readonly edges: readonly PaneEdge[];
 }
 
-export function paneLayoutOf(node: PaneNode | null, box: PaneRect, gap: number): PaneLayout {
-	const rects = new Map<string, PaneRect>();
-	const edges: PaneEdge[] = [];
+export interface PaneSpacing {
+	readonly gapPx: number;
+	readonly leastPx: number;
+}
 
-	if (node !== null) {
-		layInto({ rects, edges, gap }, node, box);
-	}
+export interface DraggedShare {
+	readonly splitId: string;
+	readonly at: number;
+	readonly share: number;
+}
 
-	return {
-		rects,
-		edges,
-	};
+interface LayoutAsk {
+	readonly node: PaneNode | null;
+	readonly box: PaneRect;
+	readonly spacing: PaneSpacing;
+	readonly dragged: DraggedShare | null;
+}
+
+export interface DraggedLayoutAsk extends LayoutAsk {
+	readonly dragged: DraggedShare;
+}
+
+export function paneLayoutOf(node: PaneNode | null, box: PaneRect, spacing: PaneSpacing): PaneLayout {
+	return laidOut({
+		node,
+		box,
+		spacing,
+		dragged: null,
+	});
+}
+
+export function draggedLayoutOf(ask: DraggedLayoutAsk): PaneLayout {
+	return laidOut(ask);
 }
 
 export interface PanePlace {
@@ -47,8 +67,12 @@ export interface PanePlace {
 
 const PROBE_PX = 1;
 
-export function panePlacesOf(node: PaneNode | null, box: PaneRect, gap: number): ReadonlyMap<string, PanePlace> {
-	const here = paneLayoutOf(node, box, gap).rects;
+export function panePlacesOf(
+	node: PaneNode | null,
+	box: PaneRect,
+	spacing: PaneSpacing,
+): ReadonlyMap<string, PanePlace> {
+	const here = paneLayoutOf(node, box, spacing).rects;
 	const grown = paneLayoutOf(
 		node,
 		{
@@ -56,7 +80,7 @@ export function panePlacesOf(node: PaneNode | null, box: PaneRect, gap: number):
 			width: box.width + PROBE_PX,
 			height: box.height + PROBE_PX,
 		},
-		gap,
+		spacing,
 	).rects;
 	return new Map(Array.from(here, ([id, rect]) => [id, placeOf(rect, grown.get(id) ?? rect, box)]));
 }
@@ -105,7 +129,22 @@ function roundedTo(value: number, digits: number): number {
 interface Laying {
 	readonly rects: Map<string, PaneRect>;
 	readonly edges: PaneEdge[];
-	readonly gap: number;
+	readonly spacing: PaneSpacing;
+	readonly dragged: DraggedShare | null;
+}
+
+function laidOut({ node, box, spacing, dragged }: LayoutAsk): PaneLayout {
+	const rects = new Map<string, PaneRect>();
+	const edges: PaneEdge[] = [];
+
+	if (node !== null) {
+		layInto({ rects, edges, spacing, dragged }, node, box);
+	}
+
+	return {
+		rects,
+		edges,
+	};
 }
 
 function layInto(laying: Laying, node: PaneNode, box: PaneRect): void {
@@ -116,24 +155,47 @@ function layInto(laying: Laying, node: PaneNode, box: PaneRect): void {
 
 	const isRow = node.dir === "row";
 	const origin = isRow ? box.left : box.top;
-	const span = (isRow ? box.width : box.height) - laying.gap * (node.children.length - 1);
-	const sizes = sizesOf(node, span);
+	const { gapPx, leastPx } = laying.spacing;
+	const span = (isRow ? box.width : box.height) - gapPx * (node.children.length - 1);
+	const split = withDraggedShare(node, laying.dragged);
+	const sizes = sizesOf(split, span, leastPx);
 	let offset = 0;
 	node.children.forEach((child, at) => {
 		const size = sizes[at] ?? 0;
 		layInto(laying, child, isRow ? sliceAcross(box, offset, size) : sliceDown(box, offset, size));
 
 		if (at < node.children.length - 1) {
-			laying.edges.push(edgeOf(node, at, sliceEdge(box, isRow, offset + size + laying.gap / 2), origin + offset, span));
+			laying.edges.push(edgeOf(split, at, sliceEdge(box, isRow, offset + size + gapPx / 2), origin + offset, span));
 		}
 
-		offset += size + laying.gap;
+		offset += size + gapPx;
 	});
 }
 
-function sizesOf(node: PaneSplit, span: number): readonly number[] {
+function withDraggedShare(split: PaneSplit, dragged: DraggedShare | null): PaneSplit {
+	if (dragged === null || dragged.splitId !== split.id) {
+		return split;
+	}
+
+	const pair = (split.shares[dragged.at] ?? 0) + (split.shares[dragged.at + 1] ?? 0);
+	const share = Math.min(Math.max(dragged.share, 0), pair);
+	return {
+		...split,
+		shares: split.shares.map((kept, at) => draggedShareAt(at, { ...dragged, share }, pair) ?? kept),
+	};
+}
+
+function draggedShareAt(at: number, dragged: DraggedShare, pair: number): number | null {
+	if (at === dragged.at) {
+		return dragged.share;
+	}
+
+	return at === dragged.at + 1 ? pair - dragged.share : null;
+}
+
+function sizesOf(node: PaneSplit, span: number, leastPx: number): readonly number[] {
 	const wanted = node.children.map((_child, at) => (node.shares[at] ?? 1 / node.children.length) * span);
-	const least = Math.min(PLATE_LEAST_PX, span / node.children.length);
+	const least = Math.min(leastPx, span / node.children.length);
 	const lacking = wanted.reduce((sum, px) => sum + Math.max(0, least - px), 0);
 	const roomy = wanted.reduce((sum, px) => sum + (px > least ? px - least : 0), 0);
 	return wanted.map((px) => (px <= least ? least : px - (lacking * (px - least)) / Math.max(roomy, 1)));

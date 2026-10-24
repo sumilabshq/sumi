@@ -41,11 +41,18 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: 
 				<FrameSideColumn side="left" look={sides.left} panel={leftSide}>
 					{left}
 				</FrameSideColumn>
-				<FrameEdgeHandle edge="left" px={widths.left} isReachable={sides.left === "docked"} />
+				<FrameEdgeHandle
+					edge="left"
+					px={widths.left}
+					leastPx={widths.bounds.left.leastPx}
+					plateLeastPx={widths.bounds.plateLeastPx}
+					isReachable={sides.left === "docked"}
+				/>
 				<div ref={appZone} className="wg-shell-app-zone">
 					<PaneBoard
 						{...panes}
 						chatPx={widths.chat}
+						bounds={widths.bounds}
 						onChatPx={(px, mostPx) =>
 							void resizeEdge.run({
 								edge: "chat",

@@ -1,6 +1,11 @@
-import { PLATE_LEAST_PX } from "@widgetarium/layout";
 import { FRAME_WIDTH_VARS } from "../../../shared/lib/frame-width-vars.js";
 import type { FrameEdge } from "@widgetarium/layout";
+
+interface EdgePress {
+	readonly edge: FrameEdge;
+	readonly edgeElement: HTMLElement;
+	readonly px: number;
+}
 
 interface EdgeDrag {
 	readonly frame: HTMLElement;
@@ -24,9 +29,11 @@ export class FrameEdgeDrag {
 	private held: EdgeDrag | null = null;
 	private pressedEdge: HTMLElement | null = null;
 
+	constructor(private readonly plateLeastPx: number) {}
+
 	press(edge: FrameEdge, edgeElement: HTMLElement, px: number): void {
 		this.pressedEdge = edgeElement;
-		this.held = dragFrom(edge, edgeElement, px);
+		this.held = dragFrom({ edge, edgeElement, px }, this.plateLeastPx);
 	}
 
 	widthOr(px: number): number {
@@ -60,11 +67,11 @@ export class FrameEdgeDrag {
 			return px;
 		}
 
-		return dragFrom(edge, pressed, px)?.mostPx ?? px;
+		return dragFrom({ edge, edgeElement: pressed, px }, this.plateLeastPx)?.mostPx ?? px;
 	}
 }
 
-function dragFrom(edge: FrameEdge, edgeElement: HTMLElement, px: number): EdgeDrag | null {
+function dragFrom({ edge, edgeElement, px }: EdgePress, plateLeastPx: number): EdgeDrag | null {
 	const frame = edgeElement.closest<HTMLElement>(FRAME);
 	const sized = edgeElement.previousElementSibling ?? edgeElement.parentElement?.previousElementSibling ?? null;
 	if (frame === null || sized === null) {
@@ -74,14 +81,14 @@ function dragFrom(edge: FrameEdge, edgeElement: HTMLElement, px: number): EdgeDr
 	return {
 		frame,
 		sized,
-		mostPx: px + sparePxOf(frame, edge),
+		mostPx: px + sparePxOf(frame, edge, plateLeastPx),
 		hasMoved: false,
 	};
 }
 
-function sparePxOf(frame: HTMLElement, edge: FrameEdge): number {
+function sparePxOf(frame: HTMLElement, edge: FrameEdge, plateLeastPx: number): number {
 	return [...frame.querySelectorAll(GIVING_PLATES[edge])].reduce(
-		(spare, plate) => spare + Math.max(0, plate.getBoundingClientRect().width - PLATE_LEAST_PX),
+		(spare, plate) => spare + Math.max(0, plate.getBoundingClientRect().width - plateLeastPx),
 		0,
 	);
 }

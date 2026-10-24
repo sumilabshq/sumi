@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
-import { FRAME_BOUNDS, PLATE_LEAST_PX } from "@widgetarium/layout";
+import type { FrameBounds } from "@widgetarium/layout";
 import type { PaneEdge } from "../../../../shared/lib/pane-layout.js";
 import { ResizePaneSplitCommand } from "@widgetarium/layout";
 import { useEdgeDrag } from "../../lib/use-edge-drag.js";
@@ -9,6 +9,7 @@ import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 export interface PaneSplitEdgeProps {
 	readonly edge: PaneEdge;
 	readonly gap: number;
+	readonly bounds: FrameBounds;
 	readonly onDrag: (edge: PaneEdge, share: number) => void;
 	readonly onChatPx: (px: number, mostPx: number) => void;
 }
@@ -16,9 +17,9 @@ export interface PaneSplitEdgeProps {
 const RESIZE_LABEL = "Resize panes";
 const CHAT_EDGE = "chat";
 
-export function PaneSplitEdge({ edge, gap, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
+export function PaneSplitEdge({ edge, gap, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
 	const resize = useCommand(ResizePaneSplitCommand);
-	const least = PLATE_LEAST_PX / edge.spanPx;
+	const least = bounds.plateLeastPx / edge.spanPx;
 	const shareWithin = (asked: number): number => Math.min(Math.max(asked, least), edge.pairShare - least);
 	const commit = (share: number): void => {
 		void resize.run({
@@ -50,7 +51,7 @@ export function PaneSplitEdge({ edge, gap, onDrag, onChatPx }: PaneSplitEdgeProp
 			}}
 			{...handlers}
 			onDoubleClick={() =>
-				commit(shareWithin(edge.isChatEdge ? FRAME_BOUNDS.chat.usualPx / edge.spanPx : edge.pairShare / 2))
+				commit(shareWithin(edge.isChatEdge ? bounds.chat.usualPx / edge.spanPx : edge.pairShare / 2))
 			}
 		/>
 	);
