@@ -12,10 +12,14 @@ a review that finds one sends the change back. These are definitions, not advice
 | **Module** (`module.ts`)                                             | Wiring: lists its requests, provides its gateways                                                                                                                                                                                                                                  | Logic of any kind                                                                                                                                             |
 | **View** (a client package)                                          | Draws, keeps short-lived UI state (hover, drag, animation), reads with `useQuery`, writes with `useCommand`                                                                                                                                                                        | A business rule, a storage call, state that must survive a restart                                                                                            |
 
+When two handlers of one feature need the same computation, it is a pure function in that feature's `lib/`
+(`features/frame-sides/lib/side-looks.ts`, used by toggle, peek and conceal), never repeated in each handler
+nor hidden in a gateway; `shared/lib/` holds what two features use.
+
 **Bad: the handler forwards, a "store" in lib owns the state and the rules** (`packages/layout`, 2026-10-24):
 
 ```ts
-export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ frameSidesStore: FrameSidesStore })
@@ -69,7 +73,7 @@ export abstract class UserGateway {
 **Good: the handler holds the rule, `lib` computes, the gateway stores.**
 
 ```ts
-export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ frameSides: FrameSidesGateway })

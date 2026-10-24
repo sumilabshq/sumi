@@ -47,6 +47,8 @@ shared → gateways → features → module.ts
 | `"./module"`   | `generated/module.ts`   | the definition joined with every exported `*Handler`                                                                 | a starter: a client app or host for a client module; a server app for a server module (behind the `server` condition) |
 | `"./gateways"` | `generated/gateways.ts` | every gateway, every platform implementation, the parts type and factories (`obsidianCanvasParts`, `webCanvasParts`) | a starter or host; a web build keeps only what it uses (`sideEffects: false`)                                         |
 
+A `module(...)` package has two entries: `"."` is the root `index.ts`, which only re-exports `generated/contract.ts`, and `"./module"` is `module.ts`, imported by the app that starts it. It has no `"./gateways"`: the module picks its gateways from the platform. A client package's `"."` is a root `index.ts` re-exporting `shared/ui/index.ts` and `shared/lib/index.ts`. In both, `generated/` holds only generated code, never a re-export; the generator refuses to write one there.
+
 ## The table
 
 | The file is…                                              | It goes to                                                   |

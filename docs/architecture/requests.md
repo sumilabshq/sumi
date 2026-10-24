@@ -9,25 +9,34 @@ Every declaration is a fluent chain ([code-style.md](code-style.md#the-fluent-ch
 New code writes a request and its handler as one chain in `features/<feature>/requests.ts`. The chain up to the first `.inject`, `.guard`, `.use`, `.watch` or `.handle` is the contract.
 
 ```ts skip-check
-export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
-	.inject({ frameSidesStore: FrameSidesStore })
-	.handle(({ side }, { frameSidesStore }) => frameSidesStore.toggle(side));
+	.inject({ frameSides: FrameSidesGateway })
+	.handle(({ side }, { frameSides }) => frameSides.saveSides(toggledSides(frameSides.sides(), side), "toggle"));
+
+export const BuyCommand = command("buy")
+	.input(BuyInputSchema)
+	.idempotencyKey(Repeatable)
+	.sends(Payments.ChargeCommand)
+	.handle(async ({ cents }, { send }) => send(Payments.ChargeCommand, { cents }));
 
 export const LayoutModule = module("layout")
 	.queries(FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery)
 	.commands(ToggleFrameSideCommand)
-	.provide((parts: LayoutParts) => ({ ...parts }));
+	.provide((facts) => ({ ...layoutPartsOn(facts) }));
 ```
 
-- `module(name)` lists its requests and names no side. The app decides where it runs: `app({ modules: [LayoutModule.with(parts)] })` locally, `server({ modules })` on a server, which still refuses a request no guard covers.
+- A request in `requests.ts` has a short kebab name, the constant without its suffix (`"toggle-frame-side"`); the module stamps it `<module>/<short>` when it lists it, its `invalidates` list too. The generated contract carries the full name.
+- `module(name)` lists its requests and names no side. The app decides where it runs: `app({ modules: [LayoutModule], platform, scope })` locally, `server({ modules, env, scope })` on a server, which still refuses a request no guard covers.
+- `.provide` receives `{ platform, scope, env }`: `platform` is `"tauri" | "browser" | "server"`, `scope` carries `workspaceId` (the app id on the web). The module picks its gateway implementations from them inside its own `gateways/`; a host passes facts, never gateways. A starter told no platform refuses the module. A test hands fakes with `LayoutModule.with(parts)`.
 - `.provide` is typed against every listed request's `inject`: a missing or wrongly typed part is a type error.
-- `widgetarium generate` copies each listed chain up to its first handling step into `generated/contract.ts`. A contract may read only `shared/schema` and packages, so no handler code reaches a client; anything else is refused by name.
+- `.sends(...)` names the other modules' contracts a request may send; `send` in its context is typed to exactly those and routes through the running app or server, local route first, else remote. A refusal before the write refuses the sender; a failure after it fails the sender. A starter refuses a module whose declared send has no module and no server.
+- `widgetarium generate` copies each listed chain up to its first handling step into `generated/contract.ts`, with every schema it uses copied in, transitively, and the interfaces and inferred types their files declare for them. The contract imports only `zod` and `@widgetarium/core/requests`. A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`; a function, a helper call or a foreign import is refused by name, since a refinement belongs to the handler or the gateway (the kept-tree check is `KeptPaneTreeSchema` beside the pane-tree gateway). A function idempotency key is refused unless it is one arrow reading its input: `(input) => input.id`, or a template literal of its fields.
+- The package's `"."` is the root `index.ts`, `export * from "./generated/contract.js"`; `"./module"` is `module.ts`, imported only by the app that starts the module. There is no `"./gateways"`.
 - The mediator routes by request name, so the generated contract and the request that handles itself meet without sharing an object.
 - A module's `.guard()` and `.use()` run before every listed request on either side; `app()` refuses at start a step that needs a user, since a client has no Authenticate, and a step injecting what the module does not provide.
-- A store is the one writer of its state and keeps every transition through the `keep(next, reason)` it was built with; a handler never persists.
 - A data module holds no view. Its views live in a client package (`"level": "client"`), which imports the module's `"."` entry. `packages/layout` and its views in `packages/shell` are the first pair written this way; the sections below describe the earlier shape every other module still has.
 
 ## A contract
@@ -54,7 +63,7 @@ export const PagesQuery = query("canvas/pages")
 | `.settlesNow()`                                | query   | answered synchronously on its first read of a local module                    |
 | `.invalidates([Query, …])`                     | command | the queries re-read after it ran; without it every query on screen is re-read |
 
-- The name `"<module>/<name>"` is the request's address on the wire (`/rpc/billing/charge`), in logs and in done keys. `query()` throws on a name that is not kebab case `<module>/<name>`; lint holds it equal to the domain and the constant without its suffix.
+- The name `"<module>/<name>"` is the request's address on the wire (`/rpc/billing/charge`), in logs and in done keys. `query()` throws on a name that is not kebab case `<module>/<name>` or a short `<name>`; lint holds a `contract.ts` name equal to the domain and the constant without its suffix, and a `requests.ts` name to the constant alone.
 - **Strings only for free-form data** (request names, reasons). Every other choice is a typed value: a guard, a `permission("…")` constant, `PerCall` / `Repeatable`, a `Duration` (`seconds(n)`, `minutes(n)`, `hours(n)`, `duration({ hours: 1, minutes: 5 })`).
 
 ## A module
