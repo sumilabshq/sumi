@@ -1,3 +1,4 @@
+import { Event } from "./event";
 import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
@@ -32,7 +33,8 @@ export interface ModuleDefinition {
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[];
 	readonly importedModuleNames: readonly string[];
-	readonly emittedEvents: readonly AnyEvent[];
+	readonly publicEvents: readonly AnyEvent[];
+	readonly ownedEvents: readonly AnyEvent[];
 	readonly listedSubscribers: readonly AnySubscriber[];
 	readonly hostNeeds: HostNeeds;
 }
@@ -84,7 +86,8 @@ export class ServerModule<
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[] = [];
 	readonly importedModuleNames: readonly string[] = [];
-	readonly emittedEvents: readonly AnyEvent[] = [];
+	readonly publicEvents: readonly AnyEvent[] = [];
+	readonly ownedEvents: readonly AnyEvent[] = [];
 	readonly listedSubscribers: readonly AnySubscriber[] = [];
 	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
@@ -124,7 +127,8 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	readonly steps: readonly Step[] = [];
 	readonly serverOnlyRequestNames: readonly string[] = [];
 	readonly importedModuleNames: readonly string[] = [];
-	readonly emittedEvents: readonly AnyEvent[] = [];
+	readonly publicEvents: readonly AnyEvent[] = [];
+	readonly ownedEvents: readonly AnyEvent[] = [];
 	readonly listedSubscribers: readonly AnySubscriber[] = [];
 	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
@@ -148,6 +152,14 @@ type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extend
 
 export type NeedsOf<H extends readonly AnyHandledRequest[]> = Provided & IntersectionOf<InjectedBy<H[number]>>;
 
+type PublicItem = AnyHandledRequest | AnyEvent;
+
+type RequestsIn<L extends readonly PublicItem[]> = L extends readonly [infer First, ...infer Rest extends PublicItem[]]
+	? First extends AnyHandledRequest
+		? [First, ...RequestsIn<Rest>]
+		: RequestsIn<Rest>
+	: [];
+
 interface ModulePlan<R extends Runs> {
 	readonly name: string;
 	readonly runs: R;
@@ -155,7 +167,7 @@ interface ModulePlan<R extends Runs> {
 	readonly serverOnly: readonly AnyHandledRequest[];
 	readonly imports: readonly string[];
 	readonly steps: readonly Step[];
-	readonly emits: readonly AnyEvent[];
+	readonly publicEvents: readonly AnyEvent[];
 	readonly subscribers: readonly AnySubscriber[];
 	readonly needs: HostNeeds;
 }
@@ -180,7 +192,7 @@ export class ModuleDraft {
 			serverOnly: [],
 			imports: [],
 			steps: [],
-			emits: [],
+			publicEvents: [],
 			subscribers: [],
 			needs: NOTHING_NEEDED,
 		});
@@ -198,7 +210,8 @@ export class RequestsModule<
 	readonly steps: readonly Step[];
 	readonly serverOnlyRequestNames: readonly string[];
 	readonly importedModuleNames: readonly string[];
-	readonly emittedEvents: readonly AnyEvent[];
+	readonly publicEvents: readonly AnyEvent[];
+	readonly ownedEvents: readonly AnyEvent[];
 	readonly listedSubscribers: readonly AnySubscriber[];
 	readonly hostNeeds: HostNeeds;
 
@@ -208,15 +221,17 @@ export class RequestsModule<
 		this.steps = plan.steps;
 		this.serverOnlyRequestNames = plan.serverOnly.map(({ request }) => request.inModule(plan.name).name);
 		this.importedModuleNames = plan.imports;
-		this.emittedEvents = plan.emits.map((emitted) => emitted.inModule(plan.name));
+		this.publicEvents = plan.publicEvents.map((listed) => listed.inModule(plan.name));
 		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, plan.name));
+		this.ownedEvents = ownedEventsOf(this.publicEvents, this.listedSubscribers, plan.name);
 		this.hostNeeds = plan.needs;
 	}
 
-	public<const L extends readonly AnyHandledRequest[]>(...requests: L): RequestsModule<[...H, ...L], R, N, G> {
+	public<const L extends readonly PublicItem[]>(...listed: L): RequestsModule<[...H, ...RequestsIn<L>], R, N, G> {
 		return new RequestsModule({
 			...this.plan,
-			listed: this.withListed(requests),
+			listed: this.withListed(listed.filter(isHandledRequest)),
+			publicEvents: [...this.plan.publicEvents, ...listed.filter(isEvent)],
 		});
 	}
 
@@ -235,13 +250,6 @@ export class RequestsModule<
 		return new RequestsModule({
 			...this.plan,
 			imports: [...this.plan.imports, ...modules.map(nameOfImported)],
-		});
-	}
-
-	emits(...events: readonly AnyEvent[]): RequestsModule<H, R, N, G> {
-		return new RequestsModule({
-			...this.plan,
-			emits: [...this.plan.emits, ...events],
 		});
 	}
 
@@ -345,8 +353,21 @@ function coverAfter(cover: Cover, step: Step): Cover {
 	return step.needsUser ? "guarded" : cover;
 }
 
-function isHandledRequest(listed: AnyHandledRequest | string): listed is AnyHandledRequest {
-	return typeof listed !== "string";
+function isHandledRequest(listed: PublicItem | string): listed is AnyHandledRequest {
+	return typeof listed !== "string" && !isEvent(listed);
+}
+
+function isEvent(listed: PublicItem): listed is AnyEvent {
+	return listed instanceof Event;
+}
+
+function ownedEventsOf(
+	publicEvents: readonly AnyEvent[],
+	subscribers: readonly AnySubscriber[],
+	module: string,
+): readonly AnyEvent[] {
+	const heardOwn = subscribers.map(({ event }) => event).filter((heard) => heard.module === module);
+	return [...new Map([...publicEvents, ...heardOwn].map((owned) => [owned.name, owned])).values()];
 }
 
 function nameOfImported(imported: ImportedModule): string {

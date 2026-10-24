@@ -51,7 +51,9 @@ const REMOTE_SERVER_ONLY_SEND = {
 	server:
 		"{request} sends {sent}, which is server-only: server-only requests never cross the network; run {sentModule} in this server's .modules",
 } as const;
-const UNLISTED_EMIT = '{owner} emits {event}, which module "{module}" does not list in .emits()';
+const FOREIGN_EMIT = '{owner} emits {event}, which module "{module}" does not own: a module emits only its own events';
+const EVENT_NOT_PUBLIC =
+	'{owner} listens to {event}, which module "{eventModule}" keeps private: list it in .public() of {eventModule}';
 const EVENT_NOT_IMPORTED =
 	'{owner} listens to {event}, but module "{module}" does not import {eventModule}: add .imports()';
 const EVENT_OVER_NETWORK =
@@ -258,9 +260,9 @@ function emitFindings({ definition, handlers }: ReadyModule): string[] {
 	];
 	return emitters.flatMap(({ owner, emits }) =>
 		emits
-			.filter(({ name }) => !definition.emittedEvents.some((listed) => listed.name === name))
+			.filter((emitted) => emitted.inModule(definition.name).module !== definition.name)
 			.map(({ name }) =>
-				UNLISTED_EMIT.replace("{owner}", owner).replace("{event}", name).replace("{module}", definition.name),
+				FOREIGN_EMIT.replace("{owner}", owner).replace("{event}", name).replace("{module}", definition.name),
 			),
 	);
 }
@@ -298,8 +300,13 @@ function eventSourceFindings(
 		return [said(EVENT_NOT_IMPORTED)];
 	}
 
-	const isRun = modules.some((ran) => ran.definition.name === eventModule);
-	return !isRun && remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
+	const ran = modules.find((started) => started.definition.name === eventModule)?.definition;
+
+	if (ran === undefined) {
+		return remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
+	}
+
+	return ran.publicEvents.some(({ name }) => name === event.name) ? [] : [said(EVENT_NOT_PUBLIC)];
 }
 
 function duplicateFindings(handlers: readonly AnyHandler[]): string[] {

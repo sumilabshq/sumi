@@ -120,7 +120,6 @@ const ReachOtherContract = command("reaching/reach-other").idempotencyKey(Repeat
 
 const LedgerModule = module("ledger")
 	.on(Device)
-	.emits(AddedEvent, LedgerChangedEvent)
 	.subscribers(
 		FirstHearsSubscriber,
 		SecondHearsSubscriber,
@@ -149,7 +148,7 @@ check("a successful command names exactly the queries it invalidated", answer.ok
 ]);
 await settled();
 check(
-	"two subscribers of one event both run, after the emitter answered",
+	"a private event, listed nowhere, reaches both of its own module's subscribers after the emitter answered",
 	heard.said.filter((said) => said.startsWith("first") || said.startsWith("second")),
 	["first 3", "second 3"],
 );
@@ -211,23 +210,58 @@ check(
 	'reaching/reach-other invalidates other/value, but module "reaching" does not import other: add .imports()',
 );
 
-const UndeclaredCommand = command("undeclared")
-	.idempotencyKey(Repeatable)
-	.emits(AddedEvent)
-	.handle((_input, { emit }) => emit(AddedEvent, { by: 1 }));
+const ForeignEvent = event("other/changed");
 
-const UndeclaringModule = module("undeclaring")
+const EmitsForeignCommand = command("emits-foreign")
+	.idempotencyKey(Repeatable)
+	.emits(ForeignEvent)
+	.handle((_input, { emit }) => emit(ForeignEvent));
+
+const ForeignEmittingModule = module("foreign-emitting")
 	.on(Device)
-	.public(UndeclaredCommand)
+	.public(EmitsForeignCommand)
 	.provide(() => ({}));
 
 check(
-	"a request emitting an event its module does not list in .emits() is refused at start",
-	thrownBy(() => app().modules(UndeclaringModule).start(ON_BROWSER)).split("\n")[1],
-	'undeclaring/undeclared emits undeclaring/added, which module "undeclaring" does not list in .emits()',
+	"a request emitting another module's event is refused at start",
+	thrownBy(() => app().modules(ForeignEmittingModule).start(ON_BROWSER)).split("\n")[1],
+	'foreign-emitting/emits-foreign emits other/changed, which module "foreign-emitting" does not own: a module emits only its own events',
 );
 
-const ForeignEvent = event("other/changed");
+const KeptChangedEvent = event("kept-changed");
+
+const SharedChangedEvent = event("shared-changed");
+
+const RereadKeptSubscriber = subscriber(KeptChangedEvent).handle(() => undefined);
+
+const KeeperModule = module("keeper")
+	.on(Device)
+	.subscribers(RereadKeptSubscriber)
+	.public(ValueQuery, SharedChangedEvent)
+	.provide(() => ({ ledger: new Ledger() }));
+
+const HearsKeptSubscriber = subscriber(event("keeper/kept-changed")).handle(() => undefined);
+
+const HearsSharedSubscriber = subscriber(event("keeper/shared-changed")).handle(() => undefined);
+
+const hearerModuleOf = (heard: typeof HearsKeptSubscriber) =>
+	module("hearer")
+		.on(Device)
+		.imports(KeeperModule)
+		.subscribers(heard)
+		.public(ValueQuery)
+		.provide(() => ({ ledger: new Ledger() }));
+
+check(
+	"another module subscribing to a private event is refused at start, naming the fix",
+	thrownBy(() => app().modules(KeeperModule, hearerModuleOf(HearsKeptSubscriber)).start(ON_BROWSER)).split("\n")[1],
+	'the subscriber of keeper/kept-changed listens to keeper/kept-changed, which module "keeper" keeps private: list it in .public() of keeper',
+);
+check(
+	"another module subscribing to a public event starts",
+	thrownBy(() => app().modules(KeeperModule, hearerModuleOf(HearsSharedSubscriber)).start(ON_BROWSER)),
+	"",
+);
 
 const ListensForeignSubscriber = subscriber(ForeignEvent).handle(() => undefined);
 
@@ -430,7 +464,6 @@ const NeverHearsSubscriber = subscriber(BadPayloadEvent)
 
 const BadPayloadModule = module("payloads")
 	.on(Device)
-	.emits(BadPayloadEvent)
 	.subscribers(NeverHearsSubscriber)
 	.public(ValueQuery)
 	.provide(() => ({ ledger: new Ledger(), heard: new Heard() }));

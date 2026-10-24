@@ -39,7 +39,7 @@ const DROPPED = "{source} gave {event} a payload it does not accept, so it was d
 export function startModuleEvents(parts: EventParts): () => void {
 	const stops = parts.modules.flatMap((started) => [
 		...started.definition.listedSubscribers.map((listed) => subscribed(parts, started, listed)),
-		...started.definition.emittedEvents
+		...started.definition.ownedEvents
 			.filter(({ name }) => parts.listened.has(name))
 			.flatMap((emitted) => sourceStarted(parts, started, emitted)),
 	]);
