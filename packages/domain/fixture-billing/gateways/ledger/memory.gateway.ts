@@ -6,15 +6,18 @@ export class MemoryLedgerGateway extends LedgerGateway {
 
 	constructor(currency: string) {
 		super();
-		this.held = { currency, total: 0, charges: 0 };
+		this.held = {
+			currency,
+			total: 0,
+			charges: 0,
+		};
 	}
 
-	override add(amount: number): Promise<Balance> {
-		this.held = { ...this.held, total: this.held.total + amount, charges: this.held.charges + 1 };
-		return this.balance();
+	override balance(): Balance {
+		return this.held;
 	}
 
-	override balance(): Promise<Balance> {
-		return Promise.resolve(this.held);
+	override saveBalance(balance: Balance): void {
+		this.held = balance;
 	}
 }

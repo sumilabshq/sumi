@@ -2,7 +2,8 @@ import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import path from "node:path";
 import { app } from "../packages/shared/core/src/requests/index.ts";
-import { BalanceQuery, ChargeCommand } from "@widgetarium/fixture-billing";
+import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { check } from "./check-helpers.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
@@ -44,10 +45,8 @@ async function allowedOriginFor(url: string, origin: string): Promise<string | n
 	return preflight.headers.get("access-control-allow-origin");
 }
 
-type Client = ReturnType<typeof app>;
-
 async function checkRequests(url: string): Promise<void> {
-	const client = app({ modules: [], server: url });
+	const client = app().imports(FixtureBillingModule.at(url)).start();
 	const opened = await client.send(BalanceQuery);
 	check("a query travels over real HTTP and answers", opened, {
 		ok: true,
@@ -61,7 +60,7 @@ async function checkRequests(url: string): Promise<void> {
 	await checkRepeatedKey(client);
 }
 
-async function checkRepeatedKey(client: Client): Promise<void> {
+async function checkRepeatedKey(client: StartedApp): Promise<void> {
 	const first = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	const repeat = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	check("a repeat of one idempotency key gets the first answer, which ran", [first.ok, repeat], [true, first]);

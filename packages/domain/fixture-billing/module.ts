@@ -1,8 +1,9 @@
-import { serverModule } from "@widgetarium/core/requests";
-import { MemoryLedgerGateway } from "./gateways/ledger/memory.gateway.js";
+import { PublicGuard, Server, module } from "@widgetarium/core/requests";
+import { fixtureBillingPartsOn } from "./gateways/fixture-billing-parts/fixture-billing-parts.gateway.js";
+import { BalanceQuery, ChargeCommand } from "./features/charge/requests.js";
 
-const DEFAULT_CURRENCY = "EUR";
-
-export const FixtureBillingServerModule = serverModule("fixture-billing").provide(({ env }) => ({
-	ledgerGateway: new MemoryLedgerGateway(env["LEDGER_CURRENCY"] ?? DEFAULT_CURRENCY),
-}));
+export const FixtureBillingModule = module("fixture-billing")
+	.on(Server)
+	.public(BalanceQuery, ChargeCommand)
+	.guard(PublicGuard)
+	.provide((facts) => fixtureBillingPartsOn(facts));

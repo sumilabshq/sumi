@@ -791,7 +791,7 @@ try {
 }
 
 const repo = await cli(["--check"], REPO);
-const generatedFiles = ["canvas", "fixture-billing"].flatMap((module) =>
+const generatedFiles = ["canvas"].flatMap((module) =>
 	[ENTRY, JOINED].map((entry) => path.join(REPO, "packages", "domain", module, entry)),
 );
 check(

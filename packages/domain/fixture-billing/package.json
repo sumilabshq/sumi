@@ -7,13 +7,10 @@
 	"type": "module",
 	"exports": {
 		".": {
-			"source": "./generated/index.ts"
+			"source": "./index.ts"
 		},
 		"./module": {
-			"server": "./generated/module.ts"
-		},
-		"./gateways": {
-			"server": "./generated/gateways.ts"
+			"server": "./module.ts"
 		}
 	},
 	"dependencies": {
