@@ -29,6 +29,7 @@
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/browser": "0.1.0",
 		"@widgetarium/canvas": "0.1.0",
+		"@widgetarium/command-menu": "0.1.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/gpu": "0.1.0",
 		"@widgetarium/kit": "0.1.0",

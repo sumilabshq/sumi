@@ -1,0 +1,86 @@
+import { z } from "zod";
+import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { AppTabsQuery } from "@widgetarium/app-host";
+import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
+import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
+import { DoorSchema, KeptMenuSchema, OpenMenuSchema } from "../../shared/schema/command-menu.schema.js";
+import { filledWithShown } from "./lib/shown-text.js";
+
+export const CommandMenuQuery = query("command-menu")
+	.output(KeptMenuSchema)
+	.settlesNow()
+	.inject({ commandMenu: CommandMenuGateway })
+	.handle((_input, { commandMenu }) => commandMenu.menu());
+
+export const OpenCommandMenuCommand = command("open-command-menu")
+	.input(OpenMenuSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ commandMenu: CommandMenuGateway })
+	.sends(AppTabsQuery)
+	.handle(async ({ door, text, shownName }, { commandMenu, send, invalidate }) => {
+		invalidate(CommandMenuQuery);
+		const was = commandMenu.menu();
+		const filled = text === null ? filledWithShown((await send(AppTabsQuery)).tabs, shownName) : { door, text };
+		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}"`;
+		commandMenu.saveMenu(
+			{
+				isOpen: true,
+				door: filled.door,
+				text: filled.text,
+				opening: was.opening + 1,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const ChangeMenuDoorCommand = command("change-menu-door")
+	.input(z.object({ door: DoorSchema }))
+	.idempotencyKey(Repeatable)
+	.inject({ commandMenu: CommandMenuGateway })
+	.handle(({ door }, { commandMenu, invalidate }) => {
+		invalidate(CommandMenuQuery);
+		const was = commandMenu.menu();
+
+		if (!was.isOpen || was.door === door) {
+			console.info(`[widgetarium] command menu door skipped: ${was.isOpen ? `already ${door}` : "shut"}`);
+			return;
+		}
+
+		const reason = `command menu door ${was.door} → ${door}`;
+		commandMenu.saveMenu(
+			{
+				...was,
+				door,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const CloseCommandMenuCommand = command("close-command-menu")
+	.idempotencyKey(Repeatable)
+	.inject({ commandMenu: CommandMenuGateway })
+	.handle((_input, { commandMenu, invalidate }) => {
+		invalidate(CommandMenuQuery);
+		const was = commandMenu.menu();
+
+		if (!was.isOpen) {
+			console.info("[widgetarium] command menu close skipped: already shut");
+			return;
+		}
+
+		const reason = `command menu open at ${was.door} → shut`;
+		commandMenu.saveMenu(
+			{
+				...was,
+				isOpen: false,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const MenuOnMenuChangedSubscriber = subscriber(CommandMenuChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(CommandMenuQuery);
+});
