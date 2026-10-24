@@ -11,6 +11,8 @@ How code is written inside the architecture. The rules hold in any project built
 | a query            | noun phrase + `Query`, no `Get`                                          | `FrameSidesQuery`                                               |
 | a command          | verb phrase + `Command`                                                  | `ToggleFrameSideCommand`                                        |
 | a request's string | the constant without its suffix, kebab case; the module adds `<module>/` | `"toggle-frame-side"` → `layout/toggle-frame-side`              |
+| an event           | a fact in the past tense + `Event`                                       | `PanesChangedEvent`                                             |
+| a subscriber       | what it does, never its trigger: `Reread<Data>` or a verb phrase         | `RereadPanesSubscriber`, `EnsurePanePagesSubscriber`            |
 | a module           | its area + `Module`                                                      | `LayoutModule`                                                  |
 | a guard            | what it checks + `Guard`                                                 | `AuthenticatedGuard`, `OwnsInvoiceGuard`                        |
 | a middleware       | what it does + `Middleware`                                              | `TimingLoggerMiddleware`                                        |
@@ -20,7 +22,7 @@ How code is written inside the architecture. The rules hold in any project built
 | a storage shape    | `Kept<Name>Schema`, beside its gateway                                   | `KeptPaneTreeSchema`                                            |
 | a file             | kebab-case                                                               | `requests.ts`, `tauri.gateway.ts`, `side-looks.ts`              |
 
-`building-block-names` enforces the PascalCase and suffix rows; `feature-layout` the request string.
+`building-block-names` enforces the PascalCase and suffix rows; `feature-layout` the request string. Two subscribers of one feature doing the same on different events add what changed: `RereadFieldForDesignSubscriber`.
 
 ## The fluent chain
 

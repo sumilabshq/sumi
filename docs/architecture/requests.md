@@ -76,15 +76,15 @@ export const PanesChangedEvent = event("panes-changed").from(
 	gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)),
 );
 
-export const PanesOnPanesChangedSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
+export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(PaneTreeQuery);
 	invalidate(PlacementPreviewQuery);
 });
 ```
 
 - **Two sources.** A handler emits it (`.emits(Event)`, then `emit(Event, input)`, which returns nothing to await), or it comes from outside with `.from(...)`: one source for every platform, or a record keyed by platform (a missing platform never fires). Sources: `gatewayEvent(Gateway, (gateway, fire) => gateway.xChanged(fire))` for a gateway's own listener in the process, `tauriEvent(name)` (Tauri's `listen`, loaded lazily), `windowEvent(type)` (`window.addEventListener`, the payload of a `MessageEvent` or `CustomEvent`). A payload the event's schema refuses is reported and dropped, never delivered.
-- **The module lists it.** `.emits(...)` names every event the module produces, emitted or sourced; a handler emitting an event its module does not list is refused at start. The app starts a source only while some subscriber listens, and stops it with `stop()`.
-- **Subscribers.** `subscriber(Event).inject({...}).sends(...).emits(...).handle((input, { invalidate, send, emit }) => ...)`, listed with `.subscribers(...)`; many per event are normal. A subscriber of another module's event needs that module in `.imports()`; events do not cross the network yet, so an event of a module imported from an address is refused at start.
+- **Private unless public.** An event belongs to the module whose package declares it. Listed in `.public(...)` beside the requests, it enters the generated contract and other modules may subscribe to it; not listed, it is private: only the module's own subscribers hear it. A handler emits only its own module's events, public or private; emitting another module's event is refused at start. The app starts a source only while some subscriber listens, and stops it with `stop()`.
+- **Subscribers.** `subscriber(Event).inject({...}).sends(...).emits(...).handle((input, { invalidate, send, emit }) => ...)`, listed with `.subscribers(...)`: what the module reacts to; many per event are normal. A subscriber is named for what it does (`RereadPanesSubscriber`, `EnsurePanePagesSubscriber`), never for its trigger. A subscriber of another module's event needs that module in `.imports()` and the event in that module's `.public()`, or the start is refused naming the fix; events do not cross the network yet, so an event of a module imported from an address is refused at start.
 - **After the answer, each on its own.** Subscribers run after the emitting handler has answered (scheduled, never inline); one throwing or rejecting is reported once and touches neither the emitter nor the other subscribers.
 - **Views never touch events.** A view reads with `useQuery` and acts with `useCommand`; events are inside modules: subscribers handle them and call `invalidate` to re-read queries. A view never emits or subscribes to an event.
 - **Where it lives.** An event a gateway is the source of lives beside it, `gateways/<gateway>/<gateway>.events.ts`; an emitted event in the feature that emits it, or `shared/events/<topic>.events.ts` when two features use it.
@@ -113,12 +113,13 @@ module("canvas")
 
 ## A module
 
-A module says where it may run, which of its commands and queries others may use, and picks its gateways. `module.ts` holds only this:
+A module says where it may run, which of its commands, queries and events others may use, what it reacts to, and picks its gateways. `module.ts` holds only this:
 
 ```ts skip-check
 export const LayoutModule = module("layout")
 	.on(Device)
-	.public(FrameSidesQuery, ToggleFrameSideCommand, /* … */ DropGoneTabsCommand)
+	.subscribers(RereadSidesSubscriber, RereadPanesSubscriber)
+	.public(FrameSidesQuery, ToggleFrameSideCommand, /* … */ DropGoneTabsCommand, PanesChangedEvent)
 	.provide((facts) => ({ ...layoutPartsOn(facts) }));
 
 export const BillingModule = module("billing")
@@ -129,9 +130,9 @@ export const BillingModule = module("billing")
 	.provide((facts) => billingPartsOn(facts));
 ```
 
-- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.needs`, `.emits`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
-- **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries and commands are listed together. A request named twice is refused when the module is defined.
-- **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `sends` and `emits` lists and its module's events too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
+- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.needs`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
+- **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries, commands and public events are listed together. A request named twice is refused when the module is defined.
+- **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `sends` and `emits` lists, its public events and the events its own subscribers hear too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
 - **`.provide((facts) => parts)`** receives `{ platform, scope, env, host }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
 - **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app().modules(LayoutModule.with(fakes)).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
 
@@ -156,7 +157,7 @@ export const BuyCommand = command("buy")
 
 ## The generated contract
 
-`npm run generate` reads each `module.ts`, finds the listed requests and events and writes `generated/contract.ts`: each public chain and each event in `.emits` up to its first handling step (an event's `.from(...)` is cut, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`). The contract carries no invalidation.
+`npm run generate` reads each `module.ts`, finds the listed requests and events and writes `generated/contract.ts`: each request and event `.public` lists, up to its first handling step (an event's `.from(...)` is cut, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`). The contract carries no invalidation.
 
 - The contract imports only `zod` and `@widgetarium/core/requests`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
