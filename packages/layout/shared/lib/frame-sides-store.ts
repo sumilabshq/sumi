@@ -15,7 +15,10 @@ const TOGGLED: Readonly<Record<SideLook, SideLook>> = {
 export class FrameSidesStore {
 	private readonly watchers = new Set<() => void>();
 
-	constructor(private sides: FrameSides) {}
+	constructor(
+		private sides: FrameSides,
+		private readonly keep: (sides: FrameSides, reason: string) => void,
+	) {}
 
 	now = (): FrameSides => this.sides;
 
@@ -59,6 +62,7 @@ export class FrameSidesStore {
 			...this.sides,
 			[side]: next,
 		};
+		this.keep(this.sides, `${side} ${reason}`);
 
 		for (const changed of this.watchers) {
 			changed();

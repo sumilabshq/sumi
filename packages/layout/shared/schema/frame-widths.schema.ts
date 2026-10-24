@@ -10,3 +10,5 @@ export const FrameWidthsSchema = z.object({
 });
 
 export type FrameWidths = z.infer<typeof FrameWidthsSchema>;
+
+export const WidthPxSchema = z.number().finite().positive();

@@ -1,5 +1,5 @@
-import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "../schema/pane-tree.schema.js";
-import { PLATE_LEAST_PX } from "./frame-bounds.js";
+import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "@widgetarium/layout";
+import { PLATE_LEAST_PX } from "@widgetarium/layout";
 
 export interface PaneRect {
 	readonly left: number;

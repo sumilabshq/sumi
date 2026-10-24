@@ -14,3 +14,5 @@ export const FrameSidesSchema = z.object({
 });
 
 export type FrameSides = z.infer<typeof FrameSidesSchema>;
+
+export const FrameSideInputSchema = z.object({ side: FrameSideSchema });

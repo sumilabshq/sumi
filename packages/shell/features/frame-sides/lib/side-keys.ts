@@ -1,4 +1,4 @@
-import type { FrameSide } from "../../../shared/schema/frame-sides.schema.js";
+import type { FrameSide } from "@widgetarium/layout";
 
 export interface SideKeys {
 	readonly code: string;

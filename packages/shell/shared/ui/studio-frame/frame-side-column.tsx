@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
-import type { FrameSide, SideLook } from "../../schema/frame-sides.schema.js";
+import type { FrameSide, SideLook } from "@widgetarium/layout";
 
 export interface FrameSideColumnProps {
 	readonly side: FrameSide;

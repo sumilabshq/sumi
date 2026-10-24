@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
-import { FRAME_BOUNDS, PLATE_LEAST_PX } from "../../../../shared/lib/frame-bounds.js";
+import { FRAME_BOUNDS, PLATE_LEAST_PX } from "@widgetarium/layout";
 import type { PaneEdge } from "../../../../shared/lib/pane-layout.js";
-import { ResizePaneSplitCommand } from "../../contract.js";
+import { ResizePaneSplitCommand } from "@widgetarium/layout";
 import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 
 export interface PaneSplitEdgeProps {

@@ -5,8 +5,8 @@ import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "../../../shared/lib/pane-layout.js";
 import type { PaneRect } from "../../../shared/lib/pane-layout.js";
-import type { PaneLeaf, PaneSide, PaneView } from "../../../shared/schema/pane-tree.schema.js";
-import { PlacePaneCommand } from "../contract.js";
+import type { PaneLeaf, PaneSide, PaneView } from "@widgetarium/layout";
+import { PlacePaneCommand } from "@widgetarium/layout";
 
 export interface PaneAim {
 	readonly targetId: string | null;

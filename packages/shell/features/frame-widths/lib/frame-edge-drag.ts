@@ -1,6 +1,6 @@
-import { PLATE_LEAST_PX } from "../../../shared/lib/frame-bounds.js";
+import { PLATE_LEAST_PX } from "@widgetarium/layout";
 import { FRAME_WIDTH_VARS } from "../../../shared/lib/frame-width-vars.js";
-import type { FrameEdge } from "../../../shared/schema/frame-widths.schema.js";
+import type { FrameEdge } from "@widgetarium/layout";
 
 interface EdgeDrag {
 	readonly frame: HTMLElement;

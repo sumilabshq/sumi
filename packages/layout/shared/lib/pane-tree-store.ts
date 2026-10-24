@@ -7,7 +7,10 @@ const NO_PANE = 'no pane "{id}"';
 export class PaneTreeStore {
 	private readonly watchers = new Set<() => void>();
 
-	constructor(private tree: PaneTree) {}
+	constructor(
+		private tree: PaneTree,
+		private readonly keep: (tree: PaneTree, reason: string) => void,
+	) {}
 
 	now = (): PaneTree => this.tree;
 
@@ -103,14 +106,44 @@ export class PaneTreeStore {
 			throw new Error(NO_PANE.replace("{id}", id));
 		}
 
+		this.become(this.treeWithout(id), `close ${id}`);
+	}
+
+	dropGoneTabs(heldTabIds: ReadonlySet<string>): void {
+		for (const leaf of this.leaves()) {
+			if (leaf.view.kind === "app" && leaf.view.tabId !== null && !heldTabIds.has(leaf.view.tabId)) {
+				this.dropGoneTab(leaf.id, leaf.view.tabId);
+			}
+		}
+	}
+
+	private dropGoneTab(id: string, tabId: string): void {
+		const reason = `kept tab ${tabId} is gone`;
+		const appPanes = this.leaves().filter((leaf) => leaf.view.kind === "app");
+
+		if (appPanes.length > 1) {
+			this.become(this.treeWithout(id), reason);
+			return;
+		}
+
 		this.become(
 			{
 				...this.tree,
-				root: withoutPane(this.tree.root, id),
-				targetId: this.tree.targetId === id ? null : this.tree.targetId,
+				root: withView(this.tree.root, id, {
+					kind: "app",
+					tabId: null,
+				}),
 			},
-			`close ${id}`,
+			reason,
 		);
+	}
+
+	private treeWithout(id: string): PaneTree {
+		return {
+			...this.tree,
+			root: withoutPane(this.tree.root, id),
+			targetId: this.tree.targetId === id ? null : this.tree.targetId,
+		};
 	}
 
 	private mintLeaf(view: PaneView): PaneLeaf {
@@ -127,6 +160,7 @@ export class PaneTreeStore {
 		}
 
 		this.tree = next;
+		this.keep(next, reason);
 
 		for (const changed of this.watchers) {
 			changed();

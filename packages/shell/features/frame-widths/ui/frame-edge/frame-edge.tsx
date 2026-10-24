@@ -1,7 +1,7 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
-import { FRAME_BOUNDS } from "../../../../shared/lib/frame-bounds.js";
-import type { FrameEdge } from "../../../../shared/schema/frame-widths.schema.js";
+import { FRAME_BOUNDS } from "@widgetarium/layout";
+import type { FrameEdge } from "@widgetarium/layout";
 import { useFrameEdge } from "../../lib/use-frame-edge.js";
 
 export interface FrameEdgeHandleProps {

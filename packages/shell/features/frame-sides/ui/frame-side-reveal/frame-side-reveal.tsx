@@ -3,13 +3,13 @@ import type { ReactElement, RefObject } from "react";
 import { useEdgeReveal } from "@widgetarium/behaviors";
 import type { EdgeLook } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import type { FrameSide, SideLook } from "../../../../shared/schema/frame-sides.schema.js";
+import type { FrameSide, SideLook } from "@widgetarium/layout";
 import {
 	ConcealFrameSideCommand,
 	FrameSidesQuery,
 	PeekFrameSideCommand,
 	ToggleFrameSideCommand,
-} from "../../contract.js";
+} from "@widgetarium/layout";
 import { SIDE_KEYS } from "../../lib/side-keys.js";
 
 export interface FrameSideRevealProps {
