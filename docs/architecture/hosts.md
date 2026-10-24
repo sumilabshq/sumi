@@ -14,7 +14,7 @@ A host is the framework code that runs apps inside another program: `apps/host-t
 
 ```ts skip-check
 export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): StartedApp {
-	return app({ modules: [LayoutModule], platform, scope: { workspaceId } });
+	return app().modules(LayoutModule).start({ platform, scope: { workspaceId } });
 }
 ```
 
@@ -43,10 +43,10 @@ TODO: `settings.json` and `session.json` each have two holders, the host's own d
 
 ## Deploy
 
-| An app's modules…          | It needs                                                                                  |
-| -------------------------- | ----------------------------------------------------------------------------------------- |
-| all run where the app runs | no server; the app runs every handler itself                                              |
-| some run on a server       | `apps/server`: `server({ modules, env })` serves `/rpc/*`; the app passes `server: <url>` |
+| An app's modules…          | It needs                                                                                                    |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| all run where the app runs | no server; the app runs every handler itself                                                                |
+| some run on a server       | `apps/server`: `server().modules(...).start({ env })` serves `/rpc/*`; the app imports them with `.at(url)` |
 
 `apps/server` is Hono, mounted in `src/main.ts` with CORS for Obsidian's origin and the dev web origin (`WEB_ORIGIN`). `main.ts` is the one file that reads `process.env`. `npm run test:server` starts it on a free port and calls it over real HTTP. There is never a server per device: desktop and mobile call the same `/rpc`.
 

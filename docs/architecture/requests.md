@@ -62,25 +62,33 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 
 ## A module
 
-A module lists its requests and picks its gateways. `module.ts` holds only this:
+A module says where it may run, which of its commands and queries others may use, and picks its gateways. `module.ts` holds only this:
 
 ```ts skip-check
 export const LayoutModule = module("layout")
-	.queries(FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery)
-	.commands(ToggleFrameSideCommand, PeekFrameSideCommand, /* … */ DropGoneTabsCommand)
+	.on(Device)
+	.public(FrameSidesQuery, ToggleFrameSideCommand, /* … */ DropGoneTabsCommand)
 	.provide((facts) => ({ ...layoutPartsOn(facts) }));
+
+export const BillingModule = module("billing")
+	.on(Server)
+	.imports(UsersModule)
+	.public(InvoicesQuery, ChargeCommand)
+	.serverOnly(CreateCustomerCommand)
+	.provide((facts) => billingPartsOn(facts));
 ```
 
-- **Order:** `module(name)`, then `.queries`, `.commands`, `.guard`, `.use` in any order, then `.provide` last. `.queries` refuses a command and `.commands` a query.
+- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
+- **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries and commands are listed together. A request named twice is refused when the module is defined.
 - **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `invalidates` and `sends` lists too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
 - **`.provide((facts) => parts)`** receives `{ platform, scope, env }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
-- **A module names no side.** The app decides where it runs: `app()` locally, `server()` on a server.
-- **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app({ modules: [LayoutModule.with(fakes)] }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
+- **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app().modules(LayoutModule.with(fakes)).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
 
 ## Sending to another module
 
 ```ts skip-check
 import { ChargeCommand } from "@widgetarium/billing";
+import { CreateCustomerCommand } from "@widgetarium/billing/server";
 
 export const BuyCommand = command("buy")
 	.input(BuyInputSchema)
@@ -89,14 +97,15 @@ export const BuyCommand = command("buy")
 	.handle(async ({ cents }, { send }) => send(ChargeCommand, { cents }));
 ```
 
-- The other module's contract comes from its `"."` entry, declared in `package.json`. Never its `module.ts`, handler or gateway.
-- `send` is typed to exactly the requests in `.sends`; it routes through the running app or server, a local route first, else the remote server.
+- The sending module names the other in `.imports(BillingModule)`; the request names what it sends in `.sends(...)`, which types `send`. A send to a module not in `.imports` is refused at start.
+- Public requests come from the other module's `"."` entry, server-only ones from `"./server"`, and only a module `.on(Server)` may send a server-only request (refused at start otherwise). Never import its `module.ts`, handler or gateway.
+- `send` routes in process when the other module runs in the same app, else over the network to the address the app imported it at.
 - A refusal before the other side wrote refuses the sender; a failure after it fails the sender with `ran: true`.
 - A starter refuses a module whose declared send has no module and no server to reach.
 
 ## The generated contract
 
-`npm run generate` reads each `module.ts`, finds the listed requests and writes `generated/contract.ts`: each chain up to its first handling step, with every schema it uses copied in, transitively, ordered so a referenced request comes first. The root `index.ts` re-exports it.
+`npm run generate` reads each `module.ts`, finds the listed requests and writes `generated/contract.ts`: each public chain up to its first handling step, with every schema it uses copied in, transitively, ordered so a referenced request comes first, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`); a public contract naming a server-only request is refused.
 
 - The contract imports only `zod` and `@widgetarium/core/requests`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
@@ -174,16 +183,23 @@ Every answer is `{ ok: true, output }` or `{ ok: false, code, reason, ran }`.
 
 ## Starting: `app()` and `server()`
 
+An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached at an address.
+
 ```ts skip-check
-const layoutApp = app({ modules: [LayoutModule], platform: "tauri", scope: { workspaceId } });
-const started = server({ modules: [BillingModule], env: process.env, host: { authenticate } });
+const layoutApp = app()
+	.modules(LayoutModule)
+	.imports(BillingModule.at(env.API_URL))
+	.start({ platform: "tauri", scope: { workspaceId } });
+
+const served = server().modules(BillingModule, UsersModule).start({ env: process.env, host: { authenticate } });
 ```
 
-Both import the module from `<package>/module`.
-
-- `app({ modules, platform, scope, env?, server?, host? })` runs every listed module locally and sends every other request to `server`. With no `server`, such a request answers `no-server`. A module given no `platform` is refused at start.
+- `.modules(...)` take the runnable module from `<package>/module`: an app takes `Device` and `Anywhere` modules, a server `Server` and `Anywhere` ones (a type error otherwise, and refused at start).
+- `.imports(...)` take only `Server` modules, by the descriptor in their `"."` entry, at an address: `.at(url)` is required and exists only on a `Server` module. No server code reaches the bundle.
+- Every module's `.imports` must be met by the app's `.modules` or `.imports`; start refuses naming the missing module.
+- `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch }`.
 - **One app per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `AppProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
-- `server({ modules, env, scope?, host? })` is a Hono app mounting `/rpc`; it answers `{ fetch }`. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
+- A server is a Hono app mounting `/rpc`. Over the network it answers only `.public` requests: a server-only one answers `404`, while an in-process `send` from another server module reaches it. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
 - A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step injecting what the module does not provide, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.
 - The wire is oRPC, and only `core` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
 

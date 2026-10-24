@@ -15,6 +15,67 @@ The rules every developer and every agent follows when writing code in this repo
 
 > Status: `packages/state/layout` (data) and `packages/client/shell` (its views) are the reference pair. Every other package under `packages/domain/` and `packages/client/mascot` still has the older module shape ([legacy.md](legacy.md#the-older-module-shape)). A rule marked **planned** is not built or not checked by a tool yet.
 
+## In one page
+
+**What it is.** A modular monolith that can be split into services without rewriting code (like Encore.ts, Google Service Weaver). You write a command or a query once; the same code runs on the device, in one server, or across several servers, typed end to end (like tRPC). Where a module runs is one line in the app; only how much its checks protect changes.
+
+**Why not a plain REST API.** With REST every endpoint is written twice (a server route and a client fetch), its types are kept in sync by hand, and what runs on the server is decided on day one. Here a request is written once, its types travel with it, and it moves between the device and a server without a rewrite.
+
+**Requests: CQRS.** A query reads, a command writes (CQRS; as `useQuery` / `useMutation` in TanStack Query, `query` / `mutation` in tRPC, requests and handlers in MediatR). A request carries its contract (zod input and output) and its handler. Views call `useQuery` / `useCommand`; nothing else reaches logic.
+
+**Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). It declares what it is and which of its commands and queries others may use:
+
+```ts
+export const BillingModule = module("billing")
+	.on(Server)
+	.imports(UsersModule)
+	.public(InvoicesQuery, ChargeCommand)
+	.serverOnly(CreateCustomerCommand)
+	.provide((facts) => billingPartsOn(facts));
+```
+
+- `.on(Server | Device | Anywhere)`: where the module may run.
+- `.public(...)`: the module's commands and queries any caller may use: views, other modules, the network.
+- `.serverOnly(...)`: the module's commands and queries that never cross the network. On a server, other server modules in the process may use them; on a device (an `Anywhere` module run in an app), only the module's own handlers. Not on a `Device` module: a type error says why.
+- `.imports(...)`: the other modules whose commands and queries this module's handlers send: their public ones always, their server-only ones when this module runs on a server too.
+
+**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module.at(url))` are reached over the network, by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported at its URL. The module's code does not change.
+
+```ts
+app().modules(LayoutModule).imports(BillingModule.at(env.API_URL)).start({ platform, scope });
+server().modules(BillingModule, UsersModule).start({ env: process.env });
+```
+
+```mermaid
+flowchart LR
+	subgraph device["Device app"]
+		view["View: useQuery / useCommand"]
+		layout["LayoutModule · on(Device)"]
+	end
+	subgraph api["Server app"]
+		wire["Network: public only"]
+		billing["BillingModule · on(Server)"]
+		users["UsersModule · on(Server)"]
+	end
+	view -->|in process| layout
+	view -->|"BillingModule.at(url) · HTTP"| wire
+	wire --> billing
+	billing -->|"send: public and server-only, in process"| users
+```
+
+**Guards.** A guard is the same code everywhere: it refuses a call before the handler runs (no user, not the owner, a transition that is not allowed). On a server it protects the data, because nobody can reach past it; a server module's public request must have one. On a device it is an ordinary early check, optional: it keeps the app from doing what makes no sense, but anyone can send a request by hand past it, so it protects nothing.
+
+```mermaid
+flowchart TB
+	call["A call to a request"] --> where{"Module runs on"}
+	where -->|Server| sg["Guards: required on public requests, protect the data"]
+	where -->|Device| dg["Guards: optional, early checks only"]
+	sg --> handler["Handler"]
+	dg --> handler
+```
+
+**What a package exports.** `"."` holds the public contract and the module's descriptor, enough to call it at a URL and nothing that runs; `"./server"` holds the server-only contract, imported only by server modules; `"./module"` holds the module with its handlers and gateways, imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
+
 ## Layers
 
 ```
@@ -42,7 +103,7 @@ packages/shared/      code with no domain: core (requests, mediator, hooks), kit
 | ----------------------------- | -------------------------------------------------------------- | --------------------------- | ------------------------ |
 | a read and its handler        | `query("<short-name>").output(…).inject({…}).handle(fn)`       | noun phrase + `Query`       | `FrameSidesQuery`        |
 | a write and its handler       | `command("<short-name>").input(…).idempotencyKey(…)….handle()` | verb phrase + `Command`     | `ToggleFrameSideCommand` |
-| a data module                 | `module("<name>").queries(…).commands(…).provide(fn)`          | its area + `Module`         | `LayoutModule`           |
+| a data module                 | `module("<name>").on(…).public(…).serverOnly(…).provide(fn)`   | its area + `Module`         | `LayoutModule`           |
 | who may call                  | `guard<In>().inject({…}).handle(check)`                        | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
 | what wraps a call             | `middleware().inject({…}).handle(fn)`                          | what it does + `Middleware` | `TimingLoggerMiddleware` |
 | storage or an outside system  | `abstract class`, its own token                                | its data + `Gateway`        | `FrameSidesGateway`      |
@@ -53,12 +114,12 @@ A request's string name is short: the constant without its suffix, in kebab case
 
 ## Imports
 
-| From ↓ may import → | app | client package | data module                                                     | shared |
-| ------------------- | --- | -------------- | --------------------------------------------------------------- | ------ |
-| app                 | own | its `"."`      | its `"."`; its `"./module"` to start it                         | yes    |
-| client package      | no  | its `"."`      | its `"."`                                                       | yes    |
-| data module         | no  | no             | its `"."`, declared in `package.json`, to name what it `.sends` | yes    |
-| shared              | no  | no             | no                                                              | yes    |
+| From ↓ may import → | app | client package | data module                                                                                          | shared |
+| ------------------- | --- | -------------- | ---------------------------------------------------------------------------------------------------- | ------ |
+| app                 | own | its `"."`      | its `"."`; its `"./module"` to start it                                                              | yes    |
+| client package      | no  | its `"."`      | its `"."`                                                                                            | yes    |
+| data module         | no  | no             | its `"."` (and `"./server"` when both run on a server), declared in `package.json` and in `.imports` | yes    |
+| shared              | no  | no             | no                                                                                                   | yes    |
 
 A data module never imports React; a client package never imports `"./module"` or a gateway. The graph of packages has no cycle.
 

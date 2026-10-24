@@ -29,7 +29,7 @@ export default [...widgetarium.configs.recommended, { rules: { "@widgetarium/no-
 | strings only as free-form data (request and module names)                                                                           | `no-choice-strings`                                                      |
 | a data module's feature holds `requests.ts`; no `ui/`, no `.tsx`; `module.ts` holds only the `module(...)` chain                    | `feature-layout`, `feature-placement`, `module-definition`               |
 | layers import one way, `shared → gateways → features → module.ts`; a feature imports only its own folder                            | `layer-order` (warning)                                                  |
-| `"./module"` is imported only by an app; a package reaches another only through `"."`                                               | `module-imports`                                                         |
+| `"./module"` is imported only by an app; `"./server"` only by a data module; a package reaches another only through `"."`           | `module-imports`                                                         |
 | only `apps/server` resolves the `server` condition                                                                                  | `server-condition` (tools/lint)                                          |
 | no top-level state in a module: no `let`/`var`, no writable `Map`, `Set`, `WeakMap` or array                                        | `module-state`                                                           |
 | a `lib/` export with one importing file belongs in that file                                                                        | `single-use-lib` (warning)                                               |
