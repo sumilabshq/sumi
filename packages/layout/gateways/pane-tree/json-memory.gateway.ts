@@ -7,21 +7,41 @@ const UNREAD = "[widgetarium] kept panes could not be read, so the board starts 
 const REFUSED = "[widgetarium] kept panes refused, so the board starts from the first panes";
 
 export class JsonMemoryPaneTreeGateway extends PaneTreeGateway {
-	constructor(private readonly memory: JsonMemory<PaneTree>) {
+	private readonly listeners = new Set<() => void>();
+	private held: PaneTree;
+
+	constructor(
+		private readonly memory: JsonMemory<PaneTree>,
+		first: PaneTree,
+	) {
 		super();
+		this.held = keptTreeIn(memory) ?? first;
 	}
 
-	read(): PaneTree | null {
-		try {
-			return keptTreeOf(this.memory.read());
-		} catch (failure: unknown) {
-			console.warn(UNREAD, failure);
-			return null;
+	tree(): PaneTree {
+		return this.held;
+	}
+
+	saveTree(tree: PaneTree, reason: string): void {
+		this.memory.write(tree, reason);
+		this.held = tree;
+		for (const listener of this.listeners) {
+			listener();
 		}
 	}
 
-	keep(tree: PaneTree, reason: string): void {
-		this.memory.write(tree, reason);
+	treeChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
+	}
+}
+
+function keptTreeIn(memory: JsonMemory<PaneTree>): PaneTree | null {
+	try {
+		return keptTreeOf(memory.read());
+	} catch (failure: unknown) {
+		console.warn(UNREAD, failure);
+		return null;
 	}
 }
 

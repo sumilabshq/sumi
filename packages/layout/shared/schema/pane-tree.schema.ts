@@ -34,7 +34,7 @@ export interface PaneSplit {
 
 export type PaneNode = PaneLeaf | PaneSplit;
 
-const PaneLeafSchema = z.object({
+export const PaneLeafSchema = z.object({
 	kind: z.literal("pane"),
 	id: z.string(),
 	view: PaneViewSchema,
@@ -125,3 +125,35 @@ function targetFaultsOf(targetId: string | null, nodes: readonly PaneNode[]): st
 	const isLeaf = nodes.some((node) => node.kind === "pane" && node.id === targetId);
 	return targetId === null || isLeaf ? [] : [`targetId ${targetId} names no pane`];
 }
+
+export const PaneBoardSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	targetId: z.string().nullable(),
+	tabTargetId: z.string().nullable(),
+	leaves: z.array(PaneLeafSchema).readonly(),
+	tabPanes: z
+		.array(
+			z.object({
+				paneId: z.string(),
+				tabId: z.string(),
+			}),
+		)
+		.readonly(),
+});
+
+export type PaneBoard = z.infer<typeof PaneBoardSchema>;
+
+export const PanePlacementSchema = z.object({
+	view: PaneViewSchema,
+	targetId: z.string().nullable(),
+	side: PaneSideSchema,
+});
+
+export type PanePlacement = z.infer<typeof PanePlacementSchema>;
+
+export const PlacementPreviewSchema = z.object({
+	root: PaneNodeSchema.nullable(),
+	placedId: z.string(),
+});
+
+export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;

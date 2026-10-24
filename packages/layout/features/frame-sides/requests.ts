@@ -1,31 +1,101 @@
-import { Repeatable, command, query } from "@widgetarium/core/requests";
-import { FrameSidesStore } from "../../shared/lib/frame-sides-store.js";
+import { Repeatable, command, query, refuse } from "@widgetarium/core/requests";
+import { FrameSidesGateway } from "../../gateways/frame-sides/frame-sides.gateway.js";
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
+import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
 export const FrameSidesQuery = query("layout/frame-sides")
 	.output(FrameSidesSchema)
 	.settlesNow()
-	.inject({ frameSidesStore: FrameSidesStore })
-	.watch((_input, { frameSidesStore }, changed) => frameSidesStore.watch(changed))
-	.handle((_input, { frameSidesStore }) => frameSidesStore.now());
+	.inject({ frameSides: FrameSidesGateway })
+	.watch((_input, { frameSides }, changed) => frameSides.sidesChanged(changed))
+	.handle((_input, { frameSides }) => frameSides.sides());
 
 export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
-	.inject({ frameSidesStore: FrameSidesStore })
-	.handle(({ side }, { frameSidesStore }) => frameSidesStore.toggle(side));
+	.inject({ frameSides: FrameSidesGateway })
+	.handle(({ side }, { frameSides }) => {
+		const sides = frameSides.sides();
+		const was = sides[side];
+		const next = toggledLook(was);
+		const refusal = refuseTurn(was, next);
+
+		if (refusal !== null) {
+			return refuse(`frame side ${side} ${refusal} (toggle)`);
+		}
+
+		const reason = `frame side ${side} ${was} → ${next} (toggle)`;
+		frameSides.saveSides(
+			{
+				...sides,
+				[side]: next,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
 
 export const PeekFrameSideCommand = command("layout/peek-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
-	.inject({ frameSidesStore: FrameSidesStore })
-	.handle(({ side }, { frameSidesStore }) => frameSidesStore.peek(side));
+	.inject({ frameSides: FrameSidesGateway })
+	.handle(({ side }, { frameSides }) => {
+		const sides = frameSides.sides();
+		const was = sides[side];
+		const next = peekedLook(was);
+
+		if (next === was) {
+			console.info(`[widgetarium] frame side ${side} peek skipped: ${was}`);
+			return;
+		}
+
+		const refusal = refuseTurn(was, next);
+
+		if (refusal !== null) {
+			return refuse(`frame side ${side} ${refusal} (peek)`);
+		}
+
+		const reason = `frame side ${side} ${was} → ${next} (peek)`;
+		frameSides.saveSides(
+			{
+				...sides,
+				[side]: next,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});
 
 export const ConcealFrameSideCommand = command("layout/conceal-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
-	.inject({ frameSidesStore: FrameSidesStore })
-	.handle(({ side }, { frameSidesStore }) => frameSidesStore.conceal(side));
+	.inject({ frameSides: FrameSidesGateway })
+	.handle(({ side }, { frameSides }) => {
+		const sides = frameSides.sides();
+		const was = sides[side];
+		const next = concealedLook(was);
+
+		if (next === was) {
+			console.info(`[widgetarium] frame side ${side} conceal skipped: ${was}`);
+			return;
+		}
+
+		const refusal = refuseTurn(was, next);
+
+		if (refusal !== null) {
+			return refuse(`frame side ${side} ${refusal} (conceal)`);
+		}
+
+		const reason = `frame side ${side} ${was} → ${next} (conceal)`;
+		frameSides.saveSides(
+			{
+				...sides,
+				[side]: next,
+			},
+			reason,
+		);
+		console.info(`[widgetarium] ${reason}`);
+	});

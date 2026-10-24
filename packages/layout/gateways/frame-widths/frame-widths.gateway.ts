@@ -1,6 +1,7 @@
-import type { FrameEdge } from "../../shared/schema/frame-widths.schema.js";
+import type { FrameWidths } from "../../shared/schema/frame-widths.schema.js";
 
 export abstract class FrameWidthsGateway {
-	abstract read(edge: FrameEdge): number | null;
-	abstract keep(edge: FrameEdge, px: number): void;
+	abstract widths(): FrameWidths;
+	abstract saveWidths(widths: FrameWidths, reason: string): void;
+	abstract widthsChanged(listener: () => void): () => void;
 }

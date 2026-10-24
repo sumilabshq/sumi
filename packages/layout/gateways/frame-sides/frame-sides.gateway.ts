@@ -1,6 +1,7 @@
-import type { FrameSide } from "../../shared/schema/frame-sides.schema.js";
+import type { FrameSides } from "../../shared/schema/frame-sides.schema.js";
 
 export abstract class FrameSidesGateway {
-	abstract readHidden(side: FrameSide): boolean | null;
-	abstract rememberHidden(side: FrameSide, isHidden: boolean): void;
+	abstract sides(): FrameSides;
+	abstract saveSides(sides: FrameSides, reason: string): void;
+	abstract sidesChanged(listener: () => void): () => void;
 }

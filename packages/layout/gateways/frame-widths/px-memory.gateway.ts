@@ -1,19 +1,44 @@
 import type { PxMemory } from "@widgetarium/behaviors";
-import type { FrameEdge } from "../../shared/schema/frame-widths.schema.js";
+import { FrameEdgeSchema } from "../../shared/schema/frame-widths.schema.js";
+import type { FrameEdge, FrameWidths } from "../../shared/schema/frame-widths.schema.js";
 import { FrameWidthsGateway } from "./frame-widths.gateway.js";
 
 export type FrameMemories = Readonly<Record<FrameEdge, PxMemory>>;
 
 export class PxMemoryFrameWidthsGateway extends FrameWidthsGateway {
-	constructor(private readonly memories: FrameMemories) {
+	private readonly listeners = new Set<() => void>();
+	private held: FrameWidths;
+
+	constructor(
+		private readonly memories: FrameMemories,
+		first: FrameWidths,
+	) {
 		super();
+		this.held = {
+			left: memories.left.read() ?? first.left,
+			chat: memories.chat.read() ?? first.chat,
+		};
 	}
 
-	read(edge: FrameEdge): number | null {
-		return this.memories[edge].read();
+	widths(): FrameWidths {
+		return this.held;
 	}
 
-	keep(edge: FrameEdge, px: number): void {
-		this.memories[edge].write(px);
+	saveWidths(widths: FrameWidths): void {
+		for (const edge of FrameEdgeSchema.options) {
+			if (this.held[edge] !== widths[edge]) {
+				this.memories[edge].write(widths[edge]);
+			}
+		}
+
+		this.held = widths;
+		for (const listener of this.listeners) {
+			listener();
+		}
+	}
+
+	widthsChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 }

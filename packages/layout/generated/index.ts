@@ -3,4 +3,3 @@ export * from "./contract.js";
 export * from "../shared/schema/frame-sides.schema.js";
 export * from "../shared/schema/frame-widths.schema.js";
 export * from "../shared/schema/pane-tree.schema.js";
-export * from "../shared/lib/index.js";
