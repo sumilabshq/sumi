@@ -1,3 +1,1 @@
-generated/** linguist-generated=true
 packages/*/*/generated/** linguist-generated=true
-packages/shared/packs/*/generated/** linguist-generated=true

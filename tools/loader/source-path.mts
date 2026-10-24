@@ -27,10 +27,6 @@ export function sourceUrlOf(specifier: string, parentURL: string | undefined): s
 	return `${pathToFileURL(found).href}${suffix}`;
 }
 
-export function isModuleJs(file: string): boolean {
-	return /^(packages|apps)\/[^/]+\/src\//.test(path.relative(REPO, file).split(path.sep).join("/"));
-}
-
 export function nearestTsconfig(file: string): string | null {
 	for (let at = path.dirname(file); at.startsWith(REPO); at = path.dirname(at)) {
 		const candidate = path.join(at, "tsconfig.json");

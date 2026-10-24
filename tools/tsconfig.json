@@ -45,8 +45,6 @@
 		"loader/**/*.mts",
 		"lint/**/*.mts",
 		"../apps/host-obsidian/*.mts",
-		"loader/**/*.ts",
-		"lint/**/*.ts",
 		"../apps/host-obsidian/src/legacy/build-modules.d.ts",
 		"../apps/host-obsidian/src/project-seed-module.d.ts",
 		"../packages/shared/core/src/*.d.ts",

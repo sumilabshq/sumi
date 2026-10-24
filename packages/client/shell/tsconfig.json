@@ -26,12 +26,10 @@
 	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/core" }],
 	"include": [
 		"*.ts",
-		"gateways/**/*.ts",
 		"features/**/*.ts",
 		"features/**/*.tsx",
 		"shared/**/*.ts",
 		"shared/**/*.tsx",
-		"generated/**/*.ts",
 		"../../shared/core/src/*.d.ts",
 		"../../shared/kit/src/jsx-namespace.d.ts"
 	]

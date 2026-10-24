@@ -26,7 +26,6 @@
 	"dependencies": {
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/assistant": "0.1.0",
-		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/browser": "0.1.0",
 		"@widgetarium/canvas": "0.1.0",
 		"@widgetarium/core": "0.1.0",

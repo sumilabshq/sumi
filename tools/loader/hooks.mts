@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { LoadFnOutput, LoadHookSync, ResolveHookSync } from "node:module";
 import { transformSync, type Loader } from "esbuild";
-import { REPO, isModuleJs, nearestTsconfig, sourceUrlOf } from "./source-path.mts";
+import { REPO, nearestTsconfig, sourceUrlOf } from "./source-path.mts";
 import { isVirtual, virtualSource } from "./virtual-modules.mts";
 import { SOURCE_CONDITION } from "../export-source.mts";
 
@@ -73,6 +73,5 @@ function ownModuleSource(file: string): string | null {
 	if (extension === ".json") return `export default ${JSON.stringify(JSON.parse(fs.readFileSync(file, "utf8")))};\n`;
 	const loader = TRANSFORMED.get(extension);
 	if (loader) return transformed(file, loader);
-	if (extension === ".js" && isModuleJs(file)) return fs.readFileSync(file, "utf8");
 	return null;
 }

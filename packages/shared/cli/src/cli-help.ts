@@ -24,8 +24,10 @@ export const CLI_HELP = `widgetarium <command>
       beside it; never over a widget of the same name
 
   generate [module folder…] [--check]
-      writes each module's generated/index.ts: every contract, every schema and, for a client
-      module, ui/index.ts; with no folder, every package marked widgetarium.level "domain" in the
-      workspaces; --check writes nothing and exits 1 naming each module whose entry is stale`;
+      a module(...) package: generated/contract.ts (its listed requests up to their first handling
+      step, with every schema they use) and the root index.ts; a client package: the root
+      index.ts; an older module: generated/index.ts, module.ts and gateways.ts; removes stray files
+      under generated/; with no folder, every package marked widgetarium.level "domain" or
+      "client"; --check writes nothing and exits 1 naming each package whose files are stale`;
 
 export const HELP_WORDS: readonly string[] = ["help", "--help", "-h"];
