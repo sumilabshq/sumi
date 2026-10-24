@@ -1,21 +1,26 @@
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import { MascotClientModule } from "../packages/client/mascot/generated/module.ts";
-import { memoryMascotParts } from "../packages/client/mascot/generated/gateways.ts";
-import {
-	Mascot,
-	MascotFigure,
-	MascotStateSchema,
-	OutfitIdSchema,
-	RecordAgentEventsCommand,
-} from "../packages/client/mascot/generated/index.ts";
-import type { AgentEvent, OutfitId } from "../packages/client/mascot/generated/index.ts";
+import { Mascot } from "../apps/studio/src/features/mascot/ui/mascot/mascot.tsx";
+import { MascotFigure } from "../apps/studio/src/features/mascot/ui/mascot-figure/mascot-figure.tsx";
+import { MascotStateSchema } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
+import { OutfitIdSchema } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
+import type { OutfitId } from "../apps/studio/src/features/mascot/lib/outfit.schema.ts";
+import { RecordAgentEventsCommand } from "../packages/domain/mascot/index.ts";
+import type { AgentEvent } from "../packages/domain/mascot/index.ts";
+import { MascotModule } from "../packages/domain/mascot/module.ts";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();
 
-const started = app({ modules: [MascotClientModule.with(memoryMascotParts())] });
+const started = app()
+	.modules(MascotModule)
+	.start({
+		platform: "browser",
+		scope: {
+			workspaceId: "mascot-page",
+		},
+	});
 const host = document.getElementById("root");
 if (host === null) {
 	throw new Error("mascot page: no #root");
