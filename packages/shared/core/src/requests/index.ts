@@ -89,7 +89,7 @@ export type {
 	SentOf,
 } from "./request";
 export { Refused, refuse } from "./refused";
-export type { Send, Sender } from "./send";
+export type { Send } from "./send";
 export { RequestFailed } from "./request-failed";
 export type { FailedView } from "./request-boundary";
 export { Slot } from "./slot";

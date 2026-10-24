@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { stableKey } from "../gateway/stable-key";
+import type { CallingModule } from "./calling-module";
 import type { AnyQuery, SentOf } from "./request";
 
 export const InvalidationSchema = z.object({
@@ -18,16 +19,10 @@ export type Invalidate = <L extends InvalidatedQuery>(query: L, ...input: [input
 
 export type Invalidator = Readonly<Record<"invalidate", Invalidate>>;
 
-export interface Invalidating {
-	readonly module: string;
-	readonly importedModuleNames: readonly string[];
-	readonly owner: string;
-}
-
 const NOT_A_QUERY = "{owner} invalidates {name}, which is not a query";
 const NOT_IMPORTED = '{owner} invalidates {name}, but module "{module}" does not import {queryModule}: add .imports()';
 
-export function invalidateInto(collected: Invalidation[], { module, importedModuleNames, owner }: Invalidating) {
+export function invalidateInto(collected: Invalidation[], { module, importedModuleNames, owner }: CallingModule) {
 	return (query: InvalidatedQuery, ...input: [input?: unknown]): void => {
 		const stamped = ("request" in query ? query.request : query).inModule(module);
 		const said = (template: string): string =>

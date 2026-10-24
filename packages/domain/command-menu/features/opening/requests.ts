@@ -16,7 +16,6 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
-	.sends(AppTabsQuery)
 	.handle(async ({ door, text, shownName }, { commandMenu, send, invalidate }) => {
 		invalidate(CommandMenuQuery);
 		const was = commandMenu.menu();

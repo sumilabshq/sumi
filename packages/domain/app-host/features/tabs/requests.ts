@@ -40,8 +40,6 @@ import { tabIdsInPanesOf } from "../../shared/lib/tab-showing/tab-facts.js";
 import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
 import { tabPageOf, tabPagesOf } from "../../shared/lib/tab-showing/tab-pages.js";
 import {
-	EFFECT_COMMANDS,
-	FACT_QUERIES,
 	NOT_HELD,
 	NO_OWN_WINDOW,
 	factsOf,
@@ -74,7 +72,6 @@ interface OwnWindowOpening {
 export const AppTabsQuery = query("app-tabs")
 	.output(AppTabsSchema)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES)
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -90,7 +87,6 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 		...TAB_PARTS,
 		tabsColumn: TabsColumnGateway,
 	})
-	.sends(...FACT_QUERIES)
 	.handle(async (_input, { send, tabsColumn, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing, kept } = tabsNowOf(parts, facts);
@@ -108,7 +104,6 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 export const HeldTabsQuery = query("held-tabs")
 	.output(HeldTabsSchema)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES)
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -126,13 +121,11 @@ export const HeldTabsQuery = query("held-tabs")
 
 export const CanOpenOwnWindowQuery = query("can-open-own-window")
 	.output(z.boolean())
-	.sends(BrowserTabsQuery)
 	.handle(async (_input, { send }) => (await send(BrowserTabsQuery, ALL_PAGES)).canOpenOwnWindow);
 
 export const RestoreTabsCommand = command("restore-tabs")
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS, DropGoneTabsCommand)
 	.handle(async (_input, { send, ...parts }) => {
 		await parts.hostTabs.tabsLoaded();
 		const heldTabIds = parts.hostTabs.tabs()?.tabs.map(({ id }) => id) ?? [];
@@ -147,7 +140,6 @@ export const ShowTabCommand = command("show-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -172,7 +164,6 @@ export const ShowTabCommand = command("show-tab")
 export const ShowChatTabCommand = command("show-chat-tab")
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -183,7 +174,6 @@ export const PlaceTabCommand = command("place-tab")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id, to }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing, kept } = tabsNowOf(parts, facts);
@@ -214,7 +204,6 @@ export const MoveTabToListCommand = command("move-tab-to-list")
 	.input(z.object({ id: z.string(), list: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id, list }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -237,7 +226,6 @@ export const MoveTabToListCommand = command("move-tab-to-list")
 
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async (_input, { send, invalidate, ...parts }) => {
 		invalidateTabReads(invalidate);
 		const facts = await factsOf(parts, send);

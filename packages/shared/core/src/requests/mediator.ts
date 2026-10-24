@@ -2,6 +2,7 @@ import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { Invalidation } from "./invalidation";
 import type { LocalRoutes } from "./local-routes";
+import type { Runs } from "./module";
 import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
@@ -13,6 +14,7 @@ export interface Sending {
 	readonly signal?: AbortSignal | undefined;
 	readonly headers?: Headers | undefined;
 	readonly fromModule?: string | undefined;
+	readonly fromRuns?: Runs | undefined;
 }
 
 export type KeyMinting = "client-mints" | "caller-gives";

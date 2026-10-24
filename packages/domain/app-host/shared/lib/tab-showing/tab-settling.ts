@@ -34,27 +34,8 @@ import type { TabFacts } from "./tab-facts.js";
 
 export const NOT_HELD = 'the host holds no tab "{id}"';
 export const NO_OWN_WINDOW = 'the tab "{id}" holds no page that can open in its own window';
-export const FACT_QUERIES = [BrowserTabsQuery, AccessAsksQuery, PaneTreeQuery, ActiveChatQuery] as const;
-export const EFFECT_COMMANDS = [
-	OpenPageCommand,
-	ClosePageCommand,
-	ShowBrowserPageCommand,
-	OpenAddressCommand,
-	ReloadPageCommand,
-	OpenTabInOwnWindowCommand,
-	FocusOwnWindowCommand,
-	TearOffCommand,
-	ClosePanesOfTabsCommand,
-	OpenShownTabPaneCommand,
-	CloseShownTabPaneCommand,
-	ShowTabInTargetPaneCommand,
-] as const;
 
 const ALL_PAGES = { heldTabId: null };
-
-type FactsSend = Send<(typeof FACT_QUERIES)[number]>;
-
-export type TabsSend = Send<(typeof FACT_QUERIES)[number] | (typeof EFFECT_COMMANDS)[number]>;
 
 interface HostTabsStore {
 	tabsLoaded(): Promise<void>;
@@ -86,7 +67,7 @@ export interface TabStores {
 
 export interface TabsReach {
 	readonly parts: TabStores;
-	readonly send: TabsSend;
+	readonly send: Send;
 }
 
 export interface TabsNow {
@@ -94,7 +75,7 @@ export interface TabsNow {
 	readonly kept: KeptEssentials;
 }
 
-export async function factsOf(parts: TabStores, send: FactsSend): Promise<TabFacts> {
+export async function factsOf(parts: TabStores, send: Send): Promise<TabFacts> {
 	const [browserTabs, asks, board, chat] = await Promise.all([
 		send(BrowserTabsQuery, ALL_PAGES),
 		send(AccessAsksQuery),
@@ -167,7 +148,7 @@ function saveShowing(was: Showing, next: Showing, { hostTabs, shownView }: TabSt
 	}
 }
 
-async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: TabsSend): Promise<unknown> {
+async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send): Promise<unknown> {
 	switch (effect.kind) {
 		case "open-page":
 			return send(OpenPageCommand, { tabId: effect.pageId });

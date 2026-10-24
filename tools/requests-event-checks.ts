@@ -491,3 +491,10 @@ const QueryTriesInvalidating = query("tries")
 	});
 
 check("a query's context offers no invalidate", typeof QueryTriesInvalidating.handle, "function");
+
+check(
+	"a subscriber's inject naming a key the engine passes is refused where it is declared",
+	// @ts-expect-error
+	thrownBy(() => subscriber(event("reserved-heard")).inject({ invalidate: Ledger })),
+	"inject names invalidate, which the engine passes to every handler: name it otherwise",
+);

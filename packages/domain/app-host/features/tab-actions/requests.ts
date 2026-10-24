@@ -25,8 +25,6 @@ import {
 } from "../../shared/lib/tab-showing/showing.js";
 import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
 import {
-	EFFECT_COMMANDS,
-	FACT_QUERIES,
 	NOT_HELD,
 	NO_OWN_WINDOW,
 	factsOf,
@@ -53,7 +51,6 @@ export const OpenTabCommand = command("open-tab")
 	.input(z.object({ app: AppKindSchema }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ app }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -65,7 +62,6 @@ export const OpenTabBelowCommand = command("open-tab-below")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -87,7 +83,6 @@ export const DuplicateTabCommand = command("duplicate-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -111,7 +106,6 @@ export const ReloadTabCommand = command("reload-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -128,7 +122,6 @@ export const RenameTabCommand = command("rename-tab")
 	.input(z.object({ id: z.string(), label: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id, label }, { send, ...parts }) => {
 		const { showing } = tabsNowOf(parts, await factsOf(parts, send));
 
@@ -143,7 +136,6 @@ export const CloseOtherTabsCommand = command("close-other-tabs")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -161,7 +153,6 @@ export const CloseOtherTabsCommand = command("close-other-tabs")
 export const ReopenClosedTabCommand = command("reopen-closed-tab")
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -178,7 +169,6 @@ export const CloseTabCommand = command("close-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -193,7 +183,6 @@ export const CloseTabCommand = command("close-tab")
 export const CloseShownTabCommand = command("close-shown-tab")
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -213,7 +202,6 @@ export const TearOffTabCommand = command("tear-off-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -238,7 +226,6 @@ export const CloseGroupCommand = command("close-group")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);

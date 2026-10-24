@@ -288,7 +288,6 @@ export class RequestsModule<
 		const handlers = this.plan.listed.map((listed) => ({
 			...listed,
 			request: listed.request.inModule(name),
-			sends: listed.sends.map((sent) => sent.inModule(name)),
 			emits: listed.emits.map((emitted) => emitted.inModule(name)),
 			module: this,
 		}));
@@ -378,7 +377,6 @@ function subscriberInModule(listed: AnySubscriber, module: string): AnySubscribe
 	return {
 		...listed,
 		event: listed.event.inModule(module),
-		sends: listed.sends.map((sent) => sent.inModule(module)),
 		emits: listed.emits.map((emitted) => emitted.inModule(module)),
 	};
 }

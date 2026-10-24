@@ -10,13 +10,14 @@ import type { AnyEvent } from "./event";
 import type { User } from "./guard";
 import { NEVER_ABORTED } from "./handler";
 import type { AnyHandler, CallFacts } from "./handler";
-import type { Asked, Settle } from "./mediator";
+import type { Asked, Sending, Settle } from "./mediator";
 import type { Added, Step, StepCall, StepContext } from "./middleware";
 import type { Provided } from "./module";
 import { callerKeyOf, isKeyReplayed, keyRead } from "./policies";
 import type { Callers } from "./policies";
 import type { AnyRequest } from "./request";
-import { Refused } from "./refused";
+import { outputOfSent, stampSent } from "./send";
+import type { CallingModule } from "./calling-module";
 import type { Authenticate } from "./server/authenticate";
 
 export interface Route {
@@ -52,22 +53,26 @@ const CALL_FACT_KEYS: readonly (keyof CallFacts)[] = ["user", "idempotencyKey", 
 const ANSWERED_FOR_HANDLER = "{step} of {request} answered without next(): a step may only refuse";
 const REPLACED_FACT = "{step} of {request} replaced {fact}, which only the server sets";
 const STEP_AT = "step #{at}";
-const UNDECLARED_SEND = "{request} sends {sent}, which it does not declare in .sends()";
-const SENT_FAILED = "{sent} answered {code}: {reason}";
+const SERVER_ONLY_SEND =
+	'{request} is server-only, and module "{module}" does not run on the server: only a server module may send it';
 const OWN_MODULE_ONLY =
 	'{request} is server-only, and module "{module}" runs on a device: only its own handlers may send it';
 
-export function callerRefusalOf(route: Route, fromModule: string | undefined): Refusal | null {
+export function callerRefusalOf(route: Route, sending: Sending): Refusal | null {
 	const { request } = route.handler;
 
-	if (!route.isOwnModuleOnly || fromModule === request.module) {
+	if (!route.isServerOnly || sending.fromModule === request.module) {
 		return null;
 	}
 
-	return refusalOf(
-		"forbidden",
-		OWN_MODULE_ONLY.replace("{request}", request.name).replace("{module}", request.module ?? ""),
-	);
+	if (route.isOwnModuleOnly) {
+		return refusalOf(
+			"forbidden",
+			OWN_MODULE_ONLY.replace("{request}", request.name).replace("{module}", request.module ?? ""),
+		);
+	}
+
+	return offServerRefusalOf(request, sending);
 }
 
 export class LocalRoutes {
@@ -78,7 +83,7 @@ export class LocalRoutes {
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		const refused = callerRefusalOf(route, asked.sending.fromModule);
+		const refused = callerRefusalOf(route, asked.sending);
 
 		if (refused !== null) {
 			return settle.refuse(asked.request, refused);
@@ -177,7 +182,8 @@ export class LocalRoutes {
 		const ran = asked.request.kind === "command";
 		try {
 			const invalidated: Invalidation[] = [];
-			const send = sendOf(walk, facts.signal, key, invalidated);
+			const calling = callingModuleOf(route, asked);
+			const send = sendOf(walk, { signal: facts.signal, key, invalidated, calling });
 			const emitted: [AnyEvent, unknown][] = [];
 			const emitting = {
 				declared: route.handler.emits,
@@ -185,7 +191,7 @@ export class LocalRoutes {
 				module: route.handler.request.module ?? "",
 			};
 			const emit = emitOf(this.parts.bus, emitting, (event, emittedInput) => emitted.push([event, emittedInput]));
-			const invalidate = ran ? invalidateInto(invalidated, invalidatingOf(route, asked)) : undefined;
+			const invalidate = ran ? invalidateInto(invalidated, calling) : undefined;
 			const returned = await route.handler.handle(input, { ...route.provided, ...facts, send, emit, invalidate });
 			const answer = settle.held(asked.request, returned, ran, invalidated.length === 0 ? undefined : invalidated);
 
@@ -200,33 +206,34 @@ export class LocalRoutes {
 	}
 }
 
-function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string | null, invalidated: Invalidation[]) {
-	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
-		if (!route.handler.sends.some(({ name }) => name === sent.name)) {
-			throw new Error(UNDECLARED_SEND.replace("{request}", asked.request.name).replace("{sent}", sent.name));
-		}
+interface SendState {
+	readonly signal: AbortSignal;
+	readonly key: string | null;
+	readonly invalidated: Invalidation[];
+	readonly calling: CallingModule;
+}
 
-		const idempotencyKey = key === null ? undefined : `${key}:${sent.name}`;
-		const answer = await settle.send(sent, input, {
+function sendOf({ route, asked, settle }: Walk, { signal, key, invalidated, calling }: SendState) {
+	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
+		const stamped = stampSent(sent, calling);
+		const idempotencyKey = key === null ? undefined : `${key}:${stamped.name}`;
+		const answer = await settle.send(stamped, input, {
 			headers: asked.sending.headers,
 			signal,
 			idempotencyKey,
-			fromModule: route.handler.request.module ?? undefined,
+			fromModule: calling.module,
+			fromRuns: route.handler.module.runs,
 		});
 
 		if (answer.ok) {
 			invalidated.push(...(answer.invalidated ?? []));
-			return answer.output;
 		}
 
-		const reason = SENT_FAILED.replace("{sent}", sent.name)
-			.replace("{code}", answer.code)
-			.replace("{reason}", answer.reason);
-		throw answer.ran ? new Error(reason) : new Refused(reason);
+		return outputOfSent(stamped, answer);
 	};
 }
 
-function invalidatingOf({ handler }: Route, asked: Asked) {
+function callingModuleOf({ handler }: Route, asked: Asked): CallingModule {
 	return {
 		module: handler.request.module ?? "",
 		importedModuleNames: handler.module.importedModuleNames,
@@ -241,4 +248,15 @@ function replacedFactOf(context: StepContext, added: Added): string | null {
 
 function ranIn(request: AnyRequest, passedOn: readonly Answer<unknown>[]): boolean {
 	return passedOn.some((answer) => (answer.ok ? request.kind === "command" : answer.ran));
+}
+
+function offServerRefusalOf(request: AnyRequest, { fromModule, fromRuns }: Sending): Refusal | null {
+	if (fromRuns === undefined || fromRuns === "server") {
+		return null;
+	}
+
+	return refusalOf(
+		"forbidden",
+		SERVER_ONLY_SEND.replace("{request}", request.name).replace("{module}", fromModule ?? ""),
+	);
 }

@@ -97,7 +97,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 ## Questions an agent asks, answered
 
-**Another module needs this request.** Name the module in `.imports(...)`, import the request from its `"."` (or `"./server"`), name it in `.sends(...)`, and call `send(Request, input)` in the handler ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
+**Another module needs this request.** Name the module in `.imports(...)`, import the request from its `"."` (or `"./server"`), and call `send(Request, input)` in the handler ([requests.md](requests.md#sending-to-another-module)). Never import the other module's `module.ts`, handler or gateway.
 
 **Two handlers of one feature compute the same thing.** It is a pure function in that feature's `lib/`. Two features → `shared/lib/`. A feature never imports another feature's `lib/`.
 

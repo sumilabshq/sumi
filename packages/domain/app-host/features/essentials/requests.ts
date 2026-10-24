@@ -13,8 +13,6 @@ import { withMoved, withTabShown } from "../../shared/lib/tab-showing/showing.js
 import type { Showing } from "../../shared/lib/tab-showing/showing.js";
 import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
 import {
-	EFFECT_COMMANDS,
-	FACT_QUERIES,
 	factsOf,
 	freshTabOf,
 	liveTabOf,
@@ -40,7 +38,6 @@ export const ShowEssentialCommand = command("show-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing, kept } = tabsNowOf(parts, facts);
@@ -65,7 +62,6 @@ export const RemoveEssentialCommand = command("remove-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing, kept } = tabsNowOf(parts, facts);
@@ -83,7 +79,6 @@ export const CloseEssentialCommand = command("close-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
@@ -103,7 +98,6 @@ export const PlaceEssentialCommand = command("place-essential")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ id, to }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing, kept } = tabsNowOf(parts, facts);

@@ -5,13 +5,7 @@ import { HostTabsGateway } from "../../gateways/host-tabs/host-tabs.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { withClosedReopened } from "../../shared/lib/tab-showing/reopening.js";
-import {
-	EFFECT_COMMANDS,
-	FACT_QUERIES,
-	factsOf,
-	settle,
-	tabsNowOf,
-} from "../../shared/lib/tab-showing/tab-settling.js";
+import { factsOf, settle, tabsNowOf } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ClosedTabIdSchema, ClosedTabsSchema } from "../../shared/schema/closed-tab.schema.js";
 import { closedRowsOf } from "./lib/closed-rows.js";
 
@@ -30,7 +24,6 @@ export const ReopenClosedTabByIdCommand = command("reopen-closed-tab-by-id")
 		shownView: ShownViewGateway,
 		paneFlash: PaneFlashGateway,
 	})
-	.sends(...FACT_QUERIES, ...EFFECT_COMMANDS)
 	.handle(async ({ tabId }, { send, invalidate, ...parts }) => {
 		invalidate(ClosedTabsQuery);
 		const facts = await factsOf(parts, send);

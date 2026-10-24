@@ -87,7 +87,6 @@ const BuyCommand = command("buy")
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable)
-	.sends(ChargeContract)
 	.handle(async ({ cents }, { send }) => send(ChargeContract, { cents }));
 
 const BuyContract = command("shop/buy")
@@ -133,7 +132,6 @@ const SignUpCommand = command("sign-up")
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId)
-	.sends(CreateCustomerContract)
 	.handle(async ({ userId }, { send }) => send(CreateCustomerContract, { userId }));
 
 const SignUpContract = command("auth/sign-up")
@@ -163,15 +161,11 @@ export function typedOnly(): void {
 	TallyModule.provide(() => ({ counter: new Counter() }));
 	command("pay")
 		.idempotencyKey(Repeatable)
-		.sends(ChargeContract)
 		.handle(async (_input, { send }) => {
+			await send(RefundContract, { reason: "any request" });
 			// @ts-expect-error
-			await send(RefundContract, { reason: "undeclared" });
+			await send(ChargeContract, { cents: "five" });
 		});
-	command("quiet")
-		.idempotencyKey(Repeatable)
-		// @ts-expect-error
-		.handle((_input, { send }) => send);
 	// @ts-expect-error
 	module("tally").public(CountQuery);
 	// @ts-expect-error
@@ -342,10 +336,7 @@ check(
 	thrownBy(() => app().modules(ShopModule).start(ON_BROWSER))
 		.split("\n")
 		.slice(1),
-	[
-		"shop/buy sends payments/charge, which no module started by app() handles, and no server is configured",
-		'module "shop" imports payments, which app() neither runs nor reaches: add it to .modules() or .imports()',
-	],
+	['module "shop" imports payments, which app() neither runs nor reaches: add it to .modules() or .imports()'],
 );
 
 check(
@@ -354,20 +345,30 @@ check(
 	"",
 );
 
+const unimportedBuy = await app()
+	.modules(
+		module("shop")
+			.on(Anywhere)
+			.public(BuyCommand)
+			.provide(() => ({})),
+		PaymentsModule,
+	)
+	.start(ON_BROWSER)
+	.send(BuyContract, { cents: 5 });
 check(
-	"a request sending to a module its module does not import is refused when app() starts",
-	thrownBy(() =>
-		app()
-			.modules(
-				module("shop")
-					.on(Anywhere)
-					.public(BuyCommand)
-					.provide(() => ({})),
-				PaymentsModule,
-			)
-			.start(ON_BROWSER),
-	).split("\n")[1],
+	"a request sending to a module its module does not import fails at the send, naming the fix",
+	unimportedBuy.ok ? "ran" : unimportedBuy.reason,
 	'shop/buy sends payments/charge, but module "shop" does not import payments: add .imports()',
+);
+
+check(
+	"inject naming a key the engine passes to every handler is refused where it is declared",
+	[
+		// @ts-expect-error
+		thrownBy(() => command("reserved").idempotencyKey(Repeatable).inject({ send: Counter })),
+		thrownBy(() => command("free").idempotencyKey(Repeatable).inject({ counter: Counter })),
+	],
+	["inject names send, which the engine passes to every handler: name it otherwise", ""],
 );
 
 const billingServer = server().modules(AuthModule, BillingModule).start({ env: {}, scope: SCOPE });
@@ -449,18 +450,29 @@ const AnywhereSignUp = module("auth")
 	.imports(BillingContract)
 	.public(SignUpCommand)
 	.provide(() => ({}));
+const anywhereServer = server().modules(AnywhereSignUp, BillingModule).start({ env: {}, scope: SCOPE });
+const anywhereSignedUp = await app()
+	.imports(AuthContract.at("http://api"))
+	.start({ host: { fetch: anywhereServer.fetch } })
+	.send(SignUpContract, { userId: "u-4" });
 check(
-	"a module not on the server sending a server-only request is refused when server() starts",
-	thrownBy(() => server().modules(AnywhereSignUp, BillingModule).start({ env: {}, scope: SCOPE })).split("\n")[1],
-	'auth/sign-up sends billing/create-customer, which only a server module may send, and module "auth" does not run on the server',
+	"a module not on the server sending a server-only request is refused at the send",
+	anywhereSignedUp.ok ? "ran" : anywhereSignedUp.reason,
+	'billing/create-customer answered forbidden: billing/create-customer is server-only, and module "auth" does not run on the server: only a server module may send it',
 );
 
+const remoteBillingServer = server()
+	.modules(AuthModule)
+	.imports(BillingContract.at("http://billing"))
+	.start({ env: {}, scope: SCOPE });
+const remoteSignedUp = await app()
+	.imports(AuthContract.at("http://api"))
+	.start({ host: { fetch: remoteBillingServer.fetch } })
+	.send(SignUpContract, { userId: "u-5" });
 check(
-	"a server sending a server-only request to a module it imports from an address is refused when it starts",
-	thrownBy(() =>
-		server().modules(AuthModule).imports(BillingContract.at("http://billing")).start({ env: {}, scope: SCOPE }),
-	).split("\n")[1],
-	"auth/sign-up sends billing/create-customer, which is server-only: server-only requests never cross the network; run billing in this server's .modules",
+	"a server sending a server-only request to a module it imports from an address is refused at the send",
+	remoteSignedUp.ok ? "ran" : remoteSignedUp.reason,
+	"billing/create-customer answered not-found: billing/create-customer is server-only: it is not callable over the network",
 );
 
 const DeviceSignUp = module("auth")
@@ -468,17 +480,19 @@ const DeviceSignUp = module("auth")
 	.imports(BillingContract)
 	.public(SignUpCommand)
 	.provide(() => ({}));
+const deviceSignedUp = await app()
+	.modules(DeviceSignUp)
+	.imports(BillingContract.at("http://billing"))
+	.start(ON_BROWSER)
+	.send(SignUpContract, { userId: "u-6" });
 check(
-	"a device sending a server-only request to a module it imports from an address is refused when the app starts",
-	thrownBy(() => app().modules(DeviceSignUp).imports(BillingContract.at("http://billing")).start(ON_BROWSER)).split(
-		"\n",
-	)[1],
-	"auth/sign-up sends billing/create-customer, which is server-only: server-only requests never cross the network; send it from a module of the server that runs billing",
+	"a device sending a server-only request to a module it imports from an address is refused at the send",
+	deviceSignedUp.ok ? "ran" : deviceSignedUp.reason,
+	"billing/create-customer answered not-found: billing/create-customer is server-only: it is not callable over the network",
 );
 
 const ReportQuery = query("report")
 	.output(z.number())
-	.sends(InvoicesContract)
 	.handle(async (_input, { send }) => {
 		const invoices = await send(InvoicesContract);
 		return invoices.length;
@@ -546,7 +560,6 @@ const SecretQuery = query("secret")
 const SecretContract = query("vault/secret").output(z.string()).settlesNow();
 const ReadQuery = query("read")
 	.output(z.string())
-	.sends(SecretContract)
 	.handle(async (_input, { send }) => `read ${await send(SecretContract)}`);
 const ReadContract = query("vault/read").output(z.string());
 const VaultModule = module("vault")
@@ -577,24 +590,23 @@ check(
 
 const PeekQuery = query("peek")
 	.output(z.string())
-	.sends(SecretContract)
 	.handle(async (_input, { send }) => send(SecretContract));
 const PeekContract = query("audit/peek").output(z.string());
+const peekedOnDevice = await app()
+	.modules(
+		VaultModule,
+		module("audit")
+			.on(Anywhere)
+			.imports(VaultModule)
+			.public(PeekQuery)
+			.provide(() => ({})),
+	)
+	.start(ON_BROWSER)
+	.send(PeekContract);
 check(
-	"another module on a device sending an anywhere module's server-only request is refused when app() starts",
-	thrownBy(() =>
-		app()
-			.modules(
-				VaultModule,
-				module("audit")
-					.on(Anywhere)
-					.imports(VaultModule)
-					.public(PeekQuery)
-					.provide(() => ({})),
-			)
-			.start(ON_BROWSER),
-	).split("\n")[1],
-	'audit/peek sends vault/secret, which only a server module may send, and module "audit" does not run on the server',
+	"another module on a device sending an anywhere module's server-only request is refused at the send",
+	peekedOnDevice.ok ? "ran" : peekedOnDevice.reason,
+	'vault/secret answered forbidden: vault/secret is server-only, and module "vault" runs on a device: only its own handlers may send it',
 );
 
 const AuditModule = module("audit")

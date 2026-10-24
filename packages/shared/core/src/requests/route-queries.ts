@@ -71,7 +71,7 @@ export class RouteQueries {
 
 	private viewRouteOf(request: AnyRequest): Route | undefined {
 		const route = this.parts.local.routeOf(request);
-		return route === undefined || callerRefusalOf(route, undefined) !== null ? undefined : route;
+		return route === undefined || callerRefusalOf(route, {}) !== null ? undefined : route;
 	}
 }
 

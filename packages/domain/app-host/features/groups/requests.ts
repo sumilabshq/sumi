@@ -24,7 +24,6 @@ export const CreateGroupCommand = command("create-group")
 	.output(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
-	.sends(ActiveChatQuery)
 	.handle(async (asked, { hostTabs, send }) => {
 		const chatId = await loadedChatIdOf(hostTabs, send);
 		const moment = momentOf(hostTabs.tabs(), chatId);
@@ -50,7 +49,6 @@ export const RenameGroupCommand = command("rename-group")
 	.input(z.object({ id: z.string(), name: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
-	.sends(ActiveChatQuery)
 	.handle(async ({ id, name }, { hostTabs, send }) => {
 		const chatId = await loadedChatIdOf(hostTabs, send);
 		const moment = momentOf(hostTabs.tabs(), chatId);
@@ -72,7 +70,6 @@ export const SetGroupHueCommand = command("set-group-hue")
 	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
-	.sends(ActiveChatQuery)
 	.handle(async ({ id, hue }, { hostTabs, send }) => {
 		const chatId = await loadedChatIdOf(hostTabs, send);
 		const moment = momentOf(hostTabs.tabs(), chatId);
@@ -90,7 +87,6 @@ export const FoldGroupCommand = command("fold-group")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
-	.sends(ActiveChatQuery)
 	.handle(async ({ id }, { hostTabs, send }) => {
 		const chatId = await loadedChatIdOf(hostTabs, send);
 		const moment = momentOf(hostTabs.tabs(), chatId);
@@ -108,7 +104,6 @@ export const UngroupCommand = command("ungroup")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
-	.sends(ActiveChatQuery)
 	.handle(async ({ id }, { hostTabs, send }) => {
 		const chatId = await loadedChatIdOf(hostTabs, send);
 		const moment = momentOf(hostTabs.tabs(), chatId);
@@ -122,7 +117,7 @@ export const UngroupCommand = command("ungroup")
 		return undefined;
 	});
 
-async function loadedChatIdOf(hostTabs: HostTabsGateway, send: Send<typeof ActiveChatQuery>): Promise<string> {
+async function loadedChatIdOf(hostTabs: HostTabsGateway, send: Send): Promise<string> {
 	const [chat] = await Promise.all([send(ActiveChatQuery), hostTabs.tabsLoaded()]);
 	return chat.id;
 }

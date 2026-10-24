@@ -31,36 +31,13 @@ import type { Done, Intent, MenuCommand } from "../../shared/schema/command-menu
 import { confirmationOf } from "./lib/confirmation.js";
 import { menuAfter } from "./lib/menu-after.js";
 
-const DOING_SENDS = [
-	ShowTabCommand,
-	ShowEssentialCommand,
-	OpenTabCommand,
-	CloseTabCommand,
-	ReopenClosedTabCommand,
-	ReopenClosedTabByIdCommand,
-	HeldTabsQuery,
-	OpenAddressCommand,
-	SelectChatCommand,
-	CreateChatCommand,
-	ActiveChatQuery,
-	RenameChatCommand,
-	PinChatCommand,
-	OpenWorkspaceCommand,
-	OpenChatElsewhereCommand,
-	CreateWorkspaceCommand,
-	WorkspacesQuery,
-	RenameWorkspaceCommand,
-] as const;
 const NO_NAME = "A new name cannot be empty.";
-
-type DoingSend = Send<(typeof DOING_SENDS)[number]>;
 
 export const DoRowCommand = command("do-row")
 	.input(z.object({ intent: IntentSchema }))
 	.output(DoneSchema)
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
-	.sends(...DOING_SENDS)
 	.handle(async ({ intent }, { commandMenu, send }): Promise<Done> => {
 		await performIntent(intent, send);
 		const after = menuAfter(intent, commandMenu.menu());
@@ -81,7 +58,6 @@ export const RenameRowCommand = command("rename-row")
 	.input(RenameAskSchema)
 	.output(DoneSchema)
 	.idempotencyKey(Repeatable)
-	.sends(RenameTabCommand, RenameChatCommand, RenameWorkspaceCommand)
 	.handle(async ({ kind, id, name }, { send }): Promise<Done> => {
 		const trimmed = name.trim();
 
@@ -108,7 +84,7 @@ export const RenameRowCommand = command("rename-row")
 		};
 	});
 
-async function performIntent(intent: Intent, send: DoingSend): Promise<void> {
+async function performIntent(intent: Intent, send: Send): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
 			return send(ShowTabCommand, { id: intent.id });
@@ -143,7 +119,7 @@ async function performIntent(intent: Intent, send: DoingSend): Promise<void> {
 	}
 }
 
-async function openAddress(address: string, where: "new-tab" | "this-tab", send: DoingSend): Promise<void> {
+async function openAddress(address: string, where: "new-tab" | "this-tab", send: Send): Promise<void> {
 	const shown = shownPageOf(await send(HeldTabsQuery));
 
 	if (where === "this-tab" && shown !== null) {
@@ -165,7 +141,7 @@ function shownPageOf({ tabs, shownTabId }: HeldTabs): string | null {
 	return shown?.app === "browser" ? shown.pageId : null;
 }
 
-async function runMenuCommand(menuCommand: MenuCommand, send: DoingSend): Promise<void> {
+async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<void> {
 	switch (menuCommand) {
 		case "new-chat":
 			return send(CreateChatCommand);
@@ -178,7 +154,7 @@ async function runMenuCommand(menuCommand: MenuCommand, send: DoingSend): Promis
 	}
 }
 
-async function createChat(title: string, send: DoingSend): Promise<void> {
+async function createChat(title: string, send: Send): Promise<void> {
 	const trimmed = title.trim();
 	await send(CreateChatCommand);
 
@@ -189,7 +165,7 @@ async function createChat(title: string, send: DoingSend): Promise<void> {
 	await send(RenameChatCommand, { id: (await send(ActiveChatQuery)).id, title: trimmed });
 }
 
-async function createWorkspace(name: string, send: DoingSend): Promise<void> {
+async function createWorkspace(name: string, send: Send): Promise<void> {
 	const trimmed = name.trim();
 	await send(CreateWorkspaceCommand);
 

@@ -2,11 +2,10 @@ import { z } from "zod";
 import type { Duration } from "./duration";
 import type { AnyEvent, Emitter } from "./event";
 import type { Guard } from "./guard";
-import type { Handle, Inject } from "./handler";
+import type { Handle, Inject, Unreserved } from "./handler";
 import { handlingOf } from "./handled-request";
 import type { HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
 import type { Added, Middleware, NothingAdded } from "./middleware";
-import type { Sender } from "./send";
 
 type RequestKind = "query" | "command";
 type KeyStage = "unkeyed" | "keyed";
@@ -105,13 +104,6 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 		return new Contract({ ...this.definition, name: `${module}/${this.name}`, module, invalidates }, this.keyStage);
 	}
 
-	sends<R extends AnyRequest, const S extends readonly AnyRequest[]>(
-		this: R,
-		...requests: S
-	): RequestHandlerBuilder<R, NothingAdded, Sender<S[number]>> {
-		return handlingOf(this).sends(...requests);
-	}
-
 	emits<R extends AnyRequest, const E extends readonly AnyEvent[]>(
 		this: R,
 		...events: E
@@ -133,8 +125,11 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 		return handlingOf(this).use(step);
 	}
 
-	inject<R extends AnyRequest, const N extends Inject>(this: R, inject: N): RequestHandlerBuilder<R, N, NothingAdded> {
-		return handlingOf(this).inject(inject);
+	inject<R extends AnyRequest, const N extends Inject>(
+		this: R,
+		inject: N & Unreserved<N>,
+	): RequestHandlerBuilder<R, N, NothingAdded> {
+		return handlingOf(this).inject<N>(inject);
 	}
 
 	handle<R extends AnyRequest>(

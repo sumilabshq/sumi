@@ -6,9 +6,10 @@ import type { Invalidation } from "./invalidation";
 import { emitOf } from "./event-bus";
 import type { EventBus } from "./event-bus";
 import type { Sending } from "./mediator";
-import type { ModuleDefinition, Provided } from "./module";
+import type { ModuleDefinition, Provided, Runs } from "./module";
 import type { Platform } from "./platform-module";
-import { Refused } from "./refused";
+import { outputOfSent, stampSent } from "./send";
+import type { CallingModule } from "./calling-module";
 import type { FailureReport } from "./report-failure";
 import type { AnyRequest } from "./request";
 import type { AnySubscriber } from "./subscriber";
@@ -32,8 +33,6 @@ interface EventParts {
 	readonly applyInvalidations: (invalidated: readonly Invalidation[]) => void;
 }
 
-const UNDECLARED_SEND = "the subscriber of {event} sends {sent}, which it does not declare in .sends()";
-const SENT_FAILED = "{sent} answered {code}: {reason}";
 const DROPPED = "{source} gave {event} a payload it does not accept, so it was dropped: {issues}";
 
 export function startModuleEvents(parts: EventParts): () => void {
@@ -65,19 +64,19 @@ function subscribed(
 		module: definition.name,
 	};
 	const emit = emitOf(bus, emitting, (event, input) => bus.publish(event, input));
-	const send = subscriberSendOf(sender, listed, definition.name);
-	const invalidating = {
+	const calling = {
 		module: definition.name,
 		importedModuleNames: definition.importedModuleNames,
 		owner: emitting.owner,
 	};
+	const send = subscriberSendOf(sender, calling, definition.runs);
 	return bus.subscribe(listed.event.name, async (input) => {
 		const invalidated: Invalidation[] = [];
 		await listed.handle(input, {
 			...provided,
 			send,
 			emit,
-			invalidate: invalidateInto(invalidated, invalidating),
+			invalidate: invalidateInto(invalidated, calling),
 		});
 		applyInvalidations(invalidated);
 	});
@@ -110,21 +109,9 @@ function sourceStarted(
 	return [source.listen({ provided }, fire)];
 }
 
-function subscriberSendOf(sender: EventSender, listed: AnySubscriber, fromModule: string) {
+function subscriberSendOf(sender: EventSender, calling: CallingModule, fromRuns: Runs) {
 	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
-		if (!listed.sends.some(({ name }) => name === sent.name)) {
-			throw new Error(UNDECLARED_SEND.replace("{event}", listed.event.name).replace("{sent}", sent.name));
-		}
-
-		const answer = await sender.send(sent, input, { fromModule });
-
-		if (answer.ok) {
-			return answer.output;
-		}
-
-		const reason = SENT_FAILED.replace("{sent}", sent.name)
-			.replace("{code}", answer.code)
-			.replace("{reason}", answer.reason);
-		throw answer.ran ? new Error(reason) : new Refused(reason);
+		const stamped = stampSent(sent, calling);
+		return outputOfSent(stamped, await sender.send(stamped, input, { fromModule: calling.module, fromRuns }));
 	};
 }

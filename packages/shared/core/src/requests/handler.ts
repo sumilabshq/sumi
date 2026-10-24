@@ -3,6 +3,7 @@ import type { AnyEvent } from "./event";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { AnyModule, ClientModule, ModuleDefinition, Provided, ServerModule } from "./module";
 import type { AnyRequest, InputOf, ReturnedOf } from "./request";
+import type { Send, Sender } from "./send";
 
 export type Token<T> = abstract new (...args: never[]) => T;
 
@@ -16,7 +17,16 @@ export interface CallFacts {
 	readonly user: User | null;
 }
 
-export type HandlerContext<D extends Inject, C extends Added = NothingAdded> = Injected<D> & CallFacts & C;
+export type HandlerContext<D extends Inject, C extends Added = NothingAdded> = Injected<D> & CallFacts & Sender & C;
+
+const RESERVED_KEYS = ["send", "invalidate", "emit", "idempotencyKey", "signal", "user"] as const;
+
+type ReservedKey = (typeof RESERVED_KEYS)[number];
+
+export type Unreserved<N> = { readonly [K in keyof N]: K extends ReservedKey ? never : N[K] };
+
+const RESERVED_KEY_INJECTED = "inject names {key}, which the engine passes to every handler: name it otherwise";
+const SENDS_NOWHERE = "a handler called outside an app cannot send {sent}";
 
 export type HandlerState = "client" | "public" | "guarded";
 
@@ -61,7 +71,6 @@ export interface Handler<
 	readonly state: S;
 	handle(input: InputOf<R>, context: Injected<D> & Partial<CallFacts> & C): Returned<R>;
 	readonly watch: Bivariant<Watch<R, D>> | null;
-	readonly sends: readonly AnyRequest[];
 	readonly emits: readonly AnyEvent[];
 }
 
@@ -95,8 +104,8 @@ export class HandlerDraft<R extends AnyRequest, P, D extends Inject, C extends A
 		return new HandlerDraft(withStep(this.plan, step));
 	}
 
-	inject<const N extends Inject>(inject: N & Fitting<P, N>): HandlerDraft<R, P, N, C> {
-		return new HandlerDraft({ ...this.plan, inject, watch: null });
+	inject<const N extends Inject>(inject: N & Fitting<P, N> & Unreserved<N>): HandlerDraft<R, P, N, C> {
+		return new HandlerDraft({ ...this.plan, inject: checkInject(inject), watch: null });
 	}
 }
 
@@ -122,8 +131,8 @@ export class GuardedHandlerBuilder<R extends AnyRequest, P, D extends Inject, S 
 		return new GuardedHandlerBuilder(withStep(this.plan, step), this.state);
 	}
 
-	inject<const N extends Inject>(inject: N & Fitting<P, N>): GuardedHandlerBuilder<R, P, N, S, C> {
-		return new GuardedHandlerBuilder({ ...this.plan, inject, watch: null }, this.state);
+	inject<const N extends Inject>(inject: N & Fitting<P, N> & Unreserved<N>): GuardedHandlerBuilder<R, P, N, S, C> {
+		return new GuardedHandlerBuilder({ ...this.plan, inject: checkInject(inject), watch: null }, this.state);
 	}
 
 	watch(watch: Watch<R, D>): GuardedHandlerBuilder<R, P, D, S, C> {
@@ -142,8 +151,8 @@ export class ClientHandlerBuilder<R extends AnyRequest, P, D extends Inject, C e
 		return new ClientHandlerBuilder(withStep(this.plan, step));
 	}
 
-	inject<const N extends Inject>(inject: N & Fitting<P, N>): ClientHandlerBuilder<R, P, N, C> {
-		return new ClientHandlerBuilder({ ...this.plan, inject, watch: null });
+	inject<const N extends Inject>(inject: N & Fitting<P, N> & Unreserved<N>): ClientHandlerBuilder<R, P, N, C> {
+		return new ClientHandlerBuilder({ ...this.plan, inject: checkInject(inject), watch: null });
 	}
 
 	watch(watch: Watch<R, D>): ClientHandlerBuilder<R, P, D, C> {
@@ -179,6 +188,16 @@ export function handler(
 	return module.cover === "unguarded" ? new HandlerDraft(plan) : new GuardedHandlerBuilder(plan, module.cover);
 }
 
+export function checkInject<N extends Inject>(inject: N): N {
+	const reserved = RESERVED_KEYS.find((key) => key in inject);
+
+	if (reserved === undefined) {
+		return inject;
+	}
+
+	throw new Error(RESERVED_KEY_INJECTED.replace("{key}", reserved));
+}
+
 export function withStep<P extends { readonly steps: readonly Step[] }>(plan: P, step: Step): P {
 	return { ...plan, steps: [...plan.steps, step] };
 }
@@ -193,6 +212,7 @@ export function withDefaultCallFacts<R extends AnyRequest, D extends Inject, C e
 			user: null,
 			invalidate: callsNothing,
 			emit: callsNothing,
+			send: sendsNowhere,
 			...context,
 		});
 }
@@ -200,6 +220,8 @@ export function withDefaultCallFacts<R extends AnyRequest, D extends Inject, C e
 function callsNothing(): void {
 	return undefined;
 }
+
+const sendsNowhere: Send = (sent, ..._asked) => Promise.reject(new Error(SENDS_NOWHERE.replace("{sent}", sent.name)));
 
 function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerState, C extends Added>(
 	{ request, module, inject, steps, watch }: Plan<R, D>,
@@ -214,7 +236,6 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		state,
 		handle: withDefaultCallFacts(handle),
 		watch,
-		sends: [],
 		emits: [],
 	};
 }

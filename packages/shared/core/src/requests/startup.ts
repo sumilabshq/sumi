@@ -3,11 +3,9 @@ import type { AnyHandler, Inject } from "./handler";
 import type { Route } from "./local-routes";
 import { isGuardStep } from "./middleware";
 import type { Step } from "./middleware";
-import { RequestsModule } from "./module";
 import type { ModuleDefinition, Provided, ReadyModule, Side } from "./module";
 import type { ModuleReach } from "./remote-modules";
 import type { AnyEvent } from "./event";
-import type { AnyRequest } from "./request";
 import { moduleRoutesOf } from "./routes-of-module";
 import type { ModuleRoutes } from "./routes-of-module";
 
@@ -37,20 +35,9 @@ const UNGUARDED =
 	"{request} runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
 const GUARD_AT = "guard #{at}";
 const MIDDLEWARE_AT = "middleware #{at}";
-const UNROUTED_SEND =
-	"{request} sends {sent}, which no module started by {starter} handles, and no server is configured";
 const STEP_NOT_PROVIDED = "{step} of {request} injects {key}, which its module does not provide as a {token}";
 const IMPORT_UNMET =
 	'module "{module}" imports {imported}, which {starter} neither runs nor reaches: add it to .modules() or .imports()';
-const SEND_NOT_IMPORTED = '{request} sends {sent}, but module "{module}" does not import {sentModule}: add .imports()';
-const SERVER_ONLY_SEND =
-	'{request} sends {sent}, which only a server module may send, and module "{module}" does not run on the server';
-const REMOTE_SERVER_ONLY_SEND = {
-	client:
-		"{request} sends {sent}, which is server-only: server-only requests never cross the network; send it from a module of the server that runs {sentModule}",
-	server:
-		"{request} sends {sent}, which is server-only: server-only requests never cross the network; run {sentModule} in this server's .modules",
-} as const;
 const FOREIGN_EMIT = '{owner} emits {event}, which module "{module}" does not own: a module emits only its own events';
 const EVENT_NOT_PUBLIC =
 	'{owner} listens to {event}, which module "{eventModule}" keeps private: list it in .public() of {eventModule}';
@@ -81,9 +68,7 @@ export function routesOf(starting: Starting): StartedRoutes {
 			ofModule.flatMap((route) => routeFindings(module, route, starting)),
 		),
 		...duplicateFindings(routes.map((route) => route.handler)),
-		...unroutedSendFindings(routes, starting),
 		...importFindings(starting),
-		...sendFindings(routes, starting),
 		...moduleRoutes.flatMap(({ module }) => emitFindings(module)),
 		...moduleRoutes.flatMap(({ module }) => listenFindings(module, starting)),
 	]);
@@ -179,17 +164,6 @@ function missingOf(inject: Inject, provided: Provided): [string, string][] {
 		.map(([key, token]) => [key, token.name]);
 }
 
-function unroutedSendFindings(routes: readonly Route[], { side, remote }: Starting): string[] {
-	const handled = new Set(routes.map(({ handler }) => handler.request.name));
-	return routes.flatMap(({ handler }) =>
-		handler.sends
-			.filter(({ name, module }) => !handled.has(name) && remote?.reachesModule(module ?? "") !== true)
-			.map(({ name }) =>
-				fill(UNROUTED_SEND, handler.request.name).replace("{sent}", name).replace("{starter}", STARTERS[side]),
-			),
-	);
-}
-
 function importFindings({ side, modules, remote }: Starting): string[] {
 	const ranModuleNames = new Set(modules.map(({ definition }) => definition.name));
 	return modules.flatMap(({ definition }) =>
@@ -201,53 +175,6 @@ function importFindings({ side, modules, remote }: Starting): string[] {
 					.replace("{starter}", STARTERS[side]),
 			),
 	);
-}
-
-function sendFindings(routes: readonly Route[], starting: Starting): string[] {
-	const serverOnlyNames = new Set(
-		routes.filter(({ isServerOnly }) => isServerOnly).map(({ handler }) => handler.request.name),
-	);
-	return routes.flatMap(({ handler }) =>
-		handler.sends.flatMap((sent) => [
-			...placedSendFindings(handler, sent, serverOnlyNames),
-			...remoteSendFindings(handler.request, sent, starting),
-		]),
-	);
-}
-
-function placedSendFindings(handler: AnyHandler, sent: AnyRequest, serverOnlyNames: ReadonlySet<string>): string[] {
-	if (!(handler.module instanceof RequestsModule)) {
-		return [];
-	}
-
-	const { name, runs, importedModuleNames } = handler.module;
-	const sentModule = sent.module ?? name;
-	const notImported =
-		sentModule === name || importedModuleNames.includes(sentModule)
-			? []
-			: [
-					fill(SEND_NOT_IMPORTED, handler.request.name)
-						.replace("{sent}", sent.name)
-						.replace("{module}", name)
-						.replace("{sentModule}", sentModule),
-				];
-	const notOnServer =
-		runs !== "server" && sentModule !== name && serverOnlyNames.has(sent.name)
-			? [fill(SERVER_ONLY_SEND, handler.request.name).replace("{sent}", sent.name).replace("{module}", name)]
-			: [];
-	return [...notImported, ...notOnServer];
-}
-
-function remoteSendFindings(sender: AnyRequest, sent: AnyRequest, { side, remote }: Starting): string[] {
-	const sentModule = sent.module ?? "";
-
-	if (remote === null || !remote.reachesModule(sentModule) || remote.forwards(sent)) {
-		return [];
-	}
-
-	return [
-		fill(REMOTE_SERVER_ONLY_SEND[side], sender.name).replace("{sent}", sent.name).replace("{sentModule}", sentModule),
-	];
 }
 
 function emitFindings({ definition, handlers }: ReadyModule): string[] {

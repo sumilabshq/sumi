@@ -24,15 +24,6 @@ const ALL_PAGES = { heldTabId: null };
 export const CommandMenuResultsQuery = query("command-menu-results")
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
-	.sends(
-		TabsSidebarQuery,
-		AppTabsQuery,
-		ClosedTabsQuery,
-		ChatListQuery,
-		ChatsElsewhereQuery,
-		WorkspacesQuery,
-		BrowserTabsQuery,
-	)
 	.handle(async ({ text, scope, door }, { send }) => {
 		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser] = await Promise.all([
 			send(TabsSidebarQuery),
