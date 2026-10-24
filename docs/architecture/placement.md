@@ -20,6 +20,8 @@ packages/<module>/
 
 A server module has no `ui/`. No empty folder is created ahead. The top holds nothing else but `package.json`, `tsconfig*.json`, `LICENSE` and a stylesheet.
 
+A data module (`module(...)`, [requests.md](requests.md#a-data-module-requests-that-handle-themselves)) holds `features/<feature>/requests.ts` instead of `contract.ts` and `handlers.ts`, no `ui/` and no `.tsx`, and may expose pure helpers its views use through `shared/lib/index.ts`. Its `module.ts` imports the features' `requests.ts` to list them; nothing imports `module.ts` back. Its views live in a client package (`"level": "client"`, `index.ts` as its one entry), which reaches the module only through its `"."` entry.
+
 ## The layer order
 
 A module has four layers, and imports point one way, the right one importing the left:

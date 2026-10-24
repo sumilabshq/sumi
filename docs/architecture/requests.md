@@ -4,6 +4,32 @@ Logic lives only in handlers. A view or another handler reaches logic by sending
 
 Every declaration is a fluent chain ([code-style.md](code-style.md#the-fluent-chain)): one concern per call, read top to bottom in the order it runs, every behaviour ending in `.handle()`.
 
+## A data module: requests that handle themselves
+
+New code writes a request and its handler as one chain in `features/<feature>/requests.ts`. The chain up to the first `.inject`, `.guard`, `.use`, `.watch` or `.handle` is the contract.
+
+```ts skip-check
+export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+	.input(FrameSideInputSchema)
+	.idempotencyKey(Repeatable)
+	.invalidates([FrameSidesQuery])
+	.inject({ frameSidesStore: FrameSidesStore })
+	.handle(({ side }, { frameSidesStore }) => frameSidesStore.toggle(side));
+
+export const LayoutModule = module("layout")
+	.queries(FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery)
+	.commands(ToggleFrameSideCommand)
+	.provide((parts: LayoutParts) => ({ ...parts }));
+```
+
+- `module(name)` lists its requests and names no side. The app decides where it runs: `app({ modules: [LayoutModule.with(parts)] })` locally, `server({ modules })` on a server, which still refuses a request no guard covers.
+- `.provide` is typed against every listed request's `inject`: a missing or wrongly typed part is a type error.
+- `widgetarium generate` copies each listed chain up to its first handling step into `generated/contract.ts`. A contract may read only `shared/schema` and packages, so no handler code reaches a client; anything else is refused by name.
+- The mediator routes by request name, so the generated contract and the request that handles itself meet without sharing an object.
+- A module's `.guard()` and `.use()` run before every listed request on either side; `app()` refuses at start a step that needs a user, since a client has no Authenticate, and a step injecting what the module does not provide.
+- A store is the one writer of its state and keeps every transition through the `keep(next, reason)` it was built with; a handler never persists.
+- A data module holds no view. Its views live in a client package (`"level": "client"`), which imports the module's `"."` entry. `packages/layout` and its views in `packages/shell` are the first pair written this way; the sections below describe the earlier shape every other module still has.
+
 ## A contract
 
 The contract says what may be asked: a name, a shape and the policies of the call itself. It is shared by every side, holds no logic and names no guard. It lives in `features/<feature>/contract.ts`.
