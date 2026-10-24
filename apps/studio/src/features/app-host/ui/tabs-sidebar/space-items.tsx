@@ -2,7 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { ContextMenuGroup } from "@widgetarium/kit";
-import { CreateGroupCommand, OpenTabCommand } from "@widgetarium/app-host";
+import { CreateGroupCommand } from "@widgetarium/app-host";
+import { useOpensNewTabMenu } from "../../../command-menu/lib/use-opens-new-tab-menu.js";
 import { PointerItem } from "./pointer-item.js";
 import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
 
@@ -10,7 +11,7 @@ export function SpaceItems({
 	pointed,
 	onGroupMade,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "space" }> }): ReactElement {
-	const openTab = useCommand(OpenTabCommand);
+	const openNewTabMenu = useOpensNewTabMenu();
 	const newGroup = useCommand(CreateGroupCommand);
 	const makeGroup = async (): Promise<void> => {
 		const made = await newGroup.run({ list: pointed.list });
@@ -21,7 +22,7 @@ export function SpaceItems({
 	};
 	return (
 		<ContextMenuGroup>
-			<PointerItem icon="plus" label="New tab" onSelect={() => void openTab.run({ app: "browser" })} />
+			<PointerItem icon="plus" label="New tab" onSelect={openNewTabMenu} />
 			<PointerItem icon="folder-plus" label="New group" onSelect={() => void makeGroup()} />
 		</ContextMenuGroup>
 	);

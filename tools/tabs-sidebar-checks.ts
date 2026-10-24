@@ -1,80 +1,46 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
 import { waitUntil, waited } from "./chrome-ask.ts";
-import type { AskedPage, NativeDrag, PagePoint } from "./chrome-ask.ts";
-import { centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
+import type { AskedPage } from "./chrome-ask.ts";
+import type { Measured } from "./tabs-sidebar-check-kit.ts";
+import {
+	CHAT_IDS,
+	CHAT_TOP_IDS,
+	GROUP_NAMES,
+	LIST_IDS,
+	PAINT_BUDGET_MS,
+	SETTLED_MS,
+	SHOWN_ID,
+	TILE_IDS,
+	TITLE,
+	WORKSPACE_IDS,
+	addFailures,
+	check,
+	failureCount,
+	idsOf,
+	lifted,
+	menuPick,
+	pressOn,
+	printTimings,
+	recordTiming,
+	timed,
+} from "./tabs-sidebar-check-kit.ts";
 import { checksNativeDrag } from "./tabs-sidebar-drag-checks.ts";
+import { checksSidebarLook } from "./tabs-sidebar-look-checks.ts";
+import { centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
 
-interface Measured {
-	readonly ms: number | null;
-	readonly commits: number;
-	readonly rows: number;
-	readonly tiles: number;
-	readonly worstFrame: number;
-}
-
-interface Timed {
-	readonly action: string;
-	readonly measured: Measured;
-}
-
-const PAINT_BUDGET_MS = 100;
-const SETTLED_MS = 450;
-const LIST_IDS = `[...document.querySelectorAll("[data-tabs-list] [data-tabs-item=tab]")].map((row) => row.dataset.tabsId)`;
-const WORKSPACE_IDS = `[...document.querySelectorAll('[data-tabs-list="workspace"] [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
-const CHAT_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
-const CHAT_TOP_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) > [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
-const TILE_IDS = `[...document.querySelectorAll("[data-tabs-item=essential]")].map((tile) => tile.dataset.tabsId)`;
-const GROUP_NAMES = `[...document.querySelectorAll("[data-tabs-item=group] > span:first-of-type")].map((name) => name.textContent)`;
-const SHOWN_ID = `document.querySelector("[data-tabs-item=tab][data-shown]")?.dataset.tabsId ?? null`;
-const TITLE = `document.querySelector("[data-tabs-chat-title]")?.textContent`;
-
-let failures = 0;
-const timings: Timed[] = [];
-
-function check(name: string, isTrue: boolean, seen: unknown): void {
-	if (!isTrue) {
-		failures += 1;
-	}
-
-	console.log(`${isTrue ? "ok  " : "FAIL"} ${name}${isTrue ? "" : ` — saw ${JSON.stringify(seen)}`}`);
-}
-
-async function timed(page: AskedPage, action: string, act: () => Promise<void>): Promise<void> {
-	await page.ask(`window.__arm()`);
-	await act();
-	await waited(SETTLED_MS);
-	const measured = (await page.ask(`window.__result()`)) as Measured;
-	timings.push({ action, measured });
-	check(
-		`${action}: first paint under ${PAINT_BUDGET_MS} ms`,
-		measured.ms !== null && measured.ms < PAINT_BUDGET_MS,
-		measured,
-	);
-}
-
-async function lifted(page: AskedPage, from: PagePoint, to: PagePoint, steps = 14): Promise<NativeDrag> {
-	const drag = await page.lift({ from, to, steps, stepMs: 16 });
-
-	if (!drag.isLifted) {
-		check(`a press at ${from.join(",")} lifts a native drag`, false, from);
-	}
-
-	return drag;
-}
-
-async function idsOf(page: AskedPage, expression: string): Promise<readonly string[]> {
-	const said = await page.ask(expression);
-	return Array.isArray(said) ? said.map(String) : [];
-}
-
-async function pressOn(page: AskedPage, selector: string): Promise<void> {
-	const [x, y] = await centreOf(page, selector);
-	await page.press(x, y);
-}
-
-async function menuPick(page: AskedPage, label: string): Promise<void> {
-	await pressOn(page, `[data-tabs-menu-item="${label}"]`);
+export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
+	await checksPressing(page);
+	await checksChats(page);
+	await checksEssentialsMenu(page);
+	await checksGroups(page);
+	await checksRename(page);
+	await checksDrag(page, folder);
+	await checksSections(page, folder);
+	addFailures(await checksNativeDrag(page, folder));
+	await checksSidebarLook(page);
+	printTimings();
+	return failureCount();
 }
 
 async function checksPressing(page: AskedPage): Promise<void> {
@@ -95,10 +61,14 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	);
 	await checksWobblyPress(page);
 	const before = await idsOf(page, CHAT_IDS);
-	await timed(page, "new tab row", () => pressOn(page, "[data-host-column-add]"));
+	await pressOn(page, "[data-host-column-add]");
+	await waited(SETTLED_MS);
+	const token = await page.ask(`document.querySelector(".wg-cm-token")?.textContent ?? null`);
+	check("New tab opens the command menu at New tab, with no empty page", token === "New tab", token);
+	await timed(page, "new tab from the menu", () => pressOn(page, '[data-cm-tile="app"]'));
 	const workspace = await idsOf(page, WORKSPACE_IDS);
 	check(
-		"New tab lands as the shown row of Tabs in workspace, above the chat's tabs",
+		"a tab picked in New tab lands as the shown row of Tabs in workspace, above the chat's tabs",
 		workspace.length === 1 &&
 			workspace[0] === (await page.ask(SHOWN_ID)) &&
 			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before) &&
@@ -112,7 +82,7 @@ async function checksChats(page: AskedPage): Promise<void> {
 	await page.ask(`window.__armed.at = performance.now(); window.__SIDEBAR__.switchChat("chat-translator"); true`);
 	await waited(SETTLED_MS);
 	const measured = (await page.ask(`window.__result()`)) as Measured;
-	timings.push({ action: "switch chat", measured });
+	recordTiming("switch chat", measured);
 	check(
 		`switch chat: first paint under ${PAINT_BUDGET_MS} ms`,
 		measured.ms !== null && measured.ms < PAINT_BUDGET_MS,
@@ -270,116 +240,6 @@ async function checksWobblyPress(page: AskedPage): Promise<void> {
 	);
 }
 
-const ESSENTIALS_FIT = `(() => { const grid = document.querySelector("[data-tabs-essentials]").getBoundingClientRect(); const tiles = [...document.querySelectorAll("[data-tabs-item=essential]")].map((tile) => tile.getBoundingClientRect()); const row = tiles.filter((tile) => Math.abs(tile.top - tiles[0].top) < 1); const last = row.at(-1); return { tiles: tiles.length, inRow: row.length, left: Math.round(row[0].left - grid.left), right: Math.round(grid.right - last.right), widths: [...new Set(row.map((tile) => Math.round(tile.width)))] }; })()`;
-
-async function essentialsFitOf(page: AskedPage): Promise<Record<string, unknown>> {
-	const fit = await page.ask(ESSENTIALS_FIT);
-	return typeof fit === "object" && fit !== null ? { ...fit } : {};
-}
-
-function isFilledRow(fit: Record<string, unknown>, inRow: number): boolean {
-	const widths = fit["widths"];
-	return (
-		fit["inRow"] === inRow && fit["left"] === 0 && fit["right"] === 0 && Array.isArray(widths) && widths.length === 1
-	);
-}
-
-async function checksEssentialsWidth(page: AskedPage): Promise<void> {
-	const full = await essentialsFitOf(page);
-	check("eight Essentials stand in four equal columns that fill the row", isFilledRow(full, 4), full);
-
-	for (const kept of [3, 1]) {
-		await page.ask(`window.__SIDEBAR__.keepEssentials(${kept}); true`);
-		await waited(SETTLED_MS);
-		const fit = await essentialsFitOf(page);
-		check(`${kept} Essentials fill the whole row in equal tiles`, fit["tiles"] === kept && isFilledRow(fit, kept), fit);
-	}
-
-	const tile = await centreOf(page, "[data-tabs-item=essential]");
-	const start = await centreOf(page, "[data-tabs-list] > [data-tabs-item=tab]");
-	const drag = await lifted(page, start, tile, 16);
-	await waited(300);
-	const room = await page.ask(
-		`(() => { const grid = document.querySelector("[data-tabs-essentials]").getBoundingClientRect(); const tile = document.querySelector("[data-tabs-item=essential]").getBoundingClientRect(); return { half: Math.round((grid.width - 6) / 2), tile: Math.round(tile.width) }; })()`,
-	);
-	writeFileSync(
-		path.join(path.dirname(String(await page.ask("location.pathname"))), "drag-into-one-essential.png"),
-		await page.shoot(),
-	);
-	check(
-		"a row carried over one Essential halves the row: the tile gives the drop the other half",
-		typeof room === "object" && room !== null && Reflect.get(room, "tile") === Reflect.get(room, "half"),
-		room,
-	);
-	await drag.drop(tile);
-	await waited(SETTLED_MS);
-	const two = await essentialsFitOf(page);
-	check("dropping it there leaves two Essentials that fill the row", two["tiles"] === 2 && isFilledRow(two, 2), two);
-}
-
-const KIT_MOTION_OF = `(() => { const menu = document.querySelector("[data-tabs-pointer-menu]"); const style = menu ? getComputedStyle(menu) : null; return { isKitMenu: menu?.classList.contains("wg-kit-float") ?? false, transition: style?.transitionProperty ?? null }; })()`;
-
-async function checksKitMotion(page: AskedPage): Promise<void> {
-	await page.ask(pointedAt("[data-tabs-list] > [data-tabs-item=tab]"));
-	await waited(60);
-	const menu = await page.ask(KIT_MOTION_OF);
-	check(
-		"a right-click menu is the kit's menu and blooms with the kit's scale",
-		typeof menu === "object" &&
-			menu !== null &&
-			Reflect.get(menu, "isKitMenu") === true &&
-			String(Reflect.get(menu, "transition")).includes("scale"),
-		menu,
-	);
-	await page.ask(`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`);
-	await waited(300);
-	const [x, y] = await centreOf(page, "[data-tabs-section]");
-	await page.hover(x, y);
-	await waited(300);
-	const button = await centreOf(page, "[data-tabs-view-options]");
-	await page.drag({ from: button, to: button, steps: 1, stepMs: 16 });
-	await waited(200);
-	const pressed = await page.ask(
-		`(() => { const button = document.querySelector("[data-tabs-view-options]"); return { isKit: button.classList.contains("wg-kit-icon"), transform: getComputedStyle(button).transform }; })()`,
-	);
-	await page.release(button);
-	await waited(400);
-	check(
-		"the view button is the kit's button and gives under a press",
-		typeof pressed === "object" &&
-			pressed !== null &&
-			Reflect.get(pressed, "isKit") === true &&
-			String(Reflect.get(pressed, "transform")).startsWith("matrix(0.95"),
-		pressed,
-	);
-	await page.ask(
-		`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); document.activeElement?.blur(); true`,
-	);
-	await page.hover(5, 5);
-	await waited(300);
-}
-
-async function checksOneForm(page: AskedPage): Promise<void> {
-	check(
-		"the column has one form: no icon rail, no rail buttons, no app picker",
-		(await page.ask(
-			`document.querySelector("[data-host-rail], [data-host-column-toggle], [data-host-column-open-app], [data-host-app-picker]") === null && document.querySelector("[data-tabs-sidebar]") !== null`,
-		)) === true,
-		null,
-	);
-	const edge = await centreOf(page, "[data-host-column-edge]");
-	const far = [edge[0] + 400, edge[1]] as const;
-	await page.drag({ from: edge, to: far, steps: 10, stepMs: 16 });
-	await page.release(far);
-	await waited(SETTLED_MS);
-	const width = await page.ask(`document.querySelector("[data-host-column]").getBoundingClientRect().width`);
-	check(
-		"dragging the edge all the way stops at the narrowest full sidebar",
-		width === 200 && (await page.ask(`document.querySelector("[data-tabs-sidebar]") !== null`)) === true,
-		width,
-	);
-}
-
 async function dragged(page: AskedPage, action: string, from: string, to: readonly [number, number]): Promise<void> {
 	const start = await centreOf(page, from);
 	await timed(page, action, async () => {
@@ -432,7 +292,7 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 	await drag.drop(tile);
 	await waited(SETTLED_MS);
 	const into = (await page.ask(`window.__result()`)) as Measured;
-	timings.push({ action: "drag a row into Essentials", measured: into });
+	recordTiming("drag a row into Essentials", into);
 	check(
 		"dropping it on Essentials makes it an Essential",
 		(await idsOf(page, TILE_IDS)).length === 9 && !(await idsOf(page, LIST_IDS)).includes("tab-5"),
@@ -515,23 +375,4 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 		)) === 0,
 		null,
 	);
-}
-
-export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
-	await checksPressing(page);
-	await checksChats(page);
-	await checksEssentialsMenu(page);
-	await checksGroups(page);
-	await checksRename(page);
-	await checksDrag(page, folder);
-	await checksSections(page, folder);
-	failures += await checksNativeDrag(page, folder);
-	await checksKitMotion(page);
-	await checksOneForm(page);
-	await checksEssentialsWidth(page);
-	console.log("\naction | ms to first paint | commits | rows re-rendered | tiles re-rendered");
-	timings.forEach(({ action, measured }) =>
-		console.log(`${action} | ${measured.ms} | ${measured.commits} | ${measured.rows} | ${measured.tiles}`),
-	);
-	return failures;
 }

@@ -13,7 +13,9 @@ import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
+import { askInkSenderOf } from "../assistant/ask-ink-seam.js";
 import { chatAppOf } from "../assistant/chat-app.js";
+import { AskInkContext } from "../features/command-menu/lib/ask-ink-context.js";
 import type { AssistantHostObjects } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -109,7 +111,12 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	useStudioPortalClass();
 	const catalogueAsk = useTakesCatalogueAsks(frame, started.catalogue.requests, state);
 	const backToView = useMemo(() => () => state.show("app"), [state]);
-	return studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView });
+	const askInk = useMemo(() => askInkSenderOf(started.chatApp), [started.chatApp]);
+	return h(
+		AskInkContext.Provider,
+		{ value: askInk },
+		studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+	);
 }
 
 function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElement {

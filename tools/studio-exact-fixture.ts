@@ -1,6 +1,7 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
+import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
@@ -151,6 +152,7 @@ export function exactStudio({
 			BrowserModule.with(fakeBrowser(new BoardPagesGateway()).parts),
 			LayoutModule,
 			WorkspacesModule.with(workspaces),
+			CommandMenuModule,
 		)
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
 	return {

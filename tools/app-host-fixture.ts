@@ -12,6 +12,7 @@ import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/e
 import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
 import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
@@ -135,6 +136,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...layout }),
 			WorkspacesModule.with(workspacesOf(seed.chatTitle ?? null)),
+			CommandMenuModule,
 		)
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {

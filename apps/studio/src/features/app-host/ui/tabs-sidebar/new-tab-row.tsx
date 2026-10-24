@@ -1,8 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
 import { Icon } from "@widgetarium/kit";
-import { OpenTabCommand } from "@widgetarium/app-host";
+import { useOpensNewTabMenu } from "../../../command-menu/lib/use-opens-new-tab-menu.js";
 import { keyHintOf } from "../../lib/shortcut/key-hint.js";
 import { KEY_HINT, ROW_WORDS, SIDEBAR_ROW } from "../../lib/tabs-look/tabs-look.js";
 
@@ -10,12 +9,12 @@ const NEW_TAB = "New tab";
 const NEW_TAB_KEY = "t";
 
 export function NewTabRow(): ReactElement {
-	const openTab = useCommand(OpenTabCommand);
+	const openNewTabMenu = useOpensNewTabMenu();
 	return (
 		<button
 			type="button"
 			className={`${SIDEBAR_ROW} cv:cursor-pointer cv:[&>svg]:mx-px cv:[&>svg]:text-(--sumi-text-2)`}
-			onClick={() => void openTab.run({ app: "browser" })}
+			onClick={openNewTabMenu}
 			data-host-column-add=""
 		>
 			<Icon name="plus" size={16} />

@@ -1,6 +1,7 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { TabsSidebarColumn } from "../apps/studio/src/tabs/tabs-sidebar-column.tsx";
+import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
 import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
@@ -67,6 +68,7 @@ try {
 				/>
 				<TabsSidebarColumn />
 			</Profiler>
+			<CommandMenu />
 		</AppProvider>,
 	);
 } catch (failure: unknown) {
