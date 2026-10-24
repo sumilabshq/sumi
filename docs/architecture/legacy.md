@@ -1,6 +1,6 @@
 # Legacy
 
-Two kinds of code predate these rules. Both leave by rewrite, one package at a time, with the app running between pieces ([migrate.md](migrate.md)).
+Two kinds of code predate these rules. Both leave by rewrite, one package at a time,, with the app running between pieces.
 
 ## `legacy/` folders
 

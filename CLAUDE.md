@@ -1,31 +1,30 @@
 # Widgetarium
 
 The product is the Tauri desktop studio (`apps/host-tauri`, `apps/studio`); Obsidian (`apps/host-obsidian`)
-is a later host. The vault widget system, its boards and its catalogue are legacy: their laws live in
-[docs/legacy-widgets.md](docs/legacy-widgets.md), read only when touching that code.
+is a later host. The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
 
-**New code follows [docs/architecture/](docs/architecture/README.md)**: data modules (`module(...)`, requests that
-handle themselves) in `packages/domain` and `packages/state`, their views in `packages/client`, common code in
-`packages/shared`, apps and hosts in `apps/`. Before writing or moving a package read the README, requests.md and
-placement.md there. Code in a `legacy/` folder or in the older module shape leaves by rewrite
-([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree, those pages win.
+## Architecture
 
-**Layer responsibilities are hard rules**, loaded from [docs/architecture/layers.md](docs/architecture/layers.md):
+The architecture is `docs/architecture/`, loaded here in full. Where this file and those pages disagree, the
+pages win, and a change to the architecture changes them in the same commit.
+
+@docs/architecture/README.md
 
 @docs/architecture/layers.md
 
-**"Convert X to the new architecture" means the recipe in [docs/architecture/migrate.md](docs/architecture/migrate.md)**,
-loaded here:
+@docs/architecture/placement.md
 
-@docs/architecture/migrate.md
+@docs/architecture/requests.md
 
-**Every declaration is a fluent chain, never an options object, and every behaviour ends in `.handle()`**:
-`command("toggle-frame-side").input(…).idempotencyKey(…).inject({…}).handle(…)`,
-`module("layout").queries(…).commands(…).provide(…)`, `guard().inject({…}).handle(…)`,
-`middleware().inject({…}).handle(…)`. A declared building block is PascalCase with its kind as suffix
-(`ToggleFrameSideCommand`, `FrameSidesQuery`, `LayoutModule`, `FrameSidesGateway`, `OwnsInvoiceGuard`), so a
-move to classes renames nothing. camelCase is for ordinary values and functions. A string appears only as
-free-form data (a request or permission name); every other choice is a typed value.
+@docs/architecture/code-style.md
+
+@docs/architecture/views.md
+
+@docs/architecture/hosts.md
+
+@docs/architecture/lint.md
+
+@docs/architecture/legacy.md
 
 **Code style, every rule enforced by a tool, never by memory**: tabs, width 4. `if` and `for` always
 take braces and a body on its own line, even a lone `return`. An object literal is always spread over
