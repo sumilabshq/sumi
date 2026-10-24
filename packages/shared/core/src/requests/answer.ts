@@ -27,7 +27,7 @@ const RefusalSchema = z.object({
 export const AnswerSchema = z.union([
 	z.object({
 		ok: z.literal(true),
-		output: z.unknown(),
+		output: z.unknown().optional(),
 		invalidated: z.array(InvalidationSchema).optional(),
 	}),
 	RefusalSchema,

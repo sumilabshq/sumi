@@ -386,6 +386,33 @@ check("a public request answers over the wire", await overWire.send(InvoicesCont
 	output: ["inv-1"],
 });
 
+const forgotten: string[] = [];
+const ForgetCommand = command("forget")
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable)
+	.handle(({ id }) => {
+		forgotten.push(id);
+	});
+const NotesModule = module("notes")
+	.on(Server)
+	.guard(PublicGuard)
+	.public(ForgetCommand)
+	.provide(() => ({}));
+const ForgetContract = command("notes/forget")
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+const notesServer = server().modules(NotesModule).start({ env: {}, scope: SCOPE });
+const notesOverWire = app()
+	.imports(moduleContract("notes", Server, [ForgetContract]).at("http://notes"))
+	.start({ host: { fetch: notesServer.fetch } });
+const forgetAnswer = await notesOverWire.send(ForgetContract, { id: "n-1" });
+
+check(
+	"a command with no output answers ok over the wire, not as a broken answer",
+	forgetAnswer.ok ? [true, forgotten] : [forgetAnswer.code, forgetAnswer.reason],
+	[true, ["n-1"]],
+);
+
 const wireCalls: string[] = [];
 const countingFetch = (request: Request): Promise<Response> => {
 	wireCalls.push(new URL(request.url).pathname);

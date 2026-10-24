@@ -15,5 +15,17 @@ export function wirePathOf(request: AnyRequest): string[] {
 
 export function wireAnswerOf(answered: unknown): Answer<unknown> | null {
 	const parsed = AnswerSchema.safeParse(answered);
-	return parsed.success ? parsed.data : null;
+
+	if (!parsed.success) {
+		return null;
+	}
+
+	if (!parsed.data.ok) {
+		return parsed.data;
+	}
+
+	return {
+		...parsed.data,
+		output: parsed.data.output,
+	};
 }
