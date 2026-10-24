@@ -20,6 +20,7 @@ export interface Declared {
 	readonly file: string;
 	readonly text: string;
 	readonly at: number;
+	readonly isExported: boolean;
 	readonly isExportedType: boolean;
 	readonly eager: readonly string[];
 	readonly needs: readonly string[];
@@ -121,13 +122,14 @@ function placeOf(
 	file: SchemaFile,
 	statement: Statement,
 	name: string,
-): Pick<Declared, "name" | "file" | "text" | "at"> {
+): Pick<Declared, "name" | "file" | "text" | "at" | "isExported"> {
 	const at = statement.start ?? 0;
 	return {
 		name,
 		file: file.relative,
 		text: file.text.slice(at, statement.end ?? at),
 		at,
+		isExported: statement.type === "ExportNamedDeclaration",
 	};
 }
 

@@ -99,10 +99,10 @@ const COUNT_REQUESTS = [
 const REQUESTS_FILES: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "@fixture/tally", widgetarium: { level: "domain" } }),
 	"module.ts": [
-		'import { module } from "@widgetarium/core/requests";',
+		'import { Device, module } from "@widgetarium/core/requests";',
 		'import { BumpCommand, CountQuery } from "./features/count/requests.js";',
 		"",
-		'export const TallyModule = module("tally").queries(CountQuery).commands(BumpCommand).provide((parts: TallyParts) => ({ ...parts }));',
+		'export const TallyModule = module("tally").on(Device).public(CountQuery, BumpCommand).provide((parts: TallyParts) => ({ ...parts }));',
 		"",
 	].join("\n"),
 	"features/count/requests.ts": COUNT_REQUESTS,
@@ -113,7 +113,7 @@ const REQUESTS_FILES: Readonly<Record<string, string>> = {
 
 const REQUESTS_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import { command, query } from "@widgetarium/core/requests";',
+	'import { Device, command, moduleContract, query } from "@widgetarium/core/requests";',
 	'import { z } from "zod";',
 	"",
 	"export const CountSchema = 1;",
@@ -125,6 +125,35 @@ const REQUESTS_CONTRACT = [
 	"\t.input(z.object({ by: z.number() }))",
 	"\t.idempotencyKey((input) => `${input.by}`)",
 	"\t.invalidates([CountQuery]);",
+	"",
+	'export const TallyModule = moduleContract("tally", Device, [CountQuery, BumpCommand]);',
+	"",
+].join("\n");
+
+const SERVER_CONTRACT = "generated/server.ts";
+
+const SERVING_SERVER = [
+	GENERATED_HEADER.trimEnd(),
+	'import { CountQuery } from "./contract.js";',
+	'import { command } from "@widgetarium/core/requests";',
+	'import { z } from "zod";',
+	"",
+	'export const BumpCommand = command("tally/bump")',
+	"\t.input(z.object({ by: z.number() }))",
+	"\t.idempotencyKey((input) => `${input.by}`)",
+	"\t.invalidates([CountQuery]);",
+	"",
+].join("\n");
+
+const SHARING_SERVER = [
+	GENERATED_HEADER.trimEnd(),
+	'import { CountSchema } from "./contract.js";',
+	'import { Repeatable, command } from "@widgetarium/core/requests";',
+	'import { z } from "zod";',
+	"",
+	'export const BumpCommand = command("tally/bump")',
+	"\t.input(z.object({ by: CountSchema }))",
+	"\t.idempotencyKey(Repeatable);",
 	"",
 ].join("\n");
 
@@ -166,7 +195,7 @@ const TYPED_SCHEMA = [
 
 const TYPED_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import { query } from "@widgetarium/core/requests";',
+	'import { Device, moduleContract, query } from "@widgetarium/core/requests";',
 	'import { z } from "zod";',
 	"",
 	"export const CountSchema = z.number();",
@@ -176,6 +205,8 @@ const TYPED_CONTRACT = [
 	'export const CountQuery = query("tally/count")',
 	"\t.output(z.custom<Count>())",
 	"\t.settlesNow();",
+	"",
+	'export const TallyModule = moduleContract("tally", Device, [CountQuery]);',
 	"",
 ].join("\n");
 
@@ -208,13 +239,41 @@ const FOREST_SCHEMA = [
 
 const LABEL_SCHEMA = 'import { z } from "zod";\n\nexport const LabelSchema = z.string().min(1);\n';
 
+function servingManifest(name: string): string {
+	return JSON.stringify({
+		name: `@fixture/${name}`,
+		exports: {
+			".": "./index.ts",
+			"./server": "./server.ts",
+		},
+		widgetarium: { level: "domain" },
+	});
+}
+
+const SHARING_REQUESTS = [
+	'import { z } from "zod";',
+	'import { Repeatable, command, query } from "@widgetarium/core/requests";',
+	'import { CountSchema } from "../../shared/schema/count.schema.js";',
+	"",
+	'export const BumpCommand = command("bump")',
+	"\t.input(z.object({ by: CountSchema }))",
+	"\t.idempotencyKey(Repeatable)",
+	"\t.handle(() => undefined);",
+	"",
+	'export const CountQuery = query("count")',
+	"\t.output(CountSchema)",
+	"\t.settlesNow()",
+	"\t.handle(() => 0);",
+	"",
+].join("\n");
+
 function moduleListing(listing: string, from = "./features/count/requests.js"): string {
 	const names = [...new Set(listing.match(/[A-Z]\w+(Query|Command)/g) ?? [])].join(", ");
 	return [
-		'import { module } from "@widgetarium/core/requests";',
+		'import { Device, Server, module } from "@widgetarium/core/requests";',
 		`import { ${names} } from "${from}";`,
 		"",
-		`export const TallyModule = module("tally")${listing}.provide((parts: TallyParts) => ({ ...parts }));`,
+		`export const TallyModule = module("tally")${listing.startsWith(".on(") ? "" : ".on(Device)"}${listing}.provide((parts: TallyParts) => ({ ...parts }));`,
 		"",
 	].join("\n");
 }
@@ -432,7 +491,7 @@ try {
 	);
 
 	const typed = await generatedIn("typed", {
-		"module.ts": moduleListing(".queries(CountQuery)"),
+		"module.ts": moduleListing(".public(CountQuery)"),
 		"features/count/requests.ts": TYPED_REQUESTS,
 		"shared/schema/count.schema.ts": TYPED_SCHEMA,
 	});
@@ -443,7 +502,7 @@ try {
 	);
 
 	const forest = await generatedIn("forest", {
-		"module.ts": moduleListing(".queries(ForestQuery)", "./features/forest/requests.js"),
+		"module.ts": moduleListing(".public(ForestQuery)", "./features/forest/requests.js"),
 		"features/forest/requests.ts": FOREST_REQUESTS,
 		"shared/schema/forest.schema.ts": FOREST_SCHEMA,
 		"shared/schema/label.schema.ts": LABEL_SCHEMA,
@@ -538,7 +597,7 @@ try {
 	);
 
 	const viewed = await generatedIn("viewed", {
-		"module.ts": moduleListing(".queries(ViewQuery)", "./features/view/requests.js"),
+		"module.ts": moduleListing(".public(ViewQuery)", "./features/view/requests.js"),
 		"features/view/requests.tsx": [
 			'import { query } from "@widgetarium/core/requests";',
 			"",
@@ -551,25 +610,121 @@ try {
 		[viewed.code, entryIn(path.join(scratch, "packages/viewed"), "generated/contract.ts")],
 		[
 			0,
-			`${GENERATED_HEADER}import { query } from "@widgetarium/core/requests";\n\nexport const ViewQuery = query("tally/view").settlesNow();\n`,
+			`${GENERATED_HEADER}import { Device, moduleContract, query } from "@widgetarium/core/requests";\n\nexport const ViewQuery = query("tally/view").settlesNow();\n\nexport const TallyModule = moduleContract("tally", Device, [ViewQuery]);\n`,
 		],
 	);
 
 	const twice = await generatedIn("twice", {
-		"module.ts": moduleListing(".queries(CountQuery, CountQuery).commands(BumpCommand)"),
+		"module.ts": moduleListing(".public(CountQuery, CountQuery, BumpCommand)"),
 	});
 	check("a request listed twice is refused by name", refusedWith(twice, "TallyModule: CountQuery is listed twice"), [
 		1,
 		true,
 	]);
 
+	const serving = await generatedIn("serving", {
+		"package.json": servingManifest("serving"),
+		"module.ts": moduleListing(".on(Server).public(CountQuery).serverOnly(BumpCommand)"),
+	});
+	const servingFolder = path.join(scratch, "packages/serving");
+	check(
+		"a server-only request leaves the public contract, which names the module on the server",
+		[
+			serving.code,
+			entryIn(servingFolder, "generated/contract.ts").includes("BumpCommand"),
+			entryIn(servingFolder, "generated/contract.ts").includes('moduleContract("tally", Server, [CountQuery])'),
+		],
+		[0, false, true],
+	);
+	check(
+		"server-only requests are cut into generated/server.ts",
+		entryIn(servingFolder, SERVER_CONTRACT),
+		SERVING_SERVER,
+	);
+	check(
+		"the root server.ts is the server-only entry and re-exports it alone",
+		entryIn(servingFolder, "server.ts"),
+		`${GENERATED_HEADER}export * from "./generated/server.js";\n`,
+	);
+
+	layFiles(servingFolder, { "module.ts": moduleListing(".on(Server).public(CountQuery, BumpCommand)") });
+	check(
+		'a package still exporting "./server" once nothing is server-only is refused by name, and nothing is removed',
+		[
+			...refusedWith(
+				await cli(["packages/serving"], scratch),
+				'@fixture/serving exports "./server" in package.json, and its module lists nothing server-only',
+			),
+			fs.existsSync(path.join(servingFolder, SERVER_CONTRACT)),
+		],
+		[1, true, true],
+	);
+
+	layFiles(servingFolder, {
+		"package.json": JSON.stringify({ name: "@fixture/serving", widgetarium: { level: "domain" } }),
+	});
+	await cli(["packages/serving"], scratch);
+	check(
+		"a module with nothing server-only loses both server files on the next run",
+		[fs.existsSync(path.join(servingFolder, SERVER_CONTRACT)), fs.existsSync(path.join(servingFolder, "server.ts"))],
+		[false, false],
+	);
+
+	const unexported = await generatedIn("unexported", {
+		"module.ts": moduleListing(".on(Server).public(CountQuery).serverOnly(BumpCommand)"),
+	});
+	check(
+		'server-only requests in a package whose package.json exports no "./server" are refused by name',
+		refusedWith(
+			unexported,
+			'@fixture/unexported lists server-only requests, and its package.json exports no "./server"',
+		),
+		[1, true],
+	);
+
+	const handWritten = await generatedIn("hand-written", {
+		"module.ts": moduleListing(".on(Server).public(CountQuery, BumpCommand)"),
+		"server.ts": 'export * from "./generated/server.js";\n',
+	});
+	check(
+		"a hand-written root server.ts beside a module with nothing server-only is refused by name",
+		refusedWith(handWritten, "@fixture/hand-written: server.ts is not generated"),
+		[1, true],
+	);
+
+	const sharing = await generatedIn("sharing", {
+		"package.json": servingManifest("sharing"),
+		"module.ts": moduleListing(".on(Server).public(CountQuery).serverOnly(BumpCommand)"),
+		"features/count/requests.ts": SHARING_REQUESTS,
+		"shared/schema/count.schema.ts": TYPED_SCHEMA,
+	});
+	const sharingFolder = path.join(scratch, "packages/sharing");
+	check(
+		"a schema both a public and a server-only request use is copied once, into the public contract",
+		[
+			sharing.code,
+			entryIn(sharingFolder, "generated/contract.ts").includes("export const CountSchema = z.number();"),
+			entryIn(sharingFolder, SERVER_CONTRACT),
+		],
+		[0, true, SHARING_SERVER],
+	);
+
+	const leaking = await generatedIn("leaking", {
+		"module.ts": moduleListing(".on(Server).public(BumpCommand).serverOnly(CountQuery)"),
+	});
+	check(
+		"a public contract naming a server-only request is refused by name",
+		refusedWith(leaking, "TallyModule: the public contract of BumpCommand names CountQuery, which is server-only"),
+		[1, true],
+	);
+
 	const split = await generatedIn("split", {
 		"module.ts": [
-			'import { module } from "@widgetarium/core/requests";',
+			'import { Device, module } from "@widgetarium/core/requests";',
 			'import { CountQuery } from "./features/count/requests.js";',
 			'import { BumpCommand } from "./features/bump/requests.js";',
 			"",
-			'export const TallyModule = module("tally").queries(CountQuery).commands(BumpCommand).provide((parts: TallyParts) => ({ ...parts }));',
+			'export const TallyModule = module("tally").on(Device).public(CountQuery, BumpCommand).provide((parts: TallyParts) => ({ ...parts }));',
 			"",
 		].join("\n"),
 		"features/count/requests.ts":
@@ -585,7 +740,7 @@ try {
 	);
 
 	const gone = await generatedIn("gone", {
-		"module.ts": moduleListing(".queries(CountQuery)", "./features/gone/requests.js"),
+		"module.ts": moduleListing(".public(CountQuery)", "./features/gone/requests.js"),
 	});
 	check(
 		"a listed file that does not exist is refused by name",
@@ -609,7 +764,7 @@ try {
 		[1, true],
 	);
 
-	const unlisted = await generatedIn("unlisted", { "module.ts": moduleListing(".commands(BumpCommand)") });
+	const unlisted = await generatedIn("unlisted", { "module.ts": moduleListing(".public(BumpCommand)") });
 	check(
 		"a contract using a request of its own file the module does not list says to list it",
 		refusedWith(unlisted, "uses CountQuery, a request of that file that module.ts does not list"),

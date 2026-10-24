@@ -13,6 +13,12 @@ export interface SchemaRoot {
 export interface CopiedSchemas {
 	readonly text: string;
 	readonly imports: readonly Imported[];
+	readonly exportedNames: ReadonlySet<string>;
+}
+
+export interface SchemasElsewhere {
+	readonly specifier: string;
+	readonly names: ReadonlySet<string>;
 }
 
 type Resolved =
@@ -26,6 +32,10 @@ const ZOD = "zod";
 const SCHEMAS = "shared/schema/";
 const SCRIPT = /\.[jt]s$/;
 const KNOWN_NAMES: ReadonlySet<string> = new Set(["undefined", "Readonly", "ReadonlyArray", "Record", "Partial"]);
+const NOWHERE_ELSE: SchemasElsewhere = {
+	specifier: "",
+	names: new Set(),
+};
 
 const FOREIGN =
 	"{file}: {name} comes from {specifier}; a schema copied into the contract reads only zod and shared/schema";
@@ -33,8 +43,12 @@ const MISSING = "{file}: the contract needs {name}, which that file neither impo
 const ALIASED = "{file}: {name} is imported under another name; import a schema under its own name";
 const TWO_DECLARED = "{name} is declared in {one} and in {other}; two schemas copied into one contract need two names";
 
-export function copiedSchemasOf(folder: string, roots: readonly SchemaRoot[]): CopiedSchemas {
-	const copying = new SchemaCopy(folder);
+export function copiedSchemasOf(
+	folder: string,
+	roots: readonly SchemaRoot[],
+	elsewhere: SchemasElsewhere = NOWHERE_ELSE,
+): CopiedSchemas {
+	const copying = new SchemaCopy(folder, elsewhere);
 	for (const root of roots) {
 		copying.add(root.file, root.name);
 	}
@@ -47,8 +61,12 @@ class SchemaCopy {
 	private readonly files = new Map<string, SchemaFile>();
 	private readonly collected = new Map<string, Declared>();
 	private readonly zodImports = new Map<string, Imported>();
+	private readonly elsewhereImports = new Map<string, Imported>();
 
-	constructor(private readonly folder: string) {}
+	constructor(
+		private readonly folder: string,
+		private readonly elsewhere: SchemasElsewhere,
+	) {}
 
 	add(file: string, name: string): void {
 		const resolved = this.resolve(file, name);
@@ -85,11 +103,17 @@ class SchemaCopy {
 		ordered.forEach((declared) => this.emitAfterEager(declared, emitted));
 		return {
 			text: emitted.map(({ text }) => `${text}\n`).join("\n"),
-			imports: [...this.zodImports.values()],
+			imports: [...this.zodImports.values(), ...this.elsewhereImports.values()],
+			exportedNames: new Set(emitted.filter(({ isExported }) => isExported).map(({ name }) => name)),
 		};
 	}
 
 	private collect(declared: Declared): void {
+		if (this.elsewhere.names.has(declared.name)) {
+			this.elsewhereImports.set(declared.name, this.importedFromElsewhere(declared));
+			return;
+		}
+
 		const held = this.collected.get(declared.name);
 
 		if (held !== undefined) {
@@ -109,6 +133,7 @@ class SchemaCopy {
 			const isReady =
 				declared !== null &&
 				!this.collected.has(declared.name) &&
+				!this.elsewhere.names.has(declared.name) &&
 				declared.needs.every((name) => this.isCopiedName(file.relative, name));
 			return isReady ? [declared] : [];
 		});
@@ -117,14 +142,24 @@ class SchemaCopy {
 	private isCopiedName(file: string, name: string): boolean {
 		const resolved = this.resolve(file, name);
 		if (resolved.kind === "declared") {
-			return this.collected.has(resolved.declared.name);
+			return this.collected.has(resolved.declared.name) || this.elsewhere.names.has(resolved.declared.name);
 		}
 
 		return resolved.kind === "zod" || resolved.kind === "known";
 	}
 
+	private importedFromElsewhere({ name, isExportedType }: Declared): Imported {
+		return {
+			specifier: this.elsewhere.specifier,
+			imported: name,
+			local: name,
+			form: "named",
+			isType: isExportedType,
+		};
+	}
+
 	private emitAfterEager(declared: Declared, emitted: Declared[]): void {
-		if (emitted.some(({ name }) => name === declared.name)) {
+		if (emitted.some(({ name }) => name === declared.name) || this.elsewhere.names.has(declared.name)) {
 			return;
 		}
 

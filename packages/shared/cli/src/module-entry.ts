@@ -1,13 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { CliRefusal } from "./cli-output.js";
-import { CONTRACT_ENTRY, contractTextOf } from "./module-contract.js";
+import { z } from "zod";
+import { CONTRACT_ENTRY, SERVER_CONTRACT_FILE, moduleContractsOf } from "./module-contract.js";
 import { JOINED_ENTRY, joinedTextOf } from "./module-joined.js";
 import { packageKindOf } from "@widgetarium/eslint-plugin/domain-file";
+import { fillTemplate } from "@widgetarium/eslint-plugin/fill-template";
 import type { DeclaredModule } from "@widgetarium/eslint-plugin/module-declared";
+import { jsonAt } from "@widgetarium/eslint-plugin/workspace";
 
 const GENERATED_ENTRY = "generated/index.ts";
 const ROOT_ENTRY = "index.ts";
+const ROOT_SERVER_ENTRY = "server.ts";
 const GENERATED_FOLDER = "generated/";
 const RE_EXPORT = /^\s*export\s+(\*|\{[^}]*\}|type\s+\{[^}]*\})\s+from\s/m;
 const GATEWAYS_ENTRY = "generated/gateways.ts";
@@ -24,7 +28,15 @@ const UI_ENTRY = "shared/ui/index.ts";
 const LIB_ENTRY = "shared/lib/index.ts";
 const MODULE_FILE = "module.ts";
 const SCRIPT = /\.ts$/;
+const SERVER_EXPORT = "./server";
+const PACKAGE_FILE = "package.json";
 const RE_EXPORT_GENERATED = "the generator wrote a re-export into {file}; generated/ holds only generated code";
+const NO_SERVER_EXPORT =
+	'{package} lists server-only requests, and its package.json exports no "./server": add "./server" to its exports, or {package}/server never resolves';
+const DANGLING_SERVER_EXPORT =
+	'{package} exports "./server" in package.json, and its module lists nothing server-only: remove "./server" from its exports';
+const HAND_WRITTEN_SERVER =
+	"{package}: server.ts is not generated, and its module lists nothing server-only: remove server.ts, which re-exports nothing generate writes";
 const UNREAD_MODULE =
 	"{file} exports no const built by serverModule(...), clientModule(...) or module(...) the generator can read; it reads module.ts, never runs it";
 
@@ -37,6 +49,11 @@ export interface GeneratedPackage {
 	readonly files: readonly GeneratedFile[];
 	readonly strays: readonly string[];
 }
+
+const PackageManifestSchema = z.object({
+	name: z.string(),
+	exports: z.record(z.string(), z.unknown()).optional(),
+});
 
 export function generatedPackageOf(folder: string, shownAs: string): GeneratedPackage {
 	const kind = packageKindOf(folder);
@@ -74,7 +91,13 @@ function refuseGeneratedReExports(files: readonly GeneratedFile[]): void {
 
 function strayEntriesOf(folder: string, files: readonly GeneratedFile[]): string[] {
 	const written = new Set(files.map(({ entry }) => entry));
-	return filesUnder(folder, GENERATED_FOLDER).filter((entry) => !written.has(entry));
+	const rootServer = isGeneratedFile(folder, ROOT_SERVER_ENTRY) ? [ROOT_SERVER_ENTRY] : [];
+	return [...filesUnder(folder, GENERATED_FOLDER), ...rootServer].filter((entry) => !written.has(entry));
+}
+
+function isGeneratedFile(folder: string, relative: string): boolean {
+	const file = path.join(folder, relative);
+	return fs.existsSync(file) && fs.readFileSync(file, "utf8").startsWith(GENERATED_HEADER);
 }
 
 function handledModuleFilesOf(folder: string, declared: DeclaredModule): GeneratedFile[] {
@@ -98,10 +121,44 @@ function clientFilesOf(folder: string): GeneratedFile[] {
 }
 
 function requestsModuleFilesOf(folder: string, declared: DeclaredModule): GeneratedFile[] {
-	return [
-		{ entry: CONTRACT_ENTRY, text: GENERATED_HEADER + contractTextOf(folder, declared.name) },
+	const { contract, server } = moduleContractsOf(folder, declared.name);
+	refuseServerEntryMismatch(folder, server !== null);
+	const files = [
+		{ entry: CONTRACT_ENTRY, text: GENERATED_HEADER + contract },
 		{ entry: ROOT_ENTRY, text: GENERATED_HEADER + rootReExportOf(CONTRACT_ENTRY) },
 	];
+
+	if (server === null) {
+		return files;
+	}
+
+	return [
+		...files,
+		{ entry: SERVER_CONTRACT_FILE, text: GENERATED_HEADER + server },
+		{ entry: ROOT_SERVER_ENTRY, text: GENERATED_HEADER + rootReExportOf(SERVER_CONTRACT_FILE) },
+	];
+}
+
+function refuseServerEntryMismatch(folder: string, isServing: boolean): void {
+	const manifest = PackageManifestSchema.parse(jsonAt(path.join(folder, PACKAGE_FILE)));
+	const isExported = manifest.exports !== undefined && SERVER_EXPORT in manifest.exports;
+	const said = { package: manifest.name };
+
+	if (isServing && !isExported) {
+		throw new CliRefusal(fillTemplate(NO_SERVER_EXPORT, said));
+	}
+
+	if (!isServing && isExported) {
+		throw new CliRefusal(fillTemplate(DANGLING_SERVER_EXPORT, said));
+	}
+
+	if (
+		!isServing &&
+		fs.existsSync(path.join(folder, ROOT_SERVER_ENTRY)) &&
+		!isGeneratedFile(folder, ROOT_SERVER_ENTRY)
+	) {
+		throw new CliRefusal(fillTemplate(HAND_WRITTEN_SERVER, said));
+	}
 }
 
 function entryTextOf(folder: string, declared: DeclaredModule, features: readonly string[]): string {
