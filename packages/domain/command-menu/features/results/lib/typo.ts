@@ -49,10 +49,14 @@ function editsBetween(one: string, other: string): number {
 function cheapestEdit(rows: readonly (readonly number[])[], { one, other }: Words, { at, column }: Cell): number {
 	const swapped = one[at - 1] === other[column - 1] ? 0 : 1;
 	const best = Math.min(
-		(rows[at - 1]?.[column] ?? 0) + 1,
-		(rows[at]?.[column - 1] ?? 0) + 1,
-		(rows[at - 1]?.[column - 1] ?? 0) + swapped,
+		costAt(rows, at - 1, column) + 1,
+		costAt(rows, at, column - 1) + 1,
+		costAt(rows, at - 1, column - 1) + swapped,
 	);
 	const isTransposed = at > 1 && column > 1 && one[at - 1] === other[column - 2] && one[at - 2] === other[column - 1];
-	return isTransposed ? Math.min(best, (rows[at - 2]?.[column - 2] ?? 0) + 1) : best;
+	return isTransposed ? Math.min(best, costAt(rows, at - 2, column - 2) + 1) : best;
+}
+
+function costAt(rows: readonly (readonly number[])[], at: number, column: number): number {
+	return rows[at]?.[column] ?? 0;
 }

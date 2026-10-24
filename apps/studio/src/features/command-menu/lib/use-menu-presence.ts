@@ -12,17 +12,7 @@ const LEAVE_AT_LATEST_MS = 260;
 export function useMenuPresence(isOpen: boolean): MenuPresence {
 	const [isMounted, setMounted] = useState(isOpen);
 	const [isShown, setShown] = useState(false);
-	useEffect(() => {
-		if (!isOpen) {
-			setShown(false);
-			const leave = setTimeout(() => setMounted(false), LEAVE_AT_LATEST_MS);
-			return () => clearTimeout(leave);
-		}
-
-		setMounted(true);
-		const frame = requestAnimationFrame(() => setShown(true));
-		return () => cancelAnimationFrame(frame);
-	}, [isOpen]);
+	useEffect(() => stepsPresence(isOpen, setMounted, setShown), [isOpen]);
 	return {
 		isMounted,
 		isShown,
@@ -32,4 +22,20 @@ export function useMenuPresence(isOpen: boolean): MenuPresence {
 			}
 		},
 	};
+}
+
+function stepsPresence(
+	isOpen: boolean,
+	setMounted: (isMounted: boolean) => void,
+	setShown: (isShown: boolean) => void,
+): () => void {
+	if (!isOpen) {
+		setShown(false);
+		const leave = setTimeout(() => setMounted(false), LEAVE_AT_LATEST_MS);
+		return () => clearTimeout(leave);
+	}
+
+	setMounted(true);
+	const frame = requestAnimationFrame(() => setShown(true));
+	return () => cancelAnimationFrame(frame);
 }
