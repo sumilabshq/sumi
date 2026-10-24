@@ -2,6 +2,7 @@ import { z } from "zod";
 import { GrantChangeSchema, SiteGrantSchema } from "../../shared/schema/site-access.schema.js";
 import type { GrantChange, SiteGrant } from "../../shared/schema/site-access.schema.js";
 import { storageKeyOfProfile } from "../../shared/lib/browser-profile.js";
+import { jsonOf } from "../../shared/lib/json-of.js";
 import { BrowserGrantsGateway } from "./browser-grants.gateway.js";
 
 const GrantsSchema = z.array(SiteGrantSchema);
@@ -14,7 +15,7 @@ const KEPT_CHANGES = 2000;
 export class LocalStorageBrowserGrantsGateway extends BrowserGrantsGateway {
 	private readonly grantsKey: string;
 	private readonly changesKey: string;
-	private readonly watchers = new Set<() => void>();
+	private readonly listeners = new Set<() => void>();
 
 	constructor(
 		private readonly storage: Storage,
@@ -25,16 +26,16 @@ export class LocalStorageBrowserGrantsGateway extends BrowserGrantsGateway {
 		this.changesKey = storageKeyOfProfile("grant-changes", profileId);
 	}
 
-	readGrants(): readonly SiteGrant[] {
+	grants(): readonly SiteGrant[] {
 		return this.parsed(this.grantsKey, GrantsSchema);
 	}
 
-	watch(changed: () => void): () => void {
-		this.watchers.add(changed);
-		return () => void this.watchers.delete(changed);
+	grantsChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 
-	writeGrantChange(grants: readonly SiteGrant[], change: GrantChange): void {
+	saveGrants(grants: readonly SiteGrant[], change: GrantChange): void {
 		const before = this.storage.getItem(this.grantsKey);
 		const changes = [...this.parsed(this.changesKey, ChangesSchema), change].slice(-KEPT_CHANGES);
 		this.storage.setItem(this.grantsKey, JSON.stringify(grants));
@@ -46,7 +47,7 @@ export class LocalStorageBrowserGrantsGateway extends BrowserGrantsGateway {
 			throw failure;
 		}
 
-		for (const changed of [...this.watchers]) {
+		for (const changed of [...this.listeners]) {
 			changed();
 		}
 	}
@@ -69,13 +70,5 @@ export class LocalStorageBrowserGrantsGateway extends BrowserGrantsGateway {
 		}
 
 		return parsed.data;
-	}
-}
-
-function jsonOf(text: string): unknown {
-	try {
-		return JSON.parse(text);
-	} catch {
-		return null;
 	}
 }

@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import { Browser } from "../packages/domain/browser/generated/index.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { Browser } from "../apps/studio/src/features/browser/ui/browser/browser.tsx";
 import type { BrowserTab, RecentSite } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { pageGlobal, reportsFailures } from "./page-harness.ts";
@@ -26,10 +26,10 @@ function sceneElement(scene: StateScene): ReturnType<typeof h> {
 		favicon: null,
 		...scene.tab,
 	};
-	browser.recentSites.keep(scene.recentSites);
+	browser.recentSites.saveRecentSites(scene.recentSites);
 
 	if (scene.blockedSite !== null) {
-		browser.grants.writeGrantChange(
+		browser.grants.saveGrants(
 			[
 				{
 					siteKey: scene.blockedSite,
@@ -51,7 +51,7 @@ function sceneElement(scene: StateScene): ReturnType<typeof h> {
 		);
 	}
 
-	const sceneApp = app({ modules: [BrowserClientModule.with(browser.parts)] });
+	const sceneApp = app().modules(BrowserModule.with(browser.parts)).start();
 	return h(
 		"div",
 		{

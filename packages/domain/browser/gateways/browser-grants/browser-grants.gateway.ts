@@ -2,5 +2,5 @@ import type { GrantChange, SiteGrant } from "../../shared/schema/site-access.sch
 import { BrowserGrantReadsGateway } from "../browser-grant-reads/browser-grant-reads.gateway.js";
 
 export abstract class BrowserGrantsGateway extends BrowserGrantReadsGateway {
-	abstract writeGrantChange(grants: readonly SiteGrant[], change: GrantChange): void;
+	abstract saveGrants(grants: readonly SiteGrant[], change: GrantChange): void;
 }

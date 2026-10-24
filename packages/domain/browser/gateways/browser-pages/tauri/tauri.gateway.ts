@@ -15,6 +15,9 @@ import type { PageEvent, PageFrame, PageLoadEvent, PagePlacement, PagesBridge } 
 import { PanePages } from "./pane-pages.js";
 import { TauriPage } from "./tauri-page.js";
 
+export { tauriPagesBridge } from "./pages-bridge.js";
+export type { BrowserPagesIpc } from "./pages-bridge.js";
+
 const FIRST_TAB = "tab-1";
 const NO_TAB = 'the browser holds no tab "{tabId}"';
 const IN_PAGE_CHECK_MS = 1000;
@@ -78,7 +81,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		return this.drawnPage() === tabId || this.inPanes.drawnOf(tabId) !== null;
 	}
 
-	watch(changed: () => void): () => void {
+	pagesChanged(changed: () => void): () => void {
 		this.watchers.add(changed);
 		return () => this.watchers.delete(changed);
 	}
@@ -246,7 +249,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		return this.looks.lookOf(tabId);
 	}
 
-	watchLook(changed: () => void): () => void {
+	looksChanged(changed: () => void): () => void {
 		return this.looks.watch(changed);
 	}
 

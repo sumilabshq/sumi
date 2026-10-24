@@ -56,9 +56,27 @@ export type BrowserTabState = z.infer<typeof BrowserTabStateSchema>;
 
 export const BrowserTabsSchema = z.object({
 	isAvailable: z.boolean(),
+	canOpenOwnWindow: z.boolean(),
 	tabs: z.array(BrowserTabStateSchema).readonly(),
 	inkReading: InkReadingSchema.nullable(),
 	recentSites: z.array(RecentSiteSchema).readonly(),
 });
 
 export type BrowserTabs = z.infer<typeof BrowserTabsSchema>;
+
+export const BrowserViewSchema = z.object({ heldTabId: z.string().nullable() });
+
+export type BrowserView = z.infer<typeof BrowserViewSchema>;
+
+export const TabIdSchema = z.object({ tabId: z.string() });
+
+export const OpenAddressSchema = z.object({
+	tabId: z.string(),
+	address: z.string().trim().min(1),
+	heldTabId: z.string().nullable(),
+});
+
+export const PagesHostSchema = z.object({
+	host: z.unknown(),
+	heldTabId: z.string().nullable(),
+});

@@ -1,75 +1,52 @@
-import { MemoryBrowserAsksStore } from "../../shared/lib/browser-asks-store.js";
-import type { BrowserAsksStore } from "../../shared/lib/browser-asks-store.js";
-import { MemoryInkActivityStore } from "../../shared/lib/ink-activity-store.js";
-import type { InkActivityStore } from "../../shared/lib/ink-activity-store.js";
-import { MemoryOnceAllowancesStore } from "../../shared/lib/once-allowances-store.js";
-import type { OnceAllowancesStore } from "../../shared/lib/once-allowances-store.js";
-import { onceKeptOnTabs } from "../../shared/lib/once-grants.js";
-import { isSameSites, visitOf, withVisit } from "../../shared/lib/recent-sites.js";
+import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
+import type { AccessAsksGateway } from "../access-asks/access-asks.gateway.js";
 import type { BrowserAuditGateway } from "../browser-audit/browser-audit.gateway.js";
 import type { BrowserGrantReadsGateway } from "../browser-grant-reads/browser-grant-reads.gateway.js";
 import type { BrowserGrantsGateway } from "../browser-grants/browser-grants.gateway.js";
 import type { BrowserPagesGateway } from "../browser-pages/browser-pages.gateway.js";
-import { PaneBrowserPagesGateway } from "../browser-pages/pane.gateway.js";
 import type { ClockGateway } from "../clock/clock.gateway.js";
-import type { ChatComposerGateway } from "../chat-composer/chat-composer.gateway.js";
+import type { InkActivityGateway } from "../ink-activity/ink-activity.gateway.js";
+import type { OnceAllowancesGateway } from "../once-allowances/once-allowances.gateway.js";
 import type { RecentSitesGateway } from "../recent-sites/recent-sites.gateway.js";
+import { electronRemoteOfWindow, electronBrowserParts } from "./electron.gateway.js";
+import { tauriBrowserParts } from "./tauri.gateway.js";
+import { webBrowserParts } from "./web.gateway.js";
 
-export interface BrowserGateways {
-	readonly browserPagesGateway: BrowserPagesGateway;
-	readonly browserGrantsGateway: BrowserGrantsGateway;
-	readonly browserAuditGateway: BrowserAuditGateway;
-	readonly clockGateway: ClockGateway;
-	readonly recentSitesGateway: RecentSitesGateway;
-	readonly chatComposerGateway: ChatComposerGateway;
+export type KeptBrowserParts = {
+	readonly browserPages: BrowserPagesGateway;
+	readonly browserGrants: BrowserGrantsGateway;
+	readonly browserAudit: BrowserAuditGateway;
+	readonly recentSites: RecentSitesGateway;
+};
+
+export type BrowserParts = KeptBrowserParts & {
+	readonly browserGrantReads: BrowserGrantReadsGateway;
+	readonly clock: ClockGateway;
+	readonly onceAllowances: OnceAllowancesGateway;
+	readonly accessAsks: AccessAsksGateway;
+	readonly inkActivity: InkActivityGateway;
+};
+
+const PARTS_ON: Readonly<Record<Platform, () => BrowserParts>> = {
+	browser: () => startedOrOff(browserWindowParts),
+	tauri: () => startedOrOff(tauriBrowserParts),
+	server: webBrowserParts,
+};
+
+export function browserPartsOn(facts: ModuleFacts): BrowserParts {
+	return PARTS_ON[facts.platform]();
 }
 
-export interface BrowserParts extends BrowserGateways {
-	readonly browserGrantReadsGateway: BrowserGrantReadsGateway;
-	readonly onceAllowancesStore: OnceAllowancesStore;
-	readonly browserAsksStore: BrowserAsksStore;
-	readonly inkActivityStore: InkActivityStore;
+function browserWindowParts(): BrowserParts {
+	const remote = electronRemoteOfWindow();
+	return remote === null ? webBrowserParts() : electronBrowserParts(remote);
 }
 
-const ENDED_AWAY = "the tab left the host it was allowed once on";
-const VISITED = "a tab finished loading a page";
-
-export function browserPartsOf(gateways: BrowserGateways): BrowserParts {
-	const { browserPagesGateway, browserGrantsGateway, clockGateway } = gateways;
-	const onceAllowancesStore = new MemoryOnceAllowancesStore();
-	browserPagesGateway.watch(() =>
-		onceAllowancesStore.keep(
-			onceKeptOnTabs(onceAllowancesStore.allowances(), browserPagesGateway.tabs(), clockGateway.now()),
-			ENDED_AWAY,
-		),
-	);
-	browserPagesGateway.watch(() => noteVisits(browserPagesGateway, gateways.recentSitesGateway));
-	return {
-		...gateways,
-		browserGrantReadsGateway: browserGrantsGateway,
-		onceAllowancesStore,
-		browserAsksStore: new MemoryBrowserAsksStore(),
-		inkActivityStore: new MemoryInkActivityStore(),
-	};
-}
-
-export function paneBrowserParts(parts: BrowserParts, tabId: string): BrowserParts {
-	return {
-		...parts,
-		browserPagesGateway: new PaneBrowserPagesGateway(parts.browserPagesGateway, tabId),
-	};
-}
-
-function noteVisits(browserPagesGateway: BrowserPagesGateway, recentSitesGateway: RecentSitesGateway): void {
-	const kept = recentSitesGateway.sites();
-	const visited = browserPagesGateway
-		.tabs()
-		.map(visitOf)
-		.reduce((sites, visit) => (visit === null ? sites : withVisit(sites, visit)), kept);
-
-	if (isSameSites(kept, visited)) {
-		return;
+function startedOrOff(start: () => BrowserParts): BrowserParts {
+	try {
+		return start();
+	} catch (failure) {
+		console.error("[widgetarium] the browser could not start and stays off", failure);
+		return webBrowserParts();
 	}
-
-	recentSitesGateway.keep(visited, VISITED);
 }

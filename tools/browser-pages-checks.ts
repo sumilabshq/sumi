@@ -1,13 +1,13 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import {
 	BrowserTabsQuery,
 	ClosePageCommand,
 	OpenPageCommand,
 	ShowTabCommand,
-} from "../packages/domain/browser/features/tabs/contract.ts";
+} from "../packages/domain/browser/index.ts";
 import { onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import type { CommittedPage } from "../packages/domain/browser/shared/schema/page-read.schema.ts";
@@ -98,7 +98,7 @@ function manyPages(): ManyPages {
 	return {
 		browser,
 		pages,
-		started: app({ modules: [BrowserClientModule.with(browser.parts)] }),
+		started: app().modules(BrowserModule.with(browser.parts)).start(),
 	};
 }
 
@@ -115,7 +115,7 @@ async function opened(started: StartedApp, tabIds: readonly string[]): Promise<v
 const listed = manyPages();
 await opened(listed.started, ["page-b", "page-c", "page-b"]);
 await listed.started.send(ShowTabCommand, { tabId: "page-c" });
-const listedTabs = await listed.started.send(BrowserTabsQuery);
+const listedTabs = await listed.started.send(BrowserTabsQuery, { heldTabId: null });
 check(
 	"the browser holds one page per opened tab, an id opened twice once, and shows the one asked",
 	listedTabs.ok && listedTabs.output.tabs.map((tab) => `${tab.id}${tab.isShown ? "*" : ""}`),
@@ -125,7 +125,7 @@ check("showing a page freezes every other page and thaws it", [...listed.pages.f
 await listed.started.send(ShowTabCommand, { tabId: FIRST });
 check("showing another page thaws it and freezes the one left", [...listed.pages.frozen].sort(), ["page-b", "page-c"]);
 await listed.started.send(ClosePageCommand, { tabId: "page-c" });
-const afterClose = await listed.started.send(BrowserTabsQuery);
+const afterClose = await listed.started.send(BrowserTabsQuery, { heldTabId: null });
 check(
 	"closing a page takes it off the list and keeps the rest",
 	afterClose.ok && afterClose.output.tabs.map((tab) => tab.id),
@@ -148,14 +148,14 @@ await opened(reading.started, ["page-b"]);
 reading.pages.open("page-b", "https://example.com/board");
 await reading.started.send(ShowTabCommand, { tabId: "page-b" });
 check("Ink reads the shown page", said(await reading.started.send(ReadPageContentCommand)), "ok");
-check("and the reading mark is on that page", reading.browser.parts.inkActivityStore.now().reading?.tabId, "page-b");
+check("and the reading mark is on that page", reading.browser.parts.inkActivity.inkActivity().reading?.tabId, "page-b");
 
 const granted = manyPages();
 await opened(granted.started, ["page-b"]);
 granted.pages.open(FIRST, PRIVATE_SITE);
 granted.pages.open("page-b", PRIVATE_SITE);
-granted.browser.parts.onceAllowancesStore.keep([onceAllowanceOf("192.168.1.10", FIRST, Date.now())], "allowed once");
-const grantedTabs = await granted.started.send(BrowserTabsQuery);
+granted.browser.parts.onceAllowances.saveOnceAllowances([onceAllowanceOf("192.168.1.10", FIRST, Date.now())]);
+const grantedTabs = await granted.started.send(BrowserTabsQuery, { heldTabId: null });
 check(
 	"a once-grant on one page does not cover another page at the same site",
 	grantedTabs.ok && grantedTabs.output.tabs.map((tab) => `${tab.id}:${tab.access?.decision}`),
@@ -165,7 +165,7 @@ check(
 const asking = manyPages();
 asking.pages.open(FIRST, PRIVATE_SITE);
 const askedRead = asking.started.send(ReadPageContentCommand);
-await waitFor(() => asking.browser.parts.browserAsksStore.asks().length === 1);
+await waitFor(() => asking.browser.parts.accessAsks.accessAsks().length === 1);
 await asking.started.send(ClosePageCommand, { tabId: FIRST });
 check("closing a page refuses the ask still waiting on it", said(await askedRead), "ask-unanswered");
 

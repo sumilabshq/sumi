@@ -23,7 +23,7 @@ const STRIP_TYPE = "image/jpeg";
 const SAMPLE_SIDE = 8;
 const STRIP_LOOK_EVERY_MS = 250;
 const FILL_LOOK_EVERY_MS = 1000;
-const RGB_CHANNELS = [0, 1, 2];
+const RGB_CHANNELS: readonly number[] = [0, 1, 2];
 
 export class PageLooks {
 	private readonly looks = new Map<string, PageLook>();

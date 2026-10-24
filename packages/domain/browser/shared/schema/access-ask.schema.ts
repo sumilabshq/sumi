@@ -15,3 +15,10 @@ export const AccessAskSchema = z.object({
 export type AccessAsk = z.infer<typeof AccessAskSchema>;
 
 export const AccessAsksSchema = z.array(AccessAskSchema).readonly();
+
+export const AnswerAskSchema = z.object({
+	id: z.string(),
+	answer: AskAnswerSchema,
+});
+
+export type AskOutcome = AskAnswer | "unanswered";

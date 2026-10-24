@@ -1,3 +1,4 @@
+import { SECRET_FIELD_ON_PAGE } from "./read-refusals.js";
 import { SENSITIVE_SITES } from "../../../shared/lib/sensitive-sites.js";
 import { isOnList, siteKeyOfAddress } from "../../../shared/lib/decide-browser-access.js";
 import { urlOf } from "../../../shared/lib/site-key.js";
@@ -22,7 +23,7 @@ export function refuseClosedFrame({ pageUrl, frames, isAllowed }: FramesShown): 
 export function refusePaymentFrame(frames: readonly string[]): string | null {
 	const paying = frames.some((url) => isOnList(siteKeyOfAddress(url), SENSITIVE_SITES.paymentFrames));
 
-	return paying ? "secret-field-on-page" : null;
+	return paying ? SECRET_FIELD_ON_PAGE : null;
 }
 
 function isForeignFrame(url: string, pageOrigin: string | undefined): boolean {

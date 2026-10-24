@@ -7,8 +7,4 @@ export class MemoryBrowserAuditGateway extends BrowserAuditGateway {
 	appendAccess(entry: AccessLogEntry): void {
 		this.access.push(entry);
 	}
-
-	recentAccess(): readonly AccessLogEntry[] {
-		return this.access;
-	}
 }

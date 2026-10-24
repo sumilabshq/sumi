@@ -1,34 +1,29 @@
-import { Platform } from "obsidian";
-import { electronBrowserParts, webBrowserParts } from "@widgetarium/browser/gateways";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
+import { BrowserTabsQuery } from "@widgetarium/browser";
+import type { StartedApp } from "@widgetarium/core/requests";
+import { startBrowserApp } from "@widgetarium/studio";
 import type { WidgetariumPlugin } from "../main.js";
 import { answerPendingAsks, openBrowserDesk } from "./browser-desk-responder.js";
 
 const DESK_POLL_MS = 500;
-const REMOTE_MODULE = "@electron/remote";
 
-export function startObsidianBrowser(plugin: WidgetariumPlugin): BrowserParts {
-	const loadModule: unknown = Reflect.get(window, "require");
-
-	if (!Platform.isDesktopApp || typeof loadModule !== "function") {
-		return webBrowserParts();
-	}
-
-	try {
-		const parts = electronBrowserParts({
-			remote: Reflect.apply(loadModule, window, [REMOTE_MODULE]),
-			machineStorage: window.localStorage,
-		});
-		answerAgentDesk(plugin, parts);
-		return parts;
-	} catch (failure) {
-		console.error("[widgetarium] the browser could not be locked down and stays off", failure);
-		return webBrowserParts();
-	}
+export function startObsidianBrowser(plugin: WidgetariumPlugin): StartedApp {
+	const browserApp = startBrowserApp({
+		platform: "browser",
+		workspaceId: plugin.app.vault.getName(),
+	});
+	void answerAgentDesk(plugin, browserApp);
+	return browserApp;
 }
 
-function answerAgentDesk(plugin: WidgetariumPlugin, parts: BrowserParts): void {
-	const desk = openedDesk(plugin, parts);
+async function answerAgentDesk(plugin: WidgetariumPlugin, browserApp: StartedApp): Promise<void> {
+	const tabs = await browserApp.send(BrowserTabsQuery, { heldTabId: null });
+
+	if (!tabs.ok || !tabs.output.isAvailable) {
+		console.info("[widgetarium] the browser desk stays shut: this host draws no pages");
+		return;
+	}
+
+	const desk = openedDesk(plugin, browserApp);
 
 	if (desk === null) {
 		return;
@@ -43,9 +38,9 @@ function answerAgentDesk(plugin: WidgetariumPlugin, parts: BrowserParts): void {
 	);
 }
 
-function openedDesk(plugin: WidgetariumPlugin, parts: BrowserParts): ReturnType<typeof openBrowserDesk> {
+function openedDesk(plugin: WidgetariumPlugin, browserApp: StartedApp): ReturnType<typeof openBrowserDesk> {
 	try {
-		return openBrowserDesk(plugin.app.vault.adapter, parts);
+		return openBrowserDesk(plugin.app.vault.adapter, browserApp);
 	} catch (failure) {
 		console.error("[widgetarium] the browser desk is not private, so Sumi cannot reach the browser", failure);
 		return null;

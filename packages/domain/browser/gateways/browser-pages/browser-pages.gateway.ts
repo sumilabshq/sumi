@@ -7,7 +7,7 @@ export abstract class BrowserPagesGateway {
 	abstract tabs(): readonly BrowserTab[];
 	abstract shownId(): string | null;
 	abstract isOnScreen(tabId: string): boolean;
-	abstract watch(changed: () => void): () => void;
+	abstract pagesChanged(changed: () => void): () => void;
 	abstract attach(into: HTMLElement): void;
 	abstract detach(from: HTMLElement): void;
 	abstract attachInPane(tabId: string, into: HTMLElement): void;
@@ -34,6 +34,6 @@ export abstract class BrowserPagesGateway {
 	abstract hasSecretField(tabId: string): Promise<boolean>;
 	abstract content(tabId: string): Promise<PageContentRead>;
 	abstract look(tabId: string): PageLook | null;
-	abstract watchLook(changed: () => void): () => void;
+	abstract looksChanged(changed: () => void): () => void;
 	abstract capture(tabId: string, region: PageRegion | null): Promise<PageShot>;
 }

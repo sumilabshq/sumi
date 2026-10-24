@@ -2,7 +2,7 @@ import { decideBrowserAccess } from "../packages/domain/browser/shared/lib/decid
 import { SENSITIVE_SITES } from "../packages/domain/browser/shared/lib/sensitive-sites.ts";
 import type { SiteGrant } from "../packages/domain/browser/shared/schema/site-access.schema.ts";
 import { regionWithin } from "../packages/domain/browser/shared/lib/region-within.ts";
-import { webAddressOf } from "../packages/domain/browser/features/tabs/handlers.ts";
+import { webAddressOf } from "../packages/domain/browser/features/tabs/lib/web-address.ts";
 import { check } from "./check-helpers.ts";
 
 const NONE: readonly SiteGrant[] = [];

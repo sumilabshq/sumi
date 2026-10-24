@@ -1,21 +1,15 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import {
-	CapturePageCommand,
-	InkOpenAddressCommand,
-	ReadPageContentCommand,
-} from "../packages/domain/browser/features/ink/contract.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { CapturePageCommand, InkOpenAddressCommand, ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { LocalStorageBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/local-storage.gateway.ts";
-import { StopInkCommandHandler } from "../packages/domain/browser/features/asks/handlers.ts";
-import { SetSiteLevelCommandHandler } from "../packages/domain/browser/features/sites/handlers.ts";
 import { hasReadContentThisTurn } from "../packages/domain/browser/features/ink/lib/ink-turn.ts";
 import { check, thrownBy, waitFor } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 
 function started(browser: FakeBrowser): StartedApp {
-	return app({ modules: [BrowserClientModule.with(browser.parts)] });
+	return app().modules(BrowserModule.with(browser.parts)).start();
 }
 
 function said(answer: Answer<unknown>): string {
@@ -51,8 +45,8 @@ sameHost.pages.tab = {
 	url: "http://example.com/a",
 };
 const sameHostOpen = started(sameHost).send(InkOpenAddressCommand, { url: "http://example.com/b" });
-check("the same host is checked too", await waitFor(() => sameHost.parts.browserAsksStore.asks().length === 1), true);
-sameHost.parts.browserAsksStore.settle(sameHost.parts.browserAsksStore.asks()[0]?.id ?? "", "no");
+check("the same host is checked too", await waitFor(() => sameHost.parts.accessAsks.accessAsks().length === 1), true);
+sameHost.parts.accessAsks.saveAnswer(sameHost.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 check("and its no refuses", said(await sameHostOpen), "person-said-no");
 
 const offScreen = fakeBrowser();
@@ -65,10 +59,14 @@ check(
 
 const shooting = fakeBrowser();
 check("a screenshot is taken", said(await started(shooting).send(CapturePageCommand, { region: null })), "ok");
-check("and counts as content read", hasReadContentThisTurn(shooting.parts.inkActivityStore.now(), Date.now()), true);
+check("and counts as content read", hasReadContentThisTurn(shooting.parts.inkActivity.inkActivity(), Date.now()), true);
 
 const stopping = fakeBrowser();
-stopping.pages.duringRead = () => void StopInkCommandHandler.handle(undefined, stopping.parts);
+stopping.pages.duringRead = () =>
+	stopping.parts.inkActivity.saveInkActivity({
+		...stopping.parts.inkActivity.inkActivity(),
+		stoppedAt: Date.now(),
+	});
 check(
 	"a stop during the read refuses it",
 	said(await started(stopping).send(ReadPageContentCommand)),
@@ -77,7 +75,26 @@ check(
 
 const blockedMidRead = fakeBrowser();
 blockedMidRead.pages.duringRead = () =>
-	void SetSiteLevelCommandHandler.handle({ siteKey: "example.com", level: "blocked" }, blockedMidRead.parts);
+	blockedMidRead.grants.saveGrants(
+		[
+			{
+				siteKey: "example.com",
+				scope: "host",
+				level: "blocked",
+				source: "person",
+				grantedAt: Date.now(),
+				by: "person",
+			},
+		],
+		{
+			at: Date.now(),
+			siteKey: "example.com",
+			was: null,
+			became: "blocked",
+			by: "person",
+			reason: "blocked during the read",
+		},
+	);
 check(
 	"a block set during the read refuses it",
 	said(await started(blockedMidRead).send(ReadPageContentCommand)),
@@ -151,7 +168,7 @@ const rolledBack = new LocalStorageBrowserGrantsGateway(failingChanges, "rollbac
 check(
 	"a grant whose log cannot be written is not kept",
 	thrownBy(() =>
-		rolledBack.writeGrantChange(
+		rolledBack.saveGrants(
 			[
 				{
 					siteKey: "example.com",
@@ -174,4 +191,4 @@ check(
 	),
 	"storage is full",
 );
-check("and the grants read as before", rolledBack.readGrants(), []);
+check("and the grants read as before", rolledBack.grants(), []);

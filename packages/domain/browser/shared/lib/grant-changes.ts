@@ -1,4 +1,3 @@
-import { refuse } from "@widgetarium/core/requests";
 import type { AccessLevel, GrantChange, OnceAllowance, SiteGrant } from "../schema/site-access.schema.js";
 import { onceGrantOf } from "./once-grants.js";
 
@@ -20,11 +19,11 @@ const NOT_A_SITE = 'site access is kept per host name, and "{siteKey}" is not on
 const THE_PERSON = "person";
 const ALLOWED_ONCE = "allowed once";
 
-export function siteLevelToWrite(held: readonly SiteGrant[], wanted: SiteLevelWanted): GrantWrite | null {
-	if (!SITE_KEY.test(wanted.siteKey)) {
-		return refuse(NOT_A_SITE.replace("{siteKey}", wanted.siteKey));
-	}
+export function refuseSiteKey(siteKey: string): string | null {
+	return SITE_KEY.test(siteKey) ? null : NOT_A_SITE.replace("{siteKey}", siteKey);
+}
 
+export function siteLevelToWrite(held: readonly SiteGrant[], wanted: SiteLevelWanted): GrantWrite | null {
 	const was = hostGrantOf(held, wanted.siteKey);
 
 	if (was?.level === wanted.level && was.source === wanted.by) {

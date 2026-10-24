@@ -2,21 +2,21 @@ import type { RecentSite } from "../../shared/schema/browser-tab.schema.js";
 import { RecentSitesGateway } from "./recent-sites.gateway.js";
 
 export class MemoryRecentSitesGateway extends RecentSitesGateway {
-	private readonly watchers = new Set<() => void>();
+	private readonly listeners = new Set<() => void>();
 	private kept: readonly RecentSite[] = [];
 
-	sites(): readonly RecentSite[] {
+	recentSites(): readonly RecentSite[] {
 		return this.kept;
 	}
 
-	watch(changed: () => void): () => void {
-		this.watchers.add(changed);
-		return () => void this.watchers.delete(changed);
+	recentSitesChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 
-	keep(sites: readonly RecentSite[]): void {
+	saveRecentSites(sites: readonly RecentSite[]): void {
 		this.kept = sites;
-		for (const changed of [...this.watchers]) {
+		for (const changed of [...this.listeners]) {
 			changed();
 		}
 	}

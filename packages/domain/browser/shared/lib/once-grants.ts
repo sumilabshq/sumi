@@ -50,3 +50,11 @@ export function onceGrantOf(allowance: OnceAllowance): SiteGrant {
 		tabId: allowance.tabId,
 	};
 }
+
+export function isSameAllowances(kept: readonly OnceAllowance[], next: readonly OnceAllowance[]): boolean {
+	return kept.length === next.length && kept.every((allowance, at) => isSameAllowance(allowance, next[at]));
+}
+
+function isSameAllowance(allowance: OnceAllowance, other: OnceAllowance | undefined): boolean {
+	return allowance.siteKey === other?.siteKey && allowance.tabId === other.tabId && allowance.until === other.until;
+}

@@ -1,9 +1,6 @@
 import type { DataAdapter } from "obsidian";
 import { IS_PRODUCTION_BUILD } from "widgetarium:build-stamp";
 import { CapturePageCommand, InkOpenAddressCommand, ReadPageContentCommand } from "@widgetarium/browser";
-import { BrowserClientModule } from "@widgetarium/browser/module";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
-import { app } from "@widgetarium/core/requests";
 import type { Answer, StartedApp } from "@widgetarium/core/requests";
 import { reportsBasePath } from "../legacy/desktop-adapter.js";
 import {
@@ -35,7 +32,7 @@ export interface DeskOpening {
 	readonly fs: NodeFs;
 	readonly root: string;
 	readonly vaultPath: string;
-	readonly parts: BrowserParts;
+	readonly browserApp: StartedApp;
 	readonly uid: number | null;
 	readonly isProductionBuild: boolean;
 }
@@ -45,7 +42,7 @@ const NOT_AN_ASK = "the browser desk could not read this ask";
 const NOT_THIS_DESK = "this ask does not carry the browser desk's token";
 const NO_URL = "open needs the address of the page";
 
-export function openBrowserDesk(adapter: DataAdapter, parts: BrowserParts): Desk | null {
+export function openBrowserDesk(adapter: DataAdapter, browserApp: StartedApp): Desk | null {
 	if (typeof require !== "function" || !reportsBasePath(adapter)) {
 		return null;
 	}
@@ -56,7 +53,7 @@ export function openBrowserDesk(adapter: DataAdapter, parts: BrowserParts): Desk
 		fs,
 		root: deskRootOf(deskPlaceOfProcess(os)),
 		vaultPath: fs.realpathSync(adapter.getBasePath()),
-		parts,
+		browserApp,
 		uid: process.getuid?.() ?? null,
 		isProductionBuild: IS_PRODUCTION_BUILD,
 	});
@@ -70,7 +67,7 @@ export function openDeskAt(opening: DeskOpening): Desk {
 		fs: opening.fs,
 		files,
 		folders,
-		deskApp: app().modules(BrowserClientModule.with(opening.parts)).start(),
+		deskApp: opening.browserApp,
 		token: randomHex(),
 		refusal: refuseInkBrowser(opening.isProductionBuild),
 	};

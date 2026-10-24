@@ -32,6 +32,10 @@ export const PageShotSchema = z.object({
 
 export type PageShot = z.infer<typeof PageShotSchema>;
 
+export const CapturePageSchema = z.object({ region: PageRegionSchema.nullable() });
+
+export const InkAddressSchema = z.object({ url: z.string() });
+
 export const OpenedPageSchema = z.object({
 	tabId: z.string(),
 	url: z.string(),

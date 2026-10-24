@@ -19,6 +19,8 @@ import type { DeskAnswer } from "../apps/host-obsidian/src/browser/browser-desk.
 import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { app } from "@widgetarium/core/requests";
 
 const UID = process.getuid?.() ?? null;
 const scratch = realpathSync(mkdtempSync(`${tmpdir()}/wg-desk-`));
@@ -29,7 +31,7 @@ function opened(root: string, isProductionBuild = false, uid = UID): Desk {
 		fs: nodeFs,
 		root,
 		vaultPath: VAULT,
-		parts: fakeBrowser().parts,
+		browserApp: app().modules(BrowserModule.with(fakeBrowser().parts)).start(),
 		uid,
 		isProductionBuild,
 	});

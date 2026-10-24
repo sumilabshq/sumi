@@ -30,7 +30,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return null;
 	}
 
-	watchLook(): () => void {
+	looksChanged(): () => void {
 		return () => undefined;
 	}
 
@@ -50,7 +50,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return tabId === this.shown && isLaidOnScreen(this.container) && document.visibilityState === "visible";
 	}
 
-	watch(changed: () => void): () => void {
+	pagesChanged(changed: () => void): () => void {
 		this.watchers.add(changed);
 		return () => this.watchers.delete(changed);
 	}

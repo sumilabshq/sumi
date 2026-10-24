@@ -1,73 +1,79 @@
 import { readFileSync } from "node:fs";
-import { MemoryOnceAllowancesStore } from "../packages/domain/browser/shared/lib/once-allowances-store.ts";
-import { MemoryInkActivityStore } from "../packages/domain/browser/shared/lib/ink-activity-store.ts";
+import { AnswerAskCommand, StopInkCommand } from "../packages/domain/browser/index.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { MemoryOnceAllowancesGateway } from "../packages/domain/browser/gateways/once-allowances/memory.gateway.ts";
+import { activityWith, isSameActivity } from "../packages/domain/browser/shared/lib/ink-activity.ts";
 import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
+import { app } from "@widgetarium/core/requests";
 import { check } from "./check-helpers.ts";
+import { fakeBrowser } from "./browser-fakes.ts";
 
-const STORES = [
-	"packages/domain/browser/shared/lib/once-allowances-store.ts",
-	"packages/domain/browser/shared/lib/browser-asks-store.ts",
-	"packages/domain/browser/shared/lib/ink-activity-store.ts",
+const STATE_GATEWAYS = [
+	"packages/domain/browser/gateways/once-allowances/memory.gateway.ts",
+	"packages/domain/browser/gateways/access-asks/memory.gateway.ts",
+	"packages/domain/browser/gateways/ink-activity/memory.gateway.ts",
 ];
 const IMPORT_LINE = /^import .*$/gm;
+const OTHER_GATEWAY = /gateways\/(?!once-allowances|access-asks|ink-activity)|\.\.\/[a-z-]+\/[a-z-]+\.gateway/;
 
-for (const store of STORES) {
-	const imports = readFileSync(new URL(`../${store}`, import.meta.url), "utf8").match(IMPORT_LINE) ?? [];
+for (const gateway of STATE_GATEWAYS) {
+	const source = readFileSync(new URL(`../${gateway}`, import.meta.url), "utf8");
+	const imports = source.match(IMPORT_LINE) ?? [];
 	check(
-		`${store} imports no gateway`,
-		imports.filter((line) => /gateway/i.test(line)),
+		`${gateway} imports no other gateway`,
+		imports.filter((line) => OTHER_GATEWAY.test(line)),
 		[],
 	);
+	check(`${gateway} reads no clock`, /Date\.now|clock|\.until\s*[<>]/.test(source), false);
 }
 
-const onceSource = readFileSync(new URL(`../${STORES[0]}`, import.meta.url), "utf8");
-check("the once store reads no clock", /Date\.now|clockGateway|\.until\s*[<>]/.test(onceSource), false);
-
-function debugLines(run: () => void): readonly string[] {
-	const said: string[] = [];
-	const debug = console.debug;
-	console.debug = (line: string) => void said.push(line);
-
-	try {
-		run();
-	} finally {
-		console.debug = debug;
-	}
-
-	return said;
-}
-
-const onceStore = new MemoryOnceAllowancesStore();
+const onceAllowances = new MemoryOnceAllowancesGateway();
 let told = 0;
-onceStore.watch(() => {
+onceAllowances.onceAllowancesChanged(() => {
 	told += 1;
 });
 const expired = onceAllowanceOf("mail.google.com", "tab-1", 0);
-const logged = debugLines(() => {
-	onceStore.keep([expired], "test");
-	onceStore.keep([{ ...expired }], "test again");
-});
-check("the once store tells its watchers once per change", told, 1);
-check("and logs was and became once", logged.length === 1 && logged[0]?.includes("[] → "), true);
-check("the once store keeps what it is given, expired or not", onceStore.allowances(), [expired]);
+onceAllowances.saveOnceAllowances([expired]);
+check("the once gateway tells its listeners on a save", told, 1);
+check("the once gateway keeps what it is given, expired or not", onceAllowances.onceAllowances(), [expired]);
 check(
-	"expiry is decided by the read, outside the store",
-	effectiveGrants([], onceStore.allowances(), expired.until).length,
+	"expiry is decided by the read, outside the gateway",
+	effectiveGrants([], onceAllowances.onceAllowances(), expired.until).length,
 	0,
 );
 check(
 	"a live allowance is a grant",
-	effectiveGrants([], onceStore.allowances(), expired.until - 1).map(({ siteKey, tabId }) => `${siteKey} ${tabId}`),
+	effectiveGrants([], onceAllowances.onceAllowances(), expired.until - 1).map(
+		({ siteKey, tabId }) => `${siteKey} ${tabId}`,
+	),
 	["mail.google.com tab-1"],
 );
 
-const inkStore = new MemoryInkActivityStore();
+const quiet = {
+	reading: null,
+	contentReadAt: null,
+	stoppedAt: 5,
+};
+check("an unchanged activity is the same activity", isSameActivity(quiet, activityWith(quiet, { stoppedAt: 5 })), true);
+check("a changed activity is not", isSameActivity(quiet, activityWith(quiet, { stoppedAt: 6 })), false);
+
+const stopping = fakeBrowser();
+const stoppingApp = app().modules(BrowserModule.with(stopping.parts)).start();
 let inkTold = 0;
-inkStore.watch(() => {
+stopping.parts.inkActivity.inkActivityChanged(() => {
 	inkTold += 1;
 });
-debugLines(() => {
-	inkStore.change({ stoppedAt: 5 }, "test");
-	inkStore.change({ stoppedAt: 5 }, "test again");
+const stopped = await stoppingApp.send(StopInkCommand);
+check("stopping ink is written through the handler", [stopped.ok, inkTold], [true, 1]);
+check("and the activity says when", stopping.parts.inkActivity.inkActivity().stoppedAt !== null, true);
+
+const answered = await stoppingApp.send(AnswerAskCommand, {
+	id: "gone",
+	answer: "site",
 });
-check("the ink store exits early when nothing changed", inkTold, 1);
+check(
+	"an answer to a question nobody asks is refused by the handler",
+	answered.ok ? "ran" : answered.reason,
+	"that question was already answered",
+);
+check("and writes no grant", stopping.grants.changes.length, 0);

@@ -1,14 +1,14 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
-import { ReadPageContentCommand } from "../packages/domain/browser/features/ink/contract.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
+import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
 const browser = fakeBrowser();
-const browserApp = app({ modules: [BrowserClientModule.with(browser.parts)] });
+const browserApp = app().modules(BrowserModule.with(browser.parts)).start();
 const host = document.createElement("div");
 document.body.append(host);
 createRoot(host).render(h(AppProvider, { app: browserApp }, inBrowserPlate()));

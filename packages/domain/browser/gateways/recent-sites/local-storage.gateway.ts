@@ -2,13 +2,14 @@ import { z } from "zod";
 import { RecentSiteSchema } from "../../shared/schema/browser-tab.schema.js";
 import type { RecentSite } from "../../shared/schema/browser-tab.schema.js";
 import { storageKeyOfProfile } from "../../shared/lib/browser-profile.js";
+import { jsonOf } from "../../shared/lib/json-of.js";
 import { RecentSitesGateway } from "./recent-sites.gateway.js";
 
 const RecentSitesSchema = z.array(RecentSiteSchema);
 
 export class LocalStorageRecentSitesGateway extends RecentSitesGateway {
 	private readonly key: string;
-	private readonly watchers = new Set<() => void>();
+	private readonly listeners = new Set<() => void>();
 	private kept: readonly RecentSite[];
 
 	constructor(
@@ -20,23 +21,19 @@ export class LocalStorageRecentSitesGateway extends RecentSitesGateway {
 		this.kept = this.read();
 	}
 
-	sites(): readonly RecentSite[] {
+	recentSites(): readonly RecentSite[] {
 		return this.kept;
 	}
 
-	watch(changed: () => void): () => void {
-		this.watchers.add(changed);
-		return () => void this.watchers.delete(changed);
+	recentSitesChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
 	}
 
-	keep(sites: readonly RecentSite[], reason: string): void {
-		const was = this.kept.map(({ host }) => host);
+	saveRecentSites(sites: readonly RecentSite[]): void {
 		this.storage.setItem(this.key, JSON.stringify(sites));
 		this.kept = sites;
-		console.debug(
-			`[widgetarium] browser recent sites ${was.join(",")} → ${sites.map(({ host }) => host).join(",")} (${reason})`,
-		);
-		for (const changed of [...this.watchers]) {
+		for (const changed of [...this.listeners]) {
 			changed();
 		}
 	}
@@ -50,13 +47,5 @@ export class LocalStorageRecentSitesGateway extends RecentSitesGateway {
 		}
 
 		return parsed.data;
-	}
-}
-
-function jsonOf(text: string): unknown {
-	try {
-		return JSON.parse(text);
-	} catch {
-		return null;
 	}
 }

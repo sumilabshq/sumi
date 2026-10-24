@@ -9,29 +9,22 @@
 	],
 	"exports": {
 		".": {
-			"source": "./generated/index.ts",
-			"types": "./dist/generated/index.d.ts",
-			"default": "./dist/generated/index.js"
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		},
 		"./module": {
-			"source": "./generated/module.ts",
-			"types": "./dist/generated/module.d.ts",
-			"default": "./dist/generated/module.js"
-		},
-		"./gateways": {
-			"source": "./generated/gateways.ts",
-			"types": "./dist/generated/gateways.d.ts",
-			"default": "./dist/generated/gateways.js"
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
 		}
 	},
 	"dependencies": {
-		"@widgetarium/core": "0.1.0",
-		"@widgetarium/kit": "0.1.0",
-		"@widgetarium/mascot": "0.1.0"
+		"@tauri-apps/api": "^2.12.4",
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/core": "0.1.0"
 	},
 	"peerDependencies": {
-		"react": "^19.2.8",
-		"react-dom": "^19.2.8",
 		"zod": "^4.6.5"
 	},
 	"widgetarium": {

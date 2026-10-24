@@ -1,15 +1,14 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { BrowserClientModule } from "../packages/domain/browser/generated/module.ts";
+import { BrowserModule } from "../packages/domain/browser/module.ts";
 import {
 	CapturePageCommand,
-	INK_REQUESTS,
 	InkOpenAddressCommand,
 	ReadPageContentCommand,
-} from "../packages/domain/browser/features/ink/contract.ts";
-import { BrowserNavigationGuard, BrowserReadGuard } from "../packages/domain/browser/features/ink/handlers.ts";
-import { AnswerAskCommand } from "../packages/domain/browser/features/asks/contract.ts";
-import { SetSiteLevelCommand } from "../packages/domain/browser/features/sites/contract.ts";
+	SearchWebCommand,
+} from "../packages/domain/browser/index.ts";
+import { AnswerAskCommand } from "../packages/domain/browser/index.ts";
+import { SetSiteLevelCommand } from "../packages/domain/browser/index.ts";
 import { BrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/browser-grants.gateway.ts";
 import { decideBrowserAccess } from "../packages/domain/browser/shared/lib/decide-browser-access.ts";
 import { effectiveGrants } from "../packages/domain/browser/shared/lib/once-grants.ts";
@@ -18,36 +17,19 @@ import { check, waitFor } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 
-const GUARD_OF = new Map<string, unknown>([
-	[ReadPageContentCommand.name, BrowserReadGuard],
-	[CapturePageCommand.name, BrowserReadGuard],
-	[InkOpenAddressCommand.name, BrowserNavigationGuard],
-]);
+const INK_REQUESTS = [ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand];
 
 for (const request of INK_REQUESTS) {
-	const handled = BrowserClientModule.handlers.find((one) => one.request === request);
-	const wanted = GUARD_OF.get(request.name);
-	check(`${request.name} is handled behind its guard`, handled?.steps.some((step) => step === wanted) === true, true);
-}
-
-check(
-	"every agent-facing request names its guard",
-	INK_REQUESTS.every((request) => GUARD_OF.has(request.name)),
-	true,
-);
-
-for (const request of INK_REQUESTS) {
-	const handled = BrowserClientModule.handlers.find((one) => one.request === request);
-	const injects = [handled?.inject ?? {}, ...(handled?.steps ?? []).map((step) => step.inject)];
+	const handled = BrowserModule.handlers.find((one) => one.request.name === request.name);
 	check(
 		`${request.name} cannot reach the grant writer`,
-		injects.some((inject) => Object.values(inject).includes(BrowserGrantsGateway)),
+		Object.values(handled?.inject ?? {}).includes(BrowserGrantsGateway),
 		false,
 	);
 }
 
 function started(browser: FakeBrowser): StartedApp {
-	return app({ modules: [BrowserClientModule.with(browser.parts)] });
+	return app().modules(BrowserModule.with(browser.parts)).start();
 }
 
 function said(answer: Answer<unknown>): string {
@@ -163,8 +145,8 @@ plain.pages.tab = {
 };
 const plainApp = started(plain);
 const asking = plainApp.send(ReadPageContentCommand);
-await waitFor(() => plain.parts.browserAsksStore.asks().length === 1);
-const [asked] = plain.parts.browserAsksStore.asks();
+await waitFor(() => plain.parts.accessAsks.accessAsks().length === 1);
+const [asked] = plain.parts.accessAsks.accessAsks();
 check("an http page asks the person first", asked?.siteKey, "example.com");
 check(
 	"the person answers through their own command",
@@ -179,8 +161,8 @@ refusing.pages.tab = {
 	url: "https://mail.google.com/",
 };
 const refused = started(refusing).send(ReadPageContentCommand);
-await waitFor(() => refusing.parts.browserAsksStore.asks().length === 1);
-refusing.parts.browserAsksStore.settle(refusing.parts.browserAsksStore.asks()[0]?.id ?? "", "no");
+await waitFor(() => refusing.parts.accessAsks.accessAsks().length === 1);
+refusing.parts.accessAsks.saveAnswer(refusing.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 check("a no answer refuses the read", said(await refused), "person-said-no");
 
 const navigating = fakeBrowser();
@@ -211,13 +193,13 @@ const carrying = fakeBrowser();
 const carrier = started(carrying);
 await carrier.send(ReadPageContentCommand);
 const leaving = carrier.send(InkOpenAddressCommand, { url: "https://elsewhere.net/?q=secret" });
-await waitFor(() => carrying.parts.browserAsksStore.asks().length === 1);
+await waitFor(() => carrying.parts.accessAsks.accessAsks().length === 1);
 check(
 	"after reading content, a new host asks with the full address",
-	carrying.parts.browserAsksStore.asks()[0]?.url,
+	carrying.parts.accessAsks.accessAsks()[0]?.url,
 	"https://elsewhere.net/?q=secret",
 );
-carrying.parts.browserAsksStore.settle(carrying.parts.browserAsksStore.asks()[0]?.id ?? "", "no");
+carrying.parts.accessAsks.saveAnswer(carrying.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 check("and a no keeps the page where it was", said(await leaving), "person-said-no");
 check(
 	"the same host needs no ask",
@@ -253,8 +235,8 @@ webmail.pages.tab = {
 };
 const webmailApp = started(webmail);
 const firstRead = webmailApp.send(ReadPageContentCommand);
-await waitFor(() => webmail.parts.browserAsksStore.asks().length === 1);
-await webmailApp.send(AnswerAskCommand, { id: webmail.parts.browserAsksStore.asks()[0]?.id ?? "", answer: "once" });
+await waitFor(() => webmail.parts.accessAsks.accessAsks().length === 1);
+await webmailApp.send(AnswerAskCommand, { id: webmail.parts.accessAsks.accessAsks()[0]?.id ?? "", answer: "once" });
 check("once lets an asking site be read", said(await firstRead), "ok");
 check("and the next read in that hour needs no ask", said(await webmailApp.send(ReadPageContentCommand)), "ok");
 check(
@@ -266,18 +248,19 @@ check(
 	"once covers only the tab it was given in",
 	decideBrowserAccess(
 		{ address: "https://mail.google.com/mail", tabId: "tab-2" },
-		effectiveGrants(
-			webmail.parts.browserGrantReadsGateway.readGrants(),
-			webmail.parts.onceAllowancesStore.allowances(),
-			Date.now(),
-		),
+		effectiveGrants(webmail.parts.browserGrants.grants(), webmail.parts.onceAllowances.onceAllowances(), Date.now()),
 		SENSITIVE_SITES,
 	).decision,
 	"ask",
 );
 webmail.pages.open("tab-1", "https://example.org/");
+check(
+	"a page change prunes once through its subscriber",
+	await waitFor(() => webmail.parts.onceAllowances.onceAllowances().length === 0),
+	true,
+);
 webmail.pages.open("tab-1", "https://mail.google.com/mail");
 const afterLeaving = webmailApp.send(ReadPageContentCommand);
-check("leaving the host ends once", await waitFor(() => webmail.parts.browserAsksStore.asks().length === 1), true);
-webmail.parts.browserAsksStore.settle(webmail.parts.browserAsksStore.asks()[0]?.id ?? "", "no");
+check("leaving the host ends once", await waitFor(() => webmail.parts.accessAsks.accessAsks().length === 1), true);
+webmail.parts.accessAsks.saveAnswer(webmail.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 await afterLeaving;

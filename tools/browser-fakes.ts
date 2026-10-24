@@ -1,11 +1,10 @@
 import { BrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/browser-pages.gateway.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
-import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
+import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import { ClockGateway } from "../packages/domain/browser/gateways/clock/clock.gateway.ts";
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
-import { ChatComposerGateway } from "../packages/domain/browser/gateways/chat-composer/chat-composer.gateway.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import type {
 	CommittedPage,
@@ -62,8 +61,8 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		return this.pageLook;
 	}
 
-	watchLook(changed: () => void): () => void {
-		return this.watch(changed);
+	looksChanged(changed: () => void): () => void {
+		return this.pagesChanged(changed);
 	}
 
 	showLook(look: PageLook | null): void {
@@ -71,7 +70,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		this.told();
 	}
 
-	watch(changed: () => void): () => void {
+	pagesChanged(changed: () => void): () => void {
 		this.watchers.add(changed);
 		return () => this.watchers.delete(changed);
 	}
@@ -228,15 +227,6 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 	}
 }
 
-export class FakeChatComposerGateway extends ChatComposerGateway {
-	readonly prefilled: string[] = [];
-
-	prefill(text: string): Promise<void> {
-		this.prefilled.push(text);
-		return Promise.resolve();
-	}
-}
-
 const LONGEST_WAIT_MS = 1000;
 
 export class HurriedClockGateway extends ClockGateway {
@@ -255,7 +245,6 @@ export interface FakeBrowser {
 	readonly audit: MemoryBrowserAuditGateway;
 	readonly grants: MemoryBrowserGrantsGateway;
 	readonly recentSites: MemoryRecentSitesGateway;
-	readonly chatComposer: FakeChatComposerGateway;
 	readonly parts: BrowserParts;
 }
 
@@ -263,20 +252,19 @@ export function fakeBrowser(pages = new FakeBrowserPagesGateway()): FakeBrowser 
 	const audit = new MemoryBrowserAuditGateway();
 	const grants = new MemoryBrowserGrantsGateway();
 	const recentSites = new MemoryRecentSitesGateway();
-	const chatComposer = new FakeChatComposerGateway();
 	return {
 		pages,
 		audit,
 		grants,
 		recentSites,
-		chatComposer,
-		parts: browserPartsOf({
-			browserPagesGateway: pages,
-			browserGrantsGateway: grants,
-			browserAuditGateway: audit,
-			clockGateway: new HurriedClockGateway(),
-			recentSitesGateway: recentSites,
-			chatComposerGateway: chatComposer,
-		}),
+		parts: browserPartsOf(
+			{
+				browserPages: pages,
+				browserGrants: grants,
+				browserAudit: audit,
+				recentSites,
+			},
+			new HurriedClockGateway(),
+		),
 	};
 }

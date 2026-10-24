@@ -1,6 +1,6 @@
 import { PageContentReadSchema } from "../../../shared/schema/page-read.schema.js";
 import type { PageContentRead } from "../../../shared/schema/page-read.schema.js";
-import { FIND_SECRET_FIELD, READ_PAGE } from "../electron/page-scripts.js";
+import { FIND_SECRET_FIELD, READ_PAGE } from "../../../shared/lib/page-scripts.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
 const FAVICON = `(() => {

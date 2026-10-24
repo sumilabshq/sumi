@@ -20,7 +20,7 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		return false;
 	}
 
-	watch(): () => void {
+	pagesChanged(): () => void {
 		return () => undefined;
 	}
 
@@ -116,7 +116,7 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		return null;
 	}
 
-	watchLook(): () => void {
+	looksChanged(): () => void {
 		return () => undefined;
 	}
 

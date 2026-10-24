@@ -86,3 +86,8 @@ export const OnceAllowanceSchema = z.object({
 });
 
 export type OnceAllowance = z.infer<typeof OnceAllowanceSchema>;
+
+export const SiteLevelSchema = z.object({
+	siteKey: z.string(),
+	level: AccessLevelSchema,
+});

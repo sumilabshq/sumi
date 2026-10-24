@@ -4,7 +4,7 @@ import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../..
 import type { ElectronRemote } from "./electron-remote.js";
 import { regionWithin } from "../../../shared/lib/region-within.js";
 import { loadFailureKindOf } from "../../../shared/lib/load-failure.js";
-import { FIND_SECRET_FIELD, READ_PAGE } from "./page-scripts.js";
+import { FIND_SECRET_FIELD, READ_PAGE } from "../../../shared/lib/page-scripts.js";
 import { createPageView, fieldOfEvent, isCapturedImage } from "./page-view.js";
 import type { PageView } from "./page-view.js";
 import { PageFreezer } from "./page-freezer.js";
