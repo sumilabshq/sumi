@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { Repeatable, command, query } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { FrameWidthsChangedEvent } from "../../gateways/frame-widths/frame-widths.events.js";
 import { FrameWidthsGateway } from "../../gateways/frame-widths/frame-widths.gateway.js";
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";
 import { FrameEdgeSchema, FrameWidthsAnswerSchema, WidthPxSchema } from "../../shared/schema/frame-widths.schema.js";
@@ -8,7 +9,6 @@ export const FrameWidthsQuery = query("frame-widths")
 	.output(FrameWidthsAnswerSchema)
 	.settlesNow()
 	.inject({ frameWidths: FrameWidthsGateway })
-	.watch((_input, { frameWidths }, changed) => frameWidths.widthsChanged(changed))
 	.handle((_input, { frameWidths }) => ({
 		...widthsWithin(frameWidths.widths()),
 		bounds: FRAME_LIMITS,
@@ -23,9 +23,9 @@ export const ResizeFrameEdgeCommand = command("resize-frame-edge")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.invalidates([FrameWidthsQuery])
 	.inject({ frameWidths: FrameWidthsGateway })
-	.handle(({ edge, px, mostPx }, { frameWidths }) => {
+	.handle(({ edge, px, mostPx }, { frameWidths, invalidate }) => {
+		invalidate(FrameWidthsQuery);
 		const widths = widthsWithin(frameWidths.widths());
 		const next = edgePxWithin(edge, px, mostPx);
 
@@ -52,9 +52,9 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.invalidates([FrameWidthsQuery])
 	.inject({ frameWidths: FrameWidthsGateway })
-	.handle(({ edge, mostPx }, { frameWidths }) => {
+	.handle(({ edge, mostPx }, { frameWidths, invalidate }) => {
+		invalidate(FrameWidthsQuery);
 		const widths = widthsWithin(frameWidths.widths());
 		const next = edgePxWithin(edge, FRAME_BOUNDS[edge].usualPx, mostPx);
 
@@ -72,3 +72,9 @@ export const ResetFrameEdgeCommand = command("reset-frame-edge")
 		);
 		console.info(`[widgetarium] ${reason}`);
 	});
+
+export const FrameWidthsOnFrameWidthsChangedSubscriber = subscriber(FrameWidthsChangedEvent).handle(
+	(_input, { invalidate }) => {
+		invalidate(FrameWidthsQuery);
+	},
+);

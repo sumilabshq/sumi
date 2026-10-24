@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { Repeatable, command, query, refuse } from "@widgetarium/core/requests";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PanesChangedEvent } from "../../gateways/pane-tree/pane-tree.events.js";
 import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
 import { PaneBoardSchema, PanePlacementSchema, PlacementPreviewSchema } from "../../shared/schema/pane-tree.schema.js";
 import {
@@ -19,7 +20,6 @@ export const PaneTreeQuery = query("pane-tree")
 	.output(PaneBoardSchema)
 	.settlesNow()
 	.inject({ paneTree: PaneTreeGateway })
-	.watch((_input, { paneTree }, changed) => paneTree.treeChanged(changed))
 	.handle((_input, { paneTree }) => boardOf(paneTree.tree()));
 
 export const PlacementPreviewQuery = query("placement-preview")
@@ -27,7 +27,6 @@ export const PlacementPreviewQuery = query("placement-preview")
 	.output(PlacementPreviewSchema.nullable())
 	.settlesNow()
 	.inject({ paneTree: PaneTreeGateway })
-	.watch((_input, { paneTree }, changed) => paneTree.treeChanged(changed))
 	.handle((placement, { paneTree }) => {
 		if (placement === null) {
 			return null;
@@ -52,9 +51,10 @@ export const PlacementPreviewQuery = query("placement-preview")
 export const PlacePaneCommand = command("place-pane")
 	.input(PanePlacementSchema)
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ view, targetId, side }, { paneTree }) => {
+	.handle(({ view, targetId, side }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const refusal = refuseUnknownPane(tree, targetId);
 
@@ -84,9 +84,10 @@ export const PlacePaneCommand = command("place-pane")
 export const ClosePaneCommand = command("close-pane")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ id }, { paneTree }) => {
+	.handle(({ id }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const refusal = refuseUnknownPane(tree, id);
 
@@ -109,9 +110,10 @@ export const ResizePaneSplitCommand = command("resize-pane-split")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle((asked, { paneTree }) => {
+	.handle((asked, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const refusal = refuseUnknownEdge(tree, asked);
 
@@ -128,9 +130,9 @@ export const ResizePaneSplitCommand = command("resize-pane-split")
 export const AimPaneCommand = command("aim-pane")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ id }, { paneTree }) => {
+	.handle(({ id }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
 		const tree = paneTree.tree();
 		const refusal = refuseUnknownPane(tree, id);
 
@@ -146,3 +148,8 @@ export const AimPaneCommand = command("aim-pane")
 		paneTree.saveTree(withTarget(tree, id), reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
+
+export const PanesOnPanesChangedSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(PaneTreeQuery);
+	invalidate(PlacementPreviewQuery);
+});

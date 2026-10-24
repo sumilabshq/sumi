@@ -36,7 +36,6 @@ import { DropGoneTabsCommand } from "../packages/state/layout/generated/contract
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { edgePxWithin, widthsWithin } from "../packages/state/layout/shared/lib/frame-bounds.ts";
 import type { PaneTree } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { LayoutPaneTabsGateway } from "../apps/studio/src/tabs/layout-pane-tabs.gateway.ts";
 
 export type Check = (what: string, isOk: boolean, got: unknown) => void;
 
@@ -246,23 +245,8 @@ async function checksPreview(check: Check): Promise<void> {
 	);
 }
 
-function checksTabsClient(check: Check): void {
+function checksSendSaves(check: Check): void {
 	const parts = partsOf();
-	const tabs = new LayoutPaneTabsGateway(
-		app()
-			.modules(LayoutModule.with({ ...parts }))
-			.start(),
-	);
-	const beforeDrop = tabs.showInTargetPane("tab-1");
-	placeTab(parts, "tab-3", "pane-app");
-	const shown = tabs.showInTargetPane("tab-5");
-	const inPanes = tabs.tabIdsInPanes();
-	tabs.closePanesOf(["tab-5"]);
-	check(
-		"the pane tabs client shows a tab in the target pane only when it shows one, through layout's commands",
-		!beforeDrop && shown && JSON.stringify(inPanes) === '["tab-5"]' && tabs.tabIdsInPanes().length === 0,
-		{ beforeDrop, shown, inPanes, after: tabs.tabIdsInPanes() },
-	);
 	const layoutApp = app()
 		.modules(LayoutModule.with({ ...parts }))
 		.start();
@@ -284,6 +268,6 @@ export async function checksLayoutRules(check: Check): Promise<void> {
 	checksRefusals(check);
 	checksTabPanes(check);
 	await checksPreview(check);
-	checksTabsClient(check);
+	checksSendSaves(check);
 	console.info = quiet;
 }

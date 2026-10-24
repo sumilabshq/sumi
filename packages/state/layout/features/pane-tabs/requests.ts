@@ -22,9 +22,10 @@ const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
 export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
 	.input(z.object({ tabId: z.string() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ tabId }, { paneTree }) => {
+	.handle(({ tabId }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const target = tabTargetOf(tree);
 
@@ -51,9 +52,10 @@ export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
 
 export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle((_input, { paneTree }) => {
+	.handle((_input, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 
 		if (shownTabPaneOf(tree) !== null) {
@@ -84,9 +86,10 @@ export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
 
 export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle((_input, { paneTree }) => {
+	.handle((_input, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const shown = shownTabPaneOf(tree);
 
@@ -104,9 +107,10 @@ export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
 export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
 	.input(z.object({ tabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ tabIds }, { paneTree }) => {
+	.handle(({ tabIds }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const paneIds = tabPaneIdsOf(tree, tabIds);
 
@@ -123,9 +127,10 @@ export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
 export const DropGoneTabsCommand = command("drop-gone-tabs")
 	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
-	.invalidates([PaneTreeQuery, PlacementPreviewQuery])
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ heldTabIds }, { paneTree }) => {
+	.handle(({ heldTabIds }, { paneTree, invalidate }) => {
+		invalidate(PaneTreeQuery);
+		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 		const gonePanes = goneTabPanesOf(tree, new Set(heldTabIds));
 
