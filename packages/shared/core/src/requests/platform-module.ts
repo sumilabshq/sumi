@@ -1,5 +1,5 @@
 import type { AnyHandler } from "./handler";
-import type { ModuleDefinition, Provided, ReadyModule, ServerParts } from "./module";
+import type { ModuleDefinition, Provided, ReadyModule, Runs, ServerParts } from "./module";
 
 export type Platform = "tauri" | "browser" | "server";
 
@@ -12,9 +12,9 @@ export interface ModuleFacts extends ServerParts {
 	readonly scope: ModuleScope;
 }
 
-export class PlatformModule<P extends Provided> {
+export class PlatformModule<P extends Provided, R extends Runs = Runs> {
 	constructor(
-		readonly definition: ModuleDefinition,
+		readonly definition: ModuleDefinition & { readonly runs: R },
 		readonly handlers: readonly AnyHandler[],
 		private readonly provider: (facts: ModuleFacts) => P,
 	) {}

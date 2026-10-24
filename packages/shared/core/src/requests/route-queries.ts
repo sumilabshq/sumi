@@ -2,7 +2,9 @@ import type { Refusal } from "./answer";
 import { refusalOfThrown } from "./answer";
 import { NEVER_ABORTED } from "./handler";
 import type { CallFacts } from "./handler";
-import type { LocalRoutes } from "./local-routes";
+import { callerRefusalOf } from "./local-routes";
+import type { LocalRoutes, Route } from "./local-routes";
+import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
 import type { AnyRequest } from "./request";
@@ -15,7 +17,7 @@ export type Missing = (request: AnyRequest) => Refusal;
 
 interface RouteQueriesParts {
 	readonly local: LocalRoutes;
-	readonly reachesServer: boolean;
+	readonly remote: ModuleReach | null;
 	readonly missing: Missing;
 	readonly reportFailure: FailureReport;
 }
@@ -32,12 +34,12 @@ export class RouteQueries {
 	}
 
 	cannotRun(request: AnyRequest): string | null {
-		if (this.isLocal(request) || this.parts.reachesServer) return null;
+		if (this.isLocal(request) || this.parts.remote?.reachesModule(request.module ?? "") === true) return null;
 		return this.parts.missing(request).reason;
 	}
 
 	readNow(request: AnyRequest, sent?: unknown): SettledNow | null {
-		const route = this.parts.local.routeOf(request);
+		const route = this.viewRouteOf(request);
 		if (route === undefined || request.kind !== "query" || !request.isSettledNow) return null;
 		const input = request.inputSchema.safeParse(sent);
 		if (!input.success) return null;
@@ -50,10 +52,15 @@ export class RouteQueries {
 	}
 
 	watch(request: AnyRequest, sent: unknown, changed: () => void): () => void {
-		const route = this.parts.local.routeOf(request);
+		const route = this.viewRouteOf(request);
 		const input = request.inputSchema.safeParse(sent);
 		if (route?.handler.watch == null || !input.success) return NOT_WATCHED;
 		return route.handler.watch(input.data, route.provided, changed);
+	}
+
+	private viewRouteOf(request: AnyRequest): Route | undefined {
+		const route = this.parts.local.routeOf(request);
+		return route === undefined || callerRefusalOf(route, undefined) !== null ? undefined : route;
 	}
 }
 

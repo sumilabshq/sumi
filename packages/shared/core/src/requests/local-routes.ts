@@ -18,6 +18,8 @@ export interface Route {
 	readonly handler: AnyHandler;
 	readonly provided: Provided;
 	readonly steps: readonly Step[];
+	readonly isServerOnly: boolean;
+	readonly isOwnModuleOnly: boolean;
 }
 
 interface LocalParts {
@@ -46,6 +48,21 @@ const REPLACED_FACT = "{step} of {request} replaced {fact}, which only the serve
 const STEP_AT = "step #{at}";
 const UNDECLARED_SEND = "{request} sends {sent}, which it does not declare in .sends()";
 const SENT_FAILED = "{sent} answered {code}: {reason}";
+const OWN_MODULE_ONLY =
+	'{request} is server-only, and module "{module}" runs on a device: only its own handlers may send it';
+
+export function callerRefusalOf(route: Route, fromModule: string | undefined): Refusal | null {
+	const { request } = route.handler;
+
+	if (!route.isOwnModuleOnly || fromModule === request.module) {
+		return null;
+	}
+
+	return refusalOf(
+		"forbidden",
+		OWN_MODULE_ONLY.replace("{request}", request.name).replace("{module}", request.module ?? ""),
+	);
+}
 
 export class LocalRoutes {
 	constructor(private readonly parts: LocalParts) {}
@@ -55,6 +72,12 @@ export class LocalRoutes {
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
+		const refused = callerRefusalOf(route, asked.sending.fromModule);
+
+		if (refused !== null) {
+			return settle.refuse(asked.request, refused);
+		}
+
 		const { authenticate } = this.parts;
 		const user = authenticate === null ? null : await authenticate.userOf(asked.sending.headers ?? NO_HEADERS);
 		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user } };
@@ -163,7 +186,12 @@ function sendOf({ route, asked, settle }: Walk, signal: AbortSignal, key: string
 		}
 
 		const idempotencyKey = key === null ? undefined : `${key}:${sent.name}`;
-		const answer = await settle.send(sent, input, { headers: asked.sending.headers, signal, idempotencyKey });
+		const answer = await settle.send(sent, input, {
+			headers: asked.sending.headers,
+			signal,
+			idempotencyKey,
+			fromModule: route.handler.request.module ?? undefined,
+		});
 
 		if (answer.ok) {
 			return answer.output;

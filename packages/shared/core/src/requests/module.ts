@@ -1,10 +1,12 @@
 import type { Guard, OpenGuard } from "./guard";
-import type { AnyHandledRequest, HandledRequest } from "./handled-request";
+import type { AnyHandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
+import type { ModuleContract } from "./module-contract";
 import { PlatformModule } from "./platform-module";
 import type { AnyPlatformModule, ModuleFacts } from "./platform-module";
-import type { AnyCommand, AnyQuery, AnyRequest } from "./request";
+import type { Placement } from "./placement";
+import type { AnyRequest } from "./request";
 
 export type Side = "client" | "server";
 
@@ -24,7 +26,11 @@ export interface ModuleDefinition {
 	readonly name: string;
 	readonly runs: Runs;
 	readonly steps: readonly Step[];
+	readonly serverOnlyRequestNames: readonly string[];
+	readonly importedModuleNames: readonly string[];
 }
+
+export type ImportedModule = ModuleContract | AnyPlatformModule;
 
 export interface ReadyModule {
 	readonly definition: ModuleDefinition;
@@ -69,6 +75,8 @@ export class ServerModule<
 	readonly runs = "server";
 	readonly name: string;
 	readonly steps: readonly Step[];
+	readonly serverOnlyRequestNames: readonly string[] = [];
+	readonly importedModuleNames: readonly string[] = [];
 
 	constructor(
 		private readonly plan: ServerPlan<P>,
@@ -104,6 +112,8 @@ export class ServerModule<
 export class ClientModule<P extends Provided = NothingProvided, Q = void> implements ModuleDefinition {
 	readonly runs = "client";
 	readonly steps: readonly Step[] = [];
+	readonly serverOnlyRequestNames: readonly string[] = [];
+	readonly importedModuleNames: readonly string[] = [];
 
 	constructor(
 		readonly name: string,
@@ -119,70 +129,127 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	}
 }
 
-type HandledQuery = HandledRequest<AnyQuery, Inject, Added>;
-
-type HandledCommand = HandledRequest<AnyCommand, Inject, Added>;
-
 type InjectedBy<T> = T extends { readonly inject: infer D extends Inject } ? Injected<D> : never;
 
 type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
 
 export type NeedsOf<H extends readonly AnyHandledRequest[]> = Provided & IntersectionOf<InjectedBy<H[number]>>;
 
+interface ModulePlan<R extends Runs> {
+	readonly name: string;
+	readonly runs: R;
+	readonly listed: readonly AnyHandledRequest[];
+	readonly serverOnly: readonly AnyHandledRequest[];
+	readonly imports: readonly string[];
+	readonly steps: readonly Step[];
+}
+
+type ServerOnlyListed<R extends Runs, L> = R extends "client"
+	? [error: "serverOnly needs .on(Server) or .on(Anywhere): a device module has nothing only a server may call"]
+	: L;
+
 const NO_FACTS =
 	'module "{module}" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope';
-const NOT_A_QUERY = 'module "{module}" lists {request} under .queries(), but it is a command';
-const NOT_A_COMMAND = 'module "{module}" lists {request} under .commands(), but it is a query';
+const LISTED_TWICE =
+	'module "{module}" lists {request} twice: a request stands in exactly one of .public() and .serverOnly()';
 
-export class RequestsModule<H extends readonly AnyHandledRequest[]> implements ModuleDefinition {
-	readonly runs = "anywhere";
+export class ModuleDraft {
+	constructor(readonly name: string) {}
 
-	constructor(
-		readonly name: string,
-		readonly listed: H,
-		readonly steps: readonly Step[],
-	) {}
+	on<R extends Runs>(placement: Placement<R>): RequestsModule<[], R> {
+		return new RequestsModule({
+			name: this.name,
+			runs: placement.runs,
+			listed: [],
+			serverOnly: [],
+			imports: [],
+			steps: [],
+		});
+	}
+}
 
-	queries<const Q extends readonly HandledQuery[]>(...queries: Q): RequestsModule<[...H, ...Q]> {
-		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(queries, "query")], this.steps);
+export class RequestsModule<H extends readonly AnyHandledRequest[], R extends Runs> implements ModuleDefinition {
+	readonly name: string;
+	readonly runs: R;
+	readonly steps: readonly Step[];
+	readonly serverOnlyRequestNames: readonly string[];
+	readonly importedModuleNames: readonly string[];
+
+	constructor(private readonly plan: ModulePlan<R>) {
+		this.name = plan.name;
+		this.runs = plan.runs;
+		this.steps = plan.steps;
+		this.serverOnlyRequestNames = plan.serverOnly.map(({ request }) => request.inModule(plan.name).name);
+		this.importedModuleNames = plan.imports;
 	}
 
-	commands<const M extends readonly HandledCommand[]>(...commands: M): RequestsModule<[...H, ...M]> {
-		return new RequestsModule(this.name, [...this.listed, ...this.refuseWrongKind(commands, "command")], this.steps);
+	public<const L extends readonly AnyHandledRequest[]>(...requests: L): RequestsModule<[...H, ...L], R> {
+		return new RequestsModule({
+			...this.plan,
+			listed: this.withListed(requests),
+		});
 	}
 
-	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H> {
-		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	serverOnly<const L extends readonly AnyHandledRequest[]>(
+		...listed: ServerOnlyListed<R, L>
+	): RequestsModule<[...H, ...L], R> {
+		const requests = listed.filter(isHandledRequest);
+		return new RequestsModule({
+			...this.plan,
+			listed: this.withListed(requests),
+			serverOnly: [...this.plan.serverOnly, ...requests],
+		});
 	}
 
-	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H> {
-		return new RequestsModule(this.name, this.listed, [...this.steps, step]);
+	imports(...modules: readonly ImportedModule[]): RequestsModule<H, R> {
+		return new RequestsModule({
+			...this.plan,
+			imports: [...this.plan.imports, ...modules.map(nameOfImported)],
+		});
 	}
 
-	provide(provide: (facts: ModuleFacts) => NeedsOf<H>): PlatformModule<NeedsOf<H>> {
-		const handlers = this.listed.map((listed) => ({
+	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H, R> {
+		return new RequestsModule({
+			...this.plan,
+			steps: [...this.plan.steps, step],
+		});
+	}
+
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H, R> {
+		return new RequestsModule({
+			...this.plan,
+			steps: [...this.plan.steps, step],
+		});
+	}
+
+	provide(provide: (facts: ModuleFacts) => NeedsOf<H>): PlatformModule<NeedsOf<H>, R> {
+		const handlers = this.plan.listed.map((listed) => ({
 			...listed,
-			request: listed.request.inModule(this.name),
-			sends: listed.sends.map((sent) => sent.inModule(this.name)),
+			request: listed.request.inModule(this.plan.name),
+			sends: listed.sends.map((sent) => sent.inModule(this.plan.name)),
 			module: this,
 		}));
 		return new PlatformModule(this, handlers, provide);
 	}
 
-	private refuseWrongKind<L extends readonly AnyHandledRequest[]>(listed: L, kind: AnyRequest["kind"]): L {
-		const wrong = listed.find(({ request }) => request.kind !== kind);
+	private withListed(requests: readonly AnyHandledRequest[]): readonly AnyHandledRequest[] {
+		const listed = [...this.plan.listed];
 
-		if (wrong === undefined) {
-			return listed;
+		for (const request of requests) {
+			if (listed.some((held) => held.request.name === request.request.name)) {
+				const said = LISTED_TWICE.replace("{module}", this.plan.name);
+				throw new Error(said.replace("{request}", request.request.name));
+			}
+
+			listed.push(request);
 		}
 
-		const template = kind === "query" ? NOT_A_QUERY : NOT_A_COMMAND;
-		throw new Error(template.replace("{module}", this.name).replace("{request}", wrong.request.name));
+		return listed;
 	}
 }
 
-export function module(name: string): RequestsModule<[]> {
-	return new RequestsModule(name, [], []);
+export function module(name: string): ModuleDraft {
+	return new ModuleDraft(name);
 }
 
 export type AnyModule = ClientModule<Provided, never> | ServerModule<Provided, Cover, Added>;
@@ -218,4 +285,12 @@ function factsFor(definition: ModuleDefinition, facts: ModuleFacts | null): Modu
 function coverAfter(cover: Cover, step: Step): Cover {
 	if (step.kind === "public") return "public";
 	return step.needsUser ? "guarded" : cover;
+}
+
+function isHandledRequest(listed: AnyHandledRequest | string): listed is AnyHandledRequest {
+	return typeof listed !== "string";
+}
+
+function nameOfImported(imported: ImportedModule): string {
+	return imported instanceof PlatformModule ? imported.definition.name : imported.name;
 }

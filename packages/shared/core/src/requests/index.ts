@@ -1,9 +1,9 @@
-export { app } from "./app";
+export { AppBuilder, app } from "./app";
 export { queryKeyOf } from "./query-key";
 export { QueryWatches } from "./query-watches";
 export { RouteQueries } from "./route-queries";
 export type { SettledNow } from "./route-queries";
-export type { AppHost, AppStart, StartedApp } from "./app";
+export type { AppStartOptions, AppHost, AppStart, DeviceModule, StartedApp } from "./app";
 export { AppProvider } from "./app-provider";
 export type { AppProviderProps } from "./app-provider";
 export { REFUSAL_CODES, reasonOf } from "./answer";
@@ -29,11 +29,25 @@ export type {
 	Token,
 } from "./handler";
 export type { Sending } from "./mediator";
-export { ClientModule, HandledModule, ServerModule, clientModule, module, serverModule } from "./module";
+export {
+	ClientModule,
+	HandledModule,
+	ModuleDraft,
+	RequestsModule,
+	ServerModule,
+	clientModule,
+	module,
+	serverModule,
+} from "./module";
+export { ModuleContract, moduleContract } from "./module-contract";
+export type { RemoteModule } from "./module-contract";
+export { Anywhere, Device, Server } from "./placement";
+export type { DeviceRuns, OnServer, Placement, ServerRuns } from "./placement";
 export { PlatformModule } from "./platform-module";
 export type { AnyPlatformModule, ModuleFacts, ModuleScope, Platform } from "./platform-module";
 export type {
 	Cover,
+	ImportedModule,
 	ModuleDefinition,
 	NothingProvided,
 	Provided,

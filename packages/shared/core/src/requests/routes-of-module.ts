@@ -17,10 +17,13 @@ export function moduleRoutesOf(module: ReadyModule, side: Side, hostProvided: Pr
 	const provided = { ...provides, ...hostProvided };
 	const routes = module.handlers.map((handler) => {
 		const declared = [...module.definition.steps, ...handler.steps];
+		const isServerOnly = module.definition.serverOnlyRequestNames.includes(handler.request.name);
 		return {
 			handler,
 			provided,
 			steps: side === "server" ? serverStepsOf(declared) : declared,
+			isServerOnly,
+			isOwnModuleOnly: isServerOnly && side === "client",
 		};
 	});
 	return { module, provides, routes };

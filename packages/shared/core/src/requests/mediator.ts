@@ -1,7 +1,7 @@
 import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { LocalRoutes } from "./local-routes";
-import type { RemoteServer } from "./remote-server";
+import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
 import type { AnyRequest } from "./request";
@@ -11,6 +11,7 @@ export interface Sending {
 	readonly idempotencyKey?: string | undefined;
 	readonly signal?: AbortSignal | undefined;
 	readonly headers?: Headers | undefined;
+	readonly fromModule?: string | undefined;
 }
 
 export type KeyMinting = "client-mints" | "caller-gives";
@@ -32,7 +33,7 @@ export interface Settle {
 
 interface MediatorParts {
 	readonly local: LocalRoutes;
-	readonly remote: RemoteServer | null;
+	readonly remote: ModuleReach | null;
 	readonly keyMinting: KeyMinting;
 	readonly missing: Missing;
 	readonly reportFailure: FailureReport;
@@ -76,7 +77,7 @@ export class Mediator implements Settle {
 		const { local, remote, missing } = this.parts;
 		const route = local.routeOf(asked.request);
 		if (route !== undefined) return local.run(route, asked, this);
-		if (remote !== null) return remote.run(asked, this);
+		if (remote?.reachesModule(asked.request.module ?? "") === true) return remote.run(asked, this);
 		return Promise.resolve(this.refuse(asked.request, missing(asked.request)));
 	}
 
