@@ -2,15 +2,16 @@
 
 The rules every developer and every agent follows when writing code in this repository. Read this page first; the pages below go deeper.
 
-| Page                           | Answers                                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------------------------- |
-| [requests.md](requests.md)     | contracts, guards, handlers, modules, the mediator, idempotency, the server, gateways, data |
-| [views.md](views.md)           | blocks, layouts, slots, how a view reads and writes, loading, error and empty               |
-| [placement.md](placement.md)   | where each file goes                                                                        |
-| [code-style.md](code-style.md) | names, injected keys, the shape of a contract, a handler, a module, a block and a gateway   |
-| [hosts.md](hosts.md)           | what a host hands a module, keeping one host's code out of another's bundle, deploy, env    |
-| [lint.md](lint.md)             | the checks that hold every rule here                                                        |
-| [legacy.md](legacy.md)         | code written before these rules, and how it leaves                                          |
+| Page                           | Answers                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| [layers.md](layers.md)         | what a handler, a gateway, lib, a schema, a module and a view may do, with bad and good examples |
+| [requests.md](requests.md)     | contracts, guards, handlers, modules, the mediator, idempotency, the server, gateways, data      |
+| [views.md](views.md)           | blocks, layouts, slots, how a view reads and writes, loading, error and empty                    |
+| [placement.md](placement.md)   | where each file goes                                                                             |
+| [code-style.md](code-style.md) | names, injected keys, the shape of a contract, a handler, a module, a block and a gateway        |
+| [hosts.md](hosts.md)           | what a host hands a module, keeping one host's code out of another's bundle, deploy, env         |
+| [lint.md](lint.md)             | the checks that hold every rule here                                                             |
+| [legacy.md](legacy.md)         | code written before these rules, and how it leaves                                               |
 
 > Status: the canvas (`packages/canvas`) and the engine's request layer (`packages/core/src/requests`) follow these pages; the rest still runs on the earlier widget builder and moves domain by domain. A rule marked **planned** is not built or not checked by a tool yet.
 

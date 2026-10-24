@@ -5,6 +5,10 @@ domains and common, placement by what a file is. Code under a `legacy/` folder p
 by rewrite ([legacy.md](docs/architecture/legacy.md)). Where this file and those pages disagree for
 new code, those pages win.
 
+**Layer responsibilities are hard rules**, loaded from [docs/architecture/layers.md](docs/architecture/layers.md):
+
+@docs/architecture/layers.md
+
 **Every declaration is a fluent chain, never an options object, and every behaviour ends in `.handle()`**:
 `handler(X, BillingServerModule).guard(…).use(…).inject({…}).handle(…)`, `guard().inject({…}).handle(…)`,
 `middleware().inject({…}).handle(…)`, `serverModule(name)` / `clientModule(name)`, `query(name).input(…).output(…)`.
