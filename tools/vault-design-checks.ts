@@ -6,10 +6,10 @@ import { AppProvider, OnRefused, useCommand } from "../packages/shared/core/src/
 import type { CommandHandle, CommandRefusal } from "../packages/shared/core/src/requests/index.ts";
 import type { WidgetRegistry } from "../packages/shared/core/src/registry.ts";
 import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/obsidian.gateway.ts";
-import { canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
+import { canvasPartsOver, openedCanvasOver } from "./canvas-hosts.ts";
 import { polledChanges } from "../packages/domain/canvas/gateways/design-folder/obsidian/design-changes.ts";
 import { shownWidgetsOf } from "../packages/domain/canvas/shared/lib/design/shown-widgets.ts";
-import { AddPhotosCommand } from "../packages/domain/canvas/features/photos/contract.ts";
+import { AddPhotosCommand } from "../packages/domain/canvas/index.ts";
 import { normalizeBoard } from "../packages/shared/core/src/model.ts";
 import type { WidgetDefinition } from "../packages/shared/core/src/registry.ts";
 import { present } from "./page-dom.ts";
@@ -30,18 +30,12 @@ async function checkFailedWrite(check: Check, settle: () => Promise<void>): Prom
 	const failing = (): Promise<never> => Promise.reject(new Error(WRITE_FAILED));
 	const adapter = {
 		exists: failing,
-		read: failing,
 		mkdir: failing,
 		writeBinary: failing,
 		write: failing,
 		process: failing,
 	};
-	const opened = { app: "Farm", page: "", isLayersOpen: false, mode: "hand" as const };
-	const parts = canvasPartsOver(
-		{ opened, ownsPaste: () => true },
-		{ designFilesGateway: new ObsidianDesignFilesGateway(adapter) },
-	);
-	const canvasApp = canvasAppOver(parts);
+	const canvasApp = await openedCanvasOver(canvasPartsOver({ designFiles: new ObsidianDesignFilesGateway(adapter) }));
 	const heard: CommandRefusal[] = [];
 	const node = document.createElement("div");
 	document.body.append(node);
@@ -75,6 +69,7 @@ async function checkPolling(check: Check): Promise<void> {
 	const vault = {
 		adapter: standIn<DataAdapter>({ stat }, ["stat"], "adapter"),
 		registry: standIn<WidgetRegistry>({ get: () => null }, ["get"], "registry"),
+		drawnRegistry: { get: () => null },
 	};
 	const ticks: (() => void)[] = [];
 	const realInterval = window.setInterval;
@@ -83,12 +78,11 @@ async function checkPolling(check: Check): Promise<void> {
 	Reflect.set(window, "clearInterval", () => undefined);
 	let changes = 0;
 	try {
-		const stop = polledChanges(
+		const stop = polledChanges({
 			vault,
-			"Farm",
-			() => undefined,
-			() => (changes += 1),
-		);
+			drawn: () => new Map([["Farm", null]]),
+			changed: () => (changes += 1),
+		});
 		const tick = present(ticks[0], "the poll timer");
 		const answerAll = async (mtime: number): Promise<void> => {
 			for (const one of asked.splice(0)) one.answer(mtime);

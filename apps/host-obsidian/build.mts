@@ -32,7 +32,7 @@ const PROJECT_SEED_TOOL = "tools/project-seed.mts";
 const SEED_OUTPUT_BYTES = 64 * 1024 * 1024;
 const PLUGIN_SHEET = "apps/host-obsidian/styles.css";
 
-const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
+export const SUPPLIED_BY_ELECTRON_AT_RUNTIME = [
 	"obsidian",
 	"electron",
 	"node:fs",
@@ -106,6 +106,41 @@ export function bundleOptions({
 	};
 }
 
+export function projectSeedText(): string {
+	return execFileSync("node", ["--single-threaded", "--import", "./tools/loader/register.mts", PROJECT_SEED_TOOL], {
+		encoding: "utf8",
+		maxBuffer: SEED_OUTPUT_BYTES,
+	});
+}
+
+export async function layCanvasSheet(): Promise<void> {
+	const authored = readFileSync(PLUGIN_SHEET, "utf8");
+	const withTokens = withSystemTokens(
+		withStudioSystem(authored, studioSystemLayerOf(process.cwd())),
+		systemTokensOf(process.cwd()),
+	);
+	const laid = await formattedAsRepo(withCanvasSheet(withTokens, await canvasSheet(process.cwd())), PLUGIN_SHEET);
+	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
+}
+
+async function formattedAsRepo(text: string, filepath: string): Promise<string> {
+	const config = await resolveConfig(filepath);
+	return format(text, {
+		...config,
+		filepath,
+	});
+}
+
+if (import.meta.main) {
+	const production = process.argv.includes("--prod");
+	await layCanvasSheet();
+	runGates();
+	layGpuFiles();
+	await esbuild.build(
+		bundleOptions({ minify: production, sourcemap: production ? false : "inline", isProduction: production }),
+	);
+}
+
 function firstOutputText(files: readonly OutputFile[] | undefined): string {
 	const first = files?.[0];
 	if (!first) throw new Error("esbuild wrote no output file");
@@ -163,13 +198,6 @@ function projectSeedSource(): Plugin {
 			}));
 		},
 	};
-}
-
-export function projectSeedText(): string {
-	return execFileSync("node", ["--single-threaded", "--import", "./tools/loader/register.mts", PROJECT_SEED_TOOL], {
-		encoding: "utf8",
-		maxBuffer: SEED_OUTPUT_BYTES,
-	});
 }
 
 function widgetTypesSource(): Plugin {
@@ -250,32 +278,4 @@ function runGates(): void {
 	} catch {
 		process.exit(1);
 	}
-}
-
-export async function layCanvasSheet(): Promise<void> {
-	const authored = readFileSync(PLUGIN_SHEET, "utf8");
-	const withTokens = withSystemTokens(
-		withStudioSystem(authored, studioSystemLayerOf(process.cwd())),
-		systemTokensOf(process.cwd()),
-	);
-	const laid = await formattedAsRepo(withCanvasSheet(withTokens, await canvasSheet(process.cwd())), PLUGIN_SHEET);
-	if (laid !== authored) writeFileSync(PLUGIN_SHEET, laid);
-}
-
-async function formattedAsRepo(text: string, filepath: string): Promise<string> {
-	const config = await resolveConfig(filepath);
-	return format(text, {
-		...config,
-		filepath,
-	});
-}
-
-if (import.meta.main) {
-	const production = process.argv.includes("--prod");
-	await layCanvasSheet();
-	runGates();
-	layGpuFiles();
-	await esbuild.build(
-		bundleOptions({ minify: production, sourcemap: production ? false : "inline", isProduction: production }),
-	);
 }

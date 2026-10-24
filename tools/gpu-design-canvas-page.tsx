@@ -4,12 +4,13 @@ import { startGpuCanvas } from "../packages/shared/gpu/index.ts";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
 import { registerPacks } from "../packages/shared/core/src/engine/packs.js";
 import { NO_HOST } from "../packages/shared/core/src/engine/host-none.js";
-import type { DrawnState } from "@widgetarium/canvas";
+import type { DrawnState } from "../packages/domain/canvas/shared/schema/drawn-design.schema.ts";
 import { frameIdOf } from "../packages/domain/canvas/shared/lib/field/frame-keys.ts";
-import { FixedWidgetDrawingGateway, FixedDesignFolderGateway, canvasPartsOver } from "./canvas-hosts.ts";
+import { FixedWidgetDrawingGateway, FixedDesignFolderGateway, canvasAppOver, canvasPartsOver } from "./canvas-hosts.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.js";
 import { CANVAS_OPENED_ON, DesignStage } from "../apps/studio/src/canvas/design-stage.ts";
-import { Plate, PlateCrumb } from "@widgetarium/shell";
+import { Plate } from "../apps/studio/src/features/plate/ui/plate/plate.js";
+import { PlateCrumb } from "../apps/studio/src/features/plate/ui/plate-header/plate-crumb.js";
 import { loadFixtureCanvasKit, loadFixtureFonts } from "./gpu-canvas-fixture.tsx";
 import { DESIGN_FRAMES, DESIGN_SCREEN, TASKS_CARD, TASKS_WIDGET } from "./gpu-design-canvas-frames.ts";
 import { benchedPan, lookedAtFrame } from "./gpu-design-canvas-moves.ts";
@@ -58,6 +59,17 @@ const designFolderGateway = new FixedDesignFolderGateway(async () => ({
 }));
 const widgetDrawingGateway = new FixedWidgetDrawingGateway({ registry, host: TEST_HOST });
 const supply = { startCanvas: startGpuCanvas, loadCanvasKit: loadFixtureCanvasKit, loadFonts: loadFixtureFonts };
+const canvasApp = canvasAppOver(
+	canvasPartsOver({ designFolder: designFolderGateway, widgetDrawing: widgetDrawingGateway }),
+);
+const surroundings = {
+	gpu: supply,
+	ownsPaste: () => false,
+	returnTo: {
+		kind: "view" as const,
+		open: async () => undefined,
+	},
+};
 
 const root = document.getElementById("root");
 const reactRoot = root ? createRoot(root) : null;
@@ -77,8 +89,8 @@ function draw(): void {
 				opening: { ...CANVAS_OPENED_ON, mode: "pointer" },
 				size: VIEW,
 				shell: IN_PLATE,
-				partsOf: ({ opened }) =>
-					canvasPartsOver({ opened, gpu: supply }, { designFolderGateway, widgetDrawingGateway }),
+				canvasApp,
+				surroundings,
 			}),
 		}),
 	);

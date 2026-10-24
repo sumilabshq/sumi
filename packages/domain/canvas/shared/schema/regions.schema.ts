@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { NOTE_TONES } from "@widgetarium/core/app-design.js";
-import { StatePictureSchema } from "./design.schema.js";
 import { CanvasDocSchema } from "./doc.schema.js";
+import { NoteToneSchema } from "./note-tone.schema.js";
+import { StatePictureSchema } from "./state-picture.schema.js";
 
-const FrameSchema = z.object({
+export const FrameSchema = z.object({
 	key: z.string(),
 	label: z.string(),
 	situation: z.string().nullable(),
@@ -15,16 +15,25 @@ const FrameSchema = z.object({
 	refusal: z.string(),
 });
 
-const ScreenGroupSchema = z.object({ name: z.string(), sub: z.string(), frames: z.array(FrameSchema) });
-
-const CalloutSchema = z.object({
-	text: z.string(),
-	tone: z.enum(NOTE_TONES),
-	at: z.tuple([z.number(), z.number()]).optional(),
-	widget: z.object({ id: z.string(), name: z.string() }).nullable(),
+export const ScreenGroupSchema = z.object({
+	name: z.string(),
+	sub: z.string(),
+	frames: z.array(FrameSchema),
 });
 
-const ReferenceShownSchema = z.object({
+export const CalloutWidgetSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+});
+
+export const CalloutSchema = z.object({
+	text: z.string(),
+	tone: NoteToneSchema,
+	at: z.tuple([z.number(), z.number()]).optional(),
+	widget: CalloutWidgetSchema.nullable(),
+});
+
+export const ReferenceShownSchema = z.object({
 	key: z.string(),
 	title: z.string(),
 	badge: z.string().optional(),
@@ -43,7 +52,7 @@ export const WidgetCardSchema = z.object({
 	picture: StatePictureSchema,
 });
 
-const WidgetGroupSchema = z.object({
+export const WidgetGroupSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	badge: z.string(),
@@ -51,23 +60,47 @@ const WidgetGroupSchema = z.object({
 });
 
 export const RegionSchema = z.discriminatedUnion("kind", [
-	z.object({ kind: z.literal("docs"), title: z.string(), count: z.number(), docs: z.array(CanvasDocSchema) }),
+	z.object({
+		kind: z.literal("docs"),
+		title: z.string(),
+		count: z.number(),
+		docs: z.array(CanvasDocSchema),
+	}),
 	z.object({
 		kind: z.literal("references"),
 		title: z.string(),
 		count: z.number(),
 		references: z.array(ReferenceShownSchema),
 	}),
-	z.object({ kind: z.literal("pages"), title: z.string(), count: z.number(), screens: z.array(ScreenGroupSchema) }),
-	z.object({ kind: z.literal("planned"), title: z.string(), page: z.string(), width: z.number(), height: z.number() }),
-	z.object({ kind: z.literal("nothing"), title: z.string() }),
-	z.object({ kind: z.literal("widgets"), title: z.string(), count: z.number(), widgets: z.array(WidgetGroupSchema) }),
+	z.object({
+		kind: z.literal("pages"),
+		title: z.string(),
+		count: z.number(),
+		screens: z.array(ScreenGroupSchema),
+	}),
+	z.object({
+		kind: z.literal("planned"),
+		title: z.string(),
+		page: z.string(),
+		width: z.number(),
+		height: z.number(),
+	}),
+	z.object({
+		kind: z.literal("nothing"),
+		title: z.string(),
+	}),
+	z.object({
+		kind: z.literal("widgets"),
+		title: z.string(),
+		count: z.number(),
+		widgets: z.array(WidgetGroupSchema),
+	}),
 ]);
+
+export const FieldRegionsSchema = z.object({ regions: z.array(RegionSchema) });
 
 export type Frame = z.output<typeof FrameSchema>;
 export type CalloutShown = z.output<typeof CalloutSchema>;
 export type ReferenceShown = z.output<typeof ReferenceShownSchema>;
 export type WidgetCard = z.output<typeof WidgetCardSchema>;
 export type Region = z.output<typeof RegionSchema>;
-
-export type RegionOf<K extends Region["kind"]> = Extract<Region, { readonly kind: K }>;

@@ -1,31 +1,24 @@
-import { app } from "../packages/shared/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/core/requests";
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
-import { CanvasClientModule } from "../packages/domain/canvas/generated/module.ts";
-import {
-	CanvasHost,
-	WidgetDrawingGateway,
-	DesignFolderGateway,
-	detachedHostOf,
-	webCanvasParts,
-} from "../packages/domain/canvas/generated/gateways.ts";
-import type { CanvasParts } from "../packages/domain/canvas/generated/gateways.ts";
-import type { CanvasOpened, CanvasOpening } from "../packages/domain/canvas/shared/schema/canvas-view.schema.ts";
-import type { CanvasDoc } from "../packages/domain/canvas/shared/schema/doc.schema.ts";
-import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/design.schema.ts";
-import type { GpuSupply } from "../packages/shared/gpu/index.ts";
+import { CanvasModule } from "../packages/domain/canvas/module.ts";
+import { OpenCanvasCommand } from "../packages/domain/canvas/index.ts";
+import { projectCanvasParts } from "../packages/domain/canvas/gateways/canvas-parts/project.gateway.ts";
+import type { CanvasParts } from "../packages/domain/canvas/gateways/canvas-parts/canvas-parts.gateway.ts";
+import { DesignFolderGateway } from "../packages/domain/canvas/gateways/design-folder/design-folder.gateway.ts";
+import { HeldWidgetDrawingGateway } from "../packages/domain/canvas/gateways/widget-drawing/held.gateway.ts";
+import type { DesignFolderRead } from "../packages/domain/canvas/shared/lib/design/design-shown.ts";
+import type { CanvasOpened } from "../packages/domain/canvas/shared/schema/canvas-view.schema.ts";
+import type { DrawnDesign } from "../packages/domain/canvas/shared/schema/drawn-design.schema.ts";
 import { standIn } from "./stand-in.ts";
 
-export interface CanvasAsk {
-	readonly opened: CanvasOpened;
-	readonly ownsPaste?: () => boolean;
-	readonly gpu?: GpuSupply | null;
-	readonly keepOpening?: (kept: CanvasOpening) => void;
-}
+export type { CanvasParts } from "../packages/domain/canvas/gateways/canvas-parts/canvas-parts.gateway.ts";
 
 export const FARM_OPENED: CanvasOpened = { app: "Farm", page: "Home", isLayersOpen: false, mode: "hand" };
+
+type DesignChanged = (listener: (app: string) => void) => () => void;
 
 export function emptyProject(): StartedProject {
 	return standIn<StartedProject>(
@@ -35,52 +28,57 @@ export function emptyProject(): StartedProject {
 	);
 }
 
-export function canvasHostOf({
-	opened,
-	ownsPaste = never,
-	gpu = null,
-	keepOpening = keepsNothing,
-}: CanvasAsk): CanvasHost {
-	return new CanvasHost({ ...detachedHostOf(opened), ownsPaste, gpu, keepOpening });
-}
-
-export function canvasPartsOver(ask: CanvasAsk, chosen: Partial<CanvasParts> = {}): CanvasParts {
-	return { ...webCanvasParts(emptyProject(), canvasHostOf(ask)), ...chosen };
+export function canvasPartsOver(chosen: Partial<CanvasParts> = {}): CanvasParts {
+	return {
+		...projectCanvasParts({ kind: "project", project: emptyProject() }),
+		...chosen,
+	};
 }
 
 export function canvasAppOver(parts: CanvasParts): StartedApp {
-	return app({ modules: [CanvasClientModule.with(parts)] });
+	return app()
+		.modules(CanvasModule.with(parts))
+		.start({ platform: "browser", scope: { workspaceId: FARM_OPENED.app } });
+}
+
+export async function openedCanvasOver(parts: CanvasParts, opened: CanvasOpened = FARM_OPENED): Promise<StartedApp> {
+	const canvas = canvasAppOver(parts);
+	const answer = await canvas.send(OpenCanvasCommand, opened);
+
+	if (!answer.ok) {
+		throw new Error(`the test canvas did not open: ${answer.reason}`);
+	}
+
+	return canvas;
 }
 
 export class FixedDesignFolderGateway extends DesignFolderGateway {
 	constructor(
-		private readonly drawn: () => Promise<DrawnDesign>,
-		private readonly watched: (changed: () => void) => () => void = () => keepsNothing,
+		private readonly drawn: () => Promise<DrawnDesign | null>,
+		private readonly changed: DesignChanged = () => keepsNothing,
 	) {
 		super();
 	}
 
-	override readDesign(): Promise<DrawnDesign> {
-		return this.drawn();
+	override async folder(): Promise<DesignFolderRead> {
+		return {
+			design: await this.drawn(),
+			docs: [],
+			look: null,
+		};
 	}
 
-	override async readDocs(): Promise<readonly CanvasDoc[]> {
-		return [];
-	}
-
-	override async readSpec(): Promise<SpecRead | null> {
+	override async spec(): Promise<SpecRead | null> {
 		return null;
 	}
 
-	override watch(_app: string, changed: () => void): () => void {
-		return this.watched(changed);
+	override forgetFolder(): void {}
+
+	override designChanged(listener: (app: string) => void): () => void {
+		return this.changed(listener);
 	}
 }
 
-export class FixedWidgetDrawingGateway extends WidgetDrawingGateway {}
-
-function never(): boolean {
-	return false;
-}
+export class FixedWidgetDrawingGateway extends HeldWidgetDrawingGateway {}
 
 function keepsNothing(): void {}

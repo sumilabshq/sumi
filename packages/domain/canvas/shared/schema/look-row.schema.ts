@@ -10,4 +10,25 @@ export const LookRowSchema = z.object({
 	isRedrawn: z.boolean(),
 });
 
-export type LookRow = z.infer<typeof LookRowSchema>;
+export const LookPanelSchema = z.discriminatedUnion("kind", [
+	z.object({ kind: z.literal("none") }),
+	z.object({
+		kind: z.literal("unreadable"),
+		said: z.string(),
+	}),
+	z.object({
+		kind: z.literal("look"),
+		system: z.string(),
+		sheet: z.string(),
+		fontsUrl: z.string().nullable(),
+		rows: z.array(LookRowSchema),
+	}),
+]);
+
+export const LookPickSchema = z.object({
+	settingName: z.string(),
+	option: z.string(),
+});
+
+export type LookRow = z.output<typeof LookRowSchema>;
+export type LookPanel = z.output<typeof LookPanelSchema>;

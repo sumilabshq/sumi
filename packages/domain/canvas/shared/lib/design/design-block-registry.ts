@@ -13,16 +13,14 @@ export function blocksOf(registry: Registry, draft: string): string[] {
 	return Object.keys(registry.get(draft)?.blocks ?? {});
 }
 
-// TODO: module state shared by every canvas; provide it per app.
-// eslint-disable-next-line @widgetarium/module-state
-const WRAPPED = new WeakMap<Registry, Registry>();
-
 export function withBlocks(registry: Registry): Registry {
-	const held = WRAPPED.get(registry);
-	if (held) return held;
-	const wrapped = blocksOver(registry);
-	WRAPPED.set(registry, wrapped);
-	return wrapped;
+	return {
+		list: () => registry.list(),
+		get: (id) => (isBlock(id) ? blockDefinitionIn(registry, id) : registry.get(id)),
+		tileRefOf: (id) => (isBlock(id) ? id : registry.tileRefOf(id)),
+		resolveId: (id) => (isBlock(id) ? id : (registry.resolveId?.(id) ?? id)),
+		generationsOf: (key) => registry.generationsOf?.(key) ?? [],
+	};
 }
 
 function isBlock(id: string | null | undefined): id is string {
@@ -33,16 +31,19 @@ function blockDefinitionIn(registry: Registry, id: string): WidgetDefinition | n
 	const [draft = "", block = ""] = id.split(BLOCK_SEPARATOR);
 	const definition = registry.get(draft);
 	const component = definition?.blocks?.[block];
-	if (!definition || !component) return null;
-	return { ...definition, component, manifest: { ...definition.manifest, id, title: block, props: {} } };
-}
 
-function blocksOver(registry: Registry): Registry {
+	if (!definition || !component) {
+		return null;
+	}
+
 	return {
-		list: () => registry.list(),
-		get: (id) => (isBlock(id) ? blockDefinitionIn(registry, id) : registry.get(id)),
-		tileRefOf: (id) => (isBlock(id) ? id : registry.tileRefOf(id)),
-		resolveId: (id) => (isBlock(id) ? id : (registry.resolveId?.(id) ?? id)),
-		generationsOf: (key) => registry.generationsOf?.(key) ?? [],
+		...definition,
+		component,
+		manifest: {
+			...definition.manifest,
+			id,
+			title: block,
+			props: {},
+		},
 	};
 }

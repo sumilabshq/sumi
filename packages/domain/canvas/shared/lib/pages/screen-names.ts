@@ -1,4 +1,4 @@
-import type { DrawnScreen } from "../../schema/design.schema.js";
+import type { DrawnScreen } from "../../schema/drawn-design.schema.js";
 
 const VARIANT = /^(.+) · ([A-Z])$/;
 

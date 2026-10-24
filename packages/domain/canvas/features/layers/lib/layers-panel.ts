@@ -1,13 +1,10 @@
-import type { OutputOf } from "@widgetarium/core/requests";
-import type { LayersPanelQuery } from "../contract.js";
 import type { Drawing } from "../../../shared/schema/drawing.schema.js";
+import type { LayersPanel } from "../../../shared/schema/layer-row.schema.js";
 import type { CanvasMoment } from "../../../shared/lib/view/canvas-moment.js";
-import { layerRowsOf } from "./layer-rows.js";
+import { DESKTOP_FRAME } from "../../../shared/lib/field/desktop-frame.js";
 import { pickedMarkOf } from "../../../shared/lib/layers/picked-mark.js";
-import type { shownScreenOf } from "../../../shared/lib/layers/shown-screen.js";
-
-export type LayersPanel = OutputOf<typeof LayersPanelQuery>;
-type ShownScreen = NonNullable<ReturnType<typeof shownScreenOf>>;
+import type { ShownScreen } from "../../../shared/lib/layers/shown-screen.js";
+import { layerRowsOf } from "./layer-rows.js";
 
 export const NOT_DRAWN: LayersPanel = {
 	isDrawn: false,
@@ -17,6 +14,7 @@ export const NOT_DRAWN: LayersPanel = {
 	treeKey: "",
 	picked: null,
 	liveCopy: null,
+	liveWidthPx: DESKTOP_FRAME.width,
 	rows: [],
 };
 
@@ -32,7 +30,13 @@ export function layersPanelOf(shown: ShownScreen, moment: CanvasMoment, registry
 		treeKey: `tree:${shown.screen.name}:${seen !== null}`,
 		picked,
 		liveCopy: liveCopyOf(shown, moment, seen !== null),
-		rows: layerRowsOf(seen ?? [], { registry, picked, closed: new Set(closedLayers), isLocked: isLayoutLocked }),
+		liveWidthPx: DESKTOP_FRAME.width,
+		rows: layerRowsOf(seen ?? [], {
+			registry,
+			picked,
+			closed: new Set(closedLayers),
+			isLocked: isLayoutLocked,
+		}),
 	};
 }
 

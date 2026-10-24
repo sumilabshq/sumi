@@ -1,16 +1,23 @@
-import { EdgeWidth, localPxMemory } from "@widgetarium/behaviors";
-import type { EdgeBounds } from "@widgetarium/behaviors";
+interface SidebarBounds {
+	readonly leastPx: number;
+	readonly usualPx: number;
+	readonly keptBesidePx: number;
+}
 
-export const SIDEBAR_BOUNDS: EdgeBounds = {
+export const SIDEBAR_BOUNDS: SidebarBounds = {
 	leastPx: 160,
 	usualPx: 200,
 	keptBesidePx: 320,
 };
 
-export const SIDEBAR_HAIRLINE_PX = 1;
+export function sidebarPxWithin(px: number, roomPx: number): number {
+	return sidebarPxFloored(Math.min(px, roomPx - SIDEBAR_BOUNDS.keptBesidePx));
+}
 
-const SIDEBAR_WIDTH_KEY = "widgetarium-canvas-sidebar-px";
+export function sidebarPxOf(kept: number | null): number {
+	return sidebarPxFloored(kept ?? SIDEBAR_BOUNDS.usualPx);
+}
 
-export function createSidebarWidth(): EdgeWidth {
-	return new EdgeWidth("canvas sidebar", SIDEBAR_BOUNDS, localPxMemory(SIDEBAR_WIDTH_KEY));
+function sidebarPxFloored(px: number): number {
+	return Math.round(Math.max(SIDEBAR_BOUNDS.leastPx, px));
 }

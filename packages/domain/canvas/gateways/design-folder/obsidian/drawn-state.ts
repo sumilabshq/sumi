@@ -1,12 +1,13 @@
 import { boardIn } from "../../../shared/lib/design/board-in-note.js";
-import { textAt } from "../../../shared/lib/files/text-at.js";
-import type { ReadingAdapter } from "../../../shared/lib/files/text-at.js";
+import { textAt } from "./text-at.js";
+import type { ReadingAdapter } from "./text-at.js";
 import type { Board } from "@widgetarium/core/model.js";
 import { screenPathOf, vaultBindingOf } from "@widgetarium/core/app-design.js";
 import type { ScreenState } from "@widgetarium/core/app-design.js";
 import type { WidgetLookup } from "@widgetarium/core/registry.js";
-import { statePropsOf } from "../../../shared/schema/design.schema.js";
-import type { DrawnState, StatePicture } from "../../../shared/schema/design.schema.js";
+import { statePropsOf } from "../../../shared/lib/design/state-props.js";
+import type { DrawnState } from "../../../shared/schema/drawn-design.schema.js";
+import type { StatePicture } from "../../../shared/schema/state-picture.schema.js";
 import { statePictureOf } from "../../../shared/lib/design/state-picture.js";
 
 type Lookup = Pick<WidgetLookup, "get">;

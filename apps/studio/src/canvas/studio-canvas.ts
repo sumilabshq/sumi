@@ -1,19 +1,17 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import type { FrameSize } from "@widgetarium/canvas";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import { CanvasHost, detachedHostOf, webCanvasParts } from "@widgetarium/canvas/gateways";
-import type { CanvasParts } from "@widgetarium/canvas/gateways";
+import type { StartedApp } from "@widgetarium/core/requests";
+import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
+import type { CanvasHosts } from "./canvas-hosts.js";
+import { startCanvasApp } from "./canvas-app.js";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
-import type { CanvasShell, StageMount } from "./design-stage.js";
-
-export interface StudioMount extends StageMount {
-	readonly project: StartedProject;
-}
+import type { CanvasShell, StageSize } from "./design-stage.js";
 
 export interface StudioDesign {
 	readonly app: string;
-	readonly partsOf: (mount: StudioMount) => CanvasParts;
+	readonly hostsOf: (project: StartedProject) => CanvasHosts;
+	readonly surroundings: CanvasSurroundings;
 }
 
 export interface StudioCanvasProps {
@@ -22,15 +20,26 @@ export interface StudioCanvasProps {
 	readonly shell: CanvasShell;
 }
 
+const STAYS_IN_ITS_TAB: CanvasSurroundings = {
+	gpu: null,
+	ownsPaste: () => true,
+	returnTo: {
+		kind: "view",
+		open: async () => undefined,
+	},
+};
+
 export function StudioCanvas({ design, project, shell }: StudioCanvasProps): ReactElement {
 	const viewRef = useRef<HTMLDivElement | null>(null);
-	const [size, setSize] = useState<FrameSize | null>(null);
+	const [size, setSize] = useState<StageSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
+	const canvasApp = useStartedCanvas(design, project);
 	const stage = size
 		? h(DesignStage, {
 				app: design.app,
 				opening: CANVAS_OPENED_ON,
-				partsOf: (mount) => design.partsOf({ ...mount, project }),
+				canvasApp,
+				surroundings: design.surroundings,
 				size,
 				shell,
 			})
@@ -41,24 +50,18 @@ export function StudioCanvas({ design, project, shell }: StudioCanvasProps): Rea
 export function webStudioDesign(app: string): StudioDesign {
 	return {
 		app,
-		partsOf: ({ project, ...mount }) =>
-			webCanvasParts(
-				project,
-				new CanvasHost({
-					...detachedHostOf(mount.opened),
-					...mount,
-					ownsPaste: ownsEveryPasteInItsTab,
-					gpu: null,
-				}),
-			),
+		hostsOf: (project) => ({ project }),
+		surroundings: STAYS_IN_ITS_TAB,
 	};
 }
 
-function ownsEveryPasteInItsTab(): boolean {
-	return true;
+function useStartedCanvas(design: StudioDesign, project: StartedProject): StartedApp {
+	const [canvasApp] = useState(() => startCanvasApp(design.hostsOf(project), design.app));
+	useEffect(() => () => canvasApp.stop(), [canvasApp]);
+	return canvasApp;
 }
 
-function useWatchesInnerSize(ref: { readonly current: HTMLElement | null }, onSize: (size: FrameSize) => void): void {
+function useWatchesInnerSize(ref: { readonly current: HTMLElement | null }, onSize: (size: StageSize) => void): void {
 	useEffect(() => {
 		const element = ref.current;
 		if (!element) return undefined;

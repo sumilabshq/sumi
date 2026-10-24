@@ -1,9 +1,8 @@
 import type { DataAdapter } from "obsidian";
-import { textAt, textOrRefused } from "../../shared/lib/files/text-at.js";
 import { DesignFilesGateway } from "./design-files.gateway.js";
 import type { TextEdit } from "./design-files.gateway.js";
 
-type FilesAdapter = Pick<DataAdapter, "exists" | "read" | "mkdir" | "writeBinary" | "write" | "process">;
+type FilesAdapter = Pick<DataAdapter, "exists" | "mkdir" | "writeBinary" | "write" | "process">;
 
 export class ObsidianDesignFilesGateway extends DesignFilesGateway {
 	constructor(private readonly adapter: FilesAdapter) {
@@ -12,10 +11,6 @@ export class ObsidianDesignFilesGateway extends DesignFilesGateway {
 
 	override exists(path: string): Promise<boolean> {
 		return this.adapter.exists(path);
-	}
-
-	override async read(path: string): Promise<string | null> {
-		return textOrRefused(await textAt(this.adapter, path));
 	}
 
 	override makeFolder(path: string): Promise<void> {

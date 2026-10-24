@@ -20,11 +20,8 @@ import {
 import { runLookCommand } from "../apps/host-obsidian/src/legacy/ai/look-command.ts";
 import type { Told } from "../apps/host-obsidian/src/legacy/ai/shape-command.ts";
 import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/obsidian.gateway.ts";
-import { WebAgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/web.gateway.ts";
-import { PickLookCommandHandler } from "../packages/domain/canvas/features/look/handlers.ts";
-import { CachedDesignReads } from "../packages/domain/canvas/shared/lib/design/design-reads.ts";
-import { MomentCanvasStore } from "../packages/domain/canvas/shared/lib/view/canvas-store.ts";
-import { FARM_OPENED, FixedDesignFolderGateway } from "./canvas-hosts.ts";
+import { PickLookCommand } from "../packages/domain/canvas/index.ts";
+import { canvasPartsOver, openedCanvasOver } from "./canvas-hosts.ts";
 
 let failures = 0;
 
@@ -197,7 +194,6 @@ const agentWroteMeanwhile = lookToWrite(lookPickedAs(offered, { shell: "top-bar"
 const lookFile = { text: lookToWrite(offered) };
 const lookAdapter = {
 	exists: async () => true,
-	read: async () => lookToWrite(offered),
 	write: async (_path: string, text: string) => {
 		lookFile.text = text;
 	},
@@ -207,20 +203,16 @@ const lookAdapter = {
 	},
 };
 const designFilesGateway = new ObsidianDesignFilesGateway({
-	...lookAdapter,
+	exists: lookAdapter.exists,
+	write: lookAdapter.write,
+	process: lookAdapter.process,
 	mkdir: refusesWrites,
 	writeBinary: refusesWrites,
 });
-const lookReads = new CachedDesignReads(
-	new FixedDesignFolderGateway(async () => ({ screens: [], references: [], widgets: [] })),
-	new WebAgentJobsGateway(),
-	designFilesGateway,
-);
-await PickLookCommandHandler.handle(
-	{ settingName: "ground", option: "grey" },
-	{ designFilesGateway, designReads: lookReads, canvasStore: new MomentCanvasStore(FARM_OPENED, () => undefined) },
-);
+const lookCanvas = await openedCanvasOver(canvasPartsOver({ designFiles: designFilesGateway }));
+const lookPicked = await lookCanvas.send(PickLookCommand, { settingName: "ground", option: "grey" });
 const afterPick = readLook(lookFile.text);
+check("the look pick is answered through the canvas module", lookPicked.ok ? "ok" : lookPicked.reason, "ok");
 check(
 	"a look pick in Obsidian changes the file as it is at the write, keeping a pick written meanwhile",
 	afterPick.refusal === undefined ? afterPick.value.settings.map((one) => one.picked) : afterPick.refusal,

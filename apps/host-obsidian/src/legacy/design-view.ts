@@ -4,14 +4,19 @@ import { createElement as h } from "react";
 import { render } from "@widgetarium/core/engine/render.js";
 import { shieldFromEditor } from "@widgetarium/core/editor-shield.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { CanvasHost, detachedHostOf } from "@widgetarium/canvas/gateways";
-import { CANVAS_OPENED_ON, DesignStage } from "@widgetarium/studio";
-import type { CanvasHandle, CanvasOpening, GpuSupply, StageMount } from "@widgetarium/studio";
+import { CANVAS_OPENED_ON, DesignStage, startCanvasApp } from "@widgetarium/studio";
+import type { CanvasHandle, CanvasOpening, CanvasSurroundings, GpuSupply } from "@widgetarium/studio";
+import type { StartedApp } from "@widgetarium/core/requests";
 import { obsidianGpuSupply } from "./gpu-supply-obsidian.js";
-import { HELD_IN_VAULT, partsFor, returnToNoteIn } from "./design-held.js";
+import { HELD_IN_VAULT, hostsFor, returnToNoteIn } from "./design-held.js";
 import type WidgetariumPlugin from "../main.js";
 
 export const DESIGN_VIEW_TYPE = "widgetarium-design";
+
+interface StartedCanvas {
+	readonly app: string;
+	readonly canvasApp: StartedApp;
+}
 
 const TITLE = "Design · {app}";
 
@@ -21,6 +26,7 @@ export class DesignView extends ItemView {
 	private view: CanvasOpening = CANVAS_OPENED_ON;
 	private node: HTMLElement | null = null;
 	private canvas: CanvasHandle | null = null;
+	private started: StartedCanvas | null = null;
 	private readonly onCanvas = (canvas: CanvasHandle): void => {
 		this.canvas = canvas;
 	};
@@ -85,6 +91,8 @@ export class DesignView extends ItemView {
 	override async onClose(): Promise<void> {
 		if (this.node) render(null, this.node);
 		this.node = null;
+		this.started?.canvasApp.stop();
+		this.started = null;
 	}
 
 	private draw(): void {
@@ -93,15 +101,30 @@ export class DesignView extends ItemView {
 		if (!node || !this.appName || size.width === 0 || size.height === 0) return;
 		const { onKept, onCanvas, ownsPaste, gpu } = this;
 		const app = this.appName;
-		const cameFrom = (): string => this.fromNote;
-		const returnTo = returnToNoteIn(this.app, () => this.leaf, app);
-		const partsOf = (mount: StageMount) =>
-			partsFor(
-				this.plugin,
-				HELD_IN_VAULT,
-				new CanvasHost({ ...detachedHostOf(mount.opened), ...mount, ownsPaste, gpu, cameFrom, returnTo }),
-			);
-		render(h(DesignStage, { key: app, app, opening: this.view, partsOf, onKept, onCanvas, size }), node);
+		const surroundings: CanvasSurroundings = {
+			gpu,
+			ownsPaste,
+			returnTo: returnToNoteIn(this.app, () => this.leaf, this.fromNote),
+		};
+		const canvasApp = this.canvasAppOf(app);
+		render(
+			h(DesignStage, { key: app, app, opening: this.view, canvasApp, surroundings, onKept, onCanvas, size }),
+			node,
+		);
+	}
+
+	private canvasAppOf(app: string): StartedApp {
+		if (this.started?.app === app) {
+			return this.started.canvasApp;
+		}
+
+		this.started?.canvasApp.stop();
+		const canvasApp = startCanvasApp(hostsFor(this.plugin, HELD_IN_VAULT), app);
+		this.started = {
+			app,
+			canvasApp,
+		};
+		return canvasApp;
 	}
 }
 

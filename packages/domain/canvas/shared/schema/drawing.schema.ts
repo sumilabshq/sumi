@@ -1,5 +1,4 @@
 import { z } from "zod";
-import type { GpuSupply } from "@widgetarium/gpu";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 
 export interface Drawing {
@@ -7,21 +6,10 @@ export interface Drawing {
 	readonly host: WidgetSurfaceProps["host"];
 }
 
-export const DrawingSchema = z.custom<Drawing>(isDrawing);
-
-export const GpuSupplySchema = z.custom<GpuSupply>(isGpuSupply);
-
-function isDrawing(held: unknown): held is Drawing {
-	if (typeof held !== "object" || held === null) return false;
-	const registry: unknown = Reflect.get(held, "registry");
-	return typeof registry === "object" && registry !== null && typeof Reflect.get(registry, "get") === "function";
+// TRADE-OFF: the registry and the host cross as plain objects, since their types live in core, which a contract may not name
+export interface CanvasDrawing {
+	readonly registry: object;
+	readonly host: object;
 }
 
-function isGpuSupply(held: unknown): held is GpuSupply {
-	return (
-		typeof held === "object" &&
-		held !== null &&
-		typeof Reflect.get(held, "startCanvas") === "function" &&
-		typeof Reflect.get(held, "loadCanvasKit") === "function"
-	);
-}
+export const DrawingSchema = z.custom<CanvasDrawing>();

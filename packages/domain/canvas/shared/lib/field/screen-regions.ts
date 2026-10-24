@@ -1,7 +1,6 @@
 import { PAGES } from "../../schema/canvas-page.schema.js";
-import { frameLabelOf } from "../../schema/design.schema.js";
-import type { DrawnScreen, DrawnState } from "../../schema/design.schema.js";
-import { DESKTOP_FRAME } from "../../schema/frame-size.schema.js";
+import type { DrawnScreen, DrawnState } from "../../schema/drawn-design.schema.js";
+import { DESKTOP_FRAME } from "./desktop-frame.js";
 import type { Job } from "../../schema/job.schema.js";
 import type { Frame, Region } from "../../schema/regions.schema.js";
 import { frameIdOf } from "./frame-keys.js";
@@ -38,4 +37,8 @@ function frameOf(state: DrawnState, label: string): Frame {
 		picture: state.picture ?? null,
 		refusal: state.refusal ?? "",
 	};
+}
+
+function frameLabelOf(screen: DrawnScreen, state: string): string {
+	return screen.states.length < 2 || state === screen.name ? screen.name : `${screen.name} · ${state}`;
 }

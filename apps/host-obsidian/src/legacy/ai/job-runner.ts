@@ -12,10 +12,13 @@ import type { JobFiles } from "./job-store.js";
 import { askedSaid, endingOf, promptOf } from "./job-endings.js";
 import type { EndedBy } from "./job-endings.js";
 import type { JobsHeld, Running } from "./jobs-held.js";
-import type { LiveJob } from "@widgetarium/studio";
-import { AgentJobsGateway } from "@widgetarium/canvas/gateways";
+export interface LiveJob {
+	readonly activity: string | null;
+	readonly lines: readonly string[];
+	readonly spent: number;
+}
 
-export interface Jobs extends AgentJobsGateway {
+export interface Jobs {
 	watch(onChange: () => void): () => void;
 	version(): number;
 	apps(): string[];
@@ -69,18 +72,16 @@ export function createJobs(doors: JobsDoors): Jobs {
 		setInterval(() => void saveLive(state), tickMs * (SAVE_EVERY_MS / TICK_MS)),
 	];
 	void tick(state);
-	return new ObsidianAgentJobsGateway(state, timers);
+	return new ObsidianJobs(state, timers);
 }
 
-class ObsidianAgentJobsGateway extends AgentJobsGateway implements Jobs {
+class ObsidianJobs implements Jobs {
 	constructor(
 		private readonly state: JobsHeld,
 		private readonly timers: readonly ReturnType<typeof setInterval>[],
-	) {
-		super();
-	}
+	) {}
 
-	override watch(onChange: () => void): () => void {
+	watch(onChange: () => void): () => void {
 		this.state.watchers.add(onChange);
 		return () => void this.state.watchers.delete(onChange);
 	}
@@ -93,11 +94,11 @@ class ObsidianAgentJobsGateway extends AgentJobsGateway implements Jobs {
 		return [...new Set([...this.state.held.values()].map((job) => job.app))].sort();
 	}
 
-	override jobsOf(app: string): Job[] {
+	jobsOf(app: string): Job[] {
 		return jobsOfApp(this.state, app);
 	}
 
-	override liveOf(app: string, id: string): LiveJob | null {
+	liveOf(app: string, id: string): LiveJob | null {
 		return liveOf(this.state, keyOf(app, id));
 	}
 
@@ -105,7 +106,7 @@ class ObsidianAgentJobsGateway extends AgentJobsGateway implements Jobs {
 		return startJob(this.state, keyOf(app, id));
 	}
 
-	override stop(app: string, id: string): Promise<void> {
+	stop(app: string, id: string): Promise<void> {
 		return stopJob(this.state, keyOf(app, id));
 	}
 

@@ -11,18 +11,16 @@ export { createStudioState } from "./studio-state.js";
 export type { StudioState } from "@widgetarium/core/engine/studio-state-port.js";
 export type { ChromeInsets, HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 export { foldOf } from "./assistant/cards/spec-rows.js";
+export type { CanvasOpening } from "@widgetarium/canvas";
+export type { GpuSupply } from "@widgetarium/gpu";
+export { CANVAS_OPENED_ON, DesignStage, startCanvasApp } from "../canvas/design-stage.js";
 export type {
-	CanvasDoc,
-	CanvasOpening,
-	DrawnDesign,
-	DrawnScreen,
-	DrawnState,
-	FrameSize,
-	GpuSupply,
-	LayerMove,
-	LiveJob,
-	StatePicture,
-} from "@widgetarium/canvas";
-export { CANVAS_OPENED_ON, DesignStage } from "../canvas/design-stage.js";
-export type { CanvasHandle, CanvasShell, DesignStageProps, StageMount } from "../canvas/design-stage.js";
-export type { StudioDesign, StudioMount } from "../canvas/studio-canvas.js";
+	CanvasHandle,
+	CanvasHosts,
+	CanvasShell,
+	CanvasSurroundings,
+	DesignStageProps,
+	ReturnTo,
+	VaultCanvasHosts,
+} from "../canvas/design-stage.js";
+export type { StudioDesign } from "../canvas/studio-canvas.js";

@@ -7,15 +7,15 @@ export class WebAgentJobsGateway extends AgentJobsGateway {
 		return [];
 	}
 
-	override watch(): () => void {
-		return () => undefined;
-	}
-
-	override liveOf(): LiveJob | null {
+	override liveJob(): LiveJob | null {
 		return null;
 	}
 
-	override stop(): Promise<void> {
+	override stopJob(): Promise<void> {
 		return notAvailable();
+	}
+
+	override jobsChanged(): () => void {
+		return () => undefined;
 	}
 }

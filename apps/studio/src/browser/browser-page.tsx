@@ -1,36 +1,36 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Browser } from "@widgetarium/browser";
-import { TipSurface } from "@widgetarium/canvas";
-import { BrowserClientModule } from "@widgetarium/browser/module";
-import type { BrowserParts } from "@widgetarium/browser/gateways";
-import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { TipSurface } from "../features/canvas/ui/tip-surface/tip-surface.js";
+import { AppProvider, OnRefused, toastRefusal } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
+import { ChatBesideContext } from "../features/browser/lib/chat-beside.js";
+import { HeldTabContext } from "../features/browser/lib/held-tab.js";
+import { Browser } from "../features/browser/ui/browser/browser.js";
+import type { StudioBrowser } from "./browser-app.js";
 import { BrowserPlateHeader } from "./browser-plate-header.js";
 
 export interface BrowserPageProps {
-	readonly parts: BrowserParts;
+	readonly browser: StudioBrowser;
+	readonly heldTabId: string | null;
 }
 
 const STAGE = "wg-root cv:h-full cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0px] cv:[--wg-root-head:0px]";
 
-export function BrowserPage({ parts }: BrowserPageProps): ReactElement {
-	const [browserApp] = useState(() => createBrowserApp(parts));
+export function BrowserPage({ browser, heldTabId }: BrowserPageProps): ReactElement {
 	return (
 		<div className={STAGE} data-browser-studio="">
-			<AppProvider app={browserApp}>
-				<OnRefused value={toastRefusal}>
-					<Toaster />
-					<TipSurface>
-						<Browser header={<BrowserPlateHeader />} />
-					</TipSurface>
-				</OnRefused>
+			<AppProvider app={browser.browserApp}>
+				<HeldTabContext value={heldTabId}>
+					<ChatBesideContext value={browser.chatApp}>
+						<OnRefused value={toastRefusal}>
+							<Toaster />
+							<TipSurface>
+								<Browser header={<BrowserPlateHeader />} />
+							</TipSurface>
+						</OnRefused>
+					</ChatBesideContext>
+				</HeldTabContext>
 			</AppProvider>
 		</div>
 	);
-}
-
-function createBrowserApp(parts: BrowserParts): StartedApp {
-	return app().modules(BrowserClientModule.with(parts)).start();
 }

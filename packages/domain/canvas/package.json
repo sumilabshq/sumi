@@ -1,7 +1,7 @@
 {
 	"name": "@widgetarium/canvas",
 	"version": "0.1.0",
-	"description": "The design canvas: an app's pages, states, references and widgets laid out to look at and change",
+	"description": "The design canvas as data: an app's pages, states, references and widgets, and what the canvas shows of them",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"files": [
@@ -9,27 +9,19 @@
 	],
 	"exports": {
 		".": {
-			"source": "./generated/index.ts",
-			"types": "./dist/generated/index.d.ts",
-			"default": "./dist/generated/index.js"
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
 		},
 		"./module": {
-			"source": "./generated/module.ts",
-			"types": "./dist/generated/module.d.ts",
-			"default": "./dist/generated/module.js"
-		},
-		"./gateways": {
-			"source": "./generated/gateways.ts",
-			"types": "./dist/generated/gateways.d.ts",
-			"default": "./dist/generated/gateways.js"
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
 		}
 	},
 	"dependencies": {
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0",
-		"@widgetarium/gpu": "0.1.0",
-		"@widgetarium/kit": "0.1.0",
-		"radix-ui": "^1.7.0",
 		"yaml": "^2.9.0"
 	},
 	"devDependencies": {
@@ -37,8 +29,6 @@
 	},
 	"peerDependencies": {
 		"obsidian": "^1.13.1",
-		"react": "^19.2.8",
-		"react-dom": "^19.2.8",
 		"zod": "^4.6.5"
 	},
 	"peerDependenciesMeta": {

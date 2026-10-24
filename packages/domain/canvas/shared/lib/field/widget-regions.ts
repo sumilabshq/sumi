@@ -1,4 +1,4 @@
-import type { DrawnWidget } from "../../schema/design.schema.js";
+import type { DrawnWidget } from "../../schema/drawn-design.schema.js";
 import type { Drawing } from "../../schema/drawing.schema.js";
 import type { Region, WidgetCard } from "../../schema/regions.schema.js";
 import { statePictureOf } from "../design/state-picture.js";

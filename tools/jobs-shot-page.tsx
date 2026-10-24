@@ -3,13 +3,13 @@ import { createRoot } from "react-dom/client";
 import { JobSchema } from "../packages/shared/core/src/app-jobs.ts";
 import type { Job } from "../packages/shared/core/src/app-jobs.ts";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import { PlannedPageRegion } from "../packages/domain/canvas/shared/ui/canvas-field/regions/planned-page-region.tsx";
-import { PageRow } from "../packages/domain/canvas/features/pages/ui/pages-list/page-row.tsx";
-import { JobLine } from "../packages/domain/canvas/features/jobs/ui/job-status/job-line.tsx";
-import { ReferencesRegion } from "../packages/domain/canvas/shared/ui/canvas-field/regions/references-region.tsx";
+import { PlannedPageRegion } from "../apps/studio/src/features/canvas/ui/canvas-field/regions/planned-page-region.tsx";
+import { PageRow } from "../apps/studio/src/features/canvas/ui/pages-list/page-row.tsx";
+import { JobLine } from "../apps/studio/src/features/canvas/ui/job-status/job-line.tsx";
+import { ReferencesRegion } from "../apps/studio/src/features/canvas/ui/canvas-field/regions/references-region.tsx";
 
 const PICTURE = `data:image/svg+xml;utf8,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='640' height='420'><rect width='640' height='420' fill='#f3f3f1'/></svg>")}`;
-import { Group } from "../packages/domain/canvas/shared/ui/canvas-field/regions/group.tsx";
+import { Group } from "../apps/studio/src/features/canvas/ui/canvas-field/regions/group.tsx";
 
 const MINUTE = 60000;
 const NOW = Date.now();

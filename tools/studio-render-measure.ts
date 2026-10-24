@@ -106,7 +106,7 @@ const underSystemButtons = (insets) => [...document.querySelectorAll(".wg-shell 
 	report();
 	menuButton().click();
 	(await until(() => leafNamed("Edit in canvas")))?.click();
-	seen.canvasShown = Boolean(await until(() => document.querySelector(APP_PLATE + " [data-canvas-studio] [data-canvas-field]")));
+	seen.canvasShown = Boolean(await until(() => document.querySelector(APP_PLATE + ' [data-studio-kept="shown"] [data-canvas-studio] [data-canvas-field]')));
 	seen.taskGoneInCanvas = document.querySelectorAll(APP_PLATE + " .wg-shell-route").length === 0;
 	seen.canvasTopBars = document.querySelectorAll(APP_PLATE + " [data-canvas-topbar]").length;
 	seen.zoneInAppHead = Boolean(await until(() => document.querySelector('[data-plate-head="app"] [data-canvas-app-zone] [data-canvas-sidebar-toggle]')));

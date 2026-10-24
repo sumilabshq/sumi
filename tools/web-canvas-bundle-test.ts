@@ -1,5 +1,5 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { SUPPLIED_BY_ELECTRON_AT_RUNTIME, TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 
 interface Built {
 	readonly inputs: readonly string[];
@@ -7,13 +7,13 @@ interface Built {
 }
 
 const WEB_STUDIO = "apps/studio/src/index.ts";
-const GATEWAYS_ENTRY = "packages/domain/canvas/generated/gateways.ts";
+const OBSIDIAN_VIEW_ENTRY = "apps/host-obsidian/src/legacy/design-view.ts";
 const SERVER_ENTRY = "packages/shared/core/src/requests/server/index.ts";
 const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
 const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
 const SERVER_CONDITION = "server";
 const VAULT_CODE = /packages\/domain\/canvas\/gateways\/[^/]+\/(obsidian\.gateway\.ts|obsidian\/)/;
-const WEB_PARTS = /packages\/domain\/canvas\/gateways\/canvas-parts\/web\.gateway\.ts$/;
+const CANVAS_MODULE = /packages\/domain\/canvas\/module\.ts$/;
 const HOST_CODE = /apps\/host-obsidian\//;
 const SERVER_CODE = /node_modules\/(hono|@orpc\/server)\/|packages\/shared\/core\/src\/requests\/server\//;
 let failed = 0;
@@ -34,8 +34,8 @@ const BUILT_FOR_THE_BROWSER = {
 	logLevel: "silent",
 } satisfies esbuild.BuildOptions;
 
-async function builtOf(entry: string): Promise<Built> {
-	const built = await esbuild.build({ ...BUILT_FOR_THE_BROWSER, entryPoints: [entry] });
+async function builtOf(entry: string, external: readonly string[] = BUILT_FOR_THE_BROWSER.external): Promise<Built> {
+	const built = await esbuild.build({ ...BUILT_FOR_THE_BROWSER, entryPoints: [entry], external: [...external] });
 	const output = Object.values(built.metafile.outputs)[0];
 	return {
 		inputs: Object.keys(output?.inputs ?? {}).filter((input) => (output?.inputs[input]?.bytesInOutput ?? 0) > 0),
@@ -65,11 +65,11 @@ function check(what: string, isOk: boolean, got: unknown): void {
 const web = await builtOf(WEB_STUDIO);
 const webVault = web.inputs.filter((input) => VAULT_CODE.test(input));
 check(
-	"the web studio takes its parts from the canvas's one ./gateways entry",
-	web.inputs.some((input) => WEB_PARTS.test(input)),
-	web.inputs.filter((input) => WEB_PARTS.test(input)),
+	"the web studio runs the canvas module, which picks its gateways itself",
+	web.inputs.some((input) => CANVAS_MODULE.test(input)),
+	web.inputs.filter((input) => CANVAS_MODULE.test(input)),
 );
-check("and tree-shaking leaves none of the canvas's Obsidian implementations in it", webVault.length === 0, webVault);
+check("its vault gateways ride along as code that names obsidian only as types", webVault.length > 0, webVault.length);
 const webHost = web.inputs.filter((input) => HOST_CODE.test(input));
 check("nor any code of the Obsidian host", webHost.length === 0, webHost);
 const webServer = web.inputs.filter((input) => SERVER_CODE.test(input));
@@ -79,11 +79,14 @@ check(
 	!web.imports.includes("obsidian"),
 	web.imports.filter((path) => path === "obsidian"),
 );
-const vault = await builtOf(GATEWAYS_ENTRY);
+const obsidianView = await builtOf(OBSIDIAN_VIEW_ENTRY, [
+	...BUILT_FOR_THE_BROWSER.external,
+	...SUPPLIED_BY_ELECTRON_AT_RUNTIME,
+]);
 check(
-	"the whole ./gateways entry does carry them, so the tree-shaking check can fail",
-	vault.inputs.some((input) => VAULT_CODE.test(input)),
-	vault.inputs.filter((input) => VAULT_CODE.test(input)).length,
+	"a file importing obsidian at run time does show the import, so the no-obsidian check can fail",
+	obsidianView.imports.includes("obsidian"),
+	obsidianView.imports.filter((path) => path === "obsidian"),
 );
 const served = await builtOf(SERVER_ENTRY);
 check(

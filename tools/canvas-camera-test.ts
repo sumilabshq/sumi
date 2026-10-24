@@ -83,7 +83,6 @@ const { answerShotRequests, SHOTS_DIR, SHOT_REQUESTS_DIR } =
 	await import("../apps/host-obsidian/src/legacy/shot-requests.ts");
 const { designPathOf } = await import("../packages/shared/core/src/app-design.ts");
 const { WidgetRegistry } = await import("../packages/shared/core/src/registry.js");
-const { AgentJobsGateway } = await import("../packages/domain/canvas/generated/gateways.ts");
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -111,6 +110,11 @@ const adapter = {
 	remove: async (path: string): Promise<void> => void files.delete(path),
 	write: async (path: string, text: string): Promise<void> => void files.set(path, text),
 	writeBinary: async (path: string): Promise<void> => void files.set(path, "png"),
+	process: async (path: string, change: (text: string) => string): Promise<string> => {
+		const text = change(files.get(path) ?? "");
+		files.set(path, text);
+		return text;
+	},
 	stat: async () => null,
 	getResourcePath: (path: string) => path,
 };
@@ -137,19 +141,15 @@ const plugin = {
 	host: { ...PROBE_VIEW, slot: () => null, here: null },
 	started: Promise.resolve(),
 	assistant: {
-		jobs: new (class extends AgentJobsGateway {
-			override jobsOf(): Job[] {
-				return jobs;
-			}
-			override watch(onChange: () => void): () => void {
+		jobs: {
+			jobsOf: (): Job[] => jobs,
+			watch: (onChange: () => void): (() => void) => {
 				jobWatchers.add(onChange);
 				return () => void jobWatchers.delete(onChange);
-			}
-			override liveOf(): null {
-				return null;
-			}
-			override async stop(): Promise<void> {}
-		})(),
+			},
+			liveOf: (): null => null,
+			stop: async (): Promise<void> => undefined,
+		},
 	},
 	registerInterval: (id: number) => void intervals.push(id),
 };

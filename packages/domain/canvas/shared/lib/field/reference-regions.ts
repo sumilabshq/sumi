@@ -1,5 +1,5 @@
 import { REFERENCES_PAGE } from "../../schema/canvas-page.schema.js";
-import type { DrawnReference } from "../../schema/design.schema.js";
+import type { DrawnReference } from "../../schema/drawn-design.schema.js";
 import type { Drawing } from "../../schema/drawing.schema.js";
 import type { ReferenceShown, Region } from "../../schema/regions.schema.js";
 

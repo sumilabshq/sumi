@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AlertDialog, Dialog } from "radix-ui";
-import { StateDrawing } from "../packages/domain/canvas/shared/ui/state-drawing/state-drawing.tsx";
+import { StateDrawing } from "../apps/studio/src/features/canvas/ui/state-drawing/state-drawing.tsx";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
 import { defineLayout, defineMetadata } from "../packages/shared/core/src/gateway/declared.js";
 import { createWidget } from "../packages/shared/core/src/widget-api.js";

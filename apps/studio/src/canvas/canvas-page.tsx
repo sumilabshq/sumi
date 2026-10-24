@@ -1,12 +1,16 @@
-import { createElement as h, useState } from "react";
+import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
-import { Canvas, CanvasAppZone, TipSurface } from "@widgetarium/canvas";
-import { CanvasClientModule } from "@widgetarium/canvas/module";
-import type { CanvasParts } from "@widgetarium/canvas/gateways";
-import { AppProvider, OnRefused, app, toastRefusal } from "@widgetarium/core/requests";
+import { CanvasOpeningQuery, OpenCanvasCommand } from "@widgetarium/canvas";
+import type { CanvasOpened, CanvasOpening } from "@widgetarium/canvas";
+import { AppProvider, OnRefused, toastRefusal, useQuery } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
-import { PlateHeaderPart } from "@widgetarium/shell";
+import { PlateHeaderPart } from "../features/plate/ui/plate-header/plate-header-part.js";
+import { Canvas } from "../features/canvas/ui/canvas/canvas.js";
+import { CanvasAppZone } from "../features/canvas/ui/canvas-app-zone/canvas-app-zone.js";
+import { TipSurface } from "../features/canvas/ui/tip-surface/tip-surface.js";
+import { CanvasSurroundingsContext } from "../features/canvas/lib/canvas-surroundings.js";
+import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
 import { useHandsCanvas } from "./use-hands-canvas.js";
 import type { CanvasHandle } from "./use-hands-canvas.js";
 
@@ -15,24 +19,56 @@ export interface CanvasShell {
 }
 
 export interface CanvasPageProps {
-	readonly parts: CanvasParts;
+	readonly canvasApp: StartedApp;
+	readonly opened: CanvasOpened;
+	readonly surroundings: CanvasSurroundings;
 	readonly shell: CanvasShell | undefined;
+	readonly onKept?: ((kept: CanvasOpening) => void) | undefined;
 	readonly onCanvas?: ((canvas: CanvasHandle) => void) | undefined;
 }
 
-export function CanvasPage({ parts, shell, onCanvas }: CanvasPageProps): ReactElement {
-	const [canvasApp] = useState(() => createCanvasApp(parts));
+export function CanvasPage({
+	canvasApp,
+	opened,
+	surroundings,
+	shell,
+	onKept,
+	onCanvas,
+}: CanvasPageProps): ReactElement | null {
+	const isOpen = useOpensCanvas(canvasApp, opened);
 	useHandsCanvas(canvasApp, onCanvas);
+
+	if (!isOpen) {
+		return null;
+	}
+
 	return (
 		<AppProvider app={canvasApp}>
-			<OnRefused value={toastRefusal}>
-				<Toaster />
-				<TipSurface>
-					<Canvas header={plateControlsOf(shell)} isInPlate={shell?.isInPlate ?? false} />
-				</TipSurface>
-			</OnRefused>
+			<CanvasSurroundingsContext value={surroundings}>
+				<OnRefused value={toastRefusal}>
+					<Toaster />
+					<KeptOpening onKept={onKept} />
+					<TipSurface>
+						<Canvas header={plateControlsOf(shell)} isInPlate={shell?.isInPlate ?? false} />
+					</TipSurface>
+				</OnRefused>
+			</CanvasSurroundingsContext>
 		</AppProvider>
 	);
+}
+
+function KeptOpening({ onKept }: { readonly onKept: ((kept: CanvasOpening) => void) | undefined }): null {
+	const opening = useQuery(CanvasOpeningQuery).data;
+	const told = useRef(opening);
+	useEffect(() => {
+		if (told.current === opening) {
+			return;
+		}
+
+		told.current = opening;
+		onKept?.(opening);
+	}, [opening, onKept]);
+	return null;
 }
 
 function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefined {
@@ -47,6 +83,16 @@ function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefin
 	);
 }
 
-function createCanvasApp(parts: CanvasParts): StartedApp {
-	return app().modules(CanvasClientModule.with(parts)).start();
+function useOpensCanvas(canvasApp: StartedApp, opened: CanvasOpened): boolean {
+	const [isOpen, setOpen] = useState(false);
+	useEffect(() => {
+		void canvasApp.send(OpenCanvasCommand, opened).then((answer) => {
+			if (!answer.ok) {
+				console.error(`[widgetarium] the canvas of ${opened.app} did not open: ${answer.reason}`);
+			}
+
+			setOpen(true);
+		});
+	}, [canvasApp]);
+	return isOpen;
 }

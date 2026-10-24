@@ -1,8 +1,10 @@
 import type { CanvasDoc } from "../../schema/doc.schema.js";
-import type { DrawnDesign } from "../../schema/design.schema.js";
-import type { DesignReads } from "../design/design-reads.js";
-import type { CanvasField } from "../view/canvas-moment.js";
-import type { CanvasStore } from "../view/canvas-store.js";
+import type { DrawnDesign } from "../../schema/drawn-design.schema.js";
+import type { CanvasField } from "../../schema/canvas-moment.schema.js";
+import type { Job } from "../../schema/job.schema.js";
+import { NOTHING_DRAWN, refusedDesignOf } from "../design/design-shown.js";
+import type { DesignFolderRead } from "../design/design-shown.js";
+import type { CanvasMoment } from "../view/canvas-moment.js";
 import { canvasPagesOf } from "./canvas-pages.js";
 import type { CanvasPages } from "./canvas-pages.js";
 
@@ -13,25 +15,33 @@ export interface PagesNow {
 	readonly docs: readonly CanvasDoc[];
 }
 
-const PAGE_FIELDS: readonly CanvasField[] = ["page", "keptPage", "variants"];
+const NO_DESIGN_YET = "{app} has no design yet, or it was removed.";
 
-export async function pagesNow(designReads: DesignReads, canvasStore: CanvasStore): Promise<PagesNow> {
-	const { app, page, keptPage, variants } = canvasStore.now();
-	const { design, docs, jobs } = await designReads.read(app);
-	const held = { design: design.value, jobs, hasDocs: docs.length > 0, keptPage, variants };
-	return { app, pages: canvasPagesOf(page, held), design: design.value, docs };
+export const PAGE_FIELDS: readonly CanvasField[] = ["app", "page", "keptPage", "variants"];
+
+export function pagesNowOf(moment: CanvasMoment, folder: DesignFolderRead, jobs: readonly Job[]): PagesNow {
+	const { app, page, keptPage, variants } = moment;
+	const design = designShownOf(app, folder, jobs);
+	const held = {
+		design,
+		jobs,
+		hasDocs: folder.docs.length > 0,
+		keptPage,
+		variants,
+	};
+	return {
+		app,
+		pages: canvasPagesOf(page, held),
+		design,
+		docs: folder.docs,
+	};
 }
 
-export function watchPages(
-	designReads: DesignReads,
-	canvasStore: CanvasStore,
-	changed: () => void,
-	fields: readonly CanvasField[] = [],
-): () => void {
-	const stopSource = designReads.watch(canvasStore.now().app, changed);
-	const stopState = canvasStore.watch([...PAGE_FIELDS, ...fields], changed);
-	return () => {
-		stopSource();
-		stopState();
-	};
+function designShownOf(app: string, { design, docs, look }: DesignFolderRead, jobs: readonly Job[]): DrawnDesign {
+	if (design !== null) {
+		return design;
+	}
+
+	const isStarting = jobs.length > 0 || docs.length > 0 || look !== null;
+	return isStarting ? NOTHING_DRAWN : refusedDesignOf(app, NO_DESIGN_YET.replace("{app}", app));
 }

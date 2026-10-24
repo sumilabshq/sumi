@@ -450,9 +450,9 @@ checks:
 `;
 
 const { withReferenceNoted, readDesign } = await import("../packages/shared/core/src/app-design.js");
-const { NotedPicture } = await import("../packages/domain/canvas/shared/ui/canvas-field/frames/noted-picture.js");
+const { NotedPicture } = await import("../apps/studio/src/features/canvas/ui/canvas-field/frames/noted-picture.js");
 const { referencesRegionOf } = await import("../packages/domain/canvas/shared/lib/field/reference-regions.js");
-const { JobLine } = await import("../packages/domain/canvas/features/jobs/ui/job-status/job-line.js");
+const { JobLine } = await import("../apps/studio/src/features/canvas/ui/job-status/job-line.js");
 const { canvasPagesOf } = await import("../packages/domain/canvas/shared/lib/pages/canvas-pages.js");
 const { AppProvider, app: startedApp } = await import("../packages/shared/core/src/requests/index.js");
 const { noteOfApp } = await import("../apps/host-obsidian/src/legacy/ai/reference-command.js");

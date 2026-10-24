@@ -4,7 +4,7 @@ import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import { ROOT } from "@widgetarium/core/paths.js";
 import type { CanvasDoc } from "../../../shared/schema/doc.schema.js";
 import { specMarkdownOf } from "../../../shared/lib/design/spec-markdown.js";
-import { textAt, textOrRefused } from "../../../shared/lib/files/text-at.js";
+import { textAt, textOrRefused } from "./text-at.js";
 
 const APP_DOCS = [
 	{ name: "Research", file: "research.md" },

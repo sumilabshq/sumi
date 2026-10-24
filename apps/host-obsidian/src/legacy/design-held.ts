@@ -1,38 +1,45 @@
 import type { App, WorkspaceLeaf } from "obsidian";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import { obsidianCanvasParts } from "@widgetarium/canvas/gateways";
-import type { ObsidianDesign } from "@widgetarium/canvas/gateways";
-import { webCanvasParts } from "@widgetarium/canvas/gateways";
-import type { CanvasHost, CanvasParts, ReturnTo } from "@widgetarium/canvas/gateways";
+import type { CanvasHosts, ReturnTo, VaultCanvasHosts } from "@widgetarium/studio";
 import type WidgetariumPlugin from "../main.js";
 
 export type DesignHeld = { readonly kind: "vault" } | { readonly kind: "project"; readonly project: StartedProject };
 
 export const HELD_IN_VAULT: DesignHeld = { kind: "vault" };
 
-const NO_NOTE_TO_RETURN_TO = "{app} has no page with a note to go back to.";
+const NOTE_GONE = "{note} is not in the vault any more, so the canvas cannot go back to it.";
 
-export function partsFor(plugin: WidgetariumPlugin, held: DesignHeld, canvasHost: CanvasHost): CanvasParts {
-	if (held.kind === "project") return webCanvasParts(held.project, canvasHost);
-	return obsidianCanvasParts(obsidianDesignOf(plugin), canvasHost);
+export function hostsFor(plugin: WidgetariumPlugin, held: DesignHeld): CanvasHosts {
+	if (held.kind === "project") {
+		return { project: held.project };
+	}
+
+	return vaultHostsOf(plugin);
 }
 
-export function returnToNoteIn(obsidian: App, leafOf: () => WorkspaceLeaf, app: string): ReturnTo {
-	return { kind: "note", open: (note) => noteOpened(obsidian, leafOf(), note, app) };
+export function returnToNoteIn(obsidian: App, leafOf: () => WorkspaceLeaf, cameFrom: string): ReturnTo {
+	return {
+		kind: "note",
+		cameFrom,
+		open: (note) => noteOpened(obsidian, leafOf(), note),
+	};
 }
 
-async function noteOpened(obsidian: App, leaf: WorkspaceLeaf, note: string | null, app: string): Promise<void> {
-	const file = note ? obsidian.vault.getFileByPath(note) : null;
-	if (!file) throw new Error(NO_NOTE_TO_RETURN_TO.replace("{app}", app));
+async function noteOpened(obsidian: App, leaf: WorkspaceLeaf, note: string): Promise<void> {
+	const file = obsidian.vault.getFileByPath(note);
+
+	if (!file) {
+		throw new Error(NOTE_GONE.replace("{note}", note));
+	}
+
 	await leaf.openFile(file, { active: true });
 }
 
-function obsidianDesignOf(plugin: WidgetariumPlugin): ObsidianDesign {
-	const { registry, host } = plugin;
+function vaultHostsOf(plugin: WidgetariumPlugin): VaultCanvasHosts {
 	return {
 		adapter: plugin.app.vault.adapter,
-		registry,
-		host,
-		jobs: plugin.assistant.jobs,
+		registry: plugin.registry,
+		drawingHost: plugin.host,
+		agentJobs: plugin.assistant.jobs,
 	};
 }

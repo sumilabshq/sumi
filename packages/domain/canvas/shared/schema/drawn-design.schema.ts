@@ -1,0 +1,54 @@
+import { z } from "zod";
+import type { Board } from "@widgetarium/core/model.js";
+import { FrameSizeSchema } from "./frame-size.schema.js";
+import { NoteToneSchema } from "./note-tone.schema.js";
+import { StatePictureSchema } from "./state-picture.schema.js";
+
+export const BoardSchema = z.custom<Board>();
+
+export const DrawnStateSchema = z.object({
+	name: z.string(),
+	board: BoardSchema.nullable(),
+	picture: StatePictureSchema.optional(),
+	refusal: z.string().optional(),
+	situation: z.string().optional(),
+	size: FrameSizeSchema.optional(),
+});
+
+export const DrawnScreenSchema = z.object({
+	name: z.string(),
+	states: z.array(DrawnStateSchema).readonly(),
+});
+
+export const ReferenceNoteSchema = z.object({
+	text: z.string(),
+	tone: NoteToneSchema,
+	at: z.tuple([z.number(), z.number()]).optional(),
+	into: z.string().optional(),
+});
+
+export const DrawnReferenceSchema = z.object({
+	name: z.string(),
+	src: z.string(),
+	why: z.string().optional(),
+	kind: z.string().optional(),
+	pages: z.array(z.string()).readonly(),
+	notes: z.array(ReferenceNoteSchema).readonly(),
+});
+
+export const DrawnWidgetSchema = z.object({
+	id: z.string(),
+	isFromCatalogue: z.boolean(),
+});
+
+export const DrawnDesignSchema = z.object({
+	screens: z.array(DrawnScreenSchema).readonly(),
+	references: z.array(DrawnReferenceSchema).readonly(),
+	widgets: z.array(DrawnWidgetSchema).readonly(),
+});
+
+export type DrawnState = z.output<typeof DrawnStateSchema>;
+export type DrawnScreen = z.output<typeof DrawnScreenSchema>;
+export type DrawnReference = z.output<typeof DrawnReferenceSchema>;
+export type DrawnWidget = z.output<typeof DrawnWidgetSchema>;
+export type DrawnDesign = z.output<typeof DrawnDesignSchema>;

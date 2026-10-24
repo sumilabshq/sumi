@@ -1,8 +1,8 @@
 import { specPathOf } from "@widgetarium/core/app-spec.js";
 import { readSpec } from "@widgetarium/core/app-spec-text.js";
 import type { SpecRead } from "@widgetarium/core/app-spec.js";
-import { textAt } from "../../../shared/lib/files/text-at.js";
-import type { ReadingAdapter } from "../../../shared/lib/files/text-at.js";
+import { textAt } from "./text-at.js";
+import type { ReadingAdapter } from "./text-at.js";
 
 export async function readAppSpec(adapter: ReadingAdapter, app: string): Promise<SpecRead | null> {
 	const held = await textAt(adapter, specPathOf(app));

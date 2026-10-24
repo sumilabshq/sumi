@@ -1,10 +1,9 @@
 import type { SpecRead } from "@widgetarium/core/app-spec.js";
-import type { CanvasDoc } from "../../shared/schema/doc.schema.js";
-import type { DrawnDesign } from "../../shared/schema/design.schema.js";
+import type { DesignFolderRead } from "../../shared/lib/design/design-shown.js";
 
 export abstract class DesignFolderGateway {
-	abstract readDesign(app: string, isStarting: boolean): Promise<DrawnDesign>;
-	abstract readDocs(app: string): Promise<readonly CanvasDoc[]>;
-	abstract readSpec(app: string): Promise<SpecRead | null>;
-	abstract watch(app: string, changed: () => void): () => void;
+	abstract folder(app: string): Promise<DesignFolderRead>;
+	abstract spec(app: string): Promise<SpecRead | null>;
+	abstract forgetFolder(app: string): void;
+	abstract designChanged(listener: (app: string) => void): () => void;
 }

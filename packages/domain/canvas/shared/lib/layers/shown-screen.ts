@@ -1,4 +1,5 @@
-import type { DrawnScreen, StatePicture } from "../../schema/design.schema.js";
+import type { DrawnScreen } from "../../schema/drawn-design.schema.js";
+import type { StatePicture } from "../../schema/state-picture.schema.js";
 import type { PagesNow } from "../pages/pages-now.js";
 
 export interface ShownScreen {
@@ -19,9 +20,17 @@ export function pictureWidgetsShownOf(now: PagesNow): string[] {
 	);
 }
 
-export function shownScreenOf({ pages, design }: PagesNow): ShownScreen | null {
+export function shownScreenOf({ pages, design }: ShownPages): ShownScreen | null {
 	const screen = design.screens.find((one) => one.name === pages.shownScreen);
-	if (!screen) return null;
+
+	if (!screen) {
+		return null;
+	}
+
 	const picture = screen.states[0]?.picture ?? null;
-	return { screen, picture, key: picture?.widget ?? screen.name };
+	return {
+		screen,
+		picture,
+		key: picture?.widget ?? screen.name,
+	};
 }

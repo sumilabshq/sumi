@@ -1,5 +1,5 @@
 import type { WidgetDefinition, WidgetLookup } from "@widgetarium/core/registry.js";
-import type { DrawnDesign } from "../../schema/design.schema.js";
+import type { DrawnDesign } from "../../schema/drawn-design.schema.js";
 
 interface ScreensShow {
 	readonly onScreens: ReadonlySet<string>;

@@ -1,5 +1,5 @@
 import type { WidgetLookup } from "@widgetarium/core/registry.js";
-import type { DrawnDesign } from "../../schema/design.schema.js";
+import type { DrawnDesign } from "../../schema/drawn-design.schema.js";
 import { blocksOf } from "./design-block-registry.js";
 import { widgetsOnScreens } from "./shown-widgets.js";
 

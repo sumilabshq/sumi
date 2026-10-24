@@ -2,8 +2,8 @@ import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { mountSpecsOf } from "@widgetarium/core/manifest-holds.js";
 import type { SlotState } from "@widgetarium/core/gateway/declared-types.js";
 import type { WidgetLookup } from "@widgetarium/core/registry.js";
-import { statePropsOf } from "../../schema/design.schema.js";
-import type { MountPicture, StatePicture } from "../../schema/design.schema.js";
+import { statePropsOf } from "./state-props.js";
+import type { MountPicture, StatePicture } from "../../schema/state-picture.schema.js";
 
 type Lookup = Pick<WidgetLookup, "get">;
 

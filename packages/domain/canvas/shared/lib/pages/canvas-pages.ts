@@ -1,5 +1,5 @@
 import { COMPONENTS_PAGE, DOCS_PAGE, PAGES, REFERENCES_PAGE } from "../../schema/canvas-page.schema.js";
-import type { DrawnDesign, DrawnReference } from "../../schema/design.schema.js";
+import type { DrawnDesign, DrawnReference } from "../../schema/drawn-design.schema.js";
 import type { Job } from "../../schema/job.schema.js";
 import type { Variants } from "../../schema/canvas-view.schema.js";
 import { pageOfScreen, screensOfPage, shownVariantOf, variantLetterOf } from "./screen-names.js";

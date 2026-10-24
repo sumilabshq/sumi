@@ -1,6 +1,6 @@
 import { boardIn, boardOrRefused } from "../../../shared/lib/design/board-in-note.js";
-import { textAt, textOrRefused } from "../../../shared/lib/files/text-at.js";
-import type { ReadingAdapter } from "../../../shared/lib/files/text-at.js";
+import { textAt, textOrRefused } from "./text-at.js";
+import type { ReadingAdapter } from "./text-at.js";
 import { readLock } from "@widgetarium/core/engine/widget-lock.js";
 import { specPathOf } from "@widgetarium/core/app-spec.js";
 import { readSpec } from "@widgetarium/core/app-spec-text.js";
