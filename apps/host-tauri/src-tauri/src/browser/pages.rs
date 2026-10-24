@@ -139,8 +139,15 @@ impl Pages {
         }
     }
 
+    // TODO: close pages left from the previous start; the studio's first show only hides them
     pub fn open(&self, sink: Channel<Value>) {
         self.sink.lock().expect("the browser's event sink").replace(sink);
+        let mut shown = self.shown.lock().expect("the shown pages");
+
+        if !shown.covered.is_empty() {
+            eprintln!("[browser] covered pages {} → 0 (a new studio start holds no cover)", shown.covered.len());
+            shown.covered.clear();
+        }
     }
 
     fn told(&self, page_id: &str, kind: &str, facts: Value, failure: Value) {

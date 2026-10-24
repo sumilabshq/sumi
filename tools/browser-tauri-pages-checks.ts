@@ -27,6 +27,7 @@ class FakeRust implements BrowserPagesIpc {
 	readonly evaluated: string[] = [];
 	frameAnswers: { url: string; answer: string | null }[] = [];
 	ownWindows: string[] = [];
+	isSnapshotRefused = false;
 	pageText = { url: "https://example.com/", title: "Example", text: "Hello", hasSecretField: false };
 	private listener: ((message: unknown) => void) | null = null;
 
@@ -35,7 +36,9 @@ class FakeRust implements BrowserPagesIpc {
 		const name = command.replace("plugin:browser|", "");
 
 		if (name === "snapshot") {
-			return Promise.resolve(fakePng());
+			return this.isSnapshotRefused
+				? Promise.reject(new Error("An unknown error occurred"))
+				: Promise.resolve(fakePng());
 		}
 
 		if (name === "evaluate") {
@@ -450,6 +453,25 @@ async function checksCover(rust: FakeRust): Promise<void> {
 	aside.remove();
 }
 
+async function checksCoverWithoutPicture(rust: FakeRust): Promise<void> {
+	const covers = (): readonly unknown[] => rust.named("cover").map((call) => call.args);
+	const coversBefore = covers().length;
+	rust.isSnapshotRefused = true;
+	const menu = document.createElement("div");
+	menu.setAttribute("role", "menu");
+	laidAt(menu, { left: 600, top: 110, width: 280, height: 300 });
+	document.body.append(menu);
+	await waitFor(() => covers().length > coversBefore);
+	check("a menu over a page that cannot be pictured still steps the page aside", covers().at(-1), {
+		page: FIRST,
+		covered: true,
+	});
+	menu.remove();
+	await waitFor(() => covers().length > coversBefore + 1);
+	rust.isSnapshotRefused = false;
+	check("closing that menu brings the page back", covers().at(-1), { page: FIRST, covered: false });
+}
+
 async function checksCoverFollowsShownPage(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const next = "tab-2";
 	const covers = (): string => JSON.stringify(rust.named("cover").map((call) => call.args));
@@ -552,6 +574,7 @@ export async function checksTauriPages(): Promise<void> {
 		await checksFailures(rust, gateway);
 		await checksPlacement(rust, gateway, container);
 		await checksCover(rust);
+		await checksCoverWithoutPicture(rust);
 		await checksCoverFollowsShownPage(rust, gateway);
 		await checksCoverDuringDrag(rust);
 		await checksOwnWindow(rust, gateway, container);
@@ -562,14 +585,14 @@ export async function checksTauriPages(): Promise<void> {
 		gateway.close(FIRST);
 		await settledTicks();
 		check("closing a tab closes its page in Rust", rust.named("close").at(-1)?.args, { page: FIRST });
-		await checksReloadKeepsOwnWindows();
+		await checksAfterReload();
 	} finally {
 		container.remove();
 		restore();
 	}
 }
 
-async function checksReloadKeepsOwnWindows(): Promise<void> {
+async function checksAfterReload(): Promise<void> {
 	const rust = new FakeRust();
 	rust.ownWindows = ["tab-7"];
 	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default");
@@ -578,6 +601,11 @@ async function checksReloadKeepsOwnWindows(): Promise<void> {
 		"after a reload the studio asks Rust which pages have their own window and marks them",
 		[rust.named("own_windows").length, gateway.isInOwnWindow("tab-7"), gateway.isInOwnWindow(FIRST)],
 		[1, true, false],
+	);
+	check(
+		"after a reload the studio tells Rust to show no page, so a page from before the reload is hidden",
+		rust.named("show").map((call) => call.args),
+		[{ frames: [] }],
 	);
 }
 

@@ -30,7 +30,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private attached: Attached | null = null;
 	private readonly inPanes: PanePages;
 	private readonly ownWindows: OwnWindows;
-	private nativeShown = "";
+	private nativePagesKey: string | null = null;
 	private readonly looks: PageLooks;
 
 	constructor(
@@ -316,12 +316,14 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		const frames = this.framesNow(drawn);
 		const shownKey = frames.map((frame) => frame.page).join(" ");
 
-		if (shownKey === this.nativeShown) {
+		if (shownKey === this.nativePagesKey) {
 			return;
 		}
 
-		console.info(`[widgetarium] browser native pages [${this.nativeShown}] → [${shownKey}]`);
-		this.nativeShown = shownKey;
+		console.info(
+			`[widgetarium] browser native pages [${this.nativePagesKey ?? "unknown after a start"}] → [${shownKey}]`,
+		);
+		this.nativePagesKey = shownKey;
 		void this.bridge.show(frames).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser could not show its page", failure);
 		});

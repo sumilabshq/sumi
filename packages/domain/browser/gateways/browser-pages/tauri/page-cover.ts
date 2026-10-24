@@ -133,7 +133,7 @@ export class PageCover {
 		this.wantedPage = wanted;
 		void (wanted === null ? this.uncover() : this.cover(wanted)).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser page could not step aside for an overlay", failure);
-			return wanted !== null && this.wantedPage === wanted ? this.bridge.cover(wanted, true) : undefined;
+			return wanted !== null && this.wantedPage === wanted ? this.coverWithoutPicture(wanted) : undefined;
 		});
 	}
 
@@ -180,6 +180,11 @@ export class PageCover {
 		}
 
 		console.info(`[widgetarium] browser page ${page} shown → picture (${Math.round(performance.now() - started)} ms)`);
+	}
+
+	private coverWithoutPicture(page: string): Promise<void> {
+		this.coveredPage = page;
+		return this.bridge.cover(page, true);
 	}
 
 	private async uncover(): Promise<void> {
