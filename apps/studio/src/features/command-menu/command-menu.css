@@ -41,35 +41,14 @@
 	flex-direction: column;
 	overflow: hidden;
 	border-radius: 16px;
-	background: color-mix(in srgb, var(--sumi-plate) 72%, transparent);
+	background: color-mix(in srgb, var(--sumi-plate) 90%, transparent);
 	-webkit-backdrop-filter: var(--sumi-blur-pick);
 	backdrop-filter: var(--sumi-blur-pick);
 	box-shadow: var(--sumi-shadow-lift), var(--sumi-pick-edge);
-	transform-origin: 50% 0;
-	opacity: 0;
-	transform: translateX(-50%) translateY(-8px) scale(0.97);
-	transition:
-		opacity 140ms var(--sumi-ease-out),
-		transform 170ms var(--sumi-ease-out);
-}
-
-.wg-cm-layer[data-shown] .wg-cm-panel {
-	opacity: 1;
-	transform: translateX(-50%);
-}
-
-.wg-cm-layer:not([data-shown]) {
-	pointer-events: none;
 }
 
 .wg-cm-body {
 	display: contents;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.wg-cm-panel {
-		transition: none;
-	}
 }
 
 .wg-cm-field {

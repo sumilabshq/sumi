@@ -235,8 +235,8 @@ try {
 	await dark.ask(TYPE("re"));
 	const darkMenu = await settled(dark, MENU);
 	check(
-		"dark theme paints the dark plate as see-through glass",
-		JSON.stringify(darkMenu).includes("color(srgb 0.12") && JSON.stringify(darkMenu).includes("/ 0.72)"),
+		"dark theme paints the dark plate as 90% glass",
+		JSON.stringify(darkMenu).includes("color(srgb 0.12") && JSON.stringify(darkMenu).includes("/ 0.9)"),
 		darkMenu,
 	);
 	await shot(dark, "08-dark");

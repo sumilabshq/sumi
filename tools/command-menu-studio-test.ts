@@ -42,6 +42,37 @@ const ESCAPE_ONCE = `(() => {
 	return document.querySelector(".wg-cm-layer") === null;
 })()`;
 const MOST_ESCAPES = 4;
+const INSTANT_MS = 50;
+const OPEN_LATENCY = `new Promise((done) => {
+	const startedAt = performance.now();
+	window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", code: "KeyK", metaKey: true, bubbles: true }));
+	const seen = () => {
+		const panel = document.querySelector(".wg-cm-panel");
+		if (panel && getComputedStyle(panel).opacity === "1" && document.querySelector(".wg-cm-row")) {
+			done(Math.round(performance.now() - startedAt));
+			return;
+		}
+		if (performance.now() - startedAt > 3000) { done(-1); return; }
+		requestAnimationFrame(seen);
+	};
+	seen();
+})`;
+const TYPING_LATENCY = (typed: string): string => `new Promise((done) => {
+	const field = document.querySelector(".wg-cm-input");
+	const before = document.querySelector(".wg-cm-list")?.textContent;
+	const startedAt = performance.now();
+	Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(field, ${JSON.stringify(typed)});
+	field.dispatchEvent(new Event("input", { bubbles: true }));
+	const seen = () => {
+		if (document.querySelector(".wg-cm-list")?.textContent !== before) {
+			done(Math.round(performance.now() - startedAt));
+			return;
+		}
+		if (performance.now() - startedAt > 3000) { done(-1); return; }
+		requestAnimationFrame(seen);
+	};
+	seen();
+})`;
 const INTO_FIELD = (key: string, mods: string): string =>
 	`(() => { const field = document.querySelector(".wg-cm-input"); field?.dispatchEvent(new KeyboardEvent("keydown", { key: ${JSON.stringify(key)}, code: ${JSON.stringify(key.length === 1 ? `Key${key.toUpperCase()}` : key)}, bubbles: true, cancelable: true, ${mods} })); return true; })()`;
 const PICKED = `document.querySelector('.wg-cm-row[aria-selected="true"]')?.textContent ?? null`;
@@ -116,14 +147,31 @@ try {
 	writeFileSync(path.join(shotsAt, "01-studio-search.png"), await page.shoot());
 	check("Escape shuts it", await escapedAll(page), "shut");
 
-	await page.ask(PRESS_KEY("k"));
+	await page.ask(`document.activeElement?.blur(); true`);
+	const openMs = await page.ask(OPEN_LATENCY);
+	check(
+		`⌘K shows the menu with its rows in ${INSTANT_MS} ms or less`,
+		typeof openMs === "number" && openMs >= 0 && openMs <= INSTANT_MS,
+		openMs,
+	);
+	const typingMs = [
+		await page.ask(TYPING_LATENCY("r")),
+		await page.ask(TYPING_LATENCY("re")),
+		await page.ask(TYPING_LATENCY("reo")),
+	];
+	check(
+		`every keystroke redraws the rows in ${INSTANT_MS} ms or less`,
+		typingMs.every((ms) => typeof ms === "number" && ms >= 0 && ms <= INSTANT_MS),
+		typingMs,
+	);
+	await page.ask(TYPING_LATENCY(""));
 	check("⌘K opens it from anywhere", (await menuAfter(page)) !== null, "open");
 	const glass = await page.ask(
 		`(() => { const look = getComputedStyle(document.querySelector(".wg-cm-panel")); return { blur: look.backdropFilter, background: look.backgroundColor }; })()`,
 	);
 	check(
-		"the glass lets the blur through: blurred, and the plate is clearly see-through",
-		JSON.stringify(glass).includes("blur(32px)") && /0\.7\d?\)|oklab|color\(srgb/.test(JSON.stringify(glass)),
+		"the glass is blurred and the plate stays readable at 90%",
+		JSON.stringify(glass).includes("blur(32px)") && /\/ 0\.9\)/.test(JSON.stringify(glass)),
 		glass,
 	);
 	await page.ask(INTO_FIELD("Tab", ""));
@@ -140,21 +188,32 @@ try {
 	await waited(SETTLE_MS);
 	check("⌘K again closes it", (await page.ask(`document.querySelector(".wg-cm-layer") === null`)) === true, "shut");
 
-	await page.ask(PRESS_KEY("k"));
-	await waited(60);
-	await page.ask(`window.__menuPanel = document.querySelector(".wg-cm-panel"); true`);
-	await page.ask(INTO_FIELD("k", "metaKey: true"));
-	await waited(40);
-	const leaving = await page.ask(`Number(getComputedStyle(document.querySelector(".wg-cm-panel")).opacity)`);
-	await page.ask(PRESS_KEY("k"));
-	await waited(SETTLE_MS);
-	const reversed = await page.ask(
-		`document.querySelector(".wg-cm-panel") === window.__menuPanel && getComputedStyle(window.__menuPanel).opacity === "1"`,
-	);
+	await page.ask(`document.activeElement?.blur(); true`);
+	const flicked = await page.ask(`new Promise((done) => {
+		const press = (target) => target.dispatchEvent(new KeyboardEvent("keydown", { key: "k", code: "KeyK", metaKey: true, bubbles: true, cancelable: true }));
+		const startedAt = performance.now();
+		press(window);
+		const opened = () => {
+			if (document.querySelector(".wg-cm-input") === null) {
+				if (performance.now() - startedAt > 3000) { done(-1); return; }
+				requestAnimationFrame(opened);
+				return;
+			}
+			const pressedAt = performance.now();
+			press(document.querySelector(".wg-cm-input"));
+			const shut = () => {
+				if (document.querySelector(".wg-cm-layer") === null) { done(Math.round(performance.now() - pressedAt)); return; }
+				if (performance.now() - pressedAt > 3000) { done(-1); return; }
+				requestAnimationFrame(shut);
+			};
+			shut();
+		};
+		opened();
+	})`);
 	check(
-		"a close in the middle of opening turns back at once, and opening again reverses the same panel",
-		typeof leaving === "number" && leaving < 1 && reversed === true,
-		[leaving, reversed],
+		`⌘K pressed the moment the menu appears shuts it in ${INSTANT_MS} ms or less`,
+		typeof flicked === "number" && flicked >= 0 && flicked <= INSTANT_MS,
+		flicked,
 	);
 	await escapedAll(page);
 
