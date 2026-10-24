@@ -3,14 +3,14 @@ import { FrameSidesGateway } from "../../gateways/frame-sides/frame-sides.gatewa
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
 import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
-export const FrameSidesQuery = query("layout/frame-sides")
+export const FrameSidesQuery = query("frame-sides")
 	.output(FrameSidesSchema)
 	.settlesNow()
 	.inject({ frameSides: FrameSidesGateway })
 	.watch((_input, { frameSides }, changed) => frameSides.sidesChanged(changed))
 	.handle((_input, { frameSides }) => frameSides.sides());
 
-export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
@@ -36,7 +36,7 @@ export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const PeekFrameSideCommand = command("layout/peek-frame-side")
+export const PeekFrameSideCommand = command("peek-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])
@@ -68,7 +68,7 @@ export const PeekFrameSideCommand = command("layout/peek-frame-side")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ConcealFrameSideCommand = command("layout/conceal-frame-side")
+export const ConcealFrameSideCommand = command("conceal-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
 	.invalidates([FrameSidesQuery])

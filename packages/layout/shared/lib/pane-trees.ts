@@ -1,11 +1,4 @@
-import type {
-	PaneBoard,
-	PaneLeaf,
-	PaneNode,
-	PaneSplit,
-	PaneTree,
-	PaneView,
-} from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneBoard, PaneLeaf, PaneNode, PaneSplit, PaneTree, PaneView } from "../schema/pane-tree.schema.js";
 import { isSameView, leavesOf, withPlaced, withShare, withView, withoutPane } from "./pane-nodes.js";
 import type { PanePlace } from "./pane-nodes.js";
 

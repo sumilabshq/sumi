@@ -4,7 +4,7 @@ import { FrameWidthsGateway } from "../../gateways/frame-widths/frame-widths.gat
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";
 import { FrameEdgeSchema, FrameWidthsAnswerSchema, WidthPxSchema } from "../../shared/schema/frame-widths.schema.js";
 
-export const FrameWidthsQuery = query("layout/frame-widths")
+export const FrameWidthsQuery = query("frame-widths")
 	.output(FrameWidthsAnswerSchema)
 	.settlesNow()
 	.inject({ frameWidths: FrameWidthsGateway })
@@ -14,7 +14,7 @@ export const FrameWidthsQuery = query("layout/frame-widths")
 		bounds: FRAME_LIMITS,
 	}));
 
-export const ResizeFrameEdgeCommand = command("layout/resize-frame-edge")
+export const ResizeFrameEdgeCommand = command("resize-frame-edge")
 	.input(
 		z.object({
 			edge: FrameEdgeSchema,
@@ -44,7 +44,7 @@ export const ResizeFrameEdgeCommand = command("layout/resize-frame-edge")
 		console.info(`[widgetarium] ${reason}`);
 	});
 
-export const ResetFrameEdgeCommand = command("layout/reset-frame-edge")
+export const ResetFrameEdgeCommand = command("reset-frame-edge")
 	.input(
 		z.object({
 			edge: FrameEdgeSchema,

@@ -6,18 +6,18 @@ import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import { checksLayoutRules, infosOf, memoriesOf, memoryOf, partsOf, shapeOf } from "./layout-rules-checks.ts";
-import { leavesOf } from "../packages/layout/features/panes/lib/pane-nodes.ts";
+import { leavesOf } from "../packages/layout/shared/lib/pane-nodes.ts";
 import { paneLayoutOf, sideAt } from "../packages/shell/shared/lib/pane-layout.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
-import type { LayoutMemories, LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import {
 	AimPaneCommand,
 	ClosePaneCommand,
-	DropGoneTabsCommand,
 	PlacePaneCommand,
 	ResizePaneSplitCommand,
-	ShowTabInTargetPaneCommand,
 } from "../packages/layout/features/panes/requests.ts";
+import { DropGoneTabsCommand, ShowTabInTargetPaneCommand } from "../packages/layout/features/pane-tabs/requests.ts";
 import { PeekFrameSideCommand, ToggleFrameSideCommand } from "../packages/layout/features/frame-sides/requests.ts";
 import { ResizeFrameEdgeCommand } from "../packages/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/layout/shared/schema/pane-tree.schema.ts";

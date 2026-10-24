@@ -1,15 +1,10 @@
-import type { JsonMemory } from "@widgetarium/behaviors";
-import { USUAL_WIDTHS } from "../../shared/lib/frame-bounds.js";
-import type { FrameSides } from "../../shared/schema/frame-sides.schema.js";
-import type { PaneTree } from "../../shared/schema/pane-tree.schema.js";
+import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
 import type { FrameSidesGateway } from "../frame-sides/frame-sides.gateway.js";
-import { FlagMemoryFrameSidesGateway } from "../frame-sides/flag-memory.gateway.js";
-import type { SideMemories } from "../frame-sides/flag-memory.gateway.js";
 import type { FrameWidthsGateway } from "../frame-widths/frame-widths.gateway.js";
-import { PxMemoryFrameWidthsGateway } from "../frame-widths/px-memory.gateway.js";
-import type { FrameMemories } from "../frame-widths/px-memory.gateway.js";
 import type { PaneTreeGateway } from "../pane-tree/pane-tree.gateway.js";
-import { JsonMemoryPaneTreeGateway } from "../pane-tree/json-memory.gateway.js";
+import { serverLayoutParts } from "./server.gateway.js";
+import { tauriLayoutParts } from "./tauri.gateway.js";
+import { webLayoutParts } from "./web.gateway.js";
 
 export interface LayoutParts {
 	readonly frameSides: FrameSidesGateway;
@@ -17,47 +12,12 @@ export interface LayoutParts {
 	readonly paneTree: PaneTreeGateway;
 }
 
-export interface LayoutMemories {
-	readonly widths: FrameMemories;
-	readonly sides: SideMemories;
-	readonly panes: JsonMemory<PaneTree>;
-}
-
-export const FIRST_SIDES: FrameSides = {
-	left: "docked",
-	right: "docked",
+const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => LayoutParts>> = {
+	browser: ({ scope }) => webLayoutParts(scope.workspaceId),
+	tauri: ({ scope }) => tauriLayoutParts(scope.workspaceId),
+	server: () => serverLayoutParts(),
 };
 
-export const FIRST_PANES: PaneTree = {
-	root: {
-		kind: "split",
-		id: "pane-root",
-		dir: "row",
-		shares: [0.5, 0.5],
-		children: [
-			{
-				kind: "pane",
-				id: "pane-chat",
-				view: { kind: "chat" },
-			},
-			{
-				kind: "pane",
-				id: "pane-app",
-				view: {
-					kind: "app",
-					tabId: null,
-				},
-			},
-		],
-	},
-	minted: 0,
-	targetId: null,
-};
-
-export function layoutPartsOf({ widths, sides, panes }: LayoutMemories): LayoutParts {
-	return {
-		frameSides: new FlagMemoryFrameSidesGateway(sides, FIRST_SIDES),
-		frameWidths: new PxMemoryFrameWidthsGateway(widths, USUAL_WIDTHS),
-		paneTree: new JsonMemoryPaneTreeGateway(panes, FIRST_PANES),
-	};
+export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
+	return PARTS_ON[facts.platform](facts);
 }

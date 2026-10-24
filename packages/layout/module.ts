@@ -1,17 +1,19 @@
 import { module } from "@widgetarium/core/requests";
-import type { LayoutParts } from "./gateways/layout-parts/layout-parts.gateway.js";
+import { layoutPartsOn } from "./gateways/layout-parts/layout-parts.gateway.js";
 import {
-	AimPaneCommand,
-	ClosePaneCommand,
 	ClosePanesOfTabsCommand,
 	CloseShownTabPaneCommand,
 	DropGoneTabsCommand,
 	OpenShownTabPaneCommand,
+	ShowTabInTargetPaneCommand,
+} from "./features/pane-tabs/requests.js";
+import {
+	AimPaneCommand,
+	ClosePaneCommand,
 	PaneTreeQuery,
 	PlacePaneCommand,
 	PlacementPreviewQuery,
 	ResizePaneSplitCommand,
-	ShowTabInTargetPaneCommand,
 } from "./features/panes/requests.js";
 import {
 	ConcealFrameSideCommand,
@@ -39,4 +41,4 @@ export const LayoutModule = module("layout")
 		ClosePanesOfTabsCommand,
 		DropGoneTabsCommand,
 	)
-	.provide((parts: LayoutParts) => ({ ...parts }));
+	.provide((facts) => ({ ...layoutPartsOn(facts) }));

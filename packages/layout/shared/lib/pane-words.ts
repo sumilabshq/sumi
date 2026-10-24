@@ -1,4 +1,4 @@
-import type { PaneNode, PaneTree, PaneView } from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneNode, PaneTree, PaneView } from "../schema/pane-tree.schema.js";
 
 export function viewWords(view: PaneView): string {
 	return view.kind === "chat" ? "the chat" : `tab ${view.tabId ?? "shown"}`;

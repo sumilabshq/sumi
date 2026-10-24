@@ -1,11 +1,4 @@
-import type {
-	PaneLeaf,
-	PaneNode,
-	PaneSide,
-	PaneSplit,
-	PaneView,
-	SplitDir,
-} from "../../../shared/schema/pane-tree.schema.js";
+import type { PaneLeaf, PaneNode, PaneSide, PaneSplit, PaneView, SplitDir } from "../schema/pane-tree.schema.js";
 
 export interface PanePlace {
 	readonly targetId: string | null;

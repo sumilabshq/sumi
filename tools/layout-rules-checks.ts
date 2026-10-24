@@ -1,7 +1,8 @@
 import { isDeepStrictEqual } from "node:util";
 import { Refused, app } from "../packages/core/src/requests/index.ts";
-import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
-import type { LayoutMemories, LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
+import { FIRST_PANES, layoutPartsOf } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutMemories } from "../packages/layout/gateways/layout-parts/memory.gateway.ts";
+import type { LayoutParts } from "../packages/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import { JsonMemoryPaneTreeGateway } from "../packages/layout/gateways/pane-tree/json-memory.gateway.ts";
 import {
 	concealedLook,
@@ -11,24 +12,26 @@ import {
 } from "../packages/layout/features/frame-sides/lib/side-looks.ts";
 import { ToggleFrameSideCommand } from "../packages/layout/features/frame-sides/requests.ts";
 import { FrameWidthsQuery } from "../packages/layout/features/frame-widths/requests.ts";
-import { leavesOf } from "../packages/layout/features/panes/lib/pane-nodes.ts";
+import { leavesOf } from "../packages/layout/shared/lib/pane-nodes.ts";
 import {
 	goneTabPanesOf,
 	mintedLeafOf,
 	tabTargetOf,
 	treeWithoutGoneTabs,
-} from "../packages/layout/features/panes/lib/pane-trees.ts";
+} from "../packages/layout/shared/lib/pane-trees.ts";
 import {
 	AimPaneCommand,
 	ClosePaneCommand,
-	ClosePanesOfTabsCommand,
-	CloseShownTabPaneCommand,
-	OpenShownTabPaneCommand,
 	PlacePaneCommand,
 	PlacementPreviewQuery,
 	ResizePaneSplitCommand,
-	ShowTabInTargetPaneCommand,
 } from "../packages/layout/features/panes/requests.ts";
+import {
+	ClosePanesOfTabsCommand,
+	CloseShownTabPaneCommand,
+	OpenShownTabPaneCommand,
+	ShowTabInTargetPaneCommand,
+} from "../packages/layout/features/pane-tabs/requests.ts";
 import { DropGoneTabsCommand } from "../packages/layout/generated/contract.ts";
 import { LayoutModule } from "../packages/layout/module.ts";
 import { edgePxWithin, widthsWithin } from "../packages/layout/shared/lib/frame-bounds.ts";
@@ -245,7 +248,7 @@ async function checksPreview(check: Check): Promise<void> {
 
 function checksTabsClient(check: Check): void {
 	const parts = partsOf();
-	const tabs = new LayoutPaneTabsGateway(app({ modules: [LayoutModule.with(parts)] }));
+	const tabs = new LayoutPaneTabsGateway(app({ modules: [LayoutModule.with({ ...parts })] }));
 	const beforeDrop = tabs.showInTargetPane("tab-1");
 	placeTab(parts, "tab-3", "pane-app");
 	const shown = tabs.showInTargetPane("tab-5");
@@ -256,7 +259,7 @@ function checksTabsClient(check: Check): void {
 		!beforeDrop && shown && JSON.stringify(inPanes) === '["tab-5"]' && tabs.tabIdsInPanes().length === 0,
 		{ beforeDrop, shown, inPanes, after: tabs.tabIdsInPanes() },
 	);
-	const layoutApp = app({ modules: [LayoutModule.with(parts)] });
+	const layoutApp = app({ modules: [LayoutModule.with({ ...parts })] });
 	placeTab(parts, "tab-8", "pane-app");
 	void layoutApp.send(DropGoneTabsCommand, { heldTabIds: [] });
 	check(
