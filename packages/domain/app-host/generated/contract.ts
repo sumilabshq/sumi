@@ -141,6 +141,19 @@ export const HeldTabsSchema = z.object({
 
 export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
+export const ClosedTabRowSchema = z.object({
+	tabId: z.string().min(1),
+	title: z.string(),
+	app: AppKindSchema,
+	address: z.string(),
+});
+
+export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
+
+export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
+
+export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
+
 export const StudioViewSchema = z.enum(["app", "canvas", "browser"]);
 
 export type StudioView = z.infer<typeof StudioViewSchema>;
@@ -176,6 +189,12 @@ export type TabsColumn = z.infer<typeof TabsColumnSchema>;
 
 export const AppTabsQuery = query("app-host/app-tabs")
 	.output(AppTabsSchema);
+export const ClosedTabsQuery = query("app-host/closed-tabs")
+	.output(ClosedTabsSchema)
+	.settlesNow();
+export const ReopenClosedTabByIdCommand = command("app-host/reopen-closed-tab-by-id")
+	.input(ClosedTabIdSchema)
+	.idempotencyKey(Repeatable);
 export const TabsSidebarQuery = query("app-host/tabs-sidebar")
 	.output(TabsSidebarSchema);
 export const HeldTabsQuery = query("app-host/held-tabs")
@@ -272,4 +291,4 @@ export const ShowViewCommand = command("app-host/show-view")
 	.input(z.object({ view: StudioViewSchema }))
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, TabsColumnQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, MoveTabToListCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ResizeColumnCommand, ResetColumnCommand, FoldTabListCommand, ShowViewCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, TabsColumnQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, MoveTabToListCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ResizeColumnCommand, ResetColumnCommand, FoldTabListCommand, ShowViewCommand]);

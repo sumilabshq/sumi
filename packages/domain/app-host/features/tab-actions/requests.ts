@@ -12,8 +12,8 @@ import {
 	openTab,
 	openTabAfter,
 	renameTab,
-	reopenLastClosed,
 } from "../../shared/lib/host-tabs/host-tabs.js";
+import { withClosedReopened } from "../../shared/lib/tab-showing/reopening.js";
 import { WORKSPACE_END, WORKSPACE_LIST } from "../../shared/lib/host-tabs/tab-lists.js";
 import { withGroupClosed, withTabsClosed } from "../../shared/lib/tab-showing/closing.js";
 import {
@@ -23,8 +23,6 @@ import {
 	withMoved,
 	withPageEnsured,
 } from "../../shared/lib/tab-showing/showing.js";
-import type { Showing } from "../../shared/lib/tab-showing/showing.js";
-import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
 import { tabPageOf } from "../../shared/lib/tab-showing/tab-pages.js";
 import {
 	EFFECT_COMMANDS,
@@ -167,7 +165,7 @@ export const ReopenClosedTabCommand = command("reopen-closed-tab")
 	.handle(async (_input, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
-		const reopened = withLastClosedReopened(showing, facts);
+		const reopened = withClosedReopened(showing, facts, showing.moment.closed.at(-1)?.tab.id ?? "");
 
 		if (reopened === null) {
 			return refuse(NOTHING_CLOSED);
@@ -252,10 +250,3 @@ export const CloseGroupCommand = command("close-group")
 
 		return settle(showing, withGroupClosed(showing, facts, group), { parts, send });
 	});
-
-function withLastClosedReopened(showing: Showing, facts: TabFacts): Showing | null {
-	const reopened = reopenLastClosed(showing.moment, facts.chat.id);
-	return reopened === null
-		? null
-		: withOpenedTabShown(withMoved(showing, reopened), facts, reopened.closed.tab, reopened.closed.address);
-}

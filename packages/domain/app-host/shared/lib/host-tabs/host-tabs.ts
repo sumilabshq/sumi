@@ -144,23 +144,24 @@ export function closeGroup(moment: HostTabsMoment, group: TabGroup, pages: Reado
 	};
 }
 
-export function reopenLastClosed(moment: HostTabsMoment, chatId: string): ReopenedHostTab | null {
-	const last = moment.closed.at(-1);
+export function reopenClosed(moment: HostTabsMoment, chatId: string, tabId: string): ReopenedHostTab | null {
+	const index = moment.closed.findIndex(({ tab }) => tab.id === tabId);
+	const reopened = moment.closed[index];
 
-	if (!last) {
+	if (!reopened) {
 		return null;
 	}
 
 	return {
-		closed: last,
+		closed: reopened,
 		moment: {
 			...moment,
-			...reopenedLayoutOf(moment, last, chatId),
-			tabs: [...moment.tabs, last.tab],
-			shownId: last.tab.id,
-			closed: moment.closed.slice(0, -1),
+			...reopenedLayoutOf(moment, reopened, chatId),
+			tabs: [...moment.tabs, reopened.tab],
+			shownId: reopened.tab.id,
+			closed: moment.closed.filter((_closed, at) => at !== index),
 		},
-		reason: `reopen ${last.tab.id} in ${last.tab.essentialId === null ? chatId : "essentials"}`,
+		reason: `reopen ${reopened.tab.id} in ${reopened.tab.essentialId === null ? chatId : "essentials"}`,
 	};
 }
 

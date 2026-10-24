@@ -4,6 +4,11 @@ import { LayoutModule } from "@widgetarium/layout";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import {
+	ClosedTabsQuery,
+	RereadClosedTabsSubscriber,
+	ReopenClosedTabByIdCommand,
+} from "./features/closed-tabs/requests.js";
+import {
 	RereadTabsColumnSubscriber,
 	FoldTabListCommand,
 	ResetColumnCommand,
@@ -73,9 +78,12 @@ export const AppHostModule = module("app-host")
 		RereadSidebarForColumnSubscriber,
 		RereadTabsColumnSubscriber,
 		RereadShownViewSubscriber,
+		RereadClosedTabsSubscriber,
 	)
 	.public(
 		AppTabsQuery,
+		ClosedTabsQuery,
+		ReopenClosedTabByIdCommand,
 		TabsSidebarQuery,
 		HeldTabsQuery,
 		CanOpenOwnWindowQuery,

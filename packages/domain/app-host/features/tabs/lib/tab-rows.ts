@@ -1,3 +1,4 @@
+import { APP_LABELS } from "../../../shared/lib/app-labels.js";
 import { flatTabIdsOf } from "../../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, TabGroup } from "../../../shared/lib/host-tabs/host-tabs.js";
 import { WORKSPACE_LIST, findGroup } from "../../../shared/lib/host-tabs/tab-lists.js";
@@ -18,11 +19,6 @@ import type {
 import type { Essential } from "../../../shared/schema/essential.schema.js";
 import type { PageFacts } from "../../../shared/schema/page-facts.schema.js";
 import type { ListEntry } from "../../../shared/schema/tab-group.schema.js";
-
-const APP_LABELS: Readonly<Record<AppKind, string>> = {
-	canvas: "Canvas",
-	browser: "Browser",
-};
 
 const NEW_PAGE = "New tab";
 

@@ -10,7 +10,7 @@ import {
 	momentOfKept,
 	openTab,
 	placeTab,
-	reopenLastClosed,
+	reopenClosed,
 	tabOf,
 	ungroup,
 } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
@@ -133,7 +133,7 @@ check(
 	[groupClosed.groups.length, flatTabIdsOf(groupClosed, ONE)],
 	[0, ["tab-3", "tab-2"]],
 );
-const reopened = reopenLastClosed(groupClosed, TWO)?.moment ?? groupClosed;
+const reopened = reopenClosed(groupClosed, TWO, groupClosed.closed.at(-1)?.tab.id ?? "")?.moment ?? groupClosed;
 check(
 	"a closed tab whose chat is not on screen reopens in the workspace",
 	[flatTabIdsOf(reopened, TWO), flatTabIdsOf(reopened, WORKSPACE_LIST)],
@@ -144,7 +144,18 @@ const workspaceClosed = closeTabs(workspaceTab, new Map(), {
 	ids: ["tab-1"],
 	reason: "close the workspace tab",
 }).moment;
-const workspaceReopened = reopenLastClosed(workspaceClosed, TWO)?.moment ?? workspaceClosed;
+const workspaceReopened =
+	reopenClosed(workspaceClosed, TWO, workspaceClosed.closed.at(-1)?.tab.id ?? "")?.moment ?? workspaceClosed;
+const twoClosed = closeTabs(openTab(workspaceTab, browser, atEnd(WORKSPACE_LIST)).moment, new Map(), {
+	ids: ["tab-1", "tab-2"],
+	reason: "close both workspace tabs",
+}).moment;
+const firstReopened = reopenClosed(twoClosed, TWO, twoClosed.closed[0]?.tab.id ?? "")?.moment ?? twoClosed;
+check(
+	"reopening a closed tab by its id keeps the others closed",
+	[flatTabIdsOf(firstReopened, WORKSPACE_LIST), firstReopened.closed.map(({ tab }) => tab.id)],
+	[[twoClosed.closed[0]?.tab.id ?? ""], [twoClosed.closed[1]?.tab.id ?? ""]],
+);
 check("a closed workspace tab reopens in the workspace in any chat", flatTabIdsOf(workspaceReopened, WORKSPACE_LIST), [
 	"tab-1",
 ]);
