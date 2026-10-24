@@ -28,8 +28,10 @@ const CLIENT_MODULE =
 	'import { clientModule } from "@widgetarium/core/requests";\nexport const NotesClientModule = clientModule("notes");\n';
 
 const TALLY_MODULE =
-	'import { module } from "@widgetarium/core/requests";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").queries(CountQuery);\n';
+	'import { Device, module } from "@widgetarium/core/requests";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").on(Device).public(CountQuery);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
+const PLACED_MODULE =
+	'import { {on}, module } from "@widgetarium/core/requests";\nexport const PlacedModule = module("{name}").on({on});\n';
 
 const WORKSPACE: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "fixture", workspaces: ["apps/*", "packages/*"] }),
@@ -74,6 +76,12 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/tally/shared/lib/bounds.ts": "",
 	"packages/tally/shared/lib/rules.ts": "export const cap = 1;\n",
 	"packages/tally/shared/lib/index.ts": 'export { bounds } from "./bounds.js";\n',
+	"packages/ledger/package.json": JSON.stringify({ name: "@fixture/ledger", widgetarium: { level: "domain" } }),
+	"packages/ledger/module.ts": PLACED_MODULE.replaceAll("{name}", "ledger").replaceAll("{on}", "Server"),
+	"packages/ledger/features/post/requests.ts": "",
+	"packages/gauge/package.json": JSON.stringify({ name: "@fixture/gauge", widgetarium: { level: "domain" } }),
+	"packages/gauge/module.ts": PLACED_MODULE.replaceAll("{name}", "gauge").replaceAll("{on}", "Device"),
+	"packages/gauge/features/read/requests.ts": "",
 	"apps/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
 	"apps/web/package.json": JSON.stringify({ name: "@fixture/web" }),
 	"apps/web/tsconfig.json": JSON.stringify({ compilerOptions: { customConditions: ["source"] } }),
@@ -186,6 +194,7 @@ tested("module-imports", {
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
 		ok('import { TallyModule } from "@fixture/tally/module";', "apps/web/src/main.ts"),
 		ok('import { TallyModule } from "@fixture/tally/module";', "apps/api/src/main.ts"),
+		ok('import { RecountCommand } from "@fixture/tally/server";', "packages/ledger/features/post/requests.ts"),
 	],
 	invalid: [
 		bad('import { BillingServerModule } from "@fixture/billing/module";', "serverWiring", "apps/web/src/main.ts"),
@@ -203,6 +212,17 @@ tested("module-imports", {
 		bad('import { charge } from "@fixture/billing/features/charge/handlers";', "noSuchEntry", "apps/api/src/main.ts"),
 		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "apps/host-web/src/start.ts"),
 		bad('import { TallyModule } from "@fixture/tally/module";', "appWiring", "packages/notes/shared/lib/clock.ts"),
+		bad('import { RecountCommand } from "@fixture/tally/server";', "serverContract", "apps/web/src/main.ts"),
+		bad(
+			'import { RecountCommand } from "@fixture/tally/server";',
+			"serverContract",
+			"packages/gauge/features/read/requests.ts",
+		),
+		bad(
+			'import { RecountCommand } from "@fixture/tally/server";',
+			"serverContract",
+			"packages/notes/features/search/handlers.ts",
+		),
 		bad(
 			'import { clock } from "../../../notes/shared/lib/clock.js";',
 			"acrossPackages",
