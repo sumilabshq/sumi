@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type { GenerateArgs } from "./cli-args.js";
 import type { CliOutput } from "./cli-output.js";
-import { domainModulesIn } from "@widgetarium/eslint-plugin/workspace";
+import { generatedPackagesIn } from "@widgetarium/eslint-plugin/workspace";
 import { generatedFilesOf } from "./module-entry.js";
 
 interface ModuleEntry {
@@ -13,10 +13,10 @@ interface ModuleEntry {
 }
 
 const STALE = "{module}/{entry} is not what widgetarium generate writes; run it, never edit the file by hand";
-const NO_MODULES = 'no domain module found: name a module folder, or mark one with widgetarium.level "domain"';
+const NO_MODULES = 'no module found: name a module folder, or mark one with widgetarium.level "domain" or "client"';
 
 export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput, cwd: string): number {
-	const named = modules.length > 0 ? modules : domainModulesIn(cwd);
+	const named = modules.length > 0 ? modules : generatedPackagesIn(cwd);
 	if (named.length === 0) {
 		output.out(NO_MODULES);
 		return 0;
