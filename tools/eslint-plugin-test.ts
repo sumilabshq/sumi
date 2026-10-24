@@ -185,6 +185,7 @@ tested("module-imports", {
 		ok('import { BillingServerModule } from "@fixture/billing/module";', "apps/api/src/main.ts"),
 		ok('import { ChargeCommand } from "@fixture/billing";', "packages/notes/features/search/handlers.ts"),
 		ok('import { TallyModule } from "@fixture/tally/module";', "apps/web/src/main.ts"),
+		ok('import { TallyModule } from "@fixture/tally/module";', "apps/api/src/main.ts"),
 	],
 	invalid: [
 		bad('import { BillingServerModule } from "@fixture/billing/module";', "serverWiring", "apps/web/src/main.ts"),
@@ -201,7 +202,7 @@ tested("module-imports", {
 		),
 		bad('import { charge } from "@fixture/billing/features/charge/handlers";', "noSuchEntry", "apps/api/src/main.ts"),
 		bad('import { tallyParts } from "@fixture/tally/gateways";', "noSuchEntry", "apps/host-web/src/start.ts"),
-		bad('import { TallyModule } from "@fixture/tally/module";', "clientWiring", "packages/notes/shared/lib/clock.ts"),
+		bad('import { TallyModule } from "@fixture/tally/module";', "appWiring", "packages/notes/shared/lib/clock.ts"),
 		bad(
 			'import { clock } from "../../../notes/shared/lib/clock.js";',
 			"acrossPackages",

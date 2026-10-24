@@ -39,6 +39,8 @@ export const moduleImports: Rule.RuleModule = {
 				'{{specifier}} wires a server module: only a server app imports it (a package whose tsconfig sets customConditions ["server"], today apps/server)',
 			clientWiring:
 				"{{specifier}} wires a client module: only a client app starter (apps/*, not a server app) or a host (apps/host-*) imports it",
+			appWiring:
+				'{{specifier}} starts a module(...): only an app (apps/*) imports it; a package reaches it through its "." entry',
 			noSuchEntry:
 				'{{specifier}} is not an entry of {{name}}: a module exports only ".", "./module" and "./gateways", a module(...) only "." and "./module"',
 		},
@@ -76,8 +78,9 @@ function wiringEntriesOf(cwd: string, domain: WorkspacePackage): ReadonlySet<str
 }
 
 function wiringFinding({ place, cwd }: Importing, domain: WorkspacePackage, specifier: string): Said | null {
-	const isServer = moduleOfDomain(path.join(cwd, domain.folder))?.runs === "server";
-	if (isServer) return place === "server-app" ? null : { messageId: "serverWiring", data: { specifier } };
+	const runs = moduleOfDomain(path.join(cwd, domain.folder))?.runs;
+	if (runs === "anywhere") return place === "elsewhere" ? { messageId: "appWiring", data: { specifier } } : null;
+	if (runs === "server") return place === "server-app" ? null : { messageId: "serverWiring", data: { specifier } };
 	return place === "client-starter" ? null : { messageId: "clientWiring", data: { specifier } };
 }
 
