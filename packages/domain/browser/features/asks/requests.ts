@@ -20,7 +20,7 @@ interface Answering {
 }
 
 const ALREADY_ANSWERED = "that question was already answered";
-const ALLOWED_WHEN_ASKED = "allowed for this site when Ink asked";
+const ALLOWED_WHEN_ASKED = "allowed for this site when Sumi asked";
 
 export const AccessAsksQuery = query("access-asks")
 	.output(AccessAsksSchema)

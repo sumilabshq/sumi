@@ -7,7 +7,7 @@ import { BrowserGrantsGateway } from "../../gateways/browser-grants/browser-gran
 import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
 import { OnceAllowancesGateway } from "../../gateways/once-allowances/once-allowances.gateway.js";
-import { decideBrowserAccess } from "../../shared/lib/decide-browser-access.js";
+import { decideBrowserAccess, isKeptOut } from "../../shared/lib/decide-browser-access.js";
 import { refuseSiteKey, siteLevelToWrite } from "../../shared/lib/grant-changes.js";
 import { effectiveGrants, isSameAllowances, onceKeptOnTabs } from "../../shared/lib/once-grants.js";
 import { SENSITIVE_SITES } from "../../shared/lib/sensitive-sites.js";
@@ -51,9 +51,11 @@ export const SiteAccessQuery = query("site-access")
 		const shownTab = browserPages.tabs().find((tab) => tab.id === shownId);
 		const shownUrl = shownTab?.failure === null ? shownTab.url : "";
 		const grants = effectiveGrants(kept, onceAllowances.onceAllowances(), clock.now());
+		const shown =
+			shownUrl === "" ? null : decideBrowserAccess({ address: shownUrl, tabId: shownId }, grants, SENSITIVE_SITES);
 		return {
-			shown:
-				shownUrl === "" ? null : decideBrowserAccess({ address: shownUrl, tabId: shownId }, grants, SENSITIVE_SITES),
+			shown,
+			isKeptOut: isKeptOut(shown),
 			rows: rowsOf(kept),
 		};
 	});

@@ -140,7 +140,7 @@ function askOf(desk: Desk, taken: string): DeskAsk | null {
 async function answerAsk(desk: Desk, id: string, ask: DeskAsk): Promise<DeskAnswer> {
 	switch (ask.verb) {
 		case "read":
-			return deskAnswerOf(await desk.deskApp.send(ReadPageContentCommand));
+			return deskAnswerOf(await desk.deskApp.send(ReadPageContentCommand, { tabId: null }));
 		case "open":
 			return answerOpen(desk, ask.url);
 		case "shot":

@@ -38,7 +38,7 @@ check(
 );
 check("the pages are attached to the page area", browser.pages.attached[0]?.hasAttribute("data-browser-pages"), true);
 
-const reading = browserApp.send(ReadPageContentCommand);
+const reading = browserApp.send(ReadPageContentCommand, { tabId: null });
 await reading;
 browser.pages.told();
 await waitFor(() => host.querySelector("[data-browser-ink-reading]") !== null);
@@ -54,12 +54,12 @@ browser.pages.tab = {
 	url: "https://mail.google.com/",
 };
 browser.pages.told();
-const asking = browserApp.send(ReadPageContentCommand);
+const asking = browserApp.send(ReadPageContentCommand, { tabId: null });
 await waitFor(() => host.querySelector("[data-browser-ask]") !== null);
 check(
 	"an ask is drawn over the page",
 	host.querySelector("[data-browser-ask] h3")?.textContent,
-	"Let Ink read mail.google.com?",
+	"Let Sumi read mail.google.com?",
 );
 const once = [...host.querySelectorAll<HTMLButtonElement>("[data-browser-ask] button")].find(
 	(button) => button.textContent === "Once",

@@ -12,7 +12,7 @@ export interface RetryActionsProps {
 }
 
 const TRY_AGAIN = "Try again";
-const ASK_INK = "Ask Ink";
+const ASK_INK = "Ask Sumi";
 
 export function RetryActions({ tabId, canAskInk }: RetryActionsProps): ReactElement {
 	const reload = useCommand(ReloadPageCommand);

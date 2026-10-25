@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { GoBackCommand, GoForwardCommand, PageHeadQuery } from "@widgetarium/browser";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { useHeldTab } from "../features/browser/lib/held-tab.js";
+import { KeptOutChip } from "../features/browser/ui/kept-out-chip/kept-out-chip.js";
 import { HeaderButton } from "../features/plate/ui/plate-header/header-button.js";
 import { PlateCrumb } from "../features/plate/ui/plate-header/plate-crumb.js";
 import { PlateHeaderPart } from "../features/plate/ui/plate-header/plate-header-part.js";
@@ -37,6 +38,9 @@ export function BrowserPlateHeader(): ReactElement | null {
 			</PlateHeaderPart>
 			<PlateHeaderPart place="crumb">
 				<PlateCrumb words={{ first: head.site, second: head.title }} isPressable pageId={heldTabId} />
+			</PlateHeaderPart>
+			<PlateHeaderPart place="controls">
+				<KeptOutChip />
 			</PlateHeaderPart>
 		</Fragment>
 	);

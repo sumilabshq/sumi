@@ -34,6 +34,7 @@ export const BrowserTabSchema = z.object({
 	canGoBack: z.boolean(),
 	canGoForward: z.boolean(),
 	failure: PageFailureSchema.nullable(),
+	window: z.string().nullable(),
 });
 
 export type BrowserTab = z.infer<typeof BrowserTabSchema>;

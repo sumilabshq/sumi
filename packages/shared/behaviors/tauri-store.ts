@@ -1,6 +1,12 @@
 export { HeldDoc } from "./src/tauri-store/held-doc.js";
 export type { DocAt } from "./src/tauri-store/held-doc.js";
-export { GLOBAL_ROOT, StoreClient, folderRootOf, workspaceRootOf } from "./src/tauri-store/store-client.js";
+export {
+	GLOBAL_ROOT,
+	StoreClient,
+	folderRootOf,
+	hearStoreChangesWith,
+	workspaceRootOf,
+} from "./src/tauri-store/store-client.js";
 export type {
 	DocKind,
 	DocState,

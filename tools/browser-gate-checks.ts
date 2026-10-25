@@ -69,7 +69,7 @@ stopping.pages.duringRead = () =>
 	});
 check(
 	"a stop during the read refuses it",
-	said(await started(stopping).send(ReadPageContentCommand)),
+	said(await started(stopping).send(ReadPageContentCommand, { tabId: null })),
 	"stopped-by-person",
 );
 
@@ -97,7 +97,7 @@ blockedMidRead.pages.duringRead = () =>
 	);
 check(
 	"a block set during the read refuses it",
-	said(await started(blockedMidRead).send(ReadPageContentCommand)),
+	said(await started(blockedMidRead).send(ReadPageContentCommand, { tabId: null })),
 	"person-blocked",
 );
 
@@ -107,7 +107,7 @@ hiddenMidRead.pages.duringRead = () => {
 };
 check(
 	"a tab hidden during the read refuses it",
-	said(await started(hiddenMidRead).send(ReadPageContentCommand)),
+	said(await started(hiddenMidRead).send(ReadPageContentCommand, { tabId: null })),
 	"tab-not-visible",
 );
 
@@ -131,7 +131,7 @@ const paying = fakeBrowser();
 paying.pages.frames = ["https://example.com/board", "https://js.stripe.com/v3/elements"];
 check(
 	"a payment frame keeps the content unread",
-	said(await started(paying).send(ReadPageContentCommand)),
+	said(await started(paying).send(ReadPageContentCommand, { tabId: null })),
 	"secret-field-on-page",
 );
 
@@ -140,7 +140,7 @@ queried.pages.tab = {
 	...queried.pages.tab,
 	url: "https://example.com/board?token=abc#secret",
 };
-await started(queried).send(ReadPageContentCommand);
+await started(queried).send(ReadPageContentCommand, { tabId: null });
 check(
 	"the access log keeps origin and path only",
 	queried.audit.access.map(({ finalUrl }) => finalUrl),

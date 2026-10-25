@@ -36,6 +36,10 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 		return false;
 	}
 
+	isPoppedOut(): boolean {
+		return false;
+	}
+
 	isInOwnWindow(): boolean {
 		return false;
 	}
@@ -46,7 +50,19 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(): void {}
 
+	focusStudioWindow(): void {}
+
+	openChatWindow(): void {}
+
 	tearOff(): void {}
+
+	layTearOffGhost(): Promise<void> {
+		return Promise.resolve();
+	}
+
+	wearTearOffGhost(): void {}
+
+	showTearOffGhost(): void {}
 
 	create(): void {
 		throw new Error(NOT_AVAILABLE_ON_HOST);

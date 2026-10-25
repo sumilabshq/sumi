@@ -23,6 +23,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		canGoBack: false,
 		canGoForward: true,
 		failure: null,
+		window: null,
 	};
 	isShownOnScreen = true;
 	entry = 1;
@@ -101,13 +102,31 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 		return this.inOwnWindows.has(tabId);
 	}
 
+	isPoppedOut(tabId: string): boolean {
+		return this.inOwnWindows.has(tabId);
+	}
+
 	openInOwnWindow(tabId: string): void {
 		this.inOwnWindows.add(tabId);
 	}
 
 	focusOwnWindow(): void {}
 
+	focusStudioWindow(): void {}
+
+	openChatWindow(): void {}
+
 	tearOff(): void {}
+
+	layTearOffGhost(): Promise<void> {
+		return Promise.resolve();
+	}
+
+	wearTearOffGhost(): void {}
+
+	showTearOffGhost(shown: boolean): void {
+		document.documentElement.dataset["ghostOverlay"] = shown ? "shown" : "hidden";
+	}
 
 	create(_tabId: string): void {}
 
@@ -209,6 +228,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 			png: "iVBORw0KGgo=",
 			width: 10,
 			height: 10,
+			layout: null,
 		});
 	}
 

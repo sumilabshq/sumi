@@ -11,13 +11,13 @@ const PANEL = "cv:flex cv:w-[min(26rem,90vw)] cv:flex-col cv:gap-1 cv:p-3";
 const HEADING = "cv:m-0 cv:px-1 cv:pb-1 cv:text-base cv:font-medium cv:text-ink";
 const EMPTY = "cv:m-0 cv:px-1 cv:py-2 cv:text-sm cv:text-muted-foreground";
 const FOOTNOTE = "cv:m-0 cv:px-1 cv:pt-2 cv:text-xs cv:text-muted-foreground";
-const NOTHING_SET = "Open a page to set what Ink may read on it.";
-const READ_ONLY = "Ink only ever reads: a screenshot and page content. It never clicks or types.";
+const NOTHING_SET = "Open a page to set what Sumi may read on it.";
+const READ_ONLY = "Sumi only ever reads: a screenshot and page content. It never clicks or types.";
 
 const SAID_BY_SOURCE: Readonly<Record<AccessSource, string>> = {
 	default: "Default",
 	person: "Set by you",
-	ask: "Allowed when Ink asked",
+	ask: "Allowed when Sumi asked",
 	list: "On the sensitive sites list",
 };
 

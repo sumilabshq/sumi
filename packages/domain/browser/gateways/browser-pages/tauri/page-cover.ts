@@ -1,4 +1,5 @@
-import type { PagesBridge } from "./pages-bridge.js";
+import { listenToCarry } from "@widgetarium/behaviors";
+import type { PageHole, PagesBridge } from "./pages-bridge.js";
 
 const OVERLAYS = [
 	'[role="menu"]',
@@ -17,10 +18,13 @@ const WATCHED_CHANGES: MutationObserverInit = {
 	attributes: true,
 	attributeFilter: ["class", "style", "hidden", "open", "data-state"],
 };
-const SNAPSHOT_FORMAT = "jpeg";
-const SNAPSHOT_TYPE = "image/jpeg";
 const CAPTURED = true;
 const DRAG_ENDS = ["dragend", "drop", "pointermove"] as const;
+const LIVE = "data-browser-pages-live";
+const SHELL = ".wg-shell";
+const FRAME_TOKEN = "var(--sumi-frame)";
+const NO_HOLES = "[]";
+const NO_HOLES_SENT = "";
 
 export interface PageCoverHold {
 	readonly container: HTMLElement;
@@ -29,13 +33,14 @@ export interface PageCoverHold {
 }
 
 export class PageCover {
-	private wantedPage: string | null = null;
-	private coveredPage: string | null = null;
-	private turn = 0;
+	private holedPage: string | null = null;
+	private holesSaid = NO_HOLES;
+	private frameSaid: string | null = null;
 	private framePending = false;
-	private picture: HTMLImageElement | null = null;
 	private isFollowing = false;
 	private isDragging = false;
+	private isCarrying = false;
+	private readonly stopHearingCarry: () => void;
 	private readonly watched: MutationObserver;
 	private readonly container: HTMLElement;
 	private readonly bridge: PagesBridge;
@@ -47,6 +52,16 @@ export class PageCover {
 		this.drawnPage = drawnPage;
 		this.watched = new MutationObserver(this.recheckSoon);
 		document.addEventListener("dragstart", this.onDragStart, CAPTURED);
+		this.stopHearingCarry = listenToCarry(({ phase }) => {
+			const isCarrying = phase === "over";
+
+			if (isCarrying !== this.isCarrying) {
+				this.isCarrying = isCarrying;
+				this.recheckSoon();
+			}
+
+			return false;
+		});
 	}
 
 	follow(isDrawn: boolean): void {
@@ -62,26 +77,18 @@ export class PageCover {
 			return;
 		}
 
-		this.watched.observe(document.body, WATCHED_CHANGES);
+		this.watched.observe(document.documentElement, WATCHED_CHANGES);
 	}
 
 	stop(): void {
 		document.removeEventListener("dragstart", this.onDragStart, CAPTURED);
+		this.stopHearingCarry();
+		this.isCarrying = false;
 		this.stopWatchingDragEnd();
 		this.watched.disconnect();
 		this.isFollowing = false;
-		this.turn += 1;
-		this.dropPicture();
-
-		const page = this.coveredPage;
-		this.wantedPage = null;
-		this.coveredPage = null;
-
-		if (page !== null) {
-			void this.bridge.cover(page, false).catch((failure: unknown) => {
-				console.error("[widgetarium] the browser page could not come back after its card left", failure);
-			});
-		}
+		this.container.removeAttribute(LIVE);
+		this.cutHoles(null, []);
 	}
 
 	private readonly onDragStart = (): void => {
@@ -100,15 +107,6 @@ export class PageCover {
 		DRAG_ENDS.forEach((kind) => document.removeEventListener(kind, this.onDragEnd, CAPTURED));
 	}
 
-	private dropPicture(): void {
-		if (this.picture !== null) {
-			URL.revokeObjectURL(this.picture.src);
-			this.picture.remove();
-		}
-
-		this.picture = null;
-	}
-
 	readonly recheckSoon = (): void => {
 		if (this.framePending) {
 			return;
@@ -123,90 +121,125 @@ export class PageCover {
 
 	private recheck(): void {
 		const page = this.drawnPage();
-		const wanted = page !== null && (this.isDragging || this.hasOverlay()) ? page : null;
+		this.container.toggleAttribute(LIVE, page !== null);
 
-		if (wanted === this.wantedPage) {
+		if (page === null) {
+			this.cutHoles(null, []);
 			return;
 		}
 
-		console.info(`[widgetarium] browser page cover ${this.wantedPage ?? "none"} → ${wanted ?? "none"}`);
-		this.wantedPage = wanted;
-		void (wanted === null ? this.uncover() : this.cover(wanted)).catch((failure: unknown) => {
-			console.error("[widgetarium] the browser page could not step aside for an overlay", failure);
-			return wanted !== null && this.wantedPage === wanted ? this.coverWithoutPicture(wanted) : undefined;
-		});
+		this.wearFrame();
+		this.cutHoles(page, this.studioAreas());
 	}
 
-	private hasOverlay(): boolean {
+	private studioAreas(): readonly Element[] {
+		if (this.isDragging || this.isCarrying) {
+			return [this.container];
+		}
+
 		const area = this.container.getBoundingClientRect();
 		const candidates = Array.from(document.querySelectorAll(OVERLAYS));
 
-		return candidates.some(
+		return candidates.filter(
 			(element) => !this.container.contains(element) && isVisible(element) && isOver(element, area),
 		);
 	}
 
-	private async cover(page: string): Promise<void> {
-		const turn = ++this.turn;
-		const started = performance.now();
-		const jpeg = await this.bridge.snapshot(page, null, SNAPSHOT_FORMAT);
+	private wearFrame(): void {
+		const shell = this.container.closest(SHELL);
+		const colour = shell === null ? null : hexOf(shell, FRAME_TOKEN);
 
-		if (turn !== this.turn) {
+		if (colour === null || colour === this.frameSaid) {
 			return;
 		}
 
-		const picture = this.picture ?? pictureFor(this.container);
-		URL.revokeObjectURL(picture.src);
-		picture.src = URL.createObjectURL(new Blob([jpeg.slice()], { type: SNAPSHOT_TYPE }));
-		picture.style.removeProperty("display");
-		this.picture = picture;
-		await picture.decode();
-
-		if (turn !== this.turn) {
-			return;
-		}
-
-		const previous = this.coveredPage;
-		this.coveredPage = page;
-		await this.bridge.cover(page, true);
-
-		if (previous !== null && previous !== page) {
-			await this.bridge.cover(previous, false).catch((failure: unknown) => {
-				console.error(
-					`[widgetarium] browser page ${previous} stays hidden: it could not come back after the cover moved`,
-					failure,
-				);
-			});
-		}
-
-		console.info(`[widgetarium] browser page ${page} shown → picture (${Math.round(performance.now() - started)} ms)`);
-	}
-
-	private coverWithoutPicture(page: string): Promise<void> {
-		this.coveredPage = page;
-		return this.bridge.cover(page, true);
-	}
-
-	private async uncover(): Promise<void> {
-		const turn = ++this.turn;
-		const page = this.coveredPage;
-
-		if (page !== null) {
-			await this.bridge.cover(page, false);
-
-			if (this.coveredPage === page) {
-				this.coveredPage = null;
+		console.info(
+			`[widgetarium] browser studio frame ${this.frameSaid ?? "none"} → ${colour} (pages show under the studio)`,
+		);
+		setTimeout(() => {
+			const painted: string[] = [];
+			for (let at: Element | null = this.container; at !== null; at = at.parentElement) {
+				const look = getComputedStyle(at);
+				painted.push(`${describedElement(at).slice(0, 90)} bg=${look.backgroundColor}`);
 			}
-		}
-
-		requestAnimationFrame(() => {
-			if (turn !== this.turn || this.picture === null) {
-				return;
-			}
-
-			this.picture.style.setProperty("display", "none");
+			console.info(`[widgetarium] PAINTPROBE\n${painted.join("\n")}`);
+		}, 1500);
+		this.frameSaid = colour;
+		void this.bridge.wearFrame(colour).catch((failure: unknown) => {
+			console.error("[widgetarium] the studio frame colour did not reach the window", failure);
+			this.frameSaid = null;
 		});
 	}
+
+	private cutHoles(page: string | null, areas: readonly Element[]): void {
+		const box = this.container.getBoundingClientRect();
+		const holes = areas.map((area) => holeOf(area, box));
+		const said = JSON.stringify(holes);
+		const was = this.holedPage;
+
+		if (page === was && said === this.holesSaid) {
+			return;
+		}
+
+		console.info(
+			`[widgetarium] browser studio areas over ${was ?? "none"} → ${page ?? "none"}: ${areas.map(describedElement).join(", ") || "none"}`,
+		);
+		this.holedPage = page;
+		this.holesSaid = said;
+
+		if (was !== null && was !== page) {
+			void this.bridge.cut(was, []).catch(sayAreasFailed);
+		}
+
+		if (page !== null) {
+			void this.bridge.cut(page, holes).catch((failure: unknown) => {
+				sayAreasFailed(failure);
+				this.holesSaid = NO_HOLES_SENT;
+			});
+		}
+	}
+}
+
+function holeOf(overlay: Element, area: DOMRect): PageHole {
+	const box = overlay.getBoundingClientRect();
+
+	return {
+		x: box.left - area.left,
+		y: box.top - area.top,
+		width: box.width,
+		height: box.height,
+	};
+}
+
+function hexOf(within: Element, colour: string): string | null {
+	const probe = document.createElement("span");
+	probe.style.setProperty("display", "none");
+	probe.style.setProperty("color", colour);
+	within.append(probe);
+	const resolved = getComputedStyle(probe).color;
+	probe.remove();
+	const paint = document.createElement("canvas").getContext("2d");
+
+	if (paint === null || resolved === "") {
+		return null;
+	}
+
+	paint.fillStyle = resolved;
+	paint.fillRect(0, 0, 1, 1);
+	const [red = 0, green = 0, blue = 0] = paint.getImageData(0, 0, 1, 1).data;
+	return `#${[red, green, blue].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
+function sayAreasFailed(failure: unknown): void {
+	console.error("[widgetarium] the browser page did not hear which areas the studio draws over it", failure);
+}
+
+function describedElement(element: Element): string {
+	const marks = Array.from(element.attributes)
+		.filter(({ name }) => name === "role" || name === "class" || name.startsWith("data-"))
+		.map(({ name, value }) => `${name}="${value.slice(0, 60)}"`);
+
+	return `<${element.tagName.toLowerCase()} ${marks.join(" ")}>`;
 }
 
 function isVisible(element: Element): boolean {
@@ -225,17 +258,4 @@ function isOver(element: Element, area: DOMRect): boolean {
 	const box = element.getBoundingClientRect();
 
 	return box.right > area.left && box.left < area.right && box.bottom > area.top && box.top < area.bottom;
-}
-
-function pictureFor(container: HTMLElement): HTMLImageElement {
-	const picture = document.createElement("img");
-	picture.alt = "";
-	picture.dataset["browserPageCover"] = "";
-	picture.style.setProperty("position", "absolute");
-	picture.style.setProperty("inset", "0");
-	picture.style.setProperty("width", "100%");
-	picture.style.setProperty("height", "100%");
-	picture.style.setProperty("pointer-events", "none");
-	container.append(picture);
-	return picture;
 }

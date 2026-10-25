@@ -5,6 +5,7 @@ import {
 	InkAddressSchema,
 	OpenedPageSchema,
 	PageContentSchema,
+	ReadPageSchema,
 	PageShotSchema,
 } from "../../shared/schema/page-read.schema.js";
 import { SearchWebSchema } from "../../shared/schema/search-web.schema.js";
@@ -21,14 +22,15 @@ import {
 import { refuseReportedRead } from "./lib/read-refusals.js";
 
 export const ReadPageContentCommand = command("read-page-content")
+	.input(ReadPageSchema)
 	.output(PageContentSchema)
 	.idempotencyKey(PerCall)
 	.inject(INK_GATE)
-	.handle(async (_input, gate) => {
-		const read = await readAllowed(gate, "content");
+	.handle(async ({ tabId, form }, gate) => {
+		const read = await readAllowed(gate, "content", tabId);
 
 		try {
-			const captured = await gate.browserPages.content(read.tabId);
+			const captured = await gate.browserPages.content(read.tabId, form);
 			await stillAllowed(gate, read, refuseReportedRead(read, captured));
 			const content = inspected(gate, read, captured);
 			changeActivity(gate, { contentReadAt: gate.clock.now() }, "ink read the page content");
@@ -43,11 +45,11 @@ export const CapturePageCommand = command("capture-page")
 	.output(PageShotSchema)
 	.idempotencyKey(PerCall)
 	.inject(INK_GATE)
-	.handle(async ({ region }, gate) => {
-		const read = await readAllowed(gate, "screenshot");
+	.handle(async ({ region, area, tabId }, gate) => {
+		const read = await readAllowed(gate, "screenshot", tabId);
 
 		try {
-			const shot = await gate.browserPages.capture(read.tabId, region);
+			const shot = await gate.browserPages.capture(read.tabId, { region, area });
 			// TRADE-OFF: no OCR; an image is judged only by the field probe right after capture.
 			await stillAllowed(gate, read, null);
 			changeActivity(gate, { contentReadAt: gate.clock.now() }, "ink read the page content");

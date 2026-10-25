@@ -1,3 +1,4 @@
+import { muteTextSelection } from "../held-drag/held-pointer.js";
 import { announceCarry } from "./carry.js";
 import type { CarriedItem, CarryPhase } from "./carry.js";
 
@@ -14,6 +15,7 @@ const ESCAPE = "Escape";
 
 export class PointerCarry {
 	private isOut = false;
+	private unmuteSelection: (() => void) | null = null;
 	private last: readonly [number, number];
 
 	constructor(private readonly ask: PointerCarryAsk) {
@@ -36,6 +38,10 @@ export class PointerCarry {
 		this.last = [event.clientX, event.clientY];
 		const [startX, startY] = this.ask.start;
 		const isFar = Math.hypot(this.last[0] - startX, this.last[1] - startY) >= START_PX;
+
+		if (isFar && this.unmuteSelection === null) {
+			this.unmuteSelection = muteTextSelection();
+		}
 
 		if (isFar && !this.ask.isHome(...this.last)) {
 			this.isOut = this.say("over");
@@ -73,6 +79,8 @@ export class PointerCarry {
 	}
 
 	private stop(): void {
+		this.unmuteSelection?.();
+		this.unmuteSelection = null;
 		window.removeEventListener("pointermove", this.moved);
 		window.removeEventListener("pointerup", this.ended);
 		window.removeEventListener("pointercancel", this.cancelled);

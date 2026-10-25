@@ -1,3 +1,4 @@
+import { PrefillDraftCommand } from "../packages/domain/assistant/generated/contract.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
@@ -19,7 +20,7 @@ import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { Composer } from "../apps/studio/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { ChatBesideContext } from "../apps/studio/src/features/browser/lib/chat-beside.ts";
+import { AskInkContext } from "../apps/studio/src/features/command-menu/lib/ask-ink-context.ts";
 
 const EVENT_DELIVERED_WITHIN_MS = 200;
 
@@ -112,7 +113,7 @@ createRoot(host).render(h(AppProvider, { app: shownApp }, inBrowserPlate()));
 await waitFor(() => host.querySelector("[data-browser-page-state]") !== null);
 
 check(
-	"not found draws Ink asking",
+	"not found draws Sumi asking",
 	host.querySelector("[data-browser-page-state]")?.getAttribute("data-browser-page-state"),
 	"question",
 );
@@ -159,7 +160,7 @@ check(
 	"Where to?",
 );
 check(
-	"Ink waits idle on it",
+	"Sumi waits idle on it",
 	host.querySelector("[data-browser-page-state]")?.getAttribute("data-browser-page-state"),
 	"idle",
 );
@@ -175,7 +176,7 @@ check(
 	"github.com",
 );
 const newTabPrompt = await shownApp.send(AskInkPromptQuery, { tabId: "tab-1" });
-check("asking Ink on a new tab drafts its prompt", newTabPrompt.ok && newTabPrompt.output, "Find a page for me");
+check("asking Sumi on a new tab drafts its prompt", newTabPrompt.ok && newTabPrompt.output, "Find a page for me");
 
 const refused = await shownApp.send(OpenAddressCommand, {
 	tabId: "tab-1",
@@ -276,7 +277,7 @@ const PROMPTED: readonly (readonly [string, PageFailure | null, string])[] = [
 ];
 
 for (const [what, failure, prompt] of PROMPTED) {
-	check(`Ask Ink on ${what} drafts "${prompt}"`, askInkPromptOf({ ...shown.pages.tab, failure }), prompt);
+	check(`Ask Sumi on ${what} drafts "${prompt}"`, askInkPromptOf({ ...shown.pages.tab, failure }), prompt);
 }
 
 const chatSent: string[] = [];
@@ -299,6 +300,7 @@ createRoot(chatHost).render(
 		{ app: chatApp },
 		h(Composer, {
 			busy: false,
+			isFirst: true,
 			attached: null,
 			onSend: async (said: string) => {
 				chatSent.push(said);
@@ -322,7 +324,7 @@ createRoot(askingHost).render(
 	h(
 		AppProvider,
 		{ app: app().modules(BrowserModule.with(asking.parts)).start() },
-		h(ChatBesideContext, { value: chatApp }, h(Browser, {})),
+		h(AskInkContext, { value: (text: string) => void chatApp.send(PrefillDraftCommand, { text }) }, h(Browser, {})),
 	),
 );
 await waitFor(
@@ -330,16 +332,47 @@ await waitFor(
 );
 const askInk = askingHost.querySelector<HTMLButtonElement>("[data-browser-ask-ink]");
 check(
-	"Ask Ink is a live press with no native title",
+	"Ask Sumi is a live press with no native title",
 	[askInk?.disabled, askInk?.hasAttribute("title")],
 	[false, false],
 );
 askInk?.click();
 const composerBox = chatHost.querySelector("textarea");
 await waitFor(() => composerBox?.value !== "");
-check("pressing Ask Ink drafts the prompt in the composer", composerBox?.value, "Find the site I meant by test.co");
+check("pressing Ask Sumi drafts the prompt in the composer", composerBox?.value, "Find the site I meant by test.co");
 check("and focuses the composer", document.activeElement === composerBox, true);
 check("and sends nothing", chatSent, []);
+
+const signingIn = fakeBrowser();
+signingIn.pages.tab = {
+	...signingIn.pages.tab,
+	url: "https://accounts.google.com/",
+	failure: null,
+};
+const signingInHost = document.createElement("div");
+document.body.append(signingInHost);
+createRoot(signingInHost).render(h(AppProvider, { app: started(signingIn) }, inBrowserPlate()));
+await waitFor(() => signingInHost.querySelector("[data-browser-kept-out]") !== null);
+check(
+	"a sign-in site Sumi may not read says so in the header's controls",
+	signingInHost.querySelector('[data-plate-place="controls"] [data-browser-kept-out]')?.textContent,
+	"Sumi kept out",
+);
+check(
+	"and nothing stands over the page, so the page is never covered by a picture",
+	signingInHost.querySelector("[data-browser-page-area] > :not([data-browser-pages])")?.outerHTML ?? null,
+	null,
+);
+const originalRequestAnimationFrame = globalThis.requestAnimationFrame;
+globalThis.requestAnimationFrame = (run: FrameRequestCallback): number => Number(setTimeout(() => run(0), 0));
+
+try {
+	signingInHost.querySelector<HTMLButtonElement>("[data-browser-kept-out]")?.click();
+	await waitFor(() => document.querySelector("[data-browser-site-access]") !== null);
+	check("pressing it opens site access", document.querySelector("[data-browser-site-access]") !== null, true);
+} finally {
+	globalThis.requestAnimationFrame = originalRequestAnimationFrame;
+}
 
 const exact = await exactStatesReport();
 check("every state measures as its board in light and dark: the diff is empty", exact.differences, 0);

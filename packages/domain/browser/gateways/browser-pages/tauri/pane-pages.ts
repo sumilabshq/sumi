@@ -39,6 +39,14 @@ export class PanePages {
 		return true;
 	}
 
+	drawnIds(): readonly string[] {
+		return [...this.held.keys()].filter((tabId) => this.drawnOf(tabId) !== null);
+	}
+
+	containerOf(tabId: string): HTMLElement | null {
+		return this.held.get(tabId)?.container ?? null;
+	}
+
 	drawnOf(tabId: string): string | null {
 		return this.ask.drawnIn(this.held.get(tabId) ?? null, tabId);
 	}

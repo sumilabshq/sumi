@@ -28,12 +28,15 @@ import type { BrowserTab, RecentSite } from "../../shared/schema/browser-tab.sch
 import { askInkPromptOf } from "./lib/ask-ink-prompt.js";
 import { nearMatchOf } from "./lib/near-match.js";
 import { isPagesHost, webAddressOf } from "./lib/web-address.js";
+import { GhostLaySchema, GhostShownSchema, GhostWornSchema } from "../../shared/schema/tear-off-ghost.schema.js";
 
 const NOT_OPENED = "the browser opens only web pages: {reason}";
 const SCHEME_NOT_ALLOWED = "scheme-not-allowed";
 const NO_TAB = "the browser holds no such tab";
 const NO_OWN_WINDOWS = "this host cannot open a page in its own window";
 const NOT_A_HOST = "the browser draws its pages only into an element";
+
+const NO_GHOST_HOST = "this host opens no windows of its own, so a dragged tab has no ghost outside it";
 
 export const NoteVisitsSubscriber = subscriber(PagesChangedEvent)
 	.inject({
@@ -79,7 +82,7 @@ export const BrowserTabsQuery = query("browser-tabs")
 			tabs: browserPages.tabs().map((tab) => ({
 				...tab,
 				isShown: tab.id === shownId,
-				isInOwnWindow: browserPages.isInOwnWindow(tab.id),
+				isInOwnWindow: browserPages.isPoppedOut(tab.id),
 				access: hasNoPage(tab)
 					? null
 					: decideBrowserAccess({ address: tab.url, tabId: tab.id }, grants, SENSITIVE_SITES),
@@ -142,14 +145,48 @@ export const FocusOwnWindowCommand = command("focus-own-window")
 	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages }) => browserPages.focusOwnWindow(tabId));
 
-export const TearOffCommand = command("tear-off")
-	.input(TabIdSchema)
+export const FocusStudioWindowCommand = command("focus-studio-window")
+	.input(z.object({ window: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
 	.inject({ browserPages: BrowserPagesGateway })
-	.handle(({ tabId }, { browserPages }) => {
+	.handle(({ window }, { browserPages }) => browserPages.focusStudioWindow(window));
+
+export const OpenChatWindowCommand = command("open-chat-window")
+	.input(z.object({ chatId: z.string().min(1) }))
+	.idempotencyKey(Repeatable)
+	.inject({ browserPages: BrowserPagesGateway })
+	.handle(({ chatId }, { browserPages }) =>
+		browserPages.canOpenOwnWindow() ? browserPages.openChatWindow(chatId) : refuse(NO_OWN_WINDOWS),
+	);
+
+export const TearOffCommand = command("tear-off")
+	.input(TabIdSchema.extend({ openWith: z.string() }))
+	.idempotencyKey(Repeatable)
+	.inject({ browserPages: BrowserPagesGateway })
+	.handle(({ tabId, openWith }, { browserPages }) => {
 		const refusal = refuseOwnWindow(browserPages, tabId);
-		return refusal === null ? browserPages.tearOff(tabId) : refuse(refusal);
+		return refusal === null ? browserPages.tearOff(tabId, openWith) : refuse(refusal);
 	});
+
+export const LayTearOffGhostCommand = command("lay-tear-off-ghost")
+	.input(GhostLaySchema)
+	.idempotencyKey(Repeatable)
+	.inject({ browserPages: BrowserPagesGateway })
+	.handle((lay, { browserPages }) =>
+		browserPages.canOpenOwnWindow() ? browserPages.layTearOffGhost(lay) : refuse(NO_GHOST_HOST),
+	);
+
+export const WearTearOffGhostCommand = command("wear-tear-off-ghost")
+	.input(GhostWornSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ browserPages: BrowserPagesGateway })
+	.handle((worn, { browserPages }) => browserPages.wearTearOffGhost(worn));
+
+export const ShowTearOffGhostCommand = command("show-tear-off-ghost")
+	.input(GhostShownSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ browserPages: BrowserPagesGateway })
+	.handle(({ shown }, { browserPages }) => browserPages.showTearOffGhost(shown));
 
 export const ShowTabCommand = command("show-tab")
 	.input(TabIdSchema)

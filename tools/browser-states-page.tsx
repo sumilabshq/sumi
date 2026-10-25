@@ -13,7 +13,6 @@ export interface StateScene {
 	readonly height: number;
 	readonly tab: Partial<BrowserTab>;
 	readonly recentSites: readonly RecentSite[];
-	readonly blockedSite: string | null;
 }
 
 const STAGE = "wg-root cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0px] cv:[--wg-root-head:0px]";
@@ -27,29 +26,6 @@ function sceneElement(scene: StateScene): ReturnType<typeof h> {
 		...scene.tab,
 	};
 	browser.recentSites.saveRecentSites(scene.recentSites);
-
-	if (scene.blockedSite !== null) {
-		browser.grants.saveGrants(
-			[
-				{
-					siteKey: scene.blockedSite,
-					scope: "host",
-					level: "blocked",
-					source: "person",
-					grantedAt: 0,
-					by: "person",
-				},
-			],
-			{
-				at: 0,
-				siteKey: scene.blockedSite,
-				was: null,
-				became: "blocked",
-				by: "person",
-				reason: "measured scene",
-			},
-		);
-	}
 
 	const sceneApp = app().modules(BrowserModule.with(browser.parts)).start();
 	return h(

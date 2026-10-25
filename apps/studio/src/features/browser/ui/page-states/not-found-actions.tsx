@@ -19,7 +19,7 @@ const ACTIONS = "cv:flex cv:flex-wrap cv:items-center cv:justify-center cv:gap-2
 const UNDER_MATCH = "cv:mt-[14px]";
 const UNDER_REASON = "cv:mt-6 cv:@max-[600px]/page:mt-[18px]";
 const TRY_AGAIN = "Try again";
-const ASK_INK = "Ask Ink";
+const ASK_INK = "Ask Sumi";
 
 export function NotFoundActions({ tab, failure, searchFor }: NotFoundActionsProps): ReactElement {
 	const openAddress = useCommand(OpenAddressCommand);

@@ -2,6 +2,7 @@ import type { DocKind, DocState, StoreClient, StoreRoot } from "./store-client.j
 
 const WRITE_DELAY_MS = 400;
 const MOST_WRITE_TRIES = 3;
+const READ_RETRY_MS: readonly number[] = [300, 1000, 3000, 10_000];
 const UNREAD: DocState<never> = {
 	doc: null,
 	rev: 0,
@@ -24,6 +25,7 @@ interface PendingChange<Doc> {
 export class HeldDoc<Doc extends object> {
 	private pending: PendingChange<Doc> | null = null;
 	private changedBeforeRead: Partial<Doc> | null = null;
+	private writingPatch: Partial<Doc> = {};
 	private writing: Promise<void> = Promise.resolve();
 	private delayedWrite: ReturnType<typeof setTimeout> | null = null;
 	private readonly listeners = new Set<() => void>();
@@ -31,7 +33,9 @@ export class HeldDoc<Doc extends object> {
 	private constructor(
 		private readonly at: DocAt<Doc>,
 		private held: DocState<Doc>,
-	) {}
+	) {
+		at.store.watchForeignWrites(at.root, at.kind.file, (rev) => void this.hearForeignWrite(rev));
+	}
 
 	static async read<Doc extends object>(at: DocAt<Doc>): Promise<HeldDoc<Doc>> {
 		return new HeldDoc(at, await at.store.readDoc(at.root, at.kind));
@@ -41,14 +45,13 @@ export class HeldDoc<Doc extends object> {
 	static reading<Doc extends object>(at: DocAt<Doc>): HeldDoc<Doc> {
 		const held = new HeldDoc(at, UNREAD);
 		held.changedBeforeRead = {};
-		void at.store.readDoc(at.root, at.kind).then(
-			(fresh) => held.landRead(fresh),
-			(failure: unknown) => console.error(`[ink] ${held.label()} could not be read`, failure),
-		);
+		held.readUntilLanded(0);
 		return held;
 	}
 
 	now = (): Doc => this.held.doc ?? this.at.empty;
+
+	isRead = (): boolean => this.changedBeforeRead === null;
 
 	watch = (changed: () => void): (() => void) => {
 		this.listeners.add(changed);
@@ -83,6 +86,20 @@ export class HeldDoc<Doc extends object> {
 		return this.writing;
 	}
 
+	private readUntilLanded(attempt: number): void {
+		void this.at.store.readDoc(this.at.root, this.at.kind).then(
+			(fresh) => this.landRead(fresh),
+			(failure: unknown) => {
+				const delay = READ_RETRY_MS[Math.min(attempt, READ_RETRY_MS.length - 1)] ?? WRITE_DELAY_MS;
+				console.error(
+					`[ink] ${this.label()} could not be read (try ${attempt + 1}), reading again in ${delay} ms`,
+					failure,
+				);
+				setTimeout(() => this.readUntilLanded(attempt + 1), delay);
+			},
+		);
+	}
+
 	private landRead(fresh: DocState<Doc>): void {
 		const changed = this.changedBeforeRead ?? {};
 		this.changedBeforeRead = null;
@@ -99,6 +116,31 @@ export class HeldDoc<Doc extends object> {
 		}
 	}
 
+	private async hearForeignWrite(rev: number): Promise<void> {
+		if (rev <= this.held.rev) {
+			return;
+		}
+
+		const fresh = await this.at.store.readDoc(this.at.root, this.at.kind);
+		if (fresh.rev <= this.held.rev) {
+			return;
+		}
+
+		console.info(`[ink] ${this.label()} rev ${this.held.rev} → ${fresh.rev} (written by another window)`);
+		this.held = {
+			...fresh,
+			doc: {
+				...(fresh.doc ?? this.at.empty),
+				...this.changedBeforeRead,
+				...this.writingPatch,
+				...this.pending?.patch,
+			},
+		};
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
+	}
+
 	private async writePending(): Promise<void> {
 		const change = this.pending;
 		this.pending = null;
@@ -106,10 +148,12 @@ export class HeldDoc<Doc extends object> {
 			return;
 		}
 
+		this.writingPatch = change.patch;
 		const isWritten = await this.writeChange(change).catch((failure: unknown) => {
 			console.error(`[ink] ${this.label()} could not be written`, failure);
 			return false;
 		});
+		this.writingPatch = {};
 		if (!isWritten) {
 			this.keepForNextWrite(change);
 		}

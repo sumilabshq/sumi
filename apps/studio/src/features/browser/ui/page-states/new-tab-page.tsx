@@ -21,7 +21,7 @@ const ASK_SPACE = "cv:mt-1.5";
 const RECENT_SHOWN = 4;
 const WHERE_TO = "Where to?";
 const RECENT_WORD = "Recent";
-const ASK_TO_FIND = "Ask Ink to find it";
+const ASK_TO_FIND = "Ask Sumi to find it";
 
 export function NewTabPage({ tabId, recentSites }: NewTabPageProps): ReactElement {
 	const openAddress = useCommand(OpenAddressCommand);

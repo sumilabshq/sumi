@@ -1,6 +1,12 @@
 import { NOT_AVAILABLE_ON_HOST } from "@widgetarium/core/engine/studio-host.js";
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
+import type {
+	CommittedPage,
+	PageContentRead,
+	PageForm,
+	PageShot,
+	ShotAsk,
+} from "../../../shared/schema/page-read.schema.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
 import { ElectronRemote } from "./electron-remote.js";
 import { partitionOfProfile } from "../../../shared/lib/browser-profile.js";
@@ -9,6 +15,8 @@ import { WebviewTab } from "./webview-tab.js";
 
 const FIRST_TAB = "tab-1";
 const NO_TAB = 'the browser holds no tab "{tabId}"';
+const NO_PAGE_SHOT = "this host shoots only the part of a page on screen";
+const NO_DOM_READ = "this host reads a page only as text";
 
 export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly watchers = new Set<() => void>();
@@ -89,6 +97,10 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return false;
 	}
 
+	isPoppedOut(): boolean {
+		return false;
+	}
+
 	isInOwnWindow(): boolean {
 		return false;
 	}
@@ -100,7 +112,19 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusOwnWindow(): void {}
 
+	focusStudioWindow(): void {}
+
+	openChatWindow(): void {}
+
 	tearOff(): void {}
+
+	layTearOffGhost(): Promise<void> {
+		return Promise.resolve();
+	}
+
+	wearTearOffGhost(): void {}
+
+	showTearOffGhost(): void {}
 
 	create(tabId: string): void {
 		if (this.held.some((tab) => tab.now().id === tabId)) {
@@ -195,11 +219,19 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		return this.tabOf(tabId).hasSecretField();
 	}
 
-	content(tabId: string): Promise<PageContentRead> {
+	content(tabId: string, form: PageForm): Promise<PageContentRead> {
+		if (form === "dom") {
+			return Promise.reject(new Error(NO_DOM_READ));
+		}
+
 		return this.tabOf(tabId).content();
 	}
 
-	capture(tabId: string, region: PageRegion | null): Promise<PageShot> {
+	capture(tabId: string, { area, region }: ShotAsk): Promise<PageShot> {
+		if (area === "page") {
+			return Promise.reject(new Error(NO_PAGE_SHOT));
+		}
+
 		return this.tabOf(tabId).capture(region);
 	}
 

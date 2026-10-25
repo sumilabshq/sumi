@@ -73,6 +73,10 @@ export function decideBrowserAccess(
 	};
 }
 
+export function isKeptOut(decision: AccessDecision | null): boolean {
+	return decision !== null && decision.level === "blocked" && decision.source !== "default";
+}
+
 export function refuseUrlShape(url: URL | null): string | null {
 	if (url === null) {
 		return "not-a-url";

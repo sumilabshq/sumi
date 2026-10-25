@@ -72,7 +72,7 @@ export const UNJUDGED = [
 	"font family: the outlet draws in the host's interface font; the built page is set to Geist, the board's, so text-bearing sizes are comparable",
 	"timed-out reason x and width: the board's second sentence is a design note, the built copy says only what happened, in two lines too",
 	"favicon fill: the board paints made-up brand colours; a real chip shows the site's own favicon",
-	"Ink's eye pose: it follows the pointer or the state's own gaze, so only Ink's box is judged",
+	"Sumi's eye pose: it follows the pointer or the state's own gaze, so only Sumi's box is judged",
 ];
 
 export const DELIBERATE = [
@@ -154,10 +154,7 @@ const SCENES: readonly BoardScene[] = [
 		file: "BrowserStates",
 		root: ".cell .hbody",
 		at: 3,
-		scene: {
-			...sceneOf("blocked", { url: "https://bank.com/accounts" }, []),
-			blockedSite: "bank.com",
-		},
+		scene: sceneOf("blocked", { url: "https://bank.com/accounts" }, []),
 	},
 	{
 		file: "BrowserStates",
@@ -179,7 +176,6 @@ function sceneOf(id: string, tab: StateScene["tab"], recentSites: StateScene["re
 			...tab,
 		},
 		recentSites,
-		blockedSite: null,
 	};
 }
 

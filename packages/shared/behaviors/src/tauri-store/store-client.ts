@@ -9,6 +9,17 @@ export type FolderRoot = `folder:${string}`;
 
 export type StoreRoot = "global" | WorkspaceRoot | FolderRoot;
 
+export type Listen = (event: string, heard: (payload: unknown) => void) => void;
+
+export interface StoreHearing {
+	readonly listen: Listen;
+	readonly ownLabel: string;
+}
+
+export type ForeignWriteHeard = (rev: number) => void;
+
+export const STORE_CHANGED = "store-changed";
+
 export const GLOBAL_ROOT: StoreRoot = "global";
 
 export interface DocKind<Doc> {
@@ -66,6 +77,13 @@ const LinesReadSchema = z.object({
 	tornTail: z.boolean(),
 });
 
+const StoreChangeSchema = z.object({
+	root: z.string(),
+	file: z.string(),
+	rev: z.number().int().positive().nullable(),
+	by: z.string(),
+});
+
 const VersionSchema = z.object({
 	v: z.number().int().positive(),
 });
@@ -85,8 +103,44 @@ export function folderRootOf(id: string): FolderRoot {
 	return `folder:${id}`;
 }
 
+// TRADE-OFF: one hearing per webview, set at start; threading it through every parts factory would push a Tauri type into four domains
+let webviewHearing: StoreHearing | undefined;
+
+export function hearStoreChangesWith(hearing: StoreHearing): void {
+	webviewHearing = hearing;
+}
+
 export class StoreClient {
-	constructor(private readonly invoke: Invoke) {}
+	private readonly foreignWrites = new Map<string, Set<ForeignWriteHeard>>();
+
+	constructor(
+		private readonly invoke: Invoke,
+		hearing: StoreHearing | undefined = webviewHearing,
+	) {
+		hearing?.listen(STORE_CHANGED, (payload) => this.hearChange(payload, hearing.ownLabel));
+	}
+
+	watchForeignWrites(root: StoreRoot, file: string, heard: ForeignWriteHeard): void {
+		const key = `${root}:${file}`;
+		this.foreignWrites.set(key, new Set([...(this.foreignWrites.get(key) ?? []), heard]));
+	}
+
+	private hearChange(payload: unknown, ownLabel: string): void {
+		const change = StoreChangeSchema.safeParse(payload);
+		if (!change.success) {
+			console.warn(`[ink] a ${STORE_CHANGED} event of another shape was ignored`, change.error.issues);
+			return;
+		}
+
+		const { root, file, rev, by } = change.data;
+		if (by === ownLabel || rev === null) {
+			return;
+		}
+
+		for (const heard of this.foreignWrites.get(`${root}:${file}`) ?? []) {
+			heard(rev);
+		}
+	}
 
 	async readDoc<Doc>(root: StoreRoot, kind: DocKind<Doc>): Promise<DocState<Doc>> {
 		const answer = DocReadSchema.parse(await callStore(this.invoke, "read", { root, path: kind.file }));

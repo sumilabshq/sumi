@@ -2,7 +2,6 @@ import { z } from "zod";
 
 export const PageLookSchema = z.object({
 	fill: z.string(),
-	strip: z.string().nullable(),
 });
 
 export type PageLook = z.infer<typeof PageLookSchema>;

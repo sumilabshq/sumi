@@ -45,8 +45,8 @@ const UNANSWERED_AFTER_MS = 2 * 60 * 1000;
 
 export type Gate = { readonly [Key in keyof typeof INK_GATE]: InstanceType<(typeof INK_GATE)[Key]> };
 
-export async function readAllowed(gate: Gate, kind: BrowserRead["kind"]): Promise<BrowserRead> {
-	const tabId = gate.browserPages.shownId();
+export async function readAllowed(gate: Gate, kind: BrowserRead["kind"], asked: string | null): Promise<BrowserRead> {
+	const tabId = asked ?? gate.browserPages.shownId();
 	const page = tabId === null ? null : gate.browserPages.committed(tabId);
 	const logged = loggedOf(tabId, kind, page?.url ?? "");
 

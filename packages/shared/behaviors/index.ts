@@ -49,6 +49,16 @@ export {
 	listenToCarry,
 } from "./src/carry/carry.js";
 export { PointerCarry } from "./src/carry/pointer-carry.js";
+export {
+	capturePointer,
+	isOutsideWindow,
+	muteTextSelection,
+	releasePointer,
+	swallowNextClick,
+} from "./src/held-drag/held-pointer.js";
+export { FollowingGhost } from "./src/held-drag/following-ghost.js";
+export { useLiftedPress } from "./src/held-drag/use-lifted-press.js";
+export type { LiftedPressAsk, PendingPress } from "./src/held-drag/use-lifted-press.js";
 export { useEdgeReveal } from "./src/edge-reveal/use-edge-reveal.js";
 export type { EdgeLook } from "./src/edge-reveal/use-edge-reveal.js";
 export { useHoverIntent } from "./src/edge-reveal/use-hover-intent.js";
@@ -56,4 +66,15 @@ export { localFlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { FlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { PointerCarryAsk } from "./src/carry/pointer-carry.js";
 export type { CarriedItem, CarriedKind, CarryMoment, CarryPhase, PointBox } from "./src/carry/carry.js";
-export { isCorePage } from "./src/studio-window/studio-window.js";
+export {
+	MAIN_STUDIO_WINDOW,
+	isCorePage,
+	isTearOffGhostPage,
+	studioWindowOf,
+	viewFileOf,
+} from "./src/studio-window/studio-window.js";
+export type { StudioWindow } from "./src/studio-window/studio-window.js";
+export { TearOffGhost } from "./src/tear-off/tear-off-ghost.js";
+export type { TearOffGhostAsk, WindowZone } from "./src/tear-off/tear-off-ghost.js";
+export type { GhostFace, GhostShape, GhostSize, ListSizes } from "./src/tear-off/drag-ghost.js";
+export type { OverlayLay, OverlayPort } from "./src/tear-off/overlay-ghost.js";

@@ -10,9 +10,9 @@ const STOP =
 	"cv:h-10 cv:cursor-pointer cv:rounded-full cv:border-0 cv:bg-page cv:px-4 cv:font-[inherit] cv:text-sm cv:font-medium cv:text-ink cv:shadow-none cv:focus-visible:outline-2 cv:focus-visible:outline-offset-2 cv:focus-visible:outline-ring";
 
 const DOING: Readonly<Record<ReadKind, string>> = {
-	content: "Ink is reading page content",
-	screenshot: "Ink is taking a screenshot",
-	navigate: "Ink is opening a page",
+	content: "Sumi is reading page content",
+	screenshot: "Sumi is taking a screenshot",
+	navigate: "Sumi is opening a page",
 };
 
 export function InkReading(): ReactElement | null {

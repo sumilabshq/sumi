@@ -12,7 +12,7 @@ export function placementOf(container: HTMLElement): PagePlacement {
 		y: box.top,
 		width: box.width,
 		height: box.height,
-		corner: bottomCornerOf(container),
+		...bottomCornersOf(container),
 	};
 }
 
@@ -89,10 +89,18 @@ export class PagePlacementWatch {
 	};
 }
 
-function bottomCornerOf(container: HTMLElement): number {
-	const rounded = container.parentElement ?? container;
+const LEFT_SIDE = 1;
+const RIGHT_SIDE = 2;
 
-	return Number.parseFloat(getComputedStyle(rounded).borderBottomLeftRadius) || 0;
+function bottomCornersOf(container: HTMLElement): Pick<PagePlacement, "corner" | "cornerSides"> {
+	const rounded = container.closest<HTMLElement>("[data-shell-plate]") ?? container.parentElement ?? container;
+	const style = getComputedStyle(rounded);
+	const left = Number.parseFloat(style.borderBottomLeftRadius) || 0;
+	const right = Number.parseFloat(style.borderBottomRightRadius) || 0;
+	return {
+		corner: Math.max(left, right),
+		cornerSides: (left > 0 ? LEFT_SIDE : 0) | (right > 0 ? RIGHT_SIDE : 0),
+	};
 }
 
 function isSamePlacement(left: PagePlacement | null, right: PagePlacement): boolean {

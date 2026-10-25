@@ -27,7 +27,7 @@ export function keptStudioApp(): StartedApp {
 	Object.assign(window, {
 		__PAGE_ON_SCREEN__: () => parts.browserPages.isOnScreen("tab-1"),
 		__INK_READ__: async () => {
-			const answer = await browserApp.send(ReadPageContentCommand);
+			const answer = await browserApp.send(ReadPageContentCommand, { tabId: null });
 			return answer.ok ? "ok" : answer.reason;
 		},
 	});

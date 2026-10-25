@@ -4,7 +4,6 @@ import { Slot } from "@widgetarium/core/requests";
 import { AskCard } from "../ask-card/ask-card.js";
 import { InkReading } from "../ink-reading/ink-reading.js";
 import { SearchWebAction } from "../search-web-action/search-web-action.js";
-import { InkKeptOut } from "../ink-kept-out/ink-kept-out.js";
 import { PageArea } from "../page-area/page-area.js";
 
 export interface BrowserProps {
@@ -19,7 +18,6 @@ export function Browser({ header }: BrowserProps): ReactElement {
 			<Slot loading={null}>{header}</Slot>
 			<Slot loading={null}>
 				<PageArea searchFor={(text) => <SearchWebAction text={text} />}>
-					<InkKeptOut />
 					<InkReading />
 					<AskCard />
 				</PageArea>

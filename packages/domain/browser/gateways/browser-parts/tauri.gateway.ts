@@ -1,3 +1,4 @@
+import { studioWindowOf } from "@widgetarium/behaviors";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { GLOBAL_ROOT, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { DEFAULT_BROWSER_PROFILE } from "../../shared/lib/browser-profile.js";
@@ -52,7 +53,11 @@ export function tauriBrowserParts(ipc: BrowserPagesIpc = BROWSER_IPC): BrowserPa
 		empty: KeptRecentSitesSchema.parse({}),
 	});
 	return browserPartsOf({
-		browserPages: new TauriBrowserPagesGateway(tauriPagesBridge(ipc), DEFAULT_BROWSER_PROFILE),
+		browserPages: new TauriBrowserPagesGateway(
+			tauriPagesBridge(ipc),
+			DEFAULT_BROWSER_PROFILE,
+			studioWindowOf(location.search).label,
+		),
 		browserGrants: new TauriBrowserGrantsGateway(grants, store, files),
 		browserAudit: new TauriBrowserAuditGateway(store, files.access),
 		recentSites: new TauriRecentSitesGateway(recentSites),

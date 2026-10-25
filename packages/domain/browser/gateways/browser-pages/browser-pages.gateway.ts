@@ -1,6 +1,13 @@
 import type { BrowserTab } from "../../shared/schema/browser-tab.schema.js";
 import type { PageLook } from "../../shared/schema/page-look.schema.js";
-import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../shared/schema/page-read.schema.js";
+import type {
+	CommittedPage,
+	PageContentRead,
+	PageForm,
+	PageShot,
+	ShotAsk,
+} from "../../shared/schema/page-read.schema.js";
+import type { GhostLay, GhostWorn } from "../../shared/schema/tear-off-ghost.schema.js";
 
 export abstract class BrowserPagesGateway {
 	abstract isAvailable(): boolean;
@@ -14,9 +21,15 @@ export abstract class BrowserPagesGateway {
 	abstract detachFromPane(tabId: string, from: HTMLElement): void;
 	abstract canOpenOwnWindow(): boolean;
 	abstract isInOwnWindow(tabId: string): boolean;
+	abstract isPoppedOut(tabId: string): boolean;
 	abstract openInOwnWindow(tabId: string): void;
 	abstract focusOwnWindow(tabId: string): void;
-	abstract tearOff(tabId: string): void;
+	abstract focusStudioWindow(window: string): void;
+	abstract openChatWindow(chatId: string): void;
+	abstract tearOff(tabId: string, openWith: string): void;
+	abstract layTearOffGhost(lay: GhostLay): Promise<void>;
+	abstract wearTearOffGhost(worn: GhostWorn): void;
+	abstract showTearOffGhost(shown: boolean): void;
 	abstract create(tabId: string): void;
 	abstract close(tabId: string): void;
 	abstract freeze(tabId: string): void;
@@ -32,8 +45,8 @@ export abstract class BrowserPagesGateway {
 	abstract committed(tabId: string): CommittedPage | null;
 	abstract frameUrls(tabId: string): Promise<readonly string[]>;
 	abstract hasSecretField(tabId: string): Promise<boolean>;
-	abstract content(tabId: string): Promise<PageContentRead>;
+	abstract content(tabId: string, form: PageForm): Promise<PageContentRead>;
 	abstract look(tabId: string): PageLook | null;
 	abstract looksChanged(changed: () => void): () => void;
-	abstract capture(tabId: string, region: PageRegion | null): Promise<PageShot>;
+	abstract capture(tabId: string, ask: ShotAsk): Promise<PageShot>;
 }

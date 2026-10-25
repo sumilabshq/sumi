@@ -16,11 +16,6 @@ export const BOARD_CARD: StateParts = {
 	recentLabel: ".recent .lb",
 	chips: ".fchip:not(.wash)",
 	favicons: ".fchip:not(.wash) .fav",
-	banner: ".banner",
-	bannerInk: ".banner .wg-mascot",
-	bannerTitle: ".banner .tx b",
-	bannerLine: ".banner .tx span",
-	bannerButton: ".banner .b40",
 };
 
 export const BUILT_CARD: StateParts = {
@@ -39,11 +34,6 @@ export const BUILT_CARD: StateParts = {
 	recentLabel: "[data-browser-recent-label]",
 	chips: "[data-browser-recent-site]",
 	favicons: "[data-browser-recent-site] > :first-child",
-	banner: "[data-browser-ink-kept-out]",
-	bannerInk: "[data-browser-ink-kept-out] .wg-mascot",
-	bannerTitle: "[data-browser-ink-kept-out] b",
-	bannerLine: "[data-browser-ink-kept-out] b + span",
-	bannerButton: "[data-browser-ink-kept-out] button",
 };
 
 export const MANY = new Set(["primary", "quiet", "ask", "askInk", "chips", "favicons"]);
@@ -78,7 +68,7 @@ export const STATES_PROBE = `(async (root, parts, many) => {
 		if (name === "field") { out[name] = found[0] ? { ...lookOf(found[0], from), border: borderOf(found[0]) } : null; continue; }
 		if (name === "fieldWords") { out[name] = found[0] ? placeholderOf(found[0]) : null; continue; }
 		if (name === "favicons") { out[name] = found.map((node) => ({ ...box(node, from), radius: parseFloat(getComputedStyle(node).borderTopLeftRadius) })); continue; }
-		if (name === "ink" || name === "askInk" || name === "bannerInk" || name === "fieldIcon") { const shown = many.includes(name) ? found : found.slice(0, 1); const sized = shown.map((node) => box(node, from)); out[name] = many.includes(name) ? sized : sized[0] ?? null; continue; }
+		if (name === "ink" || name === "askInk" || name === "fieldIcon") { const shown = many.includes(name) ? found : found.slice(0, 1); const sized = shown.map((node) => box(node, from)); out[name] = many.includes(name) ? sized : sized[0] ?? null; continue; }
 		const looks = found.map((node) => lookOf(node, from));
 		out[name] = many.includes(name) ? looks : looks[0] ?? null;
 	}

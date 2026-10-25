@@ -37,6 +37,8 @@ import {
 	ClosePageCommand,
 	DetachPagesCommand,
 	FocusOwnWindowCommand,
+	FocusStudioWindowCommand,
+	OpenChatWindowCommand,
 	GoBackCommand,
 	GoForwardCommand,
 	LeaveFailureCommand,
@@ -52,6 +54,9 @@ import {
 	RereadBrowserTabsSubscriber,
 	RereadBrowserTabsForRecentSitesSubscriber,
 	TearOffCommand,
+	LayTearOffGhostCommand,
+	WearTearOffGhostCommand,
+	ShowTearOffGhostCommand,
 } from "./features/tabs/requests.js";
 
 export const BrowserModule = module("browser")
@@ -82,7 +87,12 @@ export const BrowserModule = module("browser")
 		OpenAddressCommand,
 		OpenTabInOwnWindowCommand,
 		FocusOwnWindowCommand,
+		FocusStudioWindowCommand,
+		OpenChatWindowCommand,
 		TearOffCommand,
+		LayTearOffGhostCommand,
+		WearTearOffGhostCommand,
+		ShowTearOffGhostCommand,
 		ShowTabCommand,
 		OpenPageCommand,
 		ClosePageCommand,

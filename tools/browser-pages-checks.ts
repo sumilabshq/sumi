@@ -136,8 +136,8 @@ const switching = manyPages();
 await opened(switching.started, ["page-b"]);
 switching.pages.duringRead = () => void switching.pages.show("page-b");
 check(
-	"a page switched away from during Ink's read is refused as not visible",
-	said(await switching.started.send(ReadPageContentCommand)),
+	"a page switched away from during Sumi's read is refused as not visible",
+	said(await switching.started.send(ReadPageContentCommand, { tabId: null })),
 	"tab-not-visible",
 );
 check("and the audit names the page that was being read", switching.browser.audit.access.at(-1)?.tab, FIRST);
@@ -147,7 +147,7 @@ const reading = manyPages();
 await opened(reading.started, ["page-b"]);
 reading.pages.open("page-b", "https://example.com/board");
 await reading.started.send(ShowTabCommand, { tabId: "page-b" });
-check("Ink reads the shown page", said(await reading.started.send(ReadPageContentCommand)), "ok");
+check("Sumi reads the shown page", said(await reading.started.send(ReadPageContentCommand, { tabId: null })), "ok");
 check("and the reading mark is on that page", reading.browser.parts.inkActivity.inkActivity().reading?.tabId, "page-b");
 
 const granted = manyPages();
@@ -164,7 +164,7 @@ check(
 
 const asking = manyPages();
 asking.pages.open(FIRST, PRIVATE_SITE);
-const askedRead = asking.started.send(ReadPageContentCommand);
+const askedRead = asking.started.send(ReadPageContentCommand, { tabId: null });
 await waitFor(() => asking.browser.parts.accessAsks.accessAsks().length === 1);
 await asking.started.send(ClosePageCommand, { tabId: FIRST });
 check("closing a page refuses the ask still waiting on it", said(await askedRead), "ask-unanswered");

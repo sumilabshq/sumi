@@ -43,6 +43,7 @@ export class WebviewTab {
 			canGoBack: false,
 			canGoForward: false,
 			failure: null,
+			window: null,
 		};
 		this.freezer = new PageFreezer(remote, id);
 	}
@@ -217,6 +218,7 @@ export class WebviewTab {
 			png: image.toDataURL().replace(PNG_PREFIX, ""),
 			width,
 			height,
+			layout: null,
 		};
 	}
 

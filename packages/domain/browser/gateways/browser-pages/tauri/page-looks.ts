@@ -1,46 +1,29 @@
 import type { PageLook } from "../../../shared/schema/page-look.schema.js";
-import type { PageRegion } from "../../../shared/schema/page-read.schema.js";
-import { pageFillOf, wantsStrip } from "../../../shared/lib/page-fill.js";
+import { pageFillOf, stripColourOf } from "../../../shared/lib/page-fill.js";
 import { PageColoursReadSchema, READ_PAGE_COLOURS } from "./page-look-script.js";
-import type { PageColoursRead } from "./page-look-script.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
 export interface PageLooksHold {
 	readonly bridge: PagesBridge;
-	readonly drawnPage: () => string | null;
-	readonly stripWidth: () => number;
+	readonly drawnPages: () => readonly string[];
 }
 
-interface PageStrip {
-	readonly url: string;
-	readonly average: string;
-	readonly readAt: string;
-}
-
-const STRIP_PX = 44;
-const STRIP_FORMAT = "jpeg";
-const STRIP_TYPE = "image/jpeg";
-const SAMPLE_SIDE = 8;
-const STRIP_LOOK_EVERY_MS = 250;
-const FILL_LOOK_EVERY_MS = 1000;
-const RGB_CHANNELS: readonly number[] = [0, 1, 2];
+const LOOK_EVERY_MS = 1000;
+const STRIP_PX = 2;
+const STRIP_POINTS: readonly number[] = [0.25, 0.5, 0.75];
 
 export class PageLooks {
 	private readonly looks = new Map<string, PageLook>();
-	private readonly strips = new Map<string, PageStrip>();
 	private readonly watchers = new Set<() => void>();
 	private timer: ReturnType<typeof setTimeout> | null = null;
-	private isStripShown = false;
 	private pollTurn = 0;
 	private isReading = false;
 	private readonly bridge: PagesBridge;
-	private readonly drawnPage: () => string | null;
-	private readonly stripWidth: () => number;
+	private readonly drawnPages: () => readonly string[];
 
-	constructor({ bridge, drawnPage, stripWidth }: PageLooksHold) {
+	constructor({ bridge, drawnPages }: PageLooksHold) {
 		this.bridge = bridge;
-		this.drawnPage = drawnPage;
-		this.stripWidth = stripWidth;
+		this.drawnPages = drawnPages;
 	}
 
 	start(): void {
@@ -58,7 +41,7 @@ export class PageLooks {
 			await this.reread();
 
 			if (turn === this.pollTurn) {
-				this.rereadIn(this.isStripShown ? STRIP_LOOK_EVERY_MS : FILL_LOOK_EVERY_MS);
+				this.rereadIn(LOOK_EVERY_MS);
 			}
 		}, ms);
 	}
@@ -82,77 +65,62 @@ export class PageLooks {
 	}
 
 	forget(page: string): void {
-		this.dropStrip(page);
 		this.looks.delete(page);
 	}
 
 	readonly reread = async (): Promise<void> => {
-		const page = this.drawnPage();
+		const pages = this.drawnPages();
 
-		if (page === null || this.isReading) {
+		if (pages.length === 0 || this.isReading) {
 			return;
 		}
 
 		this.isReading = true;
 
 		try {
-			await this.readLook(page);
-		} catch (failure: unknown) {
-			console.debug(`[widgetarium] browser page ${page} gave no colours`, failure);
+			await Promise.all(pages.map((page) => this.readLookOrSay(page)));
 		} finally {
 			this.isReading = false;
 		}
 	};
 
+	private async readLookOrSay(page: string): Promise<void> {
+		try {
+			await this.readLook(page);
+		} catch (failure: unknown) {
+			console.debug(`[widgetarium] browser page ${page} gave no colours`, failure);
+		}
+	}
+
 	private async readLook(page: string): Promise<void> {
 		const colours = PageColoursReadSchema.parse(JSON.parse(await this.bridge.evaluate(page, READ_PAGE_COLOURS)));
-		this.isStripShown = wantsStrip(colours);
-		const strip = this.isStripShown ? await this.stripOf(page, colours) : this.dropStrip(page);
+		const strip = colours.theme === null ? await this.stripColour(page, colours.width) : null;
 		this.keep(page, {
-			fill: pageFillOf(colours, strip?.average ?? null),
-			strip: strip?.url ?? null,
+			fill: pageFillOf(colours, strip),
 		});
 	}
 
-	private async stripOf(page: string, colours: PageColoursRead): Promise<PageStrip> {
-		const readAt = `${colours.href} ${colours.scrollY}`;
-		const held = this.strips.get(page);
+	private async stripColour(page: string, width: number): Promise<string | null> {
+		const png = await this.bridge.snapshot(page, { x: 0, y: 0, width, height: STRIP_PX }, "png");
+		const picture = await createImageBitmap(new Blob([png.slice()], { type: "image/png" }));
+		const canvas = new OffscreenCanvas(picture.width, picture.height);
+		const paint = canvas.getContext("2d");
 
-		if (held?.readAt === readAt) {
-			return held;
+		if (paint === null) {
+			return null;
 		}
 
-		const strip = await this.snapshotStrip(page, readAt);
-		this.dropStrip(page);
-		this.strips.set(page, strip);
-		return strip;
-	}
-
-	private async snapshotStrip(page: string, readAt: string): Promise<PageStrip> {
-		const jpeg = await this.bridge.snapshot(page, stripRegionOf(this.stripWidth()), STRIP_FORMAT);
-		const picture = new Blob([jpeg.slice()], { type: STRIP_TYPE });
-		return {
-			url: URL.createObjectURL(picture),
-			average: await averageOf(picture),
-			readAt,
-		};
-	}
-
-	private dropStrip(page: string): null {
-		const held = this.strips.get(page);
-
-		if (held !== undefined) {
-			URL.revokeObjectURL(held.url);
-		}
-
-		this.strips.delete(page);
-		return null;
+		paint.drawImage(picture, 0, 0);
+		const samples = STRIP_POINTS.map((share) => [
+			...paint.getImageData(Math.floor((picture.width - 1) * share), 0, 1, 1).data,
+		]);
+		return stripColourOf(samples);
 	}
 
 	private keep(page: string, look: PageLook): void {
 		const was = this.looks.get(page);
 
-		if (was?.fill === look.fill && was.strip === look.strip) {
+		if (was?.fill === look.fill) {
 			return;
 		}
 
@@ -160,44 +128,4 @@ export class PageLooks {
 		this.looks.set(page, look);
 		this.watchers.forEach((changed) => changed());
 	}
-}
-
-function stripRegionOf(width: number): PageRegion {
-	return {
-		x: 0,
-		y: 0,
-		width: Math.max(1, Math.round(width)),
-		height: STRIP_PX,
-	};
-}
-
-async function averageOf(picture: Blob): Promise<string> {
-	return averageColourOf(await sampledPixelsOf(picture));
-}
-
-async function sampledPixelsOf(picture: Blob): Promise<Uint8ClampedArray> {
-	const bitmap = await createImageBitmap(picture);
-	const canvas = document.createElement("canvas");
-	canvas.width = SAMPLE_SIDE;
-	canvas.height = SAMPLE_SIDE;
-	const paint = canvas.getContext("2d");
-	paint?.drawImage(bitmap, 0, 0, SAMPLE_SIDE, SAMPLE_SIDE);
-	bitmap.close();
-	return paint?.getImageData(0, 0, SAMPLE_SIDE, SAMPLE_SIDE).data ?? new Uint8ClampedArray(4);
-}
-
-function averageColourOf(pixels: Uint8ClampedArray): string {
-	const count = Math.max(1, pixels.length / 4);
-	const [red, green, blue] = RGB_CHANNELS.map((channel) => Math.round(channelSumOf(pixels, channel) / count));
-	return `rgb(${red ?? 0}, ${green ?? 0}, ${blue ?? 0})`;
-}
-
-function channelSumOf(pixels: Uint8ClampedArray, channel: number): number {
-	let sum = 0;
-
-	for (let at = channel; at < pixels.length; at += 4) {
-		sum += pixels[at] ?? 0;
-	}
-
-	return sum;
 }

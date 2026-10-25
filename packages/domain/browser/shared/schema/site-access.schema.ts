@@ -49,6 +49,7 @@ export type SiteRow = z.infer<typeof SiteRowSchema>;
 
 export const SiteAccessSchema = z.object({
 	shown: AccessDecisionSchema.nullable(),
+	isKeptOut: z.boolean(),
 	rows: z.array(SiteRowSchema).readonly(),
 });
 

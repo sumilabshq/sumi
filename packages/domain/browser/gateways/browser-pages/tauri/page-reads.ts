@@ -1,6 +1,6 @@
-import { PageContentReadSchema } from "../../../shared/schema/page-read.schema.js";
-import type { PageContentRead } from "../../../shared/schema/page-read.schema.js";
-import { FIND_SECRET_FIELD, READ_PAGE } from "../../../shared/lib/page-scripts.js";
+import { PageContentReadSchema, PageLayoutSchema } from "../../../shared/schema/page-read.schema.js";
+import type { PageContentRead, PageForm, PageLayout } from "../../../shared/schema/page-read.schema.js";
+import { FIND_SECRET_FIELD, PAGE_LAYOUT, READ_DOM, READ_PAGE } from "../../../shared/lib/page-scripts.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
 const FAVICON = `(() => {
@@ -14,14 +14,25 @@ const PNG_WIDTH_AT = 16;
 const PNG_HEIGHT_AT = 20;
 const BASE64_CHUNK = 0x8000;
 
-export async function contentOf(bridge: PagesBridge, page: string): Promise<PageContentRead> {
-	const read = PageContentReadSchema.safeParse(parsedJson(await bridge.evaluate(page, asJson(READ_PAGE))));
+export async function contentOf(bridge: PagesBridge, page: string, form: PageForm): Promise<PageContentRead> {
+	const script = form === "dom" ? READ_DOM : READ_PAGE;
+	const read = PageContentReadSchema.safeParse(parsedJson(await bridge.evaluate(page, asJson(script))));
 
 	if (!read.success) {
 		throw new Error(UNREADABLE);
 	}
 
 	return read.data;
+}
+
+export async function layoutOf(bridge: PagesBridge, page: string): Promise<PageLayout> {
+	const layout = PageLayoutSchema.safeParse(parsedJson(await bridge.evaluate(page, asJson(PAGE_LAYOUT))));
+
+	if (!layout.success) {
+		throw new Error(UNREADABLE);
+	}
+
+	return layout.data;
 }
 
 export async function hasSecretFieldIn(bridge: PagesBridge, page: string): Promise<boolean> {

@@ -9,7 +9,6 @@ export interface BrowserAppAsk {
 
 export interface StudioBrowser {
 	readonly browserApp: StartedApp;
-	readonly chatApp: StartedApp | null;
 }
 
 export function startBrowserApp({ platform, workspaceId }: BrowserAppAsk): StartedApp {

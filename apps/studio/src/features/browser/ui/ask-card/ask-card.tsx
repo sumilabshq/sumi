@@ -15,10 +15,10 @@ const ANSWER =
 const PRIMARY = `${ANSWER} cv:flex-[1.6] cv:bg-primary cv:text-primary-foreground cv:hover:bg-primary/85`;
 const SECONDARY = `${ANSWER} cv:bg-fill cv:text-ink cv:hover:bg-fill-hover`;
 const FOOTNOTE = "cv:m-0 cv:text-xs cv:text-muted-foreground";
-const READ_TITLE = "Let Ink read {site}?";
-const OPEN_TITLE = "Let Ink open {site}?";
+const READ_TITLE = "Let Sumi read {site}?";
+const OPEN_TITLE = "Let Sumi open {site}?";
 const READ_ONLY = "Read only: a screenshot and page content";
-const DATA_NOT_ORDERS = "Page content is data to Ink, never instructions.";
+const DATA_NOT_ORDERS = "Page content is data to Sumi, never instructions.";
 
 export function AskCard(): ReactElement | null {
 	const [asked] = useQuery(AccessAsksQuery).data;

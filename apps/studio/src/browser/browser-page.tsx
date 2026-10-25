@@ -3,7 +3,6 @@ import type { ReactElement } from "react";
 import { TipSurface } from "../features/canvas/ui/tip-surface/tip-surface.js";
 import { AppProvider, OnRefused, toastRefusal } from "@widgetarium/core/requests";
 import { Toaster } from "@widgetarium/kit";
-import { ChatBesideContext } from "../features/browser/lib/chat-beside.js";
 import { HeldTabContext } from "../features/browser/lib/held-tab.js";
 import { Browser } from "../features/browser/ui/browser/browser.js";
 import type { StudioBrowser } from "./browser-app.js";
@@ -21,14 +20,12 @@ export function BrowserPage({ browser, heldTabId }: BrowserPageProps): ReactElem
 		<div className={STAGE} data-browser-studio="">
 			<AppProvider app={browser.browserApp}>
 				<HeldTabContext value={heldTabId}>
-					<ChatBesideContext value={browser.chatApp}>
-						<OnRefused value={toastRefusal}>
-							<Toaster />
-							<TipSurface>
-								<Browser header={<BrowserPlateHeader />} />
-							</TipSurface>
-						</OnRefused>
-					</ChatBesideContext>
+					<OnRefused value={toastRefusal}>
+						<Toaster />
+						<TipSurface>
+							<Browser header={<BrowserPlateHeader />} />
+						</TipSurface>
+					</OnRefused>
 				</HeldTabContext>
 			</AppProvider>
 		</div>

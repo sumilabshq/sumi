@@ -27,6 +27,7 @@ class FakeRust implements BrowserPagesIpc {
 	readonly evaluated: string[] = [];
 	frameAnswers: { url: string; answer: string | null }[] = [];
 	ownWindows: string[] = [];
+	standing: string[] = [];
 	isSnapshotRefused = false;
 	pageText = { url: "https://example.com/", title: "Example", text: "Hello", hasSecretField: false };
 	private listener: ((message: unknown) => void) | null = null;
@@ -53,8 +54,16 @@ class FakeRust implements BrowserPagesIpc {
 			return Promise.resolve(this.ownWindows);
 		}
 
+		if (name === "standing_pages") {
+			return Promise.resolve(this.standing);
+		}
+
 		if (name === "facts") {
 			return Promise.resolve(facts("https://example.com/", "Example"));
+		}
+
+		if (name === "open_studio_window") {
+			return Promise.resolve({ window: "studio-2" });
 		}
 
 		return Promise.resolve(null);
@@ -84,6 +93,10 @@ class FakeRust implements BrowserPagesIpc {
 			return "false";
 		}
 
+		if (script.includes("getContext")) {
+			return JSON.stringify({ theme: null, page: "rgb(20, 20, 20)", canvas: "rgb(20, 20, 20)" });
+		}
+
 		return "https://example.com/favicon.ico";
 	}
 }
@@ -96,13 +109,14 @@ function fakePng(): ArrayBuffer {
 	return bytes.buffer;
 }
 
-function facts(url: string, title: string, isLoading = false): PageFacts {
+function facts(url: string, title: string, isLoading = false, window: string | null = "main"): PageFacts {
 	return {
 		url,
 		title,
 		canGoBack: url !== "https://example.com/",
 		canGoForward: false,
 		isLoading,
+		window,
 	};
 }
 
@@ -199,10 +213,11 @@ async function checksNavigation(rust: FakeRust, gateway: TauriBrowserPagesGatewa
 
 	rust.send({ page: FIRST, kind: "title", facts: facts("https://example.com/#second", "Second"), failure: null });
 	check("an in-page move counts an entry", gateway.committed(FIRST), { url: "https://example.com/#second", entry: 2 });
+	rust.send({ page: "tab-9", kind: "title", facts: facts("x", "y"), failure: null });
 	check(
-		"an event for another page changes nothing here",
-		rust.send({ page: "tab-9", kind: "title", facts: facts("x", "y"), failure: null }),
-		undefined,
+		"an event for another page leaves this page's facts alone",
+		[gateway.tabs()[0]?.title, gateway.tabs()[0]?.url],
+		["Second", "https://example.com/#second"],
 	);
 	rust.send({ page: FIRST, kind: "nonsense" });
 	check("an unreadable event is dropped", gateway.tabs()[0]?.title, "Second");
@@ -265,6 +280,7 @@ async function checksPlacement(
 		width: 840,
 		height: 640,
 		corner: 0,
+		cornerSides: 0,
 	});
 	check("a drawn page is shown natively in the card's rect", rust.named("show").at(-1)?.args, {
 		frames: [
@@ -275,6 +291,7 @@ async function checksPlacement(
 				width: 840,
 				height: 640,
 				corner: 0,
+				cornerSides: 0,
 			},
 		],
 	});
@@ -290,6 +307,7 @@ async function checksPlacement(
 		width: 600,
 		height: 640,
 		corner: 0,
+		cornerSides: 0,
 	});
 
 	gateway.create("tab-2");
@@ -359,33 +377,50 @@ async function checksOwnWindow(
 	await checksFreshTabTearOff(rust, gateway);
 }
 
+async function checksStudioWindows(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const bridge = tauriPagesBridge(rust);
+	check(
+		"a tab torn off into a new studio window names the window Rust opened",
+		[await bridge.openStudioWindow(FIRST, { x: 640, y: 120 }), rust.named("open_studio_window").at(-1)?.args],
+		["studio-2", { tab: FIRST, at: { x: 640, y: 120 } }],
+	);
+	await bridge.focusWindow("studio-2");
+	check("bringing a studio window forward names it", rust.named("focus_window").at(-1)?.args, { window: "studio-2" });
+	const tabWindow = (): string | null | undefined => gateway.tabs().find((tab) => tab.id === FIRST)?.window;
+	rust.send({
+		page: FIRST,
+		kind: "moved",
+		facts: facts("https://example.com/", "Example", false, "studio-2"),
+		failure: null,
+	});
+	check("a page Rust moved into another studio window says where it stands", tabWindow(), "studio-2");
+	check("a page standing in another studio window counts as held by that window", gateway.isInOwnWindow(FIRST), true);
+	rust.send({ kind: "window-closed", window: "studio-3" });
+	check("another studio window closing leaves the page where it stands", tabWindow(), "studio-2");
+	rust.send({ kind: "window-closed", window: "studio-2" });
+	check("its studio window closing leaves the page in no window", tabWindow(), null);
+	rust.send({ page: FIRST, kind: "moved", facts: facts("https://example.com/", "Example"), failure: null });
+	check("a page shown again in the first studio says so", tabWindow(), "main");
+}
+
 async function checksFreshTabTearOff(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const lifted = "page-lifted";
 	gateway.create(lifted);
-	gateway.tearOff(lifted);
+	gateway.tearOff(lifted, "tab-9");
 	await settledTicks();
-	const asked = rust.calls
-		.filter((call) => call.args?.["page"] === lifted)
-		.map((call) => call.command.replace("plugin:browser|", ""));
 	check(
-		"a dragged tab's native page exists before Rust is asked, once, to open it where the drag ended",
-		[asked, rust.named("open_own_window_at_cursor").at(-1)?.args],
-		[
-			["create", "open_own_window_at_cursor"],
-			{
-				page: lifted,
-				title: gateway.tabs().find((tab) => tab.id === lifted)?.title,
-			},
-		],
+		"a dragged tab asks Rust for a studio window of its own, opened with that tab, where the drag ended",
+		rust.named("open_studio_window").at(-1)?.args,
+		{ tab: "tab-9", at: null },
 	);
 	rust.send({
 		page: lifted,
-		kind: "own-window-opened",
-		facts: facts("https://example.com/", "Example"),
+		kind: "moved",
+		facts: { ...facts("https://example.com/", "Example"), window: "studio-2" },
 		failure: null,
 	});
 	await settledTicks();
-	check("the window Rust tore off marks the page as living in its own window", gateway.isInOwnWindow(lifted), true);
+	check("the page the new window took counts as held by another window", gateway.isInOwnWindow(lifted), true);
 }
 
 async function checksFreshTabOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
@@ -535,7 +570,7 @@ async function checksCoverDuringDrag(rust: FakeRust): Promise<void> {
 }
 
 async function checksReads(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
-	const content = await gateway.content(FIRST);
+	const content = await gateway.content(FIRST, "text");
 	check("a read answers the page's text", content.text, "Hello");
 	check(
 		"a read runs as an isolated JSON script",
@@ -553,13 +588,49 @@ async function checksReads(rust: FakeRust, gateway: TauriBrowserPagesGateway): P
 		"https://pay.example/card",
 		"https://ads.example/",
 	]);
-	const shot = await gateway.capture(FIRST, { x: 500, y: 0, width: 400, height: 100 });
+	const shot = await gateway.capture(FIRST, { area: "viewport", region: { x: 500, y: 0, width: 400, height: 100 } });
 	check("a picture is clamped to the card", rust.named("snapshot").at(-1)?.args, {
 		page: FIRST,
 		region: { x: 500, y: 0, width: 100, height: 100 },
 		format: "png",
 	});
 	check("a picture reports its own size", [shot.width, shot.height], [PNG_WIDTH, PNG_HEIGHT]);
+}
+
+async function checksLooksInPanes(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
+	const panes = ["tab-5", "tab-6"].map((tabId, at) => {
+		const container = document.createElement("div");
+		document.body.append(container);
+		laidAt(container, { left: 300 + at * 420, top: 100, width: 400, height: 600 });
+		gateway.create(tabId);
+		gateway.open(tabId, `https://example.com/${tabId}`);
+		gateway.attachInPane(tabId, container);
+		return { tabId, container };
+	});
+	await settledTicks();
+	rust.send({ page: "tab-5", kind: "finished", facts: facts("https://example.com/tab-5", "Five"), failure: null });
+	await waitFor(() => gateway.look("tab-5") !== null && gateway.look("tab-6") !== null);
+	check(
+		"every page drawn in a pane gets its own header colour, not only the shown page",
+		[gateway.look("tab-5")?.fill ?? null, gateway.look("tab-6")?.fill ?? null].every((fill) => fill !== null),
+		true,
+	);
+	panes.forEach(({ tabId, container }) => {
+		gateway.detachFromPane(tabId, container);
+		container.remove();
+	});
+	await settledTicks();
+}
+
+async function checksPressInPage(rust: FakeRust, container: HTMLElement): Promise<void> {
+	const heard: string[] = [];
+	const hear = (event: Event): void => void heard.push(event.type);
+	container.addEventListener("pointerdown", hear);
+	rust.send({ page: FIRST, kind: "pressed" });
+	rust.send({ page: "tab-404", kind: "pressed" });
+	await settledTicks();
+	container.removeEventListener("pointerdown", hear);
+	check("a press Rust reports inside a page reaches that page's card as a press, once", heard, ["pointerdown"]);
 }
 
 export async function checksTauriPages(): Promise<void> {
@@ -573,11 +644,14 @@ export async function checksTauriPages(): Promise<void> {
 		await checksNavigation(rust, gateway);
 		await checksFailures(rust, gateway);
 		await checksPlacement(rust, gateway, container);
+		await checksPressInPage(rust, container);
+		await checksLooksInPanes(rust, gateway);
 		await checksCover(rust);
 		await checksCoverWithoutPicture(rust);
 		await checksCoverFollowsShownPage(rust, gateway);
 		await checksCoverDuringDrag(rust);
 		await checksOwnWindow(rust, gateway, container);
+		await checksStudioWindows(rust, gateway);
 		await checksReads(rust, gateway);
 		gateway.detach(container);
 		await settledTicks();
@@ -586,10 +660,40 @@ export async function checksTauriPages(): Promise<void> {
 		await settledTicks();
 		check("closing a tab closes its page in Rust", rust.named("close").at(-1)?.args, { page: FIRST });
 		await checksAfterReload();
+		await checksSecondWindowAdopts();
 	} finally {
 		container.remove();
 		restore();
 	}
+}
+
+async function checksSecondWindowAdopts(): Promise<void> {
+	const rust = new FakeRust();
+	rust.standing = ["page-torn"];
+	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default", "studio-2");
+	await settledTicks();
+	rust.send({
+		page: "page-made-elsewhere",
+		kind: "title",
+		facts: facts("https://example.com/", "Example"),
+		failure: null,
+	});
+	await settledTicks();
+	check(
+		"a page another studio window made is adopted the first time Rust tells about it, and marked as held there",
+		[gateway.tabs().some((tab) => tab.id === "page-made-elsewhere"), gateway.isInOwnWindow("page-made-elsewhere")],
+		[true, true],
+	);
+	const created = rust.named("create").map((call) => call.args?.["page"]);
+	check(
+		"a studio opening beside a running one adopts the pages Rust already holds, never creating them again",
+		[
+			gateway.tabs().some((tab) => tab.id === "page-torn"),
+			created.includes("page-torn"),
+			rust.named("facts").some((call) => call.args?.["page"] === "page-torn"),
+		],
+		[true, false, true],
+	);
 }
 
 async function checksAfterReload(): Promise<void> {

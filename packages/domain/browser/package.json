@@ -1,7 +1,7 @@
 {
 	"name": "@widgetarium/browser",
 	"version": "0.1.0",
-	"description": "The browser: web pages in the studio, the sites Ink may read, and the guarded requests it reads them through",
+	"description": "The browser: web pages in the studio, the sites Sumi may read, and the guarded requests it reads them through",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"files": [

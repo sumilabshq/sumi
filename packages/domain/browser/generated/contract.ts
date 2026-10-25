@@ -58,6 +58,7 @@ export const BrowserTabSchema = z.object({
 	canGoBack: z.boolean(),
 	canGoForward: z.boolean(),
 	failure: PageFailureSchema.nullable(),
+	window: z.string().nullable(),
 });
 
 export type BrowserTab = z.infer<typeof BrowserTabSchema>;
@@ -123,7 +124,6 @@ export const PagesHostSchema = z.object({
 
 export const PageLookSchema = z.object({
 	fill: z.string(),
-	strip: z.string().nullable(),
 });
 
 export type PageLook = z.infer<typeof PageLookSchema>;
@@ -156,16 +156,45 @@ export const PageRegionSchema = z.object({
 
 export type PageRegion = z.infer<typeof PageRegionSchema>;
 
+export const PageLayoutSchema = z.object({
+	page: z.object({
+		width: z.number(),
+		height: z.number(),
+	}),
+	viewport: z.object({
+		x: z.number(),
+		y: z.number(),
+		width: z.number(),
+		height: z.number(),
+	}),
+});
+
+export type PageLayout = z.infer<typeof PageLayoutSchema>;
+
 export const PageShotSchema = z.object({
 	url: z.string(),
 	png: z.string(),
 	width: z.number(),
 	height: z.number(),
+	layout: PageLayoutSchema.nullable(),
 });
 
 export type PageShot = z.infer<typeof PageShotSchema>;
 
-export const CapturePageSchema = z.object({ region: PageRegionSchema.nullable() });
+export const PageToReadSchema = z.object({ tabId: z.string().nullable().default(null) });
+
+export const PageFormSchema = z.enum(["text", "dom"]);
+
+export type PageForm = z.infer<typeof PageFormSchema>;
+
+export const ReadPageSchema = PageToReadSchema.extend({ form: PageFormSchema.default("text") });
+
+export const ShotAreaSchema = z.enum(["viewport", "page"]);
+
+export const CapturePageSchema = PageToReadSchema.extend({
+	region: PageRegionSchema.nullable(),
+	area: ShotAreaSchema.default("viewport"),
+});
 
 export const InkAddressSchema = z.object({ url: z.string() });
 
@@ -200,6 +229,7 @@ export type SiteRow = z.infer<typeof SiteRowSchema>;
 
 export const SiteAccessSchema = z.object({
 	shown: AccessDecisionSchema.nullable(),
+	isKeptOut: z.boolean(),
 	rows: z.array(SiteRowSchema).readonly(),
 });
 
@@ -208,6 +238,34 @@ export type ReadKind = z.infer<typeof ReadKindSchema>;
 export const SiteLevelSchema = z.object({
 	siteKey: z.string(),
 	level: AccessLevelSchema,
+});
+
+export const GhostPageSchema = z.object({
+	htmlClass: z.string(),
+	htmlAttributes: z.array(z.tuple([z.string(), z.string()])),
+	bodyClass: z.string(),
+	ghost: z.string(),
+});
+
+export const GhostLaySchema = z.object({
+	page: GhostPageSchema,
+	width: z.number().positive(),
+	height: z.number().positive(),
+	anchorX: z.number(),
+	anchorY: z.number(),
+});
+
+export type GhostLay = z.infer<typeof GhostLaySchema>;
+
+export const GhostWornSchema = z.object({
+	styles: z.record(z.string(), z.string()),
+	texts: z.record(z.string(), z.string()),
+});
+
+export type GhostWorn = z.infer<typeof GhostWornSchema>;
+
+export const GhostShownSchema = z.object({
+	shown: z.boolean(),
 });
 
 export const BrowserTabsQuery = query("browser/browser-tabs")
@@ -241,8 +299,23 @@ export const OpenTabInOwnWindowCommand = command("browser/open-tab-in-own-window
 export const FocusOwnWindowCommand = command("browser/focus-own-window")
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable);
+export const FocusStudioWindowCommand = command("browser/focus-studio-window")
+	.input(z.object({ window: z.string().min(1) }))
+	.idempotencyKey(Repeatable);
+export const OpenChatWindowCommand = command("browser/open-chat-window")
+	.input(z.object({ chatId: z.string().min(1) }))
+	.idempotencyKey(Repeatable);
 export const TearOffCommand = command("browser/tear-off")
-	.input(TabIdSchema)
+	.input(TabIdSchema.extend({ openWith: z.string() }))
+	.idempotencyKey(Repeatable);
+export const LayTearOffGhostCommand = command("browser/lay-tear-off-ghost")
+	.input(GhostLaySchema)
+	.idempotencyKey(Repeatable);
+export const WearTearOffGhostCommand = command("browser/wear-tear-off-ghost")
+	.input(GhostWornSchema)
+	.idempotencyKey(Repeatable);
+export const ShowTearOffGhostCommand = command("browser/show-tear-off-ghost")
+	.input(GhostShownSchema)
 	.idempotencyKey(Repeatable);
 export const ShowTabCommand = command("browser/show-tab")
 	.input(TabIdSchema)
@@ -280,6 +353,7 @@ export const AnswerAskCommand = command("browser/answer-ask")
 export const StopInkCommand = command("browser/stop-ink")
 	.idempotencyKey(Repeatable);
 export const ReadPageContentCommand = command("browser/read-page-content")
+	.input(ReadPageSchema)
 	.output(PageContentSchema)
 	.idempotencyKey(PerCall);
 export const CapturePageCommand = command("browser/capture-page")
@@ -297,4 +371,4 @@ export const PagesChangedEvent = event("browser/pages-changed");
 export const InkActivityChangedEvent = event("browser/ink-activity-changed");
 export const AccessAsksChangedEvent = event("browser/access-asks-changed");
 
-export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, TearOffCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);
+export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenChatWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);

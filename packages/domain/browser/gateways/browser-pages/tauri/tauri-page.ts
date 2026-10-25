@@ -1,7 +1,14 @@
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
+import type {
+	CommittedPage,
+	PageContentRead,
+	PageForm,
+	PageShot,
+	ShotAsk,
+} from "../../../shared/schema/page-read.schema.js";
+import { regionOnPage } from "../../../shared/lib/region-within.js";
 import type { PageFacts, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
-import { base64Of, contentOf, faviconOf, frameUrlsOf, hasSecretFieldIn, pngSizeOf } from "./page-reads.js";
+import { base64Of, contentOf, faviconOf, frameUrlsOf, hasSecretFieldIn, layoutOf, pngSizeOf } from "./page-reads.js";
 
 const NEW_TAB_TITLE = "New tab";
 const BLANK = "about:blank";
@@ -16,8 +23,11 @@ const BLANK_TAB: Omit<BrowserTab, "id"> = {
 	canGoBack: false,
 	canGoForward: false,
 	failure: null,
+	window: null,
 };
 
+const MOST_SHOT_CHARACTERS = 5_000_000;
+const SHOT_TOO_HEAVY = "the shot weighs {mb} MB, over the 5 MB a model takes; ask for a smaller region";
 export interface TauriPageHold {
 	readonly id: string;
 	readonly bridge: PagesBridge;
@@ -137,17 +147,28 @@ export class TauriPage {
 		return hasSecretFieldIn(this.bridge, this.readablePage());
 	}
 
-	content(): Promise<PageContentRead> {
-		return contentOf(this.bridge, this.readablePage());
+	content(form: PageForm): Promise<PageContentRead> {
+		return contentOf(this.bridge, this.readablePage(), form);
 	}
 
-	async capture(region: PageRegion | null): Promise<PageShot> {
-		const png = await this.bridge.snapshot(this.readablePage(), region, "png");
+	async capture({ area, region }: ShotAsk): Promise<PageShot> {
+		const page = this.readablePage();
+		const layout = await layoutOf(this.bridge, page);
+		const png =
+			area === "page"
+				? await this.bridge.pageShot(page, regionOnPage(region, layout.page))
+				: await this.bridge.snapshot(page, region, "png");
+		const encoded = base64Of(png);
+
+		if (encoded.length > MOST_SHOT_CHARACTERS) {
+			throw new Error(SHOT_TOO_HEAVY.replace("{mb}", (encoded.length / 1_000_000).toFixed(1)));
+		}
 
 		return {
 			url: this.state.url,
-			png: base64Of(png),
+			png: encoded,
 			...pngSizeOf(png),
+			layout,
 		};
 	}
 
@@ -159,6 +180,7 @@ export class TauriPage {
 			title: () => this.noteFacts(event.facts),
 			failed: () => this.noteFailure(event),
 			stopped: () => this.noteStop(event.facts),
+			moved: () => this.noteFacts(event.facts),
 		};
 		reactions[event.kind]();
 	}
@@ -186,7 +208,16 @@ export class TauriPage {
 			title: facts.title || this.state.title,
 			canGoBack: facts.canGoBack,
 			canGoForward: facts.canGoForward,
+			window: facts.window,
 		});
+	}
+
+	leaveWindow(window: string): void {
+		if (this.state.window !== window) {
+			return;
+		}
+
+		this.update({ window: null });
 	}
 
 	private urlOf(facts: PageFacts): string {
@@ -203,6 +234,7 @@ export class TauriPage {
 			title: facts.title || this.state.title,
 			canGoBack: facts.canGoBack,
 			canGoForward: facts.canGoForward,
+			window: facts.window,
 		});
 	}
 
@@ -252,6 +284,11 @@ export class TauriPage {
 		}
 
 		this.noteFacts(await this.bridge.facts(this.state.id));
+	}
+
+	adopt(): Promise<void> {
+		this.created ??= Promise.resolve();
+		return this.refreshFacts({});
 	}
 
 	ensureCreated(): Promise<void> {

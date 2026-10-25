@@ -37,7 +37,7 @@ function said(answer: Answer<unknown>): string {
 }
 
 const allowed = fakeBrowser();
-const read = await started(allowed).send(ReadPageContentCommand);
+const read = await started(allowed).send(ReadPageContentCommand, { tabId: null });
 check("an allowed, visible page is read", read.ok && read.output.text, "Sprint 7");
 check(
 	"the read is logged without page content",
@@ -52,13 +52,17 @@ check("the log line holds no page text", JSON.stringify(allowed.audit.access).in
 
 const hidden = fakeBrowser();
 hidden.pages.isShownOnScreen = false;
-check("a tab not on screen is not read", said(await started(hidden).send(ReadPageContentCommand)), "tab-not-visible");
+check(
+	"a tab not on screen is not read",
+	said(await started(hidden).send(ReadPageContentCommand, { tabId: null })),
+	"tab-not-visible",
+);
 
 const moving = fakeBrowser();
 moving.pages.navigatesWhileReading = true;
 check(
 	"a page that navigates during the read is refused",
-	said(await started(moving).send(ReadPageContentCommand)),
+	said(await started(moving).send(ReadPageContentCommand, { tabId: null })),
 	"changed-during-capture",
 );
 
@@ -66,7 +70,7 @@ const secret = fakeBrowser();
 secret.pages.hasSecret = true;
 check(
 	"a page showing a password field is not read",
-	said(await started(secret).send(ReadPageContentCommand)),
+	said(await started(secret).send(ReadPageContentCommand, { tabId: null })),
 	"secret-field-on-page",
 );
 
@@ -74,7 +78,7 @@ const revealing = fakeBrowser();
 revealing.pages.duringRead = () => {
 	revealing.pages.hasSecret = true;
 };
-const revealed = await started(revealing).send(ReadPageContentCommand);
+const revealed = await started(revealing).send(ReadPageContentCommand, { tabId: null });
 check("a field shown during the text read is refused on the way out", said(revealed), "secret-field-on-page");
 check("and the text never reaches the agent", JSON.stringify(revealed).includes("Sprint 7"), false);
 check(
@@ -87,7 +91,7 @@ const flashing = fakeBrowser();
 flashing.pages.isFieldShownOnlyToRead = true;
 check(
 	"a field the read itself saw is refused though no probe saw it",
-	said(await started(flashing).send(ReadPageContentCommand)),
+	said(await started(flashing).send(ReadPageContentCommand, { tabId: null })),
 	"secret-field-on-page",
 );
 
@@ -95,7 +99,7 @@ const drifting = fakeBrowser();
 drifting.pages.readsAt = "https://example.com/elsewhere";
 check(
 	"a read whose page names another address than the committed one is refused",
-	said(await started(drifting).send(ReadPageContentCommand)),
+	said(await started(drifting).send(ReadPageContentCommand, { tabId: null })),
 	"changed-during-capture",
 );
 
@@ -109,7 +113,7 @@ check("and the image never reaches the agent", JSON.stringify(shot).includes("iV
 
 const carded = fakeBrowser();
 carded.pages.text = "Paid with 4111 1111 1111 1111 yesterday";
-const cardRead = await started(carded).send(ReadPageContentCommand);
+const cardRead = await started(carded).send(ReadPageContentCommand, { tabId: null });
 check("a card number in the page text is refused", said(cardRead), "secret-in-content");
 check("and the number never reaches the agent", JSON.stringify(cardRead).includes("4111"), false);
 check(
@@ -123,7 +127,11 @@ bank.pages.tab = {
 	...bank.pages.tab,
 	url: "https://www.paypal.com/myaccount",
 };
-check("a bank page is not read", said(await started(bank).send(ReadPageContentCommand)), "sensitive-bank-or-payments");
+check(
+	"a bank page is not read",
+	said(await started(bank).send(ReadPageContentCommand, { tabId: null })),
+	"sensitive-bank-or-payments",
+);
 
 const framed = fakeBrowser();
 framed.pages.frames = ["https://example.com/board", "https://checkout.stripe.com/pay"];
@@ -134,7 +142,7 @@ check(
 );
 check(
 	"a payment frame keeps its page content unread too",
-	said(await started(framed).send(ReadPageContentCommand)),
+	said(await started(framed).send(ReadPageContentCommand, { tabId: null })),
 	"secret-field-on-page",
 );
 
@@ -144,7 +152,7 @@ plain.pages.tab = {
 	url: "http://example.com/",
 };
 const plainApp = started(plain);
-const asking = plainApp.send(ReadPageContentCommand);
+const asking = plainApp.send(ReadPageContentCommand, { tabId: null });
 await waitFor(() => plain.parts.accessAsks.accessAsks().length === 1);
 const [asked] = plain.parts.accessAsks.accessAsks();
 check("an http page asks the person first", asked?.siteKey, "example.com");
@@ -160,7 +168,7 @@ refusing.pages.tab = {
 	...refusing.pages.tab,
 	url: "https://mail.google.com/",
 };
-const refused = started(refusing).send(ReadPageContentCommand);
+const refused = started(refusing).send(ReadPageContentCommand, { tabId: null });
 await waitFor(() => refusing.parts.accessAsks.accessAsks().length === 1);
 refusing.parts.accessAsks.saveAnswer(refusing.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 check("a no answer refuses the read", said(await refused), "person-said-no");
@@ -191,7 +199,7 @@ check("the opened page is in the tab", navigating.pages.opened, ["https://exampl
 
 const carrying = fakeBrowser();
 const carrier = started(carrying);
-await carrier.send(ReadPageContentCommand);
+await carrier.send(ReadPageContentCommand, { tabId: null });
 const leaving = carrier.send(InkOpenAddressCommand, { url: "https://elsewhere.net/?q=secret" });
 await waitFor(() => carrying.parts.accessAsks.accessAsks().length === 1);
 check(
@@ -216,10 +224,14 @@ check(
 	writer.grants.changes.map(({ was, became }) => `${String(was)}→${became}`),
 	["null→blocked"],
 );
-check("a blocked site stops the read", said(await started(writer).send(ReadPageContentCommand)), "person-blocked");
+check(
+	"a blocked site stops the read",
+	said(await started(writer).send(ReadPageContentCommand, { tabId: null })),
+	"person-blocked",
+);
 check(
 	"plain http asks on every read, even after once, and an unanswered ask refuses",
-	said(await plainApp.send(ReadPageContentCommand)),
+	said(await plainApp.send(ReadPageContentCommand, { tabId: null })),
 	"ask-unanswered",
 );
 check(
@@ -234,11 +246,15 @@ webmail.pages.tab = {
 	url: "https://mail.google.com/mail",
 };
 const webmailApp = started(webmail);
-const firstRead = webmailApp.send(ReadPageContentCommand);
+const firstRead = webmailApp.send(ReadPageContentCommand, { tabId: null });
 await waitFor(() => webmail.parts.accessAsks.accessAsks().length === 1);
 await webmailApp.send(AnswerAskCommand, { id: webmail.parts.accessAsks.accessAsks()[0]?.id ?? "", answer: "once" });
 check("once lets an asking site be read", said(await firstRead), "ok");
-check("and the next read in that hour needs no ask", said(await webmailApp.send(ReadPageContentCommand)), "ok");
+check(
+	"and the next read in that hour needs no ask",
+	said(await webmailApp.send(ReadPageContentCommand, { tabId: null })),
+	"ok",
+);
 check(
 	"once is written to the grant log as was and became",
 	webmail.grants.changes.map(({ was, became, reason }) => `${String(was)}→${became} ${reason}`),
@@ -260,7 +276,7 @@ check(
 	true,
 );
 webmail.pages.open("tab-1", "https://mail.google.com/mail");
-const afterLeaving = webmailApp.send(ReadPageContentCommand);
+const afterLeaving = webmailApp.send(ReadPageContentCommand, { tabId: null });
 check("leaving the host ends once", await waitFor(() => webmail.parts.accessAsks.accessAsks().length === 1), true);
 webmail.parts.accessAsks.saveAnswer(webmail.parts.accessAsks.accessAsks()[0]?.id ?? "", "no");
 await afterLeaving;
