@@ -15,7 +15,19 @@ pub const PLUGIN_NAME: &str = "agent";
 pub const PROMPT: &str = include_str!("sumi-prompt.md");
 
 const SOCKET_FILE: &str = "agent-tools.sock";
-pub const ALLOWED_TOOLS: &[&str] = &["app_state"];
+pub const ALLOWED_TOOLS: &[&str] = &[
+    "app_state",
+    "apps_list",
+    "tab_open",
+    "tab_duplicate",
+    "tab_update",
+    "tab_close",
+    "tab_access",
+    "tab_read",
+    "group_create",
+    "group_update",
+    "group_delete",
+];
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
 const NO_HUB: &str = "The agent tools have not started.";

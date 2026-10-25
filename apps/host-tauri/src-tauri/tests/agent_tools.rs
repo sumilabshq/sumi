@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::thread;
 use widgetarium_host_tauri_lib::agent::hub::{AgentHub, AgentLink};
 use widgetarium_host_tauri_lib::agent::hub::tool_answer_of;
-use widgetarium_host_tauri_lib::agent::mcp::tool_list;
+use widgetarium_host_tauri_lib::agent::mcp::{content_of, tool_list};
 use widgetarium_host_tauri_lib::agent::{socket, ALLOWED_TOOLS, PROMPT};
 use widgetarium_host_tauri_lib::assistant::providers::{provider_by_id, TurnAsk, TurnPlaces};
 
@@ -65,7 +65,8 @@ fn check_claude_args(checks: &mut Checks) {
     checks.check("the MCP server is the Sumi binary", server["command"].as_str(), Some("/Applications/Sumi.app/sumi"));
     let args: Vec<&str> = server["args"].as_array().map(|all| all.iter().filter_map(Value::as_str).collect()).unwrap_or_default();
     checks.check("it starts in MCP mode for this chat", args, vec!["--mcp", "--socket", "/tmp/sumi.sock", "--token", "t0k", "--chat", "chat-7"]);
-    checks.check("only Sumi's own tools are allowed", after(&argv, "--allowedTools").as_deref(), Some("mcp__sumi__app_state"));
+    let allowed: Vec<String> = ALLOWED_TOOLS.iter().map(|tool| format!("mcp__sumi__{tool}")).collect();
+    checks.check("only Sumi's own tools are allowed", after(&argv, "--allowedTools"), Some(allowed.join(",")));
     checks.check("the person's message stays last", argv.last().map(String::as_str), Some("which tabs?"));
     let codex = argv_with_agent("codex");
     checks.check("another provider gets no Claude-only flags", codex.iter().any(|arg| arg == "--mcp-config"), false);
@@ -152,6 +153,10 @@ fn check_tool_answers(checks: &mut Checks) {
     checks.check("ok with no value is refused", tool_answer_of(&json!({ "id": 4, "ok": true })).is_err(), true);
     checks.check("an ok that is not a boolean is refused", tool_answer_of(&json!({ "id": 4, "ok": "yes", "value": 1 })).is_err(), true);
     checks.check("a refusal with no reason is refused", tool_answer_of(&json!({ "id": 4, "ok": false, "error": "" })).is_err(), true);
+    let shot = content_of(json!({ "url": "https://a.example", "png": "iVBOR", "width": 2 }));
+    checks.check("a screenshot answers as an image", (shot[0]["type"].as_str(), shot[0]["data"].as_str()), (Some("image"), Some("iVBOR")));
+    checks.check("the image's facts follow as text, without the png", shot[1]["text"].as_str().map(|text| text.contains("width") && !text.contains("iVBOR")), Some(true));
+    checks.check("a plain answer stays one text block", content_of(json!({ "a": 1 }))[0]["type"].as_str(), Some("text"));
     checks.check("a refusal keeps its reason", tool_answer_of(&json!({ "id": 4, "ok": false, "error": "no" })), Ok((4, Err("no".to_string()))));
 }
 

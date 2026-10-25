@@ -84,9 +84,21 @@ fn call_tool(bridge: &Bridge, params: &Value) -> Value {
     let tool = params.get("name").and_then(Value::as_str).unwrap_or_default();
     let input = params.get("arguments").cloned().unwrap_or_else(|| json!({}));
     match asked_app(bridge, tool, input) {
-        Ok(value) => json!({ "content": [{ "type": "text", "text": pretty(&value) }] }),
+        Ok(value) => json!({ "content": content_of(value) }),
         Err(refusal) => json!({ "content": [{ "type": "text", "text": refusal }], "isError": true }),
     }
+}
+
+pub fn content_of(mut value: Value) -> Value {
+    let has_png = value.get("png").is_some_and(Value::is_string);
+    let Some(png) = value.as_object_mut().filter(|_| has_png).and_then(|fields| fields.remove("png")) else {
+        return json!([{ "type": "text", "text": pretty(&value) }]);
+    };
+
+    json!([
+        { "type": "image", "data": png, "mimeType": "image/png" },
+        { "type": "text", "text": pretty(&value) },
+    ])
 }
 
 fn pretty(value: &Value) -> String {

@@ -8,10 +8,10 @@ export type ChatList = OutputOf<typeof ChatListQuery>;
 export type AppTabs = OutputOf<typeof AppTabsQuery>;
 type SidebarSection = Sidebar["sections"][number];
 type SidebarGroup = Extract<SidebarSection["entries"][number], { kind: "group" }>["group"];
-type SidebarTab = Extract<SidebarSection["entries"][number], { kind: "tab" }>["tab"];
+export type SidebarTab = Extract<SidebarSection["entries"][number], { kind: "tab" }>["tab"];
 
-const WORKSPACE = "workspace";
-const THIS_CHAT = "this-chat";
+export const WORKSPACE = "workspace";
+export const THIS_CHAT = "this-chat";
 
 export const AppStateInputSchema = z.object({
 	scope: z.enum([WORKSPACE, THIS_CHAT]).default(WORKSPACE),
@@ -57,14 +57,14 @@ function sectionOf(section: SidebarSection, chatId: string) {
 		title: section.title,
 		isOpen: section.isOpen,
 		entries: section.entries.map((entry) =>
-			entry.kind === "tab" ? { kind: "tab", ...tabOf(entry.tab) } : groupOf(entry.group),
+			entry.kind === "tab" ? { kind: "tab" as const, ...tabOf(entry.tab) } : groupOf(entry.group),
 		),
 	};
 }
 
 function groupOf(group: SidebarGroup) {
 	return {
-		kind: "group",
+		kind: "group" as const,
 		id: group.id,
 		name: group.name,
 		colour: group.hue,

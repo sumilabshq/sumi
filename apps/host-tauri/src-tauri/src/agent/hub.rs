@@ -12,7 +12,7 @@ pub type ToolAnswer = Result<Value, String>;
 const NO_STUDIO: &str = "Sumi's window is not open, so the app cannot answer.";
 const NO_ANSWER: &str = "Sumi's window did not answer in time.";
 const NOT_AN_ANSWER: &str = "A tool answer names its id and either ok with a value or a refusal with a reason.";
-const ANSWER_WAIT: Duration = Duration::from_secs(30);
+const ANSWER_WAIT: Duration = Duration::from_secs(180);
 
 pub struct AgentLink {
     pub exe: String,
