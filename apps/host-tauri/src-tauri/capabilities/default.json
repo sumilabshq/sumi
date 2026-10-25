@@ -11,6 +11,7 @@
 		"assistant:default",
 		"browser:default",
 		"studio-log:default",
-		"agent:default"
+		"agent:default",
+		"studio-core:default"
 	]
 }

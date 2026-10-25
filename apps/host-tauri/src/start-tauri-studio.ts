@@ -1,9 +1,10 @@
-import { createElement as h } from "react";
+import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import "@widgetarium/studio/studio.css";
 import "./host-page.css";
 import { invoke } from "@tauri-apps/api/core";
 import { followColourScheme } from "@widgetarium/core/app";
+import { isCorePage } from "@widgetarium/behaviors";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { openTauriStudio } from "./startup/open-tauri-studio.js";
 import { TauriOpening } from "./startup/tauri-opening.js";
@@ -12,6 +13,7 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { WorkspaceClient } from "./workspace/workspace-client.js";
 import { forwardStudioLogs } from "./studio-log.js";
 import { followWindowDrag } from "./window-drag.js";
+import { startCore } from "./core-link/start-core.js";
 
 const STUDIO_LOG_LINE = "plugin:studio-log|line";
 
@@ -23,6 +25,11 @@ export function startTauriStudio(project: WidgetariumProject): ReactElement {
 	});
 	followColourScheme();
 	followWindowDrag();
+	if (isCorePage(location.search)) {
+		startCore();
+		return h(Fragment);
+	}
+
 	const store = new StoreClient(tauriInvoke);
 	const workspaces = new WorkspaceClient(tauriInvoke);
 	const opening = new TauriOpening({

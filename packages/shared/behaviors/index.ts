@@ -56,3 +56,4 @@ export { localFlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { FlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { PointerCarryAsk } from "./src/carry/pointer-carry.js";
 export type { CarriedItem, CarriedKind, CarryMoment, CarryPhase, PointBox } from "./src/carry/carry.js";
+export { isCorePage } from "./src/studio-window/studio-window.js";

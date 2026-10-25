@@ -14,6 +14,7 @@ import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { tauriStudioHost } from "../tauri-studio-host.js";
+import { joinPlaces } from "../core-link/window-places.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
 import { reopensOnWorkspaceSwitch } from "../workspace/workspace-switch.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
@@ -49,9 +50,14 @@ interface Flushed {
 export async function openTauriStudio(opening: StudioOpening): Promise<StartedStudio> {
 	setTracing(opening.settings.now().trace);
 	const docs = await readWorkspaceDocs(opening);
+	const joined = joinPlaces(opening.workspace.id);
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
 	const studioApp = startStudioApp({ platform: "tauri", workspaceId: opening.workspace.id });
-	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () => reopenWindow(docs));
+	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
+		reopenWindow(async () => {
+			await Promise.all([docs.flushAll(), joined.leave()]);
+		}),
+	);
 	openAgentTools(studioApp);
 	const assistant = startTauriAssistant({
 		workspace: {
@@ -67,8 +73,8 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	return startedStudioOf(opening, { studioApp, assistant });
 }
 
-async function reopenWindow(docs: WorkspaceDocs): Promise<void> {
-	await docs.flushAll();
+async function reopenWindow(leaveWindow: () => Promise<void>): Promise<void> {
+	await leaveWindow();
 	window.location.reload();
 }
 
