@@ -52,7 +52,10 @@ export const FrameWidthsAnswerSchema = FrameWidthsSchema.extend({ bounds: FrameB
 export type FrameWidthsAnswer = z.infer<typeof FrameWidthsAnswerSchema>;
 
 export const PaneViewSchema = z.discriminatedUnion("kind", [
-	z.object({ kind: z.literal("chat") }),
+	z.object({
+		kind: z.literal("chat"),
+		chatId: z.string().min(1).optional(),
+	}),
 	z.object({
 		kind: z.literal("app"),
 		tabId: z.string().nullable(),
@@ -81,6 +84,7 @@ export interface PaneSplit {
 	readonly dir: SplitDir;
 	readonly children: readonly PaneNode[];
 	readonly shares: readonly number[];
+	readonly chatId?: string | undefined;
 }
 
 export type PaneNode = PaneLeaf | PaneSplit;
@@ -100,6 +104,7 @@ export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
 			dir: SplitDirSchema,
 			children: z.array(PaneNodeSchema).readonly(),
 			shares: z.array(z.number().nonnegative()).readonly(),
+			chatId: z.string().min(1).optional(),
 		}),
 	]),
 );
@@ -107,6 +112,7 @@ export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
 export const PaneBoardSchema = z.object({
 	root: PaneNodeSchema.nullable(),
 	targetId: z.string().nullable(),
+	chatTargetId: z.string().nullable(),
 	tabTargetId: z.string().nullable(),
 	leaves: z.array(PaneLeafSchema).readonly(),
 	tabPanes: z
@@ -114,6 +120,15 @@ export const PaneBoardSchema = z.object({
 			z.object({
 				paneId: z.string(),
 				tabId: z.string(),
+			}),
+		)
+		.readonly(),
+	chatGroups: z
+		.array(
+			z.object({
+				chatId: z.string(),
+				groupId: z.string(),
+				paneIds: z.array(z.string()).readonly(),
 			}),
 		)
 		.readonly(),
@@ -125,6 +140,7 @@ export const PanePlacementSchema = z.object({
 	view: PaneViewSchema,
 	targetId: z.string().nullable(),
 	side: PaneSideSchema,
+	home: z.string().nullable().optional(),
 });
 
 export type PanePlacement = z.infer<typeof PanePlacementSchema>;
@@ -193,8 +209,25 @@ export const ResizePaneSplitCommand = command("layout/resize-pane-split")
 export const AimPaneCommand = command("layout/aim-pane")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
+export const ShowChatInPaneCommand = command("layout/show-chat-in-pane")
+	.input(
+		z.object({
+			chatId: z.string().min(1),
+			paneId: z.string().nullable(),
+		}),
+	)
+	.idempotencyKey(Repeatable);
 export const ShowTabInTargetPaneCommand = command("layout/show-tab-in-target-pane")
 	.input(z.object({ tabId: z.string() }))
+	.idempotencyKey(Repeatable);
+export const ShowTabInChatGroupCommand = command("layout/show-tab-in-chat-group")
+	.input(
+		z.object({
+			chatId: z.string().min(1),
+			tabId: z.string(),
+			isOnlyWhenBare: z.boolean(),
+		}),
+	)
 	.idempotencyKey(Repeatable);
 export const OpenShownTabPaneCommand = command("layout/open-shown-tab-pane")
 	.idempotencyKey(Repeatable);
@@ -208,4 +241,4 @@ export const DropGoneTabsCommand = command("layout/drop-gone-tabs")
 	.idempotencyKey(Repeatable);
 export const PanesChangedEvent = event("layout/panes-changed");
 
-export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowTabInTargetPaneCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand]);
+export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowChatInPaneCommand, ShowTabInTargetPaneCommand, ShowTabInChatGroupCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand]);

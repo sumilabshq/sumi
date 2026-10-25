@@ -5,6 +5,10 @@ export interface PanePlace {
 	readonly side: PaneSide;
 }
 
+export interface ChatGroup extends PaneSplit {
+	readonly chatId: string;
+}
+
 interface PanePart {
 	readonly node: PaneNode;
 	readonly share: number;
@@ -20,15 +24,39 @@ export function leavesOf(node: PaneNode | null): readonly PaneLeaf[] {
 	return node.kind === "pane" ? [node] : node.children.flatMap((child) => leavesOf(child));
 }
 
-export function withPlaced(root: PaneNode | null, at: PanePlace, leaf: PaneLeaf): PaneNode | null {
-	const standing = leavesOf(root).find((placed) => isSameView(placed.view, leaf.view));
+export function idsOf(node: PaneNode | null): readonly string[] {
+	if (node === null) {
+		return [];
+	}
 
-	if (standing !== undefined && standing.id === at.targetId) {
+	return node.kind === "pane" ? [node.id] : [node.id, ...node.children.flatMap((child) => idsOf(child))];
+}
+
+export function isChatGroup(node: PaneNode | null | undefined): node is ChatGroup {
+	return node?.kind === "split" && node.chatId !== undefined;
+}
+
+export function withPlaced(root: PaneNode | null, at: PanePlace, moved: PaneNode): PaneNode | null {
+	if (at.targetId !== null && idsOf(moved).includes(at.targetId)) {
 		return null;
 	}
 
-	const cleared = standing === undefined ? root : withoutPane(root, standing.id);
-	return withPane(cleared, at, standing ?? leaf);
+	return withPane(withoutPane(root, moved.id), at, moved);
+}
+
+export function withNodeReplaced(node: PaneNode | null, id: string, replacement: PaneNode): PaneNode | null {
+	if (node === null || node.id === id) {
+		return node === null ? null : replacement;
+	}
+
+	if (node.kind === "pane") {
+		return node;
+	}
+
+	return {
+		...node,
+		children: node.children.map((child) => withNodeReplaced(child, id, replacement) ?? child),
+	};
 }
 
 export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | null {
@@ -45,7 +73,11 @@ export function withoutPane(node: PaneNode | null, paneId: string): PaneNode | n
 		return left === null ? [] : [{ node: left, share }];
 	});
 
-	if (kept.length < 2) {
+	if (kept.length === 0) {
+		return null;
+	}
+
+	if (kept.length < 2 && !isChatGroup(node)) {
 		return kept[0]?.node ?? null;
 	}
 
@@ -88,14 +120,18 @@ export function withShare(node: PaneNode, splitId: string, at: number, share: nu
 }
 
 export function isSameView(one: PaneView, other: PaneView): boolean {
-	if (one.kind === "chat" || other.kind === "chat") {
-		return one.kind === other.kind;
+	if (one.kind === "chat" && other.kind === "chat") {
+		return one.chatId === other.chatId;
 	}
 
-	return one.tabId === other.tabId;
+	if (one.kind === "app" && other.kind === "app") {
+		return one.tabId === other.tabId;
+	}
+
+	return false;
 }
 
-function withPane(node: PaneNode | null, { targetId, side }: PanePlace, leaf: PaneLeaf): PaneNode {
+function withPane(node: PaneNode | null, { targetId, side }: PanePlace, leaf: PaneNode): PaneNode {
 	if (node === null) {
 		return leaf;
 	}
@@ -107,15 +143,15 @@ function withPane(node: PaneNode | null, { targetId, side }: PanePlace, leaf: Pa
 	return placeBeside(node, targetId, side, leaf);
 }
 
-function placeAtEdge(node: PaneNode, side: PaneSide, leaf: PaneLeaf): PaneNode {
-	if (node.kind === "split" && node.dir === dirOf(side)) {
+function placeAtEdge(node: PaneNode, side: PaneSide, leaf: PaneNode): PaneNode {
+	if (node.kind === "split" && !isChatGroup(node) && node.dir === dirOf(side)) {
 		return withInserted(node, isBefore(side) ? 0 : node.children.length, leaf);
 	}
 
 	return besideOf(node, side, leaf);
 }
 
-function placeBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: PaneLeaf): PaneNode {
+function placeBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: PaneNode): PaneNode {
 	if (node.id === targetId) {
 		return besideOf(node, side, leaf);
 	}
@@ -136,7 +172,7 @@ function placeBeside(node: PaneNode, targetId: string, side: PaneSide, leaf: Pan
 	};
 }
 
-function withInserted(split: PaneSplit, cut: number, leaf: PaneLeaf): PaneSplit {
+function withInserted(split: PaneSplit, cut: number, leaf: PaneNode): PaneSplit {
 	const count = split.children.length + 1;
 	const parts = partsOf(split).map(({ node, share }) => ({
 		node,
@@ -152,7 +188,7 @@ function withInserted(split: PaneSplit, cut: number, leaf: PaneLeaf): PaneSplit 
 	]);
 }
 
-function besideOf(node: PaneNode, side: PaneSide, leaf: PaneLeaf): PaneSplit {
+function besideOf(node: PaneNode, side: PaneSide, leaf: PaneNode): PaneSplit {
 	return {
 		kind: "split",
 		id: `${leaf.id}-around`,
@@ -189,7 +225,7 @@ function partsOf(split: PaneSplit): readonly PanePart[] {
 }
 
 function isSplitAlong(node: PaneNode, dir: SplitDir): node is PaneSplit {
-	return node.kind === "split" && node.dir === dir;
+	return node.kind === "split" && !isChatGroup(node) && node.dir === dir;
 }
 
 function pairShareOf(index: number, at: number, [first, second]: readonly [number, number]): number | null {

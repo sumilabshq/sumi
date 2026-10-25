@@ -1,7 +1,10 @@
 import { z } from "zod";
 
 export const PaneViewSchema = z.discriminatedUnion("kind", [
-	z.object({ kind: z.literal("chat") }),
+	z.object({
+		kind: z.literal("chat"),
+		chatId: z.string().min(1).optional(),
+	}),
 	z.object({
 		kind: z.literal("app"),
 		tabId: z.string().nullable(),
@@ -30,6 +33,7 @@ export interface PaneSplit {
 	readonly dir: SplitDir;
 	readonly children: readonly PaneNode[];
 	readonly shares: readonly number[];
+	readonly chatId?: string | undefined;
 }
 
 export type PaneNode = PaneLeaf | PaneSplit;
@@ -49,6 +53,7 @@ export const PaneNodeSchema: z.ZodType<PaneNode> = z.lazy(() =>
 			dir: SplitDirSchema,
 			children: z.array(PaneNodeSchema).readonly(),
 			shares: z.array(z.number().nonnegative()).readonly(),
+			chatId: z.string().min(1).optional(),
 		}),
 	]),
 );
@@ -57,6 +62,8 @@ export const PaneTreeSchema = z.object({
 	root: PaneNodeSchema.nullable(),
 	minted: z.number().int().nonnegative(),
 	targetId: z.string().nullable(),
+	chatTargetId: z.string().optional(),
+	shelved: z.record(z.string(), PaneNodeSchema).optional(),
 });
 
 export type PaneTree = z.infer<typeof PaneTreeSchema>;
@@ -64,6 +71,7 @@ export type PaneTree = z.infer<typeof PaneTreeSchema>;
 export const PaneBoardSchema = z.object({
 	root: PaneNodeSchema.nullable(),
 	targetId: z.string().nullable(),
+	chatTargetId: z.string().nullable(),
 	tabTargetId: z.string().nullable(),
 	leaves: z.array(PaneLeafSchema).readonly(),
 	tabPanes: z
@@ -71,6 +79,15 @@ export const PaneBoardSchema = z.object({
 			z.object({
 				paneId: z.string(),
 				tabId: z.string(),
+			}),
+		)
+		.readonly(),
+	chatGroups: z
+		.array(
+			z.object({
+				chatId: z.string(),
+				groupId: z.string(),
+				paneIds: z.array(z.string()).readonly(),
 			}),
 		)
 		.readonly(),
@@ -82,6 +99,7 @@ export const PanePlacementSchema = z.object({
 	view: PaneViewSchema,
 	targetId: z.string().nullable(),
 	side: PaneSideSchema,
+	home: z.string().nullable().optional(),
 });
 
 export type PanePlacement = z.infer<typeof PanePlacementSchema>;

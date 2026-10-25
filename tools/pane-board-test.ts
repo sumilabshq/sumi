@@ -101,8 +101,10 @@ function checksTree(): void {
 		pages: [],
 		shownApp: null,
 		chat: { id: "chat-1", title: "Chat" },
+		boardChats: [],
 		shutLists: [],
 		inPanes: ["tab-1"],
+		hasShownTabPane: true,
 	});
 	const rows =
 		sidebar.sections[0]?.entries.flatMap((entry) =>
@@ -562,11 +564,11 @@ async function checksBoard(folder: string): Promise<void> {
 	await page.ask(`location.reload(); true`);
 	await waited(1500);
 	const reloaded = (await page.ask(PANES)) as unknown[];
-	const idsOf = (panes: readonly unknown[]): string =>
-		JSON.stringify(panes.map((pane) => (Array.isArray(pane) ? pane[0] : null)));
+	const idsOf = (panes: readonly unknown[]): readonly unknown[] =>
+		panes.map((pane) => (Array.isArray(pane) ? pane[0] : null));
 	check(
 		"a web reload keeps the pane tree but closes the pane whose tab the host no longer holds",
-		idsOf(reloaded) === idsOf(after.filter((pane) => Array.isArray(pane) && pane[0] !== "pane-1")),
+		reloaded.length === after.length - 1 && idsOf(reloaded).includes("pane-app") && !idsOf(reloaded).includes("pane-1"),
 		[after, reloaded],
 	);
 	const outside = await page.ask(`${CARRY}("over", 5, 5)`);

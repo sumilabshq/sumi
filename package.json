@@ -136,7 +136,7 @@
 		"test:ladder": "node --single-threaded --import ./tools/loader/register.mts tools/ladder-test.ts",
 		"test:preview": "node --single-threaded --import ./tools/loader/register.mts tools/preview-test.ts",
 		"test:paint": "node --single-threaded --import ./tools/loader/register.mts tools/paint-test.ts",
-		"test:pane-board": "node --single-threaded --import ./tools/loader/register.mts tools/pane-board-test.ts",
+		"test:pane-board": "node --single-threaded --import ./tools/loader/register.mts tools/pane-board-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/chat-panes-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/chat-groups-test.ts",
 		"test:design-systems": "node --single-threaded --import ./tools/loader/register.mts tools/design-system-check-test.ts",
 		"test:system-tokens": "node --single-threaded --import ./tools/loader/register.mts tools/system-tokens-paint-test.ts",
 		"test:overlay-paint": "node --single-threaded --import ./tools/loader/register.mts tools/overlay-paint-test.ts",

@@ -1,4 +1,5 @@
 import { PaneTreeSchema } from "../../shared/schema/pane-tree.schema.js";
+import { withChatsGrouped } from "../../shared/lib/chat-groups.js";
 import type { PaneNode, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 export abstract class PaneTreeGateway {
@@ -16,7 +17,7 @@ export const KeptPaneTreeSchema = PaneTreeSchema.superRefine((tree, context) => 
 			message,
 		});
 	}
-});
+}).transform(withChatsGrouped);
 
 function paneTreeFaultsOf(tree: PaneTree): string[] {
 	const nodes = nodesOf(tree.root);
@@ -41,11 +42,20 @@ function splitFaultsOf(node: PaneNode): string[] {
 		return [];
 	}
 
-	const { id, children, shares } = node;
+	const { id, children, shares, chatId } = node;
+	const chatLeaves = nodesOf(node).filter((one) => one.kind === "pane" && one.view.kind === "chat");
 	const sum = shares.reduce((total, share) => total + share, 0);
 	const faults: readonly (readonly [boolean, string])[] = [
 		[shares.length !== children.length, `split ${id} holds ${children.length} children and ${shares.length} shares`],
-		[children.length < 2, `split ${id} holds ${children.length} child; a split holds two or more`],
+		[
+			children.length < (chatId === undefined ? 2 : 1),
+			`split ${id} holds ${children.length} children, too few for its kind`,
+		],
+		[
+			chatId !== undefined &&
+				!chatLeaves.some((one) => one.kind === "pane" && one.view.kind === "chat" && one.view.chatId === chatId),
+			`chat group ${id} holds no pane of chat ${chatId ?? ""}`,
+		],
 		[sum <= 0, `split ${id} has shares summing to ${sum}`],
 	];
 	return faults.flatMap(([isFault, message]) => (isFault ? [message] : []));

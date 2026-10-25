@@ -6,6 +6,8 @@ import {
 	CloseShownTabPaneCommand,
 	DropGoneTabsCommand,
 	OpenShownTabPaneCommand,
+	ShowChatInPaneCommand,
+	ShowTabInChatGroupCommand,
 	ShowTabInTargetPaneCommand,
 } from "./features/pane-tabs/requests.js";
 import {
@@ -48,7 +50,9 @@ export const LayoutModule = module("layout")
 		ClosePaneCommand,
 		ResizePaneSplitCommand,
 		AimPaneCommand,
+		ShowChatInPaneCommand,
 		ShowTabInTargetPaneCommand,
+		ShowTabInChatGroupCommand,
 		OpenShownTabPaneCommand,
 		CloseShownTabPaneCommand,
 		ClosePanesOfTabsCommand,

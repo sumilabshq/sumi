@@ -7,6 +7,7 @@ import {
 	boardOf,
 	isAimable,
 	placedTreeOf,
+	placementPreviewOf,
 	refuseUnknownEdge,
 	refuseUnknownPane,
 	shareAt,
@@ -14,6 +15,9 @@ import {
 	withSplitShare,
 	withTarget,
 } from "../../shared/lib/pane-trees.js";
+import { leavesOf } from "../../shared/lib/pane-nodes.js";
+import { homeOfPlacement, refuseHomeTarget } from "../../shared/lib/chat-groups.js";
+import type { PanePlacement, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 import { paneTransitionOf, viewWords } from "../../shared/lib/pane-words.js";
 
 export const PaneTreeQuery = query("pane-tree")
@@ -33,30 +37,25 @@ export const PlacementPreviewQuery = query("placement-preview")
 		}
 
 		const tree = paneTree.tree();
-		const refusal = refuseUnknownPane(tree, placement.targetId);
+		const refusal = refusePlacement(tree, placement);
 
 		if (refusal !== null) {
 			return null;
 		}
 
-		const placed = placedTreeOf(tree, placement.view, placement);
-		return placed === null
-			? null
-			: {
-					root: placed.tree.root,
-					placedId: placed.placedId,
-				};
+		return placementPreviewOf(tree, placement.view, placement);
 	});
 
 export const PlacePaneCommand = command("place-pane")
 	.input(PanePlacementSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ view, targetId, side }, { paneTree, invalidate }) => {
+	.handle((placement, { paneTree, invalidate }) => {
+		const { view, targetId, side } = placement;
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
-		const refusal = refuseUnknownPane(tree, targetId);
+		const refusal = refusePlacement(tree, placement);
 
 		if (refusal !== null) {
 			return refuse(refusal);
@@ -140,12 +139,15 @@ export const AimPaneCommand = command("aim-pane")
 			return refuse(refusal);
 		}
 
-		if (!isAimable(tree, id)) {
+		const kind = leavesOf(tree.root).find((leaf) => leaf.id === id)?.view.kind;
+
+		if (kind === undefined || !isAimable(tree, id)) {
 			return;
 		}
 
-		const reason = `pane target ${tree.targetId ?? "none"} → ${id} (pressed)`;
-		paneTree.saveTree(withTarget(tree, id), reason);
+		const was = kind === "chat" ? tree.chatTargetId : tree.targetId;
+		const reason = `${kind} pane target ${was ?? "none"} → ${id} (pressed)`;
+		paneTree.saveTree(withTarget(tree, id, kind), reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
@@ -153,3 +155,9 @@ export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_inpu
 	invalidate(PaneTreeQuery);
 	invalidate(PlacementPreviewQuery);
 });
+
+function refusePlacement(tree: PaneTree, { view, targetId, home }: PanePlacement): string | null {
+	return (
+		refuseUnknownPane(tree, targetId) ?? refuseHomeTarget(tree.root, homeOfPlacement(tree.root, view, home), targetId)
+	);
+}
