@@ -189,8 +189,8 @@
 	margin-left: var(--sumi-gap);
 }
 
-/* TRADE-OFF: a literal, a container query takes no var(): plate min 320 + gap 8 + panel 380 */
-@container shell-app (width < 708px) {
+/* TRADE-OFF: a literal, a container query takes no var(): plate min 240 + gap 8 + panel 380 */
+@container shell-app (width < 628px) {
 	.wg-shell-panel {
 		position: absolute;
 		top: 0;
@@ -250,6 +250,22 @@
 	background: var(--wg-plate-fill, var(--sumi-plate));
 	box-shadow: var(--sumi-shadow-plate);
 	transition: background-color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+html:has([data-browser-pages-live]),
+body:has([data-browser-pages-live]),
+.wg-studio.wg-shell:has([data-browser-pages-live]),
+.wg-shell-plate:has([data-browser-pages-live]) {
+	background: transparent;
+}
+
+[data-browser-page-area] {
+	background: var(--wg-plate-fill, var(--sumi-plate));
+}
+
+[data-browser-page-area]:has(> [data-browser-pages-live]) {
+	background: transparent;
+	box-shadow: 0 0 0 100vmax var(--wg-plate-fill, var(--sumi-plate));
 }
 
 .wg-shell-plate.is-chat {
@@ -480,91 +496,6 @@
 	text-overflow: ellipsis;
 }
 
-.wg-plate-head-row > .wg-studio-shell-board {
-	display: flex;
-	flex: none;
-	align-items: flex-start;
-	height: var(--sumi-h-sm);
-}
-
-.wg-plate-head-row > .wg-studio-shell-board :is(.wg-root, .wg-tree-page, .wg-tree, .wg-widget-root) {
-	min-height: 0;
-	padding: 0;
-}
-
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn {
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	min-width: 0;
-	color: var(--sumi-text-2);
-}
-
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn::before {
-	border-radius: var(--sumi-r-sm);
-	background: transparent;
-}
-
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn:hover::before {
-	background: var(--sumi-hover);
-}
-
-.wg-plate-strip {
-	position: absolute;
-	inset: 0;
-	display: none;
-	overflow: hidden;
-	pointer-events: none;
-}
-
-[data-plate-strip] > .wg-plate-head > .wg-plate-strip {
-	display: block;
-}
-
-.wg-plate-strip-image {
-	position: absolute;
-	inset: 0;
-	background-image: var(--wg-plate-strip);
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	transform: scaleY(-1);
-}
-
-.wg-plate-strip-blur {
-	position: absolute;
-	inset: 0;
-}
-
-.wg-plate-strip-blur.is-near {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-near));
-	backdrop-filter: blur(var(--sumi-strip-blur-near));
-	-webkit-mask-image: linear-gradient(to top, transparent 0%, black 30%);
-	mask-image: linear-gradient(to top, transparent 0%, black 30%);
-}
-
-.wg-plate-strip-blur.is-mid {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-mid));
-	backdrop-filter: blur(var(--sumi-strip-blur-mid));
-	-webkit-mask-image: linear-gradient(to top, transparent 25%, black 60%);
-	mask-image: linear-gradient(to top, transparent 25%, black 60%);
-}
-
-.wg-plate-strip-blur.is-far {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-far));
-	backdrop-filter: blur(var(--sumi-strip-blur-far));
-	-webkit-mask-image: linear-gradient(to top, transparent 50%, black 100%);
-	mask-image: linear-gradient(to top, transparent 50%, black 100%);
-}
-
-.wg-plate-strip-veil {
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(
-		to top,
-		transparent,
-		color-mix(in srgb, var(--wg-plate-fill, transparent) var(--sumi-strip-veil), transparent)
-	);
-}
-
 .wg-plate-menu {
 	display: flex;
 	flex-direction: column;
@@ -630,6 +561,22 @@
 	flex: 1 1 0;
 	width: auto;
 	min-width: 0;
+}
+
+.wg-pane > .wg-shell-plate::after {
+	content: "";
+	position: absolute;
+	z-index: 3;
+	inset: 0;
+	border-color: var(--sumi-plate);
+	border-style: solid;
+	border-width: var(--wg-pane-rim, 0);
+	border-radius: inherit;
+	pointer-events: none;
+}
+
+.wg-pane > .wg-shell-plate:has([data-browser-pages-live])::after {
+	border-width: 0;
 }
 
 .wg-pane-group {

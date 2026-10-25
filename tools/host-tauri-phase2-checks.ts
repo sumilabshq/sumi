@@ -1,8 +1,14 @@
+import { z } from "zod";
+import { TauriPaneTreeGateway } from "../packages/state/layout/gateways/pane-tree/tauri.gateway.ts";
+import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
+import { groupedChat } from "../packages/state/layout/shared/lib/chat-groups.ts";
+import type { WindowsPanes } from "../packages/state/layout/gateways/pane-tree/tauri.gateway.ts";
 import {
 	KeptTabsDocSchema,
 	TauriHostTabsGateway,
+	WindowViewDocSchema,
 } from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
-import type { KeptTabsDoc } from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
+import type { KeptTabsDoc, WindowViewDoc } from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
 import {
 	CreateGroupCommand,
 	OpenTabCommand,
@@ -36,6 +42,18 @@ import { check, waitFor } from "./check-helpers.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 import { studioFakesOf } from "./app-host-fixture.ts";
+
+const WINDOW_VIEW: DocKind<WindowViewDoc> = {
+	file: "window-studio-2.json",
+	v: 1,
+	schema: WindowViewDocSchema,
+};
+
+const WORKSPACE_PANES: DocKind<WindowsPanes> = {
+	file: "session.json",
+	v: 1,
+	schema: z.looseObject({}),
+};
 
 const SESSION_TABS: DocKind<KeptTabsDoc> = {
 	file: "session.json",
@@ -119,6 +137,7 @@ async function tabsSessionChecks(): Promise<void> {
 				kind: SESSION_TABS,
 				empty: KeptTabsDocSchema.parse({}),
 			}),
+			null,
 		);
 	const { studioApp } = studioFakesOf({ hostTabs: sessionTabs(), view: "canvas" });
 	await studioApp.send(RestoreTabsCommand);
@@ -156,6 +175,273 @@ async function tabsSessionChecks(): Promise<void> {
 		reopened.tabs()?.tabs.map((tab) => tab.pageId),
 		[null, null, null],
 	);
+	const secondWindow = new TauriHostTabsGateway(
+		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: SESSION_TABS, empty: KeptTabsDocSchema.parse({}) }),
+		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: WINDOW_VIEW, empty: WindowViewDocSchema.parse({}) }),
+	);
+	const live = reopened.tabs();
+
+	if (live !== null) {
+		reopened.saveTabs(
+			{ ...live, tabs: live.tabs.map((tab) => (tab.id === "tab-2" ? { ...tab, pageId: "page-live" } : tab)) },
+			"a page is live in the first window",
+		);
+	}
+
+	await waitFor(() => JSON.stringify(keptTabsOnDisk() ?? null).includes("page-live"));
+	const beside = new TauriHostTabsGateway(
+		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: SESSION_TABS, empty: KeptTabsDocSchema.parse({}) }),
+		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: WINDOW_VIEW, empty: WindowViewDocSchema.parse({}) }),
+	);
+	await beside.tabsLoaded();
+	await studioFakesOf({ hostTabs: beside, view: "browser", isBrowserAvailable: false }).studioApp.send(
+		RestoreTabsCommand,
+	);
+	check(
+		"a second window's start keeps the pages the running app holds",
+		beside.tabs()?.tabs.find((tab) => tab.id === "tab-2")?.pageId,
+		"page-live",
+	);
+	const second = studioFakesOf({ hostTabs: secondWindow, view: "browser", isBrowserAvailable: false });
+	await second.studioApp.send(ShowTabCommand, { id: "tab-2" });
+	const windowViewOnDisk = (): unknown => fake.files.get(`workspace:${DEFAULT.id}:window-studio-2.json`)?.["view"];
+	await waitFor(() => JSON.stringify(windowViewOnDisk() ?? null).includes('"shownId":"tab-2"'));
+	check(
+		"a second window keeps the tab it shows in its own file, and the main window's shown tab stays put",
+		[secondWindow.tabs()?.shownId, JSON.stringify(keptTabsOnDisk()).includes('"shownId":"tab-3"')],
+		["tab-2", true],
+	);
+}
+
+function thrownBy(run: () => unknown): string | null {
+	try {
+		run();
+		return null;
+	} catch (thrown: unknown) {
+		return thrown instanceof Error ? thrown.message : String(thrown);
+	}
+}
+
+async function ownKeyChecks(): Promise<void> {
+	const fake = new FakeStore();
+	fake.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1 });
+	const session = HeldDoc.reading({
+		store: new StoreClient(fake.invoke),
+		root: workspaceRootOf(DEFAULT.id),
+		kind: WORKSPACE_PANES,
+		empty: {},
+	});
+	const written: string[][] = [];
+	const change = session.change.bind(session);
+	session.change = (patch, reason) => {
+		written.push(Object.keys(patch));
+		change(patch, reason);
+	};
+	const first = { root: null, minted: 0, targetId: null } as const;
+	const main = new TauriPaneTreeGateway(session, { label: "main", first, boot: null });
+	const side = new TauriPaneTreeGateway(session, { label: "studio-2", first, boot: null });
+	await waitFor(() => main.isLoaded());
+	side.saveTree(
+		{
+			root: { kind: "pane", id: "pane-tab", view: { kind: "app", tabId: "tab-1" } },
+			minted: 3,
+			targetId: null,
+			shelved: {
+				"chat-x": groupedChat({ kind: "pane", id: "pane-x", view: { kind: "chat", chatId: "chat-x" } }, "chat-x"),
+			},
+		},
+		"studio-2 shelves chat-x",
+	);
+	side.tree();
+	written.length = 0;
+	main.saveTree(
+		{
+			root: groupedChat({ kind: "pane", id: "pane-1", view: { kind: "chat", chatId: "chat-x" } }, "chat-x"),
+			minted: 1,
+			targetId: null,
+		},
+		"main opens chat-x",
+	);
+	check("a window writes only its own keys, never another window's", written, [
+		["panes", "held:main"],
+		["panes:studio-2", "held:studio-2"],
+	]);
+	check(
+		"a chat parked on another window's shelf goes to the window that opened it later, and leaves that shelf",
+		[Object.keys(side.tree().shelved ?? {}), boardOf(main.tree()).focusedChatId],
+		[[], "chat-x"],
+	);
+}
+
+async function unreadLayoutChecks(): Promise<void> {
+	const fake = new FakeStore();
+	const kept = {
+		root: { kind: "pane", id: "pane-kept", view: { kind: "chat", chatId: "kept-chat" } },
+		minted: 1,
+		targetId: null,
+	};
+	fake.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1, panes: kept });
+	const session = HeldDoc.reading({
+		store: new StoreClient(fake.invoke),
+		root: workspaceRootOf(DEFAULT.id),
+		kind: WORKSPACE_PANES,
+		empty: {},
+	});
+	const first = {
+		root: { kind: "pane", id: "pane-first", view: { kind: "chat" } },
+		minted: 0,
+		targetId: null,
+	} as const;
+	const main = new TauriPaneTreeGateway(session, { label: "main", first, boot: null });
+	const early = thrownBy(() =>
+		main.saveTree(
+			{ root: { kind: "pane", id: "pane-new", view: { kind: "chat", chatId: "new-chat" } }, minted: 1, targetId: null },
+			"name the first pane",
+		),
+	);
+	await waitFor(() => main.isLoaded());
+	check(
+		"a layout write before the kept layout is read is refused, and the kept layout survives the read",
+		[early !== null, boardOf(main.tree()).focusedChatId],
+		[true, "kept-chat"],
+	);
+	const flaky = new FakeStore();
+	flaky.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1, panes: kept });
+	const reads = { failed: 0 };
+	const flakyInvoke: typeof flaky.invoke = async (command, args) => {
+		if (command.endsWith("|read") && reads.failed === 0) {
+			reads.failed += 1;
+			throw new Error("the disk did not answer");
+		}
+
+		return flaky.invoke(command, args);
+	};
+	const retried = HeldDoc.reading({
+		store: new StoreClient(flakyInvoke),
+		root: workspaceRootOf(DEFAULT.id),
+		kind: WORKSPACE_PANES,
+		empty: {},
+	});
+	const afterFailure = new TauriPaneTreeGateway(retried, { label: "main", first, boot: null });
+	const isRead = await quietly(() => waitFor(() => afterFailure.isLoaded()));
+	check(
+		"a first read that fails is tried again, so the board does not stay locked",
+		[reads.failed, isRead.answer, boardOf(afterFailure.tree()).focusedChatId],
+		[1, true, "kept-chat"],
+	);
+}
+
+async function tornWindowLayoutChecks(): Promise<void> {
+	const fake = new FakeStore();
+	const stale = {
+		root: { kind: "pane", id: "pane-old", view: { kind: "app", tabId: "tab-10" } },
+		minted: 0,
+		targetId: "pane-old",
+	};
+	fake.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1, "panes:studio-2": stale });
+	const store = new StoreClient(fake.invoke);
+	const torn = {
+		root: { kind: "pane", id: "pane-torn", view: { kind: "app", tabId: "tab-24" } },
+		minted: 0,
+		targetId: "pane-torn",
+	} as const;
+	const panesOf = async (bootTab: string): Promise<string | undefined> => {
+		const session = HeldDoc.reading({
+			store,
+			root: workspaceRootOf(DEFAULT.id),
+			kind: WORKSPACE_PANES,
+			empty: {},
+		});
+		await waitFor(() => session.now()["panes:studio-2"] !== undefined);
+		const root = new TauriPaneTreeGateway(session, {
+			label: "studio-2",
+			first: torn,
+			boot: { kind: "app", tabId: bootTab },
+		}).tree().root;
+		return root?.kind === "pane" && root.view.kind === "app" ? (root.view.tabId ?? undefined) : undefined;
+	};
+	check(
+		"a window opened for a torn tab starts from that tab, not from a layout an earlier window of that name left",
+		[await panesOf("tab-24"), await panesOf("tab-10")],
+		["tab-24", "tab-10"],
+	);
+	const metSession = HeldDoc.reading({
+		store,
+		root: workspaceRootOf(DEFAULT.id),
+		kind: WORKSPACE_PANES,
+		empty: {},
+	});
+	await waitFor(() => metSession.now()["panes:studio-2"] !== undefined);
+	const met = new TauriPaneTreeGateway(metSession, {
+		label: "studio-2",
+		first: torn,
+		boot: { kind: "app", tabId: "tab-10" },
+	});
+	met.tree();
+	met.saveTree(
+		{
+			root: { kind: "pane", id: "pane-chat", view: { kind: "chat", chatId: "c1" } },
+			minted: 1,
+			targetId: null,
+		},
+		"close the boot tab's pane",
+	);
+	const afterClose = met.tree().root;
+	check(
+		"once the window stood on its boot tab, closing that tab's pane keeps the rest instead of starting over",
+		afterClose?.kind === "split" ? afterClose.chatId : afterClose?.kind,
+		"c1",
+	);
+	const mainWindow = new TauriPaneTreeGateway(metSession, { label: "main", first: torn, boot: null });
+	mainWindow.saveTree(
+		{
+			root: { kind: "pane", id: "pane-1", view: { kind: "app", tabId: "tab-7" } },
+			minted: 1,
+			targetId: null,
+		},
+		"main shows tab-7",
+	);
+	check(
+		"each window sees what the others hold, read from the one workspace document",
+		[met.elsewhere().map(({ window }) => window), mainWindow.elsewhere().map(({ window }) => window)],
+		[["main"], ["studio-2"]],
+	);
+	met.saveTree(
+		{
+			root: { kind: "pane", id: "pane-2", view: { kind: "app", tabId: "tab-7" } },
+			minted: 2,
+			targetId: null,
+		},
+		"studio-2 takes tab-7",
+	);
+	check(
+		"a tab placed in one window leaves every other window in the same write",
+		[mainWindow.tree().root, met.tree().root?.kind === "pane" ? met.tree().root?.id : null],
+		[null, "pane-2"],
+	);
+	mainWindow.saveTree(
+		{
+			root: { kind: "pane", id: "pane-9", view: { kind: "chat", chatId: "c2" } },
+			minted: 9,
+			targetId: null,
+		},
+		"main shows chat c2",
+	);
+	met.saveTree(
+		{
+			root: { kind: "pane", id: "pane-3", view: { kind: "chat", chatId: "c3" } },
+			minted: 3,
+			targetId: null,
+		},
+		"studio-2 shows chat c3",
+	);
+	check(
+		"each window's chat is read off its own board, so one window picking a chat moves no other",
+		[boardOf(mainWindow.tree()).focusedChatId, boardOf(met.tree()).focusedChatId],
+		["c2", "c3"],
+	);
+	await met.forgetOwnWindow("studio-2 closed");
+	check("a closed window leaves no layout behind for the others", mainWindow.elsewhere(), []);
 }
 
 async function chatChecks(): Promise<void> {
@@ -217,5 +503,8 @@ async function profileChecks(): Promise<void> {
 
 await railChecks();
 await tabsSessionChecks();
+await tornWindowLayoutChecks();
+await unreadLayoutChecks();
+await ownKeyChecks();
 await chatChecks();
 await profileChecks();

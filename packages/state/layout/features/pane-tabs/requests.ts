@@ -20,6 +20,7 @@ import {
 	withTabShown,
 } from "../../shared/lib/pane-trees.js";
 import { goneTabsWords, paneTransitionOf } from "../../shared/lib/pane-words.js";
+import { holdsOf } from "../../shared/lib/window-trees.js";
 import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
@@ -68,6 +69,13 @@ export const ShowChatInPaneCommand = command("show-chat-in-pane")
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
+		const holder = paneTree.elsewhere().find((other) => holdsOf([other])[0]?.chatIds.includes(chatId));
+
+		if (holder !== undefined) {
+			console.info(`[widgetarium] show chat ${chatId} skipped: it stands in window ${holder.window}`);
+			return;
+		}
+
 		const next = treeShowingChat(tree, chatId, paneId);
 
 		if (next === tree) {

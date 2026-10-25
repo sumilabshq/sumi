@@ -10,10 +10,34 @@ export const ChatIdSchema = z.object({
 	id: z.string().min(1),
 });
 
+export const ChatToOpenSchema = z.object({
+	isRead: z.boolean(),
+	id: z.string().nullable(),
+});
+
+export type ChatToOpen = z.infer<typeof ChatToOpenSchema>;
+
+export const NewChatSchema = z.object({
+	title: z.string().nullable(),
+});
+
 export const ChatPinSchema = z.object({
 	id: z.string().min(1),
 	isPinned: z.boolean(),
 });
+
+export const ChatPlaceSchema = z.object({
+	id: z.string().min(1),
+	to: z.discriminatedUnion("list", [
+		z.object({
+			list: z.literal("pinned"),
+			before: z.string().min(1).nullable(),
+		}),
+		z.object({ list: z.literal("recents") }),
+	]),
+});
+
+export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
 
 export const ChatTitleSchema = z.object({
 	id: z.string().min(1),
@@ -23,6 +47,7 @@ export const ChatTitleSchema = z.object({
 export const ChatTurnSchema = z.object({
 	chatId: z.string().min(1),
 	isBusy: z.boolean(),
+	isSeen: z.boolean(),
 	firstAsked: z.string().nullable(),
 });
 
@@ -32,7 +57,6 @@ export const ChatRowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	isPinned: z.boolean(),
-	isActive: z.boolean(),
 	mark: ChatMarkSchema,
 });
 
@@ -45,14 +69,8 @@ export const ChatListSchema = z.object({
 
 export type ChatListData = z.infer<typeof ChatListSchema>;
 
-export const ChatCrumbSchema = z.object({
+export const WorkspaceCrumbSchema = z.object({
 	workspace: z.string(),
-	chat: z.string(),
-});
-
-export const ActiveChatSchema = z.object({
-	id: z.string(),
-	title: z.string(),
 });
 
 export const ChatElsewhereRowSchema = z.object({
@@ -133,11 +151,11 @@ export const WorkspacesQuery = query("workspaces/workspaces")
 export const ChatListQuery = query("workspaces/chat-list")
 	.output(ChatListSchema)
 	.settlesNow();
-export const ChatCrumbQuery = query("workspaces/chat-crumb")
-	.output(ChatCrumbSchema)
+export const WorkspaceCrumbQuery = query("workspaces/workspace-crumb")
+	.output(WorkspaceCrumbSchema)
 	.settlesNow();
-export const ActiveChatQuery = query("workspaces/active-chat")
-	.output(ActiveChatSchema)
+export const ChatToOpenQuery = query("workspaces/chat-to-open")
+	.output(ChatToOpenSchema)
 	.settlesNow();
 export const ChatsElsewhereQuery = query("workspaces/chats-elsewhere")
 	.output(ChatsElsewhereSchema);
@@ -151,6 +169,7 @@ export const OpenWorkspaceByPositionCommand = command("workspaces/open-workspace
 	.input(WorkspacePositionSchema)
 	.idempotencyKey(Repeatable);
 export const CreateWorkspaceCommand = command("workspaces/create-workspace")
+	.output(WorkspaceIdSchema)
 	.idempotencyKey(PerCall);
 export const RenameWorkspaceCommand = command("workspaces/rename-workspace")
 	.input(WorkspaceNameSchema)
@@ -159,12 +178,20 @@ export const SetWorkspaceIconCommand = command("workspaces/set-workspace-icon")
 	.input(WorkspaceIconChoiceSchema)
 	.idempotencyKey(Repeatable);
 export const CreateChatCommand = command("workspaces/create-chat")
+	.input(NewChatSchema)
+	.output(ChatIdSchema)
 	.idempotencyKey(PerCall);
-export const SelectChatCommand = command("workspaces/select-chat")
+export const MarkChatSeenCommand = command("workspaces/mark-chat-seen")
+	.input(ChatIdSchema)
+	.idempotencyKey(Repeatable);
+export const ForgetChatToOpenCommand = command("workspaces/forget-chat-to-open")
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable);
 export const PinChatCommand = command("workspaces/pin-chat")
 	.input(ChatPinSchema)
+	.idempotencyKey(Repeatable);
+export const PlaceChatCommand = command("workspaces/place-chat")
+	.input(ChatPlaceSchema)
 	.idempotencyKey(Repeatable);
 export const RenameChatCommand = command("workspaces/rename-chat")
 	.input(ChatTitleSchema)
@@ -174,4 +201,4 @@ export const RecordChatTurnCommand = command("workspaces/record-chat-turn")
 	.idempotencyKey(Repeatable);
 export const ChatsChangedEvent = event("workspaces/chats-changed");
 
-export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatListQuery, ChatCrumbQuery, ActiveChatQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, SelectChatCommand, PinChatCommand, RenameChatCommand, RecordChatTurnCommand]);
+export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatListQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, MarkChatSeenCommand, ForgetChatToOpenCommand, PinChatCommand, PlaceChatCommand, RenameChatCommand, RecordChatTurnCommand]);

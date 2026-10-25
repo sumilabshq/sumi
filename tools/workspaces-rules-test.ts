@@ -1,7 +1,8 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
-	ActiveChatQuery,
+	ChatToOpenQuery,
+	ForgetChatToOpenCommand,
 	ChatListQuery,
 	CreateChatCommand,
 	CreateWorkspaceCommand,
@@ -11,7 +12,7 @@ import {
 	RecordChatTurnCommand,
 	RenameChatCommand,
 	RenameWorkspaceCommand,
-	SelectChatCommand,
+	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
 	WorkspacesQuery,
 } from "../packages/domain/workspaces/generated/contract.ts";
@@ -69,7 +70,7 @@ function seededParts(): WorkspacesParts {
 		currentId: "home",
 		chats: {
 			chats: [chatOf("old", 1), chatOf("pinned", 2, true), chatOf("new", 3)],
-			activeId: "gone",
+			openOnStartId: "gone",
 		},
 		marks: {},
 	});
@@ -138,11 +139,8 @@ async function lostFolderChecks(): Promise<void> {
 async function chatChecks(): Promise<void> {
 	const parts = seededParts();
 	const chats = started(parts);
-	const activeOf = async (): Promise<unknown> => outputOf(await chats.send(ActiveChatQuery));
-	check("an active id the chats lost falls back to the latest chat", await activeOf(), {
-		id: "new",
-		title: "New chat",
-	});
+	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(ChatToOpenQuery));
+	check("a chat asked to open on start that the chats lost opens nothing", await toOpen(), { isRead: true, id: null });
 	const list = ChatListQuery.outputSchema.parse(outputOf(await chats.send(ChatListQuery)));
 	check(
 		"the list puts pinned chats apart and the latest first",
@@ -155,32 +153,45 @@ async function chatChecks(): Promise<void> {
 	await chats.send(PinChatCommand, { id: "old", isPinned: true });
 	check("a pin is kept", parts.chats.chats().chats.find((chat) => chat.id === "old")?.isPinned, true);
 
-	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, firstAsked: LONG_ASK });
+	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, isSeen: false, firstAsked: LONG_ASK });
 	const titled = parts.chats.chats().chats.find((chat) => chat.id === "old");
 	check(
 		"a first ask names the chat by its first line, cut to 80 characters, and marks it running",
 		[titled?.title?.length, titled?.title?.endsWith("…"), parts.chatMarks.chatMarks()["old"]],
 		[80, true, "running"],
 	);
-	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, firstAsked: LONG_ASK });
+	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, isSeen: false, firstAsked: LONG_ASK });
 	check("a chat finishing while not shown is unread", parts.chatMarks.chatMarks()["old"], "unread");
-	await chats.send(SelectChatCommand, { id: "old" });
+	const openBefore = parts.chats.chats().openOnStartId;
+	await chats.send(MarkChatSeenCommand, { id: "old" });
 	check(
-		"selecting it clears unread and makes it active",
-		[parts.chatMarks.chatMarks(), await activeOf()],
-		[{}, { id: "old", title: titled?.title }],
+		"marking it seen clears unread and moves no chat anywhere",
+		[parts.chatMarks.chatMarks(), parts.chats.chats().openOnStartId],
+		[{}, openBefore],
 	);
-	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, firstAsked: null });
-	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, firstAsked: null });
-	check("a chat finishing while shown is not unread", parts.chatMarks.chatMarks(), {});
+	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, isSeen: true, firstAsked: null });
+	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, isSeen: true, firstAsked: null });
+	check("a chat finishing while on screen is not unread", parts.chatMarks.chatMarks(), {});
 
-	await chats.send(CreateChatCommand);
+	const made = await chats.send(CreateChatCommand, { title: "  Plan it  " });
 	const created = parts.chats.chats();
 	check(
-		"a new chat is untitled and becomes active",
-		[created.chats.length, created.chats.at(-1)?.title, created.activeId === created.chats.at(-1)?.id],
-		[4, null, true],
+		"a new chat answers its own id, takes the title asked, and opens nothing by itself",
+		[
+			created.chats.length,
+			created.chats.at(-1)?.id === (made.ok ? made.output.id : null),
+			created.chats.at(-1)?.title,
+			created.openOnStartId,
+		],
+		[4, true, "Plan it", openBefore],
 	);
+
+	parts.chats.saveChats({ ...parts.chats.chats(), openOnStartId: "old" }, "asked from another workspace");
+	check("a chat asked from another workspace is the one to open on start", await toOpen(), { isRead: true, id: "old" });
+	await chats.send(ForgetChatToOpenCommand, { id: "new" });
+	check("forgetting another chat leaves the asked one in place", await toOpen(), { isRead: true, id: "old" });
+	await chats.send(ForgetChatToOpenCommand, { id: "old" });
+	check("once opened it is forgotten", await toOpen(), { isRead: true, id: null });
 }
 
 await quietly(async () => {

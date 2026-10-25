@@ -1,4 +1,5 @@
-import { createElement as h } from "react";
+import { createElement as h, useRef } from "react";
+import { useWearsInkUnder } from "../../../plate/lib/use-wears-ink-under.js";
 import type { ReactElement } from "react";
 import { useHoverIntent } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
@@ -37,8 +38,10 @@ export function FrameSideToggle({ side }: FrameSideToggleProps): ReactElement {
 	const toggle = useCommand(ToggleFrameSideCommand);
 	const peek = useCommand(PeekFrameSideCommand);
 	const hover = useHoverIntent(() => void peek.run({ side }));
+	const floating = useRef<HTMLDivElement>(null);
+	useWearsInkUnder(floating);
 	return (
-		<div className="wg-root wg-shell-toggle" data-side={side}>
+		<div ref={floating} className="wg-root wg-shell-toggle" data-side={side}>
 			<HeaderButton
 				label={look === "docked" ? LABEL[side].hide : LABEL[side].show}
 				keys={SIDE_KEYS[side].said}

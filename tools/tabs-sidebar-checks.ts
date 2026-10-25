@@ -25,9 +25,10 @@ import {
 	recordTiming,
 	timed,
 } from "./tabs-sidebar-check-kit.ts";
-import { checksNativeDrag } from "./tabs-sidebar-drag-checks.ts";
+import { checksPointerDrag } from "./tabs-sidebar-drag-checks.ts";
 import { checksSidebarLook } from "./tabs-sidebar-look-checks.ts";
-import { centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
+import { checksArtCutOut, checksViewOptions } from "./tabs-sidebar-view-checks.ts";
+import { bottomOf, centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
 
 export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
 	await checksPressing(page);
@@ -37,7 +38,9 @@ export async function checksSidebar(page: AskedPage, folder: string): Promise<nu
 	await checksRename(page);
 	await checksDrag(page, folder);
 	await checksSections(page, folder);
-	addFailures(await checksNativeDrag(page, folder));
+	addFailures(await checksPointerDrag(page, folder));
+	await checksViewOptions(page, folder);
+	await checksArtCutOut(page);
 	await checksSidebarLook(page);
 	printTimings();
 	return failureCount();
@@ -49,9 +52,9 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	const listed = await idsOf(page, LIST_IDS);
 	await timed(page, "show an essential", () => pressOn(page, '[data-tabs-item=essential][data-tabs-id="essential-2"]'));
 	check(
-		"pressing an essential opens and shows it, and no row stays shown",
+		"pressing an essential opens and shows it, and the chat's tile keeps its own tab",
 		(await page.ask(`document.querySelector('[data-tabs-id="essential-2"]').hasAttribute("data-shown")`)) === true &&
-			(await page.ask(SHOWN_ID)) === null,
+			(await page.ask(SHOWN_ID)) === "tab-3",
 		await page.ask(SHOWN_ID),
 	);
 	check(
@@ -60,19 +63,36 @@ async function checksPressing(page: AskedPage): Promise<void> {
 		await idsOf(page, LIST_IDS),
 	);
 	await checksWobblyPress(page);
+	check(
+		"an empty Tabs in workspace still shows its heading and its New tab row",
+		(await idsOf(page, WORKSPACE_IDS)).length === 0 &&
+			(await page.ask(`document.querySelector('[data-host-column-add="workspace"]') !== null`)) === true,
+		await idsOf(page, WORKSPACE_IDS),
+	);
+	const intoEmpty = (await idsOf(page, CHAT_TOP_IDS))[0] ?? "";
+	const emptyHead = await centreOf(page, '[data-tabs-section="workspace"]');
+	await dragged(page, "drag a row into an empty section", `[data-tabs-list] > [data-tabs-id="${intoEmpty}"]`, [
+		emptyHead[0],
+		emptyHead[1] + 24,
+	]);
+	check(
+		"dragging a row into an empty Tabs in workspace moves it there",
+		JSON.stringify(await idsOf(page, WORKSPACE_IDS)) === JSON.stringify([intoEmpty]) &&
+			!(await idsOf(page, CHAT_IDS)).includes(intoEmpty),
+		[await idsOf(page, WORKSPACE_IDS), await idsOf(page, CHAT_IDS)],
+	);
 	const before = await idsOf(page, CHAT_IDS);
-	await pressOn(page, "[data-host-column-add]");
+	await pressOn(page, '[data-host-column-add="workspace"]');
 	await waited(SETTLED_MS);
 	const token = await page.ask(`document.querySelector(".wg-cm-token")?.textContent ?? null`);
 	check("New tab opens the command menu at New tab, with no empty page", token === "New tab", token);
 	await timed(page, "new tab from the menu", () => pressOn(page, '[data-cm-tile="app"]'));
 	const workspace = await idsOf(page, WORKSPACE_IDS);
 	check(
-		"a tab picked in New tab lands as the shown row of Tabs in workspace, above the chat's tabs",
-		workspace.length === 1 &&
-			workspace[0] === (await page.ask(SHOWN_ID)) &&
-			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before) &&
-			(await page.ask(`document.querySelector("[data-tabs-section]")?.dataset.tabsSection`)) === "workspace",
+		"a tab picked in a section's New tab lands as the shown last row of that section",
+		workspace.length === 2 &&
+			workspace.at(-1) === (await page.ask(SHOWN_ID)) &&
+			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before),
 		[workspace, await idsOf(page, CHAT_IDS)],
 	);
 }
@@ -92,7 +112,7 @@ async function checksChats(page: AskedPage): Promise<void> {
 		"switching chats swaps the list and the title",
 		(await page.ask(TITLE)) === "Translator" &&
 			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(["tab-9", "tab-10", "tab-11"]) &&
-			(await idsOf(page, WORKSPACE_IDS)).length === 1,
+			(await idsOf(page, WORKSPACE_IDS)).length === 2,
 		[await idsOf(page, CHAT_IDS), await idsOf(page, WORKSPACE_IDS)],
 	);
 	check(
@@ -299,7 +319,7 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 		await idsOf(page, TILE_IDS),
 	);
 	check(`dragging keeps every frame under 50 ms`, into.worstFrame < 50, into);
-	const listEnd = await centreOf(page, "[data-host-column-add]");
+	const listEnd = await bottomOf(page, "[data-host-column-scroll]");
 	await dragged(
 		page,
 		"drag an Essential out to the list",
@@ -321,6 +341,14 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 }
 
 async function checksSections(page: AskedPage, folder: string): Promise<void> {
+	const squeezed = await page.ask(
+		`(() => { const heads = [...document.querySelectorAll("[data-tabs-section]")]; heads.forEach((head) => { head.style.setProperty("width", "130px", "important"); }); const lines = heads.map((head) => { const lead = head.querySelector(":scope > span"); return Math.round(lead.getBoundingClientRect().height / parseFloat(getComputedStyle(lead).lineHeight)); }); heads.forEach((head) => { head.style.removeProperty("width"); }); return lines; })()`,
+	);
+	check(
+		"a squeezed sidebar keeps every Tabs in on one line, the title is what shortens",
+		Array.isArray(squeezed) && squeezed.length > 0 && squeezed.every((lines) => lines === 1),
+		squeezed,
+	);
 	const target = await centreOf(page, '[data-tabs-list="workspace"] > [data-tabs-item=tab]');
 	const moved = (await idsOf(page, CHAT_TOP_IDS)).find((id) => id !== "tab-5") ?? "";
 	await dragged(page, "drag a row into another section", `[data-tabs-list] > [data-tabs-id="${moved}"]`, [
@@ -350,7 +378,7 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	await page.ask(pointedAt(`[data-tabs-id="${moved}"]`));
 	await waited(250);
 	const isOpen = (await page.ask(`document.querySelector("[data-tabs-pointer-menu]") !== null`)) === true;
-	const empty = await centreOf(page, "[data-host-column-add]");
+	const empty = await bottomOf(page, "[data-host-column-scroll]");
 	await page.press(empty[0], empty[1] - 40);
 	await waited(300);
 	check(

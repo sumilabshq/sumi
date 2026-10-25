@@ -19,7 +19,6 @@ export const EssentialTile = memo(function EssentialTile({
 			type="button"
 			aria-label={tile.title}
 			aria-current={tile.isShown || undefined}
-			draggable
 			className={TILE}
 			onClick={() => void showEssential.run({ id: tile.id })}
 			data-shown={tile.isShown || undefined}

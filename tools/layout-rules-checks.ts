@@ -237,11 +237,17 @@ async function checksPreview(check: Check): Promise<void> {
 		untouched && isDeepStrictEqual(preview?.root, placed.root) && preview?.placedId === placed.targetId,
 		{ preview, placed },
 	);
+	const now = parts.paneTree.tree();
+	const standing = leavesOf(now.root).find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === "tab-3");
+	const onItself =
+		standing === undefined ? null : await PlacementPreviewQuery.handle({ ...placement, targetId: standing.id }, parts);
 	check(
-		"no placement previews nothing, a drop where the pane already stands previews nothing",
+		"no placement previews nothing, and a drop where the pane already stands previews the tree unchanged with that pane placed",
 		(await PlacementPreviewQuery.handle(null, parts)) === null &&
-			(await PlacementPreviewQuery.handle({ ...placement, targetId: "pane-1" }, parts)) === null,
-		null,
+			onItself !== null &&
+			isDeepStrictEqual(onItself.root, now.root) &&
+			onItself.placedId === standing?.id,
+		onItself,
 	);
 }
 

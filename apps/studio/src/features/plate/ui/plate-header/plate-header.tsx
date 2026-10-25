@@ -6,7 +6,6 @@ import type { PaneClosing } from "../../../panes/lib/pane-close-context.js";
 import { PlateHeaderContext } from "../../lib/plate-header-context.js";
 import type { PlateHeaderPlace, PlateHeaderStore } from "../../lib/plate-header-store.js";
 import { HeaderButton } from "./header-button.js";
-import { PlateStrip } from "./plate-strip.js";
 
 const CLOSE_PANE = "Close pane";
 const PRIMARY_BUTTON = 0;
@@ -45,7 +44,6 @@ export const PlateHeader = forwardRef<HTMLElement, PlateHeaderProps>(function Pl
 			data-at-top-right={paneClosing?.isAtTopRight === true ? "" : undefined}
 			onPointerDown={paneClosing === null ? undefined : (event) => carryPane(event, paneClosing.paneId)}
 		>
-			<PlateStrip />
 			<div className="wg-plate-head-row wg-root">
 				{edgeStartOf(paneClosing, edgeStart)}
 				<span className="wg-plate-slot" data-plate-place="lead">

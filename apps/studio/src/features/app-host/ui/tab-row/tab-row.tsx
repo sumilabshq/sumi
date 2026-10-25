@@ -36,7 +36,6 @@ export const TabRow = memo(function TabRow({ tab, groupId, isRenaming, onRenamed
 			role="button"
 			tabIndex={0}
 			aria-current={tab.isShown || undefined}
-			draggable={!isRenaming}
 			className={`${SIDEBAR_ROW} ${SIDEBAR_ROW_SHOWN}`}
 			onClick={show}
 			onKeyDown={onKeyDown}

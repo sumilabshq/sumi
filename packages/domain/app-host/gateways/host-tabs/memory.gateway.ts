@@ -28,6 +28,10 @@ export class MemoryHostTabsGateway extends HostTabsGateway {
 		return () => void this.listeners.delete(listener);
 	}
 
+	opensBesideAnother(): boolean {
+		return false;
+	}
+
 	keepsPagesAcrossStarts(): boolean {
 		return true;
 	}

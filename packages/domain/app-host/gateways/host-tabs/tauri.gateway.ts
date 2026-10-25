@@ -10,14 +10,34 @@ export const KeptTabsDocSchema = z.looseObject({
 
 export type KeptTabsDoc = z.infer<typeof KeptTabsDocSchema>;
 
+export const WindowViewDocSchema = z.looseObject({
+	view: z
+		.object({
+			shownId: z.string().nullable(),
+			lastShown: z.record(z.string(), z.string()),
+		})
+		.nullable()
+		.catch(null),
+});
+
+export type WindowViewDoc = z.infer<typeof WindowViewDocSchema>;
+
+interface HeldTabs {
+	readonly shared: HeldDoc<KeptTabsDoc>;
+	readonly window: HeldDoc<WindowViewDoc> | null;
+}
+
 export class TauriHostTabsGateway extends HostTabsGateway {
-	private held: HeldDoc<KeptTabsDoc> | null = null;
+	private held: HeldTabs | null = null;
 	private readonly loaded: Promise<void>;
 
-	constructor(session: Promise<HeldDoc<KeptTabsDoc>>) {
+	constructor(session: Promise<HeldDoc<KeptTabsDoc>>, windowView: Promise<HeldDoc<WindowViewDoc>> | null) {
 		super();
-		this.loaded = session.then((doc) => {
-			this.held = doc;
+		this.loaded = Promise.all([session, windowView]).then(([shared, window]) => {
+			this.held = {
+				shared,
+				window,
+			};
 		});
 	}
 
@@ -26,7 +46,19 @@ export class TauriHostTabsGateway extends HostTabsGateway {
 	}
 
 	tabs(): KeptTabs | null {
-		return this.held?.now().tabs ?? null;
+		const shared = this.held?.shared.now().tabs ?? null;
+		const window = this.held?.window;
+
+		if (shared === null || window === undefined || window === null) {
+			return shared;
+		}
+
+		const view = window.now().view;
+		return {
+			...shared,
+			shownId: view?.shownId ?? null,
+			lastShown: view?.lastShown ?? {},
+		};
 	}
 
 	saveTabs(tabs: KeptTabs, reason: string): void {
@@ -34,16 +66,49 @@ export class TauriHostTabsGateway extends HostTabsGateway {
 			throw new Error(`[widgetarium] tabs saved before session.json was read (${reason})`);
 		}
 
-		this.held.change({ tabs: KeptTabsSchema.parse(tabs) }, `tabs ${reason}`);
-		void this.held.flush();
+		const kept = KeptTabsSchema.parse(tabs);
+		const { shared, window } = this.held;
+
+		if (window === null) {
+			shared.change({ tabs: kept }, `tabs ${reason}`);
+			void shared.flush();
+			return;
+		}
+
+		const sharedNow = shared.now().tabs;
+		shared.change(
+			{
+				tabs: {
+					...kept,
+					shownId: sharedNow?.shownId ?? null,
+					lastShown: sharedNow?.lastShown ?? {},
+				},
+			},
+			`tabs ${reason}`,
+		);
+		window.change(
+			{
+				view: {
+					shownId: kept.shownId,
+					lastShown: kept.lastShown,
+				},
+			},
+			`window view ${reason}`,
+		);
+		void shared.flush();
+		void window.flush();
 	}
 
 	tabsChanged(listener: () => void): () => void {
-		const stop = this.loaded.then(() => this.held?.watch(listener));
-		return () => void stop.then((stopWatching) => stopWatching?.());
+		const stop = this.loaded.then(() => [this.held?.shared.watch(listener), this.held?.window?.watch(listener)]);
+		return () => void stop.then((stops) => stops.forEach((stopWatching) => stopWatching?.()));
 	}
 
 	keepsPagesAcrossStarts(): boolean {
-		return false;
+		return this.opensBesideAnother();
+	}
+
+	opensBesideAnother(): boolean {
+		return (this.held?.window ?? null) !== null;
 	}
 }

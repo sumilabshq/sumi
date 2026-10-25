@@ -97,7 +97,7 @@ const LAYOUT = `(() => {
 		appWords: [...document.querySelectorAll(".wg-plate-head.is-app .wg-plate-crumb")].filter((crumb) => crumb.getClientRects().length > 0).map((crumb) => crumb.textContent),
 		appButtons: [...document.querySelectorAll(".wg-plate-head.is-app button:not([data-pane-close])")].filter((button) => button.getClientRects().length > 0).map((button) => [button.getAttribute("aria-label"), button.getAttribute("aria-disabled")]),
 		chatButtons: [...document.querySelectorAll(".wg-plate-head.is-chat button")].map((button) => [button.getAttribute("aria-label"), button.getAttribute("aria-disabled")]),
-		menuOffset: (() => { const menu = document.querySelector(".wg-plate-head.is-chat .wg-studio-menu-trigger")?.getBoundingClientRect(); const head = document.querySelector(".wg-plate-head.is-chat").getBoundingClientRect(); return menu ? Math.round(menu.top + menu.height / 2 - (head.top + head.height / 2)) : null; })(),
+		menuOffset: (() => { const menu = document.querySelector(".wg-plate-head.is-chat [aria-haspopup=menu]")?.getBoundingClientRect(); const head = document.querySelector(".wg-plate-head.is-chat").getBoundingClientRect(); return menu ? Math.round(menu.top + menu.height / 2 - (head.top + head.height / 2)) : null; })(),
 		mascots: document.querySelectorAll(".wg-shell .wg-plate-head [data-mascot], .wg-shell .wg-studio-ai-head").length,
 		rail: document.querySelectorAll(".wg-studio-rail").length,
 		edges: [...document.querySelectorAll("[data-shell-edge]")].map((edge) => edge.getAttribute("data-shell-edge")),
@@ -219,24 +219,8 @@ const HEAD_INK = `(() => {
 		inkClass: [...head.classList].find((name) => name.startsWith("sumi-ink")) ?? null,
 		text: getComputedStyle(head).color,
 		crumb: crumb ? getComputedStyle(crumb).color : null,
-		strip: plate.hasAttribute("data-plate-strip"),
+		picture: head.querySelector("[style*='url('], img, canvas") !== null || getComputedStyle(head).backgroundImage !== "none",
 	};
-})()`;
-
-const STRIPES = `(() => {
-	const canvas = document.createElement("canvas");
-	canvas.width = 800;
-	canvas.height = 44;
-	const paint = canvas.getContext("2d");
-	const gradient = paint.createLinearGradient(0, 0, 800, 0);
-	gradient.addColorStop(0, "#ff7a59");
-	gradient.addColorStop(0.5, "#7b5cff");
-	gradient.addColorStop(1, "#1fb6ff");
-	paint.fillStyle = gradient;
-	paint.fillRect(0, 0, 800, 44);
-	paint.fillStyle = "rgba(255,255,255,0.8)";
-	for (let x = 0; x < 800; x += 40) paint.fillRect(x, 0, 14, 44);
-	return canvas.toDataURL("image/png");
 })()`;
 
 function contrastOf(one: string, other: string): number {
@@ -291,7 +275,7 @@ const HeadInkSchema = z.object({
 	inkClass: z.string().nullable(),
 	text: z.string(),
 	crumb: z.string().nullable(),
-	strip: z.boolean(),
+	picture: z.boolean(),
 });
 const PointSchema = z.tuple([z.number(), z.number()]);
 
@@ -378,7 +362,7 @@ async function walk(theme: Theme): Promise<void> {
 		if (process.env["SHELL_SPY"])
 			console.log(
 				await page.ask(
-					`(() => { const out = []; for (let at = document.querySelector(".wg-plate-head.is-chat .wg-studio-menu-trigger"); at && !at.classList.contains("wg-plate-head-row"); at = at.parentElement) { const box = at.getBoundingClientRect(); const look = getComputedStyle(at); out.push(at.className.slice(0, 40) + " top " + Math.round(box.top) + " h " + Math.round(box.height) + " pad " + look.padding + " disp " + look.display); } return out; })()`,
+					`(() => { const out = []; for (let at = document.querySelector(".wg-plate-head.is-chat [aria-haspopup=menu]"); at && !at.classList.contains("wg-plate-head-row"); at = at.parentElement) { const box = at.getBoundingClientRect(); const look = getComputedStyle(at); out.push(at.className.slice(0, 40) + " top " + Math.round(box.top) + " h " + Math.round(box.height) + " pad " + look.padding + " disp " + look.display); } return out; })()`,
 				),
 			);
 		check(
@@ -480,7 +464,7 @@ async function walk(theme: Theme): Promise<void> {
 		const toPink = TimedSchema.parse(
 			await page.ask(
 				timedUntilPainted(
-					`window.__PAGES__.showLook({ fill: ${JSON.stringify(PINK)}, strip: null })`,
+					`window.__PAGES__.showLook({ fill: ${JSON.stringify(PINK)} })`,
 					`document.querySelector(".wg-shell-plate.is-app").style.getPropertyValue("--wg-plate-fill") === ${JSON.stringify(PINK)}`,
 				),
 			),
@@ -496,7 +480,7 @@ async function walk(theme: Theme): Promise<void> {
 		);
 		writeFileSync(path.join(shotsAt, `frame-browser-pink-${theme}.png`), await page.shoot());
 
-		await page.ask(`window.__PAGES__.showLook({ fill: ${JSON.stringify(NAVY)}, strip: null }); true`);
+		await page.ask(`window.__PAGES__.showLook({ fill: ${JSON.stringify(NAVY)} }); true`);
 		await waited(400);
 		const navy = HeadInkSchema.parse(await page.ask(HEAD_INK));
 		check(`${theme}: a navy page flips the ink light`, navy["inkClass"] === "sumi-ink-light", navy);
@@ -506,14 +490,7 @@ async function walk(theme: Theme): Promise<void> {
 			contrastOf(navy["text"] ?? "", NAVY),
 		);
 
-		const stripes = z.string().parse(await page.ask(STRIPES));
-		await page.ask(
-			`window.__PAGES__.showLook({ fill: "rgb(150, 120, 230)", strip: ${JSON.stringify(stripes)} }); true`,
-		);
-		await waited(400);
-		const striped = HeadInkSchema.parse(await page.ask(HEAD_INK));
-		check(`${theme}: a patterned page draws the strip under the header`, striped["strip"] === true, striped);
-		writeFileSync(path.join(shotsAt, `frame-browser-strip-${theme}.png`), await page.shoot());
+		check(`${theme}: the header is a solid colour, never a picture of the page`, navy["picture"] === false, navy);
 
 		const toCanvas = TimedSchema.parse(
 			await page.ask(

@@ -4,6 +4,7 @@ export const KeptChatSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
 	isPinned: z.boolean(),
+	pinRank: z.number().int().nonnegative().optional(),
 	createdAt: z.number().nonnegative(),
 	lastAt: z.number().nonnegative(),
 });
@@ -12,7 +13,7 @@ export type KeptChat = z.infer<typeof KeptChatSchema>;
 
 export const KeptChatsSchema = z.object({
 	chats: z.array(KeptChatSchema),
-	activeId: z.string().nullable(),
+	openOnStartId: z.string().nullable(),
 });
 
 export type KeptChats = z.infer<typeof KeptChatsSchema>;
@@ -29,10 +30,34 @@ export const ChatIdSchema = z.object({
 	id: z.string().min(1),
 });
 
+export const ChatToOpenSchema = z.object({
+	isRead: z.boolean(),
+	id: z.string().nullable(),
+});
+
+export type ChatToOpen = z.infer<typeof ChatToOpenSchema>;
+
+export const NewChatSchema = z.object({
+	title: z.string().nullable(),
+});
+
 export const ChatPinSchema = z.object({
 	id: z.string().min(1),
 	isPinned: z.boolean(),
 });
+
+export const ChatPlaceSchema = z.object({
+	id: z.string().min(1),
+	to: z.discriminatedUnion("list", [
+		z.object({
+			list: z.literal("pinned"),
+			before: z.string().min(1).nullable(),
+		}),
+		z.object({ list: z.literal("recents") }),
+	]),
+});
+
+export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
 
 export const ChatTitleSchema = z.object({
 	id: z.string().min(1),
@@ -42,6 +67,7 @@ export const ChatTitleSchema = z.object({
 export const ChatTurnSchema = z.object({
 	chatId: z.string().min(1),
 	isBusy: z.boolean(),
+	isSeen: z.boolean(),
 	firstAsked: z.string().nullable(),
 });
 
@@ -51,7 +77,6 @@ export const ChatRowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	isPinned: z.boolean(),
-	isActive: z.boolean(),
 	mark: ChatMarkSchema,
 });
 
@@ -64,14 +89,8 @@ export const ChatListSchema = z.object({
 
 export type ChatListData = z.infer<typeof ChatListSchema>;
 
-export const ChatCrumbSchema = z.object({
+export const WorkspaceCrumbSchema = z.object({
 	workspace: z.string(),
-	chat: z.string(),
-});
-
-export const ActiveChatSchema = z.object({
-	id: z.string(),
-	title: z.string(),
 });
 
 export const ChatElsewhereRowSchema = z.object({

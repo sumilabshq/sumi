@@ -22,6 +22,18 @@ export async function centreOf(page: AskedPage, selector: string): Promise<reado
 	return [at[0], at[1]];
 }
 
+export async function bottomOf(page: AskedPage, selector: string): Promise<readonly [number, number]> {
+	const at = await page.ask(
+		`((selector) => { const box = document.querySelector(selector)?.getBoundingClientRect(); return box ? [box.left + box.width / 2, box.bottom] : null; })(${JSON.stringify(selector)})`,
+	);
+
+	if (!Array.isArray(at) || typeof at[0] !== "number" || typeof at[1] !== "number") {
+		throw new Error(`nothing on the page answers ${selector}`);
+	}
+
+	return [at[0], at[1]];
+}
+
 export function pointedAt(selector: string): string {
 	return `((selector) => { const el = document.querySelector(selector); const box = el.getBoundingClientRect(); el.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2, clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 })); return true; })(${JSON.stringify(selector)})`;
 }
@@ -120,14 +132,6 @@ const LIST_PAIRS: readonly Pair[] = [
 		built: `${PLAIN_BOX} [data-tab-art=site]`,
 		skip: ["backgroundColor", ...COLOURS.slice(2)],
 	},
-	{ name: "new tab row", board: "aside > button.x-row:last-child", built: "[data-host-column-add]" },
-	{
-		name: "new tab plus",
-		board: "aside > button.x-row:last-child svg",
-		built: "[data-host-column-add] svg",
-		only: ["width", "height", "color"],
-	},
-	{ name: "new tab key", board: "aside > button.x-row:last-child .x-kbd", built: "[data-host-new-tab-key]" },
 ];
 
 export const LIST_SCENE: Scene = {

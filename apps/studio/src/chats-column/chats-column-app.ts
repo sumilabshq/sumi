@@ -1,24 +1,30 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
+import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
+import { ChatRenaming } from "../features/workspaces/lib/chat-renaming.js";
 import { ChatCrumb } from "../features/workspaces/ui/chat-crumb/chat-crumb.js";
+import { ChatMore } from "../features/workspaces/ui/chat-more/chat-more.js";
 import { ChatsColumn } from "../features/workspaces/ui/chats-column/chats-column.js";
-import { activeChatPortOf } from "./workspaces-active-chat.js";
+import { ChatsInPanes } from "./chats-in-panes.js";
+import { focusedChatPortOf } from "./focused-chat.js";
 
 export interface ChatsColumnApp {
-	readonly activeChat: ActiveChatPort;
+	readonly focusedChat: FocusedChatPort;
 	readonly column: ReactElement;
-	readonly crumb: ReactElement;
+	readonly crumbOf: (chatId: string | null) => ReactElement;
+	readonly moreOf: (chatId: string | null) => ReactElement;
 	readonly workspaces: StartedApp;
 }
 
 export function createChatsColumnApp(workspacesApp: StartedApp): ChatsColumnApp {
+	const renaming = new ChatRenaming();
 	return {
-		activeChat: activeChatPortOf(workspacesApp),
-		column: h(AppProvider, { app: workspacesApp }, h(ChatsColumn)),
-		crumb: h(AppProvider, { app: workspacesApp }, h(ChatCrumb)),
+		focusedChat: focusedChatPortOf(workspacesApp),
+		column: h(AppProvider, { app: workspacesApp }, h(ChatsInPanes, null, h(ChatsColumn, { renaming }))),
+		crumbOf: (chatId) => h(AppProvider, { app: workspacesApp }, h(ChatCrumb, { renaming, chatId })),
+		moreOf: (chatId) => h(AppProvider, { app: workspacesApp }, h(ChatMore, { renaming, chatId })),
 		workspaces: workspacesApp,
 	};
 }

@@ -53,7 +53,7 @@ export function boardWorkspacesParts(count: WorkspacesCount): WorkspacesParts {
 	return memoryWorkspacesParts({
 		workspaces: workspacesOf(count),
 		currentId: "default",
-		chats: { chats: [...BOARD_CHATS], activeId: "release" },
+		chats: { chats: [...BOARD_CHATS], openOnStartId: "release" },
 		marks: { checks: "unread", deepl: "running" },
 	});
 }

@@ -19,6 +19,7 @@ import type { HostTabsGateway } from "../packages/domain/app-host/gateways/host-
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
+import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
 import { check, tally, thrownBy, waitFor } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";
@@ -38,9 +39,12 @@ function restoredTabs(): KeptTabs {
 			pageId: null,
 			label: null,
 			essentialId: null,
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
 		})),
 		lists: {
-			[HOST_CHAT]: RESTORED.map((id) => ({
+			[WORKSPACE_LIST]: RESTORED.map((id) => ({
 				kind: "tab",
 				id,
 			})),
@@ -69,14 +73,14 @@ async function tearOffChecks(): Promise<void> {
 	check(
 		"a restored tab with no page is given one before the host is asked to tear it off",
 		[torn.ok, pageId?.startsWith("page-"), pages.calls.slice(-2)],
-		[true, true, [`open ${pageId}`, `tear off ${pageId}`]],
+		[true, true, [`open ${pageId}`, `tear off ${pageId} as tab-12`]],
 	);
 	const callsBefore = pages.calls.length;
 	await studioApp.send(TearOffTabCommand, { id: "tab-12" });
 	check(
 		"a second drag keeps the page the tab was given and opens nothing new",
 		[(await pageIdOf(studioApp, "tab-12")) === pageId, pages.calls.slice(callsBefore)],
-		[true, [`tear off ${pageId}`]],
+		[true, [`tear off ${pageId} as tab-12`]],
 	);
 	const moment = momentOfKept(restoredTabs(), HOST_CHAT);
 	const given = givePage(moment, { id: "tab-12", pageId: "page-mine", why: "test" })?.moment ?? moment;
@@ -104,9 +108,9 @@ async function ownWindowDropChecks(): Promise<void> {
 async function showAndPaneChecks(): Promise<void> {
 	const { pages, studioApp } = restoredStudio();
 	check(
-		"the browser's first page goes to the first restored tab",
+		"a page no tab holds goes to no tab, so a tab never shows another tab's page",
 		await pageIdOf(studioApp, "tab-10"),
-		BROWSER_FIRST_PAGE,
+		null,
 	);
 	await studioApp.send(ShowTabCommand, { id: "tab-12" });
 	const shownPage = await pageIdOf(studioApp, "tab-12");

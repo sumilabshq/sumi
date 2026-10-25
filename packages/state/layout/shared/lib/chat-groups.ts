@@ -83,19 +83,21 @@ export function withChatsGrouped(tree: PaneTree): PaneTree {
 		? tree
 		: {
 				...tree,
-				root: looseChatsGrouped(tree.root, false),
+				root: looseChatsGrouped(tree.root),
 			};
 }
 
-function looseChatsGrouped(node: PaneNode, isInGroup: boolean): PaneNode {
+function looseChatsGrouped(node: PaneNode): PaneNode {
 	if (node.kind === "pane") {
-		return !isInGroup && node.view.kind === "chat" && node.view.chatId !== undefined
-			? groupedChat(node, node.view.chatId)
-			: node;
+		return node.view.kind === "chat" && node.view.chatId !== undefined ? groupedChat(node, node.view.chatId) : node;
+	}
+
+	if (isChatGroup(node)) {
+		return node;
 	}
 
 	return {
 		...node,
-		children: node.children.map((child) => looseChatsGrouped(child, isInGroup || isChatGroup(node))),
+		children: node.children.map(looseChatsGrouped),
 	};
 }

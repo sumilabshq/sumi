@@ -128,9 +128,6 @@ class PaintedPagesGateway extends FakeBrowserPagesGateway {
 	private paint(): void {
 		const look = this.look();
 		this.page.style.background = look === null ? "" : look.fill;
-		this.page.style.backgroundImage = look?.strip ? `url("${look.strip}")` : "";
-		this.page.style.backgroundSize = "100% 44px";
-		this.page.style.backgroundRepeat = "no-repeat";
 	}
 }
 

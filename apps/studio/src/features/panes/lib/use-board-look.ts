@@ -5,14 +5,14 @@ import type { FrameBounds, PaneBoard, PaneLeaf, PaneNode, PanePlacement, Placeme
 import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
 import { focusedGroupOf } from "./aim-targets.js";
 import { drawLayout } from "./draw-layout.js";
-import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf } from "./pane-layout.js";
+import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf, rimOf } from "./pane-layout.js";
 import type { PaneEdge, PaneLayout, PanePlace, PaneRect, PaneSpacing } from "./pane-layout.js";
 import { useBoardBox } from "./use-board-box.js";
 import { useLingering } from "./use-lingering.js";
 import { useOpensChatAt } from "./use-opens-chat-at.js";
 import { usePaneDrop } from "./use-pane-drop.js";
 import { useSaysPreview } from "./use-says-preview.js";
-import { useShowsActiveChat } from "./use-shows-active-chat.js";
+import { useOpensChatAskedOnStart } from "./use-opens-chat-asked-on-start.js";
 
 type ChatGroup = PaneBoard["chatGroups"][number];
 
@@ -29,6 +29,7 @@ export interface SlotLook {
 	readonly isMoving: boolean;
 	readonly isAway: boolean;
 	readonly corners: string | undefined;
+	readonly rim: string;
 }
 
 export interface BoardLook {
@@ -70,7 +71,7 @@ const FOCUS_EASE_MS = 260;
 const EDGE_SLACK_PX = 1;
 
 export function useBoardLook(board: RefObject<HTMLDivElement | null>, { chatPx, bounds }: BoardFraming): BoardLook {
-	useShowsActiveChat();
+	useOpensChatAskedOnStart();
 	const measure: Measure = {
 		box: useBoardBox(board),
 		spacing: {
@@ -80,7 +81,12 @@ export function useBoardLook(board: RefObject<HTMLDivElement | null>, { chatPx, 
 	};
 	const focused = useFocusedLayout(board, measure);
 	const { tree, focus, resting } = focused;
-	useOpensChatAt(chatPx, paneLayoutOf(tree.root, measure.box, measure.spacing).edges, bounds.plateLeastPx);
+	useOpensChatAt({
+		chatPx,
+		edges: paneLayoutOf(tree.root, measure.box, measure.spacing).edges,
+		plateLeastPx: bounds.plateLeastPx,
+		isChatSettled: tree.focusedChatId !== null,
+	});
 	const seen = usePreviewed(board, focused, measure);
 	const placeOf = placerOf(focused, seen, measure);
 	return {
@@ -170,6 +176,7 @@ function slotLooksOf(
 			isMoving: leaf.id === movingId,
 			isAway: focus !== null && !focus.paneIds.includes(leaf.id),
 			corners: groupId === undefined ? undefined : cornersOf(shown.rects.get(leaf.id), shown.groups.get(groupId)),
+			rim: rimOf(shown.rects.get(leaf.id), groupId === undefined ? undefined : shown.groups.get(groupId)),
 		};
 	};
 }

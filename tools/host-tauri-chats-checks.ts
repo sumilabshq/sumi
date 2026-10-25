@@ -2,13 +2,17 @@ import { ChatSessions } from "../apps/host-tauri/src/assistant/chat-sessions.ts"
 import { chatSessionLinkOf } from "../apps/host-tauri/src/assistant/chat-session-link.ts";
 import type { RunAnswer, TurnRun } from "../apps/host-tauri/src/assistant/turn-run.ts";
 import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
-import { activeChatPortOf } from "../apps/studio/src/chats-column/workspaces-active-chat.ts";
+import { focusedChatPortOf } from "../apps/studio/src/chats-column/focused-chat.ts";
+import { LayoutModule } from "../packages/state/layout/module.ts";
+import { partsOf } from "./layout-rules-checks.ts";
+import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
+	ChatListQuery,
 	CreateChatCommand,
-	SelectChatCommand,
+	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
 	WorkspacesQuery,
 } from "../packages/domain/workspaces/generated/contract.ts";
@@ -42,7 +46,18 @@ function heldRun(): HeldRun {
 
 function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
-	return { parts, started: app().modules(WorkspacesModule.with(parts)).start() };
+	return {
+		parts,
+		started: app()
+			.modules(LayoutModule.with({ ...partsOf() }), WorkspacesModule.with(parts))
+			.start(),
+	};
+}
+
+async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | undefined> {
+	await waitFor(() => started.routes.readNow(ChatListQuery) !== null);
+	const answer = await started.send(ChatListQuery);
+	return answer.ok ? answer.output.recents[0]?.id : undefined;
 }
 
 function markOf({ parts }: TauriWorkspaces, id: string): string {
@@ -63,7 +78,7 @@ async function perChatChecks(): Promise<void> {
 	fake.known.set(DEFAULT.id, DEFAULT);
 	const logs = await readChatLogs(new StoreClient(fake.invoke), DEFAULT.id);
 	const workspaces = tauriWorkspacesOf(fake);
-	const activeChat = activeChatPortOf(workspaces.started);
+	const focusedChat = focusedChatPortOf(workspaces.started);
 	const runs: HeldRun[] = [];
 	const sessions = new ChatSessions(
 		{
@@ -76,16 +91,20 @@ async function perChatChecks(): Promise<void> {
 			return { run: held.run, providerId: "claude-code", resumesWithoutAnId: false };
 		},
 	);
-	const firstId = activeChat.now().id;
+	const firstId = (await firstChatIdIn(workspaces)) ?? "";
+	await quietly(() => workspaces.started.send(ShowChatInPaneCommand, { chatId: firstId, paneId: null }));
+	await waitFor(() => focusedChat.now()?.id === firstId);
 	await quietly(async () => {
 		await (await sessions.shownSession()).send("Plan the release");
 		await waitFor(() => runs.length === 1 && markOf(workspaces, firstId) === "running");
 	});
-	check("a first ask names the chat", activeChat.now().title, "Plan the release");
+	check("a first ask names the chat", focusedChat.now()?.title, "Plan the release");
 	check("and marks it running", markOf(workspaces, firstId), "running");
 
-	await quietly(() => workspaces.started.send(CreateChatCommand));
-	const secondId = activeChat.now().id;
+	const made = await quietly(() => workspaces.started.send(CreateChatCommand, { title: null }));
+	const secondId = made.answer.ok ? made.answer.output.id : "";
+	await quietly(() => workspaces.started.send(ShowChatInPaneCommand, { chatId: secondId, paneId: null }));
+	check("a new chat shown in the chat pane is the focused one", focusedChat.now()?.id, secondId);
 	await waitFor(() => sessions.now().turns.length === 0);
 	check("a new chat shows its own empty conversation", sessions.now().turns.length, 0);
 	await quietly(async () => {
@@ -95,7 +114,10 @@ async function perChatChecks(): Promise<void> {
 	check("the first chat finishing while unseen is unread", markOf(workspaces, firstId), "unread");
 	check("the shown chat is untouched by it", sessions.now().turns.length, 0);
 
-	await quietly(() => workspaces.started.send(SelectChatCommand, { id: firstId }));
+	await quietly(async () => {
+		await workspaces.started.send(ShowChatInPaneCommand, { chatId: firstId, paneId: null });
+		await workspaces.started.send(MarkChatSeenCommand, { id: firstId });
+	});
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(
 		"selecting the first chat shows its conversation again and clears unread",
@@ -126,9 +148,12 @@ async function legacyChatChecks(): Promise<void> {
 		resumes: {},
 	});
 	const workspaces = tauriWorkspacesOf(fake);
-	const activeChat = activeChatPortOf(workspaces.started);
-	await waitFor(() => activeChat.now().id === "c1");
-	check("the chat chat/index.json named is carried over as a chat of its own", activeChat.now().id, "c1");
+	await waitFor(() => workspaces.parts.chats.chats().chats.some((chat) => chat.id === "c1"));
+	check(
+		"the chat chat/index.json named is carried over as a chat of its own, opened on start",
+		[workspaces.parts.chats.chats().chats.map((chat) => chat.id), workspaces.parts.chats.chats().openOnStartId],
+		[["c1"], "c1"],
+	);
 }
 
 function rowsIn({ started }: TauriWorkspaces): readonly { readonly id: string; readonly name: string }[] {
@@ -214,8 +239,10 @@ async function entryOfAnotherShapeChecks(): Promise<void> {
 	const { answer } = await quietly(async () => {
 		const logs = await readChatLogs(new StoreClient(fake.invoke), DEFAULT.id);
 		const workspaces = tauriWorkspacesOf(fake);
-		await waitFor(() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().activeId === "good");
-		await workspaces.started.send(CreateChatCommand);
+		await waitFor(
+			() => rowsIn(workspaces).length === 1 && workspaces.parts.chats.chats().chats.some((chat) => chat.id === "good"),
+		);
+		await workspaces.started.send(CreateChatCommand, { title: null });
 		const read = workspaces.started.routes.readNow(WorkspacesQuery);
 		const rows = read === null ? [] : WorkspacesQuery.outputSchema.parse(read.output).rows;
 		await workspaces.started.send(SetWorkspaceIconCommand, { id: DEFAULT.id, icon: null });

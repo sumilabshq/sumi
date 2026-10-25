@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { GroupHueSchema, WorkspaceListSchema } from "./tab-group.schema.js";
+import { SidebarViewSchema } from "./tabs-column.schema.js";
 
 export const AppKindSchema = z.enum(["canvas", "browser"]);
 
@@ -110,14 +111,12 @@ export const TabSectionSchema = ListTargetSchema.extend({
 export type TabSection = z.infer<typeof TabSectionSchema>;
 
 export const TabsSidebarSchema = z.object({
-	chat: z.object({
-		id: z.string(),
-		title: z.string(),
-	}),
 	essentials: z.array(EssentialTileSchema).readonly(),
 	sections: z.array(TabSectionSchema).readonly(),
 	listTargets: z.array(ListTargetSchema).readonly(),
 	workspaceList: WorkspaceListSchema,
+	newTabList: z.string(),
+	view: SidebarViewSchema,
 });
 
 export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;

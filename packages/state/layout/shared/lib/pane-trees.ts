@@ -2,22 +2,14 @@ import type {
 	PaneBoard,
 	PaneLeaf,
 	PaneNode,
-	PaneSplit,
 	PaneTree,
 	PaneView,
 	PlacementPreview,
 } from "../schema/pane-tree.schema.js";
-import {
-	idsOf,
-	isSameView,
-	leavesOf,
-	withNodeReplaced,
-	withPlaced,
-	withShare,
-	withView,
-	withoutPane,
-} from "./pane-nodes.js";
+import { idsOf, isSameView, leavesOf, withNodeReplaced, withPlaced, withView, withoutPane } from "./pane-nodes.js";
 import { chatGroupsOf, chatLeafOf, groupHolding, groupOfChat, groupedChat } from "./chat-groups.js";
+import { holdsOf } from "./window-trees.js";
+import type { WindowTree } from "./window-trees.js";
 import type { PanePlace } from "./pane-nodes.js";
 
 export interface PlacedTree {
@@ -30,16 +22,7 @@ export interface TabPane {
 	readonly tabId: string;
 }
 
-export interface SplitShare {
-	readonly splitId: string;
-	readonly at: number;
-	readonly share: number;
-}
-
 const NO_PANE = 'no pane "{id}" stands on the board';
-const NO_SPLIT = 'no split "{id}" stands on the board';
-const NO_EDGE = 'split "{id}" has no edge at {at}';
-
 export function refuseUnknownPane(tree: PaneTree, id: string | null): string | null {
 	const groupIds = chatGroupsOf(tree.root).map((group) => group.id);
 
@@ -50,21 +33,14 @@ export function refuseUnknownPane(tree: PaneTree, id: string | null): string | n
 	return NO_PANE.replace("{id}", id);
 }
 
-export function refuseUnknownEdge(tree: PaneTree, { splitId, at }: SplitShare): string | null {
-	const split = splitOf(tree.root, splitId);
-
-	if (split === null) {
-		return NO_SPLIT.replace("{id}", splitId);
-	}
-
-	return at + 1 < split.children.length ? null : NO_EDGE.replace("{id}", splitId).replace("{at}", String(at));
-}
-
-export function boardOf(tree: PaneTree): PaneBoard {
+export function boardOf(tree: PaneTree, others: readonly WindowTree[] = []): PaneBoard {
+	const chatTarget = chatPaneOf(tree);
 	return {
 		root: tree.root,
 		targetId: tree.targetId,
-		chatTargetId: chatPaneOf(tree)?.id ?? null,
+		chatTargetId: chatTarget?.id ?? null,
+		focusedChatId: chatTarget?.view.kind === "chat" ? (chatTarget.view.chatId ?? null) : null,
+		isLoaded: true,
 		tabTargetId: tabTargetOf(tree)?.paneId ?? null,
 		leaves: leavesOf(tree.root),
 		tabPanes: tabPanesOf(tree),
@@ -73,6 +49,7 @@ export function boardOf(tree: PaneTree): PaneBoard {
 			groupId: group.id,
 			paneIds: leavesOf(group).map((leaf) => leaf.id),
 		})),
+		elsewhere: holdsOf(others),
 	};
 }
 
@@ -193,21 +170,6 @@ export function withTabShown(tree: PaneTree, paneId: string, tabId: string | nul
 			tabId,
 		}),
 	};
-}
-
-export function withSplitShare(tree: PaneTree, { splitId, at, share }: SplitShare): PaneTree {
-	if (tree.root === null) {
-		return tree;
-	}
-
-	return {
-		...tree,
-		root: withShare(tree.root, splitId, at, share),
-	};
-}
-
-export function shareAt(tree: PaneTree, { splitId, at }: Omit<SplitShare, "share">): number {
-	return splitOf(tree.root, splitId)?.shares[at] ?? 0;
 }
 
 export function paneShowingTab(tree: PaneTree, tabId: string): string | null {
@@ -382,16 +344,4 @@ function tabPanesOf(tree: PaneTree): TabPane[] {
 				]
 			: [],
 	);
-}
-
-function splitOf(node: PaneNode | null, splitId: string): PaneSplit | null {
-	if (node === null || node.kind === "pane") {
-		return null;
-	}
-
-	if (node.id === splitId) {
-		return node;
-	}
-
-	return node.children.reduce<PaneSplit | null>((found, child) => found ?? splitOf(child, splitId), null);
 }

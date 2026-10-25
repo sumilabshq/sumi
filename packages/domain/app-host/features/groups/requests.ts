@@ -1,14 +1,15 @@
 import { z } from "zod";
 import { Repeatable, command, refuse } from "@widgetarium/core/requests";
 import type { Send } from "@widgetarium/core/requests";
-import { ActiveChatQuery } from "@widgetarium/workspaces";
+import { PaneTreeQuery } from "@widgetarium/layout";
 import { HostTabsGateway } from "../../gateways/host-tabs/host-tabs.gateway.js";
-import { addGroup, changeGroup, chatOfTab, findGroup, ungroup } from "../../shared/lib/host-tabs/host-tabs.js";
+import { chatOfTab, findGroup } from "../../shared/lib/host-tabs/host-tabs.js";
+import { addGroup, changeGroup, ungroup } from "../../shared/lib/host-tabs/tab-groups.js";
 import type { HostTabsMoment, MovedTabs } from "../../shared/lib/host-tabs/host-tabs.js";
 import { keptTabsOf, momentOf, tabsTransitionSaid } from "../../shared/lib/host-tabs/kept-tabs.js";
-import { isKnownList } from "../../shared/lib/host-tabs/tab-lists.js";
+import { WORKSPACE_LIST, isKnownList } from "../../shared/lib/host-tabs/tab-lists.js";
 import { GroupFaceSchema, GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
-import type { AddedGroup } from "../../shared/lib/host-tabs/host-tabs.js";
+import type { AddedGroup } from "../../shared/lib/host-tabs/tab-groups.js";
 import type { GroupChange } from "../../shared/lib/host-tabs/host-tabs.js";
 import type { GroupFace } from "../../shared/schema/tab-group.schema.js";
 
@@ -29,10 +30,10 @@ export const CreateGroupCommand = command("create-group")
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
 	.handle(async (asked, { hostTabs, send }) => {
-		const chatId = await loadedChatIdOf(hostTabs, send);
-		const moment = momentOf(hostTabs.tabs(), chatId);
+		const board = await loadedBoardOf(hostTabs, send);
+		const moment = momentOf(hostTabs.tabs(), board.fallbackList);
 
-		if ("list" in asked && !isKnownList(moment, asked.list, chatId)) {
+		if ("list" in asked && !isKnownList(moment, asked.list, board.chatIds)) {
 			return refuse(UNKNOWN_LIST.replace("{list}", asked.list));
 		}
 
@@ -54,8 +55,8 @@ export const RenameGroupCommand = command("rename-group")
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
 	.handle(async ({ id, name }, { hostTabs, send }) => {
-		const chatId = await loadedChatIdOf(hostTabs, send);
-		const moment = momentOf(hostTabs.tabs(), chatId);
+		const board = await loadedBoardOf(hostTabs, send);
+		const moment = momentOf(hostTabs.tabs(), board.fallbackList);
 		const group = findGroup(moment.groups, id);
 
 		if (!group) {
@@ -75,8 +76,8 @@ export const SetGroupHueCommand = command("set-group-hue")
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
 	.handle(async ({ id, hue }, { hostTabs, send }) => {
-		const chatId = await loadedChatIdOf(hostTabs, send);
-		const moment = momentOf(hostTabs.tabs(), chatId);
+		const board = await loadedBoardOf(hostTabs, send);
+		const moment = momentOf(hostTabs.tabs(), board.fallbackList);
 		const group = findGroup(moment.groups, id);
 
 		if (!group) {
@@ -92,8 +93,8 @@ export const FoldGroupCommand = command("fold-group")
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
 	.handle(async ({ id }, { hostTabs, send }) => {
-		const chatId = await loadedChatIdOf(hostTabs, send);
-		const moment = momentOf(hostTabs.tabs(), chatId);
+		const board = await loadedBoardOf(hostTabs, send);
+		const moment = momentOf(hostTabs.tabs(), board.fallbackList);
 		const group = findGroup(moment.groups, id);
 
 		if (!group) {
@@ -109,8 +110,8 @@ export const UngroupCommand = command("ungroup")
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
 	.handle(async ({ id }, { hostTabs, send }) => {
-		const chatId = await loadedChatIdOf(hostTabs, send);
-		const moment = momentOf(hostTabs.tabs(), chatId);
+		const board = await loadedBoardOf(hostTabs, send);
+		const moment = momentOf(hostTabs.tabs(), board.fallbackList);
 		const group = findGroup(moment.groups, id);
 
 		if (!group) {
@@ -121,9 +122,17 @@ export const UngroupCommand = command("ungroup")
 		return undefined;
 	});
 
-async function loadedChatIdOf(hostTabs: HostTabsGateway, send: Send): Promise<string> {
-	const [chat] = await Promise.all([send(ActiveChatQuery), hostTabs.tabsLoaded()]);
-	return chat.id;
+interface BoardLists {
+	readonly fallbackList: string;
+	readonly chatIds: readonly string[];
+}
+
+async function loadedBoardOf(hostTabs: HostTabsGateway, send: Send): Promise<BoardLists> {
+	const [board] = await Promise.all([send(PaneTreeQuery), hostTabs.tabsLoaded()]);
+	return {
+		fallbackList: board.focusedChatId ?? WORKSPACE_LIST,
+		chatIds: board.chatGroups.map((group) => group.chatId),
+	};
 }
 
 function saveNewGroup(

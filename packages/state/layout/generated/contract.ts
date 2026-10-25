@@ -113,6 +113,8 @@ export const PaneBoardSchema = z.object({
 	root: PaneNodeSchema.nullable(),
 	targetId: z.string().nullable(),
 	chatTargetId: z.string().nullable(),
+	focusedChatId: z.string().nullable(),
+	isLoaded: z.boolean(),
 	tabTargetId: z.string().nullable(),
 	leaves: z.array(PaneLeafSchema).readonly(),
 	tabPanes: z
@@ -129,6 +131,15 @@ export const PaneBoardSchema = z.object({
 				chatId: z.string(),
 				groupId: z.string(),
 				paneIds: z.array(z.string()).readonly(),
+			}),
+		)
+		.readonly(),
+	elsewhere: z
+		.array(
+			z.object({
+				window: z.string(),
+				tabIds: z.array(z.string()).readonly(),
+				chatIds: z.array(z.string()).readonly(),
 			}),
 		)
 		.readonly(),

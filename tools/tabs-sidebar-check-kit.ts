@@ -1,5 +1,5 @@
 import { waited } from "./chrome-ask.ts";
-import type { AskedPage, NativeDrag, PagePoint } from "./chrome-ask.ts";
+import type { AskedPage, HeldDrag, PagePoint } from "./chrome-ask.ts";
 import { centreOf } from "./tabs-sidebar-scenes.ts";
 
 export interface Measured {
@@ -71,11 +71,12 @@ export async function timed(page: AskedPage, action: string, act: () => Promise<
 	);
 }
 
-export async function lifted(page: AskedPage, from: PagePoint, to: PagePoint, steps = 14): Promise<NativeDrag> {
+export async function lifted(page: AskedPage, from: PagePoint, to: PagePoint, steps = 14): Promise<HeldDrag> {
 	const drag = await page.lift({ from, to, steps, stepMs: 16 });
+	const isLifted = (await page.ask(`document.querySelector("[data-drag-ghost]") !== null`)) === true;
 
-	if (!drag.isLifted) {
-		check(`a press at ${from.join(",")} lifts a native drag`, false, from);
+	if (!isLifted) {
+		check(`a press at ${from.join(",")} moved past the threshold lifts a ghost`, false, from);
 	}
 
 	return drag;

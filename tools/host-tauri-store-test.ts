@@ -3,7 +3,12 @@ import { check, tally } from "./check-helpers.ts";
 import { SETTINGS, readSettings } from "../apps/host-tauri/src/settings/settings-doc.ts";
 
 import { TauriOpening } from "../apps/host-tauri/src/startup/tauri-opening.ts";
-import { GLOBAL_ROOT, StoreClient, folderRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import {
+	GLOBAL_ROOT,
+	STORE_CHANGED,
+	StoreClient,
+	folderRootOf,
+} from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { StoreRefusedError } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
 import type { Invoke } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
 import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
@@ -54,6 +59,77 @@ async function versionChecks(): Promise<void> {
 		"a newer v is read-only: read, never replaced",
 		[read.isReadOnly, fake.commandsCalled(), fake.files.get("global:settings.json")?.["trace"]],
 		[true, ["read", "read"], false],
+	);
+}
+
+interface HeardStore {
+	readonly fake: FakeStore;
+	readonly store: StoreClient;
+	readonly asked: string[];
+	readonly announce: (change: unknown) => Promise<void>;
+}
+
+function heardStore(): HeardStore {
+	const fake = new FakeStore();
+	const asked: string[] = [];
+	const hearers: ((payload: unknown) => void)[] = [];
+	const store = new StoreClient(fake.invoke, {
+		listen: (event, heard) => {
+			asked.push(event);
+			hearers.push(heard);
+		},
+		ownLabel: "main",
+	});
+	const announce = async (change: unknown): Promise<void> => {
+		for (const heard of hearers) {
+			heard(change);
+		}
+
+		await new Promise((settled) => setTimeout(settled, 0));
+	};
+	return { fake, store, asked, announce };
+}
+
+async function foreignWriteChecks(): Promise<void> {
+	const { fake, store, asked, announce } = heardStore();
+	const settings = await readSettings(store);
+	let notified = 0;
+	settings.watch(() => {
+		notified += 1;
+	});
+	check("the client listens for store changes", asked, [STORE_CHANGED]);
+
+	fake.put("global:settings.json", { v: 1, rev: 3, trace: true });
+	await quietly(() => announce({ root: "global", file: "settings.json", rev: 3, by: "studio-2" }));
+	check(
+		"another window's newer rev re-reads and notifies",
+		[settings.now().trace, notified, fake.commandsCalled()],
+		[true, 1, ["read", "read"]],
+	);
+
+	fake.put("global:settings.json", { v: 1, rev: 4, trace: false });
+	await announce({ root: "global", file: "settings.json", rev: 4, by: "main" });
+	await announce({ root: "global", file: "settings.json", rev: 3, by: "studio-2" });
+	await announce({ root: "global", file: "other.json", rev: 9, by: "studio-2" });
+	await announce({ root: "global", file: "log.jsonl", rev: null, by: "studio-2" });
+	check(
+		"this window's own write, an old rev, a doc not held and a line do nothing",
+		[settings.now().trace, notified, fake.commandsCalled()],
+		[true, 1, ["read", "read"]],
+	);
+}
+
+async function foreignWriteKeepsPendingChecks(): Promise<void> {
+	const { fake, store, announce } = heardStore();
+	const settings = await readSettings(store);
+	settings.change({ trace: true }, "trace");
+	fake.put("global:settings.json", { v: 1, rev: 2, trace: false, chatWidthPx: 320 });
+	await quietly(() => announce({ root: "global", file: "settings.json", rev: 2, by: "studio-2" }));
+	await settings.flush();
+	check(
+		"a re-read keeps the change not yet written and writes it on the new rev",
+		[fake.commandsCalled(), fake.calls[2]?.args["baseRev"], fake.files.get("global:settings.json")],
+		[["read", "read", "replace"], 2, { trace: true, v: 1, rev: 3, chatWidthPx: 320 }],
 	);
 }
 
@@ -188,6 +264,8 @@ async function workspaceCommandChecks(): Promise<void> {
 await settingsChecks();
 await staleRevChecks();
 await versionChecks();
+await foreignWriteChecks();
+await foreignWriteKeepsPendingChecks();
 await boundaryChecks();
 await firstRunChecks();
 await unopenedChecks();

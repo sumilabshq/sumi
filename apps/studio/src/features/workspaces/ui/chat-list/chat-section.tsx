@@ -5,8 +5,10 @@ import { InertButton } from "../inert-button/inert-button.js";
 import type { ChatRowData } from "@widgetarium/workspaces";
 import type { ChatMenuAt } from "../chat-menu/chat-menu.js";
 import { ChatRow } from "./chat-row.js";
+import type { ChatListKey } from "../../lib/chat-drag/chat-drag.js";
 
 export interface ChatSectionProps {
+	readonly list: ChatListKey;
 	readonly label: string;
 	readonly rows: readonly ChatRowData[];
 	readonly renamingId: string | null;
@@ -19,11 +21,11 @@ const SETTINGS = "{label} settings";
 const FOLD_ICON_PX = 12;
 const ACT_ICON_PX = 13;
 
-export function ChatSection({ label, rows, renamingId, onMenu, onRenamed }: ChatSectionProps): ReactElement {
+export function ChatSection({ list, label, rows, renamingId, onMenu, onRenamed }: ChatSectionProps): ReactElement {
 	const [isOpen, setOpen] = useState(true);
 	const listId = useId();
 	return (
-		<section className="wg-ws-section" aria-label={label} data-ws-section={label}>
+		<section className="wg-ws-section" aria-label={label} data-ws-section={label} data-ws-list={list}>
 			<div className={`wg-ws-section-head${isOpen ? "" : " is-shut"}`}>
 				<IconButton
 					variant="ghost"

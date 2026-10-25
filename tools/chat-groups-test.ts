@@ -1,5 +1,7 @@
 import { leavesOf } from "../packages/state/layout/shared/lib/pane-nodes.ts";
-import { chatGroupsOf } from "../packages/state/layout/shared/lib/chat-groups.ts";
+import { chatGroupsOf, groupedChat } from "../packages/state/layout/shared/lib/chat-groups.ts";
+import { JsonMemoryPaneTreeGateway } from "../packages/state/layout/gateways/pane-tree/json-memory.gateway.ts";
+import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import { aimTargetIdsOf } from "../apps/studio/src/features/panes/lib/aim-targets.ts";
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import {
@@ -15,7 +17,7 @@ import {
 import { KeptPaneTreeSchema } from "../packages/state/layout/gateways/pane-tree/pane-tree.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
 import type { PaneNode, PanePlacement } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { partsOf } from "./layout-rules-checks.ts";
+import { memoryOf, partsOf } from "./layout-rules-checks.ts";
 
 let failed = 0;
 
@@ -253,6 +255,24 @@ check(
 	"a board kept before chat groups opens with each named chat in a group of its own",
 	older.success && shapeOf(older.data.root) === "row[group:chat-a[chat:chat-a] shown]",
 	older.success ? shapeOf(older.data.root) : older.error.issues,
+);
+
+const twoWindows = new JsonMemoryPaneTreeGateway(memoryOf<unknown>(), FIRST_PANES, [
+	{
+		window: "studio-2",
+		tree: {
+			root: groupedChat({ kind: "pane", id: "pane-9", view: { kind: "chat", chatId: "chat-far" } }, "chat-far"),
+			minted: 9,
+			targetId: null,
+		},
+	},
+]);
+const beside = { ...partsOf(), paneTree: twoWindows };
+ShowChatInPaneCommand.handle({ chatId: "chat-far", paneId: null }, beside);
+check(
+	"a window never takes the active chat while another window holds it",
+	shapeOf(twoWindows.tree().root) === shapeOf(FIRST_PANES.root),
+	shapeOf(twoWindows.tree().root),
 );
 
 console.info = quiet;

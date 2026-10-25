@@ -21,6 +21,8 @@ import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
+import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
+import { treeShowingChat } from "../packages/state/layout/shared/lib/pane-trees.ts";
 
 export const HOST_CHAT = "chat-1";
 
@@ -67,8 +69,12 @@ export class RecordedPagesGateway extends FakeBrowserPagesGateway {
 		this.calls.push(`show ${tabId}`);
 	}
 
-	override tearOff(tabId = ""): void {
-		this.calls.push(`tear off ${tabId}`);
+	override openChatWindow(chatId = ""): void {
+		this.calls.push(`chat window ${chatId}`);
+	}
+
+	override tearOff(tabId = "", openWith = ""): void {
+		this.calls.push(`tear off ${tabId} as ${openWith}`);
 	}
 
 	override openInOwnWindow(tabId: string): void {
@@ -129,7 +135,7 @@ export function appHostFakesOf({
 export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const appHost = appHostFakesOf(seed);
 	const pages = new RecordedPagesGateway(seed.pages ?? [], seed.isBrowserAvailable ?? true);
-	const layout = seed.tree === undefined ? partsOf() : partsOf(seed.tree);
+	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = app()
 		.modules(
 			AppHostModule.with({ ...appHost }),
@@ -167,7 +173,7 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 					lastAt: 1,
 				},
 			],
-			activeId: HOST_CHAT,
+			openOnStartId: HOST_CHAT,
 		},
 		marks: {},
 	});

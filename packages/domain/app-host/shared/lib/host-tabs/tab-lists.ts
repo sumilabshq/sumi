@@ -90,8 +90,8 @@ export function withTabAt(layout: TabLayout, tabId: string, place: TabPlace): Ta
 	};
 }
 
-export function isKnownList({ lists }: TabLayout, listId: string, chatId: string): boolean {
-	return listId === WORKSPACE_LIST || listId === chatId || lists[listId] !== undefined;
+export function isKnownList({ lists }: TabLayout, listId: string, boardChatIds: readonly string[]): boolean {
+	return listId === WORKSPACE_LIST || boardChatIds.includes(listId) || lists[listId] !== undefined;
 }
 
 export function listPlaceOf(drop: Extract<TabDrop, { kind: "list" }>): TabPlace {

@@ -1,15 +1,20 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { Icon, Popover, PopoverAnchor, PopoverContent, PopoverItem } from "@widgetarium/kit";
+import { Icon, Popover, PopoverAnchor, PopoverAnchorAt, PopoverContent, PopoverItem } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
 import type { ChatRowData } from "@widgetarium/workspaces";
 import { PinChatCommand } from "@widgetarium/workspaces";
 
-export interface ChatMenuAt {
-	readonly id: string;
-	readonly x: number;
-	readonly y: number;
-}
+export type ChatMenuAt =
+	| {
+			readonly id: string;
+			readonly x: number;
+			readonly y: number;
+	  }
+	| {
+			readonly id: string;
+			readonly under: HTMLElement;
+	  };
 
 export interface ChatMenuProps {
 	readonly at: ChatMenuAt | null;
@@ -43,13 +48,14 @@ export function ChatMenu({ at, row, onClose, onRename }: ChatMenuProps): ReactEl
 		<Popover
 			open={at !== null && row !== null}
 			onOpenChange={(isOpen) => isOpen || onClose()}
-			placement="over"
+			placement={spot !== null && "under" in spot ? "below" : "over"}
 			isPortaled
 			className="wg-ws-pop wg-ws-menu is-chat"
 		>
-			{spot === null ? null : (
+			{spot === null || "under" in spot ? null : (
 				<PopoverAnchor className="wg-ws-menu-spot" style={{ left: spot.x, top: spot.y }} aria-hidden="true" />
 			)}
+			<PopoverAnchorAt element={spot !== null && "under" in spot ? spot.under : null} />
 			<PopoverContent>
 				{shown === null ? null : (
 					<div role="menu" aria-label={MENU_LABEL} data-ws-chat-menu={shown.id}>

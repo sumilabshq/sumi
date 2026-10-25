@@ -3,12 +3,19 @@ import { useCommand } from "@widgetarium/core/requests";
 import type { PaneEdge } from "./pane-layout.js";
 import { ResizePaneSplitCommand } from "@widgetarium/layout";
 
-export function useOpensChatAt(chatPx: number, edges: readonly PaneEdge[], plateLeastPx: number): void {
+export interface ChatOpening {
+	readonly chatPx: number;
+	readonly edges: readonly PaneEdge[];
+	readonly plateLeastPx: number;
+	readonly isChatSettled: boolean;
+}
+
+export function useOpensChatAt({ chatPx, edges, plateLeastPx, isChatSettled }: ChatOpening): void {
 	const resize = useCommand(ResizePaneSplitCommand);
 	const isOpened = useRef(false);
 	const chatEdge = edges.find((edge) => edge.isChatEdge && edge.spanPx > 0);
 	useLayoutEffect(() => {
-		if (isOpened.current || chatEdge === undefined) {
+		if (isOpened.current || !isChatSettled || chatEdge === undefined) {
 			return;
 		}
 
@@ -19,5 +26,5 @@ export function useOpensChatAt(chatPx: number, edges: readonly PaneEdge[], plate
 			at: chatEdge.at,
 			share: Math.min(Math.max(chatPx / chatEdge.spanPx, least), chatEdge.pairShare - least),
 		});
-	}, [chatEdge, chatPx, plateLeastPx, resize]);
+	}, [chatEdge, chatPx, plateLeastPx, isChatSettled, resize]);
 }

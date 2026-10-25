@@ -300,6 +300,10 @@
 	color: var(--sumi-text);
 }
 
+.wg-ws-row[data-ws-elsewhere] .wg-ws-row-title {
+	color: var(--sumi-text-3);
+}
+
 .wg-ws-row.is-active,
 .wg-ws-row.is-active:hover {
 	background: var(--sumi-selected);
@@ -853,4 +857,34 @@
 	font-weight: var(--sumi-fw-medium);
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.wg-ws-row[data-ws-lifted] {
+	opacity: 0.35;
+}
+
+.wg-ws-chats[data-ws-dragging] .wg-ws-row {
+	pointer-events: none;
+}
+
+.wg-ws-section[data-ws-drop="recents"] .wg-ws-section-rows {
+	border-radius: 10px;
+	background: var(--sumi-hover);
+}
+
+.wg-ws-chats[data-ws-dragging] .wg-ws-section-rows:empty {
+	min-height: 34px;
+}
+
+.wg-ws-drop-line {
+	position: fixed;
+	z-index: 2147483000;
+	height: 2px;
+	border-radius: 1px;
+	background: var(--sumi-text-2);
+	pointer-events: none;
+}
+
+.wg-ws-drop-line[hidden] {
+	display: none;
 }

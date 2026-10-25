@@ -1,6 +1,5 @@
-import { KeptColumnSchema } from "../../shared/schema/tabs-column.schema.js";
 import type { KeptColumn } from "../../shared/schema/tabs-column.schema.js";
-import { TabsColumnGateway } from "./tabs-column.gateway.js";
+import { StoredColumnSchema, TabsColumnGateway } from "./tabs-column.gateway.js";
 
 const KEY_OF_WORKSPACE = "widgetarium-studio-tabs-column:{workspace}";
 
@@ -41,7 +40,7 @@ export class LocalStorageTabsColumnGateway extends TabsColumnGateway {
 
 function keptColumnOf(said: string): KeptColumn | null {
 	try {
-		const parsed = KeptColumnSchema.safeParse(JSON.parse(said));
+		const parsed = StoredColumnSchema.safeParse(JSON.parse(said));
 		return parsed.success ? parsed.data : null;
 	} catch {
 		return null;

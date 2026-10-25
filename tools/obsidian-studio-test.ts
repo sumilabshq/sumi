@@ -552,18 +552,18 @@ check(
 			(studioNode.querySelector('[data-plate-head="chat"]')?.textContent ?? "").includes(
 				checkedAssistant.providerLabel,
 			),
-		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine")?.textContent ?? null,
+		studioNode.querySelector(".wg-studio-chat .wg-studio-ai-turn.is-mine .wg-studio-ai-said")?.textContent ?? null,
 	],
 	[false, checkedAssistant.asked],
 );
-await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
+await settledUntil(() => studioNode.querySelector('[data-plate-head="chat"] button[aria-haspopup="menu"]') !== null);
 check(
-	"the app menu stands in the chat plate's header, and nowhere else",
+	"the chat plate's header holds the chat's own … menu, and the old app menu is gone",
 	[
+		studioNode.querySelectorAll('[data-plate-head="chat"] button[aria-haspopup="menu"]').length,
 		studioNode.querySelectorAll('button[aria-label="Farm Stand menu"]').length,
-		studioNode.querySelector('[data-plate-head="chat"] button[aria-label="Farm Stand menu"]') !== null,
 	],
-	[1, true],
+	[1, 0],
 );
 const askCatalogueIn = (node: HTMLElement): void => {
 	const frame = node.querySelector<HTMLElement>(".wg-studio");
@@ -589,23 +589,17 @@ check(
 pressIn(studioNode, "Close the catalogue");
 await settledUntil(() => studioNode.querySelector(".wg-studio-sidebar") === null);
 const besideNode = await drawnFor(APP_NOTE);
-await settledUntil(() => studioNode.querySelector('button[aria-label="Farm Stand menu"]') !== null);
-pressIn(studioNode, "Farm Stand menu");
-await settledUntil(() => document.querySelector(".wg-studio-action-said") !== null);
-await settledUntil(() => document.querySelector("[data-agent-helpers]") !== null);
+studioNode.querySelector<HTMLElement>('[data-plate-head="chat"] button[aria-haspopup="menu"]')?.click();
+await settle();
 check(
-	"the chat's … menu holds the provider choice, the chosen one ticked, and the helper agents switch",
-	[
-		[...document.querySelectorAll("[data-agent-provider][aria-checked=true] .wg-studio-ai-menu-said")].map(
-			(said) => said.textContent,
-		),
-		document.querySelector("[data-agent-helpers]")?.getAttribute("aria-checked") ?? null,
-	],
-	[[checkedAssistant.providerLabel], "false"],
+	"the chat's … menu offers no provider choice and no helper agents switch",
+	[document.querySelector("[data-agent-provider]"), document.querySelector("[data-agent-helpers]")],
+	[null, null],
 );
-[...document.querySelectorAll(".wg-studio-action-said")]
-	.find((said) => said.textContent === "Back to view")
-	?.closest<HTMLElement>('[role="button"]')
+studioNode.querySelector<HTMLElement>('[data-shell-plate="app"] button[aria-label="More"]')?.click();
+await settledUntil(() => document.querySelector(".wg-plate-menu [role=menuitem]") !== null);
+[...document.querySelectorAll<HTMLElement>(".wg-plate-menu [role=menuitem]")]
+	.find((item) => item.textContent?.startsWith("Back to") === true)
 	?.click();
 await settledUntil(() => studioNode.querySelector('[data-shell-plate="app"] .wg-shell-route .wg-root') !== null);
 check(

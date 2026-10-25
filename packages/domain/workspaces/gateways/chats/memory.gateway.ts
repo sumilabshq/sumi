@@ -19,6 +19,10 @@ export class MemoryChatsGateway extends ChatsGateway {
 		}
 	}
 
+	isLoaded(): boolean {
+		return true;
+	}
+
 	chatsChanged(listener: () => void): () => void {
 		this.listeners.add(listener);
 		return () => void this.listeners.delete(listener);

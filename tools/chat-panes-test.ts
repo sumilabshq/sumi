@@ -71,6 +71,13 @@ check(
 	chatsShown(replaced),
 );
 
+const focusedChats = [boardOf(aimedFirst).focusedChatId, boardOf(two).focusedChatId];
+check(
+	"the window's chat is the chat of its pressed chat pane",
+	JSON.stringify(focusedChats) === '["hi","chat-2"]',
+	focusedChats,
+);
+
 const aimedStanding = treeShowingChat(aimedFirst, "chat-2", null);
 check(
 	"choosing a chat that stands in a pane aims that pane instead of copying it",

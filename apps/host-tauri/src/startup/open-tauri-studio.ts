@@ -4,6 +4,8 @@ import type { StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { openAgentTools } from "../agent/agent-tools.js";
+import { tabLinksRenderer } from "../agent/tab-links.js";
+import { ShowTabCommand } from "@widgetarium/app-host";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
@@ -60,6 +62,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	);
 	openAgentTools(studioApp);
 	const assistant = startTauriAssistant({
+		renderMarkdown: tabLinksRenderer((id) => void showLinkedTab(studioApp, id)),
 		workspace: {
 			client: opening.workspaces,
 			opened: opening.workspace,
@@ -114,4 +117,12 @@ function startedPartsFieldsOf({ assistant, studioApp }: StartedParts): StudioSta
 		assistantHost: assistant.host,
 		studioApp,
 	};
+}
+
+async function showLinkedTab(studioApp: StartedApp, id: string): Promise<void> {
+	const shown = await studioApp.send(ShowTabCommand, { id });
+
+	if (!shown.ok) {
+		console.warn(`[agent] a tab link to ${id} was pressed, but the tab is not shown: ${shown.reason}`);
+	}
 }

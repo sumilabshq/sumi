@@ -8,9 +8,10 @@ import {
 	columnReset,
 	columnSaid,
 	columnWithListFolded,
+	columnWithView,
 } from "../../shared/lib/tabs-column/column-look.js";
 import type { KeptColumn } from "../../shared/schema/tabs-column.schema.js";
-import { TabsColumnSchema } from "../../shared/schema/tabs-column.schema.js";
+import { SidebarViewSchema, TabsColumnSchema } from "../../shared/schema/tabs-column.schema.js";
 
 interface ColumnMove {
 	readonly was: KeptColumn;
@@ -51,6 +52,19 @@ export const FoldTabListCommand = command("fold-tab-list")
 			was: kept,
 			next: columnWithListFolded(kept, list),
 			reason: `fold or unfold the tab list ${list}`,
+		});
+	});
+
+export const SetSidebarViewCommand = command("set-sidebar-view")
+	.input(SidebarViewSchema.partial())
+	.idempotencyKey(Repeatable)
+	.inject({ tabsColumn: TabsColumnGateway })
+	.handle((view, { tabsColumn }) => {
+		const kept = tabsColumn.column();
+		saveColumn(tabsColumn, {
+			was: kept,
+			next: columnWithView(kept, view),
+			reason: "the sidebar view options changed",
 		});
 	});
 

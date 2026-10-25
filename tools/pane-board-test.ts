@@ -100,11 +100,12 @@ function checksTree(): void {
 		essentials: [],
 		pages: [],
 		shownApp: null,
-		chat: { id: "chat-1", title: "Chat" },
 		boardChats: [],
 		shutLists: [],
+		view: { hidesEmptyLists: false, hidesOwnWindowTabs: false },
 		inPanes: ["tab-1"],
 		hasShownTabPane: true,
+		elsewhere: [],
 	});
 	const rows =
 		sidebar.sections[0]?.entries.flatMap((entry) =>
@@ -575,8 +576,8 @@ async function checksBoard(folder: string): Promise<void> {
 	check("a carry outside the board is not taken", outside === false, outside);
 	await page.ask(`${CARRY}("leave", 5, 5)`);
 
-	for (const id of ["pane-app", "pane-chat"]) {
-		await page.ask(`document.querySelector('[data-pane-close="${id}"]').click(); true`);
+	for (const _pane of [...reloaded, "spare"]) {
+		await page.ask(`document.querySelector("[data-pane-close]")?.click(); true`);
 		await waited(250);
 	}
 

@@ -20,16 +20,16 @@ export class TauriWorkspaceChatsGateway extends WorkspaceChatsGateway {
 	}
 
 	async chatsIn(workspaceId: string): Promise<KeptChats> {
-		const { chats, activeId } = (await this.docOf(workspaceId)).now();
+		const { chats, openOnStartId } = (await this.docOf(workspaceId)).now();
 		return {
 			chats,
-			activeId,
+			openOnStartId: openOnStartId ?? null,
 		};
 	}
 
-	async saveActiveChatIn(workspaceId: string, chatId: string, reason: string): Promise<void> {
+	async saveChatToOpenIn(workspaceId: string, chatId: string, reason: string): Promise<void> {
 		const doc = await this.docOf(workspaceId);
-		doc.change({ activeId: chatId }, reason);
+		doc.change({ openOnStartId: chatId, activeId: null }, reason);
 		await doc.flush();
 	}
 

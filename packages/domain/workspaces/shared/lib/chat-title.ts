@@ -1,4 +1,4 @@
-import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/active-chat-port.js";
+import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { KeptChat } from "../schema/chat.schema.js";
 
 export function titleOf(chat: KeptChat): string {

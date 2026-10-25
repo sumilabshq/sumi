@@ -1,6 +1,6 @@
 import type { EdgeBounds, FrameBounds, FrameEdge, FrameWidths } from "../schema/frame-widths.schema.js";
 
-export const PLATE_LEAST_PX = 320;
+export const PLATE_LEAST_PX = 240;
 
 export const FRAME_BOUNDS: Readonly<Record<FrameEdge, EdgeBounds>> = {
 	left: {

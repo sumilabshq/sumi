@@ -1,6 +1,7 @@
 import type { JsonMemory } from "@widgetarium/behaviors";
 import { KeptPaneTreeSchema, PaneTreeGateway } from "./pane-tree.gateway.js";
 import type { PaneTree } from "../../shared/schema/pane-tree.schema.js";
+import type { WindowTree } from "../../shared/lib/window-trees.js";
 
 const UNREAD = "[widgetarium] kept panes could not be read, so the board starts from the first panes";
 const REFUSED = "[widgetarium] kept panes refused, so the board starts from the first panes";
@@ -12,6 +13,7 @@ export class JsonMemoryPaneTreeGateway extends PaneTreeGateway {
 	constructor(
 		private readonly memory: JsonMemory<PaneTree>,
 		first: PaneTree,
+		private readonly others: readonly WindowTree[] = [],
 	) {
 		super();
 		this.held = keptTreeIn(memory) ?? first;
@@ -21,12 +23,20 @@ export class JsonMemoryPaneTreeGateway extends PaneTreeGateway {
 		return this.held;
 	}
 
-	saveTree(tree: PaneTree, reason: string): void {
+	elsewhere(): readonly WindowTree[] {
+		return this.others;
+	}
+
+	saveOwnTree(tree: PaneTree, reason: string): void {
 		this.memory.write(tree, reason);
 		this.held = tree;
 		for (const listener of this.listeners) {
 			listener();
 		}
+	}
+
+	isLoaded(): boolean {
+		return true;
 	}
 
 	treeChanged(listener: () => void): () => void {

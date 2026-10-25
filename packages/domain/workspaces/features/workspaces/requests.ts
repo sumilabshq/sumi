@@ -101,8 +101,8 @@ export const OpenChatElsewhereCommand = command("open-chat-elsewhere")
 			return refuse(`workspace ${workspace.name} has no chat ${chatId}`);
 		}
 
-		const reason = `workspace ${workspace.id} active chat ${kept.activeId ?? "none"} → ${chatId} (opened from elsewhere)`;
-		await workspaceChats.saveActiveChatIn(workspace.id, chatId, reason);
+		const reason = `workspace ${workspace.id} chat to open on start ${kept.openOnStartId ?? "none"} → ${chatId} (opened from elsewhere)`;
+		await workspaceChats.saveChatToOpenIn(workspace.id, chatId, reason);
 		console.info(`[widgetarium] ${reason}`);
 		await openWorkspace(workspace.id, opening);
 	});
@@ -124,6 +124,7 @@ export const OpenWorkspaceByPositionCommand = command("open-workspace-by-positio
 	});
 
 export const CreateWorkspaceCommand = command("create-workspace")
+	.output(WorkspaceIdSchema)
 	.idempotencyKey(PerCall)
 	.inject(OPENING)
 	.handle(async (_input, opening) => {
@@ -132,6 +133,7 @@ export const CreateWorkspaceCommand = command("create-workspace")
 		const created = await opening.workspaces.createWorkspace(name);
 		console.info(`[widgetarium] workspaces: created ${created.name} (${created.id})`);
 		await openWorkspace(created.id, opening);
+		return { id: created.id };
 	});
 
 export const RenameWorkspaceCommand = command("rename-workspace")

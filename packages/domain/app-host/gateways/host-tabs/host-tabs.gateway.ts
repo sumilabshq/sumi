@@ -6,4 +6,5 @@ export abstract class HostTabsGateway {
 	abstract saveTabs(tabs: KeptTabs, reason: string): void;
 	abstract tabsChanged(listener: () => void): () => void;
 	abstract keepsPagesAcrossStarts(): boolean;
+	abstract opensBesideAnother(): boolean;
 }

@@ -4,7 +4,6 @@ export type PlateHeaderTargets = Readonly<Record<PlateHeaderPlace, HTMLElement |
 
 export interface PlateLook {
 	readonly fill: string;
-	readonly strip: string | null;
 }
 
 interface PaintedLook {
@@ -70,7 +69,7 @@ export class PlateHeaderStore {
 }
 
 function isSameLook(left: PlateLook | null, right: PlateLook | null): boolean {
-	return left?.fill === right?.fill && left?.strip === right?.strip;
+	return left?.fill === right?.fill;
 }
 
 function lookText(painted: PaintedLook | null): string {
@@ -78,5 +77,5 @@ function lookText(painted: PaintedLook | null): string {
 		return "plate";
 	}
 
-	return painted.look.strip === null ? painted.look.fill : `${painted.look.fill} with a strip`;
+	return painted.look.fill;
 }

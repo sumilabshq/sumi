@@ -2,10 +2,10 @@ import { z } from "zod";
 import type { HeldDoc } from "@widgetarium/behaviors/tauri-store";
 import { KeptColumnSchema } from "../../shared/schema/tabs-column.schema.js";
 import type { KeptColumn } from "../../shared/schema/tabs-column.schema.js";
-import { TabsColumnGateway } from "./tabs-column.gateway.js";
+import { StoredColumnSchema, TabsColumnGateway } from "./tabs-column.gateway.js";
 
 export const KeptColumnDocSchema = z.looseObject({
-	column: KeptColumnSchema.nullable().catch(null),
+	column: StoredColumnSchema.nullable().catch(null),
 });
 
 export type KeptColumnDoc = z.infer<typeof KeptColumnDocSchema>;

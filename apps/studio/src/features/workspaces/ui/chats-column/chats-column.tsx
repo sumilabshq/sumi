@@ -1,6 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Slot } from "@widgetarium/core/requests";
+import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { ChatList } from "../chat-list/chat-list.js";
 import { NewChat } from "../new-chat/new-chat.js";
 import { WorkspaceHeader } from "../workspace-header/workspace-header.js";
@@ -12,7 +13,7 @@ import { OpeningVeil } from "./opening-veil.js";
 
 const COLUMN_LABEL = "Chats";
 
-export function ChatsColumn(): ReactElement {
+export function ChatsColumn({ renaming }: { readonly renaming: ChatRenaming }): ReactElement {
 	return (
 		<nav className="wg-ws-column wg-root" aria-label={COLUMN_LABEL} data-ws-column="">
 			<Slot loading={null}>
@@ -21,7 +22,7 @@ export function ChatsColumn(): ReactElement {
 					<WorkspaceHeader />
 					<NewChat />
 					<div className="wg-ws-scroll">
-						<ChatList />
+						<ChatList renaming={renaming} />
 					</div>
 					<ColumnFoot />
 				</OpeningVeil>

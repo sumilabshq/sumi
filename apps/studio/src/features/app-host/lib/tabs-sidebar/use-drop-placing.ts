@@ -3,11 +3,13 @@ import { useCommand } from "@widgetarium/core/requests";
 import { PlaceEssentialCommand, PlaceTabCommand, TabDropSchema, TearOffTabCommand } from "@widgetarium/app-host";
 import type { DragSource } from "../tab-drag/sidebar-drop-plan.js";
 import { useSidebarDrag } from "../tab-drag/use-sidebar-drag.js";
+import { useTearOffOverlay } from "../../../browser/lib/use-tear-off-overlay.js";
 
 export function useDropPlacing(holder: RefObject<HTMLElement | null>, opensOwnWindows: boolean): void {
 	const placeTab = useCommand(PlaceTabCommand);
 	const placeEssential = useCommand(PlaceEssentialCommand);
 	const tearOff = useCommand(TearOffTabCommand);
+	const tearOffGhost = useTearOffOverlay();
 	useSidebarDrag(holder, {
 		opensOwnWindows,
 		onTearOff: (tabId) =>
@@ -16,6 +18,7 @@ export function useDropPlacing(holder: RefObject<HTMLElement | null>, opensOwnWi
 					console.warn(`[widgetarium] tab ${tabId} lifted → resting (tear-off refused: ${answer.reason})`);
 				}
 			}),
+		tearOffGhost,
 		onDrop: async (source, drop) => {
 			const to = TabDropSchema.safeParse(drop);
 

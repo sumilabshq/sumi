@@ -20,15 +20,14 @@ export function usePaintsPlate(look: PlateLook | null): void {
 	const isShown = useContext(PlateShownContext);
 	const [owner] = useState(() => ({}));
 	const fill = look?.fill ?? null;
-	const strip = look?.strip ?? null;
 	useEffect(() => {
 		if (store === null || !isShown || fill === null) {
 			return undefined;
 		}
 
-		store.paint(owner, { fill, strip });
+		store.paint(owner, { fill });
 		return () => store.paint(owner, null);
-	}, [store, isShown, owner, fill, strip]);
+	}, [store, isShown, owner, fill]);
 }
 
 const NO_STORE_TARGETS = (): null => null;

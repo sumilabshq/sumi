@@ -52,6 +52,8 @@ async function pressed(selector: string): Promise<void> {
 
 const KEPT = `[...document.querySelectorAll("[data-studio-kept-app=canvas]")].map((kept) => kept.dataset.studioKeptKey + ":" + kept.dataset.studioKept)`;
 const ZOOM = `document.querySelector("[data-canvas-zoom]")?.textContent ?? null`;
+const CANVAS_PANES = `[...document.querySelectorAll("[data-canvas-board]")].map((board) => board.closest("[data-pane-view]")?.dataset.paneView ?? "none")`;
+const ZOOMS = `[...document.querySelectorAll("[data-canvas-zoom]")].map((zoom) => zoom.textContent)`;
 const ZOOMED_IN = `(() => { const board = document.querySelector("[data-studio-kept=shown] [data-canvas-board]"); const box = board.getBoundingClientRect(); const x = box.left + box.width / 2; const y = box.top + box.height / 2; const target = document.elementFromPoint(x, y); for (let step = 0; step < 6; step += 1) target.dispatchEvent(new WheelEvent("wheel", { deltaY: -120, ctrlKey: true, clientX: x, clientY: y, bubbles: true, cancelable: true })); return true; })()`;
 
 async function zoomOf(page: AskedPage): Promise<unknown> {
@@ -76,21 +78,27 @@ try {
 	const zoomedFirst = await zoomOf(page);
 	check("zooming the first canvas changes its zoom", zoomedFirst !== firstZoom, [firstZoom, zoomedFirst]);
 	await pressed('[data-tabs-list] [data-tabs-id="tab-6"]');
-	const secondKept = await page.ask(KEPT);
-	const secondZoom = await zoomOf(page);
+	await waited(300);
+	const boards = await page.ask(CANVAS_PANES);
+	const zooms = await page.ask(ZOOMS);
 	writeFileSync(path.join(shotsAt, "second-canvas.png"), await page.shoot());
 	check(
-		"a second canvas tab is its own canvas, with the first kept hidden beside it",
-		Array.isArray(secondKept) &&
-			secondKept.length === 2 &&
-			secondKept.filter((one) => String(one).endsWith(":shown")).length === 1,
-		secondKept,
+		"a chat's canvas tab opens its own canvas in its chat's tile, the first kept where it stands",
+		JSON.stringify(boards) === JSON.stringify(["app", "app"]),
+		boards,
 	);
-	check("the second canvas does not wear the first one's zoom", secondZoom !== zoomedFirst, [zoomedFirst, secondZoom]);
+	check("the first canvas keeps its own zoom beside the second", Array.isArray(zooms) && zooms.includes(zoomedFirst), [
+		zoomedFirst,
+		zooms,
+	]);
 	await pressed('[data-tabs-item=essential][data-tabs-id="essential-1"]');
-	const backZoom = await zoomOf(page);
+	const backZooms = await page.ask(ZOOMS);
 	writeFileSync(path.join(shotsAt, "first-canvas-again.png"), await page.shoot());
-	check("switching back finds the first canvas where it was left", backZoom === zoomedFirst, [zoomedFirst, backZoom]);
+	check(
+		"switching back finds the first canvas where it was left",
+		Array.isArray(backZooms) && backZooms.includes(zoomedFirst),
+		[zoomedFirst, backZooms],
+	);
 } finally {
 	page.close();
 	server.close();

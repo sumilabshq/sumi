@@ -10,18 +10,21 @@ import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.
 import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
 import {
-	ActiveChatSchema,
-	ChatCrumbSchema,
 	ChatIdSchema,
+	ChatToOpenSchema,
 	ChatListSchema,
 	ChatPinSchema,
+	ChatPlaceSchema,
 	ChatTitleSchema,
 	ChatTurnSchema,
+	NewChatSchema,
+	WorkspaceCrumbSchema,
 } from "../../shared/schema/chat.schema.js";
 import type {
 	ChatListData,
 	ChatMarkKind,
 	ChatMarks,
+	ChatPlace,
 	ChatRowData,
 	ChatTurn,
 	KeptChat,
@@ -41,59 +44,46 @@ export const ChatListQuery = query("chat-list")
 	})
 	.handle((_input, { chats, chatMarks }) => chatListOf(chats.chats(), chatMarks.chatMarks()));
 
-export const ActiveChatQuery = query("active-chat")
-	.output(ActiveChatSchema)
-	.settlesNow()
-	.inject({ chats: ChatsGateway })
-	.handle((_input, { chats }) => {
-		const active = activeChatOf(chats.chats());
-		return {
-			id: active.id,
-			title: titleOf(active),
-		};
-	});
-
-export const ChatCrumbQuery = query("chat-crumb")
-	.output(ChatCrumbSchema)
+export const WorkspaceCrumbQuery = query("workspace-crumb")
+	.output(WorkspaceCrumbSchema)
 	.settlesNow()
 	.inject({
-		chats: ChatsGateway,
 		workspaces: WorkspacesGateway,
 		currentWorkspace: CurrentWorkspaceGateway,
 	})
-	.handle((_input, { chats, workspaces, currentWorkspace }) => ({
+	.handle((_input, { workspaces, currentWorkspace }) => ({
 		workspace: currentWorkspaceOf(workspaces.workspaces(), currentWorkspace.currentWorkspace().currentId).name,
-		chat: titleOf(activeChatOf(chats.chats())),
 	}));
 
 export const CreateChatCommand = command("create-chat")
+	.input(NewChatSchema)
+	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
 	.inject({ chats: ChatsGateway })
-	.handle((_input, { chats, invalidate }) => {
+	.handle(({ title }, { chats, invalidate }) => {
 		invalidate(ChatListQuery);
-		invalidate(ChatCrumbQuery);
-		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		const at = Date.now();
 		const chat: KeptChat = {
 			id: crypto.randomUUID(),
-			title: null,
+			title: title?.trim() || null,
 			isPinned: false,
 			createdAt: at,
 			lastAt: at,
 		};
-		const reason = `chats ${kept.chats.length} → ${kept.chats.length + 1}, active ${kept.activeId ?? "none"} → ${chat.id} (new chat)`;
+		const reason = `chats ${kept.chats.length} → ${kept.chats.length + 1} (new chat ${chat.id})`;
 		chats.saveChats(
 			{
+				...kept,
 				chats: [...kept.chats, chat],
-				activeId: chat.id,
 			},
 			reason,
 		);
 		console.info(`[widgetarium] ${reason}`);
+		return { id: chat.id };
 	});
 
-export const SelectChatCommand = command("select-chat")
+export const MarkChatSeenCommand = command("mark-chat-seen")
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable)
 	.inject({
@@ -102,27 +92,52 @@ export const SelectChatCommand = command("select-chat")
 	})
 	.handle(({ id }, { chats, chatMarks, invalidate }) => {
 		invalidate(ChatListQuery);
-		invalidate(ChatCrumbQuery);
-		invalidate(ActiveChatQuery);
-		const kept = chats.chats();
-		chatIn(kept, id);
+		chatIn(chats.chats(), id);
 		clearMark(chatMarks, id);
-		const was = activeChatOf(kept).id;
+	});
 
-		if (was === id) {
-			console.info(`[widgetarium] select chat ${id} skipped: it is the active one`);
+export const ForgetChatToOpenCommand = command("forget-chat-to-open")
+	.input(ChatIdSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ chats: ChatsGateway })
+	.handle(({ id }, { chats }) => {
+		const kept = chats.chats();
+
+		if (kept.openOnStartId !== id) {
+			console.info(
+				`[widgetarium] forget chat to open ${id} skipped: the one asked now is ${kept.openOnStartId ?? "none"}`,
+			);
 			return;
 		}
 
-		const reason = `chat active ${was} → ${id} (selected)`;
+		const reason = `chat to open on start ${kept.openOnStartId} → none (opened)`;
 		chats.saveChats(
 			{
 				...kept,
-				activeId: id,
+				openOnStartId: null,
 			},
 			reason,
 		);
 		console.info(`[widgetarium] ${reason}`);
+	});
+
+export const ChatToOpenQuery = query("chat-to-open")
+	.output(ChatToOpenSchema)
+	.settlesNow()
+	.inject({ chats: ChatsGateway })
+	.handle((_input, { chats }) => {
+		if (!chats.isLoaded()) {
+			return {
+				isRead: false,
+				id: null,
+			};
+		}
+
+		const { chats: held, openOnStartId } = chats.chats();
+		return {
+			isRead: true,
+			id: held.some((chat) => chat.id === openOnStartId) ? openOnStartId : null,
+		};
 	});
 
 export const PinChatCommand = command("pin-chat")
@@ -131,25 +146,26 @@ export const PinChatCommand = command("pin-chat")
 	.inject({ chats: ChatsGateway })
 	.handle(({ id, isPinned }, { chats, invalidate }) => {
 		invalidate(ChatListQuery);
-		invalidate(ChatCrumbQuery);
-		invalidate(ActiveChatQuery);
-		const kept = chats.chats();
-		const was = chatIn(kept, id);
+		const was = chatIn(chats.chats(), id);
 
 		if (was.isPinned === isPinned) {
 			console.info(`[widgetarium] pin chat ${id} skipped: already ${isPinned ? "pinned" : "unpinned"}`);
 			return;
 		}
 
-		const reason = `chat ${id} pinned ${String(was.isPinned)} → ${String(isPinned)}`;
-		chats.saveChats(
-			withChat(kept, {
-				...was,
-				isPinned,
-			}),
-			reason,
-		);
-		console.info(`[widgetarium] ${reason}`);
+		savePinnedOrder(chats, {
+			id,
+			to: isPinned ? { list: "pinned", before: null } : { list: "recents" },
+		});
+	});
+
+export const PlaceChatCommand = command("place-chat")
+	.input(ChatPlaceSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ chats: ChatsGateway })
+	.handle((place, { chats, invalidate }) => {
+		invalidate(ChatListQuery);
+		savePinnedOrder(chats, place);
 	});
 
 export const RenameChatCommand = command("rename-chat")
@@ -158,8 +174,6 @@ export const RenameChatCommand = command("rename-chat")
 	.inject({ chats: ChatsGateway })
 	.handle(({ id, title }, { chats, invalidate }) => {
 		invalidate(ChatListQuery);
-		invalidate(ChatCrumbQuery);
-		invalidate(ActiveChatQuery);
 		const trimmed = title.trim();
 
 		if (trimmed === "") {
@@ -194,8 +208,6 @@ export const RecordChatTurnCommand = command("record-chat-turn")
 	})
 	.handle((turn, { chats, chatMarks, invalidate }) => {
 		invalidate(ChatListQuery);
-		invalidate(ChatCrumbQuery);
-		invalidate(ActiveChatQuery);
 		const kept = chats.chats();
 		const was = kept.chats.find((chat) => chat.id === turn.chatId);
 
@@ -206,7 +218,7 @@ export const RecordChatTurnCommand = command("record-chat-turn")
 		const marks = chatMarks.chatMarks();
 		const mark = markOf(marks, turn.chatId);
 		const now = chatAfterTurn(was, turn, mark);
-		const nextMark = markAfter(mark, turn.isBusy, turn.chatId === activeChatOf(kept).id);
+		const nextMark = markAfter(mark, turn.isBusy, turn.isSeen);
 
 		if (JSON.stringify(now) !== JSON.stringify(was)) {
 			const reason = `chat ${was.id} title ${titleOf(was)} → ${titleOf(now)}, last ${was.lastAt} → ${now.lastAt} (turn)`;
@@ -223,23 +235,22 @@ export const RecordChatTurnCommand = command("record-chat-turn")
 
 export const RereadChatsSubscriber = subscriber(ChatsChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(ChatListQuery);
-	invalidate(ActiveChatQuery);
-	invalidate(ChatCrumbQuery);
+	invalidate(ChatToOpenQuery);
 });
 
 export const RereadChatListSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(ChatListQuery);
 });
 
-export const RereadChatCrumbForWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle(
+export const RereadCrumbForWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle(
 	(_input, { invalidate }) => {
-		invalidate(ChatCrumbQuery);
+		invalidate(WorkspaceCrumbQuery);
 	},
 );
 
-export const RereadChatCrumbForCurrentSubscriber = subscriber(CurrentWorkspaceChangedEvent).handle(
+export const RereadCrumbForCurrentSubscriber = subscriber(CurrentWorkspaceChangedEvent).handle(
 	(_input, { invalidate }) => {
-		invalidate(ChatCrumbQuery);
+		invalidate(WorkspaceCrumbQuery);
 	},
 );
 
@@ -257,36 +268,68 @@ function clearMark(chatMarks: ChatMarksGateway, id: string): void {
 }
 
 function chatListOf(kept: KeptChats, marks: ChatMarks): ChatListData {
-	const activeId = activeChatOf(kept).id;
 	const rowOf = (chat: KeptChat): ChatRowData => ({
 		id: chat.id,
 		title: titleOf(chat),
 		isPinned: chat.isPinned,
-		isActive: chat.id === activeId,
 		mark: markOf(marks, chat.id),
 	});
 	const latestFirst = [...kept.chats].sort((one, other) => other.lastAt - one.lastAt);
 	return {
-		pinned: latestFirst.filter((chat) => chat.isPinned).map(rowOf),
+		pinned: pinnedChatsOf(kept).map(rowOf),
 		recents: latestFirst.filter((chat) => !chat.isPinned).map(rowOf),
 	};
 }
 
-function activeChatOf({ chats, activeId }: KeptChats): KeptChat {
-	const active = chats.find((chat) => chat.id === activeId) ?? latestOf(chats);
+function savePinnedOrder(chats: ChatsGateway, place: ChatPlace): void {
+	const kept = chats.chats();
+	chatIn(kept, place.id);
+	const before = pinnedChatsOf(kept).map((chat) => chat.id);
+	const after = pinnedIdsWithPlace(before, place);
 
-	if (active === null) {
-		throw new Error("the chats gateway always holds one chat");
+	if (before.join() === after.join()) {
+		console.info(`[widgetarium] place chat ${place.id} skipped: nothing moves`);
+		return;
 	}
 
-	return active;
+	const reason = `pinned chats [${before.join(", ")}] → [${after.join(", ")}] (chat ${place.id} to ${place.to.list})`;
+	chats.saveChats(withPinnedOrder(kept, after), reason);
+	console.info(`[widgetarium] ${reason}`);
 }
 
-function latestOf(chats: readonly KeptChat[]): KeptChat | null {
-	return chats.reduce<KeptChat | null>(
-		(latest, chat) => (latest === null || chat.lastAt > latest.lastAt ? chat : latest),
-		null,
-	);
+function pinnedChatsOf({ chats }: KeptChats): readonly KeptChat[] {
+	const rankOf = (chat: KeptChat): number => chat.pinRank ?? Number.MAX_SAFE_INTEGER;
+	return chats
+		.filter((chat) => chat.isPinned)
+		.sort((one, other) => rankOf(one) - rankOf(other) || other.lastAt - one.lastAt);
+}
+
+function pinnedIdsWithPlace(pinnedIds: readonly string[], { id, to }: ChatPlace): readonly string[] {
+	const others = pinnedIds.filter((one) => one !== id);
+
+	if (to.list === "recents") {
+		return others;
+	}
+
+	const at = to.before === null ? -1 : others.indexOf(to.before);
+	return at === -1 ? [...others, id] : [...others.slice(0, at), id, ...others.slice(at)];
+}
+
+function withPinnedOrder(kept: KeptChats, pinnedIds: readonly string[]): KeptChats {
+	return {
+		...kept,
+		chats: kept.chats.map((chat) => {
+			const rank = pinnedIds.indexOf(chat.id);
+			return rank === -1 ? withoutPinRank(chat) : { ...chat, isPinned: true, pinRank: rank };
+		}),
+	};
+}
+
+function withoutPinRank({ pinRank: _rank, ...chat }: KeptChat): KeptChat {
+	return {
+		...chat,
+		isPinned: false,
+	};
 }
 
 function chatIn(kept: KeptChats, id: string): KeptChat {
@@ -296,8 +339,8 @@ function chatIn(kept: KeptChats, id: string): KeptChat {
 
 function withChat(kept: KeptChats, changed: KeptChat): KeptChats {
 	return {
+		...kept,
 		chats: kept.chats.map((chat) => (chat.id === changed.id ? changed : chat)),
-		activeId: activeChatOf(kept).id,
 	};
 }
 
@@ -329,13 +372,13 @@ function titleOfAsk(asked: string | null): string | null {
 	return line.length <= TITLE_MOST_CHARS ? line : `${line.slice(0, TITLE_MOST_CHARS - 1).trimEnd()}…`;
 }
 
-function markAfter(mark: ChatMarkKind, isBusy: boolean, isActive: boolean): ChatMarkKind {
+function markAfter(mark: ChatMarkKind, isBusy: boolean, isSeen: boolean): ChatMarkKind {
 	if (isBusy) {
 		return "running";
 	}
 
 	if (mark === "running") {
-		return isActive ? "none" : "unread";
+		return isSeen ? "none" : "unread";
 	}
 
 	return mark;

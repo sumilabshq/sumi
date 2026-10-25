@@ -6,7 +6,6 @@ import { EssentialsGrid } from "../essentials-grid/essentials-grid.js";
 import { GroupMenu } from "../group-menu/group-menu.js";
 import { CanOpenOwnWindowQuery, TabsSidebarQuery } from "@widgetarium/app-host";
 import type { GroupState, TabSection } from "@widgetarium/app-host";
-import { NewTabRow } from "./new-tab-row.js";
 import { PointerMenu } from "./pointer-menu.js";
 import { TabSections } from "./tab-sections.js";
 import { useDropPlacing } from "../../lib/tabs-sidebar/use-drop-placing.js";
@@ -20,7 +19,7 @@ const SCROLLER =
 	"cv:-mx-1 cv:flex cv:min-h-0 cv:flex-1 cv:flex-col cv:gap-px cv:overflow-y-auto cv:px-1 cv:pb-2 cv:[scrollbar-width:none]";
 
 export function TabsSidebar(): ReactElement {
-	const { essentials, sections, listTargets, workspaceList } = useQuery(TabsSidebarQuery).data;
+	const { essentials, sections, listTargets, workspaceList, newTabList } = useQuery(TabsSidebarQuery).data;
 	const holder = useRef<HTMLElement | null>(null);
 	const { pointed, groupMenuId, openGroupMenu, onContextMenu } = usePointedMenus(workspaceList);
 	const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -36,12 +35,12 @@ export function TabsSidebar(): ReactElement {
 					<div className={SCROLLER} data-host-column-scroll="">
 						<TabSections
 							sections={sections}
+							newTabList={newTabList}
 							renamingId={renamingId}
 							onRenamed={onRenamed}
 							onGroupMade={openGroupMenu}
 						/>
 					</div>
-					<NewTabRow />
 				</aside>
 			</ContextMenuTrigger>
 			<PointerMenu

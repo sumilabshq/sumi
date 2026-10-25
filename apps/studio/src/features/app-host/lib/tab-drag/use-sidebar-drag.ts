@@ -1,94 +1,81 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { setTabDragImage } from "./drag-image.js";
-import type { DragImageAsk, DragImageShape } from "./drag-image.js";
+import { useLiftedPress } from "@widgetarium/behaviors";
+import type { GhostFace, OverlayPort } from "@widgetarium/behaviors";
+import type { PendingPress } from "@widgetarium/behaviors";
 import type { PickedItem } from "./picked-item.js";
-import { DRAG_MOVE, TabDragSession } from "./tab-drag-session.js";
+import { TabDragSession } from "./tab-drag-session.js";
+import { TetheredPull, isHeldElsewhere } from "./tethered-pull.js";
 import type { OnTabDrop } from "./tab-drag-session.js";
 import type { DragSource } from "./sidebar-drop-plan.js";
 import { rectOf } from "./sidebar-layout.js";
 import { tabRefOf } from "../tabs-sidebar/pointed-of.js";
 
-const TAB_DRAG_TYPE = "application/x-widgetarium-tab";
-
 const NOT_A_HANDLE = "button:not([data-tabs-item]), input";
 const DRAGGED_ITEM = '[data-tabs-item="tab"], [data-tabs-item="essential"]';
-const DRAGGED_ART = "svg, img, [data-tab-art]";
+const DRAGGED_WORDS = "[data-tabs-words]";
 const BROWSER_APP = "browser";
 
 export interface SidebarDragging {
 	readonly onDrop: OnTabDrop;
 	readonly onTearOff: (tabId: string) => void;
+	readonly tearOffGhost: OverlayPort;
 	readonly opensOwnWindows: boolean;
 }
 
-interface Held {
-	pressed: EventTarget | null;
-	session: TabDragSession | null;
+interface PressedItem extends PendingPress {
+	readonly picked: PickedItem;
 }
 
 export function useSidebarDrag(holder: RefObject<HTMLElement | null>, dragging: SidebarDragging): void {
-	const latest = useRef(dragging);
-	latest.current = dragging;
-	useEffect(() => {
-		const element = holder.current;
-
-		if (element === null) {
-			return;
-		}
-
-		const held: Held = {
-			pressed: null,
-			session: null,
-		};
-		const onPointerDown = (event: PointerEvent): void => {
-			held.pressed = event.target;
-		};
-		const onDragStart = (event: DragEvent): void => {
-			held.session?.abandon();
-			held.session = startDrag(element, event, held.pressed, latest.current);
-		};
-		element.addEventListener("pointerdown", onPointerDown);
-		element.addEventListener("dragstart", onDragStart);
-		return () => {
-			element.removeEventListener("pointerdown", onPointerDown);
-			element.removeEventListener("dragstart", onDragStart);
-		};
-	}, [holder]);
+	const session = useRef<TabDragSession | TetheredPull | null>(null);
+	useLiftedPress<PressedItem>(holder, {
+		pressOf: (element, event) => pressedItemOf(element, event, dragging.opensOwnWindows),
+		onLift: (element, press, now) => {
+			session.current?.abandon();
+			session.current = isHeldElsewhere(press.picked.element)
+				? tetheredPullOf(element, press)
+				: createTabDragSession(element, press, now, dragging);
+			session.current.start();
+		},
+	});
+	useEffect(() => () => session.current?.abandon(), []);
 }
 
-function startDrag(
-	holder: HTMLElement,
-	event: DragEvent,
-	pressed: EventTarget | null,
-	dragging: SidebarDragging,
-): TabDragSession | null {
-	const picked = pickedOf(holder, event, dragging);
+function tetheredPullOf(holder: HTMLElement, { picked, pointerId, start }: PressedItem): TetheredPull {
+	return new TetheredPull({
+		holder,
+		row: picked.element,
+		tabId: picked.source.id,
+		pointerId,
+		start,
+	});
+}
 
-	if (picked === null || event.dataTransfer === null || isPressOnControl(pressed)) {
-		event.preventDefault();
+function createTabDragSession(
+	holder: HTMLElement,
+	{ picked, pointerId, start }: PressedItem,
+	now: readonly [number, number],
+	dragging: SidebarDragging,
+): TabDragSession {
+	return new TabDragSession({
+		holder,
+		picked,
+		face: ghostFaceOf(picked, start),
+		pointerId,
+		start: now,
+		onDrop: dragging.onDrop,
+		onTearOff: dragging.onTearOff,
+		tearOffGhost: dragging.tearOffGhost,
+	});
+}
+
+function pressedItemOf(holder: HTMLElement, event: PointerEvent, opensOwnWindows: boolean): PressedItem | null {
+	if (!(event.target instanceof Element) || event.target.closest(NOT_A_HANDLE) !== null) {
 		return null;
 	}
 
-	event.dataTransfer.setData(TAB_DRAG_TYPE, picked.source.id);
-	event.dataTransfer.effectAllowed = DRAG_MOVE;
-	setTabDragImage(event.dataTransfer, dragImageAskOf(picked, event));
-	const session = new TabDragSession({
-		holder,
-		picked,
-		onDrop: dragging.onDrop,
-		onTearOff: dragging.onTearOff,
-	});
-	session.start();
-	return session;
-}
-
-function isPressOnControl(pressed: EventTarget | null): boolean {
-	return pressed instanceof Element && pressed.closest(NOT_A_HANDLE) !== null;
-}
-
-function pickedOf(holder: HTMLElement, event: DragEvent, dragging: SidebarDragging): PickedItem | null {
-	const element = event.target instanceof Element ? event.target.closest<HTMLElement>(DRAGGED_ITEM) : null;
+	const element = event.target.closest<HTMLElement>(DRAGGED_ITEM);
 	const id = element?.dataset["tabsId"];
 
 	if (element === null || id === undefined || !holder.contains(element)) {
@@ -97,29 +84,23 @@ function pickedOf(holder: HTMLElement, event: DragEvent, dragging: SidebarDraggi
 
 	const source = sourceOf(holder, element, id);
 	return {
-		element,
-		source,
-		opensOwnWindow: dragging.opensOwnWindows && source.kind === "tab" && element.dataset["hostTabApp"] === BROWSER_APP,
+		picked: {
+			element,
+			source,
+			opensOwnWindow: opensOwnWindows && source.kind === "tab" && element.dataset["hostTabApp"] === BROWSER_APP,
+		},
+		pointerId: event.pointerId,
+		start: [event.clientX, event.clientY],
 	};
 }
 
-function dragImageAskOf({ element, source, opensOwnWindow }: PickedItem, event: DragEvent): DragImageAsk {
+function ghostFaceOf({ element }: PickedItem, [x, y]: readonly [number, number]): GhostFace {
 	const from = rectOf(element);
 	return {
-		art: element.querySelector(DRAGGED_ART),
-		title: (element.getAttribute("aria-label") ?? element.textContent ?? "").trim(),
-		shape: shapeOf(source, opensOwnWindow),
-		from,
-		grab: [event.clientX - from.left, event.clientY - from.top],
+		art: element.firstElementChild,
+		title: (element.querySelector(DRAGGED_WORDS)?.textContent ?? element.getAttribute("aria-label") ?? "").trim(),
+		grabOffset: [x - from.left, y - from.top],
 	};
-}
-
-function shapeOf(source: DragSource, opensOwnWindow: boolean): DragImageShape {
-	if (opensOwnWindow) {
-		return "own-window";
-	}
-
-	return source.kind === "essential" ? "tile" : "row";
 }
 
 function sourceOf(holder: HTMLElement, element: HTMLElement, id: string): DragSource {

@@ -8,13 +8,11 @@ import {
 	isAimable,
 	placedTreeOf,
 	placementPreviewOf,
-	refuseUnknownEdge,
 	refuseUnknownPane,
-	shareAt,
 	treeWithoutPane,
-	withSplitShare,
 	withTarget,
 } from "../../shared/lib/pane-trees.js";
+import { refuseUnknownEdge, shareAt, withSplitShare } from "../../shared/lib/pane-splits.js";
 import { leavesOf } from "../../shared/lib/pane-nodes.js";
 import { homeOfPlacement, refuseHomeTarget } from "../../shared/lib/chat-groups.js";
 import type { PanePlacement, PaneTree } from "../../shared/schema/pane-tree.schema.js";
@@ -24,7 +22,10 @@ export const PaneTreeQuery = query("pane-tree")
 	.output(PaneBoardSchema)
 	.settlesNow()
 	.inject({ paneTree: PaneTreeGateway })
-	.handle((_input, { paneTree }) => boardOf(paneTree.tree()));
+	.handle((_input, { paneTree }) => ({
+		...boardOf(paneTree.tree(), paneTree.elsewhere()),
+		isLoaded: paneTree.isLoaded(),
+	}));
 
 export const PlacementPreviewQuery = query("placement-preview")
 	.input(PanePlacementSchema.nullable())

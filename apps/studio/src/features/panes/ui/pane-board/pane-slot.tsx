@@ -6,7 +6,7 @@ import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
 import type { SlotLook } from "../../lib/use-board-look.js";
 import type { PaneLeaf, PaneView } from "@widgetarium/layout";
 import { AimPaneCommand, ClosePaneCommand } from "@widgetarium/layout";
-import { SelectChatCommand } from "@widgetarium/workspaces";
+import { MarkChatSeenCommand } from "@widgetarium/workspaces";
 
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
@@ -15,15 +15,15 @@ export interface PaneSlotProps {
 }
 
 export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotProps): ReactElement {
-	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
+	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners, rim } = look;
 	const closePane = useCommand(ClosePaneCommand);
 	const aimPane = useCommand(AimPaneCommand);
-	const selectChat = useCommand(SelectChatCommand);
+	const markChatSeen = useCommand(MarkChatSeenCommand);
 	const aim = (): void => {
 		void aimPane.run({ id: leaf.id });
 
 		if (leaf.view.kind === "chat" && leaf.view.chatId !== undefined) {
-			void selectChat.run({ id: leaf.view.chatId });
+			void markChatSeen.run({ id: leaf.view.chatId });
 		}
 	};
 	const closing = useMemo(
@@ -43,6 +43,7 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotPr
 				top: place.top,
 				width: place.width,
 				height: place.height,
+				...{ "--wg-pane-rim": rim },
 				...(corners === undefined ? {} : { "--wg-pane-corners": corners }),
 			}}
 			data-pane-id={leaf.id}
@@ -80,6 +81,7 @@ function isSameLook(before: SlotLook, after: SlotLook): boolean {
 		before.isMoving === after.isMoving &&
 		before.isAway === after.isAway &&
 		before.corners === after.corners &&
+		before.rim === after.rim &&
 		isSamePlace(before.place, after.place)
 	);
 }

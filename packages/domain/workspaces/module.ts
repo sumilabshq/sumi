@@ -2,18 +2,20 @@ import { Device, module } from "@widgetarium/core/requests";
 import { ChatsChangedEvent } from "./gateways/chats/chats.events.js";
 import { workspacesPartsOn } from "./gateways/workspaces-parts/workspaces-parts.gateway.js";
 import {
-	ActiveChatQuery,
-	ChatCrumbQuery,
+	ChatToOpenQuery,
+	WorkspaceCrumbQuery,
 	ChatListQuery,
 	RereadChatListSubscriber,
 	RereadChatsSubscriber,
-	RereadChatCrumbForCurrentSubscriber,
-	RereadChatCrumbForWorkspacesSubscriber,
+	RereadCrumbForCurrentSubscriber,
+	RereadCrumbForWorkspacesSubscriber,
 	CreateChatCommand,
 	PinChatCommand,
+	PlaceChatCommand,
 	RecordChatTurnCommand,
 	RenameChatCommand,
-	SelectChatCommand,
+	MarkChatSeenCommand,
+	ForgetChatToOpenCommand,
 } from "./features/chats/requests.js";
 import {
 	ChatsElsewhereQuery,
@@ -33,16 +35,16 @@ export const WorkspacesModule = module("workspaces")
 	.subscribers(
 		RereadChatsSubscriber,
 		RereadChatListSubscriber,
-		RereadChatCrumbForWorkspacesSubscriber,
-		RereadChatCrumbForCurrentSubscriber,
+		RereadCrumbForWorkspacesSubscriber,
+		RereadCrumbForCurrentSubscriber,
 		RereadWorkspacesSubscriber,
 		RereadWorkspacesForCurrentSubscriber,
 	)
 	.public(
 		WorkspacesQuery,
 		ChatListQuery,
-		ChatCrumbQuery,
-		ActiveChatQuery,
+		WorkspaceCrumbQuery,
+		ChatToOpenQuery,
 		ChatsElsewhereQuery,
 		OpenWorkspaceCommand,
 		OpenChatElsewhereCommand,
@@ -51,8 +53,10 @@ export const WorkspacesModule = module("workspaces")
 		RenameWorkspaceCommand,
 		SetWorkspaceIconCommand,
 		CreateChatCommand,
-		SelectChatCommand,
+		MarkChatSeenCommand,
+		ForgetChatToOpenCommand,
 		PinChatCommand,
+		PlaceChatCommand,
 		RenameChatCommand,
 		RecordChatTurnCommand,
 		ChatsChangedEvent,

@@ -4,6 +4,7 @@ import {
 	BrowserTabsQuery,
 	ClosePageCommand,
 	FocusOwnWindowCommand,
+	FocusStudioWindowCommand,
 	OpenAddressCommand,
 	OpenPageCommand,
 	OpenTabInOwnWindowCommand,
@@ -12,17 +13,20 @@ import {
 	TearOffCommand,
 } from "@widgetarium/browser";
 import {
+	AimPaneCommand,
 	ClosePanesOfTabsCommand,
 	CloseShownTabPaneCommand,
 	OpenShownTabPaneCommand,
 	PaneTreeQuery,
+	ShowChatInPaneCommand,
+	ShowTabInChatGroupCommand,
 	ShowTabInTargetPaneCommand,
 } from "@widgetarium/layout";
-import { ActiveChatQuery } from "@widgetarium/workspaces";
 import type { MovedEssentials } from "../essentials/essentials.js";
 import { essentialsOf } from "../essentials/essentials.js";
 import type { HostTab, HostTabsMoment, OpenedTab } from "../host-tabs/host-tabs.js";
 import { keptTabsOf, momentOf, tabsTransitionSaid } from "../host-tabs/kept-tabs.js";
+import { WORKSPACE_LIST } from "../host-tabs/tab-lists.js";
 import type { KeptEssentials } from "../../schema/essential.schema.js";
 import type { StudioView } from "../../schema/studio-view.schema.js";
 import type { KeptTabs } from "../../schema/tabs-session.schema.js";
@@ -76,20 +80,22 @@ export interface TabsNow {
 }
 
 export async function factsOf(parts: TabStores, send: Send): Promise<TabFacts> {
-	const [browserTabs, asks, board, chat] = await Promise.all([
+	const [browserTabs, asks, board] = await Promise.all([
 		send(BrowserTabsQuery, ALL_PAGES),
 		send(AccessAsksQuery),
 		send(PaneTreeQuery),
-		send(ActiveChatQuery),
 		parts.hostTabs.tabsLoaded(),
 		parts.essentials.essentialsLoaded(),
 	]);
-	return tabFactsOf({ browserTabs, asks, board, chat });
+	return tabFactsOf({ browserTabs, asks, board });
 }
 
 export function tabsNowOf(parts: TabStores, facts: TabFacts): TabsNow {
 	return {
-		showing: showingOf(momentOf(parts.hostTabs.tabs(), facts.chat.id), parts.shownView.shownView()),
+		showing: showingOf(
+			momentOf(parts.hostTabs.tabs(), facts.focusedChatId ?? WORKSPACE_LIST),
+			parts.shownView.shownView(),
+		),
 		kept: essentialsOf(parts.essentials.essentials()),
 	};
 }
@@ -167,10 +173,12 @@ async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send)
 			return send(ReloadPageCommand, { tabId: effect.pageId });
 		case "open-own-window":
 			return send(OpenTabInOwnWindowCommand, { tabId: effect.pageId });
+		case "focus-window":
+			return send(FocusStudioWindowCommand, { window: effect.window });
 		case "focus-own-window":
 			return send(FocusOwnWindowCommand, { tabId: effect.pageId });
 		case "tear-off-page":
-			return send(TearOffCommand, { tabId: effect.pageId });
+			return send(TearOffCommand, { tabId: effect.pageId, openWith: effect.tabId });
 		case "close-panes":
 			return send(ClosePanesOfTabsCommand, { tabIds: effect.tabIds });
 		case "open-shown-tab-pane":
@@ -179,7 +187,16 @@ async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send)
 			return send(CloseShownTabPaneCommand);
 		case "show-in-target-pane":
 			return send(ShowTabInTargetPaneCommand, { tabId: effect.tabId });
+		case "show-chat":
+			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: null });
+		case "show-in-chat-group":
+			return send(ShowTabInChatGroupCommand, {
+				chatId: effect.chatId,
+				tabId: effect.tabId,
+				isOnlyWhenBare: effect.isOnlyWhenBare,
+			});
 		case "flash-pane":
+			await send(AimPaneCommand, { id: effect.paneId });
 			return paneFlash.flashPane(effect.paneId);
 	}
 }

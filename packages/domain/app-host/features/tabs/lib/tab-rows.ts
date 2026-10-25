@@ -1,5 +1,5 @@
 import { APP_LABELS } from "../../../shared/lib/app-labels.js";
-import { flatTabIdsOf } from "../../../shared/lib/host-tabs/host-tabs.js";
+import { flatTabIdsOf, newTabPlaceOf } from "../../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, TabGroup } from "../../../shared/lib/host-tabs/host-tabs.js";
 import { WORKSPACE_LIST, findGroup } from "../../../shared/lib/host-tabs/tab-lists.js";
 import { hostOf, tabArtOf } from "../../../shared/lib/tab-art/tab-art-of.js";
@@ -17,19 +17,35 @@ import type {
 	TabsSidebar,
 } from "../../../shared/schema/app-tab.schema.js";
 import type { Essential } from "../../../shared/schema/essential.schema.js";
+import type { SidebarView } from "../../../shared/schema/tabs-column.schema.js";
 import type { PageFacts } from "../../../shared/schema/page-facts.schema.js";
 import type { ListEntry } from "../../../shared/schema/tab-group.schema.js";
 
 const NEW_PAGE = "New tab";
+const THIS_WORKSPACE = "This workspace";
+
+export interface BoardChat {
+	readonly id: string;
+	readonly title: string;
+}
 
 export interface SidebarAsk {
 	readonly moment: HostTabsMoment;
 	readonly essentials: readonly Essential[];
 	readonly pages: readonly PageFacts[];
 	readonly shownApp: AppKind | null;
-	readonly chat: TabsSidebar["chat"];
+	readonly boardChats: readonly BoardChat[];
 	readonly shutLists: readonly string[];
+	readonly view: SidebarView;
 	readonly inPanes: readonly string[];
+	readonly hasShownTabPane: boolean;
+	readonly elsewhere: readonly string[];
+}
+
+interface RowLooks {
+	readonly shownIds: ReadonlySet<string>;
+	readonly hidesOwnWindowTabs: boolean;
+	readonly elsewhereIds: ReadonlySet<string>;
 }
 
 export function tabRowsOf(
@@ -38,29 +54,40 @@ export function tabRowsOf(
 	shownApp: AppKind | null,
 	listIds: readonly string[],
 ): readonly AppTabState[] {
-	const rows = new TabRows(moment, pages, shownIdsOf(moment, shownApp, []));
+	const rows = new TabRows(moment, pages, {
+		shownIds: shownIdsOf(moment, shownApp, []),
+		hidesOwnWindowTabs: false,
+		elsewhereIds: new Set(),
+	});
 	return listIds.flatMap((listId) => flatTabIdsOf(moment, listId).flatMap((id) => rows.rowsOf(id)));
 }
 
 const WORKSPACE_FACE: ListTarget = {
 	list: WORKSPACE_LIST,
 	owner: "workspace",
-	title: WORKSPACE_LIST,
+	title: THIS_WORKSPACE,
 };
 
 export function sidebarOf(ask: SidebarAsk): TabsSidebar {
-	const rows = new TabRows(ask.moment, ask.pages, shownIdsOf(ask.moment, ask.shownApp, ask.inPanes));
-	const listTargets = [WORKSPACE_FACE, chatFaceOf(ask.chat)] as const;
+	const shownIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null, ask.inPanes);
+	const rows = new TabRows(ask.moment, ask.pages, {
+		shownIds,
+		hidesOwnWindowTabs: ask.view.hidesOwnWindowTabs,
+		elsewhereIds: new Set(ask.elsewhere),
+	});
+	const chatFaces = ask.boardChats.map(chatFaceOf);
+	const listTargets = [WORKSPACE_FACE, ...chatFaces];
 	return {
-		chat: ask.chat,
 		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
-		sections: sectionsOf(rows, listTargets, ask.shutLists),
+		sections: sectionsOf(rows, chatFaces, ask),
 		listTargets,
 		workspaceList: WORKSPACE_LIST,
+		newTabList: newTabPlaceOf(ask.moment, null).chatId,
+		view: ask.view,
 	};
 }
 
-function chatFaceOf(chat: SidebarAsk["chat"]): ListTarget {
+function chatFaceOf(chat: BoardChat): ListTarget {
 	return {
 		list: chat.id,
 		owner: "chat",
@@ -70,14 +97,13 @@ function chatFaceOf(chat: SidebarAsk["chat"]): ListTarget {
 
 function sectionsOf(
 	rows: TabRows,
-	[workspaceFace, chatFace]: readonly [ListTarget, ListTarget],
-	shutLists: readonly string[],
+	chatFaces: readonly ListTarget[],
+	{ shutLists, view }: SidebarAsk,
 ): readonly TabSection[] {
-	const workspace = sectionOf(rows, workspaceFace, shutLists);
-	const filledSections = [workspace, sectionOf(rows, chatFace, shutLists)].filter(
-		(section) => section.entries.length > 0,
-	);
-	return filledSections.length === 0 ? [workspace] : filledSections;
+	const chats = chatFaces
+		.map((face) => sectionOf(rows, face, shutLists))
+		.filter((chat) => !view.hidesEmptyLists || chat.count > 0);
+	return [sectionOf(rows, WORKSPACE_FACE, shutLists), ...chats];
 }
 
 function sectionOf(rows: TabRows, face: ListTarget, shutLists: readonly string[]): TabSection {
@@ -101,7 +127,7 @@ class TabRows {
 	constructor(
 		private readonly moment: HostTabsMoment,
 		pages: readonly PageFacts[],
-		private readonly shownIds: ReadonlySet<string>,
+		private readonly looks: RowLooks,
 	) {
 		this.pageOf = pagesOfTabs(moment.tabs, pages);
 		this.tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
@@ -114,10 +140,17 @@ class TabRows {
 			return [];
 		}
 
+		const paged = faceOf(tab, this.pageOf.get(tab.id) ?? null);
+		const face = { ...paged, isInOwnWindow: paged.isInOwnWindow || this.looks.elsewhereIds.has(tab.id) };
+
+		if (this.looks.hidesOwnWindowTabs && face.isInOwnWindow) {
+			return [];
+		}
+
 		return [
 			{
-				...faceOf(tab, this.pageOf.get(tab.id) ?? null),
-				isShown: this.shownIds.has(tab.id),
+				...face,
+				isShown: this.looks.shownIds.has(tab.id),
 			},
 		];
 	}
@@ -127,7 +160,7 @@ class TabRows {
 	}
 
 	countOf(list: string): number {
-		return flatTabIdsOf(this.moment, list).length;
+		return flatTabIdsOf(this.moment, list).flatMap((id) => this.rowsOf(id)).length;
 	}
 
 	entriesOf(entry: ListEntry): SidebarEntry[] {
@@ -155,7 +188,7 @@ class TabRows {
 			title: live.label ?? essential.title,
 			icon: tabArtOf(essential.app, page?.url || essential.address),
 			favicon: page?.favicon ?? essential.favicon,
-			isShown: this.shownIds.has(live.id),
+			isShown: this.looks.shownIds.has(live.id),
 			isLive: true,
 		};
 	}
@@ -193,26 +226,36 @@ function idleFaceOf(tab: HostTab): AppTab {
 	return {
 		id: tab.id,
 		app: tab.app,
-		title: tab.label ?? APP_LABELS[tab.app],
-		subtitle: null,
-		icon: tabArtOf(tab.app, null),
-		favicon: null,
+		title: tab.label ?? tab.lastTitle ?? unloadedTitleOf(tab),
+		subtitle: tab.lastAddress === null ? null : hostOf(tab.lastAddress),
+		icon: tabArtOf(tab.app, tab.lastAddress),
+		favicon: tab.lastFavicon,
 		status: null,
 		label: tab.label,
-		address: null,
+		address: tab.lastAddress,
 		isInOwnWindow: false,
 	};
 }
 
+function unloadedTitleOf({ app, lastAddress }: HostTab): string {
+	const site = lastAddress === null ? null : hostOf(lastAddress);
+
+	if (site !== null) {
+		return site;
+	}
+
+	return app === "browser" ? NEW_PAGE : APP_LABELS[app];
+}
+
 function pageFaceOf(tab: HostTab, page: PageFacts): AppTab {
-	const address = page.url || null;
+	const address = page.url || tab.lastAddress;
 	return {
 		id: tab.id,
 		app: tab.app,
-		title: tab.label ?? (page.title || NEW_PAGE),
-		subtitle: hostOf(page.url),
+		title: tab.label ?? (page.title || tab.lastTitle || NEW_PAGE),
+		subtitle: address === null ? null : hostOf(address),
 		icon: tabArtOf(tab.app, address),
-		favicon: page.favicon ?? null,
+		favicon: page.favicon ?? tab.lastFavicon,
 		status: statusOf(page),
 		label: tab.label,
 		address,

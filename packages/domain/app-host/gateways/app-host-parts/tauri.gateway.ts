@@ -1,11 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
+import { studioWindowOf, viewFileOf } from "@widgetarium/behaviors";
 import { GLOBAL_ROOT, HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind } from "@widgetarium/behaviors/tauri-store";
 import { COLUMN_OPENED_ON } from "../../shared/lib/tabs-column/column-look.js";
 import { EssentialsDocSchema, TauriEssentialsGateway } from "../essentials/tauri.gateway.js";
 import type { EssentialsDoc } from "../essentials/tauri.gateway.js";
-import { KeptTabsDocSchema, TauriHostTabsGateway } from "../host-tabs/tauri.gateway.js";
-import type { KeptTabsDoc } from "../host-tabs/tauri.gateway.js";
+import { KeptTabsDocSchema, TauriHostTabsGateway, WindowViewDocSchema } from "../host-tabs/tauri.gateway.js";
+import type { KeptTabsDoc, WindowViewDoc } from "../host-tabs/tauri.gateway.js";
 import { DocumentPaneFlashGateway } from "../pane-flash/document.gateway.js";
 import { MemoryShownViewGateway } from "../shown-view/memory.gateway.js";
 import { KeptColumnDocSchema, TauriTabsColumnGateway } from "../tabs-column/tauri.gateway.js";
@@ -21,12 +22,6 @@ const TABS: DocKind<KeptTabsDoc> = {
 	schema: KeptTabsDocSchema,
 };
 
-const COLUMN: DocKind<KeptColumnDoc> = {
-	file: SESSION_FILE,
-	v: 1,
-	schema: KeptColumnDocSchema,
-};
-
 const ESSENTIALS: DocKind<EssentialsDoc> = {
 	file: "essentials.json",
 	v: 1,
@@ -37,17 +32,40 @@ const ESSENTIALS: DocKind<EssentialsDoc> = {
 export function tauriAppHostParts(workspaceId: string): AppHostParts {
 	const store = new StoreClient(tauriInvoke);
 	const root = workspaceRootOf(workspaceId);
+	const studioWindow = studioWindowOf(location.search);
+	const windowView = studioWindow.isMain
+		? null
+		: HeldDoc.read({ store, root, kind: windowViewOf(viewFileOf(studioWindow)), empty: WindowViewDocSchema.parse({}) });
 	return {
-		hostTabs: new TauriHostTabsGateway(HeldDoc.read({ store, root, kind: TABS, empty: KeptTabsDocSchema.parse({}) })),
+		hostTabs: new TauriHostTabsGateway(
+			HeldDoc.read({ store, root, kind: TABS, empty: KeptTabsDocSchema.parse({}) }),
+			windowView,
+		),
 		essentials: new TauriEssentialsGateway(
 			HeldDoc.read({ store, root: GLOBAL_ROOT, kind: ESSENTIALS, empty: EssentialsDocSchema.parse({}) }),
 		),
 		tabsColumn: new TauriTabsColumnGateway(
-			HeldDoc.reading({ store, root, kind: COLUMN, empty: KeptColumnDocSchema.parse({}) }),
+			HeldDoc.reading({ store, root, kind: columnOf(viewFileOf(studioWindow)), empty: KeptColumnDocSchema.parse({}) }),
 			COLUMN_OPENED_ON,
 		),
 		shownView: new MemoryShownViewGateway(STUDIO_OPENED_ON),
 		paneFlash: new DocumentPaneFlashGateway(),
+	};
+}
+
+function columnOf(file: string): DocKind<KeptColumnDoc> {
+	return {
+		file,
+		v: 1,
+		schema: KeptColumnDocSchema,
+	};
+}
+
+function windowViewOf(file: string): DocKind<WindowViewDoc> {
+	return {
+		file,
+		v: 1,
+		schema: WindowViewDocSchema,
 	};
 }
 

@@ -5,9 +5,17 @@ import { KeptChatSchema } from "../../shared/schema/chat.schema.js";
 import type { KeptChats } from "../../shared/schema/chat.schema.js";
 import { ChatsGateway } from "./chats.gateway.js";
 
+const StoredChatSchema = KeptChatSchema.extend({
+	pinRank: KeptChatSchema.shape.pinRank.catch(({ input }) => {
+		console.warn(`[widgetarium] chat pin rank ${JSON.stringify(input)} → none (the kept value is not a whole number)`);
+		return undefined;
+	}),
+});
+
 export const KeptChatsDocSchema = z.looseObject({
-	chats: z.array(KeptChatSchema).default([]),
-	activeId: z.string().nullable().catch(null),
+	chats: z.array(StoredChatSchema).default([]),
+	openOnStartId: z.string().nullable().optional().catch(null),
+	activeId: z.string().nullable().optional().catch(null),
 });
 
 export type KeptChatsDoc = z.infer<typeof KeptChatsDocSchema>;
@@ -16,7 +24,7 @@ export const KEPT_CHATS: DocKind<KeptChatsDoc> = {
 	file: "chats.json",
 	v: 1,
 	schema: KeptChatsDocSchema,
-	salvage: KeptChatsDocSchema.extend({ chats: validEntriesOf(KeptChatSchema) }),
+	salvage: KeptChatsDocSchema.extend({ chats: validEntriesOf(StoredChatSchema) }),
 };
 
 export const KeptLegacyChatIndexSchema = z.looseObject({
@@ -36,6 +44,8 @@ export interface TauriChatsDocs {
 	readonly legacyIndex: HeldDoc<KeptLegacyChatIndex>;
 }
 
+const NOT_READ = 'the kept chats are not read yet, so "{reason}" would write over them';
+
 export class TauriChatsGateway extends ChatsGateway {
 	constructor(
 		private readonly docs: TauriChatsDocs,
@@ -45,12 +55,12 @@ export class TauriChatsGateway extends ChatsGateway {
 	}
 
 	chats(): KeptChats {
-		const { chats, activeId } = this.docs.chats.now();
+		const { chats, openOnStartId } = this.docs.chats.now();
 
 		if (chats.length > 0) {
 			return {
 				chats,
-				activeId,
+				openOnStartId: openOnStartId ?? null,
 			};
 		}
 
@@ -59,8 +69,16 @@ export class TauriChatsGateway extends ChatsGateway {
 	}
 
 	saveChats(chats: KeptChats, reason: string): void {
-		this.docs.chats.change(chats, reason);
+		if (!this.isLoaded()) {
+			throw new Error(NOT_READ.replace("{reason}", reason));
+		}
+
+		this.docs.chats.change({ ...chats, activeId: null }, reason);
 		void this.docs.chats.flush();
+	}
+
+	isLoaded(): boolean {
+		return this.docs.chats.isRead() && this.docs.legacyIndex.isRead();
 	}
 
 	chatsChanged(listener: () => void): () => void {
@@ -84,6 +102,6 @@ function keptOfLegacy(id: string): KeptChats {
 				lastAt: 0,
 			},
 		],
-		activeId: id,
+		openOnStartId: id,
 	};
 }

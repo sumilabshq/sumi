@@ -33,6 +33,7 @@ import {
 	withMoved,
 	withPageEnsured,
 	withTabPageOpened,
+	withTabTornOff,
 } from "../../shared/lib/tab-showing/showing.js";
 import type { Showing } from "../../shared/lib/tab-showing/showing.js";
 import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
@@ -274,7 +275,8 @@ export const TearOffTabCommand = command("tear-off-tab")
 			return refuse(NO_OWN_WINDOW.replace("{id}", id));
 		}
 
-		return settle(showing, withEffect(ensured.showing, { kind: "tear-off-page", pageId: ensured.pageId }), {
+		const tornOff = withEffect(ensured.showing, { kind: "tear-off-page", pageId: ensured.pageId, tabId: id });
+		return settle(showing, withTabTornOff(tornOff, facts, id), {
 			parts,
 			send,
 		});

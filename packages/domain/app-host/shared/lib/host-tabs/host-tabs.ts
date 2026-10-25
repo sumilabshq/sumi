@@ -1,18 +1,23 @@
-import { chatOfGroup, flatTabIdsOf, findGroup, placeAfterOf, locationOf, withTabAt, withoutTab } from "./tab-lists.js";
+import {
+	WORKSPACE_LIST,
+	chatOfGroup,
+	flatTabIdsOf,
+	findGroup,
+	placeAfterOf,
+	locationOf,
+	withTabAt,
+	withoutTab,
+} from "./tab-lists.js";
 import type { TabGroup, TabLayout, TabPlace } from "./tab-lists.js";
 import {
 	closedPlaceOf,
-	groupChangeSaid,
-	groupedMoment,
-	newGroupOf,
-	isSameGroupFace,
 	keptClosed,
 	labelSaid,
 	lastShownWith,
 	reopenPlaceOf,
 	withoutGroup,
 } from "./host-tabs-moment.js";
-import type { ClosedTab, GroupChange, HostTab, HostTabsMoment, OpenedTab, TabPage } from "./host-tabs-moment.js";
+import type { ClosedTab, HostTab, HostTabsMoment, OpenedTab, TabPage } from "./host-tabs-moment.js";
 
 export type { TabGroup, TabPlace } from "./tab-lists.js";
 
@@ -30,10 +35,6 @@ export interface OpenedHostTab extends MovedTabs {
 
 export interface ReopenedHostTab extends MovedTabs {
 	readonly closed: ClosedTab;
-}
-
-export interface AddedGroup extends MovedTabs {
-	readonly groupId: string;
 }
 
 export interface TabsClosing {
@@ -97,6 +98,15 @@ export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place:
 	};
 }
 
+export function newTabPlaceOf(moment: HostTabsMoment, asked: string | null): TabPlace {
+	const shownList = moment.shownId === null ? null : (locationOf(moment, moment.shownId)?.chatId ?? null);
+	return {
+		chatId: asked ?? shownList ?? WORKSPACE_LIST,
+		groupId: null,
+		before: null,
+	};
+}
+
 export function openTabAfter(moment: HostTabsMoment, afterId: string, opened: OpenedTab): OpenedHostTab | null {
 	const place = placeAfterOf(moment, afterId);
 	return place === null ? null : openTab(moment, opened, place);
@@ -131,6 +141,20 @@ export function markShown(moment: HostTabsMoment, id: string): MovedTabs | null 
 			lastShown: chatId === null ? moment.lastShown : lastShownWith(moment.lastShown, chatId, id),
 		},
 		reason: `show ${id}`,
+	};
+}
+
+export function markChatTabShown(moment: HostTabsMoment, id: string, chatId: string): MovedTabs | null {
+	if (moment.lastShown[chatId] === id) {
+		return null;
+	}
+
+	return {
+		moment: {
+			...moment,
+			lastShown: lastShownWith(moment.lastShown, chatId, id),
+		},
+		reason: `show ${id} in chat ${chatId}`,
 	};
 }
 
@@ -237,23 +261,6 @@ export function givePage(moment: HostTabsMoment, { id, pageId, why }: PageGiving
 	};
 }
 
-export function forgetPages(moment: HostTabsMoment): MovedTabs | null {
-	if (moment.tabs.every((tab) => tab.pageId === null)) {
-		return null;
-	}
-
-	return {
-		moment: {
-			...moment,
-			tabs: moment.tabs.map((tab) => ({
-				...tab,
-				pageId: null,
-			})),
-		},
-		reason: "pages do not outlive a start",
-	};
-}
-
 export function makeEssential(moment: HostTabsMoment, id: string, essentialId: string): MovedTabs {
 	tabOf(moment, id);
 	return {
@@ -263,48 +270,6 @@ export function makeEssential(moment: HostTabsMoment, id: string, essentialId: s
 			tabs: withTab(moment, id, { essentialId }),
 		},
 		reason: `${id} becomes essential ${essentialId}`,
-	};
-}
-
-export function addGroup(moment: HostTabsMoment, chatId: string, withTabId: string | null): AddedGroup {
-	const birth = {
-		chatId,
-		withTabId,
-	};
-	const group = newGroupOf(moment, birth);
-	return {
-		groupId: group.id,
-		moment: groupedMoment(moment, group, birth),
-		reason: `new group ${group.id} "${group.name}" in ${chatId}${withTabId === null ? "" : ` with ${withTabId}`}`,
-	};
-}
-
-export function changeGroup(moment: HostTabsMoment, group: TabGroup, change: GroupChange): MovedTabs | null {
-	const next = {
-		...group,
-		...change,
-	};
-
-	if (isSameGroupFace(next, group)) {
-		return null;
-	}
-
-	return {
-		moment: {
-			...moment,
-			groups: moment.groups.map((one) => (one.id === next.id ? next : one)),
-		},
-		reason: groupChangeSaid(group, next),
-	};
-}
-
-export function ungroup(moment: HostTabsMoment, group: TabGroup): MovedTabs {
-	return {
-		moment: {
-			...moment,
-			...withoutGroup(moment, group.id, group.tabIds),
-		},
-		reason: `ungroup ${group.id}, ${group.tabIds.length} tabs`,
 	};
 }
 
@@ -318,6 +283,9 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string 
 		id: `tab-${moment.minted + 1}`,
 		label: null,
 		essentialId,
+		lastAddress: null,
+		lastTitle: null,
+		lastFavicon: null,
 	};
 }
 

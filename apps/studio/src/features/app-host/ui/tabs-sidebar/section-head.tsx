@@ -20,7 +20,8 @@ const FOLD_BUTTON =
 	"cv:-me-1.5 cv:inline-flex cv:h-[18px] cv:w-0 cv:flex-none cv:cursor-pointer cv:items-center cv:justify-center cv:overflow-hidden cv:border-0 cv:p-0 cv:[&>svg]:text-(--sumi-text-3) cv:opacity-0 cv:outline-none cv:[transition:width_var(--sumi-dur-base)_var(--sumi-ease-out),margin_var(--sumi-dur-base)_var(--sumi-ease-out),opacity_var(--sumi-dur-fast)_var(--sumi-ease),transform_var(--wg-press)_var(--wg-ease)] cv:group-hover/section:me-0 cv:group-hover/section:w-3 cv:group-hover/section:opacity-100 cv:group-data-[shut]/section:me-0 cv:group-data-[shut]/section:w-3 cv:group-data-[shut]/section:opacity-100 cv:group-has-[[data-state=open]]/section:me-0 cv:group-has-[[data-state=open]]/section:w-3 cv:group-has-[[data-state=open]]/section:opacity-100 cv:focus-visible:me-0 cv:focus-visible:w-3 cv:focus-visible:opacity-100 cv:[&>svg]:-translate-x-1 cv:[&>svg]:transition-transform cv:[&>svg]:duration-(--sumi-dur-fast) cv:group-hover/section:[&>svg]:translate-x-0 cv:group-data-[shut]/section:[&>svg]:translate-x-0";
 const TITLE =
 	"cv:min-w-0 cv:overflow-hidden cv:text-ellipsis cv:whitespace-nowrap cv:font-semibold cv:text-(--sumi-text)";
-const COUNT = "cv:text-(--sumi-text-3)";
+const LEAD = "cv:flex-none cv:whitespace-nowrap";
+const COUNT = "cv:flex-none cv:text-(--sumi-text-3)";
 const ACTIONS =
 	"cv:ms-auto cv:flex cv:flex-none cv:translate-x-1 cv:gap-0.5 cv:opacity-0 cv:transition-[opacity,translate] cv:duration-(--sumi-dur-fast) cv:ease-(--sumi-ease) cv:group-hover/section:translate-x-0 cv:group-hover/section:opacity-100 cv:group-has-[[data-state=open]]/section:translate-x-0 cv:group-has-[[data-state=open]]/section:opacity-100 cv:focus-within:translate-x-0 cv:focus-within:opacity-100";
 
@@ -39,7 +40,7 @@ export function SectionHead({ section, onGroupMade }: SectionHeadProps): ReactEl
 			>
 				<Icon name={isOpen ? "chevron-down" : "chevron-right"} size={12} />
 			</IconButton>
-			<span>{TABS_IN}</span>
+			<span className={LEAD}>{TABS_IN}</span>
 			<b className={TITLE} data-tabs-chat-title={owner === "chat" ? "" : undefined}>
 				{title}
 			</b>

@@ -1,5 +1,5 @@
+import { tabRowsOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
 import {
-	addGroup,
 	closeGroup,
 	closeTabs,
 	emptyMoment,
@@ -12,8 +12,9 @@ import {
 	placeTab,
 	reopenClosed,
 	tabOf,
-	ungroup,
 } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
+import { addGroup, ungroup } from "../packages/domain/app-host/shared/lib/host-tabs/tab-groups.ts";
+import { rememberPages } from "../packages/domain/app-host/shared/lib/host-tabs/page-memory.ts";
 import type {
 	HostTabsMoment,
 	MovedTabs,
@@ -27,7 +28,13 @@ import {
 	showingOf,
 	withChatTabShown,
 	withFreeTabBesidePanes,
+	withPageEnsured,
+	withMoved,
+	withTabPressed,
+	withTabShown,
+	withTabTornOff,
 } from "../packages/domain/app-host/shared/lib/tab-showing/showing.ts";
+import { withHomeFollowed, withTabsAtHome } from "../packages/domain/app-host/shared/lib/tab-showing/rehoming.ts";
 import type { TabFacts } from "../packages/domain/app-host/shared/lib/tab-showing/tab-facts.ts";
 import { KeptTabsSchema } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
 
@@ -62,6 +69,12 @@ function threeTabs(): HostTabsMoment {
 	return openTab(two, browser, atEnd(ONE)).moment;
 }
 
+function threeWorkspaceTabs(): HostTabsMoment {
+	const one = openTab(emptyMoment(), browser, atEnd(WORKSPACE_LIST)).moment;
+	const two = openTab(one, browser, atEnd(WORKSPACE_LIST)).moment;
+	return openTab(two, browser, atEnd(WORKSPACE_LIST)).moment;
+}
+
 function groupOf(moment: HostTabsMoment, id: string): TabGroup {
 	const group = findGroup(moment.groups, id);
 
@@ -78,9 +91,13 @@ function factsOf(chatId: string, inPanes: readonly string[]): TabFacts {
 		isBrowserAvailable: false,
 		canOpenOwnWindow: false,
 		tabPanes: inPanes.map((tabId) => ({ paneId: `pane-${tabId}`, tabId })),
+		shownTabPaneId: null,
 		hasTabTarget: false,
 		tabTargetId: null,
-		chat: { id: chatId, title: "Chat" },
+		chatGroupIds: [chatId],
+		tabWindows: new Map(),
+		groupOfPane: new Map(),
+		focusedChatId: chatId,
 	};
 }
 
@@ -183,9 +200,49 @@ check(
 
 const fourTabs = openTab(threeTabs(), browser, atEnd(TWO)).moment;
 const followed = movedTo(markShown(fourTabs, "tab-2"), fourTabs);
-const inTwo = withChatTabShown(showingOf(followed, "browser"), factsOf(TWO, []));
-check("switching chats shows the new chat's tab", inTwo.moment.shownId, "tab-4");
-const backInOne = withChatTabShown(inTwo, factsOf(ONE, []));
+const inTwo = withChatTabShown(showingOf(followed, "browser"), factsOf(TWO, []), TWO);
+check(
+	"switching chats shows the new chat's tab in its group, only while the group holds no tab",
+	inTwo.effects.filter((effect) => effect.kind === "show-in-chat-group"),
+	[{ kind: "show-in-chat-group", chatId: TWO, tabId: "tab-4", isOnlyWhenBare: true }],
+);
+const chatTabPressed = withTabShown(showingOf(fourTabs, "browser"), factsOf(ONE, []), tabOf(fourTabs, "tab-3"));
+check(
+	"a chat tab pressed in the sidebar goes to its chat's group, never to the shown-tab pane",
+	[chatTabPressed.moment.shownId, chatTabPressed.effects.map((effect) => effect.kind)],
+	[fourTabs.shownId, ["show-in-chat-group"]],
+);
+const chatClosedPressed = withTabPressed(
+	showingOf(fourTabs, "browser"),
+	{ ...factsOf(ONE, []), chatGroupIds: [] },
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a pressed tab whose chat left the board brings the chat back first",
+	chatClosedPressed.effects.map((effect) => effect.kind),
+	["show-chat", "show-in-chat-group"],
+);
+const offBoardPressed = withTabPressed(
+	showingOf(fourTabs, "browser"),
+	factsOf("chat-elsewhere", []),
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a pressed tab of any chat off the board brings that chat, not only the focused one",
+	offBoardPressed.effects.map((effect) => effect.kind),
+	["show-chat", "show-in-chat-group"],
+);
+const otherChatTab = withTabShown(
+	showingOf(fourTabs, "browser"),
+	factsOf("chat-elsewhere", []),
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a chat tab the app shows on its own never brings a chat that is off the board",
+	otherChatTab.effects.map((effect) => effect.kind),
+	[],
+);
+const backInOne = withChatTabShown(inTwo, factsOf(ONE, []), ONE);
 check(
 	"switching back shows the tab that chat showed last",
 	[backInOne.moment.shownId, chatTabToShow(backInOne.moment, ONE)],
@@ -202,7 +259,7 @@ check(
 	[{ kind: "close-panes", tabIds: ["tab-3"] }],
 );
 
-const shownSecond = movedTo(markShown(threeTabs(), "tab-2"), threeTabs());
+const shownSecond = movedTo(markShown(threeWorkspaceTabs(), "tab-2"), threeWorkspaceTabs());
 const freed = withFreeTabBesidePanes(showingOf(shownSecond, "browser"), factsOf(ONE, ["tab-2"]));
 check(
 	"a shown tab dragged into a pane leaves the shown-tab pane to a free tab",
@@ -210,12 +267,179 @@ check(
 	false,
 );
 
-const shownFirst = movedTo(markShown(threeTabs(), "tab-1"), threeTabs());
+const shownFirst = movedTo(markShown(threeWorkspaceTabs(), "tab-1"), threeWorkspaceTabs());
 const everyPaned = withFreeTabBesidePanes(showingOf(shownFirst, "browser"), factsOf(ONE, ["tab-1", "tab-2", "tab-3"]));
 check(
 	"with no free tab left the shown-tab pane closes",
 	everyPaned.effects.map((effect) => effect.kind),
 	["close-shown-tab-pane"],
+);
+
+const focusedElsewhere = {
+	...factsOf(ONE, ["tab-2"]),
+	shownTabPaneId: "pane-shown",
+	hasTabTarget: true,
+	tabTargetId: "pane-tab-2",
+};
+const firstTab = shownFirst.tabs.find((tab) => tab.id === "tab-1");
+const pressedShown =
+	firstTab === undefined
+		? null
+		: withTabShown(showingOf(shownFirst, "browser"), focusedElsewhere, { ...firstTab, pageId: "page-1" });
+const freshShown =
+	firstTab === undefined ? null : withTabShown(showingOf(shownFirst, "browser"), focusedElsewhere, firstTab);
+check(
+	"a fresh tab with no page yet is shown, never mistaken for one already open",
+	freshShown?.effects.some((effect) => effect.kind === "flash-pane"),
+	false,
+);
+check(
+	"a tab open in the shown-tab pane, pressed while another pane is focused, focuses its own pane and moves nowhere",
+	pressedShown?.effects.map((effect) => [effect.kind, "paneId" in effect ? effect.paneId : null]),
+	[["flash-pane", "pane-shown"]],
+);
+
+const tornShown = withTabTornOff(showingOf(shownFirst, "browser"), factsOf(ONE, ["tab-2"]), "tab-1");
+check(
+	"a shown tab torn off into its own window hands the screen to a free tab",
+	[tornShown.moment.shownId, tornShown.effects.some((effect) => effect.kind === "close-panes")],
+	["tab-3", false],
+);
+const tornPaned = withTabTornOff(showingOf(shownFirst, "browser"), factsOf(ONE, ["tab-2"]), "tab-2");
+check(
+	"a tab torn off from a pane closes that pane and leaves the shown tab alone",
+	[tornPaned.moment.shownId, tornPaned.effects],
+	["tab-1", [{ kind: "close-panes", tabIds: ["tab-2"] }]],
+);
+
+const paged = movedTo(markShown(threeTabs(), "tab-1"), threeTabs());
+const withPage = { ...paged, tabs: paged.tabs.map((tab) => (tab.id === "tab-1" ? { ...tab, pageId: "page-1" } : tab)) };
+const page = {
+	pageId: "page-1",
+	url: "https://duckduckgo.com/?q=test",
+	title: "test at DuckDuckGo",
+	favicon: "https://duckduckgo.com/favicon.ico",
+};
+const remembered = rememberPages(withPage, [page]);
+check(
+	"a page's address, title and icon are remembered on its tab for the next start",
+	[
+		tabOf(movedTo(remembered, withPage), "tab-1").lastAddress,
+		tabOf(movedTo(remembered, withPage), "tab-1").lastTitle,
+		tabOf(movedTo(remembered, withPage), "tab-1").lastFavicon,
+	],
+	[page.url, page.title, page.favicon],
+);
+check(
+	"a blank page and an unchanged page remember nothing",
+	[rememberPages(withPage, [{ ...page, url: "about:blank" }]), rememberPages(movedTo(remembered, withPage), [page])],
+	[null, null],
+);
+const restarted = {
+	...movedTo(remembered, withPage),
+	tabs: movedTo(remembered, withPage).tabs.map((tab) => ({ ...tab, pageId: null })),
+};
+const reopenedAfterStart = withPageEnsured(
+	showingOf(restarted, "browser"),
+	{ ...factsOf(ONE, []), isBrowserAvailable: true },
+	{
+		tabId: "tab-1",
+		why: "shown",
+	},
+);
+check(
+	"after a start, a tab that gets a fresh page opens the address it last showed",
+	reopenedAfterStart.showing.effects.map((effect) => (effect.kind === "open-address" ? effect.address : effect.kind)),
+	["open-page", page.url],
+);
+
+const namedElsewhere = {
+	...paged,
+	tabs: paged.tabs.map((tab) => (tab.id === "tab-1" ? { ...tab, pageId: "page-from-window-1" } : tab)),
+};
+const adoptedHere = withPageEnsured(
+	showingOf(namedElsewhere, "browser"),
+	{ ...factsOf(ONE, []), isBrowserAvailable: true },
+	{
+		tabId: "tab-1",
+		why: "placed in a pane",
+	},
+);
+check(
+	"a tab naming a page this window does not hold opens that same page here, never a new one",
+	[adoptedHere.pageId, adoptedHere.showing.effects.map((effect) => effect.kind)],
+	["page-from-window-1", ["open-page"]],
+);
+
+const unloaded = tabRowsOf(restarted, [], "browser", [ONE]);
+check(
+	"after a start, an unloaded tab shows the title and icon it last had, and a never-loaded one reads New tab",
+	[
+		unloaded.find((row) => row.id === "tab-1")?.title,
+		unloaded.find((row) => row.id === "tab-1")?.favicon,
+		unloaded.find((row) => row.id === "tab-2")?.title,
+	],
+	[page.title, page.favicon, "New tab"],
+);
+
+const titleless = {
+	...restarted,
+	tabs: restarted.tabs.map((tab) =>
+		tab.id === "tab-3" ? { ...tab, lastAddress: "https://example.com/", lastTitle: null } : tab,
+	),
+};
+check(
+	"an unloaded tab whose page never had a title shows its site",
+	tabRowsOf(titleless, [], "browser", [ONE]).find((row) => row.id === "tab-3")?.title,
+	"example.com",
+);
+
+const workspaceShown = movedTo(markShown(threeWorkspaceTabs(), "tab-1"), threeWorkspaceTabs());
+const shownPaneFacts = { ...factsOf(ONE, []), shownTabPaneId: "pane-shown" };
+const shownWas = showingOf(workspaceShown, "browser");
+const shownMoved = withMoved(shownWas, placeTab(workspaceShown, "tab-1", atEnd(ONE)));
+const shownFollowed = withHomeFollowed(shownWas, shownMoved, shownPaneFacts);
+check(
+	"the shown workspace tab dragged into a chat goes to that chat's group and the shown pane takes a free tab",
+	[
+		shownFollowed.effects.filter((effect) => effect.kind === "show-in-chat-group").map((effect) => effect.tabId),
+		shownFollowed.moment.shownId,
+	],
+	[["tab-1"], "tab-2"],
+);
+const panedWas = showingOf(workspaceShown, "browser");
+const panedMoved = withMoved(panedWas, placeTab(workspaceShown, "tab-3", atEnd(ONE)));
+const panedFollowed = withHomeFollowed(panedWas, panedMoved, factsOf(ONE, ["tab-3"]));
+check(
+	"a workspace tab standing in its own tile moves into its new chat's group",
+	panedFollowed.effects.map((effect) => effect.kind),
+	["close-panes", "show-in-chat-group"],
+);
+const sameHome = withMoved(panedWas, placeTab(workspaceShown, "tab-3", atEnd(WORKSPACE_LIST)));
+check(
+	"a tab reordered inside its own list stays where it stands",
+	withHomeFollowed(panedWas, sameHome, factsOf(ONE, ["tab-3"])).effects,
+	[],
+);
+
+const heldElsewhere = { ...factsOf(ONE, []), tabWindows: new Map([["tab-3", "studio-2"]]) };
+check(
+	"a chat tab that stands in another window brings that window forward instead of moving here",
+	withTabShown(showingOf(fourTabs, "browser"), heldElsewhere, tabOf(fourTabs, "tab-3")).effects,
+	[{ kind: "focus-window", window: "studio-2" }],
+);
+
+const strayFacts = { ...factsOf(ONE, ["tab-3"]), groupOfPane: new Map() };
+check(
+	"a chat tab found in a tile outside its chat's group goes back into the group",
+	withTabsAtHome(showingOf(fourTabs, "browser"), strayFacts).effects.map((effect) => effect.kind),
+	["close-panes", "show-in-chat-group"],
+);
+const homeFacts = { ...factsOf(ONE, ["tab-3"]), groupOfPane: new Map([["pane-tab-3", ONE]]) };
+check(
+	"a chat tab already in its chat's group stays",
+	withTabsAtHome(showingOf(fourTabs, "browser"), homeFacts).effects,
+	[],
 );
 
 console.info = quiet;

@@ -4,6 +4,13 @@ import { LayoutModule } from "@widgetarium/layout";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import {
+	NameChatPaneCommand,
+	OpenChatAskedOnStartCommand,
+	OpenChatCommand,
+	OpenNewChatCommand,
+	TearOffChatCommand,
+} from "./features/chat-opening/requests.js";
+import {
 	ClosedTabsQuery,
 	RereadClosedTabsSubscriber,
 	ReopenClosedTabByIdCommand,
@@ -13,6 +20,7 @@ import {
 	FoldTabListCommand,
 	ResetColumnCommand,
 	ResizeColumnCommand,
+	SetSidebarViewCommand,
 	TabsColumnQuery,
 } from "./features/column/requests.js";
 import {
@@ -57,6 +65,7 @@ import {
 	RereadTabsSubscriber,
 	RereadTabsForInkSubscriber,
 	RereadTabsForPagesSubscriber,
+	RememberPagesSubscriber,
 	EnsurePanePagesSubscriber,
 	RereadTabsForShownViewSubscriber,
 	RereadSidebarForColumnSubscriber,
@@ -71,6 +80,7 @@ export const AppHostModule = module("app-host")
 		RereadTabsSubscriber,
 		RereadTabsForShownViewSubscriber,
 		RereadTabsForPagesSubscriber,
+		RememberPagesSubscriber,
 		RereadTabsForAccessAsksSubscriber,
 		RereadTabsForInkSubscriber,
 		RereadTabsForChatsSubscriber,
@@ -81,6 +91,11 @@ export const AppHostModule = module("app-host")
 		RereadClosedTabsSubscriber,
 	)
 	.public(
+		OpenChatCommand,
+		OpenNewChatCommand,
+		TearOffChatCommand,
+		NameChatPaneCommand,
+		OpenChatAskedOnStartCommand,
 		AppTabsQuery,
 		ClosedTabsQuery,
 		ReopenClosedTabByIdCommand,
@@ -117,6 +132,7 @@ export const AppHostModule = module("app-host")
 		ResizeColumnCommand,
 		ResetColumnCommand,
 		FoldTabListCommand,
+		SetSidebarViewCommand,
 		ShowViewCommand,
 	)
 	.provide((facts) => ({ ...appHostPartsOn(facts) }));

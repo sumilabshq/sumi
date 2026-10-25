@@ -8,6 +8,9 @@ export const KeptTabSchema = z.object({
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
+	lastAddress: z.string().nullable().default(null),
+	lastTitle: z.string().nullable().default(null),
+	lastFavicon: z.string().nullable().default(null),
 });
 
 export const KeptTabsSchema = z.object({

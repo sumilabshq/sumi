@@ -8,7 +8,7 @@ import {
 	PagesChangedEvent,
 } from "@widgetarium/browser";
 import { DropGoneTabsCommand, PanesChangedEvent } from "@widgetarium/layout";
-import { ChatsChangedEvent } from "@widgetarium/workspaces";
+import { ChatListQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { HostTabsChangedEvent } from "../../gateways/host-tabs/host-tabs.events.js";
@@ -18,23 +18,26 @@ import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.even
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { TabsColumnChangedEvent } from "../../gateways/tabs-column/tabs-column.events.js";
 import { TabsColumnGateway } from "../../gateways/tabs-column/tabs-column.gateway.js";
+import { sidebarViewOf } from "../../shared/lib/tabs-column/column-look.js";
 import { essentialFaceOf } from "../../shared/lib/essentials/essential-face.js";
 import { addEssential } from "../../shared/lib/essentials/essentials.js";
-import { forgetPages, heldTabOf, makeEssential, placeTab } from "../../shared/lib/host-tabs/host-tabs.js";
+import { heldTabOf, makeEssential, placeTab } from "../../shared/lib/host-tabs/host-tabs.js";
+import { forgetPages, rememberPages } from "../../shared/lib/host-tabs/page-memory.js";
 import type { HostTab, HostTabsMoment } from "../../shared/lib/host-tabs/host-tabs.js";
 import { WORKSPACE_LIST, chatOfGroup, isKnownList, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
 import {
 	shownAppOf,
 	shownTabIdOf,
 	withChatTabShown,
+	withTabPressed,
 	withEffect,
 	withFirstTabShown,
 	withFreeTabBesidePanes,
 	withMoved,
 	withPageEnsured,
 	withPanePagesEnsured,
-	withTabShown,
 } from "../../shared/lib/tab-showing/showing.js";
+import { withHomeFollowed, withTabsAtHome } from "../../shared/lib/tab-showing/rehoming.js";
 import type { Showing, TabEffect } from "../../shared/lib/tab-showing/showing.js";
 import { tabIdsInPanesOf } from "../../shared/lib/tab-showing/tab-facts.js";
 import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
@@ -77,7 +80,10 @@ export const AppTabsQuery = query("app-tabs")
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
 		return {
-			tabs: tabRowsOf(showing.moment, facts.pages, shownAppOf(showing.shownView), [WORKSPACE_LIST, facts.chat.id]),
+			tabs: tabRowsOf(showing.moment, facts.pages, shownAppOf(showing.shownView), [
+				WORKSPACE_LIST,
+				...facts.chatGroupIds,
+			]),
 			canReopen: showing.moment.closed.length > 0,
 		};
 	});
@@ -89,16 +95,22 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 		tabsColumn: TabsColumnGateway,
 	})
 	.handle(async (_input, { send, tabsColumn, ...parts }) => {
-		const facts = await factsOf(parts, send);
+		const [facts, chatList] = await Promise.all([factsOf(parts, send), send(ChatListQuery)]);
 		const { showing, kept } = tabsNowOf(parts, facts);
+		const chatRows = [...chatList.pinned, ...chatList.recents];
 		return sidebarOf({
 			moment: showing.moment,
 			essentials: kept.essentials,
 			pages: facts.pages,
 			shownApp: shownAppOf(showing.shownView),
-			chat: facts.chat,
+			boardChats: chatRows
+				.filter((row) => facts.chatGroupIds.includes(row.id))
+				.map((row) => ({ id: row.id, title: row.title })),
 			shutLists: tabsColumn.column().shutLists,
+			view: sidebarViewOf(tabsColumn.column()),
 			inPanes: tabIdsInPanesOf(facts),
+			hasShownTabPane: facts.shownTabPaneId !== null,
+			elsewhere: [...facts.tabWindows.keys()],
 		});
 	});
 
@@ -129,6 +141,16 @@ export const RestoreTabsCommand = command("restore-tabs")
 	.inject(TAB_PARTS)
 	.handle(async (_input, { send, ...parts }) => {
 		await parts.hostTabs.tabsLoaded();
+		if (parts.hostTabs.opensBesideAnother()) {
+			console.info(
+				"[widgetarium] host tabs restore → skipped (this studio opens beside a running one; its pages live)",
+			);
+			const beside = await factsOf(parts, send);
+			const { showing } = tabsNowOf(parts, beside);
+			await settle(showing, withPanePagesEnsured(showing, beside), { parts, send });
+			return;
+		}
+
 		const heldTabIds = parts.hostTabs.tabs()?.tabs.map(({ id }) => id) ?? [];
 		await sendLogged("drop the panes of gone tabs", () => send(DropGoneTabsCommand, { heldTabIds }));
 		const facts = await factsOf(parts, send);
@@ -159,16 +181,17 @@ export const ShowTabCommand = command("show-tab")
 			return settle(showing, withEffect(showing, apart), { parts, send });
 		}
 
-		return settle(showing, withTabShown(showing, facts, tab), { parts, send });
+		return settle(showing, withTabPressed(showing, facts, tab), { parts, send });
 	});
 
 export const ShowChatTabCommand = command("show-chat-tab")
+	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.handle(async (_input, { send, ...parts }) => {
+	.handle(async ({ chatId }, { send, ...parts }) => {
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
-		return settle(showing, withChatTabShown(showing, facts), { parts, send });
+		return settle(showing, withChatTabShown(showing, facts, chatId), { parts, send });
 	});
 
 export const PlaceTabCommand = command("place-tab")
@@ -184,7 +207,7 @@ export const PlaceTabCommand = command("place-tab")
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		if (to.kind === "list" && !isKnownList(showing.moment, to.list, facts.chat.id)) {
+		if (to.kind === "list" && !isKnownList(showing.moment, to.list, facts.chatGroupIds)) {
 			return refuse(UNKNOWN_LIST.replace("{list}", to.list));
 		}
 
@@ -193,7 +216,8 @@ export const PlaceTabCommand = command("place-tab")
 		}
 
 		if (to.kind === "list") {
-			return settle(showing, withMoved(showing, placeTab(showing.moment, id, listPlaceOf(to))), { parts, send });
+			const placed = withMoved(showing, placeTab(showing.moment, id, listPlaceOf(to)));
+			return settle(showing, withHomeFollowed(showing, placed, facts), { parts, send });
 		}
 
 		if (to.kind === "own-window") {
@@ -217,7 +241,7 @@ export const MoveTabToListCommand = command("move-tab-to-list")
 			return refuse(NOT_HELD.replace("{id}", id));
 		}
 
-		if (!isKnownList(showing.moment, list, facts.chat.id)) {
+		if (!isKnownList(showing.moment, list, facts.chatGroupIds)) {
 			return refuse(UNKNOWN_LIST.replace("{list}", list));
 		}
 
@@ -226,7 +250,8 @@ export const MoveTabToListCommand = command("move-tab-to-list")
 			groupId: null,
 			before: null,
 		};
-		return settle(showing, withMoved(showing, placeTab(showing.moment, id, place)), { parts, send });
+		const placed = withMoved(showing, placeTab(showing.moment, id, place));
+		return settle(showing, withHomeFollowed(showing, placed, facts), { parts, send });
 	});
 
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
@@ -235,7 +260,17 @@ export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
 		invalidateTabReads(invalidate);
 		const facts = await factsOf(parts, send);
 		const { showing } = tabsNowOf(parts, facts);
-		await settle(showing, withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts), { parts, send });
+		const atHome = withTabsAtHome(showing, facts);
+		const settled = atHome === showing ? withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts) : atHome;
+		await settle(showing, settled, { parts, send });
+	});
+
+export const RememberPagesSubscriber = subscriber(PagesChangedEvent)
+	.inject(TAB_PARTS)
+	.handle(async (_input, { send, ...parts }) => {
+		const facts = await factsOf(parts, send);
+		const { showing } = tabsNowOf(parts, facts);
+		await settle(showing, withMoved(showing, rememberPages(showing.moment, facts.pages)), { parts, send });
 	});
 
 export const RereadTabsSubscriber = subscriber(HostTabsChangedEvent).handle((_input, { invalidate }) => {
@@ -283,6 +318,12 @@ function invalidateTabReads(invalidate: (query: { readonly request: AnyQuery }) 
 }
 
 function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {
+	const window = facts.tabWindows.get(tab.id);
+
+	if (window !== undefined) {
+		return { kind: "focus-window", window };
+	}
+
 	const pane = facts.tabPanes.find(({ tabId }) => tabId === tab.id);
 
 	if (pane !== undefined) {

@@ -3,7 +3,7 @@ import { WorkspaceChatsGateway } from "./workspace-chats.gateway.js";
 
 const NO_CHATS: KeptChats = {
 	chats: [],
-	activeId: null,
+	openOnStartId: null,
 };
 
 export class MemoryWorkspaceChatsGateway extends WorkspaceChatsGateway {
@@ -18,10 +18,10 @@ export class MemoryWorkspaceChatsGateway extends WorkspaceChatsGateway {
 		return Promise.resolve(this.held.get(workspaceId) ?? NO_CHATS);
 	}
 
-	saveActiveChatIn(workspaceId: string, chatId: string): Promise<void> {
+	saveChatToOpenIn(workspaceId: string, chatId: string): Promise<void> {
 		this.held.set(workspaceId, {
 			...(this.held.get(workspaceId) ?? NO_CHATS),
-			activeId: chatId,
+			openOnStartId: chatId,
 		});
 		return Promise.resolve();
 	}

@@ -1,10 +1,10 @@
-import { createElement as h, memo, useCallback } from "react";
+import { createElement as h, memo, useCallback, useContext } from "react";
 import type { MouseEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
 import type { ChatRowData } from "@widgetarium/workspaces";
-import { SelectChatCommand } from "@widgetarium/workspaces";
-import { useCarriesChat } from "../../lib/use-carries-chat.js";
+import { OpenChatCommand } from "@widgetarium/app-host";
+import { ChatWindowsContext, ShownChatsContext } from "../../lib/shown-chats.js";
 import type { ChatMenuAt } from "../chat-menu/chat-menu.js";
 import { ChatMark } from "./chat-mark.js";
 import { ChatTitleField } from "./chat-title-field.js";
@@ -20,24 +20,20 @@ const MORE = "More for {title}";
 const MORE_ICON_PX = 16;
 
 export const ChatRow = memo(function ChatRow({ row, isRenaming, onMenu, onRenamed }: ChatRowProps): ReactElement {
-	const selectChat = useCommand(SelectChatCommand);
-	const select = useCallback(() => void selectChat.run({ id: row.id }), [selectChat, row.id]);
-	const carry = useCarriesChat(
-		{
-			id: row.id,
-			title: row.title,
-		},
-		select,
-	);
+	const openChat = useCommand(OpenChatCommand);
+	const heldIn = useContext(ChatWindowsContext).get(row.id);
+	const isOnScreen = useContext(ShownChatsContext)?.has(row.id) === true;
+	const select = useCallback(() => void openChat.run({ chatId: row.id, paneId: null }), [openChat, row.id]);
 	const menuAt = (event: MouseEvent): void => {
 		event.preventDefault();
 		onMenu({ id: row.id, x: event.clientX, y: event.clientY });
 	};
 	return (
 		<div
-			className={`wg-ws-row${row.isActive ? " is-active" : ""}`}
+			className={`wg-ws-row${isOnScreen ? " is-active" : ""}`}
+			data-ws-shown={isOnScreen || undefined}
+			data-ws-elsewhere={heldIn === undefined ? undefined : heldIn}
 			onContextMenu={menuAt}
-			onPointerDown={carry}
 			data-ws-chat={row.id}
 			data-ws-mark={row.mark}
 		>
@@ -47,7 +43,7 @@ export const ChatRow = memo(function ChatRow({ row, isRenaming, onMenu, onRename
 				<button
 					type="button"
 					className="wg-ws-row-pick"
-					aria-current={row.isActive ? "true" : undefined}
+					aria-current={isOnScreen ? "true" : undefined}
 					onClick={select}
 				>
 					<span className="wg-ws-row-title">{row.title}</span>

@@ -18,6 +18,8 @@ import { createStudioState } from "../apps/studio/src/legacy/studio-state.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
+import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
+import { CreateChatCommand, RenameChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 
@@ -33,8 +35,26 @@ const KEPT_ESSENTIALS: KeptEssentials = {
 
 const KEPT_TABS: KeptTabs = {
 	tabs: [
-		{ id: "tab-8", app: "browser", pageId: "page-restarted-a", label: null, essentialId: null },
-		{ id: "tab-10", app: "browser", pageId: "page-restarted-b", label: null, essentialId: null },
+		{
+			id: "tab-8",
+			app: "browser",
+			pageId: "page-restarted-a",
+			label: null,
+			essentialId: null,
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
+		},
+		{
+			id: "tab-10",
+			app: "browser",
+			pageId: "page-restarted-b",
+			label: null,
+			essentialId: null,
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
+		},
 	],
 	lists: {
 		[CHAT_ID]: [
@@ -70,6 +90,10 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 				targetId: "pane-app",
 				side: "right",
 			}),
+		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
+			studioApp.send(PlacePaneCommand, { view, targetId, side }),
+		__CREATE_CHAT__: () => studioApp.send(CreateChatCommand, { title: null }),
+		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(RenameChatCommand, { id, title }),
 	});
 	return {
 		assistant,
@@ -99,7 +123,7 @@ function newChatWorkspaces(): ReturnType<typeof memoryWorkspacesParts> {
 					lastAt: 1,
 				},
 			],
-			activeId: CHAT_ID,
+			openOnStartId: CHAT_ID,
 		},
 		marks: {},
 	});
@@ -115,6 +139,7 @@ function pageOf(id: string): BrowserTab {
 		canGoBack: false,
 		canGoForward: false,
 		failure: null,
+		window: null,
 	};
 }
 

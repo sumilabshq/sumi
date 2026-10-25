@@ -362,14 +362,6 @@ const TABS_COLUMN: readonly Pair[] = [
 		built: `${RESTING_TAB} [data-tabs-words]`,
 		only: WORDS,
 	},
-	{ name: "new tab row", board: "aside > button.x-row:last-child", built: "[data-host-column-add]" },
-	{
-		name: "new tab plus",
-		board: "aside > button.x-row:last-child svg",
-		built: "[data-host-column-add] svg",
-		only: GLYPH,
-	},
-	{ name: "new tab key", board: "aside > button.x-row:last-child .x-kbd", built: "[data-host-new-tab-key]" },
 ];
 
 const APP_HEAD: readonly Pair[] = [
@@ -669,7 +661,7 @@ export const ALIGNMENTS: readonly Alignment[] = [
 	{
 		name: "tabs rows: one glyph axis, one text axis",
 		measure: ONE_EDGE(
-			"[data-tabs-list] > [data-tabs-item=tab], [data-host-column-add]",
+			"[data-tabs-list] > [data-tabs-item=tab]",
 			":scope > [data-tab-art], :scope > svg",
 			":scope > [data-tabs-words], :scope > span:not([data-tab-art])",
 		),

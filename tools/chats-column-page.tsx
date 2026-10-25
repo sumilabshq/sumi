@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.js";
 import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-column/chats-column.js";
 import { ChatCrumb } from "../apps/studio/src/features/workspaces/ui/chat-crumb/chat-crumb.js";
+import { ChatMore } from "../apps/studio/src/features/workspaces/ui/chat-more/chat-more.js";
+import { ChatRenaming } from "../apps/studio/src/features/workspaces/lib/chat-renaming.js";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.js";
 import { TooltipHost } from "../packages/shared/kit/src/index.js";
 import { reportsFailures } from "./page-harness.ts";
@@ -52,8 +54,15 @@ const PLATE_STYLE = {
 	padding: "8px",
 } as const;
 
+const renaming = new ChatRenaming();
+
 function ActivePlate(): ReturnType<typeof h> {
-	return h("main", { style: PLATE_STYLE, "data-test-plate": "" }, h(ChatCrumb));
+	return h(
+		"main",
+		{ style: PLATE_STYLE, "data-test-plate": "" },
+		h(ChatCrumb, { renaming, chatId: null }),
+		h(ChatMore, { renaming, chatId: null }),
+	);
 }
 
 const studioLayer = document.createElement("div");
@@ -81,7 +90,7 @@ createRoot(root).render(
 			h(
 				"div",
 				{ className: "sm", style: FRAME_STYLE },
-				h("div", { style: LEFT_STYLE, "data-test-left": "" }, h(ChatsColumn)),
+				h("div", { style: LEFT_STYLE, "data-test-left": "" }, h(ChatsColumn, { renaming })),
 				h(ActivePlate),
 			),
 		),

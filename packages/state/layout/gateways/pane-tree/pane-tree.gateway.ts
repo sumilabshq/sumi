@@ -1,12 +1,25 @@
 import { PaneTreeSchema } from "../../shared/schema/pane-tree.schema.js";
 import { withChatsGrouped } from "../../shared/lib/chat-groups.js";
+import type { WindowTree } from "../../shared/lib/window-trees.js";
 import type { PaneNode, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 export abstract class PaneTreeGateway {
 	abstract tree(): PaneTree;
-	abstract saveTree(tree: PaneTree, reason: string): void;
+	abstract elsewhere(): readonly WindowTree[];
+	abstract saveOwnTree(tree: PaneTree, reason: string): void;
 	abstract treeChanged(listener: () => void): () => void;
+	abstract isLoaded(): boolean;
+
+	saveTree(tree: PaneTree, reason: string): void {
+		if (!this.isLoaded()) {
+			throw new Error(NOT_READ.replace("{reason}", reason));
+		}
+
+		this.saveOwnTree(tree, reason);
+	}
 }
+
+const NOT_READ = 'the kept panes are not read yet, so "{reason}" would write over them';
 
 const MINTED_ID = /^pane-(\d+)(?:-|$)/;
 

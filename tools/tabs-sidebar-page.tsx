@@ -21,6 +21,7 @@ Reflect.set(window, "__SIDEBAR__", {
 	counted,
 	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
 	switchChat: exact.switchChat,
+	holdElsewhere: exact.holdElsewhere,
 	moment: () => exact.hostTabs.tabs(),
 	essentials: () => exact.essentials.essentials(),
 	shownView: () => state.now().view,

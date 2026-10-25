@@ -12,8 +12,9 @@ import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-se
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
+import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import { SelectChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
+import { OpenChatCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -83,15 +84,42 @@ const KEPT_ESSENTIALS: KeptEssentials = {
 
 const KEPT_TABS: KeptTabs = {
 	tabs: [
-		{ id: "tab-1", app: "canvas", pageId: null, label: null, essentialId: "essential-1" },
+		{
+			id: "tab-1",
+			app: "canvas",
+			pageId: null,
+			label: null,
+			essentialId: "essential-1",
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
+		},
 		browserTab("tab-2", "page-2"),
 		browserTab("tab-3", "page-3"),
 		browserTab("tab-4", "page-4"),
 		browserTab("tab-5", "page-5"),
-		{ id: "tab-6", app: "canvas", pageId: null, label: "Canvas · Release board", essentialId: null },
+		{
+			id: "tab-6",
+			app: "canvas",
+			pageId: null,
+			label: "Canvas · Release board",
+			essentialId: null,
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
+		},
 		browserTab("tab-7", "page-7"),
 		browserTab("tab-8", "page-8"),
-		{ id: "tab-9", app: "canvas", pageId: null, label: "Translator", essentialId: null },
+		{
+			id: "tab-9",
+			app: "canvas",
+			pageId: null,
+			label: "Translator",
+			essentialId: null,
+			lastAddress: null,
+			lastTitle: null,
+			lastFavicon: null,
+		},
 		browserTab("tab-10", "page-10"),
 		browserTab("tab-11", "page-11"),
 	],
@@ -131,6 +159,7 @@ export interface ExactStudio {
 	readonly hostTabs: MemoryHostTabsGateway;
 	readonly essentials: MemoryEssentialsGateway;
 	readonly switchChat: (id: string) => void;
+	readonly holdElsewhere: (pageId: string) => void;
 }
 
 export function exactStudio({
@@ -140,26 +169,35 @@ export function exactStudio({
 }: ExactStudioAsk = {}): ExactStudio {
 	const hostTabs = new MemoryHostTabsGateway(keptTabsIn(releaseChatId));
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
+	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
 		.modules(
 			AppHostModule.with({
 				hostTabs,
 				essentials: keptEssentials,
-				tabsColumn: new MemoryTabsColumnGateway({ fullPx: EXACT_COLUMN_PX, side: "end", shutLists: [] }),
+				tabsColumn: new MemoryTabsColumnGateway({
+					fullPx: EXACT_COLUMN_PX,
+					side: "end",
+					shutLists: [],
+					hidesEmptyLists: false,
+					hidesOwnWindowTabs: false,
+				}),
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
 			}),
-			BrowserModule.with(fakeBrowser(new BoardPagesGateway()).parts),
+			BrowserModule.with(fakeBrowser(boardPages).parts),
 			LayoutModule,
 			WorkspacesModule.with(workspaces),
 			CommandMenuModule,
 		)
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
+	void studioApp.send(ShowChatInPaneCommand, { chatId: releaseChatId, paneId: null });
 	return {
 		studioApp,
 		hostTabs,
 		essentials: keptEssentials,
-		switchChat: (id) => void studioApp.send(SelectChatCommand, { id }),
+		switchChat: (id) => void studioApp.send(OpenChatCommand, { chatId: id, paneId: null }),
+		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }
 
@@ -193,7 +231,7 @@ function boardChats(): WorkspacesParts {
 				createdAt: at + 1,
 				lastAt: at + 1,
 			})),
-			activeId: CHATS[0]?.id ?? "chat-release",
+			openOnStartId: CHATS[0]?.id ?? "chat-release",
 		},
 		marks: {},
 	});
@@ -220,8 +258,8 @@ class BoardPagesGateway extends FakeBrowserPagesGateway {
 
 	override show(): void {}
 
-	override tearOff(tabId = ""): void {
-		TEAR_OFF_ASKED.push(`tear off ${tabId}`);
+	override tearOff(tabId = "", openWith = ""): void {
+		TEAR_OFF_ASKED.push(`tear off ${tabId} as ${openWith}`);
 	}
 
 	override openInOwnWindow(tabId: string): void {
@@ -241,6 +279,10 @@ class BoardPagesGateway extends FakeBrowserPagesGateway {
 					: page,
 			),
 		);
+	}
+
+	holdElsewhere(pageId: string): void {
+		this.openInOwnWindow(pageId);
 	}
 
 	private change(next: readonly BrowserTab[]): void {
@@ -267,5 +309,8 @@ function browserTab(id: string, pageId: string): KeptTabs["tabs"][number] {
 		pageId,
 		label: null,
 		essentialId: null,
+		lastAddress: null,
+		lastTitle: null,
+		lastFavicon: null,
 	};
 }

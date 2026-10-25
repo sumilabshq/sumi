@@ -1,4 +1,4 @@
-import type { KeptColumn, TabsColumn } from "../../schema/tabs-column.schema.js";
+import type { KeptColumn, SidebarView, TabsColumn } from "../../schema/tabs-column.schema.js";
 
 const FULL_USUAL_PX = 240;
 const FULL_LEAST_PX = 200;
@@ -8,7 +8,27 @@ export const COLUMN_OPENED_ON: KeptColumn = {
 	fullPx: FULL_USUAL_PX,
 	side: "end",
 	shutLists: [],
+	hidesEmptyLists: false,
+	hidesOwnWindowTabs: false,
 };
+
+export function sidebarViewOf({ hidesEmptyLists, hidesOwnWindowTabs }: KeptColumn): SidebarView {
+	return {
+		hidesEmptyLists,
+		hidesOwnWindowTabs,
+	};
+}
+
+export function columnWithView(
+	kept: KeptColumn,
+	view: { readonly [Option in keyof SidebarView]?: SidebarView[Option] | undefined },
+): KeptColumn {
+	return {
+		...kept,
+		hidesEmptyLists: view.hidesEmptyLists ?? kept.hidesEmptyLists,
+		hidesOwnWindowTabs: view.hidesOwnWindowTabs ?? kept.hidesOwnWindowTabs,
+	};
+}
 
 export function columnOf(kept: KeptColumn): TabsColumn {
 	return {
@@ -37,5 +57,6 @@ export function columnWithListFolded(kept: KeptColumn, list: string): KeptColumn
 }
 
 export function columnSaid(kept: KeptColumn): string {
-	return `${kept.fullPx}px ${kept.side}, folded lists [${kept.shutLists.join(", ")}]`;
+	const hidden = [kept.hidesEmptyLists ? "empty lists" : "", kept.hidesOwnWindowTabs ? "own-window tabs" : ""];
+	return `${kept.fullPx}px ${kept.side}, folded lists [${kept.shutLists.join(", ")}], hiding [${hidden.filter(Boolean).join(", ")}]`;
 }

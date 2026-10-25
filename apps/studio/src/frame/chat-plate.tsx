@@ -1,14 +1,19 @@
-import { createElement as h, useState } from "react";
+import { createElement as h, useContext, useEffect, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { AssistantPanel } from "../features/assistant/ui/assistant-panel/assistant-panel.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
-import { AppProvider } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
+import { NameChatPaneCommand } from "@widgetarium/app-host";
+import { PaneTreeQuery } from "@widgetarium/layout";
+import { ChatToOpenQuery } from "@widgetarium/workspaces";
+import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { chatCardsOver } from "../assistant/chat-cards.js";
+import { ChatBody } from "./chat-body.js";
 
 export interface ChatPlateProps {
-	readonly chatApp: StartedApp;
+	readonly chatId: string | null;
+	readonly chatAppFor: (chatId: string) => StartedApp;
 	readonly assistant: AssistantPort;
 	readonly crumb: ReactNode;
 	readonly more: ReactNode;
@@ -16,15 +21,31 @@ export interface ChatPlateProps {
 
 const CHAT_LABEL = "Chat";
 
-export function ChatPlate({ chatApp, assistant, crumb, more }: ChatPlateProps): ReactElement {
+export function ChatPlate({ chatId, chatAppFor, assistant, crumb, more }: ChatPlateProps): ReactElement {
 	const [cards] = useState(() => chatCardsOver(assistant));
+	useNamesUnnamedPane(chatId);
 	return (
 		<Plate side="chat" label={CHAT_LABEL} edgeStart={null} lead={null} crumb={crumb} more={more} edgeEnd={null}>
-			<div className="wg-studio-chat">
-				<AppProvider app={chatApp}>
-					<AssistantPanel cards={cards} />
-				</AppProvider>
-			</div>
+			{chatId === null ? null : <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
 		</Plate>
 	);
+}
+
+function useNamesUnnamedPane(chatId: string | null): void {
+	const pane = useContext(PaneCloseContext);
+	const isBoardRead = useQuery(PaneTreeQuery).data.isLoaded;
+	const areChatsRead = useQuery(ChatToOpenQuery).data.isRead;
+	const nameChatPane = useCommand(NameChatPaneCommand);
+	const paneId = pane?.paneId ?? null;
+	useEffect(() => {
+		if (chatId !== null || paneId === null || !isBoardRead || !areChatsRead) {
+			return;
+		}
+
+		void nameChatPane.run({ paneId }).then((answer) => {
+			if (!answer.ok) {
+				console.error(`[widgetarium] chat pane ${paneId} got no chat: ${answer.reason}`);
+			}
+		});
+	}, [chatId, paneId, isBoardRead, areChatsRead, nameChatPane]);
 }
