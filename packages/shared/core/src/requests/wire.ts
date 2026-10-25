@@ -5,6 +5,8 @@ import type { AnyRequest } from "./request";
 
 export const WIRE_PREFIX = "/rpc";
 
+export const WIRE_CHANGES_PATH = "/rpc-changes";
+
 export const WireCallSchema = z.object({ input: z.unknown().optional(), idempotencyKey: z.string().nullable() });
 
 export type WireCall = z.infer<typeof WireCallSchema>;

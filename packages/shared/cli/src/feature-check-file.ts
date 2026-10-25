@@ -47,7 +47,7 @@ function importsOf({ module, folder, seed, names, isServer, moduleConst }: Check
 	const contract = [...(isServer ? [moduleConst] : []), ...requestNamesOf(seed)].sort();
 	const runnable = isServer ? `${moduleConst} as Runnable${moduleConst}` : moduleConst;
 	return [
-		`import { app${isServer ? ", type User" : ""} } from "${CORE_REQUESTS}";`,
+		`import { app${isServer ? ", orpcTransport, type User" : ""} } from "${CORE_REQUESTS}";`,
 		...(isServer ? [`import { Authenticate, server } from "${CORE_REQUESTS}/server";`] : []),
 		`import { ${contract.join(", ")} } from "../${folder}/index.ts";`,
 		`import { ${memoryPartsOf(module)} } from "../${folder}/${pickerPathOf(module)}";`,
@@ -99,8 +99,8 @@ function serverStartOf(moduleConst: string, fakes: readonly string[]): string[] 
 		"\t\thost: { authenticate: new CheckerAuthenticate() },",
 		"\t});",
 		"const started = app()",
-		`\t.imports(${moduleConst}.at("${SERVER_URL}"))`,
-		"\t.start({ host: { fetch: served.fetch } });",
+		`\t.imports(${moduleConst}.over(orpcTransport("${SERVER_URL}", { fetch: served.fetch })))`,
+		"\t.start();",
 	];
 }
 

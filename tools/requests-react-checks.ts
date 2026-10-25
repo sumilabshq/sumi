@@ -7,6 +7,7 @@ import {
 	OnRefused,
 	Slot,
 	app,
+	orpcTransport,
 	useCommand,
 	useOptionalQuery,
 	useQuery,
@@ -131,8 +132,7 @@ const remoteServer = server({
 });
 const mixed = app({
 	modules: [fx.pagesModuleOver(new fx.MemoryPages())],
-	server: "http://server.test",
-	host: { fetch: (request) => remoteServer.fetch(request) },
+	server: orpcTransport("http://server.test", { fetch: (request) => remoteServer.fetch(request) }),
 });
 const policies = (started: StartedApp) =>
 	started.queryClient
@@ -151,8 +151,7 @@ check("a local query gets no retries, no re-read on focus, and runs offline", po
 
 const remoteOnly = app({
 	modules: [],
-	server: "http://server.test",
-	host: { fetch: (request) => remoteServer.fetch(request) },
+	server: orpcTransport("http://server.test", { fetch: (request) => remoteServer.fetch(request) }),
 });
 const remoteHost = drawn(remoteOnly, h(Slot, { loading, error: failed }, h(PageList)));
 await waitFor(() => remoteHost.textContent === "Home");

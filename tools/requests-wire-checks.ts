@@ -12,7 +12,7 @@ import {
 } from "../packages/shared/core/src/requests/index.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { z } from "zod";
-import { remoteOver } from "../packages/shared/core/src/requests/wire-client.ts";
+import { orpcTransport } from "../packages/shared/core/src/requests/wire-client.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 
@@ -43,14 +43,13 @@ const wireCalls: string[] = [];
 function clientAs(user: string | null) {
 	return app({
 		modules: [],
-		server: SERVER,
-		host: {
+		server: orpcTransport(SERVER, {
 			fetch: (request) => {
 				wireCalls.push(new URL(request.url).pathname);
 				return served.fetch(request);
 			},
 			headers: () => (user === null ? {} : { "x-user": user }),
-		},
+		}),
 	});
 }
 
@@ -199,7 +198,7 @@ check(
 	[{ ok: true, output: "editor" }, 0],
 );
 
-const keyless = await remoteOver(SERVER, { fetch: served.fetch })({
+const keyless = await orpcTransport(SERVER, { fetch: served.fetch }).call({
 	request: fx.AddPageCommand,
 	sent: { title: "Keyless" },
 	idempotencyKey: null,
@@ -212,8 +211,7 @@ check("a server crash reaches the client as a refusal with its code", crashed.ok
 
 const unreachable = app({
 	modules: [],
-	server: SERVER,
-	host: { fetch: () => Promise.reject(new TypeError("Failed to fetch")) },
+	server: orpcTransport(SERVER, { fetch: () => Promise.reject(new TypeError("Failed to fetch")) }),
 });
 const lost = await unreachable.send(fx.PagesQuery, { prefix: "" });
 check("an unreachable server is a refusal, never a throw", lost.ok ? null : lost.code, "unreachable");

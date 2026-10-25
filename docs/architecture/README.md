@@ -57,10 +57,13 @@ flowchart LR
 	reread -->|useQuery| view
 ```
 
-**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module.at(url))` are reached over the network, by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported at its URL. The module's code does not change.
+**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module.over(transport))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change.
 
 ```ts
-app().modules(LayoutModule).imports(BillingModule.at(env.API_URL)).start({ platform, scope });
+app()
+	.modules(LayoutModule)
+	.imports(BillingModule.over(orpcTransport(env.API_URL)))
+	.start({ platform, scope });
 server().modules(BillingModule, UsersModule).start({ env: process.env });
 ```
 
@@ -76,7 +79,7 @@ flowchart LR
 		users["UsersModule · on(Server)"]
 	end
 	view -->|in process| layout
-	view -->|"BillingModule.at(url) · HTTP"| wire
+	view -->|"BillingModule.over(orpcTransport(url)) · HTTP"| wire
 	wire --> billing
 	billing -->|"send: public and server-only, in process"| users
 ```

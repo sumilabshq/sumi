@@ -15,6 +15,7 @@ import {
 	query,
 } from "../packages/shared/core/src/requests/index.ts";
 import type { ModuleFacts } from "../packages/shared/core/src/requests/index.ts";
+import { orpcTransport } from "../packages/shared/core/src/requests/index.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
@@ -174,12 +175,12 @@ export function typedOnly(): void {
 	// @ts-expect-error
 	app().imports(PaymentsContract);
 	// @ts-expect-error
-	DevicePaymentsContract.at("http://127.0.0.1:9");
+	DevicePaymentsContract.over(orpcTransport("http://127.0.0.1:9"));
 	// @ts-expect-error
 	server().modules(DeviceTallyModule);
 	// @ts-expect-error
 	app().modules(BillingModule);
-	app().imports(PaymentsContract.at("http://127.0.0.1:9"));
+	app().imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")));
 }
 
 const counter = new Counter();
@@ -341,7 +342,12 @@ check(
 
 check(
 	"the same module starts when the app imports its dependency at an address",
-	thrownBy(() => app().modules(ShopModule).imports(PaymentsContract.at("http://127.0.0.1:9")).start(ON_BROWSER)),
+	thrownBy(() =>
+		app()
+			.modules(ShopModule)
+			.imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")))
+			.start(ON_BROWSER),
+	),
 	"",
 );
 
@@ -374,8 +380,11 @@ check(
 const billingServer = server().modules(AuthModule, BillingModule).start({ env: {}, scope: SCOPE });
 const AuthContract = moduleContract("auth", Server, [SignUpContract]);
 const overWire = app()
-	.imports(AuthContract.at("http://api"), BillingContract.at("http://api"))
-	.start({ host: { fetch: billingServer.fetch } });
+	.imports(
+		AuthContract.over(orpcTransport("http://api", { fetch: billingServer.fetch })),
+		BillingContract.over(orpcTransport("http://api", { fetch: billingServer.fetch })),
+	)
+	.start();
 
 check(
 	"a server-only request runs in-process when a server module sends it",
@@ -404,8 +413,10 @@ const ForgetContract = command("notes/forget")
 	.idempotencyKey(Repeatable);
 const notesServer = server().modules(NotesModule).start({ env: {}, scope: SCOPE });
 const notesOverWire = app()
-	.imports(moduleContract("notes", Server, [ForgetContract]).at("http://notes"))
-	.start({ host: { fetch: notesServer.fetch } });
+	.imports(
+		moduleContract("notes", Server, [ForgetContract]).over(orpcTransport("http://notes", { fetch: notesServer.fetch })),
+	)
+	.start();
 const forgetAnswer = await notesOverWire.send(ForgetContract, { id: "n-1" });
 
 check(
@@ -422,10 +433,10 @@ const countingFetch = (request: Request): Promise<Response> => {
 const leaky = app()
 	.imports({
 		name: "billing",
-		url: "http://api",
+		transport: orpcTransport("http://api", { fetch: countingFetch }),
 		publicRequestNames: ["billing/invoices", "billing/create-customer"],
 	})
-	.start({ host: { fetch: countingFetch } });
+	.start();
 const askedOverWire = await leaky.send(CreateCustomerContract, { userId: "u-3" });
 check(
 	"a server-only request reaching the server over the wire answers a refusal naming it, never unreachable",
@@ -435,12 +446,12 @@ check(
 
 wireCalls.length = 0;
 const devicePayments = app()
-	.imports(BillingContract.at("http://api"))
-	.start({ host: { fetch: countingFetch } });
+	.imports(BillingContract.over(orpcTransport("http://api", { fetch: countingFetch })))
+	.start();
 const sentOverWire = await devicePayments.send(CreateCustomerContract, { userId: "u-2" });
 check(
 	"a server-only request sent from a device is refused before it crosses the network",
-	[sentOverWire.ok ? "ran" : sentOverWire.code, wireCalls],
+	[sentOverWire.ok ? "ran" : sentOverWire.code, wireCalls.filter((path) => path.startsWith("/rpc/"))],
 	["not-found", []],
 );
 
@@ -452,8 +463,8 @@ const AnywhereSignUp = module("auth")
 	.provide(() => ({}));
 const anywhereServer = server().modules(AnywhereSignUp, BillingModule).start({ env: {}, scope: SCOPE });
 const anywhereSignedUp = await app()
-	.imports(AuthContract.at("http://api"))
-	.start({ host: { fetch: anywhereServer.fetch } })
+	.imports(AuthContract.over(orpcTransport("http://api", { fetch: anywhereServer.fetch })))
+	.start()
 	.send(SignUpContract, { userId: "u-4" });
 check(
 	"a module not on the server sending a server-only request is refused at the send",
@@ -463,11 +474,11 @@ check(
 
 const remoteBillingServer = server()
 	.modules(AuthModule)
-	.imports(BillingContract.at("http://billing"))
+	.imports(BillingContract.over(orpcTransport("http://billing")))
 	.start({ env: {}, scope: SCOPE });
 const remoteSignedUp = await app()
-	.imports(AuthContract.at("http://api"))
-	.start({ host: { fetch: remoteBillingServer.fetch } })
+	.imports(AuthContract.over(orpcTransport("http://api", { fetch: remoteBillingServer.fetch })))
+	.start()
 	.send(SignUpContract, { userId: "u-5" });
 check(
 	"a server sending a server-only request to a module it imports from an address is refused at the send",
@@ -482,7 +493,7 @@ const DeviceSignUp = module("auth")
 	.provide(() => ({}));
 const deviceSignedUp = await app()
 	.modules(DeviceSignUp)
-	.imports(BillingContract.at("http://billing"))
+	.imports(BillingContract.over(orpcTransport("http://billing")))
 	.start(ON_BROWSER)
 	.send(SignUpContract, { userId: "u-6" });
 check(
@@ -507,21 +518,25 @@ const ReportsModule = module("reports")
 let headerAtBilling: string | null = null;
 const reportsServer = server()
 	.modules(ReportsModule)
-	.imports(BillingContract.at("http://billing"))
-	.start({
-		env: {},
-		scope: SCOPE,
-		host: {
-			fetch: (request) => {
-				headerAtBilling = request.headers.get("x-caller");
-				return billingServer.fetch(request);
-			},
-			headers: () => ({ "x-caller": "reports" }),
-		},
-	});
+	.imports(
+		BillingContract.over(
+			orpcTransport("http://billing", {
+				fetch: (request) => {
+					headerAtBilling = request.headers.get("x-caller");
+					return billingServer.fetch(request);
+				},
+				headers: () => ({ "x-caller": "reports" }),
+			}),
+		),
+	)
+	.start({ env: {}, scope: SCOPE });
 const reports = app()
-	.imports(moduleContract("reports", Server, [ReportContract]).at("http://reports"))
-	.start({ host: { fetch: reportsServer.fetch } });
+	.imports(
+		moduleContract("reports", Server, [ReportContract]).over(
+			orpcTransport("http://reports", { fetch: reportsServer.fetch }),
+		),
+	)
+	.start();
 check(
 	"a server reaches a module it imports through the fetch and headers its host gives",
 	[await reports.send(ReportContract), headerAtBilling],
@@ -531,25 +546,30 @@ check(
 check(
 	"a module both run and imported from an address is refused by name when app() starts",
 	thrownBy(() =>
-		app().modules(PaymentsModule).imports(PaymentsContract.at("http://127.0.0.1:9")).start(ON_BROWSER),
+		app()
+			.modules(PaymentsModule)
+			.imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")))
+			.start(ON_BROWSER),
 	).split("\n")[1],
 	'module "payments" is both run in .modules() and imported from an address in .imports(): keep exactly one',
 );
 
 check(
 	"a module imported twice is refused by name when app() starts",
-	thrownBy(() => app().imports(BillingContract.at("http://one"), BillingContract.at("http://two")).start()).split(
-		"\n",
-	)[1],
+	thrownBy(() =>
+		app()
+			.imports(BillingContract.over(orpcTransport("http://one")), BillingContract.over(orpcTransport("http://two")))
+			.start(),
+	).split("\n")[1],
 	'module "billing" is imported 2 times in .imports(): import it once',
 );
 
 check(
-	"an address that is not a URL is refused by module name in .at()",
-	[thrownBy(() => BillingContract.at("")), thrownBy(() => BillingContract.at("/api"))],
+	"an oRPC transport refuses an address that is not a URL",
+	[thrownBy(() => orpcTransport("")), thrownBy(() => orpcTransport("/api"))],
 	[
-		'module "billing" is imported at "", which is not an absolute URL: pass one such as https://api.example.com',
-		'module "billing" is imported at "/api", which is not an absolute URL: pass one such as https://api.example.com',
+		'the oRPC transport needs an absolute URL such as https://api.example.com, not ""',
+		'the oRPC transport needs an absolute URL such as https://api.example.com, not "/api"',
 	],
 );
 
@@ -617,16 +637,22 @@ const AuditModule = module("audit")
 	.provide(() => ({}));
 const vaultServer = server().modules(VaultModule, AuditModule).start({ env: {}, scope: SCOPE });
 const auditOverWire = app()
-	.imports(moduleContract("audit", Server, [PeekContract]).at("http://api"))
-	.start({ host: { fetch: vaultServer.fetch } });
+	.imports(
+		moduleContract("audit", Server, [PeekContract]).over(orpcTransport("http://api", { fetch: vaultServer.fetch })),
+	)
+	.start();
 check(
 	"a server module sends an anywhere module's server-only request in the same server",
 	await auditOverWire.send(PeekContract),
 	{ ok: true, output: "s3cret" },
 );
 const secretOverWire = await app()
-	.imports({ name: "vault", url: "http://api", publicRequestNames: ["vault/read", "vault/secret"] })
-	.start({ host: { fetch: vaultServer.fetch } })
+	.imports({
+		name: "vault",
+		transport: orpcTransport("http://api", { fetch: vaultServer.fetch }),
+		publicRequestNames: ["vault/read", "vault/secret"],
+	})
+	.start()
 	.send(SecretContract);
 check(
 	"an anywhere module's server-only request is refused over the wire",

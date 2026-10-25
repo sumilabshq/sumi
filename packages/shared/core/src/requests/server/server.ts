@@ -1,8 +1,9 @@
 import { os } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
+import { streamSSE } from "hono/streaming";
 import { refusalOf } from "../answer";
-import type { Refusal } from "../answer";
+import type { Answer, Refusal } from "../answer";
 import { MemoryDoneKeys } from "../done-keys";
 import type { DoneKeys } from "../done-keys";
 import { hostProvidedOf } from "../app";
@@ -34,7 +35,9 @@ import type { FailureReport } from "../report-failure";
 import type { AnyRequest } from "../request";
 import { routesOf } from "../startup";
 import type { StartedRoutes } from "../startup";
-import { WIRE_PREFIX, WireCallSchema, wirePathOf } from "../wire";
+import { ChangeBroadcast } from "../transport";
+import type { ListeningTransport, ServedCall, ServingServer } from "../transport";
+import { WIRE_CHANGES_PATH, WIRE_PREFIX, WireCallSchema, wirePathOf } from "../wire";
 import type { WireHost } from "../wire-client";
 import type { Authenticate } from "./authenticate";
 
@@ -70,8 +73,9 @@ type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extend
 export type ServerSideModule =
 	PlatformModule<Provided, ServerRuns, NothingProvided> | HandledModule<ServerParts> | ReadyModule;
 
-interface StartedServer {
+export interface StartedServer extends ServingServer {
 	readonly fetch: (request: Request) => Promise<Response>;
+	stop(): void;
 }
 
 interface WireContext {
@@ -81,26 +85,41 @@ interface WireContext {
 const NOT_A_CALL = "the body is not a widgetarium call";
 const NOT_HERE = "{name} runs on no module of this server";
 
+interface ServerPlan {
+	readonly ranModules: readonly ServerSideModule[];
+	readonly remoteModules: readonly RemoteModule[];
+	readonly listeners: readonly ListeningTransport[];
+}
+
 export class ServerBuilder<N extends Provided = NothingProvided> {
-	constructor(
-		private readonly ranModules: readonly ServerSideModule[],
-		private readonly remoteModules: readonly RemoteModule[],
-	) {}
+	constructor(private readonly plan: ServerPlan) {}
 
 	modules<const M extends readonly ServerSideModule[]>(
 		...modules: M
 	): ServerBuilder<N & Unboxed<IntersectionOf<ServerHostNeedsOf<M[number]>>>> {
-		return new ServerBuilder([...this.ranModules, ...modules], this.remoteModules);
+		return new ServerBuilder({ ...this.plan, ranModules: [...this.plan.ranModules, ...modules] });
 	}
 
 	imports(...modules: readonly RemoteModule[]): ServerBuilder<N> {
-		return new ServerBuilder(this.ranModules, [...this.remoteModules, ...modules]);
+		return new ServerBuilder({ ...this.plan, remoteModules: [...this.plan.remoteModules, ...modules] });
+	}
+
+	listen(transport: ListeningTransport): ServerBuilder<N> {
+		return new ServerBuilder({ ...this.plan, listeners: [...this.plan.listeners, transport] });
 	}
 
 	start({ env, scope, host = {} }: ServerLentBy<N>): StartedServer {
 		// TODO: service tokens for server-to-server identity
-		const remote = new RemoteModules(this.remoteModules, host, notHere);
-		return startServer({ modules: this.ranModules, env, ...(scope === undefined ? {} : { scope }), host }, remote);
+		const remote = new RemoteModules(this.plan.remoteModules, notHere);
+		const started = startServer(
+			{ modules: this.plan.ranModules, env, ...(scope === undefined ? {} : { scope }), host },
+			remote,
+		);
+		const stops = this.plan.listeners.map((listener) => listener.serve(started));
+		return {
+			...started,
+			stop: () => stops.forEach((stop) => stop()),
+		};
 	}
 }
 
@@ -108,7 +127,7 @@ export function server(): ServerBuilder;
 export function server(start: ServerStart): StartedServer;
 export function server(start?: ServerStart): ServerBuilder | StartedServer {
 	if (start === undefined) {
-		return new ServerBuilder([], []);
+		return new ServerBuilder({ ranModules: [], remoteModules: [], listeners: [] });
 	}
 
 	return startServer(start, null);
@@ -127,6 +146,7 @@ function startServer({ modules, env, scope, host = {} }: ServerStart, remote: Mo
 	const reportFailure = host.reportFailure ?? reportToConsole;
 	const bus = new EventBus(reportFailure);
 	const mediator = serverMediatorOf({ started, host, remote, bus });
+	const changed = new ChangeBroadcast();
 	const startedModules = started.modules.map(({ module, provided }) => ({ definition: module.definition, provided }));
 	startModuleEvents({
 		modules: startedModules,
@@ -135,16 +155,63 @@ function startServer({ modules, env, scope, host = {} }: ServerStart, remote: Mo
 		bus,
 		sender: mediator,
 		reportFailure,
-		applyInvalidations: invalidatedWithNoPush,
+		applyInvalidations: (invalidated) => changed.tell(invalidated),
 	});
-	const handler = new RPCHandler<WireContext>(routerOf(started.routes, mediator));
+	const answer = answering(started.routes, mediator, changed);
+	const hono = honoOf({ routes: started.routes, mediator, changed });
+	return {
+		fetch: (request) => Promise.resolve(hono.fetch(request)),
+		answer,
+		changes: (hear) => changed.hear(hear),
+		stop: () => undefined,
+	};
+}
+
+interface Serving {
+	readonly routes: ReadonlyMap<string, Route>;
+	readonly mediator: Mediator;
+	readonly changed: ChangeBroadcast;
+}
+
+function honoOf({ routes, mediator, changed }: Serving): Hono {
+	const handler = new RPCHandler<WireContext>(routerOf(routes, mediator, changed));
 	const hono = new Hono();
+	hono.get(WIRE_CHANGES_PATH, (context) =>
+		streamSSE(context, async (stream) => {
+			const stopHearing = changed.hear((invalidated) => void stream.writeSSE({ data: JSON.stringify(invalidated) }));
+			await new Promise<void>((closed) => stream.onAbort(closed));
+			stopHearing();
+		}),
+	);
 	hono.all(`${WIRE_PREFIX}/*`, async (context) => {
 		const { headers } = context.req.raw;
 		const handled = await handler.handle(context.req.raw, { prefix: WIRE_PREFIX, context: { headers } });
 		return handled.matched ? handled.response : context.notFound();
 	});
-	return { fetch: (request) => Promise.resolve(hono.fetch(request)) };
+	return hono;
+}
+
+function answering(
+	routes: ReadonlyMap<string, Route>,
+	mediator: Mediator,
+	changed: ChangeBroadcast,
+): (call: ServedCall) => Promise<Answer<unknown>> {
+	return async ({ name, input, idempotencyKey, signal }) => {
+		const route = routes.get(name);
+
+		if (route === undefined) {
+			return refusalOf("not-found", NOT_HERE.replace("{name}", name));
+		}
+
+		if (route.isServerOnly) {
+			return notOverNetwork(route.handler.request);
+		}
+
+		const sending = { signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
+		const answered = await mediator.send(route.handler.request, input, sending);
+		changed.tell(answered.ok ? answered.invalidated : undefined);
+		return answered;
+	};
 }
 
 interface ServerWiring {
@@ -175,13 +242,14 @@ type WireProcedure = ReturnType<typeof wireProcedureOf>;
 function routerOf(
 	routes: ReadonlyMap<string, Route>,
 	mediator: Mediator,
+	changed: ChangeBroadcast,
 ): Record<string, Record<string, WireProcedure>> {
 	const router: Record<string, Record<string, WireProcedure>> = {};
 	for (const { handler, isServerOnly } of routes.values()) {
 		const [module = "", name = ""] = wirePathOf(handler.request);
 		const procedure = isServerOnly
 			? notOverNetworkProcedureOf(handler.request)
-			: wireProcedureOf(handler.request, mediator);
+			: wireProcedureOf(handler.request, mediator, changed);
 		router[module] = { ...router[module], [name]: procedure };
 	}
 	return router;
@@ -191,17 +259,14 @@ function notOverNetworkProcedureOf(request: AnyRequest): WireProcedure {
 	return os.$context<WireContext>().handler(() => notOverNetwork(request));
 }
 
-function wireProcedureOf(request: AnyRequest, mediator: Mediator) {
+function wireProcedureOf(request: AnyRequest, mediator: Mediator, changed: ChangeBroadcast) {
 	return os.$context<WireContext>().handler(async ({ input, context, signal }) => {
 		const call = WireCallSchema.safeParse(input);
 		if (!call.success) return refusalOf("invalid-input", NOT_A_CALL);
 		const { idempotencyKey } = call.data;
 		const sending = { headers: context.headers, signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
-		return mediator.send(request, call.data.input, sending);
+		const answered = await mediator.send(request, call.data.input, sending);
+		changed.tell(answered.ok ? answered.invalidated : undefined);
+		return answered;
 	});
-}
-
-// TODO: carry invalidations no client's call caused to clients through a push channel (SSE or WebSocket)
-function invalidatedWithNoPush(): void {
-	return undefined;
 }

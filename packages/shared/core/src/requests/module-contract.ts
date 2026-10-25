@@ -1,15 +1,13 @@
 import type { Runs } from "./module";
 import type { OnServer, Placement } from "./placement";
 import type { AnyRequest } from "./request";
+import type { RemoteTransport } from "./transport";
 
 export interface RemoteModule {
 	readonly name: string;
-	readonly url: string;
+	readonly transport: RemoteTransport;
 	readonly publicRequestNames: readonly string[];
 }
-
-const NOT_A_URL =
-	'module "{module}" is imported at "{url}", which is not an absolute URL: pass one such as https://api.example.com';
 
 export class ModuleContract<R extends Runs = Runs> {
 	constructor(
@@ -18,11 +16,10 @@ export class ModuleContract<R extends Runs = Runs> {
 		readonly requests: readonly AnyRequest[],
 	) {}
 
-	at(this: ModuleContract<OnServer>, url: string): RemoteModule {
-		refuseNotUrl(this.name, url);
+	over(this: ModuleContract<OnServer>, transport: RemoteTransport): RemoteModule {
 		return {
 			name: this.name,
-			url,
+			transport,
 			publicRequestNames: this.requests.map(({ name }) => name),
 		};
 	}
@@ -34,12 +31,4 @@ export function moduleContract<R extends Runs>(
 	requests: readonly AnyRequest[],
 ): ModuleContract<R> {
 	return new ModuleContract(name, placement.runs, requests);
-}
-
-function refuseNotUrl(module: string, url: string): void {
-	if (URL.canParse(url)) {
-		return;
-	}
-
-	throw new Error(NOT_A_URL.replace("{module}", module).replace("{url}", url));
 }

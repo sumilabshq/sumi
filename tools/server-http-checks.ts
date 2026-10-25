@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import path from "node:path";
-import { app } from "../packages/shared/core/src/requests/index.ts";
+import { app, orpcTransport } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { check } from "./check-helpers.ts";
@@ -46,7 +46,9 @@ async function allowedOriginFor(url: string, origin: string): Promise<string | n
 }
 
 async function checkRequests(url: string): Promise<void> {
-	const client = app().imports(FixtureBillingModule.at(url)).start();
+	const client = app()
+		.imports(FixtureBillingModule.over(orpcTransport(url)))
+		.start();
 	const opened = await client.send(BalanceQuery);
 	check("a query travels over real HTTP and answers", opened, {
 		ok: true,

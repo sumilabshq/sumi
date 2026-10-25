@@ -12,7 +12,7 @@ export { gatewayEvent, tauriEvent, windowEvent } from "./event-source";
 export type { EventSource, Fire, SourceContext } from "./event-source";
 export { AppProvider } from "./app-provider";
 export type { AppProviderProps } from "./app-provider";
-export { REFUSAL_CODES, reasonOf } from "./answer";
+export { REFUSAL_CODES, reasonOf, refusalOf } from "./answer";
 export type { Answer, Refusal, RefusalCode } from "./answer";
 export { DoneKeys, MemoryDoneKeys } from "./done-keys";
 export type { Claim } from "./done-keys";
@@ -48,6 +48,13 @@ export {
 	serverModule,
 } from "./module";
 export { ModuleContract, moduleContract } from "./module-contract";
+export { ChangeBroadcast } from "./transport";
+export type { HearChanges, ListeningTransport, RemoteTransport, ServedCall, ServingServer } from "./transport";
+export { LocalTransport, localTransport } from "./local-transport";
+export { orpcTransport } from "./wire-client";
+export { wireAnswerOf } from "./wire";
+export { InvalidationSchema } from "./invalidation";
+export type { WireHost } from "./wire-client";
 export type { RemoteModule } from "./module-contract";
 export { Anywhere, Device, Server } from "./placement";
 export type { DeviceRuns, OnServer, Placement, ServerRuns } from "./placement";

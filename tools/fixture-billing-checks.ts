@@ -1,4 +1,4 @@
-import { app } from "../packages/shared/core/src/requests/index.ts";
+import { app, orpcTransport } from "../packages/shared/core/src/requests/index.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { FixtureBillingModule as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
@@ -10,8 +10,8 @@ const SERVER_URL = "http://fixture-billing.test";
 const ledger = new MemoryLedgerGateway("USD");
 const served = server().modules(RunnableFixtureBillingModule.with({ ledger })).start({ env: {} });
 const client = app()
-	.imports(FixtureBillingModule.at(SERVER_URL))
-	.start({ host: { fetch: served.fetch } });
+	.imports(FixtureBillingModule.over(orpcTransport(SERVER_URL, { fetch: served.fetch })))
+	.start();
 
 const first = await client.send(ChargeCommand, { amount: 10 });
 const second = await client.send(ChargeCommand, { amount: 15 });

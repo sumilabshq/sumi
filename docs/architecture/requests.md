@@ -63,7 +63,7 @@ A command or a subscriber calls `invalidate(Query, input?)` for each query its w
 
 - Invalidations are collected during the call and applied only after a successful answer; a refused, thrown or failed call applies none. A subscriber's apply after it returns without throwing.
 - No default: a command that invalidates nothing re-reads nothing. A query has no `invalidate`.
-- Over the network the names ride in the answer body (`invalidated: [...]`) and the client engine re-reads them. A change on the server that no call of this client caused (another user, a cron, a webhook) needs a push channel (SSE or WebSocket) carrying `invalidated: [...]` and, later, events: **planned**.
+- Over the network the names ride in the answer body (`invalidated: [...]`) and the client engine re-reads them. A change on the server that no call of this client caused (another user, a cron, a webhook) reaches every other client through its transport's `changes`: the server tells each listener and the SSE stream every invalidation, its own calls' and its subscribers' alike. Events over the wire are still **planned**.
 - A command sending another command adds what that one invalidated to its own answer.
 
 ## Events and subscribers
@@ -229,21 +229,23 @@ Every answer is `{ ok: true, output }` or `{ ok: false, code, reason, ran }`.
 
 ## Starting: `app()` and `server()`
 
-An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached at an address.
+An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached through a transport.
 
 ```ts skip-check
 const layoutApp = app()
 	.modules(LayoutModule)
-	.imports(BillingModule.at(env.API_URL))
+	.imports(BillingModule.over(orpcTransport(env.API_URL)))
 	.start({ platform: "tauri", scope: { workspaceId } });
 
 const served = server().modules(BillingModule, UsersModule).start({ env: process.env, host: { authenticate } });
 ```
 
 - `.modules(...)` take the runnable module from `<package>/module`: an app takes `Device` and `Anywhere` modules, a server `Server` and `Anywhere` ones (a type error otherwise, and refused at start).
-- `.imports(...)` take only `Server` modules, by the descriptor in their `"."` entry, at an address: `.at(url)` is required and exists only on a `Server` module. No server code reaches the bundle.
+- `.imports(...)` take only `Server` modules, by the descriptor in their `"."` entry, over a transport: `.over(transport)` exists only on a `Server` module. No server code reaches the bundle.
+- **A transport is a port.** `RemoteTransport` (`transport.ts`) carries a call there and its answer back (`call`), and the changes the server reports that this client did not cause (`changes`). The framework ships `orpcTransport(url, { fetch?, headers? })` (HTTP; changes over the SSE stream at `/rpc-changes`) and `localTransport()` (same process). An app writes its own for anything else (the studio's IPC to its core window), with no change to the framework.
+- **A server listens on transports.** `server().modules(...).listen(transport)` hands every module of that server to the transport's `serve`; several `.listen` calls serve the same modules over several transports. Modules that need different transports are different servers. HTTP is served by the server's own `fetch`, whatever is listened on.
 - Every module's `.imports` must be met by the app's `.modules` or `.imports`; start refuses naming the missing module.
-- `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch }`.
+- `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch, answer, changes, stop }`.
 - **One app per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `AppProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
 - A server is a Hono app mounting `/rpc`. Over the network it answers only `.public` requests: a server-only one answers `404`, while an in-process `send` from another server module reaches it. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
 - A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step injecting what the module does not provide, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.

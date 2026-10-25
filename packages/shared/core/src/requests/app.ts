@@ -24,6 +24,7 @@ import type { AnyRequest, InputArgs, OutputOf } from "./request";
 import { RouteQueries } from "./route-queries";
 import { routesOf } from "./startup";
 import type { StartedRoutes } from "./startup";
+import type { RemoteTransport } from "./transport";
 import type { WireHost } from "./wire-client";
 
 export interface AppHost extends WireHost {
@@ -38,7 +39,7 @@ export interface AppStart {
 	readonly platform?: Platform;
 	readonly scope?: ModuleScope;
 	readonly env?: ServerParts["env"];
-	readonly server?: string | undefined;
+	readonly server?: RemoteTransport | undefined;
 	readonly host?: AppHost & HostObjects;
 }
 
@@ -89,7 +90,7 @@ export class AppBuilder<N extends Provided = NothingProvided> {
 
 	start(...[options = {}]: LentBy<N>): StartedApp {
 		const host = options.host ?? {};
-		const remote = new RemoteModules(this.remoteModules, host, noServer);
+		const remote = new RemoteModules(this.remoteModules, noServer);
 		return startApp({ ...options, modules: this.ranModules, host }, remote);
 	}
 }
@@ -101,8 +102,8 @@ export function app(start?: AppStart): AppBuilder | StartedApp {
 		return new AppBuilder([], []);
 	}
 
-	const { server, host = {} } = start;
-	return startApp(start, server === undefined ? null : new SingleServer(server, host));
+	const { server } = start;
+	return startApp(start, server === undefined ? null : new SingleServer(server));
 }
 
 export function hostProvidedOf(host: HostObjects): Provided {
@@ -136,17 +137,20 @@ function startApp(start: AppStart, remote: ModuleReach | null): StartedApp {
 		local.routeOf(request)?.handler.module instanceof RequestsModule || remote?.forwards(request) === true;
 	const clientApp = new ClientApp({ mediator, routes, reportFailure, queryClient, invalidations, isModuleRequest });
 	const modules = startedRoutes.modules.map(({ module, provided }) => ({ definition: module.definition, provided }));
-	clientApp.stopsWith(
-		startModuleEvents({
-			modules,
-			listened: listenedEventNames(modules),
-			platform: start.platform ?? null,
-			bus,
-			sender: mediator,
-			reportFailure,
-			applyInvalidations: (invalidated) => invalidations.apply(invalidated),
-		}),
-	);
+	const stopHearing = remote?.changes((invalidated) => invalidations.apply(invalidated)) ?? (() => undefined);
+	const stopEvents = startModuleEvents({
+		modules,
+		listened: listenedEventNames(modules),
+		platform: start.platform ?? null,
+		bus,
+		sender: mediator,
+		reportFailure,
+		applyInvalidations: (invalidated) => invalidations.apply(invalidated),
+	});
+	clientApp.stopsWith(() => {
+		stopHearing();
+		stopEvents();
+	});
 	return clientApp;
 }
 
