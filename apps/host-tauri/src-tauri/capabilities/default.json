@@ -1,13 +1,14 @@
 {
 	"$schema": "../gen/schemas/desktop-schema.json",
 	"identifier": "default",
-	"webviews": ["main"],
+	"webviews": ["main", "studio-*"],
 	"permissions": [
 		"core:default",
 		"core:window:allow-start-dragging",
 		"core:window:allow-toggle-maximize",
 		"core:window:allow-is-fullscreen",
 		"core:window:allow-destroy",
+		"core:window:allow-close",
 		"assistant:default",
 		"browser:default",
 		"studio-log:default",

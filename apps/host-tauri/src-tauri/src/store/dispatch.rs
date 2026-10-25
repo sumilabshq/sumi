@@ -2,16 +2,18 @@ use super::place;
 use super::refusal::Refusal;
 use super::workspaces::{self, WORKSPACES_FILE, WORKSPACE_FILE};
 use super::{RootKind, Store};
-use crate::studio_caller::refuse_foreign_caller;
+use crate::studio_caller::{is_studio_label, refuse_foreign_caller};
 use serde_json::{json, Value};
 use tauri::ipc::{Invoke, InvokeBody, InvokeError, InvokeResolver};
-use tauri::{AppHandle, Manager, Runtime};
+use tauri::{AppHandle, Emitter, EventTarget, Manager, Runtime};
 use tauri_plugin_dialog::DialogExt;
 
 const DOC_EXTENSION: &str = ".json";
 const LINES_EXTENSION: &str = ".jsonl";
 const MISSING_ARGUMENT: &str = "the call is missing its {name} argument";
 const NO_STORE: &str = "the store has not started";
+
+pub const STORE_CHANGED: &str = "store-changed";
 
 type Answer = Result<Value, Refusal>;
 
@@ -45,6 +47,7 @@ pub fn handle<R: Runtime>(invoke: Invoke<R>) -> bool {
         return true;
     }
 
+    let by = message.webview().label().to_owned();
     let app = message.webview().app_handle().clone();
     let args = match message.payload() {
         InvokeBody::Json(args) => args.clone(),
@@ -64,7 +67,10 @@ pub fn handle<R: Runtime>(invoke: Invoke<R>) -> bool {
         return true;
     };
     match answer_of(&store, &call) {
-        Some(answer) => resolver.respond(as_reply(answer)),
+        Some(answer) => {
+            announce_change(&app, change_of(&call, &answer, &by));
+            resolver.respond(as_reply(answer));
+        }
         None => return false,
     }
     true
@@ -85,6 +91,41 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
         _ => return None,
     };
     Some(answer)
+}
+
+pub fn change_of(call: &Call, answer: &Answer, by: &str) -> Option<Value> {
+    if !matches!(call.command.as_str(), "replace" | "append") {
+        return None;
+    }
+
+    let Ok(answered) = answer else {
+        return None;
+    };
+    Some(json!({
+        "root": call.args.get("root")?,
+        "file": call.args.get("path")?,
+        "rev": answered.get("rev").cloned().unwrap_or(Value::Null),
+        "by": by,
+    }))
+}
+
+fn announce_change<R: Runtime>(app: &AppHandle<R>, change: Option<Value>) {
+    let Some(change) = change else {
+        return;
+    };
+    if let Err(failure) = app.emit_filter(STORE_CHANGED, &change, is_studio_target) {
+        eprintln!("[ink-store] {change} written → unannounced ({failure})");
+    }
+}
+
+pub fn is_studio_target(target: &EventTarget) -> bool {
+    match target {
+        EventTarget::Window { label }
+        | EventTarget::Webview { label }
+        | EventTarget::WebviewWindow { label }
+        | EventTarget::AnyLabel { label } => is_studio_label(label),
+        _ => false,
+    }
 }
 
 fn read(store: &Store, call: &Call) -> Answer {

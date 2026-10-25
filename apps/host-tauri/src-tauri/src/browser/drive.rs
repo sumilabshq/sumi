@@ -27,7 +27,10 @@ fn shot_path(name: &str) -> Result<PathBuf, String> {
 fn window_png(app: &AppHandle<Wry>) -> Result<Vec<u8>, String> {
     let window = app.get_window(super::dispatch::STUDIO_WEBVIEW).ok_or(NO_PICTURE)?;
     let pointer = window.ns_window().map_err(|failure| failure.to_string())? as *const NSWindow;
-    let number = unsafe { &*pointer }.windowNumber() as u32;
+    png_of_window(unsafe { &*pointer }.windowNumber() as u32)
+}
+
+pub fn png_of_window(number: u32) -> Result<Vec<u8>, String> {
     // TRADE-OFF: CGWindowListCreateImage is deprecated for ScreenCaptureKit, which needs the screen-recording grant this test drive does not have
     let image = unsafe {
         CGWindowListCreateImage(

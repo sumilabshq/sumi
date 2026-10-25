@@ -1,11 +1,11 @@
 use block2::RcBlock;
 use objc2::rc::Retained;
 use objc2::runtime::{AnyObject, Bool};
-use objc2::{msg_send, MainThreadMarker};
+use objc2::{class, msg_send, AllocAnyThread, MainThreadMarker};
 use objc2_app_kit::{NSBitmapImageFileType, NSBitmapImageRep, NSImage};
 use objc2_core_foundation::{CGFloat, CGPoint, CGRect, CGSize};
-use objc2_foundation::{NSDictionary, NSError, NSString};
-use objc2_web_kit::{WKContentWorld, WKFrameInfo, WKSnapshotConfiguration, WKWebView};
+use objc2_foundation::{NSBundle, NSData, NSDictionary, NSError, NSString};
+use objc2_web_kit::{WKContentWorld, WKFrameInfo, WKPDFConfiguration, WKSnapshotConfiguration, WKWebView};
 use serde_json::{json, Value};
 
 pub const INK_WORLD: &str = "widgetarium-ink";
@@ -26,6 +26,15 @@ pub enum ShotFormat {
 }
 
 pub type Answer<T> = Result<T, String>;
+
+const SAFARI_BUNDLE: &str = "/Applications/Safari.app";
+const SHORT_VERSION_KEY: &str = "CFBundleShortVersionString";
+
+pub fn safari_version() -> Option<String> {
+    let bundle = NSBundle::bundleWithPath(&NSString::from_str(SAFARI_BUNDLE))?;
+    let version = bundle.objectForInfoDictionaryKey(&NSString::from_str(SHORT_VERSION_KEY))?;
+    version.downcast::<NSString>().ok().map(|text| text.to_string())
+}
 
 pub fn view_of(platform: &tauri::webview::PlatformWebview) -> &WKWebView {
     unsafe { &*(platform.inner() as *const WKWebView) }
@@ -58,15 +67,29 @@ pub fn reload(view: &WKWebView) {
     let _ = unsafe { view.reload() };
 }
 
-const MIN_Y_CORNERS: usize = 1 | 2;
-const MAX_Y_CORNERS: usize = 4 | 8;
+const LEFT_SIDE: u8 = 1;
+const RIGHT_SIDE: u8 = 2;
+const MIN_X_MIN_Y: usize = 1;
+const MAX_X_MIN_Y: usize = 2;
+const MIN_X_MAX_Y: usize = 4;
+const MAX_X_MAX_Y: usize = 8;
 
-pub fn round_bottom_corners(view: &WKWebView, radius: f64) {
+const DARK_APPEARANCE: &str = "NSAppearanceNameDarkAqua";
+const LIGHT_APPEARANCE: &str = "NSAppearanceNameAqua";
+
+pub fn wear_appearance(view: &WKWebView, is_dark: bool) {
+    let name = NSString::from_str(if is_dark { DARK_APPEARANCE } else { LIGHT_APPEARANCE });
+    let appearance: *mut AnyObject = unsafe { msg_send![class!(NSAppearance), appearanceNamed: &*name] };
+    let _: () = unsafe { msg_send![view, setAppearance: appearance] };
+}
+
+pub fn round_bottom_corners(view: &WKWebView, radius: f64, sides: u8) {
     let _: () = unsafe { msg_send![view, setWantsLayer: Bool::YES] };
     let layer: *mut AnyObject = unsafe { msg_send![view, layer] };
     let Some(layer) = (unsafe { layer.as_ref() }) else { return };
     let is_flipped: Bool = unsafe { msg_send![layer, isGeometryFlipped] };
-    let bottom = if is_flipped.as_bool() { MAX_Y_CORNERS } else { MIN_Y_CORNERS };
+    let (left, right) = if is_flipped.as_bool() { (MIN_X_MAX_Y, MAX_X_MAX_Y) } else { (MIN_X_MIN_Y, MAX_X_MIN_Y) };
+    let bottom = (if sides & LEFT_SIDE != 0 { left } else { 0 }) | (if sides & RIGHT_SIDE != 0 { right } else { 0 });
     let _: () = unsafe { msg_send![layer, setCornerRadius: radius as CGFloat] };
     let _: () = unsafe { msg_send![layer, setMaskedCorners: bottom] };
     let _: () = unsafe { msg_send![layer, setMasksToBounds: Bool::YES] };
@@ -112,6 +135,27 @@ pub fn snapshot(
     });
     unsafe { view.takeSnapshotWithConfiguration_completionHandler(Some(&configuration), &answered) };
     Ok(())
+}
+
+pub fn page_shot(view: &WKWebView, region: Option<ShotRegion>, done: impl Fn(Answer<Vec<u8>>) + 'static) -> Answer<()> {
+    let configuration = unsafe { WKPDFConfiguration::new(main_thread()?) };
+
+    if let Some(region) = region {
+        let rect = CGRect::new(CGPoint::new(region.x, region.y), CGSize::new(region.width, region.height));
+        unsafe { configuration.setRect(rect) };
+    }
+
+    let answered = RcBlock::new(move |pdf: *mut NSData, error: *mut NSError| {
+        let drawn = unsafe { pdf.as_ref() }.ok_or_else(|| failure_text(error, NO_SNAPSHOT));
+        done(drawn.and_then(png_of_pdf));
+    });
+    unsafe { view.createPDFWithConfiguration_completionHandler(Some(&configuration), &answered) };
+    Ok(())
+}
+
+fn png_of_pdf(pdf: &NSData) -> Answer<Vec<u8>> {
+    let image = NSImage::initWithData(NSImage::alloc(), pdf).ok_or(NO_SNAPSHOT)?;
+    encoded(&image, &ShotFormat::Png)
 }
 
 fn ink_world(mtm: MainThreadMarker) -> Retained<WKContentWorld> {

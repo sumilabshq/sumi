@@ -3,7 +3,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 use std::time::{Duration, Instant};
-use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of};
+use tauri::EventTarget;
+use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of, change_of, is_studio_target};
 use widgetarium_host_tauri_lib::store::{atomic, workspaces, Refusal, Store, APP_FOLDER};
 use widgetarium_host_tauri_lib::studio_caller::{refuse_foreign_caller, NOT_FROM_STUDIO};
 
@@ -76,9 +77,29 @@ fn temp_beside(file: &Path) -> bool {
 
 fn studio_callers(checks: &mut Checks) {
     checks.check("the studio webview may call", refuse_foreign_caller("main"), Ok(()));
-    for label in ["tab-1", "page:example.com", "", "Main"] {
+    for label in ["studio-2", "studio-17"] {
+        checks.check(&format!("a second studio window {label:?} may call"), refuse_foreign_caller(label), Ok(()));
+    }
+    for label in ["tab-1", "page:example.com", "", "Main", "studio-", "studio", "page-studio-2"] {
         checks.check(&format!("a webview labelled {label:?} is refused"), refuse_foreign_caller(label), Err(NOT_FROM_STUDIO.to_owned()));
     }
+}
+
+fn change_announcements(checks: &mut Checks) {
+    let replace = call_of("replace", json!({ "root": "global", "path": "settings.json", "doc": {}, "baseRev": 1, "reason": "r" }));
+    let announced = change_of(&replace, &Ok(json!({ "rev": 2 })), "studio-2");
+    checks.check("a replace announces its root, file, new rev and writer", announced, Some(json!({ "root": "global", "file": "settings.json", "rev": 2, "by": "studio-2" })));
+    let append = call_of("append", json!({ "root": "global", "path": "log.jsonl", "line": { "id": "a" } }));
+    checks.check("an append announces no rev", change_of(&append, &Ok(Value::Null), "main"), Some(json!({ "root": "global", "file": "log.jsonl", "rev": null, "by": "main" })));
+    checks.check("a refused replace announces nothing", change_of(&replace, &Err(Refusal::StaleRev { current_rev: 3 }), "main"), None);
+    let read = call_of("read", json!({ "root": "global", "path": "settings.json" }));
+    checks.check("a read announces nothing", change_of(&read, &Ok(json!({ "rev": 2 })), "main"), None);
+    let heard: Vec<bool> = ["main", "studio-3", "browser-page-1"]
+        .iter()
+        .map(|label| is_studio_target(&EventTarget::WebviewWindow { label: (*label).to_owned() }))
+        .collect();
+    checks.check("only studio windows hear a change", heard, vec![true, true, false]);
+    checks.check("a listener on the app itself does not hear it", is_studio_target(&EventTarget::App), false);
 }
 
 fn replace_and_rev(checks: &mut Checks) {
@@ -261,6 +282,7 @@ fn main() -> ExitCode {
 
     let mut checks = Checks { failed: 0 };
     studio_callers(&mut checks);
+    change_announcements(&mut checks);
     replace_and_rev(&mut checks);
     refused_paths(&mut checks);
     reserved_through_dispatch(&mut checks);

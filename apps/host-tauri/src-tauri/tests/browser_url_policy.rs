@@ -1,5 +1,5 @@
 use widgetarium_host_tauri_lib::browser::policy::{
-    data_store_of, failure_kind, is_page_address, is_superseded, label_of, may_navigate, NOT_A_PAGE_ID, NOT_A_PROFILE,
+    data_store_of, failure_kind, is_page_address, is_superseded, label_of, may_navigate, rgb_of_hex, user_agent_of, NOT_A_PAGE_ID, NOT_A_PROFILE,
 };
 
 struct Checks {
@@ -89,12 +89,28 @@ fn labels_and_profiles(checks: &mut Checks) {
     checks.check("a store id is a version-4 uuid", version, Ok(4));
 }
 
+fn user_agents(checks: &mut Checks) {
+    let webkit = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)";
+    checks.check("a read Safari version is said", user_agent_of(Some("26.5")), format!("{webkit} Version/26.5 Safari/605.1.15"));
+    checks.check("an unread version says the fallback", user_agent_of(None), format!("{webkit} Version/26.0 Safari/605.1.15"));
+    checks.check("a version that is not digits says the fallback", user_agent_of(Some("26 beta")), format!("{webkit} Version/26.0 Safari/605.1.15"));
+}
+
+fn frame_colours(checks: &mut Checks) {
+    checks.check("a hex frame colour is read", rgb_of_hex("#f4f3ee"), Some((0xf4, 0xf3, 0xee)));
+    checks.check("a colour without a hash is refused", rgb_of_hex("f4f3ee"), None);
+    checks.check("a short hex is refused", rgb_of_hex("#fff"), None);
+    checks.check("a colour that is not hex is refused", rgb_of_hex("#zzzzzz"), None);
+}
+
 fn main() {
     let mut checks = Checks { failed: 0 };
     page_addresses(&mut checks);
+    user_agents(&mut checks);
     frame_navigations(&mut checks);
     failure_kinds(&mut checks);
     labels_and_profiles(&mut checks);
+    frame_colours(&mut checks);
 
     if checks.failed > 0 {
         println!("{} check(s) failed", checks.failed);

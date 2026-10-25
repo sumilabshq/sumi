@@ -1,4 +1,7 @@
+use crate::studio_caller::STUDIO_WINDOW_PREFIX;
+
 pub const PAGE_LABEL_PREFIX: &str = "browser-page-";
+pub const FIRST_EXTRA_STUDIO_WINDOW: u32 = 2;
 
 const PAGE_SCHEMES: &[&str] = &["http:", "https:"];
 const BLANK_PAGES: &[&str] = &["about:blank", "about:srcdoc"];
@@ -10,6 +13,10 @@ const CERTIFICATE_LAST: i64 = -1200;
 const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
 const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
 const SECOND_SEED: u64 = 0x9e37_79b9_7f4a_7c15;
+
+const WEBKIT_USER_AGENT: &str = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)";
+const SAFARI_BUILD: &str = "605.1.15";
+pub const SAFARI_VERSION_UNREAD: &str = "26.0";
 
 pub const NOT_A_PAGE_ID: &str = "A browser page id is lowercase words and digits joined by hyphens, and \"{id}\" is not one.";
 pub const NOT_A_PROFILE: &str = "A browser profile id is lowercase words and digits joined by hyphens, and \"{id}\" is not one.";
@@ -93,4 +100,30 @@ pub fn data_store_of(profile_id: &str) -> Result<[u8; 16], String> {
     identifier[6] = (identifier[6] & 0x0f) | 0x40;
     identifier[8] = (identifier[8] & 0x3f) | 0x80;
     Ok(identifier)
+}
+
+fn is_version(text: &str) -> bool {
+    !text.is_empty() && text.split('.').all(|part| !part.is_empty() && part.chars().all(|c| c.is_ascii_digit()))
+}
+
+pub fn user_agent_of(safari_version: Option<&str>) -> String {
+    let version = safari_version.filter(|read| is_version(read)).unwrap_or(SAFARI_VERSION_UNREAD);
+    format!("{WEBKIT_USER_AGENT} Version/{version} Safari/{SAFARI_BUILD}")
+}
+
+pub fn next_studio_window_label(taken: &[&str]) -> String {
+    let label_of_number = |number: u32| format!("{STUDIO_WINDOW_PREFIX}{number}");
+    let mut number = FIRST_EXTRA_STUDIO_WINDOW;
+
+    while taken.contains(&label_of_number(number).as_str()) {
+        number += 1;
+    }
+
+    label_of_number(number)
+}
+
+pub fn rgb_of_hex(colour: &str) -> Option<(u8, u8, u8)> {
+    let digits = colour.strip_prefix('#').filter(|digits| digits.len() == 6)?;
+    let channel = |at: usize| u8::from_str_radix(digits.get(at..at + 2)?, 16).ok();
+    Some((channel(0)?, channel(2)?, channel(4)?))
 }

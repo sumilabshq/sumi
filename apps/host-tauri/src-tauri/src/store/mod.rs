@@ -171,6 +171,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(dispatch::handle)
         .setup(|app, _api| {
             app.manage(Store::new(app.path().home_dir()?));
+            crate::drive_files::start_in_debug(app);
             Ok(())
         })
         .build()
