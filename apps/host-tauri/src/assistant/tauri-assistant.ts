@@ -9,9 +9,10 @@ import { TauriFileDrops } from "./tauri-file-drop.js";
 import type { ChatSpot, WebviewDragSource } from "./tauri-file-drop.js";
 import { tauriPrivateFolder } from "./tauri-private-folder.js";
 import type { ChatsLink } from "./chat-sessions.js";
-import { claudeOptionsCell } from "./claude-options-cell.js";
 import type { ClaudeOptionsCell } from "./claude-options-cell.js";
 import type { TauriPrivateFolder } from "./tauri-private-folder.js";
+import { browserUsageMemory, claudeOptionsKeptIn } from "./kept-usage.js";
+import type { UsageMemory } from "./kept-usage.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
 
@@ -76,6 +77,7 @@ export interface TauriAssistantAsk {
 	readonly chats?: ChatsLink;
 	readonly drags?: WebviewDragSource;
 	readonly chat?: ChatSpot;
+	readonly usageMemory?: UsageMemory;
 }
 
 export function startTauriAssistant({
@@ -85,11 +87,12 @@ export function startTauriAssistant({
 	chats,
 	drags = webviewDrags,
 	chat = chatColumn,
+	usageMemory = browserUsageMemory(),
 }: TauriAssistantAsk): TauriAssistant {
 	const bridge = tauriAssistantBridge(ipc);
 	const privateFolder = tauriPrivateFolder(bridge);
 	const folders = folderLending(bridge);
-	const claudeOptions = claudeOptionsCell();
+	const claudeOptions = claudeOptionsKeptIn(usageMemory);
 	const port = tauriAssistantPort({
 		bridge,
 		attachments: privateFolder,

@@ -34,6 +34,8 @@ import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts"
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { startTauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
+import { keptUsageIn } from "../apps/host-tauri/src/assistant/kept-usage.ts";
+import type { UsageMemory } from "../apps/host-tauri/src/assistant/kept-usage.ts";
 import type { TauriAssistant, TauriWorkspaceFolders } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
 
 let failed = 0;
@@ -119,8 +121,25 @@ const NO_FOLDER_PICKS: TauriWorkspaceFolders = {
 	opened: OPENED,
 };
 
-function startedAssistant(ipc: FakeIpc, page: object): TauriAssistant {
-	return startTauriAssistant({ ipc, page, workspace: NO_FOLDER_PICKS, drags: fakeDrags(), chat: CHAT_SPOT });
+function startedAssistant(ipc: FakeIpc, page: object, usageMemory: UsageMemory = memoryShelf()): TauriAssistant {
+	return startTauriAssistant({
+		ipc,
+		page,
+		workspace: NO_FOLDER_PICKS,
+		drags: fakeDrags(),
+		chat: CHAT_SPOT,
+		usageMemory,
+	});
+}
+
+function memoryShelf(): UsageMemory {
+	const held: { kept: unknown } = { kept: null };
+	return {
+		read: () => held.kept,
+		write: (value) => {
+			held.kept = JSON.parse(JSON.stringify(value));
+		},
+	};
 }
 
 function chatOver({ host }: TauriAssistant): StartedApp {
@@ -395,7 +414,8 @@ async function errorChecks(): Promise<void> {
 async function folderAndOptionChecks(): Promise<void> {
 	const ipc = fakeIpc();
 	ipc.pickedFolder = "/Users/me/Apps/habits";
-	const chat = chatOver(startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER }));
+	const shelf = memoryShelf();
+	const chat = chatOver(startedAssistant(ipc, { __WIDGETARIUM_ATTACHMENTS__: FOLDER }, shelf));
 	const reach = await chat.send(AttachReachQuery);
 	check("Tauri offers folders to attach", reach.ok ? reach.output.canAttachFolders : null, true);
 	await chat.send(AttachFolderCommand);
@@ -441,6 +461,15 @@ async function folderAndOptionChecks(): Promise<void> {
 		fiveHour: { used: 0.38, resetsAt: 1792326000000 },
 		week: { used: 0.12, resetsAt: 1792731600000 },
 	});
+	check("the reported plan usage is kept for the next start", keptUsageIn(shelf, 1792300000000), {
+		fiveHour: { used: 0.38, resetsAt: 1792326000000 },
+		week: { used: 0.12, resetsAt: 1792731600000 },
+	});
+	check("a kept window that already reset is not shown", keptUsageIn(shelf, 1792500000000), {
+		fiveHour: null,
+		week: { used: 0.12, resetsAt: 1792731600000 },
+	});
+	check("kept usage whose windows all reset is no usage", keptUsageIn(shelf, 1792800000000), null);
 	check(
 		"a picked path that is not absolute is refused",
 		await refusalOf(async () => pickedFolderIn("relative/x")),
