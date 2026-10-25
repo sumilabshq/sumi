@@ -111,7 +111,7 @@ void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title:
 
 function Demo(): ReturnType<typeof h> {
 	const openNewTab = useTogglesNewTabMenu();
-	const openHere = useTogglesMenuOnShown("Canvas");
+	const openHere = useTogglesMenuOnShown("Canvas", null);
 	return (
 		<IsTooltipHosted.Provider value={true}>
 			<div className="wg-cm-demo">

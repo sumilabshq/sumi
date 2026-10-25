@@ -17,6 +17,7 @@ import {
 } from "./lib/found.js";
 import { commandsFound } from "./lib/made.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
+import { heldTabOfPage } from "../../shared/lib/held-tab-of-page.js";
 import { askInkOf, makeNewLabelOf, makeNewOf, typedOf } from "./lib/typed.js";
 
 const ALL_PAGES = { heldTabId: null };
@@ -24,7 +25,7 @@ const ALL_PAGES = { heldTabId: null };
 export const CommandMenuResultsQuery = query("command-menu-results")
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
-	.handle(async ({ text, scope, door }, { send }) => {
+	.handle(async ({ text, scope, door, pageId }, { send }) => {
 		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser] = await Promise.all([
 			send(TabsSidebarQuery),
 			send(AppTabsQuery),
@@ -44,9 +45,10 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 			closed: closedFoundOf(closedTabs.tabs),
 			elsewhere: chatsElsewhereFoundOf(elsewhere.rows),
 		};
+		const heldId = await heldTabOfPage(pageId, send);
 		const around: Around = {
 			workspaceName: workspaces.current.name,
-			shownTitle: appTabs.tabs.find((tab) => tab.isShown)?.title ?? "",
+			shownTitle: appTabs.tabs.find((tab) => (heldId === null ? tab.isShown : tab.id === heldId))?.title ?? "",
 		};
 		const typed = typedOf(text);
 		const scoped = door === "anywhere" ? scope : "all";

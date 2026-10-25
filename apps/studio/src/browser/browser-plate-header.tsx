@@ -9,7 +9,8 @@ import { PlateHeaderPart } from "../features/plate/ui/plate-header/plate-header-
 import { PlateTint } from "../features/plate/ui/plate-header/plate-tint.js";
 
 export function BrowserPlateHeader(): ReactElement | null {
-	const head = useQuery(PageHeadQuery, { heldTabId: useHeldTab() }).data;
+	const heldTabId = useHeldTab();
+	const head = useQuery(PageHeadQuery, { heldTabId }).data;
 	const goBack = useCommand(GoBackCommand);
 	const goForward = useCommand(GoForwardCommand);
 
@@ -35,7 +36,7 @@ export function BrowserPlateHeader(): ReactElement | null {
 				/>
 			</PlateHeaderPart>
 			<PlateHeaderPart place="crumb">
-				<PlateCrumb words={{ first: head.site, second: head.title }} isPressable />
+				<PlateCrumb words={{ first: head.site, second: head.title }} isPressable pageId={heldTabId} />
 			</PlateHeaderPart>
 		</Fragment>
 	);

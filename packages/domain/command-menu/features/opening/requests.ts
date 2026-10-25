@@ -5,6 +5,7 @@ import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-men
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoorSchema, KeptMenuSchema, OpenMenuSchema } from "../../shared/schema/command-menu.schema.js";
 import { filledWithShown } from "./lib/shown-text.js";
+import { heldTabOfPage } from "../../shared/lib/held-tab-of-page.js";
 
 export const CommandMenuQuery = query("command-menu")
 	.output(KeptMenuSchema)
@@ -16,12 +17,15 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
-	.handle(async ({ door, text, shownName }, { commandMenu, send, invalidate }) => {
+	.handle(async ({ door, text, shownName, pageId }, { commandMenu, send, invalidate }) => {
 		invalidate(CommandMenuQuery);
 		const was = commandMenu.menu();
-		const filled = text === null ? filledWithShown((await send(AppTabsQuery)).tabs, shownName) : { door, text };
+		const filled =
+			text === null
+				? filledWithShown((await send(AppTabsQuery)).tabs, shownName, await heldTabOfPage(pageId, send))
+				: { door, text };
 
-		if (was.isOpen && (was.door === door || was.door === filled.door)) {
+		if (was.isOpen && (was.door === door || was.door === filled.door) && was.pageId === pageId) {
 			const shut = `command menu open at ${was.door} → shut (the same opener again)`;
 			commandMenu.saveMenu(
 				{
@@ -34,13 +38,14 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 			return;
 		}
 
-		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}"`;
+		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}`;
 		commandMenu.saveMenu(
 			{
 				isOpen: true,
 				door: filled.door,
 				text: filled.text,
 				opening: was.opening + 1,
+				pageId,
 			},
 			reason,
 		);

@@ -14,7 +14,7 @@ export function OpenMenu({ menu }: { readonly menu: KeptMenu }): ReactElement {
 	return (
 		<div className="wg-cm-layer" data-command-menu="">
 			<div ref={panel} className="wg-cm-panel" role="dialog" aria-label={MENU}>
-				<MenuPanel key={menu.opening} door={menu.door} startText={menu.text} />
+				<MenuPanel key={menu.opening} door={menu.door} startText={menu.text} pageId={menu.pageId} />
 			</div>
 		</div>
 	);

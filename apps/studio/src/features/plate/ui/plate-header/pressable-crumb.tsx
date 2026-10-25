@@ -7,8 +7,13 @@ import type { CrumbWords } from "./plate-crumb.js";
 
 const CRUMB_LABEL = "Go to";
 
-export function PressableCrumb({ words }: { readonly words: CrumbWords }): ReactElement {
-	const openMenuOnShown = useTogglesMenuOnShown(words.first);
+export interface PressableCrumbProps {
+	readonly words: CrumbWords;
+	readonly pageId: string | null;
+}
+
+export function PressableCrumb({ words, pageId }: PressableCrumbProps): ReactElement {
+	const openMenuOnShown = useTogglesMenuOnShown(words.first, pageId);
 	return (
 		<button
 			type="button"

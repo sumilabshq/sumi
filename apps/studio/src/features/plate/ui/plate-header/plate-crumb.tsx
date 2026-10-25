@@ -11,12 +11,13 @@ export interface CrumbWords {
 export interface PlateCrumbProps {
 	readonly words: CrumbWords;
 	readonly isPressable: boolean;
+	readonly pageId?: string | null;
 }
 
-export function PlateCrumb({ words, isPressable }: PlateCrumbProps): ReactElement {
+export function PlateCrumb({ words, isPressable, pageId = null }: PlateCrumbProps): ReactElement {
 	if (!isPressable) {
 		return <StillCrumb words={words} />;
 	}
 
-	return <PressableCrumb words={words} />;
+	return <PressableCrumb words={words} pageId={pageId} />;
 }

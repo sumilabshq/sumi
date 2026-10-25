@@ -14,6 +14,7 @@ import { RowActions } from "./row-actions.js";
 export interface MenuPanelProps {
 	readonly door: Door;
 	readonly startText: string;
+	readonly pageId: string | null;
 }
 
 const NO_RESULTS: Results = {
@@ -24,10 +25,10 @@ const NO_RESULTS: Results = {
 	askInk: null,
 };
 
-export function MenuPanel({ door, startText }: MenuPanelProps): ReactElement {
+export function MenuPanel({ door, startText, pageId }: MenuPanelProps): ReactElement {
 	const [text, setText] = useState(startText);
 	const [scope, setScope] = useState<Scope>("all");
-	const results = useOptionalQuery(CommandMenuResultsQuery, { text, scope, door }).data ?? NO_RESULTS;
+	const results = useOptionalQuery(CommandMenuResultsQuery, { text, scope, door, pageId }).data ?? NO_RESULTS;
 	const moves = useMenuMoves(results);
 	const onKey = useMenuKeys({ door, text, setText, setScope, results, moves });
 	return (

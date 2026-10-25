@@ -27,7 +27,7 @@ import {
 } from "@widgetarium/workspaces";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
-import type { Done, Intent, MenuCommand } from "../../shared/schema/command-menu.schema.js";
+import type { Done, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
 import { confirmationOf } from "./lib/confirmation.js";
 import { menuAfter } from "./lib/menu-after.js";
 
@@ -39,7 +39,7 @@ export const DoRowCommand = command("do-row")
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
 	.handle(async ({ intent }, { commandMenu, send }): Promise<Done> => {
-		await performIntent(intent, send);
+		await performIntent(intent, send, commandMenu.menu());
 		const after = menuAfter(intent, commandMenu.menu());
 
 		if (after.next !== null) {
@@ -84,7 +84,7 @@ export const RenameRowCommand = command("rename-row")
 		};
 	});
 
-async function performIntent(intent: Intent, send: Send): Promise<void> {
+async function performIntent(intent: Intent, send: Send, { pageId }: KeptMenu): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
 			return send(ShowTabCommand, { id: intent.id });
@@ -101,7 +101,7 @@ async function performIntent(intent: Intent, send: Send): Promise<void> {
 		case "open-app":
 			return send(OpenTabCommand, { app: intent.app });
 		case "open-address":
-			return openAddress(intent.address, intent.where, send);
+			return openAddress(intent, send, pageId);
 		case "run":
 			return runMenuCommand(intent.command, send);
 		case "ask-ink":
@@ -119,8 +119,12 @@ async function performIntent(intent: Intent, send: Send): Promise<void> {
 	}
 }
 
-async function openAddress(address: string, where: "new-tab" | "this-tab", send: Send): Promise<void> {
-	const shown = shownPageOf(await send(HeldTabsQuery));
+async function openAddress(
+	{ address, where }: Extract<Intent, { do: "open-address" }>,
+	send: Send,
+	pageId: string | null,
+): Promise<void> {
+	const shown = pageId ?? shownPageOf(await send(HeldTabsQuery));
 
 	if (where === "this-tab" && shown !== null) {
 		return send(OpenAddressCommand, { tabId: shown, address, heldTabId: null });

@@ -6,6 +6,7 @@ export const SHUT_MENU: KeptMenu = {
 	door: "anywhere",
 	text: "",
 	opening: 0,
+	pageId: null,
 };
 
 export class MemoryCommandMenuGateway extends CommandMenuGateway {

@@ -7,8 +7,8 @@ interface Filled {
 	readonly text: string;
 }
 
-export function filledWithShown(tabs: readonly AppTabState[], shownName: string): Filled {
-	const shown = tabs.find((tab) => tab.isShown);
+export function filledWithShown(tabs: readonly AppTabState[], shownName: string, tabId: string | null): Filled {
+	const shown = tabs.find((tab) => (tabId === null ? tab.isShown : tab.id === tabId));
 
 	if (shown?.address) {
 		return {

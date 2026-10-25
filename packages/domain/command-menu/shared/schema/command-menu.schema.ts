@@ -13,6 +13,7 @@ export const KeptMenuSchema = z.object({
 	door: DoorSchema,
 	text: z.string(),
 	opening: z.number().int().nonnegative(),
+	pageId: z.string().nullable().default(null),
 });
 
 export type KeptMenu = z.infer<typeof KeptMenuSchema>;
@@ -21,12 +22,14 @@ export const OpenMenuSchema = z.object({
 	door: DoorSchema,
 	text: z.string().nullable(),
 	shownName: z.string().default(""),
+	pageId: z.string().nullable().default(null),
 });
 
 export const ResultsAskSchema = z.object({
 	text: z.string(),
 	scope: ScopeSchema,
 	door: DoorSchema,
+	pageId: z.string().nullable().default(null),
 });
 
 export type ResultsAsk = z.infer<typeof ResultsAskSchema>;

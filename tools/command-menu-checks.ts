@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
+import { filledWithShown } from "../packages/domain/command-menu/features/opening/lib/shown-text.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer } from "../packages/shared/core/src/requests/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { AppTabsQuery } from "../packages/domain/app-host/index.ts";
+import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../packages/domain/app-host/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
@@ -17,6 +18,7 @@ import {
 	CommandMenuQuery,
 	CommandMenuResultsQuery,
 	DoRowCommand,
+	CloseCommandMenuCommand,
 	ToggleCommandMenuCommand,
 	RenameRowCommand,
 } from "../packages/domain/command-menu/index.ts";
@@ -140,6 +142,46 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 		`opened ${pages.opened.join(", ")}`,
 	);
 	console.info(`    pages: ${pages.calls.join(", ")} (${newPage}); addresses: ${pages.opened.join(", ")}`);
+	ok(
+		await withPages.send(DoRowCommand, { intent: { do: "open-address", address: "second.example", where: "new-tab" } }),
+	);
+	const tabRows = ok(await withPages.send(AppTabsQuery)).tabs;
+	const unshown = tabRows.find((tab) => !tab.isShown);
+	assert.ok(unshown !== undefined, "a second tab stands beside the shown one");
+	ok(await withPages.send(RenameTabCommand, { id: unshown.id, label: "Pressed tile" }));
+	const unshownPage = ok(await withPages.send(HeldTabsQuery)).tabs.find((tab) => tab.id === unshown.id)?.pageId ?? null;
+	assert.ok(unshownPage !== null, "the second tab holds a page");
+	ok(
+		await withPages.send(ToggleCommandMenuCommand, {
+			door: "this-tab",
+			text: null,
+			pageId: unshownPage,
+		}),
+	);
+	const overTile = ok(await withPages.send(CommandMenuQuery));
+	assert.equal(overTile.pageId, unshownPage, "the menu opened from a tile's header acts on that tile's page");
+	assert.equal(overTile.text, "Pressed tile", "the menu names the pressed tile's tab, not the shown one");
+	const overResults = ok(
+		await withPages.send(CommandMenuResultsQuery, {
+			text: "x.example",
+			scope: "all",
+			door: "this-tab",
+			pageId: unshownPage,
+		}),
+	);
+	assert.ok(
+		JSON.stringify(overResults.sections).includes("instead of Pressed tile"),
+		"Open here names the pressed tile's tab",
+	);
+	const pressedRow = { ...unshown, address: "https://example.com/pressed" };
+	const shownRow = { ...(tabRows.find((tab) => tab.isShown) ?? unshown), address: "https://example.com/shown" };
+	assert.equal(
+		filledWithShown([shownRow, pressedRow], "", pressedRow.id).text,
+		"example.com/pressed",
+		"the menu names the pressed tile's tab, not the shown one",
+	);
+	assert.equal(filledWithShown([shownRow, pressedRow], "", null).text, "example.com/shown");
+	ok(await withPages.send(CloseCommandMenuCommand));
 	const shownId = ok(await withPages.send(AppTabsQuery)).tabs.find((tab) => tab.isShown)?.id ?? "";
 	ok(await withPages.send(DoRowCommand, { intent: { do: "close-tab", id: shownId, title: "example" } }));
 	const empty = ok(await withPages.send(CommandMenuResultsQuery, { text: "", scope: "all", door: "new-tab" }));
@@ -214,8 +256,8 @@ await check("a chat in another workspace is found and opened there", async () =>
 
 console.info("command menu: all checks passed");
 
-async function results(ask: ResultsAsk): Promise<Results> {
-	return ok(await studio.send(CommandMenuResultsQuery, ask));
+async function results(ask: Omit<ResultsAsk, "pageId">): Promise<Results> {
+	return ok(await studio.send(CommandMenuResultsQuery, { ...ask, pageId: null }));
 }
 
 async function chatCount(): Promise<number> {
