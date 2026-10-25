@@ -17,7 +17,7 @@ import {
 } from "./lib/found.js";
 import { commandsFound } from "./lib/made.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
-import { heldTabOfPage } from "../../shared/lib/held-tab-of-page.js";
+import { heldTabOfPage } from "../opening/lib/shown-text.js";
 import { askInkOf, makeNewLabelOf, makeNewOf, typedOf } from "./lib/typed.js";
 
 const ALL_PAGES = { heldTabId: null };

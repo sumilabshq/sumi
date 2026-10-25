@@ -4,8 +4,7 @@ import { AppTabsQuery } from "@widgetarium/app-host";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoorSchema, KeptMenuSchema, OpenMenuSchema } from "../../shared/schema/command-menu.schema.js";
-import { filledWithShown } from "./lib/shown-text.js";
-import { heldTabOfPage } from "../../shared/lib/held-tab-of-page.js";
+import { filledWithShown, heldTabOfPage } from "./lib/shown-text.js";
 
 export const CommandMenuQuery = query("command-menu")
 	.output(KeptMenuSchema)
