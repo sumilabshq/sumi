@@ -1,4 +1,5 @@
 import { CARRIED_TAB, announceCarry } from "@widgetarium/behaviors";
+import { WorkspaceListSchema } from "@widgetarium/app-host";
 import type { CarriedItem, CarryPhase } from "@widgetarium/behaviors";
 import type { PickedItem } from "./picked-item.js";
 
@@ -13,20 +14,18 @@ export class BoardCarry {
 						kind: CARRIED_TAB,
 						id: source.id,
 						title: element.textContent?.trim() ?? "",
+						home: source.list === WorkspaceListSchema.value ? null : source.list,
 					}
 				: null;
 	}
 
-	over(x: number, y: number): boolean {
-		const isTaken = this.announced("over", x, y);
-
-		if (!isTaken) {
+	over(x: number, y: number): void {
+		if (!this.announced("over", x, y)) {
 			this.leave(x, y);
-			return false;
+			return;
 		}
 
 		this.isOverBoard = true;
-		return true;
 	}
 
 	leave(x: number, y: number): void {

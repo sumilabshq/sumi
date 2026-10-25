@@ -8,8 +8,8 @@ export function drawLayout(board: HTMLElement, ask: DraggedLayoutAsk): void {
 }
 
 function placePanes(board: HTMLElement, places: ReadonlyMap<string, PanePlace>): void {
-	for (const pane of board.querySelectorAll<HTMLElement>("[data-pane-id]")) {
-		const place = places.get(pane.dataset["paneId"] ?? "");
+	for (const pane of board.querySelectorAll<HTMLElement>("[data-pane-id], [data-pane-group]")) {
+		const place = places.get(pane.dataset["paneId"] ?? pane.dataset["paneGroup"] ?? "");
 
 		if (place === undefined) {
 			continue;

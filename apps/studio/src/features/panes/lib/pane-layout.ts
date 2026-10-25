@@ -16,10 +16,12 @@ export interface PaneEdge {
 	readonly spanPx: number;
 	readonly pairShare: number;
 	readonly isChatEdge: boolean;
+	readonly gapPx: number;
 }
 
 export interface PaneLayout {
 	readonly rects: ReadonlyMap<string, PaneRect>;
+	readonly groups: ReadonlyMap<string, PaneRect>;
 	readonly edges: readonly PaneEdge[];
 }
 
@@ -66,17 +68,20 @@ export interface PanePlace {
 }
 
 const PROBE_PX = 1;
+const HAIRLINE_PX = 1;
 
 export function panePlacesOf(ask: LayoutAsk): ReadonlyMap<string, PanePlace> {
-	const here = laidOut(ask).rects;
-	const grown = laidOut({
-		...ask,
-		box: {
-			...ask.box,
-			width: ask.box.width + PROBE_PX,
-			height: ask.box.height + PROBE_PX,
-		},
-	}).rects;
+	const here = allRectsOf(laidOut(ask));
+	const grown = allRectsOf(
+		laidOut({
+			...ask,
+			box: {
+				...ask.box,
+				width: ask.box.width + PROBE_PX,
+				height: ask.box.height + PROBE_PX,
+			},
+		}),
+	);
 	return new Map(Array.from(here, ([id, rect]) => [id, placeOf(rect, grown.get(id) ?? rect, ask.box)]));
 }
 
@@ -89,6 +94,30 @@ export function fixedPlaceOf(rect: PaneRect): PanePlace {
 	};
 }
 
+export function nodeWithId(node: PaneNode | null, id: string): PaneNode | null {
+	if (node === null || node.id === id) {
+		return node;
+	}
+
+	return node.kind === "pane"
+		? null
+		: node.children.reduce<PaneNode | null>((found, child) => found ?? nodeWithId(child, id), null);
+}
+
+export function cornersOf(rect: PaneRect | undefined, group: PaneRect | undefined): string | undefined {
+	if (rect === undefined || group === undefined) {
+		return undefined;
+	}
+
+	const isLeft = Math.abs(rect.left - group.left) < 1;
+	const isTop = Math.abs(rect.top - group.top) < 1;
+	const isRight = Math.abs(rect.left + rect.width - group.left - group.width) < 1;
+	const isBottom = Math.abs(rect.top + rect.height - group.top - group.height) < 1;
+	return [isTop && isLeft, isTop && isRight, isBottom && isRight, isBottom && isLeft]
+		.map((isRound) => (isRound ? "var(--sumi-r-group)" : "0"))
+		.join(" ");
+}
+
 export function sideAt(rect: PaneRect, x: number, y: number): PaneSide {
 	const across = (x - rect.left) / rect.width;
 	const down = (y - rect.top) / rect.height;
@@ -99,6 +128,10 @@ export function sideAt(rect: PaneRect, x: number, y: number): PaneSide {
 		["bottom", 1 - down],
 	];
 	return edges.sort((one, other) => one[1] - other[1])[0]?.[0] ?? "right";
+}
+
+function allRectsOf({ rects, groups }: PaneLayout): ReadonlyMap<string, PaneRect> {
+	return new Map([...rects, ...groups]);
 }
 
 function placeOf(rect: PaneRect, grown: PaneRect, box: PaneRect): PanePlace {
@@ -123,6 +156,7 @@ function roundedTo(value: number, digits: number): number {
 
 interface Laying {
 	readonly rects: Map<string, PaneRect>;
+	readonly groups: Map<string, PaneRect>;
 	readonly edges: PaneEdge[];
 	readonly spacing: PaneSpacing;
 	readonly dragged: DraggedShare | null;
@@ -130,37 +164,49 @@ interface Laying {
 
 function laidOut({ node, box, spacing, dragged }: LayoutAsk): PaneLayout {
 	const rects = new Map<string, PaneRect>();
+	const groups = new Map<string, PaneRect>();
 	const edges: PaneEdge[] = [];
 
 	if (node !== null) {
-		layInto({ rects, edges, spacing, dragged }, node, box);
+		layInto({ rects, groups, edges, spacing, dragged }, node, box, false);
 	}
 
 	return {
 		rects,
+		groups,
 		edges,
 	};
 }
 
-function layInto(laying: Laying, node: PaneNode, box: PaneRect): void {
+function layInto(laying: Laying, node: PaneNode, box: PaneRect, isInGroup: boolean): void {
 	if (node.kind === "pane") {
 		laying.rects.set(node.id, box);
 		return;
 	}
 
+	const isGrouped = isInGroup || node.chatId !== undefined;
+
+	if (node.chatId !== undefined) {
+		laying.groups.set(node.id, box);
+	}
+
 	const isRow = node.dir === "row";
 	const origin = isRow ? box.left : box.top;
-	const { gapPx, leastPx } = laying.spacing;
+	const { leastPx } = laying.spacing;
+	const gapPx = isGrouped ? HAIRLINE_PX : laying.spacing.gapPx;
 	const span = (isRow ? box.width : box.height) - gapPx * (node.children.length - 1);
 	const split = withDraggedShare(node, laying.dragged);
 	const sizes = sizesOf(split, span, leastPx);
 	let offset = 0;
 	node.children.forEach((child, at) => {
 		const size = sizes[at] ?? 0;
-		layInto(laying, child, isRow ? sliceAcross(box, offset, size) : sliceDown(box, offset, size));
+		layInto(laying, child, isRow ? sliceAcross(box, offset, size) : sliceDown(box, offset, size), isGrouped);
 
 		if (at < node.children.length - 1) {
-			laying.edges.push(edgeOf(split, at, sliceEdge(box, isRow, offset + size + gapPx / 2), origin + offset, span));
+			laying.edges.push({
+				...edgeOf(split, at, sliceEdge(box, isRow, offset + size + gapPx / 2), origin + offset, span),
+				gapPx,
+			});
 		}
 
 		offset += size + gapPx;
@@ -196,7 +242,7 @@ function sizesOf(node: PaneSplit, span: number, leastPx: number): readonly numbe
 	return wanted.map((px) => (px <= least ? least : px - (lacking * (px - least)) / Math.max(roomy, 1)));
 }
 
-function edgeOf(node: PaneSplit, at: number, rect: PaneRect, startPx: number, spanPx: number): PaneEdge {
+function edgeOf(node: PaneSplit, at: number, rect: PaneRect, startPx: number, spanPx: number): Omit<PaneEdge, "gapPx"> {
 	return {
 		splitId: node.id,
 		at,

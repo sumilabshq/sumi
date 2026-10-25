@@ -8,7 +8,6 @@ import { useEdgeDrag } from "../../lib/use-edge-drag.js";
 
 export interface PaneSplitEdgeProps {
 	readonly edge: PaneEdge;
-	readonly gap: number;
 	readonly bounds: FrameBounds;
 	readonly onDrag: (edge: PaneEdge, share: number) => void;
 	readonly onChatPx: (px: number, mostPx: number) => void;
@@ -17,7 +16,7 @@ export interface PaneSplitEdgeProps {
 const RESIZE_LABEL = "Resize panes";
 const CHAT_EDGE = "chat";
 
-export function PaneSplitEdge({ edge, gap, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
+export function PaneSplitEdge({ edge, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
 	const resize = useCommand(ResizePaneSplitCommand);
 	const least = bounds.plateLeastPx / edge.spanPx;
 	const shareWithin = (asked: number): number => Math.min(Math.max(asked, least), edge.pairShare - least);
@@ -32,7 +31,7 @@ export function PaneSplitEdge({ edge, gap, bounds, onDrag, onChatPx }: PaneSplit
 			onChatPx(share * edge.spanPx, (edge.pairShare - least) * edge.spanPx);
 		}
 	};
-	const handlers = useEdgeDrag({ edge, gap, shareWithin, onDrag, onRelease: commit });
+	const handlers = useEdgeDrag({ edge, gap: edge.gapPx, shareWithin, onDrag, onRelease: commit });
 	const isRow = edge.dir === "row";
 	return (
 		<div

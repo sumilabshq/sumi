@@ -3,28 +3,29 @@ import type { CSSProperties, ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
+import type { SlotLook } from "../../lib/use-board-look.js";
 import type { PaneLeaf, PaneView } from "@widgetarium/layout";
 import { AimPaneCommand, ClosePaneCommand } from "@widgetarium/layout";
+import { SelectChatCommand } from "@widgetarium/workspaces";
 
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
-	readonly place: PanePlace;
-	readonly isAtTopLeft: boolean;
-	readonly isAtTopRight: boolean;
-	readonly isDimmed: boolean;
+	readonly look: SlotLook;
 	readonly drawn: (view: PaneView) => ReactNode;
 }
 
-export const PaneSlot = memo(function PaneSlot({
-	leaf,
-	place,
-	isAtTopLeft,
-	isAtTopRight,
-	isDimmed,
-	drawn,
-}: PaneSlotProps): ReactElement {
+export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotProps): ReactElement {
+	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
 	const closePane = useCommand(ClosePaneCommand);
 	const aimPane = useCommand(AimPaneCommand);
+	const selectChat = useCommand(SelectChatCommand);
+	const aim = (): void => {
+		void aimPane.run({ id: leaf.id });
+
+		if (leaf.view.kind === "chat" && leaf.view.chatId !== undefined) {
+			void selectChat.run({ id: leaf.view.chatId });
+		}
+	};
 	const closing = useMemo(
 		() => ({
 			paneId: leaf.id,
@@ -42,12 +43,16 @@ export const PaneSlot = memo(function PaneSlot({
 				top: place.top,
 				width: place.width,
 				height: place.height,
+				...(corners === undefined ? {} : { "--wg-pane-corners": corners }),
 			}}
 			data-pane-id={leaf.id}
+			data-pane-grouped={corners === undefined ? undefined : ""}
+			data-pane-away={isAway ? "" : undefined}
 			data-pane-view={leaf.view.kind}
 			data-pane-dimmed={isDimmed ? "" : undefined}
-			onPointerDownCapture={leaf.view.kind === "app" ? () => void aimPane.run({ id: leaf.id }) : undefined}
-			onWheelCapture={leaf.view.kind === "app" && isDimmed ? () => void aimPane.run({ id: leaf.id }) : undefined}
+			data-pane-moving={isMoving ? "" : undefined}
+			onPointerDownCapture={aim}
+			onWheelCapture={isDimmed ? aim : undefined}
 		>
 			<PaneCloseContext.Provider value={closing}>{drawn(leaf.view)}</PaneCloseContext.Provider>
 		</div>
@@ -64,12 +69,17 @@ export function rectStyleOf(rect: PaneRect): CSSProperties {
 }
 
 function isSameSlot(before: PaneSlotProps, after: PaneSlotProps): boolean {
+	return before.leaf === after.leaf && before.drawn === after.drawn && isSameLook(before.look, after.look);
+}
+
+function isSameLook(before: SlotLook, after: SlotLook): boolean {
 	return (
-		before.leaf === after.leaf &&
 		before.isAtTopLeft === after.isAtTopLeft &&
 		before.isAtTopRight === after.isAtTopRight &&
 		before.isDimmed === after.isDimmed &&
-		before.drawn === after.drawn &&
+		before.isMoving === after.isMoving &&
+		before.isAway === after.isAway &&
+		before.corners === after.corners &&
 		isSamePlace(before.place, after.place)
 	);
 }

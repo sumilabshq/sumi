@@ -448,6 +448,14 @@
 	opacity: 0.5;
 }
 
+.wg-pane[data-pane-dimmed] .wg-plate-head :is(.wg-ws-crumb, .wg-ws-crumb-workspace, .wg-ws-crumb-chat) {
+	color: var(--sumi-text-3);
+}
+
+.wg-pane[data-pane-moving] {
+	visibility: hidden;
+}
+
 .wg-plate-crumb.is-pressable:hover {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
@@ -622,6 +630,44 @@
 	flex: 1 1 0;
 	width: auto;
 	min-width: 0;
+}
+
+.wg-pane-group {
+	position: absolute;
+	border-radius: var(--sumi-r-group);
+	background: linear-gradient(var(--sumi-line), var(--sumi-line)), var(--sumi-plate);
+	box-shadow: var(--sumi-shadow-plate);
+	pointer-events: none;
+}
+
+.wg-pane[data-pane-grouped] > .wg-shell-plate {
+	border-radius: var(--wg-pane-corners);
+	box-shadow: none;
+}
+
+:is(.wg-pane, .wg-pane-group)[data-pane-away] {
+	visibility: hidden;
+	opacity: 0;
+}
+
+.wg-pane-board[data-pane-easing] :is(.wg-pane, .wg-pane-group) {
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out),
+		opacity var(--sumi-dur-fast) var(--sumi-ease),
+		visibility 0s;
+}
+
+.wg-pane-board[data-pane-easing] :is(.wg-pane, .wg-pane-group)[data-pane-away] {
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out),
+		opacity var(--sumi-dur-fast) var(--sumi-ease),
+		visibility 0s linear var(--sumi-dur-fast);
 }
 
 .wg-pane-preview {

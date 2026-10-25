@@ -13,6 +13,7 @@ export interface CarriedItem {
 	readonly kind: CarriedKind;
 	readonly id: string;
 	readonly title: string;
+	readonly home?: string | null;
 }
 
 export interface CarryMoment {

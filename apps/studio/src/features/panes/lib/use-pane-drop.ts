@@ -5,25 +5,48 @@ import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
 import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "./pane-layout.js";
 import type { PaneRect } from "./pane-layout.js";
-import type { PaneLeaf, PanePlacement, PaneView } from "@widgetarium/layout";
+import { aimTargetIdsOf, homeOfCarried } from "./aim-targets.js";
+import type { PaneBoard, PaneLeaf, PanePlacement, PaneView } from "@widgetarium/layout";
 import { PlacePaneCommand } from "@widgetarium/layout";
 
 export interface PaneDropAsk {
 	readonly board: RefObject<HTMLElement | null>;
-	readonly rects: ReadonlyMap<string, PaneRect>;
+	readonly rects: RefObject<ReadonlyMap<string, PaneRect>>;
 	readonly leaves: readonly PaneLeaf[];
+	readonly groups: PaneBoard["chatGroups"];
 }
 
-export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PanePlacement | null {
+export interface PaneDrop {
+	readonly aim: PanePlacement | null;
+	readonly carriedHome: string | null;
+}
+
+interface Carrying {
+	readonly view: PaneView;
+	readonly home: string | null;
+	readonly isTab: boolean;
+}
+
+const RESTING: PaneDrop = {
+	aim: null,
+	carriedHome: null,
+};
+
+export function usePaneDrop({ board, rects, leaves, groups }: PaneDropAsk): PaneDrop {
 	const placePane = useCommand(PlacePaneCommand);
-	const [aim, setAim] = useState<PanePlacement | null>(null);
-	const latest = useRef({ rects, leaves });
-	latest.current = { rects, leaves };
+	const [drop, setDrop] = useState<PaneDrop>(RESTING);
+	const latest = useRef({ rects, leaves, groups });
+	latest.current = { rects, leaves, groups };
 	useEffect(
 		() =>
 			listenToCarry((moment) => {
-				const aimed = aimOf(board.current, latest.current, moment);
-				setAim(moment.phase === "over" ? aimed : null);
+				const carrying = carryingOf(moment.item, latest.current);
+				const aimed = carrying === null ? null : aimOf(board.current, latest.current, moment, carrying);
+				const shown: PaneDrop =
+					moment.phase === "over" && carrying !== null
+						? { aim: aimed, carriedHome: carrying.isTab ? carrying.home : null }
+						: RESTING;
+				setDrop((was) => (isSameDrop(was, shown) ? was : shown));
 
 				if (aimed === null) {
 					return false;
@@ -41,17 +64,27 @@ export function usePaneDrop({ board, rects, leaves }: PaneDropAsk): PanePlacemen
 			}),
 		[board, placePane],
 	);
-	return aim;
+	return drop;
+}
+
+function carryingOf(item: CarriedItem, { leaves, groups }: Pick<PaneDropAsk, "leaves" | "groups">): Carrying | null {
+	const view = viewOf(item, leaves);
+	return view === null
+		? null
+		: {
+				view,
+				home: homeOfCarried(item, leaves, groups),
+				isTab: item.kind === CARRIED_TAB,
+			};
 }
 
 function aimOf(
 	board: HTMLElement | null,
-	{ rects, leaves }: Omit<PaneDropAsk, "board">,
+	{ rects, leaves, groups }: Omit<PaneDropAsk, "board">,
 	moment: CarryMoment,
+	carrying: Carrying,
 ): PanePlacement | null {
-	const view = viewOf(moment.item, leaves);
-
-	if (board === null || view === null || moment.phase === "leave") {
+	if (board === null || moment.phase === "leave") {
 		return null;
 	}
 
@@ -63,17 +96,41 @@ function aimOf(
 		return null;
 	}
 
-	return aimAt(rects, x, y, view);
+	const allowed = new Set(
+		aimTargetIdsOf(
+			groups,
+			leaves.map((leaf) => leaf.id),
+			carrying.home,
+		),
+	);
+	const offered = [...rects.current].filter(([id]) => allowed.has(id));
+
+	if (offered.length === 0 && (carrying.home !== null || rects.current.size > 0)) {
+		return null;
+	}
+
+	return placementOf(aimAt(offered, x, y), carrying);
 }
 
-function aimAt(rects: ReadonlyMap<string, PaneRect>, x: number, y: number, view: PaneView): PanePlacement {
+function placementOf(at: Pick<PanePlacement, "targetId" | "side">, { view, home, isTab }: Carrying): PanePlacement {
+	const placement = {
+		...at,
+		view,
+	};
+	return isTab ? { ...placement, home } : placement;
+}
+
+function aimAt(
+	rects: readonly (readonly [string, PaneRect])[],
+	x: number,
+	y: number,
+): Pick<PanePlacement, "targetId" | "side"> {
 	const nearest = [...rects].sort((one, other) => distanceTo(one[1], x, y) - distanceTo(other[1], x, y))[0];
 
 	if (nearest === undefined) {
 		return {
 			targetId: null,
 			side: "right",
-			view,
 		};
 	}
 
@@ -81,8 +138,11 @@ function aimAt(rects: ReadonlyMap<string, PaneRect>, x: number, y: number, view:
 	return {
 		targetId,
 		side: sideAt(rect, clamped(x, rect.left, rect.width), clamped(y, rect.top, rect.height)),
-		view,
 	};
+}
+
+function isSameDrop(one: PaneDrop, other: PaneDrop): boolean {
+	return JSON.stringify(one) === JSON.stringify(other);
 }
 
 function distanceTo(rect: PaneRect, x: number, y: number): number {
@@ -107,5 +167,5 @@ function viewOf(item: CarriedItem, leaves: readonly PaneLeaf[]): PaneView | null
 		};
 	}
 
-	return item.kind === CARRIED_CHAT ? { kind: "chat" } : null;
+	return item.kind === CARRIED_CHAT ? { kind: "chat", chatId: item.id } : null;
 }
