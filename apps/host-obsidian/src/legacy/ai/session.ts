@@ -1,4 +1,4 @@
-import { briefGoesInTheMessage, resumesWithoutAnId } from "./providers.js";
+import { resumesWithoutAnId } from "./providers.js";
 import type { Provider } from "./providers.js";
 import { withResult } from "./tools.js";
 import type { AiSettings, AiState } from "./settings.js";
@@ -171,20 +171,14 @@ function applyEvent(store: SessionStore, event: StreamPart): void {
 	notifyWatchersSoon(store);
 }
 
-function askOf(
-	asked: string,
-	history: ChatTurn[],
-	held: AiState,
-	{ brief, helpers }: BriefNow,
-	session: string | null,
-): RunAsk {
+function askOf(asked: string, history: ChatTurn[], held: AiState, session: string | null): RunAsk {
 	return {
-		prompt: briefGoesInTheMessage(held.provider) ? `${brief}\n\n---\n\n${asked}` : asked,
-		brief,
+		prompt: asked,
+		brief: "",
 		history,
 		session,
 		skipPermissions: held.skipPermissions,
-		helpers,
+		helpers: null,
 	};
 }
 
@@ -226,9 +220,8 @@ function refuseSend(state: SessionState, asked: string): string | null {
 
 async function answerTurn(doors: SessionDoors, store: SessionStore, asked: string, history: ChatTurn[]): Promise<void> {
 	const held = await doors.settings.state();
-	const brief = await doors.briefNow();
 	const { provider } = held;
-	const run = startRun(doors, store, provider, askOf(asked, history, held, brief, store.state.session));
+	const run = startRun(doors, store, provider, askOf(asked, history, held, store.state.session));
 	const done = await run.done;
 	if (store.activeRun !== run) return;
 	settleRun(store, provider, done.failure);

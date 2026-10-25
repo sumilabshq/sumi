@@ -5,7 +5,6 @@ import { StartupCache } from "@widgetarium/core/startup-snapshot.js";
 import { createWantedWidgets } from "@widgetarium/core/engine/widgets-wanted.js";
 import { isObject } from "@widgetarium/core/engine/is-object.js";
 import { WIDGETS_DIR, COMPONENTS_DIR } from "@widgetarium/core/paths.js";
-import { measure } from "@widgetarium/core/trace.js";
 import { REACT_SURFACE_SOURCE } from "widgetarium:surface";
 import { BUILD_STAMP } from "widgetarium:build-stamp";
 import { pluginInstaller } from "./legacy/widget-offers.js";
@@ -13,7 +12,6 @@ import type { Installer } from "./legacy/widget-offers.js";
 import { indexedDbSnapshotStore } from "./legacy/startup-snapshot-store.js";
 import { watchWidgetScopes } from "./legacy/widget-watch.js";
 import { writeBuiltCards } from "./legacy/built-cards.js";
-import { layAgentFiles } from "./legacy/ai/agent-files.js";
 import { isAlreadyExists } from "./legacy/studio-host-obsidian.js";
 
 export type WantedWidgets = ReturnType<typeof createWantedWidgets>;
@@ -84,7 +82,6 @@ async function keepUp(upkeep: Upkeep): Promise<void> {
 	try {
 		for (const folder of [WIDGETS_DIR, COMPONENTS_DIR]) await makeFolder(adapter, folder);
 		await upkeep.queue(() => revalidate(upkeep));
-		await measure("upkeep · agent files", () => layAgentFiles(adapter));
 		const unwatch = watchWidgetScopes(adapter, () => void upkeep.queue(() => reload(upkeep)));
 		if (unwatch) upkeep.plugin.register(unwatch);
 	} catch (failure) {
