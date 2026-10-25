@@ -3,8 +3,8 @@ import type { ReactElement, ReactNode } from "react";
 import { Mascot } from "../../../mascot/ui/mascot/mascot.js";
 
 const GREETING = "What are we building?";
-const SUB = "Ink makes apps on this computer, in a folder you choose.";
-const MASCOT_PX = 120;
+const SUB = "Sumi makes apps on this computer, in a folder you choose.";
+const MASCOT_PX = 64;
 
 export function ReadyEmptyChat({ starters }: { readonly starters: ReactNode }): ReactElement {
 	return (

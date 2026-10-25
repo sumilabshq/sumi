@@ -4,7 +4,8 @@ import { withResult } from "./tools.js";
 import type { AiSettings, AiState } from "./settings.js";
 import type { ChatTurn, Run, Runner, RunAsk } from "./run.js";
 import type { Phase, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
-import type { AssistantCall, AssistantTurn, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
+import { freshCallOf } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantTurn, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 
 export interface SessionState {
@@ -156,8 +157,11 @@ function applyEvent(store: SessionStore, event: StreamPart): void {
 	if ("call" in event && event.call) {
 		const { call } = event;
 		patchState(store, { tool: call.name, phase: "tools" });
-		const fresh: AssistantCall = { ...call, answered: false, output: "", failed: false, at: Date.now() };
-		intoLastTurn(store, (turn) => ({ ...turn, calls: [...turn.calls, fresh] }));
+		const at = Date.now();
+		intoLastTurn(store, (turn) => ({
+			...turn,
+			calls: [...turn.calls, freshCallOf(call, at, turn.text.length)],
+		}));
 	}
 	if ("result" in event && event.result) {
 		const { result } = event;

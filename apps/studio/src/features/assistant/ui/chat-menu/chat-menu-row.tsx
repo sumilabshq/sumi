@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
 
-export interface GlassMenuRowProps {
+export interface ChatMenuRowProps {
 	readonly text: string;
 	readonly small?: string | undefined;
 	readonly mark?: ReactNode;
@@ -11,14 +11,14 @@ export interface GlassMenuRowProps {
 	readonly onPick: () => void;
 }
 
-export function GlassMenuRow({
+export function ChatMenuRow({
 	text,
 	small,
 	mark,
 	isPicked = false,
 	isActive = false,
 	onPick,
-}: GlassMenuRowProps): ReactElement {
+}: ChatMenuRowProps): ReactElement {
 	return (
 		<button
 			type="button"

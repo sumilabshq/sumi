@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon, Tooltip, TooltipContent, TooltipTrigger } from "@widgetarium/kit";
+import { Icon, tooltipMarks } from "@widgetarium/kit";
 import { CardWords } from "./card-words.js";
 import type { AttachmentChip } from "@widgetarium/assistant";
 
@@ -20,16 +20,15 @@ export function AttachmentCard({ chip, onRemove }: AttachmentCardProps): ReactEl
 			tabIndex={0}
 		>
 			{chip.preview === null ? <CardWords chip={chip} /> : <img src={chip.preview} alt={chip.name} />}
-			<Tooltip>
-				<TooltipTrigger
-					className="wg-studio-ai-card-remove"
-					aria-label={REMOVE_NAMED.replace("{name}", chip.name)}
-					onClick={onRemove}
-				>
-					<Icon name="x" size={11} />
-				</TooltipTrigger>
-				<TooltipContent className="wg-studio-ai-tip">{REMOVE}</TooltipContent>
-			</Tooltip>
+			<button
+				type="button"
+				className="wg-studio-ai-card-remove"
+				aria-label={REMOVE_NAMED.replace("{name}", chip.name)}
+				onClick={onRemove}
+				{...tooltipMarks({ said: REMOVE, side: "top" })}
+			>
+				<Icon name="x" size={10} />
+			</button>
 		</span>
 	);
 }

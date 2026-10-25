@@ -87,8 +87,13 @@ const AI = {
 	),
 };
 
+const LOOKS = "I'll look at the page first.\n\n";
+const CHANGES = "Found it. The pair lives in a plain constant, so I'll keep it per page.\n\n";
+const WORKED_TEXT = `${LOOKS}${CHANGES}${ANSWER}`;
+
 function asked(ref: string, name: string, input: Readonly<Record<string, unknown>>, at: number): AssistantCall {
-	return { ref, name, input, output: "", answered: false, failed: false, at };
+	const textOffset = ref === "grep" || ref === "read" ? LOOKS.length : LOOKS.length + CHANGES.length;
+	return { ref, name, input, output: "", answered: false, failed: false, at, textOffset };
 }
 
 function answered(call: AssistantCall, output: string, isFailed: boolean, tookMs: number): AssistantCall {
@@ -137,12 +142,17 @@ const WORKED: AssistantCall[] = [
 	),
 ];
 
-const USER: AssistantTurn = { role: "user", text: "Make the Translate page remember the two languages.", calls: [] };
+const USER: AssistantTurn = {
+	role: "user",
+	text: "Make the Translate page remember the two languages.",
+	calls: [],
+	startedAt: T0,
+};
 
 const DONE: SessionState = {
 	turns: [
 		USER,
-		{ role: "agent", text: ANSWER, calls: WORKED, startedAt: T0 - 2000, endedAt: T0 + 70000, outcome: "done" },
+		{ role: "agent", text: WORKED_TEXT, calls: WORKED, startedAt: T0 - 2000, endedAt: T0 + 70000, outcome: "done" },
 	],
 	busy: false,
 	failure: null,
@@ -254,6 +264,7 @@ const STATES: ReadonlyMap<string, SessionState> = new Map([
 	["asking", ASKING],
 	["stopped-kept", STOPPED_KEPT],
 	["hero-alone", HERO_ALONE],
+	["empty", { ...DONE, turns: [] }],
 ]);
 
 function sessionOf(state: SessionState): Session {
@@ -303,10 +314,12 @@ declare global {
 		__SENT__?: string;
 		__STOPPED__?: boolean;
 		__RETRIED__?: boolean;
+		__T0__?: number;
 	}
 }
 
-window.__ANSWER__ = ANSWER;
+window.__ANSWER__ = WORKED_TEXT;
+window.__T0__ = T0;
 const which = location.hash.slice(1) || "done";
 const state = STATES.get(which);
 if (!state) throw new Error(`chat pill page: no state ${which}`);

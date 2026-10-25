@@ -22,7 +22,7 @@ export function CallHead({ call, face, canOpen, isOpen, onToggle }: CallHeadProp
 			aria-expanded={canOpen ? isOpen : undefined}
 			onClick={onToggle}
 		>
-			<span className={`wg-studio-ai-call-mark is-${call.failed ? "failed" : face.kind}`}>
+			<span className={call.failed ? "wg-studio-ai-call-mark is-failed" : "wg-studio-ai-call-mark"}>
 				<Icon name={face.glyph} size={16} />
 			</span>
 			<CallName face={face} />

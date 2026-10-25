@@ -182,7 +182,15 @@ function readsIn(held: unknown): ProviderReads | null {
 	}
 
 	const files = FILES_REACHES.find((reach) => reach === held["files"]);
-	return files === undefined ? null : { images: held["images"], files };
+	const mostAttached = held["mostAttached"];
+
+	if (files === undefined) {
+		return null;
+	}
+
+	return typeof mostAttached === "number"
+		? { images: held["images"], files, mostAttached }
+		: { images: held["images"], files };
 }
 
 function providerFactsIn(held: unknown): ProviderFacts | null {

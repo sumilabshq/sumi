@@ -1,5 +1,5 @@
-import { ONE_CHAT } from "@widgetarium/core/engine/active-chat-port.js";
-import type { ActiveChatPort } from "@widgetarium/core/engine/active-chat-port.js";
+import { ONE_CHAT } from "@widgetarium/core/engine/focused-chat-port.js";
+import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
 import { EMPTY_SESSION } from "./session-steps.js";
 import { NO_CHAT_HISTORY, createTurnSession } from "./turn-session.js";
@@ -8,7 +8,7 @@ import type { ChatHistory, StartTurn, TurnSession } from "./turn-session.js";
 export type StartChatTurn = (chatId: string, ...asked: Parameters<StartTurn>) => ReturnType<StartTurn>;
 
 export interface ChatSessionLink {
-	readonly activeChat: ActiveChatPort;
+	readonly focusedChat: FocusedChatPort;
 	readonly onSessionChanged: (chatId: string, session: AssistantSession) => void;
 }
 
@@ -16,8 +16,10 @@ export interface ChatsLink extends ChatSessionLink {
 	readonly historyOf: (chatId: string) => Promise<ChatHistory>;
 }
 
+const NO_FOCUSED_CHAT = "no chat stands on this window's board";
+
 export const ONE_CHAT_LINK: ChatsLink = {
-	activeChat: ONE_CHAT,
+	focusedChat: ONE_CHAT,
 	historyOf: () => Promise.resolve(NO_CHAT_HISTORY),
 	onSessionChanged: () => undefined,
 };
@@ -26,43 +28,79 @@ export class ChatSessions {
 	private readonly ready = new Map<string, TurnSession>();
 	private readonly loading = new Map<string, Promise<TurnSession>>();
 	private readonly watchers = new Set<() => void>();
+	private readonly chatWatchers = new Map<string, Set<() => void>>();
 
 	constructor(
 		private readonly link: ChatsLink,
 		private readonly startTurn: StartChatTurn,
 		private readonly clock: () => number = Date.now,
 	) {
-		link.activeChat.watch(() => this.followActive());
+		link.focusedChat.watch(() => this.followFocused());
 	}
 
-	now = (): AssistantSession => this.ready.get(this.shownId())?.now() ?? EMPTY_SESSION;
+	now = (): AssistantSession => this.shownIfReady()?.now() ?? EMPTY_SESSION;
 
 	watch = (changed: () => void): (() => void) => {
 		this.watchers.add(changed);
 		return () => void this.watchers.delete(changed);
 	};
 
+	nowOf(chatId: string): AssistantSession {
+		return this.ready.get(chatId)?.now() ?? EMPTY_SESSION;
+	}
+
+	watchChat(chatId: string, changed: () => void): () => void {
+		const watchers = this.chatWatchers.get(chatId) ?? new Set<() => void>();
+		watchers.add(changed);
+		this.chatWatchers.set(chatId, watchers);
+		this.sessionOf(chatId).catch((failure: unknown) => {
+			console.error(`[ink] chat ${chatId} could not be read`, failure);
+		});
+		return () => void watchers.delete(changed);
+	}
+
+	readyOf(chatId: string): TurnSession | null {
+		return this.ready.get(chatId) ?? null;
+	}
+
 	shownSession(): Promise<TurnSession> {
-		return this.sessionOf(this.shownId());
+		const shownId = this.shownId();
+		return shownId === null ? Promise.reject(new Error(NO_FOCUSED_CHAT)) : this.sessionOf(shownId);
+	}
+
+	async readShown(): Promise<void> {
+		const shownId = this.shownId();
+
+		if (shownId === null) {
+			return;
+		}
+
+		await this.sessionOf(shownId);
 	}
 
 	shownIfReady(): TurnSession | null {
-		return this.ready.get(this.shownId()) ?? null;
+		const shownId = this.shownId();
+		return shownId === null ? null : (this.ready.get(shownId) ?? null);
 	}
 
-	private shownId(): string {
-		return this.link.activeChat.now().id;
+	private shownId(): string | null {
+		return this.link.focusedChat.now()?.id ?? null;
 	}
 
-	private followActive(): void {
-		const activeId = this.shownId();
+	private followFocused(): void {
+		const shownId = this.shownId();
 		this.tell();
-		this.sessionOf(activeId).catch((failure: unknown) => {
-			console.error(`[ink] chat ${activeId} could not be read`, failure);
+
+		if (shownId === null) {
+			return;
+		}
+
+		this.sessionOf(shownId).catch((failure: unknown) => {
+			console.error(`[ink] chat ${shownId} could not be read`, failure);
 		});
 	}
 
-	private sessionOf(chatId: string): Promise<TurnSession> {
+	sessionOf(chatId: string): Promise<TurnSession> {
 		const ready = this.ready.get(chatId);
 		if (ready !== undefined) {
 			return Promise.resolve(ready);
@@ -95,6 +133,10 @@ export class ChatSessions {
 	}
 
 	private tellIfShown(chatId: string): void {
+		for (const changed of [...(this.chatWatchers.get(chatId) ?? [])]) {
+			changed();
+		}
+
 		if (chatId === this.shownId()) {
 			this.tell();
 		}

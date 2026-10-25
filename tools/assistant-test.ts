@@ -12,8 +12,12 @@ import type {
 	ProviderReads,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
+import { toastRefusal } from "../packages/shared/core/src/command-refusals.ts";
+import { toast } from "../packages/shared/kit/src/utils/toast.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { turnStepsOf } from "../packages/domain/assistant/features/chat/lib/turn-steps.ts";
+import { toolsSummaryOf } from "../apps/studio/src/features/assistant/lib/tools-summary.ts";
 import {
 	AttachFilesCommand,
 	ChooseClaudeOptionCommand,
@@ -32,8 +36,10 @@ import {
 	SweepAttachmentsCommand,
 	CompactChatCommand,
 	SlashCommandsQuery,
+	HoldDraftTextCommand,
+	OpenChatDraftCommand,
 } from "../packages/domain/assistant/index.ts";
-import { slashMatchesOf } from "../apps/studio/src/features/assistant/lib/slash-matches.ts";
+import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../apps/studio/src/features/assistant/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../packages/domain/assistant/gateways/assistant-session/assistant-session.gateway.ts";
 import { AssistantSetupGateway } from "../packages/domain/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
 import { PrivateFolderAttachmentFilesGateway } from "../packages/domain/assistant/gateways/attachment-files/private-folder.gateway.ts";
@@ -44,7 +50,6 @@ import { portAssistantParts } from "../packages/domain/assistant/gateways/assist
 import type { AssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
 import type { WorkspaceFolder } from "../packages/domain/assistant/shared/host/workspace-folders.host.ts";
 import { isSameDrafts } from "../packages/domain/assistant/features/composer/lib/drafts.ts";
-import { withStarter } from "../packages/domain/assistant/features/composer/lib/starter-said.ts";
 import { shortPathOf } from "../packages/domain/assistant/shared/lib/short-path.ts";
 import { attachmentsIn, withAttachments } from "../packages/domain/assistant/shared/lib/attachment-trailer.ts";
 import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/lib/attachment-sweep.ts";
@@ -365,11 +370,6 @@ check(
 	await webChat.send(ClaudeOptionsQuery).then((answer) => (answer.ok ? answer.output : "refused")),
 	null,
 );
-check(
-	"a starter is said to the agent before the message and leaves after it",
-	withStarter("create", "A habit tracker").split("\n")[0],
-	"Create an app from this idea: plan it, write the code and run it.",
-);
 const folderTrailer = withAttachments("Read it", [
 	{ kind: "folder", name: "habits", size: "a folder you may read", path: "/Users/me/habits", text: null },
 ]);
@@ -407,12 +407,12 @@ check(
 	"the sent message shows its words without the trailer, and its attachments as chips with the image's thumbnail",
 	shownChat.ok
 		? [
-				shownChat.output.turns[0]?.said,
+				shownChat.output.turns[0]?.steps.map((step) => (step.kind === "said" ? step.text : step.kind)),
 				shownChat.output.turns[0]?.attached.map(({ name, preview }) => [name, preview !== null]),
 			]
 		: null,
 	[
-		"What is on the screen?",
+		["What is on the screen?"],
 		[
 			["shot.png", true],
 			["notes.md", false],
@@ -518,14 +518,17 @@ check(
 );
 
 const crowded = benchWith(CLAUDE);
+const capped = benchWith({ ...CLAUDE, mostAttached: 3 });
+const filesOf = (count: number): ReturnType<typeof fileOf>[] =>
+	Array.from({ length: count }, (_, at) => fileOf(`n${at}.md`, "x"));
 check(
-	"more than ten files at once are refused",
-	reasonOf(
-		await crowded.chat.send(AttachFilesCommand, {
-			files: Array.from({ length: 11 }, (_, at) => fileOf(`n${at}.md`, "x")),
-		}),
-	),
-	"At most 10 files can be attached to one message",
+	"a provider that sets no limit takes any number of files; one that sets a limit refuses past it",
+	[
+		reasonOf(await crowded.chat.send(AttachFilesCommand, { files: filesOf(25) })),
+		await crowded.chat.send(DraftAttachmentsQuery).then((answer) => (answer.ok ? answer.output.length : -1)),
+		reasonOf(await capped.chat.send(AttachFilesCommand, { files: filesOf(4) })),
+	],
+	[null, 25, "At most 3 files can be attached to one message"],
 );
 
 const cleared = benchWith(CLAUDE);
@@ -536,14 +539,14 @@ await cleared.chat.send(ClearChatCommand);
 check("clearing the chat removes every attached file", fs.readdirSync(cleared.folder).length, 0);
 
 check(
-	"the shipped providers read what they can: Claude Code images and files by path, Gemini files by path, Ollama inline, Codex and OpenCode nothing",
+	"the shipped providers read what they can: Claude Code images and files by path with no count limit, Gemini files by path, Ollama inline and at most ten, Codex and OpenCode nothing",
 	PRESETS.map((provider) => [provider.id, readsOf(provider)]),
 	[
 		["claude-code", CLAUDE],
 		["codex", CODEX],
 		["opencode", CODEX],
 		["gemini", { images: false, files: "path" }],
-		["ollama", OLLAMA],
+		["ollama", { ...OLLAMA, mostAttached: 10 }],
 		["custom", CODEX],
 	],
 );
@@ -582,19 +585,65 @@ const slashNames = async (): Promise<unknown> => {
 check("a provider that cannot compact offers only /clear", await slashNames(), ["clear"]);
 slashed.setup.compacts = true;
 check("one that can offers /clear and /compact", await slashNames(), ["clear", "compact"]);
+const bothEntries = slashEntriesOf(["clear", "compact"]);
+const namesOf = (draft: string, entries = bothEntries): string[] | null =>
+	slashAskOf(entries, draft, draft.length)?.matches.map(({ name }) => name) ?? null;
 check(
-	"“/” lists every command, letters filter by name or alias, anything else is no menu",
+	"“/” at the start lists every command and skill; inside the text only skills; letters filter by name or alias",
 	[
-		slashMatchesOf(["clear", "compact"], "/"),
-		slashMatchesOf(["clear", "compact"], "/co"),
-		slashMatchesOf(["clear", "compact"], "/NEW"),
-		slashMatchesOf(["clear", "compact"], "/sum"),
-		slashMatchesOf(["clear", "compact"], "/zz"),
-		slashMatchesOf(["clear"], "/comp"),
-		slashMatchesOf(["clear", "compact"], "say /clear"),
-		slashMatchesOf(["clear", "compact"], "/clear now"),
+		namesOf("/"),
+		namesOf("/co"),
+		namesOf("/NEW"),
+		namesOf("/sum"),
+		namesOf("/zz"),
+		namesOf("/comp", slashEntriesOf(["clear"])),
+		namesOf("say /clear"),
+		namesOf("/clear now"),
+		namesOf("/cr"),
+		namesOf("/de"),
+		namesOf("make it /cr"),
+		namesOf("make it /"),
+		namesOf("a/cr"),
 	],
-	[["clear", "compact"], ["compact"], ["clear"], ["compact"], [], [], null, null],
+	[
+		["clear", "compact", "create-app", "design-app"],
+		["compact"],
+		["clear", "create-app"],
+		["compact"],
+		[],
+		[],
+		null,
+		null,
+		["create-app"],
+		["design-app"],
+		["create-app"],
+		["create-app", "design-app"],
+		null,
+	],
+);
+check(
+	"a command is marked only at the start, a skill anywhere it stands as its own word",
+	[
+		saidPiecesOf(bothEntries, "/clear"),
+		saidPiecesOf(bothEntries, "/create-app a habit tracker"),
+		saidPiecesOf(bothEntries, "build it with /design-app first"),
+		saidPiecesOf(bothEntries, "/cle"),
+		saidPiecesOf(bothEntries, "say /clear"),
+	],
+	[
+		[{ text: "/clear", isCommand: true }],
+		[
+			{ text: "/create-app", isCommand: true },
+			{ text: " a habit tracker", isCommand: false },
+		],
+		[
+			{ text: "build it with ", isCommand: false },
+			{ text: "/design-app", isCommand: true },
+			{ text: " first", isCommand: false },
+		],
+		null,
+		null,
+	],
 );
 await slashed.chat.send(CompactChatCommand);
 check("/compact asks the session to compact, once", slashed.session.compacted, 1);
@@ -662,6 +711,105 @@ check(
 	"the web host refuses a Claude option, for it offers none",
 	reasonOf(await webChat.send(ChooseClaudeOptionCommand, { model: "sonnet" })),
 	"Claude Code's options are not offered on this host",
+);
+
+const faceOf = (kind: CallFace["kind"], object: string): CallFace => ({
+	kind,
+	glyph: "",
+	verb: "",
+	doing: "",
+	object,
+	isCodeObject: false,
+	meta: null,
+	change: null,
+});
+const callAt = (ref: string, textOffset?: number): AssistantCall => ({
+	ref,
+	name: ref,
+	input: {},
+	output: "",
+	answered: true,
+	failed: false,
+	at: 0,
+	...(textOffset === undefined ? {} : { textOffset }),
+});
+const stepsSeen = (text: string, calls: readonly AssistantCall[]): unknown[] =>
+	turnStepsOf(
+		text,
+		calls.map((call) => ({ call, face: faceOf("read", call.ref) })),
+	).map((step) => (step.kind === "said" ? step.text : step.calls.map(({ ref }) => ref)));
+check(
+	"tools stand where they ran: text, tools, text, and calls in a row share one group",
+	[
+		stepsSeen("Reading.Done.", [callAt("a", 8), callAt("b", 8)]),
+		stepsSeen("Reading.\n\nDone.", [callAt("a", 8), callAt("b", 9)]),
+		stepsSeen("Old answer.", [callAt("a")]),
+	],
+	[
+		["Reading.", ["a", "b"], "Done."],
+		["Reading.", ["a", "b"], "\nDone."],
+		[["a"], "Old answer."],
+	],
+);
+check(
+	"a tool group says what it did",
+	[
+		toolsSummaryOf([
+			faceOf("read", "a"),
+			faceOf("edit", "x.ts"),
+			faceOf("edit", "y.ts"),
+			faceOf("edit", "x.ts"),
+			faceOf("run", "npm test"),
+		]),
+		toolsSummaryOf([faceOf("other", "q")]),
+	],
+	["Used 5 tools · read, edited 2 files, ran a command", "Used 1 tool"],
+);
+
+const saidOf = (answer: { readonly ok: boolean; readonly output?: { readonly said: string } }): string | null =>
+	answer.ok ? (answer.output?.said ?? null) : null;
+const draftNames = async (): Promise<string[]> =>
+	slashed.chat.send(DraftAttachmentsQuery).then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
+await slashed.chat.send(OpenChatDraftCommand, { chatId: "chat-a" });
+slashed.parts.draftAttachments.saveDraftAttachments([
+	{
+		id: "shot",
+		name: "shot.png",
+		kind: "image",
+		mime: "image/png",
+		bytes: new Uint8Array(8),
+		preview: null,
+		path: null,
+	},
+]);
+await slashed.chat.send(HoldDraftTextCommand, { said: "make the header blue" });
+const inB = saidOf(await slashed.chat.send(OpenChatDraftCommand, { chatId: "chat-b" }));
+const filesInB = await draftNames();
+const backInA = saidOf(await slashed.chat.send(OpenChatDraftCommand, { chatId: "chat-a" }));
+const filesBackInA = await draftNames();
+check(
+	"a draft belongs to its chat: another chat opens clean, and coming back brings the text and the files",
+	[inB, filesInB, backInA, filesBackInA],
+	["", [], "make the header blue", ["shot.png"]],
+);
+
+const tooMany = {
+	name: "assistant/attach-files",
+	reason: "At most 3 files can be attached to one message",
+	ran: false,
+};
+toast.dismiss();
+toastRefusal(tooMany);
+toastRefusal(tooMany);
+toastRefusal(tooMany);
+toastRefusal({ ...tooMany, reason: "Ollama can't read images" });
+check(
+	"the same refusal shown three times is one toast; a different refusal is its own",
+	toast
+		.getToasts()
+		.filter(({ isLeaving }) => !isLeaving)
+		.map(({ title }) => title),
+	["Ollama can't read images", "At most 3 files can be attached to one message"],
 );
 
 for (const bench of [claude, ollama, codex, switched, crowded, cleared, slashed]) {

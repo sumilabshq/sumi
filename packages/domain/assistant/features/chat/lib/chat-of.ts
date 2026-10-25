@@ -10,6 +10,7 @@ import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { AttachmentChip } from "../../../shared/schema/attachment.schema.js";
 import type { Chat, ShownTurn } from "../../../shared/schema/chat.schema.js";
+import { turnStepsOf } from "./turn-steps.js";
 
 export interface ChatSeen {
 	readonly isAvailable: boolean;
@@ -52,20 +53,26 @@ interface TurnPlace {
 
 function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], place: TurnPlace): ShownTurn {
 	if (turn.role !== "user") {
-		return {
-			turn,
-			said: turn.text,
-			faces: [...faces],
-			attached: [],
-		};
+		return agentTurnOf(turn, faces);
 	}
 
 	const { said, entries } = attachmentsIn(turn.text);
 	return {
 		turn,
-		said,
-		faces: [...faces],
+		steps: turnStepsOf(said, []),
 		attached: entries.map((entry, entryAt) => chipOf(entry, `${place.at}-${entryAt}`, place.previews)),
+	};
+}
+
+function agentTurnOf(turn: AssistantTurn, faces: readonly CallFace[]): ShownTurn {
+	const callsWithFaces = turn.calls.flatMap((call, at) => {
+		const face = faces[at];
+		return face === undefined ? [] : [{ call, face }];
+	});
+	return {
+		turn,
+		steps: turnStepsOf(turn.text, callsWithFaces),
+		attached: [],
 	};
 }
 

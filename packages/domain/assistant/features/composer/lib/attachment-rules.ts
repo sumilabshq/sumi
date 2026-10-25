@@ -1,5 +1,6 @@
 import type { AttachmentKind, FileKind } from "../../../shared/schema/attachment.schema.js";
 import type { ChosenProvider } from "../../../shared/lib/chosen-provider.js";
+import type { ProviderReads } from "../../../shared/schema/agent-setup.schema.js";
 import { sizeSaid } from "./size-said.js";
 
 export interface OfferedFile {
@@ -19,7 +20,6 @@ export const TEXT_EXTENSIONS: readonly string[] = ["md", "txt", "json", "ts", "t
 
 export const LARGEST_IMAGE_BYTES = 10 * 1024 * 1024;
 export const LARGEST_TEXT_BYTES = 1024 * 1024;
-export const MOST_ATTACHED = 10;
 
 const NOT_ACCEPTED =
 	"{name} can't be attached: only images (png, jpg, gif, webp) and text files (md, txt, json, ts, tsx, js, css, html, csv) can";
@@ -72,8 +72,12 @@ export function refusalOfFile(file: OfferedFile, provider: ChosenProvider): stri
 	return refusalOfReach(kind, provider);
 }
 
-export function refusalOfCount(held: number, offered: number): string | null {
-	return held + offered > MOST_ATTACHED ? TOO_MANY.replace("{count}", String(MOST_ATTACHED)) : null;
+export function refusalOfCount(held: number, offered: number, { mostAttached }: ProviderReads): string | null {
+	if (mostAttached === undefined || held + offered <= mostAttached) {
+		return null;
+	}
+
+	return TOO_MANY.replace("{count}", String(mostAttached));
 }
 
 export const ACCEPTED = [...Object.keys(IMAGE_TYPES), ...TEXT_EXTENSIONS].map((extension) => `.${extension}`).join(",");

@@ -94,6 +94,31 @@ const TALKED: AssistantSession = {
 	],
 };
 
+const WORKING: AssistantSession = {
+	...TALKED,
+	busy: true,
+	phase: "thinking",
+	turns: [
+		...TALKED.turns,
+		{
+			role: "user",
+			text: "Now add a monthly view",
+			calls: [],
+		},
+		{
+			role: "agent",
+			text: "",
+			calls: [],
+			startedAt: Date.now(),
+		},
+	],
+};
+
+const SESSION_OF: Readonly<Record<string, AssistantSession>> = {
+	empty: EMPTY,
+	working: WORKING,
+};
+
 const SHOWN_WORKSPACE = {
 	id: "personal",
 	name: "Personal",
@@ -120,7 +145,7 @@ function linesOf(count: number, bytes: number): Uint8Array {
 }
 
 const which = location.hash.slice(1) || "empty";
-const port = portOf(which === "empty" ? EMPTY : TALKED, which === "codex" ? CODEX_SETUP : SETUP);
+const port = portOf(SESSION_OF[which] ?? TALKED, which === "codex" ? CODEX_SETUP : SETUP);
 const claudeOptions = claudeOptionsCell({
 	...DEFAULT_CLAUDE_OPTIONS,
 	usage: {
@@ -204,4 +229,10 @@ if (!holder) {
 	throw new Error("chat composer page: no #chat");
 }
 
-createRoot(holder).render(h(AppProvider, { app: chat }, h(AssistantPanel, { title: "Habit tracker" })));
+createRoot(holder).render(
+	h(
+		AppProvider,
+		{ app: chat },
+		h(AssistantPanel, { title: "Habit tracker", lead: h("span", { className: "chat-composer-lead" }) }),
+	),
+);

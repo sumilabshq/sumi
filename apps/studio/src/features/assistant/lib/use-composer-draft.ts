@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from "react";
+import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { DraftAttachmentsQuery, HoldDraftTextCommand } from "@widgetarium/assistant";
 import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";
 import { useAttachesFiles } from "./use-attaches-files.js";
@@ -23,9 +25,12 @@ export interface ComposerDraft {
 export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerDraft {
 	const [draft, setDraft] = useState("");
 	const attach = useAttachesFiles();
+	const { data: drafted } = useQuery(DraftAttachmentsQuery);
+	useHoldsDraftOnLeave(draft);
+	const hasInput = draft.trim() !== "" || drafted.length > 0;
 	const sendDraft = (): void => {
 		const said = draft.trim();
-		if (said === "" || busy) return;
+		if (!hasInput || busy) return;
 		setDraft("");
 		void onSend(said).then((isSent) => {
 			if (!isSent) setDraft((typed) => (typed === "" ? said : typed));
@@ -33,7 +38,7 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 	};
 	return {
 		draft,
-		state: sendState({ busy, hasInput: draft.trim() !== "" }),
+		state: sendState({ busy, hasInput }),
 		sendDraft,
 		onChange: (event) => {
 			setDraft(event.target.value);
@@ -52,4 +57,18 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 			attach(files);
 		},
 	};
+}
+
+function useHoldsDraftOnLeave(draft: string): void {
+	const holdDraftText = useCommand(HoldDraftTextCommand);
+	const latestDraft = useRef(draft);
+	latestDraft.current = draft;
+	const latestHold = useRef(holdDraftText);
+	latestHold.current = holdDraftText;
+	useEffect(
+		() => () => {
+			void latestHold.current.run({ said: latestDraft.current });
+		},
+		[],
+	);
 }

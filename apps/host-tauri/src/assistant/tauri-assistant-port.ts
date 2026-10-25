@@ -1,5 +1,10 @@
 import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
-import type { AssistantPort, AssistantProvider, AssistantSetup } from "@widgetarium/core/engine/assistant-port.js";
+import type {
+	AssistantPort,
+	AssistantProvider,
+	AssistantSetup,
+	RenderMarkdown,
+} from "@widgetarium/core/engine/assistant-port.js";
 import type { ClaudeOptions } from "@widgetarium/assistant";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
@@ -26,6 +31,7 @@ export interface TauriAssistantDoors {
 	readonly folders: LentFolders;
 	readonly claude: ClaudeChoices;
 	readonly chats?: ChatsLink;
+	readonly renderMarkdown?: RenderMarkdown;
 }
 
 export const PREFERRED_PROVIDER = "claude-code";
@@ -61,17 +67,45 @@ interface PortHeld {
 export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPort {
 	const held: PortHeld = { answer: null, chosen: null, helperAgents: false, setupWatchers: new Set() };
 	const sessions = new ChatSessions(doors.chats ?? ONE_CHAT_LINK, turnStarter(doors, held));
-	return {
+	const setup = setupDoorsOf(doors, held);
+	const chatPorts = new Map<string, AssistantPort>();
+	const port: TauriAssistantPort = {
 		...NO_ASSISTANT,
 		can: true,
 		...sessionDoorsOf(sessions, doors, held),
-		...setupDoorsOf(doors, held),
+		...setup,
+		forChat: (chatId) => {
+			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held }) };
+			chatPorts.set(chatId, made);
+			return made;
+		},
+	};
+	return port;
+}
+
+interface CompactParts {
+	readonly doors: TauriAssistantDoors;
+	readonly held: PortHeld;
+}
+
+function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: CompactParts): Partial<AssistantPort> {
+	return {
+		session: () => sessions.nowOf(chatId),
+		onSession: (changed) => sessions.watchChat(chatId, changed),
+		send: async (said) => (await sessions.sessionOf(chatId)).send(said),
+		retry: () => sessions.readyOf(chatId)?.retry(),
+		stop: () => sessions.readyOf(chatId)?.stop(),
+		clear: async () => (await sessions.sessionOf(chatId)).clear(),
+		compact: async () => {
+			await refuseOrThrow(doors, held);
+			await (await sessions.sessionOf(chatId)).compact();
+		},
 	};
 }
 
 function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held: PortHeld): SessionDoors {
 	return {
-		shownRead: async () => void (await sessions.shownSession()),
+		shownRead: () => sessions.readShown(),
 		session: sessions.now,
 		onSession: sessions.watch,
 		send: async (said) => (await sessions.shownSession()).send(said),
@@ -84,7 +118,7 @@ function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held
 
 function setupDoorsOf(doors: TauriAssistantDoors, held: PortHeld): SetupDoors {
 	return {
-		setup: async () => setupOf(await freshProviders(doors.bridge, held), held),
+		setup: async () => setupOf(await freshProviders(doors.bridge, held), held, doors.renderMarkdown ?? null),
 		onSetup: (changed) => {
 			held.setupWatchers.add(changed);
 			return () => void held.setupWatchers.delete(changed);
@@ -117,19 +151,22 @@ async function refuseCompact(bridge: AssistantBridge, held: PortHeld): Promise<s
 }
 
 async function compact(doors: TauriAssistantDoors, held: PortHeld, sessions: ChatSessions): Promise<void> {
+	await refuseOrThrow(doors, held);
+	await (await sessions.shownSession()).compact();
+}
+
+async function refuseOrThrow(doors: TauriAssistantDoors, held: PortHeld): Promise<void> {
 	const refusal = await refuseCompact(doors.bridge, held);
 	if (refusal !== null) {
 		throw new Error(refusal);
 	}
-
-	await (await sessions.shownSession()).compact();
 }
 
 function shownProvider(facts: ProviderFacts): AssistantProvider {
 	return { id: facts.id, label: facts.label, canEdit: true, reads: facts.reads, compacts: facts.compacts };
 }
 
-function setupOf(answer: ProvidersAnswer, held: PortHeld): AssistantSetup {
+function setupOf(answer: ProvidersAnswer, held: PortHeld, renderMarkdown: RenderMarkdown | null): AssistantSetup {
 	const chosen = chosenIn(answer, held.chosen);
 	return {
 		isReady: answer.project !== null && chosen !== null,
@@ -137,7 +174,7 @@ function setupOf(answer: ProvidersAnswer, held: PortHeld): AssistantSetup {
 		providers: foundIn(answer).map(shownProvider),
 		chosen: chosen?.id ?? "",
 		helperAgents: held.helperAgents,
-		renderMarkdown: null,
+		renderMarkdown,
 	};
 }
 

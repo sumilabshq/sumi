@@ -7,7 +7,6 @@ import { CopyButton } from "./copy-button.js";
 export interface FinishLineProps {
 	readonly turn: AssistantTurn;
 	readonly outcome: TurnOutcome;
-	readonly copyText: (text: string) => Promise<void>;
 }
 
 const OUTCOME_SAID: Readonly<Record<TurnOutcome, string>> = {
@@ -16,14 +15,18 @@ const OUTCOME_SAID: Readonly<Record<TurnOutcome, string>> = {
 	failed: "Failed",
 };
 const ENDED_IN = "{outcome} · {took}";
+const COPY_ANSWER = "Copy the answer";
 
-export function FinishLine({ turn, outcome, copyText }: FinishLineProps): ReactElement {
+export function FinishLine({ turn, outcome }: FinishLineProps): ReactElement {
 	const isDone = outcome === "done";
 	return (
 		<div className={`wg-studio-ai-finish is-${outcome}`}>
-			<span className="wg-studio-ai-finish-dot" aria-hidden={true} />
+			<svg className="wg-studio-ai-finish-mark" viewBox="0 0 64 64" aria-hidden={true}>
+				<circle cx="32" cy="32" r="32" />
+				<path d="M18 34q6-8 12 0M34 34q6-8 12 0" />
+			</svg>
 			<span className="wg-studio-ai-finish-said">{endedSaid(turn, outcome)}</span>
-			{isDone && turn.text !== "" ? <CopyButton copy={() => copyText(turn.text)} /> : null}
+			{isDone && turn.text !== "" ? <CopyButton label={COPY_ANSWER} text={turn.text} /> : null}
 		</div>
 	);
 }

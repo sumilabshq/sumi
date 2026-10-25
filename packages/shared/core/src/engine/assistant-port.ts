@@ -24,10 +24,24 @@ export const AssistantCallSchema = z.object({
 	failed: z.boolean(),
 	at: z.number(),
 	answeredAt: z.number().optional(),
+	textOffset: z.number().optional(),
 	outputCounts: CallOutputCountsSchema.optional(),
 });
 
 export type AssistantCall = z.infer<typeof AssistantCallSchema>;
+
+export type CallAsked = Pick<AssistantCall, "ref" | "name" | "input">;
+
+export function freshCallOf(asked: CallAsked, at: number, textOffset: number): AssistantCall {
+	return {
+		...asked,
+		output: "",
+		answered: false,
+		failed: false,
+		at,
+		textOffset,
+	};
+}
 
 export const TurnOutcomeSchema = z.enum(["done", "stopped", "failed"]);
 
@@ -100,6 +114,7 @@ export type AttachedFilesReach = "path" | "inline" | "none";
 export interface ProviderReads {
 	readonly images: boolean;
 	readonly files: AttachedFilesReach;
+	readonly mostAttached?: number;
 }
 
 export interface AssistantProvider {
@@ -158,6 +173,11 @@ export interface AssistantPort {
 	approveDesign(app: string): Promise<void>;
 	openDesign(app: string): Promise<void>;
 	progressWidget(): ProgressWidget;
+	forChat?(chatId: string): AssistantPort;
+}
+
+export function portForChat(port: AssistantPort, chatId: string): AssistantPort {
+	return port.forChat?.(chatId) ?? port;
 }
 
 export const ASSISTANT_NOT_AVAILABLE = "AI is not available on this host";

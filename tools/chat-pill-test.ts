@@ -10,7 +10,7 @@ type Theme = "light" | "dark";
 
 const VIEW: readonly [number, number] = [640, 1400];
 const SLACK_PX = 1;
-const STATES = ["done", "running", "check-failed", "run-failed", "asking", "stopped-kept", "hero-alone"];
+const STATES = ["done", "running", "check-failed", "run-failed", "asking", "stopped-kept", "hero-alone", "empty"];
 const THEMES: readonly Theme[] = ["light", "dark"];
 const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-chat-pill"));
 mkdirSync(shotsAt, { recursive: true });
@@ -34,42 +34,8 @@ const PAINT_OF = `(token) => {
 	return painted;
 }`;
 
-const TEXT_BOX_OF = `(node) => {
-	const range = document.createRange();
-	range.selectNodeContents(node);
-	return range.getBoundingClientRect();
-}`;
-
-const BOARD_INK = {
-	w: 29.34,
-	h: 28.67,
-	gapToTitle: 15.33,
-	centreVsTitleBlock: -0.5,
-};
-const INK_SLACK_PX = 0.5;
-
-const INK_SEEN = `(() => {
-	document.getAnimations().forEach((running) => {
-		running.pause();
-		running.currentTime = 0;
-	});
-	const head = document.querySelector(".wg-studio-ai-head");
-	const drawing = head.querySelector(".wg-mascot-svg").getScreenCTM();
-	const corner = new DOMPoint(16, 26).matrixTransform(drawing);
-	const across = new DOMPoint(104, 112).matrixTransform(drawing);
-	const title = head.querySelector(".wg-studio-ai-title").getBoundingClientRect();
-	const named = head.querySelector(".wg-studio-ai-named").getBoundingClientRect();
-	const rounded = (value) => Math.round(value * 100) / 100;
-	return {
-		w: rounded(across.x - corner.x),
-		h: rounded(across.y - corner.y),
-		gapToTitle: rounded(title.left - across.x),
-		centreVsTitleBlock: rounded((corner.y + across.y) / 2 - (named.top + named.height / 2)),
-	};
-})()`;
-
 const OPEN_TOOLS = `(() => {
-	document.querySelector(".wg-studio-ai-tools-head").click();
+	document.querySelectorAll(".wg-studio-ai-tools-head").forEach((head) => head.click());
 	return true;
 })()`;
 
@@ -80,45 +46,58 @@ const OPEN_EDIT = `(() => {
 })()`;
 
 const TOOLS_SEEN = `(() => {
-	const paintOf = ${PAINT_OF};
-	const head = document.querySelector(".wg-studio-ai-tools-head");
-	const said = (${TEXT_BOX_OF})(head.querySelector(".wg-studio-ai-tools-said"));
-	const round = head.querySelector(".wg-studio-ai-round").getBoundingClientRect();
-	const box = head.getBoundingClientRect();
-	const marks = [...document.querySelectorAll(".wg-studio-ai-call-mark")].map((mark) => ({
-		kind: [...mark.classList].find((name) => name.startsWith("is-")),
-		fill: getComputedStyle(mark).backgroundColor,
-	}));
+	const answer = [...document.querySelectorAll(".wg-studio-ai-turn")].find((turn) => turn.classList.contains("is-mine") === false);
+	const firstSaid = answer.querySelector(".wg-studio-ai-said");
+	const said = firstSaid.getBoundingClientRect();
+	const head = answer.querySelector(".wg-studio-ai-tools-head");
+	const icon = head.querySelector(".wg-studio-ai-tools-icon").getBoundingClientRect();
 	return {
-		saidFromLeft: Math.round(said.left - box.left),
-		roundFromRight: Math.round(box.right - round.right),
-		took: head.querySelector(".wg-studio-ai-tools-took")?.textContent ?? null,
+		flow: [...answer.children].map((part) => (part.classList.contains("wg-studio-ai-tools") ? "tools" : "said")),
+		iconVsText: Math.round(icon.left - said.left - parseFloat(getComputedStyle(firstSaid).paddingLeft)),
+		heads: [...answer.querySelectorAll(".wg-studio-ai-tools-said")].map((part) => part.textContent),
+		took: [...answer.querySelectorAll(".wg-studio-ai-tools-took")].map((part) => part.textContent),
+		headFill: getComputedStyle(head).backgroundColor,
 		names: [...document.querySelectorAll(".wg-studio-ai-call-name")].map((name) => name.textContent),
 		codes: [...document.querySelectorAll(".wg-studio-ai-call-name code")].map((code) => code.textContent),
 		metas: [...document.querySelectorAll(".wg-studio-ai-call-head")].map(
 			(row) => row.querySelector(".wg-studio-ai-call-meta, .wg-studio-ai-chip")?.textContent ?? null,
 		),
-		marks,
-		tokens: {
-			search: paintOf("--wg-kit-accent-wash"),
-			read: paintOf("--wg-kit-accent-wash"),
-			edit: paintOf("--wg-kit-accent"),
-			run: paintOf("--primary"),
-		},
+		markFills: [...document.querySelectorAll(".wg-studio-ai-call-mark")].map((mark) => getComputedStyle(mark).backgroundColor),
 	};
-})()`;
-
-const CLOSED_HEAD = `(() => {
-	const head = document.querySelector(".wg-studio-ai-tools-head");
-	const said = (${TEXT_BOX_OF})(head.querySelector(".wg-studio-ai-tools-said"));
-	const box = head.getBoundingClientRect();
-	return { saidFromLeft: Math.round(said.left - box.left), said: head.textContent };
 })()`;
 
 const DIFF_SEEN = `(() => ({
 	file: document.querySelector(".wg-studio-ai-diff-file")?.textContent ?? null,
 	lines: [...document.querySelectorAll(".wg-studio-ai-diff-line")].map((line) => line.className.split(" is-")[1]),
 }))()`;
+
+const MINE_SEEN = `(() => {
+	const line = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-mine-line");
+	return {
+		said: line?.querySelector(":scope > span:not(.wg-studio-ai-mine-time)")?.textContent + line?.querySelector(".wg-studio-ai-mine-time")?.textContent,
+		opacity: line ? getComputedStyle(line).opacity : null,
+		fullTime: line?.querySelector(".wg-studio-ai-mine-time")?.getAttribute("data-tip-said") ?? null,
+		copyLabel: line?.querySelector("button")?.getAttribute("aria-label") ?? null,
+		addsHeight: Math.round(line.closest(".wg-studio-ai-turn").getBoundingClientRect().height - line.closest(".wg-studio-ai-turn").querySelector(".wg-studio-ai-said").getBoundingClientRect().height),
+		fitsGap: line.getBoundingClientRect().bottom <= line.closest(".wg-studio-ai-turn").nextElementSibling.getBoundingClientRect().top,
+		textBelowBubble: Math.round(line.querySelector("span").getBoundingClientRect().top - line.closest(".wg-studio-ai-turn").querySelector(".wg-studio-ai-said").getBoundingClientRect().bottom),
+		copySize: Math.round(line.querySelector("button").getBoundingClientRect().width),
+		isSelectable: getComputedStyle(line).userSelect !== "none",
+	};
+})()`;
+
+function pointIn(held: unknown): readonly [number, number] {
+	if (!Array.isArray(held) || typeof held[0] !== "number" || typeof held[1] !== "number") {
+		throw new Error(`not a point: ${JSON.stringify(held)}`);
+	}
+
+	return [held[0], held[1]];
+}
+
+const MINE_SPOT = `(() => {
+	const box = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said").getBoundingClientRect();
+	return { at: [box.left + box.width / 2, box.top + box.height / 2] };
+})()`;
 
 const FINISH_SEEN = `(() => {
 	const paintOf = ${PAINT_OF};
@@ -224,15 +203,6 @@ const QUESTION_SEEN = `(() => {
 	} : null;
 })()`;
 
-const HEAD_SEEN = `(() => {
-	const head = document.querySelector(".wg-studio-ai-head");
-	return head ? {
-		order: [...head.children].map((child) => child.className.split(" ")[0] || child.tagName),
-		title: head.querySelector(".wg-studio-ai-title")?.textContent ?? null,
-		saysProvider: /Claude Code|helpers (on|off)/.test(head.textContent),
-	} : null;
-})()`;
-
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
 	const isOk = JSON.stringify(got) === JSON.stringify(wanted);
@@ -262,13 +232,14 @@ async function opened(page: AskedPage, state: string): Promise<void> {
 }
 
 function checkTools(seen: Readonly<Record<string, unknown>>): void {
-	holds("the open head says Used N tools from the left edge", seen["saidFromLeft"] === 14, seen["saidFromLeft"]);
-	holds(
-		"and its round chevron stands at the right edge",
-		Number(seen["roundFromRight"]) <= 8 + SLACK_PX,
-		seen["roundFromRight"],
-	);
-	check("the group's duration is the span of its calls", seen["took"], "12 s");
+	check("tools stand between the words they came with", seen["flow"], ["said", "tools", "said", "tools", "said"]);
+	check("each group says what it did", seen["heads"], [
+		"Used 2 tools · searched, read",
+		"Used 3 tools · edited 1 file, ran 2 commands",
+	]);
+	holds("a group's icon starts where the text starts", Math.abs(Number(seen["iconVsText"])) <= SLACK_PX, seen);
+	check("a group's duration is the span of its calls", seen["took"], ["1 s", "10 s"]);
+	check("a group head is a line of text, not a plate", seen["headFill"], "rgba(0, 0, 0, 0)");
 	check("every row is a verb and an object", seen["names"], [
 		"Searched languages",
 		"Read translator/widget.tsx",
@@ -282,19 +253,21 @@ function checkTools(seen: Readonly<Record<string, unknown>>): void {
 		'widgets.mjs report "Translator"',
 	]);
 	check("each row's meta comes from the call", seen["metas"], ["5 hits", "212 lines", "+2 −1", "passed", "passed"]);
-	const tokens = recordOf(seen["tokens"]);
-	const marks = Array.isArray(seen["marks"]) ? seen["marks"].map(recordOf) : [];
 	check(
-		"the row's mark is painted by its kind",
-		marks.map((mark) => mark["fill"] === tokens[String(mark["kind"]).replace("is-", "")]),
-		[true, true, true, true, true],
-	);
-	check(
-		"and the kinds are search, read, edit, run, run",
-		marks.map((mark) => mark["kind"]),
-		["is-search", "is-read", "is-edit", "is-run", "is-run"],
+		"a row's mark is a quiet glyph with no painted circle",
+		seen["markFills"],
+		Array.from({ length: 5 }, () => "rgba(0, 0, 0, 0)"),
 	);
 }
+
+const STARTERS_SEEN = `(() => {
+	const rows = [...document.querySelectorAll(".wg-studio-ai-starter")];
+	return {
+		titles: rows.map((row) => row.textContent),
+		stacked: rows.every((row, at) => at === 0 || row.getBoundingClientRect().top >= rows[at - 1].getBoundingClientRect().bottom),
+		fills: rows.map((row) => getComputedStyle(row).backgroundColor),
+	};
+})()`;
 
 const server = http.createServer((request, response) => {
 	response.setHeader("content-type", "text/html");
@@ -308,21 +281,6 @@ for (const theme of THEMES) {
 	const page = await paged(`${origin}${theme}`, "chat pill", { size: VIEW });
 	try {
 		await opened(page, "done");
-		if (theme === "light") {
-			const closed = recordOf(await page.ask(CLOSED_HEAD));
-			holds("the closed head is never centred", closed["saidFromLeft"] === 10, closed);
-			check("the chat head reads Ink and the app, and names no provider", recordOf(await page.ask(HEAD_SEEN)), {
-				order: ["wg-mascot", "wg-studio-ai-named"],
-				title: "Untitled app",
-				saysProvider: false,
-			});
-			const ink = recordOf(await page.ask(INK_SEEN));
-			holds(
-				"the header Ink box equals the boards', its size, its gap to the title and its centring, within half a pixel",
-				Object.entries(BOARD_INK).every(([key, board]) => Math.abs(Number(ink[key]) - board) <= INK_SLACK_PX),
-				{ seen: ink, board: BOARD_INK },
-			);
-		}
 		await page.ask(OPEN_TOOLS);
 		await waited(200);
 		if (theme === "light") checkTools(recordOf(await page.ask(TOOLS_SEEN)));
@@ -337,6 +295,23 @@ for (const theme of THEMES) {
 			check("the finish status says how long the answer took", finish["said"], "Done · 1 m 12 s");
 			holds("on a success dot", finish["dot"] === finish["success"], finish);
 			check("beside a copy button", finish["copyLabel"], "Copy the answer");
+			check("my message's line rests hidden", recordOf(await page.ask(MINE_SEEN))["opacity"], "0");
+			const [mineX, mineY] = pointIn(recordOf(await page.ask(MINE_SPOT))["at"]);
+			await page.hover(mineX, mineY);
+			await waited(300);
+			check("hovering my message shows who read it, when, and a copy button", recordOf(await page.ask(MINE_SEEN)), {
+				said: "Read by Sumi10 minutes ago",
+				opacity: "1",
+				fullTime: new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(
+					Number(await page.ask("window.__T0__")),
+				),
+				copyLabel: "Copy the message",
+				addsHeight: 36,
+				fitsGap: true,
+				textBelowBubble: 10,
+				copySize: 24,
+				isSelectable: false,
+			});
 			check("the result pair reads the turn and its report", finish["result"], [
 				"Report · 12 features · Changed · 1 file · 1 check passed",
 				"3 of 12features work",
@@ -385,6 +360,13 @@ for (const theme of THEMES) {
 		for (const state of STATES.slice(1)) {
 			await opened(page, state);
 			writeFileSync(path.join(shotsAt, `chat-${state}-${theme}.png`), await page.shoot());
+			if (state === "empty" && theme === "light") {
+				check("the starters are a list of titles, one under another, with no plate", await page.ask(STARTERS_SEEN), {
+					titles: ["Create an app", "Design the app"],
+					stacked: true,
+					fills: ["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0)"],
+				});
+			}
 		}
 		if (theme === "light") {
 			await opened(page, "running");

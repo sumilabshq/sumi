@@ -7,6 +7,7 @@ export const AttachedFilesReachSchema = z.enum(["path", "inline", "none"]);
 export const ProviderReadsSchema = z.object({
 	images: z.boolean(),
 	files: AttachedFilesReachSchema,
+	mostAttached: z.number().int().positive().optional(),
 });
 
 export type ProviderReads = z.infer<typeof ProviderReadsSchema>;
@@ -77,6 +78,10 @@ export const MessageAskedSchema = z.object({
 	said: z.string(),
 });
 
+export const DraftTextSchema = z.object({ said: z.string() });
+
+export const ChatOpenedSchema = z.object({ chatId: z.string().min(1) });
+
 export const TallySchema = z.object({
 	passed: z.number(),
 	all: z.number(),
@@ -103,6 +108,7 @@ export const AssistantCallSchema = z.object({
 	failed: z.boolean(),
 	at: z.number(),
 	answeredAt: z.number().optional(),
+	textOffset: z.number().optional(),
 	outputCounts: CallOutputCountsSchema.optional(),
 });
 
@@ -163,10 +169,24 @@ export const CallFaceSchema = z.object({
 	change: CallChangeSchema.nullable(),
 });
 
+const SaidStepSchema = z.object({
+	kind: z.literal("said"),
+	text: z.string(),
+});
+
+const ToolsStepSchema = z.object({
+	kind: z.literal("tools"),
+	calls: z.array(AssistantCallSchema),
+	faces: z.array(CallFaceSchema),
+});
+
+export const TurnStepSchema = z.discriminatedUnion("kind", [SaidStepSchema, ToolsStepSchema]);
+
+export type TurnStep = z.infer<typeof TurnStepSchema>;
+
 export const ShownTurnSchema = z.object({
 	turn: AssistantTurnSchema,
-	said: z.string(),
-	faces: z.array(CallFaceSchema),
+	steps: z.array(TurnStepSchema),
 	attached: z.array(AttachmentChipSchema),
 });
 
@@ -279,12 +299,6 @@ export type SlashName = z.infer<typeof SlashNameSchema>;
 
 export const SlashNamesSchema = z.array(SlashNameSchema);
 
-export const StarterSchema = z.enum(["create", "design"]);
-
-export type Starter = z.infer<typeof StarterSchema>;
-
-export const StarterAskedSchema = z.object({ starter: StarterSchema });
-
 export const WorkingFoldersSchema = z.object({
 	workspace: z.string(),
 	current: z.string().nullable(),
@@ -350,14 +364,6 @@ export const AttachReachQuery = query("assistant/attach-reach")
 	.settlesNow();
 export const AttachFolderCommand = command("assistant/attach-folder")
 	.idempotencyKey(PerCall);
-export const ComposerStarterQuery = query("assistant/composer-starter")
-	.output(StarterSchema.nullable())
-	.settlesNow();
-export const PickStarterCommand = command("assistant/pick-starter")
-	.input(StarterAskedSchema)
-	.idempotencyKey(PerCall);
-export const DropStarterCommand = command("assistant/drop-starter")
-	.idempotencyKey(Repeatable);
 export const FileDragQuery = query("assistant/file-drag")
 	.output(FileDragSchema)
 	.settlesNow();
@@ -371,9 +377,16 @@ export const SlashCommandsQuery = query("assistant/slash-commands")
 	.output(SlashNamesSchema);
 export const ClearChatCommand = command("assistant/clear-chat")
 	.idempotencyKey(Repeatable);
+export const HoldDraftTextCommand = command("assistant/hold-draft-text")
+	.input(DraftTextSchema)
+	.idempotencyKey(PerCall);
+export const OpenChatDraftCommand = command("assistant/open-chat-draft")
+	.input(ChatOpenedSchema)
+	.output(DraftTextSchema)
+	.idempotencyKey(PerCall);
 export const CompactChatCommand = command("assistant/compact-chat")
 	.idempotencyKey(Repeatable);
 export const FileDraggedEvent = event("assistant/file-dragged")
 	.input(FileDragEventSchema);
 
-export const AssistantModule = moduleContract("assistant", Device, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, ComposerStarterQuery, PickStarterCommand, DropStarterCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, CompactChatCommand]);
+export const AssistantModule = moduleContract("assistant", Device, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, CompactChatCommand]);

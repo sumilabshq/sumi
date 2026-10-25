@@ -160,9 +160,12 @@ export function resumesWithoutAnId(provider: ProviderTemplate | null | undefined
 	return resumeArgs !== "" && !resumeArgs.includes("{value}");
 }
 
+const INLINE_MOST_ATTACHED = 10;
+
 const INLINE_ONLY: ProviderReads = {
 	images: false,
 	files: "inline",
+	mostAttached: INLINE_MOST_ATTACHED,
 };
 
 const READS_NOTHING: ProviderReads = {

@@ -2,50 +2,28 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
-import { PickStarterCommand } from "@widgetarium/assistant";
-import type { Starter } from "@widgetarium/assistant";
+import { PrefillDraftCommand } from "@widgetarium/assistant";
+import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
 
-interface StarterFace {
-	readonly starter: Starter;
-	readonly icon: string;
-	readonly title: string;
-	readonly line: string;
-}
-
-const STARTERS: readonly StarterFace[] = [
-	{
-		starter: "create",
-		icon: "code-xml",
-		title: "Create an app",
-		line: "Describe it in a sentence. Ink writes the code and runs it.",
-	},
-	{
-		starter: "design",
-		icon: "layout-panel-left",
-		title: "Design the app",
-		line: "Screens and look first, drawn on the canvas. No code yet.",
-	},
-];
+const TITLE_OF: Readonly<Record<string, string>> = {
+	"create-app": "Create an app",
+	"design-app": "Design the app",
+};
 
 export function Starters(): ReactElement {
-	const pick = useCommand(PickStarterCommand);
+	const prefillDraft = useCommand(PrefillDraftCommand);
 	return (
 		<div className="wg-studio-ai-starters">
-			{STARTERS.map(({ starter, icon, title, line }) => (
+			{SKILL_ENTRIES.map(({ name, icon }) => (
 				<button
-					key={starter}
+					key={name}
 					type="button"
 					className="wg-studio-ai-starter"
-					data-starter={starter}
-					onClick={() => void pick.run({ starter })}
+					data-starter={name}
+					onClick={() => void prefillDraft.run({ text: `/${name} ` })}
 				>
-					<span className="wg-studio-ai-starter-icon">
-						<Icon name={icon} size={20} />
-					</span>
-					<span className="wg-studio-ai-starter-words">
-						<b>{title}</b>
-						<span>{line}</span>
-					</span>
+					<Icon name={icon} size={16} className="wg-studio-ai-starter-icon" />
+					{TITLE_OF[name] ?? `/${name}`}
 				</button>
 			))}
 		</div>

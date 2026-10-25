@@ -6,6 +6,7 @@ import type { AttachmentFilesGateway } from "../attachment-files/attachment-file
 import { NoAttachmentFilesGateway } from "../attachment-files/none.gateway.js";
 import { PrivateFolderAttachmentFilesGateway } from "../attachment-files/private-folder.gateway.js";
 import { NoAttachmentFolderGateway } from "../attachment-folder/none.gateway.js";
+import { MemoryChatDraftsGateway } from "../chat-drafts/memory.gateway.js";
 import { NoClaudeOptionsGateway } from "../claude-options/none.gateway.js";
 import { SystemClockGateway } from "../clock/system.gateway.js";
 import { MemoryComposerPrefillGateway } from "../composer-prefill/memory.gateway.js";
@@ -13,7 +14,6 @@ import { MemoryDraftAttachmentsGateway } from "../draft-attachments/memory.gatew
 import { MemoryFileDragGateway } from "../file-drag/memory.gateway.js";
 import { NoFileDropGateway } from "../file-drop/none.gateway.js";
 import { MemorySentAttachmentsGateway } from "../sent-attachments/memory.gateway.js";
-import { MemoryStarterGateway } from "../starter/memory.gateway.js";
 import { NoWorkingFoldersGateway } from "../working-folders/none.gateway.js";
 import type { AssistantParts } from "./assistant-parts.gateway.js";
 
@@ -30,7 +30,7 @@ export function portAssistantParts(port: AssistantPort, attachmentFiles: Attachm
 		draftAttachments: new MemoryDraftAttachmentsGateway(),
 		sentAttachments: new MemorySentAttachmentsGateway(),
 		composerPrefill: new MemoryComposerPrefillGateway(),
-		starter: new MemoryStarterGateway(),
+		chatDrafts: new MemoryChatDraftsGateway(),
 		fileDrag: new MemoryFileDragGateway(),
 	};
 }

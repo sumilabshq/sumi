@@ -12,8 +12,8 @@ export interface ToolCallsProps {
 export function ToolCalls({ calls, faces }: ToolCallsProps): ReactElement {
 	const [isOpen, setOpen] = useState(false);
 	return (
-		<div className={isOpen ? "wg-studio-ai-tools is-open" : "wg-studio-ai-tools"}>
-			<ToolsHead calls={calls} isOpen={isOpen} onToggle={() => setOpen(!isOpen)} />
+		<div className="wg-studio-ai-tools">
+			<ToolsHead calls={calls} faces={faces} isOpen={isOpen} onToggle={() => setOpen(!isOpen)} />
 			{isOpen ? <CallRows calls={calls} faces={faces} /> : null}
 		</div>
 	);

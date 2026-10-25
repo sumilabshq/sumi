@@ -3,10 +3,10 @@ import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { useMenuOpening } from "../../lib/menu-spot.js";
-import { GlassMenu } from "../glass-menu/glass-menu.js";
-import { GlassMenuLine } from "../glass-menu/glass-menu-line.js";
-import { GlassMenuNote } from "../glass-menu/glass-menu-note.js";
-import { GlassMenuRow } from "../glass-menu/glass-menu-row.js";
+import { ChatMenu } from "../chat-menu/chat-menu.js";
+import { ChatMenuLine } from "../chat-menu/chat-menu-line.js";
+import { ChatMenuNote } from "../chat-menu/chat-menu-note.js";
+import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { useAttachesFiles } from "../../lib/use-attaches-files.js";
 import { AttachFolderCommand, AttachReachQuery } from "@widgetarium/assistant";
 
@@ -14,7 +14,6 @@ const ADD = "Add";
 const ATTACH_FILES = "Attach images or files";
 const ATTACH_FOLDER = "Attach a folder…";
 const DROP_OR_PASTE = "Drop or paste anywhere in the chat";
-const PLUS_MENU_PX = 316;
 
 export function ComposerTools(): ReactElement {
 	const picker = useRef<HTMLInputElement>(null);
@@ -31,7 +30,7 @@ export function ComposerTools(): ReactElement {
 				aria-haspopup="menu"
 				onClick={plus.openAt}
 			>
-				<Icon name="plus" size={18} />
+				<Icon name="plus" size={16} />
 			</button>
 			<input
 				ref={picker}
@@ -44,8 +43,8 @@ export function ComposerTools(): ReactElement {
 					event.target.value = "";
 				}}
 			/>
-			<GlassMenu spot={plus.spot} width={PLUS_MENU_PX} onDismiss={plus.close}>
-				<GlassMenuRow
+			<ChatMenu spot={plus.spot} onDismiss={plus.close}>
+				<ChatMenuRow
 					text={ATTACH_FILES}
 					mark={<Icon name="upload" size={16} />}
 					onPick={() => {
@@ -54,7 +53,7 @@ export function ComposerTools(): ReactElement {
 					}}
 				/>
 				{canAttachFolders ? (
-					<GlassMenuRow
+					<ChatMenuRow
 						text={ATTACH_FOLDER}
 						mark={<Icon name="folder" size={16} />}
 						onPick={() => {
@@ -63,9 +62,9 @@ export function ComposerTools(): ReactElement {
 						}}
 					/>
 				) : null}
-				<GlassMenuLine />
-				<GlassMenuNote>{DROP_OR_PASTE}</GlassMenuNote>
-			</GlassMenu>
+				<ChatMenuLine />
+				<ChatMenuNote>{DROP_OR_PASTE}</ChatMenuNote>
+			</ChatMenu>
 		</>
 	);
 }

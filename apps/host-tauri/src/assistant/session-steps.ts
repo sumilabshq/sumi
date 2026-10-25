@@ -4,6 +4,7 @@ import type {
 	AssistantTurn,
 	TurnOutcome,
 } from "@widgetarium/core/engine/assistant-port.js";
+import { freshCallOf } from "@widgetarium/core/engine/assistant-port.js";
 import type { StreamPart, ToolResult } from "@widgetarium/core/engine/provider-stream.js";
 
 export const EMPTY_SESSION: AssistantSession = {
@@ -16,7 +17,7 @@ export const EMPTY_SESSION: AssistantSession = {
 };
 
 export function startedTurn(session: AssistantSession, asked: string, at: number): AssistantSession {
-	const question: AssistantTurn = { role: "user", text: asked, calls: [] };
+	const question: AssistantTurn = { role: "user", text: asked, calls: [], startedAt: at };
 	const answer: AssistantTurn = { role: "agent", text: "", calls: [], startedAt: at };
 	return withStarted(session, [question, answer]);
 }
@@ -68,9 +69,11 @@ export function withPart(session: AssistantSession, part: StreamPart, at: number
 	}
 
 	if ("call" in part) {
-		const fresh: AssistantCall = { ...part.call, output: "", answered: false, failed: false, at };
 		const calling = { ...session, tool: part.call.name, phase: "tools" as const };
-		return intoLastTurn(calling, (turn) => ({ ...turn, calls: [...turn.calls, fresh] }));
+		return intoLastTurn(calling, (turn) => ({
+			...turn,
+			calls: [...turn.calls, freshCallOf(part.call, at, turn.text.length)],
+		}));
 	}
 
 	if ("result" in part) {

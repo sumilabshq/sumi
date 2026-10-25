@@ -3,17 +3,19 @@ import http from "node:http";
 import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
 import { composerDiffReport } from "./chat-composer-diff.ts";
+import { UNJUDGED } from "./chat-composer-probe.ts";
 import { bundleOf } from "./harness.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const SEEN = `(() => ({
-	header: document.querySelectorAll(".wg-studio-ai-head").length,
+	header: document.querySelectorAll(".wg-studio-ai-head:not(.is-bare)").length,
 	strip: document.querySelectorAll("[data-claude-strip]").length,
-	folder: document.querySelectorAll(".wg-studio-ai-strip-button.is-outlined").length,
+	folder: document.querySelectorAll('.wg-studio-ai-strip-button[aria-label="Choose a folder"]').length,
 	welcome: document.querySelectorAll(".wg-studio-ai-welcome").length,
 	bar: [...document.querySelectorAll(".wg-studio-ai-field-bar")].map((bar) => bar.textContent).join(""),
 	model: document.querySelector(".wg-studio-ai-strip-button[aria-label=Model]")?.textContent ?? null,
+	provider: document.querySelector(".wg-studio-ai-provider")?.textContent ?? null,
 }))()`;
 
 let failed = 0;
@@ -49,15 +51,16 @@ async function seenIn(state: string, bundled: string): Promise<unknown> {
 
 const bundled = await bundleOf("tools/chat-composer-page.tsx");
 check(
-	"the empty chat draws no header, the welcome and the folder button; the field bar names no provider",
+	"the empty chat draws a bare head, the welcome and the folder button; the field names the provider in its chip",
 	await seenIn("empty", bundled),
 	{
 		header: 0,
 		strip: 1,
 		folder: 1,
 		welcome: 1,
-		bar: "",
+		bar: "Claude Code",
 		model: "Opus",
+		provider: "Claude Code",
 	},
 );
 check(
@@ -68,22 +71,25 @@ check(
 		strip: 1,
 		folder: 0,
 		welcome: 0,
-		bar: "",
+		bar: "Claude Code",
 		model: "Opus",
+		provider: "Claude Code",
 	},
 );
 check(
-	"another provider keeps the strip with only its model button, naming the provider",
+	"another provider has no Claude strip and no model button; the chip names the provider",
 	await seenIn("codex", bundled),
 	{
 		header: 1,
 		strip: 0,
 		folder: 0,
 		welcome: 0,
-		bar: "",
-		model: "Codex",
+		bar: "Codex",
+		model: null,
+		provider: "Codex",
 	},
 );
+UNJUDGED.forEach((why) => console.log(`unjudged: ${why}`));
 const report = await composerDiffReport();
 report.differences.forEach((difference) =>
 	console.log(

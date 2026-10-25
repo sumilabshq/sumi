@@ -27,6 +27,7 @@ export const AssistantCallSchema = z.object({
 	failed: z.boolean(),
 	at: z.number(),
 	answeredAt: z.number().optional(),
+	textOffset: z.number().optional(),
 	outputCounts: CallOutputCountsSchema.optional(),
 });
 
@@ -87,10 +88,24 @@ export const CallFaceSchema = z.object({
 	change: CallChangeSchema.nullable(),
 });
 
+const SaidStepSchema = z.object({
+	kind: z.literal("said"),
+	text: z.string(),
+});
+
+const ToolsStepSchema = z.object({
+	kind: z.literal("tools"),
+	calls: z.array(AssistantCallSchema),
+	faces: z.array(CallFaceSchema),
+});
+
+export const TurnStepSchema = z.discriminatedUnion("kind", [SaidStepSchema, ToolsStepSchema]);
+
+export type TurnStep = z.infer<typeof TurnStepSchema>;
+
 export const ShownTurnSchema = z.object({
 	turn: AssistantTurnSchema,
-	said: z.string(),
-	faces: z.array(CallFaceSchema),
+	steps: z.array(TurnStepSchema),
 	attached: z.array(AttachmentChipSchema),
 });
 

@@ -6,16 +6,15 @@ import type { AskedPage } from "./chrome-ask.ts";
 import {
 	CARD_PARTS,
 	EMPTY_PARTS,
-	FIELD_PARTS,
-	HOVER_ROW_PARTS,
+	ATTACH_PARTS,
 	IDLE_PARTS,
 	MENU_PARTS,
+	PROVIDER_PARTS,
 	PART_PROBE,
-	REMOVE_LAST_PARTS,
 	REMOVE_PARTS,
-	TIP_PARTS,
 	TYPED_PARTS,
 	USAGE_PARTS,
+	WORKING_PARTS,
 } from "./chat-composer-probe.ts";
 import type { Parts } from "./chat-composer-probe.ts";
 import { bundleOf } from "./harness.ts";
@@ -29,7 +28,7 @@ interface Phase {
 	readonly name: string;
 	readonly board: string;
 	readonly boardScope: Readonly<Record<Theme, string>>;
-	readonly menuLabel?: string;
+	readonly menuLabel?: { readonly board: string; readonly built: string | null };
 	readonly state: string;
 	readonly act: (page: AskedPage) => Promise<void>;
 	readonly parts: Parts;
@@ -46,6 +45,37 @@ const GEIST_FACES = (
 ).join("\n");
 const GEIST_LOADED = `(async (faces) => { if (faces !== "") { const sheet = document.createElement("style"); sheet.textContent = faces; document.head.append(sheet); } await Promise.all(["400 13px Geist", "500 13px Geist", "600 16px Geist", "400 15px Geist", "500 28px Geist"].map((face) => document.fonts.load(face))); await document.fonts.ready; return document.fonts.check("500 13px Geist"); })`;
 const SETTLE_MS = 400;
+const SUMI_SHEET = readFileSync(path.join(REPO, "design-systems/sumi/sumi.css"), "utf8");
+const SUMI_ROLES = [
+	"frame",
+	"plate",
+	"text",
+	"text-2",
+	"text-3",
+	"hover",
+	"active",
+	"line",
+	"line-strong",
+	"success",
+	"accent",
+	"on-accent",
+	"focus-ring",
+	"overlay",
+	"accent-text",
+	"sunken",
+];
+const SUMI_RENAMED = "--shadow-popover: var(--sumi-shadow-pop);";
+const IN_SUMI_PALETTE = `((sheet, isDark) => {
+	const roles = ${JSON.stringify(SUMI_ROLES)}.map((role) => "--" + role + ": var(--sumi-" + role + ");").join("") + ${JSON.stringify(SUMI_RENAMED)};
+	const style = document.createElement("style");
+	style.textContent = sheet + " .ink.ink { " + roles + " }";
+	document.head.append(style);
+	document.querySelectorAll(".ink").forEach((ink) => {
+		ink.classList.toggle("dark", isDark);
+		ink.classList.toggle("theme-dark", isDark);
+	});
+	return true;
+})`;
 const TYPED = "Add a weekly view to the habits page";
 const TYPE_IN = `((said) => { const box = document.querySelector(".wg-studio-ai-box"); box.focus(); const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set; setter.call(box, said); box.dispatchEvent(new Event("input", { bubbles: true })); return true; })`;
 const PRESS = `((selector, text) => { const found = [...document.querySelectorAll(selector)].find((el) => text === "" || el.getAttribute("aria-label") === text); found.click(); return true; })`;
@@ -74,110 +104,116 @@ async function pressed(page: AskedPage, selector: string, label: string): Promis
 	await waited(SETTLE_MS);
 }
 
-const SLICE_LIGHT = ".slice.tok:not(.dark)";
-const SLICE_DARK = ".slice.tok.dark";
+const COMPOSER_BOARD = "Ink-composer";
+const MENUS_BOARD = "Ink-menus";
+const ATTACHMENTS_BOARD = "Ink-attachments";
+const SHELL_BOARD = "Ink-shell";
+const EMPTY_STATE = "nth:0:.plate.cell";
+const TYPING_STATE = "nth:2:.plate.cell";
+const WORKING_STATE = "nth:5:.plate.cell";
 
 const PHASES: readonly Phase[] = [
 	{
 		name: "idle",
-		board: "ComposerMono",
-		boardScope: { light: SLICE_LIGHT, dark: SLICE_DARK },
+		board: COMPOSER_BOARD,
+		boardScope: { light: EMPTY_STATE, dark: EMPTY_STATE },
 		state: "composer",
 		act: noAct,
 		parts: IDLE_PARTS,
 	},
 	{
 		name: "typed",
-		board: "ComposerMono",
-		boardScope: {
-			light: `${SLICE_LIGHT}:has(.send.ready):has(.strip)`,
-			dark: `${SLICE_DARK}:has(.send.ready):has(.strip)`,
-		},
+		board: COMPOSER_BOARD,
+		boardScope: { light: TYPING_STATE, dark: TYPING_STATE },
 		state: "composer",
 		act: typedIn,
-		parts: {
-			...FIELD_PARTS,
-			...TYPED_PARTS,
-		},
+		parts: TYPED_PARTS,
 	},
 	{
-		name: "tooltip",
-		board: "ComposerMono",
-		boardScope: {
-			light: `${SLICE_LIGHT}:has(.send .tip)`,
-			dark: `${SLICE_DARK}:has(.send .tip)`,
-		},
-		state: "composer",
-		act: async (page) => {
-			await typedIn(page);
-			await hoveredOn(page, ".wg-studio-ai-send");
-		},
-		parts: TIP_PARTS,
+		name: "working",
+		board: COMPOSER_BOARD,
+		boardScope: { light: WORKING_STATE, dark: WORKING_STATE },
+		state: "working",
+		act: noAct,
+		parts: WORKING_PARTS,
+	},
+	{
+		name: "empty",
+		board: SHELL_BOARD,
+		boardScope: { light: "", dark: "" },
+		state: "empty",
+		act: noAct,
+		parts: EMPTY_PARTS,
 	},
 	{
 		name: "cards",
-		board: "ComposerMonoFolder",
-		boardScope: {
-			light: `${SLICE_LIGHT}:has(.afolder:not(.hovring))`,
-			dark: `${SLICE_DARK}:has(.afolder:not(.hovring))`,
-		},
+		board: ATTACHMENTS_BOARD,
+		boardScope: { light: "nth:0:.plate.cell", dark: "nth:0:.plate.cell" },
 		state: "attach",
 		act: noAct,
 		parts: CARD_PARTS,
 	},
 	{
 		name: "remove",
-		board: "ComposerMonoFolder",
-		boardScope: {
-			light: `${SLICE_LIGHT}:has(.afolder.hovring)`,
-			dark: `${SLICE_DARK}:has(.afolder.hovring)`,
-		},
+		board: ATTACHMENTS_BOARD,
+		boardScope: { light: "nth:2:.plate.cell", dark: "nth:2:.plate.cell" },
 		state: "attach",
-		act: async (page) => hoveredOn(page, "[data-attachment-card=folder]"),
+		act: async (page) => hoveredOn(page, ".wg-studio-ai-card.is-image"),
 		parts: REMOVE_PARTS,
 	},
 	{
-		name: "remove last",
-		board: "ComposerMonoFolder",
-		boardScope: {
-			light: `${SLICE_LIGHT}:has(.afile:not(.afolder).hovring)`,
-			dark: `${SLICE_DARK}:has(.afile:not(.afolder).hovring)`,
+		name: "mode menu",
+		board: MENUS_BOARD,
+		boardScope: { light: "", dark: "" },
+		menuLabel: { board: "Permission mode", built: "Permission mode" },
+		state: "composer",
+		act: async (page) => {
+			await pressed(page, ".wg-studio-ai-strip-button", "Permission mode");
+			await hoveredOn(page, ".wg-studio-ai-menu.is-open .wg-studio-ai-menu-row:not(.is-picked)");
 		},
-		state: "attach",
-		act: async (page) => hoveredOn(page, "[data-attachment-card=text]"),
-		parts: REMOVE_LAST_PARTS,
+		parts: MENU_PARTS,
 	},
 	{
 		name: "model menu",
-		board: "ComposerMonoStrip",
-		boardScope: { light: "nth:1:.slice", dark: "nth:1:.slice" },
-		menuLabel: "Provider",
+		board: MENUS_BOARD,
+		boardScope: { light: "", dark: "" },
+		menuLabel: { board: "Model", built: "Model" },
 		state: "composer",
 		act: async (page) => {
 			await pressed(page, ".wg-studio-ai-strip-button", "Model");
-			await hoveredOn(page, ".wg-studio-ai-menu-row:not(.is-picked)");
+			await hoveredOn(page, ".wg-studio-ai-menu.is-open .wg-studio-ai-menu-row:not(.is-picked)");
 		},
-		parts: {
-			...MENU_PARTS,
-			...HOVER_ROW_PARTS,
-		},
+		parts: MENU_PARTS,
 	},
 	{
 		name: "usage menu",
-		board: "ComposerMonoStrip",
+		board: MENUS_BOARD,
 		boardScope: { light: "", dark: "" },
-		menuLabel: "Usage",
+		menuLabel: { board: "Usage", built: "Usage" },
 		state: "composer",
 		act: async (page) => pressed(page, ".wg-studio-ai-strip-button", "Usage"),
 		parts: USAGE_PARTS,
 	},
 	{
-		name: "empty",
-		board: "ChatEmptyBottom",
-		boardScope: { light: ".pane.tok:not(.dark)", dark: ".pane.tok.dark" },
-		state: "empty",
-		act: noAct,
-		parts: EMPTY_PARTS,
+		name: "provider menu",
+		board: MENUS_BOARD,
+		boardScope: { light: "", dark: "" },
+		menuLabel: { board: "Agent", built: "Provider" },
+		state: "composer",
+		act: async (page) => pressed(page, ".wg-studio-ai-provider", "Provider"),
+		parts: PROVIDER_PARTS,
+	},
+	{
+		name: "attach menu",
+		board: MENUS_BOARD,
+		boardScope: { light: "", dark: "" },
+		menuLabel: { board: "Attach", built: null },
+		state: "composer",
+		act: async (page) => {
+			await pressed(page, ".wg-studio-ai-plus", "Add");
+			await hoveredOn(page, ".wg-studio-ai-menu.is-open .wg-studio-ai-menu-row:last-of-type");
+		},
+		parts: ATTACH_PARTS,
 	},
 ];
 
@@ -186,9 +222,8 @@ export interface ComposerDiffReport {
 	readonly measured: Readonly<Record<string, unknown>>;
 }
 
-function boardFileOf(phase: Phase, theme: Theme): string {
-	const dark = phase.board === "ComposerMonoStrip" && theme === "dark" ? "ComposerMonoStripDark" : phase.board;
-	return path.join(BOARDS, `${dark}.dc.html`);
+function boardFileOf(phase: Phase): string {
+	return path.join(BOARDS, `${phase.board}.dc.html`);
 }
 
 function asked(phase: Phase, theme: Theme, side: "board" | "built"): string {
@@ -198,10 +233,11 @@ function asked(phase: Phase, theme: Theme, side: "board" | "built"): string {
 }
 
 async function boardOf(phase: Phase, theme: Theme): Promise<Record<string, unknown>> {
-	const page = await paged(boardFileOf(phase, theme), "chat composer board", { size: [1600, 1500] });
+	const page = await paged(boardFileOf(phase), "chat composer board", { size: [1800, 1500] });
 
 	try {
 		await waited(2500);
+		await page.ask(`${IN_SUMI_PALETTE}(${JSON.stringify(SUMI_SHEET)}, ${JSON.stringify(theme === "dark")})`);
 		await page.ask(`${GEIST_LOADED}(${JSON.stringify(GEIST_FACES)})`);
 		const seen = await page.ask(asked(phase, theme, "board"));
 		return isRecord(seen) ? seen : {};
@@ -240,6 +276,22 @@ async function builtOf(phase: Phase, theme: Theme, bundled: string): Promise<Rec
 	}
 }
 
+function withMascotRenamed(seen: unknown): unknown {
+	if (typeof seen === "string") {
+		return seen.replace(/\bInk\b/g, "Sumi");
+	}
+
+	if (Array.isArray(seen)) {
+		return seen.map(withMascotRenamed);
+	}
+
+	if (isRecord(seen)) {
+		return Object.fromEntries(Object.entries(seen).map(([key, value]) => [key, withMascotRenamed(value)]));
+	}
+
+	return seen;
+}
+
 export async function composerDiffReport(): Promise<ComposerDiffReport> {
 	const bundled = await bundleOf("tools/chat-composer-page.tsx");
 	const found: Difference[] = [];
@@ -254,7 +306,7 @@ export async function composerDiffReport(): Promise<ComposerDiffReport> {
 				board,
 				built,
 			};
-			found.push(...differences(board, built, at));
+			found.push(...differences(withMascotRenamed(board), built, at));
 		}
 	}
 

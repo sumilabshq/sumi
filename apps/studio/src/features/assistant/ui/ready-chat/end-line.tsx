@@ -29,9 +29,5 @@ export function EndLine({ chat }: { readonly chat: Chat }): ReactNode {
 		return null;
 	}
 
-	return <FinishLine turn={last} outcome={last.outcome} copyText={copiedToClipboard} />;
-}
-
-function copiedToClipboard(text: string): Promise<void> {
-	return navigator.clipboard.writeText(text);
+	return <FinishLine turn={last} outcome={last.outcome} />;
 }

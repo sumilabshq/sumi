@@ -2,7 +2,7 @@ import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { useMenuOpening } from "../../lib/menu-spot.js";
-import { EFFORT_FACES, MODE_FACES, MODEL_FACES } from "../../lib/strip-faces.js";
+import { EFFORT_FACES, MODE_FACES } from "../../lib/strip-faces.js";
 import { percentOf } from "../../lib/usage-said.js";
 import { ModelButton } from "./model-button.js";
 import { OptionMenu } from "./option-menu.js";
@@ -16,8 +16,6 @@ const PERMISSION_MODE = "Permission mode";
 const EFFORT = "Effort";
 const USAGE = "Usage";
 const NO_USAGE = "—";
-const MODE_MENU_PX = 340;
-const PICK_MENU_PX = 272;
 
 export function ClaudeOptionButtons({ claude }: { readonly claude: ClaudeOptions }): ReactElement {
 	const choose = useCommand(ChooseClaudeOptionCommand);
@@ -35,13 +33,12 @@ export function ClaudeOptionButtons({ claude }: { readonly claude: ClaudeOptions
 				<UsageRing part={fiveHour?.used ?? null} />
 				{fiveHour === null ? NO_USAGE : percentOf(fiveHour.used)}
 			</StripButton>
-			<ModelButton claude={claude} shown={MODEL_FACES[claude.model].label} />
+			<ModelButton claude={claude} />
 			<StripButton label={EFFORT} isOn={effort.spot !== null} onOpen={effort.openAt}>
 				{EFFORT_FACES[claude.effort].label}
 			</StripButton>
 			<OptionMenu
 				label={PERMISSION_MODE}
-				width={MODE_MENU_PX}
 				opening={mode}
 				faces={MODE_FACES}
 				picked={claude.mode}
@@ -50,7 +47,6 @@ export function ClaudeOptionButtons({ claude }: { readonly claude: ClaudeOptions
 			<UsageMenu opening={usage} usage={claude.usage} />
 			<OptionMenu
 				label={EFFORT}
-				width={PICK_MENU_PX}
 				opening={effort}
 				faces={EFFORT_FACES}
 				picked={claude.effort}

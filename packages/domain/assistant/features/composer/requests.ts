@@ -5,17 +5,16 @@ import { AttachmentFilesGateway } from "../../gateways/attachment-files/attachme
 import { AttachmentFolderGateway } from "../../gateways/attachment-folder/attachment-folder.gateway.js";
 import { FOLDERS_NOT_HERE } from "../../gateways/attachment-folder/none.gateway.js";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
+import { ChatDraftsGateway } from "../../gateways/chat-drafts/chat-drafts.gateway.js";
 import { DraftAttachmentsGateway } from "../../gateways/draft-attachments/draft-attachments.gateway.js";
-import type { DraftAttachment } from "../../gateways/draft-attachments/draft-attachments.gateway.js";
 import { FileDragGateway } from "../../gateways/file-drag/file-drag.gateway.js";
-import type { FileDragState } from "../../gateways/file-drag/file-drag.gateway.js";
 import { FileDraggedEvent } from "../../gateways/file-drop/file-drop.events.js";
 import { SentAttachmentsGateway } from "../../gateways/sent-attachments/sent-attachments.gateway.js";
-import { StarterGateway } from "../../gateways/starter/starter.gateway.js";
 import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
 import { withAttachments } from "../../shared/lib/attachment-trailer.js";
 import { chosenOf } from "../../shared/lib/chosen-provider.js";
 import type { ChosenProvider } from "../../shared/lib/chosen-provider.js";
+import type { ProviderReads } from "../../shared/schema/agent-setup.schema.js";
 import {
 	AttachReachSchema,
 	AttachmentAskedSchema,
@@ -23,33 +22,22 @@ import {
 	FilesAskedSchema,
 	MessageAskedSchema,
 } from "../../shared/schema/attachment.schema.js";
+import { ChatOpenedSchema, DraftTextSchema } from "../../shared/schema/chat-draft.schema.js";
 import { DroppedAskedSchema, FileDragSchema, PageDragAskedSchema } from "../../shared/schema/file-drag.schema.js";
 import type { DroppedFile } from "../../shared/schema/file-drag.schema.js";
-import { StarterAskedSchema, StarterSchema } from "../../shared/schema/starter.schema.js";
-import type { Starter } from "../../shared/schema/starter.schema.js";
 import { ACCEPTED, kindOf, refusalOfCount, refusalOfFile, refusalOfReach } from "./lib/attachment-rules.js";
 import { SENT, recordSent, sendOrRemoveWritten, sweepFolder, writeDrafts } from "./lib/attachments-on-disk.js";
-import {
-	chipOf,
-	draftOfFile,
-	draftedFolders,
-	draftedTogether,
-	isSameDrafts,
-	namesOf,
-	offeredOf,
-	refusedWith,
-} from "./lib/drafts.js";
+import { chipOf, draftOfFile, draftedFolders, draftedTogether, offeredOf, refusedWith } from "./lib/drafts.js";
 import type { Drafted } from "./lib/drafts.js";
-import { fileDragOf, heardHostDrag, heardPageDrag, isSameFileDrag } from "./lib/file-drag.js";
-import { withStarter } from "./lib/starter-said.js";
+import { fileDragOf, heardHostDrag, heardPageDrag } from "./lib/file-drag.js";
+import { holdChatDraft, saveDrafts, saveFileDrag } from "./lib/held-drafts.js";
 import { lentFoldersOf } from "./lib/written.js";
 
 const CLEARED = "the chat was cleared";
+const CHAT_SWITCHED = "another chat was opened";
 const ALREADY_REMOVED = "That attachment was already removed";
 const REMOVED = "removed {name}";
 const ATTACHED = "attached {names}";
-const PICKED = "a starter was pressed";
-const DROPPED = "the starter chip was removed";
 const DROPPED_ALREADY = "the dropped files were already attached";
 
 interface AttachingParts {
@@ -113,19 +101,15 @@ export const SendMessageCommand = command("send-message")
 		attachmentFolder: AttachmentFolderGateway,
 		draftAttachments: DraftAttachmentsGateway,
 		sentAttachments: SentAttachmentsGateway,
-		starter: StarterGateway,
 		clock: ClockGateway,
 	})
 	.emits(SentAttachmentsChangedEvent)
 	.handle(async ({ said }, parts) => {
 		const drafts = parts.draftAttachments.draftAttachments();
-		const started = withStarter(parts.starter.starter(), said);
 		parts.invalidate(DraftAttachmentsQuery);
-		parts.invalidate(ComposerStarterQuery);
 
 		if (drafts.length === 0) {
-			await parts.assistantSession.send(started);
-			saveStarter(parts.starter, null, SENT);
+			await parts.assistantSession.send(said);
 			return;
 		}
 
@@ -138,7 +122,7 @@ export const SendMessageCommand = command("send-message")
 
 		const written = writeDrafts(drafts, provider.reads, parts.attachmentFiles);
 		parts.attachmentFolder.lendFolders(lentFoldersOf(drafts));
-		await sendOrRemoveWritten(parts, withAttachments(started, written.entries), written.files);
+		await sendOrRemoveWritten(parts, withAttachments(said, written.entries), written.files);
 
 		if (written.files.length > 0) {
 			recordSent(parts, written.files);
@@ -146,7 +130,6 @@ export const SendMessageCommand = command("send-message")
 		}
 
 		saveDrafts(parts.draftAttachments, [], SENT);
-		saveStarter(parts.starter, null, SENT);
 	});
 
 export const SweepAttachmentsCommand = command("sweep-attachments")
@@ -188,7 +171,7 @@ export const AttachFolderCommand = command("attach-folder")
 
 		const provider = chosenOf(await assistantSetup.setup());
 		const held = draftAttachments.draftAttachments();
-		const refusal = refusalOfReach("folder", provider) ?? refusalOfCount(held.length, 1);
+		const refusal = refusalOfReach("folder", provider) ?? refusalOfCount(held.length, 1, provider.reads);
 
 		if (refusal) {
 			return refuse(refusal);
@@ -202,30 +185,11 @@ export const AttachFolderCommand = command("attach-folder")
 		}
 
 		invalidate(DraftAttachmentsQuery);
-		attachDrafted(draftAttachments, draftedFolders([path], provider, draftAttachments.draftAttachments()));
-	});
-
-export const ComposerStarterQuery = query("composer-starter")
-	.output(StarterSchema.nullable())
-	.settlesNow()
-	.inject({ starter: StarterGateway })
-	.handle((_input, { starter }) => starter.starter());
-
-export const PickStarterCommand = command("pick-starter")
-	.input(StarterAskedSchema)
-	.idempotencyKey(PerCall)
-	.inject({ starter: StarterGateway })
-	.handle(({ starter: picked }, { starter, invalidate }) => {
-		invalidate(ComposerStarterQuery);
-		saveStarter(starter, picked, PICKED);
-	});
-
-export const DropStarterCommand = command("drop-starter")
-	.idempotencyKey(Repeatable)
-	.inject({ starter: StarterGateway })
-	.handle((_input, { starter, invalidate }) => {
-		invalidate(ComposerStarterQuery);
-		saveStarter(starter, null, DROPPED);
+		attachDrafted(
+			draftAttachments,
+			draftedFolders([path], provider, draftAttachments.draftAttachments()),
+			provider.reads,
+		);
 	});
 
 export const FileDragQuery = query("file-drag")
@@ -292,6 +256,57 @@ export const ClearChatCommand = command("clear-chat")
 		});
 	});
 
+export const HoldDraftTextCommand = command("hold-draft-text")
+	.input(DraftTextSchema)
+	.idempotencyKey(PerCall)
+	.inject({
+		chatDrafts: ChatDraftsGateway,
+		draftAttachments: DraftAttachmentsGateway,
+	})
+	.handle(({ said }, { chatDrafts, draftAttachments }) => {
+		const openChat = chatDrafts.openChat();
+
+		if (openChat === null) {
+			console.debug("[widgetarium] draft text not held: no chat is open yet");
+			return;
+		}
+
+		holdChatDraft(chatDrafts, openChat, {
+			said,
+			attachments: draftAttachments.draftAttachments(),
+		});
+	});
+
+export const OpenChatDraftCommand = command("open-chat-draft")
+	.input(ChatOpenedSchema)
+	.output(DraftTextSchema)
+	.idempotencyKey(PerCall)
+	.inject({
+		chatDrafts: ChatDraftsGateway,
+		draftAttachments: DraftAttachmentsGateway,
+	})
+	.handle(({ chatId }, { chatDrafts, draftAttachments, invalidate }) => {
+		const left = chatDrafts.openChat();
+
+		if (left === chatId) {
+			return { said: "" };
+		}
+
+		if (left !== null) {
+			holdChatDraft(chatDrafts, left, {
+				said: chatDrafts.chatDraft(left)?.said ?? "",
+				attachments: draftAttachments.draftAttachments(),
+			});
+		}
+
+		chatDrafts.saveOpenChat(chatId);
+		console.debug(`[widgetarium] open chat ${String(left)} → ${chatId}`);
+		const opened = chatDrafts.chatDraft(chatId);
+		invalidate(DraftAttachmentsQuery);
+		saveDrafts(draftAttachments, opened?.attachments ?? [], CHAT_SWITCHED);
+		return { said: opened?.said ?? "" };
+	});
+
 export const HearHostDragSubscriber = subscriber(FileDraggedEvent)
 	.inject({ fileDrag: FileDragGateway })
 	.handle((event, { fileDrag, invalidate }) => {
@@ -332,11 +347,19 @@ async function attachOffered(parts: AttachingParts, offered: OfferedAttachments)
 		return refuse(folders.refusal);
 	}
 
-	attachDrafted(parts.draftAttachments, draftedTogether([folders, await draftedFiles(offered.files, provider)]));
+	attachDrafted(
+		parts.draftAttachments,
+		draftedTogether([folders, await draftedFiles(offered.files, provider)]),
+		provider.reads,
+	);
 }
 
-function attachDrafted(draftAttachments: DraftAttachmentsGateway, { drafts, refusal }: Drafted): void {
-	const counted = refusal ?? refusalOfCount(draftAttachments.draftAttachments().length, drafts.length);
+function attachDrafted(
+	draftAttachments: DraftAttachmentsGateway,
+	{ drafts, refusal }: Drafted,
+	reads: ProviderReads,
+): void {
+	const counted = refusal ?? refusalOfCount(draftAttachments.draftAttachments().length, drafts.length, reads);
 
 	if (counted !== null) {
 		return refuse(counted);
@@ -347,38 +370,4 @@ function attachDrafted(draftAttachments: DraftAttachmentsGateway, { drafts, refu
 		[...draftAttachments.draftAttachments(), ...drafts],
 		ATTACHED.replace("{names}", drafts.map(({ name }) => name).join(", ")),
 	);
-}
-
-function saveDrafts(draftAttachments: DraftAttachmentsGateway, next: readonly DraftAttachment[], reason: string): void {
-	const was = draftAttachments.draftAttachments();
-
-	if (isSameDrafts(was, next)) {
-		return;
-	}
-
-	draftAttachments.saveDraftAttachments(next);
-	console.debug(`[widgetarium] draft attachments ${namesOf(was)} → ${namesOf(next)} (${reason})`);
-}
-
-function saveStarter(starter: StarterGateway, next: Starter | null, reason: string): void {
-	const was = starter.starter();
-
-	if (was === next) {
-		return;
-	}
-
-	starter.saveStarter(next);
-	console.debug(`[widgetarium] composer starter ${String(was)} → ${String(next)} (${reason})`);
-}
-
-function saveFileDrag(fileDrag: FileDragGateway, next: FileDragState, reason: string): void {
-	const was = fileDragOf(fileDrag.fileDrag());
-	fileDrag.saveFileDrag(next);
-	const now = fileDragOf(next);
-
-	if (isSameFileDrag(was, now)) {
-		return;
-	}
-
-	console.debug(`[widgetarium] file drag ${JSON.stringify(was)} → ${JSON.stringify(now)} (${reason})`);
 }

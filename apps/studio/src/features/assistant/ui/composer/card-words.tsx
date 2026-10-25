@@ -13,7 +13,7 @@ export function CardWords({ chip }: { readonly chip: AttachmentChip }): ReactEle
 	return (
 		<>
 			<span className="wg-studio-ai-card-glyph">
-				<Icon name={GLYPH[chip.kind]} size={18} />
+				<Icon name={GLYPH[chip.kind]} size={16} />
 			</span>
 			<span className="wg-studio-ai-card-words">
 				<b>{chip.name}</b>

@@ -1,3 +1,4 @@
+import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { tauriAssistantBridge } from "./assistant-bridge.js";
@@ -78,6 +79,7 @@ export interface TauriAssistantAsk {
 	readonly drags?: WebviewDragSource;
 	readonly chat?: ChatSpot;
 	readonly usageMemory?: UsageMemory;
+	readonly renderMarkdown?: RenderMarkdown;
 }
 
 export function startTauriAssistant({
@@ -88,6 +90,7 @@ export function startTauriAssistant({
 	drags = webviewDrags,
 	chat = chatColumn,
 	usageMemory = browserUsageMemory(),
+	renderMarkdown,
 }: TauriAssistantAsk): TauriAssistant {
 	const bridge = tauriAssistantBridge(ipc);
 	const privateFolder = tauriPrivateFolder(bridge);
@@ -99,6 +102,7 @@ export function startTauriAssistant({
 		folders,
 		claude: claudeOptions,
 		...(chats === undefined ? {} : { chats }),
+		...(renderMarkdown === undefined ? {} : { renderMarkdown }),
 	});
 	return {
 		port,

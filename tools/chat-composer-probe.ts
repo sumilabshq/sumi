@@ -12,155 +12,194 @@ const BOX: PartKeys = ["h", "w", "radius", "pad", "gap", "bg", "edge"];
 const TEXT: PartKeys = ["fs", "fw", "lh", "color", "spacing"];
 const FLAT: PartKeys = ["h", "radius", "pad", "gap", "bg", "edge"];
 
-export const FIELD_PARTS: Parts = {
-	field: { board: ".cmp", built: ".wg-studio-ai-field", keys: FLAT },
-	box: { board: ".ctext", built: ".wg-studio-ai-box", keys: ["pad", "minH", ...TEXT] },
-	bar: { board: ".cbar", built: ".wg-studio-ai-field-bar", keys: ["h", "gap"] },
-	plus: { board: ".plus", built: ".wg-studio-ai-plus", keys: [...BOX, "color"] },
-	plusGlyph: { board: ".plus svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
-	strip: { board: ".strip", built: ".wg-studio-ai-strip", keys: ["h", "pad", "gap", "marginTop"] },
-	stripButton: {
-		board: ".sbt:not(.out):not(.hov)",
-		built: ".wg-studio-ai-strip-button:not(.is-outlined)",
+const STRIP_BOARD = ":scope > div:last-child";
+const AUTO_BUILT = '.wg-studio-ai-strip-button[aria-label="Permission mode"]';
+
+export const IDLE_PARTS: Parts = {
+	field: {
+		board: ".composer",
+		built: ".wg-studio-ai-field",
+		keys: ["h", "radius", "pad", "gap", "bg", "edge", "border"],
+	},
+	placeholder: { board: ".composer > span", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh"] },
+	bar: { board: ".composer > div", built: ".wg-studio-ai-field-bar", keys: ["h", "gap"] },
+	plus: { board: ".ib", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
+	plusGlyph: { board: ".ib svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
+	provider: { board: ".chip", built: ".wg-studio-ai-provider", keys: [...FLAT, "border", "fs", "fw", "color"] },
+	providerDot: {
+		board: ".chip > span",
+		built: ".wg-studio-ai-provider .wg-studio-ai-ready",
+		keys: ["w", "h", "radius", "bg"],
+	},
+	providerChevron: { board: ".chip svg", built: ".wg-studio-ai-provider svg", keys: ["w", "h"] },
+	providerWords: { board: "text:.chip", built: "text:.wg-studio-ai-provider", keys: [] },
+	sendIdle: { board: ".send.off", built: ".wg-studio-ai-send.is-idle", keys: [...BOX, "border", "color"] },
+	sendGlyph: { board: ".send.off svg", built: ".wg-studio-ai-send.is-idle svg", keys: ["w", "h"] },
+	strip: { board: STRIP_BOARD, built: ".wg-studio-ai-strip", keys: ["pad", "gap"] },
+	stripButton: { board: ".gt", built: AUTO_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
+	stripChevron: { board: ".gt svg", built: `${AUTO_BUILT} svg`, keys: ["w", "h"] },
+	stripWords: { board: `text:${STRIP_BOARD}`, built: "text:.wg-studio-ai-strip", keys: [] },
+	fieldToStrip: {
+		board: `between:.composer|${STRIP_BOARD}`,
+		built: "between:.wg-studio-ai-field|.wg-studio-ai-strip",
+		keys: [],
+	},
+};
+
+export const TYPED_PARTS: Parts = {
+	fieldFocused: { board: ".composer.focus", built: ".wg-studio-ai-field.is-focused", keys: ["edge", "border"] },
+	typedText: { board: ".composer > span", built: ".wg-studio-ai-box", keys: ["fs", "fw", "lh", "color"] },
+	sendReady: { board: ".send:not(.off)", built: ".wg-studio-ai-send.is-typing", keys: [...BOX, "border", "color"] },
+	sendGlyph: { board: ".send:not(.off) svg", built: ".wg-studio-ai-send.is-typing svg", keys: ["w", "h"] },
+};
+
+export const UNJUDGED = [
+	"the typing hints: the person moved ↵ send and ⇧↵ new line into the placeholder, so the field draws no hint row",
+	"the tooltips: the person chose the studio's own gliding tooltip, with its arrow, over the board's plain tip",
+	"the mascot's name: the boards still say Ink, the person renamed it Sumi, so board text is read with Sumi",
+];
+
+export const WORKING_PARTS: Parts = {
+	stop: {
+		board: "button[aria-label=Stop]",
+		built: ".wg-studio-ai-send.is-streaming",
+		keys: ["h", "w", "radius", "bg", "border"],
+	},
+	stopSquare: {
+		board: "button[aria-label=Stop] > span",
+		built: ".wg-studio-ai-stop-square",
+		keys: ["h", "w", "radius", "bg"],
+	},
+};
+
+const TEXT_CARD = "[data-attachment-card=text]";
+const IMAGE_CARD = ".wg-studio-ai-card.is-image";
+
+export const CARD_PARTS: Parts = {
+	field: { board: ".composer", built: ".wg-studio-ai-field", keys: ["pad", "gap"] },
+	row: { board: ".att", built: ".wg-studio-ai-attachments-track", keys: ["gap"] },
+	firstCard: {
+		board: ".att > :first-child",
+		built: ".wg-studio-ai-attachments-track > :first-child",
+		keys: ["fromField"],
+	},
+	rowToText: {
+		board: "between:.att|.field",
+		built: "between:.wg-studio-ai-attachments|.wg-studio-ai-box-frame",
+		keys: [],
+	},
+	file: { board: ".doc", built: `.wg-studio-ai-card.is-file${TEXT_CARD}`, keys: [...BOX] },
+	image: { board: ".img", built: IMAGE_CARD, keys: ["h", "w", "radius", "edge"] },
+	glyph: { board: ".doc svg", built: `${TEXT_CARD} .wg-studio-ai-card-glyph svg`, keys: ["w", "h", "color"] },
+	name: { board: ".doc .n", built: `${TEXT_CARD} .wg-studio-ai-card-words b`, keys: TEXT },
+	size: { board: ".doc .s", built: `${TEXT_CARD} .wg-studio-ai-card-words span`, keys: TEXT },
+	nameWords: { board: "text:.doc .n", built: `text:${TEXT_CARD} .wg-studio-ai-card-words b`, keys: [] },
+	sizeWords: { board: "text:.doc .s", built: `text:${TEXT_CARD} .wg-studio-ai-card-words span`, keys: [] },
+};
+
+export const REMOVE_PARTS: Parts = {
+	ringed: { board: ".img:has(.x)", built: IMAGE_CARD, keys: ["edge"] },
+	remove: {
+		board: ".img .x",
+		built: `${IMAGE_CARD} .wg-studio-ai-card-remove`,
+		keys: ["w", "h", "radius", "bg", "edge", "color", "top", "right"],
+	},
+	removeGlyph: { board: ".img .x svg", built: `${IMAGE_CARD} .wg-studio-ai-card-remove svg`, keys: ["w", "h"] },
+};
+
+const PICKED_BUILT = "menu .wg-studio-ai-menu-row.is-picked";
+
+export const MENU_PARTS: Parts = {
+	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
+	label: { board: "menu .mh", built: "menu .wg-studio-ai-menu-label", keys: ["pad", ...TEXT] },
+	row: {
+		board: "menu .mi:has(.d):not(.sel):not(.hov)",
+		built: "menu .wg-studio-ai-menu-row.is-two:not(.is-picked):not(:hover)",
 		keys: [...FLAT, ...TEXT],
 	},
-	stripChevron: { board: ".sbt .cv svg", built: ".wg-studio-ai-strip-button .wg-studio-ai-chevron svg", keys: ["w"] },
+	small: { board: "menu .mi .d", built: "menu .wg-studio-ai-menu-row small", keys: TEXT },
+	picked: { board: "menu .mi.sel", built: PICKED_BUILT, keys: ["h", "radius", "pad", "bg"] },
+	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-studio-ai-menu-end svg`, keys: ["w", "h", "color"] },
+	hovered: { board: "menu .mi.hov", built: "menu .wg-studio-ai-menu-row:hover", keys: ["bg"] },
+};
+
+export const PROVIDER_PARTS: Parts = {
+	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
+	label: { board: "menu .mh", built: "menu .wg-studio-ai-menu-label", keys: ["pad", ...TEXT] },
+	picked: { board: "menu .mi.sel", built: PICKED_BUILT, keys: ["radius", "pad", "gap", "bg", ...TEXT] },
+	dot: {
+		board: "menu .mi.sel > span[aria-hidden]",
+		built: `${PICKED_BUILT} .wg-studio-ai-ready`,
+		keys: ["w", "h", "radius", "bg"],
+	},
+	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-studio-ai-menu-end svg`, keys: ["w", "h", "color"] },
+};
+
+export const ATTACH_PARTS: Parts = {
+	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
+	row: {
+		board: "menu .mi:not(.hov)",
+		built: "menu .wg-studio-ai-menu-row:not(:hover)",
+		keys: ["h", "radius", "pad", "gap", "bg", ...TEXT],
+	},
+	icon: { board: "menu .mi .ic", built: "menu .wg-studio-ai-menu-mark svg", keys: ["w", "h", "color"] },
+	hovered: { board: "menu .mi.hov", built: "menu .wg-studio-ai-menu-row:hover", keys: ["bg"] },
+};
+
+export const USAGE_PARTS: Parts = {
+	label: { board: "menu > div:first-child", built: "menu .wg-studio-ai-menu-label", keys: ["fs", "fw", "color"] },
+	head: { board: "menu > div:nth-child(2)", built: "menu .wg-studio-ai-meter-head", keys: ["fs", "fw", "color"] },
+	headValue: {
+		board: "menu > div:nth-child(2) > span:last-child",
+		built: "menu .wg-studio-ai-meter-head span",
+		keys: ["fs", "color"],
+	},
+	bar: { board: "menu .bar", built: "menu .wg-studio-ai-meter-bar", keys: ["h", "radius", "bg", "margin"] },
+	fill: { board: "menu .bar span", built: "menu .wg-studio-ai-meter-bar i", keys: ["bg"] },
+	small: { board: "menu > div:nth-child(4)", built: "menu .wg-studio-ai-meter small", keys: ["fs", "color"] },
+};
+
+const WELCOME_BOARD = "sc-if > div:has(> h1)";
+const FOLDER_BOARD = "sc-if > .gt";
+const FOLDER_BUILT = '.wg-studio-ai-strip-button[aria-label="Choose a folder"]';
+
+export const EMPTY_PARTS: Parts = {
+	welcome: { board: WELCOME_BOARD, built: ".wg-studio-ai-welcome", keys: ["pad", "gap"] },
+	mascot: {
+		board: `${WELCOME_BOARD} > svg.m`,
+		built: ".wg-studio-ai-welcome .wg-mascot",
+		keys: ["w", "h", "marginBottom"],
+	},
+	greet: { board: `${WELCOME_BOARD} > h1`, built: ".wg-studio-ai-greet", keys: [...TEXT, "margin", "gapAbove"] },
+	greetWords: { board: `text:${WELCOME_BOARD} > h1`, built: "text:.wg-studio-ai-greet", keys: [] },
+	said: { board: `${WELCOME_BOARD} > p`, built: ".wg-studio-ai-greet-said", keys: [...TEXT, "margin", "gapAbove"] },
+	saidWords: { board: `text:${WELCOME_BOARD} > p`, built: "text:.wg-studio-ai-greet-said", keys: [] },
+	starters: {
+		board: `${WELCOME_BOARD} > div`,
+		built: ".wg-studio-ai-starters",
+		keys: ["w", "gap", "marginTop", "gapAbove"],
+	},
+	starter: { board: `${WELCOME_BOARD} .card`, built: ".wg-studio-ai-starter", keys: ["radius", "pad", "bg"] },
+	starterIcon: { board: `${WELCOME_BOARD} .card svg`, built: ".wg-studio-ai-starter-icon", keys: ["w", "h", "color"] },
+	starterTitle: { board: `${WELCOME_BOARD} .card > span:first-of-type`, built: ".wg-studio-ai-starter", keys: TEXT },
+	starterTitleWords: {
+		board: `text:${WELCOME_BOARD} .card > span:first-of-type`,
+		built: "text:.wg-studio-ai-starter",
+		keys: [],
+	},
+	folderButton: { board: FOLDER_BOARD, built: FOLDER_BUILT, keys: [...FLAT, "border", "fs", "fw", "color"] },
+	usageRing: { board: 'button[aria-label^="Usage"] svg', built: ".wg-studio-ai-usage-ring", keys: ["w", "h"] },
 	usageTrack: {
-		board: ".sbt svg circle:first-child",
+		board: 'button[aria-label^="Usage"] circle:first-child',
 		built: ".wg-studio-ai-usage-ring .is-track",
 		keys: ["stroke", "strokeWidth"],
 	},
 	usageUsed: {
-		board: ".sbt svg circle:last-child",
+		board: 'button[aria-label^="Usage"] circle:last-child',
 		built: ".wg-studio-ai-usage-ring .is-used",
 		keys: ["stroke", "strokeWidth"],
 	},
-};
-
-export const IDLE_PARTS: Parts = {
-	sendIdle: { board: ".send.idle", built: ".wg-studio-ai-send.is-idle", keys: [...BOX, "color"] },
-	barWords: { board: "text:.cbar", built: "text:.wg-studio-ai-field-bar", keys: [] },
-};
-
-export const TYPED_PARTS: Parts = {
-	fieldFocused: { board: ".cmp.focus", built: ".wg-studio-ai-field.is-focused", keys: ["edge"] },
-	sendReady: { board: ".send.ready", built: ".wg-studio-ai-send.is-typing", keys: [...BOX, "color"] },
-	sendGlyph: { board: ".send.ready svg", built: ".wg-studio-ai-send.is-typing svg", keys: ["w", "h"] },
-	hint: { board: ".hint > span", built: ".wg-studio-ai-hint", keys: ["gap", ...TEXT] },
-	hintKey: { board: ".hint kbd", built: ".wg-studio-ai-hint kbd", keys: [...FLAT, "minW", "fs", "fw", "color"] },
-	hintKeys: { board: "count:.hint kbd", built: "count:.wg-studio-ai-hint kbd", keys: [] },
-	hintWords: { board: "text:.hint", built: "text:.wg-studio-ai-hint", keys: [] },
-};
-
-export const TIP_PARTS: Parts = {
-	tip: { board: ".send .tip", built: ".wg-kit-tooltip.wg-studio-ai-tip", keys: [...FLAT, "fs", "fw", "color"] },
-	tipKey: { board: ".send .tip kbd", built: ".wg-studio-ai-tip kbd", keys: [...FLAT, "fs", "color"] },
-	tipWords: { board: "text:.send .tip", built: "text:.wg-studio-ai-tip", keys: [] },
-};
-
-export const CARD_PARTS: Parts = {
-	row: { board: ".atrack", built: ".wg-studio-ai-attachments-track", keys: ["pad", "gap"] },
-	rowBelow: { board: ".arow", built: ".wg-studio-ai-attachments", keys: ["marginBottom"] },
-	file: {
-		board: ".afile:not(.afolder)",
-		built: ".wg-studio-ai-card.is-file[data-attachment-card=text]",
-		keys: [...BOX],
-	},
-	folder: { board: ".afolder", built: "[data-attachment-card=folder]", keys: [...BOX] },
-	image: { board: ".aim", built: ".wg-studio-ai-card.is-image", keys: ["h", "w", "radius"] },
-	glyph: {
-		board: ".afolder .fi",
-		built: "[data-attachment-card=folder] .wg-studio-ai-card-glyph",
-		keys: [...BOX, "color"],
-	},
-	name: { board: ".afolder .ft b", built: "[data-attachment-card=folder] .wg-studio-ai-card-words b", keys: TEXT },
-	where: {
-		board: ".afolder .ft span",
-		built: "[data-attachment-card=folder] .wg-studio-ai-card-words span",
-		keys: TEXT,
-	},
-	whereWords: {
-		board: "text:.afolder .ft span",
-		built: "text:[data-attachment-card=folder] .wg-studio-ai-card-words span",
-		keys: [],
-	},
-	fileWords: {
-		board: "text:.afile:not(.afolder) .ft span",
-		built: "text:[data-attachment-card=text] .wg-studio-ai-card-words span",
-		keys: [],
-	},
-};
-
-export const REMOVE_PARTS: Parts = {
-	ringed: { board: ".afolder.hovring", built: "[data-attachment-card=folder]", keys: ["edge", "inside"] },
-	remove: {
-		board: ".afolder .ax",
-		built: "[data-attachment-card=folder] .wg-studio-ai-card-remove",
-		keys: ["w", "h", "radius", "bg", "color", "top", "right", "inside"],
-	},
-};
-
-export const REMOVE_LAST_PARTS: Parts = {
-	ringedLast: { board: ".afile:not(.afolder).hovring", built: "[data-attachment-card=text]", keys: ["edge", "inside"] },
-	removeLast: {
-		board: ".afile:not(.afolder) .ax",
-		built: "[data-attachment-card=text] .wg-studio-ai-card-remove",
-		keys: ["w", "h", "bg", "top", "right", "inside"],
-	},
-};
-
-export const MENU_PARTS: Parts = {
-	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
-	label: { board: "menu .mlabel", built: "menu .wg-studio-ai-menu-label", keys: ["pad", ...TEXT] },
-	row: {
-		board: "menu .mr.two:not(.sel):not(.hov)",
-		built: "menu .wg-studio-ai-menu-row.is-two:not(.is-picked):not(:hover)",
-		keys: [...FLAT, "fs", "fw", "color"],
-	},
-	small: { board: "menu .mr.two small", built: "menu .wg-studio-ai-menu-row.is-two small", keys: TEXT },
-	picked: { board: "menu .mr.sel", built: "menu .wg-studio-ai-menu-row.is-picked", keys: ["h", "radius", "bg"] },
-	tick: {
-		board: "menu .mr.sel .mend svg",
-		built: "menu .wg-studio-ai-menu-row.is-picked .wg-studio-ai-menu-end svg",
-		keys: ["w", "color"],
-	},
-	rows: { board: "count:menu .mr", built: "count:menu .wg-studio-ai-menu-row", keys: [] },
-	words: { board: "text:menu", built: "text:menu", keys: [] },
-};
-
-export const HOVER_ROW_PARTS: Parts = {
-	hovered: { board: "menu .mr.hov", built: "menu .wg-studio-ai-menu-row:hover", keys: ["bg"] },
-	openedButton: { board: ".sbt.hov", built: ".wg-studio-ai-strip-button.is-on", keys: ["bg", "color"] },
-};
-
-export const USAGE_PARTS: Parts = {
-	meterHead: { board: "menu .meter .mh", built: "menu .wg-studio-ai-meter-head", keys: TEXT },
-	meterBar: { board: "menu .meter .bar", built: "menu .wg-studio-ai-meter-bar", keys: ["h", "radius", "bg"] },
-	meterFill: { board: "menu .meter .bar i", built: "menu .wg-studio-ai-meter-bar i", keys: ["bg"] },
-	meterSmall: { board: "menu .meter small", built: "menu .wg-studio-ai-meter small", keys: TEXT },
-	meter: { board: "menu .meter", built: "menu .wg-studio-ai-meter", keys: ["pad", "gap"] },
-};
-
-export const EMPTY_PARTS: Parts = {
-	header: { board: "count:.pane .wg-studio-ai-head", built: "count:.wg-studio-ai-head", keys: [] },
-	mascot: { board: ".pane .wg-mascot", built: ".wg-studio-ai-welcome .wg-mascot", keys: ["w", "h"] },
-	greet: { board: ".pane .greet", built: ".wg-studio-ai-greet", keys: [...TEXT, "gapAbove"] },
-	greetWords: { board: "text:.pane .greet", built: "text:.wg-studio-ai-greet", keys: [] },
-	said: { board: ".pane .sub", built: ".wg-studio-ai-greet-said", keys: [...TEXT, "gapAbove"] },
-	saidWords: { board: "text:.pane .sub", built: "text:.wg-studio-ai-greet-said", keys: [] },
-	starters: { board: ".pane .starters", built: ".wg-studio-ai-starters", keys: ["gap"] },
-	saidToStarters: {
-		board: "between:.pane .sub|.pane .starters",
-		built: "between:.wg-studio-ai-greet-said|.wg-studio-ai-starters",
-		keys: [],
-	},
-	starter: { board: ".pane .st:not(.hov)", built: ".wg-studio-ai-starter:not(:hover)", keys: [...FLAT, "flexGap"] },
-	starterIcon: { board: ".pane .st .si", built: ".wg-studio-ai-starter-icon", keys: [...BOX, "color"] },
-	starterTitle: { board: ".pane .st b", built: ".wg-studio-ai-starter-words b", keys: TEXT },
-	starterLine: { board: ".pane .st span.d", built: ".wg-studio-ai-starter-words span", keys: TEXT },
-	starterWords: { board: "text:.pane .starters", built: "text:.wg-studio-ai-starters", keys: [] },
-	folderButton: { board: ".pane .sbt.out", built: ".wg-studio-ai-strip-button.is-outlined", keys: [...FLAT, ...TEXT] },
-	stripWords: { board: "text:.pane .strip", built: "text:.wg-studio-ai-strip", keys: [] },
+	folderGlyph: { board: `${FOLDER_BOARD} svg`, built: `${FOLDER_BUILT} svg`, keys: ["w", "h"] },
 };
 
 export const PART_PROBE = `((scope, parts, side) => {
@@ -185,15 +224,17 @@ export const PART_PROBE = `((scope, parts, side) => {
 	};
 	const ownBg = (s) => (s.backgroundColor === "rgba(0, 0, 0, 0)" ? null : rgb(s.backgroundColor));
 	const menuOf = () => {
-		const menus = side === "board" ? [...document.querySelectorAll(".gm")] : [...document.querySelectorAll(".wg-studio-ai-menu")];
-		return menus.find((menu) => menu.getClientRects().length > 0 && (window.__MENU_LABEL__ === undefined || (menu.querySelector(side === "board" ? ".mlabel" : ".wg-studio-ai-menu-label")?.textContent ?? "") === window.__MENU_LABEL__)) ?? null;
+		const asked = window.__MENU_LABEL__ === undefined ? null : window.__MENU_LABEL__[side];
+		if (side === "board") return document.querySelector(\`.menu[aria-label="\${asked}"]\`);
+		const menus = [...document.querySelectorAll(".wg-studio-ai-menu.is-open")];
+		return menus.find((menu) => menu.getClientRects().length > 0 && (asked === null || (menu.querySelector(".wg-studio-ai-menu-label")?.textContent ?? "") === asked)) ?? null;
 	};
 	const within = (selector) => {
 		if (selector.startsWith("menu")) {
 			const menu = menuOf();
 			if (!menu) return [];
 			const rest = selector.slice(4).trim();
-			return rest === "" ? [menu] : [...menu.querySelectorAll(rest)];
+			return rest === "" ? [menu] : [...menu.querySelectorAll(rest.startsWith(">") ? ":scope " + rest : rest)];
 		}
 		return [...root.querySelectorAll(selector)];
 	};
@@ -231,6 +272,8 @@ export const PART_PROBE = `((scope, parts, side) => {
 			marginBottom: s.marginBottom,
 			bg: ownBg(s),
 			edge: firstColour(s.boxShadow),
+			border: s.borderTopStyle === "none" || parseFloat(s.borderTopWidth) === 0 ? null : [s.borderTopWidth, rgb(s.borderTopColor)],
+			opacity: s.opacity,
 			color: rgb(s.color),
 			stroke: rgb(s.stroke),
 			strokeWidth: s.strokeWidth,
@@ -241,6 +284,12 @@ export const PART_PROBE = `((scope, parts, side) => {
 			top: s.top,
 			right: s.right,
 			gapAbove: previous ? Math.round(box.top - previous.getBoundingClientRect().bottom) : null,
+			fromField: (() => {
+				const field = el.closest(".composer, .wg-studio-ai-field");
+				if (!field) return null;
+				const edge = field.getBoundingClientRect();
+				return [Math.round(box.left - edge.left), Math.round(box.top - edge.top)];
+			})(),
 			inside: isInside(el, s, box),
 		};
 	};

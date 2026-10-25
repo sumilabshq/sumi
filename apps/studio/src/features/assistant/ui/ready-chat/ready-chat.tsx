@@ -2,6 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { ClaudeStrip } from "../claude-strip/claude-strip.js";
+import { ProviderChip } from "../claude-strip/provider-chip.js";
 import { useTellsAgentActivity } from "../../lib/agent-activity.js";
 import { useStuckToEnd } from "../../lib/use-stuck-to-end.js";
 import { ToEndButton } from "../to-end-button/to-end-button.js";
@@ -67,6 +68,8 @@ export function ReadyChat({ setup, setupFailure, lead, title, cards }: ReadyChat
 			<Composer
 				busy={session.busy}
 				strip={<ClaudeStrip isEmpty={isEmpty} />}
+				provider={<ProviderChip />}
+				isFirst={isEmpty}
 				attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
 				onSend={asks.send}
 				onStop={() => void stopTurn.run()}

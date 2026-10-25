@@ -5,6 +5,7 @@ export const AttachedFilesReachSchema = z.enum(["path", "inline", "none"]);
 export const ProviderReadsSchema = z.object({
 	images: z.boolean(),
 	files: AttachedFilesReachSchema,
+	mostAttached: z.number().int().positive().optional(),
 });
 
 export type ProviderReads = z.infer<typeof ProviderReadsSchema>;

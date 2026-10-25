@@ -1,3 +1,4 @@
+import type { ChatDraftsGateway } from "../chat-drafts/chat-drafts.gateway.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import type { AttachmentsFolder } from "../../shared/host/attachments-folder.host.js";
 import type { ClaudeOptionsCell } from "../../shared/host/claude-options.host.js";
@@ -15,7 +16,6 @@ import type { DraftAttachmentsGateway } from "../draft-attachments/draft-attachm
 import type { FileDragGateway } from "../file-drag/file-drag.gateway.js";
 import type { FileDropGateway } from "../file-drop/file-drop.gateway.js";
 import type { SentAttachmentsGateway } from "../sent-attachments/sent-attachments.gateway.js";
-import type { StarterGateway } from "../starter/starter.gateway.js";
 import type { WorkingFoldersGateway } from "../working-folders/working-folders.gateway.js";
 import { obsidianAssistantParts } from "./obsidian.gateway.js";
 import { tauriAssistantParts } from "./tauri.gateway.js";
@@ -33,7 +33,7 @@ export type AssistantParts = {
 	readonly draftAttachments: DraftAttachmentsGateway;
 	readonly sentAttachments: SentAttachmentsGateway;
 	readonly composerPrefill: ComposerPrefillGateway;
-	readonly starter: StarterGateway;
+	readonly chatDrafts: ChatDraftsGateway;
 	readonly fileDrag: FileDragGateway;
 };
 
