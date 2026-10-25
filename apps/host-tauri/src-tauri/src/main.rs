@@ -15,6 +15,7 @@ fn main() {
         .plugin(widgetarium_host_tauri_lib::studio_log::init())
         .plugin(widgetarium_host_tauri_lib::agent::init())
         .plugin(widgetarium_host_tauri_lib::studio_core::init())
+        .plugin(widgetarium_host_tauri_lib::terminal::init())
         .run(tauri::generate_context!())
         .expect("the Widgetarium window failed to start");
 }

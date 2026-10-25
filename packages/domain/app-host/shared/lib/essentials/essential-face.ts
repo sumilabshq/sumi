@@ -6,6 +6,7 @@ import type { EssentialFace } from "./essentials.js";
 const TITLE_OF_APP = {
 	canvas: "Canvas",
 	browser: "New tab",
+	terminal: "Terminal",
 };
 
 export function essentialFaceOf(tab: HostTab, tabs: readonly HostTab[], pages: readonly PageFacts[]): EssentialFace {

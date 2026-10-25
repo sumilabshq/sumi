@@ -14,6 +14,7 @@ type KeptInstances = ReadonlyMap<string, AppKind>;
 const HAS_EMPTY_PAGE: Readonly<Record<AppKind, boolean>> = {
 	browser: true,
 	canvas: false,
+	terminal: false,
 };
 
 export function KeptApps({ shown, drawnOf }: KeptAppsProps): ReactElement {

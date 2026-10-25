@@ -2,7 +2,7 @@ import { z } from "zod";
 import { GroupHueSchema, WorkspaceListSchema } from "./tab-group.schema.js";
 import { SidebarViewSchema } from "./tabs-column.schema.js";
 
-export const AppKindSchema = z.enum(["canvas", "browser"]);
+export const AppKindSchema = z.enum(["canvas", "browser", "terminal"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
@@ -15,6 +15,7 @@ export type TabStatus = z.infer<typeof TabStatusSchema>;
 export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
+	"terminal",
 	"git",
 	"files",
 	"routines",

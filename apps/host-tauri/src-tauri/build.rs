@@ -66,6 +66,8 @@ const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
 const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 
+const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
+
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows"];
 
 fn main() {
@@ -87,7 +89,10 @@ fn main() {
     let studio_core = InlinedPlugin::new()
         .commands(STUDIO_CORE_COMMANDS)
         .default_permission(DefaultPermissionRule::AllowAllCommands);
+    let terminal = InlinedPlugin::new()
+        .commands(TERMINAL_COMMANDS)
+        .default_permission(DefaultPermissionRule::AllowAllCommands);
     let plugins = Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser);
-    tauri_build::try_build(plugins.plugin("studio-log", studio_log).plugin("agent", agent).plugin("studio-core", studio_core))
+    tauri_build::try_build(plugins.plugin("studio-log", studio_log).plugin("agent", agent).plugin("studio-core", studio_core).plugin("terminal", terminal))
         .expect("the Tauri build step failed")
 }

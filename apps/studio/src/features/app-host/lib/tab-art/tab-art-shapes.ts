@@ -57,6 +57,21 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{ tag: "rect", attrs: { x: "7.5", y: "7.5", width: "10", height: "10", rx: "3", fill: "#7C5CFF" } },
 		{ tag: "circle", attrs: { cx: "7", cy: "7", r: "5", fill: "#FFB020", "fill-opacity": ".92" } },
 	],
+	terminal: [
+		{ tag: "rect", attrs: { x: "2", y: "3", width: "16", height: "14", rx: "3.5", fill: "#2B2B2E" } },
+		{
+			tag: "path",
+			isCut: CUT,
+			attrs: {
+				d: "M5.5 7.5l2.8 2.5-2.8 2.5M10 13h4.5",
+				stroke: CUT_INK,
+				"stroke-width": "1.6",
+				"stroke-linecap": "round",
+				"stroke-linejoin": "round",
+				fill: "none",
+			},
+		},
+	],
 	browser: [
 		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#3D8EF0" } },
 		{

@@ -15,6 +15,7 @@ import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
+import { TerminalPage } from "../terminal/terminal-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { KeptApps } from "../features/app-host/ui/kept-apps/kept-apps.js";
 import { APP_CRUMB_WORD } from "./app-crumb-words.js";
@@ -74,6 +75,10 @@ function keptAppPageOf(app: AppKind, pages: KeptAppPages): ReactElement {
 		return <BrowserPage browser={pages.browser} heldTabId={null} />;
 	}
 
+	if (app === "terminal") {
+		return <TerminalPage />;
+	}
+
 	return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />;
 }
 
@@ -84,6 +89,10 @@ function crumbOf(view: StudioView, appName: string, pathname: string): CrumbWord
 
 	if (view === "browser") {
 		return { first: APP_CRUMB_WORD.browser, second: null };
+	}
+
+	if (view === "terminal") {
+		return { first: APP_CRUMB_WORD.terminal, second: null };
 	}
 
 	return { first: appName, second: pathname === ROOT_PATH ? null : pathname };

@@ -11,6 +11,7 @@ import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";
 import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more.js";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
+import { TerminalPage } from "../terminal/terminal-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { APP_CRUMB_WORD } from "./app-crumb-words.js";
 
@@ -73,6 +74,10 @@ function paneBodyOf(paneTab: HeldTab | null, { browser, design, project }: PaneB
 
 	if (paneTab.app === "canvas") {
 		return <StudioCanvas design={design} project={project} shell={IN_PLATE} />;
+	}
+
+	if (paneTab.app === "terminal") {
+		return <TerminalPage key={paneTab.id} />;
 	}
 
 	if (paneTab.pageId === null) {

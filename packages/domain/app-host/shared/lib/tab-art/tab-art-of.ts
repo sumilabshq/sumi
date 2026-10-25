@@ -24,6 +24,10 @@ export function tabArtOf(app: AppKind, address: string | null): TabArt {
 		return "canvas";
 	}
 
+	if (app === "terminal") {
+		return "terminal";
+	}
+
 	if (address === null || address === "") {
 		return "browser";
 	}

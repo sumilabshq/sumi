@@ -2,7 +2,7 @@
 import { Device, PerCall, Repeatable, command, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
-export const AppKindSchema = z.enum(["canvas", "browser"]);
+export const AppKindSchema = z.enum(["canvas", "browser", "terminal"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
@@ -15,6 +15,7 @@ export type TabStatus = z.infer<typeof TabStatusSchema>;
 export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
+	"terminal",
 	"git",
 	"files",
 	"routines",
@@ -178,7 +179,7 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 
 export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
 
-export const StudioViewSchema = z.enum(["app", "canvas", "browser"]);
+export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal"]);
 
 export type StudioView = z.infer<typeof StudioViewSchema>;
 

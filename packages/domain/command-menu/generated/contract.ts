@@ -79,7 +79,7 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	}),
 	z.object({
 		do: z.literal("open-app"),
-		app: z.enum(["canvas", "browser"]),
+		app: z.enum(["canvas", "browser", "terminal"]),
 		title: z.string(),
 	}),
 	z.object({

@@ -13,6 +13,7 @@
 		"browser:default",
 		"studio-log:default",
 		"agent:default",
-		"studio-core:default"
+		"studio-core:default",
+		"terminal:default"
 	]
 }

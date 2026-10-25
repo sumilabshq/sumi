@@ -75,6 +75,11 @@ const MENU_APPS = [
 		title: "Canvas",
 		haystack: "canvas design board",
 	},
+	{
+		app: "terminal",
+		title: "Terminal",
+		haystack: "terminal shell zsh console",
+	},
 ] as const;
 
 export function appsFoundOf(): readonly Found[] {
