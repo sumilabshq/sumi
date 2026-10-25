@@ -1,6 +1,5 @@
 import { createElement as h, useMemo, useRef, useSyncExternalStore } from "react";
 import type { ReactElement, RefObject } from "react";
-import { ModuleRegistry } from "@widgetarium/core/engine/module-registry.js";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
@@ -15,6 +14,7 @@ import type { StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
 import { askInkSenderOf } from "../assistant/ask-ink-seam.js";
 import { chatAppOf } from "../assistant/chat-app.js";
+import { ChatApps } from "../assistant/chat-apps.js";
 import { AskInkContext } from "../features/command-menu/lib/ask-ink-context.js";
 import type { AssistantHostObjects } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -27,7 +27,6 @@ import { StudioLayout } from "../frame/studio-layout.js";
 import { browserStudioHost } from "./browser-studio-host.js";
 import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
-import { StudioShellBoard } from "./studio-shell-board.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { startStudioApp } from "../tabs/studio-app.js";
@@ -36,7 +35,6 @@ import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
 import { createStudioState } from "./studio-state.js";
-import { STUDIO_WIDGETS } from "./studio-widgets.js";
 import { useStudioPortalClass } from "./use-studio-portal-class.js";
 
 export interface StartedStudio {
@@ -45,10 +43,10 @@ export interface StartedStudio {
 	readonly assistant: AssistantPort;
 	readonly catalogue: CataloguePort;
 	readonly appId: string;
-	readonly shellRegistry: ModuleRegistry;
 	readonly state: StudioState;
 	readonly design: StudioDesign;
 	readonly chatApp: StartedApp;
+	readonly chatApps: ChatApps;
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
 	readonly chatsColumn: ChatsColumnApp;
@@ -92,11 +90,10 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const studioApp = start.studioApp ?? startStudioApp({ platform: "browser", workspaceId: lent.appId });
 	const state = start.state ?? createStudioState(studioApp);
 	return {
-		...startedChatOf(start, state, lent.appId, studioApp),
+		...startedChatOf(start, lent.appId, studioApp),
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
-		shellRegistry: new ModuleRegistry(STUDIO_WIDGETS),
 		project,
 		state,
 	};
@@ -111,7 +108,10 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	useStudioPortalClass();
 	const catalogueAsk = useTakesCatalogueAsks(frame, started.catalogue.requests, state);
 	const backToView = useMemo(() => () => state.show("app"), [state]);
-	const askInk = useMemo(() => askInkSenderOf(started.chatApp), [started.chatApp]);
+	const askInk = useMemo(
+		() => askInkSenderOf(started.studioApp, (chatId) => started.chatApps.appFor(chatId)),
+		[started.studioApp, started.chatApps],
+	);
 	return h(
 		AskInkContext.Provider,
 		{ value: askInk },
@@ -136,7 +136,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 
 function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): ReactElement {
 	if (view.kind === "chat") {
-		return chatPlateOf(started, screen.host);
+		return chatPlateOf(started, view.chatId ?? null);
 	}
 
 	if (view.tabId === null) {
@@ -151,18 +151,15 @@ function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): R
 	});
 }
 
-function chatPlateOf(started: StartedStudio, host: SurfaceHost): ReactElement {
-	const { appId, shellRegistry, studio, state, assistant } = started;
-	const menu = h(StudioShellBoard, {
-		key: `menu ${appId}`,
-		app: appId,
-		registry: shellRegistry,
-		host,
-		studio,
-		state,
+function chatPlateOf({ chatApps, assistant, chatsColumn }: StartedStudio, chatId: string | null): ReactElement {
+	return h(ChatPlate, {
+		key: chatId ?? "",
+		chatId,
+		chatAppFor: (id: string) => chatApps.appFor(id),
 		assistant,
+		crumb: chatsColumn.crumbOf(chatId),
+		more: chatsColumn.moreOf(chatId),
 	});
-	return h(ChatPlate, { chatApp: started.chatApp, assistant, crumb: started.chatsColumn.crumb, more: menu });
 }
 
 function appPlateOf(started: StartedStudio, { pathname, view, backToView }: StudioScreen): ReactElement {
@@ -188,21 +185,20 @@ function cataloguePanelOf(started: StartedStudio, { panel, host, catalogueAsk }:
 
 function startedChatOf(
 	start: StudioStart,
-	state: StudioState,
 	workspaceId: string,
 	studioApp: StartedApp,
-): Pick<StartedStudio, "chatApp" | "browser"> {
-	const chatApp = chatAppOf({
-		state,
-		platform: "browser",
+): Pick<StartedStudio, "chatApp" | "chatApps" | "browser"> {
+	const ask = {
+		platform: "browser" as const,
 		workspaceId,
 		host: start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT },
-	});
+	};
+	const chatApp = chatAppOf(ask);
 	return {
 		chatApp,
+		chatApps: new ChatApps(ask),
 		browser: {
 			browserApp: studioApp,
-			chatApp,
 		},
 	};
 }
