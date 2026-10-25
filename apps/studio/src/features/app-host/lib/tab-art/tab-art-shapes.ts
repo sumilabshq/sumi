@@ -4,12 +4,19 @@ export interface ArtShape {
 	readonly tag: "path" | "rect" | "circle" | "text";
 	readonly attrs: Readonly<Record<string, string>>;
 	readonly text?: string;
+	readonly isCut?: boolean;
 }
+
+export const CUT_INK = "#000000";
+
+export const MASK_KEEP = "#FFFFFF";
+
+const CUT = true;
 
 const PAGE = "M5 2h7l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z";
 const FOLD = "M12 2v3a1 1 0 0 0 1 1h3z";
 
-function codeOf(fill: string, letters: string, ink: string): readonly ArtShape[] {
+function codeOf(fill: string, letters: string, ink: string | typeof CUT): readonly ArtShape[] {
 	return [codeBadgeOf(fill), codeLettersOf(letters, ink)];
 }
 
@@ -27,9 +34,10 @@ function codeBadgeOf(fill: string): ArtShape {
 	};
 }
 
-function codeLettersOf(letters: string, ink: string): ArtShape {
+function codeLettersOf(letters: string, ink: string | typeof CUT): ArtShape {
 	return {
 		tag: "text",
+		isCut: ink === CUT,
 		attrs: {
 			x: "16",
 			y: "15.4",
@@ -37,7 +45,7 @@ function codeLettersOf(letters: string, ink: string): ArtShape {
 			"font-family": "Inter, Arial, sans-serif",
 			"font-size": letters.length > 2 ? "6.2" : "7.6",
 			"font-weight": "700",
-			fill: ink,
+			fill: ink === CUT ? CUT_INK : ink,
 		},
 		text: letters,
 	};
@@ -53,9 +61,10 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#3D8EF0" } },
 		{
 			tag: "path",
+			isCut: CUT,
 			attrs: {
 				d: "M2.6 10h14.8M10 2.2c2.2 2.1 3.2 4.7 3.2 7.8s-1 5.7-3.2 7.8M10 2.2C7.8 4.3 6.8 6.9 6.8 10s1 5.7 3.2 7.8",
-				stroke: "#FFFFFF",
+				stroke: CUT_INK,
 				"stroke-width": "1.4",
 				fill: "none",
 			},
@@ -88,41 +97,47 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 	],
 	routines: [
 		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#12A594" } },
-		{ tag: "path", attrs: { d: "M11 4.8 6.6 11h3.2l-.8 4.2L13.4 9h-3.2z", fill: "#FFFFFF" } },
+		{ tag: "path", isCut: CUT, attrs: { d: "M11 4.8 6.6 11h3.2l-.8 4.2L13.4 9h-3.2z", fill: CUT_INK } },
 	],
 	settings: [
 		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#8E8E93" } },
 		{
 			tag: "circle",
+			isCut: CUT,
 			attrs: {
 				cx: "10",
 				cy: "10",
 				r: "4.2",
 				fill: "none",
-				stroke: "#FFFFFF",
+				stroke: CUT_INK,
 				"stroke-width": "1.8",
 				"stroke-dasharray": "2.2 1.1",
 			},
 		},
-		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "1.6", fill: "#FFFFFF" } },
+		{ tag: "circle", isCut: CUT, attrs: { cx: "10", cy: "10", r: "1.6", fill: CUT_INK } },
 	],
 	note: [
 		{ tag: "path", attrs: { d: PAGE, fill: "#F2B544" } },
 		{ tag: "path", attrs: { d: FOLD, fill: "#C98A1B" } },
 		{
 			tag: "path",
-			attrs: { d: "M7 10h6M7 13h4", stroke: "#FFFFFF", "stroke-width": "1.6", "stroke-linecap": "round", fill: "none" },
+			isCut: CUT,
+			attrs: { d: "M7 10h6M7 13h4", stroke: CUT_INK, "stroke-width": "1.6", "stroke-linecap": "round", fill: "none" },
 		},
 	],
 	table: [
 		{ tag: "path", attrs: { d: PAGE, fill: "#2FA35B" } },
 		{ tag: "path", attrs: { d: FOLD, fill: "#1E7A41" } },
-		{ tag: "path", attrs: { d: "M7 9h6v6H7zM7 12h6M10 9v6", stroke: "#FFFFFF", "stroke-width": "1.3", fill: "none" } },
+		{
+			tag: "path",
+			isCut: CUT,
+			attrs: { d: "M7 9h6v6H7zM7 12h6M10 9v6", stroke: CUT_INK, "stroke-width": "1.3", fill: "none" },
+		},
 	],
-	"code-ts": codeOf("#3178C6", "TS", "#FFFFFF"),
+	"code-ts": codeOf("#3178C6", "TS", CUT),
 	"code-js": codeOf("#F7DF1E", "JS", "#1D1D1F"),
 	"code-py": codeOf("#3776AB", "PY", "#FFD43B"),
-	"code-css": codeOf("#663399", "CSS", "#FFFFFF"),
+	"code-css": codeOf("#663399", "CSS", CUT),
 	image: [
 		{ tag: "rect", attrs: { x: "2", y: "3", width: "16", height: "14", rx: "3", fill: "#FCD9E6" } },
 		{ tag: "circle", attrs: { cx: "13.5", cy: "7.5", r: "1.8", fill: "#F7B500" } },
