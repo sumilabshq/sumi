@@ -28,7 +28,7 @@ export function confirmationOf(intent: Intent): string {
 		case "run":
 			return RAN[intent.command];
 		case "ask-ink":
-			return `New chat: asked Ink “${intent.text}”`;
+			return `New chat: asked Sumi “${intent.text}”`;
 		case "new-chat":
 			return `New chat “${intent.title}”`;
 		case "new-workspace":

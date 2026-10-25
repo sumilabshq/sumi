@@ -37,8 +37,8 @@ export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
 	return [...sidebar.essentials.map(essentialFoundOf), ...listed];
 }
 
-export function chatsFoundOf({ pinned, recents }: ChatListData): readonly Found[] {
-	return [...recents, ...pinned].map(chatFoundOf);
+export function chatsFoundOf({ pinned, recents }: ChatListData, onScreenIds: ReadonlySet<string>): readonly Found[] {
+	return [...recents, ...pinned].map((row) => chatFoundOf(row, onScreenIds.has(row.id)));
 }
 
 export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
@@ -69,28 +69,36 @@ export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
 	}));
 }
 
-export function appsFoundOf(): readonly Found[] {
-	const intent: Intent = {
-		do: "open-app",
+const MENU_APPS = [
+	{
 		app: "canvas",
 		title: "Canvas",
-	};
-	return [
-		{
-			key: "app:canvas",
+		haystack: "canvas design board",
+	},
+] as const;
+
+export function appsFoundOf(): readonly Found[] {
+	return MENU_APPS.map(({ app, title, haystack }) => {
+		const intent: Intent = {
+			do: "open-app",
+			app,
+			title,
+		};
+		return {
+			key: `app:${app}`,
 			kind: "app",
-			title: "Canvas",
+			title,
 			meta: APP,
-			haystack: "canvas design board",
-			icon: tabIconOf("canvas", null, "Canvas", null),
+			haystack,
+			icon: tabIconOf(app, null, title, null),
 			intent,
 			shortcut: null,
 			renames: null,
 			actions: openActionsOf(intent),
 			host: "",
 			isOnScreen: false,
-		},
-	];
+		};
+	});
 }
 
 export function chatsElsewhereFoundOf(rows: readonly ChatElsewhereRow[]): readonly Found[] {
@@ -211,12 +219,12 @@ function essentialFoundOf(tile: EssentialTile): Found {
 	};
 }
 
-function chatFoundOf(row: ChatRowData): Found {
+function chatFoundOf(row: ChatRowData, isOnScreen: boolean): Found {
 	return {
 		key: `chat:${row.id}`,
 		kind: "chat",
 		title: row.title,
-		meta: chatMetaOf(row),
+		meta: chatMetaOf(row, isOnScreen),
 		haystack: row.title,
 		icon: {
 			kind: "glyph",
@@ -234,16 +242,16 @@ function chatFoundOf(row: ChatRowData): Found {
 		},
 		actions: chatActionsOf(row.id, row.isPinned),
 		host: "",
-		isOnScreen: row.isActive,
+		isOnScreen,
 	};
 }
 
-function chatMetaOf(row: ChatRowData): string {
+function chatMetaOf(row: ChatRowData, isOnScreen: boolean): string {
 	const said = [
 		row.isPinned ? PINNED : "",
 		row.mark === "running" ? WORKING : "",
 		row.mark === "unread" ? UNREAD : "",
-		row.isActive ? ON_SCREEN : "",
+		isOnScreen ? ON_SCREEN : "",
 	];
 	return said.filter((part) => part !== "").join(" · ");
 }

@@ -69,7 +69,7 @@ export function askFound(typed: string, workspaceName: string): Found {
 	return madeOf({
 		key: "ask",
 		kind: "ask",
-		title: `Ask Ink “${typed}”`,
+		title: `Ask Sumi “${typed}”`,
 		meta: `New chat in ${workspaceName}`,
 		glyph: "ink",
 		intent: {

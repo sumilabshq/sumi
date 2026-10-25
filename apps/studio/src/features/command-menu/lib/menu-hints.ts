@@ -34,7 +34,7 @@ export function hintsOf(results: Results, moves: MenuMoves): readonly Hint[] {
 		},
 		{
 			keys: "⌘↵",
-			said: "Ask Ink",
+			said: "Ask Sumi",
 		},
 	];
 

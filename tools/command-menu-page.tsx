@@ -13,7 +13,10 @@ import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command
 import { CommandMenuKeys } from "../apps/studio/src/features/command-menu/ui/command-menu-keys/command-menu-keys.tsx";
 import { SearchButton } from "../apps/studio/src/features/command-menu/ui/search-button/search-button.tsx";
 import { useTogglesMenuOnShown } from "../apps/studio/src/features/command-menu/lib/use-toggles-menu-on-shown.ts";
-import { useTogglesNewTabMenu } from "../apps/studio/src/features/command-menu/lib/use-toggles-new-tab-menu.ts";
+import {
+	SHOWN_TAB_SECTION,
+	useTogglesNewTabMenu,
+} from "../apps/studio/src/features/command-menu/lib/use-toggles-new-tab-menu.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
@@ -99,7 +102,7 @@ const studio = app()
 						createdAt: AT - at * 1000,
 						lastAt: AT - at * 1000,
 					})),
-					activeId: "chat-0",
+					openOnStartId: "chat-0",
 				},
 				marks: { "chat-2": "running" },
 			}),
@@ -110,7 +113,7 @@ const studio = app()
 void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 
 function Demo(): ReturnType<typeof h> {
-	const openNewTab = useTogglesNewTabMenu();
+	const openNewTab = useTogglesNewTabMenu(SHOWN_TAB_SECTION);
 	const openHere = useTogglesMenuOnShown("Canvas", null);
 	return (
 		<IsTooltipHosted.Provider value={true}>

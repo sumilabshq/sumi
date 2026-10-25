@@ -6,6 +6,7 @@ export const SHUT_MENU: KeptMenu = {
 	door: "anywhere",
 	text: "",
 	opening: 0,
+	newTabList: null,
 	pageId: null,
 };
 

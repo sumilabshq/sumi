@@ -1,7 +1,9 @@
 import { useCommand } from "@widgetarium/core/requests";
 import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 
-export function useTogglesNewTabMenu(): () => void {
+export const SHOWN_TAB_SECTION = null;
+
+export function useTogglesNewTabMenu(newTabList: string | typeof SHOWN_TAB_SECTION): () => void {
 	const openMenu = useCommand(ToggleCommandMenuCommand);
-	return () => void openMenu.run({ door: "new-tab", text: "" });
+	return () => void openMenu.run({ door: "new-tab", text: "", newTabList });
 }

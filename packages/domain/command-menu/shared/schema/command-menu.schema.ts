@@ -13,6 +13,7 @@ export const KeptMenuSchema = z.object({
 	door: DoorSchema,
 	text: z.string(),
 	opening: z.number().int().nonnegative(),
+	newTabList: z.string().nullable(),
 	pageId: z.string().nullable().default(null),
 });
 
@@ -22,6 +23,7 @@ export const OpenMenuSchema = z.object({
 	door: DoorSchema,
 	text: z.string().nullable(),
 	shownName: z.string().default(""),
+	newTabList: z.string().nullable().default(null),
 	pageId: z.string().nullable().default(null),
 });
 

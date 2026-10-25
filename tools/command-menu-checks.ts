@@ -235,7 +235,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 									lastAt: 1,
 								},
 							],
-							activeId: null,
+							openOnStartId: null,
 						},
 					},
 				}),

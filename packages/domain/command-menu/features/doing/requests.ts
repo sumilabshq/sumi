@@ -4,6 +4,8 @@ import type { Send } from "@widgetarium/core/requests";
 import {
 	CloseTabCommand,
 	HeldTabsQuery,
+	OpenChatCommand,
+	OpenNewChatCommand,
 	OpenTabCommand,
 	RenameTabCommand,
 	ReopenClosedTabByIdCommand,
@@ -14,16 +16,12 @@ import {
 import type { HeldTabs } from "@widgetarium/app-host";
 import { OpenAddressCommand } from "@widgetarium/browser";
 import {
-	ActiveChatQuery,
-	CreateChatCommand,
 	CreateWorkspaceCommand,
 	OpenChatElsewhereCommand,
 	OpenWorkspaceCommand,
 	PinChatCommand,
 	RenameChatCommand,
 	RenameWorkspaceCommand,
-	SelectChatCommand,
-	WorkspacesQuery,
 } from "@widgetarium/workspaces";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
@@ -84,7 +82,7 @@ export const RenameRowCommand = command("rename-row")
 		};
 	});
 
-async function performIntent(intent: Intent, send: Send, { pageId }: KeptMenu): Promise<void> {
+async function performIntent(intent: Intent, send: Send, { newTabList, pageId }: KeptMenu): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
 			return send(ShowTabCommand, { id: intent.id });
@@ -93,16 +91,16 @@ async function performIntent(intent: Intent, send: Send, { pageId }: KeptMenu): 
 		case "show-essential":
 			return send(ShowEssentialCommand, { id: intent.id });
 		case "open-chat":
-			return send(SelectChatCommand, { id: intent.id });
+			return send(OpenChatCommand, { chatId: intent.id, paneId: null });
 		case "open-chat-elsewhere":
 			return send(OpenChatElsewhereCommand, { workspaceId: intent.workspaceId, chatId: intent.chatId });
 		case "open-workspace":
 			return send(OpenWorkspaceCommand, { id: intent.id });
 		case "open-app":
-			await send(OpenTabCommand, { app: intent.app });
+			await send(OpenTabCommand, { app: intent.app, list: newTabList });
 			return;
 		case "open-address":
-			return openAddress(intent, send, pageId);
+			return openAddress(intent, send, { newTabList, pageId });
 		case "run":
 			return runMenuCommand(intent.command, send);
 		case "ask-ink":
@@ -123,7 +121,7 @@ async function performIntent(intent: Intent, send: Send, { pageId }: KeptMenu): 
 async function openAddress(
 	{ address, where }: Extract<Intent, { do: "open-address" }>,
 	send: Send,
-	pageId: string | null,
+	{ newTabList, pageId }: Pick<KeptMenu, "newTabList" | "pageId">,
 ): Promise<void> {
 	const shown = pageId ?? shownPageOf(await send(HeldTabsQuery));
 
@@ -131,7 +129,7 @@ async function openAddress(
 		return send(OpenAddressCommand, { tabId: shown, address, heldTabId: null });
 	}
 
-	await send(OpenTabCommand, { app: "browser" });
+	await send(OpenTabCommand, { app: "browser", list: newTabList });
 	const opened = shownPageOf(await send(HeldTabsQuery));
 
 	if (opened === null) {
@@ -149,36 +147,31 @@ function shownPageOf({ tabs, shownTabId }: HeldTabs): string | null {
 async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<void> {
 	switch (menuCommand) {
 		case "new-chat":
-			return send(CreateChatCommand);
+			await send(OpenNewChatCommand, { title: null });
+			return;
 		case "reopen-tab":
 			return send(ReopenClosedTabCommand);
 		case "new-workspace":
-			return send(CreateWorkspaceCommand);
+			await send(CreateWorkspaceCommand);
+			return;
 		case "new-tab":
 			return;
 	}
 }
 
 async function createChat(title: string, send: Send): Promise<void> {
-	const trimmed = title.trim();
-	await send(CreateChatCommand);
-
-	if (trimmed === "") {
-		return;
-	}
-
-	await send(RenameChatCommand, { id: (await send(ActiveChatQuery)).id, title: trimmed });
+	await send(OpenNewChatCommand, { title });
 }
 
 async function createWorkspace(name: string, send: Send): Promise<void> {
 	const trimmed = name.trim();
-	await send(CreateWorkspaceCommand);
+	const created = await send(CreateWorkspaceCommand);
 
 	if (trimmed === "") {
 		return;
 	}
 
-	await send(RenameWorkspaceCommand, { id: (await send(WorkspacesQuery)).current.id, name: trimmed });
+	await send(RenameWorkspaceCommand, { id: created.id, name: trimmed });
 }
 
 function unknownIntent(intent: never): never {

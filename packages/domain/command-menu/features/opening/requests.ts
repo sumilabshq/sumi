@@ -16,7 +16,7 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
-	.handle(async ({ door, text, shownName, pageId }, { commandMenu, send, invalidate }) => {
+	.handle(async ({ door, text, shownName, newTabList, pageId }, { commandMenu, send, invalidate }) => {
 		invalidate(CommandMenuQuery);
 		const was = commandMenu.menu();
 		const filled =
@@ -24,7 +24,12 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 				? filledWithShown((await send(AppTabsQuery)).tabs, shownName, await heldTabOfPage(pageId, send))
 				: { door, text };
 
-		if (was.isOpen && (was.door === door || was.door === filled.door) && was.pageId === pageId) {
+		if (
+			was.isOpen &&
+			(was.door === door || was.door === filled.door) &&
+			was.newTabList === newTabList &&
+			was.pageId === pageId
+		) {
 			const shut = `command menu open at ${was.door} → shut (the same opener again)`;
 			commandMenu.saveMenu(
 				{
@@ -37,13 +42,14 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 			return;
 		}
 
-		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}`;
+		const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}, new tabs into ${newTabList ?? "the shown tab's list"}`;
 		commandMenu.saveMenu(
 			{
 				isOpen: true,
 				door: filled.door,
 				text: filled.text,
 				opening: was.opening + 1,
+				newTabList,
 				pageId,
 			},
 			reason,
