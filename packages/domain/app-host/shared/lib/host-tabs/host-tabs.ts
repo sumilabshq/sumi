@@ -85,6 +85,18 @@ export function openTab(moment: HostTabsMoment, opened: OpenedTab, place: TabPla
 	};
 }
 
+export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place: TabPlace): OpenedHostTab {
+	const shown = openTab(moment, opened, place);
+	return {
+		...shown,
+		moment: {
+			...shown.moment,
+			shownId: moment.shownId,
+			lastShown: moment.lastShown,
+		},
+	};
+}
+
 export function openTabAfter(moment: HostTabsMoment, afterId: string, opened: OpenedTab): OpenedHostTab | null {
 	const place = placeAfterOf(moment, afterId);
 	return place === null ? null : openTab(moment, opened, place);

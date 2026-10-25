@@ -7,7 +7,10 @@ import { addGroup, changeGroup, chatOfTab, findGroup, ungroup } from "../../shar
 import type { HostTabsMoment, MovedTabs } from "../../shared/lib/host-tabs/host-tabs.js";
 import { keptTabsOf, momentOf, tabsTransitionSaid } from "../../shared/lib/host-tabs/kept-tabs.js";
 import { isKnownList } from "../../shared/lib/host-tabs/tab-lists.js";
-import { GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
+import { GroupFaceSchema, GroupHueSchema } from "../../shared/schema/tab-group.schema.js";
+import type { AddedGroup } from "../../shared/lib/host-tabs/host-tabs.js";
+import type { GroupChange } from "../../shared/lib/host-tabs/host-tabs.js";
+import type { GroupFace } from "../../shared/schema/tab-group.schema.js";
 
 const NO_GROUP = 'no group "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
@@ -17,10 +20,11 @@ const NAMELESS = "a group needs a name";
 interface GroupBirth {
 	readonly listId: string;
 	readonly withTabId: string | null;
+	readonly face: GroupChange;
 }
 
 export const CreateGroupCommand = command("create-group")
-	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]))
+	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
 	.output(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject({ hostTabs: HostTabsGateway })
@@ -33,7 +37,7 @@ export const CreateGroupCommand = command("create-group")
 		}
 
 		if ("list" in asked) {
-			return { id: saveNewGroup(hostTabs, moment, { listId: asked.list, withTabId: null }) };
+			return { id: saveNewGroup(hostTabs, moment, { listId: asked.list, withTabId: null, face: faceOf(asked) }) };
 		}
 
 		const listId = chatOfTab(moment, asked.withTabId);
@@ -42,7 +46,7 @@ export const CreateGroupCommand = command("create-group")
 			return refuse(NOT_LISTED.replace("{id}", asked.withTabId));
 		}
 
-		return { id: saveNewGroup(hostTabs, moment, { listId, withTabId: asked.withTabId }) };
+		return { id: saveNewGroup(hostTabs, moment, { listId, withTabId: asked.withTabId, face: faceOf(asked) }) };
 	});
 
 export const RenameGroupCommand = command("rename-group")
@@ -122,10 +126,35 @@ async function loadedChatIdOf(hostTabs: HostTabsGateway, send: Send): Promise<st
 	return chat.id;
 }
 
-function saveNewGroup(hostTabs: HostTabsGateway, moment: HostTabsMoment, { listId, withTabId }: GroupBirth): string {
+function saveNewGroup(
+	hostTabs: HostTabsGateway,
+	moment: HostTabsMoment,
+	{ listId, withTabId, face }: GroupBirth,
+): string {
 	const added = addGroup(moment, listId, withTabId);
-	saveTabs(hostTabs, moment, added);
+	saveTabs(hostTabs, moment, withGroupFaced(added, face));
 	return added.groupId;
+}
+
+function faceOf({ name, hue }: GroupFace): GroupChange {
+	return {
+		...(name === undefined ? {} : { name }),
+		...(hue === undefined ? {} : { hue }),
+	};
+}
+
+function withGroupFaced(added: AddedGroup, face: GroupChange): MovedTabs {
+	const group = findGroup(added.moment.groups, added.groupId);
+	const faced = group === undefined ? null : changeGroup(added.moment, group, face);
+
+	if (faced === null) {
+		return added;
+	}
+
+	return {
+		moment: faced.moment,
+		reason: `${added.reason}; ${faced.reason}`,
+	};
 }
 
 function saveTabs(hostTabs: HostTabsGateway, was: HostTabsMoment, moved: MovedTabs | null): void {

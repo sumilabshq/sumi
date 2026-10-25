@@ -99,7 +99,8 @@ async function performIntent(intent: Intent, send: Send, { pageId }: KeptMenu): 
 		case "open-workspace":
 			return send(OpenWorkspaceCommand, { id: intent.id });
 		case "open-app":
-			return send(OpenTabCommand, { app: intent.app });
+			await send(OpenTabCommand, { app: intent.app });
+			return;
 		case "open-address":
 			return openAddress(intent, send, pageId);
 		case "run":

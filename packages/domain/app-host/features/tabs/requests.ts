@@ -22,7 +22,7 @@ import { essentialFaceOf } from "../../shared/lib/essentials/essential-face.js";
 import { addEssential } from "../../shared/lib/essentials/essentials.js";
 import { forgetPages, heldTabOf, makeEssential, placeTab } from "../../shared/lib/host-tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment } from "../../shared/lib/host-tabs/host-tabs.js";
-import { WORKSPACE_LIST, isKnownList, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
+import { WORKSPACE_LIST, chatOfGroup, isKnownList, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
 import {
 	shownAppOf,
 	shownTabIdOf,
@@ -54,6 +54,7 @@ import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 import { sidebarOf, tabRowsOf } from "./lib/tab-rows.js";
 
 const UNKNOWN_LIST = 'no tab list "{list}" is on screen';
+const GROUP_NOT_IN_LIST = 'no group "{group}" stands in the tab list "{list}"';
 const NO_OWN_WINDOWS = "this host cannot open a page in its own window";
 const ALL_PAGES = { heldTabId: null };
 const TAB_PARTS = {
@@ -185,6 +186,10 @@ export const PlaceTabCommand = command("place-tab")
 
 		if (to.kind === "list" && !isKnownList(showing.moment, to.list, facts.chat.id)) {
 			return refuse(UNKNOWN_LIST.replace("{list}", to.list));
+		}
+
+		if (to.kind === "list" && to.groupId !== null && chatOfGroup(showing.moment, to.groupId) !== to.list) {
+			return refuse(GROUP_NOT_IN_LIST.replace("{group}", to.groupId).replace("{list}", to.list));
 		}
 
 		if (to.kind === "list") {

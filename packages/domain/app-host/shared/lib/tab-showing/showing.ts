@@ -13,7 +13,7 @@ export type TabEffect =
 	| { readonly kind: "open-page"; readonly pageId: string }
 	| { readonly kind: "close-page"; readonly pageId: string }
 	| { readonly kind: "show-page"; readonly pageId: string }
-	| { readonly kind: "open-address"; readonly pageId: string; readonly address: string }
+	| { readonly kind: "open-address"; readonly pageId: string; readonly address: string; readonly isShown: boolean }
 	| { readonly kind: "reload-page"; readonly pageId: string }
 	| { readonly kind: "open-own-window"; readonly pageId: string }
 	| { readonly kind: "focus-own-window"; readonly pageId: string }
@@ -114,6 +114,11 @@ export function withPageEnsured(showing: Showing, facts: TabFacts, { tabId, why 
 	};
 }
 
+export interface PageAddressing {
+	readonly address: string;
+	readonly isShown: boolean;
+}
+
 export function withTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
 	const marked = withMoved(showing, markShown(showing.moment, tab.id));
 	const pane = facts.tabPanes.find(({ tabId }) => tabId === tab.id);
@@ -134,13 +139,13 @@ export function withTabShown(showing: Showing, facts: TabFacts, tab: HostTab): S
 		: withEffect(ensured.showing, { kind: "show-page", pageId: ensured.pageId });
 }
 
-export function withTabPageOpened(showing: Showing, tab: HostTab, address: string): Showing {
+export function withTabPageOpened(showing: Showing, tab: HostTab, { address, isShown }: PageAddressing): Showing {
 	if (tab.pageId === null) {
 		return showing;
 	}
 
 	const opened = withEffect(showing, { kind: "open-page", pageId: tab.pageId });
-	return address === "" ? opened : withEffect(opened, { kind: "open-address", pageId: tab.pageId, address });
+	return address === "" ? opened : withEffect(opened, { kind: "open-address", pageId: tab.pageId, address, isShown });
 }
 
 export function withChatTabShown(showing: Showing, facts: TabFacts): Showing {

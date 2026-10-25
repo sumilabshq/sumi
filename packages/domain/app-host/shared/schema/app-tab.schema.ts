@@ -5,6 +5,8 @@ export const AppKindSchema = z.enum(["canvas", "browser"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
+export const OpenedTabSchema = z.object({ id: z.string() });
+
 export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
 
 export type TabStatus = z.infer<typeof TabStatusSchema>;

@@ -6,6 +6,13 @@ export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal",
 
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 
+export const GroupFaceSchema = z.object({
+	name: z.string().min(1).optional(),
+	hue: GroupHueSchema.nullable().optional(),
+});
+
+export type GroupFace = z.infer<typeof GroupFaceSchema>;
+
 export const KeptGroupSchema = z.object({
 	id: z.string(),
 	name: z.string(),

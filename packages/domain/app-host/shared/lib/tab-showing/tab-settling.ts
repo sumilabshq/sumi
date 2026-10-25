@@ -127,7 +127,7 @@ export function freshTabOf(app: OpenedTab["app"], facts: TabFacts): OpenedTab {
 }
 
 export function withOpenedTabShown(showing: Showing, facts: TabFacts, tab: HostTab, address: string): Showing {
-	return withTabShown(withTabPageOpened(showing, tab, address), facts, tab);
+	return withTabShown(withTabPageOpened(showing, tab, { address, isShown: true }), facts, tab);
 }
 
 export function liveTabOf(moment: HostTabsMoment, essentialId: string): HostTab | undefined {
@@ -158,7 +158,11 @@ async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send)
 			await send(OpenPageCommand, { tabId: effect.pageId });
 			return send(ShowBrowserPageCommand, { tabId: effect.pageId });
 		case "open-address":
-			return send(OpenAddressCommand, { tabId: effect.pageId, address: effect.address, heldTabId: null });
+			return send(OpenAddressCommand, {
+				tabId: effect.pageId,
+				address: effect.address,
+				heldTabId: effect.isShown ? null : effect.pageId,
+			});
 		case "reload-page":
 			return send(ReloadPageCommand, { tabId: effect.pageId });
 		case "open-own-window":

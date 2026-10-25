@@ -6,6 +6,8 @@ export const AppKindSchema = z.enum(["canvas", "browser"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
+export const OpenedTabSchema = z.object({ id: z.string() });
+
 export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
 
 export type TabStatus = z.infer<typeof TabStatusSchema>;
@@ -176,6 +178,13 @@ export type TabDrop = z.infer<typeof TabDropSchema>;
 
 export type GroupHue = z.infer<typeof GroupHueSchema>;
 
+export const GroupFaceSchema = z.object({
+	name: z.string().min(1).optional(),
+	hue: GroupHueSchema.nullable().optional(),
+});
+
+export type GroupFace = z.infer<typeof GroupFaceSchema>;
+
 export const ColumnSideSchema = z.enum(["start", "end"]);
 
 export type ColumnSide = z.infer<typeof ColumnSideSchema>;
@@ -215,13 +224,30 @@ export const ShowTabCommand = command("app-host/show-tab")
 export const ShowChatTabCommand = command("app-host/show-chat-tab")
 	.idempotencyKey(Repeatable);
 export const OpenTabCommand = command("app-host/open-tab")
-	.input(z.object({ app: AppKindSchema }))
+	.input(
+		z.object({
+			app: AppKindSchema,
+			list: z.string().nullable().default(null),
+			groupId: z.string().nullable().default(null),
+			address: z.string().default(""),
+			show: z.boolean().default(true),
+		}),
+	)
+	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable);
 export const OpenTabBelowCommand = command("app-host/open-tab-below")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const DuplicateTabCommand = command("app-host/duplicate-tab")
-	.input(z.object({ id: z.string() }))
+	.input(
+		z.object({
+			id: z.string(),
+			list: z.string().nullable().default(null),
+			groupId: z.string().nullable().default(null),
+			show: z.boolean().default(true),
+		}),
+	)
+	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable);
 export const ReloadTabCommand = command("app-host/reload-tab")
 	.input(z.object({ id: z.string() }))
@@ -264,7 +290,7 @@ export const PlaceEssentialCommand = command("app-host/place-essential")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable);
 export const CreateGroupCommand = command("app-host/create-group")
-	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]))
+	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
 	.output(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const RenameGroupCommand = command("app-host/rename-group")
