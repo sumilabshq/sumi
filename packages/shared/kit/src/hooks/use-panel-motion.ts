@@ -3,7 +3,7 @@ import type { RefObject } from "react";
 import { POPOVER_ITEM } from "../constants/popover";
 import type { Placement } from "../constants/popover";
 import { returnFocusTo } from "../utils/focus";
-import { endFold, enterPanel, exitPanel, restPanel } from "../utils/popover-motion";
+import { endFold, enterPanel, exitPanel, keepPanelPlaced, restPanel } from "../utils/popover-motion";
 import { prefersReducedMotion } from "../utils/reduced-motion";
 import type { StopMotion } from "../utils/popover-motion";
 
@@ -25,12 +25,46 @@ interface MotionMemory {
 	readonly latest: RefObject<PanelMotionAsk>;
 }
 
+const SETTLE_STEP_MS = 50;
+const SETTLE_TRIES = 12;
+
 export function usePanelMotion(ask: PanelMotionAsk): void {
 	const wasOpen = useRef(false);
 	const stopExit = useRef<StopMotion | null>(null);
 	const latest = useRef(ask);
 	latest.current = ask;
 	useLayoutEffect(() => movePanel(ask, { wasOpen, stopExit, latest }), [ask.isOpen, ask.where.key]);
+	useLayoutEffect(() => keepsPlacedWhileOpen(latest), [ask.isOpen, ask.where.key]);
+}
+
+function keepsPlacedWhileOpen(latest: RefObject<PanelMotionAsk>): (() => void) | undefined {
+	const panel = latest.current.panelRef.current;
+
+	if (!latest.current.isOpen || panel === null || typeof ResizeObserver === "undefined") {
+		return undefined;
+	}
+
+	let retry = 0;
+	const placeWhenSettled = (triesLeft: number): void => {
+		const anchor = motionAnchorOf(latest.current);
+
+		if (anchor === null || !latest.current.isOpen || keepPanelPlaced(panel, anchor, latest.current.where)) {
+			return;
+		}
+
+		if (triesLeft > 0) {
+			retry = window.setTimeout(() => placeWhenSettled(triesLeft - 1), SETTLE_STEP_MS);
+		}
+	};
+	const observer = new ResizeObserver(() => {
+		window.clearTimeout(retry);
+		placeWhenSettled(SETTLE_TRIES);
+	});
+	observer.observe(panel);
+	return () => {
+		observer.disconnect();
+		window.clearTimeout(retry);
+	};
 }
 
 function movePanel(ask: PanelMotionAsk, memory: MotionMemory): StopMotion | undefined {

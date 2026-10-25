@@ -10,7 +10,7 @@ export interface CommandRefusal {
 export type RefusalHandler = (refusal: CommandRefusal) => void;
 
 export function toastRefusal({ reason }: CommandRefusal): void {
-	toast.error(reason);
+	toast.error(reason, { id: `refusal:${reason}` });
 }
 
 export const REFUSAL_HANDLER = createContext<RefusalHandler>(toastRefusal);

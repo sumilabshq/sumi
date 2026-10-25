@@ -253,12 +253,14 @@
 		--sumi-accent: #3b5bfd;
 		--sumi-on-accent: #ffffff;
 		--sumi-accent-soft: rgba(59, 91, 253, 0.1);
+		--sumi-accent-text: #2e4fe6;
 		--sumi-focus-ring: rgba(59, 91, 253, 0.55);
 		--sumi-success: #2f8f5b;
 		--sumi-warning: #c98a00;
 		--sumi-danger: #d93f2e;
 		--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
 		--sumi-shadow-pop: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.12);
+		--sumi-shadow-lift: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 32px 90px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.08);
 		--sumi-blur-pop: saturate(1.6) blur(20px);
 
 		--sumi-hue-red: #dc2626;
@@ -349,11 +351,7 @@
 
 		--sumi-chats-w: 268px;
 		--sumi-chat-w: 560px;
-		--sumi-plate-min: 320px;
-		--sumi-strip-blur-near: 2px;
-		--sumi-strip-blur-mid: 6px;
-		--sumi-strip-blur-far: 16px;
-		--sumi-strip-veil: 40%;
+		--sumi-plate-min: 240px;
 	}
 
 	:root.dark,
@@ -378,6 +376,8 @@
 		--sumi-accent-soft: rgba(91, 120, 255, 0.18);
 		--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
 		--sumi-shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 28px rgba(0, 0, 0, 0.5);
+		--sumi-shadow-lift:
+			0 0 0 1px rgba(255, 255, 255, 0.1), 0 32px 90px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.35);
 
 		--sumi-hue-red: #f87171;
 		--sumi-hue-orange: #fb923c;
@@ -398,6 +398,7 @@
 		--sumi-menu-glyph-on: rgba(255, 255, 255, 0.65);
 		--sumi-pick: rgb(30 30 30 / 0.92);
 		--sumi-pick-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		--sumi-accent-text: #8ea2ff;
 	}
 
 	.sumi-ink-dark {
@@ -6526,6 +6527,42 @@ body.wg-tree-carrying .wg-tile-body {
 	align-items: flex-end;
 }
 
+:is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine {
+	position: relative;
+	padding-block: 18px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-mine-line {
+	position: absolute;
+	top: calc(100% - 12px);
+	right: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-1, 4px);
+	height: 24px;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	user-select: none;
+	color: var(--sumi-text-3, var(--muted-foreground));
+	font: var(--sumi-fw-regular, 400) var(--sumi-fs-12, 12px) / 16px var(--sumi-font-ui, inherit);
+	opacity: 0;
+	transition: opacity var(--sumi-dur-base, 160ms) var(--sumi-ease, ease);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-turn.is-mine:is(:hover, :focus-within) .wg-studio-ai-mine-line {
+	opacity: 1;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-mine-time::before {
+	content: "·";
+	margin-right: var(--sumi-sp-1, 4px);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-mine-line .wg-studio-ai-round {
+	width: 24px;
+	height: 24px;
+}
+
 :is(.wg-root, .wg-portal) .wg-studio-ai-said {
 	max-width: 92%;
 	padding: 0 4px;
@@ -6650,59 +6687,62 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 2px;
 	width: 100%;
-	box-sizing: border-box;
-	padding: 6px;
-	border-radius: 30px;
-	background: var(--wg-kit-group-fill);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-tools:not(.is-open) {
-	width: fit-content;
-	max-width: 100%;
-	border-radius: var(--wg-kit-pill);
+	min-width: 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-head {
-	display: flex;
+	display: inline-flex;
+	align-self: flex-start;
 	align-items: center;
-	justify-content: flex-start;
-	gap: 10px;
-	width: 100%;
-	height: auto;
-	padding: 6px 8px 2px 14px;
+	gap: var(--sumi-sp-4);
+	max-width: 100%;
+	height: var(--sumi-h-xs);
+	padding: 0;
 	border: none;
-	border-radius: var(--wg-kit-pill);
+	border-radius: var(--sumi-r-sm);
 	background: none;
 	box-shadow: none;
-	color: var(--wg-kit-text);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
 	text-align: start;
 	cursor: pointer;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-tools:not(.is-open) .wg-studio-ai-tools-head {
-	padding: 0 0 0 10px;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-head:hover {
 	background: none;
+	color: var(--sumi-text);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-said {
-	flex-grow: 1;
-	font-size: 13px;
-	font-weight: var(--font-medium, 500);
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-failed {
-	font-size: 12px;
+	flex: none;
 	color: var(--wg-kit-error-ink);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-took {
-	font-size: 12px;
-	color: var(--wg-kit-text-muted);
+	flex: none;
+	color: var(--sumi-text-3);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-tools-icon {
+	flex: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-tools-chevron {
+	flex: none;
+	transition: rotate 160ms ease;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-tools-chevron.is-open {
+	rotate: 90deg;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-round,
@@ -6725,34 +6765,28 @@ body.wg-tree-carrying .wg-tile-body {
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button {
-	background: var(--wg-kit-group-fill);
+	background: none;
+	color: var(--muted-foreground);
 	cursor: pointer;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-round.is-button:hover {
-	background: var(--wg-kit-fill-hover);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round .wg-studio-ai-chevron {
-	rotate: 90deg;
-	transition: rotate 180ms ease;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-round .wg-studio-ai-chevron.is-open {
-	rotate: -90deg;
+	background: var(--sumi-hover, var(--wg-kit-fill-hover));
+	color: var(--foreground);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-list {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 2px;
 	width: 100%;
+	min-width: 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-call {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px;
 	min-width: 0;
 }
 
@@ -6760,18 +6794,23 @@ body.wg-tree-carrying .wg-tile-body {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
-	gap: 12px;
+	gap: 8px;
 	width: 100%;
-	height: auto;
+	height: 28px;
 	min-width: 0;
-	padding: 6px 16px 6px 6px;
+	padding: 0 4px;
 	border: none;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-raise);
+	border-radius: 6px;
+	background: none;
 	box-shadow: none;
-	color: var(--wg-kit-text);
+	color: var(--foreground);
+	font: 400 13px var(--font-sans, inherit);
 	text-align: start;
 	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-call-head:not(:disabled):hover {
+	background: var(--sumi-hover, var(--wg-kit-fill-hover));
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-head:disabled {
@@ -6784,39 +6823,19 @@ body.wg-tree-carrying .wg-tile-body {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-group-fill);
-	color: var(--wg-kit-text-muted);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-call-mark:is(.is-search, .is-read) {
-	background: var(--wg-kit-accent-wash);
-	color: var(--wg-kit-accent);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-call-mark.is-edit {
-	background: var(--wg-kit-accent);
-	color: var(--brand-foreground);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-call-mark.is-run {
-	background: var(--primary);
-	color: var(--primary-foreground);
+	width: 16px;
+	height: 16px;
+	color: var(--muted-foreground);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-mark.is-failed {
-	background: var(--wg-kit-error-wash);
-	color: var(--wg-kit-error);
+	color: var(--wg-kit-error-ink);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-name {
 	flex-grow: 1;
 	min-width: 0;
 	overflow: hidden;
-	font-size: 14px;
-	font-weight: var(--font-normal, 400);
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
@@ -6874,9 +6893,10 @@ body.wg-tree-carrying .wg-tile-body {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 12px;
-	border-radius: 24px;
-	background: var(--wg-kit-raise);
+	margin-left: 28px;
+	padding: 10px 12px;
+	border-radius: 10px;
+	background: var(--wg-kit-group-fill);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-call-open:has(> .wg-studio-ai-diff) {
@@ -7257,30 +7277,31 @@ body.wg-tree-carrying .wg-tile-body {
 :is(.wg-root, .wg-portal) .wg-studio-ai-finish {
 	display: flex;
 	align-items: center;
-	gap: 8px;
-	padding: 2px 6px;
+	gap: var(--sumi-sp-3);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-finish-dot {
+:is(.wg-root, .wg-portal) .wg-studio-ai-finish-mark circle {
+	fill: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-finish-mark path {
+	fill: none;
+	stroke: var(--sumi-plate);
+	stroke-width: 5;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-finish-mark {
 	flex: none;
-	width: 8px;
-	height: 8px;
-	border-radius: var(--wg-kit-pill);
-	background: var(--wg-kit-success);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-finish.is-stopped .wg-studio-ai-finish-dot {
-	background: var(--wg-kit-text-muted);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-finish.is-failed .wg-studio-ai-finish-dot {
-	background: var(--wg-kit-error);
+	width: var(--sumi-icon-sm);
+	height: var(--sumi-icon-sm);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-finish-said {
 	flex-grow: 1;
-	font-size: 12px;
-	color: var(--wg-kit-text-muted);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-busy {
@@ -12329,7 +12350,7 @@ body.wg-tree-carrying .wg-tile-body {
 .wg-studio {
 	--wg-studio-edge: var(--wg-kit-plate-pad);
 	--wg-studio-sidebar: 380px;
-	--wg-studio-chat-content: 800px;
+	--wg-studio-chat-content: 768px;
 	--wg-studio-container-corner: calc(var(--radius) + var(--gap-plate));
 	--wg-studio-plate-corner: var(--radius);
 	--wg-studio-bubble-corner: calc(var(--radius) - 4px);
@@ -12360,32 +12381,6 @@ body.wg-studio-in-front .status-bar {
 	width: 100%;
 	max-width: var(--wg-studio-chat-content);
 	margin-inline: auto;
-}
-
-.wg-studio-shell-board {
-	--wg-board-pad: 0px;
-	--wg-root-head: 0px;
-	flex: none;
-}
-
-.wg-studio-shell-board > .wg-root {
-	width: max-content;
-	min-height: 0;
-	padding: 0;
-	background: transparent;
-}
-
-.wg-studio-shell-board .wg-tree-region {
-	padding: 0;
-}
-
-.wg-studio-shell-board :is(.wg-tree-page, .wg-tree-columns, .wg-tree-region, .wg-tree, .wg-tree-band) {
-	display: block;
-}
-
-.wg-studio-shell-board :is(.wg-widget-root, .wg-studio-drawn) {
-	container-type: normal;
-	width: auto;
 }
 
 .wg-studio-chat {
@@ -12494,79 +12489,6 @@ body.wg-studio-in-front .status-bar {
 	padding: var(--wg-studio-edge);
 	font-size: var(--wg-kit-text-s);
 	color: var(--wg-kit-text-muted);
-}
-
-.wg-studio-mark {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	background: var(--wg-kit-text);
-	color: var(--wg-kit-page);
-	font-size: var(--wg-kit-text-s);
-	font-weight: var(--font-medium, 500);
-	line-height: 1;
-}
-
-.wg-studio-mark.is-s {
-	font-size: var(--wg-kit-text-xs);
-	font-weight: var(--font-semibold, 600);
-}
-
-.wg-studio-menu {
-	display: flex;
-	flex-direction: column;
-	gap: var(--wg-gap-parts);
-	width: 280px;
-}
-
-.wg-studio-profile,
-.wg-studio-action {
-	display: flex;
-	min-width: 0;
-	align-items: center;
-	gap: var(--wg-gap-items);
-}
-
-.wg-studio-profile-text {
-	display: flex;
-	flex-direction: column;
-	min-width: 0;
-}
-
-.wg-studio-profile-name,
-.wg-studio-profile-line,
-.wg-studio-action-said {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.wg-studio-profile-name {
-	font-size: var(--wg-kit-text-m);
-	font-weight: var(--font-medium, 500);
-}
-
-.wg-studio-profile-line,
-.wg-studio-soon {
-	font-size: var(--wg-kit-text-xs);
-}
-
-.wg-studio-profile-line,
-.wg-studio-action.is-soon,
-.wg-studio-refusal {
-	color: var(--wg-kit-text-muted);
-}
-
-.wg-studio-action-said {
-	flex: 1;
-	min-width: 0;
-	font-size: var(--wg-kit-text-s);
-}
-
-.wg-studio-refusal {
-	padding: 8px 12px;
-	font-size: var(--wg-kit-text-s);
 }
 
 .wg-studio-catalogue-chips {
@@ -13170,20 +13092,25 @@ body.wg-studio-in-front .status-bar {
 }
 
 .wg-studio .wg-studio-ai-scroll {
-	gap: var(--wg-gap-parts, 8px);
+	gap: 14px;
+	padding: 14px 24px 12px;
 }
 
 .wg-studio .wg-studio-ai-said {
-	padding: 0 var(--wg-studio-edge);
-	font-size: var(--wg-kit-text-m);
-	line-height: 1.55;
+	padding: 0;
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.55 var(--sumi-font-ui);
+}
+
+.wg-studio .wg-studio-ai-turn {
+	gap: 14px;
 }
 
 .wg-studio .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
-	padding: 12px 18px;
-	border-radius: var(--wg-studio-bubble-corner);
-	background: var(--wg-kit-group-fill);
-	line-height: 1.45;
+	max-width: min(400px, 100%);
+	padding: 8px 12px;
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-active);
 }
 
 .wg-studio .wg-studio-ai-said.is-markdown :is(h1, h2) {
@@ -13277,52 +13204,82 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-composer {
-	--wg-studio-ai-field: var(--field, var(--background));
-	--wg-studio-ai-faint: var(--faint, var(--text-faint));
-	--wg-studio-ai-step: var(--fill-hover, var(--wg-kit-fill-hover));
 	position: relative;
 	display: flex;
 	flex: none;
 	flex-direction: column;
-	padding: 0 var(--wg-ai-gutter) var(--wg-ai-gutter);
-	font-family: var(--font-sans, inherit);
+	padding: 0 16px 10px;
+	font-family: var(--sumi-font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field {
 	position: relative;
 	display: flex;
+	box-sizing: border-box;
 	flex-direction: column;
-	gap: 0;
-	padding: 6px;
-	border-radius: 24px;
-	background: var(--wg-studio-ai-field);
-	box-shadow: inset 0 0 0 1px var(--border);
+	gap: 10px;
+	min-height: 88px;
+	padding: 12px;
+	border: 1px solid var(--sumi-line-strong);
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-plate);
+	box-shadow: none;
 	cursor: text;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field.is-focused {
-	box-shadow: inset 0 0 0 1px var(--ring);
+	border-color: transparent;
+	box-shadow: 0 0 0 2px var(--sumi-focus-ring);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box {
+	flex: 1;
 	box-sizing: border-box;
-	min-height: 30px;
-	max-height: 240px;
-	padding: 6px 10px 2px;
-	color: var(--foreground);
-	font: 400 15px / 22px var(--font-sans, inherit);
+	min-width: 0;
+	min-height: 20px;
+	max-height: 200px;
+	padding: 0;
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.4 var(--sumi-font-ui);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box::placeholder {
-	color: var(--wg-studio-ai-faint);
+	color: var(--sumi-text-3);
 	opacity: 1;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-box-frame {
+	position: relative;
+	display: flex;
+	min-width: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field .wg-studio-ai-box.has-command {
+	color: transparent;
+	caret-color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-box-mirror {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.4 var(--sumi-font-ui);
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+	pointer-events: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-command {
+	background: none;
+	color: var(--sumi-accent-text);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-field-bar {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	height: 36px;
+	gap: var(--sumi-sp-2);
+	margin-top: auto;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-bar-space,
@@ -13336,71 +13293,61 @@ body.wg-studio-in-front .status-bar {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
+	width: var(--sumi-h-sm);
+	height: var(--sumi-h-sm);
 	padding: 0;
 	border: none;
-	border-radius: 999px;
-	background: transparent;
-	box-shadow: inset 0 0 0 1px var(--border);
-	color: var(--foreground);
+	border-radius: var(--sumi-r-sm);
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text-2);
 	cursor: pointer;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus:hover {
-	background: var(--wg-studio-ai-step);
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus:hover,
+:is(.wg-root, .wg-portal) .wg-studio-ai-plus.is-on {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-plus.is-on {
-	background: var(--primary);
+:is(.wg-root, .wg-portal) .wg-studio-ai-provider {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-3);
+	height: var(--sumi-h-xs);
+	padding: 0 var(--sumi-sp-4);
+	border: none;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-hover);
 	box-shadow: none;
-	color: var(--primary-foreground);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-provider:hover,
+:is(.wg-root, .wg-portal) .wg-studio-ai-provider.is-on {
+	background: var(--sumi-active);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-ready {
 	display: inline-block;
 	flex: none;
-	width: 8px;
-	height: 8px;
-	border-radius: 999px;
-	background: var(--green);
+	width: 6px;
+	height: 6px;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-success);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-ready.is-off {
-	background: var(--wg-studio-ai-faint, var(--faint));
+	background: var(--sumi-text-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-chevron {
 	display: inline-flex;
-	color: var(--wg-studio-ai-faint, var(--faint));
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-hint {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	gap: 5px;
-	color: var(--wg-studio-ai-faint);
-	font: 400 12px var(--font-sans, inherit);
-	white-space: nowrap;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-hint kbd {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: 20px;
-	min-width: 20px;
-	padding: 0 5px;
-	border: none;
-	border-radius: 6px;
-	background: none;
-	box-shadow: inset 0 0 0 1px var(--border);
-	color: var(--muted-foreground);
-	font:
-		500 12px system-ui,
-		-apple-system,
-		sans-serif;
+	color: inherit;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-send {
@@ -13408,58 +13355,32 @@ body.wg-studio-in-front .status-bar {
 	flex: none;
 	align-items: center;
 	justify-content: center;
-	width: 32px;
-	height: 32px;
+	width: var(--sumi-h-md);
+	height: var(--sumi-h-md);
 	padding: 0;
 	border: none;
-	border-radius: 999px;
-	background: var(--brand);
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-accent);
 	box-shadow: none;
-	color: var(--brand-foreground);
+	color: var(--sumi-on-accent);
 	cursor: pointer;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-send:hover {
-	background: var(--brand-hover);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle,
-:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle:hover {
-	background: color-mix(in srgb, var(--primary) 9%, var(--wg-studio-ai-field));
-	color: var(--muted-foreground);
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-idle {
+	background: var(--sumi-active);
+	color: var(--sumi-text-3);
 	cursor: default;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-tip {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	height: 32px;
-	padding: 0 12px;
-	border-radius: 999px;
-	background: var(--primary);
-	color: var(--primary-foreground);
-	font: 500 12px var(--font-sans, inherit);
-	white-space: nowrap;
-	box-shadow: 0 8px 20px -6px var(--wg-studio-glass-shadow);
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-streaming {
+	background: var(--sumi-text);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-tip kbd {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	height: 20px;
-	min-width: 20px;
-	padding: 0 5px;
-	border: none;
-	border-radius: 6px;
-	background: color-mix(in srgb, var(--primary-foreground) 18%, transparent);
-	box-shadow: none;
-	color: var(--primary-foreground);
-	font:
-		500 12px system-ui,
-		-apple-system,
-		sans-serif;
+:is(.wg-root, .wg-portal) .wg-studio-ai-stop-square {
+	width: 10px;
+	height: 10px;
+	border-radius: 2px;
+	background: var(--sumi-plate);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starter-chip {
@@ -13467,14 +13388,13 @@ body.wg-studio-in-front .status-bar {
 	flex: none;
 	align-self: flex-start;
 	align-items: center;
-	gap: 7px;
-	height: 32px;
-	margin: 6px 0 0 6px;
-	padding: 0 4px 0 10px;
-	border-radius: 999px;
-	background: var(--group);
-	color: var(--foreground);
-	font: 500 13px var(--font-sans, inherit);
+	gap: var(--sumi-sp-3);
+	height: var(--sumi-h-xs);
+	padding: 0 var(--sumi-sp-1) 0 var(--sumi-sp-4);
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
 	white-space: nowrap;
 }
 
@@ -13482,14 +13402,14 @@ body.wg-studio-in-front .status-bar {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 20px;
+	height: 20px;
 	padding: 0;
 	border: none;
-	border-radius: 999px;
+	border-radius: var(--sumi-r-full);
 	background: none;
 	box-shadow: none;
-	color: var(--muted-foreground);
+	color: var(--sumi-text-2);
 	cursor: pointer;
 }
 
@@ -13497,63 +13417,63 @@ body.wg-studio-in-front .status-bar {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 2px;
-	height: 32px;
-	margin-top: 6px;
-	padding: 0 4px;
+	gap: var(--sumi-sp-1);
+	padding-top: var(--sumi-sp-3);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip-button {
 	display: inline-flex;
 	flex: none;
 	align-items: center;
-	gap: 6px;
-	height: 32px;
-	padding: 0 8px 0 10px;
+	gap: var(--sumi-sp-2);
+	height: var(--sumi-h-xs);
+	padding: 0 var(--sumi-sp-3);
 	border: none;
-	border-radius: 999px;
+	border-radius: var(--sumi-r-sm);
 	background: none;
 	box-shadow: none;
-	color: var(--muted-foreground);
-	font: 500 13px var(--font-sans, inherit);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
 	white-space: nowrap;
 	cursor: pointer;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-strip-button.is-outlined {
-	box-shadow: inset 0 0 0 1px var(--border);
-	color: var(--foreground);
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip-button:hover,
 :is(.wg-root, .wg-portal) .wg-studio-ai-strip-button.is-on {
-	background: var(--wg-studio-ai-step);
-	color: var(--foreground);
+	background: var(--sumi-hover);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring circle {
 	fill: none;
-	stroke-width: 3;
+	stroke-width: 2;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring .is-track {
-	stroke: color-mix(in oklch, var(--foreground) 24%, transparent);
+	stroke: var(--sumi-line-strong);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-usage-ring .is-used {
-	stroke: var(--foreground);
+	stroke: currentColor;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-field:has(> .wg-studio-ai-attachments) {
+	padding-top: var(--sumi-sp-4);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments {
 	position: relative;
+	display: flex;
 	flex: none;
-	margin-bottom: 8px;
+	flex-direction: column;
+	gap: 10px;
+	min-width: 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-track {
 	display: flex;
-	gap: 8px;
-	padding: 8px 8px 2px 0;
+	gap: 6px;
+	margin: -2px -6px 0 calc(-1 * var(--sumi-sp-2));
+	padding: 6px 6px var(--sumi-sp-2) var(--sumi-sp-2);
 	overflow-x: auto;
 	scrollbar-width: none;
 }
@@ -13563,7 +13483,7 @@ body.wg-studio-in-front .status-bar {
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments.is-over .wg-studio-ai-attachments-track {
-	mask-image: linear-gradient(to right, black 78%, transparent 97%);
+	mask-image: linear-gradient(to right, black 80%, transparent);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card {
@@ -13572,20 +13492,20 @@ body.wg-studio-in-front .status-bar {
 	display: flex;
 	flex: none;
 	align-items: center;
-	gap: 12px;
-	height: 76px;
-	border-radius: 16px;
+	height: 64px;
+	border-radius: var(--sumi-r-md);
+	background: var(--sumi-sunken);
 	outline: none;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card.is-file {
-	width: 216px;
-	padding: 0 14px 0 12px;
-	background: var(--group);
+	gap: 10px;
+	width: 184px;
+	padding: 0 var(--sumi-sp-5);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image {
-	width: 112px;
+	width: 64px;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image img {
@@ -13597,73 +13517,60 @@ body.wg-studio-in-front .status-bar {
 	object-position: left top;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image::after {
-	position: absolute;
-	inset: 0;
-	border-radius: inherit;
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--foreground) 10%, transparent);
-	content: "";
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-card:hover,
-:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within,
-:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image:hover::after,
-:is(.wg-root, .wg-portal) .wg-studio-ai-card.is-image:focus-within::after {
-	box-shadow: inset 0 0 0 2px var(--ring);
+:is(.wg-root, .wg-portal) .wg-studio-ai-card:focus-within {
+	box-shadow: 0 0 0 1.5px var(--sumi-line-strong);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-glyph {
 	display: inline-flex;
 	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border-radius: 999px;
-	background: var(--raise);
-	color: var(--foreground);
+	color: var(--sumi-text-2);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-words {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
 	min-width: 0;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-words b {
 	overflow: hidden;
-	color: var(--foreground);
-	font: 500 13px var(--font-sans, inherit);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-medium) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-words span {
 	overflow: hidden;
-	color: var(--wg-studio-ai-faint);
-	font: 400 12px var(--font-sans, inherit);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.4 var(--sumi-font-ui);
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card-remove {
 	position: absolute;
-	top: -7px;
-	right: -7px;
+	top: -6px;
+	right: -6px;
 	z-index: 3;
 	display: none;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: 18px;
+	height: 18px;
 	padding: 0;
 	border: none;
-	border-radius: 999px;
-	background: var(--primary);
-	box-shadow: 0 0 0 2px var(--background);
-	color: var(--primary-foreground);
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-text);
+	box-shadow: none;
+	color: var(--sumi-plate);
 	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-card-remove svg {
+	stroke-width: 2.5;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-card:hover .wg-studio-ai-card-remove,
@@ -13673,44 +13580,38 @@ body.wg-studio-in-front .status-bar {
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-more {
 	position: absolute;
-	top: 44px;
+	top: 22px;
 	right: 0;
 	z-index: 4;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 36px;
-	height: 36px;
+	width: var(--sumi-h-sm);
+	height: var(--sumi-h-sm);
 	padding: 0;
 	border: none;
-	border-radius: 999px;
-	background: var(--wg-studio-glass, var(--background));
-	backdrop-filter: blur(20px);
-	box-shadow:
-		0 0 0 1px var(--wg-studio-glass-edge, var(--border)),
-		0 6px 16px -6px var(--wg-studio-glass-shadow);
-	color: var(--foreground);
-	transform: translateY(-50%);
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-plate);
+	box-shadow: var(--sumi-shadow-pop);
+	color: var(--sumi-text);
 	cursor: pointer;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-meta {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	margin-top: 8px;
-	padding-right: 2px;
-	color: var(--wg-studio-ai-faint);
-	font: 400 12px var(--font-sans, inherit);
+	gap: var(--sumi-sp-4);
+	color: var(--sumi-text-3);
+	font: var(--sumi-fw-regular) var(--sumi-fs-11) / 1.4 var(--sumi-font-ui);
 	white-space: nowrap;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-bar {
 	position: relative;
 	flex: 1;
-	height: 3px;
-	border-radius: 999px;
-	background: var(--group-line);
+	height: 2px;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-attachments-bar i {
@@ -13719,7 +13620,7 @@ body.wg-studio-in-front .status-bar {
 	bottom: 0;
 	left: 0;
 	border-radius: inherit;
-	background: var(--wg-studio-ai-faint);
+	background: var(--sumi-line-strong);
 }
 
 .wg-studio-ai-menu-point {
@@ -13729,24 +13630,18 @@ body.wg-studio-in-front .status-bar {
 	pointer-events: none;
 }
 
-.wg-kit-pop.wg-studio-ai-menu {
-	--wg-studio-ai-row-hover: color-mix(in oklch, var(--foreground) 4%, transparent);
+:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal) .wg-kit-pop.wg-studio-ai-menu {
+	box-sizing: border-box;
+	width: 248px;
 	min-width: 0;
-	padding: 6px;
-	border-radius: 24px;
-	background: var(--wg-studio-glass, var(--popover));
-	backdrop-filter: var(--wg-studio-glass-blur, blur(26px) saturate(1.7));
-	-webkit-backdrop-filter: var(--wg-studio-glass-blur, blur(26px) saturate(1.7));
-	box-shadow:
-		0 0 0 1px var(--wg-studio-glass-edge, var(--border)),
-		0 24px 56px -14px var(--wg-studio-glass-shadow, transparent),
-		0 6px 16px -8px var(--wg-studio-glass-shadow-near, transparent);
-	color: var(--foreground);
-	font-family: var(--font-sans, inherit);
-}
-
-:is(.theme-dark, .dark) .wg-kit-pop.wg-studio-ai-menu {
-	--wg-studio-ai-row-hover: color-mix(in oklch, var(--foreground) 6%, transparent);
+	padding: var(--sumi-sp-2);
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-overlay);
+	backdrop-filter: var(--sumi-blur-pop);
+	-webkit-backdrop-filter: var(--sumi-blur-pop);
+	box-shadow: var(--sumi-shadow-pop);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 }
 
 :is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
@@ -13758,114 +13653,142 @@ body.wg-studio-in-front .status-bar {
 .wg-studio-ai-menu-body {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 1px;
+	min-width: 0;
 }
 
 .wg-studio-ai-menu-label {
-	padding: 8px 12px 4px;
-	color: var(--muted-foreground);
-	font: 500 12px var(--font-sans, inherit);
+	padding: 6px var(--sumi-sp-4) var(--sumi-sp-2);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.4 var(--sumi-font-ui);
 }
 
 .wg-studio-ai-menu-label.is-note {
-	padding: 6px 12px 8px;
+	padding: var(--sumi-sp-2) var(--sumi-sp-4) 6px;
+	color: var(--sumi-text-3);
+	white-space: normal;
 }
 
 .wg-studio-ai-menu-row {
 	display: flex;
+	box-sizing: border-box;
 	align-items: center;
-	gap: 10px;
-	min-height: 40px;
-	padding: 0 12px;
+	gap: var(--sumi-sp-4);
+	width: 100%;
+	min-height: var(--sumi-h-sm);
+	padding: var(--sumi-sp-2) var(--sumi-sp-4);
 	border: none;
-	border-radius: 18px;
+	border-radius: var(--sumi-r-sm);
 	background: none;
 	box-shadow: none;
-	color: var(--foreground);
-	font: 400 14px var(--font-sans, inherit);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 	text-align: start;
-	white-space: nowrap;
 	cursor: pointer;
 }
 
-.wg-studio-ai-menu-row.is-two {
-	min-height: 52px;
-	padding: 6px 12px;
+.wg-studio-ai-menu-row:hover,
+.wg-studio-ai-menu-row:focus-visible,
+.wg-studio-ai-menu-row.is-active {
+	background: var(--sumi-hover);
+	outline: none;
 }
 
-.wg-studio-ai-menu-row:hover,
-.wg-studio-ai-menu-row:focus-visible {
-	background: var(--wg-studio-ai-row-hover);
-	outline: none;
+.wg-studio-ai-menu-row.is-picked {
+	background: var(--sumi-active);
 }
 
 .wg-studio-ai-menu-mark {
 	display: inline-flex;
 	flex: none;
-	justify-content: center;
-	width: 20px;
-	color: var(--foreground);
+	align-items: center;
+	color: var(--sumi-text-2);
 }
 
 .wg-studio-ai-menu-words {
 	display: flex;
+	flex: 1;
 	flex-direction: column;
-	gap: 1px;
 	min-width: 0;
 }
 
 .wg-studio-ai-menu-words small {
-	color: var(--muted-foreground);
-	font-size: 12px;
-	white-space: nowrap;
+	color: var(--sumi-text-2);
+	font-size: var(--sumi-fs-12);
 }
 
 .wg-studio-ai-menu-end {
 	display: inline-flex;
 	flex: none;
 	align-items: center;
-	margin-left: auto;
-	color: var(--muted-foreground);
-}
-
-.wg-studio-ai-menu-end .wg-kit-icon-glyph {
-	stroke-width: 1.5;
+	color: var(--sumi-accent-text);
 }
 
 .wg-studio-ai-menu-line {
 	flex: none;
 	height: 1px;
-	margin: 4px 12px;
-	background: var(--wg-studio-glass-line, var(--group-line));
+	margin: var(--sumi-sp-2) calc(-1 * var(--sumi-sp-2));
+	background: var(--sumi-line);
+}
+
+.wg-studio-ai-menu-foot {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-6);
+	padding: 6px var(--sumi-sp-4) var(--sumi-sp-2);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) var(--sumi-font-ui);
+}
+
+.wg-studio-ai-menu-hint {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.wg-studio-ai-menu-hint kbd {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	border: none;
+	border-radius: 5px;
+	background: var(--sumi-active);
+	box-shadow: none;
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-medium) var(--sumi-fs-11) var(--sumi-font-ui);
 }
 
 .wg-studio-ai-meter {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	padding: 8px 12px 10px;
+	padding: var(--sumi-sp-2) var(--sumi-sp-4) 6px;
 }
 
 .wg-studio-ai-meter-head {
 	display: flex;
 	justify-content: space-between;
-	font: 400 13px var(--font-sans, inherit);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 }
 
 .wg-studio-ai-meter-head b {
-	font-weight: 500;
+	font-weight: var(--sumi-fw-regular);
 }
 
 .wg-studio-ai-meter-head span {
-	color: var(--muted-foreground);
+	color: var(--sumi-text-2);
 }
 
 .wg-studio-ai-meter-bar {
 	position: relative;
-	height: 6px;
+	height: var(--sumi-sp-2);
+	margin: 6px 0 var(--sumi-sp-2);
 	overflow: hidden;
-	border-radius: 999px;
-	background: var(--wg-studio-glass-line, var(--group-line));
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
 }
 
 .wg-studio-ai-meter-bar i {
@@ -13874,12 +13797,13 @@ body.wg-studio-in-front .status-bar {
 	bottom: 0;
 	left: 0;
 	border-radius: inherit;
-	background: var(--foreground);
+	background: var(--sumi-text);
 }
 
 .wg-studio-ai-meter small {
-	color: var(--faint, var(--text-faint));
-	font-size: 12px;
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+	line-height: 1.4;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai.is-empty .wg-studio-ai-scroll {
@@ -13894,83 +13818,67 @@ body.wg-studio-in-front .status-bar {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	justify-content: center;
+	gap: var(--sumi-sp-4);
 	margin: auto 0;
-	padding-top: 20px;
-	color: var(--foreground);
-	font-family: var(--font-sans, inherit);
+	padding: var(--sumi-sp-8);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-welcome > .wg-mascot {
+	margin-bottom: var(--sumi-sp-4);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet {
-	margin: 14px 0 0;
-	font: 500 28px / 1.15 var(--font-sans, inherit);
-	letter-spacing: -0.03em;
+	margin: 0;
+	color: var(--sumi-text);
+	font: var(--sumi-fw-semi) var(--sumi-fs-20) / 1.25 var(--sumi-font-ui);
+	letter-spacing: normal;
 	text-align: center;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-greet-said {
-	margin: 6px 0 0;
-	color: var(--muted-foreground);
-	font: 400 14px var(--font-sans, inherit);
+	margin: 0;
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 	text-align: center;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starters {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-4);
 	width: 100%;
-	max-width: 620px;
-	margin-top: 28px;
+	max-width: 440px;
+	margin-top: var(--sumi-sp-6);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starter {
-	position: relative;
 	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 12px;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	width: 100%;
 	height: auto;
-	padding: 14px 18px 18px 14px;
+	padding: var(--sumi-sp-5);
 	border: none;
-	border-radius: 28px;
-	background: var(--group);
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-hover);
 	box-shadow: none;
-	color: var(--foreground);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-medium) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 	text-align: start;
-	white-space: normal;
+	white-space: nowrap;
 	cursor: pointer;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starter:hover {
-	background: var(--fill-hover, var(--wg-kit-fill-hover));
+	background: var(--sumi-active);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-starter-icon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 44px;
-	height: 44px;
-	border-radius: 999px;
-	background: var(--raise);
-	color: var(--foreground);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words {
-	display: flex;
-	flex-direction: column;
-	gap: 3px;
-	padding-left: 4px;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words b {
-	font: 600 16px var(--font-sans, inherit);
-	letter-spacing: -0.01em;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-starter-words span {
-	color: var(--muted-foreground);
-	font: 400 13px / 1.45 var(--font-sans, inherit);
+	flex: none;
+	color: var(--sumi-text-2);
 }
 
 .wg-studio .wg-studio-ai-to-end {
@@ -13996,20 +13904,6 @@ body.wg-studio-in-front .status-bar {
 	letter-spacing: -0.01em;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.wg-studio .wg-studio-menu-trigger.wg-kit-btn {
-	width: 48px;
-	height: 48px;
-	color: var(--wg-kit-text);
-}
-
-.wg-studio .wg-studio-menu-trigger.wg-kit-btn::before {
-	background: var(--wg-kit-group-fill);
-}
-
-.wg-studio .wg-studio-menu-trigger.wg-kit-btn:hover::before {
-	background: var(--wg-kit-fill-hover);
 }
 
 :is(.wg-studio, .wg-studio-chat, .wg-kit-portal-layer.is-studio) {
@@ -14310,10 +14204,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	pointer-events: none;
 }
 
-.wg-studio-ai-menu-row.is-active {
-	background: var(--wg-studio-ai-row-hover);
-}
-
 .wg-studio-ai-compact-block {
 	display: flex;
 	flex-direction: column;
@@ -14401,7 +14291,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--cv-color-white: #fff;
 		--cv-spacing: 0.25rem;
 		--cv-leading-tight: 1.25;
-		--cv-leading-normal: 1.5;
 		--cv-radius-2xl: 1rem;
 		--cv-default-transition-duration: 150ms;
 		--cv-default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -14413,10 +14302,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 }
 @layer utilities {
-	.cv\:\@container\/page {
-		container-type: inline-size !important;
-		container-name: page !important;
-	}
 	.cv\:\@container {
 		container-type: inline-size !important;
 	}
@@ -14447,9 +14332,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:inset-x-0 {
 		inset-inline: 0px !important;
 	}
-	.cv\:inset-x-3 {
-		inset-inline: calc(var(--cv-spacing) * 3) !important;
-	}
 	.cv\:inset-y-0 {
 		inset-block: 0px !important;
 	}
@@ -14467,9 +14349,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:top-1\/2 {
 		top: calc(1 / 2 * 100%) !important;
-	}
-	.cv\:top-3 {
-		top: calc(var(--cv-spacing) * 3) !important;
 	}
 	.cv\:-right-px {
 		right: -1px !important;
@@ -14489,9 +14368,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bottom-4 {
 		bottom: calc(var(--cv-spacing) * 4) !important;
 	}
-	.cv\:bottom-6 {
-		bottom: calc(var(--cv-spacing) * 6) !important;
-	}
 	.cv\:left-0 {
 		left: 0px !important;
 	}
@@ -14509,9 +14385,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:z-\[2\] {
 		z-index: 2 !important;
-	}
-	.cv\:z-\[3\] {
-		z-index: 3 !important;
 	}
 	.cv\:z-\[var\(--layer-tooltip\)\] {
 		z-index: var(--layer-tooltip) !important;
@@ -14552,9 +14425,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-me-1\.5 {
 		margin-inline-end: calc(var(--cv-spacing) * -1.5) !important;
 	}
-	.cv\:me-0\.5 {
-		margin-inline-end: calc(var(--cv-spacing) * 0.5) !important;
-	}
 	.cv\:mt-1 {
 		margin-top: var(--cv-spacing) !important;
 	}
@@ -14566,21 +14436,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:mt-2\.5 {
 		margin-top: calc(var(--cv-spacing) * 2.5) !important;
-	}
-	.cv\:mt-6 {
-		margin-top: calc(var(--cv-spacing) * 6) !important;
-	}
-	.cv\:mt-\[14px\] {
-		margin-top: 14px !important;
-	}
-	.cv\:mt-\[18px\] {
-		margin-top: 18px !important;
-	}
-	.cv\:mt-\[22px\] {
-		margin-top: 22px !important;
-	}
-	.cv\:mt-\[26px\] {
-		margin-top: 26px !important;
 	}
 	.cv\:mb-0\.5 {
 		margin-bottom: calc(var(--cv-spacing) * 0.5) !important;
@@ -14646,10 +14501,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		width: 18px !important;
 		height: 18px !important;
 	}
-	.cv\:size-\[150px\] {
-		width: 150px !important;
-		height: 150px !important;
-	}
 	.cv\:size-full {
 		width: 100% !important;
 		height: 100% !important;
@@ -14663,14 +14514,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:h-9 {
 		height: calc(var(--cv-spacing) * 9) !important;
 	}
-	.cv\:h-10 {
-		height: calc(var(--cv-spacing) * 10) !important;
-	}
 	.cv\:h-12 {
 		height: calc(var(--cv-spacing) * 12) !important;
-	}
-	.cv\:h-13 {
-		height: calc(var(--cv-spacing) * 13) !important;
 	}
 	.cv\:h-\[18px\] {
 		height: 18px !important;
@@ -14683,9 +14528,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:h-\[46px\] {
 		height: 46px !important;
-	}
-	.cv\:h-\[52px\] {
-		height: 52px !important;
 	}
 	.cv\:h-\[540px\] {
 		height: 540px !important;
@@ -14732,20 +14574,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:w-\[270px\] {
 		width: 270px !important;
 	}
-	.cv\:w-\[560px\] {
-		width: 560px !important;
-	}
 	.cv\:w-\[960px\] {
 		width: 960px !important;
 	}
 	.cv\:w-\[calc\(100\%-12px\)\] {
 		width: calc(100% - 12px) !important;
-	}
-	.cv\:w-\[min\(26rem\,90vw\)\] {
-		width: min(26rem, 90vw) !important;
-	}
-	.cv\:w-\[min\(32rem\,calc\(100\%-2rem\)\)\] {
-		width: min(32rem, calc(100% - 2rem)) !important;
 	}
 	.cv\:w-\[var\(--wg-studio-edge\,6px\)\] {
 		width: var(--wg-studio-edge, 6px) !important;
@@ -14768,9 +14601,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:max-w-\[240px\] {
 		max-width: 240px !important;
 	}
-	.cv\:max-w-\[540px\] {
-		max-width: 540px !important;
-	}
 	.cv\:max-w-\[5300px\] {
 		max-width: 5300px !important;
 	}
@@ -14791,9 +14621,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:flex-1 {
 		flex: 1 !important;
-	}
-	.cv\:flex-\[1\.6\] {
-		flex: 1.6 !important;
 	}
 	.cv\:flex-initial {
 		flex: 0 auto !important;
@@ -14991,9 +14818,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:rounded-\[14px\] {
 		border-radius: 14px !important;
 	}
-	.cv\:rounded-\[28px\] {
-		border-radius: 28px !important;
-	}
 	.cv\:rounded-\[999px\] {
 		border-radius: 999px !important;
 	}
@@ -15021,14 +14845,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:rounded-xl {
 		border-radius: calc(var(--radius) + 4px) !important;
 	}
-	.cv\:rounded-b-\[var\(--sumi-r-group\)\] {
-		border-bottom-right-radius: var(--sumi-r-group) !important;
-		border-bottom-left-radius: var(--sumi-r-group) !important;
-	}
-	.cv\:border {
-		border-style: var(--tw-border-style) !important;
-		border-width: 1px !important;
-	}
 	.cv\:border-0 {
 		border-style: var(--tw-border-style) !important;
 		border-width: 0px !important;
@@ -15043,12 +14859,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:border-\[var\(--wg-kit-error-ink\)\] {
 		border-color: var(--wg-kit-error-ink) !important;
-	}
-	.cv\:border-edge {
-		border-color: var(--border) !important;
-	}
-	.cv\:border-line {
-		border-color: var(--group-line) !important;
 	}
 	.cv\:bg-\(--sumi-active\) {
 		background-color: var(--sumi-active) !important;
@@ -15095,9 +14905,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:bg-\[var\(--sumi-hover\)\] {
 		background-color: var(--sumi-hover) !important;
 	}
-	.cv\:bg-\[var\(--wg-plate-fill\,var\(--sumi-plate\)\)\] {
-		background-color: var(--wg-plate-fill, var(--sumi-plate)) !important;
-	}
 	.cv\:bg-\[var\(--wg-studio-glass\,var\(--popover\)\)\] {
 		background-color: var(--wg-studio-glass, var(--popover)) !important;
 	}
@@ -15115,9 +14922,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-brand {
 		background-color: var(--brand) !important;
-	}
-	.cv\:bg-brand-wash {
-		background-color: var(--accent-wash) !important;
 	}
 	.cv\:bg-error-wash {
 		background-color: var(--wg-kit-error-wash) !important;
@@ -15217,17 +15021,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:p-3 {
 		padding: calc(var(--cv-spacing) * 3) !important;
 	}
-	.cv\:p-5 {
-		padding: calc(var(--cv-spacing) * 5) !important;
-	}
 	.cv\:p-6 {
 		padding: calc(var(--cv-spacing) * 6) !important;
 	}
 	.cv\:p-7 {
 		padding: calc(var(--cv-spacing) * 7) !important;
-	}
-	.cv\:p-10 {
-		padding: calc(var(--cv-spacing) * 10) !important;
 	}
 	.cv\:p-12 {
 		padding: calc(var(--cv-spacing) * 12) !important;
@@ -15259,12 +15057,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:px-4 {
 		padding-inline: calc(var(--cv-spacing) * 4) !important;
 	}
-	.cv\:px-5 {
-		padding-inline: calc(var(--cv-spacing) * 5) !important;
-	}
-	.cv\:px-6 {
-		padding-inline: calc(var(--cv-spacing) * 6) !important;
-	}
 	.cv\:px-\[10px\] {
 		padding-inline: 10px !important;
 	}
@@ -15286,9 +15078,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:py-1\.5 {
 		padding-block: calc(var(--cv-spacing) * 1.5) !important;
 	}
-	.cv\:py-2 {
-		padding-block: calc(var(--cv-spacing) * 2) !important;
-	}
 	.cv\:py-2\.5 {
 		padding-block: calc(var(--cv-spacing) * 2.5) !important;
 	}
@@ -15307,17 +15096,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ps-2 {
 		padding-inline-start: calc(var(--cv-spacing) * 2) !important;
 	}
-	.cv\:ps-2\.5 {
-		padding-inline-start: calc(var(--cv-spacing) * 2.5) !important;
-	}
 	.cv\:ps-4 {
 		padding-inline-start: calc(var(--cv-spacing) * 4) !important;
-	}
-	.cv\:ps-5 {
-		padding-inline-start: calc(var(--cv-spacing) * 5) !important;
-	}
-	.cv\:ps-\[19px\] {
-		padding-inline-start: 19px !important;
 	}
 	.cv\:ps-\[31px\] {
 		padding-inline-start: 31px !important;
@@ -15330,15 +15110,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:pe-3 {
 		padding-inline-end: calc(var(--cv-spacing) * 3) !important;
-	}
-	.cv\:pe-4 {
-		padding-inline-end: calc(var(--cv-spacing) * 4) !important;
-	}
-	.cv\:pe-5 {
-		padding-inline-end: calc(var(--cv-spacing) * 5) !important;
-	}
-	.cv\:pe-\[5px\] {
-		padding-inline-end: 5px !important;
 	}
 	.cv\:pe-\[18px\] {
 		padding-inline-end: 18px !important;
@@ -15370,9 +15141,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-center {
 		text-align: center !important;
 	}
-	.cv\:text-left {
-		text-align: left !important;
-	}
 	.cv\:text-start {
 		text-align: start !important;
 	}
@@ -15381,9 +15149,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:font-\[inherit\] {
 		font-family: inherit !important;
-	}
-	.cv\:font-mono {
-		font-family: var(--font-monospace) !important;
 	}
 	.cv\:text-\[10px\] {
 		font-size: 10px !important;
@@ -15397,14 +15162,8 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-\[13px\] {
 		font-size: 13px !important;
 	}
-	.cv\:text-\[14px\] {
-		font-size: 14px !important;
-	}
 	.cv\:text-\[15px\] {
 		font-size: 15px !important;
-	}
-	.cv\:text-\[16px\] {
-		font-size: 16px !important;
 	}
 	.cv\:text-\[19px\] {
 		font-size: 19px !important;
@@ -15414,9 +15173,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-\[24px\] {
 		font-size: 24px !important;
-	}
-	.cv\:text-\[30px\] {
-		font-size: 30px !important;
 	}
 	.cv\:text-\[40px\] {
 		font-size: 40px !important;
@@ -15447,10 +15203,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-leading: 1.4 !important;
 		line-height: 1.4 !important;
 	}
-	.cv\:leading-\[1\.15\] {
-		--tw-leading: 1.15 !important;
-		line-height: 1.15 !important;
-	}
 	.cv\:leading-\[1\.35\] {
 		--tw-leading: 1.35 !important;
 		line-height: 1.35 !important;
@@ -15459,17 +15211,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-leading: 1.55 !important;
 		line-height: 1.55 !important;
 	}
-	.cv\:leading-\[normal\] {
-		--tw-leading: normal !important;
-		line-height: normal !important;
-	}
 	.cv\:leading-none {
 		--tw-leading: 1 !important;
 		line-height: 1 !important;
-	}
-	.cv\:leading-normal {
-		--tw-leading: var(--cv-leading-normal) !important;
-		line-height: var(--cv-leading-normal) !important;
 	}
 	.cv\:leading-tight {
 		--tw-leading: var(--cv-leading-tight) !important;
@@ -15491,13 +15235,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-font-weight: var(--font-semibold, 600) !important;
 		font-weight: var(--font-semibold, 600) !important;
 	}
-	.cv\:tracking-\[-0\.03em\] {
-		--tw-tracking: -0.03em !important;
-		letter-spacing: -0.03em !important;
-	}
-	.cv\:break-all {
-		word-break: break-all !important;
-	}
 	.cv\:text-ellipsis {
 		text-overflow: ellipsis !important;
 	}
@@ -15516,12 +15253,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:text-\(--sumi-text-3\) {
 		color: var(--sumi-text-3) !important;
 	}
-	.cv\:text-\[color-mix\(in_srgb\,var\(--brand\)_60\%\,var\(--foreground\)\)\] {
-		color: var(--brand) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in srgb, var(--brand) 60%, var(--foreground)) !important;
-		}
-	}
 	.cv\:text-\[color-mix\(in_srgb\,var\(--sumi-text\)_38\%\,var\(--sumi-frame\)\)\] {
 		color: var(--sumi-text) !important;
 		@supports (color: color-mix(in lab, red, red)) {
@@ -15536,12 +15267,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:text-\[var\(--wg-kit-error-ink\)\] {
 		color: var(--wg-kit-error-ink) !important;
-	}
-	.cv\:text-brand {
-		color: var(--brand) !important;
-	}
-	.cv\:text-error {
-		color: var(--destructive) !important;
 	}
 	.cv\:text-inherit {
 		color: inherit !important;
@@ -15576,26 +15301,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:caret-\(--sumi-accent\) {
 		caret-color: var(--sumi-accent) !important;
 	}
-	.cv\:caret-brand {
-		caret-color: var(--brand) !important;
-	}
 	.cv\:opacity-0 {
 		opacity: 0% !important;
 	}
 	.cv\:opacity-100 {
 		opacity: 100% !important;
-	}
-	.cv\:shadow-\[0_0_0_1px_var\(--border\)\,0_10px_28px_color-mix\(in_srgb\,var\(--foreground\)_14\%\,transparent\)\] {
-		--tw-shadow:
-			0 0 0 1px var(--tw-shadow-color, var(--border)), 0 10px 28px var(--tw-shadow-color, var(--foreground)) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			--tw-shadow:
-				0 0 0 1px var(--tw-shadow-color, var(--border)),
-				0 10px 28px var(--tw-shadow-color, color-mix(in srgb, var(--foreground) 14%, transparent)) !important;
-		}
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
 	}
 	.cv\:shadow-\[0_0_0_1px_var\(--wg-kit-card-edge\)\] {
 		--tw-shadow: 0 0 0 1px var(--tw-shadow-color, var(--wg-kit-card-edge)) !important;
@@ -15607,12 +15317,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		--tw-shadow:
 			0 0 0 1px var(--tw-shadow-color, var(--wg-studio-glass-edge, var(--border))),
 			0 18px 40px -12px var(--tw-shadow-color, var(--wg-studio-glass-shadow, transparent)) !important;
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
-	}
-	.cv\:shadow-\[inset_0_0_0_1px_var\(--border\)\] {
-		--tw-shadow: inset 0 0 0 1px var(--tw-shadow-color, var(--border)) !important;
 		box-shadow:
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
@@ -15663,16 +15367,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:ring-group {
 		--tw-ring-color: var(--group) !important;
-	}
-	.cv\:outline-2 {
-		outline-style: var(--tw-outline-style) !important;
-		outline-width: 2px !important;
-	}
-	.cv\:outline-offset-\[-2px\] {
-		outline-offset: -2px !important;
-	}
-	.cv\:outline-brand {
-		outline-color: var(--brand) !important;
 	}
 	.cv\:backdrop-blur-\[26px\] {
 		--tw-backdrop-blur: blur(26px) !important;
@@ -15943,12 +15637,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:group-data-\[shut\]\/section\:opacity-100:is(:where(.cv\:group\/section)[data-shut] *) {
 		opacity: 100% !important;
 	}
-	.cv\:placeholder\:text-muted-foreground\/67::placeholder {
-		color: var(--muted-foreground) !important;
-		@supports (color: color-mix(in lab, red, red)) {
-			color: color-mix(in oklab, var(--muted-foreground) 67%, transparent) !important;
-		}
-	}
 	.cv\:before\:pointer-events-none::before {
 		content: var(--tw-content);
 		pointer-events: none !important;
@@ -16031,13 +15719,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:focus-within\:opacity-100:focus-within {
 		opacity: 100% !important;
-	}
-	.cv\:focus-within\:shadow-\[0_0_0_2px_var\(--brand\)\,0_0_0_6px_var\(--accent-wash\)\]:focus-within {
-		--tw-shadow:
-			0 0 0 2px var(--tw-shadow-color, var(--brand)), 0 0 0 6px var(--tw-shadow-color, var(--accent-wash)) !important;
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
 	}
 	@media (hover: hover) {
 		.cv\:hover\:bg-\(--sumi-essential-hover\):hover {
@@ -16303,40 +15984,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			transition-property: none !important;
 		}
 	}
-	@container page (width < 600px) {
-		.cv\:\@max-\[600px\]\/page\:mt-1\.5 {
-			margin-top: calc(var(--cv-spacing) * 1.5) !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:mt-\[14px\] {
-			margin-top: 14px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:mt-\[18px\] {
-			margin-top: 18px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:size-\[92px\] {
-			width: 92px !important;
-			height: 92px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:max-w-\[380px\] {
-			max-width: 380px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:scale-\[0\.6133\] {
-			scale: 0.6133 !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:p-5 {
-			padding: calc(var(--cv-spacing) * 5) !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:text-\[13px\] {
-			font-size: 13px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:text-\[21px\] {
-			font-size: 21px !important;
-		}
-		.cv\:\@max-\[600px\]\/page\:tracking-\[-0\.02em\] {
-			--tw-tracking: -0.02em !important;
-			letter-spacing: -0.02em !important;
-		}
-	}
 	@container (width < 420px) {
 		.cv\:\@max-\[420px\]\:hidden {
 			display: none !important;
@@ -16484,15 +16131,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:data-\[disabled\]\:\[\&\>svg\]\:text-\(--sumi-text-3\)[data-disabled] > svg {
 		color: var(--sumi-text-3) !important;
-	}
-	.theme-dark
-		.cv\:\[\.theme-dark_\&\]\:shadow-\[0_0_0_1px_var\(--border\)\,0_10px_28px_color-mix\(in_srgb\,oklch\(0_0_0\)_50\%\,transparent\)\] {
-		--tw-shadow:
-			0 0 0 1px var(--tw-shadow-color, var(--border)),
-			0 10px 28px var(--tw-shadow-color, color-mix(in srgb, oklch(0 0 0) 50%, transparent)) !important;
-		box-shadow:
-			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
-			var(--tw-shadow) !important;
 	}
 	[data-tabs-essentials]:empty
 		~ *
@@ -17043,6 +16681,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	text-overflow: ellipsis;
 	color: var(--sumi-text);
 }
+.wg-ws-row[data-ws-elsewhere] .wg-ws-row-title {
+	color: var(--sumi-text-3);
+}
 .wg-ws-row.is-active,
 .wg-ws-row.is-active:hover {
 	background: var(--sumi-selected);
@@ -17306,9 +16947,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-kit-portal-layer .wg-kit-pop.wg-ws-pop.is-chat {
 	width: 200px;
 }
-.wg-kit-portal-layer .wg-kit-pop.wg-ws-pick .wg-kit-pop-inner {
-	padding: 0;
-}
 .wg-kit-portal-layer .wg-kit-pop.wg-ws-pop .wg-kit-pop-tick {
 	display: none;
 }
@@ -17523,6 +17161,30 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+.wg-ws-row[data-ws-lifted] {
+	opacity: 0.35;
+}
+.wg-ws-chats[data-ws-dragging] .wg-ws-row {
+	pointer-events: none;
+}
+.wg-ws-section[data-ws-drop="recents"] .wg-ws-section-rows {
+	border-radius: 10px;
+	background: var(--sumi-hover);
+}
+.wg-ws-chats[data-ws-dragging] .wg-ws-section-rows:empty {
+	min-height: 34px;
+}
+.wg-ws-drop-line {
+	position: fixed;
+	z-index: 2147483000;
+	height: 2px;
+	border-radius: 1px;
+	background: var(--sumi-text-2);
+	pointer-events: none;
+}
+.wg-ws-drop-line[hidden] {
+	display: none;
+}
 .wg-studio.wg-shell {
 	--wg-shell-left-w: max(var(--sumi-sidebar-min), var(--wg-shell-left, var(--sumi-chats-w)));
 	--wg-shell-float-pad: var(--sumi-sp-4);
@@ -17687,7 +17349,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	min-height: 0;
 	margin-left: var(--sumi-gap);
 }
-@container shell-app (width < 708px) {
+@container shell-app (width < 628px) {
 	.wg-shell-panel {
 		position: absolute;
 		top: 0;
@@ -17741,6 +17403,19 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	background: var(--wg-plate-fill, var(--sumi-plate));
 	box-shadow: var(--sumi-shadow-plate);
 	transition: background-color var(--sumi-dur-base) var(--sumi-ease);
+}
+html:has([data-browser-pages-live]),
+body:has([data-browser-pages-live]),
+.wg-studio.wg-shell:has([data-browser-pages-live]),
+.wg-shell-plate:has([data-browser-pages-live]) {
+	background: transparent;
+}
+[data-browser-page-area] {
+	background: var(--wg-plate-fill, var(--sumi-plate));
+}
+[data-browser-page-area]:has(> [data-browser-pages-live]) {
+	background: transparent;
+	box-shadow: 0 0 0 100vmax var(--wg-plate-fill, var(--sumi-plate));
 }
 .wg-shell-plate.is-chat {
 	flex: 0 1 auto;
@@ -17907,6 +17582,12 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-pane[data-pane-dimmed] .wg-plate-head img {
 	opacity: 0.5;
 }
+.wg-pane[data-pane-dimmed] .wg-plate-head :is(.wg-ws-crumb, .wg-ws-crumb-workspace, .wg-ws-crumb-chat) {
+	color: var(--sumi-text-3);
+}
+.wg-pane[data-pane-moving] {
+	visibility: hidden;
+}
 .wg-plate-crumb.is-pressable:hover {
 	background: var(--sumi-hover);
 	transition-duration: 0ms;
@@ -17926,81 +17607,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	overflow: hidden;
 	font-weight: var(--sumi-fw-medium);
 	text-overflow: ellipsis;
-}
-.wg-plate-head-row > .wg-studio-shell-board {
-	display: flex;
-	flex: none;
-	align-items: flex-start;
-	height: var(--sumi-h-sm);
-}
-.wg-plate-head-row > .wg-studio-shell-board :is(.wg-root, .wg-tree-page, .wg-tree, .wg-widget-root) {
-	min-height: 0;
-	padding: 0;
-}
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn {
-	width: var(--sumi-h-sm);
-	height: var(--sumi-h-sm);
-	min-width: 0;
-	color: var(--sumi-text-2);
-}
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn::before {
-	border-radius: var(--sumi-r-sm);
-	background: transparent;
-}
-.wg-plate-head .wg-studio-menu-trigger.wg-kit-btn:hover::before {
-	background: var(--sumi-hover);
-}
-.wg-plate-strip {
-	position: absolute;
-	inset: 0;
-	display: none;
-	overflow: hidden;
-	pointer-events: none;
-}
-[data-plate-strip] > .wg-plate-head > .wg-plate-strip {
-	display: block;
-}
-.wg-plate-strip-image {
-	position: absolute;
-	inset: 0;
-	background-image: var(--wg-plate-strip);
-	background-repeat: no-repeat;
-	background-size: 100% 100%;
-	transform: scaleY(-1);
-}
-.wg-plate-strip-blur {
-	position: absolute;
-	inset: 0;
-}
-.wg-plate-strip-blur.is-near {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-near));
-	backdrop-filter: blur(var(--sumi-strip-blur-near));
-	-webkit-mask-image: linear-gradient(to top, transparent 0%, black 30%);
-	mask-image: linear-gradient(to top, transparent 0%, black 30%);
-}
-.wg-plate-strip-blur.is-mid {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-mid));
-	backdrop-filter: blur(var(--sumi-strip-blur-mid));
-	-webkit-mask-image: linear-gradient(to top, transparent 25%, black 60%);
-	mask-image: linear-gradient(to top, transparent 25%, black 60%);
-}
-.wg-plate-strip-blur.is-far {
-	-webkit-backdrop-filter: blur(var(--sumi-strip-blur-far));
-	backdrop-filter: blur(var(--sumi-strip-blur-far));
-	-webkit-mask-image: linear-gradient(to top, transparent 50%, black 100%);
-	mask-image: linear-gradient(to top, transparent 50%, black 100%);
-}
-.wg-plate-strip-veil {
-	position: absolute;
-	inset: 0;
-	background: linear-gradient(to top, transparent, var(--wg-plate-fill, transparent));
-	@supports (color: color-mix(in lab, red, red)) {
-		background: linear-gradient(
-			to top,
-			transparent,
-			color-mix(in srgb, var(--wg-plate-fill, transparent) var(--sumi-strip-veil), transparent)
-		);
-	}
 }
 .wg-plate-menu {
 	display: flex;
@@ -18060,6 +17666,53 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	width: auto;
 	min-width: 0;
 }
+.wg-pane > .wg-shell-plate::after {
+	content: "";
+	position: absolute;
+	z-index: 3;
+	inset: 0;
+	border-color: var(--sumi-plate);
+	border-style: solid;
+	border-width: var(--wg-pane-rim, 0);
+	border-radius: inherit;
+	pointer-events: none;
+}
+.wg-pane > .wg-shell-plate:has([data-browser-pages-live])::after {
+	border-width: 0;
+}
+.wg-pane-group {
+	position: absolute;
+	border-radius: var(--sumi-r-group);
+	background: linear-gradient(var(--sumi-line), var(--sumi-line)), var(--sumi-plate);
+	box-shadow: var(--sumi-shadow-plate);
+	pointer-events: none;
+}
+.wg-pane[data-pane-grouped] > .wg-shell-plate {
+	border-radius: var(--wg-pane-corners);
+	box-shadow: none;
+}
+:is(.wg-pane, .wg-pane-group)[data-pane-away] {
+	visibility: hidden;
+	opacity: 0;
+}
+.wg-pane-board[data-pane-easing] :is(.wg-pane, .wg-pane-group) {
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out),
+		opacity var(--sumi-dur-fast) var(--sumi-ease),
+		visibility 0s;
+}
+.wg-pane-board[data-pane-easing] :is(.wg-pane, .wg-pane-group)[data-pane-away] {
+	transition:
+		left var(--sumi-dur-base) var(--sumi-ease-out),
+		top var(--sumi-dur-base) var(--sumi-ease-out),
+		width var(--sumi-dur-base) var(--sumi-ease-out),
+		height var(--sumi-dur-base) var(--sumi-ease-out),
+		opacity var(--sumi-dur-fast) var(--sumi-ease),
+		visibility 0s linear var(--sumi-dur-fast);
+}
 .wg-pane-preview {
 	position: absolute;
 	box-sizing: border-box;
@@ -18107,6 +17760,408 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-pane-board:has(> .wg-pane-edge:active) > .wg-pane {
 	transition: none;
 }
+.wg-cm-layer {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	font-family: var(--sumi-font-ui);
+	font-feature-settings: var(--sumi-font-features);
+	font-size: var(--sumi-fs-13);
+	line-height: 1.4;
+	letter-spacing: -0.006em;
+	color: var(--sumi-text);
+	-webkit-font-smoothing: antialiased;
+	pointer-events: none;
+}
+.wg-cm-layer * {
+	box-sizing: border-box;
+}
+:where(.wg-cm-layer) button {
+	font: inherit;
+	color: inherit;
+	border: 0;
+	background: none;
+	margin: 0;
+	padding: 0;
+	cursor: pointer;
+	text-align: left;
+}
+.wg-cm-panel {
+	pointer-events: auto;
+	position: absolute;
+	left: 50%;
+	top: 116px;
+	width: min(680px, calc(100vw - 32px));
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border-radius: 16px;
+	background: var(--sumi-plate);
+	@supports (color: color-mix(in lab, red, red)) {
+		background: color-mix(in srgb, var(--sumi-plate) 90%, transparent);
+	}
+	-webkit-backdrop-filter: var(--sumi-blur-pick);
+	backdrop-filter: var(--sumi-blur-pick);
+	box-shadow: var(--sumi-shadow-lift), var(--sumi-pick-edge);
+}
+.wg-cm-body {
+	display: contents;
+}
+.wg-cm-field {
+	height: 56px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 18px;
+	color: var(--sumi-text-3);
+}
+.wg-cm-token {
+	height: 26px;
+	padding: 0 6px 0 10px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: none;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
+	font-size: var(--sumi-fs-12);
+	font-weight: var(--sumi-fw-medium);
+	color: var(--sumi-text);
+	white-space: nowrap;
+}
+.wg-cm-token .wg-kit-icon-glyph {
+	color: var(--sumi-text-2);
+}
+.wg-cm-token-drop {
+	width: 16px;
+	height: 16px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-full);
+}
+.wg-cm-token-drop:hover {
+	background: var(--sumi-active);
+}
+.wg-cm-input-wrap {
+	position: relative;
+	flex: 1;
+	min-width: 0;
+	height: 24px;
+}
+.wg-cm-ghost,
+.wg-cm-input {
+	font: inherit;
+	font-size: var(--sumi-fs-16);
+	line-height: 24px;
+	letter-spacing: inherit;
+}
+.wg-cm-ghost {
+	position: absolute;
+	left: 0;
+	top: 0;
+	white-space: pre;
+	color: var(--sumi-text-3);
+	pointer-events: none;
+}
+.wg-cm-ghost-typed {
+	visibility: hidden;
+}
+.wg-cm-input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	padding: 0;
+	margin: 0;
+	border: 0;
+	outline: 0;
+	background: transparent;
+	color: var(--sumi-text);
+}
+.wg-cm-input::placeholder {
+	color: var(--sumi-text-3);
+}
+.wg-cm-scopes {
+	display: flex;
+	gap: 2px;
+	padding: 0 12px 10px;
+}
+.wg-cm-scope {
+	height: 26px;
+	padding: 0 10px;
+	display: inline-flex;
+	align-items: center;
+	border-radius: var(--sumi-r-full);
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-2);
+}
+.wg-cm-scope:hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+.wg-cm-scope[aria-selected="true"] {
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+	font-weight: var(--sumi-fw-medium);
+}
+.wg-cm-hr {
+	height: 1px;
+	flex: none;
+	background: var(--sumi-line);
+}
+.wg-cm-list {
+	max-height: min(500px, calc(100vh - 260px));
+	overflow-y: auto;
+	padding: 4px 6px 6px;
+	display: flex;
+	flex-direction: column;
+}
+.wg-cm-label {
+	padding: 10px 10px 4px;
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-2);
+}
+.wg-cm-row {
+	width: 100%;
+	height: 40px;
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 0 10px;
+	border-radius: 10px;
+	font-size: var(--sumi-fs-14);
+	color: var(--sumi-text);
+}
+.wg-cm-row[aria-selected="true"] {
+	background: var(--sumi-active);
+}
+.wg-cm-icon {
+	width: 20px;
+	height: 20px;
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--sumi-text-2);
+}
+.wg-cm-letter {
+	width: 16px;
+	height: 16px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-xs);
+	background: var(--sumi-text);
+	color: var(--sumi-plate);
+	font-size: 10px;
+	font-weight: 700;
+}
+.wg-cm-letter[data-shape="round"] {
+	width: 18px;
+	height: 18px;
+	border-radius: var(--sumi-r-full);
+	font-weight: var(--sumi-fw-semi);
+}
+.wg-cm-ink {
+	width: 17px;
+	height: 17px;
+	border-radius: var(--sumi-r-full);
+	background:
+		radial-gradient(1.3px 1.7px at 36% 46%, var(--sumi-plate) 98%, transparent),
+		radial-gradient(1.3px 1.7px at 64% 46%, var(--sumi-plate) 98%, transparent), var(--sumi-text);
+}
+.wg-cm-texts {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	overflow: hidden;
+	white-space: nowrap;
+}
+.wg-cm-title {
+	flex: none;
+	max-width: 70%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.wg-cm-matched {
+	font-weight: var(--sumi-fw-semi);
+}
+.wg-cm-meta {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-3);
+}
+.wg-cm-end {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-3);
+}
+.wg-cm-row[aria-selected="true"] .wg-cm-end {
+	color: var(--sumi-text-2);
+}
+.wg-cm-kbd {
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 5px;
+	background: var(--sumi-active);
+	font-family: inherit;
+	font-size: var(--sumi-fs-11);
+	font-weight: var(--sumi-fw-medium);
+	color: var(--sumi-text-2);
+	white-space: nowrap;
+}
+.wg-cm-rename {
+	flex: 1;
+	min-width: 0;
+	height: 28px;
+	margin-left: -8px;
+	padding: 0 8px;
+	border: 0;
+	outline: 0;
+	border-radius: var(--sumi-r-sm);
+	background: var(--sumi-plate);
+	box-shadow: 0 0 0 2px var(--sumi-focus-ring);
+	font: inherit;
+	font-size: var(--sumi-fs-14);
+	color: var(--sumi-text);
+}
+.wg-cm-grid {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 4px;
+	padding: 2px 0 4px;
+}
+.wg-cm-tile {
+	height: 84px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	border-radius: var(--sumi-r-lg);
+	font-size: var(--sumi-fs-12);
+	text-align: center;
+}
+:where(.wg-cm-layer) .wg-cm-tile {
+	text-align: center;
+}
+.wg-cm-tile:hover {
+	background: var(--sumi-hover);
+}
+.wg-cm-tile[aria-selected="true"] {
+	background: var(--sumi-active);
+}
+.wg-cm-tile-icon {
+	width: 40px;
+	height: 40px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-plate);
+	box-shadow: 0 0 0 1px var(--sumi-line);
+}
+.wg-cm-tile-icon > .wg-cm-icon {
+	transform: scale(1.35);
+}
+.wg-cm-tile-title {
+	max-width: 96px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.wg-cm-foot {
+	height: 40px;
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 0 14px;
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-2);
+}
+.wg-cm-hint {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+.wg-cm-gap {
+	flex: 1;
+}
+.wg-cm-toast {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	overflow: hidden;
+	color: var(--sumi-text);
+	font-weight: var(--sumi-fw-medium);
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+.wg-cm-toast .wg-kit-icon-glyph {
+	color: var(--sumi-success);
+}
+.wg-cm-toast[data-warning] .wg-kit-icon-glyph {
+	color: var(--sumi-danger);
+}
+.wg-cm-actions {
+	position: absolute;
+	right: 10px;
+	bottom: 46px;
+	width: 250px;
+	padding: 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	border-radius: var(--sumi-r-lg);
+	background: var(--sumi-overlay);
+	-webkit-backdrop-filter: var(--sumi-blur-pop);
+	backdrop-filter: var(--sumi-blur-pop);
+	box-shadow: var(--sumi-shadow-pop);
+}
+.wg-cm-actions-head {
+	padding: 6px 8px 4px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-2);
+}
+.wg-cm-action {
+	width: 100%;
+	height: 32px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 8px;
+	border-radius: var(--sumi-r-md);
+	font-size: var(--sumi-fs-13);
+}
+.wg-cm-action:hover {
+	background: var(--sumi-active);
+}
+.wg-cm-action[data-danger] {
+	color: var(--sumi-danger);
+}
+.wg-cm-action-said {
+	flex: 1;
+	min-width: 0;
+}
 @property --tw-translate-x {
 	syntax: "*";
 	inherits: false;
@@ -18132,10 +18187,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	inherits: false;
 }
 @property --tw-font-weight {
-	syntax: "*";
-	inherits: false;
-}
-@property --tw-tracking {
 	syntax: "*";
 	inherits: false;
 }
@@ -18224,11 +18275,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	inherits: false;
 	initial-value: 0 0 #0000;
 }
-@property --tw-outline-style {
-	syntax: "*";
-	inherits: false;
-	initial-value: solid;
-}
 @property --tw-backdrop-blur {
 	syntax: "*";
 	inherits: false;
@@ -18277,6 +18323,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	syntax: "*";
 	initial-value: "";
 	inherits: false;
+}
+@property --tw-outline-style {
+	syntax: "*";
+	inherits: false;
+	initial-value: solid;
 }
 @keyframes canvas-fold-open {
 	from {
@@ -18331,7 +18382,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-border-style: solid;
 			--tw-leading: initial;
 			--tw-font-weight: initial;
-			--tw-tracking: initial;
 			--tw-ordinal: initial;
 			--tw-slashed-zero: initial;
 			--tw-numeric-figure: initial;
@@ -18351,7 +18401,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-ring-offset-width: 0px;
 			--tw-ring-offset-color: #fff;
 			--tw-ring-offset-shadow: 0 0 #0000;
-			--tw-outline-style: solid;
 			--tw-backdrop-blur: initial;
 			--tw-backdrop-brightness: initial;
 			--tw-backdrop-contrast: initial;
@@ -18364,6 +18413,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			--tw-duration: initial;
 			--tw-ease: initial;
 			--tw-content: "";
+			--tw-outline-style: solid;
 			--scroll-fade-t: 0px;
 			--scroll-fade-b: 0px;
 			--scroll-fade-s: 0px;

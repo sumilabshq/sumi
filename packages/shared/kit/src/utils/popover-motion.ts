@@ -86,6 +86,19 @@ export function exitPanel(panel: HTMLElement, anchor: HTMLElement, done: () => v
 	return stop;
 }
 
+export function keepPanelPlaced(panel: HTMLElement, anchor: HTMLElement, placement: Placement): boolean {
+	if (panel.style.animation !== "" || panel.style.scale !== "") {
+		return false;
+	}
+
+	panel.style.left = "0px";
+	panel.style.top = "0px";
+	const frame = laidFrameOf(panel);
+	const spot = placement.solve(anchor.getBoundingClientRect(), panel.getBoundingClientRect(), viewportSize());
+	wearSpot(panel, spot, frame);
+	return true;
+}
+
 function isStyled(node: Element | null): node is Styled {
 	return node !== null && "style" in node;
 }

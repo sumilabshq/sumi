@@ -18,6 +18,7 @@
 	--sumi-accent: #3b5bfd;
 	--sumi-on-accent: #ffffff;
 	--sumi-accent-soft: rgba(59, 91, 253, 0.1);
+	--sumi-accent-text: #2e4fe6;
 	--sumi-focus-ring: rgba(59, 91, 253, 0.55);
 	--sumi-success: #2f8f5b;
 	--sumi-warning: #c98a00;
@@ -115,11 +116,7 @@
 
 	--sumi-chats-w: 268px;
 	--sumi-chat-w: 560px;
-	--sumi-plate-min: 320px;
-	--sumi-strip-blur-near: 2px;
-	--sumi-strip-blur-mid: 6px;
-	--sumi-strip-blur-far: 16px;
-	--sumi-strip-veil: 40%;
+	--sumi-plate-min: 240px;
 }
 
 :root.dark,
@@ -166,6 +163,7 @@
 	--sumi-menu-glyph-on: rgba(255, 255, 255, 0.65);
 	--sumi-pick: rgb(30 30 30 / 0.92);
 	--sumi-pick-edge: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+	--sumi-accent-text: #8ea2ff;
 }
 
 .sumi-ink-dark {
