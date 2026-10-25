@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Composer attachments</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.ink{--frame:#F2F2F3;--frame-tinted:#F2F2F3;--plate:#FFFFFF;--sunken:#EAEAED;--overlay:rgba(255,255,255,.86);--text:#1F1E1C;--text-2:rgba(31,30,28,.66);--text-3:rgba(31,30,28,.42);--hover:rgba(31,30,28,.05);--active:rgba(31,30,28,.08);--line:rgba(31,30,28,.08);--line-strong:rgba(31,30,28,.14);--success:#2F8F5B;--warning:#C98A1A;--danger:#D93F2E;--danger-soft:rgba(217,63,46,.10);--accent:#3B5BFD;--on-accent:#FFFFFF;--accent-soft:rgba(59,91,253,.12);--focus-ring:rgba(59,91,253,.55);--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.12);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame:#141416;--frame-tinted:#141416;--plate:#1F1F21;--sunken:#2B2B2E;--overlay:rgba(36,36,34,.86);--text:#EDECE8;--text-2:rgba(237,236,232,.66);--text-3:rgba(237,236,232,.40);--hover:rgba(237,236,232,.06);--active:rgba(237,236,232,.10);--line:rgba(237,236,232,.08);--line-strong:rgba(237,236,232,.16);--danger-soft:rgba(217,63,46,.18);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.45)}
+.ink *{box-sizing:border-box}
+:where(.ink) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer}
+.ink svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ink svg.s12{width:12px;height:12px}
+.ib{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.chip{height:24px;padding:0 8px;border-radius:999px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:var(--hover)}
+.plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
+.composer{position:relative;background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;padding:8px 12px 12px;display:flex;flex-direction:column;gap:10px}
+.send{width:32px;height:32px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.tip{background:var(--text);color:var(--plate);font-size:12px;border-radius:6px;padding:4px 8px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.state{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:start}
+.state h3{margin:0 0 4px;font-size:13px;font-weight:600}
+.state p{margin:0;font-size:12px;color:var(--text-2);line-height:1.45}
+.cell{padding:16px}
+.att{display:flex;gap:6px;overflow:hidden;margin:0 -4px;padding:4px}
+.img{position:relative;width:64px;height:64px;flex:none;border-radius:8px;background:var(--sunken);display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:11px;flex-direction:column;gap:2px}
+.doc{position:relative;width:184px;height:64px;flex:none;border-radius:8px;background:var(--sunken);display:flex;align-items:center;gap:10px;padding:0 12px}
+.doc .n{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .s{font-size:12px;color:var(--text-2)}
+.x{position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:999px;background:var(--text);color:var(--plate);display:flex;align-items:center;justify-content:center}
+.field{font-size:14px}
+.caret{display:inline-block;width:1.5px;height:17px;background:var(--accent);vertical-align:-3px}
+</style>
+</helmet>
+<div class="ink {{themeCls}}" style="width: 1440px; height: 1000px; padding: 48px; background: var(--frame-tinted); display: flex; flex-direction: column; gap: 32px; overflow: hidden;">
+  <div style="display: flex; align-items: flex-end; gap: 48px;">
+    <div style="flex: 1;">
+      <div style="font-size: 12px; color: var(--text-2);">Chat · composer · attachments</div>
+      <h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600; line-height: 1.25;">Attachments sit above the text</h1>
+    </div>
+    <p style="margin: 0; max-width: 520px; font-size: 12px; color: var(--text-2);">Inside the composer, in one row 64px tall that scrolls sideways, so ten files never push the text down. Images show the picture; text files show name, size and lines. 8px corners, the sunken fill, no border.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="state">
+        <div><h3>A few</h3><p>Two images and a text file. The row is one item tall and never wraps.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <div class="att">
+              <div class="img"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21"></path></svg>[image]</div>
+              <div class="img"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21"></path></svg>[image]</div>
+              <div class="doc"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><div style="min-width: 0;"><div class="n">habits-spec.md</div><div class="s">18 KB · 214 lines</div></div></div>
+            </div>
+            <span class="field">Match these two screens<span class="caret"></span></span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Many</h3><p>Ten items scroll sideways. The edge fades, a round arrow pages on, and the line under the row says how many.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <div style="position: relative;">
+              <div class="att" style="-webkit-mask-image: linear-gradient(to right, #000 80%, transparent); mask-image: linear-gradient(to right, #000 80%, transparent);">
+                <div class="img">[image]</div>
+                <div class="doc"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><div style="min-width: 0;"><div class="n">brief.md</div><div class="s">4 KB · 62 lines</div></div></div>
+                <div class="img">[image]</div>
+                <div class="img">[image]</div>
+                <div class="img">[image]</div>
+              </div>
+              <button class="ib" aria-label="Next attachments" style="position: absolute; right: 0; top: 22px; border-radius: 999px; background: var(--plate); box-shadow: var(--shadow-popover); color: var(--text);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text-3);"><span style="flex: 1; height: 2px; border-radius: 999px; background: var(--active); position: relative;"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 38%; border-radius: 999px; background: var(--line-strong);"></span></span>10 files · 4.1 MB</div>
+            <span class="field">Use all of these for the landing page<span class="caret"></span></span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="state">
+        <div><h3>Remove</h3><p>The × sits on the hovered or focused item, with one tooltip. Backspace in an empty field removes the last one.</p></div>
+        <div class="plate cell" style="padding-top: 40px;">
+          <div class="composer">
+            <div class="att" style="overflow: visible;">
+              <div class="img">[image]</div>
+              <div class="img" style="box-shadow: 0 0 0 1.5px var(--line-strong);">[image]<button class="x" aria-label="Remove"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 10px; height: 10px; stroke-width: 2.5;"><path d="M18 6 6 18M6 6l12 12"></path></svg></button><span class="tip" style="position: absolute; bottom: 74px; left: 40px;">Remove</span></div>
+              <div class="doc"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2);"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><div style="min-width: 0;"><div class="n">habits-spec.md</div><div class="s">18 KB · 214 lines</div></div></div>
+            </div>
+            <span class="field">Match these two screens<span class="caret"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Uploading</h3><p>A ring over the item fills as it reads. Send waits until every item is ready.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <div class="att">
+              <div class="img">[image]</div>
+              <div class="img" style="background: var(--active);"><svg viewBox="0 0 20 20" aria-label="Uploading, 60%" style="width: 20px; height: 20px;"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--line-strong)" stroke-width="2"></circle><circle cx="10" cy="10" r="8" fill="none" stroke="var(--text)" stroke-width="2" stroke-linecap="round" stroke-dasharray="30.2 50.3" transform="rotate(-90 10 10)"></circle></svg></div>
+            </div>
+            <span class="field">Here are the screens<span class="caret"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Refused</h3><p>The refused file stays in the row as a red item that says why, until it is dismissed or the next send. Red only because it is an error.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <div class="att" style="overflow: visible;">
+              <div class="doc" style="width: 236px; background: var(--danger-soft);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--danger);"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 8v4M12 16h.01"></path></svg><div style="min-width: 0;"><div class="n" style="color: var(--danger);">hero.png</div><div class="s">14 MB, over the 10 MB limit</div></div><button class="x" aria-label="Dismiss"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 10px; height: 10px; stroke-width: 2.5;"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></div>
+              <div class="img">[image]</div>
+            </div>
+            <span class="field">Here are the screens<span class="caret"></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeCls: (this.props.theme ?? 'light') === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

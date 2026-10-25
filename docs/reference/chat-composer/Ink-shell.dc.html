@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ink, chat and new tab</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap">
+<style>
+body{margin:0}
+.ink{--frame:#F2F2F3;--frame-tinted:#F2F2F3;--plate:#FFFFFF;--sunken:#EAEAED;--overlay:rgba(255,255,255,.86);--text:#1F1E1C;--text-2:rgba(31,30,28,.66);--text-3:rgba(31,30,28,.42);--hover:rgba(31,30,28,.05);--active:rgba(31,30,28,.08);--line:rgba(31,30,28,.08);--line-strong:rgba(31,30,28,.14);--success:#2F8F5B;--warning:#C98A1A;--danger:#D93F2E;--accent:#3B5BFD;--on-accent:#FFFFFF;--accent-soft:rgba(59,91,253,.12);--focus-ring:rgba(59,91,253,.55);--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.12);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame:#141416;--frame-tinted:#141416;--plate:#1F1F21;--sunken:#2B2B2E;--overlay:rgba(36,36,34,.86);--text:#EDECE8;--text-2:rgba(237,236,232,.66);--text-3:rgba(237,236,232,.40);--hover:rgba(237,236,232,.06);--active:rgba(237,236,232,.10);--line:rgba(237,236,232,.08);--line-strong:rgba(237,236,232,.16);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.45)}
+.ink *{box-sizing:border-box}
+:where(.ink) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer}
+.ink svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ib{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.ib.off{color:var(--text-3)}
+.row{height:28px;width:100%;border-radius:6px;display:flex;align-items:center;gap:8px;padding:0 8px;font-size:13px;text-align:left;white-space:nowrap}
+.row .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.row .ic{color:var(--text-2)}
+.row.sel{background:var(--active);font-weight:500}
+.row.hov{background:var(--hover)}
+.lbl{font-size:12px;color:var(--text-2);padding:0 8px;margin:16px 0 4px}
+.field{height:32px;border-radius:8px;background:var(--sunken);display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--text-3);font-size:13px}
+.chip{height:24px;padding:0 8px;border-radius:999px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:var(--hover)}
+.gt{height:24px;padding:0 6px;border-radius:6px;font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:4px}
+.kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
+.plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
+.composer{background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;min-height:88px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.send{width:32px;height:32px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.send.off{background:var(--active);color:var(--text-3)}
+.crumb{height:28px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
+.card{background:var(--plate);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.m circle{fill:var(--text)}.m .e{fill:var(--plate)}.m .s{fill:none;stroke:var(--plate);stroke-width:5;stroke-linecap:round}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace;font-size:12.5px}
+</style>
+</helmet>
+<div class="ink {{themeCls}}" style="position: relative; width: 1728px; height: 1080px; display: flex; gap: 8px; padding: 8px; background: var(--frame-tinted); overflow: hidden;">
+
+  <div aria-hidden="true" style="position: absolute; top: 24px; left: 16px; display: flex; gap: 8px;">
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57;"></span>
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E;"></span>
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840;"></span>
+  </div>
+
+  <sc-if value="{{hasRail}}" hint-placeholder-val="{{true}}">
+  <nav aria-label="Workspaces" style="width: 72px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 52px 0 12px; {{railEdge}}">
+    <button aria-label="Default, ⌘1" style="width: 32px; height: 32px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 13px; font-weight: 600;">D</button>
+    <button aria-label="Widgetarium, ⌘2" style="width: 32px; height: 32px; border-radius: 999px; background: var(--hover); color: var(--text-2); font-size: 13px; font-weight: 600;">W</button>
+    <button aria-label="Urcraft, ⌘3" style="width: 32px; height: 32px; border-radius: 999px; background: var(--hover); color: var(--text-2); font-size: 13px; font-weight: 600;">U</button>
+    <button aria-label="Light agency, ⌘4" style="width: 32px; height: 32px; border-radius: 999px; background: var(--hover); color: var(--text-2); font-size: 13px; font-weight: 600;">L</button>
+    <button class="ib" aria-label="New workspace"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+    <span style="flex: 1;"></span>
+    <button aria-label="Denis, account" style="width: 28px; height: 28px; border-radius: 999px; background: var(--sunken); color: var(--text); font-size: 12px; font-weight: 500;">D</button>
+  </nav>
+  </sc-if>
+
+  <nav aria-label="Chats" style="width: 240px; flex: none; display: flex; flex-direction: column; min-height: 0;">
+    <div style="position: relative; height: 44px; flex: none; display: flex; align-items: center; padding-left: {{chatsHeadPad}};">
+      <sc-if value="{{plainTitle}}" hint-placeholder-val="{{true}}">
+        <span style="flex: 1; font-weight: 600;">Default</span>
+      </sc-if>
+      <sc-if value="{{wsSelect}}" hint-placeholder-val="{{false}}">
+        <button class="crumb" aria-label="Switch workspace" style="margin-left: -4px; padding: 0 6px 0 4px; {{selectBtnStyle}}"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">D</span><span style="font-weight: 600;">Default</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px; color: var(--text-2);"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <span style="flex: 1;"></span>
+      </sc-if>
+      <sc-if value="{{selectOpen}}" hint-placeholder-val="{{false}}">
+        <div role="menu" aria-label="Workspaces" style="position: absolute; z-index: 5; top: 40px; left: 64px; width: 248px; background: var(--overlay); -webkit-backdrop-filter: saturate(1.6) blur(20px); backdrop-filter: saturate(1.6) blur(20px); border-radius: 12px; box-shadow: var(--shadow-popover); padding: 4px; display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 12px; color: var(--text-2); padding: 6px 8px 4px;">Workspaces</div>
+          <button class="row sel"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 999px; background: #3B5BFD; color: #FFFFFF; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">D</span><span class="t">Default</span><span class="kbd">⌘1</span></button>
+          <button class="row"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 999px; background: #7A5AF8; color: #FFFFFF; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">W</span><span class="t">Widgetarium</span><span class="kbd">⌘2</span></button>
+          <button class="row"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 999px; background: #E0567A; color: #FFFFFF; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">U</span><span class="t">Urcraft</span><span class="kbd">⌘3</span></button>
+          <button class="row"><span aria-hidden="true" style="width: 20px; height: 20px; border-radius: 999px; background: #E5793A; color: #FFFFFF; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center;">L</span><span class="t">Light agency</span><span class="kbd">⌘4</span></button>
+          <div style="height: 1px; background: var(--line); margin: 4px 8px;"></div>
+          <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span class="t">New workspace</span></button>
+          <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 0 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 0 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 0 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 0 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg><span class="t">Workspace settings</span></button>
+        </div>
+      </sc-if>
+      <button class="ib" aria-label="New chat, ⌘N"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.4 2.6a2 2 0 0 1 3 3L12 15l-4 1 1-4z"></path></svg></button>
+    </div>
+    <div class="field"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>Search chats<span style="flex: 1;"></span><span class="kbd">⌘K</span></div>
+    <div class="lbl">Today</div>
+    <button class="row {{firstChatCls}}"><span class="t">{{firstChat}}</span></button>
+    <button class="row"><span class="t">Browse catalogue screen</span><svg class="m" viewBox="0 0 64 64" aria-label="Ink is working" style="width: 14px; height: 14px; flex: none;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="18" y="27" width="12" height="6" rx="3"></rect><rect class="e" x="36" y="27" width="12" height="6" rx="3"></rect></svg></button>
+    <button class="row"><span class="t">Glossary manager UI design</span><span aria-label="Unread" style="width: 6px; height: 6px; border-radius: 999px; background: var(--accent); flex: none;"></span></button>
+    <div class="lbl">Yesterday</div>
+    <button class="row"><span class="t">White and grey background in the design system</span></button>
+    <button class="row"><span class="t">Inline translation placement</span></button>
+    <div class="lbl">Previous 7 days</div>
+    <button class="row"><span class="t">Apply picture Radix shims in the Vite plugin</span></button>
+    <button class="row"><span class="t">Weekly work log</span></button>
+    <button class="row"><span class="t">Token spend analysis</span></button>
+    <sc-if value="{{wsBottom}}" hint-placeholder-val="{{false}}">
+      <span style="flex: 1;"></span>
+      <div style="height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; border-top: 1px solid var(--line);">
+        <button aria-label="Denis, account" style="width: 24px; height: 24px; border-radius: 999px; background: var(--sunken); color: var(--text); font-size: 11px; font-weight: 500;">D</button>
+        <span style="flex: 1;"></span>
+        <button aria-label="Default, ⌘1" style="width: 28px; height: 28px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 600;">D</button>
+        <button aria-label="Widgetarium, ⌘2" style="width: 28px; height: 28px; border-radius: 999px; color: var(--text-2); font-size: 12px; font-weight: 600;">W</button>
+        <button aria-label="Urcraft, ⌘3" style="width: 28px; height: 28px; border-radius: 999px; color: var(--text-2); font-size: 12px; font-weight: 600;">U</button>
+        <button aria-label="Light agency, ⌘4" style="width: 28px; height: 28px; border-radius: 999px; color: var(--text-2); font-size: 12px; font-weight: 600;">L</button>
+        <button class="ib" aria-label="New workspace"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      </div>
+    </sc-if>
+  </nav>
+
+  <section aria-label="Chat" class="plate" style="width: 520px; flex: none; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 44px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px;">
+      <button class="ib" aria-label="Hide chats"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM9 3v18"></path></svg></button>
+      <button class="crumb" aria-label="Rename or move this chat"><span style="color: var(--text-2);">Default</span><span style="color: var(--text-3);">/</span><span style="font-weight: 500; overflow: hidden; text-overflow: ellipsis;">{{chatTitle}}</span></button>
+      <span style="flex: 1;"></span>
+      <button class="ib" aria-label="Chat menu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.4;"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+    </header>
+
+    <sc-if value="{{isConversation}}" hint-placeholder-val="{{true}}">
+      <div style="flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 12px 24px; font-size: 14px; line-height: 1.55;">
+        <div style="align-self: flex-end; max-width: 380px; background: var(--sunken); border-radius: 12px; padding: 8px 12px;">Make the composer quieter and give it real menus for model, mode and effort.</div>
+        <div style="display: flex; flex-direction: column; gap: 2px; font-size: 13px; color: var(--text-2);">
+          <div style="display: flex; align-items: center; gap: 8px; height: 24px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"></path></svg>Read 3 notes</div>
+          <div style="display: flex; align-items: center; gap: 8px; height: 24px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg>Edited <span class="mono" style="color: var(--text);">composer.tsx</span><span style="color: var(--success);">+42</span><span style="color: var(--danger);">−18</span></div>
+        </div>
+        <p style="margin: 0;">Done. The composer now has one loud thing, Send. Mode, usage, model and effort sit under the field as quiet text buttons, and each opens a menu at the pointer.</p>
+        <p style="margin: 0;">Attachments stand above the field in one row that scrolls sideways, so ten files never push the text down. Try <span class="mono" style="background: var(--sunken); border-radius: 4px; padding: 1px 4px;">⌘U</span> to add one.</p>
+        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2);"><svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 14px; height: 14px;"><circle cx="32" cy="32" r="32"></circle><path class="s" d="M18 34q6-8 12 0M34 34q6-8 12 0"></path></svg>Done · 11 s</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px;">
+        <svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 64px; height: 64px; margin-bottom: 8px;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="21" y="19" width="7" height="20" rx="3.5"></rect><rect class="e" x="36" y="19" width="7" height="20" rx="3.5"></rect></svg>
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25;">What are we building?</h1>
+        <p style="margin: 0; color: var(--text-2);">Ink makes apps on this computer, in a folder you choose.</p>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 440px; margin-top: 16px;">
+          <button class="card" style="background: var(--hover); border-color: transparent;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2);"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"></path></svg><span style="font-weight: 500;">Create an app</span><span style="font-size: 12px; color: var(--text-2);">Describe it in a sentence. Ink writes the code and runs it.</span></button>
+          <button class="card"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-2);"><path d="M3 3h18v18H3zM3 9h18M9 21V9"></path></svg><span style="font-weight: 500;">Design the app</span><span style="font-size: 12px; color: var(--text-2);">Screens and look first, drawn on the canvas. No code yet.</span></button>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="padding: 0 16px 10px;">
+      <div class="composer">
+        <span style="font-size: 14px; color: var(--text-3);">Describe what to build or change</span>
+        <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+          <button class="ib" aria-label="Attach, ⌘U"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+          <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
+          <span style="flex: 1;"></span>
+          <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 2px; padding-top: 6px;">
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+          <button class="gt"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></svg>Work in a folder…<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
+        </sc-if>
+        <button class="gt">Auto<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <span style="flex: 1;"></span>
+        <button class="gt" aria-label="Usage, 38% of this 5-hour window"><svg viewBox="0 0 14 14" aria-hidden="true" style="width: 12px; height: 12px;"><circle cx="7" cy="7" r="5.5" fill="none" stroke="var(--line-strong)" stroke-width="2"></circle><circle cx="7" cy="7" r="5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="13.1 34.6" transform="rotate(-90 7 7)"></circle></svg>38%</button>
+        <button class="gt">Opus<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
+        <button class="gt">Medium<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <main aria-label="Browser" class="plate" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden;">
+    <header style="height: 44px; flex: none; display: flex; align-items: center; gap: 2px; padding: 0 8px;">
+      <button class="ib off" aria-label="Back" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+      <button class="ib off" aria-label="Forward" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+      <button class="ib" aria-label="Reload"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8M21 3v5h-5"></path></svg></button>
+      <button class="crumb" aria-label="Search or type an address, ⌘L" style="margin-left: 4px;"><span style="font-weight: 500;">New tab</span></button>
+      <span style="flex: 1;"></span>
+      <button class="ib" aria-label="Page menu"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2.4;"><path d="M5 12h.01M12 12h.01M19 12h.01"></path></svg></button>
+      <button class="ib" aria-label="Hide tabs"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zM15 3v18"></path></svg></button>
+    </header>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 24px 32px 120px;">
+      <svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 48px; height: 48px;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="24" y="17" width="7" height="20" rx="3.5"></rect><rect class="e" x="39" y="17" width="7" height="20" rx="3.5"></rect></svg>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25;">Where to?</h1>
+      <sc-if value="{{notTyped}}" hint-placeholder-val="{{true}}">
+      <label style="width: 100%; max-width: 440px; height: 40px; border-radius: 12px; background: var(--sunken); display: flex; align-items: center; gap: 10px; padding: 0 12px; color: var(--text-3); font-size: 13px;">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>
+        <span style="flex: 1;">Search, type an address, or ask Ink</span>
+        <span class="kbd">⌘L</span>
+      </label>
+      </sc-if>
+      <sc-if value="{{typed}}" hint-placeholder-val="{{false}}">
+      <div style="position: relative; width: 100%; max-width: 440px; height: 40px;">
+        <div role="combobox" aria-expanded="true" style="position: absolute; z-index: 4; top: 0; left: 0; right: 0; background: var(--plate); border-radius: 12px; box-shadow: 0 0 0 2px var(--focus-ring), var(--shadow-popover); overflow: hidden;">
+          <div style="height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 13px;">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--text-3);"><path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3"></path></svg>
+            <span style="flex: 1;">how do I add a weekly view to my habits app<span style="display: inline-block; width: 1.5px; height: 16px; background: var(--accent); vertical-align: -3px;"></span></span>
+          </div>
+          <div role="listbox" style="border-top: 1px solid var(--line); padding: 4px; display: flex; flex-direction: column; gap: 1px;">
+            <button class="row sel" role="option" aria-selected="true" style="height: 36px;"><svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 16px; height: 16px;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="20" y="16" width="8" height="25" rx="4"></rect><rect class="e" x="36" y="16" width="8" height="25" rx="4"></rect></svg><span class="t">Ask Ink</span><span style="font-size: 12px; color: var(--text-2); font-weight: 400;">in a new chat</span><span class="kbd">↵</span></button>
+            <button class="row" role="option" style="height: 36px;"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"></path></svg><span class="t">Search the web</span><span class="kbd">⌘↵</span></button>
+            <div style="font-size: 12px; color: var(--text-2); padding: 8px 8px 2px;">Apps and tabs</div>
+            <button class="row" role="option"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg><span class="t">Habit tracker</span><span style="font-size: 12px; color: var(--text-3);">Canvas project</span></button>
+            <button class="row" role="option"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"></path></svg><span class="t">Habits, weekly review</span><span style="font-size: 12px; color: var(--text-3);">Note</span></button>
+            <div style="display: flex; gap: 12px; padding: 8px 8px 4px; font-size: 11px; color: var(--text-3); border-top: 1px solid var(--line); margin-top: 4px;"><span><span class="kbd">↑↓</span> choose</span><span><span class="kbd">tab</span> switch Ink and web</span><span><span class="kbd">esc</span> close</span></div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;">
+        <button class="row" style="width: auto; height: 28px; color: var(--text-2);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Canvas</button>
+        <button class="row" style="width: auto; height: 28px; color: var(--text-2);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg>Docs</button>
+        <button class="row" style="width: auto; height: 28px; color: var(--text-2);"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path></svg>Catalogue</button>
+      </div>
+    </div>
+  </main>
+
+  <aside aria-label="Tabs" style="width: 240px; flex: none; display: flex; flex-direction: column; padding: 0 0 4px;">
+    <div class="lbl" style="margin-top: 14px;">Workspace</div>
+    <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg><span class="t">Canvas</span></button>
+    <div class="lbl">This chat</div>
+    <button class="row sel"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"></path></svg><span class="t">New tab</span><span class="ib" aria-label="Close tab" style="width: 20px; height: 20px; border-radius: 4px;"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="M18 6 6 18M6 6l12 12"></path></svg></span></button>
+    <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6"></path></svg><span class="t">Docs</span></button>
+    <span style="flex: 1;"></span>
+    <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg><span class="t">New tab</span><span class="kbd">⌘T</span></button>
+    <button class="row"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"></path></svg><span class="t">Open app</span></button>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"chat":{"editor":"enum","options":["conversation","empty"],"default":"conversation"},"ws":{"editor":"enum","options":["rail","divider","select","select-open","bottom"],"default":"rail"},"bar":{"editor":"enum","options":["empty","typed"],"default":"empty"},"$preview":{"width":1728,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dark = (this.props.theme ?? 'light') === 'dark';
+    const empty = (this.props.chat ?? 'conversation') === 'empty';
+    const ws = this.props.ws ?? 'rail';
+    const hasRail = ws === 'rail' || ws === 'divider';
+    const wsSelect = ws === 'select' || ws === 'select-open';
+    const typed = (this.props.bar ?? 'empty') === 'typed';
+    return {
+      typed,
+      notTyped: !typed,
+      hasRail,
+      wsSelect,
+      selectOpen: ws === 'select-open',
+      wsBottom: ws === 'bottom',
+      plainTitle: !wsSelect,
+      railEdge: ws === 'divider' ? 'border-right: 1px solid var(--line);' : '',
+      chatsHeadPad: hasRail ? '8px' : '72px',
+      selectBtnStyle: ws === 'select-open' ? 'background: var(--active);' : '',
+      themeCls: dark ? 'dark' : '',
+      isConversation: !empty,
+      isEmpty: empty,
+      chatTitle: empty ? 'New chat' : 'Composer and menus',
+      firstChat: empty ? 'New chat' : 'Composer and menus',
+      firstChatCls: 'sel'
+    };
+  }
+}
+</script>
+</body>
+</html>

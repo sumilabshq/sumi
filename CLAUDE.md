@@ -88,7 +88,7 @@ map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths t
 `design-systems/sumi/` (`DESIGN.md`, `tokens.css`, the runtime `sumi.css` with every `--sumi-*` token), the
 approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the boards are the canvas
 "Studio two layers" (https://claude.ai/artifact/4YPtzqciNLEEfHLBeJZePw), copied as artboards into
-`docs/reference/sumi-layout/`. Sumi is also the mascot's name (once Ink).
+`docs/reference/sumi-layout/`. Sumi is also the mascot's name.
 
 - **The design is the single source of truth.** A component — kit included — that does not render like the
   board at rest, hover, pressed, open and selected, light and dark, is changed until it does; the kit gives
@@ -102,6 +102,8 @@ approved brief is `design-systems/sumi/references/quiet-ui-brief.md`, and the bo
   alone matches.
 - Quiet: hierarchy from text and spacing, controls ghost until hovered, one loud thing per view, monochrome
   with blue only as a wash, no borders and no inner plate around app content, no uppercase labels.
+- **A divider runs edge to edge.** A line inside a card, menu or list reaches both edges of its card, never
+  inset by the card's padding; the command menu is the reference. A board that draws it inset is wrong here.
 
 ## Design systems from references
 

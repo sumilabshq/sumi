@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Composer states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.ink{--frame:#F2F2F3;--frame-tinted:#F2F2F3;--plate:#FFFFFF;--sunken:#EAEAED;--overlay:rgba(255,255,255,.86);--text:#1F1E1C;--text-2:rgba(31,30,28,.66);--text-3:rgba(31,30,28,.42);--hover:rgba(31,30,28,.05);--active:rgba(31,30,28,.08);--line:rgba(31,30,28,.08);--line-strong:rgba(31,30,28,.14);--success:#2F8F5B;--warning:#C98A1A;--danger:#D93F2E;--accent:#3B5BFD;--on-accent:#FFFFFF;--accent-soft:rgba(59,91,253,.12);--focus-ring:rgba(59,91,253,.55);--shadow-plate:0 0 0 1px var(--line),0 1px 2px rgba(0,0,0,.04);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.12);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;font-size:13px;line-height:1.4;color:var(--text);-webkit-font-smoothing:antialiased}
+.ink.dark{--frame:#141416;--frame-tinted:#141416;--plate:#1F1F21;--sunken:#2B2B2E;--overlay:rgba(36,36,34,.86);--text:#EDECE8;--text-2:rgba(237,236,232,.66);--text-3:rgba(237,236,232,.40);--hover:rgba(237,236,232,.06);--active:rgba(237,236,232,.10);--line:rgba(237,236,232,.08);--line-strong:rgba(237,236,232,.16);--shadow-popover:0 0 0 1px var(--line),0 8px 24px rgba(0,0,0,.45)}
+.ink *{box-sizing:border-box}
+:where(.ink) button{font:inherit;color:inherit;border:0;background:none;margin:0;padding:0;cursor:pointer}
+.ink svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ink svg.s12{width:12px;height:12px}
+.ib{width:28px;height:28px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-2);flex:none}
+.chip{height:24px;padding:0 8px;border-radius:999px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:var(--hover)}
+.gt{height:24px;padding:0 6px;border-radius:6px;font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:4px}
+.kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
+.btn{height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn.sec{background:var(--hover)}
+.plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
+.composer{position:relative;background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;min-height:88px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.composer.focus{border-color:transparent;box-shadow:0 0 0 2px var(--focus-ring)}
+.send{width:32px;height:32px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.send.off{background:var(--active);color:var(--text-3)}
+.tip{background:var(--text);color:var(--plate);font-size:12px;border-radius:6px;padding:4px 8px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.tip .k{font-size:11px;opacity:.6}
+.m circle{fill:var(--text)}.m .e{fill:var(--plate)}
+.state{display:grid;grid-template-columns:150px minmax(0,1fr);gap:20px;align-items:start}
+.state h3{margin:0 0 4px;font-size:13px;font-weight:600}
+.state p{margin:0;font-size:12px;color:var(--text-2);line-height:1.45}
+.cell{padding:16px 16px 10px}
+.caret{display:inline-block;width:1.5px;height:17px;background:var(--accent);vertical-align:-3px}
+</style>
+</helmet>
+<div class="ink {{themeCls}}" style="width: 1440px; height: 1180px; padding: 48px; background: var(--frame-tinted); display: flex; flex-direction: column; gap: 32px; overflow: hidden;">
+  <div style="display: flex; align-items: flex-end; gap: 48px;">
+    <div style="flex: 1;">
+      <div style="font-size: 12px; color: var(--text-2);">Chat · composer</div>
+      <h1 style="margin: 4px 0 0; font-size: 28px; font-weight: 600; line-height: 1.25;">Composer states</h1>
+    </div>
+    <p style="margin: 0; max-width: 520px; font-size: 12px; color: var(--text-2);">One loud thing, Send. Everything else is ghost until touched: attach, the agent chip, and the strip under the field. 12px corners, a 1px line, no shadow. Sizes are real: controls 28, send 32, field text 14.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; align-items: start;">
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+
+      <div class="state">
+        <div><h3>Empty</h3><p>Placeholder in the faint text colour. Send waits, greyed, until there is something to send.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <span style="font-size: 14px; color: var(--text-3);">Describe what to build or change</span>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 2px; padding-top: 6px;"><button class="gt">Auto<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><span style="flex: 1;"></span><button class="gt">38%</button><button class="gt">Opus<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button class="gt">Medium<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button></div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Focused</h3><p>A 2px ring in the workspace colour replaces the line. The caret sits at the start; nothing else moves.</p></div>
+        <div class="plate cell">
+          <div class="composer focus">
+            <span style="font-size: 14px; color: var(--text-3);"><span class="caret"></span>Describe what to build or change</span>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Typing</h3><p>Send turns the workspace colour. Key hints show only while there is text, and hide under 420px.</p></div>
+        <div class="plate cell">
+          <div class="composer focus">
+            <span style="font-size: 14px;">Add a weekly view to the habits page<span class="caret"></span></span>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <span style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-3); margin-right: 6px;"><span class="kbd">↵</span>send<span class="kbd" style="margin-left: 6px;">⇧↵</span>new line</span>
+              <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Drop</h3><p>A file carried over the composer: a dashed edge and a tint in the workspace colour, one line on what fits.</p></div>
+        <div class="plate cell">
+          <div class="composer" style="border: 1.5px dashed var(--accent); background: var(--accent-soft); align-items: center; justify-content: center; gap: 6px;">
+            <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--accent);"><path d="M3 3h18v18H3zM8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21"></path></svg>
+            <span style="font-weight: 500;">Drop to attach</span>
+            <span style="font-size: 12px; color: var(--text-2);">Images, text and PDF, up to 10 MB each</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <div class="state">
+        <div><h3>Long text</h3><p>Grows to 8 lines, 200px, then scrolls inside. The top fades so cut text never looks clipped.</p></div>
+        <div class="plate cell">
+          <div class="composer focus">
+            <div style="position: relative; max-height: 200px; overflow: hidden; font-size: 14px; line-height: 1.55; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 28px); mask-image: linear-gradient(to bottom, transparent 0, #000 28px); padding-right: 12px;">
+              <p style="margin: 0 0 8px;">Keep the grid, but drop the borders and let the done days fill with the workspace colour. Streaks go into one line under the title, not a column.</p>
+              <p style="margin: 0 0 8px;">The reminder card at the bottom should only show when there is a reminder set. When there isn't, put a quiet "Add a reminder" press in its place.</p>
+              <p style="margin: 0;">And check the mobile width: the grid scrolled sideways last time and the column headers were cut off at 375 wide.<span class="caret"></span></p>
+              <span aria-hidden="true" style="position: absolute; right: 0; top: 64px; width: 3px; height: 60px; border-radius: 999px; background: var(--line-strong);"></span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="flex: 1;"></span>
+              <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>Ink working</h3><p>Ink's eyes narrow while it works, the timer counts, and Stop takes Send's place. You can already type the next message.</p></div>
+        <div class="plate cell" style="padding-top: 44px;">
+          <div class="composer">
+            <span style="font-size: 14px; color: var(--text-3);">Add to this while Ink works</span>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
+              <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
+              <span style="display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; font-size: 12px; color: var(--text-2);"><svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 16px; height: 16px;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="16" y="27" width="13" height="6" rx="3"></rect><rect class="e" x="35" y="27" width="13" height="6" rx="3"></rect></svg>Working · 12 s</span>
+              <span style="flex: 1;"></span>
+              <span style="position: relative; display: inline-flex;">
+                <span class="tip" style="position: absolute; bottom: 40px; right: -4px;">Stop<span class="k">esc</span></span>
+                <button aria-label="Stop" style="width: 32px; height: 32px; border-radius: 999px; background: var(--text); display: inline-flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 2px; background: var(--plate);"></span></button>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="state">
+        <div><h3>No provider ready</h3><p>The reason sits inside the field with its one fix. The rest of the composer steps back until it is fixed.</p></div>
+        <div class="plate cell">
+          <div class="composer">
+            <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line);">
+              <svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--warning);"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+              <div style="flex: 1;"><div style="font-weight: 500;">No provider is ready</div><div style="font-size: 12px; color: var(--text-2);">Claude Code isn't signed in on this machine.</div></div>
+              <button class="btn sec">Set up</button>
+            </div>
+            <span style="font-size: 14px; color: var(--text-3);">Set up a provider to start</span>
+            <div style="display: flex; align-items: center; gap: 4px; margin-top: auto; opacity: 0.5;">
+              <button class="ib" aria-label="Attach" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+              <button class="chip" disabled><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--text-3);"></span>Claude Code</button>
+              <span style="flex: 1;"></span>
+              <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { themeCls: (this.props.theme ?? 'light') === 'dark' ? 'dark' : '' };
+  }
+}
+</script>
+</body>
+</html>

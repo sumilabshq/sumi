@@ -94,6 +94,7 @@ Emphasis in chrome is `--text` against `--text-2`, or 500 on a selected row; nev
 ## Layout Principles
 
 - Separate with spacing first, a hairline second, a surface last.
+- A hairline divider runs from edge to edge of its card, menu or list; it is never inset by the padding.
 - Two surface levels at most on screen: the frame and the plates on it.
 - 8px between the frame's edge and a plate and between plates; a plate pads 16px, a chat 20–24px across.
 - Sidebars have no fill of their own: they are the frame. Each belongs to the half it stands beside and never moves.
