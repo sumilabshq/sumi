@@ -2,6 +2,7 @@ use super::commands::{self, ClaudeAsk, StartAsk};
 use super::drops;
 use super::state::Assistant;
 use super::turns::TurnSink;
+use crate::agent::hub::{AgentHub, AgentLink};
 use serde_json::Value;
 use crate::store::{opened_working_folder, Store};
 use crate::studio_caller::refuse_foreign_caller;
@@ -125,6 +126,24 @@ struct TurnStart {
     claude: Option<ClaudeStart>,
     folders: Vec<String>,
     sink: TurnSink,
+    agent: Option<AgentLink>,
+}
+
+fn agent_link_of<R: Runtime>(message: &InvokeMessage<R>) -> Option<AgentLink> {
+    let Some(chat) = json_args(message).and_then(|args| args.get("chatId")).and_then(Value::as_str) else {
+        eprintln!("[agent] turn names no chat → runs without Sumi's tools");
+        return None;
+    };
+    let app = message.webview().app_handle().clone();
+    let Some(hub) = app.try_state::<Arc<AgentHub>>() else {
+        eprintln!("[agent] tools not started → chat {chat} runs without them");
+        return None;
+    };
+    let link = hub.link_for(chat);
+    if link.is_none() {
+        eprintln!("[agent] own executable unknown → chat {chat} runs without Sumi's tools");
+    }
+    link
 }
 
 fn texts_argument<R: Runtime>(message: &InvokeMessage<R>, name: &str) -> Result<Vec<String>, String> {
@@ -153,6 +172,7 @@ fn turn_start_of<R: Runtime>(message: &InvokeMessage<R>) -> Result<TurnStart, St
         claude: claude_start_of(message)?,
         folders: texts_argument(message, "folders")?,
         sink: channel_sink(message)?,
+        agent: agent_link_of(message),
     })
 }
 
@@ -164,6 +184,7 @@ fn start_turn(assistant: &Assistant, project: Option<&Path>, start: TurnStart) -
         resume: start.resume.as_deref(),
         claude,
         folders: &start.folders,
+        agent: start.agent.as_ref(),
     };
     commands::start_turn(assistant, project, &ask, start.sink)
 }

@@ -64,3 +64,8 @@ harness = false
 name = "plugin_acl"
 path = "tests/plugin_acl.rs"
 harness = false
+
+[[test]]
+name = "agent_tools"
+path = "tests/agent_tools.rs"
+harness = false

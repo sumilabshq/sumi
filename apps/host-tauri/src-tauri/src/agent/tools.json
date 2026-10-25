@@ -1,0 +1,17 @@
+[
+	{
+		"name": "app_state",
+		"description": "What is open in Sumi right now: every chat (which one is this chat, which one is on screen), the browser's Essentials, and its tab sections (Workspace, This chat, other chats) with their tabs and groups in sidebar order, and which tab the person sees. Read it before acting on tabs.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"scope": {
+					"type": "string",
+					"enum": ["workspace", "this-chat"],
+					"description": "workspace (default): every section on screen; this-chat: only this chat's tabs."
+				}
+			},
+			"additionalProperties": false
+		}
+	}
+]

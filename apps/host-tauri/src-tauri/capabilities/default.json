@@ -10,6 +10,7 @@
 		"core:window:allow-destroy",
 		"assistant:default",
 		"browser:default",
-		"studio-log:default"
+		"studio-log:default",
+		"agent:default"
 	]
 }

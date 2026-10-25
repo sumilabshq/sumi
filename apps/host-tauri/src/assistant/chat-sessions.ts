@@ -5,6 +5,8 @@ import { EMPTY_SESSION } from "./session-steps.js";
 import { NO_CHAT_HISTORY, createTurnSession } from "./turn-session.js";
 import type { ChatHistory, StartTurn, TurnSession } from "./turn-session.js";
 
+export type StartChatTurn = (chatId: string, ...asked: Parameters<StartTurn>) => ReturnType<StartTurn>;
+
 export interface ChatSessionLink {
 	readonly activeChat: ActiveChatPort;
 	readonly onSessionChanged: (chatId: string, session: AssistantSession) => void;
@@ -27,7 +29,7 @@ export class ChatSessions {
 
 	constructor(
 		private readonly link: ChatsLink,
-		private readonly startTurn: StartTurn,
+		private readonly startTurn: StartChatTurn,
 		private readonly clock: () => number = Date.now,
 	) {
 		link.activeChat.watch(() => this.followActive());
@@ -80,7 +82,7 @@ export class ChatSessions {
 	}
 
 	private startSession(chatId: string, history: ChatHistory): TurnSession {
-		const session = createTurnSession(this.startTurn, this.clock, history);
+		const session = createTurnSession((...asked) => this.startTurn(chatId, ...asked), this.clock, history);
 		session.watch(() => {
 			this.link.onSessionChanged(chatId, session.now());
 			this.tellIfShown(chatId);

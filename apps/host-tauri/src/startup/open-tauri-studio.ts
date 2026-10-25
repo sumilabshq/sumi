@@ -3,6 +3,7 @@ import { startStudio, startStudioApp } from "@widgetarium/studio";
 import type { StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
+import { openAgentTools } from "../agent/agent-tools.js";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
@@ -51,6 +52,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
 	const studioApp = startStudioApp({ platform: "tauri", workspaceId: opening.workspace.id });
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () => reopenWindow(docs));
+	openAgentTools(studioApp);
 	const assistant = startTauriAssistant({
 		workspace: {
 			client: opening.workspaces,

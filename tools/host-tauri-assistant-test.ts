@@ -268,12 +268,13 @@ async function streamChecks(): Promise<void> {
 	const { port } = startedAssistant(ipc, {});
 	const channel = await sendAndStart(port, ipc, "Reply with the single word ok");
 	const started = callsNamed(ipc, "start_turn")[0]?.args;
-	check("the turn names the provider and the prompt, never a command line", started, {
+	check("the turn names the provider, the prompt and its chat, never a command line", started, {
 		providerId: "claude-code",
 		prompt: "Reply with the single word ok",
 		resume: null,
 		claude: { mode: "auto", model: "opus", effort: "medium" },
 		folders: [],
+		chatId: "chat-1",
 		onEvent: channel,
 	});
 	check("a sent turn is busy", port.session().busy, true);

@@ -53,6 +53,8 @@ const BROWSER_COMMANDS: &[&str] = &[
 
 const STUDIO_LOG_COMMANDS: &[&str] = &["line"];
 
+const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
+
 fn main() {
     let assistant = InlinedPlugin::new()
         .commands(ASSISTANT_COMMANDS)
@@ -66,7 +68,10 @@ fn main() {
     let studio_log = InlinedPlugin::new()
         .commands(STUDIO_LOG_COMMANDS)
         .default_permission(DefaultPermissionRule::AllowAllCommands);
+    let agent = InlinedPlugin::new()
+        .commands(AGENT_COMMANDS)
+        .default_permission(DefaultPermissionRule::AllowAllCommands);
     let plugins = Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser);
-    tauri_build::try_build(plugins.plugin("studio-log", studio_log))
+    tauri_build::try_build(plugins.plugin("studio-log", studio_log).plugin("agent", agent))
         .expect("the Tauri build step failed")
 }

@@ -43,7 +43,7 @@ fn scratch(name: &str) -> PathBuf {
 fn argv_for(id: &str, prompt: &str, resume: Option<&str>) -> Vec<String> {
     let (project, attachments) = (PathBuf::from("/work/app"), PathBuf::from("/tmp/attach"));
     let places = TurnPlaces { project: &project, attachments: &attachments, folders: &[] };
-    provider_by_id(id).expect("a known provider").argv(&TurnAsk { prompt, resume, claude: None }, &places)
+    provider_by_id(id).expect("a known provider").argv(&TurnAsk { prompt, resume, claude: None, agent: None }, &places)
 }
 
 fn mode_of(path: &Path) -> u32 {
@@ -99,7 +99,7 @@ fn turn_refusals(checks: &mut Checks) {
     let assistant = Assistant::new(attachments.clone());
     let project = Some(attachments.as_path());
     let (sink, _) = recording_sink();
-    let ask = |provider_id, prompt, resume| StartAsk { provider_id, prompt, resume, claude: None, folders: &[] };
+    let ask = |provider_id, prompt, resume| StartAsk { provider_id, prompt, resume, claude: None, folders: &[], agent: None };
 
     let unknown = commands::start_turn(&assistant, project, &ask("custom", "hi", None), sink.clone());
     checks.check("an unknown provider is refused", unknown.err(), Some("This provider is not one Widgetarium can start: custom".into()));
@@ -228,7 +228,7 @@ fn claude_choices(checks: &mut Checks) {
     let folders = vec![PathBuf::from("/work/lent")];
     let places = TurnPlaces { project: &project, attachments: &attachments, folders: &folders };
     let choice = ClaudeChoice { mode: "plan", model: "sonnet", effort: "low" };
-    let argv = claude.argv(&TurnAsk { prompt: "hi", resume: None, claude: Some(choice) }, &places);
+    let argv = claude.argv(&TurnAsk { prompt: "hi", resume: None, claude: Some(choice), agent: None }, &places);
     let pair = |flag: &str| argv.windows(2).filter(|pair| pair[0] == flag).map(|pair| pair[1].clone()).collect::<Vec<_>>();
     checks.check("the chosen mode reaches claude", pair("--permission-mode"), vec!["plan".to_string()]);
     checks.check("the chosen model reaches claude", pair("--model"), vec!["sonnet".to_string()]);

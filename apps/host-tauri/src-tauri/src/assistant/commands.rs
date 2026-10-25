@@ -7,6 +7,7 @@ use super::providers::{
 use super::search_path::{find_command, search_path};
 use super::state::Assistant;
 use super::turns::{TurnLaunch, TurnSink};
+use crate::agent::hub::AgentLink;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
@@ -36,6 +37,7 @@ pub struct StartAsk<'a> {
     pub resume: Option<&'a str>,
     pub claude: Option<ClaudeAsk<'a>>,
     pub folders: &'a [String],
+    pub agent: Option<&'a AgentLink>,
 }
 
 fn is_found(provider: &Provider) -> bool {
@@ -98,7 +100,7 @@ fn checked_ask<'a>(provider: &Provider, ask: &StartAsk<'a>) -> Result<TurnAsk<'a
     }
 
     let claude = checked_claude(provider, ask.claude.as_ref())?;
-    Ok(TurnAsk { prompt: ask.prompt, resume: ask.resume, claude })
+    Ok(TurnAsk { prompt: ask.prompt, resume: ask.resume, claude, agent: ask.agent })
 }
 
 pub fn remember_picked_folder(assistant: &Assistant, picked: &Path) -> Result<Value, String> {

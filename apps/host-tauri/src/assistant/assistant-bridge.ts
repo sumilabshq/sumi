@@ -34,6 +34,7 @@ export interface TurnStart {
 	readonly resume: string | null;
 	readonly claude: ClaudeStart | null;
 	readonly folders: readonly string[];
+	readonly chatId: string | null;
 }
 
 export interface DroppedEntry {
@@ -115,7 +116,7 @@ export function tauriAssistantBridge(ipc: TauriIpc): AssistantBridge {
 		ipc.invoke(commandNamed(name), args);
 	return {
 		providers: async () => providersAnswerIn(await call("providers")),
-		startTurn: async ({ providerId, prompt, resume, claude, folders }, onEvent) => {
+		startTurn: async ({ providerId, prompt, resume, claude, folders, chatId }, onEvent) => {
 			const onEventChannel = ipc.channel((message) => {
 				const event = turnEventIn(message);
 				if (event !== null) {
@@ -123,7 +124,7 @@ export function tauriAssistantBridge(ipc: TauriIpc): AssistantBridge {
 				}
 			});
 			return turnIdIn(
-				await call("start_turn", { providerId, prompt, resume, claude, folders, onEvent: onEventChannel }),
+				await call("start_turn", { providerId, prompt, resume, claude, folders, chatId, onEvent: onEventChannel }),
 			);
 		},
 		stopTurn: async (turnId) => void (await call("stop_turn", { turnId })),

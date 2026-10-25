@@ -5,8 +5,7 @@ import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
 import { runTurn } from "./turn-run.js";
 import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
-import type { ChatsLink } from "./chat-sessions.js";
-import type { StartTurn } from "./turn-session.js";
+import type { ChatsLink, StartChatTurn } from "./chat-sessions.js";
 
 export interface PendingWrites {
 	settled(): Promise<void>;
@@ -169,8 +168,8 @@ async function choose(doors: TauriAssistantDoors, held: PortHeld, id: string): P
 	setupChanged(held);
 }
 
-function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartTurn {
-	return async (asked, resumeOf, emit) => {
+function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn {
+	return async (chatId, asked, resumeOf, emit) => {
 		const provider = chosenIn(await providersOf(doors.bridge, held), held.chosen);
 		if (provider === null) {
 			throw new Error(NO_PROVIDER_FOUND);
@@ -183,6 +182,7 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartTurn {
 			resume: resumeOf(provider.id),
 			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.value()) : null,
 			folders: doors.folders.take(),
+			chatId,
 		};
 		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));
 		return { run, providerId: provider.id, resumesWithoutAnId: provider.resumesWithoutAnId };

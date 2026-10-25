@@ -18,6 +18,7 @@ export interface TurnAsk {
 	readonly resume: string | null;
 	readonly claude: ClaudeStart | null;
 	readonly folders: readonly string[];
+	readonly chatId: string | null;
 }
 
 export const IDLE_MS = 180000;
@@ -153,10 +154,10 @@ function eventHandler(scope: RunScope, emit: Emit): (event: TurnEvent) => void {
 }
 
 function begin(scope: RunScope, emit: Emit): void {
-	const { provider, prompt, resume, claude, folders } = scope.ask;
+	const { provider, prompt, resume, claude, folders, chatId } = scope.ask;
 	heard(scope);
 	scope.bridge
-		.startTurn({ providerId: provider.id, prompt, resume, claude, folders }, eventHandler(scope, emit))
+		.startTurn({ providerId: provider.id, prompt, resume, claude, folders, chatId }, eventHandler(scope, emit))
 		.then((turnId) => {
 			scope.held.turnId = turnId;
 			if (scope.held.stopping) {

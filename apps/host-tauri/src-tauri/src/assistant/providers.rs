@@ -1,3 +1,5 @@
+use crate::agent::claude_flags;
+use crate::agent::hub::AgentLink;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
@@ -26,6 +28,7 @@ pub struct TurnAsk<'a> {
     pub prompt: &'a str,
     pub resume: Option<&'a str>,
     pub claude: Option<ClaudeChoice>,
+    pub agent: Option<&'a AgentLink>,
 }
 
 pub fn allowed(choices: &[&'static str], asked: &str) -> Option<&'static str> {
@@ -146,22 +149,26 @@ fn claude_args(ask: &TurnAsk, places: &TurnPlaces) -> Vec<String> {
         "--verbose",
         "--include-partial-messages",
         "--setting-sources",
-        "project,local",
+        "user,project,local",
     ];
     let mut argv: Vec<String> = fixed.iter().map(|part| part.to_string()).collect();
-    argv.extend(["--add-dir".into(), shown(places.project), "--add-dir".into(), shown(places.attachments)]);
-    for folder in places.folders {
-        argv.extend(["--add-dir".into(), shown(folder)]);
-    }
+    argv.extend(folder_args(places));
     if let Some(choice) = &ask.claude {
         argv.extend(["--permission-mode".into(), choice.mode.into(), "--model".into(), choice.model.into()]);
         argv.extend(["--effort".into(), choice.effort.into()]);
+    }
+    if let Some(agent) = ask.agent {
+        argv.extend(claude_flags(agent));
     }
     if let Some(session) = ask.resume {
         argv.extend(["--resume".into(), session.to_string()]);
     }
     argv.extend([END_OF_OPTIONS.into(), ask.prompt.to_string()]);
     argv
+}
+
+fn folder_args(places: &TurnPlaces) -> Vec<String> {
+    [places.project, places.attachments].into_iter().chain(places.folders.iter().map(PathBuf::as_path)).flat_map(|folder| ["--add-dir".to_string(), shown(folder)]).collect()
 }
 
 fn codex_args(ask: &TurnAsk, places: &TurnPlaces) -> Vec<String> {
