@@ -162,7 +162,14 @@ export class PageCover {
 				const look = getComputedStyle(at);
 				painted.push(`${describedElement(at).slice(0, 90)} bg=${look.backgroundColor}`);
 			}
-			console.info(`[widgetarium] PAINTPROBE\n${painted.join("\n")}`);
+			const box = this.container.getBoundingClientRect();
+			const stacked = document.elementsFromPoint(box.left + box.width / 2, box.top + box.height / 2).map((at) => {
+				const look = getComputedStyle(at);
+				return `${describedElement(at).slice(0, 80)} bg=${look.backgroundColor} shadow=${look.boxShadow.slice(0, 50)} opacity=${look.opacity}`;
+			});
+			console.info(
+				`[widgetarium] PAINTPROBE ${this.drawnPage() ?? "none"} at ${Math.round(box.left)},${Math.round(box.top)} ${Math.round(box.width)}x${Math.round(box.height)}\n${painted.join("\n")}\nSTACKED\n${stacked.join("\n")}`,
+			);
 		}, 1500);
 		this.frameSaid = colour;
 		void this.bridge.wearFrame(colour).catch((failure: unknown) => {
