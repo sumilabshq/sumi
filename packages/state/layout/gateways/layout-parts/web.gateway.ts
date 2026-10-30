@@ -6,7 +6,6 @@ import type { LayoutParts } from "./layout-parts.gateway.js";
 const LEFT_WIDTH_KEY = "widgetarium-studio-left-px";
 const CHAT_WIDTH_KEY = "widgetarium-studio-chat-px";
 const LEFT_HIDDEN_KEY = "widgetarium-studio-left-hidden";
-const RIGHT_HIDDEN_KEY = "widgetarium-studio-right-hidden";
 const PANES_KEY = "widgetarium-studio-panes:{workspaceId}";
 
 export function webLayoutParts(workspaceId: string): LayoutParts {
@@ -17,7 +16,6 @@ export function webLayoutParts(workspaceId: string): LayoutParts {
 		},
 		sides: {
 			left: localFlagMemory(LEFT_HIDDEN_KEY),
-			right: localFlagMemory(RIGHT_HIDDEN_KEY),
 		},
 		panes: localJsonMemory<PaneTree>(PANES_KEY.replace("{workspaceId}", () => workspaceId)),
 	});

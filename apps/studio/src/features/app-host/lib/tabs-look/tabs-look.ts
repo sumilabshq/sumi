@@ -6,6 +6,9 @@ export const SIDEBAR_ROW = `cv:group/row cv:relative cv:flex cv:h-[34px] cv:w-fu
 export const SIDEBAR_ROW_SHOWN =
 	"cv:data-[shown]:bg-(--sumi-selected) cv:data-[shown]:font-medium cv:data-[shown]:hover:bg-(--sumi-selected)";
 
+export const CHILD_ROW =
+	"cv:ps-[34px] cv:before:pointer-events-none cv:before:absolute cv:before:start-[15px] cv:before:-top-[9px] cv:before:h-[26px] cv:before:w-[11px] cv:before:rounded-bl-[7px] cv:before:[border-left:1.5px_solid_var(--sumi-line-strong)] cv:before:[border-bottom:1.5px_solid_var(--sumi-line-strong)] cv:before:content-['']";
+
 export const ROW_WORDS = "cv:min-w-0 cv:flex-1 cv:overflow-hidden cv:text-ellipsis";
 
 export const ICON_BUTTON = `cv:[font:inherit] cv:size-6 cv:rounded-[6px] cv:border-0 cv:p-0 cv:outline-none cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)]`;

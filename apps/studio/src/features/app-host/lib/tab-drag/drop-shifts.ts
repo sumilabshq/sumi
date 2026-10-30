@@ -2,12 +2,13 @@ import type { TabDrop } from "@widgetarium/app-host";
 import { columnsDuring, scrollerShiftOf } from "./sidebar-drop-plan.js";
 import type { DragSource, ListDrop } from "./sidebar-drop-plan.js";
 import { cellRectOf, rowStepOf } from "./sidebar-layout.js";
-import type { MeasuredGroup, MeasuredList, SidebarLayout } from "./sidebar-layout.js";
+import type { MeasuredGroup, MeasuredList, Rect, SidebarLayout } from "./sidebar-layout.js";
 
 interface FlowItem {
 	readonly element: HTMLElement;
 	readonly unitId: string | null;
 	readonly list: string;
+	readonly top: number;
 }
 
 export interface Shifts {
@@ -123,23 +124,39 @@ class DropShifts {
 		}
 
 		const after = this.flow.map((item) => item.list === drop.list).lastIndexOf(true) + 1;
-		return after === 0 || after === this.flow.length ? -1 : after;
+
+		if (after === 0) {
+			return this.emptyChatFlowIndexOf(drop.list);
+		}
+
+		return after === this.flow.length ? -1 : after;
+	}
+
+	private emptyChatFlowIndexOf(chatId: string): number {
+		const chatRowAt = this.flowIndexOf(chatId);
+		const after = chatRowAt + 1;
+		return chatRowAt === -1 || after === this.flow.length ? -1 : after;
 	}
 }
 
 function flowOf(layout: SidebarLayout): readonly FlowItem[] {
-	return layout.lists.flatMap((list) => listFlowOf(list));
+	return layout.lists.flatMap((list) => listFlowOf(list)).sort((one, other) => one.top - other.top);
 }
 
 function listFlowOf(list: MeasuredList): readonly FlowItem[] {
-	const head = list.head === null ? [] : [flowItemOf(list.head.element, null, list.id)];
-	return [...head, ...list.units.map((unit) => flowItemOf(unit.element, unit.id, list.id))];
+	const head = list.head === null ? [] : [flowItemOf(list.head, null, list.id)];
+	return [...head, ...list.units.map((unit) => flowItemOf(unit, unit.id, list.id))];
 }
 
-function flowItemOf(element: HTMLElement, unitId: string | null, list: string): FlowItem {
+function flowItemOf(
+	{ element, rect }: { readonly element: HTMLElement; readonly rect: Rect },
+	unitId: string | null,
+	list: string,
+): FlowItem {
 	return {
 		element,
 		unitId,
 		list,
+		top: rect.top,
 	};
 }

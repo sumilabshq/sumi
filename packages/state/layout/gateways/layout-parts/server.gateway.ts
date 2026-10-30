@@ -15,7 +15,6 @@ export function serverLayoutParts(): LayoutParts {
 		},
 		sides: {
 			left: heldValue<boolean>(),
-			right: heldValue<boolean>(),
 		},
 		panes: heldValue<PaneTree>(),
 	});

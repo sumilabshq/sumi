@@ -46,7 +46,11 @@ export const GroupBox = memo(function GroupBox({
 				<span className={NAME}>{name}</span>
 				<span className={COUNT}>{count}</span>
 			</button>
-			{isOpen ? <div className={ROWS}>{children}</div> : null}
+			{isOpen ? (
+				<div className={ROWS} data-tabs-rows="">
+					{children}
+				</div>
+			) : null}
 		</div>
 	);
 });

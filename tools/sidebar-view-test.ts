@@ -1,13 +1,8 @@
-import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import type { HostTabsMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
-import { COLUMN_OPENED_ON, columnWithView } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
-import { sidebarOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
+import { emptyMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import type { HostTab, HostTabsMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { sidebarOf } from "../packages/state/places/shared/lib/rows/sidebar-rows.ts";
 import type { PageFacts } from "../packages/state/places/shared/schema/screen.schema.ts";
-import type { SidebarView } from "../packages/domain/app-host/shared/schema/tabs-column.schema.ts";
-import type { TabsSidebar } from "../packages/domain/app-host/shared/schema/app-tab.schema.ts";
-
-const WORKSPACE_END = { chatId: WORKSPACE_LIST, groupId: null, before: null };
+import type { PlacedSidebar, SidebarEntry } from "../packages/state/places/shared/schema/tab-rows.schema.ts";
 
 let failed = 0;
 
@@ -32,112 +27,107 @@ function pageOf(pageId: string, isInOwnWindow: boolean): PageFacts {
 	};
 }
 
-function workspaceTabs(...pageIds: readonly string[]): HostTabsMoment {
-	return pageIds.reduce(
-		(moment, pageId) => openTab(moment, { app: "browser", pageId }, WORKSPACE_END).moment,
-		emptyMoment(),
-	);
+function tabOf(id: string, app: HostTab["app"]): HostTab {
+	return {
+		id,
+		app,
+		pageId: app === "browser" ? id : null,
+		label: null,
+		essentialId: null,
+		lastAddress: null,
+		lastTitle: null,
+		lastFavicon: null,
+	};
 }
 
-const BOARD_CHAT = { id: "chat-1", title: "Hello" };
+const MOMENT: HostTabsMoment = {
+	...emptyMoment(),
+	tabs: [
+		tabOf("chat-1", "chat"),
+		tabOf("chat-2", "chat"),
+		tabOf("chat-3", "chat"),
+		tabOf("apart", "browser"),
+		tabOf("sub", "browser"),
+		tabOf("loose", "canvas"),
+	],
+	lists: {
+		pinned: [{ kind: "tab", id: "chat-2" }],
+		workspace: [
+			{ kind: "tab", id: "chat-1" },
+			{ kind: "group", id: "g1" },
+			{ kind: "tab", id: "apart" },
+		],
+		"chat-1": [
+			{ kind: "tab", id: "sub" },
+			{ kind: "group", id: "g2" },
+		],
+	},
+	groups: [
+		{ id: "g1", name: "Work", hue: "blue", isOpen: true, tabIds: ["chat-3"] },
+		{ id: "g2", name: "Docs", hue: null, isOpen: true, tabIds: ["loose"] },
+	],
+};
 
-function sidebarWith(moment: HostTabsMoment, pages: readonly PageFacts[], view: SidebarView): TabsSidebar {
+function sidebarWith(moment: HostTabsMoment, boardChatIds: readonly string[]): PlacedSidebar {
 	return sidebarOf({
 		moment,
 		essentials: [],
-		pages,
+		pages: [pageOf("apart", true), pageOf("sub", false)],
 		shownApp: null,
-		boardChats: [BOARD_CHAT],
-		shutLists: [],
-		view,
 		inPanes: [],
 		hasShownTabPane: true,
 		elsewhere: [],
+		boardChatIds,
 	});
 }
 
-function sectionsOf(sidebar: TabsSidebar): readonly string[] {
-	return sidebar.sections.map((section) => `${section.list}:${section.count}`);
+function shapeOf(entry: SidebarEntry): string {
+	if (entry.kind === "tab") {
+		return `tab:${entry.tab.id}`;
+	}
+
+	if (entry.kind === "chat") {
+		return `chat:${entry.chat.id}[${entry.chat.children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
+	}
+
+	return `group:${entry.group.id}[${entry.group.items.map((item) => (item.kind === "tab" ? item.tab.id : `chat:${item.chat.id}`)).join(",")}]`;
 }
 
-function workspaceRowsOf(sidebar: TabsSidebar): readonly string[] {
-	return (sidebar.sections[0]?.entries ?? []).flatMap((entry) => (entry.kind === "tab" ? [entry.tab.title] : []));
-}
-
-const SHOW_ALL: SidebarView = { hidesEmptyLists: false, hidesOwnWindowTabs: false };
-const moment = workspaceTabs("apart", "here");
-const pages = [pageOf("apart", true), pageOf("here", false)];
-
-const shown = sidebarWith(moment, pages, SHOW_ALL);
+const sidebar = sidebarWith(MOMENT, ["chat-1"]);
+const shapes = sidebar.sections.map((section) => [section.list, section.entries.map(shapeOf)]);
 check(
-	"with both options off, an empty chat section stands and a tab in its own window is listed",
-	JSON.stringify(sectionsOf(shown)) === '["workspace:2","chat-1:0"]' &&
-		JSON.stringify(workspaceRowsOf(shown)) === '["apart","here"]',
-	[sectionsOf(shown), workspaceRowsOf(shown)],
+	"the sidebar is Pinned then Open, and a chat carries its own tabs and groups nested under it",
+	JSON.stringify(shapes) ===
+		JSON.stringify([
+			["pinned", ["chat:chat-2[]"]],
+			["workspace", ["chat:chat-1[sub,group:g2]", "group:g1[chat:chat-3]", "tab:apart"]],
+		]),
+	shapes,
 );
 
-const offBoard = sidebarOf({
-	moment: workspaceTabs("lone"),
-	essentials: [],
-	pages: [],
-	shownApp: null,
-	boardChats: [],
-	shutLists: [],
-	view: SHOW_ALL,
-	inPanes: [],
-	hasShownTabPane: true,
-	elsewhere: [],
-});
-const offBoardLists = [sectionsOf(offBoard), offBoard.listTargets.map((target) => target.list)];
+const openChat = sidebar.sections[1]?.entries[0];
 check(
-	"a chat that stands on no board of this window has no section, whatever chat was picked last",
-	JSON.stringify(offBoardLists) === JSON.stringify([["workspace:1"], [WORKSPACE_LIST]]),
-	offBoardLists,
+	"a chat on this window's board is shown, one off it is not",
+	openChat?.kind === "chat" &&
+		openChat.chat.isShown &&
+		sidebar.sections[0]?.entries[0]?.kind === "chat" &&
+		!sidebar.sections[0].entries[0].chat.isShown,
+	sidebar.sections.map((section) => section.entries.map((entry) => entry.kind === "chat" && entry.chat.isShown)),
 );
 
-const noEmpty = sidebarWith(moment, pages, { ...SHOW_ALL, hidesEmptyLists: true });
+const apart = sidebar.sections[1]?.entries[2];
 check(
-	"Hide empty sections drops the empty chat section",
-	JSON.stringify(sectionsOf(noEmpty)) === '["workspace:2"]',
-	sectionsOf(noEmpty),
+	"a tab whose page stands in its own window is still listed and says so",
+	apart?.kind === "tab" && apart.tab.isInOwnWindow,
+	apart,
 );
 
-const noApart = sidebarWith(moment, pages, { ...SHOW_ALL, hidesOwnWindowTabs: true });
+const empty = sidebarWith(emptyMoment(), []);
 check(
-	"Hide tabs in other windows drops that row and its count",
-	JSON.stringify(workspaceRowsOf(noApart)) === '["here"]' && sectionsOf(noApart)[0] === "workspace:1",
-	[workspaceRowsOf(noApart), sectionsOf(noApart)],
-);
-
-const closedWindow = sidebarWith(moment, [pageOf("apart", false), pageOf("here", false)], {
-	...SHOW_ALL,
-	hidesOwnWindowTabs: true,
-});
-check(
-	"a tab whose own window closed comes back",
-	JSON.stringify(workspaceRowsOf(closedWindow)) === '["apart","here"]',
-	workspaceRowsOf(closedWindow),
-);
-
-const allApart = sidebarWith(workspaceTabs("apart"), [pageOf("apart", true)], {
-	hidesEmptyLists: true,
-	hidesOwnWindowTabs: true,
-});
-check(
-	"the workspace section stays even when both options empty it, so its New tab stays",
-	JSON.stringify(sectionsOf(allApart)) === '["workspace:0"]',
-	sectionsOf(allApart),
-);
-
-const switched = columnWithView(COLUMN_OPENED_ON, { hidesOwnWindowTabs: true });
-const switchedBack = columnWithView(switched, { hidesEmptyLists: true, hidesOwnWindowTabs: undefined });
-check(
-	"one option switched leaves the other as it was",
-	switched.hidesOwnWindowTabs &&
-		!switched.hidesEmptyLists &&
-		switchedBack.hidesOwnWindowTabs &&
-		switchedBack.hidesEmptyLists,
-	[switched, switchedBack],
+	"both sections stand even when empty, and a new tab goes to Open",
+	JSON.stringify(empty.sections.map((section) => section.list)) === '["pinned","workspace"]' &&
+		empty.newTabList === "workspace",
+	[empty.sections, empty.newTabList],
 );
 
 console.log(`\nsidebar view: ${failed === 0 ? "clean" : "BLOCKED"}`);

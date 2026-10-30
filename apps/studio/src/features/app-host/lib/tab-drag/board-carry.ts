@@ -1,22 +1,17 @@
-import { CARRIED_TAB, announceCarry } from "@widgetarium/behaviors";
-import { WorkspaceListSchema } from "@widgetarium/app-host";
+import { CARRIED_CHAT, CARRIED_TAB, announceCarry } from "@widgetarium/behaviors";
+import { SectionListSchema } from "@widgetarium/app-host";
 import type { CarriedItem, CarryPhase } from "@widgetarium/behaviors";
 import type { PickedItem } from "./picked-item.js";
+import type { TabRef } from "./tab-ref.js";
+
+const ROW_WORDS = "[data-tabs-words]";
 
 export class BoardCarry {
 	private isOverBoard = false;
 	private readonly item: CarriedItem | null;
 
-	constructor({ source, element }: PickedItem) {
-		this.item =
-			source.kind === "tab"
-				? {
-						kind: CARRIED_TAB,
-						id: source.id,
-						title: element.textContent?.trim() ?? "",
-						home: source.list === WorkspaceListSchema.value ? null : source.list,
-					}
-				: null;
+	constructor(picked: PickedItem) {
+		this.item = carriedItemOf(picked);
 	}
 
 	over(x: number, y: number): void {
@@ -58,4 +53,22 @@ export class BoardCarry {
 			y,
 		});
 	}
+}
+
+function carriedItemOf({ source, element }: PickedItem): CarriedItem | null {
+	if (source.kind !== "tab") {
+		return null;
+	}
+
+	const title = (element.querySelector(ROW_WORDS)?.textContent ?? element.textContent ?? "").trim();
+	return source.isChat ? { kind: CARRIED_CHAT, id: source.id, title } : carriedTabOf(source, title);
+}
+
+function carriedTabOf({ id, list }: TabRef, title: string): CarriedItem {
+	return {
+		kind: CARRIED_TAB,
+		id,
+		title,
+		home: SectionListSchema.safeParse(list).success ? null : list,
+	};
 }

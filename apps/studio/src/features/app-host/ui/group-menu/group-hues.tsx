@@ -2,7 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { GroupHueSchema, SetGroupHueCommand } from "@widgetarium/app-host";
-import type { GroupHue, GroupState } from "@widgetarium/app-host";
+import type { GroupHue } from "@widgetarium/app-host";
+import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const COLOUR = "Colour";
 const NO_COLOUR = "No colour";
@@ -22,7 +23,7 @@ const SWATCH_HUE: Readonly<Record<GroupHue, string>> = {
 	pink: "cv:[--swatch:var(--sumi-hue-pink)]",
 };
 
-export function GroupHues({ group }: { readonly group: GroupState }): ReactElement {
+export function GroupHues({ group }: { readonly group: GroupFace }): ReactElement {
 	const colourGroup = useCommand(SetGroupHueCommand);
 	const pick = (hue: GroupHue | null) => () =>
 		void colourGroup.run({

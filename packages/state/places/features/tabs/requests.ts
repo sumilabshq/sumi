@@ -27,7 +27,7 @@ export const TabRowsQuery = query("tab-rows")
 	.inject({ tabs: TabsGateway })
 	.handle(async ({ at }, { tabs }) => rowsAt(await tabs.placedTabs(), at));
 
-export const PlacedSidebarQuery = query("placed-sidebar")
+export const SidebarQuery = query("sidebar")
 	.input(SidebarAskSchema)
 	.output(PlacedSidebarSchema)
 	.inject({ tabs: TabsGateway })
@@ -52,7 +52,7 @@ export const ChatTabsQuery = query("chat-tabs")
 export const RereadPlacedTabsSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(PlacedTabsQuery);
 	invalidate(TabRowsQuery);
-	invalidate(PlacedSidebarQuery);
+	invalidate(SidebarQuery);
 	invalidate(HeldTabsQuery);
 	invalidate(ClosedTabsQuery);
 	invalidate(ChatTabsQuery);

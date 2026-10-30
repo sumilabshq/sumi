@@ -6,8 +6,7 @@ import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import {
 	ChatListQuery,
-	PinChatCommand,
-	PlaceChatCommand,
+	PinTabCommand,
 	RereadChatListForChatsSubscriber,
 	RereadChatListForCoreSubscriber,
 	RereadChatListForMarksSubscriber,
@@ -26,14 +25,6 @@ import {
 	RereadClosedTabsSubscriber,
 	ReopenClosedTabByIdCommand,
 } from "./features/closed-tabs/requests.js";
-import {
-	RereadTabsColumnSubscriber,
-	FoldTabListCommand,
-	ResetColumnCommand,
-	ResizeColumnCommand,
-	SetSidebarViewCommand,
-	TabsColumnQuery,
-} from "./features/column/requests.js";
 import {
 	CreateGroupCommand,
 	FoldGroupCommand,
@@ -65,7 +56,6 @@ import {
 	AppTabsQuery,
 	CanOpenOwnWindowQuery,
 	HeldTabsQuery,
-	MoveTabToListCommand,
 	PlaceTabCommand,
 	RestoreTabsCommand,
 	ShowChatTabCommand,
@@ -73,6 +63,7 @@ import {
 	RereadTabsForAccessAsksSubscriber,
 	RereadTabsForChatsSubscriber,
 	RereadSidebarForEssentialsSubscriber,
+	RereadSidebarForMarksSubscriber,
 	KeepChatTabsSubscriber,
 	RereadTabsSubscriber,
 	RereadTabsForCoreSubscriber,
@@ -81,7 +72,6 @@ import {
 	RememberPagesSubscriber,
 	EnsurePanePagesSubscriber,
 	RereadTabsForShownViewSubscriber,
-	RereadSidebarForColumnSubscriber,
 	TabsSidebarQuery,
 } from "./features/tabs/requests.js";
 
@@ -104,13 +94,12 @@ export const AppHostModule = module("app-host")
 		RereadTabsForInkSubscriber,
 		RereadTabsForChatsSubscriber,
 		RereadSidebarForEssentialsSubscriber,
-		RereadSidebarForColumnSubscriber,
-		RereadTabsColumnSubscriber,
+		RereadSidebarForMarksSubscriber,
 		RereadShownViewSubscriber,
 		RereadClosedTabsSubscriber,
 		RereadClosedTabsForCoreSubscriber,
 	)
-	.public(ChatListQuery, PinChatCommand, PlaceChatCommand)
+	.public(ChatListQuery, PinTabCommand)
 	.public(
 		OpenChatCommand,
 		OpenNewChatCommand,
@@ -123,7 +112,6 @@ export const AppHostModule = module("app-host")
 		TabsSidebarQuery,
 		HeldTabsQuery,
 		CanOpenOwnWindowQuery,
-		TabsColumnQuery,
 		ShownViewQuery,
 		RestoreTabsCommand,
 		ShowTabCommand,
@@ -138,7 +126,6 @@ export const AppHostModule = module("app-host")
 		CloseTabCommand,
 		CloseShownTabCommand,
 		PlaceTabCommand,
-		MoveTabToListCommand,
 		TearOffTabCommand,
 		CloseGroupCommand,
 		ShowEssentialCommand,
@@ -150,10 +137,6 @@ export const AppHostModule = module("app-host")
 		SetGroupHueCommand,
 		FoldGroupCommand,
 		UngroupCommand,
-		ResizeColumnCommand,
-		ResetColumnCommand,
-		FoldTabListCommand,
-		SetSidebarViewCommand,
 		ShowViewCommand,
 	)
 	.provide((facts) => ({ ...appHostPartsOn(facts) }));

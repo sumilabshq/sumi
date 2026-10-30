@@ -6,7 +6,7 @@ import { WorkspaceCrumbQuery } from "@widgetarium/workspaces";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { useRenamingIdIn } from "../../lib/chat-renaming.js";
 import { useChatRow } from "../../lib/use-chat-row.js";
-import { ChatTitleField } from "../chat-list/chat-title-field.js";
+import { RenameField } from "../../../app-host/ui/rename-field/rename-field.js";
 
 export interface ChatCrumbProps {
 	readonly renaming: ChatRenaming;
@@ -24,7 +24,11 @@ export function ChatCrumb({ renaming, chatId }: ChatCrumbProps): ReactElement {
 				/
 			</span>
 			{row !== null && row.id === renamingId ? (
-				<ChatTitleField row={row} onRenamed={() => renaming.stop()} />
+				<RenameField
+					named={{ id: row.id, label: null, title: row.title }}
+					className="wg-ws-row-field"
+					onDone={() => renaming.stop()}
+				/>
 			) : (
 				<span className="wg-ws-crumb-chat">{row?.title ?? NEW_CHAT_TITLE}</span>
 			)}

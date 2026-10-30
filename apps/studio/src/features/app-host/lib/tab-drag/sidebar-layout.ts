@@ -11,13 +11,17 @@ export interface Measured {
 	readonly rect: Rect;
 }
 
+export interface MeasuredRow extends Measured {
+	readonly isChat: boolean;
+}
+
 export interface MeasuredGroup extends Measured {
 	readonly head: Rect;
-	readonly rows: readonly Measured[];
+	readonly rows: readonly MeasuredRow[];
 	readonly isOpen: boolean;
 }
 
-export type MeasuredUnit = (Measured & { readonly kind: "tab" }) | (MeasuredGroup & { readonly kind: "group" });
+export type MeasuredUnit = (MeasuredRow & { readonly kind: "tab" }) | (MeasuredGroup & { readonly kind: "group" });
 
 export interface MeasuredGrid {
 	readonly element: HTMLElement | null;
@@ -32,6 +36,7 @@ export interface MeasuredHead {
 
 export interface MeasuredList {
 	readonly id: string;
+	readonly isNested: boolean;
 	readonly rect: Rect;
 	readonly head: MeasuredHead | null;
 	readonly units: readonly MeasuredUnit[];
@@ -149,6 +154,13 @@ function measuredOf(found: Iterable<HTMLElement>): readonly Measured[] {
 	});
 }
 
+function measuredRowsOf(found: Iterable<HTMLElement>): readonly MeasuredRow[] {
+	return measuredOf(found).map((row) => ({
+		...row,
+		isChat: row.element.dataset["tabsChat"] !== undefined,
+	}));
+}
+
 function measuredGridOf(element: HTMLElement | null): MeasuredGrid {
 	if (element === null) {
 		return {
@@ -175,6 +187,7 @@ function measuredListsOf(holder: HTMLElement, element: HTMLElement): readonly Me
 	return [
 		{
 			id,
+			isNested: element.dataset["tabsNested"] !== undefined,
 			rect: rectOf(element),
 			head: measuredHeadOf(holder, id),
 			units: [...element.children].flatMap((child) => unitsOf(child)),
@@ -217,7 +230,7 @@ function unitsOf(child: Element): readonly MeasuredUnit[] {
 	const boxId = child.dataset["tabsBox"];
 
 	if (boxId === undefined) {
-		return measuredOf([child]).map((row) => ({
+		return measuredRowsOf([child]).map((row) => ({
 			...row,
 			kind: "tab",
 		}));
@@ -234,7 +247,7 @@ function measuredGroupOf(box: HTMLElement, id: string): MeasuredUnit {
 		element: box,
 		rect: rectOf(box),
 		head: rectOf(head ?? box),
-		rows: measuredOf(box.querySelectorAll<HTMLElement>('[data-tabs-item="tab"]')),
+		rows: measuredRowsOf(box.querySelectorAll<HTMLElement>(':scope > [data-tabs-rows] > [data-tabs-item="tab"]')),
 		isOpen: head?.getAttribute("aria-expanded") === "true",
 	};
 }

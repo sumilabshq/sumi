@@ -6,8 +6,6 @@ import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/
 import type { StudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/studio-window.gateway.ts";
 import { PaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/pane-flash.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
-import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
-import { COLUMN_OPENED_ON } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
 import { PlacesModule } from "../packages/state/places/generated/contract.ts";
@@ -104,7 +102,6 @@ export class RecordedPaneFlash extends PaneFlashGateway {
 export interface AppHostFakes {
 	readonly studioWindow: StudioWindowGateway;
 	readonly essentials: MemoryEssentialsGateway;
-	readonly tabsColumn: MemoryTabsColumnGateway;
 	readonly shownView: MemoryShownViewGateway;
 	readonly paneFlash: RecordedPaneFlash;
 }
@@ -133,7 +130,6 @@ export function appHostFakesOf({ studioWindow, essentials = null, view = "browse
 	return {
 		studioWindow: studioWindow ?? new MemoryStudioWindowGateway(),
 		essentials: new MemoryEssentialsGateway(essentials),
-		tabsColumn: new MemoryTabsColumnGateway(COLUMN_OPENED_ON),
 		shownView: new MemoryShownViewGateway(view),
 		paneFlash: new RecordedPaneFlash(),
 	};

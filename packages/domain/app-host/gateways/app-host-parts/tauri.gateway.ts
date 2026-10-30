@@ -1,15 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
-import { studioWindowOf, viewFileOf } from "@widgetarium/behaviors";
-import { GLOBAL_ROOT, HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import { studioWindowOf } from "@widgetarium/behaviors";
+import { GLOBAL_ROOT, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind } from "@widgetarium/behaviors/tauri-store";
-import { COLUMN_OPENED_ON } from "../../shared/lib/tabs-column/column-look.js";
 import { EssentialsDocSchema, TauriEssentialsGateway } from "../essentials/tauri.gateway.js";
 import type { EssentialsDoc } from "../essentials/tauri.gateway.js";
 import { DocumentPaneFlashGateway } from "../pane-flash/document.gateway.js";
 import { MemoryShownViewGateway } from "../shown-view/memory.gateway.js";
 import { TauriStudioWindowGateway } from "../studio-window/tauri.gateway.js";
-import { KeptColumnDocSchema, TauriTabsColumnGateway } from "../tabs-column/tauri.gateway.js";
-import type { KeptColumnDoc } from "../tabs-column/tauri.gateway.js";
 import type { AppHostParts } from "./app-host-parts.gateway.js";
 import { STUDIO_OPENED_ON } from "./memory.gateway.js";
 
@@ -20,29 +17,16 @@ const ESSENTIALS: DocKind<EssentialsDoc> = {
 };
 
 // TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too; export conditions would need a condition the test loader and the Vite configs do not set
-export function tauriAppHostParts(workspaceId: string): AppHostParts {
+export function tauriAppHostParts(): AppHostParts {
 	const store = new StoreClient(tauriInvoke);
-	const root = workspaceRootOf(workspaceId);
 	const studioWindow = studioWindowOf(location.search);
 	return {
 		studioWindow: new TauriStudioWindowGateway(studioWindow),
 		essentials: new TauriEssentialsGateway(
 			HeldDoc.read({ store, root: GLOBAL_ROOT, kind: ESSENTIALS, empty: EssentialsDocSchema.parse({}) }),
 		),
-		tabsColumn: new TauriTabsColumnGateway(
-			HeldDoc.reading({ store, root, kind: columnOf(viewFileOf(studioWindow)), empty: KeptColumnDocSchema.parse({}) }),
-			COLUMN_OPENED_ON,
-		),
 		shownView: new MemoryShownViewGateway(STUDIO_OPENED_ON),
 		paneFlash: new DocumentPaneFlashGateway(),
-	};
-}
-
-function columnOf(file: string): DocKind<KeptColumnDoc> {
-	return {
-		file,
-		v: 1,
-		schema: KeptColumnDocSchema,
 	};
 }
 

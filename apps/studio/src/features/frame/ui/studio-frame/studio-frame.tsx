@@ -13,7 +13,6 @@ import { PaneBoard } from "../../../panes/ui/pane-board/pane-board.js";
 import type { PaneBoardProps } from "../../../panes/ui/pane-board/pane-board.js";
 import { useWritesChromeLeft } from "../../lib/use-writes-chrome-left.js";
 import { useWritesFrameWidths } from "../../lib/use-writes-frame-widths.js";
-import { useWritesRightSideWidth } from "../../lib/use-writes-right-side-width.js";
 import { FrameSideColumn } from "./frame-side-column.js";
 
 export interface StudioFrameProps {
@@ -22,21 +21,18 @@ export interface StudioFrameProps {
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
-	readonly right: ReactNode;
 }
 
 const FRAME_CLASS = "wg-studio wg-shell";
 
-export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: StudioFrameProps): ReactElement {
+export function StudioFrame({ frame, chromeLeftPx, left, panes, panel }: StudioFrameProps): ReactElement {
 	const widths = useQuery(FrameWidthsQuery).data;
 	const sides = useQuery(FrameSidesQuery).data;
 	const resizeEdge = useCommand(ResizeFrameEdgeCommand);
 	const appZone = useRef<HTMLDivElement | null>(null);
 	const leftSide = useRef<HTMLDivElement | null>(null);
-	const rightSide = useRef<HTMLDivElement | null>(null);
 	useWritesFrameWidths(frame, widths);
 	useWritesChromeLeft(frame, chromeLeftPx);
-	useWritesRightSideWidth(rightSide);
 	return (
 		<IsTooltipHosted.Provider value={true}>
 			<div ref={frame} className={FRAME_CLASS} data-shell-frame="">
@@ -65,19 +61,8 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel, right }: 
 					/>
 					{panel === null ? null : <div className="wg-shell-panel">{panel}</div>}
 				</div>
-				<FrameSideColumn side="right" look={sides.right} panel={rightSide}>
-					{right}
-				</FrameSideColumn>
-				<FrameSideReveal
-					frame={frame}
-					content={appZone}
-					panels={{
-						left: leftSide,
-						right: rightSide,
-					}}
-				/>
+				<FrameSideReveal frame={frame} content={appZone} panel={leftSide} />
 				<FrameSideToggle side="left" />
-				<FrameSideToggle side="right" />
 				<Slot loading={null}>
 					<CommandMenu />
 					<CommandMenuKeys />

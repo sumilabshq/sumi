@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { StartedApp } from "@widgetarium/core/requests";
-import { THIS_CHAT, WORKSPACE } from "./app-state.js";
-import type { Sidebar, SidebarTab } from "./app-state.js";
+import { PINNED, THIS_CHAT, WORKSPACE } from "./app-state.js";
+import { tabListsOf } from "./sidebar-lists.js";
+import type { ListedEntry, Sidebar, SidebarTab } from "./sidebar-lists.js";
 
 export interface ToolContext {
 	readonly app: StartedApp;
@@ -15,12 +16,11 @@ export interface TabSpot {
 	readonly address: string | null;
 }
 
-type SidebarEntry = Sidebar["sections"][number]["entries"][number];
-
 interface PlacedTab extends TabSpot {
 	readonly id: string;
 }
 
+const SHARED_LISTS: ReadonlySet<string> = new Set([WORKSPACE, PINNED]);
 const BAD_INPUT = "The {tool} input is not what the tool takes: {reason}";
 const NO_TAB = "No tab {id} stands in a tab list.";
 const NO_GROUP = "No group {id} stands in a tab list.";
@@ -57,7 +57,7 @@ export function placeOfList(list: string, chatId: string): string {
 }
 
 export function assertOwnList(list: string, chatId: string, what: string): void {
-	if (list === chatId || list === WORKSPACE) {
+	if (list === chatId || SHARED_LISTS.has(list)) {
 		return;
 	}
 
@@ -75,27 +75,27 @@ export function spotOfTab(sidebar: Sidebar, tabId: string): TabSpot {
 }
 
 export function listOfGroup(sidebar: Sidebar, groupId: string): string {
-	const section = sidebar.sections.find(({ entries }) =>
-		entries.some((entry) => entry.kind === "group" && entry.group.id === groupId),
+	const found = tabListsOf(sidebar).find(({ entries }) =>
+		entries.some((entry) => entry.kind === "group" && entry.id === groupId),
 	);
 
-	if (section === undefined) {
+	if (found === undefined) {
 		throw new Error(NO_GROUP.replace("{id}", groupId));
 	}
 
-	return section.list;
+	return found.list;
 }
 
 function placedTabsOf(sidebar: Sidebar): readonly PlacedTab[] {
-	return sidebar.sections.flatMap(({ list, entries }) => entries.flatMap((entry) => placedInEntry(list, entry)));
+	return tabListsOf(sidebar).flatMap(({ list, entries }) => entries.flatMap((entry) => placedInEntry(list, entry)));
 }
 
-function placedInEntry(list: string, entry: SidebarEntry): readonly PlacedTab[] {
+function placedInEntry(list: string, entry: ListedEntry): readonly PlacedTab[] {
 	if (entry.kind === "tab") {
 		return [spotOf(list, null, entry.tab)];
 	}
 
-	return entry.group.tabs.map((tab) => spotOf(list, entry.group.id, tab));
+	return entry.kind === "group" ? entry.tabs.map((tab) => spotOf(list, entry.id, tab)) : [];
 }
 
 function spotOf(list: string, groupId: string | null, tab: SidebarTab): PlacedTab {

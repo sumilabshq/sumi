@@ -7,7 +7,6 @@ import { ChatRenaming } from "../features/workspaces/lib/chat-renaming.js";
 import { ChatCrumb } from "../features/workspaces/ui/chat-crumb/chat-crumb.js";
 import { ChatMore } from "../features/workspaces/ui/chat-more/chat-more.js";
 import { ChatsColumn } from "../features/workspaces/ui/chats-column/chats-column.js";
-import { ChatsInPanes } from "./chats-in-panes.js";
 import { focusedChatPortOf } from "./focused-chat.js";
 
 export interface ChatsColumnApp {
@@ -22,7 +21,7 @@ export function createChatsColumnApp(workspacesApp: StartedApp): ChatsColumnApp 
 	const renaming = new ChatRenaming();
 	return {
 		focusedChat: focusedChatPortOf(workspacesApp),
-		column: h(AppProvider, { app: workspacesApp }, h(ChatsInPanes, null, h(ChatsColumn, { renaming }))),
+		column: h(AppProvider, { app: workspacesApp }, h(ChatsColumn)),
 		crumbOf: (chatId) => h(AppProvider, { app: workspacesApp }, h(ChatCrumb, { renaming, chatId })),
 		moreOf: (chatId) => h(AppProvider, { app: workspacesApp }, h(ChatMore, { renaming, chatId })),
 		workspaces: workspacesApp,

@@ -18,6 +18,7 @@ import { columnsDuring, dropOf, isSameDrop, isStill, stillDropOf } from "./sideb
 import type { DragSource } from "./sidebar-drop-plan.js";
 import { TILE_HEIGHT_PX, cellRectOf, measuredLayoutOf, rowStepOf } from "./sidebar-layout.js";
 import type { SidebarLayout } from "./sidebar-layout.js";
+import type { TabRef } from "./tab-ref.js";
 
 export type OnTabDrop = (source: DragSource, drop: TabDrop) => Promise<boolean>;
 
@@ -28,7 +29,7 @@ export interface TabDragAsk {
 	readonly pointerId: number;
 	readonly start: readonly [number, number];
 	readonly onDrop: OnTabDrop;
-	readonly onTearOff: (tabId: string) => void;
+	readonly onTearOff: (source: TabRef) => void;
 	readonly tearOffGhost: OverlayPort;
 }
 
@@ -194,7 +195,7 @@ export class TabDragSession {
 		}
 
 		console.info(`[widgetarium] tab drag of ${source.id} lifted → host asked to tear off (released outside)`);
-		this.ask.onTearOff(source.id);
+		this.ask.onTearOff(source);
 	}
 
 	private isOverSidebar(): boolean {

@@ -16,7 +16,6 @@ export class FlagMemoryFrameSidesGateway extends FrameSidesGateway {
 		super();
 		this.held = {
 			left: keptLookOf(memories.left, first.left),
-			right: keptLookOf(memories.right, first.right),
 		};
 	}
 

@@ -1,53 +1,17 @@
 import { APP_LABELS } from "./app-labels.js";
-import { flatTabIdsOf, isPageTab, newTabPlaceOf } from "../tabs/host-tabs.js";
-import type { HostTabsMoment, PageTab, TabGroup } from "../tabs/host-tabs.js";
-import { WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
+import { flatTabIdsOf, isPageTab } from "../tabs/host-tabs.js";
+import type { HostTab, HostTabsMoment, PageTab } from "../tabs/host-tabs.js";
 import { hostOf, tabArtOf } from "./tab-art-of.js";
 import { shownTabIdOf } from "../showing/showing.js";
 import { pagesOfTabs } from "../showing/tab-pages.js";
-import type {
-	AppTab,
-	AppTabState,
-	Essential,
-	EssentialTile,
-	ListTarget,
-	PlacedSidebar,
-	SidebarEntry,
-	TabSection,
-	TabStatus,
-} from "../../schema/tab-rows.schema.js";
+import type { AppTab, AppTabState, Essential, EssentialTile, TabStatus } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
-import type { ListEntry, PageApp } from "../../schema/tabs.schema.js";
+import type { PageApp } from "../../schema/tabs.schema.js";
 
 const NEW_PAGE = "New tab";
-const THIS_WORKSPACE = "This workspace";
 
-export interface BoardChat {
-	readonly id: string;
-	readonly title: string;
-}
-
-export interface SidebarLook {
-	readonly hidesEmptyLists: boolean;
-	readonly hidesOwnWindowTabs: boolean;
-}
-
-export interface SidebarRowsAsk {
-	readonly moment: HostTabsMoment;
-	readonly essentials: readonly Essential[];
-	readonly pages: readonly PageFacts[];
-	readonly shownApp: PageApp | null;
-	readonly boardChats: readonly BoardChat[];
-	readonly shutLists: readonly string[];
-	readonly view: SidebarLook;
-	readonly inPanes: readonly string[];
-	readonly hasShownTabPane: boolean;
-	readonly elsewhere: readonly string[];
-}
-
-interface RowLooks {
+export interface RowLooks {
 	readonly shownIds: ReadonlySet<string>;
-	readonly hidesOwnWindowTabs: boolean;
 	readonly elsewhereIds: ReadonlySet<string>;
 }
 
@@ -59,71 +23,21 @@ export function tabRowsOf(
 ): readonly AppTabState[] {
 	const rows = new TabRows(moment, pages, {
 		shownIds: shownIdsOf(moment, shownApp, []),
-		hidesOwnWindowTabs: false,
 		elsewhereIds: new Set(),
 	});
 	return listIds.flatMap((listId) => flatTabIdsOf(moment, listId).flatMap((id) => rows.rowsOf(id)));
 }
 
-const WORKSPACE_FACE: ListTarget = {
-	list: WORKSPACE_LIST,
-	owner: "workspace",
-	title: THIS_WORKSPACE,
-};
-
-export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
-	const shownIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null, ask.inPanes);
-	const rows = new TabRows(ask.moment, ask.pages, {
-		shownIds,
-		hidesOwnWindowTabs: ask.view.hidesOwnWindowTabs,
-		elsewhereIds: new Set(ask.elsewhere),
-	});
-	const chatFaces = ask.boardChats.map(chatFaceOf);
-	const listTargets = [WORKSPACE_FACE, ...chatFaces];
-	return {
-		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
-		sections: sectionsOf(rows, chatFaces, ask),
-		listTargets,
-		workspaceList: WORKSPACE_LIST,
-		newTabList: newTabPlaceOf(ask.moment, null).chatId,
-		view: ask.view,
-	};
-}
-
-function chatFaceOf(chat: BoardChat): ListTarget {
-	return {
-		list: chat.id,
-		owner: "chat",
-		title: chat.title,
-	};
-}
-
-function sectionsOf(
-	rows: TabRows,
-	chatFaces: readonly ListTarget[],
-	{ shutLists, view }: SidebarRowsAsk,
-): readonly TabSection[] {
-	const chats = chatFaces
-		.map((face) => sectionOf(rows, face, shutLists))
-		.filter((chat) => !view.hidesEmptyLists || chat.count > 0);
-	return [sectionOf(rows, WORKSPACE_FACE, shutLists), ...chats];
-}
-
-function sectionOf(rows: TabRows, face: ListTarget, shutLists: readonly string[]): TabSection {
-	return {
-		...face,
-		isOpen: !shutLists.includes(face.list),
-		count: rows.countOf(face.list),
-		entries: rows.listEntriesOf(face.list),
-	};
-}
-
-function shownIdsOf(moment: HostTabsMoment, shownApp: PageApp | null, inPanes: readonly string[]): ReadonlySet<string> {
+export function shownIdsOf(
+	moment: HostTabsMoment,
+	shownApp: PageApp | null,
+	inPanes: readonly string[],
+): ReadonlySet<string> {
 	const shownId = shownTabIdOf(moment, shownApp);
 	return new Set(shownId === null ? inPanes : [shownId, ...inPanes]);
 }
 
-class TabRows {
+export class TabRows {
 	private readonly pageOf: ReadonlyMap<string, PageFacts>;
 	private readonly tabOf: ReadonlyMap<string, PageTab>;
 
@@ -144,47 +58,22 @@ class TabRows {
 		}
 
 		const paged = faceOf(tab, this.pageOf.get(tab.id) ?? null);
-		const face = { ...paged, isInOwnWindow: paged.isInOwnWindow || this.looks.elsewhereIds.has(tab.id) };
-
-		if (this.looks.hidesOwnWindowTabs && face.isInOwnWindow) {
-			return [];
-		}
-
 		return [
 			{
-				...face,
+				...paged,
+				isInOwnWindow: paged.isInOwnWindow || this.looks.elsewhereIds.has(tab.id),
 				isShown: this.looks.shownIds.has(tab.id),
 			},
 		];
 	}
 
-	listEntriesOf(list: string): readonly SidebarEntry[] {
-		return (this.moment.lists[list] ?? []).flatMap((entry) => this.entriesOf(entry));
-	}
-
-	countOf(list: string): number {
-		return flatTabIdsOf(this.moment, list).flatMap((id) => this.rowsOf(id)).length;
-	}
-
-	entriesOf(entry: ListEntry): SidebarEntry[] {
-		if (entry.kind === "tab") {
-			return this.rowsOf(entry.id).map((tab) => ({
-				kind: "tab",
-				tab,
-			}));
-		}
-
-		const group = findGroup(this.moment.groups, entry.id);
-		return group === undefined ? [] : [this.groupEntryOf(group)];
-	}
-
 	tileOf(essential: Essential): EssentialTile {
 		const live = this.moment.tabs.find((tab) => tab.essentialId === essential.id);
 
-		if (live === undefined) {
-			return restingTileOf(essential);
-		}
+		return live === undefined ? restingTileOf(essential) : this.liveTileOf(essential, live);
+	}
 
+	private liveTileOf(essential: Essential, live: HostTab): EssentialTile {
 		const page = this.pageOf.get(live.id) ?? null;
 		return {
 			id: essential.id,
@@ -195,21 +84,7 @@ class TabRows {
 			isLive: true,
 		};
 	}
-
-	private groupEntryOf(group: TabGroup): SidebarEntry {
-		return {
-			kind: "group",
-			group: {
-				id: group.id,
-				name: group.name,
-				hue: group.hue,
-				isOpen: group.isOpen,
-				tabs: group.tabIds.flatMap((id) => this.rowsOf(id)),
-			},
-		};
-	}
 }
-
 function restingTileOf(essential: Essential): EssentialTile {
 	return {
 		id: essential.id,

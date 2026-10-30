@@ -1,6 +1,5 @@
 import { query, subscriber } from "@widgetarium/core/requests";
 import { AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import type { TabsSidebar } from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
@@ -17,6 +16,7 @@ import {
 	workspacesFoundOf,
 } from "./lib/found.js";
 import { commandsFound } from "./lib/made.js";
+import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
 import { heldTabOfPage } from "../opening/lib/shown-text.js";
 import { askInkOf, makeNewLabelOf, makeNewOf, typedOf } from "./lib/typed.js";
@@ -38,7 +38,7 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 		]);
 		const pools: Pools = {
 			tabs: tabsFoundOf(sidebar),
-			chats: chatsFoundOf(chats, boardChatIdsOf(sidebar)),
+			chats: chatsFoundOf(chats, shownChatIdsOf(sidebar)),
 			apps: appsFoundOf(),
 			sites: sitesFoundOf(browser.recentSites),
 			workspaces: workspacesFoundOf(workspaces),
@@ -77,7 +77,3 @@ export const ResultsOnChatsChangedSubscriber = subscriber(ChatsChangedEvent).han
 export const ResultsOnPagesChangedSubscriber = subscriber(PagesChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(CommandMenuResultsQuery);
 });
-
-function boardChatIdsOf({ listTargets }: TabsSidebar): ReadonlySet<string> {
-	return new Set(listTargets.filter((target) => target.owner === "chat").map((target) => target.list));
-}

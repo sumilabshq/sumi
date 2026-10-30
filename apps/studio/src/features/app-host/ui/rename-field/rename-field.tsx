@@ -2,19 +2,24 @@ import { createElement as h, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { RenameTabCommand } from "@widgetarium/app-host";
-import type { AppTab } from "@widgetarium/app-host";
 import { useSelectsOnMount } from "../../lib/use-selects-on-mount.js";
 
+export interface Named {
+	readonly id: string;
+	readonly label: string | null;
+	readonly title: string;
+}
+
 export interface RenameFieldProps {
-	readonly tab: AppTab;
+	readonly named: Named;
 	readonly className: string;
 	readonly onDone: () => void;
 }
 
 const RENAME_TAB = "Rename {title}";
 
-export function RenameField({ tab, className, onDone }: RenameFieldProps): ReactElement {
-	const [typed, setTyped] = useState(tab.label ?? tab.title);
+export function RenameField({ named, className, onDone }: RenameFieldProps): ReactElement {
+	const [typed, setTyped] = useState(named.label ?? named.title);
 	const field = useRef<HTMLInputElement | null>(null);
 	const renameTab = useCommand(RenameTabCommand);
 	useSelectsOnMount(field);
@@ -28,7 +33,7 @@ export function RenameField({ tab, className, onDone }: RenameFieldProps): React
 
 		if (event.key === "Enter") {
 			void renameTab.run({
-				id: tab.id,
+				id: named.id,
 				label: typed,
 			});
 		}
@@ -40,12 +45,12 @@ export function RenameField({ tab, className, onDone }: RenameFieldProps): React
 			ref={field}
 			type="text"
 			value={typed}
-			aria-label={RENAME_TAB.replace("{title}", tab.title)}
+			aria-label={RENAME_TAB.replace("{title}", named.title)}
 			className={className}
 			onChange={(event) => setTyped(event.target.value)}
 			onKeyDown={onKeyDown}
 			onBlur={onDone}
-			data-host-tab-rename={tab.id}
+			data-host-tab-rename={named.id}
 		/>
 	);
 }

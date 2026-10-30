@@ -9,7 +9,6 @@ import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
-import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
@@ -22,7 +21,6 @@ import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/wor
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 
 export const EXACT_WORKSPACE = "Exact tabs";
-export const EXACT_COLUMN_PX = 240;
 export const TEAR_OFF_ASKED: string[] = [];
 
 const RELEASE_CHAT = "chat-release";
@@ -180,13 +178,6 @@ export function exactStudio({
 			AppHostModule.with({
 				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,
-				tabsColumn: new MemoryTabsColumnGateway({
-					fullPx: EXACT_COLUMN_PX,
-					side: "end",
-					shutLists: [],
-					hidesEmptyLists: false,
-					hidesOwnWindowTabs: false,
-				}),
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
 			}),

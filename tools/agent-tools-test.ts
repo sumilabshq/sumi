@@ -1,5 +1,6 @@
 import { appStateOf } from "../apps/host-tauri/src/agent/app-state.ts";
 import type { AppTabs, ChatList, Sidebar } from "../apps/host-tauri/src/agent/app-state.ts";
+import type { ChatChild } from "../packages/domain/app-host/generated/contract.ts";
 
 let failed = 0;
 
@@ -29,44 +30,32 @@ function tab(id: string, title: string, isShown = false) {
 	};
 }
 
+function chat(id: string, title: string, children: readonly ChatChild[]) {
+	return { kind: "chat" as const, chat: { id, title, label: null, mark: "none" as const, isShown: false, children } };
+}
+
 const sidebar: Sidebar = {
 	essentials: [{ id: "e1", title: "Mail", icon: "site", favicon: null, isShown: false, isLive: true }],
 	sections: [
 		{
-			list: "workspace",
-			owner: "workspace",
-			title: "Workspace",
-			isOpen: true,
-			count: 1,
-			entries: [{ kind: "tab", tab: tab("t1", "Linear") }],
+			list: "pinned",
+			entries: [chat("chat-b", "Billing", [{ kind: "tab", tab: tab("t4", "BILL board") }])],
 		},
 		{
-			list: "chat-a",
-			owner: "chat",
-			title: "Pane bugs",
-			isOpen: true,
-			count: 2,
+			list: "workspace",
 			entries: [
-				{ kind: "tab", tab: tab("t2", "localhost", true) },
-				{
-					kind: "group",
-					group: { id: "g1", name: "Docs", hue: "blue", isOpen: false, tabs: [tab("t3", "Tauri docs")] },
-				},
+				{ kind: "tab", tab: tab("t1", "Linear") },
+				chat("chat-a", "Pane bugs", [
+					{ kind: "tab", tab: tab("t2", "localhost", true) },
+					{
+						kind: "group",
+						group: { id: "g1", name: "Docs", hue: "blue", isOpen: false, tabs: [tab("t3", "Tauri docs")] },
+					},
+				]),
 			],
 		},
-		{
-			list: "chat-b",
-			owner: "chat",
-			title: "Billing",
-			isOpen: true,
-			count: 1,
-			entries: [{ kind: "tab", tab: tab("t4", "BILL board") }],
-		},
 	],
-	listTargets: [],
-	workspaceList: "workspace",
 	newTabList: "chat-a",
-	view: { hidesEmptyLists: false, hidesOwnWindowTabs: false },
 };
 
 const chats: ChatList = {
@@ -89,9 +78,9 @@ check(
 check(
 	"each section says whose it is",
 	whole.sections.map((section) => section.place),
-	["workspace", "this-chat", "chat:chat-b"],
+	["pinned", "workspace", "chat:chat-b", "this-chat"],
 );
-check("groups keep their tabs and colour", whole.sections[1]?.entries[1], {
+check("groups keep their tabs and colour", whole.sections[3]?.entries[1], {
 	kind: "group",
 	id: "g1",
 	name: "Docs",
@@ -108,6 +97,7 @@ check("groups keep their tabs and colour", whole.sections[1]?.entries[1], {
 			status: null,
 		},
 	],
+	chats: [],
 });
 check("the tab the person sees is named", whole.shownTab, "t2");
 check("essentials come with the workspace scope", whole.essentials, [{ id: "e1", title: "Mail", isShown: false }]);
@@ -124,7 +114,7 @@ const other = appStateOf({ sidebar, chats, tabs }, "chat-b", { scope: "workspace
 check(
 	"the same tabs read from another chat swap places",
 	other.sections.map((section) => section.place),
-	["workspace", "chat:chat-a", "this-chat"],
+	["pinned", "workspace", "this-chat", "chat:chat-a"],
 );
 
 if (failed > 0) {

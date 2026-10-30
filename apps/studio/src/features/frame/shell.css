@@ -36,26 +36,9 @@
 		min-width var(--wg-shell-slide);
 }
 
-.wg-shell-right {
-	--wg-kit-group-fill: transparent;
-	position: relative;
-	flex: none;
-	width: var(--wg-shell-right, auto);
-	min-height: 0;
-	margin-left: var(--sumi-gap);
-	transition:
-		width var(--wg-shell-slide),
-		margin-left var(--wg-shell-slide);
-}
-
-.wg-shell-left:not([data-state="docked"]),
-.wg-shell-right:not([data-state="docked"]) {
+.wg-shell-left:not([data-state="docked"]) {
 	width: 0;
 	min-width: 0;
-}
-
-.wg-shell-right:not([data-state="docked"]) {
-	margin-left: 0;
 }
 
 .wg-shell-side {
@@ -80,18 +63,6 @@
 	width: var(--wg-shell-left-w);
 }
 
-.wg-shell-side[data-shell-side="right"] {
-	right: 0;
-}
-
-.wg-shell-right:not([data-sized]) {
-	width: auto;
-}
-
-.wg-shell-right:not([data-sized]) > .wg-shell-side {
-	position: relative;
-}
-
 .wg-shell-left[data-state="docked"] > .wg-shell-side {
 	min-width: 100%;
 }
@@ -114,10 +85,6 @@
 	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
 }
 
-.wg-shell-right > .wg-shell-side {
-	padding-top: var(--sumi-header-h);
-}
-
 [data-state="hidden"] > .wg-shell-side {
 	visibility: hidden;
 	transition:
@@ -130,17 +97,12 @@
 	transform: translateX(calc(-100% - 2 * var(--sumi-gap)));
 }
 
-.wg-shell-right[data-state="hidden"] > .wg-shell-side {
-	transform: translateX(calc(100% + 2 * var(--sumi-gap)));
-}
-
 .wg-shell-left:not([data-state="docked"]) + .wg-shell-edge {
 	width: 0;
 	pointer-events: none;
 }
 
-.wg-shell:has(> .wg-shell-edge:active) > :is(.wg-shell-left, .wg-shell-edge),
-.wg-shell-right:has([data-host-column-edge]:active) {
+.wg-shell:has(> .wg-shell-edge:active) > :is(.wg-shell-left, .wg-shell-edge) {
 	transition: none;
 }
 
@@ -156,10 +118,6 @@
 	left: var(--wg-shell-toggle-left);
 }
 
-.wg-shell .wg-shell-toggle[data-side="right"] {
-	right: calc(var(--sumi-gap) + var(--sumi-sp-4));
-}
-
 .wg-shell-side-footprint {
 	position: absolute;
 	top: var(--sumi-gap);
@@ -170,11 +128,6 @@
 .wg-shell-side-footprint[data-side="left"] {
 	left: var(--sumi-gap);
 	width: calc(var(--wg-shell-left-w) + 2 * var(--wg-shell-float-pad));
-}
-
-.wg-shell-side-footprint[data-side="right"] {
-	right: var(--sumi-gap);
-	width: calc(var(--wg-shell-right, 0px) + 2 * var(--wg-shell-float-pad));
 }
 
 .wg-shell-app-zone {
@@ -340,10 +293,6 @@ body:has([data-browser-pages-live]),
 
 .wg-shell-left:not([data-state="docked"]) ~ .wg-shell-app-zone .wg-plate-head[data-at-top-left] .wg-plate-head-row {
 	padding-left: calc(var(--wg-shell-toggle-left) - var(--sumi-gap) + var(--sumi-h-sm) + var(--sumi-sp-3));
-}
-
-.wg-shell:has(> .wg-shell-right:not([data-state="docked"])) .wg-plate-head[data-at-top-right] .wg-plate-head-row {
-	padding-right: calc(var(--sumi-sp-4) + var(--sumi-h-sm) + var(--sumi-sp-1));
 }
 
 .wg-plate-head-row.wg-root {

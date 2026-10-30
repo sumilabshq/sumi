@@ -6,14 +6,12 @@ import { FrameSidesGateway } from "./frame-sides.gateway.js";
 
 export const KeptSidesSchema = z.object({
 	leftHidden: z.boolean().nullable().catch(null),
-	rightHidden: z.boolean().nullable().catch(null),
 });
 
 export type KeptSides = z.infer<typeof KeptSidesSchema>;
 
 const HIDDEN_KEY: Readonly<Record<FrameSide, keyof KeptSides>> = {
 	left: "leftHidden",
-	right: "rightHidden",
 };
 
 export class TauriFrameSidesGateway extends FrameSidesGateway {
@@ -30,14 +28,12 @@ export class TauriFrameSidesGateway extends FrameSidesGateway {
 	sides(): FrameSides {
 		return {
 			left: this.lookOf("left"),
-			right: this.lookOf("right"),
 		};
 	}
 
 	saveSides(sides: FrameSides, reason: string): void {
 		const hidden = {
 			leftHidden: sides.left !== "docked",
-			rightHidden: sides.right !== "docked",
 		};
 		this.peeking = new Set(FrameSideSchema.options.filter((side) => sides[side] === "peeking"));
 

@@ -14,7 +14,6 @@ export interface FrameSideToggleProps {
 
 const ICON: Readonly<Record<FrameSide, string>> = {
 	left: "panel-left",
-	right: "panel-right",
 };
 
 interface SideLabels {
@@ -26,10 +25,6 @@ const LABEL: Readonly<Record<FrameSide, SideLabels>> = {
 	left: {
 		hide: "Hide sidebar",
 		show: "Show sidebar",
-	},
-	right: {
-		hide: "Hide tabs",
-		show: "Show tabs",
 	},
 };
 

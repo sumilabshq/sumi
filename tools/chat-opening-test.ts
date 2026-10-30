@@ -2,7 +2,7 @@ import {
 	NameChatPaneCommand,
 	OpenChatCommand,
 	OpenNewChatCommand,
-	PinChatCommand,
+	PinTabCommand,
 	RenameTabCommand,
 	TearOffChatCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
@@ -67,7 +67,7 @@ async function chatTabChecks(): Promise<void> {
 	const { studioApp, places, appHost } = studioFakesOf();
 	const opened = await studioApp.send(OpenNewChatCommand, { title: "Plan" });
 	const newId = opened.ok ? opened.output.id : "";
-	await studioApp.send(PinChatCommand, { id: newId, isPinned: true });
+	await studioApp.send(PinTabCommand, { id: newId, isPinned: true });
 	await studioApp.send(RenameTabCommand, { id: HOST_CHAT, label: "Renamed" });
 	const list = await studioApp.send(ChatListQuery);
 	const placed = await places.placedTabs();

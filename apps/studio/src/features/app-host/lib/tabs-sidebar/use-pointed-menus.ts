@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SectionListSchema } from "@widgetarium/app-host";
 import type { MouseEvent } from "react";
 import { pointedOf } from "./pointed-of.js";
 import type { PointedItem } from "./pointed-of.js";
@@ -12,10 +13,10 @@ export interface PointedMenus {
 	readonly onContextMenu: (event: MouseEvent<HTMLElement>) => void;
 }
 
-export function usePointedMenus(workspaceList: string): PointedMenus {
+export function usePointedMenus(): PointedMenus {
 	const [pointed, setPointed] = useState<PointedOutsideGroup>(() => ({
 		kind: "space",
-		list: workspaceList,
+		list: SectionListSchema.enum.workspace,
 	}));
 	const [groupMenuId, openGroupMenu] = useState<string | null>(null);
 	return {

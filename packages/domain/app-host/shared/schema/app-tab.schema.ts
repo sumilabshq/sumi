@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { GroupHueSchema, WorkspaceListSchema } from "./tab-group.schema.js";
-import { SidebarViewSchema } from "./tabs-column.schema.js";
+import { ChatMarkSchema } from "./chat-list.schema.js";
+import { GroupHueSchema, SectionListSchema } from "./tab-group.schema.js";
 
 export const AppKindSchema = z.enum(["canvas", "browser", "terminal"]);
 
@@ -78,46 +78,78 @@ export const GroupStateSchema = z.object({
 
 export type GroupState = z.infer<typeof GroupStateSchema>;
 
+export const SidebarTabSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
+});
+
+export type SidebarTab = z.infer<typeof SidebarTabSchema>;
+
+export const ChatGroupSchema = z.object({
+	kind: z.literal("group"),
+	group: GroupStateSchema,
+});
+
+export const ChatChildSchema = z.discriminatedUnion("kind", [SidebarTabSchema, ChatGroupSchema]);
+
+export type ChatChild = z.infer<typeof ChatChildSchema>;
+
+export const ChatStateSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	label: z.string().nullable(),
+	mark: ChatMarkSchema,
+	isShown: z.boolean(),
+	children: z.array(ChatChildSchema).readonly(),
+});
+
+export type ChatState = z.infer<typeof ChatStateSchema>;
+
+export const SidebarChatSchema = z.object({
+	kind: z.literal("chat"),
+	chat: ChatStateSchema,
+});
+
+export type SidebarChat = z.infer<typeof SidebarChatSchema>;
+
+export const GroupItemSchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema]);
+
+export type GroupItem = z.infer<typeof GroupItemSchema>;
+
+export const SidebarGroupStateSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	hue: GroupHueSchema.nullable(),
+	isOpen: z.boolean(),
+	items: z.array(GroupItemSchema).readonly(),
+});
+
+export type SidebarGroupState = z.infer<typeof SidebarGroupStateSchema>;
+
+export const SidebarGroupSchema = z.object({
+	kind: z.literal("group"),
+	group: SidebarGroupStateSchema,
+});
+
 export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	z.object({
-		kind: z.literal("tab"),
-		tab: AppTabStateSchema,
-	}),
-	z.object({
-		kind: z.literal("group"),
-		group: GroupStateSchema,
-	}),
+	SidebarTabSchema,
+	SidebarChatSchema,
+	SidebarGroupSchema,
 ]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
-export const ListOwnerSchema = z.enum(["workspace", "chat"]);
-
-export type ListOwner = z.infer<typeof ListOwnerSchema>;
-
-export const ListTargetSchema = z.object({
-	list: z.string(),
-	owner: ListOwnerSchema,
-	title: z.string(),
-});
-
-export type ListTarget = z.infer<typeof ListTargetSchema>;
-
-export const TabSectionSchema = ListTargetSchema.extend({
-	isOpen: z.boolean(),
-	count: z.number().int().nonnegative(),
+export const SidebarSectionSchema = z.object({
+	list: SectionListSchema,
 	entries: z.array(SidebarEntrySchema).readonly(),
 });
 
-export type TabSection = z.infer<typeof TabSectionSchema>;
+export type SidebarSection = z.infer<typeof SidebarSectionSchema>;
 
 export const TabsSidebarSchema = z.object({
 	essentials: z.array(EssentialTileSchema).readonly(),
-	sections: z.array(TabSectionSchema).readonly(),
-	listTargets: z.array(ListTargetSchema).readonly(),
-	workspaceList: WorkspaceListSchema,
+	sections: z.array(SidebarSectionSchema).readonly(),
 	newTabList: z.string(),
-	view: SidebarViewSchema,
 });
 
 export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;

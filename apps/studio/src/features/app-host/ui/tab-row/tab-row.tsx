@@ -1,17 +1,20 @@
 import { createElement as h, memo } from "react";
 import type { KeyboardEvent, MouseEvent, ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
-import { ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../lib/tabs-look/tabs-look.js";
-import { CloseTabCommand, ShowTabCommand } from "@widgetarium/app-host";
-import type { AppTabState } from "@widgetarium/app-host";
-import { TabArt } from "../tab-face/tab-art.js";
+import type { GroupItem } from "@widgetarium/app-host";
+import { CHAT_TAB_ICON_HOST } from "../../../mascot/ui/chat-tab-icon/chat-tab-icon.js";
+import { CHILD_ROW, ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../lib/tabs-look/tabs-look.js";
+import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
+import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";
 import { RenameField } from "../rename-field/rename-field.js";
-import { TabRowClose } from "./tab-row-close.js";
-import { TabRowOwnWindow } from "./tab-row-own-window.js";
+import { RowIcon } from "./row-icon.js";
+import { RowTail } from "./row-tail.js";
+
+export type RowPlace = "top" | "child";
 
 export interface TabRowProps {
-	readonly tab: AppTabState;
+	readonly item: GroupItem;
 	readonly groupId: string | null;
+	readonly place: RowPlace;
 	readonly isRenaming: boolean;
 	readonly onRenamed: () => void;
 }
@@ -19,12 +22,15 @@ export interface TabRowProps {
 const MIDDLE_BUTTON = 1;
 const RENAME_FIELD =
 	"cv:h-6 cv:min-w-0 cv:flex-1 cv:rounded-[6px] cv:border-0 cv:bg-(--sumi-plate) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:[box-shadow:inset_0_0_0_1.5px_var(--sumi-accent)] cv:outline-none";
+const PLACE_LOOK: Readonly<Record<RowPlace, string>> = {
+	top: "",
+	child: CHILD_ROW,
+};
 
-export const TabRow = memo(function TabRow({ tab, groupId, isRenaming, onRenamed }: TabRowProps): ReactElement {
-	const showTab = useCommand(ShowTabCommand);
-	const closeTab = useCommand(CloseTabCommand);
-	const show = (): void => void showTab.run({ id: tab.id });
-	const close = (): void => void closeTab.run({ id: tab.id });
+export const TabRow = memo(function TabRow({ item, groupId, place, isRenaming, onRenamed }: TabRowProps): ReactElement {
+	const face = rowFaceOf(item);
+	const { show, close } = useRowPick(item);
+	const isChat = item.kind === "chat";
 	const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
 		if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
 			event.preventDefault();
@@ -35,30 +41,31 @@ export const TabRow = memo(function TabRow({ tab, groupId, isRenaming, onRenamed
 		<div
 			role="button"
 			tabIndex={0}
-			aria-current={tab.isShown || undefined}
-			className={`${SIDEBAR_ROW} ${SIDEBAR_ROW_SHOWN}`}
+			aria-current={face.isShown || undefined}
+			className={`${SIDEBAR_ROW} ${SIDEBAR_ROW_SHOWN} ${PLACE_LOOK[place]} ${isChat ? CHAT_TAB_ICON_HOST : ""}`}
 			onClick={show}
 			onKeyDown={onKeyDown}
 			onAuxClick={(event: MouseEvent) => {
-				if (event.button === MIDDLE_BUTTON) close();
+				if (event.button === MIDDLE_BUTTON) close?.();
 			}}
-			data-shown={tab.isShown || undefined}
+			data-shown={face.isShown || undefined}
 			data-tabs-item="tab"
-			data-tabs-id={tab.id}
+			data-tabs-id={face.id}
 			data-tabs-group={groupId ?? undefined}
-			data-host-list-tab={tab.id}
-			data-host-tab-app={tab.app}
+			data-tabs-chat={isChat ? face.id : undefined}
+			data-tabs-place={place}
+			data-host-list-tab={face.id}
+			data-host-tab-app={face.app}
 		>
-			<TabArt icon={tab.icon} favicon={tab.favicon} title={tab.title} address={tab.address} size="row" />
+			<RowIcon item={item} />
 			{isRenaming ? (
-				<RenameField tab={tab} className={RENAME_FIELD} onDone={onRenamed} />
+				<RenameField named={face} className={RENAME_FIELD} onDone={onRenamed} />
 			) : (
 				<span className={ROW_WORDS} data-tabs-words="">
-					{tab.title}
+					{face.title}
 				</span>
 			)}
-			{tab.isInOwnWindow ? <TabRowOwnWindow /> : null}
-			<TabRowClose title={tab.title} tabId={tab.id} onClose={close} />
+			<RowTail face={face} onClose={close} />
 		</div>
 	);
 });

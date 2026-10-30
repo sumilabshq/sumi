@@ -14,7 +14,7 @@ import {
 	MakeEssentialCommand,
 	OpenTabInOwnWindowCommand,
 	PlaceTabCommand as PlacesPlaceTabCommand,
-	PlacedSidebarQuery,
+	SidebarQuery,
 	PlacedTabsQuery,
 	RememberPagesCommand,
 	RestoreTabsCommand as PlacesRestoreTabsCommand,
@@ -22,18 +22,15 @@ import {
 	ShowTabCommand as PlacesShowTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
-import { ChatRecordsQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
+import { ChatMarksChangedEvent, ChatRecordsQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
 import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
-import { TabsColumnChangedEvent } from "../../gateways/tabs-column/tabs-column.events.js";
-import { TabsColumnGateway } from "../../gateways/tabs-column/tabs-column.gateway.js";
 import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
-import { sidebarViewOf } from "../../shared/lib/tabs-column/column-look.js";
 import {
 	keepChatTabs,
 	saveEssentials,
@@ -44,6 +41,7 @@ import {
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
+import { sidebarWithChats } from "./lib/sidebar-chats.js";
 
 const ALL_PAGES = { heldTabId: null };
 
@@ -70,24 +68,15 @@ export const AppTabsQuery = query("app-tabs")
 
 export const TabsSidebarQuery = query("tabs-sidebar")
 	.output(TabsSidebarSchema)
-	.inject({
-		...TAB_PARTS,
-		tabsColumn: TabsColumnGateway,
-	})
-	.handle(async (_input, { send, tabsColumn, ...parts }) => {
-		const [at, chatList] = await Promise.all([
+	.inject(TAB_PARTS)
+	.handle(async (_input, { send, ...parts }) => {
+		const [at, records] = await Promise.all([
 			tabsAskOf({ parts, send }),
 			send(ChatRecordsQuery),
 			parts.essentials.essentialsLoaded(),
 		]);
-		const onBoard = new Set(at.screen.chatGroups.map((group) => group.chatId));
-		return send(PlacedSidebarQuery, {
-			at,
-			essentials: essentialsOf(parts.essentials.essentials()).essentials,
-			boardChats: chatList.chats.filter((row) => onBoard.has(row.id)).map(({ id, title }) => ({ id, title })),
-			shutLists: tabsColumn.column().shutLists,
-			look: sidebarViewOf(tabsColumn.column()),
-		});
+		const essentials = essentialsOf(parts.essentials.essentials()).essentials;
+		return sidebarWithChats(await send(SidebarQuery, { at, essentials }), records);
 	});
 
 export const HeldTabsQuery = query("held-tabs")
@@ -159,18 +148,6 @@ export const PlaceTabCommand = command("place-tab")
 		await makeEssential(reach, parts.essentials, { id, at: to.at });
 	});
 
-export const MoveTabToListCommand = command("move-tab-to-list")
-	.input(z.object({ id: z.string(), list: z.string() }))
-	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ id, list }, { send, emit, ...parts }) => {
-		const place = { list, groupId: null, before: null };
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesPlaceTabCommand, { at, id, place }),
-		);
-	});
-
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
 	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
@@ -231,7 +208,7 @@ export const RereadSidebarForEssentialsSubscriber = subscriber(EssentialsChanged
 	},
 );
 
-export const RereadSidebarForColumnSubscriber = subscriber(TabsColumnChangedEvent).handle((_input, { invalidate }) => {
+export const RereadSidebarForMarksSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(TabsSidebarQuery);
 });
 

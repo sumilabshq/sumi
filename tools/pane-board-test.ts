@@ -29,7 +29,7 @@ import { ResizeFrameEdgeCommand } from "../packages/state/layout/features/frame-
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
 import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
-import { sidebarOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
+import { sidebarOf } from "../packages/state/places/shared/lib/rows/sidebar-rows.ts";
 
 let failed = 0;
 const quiet = console.info;
@@ -100,15 +100,13 @@ function checksTree(): void {
 		essentials: [],
 		pages: [],
 		shownApp: null,
-		boardChats: [],
-		shutLists: [],
-		view: { hidesEmptyLists: false, hidesOwnWindowTabs: false },
+		boardChatIds: [],
 		inPanes: ["tab-1"],
 		hasShownTabPane: true,
 		elsewhere: [],
 	});
 	const rows =
-		sidebar.sections[0]?.entries.flatMap((entry) =>
+		sidebar.sections[1]?.entries.flatMap((entry) =>
 			entry.kind === "tab" ? [[entry.tab.id, entry.tab.isShown]] : [],
 		) ?? [];
 	check(
@@ -380,7 +378,6 @@ function checksGatewaysKeep(): void {
 	check(
 		"each gateway keeps its own transitions: the hidden side, the width, the pane tree with its reason",
 		memories.sides.left.read() === true &&
-			memories.sides.right.read() === null &&
 			memories.widths.chat.read() === 640 &&
 			JSON.stringify(reasons) === '["split pane-root edge 0 0.500 → 0.250 (drag)"]',
 		{ left: memories.sides.left.read(), chat: memories.widths.chat.read(), reasons },

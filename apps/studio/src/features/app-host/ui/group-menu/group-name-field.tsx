@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { RenameGroupCommand } from "@widgetarium/app-host";
-import type { GroupState } from "@widgetarium/app-host";
+import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 
 const GROUP_NAME = "Group name";
 const FIELD =
@@ -12,7 +12,7 @@ export function GroupNameField({
 	group,
 	onDone,
 }: {
-	readonly group: GroupState;
+	readonly group: GroupFace;
 	readonly onDone: () => void;
 }): ReactElement {
 	const [typed, setTyped] = useState(group.name);

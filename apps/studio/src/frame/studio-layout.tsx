@@ -13,14 +13,13 @@ export interface StudioLayoutProps {
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
-	readonly right: ReactNode;
 }
 
-export function StudioLayout({ frame, layoutApp, studio, left, panes, panel, right }: StudioLayoutProps): ReactElement {
+export function StudioLayout({ frame, layoutApp, studio, left, panes, panel }: StudioLayoutProps): ReactElement {
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
 		<AppProvider app={layoutApp}>
-			<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} right={right} />
+			<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} />
 		</AppProvider>
 	);
 }

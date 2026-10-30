@@ -7,7 +7,7 @@ import {
 	OpenChatCommand,
 	OpenNewChatCommand,
 	OpenTabCommand,
-	PinChatCommand,
+	PinTabCommand,
 	RenameTabCommand,
 	ReopenClosedTabByIdCommand,
 	ReopenClosedTabCommand,
@@ -111,7 +111,7 @@ async function performIntent(intent: Intent, send: Send, { newTabList, pageId }:
 		case "close-tab":
 			return send(CloseTabCommand, { id: intent.id });
 		case "pin-chat":
-			return send(PinChatCommand, { id: intent.id, isPinned: intent.isPinned });
+			return send(PinTabCommand, { id: intent.id, isPinned: intent.isPinned });
 		default:
 			return unknownIntent(intent);
 	}

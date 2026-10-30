@@ -44,7 +44,13 @@ async function sectionOf(place: string): Promise<Section | undefined> {
 }
 
 function tabsIn(section: Section | undefined) {
-	return (section?.entries ?? []).flatMap((entry) => (entry.kind === "tab" ? [entry] : entry.tabs));
+	return (section?.entries ?? []).flatMap((entry) => {
+		if (entry.kind === "tab") {
+			return [entry];
+		}
+
+		return entry.kind === "group" ? entry.tabs : [];
+	});
 }
 
 function idsIn(section: Section | undefined): readonly string[] {

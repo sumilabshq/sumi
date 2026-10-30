@@ -37,7 +37,7 @@ export function TabMenu({ tabs, menu, onRenameInPlace }: TabMenuProps): ReactEle
 			)}
 			<PointerPopover spot={renamedTab === null ? null : (renaming?.spot ?? null)} onDismiss={() => setRenaming(null)}>
 				{renamedTab === null ? null : (
-					<RenameField tab={renamedTab} className={RENAME_FIELD} onDone={() => setRenaming(null)} />
+					<RenameField named={renamedTab} className={RENAME_FIELD} onDone={() => setRenaming(null)} />
 				)}
 			</PointerPopover>
 			<LinkCopiedNote spot={linkCopied.spot} />

@@ -3,13 +3,13 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { ContextMenuItem, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, Icon } from "@widgetarium/kit";
 import { PlaceTabCommand } from "@widgetarium/app-host";
-import type { GroupState } from "@widgetarium/app-host";
+import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 import { POINTER_ITEM, POINTER_SUBMENU } from "../../lib/menu-look/menu-look.js";
 
 export interface MoveToGroupMenuProps {
 	readonly tabId: string;
 	readonly list: string;
-	readonly groups: readonly GroupState[];
+	readonly groups: readonly GroupFace[];
 }
 
 export function MoveToGroupMenu({ tabId, list, groups }: MoveToGroupMenuProps): ReactElement {

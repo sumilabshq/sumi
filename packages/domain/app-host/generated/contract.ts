@@ -80,53 +80,78 @@ export const GroupStateSchema = z.object({
 
 export type GroupState = z.infer<typeof GroupStateSchema>;
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [
-	z.object({
-		kind: z.literal("tab"),
-		tab: AppTabStateSchema,
-	}),
-	z.object({
-		kind: z.literal("group"),
-		group: GroupStateSchema,
-	}),
-]);
+export const SidebarTabSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
+});
+
+export type SidebarTab = z.infer<typeof SidebarTabSchema>;
+
+export const ChatGroupSchema = z.object({
+	kind: z.literal("group"),
+	group: GroupStateSchema,
+});
+
+export const ChatChildSchema = z.discriminatedUnion("kind", [SidebarTabSchema, ChatGroupSchema]);
+
+export type ChatChild = z.infer<typeof ChatChildSchema>;
+
+export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+
+export const ChatStateSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	label: z.string().nullable(),
+	mark: ChatMarkSchema,
+	isShown: z.boolean(),
+	children: z.array(ChatChildSchema).readonly(),
+});
+
+export type ChatState = z.infer<typeof ChatStateSchema>;
+
+export const SidebarChatSchema = z.object({
+	kind: z.literal("chat"),
+	chat: ChatStateSchema,
+});
+
+export type SidebarChat = z.infer<typeof SidebarChatSchema>;
+
+export const GroupItemSchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema]);
+
+export type GroupItem = z.infer<typeof GroupItemSchema>;
+
+export const SidebarGroupStateSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	hue: GroupHueSchema.nullable(),
+	isOpen: z.boolean(),
+	items: z.array(GroupItemSchema).readonly(),
+});
+
+export type SidebarGroupState = z.infer<typeof SidebarGroupStateSchema>;
+
+export const SidebarGroupSchema = z.object({
+	kind: z.literal("group"),
+	group: SidebarGroupStateSchema,
+});
+
+export const SidebarEntrySchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema, SidebarGroupSchema]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
-export const ListOwnerSchema = z.enum(["workspace", "chat"]);
+export const SectionListSchema = z.enum(["pinned", "workspace"]);
 
-export type ListOwner = z.infer<typeof ListOwnerSchema>;
-
-export const ListTargetSchema = z.object({
-	list: z.string(),
-	owner: ListOwnerSchema,
-	title: z.string(),
-});
-
-export type ListTarget = z.infer<typeof ListTargetSchema>;
-
-export const TabSectionSchema = ListTargetSchema.extend({
-	isOpen: z.boolean(),
-	count: z.number().int().nonnegative(),
+export const SidebarSectionSchema = z.object({
+	list: SectionListSchema,
 	entries: z.array(SidebarEntrySchema).readonly(),
 });
 
-export type TabSection = z.infer<typeof TabSectionSchema>;
-
-export const WorkspaceListSchema = z.literal("workspace");
-
-export const SidebarViewSchema = z.object({
-	hidesEmptyLists: z.boolean(),
-	hidesOwnWindowTabs: z.boolean(),
-});
+export type SidebarSection = z.infer<typeof SidebarSectionSchema>;
 
 export const TabsSidebarSchema = z.object({
 	essentials: z.array(EssentialTileSchema).readonly(),
-	sections: z.array(TabSectionSchema).readonly(),
-	listTargets: z.array(ListTargetSchema).readonly(),
-	workspaceList: WorkspaceListSchema,
+	sections: z.array(SidebarSectionSchema).readonly(),
 	newTabList: z.string(),
-	view: SidebarViewSchema,
 });
 
 export type TabsSidebar = z.infer<typeof TabsSidebarSchema>;
@@ -147,7 +172,7 @@ export const HeldTabsSchema = z.object({
 
 export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+export type ChatMark = z.infer<typeof ChatMarkSchema>;
 
 export const ChatRowSchema = z.object({
 	id: z.string(),
@@ -165,23 +190,10 @@ export const ChatListSchema = z.object({
 
 export type ChatListData = z.infer<typeof ChatListSchema>;
 
-export const ChatPinSchema = z.object({
+export const TabPinSchema = z.object({
 	id: z.string().min(1),
 	isPinned: z.boolean(),
 });
-
-export const ChatPlaceSchema = z.object({
-	id: z.string().min(1),
-	to: z.discriminatedUnion("list", [
-		z.object({
-			list: z.literal("pinned"),
-			before: z.string().min(1).nullable(),
-		}),
-		z.object({ list: z.literal("recents") }),
-	]),
-});
-
-export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
 
 export const ChatToShowSchema = z.object({
 	chatId: z.string().min(1),
@@ -244,26 +256,10 @@ export const GroupFaceSchema = z.object({
 
 export type GroupFace = z.infer<typeof GroupFaceSchema>;
 
-export const ColumnSideSchema = z.enum(["start", "end"]);
-
-export type ColumnSide = z.infer<typeof ColumnSideSchema>;
-
-export type SidebarView = z.infer<typeof SidebarViewSchema>;
-
-export const TabsColumnSchema = z.object({
-	widthPx: z.number(),
-	side: ColumnSideSchema,
-});
-
-export type TabsColumn = z.infer<typeof TabsColumnSchema>;
-
 export const ChatListQuery = query("app-host/chat-list")
 	.output(ChatListSchema);
-export const PinChatCommand = command("app-host/pin-chat")
-	.input(ChatPinSchema)
-	.idempotencyKey(Repeatable);
-export const PlaceChatCommand = command("app-host/place-chat")
-	.input(ChatPlaceSchema)
+export const PinTabCommand = command("app-host/pin-tab")
+	.input(TabPinSchema)
 	.idempotencyKey(Repeatable);
 export const OpenChatCommand = command("app-host/open-chat")
 	.input(ChatToShowSchema)
@@ -294,9 +290,6 @@ export const HeldTabsQuery = query("app-host/held-tabs")
 	.output(HeldTabsSchema);
 export const CanOpenOwnWindowQuery = query("app-host/can-open-own-window")
 	.output(z.boolean());
-export const TabsColumnQuery = query("app-host/tabs-column")
-	.output(TabsColumnSchema)
-	.settlesNow();
 export const ShownViewQuery = query("app-host/shown-view")
 	.output(StudioViewSchema)
 	.settlesNow();
@@ -353,9 +346,6 @@ export const CloseShownTabCommand = command("app-host/close-shown-tab")
 export const PlaceTabCommand = command("app-host/place-tab")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable);
-export const MoveTabToListCommand = command("app-host/move-tab-to-list")
-	.input(z.object({ id: z.string(), list: z.string() }))
-	.idempotencyKey(Repeatable);
 export const TearOffTabCommand = command("app-host/tear-off-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
@@ -390,19 +380,8 @@ export const FoldGroupCommand = command("app-host/fold-group")
 export const UngroupCommand = command("app-host/ungroup")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const ResizeColumnCommand = command("app-host/resize-column")
-	.input(z.object({ px: z.number() }))
-	.idempotencyKey(Repeatable);
-export const ResetColumnCommand = command("app-host/reset-column")
-	.idempotencyKey(Repeatable);
-export const FoldTabListCommand = command("app-host/fold-tab-list")
-	.input(z.object({ list: z.string() }))
-	.idempotencyKey(Repeatable);
-export const SetSidebarViewCommand = command("app-host/set-sidebar-view")
-	.input(SidebarViewSchema.partial())
-	.idempotencyKey(Repeatable);
 export const ShowViewCommand = command("app-host/show-view")
 	.input(z.object({ view: StudioViewSchema }))
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinChatCommand, PlaceChatCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, TabsColumnQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, MoveTabToListCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ResizeColumnCommand, ResetColumnCommand, FoldTabListCommand, SetSidebarViewCommand, ShowViewCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ShowViewCommand]);

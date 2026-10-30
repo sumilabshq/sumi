@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
+export type ChatMark = z.infer<typeof ChatMarkSchema>;
+
 export const ChatRowSchema = z.object({
 	id: z.string(),
 	title: z.string(),
@@ -18,20 +20,7 @@ export const ChatListSchema = z.object({
 
 export type ChatListData = z.infer<typeof ChatListSchema>;
 
-export const ChatPinSchema = z.object({
+export const TabPinSchema = z.object({
 	id: z.string().min(1),
 	isPinned: z.boolean(),
 });
-
-export const ChatPlaceSchema = z.object({
-	id: z.string().min(1),
-	to: z.discriminatedUnion("list", [
-		z.object({
-			list: z.literal("pinned"),
-			before: z.string().min(1).nullable(),
-		}),
-		z.object({ list: z.literal("recents") }),
-	]),
-});
-
-export type ChatPlace = z.infer<typeof ChatPlaceSchema>;

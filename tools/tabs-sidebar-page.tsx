@@ -1,6 +1,6 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { TabsSidebarColumn } from "../apps/studio/src/tabs/tabs-sidebar-column.tsx";
+import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-column/chats-column.tsx";
 import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
@@ -62,6 +62,9 @@ try {
 					counted.commits += 1;
 				}}
 			>
+				<div style={{ width: 268, flex: "none", display: "flex", minHeight: 0 }} data-test-left="">
+					<ChatsColumn />
+				</div>
 				<main
 					style={{
 						flex: 1,
@@ -72,7 +75,6 @@ try {
 					}}
 					data-exact-plate=""
 				/>
-				<TabsSidebarColumn />
 			</Profiler>
 			<CommandMenu />
 		</AppProvider>,

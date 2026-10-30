@@ -1,16 +1,7 @@
-export interface TabRef {
-	readonly id: string;
-	readonly groupId: string | null;
-	readonly list: string;
-}
+import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export type PointedItem =
-	| {
-			readonly kind: "tab";
-			readonly id: string;
-			readonly groupId: string | null;
-			readonly list: string;
-	  }
+	| (TabRef & { readonly kind: "tab" })
 	| {
 			readonly kind: "essential";
 			readonly id: string;
@@ -60,6 +51,7 @@ export function tabRefOf(item: HTMLElement, id: string): TabRef {
 		id,
 		groupId: item.dataset["tabsGroup"] ?? null,
 		list: listIdOf(item),
+		isChat: item.dataset["tabsChat"] !== undefined,
 	};
 }
 

@@ -8,15 +8,12 @@ import { ROW_WORDS, SIDEBAR_ROW } from "../../lib/tabs-look/tabs-look.js";
 
 export interface NewTabRowProps {
 	readonly list: string;
-	readonly title: string;
-	readonly isShortcutTarget: boolean;
 }
 
 const NEW_TAB = "New tab";
-const NEW_TAB_IN = "Open a new tab in {title}";
 const NEW_TAB_KEY = "t";
 
-export function NewTabRow({ list, title, isShortcutTarget }: NewTabRowProps): ReactElement {
+export function NewTabRow({ list }: NewTabRowProps): ReactElement {
 	const openNewTabMenu = useTogglesNewTabMenu(list);
 	return (
 		<button
@@ -25,8 +22,8 @@ export function NewTabRow({ list, title, isShortcutTarget }: NewTabRowProps): Re
 			onClick={openNewTabMenu}
 			data-host-column-add={list}
 			{...tooltipMarks({
-				said: NEW_TAB_IN.replace("{title}", title),
-				keys: isShortcutTarget ? keyHintOf(NEW_TAB_KEY, false) : null,
+				said: NEW_TAB,
+				keys: keyHintOf(NEW_TAB_KEY, false),
 				side: "bottom",
 				align: "start",
 			})}

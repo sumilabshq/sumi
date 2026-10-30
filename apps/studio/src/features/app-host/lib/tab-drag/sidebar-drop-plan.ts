@@ -12,14 +12,10 @@ import {
 	middleOf,
 } from "./sidebar-layout.js";
 import type { Measured, MeasuredGroup, MeasuredList, MeasuredUnit, SidebarLayout } from "./sidebar-layout.js";
+import type { TabRef } from "./tab-ref.js";
 
 export type DragSource =
-	| {
-			readonly kind: "tab";
-			readonly id: string;
-			readonly groupId: string | null;
-			readonly list: string;
-	  }
+	| (TabRef & { readonly kind: "tab" })
 	| {
 			readonly kind: "essential";
 			readonly id: string;
@@ -39,8 +35,8 @@ export function dropOf(layout: SidebarLayout, source: DragSource, x: number, y: 
 	}
 
 	const listedY = y - scrollerShiftOf(layout, source, listDrop(first.id, null, null));
-	const list = listAtY(layout, listedY) ?? first;
-	return listDropOf(list, source, listedY);
+	const list = listAtY(layout, source, listedY) ?? first;
+	return nestDropOf(layout, list, source, listedY) ?? listDropOf(list, source, listedY);
 }
 
 export function stillDropOf(layout: SidebarLayout, source: DragSource): TabDrop {
@@ -105,8 +101,48 @@ function firstListDropLineOf(layout: SidebarLayout, first: MeasuredList, source:
 	return middleOf(first.head.rect);
 }
 
-function listAtY(layout: SidebarLayout, y: number): MeasuredList | undefined {
-	return layout.lists.filter((list) => listTopOf(list) <= y).at(-1);
+function listAtY(layout: SidebarLayout, source: DragSource, y: number): MeasuredList | undefined {
+	return layout.lists.filter((list) => listTopOf(list) <= y && isOpenTo(list, source, y)).at(-1);
+}
+
+function isOpenTo(list: MeasuredList, source: DragSource, y: number): boolean {
+	if (!list.isNested) {
+		return true;
+	}
+
+	return !isChatSource(source) && y <= bottomOf(list.rect);
+}
+
+function nestDropOf(layout: SidebarLayout, list: MeasuredList, source: DragSource, y: number): ListDrop | null {
+	if (isChatSource(source)) {
+		return null;
+	}
+
+	const chat = chatRowsOf(list).find(
+		(row) => row.id !== source.id && y >= middleOf(row.rect) && y < bottomOf(row.rect),
+	);
+
+	if (chat === undefined) {
+		return null;
+	}
+
+	const firstChild = findMeasuredList(layout, chat.id)?.units.find((unit) => !isDraggedRow(source, unit));
+	return listDrop(chat.id, null, firstChild?.id ?? null);
+}
+
+function chatRowsOf(list: MeasuredList): readonly Measured[] {
+	const rows = list.units.flatMap((unit) => {
+		if (unit.kind === "tab") {
+			return [unit];
+		}
+
+		return unit.isOpen ? unit.rows : [];
+	});
+	return rows.filter((row) => row.isChat);
+}
+
+function isChatSource(source: DragSource): boolean {
+	return source.kind === "tab" && source.isChat;
 }
 
 function listDropOf(list: MeasuredList, source: DragSource, y: number): ListDrop {

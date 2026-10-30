@@ -5,6 +5,7 @@ import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
 import { hostOf } from "../../../shared/lib/address.js";
 import type { Intent, RowAction, RowIcon, RowKind } from "../../../shared/schema/command-menu.schema.js";
 import { chatActionsOf, openActionsOf, tabActionsOf, workspaceActionsOf } from "./row-actions.js";
+import { listedTabsOf } from "./sidebar-tabs.js";
 
 export interface Found {
 	readonly key: string;
@@ -30,11 +31,7 @@ const WORKSPACE = "Workspace";
 const APP = "App";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
-	const listed = sidebar.sections.flatMap((section) =>
-		section.entries
-			.flatMap((entry) => (entry.kind === "tab" ? [entry.tab] : entry.group.tabs))
-			.map((tab) => tabFoundOf(tab, section.title)),
-	);
+	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
 	return [...sidebar.essentials.map(essentialFoundOf), ...listed];
 }
 

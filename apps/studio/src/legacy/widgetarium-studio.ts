@@ -30,7 +30,6 @@ import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { startStudioApp } from "../tabs/studio-app.js";
-import { TabsSidebarColumn } from "../tabs/tabs-sidebar-column.js";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -130,7 +129,6 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 			empty: h(EmptyPanes),
 		},
 		panel: cataloguePanelOf(started, screen),
-		right: h(TabsSidebarColumn),
 	});
 }
 

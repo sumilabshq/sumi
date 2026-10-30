@@ -1,11 +1,13 @@
 import { chatTabRowsOf } from "../../../shared/lib/tabs/chat-tabs.js";
 import type { TabsAsk } from "../../../shared/schema/screen.schema.js";
-import type { AppTabState, HeldTab, SidebarAsk } from "../../../shared/schema/tab-rows.schema.js";
+import type { AppTabState, HeldTab, PlacedSidebar, SidebarAsk } from "../../../shared/schema/tab-rows.schema.js";
 import type { ChatTabs, PlacedTabs } from "../../../shared/schema/tabs.schema.js";
-import { sidebarOf, tabRowsOf } from "../../../shared/lib/rows/tab-rows.js";
-import type { SidebarRowsAsk } from "../../../shared/lib/rows/tab-rows.js";
+import { tabRowsOf } from "../../../shared/lib/rows/tab-rows.js";
+import { sidebarOf } from "../../../shared/lib/rows/sidebar-rows.js";
+import type { SidebarRowsAsk } from "../../../shared/lib/rows/sidebar-rows.js";
 import { shownAppOf, shownTabIdOf } from "../../../shared/lib/showing/showing.js";
 import { tabFactsOf, tabIdsInPanesOf } from "../../../shared/lib/showing/tab-facts.js";
+import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPagesOf } from "../../../shared/lib/showing/tab-pages.js";
 import { isPageTab } from "../../../shared/lib/tabs/host-tabs.js";
 import { momentOfWindow } from "../../../shared/lib/tabs/kept-tabs.js";
@@ -23,26 +25,18 @@ export function rowsAt(
 	};
 }
 
-export function sidebarAskOf(
-	placed: PlacedTabs,
-	{ at, essentials, boardChats, shutLists, look }: SidebarAsk,
-): SidebarRowsAsk {
-	const facts = tabFactsOf(at.screen);
+export function sidebarAskOf(placed: PlacedTabs, { at, essentials }: SidebarAsk): SidebarRowsAsk {
 	return {
 		moment: momentOfWindow(placed, at.window),
 		essentials,
 		pages: at.screen.pages,
 		shownApp: shownAppOf(at.view),
-		boardChats,
-		shutLists,
-		view: look,
-		inPanes: tabIdsInPanesOf(facts),
-		hasShownTabPane: facts.shownTabPaneId !== null,
-		elsewhere: [...facts.tabWindows.keys()],
+		boardChatIds: at.screen.chatGroups.map((group) => group.chatId),
+		...paneLooksOf(tabFactsOf(at.screen)),
 	};
 }
 
-export function placedSidebarOf(placed: PlacedTabs, ask: SidebarAsk): ReturnType<typeof sidebarOf> {
+export function placedSidebarOf(placed: PlacedTabs, ask: SidebarAsk): PlacedSidebar {
 	return sidebarOf(sidebarAskOf(placed, ask));
 }
 
@@ -68,5 +62,13 @@ export function chatTabsOf(placed: PlacedTabs): ChatTabs {
 	return {
 		pinned: [...pinned],
 		open: [...open],
+	};
+}
+
+function paneLooksOf(facts: TabFacts): Pick<SidebarRowsAsk, "inPanes" | "hasShownTabPane" | "elsewhere"> {
+	return {
+		inPanes: tabIdsInPanesOf(facts),
+		hasShownTabPane: facts.shownTabPaneId !== null,
+		elsewhere: [...facts.tabWindows.keys()],
 	};
 }

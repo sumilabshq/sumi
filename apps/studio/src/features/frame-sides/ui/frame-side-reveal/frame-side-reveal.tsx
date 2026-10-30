@@ -15,7 +15,7 @@ import { SIDE_KEYS } from "../../lib/side-keys.js";
 export interface FrameSideRevealProps {
 	readonly frame: RefObject<HTMLElement | null>;
 	readonly content: RefObject<HTMLElement | null>;
-	readonly panels: Readonly<Record<FrameSide, RefObject<HTMLElement | null>>>;
+	readonly panel: RefObject<HTMLElement | null>;
 }
 
 const EDGE_LOOK: Readonly<Record<SideLook, EdgeLook>> = {
@@ -24,9 +24,10 @@ const EDGE_LOOK: Readonly<Record<SideLook, EdgeLook>> = {
 	peeking: "out",
 };
 
-const SIDES: readonly FrameSide[] = ["left", "right"];
+const SIDES: readonly FrameSide[] = ["left"];
+const NO_PANEL: RefObject<HTMLElement | null> = { current: null };
 
-export function FrameSideReveal({ frame, content, panels }: FrameSideRevealProps): ReactElement {
+export function FrameSideReveal({ frame, content, panel }: FrameSideRevealProps): ReactElement {
 	const sides = useQuery(FrameSidesQuery).data;
 	const peek = useCommand(PeekFrameSideCommand);
 	const conceal = useCommand(ConcealFrameSideCommand);
@@ -35,13 +36,16 @@ export function FrameSideReveal({ frame, content, panels }: FrameSideRevealProps
 	useEdgeReveal({
 		frame,
 		content,
-		panels,
+		panels: {
+			left: panel,
+			right: NO_PANEL,
+		},
 		sides: {
 			left: EDGE_LOOK[sides.left],
-			right: EDGE_LOOK[sides.right],
+			right: EDGE_LOOK.docked,
 		},
-		reveal: (side) => void peek.run({ side }),
-		conceal: (side) => void conceal.run({ side }),
+		reveal: (side) => runOnFrameSide(side, (frameSide) => void peek.run({ side: frameSide })),
+		conceal: (side) => runOnFrameSide(side, (frameSide) => void conceal.run({ side: frameSide })),
 	});
 	return (
 		<Fragment>
@@ -50,6 +54,14 @@ export function FrameSideReveal({ frame, content, panels }: FrameSideRevealProps
 			))}
 		</Fragment>
 	);
+}
+
+function runOnFrameSide(side: string, run: (side: FrameSide) => void): void {
+	const frameSide = SIDES.find((one) => one === side);
+
+	if (frameSide !== undefined) {
+		run(frameSide);
+	}
 }
 
 const EDITABLE_SELECTOR = "[contenteditable]:not([contenteditable='false'])";

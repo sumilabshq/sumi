@@ -3,13 +3,10 @@ import {
 	HeldTabsQuery,
 	PlaceTabCommand,
 	RenameTabCommand,
-	ResetColumnCommand,
-	ResizeColumnCommand,
 	RestoreTabsCommand,
 	ShowTabCommand,
 	ShowViewCommand,
 	ShownViewQuery,
-	TabsColumnQuery,
 	TearOffTabCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
@@ -174,19 +171,11 @@ async function pagesAfterRestoreOf(keepsPages: boolean): Promise<readonly (strin
 	return (await places.placedTabs()).tabs.filter((tab) => tab.app !== "chat").map((tab) => tab.pageId);
 }
 
-async function viewAndColumnChecks(): Promise<void> {
+async function viewChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
 	await studioApp.send(ShowViewCommand, { view: "app" });
 	const shown = await studioApp.send(ShownViewQuery);
-	await studioApp.send(ResizeColumnCommand, { px: 9999 });
-	const widest = await studioApp.send(TabsColumnQuery);
-	await studioApp.send(ResetColumnCommand);
-	const reset = await studioApp.send(TabsColumnQuery);
-	check(
-		"which app is shown is app-host's data, and the column is held between its bounds and reset to its usual width",
-		[shown.ok && shown.output, widest.ok && widest.output.widthPx, reset.ok && reset.output.widthPx],
-		["app", 420, 240],
-	);
+	check("which app is shown is app-host's data", shown.ok && shown.output, "app");
 }
 
 const quiet = console.info;
@@ -196,7 +185,7 @@ await ownWindowDropChecks();
 await showAndPaneChecks();
 await handlerRuleChecks();
 await restartPageChecks();
-await viewAndColumnChecks();
+await viewChecks();
 console.info = quiet;
 console.log(tally.failed === 0 ? "tab pages: all checks pass" : `tab pages: ${tally.failed} failed`);
 process.exit(tally.failed === 0 ? 0 : 1);

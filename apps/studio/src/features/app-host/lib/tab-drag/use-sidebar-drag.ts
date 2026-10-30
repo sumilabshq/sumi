@@ -10,15 +10,16 @@ import type { OnTabDrop } from "./tab-drag-session.js";
 import type { DragSource } from "./sidebar-drop-plan.js";
 import { rectOf } from "./sidebar-layout.js";
 import { tabRefOf } from "../tabs-sidebar/pointed-of.js";
+import type { TabRef } from "./tab-ref.js";
 
 const NOT_A_HANDLE = "button:not([data-tabs-item]), input";
 const DRAGGED_ITEM = '[data-tabs-item="tab"], [data-tabs-item="essential"]';
 const DRAGGED_WORDS = "[data-tabs-words]";
-const BROWSER_APP = "browser";
+const TEARABLE_APPS: ReadonlySet<string | undefined> = new Set(["browser", "chat"]);
 
 export interface SidebarDragging {
 	readonly onDrop: OnTabDrop;
-	readonly onTearOff: (tabId: string) => void;
+	readonly onTearOff: (source: TabRef) => void;
 	readonly tearOffGhost: OverlayPort;
 	readonly opensOwnWindows: boolean;
 }
@@ -87,7 +88,7 @@ function pressedItemOf(holder: HTMLElement, event: PointerEvent, opensOwnWindows
 		picked: {
 			element,
 			source,
-			opensOwnWindow: opensOwnWindows && source.kind === "tab" && element.dataset["hostTabApp"] === BROWSER_APP,
+			opensOwnWindow: opensOwnWindows && source.kind === "tab" && isTearableApp(element),
 		},
 		pointerId: event.pointerId,
 		start: [event.clientX, event.clientY],
@@ -116,4 +117,8 @@ function sourceOf(holder: HTMLElement, element: HTMLElement, id: string): DragSo
 		id,
 		at: [...holder.querySelectorAll('[data-tabs-item="essential"]')].indexOf(element),
 	};
+}
+
+function isTearableApp(element: HTMLElement): boolean {
+	return TEARABLE_APPS.has(element.dataset["hostTabApp"]);
 }

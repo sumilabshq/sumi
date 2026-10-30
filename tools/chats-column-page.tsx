@@ -96,7 +96,7 @@ createRoot(root).render(
 			h(
 				"div",
 				{ className: "sm", style: FRAME_STYLE },
-				h("div", { style: LEFT_STYLE, "data-test-left": "" }, h(ChatsColumn, { renaming })),
+				h("div", { style: LEFT_STYLE, "data-test-left": "" }, h(ChatsColumn)),
 				h(ActivePlate),
 			),
 		),

@@ -1,16 +1,16 @@
 import { z } from "zod";
-import type { AppTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import type { AppTabsQuery } from "@widgetarium/app-host";
 import type { ChatListQuery } from "@widgetarium/app-host";
 import type { OutputOf } from "@widgetarium/core/requests";
+import { tabListsOf } from "./sidebar-lists.js";
+import type { ListedEntry, ListedGroup, Sidebar, SidebarTab, TabList } from "./sidebar-lists.js";
 
-export type Sidebar = OutputOf<typeof TabsSidebarQuery>;
+export type { Sidebar, SidebarTab } from "./sidebar-lists.js";
 export type ChatList = OutputOf<typeof ChatListQuery>;
 export type AppTabs = OutputOf<typeof AppTabsQuery>;
-type SidebarSection = Sidebar["sections"][number];
-type SidebarGroup = Extract<SidebarSection["entries"][number], { kind: "group" }>["group"];
-export type SidebarTab = Extract<SidebarSection["entries"][number], { kind: "tab" }>["tab"];
 
 export const WORKSPACE = "workspace";
+export const PINNED = "pinned";
 export const THIS_CHAT = "this-chat";
 
 export const AppStateInputSchema = z.object({
@@ -29,7 +29,7 @@ export type AppState = ReturnType<typeof appStateOf>;
 
 export function appStateOf({ sidebar, chats, tabs }: AppStateSources, chatId: string, { scope }: AppStateInput) {
 	const isWorkspace = scope === WORKSPACE;
-	const sections = sidebar.sections
+	const sections = tabListsOf(sidebar)
 		.map((section) => sectionOf(section, chatId))
 		.filter((section) => isWorkspace || section.place === THIS_CHAT);
 	return {
@@ -50,19 +50,24 @@ function chatsOf(chats: ChatList, chatId: string) {
 	}));
 }
 
-function sectionOf(section: SidebarSection, chatId: string) {
+function sectionOf(section: TabList, chatId: string) {
 	return {
 		place: placeOf(section, chatId),
 		list: section.list,
 		title: section.title,
-		isOpen: section.isOpen,
-		entries: section.entries.map((entry) =>
-			entry.kind === "tab" ? { kind: "tab" as const, ...tabOf(entry.tab) } : groupOf(entry.group),
-		),
+		entries: section.entries.map(entryOf),
 	};
 }
 
-function groupOf(group: SidebarGroup) {
+function entryOf(entry: ListedEntry) {
+	if (entry.kind === "tab") {
+		return { kind: "tab" as const, ...tabOf(entry.tab) };
+	}
+
+	return entry.kind === "chat" ? entry : groupOf(entry);
+}
+
+function groupOf(group: ListedGroup) {
 	return {
 		kind: "group" as const,
 		id: group.id,
@@ -70,12 +75,13 @@ function groupOf(group: SidebarGroup) {
 		colour: group.hue,
 		isOpen: group.isOpen,
 		tabs: group.tabs.map(tabOf),
+		chats: group.chats,
 	};
 }
 
-function placeOf(section: SidebarSection, chatId: string): string {
-	if (section.owner === WORKSPACE) {
-		return WORKSPACE;
+function placeOf(section: TabList, chatId: string): string {
+	if (!section.isChat) {
+		return section.list;
 	}
 
 	return section.list === chatId ? THIS_CHAT : `chat:${section.list}`;

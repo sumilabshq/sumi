@@ -12,9 +12,4 @@ export const SIDE_KEYS: Readonly<Record<FrameSide, SideKeys>> = {
 		needsAlt: false,
 		said: "⌘B",
 	},
-	right: {
-		code: "KeyB",
-		needsAlt: true,
-		said: "⌥⌘B",
-	},
 };

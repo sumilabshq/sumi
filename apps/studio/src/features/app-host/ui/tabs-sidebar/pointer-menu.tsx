@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { ContextMenuContent } from "@widgetarium/kit";
 import { POINTER_MENU } from "../../lib/menu-look/menu-look.js";
 import type { PointedOutsideGroup } from "../../lib/tabs-sidebar/use-pointed-menus.js";
-import type { EssentialTile, ListTarget, TabSection } from "@widgetarium/app-host";
+import type { TabsSidebar } from "@widgetarium/app-host";
 import { EssentialItems } from "./essential-items.js";
 import { SpaceItems } from "./space-items.js";
 import { TabItems } from "./tab-items.js";
@@ -12,9 +12,7 @@ export type Pointed = PointedOutsideGroup;
 
 export interface PointerMenuProps {
 	readonly pointed: Pointed;
-	readonly sections: readonly TabSection[];
-	readonly listTargets: readonly ListTarget[];
-	readonly essentials: readonly EssentialTile[];
+	readonly sidebar: TabsSidebar;
 	readonly onRename: (tabId: string) => void;
 	readonly onGroupMade: (groupId: string) => void;
 }

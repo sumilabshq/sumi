@@ -2,13 +2,13 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Popover, PopoverAnchorAt, PopoverContent } from "@widgetarium/kit";
 import { BOARD_LABEL, BOARD_LINE, GROUP_MENU } from "../../lib/menu-look/menu-look.js";
-import type { GroupState } from "@widgetarium/app-host";
+import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 import { GroupActions } from "./group-actions.js";
 import { GroupHues } from "./group-hues.js";
 import { GroupNameField } from "./group-name-field.js";
 
 export interface GroupMenuProps {
-	readonly group: GroupState | null;
+	readonly group: GroupFace | null;
 	readonly anchor: HTMLElement | null;
 	readonly onClose: () => void;
 }

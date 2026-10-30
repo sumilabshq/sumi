@@ -9,11 +9,11 @@ import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
 
 export function EssentialItems({
 	pointed,
-	essentials,
+	sidebar,
 }: PointerMenuProps & { readonly pointed: Extract<Pointed, { kind: "essential" }> }): ReactElement {
 	const removeFromEssentials = useCommand(RemoveEssentialCommand);
 	const closeEssential = useCommand(CloseEssentialCommand);
-	const isLive = essentials.some((tile) => tile.id === pointed.id && tile.isLive);
+	const isLive = sidebar.essentials.some((tile) => tile.id === pointed.id && tile.isLive);
 	return (
 		<ContextMenuGroup>
 			<PointerItem
