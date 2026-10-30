@@ -1,4 +1,4 @@
-import { reopenClosed } from "../tabs/host-tabs.js";
+import { reopenClosed } from "../tabs/tab-closing.js";
 import { WORKSPACE_LIST } from "../tabs/tab-lists.js";
 import { withMoved } from "./showing.js";
 import type { Showing } from "./showing.js";

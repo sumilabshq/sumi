@@ -1,5 +1,7 @@
-import { closeGroup, closeTabs } from "../tabs/host-tabs.js";
-import type { MovedTabs, TabGroup, TabPage, TabsClosing } from "../tabs/host-tabs.js";
+import { holdsTabs } from "../tabs/app-abilities.js";
+import { closeGroup, closeTabs } from "../tabs/tab-closing.js";
+import type { HostTab, MovedTabs, TabGroup, TabPage } from "../tabs/host-tabs.js";
+import type { TabsClosing } from "../tabs/tab-closing.js";
 import { shownAppOf, shownTabIdOf, withEffect, withMoved, withTabShown, withView } from "./showing.js";
 import type { Showing } from "./showing.js";
 import type { TabFacts } from "./tab-facts.js";
@@ -18,17 +20,26 @@ export function withGroupClosed(showing: Showing, facts: TabFacts, group: TabGro
 function withClosing(showing: Showing, facts: TabFacts, closing: (pages: TabPages) => MovedTabs): Showing {
 	const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.shownView));
 	const pages = tabPagesOf(showing.moment.tabs, facts.pages);
-	const before = showing.moment.tabs.map((tab) => tab.id);
 	const closed = withMoved(showing, closing(pages));
 	const held = new Set(closed.moment.tabs.map((tab) => tab.id));
-	const panesClosed = withEffect(closed, { kind: "close-panes", tabIds: before.filter((id) => !held.has(id)) });
-	const released = withReleasedPages(panesClosed, pages, held);
+	const gone = showing.moment.tabs.filter((tab) => !held.has(tab.id));
+	const released = withReleasedPages(withPanesOfGoneClosed(closed, gone), pages, held);
 
 	if (shownId === null || held.has(shownId)) {
 		return released;
 	}
 
 	return withNextTabShown(released, facts);
+}
+
+function withPanesOfGoneClosed(showing: Showing, gone: readonly HostTab[]): Showing {
+	const panesClosed = withEffect(showing, { kind: "close-panes", tabIds: gone.map((tab) => tab.id) });
+	const chatIds = gone.filter(holdsTabs).map((tab) => tab.id);
+	if (chatIds.length === 0) {
+		return panesClosed;
+	}
+
+	return withEffect(panesClosed, { kind: "close-chat-panes", chatIds });
 }
 
 function withReleasedPages(showing: Showing, pages: TabPages, held: ReadonlySet<string>): Showing {

@@ -1,6 +1,5 @@
 import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
 import { ChatTabsQuery, PinTabCommand as PlacesPinTabCommand } from "@widgetarium/places";
-import { ChatMarksChangedEvent, ChatRecordsQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { ChatListSchema, TabPinSchema } from "../../shared/schema/chat-list.schema.js";
@@ -9,8 +8,7 @@ import { chatListOf } from "./lib/chat-list.js";
 export const ChatListQuery = query("chat-list")
 	.output(ChatListSchema)
 	.handle(async (_input, { send }) => {
-		const [tabs, records] = await Promise.all([send(ChatTabsQuery), send(ChatRecordsQuery)]);
-		return chatListOf(tabs, records);
+		return chatListOf(await send(ChatTabsQuery));
 	});
 
 export const PinTabCommand = command("pin-tab")
@@ -24,14 +22,6 @@ export const PinTabCommand = command("pin-tab")
 	});
 
 export const RereadChatListSubscriber = subscriber(TabsSettledEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatListQuery);
-});
-
-export const RereadChatListForChatsSubscriber = subscriber(ChatsChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatListQuery);
-});
-
-export const RereadChatListForMarksSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(ChatListQuery);
 });
 

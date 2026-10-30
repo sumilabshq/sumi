@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import type { GroupItem, SidebarEntry } from "@widgetarium/app-host";
+import type { SidebarEntry } from "@widgetarium/app-host";
 import { GroupBox } from "../group-box/group-box.js";
 import { SplitEntry } from "../split-entry/split-entry.js";
 import { ListedItem } from "./listed-item.js";
@@ -20,7 +20,7 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 				}
 
 				if (entry.kind !== "group") {
-					return <ListedItem key={itemKeyOf(entry)} item={entry} groupId={null} renaming={renaming} />;
+					return <ListedItem key={entry.tab.id} item={entry} groupId={null} renaming={renaming} />;
 				}
 
 				return (
@@ -33,15 +33,11 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 						count={entry.group.items.length}
 					>
 						{entry.group.items.map((item) => (
-							<ListedItem key={itemKeyOf(item)} item={item} groupId={entry.group.id} renaming={renaming} />
+							<ListedItem key={item.tab.id} item={item} groupId={entry.group.id} renaming={renaming} />
 						))}
 					</GroupBox>
 				);
 			})}
 		</Fragment>
 	);
-}
-
-function itemKeyOf(item: GroupItem): string {
-	return item.kind === "chat" ? item.chat.id : item.tab.id;
 }

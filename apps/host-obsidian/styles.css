@@ -15438,6 +15438,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
+	.cv\:transition-transform {
+		transition-property: transform, translate, scale, rotate !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
 	.cv\:duration-\(--sumi-dur-base\) {
 		--tw-duration: var(--sumi-dur-base) !important;
 		transition-duration: var(--sumi-dur-base) !important;
@@ -15692,6 +15697,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		padding-bottom: 0px !important;
 	}
 	@media (hover: hover) {
+		.cv\:hover\:bg-\(--sumi-active\):hover {
+			background-color: var(--sumi-active) !important;
+		}
 		.cv\:hover\:bg-\(--sumi-essential-hover\):hover {
 			background-color: var(--sumi-essential-hover) !important;
 		}
@@ -15819,6 +15827,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:data-\[dragging\]\:cursor-grabbing[data-dragging] {
 		cursor: grabbing !important;
+	}
+	.cv\:data-\[folded\]\:-rotate-90[data-folded] {
+		rotate: calc(90deg * -1) !important;
 	}
 	.cv\:data-\[hue\]\:before\:bg-\[color-mix\(in_srgb\,var\(--group-hue\)_var\(--sumi-group-tint\)\,transparent\)\][data-hue]::before {
 		content: var(--tw-content);
@@ -16045,6 +16056,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	:is(.cv\:\[\&\,\&_\*\]\:box-border),
 	.cv\:\[\&\,\&_\*\]\:box-border * {
 		box-sizing: border-box !important;
+	}
+	.cv\:\[\&\:not\(\[data-shown\]\)\:has\(\[data-tabs-fold\]\:hover\)\]\:bg-transparent:not([data-shown]):has(
+			[data-tabs-fold]:hover
+		) {
+		background-color: transparent !important;
 	}
 	.cv\:\[\&\>\*\+\*\]\:-ms-1 > * + * {
 		margin-inline-start: calc(var(--cv-spacing) * -1) !important;

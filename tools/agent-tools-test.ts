@@ -1,6 +1,6 @@
 import { appStateOf } from "../apps/host-tauri/src/agent/app-state.ts";
 import type { AppTabs, ChatList, Sidebar } from "../apps/host-tauri/src/agent/app-state.ts";
-import type { ChatChild } from "../packages/domain/app-host/generated/contract.ts";
+import type { TabChild } from "../packages/domain/app-host/generated/contract.ts";
 
 let failed = 0;
 
@@ -26,12 +26,14 @@ function tab(id: string, title: string, isShown = false) {
 		label: null,
 		address: `https://${id}.example.com`,
 		isInOwnWindow: false,
+		mark: "none" as const,
 		isShown,
 	};
 }
 
-function chat(id: string, title: string, children: readonly ChatChild[]) {
-	return { kind: "chat" as const, chat: { id, title, label: null, mark: "none" as const, isShown: false, children } };
+function chat(id: string, title: string, children: readonly TabChild[]) {
+	const face = { ...tab(id, title), app: "chat" as const, icon: "chat" as const, address: null };
+	return { kind: "tab" as const, tab: face, children };
 }
 
 const sidebar: Sidebar = {

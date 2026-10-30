@@ -8,21 +8,31 @@ import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
 import { momentOfWindow, windowTabsOf } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
-import type { PlacedTabs, WindowTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
+import type { PlacedTabs, TabMark, WindowTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
 
 export const MAIN_WINDOW = "main";
 
 export type SeededTabs = z.input<typeof KeptSessionTabsSchema>;
 
+export interface SeededFacts {
+	readonly title?: string;
+	readonly mark?: TabMark;
+}
+
 export function placedTabsOf(
 	seed: SeededTabs,
 	chatIds: readonly string[] = [],
 	pinnedIds: readonly string[] = [],
+	factsOf: Readonly<Record<string, SeededFacts>> = {},
 ): PlacedTabs {
-	return migratedTabsOf(
+	const placed = migratedTabsOf(
 		KeptSessionTabsSchema.parse(seed),
 		chatIds.map((id) => ({ id, isPinned: pinnedIds.includes(id), pinRank: pinnedIds.indexOf(id), lastAt: 0 })),
 	);
+	return {
+		...placed,
+		tabs: placed.tabs.map((tab) => ({ ...tab, ...factsOf[tab.id] })),
+	};
 }
 
 export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {

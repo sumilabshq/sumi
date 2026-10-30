@@ -2,6 +2,7 @@ import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/wo
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.js";
 import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.schema.js";
 import type { Workspace } from "../packages/domain/workspaces/shared/schema/workspace.schema.js";
+import type { SeededFacts } from "./places-fixture.ts";
 
 export type WorkspacesCount = "one" | "board" | "many";
 
@@ -52,11 +53,19 @@ export const BOARD_PINNED: readonly string[] = ["weekly", "release"];
 
 export const BOARD_CHAT_IDS: readonly string[] = BOARD_CHATS.map((chat) => chat.id);
 
+const BOARD_MARKS: Readonly<Record<string, SeededFacts["mark"]>> = {
+	checks: "unread",
+	deepl: "running",
+};
+
+export const BOARD_CHAT_FACTS: Readonly<Record<string, SeededFacts>> = Object.fromEntries(
+	BOARD_CHATS.map((chat) => [chat.id, { title: chat.title ?? "New chat", mark: BOARD_MARKS[chat.id] ?? "none" }]),
+);
+
 export function boardWorkspacesParts(count: WorkspacesCount): WorkspacesParts {
 	return memoryWorkspacesParts({
 		workspaces: workspacesOf(count),
 		currentId: "default",
 		chats: { chats: [...BOARD_CHATS], openOnStartId: "release" },
-		marks: { checks: "unread", deepl: "running" },
 	});
 }

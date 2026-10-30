@@ -18,7 +18,7 @@ import {
 import {
 	CreateGroupCommand,
 	FoldGroupCommand,
-	KeepChatTabsCommand,
+	FoldTabCommand,
 	MakeEssentialCommand,
 	PinTabCommand,
 	PlaceTabCommand,
@@ -27,6 +27,12 @@ import {
 	SetGroupHueCommand,
 	UngroupCommand,
 } from "./features/tab-placing/requests.js";
+import {
+	ForgetRunningTurnsCommand,
+	KeepChatTabsCommand,
+	MarkTabSeenCommand,
+	RecordTabTurnCommand,
+} from "./features/tab-facts/requests.js";
 import {
 	FitTabsToPanesCommand,
 	OpenTabInOwnWindowCommand,
@@ -76,6 +82,8 @@ export const PlacesModule = module("places")
 		HeldTabsQuery,
 		ClosedTabsQuery,
 		ChatTabsQuery,
+	)
+	.public(
 		RestoreTabsCommand,
 		ShowTabCommand,
 		ShowChatTabCommand,
@@ -100,10 +108,14 @@ export const PlacesModule = module("places")
 		RenameTabCommand,
 		PinTabCommand,
 		KeepChatTabsCommand,
+		RecordTabTurnCommand,
+		MarkTabSeenCommand,
+		ForgetRunningTurnsCommand,
 		CreateGroupCommand,
 		RenameGroupCommand,
 		SetGroupHueCommand,
 		FoldGroupCommand,
+		FoldTabCommand,
 		UngroupCommand,
 		ShownSplitQuery,
 		PlaceInViewCommand,

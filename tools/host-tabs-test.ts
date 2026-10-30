@@ -1,7 +1,5 @@
 import { tabRowsOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
 import {
-	closeGroup,
-	closeTabs,
 	emptyMoment,
 	findGroup,
 	flatTabIdsOf,
@@ -9,9 +7,9 @@ import {
 	markShown,
 	openTab,
 	placeTab,
-	reopenClosed,
 	tabOf,
 } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { closeGroup, closeTabs, reopenClosed } from "../packages/state/places/shared/lib/tabs/tab-closing.ts";
 import { addGroup, ungroup } from "../packages/state/places/shared/lib/tabs/tab-groups.ts";
 import { rememberPages } from "../packages/state/places/shared/lib/tabs/page-memory.ts";
 import type { HostTabsMoment, MovedTabs, TabGroup } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";

@@ -125,7 +125,6 @@ function newChatWorkspaces(): ReturnType<typeof memoryWorkspacesParts> {
 			],
 			openOnStartId: CHAT_ID,
 		},
-		marks: {},
 	});
 }
 

@@ -12,7 +12,6 @@ import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
 	ChatRecordsQuery,
 	CreateChatCommand,
-	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
 	WorkspacesQuery,
 } from "../packages/domain/workspaces/generated/contract.ts";
@@ -22,6 +21,9 @@ import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/wor
 import { check, waitFor } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 import type { Doc } from "./host-tauri-fake-store.ts";
+import { placesOver } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MarkTabSeenCommand } from "../packages/state/places/generated/contract.ts";
 
 interface HeldRun {
 	readonly run: TurnRun;
@@ -31,6 +33,7 @@ interface HeldRun {
 interface TauriWorkspaces {
 	readonly parts: WorkspacesParts;
 	readonly started: StartedApp;
+	readonly marks: Map<string, string>;
 }
 
 function heldRun(): HeldRun {
@@ -46,10 +49,17 @@ function heldRun(): HeldRun {
 
 function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
+	const tabs = new MemoryTabsGateway();
+	const marks = new Map<string, string>();
+	tabs.placedTabsChanged(() => {
+		void tabs.placedTabs().then((placed) => placed.tabs.forEach((tab) => marks.set(tab.id, tab.mark)));
+	});
 	return {
 		parts,
+		marks,
 		started: app()
 			.modules(LayoutModule.with({ ...partsOf() }), WorkspacesModule.with(parts))
+			.imports(placesOver(tabs))
 			.start(),
 	};
 }
@@ -60,8 +70,8 @@ async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | und
 	return answer.ok ? [...answer.output.chats].sort((one, other) => other.lastAt - one.lastAt)[0]?.id : undefined;
 }
 
-function markOf({ parts }: TauriWorkspaces, id: string): string {
-	return parts.chatMarks.chatMarks()[id] ?? "none";
+function markOf({ marks }: TauriWorkspaces, id: string): string {
+	return marks.get(id) ?? "none";
 }
 
 function keptChatsIn(fake: FakeStore): unknown[] | null {
@@ -116,7 +126,7 @@ async function perChatChecks(): Promise<void> {
 
 	await quietly(async () => {
 		await workspaces.started.send(ShowChatInPaneCommand, { chatId: firstId, paneId: null });
-		await workspaces.started.send(MarkChatSeenCommand, { id: firstId });
+		await workspaces.started.send(MarkTabSeenCommand, { id: firstId });
 	});
 	await waitFor(() => sessions.now().turns.length === 2);
 	check(

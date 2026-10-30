@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { TabsAskSchema } from "./screen.schema.js";
 import { EssentialSchema } from "./tab-rows.schema.js";
-import { GroupHueSchema, PageAppSchema } from "./tabs.schema.js";
+import { AppKindSchema, GroupHueSchema, PageAppSchema } from "./tabs.schema.js";
 
 export const TabPlaceSchema = z.object({
 	list: z.string().min(1),
@@ -88,6 +88,11 @@ export const CreateGroupAskSchema = z.object({
 
 export type CreateGroupAsk = z.infer<typeof CreateGroupAskSchema>;
 
+export const FoldTabAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+});
+
 export const GroupAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
@@ -107,7 +112,7 @@ export const GroupHueAskSchema = z.object({
 
 export const EssentialRefSchema = z.object({
 	id: z.string().min(1),
-	app: PageAppSchema,
+	app: AppKindSchema,
 	address: z.string().nullable(),
 });
 
@@ -134,5 +139,3 @@ export const MakeEssentialAskSchema = z.object({
 	id: z.string().min(1),
 	essentialId: z.string().min(1),
 });
-
-export const KeepChatTabsAskSchema = z.object({ chatIds: z.array(z.string().min(1)) });

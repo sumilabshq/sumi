@@ -1,4 +1,4 @@
-import type { AppKind, GroupHue, ListEntry } from "../../schema/tabs.schema.js";
+import type { AppKind, GroupHue, HeldList, ListEntry, TabMark } from "../../schema/tabs.schema.js";
 import type { KeptSplit } from "../../schema/splits.schema.js";
 import {
 	WORKSPACE_LIST,
@@ -12,6 +12,7 @@ import {
 	withEntryBefore,
 	withoutTab,
 } from "./tab-lists.js";
+import { abilitiesOf } from "./app-abilities.js";
 import type { TabGroup, TabLayout, TabLocation, TabPlace } from "./tab-lists.js";
 
 export interface OpenedTab {
@@ -26,6 +27,9 @@ export interface HostTab extends OpenedTab {
 	readonly lastAddress: string | null;
 	readonly lastTitle: string | null;
 	readonly lastFavicon: string | null;
+	readonly title: string | null;
+	readonly mark: TabMark;
+	readonly isFolded: boolean;
 }
 
 export interface TabPage {
@@ -39,6 +43,7 @@ export interface ClosedTab {
 	readonly groupId: string | null;
 	readonly at: number;
 	readonly address: string;
+	readonly held: HeldList | null;
 }
 
 export interface HostTabsMoment extends TabLayout {
@@ -122,7 +127,9 @@ export function lastShownWith(
 }
 
 export function keptClosed(closed: readonly ClosedTab[], closing: readonly ClosedTab[]): readonly ClosedTab[] {
-	return [...closed, ...closing].slice(-CLOSED_KEPT);
+	const all = [...closed, ...closing];
+	const evicted = new Set(all.filter((one) => !isArchive(one)).slice(0, -CLOSED_KEPT));
+	return all.filter((one) => !evicted.has(one));
 }
 
 export function labelSaid(label: string | null): string {
@@ -194,4 +201,8 @@ function groupBeforeOf(moment: HostTabsMoment, { chatId, withTabId }: GroupBirth
 	}
 
 	return moment.lists[chatId]?.[location.at + 1]?.id ?? null;
+}
+
+function isArchive({ tab }: ClosedTab): boolean {
+	return abilitiesOf(tab.app).keepsRecord;
 }

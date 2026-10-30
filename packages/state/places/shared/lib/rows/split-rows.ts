@@ -1,5 +1,5 @@
 import type { KeptSplit } from "../../schema/splits.schema.js";
-import type { GroupItem, SidebarEntry, SplitMember } from "../../schema/tab-rows.schema.js";
+import type { SidebarEntry, SidebarTab, SplitMember } from "../../schema/tab-rows.schema.js";
 import type { SectionList } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "../tabs/host-tabs.js";
 import { PINNED_LIST, WORKSPACE_LIST, locationOf } from "../tabs/tab-lists.js";
@@ -9,7 +9,7 @@ import { splitOfTab } from "../splits/split-members.js";
 export class SplitRows {
 	constructor(
 		private readonly moment: HostTabsMoment,
-		private readonly itemsOf: (id: string) => readonly GroupItem[],
+		private readonly itemsOf: (id: string) => readonly SidebarTab[],
 	) {}
 
 	entriesOf(tabId: string, list: SectionList): readonly SidebarEntry[] | null {

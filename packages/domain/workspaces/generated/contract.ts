@@ -2,10 +2,6 @@
 import { Device, PerCall, Repeatable, command, event, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
-
-export type ChatMarkKind = z.infer<typeof ChatMarkSchema>;
-
 export const ChatIdSchema = z.object({
 	id: z.string().min(1),
 });
@@ -34,7 +30,6 @@ export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	lastAt: z.number().nonnegative(),
-	mark: ChatMarkSchema,
 });
 
 export type ChatRecord = z.infer<typeof ChatRecordSchema>;
@@ -158,9 +153,6 @@ export const CreateChatCommand = command("workspaces/create-chat")
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall);
-export const MarkChatSeenCommand = command("workspaces/mark-chat-seen")
-	.input(ChatIdSchema)
-	.idempotencyKey(Repeatable);
 export const ForgetChatToOpenCommand = command("workspaces/forget-chat-to-open")
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable);
@@ -168,6 +160,5 @@ export const RecordChatTurnCommand = command("workspaces/record-chat-turn")
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable);
 export const ChatsChangedEvent = event("workspaces/chats-changed");
-export const ChatMarksChangedEvent = event("workspaces/chat-marks-changed");
 
-export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatRecordsQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, MarkChatSeenCommand, ForgetChatToOpenCommand, RecordChatTurnCommand]);
+export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatRecordsQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, ForgetChatToOpenCommand, RecordChatTurnCommand]);

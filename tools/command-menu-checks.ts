@@ -227,7 +227,6 @@ await check("a chat in another workspace is found and opened there", async () =>
 					],
 					currentId: "untitled",
 					chats: firstChats(),
-					marks: {},
 					chatsElsewhere: {
 						default: {
 							chats: [

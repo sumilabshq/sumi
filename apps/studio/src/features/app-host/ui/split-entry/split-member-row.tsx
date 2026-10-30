@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { GroupItem, SplitMember } from "@widgetarium/app-host";
+import type { SidebarTab, SplitMember } from "@widgetarium/app-host";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
-import { ChatEntry } from "../tabs-sidebar/chat-entry.js";
+import { HolderEntry } from "../tabs-sidebar/holder-entry.js";
 import { TabRow } from "../tab-row/tab-row.js";
 import type { RowBadge } from "../tab-row/row-badge.js";
 
@@ -15,10 +15,10 @@ const PINNED_BADGE: RowBadge = { kind: "pinned" };
 
 export function SplitMemberRow({ member, renaming }: SplitMemberRowProps): ReactElement {
 	const badge = member.isPinned ? PINNED_BADGE : null;
-	const item = focusShownOf(member);
+	const item = withShownByFocus(member);
 
-	if (item.kind === "chat") {
-		return <ChatEntry chat={item.chat} groupId={null} renaming={renaming} badge={badge} />;
+	if (item.children !== undefined) {
+		return <HolderEntry holder={item} children={item.children} groupId={null} renaming={renaming} badge={badge} />;
 	}
 
 	return (
@@ -33,8 +33,6 @@ export function SplitMemberRow({ member, renaming }: SplitMemberRowProps): React
 	);
 }
 
-function focusShownOf({ item, isFocused }: SplitMember): GroupItem {
-	return item.kind === "chat"
-		? { ...item, chat: { ...item.chat, isShown: isFocused } }
-		: { ...item, tab: { ...item.tab, isShown: isFocused } };
+function withShownByFocus({ item, isFocused }: SplitMember): SidebarTab {
+	return { ...item, tab: { ...item.tab, isShown: isFocused } };
 }

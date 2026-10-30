@@ -25,16 +25,18 @@ import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 import type { StudioAppParts } from "./studio-app-fixture.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
-import { BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryChatsGateway } from "../packages/domain/workspaces/gateways/chats/memory.gateway.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
 
 const STARTED_AT = performance.now();
 const HAS_TRAFFIC_LIGHTS = new URLSearchParams(location.search).has("lights");
+const IS_RECORDS_PENDING = new URLSearchParams(location.search).has("records-pending");
 const TAURI_LIKE_HOST: StudioHostPort = {
 	...NO_STUDIO_HOST,
 	insets: () => ({
@@ -158,14 +160,26 @@ const SEEDED_TABS: SeededTabs = {
 	closed: [],
 };
 
+class PendingChatsGateway extends MemoryChatsGateway {
+	override isLoaded(): boolean {
+		return false;
+	}
+}
+
 function seededParts(): Pick<StudioAppParts, "workspaces" | "places"> {
 	if (!IS_SEEDED) {
 		return {};
 	}
 
+	const board = boardWorkspacesParts("board");
+	const workspaces = IS_RECORDS_PENDING
+		? { ...board, chats: new PendingChatsGateway({ chats: [], openOnStartId: null }) }
+		: board;
+	const places = new MemoryTabsGateway(placedTabsOf(SEEDED_TABS, BOARD_CHAT_IDS, BOARD_PINNED, BOARD_CHAT_FACTS));
+	Object.assign(window, { __PLACES__: places, __WORKSPACES__: workspaces });
 	return {
-		workspaces: boardWorkspacesParts("board"),
-		places: new MemoryTabsGateway(placedTabsOf(SEEDED_TABS, BOARD_CHAT_IDS, BOARD_PINNED)),
+		workspaces,
+		places,
 	};
 }
 

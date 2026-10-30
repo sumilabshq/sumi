@@ -180,6 +180,5 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 			],
 			openOnStartId: HOST_CHAT,
 		},
-		marks: {},
 	});
 }

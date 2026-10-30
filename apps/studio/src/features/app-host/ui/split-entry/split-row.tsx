@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { GroupItem, SidebarSplitState } from "@widgetarium/app-host";
+import type { SidebarSplitState, SidebarTab } from "@widgetarium/app-host";
 import { SIDEBAR_ROW, ROW_WORDS } from "../../lib/tabs-look/tabs-look.js";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";
@@ -9,7 +9,7 @@ import { SplitMapIcon } from "../split-map/split-map-icon.js";
 
 export interface SplitRowProps {
 	readonly split: SidebarSplitState;
-	readonly focused: GroupItem;
+	readonly focused: SidebarTab;
 }
 
 const JOINER = " + ";

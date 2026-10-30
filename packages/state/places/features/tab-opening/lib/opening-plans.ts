@@ -10,7 +10,7 @@ import type { ExtraPlan, Planned, Refusal, ShowingPlan } from "../../../shared/l
 import { freshTabOf } from "../../../shared/lib/showing/new-tab-page.js";
 import { liveTabOf, withOpenedTabShown } from "../../../shared/lib/showing/opening.js";
 import { withClosedReopened } from "../../../shared/lib/showing/reopening.js";
-import { withMoved, withTabPageOpened, withTabShown } from "../../../shared/lib/showing/showing.js";
+import { withEffect, withMoved, withTabPageOpened, withTabShown } from "../../../shared/lib/showing/showing.js";
 import type { Showing } from "../../../shared/lib/showing/showing.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
@@ -27,6 +27,8 @@ import {
 } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTabsMoment, OpenedHostTab, PageTab, TabPlace } from "../../../shared/lib/tabs/host-tabs.js";
 import { chatOfGroup, placeAfterOf } from "../../../shared/lib/tabs/tab-lists.js";
+import { isPageApp } from "../../../shared/lib/tabs/app-abilities.js";
+import type { HostTab } from "../../../shared/lib/tabs/host-tabs.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
@@ -36,6 +38,7 @@ const GROUP_ELSEWHERE = 'the group "{id}" stands in "{home}", not in "{list}"';
 const NOTHING_CLOSED = "no closed tab is left to reopen";
 const NOT_CLOSED = 'the tab "{id}" is not among the closed tabs';
 const NOT_A_PAGE = 'the tab "{id}" is a chat: it cannot be duplicated';
+const RECORD_GONE = 'the essential "{id}" names a {app} that is neither open nor closed here';
 
 interface AskedPlace {
 	readonly list: string | null;
@@ -109,11 +112,16 @@ export function showEssentialPlan(essential: EssentialRef): ShowingPlan {
 		const live = liveTabOf(showing.moment, essential.id);
 
 		if (live) {
-			return withTabShown(showing, facts, live);
+			return withEssentialShown(showing, facts, live);
 		}
 
-		const opened = openEssentialTab(showing.moment, essential.id, freshTabOf(essential.app, facts.isBrowserAvailable));
-		return withOpenedTabShown(withMoved(showing, opened), facts, opened.tab, essential.address ?? "");
+		const closed = showing.moment.closed.find(({ tab }) => tab.essentialId === essential.id);
+
+		if (closed === undefined) {
+			return withEssentialOpened(showing, facts, essential);
+		}
+
+		return withClosedReopened(showing, facts, closed.tab.id) ?? refusal(NOT_CLOSED.replace("{id}", closed.tab.id));
 	};
 }
 
@@ -124,6 +132,10 @@ export function releaseEssentialPlan(essential: EssentialRef, asked: TabPlaceAsk
 
 		if (live) {
 			return withMoved(showing, placeTab(showing.moment, live.id, place));
+		}
+
+		if (!isPageApp(essential.app)) {
+			return recordGoneOf(essential);
 		}
 
 		const opened = openTab(showing.moment, freshTabOf(essential.app, facts.isBrowserAvailable), place);
@@ -189,4 +201,25 @@ function groupPlaceOf(moment: HostTabsMoment, groupId: string, list: string | nu
 		groupId,
 		before: null,
 	};
+}
+
+function withEssentialShown(showing: Showing, facts: TabFacts, live: HostTab): Showing {
+	if (isPageApp(live.app)) {
+		return withTabShown(showing, facts, live);
+	}
+
+	return withEffect(showing, { kind: "show-chat", chatId: live.id });
+}
+
+function withEssentialOpened(showing: Showing, facts: TabFacts, essential: EssentialRef): Showing | Refusal {
+	if (!isPageApp(essential.app)) {
+		return recordGoneOf(essential);
+	}
+
+	const opened = openEssentialTab(showing.moment, essential.id, freshTabOf(essential.app, facts.isBrowserAvailable));
+	return withOpenedTabShown(withMoved(showing, opened), facts, opened.tab, essential.address ?? "");
+}
+
+function recordGoneOf(essential: EssentialRef): Refusal {
+	return refusal(RECORD_GONE.replace("{id}", essential.id).replace("{app}", essential.app));
 }

@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { AppKindSchema } from "./app-tab.schema.js";
+import { TabAppSchema } from "./app-tab.schema.js";
 
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
-	app: AppKindSchema,
+	app: TabAppSchema,
 	address: z.string(),
 });
 

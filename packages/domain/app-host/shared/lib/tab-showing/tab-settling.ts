@@ -18,6 +18,7 @@ import {
 	CloseShownTabPaneCommand,
 	LeaveSplitCommand,
 	OpenShownTabPaneCommand,
+	ClosePaneCommand,
 	PaneTreeQuery,
 	ShowChatInPaneCommand,
 	ShowTabInChatGroupCommand,
@@ -39,6 +40,7 @@ const PAGE_EFFECTS = ["open-page", "close-page", "show-page", "open-address", "r
 const WINDOW_EFFECTS = ["open-own-window", "focus-window", "focus-own-window", "tear-off-page"] as const;
 const PANE_EFFECTS = [
 	"close-panes",
+	"close-chat-panes",
 	"open-shown-tab-pane",
 	"close-shown-tab-pane",
 	"show-in-target-pane",
@@ -124,7 +126,7 @@ export async function keepChatTabs(send: Send): Promise<void> {
 		return;
 	}
 
-	await send(KeepChatTabsCommand, { chatIds: records.chats.map(({ id }) => id) });
+	await send(KeepChatTabsCommand, { chats: records.chats.map(({ id, title }) => ({ id, title })) });
 }
 
 export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {
@@ -192,6 +194,8 @@ async function sendPaneEffect(effect: PaneEffect, { parts, send }: TabsReach): P
 	switch (effect.kind) {
 		case "close-panes":
 			return send(ClosePanesOfTabsCommand, { tabIds: effect.tabIds });
+		case "close-chat-panes":
+			return closeChatPanes(send, effect.chatIds);
 		case "open-shown-tab-pane":
 			return send(OpenShownTabPaneCommand);
 		case "close-shown-tab-pane":
@@ -216,6 +220,15 @@ function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 			return send(FocusSplitCommand, { focusedId: effect.focusedId });
 		case "leave-split":
 			return send(LeaveSplitCommand);
+	}
+}
+
+async function closeChatPanes(send: Send, chatIds: readonly string[]): Promise<void> {
+	const board = await send(PaneTreeQuery);
+	const standing = board.leaves.filter((leaf) => leaf.view.kind === "chat" && chatIds.includes(leaf.view.chatId ?? ""));
+
+	for (const leaf of standing) {
+		await send(ClosePaneCommand, { id: leaf.id });
 	}
 }
 

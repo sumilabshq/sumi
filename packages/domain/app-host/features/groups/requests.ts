@@ -3,6 +3,7 @@ import { Repeatable, command } from "@widgetarium/core/requests";
 import {
 	CreateGroupCommand as PlacesCreateGroupCommand,
 	FoldGroupCommand as PlacesFoldGroupCommand,
+	FoldTabCommand as PlacesFoldTabCommand,
 	RenameGroupCommand as PlacesRenameGroupCommand,
 	SetGroupHueCommand as PlacesSetGroupHueCommand,
 	UngroupCommand as PlacesUngroupCommand,
@@ -57,6 +58,16 @@ export const FoldGroupCommand = command("fold-group")
 	.emits(TabsSettledEvent)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
 		await send(PlacesFoldGroupCommand, { window: studioWindow.windowLabel(), id });
+		emit(TabsSettledEvent);
+	});
+
+export const FoldTabCommand = command("fold-tab")
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable)
+	.inject({ studioWindow: StudioWindowGateway })
+	.emits(TabsSettledEvent)
+	.handle(async ({ id }, { send, emit, studioWindow }) => {
+		await send(PlacesFoldTabCommand, { window: studioWindow.windowLabel(), id });
 		emit(TabsSettledEvent);
 	});
 

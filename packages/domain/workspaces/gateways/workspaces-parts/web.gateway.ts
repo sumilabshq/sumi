@@ -12,6 +12,5 @@ export function webWorkspacesParts(workspaceId: string): WorkspacesParts {
 		],
 		currentId: workspaceId,
 		chats: firstChats(),
-		marks: {},
 	});
 }

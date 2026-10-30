@@ -169,8 +169,10 @@ export function exactStudio({
 	releaseChatId = RELEASE_CHAT,
 	pinnedChatIds = [],
 }: ExactStudioAsk = {}): ExactStudio {
-	const chatIds = workspaces.chats.chats().chats.map((chat) => chat.id);
-	const places = new MemoryTabsGateway(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds));
+	const kept = workspaces.chats.chats().chats;
+	const titles = Object.fromEntries(kept.map((chat) => [chat.id, { title: chat.title ?? "New chat" }]));
+	const chatIds = kept.map((chat) => chat.id);
+	const places = new MemoryTabsGateway(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds, titles));
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
@@ -229,7 +231,6 @@ function boardChats(): WorkspacesParts {
 			})),
 			openOnStartId: CHATS[0]?.id ?? "chat-release",
 		},
-		marks: {},
 	});
 }
 

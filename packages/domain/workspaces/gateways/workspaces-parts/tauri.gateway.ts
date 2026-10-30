@@ -1,7 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { Invoke } from "@widgetarium/behaviors/tauri-store";
-import { MemoryChatMarksGateway } from "../chat-marks/memory.gateway.js";
 import {
 	KEPT_CHATS,
 	KEPT_LEGACY_CHAT_INDEX,
@@ -38,7 +37,6 @@ export function tauriWorkspacesParts(workspaceId: string, tauriCall: Invoke): Wo
 			},
 			firstChats(),
 		),
-		chatMarks: new MemoryChatMarksGateway(),
 	};
 }
 

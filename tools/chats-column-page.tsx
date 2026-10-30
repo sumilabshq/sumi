@@ -7,7 +7,7 @@ import { ChatMore } from "../apps/studio/src/features/workspaces/ui/chat-more/ch
 import { ChatRenaming } from "../apps/studio/src/features/workspaces/lib/chat-renaming.js";
 import { TooltipHost } from "../packages/shared/kit/src/index.js";
 import { reportsFailures } from "./page-harness.ts";
-import { BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
@@ -37,7 +37,7 @@ Reflect.set(window, "__chats", { parts, commits });
 const NO_TABS = { tabs: [], shownId: null, minted: 0, closed: [] };
 const started = studioAppOf({
 	workspaces: parts,
-	places: new MemoryTabsGateway(placedTabsOf(NO_TABS, BOARD_CHAT_IDS, BOARD_PINNED)),
+	places: new MemoryTabsGateway(placedTabsOf(NO_TABS, BOARD_CHAT_IDS, BOARD_PINNED, BOARD_CHAT_FACTS)),
 });
 const FRAME_STYLE = {
 	position: "relative",

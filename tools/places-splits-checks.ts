@@ -253,8 +253,12 @@ async function allPinnedChecks(window: StartedApp): Promise<void> {
 		"a split whose every member is pinned stands once in Pinned",
 		typeof allPinned === "string"
 			? allPinned
-			: allPinned.sections.map((section) => section.entries.map((entry) => entry.kind)),
-		[["split"], ["chat", "tab", "tab", "tab"]],
+			: allPinned.sections.map((section) =>
+					section.entries.map((entry) =>
+						entry.kind === "tab" && entry.children !== undefined ? "holder" : entry.kind,
+					),
+				),
+		[["split"], ["holder", "tab", "tab", "tab"]],
 	);
 }
 

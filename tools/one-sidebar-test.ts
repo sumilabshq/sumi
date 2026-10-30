@@ -75,7 +75,7 @@ const ANATOMY = `(() => {
 
 const CHAT_ROWS = `(() => {
 	const chat = document.querySelector('[data-tabs-chat="release"]');
-	const nested = chat?.nextElementSibling ?? null;
+	const nested = chat?.nextElementSibling?.querySelector("[data-tabs-list]") ?? null;
 	const child = nested?.querySelector('[data-tabs-place="child"]') ?? null;
 	const elbow = child === null ? null : getComputedStyle(child, "::before");
 	const unread = document.querySelector('[data-tabs-chat="checks"] [data-tabs-unread]');

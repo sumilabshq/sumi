@@ -22,7 +22,7 @@ import {
 	ShowTabCommand as PlacesShowTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
-import { ChatMarksChangedEvent, ChatRecordsQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
+import { ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
@@ -41,7 +41,6 @@ import {
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
-import { sidebarWithChats } from "./lib/sidebar-chats.js";
 
 const ALL_PAGES = { heldTabId: null };
 
@@ -70,13 +69,9 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 	.output(TabsSidebarSchema)
 	.inject(TAB_PARTS)
 	.handle(async (_input, { send, ...parts }) => {
-		const [at, records] = await Promise.all([
-			tabsAskOf({ parts, send }),
-			send(ChatRecordsQuery),
-			parts.essentials.essentialsLoaded(),
-		]);
+		const [at] = await Promise.all([tabsAskOf({ parts, send }), parts.essentials.essentialsLoaded()]);
 		const essentials = essentialsOf(parts.essentials.essentials()).essentials;
-		return sidebarWithChats(await send(SidebarQuery, { at, essentials }), records);
+		return send(SidebarQuery, { at, essentials });
 	});
 
 export const HeldTabsQuery = query("held-tabs")
@@ -207,10 +202,6 @@ export const RereadSidebarForEssentialsSubscriber = subscriber(EssentialsChanged
 		invalidate(TabsSidebarQuery);
 	},
 );
-
-export const RereadSidebarForMarksSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(TabsSidebarQuery);
-});
 
 function invalidateTabReads(invalidate: (query: { readonly request: AnyQuery }) => void): void {
 	invalidate(AppTabsQuery);

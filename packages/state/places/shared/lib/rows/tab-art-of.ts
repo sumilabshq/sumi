@@ -1,5 +1,5 @@
 import type { TabArt } from "../../schema/tab-rows.schema.js";
-import type { PageApp } from "../../schema/tabs.schema.js";
+import type { AppKind } from "../../schema/tabs.schema.js";
 
 const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
 	md: "note",
@@ -20,13 +20,15 @@ const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
 	svg: "image",
 };
 
-export function tabArtOf(app: PageApp, address: string | null): TabArt {
-	if (app === "canvas") {
-		return "canvas";
-	}
+const ART_OF_APP: Readonly<Record<Exclude<AppKind, "browser">, TabArt>> = {
+	canvas: "canvas",
+	terminal: "terminal",
+	chat: "chat",
+};
 
-	if (app === "terminal") {
-		return "terminal";
+export function tabArtOf(app: AppKind, address: string | null): TabArt {
+	if (app !== "browser") {
+		return ART_OF_APP[app];
 	}
 
 	if (address === null || address === "") {
