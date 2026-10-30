@@ -11,6 +11,18 @@ export function layJsdomGlobals(): JSDOM {
 		HTMLElement: window.HTMLElement,
 		SVGElement: window.SVGElement,
 		getComputedStyle: window.getComputedStyle,
+		matchMedia: unmatchedMedia,
 	});
 	return dom;
+}
+
+function unmatchedMedia(
+	media: string,
+): Pick<MediaQueryList, "media" | "matches" | "addEventListener" | "removeEventListener"> {
+	return {
+		media,
+		matches: false,
+		addEventListener: () => undefined,
+		removeEventListener: () => undefined,
+	};
 }
