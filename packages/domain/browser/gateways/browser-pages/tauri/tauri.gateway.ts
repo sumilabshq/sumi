@@ -14,17 +14,27 @@ import type { GhostLay, GhostWorn } from "../../../shared/schema/tear-off-ghost.
 import { DrawnPages } from "./drawn-pages.js";
 import { HeldPages } from "./held-pages.js";
 import { OwnWindows } from "./own-windows.js";
+import { PageIcons } from "./page-icons.js";
 import { PageInputReplay } from "./page-input-replay.js";
 import { followTheme } from "./page-theme.js";
 import { isOwnWindowEvent, isPageHoveredEvent, isPagePressedEvent, isWindowClosedEvent } from "./pages-bridge.js";
 import type { PageEvent, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
 import { StudioWindows } from "./studio-windows.js";
 import { TearOffGhost } from "./tear-off-ghost.js";
+import { MemorySiteIconsGateway } from "../../site-icons/memory.gateway.js";
+import type { SiteIconsGateway } from "../../site-icons/site-icons.gateway.js";
 
 export { tauriPagesBridge } from "./pages-bridge.js";
 export type { BrowserPagesIpc } from "./pages-bridge.js";
 
 const FIRST_TAB = "tab-1";
+
+export interface TauriPagesHold {
+	readonly profileId: string;
+	readonly ownLabel?: string;
+	readonly siteIcons?: SiteIconsGateway;
+}
+
 const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
@@ -35,14 +45,15 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly studioWindows: StudioWindows;
 	private readonly ghost: TearOffGhost;
 	private readonly drawn: DrawnPages;
+	private readonly icons: PageIcons;
 
 	constructor(
 		private readonly bridge: PagesBridge,
-		profileId: string,
-		ownLabel: string = MAIN_STUDIO_WINDOW,
+		{ profileId, ownLabel = MAIN_STUDIO_WINDOW, siteIcons = new MemorySiteIconsGateway() }: TauriPagesHold,
 	) {
 		super();
 		this.heldPages = this.createHeldPages(profileId);
+		this.icons = this.createPageIcons(siteIcons);
 		this.ownWindows = new OwnWindows(bridge, () => this.told());
 		this.studioWindows = this.createStudioWindows(ownLabel);
 		this.ghost = new TearOffGhost(bridge);
@@ -161,6 +172,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		}
 
 		this.drawn.looks.forget(tabId);
+		this.icons.forget(tabId);
 		this.ownWindows.forget(tabId);
 		this.drawn.forgetShown(tabId);
 		this.heldPages.drop(page);
@@ -247,6 +259,19 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		});
 	}
 
+	private createPageIcons(siteIcons: SiteIconsGateway): PageIcons {
+		return new PageIcons({
+			bridge: this.bridge,
+			siteIcons,
+			livePages: () =>
+				this.heldPages
+					.pages()
+					.filter((page) => page.isDrawn())
+					.map((page) => page.now().id),
+			wear: (page, worn) => this.heldPages.heldPageOf(page)?.wearFavicon(worn),
+		});
+	}
+
 	private createStudioWindows(ownLabel: string): StudioWindows {
 		return new StudioWindows({
 			bridge: this.bridge,
@@ -310,9 +335,27 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private applyLoadEvent(event: PageLoadEvent): void {
 		this.heldPages.adoptIfStanding(event.page);
 		this.heldPages.heldPageOf(event.page)?.apply(event);
+		this.followIcon(event);
 
 		if (this.drawn.drawnPages().includes(event.page) && LOOK_CHANGING_EVENTS.has(event.kind)) {
 			void this.drawn.looks.reread();
+		}
+	}
+
+	private followIcon(event: PageLoadEvent): void {
+		if (event.kind === "finished") {
+			void this.icons.readNow(event.page);
+			return;
+		}
+
+		if (event.kind !== "committed") {
+			return;
+		}
+
+		this.icons.forget(event.page);
+
+		if (this.heldPages.heldPageOf(event.page)?.now().favicon === null) {
+			this.icons.wearRemembered(event.page, event.facts.url);
 		}
 	}
 

@@ -3,10 +3,6 @@ import type { PageContentRead, PageForm, PageLayout } from "../../../shared/sche
 import { FIND_SECRET_FIELD, PAGE_LAYOUT, READ_DOM, READ_PAGE } from "../../../shared/lib/page-scripts.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
-const FAVICON = `(() => {
-	const icon = document.querySelector('link[rel~="icon" i]');
-	return icon && icon.href ? icon.href : new URL("/favicon.ico", location.href).href;
-})()`;
 const FRAME_ADDRESS = "location.href";
 const UNREADABLE = "the page answered something that is not its content";
 const SECRET_FOUND = "true";
@@ -48,12 +44,6 @@ export async function frameUrlsOf(bridge: PagesBridge, page: string): Promise<re
 	const frames = await bridge.evaluateInFrames(page, FRAME_ADDRESS);
 
 	return frames.map((frame) => frame.answer ?? frame.url);
-}
-
-export async function faviconOf(bridge: PagesBridge, page: string): Promise<string | null> {
-	const address = await bridge.evaluate(page, FAVICON).catch(() => "");
-
-	return address.startsWith("http") ? address : null;
 }
 
 export function pngSizeOf(png: Uint8Array): { readonly width: number; readonly height: number } {

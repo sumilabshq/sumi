@@ -62,6 +62,13 @@ class FakeRust implements BrowserPagesIpc {
 			return Promise.resolve(facts("https://example.com/", "Example"));
 		}
 
+		if (name === "site_icon") {
+			return Promise.resolve({
+				icon: String(args?.["address"]).endsWith("/favicon.ico") ? FAKE_ICON : null,
+				isReached: true,
+			});
+		}
+
 		if (name === "open_studio_window") {
 			return Promise.resolve({ window: "studio-2" });
 		}
@@ -97,9 +104,22 @@ class FakeRust implements BrowserPagesIpc {
 			return JSON.stringify({ theme: null, page: "rgb(20, 20, 20)", canvas: "rgb(20, 20, 20)" });
 		}
 
+		if (script.includes("scrollWidth")) {
+			return JSON.stringify({
+				page: { width: 1000, height: 2000 },
+				viewport: { x: 0, y: 0, width: 1000, height: 800 },
+			});
+		}
+
+		if (script.includes("__wgSiteIcons")) {
+			return JSON.stringify({ page: "https://example.com/", links: [] });
+		}
+
 		return "https://example.com/favicon.ico";
 	}
 }
+
+const FAKE_ICON = "data:image/png;base64,iVBORw0KGgo=";
 
 function fakePng(): ArrayBuffer {
 	const bytes = new Uint8Array(24);
@@ -209,7 +229,7 @@ async function checksNavigation(rust: FakeRust, gateway: TauriBrowserPagesGatewa
 	check("a finished load settles", gateway.tabs()[0]?.isLoading, false);
 	check("a finished load names the page", gateway.tabs()[0]?.title, "Example");
 	await waitFor(() => gateway.tabs()[0]?.favicon !== null);
-	check("a finished load reads its icon", gateway.tabs()[0]?.favicon, "https://example.com/favicon.ico");
+	check("a finished load wears the site's icon as an image", gateway.tabs()[0]?.favicon, FAKE_ICON);
 
 	rust.send({ page: FIRST, kind: "title", facts: facts("https://example.com/#second", "Second"), failure: null });
 	check("an in-page move counts an entry", gateway.committed(FIRST), { url: "https://example.com/#second", entry: 2 });
@@ -636,7 +656,7 @@ async function checksPressInPage(rust: FakeRust, container: HTMLElement): Promis
 export async function checksTauriPages(): Promise<void> {
 	const restore = layBrowserGlobals();
 	const rust = new FakeRust();
-	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default");
+	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), { profileId: "default" });
 	const container = document.createElement("div");
 	document.body.append(container);
 
@@ -670,7 +690,7 @@ export async function checksTauriPages(): Promise<void> {
 async function checksSecondWindowAdopts(): Promise<void> {
 	const rust = new FakeRust();
 	rust.standing = ["page-torn"];
-	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default", "studio-2");
+	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), { profileId: "default", ownLabel: "studio-2" });
 	await settledTicks();
 	rust.send({
 		page: "page-made-elsewhere",
@@ -699,7 +719,7 @@ async function checksSecondWindowAdopts(): Promise<void> {
 async function checksAfterReload(): Promise<void> {
 	const rust = new FakeRust();
 	rust.ownWindows = ["tab-7"];
-	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), "default");
+	const gateway = new TauriBrowserPagesGateway(tauriPagesBridge(rust), { profileId: "default" });
 	await settledTicks();
 	check(
 		"after a reload the studio asks Rust which pages have their own window and marks them",

@@ -57,6 +57,7 @@ const BROWSER_COMMANDS: &[&str] = &[
     "page_shot",
     "evaluate",
     "evaluate_frames",
+    "site_icon",
     "window_shot",
     "drive_log",
     "drive_front",

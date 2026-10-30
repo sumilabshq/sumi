@@ -24,21 +24,31 @@ const LETTER_PX: Readonly<Record<TabArtSize, number>> = {
 	row: 16,
 	tile: 18,
 };
+const FAVICON_PX: Readonly<Record<TabArtSize, number>> = {
+	row: 16,
+	tile: 20,
+};
 const ART = "cv:block cv:flex-none";
+const FAVICON_CLASS = "cv:mx-px cv:block cv:flex-none cv:rounded-(--sumi-r-xs) cv:object-contain";
 
 export function TabArt({ icon, favicon, title, address, size }: TabArtProps): ReactElement {
 	const [failed, setFailed] = useState<string | null>(null);
 	const idOfMask = useId();
-	const letterPx = LETTER_PX[size];
 
 	if (favicon !== null && favicon !== failed) {
 		return (
 			<img
 				src={favicon}
 				alt=""
-				width={letterPx}
-				height={letterPx}
-				className="cv:mx-px cv:flex-none cv:rounded-[4px]"
+				width={FAVICON_PX[size]}
+				height={FAVICON_PX[size]}
+				draggable={false}
+				decoding="async"
+				className={FAVICON_CLASS}
+				style={{
+					width: FAVICON_PX[size],
+					height: FAVICON_PX[size],
+				}}
 				onError={() => setFailed(favicon)}
 				data-host-tab-favicon=""
 			/>
@@ -46,7 +56,7 @@ export function TabArt({ icon, favicon, title, address, size }: TabArtProps): Re
 	}
 
 	if (icon === "site") {
-		return <SiteLetter letter={siteLetterOf(title, address)} size={size} px={letterPx} />;
+		return <SiteLetter letter={siteLetterOf(title, address)} size={size} px={LETTER_PX[size]} />;
 	}
 
 	const px = ART_PX[size];

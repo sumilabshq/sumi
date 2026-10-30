@@ -1,6 +1,7 @@
 use super::drive;
 use super::page_holes::Rect;
 use super::pages::{Frame, Pages, Placement};
+use super::site_icon;
 use super::tear_off;
 use super::tear_off_ghost;
 use super::webkit::{self, ShotFormat, ShotRegion};
@@ -131,6 +132,7 @@ fn answer_of(pages: &Arc<Pages>, call: &Call) -> Answer {
         "wear_tear_off_ghost" => tear_off_ghost::wear(app, call.argument("worn")?),
         "show_tear_off_ghost" => tear_off_ghost::show(app, call.flag("shown")?),
         "evaluate" => pages.evaluate(app, call.page()?, call.text("script")?.to_string()),
+        "site_icon" => site_icon::site_icon(call.text("address")?, super::pages::user_agent()),
         "evaluate_frames" => pages.evaluate_in_frames(app, call.page()?, call.text("script")?.to_string()),
         command if drive::is_drive_command(command) => drive::answer(app, command, &call.args),
         unknown => Err(format!("The browser has no command {unknown}.")),

@@ -74,3 +74,8 @@ harness = false
 name = "agent_tools"
 path = "tests/agent_tools.rs"
 harness = false
+
+[[test]]
+name = "browser_site_icon"
+path = "tests/browser_site_icon.rs"
+harness = false

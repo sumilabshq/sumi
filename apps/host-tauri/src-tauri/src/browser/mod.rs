@@ -6,6 +6,7 @@ pub mod page_pointer;
 pub mod page_press;
 pub mod pages;
 pub mod policy;
+pub mod site_icon;
 pub mod studio_hit;
 pub mod tear_off;
 pub mod tear_off_ghost;

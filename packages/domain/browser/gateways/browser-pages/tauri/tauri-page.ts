@@ -7,8 +7,10 @@ import type {
 	ShotAsk,
 } from "../../../shared/schema/page-read.schema.js";
 import { regionOnPage } from "../../../shared/lib/region-within.js";
+import { originOf } from "../../../shared/lib/site-key.js";
+import type { WornIcon } from "../../../shared/schema/site-icon.schema.js";
 import type { PageFacts, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
-import { base64Of, contentOf, faviconOf, frameUrlsOf, hasSecretFieldIn, layoutOf, pngSizeOf } from "./page-reads.js";
+import { base64Of, contentOf, frameUrlsOf, hasSecretFieldIn, layoutOf, pngSizeOf } from "./page-reads.js";
 
 const NEW_TAB_TITLE = "New tab";
 const BLANK = "about:blank";
@@ -38,6 +40,7 @@ export interface TauriPageHold {
 export class TauriPage {
 	private state: BrowserTab;
 	private entry = 0;
+	private faviconOrigin: string | null = null;
 	private created: Promise<void> | null = null;
 	private settledWaiters: (() => void)[] = [];
 	private readonly bridge: PagesBridge;
@@ -172,6 +175,21 @@ export class TauriPage {
 		};
 	}
 
+	wearFavicon({ favicon, origin }: WornIcon): void {
+		if (originOf(this.state.url) !== origin) {
+			console.debug(`[widgetarium] browser page ${this.state.id} icon of ${origin} skipped: the tab moved on`);
+			return;
+		}
+
+		this.faviconOrigin = origin;
+
+		if (favicon === this.state.favicon) {
+			return;
+		}
+
+		this.update({ favicon });
+	}
+
 	apply(event: PageLoadEvent): void {
 		const reactions: Record<PageLoadEvent["kind"], () => void> = {
 			started: () => this.update({ isLoading: true }),
@@ -226,11 +244,13 @@ export class TauriPage {
 
 	private noteCommit(facts: PageFacts): void {
 		this.entry += 1;
+		const url = this.urlOf(facts);
+		const origin = originOf(url);
 		this.update({
 			failure: null,
-			favicon: null,
+			favicon: origin !== null && origin === this.faviconOrigin ? this.state.favicon : null,
 			isLoading: true,
-			url: this.urlOf(facts),
+			url,
 			title: facts.title || this.state.title,
 			canGoBack: facts.canGoBack,
 			canGoForward: facts.canGoForward,
@@ -242,7 +262,6 @@ export class TauriPage {
 		this.noteFacts(facts);
 		this.update({ isLoading: false });
 		this.releaseSettledWaiters();
-		void faviconOf(this.bridge, this.state.id).then((favicon) => this.update({ favicon }));
 	}
 
 	private noteStop(facts: PageFacts): void {

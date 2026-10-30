@@ -819,7 +819,7 @@ fn evaluated_in(view: &WKWebView, script: &str, sub_frame: SubFrame) -> (String,
     (sub_frame.url, receiver)
 }
 
-fn user_agent() -> &'static str {
+pub fn user_agent() -> &'static str {
     USER_AGENT.get_or_init(|| {
         let version = webkit::safari_version();
 

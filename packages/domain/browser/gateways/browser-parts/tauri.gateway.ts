@@ -7,6 +7,8 @@ import { KeptGrantsSchema, TauriBrowserGrantsGateway, keptGrantsKind } from "../
 import { TauriBrowserPagesGateway, tauriPagesBridge } from "../browser-pages/tauri/tauri.gateway.js";
 import type { BrowserPagesIpc } from "../browser-pages/tauri/tauri.gateway.js";
 import { KeptRecentSitesSchema, TauriRecentSitesGateway, keptRecentSitesKind } from "../recent-sites/tauri.gateway.js";
+import { KeptSiteIconsSchema } from "../../shared/schema/site-icon.schema.js";
+import { TauriSiteIconsGateway, keptSiteIconsKind } from "../site-icons/tauri.gateway.js";
 import type { BrowserParts } from "./browser-parts.gateway.js";
 import { browserPartsOf } from "./memory.gateway.js";
 
@@ -15,6 +17,7 @@ export interface TauriProfileFiles {
 	readonly grantChanges: string;
 	readonly access: string;
 	readonly recentSites: string;
+	readonly siteIcons: string;
 }
 
 // TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too, as in the layout module
@@ -34,6 +37,7 @@ export function profileFilesOf(profileId: string): TauriProfileFiles {
 		grantChanges: at("grant-changes.jsonl"),
 		access: at("access.jsonl"),
 		recentSites: at("recent-sites.json"),
+		siteIcons: at("site-icons.json"),
 	};
 }
 
@@ -52,12 +56,18 @@ export function tauriBrowserParts(ipc: BrowserPagesIpc = BROWSER_IPC): BrowserPa
 		kind: keptRecentSitesKind(files.recentSites),
 		empty: KeptRecentSitesSchema.parse({}),
 	});
+	const siteIcons = HeldDoc.reading({
+		store,
+		root: GLOBAL_ROOT,
+		kind: keptSiteIconsKind(files.siteIcons),
+		empty: KeptSiteIconsSchema.parse({}),
+	});
 	return browserPartsOf({
-		browserPages: new TauriBrowserPagesGateway(
-			tauriPagesBridge(ipc),
-			DEFAULT_BROWSER_PROFILE,
-			studioWindowOf(location.search).label,
-		),
+		browserPages: new TauriBrowserPagesGateway(tauriPagesBridge(ipc), {
+			profileId: DEFAULT_BROWSER_PROFILE,
+			ownLabel: studioWindowOf(location.search).label,
+			siteIcons: new TauriSiteIconsGateway(siteIcons),
+		}),
 		browserGrants: new TauriBrowserGrantsGateway(grants, store, files),
 		browserAudit: new TauriBrowserAuditGateway(store, files.access),
 		recentSites: new TauriRecentSitesGateway(recentSites),

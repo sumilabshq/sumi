@@ -14783,6 +14783,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:overflow-y-auto {
 		overflow-y: auto !important;
 	}
+	.cv\:rounded-\(--sumi-r-xs\) {
+		border-radius: var(--sumi-r-xs) !important;
+	}
 	.cv\:rounded-2xl {
 		border-radius: var(--cv-radius-2xl) !important;
 	}
