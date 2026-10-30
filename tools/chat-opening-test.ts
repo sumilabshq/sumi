@@ -1,10 +1,14 @@
 import {
 	NameChatPaneCommand,
 	OpenChatCommand,
+	OpenNewChatCommand,
+	PinChatCommand,
+	RenameTabCommand,
 	TearOffChatCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
 import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";
-import { ChatListQuery, ChatToOpenQuery } from "../packages/domain/workspaces/generated/contract.ts";
+import { ChatToOpenQuery } from "../packages/domain/workspaces/generated/contract.ts";
+import { ChatListQuery } from "../packages/domain/app-host/generated/contract.ts";
 import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
@@ -59,7 +63,28 @@ async function tearOffChecks(): Promise<void> {
 	);
 }
 
+async function chatTabChecks(): Promise<void> {
+	const { studioApp, places, appHost } = studioFakesOf();
+	const opened = await studioApp.send(OpenNewChatCommand, { title: "Plan" });
+	const newId = opened.ok ? opened.output.id : "";
+	await studioApp.send(PinChatCommand, { id: newId, isPinned: true });
+	await studioApp.send(RenameTabCommand, { id: HOST_CHAT, label: "Renamed" });
+	const list = await studioApp.send(ChatListQuery);
+	const placed = await places.placedTabs();
+	check(
+		"a new chat is a tab, a pin moves it into Pinned in places, and a tab label names the chat",
+		[
+			list.ok ? list.output.pinned.map((row) => [row.id, row.title]) : list.reason,
+			list.ok ? list.output.recents.map((row) => [row.id, row.title]) : list.reason,
+			placed.lists["pinned"]?.map((entry) => entry.id),
+			appHost.studioWindow.windowLabel(),
+		],
+		[[[newId, "Plan"]], [[HOST_CHAT, "Renamed"]], [newId], "main"],
+	);
+}
+
 await namingChecks();
+await chatTabChecks();
 await tearOffChecks();
 await unknownChatChecks();
 console.log(tally.failed === 0 ? "chat opening: all checks pass" : `chat opening: ${tally.failed} failed`);

@@ -178,7 +178,6 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 				{
 					id: HOST_CHAT,
 					title,
-					isPinned: false,
 					createdAt: 1,
 					lastAt: 1,
 				},

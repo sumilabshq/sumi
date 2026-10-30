@@ -147,6 +147,42 @@ export const HeldTabsSchema = z.object({
 
 export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
+export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
+
+export const ChatRowSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	isPinned: z.boolean(),
+	mark: ChatMarkSchema,
+});
+
+export type ChatRowData = z.infer<typeof ChatRowSchema>;
+
+export const ChatListSchema = z.object({
+	pinned: z.array(ChatRowSchema),
+	recents: z.array(ChatRowSchema),
+});
+
+export type ChatListData = z.infer<typeof ChatListSchema>;
+
+export const ChatPinSchema = z.object({
+	id: z.string().min(1),
+	isPinned: z.boolean(),
+});
+
+export const ChatPlaceSchema = z.object({
+	id: z.string().min(1),
+	to: z.discriminatedUnion("list", [
+		z.object({
+			list: z.literal("pinned"),
+			before: z.string().min(1).nullable(),
+		}),
+		z.object({ list: z.literal("recents") }),
+	]),
+});
+
+export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
+
 export const ChatToShowSchema = z.object({
 	chatId: z.string().min(1),
 	paneId: z.string().nullable(),
@@ -221,6 +257,14 @@ export const TabsColumnSchema = z.object({
 
 export type TabsColumn = z.infer<typeof TabsColumnSchema>;
 
+export const ChatListQuery = query("app-host/chat-list")
+	.output(ChatListSchema);
+export const PinChatCommand = command("app-host/pin-chat")
+	.input(ChatPinSchema)
+	.idempotencyKey(Repeatable);
+export const PlaceChatCommand = command("app-host/place-chat")
+	.input(ChatPlaceSchema)
+	.idempotencyKey(Repeatable);
 export const OpenChatCommand = command("app-host/open-chat")
 	.input(ChatToShowSchema)
 	.idempotencyKey(Repeatable);
@@ -361,4 +405,4 @@ export const ShowViewCommand = command("app-host/show-view")
 	.input(z.object({ view: StudioViewSchema }))
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, TabsColumnQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, MoveTabToListCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ResizeColumnCommand, ResetColumnCommand, FoldTabListCommand, SetSidebarViewCommand, ShowViewCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinChatCommand, PlaceChatCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, TabsColumnQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, MoveTabToListCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ResizeColumnCommand, ResetColumnCommand, FoldTabListCommand, SetSidebarViewCommand, ShowViewCommand]);

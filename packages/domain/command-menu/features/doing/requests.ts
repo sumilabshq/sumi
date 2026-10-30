@@ -7,6 +7,7 @@ import {
 	OpenChatCommand,
 	OpenNewChatCommand,
 	OpenTabCommand,
+	PinChatCommand,
 	RenameTabCommand,
 	ReopenClosedTabByIdCommand,
 	ReopenClosedTabCommand,
@@ -19,8 +20,6 @@ import {
 	CreateWorkspaceCommand,
 	OpenChatElsewhereCommand,
 	OpenWorkspaceCommand,
-	PinChatCommand,
-	RenameChatCommand,
 	RenameWorkspaceCommand,
 } from "@widgetarium/workspaces";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
@@ -68,7 +67,7 @@ export const RenameRowCommand = command("rename-row")
 				await send(RenameTabCommand, { id, label: trimmed });
 				break;
 			case "chat":
-				await send(RenameChatCommand, { id, title: trimmed });
+				await send(RenameTabCommand, { id, label: trimmed });
 				break;
 			case "workspace":
 				await send(RenameWorkspaceCommand, { id, name: trimmed });

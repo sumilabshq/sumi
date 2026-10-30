@@ -10,7 +10,7 @@ import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
-	ChatListQuery,
+	ChatRecordsQuery,
 	CreateChatCommand,
 	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
@@ -55,9 +55,9 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 }
 
 async function firstChatIdIn({ started }: TauriWorkspaces): Promise<string | undefined> {
-	await waitFor(() => started.routes.readNow(ChatListQuery) !== null);
-	const answer = await started.send(ChatListQuery);
-	return answer.ok ? answer.output.recents[0]?.id : undefined;
+	await waitFor(() => started.routes.readNow(ChatRecordsQuery) !== null);
+	const answer = await started.send(ChatRecordsQuery);
+	return answer.ok ? [...answer.output.chats].sort((one, other) => other.lastAt - one.lastAt)[0]?.id : undefined;
 }
 
 function markOf({ parts }: TauriWorkspaces, id: string): string {

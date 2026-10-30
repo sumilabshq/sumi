@@ -1,6 +1,6 @@
 import { useQuery } from "@widgetarium/core/requests";
-import { ChatListQuery } from "@widgetarium/workspaces";
-import type { ChatRowData } from "@widgetarium/workspaces";
+import { ChatListQuery } from "@widgetarium/app-host";
+import type { ChatRowData } from "@widgetarium/app-host";
 
 export function useChatRow(chatId: string | null): ChatRowData | null {
 	const { pinned, recents } = useQuery(ChatListQuery).data;

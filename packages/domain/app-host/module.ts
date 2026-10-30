@@ -5,6 +5,15 @@ import { PlacesModule } from "@widgetarium/places";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import {
+	ChatListQuery,
+	PinChatCommand,
+	PlaceChatCommand,
+	RereadChatListForChatsSubscriber,
+	RereadChatListForCoreSubscriber,
+	RereadChatListForMarksSubscriber,
+	RereadChatListSubscriber,
+} from "./features/chat-list/requests.js";
+import {
 	NameChatPaneCommand,
 	OpenChatAskedOnStartCommand,
 	OpenChatCommand,
@@ -80,6 +89,10 @@ export const AppHostModule = module("app-host")
 	.on(Device)
 	.imports(BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
 	.subscribers(
+		RereadChatListSubscriber,
+		RereadChatListForChatsSubscriber,
+		RereadChatListForMarksSubscriber,
+		RereadChatListForCoreSubscriber,
 		EnsurePanePagesSubscriber,
 		KeepChatTabsSubscriber,
 		RereadTabsSubscriber,
@@ -97,6 +110,7 @@ export const AppHostModule = module("app-host")
 		RereadClosedTabsSubscriber,
 		RereadClosedTabsForCoreSubscriber,
 	)
+	.public(ChatListQuery, PinChatCommand, PlaceChatCommand)
 	.public(
 		OpenChatCommand,
 		OpenNewChatCommand,

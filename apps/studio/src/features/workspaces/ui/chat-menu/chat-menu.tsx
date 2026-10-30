@@ -2,8 +2,8 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverAnchor, PopoverAnchorAt, PopoverContent, PopoverItem } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
-import type { ChatRowData } from "@widgetarium/workspaces";
-import { PinChatCommand } from "@widgetarium/workspaces";
+import type { ChatRowData } from "@widgetarium/app-host";
+import { PinChatCommand } from "@widgetarium/app-host";
 
 export type ChatMenuAt =
 	| {

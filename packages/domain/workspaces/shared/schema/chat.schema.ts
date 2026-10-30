@@ -3,8 +3,6 @@ import { z } from "zod";
 export const KeptChatSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
-	isPinned: z.boolean(),
-	pinRank: z.number().int().nonnegative().optional(),
 	createdAt: z.number().nonnegative(),
 	lastAt: z.number().nonnegative(),
 });
@@ -41,29 +39,6 @@ export const NewChatSchema = z.object({
 	title: z.string().nullable(),
 });
 
-export const ChatPinSchema = z.object({
-	id: z.string().min(1),
-	isPinned: z.boolean(),
-});
-
-export const ChatPlaceSchema = z.object({
-	id: z.string().min(1),
-	to: z.discriminatedUnion("list", [
-		z.object({
-			list: z.literal("pinned"),
-			before: z.string().min(1).nullable(),
-		}),
-		z.object({ list: z.literal("recents") }),
-	]),
-});
-
-export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
-
-export const ChatTitleSchema = z.object({
-	id: z.string().min(1),
-	title: z.string(),
-});
-
 export const ChatTurnSchema = z.object({
 	chatId: z.string().min(1),
 	isBusy: z.boolean(),
@@ -73,21 +48,21 @@ export const ChatTurnSchema = z.object({
 
 export type ChatTurn = z.infer<typeof ChatTurnSchema>;
 
-export const ChatRowSchema = z.object({
+export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
-	isPinned: z.boolean(),
+	lastAt: z.number().nonnegative(),
 	mark: ChatMarkSchema,
 });
 
-export type ChatRowData = z.infer<typeof ChatRowSchema>;
+export type ChatRecord = z.infer<typeof ChatRecordSchema>;
 
-export const ChatListSchema = z.object({
-	pinned: z.array(ChatRowSchema),
-	recents: z.array(ChatRowSchema),
+export const ChatRecordsSchema = z.object({
+	isRead: z.boolean(),
+	chats: z.array(ChatRecordSchema),
 });
 
-export type ChatListData = z.infer<typeof ChatListSchema>;
+export type ChatRecords = z.infer<typeof ChatRecordsSchema>;
 
 export const WorkspaceCrumbSchema = z.object({
 	workspace: z.string(),

@@ -14,10 +14,14 @@ export const MAIN_WINDOW = "main";
 
 export type SeededTabs = z.input<typeof KeptSessionTabsSchema>;
 
-export function placedTabsOf(seed: SeededTabs, chatIds: readonly string[] = []): PlacedTabs {
+export function placedTabsOf(
+	seed: SeededTabs,
+	chatIds: readonly string[] = [],
+	pinnedIds: readonly string[] = [],
+): PlacedTabs {
 	return migratedTabsOf(
 		KeptSessionTabsSchema.parse(seed),
-		chatIds.map((id) => ({ id, isPinned: false, lastAt: 0 })),
+		chatIds.map((id) => ({ id, isPinned: pinnedIds.includes(id), pinRank: pinnedIds.indexOf(id), lastAt: 0 })),
 	);
 }
 

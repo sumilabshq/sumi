@@ -24,7 +24,7 @@ import {
 } from "@widgetarium/layout";
 import { KeepChatTabsCommand } from "@widgetarium/places";
 import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places";
-import { ChatListQuery } from "@widgetarium/workspaces";
+import { ChatRecordsQuery } from "@widgetarium/workspaces";
 import type { KeptEssentials } from "../../schema/essential.schema.js";
 import type { StudioView } from "../../schema/studio-view.schema.js";
 import type { MovedEssentials } from "../essentials/essentials.js";
@@ -99,8 +99,14 @@ export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | nul
 }
 
 export async function keepChatTabs(send: Send): Promise<void> {
-	const { pinned, recents } = await send(ChatListQuery);
-	await send(KeepChatTabsCommand, { chatIds: [...pinned, ...recents].map(({ id }) => id) });
+	const records = await send(ChatRecordsQuery);
+
+	if (!records.isRead) {
+		console.info("[widgetarium] keep chat tabs skipped: the chats are not read yet");
+		return;
+	}
+
+	await send(KeepChatTabsCommand, { chatIds: records.chats.map(({ id }) => id) });
 }
 
 export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { AppTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import type { ChatListQuery } from "@widgetarium/workspaces";
+import type { ChatListQuery } from "@widgetarium/app-host";
 import type { OutputOf } from "@widgetarium/core/requests";
 
 export type Sidebar = OutputOf<typeof TabsSidebarQuery>;

@@ -21,29 +21,6 @@ export const NewChatSchema = z.object({
 	title: z.string().nullable(),
 });
 
-export const ChatPinSchema = z.object({
-	id: z.string().min(1),
-	isPinned: z.boolean(),
-});
-
-export const ChatPlaceSchema = z.object({
-	id: z.string().min(1),
-	to: z.discriminatedUnion("list", [
-		z.object({
-			list: z.literal("pinned"),
-			before: z.string().min(1).nullable(),
-		}),
-		z.object({ list: z.literal("recents") }),
-	]),
-});
-
-export type ChatPlace = z.infer<typeof ChatPlaceSchema>;
-
-export const ChatTitleSchema = z.object({
-	id: z.string().min(1),
-	title: z.string(),
-});
-
 export const ChatTurnSchema = z.object({
 	chatId: z.string().min(1),
 	isBusy: z.boolean(),
@@ -53,21 +30,21 @@ export const ChatTurnSchema = z.object({
 
 export type ChatTurn = z.infer<typeof ChatTurnSchema>;
 
-export const ChatRowSchema = z.object({
+export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
-	isPinned: z.boolean(),
+	lastAt: z.number().nonnegative(),
 	mark: ChatMarkSchema,
 });
 
-export type ChatRowData = z.infer<typeof ChatRowSchema>;
+export type ChatRecord = z.infer<typeof ChatRecordSchema>;
 
-export const ChatListSchema = z.object({
-	pinned: z.array(ChatRowSchema),
-	recents: z.array(ChatRowSchema),
+export const ChatRecordsSchema = z.object({
+	isRead: z.boolean(),
+	chats: z.array(ChatRecordSchema),
 });
 
-export type ChatListData = z.infer<typeof ChatListSchema>;
+export type ChatRecords = z.infer<typeof ChatRecordsSchema>;
 
 export const WorkspaceCrumbSchema = z.object({
 	workspace: z.string(),
@@ -148,8 +125,8 @@ export type WorkspacesView = z.infer<typeof WorkspacesSchema>;
 export const WorkspacesQuery = query("workspaces/workspaces")
 	.output(WorkspacesSchema)
 	.settlesNow();
-export const ChatListQuery = query("workspaces/chat-list")
-	.output(ChatListSchema)
+export const ChatRecordsQuery = query("workspaces/chat-records")
+	.output(ChatRecordsSchema)
 	.settlesNow();
 export const WorkspaceCrumbQuery = query("workspaces/workspace-crumb")
 	.output(WorkspaceCrumbSchema)
@@ -187,18 +164,10 @@ export const MarkChatSeenCommand = command("workspaces/mark-chat-seen")
 export const ForgetChatToOpenCommand = command("workspaces/forget-chat-to-open")
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable);
-export const PinChatCommand = command("workspaces/pin-chat")
-	.input(ChatPinSchema)
-	.idempotencyKey(Repeatable);
-export const PlaceChatCommand = command("workspaces/place-chat")
-	.input(ChatPlaceSchema)
-	.idempotencyKey(Repeatable);
-export const RenameChatCommand = command("workspaces/rename-chat")
-	.input(ChatTitleSchema)
-	.idempotencyKey(Repeatable);
 export const RecordChatTurnCommand = command("workspaces/record-chat-turn")
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable);
 export const ChatsChangedEvent = event("workspaces/chats-changed");
+export const ChatMarksChangedEvent = event("workspaces/chat-marks-changed");
 
-export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatListQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, MarkChatSeenCommand, ForgetChatToOpenCommand, PinChatCommand, PlaceChatCommand, RenameChatCommand, RecordChatTurnCommand]);
+export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatRecordsQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, MarkChatSeenCommand, ForgetChatToOpenCommand, RecordChatTurnCommand]);

@@ -3,14 +3,12 @@ import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
 	ChatToOpenQuery,
 	ForgetChatToOpenCommand,
-	ChatListQuery,
+	ChatRecordsQuery,
 	CreateChatCommand,
 	CreateWorkspaceCommand,
 	OpenWorkspaceByPositionCommand,
 	OpenWorkspaceCommand,
-	PinChatCommand,
 	RecordChatTurnCommand,
-	RenameChatCommand,
 	RenameWorkspaceCommand,
 	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
@@ -43,11 +41,10 @@ class LostFolderWorkspacesGateway extends MemoryWorkspacesGateway {
 	}
 }
 
-function chatOf(id: string, lastAt: number, isPinned = false): KeptChat {
+function chatOf(id: string, lastAt: number): KeptChat {
 	return {
 		id,
 		title: null,
-		isPinned,
 		createdAt: lastAt,
 		lastAt,
 	};
@@ -69,7 +66,7 @@ function seededParts(): WorkspacesParts {
 		],
 		currentId: "home",
 		chats: {
-			chats: [chatOf("old", 1), chatOf("pinned", 2, true), chatOf("new", 3)],
+			chats: [chatOf("old", 1), chatOf("pinned", 2), chatOf("new", 3)],
 			openOnStartId: "gone",
 		},
 		marks: {},
@@ -141,17 +138,19 @@ async function chatChecks(): Promise<void> {
 	const chats = started(parts);
 	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(ChatToOpenQuery));
 	check("a chat asked to open on start that the chats lost opens nothing", await toOpen(), { isRead: true, id: null });
-	const list = ChatListQuery.outputSchema.parse(outputOf(await chats.send(ChatListQuery)));
+	const records = ChatRecordsQuery.outputSchema.parse(outputOf(await chats.send(ChatRecordsQuery)));
 	check(
-		"the list puts pinned chats apart and the latest first",
-		[list.pinned.map((row) => row.id), list.recents.map((row) => row.id)],
-		[["pinned"], ["new", "old"]],
+		"the records hold every chat with its title and mark, and no pin: places keeps where a chat stands",
+		[records.isRead, records.chats.map((row) => [row.id, row.title, row.mark]).sort()],
+		[
+			true,
+			[
+				["new", "New chat", "none"],
+				["old", "New chat", "none"],
+				["pinned", "New chat", "none"],
+			],
+		],
 	);
-
-	const blank = await chats.send(RenameChatCommand, { id: "old", title: " " });
-	check("a blank chat title is refused", outputOf(blank), "A chat needs a title.");
-	await chats.send(PinChatCommand, { id: "old", isPinned: true });
-	check("a pin is kept", parts.chats.chats().chats.find((chat) => chat.id === "old")?.isPinned, true);
 
 	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, isSeen: false, firstAsked: LONG_ASK });
 	const titled = parts.chats.chats().chats.find((chat) => chat.id === "old");

@@ -8,7 +8,7 @@ import { BESIDE_TRAFFIC_LIGHTS } from "../apps/host-tauri/src/tauri-studio-host.
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { NO_ESSENTIALS, exactStudio } from "./studio-exact-fixture.ts";
-import { boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -23,8 +23,8 @@ const PROJECT: WidgetariumProject = {
 
 const workspaces = boardWorkspacesParts("board");
 const exact = new URLSearchParams(location.search).has("bare")
-	? exactStudio({ essentials: NO_ESSENTIALS, workspaces, releaseChatId: "release" })
-	: exactStudio({ workspaces, releaseChatId: "release" });
+	? exactStudio({ essentials: NO_ESSENTIALS, workspaces, releaseChatId: "release", pinnedChatIds: BOARD_PINNED })
+	: exactStudio({ workspaces, releaseChatId: "release", pinnedChatIds: BOARD_PINNED });
 const state = createStudioState(exact.studioApp);
 const started = startStudio(PROJECT, {
 	assistant: { ...NO_ASSISTANT, can: true },

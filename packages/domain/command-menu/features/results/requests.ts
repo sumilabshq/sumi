@@ -1,8 +1,8 @@
 import { query, subscriber } from "@widgetarium/core/requests";
-import { AppTabsQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
 import type { TabsSidebar } from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
-import { ChatListQuery, ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
+import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import { ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
 import { draftsOf } from "./lib/drafts.js";

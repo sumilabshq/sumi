@@ -7,7 +7,8 @@ import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../packages/domai
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import { ChatListQuery, WorkspacesQuery } from "../packages/domain/workspaces/index.ts";
+import { WorkspacesQuery } from "../packages/domain/workspaces/index.ts";
+import { ChatListQuery } from "../packages/domain/app-host/index.ts";
 import {
 	firstChats,
 	memoryWorkspacesParts,
@@ -233,7 +234,6 @@ await check("a chat in another workspace is found and opened there", async () =>
 								{
 									id: "tab-one-chat",
 									title: "Default tab number one",
-									isPinned: false,
 									createdAt: 1,
 									lastAt: 1,
 								},

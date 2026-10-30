@@ -154,6 +154,7 @@ export interface ExactStudioAsk {
 	readonly essentials?: KeptEssentials;
 	readonly workspaces?: WorkspacesParts;
 	readonly releaseChatId?: string;
+	readonly pinnedChatIds?: readonly string[];
 }
 
 export interface ExactStudio {
@@ -168,13 +169,10 @@ export function exactStudio({
 	essentials = KEPT_ESSENTIALS,
 	workspaces = boardChats(),
 	releaseChatId = RELEASE_CHAT,
+	pinnedChatIds = [],
 }: ExactStudioAsk = {}): ExactStudio {
-	const places = new MemoryTabsGateway(
-		placedTabsOf(
-			keptTabsIn(releaseChatId),
-			CHATS.map((chat) => chat.id),
-		),
-	);
+	const chatIds = workspaces.chats.chats().chats.map((chat) => chat.id);
+	const places = new MemoryTabsGateway(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds));
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
@@ -235,7 +233,6 @@ function boardChats(): WorkspacesParts {
 			chats: CHATS.map((chat, at) => ({
 				id: chat.id,
 				title: chat.title,
-				isPinned: false,
 				createdAt: at + 1,
 				lastAt: at + 1,
 			})),

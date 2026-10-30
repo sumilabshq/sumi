@@ -21,7 +21,8 @@ import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { CreateChatCommand, RenameChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
+import { CreateChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
+import { RenameTabCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 
@@ -96,7 +97,7 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 		__PLACE_PANE__: (view: PaneView, targetId: string | null, side: PaneSide) =>
 			studioApp.send(PlacePaneCommand, { view, targetId, side }),
 		__CREATE_CHAT__: () => studioApp.send(CreateChatCommand, { title: null }),
-		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(RenameChatCommand, { id, title }),
+		__RENAME_CHAT__: (id: string, title: string) => studioApp.send(RenameTabCommand, { id, label: title }),
 	});
 	return {
 		assistant,
@@ -121,7 +122,6 @@ function newChatWorkspaces(): ReturnType<typeof memoryWorkspacesParts> {
 				{
 					id: CHAT_ID,
 					title: null,
-					isPinned: false,
 					createdAt: 1,
 					lastAt: 1,
 				},

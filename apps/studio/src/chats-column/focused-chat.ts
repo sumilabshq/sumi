@@ -2,7 +2,7 @@ import type { FocusedChat, FocusedChatPort } from "@widgetarium/core/engine/focu
 import type { StartedApp } from "@widgetarium/core/requests";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
-import { ChatListQuery } from "@widgetarium/workspaces";
+import { ChatListQuery } from "@widgetarium/app-host";
 
 export function focusedChatPortOf(studioApp: StartedApp): FocusedChatPort {
 	return {

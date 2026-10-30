@@ -2,7 +2,7 @@ import { createElement as h, memo, useCallback, useContext } from "react";
 import type { MouseEvent, ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/core/requests";
-import type { ChatRowData } from "@widgetarium/workspaces";
+import type { ChatRowData } from "@widgetarium/app-host";
 import { OpenChatCommand } from "@widgetarium/app-host";
 import { ChatWindowsContext, ShownChatsContext } from "../../lib/shown-chats.js";
 import type { ChatMenuAt } from "../chat-menu/chat-menu.js";

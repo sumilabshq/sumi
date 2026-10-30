@@ -2,7 +2,7 @@ import { createElement as h, useId, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
 import { InertButton } from "../inert-button/inert-button.js";
-import type { ChatRowData } from "@widgetarium/workspaces";
+import type { ChatRowData } from "@widgetarium/app-host";
 import type { ChatMenuAt } from "../chat-menu/chat-menu.js";
 import { ChatRow } from "./chat-row.js";
 import type { ChatListKey } from "../../lib/chat-drag/chat-drag.js";

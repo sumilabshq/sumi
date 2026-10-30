@@ -1,7 +1,8 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import { ChatListQuery, MarkChatSeenCommand, PlaceChatCommand } from "@widgetarium/workspaces";
+import { ChatListQuery, PlaceChatCommand } from "@widgetarium/app-host";
+import { MarkChatSeenCommand } from "@widgetarium/workspaces";
 import { TearOffChatCommand } from "@widgetarium/app-host";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";
 import { useRenamingIdIn } from "../../lib/chat-renaming.js";

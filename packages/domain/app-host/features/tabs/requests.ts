@@ -22,7 +22,7 @@ import {
 	ShowTabCommand as PlacesShowTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
-import { ChatListQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
+import { ChatRecordsQuery, ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
@@ -77,16 +77,14 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 	.handle(async (_input, { send, tabsColumn, ...parts }) => {
 		const [at, chatList] = await Promise.all([
 			tabsAskOf({ parts, send }),
-			send(ChatListQuery),
+			send(ChatRecordsQuery),
 			parts.essentials.essentialsLoaded(),
 		]);
 		const onBoard = new Set(at.screen.chatGroups.map((group) => group.chatId));
 		return send(PlacedSidebarQuery, {
 			at,
 			essentials: essentialsOf(parts.essentials.essentials()).essentials,
-			boardChats: [...chatList.pinned, ...chatList.recents]
-				.filter((row) => onBoard.has(row.id))
-				.map(({ id, title }) => ({ id, title })),
+			boardChats: chatList.chats.filter((row) => onBoard.has(row.id)).map(({ id, title }) => ({ id, title })),
 			shutLists: tabsColumn.column().shutLists,
 			look: sidebarViewOf(tabsColumn.column()),
 		});

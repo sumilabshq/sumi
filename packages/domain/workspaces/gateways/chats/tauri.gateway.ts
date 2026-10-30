@@ -5,15 +5,8 @@ import { KeptChatSchema } from "../../shared/schema/chat.schema.js";
 import type { KeptChats } from "../../shared/schema/chat.schema.js";
 import { ChatsGateway } from "./chats.gateway.js";
 
-const StoredChatSchema = KeptChatSchema.extend({
-	pinRank: KeptChatSchema.shape.pinRank.catch(({ input }) => {
-		console.warn(`[widgetarium] chat pin rank ${JSON.stringify(input)} → none (the kept value is not a whole number)`);
-		return undefined;
-	}),
-});
-
 export const KeptChatsDocSchema = z.looseObject({
-	chats: z.array(StoredChatSchema).default([]),
+	chats: z.array(KeptChatSchema).default([]),
 	openOnStartId: z.string().nullable().optional().catch(null),
 	activeId: z.string().nullable().optional().catch(null),
 });
@@ -24,7 +17,7 @@ export const KEPT_CHATS: DocKind<KeptChatsDoc> = {
 	file: "chats.json",
 	v: 1,
 	schema: KeptChatsDocSchema,
-	salvage: KeptChatsDocSchema.extend({ chats: validEntriesOf(StoredChatSchema) }),
+	salvage: KeptChatsDocSchema.extend({ chats: validEntriesOf(KeptChatSchema) }),
 };
 
 export const KeptLegacyChatIndexSchema = z.looseObject({
@@ -97,7 +90,6 @@ function keptOfLegacy(id: string): KeptChats {
 			{
 				id,
 				title: null,
-				isPinned: false,
 				createdAt: 0,
 				lastAt: 0,
 			},

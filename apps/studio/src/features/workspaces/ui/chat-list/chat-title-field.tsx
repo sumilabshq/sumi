@@ -1,8 +1,8 @@
 import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
-import type { ChatRowData } from "@widgetarium/workspaces";
-import { RenameChatCommand } from "@widgetarium/workspaces";
+import type { ChatRowData } from "@widgetarium/app-host";
+import { RenameTabCommand } from "@widgetarium/app-host";
 
 const TITLE_LABEL = "Chat title";
 
@@ -14,10 +14,10 @@ export function ChatTitleField({
 	readonly onRenamed: () => void;
 }): ReactElement {
 	const [typed, setTyped] = useState(row.title);
-	const renameChat = useCommand(RenameChatCommand);
+	const renameChat = useCommand(RenameTabCommand);
 	const commit = (): void => {
 		if (typed.trim() !== "" && typed.trim() !== row.title) {
-			void renameChat.run({ id: row.id, title: typed });
+			void renameChat.run({ id: row.id, label: typed });
 		}
 
 		onRenamed();

@@ -10,7 +10,7 @@ import {
 	swallowNextClick,
 } from "@widgetarium/behaviors";
 import type { CarryPhase, OverlayPort } from "@widgetarium/behaviors";
-import type { ChatPlace } from "@widgetarium/workspaces";
+import type { ChatPlace } from "@widgetarium/app-host";
 
 export type ChatTarget = ChatPlace["to"];
 

@@ -1,6 +1,7 @@
 import type { AppTabState, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
 import type { RecentSite } from "@widgetarium/browser";
-import type { ChatElsewhereRow, ChatListData, ChatRowData, WorkspacesView } from "@widgetarium/workspaces";
+import type { ChatListData, ChatRowData } from "@widgetarium/app-host";
+import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
 import { hostOf } from "../../../shared/lib/address.js";
 import type { Intent, RowAction, RowIcon, RowKind } from "../../../shared/schema/command-menu.schema.js";
 import { chatActionsOf, openActionsOf, tabActionsOf, workspaceActionsOf } from "./row-actions.js";

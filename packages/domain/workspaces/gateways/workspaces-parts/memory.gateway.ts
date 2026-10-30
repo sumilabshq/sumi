@@ -42,7 +42,6 @@ export function firstChats(): KeptChats {
 			{
 				id,
 				title: null,
-				isPinned: false,
 				createdAt: at,
 				lastAt: at,
 			},

@@ -22,19 +22,18 @@ const MORE_WORKSPACES: readonly Workspace[] = [
 	{ id: "side", name: "Side project", icon: { kind: "emoji", emoji: "🚀" } },
 ];
 
-function chatOf(id: string, title: string, at: number, isPinned = false): KeptChat {
+function chatOf(id: string, title: string, at: number): KeptChat {
 	return {
 		id,
 		title,
-		isPinned,
 		createdAt: at,
 		lastAt: at,
 	};
 }
 
 const BOARD_CHATS: readonly KeptChat[] = [
-	chatOf("weekly", "Weekly work log", 90, true),
-	chatOf("release", "Release plan", 80, true),
+	chatOf("weekly", "Weekly work log", 90),
+	chatOf("release", "Release plan", 80),
 	chatOf("checks", "Translator 1.0 checks", 70),
 	chatOf("brief", "Morning brief · 9:00", 60),
 	chatOf("deepl", "Fix DeepL key lookup", 50),
@@ -48,6 +47,10 @@ function workspacesOf(count: WorkspacesCount): readonly Workspace[] {
 
 	return count === "many" ? [...BOARD_WORKSPACES, ...MORE_WORKSPACES] : BOARD_WORKSPACES;
 }
+
+export const BOARD_PINNED: readonly string[] = ["weekly", "release"];
+
+export const BOARD_CHAT_IDS: readonly string[] = BOARD_CHATS.map((chat) => chat.id);
 
 export function boardWorkspacesParts(count: WorkspacesCount): WorkspacesParts {
 	return memoryWorkspacesParts({
