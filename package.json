@@ -89,6 +89,7 @@
 		"test:places": "node --single-threaded --import ./tools/loader/register.mts tools/places-windows-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/places-tabs-checks.ts",
 		"test:studio-host": "node --single-threaded --import ./tools/loader/register.mts tools/studio-host-test.ts",
 		"test:workspaces": "node --single-threaded --import ./tools/loader/register.mts tools/workspaces-rules-test.ts",
+		"test:one-sidebar": "node --single-threaded --import ./tools/loader/register.mts tools/one-sidebar-test.ts",
 		"test:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-test.ts",
 		"diff:chats-column": "node --single-threaded --import ./tools/loader/register.mts tools/chats-column-diff.ts",
 		"test:tip": "node --single-threaded --import ./tools/loader/register.mts tools/tip-test.ts",

@@ -17,14 +17,15 @@ interface Timed {
 
 export const PAINT_BUDGET_MS = 100;
 export const SETTLED_MS = 450;
-export const LIST_IDS = `[...document.querySelectorAll("[data-tabs-list] [data-tabs-item=tab]")].map((row) => row.dataset.tabsId)`;
-export const WORKSPACE_IDS = `[...document.querySelectorAll('[data-tabs-list="workspace"] [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
-export const CHAT_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
-export const CHAT_TOP_IDS = `[...document.querySelectorAll('[data-tabs-list]:not([data-tabs-list="workspace"]) > [data-tabs-item=tab]')].map((row) => row.dataset.tabsId)`;
+export const LIST_IDS = `[...document.querySelectorAll("[data-tabs-list] [data-tabs-item=tab]:not([data-tabs-chat])")].map((row) => row.dataset.tabsId)`;
+export const WORKSPACE_IDS = `[...document.querySelectorAll('[data-tabs-list="workspace"] [data-tabs-item=tab]:not([data-tabs-chat])')].filter((row) => row.closest("[data-tabs-list]").dataset.tabsList === "workspace").map((row) => row.dataset.tabsId)`;
+export const CHAT_IDS = `[...document.querySelectorAll("[data-tabs-nested] [data-tabs-item=tab]")].map((row) => row.dataset.tabsId)`;
+export const CHAT_TOP_IDS = `[...document.querySelectorAll("[data-tabs-nested] > [data-tabs-item=tab]")].map((row) => row.dataset.tabsId)`;
+export const PINNED_IDS = `[...document.querySelectorAll('[data-tabs-list="pinned"] [data-tabs-item=tab]:not([data-tabs-chat])')].filter((row) => row.closest("[data-tabs-list]").dataset.tabsList === "pinned").map((row) => row.dataset.tabsId)`;
 export const TILE_IDS = `[...document.querySelectorAll("[data-tabs-item=essential]")].map((tile) => tile.dataset.tabsId)`;
 export const GROUP_NAMES = `[...document.querySelectorAll("[data-tabs-item=group] > span:first-of-type")].map((name) => name.textContent)`;
-export const SHOWN_ID = `document.querySelector("[data-tabs-item=tab][data-shown]")?.dataset.tabsId ?? null`;
-export const TITLE = `document.querySelector("[data-tabs-chat-title]")?.textContent`;
+export const SHOWN_ID = `document.querySelector("[data-tabs-item=tab][data-shown]:not([data-tabs-chat])")?.dataset.tabsId ?? null`;
+export const TITLE = `document.querySelector("[data-tabs-chat][data-shown] [data-tabs-words]")?.textContent`;
 
 const seen = {
 	failures: 0,

@@ -23,7 +23,12 @@ import * as taskList from "./studio-fixture-widget.tsx";
 import { FixtureTaskSchema } from "./studio-fixture-widget.tsx";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
+import type { StudioAppParts } from "./studio-app-fixture.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
+import { BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
+import { placedTabsOf } from "./places-fixture.ts";
+import type { SeededTabs } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 
 reportsFailures();
@@ -131,6 +136,39 @@ class PaintedPagesGateway extends FakeBrowserPagesGateway {
 	}
 }
 
+const IS_SEEDED = new URLSearchParams(location.search).has("seeded");
+
+const SEEDED_TABS: SeededTabs = {
+	tabs: [
+		{ id: "tab-1", app: "browser", pageId: null, label: "Linear", essentialId: null },
+		{ id: "tab-2", app: "canvas", pageId: null, label: "Release canvas", essentialId: null },
+		{ id: "tab-3", app: "terminal", pageId: null, label: "Release terminal", essentialId: null },
+	],
+	lists: {
+		workspace: [{ kind: "tab", id: "tab-1" }],
+		release: [
+			{ kind: "tab", id: "tab-2" },
+			{ kind: "tab", id: "tab-3" },
+		],
+	},
+	groups: [],
+	shownId: "tab-1",
+	lastShown: {},
+	minted: 3,
+	closed: [],
+};
+
+function seededParts(): Pick<StudioAppParts, "workspaces" | "places"> {
+	if (!IS_SEEDED) {
+		return {};
+	}
+
+	return {
+		workspaces: boardWorkspacesParts("board"),
+		places: new MemoryTabsGateway(placedTabsOf(SEEDED_TABS, BOARD_CHAT_IDS, BOARD_PINNED)),
+	};
+}
+
 const pages = new PaintedPagesGateway();
 const studioApp = studioAppOf({
 	browser: browserPartsOf(
@@ -143,6 +181,7 @@ const studioApp = studioAppOf({
 		new HurriedClockGateway(),
 	),
 	workspaceId: "Default",
+	...seededParts(),
 });
 void restoreTabs(studioApp);
 

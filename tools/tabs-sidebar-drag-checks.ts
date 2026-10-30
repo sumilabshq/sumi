@@ -14,7 +14,7 @@ const GHOST_NOW = `(() => { const ghost = document.querySelector("[data-drag-gho
 const NO_GHOST_LEFT = `document.querySelector("[data-drag-ghost]") === null`;
 const NO_TRANSFORM_LEFT = `[...document.querySelectorAll("[data-tabs-sidebar] [style*=transform]")].filter((one) => one.style.transform !== "").length === 0 && [...document.querySelectorAll("[data-tabs-sidebar] [data-tabs-item]")].every((one) => one.style.visibility === "")`;
 const ROW_HEIGHT_MOST_PX = 40;
-const EDGE_X = 12;
+const EDGE_Y = 12;
 const CARD_WIDTH_PX = 208;
 const CARD_HEIGHT_PX = 156;
 
@@ -108,7 +108,7 @@ async function checksTearOff(page: AskedPage, folder: string): Promise<void> {
 		const { drag, ghost } = await lifted(page, BROWSER_ROW, () => plate);
 		writeFileSync(path.join(folder, "own-window-drag.png"), await page.shoot());
 		check("a browser row carried over a board stays a row", isRowGhost(ghost), ghost);
-		await drag.over([EDGE_X, plate[1]]);
+		await drag.over([plate[0], EDGE_Y]);
 		await waited(SETTLED_MS);
 		const atEdge = await page.ask(GHOST_NOW);
 		writeFileSync(path.join(folder, "own-window-edge.png"), await page.shoot());
@@ -117,7 +117,7 @@ async function checksTearOff(page: AskedPage, folder: string): Promise<void> {
 			isCardGhost(atEdge) && fieldOf(atEdge, "caption") === "Drag out to open in a new window",
 			atEdge,
 		);
-		await drag.over([-40, plate[1]]);
+		await drag.over([plate[0], -40]);
 		await waited(SETTLED_MS);
 		const outside = await page.ask(GHOST_NOW);
 		check(

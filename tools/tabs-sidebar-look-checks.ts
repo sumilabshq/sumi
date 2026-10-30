@@ -61,25 +61,6 @@ async function checksKitMotion(page: AskedPage): Promise<void> {
 	);
 	await page.ask(`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); true`);
 	await waited(300);
-	const [x, y] = await centreOf(page, "[data-tabs-section]");
-	await page.hover(x, y);
-	await waited(300);
-	const button = await centreOf(page, "[data-tabs-view-options]");
-	await page.drag({ from: button, to: button, steps: 1, stepMs: 16 });
-	await waited(200);
-	const pressed = await page.ask(
-		`(() => { const button = document.querySelector("[data-tabs-view-options]"); return { isKit: button.classList.contains("wg-kit-icon"), transform: getComputedStyle(button).transform }; })()`,
-	);
-	await page.release(button);
-	await waited(400);
-	check(
-		"the view button is the kit's button and gives under a press",
-		typeof pressed === "object" &&
-			pressed !== null &&
-			Reflect.get(pressed, "isKit") === true &&
-			String(Reflect.get(pressed, "transform")).startsWith("matrix(0.95"),
-		pressed,
-	);
 	await page.ask(
 		`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })); document.activeElement?.blur(); true`,
 	);
@@ -95,16 +76,10 @@ async function checksOneForm(page: AskedPage): Promise<void> {
 		)) === true,
 		null,
 	);
-	const edge = await centreOf(page, "[data-host-column-edge]");
-	const far = [edge[0] + 400, edge[1]] as const;
-	await page.drag({ from: edge, to: far, steps: 10, stepMs: 16 });
-	await page.release(far);
-	await waited(SETTLED_MS);
-	const width = await page.ask(`document.querySelector("[data-host-column]").getBoundingClientRect().width`);
 	check(
-		"dragging the edge all the way stops at the narrowest full sidebar",
-		width === 200 && (await page.ask(`document.querySelector("[data-tabs-sidebar]") !== null`)) === true,
-		width,
+		"there is one sidebar: no tabs column of its own and no width edge",
+		(await page.ask(`document.querySelector("[data-host-column], [data-host-column-edge]") === null`)) === true,
+		null,
 	);
 }
 

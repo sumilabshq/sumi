@@ -85,7 +85,6 @@ const LAYOUT = `(() => {
 		left: boxOf(".wg-shell-left"),
 		chat: boxOf(".wg-shell-plate.is-chat"),
 		app: boxOf(".wg-shell-plate.is-app"),
-		right: boxOf(".wg-shell-right"),
 		chatHead: boxOf(".wg-plate-head.is-chat"),
 		appHead: boxOf(".wg-plate-head.is-app"),
 		chatRow: boxOf(".wg-plate-head.is-chat .wg-plate-head-row"),
@@ -156,11 +155,11 @@ const SIDES = `(() => {
 	};
 	return {
 		left: document.querySelector('[data-shell-column="left"]').dataset.state,
-		right: document.querySelector('[data-shell-column="right"]').dataset.state,
+		rightColumns: document.querySelectorAll('[data-shell-column="right"], .wg-shell-right').length,
 		leftWidth: Math.round(document.querySelector(".wg-shell-left").getBoundingClientRect().width),
 		zoneLeft: Math.round(document.querySelector(".wg-shell-app-zone").getBoundingClientRect().left),
 		leftToggle: centre('[data-side-toggle="left"]'),
-		rightToggle: centre('[data-side-toggle="right"]'),
+		rightToggles: document.querySelectorAll('[data-side-toggle="right"]').length,
 		isLeftToggleOnTop: (() => {
 			const toggle = document.querySelector('[data-side-toggle="left"]');
 			const box = toggle.getBoundingClientRect();
@@ -197,11 +196,11 @@ const keydownScriptOf = (hasAlt: boolean): string =>
 
 const SidesSchema = z.object({
 	left: z.string(),
-	right: z.string(),
+	rightColumns: z.number(),
 	leftWidth: z.number(),
 	zoneLeft: z.number(),
 	leftToggle: z.tuple([z.number(), z.number()]),
-	rightToggle: z.tuple([z.number(), z.number()]),
+	rightToggles: z.number(),
 	isLeftToggleOnTop: z.boolean(),
 	leftSaid: z.string().nullable(),
 	leftKeys: z.string().nullable(),
@@ -635,20 +634,10 @@ async function walkSides(theme: Theme): Promise<void> {
 		await waited(400);
 		const pinned = await sidesAt();
 		check(`${theme}: pressing it docks the chats again`, pinned.left === "docked", pinned);
-		await page.press(...pinned.rightToggle);
-		await waited(400);
-		const tabsHidden = await sidesAt();
-		check(`${theme}: Hide tabs folds the tabs away`, tabsHidden.right === "hidden", tabsHidden);
-		await page.press(...tabsHidden.rightToggle);
-		await waited(400);
-		const tabsBack = await sidesAt();
-		check(`${theme}: Show tabs brings the tabs back`, tabsBack.right === "docked", tabsBack);
 		check(
-			`${theme}: the tabs toggle stays at the right edge whether the tabs are shown or not`,
-			JSON.stringify(tabsHidden.rightToggle) === JSON.stringify(pinned.rightToggle) &&
-				JSON.stringify(tabsBack.rightToggle) === JSON.stringify(pinned.rightToggle) &&
-				(pinned.rightToggle[0] ?? 0) === VIEW[0] - 30,
-			[pinned.rightToggle, tabsHidden.rightToggle, tabsBack.rightToggle],
+			`${theme}: there is one sidebar: no right column and no right toggle`,
+			pinned.rightColumns === 0 && pinned.rightToggles === 0,
+			pinned,
 		);
 		await page.ask(keydownScriptOf(false));
 		await waited(400);
@@ -662,18 +651,8 @@ async function walkSides(theme: Theme): Promise<void> {
 		await page.hover(700, 400);
 		await page.ask(keydownScriptOf(true));
 		await waited(400);
-		const tabsKeyHidden = await sidesAt();
-		check(
-			`${theme}: ⌥⌘B hides the tabs`,
-			tabsKeyHidden.right === "hidden" && tabsKeyHidden.left === "docked",
-			tabsKeyHidden,
-		);
-		await page.hover(700, 400);
-		await page.hover(1300, 400);
-		await page.hover(1500, 400);
-		await waited(300);
-		const tabsOvershot = await sidesAt();
-		check(`${theme}: overshooting the right edge peeks the tabs`, tabsOvershot.right === "peeking", tabsOvershot);
+		const altKeyed = await sidesAt();
+		check(`${theme}: ⌥⌘B leaves the sidebar docked`, altKeyed.left === "docked", altKeyed);
 		const bad = await page.ask(`document.getElementById("boom").textContent`);
 		check(`${theme}: nothing failed while the sides moved`, bad === "", bad);
 	} finally {

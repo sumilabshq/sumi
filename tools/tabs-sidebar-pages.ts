@@ -82,21 +82,6 @@ export async function sidebarPageFile(folder: string): Promise<string> {
 	return file;
 }
 
-export function boardPageFile(folder: string, board: string, theme: Theme): string {
-	const html = readFileSync(path.join("docs/reference/sumi-layout", `${board}.dc.html`), "utf8");
-	const style = html.split("<style>")[1]?.split("</style>")[0] ?? "";
-	const body = (html.split("</helmet>")[1]?.split("</x-dc>")[0] ?? "").replaceAll(
-		"{{themeCls}}",
-		theme === "dark" ? "dark" : "",
-	);
-	const file = path.join(folder, `${board}-${theme}.html`);
-	writeFileSync(
-		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${FONT_FACES}\n${style}</style></head><body>${body}</body></html>`,
-	);
-	return file;
-}
-
 export async function openedPage(file: string, size: readonly [number, number] = BOARD_SIZE): Promise<AskedPage> {
 	const page = await paged(file, SIDEBAR_GATE, { size });
 	await waited(400);

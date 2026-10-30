@@ -9,6 +9,7 @@ import {
 	GROUP_NAMES,
 	LIST_IDS,
 	PAINT_BUDGET_MS,
+	PINNED_IDS,
 	SETTLED_MS,
 	SHOWN_ID,
 	TILE_IDS,
@@ -27,7 +28,7 @@ import {
 } from "./tabs-sidebar-check-kit.ts";
 import { checksPointerDrag } from "./tabs-sidebar-drag-checks.ts";
 import { checksSidebarLook } from "./tabs-sidebar-look-checks.ts";
-import { checksArtCutOut, checksViewOptions } from "./tabs-sidebar-view-checks.ts";
+import { checksArtCutOut } from "./tabs-sidebar-view-checks.ts";
 import { bottomOf, centreOf, pointedAt } from "./tabs-sidebar-scenes.ts";
 
 export async function checksSidebar(page: AskedPage, folder: string): Promise<number> {
@@ -39,7 +40,6 @@ export async function checksSidebar(page: AskedPage, folder: string): Promise<nu
 	await checksDrag(page, folder);
 	await checksSections(page, folder);
 	addFailures(await checksPointerDrag(page, folder));
-	await checksViewOptions(page, folder);
 	await checksArtCutOut(page);
 	await checksSidebarLook(page);
 	printTimings();
@@ -64,9 +64,11 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	);
 	await checksWobblyPress(page);
 	check(
-		"an empty Tabs in workspace still shows its heading and its New tab row",
+		"Open with no tab of its own still shows its heading, and New tab stands above the sections",
 		(await idsOf(page, WORKSPACE_IDS)).length === 0 &&
-			(await page.ask(`document.querySelector('[data-host-column-add="workspace"]') !== null`)) === true,
+			(await page.ask(
+				`document.querySelector('[data-tabs-section="workspace"]') !== null && document.querySelector("[data-host-column-add]") !== null`,
+			)) === true,
 		await idsOf(page, WORKSPACE_IDS),
 	);
 	const intoEmpty = (await idsOf(page, CHAT_TOP_IDS))[0] ?? "";
@@ -76,25 +78,23 @@ async function checksPressing(page: AskedPage): Promise<void> {
 		emptyHead[1] + 24,
 	]);
 	check(
-		"dragging a row into an empty Tabs in workspace moves it there",
+		"dragging a chat's sub-tab to the top of Open moves it there",
 		JSON.stringify(await idsOf(page, WORKSPACE_IDS)) === JSON.stringify([intoEmpty]) &&
 			!(await idsOf(page, CHAT_IDS)).includes(intoEmpty),
 		[await idsOf(page, WORKSPACE_IDS), await idsOf(page, CHAT_IDS)],
 	);
-	const before = await idsOf(page, CHAT_IDS);
-	await pressOn(page, '[data-host-column-add="workspace"]');
+	const addsTo = await page.ask(`document.querySelector("[data-host-column-add]").dataset.hostColumnAdd`);
+	const listedBefore = new Set(await idsOf(page, LIST_IDS));
+	await pressOn(page, "[data-host-column-add]");
 	await waited(SETTLED_MS);
 	const token = await page.ask(`document.querySelector(".wg-cm-token")?.textContent ?? null`);
 	check("New tab opens the command menu at New tab, with no empty page", token === "New tab", token);
 	await timed(page, "new tab from the menu", () => pressOn(page, '[data-cm-tile="app"]'));
-	const workspace = await idsOf(page, WORKSPACE_IDS);
-	check(
-		"a tab picked in a section's New tab lands as the shown last row of that section",
-		workspace.length === 2 &&
-			workspace.at(-1) === (await page.ask(SHOWN_ID)) &&
-			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(before),
-		[workspace, await idsOf(page, CHAT_IDS)],
+	const opened = (await idsOf(page, LIST_IDS)).find((id) => !listedBefore.has(id)) ?? "";
+	const landed = await page.ask(
+		`document.querySelector('[data-tabs-id="${opened}"][data-shown]')?.closest("[data-tabs-list]")?.dataset.tabsList ?? null`,
 	);
+	check("a tab picked from New tab is shown in the list New tab names", landed === addsTo, [landed, addsTo]);
 }
 
 async function checksChats(page: AskedPage): Promise<void> {
@@ -108,11 +108,11 @@ async function checksChats(page: AskedPage): Promise<void> {
 		measured.ms !== null && measured.ms < PAINT_BUDGET_MS,
 		measured,
 	);
+	const chatTabIds = new Set(await idsOf(page, CHAT_IDS));
 	check(
-		"switching chats swaps the list and the title",
+		"switching chats marks the other chat shown and keeps every chat's tabs listed under its chat",
 		(await page.ask(TITLE)) === "Translator" &&
-			JSON.stringify(await idsOf(page, CHAT_IDS)) === JSON.stringify(["tab-9", "tab-10", "tab-11"]) &&
-			(await idsOf(page, WORKSPACE_IDS)).length === 2,
+			["tab-9", "tab-10", "tab-11", "tab-2"].every((id) => chatTabIds.has(id)),
 		[await idsOf(page, CHAT_IDS), await idsOf(page, WORKSPACE_IDS)],
 	);
 	check(
@@ -145,7 +145,7 @@ async function checksEssentialsMenu(page: AskedPage): Promise<void> {
 	await waited(250);
 	await timed(page, "remove from Essentials", () => menuPick(page, "Remove from Essentials"));
 	check(
-		"Remove from Essentials puts the live tab back at the end of Tabs in workspace",
+		"Remove from Essentials puts the live tab back at the end of Open",
 		(await idsOf(page, WORKSPACE_IDS)).at(-1) === "tab-7" && (await idsOf(page, TILE_IDS)).length === 8,
 		await idsOf(page, WORKSPACE_IDS),
 	);
@@ -345,32 +345,36 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 		`(() => { const heads = [...document.querySelectorAll("[data-tabs-section]")]; heads.forEach((head) => { head.style.setProperty("width", "130px", "important"); }); const lines = heads.map((head) => { const lead = head.querySelector(":scope > span"); return Math.round(lead.getBoundingClientRect().height / parseFloat(getComputedStyle(lead).lineHeight)); }); heads.forEach((head) => { head.style.removeProperty("width"); }); return lines; })()`,
 	);
 	check(
-		"a squeezed sidebar keeps every Tabs in on one line, the title is what shortens",
+		"a squeezed sidebar keeps every section head on one line",
 		Array.isArray(squeezed) && squeezed.length > 0 && squeezed.every((lines) => lines === 1),
 		squeezed,
 	);
-	const target = await centreOf(page, '[data-tabs-list="workspace"] > [data-tabs-item=tab]');
+	const target = await centreOf(page, '[data-tabs-section="workspace"]');
 	const moved = (await idsOf(page, CHAT_TOP_IDS)).find((id) => id !== "tab-5") ?? "";
 	await dragged(page, "drag a row into another section", `[data-tabs-list] > [data-tabs-id="${moved}"]`, [
 		target[0],
-		target[1] - 10,
+		target[1] + 24,
 	]);
 	check(
-		"dragging a chat's row onto Tabs in workspace moves it there, first",
+		"dragging a chat's sub-tab onto Open moves it there, first",
 		(await idsOf(page, WORKSPACE_IDS))[0] === moved && !(await idsOf(page, CHAT_IDS)).includes(moved),
 		[await idsOf(page, WORKSPACE_IDS), await idsOf(page, CHAT_IDS)],
 	);
 	await page.ask(pointedAt(`[data-tabs-id="${moved}"]`));
 	await waited(250);
-	await menuPick(page, "Move to section");
-	await waited(250);
-	await timed(page, "move to the chat's section", () =>
-		pressOn(page, '[data-tabs-move-to-list]:not([data-tabs-move-to-list="workspace"])'),
-	);
+	await timed(page, "pin a tab", () => menuPick(page, "Pin"));
 	check(
-		"Move to section → the chat puts a workspace tab at the end of the chat's tabs",
-		(await idsOf(page, CHAT_IDS)).at(-1) === moved && !(await idsOf(page, WORKSPACE_IDS)).includes(moved),
-		await idsOf(page, CHAT_IDS),
+		"Pin moves a tab out of Open to the end of Pinned",
+		(await idsOf(page, PINNED_IDS)).at(-1) === moved && !(await idsOf(page, WORKSPACE_IDS)).includes(moved),
+		await idsOf(page, PINNED_IDS),
+	);
+	await page.ask(pointedAt(`[data-tabs-id="${moved}"]`));
+	await waited(250);
+	await timed(page, "unpin a tab", () => menuPick(page, "Unpin"));
+	check(
+		"Unpin puts it back at the top of Open",
+		(await idsOf(page, WORKSPACE_IDS))[0] === moved && !(await idsOf(page, PINNED_IDS)).includes(moved),
+		await idsOf(page, WORKSPACE_IDS),
 	);
 	await page.hover(5, 5);
 	await waited(300);
@@ -388,11 +392,13 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	);
 	await page.hover(...(await centreOf(page, '[data-tabs-section="workspace"]')));
 	await waited(300);
-	await timed(page, "fold Tabs in workspace", () => pressOn(page, '[data-tabs-section="workspace"] [data-tabs-fold]'));
+	await timed(page, "fold Open", () => pressOn(page, '[data-tabs-section="workspace"] [data-tabs-fold]'));
 	check(
-		"folding Tabs in workspace hides only its rows",
-		(await idsOf(page, WORKSPACE_IDS)).length === 0 && (await idsOf(page, CHAT_IDS)).length > 0,
-		await idsOf(page, CHAT_IDS),
+		"folding Open hides only its rows",
+		(await page.ask(
+			`document.querySelector('[data-tabs-list="workspace"]').hidden && !document.querySelector('[data-tabs-list="pinned"]').hidden`,
+		)) === true,
+		null,
 	);
 	await pressOn(page, '[data-tabs-section="workspace"] [data-tabs-fold]');
 	await waited(SETTLED_MS);

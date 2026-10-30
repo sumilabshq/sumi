@@ -5,7 +5,7 @@ import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { INSTRUMENT } from "./chats-column-instrument.ts";
-import { TAILWIND_BANNER } from "./canvas-sheet.mts";
+import { TAILWIND_BANNER, canvasSheet } from "./canvas-sheet.mts";
 import { bundleOf } from "./harness.ts";
 import { kitTooltipSheet } from "./kit-tooltip-sheet.ts";
 
@@ -39,7 +39,8 @@ const sheets =
 		"apps/studio/src/features/frame/shell.css",
 	]
 		.map((at) => readFileSync(at, "utf8").split(TAILWIND_BANNER)[0])
-		.join("\n");
+		.join("\n") +
+	`\n${await canvasSheet(process.cwd())}`;
 const font = readFileSync("packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2");
 const FONT_FACE = `@font-face { font-family: "Inter Variable"; src: url(/inter.woff2) format("woff2"); font-weight: 100 900; }`;
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${FONT_FACE}</style><style>${sheets}</style>
@@ -151,92 +152,83 @@ function keyed(target: string, init: Readonly<Record<string, unknown>>): string 
 const TEXT_OF = (selector: string): string =>
 	`(document.querySelector(${JSON.stringify(selector)})?.textContent ?? null)`;
 
-const ROW_TITLES = `[...document.querySelectorAll("[data-ws-section]")].map((section) => [section.dataset.wsSection, [...section.querySelectorAll("[data-ws-chat]")].map((row) => row.querySelector(".wg-ws-row-title, input")?.textContent || row.querySelector("input")?.value)])`;
+const ROW_TITLES = `[...document.querySelectorAll("[data-ws-section]")].map((section) => [section.dataset.wsSection, [...section.querySelectorAll("[data-tabs-chat]")].map((row) => row.querySelector("[data-tabs-words]")?.textContent || row.querySelector("input")?.value)])`;
+const MARKS = `[document.querySelector('[data-tabs-chat="checks"] [data-tabs-unread]') !== null, document.querySelector('[data-tabs-chat="deepl"] .wg-chat-tab-icon')?.dataset.motion === "bob"]`;
 
 async function boardPage(query: string): Promise<AskedPage> {
 	const page = await paged(`${origin}?${query}`, "chats column", { size: VIEW });
-	await untilTrue(page, `document.querySelector("[data-ws-column]") !== null && document.fonts.status === "loaded"`);
+	await untilTrue(
+		page,
+		`document.querySelector("[data-ws-column] [data-tabs-chat]") !== null && document.fonts.status === "loaded"`,
+	);
 	await waited(150);
 	return page;
 }
 
 async function chatChecks(page: AskedPage): Promise<void> {
 	check("the board's sections and rows are drawn", true, await page.ask(ROW_TITLES));
+	const marks = await page.ask(MARKS);
 	check(
-		"marks: unread dot on a chat that finished unseen, spinner on a running one",
-		(await page.ask(
-			`[document.querySelector('[data-ws-chat="checks"] .wg-ws-unread') !== null, document.querySelector('[data-ws-chat="deepl"] .wg-ws-spin') !== null]`,
-		)) !== null,
-		await page.ask(
-			`[document.querySelector('[data-ws-chat="checks"] .wg-ws-unread') !== null, document.querySelector('[data-ws-chat="deepl"] .wg-ws-spin') !== null]`,
-		),
+		"marks: unread dot on a chat that finished unseen, a working mascot on a running one",
+		JSON.stringify(marks) === "[true,true]",
+		marks,
 	);
 	await timed(
 		page,
 		"select a chat",
 		"pointerdown",
-		`document.querySelector('[data-ws-chat="checks"]')?.classList.contains("is-active")`,
-		() => pressing(page, '[data-ws-chat="checks"] .wg-ws-row-pick'),
+		`document.querySelector('[data-tabs-chat="checks"]')?.hasAttribute("data-shown")`,
+		() => pressing(page, '[data-tabs-chat="checks"]'),
 	);
 	const selected = [
 		await page.ask(TEXT_OF("[data-ws-crumb]")),
-		await page.ask(`document.querySelector('[data-ws-chat="checks"] .wg-ws-unread') === null`),
+		await page.ask(`document.querySelector('[data-tabs-chat="checks"] [data-tabs-unread]') === null`),
 	];
 	check(
 		"selecting reads its title into the crumb and clears its unread dot",
 		JSON.stringify(selected) === JSON.stringify(["Default/Translator 1.0 checks", true]),
 		selected,
 	);
-	await timed(
-		page,
-		"new chat",
-		"pointerdown",
-		`document.querySelector('[data-ws-section="Recents"] [data-ws-chat]')?.textContent.startsWith("New chat") && document.querySelector('[data-ws-section="Recents"] [data-ws-chat]')?.classList.contains("is-active")`,
-		() => pressing(page, "[data-ws-new-chat]"),
-	);
 	check(
-		"new chat is selected at once, first in Recents, titled New chat",
-		(await page.ask(TEXT_OF("[data-ws-crumb]"))) === "Default/New chat",
-		await page.ask(TEXT_OF("[data-ws-crumb]")),
+		"the sidebar holds no New chat button, New tab stands instead",
+		(await page.ask(
+			`document.querySelector("[data-ws-new-chat]") === null && document.querySelector("[data-host-column-add]") !== null`,
+		)) === true,
+		null,
 	);
 }
 
+const MENU_OF_NOTES = `(() => { const row = document.querySelector('[data-tabs-chat="notes"]'); const box = row.getBoundingClientRect(); row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: box.left + 40, clientY: box.top + 10 })); return true; })()`;
+const MENU_ITEMS = `[...document.querySelectorAll("[data-tabs-pointer-menu] [data-tabs-menu-item]")].map((item) => item.dataset.tabsMenuItem).join(",")`;
+
 async function pinAndRename(page: AskedPage): Promise<void> {
-	await page.ask(
-		`(() => { const row = document.querySelector('[data-ws-chat="notes"]'); const box = row.getBoundingClientRect(); row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: box.left + 40, clientY: box.top + 10 })); return true; })()`,
-	);
-	const hasMenu = await untilTrue(page, `document.querySelector('[data-ws-chat-menu="notes"]') !== null`);
+	await page.ask(MENU_OF_NOTES);
+	const hasMenu = await untilTrue(page, `document.querySelector("[data-tabs-pointer-menu]") !== null`);
 	await waited(BLOOM_MS);
-	check("a right press on a row opens Pin and Rename", hasMenu, await page.ask(TEXT_OF('[data-ws-chat-menu="notes"]')));
+	check("a right press on a chat row opens the tab menu", hasMenu, await page.ask(MENU_ITEMS));
 	await timed(
 		page,
 		"pin a chat",
 		"pointerdown",
-		`document.querySelector('[data-ws-section="Pinned"] [data-ws-chat="notes"]') !== null`,
-		async () => {
-			const [x, y] = await centreOf(page, '[data-ws-chat-menu="notes"] .wg-kit-pop-item:first-child');
-			await page.press(x, y);
-		},
+		`document.querySelector('[data-ws-section="Pinned"] [data-tabs-chat="notes"]') !== null`,
+		() => pressing(page, '[data-tabs-pointer-menu] [data-tabs-menu-item="Pin"]'),
 	);
-	await page.ask(
-		`(() => { const row = document.querySelector('[data-ws-chat="notes"]'); const box = row.getBoundingClientRect(); row.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true, clientX: box.left + 40, clientY: box.top + 10 })); return true; })()`,
-	);
-	await untilTrue(page, `document.querySelector('[data-ws-chat-menu="notes"]') !== null`);
+	await page.ask(MENU_OF_NOTES);
+	await untilTrue(page, `document.querySelector('[data-tabs-pointer-menu] [data-tabs-menu-item="Unpin"]') !== null`);
 	await waited(BLOOM_MS);
-	check(
-		"a pinned chat offers Unpin",
-		(await page.ask(TEXT_OF('[data-ws-chat-menu="notes"]'))) === "UnpinRename",
-		await page.ask(TEXT_OF('[data-ws-chat-menu="notes"]')),
+	check("a pinned chat offers Unpin", String(await page.ask(MENU_ITEMS)).includes("Unpin"), await page.ask(MENU_ITEMS));
+	await pressing(page, '[data-tabs-pointer-menu] [data-tabs-menu-item="Rename"]');
+	await untilTrue(page, `document.querySelector('[data-tabs-chat="notes"] input') !== null`);
+	await page.ask(typed('[data-tabs-chat="notes"] input', "Release notes"));
+	await page.ask(keyed(`document.querySelector('[data-tabs-chat="notes"] input')`, { key: "Enter" }));
+	const isRenamed = await untilTrue(
+		page,
+		`${TEXT_OF('[data-tabs-chat="notes"] [data-tabs-words]')} === "Release notes"`,
 	);
-	await pressing(page, '[data-ws-chat-menu="notes"] .wg-kit-pop-item:last-child');
-	await untilTrue(page, `document.querySelector('[data-ws-chat="notes"] input') !== null`);
-	await page.ask(typed('[data-ws-chat="notes"] input', "Release notes"));
-	await page.ask(keyed(`document.querySelector('[data-ws-chat="notes"] input')`, { key: "Enter" }));
-	const isRenamed = await untilTrue(page, `${TEXT_OF('[data-ws-chat="notes"] .wg-ws-row-title')} === "Release notes"`);
 	check(
 		"Rename turns the row into a field and Enter keeps the title",
 		isRenamed,
-		await page.ask(TEXT_OF('[data-ws-chat="notes"]')),
+		await page.ask(TEXT_OF('[data-tabs-chat="notes"]')),
 	);
 }
 
@@ -276,19 +268,17 @@ async function headerMenu(page: AskedPage): Promise<void> {
 }
 
 async function sectionHover(page: AskedPage): Promise<void> {
-	const [x, y] = await centreOf(page, '[data-ws-section="Recents"] .wg-ws-section-head');
+	const [x, y] = await centreOf(page, '[data-ws-section="Open"] .wg-ws-section-head');
 	await page.hover(x, y);
 	await waited(400);
 	const look = await page.ask(`(() => {
-		const head = document.querySelector('[data-ws-section="Recents"] .wg-ws-section-head');
+		const head = document.querySelector('[data-ws-section="Open"] .wg-ws-section-head');
 		const fold = head.querySelector(".wg-ws-section-fold");
-		const acts = head.querySelector(".wg-ws-section-acts");
-		return { fold: [getComputedStyle(fold).width, getComputedStyle(fold).opacity], acts: getComputedStyle(acts).opacity, pad: getComputedStyle(head).paddingLeft, fill: getComputedStyle(head).backgroundColor };
+		return { fold: [getComputedStyle(fold).width, getComputedStyle(fold).opacity], pad: getComputedStyle(head).paddingLeft, fill: getComputedStyle(head).backgroundColor };
 	})()`);
 	check(
-		"section hover: the chevron slides in, the controls appear, the label moves 2px",
-		JSON.stringify(look) ===
-			JSON.stringify({ fold: ["12px", "1"], acts: "1", pad: "10px", fill: "rgba(0, 0, 0, 0.035)" }),
+		"section hover: the chevron slides in and the label moves 2px",
+		JSON.stringify(look) === JSON.stringify({ fold: ["12px", "1"], pad: "10px", fill: "rgba(0, 0, 0, 0.035)" }),
 		look,
 	);
 	writeFileSync(path.join(shotsAt, "chats-section-hover.png"), await page.shoot());
@@ -428,7 +418,7 @@ async function stripShapes(): Promise<void> {
 }
 
 const IDS_IN = (section: string): string =>
-	`[...document.querySelectorAll('[data-ws-section="${section}"] [data-ws-chat]')].map((row) => row.dataset.wsChat)`;
+	`[...document.querySelectorAll('[data-ws-section="${section}"] [data-tabs-chat]')].map((row) => row.dataset.tabsChat)`;
 const CARRY_TAKEN = `(() => { window.__chatCarried = []; document.addEventListener("wg-carry", (event) => { window.__chatCarried.push(event.detail.phase); event.detail.isTaken = event.detail.x > 300; }); return true; })()`;
 
 async function chatDragged(
@@ -436,22 +426,21 @@ async function chatDragged(
 	from: string,
 	to: (rect: { readonly top: number; readonly bottom: number; readonly x: number }) => readonly [number, number],
 	target: string,
-): Promise<{ readonly ghost: unknown; readonly line: unknown }> {
+): Promise<{ readonly ghost: unknown }> {
 	const [x, y] = await centreOf(page, from);
 	await page.hover(x, y);
-	const drag = await page.lift({ from: [x, y], to: [x, y + 8], steps: 4, stepMs: 16 });
-	await waited(60);
+	const drag = await page.lift({ from: [x, y], to: [x, y + 16], steps: 8, stepMs: 16 });
+	await waited(260);
 	const rect = (await page.ask(
 		`(() => { const box = document.querySelector('${target}').getBoundingClientRect(); return { top: box.top, bottom: box.bottom, x: box.left + box.width / 2 }; })()`,
 	)) as { top: number; bottom: number; x: number };
 	const at = to(rect);
 	await drag.over(at);
 	await waited(60);
-	const ghost = await page.ask(`document.querySelector("[data-drag-ghost]") !== null`);
-	const line = await page.ask(`document.querySelector(".wg-ws-drop-line:not([hidden])") !== null`);
+	const ghost = await page.ask(`document.querySelector('${from}')?.style.visibility === "hidden"`);
 	await drag.drop(at);
-	await waited(250);
-	return { ghost, line };
+	await waited(400);
+	return { ghost };
 }
 
 async function dragChecks(page: AskedPage): Promise<void> {
@@ -459,22 +448,23 @@ async function dragChecks(page: AskedPage): Promise<void> {
 	check("the board opens with Weekly and Release pinned", pinnedFirst === '["weekly","release"]', pinnedFirst);
 	const intoPinned = await chatDragged(
 		page,
-		'[data-ws-chat="brief"]',
+		'[data-tabs-chat="brief"]',
 		({ top, x }) => [x, top + 4],
-		'[data-ws-chat="release"]',
+		'[data-tabs-chat="release"]',
 	);
-	check(
-		"a held chat shows a ghost and a drop line over Pinned",
-		intoPinned.ghost === true && intoPinned.line === true,
-		intoPinned,
-	);
+	check("a held chat is lifted out of its place over Pinned", intoPinned.ghost === true, intoPinned);
 	const afterPin = JSON.stringify(await page.ask(IDS_IN("Pinned")));
 	check(
 		"a recent chat dropped above a pinned one is pinned there",
 		afterPin === '["weekly","brief","release"]',
 		afterPin,
 	);
-	await chatDragged(page, '[data-ws-chat="weekly"]', ({ bottom, x }) => [x, bottom - 3], '[data-ws-chat="release"]');
+	await chatDragged(
+		page,
+		'[data-tabs-chat="weekly"]',
+		({ bottom, x }) => [x, bottom - 3],
+		'[data-tabs-chat="release"]',
+	);
 	const reordered = JSON.stringify(await page.ask(IDS_IN("Pinned")));
 	check(
 		"a pinned chat dropped below the last one moves to the end",
@@ -483,48 +473,54 @@ async function dragChecks(page: AskedPage): Promise<void> {
 	);
 	await chatDragged(
 		page,
-		'[data-ws-chat="release"]',
+		'[data-tabs-chat="release"]',
 		({ top, bottom, x }) => [x, (top + bottom) / 2],
-		'[data-ws-chat="deepl"]',
+		'[data-tabs-chat="deepl"]',
 	);
-	const unpinned = [await page.ask(IDS_IN("Pinned")), await page.ask(IDS_IN("Recents"))];
+	const unpinned = [await page.ask(IDS_IN("Pinned")), await page.ask(IDS_IN("Open"))];
 	check(
-		"a pinned chat dropped into Recents is unpinned",
+		"a pinned chat dropped into Open is unpinned",
 		JSON.stringify(unpinned[0]) === '["brief","weekly"]' && JSON.stringify(unpinned[1]).includes('"release"'),
 		unpinned,
 	);
 	check(
 		"a drop leaves no ghost, no line and no lifted row",
 		(await page.ask(
-			`document.querySelector("[data-drag-ghost]") === null && document.querySelector(".wg-ws-drop-line") === null && document.querySelector("[data-ws-lifted]") === null`,
+			`document.querySelector("[data-drag-ghost]") === null && [...document.querySelectorAll("[data-tabs-item]")].every((row) => row.style.transform === "")`,
 		)) === true,
 		null,
 	);
 	for (const id of ["brief", "weekly"]) {
 		await chatDragged(
 			page,
-			`[data-ws-chat="${id}"]`,
+			`[data-tabs-chat="${id}"]`,
 			({ top, bottom, x }) => [x, (top + bottom) / 2],
-			'[data-ws-chat="notes"]',
+			'[data-tabs-chat="notes"]',
 		);
 	}
 
 	check(
-		"with every chat unpinned, Pinned is gone",
-		(await page.ask(`document.querySelector('[data-ws-section="Pinned"]') === null`)) === true,
+		"with every chat unpinned, Pinned stays as an empty section",
+		JSON.stringify(await page.ask(IDS_IN("Pinned"))) === "[]" &&
+			(await page.ask(`document.querySelector('[data-ws-section="Pinned"]') !== null`)) === true,
 		await page.ask(IDS_IN("Pinned")),
 	);
-	await chatDragged(page, '[data-ws-chat="checks"]', ({ top, x }) => [x, top + 12], '[data-ws-section="Pinned"]');
+	await chatDragged(
+		page,
+		'[data-tabs-chat="checks"]',
+		({ bottom, x }) => [x, bottom - 2],
+		'[data-ws-section="Pinned"]',
+	);
 	const firstPinned = JSON.stringify(await page.ask(IDS_IN("Pinned")));
-	check("a held chat opens an empty Pinned to drop into", firstPinned === '["checks"]', firstPinned);
+	check("a chat dropped into the empty Pinned is pinned", firstPinned === '["checks"]', firstPinned);
 	await page.ask(CARRY_TAKEN);
-	await chatDragged(page, '[data-ws-chat="deepl"]', () => [800, 400], "[data-test-plate]");
+	await chatDragged(page, '[data-tabs-chat="deepl"]', () => [800, 400], "[data-test-plate]");
 	const carried = String(await page.ask(`window.__chatCarried.join(" ")`));
 	check(
 		"a chat carried onto a pane is offered to it and, taken, becomes the active chat",
 		carried.startsWith("over") &&
 			carried.endsWith("drop") &&
-			(await page.ask(`document.querySelector('[data-ws-chat="deepl"]')?.classList.contains("is-active")`)) === true,
+			(await page.ask(`document.querySelector('[data-tabs-chat="deepl"]')?.hasAttribute("data-shown")`)) === true,
 		carried,
 	);
 }
