@@ -14416,6 +14416,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:-my-\[3px\] {
 		margin-block: calc(3px * -1) !important;
 	}
+	.cv\:my-0\.5 {
+		margin-block: calc(var(--cv-spacing) * 0.5) !important;
+	}
 	.cv\:my-1 {
 		margin-block: var(--cv-spacing) !important;
 	}
@@ -14666,6 +14669,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:grid-cols-\[repeat\(var\(--tabs-drag-columns\,var\(--tabs-columns\)\)\,minmax\(0\,1fr\)\)\] {
 		grid-template-columns: repeat(var(--tabs-drag-columns, var(--tabs-columns)), minmax(0, 1fr)) !important;
+	}
+	.cv\:grid-rows-\[0fr\] {
+		grid-template-rows: 0fr !important;
 	}
 	.cv\:flex-col {
 		flex-direction: column !important;
@@ -14979,6 +14985,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:bg-no-repeat {
 		background-repeat: no-repeat !important;
+	}
+	.cv\:fill-\(--sumi-line-strong\) {
+		fill: var(--sumi-line-strong) !important;
 	}
 	.cv\:stroke-\[var\(--wg-kit-text-muted\)\] {
 		stroke: var(--wg-kit-text-muted) !important;
@@ -15327,6 +15336,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:\[box-shadow\:0_0_0_2px_var\(--sumi-frame\)\] {
+		box-shadow: 0 0 0 2px var(--sumi-frame) !important;
+	}
 	.cv\:\[box-shadow\:inset_0_0_0_1\.5px_var\(--sumi-accent\)\] {
 		box-shadow: inset 0 0 0 1.5px var(--sumi-accent) !important;
 	}
@@ -15374,6 +15386,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
+	.cv\:transition-\[background-color\,padding\] {
+		transition-property: background-color, padding !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
 	.cv\:transition-\[background-color\] {
 		transition-property: background-color !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
@@ -15381,6 +15398,11 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	}
 	.cv\:transition-\[box-shadow\] {
 		transition-property: box-shadow !important;
+		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
+		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
+	}
+	.cv\:transition-\[grid-template-rows\,opacity\] {
+		transition-property: grid-template-rows, opacity !important;
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
@@ -15416,6 +15438,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 		transition-timing-function: var(--tw-ease, var(--cv-default-transition-timing-function)) !important;
 		transition-duration: var(--tw-duration, var(--cv-default-transition-duration)) !important;
 	}
+	.cv\:duration-\(--sumi-dur-base\) {
+		--tw-duration: var(--sumi-dur-base) !important;
+		transition-duration: var(--sumi-dur-base) !important;
+	}
 	.cv\:duration-\(--sumi-dur-fast\) {
 		--tw-duration: var(--sumi-dur-fast) !important;
 		transition-duration: var(--sumi-dur-fast) !important;
@@ -15439,6 +15465,10 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:ease-\(--sumi-ease\) {
 		--tw-ease: var(--sumi-ease) !important;
 		transition-timing-function: var(--sumi-ease) !important;
+	}
+	.cv\:ease-\(--sumi-ease-out\) {
+		--tw-ease: var(--sumi-ease-out) !important;
+		transition-timing-function: var(--sumi-ease-out) !important;
 	}
 	.cv\:ease-spring {
 		--tw-ease: var(--wg-spring) !important;
@@ -15842,6 +15872,27 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	.cv\:data-\[lifted\]\:transition-none[data-lifted] {
 		transition-property: none !important;
 	}
+	.cv\:data-\[marked\]\:fill-\(--sumi-text\)[data-marked] {
+		fill: var(--sumi-text) !important;
+	}
+	.cv\:data-\[open\]\:grid-rows-\[1fr\][data-open] {
+		grid-template-rows: 1fr !important;
+	}
+	.cv\:data-\[open\]\:bg-\(--sumi-plate\)[data-open] {
+		background-color: var(--sumi-plate) !important;
+	}
+	.cv\:data-\[open\]\:px-0\.5[data-open] {
+		padding-inline: calc(var(--cv-spacing) * 0.5) !important;
+	}
+	.cv\:data-\[open\]\:pt-0\.5[data-open] {
+		padding-top: calc(var(--cv-spacing) * 0.5) !important;
+	}
+	.cv\:data-\[open\]\:pb-1[data-open] {
+		padding-bottom: var(--cv-spacing) !important;
+	}
+	.cv\:data-\[open\]\:opacity-100[data-open] {
+		opacity: 100% !important;
+	}
 	.cv\:data-\[picked\]\:bg-group[data-picked] {
 		background-color: var(--group) !important;
 	}
@@ -15938,6 +15989,14 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 			var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow),
 			var(--tw-shadow) !important;
 	}
+	.cv\:\[\&_\[data-shown\]\]\:bg-\(--sumi-active\) [data-shown] {
+		background-color: var(--sumi-active) !important;
+	}
+	@media (hover: hover) {
+		.cv\:\[\&_\[data-shown\]\]\:hover\:bg-\(--sumi-active\) [data-shown]:hover {
+			background-color: var(--sumi-active) !important;
+		}
+	}
 	.cv\:\[\&_\[role\=tab\]\]\:h-10 [role="tab"] {
 		height: calc(var(--cv-spacing) * 10) !important;
 	}
@@ -15986,6 +16045,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	:is(.cv\:\[\&\,\&_\*\]\:box-border),
 	.cv\:\[\&\,\&_\*\]\:box-border * {
 		box-sizing: border-box !important;
+	}
+	.cv\:\[\&\>\*\+\*\]\:-ms-1 > * + * {
+		margin-inline-start: calc(var(--cv-spacing) * -1) !important;
 	}
 	.cv\:\[\&\>\.wg-kit-menu-chevron\]\:size-3 > .wg-kit-menu-chevron {
 		width: calc(var(--cv-spacing) * 3) !important;

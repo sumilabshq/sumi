@@ -38,6 +38,13 @@ import {
 	TearOffTabCommand,
 } from "./features/tab-showing/requests.js";
 import {
+	PlaceInViewCommand,
+	RemoveFromSplitCommand,
+	ResizeSplitCommand,
+	RereadShownSplitSubscriber,
+	ShownSplitQuery,
+} from "./features/splits/requests.js";
+import {
 	ChatTabsQuery,
 	ClosedTabsQuery,
 	HeldTabsQuery,
@@ -57,7 +64,7 @@ import {
 export const PlacesModule = module("places")
 	.on(Server)
 	.guard(PublicGuard)
-	.subscribers(RereadWindowsSubscriber, RereadPlacedTabsSubscriber)
+	.subscribers(RereadWindowsSubscriber, RereadPlacedTabsSubscriber, RereadShownSplitSubscriber)
 	.public(
 		OpenWindowsQuery,
 		OpenWindowCommand,
@@ -98,5 +105,9 @@ export const PlacesModule = module("places")
 		SetGroupHueCommand,
 		FoldGroupCommand,
 		UngroupCommand,
+		ShownSplitQuery,
+		PlaceInViewCommand,
+		RemoveFromSplitCommand,
+		ResizeSplitCommand,
 	)
 	.provide((facts) => placesPartsOn(facts));

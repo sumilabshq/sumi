@@ -3,7 +3,7 @@ import type { OutputOf } from "@widgetarium/core/requests";
 
 export type Sidebar = OutputOf<typeof TabsSidebarQuery>;
 type SidebarEntry = Sidebar["sections"][number]["entries"][number];
-type SidebarItem = Exclude<SidebarEntry, { kind: "group" }>;
+type SidebarItem = Exclude<SidebarEntry, { kind: "group" | "split" }>;
 type ChatState = Extract<SidebarItem, { kind: "chat" }>["chat"];
 type ChatChild = ChatState["children"][number];
 export type SidebarTab = Extract<SidebarItem, { kind: "tab" }>["tab"];
@@ -44,14 +44,14 @@ export function tabListsOf(sidebar: Sidebar): readonly TabList[] {
 		list: section.list,
 		title: SECTION_TITLES[section.list],
 		isChat: false,
-		entries: section.entries.map(listedOf),
+		entries: section.entries.flatMap(listedOf),
 	}));
 	return [...sections, ...chatsIn(sidebar).map(chatListOf)];
 }
 
 function chatsIn(sidebar: Sidebar): readonly ChatState[] {
 	return sidebar.sections
-		.flatMap((section) => section.entries.flatMap((entry) => (entry.kind === "group" ? entry.group.items : [entry])))
+		.flatMap((section) => section.entries.flatMap(itemsOfEntry))
 		.flatMap((item) => (item.kind === "chat" ? [item.chat] : []));
 }
 
@@ -64,22 +64,37 @@ function chatListOf(chat: ChatState): TabList {
 	};
 }
 
-function listedOf(entry: SidebarEntry): ListedEntry {
+function listedOf(entry: SidebarEntry | SidebarItem): readonly ListedEntry[] {
 	if (entry.kind === "tab") {
-		return entry;
+		return [entry];
 	}
 
 	if (entry.kind === "chat") {
-		return chatOf(entry.chat);
+		return [chatOf(entry.chat)];
 	}
 
-	const { items, ...face } = entry.group;
+	if (entry.kind === "split") {
+		return entry.split.members.flatMap((member) => listedOf(member.item));
+	}
+
+	return [groupListedOf(entry.group)];
+}
+
+function groupListedOf({ items, ...face }: Extract<SidebarEntry, { kind: "group" }>["group"]): ListedGroup {
 	return {
 		kind: "group",
 		...face,
 		tabs: items.flatMap((item) => (item.kind === "tab" ? [item.tab] : [])),
 		chats: items.flatMap((item) => (item.kind === "chat" ? [chatOf(item.chat)] : [])),
 	};
+}
+
+function itemsOfEntry(entry: SidebarEntry): readonly SidebarItem[] {
+	if (entry.kind === "group") {
+		return entry.group.items;
+	}
+
+	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
 function childOf(child: ChatChild): ListedEntry {

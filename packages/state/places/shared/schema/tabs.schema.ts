@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { KeptSplitSchema } from "./splits.schema.js";
 
 export const PageAppSchema = z.enum(["canvas", "browser", "terminal"]);
 
@@ -53,6 +54,7 @@ export const ClosedTabSchema = z.object({
 export const WindowViewSchema = z.object({
 	shownId: z.string().nullable(),
 	lastShown: z.record(z.string(), z.string()).default({}),
+	shownSplitId: z.string().nullable().default(null),
 });
 
 export type WindowView = z.infer<typeof WindowViewSchema>;
@@ -64,6 +66,8 @@ export const PlacedTabsSchema = z.object({
 	views: z.record(z.string(), WindowViewSchema).default({}),
 	minted: z.number().int().nonnegative(),
 	closed: z.array(ClosedTabSchema),
+	splits: z.array(KeptSplitSchema).default([]),
+	mintedSplits: z.number().int().nonnegative().default(0),
 });
 
 export type PlacedTabs = z.infer<typeof PlacedTabsSchema>;

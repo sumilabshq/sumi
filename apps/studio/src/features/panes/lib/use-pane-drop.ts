@@ -2,12 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { CARRIED_CHAT, CARRIED_PANE, CARRIED_TAB, listenToCarry } from "@widgetarium/behaviors";
 import type { CarriedItem, CarryMoment } from "@widgetarium/behaviors";
-import { useCommand } from "@widgetarium/core/requests";
 import { sideAt } from "./pane-layout.js";
 import type { PaneRect } from "./pane-layout.js";
 import { aimTargetIdsOf, homeOfCarried } from "./aim-targets.js";
 import type { PaneBoard, PaneLeaf, PanePlacement, PaneView } from "@widgetarium/layout";
-import { PlacePaneCommand } from "@widgetarium/layout";
+import { dropped } from "./view-drops.js";
+import { usePlacers } from "./use-placers.js";
+import type { Carrying, Placers } from "./view-drops.js";
 
 export interface PaneDropAsk {
 	readonly board: RefObject<HTMLElement | null>;
@@ -21,10 +22,11 @@ export interface PaneDrop {
 	readonly carriedHome: string | null;
 }
 
-interface Carrying {
-	readonly view: PaneView;
-	readonly home: string | null;
-	readonly isTab: boolean;
+interface Hearing {
+	readonly board: HTMLElement | null;
+	readonly seen: Omit<PaneDropAsk, "board">;
+	readonly setDrop: (next: (was: PaneDrop) => PaneDrop) => void;
+	readonly placers: Placers;
 }
 
 const RESTING: PaneDrop = {
@@ -33,38 +35,36 @@ const RESTING: PaneDrop = {
 };
 
 export function usePaneDrop({ board, rects, leaves, groups }: PaneDropAsk): PaneDrop {
-	const placePane = useCommand(PlacePaneCommand);
+	const placers = usePlacers();
 	const [drop, setDrop] = useState<PaneDrop>(RESTING);
 	const latest = useRef({ rects, leaves, groups });
 	latest.current = { rects, leaves, groups };
 	useEffect(
 		() =>
-			listenToCarry((moment) => {
-				const carrying = carryingOf(moment.item, latest.current);
-				const aimed = carrying === null ? null : aimOf(board.current, latest.current, moment, carrying);
-				const shown: PaneDrop =
-					moment.phase === "over" && carrying !== null
-						? { aim: aimed, carriedHome: carrying.isTab ? carrying.home : null }
-						: RESTING;
-				setDrop((was) => (isSameDrop(was, shown) ? was : shown));
-
-				if (aimed === null) {
-					return false;
-				}
-
-				if (moment.phase === "drop") {
-					void placePane.run(aimed).then((answer) => {
-						if (!answer.ok) {
-							console.error(`[widgetarium] drop on the pane board refused: ${answer.reason}`);
-						}
-					});
-				}
-
-				return true;
-			}),
-		[board, placePane],
+			listenToCarry((moment) => tookCarry(moment, { board: board.current, seen: latest.current, setDrop, placers })),
+		[board, placers],
 	);
 	return drop;
+}
+
+function tookCarry(moment: CarryMoment, { board, seen, setDrop, placers }: Hearing): boolean {
+	const carrying = carryingOf(moment.item, seen);
+	const aimed = carrying === null ? null : aimOf(board, seen, moment, carrying);
+	const shown: PaneDrop =
+		moment.phase === "over" && carrying !== null
+			? { aim: aimed, carriedHome: carrying.isTab ? carrying.home : null }
+			: RESTING;
+	setDrop((was) => (isSameDrop(was, shown) ? was : shown));
+
+	if (aimed === null || carrying === null) {
+		return false;
+	}
+
+	if (moment.phase === "drop") {
+		void dropped({ aimed, carrying, board: seen }, placers);
+	}
+
+	return true;
 }
 
 function carryingOf(item: CarriedItem, { leaves, groups }: Pick<PaneDropAsk, "leaves" | "groups">): Carrying | null {
@@ -75,6 +75,7 @@ function carryingOf(item: CarriedItem, { leaves, groups }: Pick<PaneDropAsk, "le
 				view,
 				home: homeOfCarried(item, leaves, groups),
 				isTab: item.kind === CARRIED_TAB,
+				isPane: item.kind === CARRIED_PANE,
 			};
 }
 

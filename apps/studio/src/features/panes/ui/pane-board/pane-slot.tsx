@@ -5,8 +5,9 @@ import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
 import type { SlotLook } from "../../lib/use-board-look.js";
 import type { PaneLeaf, PaneView } from "@widgetarium/layout";
-import { AimPaneCommand, ClosePaneCommand } from "@widgetarium/layout";
+import { AimPaneCommand } from "@widgetarium/layout";
 import { MarkChatSeenCommand } from "@widgetarium/workspaces";
+import { usePaneClosing } from "../../lib/use-pane-closing.js";
 
 export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
@@ -16,7 +17,7 @@ export interface PaneSlotProps {
 
 export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotProps): ReactElement {
 	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners, rim } = look;
-	const closePane = useCommand(ClosePaneCommand);
+	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(AimPaneCommand);
 	const markChatSeen = useCommand(MarkChatSeenCommand);
 	const aim = (): void => {
@@ -31,9 +32,9 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotPr
 			paneId: leaf.id,
 			isAtTopLeft,
 			isAtTopRight,
-			close: () => void closePane.run({ id: leaf.id }),
+			close,
 		}),
-		[closePane, leaf.id, isAtTopLeft, isAtTopRight],
+		[close, leaf.id, isAtTopLeft, isAtTopRight],
 	);
 	return (
 		<div

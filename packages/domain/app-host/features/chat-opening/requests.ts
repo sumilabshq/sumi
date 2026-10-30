@@ -9,7 +9,10 @@ import {
 	ForgetChatToOpenCommand,
 	MarkChatSeenCommand,
 } from "@widgetarium/workspaces";
-import { KeepChatTabsCommand } from "@widgetarium/places";
+import { KeepChatTabsCommand, ShowTabCommand as PlacesShowTabCommand } from "@widgetarium/places";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
+import { sendLogged, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { isChatHeld, windowHoldingChat } from "../../shared/lib/chat-holders.js";
 import {
 	ChatOpenedSchema,
@@ -25,7 +28,16 @@ const NOT_AN_EMPTY_CHAT_PANE = "pane {pane} is not a chat pane waiting for a cha
 export const OpenChatCommand = command("open-chat")
 	.input(ChatToShowSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ chatId, paneId }, { send }) => openChat(send, { chatId, paneId }));
+	.inject(SHOWING_PARTS)
+	.emits(TabsSettledEvent)
+	.handle(async ({ chatId, paneId }, { send, emit, ...parts }) => {
+		await sendLogged(`show chat ${chatId} in the view`, () =>
+			settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+				send(PlacesShowTabCommand, { at, id: chatId }),
+			),
+		);
+		await openChat(send, { chatId, paneId });
+	});
 
 export const OpenNewChatCommand = command("open-new-chat")
 	.input(NewChatTitleSchema)

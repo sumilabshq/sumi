@@ -4,7 +4,7 @@ import type { GroupItem, SidebarEntry, TabsSidebar } from "../../../shared/schem
 
 type PlacedEntry = PlacedSidebar["sections"][number]["entries"][number];
 
-type PlacedItem = Exclude<PlacedEntry, { readonly kind: "group" }>;
+type PlacedItem = Exclude<PlacedEntry, { readonly kind: "group" | "split" }>;
 
 type PlacedChat = Extract<PlacedItem, { readonly kind: "chat" }>["chat"];
 
@@ -27,6 +27,13 @@ class RecordedChats {
 	}
 
 	entriesOf(entry: PlacedEntry): readonly SidebarEntry[] {
+		if (entry.kind === "split") {
+			const members = entry.split.members.flatMap(({ item, ...member }) =>
+				this.itemsOf(item).map((recorded) => ({ ...member, item: recorded })),
+			);
+			return [{ kind: "split", split: { ...entry.split, members } }];
+		}
+
 		if (entry.kind !== "group") {
 			return this.itemsOf(entry);
 		}
@@ -41,7 +48,7 @@ class RecordedChats {
 		}
 
 		const record = this.recordOf.get(item.chat.id);
-		return record === undefined ? [] : [{ kind: "chat", chat: chatOf(item.chat, record) }];
+		return record === undefined ? [] : [{ kind: "chat", chat: chatOf(item.chat, record), splitMark: item.splitMark }];
 	}
 }
 

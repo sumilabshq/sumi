@@ -6,10 +6,11 @@ import type { HostTabsMoment } from "./host-tabs.js";
 const NO_VIEW = {
 	shownId: null,
 	lastShown: {},
+	shownSplitId: null,
 };
 
 export function emptyPlacedTabs(): PlacedTabs {
-	const { shownId: _shown, lastShown: _last, ...shared } = emptyMoment();
+	const { shownId: _shown, lastShown: _last, shownSplitId: _split, ...shared } = emptyMoment();
 	return PlacedTabsSchema.parse({
 		...shared,
 		views: {},
@@ -38,9 +39,12 @@ export function windowTabsOf(moment: HostTabsMoment): WindowTabs {
 
 export function placedWith(placed: PlacedTabs, window: string | null, moment: HostTabsMoment): PlacedTabs {
 	const { shownId, lastShown, ...shared } = windowTabsOf(moment);
+	const { splits, mintedSplits, shownSplitId } = moment;
 	return PlacedTabsSchema.parse({
 		...shared,
-		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, lastShown } },
+		splits,
+		mintedSplits,
+		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, lastShown, shownSplitId } },
 	});
 }
 

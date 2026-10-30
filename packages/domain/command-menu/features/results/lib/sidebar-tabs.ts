@@ -17,18 +17,20 @@ export function listedTabsOf(sidebar: TabsSidebar): readonly ListedTab[] {
 }
 
 export function shownChatIdsOf(sidebar: TabsSidebar): ReadonlySet<string> {
-	const items = sidebar.sections.flatMap((section) =>
-		section.entries.flatMap((entry) => (entry.kind === "group" ? entry.group.items : [entry])),
-	);
+	const items = sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry));
 	return new Set(items.flatMap((item) => (item.kind === "chat" && item.chat.isShown ? [item.chat.id] : [])));
 }
 
 function tabsOfEntry(entry: SidebarEntry, listTitle: string): readonly ListedTab[] {
+	return itemsOfEntry(entry).flatMap((item) => tabsOfItem(item, listTitle));
+}
+
+function itemsOfEntry(entry: SidebarEntry): readonly GroupItem[] {
 	if (entry.kind === "group") {
-		return entry.group.items.flatMap((item) => tabsOfItem(item, listTitle));
+		return entry.group.items;
 	}
 
-	return tabsOfItem(entry, listTitle);
+	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
 function tabsOfItem(item: GroupItem, listTitle: string): readonly ListedTab[] {

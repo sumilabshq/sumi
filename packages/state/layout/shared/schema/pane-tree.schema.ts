@@ -121,3 +121,40 @@ export const PlacementPreviewSchema = z.object({
 });
 
 export type PlacementPreview = z.infer<typeof PlacementPreviewSchema>;
+
+export interface SplitDrawnLeaf {
+	readonly kind: "tab";
+	readonly tabId: string;
+}
+
+export interface SplitDrawnBranch {
+	readonly kind: "branch";
+	readonly id: string;
+	readonly dir: SplitDir;
+	readonly children: readonly SplitDrawnNode[];
+	readonly shares: readonly number[];
+}
+
+export type SplitDrawnNode = SplitDrawnLeaf | SplitDrawnBranch;
+
+// TRADE-OFF: a copy of places' SplitNodeSchema; a generated contract imports no other package's schema
+export const SplitDrawnNodeSchema: z.ZodType<SplitDrawnNode> = z.lazy(() =>
+	z.discriminatedUnion("kind", [
+		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
+		z.object({
+			kind: z.literal("branch"),
+			id: z.string().min(1),
+			dir: SplitDirSchema,
+			children: z.array(SplitDrawnNodeSchema).readonly(),
+			shares: z.array(z.number().positive()).readonly(),
+		}),
+	]),
+);
+
+export const SplitDrawingSchema = z.object({
+	layout: SplitDrawnNodeSchema,
+	chatIds: z.array(z.string()).readonly(),
+	focusedId: z.string(),
+});
+
+export type SplitDrawing = z.infer<typeof SplitDrawingSchema>;

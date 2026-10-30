@@ -80,9 +80,34 @@ export const GroupStateSchema = z.object({
 
 export type GroupState = z.infer<typeof GroupStateSchema>;
 
+export const SplitMapSchema = z.object({
+	cells: z
+		.array(
+			z.object({
+				tabId: z.string(),
+				x: z.number(),
+				y: z.number(),
+				w: z.number(),
+				h: z.number(),
+			}),
+		)
+		.readonly(),
+	markedId: z.string(),
+});
+
+export type SplitMap = z.infer<typeof SplitMapSchema>;
+
+export const SplitMarkSchema = z.object({
+	id: z.string(),
+	map: SplitMapSchema,
+});
+
+export type SplitMark = z.infer<typeof SplitMarkSchema>;
+
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -112,6 +137,7 @@ export type ChatState = z.infer<typeof ChatStateSchema>;
 export const SidebarChatSchema = z.object({
 	kind: z.literal("chat"),
 	chat: ChatStateSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarChat = z.infer<typeof SidebarChatSchema>;
@@ -135,7 +161,34 @@ export const SidebarGroupSchema = z.object({
 	group: SidebarGroupStateSchema,
 });
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema, SidebarGroupSchema]);
+export const SplitMemberSchema = z.object({
+	item: GroupItemSchema,
+	isPinned: z.boolean(),
+	isFocused: z.boolean(),
+});
+
+export type SplitMember = z.infer<typeof SplitMemberSchema>;
+
+export const SidebarSplitStateSchema = z.object({
+	id: z.string(),
+	isShown: z.boolean(),
+	map: SplitMapSchema,
+	members: z.array(SplitMemberSchema).readonly(),
+});
+
+export type SidebarSplitState = z.infer<typeof SidebarSplitStateSchema>;
+
+export const SidebarSplitSchema = z.object({
+	kind: z.literal("split"),
+	split: SidebarSplitStateSchema,
+});
+
+export const SidebarEntrySchema = z.discriminatedUnion("kind", [
+	SidebarTabSchema,
+	SidebarChatSchema,
+	SidebarGroupSchema,
+	SidebarSplitSchema,
+]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
@@ -226,6 +279,28 @@ export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
 export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
 
 export const ClosedTabIdSchema = z.object({ tabId: z.string().min(1) });
+
+export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
+
+export const SplitPlacingSchema = z.object({
+	tabId: z.string().min(1),
+	targetTabId: z.string().min(1).nullable(),
+	side: SplitSideSchema,
+	isPaneMoved: z.boolean(),
+});
+
+export const ShownSplitSchema = z.object({
+	shownId: z.string().nullable(),
+	split: z
+		.object({
+			id: z.string(),
+			memberIds: z.array(z.string()).readonly(),
+			focusedId: z.string(),
+		})
+		.nullable(),
+});
+
+export type ShownSplit = z.infer<typeof ShownSplitSchema>;
 
 export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal"]);
 
@@ -383,5 +458,23 @@ export const UngroupCommand = command("app-host/ungroup")
 export const ShowViewCommand = command("app-host/show-view")
 	.input(z.object({ view: StudioViewSchema }))
 	.idempotencyKey(Repeatable);
+export const ShownSplitQuery = query("app-host/shown-split")
+	.output(ShownSplitSchema);
+export const PlaceInViewCommand = command("app-host/place-in-view")
+	.input(SplitPlacingSchema)
+	.output(z.object({ isPlaced: z.boolean() }))
+	.idempotencyKey(Repeatable);
+export const CloseViewPaneCommand = command("app-host/close-view-pane")
+	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
+	.idempotencyKey(Repeatable);
+export const ResizeSplitCommand = command("app-host/resize-split")
+	.input(
+		z.object({
+			branchId: z.string().min(1),
+			at: z.number().int().nonnegative(),
+			share: z.number().positive(),
+		}),
+	)
+	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ShowViewCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);

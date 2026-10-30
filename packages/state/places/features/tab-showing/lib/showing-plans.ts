@@ -3,6 +3,10 @@ import type { RestoreTabsAsk } from "../../../shared/schema/tab-asks.schema.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
 import type { ShowingPlan } from "../../../shared/lib/settling/settling.js";
 import { withTabsAtHome } from "../../../shared/lib/showing/rehoming.js";
+import { boardlessOf, withSplitLeftFor } from "../../../shared/lib/showing/split-showing.js";
+import { focusedInSplit } from "../../../shared/lib/splits/split-moves.js";
+import { shownSplitOf, splitOfTab } from "../../../shared/lib/splits/split-members.js";
+import type { Showing } from "../../../shared/lib/showing/showing.js";
 import {
 	withChatTabShown,
 	withEffect,
@@ -46,16 +50,7 @@ export function showTabPlan(id: string): ShowingPlan {
 			return refusal(NOT_HELD.replace("{id}", id));
 		}
 
-		const apart = shownApartEffectOf(tab, showing.moment, facts);
-
-		if (apart === null) {
-			return withTabPressed(showing, facts, tab);
-		}
-
-		console.info(
-			`[widgetarium] show ${id}: ${apart.kind === "flash-pane" ? "reveal the pane holding it" : "focus its own window"}`,
-		);
-		return withEffect(showing, apart);
+		return splitShowingOf(showing, facts, tab) ?? withLoneTabShown(showing, facts, tab);
 	};
 }
 
@@ -65,6 +60,10 @@ export function showChatTabPlan(chatId: string): ShowingPlan {
 
 export function fitTabsPlan(): ShowingPlan {
 	return (showing, facts) => {
+		if (shownSplitOf(showing.moment) !== null) {
+			return withPanePagesEnsured(showing, facts);
+		}
+
 		const atHome = withTabsAtHome(showing, facts);
 		return atHome === showing ? withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts) : atHome;
 	};
@@ -115,6 +114,32 @@ export function reloadPlan(id: string): ShowingPlan {
 			? refusal(NO_PAGE.replace("{id}", id))
 			: withEffect(showing, { kind: "reload-page", pageId: page.pageId });
 	};
+}
+
+function splitShowingOf(showing: Showing, facts: TabFacts, tab: HostTab): Showing | null {
+	if (splitOfTab(showing.moment, tab.id) !== null) {
+		return withMoved(showing, focusedInSplit(showing.moment, tab.id));
+	}
+
+	return shownSplitOf(showing.moment) === null ? null : withSplitLeftAlone(showing, facts, tab);
+}
+
+function withLoneTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
+	const apart = shownApartEffectOf(tab, showing.moment, facts);
+
+	if (apart === null) {
+		return withTabPressed(showing, facts, tab);
+	}
+
+	console.info(
+		`[widgetarium] show ${tab.id}: ${apart.kind === "flash-pane" ? "reveal the pane holding it" : "focus its own window"}`,
+	);
+	return withEffect(showing, apart);
+}
+
+function withSplitLeftAlone(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
+	const left = withSplitLeftFor(withMoved(showing, focusedInSplit(showing.moment, tab.id)));
+	return withTabPressed(left, boardlessOf(facts), tab);
 }
 
 function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {

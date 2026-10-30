@@ -2,8 +2,8 @@ import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import type { GroupItem, SidebarEntry } from "@widgetarium/app-host";
 import { GroupBox } from "../group-box/group-box.js";
-import { TabRow } from "../tab-row/tab-row.js";
-import { ChatEntry } from "./chat-entry.js";
+import { SplitEntry } from "../split-entry/split-entry.js";
+import { ListedItem } from "./listed-item.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 
 export interface SidebarEntriesProps {
@@ -12,23 +12,18 @@ export interface SidebarEntriesProps {
 }
 
 export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): ReactElement {
-	const itemOf = (item: GroupItem, groupId: string | null): ReactElement =>
-		item.kind === "chat" ? (
-			<ChatEntry key={item.chat.id} chat={item.chat} groupId={groupId} renaming={renaming} />
-		) : (
-			<TabRow
-				key={item.tab.id}
-				item={item}
-				groupId={groupId}
-				place="top"
-				isRenaming={renaming.id === item.tab.id}
-				onRenamed={renaming.onRenamed}
-			/>
-		);
 	return (
 		<Fragment>
-			{entries.map((entry) =>
-				entry.kind === "group" ? (
+			{entries.map((entry) => {
+				if (entry.kind === "split") {
+					return <SplitEntry key={entry.split.id} split={entry.split} renaming={renaming} />;
+				}
+
+				if (entry.kind !== "group") {
+					return <ListedItem key={itemKeyOf(entry)} item={entry} groupId={null} renaming={renaming} />;
+				}
+
+				return (
 					<GroupBox
 						key={entry.group.id}
 						id={entry.group.id}
@@ -37,12 +32,16 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 						isOpen={entry.group.isOpen}
 						count={entry.group.items.length}
 					>
-						{entry.group.items.map((item) => itemOf(item, entry.group.id))}
+						{entry.group.items.map((item) => (
+							<ListedItem key={itemKeyOf(item)} item={item} groupId={entry.group.id} renaming={renaming} />
+						))}
 					</GroupBox>
-				) : (
-					itemOf(entry, null)
-				),
-			)}
+				);
+			})}
 		</Fragment>
 	);
+}
+
+function itemKeyOf(item: GroupItem): string {
+	return item.kind === "chat" ? item.chat.id : item.tab.id;
 }

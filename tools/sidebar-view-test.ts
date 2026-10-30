@@ -90,6 +90,10 @@ function shapeOf(entry: SidebarEntry): string {
 		return `chat:${entry.chat.id}[${entry.chat.children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
 	}
 
+	if (entry.kind === "split") {
+		return `split:${entry.split.id}`;
+	}
+
 	return `group:${entry.group.id}[${entry.group.items.map((item) => (item.kind === "tab" ? item.tab.id : `chat:${item.chat.id}`)).join(",")}]`;
 }
 

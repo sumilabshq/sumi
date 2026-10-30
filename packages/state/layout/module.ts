@@ -10,6 +10,7 @@ import {
 	ShowTabInChatGroupCommand,
 	ShowTabInTargetPaneCommand,
 } from "./features/pane-tabs/requests.js";
+import { LeaveSplitCommand, ShowSplitCommand } from "./features/split-board/requests.js";
 import {
 	AimPaneCommand,
 	ClosePaneCommand,
@@ -57,6 +58,8 @@ export const LayoutModule = module("layout")
 		CloseShownTabPaneCommand,
 		ClosePanesOfTabsCommand,
 		DropGoneTabsCommand,
+		ShowSplitCommand,
+		LeaveSplitCommand,
 		PanesChangedEvent,
 	)
 	.provide((facts) => ({ ...layoutPartsOn(facts) }));

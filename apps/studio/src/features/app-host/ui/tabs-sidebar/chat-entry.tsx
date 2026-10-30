@@ -4,16 +4,18 @@ import type { ChatState, SidebarTab } from "@widgetarium/app-host";
 import { GroupBox } from "../group-box/group-box.js";
 import { TabRow } from "../tab-row/tab-row.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
+import type { RowBadge } from "../tab-row/row-badge.js";
 
 export interface ChatEntryProps {
 	readonly chat: ChatState;
 	readonly groupId: string | null;
 	readonly renaming: RowRenaming;
+	readonly badge?: RowBadge | null;
 }
 
 const CHILDREN = "cv:flex cv:flex-col cv:gap-px cv:empty:hidden";
 
-export function ChatEntry({ chat, groupId, renaming }: ChatEntryProps): ReactElement {
+export function ChatEntry({ chat, groupId, renaming, badge = null }: ChatEntryProps): ReactElement {
 	const childOf = (child: SidebarTab, childGroupId: string | null): ReactElement => (
 		<TabRow
 			key={child.tab.id}
@@ -32,6 +34,7 @@ export function ChatEntry({ chat, groupId, renaming }: ChatEntryProps): ReactEle
 				place="top"
 				isRenaming={renaming.id === chat.id}
 				onRenamed={renaming.onRenamed}
+				badge={badge}
 			/>
 			<div className={CHILDREN} data-tabs-list={chat.id} data-tabs-in={chat.id} data-tabs-nested="">
 				{chat.children.map((child) =>

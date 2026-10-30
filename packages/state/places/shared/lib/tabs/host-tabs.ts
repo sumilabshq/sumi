@@ -300,7 +300,8 @@ export function makeEssential(moment: HostTabsMoment, id: string, essentialId: s
 }
 
 export function momentSaid(moment: HostTabsMoment): string {
-	return `${moment.tabs.length} tabs, ${moment.groups.length} groups, shown ${moment.shownId}`;
+	const split = moment.shownSplitId === null ? "" : ` in ${moment.shownSplitId}`;
+	return `${moment.tabs.length} tabs, ${moment.groups.length} groups, ${moment.splits.length} splits, shown ${moment.shownId}${split}`;
 }
 
 function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string | null): HostTab {

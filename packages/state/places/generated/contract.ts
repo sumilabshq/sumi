@@ -41,6 +41,19 @@ export const TabsAskSchema = z.object({
 
 export type TabsAsk = z.infer<typeof TabsAskSchema>;
 
+export const SplitNodeSchema: z.ZodType<SplitNode> = z.lazy(() =>
+	z.discriminatedUnion("kind", [
+		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
+		z.object({
+			kind: z.literal("branch"),
+			id: z.string().min(1),
+			dir: SplitDirSchema,
+			children: z.array(SplitNodeSchema).readonly(),
+			shares: z.array(z.number().positive()).readonly(),
+		}),
+	]),
+);
+
 export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("open-page"), pageId: z.string() }),
 	z.object({ kind: z.literal("close-page"), pageId: z.string() }),
@@ -63,6 +76,13 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 		isOnlyWhenBare: z.boolean(),
 	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
+	z.object({
+		kind: z.literal("show-split"),
+		layout: SplitNodeSchema,
+		chatIds: z.array(z.string()),
+		focusedId: z.string(),
+	}),
+	z.object({ kind: z.literal("leave-split") }),
 ]);
 
 export type TabEffect = z.infer<typeof TabEffectSchema>;
@@ -79,6 +99,101 @@ export const OpenedTabSettledSchema = z.object({
 	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 });
+
+export const SplitSideSchema = z.enum(["left", "right", "top", "bottom"]);
+
+export const PlaceInViewAskSchema = z.object({
+	at: TabsAskSchema,
+	tabId: z.string().min(1),
+	targetTabId: z.string().min(1).nullable(),
+	side: SplitSideSchema,
+	isPaneMoved: z.boolean().default(false),
+});
+
+export const SplitMemberAskSchema = z.object({
+	at: TabsAskSchema,
+	tabId: z.string().min(1),
+});
+
+export const ResizeSplitAskSchema = z.object({
+	at: TabsAskSchema,
+	branchId: z.string().min(1),
+	edge: z.number().int().nonnegative(),
+	share: z.number().positive(),
+});
+
+export const PlacedInViewSchema = z.object({
+	view: StudioViewSchema,
+	effects: z.array(TabEffectSchema),
+	isPlaced: z.boolean(),
+});
+
+export const LeftSplitSchema = z.object({
+	view: StudioViewSchema,
+	effects: z.array(TabEffectSchema),
+	isMember: z.boolean(),
+});
+
+export const KeptSplitSchema = z.object({
+	id: z.string().min(1),
+	memberIds: z.array(z.string().min(1)).readonly(),
+	layout: SplitNodeSchema,
+	focusedId: z.string().min(1),
+});
+
+export const ShownSplitSchema = z.object({
+	shownId: z.string().nullable(),
+	split: KeptSplitSchema.nullable(),
+});
+
+export type ShownSplit = z.infer<typeof ShownSplitSchema>;
+
+export const SplitDirSchema = z.enum(["row", "column"]);
+
+export type SplitDir = z.infer<typeof SplitDirSchema>;
+
+export type SplitSide = z.infer<typeof SplitSideSchema>;
+
+export interface SplitLeaf {
+	readonly kind: "tab";
+	readonly tabId: string;
+}
+
+export interface SplitBranch {
+	readonly kind: "branch";
+	readonly id: string;
+	readonly dir: SplitDir;
+	readonly children: readonly SplitNode[];
+	readonly shares: readonly number[];
+}
+
+export type SplitNode = SplitLeaf | SplitBranch;
+
+export type KeptSplit = z.infer<typeof KeptSplitSchema>;
+
+export const SplitCellSchema = z.object({
+	tabId: z.string(),
+	x: z.number(),
+	y: z.number(),
+	w: z.number(),
+	h: z.number(),
+});
+
+export type SplitCell = z.infer<typeof SplitCellSchema>;
+
+export const SplitMapSchema = z.object({
+	cells: z.array(SplitCellSchema).readonly(),
+	markedId: z.string(),
+});
+
+export type SplitMap = z.infer<typeof SplitMapSchema>;
+
+export const SplitMarkSchema = z.object({
+	id: z.string(),
+	map: SplitMapSchema,
+});
+
+export type SplitMark = z.infer<typeof SplitMarkSchema>;
 
 export const TabPlaceSchema = z.object({
 	list: z.string().min(1),
@@ -310,6 +425,7 @@ export type GroupState = z.infer<typeof GroupStateSchema>;
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -335,6 +451,7 @@ export type PlacedChat = z.infer<typeof PlacedChatSchema>;
 export const SidebarChatSchema = z.object({
 	kind: z.literal("chat"),
 	chat: PlacedChatSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarChat = z.infer<typeof SidebarChatSchema>;
@@ -356,7 +473,32 @@ export const SidebarGroupSchema = z.object({
 
 export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
 
-export const SidebarEntrySchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema, SidebarGroupSchema]);
+export const SplitMemberSchema = z.object({
+	item: GroupItemSchema,
+	isPinned: z.boolean(),
+	isFocused: z.boolean(),
+});
+
+export type SplitMember = z.infer<typeof SplitMemberSchema>;
+
+export const SidebarSplitSchema = z.object({
+	kind: z.literal("split"),
+	split: z.object({
+		id: z.string(),
+		isShown: z.boolean(),
+		map: SplitMapSchema,
+		members: z.array(SplitMemberSchema).readonly(),
+	}),
+});
+
+export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
+
+export const SidebarEntrySchema = z.discriminatedUnion("kind", [
+	SidebarTabSchema,
+	SidebarChatSchema,
+	SidebarGroupSchema,
+	SidebarSplitSchema,
+]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
@@ -641,5 +783,20 @@ export const FoldGroupCommand = command("places/fold-group")
 export const UngroupCommand = command("places/ungroup")
 	.input(GroupAskSchema)
 	.idempotencyKey(Repeatable);
+export const ShownSplitQuery = query("places/shown-split")
+	.input(WindowLabelSchema)
+	.output(ShownSplitSchema);
+export const PlaceInViewCommand = command("places/place-in-view")
+	.input(PlaceInViewAskSchema)
+	.output(PlacedInViewSchema)
+	.idempotencyKey(Repeatable);
+export const RemoveFromSplitCommand = command("places/remove-from-split")
+	.input(SplitMemberAskSchema)
+	.output(LeftSplitSchema)
+	.idempotencyKey(Repeatable);
+export const ResizeSplitCommand = command("places/resize-split")
+	.input(ResizeSplitAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand]);
+export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ResizeSplitCommand]);

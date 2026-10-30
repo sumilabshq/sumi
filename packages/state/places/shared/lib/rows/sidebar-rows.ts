@@ -2,6 +2,7 @@ import { newTabPlaceOf } from "../tabs/host-tabs.js";
 import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
 import { PINNED_LIST, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
 import { TabRows, shownIdsOf } from "./tab-rows.js";
+import { SplitRows } from "./split-rows.js";
 import type {
 	ChatChild,
 	Essential,
@@ -42,6 +43,7 @@ export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
 
 class SidebarEntries {
 	private readonly chatIds: ReadonlySet<string>;
+	private readonly splitRows: SplitRows;
 
 	constructor(
 		private readonly moment: HostTabsMoment,
@@ -49,21 +51,22 @@ class SidebarEntries {
 		private readonly boardChatIds: ReadonlySet<string>,
 	) {
 		this.chatIds = new Set(moment.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id));
+		this.splitRows = new SplitRows(moment, (id) => this.itemsOf(id));
 	}
 
 	sectionOf(list: SectionList): SidebarSection {
 		return {
 			list,
-			entries: this.listOf(list).flatMap((entry) => this.entriesOf(entry)),
+			entries: this.listOf(list).flatMap((entry) => this.entriesOf(entry, list)),
 		};
 	}
 
-	private entriesOf(entry: ListEntry): readonly SidebarEntry[] {
+	private entriesOf(entry: ListEntry, list: SectionList): readonly SidebarEntry[] {
 		if (entry.kind === "group") {
 			return this.groupsOf(entry.id).map((group) => this.topGroupOf(group));
 		}
 
-		return this.itemsOf(entry.id);
+		return this.splitRows.entriesOf(entry.id, list) ?? this.itemsOf(entry.id);
 	}
 
 	private itemsOf(id: string): readonly GroupItem[] {

@@ -78,9 +78,34 @@ export const GroupStateSchema = z.object({
 
 export type GroupState = z.infer<typeof GroupStateSchema>;
 
+export const SplitMapSchema = z.object({
+	cells: z
+		.array(
+			z.object({
+				tabId: z.string(),
+				x: z.number(),
+				y: z.number(),
+				w: z.number(),
+				h: z.number(),
+			}),
+		)
+		.readonly(),
+	markedId: z.string(),
+});
+
+export type SplitMap = z.infer<typeof SplitMapSchema>;
+
+export const SplitMarkSchema = z.object({
+	id: z.string(),
+	map: SplitMapSchema,
+});
+
+export type SplitMark = z.infer<typeof SplitMarkSchema>;
+
 export const SidebarTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarTab = z.infer<typeof SidebarTabSchema>;
@@ -108,6 +133,7 @@ export type ChatState = z.infer<typeof ChatStateSchema>;
 export const SidebarChatSchema = z.object({
 	kind: z.literal("chat"),
 	chat: ChatStateSchema,
+	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
 export type SidebarChat = z.infer<typeof SidebarChatSchema>;
@@ -131,10 +157,33 @@ export const SidebarGroupSchema = z.object({
 	group: SidebarGroupStateSchema,
 });
 
+export const SplitMemberSchema = z.object({
+	item: GroupItemSchema,
+	isPinned: z.boolean(),
+	isFocused: z.boolean(),
+});
+
+export type SplitMember = z.infer<typeof SplitMemberSchema>;
+
+export const SidebarSplitStateSchema = z.object({
+	id: z.string(),
+	isShown: z.boolean(),
+	map: SplitMapSchema,
+	members: z.array(SplitMemberSchema).readonly(),
+});
+
+export type SidebarSplitState = z.infer<typeof SidebarSplitStateSchema>;
+
+export const SidebarSplitSchema = z.object({
+	kind: z.literal("split"),
+	split: SidebarSplitStateSchema,
+});
+
 export const SidebarEntrySchema = z.discriminatedUnion("kind", [
 	SidebarTabSchema,
 	SidebarChatSchema,
 	SidebarGroupSchema,
+	SidebarSplitSchema,
 ]);
 
 export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;

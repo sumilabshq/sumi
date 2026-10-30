@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { SplitNodeSchema } from "./splits.schema.js";
 
 export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal"]);
 
@@ -61,6 +62,13 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 		isOnlyWhenBare: z.boolean(),
 	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
+	z.object({
+		kind: z.literal("show-split"),
+		layout: SplitNodeSchema,
+		chatIds: z.array(z.string()),
+		focusedId: z.string(),
+	}),
+	z.object({ kind: z.literal("leave-split") }),
 ]);
 
 export type TabEffect = z.infer<typeof TabEffectSchema>;

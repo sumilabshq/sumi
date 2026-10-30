@@ -1,4 +1,4 @@
-import type { ChatState, GroupHue, SidebarEntry, TabsSidebar } from "@widgetarium/app-host";
+import type { ChatState, GroupHue, GroupItem, SidebarEntry, TabsSidebar } from "@widgetarium/app-host";
 
 export interface GroupFace {
 	readonly id: string;
@@ -25,10 +25,16 @@ export function groupFaceOf(sidebar: TabsSidebar, id: string | null): GroupFace 
 }
 
 export function chatsOf(sidebar: TabsSidebar): readonly ChatState[] {
-	const items = sidebar.sections.flatMap((section) =>
-		section.entries.flatMap((entry) => (entry.kind === "group" ? entry.group.items : [entry])),
-	);
+	const items = sidebar.sections.flatMap((section) => section.entries.flatMap(itemsOfEntry));
 	return items.flatMap((item) => (item.kind === "chat" ? [item.chat] : []));
+}
+
+export function itemsOfEntry(entry: SidebarEntry): readonly GroupItem[] {
+	if (entry.kind === "group") {
+		return entry.group.items;
+	}
+
+	return entry.kind === "split" ? entry.split.members.map((member) => member.item) : [entry];
 }
 
 function topGroupFaceOf({ group }: Extract<SidebarEntry, { readonly kind: "group" }>): GroupFace {

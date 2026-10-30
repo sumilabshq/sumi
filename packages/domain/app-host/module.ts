@@ -34,6 +34,14 @@ import {
 } from "./features/groups/requests.js";
 import { ShowViewCommand, RereadShownViewSubscriber, ShownViewQuery } from "./features/shown-view/requests.js";
 import {
+	PlaceInViewCommand,
+	CloseViewPaneCommand,
+	RereadShownSplitForCoreSubscriber,
+	RereadShownSplitSubscriber,
+	ResizeSplitCommand,
+	ShownSplitQuery,
+} from "./features/splits/requests.js";
+import {
 	CloseEssentialCommand,
 	PlaceEssentialCommand,
 	RemoveEssentialCommand,
@@ -98,6 +106,8 @@ export const AppHostModule = module("app-host")
 		RereadShownViewSubscriber,
 		RereadClosedTabsSubscriber,
 		RereadClosedTabsForCoreSubscriber,
+		RereadShownSplitSubscriber,
+		RereadShownSplitForCoreSubscriber,
 	)
 	.public(ChatListQuery, PinTabCommand)
 	.public(
@@ -138,5 +148,9 @@ export const AppHostModule = module("app-host")
 		FoldGroupCommand,
 		UngroupCommand,
 		ShowViewCommand,
+		ShownSplitQuery,
+		PlaceInViewCommand,
+		CloseViewPaneCommand,
+		ResizeSplitCommand,
 	)
 	.provide((facts) => ({ ...appHostPartsOn(facts) }));

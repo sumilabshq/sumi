@@ -8,6 +8,8 @@ import type { TabFacts } from "../showing/tab-facts.js";
 import type { HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import { momentOfWindow, placedWith, tabsTransitionSaid } from "../tabs/kept-tabs.js";
 import { tabBreaksOf } from "../tabs/tab-invariants.js";
+import { splitBreaksOf, splitsPruned } from "../splits/split-members.js";
+import { withSplitFollowed } from "../showing/split-showing.js";
 
 export interface PlacedTabsMove<T> {
 	readonly next: PlacedTabs | null;
@@ -76,18 +78,14 @@ export function settling(at: TabsAsk, plan: ShowingPlan): MovePlacedTabs<Answer<
 export function settlingWith<E>(at: TabsAsk, plan: ExtraPlan<E>): MovePlacedTabs<Answer<Settled<E>>> {
 	return (placed) => {
 		const was = showingOf(momentOfWindow(placed, at.window), at.view);
-		const planned = plan(was, tabFactsOf(at.screen));
+		const facts = tabFactsOf(at.screen);
+		const planned = plan(was, facts);
 
 		if (isRefusal(planned)) {
 			return refusedMove(planned.refusal);
 		}
 
-		const { showing } = planned;
-		return checkedMove(
-			{ placed, window: at.window, was: was.moment, next: showing.moment },
-			showing.reasons,
-			settledValueOf(planned),
-		);
+		return settledMove({ placed, window: at.window, was: was.moment }, { ...planned, facts });
 	};
 }
 
@@ -109,6 +107,26 @@ export function movedPlan<E>(was: HostTabsMoment, moved: MovedTabs | null, extra
 	return plannedWith(moved === null ? shown : { ...shown, moment: moved.moment, reasons: [moved.reason] }, extra);
 }
 
+interface PlannedWithFacts<E> extends Planned<E> {
+	readonly facts: TabFacts;
+}
+
+function settledMove<E>(
+	{ placed, window, was }: Omit<MomentChange, "next">,
+	{ showing: planned, extra, facts }: PlannedWithFacts<E>,
+): PlacedTabsMove<Answer<Settled<E>>> {
+	const showing = followedShowing(was, planned, facts);
+	return checkedMove(
+		{ placed, window, was, next: showing.moment },
+		showing.reasons,
+		settledValueOf({ showing, extra }),
+	);
+}
+
+function followedShowing(was: HostTabsMoment, planned: Showing, facts: TabFacts): Showing {
+	return withSplitFollowed(was, { ...planned, moment: splitsPruned(planned.moment) }, facts);
+}
+
 interface MomentChange {
 	readonly placed: PlacedTabs;
 	readonly window: string | null;
@@ -116,8 +134,9 @@ interface MomentChange {
 	readonly next: HostTabsMoment;
 }
 
-function checkedMove<T>(change: MomentChange, reasons: readonly string[], value: T): PlacedTabsMove<Answer<T>> {
+function checkedMove<T>(asked: MomentChange, reasons: readonly string[], value: T): PlacedTabsMove<Answer<T>> {
 	const reason = reasons.join("; ");
+	const change = { ...asked, next: splitsPruned(asked.next) };
 
 	if (change.next === change.was) {
 		return acceptedMove(null, reason || "nothing changes", value);
@@ -135,8 +154,12 @@ function checkedMove<T>(change: MomentChange, reasons: readonly string[], value:
 }
 
 function newlyBrokenBy({ was, next }: MomentChange): string | null {
-	const before = new Set(tabBreaksOf(was));
-	return tabBreaksOf(next).find((broken) => !before.has(broken)) ?? null;
+	const before = new Set(breaksOf(was));
+	return breaksOf(next).find((broken) => !before.has(broken)) ?? null;
+}
+
+function breaksOf(moment: HostTabsMoment): readonly string[] {
+	return [...tabBreaksOf(moment), ...splitBreaksOf(moment)];
 }
 
 function acceptedMove<T>(next: PlacedTabs | null, reason: string, value: T): PlacedTabsMove<Answer<T>> {

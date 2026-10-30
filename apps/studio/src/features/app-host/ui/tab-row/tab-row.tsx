@@ -8,6 +8,7 @@ import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";
 import { RenameField } from "../rename-field/rename-field.js";
 import { RowIcon } from "./row-icon.js";
 import { RowTail } from "./row-tail.js";
+import type { RowBadge } from "./row-badge.js";
 
 export type RowPlace = "top" | "child";
 
@@ -17,6 +18,7 @@ export interface TabRowProps {
 	readonly place: RowPlace;
 	readonly isRenaming: boolean;
 	readonly onRenamed: () => void;
+	readonly badge?: RowBadge | null;
 }
 
 const MIDDLE_BUTTON = 1;
@@ -27,7 +29,14 @@ const PLACE_LOOK: Readonly<Record<RowPlace, string>> = {
 	child: CHILD_ROW,
 };
 
-export const TabRow = memo(function TabRow({ item, groupId, place, isRenaming, onRenamed }: TabRowProps): ReactElement {
+export const TabRow = memo(function TabRow({
+	item,
+	groupId,
+	place,
+	isRenaming,
+	onRenamed,
+	badge,
+}: TabRowProps): ReactElement {
 	const face = rowFaceOf(item);
 	const { show, close } = useRowPick(item);
 	const isChat = item.kind === "chat";
@@ -65,7 +74,7 @@ export const TabRow = memo(function TabRow({ item, groupId, place, isRenaming, o
 					{face.title}
 				</span>
 			)}
-			<RowTail face={face} onClose={close} />
+			<RowTail face={face} badge={badge ?? null} onClose={close} />
 		</div>
 	);
 });

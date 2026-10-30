@@ -13,18 +13,11 @@ import {
 	ReopenClosedTabCommand as PlacesReopenClosedTabCommand,
 	TearOffTabCommand as PlacesTearOffTabCommand,
 } from "@widgetarium/places";
-import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
-import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
+import { SHOWING_PARTS as TAB_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { AppKindSchema, OpenedTabSchema } from "../../shared/schema/app-tab.schema.js";
-
-const TAB_PARTS = {
-	studioWindow: StudioWindowGateway,
-	shownView: ShownViewGateway,
-	paneFlash: PaneFlashGateway,
-};
 
 export const OpenTabCommand = command("open-tab")
 	.input(

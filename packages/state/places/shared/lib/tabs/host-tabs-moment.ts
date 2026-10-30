@@ -1,4 +1,5 @@
 import type { AppKind, GroupHue, ListEntry } from "../../schema/tabs.schema.js";
+import type { KeptSplit } from "../../schema/splits.schema.js";
 import {
 	WORKSPACE_LIST,
 	chatOfGroup,
@@ -46,6 +47,9 @@ export interface HostTabsMoment extends TabLayout {
 	readonly lastShown: Readonly<Record<string, string>>;
 	readonly minted: number;
 	readonly closed: readonly ClosedTab[];
+	readonly splits: readonly KeptSplit[];
+	readonly mintedSplits: number;
+	readonly shownSplitId: string | null;
 }
 
 export interface GroupChange {
@@ -65,6 +69,9 @@ export function emptyMoment(): HostTabsMoment {
 		lastShown: {},
 		minted: 0,
 		closed: [],
+		splits: [],
+		mintedSplits: 0,
+		shownSplitId: null,
 	};
 }
 

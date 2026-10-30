@@ -16,10 +16,12 @@ import {
 	AimPaneCommand,
 	ClosePanesOfTabsCommand,
 	CloseShownTabPaneCommand,
+	LeaveSplitCommand,
 	OpenShownTabPaneCommand,
 	PaneTreeQuery,
 	ShowChatInPaneCommand,
 	ShowTabInChatGroupCommand,
+	ShowSplitCommand,
 	ShowTabInTargetPaneCommand,
 } from "@widgetarium/layout";
 import { KeepChatTabsCommand } from "@widgetarium/places";
@@ -31,6 +33,21 @@ import type { MovedEssentials } from "../essentials/essentials.js";
 import { screenOf } from "./screen-of.js";
 
 const ALL_PAGES = { heldTabId: null };
+
+const PAGE_EFFECTS = ["open-page", "close-page", "show-page", "open-address", "reload-page"] as const;
+const WINDOW_EFFECTS = ["open-own-window", "focus-window", "focus-own-window", "tear-off-page"] as const;
+const PANE_EFFECTS = [
+	"close-panes",
+	"open-shown-tab-pane",
+	"close-shown-tab-pane",
+	"show-in-target-pane",
+	"flash-pane",
+] as const;
+
+type PageEffect = Extract<TabEffect, { readonly kind: (typeof PAGE_EFFECTS)[number] }>;
+type WindowEffect = Extract<TabEffect, { readonly kind: (typeof WINDOW_EFFECTS)[number] }>;
+type PaneEffect = Extract<TabEffect, { readonly kind: (typeof PANE_EFFECTS)[number] }>;
+type ViewEffect = Exclude<TabEffect, PageEffect | WindowEffect | PaneEffect>;
 
 interface StudioWindowSeat {
 	windowLabel(): string;
@@ -129,7 +146,19 @@ function saveView(shownView: ShownViewStore, next: StudioView): void {
 	console.info(`[widgetarium] ${reason}`);
 }
 
-async function sendEffect(effect: TabEffect, { parts, send }: TabsReach): Promise<unknown> {
+async function sendEffect(effect: TabEffect, reach: TabsReach): Promise<unknown> {
+	if (isPageEffect(effect)) {
+		return sendPageEffect(effect, reach.send);
+	}
+
+	if (isWindowEffect(effect)) {
+		return sendWindowEffect(effect, reach.send);
+	}
+
+	return isPaneEffect(effect) ? sendPaneEffect(effect, reach) : sendViewEffect(effect, reach.send);
+}
+
+async function sendPageEffect(effect: PageEffect, send: Send): Promise<unknown> {
 	switch (effect.kind) {
 		case "open-page":
 			return send(OpenPageCommand, { tabId: effect.pageId });
@@ -139,13 +168,14 @@ async function sendEffect(effect: TabEffect, { parts, send }: TabsReach): Promis
 			await send(OpenPageCommand, { tabId: effect.pageId });
 			return send(ShowBrowserPageCommand, { tabId: effect.pageId });
 		case "open-address":
-			return send(OpenAddressCommand, {
-				tabId: effect.pageId,
-				address: effect.address,
-				heldTabId: effect.isShown ? null : effect.pageId,
-			});
+			return send(OpenAddressCommand, addressAskOf(effect));
 		case "reload-page":
 			return send(ReloadPageCommand, { tabId: effect.pageId });
+	}
+}
+
+function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
+	switch (effect.kind) {
 		case "open-own-window":
 			return send(OpenTabInOwnWindowCommand, { tabId: effect.pageId });
 		case "focus-window":
@@ -154,6 +184,11 @@ async function sendEffect(effect: TabEffect, { parts, send }: TabsReach): Promis
 			return send(FocusOwnWindowCommand, { tabId: effect.pageId });
 		case "tear-off-page":
 			return send(TearOffCommand, { tabId: effect.pageId, openWith: effect.tabId });
+	}
+}
+
+async function sendPaneEffect(effect: PaneEffect, { parts, send }: TabsReach): Promise<unknown> {
+	switch (effect.kind) {
 		case "close-panes":
 			return send(ClosePanesOfTabsCommand, { tabIds: effect.tabIds });
 		case "open-shown-tab-pane":
@@ -162,16 +197,61 @@ async function sendEffect(effect: TabEffect, { parts, send }: TabsReach): Promis
 			return send(CloseShownTabPaneCommand);
 		case "show-in-target-pane":
 			return send(ShowTabInTargetPaneCommand, { tabId: effect.tabId });
-		case "show-chat":
-			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: null });
-		case "show-in-chat-group":
-			return send(ShowTabInChatGroupCommand, {
-				chatId: effect.chatId,
-				tabId: effect.tabId,
-				isOnlyWhenBare: effect.isOnlyWhenBare,
-			});
 		case "flash-pane":
 			await send(AimPaneCommand, { id: effect.paneId });
 			return parts.paneFlash.flashPane(effect.paneId);
 	}
+}
+
+function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
+	switch (effect.kind) {
+		case "show-chat":
+			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: null });
+		case "show-in-chat-group":
+			return send(ShowTabInChatGroupCommand, chatGroupAskOf(effect));
+		case "show-split":
+			return send(ShowSplitCommand, { layout: effect.layout, chatIds: effect.chatIds, focusedId: effect.focusedId });
+		case "leave-split":
+			return send(LeaveSplitCommand);
+	}
+}
+
+function addressAskOf({ pageId, address, isShown }: Extract<TabEffect, { readonly kind: "open-address" }>): {
+	readonly tabId: string;
+	readonly address: string;
+	readonly heldTabId: string | null;
+} {
+	return {
+		tabId: pageId,
+		address,
+		heldTabId: isShown ? null : pageId,
+	};
+}
+
+function chatGroupAskOf({
+	chatId,
+	tabId,
+	isOnlyWhenBare,
+}: Extract<TabEffect, { readonly kind: "show-in-chat-group" }>): {
+	readonly chatId: string;
+	readonly tabId: string;
+	readonly isOnlyWhenBare: boolean;
+} {
+	return {
+		chatId,
+		tabId,
+		isOnlyWhenBare,
+	};
+}
+
+function isPageEffect(effect: TabEffect): effect is PageEffect {
+	return PAGE_EFFECTS.some((kind) => kind === effect.kind);
+}
+
+function isWindowEffect(effect: TabEffect): effect is WindowEffect {
+	return WINDOW_EFFECTS.some((kind) => kind === effect.kind);
+}
+
+function isPaneEffect(effect: TabEffect): effect is PaneEffect {
+	return PANE_EFFECTS.some((kind) => kind === effect.kind);
 }
