@@ -1,4 +1,4 @@
-const STUDIO_MARK = "[widgetarium]";
+export const STUDIO_MARK = "[widgetarium]";
 const LEVELS = ["info", "warn", "error"] as const;
 
 export type LogLevel = (typeof LEVELS)[number];

@@ -5,22 +5,28 @@ const INPUTS = ["pointerdown", "pointermove", "wheel", "keydown"] as const;
 
 type Input = (typeof INPUTS)[number];
 
-export interface FrameReport {
-	readonly frames: number;
-	readonly janks: number;
-	readonly blockedMs: number;
-	readonly worstMs: number;
-	readonly worstAfter: Input | null;
-	readonly inputs: number;
+interface FrameCounts {
+	frames: number;
+	janks: number;
+	blockedMs: number;
+	worstMs: number;
+	worstAfter: Input | null;
+	inputs: number;
 }
 
+type FrameReport = Readonly<FrameCounts>;
+
+const NO_FRAMES: FrameReport = {
+	frames: 0,
+	janks: 0,
+	blockedMs: 0,
+	worstMs: 0,
+	worstAfter: null,
+	inputs: 0,
+};
+
 export class FrameGaps {
-	private frames = 0;
-	private janks = 0;
-	private blockedMs = 0;
-	private worstMs = 0;
-	private worstAfter: Input | null = null;
-	private inputs = 0;
+	private counts: FrameCounts = { ...NO_FRAMES };
 	private lastInput: Input | null = null;
 	private lastFrameAt: number | null = null;
 	private watchUntil = 0;
@@ -28,7 +34,7 @@ export class FrameGaps {
 
 	listen(page: Window): void {
 		for (const input of INPUTS) {
-			page.addEventListener(input, () => this.heardInput(input), {
+			page.addEventListener(input, () => this.recordInput(input), {
 				capture: true,
 				passive: true,
 			});
@@ -37,24 +43,16 @@ export class FrameGaps {
 
 	drain(): FrameReport {
 		const report = {
-			frames: this.frames,
-			janks: this.janks,
-			blockedMs: Math.round(this.blockedMs),
-			worstMs: Math.round(this.worstMs),
-			worstAfter: this.worstAfter,
-			inputs: this.inputs,
+			...this.counts,
+			blockedMs: Math.round(this.counts.blockedMs),
+			worstMs: Math.round(this.counts.worstMs),
 		};
-		this.frames = 0;
-		this.janks = 0;
-		this.blockedMs = 0;
-		this.worstMs = 0;
-		this.worstAfter = null;
-		this.inputs = 0;
+		this.counts = { ...NO_FRAMES };
 		return report;
 	}
 
-	private heardInput(input: Input): void {
-		this.inputs += 1;
+	private recordInput(input: Input): void {
+		this.counts.inputs += 1;
 		this.lastInput = input;
 		this.watchUntil = performance.now() + WATCH_AFTER_INPUT_MS;
 		if (this.isWatching) {
@@ -68,7 +66,7 @@ export class FrameGaps {
 
 	private readonly onFrame = (now: number): void => {
 		if (this.lastFrameAt !== null) {
-			this.countGap(now - this.lastFrameAt);
+			this.recordGap(now - this.lastFrameAt);
 		}
 
 		this.lastFrameAt = now;
@@ -80,16 +78,16 @@ export class FrameGaps {
 		requestAnimationFrame(this.onFrame);
 	};
 
-	private countGap(gapMs: number): void {
-		this.frames += 1;
-		if (gapMs > this.worstMs) {
-			this.worstMs = gapMs;
-			this.worstAfter = this.lastInput;
+	private recordGap(gapMs: number): void {
+		this.counts.frames += 1;
+		if (gapMs > this.counts.worstMs) {
+			this.counts.worstMs = gapMs;
+			this.counts.worstAfter = this.lastInput;
 		}
 
 		if (gapMs >= JANK_MS) {
-			this.janks += 1;
-			this.blockedMs += gapMs - FRAME_BUDGET_MS;
+			this.counts.janks += 1;
+			this.counts.blockedMs += gapMs - FRAME_BUDGET_MS;
 		}
 	}
 }

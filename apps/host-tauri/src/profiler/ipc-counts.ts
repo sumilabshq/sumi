@@ -1,98 +1,157 @@
 import { Tallies } from "./tallies.js";
+import type { TallyRow } from "./tallies.js";
 
-type Heard = (payload: unknown) => void;
+type EventCallback = (payload: unknown) => unknown;
+
+interface IpcReport {
+	readonly ipcCalls: number;
+	readonly ipcSentKb: number;
+	readonly ipc: TallyRow[];
+	readonly heardEvents: number;
+	readonly heard: TallyRow[];
+}
 
 const INTERNALS = "__TAURI_INTERNALS__";
 const IPC_URL = "ipc://localhost/";
 const EVENT_LISTEN = "plugin:event|listen";
 
 export class IpcCounts {
-	readonly calls = new Tallies();
-	readonly heard = new Tallies();
+	private readonly calls = new Tallies();
+	private readonly heard = new Tallies();
 	private sentBytes = 0;
 	private readonly eventOfCallback = new Map<number, string>();
 
-	wrap(page: Window): boolean {
-		const callbacks: unknown = Reflect.get(Reflect.get(page, INTERNALS) ?? {}, "callbacks");
-		if (!(callbacks instanceof Map)) {
+	installCounters(page: Window): boolean {
+		const callbacks = callbacksTableOf(page);
+		if (callbacks === null) {
 			return false;
 		}
 
-		this.countCalls(page);
-		this.countHeard(callbacks);
+		this.interceptFetch(page);
+		this.interceptCallbacks(callbacks);
 		return true;
 	}
 
-	drainSentKb(): number {
-		const kb = Math.round(this.sentBytes / 1024);
+	drain(rowLimit: number): IpcReport {
+		const report = {
+			ipcCalls: this.calls.totalCalls(),
+			ipcSentKb: Math.round(this.sentBytes / 1024),
+			ipc: this.calls.drain(rowLimit),
+			heardEvents: this.heard.totalCalls(),
+			heard: this.heard.drain(rowLimit),
+		};
 		this.sentBytes = 0;
-		return kb;
+		return report;
 	}
 
-	private countCalls(page: Window): void {
+	private interceptFetch(page: Window): void {
 		const fetch = page.fetch.bind(page);
 		page.fetch = (input, init) => {
-			const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
-			if (!url.startsWith(IPC_URL)) {
+			const command = ipcCommandOf(urlOf(input));
+			if (command === null) {
 				return fetch(input, init);
 			}
 
-			const command = decodeURIComponent(url.slice(IPC_URL.length));
-			const body = init?.body;
-			if (typeof body === "string") {
-				this.sentBytes += body.length;
-				this.rememberListen(command, body);
-			}
-
-			const at = performance.now();
-			const answer = fetch(input, init);
-			const done = (): void => this.calls.add(command, performance.now() - at);
-			answer.then(done, done);
-			return answer;
+			this.recordSent(command, init?.body);
+			return this.timed(command, fetch(input, init));
 		};
 	}
 
-	private countHeard(callbacks: Map<unknown, unknown>): void {
+	private recordSent(command: string, body: unknown): void {
+		if (typeof body !== "string") {
+			return;
+		}
+
+		this.sentBytes += body.length;
+		this.recordEventListener(command, body);
+	}
+
+	private timed(command: string, answer: Promise<Response>): Promise<Response> {
+		const at = performance.now();
+		const done = (): void => this.calls.add(command, performance.now() - at);
+		answer.then(done, done);
+		return answer;
+	}
+
+	private interceptCallbacks(callbacks: Map<unknown, unknown>): void {
 		const get = callbacks.get.bind(callbacks);
 		Reflect.set(callbacks, "get", (id: unknown): unknown => {
 			const callback = get(id);
 			const event = typeof id === "number" ? this.eventOfCallback.get(id) : undefined;
-			if (event === undefined || !isHeard(callback)) {
+			if (event === undefined || !isEventCallback(callback)) {
 				return callback;
 			}
 
-			return (payload: unknown) => this.hear(event, callback, payload);
+			return (payload: unknown) => this.callTimed(event, callback, payload);
 		});
 	}
 
-	private rememberListen(command: string, body: string): void {
+	private recordEventListener(command: string, body: string): void {
 		if (command !== EVENT_LISTEN) {
 			return;
 		}
 
-		const args = parsedOrNull(body);
-		const event: unknown = typeof args === "object" && args !== null ? Reflect.get(args, "event") : undefined;
-		const handler: unknown = typeof args === "object" && args !== null ? Reflect.get(args, "handler") : undefined;
+		const args = parseJsonOrNull(body);
+		if (typeof args !== "object" || args === null) {
+			return;
+		}
+
+		const event: unknown = Reflect.get(args, "event");
+		const handler: unknown = Reflect.get(args, "handler");
 		if (typeof event === "string" && typeof handler === "number") {
 			this.eventOfCallback.set(handler, event);
 		}
 	}
 
-	private hear(event: string, callback: Heard, payload: unknown): void {
+	private callTimed(event: string, callback: EventCallback, payload: unknown): unknown {
 		const at = performance.now();
 		try {
-			callback(payload);
+			return callback(payload);
 		} finally {
 			this.heard.add(event, performance.now() - at);
 		}
 	}
 }
 
-function isHeard(value: unknown): value is Heard {
+function callbacksTableOf(page: Window): Map<unknown, unknown> | null {
+	const internals: unknown = Reflect.get(page, INTERNALS);
+	if (typeof internals !== "object" || internals === null) {
+		return null;
+	}
+
+	const callbacks: unknown = Reflect.get(internals, "callbacks");
+	return callbacks instanceof Map ? callbacks : null;
+}
+
+function ipcCommandOf(url: string): string | null {
+	if (!url.startsWith(IPC_URL)) {
+		return null;
+	}
+
+	try {
+		return decodeURIComponent(url.slice(IPC_URL.length));
+	} catch {
+		return url.slice(IPC_URL.length);
+	}
+}
+
+function urlOf(input: RequestInfo | URL): string {
+	if (typeof input === "string") {
+		return input;
+	}
+
+	if (input instanceof URL) {
+		return input.href;
+	}
+
+	return input.url;
+}
+
+function isEventCallback(value: unknown): value is EventCallback {
 	return typeof value === "function";
 }
 
-function parsedOrNull(body: string): unknown {
+function parseJsonOrNull(body: string): unknown {
 	try {
 		return JSON.parse(body);
 	} catch {

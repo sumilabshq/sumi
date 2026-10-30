@@ -1,13 +1,17 @@
 import { Tallies } from "./tallies.js";
-import type { TallyRow } from "./tallies.js";
 
-const TOP_TARGETS = 6;
+const BUSIEST_TARGETS_LIMIT = 6;
 
-export interface ChurnReport {
+interface ChurnTarget {
+	readonly name: string;
+	readonly calls: number;
+}
+
+interface ChurnReport {
 	readonly mutations: number;
 	readonly batches: number;
 	readonly nodes: number;
-	readonly top: TallyRow[];
+	readonly top: ChurnTarget[];
 }
 
 export class DomChurn {
@@ -22,7 +26,7 @@ export class DomChurn {
 			this.batches += 1;
 			this.mutations += records.length;
 			for (const record of records) {
-				this.targets.add(`${nameOf(record.target)} ${record.attributeName ?? record.type}`, 0);
+				this.targets.add(`${selectorOf(record.target)} ${record.attributeName ?? record.type}`, 0);
 			}
 		}).observe(root, {
 			subtree: true,
@@ -37,7 +41,10 @@ export class DomChurn {
 			mutations: this.mutations,
 			batches: this.batches,
 			nodes: this.root?.getElementsByTagName("*").length ?? 0,
-			top: this.targets.drain(TOP_TARGETS),
+			top: this.targets.drain(BUSIEST_TARGETS_LIMIT).map(({ name, calls }) => ({
+				name,
+				calls,
+			})),
 		};
 		this.mutations = 0;
 		this.batches = 0;
@@ -45,12 +52,13 @@ export class DomChurn {
 	}
 }
 
-function nameOf(target: Node): string {
+function selectorOf(target: Node): string {
 	const element = target instanceof Element ? target : target.parentElement;
 	if (element === null) {
 		return target.nodeName;
 	}
 
+	const tag = element.tagName.toLowerCase();
 	const firstClass = element.classList.item(0);
-	return firstClass === null ? element.tagName.toLowerCase() : `${element.tagName.toLowerCase()}.${firstClass}`;
+	return firstClass === null ? tag : `${tag}.${firstClass}`;
 }

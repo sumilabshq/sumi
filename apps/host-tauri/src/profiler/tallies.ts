@@ -12,12 +12,12 @@ export interface TallyRow {
 }
 
 export class Tallies {
-	readonly #held = new Map<string, Tally>();
+	private readonly tallyByName = new Map<string, Tally>();
 
 	add(name: string, ms: number): void {
-		const held = this.#held.get(name);
-		if (held === undefined) {
-			this.#held.set(name, {
+		const tally = this.tallyByName.get(name);
+		if (tally === undefined) {
+			this.tallyByName.set(name, {
 				calls: 1,
 				ms,
 				worstMs: ms,
@@ -25,28 +25,28 @@ export class Tallies {
 			return;
 		}
 
-		held.calls += 1;
-		held.ms += ms;
-		held.worstMs = Math.max(held.worstMs, ms);
+		tally.calls += 1;
+		tally.ms += ms;
+		tally.worstMs = Math.max(tally.worstMs, ms);
 	}
 
-	callsSoFar(): number {
+	totalCalls(): number {
 		let calls = 0;
-		for (const held of this.#held.values()) {
-			calls += held.calls;
+		for (const tally of this.tallyByName.values()) {
+			calls += tally.calls;
 		}
 
 		return calls;
 	}
 
-	drain(top: number): TallyRow[] {
-		const rows = [...this.#held.entries()].map(([name, held]) => ({
+	drain(rowLimit: number): TallyRow[] {
+		const rows = [...this.tallyByName.entries()].map(([name, tally]) => ({
 			name,
-			calls: held.calls,
-			ms: Math.round(held.ms),
-			worstMs: Math.round(held.worstMs),
+			calls: tally.calls,
+			ms: Math.round(tally.ms),
+			worstMs: Math.round(tally.worstMs),
 		}));
-		this.#held.clear();
-		return rows.sort((one, other) => other.ms - one.ms || other.calls - one.calls).slice(0, top);
+		this.tallyByName.clear();
+		return rows.sort((one, other) => other.ms - one.ms || other.calls - one.calls).slice(0, rowLimit);
 	}
 }

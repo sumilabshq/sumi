@@ -4,7 +4,7 @@ import type { TallyRow } from "./tallies.js";
 
 const SLOW_COMMIT_MS = 16;
 
-export interface CommitReport {
+interface CommitReport {
 	readonly phases: TallyRow[];
 	readonly slow: number;
 }
