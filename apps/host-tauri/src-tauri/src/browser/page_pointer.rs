@@ -13,7 +13,6 @@ const HOVER_TOLD_EVERY: Duration = Duration::from_millis(40);
 thread_local! {
     static MONITOR: RefCell<Option<Retained<AnyObject>>> = const { RefCell::new(None) };
     static HOVER_TOLD_AT: RefCell<Option<Instant>> = const { RefCell::new(None) };
-    static DUMPED_AT: RefCell<Option<Instant>> = const { RefCell::new(None) };
 }
 
 pub fn watch() {
@@ -40,15 +39,6 @@ fn installed_monitor() -> Option<Retained<AnyObject>> {
 }
 
 fn tell_studio_about(event: &NSEvent) {
-    DUMPED_AT.with(|at| {
-        let now = Instant::now();
-        if at.borrow().is_none_or(|was| now.duration_since(was) >= Duration::from_secs(2)) {
-            at.replace(Some(now));
-            if let Some(content) = MainThreadMarker::new().and_then(|mtm| event.window(mtm)).and_then(|window| window.contentView()) {
-                super::page_press::dump_views(&content);
-            }
-        }
-    });
     let Some(hit) = page_hit_of(event).filter(|hit| !hit.is_in_hole) else { return };
 
     if event.r#type() == NSEventType::LeftMouseDown {

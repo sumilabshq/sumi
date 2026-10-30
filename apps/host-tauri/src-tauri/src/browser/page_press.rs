@@ -71,22 +71,12 @@ fn is_web_view(view: &NSView) -> bool {
 
 pub fn keep_under_studio(view: &WKWebView) {
     let Some(superview) = (unsafe { view.superview() }) else {
-        eprintln!("[browser] STACKPROBE page view has no superview");
+        eprintln!("[browser] page view stays where it is (it has no superview)");
         return;
     };
     let stacked: Vec<Retained<NSView>> = superview.subviews().iter().collect();
     let page_at = stacked.iter().position(|held| key_of(&**held) == key_of(view));
     let studio_at = stacked.iter().position(|held| is_web_view(held) && !is_page_view(held));
-    let kinds: Vec<String> = stacked
-        .iter()
-        .map(|held| {
-            let frame = held.frame();
-            let kind = if is_page_view(held) { "page" } else if is_web_view(held) { "web" } else { "view" };
-            format!("{kind}{}@{:.0},{:.0} {:.0}x{:.0}", if held.isHidden() { "(hidden)" } else { "" }, frame.origin.x, frame.origin.y, frame.size.width, frame.size.height)
-        })
-        .collect();
-    let opaque: bool = unsafe { msg_send![&*superview, isOpaque] };
-    eprintln!("[browser] STACKPROBE page at {page_at:?}, studio at {studio_at:?}, superview opaque {opaque}: {}", kinds.join(" | "));
     let (Some(page_at), Some(studio_at)) = (page_at, studio_at) else {
         eprintln!("[browser] page view stays where it is (page at {page_at:?}, studio at {studio_at:?} among {} views)", stacked.len());
         return;
@@ -122,19 +112,6 @@ pub fn is_page_at(content: &NSView, point: CGPoint) -> bool {
         let from_top = if held.isFlipped() { inside.y } else { held.bounds().size.height - inside.y };
         !HOLES.with(|holes| holes.borrow().get(&key_of(&*held)).is_some_and(|cut| is_in_hole(cut, inside.x, from_top)))
     })
-}
-
-pub fn dump_views(content: &NSView) {
-    let lines: Vec<String> = content
-        .subviews()
-        .iter()
-        .map(|held| {
-            let frame = held.frame();
-            let kind = if is_page_view(&held) { "page" } else if is_web_view(&held) { "studio" } else { "view" };
-            format!("{kind}{}@{:.0},{:.0} {:.0}x{:.0}", if held.isHidden() { "(hidden)" } else { "" }, frame.origin.x, frame.origin.y, frame.size.width, frame.size.height)
-        })
-        .collect();
-    eprintln!("[browser] VIEWDUMP {}", lines.join(" | "));
 }
 
 fn is_inside(point: CGPoint, view: &NSView) -> bool {
