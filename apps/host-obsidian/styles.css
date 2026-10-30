@@ -17272,6 +17272,9 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-shell-left[data-state="docked"] > .wg-shell-side {
 	min-width: 100%;
 }
+[data-state="docked"] > .wg-shell-side {
+	background-color: var(--sumi-frame);
+}
 [data-state="peeking"] > .wg-shell-side {
 	padding: 0 var(--wg-shell-float-pad) var(--wg-shell-float-pad);
 	background-color: var(--sumi-frame);
@@ -17686,6 +17689,9 @@ body:has([data-browser-pages-live]),
 	background: linear-gradient(var(--sumi-line), var(--sumi-line)), var(--sumi-plate);
 	box-shadow: var(--sumi-shadow-plate);
 	pointer-events: none;
+}
+.wg-pane-board:has(> .wg-pane[data-pane-grouped] [data-browser-pages-live]) > .wg-pane-group {
+	background: transparent;
 }
 .wg-pane[data-pane-grouped] > .wg-shell-plate {
 	border-radius: var(--wg-pane-corners);
