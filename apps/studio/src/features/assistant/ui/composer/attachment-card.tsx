@@ -6,20 +6,33 @@ import type { AttachmentChip } from "@widgetarium/assistant";
 
 export interface AttachmentCardProps {
 	readonly chip: AttachmentChip;
+	readonly onOpen?: (() => void) | undefined;
 	readonly onRemove: () => void;
 }
 
 const REMOVE = "Remove";
 const REMOVE_NAMED = "Remove {name}";
+const OPEN = "Open {name}";
 
-export function AttachmentCard({ chip, onRemove }: AttachmentCardProps): ReactElement {
+export function AttachmentCard({ chip, onOpen, onRemove }: AttachmentCardProps): ReactElement {
 	return (
 		<span
 			className={`wg-studio-ai-card is-${chip.preview === null ? "file" : "image"}`}
 			data-attachment-card={chip.kind}
-			tabIndex={0}
+			tabIndex={onOpen ? undefined : 0}
 		>
-			{chip.preview === null ? <CardWords chip={chip} /> : <img src={chip.preview} alt={chip.name} />}
+			{chip.preview === null ? <CardWords chip={chip} /> : null}
+			{chip.preview !== null && onOpen ? (
+				<button
+					type="button"
+					className="wg-studio-ai-card-open"
+					aria-label={OPEN.replace("{name}", chip.name)}
+					onClick={onOpen}
+				>
+					<img src={chip.preview} alt="" />
+				</button>
+			) : null}
+			{chip.preview !== null && !onOpen ? <img src={chip.preview} alt={chip.name} /> : null}
 			<button
 				type="button"
 				className="wg-studio-ai-card-remove"

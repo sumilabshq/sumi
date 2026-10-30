@@ -52,7 +52,9 @@ const TOOLS_SEEN = `(() => {
 	const head = answer.querySelector(".wg-studio-ai-tools-head");
 	const icon = head.querySelector(".wg-studio-ai-tools-icon").getBoundingClientRect();
 	return {
-		flow: [...answer.children].map((part) => (part.classList.contains("wg-studio-ai-tools") ? "tools" : "said")),
+		flow: [...answer.children]
+			.filter((part) => !part.classList.contains("wg-studio-ai-answer-line"))
+			.map((part) => (part.classList.contains("wg-studio-ai-tools") ? "tools" : "said")),
 		iconVsText: Math.round(icon.left - said.left - parseFloat(getComputedStyle(firstSaid).paddingLeft)),
 		heads: [...answer.querySelectorAll(".wg-studio-ai-tools-said")].map((part) => part.textContent),
 		took: [...answer.querySelectorAll(".wg-studio-ai-tools-took")].map((part) => part.textContent),
@@ -97,6 +99,24 @@ function pointIn(held: unknown): readonly [number, number] {
 const MINE_SPOT = `(() => {
 	const box = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said").getBoundingClientRect();
 	return { at: [box.left + box.width / 2, box.top + box.height / 2] };
+})()`;
+
+const ANSWER_SEEN = `(() => {
+	const line = document.querySelector(".wg-studio-ai-turn.is-answer .wg-studio-ai-answer-line");
+	const turn = line.closest(".wg-studio-ai-turn");
+	const next = turn.nextElementSibling;
+	return {
+		order: [...line.children].map((part) => (part.tagName === "BUTTON" ? "button" : "time")),
+		opacity: getComputedStyle(line).opacity,
+		copyLabel: line.querySelector("button")?.getAttribute("aria-label") ?? null,
+		fitsGap: next === null || line.getBoundingClientRect().bottom <= next.getBoundingClientRect().top + 1,
+		leftOfAnswer: Math.round(line.getBoundingClientRect().left - turn.getBoundingClientRect().left),
+	};
+})()`;
+
+const ANSWER_SPOT = `(() => {
+	const box = document.querySelector(".wg-studio-ai-turn.is-answer .wg-studio-ai-said").getBoundingClientRect();
+	return { at: [box.left + 20, box.top + box.height / 2] };
 })()`;
 
 const FINISH_SEEN = `(() => {
@@ -294,7 +314,22 @@ for (const theme of THEMES) {
 			const finish = recordOf(await page.ask(FINISH_SEEN));
 			check("the finish status says how long the answer took", finish["said"], "Done · 1 m 12 s");
 			holds("on a success dot", finish["dot"] === finish["success"], finish);
-			check("beside a copy button", finish["copyLabel"], "Copy the answer");
+			check("the finish status leaves copying to the answer's own line", finish["copyLabel"], null);
+			check("the answer's line rests hidden", recordOf(await page.ask(ANSWER_SEEN))["opacity"], "0");
+			const [answerX, answerY] = pointIn(recordOf(await page.ask(ANSWER_SPOT))["at"]);
+			await page.hover(answerX, answerY);
+			await waited(300);
+			check(
+				"hovering an answer shows a copy button first, then when it was answered",
+				recordOf(await page.ask(ANSWER_SEEN)),
+				{
+					order: ["button", "time"],
+					opacity: "1",
+					copyLabel: "Copy the answer",
+					fitsGap: true,
+					leftOfAnswer: 0,
+				},
+			);
 			check("my message's line rests hidden", recordOf(await page.ask(MINE_SEEN))["opacity"], "0");
 			const [mineX, mineY] = pointIn(recordOf(await page.ask(MINE_SPOT))["at"]);
 			await page.hover(mineX, mineY);

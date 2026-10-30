@@ -27,6 +27,11 @@
 	--sumi-shadow-pop: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.12);
 	--sumi-shadow-lift: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 32px 90px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.08);
 	--sumi-blur-pop: saturate(1.6) blur(20px);
+	--sumi-viewer-ground: rgba(18, 18, 20, 0.92);
+	--sumi-viewer-ink: #ffffff;
+	--sumi-viewer-ink-2: rgba(255, 255, 255, 0.6);
+	--sumi-viewer-hover: rgba(255, 255, 255, 0.12);
+	--sumi-viewer-thumb: rgba(255, 255, 255, 0.08);
 
 	--sumi-hue-red: #dc2626;
 	--sumi-hue-orange: #ea580c;
