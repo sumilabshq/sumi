@@ -1,6 +1,6 @@
 import { newTabPlaceOf } from "../tabs/host-tabs.js";
 import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
-import { PINNED_LIST, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
+import { PINNED_LIST, SECTION_TITLES, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
 import { TabRows, shownIdsOf } from "./tab-rows.js";
 import { SplitRows } from "./split-rows.js";
 import type {
@@ -57,6 +57,7 @@ class SidebarEntries {
 	sectionOf(list: SectionList): SidebarSection {
 		return {
 			list,
+			title: SECTION_TITLES[list],
 			entries: this.listOf(list).flatMap((entry) => this.entriesOf(entry, list)),
 		};
 	}

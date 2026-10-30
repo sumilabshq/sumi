@@ -33,11 +33,15 @@ export function TabsSidebar(): ReactElement {
 		<ContextMenu>
 			<ContextMenuTrigger asChild onContextMenu={onContextMenu}>
 				<aside ref={holder} className={SIDEBAR} aria-label={TABS} data-tabs-sidebar="" data-tabs-in={WORKSPACE_LIST}>
-					<NewTabRow list={sidebar.newTabList} />
 					<EssentialsGrid tiles={sidebar.essentials} />
 					<div className={SCROLLER} data-host-column-scroll="">
 						{sidebar.sections.map((section) => (
-							<SidebarSection key={section.list} section={section} renaming={renaming} />
+							<SidebarSection
+								key={section.list}
+								section={section}
+								renaming={renaming}
+								last={section.list === WORKSPACE_LIST ? <NewTabRow list={sidebar.newTabList} /> : null}
+							/>
 						))}
 					</div>
 				</aside>

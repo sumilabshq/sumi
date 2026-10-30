@@ -58,14 +58,15 @@ const ANATOMY = `(() => {
 	const essentials = column.querySelector("[data-tabs-essentials]");
 	const firstSection = column.querySelector("[data-ws-section]");
 	const follows = (one, other) => one !== null && other !== null && (one.compareDocumentPosition(other) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
-	const inSection = add !== null && add.closest("[data-ws-section]") !== null;
+	const recents = column.querySelector('[data-tabs-list="workspace"]');
 	return {
 		rightSides: document.querySelectorAll('.wg-shell-right, [data-shell-column="right"], [data-side-toggle="right"], [data-tabs-sidebar-column]').length,
 		sidebars: document.querySelectorAll("[data-tabs-sidebar]").length,
 		headGlyphs: head === null ? -1 : head.querySelectorAll(".wg-ws-emoji, .wg-ws-dot, .wg-ws-filled, img, [data-ws-name] > :first-child:not(.wg-ws-name-text)").length,
 		headWords: head?.querySelector("[data-ws-name]")?.textContent ?? null,
-		order: follows(head, add) && follows(add, essentials) && follows(essentials, firstSection),
-		addInSection: inSection,
+		order: follows(head, essentials) && follows(essentials, firstSection),
+		adds: column.querySelectorAll("[data-host-column-add]").length,
+		isAddLastOfRecents: add !== null && recents !== null && recents.lastElementChild === add,
 		sections: [...column.querySelectorAll("[data-ws-section]")].map((section) => section.dataset.wsSection),
 		saysTabsIn: column.textContent.includes("Tabs in"),
 		saysNewChat: column.textContent.includes("New chat"),
@@ -159,7 +160,8 @@ const AnatomySchema = z.object({
 	headGlyphs: z.number(),
 	headWords: z.string().nullable(),
 	order: z.boolean(),
-	addInSection: z.boolean(),
+	adds: z.number(),
+	isAddLastOfRecents: z.boolean(),
 	sections: z.array(z.string()),
 	saysTabsIn: z.boolean(),
 	saysNewChat: z.boolean(),
@@ -173,16 +175,25 @@ async function checksAnatomy(page: AskedPage, theme: Theme): Promise<void> {
 		seen.headGlyphs === 0 && seen.headWords === "Default",
 		seen,
 	);
-	check(`${theme}: header, New tab, Essentials, then sections, top to bottom`, seen.order && !seen.addInSection, seen);
-	check(
-		`${theme}: the sections are Pinned and Open`,
-		JSON.stringify(seen.sections) === '["Pinned","Open"]',
-		seen.sections,
-	);
+	check(`${theme}: header, Essentials, then sections, top to bottom`, seen.order, seen);
+	checksSections(seen, theme);
 	check(
 		`${theme}: no "Tabs in" and no "New chat" anywhere in the sidebar`,
 		!seen.saysTabsIn && !seen.saysNewChat,
 		seen,
+	);
+}
+
+function checksSections(seen: z.infer<typeof AnatomySchema>, theme: Theme): void {
+	check(
+		`${theme}: New tab is the one last row of Recents, nothing at the top`,
+		seen.adds === 1 && seen.isAddLastOfRecents,
+		seen,
+	);
+	check(
+		`${theme}: the sections are Pinned and Recents`,
+		JSON.stringify(seen.sections) === '["Pinned","Recents"]',
+		seen.sections,
 	);
 }
 
@@ -245,7 +256,7 @@ async function checksSubTabDrag(page: AskedPage): Promise<void> {
 	const below = await pointOf(page, centreOf('[data-tabs-id="tab-1"]'));
 	await dragged(page, await pointOf(page, centreOf('[data-tabs-id="tab-3"]')), [below[0], below[1] + 12]);
 	const out = await page.ask(listOfRow("tab-3"));
-	check("a sub-tab dragged out of its chat lands in Open", out === "workspace", out);
+	check("a sub-tab dragged out of its chat lands in Recents", out === "workspace", out);
 	const onto = await pointOf(page, lowerHalfOf('[data-tabs-chat="release"]'));
 	await dragged(page, await pointOf(page, centreOf('[data-tabs-id="tab-3"]')), onto);
 	const inside = await page.ask(listOfRow("tab-3"));

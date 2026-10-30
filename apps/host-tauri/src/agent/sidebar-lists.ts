@@ -34,15 +34,10 @@ export interface TabList {
 	readonly entries: readonly ListedEntry[];
 }
 
-const SECTION_TITLES: Readonly<Record<Sidebar["sections"][number]["list"], string>> = {
-	pinned: "Pinned",
-	workspace: "Workspace",
-};
-
 export function tabListsOf(sidebar: Sidebar): readonly TabList[] {
 	const sections = sidebar.sections.map((section) => ({
 		list: section.list,
-		title: SECTION_TITLES[section.list],
+		title: section.title,
 		isChat: false,
 		entries: section.entries.flatMap(listedOf),
 	}));

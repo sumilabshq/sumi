@@ -7,13 +7,24 @@ export function treeShowingSplit(tree: PaneTree, drawing: SplitDrawing): PaneTre
 	const groups = keptGroupsOf(tree);
 	const root = drawnNodeOf(drawing.layout, { drawing, groups });
 	const usedChatIds = new Set(drawing.chatIds);
-	const { chatTargetId: _was, ...rest } = tree;
-	const chatTarget = focusedChatLeafOf(root, drawing);
-	return {
-		...rest,
+	const drawn: PaneTree = {
+		...tree,
 		root,
 		shelved: Object.fromEntries([...groups].filter(([chatId]) => !usedChatIds.has(chatId))),
-		targetId: focusedAppPaneOf(root, drawing),
+	};
+	return treeFocusingSplit(drawn, drawing.focusedId);
+}
+
+export function treeFocusingSplit(tree: PaneTree, focusedId: string): PaneTree {
+	if (tree.root === null) {
+		return tree;
+	}
+
+	const { chatTargetId: _was, ...rest } = tree;
+	const chatTarget = focusedChatLeafOf(tree.root, focusedId);
+	return {
+		...rest,
+		targetId: focusedAppPaneOf(tree.root, focusedId),
 		...(chatTarget === null ? {} : { chatTargetId: chatTarget }),
 	};
 }
@@ -71,13 +82,13 @@ function splitPaneIdOf(id: string): string {
 	return `${SPLIT_PANE_PREFIX}${id}`;
 }
 
-function focusedAppPaneOf(root: PaneNode, { focusedId }: SplitDrawing): string | null {
+function focusedAppPaneOf(root: PaneNode, focusedId: string): string | null {
 	const apps = leavesOf(root).filter((leaf) => leaf.view.kind === "app");
 	const focused = apps.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === focusedId);
 	return (focused ?? apps[0])?.id ?? null;
 }
 
-function focusedChatLeafOf(root: PaneNode, { focusedId }: SplitDrawing): string | null {
+function focusedChatLeafOf(root: PaneNode, focusedId: string): string | null {
 	const chats = chatGroupsOf(root);
 	const focused = chats.find((group) => group.chatId === focusedId) ?? chats[0];
 	return focused === undefined ? null : (chatLeafOf(focused)?.id ?? null);

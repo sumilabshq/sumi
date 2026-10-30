@@ -14,6 +14,7 @@ export function sidebarWithChats(placed: PlacedSidebar, records: ChatRecords): T
 		...placed,
 		sections: placed.sections.map((section) => ({
 			list: section.list,
+			title: section.title,
 			entries: section.entries.flatMap((entry) => chats.entriesOf(entry)),
 		})),
 	};

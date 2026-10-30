@@ -1,5 +1,5 @@
 import { SectionListSchema } from "../../schema/tabs.schema.js";
-import type { GroupHue, ListEntry } from "../../schema/tabs.schema.js";
+import type { GroupHue, ListEntry, SectionList } from "../../schema/tabs.schema.js";
 
 export interface TabGroup {
 	readonly id: string;
@@ -34,6 +34,11 @@ export const WORKSPACE_LIST = SectionListSchema.enum.workspace;
 export const PINNED_LIST = SectionListSchema.enum.pinned;
 
 export const SECTION_LISTS: readonly string[] = SectionListSchema.options;
+
+export const SECTION_TITLES: Readonly<Record<SectionList, string>> = {
+	[PINNED_LIST]: "Pinned",
+	[WORKSPACE_LIST]: "Recents",
+};
 
 export const WORKSPACE_END: TabPlace = {
 	chatId: WORKSPACE_LIST,

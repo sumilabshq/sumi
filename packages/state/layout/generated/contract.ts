@@ -288,8 +288,11 @@ export const DropGoneTabsCommand = command("layout/drop-gone-tabs")
 export const ShowSplitCommand = command("layout/show-split")
 	.input(SplitDrawingSchema)
 	.idempotencyKey(Repeatable);
+export const FocusSplitCommand = command("layout/focus-split")
+	.input(z.object({ focusedId: z.string().min(1) }))
+	.idempotencyKey(Repeatable);
 export const LeaveSplitCommand = command("layout/leave-split")
 	.idempotencyKey(Repeatable);
 export const PanesChangedEvent = event("layout/panes-changed");
 
-export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowChatInPaneCommand, ShowTabInTargetPaneCommand, ShowTabInChatGroupCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand, ShowSplitCommand, LeaveSplitCommand]);
+export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowChatInPaneCommand, ShowTabInTargetPaneCommand, ShowTabInChatGroupCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand, ShowSplitCommand, FocusSplitCommand, LeaveSplitCommand]);

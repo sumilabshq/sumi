@@ -13,15 +13,17 @@ export interface PaneSlotProps {
 	readonly leaf: PaneLeaf;
 	readonly look: SlotLook;
 	readonly drawn: (view: PaneView) => ReactNode;
+	readonly onFocused: (paneId: string) => void;
 }
 
-export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotProps): ReactElement {
+export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }: PaneSlotProps): ReactElement {
 	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners, rim } = look;
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(AimPaneCommand);
 	const markChatSeen = useCommand(MarkChatSeenCommand);
 	const aim = (): void => {
 		void aimPane.run({ id: leaf.id });
+		onFocused(leaf.id);
 
 		if (leaf.view.kind === "chat" && leaf.view.chatId !== undefined) {
 			void markChatSeen.run({ id: leaf.view.chatId });
@@ -54,6 +56,7 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn }: PaneSlotPr
 			data-pane-dimmed={isDimmed ? "" : undefined}
 			data-pane-moving={isMoving ? "" : undefined}
 			onPointerDownCapture={aim}
+			onFocusCapture={() => onFocused(leaf.id)}
 			onWheelCapture={isDimmed ? aim : undefined}
 		>
 			<PaneCloseContext.Provider value={closing}>{drawn(leaf.view)}</PaneCloseContext.Provider>
@@ -71,7 +74,12 @@ export function rectStyleOf(rect: PaneRect): CSSProperties {
 }
 
 function isSameSlot(before: PaneSlotProps, after: PaneSlotProps): boolean {
-	return before.leaf === after.leaf && before.drawn === after.drawn && isSameLook(before.look, after.look);
+	return (
+		before.leaf === after.leaf &&
+		before.drawn === after.drawn &&
+		before.onFocused === after.onFocused &&
+		isSameLook(before.look, after.look)
+	);
 }
 
 function isSameLook(before: SlotLook, after: SlotLook): boolean {

@@ -5,15 +5,8 @@ export interface ListedTab {
 	readonly listTitle: string;
 }
 
-const LIST_TITLES = {
-	pinned: "Pinned",
-	workspace: "This workspace",
-} as const;
-
 export function listedTabsOf(sidebar: TabsSidebar): readonly ListedTab[] {
-	return sidebar.sections.flatMap((section) =>
-		section.entries.flatMap((entry) => tabsOfEntry(entry, LIST_TITLES[section.list])),
-	);
+	return sidebar.sections.flatMap((section) => section.entries.flatMap((entry) => tabsOfEntry(entry, section.title)));
 }
 
 export function shownChatIdsOf(sidebar: TabsSidebar): ReadonlySet<string> {

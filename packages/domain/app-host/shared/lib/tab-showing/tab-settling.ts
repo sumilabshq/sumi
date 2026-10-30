@@ -22,6 +22,7 @@ import {
 	ShowChatInPaneCommand,
 	ShowTabInChatGroupCommand,
 	ShowSplitCommand,
+	FocusSplitCommand,
 	ShowTabInTargetPaneCommand,
 } from "@widgetarium/layout";
 import { KeepChatTabsCommand } from "@widgetarium/places";
@@ -211,6 +212,8 @@ function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 			return send(ShowTabInChatGroupCommand, chatGroupAskOf(effect));
 		case "show-split":
 			return send(ShowSplitCommand, { layout: effect.layout, chatIds: effect.chatIds, focusedId: effect.focusedId });
+		case "focus-split":
+			return send(FocusSplitCommand, { focusedId: effect.focusedId });
 		case "leave-split":
 			return send(LeaveSplitCommand);
 	}

@@ -196,6 +196,7 @@ export const SectionListSchema = z.enum(["pinned", "workspace"]);
 
 export const SidebarSectionSchema = z.object({
 	list: SectionListSchema,
+	title: z.string(),
 	entries: z.array(SidebarEntrySchema).readonly(),
 });
 

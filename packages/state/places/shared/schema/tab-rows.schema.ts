@@ -174,6 +174,7 @@ export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
 
 export const SidebarSectionSchema = z.object({
 	list: SectionListSchema,
+	title: z.string(),
 	entries: z.array(SidebarEntrySchema).readonly(),
 });
 

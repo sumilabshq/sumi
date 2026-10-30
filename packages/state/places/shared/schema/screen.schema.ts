@@ -68,6 +68,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 		chatIds: z.array(z.string()),
 		focusedId: z.string(),
 	}),
+	z.object({ kind: z.literal("focus-split"), focusedId: z.string() }),
 	z.object({ kind: z.literal("leave-split") }),
 ]);
 

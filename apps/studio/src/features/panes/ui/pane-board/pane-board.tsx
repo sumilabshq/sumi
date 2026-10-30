@@ -2,6 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode } from "react";
 import type { FrameBounds, PaneView } from "@widgetarium/layout";
 import { useBoardLook } from "../../lib/use-board-look.js";
+import { useFocusesSplitMember } from "../../lib/use-focuses-split-member.js";
 import { PaneSlot, rectStyleOf } from "./pane-slot.js";
 import { PaneSplitEdge } from "./pane-split-edge.js";
 
@@ -19,6 +20,7 @@ export interface PaneBoardFrame {
 export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardProps & PaneBoardFrame): ReactElement {
 	const board = useRef<HTMLDivElement | null>(null);
 	const look = useBoardLook(board, { chatPx, bounds });
+	const focusMember = useFocusesSplitMember(look.tree);
 	return (
 		<div ref={board} className="wg-pane-board" data-pane-easing={look.isEasing ? "" : undefined}>
 			{look.tree.leaves.length === 0 && look.aim === null ? <div className="wg-pane-empty">{empty}</div> : null}
@@ -32,7 +34,7 @@ export function PaneBoard({ drawn, empty, chatPx, bounds, onChatPx }: PaneBoardP
 				/>
 			))}
 			{look.tree.leaves.map((leaf) => (
-				<PaneSlot key={leaf.id} leaf={leaf} look={look.slotOf(leaf)} drawn={drawn} />
+				<PaneSlot key={leaf.id} leaf={leaf} look={look.slotOf(leaf)} drawn={drawn} onFocused={focusMember} />
 			))}
 			{look.aim === null
 				? look.edges.map((edge) => (

@@ -192,6 +192,19 @@ async function swappingChecks(): Promise<void> {
 	);
 	const moment = momentOfWindow(await tabs.placedTabs(), MAIN_WINDOW);
 	check("the split is the window's shown view", moment.shownSplitId, "split-1");
+	check(
+		"showing another member of the shown split only moves the focus: no redraw",
+		[
+			await effectKindsOf(sent(window.send(ShowTabCommand, { at: AT, id: "tab-2" }))),
+			((await splitOf(window)) as { focused?: string }).focused,
+		],
+		[["focus-split"], "tab-2"],
+	);
+	check(
+		"showing the member already focused changes nothing",
+		await effectKindsOf(sent(window.send(ShowTabCommand, { at: AT, id: "tab-2" }))),
+		[],
+	);
 }
 
 async function dissolvingChecks(): Promise<void> {

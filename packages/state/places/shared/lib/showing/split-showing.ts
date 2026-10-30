@@ -44,11 +44,22 @@ export function withSplitFollowed(was: HostTabsMoment, showing: Showing, facts: 
 	const after = shownSplitOf(showing.moment);
 
 	if (after !== null) {
-		return isSameDrawing(before, after) ? showing : withSplitDrawn(showing, facts, after);
+		return isSameDrawing(before, after)
+			? withSplitRefocused(showing, before, after)
+			: withSplitDrawn(showing, facts, after);
 	}
 
 	const hasLeft = showing.effects.some((effect) => effect.kind === LEAVE_SPLIT.kind);
 	return before === null || hasLeft ? showing : withSplitLeft(showing, facts, before);
+}
+
+function withSplitRefocused(showing: Showing, before: KeptSplit, after: KeptSplit): Showing {
+	if (before.focusedId === after.focusedId) {
+		return showing;
+	}
+
+	console.info(`[widgetarium] ${after.id} focus ${before.focusedId} → ${after.focusedId} (the drawing stays)`);
+	return withEffect(showing, { kind: "focus-split", focusedId: after.focusedId });
 }
 
 function withSplitDrawn(showing: Showing, facts: TabFacts, split: KeptSplit): Showing {
@@ -100,8 +111,12 @@ function aloneIdOf(moment: HostTabsMoment, split: KeptSplit): string | null {
 	return isDissolved && left.length === 1 ? (left[0] ?? null) : moment.shownId;
 }
 
-function isSameDrawing(before: KeptSplit | null, after: KeptSplit): boolean {
-	return before !== null && JSON.stringify(before) === JSON.stringify(after);
+function isSameDrawing(before: KeptSplit | null, after: KeptSplit): before is KeptSplit {
+	return before !== null && JSON.stringify(unfocusedOf(before)) === JSON.stringify(unfocusedOf(after));
+}
+
+function unfocusedOf({ focusedId: _focused, ...drawing }: KeptSplit): Omit<KeptSplit, "focusedId"> {
+	return drawing;
 }
 
 function isPageTabId(moment: HostTabsMoment, id: string): boolean {

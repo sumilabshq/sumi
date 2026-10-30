@@ -82,6 +82,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 		chatIds: z.array(z.string()),
 		focusedId: z.string(),
 	}),
+	z.object({ kind: z.literal("focus-split"), focusedId: z.string() }),
 	z.object({ kind: z.literal("leave-split") }),
 ]);
 
@@ -506,6 +507,7 @@ export const SectionListSchema = z.enum(["workspace", "pinned"]);
 
 export const SidebarSectionSchema = z.object({
 	list: SectionListSchema,
+	title: z.string(),
 	entries: z.array(SidebarEntrySchema).readonly(),
 });
 

@@ -239,6 +239,99 @@ function checksBlockLook(block: Block, board: readonly Pane[]): void {
 	);
 }
 
+const MARKED_IN = (holder: string): string =>
+	`[...document.querySelectorAll(${JSON.stringify(`${holder} [data-split-map] rect[data-marked]`)})].map((cell) => cell.dataset.splitCell)`;
+
+const WATCH_REDRAWS = `(() => {
+	window.wgRedraws = 0;
+	const told = console.info;
+	console.info = (...said) => {
+		if (String(said[0]).includes("show the split focused")) {
+			window.wgRedraws += 1;
+		}
+		told.apply(console, said);
+	};
+	window.wgPanes = new Map([...document.querySelectorAll("[data-pane-id]")].map((pane) => [pane.dataset.paneId, pane]));
+	return window.wgPanes.size;
+})()`;
+
+const REDRAWS = `({ redraws: window.wgRedraws, remounted: [...window.wgPanes].filter(([id, pane]) => document.querySelector('[data-pane-id="' + id + '"]') !== pane).map(([id]) => id) })`;
+
+const pressIn = (paneId: string): string =>
+	`(() => { const pane = document.querySelector('[data-pane-id="${paneId}"]'); const inner = pane?.querySelector("*") ?? pane; inner?.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true })); return pane !== null; })()`;
+
+const focusIn = (paneId: string): string =>
+	`(() => { const one = document.querySelector('[data-pane-id="${paneId}"] button, [data-pane-id="${paneId}"] [tabindex]'); one?.focus(); return one !== null && document.activeElement === one; })()`;
+
+const RedrawsSchema = z.object({ redraws: z.number(), remounted: z.array(z.string()) });
+
+async function markedAfter(page: AskedPage, act: string, holder: string): Promise<unknown> {
+	const did = await page.ask(act);
+	await waited(600);
+	return { did, marked: await page.ask(MARKED_IN(holder)) };
+}
+
+interface MarkedAsk {
+	readonly what: string;
+	readonly act: string;
+	readonly want: string;
+	readonly shot: string;
+}
+
+async function checksMarkedAfter(page: AskedPage, { what, act, want, shot }: MarkedAsk): Promise<void> {
+	const seen = await markedAfter(page, act, "[data-split-head]");
+	check(what, JSON.stringify(seen) === JSON.stringify({ did: true, marked: [want] }), seen);
+	await shotOf(page, shot);
+}
+
+const LEFT_PRESSED: MarkedAsk = {
+	what: "pressing inside the left pane makes the left cell of the block's map dark",
+	act: pressIn("pane-split-tab-1"),
+	want: "tab-1",
+	shot: "focus-left",
+};
+
+const RIGHT_FOCUSED: MarkedAsk = {
+	what: "keyboard focus entering the right pane makes the right cell dark",
+	act: focusIn("pane-split-tab-2"),
+	want: "tab-2",
+	shot: "focus-right",
+};
+
+async function checksFocusFollows(page: AskedPage): Promise<void> {
+	await page.ask(WATCH_REDRAWS);
+	await checksMarkedAfter(page, LEFT_PRESSED);
+	await checksMarkedAfter(page, RIGHT_FOCUSED);
+	await markedAfter(page, pressIn("pane-split-tab-1"), "[data-split-head]");
+	const redraws = RedrawsSchema.parse(await page.ask(REDRAWS));
+	check(
+		"moving focus inside the shown split redraws nothing: no show-split, no pane mounted again",
+		redraws.redraws === 0 && redraws.remounted.length === 0,
+		redraws,
+	);
+	await checksFoldedFocus(page);
+	await checksFoldedReturns(page);
+}
+
+async function checksFoldedReturns(page: AskedPage): Promise<void> {
+	await page.ask(clickOn("[data-split-row]"));
+	const board = await settled(page, (now) => paneOf(now, "pane-split-tab-2") !== undefined);
+	check("the folded row brings the split back", paneOf(board, "pane-split-tab-1") !== undefined, board);
+}
+
+async function checksFoldedFocus(page: AskedPage): Promise<void> {
+	await page.ask(clickOn('[data-tabs-chat="checks"]'));
+	await settled(page, (now) => !now.some((pane) => pane.id.startsWith("pane-split-")));
+	await waited(400);
+	const folded = await page.ask(MARKED_IN("[data-split-row]"));
+	check(
+		"switched away, the folded row's map marks the member focused last",
+		JSON.stringify(folded) === '["tab-1"]',
+		folded,
+	);
+	await shotOf(page, "focus-folded");
+}
+
 async function checksChatJoins(page: AskedPage): Promise<void> {
 	const before = await boardOf(page);
 	const right = paneOf(before, "pane-split-tab-2");
@@ -361,6 +454,11 @@ async function walk(theme: Theme): Promise<void> {
 
 		await waited(500);
 		await checksSplitMade(page);
+
+		if (theme === "light") {
+			await checksFocusFollows(page);
+		}
+
 		await checksChatJoins(page);
 		await shotOf(page, `expanded-${theme}`);
 		await checksSwap(page);

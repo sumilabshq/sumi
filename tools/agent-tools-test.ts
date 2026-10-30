@@ -39,10 +39,12 @@ const sidebar: Sidebar = {
 	sections: [
 		{
 			list: "pinned",
+			title: "Pinned",
 			entries: [chat("chat-b", "Billing", [{ kind: "tab", tab: tab("t4", "BILL board") }])],
 		},
 		{
 			list: "workspace",
+			title: "Recents",
 			entries: [
 				{ kind: "tab", tab: tab("t1", "Linear") },
 				chat("chat-a", "Pane bugs", [

@@ -1,7 +1,7 @@
 [
 	{
 		"name": "app_state",
-		"description": "Read Sumi's state: every chat, which chat is asking, the tab the person sees, the essentials, and every tab list (workspace, this chat, other chats) with its tabs and groups. Read it before acting on tabs.",
+		"description": "Read Sumi's state: every chat, which chat is asking, the tab the person sees, the essentials, and every tab list (Pinned, Recents, this chat, other chats) with its tabs and groups. Read it before acting on tabs.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -35,7 +35,7 @@
 				},
 				"place": {
 					"type": "string",
-					"description": "this-chat (default) or workspace. Other chats' lists are read and copied from, never written."
+					"description": "this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written."
 				},
 				"group": {
 					"type": "string",
@@ -75,7 +75,7 @@
 				},
 				"place": {
 					"type": "string",
-					"description": "this-chat (default) or workspace. Other chats' lists are read and copied from, never written."
+					"description": "this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written."
 				},
 				"group": {
 					"type": "string"
@@ -105,7 +105,7 @@
 	},
 	{
 		"name": "tab_update",
-		"description": "Rename a tab or move it to another place, group or position. Only this chat's and the workspace's tabs.",
+		"description": "Rename a tab or move it to another place, group or position. Only this chat's and Recents' tabs.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -117,7 +117,7 @@
 				},
 				"place": {
 					"type": "string",
-					"description": "this-chat (default) or workspace. Other chats' lists are read and copied from, never written."
+					"description": "this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written."
 				},
 				"group": {
 					"type": ["string", "null"],
@@ -134,7 +134,7 @@
 	},
 	{
 		"name": "tab_close",
-		"description": "Close a tab. Only this chat's and the workspace's tabs.",
+		"description": "Close a tab. Only this chat's and Recents' tabs.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -209,7 +209,7 @@
 	},
 	{
 		"name": "group_create",
-		"description": "Create a tab group in this chat or the workspace, optionally moving tabs into it.",
+		"description": "Create a tab group in this chat or Recents, optionally moving tabs into it.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -222,7 +222,7 @@
 				},
 				"place": {
 					"type": "string",
-					"description": "this-chat (default) or workspace. Other chats' lists are read and copied from, never written."
+					"description": "this-chat (default) or workspace (the Recents section). Other chats' lists are read and copied from, never written."
 				},
 				"tabIds": {
 					"type": "array",
@@ -237,7 +237,7 @@
 	},
 	{
 		"name": "group_update",
-		"description": "Rename or recolour a group of this chat or the workspace.",
+		"description": "Rename or recolour a group of this chat or Recents.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
@@ -258,7 +258,7 @@
 	},
 	{
 		"name": "group_delete",
-		"description": "Delete a group of this chat or the workspace. keepTabs (default true) leaves its tabs in the list; false closes them too.",
+		"description": "Delete a group of this chat or Recents. keepTabs (default true) leaves its tabs in the list; false closes them too.",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
