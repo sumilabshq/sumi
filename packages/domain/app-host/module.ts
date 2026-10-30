@@ -1,6 +1,7 @@
 import { Device, module } from "@widgetarium/core/requests";
 import { BrowserModule } from "@widgetarium/browser";
 import { LayoutModule } from "@widgetarium/layout";
+import { PlacesModule } from "@widgetarium/places";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
 import {
@@ -12,6 +13,7 @@ import {
 } from "./features/chat-opening/requests.js";
 import {
 	ClosedTabsQuery,
+	RereadClosedTabsForCoreSubscriber,
 	RereadClosedTabsSubscriber,
 	ReopenClosedTabByIdCommand,
 } from "./features/closed-tabs/requests.js";
@@ -62,7 +64,9 @@ import {
 	RereadTabsForAccessAsksSubscriber,
 	RereadTabsForChatsSubscriber,
 	RereadSidebarForEssentialsSubscriber,
+	KeepChatTabsSubscriber,
 	RereadTabsSubscriber,
+	RereadTabsForCoreSubscriber,
 	RereadTabsForInkSubscriber,
 	RereadTabsForPagesSubscriber,
 	RememberPagesSubscriber,
@@ -74,10 +78,12 @@ import {
 
 export const AppHostModule = module("app-host")
 	.on(Device)
-	.imports(BrowserModule, LayoutModule, WorkspacesModule)
+	.imports(BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
 	.subscribers(
 		EnsurePanePagesSubscriber,
+		KeepChatTabsSubscriber,
 		RereadTabsSubscriber,
+		RereadTabsForCoreSubscriber,
 		RereadTabsForShownViewSubscriber,
 		RereadTabsForPagesSubscriber,
 		RememberPagesSubscriber,
@@ -89,6 +95,7 @@ export const AppHostModule = module("app-host")
 		RereadTabsColumnSubscriber,
 		RereadShownViewSubscriber,
 		RereadClosedTabsSubscriber,
+		RereadClosedTabsForCoreSubscriber,
 	)
 	.public(
 		OpenChatCommand,

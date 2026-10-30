@@ -1,9 +1,9 @@
-import { emptyMoment, openTab } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import type { HostTabsMoment } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
+import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import type { HostTabsMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
 import { COLUMN_OPENED_ON, columnWithView } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
-import { sidebarOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
-import type { PageFacts } from "../packages/domain/app-host/shared/schema/page-facts.schema.ts";
+import { sidebarOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
+import type { PageFacts } from "../packages/state/places/shared/schema/screen.schema.ts";
 import type { SidebarView } from "../packages/domain/app-host/shared/schema/tabs-column.schema.ts";
 import type { TabsSidebar } from "../packages/domain/app-host/shared/schema/app-tab.schema.ts";
 

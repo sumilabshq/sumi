@@ -6,6 +6,8 @@ import { WindowsGateway } from "./windows.gateway.js";
 
 export const KeptPlacesSchema = z.looseObject({
 	places: WindowsSchema.nullable().catch(null),
+	tabs: z.unknown().optional(),
+	unreadableTabs: z.unknown().optional(),
 });
 
 export type KeptPlaces = z.infer<typeof KeptPlacesSchema>;

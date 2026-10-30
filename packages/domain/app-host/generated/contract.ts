@@ -240,8 +240,7 @@ export const OpenChatAskedOnStartCommand = command("app-host/open-chat-asked-on-
 export const AppTabsQuery = query("app-host/app-tabs")
 	.output(AppTabsSchema);
 export const ClosedTabsQuery = query("app-host/closed-tabs")
-	.output(ClosedTabsSchema)
-	.settlesNow();
+	.output(ClosedTabsSchema);
 export const ReopenClosedTabByIdCommand = command("app-host/reopen-closed-tab-by-id")
 	.input(ClosedTabIdSchema)
 	.idempotencyKey(Repeatable);

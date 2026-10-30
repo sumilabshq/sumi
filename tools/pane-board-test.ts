@@ -27,9 +27,9 @@ import {
 } from "../packages/state/layout/features/frame-sides/requests.ts";
 import { ResizeFrameEdgeCommand } from "../packages/state/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { emptyMoment, openTab } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
-import { sidebarOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
+import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
+import { sidebarOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
 
 let failed = 0;
 const quiet = console.info;

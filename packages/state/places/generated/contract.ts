@@ -2,6 +2,455 @@
 import { Repeatable, Server, command, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
+export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal"]);
+
+export type StudioView = z.infer<typeof StudioViewSchema>;
+
+export const PageFactsSchema = z.object({
+	pageId: z.string(),
+	title: z.string(),
+	url: z.string(),
+	favicon: z.string().nullable(),
+	isInkReading: z.boolean(),
+	isAskWaiting: z.boolean(),
+	isClosedToInk: z.boolean(),
+	isInOwnWindow: z.boolean(),
+});
+
+export type PageFacts = z.infer<typeof PageFactsSchema>;
+
+export const ScreenSchema = z.object({
+	pages: z.array(PageFactsSchema),
+	isBrowserAvailable: z.boolean(),
+	canOpenOwnWindow: z.boolean(),
+	tabPanes: z.array(z.object({ paneId: z.string(), tabId: z.string() })),
+	shownTabPaneId: z.string().nullable(),
+	tabTargetId: z.string().nullable(),
+	chatGroups: z.array(z.object({ chatId: z.string(), paneIds: z.array(z.string()) })),
+	elsewhere: z.array(z.object({ window: z.string(), tabIds: z.array(z.string()) })),
+	focusedChatId: z.string().nullable(),
+});
+
+export type Screen = z.infer<typeof ScreenSchema>;
+
+export const TabsAskSchema = z.object({
+	window: z.string().min(1),
+	view: StudioViewSchema,
+	screen: ScreenSchema,
+});
+
+export type TabsAsk = z.infer<typeof TabsAskSchema>;
+
+export const TabEffectSchema = z.discriminatedUnion("kind", [
+	z.object({ kind: z.literal("open-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("close-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("show-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("open-address"), pageId: z.string(), address: z.string(), isShown: z.boolean() }),
+	z.object({ kind: z.literal("reload-page"), pageId: z.string() }),
+	z.object({ kind: z.literal("open-own-window"), pageId: z.string() }),
+	z.object({ kind: z.literal("focus-own-window"), pageId: z.string() }),
+	z.object({ kind: z.literal("focus-window"), window: z.string() }),
+	z.object({ kind: z.literal("tear-off-page"), pageId: z.string(), tabId: z.string() }),
+	z.object({ kind: z.literal("close-panes"), tabIds: z.array(z.string()) }),
+	z.object({ kind: z.literal("open-shown-tab-pane") }),
+	z.object({ kind: z.literal("close-shown-tab-pane") }),
+	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
+	z.object({ kind: z.literal("show-chat"), chatId: z.string() }),
+	z.object({
+		kind: z.literal("show-in-chat-group"),
+		chatId: z.string(),
+		tabId: z.string(),
+		isOnlyWhenBare: z.boolean(),
+	}),
+	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
+]);
+
+export type TabEffect = z.infer<typeof TabEffectSchema>;
+
+export const TabsSettledSchema = z.object({
+	view: StudioViewSchema,
+	effects: z.array(TabEffectSchema),
+});
+
+export type TabsSettled = z.infer<typeof TabsSettledSchema>;
+
+export const OpenedTabSettledSchema = z.object({
+	id: z.string(),
+	view: StudioViewSchema,
+	effects: z.array(TabEffectSchema),
+});
+
+export const TabPlaceSchema = z.object({
+	list: z.string().min(1),
+	groupId: z.string().nullable(),
+	before: z.string().nullable(),
+});
+
+export type TabPlaceAsked = z.infer<typeof TabPlaceSchema>;
+
+export const SettleAskSchema = z.object({ at: TabsAskSchema });
+
+export const TabAskSchema = z.object({
+	at: TabsAskSchema,
+	id: z.string().min(1),
+});
+
+export const ChatTabAskSchema = z.object({
+	at: TabsAskSchema,
+	chatId: z.string().min(1),
+});
+
+export const PageAppSchema = z.enum(["canvas", "browser", "terminal"]);
+
+export const EssentialSchema = z.object({
+	id: z.string(),
+	app: PageAppSchema,
+	address: z.string().nullable(),
+	title: z.string(),
+	favicon: z.string().nullable(),
+});
+
+export const RestoreTabsAskSchema = z.object({
+	at: TabsAskSchema,
+	essentials: z.array(EssentialSchema),
+	isBeside: z.boolean(),
+	keepsPages: z.boolean(),
+});
+
+export type RestoreTabsAsk = z.infer<typeof RestoreTabsAskSchema>;
+
+export const PlaceTabAskSchema = z.object({
+	at: TabsAskSchema,
+	id: z.string().min(1),
+	place: TabPlaceSchema,
+});
+
+export const OpenTabAskSchema = z.object({
+	at: TabsAskSchema,
+	app: PageAppSchema,
+	list: z.string().nullable().default(null),
+	groupId: z.string().nullable().default(null),
+	address: z.string().default(""),
+	show: z.boolean().default(true),
+});
+
+export type OpenTabAsk = z.infer<typeof OpenTabAskSchema>;
+
+export const DuplicateTabAskSchema = z.object({
+	at: TabsAskSchema,
+	id: z.string().min(1),
+	list: z.string().nullable().default(null),
+	groupId: z.string().nullable().default(null),
+	show: z.boolean().default(true),
+});
+
+export type DuplicateTabAsk = z.infer<typeof DuplicateTabAskSchema>;
+
+export const ReopenClosedAskSchema = z.object({
+	at: TabsAskSchema,
+	tabId: z.string().min(1).nullable(),
+});
+
+export const RenameTabAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+	label: z.string(),
+});
+
+export const PinTabAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+	isPinned: z.boolean(),
+});
+
+export const GroupHueSchema = z.enum(["red", "orange", "amber", "green", "teal", "blue", "purple", "pink"]);
+
+export const CreateGroupAskSchema = z.object({
+	window: z.string().min(1),
+	from: z.discriminatedUnion("kind", [
+		z.object({ kind: z.literal("tab"), tabId: z.string().min(1) }),
+		z.object({ kind: z.literal("list"), list: z.string().min(1) }),
+	]),
+	name: z.string().min(1).optional(),
+	hue: GroupHueSchema.nullable().optional(),
+});
+
+export type CreateGroupAsk = z.infer<typeof CreateGroupAskSchema>;
+
+export const GroupAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+});
+
+export const RenameGroupAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+	name: z.string(),
+});
+
+export const GroupHueAskSchema = z.object({
+	window: z.string().min(1),
+	id: z.string().min(1),
+	hue: GroupHueSchema.nullable(),
+});
+
+export const EssentialRefSchema = z.object({
+	id: z.string().min(1),
+	app: PageAppSchema,
+	address: z.string().nullable(),
+});
+
+export type EssentialRef = z.infer<typeof EssentialRefSchema>;
+
+export const ShowEssentialAskSchema = z.object({
+	at: TabsAskSchema,
+	essential: EssentialRefSchema,
+});
+
+export const ReleaseEssentialAskSchema = z.object({
+	at: TabsAskSchema,
+	essential: EssentialRefSchema,
+	place: TabPlaceSchema,
+});
+
+export const CloseEssentialAskSchema = z.object({
+	at: TabsAskSchema,
+	essentialId: z.string().min(1),
+});
+
+export const MakeEssentialAskSchema = z.object({
+	at: TabsAskSchema,
+	id: z.string().min(1),
+	essentialId: z.string().min(1),
+});
+
+export const KeepChatTabsAskSchema = z.object({ chatIds: z.array(z.string().min(1)) });
+
+export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
+
+export type TabStatus = z.infer<typeof TabStatusSchema>;
+
+export const TabArtSchema = z.enum([
+	"canvas",
+	"browser",
+	"terminal",
+	"git",
+	"files",
+	"routines",
+	"settings",
+	"note",
+	"table",
+	"code-ts",
+	"code-js",
+	"code-py",
+	"code-css",
+	"image",
+	"built-app",
+	"site",
+]);
+
+export type TabArt = z.infer<typeof TabArtSchema>;
+
+export const AppTabSchema = z.object({
+	id: z.string(),
+	app: PageAppSchema,
+	title: z.string(),
+	subtitle: z.string().nullable(),
+	icon: TabArtSchema,
+	favicon: z.string().nullable(),
+	status: TabStatusSchema.nullable(),
+	label: z.string().nullable(),
+	address: z.string().nullable(),
+	isInOwnWindow: z.boolean(),
+});
+
+export type AppTab = z.infer<typeof AppTabSchema>;
+
+export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
+
+export type AppTabState = z.infer<typeof AppTabStateSchema>;
+
+export const AppTabsSchema = z.object({
+	tabs: z.array(AppTabStateSchema).readonly(),
+	canReopen: z.boolean(),
+});
+
+export type Essential = z.infer<typeof EssentialSchema>;
+
+export const EssentialFaceSchema = z.object({
+	app: PageAppSchema,
+	address: z.string().nullable(),
+	title: z.string(),
+	favicon: z.string().nullable(),
+});
+
+export type EssentialFace = z.infer<typeof EssentialFaceSchema>;
+
+export const EssentialTileSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	icon: TabArtSchema,
+	favicon: z.string().nullable(),
+	isShown: z.boolean(),
+	isLive: z.boolean(),
+});
+
+export type EssentialTile = z.infer<typeof EssentialTileSchema>;
+
+export const GroupStateSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	hue: GroupHueSchema.nullable(),
+	isOpen: z.boolean(),
+	tabs: z.array(AppTabStateSchema).readonly(),
+});
+
+export const SidebarEntrySchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("tab"),
+		tab: AppTabStateSchema,
+	}),
+	z.object({
+		kind: z.literal("group"),
+		group: GroupStateSchema,
+	}),
+]);
+
+export type SidebarEntry = z.infer<typeof SidebarEntrySchema>;
+
+export const ListTargetSchema = z.object({
+	list: z.string(),
+	owner: z.enum(["workspace", "chat"]),
+	title: z.string(),
+});
+
+export type ListTarget = z.infer<typeof ListTargetSchema>;
+
+export const TabSectionSchema = ListTargetSchema.extend({
+	isOpen: z.boolean(),
+	count: z.number().int().nonnegative(),
+	entries: z.array(SidebarEntrySchema).readonly(),
+});
+
+export type TabSection = z.infer<typeof TabSectionSchema>;
+
+export const SidebarLookSchema = z.object({
+	hidesEmptyLists: z.boolean(),
+	hidesOwnWindowTabs: z.boolean(),
+});
+
+export const PlacedSidebarSchema = z.object({
+	essentials: z.array(EssentialTileSchema).readonly(),
+	sections: z.array(TabSectionSchema).readonly(),
+	listTargets: z.array(ListTargetSchema).readonly(),
+	workspaceList: z.literal("workspace"),
+	newTabList: z.string(),
+	view: SidebarLookSchema,
+});
+
+export type PlacedSidebar = z.infer<typeof PlacedSidebarSchema>;
+
+export const SidebarAskSchema = z.object({
+	at: TabsAskSchema,
+	essentials: z.array(EssentialSchema),
+	boardChats: z.array(z.object({ id: z.string(), title: z.string() })),
+	shutLists: z.array(z.string()),
+	look: SidebarLookSchema,
+});
+
+export type SidebarAsk = z.infer<typeof SidebarAskSchema>;
+
+export const HeldTabSchema = z.object({
+	id: z.string(),
+	app: PageAppSchema,
+	label: z.string().nullable(),
+	pageId: z.string().nullable(),
+});
+
+export type HeldTab = z.infer<typeof HeldTabSchema>;
+
+export const HeldTabsSchema = z.object({
+	tabs: z.array(HeldTabSchema).readonly(),
+	shownTabId: z.string().nullable(),
+});
+
+export const ClosedTabRowSchema = z.object({
+	tabId: z.string().min(1),
+	title: z.string(),
+	app: PageAppSchema,
+	address: z.string(),
+});
+
+export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
+
+export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
+
+export type PageApp = z.infer<typeof PageAppSchema>;
+
+export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "chat"]);
+
+export type AppKind = z.infer<typeof AppKindSchema>;
+
+export type GroupHue = z.infer<typeof GroupHueSchema>;
+
+export const ListEntrySchema = z.object({
+	kind: z.enum(["tab", "group"]),
+	id: z.string(),
+});
+
+export type ListEntry = z.infer<typeof ListEntrySchema>;
+
+export const KeptGroupSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	hue: GroupHueSchema.nullable(),
+	isOpen: z.boolean(),
+	tabIds: z.array(z.string()),
+});
+
+export const KeptTabSchema = z.object({
+	id: z.string(),
+	app: AppKindSchema,
+	pageId: z.string().nullable(),
+	label: z.string().nullable(),
+	essentialId: z.string().nullable().default(null),
+	lastAddress: z.string().nullable().default(null),
+	lastTitle: z.string().nullable().default(null),
+	lastFavicon: z.string().nullable().default(null),
+});
+
+export const ClosedTabSchema = z.object({
+	tab: KeptTabSchema,
+	chatId: z.string().nullable().default(null),
+	groupId: z.string().nullable().default(null),
+	at: z.number(),
+	address: z.string(),
+});
+
+export const WindowTabsSchema = z.object({
+	tabs: z.array(KeptTabSchema),
+	lists: z.record(z.string(), z.array(ListEntrySchema)),
+	groups: z.array(KeptGroupSchema),
+	shownId: z.string().nullable(),
+	lastShown: z.record(z.string(), z.string()),
+	minted: z.number().int().nonnegative(),
+	closed: z.array(ClosedTabSchema),
+});
+
+export type WindowTabs = z.infer<typeof WindowTabsSchema>;
+
+export const ChatTabRowSchema = z.object({
+	id: z.string(),
+	label: z.string().nullable(),
+});
+
+export const ChatTabsSchema = z.object({
+	pinned: z.array(ChatTabRowSchema),
+	open: z.array(ChatTabRowSchema),
+});
+
+export type ChatTabs = z.infer<typeof ChatTabsSchema>;
+
 export const OpenWindowSchema = z.object({
 	label: z.string().min(1),
 	openedAt: z.number().nonnegative(),
@@ -41,5 +490,130 @@ export const CloseWindowCommand = command("places/close-window")
 export const KeepLiveWindowsCommand = command("places/keep-live-windows")
 	.input(LiveWindowsSchema)
 	.idempotencyKey(Repeatable);
+export const PlacedTabsQuery = query("places/placed-tabs")
+	.input(WindowLabelSchema)
+	.output(WindowTabsSchema);
+export const TabRowsQuery = query("places/tab-rows")
+	.input(SettleAskSchema)
+	.output(AppTabsSchema);
+export const PlacedSidebarQuery = query("places/placed-sidebar")
+	.input(SidebarAskSchema)
+	.output(PlacedSidebarSchema);
+export const HeldTabsQuery = query("places/held-tabs")
+	.input(SettleAskSchema)
+	.output(HeldTabsSchema);
+export const ClosedTabsQuery = query("places/closed-tabs")
+	.output(ClosedTabsSchema);
+export const ChatTabsQuery = query("places/chat-tabs")
+	.output(ChatTabsSchema);
+export const RestoreTabsCommand = command("places/restore-tabs")
+	.input(RestoreTabsAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowTabCommand = command("places/show-tab")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowChatTabCommand = command("places/show-chat-tab")
+	.input(ChatTabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const FitTabsToPanesCommand = command("places/fit-tabs-to-panes")
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const RememberPagesCommand = command("places/remember-pages")
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabInOwnWindowCommand = command("places/open-tab-in-own-window")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const TearOffTabCommand = command("places/tear-off-tab")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReloadTabCommand = command("places/reload-tab")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabCommand = command("places/open-tab")
+	.input(OpenTabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabBelowCommand = command("places/open-tab-below")
+	.input(TabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const DuplicateTabCommand = command("places/duplicate-tab")
+	.input(DuplicateTabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReopenClosedTabCommand = command("places/reopen-closed-tab")
+	.input(ReopenClosedAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowEssentialTabCommand = command("places/show-essential-tab")
+	.input(ShowEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReleaseEssentialTabCommand = command("places/release-essential-tab")
+	.input(ReleaseEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseTabCommand = command("places/close-tab")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseOtherTabsCommand = command("places/close-other-tabs")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseShownTabCommand = command("places/close-shown-tab")
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseGroupCommand = command("places/close-group")
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseEssentialTabCommand = command("places/close-essential-tab")
+	.input(CloseEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const PlaceTabCommand = command("places/place-tab")
+	.input(PlaceTabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const MakeEssentialCommand = command("places/make-essential")
+	.input(MakeEssentialAskSchema)
+	.output(EssentialFaceSchema)
+	.idempotencyKey(Repeatable);
+export const RenameTabCommand = command("places/rename-tab")
+	.input(RenameTabAskSchema)
+	.idempotencyKey(Repeatable);
+export const PinTabCommand = command("places/pin-tab")
+	.input(PinTabAskSchema)
+	.idempotencyKey(Repeatable);
+export const KeepChatTabsCommand = command("places/keep-chat-tabs")
+	.input(KeepChatTabsAskSchema)
+	.idempotencyKey(Repeatable);
+export const CreateGroupCommand = command("places/create-group")
+	.input(CreateGroupAskSchema)
+	.output(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const RenameGroupCommand = command("places/rename-group")
+	.input(RenameGroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const SetGroupHueCommand = command("places/set-group-hue")
+	.input(GroupHueAskSchema)
+	.idempotencyKey(Repeatable);
+export const FoldGroupCommand = command("places/fold-group")
+	.input(GroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const UngroupCommand = command("places/ungroup")
+	.input(GroupAskSchema)
+	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand]);
+export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, PlacedSidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, UngroupCommand]);

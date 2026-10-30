@@ -3,18 +3,6 @@ import { TauriPaneTreeGateway } from "../packages/state/layout/gateways/pane-tre
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { groupedChat } from "../packages/state/layout/shared/lib/chat-groups.ts";
 import type { WindowsPanes } from "../packages/state/layout/gateways/pane-tree/tauri.gateway.ts";
-import {
-	KeptTabsDocSchema,
-	TauriHostTabsGateway,
-	WindowViewDocSchema,
-} from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
-import type { KeptTabsDoc, WindowViewDoc } from "../packages/domain/app-host/gateways/host-tabs/tauri.gateway.ts";
-import {
-	CreateGroupCommand,
-	OpenTabCommand,
-	RestoreTabsCommand,
-	ShowTabCommand,
-} from "../packages/domain/app-host/generated/contract.ts";
 import { createTurnSession } from "../apps/host-tauri/src/assistant/turn-session.ts";
 import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
 import { profileFilesOf } from "../packages/domain/browser/gateways/browser-parts/tauri.gateway.ts";
@@ -41,24 +29,11 @@ import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/wor
 import { check, waitFor } from "./check-helpers.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
-import { studioFakesOf } from "./app-host-fixture.ts";
-
-const WINDOW_VIEW: DocKind<WindowViewDoc> = {
-	file: "window-studio-2.json",
-	v: 1,
-	schema: WindowViewDocSchema,
-};
 
 const WORKSPACE_PANES: DocKind<WindowsPanes> = {
 	file: "session.json",
 	v: 1,
 	schema: z.looseObject({}),
-};
-
-const SESSION_TABS: DocKind<KeptTabsDoc> = {
-	file: "session.json",
-	v: 1,
-	schema: KeptTabsDocSchema,
 };
 
 const GRANT: SiteGrant = {
@@ -122,94 +97,6 @@ async function railChecks(): Promise<void> {
 		"+ creates a workspace named by the untitled rule and reopens on it",
 		[fake.calls.find((call) => call.command.endsWith("create_workspace"))?.args["name"], reopened.length],
 		["Untitled 1", 2],
-	);
-}
-
-async function tabsSessionChecks(): Promise<void> {
-	const fake = new FakeStore();
-	fake.put(`workspace:${DEFAULT.id}:session.json`, { v: 1, rev: 1 });
-	const store = new StoreClient(fake.invoke);
-	const sessionTabs = (): TauriHostTabsGateway =>
-		new TauriHostTabsGateway(
-			HeldDoc.read({
-				store,
-				root: workspaceRootOf(DEFAULT.id),
-				kind: SESSION_TABS,
-				empty: KeptTabsDocSchema.parse({}),
-			}),
-			null,
-		);
-	const { studioApp } = studioFakesOf({ hostTabs: sessionTabs(), view: "canvas" });
-	await studioApp.send(RestoreTabsCommand);
-	await studioApp.send(OpenTabCommand, { app: "browser" });
-	await studioApp.send(OpenTabCommand, { app: "browser" });
-	await studioApp.send(CreateGroupCommand, { withTabId: "tab-2" });
-	await studioApp.send(ShowTabCommand, { id: "tab-3" });
-	const keptTabsOnDisk = (): unknown => fake.files.get(`workspace:${DEFAULT.id}:session.json`)?.["tabs"];
-	await waitFor(() => JSON.stringify(keptTabsOnDisk() ?? null).includes('"shownId":"tab-3"'));
-
-	const reopened = sessionTabs();
-	await reopened.tabsLoaded();
-	const kept = reopened.tabs();
-	check(
-		"session.json brings the tabs, their groups and the shown one back",
-		[
-			kept?.tabs.map((tab) => [tab.app, tab.pageId !== null, tab.essentialId === null]),
-			kept?.groups.map((group) => [group.name, group.tabIds]),
-			kept?.shownId,
-		],
-		[
-			[
-				["canvas", false, false],
-				["browser", true, true],
-				["browser", true, true],
-			],
-			[["New group", ["tab-2"]]],
-			"tab-3",
-		],
-	);
-	const restarted = studioFakesOf({ hostTabs: reopened, view: "browser", isBrowserAvailable: false });
-	await restarted.studioApp.send(RestoreTabsCommand);
-	check(
-		"a restart drops the dead page ids the last start gave",
-		reopened.tabs()?.tabs.map((tab) => tab.pageId),
-		[null, null, null],
-	);
-	const secondWindow = new TauriHostTabsGateway(
-		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: SESSION_TABS, empty: KeptTabsDocSchema.parse({}) }),
-		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: WINDOW_VIEW, empty: WindowViewDocSchema.parse({}) }),
-	);
-	const live = reopened.tabs();
-
-	if (live !== null) {
-		reopened.saveTabs(
-			{ ...live, tabs: live.tabs.map((tab) => (tab.id === "tab-2" ? { ...tab, pageId: "page-live" } : tab)) },
-			"a page is live in the first window",
-		);
-	}
-
-	await waitFor(() => JSON.stringify(keptTabsOnDisk() ?? null).includes("page-live"));
-	const beside = new TauriHostTabsGateway(
-		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: SESSION_TABS, empty: KeptTabsDocSchema.parse({}) }),
-		HeldDoc.read({ store, root: workspaceRootOf(DEFAULT.id), kind: WINDOW_VIEW, empty: WindowViewDocSchema.parse({}) }),
-	);
-	await beside.tabsLoaded();
-	await studioFakesOf({ hostTabs: beside, view: "browser", isBrowserAvailable: false }).studioApp.send(
-		RestoreTabsCommand,
-	);
-	check(
-		"a second window's start keeps the pages the running app holds",
-		beside.tabs()?.tabs.find((tab) => tab.id === "tab-2")?.pageId,
-		"page-live",
-	);
-	const second = studioFakesOf({ hostTabs: secondWindow, view: "browser", isBrowserAvailable: false });
-	await second.studioApp.send(ShowTabCommand, { id: "tab-2" });
-	const windowViewOnDisk = (): unknown => fake.files.get(`workspace:${DEFAULT.id}:window-studio-2.json`)?.["view"];
-	await waitFor(() => JSON.stringify(windowViewOnDisk() ?? null).includes('"shownId":"tab-2"'));
-	check(
-		"a second window keeps the tab it shows in its own file, and the main window's shown tab stays put",
-		[secondWindow.tabs()?.shownId, JSON.stringify(keptTabsOnDisk()).includes('"shownId":"tab-3"')],
-		["tab-2", true],
 	);
 }
 
@@ -502,7 +389,6 @@ async function profileChecks(): Promise<void> {
 }
 
 await railChecks();
-await tabsSessionChecks();
 await tornWindowLayoutChecks();
 await unreadLayoutChecks();
 await ownKeyChecks();

@@ -21,7 +21,7 @@ export function startCore(): void {
 			.listen(listener)
 			.listen(own)
 			.start({
-				env: {},
+				env: { PLACES_STORE: "tauri" },
 				scope: { workspaceId: workspace },
 			});
 		const places = app().imports(PlacesContract.over(own)).start();
@@ -42,7 +42,9 @@ function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string
 	for (const [workspace, places] of served) {
 		void places.send(CloseWindowCommand, { window }).then((answered) => {
 			if (!answered.ok) {
-				console.warn(NOT_CLOSED.replace("{workspace}", workspace).replace("{window}", window).replace("{reason}", answered.reason));
+				console.warn(
+					NOT_CLOSED.replace("{workspace}", workspace).replace("{window}", window).replace("{reason}", answered.reason),
+				);
 			}
 		});
 	}

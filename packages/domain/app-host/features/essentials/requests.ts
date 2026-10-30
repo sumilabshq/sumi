@@ -1,34 +1,26 @@
 import { z } from "zod";
 import { Repeatable, command, refuse } from "@widgetarium/core/requests";
+import { CloseEssentialTabCommand, ReleaseEssentialTabCommand, ShowEssentialTabCommand } from "@widgetarium/places";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { HostTabsGateway } from "../../gateways/host-tabs/host-tabs.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
-import { findEssential, moveEssential, removeEssential } from "../../shared/lib/essentials/essentials.js";
-import { openEssentialTab, openTab, placeTab } from "../../shared/lib/host-tabs/host-tabs.js";
-import { WORKSPACE_END, listPlaceOf } from "../../shared/lib/host-tabs/tab-lists.js";
-import type { TabPlace } from "../../shared/lib/host-tabs/tab-lists.js";
-import { withTabsClosed } from "../../shared/lib/tab-showing/closing.js";
-import { withMoved, withTabShown } from "../../shared/lib/tab-showing/showing.js";
-import type { Showing } from "../../shared/lib/tab-showing/showing.js";
-import type { TabFacts } from "../../shared/lib/tab-showing/tab-facts.js";
-import {
-	factsOf,
-	freshTabOf,
-	liveTabOf,
-	saveEssentials,
-	settle,
-	tabsNowOf,
-	withOpenedTabShown,
-} from "../../shared/lib/tab-showing/tab-settling.js";
-import type { Essential } from "../../shared/schema/essential.schema.js";
+import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { essentialsOf, findEssential, moveEssential, removeEssential } from "../../shared/lib/essentials/essentials.js";
+import { saveEssentials, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
+import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
+import type { Essential, KeptEssentials } from "../../shared/schema/essential.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 
 const NO_ESSENTIAL = 'no essential "{id}"';
 const NO_ESSENTIAL_WINDOW = 'the essential "{id}" opens in its own window only as a tab';
-const NOT_OPEN = 'the essential "{id}" is not open';
+const WORKSPACE_END = {
+	list: "workspace",
+	groupId: null,
+	before: null,
+};
 const TAB_PARTS = {
-	hostTabs: HostTabsGateway,
+	studioWindow: StudioWindowGateway,
 	essentials: EssentialsGateway,
 	shownView: ShownViewGateway,
 	paneFlash: PaneFlashGateway,
@@ -38,95 +30,88 @@ export const ShowEssentialCommand = command("show-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.handle(async ({ id }, { send, ...parts }) => {
-		const facts = await factsOf(parts, send);
-		const { showing, kept } = tabsNowOf(parts, facts);
-		const essential = findEssential(kept, id);
-
-		if (!essential) {
-			return refuse(NO_ESSENTIAL.replace("{id}", id));
-		}
-
-		const live = liveTabOf(showing.moment, id);
-
-		if (live) {
-			return settle(showing, withTabShown(showing, facts, live), { parts, send });
-		}
-
-		const opened = openEssentialTab(showing.moment, id, freshTabOf(essential.app, facts));
-		const shown = withOpenedTabShown(withMoved(showing, opened), facts, opened.tab, essential.address ?? "");
-		return settle(showing, shown, { parts, send });
+	.emits(TabsSettledEvent)
+	.handle(async ({ id }, { send, emit, ...parts }) => {
+		const essential = findEssential(await keptOf(parts.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
+		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+			send(ShowEssentialTabCommand, { at, essential: refOf(essential) }),
+		);
 	});
 
 export const RemoveEssentialCommand = command("remove-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.handle(async ({ id }, { send, ...parts }) => {
-		const facts = await factsOf(parts, send);
-		const { showing, kept } = tabsNowOf(parts, facts);
-		const essential = findEssential(kept, id);
-
-		if (!essential) {
-			return refuse(NO_ESSENTIAL.replace("{id}", id));
-		}
-
-		saveEssentials(kept, removeEssential(kept, essential), parts.essentials);
-		return settle(showing, withEssentialReleased(showing, facts, essential, WORKSPACE_END), { parts, send });
+	.emits(TabsSettledEvent)
+	.handle(async ({ id }, { send, emit, ...parts }) => {
+		const kept = await keptOf(parts.essentials);
+		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
+		await releaseEssential(
+			{ parts, send, told: () => emit(TabsSettledEvent) },
+			{ kept, essential, place: WORKSPACE_END },
+		);
 	});
 
 export const CloseEssentialCommand = command("close-essential")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.handle(async ({ id }, { send, ...parts }) => {
-		const facts = await factsOf(parts, send);
-		const { showing } = tabsNowOf(parts, facts);
-		const live = liveTabOf(showing.moment, id);
-
-		if (!live) {
-			return refuse(NOT_OPEN.replace("{id}", id));
-		}
-
-		return settle(showing, withTabsClosed(showing, facts, { ids: [live.id], reason: `close essential ${id}` }), {
-			parts,
-			send,
-		});
+	.emits(TabsSettledEvent)
+	.handle(async ({ id }, { send, emit, ...parts }) => {
+		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+			send(CloseEssentialTabCommand, { at, essentialId: id }),
+		);
 	});
 
 export const PlaceEssentialCommand = command("place-essential")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
-	.handle(async ({ id, to }, { send, ...parts }) => {
-		const facts = await factsOf(parts, send);
-		const { showing, kept } = tabsNowOf(parts, facts);
-		const essential = findEssential(kept, id);
-
-		if (!essential) {
-			return refuse(NO_ESSENTIAL.replace("{id}", id));
-		}
+	.emits(TabsSettledEvent)
+	.handle(async ({ id, to }, { send, emit, ...parts }) => {
+		const kept = await keptOf(parts.essentials);
+		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 
 		if (to.kind === "essentials") {
 			saveEssentials(kept, moveEssential(kept, essential, to.at), parts.essentials);
-			return undefined;
+			return;
 		}
 
 		if (to.kind === "own-window") {
 			return refuse(NO_ESSENTIAL_WINDOW.replace("{id}", id));
 		}
 
-		saveEssentials(kept, removeEssential(kept, essential), parts.essentials);
-		return settle(showing, withEssentialReleased(showing, facts, essential, listPlaceOf(to)), { parts, send });
+		const place = { list: to.list, groupId: to.groupId, before: to.before };
+		await releaseEssential({ parts, send, told: () => emit(TabsSettledEvent) }, { kept, essential, place });
 	});
 
-function withEssentialReleased(showing: Showing, facts: TabFacts, essential: Essential, place: TabPlace): Showing {
-	const live = liveTabOf(showing.moment, essential.id);
+interface EssentialRelease {
+	readonly kept: KeptEssentials;
+	readonly essential: Essential;
+	readonly place: { readonly list: string; readonly groupId: string | null; readonly before: string | null };
+}
 
-	if (live) {
-		return withMoved(showing, placeTab(showing.moment, live.id, place));
-	}
+async function releaseEssential(
+	reach: TabsReach & { readonly parts: { readonly essentials: EssentialsGateway } },
+	{ kept, essential, place }: EssentialRelease,
+): Promise<void> {
+	await settleAsked(reach, (at) => reach.send(ReleaseEssentialTabCommand, { at, essential: refOf(essential), place }));
+	saveEssentials(kept, removeEssential(kept, essential), reach.parts.essentials);
+}
 
-	const opened = openTab(showing.moment, freshTabOf(essential.app, facts), place);
-	return withOpenedTabShown(withMoved(showing, opened), facts, opened.tab, essential.address ?? "");
+async function keptOf(essentials: EssentialsGateway): Promise<KeptEssentials> {
+	await essentials.essentialsLoaded();
+	return essentialsOf(essentials.essentials());
+}
+
+function refOf({ id, app, address }: Essential): {
+	readonly id: string;
+	readonly app: Essential["app"];
+	readonly address: string | null;
+} {
+	return {
+		id,
+		app,
+		address,
+	};
 }

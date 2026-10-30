@@ -26,9 +26,11 @@ import type { Intent, Results, ResultsAsk } from "../packages/domain/command-men
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
+import { placesOver } from "./places-fixture.ts";
 
 const studio = app()
 	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, CommandMenuModule)
+	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 
 await check("opens anywhere and the door changes", async () => {
@@ -126,6 +128,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			WorkspacesModule,
 			CommandMenuModule,
 		)
+		.imports(placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
 	const tabsBefore = ok(await withPages.send(AppTabsQuery)).tabs.length;
 	ok(await withPages.send(DoRowCommand, { intent: { do: "open-address", address: "example.com", where: "new-tab" } }));
@@ -243,6 +246,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 			AppHostModule,
 			CommandMenuModule,
 		)
+		.imports(placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "untitled" } });
 	const found = ok(
 		await elsewhere.send(CommandMenuResultsQuery, { text: "default tab", scope: "all", door: "anywhere" }),

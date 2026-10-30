@@ -2,15 +2,18 @@ import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
-import type { HostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/host-tabs.gateway.ts";
+import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import type { StudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/studio-window.gateway.ts";
 import { PaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/pane-flash.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
 import { COLUMN_OPENED_ON } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
-import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
+import { PlacesModule } from "../packages/state/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import type { SeededTabs } from "./places-fixture.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
@@ -25,6 +28,13 @@ import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memo
 import { treeShowingChat } from "../packages/state/layout/shared/lib/pane-trees.ts";
 
 export const HOST_CHAT = "chat-1";
+
+const NO_TABS: SeededTabs = {
+	tabs: [],
+	shownId: null,
+	minted: 0,
+	closed: [],
+};
 
 export class RecordedPagesGateway extends FakeBrowserPagesGateway {
 	readonly calls: string[] = [];
@@ -92,7 +102,7 @@ export class RecordedPaneFlash extends PaneFlashGateway {
 }
 
 export interface AppHostFakes {
-	readonly hostTabs: HostTabsGateway;
+	readonly studioWindow: StudioWindowGateway;
 	readonly essentials: MemoryEssentialsGateway;
 	readonly tabsColumn: MemoryTabsColumnGateway;
 	readonly shownView: MemoryShownViewGateway;
@@ -101,14 +111,16 @@ export interface AppHostFakes {
 
 export interface StudioFakes {
 	readonly appHost: AppHostFakes;
+	readonly places: MemoryTabsGateway;
 	readonly pages: RecordedPagesGateway;
 	readonly layout: LayoutParts;
 	readonly studioApp: StartedApp;
 }
 
 export interface StudioSeed {
-	readonly tabs?: KeptTabs | null;
-	readonly hostTabs?: HostTabsGateway;
+	readonly tabs?: SeededTabs | null;
+	readonly places?: MemoryTabsGateway;
+	readonly studioWindow?: StudioWindowGateway;
 	readonly essentials?: KeptEssentials | null;
 	readonly view?: StudioView;
 	readonly pages?: readonly string[];
@@ -117,14 +129,9 @@ export interface StudioSeed {
 	readonly chatTitle?: string;
 }
 
-export function appHostFakesOf({
-	tabs = null,
-	hostTabs,
-	essentials = null,
-	view = "browser",
-}: StudioSeed): AppHostFakes {
+export function appHostFakesOf({ studioWindow, essentials = null, view = "browser" }: StudioSeed): AppHostFakes {
 	return {
-		hostTabs: hostTabs ?? new MemoryHostTabsGateway(tabs),
+		studioWindow: studioWindow ?? new MemoryStudioWindowGateway(),
 		essentials: new MemoryEssentialsGateway(essentials),
 		tabsColumn: new MemoryTabsColumnGateway(COLUMN_OPENED_ON),
 		shownView: new MemoryShownViewGateway(view),
@@ -134,6 +141,7 @@ export function appHostFakesOf({
 
 export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const appHost = appHostFakesOf(seed);
+	const places = seed.places ?? new MemoryTabsGateway(placedTabsOf(seed.tabs ?? NO_TABS, [HOST_CHAT]));
 	const pages = new RecordedPagesGateway(seed.pages ?? [], seed.isBrowserAvailable ?? true);
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = app()
@@ -144,9 +152,11 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			WorkspacesModule.with(workspacesOf(seed.chatTitle ?? null)),
 			CommandMenuModule,
 		)
+		.imports(PlacesModule.over(placesLinkOf(places)))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {
 		appHost,
+		places,
 		pages,
 		layout,
 		studioApp,

@@ -1,11 +1,13 @@
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { placedTabsOf } from "./places-fixture.ts";
+import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
 import { COLUMN_OPENED_ON } from "../packages/domain/app-host/shared/lib/tabs-column/column-look.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
-import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -33,7 +35,7 @@ const KEPT_ESSENTIALS: KeptEssentials = {
 	minted: 2,
 };
 
-const KEPT_TABS: KeptTabs = {
+const KEPT_TABS: SeededTabs = {
 	tabs: [
 		{
 			id: "tab-8",
@@ -73,7 +75,7 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 	const studioApp = studioAppOf({
 		browser: restartedBrowserParts(),
 		appHost: {
-			hostTabs: new MemoryHostTabsGateway(KEPT_TABS),
+			studioWindow: new MemoryStudioWindowGateway(),
 			essentials: new MemoryEssentialsGateway(KEPT_ESSENTIALS),
 			tabsColumn: new MemoryTabsColumnGateway(COLUMN_OPENED_ON),
 			shownView: new MemoryShownViewGateway("canvas"),
@@ -81,6 +83,7 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 		},
 		workspaces: newChatWorkspaces(),
 		workspaceId: TAURI_WORKSPACE,
+		places: new MemoryTabsGateway(placedTabsOf(KEPT_TABS, [CHAT_ID])),
 	});
 	void restoreTabs(studioApp);
 	Object.assign(window, {

@@ -20,6 +20,7 @@ import {
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
+import { placesOver } from "./places-fixture.ts";
 
 reportsFailures();
 
@@ -109,6 +110,7 @@ const studio = app()
 		),
 		CommandMenuModule,
 	)
+	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 

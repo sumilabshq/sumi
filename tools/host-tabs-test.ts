@@ -1,4 +1,4 @@
-import { tabRowsOf } from "../packages/domain/app-host/features/tabs/lib/tab-rows.ts";
+import { tabRowsOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
 import {
 	closeGroup,
 	closeTabs,
@@ -7,22 +7,17 @@ import {
 	flatTabIdsOf,
 	makeEssential,
 	markShown,
-	momentOfKept,
 	openTab,
 	placeTab,
 	reopenClosed,
 	tabOf,
-} from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { addGroup, ungroup } from "../packages/domain/app-host/shared/lib/host-tabs/tab-groups.ts";
-import { rememberPages } from "../packages/domain/app-host/shared/lib/host-tabs/page-memory.ts";
-import type {
-	HostTabsMoment,
-	MovedTabs,
-	TabGroup,
-} from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
+} from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { addGroup, ungroup } from "../packages/state/places/shared/lib/tabs/tab-groups.ts";
+import { rememberPages } from "../packages/state/places/shared/lib/tabs/page-memory.ts";
+import type { HostTabsMoment, MovedTabs, TabGroup } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
 import { addEssential, essentialsOf } from "../packages/domain/app-host/shared/lib/essentials/essentials.ts";
-import { withTabsClosed } from "../packages/domain/app-host/shared/lib/tab-showing/closing.ts";
+import { withTabsClosed } from "../packages/state/places/shared/lib/showing/closing.ts";
 import {
 	chatTabToShow,
 	showingOf,
@@ -33,10 +28,11 @@ import {
 	withTabPressed,
 	withTabShown,
 	withTabTornOff,
-} from "../packages/domain/app-host/shared/lib/tab-showing/showing.ts";
-import { withHomeFollowed, withTabsAtHome } from "../packages/domain/app-host/shared/lib/tab-showing/rehoming.ts";
-import type { TabFacts } from "../packages/domain/app-host/shared/lib/tab-showing/tab-facts.ts";
-import { KeptTabsSchema } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
+} from "../packages/state/places/shared/lib/showing/showing.ts";
+import { withHomeFollowed, withTabsAtHome } from "../packages/state/places/shared/lib/showing/rehoming.ts";
+import type { TabFacts } from "../packages/state/places/shared/lib/showing/tab-facts.ts";
+import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";
+import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
 
 let failed = 0;
 const quiet = console.info;
@@ -101,7 +97,7 @@ function factsOf(chatId: string, inPanes: readonly string[]): TabFacts {
 	};
 }
 
-const legacy = KeptTabsSchema.parse({
+const legacy = KeptSessionTabsSchema.parse({
 	tabs: [
 		{ id: "tab-1", app: "canvas", pageId: null, isPinned: true, label: null },
 		{ id: "tab-2", app: "browser", pageId: null, isPinned: false, label: "Docs" },
@@ -111,8 +107,8 @@ const legacy = KeptTabsSchema.parse({
 	closed: [],
 });
 check(
-	"a session from before lists and groups opens with every tab in the current chat",
-	flatTabIdsOf(momentOfKept(legacy, ONE), ONE),
+	"a session from before lists and groups opens with every tab in the open tabs",
+	flatTabIdsOf(momentOfWindow(migratedTabsOf(legacy, []), "main"), WORKSPACE_LIST),
 	["tab-1", "tab-2"],
 );
 

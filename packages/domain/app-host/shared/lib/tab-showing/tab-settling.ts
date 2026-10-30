@@ -22,35 +22,18 @@ import {
 	ShowTabInChatGroupCommand,
 	ShowTabInTargetPaneCommand,
 } from "@widgetarium/layout";
-import type { MovedEssentials } from "../essentials/essentials.js";
-import { essentialsOf } from "../essentials/essentials.js";
-import type { HostTab, HostTabsMoment, OpenedTab } from "../host-tabs/host-tabs.js";
-import { keptTabsOf, momentOf, tabsTransitionSaid } from "../host-tabs/kept-tabs.js";
-import { WORKSPACE_LIST } from "../host-tabs/tab-lists.js";
+import { KeepChatTabsCommand } from "@widgetarium/places";
+import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places";
+import { ChatListQuery } from "@widgetarium/workspaces";
 import type { KeptEssentials } from "../../schema/essential.schema.js";
 import type { StudioView } from "../../schema/studio-view.schema.js";
-import type { KeptTabs } from "../../schema/tabs-session.schema.js";
-import { newTabPageOf } from "./new-tab-page.js";
-import { showingOf, withTabPageOpened, withTabShown } from "./showing.js";
-import type { Showing, TabEffect } from "./showing.js";
-import { tabFactsOf } from "./tab-facts.js";
-import type { TabFacts } from "./tab-facts.js";
-
-export const NOT_HELD = 'the host holds no tab "{id}"';
-export const NO_OWN_WINDOW = 'the tab "{id}" holds no page that can open in its own window';
+import type { MovedEssentials } from "../essentials/essentials.js";
+import { screenOf } from "./screen-of.js";
 
 const ALL_PAGES = { heldTabId: null };
 
-interface HostTabsStore {
-	tabsLoaded(): Promise<void>;
-	tabs(): KeptTabs | null;
-	saveTabs(tabs: KeptTabs, reason: string): void;
-}
-
-export interface EssentialsStore {
-	essentialsLoaded(): Promise<void>;
-	essentials(): KeptEssentials | null;
-	saveEssentials(essentials: KeptEssentials, reason: string): void;
+interface StudioWindowSeat {
+	windowLabel(): string;
 }
 
 interface ShownViewStore {
@@ -62,9 +45,12 @@ interface PaneFlasher {
 	flashPane(paneId: string): void;
 }
 
+interface EssentialsStore {
+	saveEssentials(essentials: KeptEssentials, reason: string): void;
+}
+
 export interface TabStores {
-	readonly hostTabs: HostTabsStore;
-	readonly essentials: EssentialsStore;
+	readonly studioWindow: StudioWindowSeat;
 	readonly shownView: ShownViewStore;
 	readonly paneFlash: PaneFlasher;
 }
@@ -72,40 +58,35 @@ export interface TabStores {
 export interface TabsReach {
 	readonly parts: TabStores;
 	readonly send: Send;
+	readonly told: () => void;
 }
 
-export interface TabsNow {
-	readonly showing: Showing;
-	readonly kept: KeptEssentials;
-}
-
-export async function factsOf(parts: TabStores, send: Send): Promise<TabFacts> {
+export async function tabsAskOf({ parts, send }: Pick<TabsReach, "parts" | "send">): Promise<TabsAsk> {
 	const [browserTabs, asks, board] = await Promise.all([
 		send(BrowserTabsQuery, ALL_PAGES),
 		send(AccessAsksQuery),
 		send(PaneTreeQuery),
-		parts.hostTabs.tabsLoaded(),
-		parts.essentials.essentialsLoaded(),
 	]);
-	return tabFactsOf({ browserTabs, asks, board });
-}
-
-export function tabsNowOf(parts: TabStores, facts: TabFacts): TabsNow {
 	return {
-		showing: showingOf(
-			momentOf(parts.hostTabs.tabs(), facts.focusedChatId ?? WORKSPACE_LIST),
-			parts.shownView.shownView(),
-		),
-		kept: essentialsOf(parts.essentials.essentials()),
+		window: parts.studioWindow.windowLabel(),
+		view: parts.shownView.shownView(),
+		screen: screenOf({ browserTabs, asks, board }),
 	};
 }
 
-export async function settle(was: Showing, next: Showing, { parts, send }: TabsReach): Promise<void> {
-	saveShowing(was, next, parts);
+export async function settleAsked<S extends TabsSettled>(
+	reach: TabsReach,
+	ask: (at: TabsAsk) => Promise<S>,
+): Promise<S> {
+	const settled = await ask(await tabsAskOf(reach));
+	saveView(reach.parts.shownView, settled.view);
 
-	for (const effect of next.effects) {
-		await sendLogged(effect.kind, () => sendEffect(effect, parts.paneFlash, send));
+	for (const effect of settled.effects) {
+		await sendLogged(effect.kind, () => sendEffect(effect, reach));
 	}
+
+	reach.told();
+	return settled;
 }
 
 export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | null, essentials: EssentialsStore): void {
@@ -117,6 +98,11 @@ export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | nul
 	console.info(`[widgetarium] essentials ${was.essentials.length} → ${moved.kept.essentials.length} (${moved.reason})`);
 }
 
+export async function keepChatTabs(send: Send): Promise<void> {
+	const { pinned, recents } = await send(ChatListQuery);
+	await send(KeepChatTabsCommand, { chatIds: [...pinned, ...recents].map(({ id }) => id) });
+}
+
 export async function sendLogged(what: string, sending: () => Promise<unknown> | void): Promise<void> {
 	try {
 		await sending();
@@ -125,36 +111,19 @@ export async function sendLogged(what: string, sending: () => Promise<unknown> |
 	}
 }
 
-export function freshTabOf(app: OpenedTab["app"], facts: TabFacts): OpenedTab {
-	return {
-		app,
-		pageId: newTabPageOf(app, facts.isBrowserAvailable),
-	};
-}
+function saveView(shownView: ShownViewStore, next: StudioView): void {
+	const was = shownView.shownView();
 
-export function withOpenedTabShown(showing: Showing, facts: TabFacts, tab: HostTab, address: string): Showing {
-	return withTabShown(withTabPageOpened(showing, tab, { address, isShown: true }), facts, tab);
-}
-
-export function liveTabOf(moment: HostTabsMoment, essentialId: string): HostTab | undefined {
-	return moment.tabs.find((tab) => tab.essentialId === essentialId);
-}
-
-function saveShowing(was: Showing, next: Showing, { hostTabs, shownView }: TabStores): void {
-	const reason = next.reasons.join("; ");
-
-	if (next.moment !== was.moment) {
-		hostTabs.saveTabs(keptTabsOf(next.moment), reason);
-		console.info(`[widgetarium] ${tabsTransitionSaid(was.moment, next.moment, reason)}`);
+	if (was === next) {
+		return;
 	}
 
-	if (next.shownView !== was.shownView) {
-		shownView.saveShownView(next.shownView, reason);
-		console.info(`[widgetarium] shown view ${was.shownView} → ${next.shownView} (${reason})`);
-	}
+	const reason = `shown view ${was} → ${next} (tabs settled)`;
+	shownView.saveShownView(next, reason);
+	console.info(`[widgetarium] ${reason}`);
 }
 
-async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send): Promise<unknown> {
+async function sendEffect(effect: TabEffect, { parts, send }: TabsReach): Promise<unknown> {
 	switch (effect.kind) {
 		case "open-page":
 			return send(OpenPageCommand, { tabId: effect.pageId });
@@ -197,6 +166,6 @@ async function sendEffect(effect: TabEffect, paneFlash: PaneFlasher, send: Send)
 			});
 		case "flash-pane":
 			await send(AimPaneCommand, { id: effect.paneId });
-			return paneFlash.flashPane(effect.paneId);
+			return parts.paneFlash.flashPane(effect.paneId);
 	}
 }

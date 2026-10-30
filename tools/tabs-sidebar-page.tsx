@@ -6,6 +6,7 @@ import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
 import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
+import type { PlacedTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
 
 reportsFailures();
 
@@ -16,13 +17,17 @@ interface Counted {
 const counted: Counted = { commits: 0 };
 const exact = exactStudio();
 const state = createStudioState(exact.studioApp);
+const placedNow: { tabs: PlacedTabs | null } = { tabs: null };
+const readPlaced = (): void => void exact.places.placedTabs().then((tabs) => (placedNow.tabs = tabs));
+readPlaced();
+exact.places.placedTabsChanged(readPlaced);
 
 Reflect.set(window, "__SIDEBAR__", {
 	counted,
 	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
 	switchChat: exact.switchChat,
 	holdElsewhere: exact.holdElsewhere,
-	moment: () => exact.hostTabs.tabs(),
+	moment: () => placedNow.tabs,
 	essentials: () => exact.essentials.essentials(),
 	shownView: () => state.now().view,
 	keepEssentials: (count: number) => {

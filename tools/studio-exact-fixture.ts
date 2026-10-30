@@ -3,12 +3,14 @@ import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { placedTabsOf, placesOver } from "./places-fixture.ts";
+import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import { MemoryTabsColumnGateway } from "../packages/domain/app-host/gateways/tabs-column/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
-import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
@@ -82,7 +84,7 @@ const KEPT_ESSENTIALS: KeptEssentials = {
 	minted: 8,
 };
 
-const KEPT_TABS: KeptTabs = {
+const KEPT_TABS: SeededTabs = {
 	tabs: [
 		{
 			id: "tab-1",
@@ -156,7 +158,7 @@ export interface ExactStudioAsk {
 
 export interface ExactStudio {
 	readonly studioApp: StartedApp;
-	readonly hostTabs: MemoryHostTabsGateway;
+	readonly places: MemoryTabsGateway;
 	readonly essentials: MemoryEssentialsGateway;
 	readonly switchChat: (id: string) => void;
 	readonly holdElsewhere: (pageId: string) => void;
@@ -167,13 +169,18 @@ export function exactStudio({
 	workspaces = boardChats(),
 	releaseChatId = RELEASE_CHAT,
 }: ExactStudioAsk = {}): ExactStudio {
-	const hostTabs = new MemoryHostTabsGateway(keptTabsIn(releaseChatId));
+	const places = new MemoryTabsGateway(
+		placedTabsOf(
+			keptTabsIn(releaseChatId),
+			CHATS.map((chat) => chat.id),
+		),
+	);
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
 		.modules(
 			AppHostModule.with({
-				hostTabs,
+				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,
 				tabsColumn: new MemoryTabsColumnGateway({
 					fullPx: EXACT_COLUMN_PX,
@@ -190,18 +197,19 @@ export function exactStudio({
 			WorkspacesModule.with(workspaces),
 			CommandMenuModule,
 		)
+		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });
 	void studioApp.send(ShowChatInPaneCommand, { chatId: releaseChatId, paneId: null });
 	return {
 		studioApp,
-		hostTabs,
+		places,
 		essentials: keptEssentials,
 		switchChat: (id) => void studioApp.send(OpenChatCommand, { chatId: id, paneId: null }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }
 
-function keptTabsIn(releaseChatId: string): KeptTabs {
+function keptTabsIn(releaseChatId: string): SeededTabs {
 	const { [RELEASE_CHAT]: release = [], ...otherLists } = KEPT_TABS.lists ?? {};
 	return {
 		...KEPT_TABS,
@@ -302,7 +310,7 @@ class BoardPagesGateway extends FakeBrowserPagesGateway {
 	}
 }
 
-function browserTab(id: string, pageId: string): KeptTabs["tabs"][number] {
+function browserTab(id: string, pageId: string): SeededTabs["tabs"][number] {
 	return {
 		id,
 		app: "browser",

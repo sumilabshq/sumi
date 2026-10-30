@@ -1,0 +1,136 @@
+import type { TabEffect } from "../../../shared/schema/screen.schema.js";
+import type { RestoreTabsAsk } from "../../../shared/schema/tab-asks.schema.js";
+import { refusal } from "../../../shared/lib/settling/settling.js";
+import type { ShowingPlan } from "../../../shared/lib/settling/settling.js";
+import { withTabsAtHome } from "../../../shared/lib/showing/rehoming.js";
+import {
+	withChatTabShown,
+	withEffect,
+	withFirstTabShown,
+	withFreeTabBesidePanes,
+	withMoved,
+	withPageEnsured,
+	withPanePagesEnsured,
+	withTabPressed,
+	withTabTornOff,
+} from "../../../shared/lib/showing/showing.js";
+import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
+import { tabPageOf } from "../../../shared/lib/showing/tab-pages.js";
+import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
+import type { HostTab, HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
+import { forgetPages, rememberPages } from "../../../shared/lib/tabs/page-memory.js";
+
+export const NOT_HELD = 'the host holds no tab "{id}"';
+export const NO_OWN_WINDOW = 'the tab "{id}" holds no page that can open in its own window';
+
+const NO_OWN_WINDOWS = "this host cannot open a page in its own window";
+const NO_PAGE = 'the tab "{id}" shows no browser page';
+
+export function restorePlan({ essentials, isBeside, keepsPages }: Omit<RestoreTabsAsk, "at">): ShowingPlan {
+	return (showing, facts) => {
+		if (isBeside) {
+			console.info("[widgetarium] host tabs restore → panes only (this studio opens beside a running one)");
+			return withPanePagesEnsured(showing, facts);
+		}
+
+		const started = keepsPages ? showing : withMoved(showing, forgetPages(showing.moment));
+		return withFirstTabShown(started, facts, essentials);
+	};
+}
+
+export function showTabPlan(id: string): ShowingPlan {
+	return (showing, facts) => {
+		const tab = heldTabOf(showing.moment, id);
+
+		if (!tab) {
+			return refusal(NOT_HELD.replace("{id}", id));
+		}
+
+		const apart = shownApartEffectOf(tab, showing.moment, facts);
+
+		if (apart === null) {
+			return withTabPressed(showing, facts, tab);
+		}
+
+		console.info(
+			`[widgetarium] show ${id}: ${apart.kind === "flash-pane" ? "reveal the pane holding it" : "focus its own window"}`,
+		);
+		return withEffect(showing, apart);
+	};
+}
+
+export function showChatTabPlan(chatId: string): ShowingPlan {
+	return (showing, facts) => withChatTabShown(showing, facts, chatId);
+}
+
+export function fitTabsPlan(): ShowingPlan {
+	return (showing, facts) => {
+		const atHome = withTabsAtHome(showing, facts);
+		return atHome === showing ? withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts) : atHome;
+	};
+}
+
+export function rememberPagesPlan(): ShowingPlan {
+	return (showing, facts) => withMoved(showing, rememberPages(showing.moment, facts.pages));
+}
+
+export function ownWindowPlan(id: string): ShowingPlan {
+	return (showing, facts) => {
+		if (!heldTabOf(showing.moment, id)) {
+			return refusal(NOT_HELD.replace("{id}", id));
+		}
+
+		if (!facts.canOpenOwnWindow) {
+			return refusal(NO_OWN_WINDOWS);
+		}
+
+		const ensured = withPageEnsured(showing, facts, { tabId: id, why: "dropped outside the studio" });
+		return ensured.pageId === null
+			? refusal(NO_OWN_WINDOW.replace("{id}", id))
+			: withEffect(ensured.showing, { kind: "open-own-window", pageId: ensured.pageId });
+	};
+}
+
+export function tearOffPlan(id: string): ShowingPlan {
+	return (showing, facts) => {
+		if (!heldTabOf(showing.moment, id)) {
+			return refusal(NOT_HELD.replace("{id}", id));
+		}
+
+		const ensured = withPageEnsured(showing, facts, { tabId: id, why: "dragged toward its own window" });
+
+		if (ensured.pageId === null) {
+			return refusal(NO_OWN_WINDOW.replace("{id}", id));
+		}
+
+		const tornOff = withEffect(ensured.showing, { kind: "tear-off-page", pageId: ensured.pageId, tabId: id });
+		return withTabTornOff(tornOff, facts, id);
+	};
+}
+
+export function reloadPlan(id: string): ShowingPlan {
+	return (showing, facts) => {
+		const page = tabPageOf(showing.moment, facts.pages, id);
+		return page === undefined
+			? refusal(NO_PAGE.replace("{id}", id))
+			: withEffect(showing, { kind: "reload-page", pageId: page.pageId });
+	};
+}
+
+function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {
+	const window = facts.tabWindows.get(tab.id);
+
+	if (window !== undefined) {
+		return { kind: "focus-window", window };
+	}
+
+	const pane = facts.tabPanes.find(({ tabId }) => tabId === tab.id);
+
+	if (pane !== undefined) {
+		return { kind: "flash-pane", paneId: pane.paneId };
+	}
+
+	const pageId = tabPageOf(moment, facts.pages, tab.id)?.pageId ?? null;
+	const isInOwnWindow = facts.pages.some((page) => page.pageId === pageId && page.isInOwnWindow);
+	return pageId !== null && isInOwnWindow ? { kind: "focus-own-window", pageId } : null;
+}

@@ -12,26 +12,23 @@ import {
 	TabsColumnQuery,
 	TearOffTabCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
-import { givePage, momentOfKept } from "../packages/domain/app-host/shared/lib/host-tabs/host-tabs.ts";
-import type { KeptTabs } from "../packages/domain/app-host/shared/schema/tabs-session.schema.ts";
-import { MemoryHostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/memory.gateway.ts";
-import type { HostTabsGateway } from "../packages/domain/app-host/gateways/host-tabs/host-tabs.gateway.ts";
+import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { placedTabsOf } from "./places-fixture.ts";
+import type { SeededTabs } from "./places-fixture.ts";
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
-import { WORKSPACE_LIST } from "../packages/domain/app-host/shared/lib/host-tabs/tab-lists.ts";
+import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
+import { givePage } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
 import { check, tally, thrownBy, waitFor } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";
 
-class StartEndingHostTabsGateway extends MemoryHostTabsGateway {
-	override keepsPagesAcrossStarts(): boolean {
-		return false;
-	}
-}
 const RESTORED = ["tab-10", "tab-12", "tab-15"];
 
-function restoredTabs(): KeptTabs {
+function restoredTabs(): SeededTabs {
 	return {
 		tabs: RESTORED.map((id) => ({
 			id,
@@ -82,7 +79,7 @@ async function tearOffChecks(): Promise<void> {
 		[(await pageIdOf(studioApp, "tab-12")) === pageId, pages.calls.slice(callsBefore)],
 		[true, [`tear off ${pageId} as tab-12`]],
 	);
-	const moment = momentOfKept(restoredTabs(), HOST_CHAT);
+	const moment = momentOfWindow(placedTabsOf(restoredTabs()), "main");
 	const given = givePage(moment, { id: "tab-12", pageId: "page-mine", why: "test" })?.moment ?? moment;
 	check(
 		"no tab takes a page another tab holds, and no tab trades its page",
@@ -140,36 +137,41 @@ async function handlerRuleChecks(): Promise<void> {
 	const renamed = await studioApp.send(RenameTabCommand, { id: "tab-99", label: "Gone" });
 	const grouped = await studioApp.send(CreateGroupCommand, { list: "chat-elsewhere" });
 	check(
-		"renaming a tab the host does not hold and grouping into a list not on screen are refused by their handlers",
+		"renaming a tab places does not hold and grouping into a list no chat owns are refused by places",
 		[renamed.ok ? null : renamed.reason, grouped.ok ? null : grouped.reason],
-		['the host holds no tab "tab-99"', 'no tab list "chat-elsewhere" is on screen'],
+		[
+			'places/rename-tab answered refused: the host holds no tab "tab-99"',
+			'places/create-group answered refused: no tab list "chat-elsewhere" is here',
+		],
 	);
 }
 
 async function restartPageChecks(): Promise<void> {
 	check(
 		"restoring keeps the pages a start before gave its tabs where the host keeps pages across starts",
-		await pagesAfterRestoreOf(new MemoryHostTabsGateway(pagedTabs())),
+		await pagesAfterRestoreOf(true),
 		RESTORED.map((id) => `page-${id}`),
 	);
-	check(
-		"restoring forgets them where the host's pages end with a start",
-		await pagesAfterRestoreOf(new StartEndingHostTabsGateway(pagedTabs())),
-		[null, null, null],
-	);
+	check("restoring forgets them where the host's pages end with a start", await pagesAfterRestoreOf(false), [
+		null,
+		null,
+		null,
+	]);
 }
 
-function pagedTabs(): KeptTabs {
+function pagedTabs(): SeededTabs {
 	return {
 		...restoredTabs(),
 		tabs: restoredTabs().tabs.map((tab) => ({ ...tab, pageId: `page-${tab.id}` })),
 	};
 }
 
-async function pagesAfterRestoreOf(hostTabs: HostTabsGateway): Promise<readonly (string | null)[] | undefined> {
-	const { studioApp } = studioFakesOf({ hostTabs, pages: [BROWSER_FIRST_PAGE] });
+async function pagesAfterRestoreOf(keepsPages: boolean): Promise<readonly (string | null)[]> {
+	const places = new MemoryTabsGateway(placedTabsOf(pagedTabs(), [HOST_CHAT]));
+	const studioWindow = new MemoryStudioWindowGateway({ label: "main", isBeside: false, keepsPages });
+	const { studioApp } = studioFakesOf({ places, studioWindow, pages: [BROWSER_FIRST_PAGE] });
 	await studioApp.send(RestoreTabsCommand);
-	return hostTabs.tabs()?.tabs.map((tab) => tab.pageId);
+	return (await places.placedTabs()).tabs.filter((tab) => tab.app !== "chat").map((tab) => tab.pageId);
 }
 
 async function viewAndColumnChecks(): Promise<void> {

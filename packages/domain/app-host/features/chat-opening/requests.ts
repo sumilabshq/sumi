@@ -9,6 +9,7 @@ import {
 	ForgetChatToOpenCommand,
 	MarkChatSeenCommand,
 } from "@widgetarium/workspaces";
+import { KeepChatTabsCommand } from "@widgetarium/places";
 import { isChatHeld, windowHoldingChat } from "../../shared/lib/chat-holders.js";
 import {
 	ChatOpenedSchema,
@@ -31,7 +32,7 @@ export const OpenNewChatCommand = command("open-new-chat")
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
-		const created = await send(CreateChatCommand, { title });
+		const created = await createChat(send, title);
 		await openChat(send, { chatId: created.id, paneId: null });
 		return created;
 	});
@@ -61,7 +62,7 @@ export const NameChatPaneCommand = command("name-chat-pane")
 			return { id: askedFree };
 		}
 
-		const created = await send(CreateChatCommand, { title: null });
+		const created = await createChat(send, null);
 		await openChat(send, { chatId: created.id, paneId });
 		return created;
 	});
@@ -105,6 +106,12 @@ export const TearOffChatCommand = command("tear-off-chat")
 
 		await send(OpenChatWindowCommand, { chatId });
 	});
+
+async function createChat(send: Send, title: string | null): Promise<{ readonly id: string }> {
+	const created = await send(CreateChatCommand, { title });
+	await send(KeepChatTabsCommand, { chatIds: [created.id] });
+	return created;
+}
 
 async function openChat(send: Send, { chatId, paneId }: ChatToShow): Promise<void> {
 	const board = await send(PaneTreeQuery);

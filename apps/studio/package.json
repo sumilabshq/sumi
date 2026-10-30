@@ -32,6 +32,7 @@
 		"@widgetarium/command-menu": "0.1.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/gpu": "0.1.0",
+		"@widgetarium/places": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/mascot": "0.1.0",
 		"@widgetarium/pack-catalogue": "0.1.0",

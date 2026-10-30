@@ -36,8 +36,12 @@ export function findEssential(kept: KeptEssentials, id: string): Essential | und
 	return kept.essentials.find((essential) => essential.id === id);
 }
 
+export function nextEssentialIdOf(kept: KeptEssentials): string {
+	return `essential-${kept.minted + 1}`;
+}
+
 export function addEssential(kept: KeptEssentials, face: EssentialFace, at: number): AddedEssential {
-	const id = `essential-${kept.minted + 1}`;
+	const id = nextEssentialIdOf(kept);
 	const { essentials } = kept;
 	return {
 		id,

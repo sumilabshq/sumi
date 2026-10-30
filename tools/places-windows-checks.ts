@@ -8,12 +8,16 @@ import {
 	PlacesModule,
 } from "../packages/state/places/index.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const windows = new MemoryWindowsGateway({ windows: [] });
 const core = localTransport();
-server().modules(RunnablePlacesModule.with({ windows })).listen(core).start({ env: {} });
+server()
+	.modules(RunnablePlacesModule.with({ windows, tabs: new MemoryTabsGateway() }))
+	.listen(core)
+	.start({ env: {} });
 const main = app().imports(PlacesModule.over(core)).start();
 const side = app().imports(PlacesModule.over(core)).start();
 const labelsOf = async (): Promise<readonly string[]> => {
