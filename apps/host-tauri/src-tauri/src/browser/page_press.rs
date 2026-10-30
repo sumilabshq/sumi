@@ -56,7 +56,7 @@ pub fn tell_pressed(page_id: &str) {
     }
 }
 
-fn is_page_view(view: &NSView) -> bool {
+pub fn is_page_view(view: &NSView) -> bool {
     PAGE_VIEWS.with(|views| views.borrow().contains_key(&key_of(view)))
 }
 
@@ -122,6 +122,19 @@ pub fn is_page_at(content: &NSView, point: CGPoint) -> bool {
         let from_top = if held.isFlipped() { inside.y } else { held.bounds().size.height - inside.y };
         !HOLES.with(|holes| holes.borrow().get(&key_of(&*held)).is_some_and(|cut| is_in_hole(cut, inside.x, from_top)))
     })
+}
+
+pub fn dump_views(content: &NSView) {
+    let lines: Vec<String> = content
+        .subviews()
+        .iter()
+        .map(|held| {
+            let frame = held.frame();
+            let kind = if is_page_view(&held) { "page" } else if is_web_view(&held) { "studio" } else { "view" };
+            format!("{kind}{}@{:.0},{:.0} {:.0}x{:.0}", if held.isHidden() { "(hidden)" } else { "" }, frame.origin.x, frame.origin.y, frame.size.width, frame.size.height)
+        })
+        .collect();
+    eprintln!("[browser] VIEWDUMP {}", lines.join(" | "));
 }
 
 fn is_inside(point: CGPoint, view: &NSView) -> bool {

@@ -800,7 +800,7 @@ fn apply_shown(app: &AppHandle<Wry>, shown: &Shown, homes: &HashMap<String, Stri
             continue;
         }
 
-        webview.set_position(shown.drawn_placement_of(page_id).position()).map_err(failure_text)?;
+        place_webview(&webview, shown.drawn_placement_of(page_id))?;
         webview.show().map_err(failure_text)?;
         let _ = webview.with_webview(|platform| page_press::keep_under_studio(view_of(&platform)));
     }

@@ -1,28 +1,25 @@
-use super::page_press::is_page_at;
-use objc2::runtime::{AnyClass, AnyObject, ClassBuilder, Sel};
-use objc2::{ffi, msg_send, sel};
+use super::page_press::{is_page_at, is_page_view};
+use objc2::runtime::{AnyClass, Imp, Sel};
+use objc2::{ffi, sel, ClassType};
 use objc2_app_kit::NSView;
 use objc2_core_foundation::CGPoint;
 use objc2_web_kit::WKWebView;
 use std::sync::OnceLock;
 
-const CLASS_NAME: &std::ffi::CStr = c"WidgetariumStudioWebView";
+type HitTest = unsafe extern "C-unwind" fn(&NSView, Sel, CGPoint) -> *mut NSView;
 
-struct StudioClass {
-    own: &'static AnyClass,
-    base: &'static AnyClass,
-}
+struct WebViewHitTest(HitTest);
 
-unsafe impl Send for StudioClass {}
-unsafe impl Sync for StudioClass {}
+unsafe impl Send for WebViewHitTest {}
+unsafe impl Sync for WebViewHitTest {}
 
-static STUDIO_CLASS: OnceLock<StudioClass> = OnceLock::new();
+static WEB_VIEW_HIT_TEST: OnceLock<WebViewHitTest> = OnceLock::new();
 
-unsafe extern "C-unwind" fn hit_test(this: &NSView, _cmd: Sel, point: CGPoint) -> *mut NSView {
-    let Some(class) = STUDIO_CLASS.get() else { return std::ptr::null_mut() };
-    let found: *mut NSView = unsafe { msg_send![super(this, class.base), hitTest: point] };
+unsafe extern "C-unwind" fn hit_test(this: &NSView, cmd: Sel, point: CGPoint) -> *mut NSView {
+    let Some(WebViewHitTest(web_view_hit_test)) = WEB_VIEW_HIT_TEST.get() else { return std::ptr::null_mut() };
+    let found = unsafe { web_view_hit_test(this, cmd, point) };
 
-    if found.is_null() {
+    if found.is_null() || is_page_view(this) {
         return found;
     }
 
@@ -35,30 +32,23 @@ unsafe extern "C-unwind" fn hit_test(this: &NSView, _cmd: Sel, point: CGPoint) -
     found
 }
 
-fn studio_class(base: &'static AnyClass) -> &'static StudioClass {
-    STUDIO_CLASS.get_or_init(|| {
-        let mut builder = ClassBuilder::new(CLASS_NAME, base).expect("the studio web view class is registered once");
-        unsafe {
-            builder.add_method(sel!(hitTest:), hit_test as unsafe extern "C-unwind" fn(_, _, _) -> _);
-        }
-        StudioClass { own: builder.register(), base }
-    })
-}
-
 pub fn let_pages_take_their_pointer(view: &WKWebView) {
-    let current = view.class();
+    let class: &AnyClass = view.class();
 
-    if current.name() == CLASS_NAME {
+    if WEB_VIEW_HIT_TEST.get().is_some() {
         return;
     }
 
-    let class = studio_class(current);
-
-    if !std::ptr::eq(class.base, current) {
-        eprintln!("[browser] studio view class {} → kept (the studio class was made over {})", current.name().to_string_lossy(), class.base.name().to_string_lossy());
+    let selector = sel!(hitTest:);
+    let Some(inherited) = WKWebView::class().instance_method(selector) else {
+        eprintln!("[browser] studio hit test stays WebKit's (WKWebView answers no hitTest:)");
         return;
-    }
-
-    unsafe { ffi::object_setClass(view as *const WKWebView as *mut AnyObject, class.own) };
-    eprintln!("[browser] studio view class {} → {} (pages under it take their own pointer)", current.name().to_string_lossy(), CLASS_NAME.to_string_lossy());
+    };
+    let web_view_hit_test: HitTest = unsafe { std::mem::transmute::<Imp, HitTest>(inherited.implementation()) };
+    let _ = WEB_VIEW_HIT_TEST.set(WebViewHitTest(web_view_hit_test));
+    let ours: Imp = unsafe { std::mem::transmute::<HitTest, Imp>(hit_test) };
+    let types = c"@@:{CGPoint=dd}";
+    let added = unsafe { ffi::class_addMethod(class as *const AnyClass as *mut AnyClass, selector, ours, types.as_ptr()) };
+    let said = if added.as_bool() { "its own hitTest" } else { "a hitTest already, left alone" };
+    eprintln!("[browser] studio hit test on {} → {said} (pages under the studio take their own pointer)", class.name().to_string_lossy());
 }
