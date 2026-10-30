@@ -1,44 +1,79 @@
+import { MAIN_STUDIO_WINDOW } from "@widgetarium/behaviors";
+import { listenToCarry } from "@widgetarium/behaviors";
 import type { BrowserTab } from "../../../shared/schema/browser-tab.schema.js";
-import type { CommittedPage, PageContentRead, PageRegion, PageShot } from "../../../shared/schema/page-read.schema.js";
+import type {
+	CommittedPage,
+	PageContentRead,
+	PageForm,
+	PageShot,
+	ShotAsk,
+} from "../../../shared/schema/page-read.schema.js";
 import { isLaidOnScreen } from "../../../shared/lib/is-laid-on-screen.js";
 import { regionOnScreen } from "../../../shared/lib/region-within.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
 import type { PageLook } from "../../../shared/schema/page-look.schema.js";
+import type { GhostLay, GhostWorn } from "../../../shared/schema/tear-off-ghost.schema.js";
+import { HeldPages } from "./held-pages.js";
+import { NativePages } from "./native-pages.js";
 import { OwnWindows } from "./own-windows.js";
-import { frameIn, stopAttachment } from "./page-attachment.js";
 import type { Attached } from "./page-attachment.js";
-import { PageCover } from "./page-cover.js";
+import { PageInputReplay } from "./page-input-replay.js";
 import { PageLooks } from "./page-looks.js";
-import { PagePlacementWatch } from "./page-placement.js";
-import { isOwnWindowEvent } from "./pages-bridge.js";
-import type { PageEvent, PageFrame, PageLoadEvent, PagePlacement, PagesBridge } from "./pages-bridge.js";
+import { followTheme } from "./page-theme.js";
+import { isOwnWindowEvent, isPageHoveredEvent, isPagePressedEvent, isWindowClosedEvent } from "./pages-bridge.js";
+import type { PageEvent, PageLoadEvent, PagePlacement, PagesBridge } from "./pages-bridge.js";
 import { PanePages } from "./pane-pages.js";
-import { TauriPage } from "./tauri-page.js";
+import { ShownCard } from "./shown-card.js";
+import { StudioWindows } from "./studio-windows.js";
+import { TearOffGhost } from "./tear-off-ghost.js";
 
 export { tauriPagesBridge } from "./pages-bridge.js";
 export type { BrowserPagesIpc } from "./pages-bridge.js";
 
 const FIRST_TAB = "tab-1";
-const NO_TAB = 'the browser holds no tab "{tabId}"';
-const IN_PAGE_CHECK_MS = 1000;
 const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly watchers = new Set<() => void>();
-	private held: readonly TauriPage[] = [];
 	private shown: string | null = FIRST_TAB;
-	private attached: Attached | null = null;
+	private readonly pages: HeldPages;
+	private readonly card: ShownCard;
 	private readonly inPanes: PanePages;
 	private readonly ownWindows: OwnWindows;
-	private nativePagesKey: string | null = null;
+	private readonly studioWindows: StudioWindows;
+	private readonly ghost: TearOffGhost;
+	private readonly replay: PageInputReplay;
 	private readonly looks: PageLooks;
-
+	private readonly native: NativePages;
 	constructor(
 		private readonly bridge: PagesBridge,
-		private readonly profileId: string,
+		profileId: string,
+		ownLabel: string = MAIN_STUDIO_WINDOW,
 	) {
 		super();
+		this.pages = new HeldPages({
+			bridge,
+			profileId,
+			ownLabel,
+			shownId: () => this.shown,
+			changed: () => this.told(),
+		});
+		this.card = new ShownCard({
+			bridge,
+			drawnPage: () => this.drawnPage(),
+			place: (placement) => this.place(placement),
+			sync: () => this.syncNative(),
+			checkInPageNavigation: () => this.checkInPageNavigation(),
+			stopped: () => this.looks.stop(),
+		});
 		this.ownWindows = new OwnWindows(bridge, () => this.told());
+		this.studioWindows = new StudioWindows({
+			bridge,
+			ownLabel,
+			windowOf: (tabId) => this.pages.heldPageOf(tabId)?.now().window ?? null,
+		});
+		this.ghost = new TearOffGhost(bridge);
+		this.replay = new PageInputReplay((page) => this.containerOf(page));
 		this.inPanes = new PanePages({
 			bridge,
 			drawnIn: (attached, tabId) => this.drawnIn(attached, tabId),
@@ -47,8 +82,13 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		});
 		this.looks = new PageLooks({
 			bridge,
-			drawnPage: () => this.drawnPage(),
-			stripWidth: () => this.attached?.placement.current().width ?? 0,
+			drawnPages: () => this.drawnPages(),
+		});
+		this.native = new NativePages({
+			bridge,
+			inPanes: this.inPanes,
+			looks: this.looks,
+			attached: () => this.card.current(),
 		});
 		this.listen();
 		this.create(FIRST_TAB);
@@ -59,10 +99,17 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 			.open((event) => this.apply(event))
 			.then(() => this.bridge.ownWindows())
 			.then((pages) => this.ownWindows.seed(pages))
+			.then(() => this.bridge.standingPages())
+			.then((pages) => this.pages.adoptStanding(pages))
 			.catch((failure: unknown) => {
 				console.error("[widgetarium] the browser could not listen to its pages", failure);
 			});
 		document.addEventListener("visibilitychange", () => this.syncNative());
+		followTheme(this.bridge);
+		listenToCarry(() => {
+			requestAnimationFrame(() => this.syncNative());
+			return false;
+		});
 	}
 
 	isAvailable(): boolean {
@@ -70,7 +117,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	tabs(): readonly BrowserTab[] {
-		return this.held.map((page) => page.now());
+		return this.pages.all().map((page) => page.now());
 	}
 
 	shownId(): string | null {
@@ -87,55 +134,67 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	attach(into: HTMLElement): void {
-		if (this.attached?.container === into) {
-			return;
+		if (this.card.attach(into)) {
+			this.told();
 		}
-
-		this.stopAttached();
-		this.attached = this.attachedTo(into);
-		this.told();
-	}
-
-	private attachedTo(container: HTMLElement): Attached {
-		return {
-			container,
-			placement: new PagePlacementWatch(
-				container,
-				(placement) => this.place(placement),
-				() => this.syncNative(),
-			),
-			cover: new PageCover({ container, bridge: this.bridge, drawnPage: () => this.drawnPage() }),
-			inPageCheck: setInterval(() => this.checkInPageNavigation(), IN_PAGE_CHECK_MS),
-		};
 	}
 
 	detach(from: HTMLElement): void {
-		if (this.attached?.container !== from) {
-			return;
+		if (this.card.detach(from)) {
+			this.told();
 		}
-
-		this.stopAttached();
-		this.told();
 	}
 
 	canOpenOwnWindow(): boolean {
 		return true;
 	}
 
-	isInOwnWindow(tabId: string): boolean {
+	isPoppedOut(tabId: string): boolean {
 		return this.ownWindows.has(tabId);
 	}
 
+	isInOwnWindow(tabId: string): boolean {
+		return this.ownWindows.has(tabId) || this.studioWindows.holding(tabId) !== null;
+	}
+
 	openInOwnWindow(tabId: string): void {
-		this.ownWindows.open(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
+		const page = this.pages.pageOf(tabId);
+		this.ownWindows.open(tabId, page.now().title, page.ensureCreated());
 	}
 
 	focusOwnWindow(tabId: string): void {
-		this.ownWindows.focus(tabId);
+		const holding = this.studioWindows.holding(tabId);
+
+		if (holding === null) {
+			this.ownWindows.focus(tabId);
+			return;
+		}
+
+		this.studioWindows.focusHolding(tabId, holding);
 	}
 
-	tearOff(tabId: string): void {
-		this.ownWindows.tearOff(tabId, this.pageOf(tabId).now().title, this.pageOf(tabId).ensureCreated());
+	focusStudioWindow(window: string): void {
+		this.studioWindows.focus(window);
+	}
+
+	openChatWindow(chatId: string): void {
+		this.studioWindows.openChat(chatId);
+	}
+
+	tearOff(tabId: string, openWith: string): void {
+		this.studioWindows.tearOff(tabId, openWith);
+	}
+
+	layTearOffGhost(lay: GhostLay): Promise<void> {
+		return this.ghost.lay(lay);
+	}
+
+	wearTearOffGhost(worn: GhostWorn): void {
+		this.ghost.wear(worn);
+	}
+
+	showTearOffGhost(shown: boolean): void {
+		this.ghost.show(shown);
 	}
 
 	attachInPane(tabId: string, into: HTMLElement): void {
@@ -151,98 +210,78 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	create(tabId: string): void {
-		if (this.heldPageOf(tabId) !== undefined) {
-			return;
-		}
-
-		const page = new TauriPage({
-			id: tabId,
-			bridge: this.bridge,
-			profileId: this.profileId,
-			changed: () => this.told(),
-		});
-		this.becomeHeld([...this.held, page], `open ${tabId}`);
+		this.pages.create(tabId);
 	}
 
 	close(tabId: string): void {
-		const page = this.heldPageOf(tabId);
+		this.pages.close(tabId, () => {
+			this.looks.forget(tabId);
+			this.ownWindows.forget(tabId);
 
-		if (!page) {
-			return;
-		}
-
-		page.destroy();
-		this.looks.forget(tabId);
-		this.ownWindows.forget(tabId);
-
-		if (this.shown === tabId) {
-			this.shown = null;
-		}
-
-		this.becomeHeld(
-			this.held.filter((held) => held !== page),
-			`close ${tabId}`,
-		);
+			if (this.shown === tabId) {
+				this.shown = null;
+			}
+		});
 	}
 
 	freeze(tabId: string): void {
 		// TODO: WebKit has no public page freeze; a hidden page relies on its occlusion throttling
-		this.pageOf(tabId);
+		this.pages.pageOf(tabId);
 	}
 
 	thaw(tabId: string): void {
-		this.pageOf(tabId);
+		this.pages.pageOf(tabId);
 	}
 
 	open(tabId: string, url: string): void {
-		this.pageOf(tabId).open(url);
+		this.pages.pageOf(tabId).open(url);
 	}
 
 	show(tabId: string): void {
-		this.pageOf(tabId);
+		this.pages.pageOf(tabId);
 		this.shown = tabId;
 		this.told();
 		void this.looks.reread();
 	}
 
 	back(tabId: string): void {
-		this.pageOf(tabId).back();
+		this.pages.pageOf(tabId).back();
 	}
 
 	forward(tabId: string): void {
-		this.pageOf(tabId).forward();
+		this.pages.pageOf(tabId).forward();
 	}
 
 	reload(tabId: string): void {
-		this.pageOf(tabId).reload();
+		this.pages.pageOf(tabId).reload();
 	}
 
 	showRefused(tabId: string, address: string): void {
-		this.pageOf(tabId).showRefused(address);
+		this.pages.pageOf(tabId).showRefused(address);
 	}
 
 	dismissFailure(tabId: string): void {
-		this.pageOf(tabId).dismissFailure();
+		this.pages.pageOf(tabId).dismissFailure();
 	}
 
 	settled(tabId: string): Promise<void> {
-		return this.pageOf(tabId).settled();
+		return this.pages.pageOf(tabId).settled();
 	}
 
 	committed(tabId: string): CommittedPage | null {
-		return this.pageOf(tabId).committed();
+		return this.pages.pageOf(tabId).committed();
 	}
 
 	frameUrls(tabId: string): Promise<readonly string[]> {
-		return this.pageOf(tabId).frameUrls();
+		return this.pages.pageOf(tabId).frameUrls();
 	}
 
 	hasSecretField(tabId: string): Promise<boolean> {
-		return this.pageOf(tabId).hasSecretField();
+		return this.pages.pageOf(tabId).hasSecretField();
 	}
 
-	content(tabId: string): Promise<PageContentRead> {
-		return this.pageOf(tabId).content();
+	content(tabId: string, form: PageForm): Promise<PageContentRead> {
+		return this.pages.pageOf(tabId).content(form);
 	}
 
 	look(tabId: string): PageLook | null {
@@ -253,21 +292,48 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		return this.looks.watch(changed);
 	}
 
-	capture(tabId: string, region: PageRegion | null): Promise<PageShot> {
-		return this.pageOf(tabId).capture(regionOnScreen(region, this.attached?.placement.current()));
+	capture(tabId: string, { area, region }: ShotAsk): Promise<PageShot> {
+		const asked = area === "page" ? region : regionOnScreen(region, this.card.current()?.placement.current());
+		return this.pages.pageOf(tabId).capture({ area, region: asked });
 	}
 
 	private apply(event: PageEvent): void {
+		if (isPagePressedEvent(event)) {
+			this.replay.press(event.page);
+			return;
+		}
+
+		if (isPageHoveredEvent(event)) {
+			this.replay.hover(event.x, event.y);
+			return;
+		}
+
 		if (isOwnWindowEvent(event)) {
 			this.ownWindows.applyEvent(event);
 			return;
 		}
 
-		this.heldPageOf(event.page)?.apply(event);
+		if (isWindowClosedEvent(event)) {
+			this.pages.leaveWindow(event.window);
+			return;
+		}
 
-		if (event.page === this.shown && LOOK_CHANGING_EVENTS.has(event.kind)) {
+		this.pages.adoptIfUnknown(event.page);
+		this.pages.heldPageOf(event.page)?.apply(event);
+
+		if (this.drawnPages().includes(event.page) && LOOK_CHANGING_EVENTS.has(event.kind)) {
 			void this.looks.reread();
 		}
+	}
+
+	private containerOf(page: string): HTMLElement | null {
+		return this.inPanes.containerOf(page) ?? (this.shown === page ? (this.card.current()?.container ?? null) : null);
+	}
+
+	private drawnPages(): readonly string[] {
+		const shown = this.drawnPage();
+		const inPanes = this.inPanes.drawnIds();
+		return shown === null || inPanes.includes(shown) ? inPanes : [shown, ...inPanes];
 	}
 
 	private place(placement: PagePlacement): void {
@@ -280,7 +346,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private placeTab(page: string, placement: PagePlacement): void {
-		if (!this.ownWindows.has(page)) {
+		if (!this.isInOwnWindow(page)) {
 			void this.bridge.place(page, placement).catch((failure: unknown) => {
 				console.error("[widgetarium] the browser page could not follow its card", failure);
 			});
@@ -296,13 +362,13 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 			return null;
 		}
 
-		return this.drawnIn(this.attached, shown);
+		return this.drawnIn(this.card.current(), shown);
 	}
 
 	private drawnIn(attached: Attached | null, tabId: string): string | null {
-		const page = this.heldPageOf(tabId);
+		const page = this.pages.heldPageOf(tabId);
 
-		if (attached === null || this.ownWindows.has(tabId) || !page?.isDrawn() || document.visibilityState !== "visible") {
+		if (attached === null || this.isInOwnWindow(tabId) || !page?.isDrawn() || document.visibilityState !== "visible") {
 			return null;
 		}
 
@@ -310,83 +376,15 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private syncNative(): void {
-		const drawn = this.drawnPage();
-		this.followCovers(drawn);
-		this.followLooks(drawn !== null);
-		const frames = this.framesNow(drawn);
-		const shownKey = frames.map((frame) => frame.page).join(" ");
-
-		if (shownKey === this.nativePagesKey) {
-			return;
-		}
-
-		console.info(
-			`[widgetarium] browser native pages [${this.nativePagesKey ?? "unknown after a start"}] → [${shownKey}]`,
-		);
-		this.nativePagesKey = shownKey;
-		void this.bridge.show(frames).catch((failure: unknown) => {
-			console.error("[widgetarium] the browser could not show its page", failure);
-		});
-	}
-
-	private followCovers(drawn: string | null): void {
-		this.attached?.cover.follow(drawn !== null);
-		this.attached?.cover.recheckSoon();
-		this.inPanes.followCovers();
-	}
-
-	private framesNow(drawn: string | null): readonly PageFrame[] {
-		const main = drawn === null ? [] : frameIn(this.attached, drawn);
-		return [...main, ...this.inPanes.frames()];
-	}
-
-	private followLooks(isDrawn: boolean): void {
-		if (isDrawn) {
-			this.looks.start();
-			return;
-		}
-
-		this.looks.stop();
+		this.native.follow(this.drawnPage());
 	}
 
 	private checkInPageNavigation(): void {
 		const drawn = this.drawnPage();
 
 		if (drawn !== null) {
-			this.heldPageOf(drawn)?.checkInPageNavigation();
+			this.pages.heldPageOf(drawn)?.checkInPageNavigation();
 		}
-	}
-
-	private stopAttached(): void {
-		const attached = this.attached;
-
-		if (attached === null) {
-			return;
-		}
-
-		stopAttachment(attached);
-		this.looks.stop();
-		this.attached = null;
-	}
-
-	private becomeHeld(next: readonly TauriPage[], reason: string): void {
-		console.info(`[widgetarium] browser pages ${this.held.length} → ${next.length}, shown ${this.shown} (${reason})`);
-		this.held = next;
-		this.told();
-	}
-
-	private pageOf(tabId: string): TauriPage {
-		const found = this.heldPageOf(tabId);
-
-		if (!found) {
-			throw new Error(NO_TAB.replace("{tabId}", tabId));
-		}
-
-		return found;
-	}
-
-	private heldPageOf(tabId: string): TauriPage | undefined {
-		return this.held.find((page) => page.now().id === tabId);
 	}
 
 	private told(): void {
