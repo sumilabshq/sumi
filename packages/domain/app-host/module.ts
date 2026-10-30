@@ -7,9 +7,7 @@ import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway
 import {
 	ChatListQuery,
 	PinTabCommand,
-	RereadChatListForChatsSubscriber,
 	RereadChatListForCoreSubscriber,
-	RereadChatListForMarksSubscriber,
 	RereadChatListSubscriber,
 } from "./features/chat-list/requests.js";
 import {
@@ -28,6 +26,7 @@ import {
 import {
 	CreateGroupCommand,
 	FoldGroupCommand,
+	FoldTabCommand,
 	RenameGroupCommand,
 	SetGroupHueCommand,
 	UngroupCommand,
@@ -71,7 +70,6 @@ import {
 	RereadTabsForAccessAsksSubscriber,
 	RereadTabsForChatsSubscriber,
 	RereadSidebarForEssentialsSubscriber,
-	RereadSidebarForMarksSubscriber,
 	KeepChatTabsSubscriber,
 	RereadTabsSubscriber,
 	RereadTabsForCoreSubscriber,
@@ -88,8 +86,6 @@ export const AppHostModule = module("app-host")
 	.imports(BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
 	.subscribers(
 		RereadChatListSubscriber,
-		RereadChatListForChatsSubscriber,
-		RereadChatListForMarksSubscriber,
 		RereadChatListForCoreSubscriber,
 		EnsurePanePagesSubscriber,
 		KeepChatTabsSubscriber,
@@ -102,7 +98,6 @@ export const AppHostModule = module("app-host")
 		RereadTabsForInkSubscriber,
 		RereadTabsForChatsSubscriber,
 		RereadSidebarForEssentialsSubscriber,
-		RereadSidebarForMarksSubscriber,
 		RereadShownViewSubscriber,
 		RereadClosedTabsSubscriber,
 		RereadClosedTabsForCoreSubscriber,
@@ -146,6 +141,7 @@ export const AppHostModule = module("app-host")
 		RenameGroupCommand,
 		SetGroupHueCommand,
 		FoldGroupCommand,
+		FoldTabCommand,
 		UngroupCommand,
 		ShowViewCommand,
 		ShownSplitQuery,

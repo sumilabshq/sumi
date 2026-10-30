@@ -1,13 +1,13 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { GroupItem, SplitMark } from "@widgetarium/app-host";
+import type { SidebarTab, SplitMark } from "@widgetarium/app-host";
 import { TabRow } from "../tab-row/tab-row.js";
 import type { RowBadge } from "../tab-row/row-badge.js";
-import { ChatEntry } from "./chat-entry.js";
+import { HolderEntry } from "./holder-entry.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 
 export interface ListedItemProps {
-	readonly item: GroupItem;
+	readonly item: SidebarTab;
 	readonly groupId: string | null;
 	readonly renaming: RowRenaming;
 }
@@ -15,8 +15,8 @@ export interface ListedItemProps {
 export function ListedItem({ item, groupId, renaming }: ListedItemProps): ReactElement {
 	const badge = badgeOf(item.splitMark ?? null);
 
-	if (item.kind === "chat") {
-		return <ChatEntry chat={item.chat} groupId={groupId} renaming={renaming} badge={badge} />;
+	if (item.children !== undefined) {
+		return <HolderEntry holder={item} children={item.children} groupId={groupId} renaming={renaming} badge={badge} />;
 	}
 
 	return (

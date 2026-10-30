@@ -158,6 +158,8 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 		{ tag: "circle", attrs: { cx: "13.5", cy: "7.5", r: "1.8", fill: "#F7B500" } },
 		{ tag: "path", attrs: { d: "M2 14.5l4.5-5 4 4.2 2-2L18 15v-1 2a1 1 0 0 1-1 1H5a3 3 0 0 1-3-3z", fill: "#E0457B" } },
 	],
+	// TRADE-OFF: a chat's art is the mascot drawn by ChatTabIcon; an empty entry keeps TabArt total over TabArt names
+	chat: [],
 	"built-app": [
 		{
 			tag: "path",

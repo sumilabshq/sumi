@@ -3,13 +3,8 @@ import { PerCall, Repeatable, command, refuse } from "@widgetarium/core/requests
 import type { Send } from "@widgetarium/core/requests";
 import { FocusStudioWindowCommand, OpenChatWindowCommand } from "@widgetarium/browser";
 import { ClosePaneCommand, PaneTreeQuery, ShowChatInPaneCommand } from "@widgetarium/layout";
-import {
-	ChatToOpenQuery,
-	CreateChatCommand,
-	ForgetChatToOpenCommand,
-	MarkChatSeenCommand,
-} from "@widgetarium/workspaces";
-import { KeepChatTabsCommand, ShowTabCommand as PlacesShowTabCommand } from "@widgetarium/places";
+import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
+import { MarkTabSeenCommand, ShowTabCommand as PlacesShowTabCommand } from "@widgetarium/places";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { sendLogged, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -119,10 +114,8 @@ export const TearOffChatCommand = command("tear-off-chat")
 		await send(OpenChatWindowCommand, { chatId });
 	});
 
-async function createChat(send: Send, title: string | null): Promise<{ readonly id: string }> {
-	const created = await send(CreateChatCommand, { title });
-	await send(KeepChatTabsCommand, { chatIds: [created.id] });
-	return created;
+function createChat(send: Send, title: string | null): Promise<{ readonly id: string }> {
+	return send(CreateChatCommand, { title });
 }
 
 async function openChat(send: Send, { chatId, paneId }: ChatToShow): Promise<void> {
@@ -135,6 +128,6 @@ async function openChat(send: Send, { chatId, paneId }: ChatToShow): Promise<voi
 		return;
 	}
 
-	await send(MarkChatSeenCommand, { id: chatId });
+	await send(MarkTabSeenCommand, { id: chatId });
 	await send(ShowChatInPaneCommand, { chatId, paneId });
 }

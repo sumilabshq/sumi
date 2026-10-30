@@ -9,6 +9,10 @@ export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "chat"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
+export const TabMarkSchema = z.enum(["none", "running", "unread"]);
+
+export type TabMark = z.infer<typeof TabMarkSchema>;
+
 export const SectionListSchema = z.enum(["workspace", "pinned"]);
 
 export type SectionList = z.infer<typeof SectionListSchema>;
@@ -41,7 +45,18 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	lastTitle: z.string().nullable().default(null),
 	lastFavicon: z.string().nullable().default(null),
+	title: z.string().nullable().default(null),
+	mark: TabMarkSchema.default("none"),
+	isFolded: z.boolean().default(false),
 });
+
+export const HeldListSchema = z.object({
+	tabs: z.array(KeptTabSchema),
+	entries: z.array(ListEntrySchema),
+	groups: z.array(KeptGroupSchema),
+});
+
+export type HeldList = z.infer<typeof HeldListSchema>;
 
 export const ClosedTabSchema = z.object({
 	tab: KeptTabSchema,
@@ -49,6 +64,7 @@ export const ClosedTabSchema = z.object({
 	groupId: z.string().nullable().default(null),
 	at: z.number(),
 	address: z.string(),
+	held: HeldListSchema.nullable().default(null),
 });
 
 export const WindowViewSchema = z.object({
@@ -86,7 +102,8 @@ export type WindowTabs = z.infer<typeof WindowTabsSchema>;
 
 export const ChatTabRowSchema = z.object({
 	id: z.string(),
-	label: z.string().nullable(),
+	title: z.string(),
+	mark: TabMarkSchema,
 });
 
 export const ChatTabsSchema = z.object({

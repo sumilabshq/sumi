@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TabsAskSchema } from "./screen.schema.js";
-import { GroupHueSchema, PageAppSchema, SectionListSchema } from "./tabs.schema.js";
+import { AppKindSchema, GroupHueSchema, PageAppSchema, SectionListSchema, TabMarkSchema } from "./tabs.schema.js";
 import { SplitMapSchema, SplitMarkSchema } from "./splits.schema.js";
 
 export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
@@ -24,13 +24,14 @@ export const TabArtSchema = z.enum([
 	"image",
 	"built-app",
 	"site",
+	"chat",
 ]);
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 
 export const AppTabSchema = z.object({
 	id: z.string(),
-	app: PageAppSchema,
+	app: AppKindSchema,
 	title: z.string(),
 	subtitle: z.string().nullable(),
 	icon: TabArtSchema,
@@ -39,6 +40,7 @@ export const AppTabSchema = z.object({
 	label: z.string().nullable(),
 	address: z.string().nullable(),
 	isInOwnWindow: z.boolean(),
+	mark: TabMarkSchema,
 });
 
 export type AppTab = z.infer<typeof AppTabSchema>;
@@ -54,7 +56,7 @@ export const AppTabsSchema = z.object({
 
 export const EssentialSchema = z.object({
 	id: z.string(),
-	app: PageAppSchema,
+	app: AppKindSchema,
 	address: z.string().nullable(),
 	title: z.string(),
 	favicon: z.string().nullable(),
@@ -63,7 +65,7 @@ export const EssentialSchema = z.object({
 export type Essential = z.infer<typeof EssentialSchema>;
 
 export const EssentialFaceSchema = z.object({
-	app: PageAppSchema,
+	app: AppKindSchema,
 	address: z.string().nullable(),
 	title: z.string(),
 	favicon: z.string().nullable(),
@@ -92,43 +94,29 @@ export const GroupStateSchema = z.object({
 
 export type GroupState = z.infer<typeof GroupStateSchema>;
 
-export const SidebarTabSchema = z.object({
+export const ChildTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
-	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
-export type SidebarTab = z.infer<typeof SidebarTabSchema>;
-
-export const ChatGroupSchema = z.object({
+export const ChildGroupSchema = z.object({
 	kind: z.literal("group"),
 	group: GroupStateSchema,
 });
 
-export const ChatChildSchema = z.discriminatedUnion("kind", [SidebarTabSchema, ChatGroupSchema]);
+export const TabChildSchema = z.discriminatedUnion("kind", [ChildTabSchema, ChildGroupSchema]);
 
-export type ChatChild = z.infer<typeof ChatChildSchema>;
+export type TabChild = z.infer<typeof TabChildSchema>;
 
-export const PlacedChatSchema = z.object({
-	id: z.string(),
-	label: z.string().nullable(),
-	isShown: z.boolean(),
-	children: z.array(ChatChildSchema).readonly(),
-});
-
-export type PlacedChat = z.infer<typeof PlacedChatSchema>;
-
-export const SidebarChatSchema = z.object({
-	kind: z.literal("chat"),
-	chat: PlacedChatSchema,
+export const SidebarTabSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	children: z.array(TabChildSchema).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
-export type SidebarChat = z.infer<typeof SidebarChatSchema>;
-
-export const GroupItemSchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema]);
-
-export type GroupItem = z.infer<typeof GroupItemSchema>;
+export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
 export const SidebarGroupSchema = z.object({
 	kind: z.literal("group"),
@@ -137,14 +125,14 @@ export const SidebarGroupSchema = z.object({
 		name: z.string(),
 		hue: GroupHueSchema.nullable(),
 		isOpen: z.boolean(),
-		items: z.array(GroupItemSchema).readonly(),
+		items: z.array(SidebarTabSchema).readonly(),
 	}),
 });
 
 export type SidebarGroup = z.infer<typeof SidebarGroupSchema>;
 
 export const SplitMemberSchema = z.object({
-	item: GroupItemSchema,
+	item: SidebarTabSchema,
 	isPinned: z.boolean(),
 	isFocused: z.boolean(),
 });
@@ -165,7 +153,6 @@ export type SidebarSplit = z.infer<typeof SidebarSplitSchema>;
 
 export const SidebarEntrySchema = z.discriminatedUnion("kind", [
 	SidebarTabSchema,
-	SidebarChatSchema,
 	SidebarGroupSchema,
 	SidebarSplitSchema,
 ]);
@@ -212,7 +199,7 @@ export const HeldTabsSchema = z.object({
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
-	app: PageAppSchema,
+	app: AppKindSchema,
 	address: z.string(),
 });
 

@@ -3,14 +3,14 @@ import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
 import { PINNED_LIST, SECTION_TITLES, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
 import { TabRows, shownIdsOf } from "./tab-rows.js";
 import { SplitRows } from "./split-rows.js";
+import { holderIdsOf } from "../tabs/app-abilities.js";
 import type {
-	ChatChild,
 	Essential,
-	GroupItem,
 	PlacedSidebar,
 	SidebarEntry,
 	SidebarSection,
 	SidebarTab,
+	TabChild,
 } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
 import type { ListEntry, PageApp, SectionList } from "../../schema/tabs.schema.js";
@@ -29,11 +29,12 @@ export interface SidebarRowsAsk {
 const SECTION_ORDER: readonly SectionList[] = [PINNED_LIST, WORKSPACE_LIST];
 
 export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
+	const shownPageIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null, ask.inPanes);
 	const rows = new TabRows(ask.moment, ask.pages, {
-		shownIds: shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null, ask.inPanes),
+		shownIds: new Set([...shownPageIds, ...ask.boardChatIds]),
 		elsewhereIds: new Set(ask.elsewhere),
 	});
-	const entries = new SidebarEntries(ask.moment, rows, new Set(ask.boardChatIds));
+	const entries = new SidebarEntries(ask.moment, rows);
 	return {
 		essentials: ask.essentials.map((essential) => rows.tileOf(essential)),
 		sections: SECTION_ORDER.map((list) => entries.sectionOf(list)),
@@ -42,16 +43,17 @@ export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
 }
 
 class SidebarEntries {
-	private readonly chatIds: ReadonlySet<string>;
+	private readonly holderIds: ReadonlySet<string>;
+	private readonly foldedIds: ReadonlySet<string>;
 	private readonly splitRows: SplitRows;
 
 	constructor(
 		private readonly moment: HostTabsMoment,
 		private readonly rows: TabRows,
-		private readonly boardChatIds: ReadonlySet<string>,
 	) {
-		this.chatIds = new Set(moment.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id));
-		this.splitRows = new SplitRows(moment, (id) => this.itemsOf(id));
+		this.holderIds = holderIdsOf(moment.tabs);
+		this.foldedIds = new Set(moment.tabs.filter((tab) => tab.isFolded).map((tab) => tab.id));
+		this.splitRows = new SplitRows(moment, (id) => this.tabsOf(id));
 	}
 
 	sectionOf(list: SectionList): SidebarSection {
@@ -67,28 +69,35 @@ class SidebarEntries {
 			return this.groupsOf(entry.id).map((group) => this.topGroupOf(group));
 		}
 
-		return this.splitRows.entriesOf(entry.id, list) ?? this.itemsOf(entry.id);
+		return this.splitRows.entriesOf(entry.id, list) ?? this.tabsOf(entry.id);
 	}
 
-	private itemsOf(id: string): readonly GroupItem[] {
-		return this.chatIds.has(id) ? [this.chatOf(id)] : this.tabsOf(id);
+	private tabsOf(id: string): readonly SidebarTab[] {
+		return this.rows.rowsOf(id).map((tab) => this.sidebarTabOf(tab));
 	}
 
-	private chatOf(id: string): GroupItem {
+	private sidebarTabOf(tab: SidebarTab["tab"]): SidebarTab {
+		if (!this.holderIds.has(tab.id)) {
+			return {
+				kind: "tab",
+				tab,
+			};
+		}
+
 		return {
-			kind: "chat",
-			chat: {
-				id,
-				label: this.moment.tabs.find((tab) => tab.id === id)?.label ?? null,
-				isShown: this.boardChatIds.has(id),
-				children: this.listOf(id).flatMap((child) => this.childrenOf(child)),
-			},
+			kind: "tab",
+			tab,
+			children: this.listOf(tab.id).flatMap((child) => this.childrenOf(child)),
+			isFolded: this.foldedIds.has(tab.id),
 		};
 	}
 
-	private childrenOf(entry: ListEntry): readonly ChatChild[] {
+	private childrenOf(entry: ListEntry): readonly TabChild[] {
 		if (entry.kind === "tab") {
-			return this.tabsOf(entry.id);
+			return this.rows.rowsOf(entry.id).map((tab) => ({
+				kind: "tab",
+				tab,
+			}));
 		}
 
 		return this.groupsOf(entry.id).map((group) => ({
@@ -105,16 +114,9 @@ class SidebarEntries {
 			kind: "group",
 			group: {
 				...groupWithoutTabsOf(group),
-				items: group.tabIds.flatMap((id) => this.itemsOf(id)),
+				items: group.tabIds.flatMap((id) => this.tabsOf(id)),
 			},
 		};
-	}
-
-	private tabsOf(id: string): readonly SidebarTab[] {
-		return this.rows.rowsOf(id).map((tab) => ({
-			kind: "tab",
-			tab,
-		}));
 	}
 
 	private groupsOf(id: string): readonly TabGroup[] {

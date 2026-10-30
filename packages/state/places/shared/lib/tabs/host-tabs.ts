@@ -11,16 +11,10 @@ import {
 	withTabAt,
 	withoutTab,
 } from "./tab-lists.js";
-import type { TabGroup, TabLayout, TabPlace } from "./tab-lists.js";
-import {
-	closedPlaceOf,
-	keptClosed,
-	labelSaid,
-	lastShownWith,
-	reopenPlaceOf,
-	withoutGroup,
-} from "./host-tabs-moment.js";
-import type { ClosedTab, HostTab, HostTabsMoment, OpenedTab, TabPage } from "./host-tabs-moment.js";
+import type { TabPlace } from "./tab-lists.js";
+import { labelSaid, lastShownWith } from "./host-tabs-moment.js";
+import type { HostTab, HostTabsMoment, OpenedTab } from "./host-tabs-moment.js";
+import { abilitiesOf, holdsTabs } from "./app-abilities.js";
 
 export type { TabGroup, TabPlace } from "./tab-lists.js";
 
@@ -36,15 +30,6 @@ export interface MovedTabs {
 
 export interface OpenedHostTab extends MovedTabs {
 	readonly tab: HostTab;
-}
-
-export interface ReopenedHostTab extends MovedTabs {
-	readonly closed: ClosedTab;
-}
-
-export interface TabsClosing {
-	readonly ids: readonly string[];
-	readonly reason: string;
 }
 
 export interface PageGiving {
@@ -104,15 +89,15 @@ export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place:
 }
 
 export function isPageTab(tab: HostTab): tab is PageTab {
-	return tab.app !== "chat";
+	return abilitiesOf(tab.app).runsInPage;
 }
 
-export function isChatTabId(moment: HostTabsMoment, id: string): boolean {
-	return moment.tabs.some((tab) => tab.id === id && tab.app === "chat");
+export function isHolderTabId(moment: HostTabsMoment, id: string): boolean {
+	return moment.tabs.some((tab) => tab.id === id && holdsTabs(tab));
 }
 
 export function isKnownList(moment: HostTabsMoment, listId: string): boolean {
-	return isSectionList(listId) || isChatTabId(moment, listId);
+	return isSectionList(listId) || isHolderTabId(moment, listId);
 }
 
 export function pageTabIdsOf(moment: HostTabsMoment, listId: string): readonly string[] {
@@ -184,49 +169,6 @@ export function markChatTabShown(moment: HostTabsMoment, id: string, chatId: str
 	};
 }
 
-export function closeTabs(
-	moment: HostTabsMoment,
-	pages: ReadonlyMap<string, TabPage>,
-	{ ids, reason }: TabsClosing,
-): MovedTabs {
-	return {
-		moment: closedMoment(moment, ids, pages),
-		reason,
-	};
-}
-
-export function closeGroup(moment: HostTabsMoment, group: TabGroup, pages: ReadonlyMap<string, TabPage>): MovedTabs {
-	const closed = closedMoment(moment, group.tabIds, pages);
-	return {
-		moment: {
-			...closed,
-			...withoutGroup(closed, group.id, []),
-		},
-		reason: `close group ${group.id} with ${group.tabIds.length} tabs`,
-	};
-}
-
-export function reopenClosed(moment: HostTabsMoment, chatId: string, tabId: string): ReopenedHostTab | null {
-	const index = moment.closed.findIndex(({ tab }) => tab.id === tabId);
-	const reopened = moment.closed[index];
-
-	if (!reopened) {
-		return null;
-	}
-
-	return {
-		closed: reopened,
-		moment: {
-			...moment,
-			...reopenedLayoutOf(moment, reopened, chatId),
-			tabs: [...moment.tabs, reopened.tab],
-			shownId: reopened.tab.id,
-			closed: moment.closed.filter((_closed, at) => at !== index),
-		},
-		reason: `reopen ${reopened.tab.id} in ${reopened.tab.essentialId === null ? chatId : "essentials"}`,
-	};
-}
-
 export function renameTab(moment: HostTabsMoment, id: string, typed: string): MovedTabs | null {
 	const renamed = tabOf(moment, id);
 	const label = typed.trim() || null;
@@ -238,7 +180,7 @@ export function renameTab(moment: HostTabsMoment, id: string, typed: string): Mo
 	return {
 		moment: {
 			...moment,
-			tabs: withTab(moment, id, { label }),
+			tabs: tabsWith(moment, id, { label }),
 		},
 		reason: `rename ${id}, ${labelSaid(renamed.label)} → ${labelSaid(label)}`,
 	};
@@ -256,7 +198,7 @@ export function placeTab(moment: HostTabsMoment, id: string, place: TabPlace): M
 		moment: {
 			...moment,
 			...withTabAt(withoutTab(moment, id), id, place),
-			tabs: withTab(moment, id, { essentialId: null }),
+			tabs: tabsWith(moment, id, { essentialId: null }),
 		},
 		reason: `place ${id} in ${place.chatId}/${place.groupId ?? "list"} before ${place.before ?? "the end"}${wasEssential}`,
 	};
@@ -281,9 +223,19 @@ export function givePage(moment: HostTabsMoment, { id, pageId, why }: PageGiving
 	return {
 		moment: {
 			...moment,
-			tabs: withTab(moment, id, { pageId }),
+			tabs: tabsWith(moment, id, { pageId }),
 		},
 		reason: `${id} page none → ${pageId}, ${why}`,
+	};
+}
+
+export function foldTab(moment: HostTabsMoment, tab: HostTab): MovedTabs {
+	return {
+		moment: {
+			...moment,
+			tabs: tabsWith(moment, tab.id, { isFolded: !tab.isFolded }),
+		},
+		reason: `${tab.id} children ${foldSaid(tab.isFolded)} → ${foldSaid(!tab.isFolded)}`,
 	};
 }
 
@@ -293,7 +245,7 @@ export function makeEssential(moment: HostTabsMoment, id: string, essentialId: s
 		moment: {
 			...moment,
 			...withoutTab(moment, id),
-			tabs: withTab(moment, id, { essentialId }),
+			tabs: tabsWith(moment, id, { essentialId }),
 		},
 		reason: `${id} becomes essential ${essentialId}`,
 	};
@@ -302,6 +254,21 @@ export function makeEssential(moment: HostTabsMoment, id: string, essentialId: s
 export function momentSaid(moment: HostTabsMoment): string {
 	const split = moment.shownSplitId === null ? "" : ` in ${moment.shownSplitId}`;
 	return `${moment.tabs.length} tabs, ${moment.groups.length} groups, ${moment.splits.length} splits, shown ${moment.shownId}${split}`;
+}
+
+export function tabsWith(moment: HostTabsMoment, id: string, change: Partial<HostTab>): readonly HostTab[] {
+	return moment.tabs.map((tab) =>
+		tab.id === id
+			? {
+					...tab,
+					...change,
+				}
+			: tab,
+	);
+}
+
+function foldSaid(isFolded: boolean): string {
+	return isFolded ? "folded" : "shown";
 }
 
 function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string | null): HostTab {
@@ -313,80 +280,10 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string 
 		lastAddress: null,
 		lastTitle: null,
 		lastFavicon: null,
+		title: null,
+		mark: "none",
+		isFolded: false,
 	};
-}
-
-function withTab(moment: HostTabsMoment, id: string, change: Partial<HostTab>): readonly HostTab[] {
-	return moment.tabs.map((tab) =>
-		tab.id === id
-			? {
-					...tab,
-					...change,
-				}
-			: tab,
-	);
-}
-
-function reopenedLayoutOf(moment: HostTabsMoment, last: ClosedTab, chatId: string): TabLayout {
-	if (last.tab.essentialId !== null) {
-		return moment;
-	}
-
-	return withTabAt(moment, last.tab.id, reopenPlaceOf(moment, last, chatId));
-}
-
-function closedOf(moment: HostTabsMoment, tab: HostTab, page: TabPage | null): ClosedTab {
-	return {
-		tab: {
-			...tab,
-			pageId: page?.pageId ?? tab.pageId,
-		},
-		...closedPlaceOf(locationOf(moment, tab.id)),
-		address: page?.address ?? "",
-	};
-}
-
-function closedMoment(
-	moment: HostTabsMoment,
-	ids: readonly string[],
-	pages: ReadonlyMap<string, TabPage>,
-): HostTabsMoment {
-	const closing = ids.map((id) => tabOf(moment, id));
-	const closingIds = new Set(ids);
-	const layout = closing.reduce<TabLayout>((kept, tab) => withoutTab(kept, tab.id), moment);
-	return {
-		...moment,
-		...layout,
-		tabs: moment.tabs.filter((tab) => !closingIds.has(tab.id)),
-		shownId: shownAfterClosing(moment, closingIds),
-		closed: keptClosed(
-			moment.closed,
-			closing.map((tab) => closedOf(moment, tab, pages.get(tab.id) ?? null)),
-		),
-	};
-}
-
-function shownAfterClosing(moment: HostTabsMoment, closingIds: ReadonlySet<string>): string | null {
-	const { shownId } = moment;
-
-	if (shownId === null || !closingIds.has(shownId)) {
-		return shownId;
-	}
-
-	return neighbourOf(moment, shownId, closingIds);
-}
-
-function neighbourOf(moment: HostTabsMoment, id: string, leaving: ReadonlySet<string>): string | null {
-	const chatId = locationOf(moment, id)?.chatId;
-
-	if (chatId === undefined) {
-		return null;
-	}
-
-	const ids = pageTabIdsOf(moment, chatId);
-	const at = ids.indexOf(id);
-	const isStaying = (one: string): boolean => !leaving.has(one);
-	return ids.slice(at + 1).find(isStaying) ?? ids.slice(0, at).reverse().find(isStaying) ?? null;
 }
 
 export { chatOfGroup, findGroup, flatTabIdsOf };

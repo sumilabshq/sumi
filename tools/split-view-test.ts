@@ -68,7 +68,7 @@ const BLOCK = `(() => {
 	const block = document.querySelector("[data-tabs-split]");
 	if (block === null) return null;
 	const box = block.getBoundingClientRect();
-	const shownFold = (selector) => block.querySelector(selector)?.closest("[data-split-fold]")?.hasAttribute("data-open") ?? false;
+	const shownFold = (selector) => block.querySelector(selector)?.closest("[data-fold-box]")?.hasAttribute("data-open") ?? false;
 	const head = block.querySelector("[data-split-head] [data-split-map]");
 	return {
 		isOpen: block.hasAttribute("data-open"),

@@ -10,7 +10,6 @@ import {
 	OpenWorkspaceCommand,
 	RecordChatTurnCommand,
 	RenameWorkspaceCommand,
-	MarkChatSeenCommand,
 	SetWorkspaceIconCommand,
 	WorkspacesQuery,
 } from "../packages/domain/workspaces/generated/contract.ts";
@@ -22,6 +21,13 @@ import type { KeptChat } from "../packages/domain/workspaces/shared/schema/chat.
 import type { WorkspaceFolder } from "../packages/domain/workspaces/shared/schema/workspace.schema.ts";
 import { check, tally } from "./check-helpers.ts";
 import { quietly } from "./host-tauri-fake-store.ts";
+import { placedTabsOf, placesOver } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MarkTabSeenCommand } from "../packages/state/places/generated/contract.ts";
+
+const SEEDED_CHATS = ["old", "pinned", "new"];
+
+const NO_SESSION_TABS = { tabs: [], shownId: null, minted: 0, closed: [] };
 
 const LONG_ASK = `${"a".repeat(90)}\nsecond line`;
 
@@ -69,12 +75,19 @@ function seededParts(): WorkspacesParts {
 			chats: [chatOf("old", 1), chatOf("pinned", 2), chatOf("new", 3)],
 			openOnStartId: "gone",
 		},
-		marks: {},
 	});
 }
 
-function started(parts: WorkspacesParts): StartedApp {
-	return app().modules(WorkspacesModule.with(parts)).start();
+function started(
+	parts: WorkspacesParts,
+	tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS)),
+): StartedApp {
+	return app().modules(WorkspacesModule.with(parts)).imports(placesOver(tabs)).start();
+}
+
+async function marksIn(tabs: MemoryTabsGateway): Promise<Readonly<Record<string, string>>> {
+	const placed = await tabs.placedTabs();
+	return Object.fromEntries(placed.tabs.filter((tab) => tab.mark !== "none").map((tab) => [tab.id, tab.mark]));
 }
 
 function outputOf(answer: { readonly ok: boolean; readonly reason?: string; readonly output?: unknown }): unknown {
@@ -135,19 +148,20 @@ async function lostFolderChecks(): Promise<void> {
 
 async function chatChecks(): Promise<void> {
 	const parts = seededParts();
-	const chats = started(parts);
+	const tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS));
+	const chats = started(parts, tabs);
 	const toOpen = async (): Promise<unknown> => outputOf(await chats.send(ChatToOpenQuery));
 	check("a chat asked to open on start that the chats lost opens nothing", await toOpen(), { isRead: true, id: null });
 	const records = ChatRecordsQuery.outputSchema.parse(outputOf(await chats.send(ChatRecordsQuery)));
 	check(
-		"the records hold every chat with its title and mark, and no pin: places keeps where a chat stands",
-		[records.isRead, records.chats.map((row) => [row.id, row.title, row.mark]).sort()],
+		"the records hold every chat with its title and no pin or mark: places keeps where a chat stands and how",
+		[records.isRead, records.chats.map((row) => [row.id, row.title]).sort()],
 		[
 			true,
 			[
-				["new", "New chat", "none"],
-				["old", "New chat", "none"],
-				["pinned", "New chat", "none"],
+				["new", "New chat"],
+				["old", "New chat"],
+				["pinned", "New chat"],
 			],
 		],
 	);
@@ -155,22 +169,27 @@ async function chatChecks(): Promise<void> {
 	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, isSeen: false, firstAsked: LONG_ASK });
 	const titled = parts.chats.chats().chats.find((chat) => chat.id === "old");
 	check(
-		"a first ask names the chat by its first line, cut to 80 characters, and marks it running",
-		[titled?.title?.length, titled?.title?.endsWith("…"), parts.chatMarks.chatMarks()["old"]],
-		[80, true, "running"],
+		"a first ask names the chat by its first line, cut to 80 characters, and places marks its tab running under that title",
+		[
+			titled?.title?.length,
+			titled?.title?.endsWith("…"),
+			(await marksIn(tabs))["old"],
+			(await tabs.placedTabs()).tabs.find((tab) => tab.id === "old")?.title === titled?.title,
+		],
+		[80, true, "running", true],
 	);
 	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, isSeen: false, firstAsked: LONG_ASK });
-	check("a chat finishing while not shown is unread", parts.chatMarks.chatMarks()["old"], "unread");
+	check("a chat finishing while not shown is unread", (await marksIn(tabs))["old"], "unread");
 	const openBefore = parts.chats.chats().openOnStartId;
-	await chats.send(MarkChatSeenCommand, { id: "old" });
+	await chats.send(MarkTabSeenCommand, { id: "old" });
 	check(
 		"marking it seen clears unread and moves no chat anywhere",
-		[parts.chatMarks.chatMarks(), parts.chats.chats().openOnStartId],
+		[await marksIn(tabs), parts.chats.chats().openOnStartId],
 		[{}, openBefore],
 	);
 	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: true, isSeen: true, firstAsked: null });
 	await chats.send(RecordChatTurnCommand, { chatId: "old", isBusy: false, isSeen: true, firstAsked: null });
-	check("a chat finishing while on screen is not unread", parts.chatMarks.chatMarks(), {});
+	check("a chat finishing while on screen is not unread", await marksIn(tabs), {});
 
 	const made = await chats.send(CreateChatCommand, { title: "  Plan it  " });
 	const created = parts.chats.chats();
@@ -183,6 +202,12 @@ async function chatChecks(): Promise<void> {
 			created.openOnStartId,
 		],
 		[4, true, "Plan it", openBefore],
+	);
+	const madeId = made.ok ? made.output.id : "";
+	check(
+		"and places keeps a tab for it under that title",
+		(await tabs.placedTabs()).tabs.find((tab) => tab.id === madeId)?.title,
+		"Plan it",
 	);
 
 	parts.chats.saveChats({ ...parts.chats.chats(), openOnStartId: "old" }, "asked from another workspace");

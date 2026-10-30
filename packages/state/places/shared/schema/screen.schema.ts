@@ -51,6 +51,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("focus-window"), window: z.string() }),
 	z.object({ kind: z.literal("tear-off-page"), pageId: z.string(), tabId: z.string() }),
 	z.object({ kind: z.literal("close-panes"), tabIds: z.array(z.string()) }),
+	z.object({ kind: z.literal("close-chat-panes"), chatIds: z.array(z.string()) }),
 	z.object({ kind: z.literal("open-shown-tab-pane") }),
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),

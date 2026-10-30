@@ -1,9 +1,11 @@
 import type { ListEntry } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "./host-tabs-moment.js";
+import { holderIdsOf } from "./app-abilities.js";
 import { findGroup, isSectionList } from "./tab-lists.js";
 
-const LIST_OF_NO_CHAT = 'the list "{list}" belongs to no chat: only a chat holds tabs of its own';
-const CHAT_IN_CHAT = 'the chat "{id}" stands inside the chat "{list}": a chat holds no chat';
+const LIST_OF_NO_HOLDER = 'the list "{list}" belongs to no tab that holds tabs: only such an app owns a list';
+const HOLDER_IN_HOLDER =
+	'the tab "{id}" holds tabs and stands inside "{list}": a tab that holds tabs stands in no other';
 const NOT_ONE_PLACE = 'the tab "{id}" stands in {count} places: a tab stands in exactly one list';
 const UNKNOWN_ENTRY = 'the list "{list}" names "{id}", which is no tab or group here';
 const GROUP_NOT_ONE_LIST = 'the group "{id}" stands in {count} lists: a group stands in exactly one';
@@ -17,23 +19,19 @@ type TabLaws = Pick<HostTabsMoment, "tabs" | "lists" | "groups">;
 
 export function tabBreaksOf(moment: TabLaws): readonly string[] {
 	return [
-		...listsOfNoChat(moment),
+		...listsOfNoHolder(moment),
 		...unknownEntries(moment),
 		...groupsNotInOneList(moment),
-		...chatsInChats(moment),
+		...holdersInHolders(moment),
 		...tabsNotInOnePlace(moment),
 	];
 }
 
-function chatIdsOf(moment: TabLaws): ReadonlySet<string> {
-	return new Set(moment.tabs.filter((tab) => tab.app === "chat").map((tab) => tab.id));
-}
-
-function listsOfNoChat(moment: TabLaws): readonly string[] {
-	const chatIds = chatIdsOf(moment);
+function listsOfNoHolder(moment: TabLaws): readonly string[] {
+	const holderIds = holderIdsOf(moment.tabs);
 	return Object.keys(moment.lists)
-		.filter((list) => !isSectionList(list) && !chatIds.has(list))
-		.map((list) => LIST_OF_NO_CHAT.replace("{list}", list));
+		.filter((list) => !isSectionList(list) && !holderIds.has(list))
+		.map((list) => LIST_OF_NO_HOLDER.replace("{list}", list));
 }
 
 function unknownEntries(moment: TabLaws): readonly string[] {
@@ -56,11 +54,11 @@ function groupsNotInOneList(moment: TabLaws): readonly string[] {
 		.map((group) => GROUP_NOT_ONE_LIST.replace("{id}", group.id).replace("{count}", String(countOf(group.id))));
 }
 
-function chatsInChats(moment: TabLaws): readonly string[] {
-	const chatIds = chatIdsOf(moment);
+function holdersInHolders(moment: TabLaws): readonly string[] {
+	const holderIds = holderIdsOf(moment.tabs);
 	return standingsOf(moment)
-		.filter(({ list, tabId }) => !isSectionList(list) && chatIds.has(tabId))
-		.map(({ list, tabId }) => CHAT_IN_CHAT.replace("{id}", tabId).replace("{list}", list));
+		.filter(({ list, tabId }) => !isSectionList(list) && holderIds.has(tabId))
+		.map(({ list, tabId }) => HOLDER_IN_HOLDER.replace("{id}", tabId).replace("{list}", list));
 }
 
 function tabsNotInOnePlace(moment: TabLaws): readonly string[] {

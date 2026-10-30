@@ -5,9 +5,9 @@ import { answered, moving, settledOf, settling, settlingWith } from "../../share
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import {
 	CreateGroupAskSchema,
+	FoldTabAskSchema,
 	GroupAskSchema,
 	GroupHueAskSchema,
-	KeepChatTabsAskSchema,
 	MakeEssentialAskSchema,
 	PinTabAskSchema,
 	PlaceTabAskSchema,
@@ -16,7 +16,7 @@ import {
 } from "../../shared/schema/tab-asks.schema.js";
 import { EssentialFaceSchema } from "../../shared/schema/tab-rows.schema.js";
 import { createGroupPlan, foldGroupPlan, groupHuePlan, renameGroupPlan, ungroupPlan } from "./lib/group-plans.js";
-import { keepChatTabsPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
+import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
 export const PlaceTabCommand = command("place-tab")
 	.input(PlaceTabAskSchema)
@@ -53,12 +53,12 @@ export const PinTabCommand = command("pin-tab")
 		answered(await tabs.movePlacedTabs(moving(window, pinPlan(id, isPinned))));
 	});
 
-export const KeepChatTabsCommand = command("keep-chat-tabs")
-	.input(KeepChatTabsAskSchema)
+export const FoldTabCommand = command("fold-tab")
+	.input(FoldTabAskSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ tabs: TabsGateway })
-	.handle(async ({ chatIds }, { tabs }) => {
-		answered(await tabs.movePlacedTabs(moving(null, keepChatTabsPlan(chatIds))));
+	.handle(async ({ window, id }, { tabs }) => {
+		answered(await tabs.movePlacedTabs(moving(window, foldTabPlan(id))));
 	});
 
 export const CreateGroupCommand = command("create-group")

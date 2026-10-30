@@ -194,8 +194,18 @@ async function oneWriterChecks(): Promise<void> {
 async function lawChecks(): Promise<void> {
 	const tabs = new MemoryTabsGateway();
 	const [main] = windowsOver(tabs);
-	await main.send(KeepChatTabsCommand, { chatIds: ["chat-a", "chat-b"] });
-	await main.send(KeepChatTabsCommand, { chatIds: ["chat-a", "chat-b"] });
+	await main.send(KeepChatTabsCommand, {
+		chats: [
+			{ id: "chat-a", title: null },
+			{ id: "chat-b", title: null },
+		],
+	});
+	await main.send(KeepChatTabsCommand, {
+		chats: [
+			{ id: "chat-a", title: null },
+			{ id: "chat-b", title: null },
+		],
+	});
 	const tab = await main.send(OpenTabCommand, { at: askAt("main"), app: "canvas", list: "chat-a" });
 	const tabId = tab.ok ? tab.output.id : "";
 	const chatInChat = await main.send(PlaceTabCommand, {
@@ -217,7 +227,7 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the chat "chat-b" stands inside the chat "chat-a": a chat holds no chat',
+			'the tab "chat-b" holds tabs of its own: it cannot stand inside "chat-a"',
 			'no tab list "tab-1" is here: a tab stands in Open, Pinned or a chat',
 		],
 	);

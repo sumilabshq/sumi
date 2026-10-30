@@ -6,7 +6,7 @@ import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
 import type { SlotLook } from "../../lib/use-board-look.js";
 import type { PaneLeaf, PaneView } from "@widgetarium/layout";
 import { AimPaneCommand } from "@widgetarium/layout";
-import { MarkChatSeenCommand } from "@widgetarium/workspaces";
+import { MarkTabSeenCommand } from "@widgetarium/places";
 import { usePaneClosing } from "../../lib/use-pane-closing.js";
 
 export interface PaneSlotProps {
@@ -20,13 +20,13 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }:
 	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners, rim } = look;
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(AimPaneCommand);
-	const markChatSeen = useCommand(MarkChatSeenCommand);
+	const markTabSeen = useCommand(MarkTabSeenCommand);
 	const aim = (): void => {
 		void aimPane.run({ id: leaf.id });
 		onFocused(leaf.id);
 
 		if (leaf.view.kind === "chat" && leaf.view.chatId !== undefined) {
-			void markChatSeen.run({ id: leaf.view.chatId });
+			void markTabSeen.run({ id: leaf.view.chatId });
 		}
 	};
 	const closing = useMemo(

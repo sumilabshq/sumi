@@ -16,14 +16,6 @@ export const KeptChatsSchema = z.object({
 
 export type KeptChats = z.infer<typeof KeptChatsSchema>;
 
-export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
-
-export type ChatMarkKind = z.infer<typeof ChatMarkSchema>;
-
-export const ChatMarksSchema = z.record(z.string(), ChatMarkSchema);
-
-export type ChatMarks = z.infer<typeof ChatMarksSchema>;
-
 export const ChatIdSchema = z.object({
 	id: z.string().min(1),
 });
@@ -52,7 +44,6 @@ export const ChatRecordSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	lastAt: z.number().nonnegative(),
-	mark: ChatMarkSchema,
 });
 
 export type ChatRecord = z.infer<typeof ChatRecordSchema>;

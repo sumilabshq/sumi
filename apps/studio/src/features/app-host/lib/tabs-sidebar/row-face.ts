@@ -1,4 +1,4 @@
-import type { ChatState, GroupItem, SidebarTab } from "@widgetarium/app-host";
+import type { SidebarTab } from "@widgetarium/app-host";
 
 export interface RowFace {
 	readonly id: string;
@@ -10,32 +10,14 @@ export interface RowFace {
 	readonly isUnread: boolean;
 }
 
-const CHAT_APP = "chat";
-
-export function rowFaceOf(item: GroupItem): RowFace {
-	return item.kind === "chat" ? chatFaceOf(item.chat) : tabFaceOf(item.tab);
-}
-
-function chatFaceOf({ id, title, label, isShown, mark }: ChatState): RowFace {
+export function rowFaceOf({ tab }: SidebarTab): RowFace {
 	return {
-		id,
-		app: CHAT_APP,
-		title,
-		label,
-		isShown,
-		isInOwnWindow: false,
-		isUnread: mark === "unread",
-	};
-}
-
-function tabFaceOf({ id, app, title, label, isShown, isInOwnWindow }: SidebarTab["tab"]): RowFace {
-	return {
-		id,
-		app,
-		title,
-		label,
-		isShown,
-		isInOwnWindow,
-		isUnread: false,
+		id: tab.id,
+		app: tab.app,
+		title: tab.title,
+		label: tab.label,
+		isShown: tab.isShown,
+		isInOwnWindow: tab.isInOwnWindow,
+		isUnread: tab.mark === "unread",
 	};
 }

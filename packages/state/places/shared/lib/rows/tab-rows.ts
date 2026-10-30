@@ -1,4 +1,4 @@
-import { APP_LABELS } from "./app-labels.js";
+import { APP_LABELS, recordTitleOf } from "./app-labels.js";
 import { flatTabIdsOf, isPageTab } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, PageTab } from "../tabs/host-tabs.js";
 import { hostOf, tabArtOf } from "./tab-art-of.js";
@@ -25,7 +25,9 @@ export function tabRowsOf(
 		shownIds: shownIdsOf(moment, shownApp, []),
 		elsewhereIds: new Set(),
 	});
-	return listIds.flatMap((listId) => flatTabIdsOf(moment, listId).flatMap((id) => rows.rowsOf(id)));
+	const pageIds = new Set(moment.tabs.filter(isPageTab).map((tab) => tab.id));
+	const listed = listIds.flatMap((listId) => flatTabIdsOf(moment, listId));
+	return listed.filter((id) => pageIds.has(id)).flatMap((id) => rows.rowsOf(id));
 }
 
 export function shownIdsOf(
@@ -39,7 +41,7 @@ export function shownIdsOf(
 
 export class TabRows {
 	private readonly pageOf: ReadonlyMap<string, PageFacts>;
-	private readonly tabOf: ReadonlyMap<string, PageTab>;
+	private readonly tabOf: ReadonlyMap<string, HostTab>;
 
 	constructor(
 		private readonly moment: HostTabsMoment,
@@ -47,7 +49,7 @@ export class TabRows {
 		private readonly looks: RowLooks,
 	) {
 		this.pageOf = pagesOfTabs(moment.tabs, pages);
-		this.tabOf = new Map(moment.tabs.filter(isPageTab).map((tab) => [tab.id, tab]));
+		this.tabOf = new Map(moment.tabs.map((tab) => [tab.id, tab]));
 	}
 
 	rowsOf(id: string): AppTabState[] {
@@ -57,7 +59,7 @@ export class TabRows {
 			return [];
 		}
 
-		const paged = faceOf(tab, this.pageOf.get(tab.id) ?? null);
+		const paged = isPageTab(tab) ? faceOf(tab, this.pageOf.get(tab.id) ?? null) : recordFaceOf(tab);
 		return [
 			{
 				...paged,
@@ -77,7 +79,7 @@ export class TabRows {
 		const page = this.pageOf.get(live.id) ?? null;
 		return {
 			id: essential.id,
-			title: live.label ?? essential.title,
+			title: live.label ?? live.title ?? essential.title,
 			icon: tabArtOf(essential.app, page?.url || essential.address),
 			favicon: page?.favicon ?? essential.favicon,
 			isShown: this.looks.shownIds.has(live.id),
@@ -93,6 +95,26 @@ function restingTileOf(essential: Essential): EssentialTile {
 		favicon: essential.favicon,
 		isShown: false,
 		isLive: false,
+	};
+}
+
+const PAGELESS: Pick<AppTab, "subtitle" | "favicon" | "status" | "address" | "isInOwnWindow"> = {
+	subtitle: null,
+	favicon: null,
+	status: null,
+	address: null,
+	isInOwnWindow: false,
+};
+
+function recordFaceOf(tab: HostTab): AppTab {
+	return {
+		...PAGELESS,
+		id: tab.id,
+		app: tab.app,
+		title: recordTitleOf(tab),
+		icon: tabArtOf(tab.app, null),
+		label: tab.label,
+		mark: tab.mark,
 	};
 }
 
@@ -112,6 +134,7 @@ function idleFaceOf(tab: PageTab): AppTab {
 		label: tab.label,
 		address: tab.lastAddress,
 		isInOwnWindow: false,
+		mark: tab.mark,
 	};
 }
 
@@ -138,6 +161,7 @@ function pageFaceOf(tab: PageTab, page: PageFacts): AppTab {
 		label: tab.label,
 		address,
 		isInOwnWindow: page.isInOwnWindow,
+		mark: tab.mark,
 	};
 }
 

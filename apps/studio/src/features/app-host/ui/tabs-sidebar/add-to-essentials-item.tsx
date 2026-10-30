@@ -16,7 +16,6 @@ export function AddToEssentialsItem({ pointed, at }: AddToEssentialsItemProps): 
 		<PointerItem
 			icon="grid-plus"
 			label="Add to Essentials"
-			isDisabled={pointed.isChat}
 			onSelect={() => void placeTab.run({ id: pointed.id, to: { kind: "essentials", at } })}
 		/>
 	);

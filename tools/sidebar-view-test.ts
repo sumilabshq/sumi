@@ -37,6 +37,9 @@ function tabOf(id: string, app: HostTab["app"]): HostTab {
 		lastAddress: null,
 		lastTitle: null,
 		lastFavicon: null,
+		title: null,
+		mark: "none",
+		isFolded: false,
 	};
 }
 
@@ -83,18 +86,22 @@ function sidebarWith(moment: HostTabsMoment, boardChatIds: readonly string[]): P
 
 function shapeOf(entry: SidebarEntry): string {
 	if (entry.kind === "tab") {
-		return `tab:${entry.tab.id}`;
-	}
-
-	if (entry.kind === "chat") {
-		return `chat:${entry.chat.id}[${entry.chat.children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
+		return itemShapeOf(entry);
 	}
 
 	if (entry.kind === "split") {
 		return `split:${entry.split.id}`;
 	}
 
-	return `group:${entry.group.id}[${entry.group.items.map((item) => (item.kind === "tab" ? item.tab.id : `chat:${item.chat.id}`)).join(",")}]`;
+	return `group:${entry.group.id}[${entry.group.items.map(itemShapeOf).join(",")}]`;
+}
+
+function itemShapeOf({ tab, children }: Extract<SidebarEntry, { kind: "tab" }>): string {
+	if (children === undefined) {
+		return `tab:${tab.id}`;
+	}
+
+	return `chat:${tab.id}[${children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
 }
 
 const sidebar = sidebarWith(MOMENT, ["chat-1"]);
@@ -104,7 +111,7 @@ check(
 	JSON.stringify(shapes) ===
 		JSON.stringify([
 			["pinned", ["chat:chat-2[]"]],
-			["workspace", ["chat:chat-1[sub,group:g2]", "group:g1[chat:chat-3]", "tab:apart"]],
+			["workspace", ["chat:chat-1[sub,group:g2]", "group:g1[chat:chat-3[]]", "tab:apart"]],
 		]),
 	shapes,
 );
@@ -112,11 +119,12 @@ check(
 const openChat = sidebar.sections[1]?.entries[0];
 check(
 	"a chat on this window's board is shown, one off it is not",
-	openChat?.kind === "chat" &&
-		openChat.chat.isShown &&
-		sidebar.sections[0]?.entries[0]?.kind === "chat" &&
-		!sidebar.sections[0].entries[0].chat.isShown,
-	sidebar.sections.map((section) => section.entries.map((entry) => entry.kind === "chat" && entry.chat.isShown)),
+	openChat?.kind === "tab" &&
+		openChat.children !== undefined &&
+		openChat.tab.isShown &&
+		sidebar.sections[0]?.entries[0]?.kind === "tab" &&
+		!sidebar.sections[0].entries[0].tab.isShown,
+	sidebar.sections.map((section) => section.entries.map((entry) => entry.kind === "tab" && entry.tab.isShown)),
 );
 
 const apart = sidebar.sections[1]?.entries[2];

@@ -6,6 +6,10 @@ export const AppKindSchema = z.enum(["canvas", "browser", "terminal"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
+export const TabAppSchema = z.enum(["canvas", "browser", "terminal", "chat"]);
+
+export type TabApp = z.infer<typeof TabAppSchema>;
+
 export const OpenedTabSchema = z.object({ id: z.string() });
 
 export const TabStatusSchema = z.enum(["reading", "waiting", "cannot-look"]);
@@ -29,13 +33,14 @@ export const TabArtSchema = z.enum([
 	"image",
 	"built-app",
 	"site",
+	"chat",
 ]);
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 
 export const AppTabSchema = z.object({
 	id: z.string(),
-	app: AppKindSchema,
+	app: TabAppSchema,
 	title: z.string(),
 	subtitle: z.string().nullable(),
 	icon: TabArtSchema,
@@ -44,6 +49,7 @@ export const AppTabSchema = z.object({
 	label: z.string().nullable(),
 	address: z.string().nullable(),
 	isInOwnWindow: z.boolean(),
+	mark: ChatMarkSchema,
 });
 
 export type AppTab = z.infer<typeof AppTabSchema>;
@@ -102,52 +108,36 @@ export const SplitMarkSchema = z.object({
 
 export type SplitMark = z.infer<typeof SplitMarkSchema>;
 
-export const SidebarTabSchema = z.object({
+export const ChildTabSchema = z.object({
 	kind: z.literal("tab"),
 	tab: AppTabStateSchema,
-	splitMark: SplitMarkSchema.nullable().optional(),
 });
 
-export type SidebarTab = z.infer<typeof SidebarTabSchema>;
-
-export const ChatGroupSchema = z.object({
+export const ChildGroupSchema = z.object({
 	kind: z.literal("group"),
 	group: GroupStateSchema,
 });
 
-export const ChatChildSchema = z.discriminatedUnion("kind", [SidebarTabSchema, ChatGroupSchema]);
+export const TabChildSchema = z.discriminatedUnion("kind", [ChildTabSchema, ChildGroupSchema]);
 
-export type ChatChild = z.infer<typeof ChatChildSchema>;
+export type TabChild = z.infer<typeof TabChildSchema>;
 
-export const ChatStateSchema = z.object({
-	id: z.string(),
-	title: z.string(),
-	label: z.string().nullable(),
-	mark: ChatMarkSchema,
-	isShown: z.boolean(),
-	children: z.array(ChatChildSchema).readonly(),
-});
-
-export type ChatState = z.infer<typeof ChatStateSchema>;
-
-export const SidebarChatSchema = z.object({
-	kind: z.literal("chat"),
-	chat: ChatStateSchema,
+export const SidebarTabSchema = z.object({
+	kind: z.literal("tab"),
+	tab: AppTabStateSchema,
 	splitMark: SplitMarkSchema.nullable().optional(),
+	children: z.array(TabChildSchema).readonly().optional(),
+	isFolded: z.boolean().optional(),
 });
 
-export type SidebarChat = z.infer<typeof SidebarChatSchema>;
-
-export const GroupItemSchema = z.discriminatedUnion("kind", [SidebarTabSchema, SidebarChatSchema]);
-
-export type GroupItem = z.infer<typeof GroupItemSchema>;
+export type SidebarTab = z.infer<typeof SidebarTabSchema>;
 
 export const SidebarGroupStateSchema = z.object({
 	id: z.string(),
 	name: z.string(),
 	hue: GroupHueSchema.nullable(),
 	isOpen: z.boolean(),
-	items: z.array(GroupItemSchema).readonly(),
+	items: z.array(SidebarTabSchema).readonly(),
 });
 
 export type SidebarGroupState = z.infer<typeof SidebarGroupStateSchema>;
@@ -158,7 +148,7 @@ export const SidebarGroupSchema = z.object({
 });
 
 export const SplitMemberSchema = z.object({
-	item: GroupItemSchema,
+	item: SidebarTabSchema,
 	isPinned: z.boolean(),
 	isFocused: z.boolean(),
 });
@@ -181,7 +171,6 @@ export const SidebarSplitSchema = z.object({
 
 export const SidebarEntrySchema = z.discriminatedUnion("kind", [
 	SidebarTabSchema,
-	SidebarChatSchema,
 	SidebarGroupSchema,
 	SidebarSplitSchema,
 ]);

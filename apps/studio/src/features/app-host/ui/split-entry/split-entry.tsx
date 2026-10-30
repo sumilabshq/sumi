@@ -4,7 +4,7 @@ import type { SidebarSplitState } from "@widgetarium/app-host";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import { SplitMapIcon } from "../split-map/split-map-icon.js";
-import { SplitFold } from "./split-fold.js";
+import { FoldBox } from "../fold-box/fold-box.js";
 import { SplitMemberRow } from "./split-member-row.js";
 import { SplitRow } from "./split-row.js";
 
@@ -32,22 +32,22 @@ export function SplitEntry({ split, renaming }: SplitEntryProps): ReactElement |
 	const words = HEAD_WORDS.replace("{count}", String(split.members.length));
 	return (
 		<div className={BLOCK} data-open={isOpen || undefined} data-tabs-split={split.id} role="group" aria-label={words}>
-			<SplitFold isOpen={isOpen}>
+			<FoldBox isOpen={isOpen}>
 				<div className={HEAD} data-split-head="">
 					<SplitMapIcon map={split.map} label={null} />
 					<span>{words}</span>
 				</div>
-			</SplitFold>
-			<SplitFold isOpen={!isOpen}>
+			</FoldBox>
+			<FoldBox isOpen={!isOpen}>
 				<SplitRow split={split} focused={focused.item} />
-			</SplitFold>
-			<SplitFold isOpen={isOpen}>
+			</FoldBox>
+			<FoldBox isOpen={isOpen}>
 				<div className={ROWS} data-split-members="">
 					{split.members.map((member) => (
 						<SplitMemberRow key={rowFaceOf(member.item).id} member={member} renaming={renaming} />
 					))}
 				</div>
-			</SplitFold>
+			</FoldBox>
 		</div>
 	);
 }

@@ -42,12 +42,7 @@ export function TabItems({
 			<MoveToGroupMenu tabId={pointed.id} list={pointed.list} groups={groups} />
 			<PointerItem icon="pencil" label="Rename" onSelect={() => onRename(pointed.id)} />
 			<ContextMenuSeparator className={POINTER_LINE} />
-			<PointerItem
-				icon="x"
-				label="Close"
-				isDisabled={pointed.isChat}
-				onSelect={() => void closeTab.run({ id: pointed.id })}
-			/>
+			<PointerItem icon="x" label="Close" onSelect={() => void closeTab.run({ id: pointed.id })} />
 		</ContextMenuGroup>
 	);
 }

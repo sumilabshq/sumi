@@ -20,7 +20,8 @@ import {
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
-import { placesOver } from "./places-fixture.ts";
+import { placedTabsOf, placesOver } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 
 reportsFailures();
 
@@ -105,12 +106,22 @@ const studio = app()
 					})),
 					openOnStartId: "chat-0",
 				},
-				marks: { "chat-2": "running" },
 			}),
 		),
 		CommandMenuModule,
 	)
-	.imports(placesOver())
+	.imports(
+		placesOver(
+			new MemoryTabsGateway(
+				placedTabsOf(
+					{ tabs: [], shownId: null, minted: 0, closed: [] },
+					CHATS.map((_title, at) => `chat-${at}`),
+					["chat-1"],
+					{ "chat-2": { mark: "running" } },
+				),
+			),
+		),
+	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { AppKindSchema } from "./app-tab.schema.js";
+import { TabAppSchema } from "./app-tab.schema.js";
 
 export const EssentialSchema = z.object({
 	id: z.string(),
-	app: AppKindSchema,
+	app: TabAppSchema,
 	address: z.string().nullable(),
 	title: z.string(),
 	favicon: z.string().nullable(),

@@ -1,9 +1,9 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import type { Send } from "@widgetarium/core/requests";
+import { KeepChatTabsCommand, RecordTabTurnCommand } from "@widgetarium/places";
 import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
 import { ChatsChangedEvent } from "../../gateways/chats/chats.events.js";
-import { ChatMarksChangedEvent } from "../../gateways/chat-marks/chat-marks.events.js";
-import { ChatMarksGateway } from "../../gateways/chat-marks/chat-marks.gateway.js";
 import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
 import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
@@ -17,25 +17,20 @@ import {
 	NewChatSchema,
 	WorkspaceCrumbSchema,
 } from "../../shared/schema/chat.schema.js";
-import type { ChatMarkKind, ChatMarks, ChatTurn, KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
+import type { KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
 
 const TITLE_MOST_CHARS = 80;
-const UNKNOWN = "There is no chat {id}.";
 
 export const ChatRecordsQuery = query("chat-records")
 	.output(ChatRecordsSchema)
 	.settlesNow()
-	.inject({
-		chats: ChatsGateway,
-		chatMarks: ChatMarksGateway,
-	})
-	.handle((_input, { chats, chatMarks }) => ({
+	.inject({ chats: ChatsGateway })
+	.handle((_input, { chats }) => ({
 		isRead: chats.isLoaded(),
 		chats: chats.chats().chats.map((chat) => ({
 			id: chat.id,
 			title: titleOf(chat),
 			lastAt: chat.lastAt,
-			mark: markOf(chatMarks.chatMarks(), chat.id),
 		})),
 	}));
 
@@ -55,16 +50,10 @@ export const CreateChatCommand = command("create-chat")
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
 	.inject({ chats: ChatsGateway })
-	.handle(({ title }, { chats, invalidate }) => {
+	.handle(async ({ title }, { chats, invalidate, send }) => {
 		invalidate(ChatRecordsQuery);
 		const kept = chats.chats();
-		const at = Date.now();
-		const chat: KeptChat = {
-			id: crypto.randomUUID(),
-			title: title?.trim() || null,
-			createdAt: at,
-			lastAt: at,
-		};
+		const chat = newChatOf(title);
 		const reason = `chats ${kept.chats.length} → ${kept.chats.length + 1} (new chat ${chat.id})`;
 		chats.saveChats(
 			{
@@ -74,20 +63,8 @@ export const CreateChatCommand = command("create-chat")
 			reason,
 		);
 		console.info(`[widgetarium] ${reason}`);
+		await keepTabOf(send, chat);
 		return { id: chat.id };
-	});
-
-export const MarkChatSeenCommand = command("mark-chat-seen")
-	.input(ChatIdSchema)
-	.idempotencyKey(Repeatable)
-	.inject({
-		chats: ChatsGateway,
-		chatMarks: ChatMarksGateway,
-	})
-	.handle(({ id }, { chats, chatMarks, invalidate }) => {
-		invalidate(ChatRecordsQuery);
-		chatIn(chats.chats(), id);
-		clearMark(chatMarks, id);
 	});
 
 export const ForgetChatToOpenCommand = command("forget-chat-to-open")
@@ -137,44 +114,27 @@ export const ChatToOpenQuery = query("chat-to-open")
 export const RecordChatTurnCommand = command("record-chat-turn")
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable)
-	.inject({
-		chats: ChatsGateway,
-		chatMarks: ChatMarksGateway,
-	})
-	.handle((turn, { chats, chatMarks, invalidate }) => {
+	.inject({ chats: ChatsGateway })
+	.handle(async (turn, { chats, invalidate, send }) => {
 		invalidate(ChatRecordsQuery);
 		const kept = chats.chats();
 		const was = kept.chats.find((chat) => chat.id === turn.chatId);
 
 		if (was === undefined) {
+			console.info(`[widgetarium] chat turn of ${turn.chatId} skipped: no such chat in this workspace`);
 			return;
 		}
 
-		const marks = chatMarks.chatMarks();
-		const mark = markOf(marks, turn.chatId);
-		const now = chatAfterTurn(was, turn, mark);
-		const nextMark = markAfter(mark, turn.isBusy, turn.isSeen);
-
-		if (JSON.stringify(now) !== JSON.stringify(was)) {
-			const reason = `chat ${was.id} title ${titleOf(was)} → ${titleOf(now)}, last ${was.lastAt} → ${now.lastAt} (turn)`;
-			chats.saveChats(withChat(kept, now), reason);
-			console.info(`[widgetarium] ${reason}`);
-		}
-
-		if (nextMark !== mark) {
-			const reason = `chat ${was.id} mark ${mark} → ${nextMark} (turn)`;
-			chatMarks.saveChatMarks(withMark(marks, was.id, nextMark), reason);
-			console.info(`[widgetarium] ${reason}`);
-		}
+		const title = was.title ?? titleOfAsk(turn.firstAsked);
+		const marks = await send(RecordTabTurnCommand, { id: was.id, title, isBusy: turn.isBusy, isSeen: turn.isSeen });
+		const isStarting = turn.isBusy && marks.was !== null && marks.was !== "running";
+		const now = chats.chats().chats.find((chat) => chat.id === was.id) ?? was;
+		saveTurned(chats, now, chatAfterTurn(now, { title: now.title ?? title, isStarting }));
 	});
 
 export const RereadChatsSubscriber = subscriber(ChatsChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(ChatRecordsQuery);
 	invalidate(ChatToOpenQuery);
-});
-
-export const RereadChatListSubscriber = subscriber(ChatMarksChangedEvent).handle((_input, { invalidate }) => {
-	invalidate(ChatRecordsQuery);
 });
 
 export const RereadCrumbForWorkspacesSubscriber = subscriber(WorkspacesChangedEvent).handle(
@@ -189,22 +149,32 @@ export const RereadCrumbForCurrentSubscriber = subscriber(CurrentWorkspaceChange
 	},
 );
 
-function clearMark(chatMarks: ChatMarksGateway, id: string): void {
-	const marks = chatMarks.chatMarks();
-	const mark = markOf(marks, id);
+async function keepTabOf(send: Send, chat: KeptChat): Promise<void> {
+	try {
+		await send(KeepChatTabsCommand, { chats: [{ id: chat.id, title: chat.title }] });
+	} catch (failure: unknown) {
+		console.error(`[widgetarium] chat ${chat.id} kept with no tab yet; the next restore gives it one`, failure);
+	}
+}
 
-	if (mark === "none") {
+function newChatOf(title: string | null): KeptChat {
+	const at = Date.now();
+	return {
+		id: crypto.randomUUID(),
+		title: title?.trim() || null,
+		createdAt: at,
+		lastAt: at,
+	};
+}
+
+function saveTurned(chats: ChatsGateway, was: KeptChat, now: KeptChat): void {
+	if (now.title === was.title && now.lastAt === was.lastAt) {
 		return;
 	}
 
-	const reason = `chat ${id} mark ${mark} → none (selected)`;
-	chatMarks.saveChatMarks(withMark(marks, id, "none"), reason);
+	const reason = `chat ${was.id} title ${titleOf(was)} → ${titleOf(now)}, last ${was.lastAt} → ${now.lastAt} (turn)`;
+	chats.saveChats(withChat(chats.chats(), now), reason);
 	console.info(`[widgetarium] ${reason}`);
-}
-
-function chatIn(kept: KeptChats, id: string): KeptChat {
-	const found = kept.chats.find((chat) => chat.id === id);
-	return found ?? refuse(UNKNOWN.replace("{id}", id));
 }
 
 function withChat(kept: KeptChats, changed: KeptChat): KeptChats {
@@ -214,20 +184,16 @@ function withChat(kept: KeptChats, changed: KeptChat): KeptChats {
 	};
 }
 
-function markOf(marks: ChatMarks, id: string): ChatMarkKind {
-	return marks[id] ?? "none";
+interface TurnChange {
+	readonly title: string | null;
+	readonly isStarting: boolean;
 }
 
-function withMark(marks: ChatMarks, id: string, mark: ChatMarkKind): ChatMarks {
-	const others = Object.entries(marks).filter(([held]) => held !== id);
-	return Object.fromEntries(mark === "none" ? others : [...others, [id, mark]]);
-}
-
-function chatAfterTurn(chat: KeptChat, { isBusy, firstAsked }: ChatTurn, mark: ChatMarkKind): KeptChat {
+function chatAfterTurn(chat: KeptChat, { title, isStarting }: TurnChange): KeptChat {
 	return {
 		...chat,
-		title: chat.title ?? titleOfAsk(firstAsked),
-		lastAt: isBusy && mark !== "running" ? Date.now() : chat.lastAt,
+		title,
+		lastAt: isStarting ? Date.now() : chat.lastAt,
 	};
 }
 
@@ -240,16 +206,4 @@ function titleOfAsk(asked: string | null): string | null {
 	}
 
 	return line.length <= TITLE_MOST_CHARS ? line : `${line.slice(0, TITLE_MOST_CHARS - 1).trimEnd()}…`;
-}
-
-function markAfter(mark: ChatMarkKind, isBusy: boolean, isSeen: boolean): ChatMarkKind {
-	if (isBusy) {
-		return "running";
-	}
-
-	if (mark === "running") {
-		return isSeen ? "none" : "unread";
-	}
-
-	return mark;
 }
