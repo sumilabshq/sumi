@@ -6,7 +6,6 @@ import type { FrameBounds } from "@widgetarium/layout";
 import type { PaneEdge } from "../../lib/pane-layout.js";
 import { ResizePaneSplitCommand } from "@widgetarium/layout";
 import { useEdgeDrag } from "../../lib/use-edge-drag.js";
-import { branchIdOfPane } from "../../lib/split-panes.js";
 
 export interface PaneSplitEdgeProps {
 	readonly edge: PaneEdge;
@@ -21,7 +20,7 @@ const CHAT_EDGE = "chat";
 export function PaneSplitEdge({ edge, bounds, onDrag, onChatPx }: PaneSplitEdgeProps): ReactElement {
 	const resize = useCommand(ResizePaneSplitCommand);
 	const resizeSplit = useCommand(ResizeSplitCommand);
-	const branchId = branchIdOfPane(edge.splitId);
+	const { branchId } = edge;
 	const least = bounds.plateLeastPx / edge.spanPx;
 	const shareWithin = (asked: number): number => Math.min(Math.max(asked, least), edge.pairShare - least);
 	const commit = (share: number): void => {

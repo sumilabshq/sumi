@@ -1,4 +1,5 @@
 import type { PaneNode, PaneSide, PaneSplit, SplitDir } from "@widgetarium/layout";
+import { branchIdOfPane } from "./split-panes.js";
 
 export interface PaneRect {
 	readonly left: number;
@@ -9,6 +10,7 @@ export interface PaneRect {
 
 export interface PaneEdge {
 	readonly splitId: string;
+	readonly branchId: string | null;
 	readonly at: number;
 	readonly dir: SplitDir;
 	readonly rect: PaneRect;
@@ -261,6 +263,7 @@ function sizesOf(node: PaneSplit, span: number, leastPx: number): readonly numbe
 function edgeOf(node: PaneSplit, at: number, rect: PaneRect, startPx: number, spanPx: number): Omit<PaneEdge, "gapPx"> {
 	return {
 		splitId: node.id,
+		branchId: node.chatId === undefined ? branchIdOfPane(node.id) : null,
 		at,
 		dir: node.dir,
 		rect,
