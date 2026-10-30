@@ -6,6 +6,7 @@ import { PageLooks } from "./page-looks.js";
 import type { PagePlacement, PagesBridge } from "./pages-bridge.js";
 import { PanePages } from "./pane-pages.js";
 import { ShownCard } from "./shown-card.js";
+import { isStudioOnScreen } from "./studio-on-screen.js";
 
 interface DrawnPagesPorts {
 	readonly bridge: PagesBridge;
@@ -28,6 +29,7 @@ export class DrawnPages {
 		this.looks = new PageLooks({
 			bridge: ports.bridge,
 			drawnPages: () => this.drawnPages(),
+			isOnScreen: isStudioOnScreen,
 		});
 		this.nativePages = this.createNativePages();
 	}

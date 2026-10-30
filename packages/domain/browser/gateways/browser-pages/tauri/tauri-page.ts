@@ -345,10 +345,18 @@ export class TauriPage {
 	}
 
 	private update(next: Partial<BrowserTab>): void {
+		if (isHeldAlready(this.state, next)) {
+			return;
+		}
+
 		this.state = {
 			...this.state,
 			...next,
 		};
 		this.changed();
 	}
+}
+
+function isHeldAlready(state: BrowserTab, next: Partial<BrowserTab>): boolean {
+	return Object.entries(next).every(([field, value]) => Object.is(Reflect.get(state, field), value));
 }

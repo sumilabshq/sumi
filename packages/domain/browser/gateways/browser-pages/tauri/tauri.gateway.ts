@@ -25,6 +25,7 @@ import { MemorySiteFilesGateway } from "../../site-files/memory.gateway.js";
 import type { SiteFilesGateway } from "../../site-files/site-files.gateway.js";
 import { MemorySiteIconsGateway } from "../../site-icons/memory.gateway.js";
 import type { SiteIconsGateway } from "../../site-icons/site-icons.gateway.js";
+import { isStudioOnScreen } from "./studio-on-screen.js";
 
 export { tauriPagesBridge } from "./pages-bridge.js";
 export type { BrowserPagesIpc } from "./pages-bridge.js";
@@ -40,9 +41,12 @@ export interface TauriPagesHold {
 
 const ICON_READING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["finished", "title"]);
 const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
+const PAGES_CHANGED_AT_MOST_EVERY_MS = 100;
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly watchers = new Set<() => void>();
+	private watchersToldAt = Number.NEGATIVE_INFINITY;
+	private isTellingWatchersSoon = false;
 	private readonly replay = new PageInputReplay((page) => this.drawn.containerOf(page));
 	private readonly heldPages: HeldPages;
 	private readonly ownWindows: OwnWindows;
@@ -273,11 +277,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 			bridge: this.bridge,
 			siteIcons,
 			siteFiles,
-			livePages: () =>
-				this.heldPages
-					.pages()
-					.filter((page) => page.isDrawn())
-					.map((page) => page.now().id),
+			drawnPages: () => this.drawn.drawnPages(),
+			isOnScreen: isStudioOnScreen,
 			wear: (page, worn) => this.heldPages.heldPageOf(page)?.wearFavicon(worn),
 		});
 	}
@@ -372,6 +373,25 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private told(): void {
 		this.drawn.sync();
 
+		if (this.isTellingWatchersSoon) {
+			return;
+		}
+
+		const sinceToldMs = performance.now() - this.watchersToldAt;
+		if (sinceToldMs >= PAGES_CHANGED_AT_MOST_EVERY_MS) {
+			this.tellWatchers();
+			return;
+		}
+
+		this.isTellingWatchersSoon = true;
+		setTimeout(() => {
+			this.isTellingWatchersSoon = false;
+			this.tellWatchers();
+		}, PAGES_CHANGED_AT_MOST_EVERY_MS - sinceToldMs);
+	}
+
+	private tellWatchers(): void {
+		this.watchersToldAt = performance.now();
 		for (const changed of this.watchers) {
 			changed();
 		}

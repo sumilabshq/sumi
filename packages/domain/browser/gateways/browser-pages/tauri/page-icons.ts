@@ -13,7 +13,8 @@ export interface PageIconsHold {
 	readonly bridge: Pick<PagesBridge, "evaluate">;
 	readonly siteIcons: SiteIconsGateway;
 	readonly siteFiles: SiteFilesGateway;
-	readonly livePages: () => readonly string[];
+	readonly drawnPages: () => readonly string[];
+	readonly isOnScreen: () => boolean;
 	readonly wear: (page: string, worn: WornIcon) => void;
 }
 
@@ -53,7 +54,11 @@ export class PageIcons {
 	}
 
 	async reread(): Promise<void> {
-		await Promise.all(this.hold.livePages().map((page) => this.readOrSay(page, false)));
+		if (!this.hold.isOnScreen()) {
+			return;
+		}
+
+		await Promise.all(this.hold.drawnPages().map((page) => this.readOrSay(page, false)));
 	}
 
 	private pollLater(): void {
@@ -63,16 +68,8 @@ export class PageIcons {
 
 		this.timer = setTimeout(() => {
 			this.timer = null;
-			void this.reread().then(() => this.pollWhileLive());
+			void this.reread().then(() => this.pollLater());
 		}, ICONS_EVERY_MS);
-	}
-
-	private pollWhileLive(): void {
-		if (this.hold.livePages().length === 0) {
-			return;
-		}
-
-		this.pollLater();
 	}
 
 	private async readOrSay(page: string, isForced: boolean): Promise<void> {

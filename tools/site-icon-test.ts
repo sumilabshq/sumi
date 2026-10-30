@@ -215,11 +215,13 @@ async function pageIconsChecks(): Promise<void> {
 	const worn = new Map<string, string>();
 	const wornFor = new Map<string, string>();
 	const siteIcons = new MemorySiteIconsGateway();
+	const studio = { isOnScreen: true };
 	const icons = new PageIcons({
 		bridge,
 		siteIcons,
 		siteFiles: siteFilesOver(bridge, { now: NOW }),
-		livePages: () => ["tab-1", "tab-2"],
+		drawnPages: () => ["tab-1", "tab-2"],
+		isOnScreen: () => studio.isOnScreen,
 		wear: (page, { favicon, origin }) => {
 			worn.set(page, favicon);
 			wornFor.set(page, origin);
@@ -234,6 +236,10 @@ async function pageIconsChecks(): Promise<void> {
 		[ICON, 1],
 	);
 	bridge.answer = JSON.stringify({ page: PAGE, links: [linkOf("https://mail.example/unread-3.png", "icon", "32x32")] });
+	studio.isOnScreen = false;
+	await icons.reread();
+	check("a poll while the studio is off screen reads nothing", worn.get("tab-1"), ICON);
+	studio.isOnScreen = true;
 	await icons.reread();
 	check("a poll after the head changed wears the new icon", worn.get("tab-1"), UNREAD_ICON);
 	check("two pages asking for one icon at once fetch it once", bridge.fetched.length, 2);
@@ -259,7 +265,8 @@ async function cdnAndOfflineChecks(): Promise<void> {
 		bridge,
 		siteIcons,
 		siteFiles: siteFilesOver(bridge, clock),
-		livePages: () => [],
+		drawnPages: () => [],
+		isOnScreen: () => true,
 		wear: (page, { favicon, origin }) => worn.set(page, `${origin} ${favicon}`),
 	});
 	bridge.answer = JSON.stringify({ page: PAGE, links: [linkOf("https://cdn.example/read.png", "icon", "32x32")] });

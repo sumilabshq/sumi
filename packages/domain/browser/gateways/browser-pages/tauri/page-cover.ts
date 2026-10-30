@@ -148,6 +148,7 @@ export class PageCover {
 	private wearFrame(): void {
 		const shell = this.container.closest(SHELL);
 		const colour = shell === null ? null : hexOf(shell, FRAME_TOKEN);
+		this.watched.takeRecords();
 
 		if (colour === null || colour === this.frameSaid) {
 			return;
@@ -156,21 +157,10 @@ export class PageCover {
 		console.info(
 			`[widgetarium] browser studio frame ${this.frameSaid ?? "none"} → ${colour} (pages show under the studio)`,
 		);
-		setTimeout(() => {
-			const painted: string[] = [];
-			for (let at: Element | null = this.container; at !== null; at = at.parentElement) {
-				const look = getComputedStyle(at);
-				painted.push(`${describedElement(at).slice(0, 90)} bg=${look.backgroundColor}`);
-			}
-			const box = this.container.getBoundingClientRect();
-			const stacked = document.elementsFromPoint(box.left + box.width / 2, box.top + box.height / 2).map((at) => {
-				const look = getComputedStyle(at);
-				return `${describedElement(at).slice(0, 80)} bg=${look.backgroundColor} shadow=${look.boxShadow.slice(0, 50)} opacity=${look.opacity}`;
-			});
-			console.info(
-				`[widgetarium] PAINTPROBE ${this.drawnPage() ?? "none"} at ${Math.round(box.left)},${Math.round(box.top)} ${Math.round(box.width)}x${Math.round(box.height)}\n${painted.join("\n")}\nSTACKED\n${stacked.join("\n")}`,
-			);
-		}, 1500);
+		this.sendFrame(colour);
+	}
+
+	private sendFrame(colour: string): void {
 		this.frameSaid = colour;
 		void this.bridge.wearFrame(colour).catch((failure: unknown) => {
 			console.error("[widgetarium] the studio frame colour did not reach the window", failure);
@@ -188,9 +178,6 @@ export class PageCover {
 			return;
 		}
 
-		console.info(
-			`[widgetarium] browser studio areas over ${was ?? "none"} → ${page ?? "none"}: ${areas.map(describedElement).join(", ") || "none"}`,
-		);
 		this.holedPage = page;
 		this.holesSaid = said;
 
@@ -239,14 +226,6 @@ function hexOf(within: Element, colour: string): string | null {
 
 function sayAreasFailed(failure: unknown): void {
 	console.error("[widgetarium] the browser page did not hear which areas the studio draws over it", failure);
-}
-
-function describedElement(element: Element): string {
-	const marks = Array.from(element.attributes)
-		.filter(({ name }) => name === "role" || name === "class" || name.startsWith("data-"))
-		.map(({ name, value }) => `${name}="${value.slice(0, 60)}"`);
-
-	return `<${element.tagName.toLowerCase()} ${marks.join(" ")}>`;
 }
 
 function isVisible(element: Element): boolean {

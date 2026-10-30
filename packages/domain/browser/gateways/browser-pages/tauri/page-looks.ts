@@ -6,9 +6,10 @@ import type { PagesBridge } from "./pages-bridge.js";
 export interface PageLooksHold {
 	readonly bridge: PagesBridge;
 	readonly drawnPages: () => readonly string[];
+	readonly isOnScreen: () => boolean;
 }
 
-const LOOK_EVERY_MS = 1000;
+const LOOK_EVERY_MS = 2000;
 const STRIP_PX = 2;
 const STRIP_POINTS: readonly number[] = [0.25, 0.5, 0.75];
 
@@ -20,10 +21,12 @@ export class PageLooks {
 	private isReading = false;
 	private readonly bridge: PagesBridge;
 	private readonly drawnPages: () => readonly string[];
+	private readonly isOnScreen: () => boolean;
 
-	constructor({ bridge, drawnPages }: PageLooksHold) {
+	constructor({ bridge, drawnPages, isOnScreen }: PageLooksHold) {
 		this.bridge = bridge;
 		this.drawnPages = drawnPages;
+		this.isOnScreen = isOnScreen;
 	}
 
 	start(): void {
@@ -38,7 +41,9 @@ export class PageLooks {
 	private rereadIn(ms: number): void {
 		const turn = this.pollTurn;
 		this.timer = setTimeout(async () => {
-			await this.reread();
+			if (this.isOnScreen()) {
+				await this.reread();
+			}
 
 			if (turn === this.pollTurn) {
 				this.rereadIn(LOOK_EVERY_MS);
