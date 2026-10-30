@@ -26,6 +26,8 @@ import type { SiteFilesGateway } from "../../site-files/site-files.gateway.js";
 import { MemorySiteIconsGateway } from "../../site-icons/memory.gateway.js";
 import type { SiteIconsGateway } from "../../site-icons/site-icons.gateway.js";
 import { isStudioOnScreen } from "./studio-on-screen.js";
+import { ChangeBell } from "./change-bell.js";
+import { UnloadablePages } from "./unloadable-pages.js";
 
 export { tauriPagesBridge } from "./pages-bridge.js";
 export type { BrowserPagesIpc } from "./pages-bridge.js";
@@ -41,12 +43,9 @@ export interface TauriPagesHold {
 
 const ICON_READING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["finished", "title"]);
 const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
-const PAGES_CHANGED_AT_MOST_EVERY_MS = 100;
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
-	private readonly watchers = new Set<() => void>();
-	private watchersToldAt = Number.NEGATIVE_INFINITY;
-	private isTellingWatchersSoon = false;
+	private readonly changes = new ChangeBell();
 	private readonly replay = new PageInputReplay((page) => this.drawn.containerOf(page));
 	private readonly heldPages: HeldPages;
 	private readonly ownWindows: OwnWindows;
@@ -54,6 +53,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	private readonly ghost: TearOffGhost;
 	private readonly drawn: DrawnPages;
 	private readonly icons: PageIcons;
+	private readonly unloading: UnloadablePages;
 
 	constructor(
 		private readonly bridge: PagesBridge,
@@ -71,6 +71,14 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.studioWindows = this.createStudioWindows(ownLabel);
 		this.ghost = new TearOffGhost(bridge);
 		this.drawn = this.createDrawnPages();
+		this.unloading = new UnloadablePages({
+			heldPages: this.heldPages,
+			drawn: this.drawn,
+			bridge,
+			isInOwnWindow: (tabId) => this.isInOwnWindow(tabId),
+			ownLabel,
+		});
+		this.unloading.start();
 		this.listenToBridge();
 		this.listenToStudio();
 		this.create(FIRST_TAB);
@@ -93,8 +101,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	pagesChanged(changed: () => void): () => void {
-		this.watchers.add(changed);
-		return () => this.watchers.delete(changed);
+		return this.changes.listen(changed);
 	}
 
 	attach(into: HTMLElement): void {
@@ -123,6 +130,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	openInOwnWindow(tabId: string): void {
 		const page = this.heldPages.pageOf(tabId);
+		this.unloading.wake(tabId);
 		this.ownWindows.open(tabId, page.now().title, page.ensureCreated());
 	}
 
@@ -162,6 +170,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	attachInPane(tabId: string, into: HTMLElement): void {
+		this.unloading.wake(tabId);
+
 		if (this.drawn.attachInPaneIfNew(tabId, into)) {
 			this.told();
 		}
@@ -206,6 +216,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	show(tabId: string): void {
 		this.heldPages.pageOf(tabId);
+		this.unloading.wake(tabId);
 		this.drawn.show(tabId);
 		this.told();
 		void this.drawn.looks.reread();
@@ -372,28 +383,6 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	private told(): void {
 		this.drawn.sync();
-
-		if (this.isTellingWatchersSoon) {
-			return;
-		}
-
-		const sinceToldMs = performance.now() - this.watchersToldAt;
-		if (sinceToldMs >= PAGES_CHANGED_AT_MOST_EVERY_MS) {
-			this.tellWatchers();
-			return;
-		}
-
-		this.isTellingWatchersSoon = true;
-		setTimeout(() => {
-			this.isTellingWatchersSoon = false;
-			this.tellWatchers();
-		}, PAGES_CHANGED_AT_MOST_EVERY_MS - sinceToldMs);
-	}
-
-	private tellWatchers(): void {
-		this.watchersToldAt = performance.now();
-		for (const changed of this.watchers) {
-			changed();
-		}
+		this.changes.ring();
 	}
 }

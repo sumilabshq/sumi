@@ -48,6 +48,10 @@ export class DrawnPages {
 		}
 	}
 
+	isShownOrPaned(tabId: string): boolean {
+		return this.shown === tabId || this.inPanes.has(tabId);
+	}
+
 	isOnScreen(tabId: string): boolean {
 		return this.drawnPage() === tabId || this.inPanes.drawnOf(tabId) !== null;
 	}

@@ -6,11 +6,10 @@ import type {
 	PageShot,
 	ShotAsk,
 } from "../../../shared/schema/page-read.schema.js";
-import { regionOnPage } from "../../../shared/lib/region-within.js";
 import { originOf } from "../../../shared/lib/site-key.js";
 import type { WornIcon } from "../../../shared/schema/site-icon.schema.js";
 import type { PageFacts, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
-import { base64Of, contentOf, frameUrlsOf, hasSecretFieldIn, layoutOf, pngSizeOf } from "./page-reads.js";
+import { contentOf, frameUrlsOf, hasSecretFieldIn, shotOf } from "./page-reads.js";
 
 const NEW_TAB_TITLE = "New tab";
 const BLANK = "about:blank";
@@ -28,8 +27,6 @@ const BLANK_TAB: Omit<BrowserTab, "id"> = {
 	window: null,
 };
 
-const MOST_SHOT_CHARACTERS = 5_000_000;
-const SHOT_TOO_HEAVY = "the shot weighs {mb} MB, over the 5 MB a model takes; ask for a smaller region";
 export interface TauriPageHold {
 	readonly id: string;
 	readonly bridge: PagesBridge;
@@ -42,6 +39,8 @@ export class TauriPage {
 	private entry = 0;
 	private faviconOrigin: string | null = null;
 	private created: Promise<void> | null = null;
+	private pendingClose: Promise<void> = Promise.resolve();
+	private unloadedUrl: string | null = null;
 	private settledWaiters: (() => void)[] = [];
 	private readonly bridge: PagesBridge;
 	private readonly profileId: string;
@@ -65,7 +64,43 @@ export class TauriPage {
 		return this.created !== null && this.state.url !== "" && this.state.failure === null;
 	}
 
+	isLive(): boolean {
+		return this.created !== null;
+	}
+
+	unload(): boolean {
+		const created = this.created;
+
+		if (created === null || this.state.url === "") {
+			return false;
+		}
+
+		const page = this.state.id;
+		this.created = null;
+		this.unloadedUrl = this.state.url;
+		this.pendingClose = created
+			.then(() => this.bridge.close(page))
+			.catch((failure: unknown) => console.error(`[widgetarium] browser page ${page} unload failed`, failure));
+		this.update({
+			isLoading: false,
+			canGoBack: false,
+			canGoForward: false,
+		});
+		return true;
+	}
+
+	wakeIfUnloaded(): boolean {
+		if (this.unloadedUrl === null) {
+			return false;
+		}
+
+		console.info(`[widgetarium] browser page ${this.state.id} unloaded → loading (shown again)`);
+		this.open(this.unloadedUrl);
+		return true;
+	}
+
 	open(url: string): void {
+		this.unloadedUrl = null;
 		this.update({
 			url,
 			failure: null,
@@ -85,6 +120,10 @@ export class TauriPage {
 	}
 
 	reload(): void {
+		if (this.wakeIfUnloaded()) {
+			return;
+		}
+
 		this.whenCreated((page) => this.bridge.reload(page));
 	}
 
@@ -154,25 +193,15 @@ export class TauriPage {
 		return contentOf(this.bridge, this.readablePage(), form);
 	}
 
-	async capture({ area, region }: ShotAsk): Promise<PageShot> {
-		const page = this.readablePage();
-		const layout = await layoutOf(this.bridge, page);
-		const png =
-			area === "page"
-				? await this.bridge.pageShot(page, regionOnPage(region, layout.page))
-				: await this.bridge.snapshot(page, region, "png");
-		const encoded = base64Of(png);
-
-		if (encoded.length > MOST_SHOT_CHARACTERS) {
-			throw new Error(SHOT_TOO_HEAVY.replace("{mb}", (encoded.length / 1_000_000).toFixed(1)));
-		}
-
-		return {
-			url: this.state.url,
-			png: encoded,
-			...pngSizeOf(png),
-			layout,
-		};
+	capture(ask: ShotAsk): Promise<PageShot> {
+		return shotOf(
+			this.bridge,
+			{
+				page: this.readablePage(),
+				url: this.state.url,
+			},
+			ask,
+		);
 	}
 
 	wearFavicon({ favicon, origin }: WornIcon): void {
@@ -191,6 +220,10 @@ export class TauriPage {
 	}
 
 	apply(event: PageLoadEvent): void {
+		if (this.unloadedUrl !== null) {
+			return;
+		}
+
 		const reactions: Record<PageLoadEvent["kind"], () => void> = {
 			started: () => this.update({ isLoading: true }),
 			committed: () => this.noteCommit(event.facts),
@@ -311,7 +344,7 @@ export class TauriPage {
 	}
 
 	ensureCreated(): Promise<void> {
-		this.created ??= this.bridge.create(this.state.id, this.profileId);
+		this.created ??= this.pendingClose.then(() => this.bridge.create(this.state.id, this.profileId));
 		return this.created;
 	}
 
