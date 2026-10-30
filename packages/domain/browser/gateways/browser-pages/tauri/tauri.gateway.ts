@@ -21,6 +21,8 @@ import { isOwnWindowEvent, isPageHoveredEvent, isPagePressedEvent, isWindowClose
 import type { PageEvent, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
 import { StudioWindows } from "./studio-windows.js";
 import { TearOffGhost } from "./tear-off-ghost.js";
+import { MemorySiteFilesGateway } from "../../site-files/memory.gateway.js";
+import type { SiteFilesGateway } from "../../site-files/site-files.gateway.js";
 import { MemorySiteIconsGateway } from "../../site-icons/memory.gateway.js";
 import type { SiteIconsGateway } from "../../site-icons/site-icons.gateway.js";
 
@@ -33,8 +35,10 @@ export interface TauriPagesHold {
 	readonly profileId: string;
 	readonly ownLabel?: string;
 	readonly siteIcons?: SiteIconsGateway;
+	readonly siteFiles?: SiteFilesGateway;
 }
 
+const ICON_READING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["finished", "title"]);
 const LOOK_CHANGING_EVENTS: ReadonlySet<PageLoadEvent["kind"]> = new Set(["committed", "finished", "title"]);
 
 export class TauriBrowserPagesGateway extends BrowserPagesGateway {
@@ -49,11 +53,16 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 
 	constructor(
 		private readonly bridge: PagesBridge,
-		{ profileId, ownLabel = MAIN_STUDIO_WINDOW, siteIcons = new MemorySiteIconsGateway() }: TauriPagesHold,
+		{
+			profileId,
+			ownLabel = MAIN_STUDIO_WINDOW,
+			siteIcons = new MemorySiteIconsGateway(),
+			siteFiles = new MemorySiteFilesGateway(),
+		}: TauriPagesHold,
 	) {
 		super();
 		this.heldPages = this.createHeldPages(profileId);
-		this.icons = this.createPageIcons(siteIcons);
+		this.icons = this.createPageIcons(siteIcons, siteFiles);
 		this.ownWindows = new OwnWindows(bridge, () => this.told());
 		this.studioWindows = this.createStudioWindows(ownLabel);
 		this.ghost = new TearOffGhost(bridge);
@@ -259,10 +268,11 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		});
 	}
 
-	private createPageIcons(siteIcons: SiteIconsGateway): PageIcons {
+	private createPageIcons(siteIcons: SiteIconsGateway, siteFiles: SiteFilesGateway): PageIcons {
 		return new PageIcons({
 			bridge: this.bridge,
 			siteIcons,
+			siteFiles,
 			livePages: () =>
 				this.heldPages
 					.pages()
@@ -343,7 +353,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private followIcon(event: PageLoadEvent): void {
-		if (event.kind === "finished") {
+		if (ICON_READING_EVENTS.has(event.kind)) {
 			void this.icons.readNow(event.page);
 			return;
 		}

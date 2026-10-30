@@ -2,25 +2,26 @@ import { PageIconsReadSchema, SiteIconSchema } from "../../../shared/schema/site
 import type { KeptSiteIcon, WornIcon } from "../../../shared/schema/site-icon.schema.js";
 import { freshIconAt, latestIconOfOrigin, withIconKept } from "../../../shared/lib/site-icon-cache.js";
 import { iconAddressesOf } from "../../../shared/lib/site-icon-choice.js";
+import { DATA_IMAGE } from "../../../shared/lib/page-icon-links.js";
 import { originOf } from "../../../shared/lib/site-key.js";
+import type { SiteFilesGateway } from "../../site-files/site-files.gateway.js";
 import type { SiteIconsGateway } from "../../site-icons/site-icons.gateway.js";
 import { ICONS_UNCHANGED, readPageIconsScript } from "./page-icon-script.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
 export interface PageIconsHold {
-	readonly bridge: Pick<PagesBridge, "evaluate" | "siteIcon">;
+	readonly bridge: Pick<PagesBridge, "evaluate">;
 	readonly siteIcons: SiteIconsGateway;
+	readonly siteFiles: SiteFilesGateway;
 	readonly livePages: () => readonly string[];
 	readonly wear: (page: string, worn: WornIcon) => void;
 }
 
 const ICONS_EVERY_MS = 2000;
-const DATA_IMAGE = "data:image/";
 
 export class PageIcons {
 	private readonly worn = new Map<string, string>();
 	private readonly reading = new Set<string>();
-	private readonly fetching = new Map<string, Promise<string | null>>();
 	private timer: ReturnType<typeof setTimeout> | null = null;
 	private readonly hold: PageIconsHold;
 
@@ -84,7 +85,7 @@ export class PageIcons {
 		try {
 			await this.read(page, isForced);
 		} catch (failure: unknown) {
-			console.debug(`[widgetarium] browser page ${page} gave no icon`, failure);
+			console.error(`[widgetarium] browser page ${page} gave no icon`, failure);
 		} finally {
 			this.reading.delete(page);
 		}
@@ -142,25 +143,13 @@ export class PageIcons {
 			return kept.icon;
 		}
 
-		return this.fetchedOnce(address, origin);
+		return this.fetchedIcon(address, origin);
 	}
 
-	private fetchedOnce(address: string, origin: string): Promise<string | null> {
-		const asked = this.fetching.get(address);
-
-		if (asked !== undefined) {
-			return asked;
-		}
-
-		const fetched = this.hold.bridge
-			.siteIcon(address)
-			.then(({ icon, isReached }) => {
-				this.keepIfReached({ address, origin, icon, fetchedAt: Date.now() }, isReached);
-				return icon;
-			})
-			.finally(() => this.fetching.delete(address));
-		this.fetching.set(address, fetched);
-		return fetched;
+	private async fetchedIcon(address: string, origin: string): Promise<string | null> {
+		const { icon, isReached } = await this.hold.siteFiles.siteIcon(address);
+		this.keepIfReached({ address, origin, icon, fetchedAt: Date.now() }, isReached);
+		return icon;
 	}
 
 	private keepIfReached(fetched: KeptSiteIcon, isReached: boolean): void {
@@ -171,8 +160,8 @@ export class PageIcons {
 			return;
 		}
 
-		const reason = `site icon ${fetched.address} for ${fetched.origin} → ${said} (fetched)`;
-		this.hold.siteIcons.saveSiteIcons(withIconKept(this.hold.siteIcons.siteIcons(), fetched), reason);
+		const reason = `site icon ${fetched.origin} → ${said} (fetched from the live page, ${fetched.address})`;
+		this.hold.siteIcons.saveSiteIcons(withIconKept(this.hold.siteIcons.siteIcons(), fetched), fetched.origin, reason);
 		console.info(`[widgetarium] ${reason}`);
 	}
 }

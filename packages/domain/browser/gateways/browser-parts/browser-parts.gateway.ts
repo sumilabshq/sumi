@@ -8,6 +8,8 @@ import type { ClockGateway } from "../clock/clock.gateway.js";
 import type { InkActivityGateway } from "../ink-activity/ink-activity.gateway.js";
 import type { OnceAllowancesGateway } from "../once-allowances/once-allowances.gateway.js";
 import type { RecentSitesGateway } from "../recent-sites/recent-sites.gateway.js";
+import type { SiteFilesGateway } from "../site-files/site-files.gateway.js";
+import type { SiteIconsGateway } from "../site-icons/site-icons.gateway.js";
 import { electronRemoteOfWindow, electronBrowserParts } from "./electron.gateway.js";
 import { tauriBrowserParts } from "./tauri.gateway.js";
 import { webBrowserParts } from "./web.gateway.js";
@@ -19,13 +21,19 @@ export type KeptBrowserParts = {
 	readonly recentSites: RecentSitesGateway;
 };
 
-export type BrowserParts = KeptBrowserParts & {
-	readonly browserGrantReads: BrowserGrantReadsGateway;
-	readonly clock: ClockGateway;
-	readonly onceAllowances: OnceAllowancesGateway;
-	readonly accessAsks: AccessAsksGateway;
-	readonly inkActivity: InkActivityGateway;
+export type SiteIconParts = {
+	readonly siteIcons: SiteIconsGateway;
+	readonly siteFiles: SiteFilesGateway;
 };
+
+export type BrowserParts = KeptBrowserParts &
+	SiteIconParts & {
+		readonly browserGrantReads: BrowserGrantReadsGateway;
+		readonly clock: ClockGateway;
+		readonly onceAllowances: OnceAllowancesGateway;
+		readonly accessAsks: AccessAsksGateway;
+		readonly inkActivity: InkActivityGateway;
+	};
 
 const PARTS_ON: Readonly<Record<Platform, () => BrowserParts>> = {
 	browser: () => startedOrOff(browserWindowParts),

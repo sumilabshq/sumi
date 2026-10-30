@@ -30,6 +30,7 @@ import {
 	RereadSiteAccessForOnceAllowancesSubscriber,
 	RereadSiteAccessForPagesSubscriber,
 } from "./features/sites/requests.js";
+import { RereadSiteIconSubscriber, SiteIconQuery } from "./features/site-icons/requests.js";
 import {
 	AskInkPromptQuery,
 	AttachPagesCommand,
@@ -76,11 +77,13 @@ export const BrowserModule = module("browser")
 		RereadInkReadingSubscriber,
 		RereadPageHeadForPagesSubscriber,
 		RereadPageHeadSubscriber,
+		RereadSiteIconSubscriber,
 	)
 	.public(
 		BrowserTabsQuery,
 		AskInkPromptQuery,
 		PageHeadQuery,
+		SiteIconQuery,
 		SiteAccessQuery,
 		AccessAsksQuery,
 		InkReadingQuery,

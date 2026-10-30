@@ -240,6 +240,23 @@ export const SiteLevelSchema = z.object({
 	level: AccessLevelSchema,
 });
 
+export const SiteIconSchema = z.string().regex(/^data:image\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/);
+
+export interface WornIcon {
+	readonly favicon: string;
+	readonly origin: string;
+}
+
+export const SiteOriginSchema = z.object({
+	origin: z.string(),
+});
+
+export const SiteIconOfOriginSchema = z.object({
+	icon: SiteIconSchema.nullable(),
+});
+
+export type SiteIconOfOrigin = z.infer<typeof SiteIconOfOriginSchema>;
+
 export const GhostPageSchema = z.object({
 	htmlClass: z.string(),
 	htmlAttributes: z.array(z.tuple([z.string(), z.string()])),
@@ -280,6 +297,9 @@ export const PageHeadQuery = query("browser/page-head")
 	.input(BrowserViewSchema)
 	.output(PageHeadSchema.nullable())
 	.settlesNow();
+export const SiteIconQuery = query("browser/site-icon")
+	.input(SiteOriginSchema)
+	.output(SiteIconOfOriginSchema);
 export const SiteAccessQuery = query("browser/site-access")
 	.input(BrowserViewSchema)
 	.output(SiteAccessSchema)
@@ -371,4 +391,4 @@ export const PagesChangedEvent = event("browser/pages-changed");
 export const InkActivityChangedEvent = event("browser/ink-activity-changed");
 export const AccessAsksChangedEvent = event("browser/access-asks-changed");
 
-export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenChatWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);
+export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteIconQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenChatWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);

@@ -194,11 +194,11 @@ pub fn install(view: &WKWebView, hooks: NavigationHooks) -> Result<(), String> {
     let inner: Option<Retained<AnyObject>> = unsafe { msg_send![view, navigationDelegate] };
     let inner = inner.ok_or("The page has no navigation delegate to wrap.")?;
     let held: Retained<AnyObject> = unsafe { msg_send![registered_class(), new] };
-    let _: () = unsafe { msg_send![view, setNavigationDelegate: &*held] };
     let view_key = view as *const WKWebView as usize;
     PROXIES.with(|proxies| {
         proxies.borrow_mut().insert(key_of(&held), Proxy { view: view_key, inner, hooks, frames: Vec::new(), held: held.clone() });
     });
+    let _: () = unsafe { msg_send![view, setNavigationDelegate: &*held] };
     Ok(())
 }
 

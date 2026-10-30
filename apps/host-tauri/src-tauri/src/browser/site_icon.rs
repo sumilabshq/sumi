@@ -1,7 +1,9 @@
 use serde_json::{json, Value};
+use std::io::Read;
 use std::process::{Command, Stdio};
 
 pub const MOST_ICON_BYTES: usize = 48 * 1024;
+pub const MOST_PAGE_BYTES: usize = 256 * 1024;
 pub const NOT_A_WEB_ADDRESS: &str = "A site icon is fetched only over http or https.";
 
 const CURL: &str = "/usr/bin/curl";
@@ -11,6 +13,14 @@ const WEB_PROTOCOLS: &str = "=http,https";
 const SNIFFED_TEXT: usize = 1024;
 const CURL_HTTP_ERROR: i32 = 22;
 const CURL_TOO_LARGE: i32 = 63;
+const CURL_WRITE_REFUSED: i32 = 23;
+const CURL_RECEIVE_CUT: i32 = 56;
+const CURL_TOO_MANY_REDIRECTS: i32 = 47;
+const PAGE_FACTS_OUT: &str = "%{stderr}%{url_effective}\n%{content_type}\n%{http_code}";
+const STATUS_OUT: &str = "%{stderr}%{http_code}";
+const FIRST_HTTP_ERROR: u16 = 400;
+const HEAD_END: &str = "</head";
+const HTML_TYPE: &str = "html";
 const BASE64_LETTERS: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 pub fn is_web_address(address: &str) -> bool {
@@ -93,17 +103,25 @@ fn fetched_bytes(address: &str, user_agent: &str) -> Fetched {
     let output = Command::new(CURL)
         .args(["--disable", "--silent", "--fail", "--location"])
         .args(["--max-redirs", MOST_REDIRECTS, "--max-time", FETCH_SECONDS, "--max-filesize", &most_bytes])
+        .args(["--write-out", STATUS_OUT])
         .args(["--proto", WEB_PROTOCOLS, "--proto-redir", WEB_PROTOCOLS, "--user-agent", user_agent, "--", address])
         .stdin(Stdio::null())
-        .stderr(Stdio::null())
         .output();
     let Ok(output) = output else { return Fetched::Unreached };
+
+    if is_http_error(&String::from_utf8_lossy(&output.stderr)) {
+        return Fetched::Answered(None);
+    }
 
     match output.status.code() {
         Some(0) => Fetched::Answered(Some(output.stdout)),
         Some(CURL_HTTP_ERROR) | Some(CURL_TOO_LARGE) => Fetched::Answered(None),
         _ => Fetched::Unreached,
     }
+}
+
+fn is_http_error(status: &str) -> bool {
+    status.trim().parse::<u16>().is_ok_and(|code| code >= FIRST_HTTP_ERROR)
 }
 
 pub fn site_icon(address: &str, user_agent: &str) -> Result<Value, String> {
@@ -119,4 +137,84 @@ pub fn answer_of(fetched: Fetched) -> Value {
         Fetched::Answered(bytes) => json!({ "icon": bytes.and_then(|bytes| icon_of_bytes(&bytes)), "isReached": true }),
         Fetched::Unreached => json!({ "icon": null, "isReached": false }),
     }
+}
+
+struct ReadPage {
+    code: Option<i32>,
+    body: Vec<u8>,
+    facts: PageFacts,
+}
+
+struct PageFacts {
+    page: Option<String>,
+    is_html: bool,
+    is_http_error: bool,
+}
+
+pub fn page_head(address: &str, user_agent: &str) -> Result<Value, String> {
+    if !is_web_address(address) {
+        return Err(NOT_A_WEB_ADDRESS.into());
+    }
+
+    Ok(head_answer_of(address, read_page(address, user_agent)))
+}
+
+fn read_page(address: &str, user_agent: &str) -> Option<ReadPage> {
+    let mut child = Command::new(CURL)
+        .args(["--disable", "--silent", "--fail", "--location", "--compressed"])
+        .args(["--max-redirs", MOST_REDIRECTS, "--max-time", FETCH_SECONDS, "--write-out", PAGE_FACTS_OUT])
+        .args(["--proto", WEB_PROTOCOLS, "--proto-redir", WEB_PROTOCOLS, "--user-agent", user_agent, "--", address])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .ok()?;
+    let mut body = Vec::new();
+    let stdout = child.stdout.take()?;
+    stdout.take(MOST_PAGE_BYTES as u64).read_to_end(&mut body).ok()?;
+    let output = child.wait_with_output().ok()?;
+    Some(ReadPage { code: output.status.code(), body, facts: page_facts_of(&String::from_utf8_lossy(&output.stderr)) })
+}
+
+fn page_facts_of(written: &str) -> PageFacts {
+    let mut lines = written.lines();
+    let page = lines.next().filter(|page| is_web_address(page)).map(str::to_string);
+    let is_html = lines.next().is_some_and(|kind| kind.to_ascii_lowercase().contains(HTML_TYPE));
+    PageFacts { page, is_html, is_http_error: lines.next().is_some_and(is_http_error) }
+}
+
+fn head_answer_of(address: &str, read: Option<ReadPage>) -> Value {
+    let Some(read) = read else { return unreached_head(address) };
+    let is_cut_by_cap = read.body.len() == MOST_PAGE_BYTES;
+
+    if read.facts.is_http_error {
+        return headless_answer(address);
+    }
+
+    match read.code {
+        Some(0) => answered_head(address, &read),
+        Some(CURL_WRITE_REFUSED | CURL_RECEIVE_CUT) if is_cut_by_cap => answered_head(address, &read),
+        Some(CURL_HTTP_ERROR | CURL_TOO_MANY_REDIRECTS) => headless_answer(address),
+        _ => unreached_head(address),
+    }
+}
+
+fn headless_answer(address: &str) -> Value {
+    json!({ "page": address, "head": null, "isReached": true })
+}
+
+fn unreached_head(address: &str) -> Value {
+    json!({ "page": address, "head": null, "isReached": false })
+}
+
+fn answered_head(address: &str, read: &ReadPage) -> Value {
+    let page = read.facts.page.as_deref().unwrap_or(address);
+    let head = read.facts.is_html.then(|| head_of(&read.body));
+    json!({ "page": page, "head": head, "isReached": true })
+}
+
+fn head_of(body: &[u8]) -> String {
+    let text = String::from_utf8_lossy(body);
+    let end = text.to_ascii_lowercase().find(HEAD_END).unwrap_or(text.len());
+    text[..end].to_string()
 }

@@ -8,7 +8,7 @@ export class MemorySiteIconsGateway extends SiteIconsGateway {
 		return this.kept;
 	}
 
-	saveSiteIcons(icons: readonly KeptSiteIcon[]): void {
+	protected writeSiteIcons(icons: readonly KeptSiteIcon[]): void {
 		this.kept = icons;
 	}
 }

@@ -1,7 +1,7 @@
+import { ICON_LINKS } from "../../../shared/lib/page-icon-links.js";
+
 export const ICONS_UNCHANGED = "same";
 
-const ICON_LINKS =
-	'link[rel][href]:is([rel~="icon" i], [rel~="apple-touch-icon" i], [rel~="apple-touch-icon-precomposed" i])';
 const MOST_HREF_CHARACTERS = 70_000;
 const WATCHED_ATTRIBUTES = '["href", "rel", "sizes", "type", "media"]';
 

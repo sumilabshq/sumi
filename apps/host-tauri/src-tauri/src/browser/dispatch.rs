@@ -133,6 +133,7 @@ fn answer_of(pages: &Arc<Pages>, call: &Call) -> Answer {
         "show_tear_off_ghost" => tear_off_ghost::show(app, call.flag("shown")?),
         "evaluate" => pages.evaluate(app, call.page()?, call.text("script")?.to_string()),
         "site_icon" => site_icon::site_icon(call.text("address")?, super::pages::user_agent()),
+        "site_page_head" => site_icon::page_head(call.text("address")?, super::pages::user_agent()),
         "evaluate_frames" => pages.evaluate_in_frames(app, call.page()?, call.text("script")?.to_string()),
         command if drive::is_drive_command(command) => drive::answer(app, command, &call.args),
         unknown => Err(format!("The browser has no command {unknown}.")),

@@ -22,6 +22,7 @@ import {
 } from "../packages/domain/browser/gateways/browser-pages/tauri/page-icon-script.ts";
 import { PageIcons } from "../packages/domain/browser/gateways/browser-pages/tauri/page-icons.ts";
 import { MemorySiteIconsGateway } from "../packages/domain/browser/gateways/site-icons/memory.gateway.ts";
+import { TauriSiteFilesGateway } from "../packages/domain/browser/gateways/site-files/tauri/tauri.gateway.ts";
 import type { PagesBridge } from "../packages/domain/browser/gateways/browser-pages/tauri/pages-bridge.ts";
 
 const PAGE = "https://mail.example/inbox";
@@ -178,7 +179,7 @@ function iconServedAt(address: string): string | null {
 	return address.endsWith("read.png") ? ICON : null;
 }
 
-class FakeIconBridge implements Pick<PagesBridge, "evaluate" | "siteIcon"> {
+class FakeIconBridge implements Pick<PagesBridge, "evaluate"> {
 	readonly fetched: string[] = [];
 	answer = JSON.stringify({ page: PAGE, links: [linkOf("https://mail.example/read.png", "icon", "32x32")] });
 
@@ -199,6 +200,16 @@ class FakeIconBridge implements Pick<PagesBridge, "evaluate" | "siteIcon"> {
 	}
 }
 
+const BACK_OFF_MS = 5 * 60 * 1000;
+
+function siteFilesOver(bridge: FakeIconBridge, clock: { now: number }): TauriSiteFilesGateway {
+	const ipc = {
+		invoke: (_command: string, args?: Readonly<Record<string, unknown>>) => bridge.siteIcon(String(args?.["address"])),
+		channel: () => null,
+	};
+	return new TauriSiteFilesGateway(ipc, () => clock.now);
+}
+
 async function pageIconsChecks(): Promise<void> {
 	const bridge = new FakeIconBridge();
 	const worn = new Map<string, string>();
@@ -207,6 +218,7 @@ async function pageIconsChecks(): Promise<void> {
 	const icons = new PageIcons({
 		bridge,
 		siteIcons,
+		siteFiles: siteFilesOver(bridge, { now: NOW }),
 		livePages: () => ["tab-1", "tab-2"],
 		wear: (page, { favicon, origin }) => {
 			worn.set(page, favicon);
@@ -242,9 +254,11 @@ async function cdnAndOfflineChecks(): Promise<void> {
 	const bridge = new FakeIconBridge();
 	const worn = new Map<string, string>();
 	const siteIcons = new MemorySiteIconsGateway();
+	const clock = { now: NOW };
 	const icons = new PageIcons({
 		bridge,
 		siteIcons,
+		siteFiles: siteFilesOver(bridge, clock),
 		livePages: () => [],
 		wear: (page, { favicon, origin }) => worn.set(page, `${origin} ${favicon}`),
 	});
@@ -258,8 +272,11 @@ async function cdnAndOfflineChecks(): Promise<void> {
 	);
 	bridge.isOffline = false;
 	await icons.readNow("tab-1");
+	check("an unreached icon is not asked again for 5 min", [worn.get("tab-1"), bridge.fetched.length], [undefined, 2]);
+	clock.now += BACK_OFF_MS;
+	await icons.readNow("tab-1");
 	check(
-		"the next read after a failed one fetches again and wears it",
+		"the next read after the back-off fetches again and wears it",
 		worn.get("tab-1"),
 		`https://mail.example ${ICON}`,
 	);

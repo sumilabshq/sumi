@@ -8,6 +8,7 @@ import { TauriBrowserPagesGateway, tauriPagesBridge } from "../browser-pages/tau
 import type { BrowserPagesIpc } from "../browser-pages/tauri/tauri.gateway.js";
 import { KeptRecentSitesSchema, TauriRecentSitesGateway, keptRecentSitesKind } from "../recent-sites/tauri.gateway.js";
 import { KeptSiteIconsSchema } from "../../shared/schema/site-icon.schema.js";
+import { TauriSiteFilesGateway } from "../site-files/tauri/tauri.gateway.js";
 import { TauriSiteIconsGateway, keptSiteIconsKind } from "../site-icons/tauri.gateway.js";
 import type { BrowserParts } from "./browser-parts.gateway.js";
 import { browserPartsOf } from "./memory.gateway.js";
@@ -56,20 +57,26 @@ export function tauriBrowserParts(ipc: BrowserPagesIpc = BROWSER_IPC): BrowserPa
 		kind: keptRecentSitesKind(files.recentSites),
 		empty: KeptRecentSitesSchema.parse({}),
 	});
-	const siteIcons = HeldDoc.reading({
-		store,
-		root: GLOBAL_ROOT,
-		kind: keptSiteIconsKind(files.siteIcons),
-		empty: KeptSiteIconsSchema.parse({}),
-	});
+	const siteIcons = new TauriSiteIconsGateway(
+		HeldDoc.reading({
+			store,
+			root: GLOBAL_ROOT,
+			kind: keptSiteIconsKind(files.siteIcons),
+			empty: KeptSiteIconsSchema.parse({}),
+		}),
+	);
+	const siteFiles = new TauriSiteFilesGateway(ipc);
 	return browserPartsOf({
 		browserPages: new TauriBrowserPagesGateway(tauriPagesBridge(ipc), {
 			profileId: DEFAULT_BROWSER_PROFILE,
 			ownLabel: studioWindowOf(location.search).label,
-			siteIcons: new TauriSiteIconsGateway(siteIcons),
+			siteIcons,
+			siteFiles,
 		}),
 		browserGrants: new TauriBrowserGrantsGateway(grants, store, files),
 		browserAudit: new TauriBrowserAuditGateway(store, files.access),
 		recentSites: new TauriRecentSitesGateway(recentSites),
+		siteIcons,
+		siteFiles,
 	});
 }

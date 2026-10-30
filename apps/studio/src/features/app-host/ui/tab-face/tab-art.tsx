@@ -1,9 +1,12 @@
-import { createElement as h, useId, useState } from "react";
+import { createElement as h, useId } from "react";
 import type { ReactElement } from "react";
 import { MASK_KEEP, TAB_ART_SHAPES } from "../../lib/tab-art/tab-art-shapes.js";
 import type { ArtShape } from "../../lib/tab-art/tab-art-shapes.js";
 import { siteLetterOf } from "../../lib/tab-art/site-letter.js";
+import { webOriginOf } from "../../lib/tab-art/site-origin.js";
 import type { TabArt as TabArtName } from "@widgetarium/app-host";
+import { FaviconImage } from "./favicon-image.js";
+import { KnownSiteIcon } from "./known-site-icon.js";
 import { SiteLetter } from "./site-letter.js";
 
 export type TabArtSize = "row" | "tile";
@@ -24,45 +27,23 @@ const LETTER_PX: Readonly<Record<TabArtSize, number>> = {
 	row: 16,
 	tile: 18,
 };
-const FAVICON_PX: Readonly<Record<TabArtSize, number>> = {
-	row: 16,
-	tile: 20,
-};
 const ART = "cv:block cv:flex-none";
-const FAVICON_CLASS = "cv:mx-px cv:block cv:flex-none cv:rounded-(--sumi-r-xs) cv:object-contain";
 
 export function TabArt({ icon, favicon, title, address, size }: TabArtProps): ReactElement {
-	const [failed, setFailed] = useState<string | null>(null);
 	const idOfMask = useId();
 
-	if (favicon !== null && favicon !== failed) {
-		return (
-			<img
-				src={favicon}
-				alt=""
-				width={FAVICON_PX[size]}
-				height={FAVICON_PX[size]}
-				draggable={false}
-				decoding="async"
-				className={FAVICON_CLASS}
-				style={{
-					width: FAVICON_PX[size],
-					height: FAVICON_PX[size],
-				}}
-				onError={() => setFailed(favicon)}
-				data-host-tab-favicon=""
-			/>
-		);
-	}
-
 	if (icon === "site") {
-		return <SiteLetter letter={siteLetterOf(title, address)} size={size} px={LETTER_PX[size]} />;
+		return siteArtOf({ favicon, title, address, size });
 	}
 
+	const art = shapeArtOf(icon, size, `tab-art-cut${idOfMask.replace(/\W/g, "")}`);
+	return favicon === null ? art : <FaviconImage src={favicon} size={size} fallback={art} />;
+}
+
+function shapeArtOf(icon: Exclude<TabArtName, "site">, size: TabArtSize, maskId: string): ReactElement {
 	const px = ART_PX[size];
 	const shapes = TAB_ART_SHAPES[icon];
 	const cuts = shapes.filter((shape) => shape.isCut === true);
-	const maskId = `tab-art-cut${idOfMask.replace(/\W/g, "")}`;
 	return (
 		<svg viewBox="0 0 20 20" aria-hidden="true" width={px} height={px} className={ART} data-tab-art={icon}>
 			{cuts.length === 0 ? null : (
@@ -76,6 +57,17 @@ export function TabArt({ icon, favicon, title, address, size }: TabArtProps): Re
 			</g>
 		</svg>
 	);
+}
+
+function siteArtOf({ favicon, title, address, size }: Omit<TabArtProps, "icon">): ReactElement {
+	const letter = <SiteLetter letter={siteLetterOf(title, address)} size={size} px={LETTER_PX[size]} />;
+
+	if (favicon !== null) {
+		return <FaviconImage src={favicon} size={size} fallback={letter} />;
+	}
+
+	const origin = webOriginOf(address);
+	return origin === null ? letter : <KnownSiteIcon origin={origin} size={size} fallback={letter} />;
 }
 
 function drawnShapeOf({ tag, attrs, text }: ArtShape, at: number): ReactElement {

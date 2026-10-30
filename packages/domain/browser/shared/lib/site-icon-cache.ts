@@ -13,18 +13,29 @@ export function freshIconAt(icons: readonly KeptSiteIcon[], address: string, now
 }
 
 export function latestIconOfOrigin(icons: readonly KeptSiteIcon[], origin: string, now: number): string | null {
-	const latest = icons
-		.filter((icon) => icon.origin === origin && icon.icon !== null && isFresh(icon, now))
-		.reduce<KeptSiteIcon | null>(
-			(best, icon) => (best === null || icon.fetchedAt > best.fetchedAt ? icon : best),
-			null,
-		);
-	return latest?.icon ?? null;
+	return latestKeptOfOrigin(icons, origin, now)?.icon ?? null;
 }
 
 export function withIconKept(icons: readonly KeptSiteIcon[], kept: KeptSiteIcon): readonly KeptSiteIcon[] {
 	const newestFirst = [kept, ...icons.filter((icon) => icon.address !== kept.address && isFresh(icon, kept.fetchedAt))];
 	return withinCaps(newestFirst.sort((one, other) => other.fetchedAt - one.fetchedAt));
+}
+
+export function originPageOf(origin: string): string {
+	return `${origin}/`;
+}
+
+export function keptIconOfOrigin(icons: readonly KeptSiteIcon[], origin: string, now: number): KeptSiteIcon | null {
+	return latestKeptOfOrigin(icons, origin, now) ?? freshIconAt(icons, originPageOf(origin), now);
+}
+
+function latestKeptOfOrigin(icons: readonly KeptSiteIcon[], origin: string, now: number): KeptSiteIcon | null {
+	return icons
+		.filter((icon) => icon.origin === origin && icon.icon !== null && isFresh(icon, now))
+		.reduce<KeptSiteIcon | null>(
+			(best, icon) => (best === null || icon.fetchedAt > best.fetchedAt ? icon : best),
+			null,
+		);
 }
 
 function isFresh(icon: KeptSiteIcon, now: number): boolean {
