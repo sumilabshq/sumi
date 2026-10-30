@@ -177,7 +177,7 @@ export class TauriPage {
 
 	wearFavicon({ favicon, origin }: WornIcon): void {
 		if (originOf(this.state.url) !== origin) {
-			console.debug(`[widgetarium] browser page ${this.state.id} icon of ${origin} skipped: the tab moved on`);
+			console.info(`[widgetarium] browser page ${this.state.id} icon of ${origin} skipped: the tab moved on`);
 			return;
 		}
 

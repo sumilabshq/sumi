@@ -2,8 +2,6 @@ import type { GhostLay, GhostWorn } from "../../../shared/schema/tear-off-ghost.
 import { z } from "zod";
 import { PageFailureSchema } from "../../../shared/schema/browser-tab.schema.js";
 import type { PageRegion } from "../../../shared/schema/page-read.schema.js";
-import { SiteIconAnswerSchema } from "../../../shared/schema/site-icon.schema.js";
-import type { SiteIconAnswer } from "../../../shared/schema/site-icon.schema.js";
 
 export interface BrowserPagesIpc {
 	invoke(command: string, args?: Readonly<Record<string, unknown>>): Promise<unknown>;
@@ -153,7 +151,6 @@ export interface PagesBridge {
 	pageShot(page: string, region: PageRegion): Promise<Uint8Array>;
 	evaluate(page: string, script: string): Promise<string>;
 	evaluateInFrames(page: string, script: string): Promise<readonly FrameAnswer[]>;
-	siteIcon(address: string): Promise<SiteIconAnswer>;
 }
 
 const COMMAND = "plugin:browser|{name}";
@@ -200,7 +197,6 @@ export function tauriPagesBridge(ipc: BrowserPagesIpc): PagesBridge {
 		pageShot: async (page, region) => bytesOf(await call("page_shot", { page, region })),
 		evaluate: async (page, script) => textOf(await call("evaluate", { page, script })),
 		evaluateInFrames: async (page, script) => FrameAnswersSchema.parse(await call("evaluate_frames", { page, script })),
-		siteIcon: async (address) => SiteIconAnswerSchema.parse(await call("site_icon", { address })),
 	};
 }
 

@@ -20,7 +20,7 @@ export class TauriSiteIconsGateway extends SiteIconsGateway {
 		return this.kept.now().icons;
 	}
 
-	saveSiteIcons(icons: readonly KeptSiteIcon[], reason: string): void {
+	protected writeSiteIcons(icons: readonly KeptSiteIcon[], reason: string): void {
 		this.kept.change({ icons: [...icons] }, reason);
 	}
 }

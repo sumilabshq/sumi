@@ -30,6 +30,8 @@ const DrawnCaseSchema = z.object({
 	radius: z.string(),
 	fill: z.string(),
 	shadow: z.string(),
+	srcLength: z.number(),
+	srcMiddle: z.string(),
 });
 
 type DrawnCase = z.infer<typeof DrawnCaseSchema>;
@@ -48,6 +50,8 @@ const DRAWN_CASES = `[...document.querySelectorAll("[data-case]")].map((row) => 
 		radius: style?.borderTopLeftRadius ?? "",
 		fill: style?.backgroundColor ?? "",
 		shadow: style?.boxShadow ?? "",
+		srcLength: image?.getAttribute("src")?.length ?? 0,
+		srcMiddle: image?.getAttribute("src")?.slice(200, 232) ?? "",
 	};
 })`;
 
@@ -98,7 +102,7 @@ async function checksTheme(theme: Theme): Promise<void> {
 
 	try {
 		await waited(DRAWN_MS);
-		const cases = z.array(DrawnCaseSchema).parse(await page.ask(DRAWN_CASES));
+		const cases = await drawnCases(page);
 		const row = caseNamed(cases, "row-icon");
 		check(`${theme}: a tab row with a favicon draws a 16×16 image and no letter tile`, isIconOf(row, 16), row);
 		check(`${theme}: the favicon wears the xs corner and no plate behind it`, isBare(row), row);
@@ -117,10 +121,47 @@ async function checksTheme(theme: Theme): Promise<void> {
 			isIconOf(caseNamed(cases, "tile-icon"), 20),
 			caseNamed(cases, "tile-icon"),
 		);
+		await checksUnloadedTabs(page, theme, cases);
 		writeFileSync(path.join(shotsAt, `icons-${theme}.png`), await page.shoot());
 	} finally {
 		page.close();
 	}
+}
+
+const SWAP_SITE_ICON = "globalThis.swapSiteIcon()";
+
+async function drawnCases(page: AskedPage): Promise<readonly DrawnCase[]> {
+	return z.array(DrawnCaseSchema).parse(await page.ask(DRAWN_CASES));
+}
+
+async function checksUnloadedTabs(page: AskedPage, theme: Theme, cases: readonly DrawnCase[]): Promise<void> {
+	for (const name of ["unloaded-slack", "unloaded-linear"]) {
+		check(
+			`${theme}: an unloaded tab with an address draws its discovered icon at 16×16, not a letter`,
+			isIconOf(caseNamed(cases, name), 16),
+			caseNamed(cases, name),
+		);
+	}
+
+	check(
+		`${theme}: two origins draw two different discovered icons`,
+		caseNamed(cases, "unloaded-slack")?.srcMiddle !== caseNamed(cases, "unloaded-linear")?.srcMiddle,
+		[caseNamed(cases, "unloaded-slack")?.srcMiddle, caseNamed(cases, "unloaded-linear")?.srcMiddle],
+	);
+	check(
+		`${theme}: an unloaded Essentials tile draws its discovered icon at 20×20`,
+		isIconOf(caseNamed(cases, "unloaded-tile"), 20),
+		caseNamed(cases, "unloaded-tile"),
+	);
+	const before = caseNamed(cases, "live-swap")?.srcLength ?? 0;
+	const swappedLength = Number(await page.ask(SWAP_SITE_ICON));
+	await waited(DRAWN_MS);
+	const after = caseNamed(await drawnCases(page), "live-swap");
+	check(
+		`${theme}: a live page swapping its origin's icon redraws the unloaded row`,
+		before !== 0 && after?.srcLength !== before && after?.srcLength === swappedLength && isIconOf(after, 16),
+		{ before, after: after?.srcLength, swappedLength },
+	);
 }
 
 const LAY_ICON_LINK = `(() => {

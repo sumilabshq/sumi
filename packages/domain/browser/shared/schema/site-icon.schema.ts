@@ -45,3 +45,21 @@ export const KeptSiteIconsSchema = z.looseObject({
 });
 
 export type KeptSiteIcons = z.infer<typeof KeptSiteIconsSchema>;
+
+export const PageHeadReadSchema = z.object({
+	page: z.string(),
+	head: z.string().nullable(),
+	isReached: z.boolean(),
+});
+
+export type PageHeadRead = z.infer<typeof PageHeadReadSchema>;
+
+export const SiteOriginSchema = z.object({
+	origin: z.string(),
+});
+
+export const SiteIconOfOriginSchema = z.object({
+	icon: SiteIconSchema.nullable(),
+});
+
+export type SiteIconOfOrigin = z.infer<typeof SiteIconOfOriginSchema>;
