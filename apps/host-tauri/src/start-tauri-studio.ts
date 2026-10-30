@@ -1,4 +1,4 @@
-import { Fragment, createElement as h } from "react";
+import { Fragment, Profiler, createElement as h } from "react";
 import type { ReactElement } from "react";
 import "@widgetarium/studio/studio.css";
 import "./host-page.css";
@@ -13,6 +13,7 @@ import { TauriStartup } from "./startup/tauri-startup.js";
 import { StoreClient, hearStoreChangesWith } from "@widgetarium/behaviors/tauri-store";
 import { WorkspaceClient } from "./workspace/workspace-client.js";
 import { forwardStudioLogs } from "./studio-log.js";
+import { startStudioProfiler } from "./profiler/studio-profiler.js";
 import { followWindowDrag } from "./window-drag.js";
 import { startCore } from "./core-link/start-core.js";
 
@@ -28,6 +29,7 @@ export function startTauriStudio(project: WidgetariumProject): ReactElement {
 		logged: console,
 		page: window,
 	});
+	const profiler = startStudioProfiler(window, getCurrentWebviewWindow().label);
 	followColourScheme();
 	followWindowDrag();
 	hearStoreChangesWith({
@@ -47,7 +49,11 @@ export function startTauriStudio(project: WidgetariumProject): ReactElement {
 		openStudio: (settings, workspace) => openTauriStudio({ project, store, workspaces, settings, workspace }),
 	});
 	void opening.start();
-	return h(TauriStartup, { opening });
+	if (profiler === null) {
+		return h(TauriStartup, { opening });
+	}
+
+	return h(Profiler, { id: "studio", onRender: profiler.commits.onRender }, h(TauriStartup, { opening }));
 }
 
 function tauriInvoke(command: string, args: Readonly<Record<string, unknown>>): Promise<unknown> {
