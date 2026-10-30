@@ -3,25 +3,20 @@ import { Repeatable, command, refuse } from "@widgetarium/core/requests";
 import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
 import { PaneTreeQuery, PlacementPreviewQuery } from "../../generated/contract.js";
 import {
-	boardOf,
-	chatPaneOf,
 	goneTabPanesOf,
-	outerIdOf,
 	paneShowingTab,
-	placedTreeOf,
 	shownTabPaneOf,
 	tabPaneIdsOf,
 	tabTargetOf,
 	treeWithoutGoneTabs,
 	treeWithoutPane,
 	treeShowingChat,
-	treeShowingTabInGroup,
+	treeShowingShownTabAlone,
 	treeWithoutPanes,
 	withTabShown,
 } from "../../shared/lib/pane-trees.js";
 import { goneTabsWords, paneTransitionOf } from "../../shared/lib/pane-words.js";
 import { holdsOf } from "../../shared/lib/window-trees.js";
-import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.js";
 
 const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
 
@@ -96,29 +91,16 @@ export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
 		invalidate(PlacementPreviewQuery);
 		const tree = paneTree.tree();
 
-		if (shownTabPaneOf(tree) !== null) {
-			console.info("[widgetarium] open the shown tab pane skipped: it stands already");
+		const shownTabLeaf = shownTabPaneOf(tree);
+
+		if (shownTabLeaf !== null && tree.root?.id === shownTabLeaf.id) {
+			console.info("[widgetarium] open the shown tab pane skipped: it holds the board alone already");
 			return;
 		}
 
-		const placed = placedTreeOf(
-			tree,
-			{
-				kind: "app",
-				tabId: null,
-			},
-			{
-				targetId: chatOuterIdOf(tree),
-				side: "right",
-			},
-		);
-
-		if (placed === null) {
-			return;
-		}
-
-		const reason = paneTransitionOf(tree, placed.tree, "open the shown tab beside the chat");
-		paneTree.saveTree(placed.tree, reason);
+		const next = treeShowingShownTabAlone(tree);
+		const reason = paneTransitionOf(tree, next, "the shown tab takes the whole board");
+		paneTree.saveTree(next, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
@@ -181,48 +163,3 @@ export const DropGoneTabsCommand = command("drop-gone-tabs")
 		paneTree.saveTree(next, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
-
-export const ShowTabInChatGroupCommand = command("show-tab-in-chat-group")
-	.input(
-		z.object({
-			chatId: z.string().min(1),
-			tabId: z.string(),
-			isOnlyWhenBare: z.boolean(),
-		}),
-	)
-	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
-	.handle(({ chatId, tabId, isOnlyWhenBare }, { paneTree, invalidate }) => {
-		invalidate(PaneTreeQuery);
-		invalidate(PlacementPreviewQuery);
-		const tree = paneTree.tree();
-		const group = boardGroupOf(tree, chatId);
-
-		if (group === null) {
-			return refuse(`chat ${chatId} has no group on the board`);
-		}
-
-		if (isOnlyWhenBare && group.paneIds.length > 1) {
-			console.info(`[widgetarium] show tab ${tabId} in chat ${chatId} skipped: its group holds tabs already`);
-			return;
-		}
-
-		const next = treeShowingTabInGroup(tree, chatId, tabId);
-
-		if (next === null) {
-			return refuse(`tab ${tabId} found no place in the group of chat ${chatId}`);
-		}
-
-		const reason = paneTransitionOf(tree, next, `show tab ${tabId} in the group of chat ${chatId}`);
-		paneTree.saveTree(next, reason);
-		console.info(`[widgetarium] ${reason}`);
-	});
-
-function chatOuterIdOf(tree: PaneTree): string | null {
-	const chat = chatPaneOf(tree);
-	return chat === null ? null : outerIdOf(tree, chat.id);
-}
-
-function boardGroupOf(tree: PaneTree, chatId: string): PaneBoard["chatGroups"][number] | null {
-	return boardOf(tree).chatGroups.find((group) => group.chatId === chatId) ?? null;
-}

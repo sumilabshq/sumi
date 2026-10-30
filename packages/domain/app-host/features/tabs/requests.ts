@@ -18,7 +18,6 @@ import {
 	PlacedTabsQuery,
 	RememberPagesCommand,
 	RestoreTabsCommand as PlacesRestoreTabsCommand,
-	ShowChatTabCommand as PlacesShowChatTabCommand,
 	ShowTabCommand as PlacesShowTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
@@ -107,17 +106,6 @@ export const ShowTabCommand = command("show-tab")
 	.handle(async ({ id }, { send, emit, ...parts }) => {
 		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesShowTabCommand, { at, id }),
-		);
-	});
-
-export const ShowChatTabCommand = command("show-chat-tab")
-	.input(z.object({ chatId: z.string().min(1) }))
-	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ chatId }, { send, emit, ...parts }) => {
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesShowChatTabCommand, { at, chatId }),
 		);
 	});
 

@@ -2,19 +2,13 @@ import { Repeatable, command } from "@widgetarium/core/requests";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { settledOf, settling } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import {
-	ChatTabAskSchema,
-	RestoreTabsAskSchema,
-	SettleAskSchema,
-	TabAskSchema,
-} from "../../shared/schema/tab-asks.schema.js";
+import { RestoreTabsAskSchema, SettleAskSchema, TabAskSchema } from "../../shared/schema/tab-asks.schema.js";
 import {
 	fitTabsPlan,
 	ownWindowPlan,
 	reloadPlan,
 	rememberPagesPlan,
 	restorePlan,
-	showChatTabPlan,
 	showTabPlan,
 	tearOffPlan,
 } from "./lib/showing-plans.js";
@@ -32,15 +26,6 @@ export const ShowTabCommand = command("show-tab")
 	.idempotencyKey(Repeatable)
 	.inject({ tabs: TabsGateway })
 	.handle(async ({ at, id }, { tabs }) => settledOf(await tabs.movePlacedTabs(settling(at, showTabPlan(id)))));
-
-export const ShowChatTabCommand = command("show-chat-tab")
-	.input(ChatTabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
-	.handle(async ({ at, chatId }, { tabs }) =>
-		settledOf(await tabs.movePlacedTabs(settling(at, showChatTabPlan(chatId)))),
-	);
 
 export const FitTabsToPanesCommand = command("fit-tabs-to-panes")
 	.input(SettleAskSchema)

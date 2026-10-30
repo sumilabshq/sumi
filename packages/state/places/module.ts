@@ -39,7 +39,6 @@ import {
 	ReloadTabCommand,
 	RememberPagesCommand,
 	RestoreTabsCommand,
-	ShowChatTabCommand,
 	ShowTabCommand,
 	TearOffTabCommand,
 } from "./features/tab-showing/requests.js";
@@ -86,7 +85,6 @@ export const PlacesModule = module("places")
 	.public(
 		RestoreTabsCommand,
 		ShowTabCommand,
-		ShowChatTabCommand,
 		FitTabsToPanesCommand,
 		RememberPagesCommand,
 		OpenTabInOwnWindowCommand,

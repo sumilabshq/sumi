@@ -3,11 +3,13 @@ import { PerCall, Repeatable, command, refuse } from "@widgetarium/core/requests
 import type { Send } from "@widgetarium/core/requests";
 import { FocusStudioWindowCommand, OpenChatWindowCommand } from "@widgetarium/browser";
 import { ClosePaneCommand, PaneTreeQuery, ShowChatInPaneCommand } from "@widgetarium/layout";
+import type { PaneBoard } from "@widgetarium/layout";
 import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
 import { MarkTabSeenCommand, ShowTabCommand as PlacesShowTabCommand } from "@widgetarium/places";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { sendLogged, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
+import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { isChatHeld, windowHoldingChat } from "../../shared/lib/chat-holders.js";
 import {
 	ChatOpenedSchema,
@@ -25,22 +27,19 @@ export const OpenChatCommand = command("open-chat")
 	.idempotencyKey(Repeatable)
 	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ chatId, paneId }, { send, emit, ...parts }) => {
-		await sendLogged(`show chat ${chatId} in the view`, () =>
-			settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
-				send(PlacesShowTabCommand, { at, id: chatId }),
-			),
-		);
-		await openChat(send, { chatId, paneId });
+	.handle(async (chat, { send, emit, ...parts }) => {
+		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, chat);
 	});
 
 export const OpenNewChatCommand = command("open-new-chat")
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
-	.handle(async ({ title }, { send }) => {
+	.inject(SHOWING_PARTS)
+	.emits(TabsSettledEvent)
+	.handle(async ({ title }, { send, emit, ...parts }) => {
 		const created = await createChat(send, title);
-		await openChat(send, { chatId: created.id, paneId: null });
+		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
 		return created;
 	});
 
@@ -48,7 +47,9 @@ export const NameChatPaneCommand = command("name-chat-pane")
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
-	.handle(async ({ paneId }, { send }) => {
+	.inject(SHOWING_PARTS)
+	.emits(TabsSettledEvent)
+	.handle(async ({ paneId }, { send, emit, ...parts }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 
 		if (!board.isLoaded || !asked.isRead) {
@@ -61,22 +62,16 @@ export const NameChatPaneCommand = command("name-chat-pane")
 			return refuse(NOT_AN_EMPTY_CHAT_PANE.replace("{pane}", paneId));
 		}
 
-		const askedFree = asked.id !== null && !isChatHeld(board, asked.id) ? asked.id : null;
-
-		if (askedFree !== null) {
-			await openChat(send, { chatId: askedFree, paneId });
-			await send(ForgetChatToOpenCommand, { id: askedFree });
-			return { id: askedFree };
-		}
-
-		const created = await createChat(send, null);
-		await openChat(send, { chatId: created.id, paneId });
-		return created;
+		const chatId = await chatIdForPane(send, board, asked.id);
+		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId, paneId });
+		return { id: chatId };
 	});
 
 export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 	.idempotencyKey(Repeatable)
-	.handle(async (_input, { send }) => {
+	.inject(SHOWING_PARTS)
+	.emits(TabsSettledEvent)
+	.handle(async (_input, { send, emit, ...parts }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 
 		if (!board.isLoaded || !asked.isRead) {
@@ -88,7 +83,7 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await openChat(send, { chatId: asked.id, paneId: null });
+		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
 		await send(ForgetChatToOpenCommand, { id: asked.id });
 	});
 
@@ -114,8 +109,25 @@ export const TearOffChatCommand = command("tear-off-chat")
 		await send(OpenChatWindowCommand, { chatId });
 	});
 
+async function chatIdForPane(send: Send, board: PaneBoard, askedId: string | null): Promise<string> {
+	if (askedId !== null && !isChatHeld(board, askedId)) {
+		await send(ForgetChatToOpenCommand, { id: askedId });
+		return askedId;
+	}
+
+	const created = await createChat(send, null);
+	return created.id;
+}
+
 function createChat(send: Send, title: string | null): Promise<{ readonly id: string }> {
 	return send(CreateChatCommand, { title });
+}
+
+async function openChatShown(reach: TabsReach, chat: ChatToShow): Promise<void> {
+	await sendLogged(`show chat ${chat.chatId} in the view`, () =>
+		settleAsked(reach, (at) => reach.send(PlacesShowTabCommand, { at, id: chat.chatId })),
+	);
+	await openChat(reach.send, chat);
 }
 
 async function openChat(send: Send, { chatId, paneId }: ChatToShow): Promise<void> {

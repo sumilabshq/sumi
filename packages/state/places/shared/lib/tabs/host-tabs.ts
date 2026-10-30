@@ -155,20 +155,6 @@ export function markShown(moment: HostTabsMoment, id: string): MovedTabs | null 
 	};
 }
 
-export function markChatTabShown(moment: HostTabsMoment, id: string, chatId: string): MovedTabs | null {
-	if (moment.lastShown[chatId] === id) {
-		return null;
-	}
-
-	return {
-		moment: {
-			...moment,
-			lastShown: lastShownWith(moment.lastShown, chatId, id),
-		},
-		reason: `show ${id} in chat ${chatId}`,
-	};
-}
-
 export function renameTab(moment: HostTabsMoment, id: string, typed: string): MovedTabs | null {
 	const renamed = tabOf(moment, id);
 	const label = typed.trim() || null;

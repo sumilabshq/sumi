@@ -2,20 +2,18 @@ import type { TabEffect } from "../../../shared/schema/screen.schema.js";
 import type { RestoreTabsAsk } from "../../../shared/schema/tab-asks.schema.js";
 import { refusal } from "../../../shared/lib/settling/settling.js";
 import type { ShowingPlan } from "../../../shared/lib/settling/settling.js";
-import { withTabsAtHome } from "../../../shared/lib/showing/rehoming.js";
 import { boardlessOf, withSplitLeftFor } from "../../../shared/lib/showing/split-showing.js";
 import { focusedInSplit } from "../../../shared/lib/splits/split-moves.js";
 import { shownSplitOf, splitOfTab } from "../../../shared/lib/splits/split-members.js";
 import type { Showing } from "../../../shared/lib/showing/showing.js";
 import {
-	withChatTabShown,
 	withEffect,
 	withFirstTabShown,
 	withFreeTabBesidePanes,
 	withMoved,
 	withPageEnsured,
 	withPanePagesEnsured,
-	withTabPressed,
+	withTabShown,
 	withTabTornOff,
 } from "../../../shared/lib/showing/showing.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
@@ -54,18 +52,13 @@ export function showTabPlan(id: string): ShowingPlan {
 	};
 }
 
-export function showChatTabPlan(chatId: string): ShowingPlan {
-	return (showing, facts) => withChatTabShown(showing, facts, chatId);
-}
-
 export function fitTabsPlan(): ShowingPlan {
 	return (showing, facts) => {
 		if (shownSplitOf(showing.moment) !== null) {
 			return withPanePagesEnsured(showing, facts);
 		}
 
-		const atHome = withTabsAtHome(showing, facts);
-		return atHome === showing ? withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts) : atHome;
+		return withFreeTabBesidePanes(withPanePagesEnsured(showing, facts), facts);
 	};
 }
 
@@ -128,7 +121,7 @@ function withLoneTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Show
 	const apart = shownApartEffectOf(tab, showing.moment, facts);
 
 	if (apart === null) {
-		return withTabPressed(showing, facts, tab);
+		return withTabShown(showing, facts, tab);
 	}
 
 	console.info(
@@ -139,7 +132,7 @@ function withLoneTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Show
 
 function withSplitLeftAlone(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
 	const left = withSplitLeftFor(withMoved(showing, focusedInSplit(showing.moment, tab.id)));
-	return withTabPressed(left, boardlessOf(facts), tab);
+	return withTabShown(left, boardlessOf(facts), tab);
 }
 
 function shownApartEffectOf(tab: HostTab, moment: HostTabsMoment, facts: TabFacts): TabEffect | null {

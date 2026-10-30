@@ -70,12 +70,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
 	z.object({ kind: z.literal("show-chat"), chatId: z.string() }),
-	z.object({
-		kind: z.literal("show-in-chat-group"),
-		chatId: z.string(),
-		tabId: z.string(),
-		isOnlyWhenBare: z.boolean(),
-	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
 	z.object({
 		kind: z.literal("show-split"),
@@ -210,11 +204,6 @@ export const SettleAskSchema = z.object({ at: TabsAskSchema });
 export const TabAskSchema = z.object({
 	at: TabsAskSchema,
 	id: z.string().min(1),
-});
-
-export const ChatTabAskSchema = z.object({
-	at: TabsAskSchema,
-	chatId: z.string().min(1),
 });
 
 export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "chat"]);
@@ -717,10 +706,6 @@ export const ShowTabCommand = command("places/show-tab")
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("places/show-chat-tab")
-	.input(ChatTabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
 export const FitTabsToPanesCommand = command("places/fit-tabs-to-panes")
 	.input(SettleAskSchema)
 	.output(TabsSettledSchema)
@@ -846,4 +831,4 @@ export const ResizeSplitCommand = command("places/resize-split")
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ResizeSplitCommand]);
+export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, RestoreTabsCommand, ShowTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ResizeSplitCommand]);

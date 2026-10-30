@@ -56,12 +56,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
 	z.object({ kind: z.literal("show-chat"), chatId: z.string() }),
-	z.object({
-		kind: z.literal("show-in-chat-group"),
-		chatId: z.string(),
-		tabId: z.string(),
-		isOnlyWhenBare: z.boolean(),
-	}),
 	z.object({ kind: z.literal("flash-pane"), paneId: z.string() }),
 	z.object({
 		kind: z.literal("show-split"),

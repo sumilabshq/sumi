@@ -7,7 +7,7 @@ import type {
 	PlacementPreview,
 } from "../schema/pane-tree.schema.js";
 import { idsOf, isSameView, leavesOf, withNodeReplaced, withPlaced, withView, withoutPane } from "./pane-nodes.js";
-import { chatGroupsOf, chatLeafOf, groupHolding, groupOfChat, groupedChat } from "./chat-groups.js";
+import { chatGroupsOf, chatLeafOf, groupHolding, groupedChat } from "./chat-groups.js";
 import { holdsOf } from "./window-trees.js";
 import type { WindowTree } from "./window-trees.js";
 import type { PanePlace } from "./pane-nodes.js";
@@ -140,18 +140,19 @@ export function treeShowingChat(tree: PaneTree, chatId: string, paneId: string |
 		return grouped.chatTargetId === standing.id ? grouped : withChatTarget(grouped, standing.id);
 	}
 
-	const shownIn =
-		leavesOf(tree.root).find((leaf) => leaf.id === paneId && leaf.view.kind === "chat") ?? chatPaneOf(tree);
+	const waitingChatLeaf = leavesOf(tree.root).find((leaf) => leaf.id === paneId && leaf.view.kind === "chat");
+	return treeHoldingChatAlone(tree, chatId, waitingChatLeaf ?? null);
+}
 
-	if (shownIn !== null) {
-		return withChatSwapped(tree, shownIn, chatId);
-	}
-
-	const view: PaneView = {
-		kind: "chat",
-		chatId,
+export function treeShowingShownTabAlone(tree: PaneTree): PaneTree {
+	const standingShownTabLeaf = shownTabPaneOf(tree);
+	const leaf = standingShownTabLeaf ?? mintedLeafOf(tree, { kind: "app", tabId: null });
+	return {
+		...withChatTarget(tree, null),
+		root: leaf,
+		targetId: leaf.id,
+		minted: standingShownTabLeaf === null ? tree.minted + 1 : tree.minted,
 	};
-	return placedTreeOf(tree, view, { targetId: null, side: "left" })?.tree ?? tree;
 }
 
 export function paneShowingChat(tree: PaneTree, chatId: string): PaneLeaf | null {
@@ -193,11 +194,6 @@ export function shownTabPaneOf(tree: PaneTree): PaneLeaf | null {
 	return leavesOf(tree.root).find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null) ?? null;
 }
 
-export function chatPaneOf(tree: PaneTree): PaneLeaf | null {
-	const chats = leavesOf(tree.root).filter((leaf) => leaf.view.kind === "chat");
-	return chats.find((leaf) => leaf.id === tree.chatTargetId) ?? chats[0] ?? null;
-}
-
 export function tabPaneIdsOf(tree: PaneTree, tabIds: readonly string[]): string[] {
 	return tabPanesOf(tree)
 		.filter(({ tabId }) => tabIds.includes(tabId))
@@ -212,41 +208,24 @@ export function treeWithoutGoneTabs(tree: PaneTree, gonePanes: readonly TabPane[
 	return gonePanes.reduce((left, { paneId }) => treeWithoutGoneTab(left, paneId), tree);
 }
 
-export function treeShowingTabInGroup(tree: PaneTree, chatId: string, tabId: string): PaneTree | null {
-	const group = groupOfChat(tree.root, chatId);
-
-	if (group === null) {
-		return null;
-	}
-
-	const standing = paneShowingTab(tree, tabId);
-
-	if (standing !== null) {
-		return {
-			...tree,
-			targetId: standing,
-		};
-	}
-
-	const tabs = leavesOf(group).filter((leaf) => leaf.view.kind === "app");
-	const shownIn = tabs.find((leaf) => leaf.id === tree.targetId) ?? tabs.at(-1);
-
-	if (shownIn !== undefined) {
-		return {
-			...withTabShown(tree, shownIn.id, tabId),
-			targetId: shownIn.id,
-		};
-	}
-
-	const chat = chatLeafOf(group);
-	const view: PaneView = {
-		kind: "app",
-		tabId,
+function treeHoldingChatAlone(tree: PaneTree, chatId: string, waitingChatLeaf: PaneLeaf | null): PaneTree {
+	const leaf = waitingChatLeaf ?? mintedLeafOf(tree, { kind: "chat", chatId });
+	const alone = {
+		...tree,
+		...shelfWithout(tree, chatId),
+		root: groupedChat(leaf, chatId),
+		targetId: null,
+		minted: waitingChatLeaf === null ? tree.minted + 1 : tree.minted,
 	};
-	return placedTreeOf(tree, view, { targetId: chat?.id ?? null, side: "right" })?.tree ?? null;
+	return withChatTarget(alone, leaf.id);
 }
 
-export function outerIdOf(tree: PaneTree, id: string): string {
+function chatPaneOf(tree: PaneTree): PaneLeaf | null {
+	const chats = leavesOf(tree.root).filter((leaf) => leaf.view.kind === "chat");
+	return chats.find((leaf) => leaf.id === tree.chatTargetId) ?? chats[0] ?? null;
+}
+
+function outerIdOf(tree: PaneTree, id: string): string {
 	return groupHolding(tree.root, id)?.id ?? id;
 }
 
@@ -295,28 +274,6 @@ function withChatGrouped(tree: PaneTree, leaf: PaneLeaf, chatId: string): PaneTr
 		...tree,
 		root: withNodeReplaced(tree.root, leaf.id, groupedChat(leaf, chatId)),
 	};
-}
-
-function withChatSwapped(tree: PaneTree, leaf: PaneLeaf, chatId: string): PaneTree {
-	const group = groupHolding(tree.root, leaf.id);
-	const leaving = group ?? leaf;
-	const leavingChatId = group?.chatId ?? (leaf.view.kind === "chat" ? leaf.view.chatId : undefined);
-	const shelf =
-		leavingChatId === undefined
-			? tree
-			: { ...tree, ...shelfWith(tree, leavingChatId, group ?? groupedChat(leaf, leavingChatId)) };
-	const kept = tree.shelved?.[chatId];
-	const isMinted = kept === undefined && leavingChatId !== undefined;
-	const arriving = kept ?? groupedChat(isMinted ? mintedLeafOf(tree, { kind: "chat", chatId }) : leaf, chatId);
-	const leftIds = idsOf(leaving);
-	const swapped = {
-		...shelf,
-		...shelfWithout(shelf, chatId),
-		root: withNodeReplaced(tree.root, leaving.id, arriving),
-		minted: isMinted ? tree.minted + 1 : tree.minted,
-		targetId: tree.targetId !== null && leftIds.includes(tree.targetId) ? null : tree.targetId,
-	};
-	return withChatTarget(swapped, chatLeafOf(arriving)?.id ?? null);
 }
 
 function withChatTarget({ chatTargetId: _was, ...tree }: PaneTree, id: string | null): PaneTree {

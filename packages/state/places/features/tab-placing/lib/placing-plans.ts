@@ -4,7 +4,6 @@ import type { EssentialFace } from "../../../shared/schema/tab-rows.schema.js";
 import { essentialFaceOf } from "../../../shared/lib/rows/essential-face.js";
 import { movedPlan, plannedWith, refusal } from "../../../shared/lib/settling/settling.js";
 import type { ExtraPlan, MomentPlan, ShowingPlan } from "../../../shared/lib/settling/settling.js";
-import { withHomeFollowed } from "../../../shared/lib/showing/rehoming.js";
 import { withMoved } from "../../../shared/lib/showing/showing.js";
 import {
 	heldTabOf,
@@ -25,7 +24,7 @@ const HOLDS_NOTHING = 'the tab "{id}" holds no tabs: there is nothing under it t
 const HOLDER_IN_HOLDER = 'the tab "{id}" holds tabs of its own: it cannot stand inside "{list}"';
 
 export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
-	return (showing, facts) => {
+	return (showing) => {
 		const refused = placeRefusalOf(showing.moment, id, asked);
 
 		if (refused !== null) {
@@ -33,7 +32,7 @@ export function placeTabPlan(id: string, asked: TabPlaceAsked): ShowingPlan {
 		}
 
 		const place = { chatId: asked.list, groupId: asked.groupId, before: asked.before };
-		return withHomeFollowed(showing, withMoved(showing, placeTab(showing.moment, id, place)), facts);
+		return withMoved(showing, placeTab(showing.moment, id, place));
 	};
 }
 

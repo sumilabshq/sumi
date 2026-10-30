@@ -21,7 +21,6 @@ import {
 	ClosePaneCommand,
 	PaneTreeQuery,
 	ShowChatInPaneCommand,
-	ShowTabInChatGroupCommand,
 	ShowSplitCommand,
 	FocusSplitCommand,
 	ShowTabInTargetPaneCommand,
@@ -212,8 +211,6 @@ function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 	switch (effect.kind) {
 		case "show-chat":
 			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: null });
-		case "show-in-chat-group":
-			return send(ShowTabInChatGroupCommand, chatGroupAskOf(effect));
 		case "show-split":
 			return send(ShowSplitCommand, { layout: effect.layout, chatIds: effect.chatIds, focusedId: effect.focusedId });
 		case "focus-split":
@@ -241,22 +238,6 @@ function addressAskOf({ pageId, address, isShown }: Extract<TabEffect, { readonl
 		tabId: pageId,
 		address,
 		heldTabId: isShown ? null : pageId,
-	};
-}
-
-function chatGroupAskOf({
-	chatId,
-	tabId,
-	isOnlyWhenBare,
-}: Extract<TabEffect, { readonly kind: "show-in-chat-group" }>): {
-	readonly chatId: string;
-	readonly tabId: string;
-	readonly isOnlyWhenBare: boolean;
-} {
-	return {
-		chatId,
-		tabId,
-		isOnlyWhenBare,
 	};
 }
 

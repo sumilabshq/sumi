@@ -6,7 +6,7 @@ import { tabRowsOf } from "../../../shared/lib/rows/tab-rows.js";
 import { sidebarOf } from "../../../shared/lib/rows/sidebar-rows.js";
 import type { SidebarRowsAsk } from "../../../shared/lib/rows/sidebar-rows.js";
 import { shownAppOf, shownTabIdOf } from "../../../shared/lib/showing/showing.js";
-import { tabFactsOf, tabIdsInPanesOf } from "../../../shared/lib/showing/tab-facts.js";
+import { tabFactsOf } from "../../../shared/lib/showing/tab-facts.js";
 import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPagesOf } from "../../../shared/lib/showing/tab-pages.js";
 import { isPageTab } from "../../../shared/lib/tabs/host-tabs.js";
@@ -31,7 +31,7 @@ export function sidebarAskOf(placed: PlacedTabs, { at, essentials }: SidebarAsk)
 		essentials,
 		pages: at.screen.pages,
 		shownApp: shownAppOf(at.view),
-		boardChatIds: at.screen.chatGroups.map((group) => group.chatId),
+		shownChatId: at.screen.focusedChatId,
 		...paneLooksOf(tabFactsOf(at.screen)),
 	};
 }
@@ -65,9 +65,8 @@ export function chatTabsOf(placed: PlacedTabs): ChatTabs {
 	};
 }
 
-function paneLooksOf(facts: TabFacts): Pick<SidebarRowsAsk, "inPanes" | "hasShownTabPane" | "elsewhere"> {
+function paneLooksOf(facts: TabFacts): Pick<SidebarRowsAsk, "hasShownTabPane" | "elsewhere"> {
 	return {
-		inPanes: tabIdsInPanesOf(facts),
 		hasShownTabPane: facts.shownTabPaneId !== null,
 		elsewhere: [...facts.tabWindows.keys()],
 	};

@@ -1,18 +1,8 @@
-import {
-	flatTabIdsOf,
-	givePage,
-	isPageTab,
-	markChatTabShown,
-	markShown,
-	openEssentialTab,
-	tabOf,
-	topPageTabIdsOf,
-} from "../tabs/host-tabs.js";
+import { givePage, isPageTab, markShown, openEssentialTab, tabOf, topPageTabIdsOf } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import type { PageApp } from "../../schema/tabs.schema.js";
 import type { StudioView, TabEffect } from "../../schema/screen.schema.js";
 import type { Essential } from "../../schema/tab-rows.schema.js";
-import { chatHomeOf } from "./chat-home.js";
 import { newTabPageOf } from "./new-tab-page.js";
 import { tabIdsInPanesOf } from "./tab-facts.js";
 import type { TabFacts } from "./tab-facts.js";
@@ -55,7 +45,7 @@ export function shownTabIdOf(moment: HostTabsMoment, shownApp: PageApp | null): 
 		return null;
 	}
 
-	const free = moment.tabs.filter((tab) => tab.app === shownApp && chatHomeOf(moment, tab.id) === null);
+	const free = moment.tabs.filter((tab) => tab.app === shownApp);
 	return (free.find((tab) => tab.id === moment.shownId) ?? free[0])?.id ?? null;
 }
 
@@ -127,30 +117,10 @@ export interface PageAddressing {
 	readonly isShown: boolean;
 }
 
-export interface ChatTabAsk {
-	readonly tab: HostTab;
-	readonly chatId: string;
-	readonly isOnlyWhenBare: boolean;
-	readonly isPressed: boolean;
-}
-
-export function withTabPressed(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
-	const chatId = chatHomeOf(showing.moment, tab.id);
-	return chatId === null
-		? withTabShown(showing, facts, tab)
-		: withChatTabPlaced(showing, facts, { tab, chatId, isOnlyWhenBare: false, isPressed: true });
-}
-
 export function withTabShown(showing: Showing, facts: TabFacts, tab: HostTab): Showing {
 	if (!isPageTab(tab)) {
 		console.info(`[widgetarium] show ${tab.id} skipped: a chat stands in a pane, not in the shown tab pane`);
 		return showing;
-	}
-
-	const chatId = chatHomeOf(showing.moment, tab.id);
-
-	if (chatId !== null) {
-		return withChatTabPlaced(showing, facts, { tab, chatId, isOnlyWhenBare: false, isPressed: false });
 	}
 
 	const marked = withMoved(showing, markShown(showing.moment, tab.id));
@@ -172,37 +142,6 @@ export function withTabShown(showing: Showing, facts: TabFacts, tab: HostTab): S
 		: withEffect(ensured.showing, { kind: "show-page", pageId: ensured.pageId });
 }
 
-export function withChatTabPlaced(
-	showing: Showing,
-	facts: TabFacts,
-	{ tab, chatId, isOnlyWhenBare, isPressed }: ChatTabAsk,
-): Showing {
-	const marked = withMoved(showing, markChatTabShown(showing.moment, tab.id, chatId));
-	const standing = facts.tabPanes.find((pane) => pane.tabId === tab.id);
-
-	if (standing !== undefined) {
-		return withEffect(marked, { kind: "flash-pane", paneId: standing.paneId });
-	}
-
-	const isOnBoard = facts.chatGroupIds.includes(chatId);
-	const window = facts.tabWindows.get(tab.id);
-
-	if (window !== undefined) {
-		return withEffect(marked, { kind: "focus-window", window });
-	}
-
-	if (!isOnBoard && !isPressed) {
-		console.info(
-			`[widgetarium] chat tab ${tab.id} stays off screen: chat ${chatId} is not on the board and nobody pressed the tab`,
-		);
-		return marked;
-	}
-
-	const opened = isOnBoard ? marked : withEffect(marked, { kind: "show-chat", chatId });
-	const placed = withEffect(opened, { kind: "show-in-chat-group", chatId, tabId: tab.id, isOnlyWhenBare });
-	return withPageEnsured(placed, facts, { tabId: tab.id, why: `shown in chat ${chatId}` }).showing;
-}
-
 export function withTabPageOpened(showing: Showing, tab: HostTab, { address, isShown }: PageAddressing): Showing {
 	if (tab.pageId === null) {
 		return showing;
@@ -210,35 +149,6 @@ export function withTabPageOpened(showing: Showing, tab: HostTab, { address, isS
 
 	const opened = withEffect(showing, { kind: "open-page", pageId: tab.pageId });
 	return address === "" ? opened : withEffect(opened, { kind: "open-address", pageId: tab.pageId, address, isShown });
-}
-
-export function withChatTabShown(showing: Showing, facts: TabFacts, chatId: string): Showing {
-	const { tabs, shownId } = showing.moment;
-	const isEssentialShown = tabs.some((tab) => tab.id === shownId && tab.essentialId !== null);
-	const shownNext = chatTabToShow(showing.moment, chatId);
-
-	if (isEssentialShown) {
-		console.info(`[widgetarium] host tabs keep essential ${shownId} on screen in chat ${chatId}`);
-		return showing;
-	}
-
-	if (shownNext === null) {
-		console.info(`[widgetarium] host tabs keep ${shownId ?? "nothing"} in chat ${chatId}`);
-		return showing;
-	}
-
-	return withChatTabPlaced(showing, facts, {
-		tab: tabOf(showing.moment, shownNext),
-		chatId,
-		isOnlyWhenBare: true,
-		isPressed: false,
-	});
-}
-
-export function chatTabToShow(moment: HostTabsMoment, chatId: string): string | null {
-	const ids = flatTabIdsOf(moment, chatId);
-	const last = moment.lastShown[chatId];
-	return last !== undefined && ids.includes(last) ? last : (ids[0] ?? null);
 }
 
 export function withFreeTabBesidePanes(showing: Showing, facts: TabFacts): Showing {

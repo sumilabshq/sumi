@@ -18,11 +18,6 @@ export const TabAskSchema = z.object({
 	id: z.string().min(1),
 });
 
-export const ChatTabAskSchema = z.object({
-	at: TabsAskSchema,
-	chatId: z.string().min(1),
-});
-
 export const RestoreTabsAskSchema = z.object({
 	at: TabsAskSchema,
 	essentials: z.array(EssentialSchema),

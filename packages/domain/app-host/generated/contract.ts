@@ -363,9 +363,6 @@ export const RestoreTabsCommand = command("app-host/restore-tabs")
 export const ShowTabCommand = command("app-host/show-tab")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("app-host/show-chat-tab")
-	.input(z.object({ chatId: z.string().min(1) }))
-	.idempotencyKey(Repeatable);
 export const OpenTabCommand = command("app-host/open-tab")
 	.input(
 		z.object({
@@ -470,4 +467,4 @@ export const ResizeSplitCommand = command("app-host/resize-split")
 	)
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);

@@ -20,18 +20,17 @@ export interface SidebarRowsAsk {
 	readonly essentials: readonly Essential[];
 	readonly pages: readonly PageFacts[];
 	readonly shownApp: PageApp | null;
-	readonly inPanes: readonly string[];
 	readonly hasShownTabPane: boolean;
 	readonly elsewhere: readonly string[];
-	readonly boardChatIds: readonly string[];
+	readonly shownChatId: string | null;
 }
 
 const SECTION_ORDER: readonly SectionList[] = [PINNED_LIST, WORKSPACE_LIST];
 
 export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
-	const shownPageIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null, ask.inPanes);
+	const shownPageIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null);
 	const rows = new TabRows(ask.moment, ask.pages, {
-		shownIds: new Set([...shownPageIds, ...ask.boardChatIds]),
+		shownIds: ask.shownChatId === null ? shownPageIds : new Set([...shownPageIds, ask.shownChatId]),
 		elsewhereIds: new Set(ask.elsewhere),
 	});
 	const entries = new SidebarEntries(ask.moment, rows);

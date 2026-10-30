@@ -22,7 +22,7 @@ export function tabRowsOf(
 	listIds: readonly string[],
 ): readonly AppTabState[] {
 	const rows = new TabRows(moment, pages, {
-		shownIds: shownIdsOf(moment, shownApp, []),
+		shownIds: shownIdsOf(moment, shownApp),
 		elsewhereIds: new Set(),
 	});
 	const pageIds = new Set(moment.tabs.filter(isPageTab).map((tab) => tab.id));
@@ -30,13 +30,9 @@ export function tabRowsOf(
 	return listed.filter((id) => pageIds.has(id)).flatMap((id) => rows.rowsOf(id));
 }
 
-export function shownIdsOf(
-	moment: HostTabsMoment,
-	shownApp: PageApp | null,
-	inPanes: readonly string[],
-): ReadonlySet<string> {
+export function shownIdsOf(moment: HostTabsMoment, shownApp: PageApp | null): ReadonlySet<string> {
 	const shownId = shownTabIdOf(moment, shownApp);
-	return new Set(shownId === null ? inPanes : [shownId, ...inPanes]);
+	return new Set(shownId === null ? [] : [shownId]);
 }
 
 export class TabRows {
