@@ -208,9 +208,9 @@ function checksTabPanes(check: Check): void {
 	const opened = parts.paneTree.tree();
 	OpenShownTabPaneCommand.handle(undefined, parts);
 	check(
-		"the shown tab pane closes, then opens once beside the chat however often it is asked",
+		"the shown tab pane closes, then takes the whole board once however often it is asked",
 		JSON.stringify(closed) === '["chat"]' &&
-			JSON.stringify(shapeOf(parts)) === '["chat","shown"]' &&
+			JSON.stringify(shapeOf(parts)) === '["shown"]' &&
 			parts.paneTree.tree() === opened,
 		[closed, shapeOf(parts)],
 	);

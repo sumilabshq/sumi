@@ -52,9 +52,9 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	const listed = await idsOf(page, LIST_IDS);
 	await timed(page, "show an essential", () => pressOn(page, '[data-tabs-item=essential][data-tabs-id="essential-2"]'));
 	check(
-		"pressing an essential opens and shows it, and the chat's tile keeps its own tab",
+		"pressing an essential shows it alone: the tab pressed before is no longer marked shown",
 		(await page.ask(`document.querySelector('[data-tabs-id="essential-2"]').hasAttribute("data-shown")`)) === true &&
-			(await page.ask(SHOWN_ID)) === "tab-3",
+			(await page.ask(SHOWN_ID)) !== "tab-3",
 		await page.ask(SHOWN_ID),
 	);
 	check(

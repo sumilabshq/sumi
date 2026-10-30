@@ -100,8 +100,7 @@ function checksTree(): void {
 		essentials: [],
 		pages: [],
 		shownApp: null,
-		boardChatIds: [],
-		inPanes: ["tab-1"],
+		shownChatId: null,
 		hasShownTabPane: true,
 		elsewhere: [],
 	});
@@ -110,8 +109,8 @@ function checksTree(): void {
 			entry.kind === "tab" ? [[entry.tab.id, entry.tab.isShown]] : [],
 		) ?? [];
 	check(
-		"a tab standing in a pane is marked shown in the sidebar",
-		JSON.stringify(rows) === '[["tab-1",true],["tab-2",false]]',
+		"a tab standing in a pane is not marked shown: only what fills the screen is",
+		JSON.stringify(rows) === '[["tab-1",false],["tab-2",false]]',
 		rows,
 	);
 	checksShares();

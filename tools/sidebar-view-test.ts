@@ -71,16 +71,15 @@ const MOMENT: HostTabsMoment = {
 	],
 };
 
-function sidebarWith(moment: HostTabsMoment, boardChatIds: readonly string[]): PlacedSidebar {
+function sidebarWith(moment: HostTabsMoment, shownChatId: string | null): PlacedSidebar {
 	return sidebarOf({
 		moment,
 		essentials: [],
 		pages: [pageOf("apart", true), pageOf("sub", false)],
 		shownApp: null,
-		inPanes: [],
 		hasShownTabPane: true,
 		elsewhere: [],
-		boardChatIds,
+		shownChatId,
 	});
 }
 
@@ -104,7 +103,7 @@ function itemShapeOf({ tab, children }: Extract<SidebarEntry, { kind: "tab" }>):
 	return `chat:${tab.id}[${children.map((child) => (child.kind === "tab" ? child.tab.id : `group:${child.group.id}`)).join(",")}]`;
 }
 
-const sidebar = sidebarWith(MOMENT, ["chat-1"]);
+const sidebar = sidebarWith(MOMENT, "chat-1");
 const shapes = sidebar.sections.map((section) => [section.list, section.entries.map(shapeOf)]);
 check(
 	"the sidebar is Pinned then Open, and a chat carries its own tabs and groups nested under it",
@@ -118,7 +117,7 @@ check(
 
 const openChat = sidebar.sections[1]?.entries[0];
 check(
-	"a chat on this window's board is shown, one off it is not",
+	"the chat on screen is shown, another chat is not",
 	openChat?.kind === "tab" &&
 		openChat.children !== undefined &&
 		openChat.tab.isShown &&
@@ -134,7 +133,7 @@ check(
 	apart,
 );
 
-const empty = sidebarWith(emptyMoment(), []);
+const empty = sidebarWith(emptyMoment(), null);
 check(
 	"both sections stand even when empty, and a new tab goes to Open",
 	JSON.stringify(empty.sections.map((section) => section.list)) === '["pinned","workspace"]' &&

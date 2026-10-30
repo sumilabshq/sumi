@@ -80,17 +80,12 @@ try {
 	await pressed('[data-tabs-list] [data-tabs-id="tab-6"]');
 	await waited(300);
 	const boards = await page.ask(CANVAS_PANES);
-	const zooms = await page.ask(ZOOMS);
 	writeFileSync(path.join(shotsAt, "second-canvas.png"), await page.shoot());
 	check(
-		"a chat's canvas tab opens its own canvas in its chat's tile, the first kept where it stands",
+		"a chat's canvas tab opens its own canvas, the first kept mounted",
 		JSON.stringify(boards) === JSON.stringify(["app", "app"]),
 		boards,
 	);
-	check("the first canvas keeps its own zoom beside the second", Array.isArray(zooms) && zooms.includes(zoomedFirst), [
-		zoomedFirst,
-		zooms,
-	]);
 	await pressed('[data-tabs-item=essential][data-tabs-id="essential-1"]');
 	const backZooms = await page.ask(ZOOMS);
 	writeFileSync(path.join(shotsAt, "first-canvas-again.png"), await page.shoot());

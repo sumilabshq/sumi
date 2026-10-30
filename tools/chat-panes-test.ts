@@ -66,8 +66,8 @@ check(
 
 const replaced = treeShowingChat(aimedFirst, "third", null);
 check(
-	"choosing a chat in the sidebar replaces the chat in the active chat pane only",
-	JSON.stringify(chatsShown(replaced)) === '["pane-3:third","pane-2:chat-2"]',
+	"choosing a chat in the sidebar puts it alone on the board",
+	JSON.stringify(chatsShown(replaced)) === '["pane-3:third"]' && replaced.chatTargetId === "pane-3",
 	chatsShown(replaced),
 );
 

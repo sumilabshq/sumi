@@ -13,7 +13,7 @@ import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
+import { PaneTreeQuery, PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
@@ -113,9 +113,13 @@ async function showAndPaneChecks(): Promise<void> {
 		[shownPage === BROWSER_FIRST_PAGE, pages.calls.slice(-2)],
 		[false, [`open ${shownPage}`, `show ${shownPage}`]],
 	);
+	const board = await studioApp.send(PaneTreeQuery);
+	const shownPane = board.ok
+		? board.output.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)
+		: undefined;
 	await studioApp.send(PlacePaneCommand, {
 		view: { kind: "app", tabId: "tab-15" },
-		targetId: "pane-app",
+		targetId: shownPane?.id ?? null,
 		side: "right",
 	});
 	const isGiven = await waitFor(() =>

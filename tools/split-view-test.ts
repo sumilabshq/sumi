@@ -346,8 +346,8 @@ async function checksChatJoins(page: AskedPage): Promise<void> {
 	const chat = board.find((pane) => pane.view === "chat");
 	const stage = board.filter((pane) => pane.view === "app" && !pane.id.startsWith("pane-split-"));
 	check(
-		"a chat dropped below a member joins the split with its own stage: the chat and its sub-tab beside it",
-		chat !== undefined && board.length >= 3 && stage.length >= 1,
+		"a chat dropped below a member joins the split as one pane, no sub-tab beside it",
+		chat !== undefined && board.length === 3 && stage.length === 0,
 		board,
 	);
 	const block = await blockOf(page);
