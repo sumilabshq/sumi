@@ -1,26 +1,24 @@
-import { PageCover } from "./page-cover.js";
-import { frameIn, stopAttachment } from "./page-attachment.js";
+import { createAttachment, followCover, frameIn, stopAttachment } from "./page-attachment.js";
 import type { Attached } from "./page-attachment.js";
-import { PagePlacementWatch } from "./page-placement.js";
 import type { PageFrame, PagePlacement, PagesBridge } from "./pages-bridge.js";
 
-export interface PanePagesAsk {
+interface PanePagesPorts {
 	readonly bridge: PagesBridge;
 	readonly drawnIn: (attached: Attached | null, tabId: string) => string | null;
-	readonly place: (tabId: string, placement: PagePlacement) => void;
+	readonly placeTab: (tabId: string, placement: PagePlacement) => void;
 	readonly sync: () => void;
 }
 
 export class PanePages {
 	private readonly held = new Map<string, Attached>();
 
-	constructor(private readonly ask: PanePagesAsk) {}
+	constructor(private readonly ports: PanePagesPorts) {}
 
 	has(tabId: string): boolean {
 		return this.held.has(tabId);
 	}
 
-	attach(tabId: string, into: HTMLElement): boolean {
+	attachIfNew(tabId: string, into: HTMLElement): boolean {
 		if (this.held.get(tabId)?.container === into) {
 			return false;
 		}
@@ -30,7 +28,7 @@ export class PanePages {
 		return true;
 	}
 
-	detach(tabId: string, from: HTMLElement): boolean {
+	detachIfCurrent(tabId: string, from: HTMLElement): boolean {
 		if (this.held.get(tabId)?.container !== from) {
 			return false;
 		}
@@ -48,13 +46,12 @@ export class PanePages {
 	}
 
 	drawnOf(tabId: string): string | null {
-		return this.ask.drawnIn(this.held.get(tabId) ?? null, tabId);
+		return this.ports.drawnIn(this.held.get(tabId) ?? null, tabId);
 	}
 
 	followCovers(): void {
 		for (const [tabId, held] of this.held) {
-			held.cover.follow(this.drawnOf(tabId) !== null);
-			held.cover.recheckSoon();
+			followCover(held, this.drawnOf(tabId) !== null);
 		}
 	}
 
@@ -63,16 +60,14 @@ export class PanePages {
 	}
 
 	private attachmentOf(tabId: string, container: HTMLElement): Attached {
-		return {
+		return createAttachment({
 			container,
-			placement: new PagePlacementWatch(
-				container,
-				(placement) => this.ask.place(tabId, placement),
-				() => this.ask.sync(),
-			),
-			cover: new PageCover({ container, bridge: this.ask.bridge, drawnPage: () => this.drawnOf(tabId) }),
-			inPageCheck: null,
-		};
+			bridge: this.ports.bridge,
+			placeAt: (placement) => this.ports.placeTab(tabId, placement),
+			sync: this.ports.sync,
+			drawnPage: () => this.drawnOf(tabId),
+			checkInPageNavigation: null,
+		});
 	}
 
 	private drop(tabId: string): void {

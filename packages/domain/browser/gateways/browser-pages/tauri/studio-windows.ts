@@ -1,58 +1,56 @@
 import type { PagesBridge } from "./pages-bridge.js";
 
-export interface StudioWindowsHold {
+interface StudioWindowsPorts {
 	readonly bridge: PagesBridge;
 	readonly ownLabel: string;
 	readonly windowOf: (tabId: string) => string | null;
 }
 
 export class StudioWindows {
-	constructor(private readonly hold: StudioWindowsHold) {}
+	constructor(private readonly ports: StudioWindowsPorts) {}
 
-	holding(tabId: string): string | null {
-		const window = this.hold.windowOf(tabId);
-		return window === null || window === this.hold.ownLabel ? null : window;
+	otherWindowHolding(tabId: string): string | null {
+		const windowLabel = this.ports.windowOf(tabId);
+		return windowLabel === null || windowLabel === this.ports.ownLabel ? null : windowLabel;
 	}
 
-	focusHolding(tabId: string, holding: string): void {
+	focusHolding(tabId: string, holdingWindow: string): void {
 		console.info(
-			`[widgetarium] browser page ${tabId} picked in ${this.hold.ownLabel} → ${holding} focused (it stands there)`,
+			`[widgetarium] browser page ${tabId} picked in ${this.ports.ownLabel} → ${holdingWindow} focused (it stands there)`,
 		);
-		this.bringForward(holding);
+		this.bringForward(holdingWindow);
 	}
 
-	focus(window: string): void {
-		console.info(`[widgetarium] studio window ${this.hold.ownLabel} → ${window} focused (it holds what was picked)`);
-		this.bringForward(window);
+	focus(windowLabel: string): void {
+		console.info(
+			`[widgetarium] studio window ${this.ports.ownLabel} → ${windowLabel} focused (it holds what was picked)`,
+		);
+		this.bringForward(windowLabel);
 	}
 
 	openChat(chatId: string): void {
-		void this.hold.bridge
-			.openChatWindow(chatId, null)
-			.then((window) => {
-				console.info(`[widgetarium] chat ${chatId} ${this.hold.ownLabel} → ${window} (torn off)`);
-			})
-			.catch((failure: unknown) => {
-				console.error(`[widgetarium] chat ${chatId} could not open in a studio window of its own`, failure);
-			});
+		const opened = this.ports.bridge.openChatWindow(chatId, null).then((windowLabel) => {
+			console.info(`[widgetarium] chat ${chatId} ${this.ports.ownLabel} → ${windowLabel} (torn off)`);
+		});
+		this.logFailure(opened, `chat ${chatId} could not open in a studio window of its own`);
 	}
 
 	tearOff(tabId: string, openWith: string): void {
-		void this.hold.bridge
-			.openStudioWindow(openWith, null)
-			.then((window) => {
-				console.info(
-					`[widgetarium] browser page ${tabId} ${this.hold.ownLabel} → ${window} (torn off as tab ${openWith})`,
-				);
-			})
-			.catch((failure: unknown) => {
-				console.error(`[widgetarium] tab ${openWith} could not open in a studio window of its own`, failure);
-			});
+		const opened = this.ports.bridge.openStudioWindow(openWith, null).then((windowLabel) => {
+			console.info(
+				`[widgetarium] browser page ${tabId} ${this.ports.ownLabel} → ${windowLabel} (torn off as tab ${openWith})`,
+			);
+		});
+		this.logFailure(opened, `tab ${openWith} could not open in a studio window of its own`);
 	}
 
-	private bringForward(window: string): void {
-		void this.hold.bridge.focusWindow(window).catch((failure: unknown) => {
-			console.error(`[widgetarium] studio window ${window} could not come forward`, failure);
+	private bringForward(windowLabel: string): void {
+		this.logFailure(this.ports.bridge.focusWindow(windowLabel), `studio window ${windowLabel} could not come forward`);
+	}
+
+	private logFailure(asked: Promise<void>, refusal: string): void {
+		void asked.catch((failure: unknown) => {
+			console.error(`[widgetarium] ${refusal}`, failure);
 		});
 	}
 }

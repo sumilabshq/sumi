@@ -1,10 +1,10 @@
-import { frameIn } from "./page-attachment.js";
+import { followCover, frameIn } from "./page-attachment.js";
 import type { Attached } from "./page-attachment.js";
 import type { PageLooks } from "./page-looks.js";
 import type { PageFrame, PagesBridge } from "./pages-bridge.js";
 import type { PanePages } from "./pane-pages.js";
 
-export interface NativePagesHold {
+interface NativePagesPorts {
 	readonly bridge: PagesBridge;
 	readonly inPanes: PanePages;
 	readonly looks: PageLooks;
@@ -14,43 +14,41 @@ export interface NativePagesHold {
 export class NativePages {
 	private shownKey: string | null = null;
 
-	constructor(private readonly hold: NativePagesHold) {}
+	constructor(private readonly ports: NativePagesPorts) {}
 
 	follow(drawn: string | null): void {
 		this.followCovers(drawn);
 		this.followLooks(drawn !== null);
-		const frames = this.framesNow(drawn);
-		const shownKey = frames.map((frame) => frame.page).join(" ");
+		const frames = this.framesOf(drawn);
+		const nextKey = frames.map((frame) => frame.page).join(" ");
 
-		if (shownKey === this.shownKey) {
+		if (nextKey === this.shownKey) {
 			return;
 		}
 
-		console.info(`[widgetarium] browser native pages [${this.shownKey ?? "unknown after a start"}] → [${shownKey}]`);
-		this.shownKey = shownKey;
-		void this.hold.bridge.show(frames).catch((failure: unknown) => {
+		console.info(`[widgetarium] browser native pages [${this.shownKey ?? "unknown after a start"}] → [${nextKey}]`);
+		this.shownKey = nextKey;
+		void this.ports.bridge.show(frames).catch((failure: unknown) => {
 			console.error("[widgetarium] the browser could not show its page", failure);
 		});
 	}
 
 	private followCovers(drawn: string | null): void {
-		const attached = this.hold.attached();
-		attached?.cover.follow(drawn !== null);
-		attached?.cover.recheckSoon();
-		this.hold.inPanes.followCovers();
+		followCover(this.ports.attached(), drawn !== null);
+		this.ports.inPanes.followCovers();
 	}
 
-	private framesNow(drawn: string | null): readonly PageFrame[] {
-		const main = drawn === null ? [] : frameIn(this.hold.attached(), drawn);
-		return [...main, ...this.hold.inPanes.frames()];
+	private framesOf(drawn: string | null): readonly PageFrame[] {
+		const main = drawn === null ? [] : frameIn(this.ports.attached(), drawn);
+		return [...main, ...this.ports.inPanes.frames()];
 	}
 
 	private followLooks(isDrawn: boolean): void {
 		if (isDrawn) {
-			this.hold.looks.start();
+			this.ports.looks.start();
 			return;
 		}
 
-		this.hold.looks.stop();
+		this.ports.looks.stop();
 	}
 }
