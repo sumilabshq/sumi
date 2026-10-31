@@ -14,6 +14,8 @@ import type { ClaudeOptionsCell } from "./claude-options-cell.js";
 import type { TauriPrivateFolder } from "./tauri-private-folder.js";
 import { browserUsageMemory, claudeOptionsKeptIn } from "./kept-usage.js";
 import type { UsageMemory } from "./kept-usage.js";
+import { workspaceFolderCell } from "./workspace-folder-cell.js";
+import type { WorkspaceFolderCell } from "./workspace-folder-cell.js";
 import type { WorkspaceClient } from "../workspace/workspace-client.js";
 import type { WorkspaceEntry } from "../workspace/workspace-docs.js";
 
@@ -27,6 +29,11 @@ export interface TauriWorkspaceFolders {
 	readonly opened: WorkspaceEntry;
 }
 
+export interface SharedWorkspaceFolder {
+	readonly client: TauriWorkspaceFolders["client"];
+	readonly folder: WorkspaceFolderCell<WorkspaceEntry>;
+}
+
 export type TauriAssistantHost = {
 	readonly tauriAssistant: TauriAssistantPort;
 	readonly tauriAttachments: {
@@ -36,7 +43,7 @@ export type TauriAssistantHost = {
 	readonly folders: FolderPicker;
 	readonly claudeOptions: ClaudeOptionsCell;
 	readonly drops: TauriFileDrops;
-	readonly workspace: TauriWorkspaceFolders;
+	readonly workspace: SharedWorkspaceFolder;
 };
 
 export interface TauriAssistant {
@@ -115,7 +122,10 @@ export function startTauriAssistant({
 			folders,
 			claudeOptions,
 			drops: new TauriFileDrops(drags, chat, bridge),
-			workspace,
+			workspace: {
+				client: workspace.client,
+				folder: workspaceFolderCell(workspace.opened),
+			},
 		},
 	};
 }

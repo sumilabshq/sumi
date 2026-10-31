@@ -2,19 +2,16 @@ import type { WorkspaceFolder, WorkspaceFolders } from "../../shared/host/worksp
 import { WorkingFoldersGateway } from "./working-folders.gateway.js";
 
 export class ClientWorkingFoldersGateway extends WorkingFoldersGateway {
-	private held: WorkspaceFolder;
-
 	constructor(private readonly workspace: WorkspaceFolders) {
 		super();
-		this.held = workspace.opened;
 	}
 
 	workspaceFolder(): WorkspaceFolder {
-		return this.held;
+		return this.workspace.folder.value();
 	}
 
 	saveWorkspaceFolder(next: WorkspaceFolder): void {
-		this.held = next;
+		this.workspace.folder.save(next);
 	}
 
 	chosenFolder(workspaceId: string, path: string): Promise<WorkspaceFolder> {
@@ -23,5 +20,9 @@ export class ClientWorkingFoldersGateway extends WorkingFoldersGateway {
 
 	attachedPickedFolder(workspaceId: string): Promise<WorkspaceFolder | null> {
 		return this.workspace.client.attachFolder(workspaceId);
+	}
+
+	workingFolderChanged(listener: () => void): () => void {
+		return this.workspace.folder.changed(listener);
 	}
 }

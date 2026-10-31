@@ -10,12 +10,14 @@ import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.j
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
-import { askInkSenderOf } from "../assistant/ask-ink-seam.js";
+import { askComposerOf } from "../assistant/ask-composer-seam.js";
 import { chatAppOf } from "../assistant/chat-app.js";
+import { chatDeliveryPortOf } from "../assistant/chat-delivery.js";
+import { ChatDeliveryContext } from "../assistant/chat-delivery-context.js";
 import { ChatApps } from "../assistant/chat-apps.js";
-import { AskInkContext } from "../features/command-menu/lib/ask-ink-context.js";
+import { AskComposerContext } from "../features/command-menu/lib/ask-composer-context.js";
 import type { AssistantHostObjects } from "../assistant/chat-app.js";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -29,7 +31,7 @@ import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { startStudioApp } from "../tabs/studio-app.js";
+import { startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -44,7 +46,7 @@ export interface StartedStudio {
 	readonly appId: string;
 	readonly state: StudioState;
 	readonly design: StudioDesign;
-	readonly chatApp: StartedApp;
+	readonly askApp: StartedApp;
 	readonly chatApps: ChatApps;
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
@@ -60,6 +62,13 @@ export interface StudioStart extends ProjectStart {
 	readonly design?: StudioDesign;
 	readonly assistantHost?: AssistantHostObjects;
 	readonly studioApp?: StartedApp;
+	readonly core?: RemoteTransport;
+}
+
+interface ChatReach {
+	readonly workspaceId: string;
+	readonly studioApp: StartedApp;
+	readonly core: RemoteTransport;
 }
 
 export interface WidgetariumStudioProps {
@@ -86,10 +95,21 @@ export function startStudio(project: WidgetariumProject, start: StudioStart = {}
 export function startOpenedStudio(opened: OpenedApp, start: StudioStart): StartedStudio {
 	const project = startOpenedProject(opened, start);
 	const lent = lentPortsOf(opened, start);
-	const studioApp = start.studioApp ?? startStudioApp({ platform: "browser", workspaceId: lent.appId });
+	const core = start.core ?? startCoreInProcess(lent.appId);
+	const studioApp =
+		start.studioApp ??
+		startStudioApp({
+			platform: "browser",
+			workspaceId: lent.appId,
+			core,
+		});
 	const state = start.state ?? createStudioState(studioApp);
 	return {
-		...startedChatOf(start, lent.appId, studioApp),
+		...startedChatOf(start, {
+			workspaceId: lent.appId,
+			studioApp,
+			core,
+		}),
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
@@ -107,14 +127,31 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	useStudioPortalClass();
 	const catalogueAsk = useTakesCatalogueAsks(frame, started.catalogue.requests, state);
 	const backToView = useMemo(() => () => state.show("app"), [state]);
-	const askInk = useMemo(
-		() => askInkSenderOf(started.studioApp, (chatId) => started.chatApps.appFor(chatId)),
-		[started.studioApp, started.chatApps],
+	const askComposer = useMemo(
+		() =>
+			askComposerOf({
+				studioApp: started.studioApp,
+				askApp: started.askApp,
+				chatAppFor: (chatId) => started.chatApps.appFor(chatId),
+			}),
+		[started.studioApp, started.askApp, started.chatApps],
+	);
+	const chatDelivery = useMemo(
+		() =>
+			chatDeliveryPortOf({
+				studioApp: started.studioApp,
+				assistant: started.assistant,
+			}),
+		[started.studioApp, started.assistant],
 	);
 	return h(
-		AskInkContext.Provider,
-		{ value: askInk },
-		studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+		ChatDeliveryContext.Provider,
+		{ value: chatDelivery },
+		h(
+			AskComposerContext.Provider,
+			{ value: askComposer },
+			studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+		),
 	);
 }
 
@@ -183,17 +220,16 @@ function cataloguePanelOf(started: StartedStudio, { panel, host, catalogueAsk }:
 
 function startedChatOf(
 	start: StudioStart,
-	workspaceId: string,
-	studioApp: StartedApp,
-): Pick<StartedStudio, "chatApp" | "chatApps" | "browser"> {
+	{ workspaceId, studioApp, core }: ChatReach,
+): Pick<StartedStudio, "askApp" | "chatApps" | "browser"> {
 	const ask = {
 		platform: "browser" as const,
 		workspaceId,
 		host: start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT },
+		tasks: core,
 	};
-	const chatApp = chatAppOf(ask);
 	return {
-		chatApp,
+		askApp: chatAppOf(ask),
 		chatApps: new ChatApps(ask),
 		browser: {
 			browserApp: studioApp,

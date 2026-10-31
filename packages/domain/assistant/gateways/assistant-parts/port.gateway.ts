@@ -6,7 +6,7 @@ import type { AttachmentFilesGateway } from "../attachment-files/attachment-file
 import { NoAttachmentFilesGateway } from "../attachment-files/none.gateway.js";
 import { PrivateFolderAttachmentFilesGateway } from "../attachment-files/private-folder.gateway.js";
 import { NoAttachmentFolderGateway } from "../attachment-folder/none.gateway.js";
-import { MemoryChatDraftsGateway } from "../chat-drafts/memory.gateway.js";
+import { PortChatDraftsGateway } from "../chat-drafts/port.gateway.js";
 import { NoClaudeOptionsGateway } from "../claude-options/none.gateway.js";
 import { SystemClockGateway } from "../clock/system.gateway.js";
 import { MemoryComposerPrefillGateway } from "../composer-prefill/memory.gateway.js";
@@ -30,7 +30,7 @@ export function portAssistantParts(port: AssistantPort, attachmentFiles: Attachm
 		draftAttachments: new MemoryDraftAttachmentsGateway(),
 		sentAttachments: new MemorySentAttachmentsGateway(),
 		composerPrefill: new MemoryComposerPrefillGateway(),
-		chatDrafts: new MemoryChatDraftsGateway(),
+		chatDrafts: new PortChatDraftsGateway(port),
 		fileDrag: new MemoryFileDragGateway(),
 	};
 }

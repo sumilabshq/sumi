@@ -29,8 +29,9 @@ body{margin:0}
 .gt{height:24px;padding:0 6px;border-radius:6px;font-size:12px;color:var(--text-2);display:inline-flex;align-items:center;gap:4px}
 .kbd{font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;background:var(--active);color:var(--text-2)}
 .plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
-.composer{background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;min-height:88px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.send{width:32px;height:32px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.composer{background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:10px}
+.send svg.i{width:14px;height:14px}
+.send{width:28px;height:28px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
 .send.off{background:var(--active);color:var(--text-3)}
 .crumb{height:28px;border-radius:6px;padding:0 8px;display:inline-flex;align-items:center;gap:6px;min-width:0;white-space:nowrap}
 .card{background:var(--plate);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;text-align:left}
@@ -145,7 +146,6 @@ body{margin:0}
         <span style="font-size: 14px; color: var(--text-3);">Describe what to build or change</span>
         <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
           <button class="ib" aria-label="Attach, ⌘U"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-          <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width: 12px; height: 12px;"><path d="m6 9 6 6 6-6"></path></svg></button>
           <span style="flex: 1;"></span>
           <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
         </div>

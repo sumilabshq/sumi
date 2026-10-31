@@ -5,4 +5,5 @@ export abstract class WorkingFoldersGateway {
 	abstract saveWorkspaceFolder(next: WorkspaceFolder): void;
 	abstract chosenFolder(workspaceId: string, path: string): Promise<WorkspaceFolder>;
 	abstract attachedPickedFolder(workspaceId: string): Promise<WorkspaceFolder | null>;
+	abstract workingFolderChanged(listener: () => void): () => void;
 }

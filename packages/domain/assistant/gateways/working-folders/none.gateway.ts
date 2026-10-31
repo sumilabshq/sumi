@@ -18,4 +18,8 @@ export class NoWorkingFoldersGateway extends WorkingFoldersGateway {
 	attachedPickedFolder(): Promise<never> {
 		return Promise.reject(new Error(WORKING_FOLDER_NOT_HERE));
 	}
+
+	workingFolderChanged(): () => void {
+		return () => undefined;
+	}
 }

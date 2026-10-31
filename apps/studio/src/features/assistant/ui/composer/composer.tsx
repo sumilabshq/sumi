@@ -17,7 +17,6 @@ import { SendButton } from "./send-button.js";
 export interface ComposerProps {
 	readonly busy: boolean;
 	readonly strip?: ReactNode;
-	readonly provider?: ReactNode;
 	readonly isFirst: boolean;
 	readonly attached: Attached | null;
 	readonly onSend: (said: string) => Promise<boolean>;
@@ -31,7 +30,6 @@ const NEXT_PLACEHOLDER = "Ask for the next change · ↵ send · ⇧↵ new line
 export function Composer({
 	busy,
 	strip = null,
-	provider = null,
 	isFirst,
 	attached,
 	onSend,
@@ -82,7 +80,6 @@ export function Composer({
 				</div>
 				<div className="wg-studio-ai-field-bar">
 					<ComposerTools />
-					{provider}
 					<span className="wg-studio-ai-bar-space" />
 					<SendButton state={state} onSend={sendDraft} onStop={onStop} />
 				</div>

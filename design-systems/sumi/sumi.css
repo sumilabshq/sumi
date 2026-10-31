@@ -11,13 +11,24 @@
 	--sumi-active: rgba(0, 0, 0, 0.06);
 	--sumi-line: rgba(0, 0, 0, 0.08);
 	--sumi-line-strong: rgba(0, 0, 0, 0.11);
-	--sumi-group-plain: rgba(0, 0, 0, 0.04);
+	--sumi-group-plain: rgba(0, 0, 0, 0.07);
+	--sumi-group-glass: rgba(255, 255, 255, 0.5);
 	--sumi-essential: rgba(0, 0, 0, 0.045);
 	--sumi-essential-hover: rgba(0, 0, 0, 0.07);
 	--sumi-essential-on: rgba(0, 0, 0, 0.09);
 	--sumi-accent: #3b5bfd;
 	--sumi-on-accent: #ffffff;
 	--sumi-accent-soft: rgba(59, 91, 253, 0.1);
+	--sumi-ask-violet: rgba(167, 139, 250, 0.34);
+	--sumi-ask-sky: rgba(125, 211, 252, 0.32);
+	--sumi-ask-pink: rgba(251, 182, 206, 0.34);
+	--sumi-ask-line: linear-gradient(
+		90deg,
+		rgba(167, 139, 250, 0.9),
+		rgba(125, 211, 252, 0.9) 33%,
+		rgba(251, 182, 206, 0.9) 66%,
+		rgba(167, 139, 250, 0.9)
+	);
 	--sumi-accent-text: #2e4fe6;
 	--sumi-focus-ring: rgba(59, 91, 253, 0.55);
 	--sumi-success: #2f8f5b;
@@ -26,6 +37,7 @@
 	--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.05);
 	--sumi-shadow-pop: 0 0 0 1px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.12);
 	--sumi-shadow-lift: 0 0 0 1px rgba(0, 0, 0, 0.07), 0 32px 90px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.08);
+	--sumi-shadow-float: 0 32px 90px rgba(0, 0, 0, 0.22), 0 6px 18px rgba(0, 0, 0, 0.08);
 	--sumi-blur-pop: saturate(1.6) blur(20px);
 	--sumi-viewer-ground: rgba(18, 18, 20, 0.92);
 	--sumi-viewer-ink: #ffffff;
@@ -139,15 +151,27 @@
 	--sumi-active: rgba(255, 255, 255, 0.09);
 	--sumi-line: rgba(255, 255, 255, 0.08);
 	--sumi-line-strong: rgba(255, 255, 255, 0.14);
-	--sumi-group-plain: rgba(255, 255, 255, 0.05);
+	--sumi-group-plain: rgba(255, 255, 255, 0.07);
+	--sumi-group-glass: rgba(255, 255, 255, 0.02);
 	--sumi-essential: rgba(255, 255, 255, 0.06);
 	--sumi-essential-hover: rgba(255, 255, 255, 0.09);
 	--sumi-essential-on: rgba(255, 255, 255, 0.12);
 	--sumi-accent-soft: rgba(91, 120, 255, 0.18);
+	--sumi-ask-violet: rgba(167, 139, 250, 0.22);
+	--sumi-ask-sky: rgba(125, 211, 252, 0.16);
+	--sumi-ask-pink: rgba(251, 182, 206, 0.16);
+	--sumi-ask-line: linear-gradient(
+		90deg,
+		rgba(167, 139, 250, 0.8),
+		rgba(125, 211, 252, 0.8) 33%,
+		rgba(251, 182, 206, 0.8) 66%,
+		rgba(167, 139, 250, 0.8)
+	);
 	--sumi-shadow-plate: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.3);
 	--sumi-shadow-pop: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 10px 28px rgba(0, 0, 0, 0.5);
 	--sumi-shadow-lift:
 		0 0 0 1px rgba(255, 255, 255, 0.1), 0 32px 90px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.35);
+	--sumi-shadow-float: 0 32px 90px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.35);
 
 	--sumi-hue-red: #f87171;
 	--sumi-hue-orange: #fb923c;

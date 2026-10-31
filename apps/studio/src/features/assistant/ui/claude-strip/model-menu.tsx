@@ -1,38 +1,57 @@
-import { createElement as h } from "react";
+import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import type { MenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";
-import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
-import { MODEL_FACES } from "../../lib/strip-faces.js";
-import { ChooseClaudeOptionCommand } from "@widgetarium/assistant";
-import type { ClaudeModel, ClaudeOptions } from "@widgetarium/assistant";
+import { ModelsPane } from "./models-pane.js";
+import { ProvidersPane } from "./providers-pane.js";
+import { ChooseClaudeModelCommand, ChooseProviderCommand, OpenProvidersCommand } from "@widgetarium/assistant";
+import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
 
 export interface ModelMenuProps {
 	readonly opening: MenuOpening;
-	readonly claude: ClaudeOptions;
+	readonly setup: AgentSetup;
+	readonly claude: ClaudeOptions | null;
 }
 
-const MODEL = "Model";
+export function ModelMenu({ opening, setup, claude }: ModelMenuProps): ReactElement {
+	const [browsedProviderId, setBrowsedProviderId] = useState<string | null>(null);
+	const chooseProvider = useCommand(ChooseProviderCommand);
+	const chooseClaudeModel = useCommand(ChooseClaudeModelCommand);
+	const openProviders = useCommand(OpenProvidersCommand);
+	const shownProviderId = browsedProviderId ?? setup.chosen;
+	const closeMenu = (): void => {
+		setBrowsedProviderId(null);
+		opening.close();
+	};
 
-export function ModelMenu({ opening, claude }: ModelMenuProps): ReactElement {
-	const choose = useCommand(ChooseClaudeOptionCommand);
 	return (
-		<ChatMenu spot={opening.spot} label={MODEL} onDismiss={opening.close}>
-			{MODELS.map((model) => (
-				<ChatMenuRow
-					key={model}
-					text={MODEL_FACES[model].label}
-					small={MODEL_FACES[model].small}
-					isPicked={model === claude.model}
-					onPick={() => {
-						opening.close();
-						void choose.run({ model });
+		<ChatMenu spot={opening.spot} align="center" onDismiss={closeMenu}>
+			<div className="wg-studio-ai-menu-panes">
+				<ProvidersPane
+					setup={setup}
+					shownProviderId={shownProviderId}
+					onBrowse={setBrowsedProviderId}
+					onManage={() => {
+						closeMenu();
+						void openProviders.run();
 					}}
 				/>
-			))}
+				<div role="separator" aria-orientation="vertical" className="wg-studio-ai-menu-pane-divider" />
+				<ModelsPane
+					setup={setup}
+					claude={claude}
+					shownProviderId={shownProviderId}
+					onPickModel={(model) => {
+						closeMenu();
+						void chooseClaudeModel.run({ model });
+					}}
+					onPickProvider={(id) => {
+						closeMenu();
+						void chooseProvider.run({ id });
+					}}
+				/>
+			</div>
 		</ChatMenu>
 	);
 }
-
-const MODELS = Object.keys(MODEL_FACES).filter((value): value is ClaudeModel => value in MODEL_FACES);

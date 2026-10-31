@@ -92,14 +92,28 @@ body{margin:0}
       </div>
 
       <div>
-        <div class="cap" style="margin-bottom: 8px;"><h3>Model</h3><p>The models the agent accepts, a line on each.</p></div>
+        <div class="cap" style="margin-bottom: 8px;"><h3>Model</h3><p>Providers on the left, the shown provider's models on the right, Manage under a line.</p></div>
         <div class="plate cell" style="align-items: flex-end;">
-          <div class="menu" role="menu" aria-label="Model" style="margin-right: 40px;">
-            <div class="mh">Model</div>
-            <button class="mi sel"><span class="w">Opus<span class="d">Most capable</span></span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
-            <button class="mi hov"><span class="w">Sonnet<span class="d">Fast for everyday work</span></span></button>
-            <button class="mi"><span class="w">Haiku<span class="d">Quickest, lightest</span></span></button>
-            <button class="mi"><span class="w">Fable<span class="d">Newest</span></span></button>
+          <div class="menu" role="menu" aria-label="Provider" style="width: 480px;">
+            <div style="display: flex; margin: -4px;">
+              <div style="width: 196px; flex: none; display: flex; flex-direction: column; gap: 1px; padding: 4px;">
+                <div class="mh">Provider</div>
+                <button class="mi" style="background: var(--active);"><span class="w">Claude Code</span><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 14px; height: 14px;"><path d="m9 18 6-6-6-6"></path></svg></button>
+                <button class="mi"><span class="w">OpenCode</span></button>
+                <button class="mi"><span class="w">Gemini CLI</span></button>
+                <span style="flex: 1;"></span>
+                <div class="sep" style="margin: 4px -4px;"></div>
+                <button class="mi"><svg class="i ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg><span class="w">Manage</span></button>
+              </div>
+              <div style="width: 1px; flex: none; background: var(--line);"></div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 4px;">
+                <div class="mh">Model</div>
+                <button class="mi sel"><span class="w">Opus<span class="d">Most capable</span></span><svg class="i chk" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></button>
+                <button class="mi hov"><span class="w">Sonnet<span class="d">Fast for everyday work</span></span></button>
+                <button class="mi"><span class="w">Haiku<span class="d">Quickest, lightest</span></span></button>
+                <button class="mi"><span class="w">Fable</span></button>
+              </div>
+            </div>
           </div>
           <div style="display: flex; align-items: center; gap: 2px; width: 100%;"><button class="gt">Auto</button><span style="flex: 1;"></span><button class="gt">38%</button><button class="gt open">Opus<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 15-6-6-6 6"></path></svg></button><button class="gt">Medium</button></div>
         </div>

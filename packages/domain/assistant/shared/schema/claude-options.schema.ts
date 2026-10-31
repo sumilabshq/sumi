@@ -40,3 +40,7 @@ export const ClaudeOptionAskedSchema = z.union([
 ]);
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
+
+export const ClaudeModelAskedSchema = z.object({
+	model: ClaudeModelSchema,
+});

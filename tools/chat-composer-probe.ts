@@ -25,14 +25,6 @@ export const IDLE_PARTS: Parts = {
 	bar: { board: ".composer > div", built: ".wg-studio-ai-field-bar", keys: ["h", "gap"] },
 	plus: { board: ".ib", built: ".wg-studio-ai-plus", keys: [...BOX, "border", "color"] },
 	plusGlyph: { board: ".ib svg", built: ".wg-studio-ai-plus svg", keys: ["w", "h"] },
-	provider: { board: ".chip", built: ".wg-studio-ai-provider", keys: [...FLAT, "border", "fs", "fw", "color"] },
-	providerDot: {
-		board: ".chip > span",
-		built: ".wg-studio-ai-provider .wg-studio-ai-ready",
-		keys: ["w", "h", "radius", "bg"],
-	},
-	providerChevron: { board: ".chip svg", built: ".wg-studio-ai-provider svg", keys: ["w", "h"] },
-	providerWords: { board: "text:.chip", built: "text:.wg-studio-ai-provider", keys: [] },
 	sendIdle: { board: ".send.off", built: ".wg-studio-ai-send.is-idle", keys: [...BOX, "border", "color"] },
 	sendGlyph: { board: ".send.off svg", built: ".wg-studio-ai-send.is-idle svg", keys: ["w", "h"] },
 	strip: { board: STRIP_BOARD, built: ".wg-studio-ai-strip", keys: ["pad", "gap"] },
@@ -121,18 +113,6 @@ export const MENU_PARTS: Parts = {
 	picked: { board: "menu .mi.sel", built: PICKED_BUILT, keys: ["h", "radius", "pad", "bg"] },
 	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-studio-ai-menu-end svg`, keys: ["w", "h", "color"] },
 	hovered: { board: "menu .mi.hov", built: "menu .wg-studio-ai-menu-row:hover", keys: ["bg"] },
-};
-
-export const PROVIDER_PARTS: Parts = {
-	menu: { board: "menu", built: "menu", keys: ["radius", "pad", "w", "bg", "edge"] },
-	label: { board: "menu .mh", built: "menu .wg-studio-ai-menu-label", keys: ["pad", ...TEXT] },
-	picked: { board: "menu .mi.sel", built: PICKED_BUILT, keys: ["radius", "pad", "gap", "bg", ...TEXT] },
-	dot: {
-		board: "menu .mi.sel > span[aria-hidden]",
-		built: `${PICKED_BUILT} .wg-studio-ai-ready`,
-		keys: ["w", "h", "radius", "bg"],
-	},
-	tick: { board: "menu .mi.sel .chk", built: `${PICKED_BUILT} .wg-studio-ai-menu-end svg`, keys: ["w", "h", "color"] },
 };
 
 export const ATTACH_PARTS: Parts = {

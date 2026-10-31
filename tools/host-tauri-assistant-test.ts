@@ -788,8 +788,7 @@ async function clearChecks(): Promise<void> {
 			started.push([asked, resumeOf("claude-code")]);
 			return Promise.reject(new Error("no provider"));
 		},
-		Date.now,
-		history,
+		{ history },
 	);
 	history.settled(
 		{

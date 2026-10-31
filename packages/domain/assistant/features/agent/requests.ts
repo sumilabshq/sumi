@@ -5,15 +5,22 @@ import { ClaudeOptionsChangedEvent } from "../../gateways/claude-options/claude-
 import { ClaudeOptionsGateway } from "../../gateways/claude-options/claude-options.gateway.js";
 import { OPTIONS_NOT_HERE } from "../../gateways/claude-options/none.gateway.js";
 import { WORKING_FOLDER_NOT_HERE } from "../../gateways/working-folders/none.gateway.js";
+import { WorkingFolderChangedEvent } from "../../gateways/working-folders/working-folders.events.js";
 import { WorkingFoldersGateway } from "../../gateways/working-folders/working-folders.gateway.js";
 import {
 	AgentSetupSchema,
 	HelperAgentsAskedSchema,
 	ProviderAskedSchema,
 } from "../../shared/schema/agent-setup.schema.js";
-import { ClaudeOptionAskedSchema, ClaudeOptionsSchema } from "../../shared/schema/claude-options.schema.js";
+import {
+	ClaudeModelAskedSchema,
+	ClaudeOptionAskedSchema,
+	ClaudeOptionsSchema,
+} from "../../shared/schema/claude-options.schema.js";
 import { FolderAskedSchema, WorkingFoldersSchema } from "../../shared/schema/working-folder.schema.js";
-import { agentSetupOf, withOptionChosen, workingFoldersOf } from "./lib/agent-setup.js";
+import { CLAUDE_CODE_PROVIDER_ID, agentSetupOf, withOptionChosen, workingFoldersOf } from "./lib/agent-setup.js";
+
+const NO_CLAUDE_CODE = "Claude Code is not among the providers, so its model cannot be chosen.";
 
 export const AgentSetupQuery = query("agent-setup")
 	.output(AgentSetupSchema)
@@ -68,6 +75,39 @@ export const ChooseClaudeOptionCommand = command("choose-claude-option")
 		);
 	});
 
+export const ChooseClaudeModelCommand = command("choose-claude-model")
+	.input(ClaudeModelAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({
+		assistantSetup: AssistantSetupGateway,
+		claudeOptions: ClaudeOptionsGateway,
+	})
+	.handle(async ({ model }, { assistantSetup, claudeOptions, invalidate }) => {
+		const setup = await assistantSetup.setup();
+
+		if (!setup.providers.some(({ id }) => id === CLAUDE_CODE_PROVIDER_ID)) {
+			return refuse(NO_CLAUDE_CODE);
+		}
+
+		if (setup.chosen !== CLAUDE_CODE_PROVIDER_ID) {
+			invalidate(AgentSetupQuery);
+			await assistantSetup.chooseProvider(CLAUDE_CODE_PROVIDER_ID);
+			console.info(
+				`[widgetarium] provider ${setup.chosen} → ${CLAUDE_CODE_PROVIDER_ID} (chose the Claude model ${model})`,
+			);
+		}
+
+		const was = claudeOptions.claudeOptions();
+
+		if (was === null) {
+			return refuse(OPTIONS_NOT_HERE);
+		}
+
+		invalidate(ClaudeOptionsQuery);
+		claudeOptions.saveClaudeOptions(withOptionChosen(was, { model }));
+		console.debug(`[widgetarium] claude model ${was.model} → ${model}`);
+	});
+
 export const WorkingFoldersQuery = query("working-folders")
 	.output(WorkingFoldersSchema.nullable())
 	.inject({ workingFolders: WorkingFoldersGateway })
@@ -119,6 +159,10 @@ export const PickWorkingFolderCommand = command("pick-working-folder")
 
 export const RereadAgentSetupSubscriber = subscriber(AssistantSetupChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(AgentSetupQuery);
+});
+
+export const RereadWorkingFoldersSubscriber = subscriber(WorkingFolderChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(WorkingFoldersQuery);
 });
 
 export const RereadClaudeOptionsSubscriber = subscriber(ClaudeOptionsChangedEvent).handle((_input, { invalidate }) => {

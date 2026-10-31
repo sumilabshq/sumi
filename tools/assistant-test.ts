@@ -20,8 +20,10 @@ import { turnStepsOf } from "../packages/domain/assistant/features/chat/lib/turn
 import { toolsSummaryOf } from "../apps/studio/src/features/assistant/lib/tools-summary.ts";
 import {
 	AttachFilesCommand,
+	ChooseClaudeModelCommand,
 	ChooseClaudeOptionCommand,
 	PickWorkingFolderCommand,
+	ChooseWorkingFolderCommand,
 	WorkingFoldersQuery,
 	AttachFolderCommand,
 	AttachReachQuery,
@@ -38,6 +40,8 @@ import {
 	SlashCommandsQuery,
 	HoldDraftTextCommand,
 	OpenChatDraftCommand,
+	TakeDraftCommand,
+	AdoptDraftCommand,
 } from "../packages/domain/assistant/index.ts";
 import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../apps/studio/src/features/assistant/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../packages/domain/assistant/gateways/assistant-session/assistant-session.gateway.ts";
@@ -55,6 +59,7 @@ import { attachmentsIn, withAttachments } from "../packages/domain/assistant/sha
 import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/lib/attachment-sweep.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
 import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
 import { readsOf, PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
 import { expandArgs } from "../apps/host-obsidian/src/legacy/ai/command.ts";
@@ -185,7 +190,7 @@ class FakeSetupGateway extends AssistantSetupGateway {
 		return () => undefined;
 	}
 
-	async chooseProvider(): Promise<void> {}
+	async chooseProvider(_id: string): Promise<void> {}
 
 	async setHelperAgents(): Promise<void> {}
 
@@ -667,7 +672,7 @@ const picks: (WorkspaceFolder | null)[] = [
 const folderChat = chatOver({
 	...portAssistantParts(NO_ASSISTANT, claude.parts.attachmentFiles),
 	workingFolders: new ClientWorkingFoldersGateway({
-		opened,
+		folder: workspaceFolderCell(opened),
 		client: {
 			chooseFolder: async (_id, folder) => ({ ...opened, folder }),
 			attachFolder: async () => picks.shift() ?? null,
@@ -696,6 +701,31 @@ check("a picked folder becomes the current one", await currentFolder(), {
 	current: "/Users/me/other",
 	recent: ["/Users/me/other"],
 });
+const sharedFolder = workspaceFolderCell(opened);
+const folderAppOver = (): StartedApp =>
+	chatOver({
+		...portAssistantParts(NO_ASSISTANT, claude.parts.attachmentFiles),
+		workingFolders: new ClientWorkingFoldersGateway({
+			folder: sharedFolder,
+			client: {
+				chooseFolder: async (_id, folder) => ({ ...opened, folder }),
+				attachFolder: async () => null,
+			},
+		}),
+	});
+const askFolders = folderAppOver();
+const chatFolders = folderAppOver();
+const folderIn = async (started: StartedApp): Promise<unknown> => {
+	const folders = await started.send(WorkingFoldersQuery);
+	return folders.ok ? folders.output?.current : folders.reason;
+};
+await folderIn(chatFolders);
+await askFolders.send(ChooseWorkingFolderCommand, { path: "/Users/me/asked" });
+check(
+	"a folder chosen in the Ask composer is the folder every chat app reads next",
+	[await folderIn(askFolders), await folderIn(chatFolders)],
+	["/Users/me/asked", "/Users/me/asked"],
+);
 check(
 	"the web host refuses a working folder pick before anything opens",
 	reasonOf(await webChat.send(PickWorkingFolderCommand)),
@@ -711,6 +741,59 @@ check(
 	"the web host refuses a Claude option, for it offers none",
 	reasonOf(await webChat.send(ChooseClaudeOptionCommand, { model: "sonnet" })),
 	"Claude Code's options are not offered on this host",
+);
+
+class ProvidersSetupGateway extends FakeSetupGateway {
+	chosenProviderId = "codex";
+	readonly chosenLog: string[] = [];
+
+	constructor(private readonly providerIds: readonly string[]) {
+		super({
+			images: false,
+			files: "none",
+		});
+	}
+
+	override async setup(): Promise<AssistantSetup> {
+		const base = await super.setup();
+		return {
+			...base,
+			providers: this.providerIds.map((id) => ({
+				id,
+				label: id,
+				canEdit: true,
+			})),
+			chosen: this.chosenProviderId,
+		};
+	}
+
+	override async chooseProvider(id: string): Promise<void> {
+		this.chosenLog.push(id);
+		this.chosenProviderId = id;
+	}
+}
+
+async function claudeModelPickedWith(providerIds: readonly string[]): Promise<readonly unknown[]> {
+	const setup = new ProvidersSetupGateway(providerIds);
+	const picker = chatOver({
+		...portAssistantParts(NO_ASSISTANT, claude.parts.attachmentFiles),
+		assistantSetup: setup,
+		claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
+	});
+	const answer = await picker.send(ChooseClaudeModelCommand, { model: "sonnet" });
+	const options = await picker.send(ClaudeOptionsQuery);
+	return [answer.ok, setup.chosenLog, setup.chosenProviderId, options.ok ? options.output?.model : options.reason];
+}
+
+check(
+	"a Claude model picked while another provider is chosen switches to Claude Code, then sets the model",
+	await claudeModelPickedWith(["claude-code", "codex"]),
+	[true, ["claude-code"], "claude-code", "sonnet"],
+);
+check(
+	"with no Claude Code among the providers the pick is refused and nothing changes",
+	await claudeModelPickedWith(["codex"]),
+	[false, [], "codex", "opus"],
 );
 
 const faceOf = (kind: CallFace["kind"], object: string): CallFace => ({
@@ -793,6 +876,75 @@ check(
 	["", [], "make the header blue", ["shot.png"]],
 );
 
+const askedShot = {
+	id: "asked-shot",
+	name: "asked.png",
+	kind: "image" as const,
+	mime: "image/png",
+	bytes: new Uint8Array(8),
+	preview: null,
+	path: null,
+};
+const asking = benchWith(CLAUDE);
+const namesIn = async (bench: Bench): Promise<string[]> =>
+	bench.chat.send(DraftAttachmentsQuery).then((answer) => (answer.ok ? answer.output.map(({ name }) => name) : []));
+asking.parts.draftAttachments.saveDraftAttachments([askedShot]);
+const taken = await asking.chat.send(TakeDraftCommand);
+const takenFiles = taken.ok ? taken.output.attachments : [];
+check(
+	"the ask composer hands its files over once and keeps none",
+	[takenFiles.map(({ name }) => name), takenFiles[0]?.bytes.length, await namesIn(asking)],
+	[["asked.png"], 8, []],
+);
+const drafted = benchWith(CLAUDE);
+const heldForLater = saidOf(
+	await drafted.chat.send(AdoptDraftCommand, {
+		chatId: "new-chat",
+		said: "why does the build fail",
+		attachments: [...takenFiles],
+		sends: false,
+	}),
+);
+const openedDraft = saidOf(await drafted.chat.send(OpenChatDraftCommand, { chatId: "new-chat" }));
+check(
+	"Create only: the new chat opens with the text and the files in its composer, and nothing is sent",
+	[heldForLater, openedDraft, await namesIn(drafted), drafted.session.sent],
+	["", "why does the build fail", ["asked.png"], []],
+);
+const alreadyOpen = benchWith(CLAUDE);
+await alreadyOpen.chat.send(OpenChatDraftCommand, { chatId: "shown-chat" });
+const fillNow = saidOf(
+	await alreadyOpen.chat.send(AdoptDraftCommand, {
+		chatId: "shown-chat",
+		said: "look at this",
+		attachments: [askedShot],
+		sends: false,
+	}),
+);
+check(
+	"Create only into a chat already on screen fills its composer at once",
+	[fillNow, await namesIn(alreadyOpen)],
+	["look at this", ["asked.png"]],
+);
+const askedAndSent = benchWith(CLAUDE);
+await askedAndSent.chat.send(AdoptDraftCommand, {
+	chatId: "sent-chat",
+	said: "fix the build",
+	attachments: [askedShot],
+	sends: true,
+});
+const sentTrailer = attachmentsIn(askedAndSent.session.sent[0] ?? "");
+check(
+	"Create and send: the new chat sends the text with the files, and keeps no draft",
+	[
+		sentTrailer.said,
+		sentTrailer.entries.map(({ name }) => name),
+		saidOf(await askedAndSent.chat.send(OpenChatDraftCommand, { chatId: "sent-chat" })),
+		await namesIn(askedAndSent),
+	],
+	["fix the build", ["asked.png"], "", []],
+);
+
 const tooMany = {
 	name: "assistant/attach-files",
 	reason: "At most 3 files can be attached to one message",
@@ -812,7 +964,19 @@ check(
 	["Ollama can't read images", "At most 3 files can be attached to one message"],
 );
 
-for (const bench of [claude, ollama, codex, switched, crowded, cleared, slashed]) {
+for (const bench of [
+	claude,
+	ollama,
+	codex,
+	switched,
+	crowded,
+	cleared,
+	slashed,
+	asking,
+	drafted,
+	alreadyOpen,
+	askedAndSent,
+]) {
 	rmSync(bench.folder, { recursive: true, force: true });
 }
 

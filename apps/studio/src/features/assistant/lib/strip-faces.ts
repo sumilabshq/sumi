@@ -1,4 +1,8 @@
-import type { ClaudeEffort, ClaudeModel, PermissionMode } from "@widgetarium/assistant";
+import type { AgentSetup, ClaudeEffort, ClaudeModel, PermissionMode } from "@widgetarium/assistant";
+
+export function providerLabelOf(setup: AgentSetup, id: string): string {
+	return setup.providers.find((provider) => provider.id === id)?.label ?? setup.providerLabel;
+}
 
 export interface OptionFace {
 	readonly label: string;

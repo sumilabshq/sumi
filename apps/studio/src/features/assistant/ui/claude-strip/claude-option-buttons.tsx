@@ -1,39 +1,34 @@
 import { Fragment, createElement as h } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { useMenuOpening } from "../../lib/menu-spot.js";
 import { EFFORT_FACES, MODE_FACES } from "../../lib/strip-faces.js";
-import { percentOf } from "../../lib/usage-said.js";
-import { ModelButton } from "./model-button.js";
 import { OptionMenu } from "./option-menu.js";
 import { StripButton } from "./strip-button.js";
-import { UsageMenu } from "./usage-menu.js";
-import { UsageRing } from "./usage-ring.js";
 import { ChooseClaudeOptionCommand } from "@widgetarium/assistant";
 import type { ClaudeOptions } from "@widgetarium/assistant";
 
+export interface ClaudeOptionButtonsProps {
+	readonly claude: ClaudeOptions;
+	readonly usage?: ReactNode;
+	readonly modelButton: ReactNode;
+}
+
 const PERMISSION_MODE = "Permission mode";
 const EFFORT = "Effort";
-const USAGE = "Usage";
-const NO_USAGE = "—";
 
-export function ClaudeOptionButtons({ claude }: { readonly claude: ClaudeOptions }): ReactElement {
+export function ClaudeOptionButtons({ claude, usage = null, modelButton }: ClaudeOptionButtonsProps): ReactElement {
 	const choose = useCommand(ChooseClaudeOptionCommand);
 	const mode = useMenuOpening();
-	const usage = useMenuOpening();
 	const effort = useMenuOpening();
-	const fiveHour = claude.usage?.fiveHour ?? null;
 	return (
 		<>
 			<StripButton label={PERMISSION_MODE} isOn={mode.spot !== null} onOpen={mode.openAt}>
 				{MODE_FACES[claude.mode].label}
 			</StripButton>
 			<span className="wg-studio-ai-strip-space" />
-			<StripButton label={USAGE} hasChevron={false} isOn={usage.spot !== null} onOpen={usage.openAt}>
-				<UsageRing part={fiveHour?.used ?? null} />
-				{fiveHour === null ? NO_USAGE : percentOf(fiveHour.used)}
-			</StripButton>
-			<ModelButton claude={claude} />
+			{usage}
+			{modelButton}
 			<StripButton label={EFFORT} isOn={effort.spot !== null} onOpen={effort.openAt}>
 				{EFFORT_FACES[claude.effort].label}
 			</StripButton>
@@ -44,7 +39,6 @@ export function ClaudeOptionButtons({ claude }: { readonly claude: ClaudeOptions
 				picked={claude.mode}
 				onPick={(picked) => void choose.run({ mode: picked })}
 			/>
-			<UsageMenu opening={usage} usage={claude.usage} />
 			<OptionMenu
 				label={EFFORT}
 				opening={effort}

@@ -9,7 +9,6 @@ import {
 	ATTACH_PARTS,
 	IDLE_PARTS,
 	MENU_PARTS,
-	PROVIDER_PARTS,
 	PART_PROBE,
 	REMOVE_PARTS,
 	TYPED_PARTS,
@@ -177,11 +176,14 @@ const PHASES: readonly Phase[] = [
 		name: "model menu",
 		board: MENUS_BOARD,
 		boardScope: { light: "", dark: "" },
-		menuLabel: { board: "Model", built: "Model" },
+		menuLabel: { board: "Provider", built: "Provider" },
 		state: "composer",
 		act: async (page) => {
 			await pressed(page, ".wg-studio-ai-strip-button", "Model");
-			await hoveredOn(page, ".wg-studio-ai-menu.is-open .wg-studio-ai-menu-row:not(.is-picked)");
+			await hoveredOn(
+				page,
+				".wg-studio-ai-menu.is-open .wg-studio-ai-menu-pane:not(.is-providers) .wg-studio-ai-menu-row:not(.is-picked)",
+			);
 		},
 		parts: MENU_PARTS,
 	},
@@ -193,15 +195,6 @@ const PHASES: readonly Phase[] = [
 		state: "composer",
 		act: async (page) => pressed(page, ".wg-studio-ai-strip-button", "Usage"),
 		parts: USAGE_PARTS,
-	},
-	{
-		name: "provider menu",
-		board: MENUS_BOARD,
-		boardScope: { light: "", dark: "" },
-		menuLabel: { board: "Agent", built: "Provider" },
-		state: "composer",
-		act: async (page) => pressed(page, ".wg-studio-ai-provider", "Provider"),
-		parts: PROVIDER_PARTS,
 	},
 	{
 		name: "attach menu",

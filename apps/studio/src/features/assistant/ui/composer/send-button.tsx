@@ -35,7 +35,7 @@ export function SendButton({ state, onSend, onStop }: SendButtonProps): ReactEle
 			{isStreaming ? (
 				<span className="wg-studio-ai-stop-square" aria-hidden={true} />
 			) : (
-				<Icon name="arrow-up" size={16} />
+				<Icon name="arrow-up" size={14} />
 			)}
 		</button>
 	);

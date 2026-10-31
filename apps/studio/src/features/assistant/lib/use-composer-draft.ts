@@ -6,6 +6,8 @@ import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";
 import { useAttachesFiles } from "./use-attaches-files.js";
 
+const HOLD_TYPED_AFTER_MS = 400;
+
 export interface DraftAsk {
 	readonly busy: boolean;
 	readonly onSend: (said: string) => Promise<boolean>;
@@ -27,13 +29,19 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 	const attach = useAttachesFiles();
 	const { data: drafted } = useQuery(DraftAttachmentsQuery);
 	useHoldsDraftOnLeave(draft);
+	const holdNow = useHoldsDraftWhileTyped({ draft, attachedCount: drafted.length });
 	const hasInput = draft.trim() !== "" || drafted.length > 0;
 	const sendDraft = (): void => {
 		const said = draft.trim();
 		if (!hasInput || busy) return;
 		setDraft("");
 		void onSend(said).then((isSent) => {
-			if (!isSent) setDraft((typed) => (typed === "" ? said : typed));
+			if (!isSent) {
+				setDraft((typed) => (typed === "" ? said : typed));
+				return;
+			}
+
+			holdNow();
 		});
 	};
 	return {
@@ -57,6 +65,24 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 			attach(files);
 		},
 	};
+}
+
+interface HeldInput {
+	readonly draft: string;
+	readonly attachedCount: number;
+}
+
+function useHoldsDraftWhileTyped({ draft, attachedCount }: HeldInput): () => void {
+	const holdDraftText = useCommand(HoldDraftTextCommand);
+	const latestHold = useRef(holdDraftText);
+	latestHold.current = holdDraftText;
+	const latestDraft = useRef(draft);
+	latestDraft.current = draft;
+	useEffect(() => {
+		const timer = setTimeout(() => void latestHold.current.run({ said: draft }), HOLD_TYPED_AFTER_MS);
+		return () => clearTimeout(timer);
+	}, [draft, attachedCount]);
+	return () => void latestHold.current.run({ said: latestDraft.current });
 }
 
 function useHoldsDraftOnLeave(draft: string): void {

@@ -15,7 +15,6 @@ const SEEN = `(() => ({
 	welcome: document.querySelectorAll(".wg-studio-ai-welcome").length,
 	bar: [...document.querySelectorAll(".wg-studio-ai-field-bar")].map((bar) => bar.textContent).join(""),
 	model: document.querySelector(".wg-studio-ai-strip-button[aria-label=Model]")?.textContent ?? null,
-	provider: document.querySelector(".wg-studio-ai-provider")?.textContent ?? null,
 }))()`;
 
 let failed = 0;
@@ -51,16 +50,15 @@ async function seenIn(state: string, bundled: string): Promise<unknown> {
 
 const bundled = await bundleOf("tools/chat-composer-page.tsx");
 check(
-	"the empty chat draws a bare head, the welcome and the folder button; the field names the provider in its chip",
+	"the empty chat draws a bare head, the welcome and the folder button; the model button names the model",
 	await seenIn("empty", bundled),
 	{
 		header: 0,
 		strip: 1,
 		folder: 1,
 		welcome: 1,
-		bar: "Claude Code",
+		bar: "",
 		model: "Opus",
-		provider: "Claude Code",
 	},
 );
 check(
@@ -71,24 +69,18 @@ check(
 		strip: 1,
 		folder: 0,
 		welcome: 0,
-		bar: "Claude Code",
+		bar: "",
 		model: "Opus",
-		provider: "Claude Code",
 	},
 );
-check(
-	"another provider has no Claude strip and no model button; the chip names the provider",
-	await seenIn("codex", bundled),
-	{
-		header: 1,
-		strip: 0,
-		folder: 0,
-		welcome: 0,
-		bar: "Codex",
-		model: null,
-		provider: "Codex",
-	},
-);
+check("another provider has no Claude strip; the model button names the provider", await seenIn("codex", bundled), {
+	header: 1,
+	strip: 0,
+	folder: 0,
+	welcome: 0,
+	bar: "",
+	model: "Codex",
+});
 UNJUDGED.forEach((why) => console.log(`unjudged: ${why}`));
 const report = await composerDiffReport();
 report.differences.forEach((difference) =>

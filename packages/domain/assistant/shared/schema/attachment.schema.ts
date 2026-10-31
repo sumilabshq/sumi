@@ -22,6 +22,31 @@ export type AttachmentChip = z.infer<typeof AttachmentChipSchema>;
 
 export const DraftAttachmentsSchema = z.array(AttachmentChipSchema);
 
+export const DraftAttachmentSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	kind: AttachmentKindSchema,
+	mime: z.string(),
+	bytes: z.custom<Uint8Array>(),
+	preview: z.string().nullable(),
+	path: z.string().nullable(),
+});
+
+export type DraftAttachment = z.infer<typeof DraftAttachmentSchema>;
+
+export const TakenDraftSchema = z.object({
+	attachments: z.array(DraftAttachmentSchema),
+});
+
+export const AdoptedDraftSchema = z.object({
+	chatId: z.string().min(1),
+	said: z.string(),
+	attachments: z.array(DraftAttachmentSchema),
+	sends: z.boolean(),
+});
+
+export type AdoptedDraft = z.infer<typeof AdoptedDraftSchema>;
+
 export const AttachReachSchema = z.object({
 	canAttachFolders: z.boolean(),
 	accepted: z.string(),

@@ -5,6 +5,8 @@ import type { AgentSetup } from "../../../shared/schema/agent-setup.schema.js";
 import type { ClaudeOptionAsked, ClaudeOptions } from "../../../shared/schema/claude-options.schema.js";
 import type { WorkingFolders } from "../../../shared/schema/working-folder.schema.js";
 
+export const CLAUDE_CODE_PROVIDER_ID = "claude-code";
+
 export function withOptionChosen(options: ClaudeOptions, asked: ClaudeOptionAsked): ClaudeOptions {
 	return {
 		...options,

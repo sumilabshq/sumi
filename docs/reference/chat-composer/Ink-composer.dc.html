@@ -24,9 +24,10 @@ body{margin:0}
 .btn{height:32px;padding:0 12px;border-radius:8px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
 .btn.sec{background:var(--hover)}
 .plate{background:var(--plate);border-radius:14px;box-shadow:var(--shadow-plate)}
-.composer{position:relative;background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;min-height:88px;padding:12px;display:flex;flex-direction:column;gap:10px}
-.composer.focus{border-color:transparent;box-shadow:0 0 0 2px var(--focus-ring)}
-.send{width:32px;height:32px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
+.composer{position:relative;background:var(--plate);border:1px solid var(--line-strong);border-radius:12px;padding:12px 12px 8px;display:flex;flex-direction:column;gap:10px}
+.composer.focus{border-color:var(--text-3)}
+.send svg.i{width:14px;height:14px}
+.send{width:28px;height:28px;border-radius:999px;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;flex:none}
 .send.off{background:var(--active);color:var(--text-3)}
 .tip{background:var(--text);color:var(--plate);font-size:12px;border-radius:6px;padding:4px 8px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
 .tip .k{font-size:11px;opacity:.6}
@@ -57,7 +58,6 @@ body{margin:0}
             <span style="font-size: 14px; color: var(--text-3);">Describe what to build or change</span>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
               <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
               <span style="flex: 1;"></span>
               <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
             </div>
@@ -73,7 +73,6 @@ body{margin:0}
             <span style="font-size: 14px; color: var(--text-3);"><span class="caret"></span>Describe what to build or change</span>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
               <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
               <span style="flex: 1;"></span>
               <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
             </div>
@@ -88,7 +87,6 @@ body{margin:0}
             <span style="font-size: 14px;">Add a weekly view to the habits page<span class="caret"></span></span>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
               <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
               <span style="flex: 1;"></span>
               <span style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-3); margin-right: 6px;"><span class="kbd">↵</span>send<span class="kbd" style="margin-left: 6px;">⇧↵</span>new line</span>
               <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
@@ -122,7 +120,6 @@ body{margin:0}
             </div>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
               <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
               <span style="flex: 1;"></span>
               <button class="send" aria-label="Send"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
             </div>
@@ -137,12 +134,11 @@ body{margin:0}
             <span style="font-size: 14px; color: var(--text-3);">Add to this while Ink works</span>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto;">
               <button class="ib" aria-label="Attach"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--success);"></span>Claude Code<svg class="i s12" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button>
               <span style="display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; font-size: 12px; color: var(--text-2);"><svg class="m" viewBox="0 0 64 64" aria-hidden="true" style="width: 16px; height: 16px;"><circle cx="32" cy="32" r="32"></circle><rect class="e" x="16" y="27" width="13" height="6" rx="3"></rect><rect class="e" x="35" y="27" width="13" height="6" rx="3"></rect></svg>Working · 12 s</span>
               <span style="flex: 1;"></span>
               <span style="position: relative; display: inline-flex;">
                 <span class="tip" style="position: absolute; bottom: 40px; right: -4px;">Stop<span class="k">esc</span></span>
-                <button aria-label="Stop" style="width: 32px; height: 32px; border-radius: 999px; background: var(--text); display: inline-flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 2px; background: var(--plate);"></span></button>
+                <button aria-label="Stop" style="width: 28px; height: 28px; border-radius: 999px; background: var(--text); display: inline-flex; align-items: center; justify-content: center;"><span aria-hidden="true" style="width: 10px; height: 10px; border-radius: 2px; background: var(--plate);"></span></button>
               </span>
             </div>
           </div>
@@ -161,7 +157,6 @@ body{margin:0}
             <span style="font-size: 14px; color: var(--text-3);">Set up a provider to start</span>
             <div style="display: flex; align-items: center; gap: 4px; margin-top: auto; opacity: 0.5;">
               <button class="ib" aria-label="Attach" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
-              <button class="chip" disabled><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 999px; background: var(--text-3);"></span>Claude Code</button>
               <span style="flex: 1;"></span>
               <button class="send off" aria-label="Send" disabled><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="stroke-width: 2;"><path d="M12 19V5M5 12l7-7 7 7"></path></svg></button>
             </div>

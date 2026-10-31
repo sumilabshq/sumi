@@ -59,6 +59,31 @@ export type AttachmentChip = z.infer<typeof AttachmentChipSchema>;
 
 export const DraftAttachmentsSchema = z.array(AttachmentChipSchema);
 
+export const DraftAttachmentSchema = z.object({
+	id: z.string(),
+	name: z.string(),
+	kind: AttachmentKindSchema,
+	mime: z.string(),
+	bytes: z.custom<Uint8Array>(),
+	preview: z.string().nullable(),
+	path: z.string().nullable(),
+});
+
+export type DraftAttachment = z.infer<typeof DraftAttachmentSchema>;
+
+export const TakenDraftSchema = z.object({
+	attachments: z.array(DraftAttachmentSchema),
+});
+
+export const AdoptedDraftSchema = z.object({
+	chatId: z.string().min(1),
+	said: z.string(),
+	attachments: z.array(DraftAttachmentSchema),
+	sends: z.boolean(),
+});
+
+export type AdoptedDraft = z.infer<typeof AdoptedDraftSchema>;
+
 export const AttachReachSchema = z.object({
 	canAttachFolders: z.boolean(),
 	accepted: z.string(),
@@ -244,6 +269,10 @@ export const ClaudeOptionAskedSchema = z.union([
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
 
+export const ClaudeModelAskedSchema = z.object({
+	model: ClaudeModelSchema,
+});
+
 export const ComposerPrefillSchema = z.object({
 	id: z.number(),
 	text: z.string(),
@@ -325,6 +354,9 @@ export const ClaudeOptionsQuery = query("assistant/claude-options")
 export const ChooseClaudeOptionCommand = command("assistant/choose-claude-option")
 	.input(ClaudeOptionAskedSchema)
 	.idempotencyKey(PerCall);
+export const ChooseClaudeModelCommand = command("assistant/choose-claude-model")
+	.input(ClaudeModelAskedSchema)
+	.idempotencyKey(PerCall);
 export const WorkingFoldersQuery = query("assistant/working-folders")
 	.output(WorkingFoldersSchema.nullable());
 export const ChooseWorkingFolderCommand = command("assistant/choose-working-folder")
@@ -384,9 +416,16 @@ export const OpenChatDraftCommand = command("assistant/open-chat-draft")
 	.input(ChatOpenedSchema)
 	.output(DraftTextSchema)
 	.idempotencyKey(PerCall);
+export const TakeDraftCommand = command("assistant/take-draft")
+	.output(TakenDraftSchema)
+	.idempotencyKey(PerCall);
+export const AdoptDraftCommand = command("assistant/adopt-draft")
+	.input(AdoptedDraftSchema)
+	.output(DraftTextSchema)
+	.idempotencyKey(PerCall);
 export const CompactChatCommand = command("assistant/compact-chat")
 	.idempotencyKey(Repeatable);
 export const FileDraggedEvent = event("assistant/file-dragged")
 	.input(FileDragEventSchema);
 
-export const AssistantModule = moduleContract("assistant", Device, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, CompactChatCommand]);
+export const AssistantModule = moduleContract("assistant", Device, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);

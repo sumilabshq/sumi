@@ -10,7 +10,9 @@ import { WorkspaceFoldersHost } from "./shared/host/workspace-folders.host.js";
 import {
 	RereadAgentSetupSubscriber,
 	RereadClaudeOptionsSubscriber,
+	RereadWorkingFoldersSubscriber,
 	AgentSetupQuery,
+	ChooseClaudeModelCommand,
 	ChooseClaudeOptionCommand,
 	ChooseProviderCommand,
 	ChooseWorkingFolderCommand,
@@ -36,6 +38,8 @@ import {
 	HearHostDragSubscriber,
 	HoldDraftTextCommand,
 	OpenChatDraftCommand,
+	AdoptDraftCommand,
+	TakeDraftCommand,
 	DraftAttachmentsQuery,
 	FileDragQuery,
 	HearPageDragCommand,
@@ -74,6 +78,7 @@ export const AssistantModule = module("assistant")
 	.subscribers(
 		RereadAgentSetupSubscriber,
 		RereadClaudeOptionsSubscriber,
+		RereadWorkingFoldersSubscriber,
 		RereadChatSubscriber,
 		RereadChatForAttachmentsSubscriber,
 		RereadSlashCommandsSubscriber,
@@ -86,6 +91,7 @@ export const AssistantModule = module("assistant")
 		OpenProvidersCommand,
 		ClaudeOptionsQuery,
 		ChooseClaudeOptionCommand,
+		ChooseClaudeModelCommand,
 		WorkingFoldersQuery,
 		ChooseWorkingFolderCommand,
 		PickWorkingFolderCommand,
@@ -108,6 +114,8 @@ export const AssistantModule = module("assistant")
 		ClearChatCommand,
 		HoldDraftTextCommand,
 		OpenChatDraftCommand,
+		TakeDraftCommand,
+		AdoptDraftCommand,
 		CompactChatCommand,
 		FileDraggedEvent,
 	)

@@ -14,13 +14,19 @@ export interface WorkspaceFolderClient {
 	attachFolder(id: string): Promise<WorkspaceFolder | null>;
 }
 
+export interface WorkspaceFolderCell {
+	value(): WorkspaceFolder;
+	save(next: WorkspaceFolder): void;
+	changed(listener: () => void): () => void;
+}
+
 export interface WorkspaceFolders {
 	readonly client: WorkspaceFolderClient;
-	readonly opened: WorkspaceFolder;
+	readonly folder: WorkspaceFolderCell;
 }
 
 export const WorkspaceFoldersHost = hostObject<WorkspaceFolders>("WorkspaceFolders", isWorkspaceFolders);
 
 function isWorkspaceFolders(held: unknown): held is WorkspaceFolders {
-	return isObject(held) && isObject(held["client"]) && isObject(held["opened"]);
+	return isObject(held) && isObject(held["client"]) && isObject(held["folder"]);
 }

@@ -174,6 +174,8 @@ export interface AssistantPort {
 	openDesign(app: string): Promise<void>;
 	progressWidget(): ProgressWidget;
 	forChat?(chatId: string): AssistantPort;
+	lendDrafts?(isDrafted: (chatId: string) => boolean): void;
+	sendFromHost?(said: string): Promise<void>;
 }
 
 export function portForChat(port: AssistantPort, chatId: string): AssistantPort {

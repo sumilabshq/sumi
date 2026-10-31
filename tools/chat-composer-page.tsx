@@ -4,6 +4,7 @@ import { AssistantPanel } from "../apps/studio/src/features/assistant/ui/assista
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type {
 	AssistantPort,
@@ -179,7 +180,7 @@ const parts = tauriAssistantParts({
 			chooseFolder: async () => SHOWN_WORKSPACE,
 			attachFolder: async () => null,
 		},
-		opened: SHOWN_WORKSPACE,
+		folder: workspaceFolderCell(SHOWN_WORKSPACE),
 	},
 });
 
