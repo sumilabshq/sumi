@@ -66,17 +66,22 @@ const BROWSER_STYLES = {
 	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
 };
 
-export async function packEngine(): Promise<PackedPackage[]> {
-	const folders = ENGINE_PACKAGES.map((folder) => path.join(REPO, folder));
+export function packEngine(): Promise<PackedPackage[]> {
+	return packPackages(ENGINE_PACKAGES);
+}
+
+export async function packPackages(packages: readonly string[]): Promise<PackedPackage[]> {
+	const folders = packages.map((folder) => path.join(REPO, folder));
+	const touched = [...new Set([...ENGINE_PACKAGES.map((folder) => path.join(REPO, folder)), ...folders])];
 	refuseDriftedSiblingVersions(folders.map(manifestIn));
-	clearBuilds();
+	clearBuilds(touched);
 	fs.rmSync(PACKED_INTO, { recursive: true, force: true });
 	fs.mkdirSync(PACKED_INTO, { recursive: true });
 	try {
 		await buildEach(folders);
 		return folders.map(npmPack);
 	} finally {
-		clearBuilds();
+		clearBuilds(touched);
 	}
 }
 
@@ -102,6 +107,8 @@ export function writeBrowserStyles(): void {
 	const [host = "", board = ""] = [BROWSER_STYLES.host, BROWSER_STYLES.board].map((at) => fs.readFileSync(at, "utf8"));
 	const [authored = "", canvas = ""] = board.split(TAILWIND_BANNER);
 	const { app, studio } = studioSplitOf(`${host}\n${authored}`);
+	fs.mkdirSync(path.dirname(BROWSER_STYLES.into), { recursive: true });
+	fs.mkdirSync(path.dirname(BROWSER_STYLES.studioInto), { recursive: true });
 	fs.writeFileSync(BROWSER_STYLES.into, app);
 	fs.writeFileSync(BROWSER_STYLES.studioInto, canvas === "" ? studio : `${studio}\n${TAILWIND_BANNER}${canvas}`);
 }
@@ -130,8 +137,8 @@ function internalDependenciesOf(manifest: PackageManifest): [string, string][] {
 		.filter(([dependency]) => INTERNAL_PACKAGE.test(dependency));
 }
 
-function clearBuilds(): void {
-	for (const folder of ENGINE_PACKAGES) fs.rmSync(builtIn(path.join(REPO, folder)), { recursive: true, force: true });
+function clearBuilds(folders: readonly string[]): void {
+	for (const folder of folders) fs.rmSync(builtIn(folder), { recursive: true, force: true });
 }
 
 async function bundleEntries(folder: string, built: string): Promise<void> {

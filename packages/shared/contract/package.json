@@ -1,0 +1,25 @@
+{
+	"name": "@sumi/contract",
+	"version": "0.3.0",
+	"description": "What a Sumi app imports: the shell modules it may call, the app manifest and the contract version gate",
+	"license": "MIT",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"peerDependencies": {
+		"@widgetarium/core": "0.1.0",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "contract"
+	},
+	"sideEffects": false
+}

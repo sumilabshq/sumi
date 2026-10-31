@@ -23,6 +23,7 @@ export const LEAF_FILES: readonly string[] = [...FEATURE_FILES, REQUESTS_FILE];
 
 export type PackageKind =
 	| { readonly kind: "client-package" }
+	| { readonly kind: "contract-package" }
 	| {
 			readonly kind: "module";
 			readonly module: DeclaredModule;
@@ -30,6 +31,7 @@ export type PackageKind =
 
 const DOMAIN_LEVEL = "domain";
 const CLIENT_LEVEL = "client";
+const CONTRACT_LEVEL = "contract";
 const ROOTS = new Map<string, DomainRoot | null>();
 
 interface DomainRoot {
@@ -51,8 +53,14 @@ export function moduleOfDomain(root: string): DeclaredModule | null {
 }
 
 export function packageKindOf(root: string): PackageKind | null {
-	if (levelOf(jsonAt(path.join(root, "package.json"))) === CLIENT_LEVEL) {
+	const level = levelOf(jsonAt(path.join(root, "package.json")));
+
+	if (level === CLIENT_LEVEL) {
 		return { kind: "client-package" };
+	}
+
+	if (level === CONTRACT_LEVEL) {
+		return { kind: "contract-package" };
 	}
 
 	const module = moduleOfDomain(root);

@@ -4,6 +4,7 @@ import { CliRefusal } from "./cli-output.js";
 import { z } from "zod";
 import { CONTRACT_ENTRY, SERVER_CONTRACT_FILE, moduleContractsOf } from "./module-contract.js";
 import { JOINED_ENTRY, joinedTextOf } from "./module-joined.js";
+import { contractPackageFilesOf } from "./contract-package.js";
 import { packageKindOf } from "@widgetarium/eslint-plugin/domain-file";
 import { fillTemplate } from "@widgetarium/eslint-plugin/fill-template";
 import type { DeclaredModule } from "@widgetarium/eslint-plugin/module-declared";
@@ -64,6 +65,10 @@ export function generatedPackageOf(folder: string, shownAs: string): GeneratedPa
 
 	if (kind.kind === "client-package") {
 		return onlyGeneratedCodeIn(folder, clientFilesOf(folder));
+	}
+
+	if (kind.kind === "contract-package") {
+		return onlyGeneratedCodeIn(folder, contractPackageFilesOf(folder, GENERATED_HEADER));
 	}
 
 	if (kind.module.runs === "anywhere") {

@@ -294,7 +294,7 @@ function newShapePackagesOf(root: string): string[] {
 		.flatMap((layer) => fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name)))
 		.filter((folder) => {
 			const kind = packageKindOf(folder);
-			return kind?.kind === "client-package" || kind?.module.runs === "anywhere";
+			return kind?.kind === "client-package" || (kind?.kind === "module" && kind.module.runs === "anywhere");
 		});
 }
 

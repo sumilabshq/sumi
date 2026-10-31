@@ -11,7 +11,8 @@ export interface WorkspacePackage {
 const ANY_FOLDER = "/*";
 const DOMAIN_LEVEL = "domain";
 const CLIENT_LEVEL = "client";
-const GENERATED_LEVELS: ReadonlySet<string> = new Set([DOMAIN_LEVEL, CLIENT_LEVEL]);
+const CONTRACT_LEVEL = "contract";
+const GENERATED_LEVELS: ReadonlySet<string> = new Set([DOMAIN_LEVEL, CLIENT_LEVEL, CONTRACT_LEVEL]);
 const NOT_JSON = "{file} is not plain JSON, so the Widgetarium lint rules cannot read it";
 
 export function generatedPackagesIn(cwd: string): string[] {
