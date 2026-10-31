@@ -1,5 +1,5 @@
 export * from "./legacy/index.js";
-export { restoreTabs, startStudioApp } from "./tabs/studio-app.js";
+export { restoreTabs, startCoreInProcess, startStudioApp } from "./tabs/studio-app.js";
 export type { StudioAppAsk } from "./tabs/studio-app.js";
 export { focusedChatPortOf } from "./chats-column/focused-chat.js";
 export { startBrowserApp } from "./browser/browser-app.js";

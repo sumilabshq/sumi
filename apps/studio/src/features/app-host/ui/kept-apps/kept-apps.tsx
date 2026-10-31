@@ -4,34 +4,40 @@ import { HeldTabsQuery } from "@widgetarium/app-host";
 import type { AppKind, HeldTabs } from "@widgetarium/app-host";
 import { useQuery } from "@widgetarium/core/requests";
 
-export interface KeptAppsProps {
-	readonly shown: AppKind | null;
-	readonly drawnOf: (app: AppKind, isShown: boolean) => ReactNode;
+export interface KeptInstance {
+	readonly app: AppKind;
+	readonly tabId: string | null;
 }
 
-type KeptInstances = ReadonlyMap<string, AppKind>;
+export interface KeptAppsProps {
+	readonly shown: AppKind | null;
+	readonly drawnOf: (instance: KeptInstance, isShown: boolean) => ReactNode;
+}
+
+type KeptInstances = ReadonlyMap<string, KeptInstance>;
 
 const HAS_EMPTY_PAGE: Readonly<Record<AppKind, boolean>> = {
 	browser: true,
 	canvas: false,
 	terminal: false,
+	tasks: false,
 };
 
 export function KeptApps({ shown, drawnOf }: KeptAppsProps): ReactElement {
 	const { kept, shownKey } = useKeptInstances(shown, useQuery(HeldTabsQuery).data);
 	return (
 		<Fragment>
-			{[...kept].map(([key, app]) => (
+			{[...kept].map(([key, instance]) => (
 				<div
 					key={key}
 					className="wg-studio-kept"
 					data-studio-kept={key === shownKey ? "shown" : "hidden"}
-					data-studio-kept-app={app}
+					data-studio-kept-app={instance.app}
 					data-studio-kept-key={key}
 					inert={key !== shownKey}
 					aria-hidden={key === shownKey ? undefined : true}
 				>
-					{drawnOf(app, key === shownKey)}
+					{drawnOf(instance, key === shownKey)}
 				</div>
 			))}
 		</Fragment>
@@ -45,8 +51,18 @@ function useKeptInstances(
 	const [kept, setKept] = useState<KeptInstances>(() => new Map());
 	const shownKey = shownKeyOf(shown, held.shownTabId);
 	const open = new Set(held.tabs.map((tab) => instanceKeyOf(tab.app, tab.id)));
-	const shownEntry: readonly (readonly [string, AppKind])[] =
-		shown === null || shownKey === null ? [] : [[shownKey, shown]];
+	const shownEntry: readonly (readonly [string, KeptInstance])[] =
+		shown === null || shownKey === null
+			? []
+			: [
+					[
+						shownKey,
+						{
+							app: shown,
+							tabId: held.shownTabId,
+						},
+					],
+				];
 	const next: KeptInstances = new Map([...kept, ...shownEntry].filter(([key]) => key === shownKey || open.has(key)));
 
 	if (!isSameKept(next, kept)) {

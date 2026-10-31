@@ -1,6 +1,5 @@
 import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
-import type { AppKind } from "@widgetarium/app-host";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
@@ -16,9 +15,12 @@ import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { TerminalPage } from "../terminal/terminal-page.js";
+import { TasksTabPage } from "../tasks/tasks-tab-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { KeptApps } from "../features/app-host/ui/kept-apps/kept-apps.js";
-import { APP_CRUMB_WORD } from "./app-crumb-words.js";
+import type { KeptInstance } from "../features/app-host/ui/kept-apps/kept-apps.js";
+import { useAppTitleOf } from "./use-app-title-of.js";
+import type { AppTitleOf } from "./use-app-title-of.js";
 import { MovesUnheld } from "./moves-unheld.js";
 
 export interface WorkspaceAppPlateProps {
@@ -49,10 +51,11 @@ export function WorkspaceAppPlate({
 	backToView,
 }: WorkspaceAppPlateProps): ReactElement {
 	const appName = useQuery(WorkspacesQuery).data.current.name;
+	const appTitleOf = useAppTitleOf();
 	const shownApp = view === "app" ? null : view;
 	const moreItems = useMemo(() => moreItemsOf(view, appName, backToView), [view, appName, backToView]);
-	const drawnOf = (app: AppKind, isShown: boolean): ReactElement => (
-		<PlateShown isShown={isShown}>{keptAppPageOf(app, { browser, design, project })}</PlateShown>
+	const drawnOf = (instance: KeptInstance, isShown: boolean): ReactElement => (
+		<PlateShown isShown={isShown}>{keptAppPageOf(instance, { browser, design, project })}</PlateShown>
 	);
 	return (
 		<Plate
@@ -60,7 +63,7 @@ export function WorkspaceAppPlate({
 			label={appName}
 			edgeStart={null}
 			lead={<MovesUnheld />}
-			crumb={<PlateCrumb words={crumbOf(view, appName, pathname)} isPressable />}
+			crumb={<PlateCrumb words={crumbOf({ view, appName, pathname, appTitleOf })} isPressable />}
 			more={<PlateMore items={moreItems} />}
 			edgeEnd={null}
 		>
@@ -70,7 +73,7 @@ export function WorkspaceAppPlate({
 	);
 }
 
-function keptAppPageOf(app: AppKind, pages: KeptAppPages): ReactElement {
+function keptAppPageOf({ app, tabId }: KeptInstance, pages: KeptAppPages): ReactElement {
 	if (app === "browser") {
 		return <BrowserPage browser={pages.browser} heldTabId={null} />;
 	}
@@ -79,20 +82,27 @@ function keptAppPageOf(app: AppKind, pages: KeptAppPages): ReactElement {
 		return <TerminalPage />;
 	}
 
+	if (app === "tasks") {
+		return <TasksTabPage tabId={tabId} />;
+	}
+
 	return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />;
 }
 
-function crumbOf(view: StudioView, appName: string, pathname: string): CrumbWords {
+interface CrumbAsk {
+	readonly view: StudioView;
+	readonly appName: string;
+	readonly pathname: string;
+	readonly appTitleOf: AppTitleOf;
+}
+
+function crumbOf({ view, appName, pathname, appTitleOf }: CrumbAsk): CrumbWords {
 	if (view === "canvas") {
-		return { first: APP_CRUMB_WORD.canvas, second: appName };
+		return { first: appTitleOf("canvas"), second: appName };
 	}
 
-	if (view === "browser") {
-		return { first: APP_CRUMB_WORD.browser, second: null };
-	}
-
-	if (view === "terminal") {
-		return { first: APP_CRUMB_WORD.terminal, second: null };
+	if (view === "browser" || view === "terminal" || view === "tasks") {
+		return { first: appTitleOf(view), second: null };
 	}
 
 	return { first: appName, second: pathname === ROOT_PATH ? null : pathname };

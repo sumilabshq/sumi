@@ -13,6 +13,7 @@ pub const PLUGIN_NAME: &str = "studio-core";
 
 const CORE_URL: &str = "index.html?core=1";
 const CHANGED_EVENT: &str = "studio-core-changed";
+const SERVING_EVENT: &str = "studio-core-serving";
 const WINDOW_CLOSED_EVENT: &str = "studio-core-window-closed";
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onCall argument is not a channel.";
@@ -102,6 +103,7 @@ fn serve<R: Runtime>(message: &InvokeMessage<R>) -> Result<Value, String> {
     let channel: Channel<Value> = id.channel_on(message.webview());
     hub_of(message)?.serve(channel);
     eprintln!("[studio-core] core none → serving");
+    message.webview().app_handle().emit_filter(SERVING_EVENT, (), is_studio_window).map_err(|failure| failure.to_string())?;
     Ok(Value::Null)
 }
 

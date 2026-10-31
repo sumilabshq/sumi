@@ -24,6 +24,7 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/workspaces.css": "apps/studio/src/features/workspaces/workspaces.css",
 	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
 	"@widgetarium/studio/command-menu.css": "apps/studio/src/features/command-menu/command-menu.css",
+	"@widgetarium/studio/tasks.css": "apps/studio/src/features/tasks/tasks.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -35,6 +36,7 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@widgetarium/studio/workspaces.css";
 @import "@widgetarium/studio/shell.css";
 @import "@widgetarium/studio/command-menu.css";
+@import "@widgetarium/studio/tasks.css";
 `;
 
 export async function canvasSheet(repo: string): Promise<string> {

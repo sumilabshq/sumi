@@ -23,6 +23,7 @@ const ABILITIES_OF_APP: Readonly<Record<AppKind, AppAbilities>> = {
 	},
 	canvas: PAGE_APP,
 	terminal: PAGE_APP,
+	tasks: PAGE_APP,
 	chat: {
 		holdsTabs: true,
 		navigates: false,

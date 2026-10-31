@@ -12,8 +12,9 @@ import type { PlateMoreItem } from "../features/plate/ui/plate-header/plate-more
 import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { TerminalPage } from "../terminal/terminal-page.js";
+import { TasksPage } from "../tasks/tasks-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { APP_CRUMB_WORD } from "./app-crumb-words.js";
+import { useAppTitleOf } from "./use-app-title-of.js";
 
 export interface PaneAppPlateProps {
 	readonly tabId: string;
@@ -36,16 +37,18 @@ const NO_MORE_ITEMS: readonly PlateMoreItem[] = [];
 
 export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlateProps): ReactElement {
 	const paneTab = useQuery(HeldTabsQuery).data.tabs.find((tab) => tab.id === tabId) ?? null;
+	const appTitleOf = useAppTitleOf();
+	const appTitle = paneTab === null ? NO_TAB : appTitleOf(paneTab.app);
 	return (
 		<Plate
 			side="app"
-			label={paneLabelOf(paneTab)}
+			label={paneTab?.label ?? appTitle}
 			edgeStart={null}
 			lead={null}
 			crumb={
 				<PlateCrumb
 					words={{
-						first: paneTab === null ? NO_TAB : APP_CRUMB_WORD[paneTab.app],
+						first: appTitle,
 						second: paneTab?.label ?? null,
 					}}
 					isPressable={false}
@@ -59,14 +62,6 @@ export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlatePr
 	);
 }
 
-function paneLabelOf(paneTab: HeldTab | null): string {
-	if (paneTab === null) {
-		return NO_TAB;
-	}
-
-	return paneTab.label ?? APP_CRUMB_WORD[paneTab.app];
-}
-
 function paneBodyOf(paneTab: HeldTab | null, { browser, design, project }: PaneBody): ReactElement {
 	if (paneTab === null) {
 		return <p className="wg-pane-note">{NO_TAB}</p>;
@@ -78,6 +73,10 @@ function paneBodyOf(paneTab: HeldTab | null, { browser, design, project }: PaneB
 
 	if (paneTab.app === "terminal") {
 		return <TerminalPage key={paneTab.id} />;
+	}
+
+	if (paneTab.app === "tasks") {
+		return <TasksPage key={paneTab.id} address={paneTab.address ?? ""} />;
 	}
 
 	if (paneTab.pageId === null) {

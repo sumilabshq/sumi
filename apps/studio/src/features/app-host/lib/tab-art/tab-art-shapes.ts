@@ -72,6 +72,21 @@ export const TAB_ART_SHAPES: Readonly<Record<Exclude<TabArt, "site">, readonly A
 			},
 		},
 	],
+	tasks: [
+		{ tag: "rect", attrs: { x: "2", y: "2", width: "16", height: "16", rx: "4", fill: "#E5484D" } },
+		{
+			tag: "path",
+			isCut: CUT,
+			attrs: {
+				d: "M5.4 7.2l1.3 1.3 2.2-2.4M5.4 12.6l1.3 1.3 2.2-2.4M11 7.4h3.6M11 12.8h3.6",
+				stroke: CUT_INK,
+				"stroke-width": "1.5",
+				"stroke-linecap": "round",
+				"stroke-linejoin": "round",
+				fill: "none",
+			},
+		},
+	],
 	browser: [
 		{ tag: "circle", attrs: { cx: "10", cy: "10", r: "8", fill: "#3D8EF0" } },
 		{

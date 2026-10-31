@@ -6,6 +6,8 @@ export const CORE_SERVE = "plugin:studio-core|serve";
 export const CORE_ANSWER = "plugin:studio-core|answer";
 export const CORE_CHANGED = "plugin:studio-core|changed";
 export const CORE_CHANGED_EVENT = "studio-core-changed";
+export const CORE_SERVING_EVENT = "studio-core-serving";
+export const CORE_RESTARTED = "The core window restarted before it answered; the call may or may not have run.";
 export const CORE_LIVE_WINDOWS = "plugin:studio-core|live_windows";
 export const CORE_WINDOW_CLOSED_EVENT = "studio-core-window-closed";
 

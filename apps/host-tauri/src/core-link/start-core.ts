@@ -11,21 +11,31 @@ import {
 	PlacesModule as PlacesContract,
 } from "@widgetarium/places";
 import { PlacesModule } from "@widgetarium/places/module";
+import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
+import { TasksModule } from "@widgetarium/tasks/module";
 import { serveCore } from "./core-calls.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
 
 const NOT_KEPT = "[studio-core] workspace {workspace}: the open windows were not checked ({reason})";
 const TURNS_KEPT = "[studio-core] workspace {workspace}: running marks of the last run stay ({reason})";
 const NOT_CLOSED = "[studio-core] workspace {workspace}: window {window} closed but stays listed ({reason})";
+const NOT_RECONCILED = "[tasks] workspace {workspace}: tasks in progress before this start stay in progress ({reason})";
+const RECONCILED = "[tasks] workspace {workspace}: {count} tasks in progress → blocked (the app started, no turn runs)";
+const NOT_COLD =
+	"[tasks] workspace {workspace}: tasks in progress stay in progress (the core reloaded; the open windows may still run their turns)";
+const NOT_SWEPT = "[tasks] workspace {workspace}: stale tasks stay open ({reason})";
+const SWEPT = "[tasks] workspace {workspace}: {count} stale tasks → cancelled (the {when} sweep)";
+const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 
 export function startCore(): void {
 	const served = new Map<string, StartedApp>();
 	serveCore((workspace, listener) => {
-		const places = placesServedOver(workspace, listener);
+		const places = coreServedOver(workspace, listener);
 		served.set(workspace, places);
-		console.info(`[studio-core] workspace ${workspace}: none → serving places`);
+		console.info(`[studio-core] workspace ${workspace}: none → serving places and tasks`);
 		void keepLiveWindows(places, workspace);
 		void forgetRunningTurns(places, workspace);
+		void superviseTasks(places, workspace);
 	});
 	void getCurrentWebviewWindow().listen(CORE_WINDOW_CLOSED_EVENT, (event) => {
 		const window = z.string().safeParse(event.payload);
@@ -36,17 +46,20 @@ export function startCore(): void {
 	});
 }
 
-function placesServedOver(workspace: string, listener: ListeningTransport): StartedApp {
+function coreServedOver(workspace: string, listener: ListeningTransport): StartedApp {
 	const own = localTransport();
 	server()
-		.modules(PlacesModule)
+		.modules(PlacesModule, TasksModule)
 		.listen(listener)
 		.listen(own)
 		.start({
-			env: { PLACES_STORE: "tauri" },
+			env: {
+				PLACES_STORE: "tauri",
+				TASKS_STORE: "tauri",
+			},
 			scope: { workspaceId: workspace },
 		});
-	return app().imports(PlacesContract.over(own)).start();
+	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }
 
 function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string): void {
@@ -76,4 +89,46 @@ async function forgetRunningTurns(places: StartedApp, workspace: string): Promis
 	if (!answered.ok) {
 		console.warn(TURNS_KEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));
 	}
+}
+
+async function superviseTasks(core: StartedApp, workspace: string): Promise<void> {
+	await reconcileTasks(core, workspace);
+	await sweepStaleTasks(core, workspace, "start");
+	setInterval(() => void sweepStaleTasks(core, workspace, "six-hourly"), SWEEP_EVERY_MS);
+}
+
+async function reconcileTasks(core: StartedApp, workspace: string): Promise<void> {
+	if (isCoreReloaded()) {
+		console.info(NOT_COLD.replace("{workspace}", workspace));
+		return;
+	}
+
+	const answered = await core.send(ReconcileTasksCommand, { liveChats: [] });
+
+	if (!answered.ok) {
+		console.warn(NOT_RECONCILED.replace("{workspace}", workspace).replace("{reason}", answered.reason));
+		return;
+	}
+
+	console.info(RECONCILED.replace("{workspace}", workspace).replace("{count}", String(answered.output.changed)));
+}
+
+async function sweepStaleTasks(core: StartedApp, workspace: string, when: string): Promise<void> {
+	const answered = await core.send(SweepStaleTasksCommand);
+
+	if (!answered.ok) {
+		console.warn(NOT_SWEPT.replace("{workspace}", workspace).replace("{reason}", answered.reason));
+		return;
+	}
+
+	console.info(
+		SWEPT.replace("{workspace}", workspace).replace("{count}", String(answered.output.changed)).replace("{when}", when),
+	);
+}
+
+// TRADE-OFF: the page's navigation type, because every studio window is live before the core on a cold start too
+function isCoreReloaded(): boolean {
+	return performance
+		.getEntriesByType("navigation")
+		.some((entry) => entry instanceof PerformanceNavigationTiming && entry.type === "reload");
 }

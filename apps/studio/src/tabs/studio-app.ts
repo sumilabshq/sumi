@@ -8,26 +8,29 @@ import { server } from "@widgetarium/core/requests/server";
 import { LayoutModule } from "@widgetarium/layout/module";
 import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
+import { TasksModule } from "@widgetarium/tasks";
+import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 
 export interface StudioAppAsk {
 	readonly platform: Platform;
 	readonly workspaceId: string;
-	readonly places?: RemoteTransport;
+	readonly core?: RemoteTransport;
 }
 
-export function startStudioApp({ platform, workspaceId, places }: StudioAppAsk): StartedApp {
+export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): StartedApp {
+	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
 		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
-		.imports(PlacesModule.over(places ?? placesInProcess(workspaceId)))
+		.imports(PlacesModule.over(served), TasksModule.over(served))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
 }
 
-export function placesInProcess(workspaceId: string): RemoteTransport {
+export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
-	server().modules(RunnablePlacesModule).listen(local).start({
+	server().modules(RunnablePlacesModule, RunnableTasksModule).listen(local).start({
 		env: {},
 		scope: { workspaceId },
 	});

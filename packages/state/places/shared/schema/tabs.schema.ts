@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { KeptSplitSchema } from "./splits.schema.js";
 
-export const PageAppSchema = z.enum(["canvas", "browser", "terminal"]);
+export const PageAppSchema = z.enum(["canvas", "browser", "terminal", "tasks"]);
 
 export type PageApp = z.infer<typeof PageAppSchema>;
 
-export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "chat"]);
+export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 

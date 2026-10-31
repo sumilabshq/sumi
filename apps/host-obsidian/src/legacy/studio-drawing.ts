@@ -6,8 +6,14 @@ import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.js";
 import { hostOverRouter } from "@widgetarium/core/app";
-import type { StartedApp } from "@widgetarium/core/requests";
-import { WidgetariumStudio, createStudioState, startOpenedStudio, startStudioApp } from "@widgetarium/studio";
+import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
+import {
+	WidgetariumStudio,
+	createStudioState,
+	startCoreInProcess,
+	startOpenedStudio,
+	startStudioApp,
+} from "@widgetarium/studio";
 import type { StartedStudio, StudioDesign, StudioStart, StudioState } from "@widgetarium/studio";
 import type { AppOpening, AppProjects } from "./app-projects.js";
 import { refusalOf, reportNotDrawn, reportRefused } from "./app-refusal.js";
@@ -43,6 +49,7 @@ interface StudioDrawing {
 	readonly studio: StudioHostPort;
 	readonly state: StudioState;
 	readonly studioApp: StartedApp;
+	readonly core: RemoteTransport;
 	readonly routing: StudioRouting;
 }
 
@@ -61,9 +68,10 @@ export function drawStudio(place: StudioPlace, shown: ShownNote, routing: Studio
 		return () => undefined;
 	}
 	const studio = obsidianStudioHost({ app: place.app, leaf: shown.leaf, frame: shown.frame, viewType: place.viewType });
-	const studioApp = startStudioApp({ platform: "browser", workspaceId: note.folder });
+	const core = startCoreInProcess(note.folder);
+	const studioApp = startStudioApp({ platform: "browser", workspaceId: note.folder, core });
 	const state = createStudioState(studioApp);
-	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, studioApp, routing });
+	const stopDrawing = redrawOnEveryChange({ place, shown, note, studio, state, studioApp, core, routing });
 	return () => {
 		stopDrawing();
 		studioApp.stop();
@@ -102,7 +110,7 @@ async function openingElementOf(drawing: StudioDrawing, opening: AppOpening): Pr
 }
 
 function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: StudioDesign): StartedStudio {
-	const { place, shown, note, studio, state, studioApp } = drawing;
+	const { place, shown, note, studio, state, studioApp, core } = drawing;
 	const notePath = shown.file.path;
 	const router = drawing.routing.routerFor(note, opening.routes);
 	const hostOf = hostOverRouter(() => place.hostOf(notePath), router);
@@ -116,6 +124,7 @@ function startStudioOver(drawing: StudioDrawing, opening: OpenedApp, design: Stu
 			assistant: place.assistant,
 			assistantHost: place.assistantHost,
 			studioApp,
+			core,
 			appId: note.folder,
 			design,
 		},

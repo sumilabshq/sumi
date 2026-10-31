@@ -5,6 +5,8 @@ import type { StartedApp } from "@widgetarium/core/requests";
 import { OpenChatDraftCommand, PrefillDraftCommand } from "@widgetarium/assistant";
 import { AssistantPanel } from "../features/assistant/ui/assistant-panel/assistant-panel.js";
 import type { ChatCardsSlot } from "../features/assistant/lib/chat-cards-slot.js";
+import { ChatTaskContext } from "../features/assistant/lib/chat-task-context.js";
+import { useOpenTask } from "../features/tasks/lib/use-open-task.js";
 
 export interface ChatBodyProps {
 	readonly chatId: string;
@@ -14,11 +16,19 @@ export interface ChatBodyProps {
 
 export function ChatBody({ chatId, chatApp, cards }: ChatBodyProps): ReactElement {
 	useOpensChatDraft(chatApp, chatId);
+	const openTask = useOpenTask();
 	return (
 		<div className="wg-studio-chat" data-chat-id={chatId}>
-			<AppProvider app={chatApp}>
-				<AssistantPanel key={chatId} cards={cards} />
-			</AppProvider>
+			<ChatTaskContext
+				value={{
+					chatId,
+					openTask,
+				}}
+			>
+				<AppProvider app={chatApp}>
+					<AssistantPanel key={chatId} cards={cards} />
+				</AppProvider>
+			</ChatTaskContext>
 		</div>
 	);
 }
