@@ -1,9 +1,13 @@
-import { createElement as h } from "react";
+import { createElement as h, useMemo, useState } from "react";
 import type { ReactElement } from "react";
 import { AppPageSchema, RecordAppPageCommand } from "@widgetarium/places";
-import { useCommand } from "@widgetarium/core/requests";
+import { OpenLinkCommand } from "@widgetarium/app-host";
+import { useApp, useCommand } from "@widgetarium/core/requests";
 import { useAppFrameFleet } from "../../lib/app-frames-context.js";
+import { FrameLinkPace, linkToOpenOf } from "../../lib/frame-link.js";
+import type { FrameLink } from "../../lib/frame-link.js";
 import { reportFrameProblem } from "../../lib/frame-problem.js";
+import { frameServicesOf } from "../../lib/frame-services.js";
 import { useAppFrameSeat } from "../../lib/use-app-frame-seat.js";
 import { FrameNote } from "../frame-note/frame-note.js";
 import { FrameWindow } from "./frame-window.js";
@@ -18,11 +22,17 @@ export interface AppFrameProps {
 }
 
 const LOADING = "Opening {app}";
+const NOT_OPENED = "the link {href} was not opened: {why}";
+const TOO_MANY_LINKS = "the app opened too many links at once";
 
 export function AppFrame({ app, tabId, address, workspace, isShown }: AppFrameProps): ReactElement {
 	const fleet = useAppFrameFleet();
 	const { frameId, running } = useAppFrameSeat(fleet, app, isShown);
 	const recordPage = useCommand(RecordAppPageCommand);
+	const openLink = useCommand(OpenLinkCommand);
+	const studio = useApp("AppFrame");
+	const [linkPace] = useState(() => new FrameLinkPace());
+	const services = useMemo(() => frameServicesOf(app, studio.send.bind(studio)), [app, studio]);
 
 	if (running === null) {
 		return <FrameNote said={LOADING.replace("{app}", app)} />;
@@ -52,6 +62,25 @@ export function AppFrame({ app, tabId, address, workspace, isShown }: AppFramePr
 		);
 	};
 
+	const open = (link: FrameLink): void => {
+		const notOpened = (why: string): void =>
+			reportFrameProblem(app, NOT_OPENED.replace("{href}", JSON.stringify(link.href)).replace("{why}", why));
+
+		if (!linkPace.admits(Date.now())) {
+			notOpened(TOO_MANY_LINKS);
+			return;
+		}
+
+		openLink.run(linkToOpenOf(link)).then(
+			(answer) => {
+				if (!answer.ok) {
+					notOpened(answer.reason);
+				}
+			},
+			(thrown: unknown) => notOpened(String(thrown)),
+		);
+	};
+
 	return (
 		<FrameWindow
 			key={`${running.version}:${running.loads}`}
@@ -64,6 +93,8 @@ export function AppFrame({ app, tabId, address, workspace, isShown }: AppFramePr
 			onReady={() => fleet.ready(frameId)}
 			onBusy={(isBusy) => fleet.busyIs(frameId, isBusy)}
 			onFailed={(reason) => fleet.failedStart(frameId, reason)}
+			onLink={open}
+			onAsk={services}
 		/>
 	);
 }

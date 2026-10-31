@@ -18,7 +18,8 @@
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
-		"types": []
+		"types": [],
+		"allowImportingTsExtensions": true
 	},
 	"references": [
 		{

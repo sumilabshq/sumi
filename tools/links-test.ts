@@ -27,9 +27,15 @@ check("a link reads back to its target", linkTargetOf("sumi://task/T-12"), {
 });
 
 const REFUSED: readonly [string, string][] = [
-	["https://example.com", "https://example.com is not a Sumi link: one reads sumi://<chat|task|tab|app>/<id>"],
-	["sumi://chat", "sumi://chat is not a Sumi link: one reads sumi://<chat|task|tab|app>/<id>"],
-	["sumi://chat/a/b", "sumi://chat/a/b is not a Sumi link: one reads sumi://<chat|task|tab|app>/<id>"],
+	[
+		"https://example.com",
+		"https://example.com opens nowhere: Sumi opens sumi://<chat|task|tab|app>/<id> links and https:// pages",
+	],
+	["sumi://chat", "sumi://chat opens nowhere: Sumi opens sumi://<chat|task|tab|app>/<id> links and https:// pages"],
+	[
+		"sumi://chat/a/b",
+		"sumi://chat/a/b opens nowhere: Sumi opens sumi://<chat|task|tab|app>/<id> links and https:// pages",
+	],
 	["sumi://note/x", "sumi://note/x names no chat, task, tab or app, so there is nothing to open"],
 	["sumi://task/", "sumi://task/ names no task to open"],
 	["sumi://tab/%E0%A4%A", "sumi://tab/%E0%A4%A carries a broken %-escape in its id"],

@@ -1,8 +1,7 @@
-import { invoke } from "@tauri-apps/api/core";
-import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
-import { StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { TasksFacts } from "../../shared/host/tasks-host.js";
 import { ClockGateway, SystemClockGateway } from "../clock/clock.gateway.js";
-import { MemoryTasksGateway } from "../tasks/memory.gateway.js";
+import { StorageTasksGateway } from "../tasks/storage.gateway.js";
 import { TauriTasksGateway } from "../tasks/tauri.gateway.js";
 import type { TasksGateway } from "../tasks/tasks.gateway.js";
 
@@ -11,35 +10,17 @@ export type TasksParts = {
 	readonly clock: ClockGateway;
 };
 
-const TASKS_STORE = "TASKS_STORE";
-const TAURI_TASKS_STORE = "tauri";
-
-const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => TasksParts>> = {
-	browser: memoryTasksParts,
-	tauri: memoryTasksParts,
-	server: serverTasksParts,
-};
-
-export function tasksPartsOn(facts: ModuleFacts): TasksParts {
-	return PARTS_ON[facts.platform](facts);
-}
-
-export function memoryTasksParts(): TasksParts {
+export function tasksPartsOn(facts: TasksFacts): TasksParts {
 	return {
-		tasks: new MemoryTasksGateway(),
+		tasks: tasksGatewayOf(facts),
 		clock: new SystemClockGateway(),
 	};
 }
 
-// TRADE-OFF: the core window serves tasks as a server module, so its Tauri store is picked by env rather than by platform
-function serverTasksParts(facts: ModuleFacts): TasksParts {
-	if (facts.env[TASKS_STORE] !== TAURI_TASKS_STORE) {
-		return memoryTasksParts();
+function tasksGatewayOf({ host, scope }: TasksFacts): TasksGateway {
+	if (host.kind === "storage") {
+		return new StorageTasksGateway(host.storage);
 	}
 
-	const store = new StoreClient((command, args) => invoke(command, args));
-	return {
-		tasks: new TauriTasksGateway(store, workspaceRootOf(facts.scope.workspaceId)),
-		clock: new SystemClockGateway(),
-	};
+	return new TauriTasksGateway(host.store, workspaceRootOf(scope.workspaceId));
 }

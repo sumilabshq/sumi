@@ -1,4 +1,4 @@
-import { isTerminalStep, refuseOverflow } from "../../../shared/lib/gates.js";
+import { isTerminalStep, refuseCriterionState, refuseOverflow } from "../../../shared/lib/gates.js";
 import type { BoardStep } from "../../../shared/lib/task-moves.js";
 import { touchTask } from "../../../shared/lib/task-moves.js";
 import { idOf, nextIdOf, oneLine } from "../../../shared/lib/task-refs.js";
@@ -15,8 +15,6 @@ import { agentOf, editableOrRefusal, nextDocIdOf, stepWith } from "./agent-edits
 const NOT_YOURS_YET = "{id} has no owner yet: start it with task_start before marking its steps.";
 const STEP_NOTE = "Marking a step {state} needs a note saying why.";
 const NO_CRITERION = "{id} has no criterion {criterion}. Its criteria: {known}.";
-const EVIDENCE = "Marking {criterion} met needs evidence: a test run, a screenshot path, a commit, a document.";
-const DROP_REASON = "Dropping {criterion} needs the reason, in the person's words when they changed the ask.";
 const NO_TEST_PLAN = "{id} has no test plan yet: attach a test_plan before a test_run.";
 const UNKNOWN_CASES = "{id}'s test plan has no case {cases}. Its cases: {known}.";
 const NOTED_STATES: ReadonlySet<Step["state"]> = new Set(["skipped", "blocked", "cancelled"]);
@@ -175,7 +173,7 @@ function checkTargetOrRefusal(board: Board, ask: CheckCriterionAsk): CheckTarget
 	}
 
 	return (
-		refuseCheck(ask, known.id) ?? {
+		refuseCriterionState(ask, known.id) ?? {
 			task,
 			known,
 		}
@@ -186,18 +184,6 @@ function noCriterionOf(task: Task, criterion: string): string {
 	return NO_CRITERION.replace("{id}", idOf(task.number))
 		.replace("{criterion}", criterion)
 		.replace("{known}", task.acceptance.map((kept) => kept.id).join(", ") || "none");
-}
-
-function refuseCheck(ask: CheckCriterionAsk, criterion: string): string | null {
-	if (ask.state === "met" && (ask.evidence === null || ask.evidence.length < 3)) {
-		return EVIDENCE.replace("{criterion}", criterion);
-	}
-
-	if (ask.state === "dropped" && (ask.reason === null || ask.reason.length < 3)) {
-		return DROP_REASON.replace("{criterion}", criterion);
-	}
-
-	return null;
 }
 
 function withChecked(task: Task, ask: CheckCriterionAsk, known: Criterion): Task {

@@ -1,12 +1,14 @@
 import { serveFrame } from "@sumi/contract";
-import type { AnswerResult, AppEvent, AppHandlers, FramePair, ServedApp, WelcomeBody } from "@sumi/contract";
+import type { AppEvent, AppHandlers, FramePair, ServedApp, WelcomeBody } from "@sumi/contract";
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { reportFrameProblem } from "./frame-problem.js";
+import type { FrameAsk } from "./frame-services.js";
 
 export interface FrameHandlers {
 	readonly welcomeOf: () => WelcomeBody;
 	readonly onEvent: (event: AppEvent) => void;
+	readonly onAsk: FrameAsk;
 }
 
 interface FrameServing {
@@ -15,8 +17,6 @@ interface FrameServing {
 	readonly latest: RefObject<FrameHandlers>;
 	readonly served: RefObject<ServedApp | null>;
 }
-
-const UNKNOWN_SERVICE = 'Sumi has no service "{service}" yet';
 
 export function useServedFrame(
 	frame: RefObject<HTMLIFrameElement | null>,
@@ -54,15 +54,8 @@ function latestHandlersOf(app: string, latest: RefObject<FrameHandlers>): AppHan
 	return {
 		welcomeOf: () => latest.current.welcomeOf(),
 		onEvent: (event) => latest.current.onEvent(event),
-		onAsk: (service) => Promise.resolve(unknownService(service)),
+		onAsk: (service, input) => latest.current.onAsk(service, input),
 		onProblem: (reason) => reportFrameProblem(app, reason),
-	};
-}
-
-function unknownService(service: string): AnswerResult {
-	return {
-		ok: false,
-		reason: UNKNOWN_SERVICE.replace("{service}", service),
 	};
 }
 

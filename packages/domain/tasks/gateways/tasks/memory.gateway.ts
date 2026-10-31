@@ -1,14 +1,10 @@
 import type { Board } from "../../shared/schema/task.schema.js";
-import { SAVED_BOARD, STALE_BOARD, TasksGateway } from "./tasks.gateway.js";
+import { EMPTY_BOARD, TasksGateway } from "./tasks.gateway.js";
 import type { BoardWrite, HeldBoard, SavedBoard } from "./tasks.gateway.js";
 
-export const EMPTY_BOARD: Board = {
-	nextNumber: 1,
-	tasks: [],
-};
+export { EMPTY_BOARD } from "./tasks.gateway.js";
 
 export class MemoryTasksGateway extends TasksGateway {
-	private readonly listeners = new Set<() => void>();
 	private held: HeldBoard;
 
 	constructor(board: Board = EMPTY_BOARD) {
@@ -16,6 +12,7 @@ export class MemoryTasksGateway extends TasksGateway {
 		this.held = {
 			board,
 			rev: 0,
+			isReadOnly: false,
 		};
 	}
 
@@ -25,22 +22,21 @@ export class MemoryTasksGateway extends TasksGateway {
 
 	saveBoard(board: Board, { baseRev }: BoardWrite): Promise<SavedBoard> {
 		if (baseRev !== this.held.rev) {
-			return Promise.resolve(STALE_BOARD);
+			return Promise.resolve({
+				ok: false,
+				rev: this.held.rev,
+			});
 		}
 
 		this.held = {
 			board,
 			rev: this.held.rev + 1,
+			isReadOnly: false,
 		};
-		for (const listener of [...this.listeners]) {
-			listener();
-		}
-
-		return Promise.resolve(SAVED_BOARD);
-	}
-
-	boardChanged(listener: () => void): () => void {
-		this.listeners.add(listener);
-		return () => void this.listeners.delete(listener);
+		this.tell();
+		return Promise.resolve({
+			ok: true,
+			rev: this.held.rev,
+		});
 	}
 }

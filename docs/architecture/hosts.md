@@ -18,7 +18,7 @@ export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): Started
 }
 ```
 
-A host never builds a module's gateway, never passes a store or a "parts" object. What a module needs from the platform it reaches itself, through its gateways (the Tauri store client is `@widgetarium/behaviors/tauri-store`).
+A host never builds a module's gateway and never passes a "parts" object. What a module needs from the platform it reaches through its gateways. A module that writes the Tauri store is lent a `StoreClient` (`@widgetarium/behaviors/tauri-store`) as a host object, never Tauri's `invoke`: the tasks module's `TASKS_HOST_NEEDS`.
 
 **Host objects, through `.needs`.** A live object only the host has (an Obsidian vault, its widget registry, a running agent) is lent raw: the module declares `.needs({ vault: Vault })`, the host passes `start({ platform, scope, host: { vault } })`, and `provide` builds the module's gateways on it. A missing or wrongly typed one is a type error and a start refusal naming the module and the key.
 

@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { z } from "zod";
+import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { app, localTransport } from "@widgetarium/core/requests";
 import type { ListeningTransport, StartedApp } from "@widgetarium/core/requests";
 import { server } from "@widgetarium/core/requests/server";
@@ -55,9 +56,11 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 		.start({
 			env: {
 				PLACES_STORE: "tauri",
-				TASKS_STORE: "tauri",
 			},
 			scope: { workspaceId: workspace },
+			host: {
+				store: new StoreClient((command, args) => invoke(command, args)),
+			},
 		});
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }

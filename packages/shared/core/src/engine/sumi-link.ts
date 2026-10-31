@@ -24,7 +24,7 @@ export type LinkRead =
 	  };
 
 const SUMI_ADDRESS = /^sumi:\/\/([^/?#]*)\/([^/?#]*)$/;
-const NOT_SUMI = "{href} is not a Sumi link: one reads sumi://<chat|task|tab|app>/<id>";
+const NOT_SUMI = "{href} opens nowhere: Sumi opens sumi://<chat|task|tab|app>/<id> links and https:// pages";
 const UNKNOWN_KIND = "{href} names no chat, task, tab or app, so there is nothing to open";
 const NO_ID = "{href} names no {kind} to open";
 const BAD_ESCAPE = "{href} carries a broken %-escape in its id";

@@ -1,3 +1,4 @@
+import { MemoryDocStore } from "@sumi/contract";
 import { AppHostModule } from "@widgetarium/app-host/module";
 import { AppInstallerModule } from "@widgetarium/app-installer/module";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
@@ -31,10 +32,16 @@ export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): S
 
 export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
-	server().modules(RunnablePlacesModule, RunnableTasksModule).listen(local).start({
-		env: {},
-		scope: { workspaceId },
-	});
+	server()
+		.modules(RunnablePlacesModule, RunnableTasksModule)
+		.listen(local)
+		.start({
+			env: {},
+			scope: { workspaceId },
+			host: {
+				storage: new MemoryDocStore(),
+			},
+		});
 	return local;
 }
 

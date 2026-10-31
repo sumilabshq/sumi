@@ -36,7 +36,7 @@ export type {
 } from "./handler";
 export type { Sending } from "./mediator";
 export { HostObject, OneOf, hostObject, oneOf } from "./host-needs";
-export type { HeldBy, HostNeeds, Need, NeedSets, NeedsShape } from "./host-needs";
+export type { HeldBy, HostNeeds, Need, NeedSets, NeedsShape, OneSetTagged } from "./host-needs";
 export {
 	ClientModule,
 	HandledModule,

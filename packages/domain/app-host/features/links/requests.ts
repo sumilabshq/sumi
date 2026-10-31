@@ -19,6 +19,8 @@ interface LinkOpening {
 type LinkOpener = (opening: LinkOpening) => Promise<string | null>;
 
 const TASKS_APP: AppKind = "tasks";
+const BROWSER_APP: AppKind = "browser";
+const WEB_SCHEME = "https:";
 const NO_SUCH_APP = "Sumi has no app named {app}";
 const OPENED = "[widgetarium] link {href} opened{where}";
 
@@ -35,18 +37,31 @@ export const OpenLinkCommand = command("open-link")
 	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
 	.handle(async ({ href, opensNew }, { send, emit, ...parts }) => {
-		const read = linkTargetOf(href);
 		const reach = { parts, send, told: () => emit(TabsSettledEvent) };
-		const refusal = read.ok
-			? await LINK_OPENERS[read.target.kind]({ id: read.target.id, opensNew, reach })
-			: read.reason;
+		const refusal = isWebPage(href)
+			? await openWebPageLinked(href, opensNew, reach)
+			: await openSumiLinked(href, opensNew, reach);
 
 		if (refusal !== null) {
 			return refuse(refusal);
 		}
 
-		console.info(OPENED.replace("{href}", href).replace("{where}", opensNew ? " in a new tab" : ""));
+		console.info(OPENED.replace("{href}", JSON.stringify(href)).replace("{where}", opensNew ? " in a new tab" : ""));
 	});
+
+function isWebPage(href: string): boolean {
+	return URL.parse(href)?.protocol === WEB_SCHEME;
+}
+
+async function openSumiLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<string | null> {
+	const read = linkTargetOf(href);
+	return read.ok ? LINK_OPENERS[read.target.kind]({ id: read.target.id, opensNew, reach }) : read.reason;
+}
+
+async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
+	await openAppTab(reach, { app: BROWSER_APP, address: href, opensNew });
+	return null;
+}
 
 async function openChatLinked({ id, reach }: LinkOpening): Promise<null> {
 	await showChatSettled(reach, { chatId: id, paneId: null });
