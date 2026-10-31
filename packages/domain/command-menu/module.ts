@@ -1,5 +1,6 @@
 import { Device, module } from "@widgetarium/core/requests";
 import { AppHostModule } from "@widgetarium/app-host";
+import { AppInstallerModule } from "@widgetarium/app-installer";
 import { BrowserModule } from "@widgetarium/browser";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { commandMenuPartsOn } from "./gateways/command-menu-parts/command-menu-parts.gateway.js";
@@ -20,7 +21,7 @@ import {
 
 export const CommandMenuModule = module("command-menu")
 	.on(Device)
-	.imports(AppHostModule, BrowserModule, WorkspacesModule)
+	.imports(AppHostModule, AppInstallerModule, BrowserModule, WorkspacesModule)
 	.subscribers(
 		MenuOnMenuChangedSubscriber,
 		ResultsOnMenuChangedSubscriber,

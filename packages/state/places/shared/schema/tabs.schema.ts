@@ -1,13 +1,21 @@
 import { z } from "zod";
 import { KeptSplitSchema } from "./splits.schema.js";
 
-export const PageAppSchema = z.enum(["canvas", "browser", "terminal", "tasks"]);
+export const BuiltInAppSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
 
-export type PageApp = z.infer<typeof PageAppSchema>;
+export type BuiltInApp = z.infer<typeof BuiltInAppSchema>;
 
-export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
+export const InstalledAppIdSchema = z
+	.string()
+	.regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
+
+export const AppKindSchema = z.union([BuiltInAppSchema, InstalledAppIdSchema]);
 
 export type AppKind = z.infer<typeof AppKindSchema>;
+
+export const PageAppSchema = z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat");
+
+export type PageApp = z.infer<typeof PageAppSchema>;
 
 export const TabMarkSchema = z.enum(["none", "running", "unread"]);
 

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { SplitNodeSchema } from "./splits.schema.js";
+import { PageAppSchema } from "./tabs.schema.js";
 
-export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal", "tasks"]);
+export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
 
 export type StudioView = z.infer<typeof StudioViewSchema>;
 

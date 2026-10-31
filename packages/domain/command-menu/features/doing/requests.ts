@@ -14,6 +14,7 @@ import {
 	ShowTabCommand,
 } from "@widgetarium/app-host";
 import type { HeldTabs } from "@widgetarium/app-host";
+import { InstallAppCommand, UpdateAppsCommand } from "@widgetarium/app-installer";
 import { OpenAddressCommand } from "@widgetarium/browser";
 import { OpenChatElsewhereCommand, OpenWorkspaceCommand, RenameWorkspaceCommand } from "@widgetarium/workspaces";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
@@ -92,6 +93,9 @@ async function performIntent(intent: Intent, send: Send, { newTabList, pageId }:
 		case "open-app":
 			await send(OpenTabCommand, { app: intent.app, list: newTabList });
 			return;
+		case "install-app":
+			await send(InstallAppCommand, { id: intent.id });
+			return;
 		case "open-address":
 			return openAddress(intent, send, { newTabList, pageId });
 		case "run":
@@ -139,6 +143,9 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 			await send(OpenNewChatCommand, { title: null });
 			return;
 		case "new-tab":
+			return;
+		case "update-apps":
+			await send(UpdateAppsCommand);
 			return;
 	}
 }

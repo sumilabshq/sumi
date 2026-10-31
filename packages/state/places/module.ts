@@ -32,6 +32,7 @@ import {
 	ForgetRunningTurnsCommand,
 	KeepChatTabsCommand,
 	MarkTabSeenCommand,
+	RecordAppPageCommand,
 	RecordTabTurnCommand,
 } from "./features/tab-facts/requests.js";
 import {
@@ -113,6 +114,7 @@ export const PlacesModule = module("places")
 		PinTabCommand,
 		KeepChatTabsCommand,
 		RecordTabTurnCommand,
+		RecordAppPageCommand,
 		MarkTabSeenCommand,
 		ForgetRunningTurnsCommand,
 		CreateGroupCommand,

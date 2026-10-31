@@ -1,4 +1,5 @@
 import { Device, module } from "@widgetarium/core/requests";
+import { AppInstallerModule } from "@widgetarium/app-installer";
 import { BrowserModule } from "@widgetarium/browser";
 import { LayoutModule } from "@widgetarium/layout";
 import { PlacesModule } from "@widgetarium/places";
@@ -17,7 +18,7 @@ import {
 	OpenNewChatCommand,
 	TearOffChatCommand,
 } from "./features/chat-opening/requests.js";
-import { AppFacesQuery } from "./features/app-faces/requests.js";
+import { AppFacesQuery, KnownAppsQuery } from "./features/app-faces/requests.js";
 import { OpenLinkCommand } from "./features/links/requests.js";
 import {
 	ClosedTabsQuery,
@@ -86,7 +87,7 @@ import {
 
 export const AppHostModule = module("app-host")
 	.on(Device)
-	.imports(BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
+	.imports(AppInstallerModule, BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
 	.subscribers(
 		RereadChatListSubscriber,
 		RereadChatListForCoreSubscriber,
@@ -107,7 +108,7 @@ export const AppHostModule = module("app-host")
 		RereadShownSplitSubscriber,
 		RereadShownSplitForCoreSubscriber,
 	)
-	.public(ChatListQuery, PinTabCommand)
+	.public(ChatListQuery, PinTabCommand, KnownAppsQuery)
 	.public(
 		OpenLinkCommand,
 		OpenChatCommand,

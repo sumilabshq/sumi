@@ -1,5 +1,6 @@
-import { AppKindSchema } from "../../schema/tabs.schema.js";
-import type { AppKind } from "../../schema/tabs.schema.js";
+import { BuiltInAppSchema } from "../../schema/tabs.schema.js";
+import type { AppKind, BuiltInApp } from "../../schema/tabs.schema.js";
+import { isBuiltInApp } from "../tabs/app-abilities.js";
 import type { AppFace, TabArt } from "../../schema/tab-rows.schema.js";
 import type { HostTab } from "../tabs/host-tabs-moment.js";
 
@@ -10,7 +11,7 @@ export interface Named {
 	readonly address: string | null;
 }
 
-const APP_TITLES: Readonly<Record<AppKind, string>> = {
+const APP_TITLES: Readonly<Record<BuiltInApp, string>> = {
 	canvas: "Canvas",
 	browser: "Browser",
 	terminal: "Terminal",
@@ -18,6 +19,7 @@ const APP_TITLES: Readonly<Record<AppKind, string>> = {
 	chat: "New chat",
 };
 const EMPTY_PAGE_TITLE = "New tab";
+const INSTALLED_APP_ART: TabArt = "built-app";
 const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
 	md: "note",
 	txt: "note",
@@ -36,7 +38,7 @@ const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
 	webp: "image",
 	svg: "image",
 };
-const ART_OF_APP: Readonly<Record<Exclude<AppKind, "browser">, TabArt>> = {
+const ART_OF_APP: Readonly<Record<Exclude<BuiltInApp, "browser">, TabArt>> = {
 	canvas: "canvas",
 	terminal: "terminal",
 	tasks: "tasks",
@@ -57,14 +59,19 @@ export function titleOfTab(tab: HostTab): string {
 }
 
 export function appFacesOf(): readonly AppFace[] {
-	return AppKindSchema.options.map((app) => ({
+	return BuiltInAppSchema.options.map((app) => ({
 		app,
 		title: APP_TITLES[app],
 		icon: tabArtOf(app, null),
+		isBuiltIn: true,
 	}));
 }
 
 export function tabArtOf(app: AppKind, address: string | null): TabArt {
+	if (!isBuiltInApp(app)) {
+		return INSTALLED_APP_ART;
+	}
+
 	if (app !== "browser") {
 		return ART_OF_APP[app];
 	}
@@ -89,6 +96,10 @@ function siteOf(address: string | null): string | null {
 }
 
 function emptyTitleOf(app: AppKind): string {
+	if (!isBuiltInApp(app)) {
+		return app;
+	}
+
 	return app === "browser" ? EMPTY_PAGE_TITLE : APP_TITLES[app];
 }
 

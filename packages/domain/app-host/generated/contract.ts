@@ -2,7 +2,7 @@
 import { Device, PerCall, Repeatable, command, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
-export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "tasks"]);
+export const AppKindSchema = z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat");
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
@@ -17,7 +17,7 @@ export const TabToOpenSchema = z.object({
 
 export type TabToOpen = z.infer<typeof TabToOpenSchema>;
 
-export const TabAppSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
+export const TabAppSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
 export type TabApp = z.infer<typeof TabAppSchema>;
 
@@ -54,11 +54,23 @@ export const AppFaceSchema = z.object({
 	app: TabAppSchema,
 	title: z.string(),
 	icon: TabArtSchema,
+	isBuiltIn: z.boolean(),
 });
 
 export type AppFace = z.infer<typeof AppFaceSchema>;
 
 export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });
+
+export const KnownAppSchema = z.object({
+	id: TabAppSchema,
+	isBuiltIn: z.boolean(),
+	isInstalled: z.boolean(),
+	isListed: z.boolean(),
+});
+
+export type KnownApp = z.infer<typeof KnownAppSchema>;
+
+export const KnownAppsSchema = z.object({ apps: z.array(KnownAppSchema).readonly() });
 
 export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
@@ -322,7 +334,7 @@ export const ShownSplitSchema = z.object({
 
 export type ShownSplit = z.infer<typeof ShownSplitSchema>;
 
-export const StudioViewSchema = z.enum(["app", "canvas", "browser", "terminal", "tasks"]);
+export const StudioViewSchema = z.union([z.literal("app"), AppKindSchema]);
 
 export type StudioView = z.infer<typeof StudioViewSchema>;
 
@@ -361,6 +373,8 @@ export const ChatListQuery = query("app-host/chat-list")
 export const PinTabCommand = command("app-host/pin-tab")
 	.input(TabPinSchema)
 	.idempotencyKey(Repeatable);
+export const KnownAppsQuery = query("app-host/known-apps")
+	.output(KnownAppsSchema);
 export const OpenLinkCommand = command("app-host/open-link")
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable);
@@ -513,4 +527,4 @@ export const ResizeSplitCommand = command("app-host/resize-split")
 	)
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenLinkCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, AppFacesQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, KnownAppsQuery, OpenLinkCommand, OpenChatCommand, OpenNewChatCommand, TearOffChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, AppFacesQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);

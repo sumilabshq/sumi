@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ChatMarkSchema } from "./chat-list.schema.js";
 import { GroupHueSchema, SectionListSchema } from "./tab-group.schema.js";
 
-export const AppKindSchema = z.enum(["canvas", "browser", "terminal", "tasks"]);
+export const AppKindSchema = z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat");
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 
@@ -17,7 +17,7 @@ export const TabToOpenSchema = z.object({
 
 export type TabToOpen = z.infer<typeof TabToOpenSchema>;
 
-export const TabAppSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
+export const TabAppSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
 export type TabApp = z.infer<typeof TabAppSchema>;
 
@@ -54,11 +54,23 @@ export const AppFaceSchema = z.object({
 	app: TabAppSchema,
 	title: z.string(),
 	icon: TabArtSchema,
+	isBuiltIn: z.boolean(),
 });
 
 export type AppFace = z.infer<typeof AppFaceSchema>;
 
 export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });
+
+export const KnownAppSchema = z.object({
+	id: TabAppSchema,
+	isBuiltIn: z.boolean(),
+	isInstalled: z.boolean(),
+	isListed: z.boolean(),
+});
+
+export type KnownApp = z.infer<typeof KnownAppSchema>;
+
+export const KnownAppsSchema = z.object({ apps: z.array(KnownAppSchema).readonly() });
 
 export const AppTabSchema = z.object({
 	id: z.string(),

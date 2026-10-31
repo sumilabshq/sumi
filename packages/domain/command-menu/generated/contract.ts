@@ -35,7 +35,7 @@ export type ResultsAsk = z.infer<typeof ResultsAskSchema>;
 
 export const WhereSchema = z.enum(["new-tab", "this-tab"]);
 
-export const MenuCommandSchema = z.enum(["new-chat", "new-tab"]);
+export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "update-apps"]);
 
 export type MenuCommand = z.infer<typeof MenuCommandSchema>;
 
@@ -74,7 +74,12 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	}),
 	z.object({
 		do: z.literal("open-app"),
-		app: z.enum(["canvas", "browser", "terminal", "tasks"]),
+		app: z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat"),
+		title: z.string(),
+	}),
+	z.object({
+		do: z.literal("install-app"),
+		id: z.string().min(1),
 		title: z.string(),
 	}),
 	z.object({

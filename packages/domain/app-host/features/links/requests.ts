@@ -2,6 +2,7 @@ import { Repeatable, command, refuse } from "@widgetarium/core/requests";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkKind } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { isKnownApp, readKnownApps } from "../../shared/lib/apps/known-apps.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { openTabSettled, showChatSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -65,7 +66,7 @@ async function showTabLinked({ id, reach }: LinkOpening): Promise<null> {
 async function openAppLinked({ id, opensNew, reach }: LinkOpening): Promise<string | null> {
 	const app = AppKindSchema.safeParse(id);
 
-	if (!app.success) {
+	if (!app.success || !isKnownApp(await readKnownApps(reach.send), id)) {
 		return NO_SUCH_APP.replace("{app}", id);
 	}
 

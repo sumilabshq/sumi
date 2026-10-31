@@ -2,12 +2,19 @@ import { Repeatable, command } from "@widgetarium/core/requests";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
 import {
+	AppPageSchema,
 	KeepChatTabsAskSchema,
 	SeenTabSchema,
 	TabTurnMarksSchema,
 	TabTurnSchema,
 } from "../../shared/schema/tab-facts.schema.js";
-import { forgetRunningTurnsPlan, keepChatTabsPlan, markSeenPlan, recordTurnPlan } from "./lib/fact-plans.js";
+import {
+	forgetRunningTurnsPlan,
+	keepChatTabsPlan,
+	markSeenPlan,
+	recordAppPagePlan,
+	recordTurnPlan,
+} from "./lib/fact-plans.js";
 
 export const KeepChatTabsCommand = command("keep-chat-tabs")
 	.input(KeepChatTabsAskSchema)
@@ -45,4 +52,12 @@ export const ForgetRunningTurnsCommand = command("forget-running-turns")
 	.inject({ tabs: TabsGateway })
 	.handle(async (_input, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(null, forgetRunningTurnsPlan())));
+	});
+
+export const RecordAppPageCommand = command("record-app-page")
+	.input(AppPageSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ tabs: TabsGateway })
+	.handle(async (page, { tabs }) => {
+		answered(await tabs.movePlacedTabs(moving(null, recordAppPagePlan(page))));
 	});

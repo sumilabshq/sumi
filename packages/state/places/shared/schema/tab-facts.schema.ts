@@ -25,3 +25,23 @@ export const NamedRecordSchema = z.object({
 export type NamedRecord = z.infer<typeof NamedRecordSchema>;
 
 export const KeepChatTabsAskSchema = z.object({ chats: z.array(NamedRecordSchema) });
+
+export const AppPageSchema = z.object({
+	id: z.string().min(1),
+	address: z.string().max(2048).optional(),
+	title: z.string().max(200).optional(),
+	favicon: z
+		.union([
+			z
+				.string()
+				.max(65_536)
+				.regex(/^data:image\//),
+			z
+				.string()
+				.max(2048)
+				.regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
+		])
+		.optional(),
+});
+
+export type AppPage = z.infer<typeof AppPageSchema>;

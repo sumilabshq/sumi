@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-	AppKindSchema,
 	CloseGroupCommand,
 	CloseTabCommand,
 	CreateGroupCommand,
@@ -26,6 +25,7 @@ import {
 	spotOfTab,
 } from "./tool-places.js";
 import type { TabSpot, ToolContext } from "./tool-places.js";
+import { AgentAppSchema } from "./state-tools.js";
 
 const ONE_GROUP = "Name either group or newGroup, not both.";
 const THE_TAB = "The tab {id}";
@@ -44,7 +44,7 @@ const GroupingSchema = z.strictObject({
 	show: z.boolean().default(false),
 });
 
-const TabOpenSchema = GroupingSchema.extend({ app: AppKindSchema, target: z.string().min(1).optional() }).refine(
+const TabOpenSchema = GroupingSchema.extend({ app: AgentAppSchema, target: z.string().min(1).optional() }).refine(
 	isOneGroup,
 	ONE_GROUP,
 );

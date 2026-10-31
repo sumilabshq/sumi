@@ -215,6 +215,7 @@ export const AppFaceSchema = z.object({
 	app: AppKindSchema,
 	title: z.string(),
 	icon: TabArtSchema,
+	isBuiltIn: z.boolean(),
 });
 
 export type AppFace = z.infer<typeof AppFaceSchema>;

@@ -1,5 +1,12 @@
 import { query, subscriber } from "@widgetarium/core/requests";
-import { AppFacesQuery, AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import {
+	AppFacesQuery,
+	AppTabsQuery,
+	ChatListQuery,
+	ClosedTabsQuery,
+	KnownAppsQuery,
+	TabsSidebarQuery,
+} from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
@@ -16,6 +23,7 @@ import {
 	workspacesFoundOf,
 } from "./lib/found.js";
 import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
+import { installableFoundOf } from "./lib/installable-found.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
 import { askInkOf, fallbackLabelOf, fallbackIntentOf, typedOf } from "./lib/typed.js";
@@ -26,7 +34,7 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
 	.handle(async ({ text, door, pageId }, { send }) => {
-		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser, apps] = await Promise.all([
+		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser, apps, known] = await Promise.all([
 			send(TabsSidebarQuery),
 			send(AppTabsQuery),
 			send(ClosedTabsQuery),
@@ -35,11 +43,12 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 			send(WorkspacesQuery),
 			send(BrowserTabsQuery, ALL_PAGES),
 			send(AppFacesQuery),
+			send(KnownAppsQuery),
 		]);
 		const pools: Pools = {
 			tabs: tabsFoundOf(sidebar),
 			chats: chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.faces),
-			apps: appsFoundOf(apps.faces),
+			apps: [...appsFoundOf(apps.faces), ...installableFoundOf(known.apps)],
 			sites: sitesFoundOf(browser.recentSites),
 			workspaces: workspacesFoundOf(workspaces),
 			closed: closedFoundOf(closedTabs.tabs),

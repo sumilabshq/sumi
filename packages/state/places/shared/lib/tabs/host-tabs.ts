@@ -88,7 +88,7 @@ export function openTabUnshown(moment: HostTabsMoment, opened: OpenedTab, place:
 	};
 }
 
-export function isPageTab(tab: HostTab): tab is PageTab {
+export function isPageTab(tab: HostTab): boolean {
 	return abilitiesOf(tab.app).runsInPage;
 }
 

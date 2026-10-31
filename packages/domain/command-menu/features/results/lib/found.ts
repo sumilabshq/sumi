@@ -83,56 +83,16 @@ export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
 	}));
 }
 
-const MENU_APPS = [
-	{
-		app: "canvas",
-		haystack: "canvas design board",
-	},
-	{
-		app: "terminal",
-		haystack: "terminal shell zsh console",
-	},
-	{
-		app: "tasks",
-		haystack: "tasks board kanban agents jira linear",
-	},
-] as const;
+const MENU_WORDS: ReadonlyMap<string, string> = new Map([
+	["canvas", "canvas design board"],
+	["terminal", "terminal shell zsh console"],
+	["tasks", "tasks board kanban agents jira linear"],
+]);
 
 export function appsFoundOf(faces: readonly AppFace[]): readonly Found[] {
-	return MENU_APPS.flatMap(({ app, haystack }) => {
-		const face = faces.find((one) => one.app === app);
-
-		if (face === undefined) {
-			return [];
-		}
-
-		const intent: Intent = {
-			do: "open-app",
-			app,
-			title: face.title,
-		};
-		return [
-			{
-				key: `app:${app}`,
-				kind: "app",
-				title: face.title,
-				meta: APP,
-				haystack,
-				icon: iconOf({
-					art: face.icon,
-					favicon: null,
-					title: face.title,
-					address: null,
-					mark: NO_MARK,
-				}),
-				intent,
-				shortcut: null,
-				renames: null,
-				actions: openActionsOf(intent),
-				host: "",
-				isOnScreen: false,
-			},
-		];
+	return faces.flatMap((face) => {
+		const words = face.isBuiltIn ? MENU_WORDS.get(face.app) : `${face.title} ${face.app} app`;
+		return words === undefined ? [] : [appFoundOf(face, words)];
 	});
 }
 
@@ -339,4 +299,32 @@ function letterOf(name: string): string {
 		.trim()
 		.charAt(0)
 		.toUpperCase();
+}
+
+function appFoundOf(face: AppFace, haystack: string): Found {
+	const intent: Intent = {
+		do: "open-app",
+		app: face.app,
+		title: face.title,
+	};
+	return {
+		key: `app:${face.app}`,
+		kind: "app",
+		title: face.title,
+		meta: APP,
+		haystack,
+		icon: iconOf({
+			art: face.icon,
+			favicon: null,
+			title: face.title,
+			address: null,
+			mark: NO_MARK,
+		}),
+		intent,
+		shortcut: null,
+		renames: null,
+		actions: openActionsOf(intent),
+		host: "",
+		isOnScreen: false,
+	};
 }

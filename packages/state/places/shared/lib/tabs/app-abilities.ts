@@ -1,4 +1,4 @@
-import type { AppKind, PageApp } from "../../schema/tabs.schema.js";
+import type { AppKind, BuiltInApp } from "../../schema/tabs.schema.js";
 
 export interface AppAbilities {
 	readonly holdsTabs: boolean;
@@ -16,7 +16,7 @@ const PAGE_APP: AppAbilities = {
 	keepsRecord: false,
 };
 
-const ABILITIES_OF_APP: Readonly<Record<AppKind, AppAbilities>> = {
+const ABILITIES_OF_APP: Readonly<Record<BuiltInApp, AppAbilities>> = {
 	browser: {
 		...PAGE_APP,
 		navigates: true,
@@ -34,7 +34,11 @@ const ABILITIES_OF_APP: Readonly<Record<AppKind, AppAbilities>> = {
 };
 
 export function abilitiesOf(app: AppKind): AppAbilities {
-	return ABILITIES_OF_APP[app];
+	return isBuiltInApp(app) ? ABILITIES_OF_APP[app] : PAGE_APP;
+}
+
+export function isBuiltInApp(app: AppKind): app is BuiltInApp {
+	return Object.hasOwn(ABILITIES_OF_APP, app);
 }
 
 export function holdsTabs({ app }: { readonly app: AppKind }): boolean {
@@ -45,6 +49,6 @@ export function holderIdsOf(tabs: readonly { readonly id: string; readonly app: 
 	return new Set(tabs.filter(holdsTabs).map((tab) => tab.id));
 }
 
-export function isPageApp(app: AppKind): app is PageApp {
+export function isPageApp(app: AppKind): boolean {
 	return abilitiesOf(app).runsInPage;
 }
