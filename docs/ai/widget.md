@@ -882,7 +882,7 @@ A scope may add a `theme.css` of its own, imported third, and a `@theme` of your
 
 The kit's theme names every token as a Tailwind one, shadcn's names and the kit's own —
 `bg-card`, `bg-muted`, `text-muted-foreground`, `text-brand`, `bg-group`, `bg-fill`, `rounded-plate`,
-`rounded-pill`, `text-sm`, `text-h3`, `gap-cards`, `p-plate` — so you repeat no variable. A scope file beside your widgets carries what all of them share, and a `@theme`
+`rounded-control`, `text-sm`, `text-h3`, `gap-cards`, `p-plate` — so you repeat no variable. A scope file beside your widgets carries what all of them share, and a `@theme`
 of your own comes last and wins: add a colour, or change one of the kit's for this widget alone
 (`--radius-plate: 18px`). `--color-*: initial` drops a whole namespace, `--*: initial` starts from
 nothing.

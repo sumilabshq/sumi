@@ -103,7 +103,9 @@
 	--radius-xl: calc(var(--radius) + 4px);
 	--radius-plate: var(--radius);
 	--radius-item: var(--wg-kit-item);
-	--radius-pill: var(--wg-kit-pill);
+	--radius-control: var(--wg-kit-control-radius);
+	/* TODO: drop rounded-pill, vault widgets still use it */
+	--radius-pill: var(--wg-kit-control-radius);
 
 	--spacing-items: var(--wg-gap-items);
 	--spacing-parts: var(--wg-gap-parts);

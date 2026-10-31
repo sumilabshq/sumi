@@ -75,6 +75,7 @@ export const RADIUS_WORDS: Readonly<Record<string, TokenLength>> = {
 	full: 9999,
 	plate: { token: "radius-plate" },
 	item: { token: "radius-item" },
+	control: { token: "radius-control" },
 	pill: { token: "radius-pill" },
 };
 

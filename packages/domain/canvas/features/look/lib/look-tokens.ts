@@ -44,16 +44,16 @@ const LIVE_TOKENS: Readonly<Record<string, Readonly<Record<string, Tokens>>>> = 
 		compact: { "--wg-gap-scale": "0.75" },
 	},
 	expression: {
-		sharp: expressionOf({ plate: 8, pill: "8px", controls: [30, 34, 40], spring: "var(--wg-ease)" }),
+		sharp: expressionOf({ plate: 8, controlRadius: "8px", controls: [30, 34, 40], spring: "var(--wg-ease)" }),
 		soft: expressionOf({
 			plate: 12,
-			pill: "12px",
+			controlRadius: "12px",
 			controls: [32, 38, 46],
 			spring: "cubic-bezier(0.34, 1.15, 0.64, 1)",
 		}),
 		round: expressionOf({
 			plate: 14,
-			pill: "999px",
+			controlRadius: "999px",
 			controls: [34, 42, 52],
 			spring: "cubic-bezier(0.34, 1.42, 0.64, 1)",
 		}),
@@ -83,15 +83,15 @@ function fontTokensOf({ family }: FontPair): Tokens {
 
 interface Expression {
 	readonly plate: number;
-	readonly pill: string;
+	readonly controlRadius: string;
 	readonly controls: readonly [number, number, number];
 	readonly spring: string;
 }
 
-function expressionOf({ plate, pill, controls: [small, medium, large], spring }: Expression): Tokens {
+function expressionOf({ plate, controlRadius, controls: [small, medium, large], spring }: Expression): Tokens {
 	return {
 		"--wg-kit-plate": `${plate}px`,
-		"--wg-kit-pill": pill,
+		"--wg-kit-control-radius": controlRadius,
 		"--wg-kit-control-s": `${small}px`,
 		"--wg-kit-control-m": `${medium}px`,
 		"--wg-kit-control-l": `${large}px`,

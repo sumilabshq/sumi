@@ -18,6 +18,7 @@ export interface SegmentedProps<V extends Key> {
 	readonly onValueChange?: ((value: V) => void) | undefined;
 	readonly onChange?: ((value: V) => void) | undefined;
 	readonly size?: "s" | "m" | "l";
+	readonly variant?: "track" | "plain";
 	readonly className?: string | undefined;
 }
 
@@ -28,6 +29,7 @@ export function Segmented<V extends Key>({
 	onValueChange,
 	onChange,
 	size = "m",
+	variant = "track",
 	className: cls,
 }: SegmentedProps<V>): ReactElement {
 	const [current, setCurrent] = useControllableState<V | undefined>({
@@ -59,7 +61,13 @@ export function Segmented<V extends Key>({
 
 	return (
 		<div
-			className={cn("wg-kit-seg", size === "l" && "is-l", size === "s" && "is-s", cls)}
+			className={cn(
+				"wg-kit-seg",
+				size === "l" && "is-l",
+				size === "s" && "is-s",
+				variant === "plain" && "is-plain",
+				cls,
+			)}
 			ref={listRef}
 			role="tablist"
 			aria-orientation="horizontal"

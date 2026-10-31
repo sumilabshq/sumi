@@ -98,7 +98,8 @@ export const LENGTH_WORDS: Readonly<Record<string, string>> = {
 	"radius-xl": "calc(var(--radius) + 4px)",
 	"radius-plate": "var(--wg-kit-plate)",
 	"radius-item": "var(--wg-kit-item)",
-	"radius-pill": "var(--wg-kit-pill)",
+	"radius-control": "var(--wg-kit-control-radius)",
+	"radius-pill": "var(--wg-kit-control-radius)",
 };
 
 const FIXED_COLOURS: Readonly<Record<string, Rgba>> = {

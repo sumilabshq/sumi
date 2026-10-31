@@ -2,6 +2,7 @@ export { Kit } from "./kit-object";
 
 export { ActionButton, Button, ButtonLabel, IconButton, ShowMore, Spinner } from "./components/button";
 export { Badge, Count, Pill } from "./components/badge";
+export { TextLink } from "./components/text-link";
 
 export { Calendar } from "./components/calendar";
 export {
@@ -211,6 +212,7 @@ export {
 export { cn, cn as cx, variants } from "./utils/cn";
 export { markOf } from "./utils/marks";
 export { progressState } from "./utils/progress";
+export { prefersReducedMotion } from "./utils/reduced-motion";
 export { barGeometry, circleGeometry } from "./utils/progress-geometry";
 export { inkedClass, toneClass, toneOf } from "./utils/tones";
 export { Ceiling, COUNTED_CEILING, countedFirstLine } from "./components/ceiling";

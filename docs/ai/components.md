@@ -151,7 +151,7 @@ export function Tags({ tags, remove }: { tags: readonly string[]; remove: (tag: 
 						layout
 						exit={{ opacity: 0, scale: 0.9 }}
 						transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-						className="flex items-center gap-1 rounded-pill bg-fill px-2 text-sm"
+						className="flex items-center gap-1 rounded-control bg-fill px-2 text-sm"
 					>
 						{tag}
 						<button

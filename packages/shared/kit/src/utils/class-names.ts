@@ -46,6 +46,7 @@ const PILL_WORDS = {
 		default: "is-primary",
 		secondary: "is-secondary",
 		destructive: "is-destructive",
+		chip: "is-chip",
 	},
 	size: { s: "is-s", m: "" },
 };

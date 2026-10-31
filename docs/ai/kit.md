@@ -70,7 +70,7 @@ the kit's own beside them.
 | a tinted plate | `bg-brand-wash`, `bg-success-wash`, `bg-warning-wash`, `bg-error-wash`, `bg-info-wash`                                                                                               |
 | hues, charts   | `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink`, `chart-1` … `chart-5` after `bg-`/`text-`                                                                      |
 | type           | `text-xs`, `text-sm`, `text-base`, `text-lg`, `text-h1` … `text-h6`, `font-medium`                                                                                                   |
-| corners        | `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`; ours: `rounded-plate`, `rounded-item`, `rounded-pill`                                                                        |
+| corners        | `rounded-sm`, `rounded-md`, `rounded-lg`, `rounded-xl`; ours: `rounded-plate`, `rounded-item`, `rounded-control`; a circle `rounded-full`                                            |
 | spacing        | `gap-items`, `gap-parts`, `gap-cards`, `p-plate`                                                                                                                                     |
 | lines and lift | `border-border`, `ring-ring`; ours: `border-line`, `border-edge`, `shadow-raise`                                                                                                     |
 | layout         | Tailwind's own: `flex`, `grid`, `grid-cols-3`, `justify-between`, `items-center`, `w-full`                                                                                           |

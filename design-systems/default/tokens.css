@@ -51,7 +51,7 @@
 	--input: var(--border);
 	--ring: var(--brand);
 	--radius: 14px;
-	--control-radius: 999px;
+	--control-radius: 8px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--blue);
@@ -143,7 +143,7 @@
 	--input: var(--border);
 	--ring: var(--brand);
 	--radius: 14px;
-	--control-radius: 999px;
+	--control-radius: 8px;
 
 	--chart-1: var(--brand);
 	--chart-2: var(--blue);
