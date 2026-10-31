@@ -1,5 +1,6 @@
 export { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./components/accordion";
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
+export { CollapsePanel } from "./components/collapse-panel";
 export { Alert, AlertAction, AlertDescription, AlertTitle } from "./components/alert";
 export { AspectRatio } from "./components/aspect-ratio";
 export {

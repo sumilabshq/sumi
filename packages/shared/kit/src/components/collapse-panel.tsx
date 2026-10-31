@@ -1,5 +1,5 @@
-import { createElement as h } from "react";
-import type { HTMLAttributes, ReactElement } from "react";
+import { createElement as h, useRef } from "react";
+import type { HTMLAttributes, ReactElement, ReactNode } from "react";
 import { cn } from "../utils/cn";
 
 export interface CollapsePanelProps extends HTMLAttributes<HTMLDivElement> {
@@ -16,6 +16,12 @@ export function CollapsePanel({
 	children,
 	...rest
 }: CollapsePanelProps): ReactElement {
+	const lastShown = useRef<ReactNode>(children);
+
+	if (isOpen) {
+		lastShown.current = children;
+	}
+
 	return (
 		<div
 			data-slot={slot}
@@ -25,7 +31,7 @@ export function CollapsePanel({
 			className={cn("wg-kit-collapse", className)}
 		>
 			<div className="wg-kit-collapse-inner">
-				<div className={innerClassName}>{children}</div>
+				<div className={innerClassName}>{lastShown.current}</div>
 			</div>
 		</div>
 	);

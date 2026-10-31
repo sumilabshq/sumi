@@ -147,6 +147,7 @@ export type {
 	AccordionTriggerProps,
 } from "./components/accordion";
 export type { CollapsibleContentProps, CollapsibleProps, CollapsibleTriggerProps } from "./components/collapsible";
+export type { CollapsePanelProps } from "./components/collapse-panel";
 export type { AlertProps, AlertVariant } from "./components/alert";
 export type { AspectRatioProps } from "./components/aspect-ratio";
 export type { BreadcrumbLinkProps } from "./components/breadcrumb";
