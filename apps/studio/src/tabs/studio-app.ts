@@ -1,4 +1,5 @@
 import { AppHostModule } from "@widgetarium/app-host/module";
+import { AppInstallerModule } from "@widgetarium/app-installer/module";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import { CommandMenuModule } from "@widgetarium/command-menu/module";
@@ -21,7 +22,7 @@ export interface StudioAppAsk {
 export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): StartedApp {
 	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
-		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
+		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppInstallerModule, AppHostModule, CommandMenuModule)
 		.imports(PlacesModule.over(served), TasksModule.over(served))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);

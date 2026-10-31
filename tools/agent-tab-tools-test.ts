@@ -1,7 +1,7 @@
-import { AppKindSchema, HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { AGENT_TOOLS, runAgentTool } from "../apps/host-tauri/src/agent/run-agent-tool.ts";
 import { readFileSync } from "node:fs";
-import { appState, appsList } from "../apps/host-tauri/src/agent/state-tools.ts";
+import { AgentAppSchema, appState, appsList } from "../apps/host-tauri/src/agent/state-tools.ts";
 import {
 	groupCreate,
 	groupDelete,
@@ -184,7 +184,7 @@ check(
 check(
 	"apps_list names every app the person can open a tab with",
 	(await appsList()).apps.map((app) => app.id),
-	[...AppKindSchema.options],
+	[...AgentAppSchema.options],
 );
 
 const openedTask = (await runAgentTool(context, "tab_open", { app: "tasks", target: "T-12" })) as { id: string };
@@ -402,7 +402,7 @@ check(
 	"tab_open tells Claude about every app the person can open",
 	(listedTabOpen as { inputSchema?: { properties?: { app?: { enum?: unknown } } } } | null)?.inputSchema?.properties
 		?.app?.enum,
-	[...AppKindSchema.options],
+	[...AgentAppSchema.options],
 );
 
 if (tally.failed > 0) {

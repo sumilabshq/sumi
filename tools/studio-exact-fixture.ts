@@ -1,5 +1,6 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
@@ -177,6 +178,7 @@ export function exactStudio({
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
 		.modules(
+			AppInstallerModule,
 			AppHostModule.with({
 				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,

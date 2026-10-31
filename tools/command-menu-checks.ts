@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { filledWithShown } from "../packages/domain/command-menu/features/opening/lib/shown-text.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { Answer } from "../packages/shared/core/src/requests/index.ts";
+import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../packages/domain/app-host/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -30,7 +31,7 @@ import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver } from "./places-fixture.ts";
 
 const studio = app()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, CommandMenuModule)
+	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppInstallerModule, AppHostModule, CommandMenuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 
@@ -179,6 +180,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	const pages = new RecordedPagesGateway([]);
 	const withPages = app()
 		.modules(
+			AppInstallerModule,
 			AppHostModule.with({ ...appHostFakesOf({}) }),
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...partsOf() }),
@@ -297,6 +299,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 					},
 				}),
 			),
+			AppInstallerModule,
 			AppHostModule,
 			CommandMenuModule,
 		)

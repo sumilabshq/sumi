@@ -5,6 +5,8 @@ import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
 import { useQuery } from "@widgetarium/core/requests";
+import { AppFacesQuery } from "@widgetarium/app-host";
+import type { AppFace } from "@widgetarium/app-host";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { PlateCrumb } from "../features/plate/ui/plate-header/plate-crumb.js";
 import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";
@@ -16,9 +18,11 @@ import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { TerminalPage } from "../terminal/terminal-page.js";
 import { TasksTabPage } from "../tasks/tasks-tab-page.js";
+import { InstalledAppPage } from "../features/app-frame/ui/installed-app-page/installed-app-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { KeptApps } from "../features/app-host/ui/kept-apps/kept-apps.js";
 import type { KeptInstance } from "../features/app-host/ui/kept-apps/kept-apps.js";
+import { appPageOf } from "./app-page-of.js";
 import { useAppTitleOf } from "./use-app-title-of.js";
 import type { AppTitleOf } from "./use-app-title-of.js";
 import { MovesUnheld } from "./moves-unheld.js";
@@ -36,6 +40,7 @@ interface KeptAppPages {
 	readonly browser: StudioBrowser;
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
+	readonly faces: readonly AppFace[];
 }
 
 const IN_PLATE = { isInPlate: true } as const;
@@ -52,10 +57,11 @@ export function WorkspaceAppPlate({
 }: WorkspaceAppPlateProps): ReactElement {
 	const appName = useQuery(WorkspacesQuery).data.current.name;
 	const appTitleOf = useAppTitleOf();
+	const { faces } = useQuery(AppFacesQuery).data;
 	const shownApp = view === "app" ? null : view;
 	const moreItems = useMemo(() => moreItemsOf(view, appName, backToView), [view, appName, backToView]);
 	const drawnOf = (instance: KeptInstance, isShown: boolean): ReactElement => (
-		<PlateShown isShown={isShown}>{keptAppPageOf(instance, { browser, design, project })}</PlateShown>
+		<PlateShown isShown={isShown}>{keptAppPageOf(instance, { browser, design, project, faces }, isShown)}</PlateShown>
 	);
 	return (
 		<Plate
@@ -73,20 +79,18 @@ export function WorkspaceAppPlate({
 	);
 }
 
-function keptAppPageOf({ app, tabId }: KeptInstance, pages: KeptAppPages): ReactElement {
-	if (app === "browser") {
-		return <BrowserPage browser={pages.browser} heldTabId={null} />;
-	}
-
-	if (app === "terminal") {
-		return <TerminalPage />;
-	}
-
-	if (app === "tasks") {
-		return <TasksTabPage tabId={tabId} />;
-	}
-
-	return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />;
+function keptAppPageOf({ app, tabId }: KeptInstance, pages: KeptAppPages, isShown: boolean): ReactElement {
+	return appPageOf({
+		app,
+		faces: pages.faces,
+		builtIn: {
+			browser: () => <BrowserPage browser={pages.browser} heldTabId={null} />,
+			terminal: () => <TerminalPage />,
+			tasks: () => <TasksTabPage tabId={tabId} />,
+			canvas: () => <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />,
+		},
+		installed: () => <InstalledAppPage app={app} tabId={tabId} isShown={isShown} />,
+	});
 }
 
 interface CrumbAsk {
@@ -101,11 +105,11 @@ function crumbOf({ view, appName, pathname, appTitleOf }: CrumbAsk): CrumbWords 
 		return { first: appTitleOf("canvas"), second: appName };
 	}
 
-	if (view === "browser" || view === "terminal" || view === "tasks") {
-		return { first: appTitleOf(view), second: null };
+	if (view === "app") {
+		return { first: appName, second: pathname === ROOT_PATH ? null : pathname };
 	}
 
-	return { first: appName, second: pathname === ROOT_PATH ? null : pathname };
+	return { first: appTitleOf(view), second: null };
 }
 
 function moreItemsOf(view: StudioView, appName: string, backToView: () => void): readonly PlateMoreItem[] {

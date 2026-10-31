@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { HeldTabsQuery } from "@widgetarium/app-host";
-import type { HeldTab } from "@widgetarium/app-host";
+import { AppFacesQuery, HeldTabsQuery } from "@widgetarium/app-host";
+import type { AppFace, HeldTab } from "@widgetarium/app-host";
 import { useQuery } from "@widgetarium/core/requests";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
@@ -13,7 +13,9 @@ import { BrowserPage } from "../browser/browser-page.js";
 import { StudioCanvas } from "../canvas/studio-canvas.js";
 import { TerminalPage } from "../terminal/terminal-page.js";
 import { TasksPage } from "../tasks/tasks-page.js";
+import { InstalledAppPage } from "../features/app-frame/ui/installed-app-page/installed-app-page.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
+import { appPageOf } from "./app-page-of.js";
 import { useAppTitleOf } from "./use-app-title-of.js";
 
 export interface PaneAppPlateProps {
@@ -27,6 +29,7 @@ interface PaneBody {
 	readonly browser: StudioBrowser;
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
+	readonly faces: readonly AppFace[];
 }
 
 const IN_PLATE = { isInPlate: true } as const;
@@ -38,6 +41,7 @@ const NO_MORE_ITEMS: readonly PlateMoreItem[] = [];
 export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlateProps): ReactElement {
 	const paneTab = useQuery(HeldTabsQuery).data.tabs.find((tab) => tab.id === tabId) ?? null;
 	const appTitleOf = useAppTitleOf();
+	const { faces } = useQuery(AppFacesQuery).data;
 	const appTitle = paneTab === null ? NO_TAB : appTitleOf(paneTab.app);
 	return (
 		<Plate
@@ -57,31 +61,31 @@ export function PaneAppPlate({ tabId, browser, design, project }: PaneAppPlatePr
 			more={<PlateMore items={NO_MORE_ITEMS} />}
 			edgeEnd={null}
 		>
-			{paneBodyOf(paneTab, { browser, design, project })}
+			{paneBodyOf(paneTab, { browser, design, project, faces })}
 		</Plate>
 	);
 }
 
-function paneBodyOf(paneTab: HeldTab | null, { browser, design, project }: PaneBody): ReactElement {
+function paneBodyOf(paneTab: HeldTab | null, { browser, design, project, faces }: PaneBody): ReactElement {
 	if (paneTab === null) {
 		return <p className="wg-pane-note">{NO_TAB}</p>;
 	}
 
-	if (paneTab.app === "canvas") {
-		return <StudioCanvas design={design} project={project} shell={IN_PLATE} />;
-	}
-
-	if (paneTab.app === "terminal") {
-		return <TerminalPage key={paneTab.id} />;
-	}
-
-	if (paneTab.app === "tasks") {
-		return <TasksPage key={paneTab.id} address={paneTab.address ?? ""} />;
-	}
-
-	if (paneTab.pageId === null) {
-		return <p className="wg-pane-note">{NO_PAGE}</p>;
-	}
-
-	return <BrowserPage key={paneTab.pageId} browser={browser} heldTabId={paneTab.pageId} />;
+	const { id, app, address, pageId } = paneTab;
+	return appPageOf({
+		app,
+		faces,
+		builtIn: {
+			canvas: () => <StudioCanvas design={design} project={project} shell={IN_PLATE} />,
+			terminal: () => <TerminalPage key={id} />,
+			tasks: () => <TasksPage key={id} address={address ?? ""} />,
+			browser: () =>
+				pageId === null ? (
+					<p className="wg-pane-note">{NO_PAGE}</p>
+				) : (
+					<BrowserPage key={pageId} browser={browser} heldTabId={pageId} />
+				),
+		},
+		installed: () => <InstalledAppPage key={id} app={app} tabId={id} isShown />,
+	});
 }

@@ -1,5 +1,6 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
@@ -142,6 +143,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = app()
 		.modules(
+			AppInstallerModule,
 			AppHostModule.with({ ...appHost }),
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...layout }),

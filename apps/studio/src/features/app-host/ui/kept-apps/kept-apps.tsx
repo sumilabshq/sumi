@@ -16,12 +16,7 @@ export interface KeptAppsProps {
 
 type KeptInstances = ReadonlyMap<string, KeptInstance>;
 
-const HAS_EMPTY_PAGE: Readonly<Record<AppKind, boolean>> = {
-	browser: true,
-	canvas: false,
-	terminal: false,
-	tasks: false,
-};
+const APPS_WITH_EMPTY_PAGE: ReadonlySet<AppKind> = new Set(["browser"]);
 
 export function KeptApps({ shown, drawnOf }: KeptAppsProps): ReactElement {
 	const { kept, shownKey } = useKeptInstances(shown, useQuery(HeldTabsQuery).data);
@@ -80,7 +75,7 @@ function shownKeyOf(shown: AppKind | null, shownTabId: string | null): string | 
 		return null;
 	}
 
-	return shownTabId === null && !HAS_EMPTY_PAGE[shown] ? null : instanceKeyOf(shown, shownTabId);
+	return shownTabId === null && !APPS_WITH_EMPTY_PAGE.has(shown) ? null : instanceKeyOf(shown, shownTabId);
 }
 
 // TRADE-OFF: the browser holds every page in one view, so it is kept once; a canvas is kept per tab

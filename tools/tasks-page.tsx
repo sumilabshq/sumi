@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { AppProvider, app, localTransport } from "../packages/shared/core/src/requests/index.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { TasksModule as TasksContract } from "../packages/domain/tasks/generated/contract.ts";
+import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
@@ -63,6 +64,7 @@ server()
 	.start({ env: {} });
 const studio = app()
 	.modules(
+		AppInstallerModule,
 		AppHostModule,
 		BrowserModule.with(fakeBrowser(new FakeBrowserPagesGateway()).parts),
 		LayoutModule,

@@ -18,7 +18,7 @@ Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a bro
 
 An app repository is a pnpm workspace: `packages/domain/*` holds its modules, `apps/*` its frontend. `sumi-app.json` at its root is its manifest.
 
-**What stays in the shell:** Places (tabs, address, history, title, favicon), workspaces, the page frame, the event bus, the app store (install, update, roll back), and every native power: the Rust core, the terminal pty, browser webviews, the agent runner, the file store. **Only the shell imports Tauri.** An app reaches a native power by asking the shell for it (`ask`), never by importing `@tauri-apps/api`.
+**What stays in the shell:** Places (tabs, address, history, title, favicon), workspaces, the page frame, the event bus, the app installer (install, update, roll back), and every native power: the Rust core, the terminal pty, browser webviews, the agent runner, the file store. **Only the shell imports Tauri.** An app reaches a native power by asking the shell for it (`ask`), never by importing `@tauri-apps/api`.
 
 **Developing across repositories needs no publish.** `pnpm install` in `~/Projects/Sumi` links `@sumi/contract` (and later the framework and kit) into every repository that depends on it, by package name; an edit in one shows in the next run of another. npm is for releases. The shell joins the dev workspace when it moves from npm workspaces to pnpm (**planned**, with the framework extraction).
 
@@ -62,7 +62,7 @@ An app repository is a pnpm workspace: `packages/domain/*` holds its modules, `a
 
 The contract is 0.x until the Tasks pilot runs through it in Sumi, then 1.0. The manifest is part of the contract and follows the same rules; it has no version of its own.
 
-**Two gates.** Before install, the shell skips a release whose `contract` range Sumi does not satisfy and takes the newest that fits (**planned**, in the app store). At runtime, `serveApp` checks `hello.contract` again, because a dev server never passed the install gate.
+**Two gates.** Before install and on an update check, the app installer refuses a release whose `contract` range Sumi does not satisfy (`gatedManifestOf` in `packages/state/app-installer`); taking the newest release that fits waits for sources that hold more than one (**planned**). At runtime, `serveApp` checks `hello.contract` again, because a dev server never passed the install gate.
 
 **The handshake.** The app posts `sumi:port-ask` to its parent window. `serveFrame` answers only an ask whose source is the frame it was given, with a fresh `MessageChannel` port posted into that frame alone; a reloaded frame asks again and gets a new channel, the old one closed. The app sends `hello` on the port and waits for `welcome` or `refused`. An app opened outside Sumi is told so at once, and one Sumi never answers gives up after `CONNECT_TIMEOUT_MS` (10 s) with a reason, never a silent wait.
 
@@ -78,30 +78,41 @@ An app's manifest lists its modules: `modules: [{ name, runs: "page" | "backgrou
 
 The chat's sub-tabs under a chat stay drawn by the shell's own code until apps can contribute UI.
 
-## Registry, install and updates (**planned**)
+## Registry, install and updates
 
-**The registry** is the list of apps Sumi may install. Each row names an id and a source: a GitHub repository (`{ kind: "github", repository: "owner/sumi-tasks" }`) or a folder on this machine (`{ kind: "folder", path: "/Users/…/sumi-tasks" }`). Its schema lives in the shell, because only the shell reads it.
+> Built: folder sources, install, the update check on a press, switch, rollback, the frame. **Planned**: GitHub sources, signatures, checks at start and every few hours, the setting that turns updates off, grants.
+
+**The registry** is the list of apps Sumi may install: `<appData>/apps/registry.json`, `{ "apps": [{ id, source }] }`, written by the person; absent means empty. A source is a GitHub repository (`{ kind: "github", repository: "owner/sumi-tasks" }`, refused with "installing from GitHub is not built yet") or a folder on this machine holding a built release (`{ kind: "folder", path: "/Users/…/sumi-tasks/dist" }`). Its schema lives in the shell (`RegistryRowSchema`), because only the shell reads it. A registry that does not parse, or names an id twice, answers with a `problem`, never as an empty list in silence.
+
+**A release** is a folder: `sumi-app.json`, `sumi-release.json` (`{ app, version, files: [{ path, sha256, size }] }`, every file but itself) and the files. `tools/app-release.ts <folder>` lays `sumi-release.json`; an app repository runs it after its build. `tools/fixtures/hello-app/src` is a hello app; `buildHelloReleases` in `tools/hello-app-build.ts` builds three releases of it (1.0.2 never sends `ready`) into a temp folder each time `test:app-installer` runs, so they always carry the contract range Sumi speaks.
 
 **Sumi never runs an app from its source.** Installing reads the source's built release, checks it, and copies it into Sumi's own folder; the source folder or repository is only where a version comes from:
 
 ```
 ~/Library/Application Support/<Sumi app id>/apps/
-  store.json          written only by the shell's app store: current, previous, failed versions
+  registry.json       written by the person, read only
+  store.json          written only by the Rust app installer: current, previous, failed versions
   tasks/1.0.0/        immutable once written
   tasks/1.0.1/
 ```
 
 The app id is `app.widgetarium.studio` today (`tauri.conf.json`); renaming it moves this folder and every workspace file, so the rename carries a migration.
 
-**Updates** are checked at start, every few hours and on a press; a newer release that passes the install gate is downloaded, checked (hash, then signature), unpacked into its own version folder and made current. A hidden tab reloads at once; a shown one reloads when the app is not `busy`, at the same address, because Places holds it. A version whose frame never sends `ready` is marked failed and the previous one comes back. Apps from the registry update automatically, with a setting to turn it off; an update that would ask for a new grant waits for the person. Installing from anywhere outside the registry is not supported.
+**One writer.** The Rust plugin `apps` (`apps/host-tauri/src-tauri/src/app_installer/`) owns `store.json` and the version folders: `registry`, `installed`, `inspect`, `install` (checks each listed file's size and sha256, the ids and versions, copies, renames; an app's first install is current), `switch`, `fail` (a failed version never becomes current; failing the current one brings `previous` back). `@widgetarium/app-installer` (`packages/state/app-installer`) is the shell's side: `AppRegistryQuery`, `InstalledAppsQuery` (versions and the current manifest, read through `sumi-app://`), `InstallAppCommand` (registry row → `inspect` → contract gate → `install` with the `manifestSha256` inspect answered), `UpdateAppsCommand` (installs each newer release that passes the gate, then switches to it), `SwitchAppVersionCommand`, `FailAppVersionCommand`, `RetryAppVersionCommand`, each logging the `{ was, now }` Rust answers. The tauri gateway parses every answer (`.strict()`), the registry and the fetched manifest. It keeps no copy: every answer is re-read from Rust, and a Rust refusal reaches the person as a refusal (`ran: false`). The ids of pages Sumi draws itself (`canvas`, `browser`, `terminal`, `chat`, `app`) cannot be installed; `tasks` can, and an installed `tasks` replaces the built-in Tasks page (`AppFace.isBuiltIn`, `appPageOf`).
+
+**A tab of an installed app.** Places keeps any app id matching `^[a-z][a-z0-9-]*$` (`AppKindSchema`): a built-in is drawn by the shell, any other id by `InstalledAppPage` (`apps/studio/src/features/app-frame`). An id that is not installed draws a missing-app state naming it, with Install when the registry lists it. The page is `<iframe sandbox="allow-scripts allow-forms">` (`APP_FRAME_SANDBOX`) at the `pageUrl` the installer answers (`sumi-app://<id>/<version>/<ui>`), wired with `serveFrame`: `welcome` carries the tab's address, the theme and the workspace; `navigated`, `title` and `favicon` are kept on the tab by Places' `RecordAppPageCommand`, whose `AppPageSchema` bounds the title (200), the address (2 048) and the favicon (`data:image/…` up to 64 KiB or `sumi-app://<the same id>/…`; another app's is dropped and reported); Places moving the tab sends `show`; an `ask` is answered "no service yet". The command menu lists installed apps by manifest name, "Install <id>" for each registry row not installed (registry ids stay known on purpose: a link to one opens the missing-app tab), and "Update apps"; links and the menu read one decision, `KnownAppsQuery`.
+
+**Updates.** `AppFrameFleet` is the one owner of which frame runs which version. After a switch a frame reloads when its last `busy` was false, shown or hidden, at the same address, because Places holds it; a busy frame waits. A frame on a version that has not sent `ready` in this session gets `READY_TIMEOUT_MS` (10 s), counted only while the frame is shown and the document visible; without `ready`, or after an `error` before it, the version is failed through `FailAppVersionCommand` and every frame reloads on the version now current. A refused or thrown fail is reported and forgotten, so the next failed start tries again. An app left with no current version offers "Try again" (`RetryAppVersionCommand`). `npm run test:app-installer` drives all of it in Chrome against the hello fixture over http.
+
+**What keeps a frame from the IPC.** The frame runs in an opaque origin (no `allow-same-origin`), so `parent.__TAURI_INTERNALS__` and `top.__TAURI_INTERNALS__` throw and it has none of its own; the scheme's `Content-Security-Policy` (`app_installer/frame-policy.txt`, the one owner of that line) names neither `ipc:` nor `http://ipc.localhost` in `connect-src`. `npm run test:app-frame-sandbox` proves both in headless Chrome, the template's `sumi-app://{app}` filled and mapped to the test server's origin. Tauri treats any registered custom scheme as local (`tauri-2.12.4/src/webview/mod.rs:1978-1985`), so what keeps a frame out of IPC is the invoke key only the main frame's scripts hold (`webview/mod.rs:2010-2026`, `manager/webview.rs:161-166`) and the `null` Origin refused on the `ipc://` route (`ipc/protocol.rs:488-495`). Not verified in a real WKWebView.
 
 ## Order
 
-| Step                                                                    | Done when                                                  |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 1. Folder, dev workspace, `@sumi/contract` 0.1                          | done: `pnpm test` and `pnpm check` in `sumi-contract` pass |
-| 2. `sumi-framework` extracted with its history; the shell depends on it | the shell builds and starts                                |
-| 3. `sumi-kit` extracted the same way                                    | the shell builds and starts                                |
-| 4. App store, `sumi-app://` loading, registry (GitHub or folder)        | a hello app installs, updates and rolls back               |
-| 5. Tasks moves to `sumi-tasks`; contract 1.0                            | the board opens from the registry                          |
-| 6. Canvas, terminal, browser page; chat last                            | each opens from the registry                               |
+| Step                                                                    | Done when                                                                                                  |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1. Folder, dev workspace, `@sumi/contract` 0.1                          | done: `pnpm test` and `pnpm check` in `sumi-contract` pass                                                 |
+| 2. `sumi-framework` extracted with its history; the shell depends on it | the shell builds and starts                                                                                |
+| 3. `sumi-kit` extracted the same way                                    | the shell builds and starts                                                                                |
+| 4. App installer, `sumi-app://` loading, registry (GitHub or folder)    | folder sources done: the hello app installs, updates and rolls back (`test:app-installer`); GitHub planned |
+| 5. Tasks moves to `sumi-tasks`; contract 1.0                            | the board opens from the registry                                                                          |
+| 6. Canvas, terminal, browser page; chat last                            | each opens from the registry                                                                               |
