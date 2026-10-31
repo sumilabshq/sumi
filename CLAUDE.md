@@ -8,6 +8,15 @@ is a later host. The vault widget system (boards, tiles, the catalogue, `registr
 The architecture is `docs/architecture/`, loaded here in full. Where this file and those pages disagree, the
 pages win, and a change to the architecture changes them in the same commit.
 
+**CRITICAL — one request system, never a second.** Every call between an app, the shell and a module is a
+command or query of a module over a transport (`docs/architecture/requests.md`: `RemoteTransport`,
+`server().listen(transport)`, `.imports(X.over(transport))`; identity from `Authenticate`, permissions by
+guards, tracking by middleware, push by the transport's `changes`). A new boundary (iframe, window, process)
+gets a new transport, never a new message vocabulary. A design or diff introducing "services", `ask`/`answer`,
+`op: "read" | "write"`, a bridge protocol or an events channel beside requests is refused on sight. It happened
+once: `@sumi/contract` got `ask { service, input }` with a `storage` read/write service, five agents built on
+it, and all of it had to be redone.
+
 @docs/architecture/README.md
 
 @docs/architecture/layers.md
