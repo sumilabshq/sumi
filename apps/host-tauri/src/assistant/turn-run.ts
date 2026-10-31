@@ -1,10 +1,14 @@
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { createLineSplitter, plainText, readerNamed } from "@widgetarium/core/engine/provider-stream.js";
-import type { Emit, LineSplitter } from "@widgetarium/core/engine/provider-stream.js";
+import type { Emit, LineSplitter, PlanUsage, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, TurnEvent } from "./assistant-bridge.js";
+
+export type RunFailureKind = "silent" | "usage_limit" | "other";
 
 export interface RunAnswer {
 	readonly failure: string | null;
+	readonly failureKind: RunFailureKind | null;
+	readonly resumesAt: number | null;
 }
 
 export interface TurnRun {
@@ -35,11 +39,22 @@ const ASKING_IN_A_TERMINAL =
 
 const ASKS_IN_A_TERMINAL = /\[[YyNn]\/[YyNn]\]|\((?:y\/n|Y\/n|y\/N)\)/;
 
+const SAYS_USAGE_LIMIT = /\busage limit\b|\b(?:5-hour|weekly|opus|session) limit reached\b/i;
+const USAGE_LIMIT_RESET = /usage limit reached\|(\d{9,11})\b/i;
+const MS_PER_SECOND = 1000;
+
+const ANSWERED: RunAnswer = {
+	failure: null,
+	failureKind: null,
+	resumesAt: null,
+};
+
 interface RunHeld {
 	turnId: number | null;
 	stopping: boolean;
 	settled: boolean;
 	streamFailure: string | null;
+	usage: PlanUsage | null;
 	quietTimer: ReturnType<typeof setTimeout> | undefined;
 	readonly stderr: string[];
 }
@@ -61,6 +76,22 @@ export function runTurn(bridge: AssistantBridge, ask: TurnAsk, emit: Emit): Turn
 	return { stop: () => stopProcess(scope), done };
 }
 
+export function failureAnswerOf(failure: string, usage: PlanUsage | null): RunAnswer {
+	if (!SAYS_USAGE_LIMIT.test(failure)) {
+		return {
+			failure,
+			failureKind: "other",
+			resumesAt: null,
+		};
+	}
+
+	return {
+		failure,
+		failureKind: "usage_limit",
+		resumesAt: saidResetOf(failure) ?? fullestResetOf(usage),
+	};
+}
+
 const said = (template: string, { ask }: RunScope): string => template.replace("{command}", ask.provider.label);
 
 function finish(scope: RunScope, answer: RunAnswer): void {
@@ -80,8 +111,8 @@ function stopProcess(scope: RunScope): void {
 	}
 }
 
-function giveUp(scope: RunScope, failure: string): void {
-	finish(scope, { failure });
+function giveUp(scope: RunScope, answer: RunAnswer): void {
+	finish(scope, answer);
 	stopProcess(scope);
 }
 
@@ -89,23 +120,32 @@ function heard(scope: RunScope): void {
 	clearTimeout(scope.held.quietTimer);
 	const minutes = String(Math.round(IDLE_MS / 60000));
 	scope.held.quietTimer = setTimeout(
-		() => giveUp(scope, said(WENT_QUIET, scope).replace("{minutes}", minutes)),
+		() =>
+			giveUp(scope, {
+				failure: said(WENT_QUIET, scope).replace("{minutes}", minutes),
+				failureKind: "silent",
+				resumesAt: null,
+			}),
 		IDLE_MS,
 	);
 }
 
 function exitAnswer(scope: RunScope, code: number | null): RunAnswer {
-	if (code === 0 || scope.held.stopping) {
-		return { failure: null };
+	if (scope.held.stopping) {
+		return ANSWERED;
 	}
 
 	if (scope.held.streamFailure !== null) {
-		return { failure: scope.held.streamFailure };
+		return failureAnswerOf(scope.held.streamFailure, scope.held.usage);
+	}
+
+	if (code === 0) {
+		return ANSWERED;
 	}
 
 	const stderr = scope.held.stderr.join("").trim();
 	const ended = code === null ? ENDED_BY_A_SIGNAL : ENDED_BADLY.replace("{code}", String(code));
-	return { failure: said(ended, scope).replace("{said}", stderr).trim() };
+	return failureAnswerOf(said(ended, scope).replace("{said}", stderr).trim(), scope.held.usage);
 }
 
 // TRADE-OFF: a parser that throws is swallowed per line, because one unreadable line must not leave the turn spinning forever
@@ -114,15 +154,23 @@ function outputInto(scope: RunScope, emit: Emit): LineSplitter {
 	return createLineSplitter((line) => {
 		try {
 			read(line, (part) => {
-				if ("failure" in part) {
-					scope.held.streamFailure = part.failure;
-				}
+				holdRunFacts(scope.held, part);
 				emit(part);
 			});
 		} catch (failure) {
 			console.error("[widgetarium] a line of the agent's output could not be read", line, failure);
 		}
 	});
+}
+
+function holdRunFacts(held: RunHeld, part: StreamPart): void {
+	if ("failure" in part) {
+		held.streamFailure = part.failure;
+	}
+
+	if ("usage" in part) {
+		held.usage = part.usage;
+	}
 }
 
 function isAskingInATerminal(scope: RunScope, chunk: string): boolean {
@@ -145,7 +193,11 @@ function eventHandler(scope: RunScope, emit: Emit): (event: TurnEvent) => void {
 		}
 
 		if (isAskingInATerminal(scope, event.text)) {
-			giveUp(scope, said(ASKING_IN_A_TERMINAL, scope));
+			giveUp(scope, {
+				failure: said(ASKING_IN_A_TERMINAL, scope),
+				failureKind: "other",
+				resumesAt: null,
+			});
 			return;
 		}
 
@@ -164,9 +216,28 @@ function begin(scope: RunScope, emit: Emit): void {
 				stopProcess(scope);
 			}
 		})
-		.catch((failed: unknown) => finish(scope, { failure: failureMessage(failed) }));
+		.catch((failed: unknown) => finish(scope, failureAnswerOf(failureMessage(failed), scope.held.usage)));
 }
 
 function freshHeld(): RunHeld {
-	return { turnId: null, stopping: false, settled: false, streamFailure: null, quietTimer: undefined, stderr: [] };
+	return {
+		turnId: null,
+		stopping: false,
+		settled: false,
+		streamFailure: null,
+		usage: null,
+		quietTimer: undefined,
+		stderr: [],
+	};
+}
+
+function saidResetOf(failure: string): number | null {
+	const seconds = USAGE_LIMIT_RESET.exec(failure)?.[1];
+	return seconds === undefined ? null : Number(seconds) * MS_PER_SECOND;
+}
+
+function fullestResetOf(usage: PlanUsage | null): number | null {
+	const windows = [usage?.fiveHour ?? null, usage?.week ?? null].filter((window) => window !== null);
+	const fullest = windows.sort((a, b) => b.used - a.used)[0];
+	return fullest?.resetsAt ?? null;
 }

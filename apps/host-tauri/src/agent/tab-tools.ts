@@ -14,7 +14,6 @@ import {
 	TabsSidebarQuery,
 	UngroupCommand,
 } from "@widgetarium/app-host";
-import type { AppKind } from "@widgetarium/app-host";
 import type { StartedApp } from "@widgetarium/core/requests";
 import {
 	PlaceSchema,
@@ -45,7 +44,10 @@ const GroupingSchema = z.strictObject({
 	show: z.boolean().default(false),
 });
 
-const TabOpenSchema = GroupingSchema.extend({ target: z.string().min(1) }).refine(isOneGroup, ONE_GROUP);
+const TabOpenSchema = GroupingSchema.extend({ app: AppKindSchema, target: z.string().min(1).optional() }).refine(
+	isOneGroup,
+	ONE_GROUP,
+);
 
 const TabDuplicateSchema = GroupingSchema.extend({ tabId: z.string().min(1) }).refine(isOneGroup, ONE_GROUP);
 
@@ -92,7 +94,7 @@ export async function tabOpen({ app, chatId }: ToolContext, input: unknown) {
 	const groupId = await ensureGroupId(app, list, asked);
 	// TODO: honour show only while the person is idle
 	const opened = await outputOf(
-		app.send(OpenTabCommand, { ...openedTarget(asked.target), list, groupId, show: asked.show }),
+		app.send(OpenTabCommand, { app: asked.app, address: asked.target ?? "", list, groupId, show: asked.show }),
 	);
 	return placedAnswer(opened.id, asked);
 }
@@ -167,22 +169,6 @@ export async function groupDelete({ app, chatId }: ToolContext, input: unknown) 
 	return {
 		deleted: asked.groupId,
 		keptTabs: asked.keepTabs,
-	};
-}
-
-function openedTarget(target: string): { readonly app: AppKind; readonly address: string } {
-	const appKind = AppKindSchema.safeParse(target);
-
-	if (appKind.success) {
-		return {
-			app: appKind.data,
-			address: "",
-		};
-	}
-
-	return {
-		app: "browser",
-		address: target,
 	};
 }
 

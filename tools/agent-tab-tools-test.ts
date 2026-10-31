@@ -1,4 +1,4 @@
-import { HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { AppKindSchema, HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { AGENT_TOOLS, runAgentTool } from "../apps/host-tauri/src/agent/run-agent-tool.ts";
 import { readFileSync } from "node:fs";
 import { appState, appsList } from "../apps/host-tauri/src/agent/state-tools.ts";
@@ -79,21 +79,22 @@ async function shownTabId(): Promise<string | null> {
 await fakes.studioApp.send(OpenTabCommand, { app: "browser" });
 const shownBefore = await shownTabId();
 
-const hidden = await tabOpen(context, { target: "https://jira.example.com" });
+const hidden = await tabOpen(context, { app: "browser", target: "https://jira.example.com" });
 check("a tab opened without show leaves the person's tab on screen", await shownTabId(), shownBefore);
 check("it opens in this chat by default", idsIn(await sectionOf("this-chat")).includes(hidden.id), true);
 check("it is not shown", await isShown(hidden.id), false);
 check("its page loads the address without ever being shown", await pageWasShown(hidden.id), false);
 
-const workspaceShown = await tabOpen(context, { target: "browser", place: "workspace", show: true });
+const workspaceShown = await tabOpen(context, { app: "browser", place: "workspace", show: true });
 check("a workspace tab opened with show is the one on screen", await shownTabId(), workspaceShown.id);
-await tabOpen(context, { target: "https://mail.example.com", place: "workspace" });
+await tabOpen(context, { app: "browser", target: "https://mail.example.com", place: "workspace" });
 check("a workspace tab opened without show leaves it there", await shownTabId(), workspaceShown.id);
 
-const shown = await tabOpen(context, { target: "browser", show: true });
+const shown = await tabOpen(context, { app: "browser", show: true });
 check("show: true shows the new tab", await isShown(shown.id), true);
 
 const grouped = await tabOpen(context, {
+	app: "browser",
 	target: "https://slack.example.com",
 	newGroup: { name: "Work", colour: "blue" },
 });
@@ -150,7 +151,7 @@ check("tab_close closes the tab", idsIn(await sectionOf("workspace")).includes(c
 
 check(
 	"a tab is never opened into another chat's list",
-	(await refusalOf("tab_open", { target: "browser", place: "chat-other" })).includes("belongs to another chat"),
+	(await refusalOf("tab_open", { app: "browser", place: "chat-other" })).includes("belongs to another chat"),
 	true,
 );
 const before = tabsIn(await sectionOf("workspace")).find((tab) => tab.id === hidden.id);
@@ -181,9 +182,29 @@ check(
 );
 
 check(
-	"apps_list names the apps a tab can open",
+	"apps_list names every app the person can open a tab with",
 	(await appsList()).apps.map((app) => app.id),
-	["browser", "canvas"],
+	[...AppKindSchema.options],
+);
+
+const openedTask = (await runAgentTool(context, "tab_open", { app: "tasks", target: "T-12" })) as { id: string };
+const taskTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedTask.id);
+check(
+	"tab_open with app tasks opens that task, not a web address",
+	[taskTab?.app, taskTab?.address],
+	["tasks", "T-12"],
+);
+check(
+	"tab_open without an app is refused, so a task id never turns into a web search",
+	(await refusalOf("tab_open", { target: "T-12" })).includes("tab_open input"),
+	true,
+);
+const openedBoard = (await runAgentTool(context, "tab_open", { app: "tasks" })) as { id: string };
+const boardTab = tabsIn(await sectionOf("this-chat")).find((tab) => tab.id === openedBoard.id);
+check(
+	"tab_open with app tasks and no target opens the board",
+	[boardTab?.app, boardTab?.address ?? null],
+	["tasks", null],
 );
 
 check(
@@ -193,7 +214,7 @@ check(
 );
 check(
 	"both group and newGroup are refused",
-	(await refusalOf("tab_open", { target: "browser", group: "g", newGroup: { name: "n" } })).includes(
+	(await refusalOf("tab_open", { app: "browser", group: "g", newGroup: { name: "n" } })).includes(
 		"either group or newGroup",
 	),
 	true,
@@ -310,16 +331,25 @@ check(
 
 const chatPage = new JSDOM("<div></div>");
 const said = chatPage.window.document.createElement("div");
-const pressedTabs: string[] = [];
-const unrender = tabLinksRenderer((tabId) => pressedTabs.push(tabId))(
+const unrender = tabLinksRenderer()(
 	said,
 	'Opened [Jira board](tab:tab-2) for you.\nNext line <img src=x onerror="alert(1)">\n\nSecond paragraph',
 );
 const tabLink = said.querySelector("a[data-tab]");
 check(
-	"a tab: link becomes a link naming its tab",
-	[tabLink?.textContent, tabLink?.getAttribute("data-tab")],
-	["Jira board", "tab-2"],
+	"an old tab: link is read as a sumi tab link naming its tab",
+	[tabLink?.textContent, tabLink?.getAttribute("href"), tabLink?.getAttribute("data-tab")],
+	["Jira board", "sumi://tab/tab-2", "tab-2"],
+);
+const taskSaid = chatPage.window.document.createElement("div");
+tabLinksRenderer()(taskSaid, "Made [the task](sumi://task/T-1) and [a chat](sumi://chat/chat%201)");
+check(
+	"a sumi link renders as a plain link carrying it",
+	[...taskSaid.querySelectorAll("a")].map((link) => [link.textContent, link.getAttribute("href"), link.target]),
+	[
+		["the task", "sumi://task/T-1", ""],
+		["a chat", "sumi://chat/chat%201", ""],
+	],
 );
 check(
 	"paragraphs and line breaks are kept",
@@ -328,11 +358,34 @@ check(
 );
 check(
 	"markup in the text stays text",
-	[said.querySelector("img"), said.textContent?.includes("<img src=x")],
+	[said.querySelector("img:not(.wg-studio-ai-link-icon)"), said.textContent?.includes("<img src=x")],
 	[null, true],
 );
-tabLink?.dispatchEvent(new chatPage.window.MouseEvent("click", { bubbles: true, cancelable: true }));
-check("pressing the link shows that tab", pressedTabs, ["tab-2"]);
+check(
+	"a tab link starts with the link glyph",
+	tabLink?.firstElementChild?.className,
+	"wg-studio-ai-link-icon is-glyph",
+);
+const webSaid = chatPage.window.document.createElement("div");
+tabLinksRenderer()(webSaid, "Read [the docs](https://example.com/guide) first");
+check(
+	"a web link starts with its site's favicon",
+	webSaid.querySelector("a > img.wg-studio-ai-link-icon")?.getAttribute("src"),
+	"https://example.com/favicon.ico",
+);
+const iconSaid = chatPage.window.document.createElement("div");
+await new Promise<void>((shown) => {
+	tabLinksRenderer(async () => {
+		queueMicrotask(shown);
+		return "https://example.com/tab.png";
+	})(iconSaid, "Opened [Jira board](tab:tab-2)");
+});
+await Promise.resolve();
+check(
+	"a tab link takes that tab's favicon once it is known",
+	iconSaid.querySelector("a > img.wg-studio-ai-link-icon")?.getAttribute("src"),
+	"https://example.com/tab.png",
+);
 unrender();
 check("unrendering empties the holder", said.childNodes.length, 0);
 
@@ -341,6 +394,15 @@ check(
 	"the app answers exactly the tools Claude is told about",
 	Array.isArray(listedTools) ? listedTools.map((tool: { name: string }) => tool.name).toSorted() : null,
 	Object.keys(AGENT_TOOLS).toSorted(),
+);
+const listedTabOpen: unknown = Array.isArray(listedTools)
+	? listedTools.find((tool: { name: string }) => tool.name === "tab_open")
+	: null;
+check(
+	"tab_open tells Claude about every app the person can open",
+	(listedTabOpen as { inputSchema?: { properties?: { app?: { enum?: unknown } } } } | null)?.inputSchema?.properties
+		?.app?.enum,
+	[...AppKindSchema.options],
 );
 
 if (tally.failed > 0) {

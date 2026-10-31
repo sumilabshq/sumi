@@ -1,15 +1,19 @@
+import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { ONE_CHAT } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
+import { NO_CHAT_TASKS } from "./chat-tasks.js";
+import type { ChatTasks, Nudge } from "./chat-tasks.js";
 import { EMPTY_SESSION } from "./session-steps.js";
 import { NO_CHAT_HISTORY, createTurnSession } from "./turn-session.js";
-import type { ChatHistory, StartTurn, TurnSession } from "./turn-session.js";
+import type { ChatHistory, SettledTurn, StartTurn, TurnListener, TurnSession } from "./turn-session.js";
 
 export type StartChatTurn = (chatId: string, ...asked: Parameters<StartTurn>) => ReturnType<StartTurn>;
 
 export interface ChatSessionLink {
 	readonly focusedChat: FocusedChatPort;
 	readonly onSessionChanged: (chatId: string, session: AssistantSession) => void;
+	readonly tasks?: ChatTasks;
 }
 
 export interface ChatsLink extends ChatSessionLink {
@@ -17,6 +21,8 @@ export interface ChatsLink extends ChatSessionLink {
 }
 
 const NO_FOCUSED_CHAT = "no chat stands on this window's board";
+const CHAT_GONE = "the chat is gone";
+const WRITING_IN_IT = "you were writing in it";
 
 export const ONE_CHAT_LINK: ChatsLink = {
 	focusedChat: ONE_CHAT,
@@ -29,12 +35,15 @@ export class ChatSessions {
 	private readonly loading = new Map<string, Promise<TurnSession>>();
 	private readonly watchers = new Set<() => void>();
 	private readonly chatWatchers = new Map<string, Set<() => void>>();
+	private readonly draftReaders = new Set<(chatId: string) => boolean>();
+	private readonly tasks: ChatTasks;
 
 	constructor(
 		private readonly link: ChatsLink,
 		private readonly startTurn: StartChatTurn,
 		private readonly clock: () => number = Date.now,
 	) {
+		this.tasks = link.tasks ?? NO_CHAT_TASKS;
 		link.focusedChat.watch(() => this.followFocused());
 	}
 
@@ -57,6 +66,10 @@ export class ChatSessions {
 			console.error(`[ink] chat ${chatId} could not be read`, failure);
 		});
 		return () => void watchers.delete(changed);
+	}
+
+	lendDrafts(isDrafted: (chatId: string) => boolean): void {
+		this.draftReaders.add(isDrafted);
 	}
 
 	readyOf(chatId: string): TurnSession | null {
@@ -120,7 +133,11 @@ export class ChatSessions {
 	}
 
 	private startSession(chatId: string, history: ChatHistory): TurnSession {
-		const session = createTurnSession((...asked) => this.startTurn(chatId, ...asked), this.clock, history);
+		const session = createTurnSession((...asked) => this.startTurn(chatId, ...asked), {
+			clock: this.clock,
+			history,
+			listener: this.turnListenerOf(chatId),
+		});
 		session.watch(() => {
 			this.link.onSessionChanged(chatId, session.now());
 			this.tellIfShown(chatId);
@@ -130,6 +147,55 @@ export class ChatSessions {
 		console.info(`[ink] chat ${chatId} opened with ${session.now().turns.length} turns`);
 		this.tellIfShown(chatId);
 		return session;
+	}
+
+	private turnListenerOf(chatId: string): TurnListener {
+		return {
+			settled: (turn) => void this.settleTasks(chatId, turn),
+			cleared: () => void this.tasks.release(chatId, "cleared"),
+		};
+	}
+
+	private isDrafted(chatId: string): boolean {
+		return [...this.draftReaders].some((isDrafted) => isDrafted(chatId));
+	}
+
+	private async settleTasks(chatId: string, turn: SettledTurn): Promise<void> {
+		const nudge = await this.tasks.settle(chatId, turn, {
+			isDrafted: this.isDrafted(chatId),
+			isBusy: this.ready.get(chatId)?.now().busy ?? false,
+		});
+
+		if (nudge !== null) {
+			this.sendNudge(chatId, turn.turn, nudge);
+		}
+	}
+
+	private sendNudge(chatId: string, turn: string, nudge: Nudge): void {
+		const session = this.ready.get(chatId);
+
+		if (session === undefined) {
+			void this.tasks.unsent(nudge, CHAT_GONE);
+			return;
+		}
+
+		const noNudgeReason = noNudgeReasonOf(session, turn);
+
+		if (noNudgeReason !== null) {
+			console.info(`[tasks] chat ${chatId}: turn ${turn} left ${nudge.task} in progress → no nudge (${noNudgeReason})`);
+			return;
+		}
+
+		if (this.isDrafted(chatId)) {
+			void this.tasks.unsent(nudge, WRITING_IN_IT);
+			return;
+		}
+
+		console.info(`[tasks] chat ${chatId}: turn ${turn} ended with ${nudge.task} in progress → nudged`);
+		session.sendFromHost(nudge.message).catch((failure: unknown) => {
+			console.warn(`[tasks] chat ${chatId}: the nudge was not sent`, failure);
+			void this.tasks.unsent(nudge, failureMessage(failure));
+		});
 	}
 
 	private tellIfShown(chatId: string): void {
@@ -147,4 +213,12 @@ export class ChatSessions {
 			changed();
 		}
 	}
+}
+
+function noNudgeReasonOf(session: TurnSession, turn: string): string | null {
+	if (session.now().busy) {
+		return "the chat is answering again; that turn settles it";
+	}
+
+	return session.lastEndedTurn() === turn ? null : "the chat was cleared or a newer turn ended";
 }

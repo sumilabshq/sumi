@@ -27,6 +27,16 @@ pub const ALLOWED_TOOLS: &[&str] = &[
     "group_create",
     "group_update",
     "group_delete",
+    "task_search",
+    "task_list",
+    "task_get",
+    "task_create",
+    "task_update",
+    "task_start",
+    "task_step",
+    "task_check",
+    "task_attach",
+    "task_move",
 ];
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";

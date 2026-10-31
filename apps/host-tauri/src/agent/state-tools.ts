@@ -1,22 +1,29 @@
 import { AppTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import { ChatListQuery } from "@widgetarium/app-host";
+import { AppKindSchema, ChatListQuery } from "@widgetarium/app-host";
+import type { AppKind } from "@widgetarium/app-host";
 import { AppStateInputSchema, appStateOf } from "./app-state.js";
 import type { AppState } from "./app-state.js";
 import { inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
 
-const APPS = [
-	{
-		id: "browser",
+const APP_WORDS: Readonly<Record<AppKind, { readonly name: string; readonly reaches: string }>> = {
+	browser: {
 		name: "Browser",
 		reaches: "web pages, with the site access the person set",
 	},
-	{
-		id: "canvas",
+	canvas: {
 		name: "Canvas",
 		reaches: "the workspace's boards and widgets",
 	},
-];
+	terminal: {
+		name: "Terminal",
+		reaches: "a shell in the workspace's folder",
+	},
+	tasks: {
+		name: "Tasks",
+		reaches: "the workspace's task board, or one task when target is its id (T-12)",
+	},
+};
 
 export async function appState({ app, chatId }: ToolContext, input: unknown): Promise<AppState> {
 	const asked = inputOf(AppStateInputSchema, "app_state", input);
@@ -31,3 +38,8 @@ export async function appState({ app, chatId }: ToolContext, input: unknown): Pr
 export function appsList(): Promise<{ readonly apps: typeof APPS }> {
 	return Promise.resolve({ apps: APPS });
 }
+
+const APPS = AppKindSchema.options.map((id) => ({
+	id,
+	...APP_WORDS[id],
+}));

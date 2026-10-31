@@ -25,13 +25,18 @@
 	},
 	{
 		"name": "tab_open",
-		"description": "Open a tab with an address or an app id. Opens hidden in this chat unless told otherwise; link the result as [title](tab:ID).",
+		"description": "Open a tab in an app. app is always required: tasks, browser, canvas or terminal. target is the place inside that app and may be left out to open the app's home: app tasks with target T-12 opens task T-12, app tasks alone opens the task board, app browser with target an address or search words opens that page. Opens hidden in this chat unless show is true; link the result as [title](sumi://tab/ID), or a task as [title](sumi://task/T-12).",
 		"inputSchema": {
 			"type": "object",
 			"properties": {
 				"target": {
 					"type": "string",
-					"description": "An address, or an app id from apps_list."
+					"description": "The place inside app: a task id such as T-12 for tasks, an address or search words for browser. Leave it out for the app's home."
+				},
+				"app": {
+					"type": "string",
+					"enum": ["canvas", "browser", "terminal", "tasks"],
+					"description": "The app to open the tab in, from apps_list."
 				},
 				"place": {
 					"type": "string",
@@ -60,7 +65,7 @@
 					"description": "Show the tab to the person. Default false."
 				}
 			},
-			"required": ["target"],
+			"required": ["app"],
 			"additionalProperties": false
 		}
 	},
@@ -270,6 +275,469 @@
 				}
 			},
 			"required": ["groupId"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_search",
+		"description": "Search the workspace's tasks by words in their title and description. Run it before task_create: when an open task has the same goal, continue it instead of creating another.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"query": {
+					"type": "string",
+					"description": "Words to look for.",
+					"minLength": 1,
+					"maxLength": 300
+				},
+				"includeClosed": {
+					"type": ["boolean", "null"],
+					"description": "Also search done and cancelled tasks (default false)."
+				}
+			},
+			"required": ["query"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_list",
+		"description": "List the workspace's tasks, newest change first, a page at a time. Every agent's tasks are listed; filter by status, owner chat or kind.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"status": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"enum": ["backlog", "todo", "in_progress", "ready_to_test", "done", "paused", "blocked", "cancelled"]
+					},
+					"description": "Only these statuses.",
+					"maxItems": 8
+				},
+				"updatedWithin": {
+					"type": ["string", "null"],
+					"enum": ["day", "week", "month", "all", null],
+					"description": "day, week (default), month or all."
+				},
+				"owner": {
+					"type": ["string", "null"],
+					"description": "Only tasks owned by this chat id.",
+					"minLength": 1,
+					"maxLength": 200
+				},
+				"kind": {
+					"type": ["string", "null"],
+					"enum": ["code", "research", "design", "ops", null]
+				},
+				"cursor": {
+					"type": ["string", "null"],
+					"description": "next from the previous page.",
+					"maxLength": 20
+				},
+				"limit": {
+					"type": ["integer", "null"],
+					"minimum": 1,
+					"maximum": 200
+				}
+			},
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_get",
+		"description": "Read one task whole: its criteria, steps, documents, workplaces and status. This only reads it; to show the task to the person use tab_open with app tasks, target its id and show true.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				}
+			},
+			"required": ["task"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_create",
+		"description": "Create a task on the workspace's board, owned by this chat. Create one when the work has 3+ distinct steps, changes code in more than one place or needs checking, is research with a written result, will outlive this turn, or is work you found but were not asked to do (status backlog). Do not create one for a question, a lookup, one small edit, or a side ask while a task is open: pause yours with task_move, answer, then task_start or task_move it back. Always task_search first and continue an open task with the same goal. Acceptance criteria come from the person's ask, in their words. One task in_progress per chat. Link it as [title](sumi://task/ID).",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"title": {
+					"type": "string",
+					"description": "What will be true when it is done, in a few words.",
+					"minLength": 1,
+					"maxLength": 200
+				},
+				"description": {
+					"type": ["string", "null"],
+					"description": "The ask and its context.",
+					"maxLength": 40000
+				},
+				"kind": {
+					"type": "string",
+					"enum": ["code", "research", "design", "ops"]
+				},
+				"acceptance": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"description": "Criteria from the person's ask, each checkable.",
+					"maxItems": 50
+				},
+				"plan": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"description": "Steps in order.",
+					"maxItems": 100
+				},
+				"status": {
+					"type": ["string", "null"],
+					"enum": ["backlog", "todo", null],
+					"description": "todo (default) or backlog for work you found but were not asked to do."
+				},
+				"parent": {
+					"type": ["string", "null"],
+					"description": "Id of the task this one is part of.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"blockedBy": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 20
+					},
+					"description": "Ids of tasks that must close first.",
+					"maxItems": 20
+				}
+			},
+			"required": ["title", "kind"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_update",
+		"description": "Edit this chat's task: title, description, kind, blockers; add criteria the person asked for or steps you found.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"title": {
+					"type": ["string", "null"],
+					"minLength": 1,
+					"maxLength": 200
+				},
+				"description": {
+					"type": ["string", "null"],
+					"maxLength": 40000
+				},
+				"kind": {
+					"type": ["string", "null"],
+					"enum": ["code", "research", "design", "ops", null]
+				},
+				"addCriteria": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"maxItems": 50
+				},
+				"addSteps": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 500
+					},
+					"maxItems": 100
+				},
+				"blockedBy": {
+					"type": ["array", "null"],
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"maxLength": 20
+					},
+					"description": "Replaces the list of blocking task ids.",
+					"maxItems": 20
+				}
+			},
+			"required": ["task"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_start",
+		"description": "Take a task and move it to in_progress in this chat. A code task needs its workplace attached first (task_attach). One task in_progress per chat: pause or move the current one first. The host will not let a turn end quietly while this chat owns a task in_progress.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				}
+			},
+			"required": ["task"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_step",
+		"description": "Mark one step of this chat's task the moment it changes: active when you begin it, done when it is done. Never batch steps at the end. A step not in the plan is added. skipped, blocked and cancelled need a note saying why.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"step": {
+					"type": "string",
+					"description": "Step id (S1) or its exact text.",
+					"minLength": 1,
+					"maxLength": 500
+				},
+				"state": {
+					"type": "string",
+					"enum": ["pending", "active", "done", "skipped", "blocked", "cancelled"]
+				},
+				"note": {
+					"type": ["string", "null"],
+					"maxLength": 600
+				}
+			},
+			"required": ["task", "step", "state"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_check",
+		"description": "Mark one acceptance criterion met, dropped or open again. Never mark met without evidence: a test run, a screenshot path, a commit, a document. Dropping needs the reason, in the person's words when they changed the ask.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"criterion": {
+					"type": "string",
+					"description": "Criterion id, e.g. C1.",
+					"minLength": 1,
+					"maxLength": 12
+				},
+				"state": {
+					"type": "string",
+					"enum": ["open", "met", "dropped"]
+				},
+				"evidence": {
+					"type": ["string", "null"],
+					"maxLength": 1000
+				},
+				"reason": {
+					"type": ["string", "null"],
+					"maxLength": 600
+				}
+			},
+			"required": ["task", "criterion", "state"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_attach",
+		"description": "Attach to this chat's task where the work happens (workplace), a written result (document), how to test it (test_plan) or a test run's results (test_run).",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"item": {
+					"oneOf": [
+						{
+							"type": "object",
+							"properties": {
+								"type": {
+									"const": "workplace"
+								},
+								"folder": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 1000
+								},
+								"branch": {
+									"type": ["string", "null"],
+									"maxLength": 300
+								},
+								"worktree": {
+									"type": ["string", "null"],
+									"maxLength": 1000
+								}
+							},
+							"required": ["type", "folder"],
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"properties": {
+								"type": {
+									"const": "document"
+								},
+								"kind": {
+									"type": "string",
+									"enum": ["spec", "research", "plan", "design", "notes"]
+								},
+								"title": {
+									"type": "string",
+									"minLength": 1,
+									"maxLength": 200
+								},
+								"path": {
+									"type": ["string", "null"],
+									"maxLength": 1000
+								},
+								"body": {
+									"type": ["string", "null"],
+									"maxLength": 40000
+								}
+							},
+							"required": ["type", "kind", "title"],
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"properties": {
+								"type": {
+									"const": "test_plan"
+								},
+								"stand": {
+									"type": "string",
+									"description": "Where and how to run it.",
+									"minLength": 1,
+									"maxLength": 600
+								},
+								"cases": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"text": {
+												"type": "string",
+												"minLength": 1,
+												"maxLength": 500
+											},
+											"expect": {
+												"type": ["string", "null"],
+												"maxLength": 500
+											}
+										},
+										"required": ["text"],
+										"additionalProperties": false
+									},
+									"minItems": 1,
+									"maxItems": 40
+								}
+							},
+							"required": ["type", "stand", "cases"],
+							"additionalProperties": false
+						},
+						{
+							"type": "object",
+							"properties": {
+								"type": {
+									"const": "test_run"
+								},
+								"results": {
+									"type": "object",
+									"description": "Case id to passed, failed, skipped or needs_you.",
+									"additionalProperties": {
+										"type": "string",
+										"enum": ["passed", "failed", "skipped", "needs_you"]
+									}
+								},
+								"failures": {
+									"type": ["object", "null"],
+									"additionalProperties": {
+										"type": "string",
+										"maxLength": 2000
+									}
+								},
+								"screenshots": {
+									"type": ["array", "null"],
+									"items": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 1000
+									},
+									"maxItems": 20
+								}
+							},
+							"required": ["type", "results"],
+							"additionalProperties": false
+						}
+					]
+				}
+			},
+			"required": ["task", "item"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "task_move",
+		"description": "Move this chat's task to another status. When the work is finished, move a code task to ready_to_test and say what to try. Done on a code task or from ready_to_test, reopening a done or cancelled task, and ready_to_test back to todo are the person's calls: make them only when the person said so in this chat (\"approved\", \"reopen it\"), and quote their words as the note. paused, blocked and cancelled need a note. A refused move lists what is still missing.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"task": {
+					"type": "string",
+					"description": "Task id, e.g. T-12.",
+					"minLength": 1,
+					"maxLength": 20
+				},
+				"to": {
+					"type": "string",
+					"enum": ["backlog", "todo", "in_progress", "ready_to_test", "done", "paused", "blocked", "cancelled"]
+				},
+				"note": {
+					"type": ["string", "null"],
+					"maxLength": 600,
+					"description": "Why. For the person's call, their words from this chat."
+				},
+				"blocker": {
+					"type": ["string", "null"],
+					"enum": ["task", "external", null],
+					"description": "For blocked: waiting on another task or on something outside."
+				}
+			},
+			"required": ["task", "to"],
 			"additionalProperties": false
 		}
 	}

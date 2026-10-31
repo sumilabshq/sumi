@@ -8,6 +8,7 @@ import type {
 import type { ClaudeOptions } from "@widgetarium/assistant";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
+import { NO_CHAT_TASKS } from "./chat-tasks.js";
 import { runTurn } from "./turn-run.js";
 import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
 import type { ChatsLink, StartChatTurn } from "./chat-sessions.js";
@@ -45,6 +46,8 @@ export const CANNOT_COMPACT = "{label} cannot compact a conversation.";
 
 const NO_PROVIDER_LABEL = "No provider";
 
+const SLASH = "/";
+
 export interface TauriAssistantPort extends AssistantPort {
 	readonly shownRead: () => Promise<void>;
 }
@@ -74,6 +77,7 @@ export function tauriAssistantPort(doors: TauriAssistantDoors): TauriAssistantPo
 		can: true,
 		...sessionDoorsOf(sessions, doors, held),
 		...setup,
+		lendDrafts: (isDrafted) => sessions.lendDrafts(isDrafted),
 		forChat: (chatId) => {
 			const made = chatPorts.get(chatId) ?? { ...port, ...chatDoorsOf(sessions, chatId, { doors, held }) };
 			chatPorts.set(chatId, made);
@@ -93,6 +97,7 @@ function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: Co
 		session: () => sessions.nowOf(chatId),
 		onSession: (changed) => sessions.watchChat(chatId, changed),
 		send: async (said) => (await sessions.sessionOf(chatId)).send(said),
+		sendFromHost: async (said) => (await sessions.sessionOf(chatId)).sendFromHost(said),
 		retry: () => sessions.readyOf(chatId)?.retry(),
 		stop: () => sessions.readyOf(chatId)?.stop(),
 		clear: async () => (await sessions.sessionOf(chatId)).clear(),
@@ -213,9 +218,10 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 		}
 
 		await doors.attachments.settled();
+		const prompt = await withTaskTrailer(doors, { chatId, asked });
 		const ask = {
 			provider,
-			prompt: asked,
+			prompt,
 			resume: resumeOf(provider.id),
 			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.value()) : null,
 			folders: doors.folders.take(),
@@ -224,6 +230,19 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));
 		return { run, providerId: provider.id, resumesWithoutAnId: provider.resumesWithoutAnId };
 	};
+}
+
+// TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task trailer
+async function withTaskTrailer(
+	doors: TauriAssistantDoors,
+	{ chatId, asked }: { readonly chatId: string; readonly asked: string },
+): Promise<string> {
+	if (asked.startsWith(SLASH)) {
+		return asked;
+	}
+
+	const { trailer } = await (doors.chats?.tasks ?? NO_CHAT_TASKS).askTrailer(chatId);
+	return trailer === null ? asked : `${asked}\n\n${trailer}`;
 }
 
 function claudeStartOf({ mode, model, effort }: ClaudeOptions): ClaudeStart {
