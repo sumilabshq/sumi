@@ -15,6 +15,7 @@ export const FIRST_ESSENTIALS: readonly EssentialFace[] = [
 	{
 		app: "canvas",
 		address: null,
+		// TODO: seed title from places AppFacesQuery; a sync seed cannot ask
 		title: "Canvas",
 		favicon: null,
 	},

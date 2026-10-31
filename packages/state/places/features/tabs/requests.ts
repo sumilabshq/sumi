@@ -2,9 +2,11 @@ import { query, subscriber } from "@widgetarium/core/requests";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { closedRowsOf } from "../../shared/lib/rows/closed-rows.js";
+import { appFacesOf } from "../../shared/lib/rows/tab-face.js";
 import { momentOfWindow, windowTabsOf } from "../../shared/lib/tabs/kept-tabs.js";
 import { SettleAskSchema } from "../../shared/schema/tab-asks.schema.js";
 import {
+	AppFacesSchema,
 	AppTabsSchema,
 	ClosedTabsSchema,
 	HeldTabsSchema,
@@ -43,6 +45,11 @@ export const ClosedTabsQuery = query("closed-tabs")
 	.output(ClosedTabsSchema)
 	.inject({ tabs: TabsGateway })
 	.handle(async (_input, { tabs }) => ({ tabs: closedRowsOf((await tabs.placedTabs()).closed) }));
+
+export const AppFacesQuery = query("app-faces")
+	.output(AppFacesSchema)
+	.settlesNow()
+	.handle(() => ({ faces: appFacesOf() }));
 
 export const ChatTabsQuery = query("chat-tabs")
 	.output(ChatTabsSchema)

@@ -1,11 +1,13 @@
 import { z } from "zod";
-import { TabAppSchema } from "./app-tab.schema.js";
+import { TabAppSchema, TabArtSchema } from "./app-tab.schema.js";
 
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
 	app: TabAppSchema,
 	address: z.string(),
+	icon: TabArtSchema,
+	favicon: z.string().nullable(),
 });
 
 export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;

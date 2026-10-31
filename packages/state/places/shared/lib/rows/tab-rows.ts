@@ -1,14 +1,11 @@
-import { APP_LABELS, recordTitleOf } from "./app-labels.js";
 import { flatTabIdsOf, isPageTab } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, PageTab } from "../tabs/host-tabs.js";
-import { hostOf, tabArtOf } from "./tab-art-of.js";
+import { hostOf, tabArtOf, titleOf, titleOfTab } from "./tab-face.js";
 import { shownTabIdOf } from "../showing/showing.js";
 import { pagesOfTabs } from "../showing/tab-pages.js";
 import type { AppTab, AppTabState, Essential, EssentialTile, TabStatus } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
 import type { PageApp } from "../../schema/tabs.schema.js";
-
-const NEW_PAGE = "New tab";
 
 export interface RowLooks {
 	readonly shownIds: ReadonlySet<string>;
@@ -75,7 +72,12 @@ export class TabRows {
 		const page = this.pageOf.get(live.id) ?? null;
 		return {
 			id: essential.id,
-			title: live.label ?? live.title ?? essential.title,
+			title: titleOf({
+				app: essential.app,
+				label: live.label,
+				title: live.title ?? essential.title,
+				address: null,
+			}),
 			icon: tabArtOf(essential.app, page?.url || essential.address),
 			favicon: page?.favicon ?? essential.favicon,
 			isShown: this.looks.shownIds.has(live.id),
@@ -107,7 +109,7 @@ function recordFaceOf(tab: HostTab): AppTab {
 		...PAGELESS,
 		id: tab.id,
 		app: tab.app,
-		title: recordTitleOf(tab),
+		title: titleOfTab(tab),
 		icon: tabArtOf(tab.app, null),
 		label: tab.label,
 		mark: tab.mark,
@@ -122,7 +124,12 @@ function idleFaceOf(tab: PageTab): AppTab {
 	return {
 		id: tab.id,
 		app: tab.app,
-		title: tab.label ?? tab.lastTitle ?? unloadedTitleOf(tab),
+		title: titleOf({
+			app: tab.app,
+			label: tab.label,
+			title: tab.lastTitle,
+			address: tab.lastAddress,
+		}),
 		subtitle: tab.lastAddress === null ? null : hostOf(tab.lastAddress),
 		icon: tabArtOf(tab.app, tab.lastAddress),
 		favicon: tab.lastFavicon,
@@ -134,22 +141,17 @@ function idleFaceOf(tab: PageTab): AppTab {
 	};
 }
 
-function unloadedTitleOf({ app, lastAddress }: PageTab): string {
-	const site = lastAddress === null ? null : hostOf(lastAddress);
-
-	if (site !== null) {
-		return site;
-	}
-
-	return app === "browser" ? NEW_PAGE : APP_LABELS[app];
-}
-
 function pageFaceOf(tab: PageTab, page: PageFacts): AppTab {
 	const address = page.url || tab.lastAddress;
 	return {
 		id: tab.id,
 		app: tab.app,
-		title: tab.label ?? (page.title || tab.lastTitle || NEW_PAGE),
+		title: titleOf({
+			app: tab.app,
+			label: tab.label,
+			title: page.title || tab.lastTitle || null,
+			address: null,
+		}),
 		subtitle: address === null ? null : hostOf(address),
 		icon: tabArtOf(tab.app, address),
 		favicon: page.favicon ?? tab.lastFavicon,

@@ -8,15 +8,17 @@ export interface HeaderButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
 	readonly keys?: string;
 	readonly isOff?: boolean;
 	readonly isInert?: boolean;
+	readonly href?: string;
 }
 
 export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(function HeaderButton(
-	{ label, icon, keys, isOff = false, isInert = false, ...pressed },
+	{ label, icon, keys, isOff = false, isInert = false, href, ...pressed },
 	ref,
 ) {
 	return (
 		<IconButton
 			ref={ref}
+			asChild={href !== undefined}
 			variant="ghost"
 			size="xs"
 			className="wg-plate-button"
@@ -29,7 +31,13 @@ export const HeaderButton = forwardRef<HTMLButtonElement, HeaderButtonProps>(fun
 			data-off={isOff ? "" : undefined}
 			{...pressed}
 		>
-			<Icon name={icon} size={16} />
+			{href === undefined ? (
+				<Icon name={icon} size={16} />
+			) : (
+				<a href={href}>
+					<Icon name={icon} size={16} />
+				</a>
+			)}
 		</IconButton>
 	);
 });

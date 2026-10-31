@@ -11,6 +11,7 @@ export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
 	"terminal",
+	"tasks",
 	"git",
 	"files",
 	"routines",
@@ -187,6 +188,7 @@ export const HeldTabSchema = z.object({
 	app: PageAppSchema,
 	label: z.string().nullable(),
 	pageId: z.string().nullable(),
+	address: z.string().nullable(),
 });
 
 export type HeldTab = z.infer<typeof HeldTabSchema>;
@@ -201,8 +203,20 @@ export const ClosedTabRowSchema = z.object({
 	title: z.string(),
 	app: AppKindSchema,
 	address: z.string(),
+	icon: TabArtSchema,
+	favicon: z.string().nullable(),
 });
 
 export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
 
 export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
+
+export const AppFaceSchema = z.object({
+	app: AppKindSchema,
+	title: z.string(),
+	icon: TabArtSchema,
+});
+
+export type AppFace = z.infer<typeof AppFaceSchema>;
+
+export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });
