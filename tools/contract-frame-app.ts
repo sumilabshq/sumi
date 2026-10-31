@@ -17,6 +17,7 @@ const TYPED = "echo sumi-$((40+2))";
 const SHELL_SAID = "sumi-42";
 const OUTPUT_WAIT_MS = 5000;
 const OUTPUT_STEP_MS = 100;
+const SECOND_PORT_WAIT_MS = 1500;
 
 const transport = messagePortTransport(portFromParent());
 const heard = {
@@ -62,6 +63,10 @@ async function run(): Promise<unknown> {
 		otherTab: otherTab.ok ? "answered" : otherTab.code,
 		typed: typed.ok,
 		terminal: await terminalSaid(),
+		secondPort: await portFromParent(window, SECOND_PORT_WAIT_MS).then(
+			() => "handed",
+			() => "refused",
+		),
 		changesHeard: heard.changes,
 	};
 }

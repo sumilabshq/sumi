@@ -7,6 +7,7 @@ const WRITE = "plugin:terminal|write";
 const COLUMNS = 120;
 const ROWS = 40;
 const ENTER = "\r";
+const NOT_OPENED = "[terminal] app {app}: no session → no session (the pty did not open)";
 const NOT_UNDERSTOOD = "[terminal] app {app}: the pty said something that is neither bytes nor an exit";
 
 const PtyMessageSchema = z.union([
@@ -18,15 +19,18 @@ const PtyMessageSchema = z.union([
 
 const SessionIdSchema = z.number();
 
+const DoneSchema = z.null();
+
 export class TauriTerminalSessionsGateway extends TerminalSessionsGateway {
 	private readonly sessions = new Map<string, Promise<number>>();
 
 	override async send(app: string, line: string): Promise<void> {
 		const id = await (this.sessions.get(app) ?? this.openSession(app));
-		await invoke(WRITE, {
+		const written = await invoke(WRITE, {
 			id,
 			data: `${line}${ENTER}`,
 		});
+		DoneSchema.parse(written);
 	}
 
 	private openSession(app: string): Promise<number> {
@@ -34,9 +38,15 @@ export class TauriTerminalSessionsGateway extends TerminalSessionsGateway {
 			onData: this.ptyChannelOf(app),
 			cols: COLUMNS,
 			rows: ROWS,
-		}).then((id) => SessionIdSchema.parse(id));
+		}).then((id) => {
+			this.recordStart(app);
+			return SessionIdSchema.parse(id);
+		});
 		this.sessions.set(app, opened);
-		this.heardStart(app);
+		opened.catch((failure: unknown) => {
+			this.sessions.delete(app);
+			console.error(NOT_OPENED.replace("{app}", app), failure);
+		});
 		return opened;
 	}
 
@@ -51,12 +61,12 @@ export class TauriTerminalSessionsGateway extends TerminalSessionsGateway {
 			}
 
 			if (Array.isArray(read.data)) {
-				this.heardOutput(app, decoder.decode(new Uint8Array(read.data), { stream: true }));
+				this.recordOutput(app, decoder.decode(new Uint8Array(read.data), { stream: true }));
 				return;
 			}
 
 			this.sessions.delete(app);
-			this.heardExit(app, read.data.exit);
+			this.recordExit(app, read.data.exit);
 		});
 	}
 }

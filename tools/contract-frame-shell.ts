@@ -1,5 +1,5 @@
 import { orpcTransport } from "@widgetarium/core/requests";
-import { frameRelayOf } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
+import { createFrameRelay } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
 
@@ -18,7 +18,7 @@ frame.src = "/app.html#sumi-tab=t1";
 servePortHandovers(
 	() => frame.contentWindow,
 	FRAME_APP,
-	frameRelayOf(orpcTransport(location.origin)),
+	createFrameRelay(orpcTransport(location.origin)),
 	() => {
 		window.relayAnswers += 1;
 	},

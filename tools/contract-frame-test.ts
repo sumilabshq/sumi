@@ -93,6 +93,7 @@ try {
 		true,
 	);
 	check("changes reached the frame over the port", Number(told["changesHeard"]) > 0, true);
+	check("a second document wanting a port in the same frame mount gets none", told["secondPort"], "refused");
 	check("the relay answered the frame's calls", Number(await page.ask("window.relayAnswers")) > 0, true);
 } finally {
 	page.close();

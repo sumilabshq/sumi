@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
-import { app, messagePortListener, messagePortTransport } from "@widgetarium/core/requests";
+import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/core/requests";
+import { createFrameRelay } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { server } from "@widgetarium/core/requests/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
@@ -80,6 +81,24 @@ check(
 check("a change crosses the port to the calling side", heard.changes > 0, true);
 stopServing();
 channel.port2.close();
+
+const relay = createFrameRelay(localTransport());
+const notRelayed = await relay.answer({
+	name: "tasks/board",
+	input: undefined,
+	idempotencyKey: null,
+	signal: new AbortController().signal,
+});
+check(
+	"the relay refuses a request of a module the contract does not list",
+	notRelayed.ok ? "answered" : notRelayed.code,
+	"not-found",
+);
+const forged = await new AppCallerAuthenticate().userOf(new Headers({ [APP_CALLER_HEADER]: "../Other App" })).then(
+	() => "accepted",
+	() => "refused",
+);
+check("a caller header that is not an app id is refused, never read as no caller", forged, "refused");
 
 console.log(tally.failed ? `sumi contract: ${tally.failed} check(s) failed` : "sumi contract: all checks passed");
 process.exit(tally.failed ? 1 : 0);

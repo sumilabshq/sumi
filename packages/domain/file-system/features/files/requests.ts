@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, command, guard, middleware, query } from "@widgetarium/core/requests";
 import type { Invalidate } from "@widgetarium/core/requests";
 import { FilesGateway } from "../../gateways/files/files.gateway.js";
-import { placedIn, refusedFailure } from "../../shared/lib/app-path.js";
+import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
 import {
 	FileContentSchema,
 	FileInfoSchema,
@@ -32,14 +32,14 @@ export const ReadFileQuery = query("read-file")
 	.input(PathInputSchema)
 	.output(FileContentSchema)
 	.inject({ files: FilesGateway })
-	.handle(async ({ path }, { files, user }) => files.readFile(await placedIn(files, user, path)).catch(refusedFailure));
+	.handle(async ({ path }, { files, user }) => files.readFile(await placedIn(files, user, path)).catch(refuseFailure));
 
 export const ReadFolderQuery = query("read-folder")
 	.input(PathInputSchema)
 	.output(FolderSchema)
 	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => {
-		const entries = await files.readFolder(await placedIn(files, user, path)).catch(refusedFailure);
+		const entries = await files.readFolder(await placedIn(files, user, path)).catch(refuseFailure);
 		return {
 			entries: [...entries],
 		};

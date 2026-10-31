@@ -25,12 +25,12 @@ export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 	private startShell(app: string): ChildProcessWithoutNullStreams {
 		const shell = spawn(SHELL, [], { cwd: this.folder });
 		this.shells.set(app, shell);
-		this.heardStart(app);
-		shell.stdout.setEncoding("utf8").on("data", (chunk: string) => this.heardOutput(app, chunk));
-		shell.stderr.setEncoding("utf8").on("data", (chunk: string) => this.heardOutput(app, chunk));
+		this.recordStart(app);
+		shell.stdout.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(app, chunk));
+		shell.stderr.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(app, chunk));
 		shell.on("exit", (code) => {
 			this.shells.delete(app);
-			this.heardExit(app, code);
+			this.recordExit(app, code);
 		});
 		return shell;
 	}

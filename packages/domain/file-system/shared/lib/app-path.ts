@@ -21,11 +21,17 @@ const NUL_IN_PATH = "the path {value} holds a NUL character";
 const LEAVES_APP_DATA = "the path {value} climbs out of the app's own folder; name it absolute instead";
 
 export function placedPathOf(appDataFolder: string, user: User | null, path: string): PlacedPath {
-	const refusal = refusalOf(user, path);
-
-	if (refusal !== null || user === null) {
+	if (user === null) {
 		return {
-			refusal: refusal ?? NO_APP,
+			refusal: NO_APP,
+		};
+	}
+
+	const refusal = pathRefusalOf(user, path);
+
+	if (refusal !== null) {
+		return {
+			refusal,
 		};
 	}
 
@@ -51,15 +57,11 @@ export async function placedIn(holder: AppDataHolder, user: User | null, path: s
 	return placed.path;
 }
 
-export function refusedFailure(failure: unknown): never {
+export function refuseFailure(failure: unknown): never {
 	return refuse(failure instanceof Error ? failure.message : String(failure));
 }
 
-function refusalOf(user: User | null, path: string): string | null {
-	if (user === null) {
-		return NO_APP;
-	}
-
+function pathRefusalOf(user: User, path: string): string | null {
 	if (!APP_ID.test(user.id)) {
 		return BAD_APP.replace("{value}", JSON.stringify(user.id));
 	}
@@ -68,6 +70,9 @@ function refusalOf(user: User | null, path: string): string | null {
 		return NUL_IN_PATH.replace("{value}", JSON.stringify(path));
 	}
 
-	const climbs = !path.startsWith("/") && path.split("/").includes("..");
-	return climbs ? LEAVES_APP_DATA.replace("{value}", JSON.stringify(path)) : null;
+	if (!path.startsWith("/") && path.split("/").includes("..")) {
+		return LEAVES_APP_DATA.replace("{value}", JSON.stringify(path));
+	}
+
+	return null;
 }

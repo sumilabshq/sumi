@@ -5,7 +5,7 @@ import { useCommand } from "@widgetarium/core/requests";
 import type { RemoteTransport } from "@widgetarium/core/requests";
 import { AppFrameFleet, READY_TIMEOUT_MS } from "../../lib/app-frame-fleet.js";
 import { AppFramesContext } from "../../lib/app-frames-context.js";
-import { frameRelayOf } from "../../lib/frame-relay.js";
+import { createFrameRelay } from "../../lib/frame-relay.js";
 import { FrameRelayContext } from "../../lib/use-frame-port.js";
 import { useFleetFollowsDocument } from "../../lib/use-fleet-follows-document.js";
 import { useFleetFollowsInstalled } from "../../lib/use-fleet-follows-installed.js";
@@ -30,7 +30,7 @@ export function AppFramesProvider({
 				readyTimeoutMs,
 			}),
 	);
-	const relay = useMemo(() => frameRelayOf(core), [core]);
+	const relay = useMemo(() => createFrameRelay(core), [core]);
 	useFleetFollowsInstalled(fleet);
 	useFleetFollowsDocument(fleet);
 	return (

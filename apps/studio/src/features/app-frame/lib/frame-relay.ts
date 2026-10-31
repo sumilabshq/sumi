@@ -10,7 +10,7 @@ const RELAYED: ReadonlyMap<string, AnyRequest> = new Map(
 		.map((request) => [request.name, request]),
 );
 
-export function frameRelayOf(core: RemoteTransport): ServingServer {
+export function createFrameRelay(core: RemoteTransport): ServingServer {
 	return {
 		answer: ({ name, input, idempotencyKey, signal, headers }) => {
 			const request = RELAYED.get(name);
@@ -27,6 +27,13 @@ export function frameRelayOf(core: RemoteTransport): ServingServer {
 				headers,
 			});
 		},
-		changes: (hear) => core.changes(hear),
+		changes: (hear) =>
+			core.changes((invalidated) => {
+				const relayed = invalidated.filter(({ query }) => RELAYED.has(query));
+
+				if (relayed.length > 0) {
+					hear(relayed);
+				}
+			}),
 	};
 }

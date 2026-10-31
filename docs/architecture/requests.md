@@ -270,7 +270,7 @@ const files = app()
 await files.send(WriteFileCommand, { path: "tasks.json", content });
 ```
 
-The port carries calls, answers and `{ invalidated }`, never a message of its own: a new kind of thing an app wants is a request of a module. Sumi's shell serves frames through a relay (`apps/studio/src/features/app-frame`): `servePortHandovers` answers only a handover wanted by that frame, stamps `x-sumi-app: <the app the shell opened there>`, and `frameRelayOf(core)` passes each call of a module `@sumi/contract` lists to the core transport, refusing any other name. In the core `AppCallerAuthenticate` turns the header into `user`.
+The port carries calls, answers and `{ invalidated }`, never a message of its own: a new kind of thing an app wants is a request of a module. Sumi's shell serves frames through a relay (`apps/studio/src/features/app-frame`): `servePortHandovers` answers only a handover wanted by that frame, stamps `x-sumi-app: <the app the shell opened there>`, and `createFrameRelay(core)` passes each call of a module `@sumi/contract` lists to the core transport, refusing any other name. In the core `AppCallerAuthenticate` turns the header into `user`.
 
 ## Cache and re-read
 

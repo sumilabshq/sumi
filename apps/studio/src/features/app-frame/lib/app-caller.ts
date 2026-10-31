@@ -4,18 +4,23 @@ import { Authenticate } from "@widgetarium/core/requests/server";
 export const APP_CALLER_HEADER = "x-sumi-app";
 
 const APP_ID = /^[a-z][a-z0-9-]*$/;
+const NOT_AN_APP = "the caller header names {app}, which is not an app id; the call is refused";
 
 export class AppCallerAuthenticate extends Authenticate {
-	override userOf(headers: Headers): Promise<User | null> {
+	override async userOf(headers: Headers): Promise<User | null> {
 		const app = headers.get(APP_CALLER_HEADER);
 
-		if (app === null || !APP_ID.test(app)) {
-			return Promise.resolve(null);
+		if (app === null) {
+			return null;
 		}
 
-		return Promise.resolve({
+		if (!APP_ID.test(app)) {
+			throw new Error(NOT_AN_APP.replace("{app}", JSON.stringify(app)));
+		}
+
+		return {
 			id: app,
 			permissions: [],
-		});
+		};
 	}
 }

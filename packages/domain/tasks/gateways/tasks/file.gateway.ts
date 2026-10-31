@@ -51,16 +51,22 @@ export class FileTasksGateway extends TasksGateway {
 
 function heldBoardOf(text: string): HeldBoard {
 	const kept = KeptFileSchema.safeParse(jsonOf(text));
-	const read = BoardSchema.safeParse(kept.data?.board);
+	const rev = kept.data?.rev ?? 0;
+	const board = BoardSchema.safeParse(kept.data?.board);
 
-	if (!read.success) {
-		console.warn(READ_ONLY_WARNING, read.error.issues);
+	if (!board.success) {
+		console.warn(READ_ONLY_WARNING, (kept.success ? board.error : kept.error).issues);
+		return {
+			board: EMPTY_BOARD,
+			rev,
+			isReadOnly: true,
+		};
 	}
 
 	return {
-		board: read.success ? read.data : EMPTY_BOARD,
-		rev: kept.data?.rev ?? 0,
-		isReadOnly: !read.success,
+		board: board.data,
+		rev,
+		isReadOnly: false,
 	};
 }
 
