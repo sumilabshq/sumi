@@ -243,6 +243,7 @@ const served = server().modules(BillingModule, UsersModule).start({ env: process
 - `.modules(...)` take the runnable module from `<package>/module`: an app takes `Device` and `Anywhere` modules, a server `Server` and `Anywhere` ones (a type error otherwise, and refused at start).
 - `.imports(...)` take only `Server` modules, by the descriptor in their `"."` entry, over a transport: `.over(transport)` exists only on a `Server` module. No server code reaches the bundle.
 - **A transport is a port.** `RemoteTransport` (`transport.ts`) carries a call there and its answer back (`call`), and the changes the server reports that this client did not cause (`changes`). The framework ships `orpcTransport(url, { fetch?, headers? })` (HTTP; changes over the SSE stream at `/rpc-changes`) and `localTransport()` (same process). An app writes its own for anything else (the studio's IPC to its core window), with no change to the framework.
+- **A call carries its caller's headers.** `ServedCall.headers` and `RemoteCall.headers` reach `Authenticate`; `orpcTransport` sends them as HTTP headers, `localTransport` and the studio's IPC pass them on. A relay stamps them; the caller never writes its own.
 - **A server listens on transports.** `server().modules(...).listen(transport)` hands every module of that server to the transport's `serve`; several `.listen` calls serve the same modules over several transports. Modules that need different transports are different servers. HTTP is served by the server's own `fetch`, whatever is listened on.
 - Every module's `.imports` must be met by the app's `.modules` or `.imports`; start refuses naming the missing module.
 - `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch, answer, changes, stop }`.
@@ -250,6 +251,26 @@ const served = server().modules(BillingModule, UsersModule).start({ env: process
 - A server is a Hono app mounting `/rpc`. Over the network it answers only `.public` requests: a server-only one answers `404`, while an in-process `send` from another server module reaches it. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
 - A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step injecting what the module does not provide, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.
 - The wire is oRPC, and only `core` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
+
+## The frame transport
+
+A page in another window or a sandboxed iframe reaches modules over a `MessagePort`, the same requests and nothing else (`message-port-transport.ts`).
+
+| Side             | Call                                     | Does                                                                                                   |
+| ---------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| the page         | `portFromParent()`                       | posts `PORT_WANTED` to the window above and takes the port it hands down; refuses after 10 s           |
+| the page         | `messagePortTransport(port)`             | a `RemoteTransport`: `call` posts `{ id, name, input, idempotencyKey }`, `changes` hears invalidations |
+| the window above | `handPort(frame, port)`                  | posts the other end of a fresh `MessageChannel` into that frame only                                   |
+| the window above | `messagePortListener(port, { headers })` | a `ListeningTransport`: answers each call through the server it serves, stamped with `headers`         |
+
+```ts skip-check
+const files = app()
+	.imports(FileSystemModule.over(messagePortTransport(portFromParent())))
+	.start();
+await files.send(WriteFileCommand, { path: "tasks.json", content });
+```
+
+The port carries calls, answers and `{ invalidated }`, never a message of its own: a new kind of thing an app wants is a request of a module. Sumi's shell serves frames through a relay (`apps/studio/src/features/app-frame`): `servePortHandovers` answers only a handover wanted by that frame, stamps `x-sumi-app: <the app the shell opened there>`, and `frameRelayOf(core)` passes each call of a module `@sumi/contract` lists to the core transport, refusing any other name. In the core `AppCallerAuthenticate` turns the header into `user`.
 
 ## Cache and re-read
 

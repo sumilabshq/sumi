@@ -196,7 +196,7 @@ function answering(
 	mediator: Mediator,
 	changed: ChangeBroadcast,
 ): (call: ServedCall) => Promise<Answer<unknown>> {
-	return async ({ name, input, idempotencyKey, signal }) => {
+	return async ({ name, input, idempotencyKey, signal, headers }) => {
 		const route = routes.get(name);
 
 		if (route === undefined) {
@@ -207,7 +207,7 @@ function answering(
 			return notOverNetwork(route.handler.request);
 		}
 
-		const sending = { signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
+		const sending = { signal, headers, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
 		const answered = await mediator.send(route.handler.request, input, sending);
 		changed.tell(answered.ok ? answered.invalidated : undefined);
 		return answered;

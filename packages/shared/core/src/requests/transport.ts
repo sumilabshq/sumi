@@ -14,6 +14,7 @@ export interface ServedCall {
 	readonly input: unknown;
 	readonly idempotencyKey: string | null;
 	readonly signal: AbortSignal;
+	readonly headers?: Headers | undefined;
 }
 
 export interface ServingServer {

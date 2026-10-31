@@ -51,9 +51,18 @@ export { ModuleContract, moduleContract } from "./module-contract";
 export { ChangeBroadcast } from "./transport";
 export type { HearChanges, ListeningTransport, RemoteTransport, ServedCall, ServingServer } from "./transport";
 export { LocalTransport, localTransport } from "./local-transport";
+export {
+	PORT_WANTED,
+	handPort,
+	messagePortListener,
+	messagePortTransport,
+	portFromParent,
+} from "./message-port-transport";
+export type { PortListening } from "./message-port-transport";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";
 export { InvalidationSchema } from "./invalidation";
+export type { Invalidate } from "./invalidation";
 export type { WireHost } from "./wire-client";
 export type { RemoteModule } from "./module-contract";
 export { Anywhere, Device, Server } from "./placement";
