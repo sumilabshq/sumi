@@ -4,6 +4,8 @@ import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import { Slot, useCommand, useQuery } from "@widgetarium/core/requests";
 import { CommandMenu } from "../../../command-menu/ui/command-menu/command-menu.js";
 import { CommandMenuKeys } from "../../../command-menu/ui/command-menu-keys/command-menu-keys.js";
+import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";
+import { LinkOpener } from "../../../app-host/ui/link-opener/link-opener.js";
 import { FrameSidesQuery } from "@widgetarium/layout";
 import { FrameSideReveal } from "../../../frame-sides/ui/frame-side-reveal/frame-side-reveal.js";
 import { FrameSideToggle } from "../../../frame-sides/ui/frame-side-toggle/frame-side-toggle.js";
@@ -63,9 +65,11 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel }: StudioF
 				</div>
 				<FrameSideReveal frame={frame} content={appZone} panel={leftSide} />
 				<FrameSideToggle side="left" />
+				<LinkOpener frame={frame} />
 				<Slot loading={null}>
 					<CommandMenu />
 					<CommandMenuKeys />
+					<NewChatShortcut frame={frame} />
 				</Slot>
 				<TooltipHost />
 			</div>

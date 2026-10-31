@@ -1,31 +1,31 @@
 import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
-import { TAB_ATTRIBUTE, markdownNodesOf } from "./markdown-blocks.js";
+import { LINK_ICON_CLASS, TAB_ATTRIBUTE, linkIconOf, markdownNodesOf } from "./markdown-blocks.js";
 
-export function tabLinksRenderer(showTab: (tabId: string) => void): RenderMarkdown {
+export type TabFaviconOf = (tabId: string) => Promise<string | null>;
+
+export function tabLinksRenderer(tabFaviconOf?: TabFaviconOf): RenderMarkdown {
 	return (element, markdown) => {
-		const page = element.ownerDocument;
-		element.replaceChildren(...markdownNodesOf(page, markdown));
-		const pressed = tabPressOf(page, showTab);
-		element.addEventListener("click", pressed);
+		element.replaceChildren(...markdownNodesOf(element.ownerDocument, markdown));
+
+		if (tabFaviconOf !== undefined) {
+			showTabFavicons(element, tabFaviconOf);
+		}
+
 		return () => {
-			element.removeEventListener("click", pressed);
 			element.replaceChildren();
 		};
 	};
 }
 
-function tabPressOf(page: Document, showTab: (tabId: string) => void): (event: MouseEvent) => void {
-	return (event) => {
-		const view = page.defaultView;
-		const link =
-			view !== null && event.target instanceof view.Element ? event.target.closest(`a[${TAB_ATTRIBUTE}]`) : null;
-		const tabId = link?.getAttribute(TAB_ATTRIBUTE) ?? null;
+function showTabFavicons(element: HTMLElement, tabFaviconOf: TabFaviconOf): void {
+	for (const link of element.querySelectorAll(`a[${TAB_ATTRIBUTE}]`)) {
+		const tabId = link.getAttribute(TAB_ATTRIBUTE) ?? "";
+		void tabFaviconOf(tabId).then((favicon) => {
+			if (favicon === null) {
+				return;
+			}
 
-		if (tabId === null) {
-			return;
-		}
-
-		event.preventDefault();
-		showTab(tabId);
-	};
+			link.querySelector(`.${LINK_ICON_CLASS}`)?.replaceWith(linkIconOf(element.ownerDocument, favicon));
+		});
+	}
 }

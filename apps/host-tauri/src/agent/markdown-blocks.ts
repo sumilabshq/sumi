@@ -1,3 +1,5 @@
+import { isSumiLink, linkOf, linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
+
 const FENCE = /^\s*(```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
 const RULE = /^\s*([-*_])(\s*\1){2,}\s*$/;
@@ -6,10 +8,12 @@ const ITEM = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/;
 const TABLE_DIVIDER = /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/;
 const BLANK = /^\s*$/;
 const ORDERED = /^\d/;
-const TAB_LINK = /^tab:([\w-]+)$/;
+const OLD_TAB_LINK = /^tab:([\w-]+)$/;
 const WEB_LINK = /^https?:\/\//;
 
 export const TAB_ATTRIBUTE = "data-tab";
+
+export const LINK_ICON_CLASS = "wg-studio-ai-link-icon";
 
 interface InlineRule {
 	readonly pattern: RegExp;
@@ -54,6 +58,20 @@ interface Found {
 
 export function markdownNodesOf(page: Document, markdown: string): readonly Node[] {
 	return blocksOf(page, markdown.replace(/\r\n?/g, "\n").split("\n"));
+}
+
+export function linkIconOf(page: Document, favicon: string | null): Element {
+	if (favicon === null) {
+		return linkGlyphOf(page);
+	}
+
+	const icon = page.createElement("img");
+	icon.className = LINK_ICON_CLASS;
+	icon.alt = "";
+	icon.setAttribute("aria-hidden", "true");
+	icon.addEventListener("error", () => icon.replaceWith(linkGlyphOf(page)), { once: true });
+	icon.src = favicon;
+	return icon;
 }
 
 function blocksOf(page: Document, lines: readonly string[]): readonly Node[] {
@@ -305,7 +323,7 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 	}
 
 	if (rule.tag === "a") {
-		return linkOf(page, inner, match[2] ?? "");
+		return linkNodeOf(page, inner, oldTabLinkRead(match[2] ?? ""));
 	}
 
 	const element = page.createElement(rule.tag);
@@ -313,25 +331,57 @@ function elementOf(page: Document, rule: InlineRule, match: RegExpExecArray): No
 	return element;
 }
 
-function linkOf(page: Document, label: string, target: string): Node {
-	const tab = TAB_LINK.exec(target);
+function oldTabLinkRead(target: string): string {
+	const oldTab = OLD_TAB_LINK.exec(target);
+	return oldTab === null ? target : linkOf({ kind: "tab", id: oldTab[1] ?? "" });
+}
 
-	if (!tab && !WEB_LINK.test(target)) {
+function linkNodeOf(page: Document, label: string, target: string): Node {
+	if (isSumiLink(target)) {
+		return sumiLinkNodeOf(page, label, target);
+	}
+
+	if (!WEB_LINK.test(target)) {
 		const text = page.createElement("span");
 		text.append(...inlineNodesOf(page, label));
 		return text;
 	}
 
-	const link = page.createElement("a");
-	link.href = tab ? "#" : target;
-	link.append(...inlineNodesOf(page, label));
-
-	if (tab) {
-		link.setAttribute(TAB_ATTRIBUTE, tab[1] ?? "");
-		return link;
-	}
-
+	const link = labelledLinkOf(page, label, target, siteFaviconOf(target));
 	link.target = "_blank";
 	link.rel = "noopener noreferrer";
 	return link;
+}
+
+function sumiLinkNodeOf(page: Document, label: string, target: string): Node {
+	const link = labelledLinkOf(page, label, target, null);
+	const read = linkTargetOf(target);
+
+	if (read.ok && read.target.kind === "tab") {
+		link.setAttribute(TAB_ATTRIBUTE, read.target.id);
+	}
+
+	return link;
+}
+
+function labelledLinkOf(page: Document, label: string, target: string, favicon: string | null): HTMLAnchorElement {
+	const link = page.createElement("a");
+	link.setAttribute("href", target);
+	link.append(linkIconOf(page, favicon), ...inlineNodesOf(page, label));
+	return link;
+}
+
+function linkGlyphOf(page: Document): Element {
+	const glyph = page.createElement("span");
+	glyph.className = `${LINK_ICON_CLASS} is-glyph`;
+	glyph.setAttribute("aria-hidden", "true");
+	return glyph;
+}
+
+function siteFaviconOf(target: string): string | null {
+	if (!URL.canParse(target)) {
+		return null;
+	}
+
+	return `${new URL(target).origin}/favicon.ico`;
 }

@@ -5,7 +5,7 @@ import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import { openAgentTools } from "../agent/agent-tools.js";
 import { tabLinksRenderer } from "../agent/tab-links.js";
-import { ShowTabCommand } from "@widgetarium/app-host";
+import { AppTabsQuery } from "@widgetarium/app-host";
 import { chatSessionLinkOf } from "../assistant/chat-session-link.js";
 import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
@@ -14,7 +14,7 @@ import type { TauriChatLogs } from "../chat/tauri-chat-history.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import { tauriStudioHost } from "../tauri-studio-host.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
 import { joinPlaces } from "../core-link/window-places.js";
@@ -31,11 +31,12 @@ export interface StudioOpening {
 	readonly workspace: WorkspaceEntry;
 }
 
-type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp">;
+type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp" | "core">;
 
 interface StartedParts {
 	readonly studioApp: StartedApp;
 	readonly assistant: TauriAssistant;
+	readonly core: RemoteTransport;
 }
 
 interface HeldWorkspaceDocs {
@@ -55,7 +56,8 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	const docs = await readWorkspaceDocs(opening);
 	const joined = joinPlaces(opening.workspace.id);
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
-	const studioApp = startTauriStudioApp(opening.workspace.id);
+	const core = ipcTransport(opening.workspace.id);
+	const studioApp = startTauriStudioApp(opening.workspace.id, core);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
 		reopenWindow(async () => {
 			await Promise.all([docs.flushAll(), joined.leave()]);
@@ -63,7 +65,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	);
 	openAgentTools(studioApp);
 	const assistant = startTauriAssistant({
-		renderMarkdown: tabLinksRenderer((id) => void showLinkedTab(studioApp, id)),
+		renderMarkdown: tabLinksRenderer((id) => tabFaviconOf(studioApp, id)),
 		workspace: {
 			client: opening.workspaces,
 			opened: opening.workspace,
@@ -74,14 +76,14 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 		},
 	});
 	await assistant.port.shownRead();
-	return startedStudioOf(opening, { studioApp, assistant });
+	return startedStudioOf(opening, { studioApp, assistant, core });
 }
 
-function startTauriStudioApp(workspaceId: string): StartedApp {
+function startTauriStudioApp(workspaceId: string, core: RemoteTransport): StartedApp {
 	return startStudioApp({
 		platform: "tauri",
 		workspaceId,
-		places: ipcTransport(workspaceId),
+		core,
 	});
 }
 
@@ -120,18 +122,22 @@ function studioHostOf({ project, workspaces }: StudioOpening, workspacesApp: Sta
 	return tauriStudioHost(project, tauriWorkspaceApps({ workspaces, workspacesApp }));
 }
 
-function startedPartsFieldsOf({ assistant, studioApp }: StartedParts): StudioStartedFields {
+function startedPartsFieldsOf({ assistant, studioApp, core }: StartedParts): StudioStartedFields {
 	return {
 		assistant: assistant.port,
 		assistantHost: assistant.host,
 		studioApp,
+		core,
 	};
 }
 
-async function showLinkedTab(studioApp: StartedApp, id: string): Promise<void> {
-	const shown = await studioApp.send(ShowTabCommand, { id });
+async function tabFaviconOf(studioApp: StartedApp, id: string): Promise<string | null> {
+	const tabs = await studioApp.send(AppTabsQuery);
 
-	if (!shown.ok) {
-		console.warn(`[agent] a tab link to ${id} was pressed, but the tab is not shown: ${shown.reason}`);
+	if (!tabs.ok) {
+		console.warn(`[agent] the icon of a tab link to ${id} stays a glyph: ${tabs.reason}`);
+		return null;
 	}
+
+	return tabs.output.tabs.find((tab) => tab.id === id)?.favicon ?? null;
 }
