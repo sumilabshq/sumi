@@ -11,44 +11,33 @@ import { FileDragGateway } from "../../gateways/file-drag/file-drag.gateway.js";
 import { FileDraggedEvent } from "../../gateways/file-drop/file-drop.events.js";
 import { SentAttachmentsGateway } from "../../gateways/sent-attachments/sent-attachments.gateway.js";
 import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
-import { withAttachments } from "../../shared/lib/attachment-trailer.js";
 import { chosenOf } from "../../shared/lib/chosen-provider.js";
-import type { ChosenProvider } from "../../shared/lib/chosen-provider.js";
-import type { ProviderReads } from "../../shared/schema/agent-setup.schema.js";
 import {
+	AdoptedDraftSchema,
 	AttachReachSchema,
 	AttachmentAskedSchema,
 	DraftAttachmentsSchema,
 	FilesAskedSchema,
 	MessageAskedSchema,
+	TakenDraftSchema,
 } from "../../shared/schema/attachment.schema.js";
 import { ChatOpenedSchema, DraftTextSchema } from "../../shared/schema/chat-draft.schema.js";
 import { DroppedAskedSchema, FileDragSchema, PageDragAskedSchema } from "../../shared/schema/file-drag.schema.js";
-import type { DroppedFile } from "../../shared/schema/file-drag.schema.js";
-import { ACCEPTED, kindOf, refusalOfCount, refusalOfFile, refusalOfReach } from "./lib/attachment-rules.js";
-import { SENT, recordSent, sendOrRemoveWritten, sweepFolder, writeDrafts } from "./lib/attachments-on-disk.js";
-import { chipOf, draftOfFile, draftedFolders, draftedTogether, offeredOf, refusedWith } from "./lib/drafts.js";
-import type { Drafted } from "./lib/drafts.js";
+import { adoptUnsent } from "./lib/adopted-draft.js";
+import { ACCEPTED, refusalOfCount, refusalOfReach } from "./lib/attachment-rules.js";
+import { attachDrafted, attachOffered } from "./lib/attaching.js";
+import { sweepFolder } from "./lib/attachments-on-disk.js";
+import { chipOf, draftedFolders, offeredOf } from "./lib/drafts.js";
 import { fileDragOf, heardHostDrag, heardPageDrag } from "./lib/file-drag.js";
 import { holdChatDraft, saveDrafts, saveFileDrag } from "./lib/held-drafts.js";
-import { lentFoldersOf } from "./lib/written.js";
+import { sendWithDrafts } from "./lib/sending.js";
 
 const CLEARED = "the chat was cleared";
 const CHAT_SWITCHED = "another chat was opened";
 const ALREADY_REMOVED = "That attachment was already removed";
 const REMOVED = "removed {name}";
-const ATTACHED = "attached {names}";
 const DROPPED_ALREADY = "the dropped files were already attached";
-
-interface AttachingParts {
-	readonly assistantSetup: AssistantSetupGateway;
-	readonly draftAttachments: DraftAttachmentsGateway;
-}
-
-interface OfferedAttachments {
-	readonly files: readonly DroppedFile[];
-	readonly folders: readonly string[];
-}
+const HANDED_OVER = "handed to a new chat";
 
 export const DraftAttachmentsQuery = query("draft-attachments")
 	.output(DraftAttachmentsSchema)
@@ -107,29 +96,49 @@ export const SendMessageCommand = command("send-message")
 	.handle(async ({ said }, parts) => {
 		const drafts = parts.draftAttachments.draftAttachments();
 		parts.invalidate(DraftAttachmentsQuery);
+		await sendWithDrafts(parts, said, drafts);
+	});
 
-		if (drafts.length === 0) {
-			await parts.assistantSession.send(said);
-			return;
+export const TakeDraftCommand = command("take-draft")
+	.output(TakenDraftSchema)
+	.idempotencyKey(PerCall)
+	.inject({ draftAttachments: DraftAttachmentsGateway })
+	.handle((_input, { draftAttachments, invalidate }) => {
+		const attachments = draftAttachments.draftAttachments();
+		invalidate(DraftAttachmentsQuery);
+		saveDrafts(draftAttachments, [], HANDED_OVER);
+		return { attachments: [...attachments] };
+	});
+
+export const AdoptDraftCommand = command("adopt-draft")
+	.input(AdoptedDraftSchema)
+	.output(DraftTextSchema)
+	.idempotencyKey(PerCall)
+	.inject({
+		assistantSession: AssistantSessionGateway,
+		assistantSetup: AssistantSetupGateway,
+		attachmentFiles: AttachmentFilesGateway,
+		attachmentFolder: AttachmentFolderGateway,
+		chatDrafts: ChatDraftsGateway,
+		draftAttachments: DraftAttachmentsGateway,
+		sentAttachments: SentAttachmentsGateway,
+		clock: ClockGateway,
+	})
+	.emits(SentAttachmentsChangedEvent)
+	.handle(async (adopted, parts) => {
+		parts.invalidate(DraftAttachmentsQuery);
+
+		if (!adopted.sends) {
+			return adoptUnsent(parts, adopted);
 		}
 
-		const provider = chosenOf(await parts.assistantSetup.setup());
-		const refusal = drafts.map((draft) => refusalOfReach(draft.kind, provider)).find((found) => found !== null);
-
-		if (refusal) {
-			return refuse(refusal);
+		try {
+			await sendWithDrafts(parts, adopted.said, adopted.attachments);
+			return { said: "" };
+		} catch (failed) {
+			adoptUnsent(parts, adopted);
+			throw failed;
 		}
-
-		const written = writeDrafts(drafts, provider.reads, parts.attachmentFiles);
-		parts.attachmentFolder.lendFolders(lentFoldersOf(drafts));
-		await sendOrRemoveWritten(parts, withAttachments(said, written.entries), written.files);
-
-		if (written.files.length > 0) {
-			recordSent(parts, written.files);
-			parts.emit(SentAttachmentsChangedEvent);
-		}
-
-		saveDrafts(parts.draftAttachments, [], SENT);
 	});
 
 export const SweepAttachmentsCommand = command("sweep-attachments")
@@ -317,57 +326,3 @@ export const HearHostDragSubscriber = subscriber(FileDraggedEvent)
 			`the host heard a file drag ${event.kind}`,
 		);
 	});
-
-async function draftedFiles(offered: readonly DroppedFile[], provider: ChosenProvider): Promise<Drafted> {
-	const refusal = offered.map((one) => refusalOfFile(one, provider)).find((found) => found !== null);
-
-	if (refusal) {
-		return refusedWith(refusal);
-	}
-
-	const each = await Promise.all(
-		offered.map(async (one) => {
-			const file = await one.file();
-			const read = {
-				name: file.name,
-				type: file.type,
-				bytes: new Uint8Array(await file.arrayBuffer()),
-			};
-			return draftOfFile(read, kindOf(one.name) ?? "text");
-		}),
-	);
-	return draftedTogether(each);
-}
-
-async function attachOffered(parts: AttachingParts, offered: OfferedAttachments): Promise<void> {
-	const provider = chosenOf(await parts.assistantSetup.setup());
-	const folders = draftedFolders(offered.folders, provider, parts.draftAttachments.draftAttachments());
-
-	if (folders.refusal !== null) {
-		return refuse(folders.refusal);
-	}
-
-	attachDrafted(
-		parts.draftAttachments,
-		draftedTogether([folders, await draftedFiles(offered.files, provider)]),
-		provider.reads,
-	);
-}
-
-function attachDrafted(
-	draftAttachments: DraftAttachmentsGateway,
-	{ drafts, refusal }: Drafted,
-	reads: ProviderReads,
-): void {
-	const counted = refusal ?? refusalOfCount(draftAttachments.draftAttachments().length, drafts.length, reads);
-
-	if (counted !== null) {
-		return refuse(counted);
-	}
-
-	saveDrafts(
-		draftAttachments,
-		[...draftAttachments.draftAttachments(), ...drafts],
-		ATTACHED.replace("{names}", drafts.map(({ name }) => name).join(", ")),
-	);
-}

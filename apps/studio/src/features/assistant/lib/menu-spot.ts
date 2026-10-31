@@ -9,6 +9,7 @@ export interface MenuSpot {
 export interface MenuOpening {
 	readonly spot: MenuSpot | null;
 	readonly openAt: (event: MouseEvent<HTMLElement>) => void;
+	readonly openAtCentre: (event: MouseEvent<HTMLElement>) => void;
 	readonly close: () => void;
 }
 
@@ -17,8 +18,7 @@ export function spotOf(event: MouseEvent<HTMLElement>): MenuSpot {
 		return { x: event.clientX, y: event.clientY };
 	}
 
-	const box = event.currentTarget.getBoundingClientRect();
-	return { x: box.left + box.width / 2, y: box.top };
+	return centreSpotOf(event.currentTarget);
 }
 
 export function useMenuOpening(): MenuOpening {
@@ -26,6 +26,12 @@ export function useMenuOpening(): MenuOpening {
 	return {
 		spot,
 		openAt: (event) => setSpot(spotOf(event)),
+		openAtCentre: (event) => setSpot(centreSpotOf(event.currentTarget)),
 		close: () => setSpot(null),
 	};
+}
+
+function centreSpotOf(element: HTMLElement): MenuSpot {
+	const box = element.getBoundingClientRect();
+	return { x: box.left + box.width / 2, y: box.top };
 }

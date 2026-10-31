@@ -16,7 +16,7 @@ export function AskField({ field }: { readonly field: MenuFieldAsk }): ReactElem
 	return (
 		<>
 			<MenuField
-				{...field}
+				ask={field}
 				end={isAsking ? null : <CarriedAttachments carried={carriedOf(drafts)} onOpen={() => field.onDoor("ask")} />}
 				onFiles={isAsking ? (files) => void attachFiles.run({ files: [...files] }) : null}
 			/>

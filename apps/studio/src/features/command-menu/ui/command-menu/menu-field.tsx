@@ -1,54 +1,69 @@
 import { createElement as h } from "react";
-import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import type { ClipboardEvent, DragEvent, ReactElement, ReactNode } from "react";
 import { Icon } from "@widgetarium/kit";
-import { ChangeMenuDoorCommand } from "@widgetarium/command-menu";
 import type { Door } from "@widgetarium/command-menu";
 import { useSelectsFieldOnMount } from "../../lib/use-selects-field-on-mount.js";
+import { FieldIcon } from "./field-icon.js";
+import type { FieldGlyph } from "./field-icon.js";
 
-export interface MenuFieldProps {
+export interface MenuFieldAsk {
 	readonly door: Door;
 	readonly text: string;
 	readonly ghost: string;
 	readonly onText: (text: string) => void;
+	readonly onDoor: (door: Door) => void;
 }
 
+export interface MenuFieldProps {
+	readonly ask: MenuFieldAsk;
+	readonly end: ReactNode;
+	readonly onFiles: FilesTaker | null;
+}
+
+type FilesTaker = (files: readonly File[]) => void;
+
 const PLACEHOLDER: Readonly<Record<Door, string>> = {
-	anywhere: "Search tabs, chats, apps, or type an address",
-	"new-tab": "Address, app or search",
+	anywhere: "Find tabs, chats and apps",
+	"new-tab": "Search the web or ask Sumi",
+	ask: "Ask Sumi anything",
 	"this-tab": "Address or search, opens in this tab",
 };
-const TOKEN: Readonly<Record<Door, string>> = {
-	anywhere: "",
-	"new-tab": "New tab",
-	"this-tab": "In this tab",
-};
+const IN_THIS_TAB = "In this tab";
 const SEARCH_EVERYTHING = "Remove, search everything";
-const FIELD_LABEL = "Search tabs, chats, apps and the web";
+const FIELD_LABEL = "Find tabs, chats, apps or make something new";
+const FIELD_GLYPH_BY_DOOR: Readonly<Record<Door, FieldGlyph>> = {
+	anywhere: "find",
+	"new-tab": "new",
+	ask: "ask",
+	"this-tab": "find",
+};
 
-export function MenuField({ door, text, ghost, onText }: MenuFieldProps): ReactElement {
+export function MenuField({ ask: { door, text, ghost, onText, onDoor }, end, onFiles }: MenuFieldProps): ReactElement {
 	const field = useSelectsFieldOnMount();
-	const changeDoor = useCommand(ChangeMenuDoorCommand);
 	return (
-		<div className="wg-cm-field">
-			<Icon name="search" size={18} />
-			{door === "anywhere" ? null : (
-				<span className="wg-cm-token" data-cm-token={door}>
-					<Icon name={door === "new-tab" ? "plus" : "arrow-right-left"} size={12} />
-					{TOKEN[door]}
+		<div
+			className="wg-cm-field"
+			onDragOver={(event) => acceptFileDrag(event, onFiles)}
+			onDrop={(event) => takeDroppedFiles(event, onFiles)}
+		>
+			<FieldIcon shown={FIELD_GLYPH_BY_DOOR[door]} />
+			{door === "this-tab" ? (
+				<span className="wg-cm-token">
+					<Icon name="arrow-right-left" size={12} />
+					{IN_THIS_TAB}
 					<button
 						type="button"
 						className="wg-cm-token-drop"
 						aria-label={SEARCH_EVERYTHING}
 						onClick={() => {
-							void changeDoor.run({ door: "anywhere" });
+							onDoor("anywhere");
 							field.current?.focus();
 						}}
 					>
 						<Icon name="x" size={10} />
 					</button>
 				</span>
-			)}
+			) : null}
 			<span className="wg-cm-input-wrap">
 				<span className="wg-cm-ghost" aria-hidden="true">
 					<span className="wg-cm-ghost-typed">{text}</span>
@@ -62,8 +77,40 @@ export function MenuField({ door, text, ghost, onText }: MenuFieldProps): ReactE
 					aria-label={FIELD_LABEL}
 					spellCheck={false}
 					onChange={(event) => onText(event.currentTarget.value)}
+					onPaste={(event) => takePastedFiles(event, onFiles)}
 				/>
 			</span>
+			{end}
 		</div>
 	);
+}
+
+function takePastedFiles(event: ClipboardEvent<HTMLInputElement>, onFiles: FilesTaker | null): void {
+	const files = [...event.clipboardData.files];
+
+	if (onFiles === null || files.length === 0) {
+		return;
+	}
+
+	event.preventDefault();
+	onFiles(files);
+}
+
+function acceptFileDrag(event: DragEvent<HTMLDivElement>, onFiles: FilesTaker | null): void {
+	if (onFiles === null || !event.dataTransfer.types.includes("Files")) {
+		return;
+	}
+
+	event.preventDefault();
+}
+
+function takeDroppedFiles(event: DragEvent<HTMLDivElement>, onFiles: FilesTaker | null): void {
+	const files = [...event.dataTransfer.files];
+
+	if (onFiles === null || files.length === 0) {
+		return;
+	}
+
+	event.preventDefault();
+	onFiles(files);
 }

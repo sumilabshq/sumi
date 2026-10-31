@@ -54,7 +54,7 @@ export function MenuPanel({ door, startText, pageId }: MenuPanelProps): ReactEle
 			onKeyDown={onKey}
 		>
 			{askApp === null ? (
-				<MenuField {...field} end={null} onFiles={null} />
+				<MenuField ask={field} end={null} onFiles={null} />
 			) : (
 				<AppProvider app={askApp}>
 					<AskField field={field} />
