@@ -1,5 +1,6 @@
 import { dom, layBehaviorGlobals } from "./behaviors-dom.ts";
-import { LayoutMotion, sightOf } from "../apps/studio/src/features/app-host/lib/layout-motion/layout-motion.ts";
+import { LayoutMotion } from "../apps/studio/src/features/app-host/lib/layout-motion/layout-motion.ts";
+import { sightOf } from "../apps/studio/src/features/app-host/lib/layout-motion/layout-sight.ts";
 import { tabRefOf } from "../apps/studio/src/features/app-host/lib/tabs-sidebar/pointed-of.ts";
 import { check, tally } from "./check-helpers.ts";
 

@@ -1,5 +1,5 @@
 import type { LayoutMotion } from "../layout-motion/layout-motion.js";
-import { measuredLayoutOf } from "./sidebar-layout.js";
+import { measuredLayoutOf } from "./sidebar-measure.js";
 import type { SidebarLayout } from "./sidebar-layout.js";
 
 const STALE_WAIT_MS = 120;

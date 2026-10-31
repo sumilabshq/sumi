@@ -1,4 +1,4 @@
-import { cardOrRowOf } from "./sidebar-layout.js";
+import { cardOrRowOf } from "./sidebar-measure.js";
 
 const SAID = "A chat can't hold a chat";
 const SVG_NS = "http://www.w3.org/2000/svg";

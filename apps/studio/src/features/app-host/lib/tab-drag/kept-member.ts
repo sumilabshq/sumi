@@ -1,5 +1,6 @@
 import type { SidebarEntry, SidebarSection, TabDrop, TabsSidebar } from "@widgetarium/app-host";
-import { entryKeysOf, insertedBefore, keyedSpot } from "./sidebar-put-in.js";
+import { insertedBefore, keyedSpot } from "./keyed-spot.js";
+import { entryKeysOf } from "./sidebar-put-in.js";
 
 export interface Membership {
 	readonly id: string;

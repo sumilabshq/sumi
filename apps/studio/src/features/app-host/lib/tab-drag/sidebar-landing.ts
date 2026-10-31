@@ -2,10 +2,11 @@ import type { GhostShape, TearOffGhost } from "@widgetarium/behaviors";
 import type { TabDrop } from "@widgetarium/app-host";
 import type { DragPreview } from "./drag-preview.js";
 import type { DragSource } from "./drag-source.js";
-import { placeholderRectOf } from "./drop-aim.js";
+import { placeholderRectOf } from "./drag-placeholder.js";
 import type { LaidOutSidebar } from "./laid-out-sidebar.js";
 import type { SidebarAim } from "./sidebar-aim.js";
-import { contentStartOf, scrolledOf } from "./sidebar-layout.js";
+import { scrolledOf } from "./sidebar-layout.js";
+import { contentStartOf } from "./sidebar-measure.js";
 import type { Rect } from "./sidebar-layout.js";
 
 export type OnTabDrop = (source: DragSource, drop: TabDrop) => Promise<boolean>;

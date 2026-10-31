@@ -1,7 +1,7 @@
 import type { TabDrop, TabsSidebar } from "@widgetarium/app-host";
 import { arrangedSidebar } from "./arranged-sidebar.js";
 import { arrangementKeyOf } from "./arrangement-key.js";
-import { isSameDrop } from "./drop-aim.js";
+import { isSameDrop } from "./tab-drops.js";
 import type { DragSource } from "./drag-source.js";
 import { sourceSpotOf } from "./source-spot.js";
 

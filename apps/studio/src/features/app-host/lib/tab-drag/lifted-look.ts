@@ -2,7 +2,7 @@ import { createContext, useContext, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { TabsSidebar } from "@widgetarium/app-host";
 import type { DragPreviewState } from "./drag-preview.js";
-import { liftedSplitIdOf } from "./drop-aim.js";
+import { liftedSplitIdOf } from "./drag-placeholder.js";
 
 export interface LiftedLook {
 	readonly ids: ReadonlySet<string>;

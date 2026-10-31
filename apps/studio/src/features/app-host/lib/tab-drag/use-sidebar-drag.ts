@@ -9,7 +9,7 @@ import type { SidebarDragParts } from "./sidebar-drag-parts.js";
 import { TabDragSession } from "./tab-drag-session.js";
 import type { OnTabDrop, TabDragAsk } from "./tab-drag-session.js";
 import { TetheredPull, isHeldElsewhere } from "./tethered-pull.js";
-import { contentStartOf, rectOf } from "./sidebar-layout.js";
+import { contentStartOf, rectOf } from "./sidebar-measure.js";
 import { listIdOf, tabRefOf } from "../tabs-sidebar/pointed-of.js";
 import type { TabRef } from "./tab-ref.js";
 

@@ -13,15 +13,34 @@ export interface Measured {
 
 export interface MeasuredRow extends Measured {
 	readonly isChat: boolean;
+	readonly isFolded: boolean;
+	readonly cardRect: Rect;
 }
 
 export interface MeasuredGroup extends Measured {
 	readonly head: Rect;
 	readonly rows: readonly MeasuredRow[];
 	readonly isOpen: boolean;
+	readonly holdsChat: boolean;
 }
 
-export type MeasuredUnit = (MeasuredRow & { readonly kind: "tab" }) | (MeasuredGroup & { readonly kind: "group" });
+export interface MeasuredPart {
+	readonly id: string | null;
+	readonly element: HTMLElement;
+	readonly rect: Rect;
+}
+
+export interface MeasuredSplit extends Measured {
+	readonly anchorId: string;
+	readonly parts: readonly MeasuredPart[];
+	readonly members: Rect;
+	readonly isOpen: boolean;
+}
+
+export type MeasuredUnit =
+	| (MeasuredRow & { readonly kind: "tab" })
+	| (MeasuredGroup & { readonly kind: "group" })
+	| (MeasuredSplit & { readonly kind: "split" });
 
 export interface MeasuredGrid {
 	readonly element: HTMLElement | null;
@@ -46,49 +65,16 @@ export interface SidebarLayout {
 	readonly grid: MeasuredGrid;
 	readonly scroller: HTMLElement | null;
 	readonly scrollerRect: Rect;
+	readonly scrollTop: number;
 	readonly lists: readonly MeasuredList[];
 	readonly units: readonly MeasuredUnit[];
-	readonly groupMargin: number;
 }
 
-export const GRID_COLUMNS = 4;
+const GRID_COLUMNS = 4;
 export const GRID_GAP_PX = 6;
 export const TILE_HEIGHT_PX = 46;
 const ROW_GAP_PX = 1;
 const ROW_HEIGHT_PX = 34;
-
-const NOWHERE: Rect = {
-	left: 0,
-	top: 0,
-	width: 0,
-	height: 0,
-};
-
-export function rectOf(element: Element): Rect {
-	const box = element.getBoundingClientRect();
-	return {
-		left: box.left,
-		top: box.top,
-		width: box.width,
-		height: box.height,
-	};
-}
-
-export function measuredLayoutOf(holder: HTMLElement): SidebarLayout {
-	const scroller = holder.querySelector<HTMLElement>("[data-host-column-scroll]");
-	const lists = [...holder.querySelectorAll<HTMLElement>("[data-tabs-list]")].flatMap((element) =>
-		measuredListsOf(holder, element),
-	);
-	const units = lists.flatMap((list) => list.units);
-	return {
-		grid: measuredGridOf(holder.querySelector<HTMLElement>("[data-tabs-essentials]")),
-		scroller,
-		scrollerRect: rectOrNullOf(scroller) ?? NOWHERE,
-		lists,
-		units,
-		groupMargin: groupMarginOf(units),
-	};
-}
 
 export function findMeasuredList(layout: SidebarLayout, id: string): MeasuredList | undefined {
 	return layout.lists.find((list) => list.id === id);
@@ -96,6 +82,19 @@ export function findMeasuredList(layout: SidebarLayout, id: string): MeasuredLis
 
 export function listTopOf(list: MeasuredList): number {
 	return list.head?.rect.top ?? list.rect.top;
+}
+
+export function scrolledOf(layout: SidebarLayout): number {
+	return (layout.scroller?.scrollTop ?? 0) - layout.scrollTop;
+}
+
+export function splitUnitOf(layout: SidebarLayout, splitId: string): MeasuredSplit | undefined {
+	const unit = layout.units.find((one) => one.kind === "split" && one.id === splitId);
+	return unit?.kind === "split" ? unit : undefined;
+}
+
+export function memberIdsOf(split: MeasuredSplit | undefined): readonly string[] {
+	return split?.parts.flatMap((part) => (part.id === null ? [] : [part.id])) ?? [];
 }
 
 export function rowStepOf(layout: SidebarLayout): number {
@@ -106,6 +105,25 @@ export function rowStepOf(layout: SidebarLayout): number {
 export function groupUnitOf(layout: SidebarLayout, groupId: string): MeasuredGroup | undefined {
 	const unit = layout.units.find((one) => one.kind === "group" && one.id === groupId);
 	return unit?.kind === "group" ? unit : undefined;
+}
+
+export function chatRowsOf(list: MeasuredList): readonly MeasuredRow[] {
+	const rows = list.units.flatMap((unit) => {
+		if (unit.kind === "tab") {
+			return [unit];
+		}
+
+		return unit.kind === "group" && unit.isOpen ? unit.rows : [];
+	});
+	return rows.filter((row) => row.isChat);
+}
+
+export function allChatRowsOf(layout: SidebarLayout): readonly MeasuredRow[] {
+	return layout.lists.flatMap((list) => chatRowsOf(list));
+}
+
+export function chatRowOf(layout: SidebarLayout, id: string): MeasuredRow | undefined {
+	return allChatRowsOf(layout).find((row) => row.id === id);
 }
 
 export function bottomOf(rect: Rect): number {
@@ -122,132 +140,4 @@ export function columnsOf(tiles: number): number {
 
 export function cellWidthOf(grid: MeasuredGrid, columns: number): number {
 	return (grid.rect.width - GRID_GAP_PX * (columns - 1)) / columns;
-}
-
-export function cellRectOf(grid: MeasuredGrid, at: number, columns: number): Rect {
-	const width = cellWidthOf(grid, columns);
-	return {
-		left: grid.rect.left + (at % columns) * (width + GRID_GAP_PX),
-		top: grid.rect.top + Math.floor(at / columns) * (TILE_HEIGHT_PX + GRID_GAP_PX),
-		width,
-		height: TILE_HEIGHT_PX,
-	};
-}
-
-export function gridHeightOf(tiles: number): number {
-	const rows = Math.ceil(tiles / GRID_COLUMNS);
-	return rows === 0 ? 0 : rows * TILE_HEIGHT_PX + (rows - 1) * GRID_GAP_PX;
-}
-
-function measuredOf(found: Iterable<HTMLElement>): readonly Measured[] {
-	return [...found].flatMap((element) => {
-		const id = element.dataset["tabsId"];
-		return id === undefined
-			? []
-			: [
-					{
-						id,
-						element,
-						rect: rectOf(element),
-					},
-				];
-	});
-}
-
-function measuredRowsOf(found: Iterable<HTMLElement>): readonly MeasuredRow[] {
-	return measuredOf(found).map((row) => ({
-		...row,
-		isChat: row.element.dataset["tabsChat"] !== undefined,
-	}));
-}
-
-function measuredGridOf(element: HTMLElement | null): MeasuredGrid {
-	if (element === null) {
-		return {
-			element,
-			rect: NOWHERE,
-			tiles: [],
-		};
-	}
-
-	return {
-		element,
-		rect: rectOf(element),
-		tiles: measuredOf(element.querySelectorAll<HTMLElement>('[data-tabs-item="essential"]')),
-	};
-}
-
-function measuredListsOf(holder: HTMLElement, element: HTMLElement): readonly MeasuredList[] {
-	const id = element.dataset["tabsList"];
-
-	if (id === undefined) {
-		return [];
-	}
-
-	return [
-		{
-			id,
-			isNested: element.dataset["tabsNested"] !== undefined,
-			rect: rectOf(element),
-			head: measuredHeadOf(holder, id),
-			units: [...element.children].flatMap((child) => unitsOf(child)),
-		},
-	];
-}
-
-function measuredHeadOf(holder: HTMLElement, listId: string): MeasuredHead | null {
-	const head = holder.querySelector<HTMLElement>(`[data-tabs-section="${CSS.escape(listId)}"]`);
-
-	if (head === null) {
-		return null;
-	}
-
-	return {
-		element: head,
-		rect: rectOf(head),
-	};
-}
-
-function rectOrNullOf(element: Element | null): Rect | null {
-	return element === null ? null : rectOf(element);
-}
-
-function groupMarginOf(units: readonly MeasuredUnit[]): number {
-	const firstBox = units.find((unit) => unit.kind === "group");
-
-	if (firstBox === undefined) {
-		return 0;
-	}
-
-	return parseFloat(getComputedStyle(firstBox.element).marginTop) || 0;
-}
-
-function unitsOf(child: Element): readonly MeasuredUnit[] {
-	if (!(child instanceof HTMLElement)) {
-		return [];
-	}
-
-	const boxId = child.dataset["tabsBox"];
-
-	if (boxId === undefined) {
-		return measuredRowsOf([child]).map((row) => ({
-			...row,
-			kind: "tab",
-		}));
-	}
-
-	return [measuredGroupOf(child, boxId)];
-}
-
-function measuredGroupOf(box: HTMLElement, id: string): MeasuredUnit {
-	const head = box.querySelector<HTMLElement>('[data-tabs-item="group"]');
-	return {
-		kind: "group",
-		id,
-		element: box,
-		rect: rectOf(box),
-		head: rectOf(head ?? box),
-		rows: measuredRowsOf(box.querySelectorAll<HTMLElement>(':scope > [data-tabs-rows] > [data-tabs-item="tab"]')),
-		isOpen: head?.getAttribute("aria-expanded") === "true",
-	};
 }

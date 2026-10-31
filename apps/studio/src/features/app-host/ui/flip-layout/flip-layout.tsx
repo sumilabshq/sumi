@@ -1,7 +1,8 @@
 import { Component } from "react";
 import type { ReactNode, RefObject } from "react";
-import { sightOf } from "../../lib/layout-motion/layout-motion.js";
-import type { LayoutMotion, Sight } from "../../lib/layout-motion/layout-motion.js";
+import { sightOf } from "../../lib/layout-motion/layout-sight.js";
+import type { LayoutMotion } from "../../lib/layout-motion/layout-motion.js";
+import type { Sight } from "../../lib/layout-motion/layout-sight.js";
 
 export interface FlipLayoutProps {
 	readonly holder: RefObject<HTMLElement | null>;

@@ -1,71 +1,59 @@
-import { createElement as h, Fragment } from "react";
-import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
-import { FoldTabCommand } from "@widgetarium/app-host";
+import { createElement as h, useContext } from "react";
+import type { CSSProperties, ReactElement } from "react";
 import type { SidebarTab, TabChild } from "@widgetarium/app-host";
-import { FoldBox } from "../fold-box/fold-box.js";
-import { GroupBox } from "../group-box/group-box.js";
-import type { RowFold } from "../tab-row/fold-chevron.js";
-import { TabRow } from "../tab-row/tab-row.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import type { RowBadge } from "../tab-row/row-badge.js";
+import { SidebarCard } from "../sidebar-card/sidebar-card.js";
+import type { CardMarks } from "../sidebar-card/sidebar-card.js";
+import { CARD_RADIUS_PX } from "../../lib/tabs-look/tabs-look.js";
+import { DropTint } from "../drop-tint/drop-tint.js";
+import { HolderRows } from "./holder-rows.js";
+import { LIFTED_HIDDEN, LiftedContext, liftedWithout, useLiftedMark } from "../../lib/tab-drag/lifted-look.js";
 
 export interface HolderEntryProps {
 	readonly holder: SidebarTab;
 	readonly children: readonly TabChild[];
 	readonly groupId: string | null;
+	readonly splitId?: string | null;
 	readonly renaming: RowRenaming;
 	readonly badge?: RowBadge | null;
 }
 
-const CHILDREN = "cv:flex cv:flex-col cv:gap-px cv:empty:hidden";
+const LIFTED_HOLDER: CSSProperties = {
+	...LIFTED_HIDDEN,
+	position: "relative",
+};
+const CARD_MARKS: CardMarks = {
+	"data-tabs-card": "",
+};
+const LIFTED_CARD_MARKS: CardMarks = {
+	"data-tabs-card": "",
+	"data-tabs-lifted": "",
+	"data-tabs-lifted-holder": "",
+};
 
-export function HolderEntry({ holder, children, groupId, renaming, badge = null }: HolderEntryProps): ReactElement {
-	const foldTab = useCommand(FoldTabCommand);
-	const isFolded = holder.isFolded ?? false;
-	const fold: RowFold | null =
-		children.length === 0 ? null : { isFolded, onToggle: () => void foldTab.run({ id: holder.tab.id }) };
-	const childOf = (child: SidebarTab, childGroupId: string | null): ReactElement => (
-		<TabRow
-			key={child.tab.id}
-			item={child}
-			groupId={childGroupId}
-			place="child"
-			isRenaming={renaming.id === child.tab.id}
-			onRenamed={renaming.onRenamed}
-		/>
-	);
+export function HolderEntry(props: HolderEntryProps): ReactElement {
+	const lifted = useLiftedMark(props.holder.tab.id, props.splitId ?? null);
+	const look = useContext(LiftedContext);
+
+	if (props.children.length === 0) {
+		return <HolderRows {...props} />;
+	}
+
 	return (
-		<Fragment>
-			<TabRow
-				item={holder}
-				groupId={groupId}
-				place="top"
-				isRenaming={renaming.id === holder.tab.id}
-				onRenamed={renaming.onRenamed}
-				badge={badge}
-				fold={fold}
-			/>
-			<FoldBox isOpen={!isFolded}>
-				<div className={CHILDREN} data-tabs-list={holder.tab.id} data-tabs-in={holder.tab.id} data-tabs-nested="">
-					{children.map((child) =>
-						child.kind === "tab" ? (
-							childOf(child, null)
-						) : (
-							<GroupBox
-								key={child.group.id}
-								id={child.group.id}
-								name={child.group.name}
-								hue={child.group.hue}
-								isOpen={child.group.isOpen}
-								count={child.group.tabs.length}
-							>
-								{child.group.tabs.map((tab) => childOf({ kind: "tab", tab }, child.group.id))}
-							</GroupBox>
-						),
-					)}
-				</div>
-			</FoldBox>
-		</Fragment>
+		<SidebarCard
+			isOpen={!(props.holder.isFolded ?? false)}
+			style={lifted === null ? undefined : LIFTED_HOLDER}
+			marks={lifted === null ? CARD_MARKS : LIFTED_CARD_MARKS}
+		>
+			{lifted === null ? null : <DropTint isOn={lifted.isMarked} radius={CARD_RADIUS_PX} />}
+			{lifted === null ? (
+				<HolderRows {...props} />
+			) : (
+				<LiftedContext.Provider value={liftedWithout(look, props.holder.tab.id)}>
+					<HolderRows {...props} />
+				</LiftedContext.Provider>
+			)}
+		</SidebarCard>
 	);
 }

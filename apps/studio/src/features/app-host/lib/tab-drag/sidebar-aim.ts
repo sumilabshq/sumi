@@ -1,7 +1,9 @@
 import type { TabDrop } from "@widgetarium/app-host";
 import type { DragPreview } from "./drag-preview.js";
 import type { DragSource } from "./drag-source.js";
-import { dropOf, isOverRefusedSlot, isSameDrop, refusedChatOf, slotAboveOf } from "./drop-aim.js";
+import { dropOf } from "./drop-aim.js";
+import { isOverRefusedSlot, refusedChatOf, slotAboveOf } from "./refused-chat.js";
+import { isSameDrop } from "./tab-drops.js";
 import type { LaidOutSidebar } from "./laid-out-sidebar.js";
 import type { SidebarLayout } from "./sidebar-layout.js";
 import { RefusalCue } from "./refusal-cue.js";

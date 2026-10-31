@@ -1,4 +1,4 @@
-import { ROW_WRAPPER } from "../tab-drag/sidebar-layout.js";
+import { ROW_WRAPPER } from "../tab-drag/sidebar-measure.js";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export type PointedItem =

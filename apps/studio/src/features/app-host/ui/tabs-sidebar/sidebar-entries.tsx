@@ -26,10 +26,7 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 				return (
 					<GroupBox
 						key={entry.group.id}
-						id={entry.group.id}
-						name={entry.group.name}
-						hue={entry.group.hue}
-						isOpen={entry.group.isOpen}
+						group={entry.group}
 						count={entry.group.items.length}
 						holdsChat={entry.group.items.some((item) => item.children !== undefined)}
 					>

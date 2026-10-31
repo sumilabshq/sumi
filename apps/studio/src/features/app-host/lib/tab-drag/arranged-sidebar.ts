@@ -1,6 +1,7 @@
 import type { SidebarEntry, SidebarSplitState, TabDrop, TabsSidebar } from "@widgetarium/app-host";
 import type { DragSource } from "./drag-source.js";
-import { insertedBefore, keyedSpot, putIn } from "./sidebar-put-in.js";
+import { insertedBefore, keyedSpot } from "./keyed-spot.js";
+import { putIn } from "./sidebar-put-in.js";
 import { takenOut } from "./sidebar-take-out.js";
 import { isKeptInSplit, membershipOf, withKeptMemberPlaced } from "./kept-member.js";
 

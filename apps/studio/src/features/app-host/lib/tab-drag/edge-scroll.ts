@@ -1,4 +1,4 @@
-import { rectOf } from "./sidebar-layout.js";
+import { rectOf } from "./sidebar-measure.js";
 import type { Rect } from "./sidebar-layout.js";
 
 const EDGE_PX = 40;
