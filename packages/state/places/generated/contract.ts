@@ -385,6 +385,15 @@ export const TabTurnMarksSchema = z.object({
 
 export const SeenTabSchema = z.object({ id: z.string().min(1) });
 
+export const OwnAppTabAskSchema = z.object({ id: z.string().min(1) });
+
+export const OwnAppTabSchema = z.object({
+	id: z.string(),
+	app: z.string(),
+	address: z.string().nullable(),
+	title: z.string().nullable(),
+});
+
 export const NamedRecordSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
@@ -768,6 +777,9 @@ export const ChatTabsQuery = query("places/chat-tabs")
 export const AppFacesQuery = query("places/app-faces")
 	.output(AppFacesSchema)
 	.settlesNow();
+export const AppTabQuery = query("places/app-tab")
+	.input(OwnAppTabAskSchema)
+	.output(OwnAppTabSchema);
 export const RestoreTabsCommand = command("places/restore-tabs")
 	.input(RestoreTabsAskSchema)
 	.output(TabsSettledSchema)
@@ -915,4 +927,4 @@ export const ResizeSplitCommand = command("places/resize-split")
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, AppFacesQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, RecordAppPageCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand]);
+export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, AppFacesQuery, AppTabQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, RecordAppPageCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand]);

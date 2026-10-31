@@ -29,6 +29,9 @@ import {
 	UngroupCommand,
 } from "./features/tab-placing/requests.js";
 import {
+	AppCallersGuard,
+	AppTabQuery,
+	RereadAppTabSubscriber,
 	ForgetRunningTurnsCommand,
 	KeepChatTabsCommand,
 	MarkTabSeenCommand,
@@ -74,7 +77,8 @@ import {
 export const PlacesModule = module("places")
 	.on(Server)
 	.guard(PublicGuard)
-	.subscribers(RereadWindowsSubscriber, RereadPlacedTabsSubscriber, RereadShownSplitSubscriber)
+	.guard(AppCallersGuard)
+	.subscribers(RereadWindowsSubscriber, RereadPlacedTabsSubscriber, RereadShownSplitSubscriber, RereadAppTabSubscriber)
 	.public(
 		OpenWindowsQuery,
 		OpenWindowCommand,
@@ -87,6 +91,7 @@ export const PlacesModule = module("places")
 		ClosedTabsQuery,
 		ChatTabsQuery,
 		AppFacesQuery,
+		AppTabQuery,
 	)
 	.public(
 		RestoreTabsCommand,

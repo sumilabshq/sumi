@@ -17,6 +17,15 @@ export const TabTurnMarksSchema = z.object({
 
 export const SeenTabSchema = z.object({ id: z.string().min(1) });
 
+export const OwnAppTabAskSchema = z.object({ id: z.string().min(1) });
+
+export const OwnAppTabSchema = z.object({
+	id: z.string(),
+	app: z.string(),
+	address: z.string().nullable(),
+	title: z.string().nullable(),
+});
+
 export const NamedRecordSchema = z.object({
 	id: z.string().min(1),
 	title: z.string().nullable(),
