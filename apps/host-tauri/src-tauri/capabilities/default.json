@@ -14,6 +14,7 @@
 		"studio-log:default",
 		"agent:default",
 		"studio-core:default",
-		"terminal:default"
+		"terminal:default",
+		"apps:default"
 	]
 }

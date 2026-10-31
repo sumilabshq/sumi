@@ -1,0 +1,1 @@
+default-src 'none'; script-src sumi-app://{app}; style-src sumi-app://{app} 'unsafe-inline'; img-src sumi-app://{app} data: blob:; font-src sumi-app://{app} data:; media-src sumi-app://{app} blob:; worker-src sumi-app://{app} blob:; connect-src sumi-app://{app} https: wss:; object-src 'none'; base-uri 'none'; form-action 'none'

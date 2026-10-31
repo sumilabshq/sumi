@@ -1,5 +1,5 @@
 use super::refusal::Refusal;
-use std::fs;
+use crate::path_guard::{is_symlink, joined_without_symlinks, relative_parts};
 use std::path::{Path, PathBuf};
 
 pub const APP_FOLDER: &str = ".ink";
@@ -44,13 +44,10 @@ pub struct Place {
 }
 
 pub fn place_in(app_folder: &Path, root_label: &str, relative: &str) -> Result<Place, Refusal> {
-    let mut file = app_folder.to_path_buf();
-    refuse_symlink(&file)?;
-    for part in checked_parts(relative)? {
-        file.push(part);
-        refuse_symlink(&file)?;
-    }
-
+    refuse_symlink(app_folder)?;
+    let file = joined_without_symlinks(app_folder, &checked_parts(relative)?).map_err(|link| Refusal::Symlink {
+        detail: link.display().to_string(),
+    })?;
     Ok(Place {
         label: format!("{root_label}:{relative}"),
         file,
@@ -68,8 +65,7 @@ pub fn require_extension(relative: &str, extension: &str) -> Result<(), Refusal>
 }
 
 pub fn refuse_symlink(path: &Path) -> Result<(), Refusal> {
-    let is_symlink = fs::symlink_metadata(path).is_ok_and(|meta| meta.file_type().is_symlink());
-    if !is_symlink {
+    if !is_symlink(path) {
         return Ok(());
     }
 
@@ -92,15 +88,9 @@ fn checked_parts(relative: &str) -> Result<Vec<&str>, Refusal> {
     let refused = || Refusal::BadPath {
         detail: relative.to_owned(),
     };
-    let is_unsafe = relative.contains(FORBIDDEN_IN_PATH) || relative.chars().any(char::is_uppercase);
-    if relative.is_empty() || relative.starts_with('/') || is_unsafe {
+    if relative.chars().any(char::is_uppercase) {
         return Err(refused());
     }
 
-    let parts: Vec<&str> = relative.split('/').collect();
-    if parts.iter().any(|part| part.is_empty() || *part == "." || *part == "..") {
-        return Err(refused());
-    }
-
-    Ok(parts)
+    relative_parts(relative, &FORBIDDEN_IN_PATH).ok_or_else(refused)
 }
