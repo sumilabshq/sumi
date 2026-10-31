@@ -17,6 +17,7 @@ fn main() {
         .plugin(widgetarium_host_tauri_lib::agent::init())
         .plugin(widgetarium_host_tauri_lib::studio_core::init())
         .plugin(widgetarium_host_tauri_lib::terminal::init())
+        .plugin(widgetarium_host_tauri_lib::files::init())
         .plugin(app_installer::init())
         .register_asynchronous_uri_scheme_protocol(scheme::SCHEME, app_installer::serve_scheme)
         .run(tauri::generate_context!())

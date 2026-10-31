@@ -3,6 +3,7 @@ const BROWSER: &str = include_str!("../src/browser/dispatch.rs");
 const STORE: &str = include_str!("../src/store/dispatch.rs");
 const ASSISTANT: &str = include_str!("../src/assistant/dispatch.rs");
 const APPS: &str = include_str!("../src/app_installer/dispatch.rs");
+const FILES: &str = include_str!("../src/files.rs");
 const BROWSER_OUTSIDE_THE_MATCH: [&str; 5] = ["open", "snapshot", "window_shot", "drive_log", "drive_front"];
 
 fn answering_body(dispatch: &str) -> &str {
@@ -34,6 +35,7 @@ fn main() {
         ("store", answered_commands(STORE), listed_commands("STORE_COMMANDS")),
         ("assistant", answered_commands(ASSISTANT), listed_commands("ASSISTANT_COMMANDS")),
         ("apps", answered_commands(APPS), listed_commands("APPS_COMMANDS")),
+        ("files", answered_commands(FILES), listed_commands("FILES_COMMANDS")),
     ];
     let mut failed = 0;
 

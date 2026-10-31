@@ -86,3 +86,13 @@ harness = false
 name = "app_installer_rules"
 path = "tests/app_installer_rules.rs"
 harness = false
+
+[[test]]
+name = "files_rules"
+path = "tests/files_rules.rs"
+harness = false
+
+[[test]]
+name = "terminal_exit"
+path = "tests/terminal_exit.rs"
+harness = false

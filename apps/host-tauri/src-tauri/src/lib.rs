@@ -3,6 +3,7 @@ pub mod app_installer;
 pub mod assistant;
 pub mod browser;
 pub mod drive_files;
+pub mod files;
 pub mod path_guard;
 pub mod store;
 pub mod studio_caller;

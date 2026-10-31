@@ -1,14 +1,15 @@
 use super::studio_caller::refuse_foreign_caller;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::os::fd::{AsRawFd, FromRawFd, RawFd};
 use std::os::unix::process::CommandExt;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant};
 use tauri::ipc::{Channel, Invoke, InvokeBody, InvokeError, InvokeMessage, JavaScriptChannelId};
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::Wry;
@@ -17,12 +18,13 @@ pub const PLUGIN_NAME: &str = "terminal";
 
 const DEFAULT_SHELL: &str = "/bin/zsh";
 const DEFAULT_LANG: &str = "en_US.UTF-8";
-const EXITED: &[u8] = b"\r\n[process exited]\r\n";
 const NO_SESSION: &str = "This terminal is closed.";
 const NOT_A_CHANNEL: &str = "onData must be a channel.";
 const MISSING_ARGUMENT: &str = "The terminal call is missing {name}.";
 const UNKNOWN_COMMAND: &str = "The terminal has no command {name}.";
 const READ_CHUNK_BYTES: usize = 16 * 1024;
+const EXIT_WAIT: Duration = Duration::from_secs(2);
+const EXIT_POLL: Duration = Duration::from_millis(20);
 
 struct Session {
     master: File,
@@ -103,7 +105,41 @@ fn spawned_shell(slave: RawFd) -> Result<Child, String> {
     command.spawn().map_err(|error| format!("{shell} did not start: {error}"))
 }
 
-fn pipe_output(mut reader: File, on_data: Channel<Value>) {
+pub fn output_message(bytes: &[u8]) -> Value {
+    Value::from(bytes.to_vec())
+}
+
+pub fn exit_message(code: Option<i32>) -> Value {
+    json!({ "exit": code })
+}
+
+pub fn settled_code(mut try_wait: impl FnMut() -> Option<Option<ExitStatus>>, wait: Duration) -> Option<i32> {
+    let deadline = Instant::now() + wait;
+
+    loop {
+        if let Some(status) = try_wait()? {
+            return status.code();
+        }
+
+        if Instant::now() >= deadline {
+            return None;
+        }
+
+        std::thread::sleep(EXIT_POLL);
+    }
+}
+
+fn exit_code_of(id: u64) -> Option<i32> {
+    settled_code(
+        || {
+            let mut held = sessions().lock().ok()?;
+            held.get_mut(&id)?.child.try_wait().ok()
+        },
+        EXIT_WAIT,
+    )
+}
+
+fn pipe_output(id: u64, mut reader: File, on_data: Channel<Value>) {
     std::thread::spawn(move || {
         let mut buffer = [0u8; READ_CHUNK_BYTES];
 
@@ -111,14 +147,16 @@ fn pipe_output(mut reader: File, on_data: Channel<Value>) {
             match reader.read(&mut buffer) {
                 Ok(0) | Err(_) => break,
                 Ok(read) => {
-                    if on_data.send(Value::from(buffer[..read].to_vec())).is_err() {
+                    if on_data.send(output_message(&buffer[..read])).is_err() {
                         break;
                     }
                 }
             }
         }
 
-        let _ = on_data.send(Value::from(EXITED.to_vec()));
+        let code = exit_code_of(id);
+        eprintln!("[terminal] session {id} exited with {code:?}");
+        let _ = on_data.send(exit_message(code));
     });
 }
 
@@ -135,7 +173,7 @@ fn open(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let reader = master_file.try_clone().map_err(|error| error.to_string())?;
     let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
     sessions().lock().map_err(|error| error.to_string())?.insert(id, Session { master: master_file, child });
-    pipe_output(reader, on_data);
+    pipe_output(id, reader, on_data);
     eprintln!("[terminal] session {id} opened ({}×{})", size.ws_col, size.ws_row);
     Ok(Value::from(id))
 }

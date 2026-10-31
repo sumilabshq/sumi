@@ -12,6 +12,8 @@ const FONT_SIZE = 13;
 const LINE_HEIGHT = 1.25;
 const SCROLLBACK = 10_000;
 const DARK_LUMINANCE_BELOW = 0.5;
+const EXITED = "\r\n[process exited]\r\n";
+const NOT_UNDERSTOOD = "[widgetarium] the terminal said something that is neither bytes nor an exit";
 
 // TRADE-OFF: ANSI colours are terminal data, not UI tokens; Sumi has no 16-colour scale
 const LIGHT_ANSI: ITheme = {
@@ -126,8 +128,17 @@ function startShell(host: HTMLDivElement): () => void {
 }
 
 function openSession(terminal: Terminal): Promise<number> {
-	const onData = new Channel<number[]>();
-	onData.onmessage = (bytes) => terminal.write(Uint8Array.from(bytes));
+	const onData = new Channel<unknown>();
+	onData.onmessage = (said) => {
+		const shown = shownOf(said);
+
+		if (shown === null) {
+			console.error(NOT_UNDERSTOOD, said);
+			return;
+		}
+
+		terminal.write(shown);
+	};
 	const opened = invoke<number>("plugin:terminal|open", {
 		cols: terminal.cols,
 		rows: terminal.rows,
@@ -138,6 +149,22 @@ function openSession(terminal: Terminal): Promise<number> {
 		terminal.write(`\r\n${String(error)}\r\n`);
 	});
 	return opened;
+}
+
+function shownOf(said: unknown): Uint8Array | string | null {
+	if (Array.isArray(said)) {
+		return said.every(isByte) ? Uint8Array.from(said) : null;
+	}
+
+	return isExitSaid(said) ? EXITED : null;
+}
+
+function isByte(value: unknown): value is number {
+	return Number.isInteger(value) && typeof value === "number" && value >= 0 && value <= 255;
+}
+
+function isExitSaid(said: unknown): boolean {
+	return typeof said === "object" && said !== null && "exit" in said;
 }
 
 function themeOf(host: HTMLElement): ITheme {
