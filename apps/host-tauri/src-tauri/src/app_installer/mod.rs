@@ -3,7 +3,7 @@ pub mod install;
 pub mod paths;
 pub mod release;
 pub mod scheme;
-pub mod strict_json;
+pub mod decode;
 pub mod versions;
 
 use paths::{checked_app_id, checked_version, refuse_built_in, refuse_symlink};
@@ -112,7 +112,7 @@ impl AppInstaller {
         }
 
         rows.insert(id.to_owned(), next);
-        versions::write_rows(&self.apps, &rows)?;
+        versions::write_rows(&self.apps, rows)?;
         eprintln!("[apps] {STORE_FILE} {id}: {was_json} → {next_json}");
         Ok(answer)
     }

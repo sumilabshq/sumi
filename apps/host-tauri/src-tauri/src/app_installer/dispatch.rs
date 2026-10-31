@@ -1,6 +1,8 @@
-use super::strict_json::strict_texts_of;
+use super::decode::decode_value;
 use super::AppInstaller;
 use crate::studio_caller::refuse_foreign_caller;
+use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use serde_json::Value;
 use std::path::Path;
 use tauri::ipc::{Invoke, InvokeBody, InvokeError};
@@ -14,9 +16,30 @@ pub struct Call {
 }
 
 impl Call {
-    fn texts<const N: usize>(&self, names: [&str; N]) -> Result<[&str; N], String> {
-        strict_texts_of(&self.args, names, &format!("the {} call", self.command))
+    fn args<T: DeserializeOwned>(&self) -> Result<T, String> {
+        decode_value(&self.args, &format!("the {} call", self.command))
     }
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct PathArgs {
+    path: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields, rename_all = "camelCase")]
+struct InstallArgs {
+    id: String,
+    path: String,
+    manifest_sha256: String,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct VersionArgs {
+    id: String,
+    version: String,
 }
 
 pub fn call_of(command: &str, args: Value) -> Call {
@@ -54,13 +77,13 @@ pub fn answer_of(installer: &AppInstaller, call: &Call) -> Option<Result<Value, 
     let answer = match call.command.as_str() {
         "registry" => installer.registry(),
         "installed" => installer.installed(),
-        "inspect" => call.texts(["path"]).and_then(|[path]| super::release::inspect(Path::new(path))),
+        "inspect" => call.args().and_then(|args: PathArgs| super::release::inspect(Path::new(&args.path))),
         "install" => call
-            .texts(["id", "path", "manifestSha256"])
-            .and_then(|[id, path, manifest_sha256]| installer.install(id, Path::new(path), manifest_sha256)),
-        "switch" => call.texts(["id", "version"]).and_then(|[id, version]| installer.switch(id, version)),
-        "fail" => call.texts(["id", "version"]).and_then(|[id, version]| installer.fail(id, version)),
-        "retry" => call.texts(["id", "version"]).and_then(|[id, version]| installer.retry(id, version)),
+            .args()
+            .and_then(|args: InstallArgs| installer.install(&args.id, Path::new(&args.path), &args.manifest_sha256)),
+        "switch" => call.args().and_then(|args: VersionArgs| installer.switch(&args.id, &args.version)),
+        "fail" => call.args().and_then(|args: VersionArgs| installer.fail(&args.id, &args.version)),
+        "retry" => call.args().and_then(|args: VersionArgs| installer.retry(&args.id, &args.version)),
         _ => return None,
     };
     Some(answer)

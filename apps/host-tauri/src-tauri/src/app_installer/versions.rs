@@ -1,6 +1,8 @@
 use super::paths::{checked_app_id, is_plain_folder, refuse_symlink, version_key};
+use super::decode::decode_bytes;
 use crate::store::atomic::write_atomically;
-use serde_json::{json, Map, Value};
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::fs;
 use std::io::ErrorKind;
@@ -10,30 +12,17 @@ pub const STORE_FILE: &str = "store.json";
 
 pub type AppRows = BTreeMap<String, AppVersions>;
 
+#[derive(Serialize, Deserialize)]
+struct Store {
+    apps: AppRows,
+}
+
+#[derive(Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct AppVersions {
     pub current: Option<String>,
     pub previous: Option<String>,
     pub failed: Vec<String>,
-}
-
-impl Clone for AppVersions {
-    fn clone(&self) -> Self {
-        Self {
-            current: self.current.clone(),
-            previous: self.previous.clone(),
-            failed: self.failed.clone(),
-        }
-    }
-}
-
-impl Default for AppVersions {
-    fn default() -> Self {
-        Self {
-            current: None,
-            previous: None,
-            failed: Vec::new(),
-        }
-    }
 }
 
 impl AppVersions {
@@ -107,58 +96,23 @@ impl AppVersions {
     fn has_failed(&self, version: &str) -> bool {
         self.failed.iter().any(|failed| failed == version)
     }
-
-    fn to_store_json(&self) -> Value {
-        json!({
-            "current": self.current,
-            "previous": self.previous,
-            "failed": self.failed,
-        })
-    }
-
-    fn of_store_json(id: &str, row: &Value) -> Result<Self, String> {
-        let refused = || format!("{STORE_FILE} is corrupt: the row of {id} is not {{ current, previous, failed }}");
-        let optional_text = |name: &str| match row.get(name) {
-            None | Some(Value::Null) => Ok(None),
-            Some(Value::String(text)) => Ok(Some(text.clone())),
-            Some(_) => Err(refused()),
-        };
-        let failed = match row.get("failed") {
-            None => Vec::new(),
-            Some(Value::Array(items)) => {
-                items.iter().map(|item| item.as_str().map(str::to_owned).ok_or_else(refused)).collect::<Result<_, _>>()?
-            }
-            Some(_) => return Err(refused()),
-        };
-        Ok(Self {
-            current: optional_text("current")?,
-            previous: optional_text("previous")?,
-            failed,
-        })
-    }
 }
 
 pub fn read_rows(apps: &Path) -> Result<AppRows, String> {
     let file = apps.join(STORE_FILE);
     refuse_symlink(&file)?;
-    let text = match fs::read_to_string(&file) {
-        Ok(text) => text,
+    let bytes = match fs::read(&file) {
+        Ok(bytes) => bytes,
         Err(failure) if failure.kind() == ErrorKind::NotFound => return Ok(AppRows::new()),
         Err(failure) => return Err(format!("{STORE_FILE} cannot be read: {failure}")),
     };
-    let doc: Value = serde_json::from_str(&text).map_err(|failure| format!("{STORE_FILE} is corrupt: {failure}"))?;
-    let rows = doc
-        .get("apps")
-        .and_then(Value::as_object)
-        .ok_or_else(|| format!("{STORE_FILE} is corrupt: it has no apps object"))?;
-    rows.iter().map(|(id, row)| Ok((id.clone(), AppVersions::of_store_json(id, row)?))).collect()
+    decode_bytes::<Store>(&bytes, STORE_FILE).map(|store| store.apps)
 }
 
-pub fn write_rows(apps: &Path, rows: &AppRows) -> Result<(), String> {
+pub fn write_rows(apps: &Path, rows: AppRows) -> Result<(), String> {
     let file = apps.join(STORE_FILE);
     refuse_symlink(&file)?;
-    let apps_json: Map<String, Value> = rows.iter().map(|(id, row)| (id.clone(), row.to_store_json())).collect();
-    let text = serde_json::to_string_pretty(&json!({ "apps": apps_json })).map_err(|failure| failure.to_string())?;
+    let text = serde_json::to_string_pretty(&Store { apps: rows }).map_err(|failure| failure.to_string())?;
     write_atomically(&file, text.as_bytes()).map_err(|failure| format!("{STORE_FILE} was not written: {failure}"))
 }
 

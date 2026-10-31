@@ -308,6 +308,23 @@ fn corrupt_store_json_is_refused(checks: &mut Checks) {
     checks.refused("a row of the wrong shape is refused", installer.installed());
 }
 
+fn names_the_listed_row_it_refuses(checks: &mut Checks) {
+    let sandbox = Sandbox::new("listed-row");
+    let extra = sandbox.release("extra", "tasks", "1.0.0", INDEX);
+    edit_listing(&extra, |doc| listed_index(doc)["mode"] = json!("0644"));
+    checks.refused_with("an unknown field in a file row names the row", sandbox.install("tasks", &extra), "file row 1 of sumi-release.json has an unknown field mode");
+    let sizeless = sandbox.release("sizeless", "tasks", "1.0.0", INDEX);
+    edit_listing(&sizeless, |doc| {
+        listed_index(doc).as_object_mut().expect("a row").remove("size");
+    });
+    checks.refused_with("a missing field in a file row names the row", sandbox.install("tasks", &sizeless), "file row 1 of sumi-release.json has no size");
+    let lacking = sandbox.release("lacking", "tasks", "1.0.0", INDEX);
+    edit_listing(&lacking, |doc| {
+        doc.as_object_mut().expect("a listing").remove("app");
+    });
+    checks.refused_with("a missing listing field is named", sandbox.install("tasks", &lacking), "sumi-release.json has no app");
+}
+
 fn registry_reads_raw(checks: &mut Checks) {
     let sandbox = Sandbox::new("registry");
     let installer = sandbox.installer();
@@ -394,6 +411,7 @@ fn main() -> ExitCode {
     refuses_oversized_releases(&mut checks);
     sweeps_leftover_incoming(&mut checks);
     corrupt_store_json_is_refused(&mut checks);
+    names_the_listed_row_it_refuses(&mut checks);
     registry_reads_raw(&mut checks);
     scheme_serves_installed_files(&mut checks);
     frame_policy_never_reaches_ipc(&mut checks);
