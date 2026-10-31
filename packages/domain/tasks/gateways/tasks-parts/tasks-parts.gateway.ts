@@ -1,7 +1,7 @@
 import { workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { TasksFacts } from "../../shared/host/tasks-host.js";
 import { ClockGateway, SystemClockGateway } from "../clock/clock.gateway.js";
-import { StorageTasksGateway } from "../tasks/storage.gateway.js";
+import { FileTasksGateway } from "../tasks/file.gateway.js";
 import { TauriTasksGateway } from "../tasks/tauri.gateway.js";
 import type { TasksGateway } from "../tasks/tasks.gateway.js";
 
@@ -18,8 +18,8 @@ export function tasksPartsOn(facts: TasksFacts): TasksParts {
 }
 
 function tasksGatewayOf({ host, scope }: TasksFacts): TasksGateway {
-	if (host.kind === "storage") {
-		return new StorageTasksGateway(host.storage);
+	if (host.kind === "file") {
+		return new FileTasksGateway(host.file);
 	}
 
 	return new TauriTasksGateway(host.store, workspaceRootOf(scope.workspaceId));

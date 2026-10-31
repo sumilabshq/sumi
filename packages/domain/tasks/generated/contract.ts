@@ -2,9 +2,25 @@
 import { Repeatable, Server, command, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
-const KeptRevSchema = z.number().int().nonnegative();
+export const TaskRefSchema = z.string().min(1).max(20);
+
+export const ChatIdSchema = z.string().min(1).max(200);
+
+export const ClosedWithinSchema = z.enum(["none", "day", "week", "month", "all"]);
+
+export const ClosedOrderSchema = z.enum(["newest", "oldest"]);
 
 export const TaskKindSchema = z.enum(["code", "research", "design", "ops"]);
+
+export const BoardAskSchema = z.object({
+	closedWithin: ClosedWithinSchema.default("day"),
+	closedOrder: ClosedOrderSchema.default("newest"),
+	kind: TaskKindSchema.nullable().default(null),
+	owner: ChatIdSchema.nullable().default(null),
+	isYourTurnOnly: z.boolean().default(false),
+});
+
+export type BoardAsk = z.infer<typeof BoardAskSchema>;
 
 export const TaskStatusSchema = z.enum([
 	"backlog",
@@ -16,188 +32,6 @@ export const TaskStatusSchema = z.enum([
 	"blocked",
 	"cancelled",
 ]);
-
-export const BlockerKindSchema = z.enum([
-	"session_silent",
-	"session_failed",
-	"usage_limit",
-	"stalled",
-	"interrupted",
-	"task",
-	"external",
-]);
-
-export const BlockerSchema = z.object({
-	kind: BlockerKindSchema,
-	detail: z.string().max(600),
-	resumesAt: z.number().nullable().default(null),
-});
-
-export const MOST_BLOCKERS = 20;
-
-export const CriterionStateSchema = z.enum(["open", "met", "dropped"]);
-
-export const CriterionSchema = z.object({
-	id: z.string().min(1).max(12),
-	text: z.string().min(1).max(500),
-	state: CriterionStateSchema,
-	evidence: z.string().max(1000).nullable(),
-	reason: z.string().max(600).nullable(),
-});
-
-export const MOST_CRITERIA = 50;
-
-export const StepStateSchema = z.enum(["pending", "active", "done", "skipped", "blocked", "cancelled"]);
-
-export const StepSchema = z.object({
-	id: z.string().min(1).max(12),
-	text: z.string().min(1).max(500),
-	state: StepStateSchema,
-	note: z.string().max(600).nullable(),
-	by: z.string().max(200).nullable(),
-});
-
-export const MOST_STEPS = 100;
-
-export const TestCaseSchema = z.object({
-	id: z.string().min(1).max(12),
-	text: z.string().min(1).max(500),
-	expect: z.string().max(500),
-});
-
-export const CaseResultSchema = z.enum(["passed", "failed", "skipped", "needs_you"]);
-
-export const TestRunSchema = z.object({
-	at: z.number(),
-	results: z.record(z.string(), CaseResultSchema),
-	failures: z.record(z.string(), z.string().max(2000)),
-	screenshots: z.array(z.string().min(1).max(1000)).max(20),
-	by: z.string().max(200),
-});
-
-export const TestPlanSchema = z.object({
-	stand: z.string().min(1).max(600),
-	cases: z.array(TestCaseSchema).max(40),
-	runs: z.array(TestRunSchema).max(20),
-});
-
-export const DocKindSchema = z.enum(["spec", "research", "plan", "design", "notes"]);
-
-export const TaskDocSchema = z.object({
-	id: z.string().min(1).max(12),
-	kind: DocKindSchema,
-	title: z.string().min(1).max(200),
-	path: z.string().max(1000).nullable(),
-	body: z.string().max(40000).nullable(),
-	by: z.string().max(200),
-	at: z.number(),
-});
-
-export const WorkplaceSchema = z.object({
-	folder: z.string().min(1).max(1000),
-	branch: z.string().max(300).nullable(),
-	worktree: z.string().max(1000).nullable(),
-	at: z.number(),
-});
-
-export const MOST_CHATS = 50;
-
-export const MOST_PROGRESSED = 150;
-
-export const ActorSchema = z.discriminatedUnion("kind", [
-	z.object({
-		kind: z.literal("agent"),
-		chat: z.string().min(1).max(200),
-	}),
-	z.object({
-		kind: z.literal("person"),
-	}),
-	z.object({
-		kind: z.literal("host"),
-	}),
-]);
-
-export const TransitionSchema = z.object({
-	from: TaskStatusSchema.nullable(),
-	to: TaskStatusSchema,
-	by: ActorSchema,
-	reason: z.string().max(1000),
-	at: z.number(),
-});
-
-export const TaskSchema = z.object({
-	number: z.number().int().positive(),
-	title: z.string().min(1).max(200),
-	description: z.string().max(40000),
-	kind: TaskKindSchema,
-	status: TaskStatusSchema,
-	blocker: BlockerSchema.nullable(),
-	parent: z.number().int().positive().nullable(),
-	blockedBy: z.array(z.number().int().positive()).max(MOST_BLOCKERS),
-	acceptance: z.array(CriterionSchema).max(MOST_CRITERIA),
-	plan: z.array(StepSchema).max(MOST_STEPS),
-	testPlan: TestPlanSchema.nullable(),
-	documents: z.array(TaskDocSchema).max(30),
-	workplaces: z.array(WorkplaceSchema).max(20),
-	owner: z.string().max(200).nullable(),
-	chats: z.array(z.string().max(200)).max(MOST_CHATS),
-	createdBy: z.string().max(200),
-	createdAt: z.number(),
-	updatedAt: z.number(),
-	keptAt: z.number().nullable(),
-	nudges: z.number().int().nonnegative(),
-	progressed: z.array(z.string().min(1).max(12)).max(MOST_PROGRESSED).default([]),
-	log: z.array(TransitionSchema).max(200),
-});
-
-export const MOST_TASKS = 5000;
-
-export const BoardSchema = z.object({
-	nextNumber: z.number().int().positive(),
-	tasks: z.array(TaskSchema).max(MOST_TASKS),
-});
-
-export const KeptBoardSchema = z.object({
-	board: BoardSchema,
-	rev: KeptRevSchema,
-});
-
-export const BoardReplaceSchema = z.object({
-	board: BoardSchema,
-	baseRev: KeptRevSchema,
-});
-
-export const BoardReplacedSchema = z.discriminatedUnion("ok", [
-	z.object({
-		ok: z.literal(true),
-		rev: KeptRevSchema,
-	}),
-	z.object({
-		ok: z.literal(false),
-		why: z.literal("stale"),
-		rev: KeptRevSchema,
-	}),
-]);
-
-export type BoardReplaced = z.infer<typeof BoardReplacedSchema>;
-
-export const TaskRefSchema = z.string().min(1).max(20);
-
-export const ChatIdSchema = z.string().min(1).max(200);
-
-export const ClosedWithinSchema = z.enum(["none", "day", "week", "month", "all"]);
-
-export const ClosedOrderSchema = z.enum(["newest", "oldest"]);
-
-export const BoardAskSchema = z.object({
-	closedWithin: ClosedWithinSchema.default("day"),
-	closedOrder: ClosedOrderSchema.default("newest"),
-	kind: TaskKindSchema.nullable().default(null),
-	owner: ChatIdSchema.nullable().default(null),
-	isYourTurnOnly: z.boolean().default(false),
-});
-
-export type BoardAsk = z.infer<typeof BoardAskSchema>;
 
 export const UpdatedWithinSchema = z.enum(["day", "week", "month", "all"]);
 
@@ -227,6 +61,12 @@ export type SearchAsk = z.infer<typeof SearchAskSchema>;
 export const ChatAskSchema = z.object({
 	chat: ChatIdSchema,
 });
+
+export const MOST_CRITERIA = 50;
+
+export const MOST_STEPS = 100;
+
+export const MOST_BLOCKERS = 20;
 
 export const CreateTaskAskSchema = z.object({
 	chat: ChatIdSchema,
@@ -262,6 +102,8 @@ export const StartTaskAskSchema = z.object({
 
 export type StartTaskAsk = z.infer<typeof StartTaskAskSchema>;
 
+export const StepStateSchema = z.enum(["pending", "active", "done", "skipped", "blocked", "cancelled"]);
+
 export const MarkStepAskSchema = z.object({
 	chat: ChatIdSchema,
 	task: TaskRefSchema,
@@ -282,6 +124,10 @@ export const CheckCriterionAskSchema = z.object({
 });
 
 export type CheckCriterionAsk = z.infer<typeof CheckCriterionAskSchema>;
+
+export const DocKindSchema = z.enum(["spec", "research", "plan", "design", "notes"]);
+
+export const CaseResultSchema = z.enum(["passed", "failed", "skipped", "needs_you"]);
 
 export const AttachedItemSchema = z.discriminatedUnion("type", [
 	z.object({
@@ -416,6 +262,22 @@ export const PersonActionSchema = z.enum(["accept", "send_back", "continue", "ke
 
 export type PersonAction = z.infer<typeof PersonActionSchema>;
 
+export const BlockerKindSchema = z.enum([
+	"session_silent",
+	"session_failed",
+	"usage_limit",
+	"stalled",
+	"interrupted",
+	"task",
+	"external",
+]);
+
+export const BlockerSchema = z.object({
+	kind: BlockerKindSchema,
+	detail: z.string().max(600),
+	resumesAt: z.number().nullable().default(null),
+});
+
 export const TaskCardSchema = z.object({
 	id: z.string(),
 	number: z.number().int().positive(),
@@ -444,12 +306,88 @@ export const TaskCardSchema = z.object({
 
 export type TaskCard = z.infer<typeof TaskCardSchema>;
 
+export const ActorSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("agent"),
+		chat: z.string().min(1).max(200),
+	}),
+	z.object({
+		kind: z.literal("person"),
+	}),
+	z.object({
+		kind: z.literal("host"),
+	}),
+]);
+
+export const TransitionSchema = z.object({
+	from: TaskStatusSchema.nullable(),
+	to: TaskStatusSchema,
+	by: ActorSchema,
+	reason: z.string().max(1000),
+	at: z.number(),
+});
+
 export const LogEntrySchema = TransitionSchema.extend({
 	fromLabel: z.string().nullable(),
 	toLabel: z.string(),
 });
 
 export type LogEntry = z.infer<typeof LogEntrySchema>;
+
+export const CriterionStateSchema = z.enum(["open", "met", "dropped"]);
+
+export const CriterionSchema = z.object({
+	id: z.string().min(1).max(12),
+	text: z.string().min(1).max(500),
+	state: CriterionStateSchema,
+	evidence: z.string().max(1000).nullable(),
+	reason: z.string().max(600).nullable(),
+});
+
+export const StepSchema = z.object({
+	id: z.string().min(1).max(12),
+	text: z.string().min(1).max(500),
+	state: StepStateSchema,
+	note: z.string().max(600).nullable(),
+	by: z.string().max(200).nullable(),
+});
+
+export const TestCaseSchema = z.object({
+	id: z.string().min(1).max(12),
+	text: z.string().min(1).max(500),
+	expect: z.string().max(500),
+});
+
+export const TestRunSchema = z.object({
+	at: z.number(),
+	results: z.record(z.string(), CaseResultSchema),
+	failures: z.record(z.string(), z.string().max(2000)),
+	screenshots: z.array(z.string().min(1).max(1000)).max(20),
+	by: z.string().max(200),
+});
+
+export const TestPlanSchema = z.object({
+	stand: z.string().min(1).max(600),
+	cases: z.array(TestCaseSchema).max(40),
+	runs: z.array(TestRunSchema).max(20),
+});
+
+export const TaskDocSchema = z.object({
+	id: z.string().min(1).max(12),
+	kind: DocKindSchema,
+	title: z.string().min(1).max(200),
+	path: z.string().max(1000).nullable(),
+	body: z.string().max(40000).nullable(),
+	by: z.string().max(200),
+	at: z.number(),
+});
+
+export const WorkplaceSchema = z.object({
+	folder: z.string().min(1).max(1000),
+	branch: z.string().max(300).nullable(),
+	worktree: z.string().max(1000).nullable(),
+	at: z.number(),
+});
 
 export const TaskViewSchema = z.object({
 	card: TaskCardSchema,
@@ -582,10 +520,6 @@ export type Actor = z.infer<typeof ActorSchema>;
 
 export type Transition = z.infer<typeof TransitionSchema>;
 
-export type Task = z.infer<typeof TaskSchema>;
-
-export type Board = z.infer<typeof BoardSchema>;
-
 export const BoardQuery = query("tasks/board")
 	.input(BoardAskSchema)
 	.output(BoardAnswerSchema);
@@ -667,11 +601,5 @@ export const ReconcileTasksCommand = command("tasks/reconcile-tasks")
 export const SweepStaleTasksCommand = command("tasks/sweep-stale-tasks")
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
-export const KeptBoardQuery = query("tasks/kept-board")
-	.output(KeptBoardSchema);
-export const ReplaceKeptBoardCommand = command("tasks/replace-kept-board")
-	.input(BoardReplaceSchema)
-	.output(BoardReplacedSchema)
-	.idempotencyKey(Repeatable);
 
-export const TasksModule = moduleContract("tasks", Server, [BoardQuery, TasksQuery, TaskQuery, SearchTasksQuery, ChatTaskLineQuery, TaskTrailerQuery, CreateTaskCommand, EditTaskCommand, StartTaskCommand, MarkStepCommand, CheckCriterionCommand, AttachToTaskCommand, MoveTaskCommand, AcceptTaskCommand, SendBackTaskCommand, ContinueTaskCommand, KeepTaskCommand, UndeliveredTaskCommand, SettleTurnCommand, ReleaseChatTasksCommand, ReconcileTasksCommand, SweepStaleTasksCommand, KeptBoardQuery, ReplaceKeptBoardCommand]);
+export const TasksModule = moduleContract("tasks", Server, [BoardQuery, TasksQuery, TaskQuery, SearchTasksQuery, ChatTaskLineQuery, TaskTrailerQuery, CreateTaskCommand, EditTaskCommand, StartTaskCommand, MarkStepCommand, CheckCriterionCommand, AttachToTaskCommand, MoveTaskCommand, AcceptTaskCommand, SendBackTaskCommand, ContinueTaskCommand, KeepTaskCommand, UndeliveredTaskCommand, SettleTurnCommand, ReleaseChatTasksCommand, ReconcileTasksCommand, SweepStaleTasksCommand]);

@@ -22,7 +22,8 @@ import { AppFramesProvider } from "../apps/studio/src/features/app-frame/ui/app-
 import { InstalledAppPage } from "../apps/studio/src/features/app-frame/ui/installed-app-page/installed-app-page.tsx";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
-import { placedTabsOf, placesOver } from "./places-fixture.ts";
+import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import { PlacesModule as PlacesContract } from "../packages/state/places/generated/contract.ts";
 
 declare global {
 	interface Window {
@@ -76,6 +77,7 @@ const tabs = new MemoryTabsGateway(
 		closed: [],
 	}),
 );
+const core = placesLinkOf(tabs);
 const studio = app()
 	.modules(
 		AppInstallerModule.with({
@@ -101,7 +103,7 @@ const studio = app()
 			}),
 		),
 	)
-	.imports(placesOver(tabs))
+	.imports(PlacesContract.over(core))
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 
 interface SeededHelloTab {
@@ -182,7 +184,7 @@ function onShown(told: () => void): () => void {
 function Frames(): ReactElement {
 	const shown = useSyncExternalStore(onShown, () => shownTabId);
 	return (
-		<AppFramesProvider readyTimeoutMs={READY_TIMEOUT_MS}>
+		<AppFramesProvider core={core} readyTimeoutMs={READY_TIMEOUT_MS}>
 			{TAB_IDS.map((id) => (
 				<div key={id} data-tab={id} style={{ height: "200px" }}>
 					<InstalledAppPage app="hello" tabId={id} isShown={id === shown} />

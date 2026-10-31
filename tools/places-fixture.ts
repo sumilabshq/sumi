@@ -4,6 +4,7 @@ import type { RemoteModule, RemoteTransport } from "../packages/shared/core/src/
 import { PlacesModule as PlacesContract } from "../packages/state/places/generated/contract.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
+import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
@@ -40,7 +41,7 @@ export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 	server()
 		.modules(PlacesModule.with({ windows: new MemoryWindowsGateway({ windows: [] }), tabs }))
 		.listen(link)
-		.start({ env: {} });
+		.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 	return link;
 }
 

@@ -18,6 +18,7 @@ export const CoreCallSchema = z.object({
 	name: z.string(),
 	input: z.unknown().optional(),
 	idempotencyKey: z.string().nullable(),
+	headers: z.record(z.string(), z.string()).optional(),
 });
 
 export type CoreCall = z.infer<typeof CoreCallSchema>;

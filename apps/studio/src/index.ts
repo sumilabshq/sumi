@@ -2,5 +2,6 @@ export * from "./legacy/index.js";
 export { restoreTabs, startCoreInProcess, startStudioApp } from "./tabs/studio-app.js";
 export type { StudioAppAsk } from "./tabs/studio-app.js";
 export { focusedChatPortOf } from "./chats-column/focused-chat.js";
+export { AppCallerAuthenticate } from "./features/app-frame/lib/app-caller.js";
 export { startBrowserApp } from "./browser/browser-app.js";
 export type { BrowserAppAsk } from "./browser/browser-app.js";

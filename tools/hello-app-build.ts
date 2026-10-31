@@ -50,6 +50,7 @@ async function buildRelease(root: string, { version, sendsReady }: HelloRelease)
 		entryPoints: [path.join(HELLO_SOURCE, "hello.ts")],
 		outfile: path.join(folder, "hello.js"),
 		bundle: true,
+		conditions: ["source"],
 		format: "iife",
 		platform: "browser",
 		target: "es2020",

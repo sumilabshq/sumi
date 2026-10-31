@@ -73,7 +73,12 @@ class WorkspaceListener implements ListeningTransport {
 
 	async answer(call: ServedCall): Promise<Answer<unknown>> {
 		const server = await this.served.catch((failure: unknown) =>
-			refusalOf("unreachable", NOT_STARTED.replace("{name}", call.name).replace("{workspace}", this.workspace).replace("{failure}", String(failure))),
+			refusalOf(
+				"unreachable",
+				NOT_STARTED.replace("{name}", call.name)
+					.replace("{workspace}", this.workspace)
+					.replace("{failure}", String(failure)),
+			),
 		);
 
 		if ("ok" in server) {
@@ -112,6 +117,7 @@ async function answerAsk(listenerOf: (workspace: string) => WorkspaceListener, m
 		input: call.input,
 		idempotencyKey: call.idempotencyKey,
 		signal: new AbortController().signal,
+		headers: new Headers(call.headers),
 	});
 	await sendAnswer(asked.data.id, answer);
 }

@@ -311,21 +311,20 @@ async function frameChecks(): Promise<void> {
 		);
 		await page.ask(`window.__appInstaller.place("1.0.0")`);
 		await page.ask("window.__appInstaller.install()");
-		const welcomed = await until(page, "after install, both frames run 1.0.0 and say their title to Places", (read) =>
-			["t1", "t2"].every(
-				(id) => srcOf(read, id)?.includes("/1.0.0/") === true && titleOf(read, id) === "Hello 1.0.0 in Widgetarium",
-			),
+		const titled = await until(
+			page,
+			"after install, both frames run 1.0.0 and record their title through RecordAppPageCommand",
+			(read) =>
+				["t1", "t2"].every(
+					(id) => srcOf(read, id)?.includes("/1.0.0/") === true && titleOf(read, id) === "Hello 1.0.0",
+				),
 		);
-		check(
-			"the welcome carried the workspace and the app's title reached the tab",
-			titleOf(welcomed, "t1"),
-			"Hello 1.0.0 in Widgetarium",
-		);
+		check("the app's title reached its own tab", titleOf(titled, "t1"), "Hello 1.0.0");
 
 		await page.ask(`window.__appInstaller.recordAddress("t2", "/go")`);
 		await until(
 			page,
-			"a navigated event is recorded by Places for that tab",
+			"the app reads its moved address from AppTabQuery and records where it went",
 			(read) => read.tabs.find((tab) => tab.id === "t2")?.address === "/page-2",
 		);
 
@@ -340,20 +339,8 @@ async function frameChecks(): Promise<void> {
 async function updateChecks(page: AskedPage): Promise<void> {
 	await page.ask(`window.__appInstaller.place("1.0.1")`);
 	await page.ask("window.__appInstaller.updateApps()");
-	const updated = await until(
-		page,
-		"an update reloads the hidden frame at once",
-		(read) => srcOf(read, "t2")?.includes("/1.0.1/") === true,
-	);
-	check("the shown busy frame keeps its version while busy", srcOf(updated, "t1")?.includes("/1.0.0/"), true);
-	await new Promise((settle) => setTimeout(settle, 1000));
-	check("the shown busy frame still waits a second later", srcOf(await readOf(page), "t1")?.includes("/1.0.0/"), true);
-
-	await page.ask(`window.__appInstaller.recordAddress("t1", "/idle")`);
-	await until(
-		page,
-		"the shown frame reloads on the new version once it says busy:false",
-		(read) => srcOf(read, "t1")?.includes("/1.0.1/") === true && titleOf(read, "t1") === "Hello 1.0.1 in Widgetarium",
+	await until(page, "an update reloads both frames on the new version, and each records its new title", (read) =>
+		["t1", "t2"].every((id) => srcOf(read, id)?.includes("/1.0.1/") === true && titleOf(read, id) === "Hello 1.0.1"),
 	);
 
 	await page.ask(`window.__appInstaller.place("1.0.2")`);

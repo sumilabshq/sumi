@@ -1,4 +1,3 @@
-import { MemoryDocStore } from "@sumi/contract";
 import { AppHostModule } from "@widgetarium/app-host/module";
 import { AppInstallerModule } from "@widgetarium/app-installer/module";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
@@ -12,7 +11,11 @@ import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
 import { TasksModule } from "@widgetarium/tasks";
 import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
+import type { BoardFile } from "@widgetarium/tasks/module";
+import { FileSystemModule } from "@widgetarium/file-system/module";
+import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
+import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
 export interface StudioAppAsk {
 	readonly platform: Platform;
@@ -33,13 +36,14 @@ export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): S
 export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
 	server()
-		.modules(RunnablePlacesModule, RunnableTasksModule)
+		.modules(RunnablePlacesModule, RunnableTasksModule, FileSystemModule, TerminalModule)
 		.listen(local)
 		.start({
 			env: {},
 			scope: { workspaceId },
 			host: {
-				storage: new MemoryDocStore(),
+				file: boardFileInMemory(),
+				authenticate: new AppCallerAuthenticate(),
 			},
 		});
 	return local;
@@ -51,4 +55,17 @@ export async function restoreTabs(studioApp: StartedApp): Promise<void> {
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not restore its tabs: ${answer.reason}`);
 	}
+}
+
+function boardFileInMemory(): BoardFile {
+	const held: { text: string | null } = {
+		text: null,
+	};
+	return {
+		read: () => Promise.resolve(held.text),
+		write: (text) => {
+			held.text = text;
+			return Promise.resolve();
+		},
+	};
 }

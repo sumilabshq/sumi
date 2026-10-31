@@ -14,6 +14,9 @@ import {
 import { PlacesModule } from "@widgetarium/places/module";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
 import { TasksModule } from "@widgetarium/tasks/module";
+import { FileSystemModule } from "@widgetarium/file-system/module";
+import { TerminalModule } from "@widgetarium/terminal/module";
+import { AppCallerAuthenticate } from "@widgetarium/studio";
 import { serveCore } from "./core-calls.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
 
@@ -50,16 +53,19 @@ export function startCore(): void {
 function coreServedOver(workspace: string, listener: ListeningTransport): StartedApp {
 	const own = localTransport();
 	server()
-		.modules(PlacesModule, TasksModule)
+		.modules(PlacesModule, TasksModule, FileSystemModule, TerminalModule)
 		.listen(listener)
 		.listen(own)
 		.start({
 			env: {
 				PLACES_STORE: "tauri",
+				FILES_STORE: "tauri",
+				TERMINAL_STORE: "tauri",
 			},
 			scope: { workspaceId: workspace },
 			host: {
 				store: new StoreClient((command, args) => invoke(command, args)),
+				authenticate: new AppCallerAuthenticate(),
 			},
 		});
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();

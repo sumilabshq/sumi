@@ -2,7 +2,7 @@ import { createElement as h, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import { AppProvider } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";
 import { AppFramesProvider } from "../features/app-frame/ui/app-frames/app-frames-provider.js";
 import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.js";
@@ -10,17 +10,18 @@ import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.
 export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
 	readonly layoutApp: StartedApp;
+	readonly core: RemoteTransport;
 	readonly studio: StudioHostPort;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
 }
 
-export function StudioLayout({ frame, layoutApp, studio, left, panes, panel }: StudioLayoutProps): ReactElement {
+export function StudioLayout({ frame, layoutApp, core, studio, left, panes, panel }: StudioLayoutProps): ReactElement {
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
 		<AppProvider app={layoutApp}>
-			<AppFramesProvider>
+			<AppFramesProvider core={core}>
 				<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} />
 			</AppFramesProvider>
 		</AppProvider>

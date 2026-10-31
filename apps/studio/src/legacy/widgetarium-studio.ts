@@ -50,6 +50,7 @@ export interface StartedStudio {
 	readonly chatApps: ChatApps;
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
+	readonly core: RemoteTransport;
 	readonly chatsColumn: ChatsColumnApp;
 }
 
@@ -113,6 +114,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
+		core,
 		project,
 		state,
 	};
@@ -159,6 +161,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 	return h(StudioLayout, {
 		frame: screen.frame,
 		layoutApp: started.studioApp,
+		core: started.core,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
