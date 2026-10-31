@@ -20,7 +20,7 @@ import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { Composer } from "../apps/studio/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { AskInkContext } from "../apps/studio/src/features/command-menu/lib/ask-ink-context.ts";
+import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
 
 const EVENT_DELIVERED_WITHIN_MS = 200;
 
@@ -324,7 +324,16 @@ createRoot(askingHost).render(
 	h(
 		AppProvider,
 		{ app: app().modules(BrowserModule.with(asking.parts)).start() },
-		h(AskInkContext, { value: (text: string) => void chatApp.send(PrefillDraftCommand, { text }) }, h(Browser, {})),
+		h(
+			AskComposerContext,
+			{
+				value: {
+					app: null,
+					ask: (text: string) => void chatApp.send(PrefillDraftCommand, { text }),
+				},
+			},
+			h(Browser, {}),
+		),
 	),
 );
 await waitFor(

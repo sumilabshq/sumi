@@ -18,7 +18,7 @@ export function MenuFoot({ door, text, results, moves }: MenuFootProps): ReactEl
 	return (
 		<div className="wg-cm-foot">
 			{moves.toast === "" ? (
-				hintsOf(results, moves).map((hint) => (
+				hintsOf(results, moves, door).map((hint) => (
 					<span key={hint.keys} className="wg-cm-hint">
 						<kbd className="wg-cm-kbd">{hint.keys}</kbd>
 						{hint.said}
@@ -44,5 +44,5 @@ function escSaidOf(door: Door, text: string): string {
 		return "Clear";
 	}
 
-	return door === "anywhere" ? "Close" : "Back";
+	return door === "this-tab" ? "Back" : "Close";
 }

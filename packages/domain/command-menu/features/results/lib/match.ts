@@ -10,13 +10,8 @@ const KIND_RANK: Readonly<Partial<Record<RowKind, number>>> = {
 	chat: 1,
 	app: 2,
 	workspace: 3,
-	command: 4,
 };
 const LAST_RANK = 9;
-
-export function bestOf(pools: readonly (readonly Found[])[], typed: string): Found | null {
-	return rankedOf(pools.flat(), typed)[0] ?? null;
-}
 
 export function rankedOf(pool: readonly Found[], typed: string): readonly Found[] {
 	return pool

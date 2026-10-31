@@ -10,18 +10,12 @@ import {
 	PinTabCommand,
 	RenameTabCommand,
 	ReopenClosedTabByIdCommand,
-	ReopenClosedTabCommand,
 	ShowEssentialCommand,
 	ShowTabCommand,
 } from "@widgetarium/app-host";
 import type { HeldTabs } from "@widgetarium/app-host";
 import { OpenAddressCommand } from "@widgetarium/browser";
-import {
-	CreateWorkspaceCommand,
-	OpenChatElsewhereCommand,
-	OpenWorkspaceCommand,
-	RenameWorkspaceCommand,
-} from "@widgetarium/workspaces";
+import { OpenChatElsewhereCommand, OpenWorkspaceCommand, RenameWorkspaceCommand } from "@widgetarium/workspaces";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Done, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
@@ -104,10 +98,6 @@ async function performIntent(intent: Intent, send: Send, { newTabList, pageId }:
 			return runMenuCommand(intent.command, send);
 		case "ask-ink":
 			return createChat(intent.text, send);
-		case "new-chat":
-			return createChat(intent.title, send);
-		case "new-workspace":
-			return createWorkspace(intent.name, send);
 		case "close-tab":
 			return send(CloseTabCommand, { id: intent.id });
 		case "pin-chat":
@@ -148,11 +138,6 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 		case "new-chat":
 			await send(OpenNewChatCommand, { title: null });
 			return;
-		case "reopen-tab":
-			return send(ReopenClosedTabCommand);
-		case "new-workspace":
-			await send(CreateWorkspaceCommand);
-			return;
 		case "new-tab":
 			return;
 	}
@@ -160,17 +145,6 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 
 async function createChat(title: string, send: Send): Promise<void> {
 	await send(OpenNewChatCommand, { title });
-}
-
-async function createWorkspace(name: string, send: Send): Promise<void> {
-	const trimmed = name.trim();
-	const created = await send(CreateWorkspaceCommand);
-
-	if (trimmed === "") {
-		return;
-	}
-
-	await send(RenameWorkspaceCommand, { id: created.id, name: trimmed });
 }
 
 function unknownIntent(intent: never): never {

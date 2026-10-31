@@ -1,4 +1,4 @@
-import type { AppTabState, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
+import type { AppFace, AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
 import type { RecentSite } from "@widgetarium/browser";
 import type { ChatListData, ChatRowData } from "@widgetarium/app-host";
 import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
@@ -22,6 +22,14 @@ export interface Found {
 	readonly isOnScreen: boolean;
 }
 
+interface ShownFace {
+	readonly art: string;
+	readonly favicon: string | null;
+	readonly title: string;
+	readonly address: string | null;
+	readonly mark: ChatMark;
+}
+
 const ON_SCREEN = "on screen";
 const ESSENTIALS = "Essentials";
 const PINNED = "Pinned";
@@ -29,14 +37,22 @@ const WORKING = "Working";
 const UNREAD = "Done, not read";
 const WORKSPACE = "Workspace";
 const APP = "App";
+const NO_MARK = "none";
+const UNKNOWN_ART = "site";
+const CHAT_APP = "chat";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
 	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
 	return [...sidebar.essentials.map(essentialFoundOf), ...listed];
 }
 
-export function chatsFoundOf({ pinned, recents }: ChatListData, onScreenIds: ReadonlySet<string>): readonly Found[] {
-	return [...recents, ...pinned].map((row) => chatFoundOf(row, onScreenIds.has(row.id)));
+export function chatsFoundOf(
+	{ pinned, recents }: ChatListData,
+	onScreenIds: ReadonlySet<string>,
+	faces: readonly AppFace[],
+): readonly Found[] {
+	const art = artOf(faces, CHAT_APP);
+	return [...recents, ...pinned].map((row) => chatFoundOf(row, onScreenIds.has(row.id), art));
 }
 
 export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
@@ -70,51 +86,71 @@ export function workspacesFoundOf({ rows }: WorkspacesView): readonly Found[] {
 const MENU_APPS = [
 	{
 		app: "canvas",
-		title: "Canvas",
 		haystack: "canvas design board",
 	},
 	{
 		app: "terminal",
-		title: "Terminal",
 		haystack: "terminal shell zsh console",
+	},
+	{
+		app: "tasks",
+		haystack: "tasks board kanban agents jira linear",
 	},
 ] as const;
 
-export function appsFoundOf(): readonly Found[] {
-	return MENU_APPS.map(({ app, title, haystack }) => {
+export function appsFoundOf(faces: readonly AppFace[]): readonly Found[] {
+	return MENU_APPS.flatMap(({ app, haystack }) => {
+		const face = faces.find((one) => one.app === app);
+
+		if (face === undefined) {
+			return [];
+		}
+
 		const intent: Intent = {
 			do: "open-app",
 			app,
-			title,
+			title: face.title,
 		};
-		return {
-			key: `app:${app}`,
-			kind: "app",
-			title,
-			meta: APP,
-			haystack,
-			icon: tabIconOf(app, null, title, null),
-			intent,
-			shortcut: null,
-			renames: null,
-			actions: openActionsOf(intent),
-			host: "",
-			isOnScreen: false,
-		};
+		return [
+			{
+				key: `app:${app}`,
+				kind: "app",
+				title: face.title,
+				meta: APP,
+				haystack,
+				icon: iconOf({
+					art: face.icon,
+					favicon: null,
+					title: face.title,
+					address: null,
+					mark: NO_MARK,
+				}),
+				intent,
+				shortcut: null,
+				renames: null,
+				actions: openActionsOf(intent),
+				host: "",
+				isOnScreen: false,
+			},
+		];
 	});
 }
 
-export function chatsElsewhereFoundOf(rows: readonly ChatElsewhereRow[]): readonly Found[] {
+export function chatsElsewhereFoundOf(rows: readonly ChatElsewhereRow[], faces: readonly AppFace[]): readonly Found[] {
+	const art = artOf(faces, CHAT_APP);
 	return rows.map((row) => ({
 		key: `elsewhere:${row.workspaceId}:${row.chatId}`,
 		kind: "chat",
 		title: row.title,
 		meta: `In ${row.workspaceName}`,
 		haystack: `${row.title} ${row.workspaceName}`,
-		icon: {
-			kind: "glyph",
-			glyph: "chat",
-		},
+		icon: iconOf({
+			art,
+			favicon: null,
+			title: row.title,
+			address: null,
+			mark: NO_MARK,
+		}),
 		intent: {
 			do: "open-chat-elsewhere",
 			workspaceId: row.workspaceId,
@@ -137,7 +173,13 @@ export function closedFoundOf(closed: readonly ClosedTabRow[]): readonly Found[]
 		title: row.title,
 		meta: hostOf(row.address),
 		haystack: row.address,
-		icon: tabIconOf(row.app, null, row.title, row.address),
+		icon: iconOf({
+			art: row.icon,
+			favicon: row.favicon,
+			title: row.title,
+			address: row.address,
+			mark: NO_MARK,
+		}),
 		intent: {
 			do: "reopen-closed",
 			tabId: row.tabId,
@@ -164,7 +206,13 @@ export function sitesFoundOf(sites: readonly RecentSite[]): readonly Found[] {
 			title: site.host.replace(/^www\./, ""),
 			meta: site.host,
 			haystack: site.address,
-			icon: tabIconOf("site", site.favicon, site.host, site.address),
+			icon: iconOf({
+				art: UNKNOWN_ART,
+				favicon: site.favicon,
+				title: site.host,
+				address: site.address,
+				mark: NO_MARK,
+			}),
 			intent,
 			shortcut: null,
 			renames: null,
@@ -184,7 +232,13 @@ function tabFoundOf(tab: AppTabState, listTitle: string): Found {
 		title: tab.title,
 		meta: where.join(" · "),
 		haystack: [tab.address ?? "", tab.subtitle ?? "", tab.label ?? "", listTitle].join(" "),
-		icon: tabIconOf(tab.icon, tab.favicon, tab.title, tab.address),
+		icon: iconOf({
+			art: tab.icon,
+			favicon: tab.favicon,
+			title: tab.title,
+			address: tab.address,
+			mark: tab.mark,
+		}),
 		intent: {
 			do: "show-tab",
 			id: tab.id,
@@ -208,7 +262,13 @@ function essentialFoundOf(tile: EssentialTile): Found {
 		title: tile.title,
 		meta: tile.isShown ? `${ESSENTIALS} · ${ON_SCREEN}` : ESSENTIALS,
 		haystack: ESSENTIALS,
-		icon: tabIconOf(tile.icon, tile.favicon, tile.title, null),
+		icon: iconOf({
+			art: tile.icon,
+			favicon: tile.favicon,
+			title: tile.title,
+			address: null,
+			mark: NO_MARK,
+		}),
 		intent: {
 			do: "show-essential",
 			id: tile.id,
@@ -222,17 +282,20 @@ function essentialFoundOf(tile: EssentialTile): Found {
 	};
 }
 
-function chatFoundOf(row: ChatRowData, isOnScreen: boolean): Found {
+function chatFoundOf(row: ChatRowData, isOnScreen: boolean, art: string): Found {
 	return {
 		key: `chat:${row.id}`,
 		kind: "chat",
 		title: row.title,
 		meta: chatMetaOf(row, isOnScreen),
 		haystack: row.title,
-		icon: {
-			kind: "glyph",
-			glyph: "chat",
-		},
+		icon: iconOf({
+			art,
+			favicon: null,
+			title: row.title,
+			address: null,
+			mark: row.mark,
+		}),
 		intent: {
 			do: "open-chat",
 			id: row.id,
@@ -259,13 +322,14 @@ function chatMetaOf(row: ChatRowData, isOnScreen: boolean): string {
 	return said.filter((part) => part !== "").join(" · ");
 }
 
-function tabIconOf(art: string, favicon: string | null, title: string, address: string | null): RowIcon {
+function artOf(faces: readonly AppFace[], app: AppFace["app"]): string {
+	return faces.find((face) => face.app === app)?.icon ?? UNKNOWN_ART;
+}
+
+function iconOf(face: ShownFace): RowIcon {
 	return {
 		kind: "tab",
-		art,
-		favicon,
-		title,
-		address,
+		...face,
 	};
 }
 

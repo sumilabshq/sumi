@@ -1,38 +1,10 @@
 import { bareAddressOf } from "../../../shared/lib/address.js";
-import type { MenuCommand } from "../../../shared/schema/command-menu.schema.js";
 import type { Found } from "./found.js";
 
-const COMMANDS: readonly (readonly [MenuCommand, string, string, "plus" | "reopen"])[] = [
-	["new-chat", "New chat", "⌘N", "plus"],
-	["new-tab", "New tab", "⌘T", "plus"],
-	["reopen-tab", "Reopen closed tab", "⇧⌘T", "reopen"],
-	["new-workspace", "New workspace", "", "plus"],
-];
 const NEW_TAB = "New tab";
 const IN_THIS_TAB = "In this tab";
-
-export function commandsFound(): readonly Found[] {
-	return COMMANDS.map(([command, title, shortcut, glyph]) => ({
-		key: `command:${command}`,
-		kind: "command",
-		title,
-		meta: "",
-		haystack: title,
-		icon: {
-			kind: "glyph",
-			glyph,
-		},
-		intent: {
-			do: "run",
-			command,
-		},
-		shortcut: shortcut === "" ? null : shortcut,
-		renames: null,
-		actions: [],
-		host: "",
-		isOnScreen: false,
-	}));
-}
+const ENTER = "↵";
+const SHIFT_ENTER = "⇧↵";
 
 export function addressFound(typed: string, where: "new-tab" | "this-tab", instead: string): Found {
 	const bare = bareAddressOf(typed);
@@ -54,7 +26,7 @@ export function searchFound(typed: string, where: "new-tab" | "this-tab"): Found
 	return madeOf({
 		key: `search:${where}`,
 		kind: "search",
-		title: `Search the web for “${typed}”`,
+		title: "Search the web",
 		meta: where === "new-tab" ? NEW_TAB : IN_THIS_TAB,
 		glyph: "search",
 		intent: {
@@ -69,40 +41,64 @@ export function askFound(typed: string, workspaceName: string): Found {
 	return madeOf({
 		key: "ask",
 		kind: "ask",
-		title: `Ask Sumi “${typed}”`,
-		meta: `New chat in ${workspaceName}`,
+		title: "Ask Sumi",
+		meta: workspaceName,
 		glyph: "ink",
 		intent: {
 			do: "ask-ink",
 			text: typed,
+			sends: true,
 		},
 	});
 }
 
-export function newChatFound(typed: string, workspaceName: string): Found {
-	return madeOf({
-		key: "new-chat",
-		kind: "new-chat",
-		title: `New chat “${typed}”`,
-		meta: `In ${workspaceName}`,
-		glyph: "plus",
-		intent: {
-			do: "new-chat",
-			title: typed,
-		},
-	});
+export function createAndSendFound(typed: string): Found {
+	return {
+		...madeOf({
+			key: "ask:send",
+			kind: "ask",
+			title: "Create and send",
+			meta: "",
+			glyph: "ink",
+			intent: {
+				do: "ask-ink",
+				text: typed,
+				sends: true,
+			},
+		}),
+		shortcut: ENTER,
+	};
 }
 
-export function newWorkspaceFound(typed: string): Found {
+export function createOnlyFound(typed: string): Found {
+	return {
+		...madeOf({
+			key: "ask:draft",
+			kind: "ask",
+			title: "Create only",
+			meta: "Don’t send",
+			glyph: "pencil",
+			intent: {
+				do: "ask-ink",
+				text: typed,
+				sends: false,
+			},
+		}),
+		shortcut: SHIFT_ENTER,
+	};
+}
+
+export function askFallbackFound(typed: string): Found {
 	return madeOf({
-		key: "new-workspace",
-		kind: "new-workspace",
-		title: `New workspace “${typed}”`,
-		meta: "Empty, no chats yet",
-		glyph: "plus",
+		key: "fallback:ask",
+		kind: "ask",
+		title: `Ask Sumi about “${typed}”`,
+		meta: "",
+		glyph: "ink",
 		intent: {
-			do: "new-workspace",
-			name: typed,
+			do: "ask-ink",
+			text: typed,
+			sends: true,
 		},
 	});
 }
@@ -112,7 +108,7 @@ interface Made {
 	readonly kind: Found["kind"];
 	readonly title: string;
 	readonly meta: string;
-	readonly glyph: "globe" | "search" | "ink" | "plus";
+	readonly glyph: Extract<Found["icon"], { kind: "glyph" }>["glyph"];
 	readonly intent: Found["intent"];
 }
 

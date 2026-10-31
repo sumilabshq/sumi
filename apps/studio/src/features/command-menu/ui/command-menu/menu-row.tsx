@@ -24,6 +24,7 @@ export function MenuRow({ row, at, moves }: MenuRowProps): ReactElement {
 			className="wg-cm-row"
 			aria-selected={isPicked}
 			data-cm-row={row.kind}
+			data-cm-fallback={row.isFallback ? "" : undefined}
 			onMouseDown={(event) => event.preventDefault()}
 			onMouseMove={() => !isPicked && moves.pickAt(at)}
 			onClick={() => moves.run(row.intent)}

@@ -33,6 +33,11 @@ const MENU = `(() => {
 		token: document.querySelector(".wg-cm-token")?.textContent ?? "",
 		text: document.querySelector(".wg-cm-input")?.value ?? "",
 		labels: [...document.querySelectorAll(".wg-cm-label")].map((one) => one.textContent),
+		head: document.querySelector(".wg-cm-head")?.textContent ?? "",
+		active: document.querySelector('.wg-cm-mode[aria-pressed="true"]')?.dataset.cmMode ?? "",
+		count: document.querySelector(".wg-cm-mode-count")?.textContent ?? "",
+		mode: document.querySelector("[data-cm-field-icon]")?.dataset.cmFieldIcon ?? "",
+		rows: [...document.querySelectorAll(".wg-cm-row .wg-cm-title")].map((one) => one.textContent),
 		width: Math.round(panel.getBoundingClientRect().width),
 		blur: getComputedStyle(panel).backdropFilter,
 	};
@@ -248,8 +253,8 @@ try {
 	const pressedNewTab = await pressOn(page, "[data-host-column-add]");
 	const fromNewTab = await menuAfter(page);
 	check(
-		"the New tab row opens the menu at New tab",
-		pressedNewTab && JSON.stringify(fromNewTab).includes('"token":"New tab"'),
+		"the New tab row opens the menu in New",
+		pressedNewTab && JSON.stringify(fromNewTab).includes('"mode":"new"'),
 		fromNewTab,
 	);
 	writeFileSync(path.join(shotsAt, "02-studio-new-tab.png"), await page.shoot());
@@ -257,11 +262,7 @@ try {
 
 	await page.ask(PRESS_KEY("t"));
 	const fromKey = await menuAfter(page);
-	check(
-		"⌘T opens the menu at New tab, not an empty page",
-		JSON.stringify(fromKey).includes('"token":"New tab"'),
-		fromKey,
-	);
+	check("⌘T opens the menu in New, not an empty page", JSON.stringify(fromKey).includes('"mode":"new"'), fromKey);
 	await escapedAll(page);
 
 	const pressedCrumb = await pressOn(page, ".wg-plate-head.is-app [data-plate-crumb]");
@@ -270,8 +271,9 @@ try {
 		"the app plate's title opens the menu filled with what it shows",
 		pressedCrumb &&
 			JSON.stringify(fromCrumb).includes('"text":"Canvas"') &&
-			JSON.stringify(fromCrumb).includes("Top hit"),
-		fromCrumb,
+			JSON.stringify(fromCrumb).includes('"active":"anywhere"') &&
+			!JSON.stringify(fromCrumb).includes('"count":""'),
+		[pressedCrumb, fromCrumb, await page.ask(`document.querySelectorAll("[data-plate-crumb]").length`)],
 	);
 	const icons = await page.ask(
 		`[...document.querySelectorAll('.wg-cm-row:is([data-cm-row="tab"], [data-cm-row="app"]) .wg-cm-icon')].map((icon) => icon.querySelector("img, svg")?.getAttribute("class") ?? "")`,
@@ -283,6 +285,11 @@ try {
 	);
 	writeFileSync(path.join(shotsAt, "03-studio-header.png"), await page.shoot());
 	await escapedAll(page);
+	await page.ask(PRESS_KEY("n"));
+	const fromN = await menuAfter(page);
+	check("⌘N opens the menu in New", JSON.stringify(fromN).includes('"mode":"new"'), fromN);
+	await page.ask(PRESS_KEY("n"));
+	check("⌘N again closes it", (await menuAfter(page)) === null, "shut");
 	check(
 		"nothing failed on the page",
 		(await page.ask(`document.getElementById("boom").textContent`)) === "",

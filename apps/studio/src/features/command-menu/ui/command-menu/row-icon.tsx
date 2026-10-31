@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
 import { TabArtSchema } from "@widgetarium/app-host";
 import type { RowIcon as RowIconData } from "@widgetarium/command-menu";
-import { TabArt } from "../../../app-host/ui/tab-face/tab-art.js";
+import { TabFaceIcon } from "../../../app-host/ui/tab-face/tab-face-icon.js";
 
 type Glyph = Extract<RowIconData, { kind: "glyph" }>["glyph"];
 
@@ -11,8 +11,7 @@ const GLYPH_ICONS: Readonly<Record<Exclude<Glyph, "ink">, string>> = {
 	search: "search",
 	globe: "globe",
 	plus: "plus",
-	chat: "message-circle",
-	reopen: "rotate-ccw",
+	pencil: "pencil",
 };
 const ICON_PX = 16;
 const UNKNOWN_ART = "site";
@@ -25,11 +24,12 @@ function iconDrawingOf(icon: RowIconData): ReactElement {
 	switch (icon.kind) {
 		case "tab":
 			return (
-				<TabArt
+				<TabFaceIcon
 					icon={TabArtSchema.catch(UNKNOWN_ART).parse(icon.art)}
 					favicon={icon.favicon}
 					title={icon.title}
 					address={icon.address}
+					mark={icon.mark}
 					size="row"
 				/>
 			);

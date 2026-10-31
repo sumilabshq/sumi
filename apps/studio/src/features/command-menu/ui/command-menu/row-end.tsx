@@ -10,19 +10,19 @@ export interface RowEndProps {
 
 const ENTER = "↵";
 const ASK_KEYS = "⌘↵";
-const MAKE_KEYS = "⇧↵";
+const FALLBACK_KEYS = "⇧↵";
 
 export function RowEnd({ row, isPicked }: RowEndProps): ReactElement {
 	if (isPicked) {
-		return <RowEndKeys said={row.doLabel} keys={ENTER} />;
+		return <RowEndKeys said={row.kindLabel} keys={ENTER} />;
 	}
 
 	if (row.kind === "ask") {
-		return <RowEndKeys said="" keys={ASK_KEYS} />;
+		return <RowEndKeys said="" keys={row.shortcut ?? ASK_KEYS} />;
 	}
 
-	if (row.isMakeNew) {
-		return <RowEndKeys said="" keys={MAKE_KEYS} />;
+	if (row.isFallback) {
+		return <RowEndKeys said="" keys={FALLBACK_KEYS} />;
 	}
 
 	return <RowEndKeys said={row.kindLabel} keys={row.shortcut} />;

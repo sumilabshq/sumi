@@ -9,7 +9,7 @@ export interface RowEndKeysProps {
 export function RowEndKeys({ said, keys }: RowEndKeysProps): ReactElement {
 	return (
 		<span className="wg-cm-end">
-			{said === "" ? null : <span>{said}</span>}
+			{said === "" ? null : <span className="wg-cm-kind">{said}</span>}
 			{keys === null ? null : <kbd className="wg-cm-kbd">{keys}</kbd>}
 		</span>
 	);

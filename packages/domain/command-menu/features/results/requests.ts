@@ -1,10 +1,10 @@
 import { query, subscriber } from "@widgetarium/core/requests";
-import { AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { AppFacesQuery, AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import { ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
-import { draftsOf } from "./lib/drafts.js";
+import { draftedMenuOf } from "./lib/drafts.js";
 import type { Around, Pools } from "./lib/drafts.js";
 import {
 	appsFoundOf,
@@ -15,19 +15,18 @@ import {
 	tabsFoundOf,
 	workspacesFoundOf,
 } from "./lib/found.js";
-import { commandsFound } from "./lib/made.js";
 import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
-import { heldTabOfPage } from "../opening/lib/shown-text.js";
-import { askInkOf, makeNewLabelOf, makeNewOf, typedOf } from "./lib/typed.js";
+import { heldTabOfPage } from "../../shared/lib/held-tab.js";
+import { askInkOf, fallbackLabelOf, fallbackIntentOf, typedOf } from "./lib/typed.js";
 
 const ALL_PAGES = { heldTabId: null };
 
 export const CommandMenuResultsQuery = query("command-menu-results")
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
-	.handle(async ({ text, scope, door, pageId }, { send }) => {
-		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser] = await Promise.all([
+	.handle(async ({ text, door, pageId }, { send }) => {
+		const [sidebar, appTabs, closedTabs, chats, elsewhere, workspaces, browser, apps] = await Promise.all([
 			send(TabsSidebarQuery),
 			send(AppTabsQuery),
 			send(ClosedTabsQuery),
@@ -35,16 +34,16 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 			send(ChatsElsewhereQuery),
 			send(WorkspacesQuery),
 			send(BrowserTabsQuery, ALL_PAGES),
+			send(AppFacesQuery),
 		]);
 		const pools: Pools = {
 			tabs: tabsFoundOf(sidebar),
-			chats: chatsFoundOf(chats, shownChatIdsOf(sidebar)),
-			apps: appsFoundOf(),
+			chats: chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.faces),
+			apps: appsFoundOf(apps.faces),
 			sites: sitesFoundOf(browser.recentSites),
 			workspaces: workspacesFoundOf(workspaces),
-			commands: commandsFound(),
 			closed: closedFoundOf(closedTabs.tabs),
-			elsewhere: chatsElsewhereFoundOf(elsewhere.rows),
+			elsewhere: chatsElsewhereFoundOf(elsewhere.rows, apps.faces),
 		};
 		const heldId = await heldTabOfPage(pageId, send);
 		const around: Around = {
@@ -52,16 +51,18 @@ export const CommandMenuResultsQuery = query("command-menu-results")
 			shownTitle: appTabs.tabs.find((tab) => (heldId === null ? tab.isShown : tab.id === heldId))?.title ?? "",
 		};
 		const typed = typedOf(text);
-		const scoped = door === "anywhere" ? scope : "all";
+		const { foundCount, drafts } = draftedMenuOf({ door, pools, typed, around });
 		return {
-			sections: [...sectionsOf(draftsOf({ door, scope, pools, typed, around }), typed.matched, door)],
+			door,
+			foundCount,
+			sections: [...sectionsOf(drafts, typed.matched, door)],
 			ghost: ghostOf(
-				text.trim(),
+				door === "ask" ? "" : text.trim(),
 				door,
 				browser.recentSites.map((site) => site.host.toLowerCase()),
 			),
-			makeNew: makeNewOf(typed, scoped),
-			makeNewLabel: makeNewLabelOf(scoped),
+			fallbackIntent: fallbackIntentOf(typed, door),
+			fallbackLabel: fallbackLabelOf(typed, door),
 			askInk: askInkOf(typed),
 		};
 	});

@@ -1,18 +1,15 @@
 import { useEffect } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
-import type { Door } from "@widgetarium/command-menu";
+import { doorOfLetter } from "../../lib/menu-key-labels.js";
 
-const DOOR_OF_KEY: Readonly<Record<string, Door>> = {
-	KeyK: "anywhere",
-	KeyL: "this-tab",
-};
+const LETTER_CODE = /^Key([A-Z])$/;
 
 export function CommandMenuKeys(): null {
 	const { run } = useCommand(ToggleCommandMenuCommand);
 	useEffect(() => {
 		const pressed = (event: KeyboardEvent): void => {
-			const door = DOOR_OF_KEY[event.code];
+			const door = doorOfLetter(LETTER_CODE.exec(event.code)?.[1]?.toLowerCase() ?? "");
 
 			if (door === undefined || event.defaultPrevented || !isCommandAlone(event)) {
 				return;

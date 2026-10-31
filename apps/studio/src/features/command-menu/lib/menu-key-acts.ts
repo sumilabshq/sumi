@@ -1,12 +1,12 @@
 import type { KeyboardEvent } from "react";
-import type { Door, Intent, Results, Scope } from "@widgetarium/command-menu";
+import type { Door, Intent, Results } from "@widgetarium/command-menu";
+import { doorOfMenuLetter } from "./menu-key-labels.js";
 import type { MenuMoves } from "./use-menu-moves.js";
 
 export interface KeyedMenu {
 	readonly door: Door;
 	readonly text: string;
 	readonly setText: (text: string) => void;
-	readonly setScope: (scope: Scope) => void;
 	readonly results: Results;
 	readonly moves: MenuMoves;
 	readonly toDoor: (door: Door) => void;
@@ -17,19 +17,6 @@ type MenuKey = KeyboardEvent<HTMLElement>;
 
 type KeyAct = (event: MenuKey, menu: KeyedMenu) => boolean;
 
-const SCOPE_KEYS: Readonly<Record<string, Scope>> = {
-	"1": "all",
-	"2": "tabs",
-	"3": "chats",
-	"4": "apps",
-	"5": "workspaces",
-};
-const DOOR_KEYS: Readonly<Record<string, Door>> = {
-	k: "anywhere",
-	t: "new-tab",
-	l: "this-tab",
-};
-
 export const MENU_KEY_ACTS: readonly KeyAct[] = [
 	stepped,
 	entered,
@@ -37,7 +24,6 @@ export const MENU_KEY_ACTS: readonly KeyAct[] = [
 	actionsToggled,
 	renamed,
 	tabClosed,
-	scoped,
 	doorChanged,
 	escaped,
 	tokenDropped,
@@ -115,20 +101,8 @@ function tabClosed(event: MenuKey, { moves }: KeyedMenu): boolean {
 	return true;
 }
 
-function scoped(event: MenuKey, { setScope, moves, toDoor }: KeyedMenu): boolean {
-	const scope = isCommand(event) ? SCOPE_KEYS[event.key] : undefined;
-
-	if (scope === undefined) {
-		return false;
-	}
-
-	toDoor("anywhere");
-	moves.typed(() => setScope(scope));
-	return true;
-}
-
 function doorChanged(event: MenuKey, menu: KeyedMenu): boolean {
-	const door = isCommand(event) ? DOOR_KEYS[event.key.toLowerCase()] : undefined;
+	const door = isCommand(event) ? doorOfMenuLetter(event.key.toLowerCase()) : undefined;
 
 	if (door === undefined) {
 		return false;
@@ -143,32 +117,36 @@ function doorChanged(event: MenuKey, menu: KeyedMenu): boolean {
 	return true;
 }
 
-function escaped(event: MenuKey, { door, text, setText, moves, toDoor, close }: KeyedMenu): boolean {
+function escaped(event: MenuKey, menu: KeyedMenu): boolean {
 	if (event.key !== "Escape") {
 		return false;
 	}
 
-	if (moves.isActing) {
-		moves.setActing(false);
+	if (menu.moves.isActing) {
+		menu.moves.setActing(false);
 		return true;
 	}
 
-	if (text !== "") {
-		moves.typed(() => setText(""));
+	if (menu.text !== "") {
+		menu.moves.typed(() => menu.setText(""));
 		return true;
 	}
 
-	if (door !== "anywhere") {
-		toDoor("anywhere");
-		return true;
-	}
-
-	close();
+	leave(menu);
 	return true;
 }
 
+function leave({ door, toDoor, close }: KeyedMenu): void {
+	if (door === "this-tab") {
+		toDoor("anywhere");
+		return;
+	}
+
+	close();
+}
+
 function tokenDropped(event: MenuKey, { door, text, toDoor }: KeyedMenu): boolean {
-	if (event.key !== "Backspace" || text !== "" || door === "anywhere") {
+	if (event.key !== "Backspace" || text !== "" || door !== "this-tab") {
 		return false;
 	}
 
@@ -182,7 +160,7 @@ function enteredIntentOf(event: MenuKey, results: Results, moves: MenuMoves): In
 	}
 
 	if (event.shiftKey) {
-		return results.makeNew;
+		return results.fallbackIntent;
 	}
 
 	return moves.picked?.intent ?? null;

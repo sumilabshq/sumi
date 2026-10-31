@@ -2,13 +2,9 @@
 import { Device, PerCall, Repeatable, command, moduleContract, query } from "@widgetarium/core/requests";
 import { z } from "zod";
 
-export const DoorSchema = z.enum(["anywhere", "new-tab", "this-tab"]);
+export const DoorSchema = z.enum(["anywhere", "new-tab", "ask", "this-tab"]);
 
 export type Door = z.infer<typeof DoorSchema>;
-
-export const ScopeSchema = z.enum(["all", "tabs", "chats", "apps", "workspaces"]);
-
-export type Scope = z.infer<typeof ScopeSchema>;
 
 export const KeptMenuSchema = z.object({
 	isOpen: z.boolean(),
@@ -31,7 +27,6 @@ export const OpenMenuSchema = z.object({
 
 export const ResultsAskSchema = z.object({
 	text: z.string(),
-	scope: ScopeSchema,
 	door: DoorSchema,
 	pageId: z.string().nullable().default(null),
 });
@@ -40,7 +35,7 @@ export type ResultsAsk = z.infer<typeof ResultsAskSchema>;
 
 export const WhereSchema = z.enum(["new-tab", "this-tab"]);
 
-export const MenuCommandSchema = z.enum(["new-chat", "new-tab", "reopen-tab", "new-workspace"]);
+export const MenuCommandSchema = z.enum(["new-chat", "new-tab"]);
 
 export type MenuCommand = z.infer<typeof MenuCommandSchema>;
 
@@ -79,7 +74,7 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	}),
 	z.object({
 		do: z.literal("open-app"),
-		app: z.enum(["canvas", "browser", "terminal"]),
+		app: z.enum(["canvas", "browser", "terminal", "tasks"]),
 		title: z.string(),
 	}),
 	z.object({
@@ -94,14 +89,7 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	z.object({
 		do: z.literal("ask-ink"),
 		text: z.string().min(1),
-	}),
-	z.object({
-		do: z.literal("new-chat"),
-		title: z.string(),
-	}),
-	z.object({
-		do: z.literal("new-workspace"),
-		name: z.string(),
+		sends: z.boolean(),
 	}),
 	z.object({
 		do: z.literal("close-tab"),
@@ -125,7 +113,7 @@ export const RenameAskSchema = z.object({
 	name: z.string(),
 });
 
-export const RowGlyphSchema = z.enum(["search", "globe", "plus", "chat", "reopen", "ink"]);
+export const RowGlyphSchema = z.enum(["search", "globe", "plus", "ink", "pencil"]);
 
 export const RowIconSchema = z.discriminatedUnion("kind", [
 	z.object({
@@ -134,6 +122,7 @@ export const RowIconSchema = z.discriminatedUnion("kind", [
 		favicon: z.string().nullable(),
 		title: z.string(),
 		address: z.string().nullable(),
+		mark: z.enum(["none", "running", "unread"]),
 	}),
 	z.object({
 		kind: z.literal("letter"),
@@ -155,12 +144,9 @@ export const RowKindSchema = z.enum([
 	"app",
 	"site",
 	"workspace",
-	"command",
 	"address",
 	"search",
 	"ask",
-	"new-chat",
-	"new-workspace",
 ]);
 
 export type RowKind = z.infer<typeof RowKindSchema>;
@@ -190,7 +176,7 @@ export const RowSchema = z.object({
 	kindLabel: z.string(),
 	doLabel: z.string(),
 	shortcut: z.string().nullable(),
-	isMakeNew: z.boolean(),
+	isFallback: z.boolean(),
 	intent: IntentSchema,
 	renames: z
 		.object({
@@ -212,10 +198,12 @@ export const SectionSchema = z.object({
 export type Section = z.infer<typeof SectionSchema>;
 
 export const ResultsSchema = z.object({
+	door: DoorSchema,
+	foundCount: z.number().int().nonnegative().nullable(),
 	sections: z.array(SectionSchema),
 	ghost: z.string(),
-	makeNew: IntentSchema.nullable(),
-	makeNewLabel: z.string(),
+	fallbackIntent: IntentSchema.nullable(),
+	fallbackLabel: z.string(),
 	askInk: IntentSchema.nullable(),
 });
 

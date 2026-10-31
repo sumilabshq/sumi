@@ -41,7 +41,19 @@
 	background: color-mix(in srgb, var(--sumi-plate) 90%, transparent);
 	-webkit-backdrop-filter: var(--sumi-blur-pick);
 	backdrop-filter: var(--sumi-blur-pick);
-	box-shadow: var(--sumi-shadow-lift), var(--sumi-pick-edge);
+	box-shadow: var(--sumi-shadow-float);
+	animation: wg-cm-panel-in var(--sumi-dur-base) var(--sumi-ease-out) both;
+}
+
+@keyframes wg-cm-panel-in {
+	from {
+		transform: translateX(-50%) translateY(-8px) scale(0.98);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateX(-50%);
+	}
 }
 
 .wg-cm-body {
@@ -52,8 +64,8 @@
 	height: 56px;
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	padding: 0 18px;
+	gap: 12px;
+	padding: 0 16px;
 	color: var(--sumi-text-3);
 }
 
@@ -133,31 +145,162 @@
 	color: var(--sumi-text-3);
 }
 
-.wg-cm-scopes {
-	display: flex;
-	gap: 2px;
-	padding: 0 12px 10px;
-}
-
-.wg-cm-scope {
-	height: 26px;
-	padding: 0 10px;
-	display: inline-flex;
-	align-items: center;
-	border-radius: var(--sumi-r-full);
-	font-size: var(--sumi-fs-12);
+.wg-cm-field-icon {
+	position: relative;
+	width: 20px;
+	height: 20px;
+	flex: none;
 	color: var(--sumi-text-2);
 }
 
-.wg-cm-scope:hover {
-	background: var(--sumi-hover);
-	color: var(--sumi-text);
+.wg-cm-field-glyph {
+	position: absolute;
+	inset: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	opacity: 0;
+	transform: scale(0.7) rotate(-20deg);
+	transition:
+		opacity var(--sumi-dur-base) var(--sumi-ease),
+		transform var(--sumi-dur-slow) var(--sumi-ease-out);
 }
 
-.wg-cm-scope[aria-selected="true"] {
+.wg-cm-field-glyph[data-shown] {
+	opacity: 1;
+	transform: none;
+}
+
+.wg-cm-field-glyph > .wg-cm-ink {
+	width: 22px;
+	height: 22px;
+}
+
+.wg-cm-panel {
+	isolation: isolate;
+}
+
+.wg-cm-panel::before,
+.wg-cm-panel::after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity var(--sumi-dur-slow) var(--sumi-ease);
+}
+
+.wg-cm-panel::before {
+	left: -60px;
+	right: -60px;
+	top: -70px;
+	height: 190px;
+	background:
+		radial-gradient(34% 60% at 22% 30%, var(--sumi-ask-violet), transparent 70%),
+		radial-gradient(30% 55% at 52% 20%, var(--sumi-ask-sky), transparent 70%),
+		radial-gradient(28% 50% at 82% 30%, var(--sumi-ask-pink), transparent 70%);
+	filter: blur(14px);
+	animation: wg-cm-ask-drift 6s ease-in-out infinite alternate;
+}
+
+.wg-cm-panel::after {
+	top: 0;
+	left: 6%;
+	right: 6%;
+	height: 1px;
+	background: var(--sumi-ask-line);
+	background-size: 200% 100%;
+	mask-image: linear-gradient(90deg, transparent, black 25%, black 75%, transparent);
+	animation: wg-cm-ask-shimmer 4s linear infinite;
+}
+
+@keyframes wg-cm-ask-shimmer {
+	to {
+		background-position: -200% 0;
+	}
+}
+
+.wg-cm-panel:has(> .wg-cm-body[data-cm-mode="ask"])::before,
+.wg-cm-panel:has(> .wg-cm-body[data-cm-mode="ask"])::after {
+	opacity: 1;
+}
+
+@keyframes wg-cm-ask-drift {
+	from {
+		transform: translateX(-56px);
+	}
+
+	to {
+		transform: translateX(56px);
+	}
+}
+
+.wg-cm-head {
+	height: 48px;
+	flex: none;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 12px 0 8px;
+}
+
+.wg-cm-mode {
+	height: 28px;
+	padding: 0 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: var(--sumi-r-sm);
+	font-size: var(--sumi-fs-13);
+	font-weight: var(--sumi-fw-semi);
+	color: var(--sumi-text-3);
+	transition:
+		color var(--sumi-dur-fast) var(--sumi-ease),
+		background-color var(--sumi-dur-hover) var(--sumi-ease);
+}
+
+.wg-cm-mode:hover {
+	color: var(--sumi-text-2);
+	background: var(--sumi-hover);
+}
+
+.wg-cm-mode:active {
 	background: var(--sumi-active);
+}
+
+.wg-cm-mode[aria-pressed="true"] {
 	color: var(--sumi-text);
-	font-weight: var(--sumi-fw-medium);
+	background: none;
+	cursor: default;
+}
+
+.wg-cm-mode-count {
+	font-weight: var(--sumi-fw-regular);
+	color: var(--sumi-text-3);
+	animation: wg-cm-fade-in var(--sumi-dur-fast) var(--sumi-ease) both;
+}
+
+.wg-cm-mode-keys {
+	font-family: inherit;
+	font-size: var(--sumi-fs-11);
+	font-weight: var(--sumi-fw-regular);
+	color: var(--sumi-text-3);
+}
+
+@keyframes wg-cm-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+.wg-cm-kind {
+	height: 22px;
+	padding: 0 8px;
+	display: inline-flex;
+	align-items: center;
+	border-radius: 6px;
+	background: var(--sumi-active);
+	color: var(--sumi-text-2);
 }
 
 .wg-cm-hr {
@@ -166,12 +309,55 @@
 	background: var(--sumi-line);
 }
 
+.wg-cm-list-frame {
+	flex: none;
+	overflow: hidden;
+	transition: height var(--sumi-dur-slow) var(--sumi-ease-out);
+}
+
 .wg-cm-list {
-	max-height: min(500px, calc(100vh - 260px));
+	max-height: min(500px, calc(100vh - 300px));
 	overflow-y: auto;
-	padding: 4px 6px 6px;
+	padding: 0 6px 6px;
 	display: flex;
 	flex-direction: column;
+	transition:
+		opacity var(--sumi-dur-base) var(--sumi-ease),
+		transform var(--sumi-dur-base) var(--sumi-ease-out);
+}
+
+[data-cm-leaving] > .wg-cm-list-frame > .wg-cm-list {
+	opacity: 0;
+	transform: translateY(-4px);
+	transition-duration: var(--sumi-dur-out);
+}
+
+.wg-cm-row,
+.wg-cm-tile,
+.wg-cm-label {
+	animation: wg-cm-row-in var(--sumi-dur-base) var(--sumi-ease-out) both;
+}
+
+.wg-cm-nothing {
+	height: 32px;
+	display: flex;
+	align-items: center;
+	padding: 0 10px;
+	font-size: var(--sumi-fs-14);
+	color: var(--sumi-text-2);
+}
+
+.wg-cm-nothing + .wg-cm-label {
+	margin: 6px -6px 0;
+	border-top: 1px solid var(--sumi-line);
+	padding: 12px 16px 4px;
+}
+
+@keyframes wg-cm-row-in {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
 }
 
 .wg-cm-label {
@@ -369,7 +555,7 @@
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	padding: 0 14px;
+	padding: 0 16px;
 	font-size: var(--sumi-fs-12);
 	color: var(--sumi-text-2);
 }
@@ -452,4 +638,91 @@
 .wg-cm-action-said {
 	flex: 1;
 	min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wg-cm-panel,
+	.wg-cm-row,
+	.wg-cm-tile,
+	.wg-cm-label,
+	.wg-cm-mode-count {
+		animation: none;
+	}
+
+	.wg-cm-panel::before,
+	.wg-cm-panel::after {
+		animation: none;
+	}
+
+	.wg-cm-list-frame,
+	.wg-cm-list,
+	.wg-cm-field-glyph,
+	.wg-cm-panel::before,
+	.wg-cm-panel::after {
+		transition: none;
+	}
+}
+
+[data-cm-mode="ask"] > .wg-cm-field {
+	height: 44px;
+}
+
+[data-cm-mode="ask"] > .wg-cm-head {
+	height: 40px;
+}
+
+.wg-cm-ask {
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-1);
+	padding: 0 16px 4px 48px;
+}
+
+.wg-cm-panel .wg-cm-ask .wg-studio-ai-field-bar {
+	gap: var(--sumi-sp-1);
+	margin-left: -9px;
+}
+
+.wg-cm-carried {
+	height: 26px;
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 9px 0 4px;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
+	font-size: var(--sumi-fs-12);
+	font-weight: var(--sumi-fw-medium);
+	color: var(--sumi-text-2);
+	transition: background var(--sumi-dur-hover) var(--sumi-ease);
+}
+
+.wg-cm-carried:hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+
+.wg-cm-carried-stack {
+	display: inline-flex;
+	align-items: center;
+}
+
+.wg-cm-carried-kind {
+	width: 18px;
+	height: 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-plate);
+	box-shadow: 0 0 0 1px var(--sumi-line-strong);
+}
+
+.wg-cm-carried-kind + .wg-cm-carried-kind {
+	margin-left: -6px;
+}
+
+body:has(.wg-cm-layer) :is(.wg-kit-pop, .wg-kit-tooltip) {
+	z-index: 1001;
 }

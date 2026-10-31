@@ -22,6 +22,20 @@ import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
+import type { AskComposer } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
+import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
+import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
+import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
+import { memoryFolder } from "./assistant-chat-app.ts";
+
+declare global {
+	interface Window {
+		__ASKED__?: { readonly text: string; readonly sends: boolean }[];
+	}
+}
 
 reportsFailures();
 
@@ -125,6 +139,69 @@ const studio = app()
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 void studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 
+const ASK_WORKSPACE = {
+	id: "default",
+	name: "Default",
+	folder: "/Users/me/Apps/translator",
+	folderFound: true,
+	recentFolders: ["/Users/me/Apps/translator", "/Users/me/Apps/recipes"],
+};
+const askApp = app()
+	.modules(
+		AssistantModule.with(
+			tauriAssistantParts({
+				kind: "tauri",
+				tauriAssistant: {
+					...NO_ASSISTANT,
+					can: true,
+					setup: async () => ({
+						isReady: true,
+						providerLabel: "Claude Code",
+						providers: [
+							{
+								id: "claude-code",
+								label: "Claude Code",
+								canEdit: true,
+								reads: {
+									images: true,
+									files: "path",
+								},
+							},
+						],
+						chosen: "claude-code",
+						helperAgents: false,
+						renderMarkdown: null,
+					}),
+				},
+				tauriAttachments: {
+					folder: "/attachments",
+					files: memoryFolder(),
+				},
+				folders: {
+					pick: async () => null,
+					lend: () => undefined,
+				},
+				claudeOptions: claudeOptionsCell(),
+				drops: {
+					fileDragged: () => () => undefined,
+				},
+				workspace: {
+					client: {
+						chooseFolder: async (_id, folder) => ({ ...ASK_WORKSPACE, folder }),
+						attachFolder: async () => null,
+					},
+					folder: workspaceFolderCell(ASK_WORKSPACE),
+				},
+			}),
+		),
+	)
+	.start({ platform: "browser", scope: { workspaceId: "default" } });
+window.__ASKED__ = [];
+const askComposer: AskComposer = {
+	app: askApp,
+	ask: (text, sends) => window.__ASKED__?.push({ text, sends }),
+};
+
 function Demo(): ReturnType<typeof h> {
 	const openNewTab = useTogglesNewTabMenu(SHOWN_TAB_SECTION);
 	const openHere = useTogglesMenuOnShown("Canvas", null);
@@ -157,7 +234,9 @@ const root = document.getElementById("root");
 if (root !== null) {
 	createRoot(root).render(
 		<AppProvider app={studio}>
-			<Demo />
+			<AskComposerContext value={askComposer}>
+				<Demo />
+			</AskComposerContext>
 		</AppProvider>,
 	);
 }

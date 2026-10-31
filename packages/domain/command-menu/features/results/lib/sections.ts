@@ -8,6 +8,7 @@ const KIND_LABEL: Readonly<Partial<Record<RowKind, string>>> = {
 	app: "App",
 	site: "Site",
 	workspace: "Workspace",
+	"closed-tab": "Closed tab",
 };
 const DO_LABEL: Readonly<Record<RowKind, string>> = {
 	tab: "Switch",
@@ -16,15 +17,12 @@ const DO_LABEL: Readonly<Record<RowKind, string>> = {
 	app: "Open",
 	site: "Open",
 	workspace: "Switch",
-	command: "Run",
 	address: "Open",
 	search: "Search",
 	ask: "Ask",
-	"new-chat": "Create",
-	"new-workspace": "Create",
 };
 const OPENS_HERE = "Open here";
-const MATCHED_KINDS: ReadonlySet<RowKind> = new Set(["tab", "chat", "app", "site", "workspace", "command"]);
+const MATCHED_KINDS: ReadonlySet<RowKind> = new Set(["tab", "chat", "app", "site", "workspace"]);
 
 export function sectionsOf(drafts: readonly Draft[], matched: string, door: Door): readonly Section[] {
 	return drafts
@@ -32,7 +30,7 @@ export function sectionsOf(drafts: readonly Draft[], matched: string, door: Door
 		.map((draft) => ({
 			label: draft.label,
 			layout: draft.layout,
-			rows: draft.rows.map((found) => rowOf(found, matched, draft.isMakeNew, door)),
+			rows: draft.rows.map((found) => rowOf(found, matched, draft.isFallback, door)),
 		}));
 }
 
@@ -46,18 +44,18 @@ export function ghostOf(typed: string, door: Door, hosts: readonly string[]): st
 	return hosts.find((host) => host.startsWith(lower) && host !== lower)?.slice(lower.length) ?? "";
 }
 
-function rowOf(found: Found, matched: string, isMakeNew: boolean, door: Door): Row {
+function rowOf(found: Found, matched: string, isFallback: boolean, door: Door): Row {
 	return {
 		key: found.key,
 		kind: found.kind,
 		title: found.title,
 		meta: found.meta,
 		icon: found.icon,
-		match: isMakeNew ? null : matchOf(found, matched),
+		match: isFallback ? null : matchOf(found, matched),
 		kindLabel: KIND_LABEL[found.kind] ?? "",
 		doLabel: doLabelOf(found, door),
 		shortcut: found.shortcut,
-		isMakeNew,
+		isFallback,
 		intent: found.intent,
 		renames: found.renames,
 		actions: [...found.actions],
@@ -67,6 +65,10 @@ function rowOf(found: Found, matched: string, isMakeNew: boolean, door: Door): R
 function doLabelOf(found: Found, door: Door): string {
 	if (door === "this-tab" && found.intent.do === "open-address" && found.intent.where === "this-tab") {
 		return OPENS_HERE;
+	}
+
+	if (door === "ask" && found.kind === "ask") {
+		return found.title;
 	}
 
 	return DO_LABEL[found.kind];

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { DoRowCommand } from "@widgetarium/command-menu";
 import type { Intent, Results, Row } from "@widgetarium/command-menu";
-import { useAskInk } from "./ask-ink-context.js";
+import { useAskComposer } from "./ask-composer-context.js";
 import { useRowRename } from "./use-row-rename.js";
 import type { RowRename } from "./use-row-rename.js";
 
@@ -32,7 +32,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 	const [toast, setToast] = useState<Toast>({ message: "", isWarning: false });
 	const doRow = useCommand(DoRowCommand);
 	// TRADE-OFF: the assistant runs in its own app, so the view hands the text over once the chat is made
-	const askInk = useAskInk();
+	const askComposer = useAskComposer();
 	const rows = results.sections.flatMap((section) => section.rows);
 	const at = rows.length === 0 ? 0 : Math.min(pickedAt, rows.length - 1);
 	const picked = rows[at] ?? null;
@@ -71,7 +71,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 				}
 
 				if (intent.do === "ask-ink") {
-					askInk(intent.text);
+					askComposer.ask(intent.text, intent.sends);
 				}
 
 				if (answer.output.isMenuKept) {
