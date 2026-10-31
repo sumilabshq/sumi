@@ -11,6 +11,7 @@ The rules every developer and every agent follows when writing code in this repo
 | [code-style.md](code-style.md) | names, injected keys, logging, the shape of a request, a module, a block and a gateway           |
 | [hosts.md](hosts.md)           | the facts a host hands an app, keeping one platform's code out of another's bundle, deploy, env  |
 | [lint.md](lint.md)             | the checks that hold every rule here                                                             |
+| [apps.md](apps.md)             | Sumi as a shell: app repositories, the contract, versioning, registry, install and updates       |
 | [legacy.md](legacy.md)         | code written before these rules: `legacy/` folders and the older module shape                    |
 
 > Status: `packages/state/layout` (data) and `packages/client/shell` (its views) are the reference pair. Every other package under `packages/domain/` and `packages/client/mascot` still has the older module shape ([legacy.md](legacy.md#the-older-module-shape)). A rule marked **planned** is not built or not checked by a tool yet.
