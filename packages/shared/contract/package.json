@@ -5,7 +5,9 @@
 	"license": "MIT",
 	"type": "module",
 	"files": [
-		"dist"
+		"dist",
+		"*.ts",
+		"generated"
 	],
 	"exports": {
 		".": {

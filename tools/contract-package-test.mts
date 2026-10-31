@@ -82,6 +82,16 @@ function installIn(project: string): void {
 	}
 }
 
+function missingExportTargetsIn(shipped: string): string[] {
+	const manifest: unknown = JSON.parse(fs.readFileSync(path.join(shipped, "package.json"), "utf8"));
+	const exported = fieldOf(manifest, "exports");
+	const targets = typeof exported === "object" && exported !== null ? Object.values(exported) : [];
+	return targets
+		.flatMap((target) => (typeof target === "object" && target !== null ? Object.values(target) : [target]))
+		.filter((target): target is string => typeof target === "string")
+		.filter((target) => !fs.existsSync(path.join(shipped, target)));
+}
+
 function shippedImportsOf(folder: string): string[] {
 	return fs
 		.readdirSync(folder, { recursive: true, withFileTypes: true })
@@ -122,6 +132,7 @@ try {
 	const shipped = path.join(project, "node_modules", CONTRACT);
 	check("the tarball ships a built dist", fs.existsSync(path.join(shipped, "dist/index.js")), true);
 	check("the tarball ships its declarations", fs.existsSync(path.join(shipped, "dist/index.d.ts")), true);
+	check("every target its exports name is in the tarball", missingExportTargetsIn(shipped).join(", "), "");
 	check("the shipped files import only zod and @widgetarium/core/requests", shippedImportsOf(shipped).join(", "), "");
 	check("an app outside the repo type-checks WriteFileCommand and FileSystemModule", typeErrorsIn(project, APP), "");
 	check(
