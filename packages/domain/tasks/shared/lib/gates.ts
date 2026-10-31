@@ -1,5 +1,5 @@
 import { MOST_BLOCKERS, MOST_CRITERIA, MOST_STEPS } from "../schema/task.schema.js";
-import type { Actor, Board, StepState, Task, TaskStatus } from "../schema/task.schema.js";
+import type { Actor, Board, Criterion, StepState, Task, TaskStatus } from "../schema/task.schema.js";
 import { idOf, isClosed, taskOfNumber } from "./task-refs.js";
 import { STATUS_WORDS, statusGuideOf } from "./task-words.js";
 
@@ -23,6 +23,8 @@ const NOTE_NEEDED = "Moving {id} to {to} needs a note saying why.";
 const PERSONS_WORDS_NEEDED =
 	"Moving {id} from {from} to {to} is the person's call: make it only when they said so in this chat, and quote their words as the note.";
 const NOT_YET = "{id} cannot go to {to} yet:\n{missing}";
+const EVIDENCE = "Marking {criterion} met needs evidence: a test run, a screenshot path, a commit, a document.";
+const DROP_REASON = "Dropping {criterion} needs the reason, in the person's words when they changed the ask.";
 const OVERFLOW = "{id} would hold {count} {what}; a task holds at most {most}. Split the work into a subtask instead.";
 
 interface Noted {
@@ -85,6 +87,21 @@ export function refuseOverflow(task: Task): string | null {
 		.replace("{count}", String(over.countOf(task)))
 		.replace("{what}", over.what)
 		.replace("{most}", String(over.most));
+}
+
+export function refuseCriterionState(
+	{ state, evidence, reason }: Pick<Criterion, "state" | "evidence" | "reason">,
+	criterion: string,
+): string | null {
+	if (state === "met" && (evidence === null || evidence.length < 3)) {
+		return EVIDENCE.replace("{criterion}", criterion);
+	}
+
+	if (state === "dropped" && (reason === null || reason.length < 3)) {
+		return DROP_REASON.replace("{criterion}", criterion);
+	}
+
+	return null;
 }
 
 export function needsNote(to: TaskStatus): boolean {

@@ -20,7 +20,7 @@
 		}
 	},
 	"dependencies": {
-		"@tauri-apps/api": "^2.12.4",
+		"@sumi/contract": "0.2.0",
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0"
 	},

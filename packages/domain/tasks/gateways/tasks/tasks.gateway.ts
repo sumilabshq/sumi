@@ -5,6 +5,7 @@ import type { Board, Task } from "../../shared/schema/task.schema.js";
 export interface HeldBoard {
 	readonly board: Board;
 	readonly rev: number;
+	readonly isReadOnly: boolean;
 }
 
 export interface BoardWrite {
@@ -12,14 +13,15 @@ export interface BoardWrite {
 	readonly reason: string;
 }
 
-export type SavedBoard =
-	| {
-			readonly ok: true;
-	  }
-	| {
-			readonly ok: false;
-			readonly why: "stale" | "read-only";
-	  };
+export interface SavedBoard {
+	readonly ok: boolean;
+	readonly rev: number;
+}
+
+export const EMPTY_BOARD: Board = {
+	nextNumber: 1,
+	tasks: [],
+};
 
 export interface RefusedChange {
 	readonly ok: false;
@@ -45,20 +47,6 @@ export type ChangedTask =
 	  }
 	| RefusedChange;
 
-export const SAVED_BOARD: SavedBoard = {
-	ok: true,
-};
-
-export const STALE_BOARD: SavedBoard = {
-	ok: false,
-	why: "stale",
-};
-
-export const READ_ONLY_BOARD: SavedBoard = {
-	ok: false,
-	why: "read-only",
-};
-
 const MOST_TRIES = 6;
 const RETRY_MS = 15;
 const KEPT_CHANGING = "The tasks file kept changing while this was written; try again.";
@@ -67,9 +55,21 @@ const READ_ONLY_REFUSAL =
 	"The tasks file is read-only here: a newer Sumi wrote it, or it no longer matches its shape. Nothing was written.";
 
 export abstract class TasksGateway {
+	private readonly listeners = new Set<() => void>();
+
 	abstract board(): Promise<HeldBoard>;
 	abstract saveBoard(board: Board, write: BoardWrite): Promise<SavedBoard>;
-	abstract boardChanged(listener: () => void): () => void;
+
+	boardChanged(listener: () => void): () => void {
+		this.listeners.add(listener);
+		return () => void this.listeners.delete(listener);
+	}
+
+	protected tell(): void {
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
+	}
 
 	async changeBoard(next: (board: Board) => BoardStep): Promise<ChangedBoard> {
 		for (let attempt = 0; attempt < MOST_TRIES; attempt += 1) {
@@ -108,6 +108,11 @@ export abstract class TasksGateway {
 
 	private async changeOnce(next: (board: Board) => BoardStep, attempt: number): Promise<ChangedBoard | null> {
 		const held = await this.board();
+
+		if (held.isReadOnly) {
+			return refusedChange(READ_ONLY_REFUSAL);
+		}
+
 		const step = next(held.board);
 
 		if ("refusal" in step) {
@@ -134,11 +139,7 @@ export abstract class TasksGateway {
 			return answeredChange(held.board, step, changedTasksOf(held.board, step.board));
 		}
 
-		if (saved.why === "read-only") {
-			return refusedChange(READ_ONLY_REFUSAL);
-		}
-
-		console.info(`[tasks] ${step.reason} → rev moved on, read again (try ${attempt + 1})`);
+		console.info(`[tasks] ${step.reason} → rev ${held.rev} lost to rev ${saved.rev}, read again (try ${attempt + 1})`);
 		return null;
 	}
 }

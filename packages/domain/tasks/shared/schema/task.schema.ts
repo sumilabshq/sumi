@@ -5,6 +5,7 @@ export const MOST_STEPS = 100;
 export const MOST_BLOCKERS = 20;
 export const MOST_CHATS = 50;
 export const MOST_PROGRESSED = 150;
+export const MOST_TASKS = 5000;
 
 export const TaskStatusSchema = z.enum([
 	"backlog",
@@ -180,7 +181,7 @@ export type Task = z.infer<typeof TaskSchema>;
 
 export const BoardSchema = z.object({
 	nextNumber: z.number().int().positive(),
-	tasks: z.array(TaskSchema),
+	tasks: z.array(TaskSchema).max(MOST_TASKS),
 });
 
 export type Board = z.infer<typeof BoardSchema>;
