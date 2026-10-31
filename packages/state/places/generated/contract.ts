@@ -400,8 +400,14 @@ export const AppPageSchema = z.object({
 	title: z.string().max(200).optional(),
 	favicon: z
 		.union([
-			z.string().max(65_536).regex(/^data:image\//),
-			z.string().max(2048).regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
+			z
+				.string()
+				.max(65_536)
+				.regex(/^data:image\//),
+			z
+				.string()
+				.max(2048)
+				.regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
 		])
 		.optional(),
 });

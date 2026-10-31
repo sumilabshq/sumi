@@ -1,7 +1,9 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, RefObject } from "react";
 import type { AppEvent, WelcomeBody, Workspace } from "@sumi/contract";
+import type { FrameLink } from "../../lib/frame-link.js";
 import { APP_FRAME_SANDBOX } from "../../lib/frame-sandbox.js";
+import type { FrameAsk } from "../../lib/frame-services.js";
 import { themeNow } from "../../lib/theme-now.js";
 import { useHostEvents } from "../../lib/use-host-events.js";
 import { useServedFrame } from "../../lib/use-served-frame.js";
@@ -24,9 +26,11 @@ export interface FrameWindowProps {
 	readonly onReady: () => void;
 	readonly onBusy: (isBusy: boolean) => void;
 	readonly onFailed: (reason: string) => void;
+	readonly onLink: (link: FrameLink) => void;
+	readonly onAsk: FrameAsk;
 }
 
-type HeardEvents = Pick<FrameWindowProps, "app" | "onReady" | "onBusy" | "onFailed">;
+type HeardEvents = Pick<FrameWindowProps, "app" | "onReady" | "onBusy" | "onFailed" | "onLink">;
 
 export function FrameWindow(props: FrameWindowProps): ReactElement {
 	const { app, url } = props;
@@ -50,6 +54,7 @@ function useFrameConversation(frame: RefObject<HTMLIFrameElement | null>, props:
 	const served = useServedFrame(frame, props.app, {
 		welcomeOf: () => welcomeOf(props),
 		onEvent: (event) => answerEvent(event, props, reported),
+		onAsk: props.onAsk,
 	});
 	const reported = useHostEvents(served, {
 		address: props.address,
@@ -99,7 +104,7 @@ function pageOf(event: AppEvent): ReportedPage | null {
 	}
 }
 
-function heard(event: AppEvent, { app, onReady, onBusy, onFailed }: HeardEvents): void {
+function heard(event: AppEvent, { app, onReady, onBusy, onFailed, onLink }: HeardEvents): void {
 	switch (event.type) {
 		case "ready":
 			onReady();
@@ -111,8 +116,11 @@ function heard(event: AppEvent, { app, onReady, onBusy, onFailed }: HeardEvents)
 			console.error(`[widgetarium] app ${app} failed: ${event.message}`, event.stack ?? "");
 			onFailed(event.message);
 			return;
+		case "open-link":
+			onLink(event);
+			return;
 		default:
-			// TODO: open-link, mark and notify reach Places and the person once those services exist
+			// TODO: mark and notify reach Places and the person once those services exist
 			console.info(`[widgetarium] app ${app} said ${event.type}; the shell does not act on it yet`);
 	}
 }

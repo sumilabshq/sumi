@@ -277,7 +277,7 @@ try {
 	};
 	check(
 		"pressing a chat link opens the chat in place and leaves the page where it was",
-		JSON.stringify(pressed) === JSON.stringify({ links: ["sumi://chat/chat-panes opened"], at: true }),
+		JSON.stringify(pressed) === JSON.stringify({ links: ['"sumi://chat/chat-panes" opened'], at: true }),
 		pressed,
 	);
 	const SIDE_LINK = `document.querySelector("[data-tasks-side] [data-tasks-chat-link]")`;
@@ -292,7 +292,7 @@ try {
 	check(
 		"a ⌘-press and a middle press open the chat as a new tab",
 		JSON.stringify(newTabs.slice(1)) ===
-			JSON.stringify(["sumi://chat/chat-panes opened in a new tab", "sumi://chat/chat-panes opened in a new tab"]),
+			JSON.stringify(['"sumi://chat/chat-panes" opened in a new tab', '"sumi://chat/chat-panes" opened in a new tab']),
 		newTabs,
 	);
 	await wide.ask(`document.querySelector("[data-tasks-send-back-open]").click()`);

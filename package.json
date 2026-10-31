@@ -88,6 +88,7 @@
 		"test:links": "node --single-threaded --import ./tools/loader/register.mts tools/links-test.ts",
 		"test:tasks-ui": "node --single-threaded --import ./tools/loader/register.mts tools/tasks-ui-test.ts",
 		"test:app-installer": "node --single-threaded --import ./tools/loader/register.mts tools/app-installer-test.ts",
+		"test:tasks-app": "node --single-threaded --import ./tools/loader/register.mts tools/tasks-app-test.ts",
 		"test:app-frame-sandbox": "node --single-threaded --import ./tools/loader/register.mts tools/app-frame-sandbox-test.ts",
 		"test:app-plate": "node --single-threaded --import ./tools/loader/register.mts tools/app-plate-test.ts",
 		"test:shell-board-diff": "node --single-threaded --import ./tools/loader/register.mts tools/shell-board-diff.ts",

@@ -9,6 +9,7 @@ export type PageSize = readonly [number, number];
 export interface PageAsk {
 	readonly size: PageSize;
 	readonly onGpu?: boolean;
+	readonly hasFramesInProcess?: boolean;
 }
 
 export type PagePoint = readonly [x: number, y: number];
@@ -28,6 +29,7 @@ export interface HeldDrag {
 
 export interface AskedPage {
 	readonly ask: (expression: string) => Promise<unknown>;
+	readonly askInFrame: (frameUrlPart: string, expression: string) => Promise<unknown>;
 	readonly lift: (path: PointerPath) => Promise<HeldDrag>;
 	readonly press: (x: number, y: number) => Promise<void>;
 	readonly hover: (x: number, y: number) => Promise<void>;
@@ -41,6 +43,7 @@ export interface AskedPage {
 interface PageSocket {
 	readonly close: () => void;
 	readonly ask: (expression: string) => Promise<unknown>;
+	readonly askInFrame: (frameUrlPart: string, expression: string) => Promise<unknown>;
 	readonly lift: (path: PointerPath) => Promise<HeldDrag>;
 	readonly press: (x: number, y: number) => Promise<void>;
 	readonly hover: (x: number, y: number) => Promise<void>;
@@ -103,6 +106,7 @@ function closeChrome(chrome: ChildProcess, profile: string): void {
 function handled(socket: PageSocket, chrome: ChildProcess, profile: string): AskedPage {
 	return {
 		ask: socket.ask,
+		askInFrame: socket.askInFrame,
 		lift: socket.lift,
 		press: socket.press,
 		hover: socket.hover,
@@ -119,12 +123,23 @@ function handled(socket: PageSocket, chrome: ChildProcess, profile: string): Ask
 
 const GPU_FLAGS: readonly string[] = ["--use-angle=metal", "--enable-gpu", "--ignore-gpu-blocklist"];
 
-function spawned(browser: string, file: string, { size, onGpu = false }: PageAsk, profile: string): ChildProcess {
+const FRAMES_IN_PROCESS_FLAGS: readonly string[] = [
+	"--disable-features=IsolateSandboxedIframes",
+	"--disable-site-isolation-trials",
+];
+
+function spawned(
+	browser: string,
+	file: string,
+	{ size, onGpu = false, hasFramesInProcess = false }: PageAsk,
+	profile: string,
+): ChildProcess {
 	return spawn(
 		browser,
 		[
 			"--headless=new",
 			...(onGpu ? GPU_FLAGS : ["--disable-gpu"]),
+			...(hasFramesInProcess ? FRAMES_IN_PROCESS_FLAGS : []),
 			"--no-sandbox",
 			"--hide-scrollbars",
 			"--no-first-run",
@@ -190,6 +205,7 @@ async function talking(socketUrl: string): Promise<PageSocket> {
 	return {
 		close: () => socket.close(),
 		ask: (expression) => answered(send, expression),
+		askInFrame: (frameUrlPart, expression) => answeredInFrame(send, frameUrlPart, expression),
 		lift: (path) => lifted(send, path),
 		press: (x, y) => pressedAt(send, x, y),
 		hover: async (x, y) => {
@@ -313,11 +329,60 @@ function fieldOf(value: unknown, name: string): unknown {
 	return Reflect.get(value, name);
 }
 
-async function answered(send: Send, expression: string): Promise<unknown> {
-	const reply = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
+async function answered(send: Send, expression: string, contextId?: number): Promise<unknown> {
+	const reply = await send("Runtime.evaluate", {
+		expression,
+		returnByValue: true,
+		awaitPromise: true,
+		...(contextId === undefined ? {} : { contextId }),
+	});
 	const result = fieldOf(reply, "result");
 	const exceptionDetails = fieldOf(result, "exceptionDetails");
 	if (exceptionDetails)
 		throw new Error(`the page threw: ${JSON.stringify(fieldOf(exceptionDetails, "exception") ?? exceptionDetails)}`);
 	return fieldOf(fieldOf(result, "result"), "value");
+}
+
+async function answeredInFrame(send: Send, frameUrlPart: string, expression: string): Promise<unknown> {
+	const tree = fieldOf(fieldOf(await send("Page.getFrameTree", {}), "result"), "frameTree");
+	const frameId = frameIdIn(tree, frameUrlPart);
+
+	if (frameId === null) {
+		return undefined;
+	}
+
+	const world = await send("Page.createIsolatedWorld", { frameId, worldName: "chrome-ask" });
+	const contextId = fieldOf(fieldOf(world, "result"), "executionContextId");
+
+	if (typeof contextId !== "number") {
+		throw new Error(`chrome gave frame ${frameUrlPart} no context: ${JSON.stringify(world)}`);
+	}
+
+	return answered(send, expression, contextId);
+}
+
+function frameIdIn(tree: unknown, frameUrlPart: string): string | null {
+	const frame = fieldOf(tree, "frame");
+	const url = fieldOf(frame, "url");
+	const id = fieldOf(frame, "id");
+
+	if (typeof url === "string" && url.includes(frameUrlPart) && typeof id === "string") {
+		return id;
+	}
+
+	const children = fieldOf(tree, "childFrames");
+
+	if (!Array.isArray(children)) {
+		return null;
+	}
+
+	for (const child of children) {
+		const found = frameIdIn(child, frameUrlPart);
+
+		if (found !== null) {
+			return found;
+		}
+	}
+
+	return null;
 }
