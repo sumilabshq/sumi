@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use widgetarium_host_tauri_lib::files::{
     append_file, copy, file_info, make_folder, read_file, read_folder, remove, rename, write_file, EntryKind,
-    FolderEntry,
+    FolderEntry, MAX_CONTENT_BYTES, MAX_PATH_BYTES,
 };
 
 struct Checks {
@@ -150,6 +150,54 @@ fn refuses_unsafe_paths(checks: &mut Checks, sandbox: &Sandbox) {
     checks.check("a NUL in a rename target is refused", rename(&sandbox.at("x"), &held), refusal.map(|_: String| ()));
 }
 
+fn refuses_what_is_not_a_small_regular_file(checks: &mut Checks, sandbox: &Sandbox) {
+    let fifo = sandbox.at("pipe");
+    let made = std::process::Command::new("mkfifo").arg(&fifo).status().map(|status| status.success());
+    checks.check("a FIFO is made for the check", made.ok(), Some(true));
+    let refusal = Err(format!("{} is not a regular file, so it is not read.", fifo.display()));
+    checks.check("a FIFO is refused, not read", read_file(&fifo), refusal);
+    let big = sandbox.at("big.bin");
+    let sized = fs::File::create(&big).and_then(|file| file.set_len(MAX_CONTENT_BYTES + 1));
+    checks.check("an oversize file is made for the check", sized.is_ok(), true);
+    let too_big = format!("{} is larger than {MAX_CONTENT_BYTES} bytes, so it is refused.", big.display());
+    checks.check("a file over 16 MiB is refused", read_file(&big), Err(too_big));
+    let content = "x".repeat(MAX_CONTENT_BYTES as usize + 1);
+    let target = sandbox.at("too-much.txt");
+    let too_much = Err(format!("{} is larger than {MAX_CONTENT_BYTES} bytes, so it is refused.", target.display()));
+    checks.check("a write over 16 MiB is refused", write_file(&target, &content), too_much.clone());
+    checks.check("an append over 16 MiB is refused", append_file(&target, &content), too_much);
+    checks.check("the refused content wrote nothing", exists(&target), false);
+    let long = sandbox.at(&"a".repeat(MAX_PATH_BYTES));
+    let refusal = Err(format!("A path longer than {MAX_PATH_BYTES} bytes is refused."));
+    checks.check("a path over 4096 bytes is refused", file_info(&long).map(|_| ()), refusal);
+}
+
+fn refuses_into_itself(checks: &mut Checks, sandbox: &Sandbox) {
+    let from = sandbox.at("self");
+    let _ = write_file(&from.join("one.md"), "one");
+    let inside = from.join("deeper/copy");
+    let refusal = format!("{} cannot go into itself at {}.", from.display(), inside.display());
+    checks.check("a copy into itself is refused", copy(&from, &inside), Err(refusal.clone()));
+    checks.check("the refused copy created nothing", exists(&from.join("deeper")), false);
+    checks.check("a rename into itself is refused", rename(&from, &inside), Err(refusal));
+    let same = format!("{} cannot go into itself at {}.", from.display(), from.display());
+    checks.check("a copy onto itself is refused", copy(&from, &from), Err(same));
+    let sibling = sandbox.at("self-sibling");
+    checks.check("a sibling sharing the name's prefix is allowed", copy(&from, &sibling), Ok(()));
+}
+
+fn copies_links_as_links(checks: &mut Checks, sandbox: &Sandbox) {
+    let from = sandbox.at("linked");
+    let _ = write_file(&from.join("real.md"), "real");
+    let made = std::os::unix::fs::symlink("real.md", from.join("alias.md"));
+    checks.check("a symlink is made for the check", made.is_ok(), true);
+    let to = sandbox.at("linked-copy");
+    checks.check("a folder holding a link copies", copy(&from, &to), Ok(()));
+    let copied = fs::symlink_metadata(to.join("alias.md")).map(|metadata| metadata.file_type().is_symlink());
+    checks.check("the link is copied as a link", copied.ok(), Some(true));
+    checks.check("the link points where it pointed", fs::read_link(to.join("alias.md")).ok(), Some(PathBuf::from("real.md")));
+}
+
 fn main() -> ExitCode {
     let mut checks = Checks { failed: 0 };
     let sandbox = Sandbox::new();
@@ -161,6 +209,9 @@ fn main() -> ExitCode {
     renames(&mut checks, &sandbox);
     copies(&mut checks, &sandbox);
     refuses_unsafe_paths(&mut checks, &sandbox);
+    refuses_what_is_not_a_small_regular_file(&mut checks, &sandbox);
+    refuses_into_itself(&mut checks, &sandbox);
+    copies_links_as_links(&mut checks, &sandbox);
     let root = sandbox.root.clone();
     drop(sandbox);
     checks.check("the temp folder is deleted at the end", exists(&root), false);

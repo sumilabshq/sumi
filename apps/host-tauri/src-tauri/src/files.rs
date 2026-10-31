@@ -3,15 +3,20 @@ use super::studio_caller::refuse_foreign_caller;
 use serde::Serialize;
 use serde_json::Value;
 use std::fs::{self, OpenOptions};
-use std::io::{self, ErrorKind, Write};
+use std::io::{self, ErrorKind, Read, Write};
 use std::os::unix::ffi::OsStrExt;
+use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
-use tauri::ipc::{Invoke, InvokeBody, InvokeError, InvokeMessage};
+use tauri::ipc::{Invoke, InvokeBody, InvokeError};
 use tauri::plugin::{Builder, TauriPlugin};
 use tauri::Wry;
 
 pub const PLUGIN_NAME: &str = "files";
+
+pub const MAX_PATH_BYTES: usize = 4096;
+
+pub const MAX_CONTENT_BYTES: u64 = 16 * 1024 * 1024;
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
 #[serde(rename_all = "lowercase")]
@@ -40,8 +45,47 @@ pub fn refuse_unsafe_path(path: &Path) -> Result<(), String> {
         return Err(format!("The path {} holds a NUL character, so it is refused.", path.display()));
     }
 
+    if path.as_os_str().len() > MAX_PATH_BYTES {
+        return Err(format!("A path longer than {MAX_PATH_BYTES} bytes is refused."));
+    }
+
     if !path.is_absolute() {
         return Err(format!("The path {} is not absolute, so it is refused.", path.display()));
+    }
+
+    Ok(())
+}
+
+fn refuse_oversized(path: &Path, bytes: u64) -> Result<(), String> {
+    if bytes > MAX_CONTENT_BYTES {
+        return Err(format!("{} is larger than {MAX_CONTENT_BYTES} bytes, so it is refused.", path.display()));
+    }
+
+    Ok(())
+}
+
+fn resolved(path: &Path) -> Result<PathBuf, String> {
+    let mut existing = path;
+    let mut rest = Vec::new();
+
+    loop {
+        if let Ok(real) = fs::canonicalize(existing) {
+            return Ok(rest.iter().rev().fold(real, |whole, part| whole.join(part)));
+        }
+
+        let (Some(parent), Some(name)) = (existing.parent(), existing.file_name()) else {
+            return Err(format!("Could not resolve {}.", path.display()));
+        };
+        rest.push(name);
+        existing = parent;
+    }
+}
+
+fn refuse_into_itself(from: &Path, to: &Path) -> Result<(), String> {
+    let source = fs::canonicalize(from).map_err(|error| failed("resolve", from, &error))?;
+
+    if resolved(to)?.starts_with(&source) {
+        return Err(format!("{} cannot go into itself at {}.", from.display(), to.display()));
     }
 
     Ok(())
@@ -76,7 +120,26 @@ pub fn read_file(path: &Path) -> Result<String, String> {
         return Err(format!("{} is a folder, not a file.", path.display()));
     }
 
-    fs::read_to_string(path).map_err(|error| failed("read", path, &error))
+    if !metadata.is_file() {
+        return Err(format!("{} is not a regular file, so it is not read.", path.display()));
+    }
+
+    refuse_oversized(path, metadata.len())?;
+    let file = OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK)
+        .open(path)
+        .map_err(|error| failed("read", path, &error))?;
+    let opened = file.metadata().map_err(|error| failed("read", path, &error))?;
+
+    if !opened.is_file() {
+        return Err(format!("{} is not a regular file, so it is not read.", path.display()));
+    }
+
+    let mut text = String::new();
+    file.take(MAX_CONTENT_BYTES + 1).read_to_string(&mut text).map_err(|error| failed("read", path, &error))?;
+    refuse_oversized(path, text.len() as u64)?;
+    Ok(text)
 }
 
 pub fn read_folder(path: &Path) -> Result<Vec<FolderEntry>, String> {
@@ -122,12 +185,14 @@ pub fn file_info(path: &Path) -> Result<FileInfo, String> {
 
 pub fn write_file(path: &Path, content: &str) -> Result<(), String> {
     refuse_unsafe_path(path)?;
+    refuse_oversized(path, content.len() as u64)?;
     make_parent_of(path)?;
     write_atomically(path, content.as_bytes()).map_err(|error| failed("write", path, &error))
 }
 
 pub fn append_file(path: &Path, content: &str) -> Result<(), String> {
     refuse_unsafe_path(path)?;
+    refuse_oversized(path, content.len() as u64)?;
     make_parent_of(path)?;
     let mut file =
         OpenOptions::new().create(true).append(true).open(path).map_err(|error| failed("open", path, &error))?;
@@ -153,12 +218,18 @@ pub fn remove(path: &Path) -> Result<(), String> {
 pub fn rename(from: &Path, to: &Path) -> Result<(), String> {
     refuse_unsafe_path(from)?;
     refuse_unsafe_path(to)?;
+    refuse_into_itself(from, to)?;
     make_parent_of(to)?;
     fs::rename(from, to).map_err(|error| failed("move", from, &error))
 }
 
 fn copy_tree(from: &Path, to: &Path) -> Result<(), String> {
-    let metadata = fs::metadata(from).map_err(|error| failed("copy", from, &error))?;
+    let metadata = fs::symlink_metadata(from).map_err(|error| failed("copy", from, &error))?;
+
+    if metadata.file_type().is_symlink() {
+        let target = fs::read_link(from).map_err(|error| failed("read the link", from, &error))?;
+        return std::os::unix::fs::symlink(target, to).map_err(|error| failed("link", to, &error));
+    }
 
     if !metadata.is_dir() {
         return fs::copy(from, to).map(|_| ()).map_err(|error| failed("copy", from, &error));
@@ -177,46 +248,55 @@ fn copy_tree(from: &Path, to: &Path) -> Result<(), String> {
 pub fn copy(from: &Path, to: &Path) -> Result<(), String> {
     refuse_unsafe_path(from)?;
     refuse_unsafe_path(to)?;
+    refuse_into_itself(from, to)?;
     make_parent_of(to)?;
     copy_tree(from, to)
 }
 
-fn text_of<'a>(message: &'a InvokeMessage<Wry>, name: &str) -> Result<&'a str, String> {
-    let missing = || format!("The files call is missing {name}.");
-    let InvokeBody::Json(args) = message.payload() else { return Err(missing()) };
-    args.get(name).and_then(Value::as_str).ok_or_else(missing)
+fn text_of<'a>(args: &'a Value, name: &str) -> Result<&'a str, String> {
+    args.get(name).and_then(Value::as_str).ok_or_else(|| format!("The files call is missing {name}."))
 }
 
-fn path_of(message: &InvokeMessage<Wry>, name: &str) -> Result<PathBuf, String> {
-    text_of(message, name).map(PathBuf::from)
+fn path_of(args: &Value, name: &str) -> Result<PathBuf, String> {
+    text_of(args, name).map(PathBuf::from)
 }
 
 fn answered<T: Serialize>(answer: Result<T, String>) -> Result<Value, String> {
     serde_json::to_value(answer?).map_err(|error| error.to_string())
 }
 
-fn answer_of(message: &InvokeMessage<Wry>) -> Result<Value, String> {
-    match message.command() {
-        "read_file" => answered(read_file(&path_of(message, "path")?)),
-        "read_folder" => answered(read_folder(&path_of(message, "path")?)),
-        "file_info" => answered(file_info(&path_of(message, "path")?)),
-        "write_file" => answered(write_file(&path_of(message, "path")?, text_of(message, "content")?)),
-        "append_file" => answered(append_file(&path_of(message, "path")?, text_of(message, "content")?)),
-        "make_folder" => answered(make_folder(&path_of(message, "path")?)),
-        "remove" => answered(remove(&path_of(message, "path")?)),
-        "rename" => answered(rename(&path_of(message, "from")?, &path_of(message, "to")?)),
-        "copy" => answered(copy(&path_of(message, "from")?, &path_of(message, "to")?)),
+fn answer_of(command: &str, args: &Value) -> Result<Value, String> {
+    match command {
+        "read_file" => answered(read_file(&path_of(args, "path")?)),
+        "read_folder" => answered(read_folder(&path_of(args, "path")?)),
+        "file_info" => answered(file_info(&path_of(args, "path")?)),
+        "write_file" => answered(write_file(&path_of(args, "path")?, text_of(args, "content")?)),
+        "append_file" => answered(append_file(&path_of(args, "path")?, text_of(args, "content")?)),
+        "make_folder" => answered(make_folder(&path_of(args, "path")?)),
+        "remove" => answered(remove(&path_of(args, "path")?)),
+        "rename" => answered(rename(&path_of(args, "from")?, &path_of(args, "to")?)),
+        "copy" => answered(copy(&path_of(args, "from")?, &path_of(args, "to")?)),
         other => Err(format!("The files plugin has no command {other}.")),
     }
 }
 
+fn handle(invoke: Invoke<Wry>) -> bool {
+    let Invoke { message, resolver, .. } = invoke;
+
+    if let Err(refused) = refuse_foreign_caller(message.webview().label()) {
+        resolver.reject(refused);
+        return true;
+    }
+
+    let command = message.command().to_owned();
+    let args = match message.payload() {
+        InvokeBody::Json(args) => args.clone(),
+        InvokeBody::Raw(_) => Value::Null,
+    };
+    std::thread::spawn(move || resolver.respond(answer_of(&command, &args).map_err(InvokeError::from)));
+    true
+}
+
 pub fn init() -> TauriPlugin<Wry> {
-    Builder::new(PLUGIN_NAME)
-        .invoke_handler(|invoke: Invoke<Wry>| {
-            let message = &invoke.message;
-            let answer = refuse_foreign_caller(message.webview().label()).and_then(|()| answer_of(message));
-            invoke.resolver.respond(answer.map_err(InvokeError::from));
-            true
-        })
-        .build()
+    Builder::new(PLUGIN_NAME).invoke_handler(handle).build()
 }
