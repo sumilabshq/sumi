@@ -1,4 +1,6 @@
-import type { TabGroup } from "./tab-lists.js";
+import { withEntryBefore } from "./tab-lists.js";
+import type { ListEntry } from "../../schema/tabs.schema.js";
+import type { ChatLists, TabGroup, TabPlace } from "./tab-lists.js";
 import { groupChangeSaid, groupedMoment, isSameGroupFace, newGroupOf, withoutGroup } from "./host-tabs-moment.js";
 import type { GroupChange, HostTabsMoment } from "./host-tabs-moment.js";
 import type { MovedTabs } from "./host-tabs.js";
@@ -39,6 +41,25 @@ export function changeGroup(moment: HostTabsMoment, group: TabGroup, change: Gro
 	};
 }
 
+export function placeGroup(moment: HostTabsMoment, group: TabGroup, place: TabPlace): MovedTabs | null {
+	if (place.before === group.id) {
+		return null;
+	}
+
+	return {
+		moment: {
+			...moment,
+			lists: withEntryBefore(
+				listsWithoutEntry(moment.lists, group.id),
+				place.chatId,
+				groupEntryOf(group.id),
+				place.before,
+			),
+		},
+		reason: `place group ${group.id} in ${place.chatId} before ${place.before ?? "the end"}`,
+	};
+}
+
 export function ungroup(moment: HostTabsMoment, group: TabGroup): MovedTabs {
 	return {
 		moment: {
@@ -46,5 +67,18 @@ export function ungroup(moment: HostTabsMoment, group: TabGroup): MovedTabs {
 			...withoutGroup(moment, group.id, group.tabIds),
 		},
 		reason: `ungroup ${group.id}, ${group.tabIds.length} tabs`,
+	};
+}
+
+function listsWithoutEntry(lists: ChatLists, id: string): ChatLists {
+	return Object.fromEntries(
+		Object.entries(lists).map(([chatId, entries]) => [chatId, entries.filter((one) => one.id !== id)]),
+	);
+}
+
+function groupEntryOf(id: string): ListEntry {
+	return {
+		kind: "group",
+		id,
 	};
 }
