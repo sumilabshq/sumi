@@ -2,9 +2,9 @@ import type { KeptSplit } from "../../schema/splits.schema.js";
 import type { SidebarEntry, SidebarTab, SplitMember } from "../../schema/tab-rows.schema.js";
 import type { SectionList } from "../../schema/tabs.schema.js";
 import type { HostTabsMoment } from "../tabs/host-tabs.js";
-import { PINNED_LIST, WORKSPACE_LIST, locationOf } from "../tabs/tab-lists.js";
+import { PINNED_LIST, locationOf } from "../tabs/tab-lists.js";
 import { splitMapOf } from "../splits/split-map.js";
-import { splitOfTab } from "../splits/split-members.js";
+import { blockListOf, firstListedMember, splitOfTab } from "../splits/split-members.js";
 
 export class SplitRows {
 	constructor(
@@ -19,10 +19,10 @@ export class SplitRows {
 			return null;
 		}
 
-		const blockList = this.blockListOf(split);
+		const blockList = blockListOf(this.moment, split);
 
 		if (list === blockList) {
-			return this.firstIn(split, blockList) === tabId ? [this.blockOf(split)] : [];
+			return firstListedMember(this.moment, split, blockList) === tabId ? [this.blockOf(split)] : [];
 		}
 
 		return this.itemsOf(tabId).map((item) => ({
@@ -49,17 +49,6 @@ export class SplitRows {
 			isPinned: this.isPinned(id),
 			isFocused: split.focusedId === id,
 		}));
-	}
-
-	private blockListOf(split: KeptSplit): SectionList {
-		return split.memberIds.every((id) => this.isPinned(id)) ? PINNED_LIST : WORKSPACE_LIST;
-	}
-
-	private firstIn(split: KeptSplit, list: SectionList): string | null {
-		const first = (this.moment.lists[list] ?? []).find(
-			(entry) => entry.kind === "tab" && split.memberIds.includes(entry.id),
-		);
-		return first?.id ?? null;
 	}
 
 	private isPinned(tabId: string): boolean {

@@ -82,8 +82,8 @@ try {
 	const boards = await page.ask(CANVAS_PANES);
 	writeFileSync(path.join(shotsAt, "second-canvas.png"), await page.shoot());
 	check(
-		"a chat's canvas tab opens its own canvas, the first kept mounted",
-		JSON.stringify(boards) === JSON.stringify(["app", "app"]),
+		"a chat's canvas tab opens its own canvas in its chat's tile, which takes the screen",
+		JSON.stringify(boards) === JSON.stringify(["app"]),
 		boards,
 	);
 	await pressed('[data-tabs-item=essential][data-tabs-id="essential-1"]');

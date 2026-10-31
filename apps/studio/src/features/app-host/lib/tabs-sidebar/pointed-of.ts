@@ -1,3 +1,4 @@
+import { ROW_WRAPPER } from "../tab-drag/sidebar-layout.js";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 
 export type PointedItem =
@@ -50,9 +51,25 @@ export function tabRefOf(item: HTMLElement, id: string): TabRef {
 	return {
 		id,
 		groupId: item.dataset["tabsGroup"] ?? null,
+		splitId: splitIdOf(item),
 		list: listIdOf(item),
 		isChat: item.dataset["tabsChat"] !== undefined,
 	};
+}
+
+function splitIdOf(item: HTMLElement): string | null {
+	const members = parentPastWrapperOf(item);
+
+	if (members === null || !members.matches("[data-split-members]")) {
+		return null;
+	}
+
+	return members.closest<HTMLElement>("[data-tabs-split]")?.dataset["tabsSplit"] ?? null;
+}
+
+function parentPastWrapperOf(item: HTMLElement): HTMLElement | null {
+	const parent = item.parentElement;
+	return parent?.matches(ROW_WRAPPER) === true ? parent.parentElement : parent;
 }
 
 function spaceIn(list: string): PointedItem {

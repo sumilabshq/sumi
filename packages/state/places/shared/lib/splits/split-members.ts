@@ -1,7 +1,8 @@
 import type { KeptSplit, SplitNode } from "../../schema/splits.schema.js";
 import { SPLIT_LEAST_MEMBERS, SPLIT_MOST_MEMBERS } from "../../schema/splits.schema.js";
 import type { HostTabsMoment } from "../tabs/host-tabs-moment.js";
-import { isSectionList, locationOf } from "../tabs/tab-lists.js";
+import type { SectionList } from "../../schema/tabs.schema.js";
+import { PINNED_LIST, WORKSPACE_LIST, isSectionList, locationOf } from "../tabs/tab-lists.js";
 import { leafIdsOf, withoutLeaf } from "./split-tree.js";
 
 const TOO_FEW = 'the split "{id}" holds {count} tabs: a split holds {least} to {most}';
@@ -12,6 +13,19 @@ const NOT_TOP_LEVEL = 'the tab "{tab}" stands in the split "{id}" from inside a 
 
 export function splitOfTab(moment: Pick<HostTabsMoment, "splits">, tabId: string): KeptSplit | null {
 	return moment.splits.find((split) => split.memberIds.includes(tabId)) ?? null;
+}
+
+export function firstListedMember(
+	moment: Pick<HostTabsMoment, "lists">,
+	split: KeptSplit,
+	list: string,
+): string | null {
+	const first = (moment.lists[list] ?? []).find((entry) => entry.kind === "tab" && split.memberIds.includes(entry.id));
+	return first?.id ?? null;
+}
+
+export function blockListOf(moment: HostTabsMoment, split: KeptSplit): SectionList {
+	return split.memberIds.every((id) => locationOf(moment, id)?.chatId === PINNED_LIST) ? PINNED_LIST : WORKSPACE_LIST;
 }
 
 export function shownSplitOf(moment: Pick<HostTabsMoment, "splits" | "shownSplitId">): KeptSplit | null {

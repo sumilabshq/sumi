@@ -31,6 +31,7 @@ export function SidebarEntries({ entries, renaming }: SidebarEntriesProps): Reac
 						hue={entry.group.hue}
 						isOpen={entry.group.isOpen}
 						count={entry.group.items.length}
+						holdsChat={entry.group.items.some((item) => item.children !== undefined)}
 					>
 						{entry.group.items.map((item) => (
 							<ListedItem key={item.tab.id} item={item} groupId={entry.group.id} renaming={renaming} />

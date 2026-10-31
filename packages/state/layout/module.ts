@@ -7,6 +7,7 @@ import {
 	DropGoneTabsCommand,
 	OpenShownTabPaneCommand,
 	ShowChatInPaneCommand,
+	ShowTabInChatGroupCommand,
 	ShowTabInTargetPaneCommand,
 } from "./features/pane-tabs/requests.js";
 import { FocusSplitCommand, LeaveSplitCommand, ShowSplitCommand } from "./features/split-board/requests.js";
@@ -52,6 +53,7 @@ export const LayoutModule = module("layout")
 		AimPaneCommand,
 		ShowChatInPaneCommand,
 		ShowTabInTargetPaneCommand,
+		ShowTabInChatGroupCommand,
 		OpenShownTabPaneCommand,
 		CloseShownTabPaneCommand,
 		ClosePanesOfTabsCommand,

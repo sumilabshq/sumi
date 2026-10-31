@@ -13,7 +13,6 @@ import {
 	SETTLED_MS,
 	SHOWN_ID,
 	TILE_IDS,
-	TITLE,
 	WORKSPACE_IDS,
 	addFailures,
 	check,
@@ -75,7 +74,7 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	const emptyHead = await centreOf(page, '[data-tabs-section="workspace"]');
 	await dragged(page, "drag a row into an empty section", `[data-tabs-list] > [data-tabs-id="${intoEmpty}"]`, [
 		emptyHead[0],
-		emptyHead[1] + 24,
+		emptyHead[1] + 12,
 	]);
 	check(
 		"dragging a chat's sub-tab to the top of Open moves it there",
@@ -87,8 +86,8 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	const listedBefore = new Set(await idsOf(page, LIST_IDS));
 	await pressOn(page, "[data-host-column-add]");
 	await waited(SETTLED_MS);
-	const token = await page.ask(`document.querySelector(".wg-cm-token")?.textContent ?? null`);
-	check("New tab opens the command menu at New tab, with no empty page", token === "New tab", token);
+	const mode = await page.ask(`document.querySelector("[data-cm-field-icon]")?.dataset.cmFieldIcon ?? null`);
+	check("New tab opens the command menu in New, with no empty page", mode === "new", mode);
 	await timed(page, "new tab from the menu", () => pressOn(page, '[data-cm-tile="app"]'));
 	const opened = (await idsOf(page, LIST_IDS)).find((id) => !listedBefore.has(id)) ?? "";
 	const landed = await page.ask(
@@ -96,6 +95,10 @@ async function checksPressing(page: AskedPage): Promise<void> {
 	);
 	check("a tab picked from New tab is shown in the list New tab names", landed === addsTo, [landed, addsTo]);
 }
+
+const FOLDED_AWAY = (id: string): string =>
+	`(() => { const row = document.querySelector('[data-tabs-list] [data-tabs-id="${id}"]'); return row === null || row.closest("[data-fold-box]:not([data-open])") !== null; })()`;
+const TRANSLATOR_TILE_SHOWN = `document.querySelector('[data-tabs-id="chat-translator"][data-shown], [data-tabs-in="chat-translator"] [data-shown]') !== null`;
 
 async function checksChats(page: AskedPage): Promise<void> {
 	await page.ask(`window.__arm()`);
@@ -110,8 +113,8 @@ async function checksChats(page: AskedPage): Promise<void> {
 	);
 	const chatTabIds = new Set(await idsOf(page, CHAT_IDS));
 	check(
-		"switching chats marks the other chat shown and keeps every chat's tabs listed under its chat",
-		(await page.ask(TITLE)) === "Translator" &&
+		"switching chats marks the other chat's tile shown and keeps every chat's tabs listed under its chat",
+		(await page.ask(TRANSLATOR_TILE_SHOWN)) === true &&
 			["tab-9", "tab-10", "tab-11", "tab-2"].every((id) => chatTabIds.has(id)),
 		[await idsOf(page, CHAT_IDS), await idsOf(page, WORKSPACE_IDS)],
 	);
@@ -207,11 +210,7 @@ async function checksGroups(page: AskedPage): Promise<void> {
 		await idsOf(page, GROUP_NAMES),
 	);
 	await timed(page, "fold a group", () => pressOn(page, '[data-tabs-item=group][data-tabs-id="group-12"]'));
-	check(
-		"pressing a group head folds it",
-		!(await idsOf(page, LIST_IDS)).includes("tab-3"),
-		await idsOf(page, LIST_IDS),
-	);
+	check("pressing a group head folds it", (await page.ask(FOLDED_AWAY("tab-3"))) === true, await idsOf(page, LIST_IDS));
 	await pressOn(page, '[data-tabs-item=group][data-tabs-id="group-12"]');
 	await waited(SETTLED_MS);
 	await page.ask(pointedAt('[data-tabs-item=group][data-tabs-id="group-13"]'));
@@ -298,15 +297,12 @@ async function checksDrag(page: AskedPage, folder: string): Promise<void> {
 	const drag = await lifted(page, start, tile, 16);
 	await waited(300);
 	const room = await page.ask(
-		`(() => { const row = document.querySelector('[data-tabs-id="tab-5"]'); const shifted = [...document.querySelectorAll("[data-tabs-item=essential]")].filter((one) => one.style.transform !== "").length; return { shifted, rowHidden: getComputedStyle(row).visibility === "hidden" }; })()`,
+		`(() => { const held = document.querySelectorAll('[data-tabs-essentials] [data-tabs-item=essential][data-tabs-lifted][data-tabs-id="tab-5"]'); return { held: held.length, isHeldHidden: held.length === 1 && getComputedStyle(held[0]).visibility === "hidden", isLeftList: document.querySelector('[data-tabs-list] [data-tabs-id="tab-5"]') === null }; })()`,
 	);
 	writeFileSync(path.join(folder, "drag-into-essentials.png"), await page.shoot());
 	check(
-		"over Essentials the tiles make room and the dragged row leaves its place in the list",
-		typeof room === "object" &&
-			room !== null &&
-			Number(Reflect.get(room, "shifted")) > 0 &&
-			Reflect.get(room, "rowHidden") === true,
+		"over Essentials the tiles make room for the held tab and the dragged row leaves its place in the list",
+		JSON.stringify(room) === JSON.stringify({ held: 1, isHeldHidden: true, isLeftList: true }),
 		room,
 	);
 	await drag.drop(tile);
@@ -353,7 +349,7 @@ async function checksSections(page: AskedPage, folder: string): Promise<void> {
 	const moved = (await idsOf(page, CHAT_TOP_IDS)).find((id) => id !== "tab-5") ?? "";
 	await dragged(page, "drag a row into another section", `[data-tabs-list] > [data-tabs-id="${moved}"]`, [
 		target[0],
-		target[1] + 24,
+		target[1] + 12,
 	]);
 	check(
 		"dragging a chat's sub-tab onto Open moves it there, first",

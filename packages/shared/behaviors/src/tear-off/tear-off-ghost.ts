@@ -1,6 +1,6 @@
 import { isOutsideWindow } from "../held-drag/held-pointer.js";
 import { DragGhost } from "./drag-ghost.js";
-import type { GhostAsk, GhostShape } from "./drag-ghost.js";
+import type { GhostAsk, GhostRect, GhostShape } from "./drag-ghost.js";
 import { OverlayGhost } from "./overlay-ghost.js";
 import type { OverlayPort } from "./overlay-ghost.js";
 
@@ -12,21 +12,20 @@ export interface TearOffGhostAsk extends GhostAsk {
 }
 
 const EDGE_ZONE_PX = 40;
-const DRAG_OUT = "Drag out to open in a new window";
+const NUDGE_MOST_PX = 16;
 const RELEASE_OUT = "Release to open in a new window";
 
 export class TearOffGhost {
 	private readonly ghost: DragGhost;
 	private overlay: OverlayGhost | null = null;
-	private pointer: readonly [number, number] = [0, 0];
+	private isCardShown = false;
 
 	constructor(private readonly ask: TearOffGhostAsk) {
 		this.ghost = new DragGhost(ask);
 	}
 
 	start(x: number, y: number): void {
-		this.pointer = [x, y];
-		this.ghost.follow(x, y);
+		this.ghost.follow(x, y, true);
 
 		if (this.ask.overlay === null) {
 			return;
@@ -40,23 +39,47 @@ export class TearOffGhost {
 	}
 
 	carry(x: number, y: number, listShape: GhostShape, mayTearOff: boolean): WindowZone {
-		this.pointer = [x, y];
-		this.ghost.follow(x, y);
 		const zone = windowZoneOf(x, y);
 
-		if (mayTearOff && this.canTearOff() && zone !== "inside") {
-			this.reshape("card", zone === "outside" ? RELEASE_OUT : DRAG_OUT);
+		this.isCardShown = mayTearOff && this.canTearOff() && zone !== "inside";
+
+		if (this.isCardShown) {
+			this.reshape("card", RELEASE_OUT);
 		} else {
 			this.reshape(listShape, "");
 		}
 
-		const isTaken = this.overlay?.takesOver(this.ghost.rectAt(...this.pointer)) ?? false;
+		const rect = this.ghost.rectAt(x, y);
+		const isLeaving = overflowOf(rect) > NUDGE_MOST_PX;
+		const isTaken = isLeaving && (this.overlay?.takesOver(rect) ?? false);
+
+		if (!isLeaving) {
+			this.overlay?.giveBack();
+		}
+
+		this.ghost.follow(x, y, !isLeaving);
 		this.ghost.show(!isTaken);
 		return zone;
 	}
 
+	land(rect: GhostRect, shape: GhostShape, contentStart: number): void {
+		this.overlay?.stop();
+		this.reshape(shape, "");
+		this.ghost.show(true);
+		this.ghost.land(rect, contentStart);
+	}
+
+	willTearOff(): boolean {
+		return this.isCardShown;
+	}
+
 	canTearOff(): boolean {
 		return this.overlay?.isReady() ?? false;
+	}
+
+	fade(): void {
+		this.overlay?.stop();
+		this.ghost.fadeAway();
 	}
 
 	stop(): void {
@@ -72,6 +95,10 @@ export class TearOffGhost {
 			this.overlay?.sync();
 		}
 	}
+}
+
+function overflowOf({ left, top, width, height }: GhostRect): number {
+	return Math.max(0, -left, -top, left + width - window.innerWidth, top + height - window.innerHeight);
 }
 
 function windowZoneOf(x: number, y: number): WindowZone {

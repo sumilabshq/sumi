@@ -5,8 +5,17 @@ import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import type { RowRenaming } from "../../lib/tabs-sidebar/use-row-renaming.js";
 import { SplitMapIcon } from "../split-map/split-map-icon.js";
 import { FoldBox } from "../fold-box/fold-box.js";
+import { SwapLayer } from "../swap-layer/swap-layer.js";
 import { SplitMemberRow } from "./split-member-row.js";
 import { SplitRow } from "./split-row.js";
+import {
+	CARD_HEAD_COUNT,
+	CARD_HEAD_ICON,
+	CARD_HEAD_LOOK,
+	CARD_HEAD_NAME,
+	NESTED_ROWS,
+} from "../../lib/tabs-look/tabs-look.js";
+import { SidebarCard } from "../sidebar-card/sidebar-card.js";
 
 export interface SplitEntryProps {
 	readonly split: SidebarSplitState;
@@ -14,12 +23,8 @@ export interface SplitEntryProps {
 }
 
 const HEAD_WORDS = "Split · {count}";
-const BLOCK =
-	"cv:relative cv:my-0.5 cv:flex cv:flex-none cv:flex-col cv:rounded-[12px] cv:transition-[background-color,padding] cv:duration-(--sumi-dur-base) cv:ease-(--sumi-ease-out) cv:motion-reduce:transition-none cv:data-[open]:bg-(--sumi-plate) cv:data-[open]:px-0.5 cv:data-[open]:pt-0.5 cv:data-[open]:pb-1";
-const HEAD =
-	"cv:flex cv:h-[30px] cv:items-center cv:gap-2 cv:px-2 cv:text-[12px] cv:whitespace-nowrap cv:text-(--sumi-text-2)";
-const ROWS =
-	"cv:flex cv:flex-col cv:gap-px cv:[&_[data-shown]]:bg-(--sumi-active) cv:[&_[data-shown]]:hover:bg-(--sumi-active)";
+const HEAD_NAME = "Split";
+const HEAD_SLOT = "cv:grid";
 
 export function SplitEntry({ split, renaming }: SplitEntryProps): ReactElement | null {
 	const focused = split.members.find((member) => member.isFocused) ?? split.members[0];
@@ -31,23 +36,30 @@ export function SplitEntry({ split, renaming }: SplitEntryProps): ReactElement |
 	const isOpen = split.isShown;
 	const words = HEAD_WORDS.replace("{count}", String(split.members.length));
 	return (
-		<div className={BLOCK} data-open={isOpen || undefined} data-tabs-split={split.id} role="group" aria-label={words}>
+		<SidebarCard isOpen={isOpen} label={words} marks={{ "data-tabs-split": split.id }}>
+			<div className={HEAD_SLOT}>
+				<SwapLayer isShown={isOpen}>
+					<div className={CARD_HEAD_LOOK} data-split-head="">
+						<i className={CARD_HEAD_ICON} aria-hidden="true">
+							<SplitMapIcon map={split.map} label={null} />
+						</i>
+						<span className={CARD_HEAD_NAME}>{HEAD_NAME}</span>
+						<span className={CARD_HEAD_COUNT} data-card-count="">
+							{split.members.length}
+						</span>
+					</div>
+				</SwapLayer>
+				<SwapLayer isShown={!isOpen}>
+					<SplitRow split={split} focused={focused.item} />
+				</SwapLayer>
+			</div>
 			<FoldBox isOpen={isOpen}>
-				<div className={HEAD} data-split-head="">
-					<SplitMapIcon map={split.map} label={null} />
-					<span>{words}</span>
-				</div>
-			</FoldBox>
-			<FoldBox isOpen={!isOpen}>
-				<SplitRow split={split} focused={focused.item} />
-			</FoldBox>
-			<FoldBox isOpen={isOpen}>
-				<div className={ROWS} data-split-members="">
+				<div className={NESTED_ROWS} data-split-members="">
 					{split.members.map((member) => (
-						<SplitMemberRow key={rowFaceOf(member.item).id} member={member} renaming={renaming} />
+						<SplitMemberRow key={rowFaceOf(member.item).id} member={member} splitId={split.id} renaming={renaming} />
 					))}
 				</div>
 			</FoldBox>
-		</div>
+		</SidebarCard>
 	);
 }

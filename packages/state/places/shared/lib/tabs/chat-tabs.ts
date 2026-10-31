@@ -1,6 +1,6 @@
 import type { NamedRecord } from "../../schema/tab-facts.schema.js";
 import type { TabMark } from "../../schema/tabs.schema.js";
-import { recordTitleOf } from "../rows/app-labels.js";
+import { titleOfTab } from "../rows/tab-face.js";
 import { holdsTabs } from "./app-abilities.js";
 import type { HostTab, HostTabsMoment, MovedTabs } from "./host-tabs.js";
 import { placeTab } from "./host-tabs.js";
@@ -73,7 +73,7 @@ function chatsWithNoTab(moment: HostTabsMoment, chats: readonly NamedRecord[]): 
 function chatTabRowOf(tab: HostTab): ChatTabRow {
 	return {
 		id: tab.id,
-		title: recordTitleOf(tab),
+		title: titleOfTab(tab),
 		mark: tab.mark,
 	};
 }

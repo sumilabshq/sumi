@@ -94,6 +94,15 @@ export class OverlayGhost {
 		return isShown;
 	}
 
+	giveBack(): void {
+		if (!this.isShown) {
+			return;
+		}
+
+		this.isShown = false;
+		this.port.show(false);
+	}
+
 	stop(): void {
 		this.isStopped = true;
 

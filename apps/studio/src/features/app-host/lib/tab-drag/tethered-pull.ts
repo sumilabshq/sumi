@@ -1,4 +1,6 @@
+import { forceStyle } from "./forced-style.js";
 import { capturePointer, releasePointer, swallowNextClick } from "@widgetarium/behaviors";
+import { dragHintOf } from "./drag-hint.js";
 
 export interface TetheredPullAsk {
 	readonly holder: HTMLElement;
@@ -14,19 +16,6 @@ const STRETCH_SOFTNESS_PX = 70;
 const HINT = "In another window";
 const HINT_GAP_PX = 8;
 const SNAP_BACK = "transform var(--sumi-dur-slow) cubic-bezier(0.34, 1.56, 0.64, 1)";
-const HINT_STYLE: Partial<CSSStyleDeclaration> = {
-	position: "fixed",
-	zIndex: "2147483000",
-	pointerEvents: "none",
-	padding: "4px 8px",
-	borderRadius: "8px",
-	fontFamily: "var(--sumi-font-ui)",
-	fontSize: "var(--sumi-fs-12)",
-	whiteSpace: "nowrap",
-	color: "var(--sumi-text)",
-	background: "var(--sumi-plate)",
-	boxShadow: "var(--sumi-shadow-pop)",
-};
 
 export function isHeldElsewhere(row: HTMLElement): boolean {
 	return row.querySelector("[data-tabs-own-window]") !== null;
@@ -36,10 +25,8 @@ export class TetheredPull {
 	private readonly hint: HTMLElement;
 
 	constructor(private readonly ask: TetheredPullAsk) {
-		this.hint = document.createElement("div");
-		this.hint.textContent = HINT;
+		this.hint = dragHintOf(HINT);
 		this.hint.dataset["tabsHeldHint"] = "";
-		Object.assign(this.hint.style, HINT_STYLE);
 	}
 
 	start(): void {
@@ -48,7 +35,7 @@ export class TetheredPull {
 		holder.addEventListener("pointermove", this.onMove);
 		holder.addEventListener("pointerup", this.onEnd);
 		holder.addEventListener("pointercancel", this.onEnd);
-		row.style.transition = "none";
+		forceStyle(row, "transition", "none");
 		document.body.append(this.hint);
 		this.placeHint();
 		console.info(`[widgetarium] tab drag of ${tabId} none → tethered (it stands in another window)`);
@@ -70,7 +57,7 @@ export class TetheredPull {
 		holder.removeEventListener("pointercancel", this.onEnd);
 		releasePointer(holder, pointerId);
 		swallowNextClick(holder);
-		row.style.transition = SNAP_BACK;
+		forceStyle(row, "transition", SNAP_BACK);
 		row.style.transform = "";
 		this.hint.remove();
 		console.info(`[widgetarium] tab drag of ${tabId} tethered → resting (sprang back; it stays in its window)`);

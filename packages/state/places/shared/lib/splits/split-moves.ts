@@ -3,7 +3,7 @@ import { SPLIT_MOST_MEMBERS } from "../../schema/splits.schema.js";
 import type { HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import { heldTabOf, isPageTab, markShown, placeTab } from "../tabs/host-tabs.js";
 import { WORKSPACE_LIST, isSectionList, locationOf } from "../tabs/tab-lists.js";
-import { isTopLevel, shownSplitOf, splitOfTab, splitWithout } from "./split-members.js";
+import { blockListOf, firstListedMember, isTopLevel, shownSplitOf, splitOfTab, splitWithout } from "./split-members.js";
 import { branchIdsOf, isEdgeOf, leafOf, withBranchShare, withLeafPlaced, withoutLeaf } from "./split-tree.js";
 import type { BranchShare } from "./split-tree.js";
 
@@ -43,6 +43,7 @@ const NO_TARGET = "no tab is shown to stand beside";
 const FULL = 'the split "{id}" holds {most} tabs already';
 const ESSENTIAL = 'the essential tab "{id}" stands in no split';
 const NO_SPLIT = 'the tab "{id}" stands in no split';
+const OTHER_SPLIT = 'the tab "{id}" stands in no place of the split "{split}"';
 const NO_EDGE = 'no split has an edge {at} in "{branch}"';
 
 export function isSplitRefusal(move: object): move is SplitRefusal {
@@ -77,8 +78,52 @@ export function removeFromSplit(moment: HostTabsMoment, tabId: string): SplitMov
 
 	const left = splitWithout(split, (id) => id === tabId);
 	return {
-		moment: shownAfterLeaving(moment, { split, left, tabId }),
+		moment: shownAfterLeaving(left === null ? withRemainderInBlock(moment, split, tabId) : moment, {
+			split,
+			left,
+			tabId,
+		}),
 		reason: `${tabId} leaves ${split.id}${left === null ? `, so ${split.id} dissolves` : ""}`,
+	};
+}
+
+export function reorderInSplit(moment: HostTabsMoment, tabId: string, before: string | null): SplitMove {
+	const split = splitOfTab(moment, tabId);
+
+	if (split === null) {
+		return { refusal: NO_SPLIT.replace("{id}", tabId) };
+	}
+
+	if (before !== null && !split.memberIds.includes(before)) {
+		return { refusal: OTHER_SPLIT.replace("{id}", before).replace("{split}", split.id) };
+	}
+
+	const others = split.memberIds.filter((id) => id !== tabId);
+	const at = before === null ? others.length : others.indexOf(before);
+	const memberIds = [...others.slice(0, at), tabId, ...others.slice(at)];
+	return {
+		moment: withSplit(moment, { ...split, memberIds }),
+		reason: `${split.id} members ${split.memberIds.join(",")} → ${memberIds.join(",")} (${tabId} before ${before ?? "the end"})`,
+	};
+}
+
+export function carryOutOfSplit(moment: HostTabsMoment, tabId: string): SplitMove {
+	const split = splitOfTab(moment, tabId);
+	const isShownMember = split !== null && moment.shownSplitId === split.id && moment.shownId === tabId;
+
+	if (split === null || !isShownMember) {
+		return removeFromSplit(moment, tabId);
+	}
+
+	const left = splitWithout(split, (id) => id === tabId);
+	const kept = left === null ? withRemainderInBlock(moment, split, tabId) : moment;
+	return {
+		moment: {
+			...kept,
+			splits: splitsWith(kept.splits, split.id, left),
+			shownSplitId: null,
+		},
+		reason: `${tabId} is carried out of ${split.id} and stays shown alone`,
 	};
 }
 
@@ -126,6 +171,22 @@ function leftSplit(moment: HostTabsMoment, tabId: string): MovedTabs | null {
 		},
 		reason: `${shown.id} → off screen, ${tabId} is shown alone`,
 	};
+}
+
+function withRemainderInBlock(moment: HostTabsMoment, split: KeptSplit, leavingId: string): HostTabsMoment {
+	const list = blockListOf(moment, split);
+	const anchor = firstListedMember(moment, split, list);
+	const remaining = split.memberIds.find((id) => id !== leavingId);
+
+	if (anchor === null || remaining === undefined || anchor === remaining) {
+		return moment;
+	}
+
+	if (locationOf(moment, remaining)?.chatId !== list) {
+		return moment;
+	}
+
+	return placeTab(moment, remaining, { chatId: list, groupId: null, before: anchor })?.moment ?? moment;
 }
 
 function shownAfterLeaving(moment: HostTabsMoment, { split, left, tabId }: Leaving): HostTabsMoment {

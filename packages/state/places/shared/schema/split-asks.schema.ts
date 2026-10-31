@@ -2,6 +2,12 @@ import { z } from "zod";
 import { TabEffectSchema, TabsAskSchema, StudioViewSchema } from "./screen.schema.js";
 import { KeptSplitSchema, SplitSideSchema } from "./splits.schema.js";
 
+export const ReorderSplitMemberAskSchema = z.object({
+	at: TabsAskSchema,
+	tabId: z.string().min(1),
+	before: z.string().min(1).nullable(),
+});
+
 export const PlaceInViewAskSchema = z.object({
 	at: TabsAskSchema,
 	tabId: z.string().min(1),

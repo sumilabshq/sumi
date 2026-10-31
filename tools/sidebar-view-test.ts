@@ -71,7 +71,7 @@ const MOMENT: HostTabsMoment = {
 	],
 };
 
-function sidebarWith(moment: HostTabsMoment, shownChatId: string | null): PlacedSidebar {
+function sidebarWith(moment: HostTabsMoment, shownTileRowId: string | null): PlacedSidebar {
 	return sidebarOf({
 		moment,
 		essentials: [],
@@ -79,7 +79,7 @@ function sidebarWith(moment: HostTabsMoment, shownChatId: string | null): Placed
 		shownApp: null,
 		hasShownTabPane: true,
 		elsewhere: [],
-		shownChatId,
+		shownTileRowId,
 	});
 }
 

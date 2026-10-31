@@ -1,4 +1,4 @@
-import type { DragSource } from "./sidebar-drop-plan.js";
+import type { DragSource } from "./drag-source.js";
 
 export interface PickedItem {
 	readonly element: HTMLElement;

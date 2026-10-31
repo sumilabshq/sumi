@@ -5,6 +5,7 @@ import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
 import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
+import { PlaceInViewCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 import type { PlacedTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
 
@@ -27,6 +28,8 @@ Reflect.set(window, "__SIDEBAR__", {
 	tearOffAsked: () => TEAR_OFF_ASKED.join(" | "),
 	switchChat: exact.switchChat,
 	holdElsewhere: exact.holdElsewhere,
+	splitTabs: async (tabId: string, targetTabId: string) =>
+		(await exact.studioApp.send(PlaceInViewCommand, { tabId, targetTabId, side: "right", isPaneMoved: false })).ok,
 	moment: () => placedNow.tabs,
 	essentials: () => exact.essentials.essentials(),
 	shownView: () => state.now().view,

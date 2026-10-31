@@ -100,7 +100,7 @@ function checksTree(): void {
 		essentials: [],
 		pages: [],
 		shownApp: null,
-		shownChatId: null,
+		shownTileRowId: null,
 		hasShownTabPane: true,
 		elsewhere: [],
 	});

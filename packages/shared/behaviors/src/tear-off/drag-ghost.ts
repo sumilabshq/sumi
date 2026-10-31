@@ -11,6 +11,7 @@ export interface GhostFace {
 	readonly art: Element | null;
 	readonly title: string;
 	readonly grabOffset: readonly [number, number];
+	readonly contentStart: number;
 }
 
 export type ListSizes = Readonly<Record<Exclude<GhostShape, "card">, GhostSize>>;
@@ -49,6 +50,7 @@ const TILE_RADIUS_PX = 14;
 const CONTENT_RADIUS_PX = 6;
 const CARD_ART_SCALE = 0.75;
 const PART = "ghostPart";
+const FADE_MS = 200;
 const SHAPE_MOTION = [
 	"width",
 	"height",
@@ -117,6 +119,7 @@ export class DragGhost {
 	private readonly following: FollowingGhost;
 	private shape: GhostShape;
 	private grab: readonly [number, number];
+	private contentStart: number;
 
 	constructor(private readonly ask: GhostAsk) {
 		this.words = partOf(document.createElement("span"), "words", WORDS_STYLE);
@@ -129,13 +132,22 @@ export class DragGhost {
 		this.element = partOf(document.createElement("div"), "root", ROOT_STYLE);
 		this.element.append(this.head, this.content, this.footer);
 		this.grab = ask.grabOffset;
+		this.contentStart = ask.contentStart;
 		this.following = new FollowingGhost(this.element, ask.grabOffset);
 		this.shape = ask.shape;
 		this.paintShape();
 	}
 
-	follow(x: number, y: number): void {
-		this.following.follow(x, y);
+	follow(x: number, y: number, isNudgedInside: boolean): void {
+		if (!isNudgedInside) {
+			this.following.follow(x, y);
+			return;
+		}
+
+		const { left, top, width, height } = this.rectAt(x, y);
+		const dx = Math.max(0, -left) - Math.max(0, left + width - window.innerWidth);
+		const dy = Math.max(0, -top) - Math.max(0, top + height - window.innerHeight);
+		this.following.follow(x + dx, y + dy);
 	}
 
 	wear(shape: GhostShape): boolean {
@@ -148,6 +160,16 @@ export class DragGhost {
 		this.paintShape();
 		this.following.grabAt(this.grab);
 		return true;
+	}
+
+	land(rect: GhostRect, contentStart: number): void {
+		this.contentStart = contentStart;
+		this.head.style.paddingInlineStart = `${contentStart}px`;
+		this.element.style.transition = `${SHAPE_MOTION}, ${GRAB_MOTION}`;
+		this.element.style.width = `${rect.width}px`;
+		this.element.style.height = `${rect.height}px`;
+		this.element.style.boxShadow = "none";
+		this.following.landAt(rect.left, rect.top);
 	}
 
 	say(caption: string): boolean {
@@ -165,6 +187,11 @@ export class DragGhost {
 
 	remove(): void {
 		this.following.remove();
+	}
+
+	fadeAway(): void {
+		this.element.style.opacity = "0";
+		setTimeout(() => this.following.remove(), FADE_MS);
 	}
 
 	rectAt(x: number, y: number): GhostRect {
@@ -218,7 +245,7 @@ export class DragGhost {
 		this.element.dataset["dragGhost"] = shape;
 		this.words.style.display = shape === "tile" ? "none" : "";
 		Object.assign(this.element.style, rootStyleOf(shape, this.sizeOf(shape)));
-		Object.assign(this.head.style, headStyleOf(shape));
+		Object.assign(this.head.style, headStyleOf(shape, this.contentStart));
 		this.content.style.opacity = isCard ? "1" : "0";
 		this.content.style.margin = isCard ? `0 ${PAD_PX}px` : "0";
 		this.footer.style.height = isCard ? `${CARD_FOOTER_PX}px` : "0";
@@ -289,7 +316,7 @@ function rootStyleOf(shape: GhostShape, { width, height }: GhostSize): Partial<C
 	};
 }
 
-function headStyleOf(shape: GhostShape): Partial<CSSStyleDeclaration> {
+function headStyleOf(shape: GhostShape, contentStart: number): Partial<CSSStyleDeclaration> {
 	if (shape === "card") {
 		return {
 			height: `${CARD_BAR_PX}px`,
@@ -303,7 +330,7 @@ function headStyleOf(shape: GhostShape): Partial<CSSStyleDeclaration> {
 
 	return {
 		height: "100%",
-		padding: shape === "tile" ? "0" : `0 ${PAD_PX}px`,
+		padding: shape === "tile" ? "0" : `0 ${PAD_PX}px 0 ${contentStart}px`,
 		gap: shape === "tile" ? "0" : `${ROW_GAP_PX}px`,
 		justifyContent: shape === "tile" ? "center" : "flex-start",
 		fontSize: "var(--sumi-fs-13)",

@@ -22,6 +22,7 @@ export function SidebarSection({ section, renaming, last }: SidebarSectionProps)
 	return (
 		<section className="wg-ws-section" aria-label={label} data-ws-section={label}>
 			<div className={`wg-ws-section-head${isOpen ? "" : " is-shut"}`} data-tabs-section={section.list}>
+				<span className="wg-ws-section-label">{label}</span>
 				<IconButton
 					variant="ghost"
 					className="wg-ws-section-fold"
@@ -33,7 +34,6 @@ export function SidebarSection({ section, renaming, last }: SidebarSectionProps)
 				>
 					<Icon name="chevron-down" size={FOLD_ICON_PX} />
 				</IconButton>
-				<span className="wg-ws-section-label">{label}</span>
 			</div>
 			<div id={rowsId} className={ROWS} hidden={!isOpen} data-tabs-list={section.list} data-tabs-in={section.list}>
 				<SidebarEntries entries={section.entries} renaming={renaming} />

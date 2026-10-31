@@ -147,6 +147,8 @@ fn ghost_window(app: &AppHandle<Wry>) -> Answer<WebviewWindow<Wry>> {
         Err(_) => eprintln!("[browser] tear-off ghost window none → built (its page did not report loaded in {LOAD_WAIT:?})"),
     }
 
+    window.hide().map_err(|failure| failure.to_string())?;
+    eprintln!("[browser] tear-off ghost window shown off-screen → hidden (loaded, waits for a drag)");
     Ok(window)
 }
 

@@ -13,6 +13,7 @@ import type { Essential, KeptEssentials } from "../../shared/schema/essential.sc
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 
 const NO_ESSENTIAL = 'no essential "{id}"';
+const NO_ESSENTIAL_SPLIT = 'the essential "{id}" joins a split only as a tab';
 const NO_ESSENTIAL_WINDOW = 'the essential "{id}" opens in its own window only as a tab';
 const WORKSPACE_END = {
 	list: "workspace",
@@ -79,6 +80,10 @@ export const PlaceEssentialCommand = command("place-essential")
 
 		if (to.kind === "own-window") {
 			return refuse(NO_ESSENTIAL_WINDOW.replace("{id}", id));
+		}
+
+		if (to.kind === "split") {
+			return refuse(NO_ESSENTIAL_SPLIT.replace("{id}", id));
 		}
 
 		const place = { list: to.list, groupId: to.groupId, before: to.before };

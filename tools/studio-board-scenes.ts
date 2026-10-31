@@ -332,13 +332,13 @@ const TABS_COLUMN: readonly Pair[] = [
 	{
 		name: "group count",
 		board: "aside .grp.plain .gh .n",
-		built: `${PLAIN_BOX} [data-tabs-item=group] > span:last-child`,
+		built: `${PLAIN_BOX} [data-tabs-item=group] [data-card-count]`,
 		only: WORDS,
 	},
 	{
 		name: "group chevron",
 		board: "aside .grp.plain .gh svg",
-		built: `${PLAIN_BOX} [data-tabs-item=group] svg`,
+		built: `${PLAIN_BOX} [data-tabs-item=group] [data-card-chevron] svg`,
 		only: GLYPH,
 	},
 	{ name: "shown row", board: "aside .x-row.lift", built: SHOWN_TAB },

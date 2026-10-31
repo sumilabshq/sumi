@@ -101,6 +101,7 @@ export { RequestFailed } from "./request-failed";
 export type { FailedView } from "./request-boundary";
 export { Slot } from "./slot";
 export type { BoundaryProps } from "./slot";
+export { useApp } from "./app-context";
 export { useCommand } from "./use-command";
 export { useOptionalQuery } from "./use-optional-query";
 export type { OptionalQueryRead } from "./use-optional-query";

@@ -17,6 +17,8 @@ import {
 	OpenNewChatCommand,
 	TearOffChatCommand,
 } from "./features/chat-opening/requests.js";
+import { AppFacesQuery } from "./features/app-faces/requests.js";
+import { OpenLinkCommand } from "./features/links/requests.js";
 import {
 	ClosedTabsQuery,
 	RereadClosedTabsForCoreSubscriber,
@@ -29,6 +31,7 @@ import {
 	FoldTabCommand,
 	RenameGroupCommand,
 	SetGroupHueCommand,
+	PlaceGroupCommand,
 	UngroupCommand,
 } from "./features/groups/requests.js";
 import { ShowViewCommand, RereadShownViewSubscriber, ShownViewQuery } from "./features/shown-view/requests.js";
@@ -65,6 +68,7 @@ import {
 	HeldTabsQuery,
 	PlaceTabCommand,
 	RestoreTabsCommand,
+	ShowChatTabCommand,
 	ShowTabCommand,
 	RereadTabsForAccessAsksSubscriber,
 	RereadTabsForChatsSubscriber,
@@ -105,12 +109,14 @@ export const AppHostModule = module("app-host")
 	)
 	.public(ChatListQuery, PinTabCommand)
 	.public(
+		OpenLinkCommand,
 		OpenChatCommand,
 		OpenNewChatCommand,
 		TearOffChatCommand,
 		NameChatPaneCommand,
 		OpenChatAskedOnStartCommand,
 		AppTabsQuery,
+		AppFacesQuery,
 		ClosedTabsQuery,
 		ReopenClosedTabByIdCommand,
 		TabsSidebarQuery,
@@ -119,6 +125,7 @@ export const AppHostModule = module("app-host")
 		ShownViewQuery,
 		RestoreTabsCommand,
 		ShowTabCommand,
+		ShowChatTabCommand,
 		OpenTabCommand,
 		OpenTabBelowCommand,
 		DuplicateTabCommand,
@@ -140,6 +147,7 @@ export const AppHostModule = module("app-host")
 		SetGroupHueCommand,
 		FoldGroupCommand,
 		FoldTabCommand,
+		PlaceGroupCommand,
 		UngroupCommand,
 		ShowViewCommand,
 		ShownSplitQuery,

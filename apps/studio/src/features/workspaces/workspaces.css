@@ -414,31 +414,23 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 4px 0 8px;
+	padding: 0 10px 0 8px;
 	margin-top: 10px;
 	border-radius: 10px;
 	font-size: var(--sumi-fs-12);
 	color: var(--sumi-text-2);
-	transition:
-		padding var(--sumi-dur-base) var(--sumi-ease-out),
-		background-color var(--sumi-dur-fast) var(--sumi-ease);
-}
-
-.wg-ws-section-head:hover,
-.wg-ws-section-head:focus-within,
-.wg-ws-section-head.is-shut {
-	padding-left: 10px;
+	transition: background-color var(--sumi-dur-fast) var(--sumi-ease);
 }
 
 .wg-ws-section-head:hover {
 	background: var(--sumi-hover);
-	transition-duration: var(--sumi-dur-base), 0ms;
+	transition-duration: 0ms;
 }
 
 .wg-ws-column .wg-ws-section-fold.wg-kit-icon {
 	width: 0;
 	height: 18px;
-	margin-right: -6px;
+	margin-left: -6px;
 	opacity: 0;
 	overflow: hidden;
 	display: inline-flex;
@@ -462,7 +454,7 @@
 .wg-ws-column .wg-ws-section-head:focus-within .wg-ws-section-fold.wg-kit-icon,
 .wg-ws-column .wg-ws-section-head.is-shut .wg-ws-section-fold.wg-kit-icon {
 	width: 12px;
-	margin-right: 0;
+	margin-left: 0;
 	opacity: 1;
 }
 
@@ -479,6 +471,8 @@
 }
 
 .wg-ws-section-label {
+	flex: 1;
+	min-width: 0;
 	color: var(--sumi-text-2);
 	overflow: hidden;
 	text-overflow: ellipsis;

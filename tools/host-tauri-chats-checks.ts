@@ -43,7 +43,7 @@ function heldRun(): HeldRun {
 	});
 	return {
 		run: { stop: () => undefined, done },
-		finish: () => held.finish({ failure: null }),
+		finish: () => held.finish({ failure: null, failureKind: null, resumesAt: null }),
 	};
 }
 

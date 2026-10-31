@@ -18,6 +18,11 @@ export const TabAskSchema = z.object({
 	id: z.string().min(1),
 });
 
+export const ChatTabAskSchema = z.object({
+	at: TabsAskSchema,
+	chatId: z.string().min(1),
+});
+
 export const RestoreTabsAskSchema = z.object({
 	at: TabsAskSchema,
 	essentials: z.array(EssentialSchema),
@@ -40,6 +45,7 @@ export const OpenTabAskSchema = z.object({
 	groupId: z.string().nullable().default(null),
 	address: z.string().default(""),
 	show: z.boolean().default(true),
+	reusesHeld: z.boolean().default(false),
 });
 
 export type OpenTabAsk = z.infer<typeof OpenTabAskSchema>;
@@ -92,6 +98,12 @@ export const GroupAskSchema = z.object({
 	window: z.string().min(1),
 	id: z.string().min(1),
 });
+
+export const PlaceGroupAskSchema = GroupAskSchema.extend({
+	place: TabPlaceSchema.omit({ groupId: true }),
+});
+
+export type GroupPlaceAsked = z.infer<typeof PlaceGroupAskSchema>["place"];
 
 export const RenameGroupAskSchema = z.object({
 	window: z.string().min(1),

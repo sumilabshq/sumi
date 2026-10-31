@@ -224,8 +224,11 @@ function checksOpenBlock(block: Block, board: readonly Pane[]): void {
 
 function checksBlockLook(block: Block, board: readonly Pane[]): void {
 	check(
-		"the block is a plate of its own and the focused row inside it is shaded, not white",
-		block !== null && block.fill !== "rgba(0, 0, 0, 0)" && block.focusFill !== null && block.focusFill !== block.fill,
+		"the block wears no plate and its focused row wears the shown fill",
+		block !== null &&
+			block.fill === "rgba(0, 0, 0, 0)" &&
+			block.focusFill !== null &&
+			block.focusFill !== "rgba(0, 0, 0, 0)",
 		[block?.fill, block?.focusFill],
 	);
 	check(
@@ -346,12 +349,40 @@ async function checksChatJoins(page: AskedPage): Promise<void> {
 	const chat = board.find((pane) => pane.view === "chat");
 	const stage = board.filter((pane) => pane.view === "app" && !pane.id.startsWith("pane-split-"));
 	check(
-		"a chat dropped below a member joins the split as one pane, no sub-tab beside it",
-		chat !== undefined && board.length === 3 && stage.length === 0,
+		"a chat dropped below a member joins the split with its own stage: the chat and its sub-tab beside it",
+		chat !== undefined && board.length >= 3 && stage.length >= 1,
 		board,
 	);
 	const block = await blockOf(page);
 	check("the block now counts three members", block?.members.length === 3, block?.members);
+}
+
+async function checksArtifactInSplit(page: AskedPage): Promise<void> {
+	await page.ask(clickOn('[data-tabs-id="tab-3"]'));
+	await waited(700);
+	const board = await boardOf(page);
+	const block = await blockOf(page);
+	check(
+		"a chat's artifact pressed inside a split opens in that chat's tile, and the split stays",
+		paneOf(board, "pane-split-tab-1") !== undefined &&
+			board.some((pane) => pane.view === "chat") &&
+			board.some((pane) => pane.view === "app" && !pane.id.startsWith("pane-split-")) &&
+			block?.isOpen === true,
+		{ board, block },
+	);
+}
+
+async function checksArtifactBesideChat(page: AskedPage): Promise<void> {
+	await page.ask(clickOn('[data-tabs-id="tab-3"]'));
+	const board = await settled(page, (now) => now.some((pane) => pane.view === "app"));
+	check(
+		"a chat's artifact pressed outside a split opens beside its chat in one tile, not over the whole screen",
+		board.length === 2 &&
+			board.some((pane) => pane.view === "chat") &&
+			board.some((pane) => pane.view === "app") &&
+			!board.some((pane) => pane.id.startsWith("pane-split-")),
+		board,
+	);
 }
 
 async function checksSwap(page: AskedPage): Promise<void> {
@@ -460,9 +491,15 @@ async function walk(theme: Theme): Promise<void> {
 		}
 
 		await checksChatJoins(page);
+		await checksArtifactInSplit(page);
 		await shotOf(page, `expanded-${theme}`);
 		await checksSwap(page);
 		await shotOf(page, `collapsed-${theme}`);
+
+		if (theme === "light") {
+			await checksArtifactBesideChat(page);
+			await shotOf(page, "artifact-beside-chat");
+		}
 
 		if (theme === "light") {
 			await checksReturn(page);

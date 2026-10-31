@@ -28,6 +28,11 @@ export class FollowingGhost {
 		});
 	}
 
+	landAt(left: number, top: number): void {
+		cancelAnimationFrame(this.frame);
+		this.element.style.transform = `translate3d(${left}px, ${top}px, 0)`;
+	}
+
 	grabAt(grabOffset: readonly [number, number]): void {
 		this.grabOffset = grabOffset;
 	}

@@ -1,15 +1,17 @@
-import type { CreateGroupAsk } from "../../../shared/schema/tab-asks.schema.js";
+import type { CreateGroupAsk, GroupPlaceAsked } from "../../../shared/schema/tab-asks.schema.js";
 import { movedPlan, refusal } from "../../../shared/lib/settling/settling.js";
 import type { MomentPlan, Refusal } from "../../../shared/lib/settling/settling.js";
-import { chatOfTab, findGroup, isKnownList } from "../../../shared/lib/tabs/host-tabs.js";
+import { chatOfTab, findGroup, heldTabOf, isKnownList } from "../../../shared/lib/tabs/host-tabs.js";
 import type { GroupChange, HostTabsMoment, TabGroup } from "../../../shared/lib/tabs/host-tabs.js";
-import { addGroup, changeGroup, ungroup } from "../../../shared/lib/tabs/tab-groups.js";
+import { addGroup, changeGroup, placeGroup, ungroup } from "../../../shared/lib/tabs/tab-groups.js";
+import { beforeIdOfBlock, isHolderInChat } from "./placing-plans.js";
 import type { AddedGroup } from "../../../shared/lib/tabs/tab-groups.js";
 
 const NO_GROUP = 'no group "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
 const UNKNOWN_LIST = 'no tab list "{list}" is here';
 const NAMELESS = "a group needs a name";
+const HOLDER_IN_CHAT = 'the group "{id}" holds a tab that holds tabs: it cannot stand inside "{list}"';
 
 interface GroupBirth {
 	readonly listId: string;
@@ -42,6 +44,25 @@ export function groupHuePlan(id: string, hue: TabGroup["hue"]): MomentPlan<null>
 
 export function foldGroupPlan(id: string): MomentPlan<null> {
 	return groupChanging(id, (group) => ({ isOpen: !group.isOpen }));
+}
+
+export function placeGroupPlan(id: string, asked: GroupPlaceAsked): MomentPlan<null> {
+	return (moment) => {
+		const group = findGroup(moment.groups, id);
+
+		if (group === undefined) {
+			return refusal(NO_GROUP.replace("{id}", id));
+		}
+
+		const refused = groupPlaceRefusalOf(moment, group, asked);
+
+		if (refused !== null) {
+			return refusal(refused);
+		}
+
+		const before = beforeIdOfBlock(moment, id, { ...asked, groupId: null });
+		return movedPlan(moment, placeGroup(moment, group, { chatId: asked.list, groupId: null, before }), null);
+	};
 }
 
 export function ungroupPlan(id: string): MomentPlan<null> {
@@ -90,4 +111,16 @@ function withGroupFaced(added: AddedGroup, face: GroupChange): AddedGroup {
 		moment: faced.moment,
 		reason: `${added.reason}; ${faced.reason}`,
 	};
+}
+
+function groupPlaceRefusalOf(moment: HostTabsMoment, group: TabGroup, { list }: GroupPlaceAsked): string | null {
+	if (!isKnownList(moment, list)) {
+		return UNKNOWN_LIST.replace("{list}", list);
+	}
+
+	const holdsHolder = group.tabIds.some((tabId) => {
+		const tab = heldTabOf(moment, tabId);
+		return tab !== undefined && isHolderInChat(tab, list);
+	});
+	return holdsHolder ? HOLDER_IN_CHAT.replace("{id}", group.id).replace("{list}", list) : null;
 }

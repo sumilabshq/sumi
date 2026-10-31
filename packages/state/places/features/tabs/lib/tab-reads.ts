@@ -1,5 +1,5 @@
 import { chatTabRowsOf } from "../../../shared/lib/tabs/chat-tabs.js";
-import type { TabsAsk } from "../../../shared/schema/screen.schema.js";
+import type { Screen, TabsAsk } from "../../../shared/schema/screen.schema.js";
 import type { AppTabState, HeldTab, PlacedSidebar, SidebarAsk } from "../../../shared/schema/tab-rows.schema.js";
 import type { ChatTabs, PlacedTabs } from "../../../shared/schema/tabs.schema.js";
 import { tabRowsOf } from "../../../shared/lib/rows/tab-rows.js";
@@ -11,6 +11,7 @@ import type { TabFacts } from "../../../shared/lib/showing/tab-facts.js";
 import { tabPagesOf } from "../../../shared/lib/showing/tab-pages.js";
 import { isPageTab } from "../../../shared/lib/tabs/host-tabs.js";
 import { momentOfWindow } from "../../../shared/lib/tabs/kept-tabs.js";
+import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { WORKSPACE_LIST } from "../../../shared/lib/tabs/tab-lists.js";
 
 export function rowsAt(
@@ -26,12 +27,13 @@ export function rowsAt(
 }
 
 export function sidebarAskOf(placed: PlacedTabs, { at, essentials }: SidebarAsk): SidebarRowsAsk {
+	const moment = momentOfWindow(placed, at.window);
 	return {
-		moment: momentOfWindow(placed, at.window),
+		moment,
 		essentials,
 		pages: at.screen.pages,
 		shownApp: shownAppOf(at.view),
-		shownChatId: at.screen.focusedChatId,
+		shownTileRowId: shownTileRowIdOf(moment, at.screen),
 		...paneLooksOf(tabFactsOf(at.screen)),
 	};
 }
@@ -52,6 +54,7 @@ export function heldTabsAt(
 			app: tab.app,
 			label: tab.label,
 			pageId: pages.get(tab.id)?.pageId ?? null,
+			address: tab.lastAddress,
 		})),
 		shownTabId: shownTabIdOf(moment, shownAppOf(at.view)),
 	};
@@ -70,4 +73,16 @@ function paneLooksOf(facts: TabFacts): Pick<SidebarRowsAsk, "hasShownTabPane" | 
 		hasShownTabPane: facts.shownTabPaneId !== null,
 		elsewhere: [...facts.tabWindows.keys()],
 	};
+}
+
+function shownTileRowIdOf(moment: HostTabsMoment, screen: Screen): string | null {
+	const chatId = screen.focusedChatId;
+
+	if (chatId === null) {
+		return null;
+	}
+
+	const paneIds = screen.chatGroups.find((group) => group.chatId === chatId)?.paneIds ?? [];
+	const artifactIds = screen.tabPanes.filter((pane) => paneIds.includes(pane.paneId)).map((pane) => pane.tabId);
+	return artifactIds.find((id) => id === moment.lastShown[chatId]) ?? artifactIds[0] ?? chatId;
 }

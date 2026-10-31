@@ -8,8 +8,28 @@ export const SIDEBAR_ROW_SHOWN =
 
 export const FOLD_HOST_ROW = "cv:[&:not([data-shown]):has([data-tabs-fold]:hover)]:bg-transparent";
 
-export const CHILD_ROW =
-	"cv:ps-[34px] cv:before:pointer-events-none cv:before:absolute cv:before:start-[15px] cv:before:-top-[9px] cv:before:h-[26px] cv:before:w-[11px] cv:before:rounded-bl-[7px] cv:before:[border-left:1.5px_solid_var(--sumi-line-strong)] cv:before:[border-bottom:1.5px_solid_var(--sumi-line-strong)] cv:before:content-['']";
+const HUES =
+	"cv:data-[hue=red]:[--group-hue:var(--sumi-hue-red)] cv:data-[hue=orange]:[--group-hue:var(--sumi-hue-orange)] cv:data-[hue=amber]:[--group-hue:var(--sumi-hue-amber)] cv:data-[hue=green]:[--group-hue:var(--sumi-hue-green)] cv:data-[hue=teal]:[--group-hue:var(--sumi-hue-teal)] cv:data-[hue=blue]:[--group-hue:var(--sumi-hue-blue)] cv:data-[hue=purple]:[--group-hue:var(--sumi-hue-purple)] cv:data-[hue=pink]:[--group-hue:var(--sumi-hue-pink)]";
+
+export const SIDEBAR_CARD = `cv:group/card cv:relative cv:flex cv:flex-none cv:flex-col cv:gap-px cv:rounded-[12px] cv:not-data-[hue]:[--group-hue:initial] ${HUES}`;
+
+export const CARD_RADIUS_PX = 12;
+
+export const NESTED_ROWS = "cv:relative cv:flex cv:flex-col cv:gap-px cv:ps-[28px]";
+
+export const CARD_HEAD_LOOK =
+	"cv:relative cv:flex cv:h-[34px] cv:w-full cv:min-w-0 cv:flex-none cv:items-center cv:gap-[10px] cv:rounded-[10px] cv:border-0 cv:bg-transparent cv:px-2 cv:py-0 cv:text-start cv:font-[inherit] cv:text-[13px] cv:font-medium cv:whitespace-nowrap cv:text-(--sumi-text) cv:[box-shadow:none] cv:outline-none cv:select-none";
+
+export const CARD_HEAD = `cv:group/head cv:cursor-default cv:hover:bg-(--sumi-hover) cv:focus-visible:[box-shadow:inset_0_0_0_1.5px_var(--sumi-focus-ring)] ${CARD_HEAD_LOOK} ${HOVER_FADE}`;
+
+export const CARD_HEAD_NAME = "cv:min-w-0 cv:flex-1 cv:overflow-hidden cv:text-ellipsis cv:whitespace-nowrap";
+
+export const CARD_HEAD_ICON = "cv:flex cv:size-5 cv:flex-none cv:items-center cv:justify-center cv:not-italic";
+
+export const CARD_HEAD_COUNT = "cv:ms-auto cv:text-[12px] cv:font-normal cv:text-(--sumi-text-3)";
+
+export const HOVER_SHOWN =
+	"cv:opacity-0 cv:transition-[background-color,opacity] cv:duration-(--sumi-dur-hover) cv:ease-(--sumi-ease) cv:motion-reduce:transition-none cv:focus-visible:opacity-100 cv:data-[folded]:opacity-100";
 
 export const ROW_WORDS = "cv:min-w-0 cv:flex-1 cv:overflow-hidden cv:text-ellipsis";
 

@@ -13,7 +13,9 @@ export interface TabFacts {
 	readonly shownTabPaneId: string | null;
 	readonly hasTabTarget: boolean;
 	readonly tabTargetId: string | null;
+	readonly chatGroupIds: readonly string[];
 	readonly tabWindows: ReadonlyMap<string, string>;
+	readonly groupOfPane: ReadonlyMap<string, string>;
 	readonly focusedChatId: string | null;
 }
 
@@ -26,6 +28,8 @@ export function tabFactsOf(screen: Screen): TabFacts {
 		shownTabPaneId: screen.shownTabPaneId,
 		hasTabTarget: screen.tabTargetId !== null,
 		tabTargetId: screen.tabTargetId,
+		chatGroupIds: screen.chatGroups.map((group) => group.chatId),
+		groupOfPane: groupOfPaneIn(screen),
 		tabWindows: tabWindowsIn(screen),
 		focusedChatId: screen.focusedChatId,
 	};
@@ -33,6 +37,10 @@ export function tabFactsOf(screen: Screen): TabFacts {
 
 export function tabIdsInPanesOf(facts: TabFacts): readonly string[] {
 	return facts.tabPanes.map(({ tabId }) => tabId);
+}
+
+function groupOfPaneIn({ chatGroups }: Screen): ReadonlyMap<string, string> {
+	return new Map(chatGroups.flatMap(({ chatId, paneIds }) => paneIds.map((paneId) => [paneId, chatId] as const)));
 }
 
 function tabWindowsIn({ elsewhere }: Screen): ReadonlyMap<string, string> {

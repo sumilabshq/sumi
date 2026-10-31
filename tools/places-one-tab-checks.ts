@@ -161,11 +161,31 @@ async function foldChecks(): Promise<void> {
 	);
 }
 
+async function reuseChecks(): Promise<void> {
+	const tabs = new MemoryTabsGateway();
+	const places = placesApp(tabs);
+	const ask = { at: AT, app: "tasks" as const, address: "T-7", reusesHeld: true };
+	const first = await places.send(OpenTabCommand, ask);
+	const again = await places.send(OpenTabCommand, ask);
+	const other = await places.send(OpenTabCommand, { ...ask, address: "T-8" });
+	const idOf = (opened: typeof first): string => (opened.ok ? opened.output.id : opened.reason);
+	check(
+		"an open that reuses a held tab shows the tab at that address instead of opening a second one",
+		[
+			idOf(again) === idOf(first),
+			idOf(other) === idOf(first),
+			(await tabs.placedTabs()).tabs.filter((tab) => tab.app === "tasks").length,
+		],
+		[true, false, 2],
+	);
+}
+
 const quiet = console.info;
 console.info = () => undefined;
 await wholeChatChecks();
 await sameForEveryTabChecks();
 await foldChecks();
+await reuseChecks();
 console.info = quiet;
 console.log(tally.failed ? `places one tab: ${tally.failed} check(s) failed` : "places one tab: all checks passed");
 process.exit(tally.failed ? 1 : 0);

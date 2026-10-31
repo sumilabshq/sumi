@@ -14,11 +14,12 @@ import {
 	MakeEssentialCommand,
 	OpenTabInOwnWindowCommand,
 	PlaceTabCommand as PlacesPlaceTabCommand,
+	ReorderSplitMemberCommand,
 	SidebarQuery,
 	PlacedTabsQuery,
 	RememberPagesCommand,
 	RestoreTabsCommand as PlacesRestoreTabsCommand,
-	ShowTabCommand as PlacesShowTabCommand,
+	ShowChatTabCommand as PlacesShowChatTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
 import { ChatsChangedEvent } from "@widgetarium/workspaces";
@@ -38,6 +39,7 @@ import {
 	tabsAskOf,
 } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
+import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
 
@@ -103,9 +105,18 @@ export const ShowTabCommand = command("show-tab")
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ id }, { send, emit, ...parts }) => {
+	.handle(({ id }, { send, emit, ...parts }) =>
+		showTabSettled({ parts, send, told: () => emit(TabsSettledEvent) }, id),
+	);
+
+export const ShowChatTabCommand = command("show-chat-tab")
+	.input(z.object({ chatId: z.string().min(1) }))
+	.idempotencyKey(Repeatable)
+	.inject(TAB_PARTS)
+	.emits(TabsSettledEvent)
+	.handle(async ({ chatId }, { send, emit, ...parts }) => {
 		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesShowTabCommand, { at, id }),
+			send(PlacesShowChatTabCommand, { at, chatId }),
 		);
 	});
 
@@ -120,6 +131,11 @@ export const PlaceTabCommand = command("place-tab")
 		if (to.kind === "list") {
 			const place = { list: to.list, groupId: to.groupId, before: to.before };
 			await settleAsked(reach, (at) => send(PlacesPlaceTabCommand, { at, id, place }));
+			return;
+		}
+
+		if (to.kind === "split") {
+			await settleAsked(reach, (at) => send(ReorderSplitMemberCommand, { at, tabId: id, before: to.before }));
 			return;
 		}
 

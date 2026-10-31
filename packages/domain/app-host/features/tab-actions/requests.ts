@@ -7,7 +7,6 @@ import {
 	CloseTabCommand as PlacesCloseTabCommand,
 	DuplicateTabCommand as PlacesDuplicateTabCommand,
 	OpenTabBelowCommand as PlacesOpenTabBelowCommand,
-	OpenTabCommand as PlacesOpenTabCommand,
 	ReloadTabCommand as PlacesReloadTabCommand,
 	RenameTabCommand as PlacesRenameTabCommand,
 	ReopenClosedTabCommand as PlacesReopenClosedTabCommand,
@@ -17,28 +16,18 @@ import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { SHOWING_PARTS as TAB_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
-import { AppKindSchema, OpenedTabSchema } from "../../shared/schema/app-tab.schema.js";
+import { OpenedTabSchema, TabToOpenSchema } from "../../shared/schema/app-tab.schema.js";
+import { openTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 
 export const OpenTabCommand = command("open-tab")
-	.input(
-		z.object({
-			app: AppKindSchema,
-			list: z.string().nullable().default(null),
-			groupId: z.string().nullable().default(null),
-			address: z.string().default(""),
-			show: z.boolean().default(true),
-		}),
-	)
+	.input(TabToOpenSchema)
 	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable)
 	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (asked, { send, emit, ...parts }) => {
-		const opened = await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesOpenTabCommand, { at, ...asked }),
-		);
-		return { id: opened.id };
-	});
+	.handle((asked, { send, emit, ...parts }) =>
+		openTabSettled({ parts, send, told: () => emit(TabsSettledEvent) }, asked),
+	);
 
 export const OpenTabBelowCommand = command("open-tab-below")
 	.input(z.object({ id: z.string() }))

@@ -77,7 +77,6 @@ const CHAT_ROWS = `(() => {
 	const chat = document.querySelector('[data-tabs-chat="release"]');
 	const nested = chat?.nextElementSibling?.querySelector("[data-tabs-list]") ?? null;
 	const child = nested?.querySelector('[data-tabs-place="child"]') ?? null;
-	const elbow = child === null ? null : getComputedStyle(child, "::before");
 	const unread = document.querySelector('[data-tabs-chat="checks"] [data-tabs-unread]');
 	const dot = unread === null ? null : unread.getBoundingClientRect();
 	const rowBox = document.querySelector('[data-tabs-chat="checks"]').getBoundingClientRect();
@@ -87,8 +86,8 @@ const CHAT_ROWS = `(() => {
 		working: document.querySelector('[data-tabs-chat="deepl"] .wg-chat-tab-icon')?.dataset.motion ?? null,
 		nestedList: nested?.dataset.tabsList ?? null,
 		children: [...(nested?.querySelectorAll('[data-tabs-place="child"]') ?? [])].map((row) => row.dataset.tabsId),
-		elbow: elbow === null ? null : [elbow.content, elbow.borderLeftWidth, elbow.borderBottomWidth, elbow.borderBottomLeftRadius],
-		childIndent: child === null ? null : getComputedStyle(child).paddingInlineStart,
+		childShift: child === null || chat === null ? null : Math.round(child.getBoundingClientRect().left - chat.getBoundingClientRect().left),
+		cardFill: chat?.parentElement?.hasAttribute("data-tabs-card") === true ? getComputedStyle(chat.parentElement).backgroundColor : null,
 		dot: dot === null ? null : [Math.round(dot.width), Math.round(dot.height), getComputedStyle(unread).backgroundColor, Math.round(rowBox.right - dot.right)],
 		dotsOnReadChats: document.querySelectorAll('[data-tabs-chat]:not([data-tabs-chat="checks"]) [data-tabs-unread]').length,
 		tabIcons: document.querySelectorAll('[data-tabs-id="tab-1"] .wg-chat-tab-icon').length,
@@ -101,8 +100,8 @@ const ChatRowsSchema = z.object({
 	working: z.string().nullable(),
 	nestedList: z.string().nullable(),
 	children: z.array(z.string()),
-	elbow: z.array(z.string()).nullable(),
-	childIndent: z.string().nullable(),
+	childShift: z.number().nullable(),
+	cardFill: z.string().nullable(),
 	dot: z.tuple([z.number(), z.number(), z.string(), z.number()]).nullable(),
 	dotsOnReadChats: z.number(),
 	tabIcons: z.number(),
@@ -199,11 +198,8 @@ function checksSections(seen: z.infer<typeof AnatomySchema>, theme: Theme): void
 
 type ChatRows = z.infer<typeof ChatRowsSchema>;
 
-function isElbow({ childIndent, elbow }: ChatRows): boolean {
-	const [content, left, bottom, corner] = elbow ?? [];
-	return (
-		childIndent === "34px" && content === '""' && parseFloat(left ?? "0") >= 1 && left === bottom && corner === "7px"
-	);
+function isNested({ cardFill, childShift }: ChatRows): boolean {
+	return cardFill === "rgba(0, 0, 0, 0)" && childShift !== null && childShift > 0;
 }
 
 function isBlueDot({ dot, dotsOnReadChats }: ChatRows): boolean {
@@ -221,7 +217,10 @@ function checksNesting(seen: ChatRows, theme: Theme): void {
 		seen.nestedList === "release" && JSON.stringify(seen.children) === '["tab-2","tab-3"]',
 		seen,
 	);
-	check(`${theme}: a sub-tab is indented and hangs off an elbow line`, isElbow(seen), [seen.childIndent, seen.elbow]);
+	check(`${theme}: a chat with sub-tabs wears no plate, its sub-tabs stand indented under it`, isNested(seen), [
+		seen.cardFill,
+		seen.childShift,
+	]);
 }
 
 async function checksChatRows(page: AskedPage, theme: Theme): Promise<void> {

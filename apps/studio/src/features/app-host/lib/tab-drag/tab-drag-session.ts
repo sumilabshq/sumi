@@ -1,26 +1,29 @@
 import {
 	capturePointer,
 	isOutsideWindow,
-	isPointInBox,
 	muteTextSelection,
 	releasePointer,
 	swallowNextClick,
 	TearOffGhost,
 } from "@widgetarium/behaviors";
-import type { GhostFace, GhostShape, ListSizes, OverlayPort } from "@widgetarium/behaviors";
+import type { GhostFace, ListSizes, OverlayPort, WindowZone } from "@widgetarium/behaviors";
 import type { TabDrop } from "@widgetarium/app-host";
 import { BoardCarry } from "./board-carry.js";
-import { DraggedLook } from "./dragged-look.js";
-import { shiftsOf } from "./drop-shifts.js";
-import { LayoutShifts } from "./layout-shifts.js";
+import { DeafSidebar } from "./deaf-sidebar.js";
+import type { DragPreview } from "./drag-preview.js";
+import { stillDropOf } from "./drop-aim.js";
+import { EdgeScroll } from "./edge-scroll.js";
+import type { LaidOutSidebar } from "./laid-out-sidebar.js";
 import type { PickedItem } from "./picked-item.js";
-import { columnsDuring, dropOf, isSameDrop, isStill, stillDropOf } from "./sidebar-drop-plan.js";
-import type { DragSource } from "./sidebar-drop-plan.js";
-import { TILE_HEIGHT_PX, cellRectOf, measuredLayoutOf, rowStepOf } from "./sidebar-layout.js";
+import { SidebarAim } from "./sidebar-aim.js";
+import type { SidebarAimAsk } from "./sidebar-aim.js";
+import { SidebarLanding } from "./sidebar-landing.js";
+import type { OnTabDrop, SidebarLandingAsk } from "./sidebar-landing.js";
+import { TILE_HEIGHT_PX, cellWidthOf, columnsOf, rowStepOf } from "./sidebar-layout.js";
 import type { SidebarLayout } from "./sidebar-layout.js";
 import type { TabRef } from "./tab-ref.js";
 
-export type OnTabDrop = (source: DragSource, drop: TabDrop) => Promise<boolean>;
+export type { OnTabDrop } from "./sidebar-landing.js";
 
 export interface TabDragAsk {
 	readonly holder: HTMLElement;
@@ -28,86 +31,83 @@ export interface TabDragAsk {
 	readonly face: GhostFace;
 	readonly pointerId: number;
 	readonly start: readonly [number, number];
+	readonly preview: DragPreview;
+	readonly laidOut: LaidOutSidebar;
 	readonly onDrop: OnTabDrop;
 	readonly onTearOff: (source: TabRef) => void;
 	readonly tearOffGhost: OverlayPort;
 }
 
 const DRAG_NAME = "tab drag";
-const SETTLE_MS = 200;
-const COMMIT_WAIT_MS = 400;
 const CAPTURED = true;
 const ESCAPE = "Escape";
-const COMMIT_WATCH: MutationObserverInit = {
-	childList: true,
-	subtree: true,
-};
 
 export class TabDragSession {
-	private readonly layout: SidebarLayout;
-	private readonly shifts: LayoutShifts;
-	private readonly look: DraggedLook;
+	private readonly deaf: DeafSidebar;
 	private readonly board: BoardCarry;
 	private readonly tearOff: TearOffGhost;
-	private drop: TabDrop;
-	private isPainted = false;
+	private readonly edgeScroll: EdgeScroll;
+	private readonly scroller: HTMLElement | null;
+	private readonly aim: SidebarAim;
+	private readonly landing: SidebarLanding;
 	private isRunning = false;
 	private pointer: readonly [number, number];
+	private recarryTimer = 0;
 	private unmuteSelection: () => void = () => undefined;
 
 	constructor(private readonly ask: TabDragAsk) {
-		this.layout = measuredLayoutOf(ask.holder);
-		this.shifts = new LayoutShifts(this.layout);
-		this.look = new DraggedLook(ask.picked.element, ask.holder);
+		const layout = ask.laidOut.now(ask.holder);
+		this.deaf = new DeafSidebar(ask.holder);
 		this.board = new BoardCarry(ask.picked);
-		this.tearOff = new TearOffGhost({
-			...ask.face,
-			name: ask.picked.source.id,
-			shape: shapeOfSource(ask.picked.source),
-			sizes: ghostSizesOf(this.layout, ask.picked),
-			overlay: isTearable(ask.picked) ? ask.tearOffGhost : null,
-		});
-		this.drop = stillDropOf(this.layout, ask.picked.source);
+		this.scroller = layout.scroller;
+		this.edgeScroll = new EdgeScroll(layout.scroller);
+		this.tearOff = tearOffGhostOf(ask, layout);
+		this.aim = new SidebarAim(aimAskOf(ask, layout));
+		this.landing = new SidebarLanding(landingAskOf(ask, this.aim, this.tearOff));
 		this.pointer = ask.start;
 	}
 
 	start(): void {
-		const { holder, pointerId } = this.ask;
+		const { holder, pointerId, picked, preview } = this.ask;
 		this.isRunning = true;
 		this.unmuteSelection = muteTextSelection();
 		capturePointer(holder, pointerId, DRAG_NAME);
 		holder.addEventListener("pointermove", this.onMove);
 		holder.addEventListener("pointerup", this.onUp);
 		holder.addEventListener("pointercancel", this.onCancel);
+		this.scroller?.addEventListener("scroll", this.onScroll);
 		document.addEventListener("keydown", this.onKeyDown, CAPTURED);
-		this.look.lift();
-		this.shifts.animate();
+		this.deaf.deafen();
+		this.landing.follow(preview.lift(picked.source, this.aim.current()));
 		this.tearOff.start(...this.pointer);
-		console.info(`[widgetarium] tab drag of ${this.ask.picked.source.id} none → lifted (pointer drag started)`);
+		console.info(`[widgetarium] tab drag of ${picked.source.id} none → lifted (pointer drag started)`);
 	}
 
 	abandon(): void {
-		if (!this.isRunning) {
-			return;
+		if (this.isRunning) {
+			this.stop();
+			this.board.leave(...this.pointer);
+			console.warn(`[widgetarium] tab drag of ${this.ask.picked.source.id} lifted → resting (it never ended)`);
 		}
 
-		this.stop();
-		this.board.leave(...this.pointer);
-		this.restore();
-		console.warn(`[widgetarium] tab drag of ${this.ask.picked.source.id} lifted → resting (it never ended)`);
+		this.landing.putAway();
+		this.aim.remove();
 	}
 
 	private stop(): void {
 		const { holder, pointerId } = this.ask;
 		this.isRunning = false;
+		window.clearTimeout(this.recarryTimer);
 		holder.removeEventListener("pointermove", this.onMove);
 		holder.removeEventListener("pointerup", this.onUp);
 		holder.removeEventListener("pointercancel", this.onCancel);
+		this.scroller?.removeEventListener("scroll", this.onScroll);
 		document.removeEventListener("keydown", this.onKeyDown, CAPTURED);
 		releasePointer(holder, pointerId);
 		this.unmuteSelection();
-		this.tearOff.stop();
-		this.look.hearAgain();
+		this.edgeScroll.stop();
+		this.deaf.hearAgain();
+		this.aim.remove();
 	}
 
 	private readonly onKeyDown = (event: KeyboardEvent): void => {
@@ -125,22 +125,59 @@ export class TabDragSession {
 
 	private readonly onMove = (event: PointerEvent): void => {
 		this.pointer = [event.clientX, event.clientY];
-		const isOverSidebar = this.isOverSidebar();
-		const drop = isOverSidebar
-			? dropOf(this.layout, this.ask.picked.source, ...this.pointer)
-			: stillDropOf(this.layout, this.ask.picked.source);
-		this.aim(drop);
-		const listShape = isOverSidebar && drop.kind === "essentials" ? "tile" : "row";
-		const zone = this.tearOff.carry(...this.pointer, listShape, !isOverSidebar);
-		const isTearing = isTearable(this.ask.picked) && zone !== "inside";
+		this.edgeScroll.aim(...this.pointer);
+		this.carry();
+	};
 
-		if (isOverSidebar || isTearing || zone === "outside") {
-			this.board.leave(...this.pointer);
+	private readonly onScroll = (): void => {
+		this.carry();
+	};
+
+	private carry(): void {
+		const isOverSidebar = this.isOverSidebar();
+		const [x, y] = this.pointer;
+		const drop = this.aimedDrop(isOverSidebar);
+		this.recarryWhenSettled();
+		const listShape = isOverSidebar && drop.kind === "essentials" ? "tile" : "row";
+		const zone = this.tearOff.carry(x, y, listShape, !isOverSidebar);
+
+		if (isOverSidebar || this.isOffBoard(zone)) {
+			this.board.leave(x, y);
 			return;
 		}
 
-		this.board.over(...this.pointer);
-	};
+		this.board.over(x, y);
+	}
+
+	private recarryWhenSettled(): void {
+		window.clearTimeout(this.recarryTimer);
+		const staleMs = this.ask.laidOut.staleForMs();
+
+		if (!this.isRunning || staleMs === 0) {
+			return;
+		}
+
+		this.recarryTimer = window.setTimeout(() => this.carry(), staleMs + 1);
+	}
+
+	private aimedDrop(isOverSidebar: boolean): TabDrop {
+		const [x, y] = this.pointer;
+
+		if (!isOverSidebar) {
+			return this.aim.aimAway();
+		}
+
+		if (y < this.ask.holder.getBoundingClientRect().top) {
+			const current = this.aim.current();
+			return current.kind === "own-window" ? this.aim.aimHome() : current;
+		}
+
+		return this.aim.aimAt(x, y);
+	}
+
+	private isOffBoard(zone: WindowZone): boolean {
+		return zone === "outside" || (isTearable(this.ask.picked) && zone !== "inside");
+	}
 
 	private readonly onUp = (event: PointerEvent): void => {
 		this.pointer = [event.clientX, event.clientY];
@@ -148,30 +185,61 @@ export class TabDragSession {
 		swallowNextClick(this.ask.holder);
 
 		if (this.isOverSidebar()) {
-			void this.landInSidebar();
+			void this.landing.land(this.ask.onDrop);
+			return;
+		}
+
+		this.releaseOffSidebar();
+	};
+
+	private releaseOffSidebar(): void {
+		if (this.tearOff.willTearOff()) {
+			this.tearOffNow();
 			return;
 		}
 
 		if (isOutsideWindow(...this.pointer)) {
-			this.board.leave(...this.pointer);
-			this.settleBack();
-			this.tearOffIfAllowed();
+			this.releaseOutside();
 			return;
 		}
 
 		this.landOnBoardOrRest();
-	};
+	}
+
+	private releaseOutside(): void {
+		this.board.leave(...this.pointer);
+		this.landing.settleBack();
+		console.info(
+			`[widgetarium] tab drag of ${this.ask.picked.source.id} lifted → resting (released outside, no own window)`,
+		);
+	}
+
+	private tearOffNow(): void {
+		const { source } = this.ask.picked;
+		this.board.leave(...this.pointer);
+		this.landing.rest();
+		this.tearOff.stop();
+
+		if (source.kind !== "tab") {
+			return;
+		}
+
+		console.info(
+			`[widgetarium] tab drag of ${source.id} lifted → host asked to tear off (released over the new-window card)`,
+		);
+		this.ask.onTearOff(source);
+	}
 
 	private landOnBoardOrRest(): void {
 		const { id } = this.ask.picked.source;
 
 		if (this.board.drop(...this.pointer)) {
 			console.info(`[widgetarium] tab drag of ${id} lifted → board (a board took the drop)`);
-			this.restore();
+			this.landing.putAway();
 			return;
 		}
 
-		this.settleBack();
+		this.landing.settleBack();
 		console.info(`[widgetarium] tab drag of ${id} lifted → resting (no drop took it)`);
 	}
 
@@ -182,105 +250,64 @@ export class TabDragSession {
 
 		this.stop();
 		this.board.leave(...this.pointer);
-		this.settleBack();
+		this.landing.settleBack();
 		console.info(`[widgetarium] tab drag of ${this.ask.picked.source.id} lifted → resting (${reason})`);
 	}
 
-	private tearOffIfAllowed(): void {
-		const { source, opensOwnWindow } = this.ask.picked;
-
-		if (source.kind !== "tab" || !opensOwnWindow) {
-			console.info(`[widgetarium] tab drag of ${source.id} lifted → resting (released outside, no own window)`);
-			return;
-		}
-
-		console.info(`[widgetarium] tab drag of ${source.id} lifted → host asked to tear off (released outside)`);
-		this.ask.onTearOff(source);
-	}
-
 	private isOverSidebar(): boolean {
-		return isPointInBox(this.ask.holder.getBoundingClientRect(), ...this.pointer);
+		const [x, y] = this.pointer;
+		const box = this.ask.holder.getBoundingClientRect();
+		return x >= box.left && x <= box.right && y >= 0 && y <= box.bottom;
 	}
+}
 
-	private aim(drop: TabDrop): void {
-		if (this.isPainted && isSameDrop(drop, this.drop)) {
-			return;
-		}
+function aimAskOf(ask: TabDragAsk, layout: SidebarLayout): SidebarAimAsk {
+	return {
+		holder: ask.holder,
+		source: ask.picked.source,
+		preview: ask.preview,
+		laidOut: ask.laidOut,
+		home: stillDropOf(layout, ask.picked.source),
+	};
+}
 
-		this.drop = drop;
-		this.isPainted = true;
-		this.shifts.paint(shiftsOf(this.layout, this.ask.picked.source, drop));
-	}
+function landingAskOf(ask: TabDragAsk, aim: SidebarAim, ghost: TearOffGhost): SidebarLandingAsk {
+	return {
+		holder: ask.holder,
+		source: ask.picked.source,
+		preview: ask.preview,
+		laidOut: ask.laidOut,
+		aim,
+		ghost,
+	};
+}
 
-	private async landInSidebar(): Promise<void> {
-		const { source } = this.ask.picked;
-
-		if (isStill(this.layout, source, this.drop)) {
-			this.settleBack();
-			return;
-		}
-
-		const committed = whenChanged(this.ask.holder);
-		const isPlaced = await this.ask.onDrop(source, this.drop);
-
-		if (!isPlaced) {
-			this.settleBack();
-			return;
-		}
-
-		await committed;
-		console.info(`[widgetarium] tab drag of ${source.id} lifted → placed (dropped in the sidebar)`);
-		this.restore();
-	}
-
-	private settleBack(): void {
-		this.shifts.paint(null);
-		setTimeout(() => this.restore(), SETTLE_MS);
-	}
-
-	private restore(): void {
-		this.shifts.clear();
-		this.look.show();
-	}
+function tearOffGhostOf(ask: TabDragAsk, layout: SidebarLayout): TearOffGhost {
+	return new TearOffGhost({
+		...ask.face,
+		name: ask.picked.source.id,
+		shape: ask.picked.source.kind === "essential" ? "tile" : "row",
+		sizes: ghostSizesOf(layout, ask.picked),
+		overlay: isTearable(ask.picked) ? ask.tearOffGhost : null,
+	});
 }
 
 function isTearable({ source, opensOwnWindow }: PickedItem): boolean {
 	return source.kind === "tab" && opensOwnWindow;
 }
 
-function shapeOfSource(source: DragSource): GhostShape {
-	return source.kind === "essential" ? "tile" : "row";
-}
-
 function ghostSizesOf(layout: SidebarLayout, { element, source }: PickedItem): ListSizes {
 	const picked = element.getBoundingClientRect();
-	const columns = columnsDuring(layout, source, {
-		kind: "essentials",
-		at: 0,
-	});
-	const cell = cellRectOf(layout.grid, 0, columns);
-	const rowWidth = source.kind === "tab" ? picked.width : layout.scrollerRect.width;
+	const tiles = layout.grid.tiles.length + (source.kind === "essential" ? 0 : 1);
+	const cellWidth = cellWidthOf(layout.grid, columnsOf(tiles));
 	return {
 		row: {
-			width: rowWidth,
-			height: source.kind === "tab" ? picked.height : rowStepOf(layout) - 1,
+			width: source.kind === "essential" ? layout.scrollerRect.width : picked.width,
+			height: source.kind === "essential" ? rowStepOf(layout) - 1 : picked.height,
 		},
 		tile: {
-			width: source.kind === "essential" ? picked.width : Math.max(cell.width, TILE_HEIGHT_PX),
+			width: source.kind === "essential" ? picked.width : Math.max(cellWidth, TILE_HEIGHT_PX),
 			height: TILE_HEIGHT_PX,
 		},
 	};
-}
-
-function whenChanged(holder: HTMLElement): Promise<void> {
-	return new Promise((done) => {
-		const settle = (): void => {
-			observer.disconnect();
-			clearTimeout(timer);
-			done();
-		};
-		const observer = new MutationObserver(settle);
-		const timer = setTimeout(settle, COMMIT_WAIT_MS);
-		observer.observe(holder, COMMIT_WATCH);
-	});
 }

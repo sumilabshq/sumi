@@ -22,7 +22,7 @@ export interface SidebarRowsAsk {
 	readonly shownApp: PageApp | null;
 	readonly hasShownTabPane: boolean;
 	readonly elsewhere: readonly string[];
-	readonly shownChatId: string | null;
+	readonly shownTileRowId: string | null;
 }
 
 const SECTION_ORDER: readonly SectionList[] = [PINNED_LIST, WORKSPACE_LIST];
@@ -30,7 +30,7 @@ const SECTION_ORDER: readonly SectionList[] = [PINNED_LIST, WORKSPACE_LIST];
 export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
 	const shownPageIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null);
 	const rows = new TabRows(ask.moment, ask.pages, {
-		shownIds: ask.shownChatId === null ? shownPageIds : new Set([...shownPageIds, ask.shownChatId]),
+		shownIds: ask.shownTileRowId === null ? shownPageIds : new Set([...shownPageIds, ask.shownTileRowId]),
 		elsewhereIds: new Set(ask.elsewhere),
 	});
 	const entries = new SidebarEntries(ask.moment, rows);

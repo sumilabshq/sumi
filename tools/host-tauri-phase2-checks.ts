@@ -356,7 +356,7 @@ async function chatChecks(): Promise<void> {
 	);
 
 	const reopened = await (await readChatLogs(store, DEFAULT.id)).historyOf("c1");
-	const session = createTurnSession(async () => Promise.reject(new Error("no provider")), Date.now, reopened);
+	const session = createTurnSession(async () => Promise.reject(new Error("no provider")), { history: reopened });
 	check(
 		"the chat reopens with its history, a rewritten turn read once, newest copy",
 		session.now().turns.map((turn) => turn.text),

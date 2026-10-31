@@ -4,7 +4,9 @@ import {
 	CloseTabCommand,
 	PinTabCommand,
 	PlaceInViewCommand,
+	PlaceTabCommand,
 	PlacesModule,
+	ReorderSplitMemberCommand,
 	RemoveFromSplitCommand,
 	ShowTabCommand,
 	ShownSplitQuery,
@@ -225,6 +227,123 @@ async function dissolvingChecks(): Promise<void> {
 	});
 }
 
+async function openShapesOf(window: StartedApp): Promise<unknown> {
+	const sidebar = await sent(window.send(SidebarQuery, { at: AT, essentials: [] }));
+	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
+	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
+	return open.map(entryShapeOf).filter((shape) => shape !== "chat");
+}
+
+async function draggingOutChecks(): Promise<void> {
+	const { window } = started();
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-4",
+		place: { list: "workspace", groupId: null, before: "tab-2" },
+	});
+	check(
+		"a member dragged out of a split of three leaves it and stands where it was dropped",
+		await openShapesOf(window),
+		[
+			[
+				["tab-1", false],
+				["tab-3", false],
+			],
+			"tab-4",
+			"tab-2",
+			"tab-5",
+		],
+	);
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-5",
+		place: { list: "workspace", groupId: null, before: "tab-3" },
+	});
+	check("a tab dropped before any member of a split stands before the whole split", await openShapesOf(window), [
+		"tab-5",
+		[
+			["tab-1", false],
+			["tab-3", false],
+		],
+		"tab-4",
+		"tab-2",
+	]);
+}
+
+async function carryingChecks(): Promise<void> {
+	const { window } = started();
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-2",
+		place: { list: "workspace", groupId: null, before: "tab-1" },
+	});
+	check("the shown member carried out of a split of two stays shown, alone", await splitOf(window), {
+		shownId: "tab-2",
+		split: null,
+	});
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-3", targetTabId: "tab-1", side: "right" });
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-4", targetTabId: "tab-3", side: "bottom" });
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-4",
+		place: { list: "workspace", groupId: null, before: "tab-4" },
+	});
+	check("a member dropped right above its own split leaves it and stands above the split", await openShapesOf(window), [
+		"tab-2",
+		"tab-4",
+		[
+			["tab-1", false],
+			["tab-3", false],
+		],
+		"tab-5",
+	]);
+	await window.send(ReorderSplitMemberCommand, { at: AT, tabId: "tab-3", before: "tab-1" });
+	check("a member reordered inside its split moves only in the split", await openShapesOf(window), [
+		"tab-2",
+		"tab-4",
+		[
+			["tab-3", false],
+			["tab-1", false],
+		],
+		"tab-5",
+	]);
+}
+
+async function dissolvedPlaceChecks(): Promise<void> {
+	const { window } = started();
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "right" });
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-1",
+		place: { list: "workspace", groupId: null, before: "tab-5" },
+	});
+	check(
+		"when a split of two dissolves, the member left behind stands where the split stood",
+		await openShapesOf(window),
+		["tab-4", "tab-2", "tab-3", "tab-1", "tab-5"],
+	);
+}
+
+async function pinnedMemberChecks(): Promise<void> {
+	const { window } = started();
+	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
+	await window.send(PinTabCommand, { window: MAIN_WINDOW, id: "tab-1", isPinned: true });
+	await window.send(PinTabCommand, { window: MAIN_WINDOW, id: "tab-3", isPinned: true });
+	await window.send(PlaceTabCommand, {
+		at: AT,
+		id: "tab-1",
+		place: { list: "pinned", groupId: null, before: null },
+	});
+	check("a pinned member reordered inside Pinned keeps its split", await splitOf(window), {
+		members: ["tab-1", "tab-2"],
+		focused: "tab-2",
+		layout: rowOfTwo("split-1-b1", "tab-1", "tab-2"),
+	});
+}
+
 async function sidebarChecks(): Promise<void> {
 	const { window } = started();
 	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-2", targetTabId: "tab-1", side: "right" });
@@ -297,6 +416,10 @@ await placingChecks();
 await liftingChecks();
 await swappingChecks();
 await dissolvingChecks();
+await draggingOutChecks();
+await carryingChecks();
+await pinnedMemberChecks();
+await dissolvedPlaceChecks();
 await sidebarChecks();
 mapChecks();
 await lawChecks();

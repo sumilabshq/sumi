@@ -66,7 +66,7 @@ check(
 
 const replaced = treeShowingChat(aimedFirst, "third", null);
 check(
-	"choosing a chat in the sidebar puts it alone on the board",
+	"choosing a chat in the sidebar puts its tile alone on the board",
 	JSON.stringify(chatsShown(replaced)) === '["pane-3:third"]' && replaced.chatTargetId === "pane-3",
 	chatsShown(replaced),
 );

@@ -2,14 +2,12 @@ import { z } from "zod";
 import { PerCall, Repeatable, command, refuse } from "@widgetarium/core/requests";
 import type { Send } from "@widgetarium/core/requests";
 import { FocusStudioWindowCommand, OpenChatWindowCommand } from "@widgetarium/browser";
-import { ClosePaneCommand, PaneTreeQuery, ShowChatInPaneCommand } from "@widgetarium/layout";
+import { ClosePaneCommand, PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
 import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
-import { MarkTabSeenCommand, ShowTabCommand as PlacesShowTabCommand } from "@widgetarium/places";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
-import { sendLogged, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
-import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
+import { showChatSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { isChatHeld, windowHoldingChat } from "../../shared/lib/chat-holders.js";
 import {
 	ChatOpenedSchema,
@@ -17,7 +15,6 @@ import {
 	ChatToShowSchema,
 	NewChatTitleSchema,
 } from "../../shared/schema/chat-opening.schema.js";
-import type { ChatToShow } from "../../shared/schema/chat-opening.schema.js";
 
 const NOT_READ = "the layout or the chats are not read yet";
 const NOT_AN_EMPTY_CHAT_PANE = "pane {pane} is not a chat pane waiting for a chat";
@@ -28,7 +25,7 @@ export const OpenChatCommand = command("open-chat")
 	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
 	.handle(async (chat, { send, emit, ...parts }) => {
-		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, chat);
+		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, chat);
 	});
 
 export const OpenNewChatCommand = command("open-new-chat")
@@ -39,7 +36,7 @@ export const OpenNewChatCommand = command("open-new-chat")
 	.emits(TabsSettledEvent)
 	.handle(async ({ title }, { send, emit, ...parts }) => {
 		const created = await createChat(send, title);
-		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
+		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
 		return created;
 	});
 
@@ -63,7 +60,7 @@ export const NameChatPaneCommand = command("name-chat-pane")
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId, paneId });
+		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId, paneId });
 		return { id: chatId };
 	});
 
@@ -83,7 +80,7 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await openChatShown({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
+		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
 		await send(ForgetChatToOpenCommand, { id: asked.id });
 	});
 
@@ -121,25 +118,4 @@ async function chatIdForPane(send: Send, board: PaneBoard, askedId: string | nul
 
 function createChat(send: Send, title: string | null): Promise<{ readonly id: string }> {
 	return send(CreateChatCommand, { title });
-}
-
-async function openChatShown(reach: TabsReach, chat: ChatToShow): Promise<void> {
-	await sendLogged(`show chat ${chat.chatId} in the view`, () =>
-		settleAsked(reach, (at) => reach.send(PlacesShowTabCommand, { at, id: chat.chatId })),
-	);
-	await openChat(reach.send, chat);
-}
-
-async function openChat(send: Send, { chatId, paneId }: ChatToShow): Promise<void> {
-	const board = await send(PaneTreeQuery);
-	const holder = windowHoldingChat(board, chatId);
-
-	if (holder !== null) {
-		console.info(`[widgetarium] open chat ${chatId} → window ${holder} comes forward (it holds the chat)`);
-		await send(FocusStudioWindowCommand, { window: holder });
-		return;
-	}
-
-	await send(MarkTabSeenCommand, { id: chatId });
-	await send(ShowChatInPaneCommand, { chatId, paneId });
 }

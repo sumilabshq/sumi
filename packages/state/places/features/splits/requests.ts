@@ -9,12 +9,13 @@ import {
 	LeftSplitSchema,
 	PlaceInViewAskSchema,
 	PlacedInViewSchema,
+	ReorderSplitMemberAskSchema,
 	ResizeSplitAskSchema,
 	ShownSplitSchema,
 	SplitMemberAskSchema,
 } from "../../shared/schema/split-asks.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
-import { placeInViewPlan, removeFromSplitPlan, resizeSplitPlan } from "./lib/split-plans.js";
+import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 
 export const ShownSplitQuery = query("shown-split")
 	.input(WindowLabelSchema)
@@ -55,6 +56,15 @@ export const RemoveFromSplitCommand = command("remove-from-split")
 			isMember: extra,
 		};
 	});
+
+export const ReorderSplitMemberCommand = command("reorder-split-member")
+	.input(ReorderSplitMemberAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ tabs: TabsGateway })
+	.handle(async ({ at, tabId, before }, { tabs }) =>
+		settledOf(await tabs.movePlacedTabs(settlingWith(at, reorderSplitMemberPlan(tabId, before)))),
+	);
 
 export const ResizeSplitCommand = command("resize-split")
 	.input(ResizeSplitAskSchema)

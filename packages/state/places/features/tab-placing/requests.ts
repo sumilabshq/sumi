@@ -9,13 +9,21 @@ import {
 	GroupAskSchema,
 	GroupHueAskSchema,
 	MakeEssentialAskSchema,
+	PlaceGroupAskSchema,
 	PinTabAskSchema,
 	PlaceTabAskSchema,
 	RenameGroupAskSchema,
 	RenameTabAskSchema,
 } from "../../shared/schema/tab-asks.schema.js";
 import { EssentialFaceSchema } from "../../shared/schema/tab-rows.schema.js";
-import { createGroupPlan, foldGroupPlan, groupHuePlan, renameGroupPlan, ungroupPlan } from "./lib/group-plans.js";
+import {
+	createGroupPlan,
+	foldGroupPlan,
+	groupHuePlan,
+	placeGroupPlan,
+	renameGroupPlan,
+	ungroupPlan,
+} from "./lib/group-plans.js";
 import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
 export const PlaceTabCommand = command("place-tab")
@@ -92,6 +100,14 @@ export const FoldGroupCommand = command("fold-group")
 	.inject({ tabs: TabsGateway })
 	.handle(async ({ window, id }, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(window, foldGroupPlan(id))));
+	});
+
+export const PlaceGroupCommand = command("place-group")
+	.input(PlaceGroupAskSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ tabs: TabsGateway })
+	.handle(async ({ window, id, place }, { tabs }) => {
+		answered(await tabs.movePlacedTabs(moving(window, placeGroupPlan(id, place))));
 	});
 
 export const UngroupCommand = command("ungroup")

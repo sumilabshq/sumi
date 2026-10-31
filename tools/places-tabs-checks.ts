@@ -9,6 +9,7 @@ import {
 	KeepChatTabsCommand,
 	OpenTabCommand,
 	PinTabCommand,
+	PlaceGroupCommand,
 	PlaceTabCommand,
 	PlacedTabsQuery,
 	PlacesModule,
@@ -239,6 +240,37 @@ async function lawChecks(): Promise<void> {
 		"pinning moves the tab out of its chat into Pinned, and a group born around it stands there",
 		[placed.lists["chat-a"], placed.lists["pinned"]?.at(-1)?.kind, grouped.ok],
 		[[], "group", true],
+	);
+	await groupPlacingChecks(main, grouped.ok ? grouped.output.id : "");
+}
+
+async function groupPlacingChecks(main: StartedApp, groupId: string): Promise<void> {
+	const toOpen = await main.send(PlaceGroupCommand, {
+		window: "main",
+		id: groupId,
+		place: { list: "workspace", before: null },
+	});
+	const afterOpen = await main.send(PlacedTabsQuery, { window: "main" });
+	const lists = afterOpen.ok ? afterOpen.output.lists : {};
+	check(
+		"a group carried to Open leaves Pinned whole and stands last in Open",
+		[toOpen.ok, lists["pinned"]?.some((entry) => entry.id === groupId), lists["workspace"]?.at(-1)?.id],
+		[true, false, groupId],
+	);
+	await main.send(PlaceTabCommand, {
+		at: askAt("main"),
+		id: "chat-b",
+		place: { list: "workspace", groupId, before: null },
+	});
+	const intoChat = await main.send(PlaceGroupCommand, {
+		window: "main",
+		id: groupId,
+		place: { list: "chat-a", before: null },
+	});
+	check(
+		"a group holding a chat cannot stand inside another chat",
+		intoChat.ok ? "placed" : intoChat.reason,
+		`the group "${groupId}" holds a tab that holds tabs: it cannot stand inside "chat-a"`,
 	);
 }
 

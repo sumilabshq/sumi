@@ -21,36 +21,33 @@ export function useLiftedPress<Press extends PendingPress>(
 	const latest = useRef(ask);
 	latest.current = ask;
 	useEffect(() => {
-		const element = holder.current;
-
-		if (element === null) {
-			return;
-		}
-
-		const listening = new PressListening(element, latest);
+		const listening = new PressListening(holder, latest);
 		return () => listening.stop();
 	}, [holder]);
 }
 
 class PressListening<Press extends PendingPress> {
 	private press: Press | null = null;
+	private pressedIn: HTMLElement | null = null;
 
 	constructor(
-		private readonly holder: HTMLElement,
+		private readonly holder: RefObject<HTMLElement | null>,
 		private readonly ask: RefObject<LiftedPressAsk<Press>>,
 	) {
-		holder.addEventListener("pointerdown", this.onPointerDown);
-		holder.addEventListener("dragstart", preventNativeDrag);
+		document.addEventListener("pointerdown", this.onPointerDown);
+		document.addEventListener("dragstart", this.onDragStart);
 	}
 
 	stop(): void {
 		this.endPress();
-		this.holder.removeEventListener("pointerdown", this.onPointerDown);
-		this.holder.removeEventListener("dragstart", preventNativeDrag);
+		document.removeEventListener("pointerdown", this.onPointerDown);
+		document.removeEventListener("dragstart", this.onDragStart);
 	}
 
 	private readonly onPointerDown = (event: PointerEvent): void => {
-		this.press = event.button === PRIMARY_BUTTON ? this.ask.current.pressOf(this.holder, event) : null;
+		const holder = this.holderAround(event.target);
+		this.press = holder !== null && event.button === PRIMARY_BUTTON ? this.ask.current.pressOf(holder, event) : null;
+		this.pressedIn = holder;
 
 		if (this.press === null) {
 			return;
@@ -72,18 +69,34 @@ class PressListening<Press extends PendingPress> {
 			return;
 		}
 
+		const holder = this.pressedIn;
 		this.endPress();
-		this.ask.current.onLift(this.holder, press, [event.clientX, event.clientY]);
+
+		if (holder === null || !holder.isConnected) {
+			return;
+		}
+
+		this.ask.current.onLift(holder, press, [event.clientX, event.clientY]);
 	};
+
+	private readonly onDragStart = (event: DragEvent): void => {
+		if (this.holderAround(event.target) === null) {
+			return;
+		}
+
+		event.preventDefault();
+	};
+
+	private holderAround(target: EventTarget | null): HTMLElement | null {
+		const holder = this.holder.current;
+		return holder !== null && target instanceof Node && holder.contains(target) ? holder : null;
+	}
 
 	private readonly endPress = (): void => {
 		this.press = null;
+		this.pressedIn = null;
 		window.removeEventListener("pointermove", this.onMove);
 		window.removeEventListener("pointerup", this.endPress);
 		window.removeEventListener("pointercancel", this.endPress);
 	};
-}
-
-function preventNativeDrag(event: DragEvent): void {
-	event.preventDefault();
 }

@@ -25,6 +25,7 @@ import {
 	RenameGroupCommand,
 	RenameTabCommand,
 	SetGroupHueCommand,
+	PlaceGroupCommand,
 	UngroupCommand,
 } from "./features/tab-placing/requests.js";
 import {
@@ -39,17 +40,20 @@ import {
 	ReloadTabCommand,
 	RememberPagesCommand,
 	RestoreTabsCommand,
+	ShowChatTabCommand,
 	ShowTabCommand,
 	TearOffTabCommand,
 } from "./features/tab-showing/requests.js";
 import {
 	PlaceInViewCommand,
 	RemoveFromSplitCommand,
+	ReorderSplitMemberCommand,
 	ResizeSplitCommand,
 	RereadShownSplitSubscriber,
 	ShownSplitQuery,
 } from "./features/splits/requests.js";
 import {
+	AppFacesQuery,
 	ChatTabsQuery,
 	ClosedTabsQuery,
 	HeldTabsQuery,
@@ -81,10 +85,12 @@ export const PlacesModule = module("places")
 		HeldTabsQuery,
 		ClosedTabsQuery,
 		ChatTabsQuery,
+		AppFacesQuery,
 	)
 	.public(
 		RestoreTabsCommand,
 		ShowTabCommand,
+		ShowChatTabCommand,
 		FitTabsToPanesCommand,
 		RememberPagesCommand,
 		OpenTabInOwnWindowCommand,
@@ -114,10 +120,12 @@ export const PlacesModule = module("places")
 		SetGroupHueCommand,
 		FoldGroupCommand,
 		FoldTabCommand,
+		PlaceGroupCommand,
 		UngroupCommand,
 		ShownSplitQuery,
 		PlaceInViewCommand,
 		RemoveFromSplitCommand,
+		ReorderSplitMemberCommand,
 		ResizeSplitCommand,
 	)
 	.provide((facts) => placesPartsOn(facts));

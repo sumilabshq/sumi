@@ -4,6 +4,7 @@ import {
 	CreateGroupCommand as PlacesCreateGroupCommand,
 	FoldGroupCommand as PlacesFoldGroupCommand,
 	FoldTabCommand as PlacesFoldTabCommand,
+	PlaceGroupCommand as PlacesPlaceGroupCommand,
 	RenameGroupCommand as PlacesRenameGroupCommand,
 	SetGroupHueCommand as PlacesSetGroupHueCommand,
 	UngroupCommand as PlacesUngroupCommand,
@@ -58,6 +59,24 @@ export const FoldGroupCommand = command("fold-group")
 	.emits(TabsSettledEvent)
 	.handle(async ({ id }, { send, emit, studioWindow }) => {
 		await send(PlacesFoldGroupCommand, { window: studioWindow.windowLabel(), id });
+		emit(TabsSettledEvent);
+	});
+
+export const PlaceGroupCommand = command("place-group")
+	.input(
+		z.object({
+			id: z.string().min(1),
+			to: z.object({
+				list: z.string().min(1),
+				before: z.string().nullable(),
+			}),
+		}),
+	)
+	.idempotencyKey(Repeatable)
+	.inject({ studioWindow: StudioWindowGateway })
+	.emits(TabsSettledEvent)
+	.handle(async ({ id, to }, { send, emit, studioWindow }) => {
+		await send(PlacesPlaceGroupCommand, { window: studioWindow.windowLabel(), id, place: to });
 		emit(TabsSettledEvent);
 	});
 

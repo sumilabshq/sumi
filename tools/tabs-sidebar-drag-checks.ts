@@ -114,7 +114,7 @@ async function checksTearOff(page: AskedPage, folder: string): Promise<void> {
 		writeFileSync(path.join(folder, "own-window-edge.png"), await page.shoot());
 		check(
 			"a browser row carried to the window edge turns into the new-window card, its caption inside it",
-			isCardGhost(atEdge) && fieldOf(atEdge, "caption") === "Drag out to open in a new window",
+			isCardGhost(atEdge) && fieldOf(atEdge, "caption") === "Release to open in a new window",
 			atEdge,
 		);
 		await drag.over([plate[0], -40]);
@@ -152,6 +152,40 @@ async function checksTearOff(page: AskedPage, folder: string): Promise<void> {
 		[asked, id],
 	);
 	check("a tear-off leaves no gap, no shift and no hidden row", (await page.ask(NO_TRANSFORM_LEFT)) === true, null);
+}
+
+async function checksGhostStaysInByTheEdge(page: AskedPage): Promise<void> {
+	const row = await centreOf(page, BROWSER_ROW);
+	const { drag } = await lifted(page, BROWSER_ROW, ([x, y]) => [x - 12, y + 60]);
+	await waited(SETTLED_MS);
+	const ghost = await page.ask(GHOST_NOW);
+	const left = Number(
+		await page.ask(`document.querySelector("[data-drag-ghost]")?.getBoundingClientRect().left ?? -999`),
+	);
+	check(
+		"a row held over the sidebar by the window's left edge stays drawn in the app, nudged inside, never handed to the overlay",
+		fieldOf(ghost, "isOverlaid") === false && fieldOf(ghost, "isVisible") === true && left >= 0,
+		{ ghost, left },
+	);
+	await drag.drop(row);
+	await waited(SETTLED_MS);
+}
+
+async function checksCardKeepsItsWord(page: AskedPage): Promise<void> {
+	const plate = await plateSpot(page);
+	const asked = await tearOffsAfter(page, async () => {
+		const { drag } = await lifted(page, BROWSER_ROW, () => plate);
+		await drag.over([plate[0], EDGE_Y]);
+		await waited(SETTLED_MS);
+		const shown = await page.ask(GHOST_NOW);
+		check("near the edge, still inside the window, the new-window card shows", isCardGhost(shown), shown);
+		await drag.drop([plate[0], EDGE_Y]);
+	});
+	check(
+		"released while the new-window card shows, even inside the window, the tab opens its own window",
+		/^( \| )?tear off page-[\w-]+ as tab-\d+$/.test(asked),
+		asked,
+	);
 }
 
 async function checksBoardDrop(page: AskedPage): Promise<void> {
@@ -261,6 +295,8 @@ export async function checksPointerDrag(page: AskedPage, folder: string): Promis
 	await page.ask(CARRY_HEARD);
 	await checksBoardDrop(page);
 	await checksTearOff(page, folder);
+	await checksCardKeepsItsWord(page);
+	await checksGhostStaysInByTheEdge(page);
 	await page.ask(`window.__stopCarry(); true`);
 	await checksHeldTabSpringsBack(page, folder);
 	return failures;

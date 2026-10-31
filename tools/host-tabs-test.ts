@@ -17,14 +17,18 @@ import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lis
 import { addEssential, essentialsOf } from "../packages/domain/app-host/shared/lib/essentials/essentials.ts";
 import { withTabsClosed } from "../packages/state/places/shared/lib/showing/closing.ts";
 import {
+	chatTabToShow,
 	showingOf,
+	withChatTabShown,
 	withFreeTabBesidePanes,
 	withPageEnsured,
+	withMoved,
+	withTabPressed,
 	withTabShown,
 	withTabTornOff,
 } from "../packages/state/places/shared/lib/showing/showing.ts";
+import { withHomeFollowed, withTabsAtHome } from "../packages/state/places/shared/lib/showing/rehoming.ts";
 import type { TabFacts } from "../packages/state/places/shared/lib/showing/tab-facts.ts";
-import { showTabPlan } from "../packages/state/places/features/tab-showing/lib/showing-plans.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";
 import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
 
@@ -84,7 +88,9 @@ function factsOf(chatId: string, inPanes: readonly string[]): TabFacts {
 		shownTabPaneId: null,
 		hasTabTarget: false,
 		tabTargetId: null,
+		chatGroupIds: [chatId],
 		tabWindows: new Map(),
+		groupOfPane: new Map(),
 		focusedChatId: chatId,
 	};
 }
@@ -187,11 +193,54 @@ check(
 );
 
 const fourTabs = openTab(threeTabs(), browser, atEnd(TWO)).moment;
+const followed = movedTo(markShown(fourTabs, "tab-2"), fourTabs);
+const inTwo = withChatTabShown(showingOf(followed, "browser"), factsOf(TWO, []), TWO);
+check(
+	"switching chats shows the new chat's tab in its group, only while the group holds no tab",
+	inTwo.effects.filter((effect) => effect.kind === "show-in-chat-group"),
+	[{ kind: "show-in-chat-group", chatId: TWO, tabId: "tab-4", isOnlyWhenBare: true }],
+);
 const chatTabPressed = withTabShown(showingOf(fourTabs, "browser"), factsOf(ONE, []), tabOf(fourTabs, "tab-3"));
 check(
-	"a chat's tab pressed in the sidebar takes the whole screen like any tab, the chat leaves it",
+	"a chat tab pressed in the sidebar goes to its chat's group, never to the shown-tab pane",
 	[chatTabPressed.moment.shownId, chatTabPressed.effects.map((effect) => effect.kind)],
-	["tab-3", ["open-shown-tab-pane"]],
+	[fourTabs.shownId, ["show-in-chat-group"]],
+);
+const chatClosedPressed = withTabPressed(
+	showingOf(fourTabs, "browser"),
+	{ ...factsOf(ONE, []), chatGroupIds: [] },
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a pressed tab whose chat left the board brings the chat back first",
+	chatClosedPressed.effects.map((effect) => effect.kind),
+	["show-chat", "show-in-chat-group"],
+);
+const offBoardPressed = withTabPressed(
+	showingOf(fourTabs, "browser"),
+	factsOf("chat-elsewhere", []),
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a pressed tab of any chat off the board brings that chat, not only the focused one",
+	offBoardPressed.effects.map((effect) => effect.kind),
+	["show-chat", "show-in-chat-group"],
+);
+const otherChatTab = withTabShown(
+	showingOf(fourTabs, "browser"),
+	factsOf("chat-elsewhere", []),
+	tabOf(fourTabs, "tab-3"),
+);
+check(
+	"a chat tab the app shows on its own never brings a chat that is off the board",
+	otherChatTab.effects.map((effect) => effect.kind),
+	[],
+);
+const backInOne = withChatTabShown(inTwo, factsOf(ONE, []), ONE);
+check(
+	"switching back shows the tab that chat showed last",
+	[backInOne.moment.shownId, chatTabToShow(backInOne.moment, ONE)],
+	["tab-2", "tab-2"],
 );
 
 const panedClosed = withTabsClosed(showingOf(threeTabs(), "browser"), factsOf(ONE, ["tab-3"]), {
@@ -339,12 +388,52 @@ check(
 	"example.com",
 );
 
+const workspaceShown = movedTo(markShown(threeWorkspaceTabs(), "tab-1"), threeWorkspaceTabs());
+const shownPaneFacts = { ...factsOf(ONE, []), shownTabPaneId: "pane-shown" };
+const shownWas = showingOf(workspaceShown, "browser");
+const shownMoved = withMoved(shownWas, placeTab(workspaceShown, "tab-1", atEnd(ONE)));
+const shownFollowed = withHomeFollowed(shownWas, shownMoved, shownPaneFacts);
+check(
+	"the shown workspace tab dragged into a chat goes to that chat's group and the shown pane takes a free tab",
+	[
+		shownFollowed.effects.filter((effect) => effect.kind === "show-in-chat-group").map((effect) => effect.tabId),
+		shownFollowed.moment.shownId,
+	],
+	[["tab-1"], "tab-2"],
+);
+const panedWas = showingOf(workspaceShown, "browser");
+const panedMoved = withMoved(panedWas, placeTab(workspaceShown, "tab-3", atEnd(ONE)));
+const panedFollowed = withHomeFollowed(panedWas, panedMoved, factsOf(ONE, ["tab-3"]));
+check(
+	"a workspace tab standing in its own tile moves into its new chat's group",
+	panedFollowed.effects.map((effect) => effect.kind),
+	["close-panes", "show-in-chat-group"],
+);
+const sameHome = withMoved(panedWas, placeTab(workspaceShown, "tab-3", atEnd(WORKSPACE_LIST)));
+check(
+	"a tab reordered inside its own list stays where it stands",
+	withHomeFollowed(panedWas, sameHome, factsOf(ONE, ["tab-3"])).effects,
+	[],
+);
+
 const heldElsewhere = { ...factsOf(ONE, []), tabWindows: new Map([["tab-3", "studio-2"]]) };
-const pressedElsewhere = showTabPlan("tab-3")(showingOf(fourTabs, "browser"), heldElsewhere);
 check(
 	"a chat tab that stands in another window brings that window forward instead of moving here",
-	"effects" in pressedElsewhere ? pressedElsewhere.effects : pressedElsewhere,
+	withTabShown(showingOf(fourTabs, "browser"), heldElsewhere, tabOf(fourTabs, "tab-3")).effects,
 	[{ kind: "focus-window", window: "studio-2" }],
+);
+
+const strayFacts = { ...factsOf(ONE, ["tab-3"]), groupOfPane: new Map() };
+check(
+	"a chat tab found in a tile outside its chat's group goes back into the group",
+	withTabsAtHome(showingOf(fourTabs, "browser"), strayFacts).effects.map((effect) => effect.kind),
+	["close-panes", "show-in-chat-group"],
+);
+const homeFacts = { ...factsOf(ONE, ["tab-3"]), groupOfPane: new Map([["pane-tab-3", ONE]]) };
+check(
+	"a chat tab already in its chat's group stays",
+	withTabsAtHome(showingOf(fourTabs, "browser"), homeFacts).effects,
+	[],
 );
 
 console.info = quiet;

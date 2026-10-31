@@ -54,6 +54,12 @@ interface TabToOpen {
 
 export function openPlan(ask: Omit<OpenTabAsk, "at">): ExtraPlan<string> {
 	return (showing, facts) => {
+		const held = ask.reusesHeld ? heldAtAddressOf(showing.moment, ask) : undefined;
+
+		if (held !== undefined) {
+			return plannedWith(ask.show ? withTabShown(showing, facts, held) : showing, held.id);
+		}
+
 		const place = askedPlaceOf(showing.moment, ask);
 		return isRefusal(place) ? place : openedShowing(showing, facts, { ...ask, place });
 	};
@@ -155,14 +161,19 @@ function duplicatedTabOf(moment: HostTabsMoment, id: string): PageTab | Refusal 
 
 function openedShowing(showing: Showing, facts: TabFacts, asked: TabToOpen): Planned<string> {
 	const fresh = freshTabOf(asked.app, facts.isBrowserAvailable);
-	const opened: OpenedHostTab = asked.show
-		? openTab(showing.moment, fresh, asked.place)
-		: openTabUnshown(showing.moment, fresh, asked.place);
+	const opened = withAddressKept(
+		asked.show ? openTab(showing.moment, fresh, asked.place) : openTabUnshown(showing.moment, fresh, asked.place),
+		asked.address,
+	);
 	const moved = withMoved(showing, opened);
 	const shown = asked.show
 		? withOpenedTabShown(moved, facts, opened.tab, asked.address)
 		: withTabPageOpened(moved, opened.tab, { address: asked.address, isShown: false });
 	return plannedWith(shown, opened.tab.id);
+}
+
+function heldAtAddressOf(moment: HostTabsMoment, { app, address }: Omit<OpenTabAsk, "at">): HostTab | undefined {
+	return moment.tabs.find((tab) => tab.app === app && (tab.lastAddress ?? "") === address);
 }
 
 function askedPlaceOf(moment: HostTabsMoment, { list, groupId }: AskedPlace): TabPlace | Refusal {
@@ -222,4 +233,23 @@ function withEssentialOpened(showing: Showing, facts: TabFacts, essential: Essen
 
 function recordGoneOf(essential: EssentialRef): Refusal {
 	return refusal(RECORD_GONE.replace("{id}", essential.id).replace("{app}", essential.app));
+}
+
+function withAddressKept(opened: OpenedHostTab, address: string): OpenedHostTab {
+	if (opened.tab.pageId !== null || address === "") {
+		return opened;
+	}
+
+	const tab: HostTab = {
+		...opened.tab,
+		lastAddress: address,
+	};
+	return {
+		tab,
+		moment: {
+			...opened.moment,
+			tabs: opened.moment.tabs.map((held) => (held.id === tab.id ? tab : held)),
+		},
+		reason: `${opened.reason} at ${address}`,
+	};
 }

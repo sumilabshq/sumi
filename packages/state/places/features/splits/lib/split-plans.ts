@@ -4,7 +4,13 @@ import { withMoved } from "../../../shared/lib/showing/showing.js";
 import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
 import type { HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import { shownSplitOf, splitOfTab } from "../../../shared/lib/splits/split-members.js";
-import { isSplitRefusal, placeInView, removeFromSplit, resizeSplit } from "../../../shared/lib/splits/split-moves.js";
+import {
+	isSplitRefusal,
+	placeInView,
+	removeFromSplit,
+	reorderInSplit,
+	resizeSplit,
+} from "../../../shared/lib/splits/split-moves.js";
 import type { SplitResizing, ViewPlacing } from "../../../shared/lib/splits/split-moves.js";
 
 export interface ViewPlacingAsk extends ViewPlacing {
@@ -33,6 +39,13 @@ export function removeFromSplitPlan(tabId: string): ExtraPlan<boolean> {
 
 		const move = removeFromSplit(showing.moment, tabId);
 		return isSplitRefusal(move) ? refusal(move.refusal) : plannedWith(withMoved(showing, move), true);
+	};
+}
+
+export function reorderSplitMemberPlan(tabId: string, before: string | null): ExtraPlan<null> {
+	return (showing) => {
+		const move = reorderInSplit(showing.moment, tabId, before);
+		return isSplitRefusal(move) ? refusal(move.refusal) : plannedWith(withMoved(showing, move), null);
 	};
 }
 

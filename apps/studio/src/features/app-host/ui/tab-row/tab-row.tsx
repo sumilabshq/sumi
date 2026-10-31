@@ -2,10 +2,12 @@ import { createElement as h, memo } from "react";
 import type { KeyboardEvent, MouseEvent, ReactElement } from "react";
 import type { SidebarTab } from "@widgetarium/app-host";
 import { CHAT_TAB_ICON_HOST } from "../../../mascot/ui/chat-tab-icon/chat-tab-icon.js";
-import { CHILD_ROW, FOLD_HOST_ROW, ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../lib/tabs-look/tabs-look.js";
+import { FOLD_HOST_ROW, ROW_WORDS, SIDEBAR_ROW, SIDEBAR_ROW_SHOWN } from "../../lib/tabs-look/tabs-look.js";
 import { rowFaceOf } from "../../lib/tabs-sidebar/row-face.js";
 import { useRowPick } from "../../lib/tabs-sidebar/use-row-pick.js";
+import { DropTint } from "../drop-tint/drop-tint.js";
 import { RenameField } from "../rename-field/rename-field.js";
+import { LIFTED_HIDDEN, useLiftedMark } from "../../lib/tab-drag/lifted-look.js";
 import { RowIcon } from "./row-icon.js";
 import { RowTail } from "./row-tail.js";
 import type { RowBadge } from "./row-badge.js";
@@ -16,6 +18,7 @@ export type RowPlace = "top" | "child";
 export interface TabRowProps {
 	readonly item: SidebarTab;
 	readonly groupId: string | null;
+	readonly splitId?: string | null;
 	readonly place: RowPlace;
 	readonly isRenaming: boolean;
 	readonly onRenamed: () => void;
@@ -26,14 +29,12 @@ export interface TabRowProps {
 const MIDDLE_BUTTON = 1;
 const RENAME_FIELD =
 	"cv:h-6 cv:min-w-0 cv:flex-1 cv:rounded-[6px] cv:border-0 cv:bg-(--sumi-plate) cv:px-1.5 cv:font-[inherit] cv:text-[13px] cv:text-(--sumi-text) cv:[box-shadow:inset_0_0_0_1.5px_var(--sumi-accent)] cv:outline-none";
-const PLACE_LOOK: Readonly<Record<RowPlace, string>> = {
-	top: "",
-	child: CHILD_ROW,
-};
+const ROW_RADIUS_PX = 10;
 
 export const TabRow = memo(function TabRow({
 	item,
 	groupId,
+	splitId = null,
 	place,
 	isRenaming,
 	onRenamed,
@@ -43,6 +44,7 @@ export const TabRow = memo(function TabRow({
 	const face = rowFaceOf(item);
 	const { show, close } = useRowPick(item);
 	const isHolder = item.children !== undefined;
+	const lifted = useLiftedMark(face.id, splitId);
 	const onKeyDown = (event: KeyboardEvent<HTMLDivElement>): void => {
 		if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
 			event.preventDefault();
@@ -54,13 +56,7 @@ export const TabRow = memo(function TabRow({
 			role="button"
 			tabIndex={0}
 			aria-current={face.isShown || undefined}
-			className={[
-				SIDEBAR_ROW,
-				SIDEBAR_ROW_SHOWN,
-				PLACE_LOOK[place],
-				isHolder && CHAT_TAB_ICON_HOST,
-				fold && FOLD_HOST_ROW,
-			]
+			className={[SIDEBAR_ROW, SIDEBAR_ROW_SHOWN, isHolder && CHAT_TAB_ICON_HOST, fold && FOLD_HOST_ROW]
 				.filter(Boolean)
 				.join(" ")}
 			onClick={show}
@@ -76,7 +72,10 @@ export const TabRow = memo(function TabRow({
 			data-tabs-place={place}
 			data-host-list-tab={face.id}
 			data-host-tab-app={face.app}
+			data-tabs-lifted={lifted === null ? undefined : ""}
+			style={lifted === null ? undefined : LIFTED_HIDDEN}
 		>
+			{lifted === null ? null : <DropTint isOn={lifted.isMarked} radius={ROW_RADIUS_PX} />}
 			<RowIcon item={item} />
 			{isRenaming ? (
 				<RenameField named={face} className={RENAME_FIELD} onDone={onRenamed} />
