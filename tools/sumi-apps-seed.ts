@@ -6,3 +6,5 @@ export const SUMI_APP_IDS = [...SUMI_PAGE_APPS, "chat"] as const;
 export function sumiTabOf(app: string): string {
 	return `t-${app}`;
 }
+
+export type SumiAppId = (typeof SUMI_APP_IDS)[number];

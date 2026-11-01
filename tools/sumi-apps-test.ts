@@ -26,6 +26,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
 import { SUMI_APP_IDS, SUMI_APPS_WORKSPACE, SUMI_CHAT_TAB, SUMI_PAGE_APPS, sumiTabOf } from "./sumi-apps-seed.ts";
+import type { SumiAppId } from "./sumi-apps-seed.ts";
 
 const GATE = "test:sumi-apps";
 const WAIT_MS = 30_000;
@@ -263,7 +264,7 @@ async function pressInFrame(page: AskedPage, app: string, selector: string): Pro
 	const box = await inFrame(
 		page,
 		app,
-		`(() => { const box = document.querySelector(${JSON.stringify(selector)})?.getBoundingClientRect(); return box ? [box.x + box.width / 2, box.y + box.height / 2] : null; })()`,
+		`(() => { const target = [...document.querySelectorAll(${JSON.stringify(selector)})].find((each) => each.getClientRects().length > 0); target?.scrollIntoView({ block: "center", inline: "center" }); const box = target?.getBoundingClientRect(); return box ? [box.x + box.width / 2, box.y + box.height / 2] : null; })()`,
 	);
 
 	if (!Array.isArray(frameBox) || !Array.isArray(box)) {
@@ -348,8 +349,12 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 	);
 	await showAppTab(page, "tasks");
 	check(
-		"tasks: the reloaded frame draws the accepted task in Done, read back from disk",
-		await frameSees(page, "tasks", `document.querySelector('[data-tasks-column="done"] ${card}') !== null`),
+		"tasks: the reloaded frame reopens the task page it was on and draws the task as done, read back from disk",
+		await frameSees(
+			page,
+			"tasks",
+			`document.body.innerText.includes("T-147") && document.querySelector('[data-status="done"]') !== null && document.querySelector("[data-tasks-accept]") === null`,
+		),
 		true,
 	);
 }
@@ -420,7 +425,7 @@ async function chatChecks(page: AskedPage): Promise<void> {
 }
 
 function failureChecks(failures: readonly string[]): void {
-	for (const app of SUMI_APP_IDS) {
+	for (const app of CHECKED_APPS) {
 		check(
 			`${app}: no exception or console error came from its frame`,
 			failures.filter((failure) => failure.includes(framePartOf(app))),
@@ -438,6 +443,27 @@ function failureChecks(failures: readonly string[]): void {
 	studioFailures.forEach((failure) => console.log(`  ${failure.slice(0, 300)}`));
 }
 
+const CHECKS_OF_APP: Readonly<Record<SumiAppId, (page: AskedPage) => Promise<void>>> = {
+	terminal: terminalChecks,
+	canvas: canvasChecks,
+	"browser-page": browserPageChecks,
+	chat: chatChecks,
+	tasks: tasksChecks,
+};
+const NOT_AN_APP = "test:sumi-apps checks {named}, which is none of {apps}";
+const TASKS_RELOAD_LAST: readonly SumiAppId[] = ["terminal", "canvas", "browser-page", "chat", "tasks"];
+const CHECKED_APPS = checkedAppsOf(process.argv.slice(2));
+
+function checkedAppsOf(named: readonly string[]): readonly SumiAppId[] {
+	const unknown = named.find((each) => !TASKS_RELOAD_LAST.some((app) => app === each));
+
+	if (unknown !== undefined) {
+		throw new Error(NOT_AN_APP.replace("{named}", unknown).replace("{apps}", TASKS_RELOAD_LAST.join(", ")));
+	}
+
+	return named.length === 0 ? TASKS_RELOAD_LAST : TASKS_RELOAD_LAST.filter((app) => named.includes(app));
+}
+
 seedTasksFile();
 const page = await paged(`http://127.0.0.1:${port}/`, GATE, {
 	size: [1400, 900],
@@ -448,11 +474,9 @@ const page = await paged(`http://127.0.0.1:${port}/`, GATE, {
 try {
 	await studioStarts(page);
 	await installAll(page);
-	await terminalChecks(page);
-	await canvasChecks(page);
-	await browserPageChecks(page);
-	await chatChecks(page);
-	await tasksChecks(page);
+	for (const app of CHECKED_APPS) {
+		await CHECKS_OF_APP[app](page);
+	}
 	check("nothing failed on the studio page", await page.ask(`document.getElementById("boom").textContent`), "");
 	failureChecks(page.failures());
 } finally {
