@@ -1,4 +1,11 @@
-import { AssistantModule, FileSystemModule, PlacesModule, TerminalModule, WebPageModule } from "@sumi/contract";
+import {
+	AppearanceModule,
+	AssistantModule,
+	FileSystemModule,
+	PlacesModule,
+	TerminalModule,
+	WebPageModule,
+} from "@sumi/contract";
 import { stableKey } from "@widgetarium/core/gateway/stable-key.js";
 import type { LocalTransport, RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import type { StartedServer } from "@widgetarium/core/requests/server";
@@ -20,6 +27,7 @@ export interface FrameRoutesAsk {
 	readonly studioApp: StartedApp;
 	readonly assistantHost: AssistantHostObjects;
 	readonly nativeWebPages: NativeWebPages | null;
+	readonly appearance: RemoteTransport;
 }
 
 interface FrameLease {
@@ -71,7 +79,16 @@ function leaseRoutes({ ask, leases, tabId, chatId }: FrameLease): FrameRoutes {
 	const webPage = leases.webPages.lease(WEB_PAGE_SERVER);
 	const chat = chatId === null ? null : leases.chats.lease(chatId);
 	return {
-		routes: [...coreRoutesOf(ask.core), webPageRouteOf(webPage, tabId), ...chatRoutesOf(chat)],
+		routes: [
+			...coreRoutesOf(ask.core),
+			webPageRouteOf(webPage, tabId),
+			...chatRoutesOf(chat),
+			{
+				module: AppearanceModule,
+				transport: ask.appearance,
+				hears: hearsAll,
+			},
+		],
 		release: () => {
 			webPage.release();
 			chat?.release();

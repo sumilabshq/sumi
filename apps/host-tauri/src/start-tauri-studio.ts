@@ -28,13 +28,13 @@ export function startTauriStudio(project: WidgetariumProject): ReactElement {
 	forwardLogsToHost();
 	const ownLabel = getCurrentWebviewWindow().label;
 	const profiler = startStudioProfiler(window, ownLabel);
-	followColourScheme();
 	followWindowDrag();
 	hearStoreChangesWith({
 		listen: hearTauriEvent,
 		ownLabel,
 	});
 	if (isCorePage(location.search)) {
+		followColourScheme();
 		startCore();
 		return h(Fragment);
 	}

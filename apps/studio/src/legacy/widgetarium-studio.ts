@@ -33,6 +33,8 @@ import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
 import { frameRoutesOf } from "../tabs/frame-routes.js";
+import { startStudioAppearance } from "../tabs/studio-appearance.js";
+import type { StudioAppearance } from "../tabs/studio-appearance.js";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
 import type { NativeWebPages } from "../features/app-frame/lib/web-page-hosts.js";
 import type { StudioBrowser } from "../browser/browser-app.js";
@@ -55,6 +57,7 @@ export interface StartedStudio {
 	readonly studioApp: StartedApp;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
+	readonly appearance: StudioAppearance;
 }
 
 export interface StudioStart extends ProjectStart {
@@ -68,6 +71,7 @@ export interface StudioStart extends ProjectStart {
 	readonly studioApp?: StartedApp;
 	readonly core?: RemoteTransport;
 	readonly nativeWebPages?: NativeWebPages;
+	readonly appearance?: StudioAppearance;
 }
 
 interface ChatReach {
@@ -109,6 +113,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 			core,
 		});
 	const state = start.state ?? createStudioState(studioApp);
+	const appearance = start.appearance ?? startStudioAppearance(window);
 	const reach = {
 		workspaceId: lent.appId,
 		studioApp,
@@ -119,10 +124,12 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
+		appearance,
 		frameRoutes: frameRoutesOf({
 			...reach,
 			assistantHost: assistantHostOf(start),
 			nativeWebPages: start.nativeWebPages ?? null,
+			appearance: appearance.transport,
 		}),
 		project,
 		state,

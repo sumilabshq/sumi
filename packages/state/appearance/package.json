@@ -1,0 +1,31 @@
+{
+	"name": "@widgetarium/appearance",
+	"version": "0.1.0",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./module": {
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/core": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

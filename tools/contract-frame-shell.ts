@@ -4,6 +4,7 @@ import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/fra
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameRoutesOf } from "../apps/studio/src/tabs/frame-routes.ts";
+import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 
 declare global {
@@ -35,6 +36,7 @@ const routesFor = frameRoutesOf({
 		webAssistant: echoAssistantPort(),
 	},
 	nativeWebPages: null,
+	appearance: startStudioAppearance(window).transport,
 });
 
 for (const { app: frameApp, tabId, page } of FRAMES) {

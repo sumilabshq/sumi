@@ -1,3 +1,3 @@
 {
-	"modules": ["file-system", "terminal", "places", "web-page", "assistant"]
+	"modules": ["file-system", "terminal", "places", "web-page", "assistant", "appearance"]
 }
