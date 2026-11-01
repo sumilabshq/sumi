@@ -8,35 +8,29 @@ import { chatOf } from "./lib/chat-of.js";
 
 const APP_CALLABLE: ReadonlySet<string> = new Set(
 	[
-		"agent-setup",
-		"choose-provider",
-		"open-providers",
-		"claude-options",
-		"choose-claude-option",
-		"choose-claude-model",
-		"working-folders",
 		"chat",
 		"retry-turn",
 		"stop-turn",
+		"send-message",
+		"compact-chat",
+		"clear-chat",
 		"draft-attachments",
-		"composer-prefill",
-		"prefill-draft",
 		"attach-files",
 		"remove-attachment",
-		"send-message",
 		"sweep-attachments",
 		"attach-reach",
-		"file-drag",
-		"hear-page-drag",
-		"attach-dropped",
-		"slash-commands",
-		"clear-chat",
+		"composer-prefill",
+		"prefill-draft",
 		"hold-draft-text",
 		"open-chat-draft",
-		"compact-chat",
+		"slash-commands",
+		"agent-setup",
+		"claude-options",
+		"working-folders",
 	].map((short) => `assistant/${short}`),
 );
-const NOT_FOR_APPS = "{request} is not open to apps: an app's chat reaches no folder picker and lends no folder";
+const NOT_FOR_APPS =
+	"{request} is not open to apps: an app reaches only its own chat's conversation and reads the agent setup";
 
 export const AssistantCallersGuard = guard().handle(({ request, context }) => {
 	if (context.user !== null && !APP_CALLABLE.has(request)) {
