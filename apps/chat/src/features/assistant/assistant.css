@@ -1619,7 +1619,7 @@
 	white-space: nowrap;
 }
 
-.wg-studio-chat .wg-studio-ai > * {
+.wg-chat-app .wg-studio-ai > * {
 	box-sizing: border-box;
 	width: 100%;
 	max-width: var(--wg-studio-chat-content);
@@ -1640,33 +1640,33 @@
 	color: var(--wg-kit-text-muted);
 }
 
-.wg-studio .wg-studio-ai {
+.wg-chat-app .wg-studio-ai {
 	--wg-ai-gutter: var(--wg-studio-edge);
 }
 
-.wg-studio .wg-studio-ai-scroll {
+.wg-chat-app .wg-studio-ai-scroll {
 	gap: 14px;
 	padding: 14px 24px 12px;
 }
 
-.wg-studio .wg-studio-ai-said {
+.wg-chat-app .wg-studio-ai-said {
 	padding: 0;
 	color: var(--sumi-text);
 	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.55 var(--sumi-font-ui);
 }
 
-.wg-studio .wg-studio-ai-turn {
+.wg-chat-app .wg-studio-ai-turn {
 	gap: 14px;
 }
 
-.wg-studio .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
+.wg-chat-app .wg-studio-ai-turn.is-mine .wg-studio-ai-said {
 	max-width: 80%;
 	padding: 8px 12px;
 	border-radius: var(--sumi-r-lg);
 	background: var(--sumi-active);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :is(h1, h2) {
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(h1, h2) {
 	margin: 16px 0 8px;
 	font-size: 22px;
 	font-weight: var(--font-semibold, 600);
@@ -1674,20 +1674,20 @@
 	line-height: 1.2;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :is(h3, h4, h5, h6) {
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(h3, h4, h5, h6) {
 	margin: 14px 0 6px;
 	font-size: 16px;
 	font-weight: var(--font-semibold, 600);
 	line-height: 1.3;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :not(pre) > code {
+.wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
 	padding: 2px 6px;
 	background: var(--wg-kit-group-fill);
 	font-size: 12.5px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown blockquote {
+.wg-chat-app .wg-studio-ai-said.is-markdown blockquote {
 	padding: 12px 16px;
 	border-left: none;
 	border-radius: calc(var(--wg-studio-bubble-corner) - 4px);
@@ -1695,7 +1695,7 @@
 	color: var(--wg-kit-highlight-ink);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown table {
+.wg-chat-app .wg-studio-ai-said.is-markdown table {
 	display: table;
 	width: calc(100% - 2 * var(--wg-studio-edge));
 	margin: var(--wg-studio-edge) var(--wg-studio-edge) calc(8px + var(--wg-studio-edge));
@@ -1707,50 +1707,50 @@
 	font-size: var(--wg-kit-text-s);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :is(th, td) {
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(th, td) {
 	padding: 10px 14px;
 	border: none;
 	border-bottom: 1px solid var(--wg-kit-group-line);
 	text-align: start;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown th {
+.wg-chat-app .wg-studio-ai-said.is-markdown th {
 	font-weight: var(--font-medium, 500);
 	color: var(--wg-kit-text-muted);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown tr:last-child td {
+.wg-chat-app .wg-studio-ai-said.is-markdown tr:last-child td {
 	border-bottom: none;
 }
 
-.wg-studio .wg-studio-ai-failure {
+.wg-chat-app .wg-studio-ai-failure {
 	padding: 12px 18px;
 	border-radius: var(--wg-studio-bubble-corner);
 }
 
-.wg-studio .wg-studio-ai-failure.is-quiet {
+.wg-chat-app .wg-studio-ai-failure.is-quiet {
 	border-radius: var(--wg-kit-control-radius);
 }
 
-.wg-studio .wg-studio-ai-pinned-run {
+.wg-chat-app .wg-studio-ai-pinned-run {
 	min-height: var(--wg-kit-control-l);
 	border-radius: var(--wg-kit-control-radius);
 	background: var(--brand);
 	color: var(--brand-foreground);
 }
 
-.wg-studio .wg-studio-ai-spec {
+.wg-chat-app .wg-studio-ai-spec {
 	gap: var(--wg-studio-edge);
 	padding: var(--wg-studio-edge);
 	border-radius: var(--wg-studio-container-corner);
 	background: var(--wg-kit-group-fill);
 }
 
-.wg-studio .wg-studio-ai-spec-title {
+.wg-chat-app .wg-studio-ai-spec-title {
 	padding: 12px 12px 6px;
 }
 
-.wg-studio .wg-studio-ai-target {
+.wg-chat-app .wg-studio-ai-target {
 	height: 32px;
 	padding: 0 12px;
 	background: var(--wg-kit-raise);
@@ -2163,7 +2163,7 @@
 	pointer-events: none;
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal) .wg-kit-pop.wg-studio-ai-menu {
+:is(.wg-chat-app, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal) .wg-kit-pop.wg-studio-ai-menu {
 	box-sizing: border-box;
 	width: 248px;
 	min-width: 0;
@@ -2177,7 +2177,7 @@
 	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
+:is(.wg-chat-app, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
 	.wg-kit-pop.wg-studio-ai-menu
 	.wg-kit-pop-inner {
 	padding: 0;
@@ -2264,7 +2264,7 @@
 	background: var(--sumi-line);
 }
 
-:is(.wg-studio-chat, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
+:is(.wg-chat-app, .wg-kit-portal-layer.is-studio, .wg-root, .wg-portal)
 	.wg-kit-pop.wg-studio-ai-menu:has(.wg-studio-ai-menu-panes) {
 	width: 480px;
 }
@@ -2448,23 +2448,23 @@
 	color: var(--sumi-text-2);
 }
 
-.wg-studio .wg-studio-ai-to-end {
+.wg-chat-app .wg-studio-ai-to-end {
 	background: var(--wg-kit-raise);
 	box-shadow: 0 0 0 var(--wg-studio-edge) var(--wg-kit-group-fill);
 }
 
-.wg-studio .wg-studio-ai-head {
+.wg-chat-app .wg-studio-ai-head {
 	gap: 10px;
 	min-height: 48px;
 	padding-inline-start: 6px;
 }
 
-.wg-studio .wg-studio-ai-head > .wg-mascot {
+.wg-chat-app .wg-studio-ai-head > .wg-mascot {
 	flex: none;
 	margin-block-end: 7px;
 }
 
-.wg-studio .wg-studio-ai-title {
+.wg-chat-app .wg-studio-ai-title {
 	overflow: hidden;
 	font-size: 15px;
 	font-weight: var(--font-semibold, 600);
@@ -2523,7 +2523,7 @@
 	translate: 12px 0;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :is(ul, ol) {
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(ul, ol) {
 	display: block;
 	margin: 0;
 	padding-left: 20px;
@@ -2531,56 +2531,56 @@
 	list-style: disc outside;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown ol {
+.wg-chat-app .wg-studio-ai-said.is-markdown ol {
 	list-style-type: decimal;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown li :is(ul, ol) {
+.wg-chat-app .wg-studio-ai-said.is-markdown li :is(ul, ol) {
 	margin-top: 4px;
 	list-style-type: circle;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown li {
+.wg-chat-app .wg-studio-ai-said.is-markdown li {
 	display: list-item;
 	margin: 0;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown li + li {
+.wg-chat-app .wg-studio-ai-said.is-markdown li + li {
 	margin-top: 4px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown li::marker {
+.wg-chat-app .wg-studio-ai-said.is-markdown li::marker {
 	color: var(--sumi-text-3);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown ol {
+.wg-chat-app .wg-studio-ai-said.is-markdown ol {
 	padding-left: 22px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown p {
+.wg-chat-app .wg-studio-ai-said.is-markdown p {
 	line-height: 1.6;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown strong {
+.wg-chat-app .wg-studio-ai-said.is-markdown strong {
 	font-weight: var(--font-semibold, 600);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown a {
+.wg-chat-app .wg-studio-ai-said.is-markdown a {
 	color: var(--wg-kit-accent);
 	text-decoration: underline;
 	text-underline-offset: 3px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :is(code, pre, kbd) {
+.wg-chat-app .wg-studio-ai-said.is-markdown :is(code, pre, kbd) {
 	font-family: var(--font-mono);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown :not(pre) > code {
+.wg-chat-app .wg-studio-ai-said.is-markdown :not(pre) > code {
 	border-radius: 6px;
 	color: var(--wg-kit-text);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown pre {
+.wg-chat-app .wg-studio-ai-said.is-markdown pre {
 	--wg-studio-code-pad: 14px;
 	--wg-studio-code-copy: 30px;
 	position: relative;
@@ -2597,14 +2597,14 @@
 	tab-size: 4;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown pre::before {
+.wg-chat-app .wg-studio-ai-said.is-markdown pre::before {
 	content: "";
 	float: right;
 	width: calc(var(--wg-studio-code-copy) + 8px);
 	height: calc(var(--wg-studio-code-copy) - 8px);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown pre > code {
+.wg-chat-app .wg-studio-ai-said.is-markdown pre > code {
 	padding: 0;
 	border-radius: 0;
 	background: none;
@@ -2612,7 +2612,7 @@
 	overflow-wrap: inherit;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown pre .copy-code-button {
+.wg-chat-app .wg-studio-ai-said.is-markdown pre .copy-code-button {
 	position: absolute;
 	top: calc(var(--wg-studio-code-pad) - 6px);
 	right: calc(var(--wg-studio-code-pad) - 6px);
@@ -2631,7 +2631,7 @@
 	font-size: 12px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown kbd {
+.wg-chat-app .wg-studio-ai-said.is-markdown kbd {
 	padding: 1px 6px;
 	border: 1px solid var(--border);
 	border-bottom-width: 2px;
@@ -2641,44 +2641,44 @@
 	color: var(--wg-kit-text);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown hr {
+.wg-chat-app .wg-studio-ai-said.is-markdown hr {
 	height: 1px;
 	margin: 4px calc(-1 * var(--wg-studio-edge));
 	border: none;
 	background: var(--wg-kit-group-line);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > * {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > * {
 	margin-block: 0;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > * + * {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > * + * {
 	margin-top: 12px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > * + :is(h1, h2, h3, h4, h5, h6) {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > * + :is(h1, h2, h3, h4, h5, h6) {
 	margin-top: 20px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > :is(h1, h2, h3, h4, h5, h6) + * {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > :is(h1, h2, h3, h4, h5, h6) + * {
 	margin-top: 8px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > hr,
-.wg-studio .wg-studio-ai-said.is-markdown > div > hr + * {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > hr,
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > hr + * {
 	margin-top: 16px;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > table {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > table {
 	margin-top: calc(12px + var(--wg-studio-edge));
 	margin-bottom: var(--wg-studio-edge);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown > div > table:first-child {
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > table:first-child {
 	margin-top: var(--wg-studio-edge);
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon {
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon {
 	display: inline-block;
 	width: 14px;
 	height: 14px;
@@ -2688,7 +2688,7 @@
 	object-fit: contain;
 }
 
-.wg-studio .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon.is-glyph {
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon.is-glyph {
 	background: currentColor;
 	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71'/%3E%3Cpath d='M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'/%3E%3C/svg%3E")
 		center / contain no-repeat;

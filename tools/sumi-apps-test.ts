@@ -663,6 +663,156 @@ async function chatChecks(page: AskedPage): Promise<void> {
 		await frameSees(page, "chat", `document.body.innerText.includes(${JSON.stringify(`echo: ${CHAT_SAID}`)})`),
 		true,
 	);
+	await chatLookChecks(page);
+}
+
+type ChatTheme = "light" | "dark";
+type ChatLook = Readonly<Record<string, readonly number[] | string>>;
+
+const CHAT_LOOK_SAID = [
+	"Here is [the docs](sumi://tasks/T-147) and `npm test`.",
+	"Steps:\n\n- one\n- two\n- three",
+	"Last one, plain words.",
+];
+const BOX_TOLERANCE_PX = 1;
+const INTER = `"Inter Variable", Inter, -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif`;
+const JETBRAINS_MONO = `"JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace`;
+const BUILTIN_CHAT_BOXES: ChatLook = {
+	chat: [0, 0, 1108, 840],
+	column: [170, 0, 768, 704],
+	firstTurn: [194, -77, 720, 74],
+	turnGaps: [14, 14, 14, 14, 14, 14, 14],
+	composerGap: [57],
+	composer: [170, 720, 768, 120],
+	field: [186, 720, 736, 80],
+	list: "20px | 12px | 0px",
+};
+const REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG: Readonly<Record<ChatTheme, ChatLook>> = {
+	light: {
+		...BUILTIN_CHAT_BOXES,
+		background: "rgb(255, 255, 255)",
+		answerFont: `${INTER} | 14px | 22.4px | 400 | -0.078px | rgb(29, 29, 31)`,
+		mineFont: `${INTER} | 14px | 21.7px | 400 | -0.078px | rgb(29, 29, 31)`,
+		mineFill: "rgba(0, 0, 0, 0.06)",
+		codeFont: `${JETBRAINS_MONO} | 12.5px | 20px | 400 | -0.078px | oklch(0.2316 0 268.26) | oklch(0.9761 0 268.26)`,
+		link: "oklch(0.2316 0 268.26) | underline | oklch(0.2316 0 268.26) | 3px | 400",
+	},
+	dark: {
+		...BUILTIN_CHAT_BOXES,
+		background: "rgb(31, 31, 31)",
+		answerFont: `${INTER} | 14px | 22.4px | 400 | -0.078px | rgb(237, 237, 237)`,
+		mineFont: `${INTER} | 14px | 21.7px | 400 | -0.078px | rgb(237, 237, 237)`,
+		mineFill: "rgba(255, 255, 255, 0.09)",
+		codeFont: `${JETBRAINS_MONO} | 12.5px | 20px | 400 | -0.078px | oklch(0.9461 0 268.26) | oklch(0.2686 0 268.26)`,
+		link: "oklch(0.9461 0 268.26) | underline | oklch(0.9461 0 268.26) | 3px | 400",
+	},
+};
+const CHAT_FRAME_IN_PLATE = `(() => { const plate = document.querySelector('[data-shell-plate="chat"] .wg-shell-plate-body').getBoundingClientRect(); const frame = document.querySelector('iframe[data-app-frame-src*="${framePartOf("chat")}"]'); const box = frame.getBoundingClientRect(); return [box.x + frame.clientLeft - plate.x, box.y + frame.clientTop - plate.y]; })()`;
+const CHAT_LOOK = `(dx, dy) => {
+	const view = document.defaultView;
+	const boxOf = (element) => {
+		const box = element.getBoundingClientRect();
+		return [box.x + dx, box.y + dy, box.width, box.height].map((each) => Math.round(each));
+	};
+	const fillOf = (element) => {
+		for (let at = element; at !== null; at = at.parentElement) {
+			const fill = view.getComputedStyle(at).backgroundColor;
+			if (fill !== "rgba(0, 0, 0, 0)") return fill;
+		}
+		return "none";
+	};
+	const fontOf = (element) => {
+		const style = view.getComputedStyle(element);
+		return [style.fontFamily, style.fontSize, style.lineHeight, style.fontWeight, style.letterSpacing, style.color].join(" | ");
+	};
+	const turns = [...document.querySelectorAll(".wg-studio-ai-turn")];
+	const composer = document.querySelector(".wg-studio-ai-composer");
+	const link = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown a"));
+	const list = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown ul"));
+	const code = document.querySelector(".wg-studio-ai-said.is-markdown code");
+	const mine = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said");
+	return {
+		chat: boxOf(document.querySelector(".wg-studio-ai")),
+		column: boxOf(document.querySelector(".wg-studio-ai-scroll-frame")),
+		firstTurn: boxOf(turns[0]),
+		turnGaps: turns.slice(1).map((turn, at) => Math.round(turn.getBoundingClientRect().top - turns[at].getBoundingClientRect().bottom)),
+		composerGap: [Math.round(composer.getBoundingClientRect().top - turns[turns.length - 1].getBoundingClientRect().bottom)],
+		composer: boxOf(composer),
+		field: boxOf(document.querySelector(".wg-studio-ai-field")),
+		background: fillOf(document.querySelector(".wg-studio-ai-scroll")),
+		answerFont: fontOf(document.querySelector(".wg-studio-ai-said.is-markdown p")),
+		mineFont: fontOf(mine),
+		mineFill: fillOf(mine),
+		codeFont: fontOf(code) + " | " + fillOf(code),
+		link: [link.color, link.textDecorationLine, link.textDecorationColor, link.textUnderlineOffset, link.fontWeight].join(" | "),
+		list: [list.paddingLeft, list.marginTop, list.marginBottom].join(" | "),
+	};
+}`;
+
+function isLookAlike(measured: unknown, wanted: readonly number[] | string): boolean {
+	if (typeof wanted === "string") {
+		return measured === wanted;
+	}
+
+	return (
+		Array.isArray(measured) &&
+		measured.length === wanted.length &&
+		wanted.every((each, at) => Math.abs(Number(measured[at]) - each) <= BOX_TOLERANCE_PX)
+	);
+}
+
+async function chatLookOf(page: AskedPage): Promise<unknown> {
+	const offset = await page.ask(CHAT_FRAME_IN_PLATE);
+	return Array.isArray(offset)
+		? inFrame(page, "chat", `(${CHAT_LOOK})(${Number(offset[0])}, ${Number(offset[1])})`)
+		: null;
+}
+
+function lookOf(measured: unknown, quantity: string): unknown {
+	return typeof measured === "object" && measured !== null ? Reflect.get(measured, quantity) : undefined;
+}
+
+function isLookOfTag(measured: unknown, theme: ChatTheme): boolean {
+	return Object.entries(REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG[theme]).every(([quantity, wanted]) =>
+		isLookAlike(lookOf(measured, quantity), wanted),
+	);
+}
+
+async function chatLookChecks(page: AskedPage): Promise<void> {
+	for (const [at, said] of CHAT_LOOK_SAID.entries()) {
+		await typedInFrame(page, "chat", "textarea", said);
+		await frameSees(page, "chat", `document.querySelectorAll(".wg-studio-ai-turn").length === ${(at + 2) * 2}`);
+	}
+
+	for (const theme of ["light", "dark"] as const) {
+		await page.ask(`window.__sumiApps.chooseTheme(${JSON.stringify(theme)})`);
+		const held: { measured: unknown } = {
+			measured: null,
+		};
+		await waitUntil(
+			async () => {
+				held.measured = await chatLookOf(page);
+				return isLookOfTag(held.measured, theme);
+			},
+			WAIT_MS,
+			STEP_MS,
+		);
+
+		if (typeof held.measured !== "object") {
+			console.log(`chat (${theme}) was not measured, not a check:`, held.measured);
+		}
+
+		for (const [quantity, wanted] of Object.entries(REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG[theme])) {
+			const measured = lookOf(held.measured, quantity);
+			check(
+				`chat (${theme}): ${quantity} is the built-in chat's at builtin-apps-before-removal`,
+				isLookAlike(measured, wanted) ? wanted : measured,
+				wanted,
+			);
+		}
+	}
+
+	await page.ask(`window.__sumiApps.chooseTheme("system")`);
 }
 
 function failureChecks(failures: readonly string[]): void {
