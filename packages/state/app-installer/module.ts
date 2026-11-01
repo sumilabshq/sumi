@@ -9,6 +9,7 @@ import {
 	UpdateAppsCommand,
 } from "./features/installing/requests.js";
 import { AppRegistryQuery } from "./features/registry/requests.js";
+import { InstalledAppsChangedEvent } from "./shared/events/installed-apps.events.js";
 
 export const AppInstallerModule = module("app-installer")
 	.on(Device)
@@ -20,5 +21,6 @@ export const AppInstallerModule = module("app-installer")
 		SwitchAppVersionCommand,
 		FailAppVersionCommand,
 		RetryAppVersionCommand,
+		InstalledAppsChangedEvent,
 	)
 	.provide((facts) => appInstallerPartsOn(facts));
