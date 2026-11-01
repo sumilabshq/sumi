@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TabMarkSchema } from "./tabs.schema.js";
+import { AskedLinkSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const TabTurnSchema = z.object({
 	id: z.string().min(1),
@@ -25,7 +25,31 @@ export const OwnAppTabSchema = z.object({
 	address: z.string().nullable(),
 	title: z.string().nullable(),
 	chatId: z.string().nullable(),
+	canGoBack: z.boolean().optional(),
+	canGoForward: z.boolean().optional(),
 });
+
+export const TabStepSchema = z.object({ id: z.string().min(1) });
+
+export const LinkAskSchema = z.object({
+	from: z.string().min(1),
+	href: z.string().min(1).max(2048),
+	inNewTab: z.boolean().default(false),
+});
+
+export type LinkAsk = z.infer<typeof LinkAskSchema>;
+
+export const LinkFollowedSchema = z.object({
+	kind: z.enum(["navigated", "asked"]),
+});
+
+export const AskedLinksAskSchema = z.object({ tabIds: z.array(z.string()) });
+
+export const AskedLinksSchema = z.object({
+	links: z.array(AskedLinkSchema),
+});
+
+export const TakeAskedLinkSchema = z.object({ id: z.string().min(1) });
 
 export const NamedRecordSchema = z.object({
 	id: z.string().min(1),
@@ -39,6 +63,7 @@ export const KeepChatTabsAskSchema = z.object({ chats: z.array(NamedRecordSchema
 export const AppPageSchema = z.object({
 	id: z.string().min(1),
 	address: z.string().max(2048).optional(),
+	how: z.enum(["push", "replace"]).optional(),
 	title: z.string().max(200).optional(),
 	favicon: z
 		.union([

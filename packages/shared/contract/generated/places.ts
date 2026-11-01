@@ -393,7 +393,38 @@ export const OwnAppTabSchema = z.object({
 	address: z.string().nullable(),
 	title: z.string().nullable(),
 	chatId: z.string().nullable(),
+	canGoBack: z.boolean().optional(),
+	canGoForward: z.boolean().optional(),
 });
+
+export const TabStepSchema = z.object({ id: z.string().min(1) });
+
+export const LinkAskSchema = z.object({
+	from: z.string().min(1),
+	href: z.string().min(1).max(2048),
+	inNewTab: z.boolean().default(false),
+});
+
+export type LinkAsk = z.infer<typeof LinkAskSchema>;
+
+export const LinkFollowedSchema = z.object({
+	kind: z.enum(["navigated", "asked"]),
+});
+
+export const AskedLinksAskSchema = z.object({ tabIds: z.array(z.string()) });
+
+export const AskedLinkSchema = z.object({
+	id: z.string(),
+	from: z.string(),
+	href: z.string(),
+	inNewTab: z.boolean(),
+});
+
+export const AskedLinksSchema = z.object({
+	links: z.array(AskedLinkSchema),
+});
+
+export const TakeAskedLinkSchema = z.object({ id: z.string().min(1) });
 
 export const NamedRecordSchema = z.object({
 	id: z.string().min(1),
@@ -407,6 +438,7 @@ export const KeepChatTabsAskSchema = z.object({ chats: z.array(NamedRecordSchema
 export const AppPageSchema = z.object({
 	id: z.string().min(1),
 	address: z.string().max(2048).optional(),
+	how: z.enum(["push", "replace"]).optional(),
 	title: z.string().max(200).optional(),
 	favicon: z
 		.union([
@@ -664,9 +696,19 @@ export const KeptGroupSchema = z.object({
 	tabIds: z.array(z.string()),
 });
 
+export const TabHistorySchema = z.object({
+	back: z.array(z.string()),
+	forward: z.array(z.string()),
+});
+
+export type TabHistory = z.infer<typeof TabHistorySchema>;
+
+export type AskedLink = z.infer<typeof AskedLinkSchema>;
+
 export const KeptTabSchema = z.object({
 	id: z.string(),
 	app: AppKindSchema,
+	history: TabHistorySchema.optional(),
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
@@ -781,6 +823,9 @@ export const AppFacesQuery = query("places/app-faces")
 export const AppTabQuery = query("places/app-tab")
 	.input(OwnAppTabAskSchema)
 	.output(OwnAppTabSchema);
+export const AskedLinksQuery = query("places/asked-links")
+	.input(AskedLinksAskSchema)
+	.output(AskedLinksSchema);
 export const RestoreTabsCommand = command("places/restore-tabs")
 	.input(RestoreTabsAskSchema)
 	.output(TabsSettledSchema)
@@ -881,6 +926,20 @@ export const RecordTabTurnCommand = command("places/record-tab-turn")
 export const RecordAppPageCommand = command("places/record-app-page")
 	.input(AppPageSchema)
 	.idempotencyKey(Repeatable);
+export const OpenLinkCommand = command("places/open-link")
+	.input(LinkAskSchema)
+	.output(LinkFollowedSchema)
+	.idempotencyKey(Repeatable);
+export const TakeAskedLinkCommand = command("places/take-asked-link")
+	.input(TakeAskedLinkSchema)
+	.output(AskedLinkSchema)
+	.idempotencyKey(Repeatable);
+export const GoBackInTabCommand = command("places/go-back-in-tab")
+	.input(TabStepSchema)
+	.idempotencyKey(Repeatable);
+export const GoForwardInTabCommand = command("places/go-forward-in-tab")
+	.input(TabStepSchema)
+	.idempotencyKey(Repeatable);
 export const MarkTabSeenCommand = command("places/mark-tab-seen")
 	.input(SeenTabSchema)
 	.idempotencyKey(Repeatable);
@@ -928,4 +987,4 @@ export const ResizeSplitCommand = command("places/resize-split")
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, AppFacesQuery, AppTabQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, RecordAppPageCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand]);
+export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, AppFacesQuery, AppTabQuery, AskedLinksQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, RecordAppPageCommand, OpenLinkCommand, TakeAskedLinkCommand, GoBackInTabCommand, GoForwardInTabCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand]);

@@ -2,14 +2,23 @@ import { z } from "zod";
 
 export const SUMI_LINK_SCHEME = "sumi:";
 
-export const LinkKindSchema = z.enum(["chat", "task", "tab", "app"]);
+export const LinkAppSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
-export type LinkKind = z.infer<typeof LinkKindSchema>;
-
-export const LinkTargetSchema = z.object({
-	kind: LinkKindSchema,
-	id: z.string().min(1),
-});
+export const LinkTargetSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("chat"),
+		id: z.string().min(1),
+	}),
+	z.object({
+		kind: z.literal("tab"),
+		id: z.string().min(1),
+	}),
+	z.object({
+		kind: z.literal("page"),
+		app: LinkAppSchema,
+		address: z.string(),
+	}),
+]);
 
 export type LinkTarget = z.infer<typeof LinkTargetSchema>;
 
@@ -23,14 +32,30 @@ export type LinkRead =
 			readonly reason: string;
 	  };
 
-const SUMI_ADDRESS = /^sumi:\/\/([^/?#]*)\/([^/?#]*)$/;
-const NOT_SUMI = "{href} opens nowhere: Sumi opens sumi://<chat|task|tab|app>/<id> links and https:// pages";
-const UNKNOWN_KIND = "{href} names no chat, task, tab or app, so there is nothing to open";
-const NO_ID = "{href} names no {kind} to open";
-const BAD_ESCAPE = "{href} carries a broken %-escape in its id";
+type HostRead = (href: string, rest: string) => LinkRead;
 
-export function linkOf({ kind, id }: LinkTarget): string {
-	return `${SUMI_LINK_SCHEME}//${kind}/${encodeURIComponent(id)}`;
+const SUMI_ADDRESS = /^sumi:\/\/([^/?#]*)(?:\/(.*))?$/;
+const APP_ID = /^[a-z][a-z0-9-]*$/;
+const NOT_SUMI = "{href} opens nowhere: Sumi opens sumi://<app>/<page> links and https:// pages";
+const UNKNOWN_HOST = "{href} names no app, so there is nothing to open";
+const NO_ID = "{href} names no {kind} to open";
+const BAD_ESCAPE = "{href} carries a broken %-escape in its page";
+const NESTED = "{href} names a {kind} inside another: a {kind} link holds one id";
+const LEGACY_TASKS_APP = "tasks";
+
+const HOST_READS: ReadonlyMap<string, HostRead> = new Map<string, HostRead>([
+	["chat", (href, rest) => idLinkOf(href, "chat", rest)],
+	["tab", (href, rest) => idLinkOf(href, "tab", rest)],
+	["task", (href, rest) => legacyPageOf(href, LEGACY_TASKS_APP, rest)],
+	["app", (href, rest) => legacyAppOf(href, rest)],
+]);
+
+export function linkOf(target: LinkTarget): string {
+	if (target.kind === "page") {
+		return `${SUMI_LINK_SCHEME}//${target.app}/${encodeURIComponent(target.address)}`;
+	}
+
+	return `${SUMI_LINK_SCHEME}//${target.kind}/${encodeURIComponent(target.id)}`;
 }
 
 export function isSumiLink(href: string): boolean {
@@ -39,22 +64,31 @@ export function isSumiLink(href: string): boolean {
 
 export function linkTargetOf(href: string): LinkRead {
 	const parts = SUMI_ADDRESS.exec(href);
+	const host = parts?.[1] ?? "";
 
 	if (parts === null) {
 		return refusedLink(NOT_SUMI, href);
 	}
 
-	const kind = LinkKindSchema.safeParse(parts[1]);
+	const read = HOST_READS.get(host);
 
-	if (!kind.success) {
-		return refusedLink(UNKNOWN_KIND, href);
+	if (read !== undefined) {
+		return read(href, parts[2] ?? "");
 	}
 
-	return linkAt(href, kind.data, parts[2] ?? "");
+	if (!APP_ID.test(host)) {
+		return refusedLink(UNKNOWN_HOST, href);
+	}
+
+	return pageLinkOf(href, host, parts[2] ?? "");
 }
 
-function linkAt(href: string, kind: LinkKind, escapedId: string): LinkRead {
-	const id = decodedOf(escapedId);
+function idLinkOf(href: string, kind: "chat" | "tab", rest: string): LinkRead {
+	if (rest.includes("/")) {
+		return refusedLink(NESTED.replace(/{kind}/g, kind), href);
+	}
+
+	const id = decodedOf(rest);
 
 	if (id === null) {
 		return refusedLink(BAD_ESCAPE, href);
@@ -69,6 +103,39 @@ function linkAt(href: string, kind: LinkKind, escapedId: string): LinkRead {
 		target: {
 			kind,
 			id,
+		},
+	};
+}
+
+function legacyPageOf(href: string, app: string, rest: string): LinkRead {
+	if (rest === "") {
+		return refusedLink(NO_ID.replace("{kind}", "task"), href);
+	}
+
+	return pageLinkOf(href, app, rest);
+}
+
+function legacyAppOf(href: string, rest: string): LinkRead {
+	if (!APP_ID.test(rest)) {
+		return refusedLink(rest === "" ? NO_ID.replace("{kind}", "app") : UNKNOWN_HOST, href);
+	}
+
+	return pageLinkOf(href, rest, "");
+}
+
+function pageLinkOf(href: string, app: string, rest: string): LinkRead {
+	const address = decodedOf(rest);
+
+	if (address === null) {
+		return refusedLink(BAD_ESCAPE, href);
+	}
+
+	return {
+		ok: true,
+		target: {
+			kind: "page",
+			app,
+			address,
 		},
 	};
 }

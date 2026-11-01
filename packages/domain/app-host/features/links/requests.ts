@@ -1,6 +1,6 @@
 import { Repeatable, command, refuse } from "@widgetarium/core/requests";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
-import type { LinkKind } from "@widgetarium/core/engine/sumi-link.js";
+import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { isKnownApp, readKnownApps } from "../../shared/lib/apps/known-apps.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
@@ -11,25 +11,16 @@ import type { AppKind } from "../../shared/schema/app-tab.schema.js";
 import { LinkToOpenSchema } from "../../shared/schema/link.schema.js";
 
 interface LinkOpening {
-	readonly id: string;
+	readonly target: LinkTarget;
 	readonly opensNew: boolean;
 	readonly reach: TabsReach;
 }
 
-type LinkOpener = (opening: LinkOpening) => Promise<string | null>;
-
-const TASKS_APP: AppKind = "tasks";
 const BROWSER_APP: AppKind = "browser";
-const WEB_SCHEME = "https:";
+const BROWSER_PAGE_APP: AppKind = "browser-page";
+const WEB_SCHEMES: ReadonlySet<string> = new Set(["https:", "http:"]);
 const NO_SUCH_APP = "Sumi has no app named {app}";
 const OPENED = "[widgetarium] link {href} opened{where}";
-
-const LINK_OPENERS: Readonly<Record<LinkKind, LinkOpener>> = {
-	chat: openChatLinked,
-	task: openTaskLinked,
-	tab: showTabLinked,
-	app: openAppLinked,
-};
 
 export const OpenLinkCommand = command("open-link")
 	.input(LinkToOpenSchema)
@@ -50,42 +41,41 @@ export const OpenLinkCommand = command("open-link")
 	});
 
 function isWebPage(href: string): boolean {
-	return URL.parse(href)?.protocol === WEB_SCHEME;
+	return WEB_SCHEMES.has(URL.parse(href)?.protocol ?? "");
 }
 
 async function openSumiLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<string | null> {
 	const read = linkTargetOf(href);
-	return read.ok ? LINK_OPENERS[read.target.kind]({ id: read.target.id, opensNew, reach }) : read.reason;
+	return read.ok ? openTargetLinked({ target: read.target, opensNew, reach }) : read.reason;
+}
+
+async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promise<string | null> {
+	if (target.kind === "chat") {
+		await showChatSettled(reach, { chatId: target.id, paneId: null });
+		return null;
+	}
+
+	if (target.kind === "tab") {
+		await showTabSettled(reach, target.id);
+		return null;
+	}
+
+	const app = AppKindSchema.safeParse(target.app);
+
+	if (!app.success || !isKnownApp(await readKnownApps(reach.send), target.app)) {
+		return NO_SUCH_APP.replace("{app}", target.app);
+	}
+
+	await openAppTab(reach, { app: app.data, address: target.address, opensNew });
+	return null;
 }
 
 async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
-	await openAppTab(reach, { app: BROWSER_APP, address: href, opensNew });
-	return null;
-}
-
-async function openChatLinked({ id, reach }: LinkOpening): Promise<null> {
-	await showChatSettled(reach, { chatId: id, paneId: null });
-	return null;
-}
-
-async function openTaskLinked({ id, opensNew, reach }: LinkOpening): Promise<null> {
-	await openAppTab(reach, { app: TASKS_APP, address: id, opensNew });
-	return null;
-}
-
-async function showTabLinked({ id, reach }: LinkOpening): Promise<null> {
-	await showTabSettled(reach, id);
-	return null;
-}
-
-async function openAppLinked({ id, opensNew, reach }: LinkOpening): Promise<string | null> {
-	const app = AppKindSchema.safeParse(id);
-
-	if (!app.success || !isKnownApp(await readKnownApps(reach.send), id)) {
-		return NO_SUCH_APP.replace("{app}", id);
-	}
-
-	await openAppTab(reach, { app: app.data, address: "", opensNew });
+	const known = await readKnownApps(reach.send);
+	const app = known.some(({ id, isInstalled }) => id === BROWSER_PAGE_APP && isInstalled)
+		? BROWSER_PAGE_APP
+		: BROWSER_APP;
+	await openAppTab(reach, { app, address: href, opensNew });
 	return null;
 }
 

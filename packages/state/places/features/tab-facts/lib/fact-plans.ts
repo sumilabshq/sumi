@@ -5,6 +5,7 @@ import { movedPlan, refusal } from "../../../shared/lib/settling/settling.js";
 import type { MomentPlan, Planned, Refusal } from "../../../shared/lib/settling/settling.js";
 import type { AppPage, NamedRecord, TabTurn } from "../../../shared/schema/tab-facts.schema.js";
 import { abilitiesOf } from "../../../shared/lib/tabs/app-abilities.js";
+import { pushedTab } from "../../../shared/lib/tabs/tab-history.js";
 import type { HostTab, HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
 import type { TabMark } from "../../../shared/schema/tabs.schema.js";
 
@@ -125,15 +126,20 @@ function appPageReasonOf(tab: HostTab, recorded: HostTab, dropped: string | null
 	return dropped === null ? `${said})` : `${said}; ${dropped})`;
 }
 
-function withAppPage(tab: HostTab, { address, title, favicon }: AppPage): HostTab {
+function withAppPage(tab: HostTab, { address, how, title, favicon }: AppPage): HostTab {
+	const isPushed = how === "push" && address !== undefined && address !== (tab.lastAddress ?? "");
+	const moved = isPushed ? pushedTab(tab, address) : tab;
 	const next = {
-		...tab,
-		lastAddress: address ?? tab.lastAddress,
-		lastTitle: title ?? tab.lastTitle,
-		lastFavicon: favicon ?? tab.lastFavicon,
+		...moved,
+		lastAddress: address ?? moved.lastAddress,
+		lastTitle: title ?? moved.lastTitle,
+		lastFavicon: favicon ?? moved.lastFavicon,
 	};
 	const isSame =
-		next.lastAddress === tab.lastAddress && next.lastTitle === tab.lastTitle && next.lastFavicon === tab.lastFavicon;
+		!isPushed &&
+		next.lastAddress === tab.lastAddress &&
+		next.lastTitle === tab.lastTitle &&
+		next.lastFavicon === tab.lastFavicon;
 	return isSame ? tab : next;
 }
 

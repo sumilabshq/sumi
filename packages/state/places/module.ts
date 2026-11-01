@@ -31,13 +31,18 @@ import {
 import {
 	AppCallersGuard,
 	AppTabQuery,
+	AskedLinksQuery,
+	OpenLinkCommand,
 	RereadAppTabSubscriber,
+	RereadAskedLinksSubscriber,
+	TakeAskedLinkCommand,
 	ForgetRunningTurnsCommand,
 	KeepChatTabsCommand,
 	MarkTabSeenCommand,
 	RecordAppPageCommand,
 	RecordTabTurnCommand,
 } from "./features/tab-facts/requests.js";
+import { GoBackInTabCommand, GoForwardInTabCommand } from "./features/tab-history/requests.js";
 import {
 	FitTabsToPanesCommand,
 	OpenTabInOwnWindowCommand,
@@ -78,7 +83,13 @@ export const PlacesModule = module("places")
 	.on(Server)
 	.guard(PublicGuard)
 	.guard(AppCallersGuard)
-	.subscribers(RereadWindowsSubscriber, RereadPlacedTabsSubscriber, RereadShownSplitSubscriber, RereadAppTabSubscriber)
+	.subscribers(
+		RereadWindowsSubscriber,
+		RereadPlacedTabsSubscriber,
+		RereadShownSplitSubscriber,
+		RereadAppTabSubscriber,
+		RereadAskedLinksSubscriber,
+	)
 	.public(
 		OpenWindowsQuery,
 		OpenWindowCommand,
@@ -92,6 +103,7 @@ export const PlacesModule = module("places")
 		ChatTabsQuery,
 		AppFacesQuery,
 		AppTabQuery,
+		AskedLinksQuery,
 	)
 	.public(
 		RestoreTabsCommand,
@@ -120,6 +132,10 @@ export const PlacesModule = module("places")
 		KeepChatTabsCommand,
 		RecordTabTurnCommand,
 		RecordAppPageCommand,
+		OpenLinkCommand,
+		TakeAskedLinkCommand,
+		GoBackInTabCommand,
+		GoForwardInTabCommand,
 		MarkTabSeenCommand,
 		ForgetRunningTurnsCommand,
 		CreateGroupCommand,

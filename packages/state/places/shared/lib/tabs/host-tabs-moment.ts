@@ -1,4 +1,4 @@
-import type { AppKind, GroupHue, HeldList, ListEntry, TabMark } from "../../schema/tabs.schema.js";
+import type { AppKind, GroupHue, HeldList, ListEntry, TabHistory, TabMark } from "../../schema/tabs.schema.js";
 import type { KeptSplit } from "../../schema/splits.schema.js";
 import {
 	WORKSPACE_LIST,
@@ -27,6 +27,7 @@ export interface HostTab extends OpenedTab {
 	readonly lastAddress: string | null;
 	readonly lastTitle: string | null;
 	readonly lastFavicon: string | null;
+	readonly history?: TabHistory | undefined;
 	readonly title: string | null;
 	readonly mark: TabMark;
 	readonly isFolded: boolean;

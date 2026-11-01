@@ -44,9 +44,26 @@ export const KeptGroupSchema = z.object({
 	tabIds: z.array(z.string()),
 });
 
+export const TabHistorySchema = z.object({
+	back: z.array(z.string()),
+	forward: z.array(z.string()),
+});
+
+export type TabHistory = z.infer<typeof TabHistorySchema>;
+
+export const AskedLinkSchema = z.object({
+	id: z.string(),
+	from: z.string(),
+	href: z.string(),
+	inNewTab: z.boolean(),
+});
+
+export type AskedLink = z.infer<typeof AskedLinkSchema>;
+
 export const KeptTabSchema = z.object({
 	id: z.string(),
 	app: AppKindSchema,
+	history: TabHistorySchema.optional(),
 	pageId: z.string().nullable(),
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
@@ -92,6 +109,8 @@ export const PlacedTabsSchema = z.object({
 	closed: z.array(ClosedTabSchema),
 	splits: z.array(KeptSplitSchema).default([]),
 	mintedSplits: z.number().int().nonnegative().default(0),
+	askedLinks: z.array(AskedLinkSchema).optional(),
+	mintedLinks: z.number().int().nonnegative().optional(),
 });
 
 export type PlacedTabs = z.infer<typeof PlacedTabsSchema>;
