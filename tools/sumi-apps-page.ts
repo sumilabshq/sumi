@@ -26,6 +26,7 @@ import { SUMI_APPS_WORKSPACE, SUMI_CHAT_TAB } from "./sumi-apps-seed.ts";
 
 declare global {
 	interface Window {
+		__SUMI_APP_ORIGIN__?: string;
 		__SUMI_RELEASES__?: Readonly<Record<string, ReleaseRead>>;
 		__SUMI_REGISTRY__?: readonly { readonly id: string; readonly path: string }[];
 		__sumiApps?: SumiAppsDriver;
@@ -63,7 +64,7 @@ const apps = new MemoryAppsGateway({
 		})),
 	},
 	folders: window.__SUMI_RELEASES__ ?? {},
-	fileUrlOf: ({ id, version }, file) => `/apps/${id}/${version}/${file}`,
+	fileUrlOf: ({ id, version }, file) => `${window.__SUMI_APP_ORIGIN__ ?? ""}/apps/${id}/${version}/${file}`,
 });
 const overHttp = orpcTransport(location.origin);
 const NOT_ABORTED = new AbortController().signal;

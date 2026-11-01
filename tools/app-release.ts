@@ -2,6 +2,8 @@ import { createHash } from "node:crypto";
 import { lstatSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { AppManifestSchema, APP_MANIFEST_FILE } from "@sumi/contract";
+import type { ReleaseRead } from "../packages/state/app-installer/gateways/apps/apps.gateway.ts";
+import { ReleaseFileSchema } from "../packages/state/app-installer/shared/schema/registry.schema.ts";
 
 export const RELEASE_FILE = "sumi-release.json";
 
@@ -23,6 +25,15 @@ export function releaseOf(folder: string): Release {
 		app: manifest.id,
 		version: manifest.version,
 		files: filesUnder(folder, "").map((relative) => fileOf(folder, relative)),
+	};
+}
+
+export function releaseReadOf(folder: string): ReleaseRead {
+	const manifestBytes = readFileSync(path.join(folder, APP_MANIFEST_FILE));
+	return {
+		manifest: JSON.parse(manifestBytes.toString("utf8")),
+		release: ReleaseFileSchema.parse(JSON.parse(readFileSync(path.join(folder, RELEASE_FILE), "utf8"))),
+		manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
 	};
 }
 

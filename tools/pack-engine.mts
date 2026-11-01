@@ -6,8 +6,7 @@ import esbuild, { type Plugin } from "esbuild";
 import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
-import { TAILWIND_BANNER } from "./canvas-sheet.mts";
-import { studioSplitOf } from "./studio-sheet.mts";
+import { browserSheetsOf } from "./browser-sheet.mts";
 
 export interface PackedPackage {
 	readonly name: string;
@@ -60,8 +59,6 @@ const SYSTEMS = {
 };
 const UNSHIPPED_SYSTEM_FOLDER = /\/(?:references|tests)(?:\/|$)/;
 const BROWSER_STYLES = {
-	host: path.join(REPO, "packages/shared/core/browser-host.css"),
-	board: path.join(REPO, "apps/host-obsidian/styles.css"),
 	into: path.join(REPO, "packages/shared/core/dist/styles.css"),
 	studioInto: path.join(REPO, "apps/studio/dist/studio.css"),
 };
@@ -104,13 +101,11 @@ const builtIn = (folder: string): string => path.join(folder, BUILT_TO);
 
 // TRADE-OFF: the engine package's sheet is cut from the app's styles.css; moving that owner into core touches every paint gate
 export function writeBrowserStyles(): void {
-	const [host = "", board = ""] = [BROWSER_STYLES.host, BROWSER_STYLES.board].map((at) => fs.readFileSync(at, "utf8"));
-	const [authored = "", canvas = ""] = board.split(TAILWIND_BANNER);
-	const { app, studio } = studioSplitOf(`${host}\n${authored}`);
+	const { app, studio } = browserSheetsOf(REPO);
 	fs.mkdirSync(path.dirname(BROWSER_STYLES.into), { recursive: true });
 	fs.mkdirSync(path.dirname(BROWSER_STYLES.studioInto), { recursive: true });
 	fs.writeFileSync(BROWSER_STYLES.into, app);
-	fs.writeFileSync(BROWSER_STYLES.studioInto, canvas === "" ? studio : `${studio}\n${TAILWIND_BANNER}${canvas}`);
+	fs.writeFileSync(BROWSER_STYLES.studioInto, studio);
 }
 
 function manifestIn(folder: string): PackageManifest {

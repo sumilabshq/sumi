@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import type { Server } from "node:http";
@@ -23,7 +22,7 @@ import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { framePolicyServedFrom } from "./frame-policy.ts";
 import { fleetChecks } from "./app-frame-fleet-checks.ts";
 import { pageFactChecks } from "./app-page-facts-checks.ts";
-import { RELEASE_FILE } from "./app-release.ts";
+import { releaseReadOf as releaseReadIn } from "./app-release.ts";
 import { paged, waitUntil, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { buildHelloReleases, HELLO_RELEASES, helloReleaseFolderOf } from "./hello-app-build.ts";
@@ -36,13 +35,7 @@ const STEP_MS = 500;
 const HELLO_ROOT = await buildHelloReleases();
 
 function releaseReadOf(version: string): ReleaseRead {
-	const folder = helloReleaseFolderOf(HELLO_ROOT, version);
-	const manifestBytes = readFileSync(path.join(folder, "sumi-app.json"));
-	return {
-		manifest: JSON.parse(manifestBytes.toString("utf8")),
-		release: JSON.parse(readFileSync(path.join(folder, RELEASE_FILE), "utf8")),
-		manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
-	};
+	return releaseReadIn(helloReleaseFolderOf(HELLO_ROOT, version));
 }
 
 function withManifest(read: ReleaseRead, change: Record<string, unknown>): ReleaseRead {

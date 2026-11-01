@@ -1,6 +1,7 @@
-import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
+import type { RequestListener, Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { homedir, tmpdir } from "node:os";
 import path from "node:path";
@@ -19,7 +20,7 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { seededBoard } from "./tasks-fixture.ts";
-import { RELEASE_FILE } from "./app-release.ts";
+import { releaseReadOf } from "./app-release.ts";
 import { framePolicyServedFrom } from "./frame-policy.ts";
 import { paged, waitUntil } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
@@ -43,23 +44,76 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
 	".wasm": "application/wasm",
 };
 
-interface ReleaseRead {
-	readonly manifest: unknown;
-	readonly release: unknown;
-	readonly manifestSha256: string;
+const PREBUILT = "SUMI_APPS_PREBUILT";
+const NOT_AN_APP = "test:sumi-apps checks {named}, which is none of {apps}";
+const TASKS_RELOAD_LAST: readonly SumiAppId[] = [...SUMI_APP_IDS.filter((app) => app !== "tasks"), "tasks"];
+const CHECKED_APPS = checkedAppsOf(process.argv.slice(2));
+
+function checkedAppsOf(named: readonly string[]): readonly SumiAppId[] {
+	const unknown = named.find((each) => !TASKS_RELOAD_LAST.some((app) => app === each));
+
+	if (unknown !== undefined) {
+		throw new Error(NOT_AN_APP.replace("{named}", unknown).replace("{apps}", TASKS_RELOAD_LAST.join(", ")));
+	}
+
+	return named.length === 0 ? TASKS_RELOAD_LAST : TASKS_RELOAD_LAST.filter((app) => named.includes(app));
+}
+
+function repoOf(app: string): string {
+	return path.join(SUMI_ROOT, `sumi-${app}`);
 }
 
 function distOf(app: string): string {
-	return path.join(SUMI_ROOT, `sumi-${app}`, "apps", "web", "dist");
+	return path.join(repoOf(app), "apps", "web", "dist");
 }
 
-function releaseReadOf(folder: string): ReleaseRead {
-	const manifestBytes = readFileSync(path.join(folder, "sumi-app.json"));
-	return {
-		manifest: JSON.parse(manifestBytes.toString("utf8")),
-		release: JSON.parse(readFileSync(path.join(folder, RELEASE_FILE), "utf8")),
-		manifestSha256: createHash("sha256").update(manifestBytes).digest("hex"),
-	};
+function gitIn(repo: string, args: readonly string[]): string {
+	return execFileSync("git", ["-C", repo, ...args], {
+		encoding: "utf8",
+	}).trim();
+}
+
+function releaseFromHead(app: SumiAppId): void {
+	const repo = repoOf(app);
+
+	if (process.env[PREBUILT] === "1") {
+		console.log(`${app}: ${PREBUILT}=1, the release in ${distOf(app)} is read as it is, not a check`);
+		return;
+	}
+
+	check(
+		`${app}: the app repo has nothing uncommitted, so its release is built from HEAD`,
+		gitIn(repo, ["status", "--porcelain"]),
+		"",
+	);
+	for (const script of ["build", "release"]) {
+		execFileSync("pnpm", [script], {
+			cwd: repo,
+			env: {
+				...process.env,
+				SUMI_SHELL: process.cwd(),
+			},
+			stdio: ["ignore", "ignore", "inherit"],
+		});
+	}
+	console.log(`${app}: released from ${gitIn(repo, ["rev-parse", "--short", "HEAD"])}`);
+}
+
+function inScript(text: string): string {
+	return text.replaceAll("</script", "<\\/script");
+}
+
+function listening(listener: RequestListener): Promise<{ readonly server: Server; readonly origin: string }> {
+	const http = createServer(listener);
+	return new Promise((listened) =>
+		http.listen(0, "127.0.0.1", () => {
+			const { port } = http.address() as AddressInfo;
+			listened({
+				server: http,
+				origin: `http://127.0.0.1:${port}`,
+			});
+		}),
+	);
 }
 
 function boardFileInMemory(): BoardFile {
@@ -120,21 +174,15 @@ const served = server()
 		},
 	});
 
-const registry = SUMI_APP_IDS.map((id) => ({
+for (const app of CHECKED_APPS) {
+	releaseFromHead(app);
+}
+
+const registry = CHECKED_APPS.map((id) => ({
 	id,
 	path: distOf(id),
 }));
 const releases = Object.fromEntries(registry.map(({ path: folder }) => [folder, releaseReadOf(folder)]));
-const bundle = await bundleOf("tools/sumi-apps-page.ts");
-const studioSheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
-const shellPage = `<!doctype html><html><head><meta charset="utf-8">
-<link rel="icon" href="data:,"><style>${studioSheets}</style><style>html,body,#root{height:100%;margin:0}</style></head>
-<body><div id="root"></div><pre id="boom"></pre>
-<script>window.__SUMI_REGISTRY__ = ${JSON.stringify(registry)}; window.__SUMI_RELEASES__ = ${JSON.stringify(releases)};</script>
-<script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
-
 function appFileOf(pathname: string): { readonly app: string; readonly file: string } | null {
 	const asked = /^\/apps\/([a-z][a-z0-9-]*)\/(\d+\.\d+\.\d+)\/(.+)$/.exec(pathname);
 	const app = asked?.[1];
@@ -153,44 +201,52 @@ function appFileOf(pathname: string): { readonly app: string; readonly file: str
 		: null;
 }
 
-const listener = getRequestListener((request) => {
-	const { pathname, origin } = new URL(request.url);
+const apps = await listening(
+	getRequestListener((request) => {
+		const asked = appFileOf(new URL(request.url).pathname);
 
-	if (pathname === "/") {
-		return new Response(shellPage, {
-			headers: {
-				"Content-Type": "text/html; charset=utf-8",
-			},
-		});
-	}
+		if (asked === null) {
+			return new Response("not found", {
+				status: 404,
+				headers: {
+					"Access-Control-Allow-Origin": "*",
+				},
+			});
+		}
 
-	const asked = pathname.startsWith("/apps/") ? appFileOf(pathname) : null;
-
-	if (asked !== null) {
 		return new Response(readFileSync(asked.file), {
 			headers: {
 				"Content-Type": CONTENT_TYPES[path.extname(asked.file)] ?? "application/octet-stream",
 				"Access-Control-Allow-Origin": "*",
-				"Content-Security-Policy": framePolicyServedFrom(asked.app, origin),
+				"Content-Security-Policy": framePolicyServedFrom(asked.app, apps.origin),
 				"X-Content-Type-Options": "nosniff",
 			},
 		});
-	}
+	}),
+);
+const bundle = await bundleOf("tools/sumi-apps-page.ts");
+const studioSheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
+	.map((at) => readFileSync(at, "utf8"))
+	.join("\n");
+const shellPage = `<!doctype html><html><head><meta charset="utf-8">
+<link rel="icon" href="data:,"><style>${studioSheets}</style><style>html,body,#root{height:100%;margin:0}</style></head>
+<body><div id="root"></div><pre id="boom"></pre>
+<script>${inScript(`window.__SUMI_APP_ORIGIN__ = ${JSON.stringify(apps.origin)}; window.__SUMI_REGISTRY__ = ${JSON.stringify(registry)}; window.__SUMI_RELEASES__ = ${JSON.stringify(releases)};`)}</script>
+<script>${inScript(bundle)}</script></body></html>`;
+const core = await listening(
+	getRequestListener((request) => {
+		if (new URL(request.url).pathname === "/") {
+			return new Response(shellPage, {
+				headers: {
+					"Content-Type": "text/html; charset=utf-8",
+				},
+			});
+		}
 
-	if (pathname.startsWith("/apps/")) {
-		return new Response("not found", {
-			status: 404,
-			headers: {
-				"Access-Control-Allow-Origin": "*",
-			},
-		});
-	}
-
-	return served.fetch(request);
-});
-const http = createServer(listener);
-await new Promise<void>((listening) => http.listen(0, "127.0.0.1", listening));
-const { port } = http.address() as AddressInfo;
+		return served.fetch(request);
+	}),
+);
+const CORE_RPC = `${core.origin}/rpc`;
 
 function framePartOf(app: string): string {
 	return `/apps/${app}/`;
@@ -204,7 +260,15 @@ async function frameSees(page: AskedPage, app: string, expression: string): Prom
 	return waitUntil(async () => (await inFrame(page, app, expression)) === true, WAIT_MS, STEP_MS);
 }
 
-async function frameOpens(page: AskedPage, app: string): Promise<void> {
+const APP_DRAWN: Readonly<Record<SumiAppId, string>> = {
+	tasks: "[data-tasks-card], [data-tasks-page]",
+	terminal: ".wg-terminal-screen",
+	canvas: "[data-canvas-view]",
+	"browser-page": ".wg-browser-page-area",
+	chat: "textarea",
+};
+
+async function frameOpens(page: AskedPage, app: SumiAppId): Promise<void> {
 	const isDrawn = await waitUntil(
 		async () =>
 			(await page.ask(`document.querySelector('iframe[data-app-frame-src*="${framePartOf(app)}"]') !== null`)) === true,
@@ -219,9 +283,18 @@ async function frameOpens(page: AskedPage, app: string): Promise<void> {
 		),
 		APP_FRAME_SANDBOX,
 	);
-	const isStarted = await frameSees(page, app, "document.body.innerText.trim().length > 0");
-	check(`${app}: the app drew something inside its frame`, isStarted, true);
+	const isStarted = await frameSees(page, app, `document.querySelector(${JSON.stringify(APP_DRAWN[app])}) !== null`);
+	check(`${app}: the app drew its own view inside its frame`, isStarted, true);
 	check(`${app}: the frame runs in an opaque origin`, await inFrame(page, app, "origin"), "null");
+	check(
+		`${app}: the frame cannot reach the core's /rpc itself`,
+		await inFrame(
+			page,
+			app,
+			`fetch(${JSON.stringify(CORE_RPC)}, { method: "POST", mode: "no-cors" }).then(() => "reached", () => "refused")`,
+		),
+		"refused",
+	);
 }
 
 const TASK_ACCEPTED = "T-147";
@@ -295,13 +368,13 @@ async function typedInFrame(page: AskedPage, app: string, selector: string, text
 	return isFocused;
 }
 
-async function showAppTab(page: AskedPage, app: string): Promise<void> {
+async function showAppTab(page: AskedPage, app: SumiAppId): Promise<void> {
 	await page.ask(`window.__sumiApps.showTab(${JSON.stringify(sumiTabOf(app))})`);
 	await frameOpens(page, app);
 }
 
 async function installAll(page: AskedPage): Promise<void> {
-	for (const id of SUMI_APP_IDS) {
+	for (const id of CHECKED_APPS) {
 		check(
 			`${id}: installs from its folder release`,
 			await page.ask(`window.__sumiApps.install(${JSON.stringify(id)})`),
@@ -334,9 +407,8 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 	const isOpened = await frameSees(page, "tasks", `document.querySelector("[data-tasks-accept]") !== null`);
 	check("tasks: pressing the card opens the task with its Accept", isOpened, true);
 	await pressInFrame(page, "tasks", "[data-tasks-accept]");
-	const isWritten = await waitUntil(() => Promise.resolve(statusOnDisk(147) === "done"), WAIT_MS, STEP_MS);
+	await waitUntil(() => Promise.resolve(statusOnDisk(147) === "done"), WAIT_MS, STEP_MS);
 	check("tasks: Accept writes the task as done into tasks.json on disk", statusOnDisk(147), "done");
-	check("tasks: the write landed", isWritten, true);
 	await page.ask("location.reload()");
 	await studioStarts(page);
 	check(
@@ -353,7 +425,7 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 		await frameSees(
 			page,
 			"tasks",
-			`document.body.innerText.includes("T-147") && document.querySelector('[data-status="done"]') !== null && document.querySelector("[data-tasks-accept]") === null`,
+			`(() => { const shown = document.querySelector('[data-tasks-page="${TASK_ACCEPTED}"]'); const glyphs = shown === null ? [] : [...shown.querySelectorAll(".wg-tasks-st:not([data-leaving])")]; return glyphs.length > 0 && glyphs.every((glyph) => glyph.getAttribute("data-status") === "done") && shown.querySelector("[data-tasks-accept]") === null; })()`,
 		),
 		true,
 	);
@@ -450,22 +522,8 @@ const CHECKS_OF_APP: Readonly<Record<SumiAppId, (page: AskedPage) => Promise<voi
 	chat: chatChecks,
 	tasks: tasksChecks,
 };
-const NOT_AN_APP = "test:sumi-apps checks {named}, which is none of {apps}";
-const TASKS_RELOAD_LAST: readonly SumiAppId[] = ["terminal", "canvas", "browser-page", "chat", "tasks"];
-const CHECKED_APPS = checkedAppsOf(process.argv.slice(2));
-
-function checkedAppsOf(named: readonly string[]): readonly SumiAppId[] {
-	const unknown = named.find((each) => !TASKS_RELOAD_LAST.some((app) => app === each));
-
-	if (unknown !== undefined) {
-		throw new Error(NOT_AN_APP.replace("{named}", unknown).replace("{apps}", TASKS_RELOAD_LAST.join(", ")));
-	}
-
-	return named.length === 0 ? TASKS_RELOAD_LAST : TASKS_RELOAD_LAST.filter((app) => named.includes(app));
-}
-
 seedTasksFile();
-const page = await paged(`http://127.0.0.1:${port}/`, GATE, {
+const page = await paged(`${core.origin}/`, GATE, {
 	size: [1400, 900],
 	hasFramesInProcess: true,
 	hearsFailures: true,
@@ -482,7 +540,8 @@ try {
 } finally {
 	page.close();
 	terminal.stopAll();
-	http.close();
+	core.server.close();
+	apps.server.close();
 	rmSync(appData, {
 		recursive: true,
 		force: true,

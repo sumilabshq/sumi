@@ -75,6 +75,7 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 		return send(SidebarQuery, { at, essentials });
 	});
 
+// TODO: a transport that cannot abort (Tauri IPC) leaves held-tabs stale after a dropped call
 export const HeldTabsQuery = query("held-tabs")
 	.output(HeldTabsSchema)
 	.inject(TAB_PARTS)
