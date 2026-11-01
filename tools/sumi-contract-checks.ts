@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/core/requests";
-import { createFrameRelay } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
+import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
+import { webPageRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { server } from "@widgetarium/core/requests/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
@@ -8,6 +9,9 @@ import {
 	AssistantModule,
 	AttachFolderCommand,
 	ChatQuery,
+	ChooseProviderCommand,
+	FileDragQuery,
+	OpenProvidersCommand,
 	OpenWebPageCommand,
 	PickWorkingFolderCommand,
 	SendMessageCommand,
@@ -18,11 +22,16 @@ import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@
 import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
 import { AssistantModule as RunnableAssistantModule } from "../packages/domain/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
-import { FrameChatServers } from "../apps/studio/src/assistant/frame-chat-servers.ts";
+import { frameChatServersOf } from "../apps/studio/src/assistant/frame-chat-servers.ts";
 import { MemoryFilesGateway } from "../packages/domain/file-system/gateways/files/memory.gateway.ts";
 import { FileSystemModule as RunnableFileSystemModule } from "../packages/domain/file-system/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
+
+const WEB_PAGE_TABS: ReadonlyMap<string, string> = new Map([
+	["t1", "notes"],
+	["t2", "tasks"],
+]);
 
 const MANIFEST = {
 	id: "tasks",
@@ -101,6 +110,7 @@ const relay = createFrameRelay([
 	{
 		module: FileSystemModule,
 		transport: localTransport(),
+		hears: hearsAll,
 	},
 ]);
 const notRelayed = await relay.answer({
@@ -142,21 +152,44 @@ const webPages = server()
 		},
 		host: {
 			webAppTabs: {
-				appOfTab: (tab: string) => Promise.resolve(tab === "t1" ? "notes" : null),
+				appOfTab: (tab: string) => Promise.resolve(WEB_PAGE_TABS.get(tab) ?? null),
 			},
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
+const webPagesLocal = localTransport();
+webPagesLocal.serve(webPages);
+const heardByT1: string[] = [];
+createFrameRelay([
+	webPageRouteOf(
+		{
+			transport: webPagesLocal,
+			release: () => undefined,
+		},
+		"t1",
+	),
+]).changes((invalidated) => {
+	heardByT1.push(...invalidated.map(({ inputKey }) => inputKey ?? "all"));
+});
 const pages = appOver(webPages, (transport) => WebPageModule.over(transport), "notes");
-await pages.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/page" });
+await pages.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/page#private-token" });
+await appOver(webPages, (transport) => WebPageModule.over(transport), "tasks").send(OpenWebPageCommand, {
+	tab: "t2",
+	url: "https://example.org/",
+});
 const page = await pages.send(WebPageQuery, { tab: "t1" });
 check(
-	"web-page from the contract opens and reads a page over memory (a fake browser)",
-	page.ok ? page.output?.title : page.reason,
-	"example.com",
+	"web-page from the contract opens and reads a page over memory (a fake browser), its fragment left out",
+	page.ok ? [page.output?.title, page.output?.url] : page.reason,
+	["example.com", "https://example.com/page"],
 );
 const otherPage = await pages.send(WebPageQuery, { tab: "t2" });
 check("web-page refuses a tab that does not hold the calling app", otherPage.ok ? "read" : otherPage.code, "forbidden");
+check(
+	"a frame's web-page route hears its own tab's changes, never another tab's",
+	[heardByT1.includes(JSON.stringify({ tab: "t1" })), heardByT1.includes(JSON.stringify({ tab: "t2" }))],
+	[true, false],
+);
 
 const chat = server()
 	.modules(RunnableAssistantModule)
@@ -182,6 +215,16 @@ const picked = await chatOfApp.send(PickWorkingFolderCommand);
 check("an app may not pick a working folder", picked.ok ? "picked" : picked.code, "forbidden");
 const lent = await chatOfApp.send(AttachFolderCommand);
 check("an app may not lend a folder", lent.ok ? "lent" : lent.code, "forbidden");
+const shellOnly = [
+	await chatOfApp.send(ChooseProviderCommand, { id: "claude" }),
+	await chatOfApp.send(OpenProvidersCommand),
+	await chatOfApp.send(FileDragQuery),
+];
+check(
+	"an app may not choose a provider, open the providers or hear file drags: those are the shell's",
+	shellOnly.map((answer) => (answer.ok ? "answered" : answer.code)),
+	["forbidden", "forbidden", "forbidden"],
+);
 const shellPicked = await appOver(chat, (transport) => AssistantModule.over(transport), null).send(
 	PickWorkingFolderCommand,
 );
@@ -191,14 +234,14 @@ check(
 	true,
 );
 
-const chatServers = new FrameChatServers({
+const chatServers = frameChatServersOf({
 	workspaceId: "contract",
 	host: {
 		webAssistant: echoAssistantPort(),
 	},
 });
-const firstFrame = chatServers.transportFor("c1");
-const secondFrame = chatServers.transportFor("c1");
+const firstFrame = chatServers.lease("c1");
+const secondFrame = chatServers.lease("c1");
 check("two frames of one chat share its server", firstFrame.transport === secondFrame.transport, true);
 firstFrame.release();
 const stillServed = await app().imports(AssistantModule.over(secondFrame.transport)).start().send(ChatQuery);

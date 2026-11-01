@@ -30,7 +30,7 @@ export function ChatPlate({ chatId, chatAppFor, assistant, crumb, more }: ChatPl
 			{chatId === null ? null : (
 				<ChatPage
 					chatId={chatId}
-					builtIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
+					renderBuiltIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
 				/>
 			)}
 		</Plate>

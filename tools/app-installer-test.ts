@@ -346,7 +346,7 @@ async function frameChecks(): Promise<void> {
 
 interface ReplacingRead {
 	readonly pages: readonly { readonly id: string; readonly isBuiltIn: boolean; readonly src: string | null }[];
-	readonly chatAddress: string | null;
+	readonly chatId: string | null;
 	readonly chatVersions: { readonly current: string | null; readonly failed: readonly string[] } | null;
 }
 
@@ -398,8 +398,8 @@ async function chatReadyChecks(page: AskedPage): Promise<void> {
 	await waited(PAST_READY_TIMEOUT_MS);
 	const settled = await replacingReadOf(page);
 	check(
-		"the shown chat app read its chat tab, whose address is the chat id, so it was ready and its version stays current",
-		[settled.chatAddress, settled.chatVersions, pagesDrawnOf(settled).at(-1)],
+		"the shown chat app read its chat tab's chatId, so it was ready and its version stays current",
+		[settled.chatId, settled.chatVersions, pagesDrawnOf(settled).at(-1)],
 		[
 			"c1",
 			{

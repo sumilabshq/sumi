@@ -1,20 +1,15 @@
 import type { ReactElement } from "react";
 import type { AppFace } from "@widgetarium/app-host";
 
-interface AppPageAsk<BuiltIn extends string> {
+interface AppPageAsk {
 	readonly app: string;
 	readonly faces: readonly AppFace[];
-	readonly builtIn: Readonly<Record<BuiltIn, () => ReactElement>>;
+	readonly builtIn: Readonly<Record<string, () => ReactElement>>;
 	readonly installed: () => ReactElement;
 }
 
-export function appPageOf<BuiltIn extends string>({
-	app,
-	faces,
-	builtIn,
-	installed,
-}: AppPageAsk<BuiltIn>): ReactElement {
+export function appPageOf({ app, faces, builtIn, installed }: AppPageAsk): ReactElement {
 	const isBuiltIn = faces.some((face) => face.app === app && face.isBuiltIn);
-	const drawn = isBuiltIn ? new Map<string, () => ReactElement>(Object.entries(builtIn)).get(app) : undefined;
+	const drawn = isBuiltIn && Object.hasOwn(builtIn, app) ? builtIn[app] : undefined;
 	return drawn === undefined ? installed() : drawn();
 }

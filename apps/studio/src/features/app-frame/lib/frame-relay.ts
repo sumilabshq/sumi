@@ -9,9 +9,12 @@ import type {
 	ServingServer,
 } from "@widgetarium/core/requests";
 
+export type HeardInvalidation = Parameters<HearChanges>[0][number];
+
 export interface FrameRoute {
 	readonly module: ModuleContract;
 	readonly transport: RemoteTransport;
+	readonly hears: (invalidation: HeardInvalidation) => boolean;
 }
 
 export interface FrameOpened {
@@ -33,15 +36,21 @@ interface Relayed {
 
 const NOT_RELAYED = "{name} is not a request Sumi offers to apps";
 
+export function hearsAll(): boolean {
+	return true;
+}
+
 export function createFrameRelay(routes: readonly FrameRoute[]): ServingServer {
 	const relayed = relayedOf(routes);
 	return {
 		answer: (call) => answerThrough(relayed, call),
-		changes: (hear) => {
-			const stops = routes.map((route) => routeChanges(route, hear));
-			return () => stops.forEach((stop) => stop());
-		},
+		changes: (hear) => relayChanges(routes, hear),
 	};
+}
+
+function relayChanges(routes: readonly FrameRoute[], hear: HearChanges): () => void {
+	const stops = [...routesByTransport(routes)].map(([transport, held]) => transportChanges(transport, held, hear));
+	return () => stops.forEach((stop) => stop());
 }
 
 function answerThrough(
@@ -63,15 +72,30 @@ function answerThrough(
 	});
 }
 
-function routeChanges({ module, transport }: FrameRoute, hear: HearChanges): () => void {
-	const queries = new Set(module.requests.map(({ name }) => name));
-	return transport.changes((invalidated) => {
-		const own = invalidated.filter(({ query }) => queries.has(query));
+function routesByTransport(routes: readonly FrameRoute[]): ReadonlyMap<RemoteTransport, readonly FrameRoute[]> {
+	const grouped = new Map<RemoteTransport, FrameRoute[]>();
 
-		if (own.length > 0) {
-			hear(own);
-		}
-	});
+	for (const route of routes) {
+		grouped.set(route.transport, [...(grouped.get(route.transport) ?? []), route]);
+	}
+
+	return grouped;
+}
+
+function transportChanges(transport: RemoteTransport, routes: readonly FrameRoute[], hear: HearChanges): () => void {
+	return transport.changes((invalidated) => hearOwn(routes, invalidated, hear));
+}
+
+function hearOwn(routes: readonly FrameRoute[], invalidated: readonly HeardInvalidation[], hear: HearChanges): void {
+	const own = invalidated.filter((invalidation) => routes.some((route) => isHeardBy(route, invalidation)));
+
+	if (own.length > 0) {
+		hear(own);
+	}
+}
+
+function isHeardBy({ module, hears }: FrameRoute, invalidation: HeardInvalidation): boolean {
+	return module.requests.some(({ name }) => name === invalidation.query) && hears(invalidation);
 }
 
 function relayedOf(routes: readonly FrameRoute[]): ReadonlyMap<string, Relayed> {

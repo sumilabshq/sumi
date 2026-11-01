@@ -4,6 +4,7 @@ import {
 	ChatQuery,
 	OpenWebPageCommand,
 	PickWorkingFolderCommand,
+	RecordAppPageCommand,
 	SendMessageCommand,
 	WebPageModule,
 	WebPageQuery,
@@ -27,6 +28,8 @@ const OUTPUT_STEP_MS = 100;
 const SECOND_PORT_WAIT_MS = 1500;
 const OWN_TAB = new URLSearchParams(location.hash.slice(1)).get("sumi-tab") ?? "";
 const CHAT_SAID = "hello from the frame";
+const CHAT_PAGE = "/chat.html";
+const CHAT_TAB = "c1";
 
 const transport = messagePortTransport(portFromParent());
 const heard = {
@@ -111,8 +114,26 @@ async function chatTold(): Promise<object> {
 	};
 }
 
-async function run(): Promise<unknown> {
-	const told = [await filesTold(), await placesTold(), await terminalTold(), await webPageTold(), await chatTold()];
+async function foreignChatTold(): Promise<object> {
+	await sumi.send(RecordAppPageCommand, { id: OWN_TAB, address: `/${CHAT_TAB}` });
+	const foreignChat = await sumi.send(ChatQuery);
+	return {
+		foreignChat: foreignChat.ok ? "read" : foreignChat.code,
+	};
+}
+
+function run(): Promise<unknown> {
+	return location.pathname === CHAT_PAGE ? chatTold() : notesTold();
+}
+
+async function notesTold(): Promise<unknown> {
+	const told = [
+		await filesTold(),
+		await placesTold(),
+		await terminalTold(),
+		await webPageTold(),
+		await foreignChatTold(),
+	];
 	const secondPort = await portFromParent(window, SECOND_PORT_WAIT_MS).then(
 		() => "handed",
 		() => "refused",

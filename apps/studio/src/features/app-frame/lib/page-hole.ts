@@ -12,6 +12,10 @@ export class PageHole {
 	) {
 		this.resized.observe(frame);
 		window.addEventListener("resize", this.lay);
+		window.addEventListener("scroll", this.lay, {
+			capture: true,
+			passive: true,
+		});
 		this.lay();
 		document.body.append(this.element);
 	}
@@ -38,18 +42,34 @@ export class PageHole {
 	remove(): void {
 		this.resized.disconnect();
 		window.removeEventListener("resize", this.lay);
+		window.removeEventListener("scroll", this.lay, {
+			capture: true,
+		});
 		this.element.remove();
 	}
 
 	private readonly lay = (): void => {
 		const box = this.frame.getBoundingClientRect();
-		Object.assign(this.element.style, {
-			position: "fixed",
-			pointerEvents: "none",
-			left: `${box.left + this.placed.x}px`,
-			top: `${box.top + this.placed.y}px`,
-			width: `${this.placed.width}px`,
-			height: `${this.placed.height}px`,
-		});
+
+		if (!this.frame.isConnected || box.width === 0 || box.height === 0) {
+			this.element.style.display = "none";
+			return;
+		}
+
+		Object.assign(this.element.style, holeStyleOf(box, this.placed));
+	};
+}
+
+function holeStyleOf(box: DOMRect, placed: PageArea): Partial<CSSStyleDeclaration> {
+	const left = Math.min(placed.x, box.width);
+	const top = Math.min(placed.y, box.height);
+	return {
+		display: "block",
+		position: "fixed",
+		pointerEvents: "none",
+		left: `${box.left + left}px`,
+		top: `${box.top + top}px`,
+		width: `${Math.min(placed.width, box.width - left)}px`,
+		height: `${Math.min(placed.height, box.height - top)}px`,
 	};
 }

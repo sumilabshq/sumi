@@ -15,7 +15,7 @@ import type { PageArea, WebPage } from "@widgetarium/web-page";
 import { PageHole } from "./page-hole.js";
 import type { NativeWebPages } from "./web-page-hosts.js";
 
-const NOT_DONE = "the browser refused {request} for tab {tab}: {reason}";
+const REFUSED = "the browser refused {request} for tab {tab}: {reason}";
 
 export function nativeWebPagesOver(studioApp: StartedApp): NativeWebPages {
 	return new BrowserModuleWebPages(studioApp);
@@ -31,74 +31,100 @@ class BrowserModuleWebPages implements NativeWebPages {
 		return pageOf(await this.studioApp.send(BrowserTabsQuery, { heldTabId: tab }), tab);
 	}
 
-	area(tab: string): PageArea | null {
+	pageArea(tab: string): PageArea | null {
 		return this.holes.get(tab)?.area ?? null;
 	}
 
-	async open(tab: string, url: string): Promise<void> {
-		await done("open-page", tab, this.studioApp.send(OpenPageCommand, { tabId: tab }));
-		await done(
+	async openPage(tab: string, url: string, profileId: string): Promise<void> {
+		await throwIfRefused("open-page", tab, this.studioApp.send(OpenPageCommand, { tabId: tab, profileId }));
+		await throwIfRefused(
 			"open-address",
 			tab,
 			this.studioApp.send(OpenAddressCommand, { tabId: tab, address: url, heldTabId: tab }),
 		);
 	}
 
-	place(tab: string, area: PageArea | null): Promise<void> {
+	async placePage(tab: string, area: PageArea | null): Promise<void> {
 		const held = this.holes.get(tab);
 
 		if (area === null) {
-			return this.hidden(tab, held);
+			return this.detachHole(tab, held);
 		}
 
 		if (held !== undefined) {
 			held.moveTo(area);
-			return Promise.resolve();
+			return;
 		}
 
-		const hole = PageHole.overFrame(tab, area);
+		const hole = await this.attachHole(tab, area);
+		this.holes.get(tab)?.remove();
 		this.holes.set(tab, hole);
-		return done("attach-pages", tab, this.studioApp.send(AttachPagesCommand, { host: hole.element, heldTabId: tab }));
 	}
 
-	back(tab: string): Promise<void> {
-		return done("go-back", tab, this.studioApp.send(GoBackCommand, { tabId: tab }));
+	private async attachHole(tab: string, area: PageArea): Promise<PageHole> {
+		const hole = PageHole.overFrame(tab, area);
+
+		try {
+			await throwIfRefused(
+				"attach-pages",
+				tab,
+				this.studioApp.send(AttachPagesCommand, { host: hole.element, heldTabId: tab }),
+			);
+			return hole;
+		} catch (failure: unknown) {
+			hole.remove();
+			throw failure;
+		}
 	}
 
-	forward(tab: string): Promise<void> {
-		return done("go-forward", tab, this.studioApp.send(GoForwardCommand, { tabId: tab }));
+	goBackPage(tab: string): Promise<void> {
+		return throwIfRefused("go-back", tab, this.studioApp.send(GoBackCommand, { tabId: tab }));
 	}
 
-	reload(tab: string): Promise<void> {
-		return done("reload-page", tab, this.studioApp.send(ReloadPageCommand, { tabId: tab }));
+	goForwardPage(tab: string): Promise<void> {
+		return throwIfRefused("go-forward", tab, this.studioApp.send(GoForwardCommand, { tabId: tab }));
 	}
 
-	async close(tab: string): Promise<void> {
-		await done("close-page", tab, this.studioApp.send(ClosePageCommand, { tabId: tab }));
+	reloadPage(tab: string): Promise<void> {
+		return throwIfRefused("reload-page", tab, this.studioApp.send(ReloadPageCommand, { tabId: tab }));
+	}
+
+	async closePage(tab: string): Promise<void> {
 		this.holes.get(tab)?.remove();
 		this.holes.delete(tab);
+
+		if ((await this.page(tab)) === null) {
+			console.info(`[widgetarium] web page ${tab} close skipped: the browser holds no page for it`);
+			return;
+		}
+
+		await throwIfRefused("close-page", tab, this.studioApp.send(ClosePageCommand, { tabId: tab }));
 	}
 
 	pagesChanged(changed: () => void): () => void {
 		return this.studioApp.routes.watch(BrowserTabsQuery, { heldTabId: null }, changed);
 	}
 
-	private hidden(tab: string, held: PageHole | undefined): Promise<void> {
+	private detachHole(tab: string, held: PageHole | undefined): Promise<void> {
 		if (held === undefined) {
 			return Promise.resolve();
 		}
 
 		held.remove();
 		this.holes.delete(tab);
-		return done("detach-pages", tab, this.studioApp.send(DetachPagesCommand, { host: held.element, heldTabId: tab }));
+		return throwIfRefused(
+			"detach-pages",
+			tab,
+			this.studioApp.send(DetachPagesCommand, { host: held.element, heldTabId: tab }),
+		);
 	}
 }
 
-async function done(request: string, tab: string, answering: Promise<Answer<unknown>>): Promise<void> {
+async function throwIfRefused(request: string, tab: string, answering: Promise<Answer<unknown>>): Promise<void> {
 	const answer = await answering;
 
 	if (!answer.ok) {
-		throw new Error(NOT_DONE.replace("{request}", request).replace("{tab}", tab).replace("{reason}", answer.reason));
+		throw new Error(REFUSED.replace("{request}", request).replace("{tab}", tab).replace("{reason}", answer.reason));
 	}
 }
 

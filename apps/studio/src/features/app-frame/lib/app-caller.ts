@@ -3,6 +3,7 @@ import { Authenticate } from "@widgetarium/core/requests/server";
 
 export const APP_CALLER_HEADER = "x-sumi-app";
 
+// TODO: one owner of the app-id schema
 const APP_ID = /^[a-z][a-z0-9-]*$/;
 const NOT_AN_APP = "the caller header names {app}, which is not an app id; the call is refused";
 

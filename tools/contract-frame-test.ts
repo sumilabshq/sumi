@@ -40,7 +40,13 @@ const served = server()
 							app: "notes",
 							pageId: null,
 							label: null,
-							lastAddress: "/c1",
+							lastAddress: "/start",
+						},
+						{
+							id: "c1",
+							app: "chat",
+							pageId: null,
+							label: null,
 						},
 					],
 					shownId: "t1",
@@ -62,6 +68,7 @@ const scripts: Readonly<Record<string, string>> = {
 const pages: Readonly<Record<string, string>> = {
 	"/": SHELL_PAGE,
 	"/app.html": APP_PAGE,
+	"/chat.html": APP_PAGE,
 };
 
 const listener = getRequestListener((request) => {
@@ -95,6 +102,16 @@ try {
 	);
 	console.log(JSON.stringify(result));
 	const told = result as Record<string, unknown>;
+	const chatSettled = await waitUntil(
+		async () => (await page.askInFrame("chat.html", "document.body.dataset.frameResult !== undefined")) === true,
+		WAIT_MS,
+		STEP_MS,
+	);
+	const chatTold = JSON.parse(
+		String(await page.askInFrame("chat.html", 'document.body.dataset.frameResult ?? "{}"')),
+	) as Record<string, unknown>;
+	console.log(JSON.stringify(chatTold));
+	check("the chat app settled inside its sandboxed frame", chatSettled, true);
 	check("the app settled inside its sandboxed frame", settled, true);
 	check("the frame runs in an opaque origin", told["origin"], "null");
 	check("WriteFileCommand from the frame is answered ok", told["written"], true);
@@ -107,7 +124,7 @@ try {
 	check("a relative path climbing out of the app's folder is refused", told["climbed"], "refused");
 	check("a Places request off the app allow-list is forbidden", told["closedTabs"], "forbidden");
 	check("a tab that does not hold the app is forbidden", told["otherTab"], "forbidden");
-	check("the app reads its own tab through Places", told["ownTab"], "/c1");
+	check("the app reads its own tab through Places", told["ownTab"], "/start");
 	check(
 		"the frame opens a web page and WebPageQuery reads it back (memory fake browser in the shell)",
 		told["webPage"],
@@ -115,11 +132,16 @@ try {
 	);
 	check("a web page in a tab the app does not hold is forbidden", told["otherWebPage"], "forbidden");
 	check(
-		"the frame sends a chat message and ChatQuery reads the fake port's answer, routed by the tab's address",
-		told["chat"],
+		"a non-chat app that recorded a chat id as its address gets no assistant route",
+		told["foreignChat"],
+		"not-found",
+	);
+	check(
+		"the chat app in a chat tab sends a message and ChatQuery reads the fake port's answer",
+		chatTold["chat"],
 		"echo: hello from the frame",
 	);
-	check("a chat request off the app list is forbidden", told["pickedFolder"], "forbidden");
+	check("a chat request off the app list is forbidden", chatTold["pickedFolder"], "forbidden");
 	check("SendTerminalCommand is answered ok", told["typed"], true);
 	check(
 		"the shell ran the typed line and TerminalOutputQuery reads its output",

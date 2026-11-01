@@ -53,7 +53,6 @@ export interface StartedStudio {
 	readonly chatApps: ChatApps;
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
-	readonly core: RemoteTransport;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
 }
@@ -120,7 +119,6 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
-		core,
 		frameRoutes: frameRoutesOf({
 			...reach,
 			assistantHost: assistantHostOf(start),

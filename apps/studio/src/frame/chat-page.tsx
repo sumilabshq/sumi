@@ -7,18 +7,18 @@ import { appPageOf } from "./app-page-of.js";
 
 export interface ChatPageProps {
 	readonly chatId: string;
-	readonly builtIn: () => ReactElement;
+	readonly renderBuiltIn: () => ReactElement;
 }
 
 const CHAT_APP = "chat";
 
-export function ChatPage({ chatId, builtIn }: ChatPageProps): ReactElement {
+export function ChatPage({ chatId, renderBuiltIn }: ChatPageProps): ReactElement {
 	const { faces } = useQuery(AppFacesQuery).data;
 	return appPageOf({
 		app: CHAT_APP,
 		faces,
 		builtIn: {
-			chat: builtIn,
+			chat: renderBuiltIn,
 		},
 		installed: () => <InstalledAppPage key={chatId} app={CHAT_APP} tabId={chatId} isShown />,
 	});

@@ -21,6 +21,7 @@ import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { AppFramesProvider } from "../apps/studio/src/features/app-frame/ui/app-frames/app-frames-provider.tsx";
+import { hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import type { FrameRoutes } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { InstalledAppPage } from "../apps/studio/src/features/app-frame/ui/installed-app-page/installed-app-page.tsx";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -219,7 +220,7 @@ window.__appInstaller = {
 				isBuiltIn: document.querySelector(`[data-page="${id}"] [data-built-in]`) !== null,
 				src: document.querySelector(`[data-page="${id}"] iframe`)?.getAttribute("src") ?? null,
 			})),
-			chatAddress: chatTab.ok ? chatTab.output.address : chatTab.reason,
+			chatId: chatTab.ok ? chatTab.output.chatId : chatTab.reason,
 			chatVersions:
 				chatApp === undefined
 					? null
@@ -273,7 +274,7 @@ function ReplacingPages(): ReactElement {
 				</div>
 			))}
 			<div data-page="chat" style={{ height: "100px" }}>
-				<ChatPage chatId={CHAT_TAB} builtIn={() => <BuiltInStandIn app="chat" />} />
+				<ChatPage chatId={CHAT_TAB} renderBuiltIn={() => <BuiltInStandIn app="chat" />} />
 			</div>
 		</>
 	);
@@ -290,6 +291,7 @@ function helloRoutes(): Promise<FrameRoutes> {
 			{
 				module: PlacesContract,
 				transport: core,
+				hears: hearsAll,
 			},
 		],
 		release: () => undefined,

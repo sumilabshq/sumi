@@ -1,7 +1,7 @@
 import { InstalledAppsQuery } from "@widgetarium/app-installer";
 import type { InstalledApp } from "@widgetarium/app-installer";
 import { useQuery } from "@widgetarium/core/requests";
-import { useOpenTabId } from "./use-open-tab-id.js";
+import { useTabIdIfOpen } from "./use-tab-id-if-open.js";
 
 export type InstalledAppView =
 	| {
@@ -27,7 +27,7 @@ const CLOSED: InstalledAppView = {
 
 export function useInstalledAppView(app: string, tabId: string | null): InstalledAppView {
 	const installed = useQuery(InstalledAppsQuery).data.apps.find(({ id }) => id === app) ?? null;
-	const openTabId = useOpenTabId(tabId);
+	const openTabId = useTabIdIfOpen(tabId);
 
 	if (openTabId === null) {
 		return CLOSED;
