@@ -229,13 +229,25 @@ fn dispatch_reads_typed_args(checks: &mut Checks) {
 
 fn refuses_built_in_names(checks: &mut Checks) {
     let sandbox = Sandbox::new("built-in");
-    for id in ["canvas", "browser", "terminal", "chat", "app"] {
+    for id in ["browser", "app"] {
         let release = sandbox.release(id, id, "1.0.0", INDEX);
         let refusal = sandbox.install(id, &release).err();
         checks.check(&format!("{id} is refused as a built-in app name"), refusal, Some(format!("{id} is a built-in app name")));
     }
 
     checks.check("no built-in name reached the apps folder", installed_ids(&sandbox.apps()), Vec::<String>::new());
+}
+
+fn installs_apps_that_replace_built_in_pages(checks: &mut Checks) {
+    let sandbox = Sandbox::new("replacing");
+    for id in ["canvas", "terminal", "chat"] {
+        let release = sandbox.release(id, id, "1.0.0", INDEX);
+        checks.check(&format!("{id} installs: an app may replace its built-in page"), sandbox.install(id, &release), Ok(json!({ "id": id, "version": "1.0.0" })));
+    }
+
+    let mut laid = installed_ids(&sandbox.apps());
+    laid.sort();
+    checks.check("each replacing app has its own folder", laid, vec!["canvas".to_owned(), "chat".to_owned(), "terminal".to_owned()]);
 }
 
 fn installed_ids(apps: &Path) -> Vec<String> {
@@ -407,6 +419,7 @@ fn main() -> ExitCode {
     switches_and_fails(&mut checks);
     dispatch_reads_typed_args(&mut checks);
     refuses_built_in_names(&mut checks);
+    installs_apps_that_replace_built_in_pages(&mut checks);
     refuses_a_release_changed_after_check(&mut checks);
     refuses_oversized_releases(&mut checks);
     sweeps_leftover_incoming(&mut checks);

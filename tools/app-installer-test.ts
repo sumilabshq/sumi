@@ -24,7 +24,7 @@ import { framePolicyServedFrom } from "./frame-policy.ts";
 import { fleetChecks } from "./app-frame-fleet-checks.ts";
 import { pageFactChecks } from "./app-page-facts-checks.ts";
 import { RELEASE_FILE } from "./app-release.ts";
-import { paged, waitUntil } from "./chrome-ask.ts";
+import { paged, waitUntil, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { buildHelloReleases, HELLO_RELEASES, helloReleaseFolderOf } from "./hello-app-build.ts";
 import { bundleOf } from "./harness.ts";
@@ -71,6 +71,7 @@ async function moduleChecks(): Promise<void> {
 					{ id: "elsewhere", source: { kind: "github", repository: "someone/elsewhere" } },
 					{ id: "future", source: { kind: "folder", path: "/future" } },
 					{ id: "impostor", source: { kind: "folder", path: "/impostor" } },
+					{ id: "browser", source: { kind: "folder", path: "/browser" } },
 					{ id: "canvas", source: { kind: "folder", path: "/canvas" } },
 					{ id: "tasks", source: { kind: "folder", path: "/tasks" } },
 				],
@@ -79,6 +80,7 @@ async function moduleChecks(): Promise<void> {
 				"/hello": hello100,
 				"/future": withManifest(hello100, { id: "future", contract: "^9.0" }),
 				"/impostor": hello100,
+				"/browser": withManifest(hello100, { id: "browser" }),
 				"/canvas": withManifest(hello100, { id: "canvas" }),
 				"/tasks": withManifest(hello100, { id: "tasks" }),
 			},
@@ -96,6 +98,11 @@ async function manifestShaChecks(started: StartedApp, apps: InstallsRecorded): P
 		"tasks is no longer reserved: it installs from the registry like any app",
 		await outputOf(started.send(InstallAppCommand, { id: "tasks" })),
 		{ id: "tasks", version: "1.0.0" },
+	);
+	check(
+		"canvas installs: an app may replace a page Sumi draws itself",
+		await outputOf(started.send(InstallAppCommand, { id: "canvas" })),
+		{ id: "canvas", version: "1.0.0" },
 	);
 	check(
 		"install hands over the manifest hash inspect answered",
@@ -130,7 +137,7 @@ async function gateChecks(started: StartedApp): Promise<void> {
 		"a registry naming an id twice keeps the first row and says so",
 		typeof registry === "object" ? [registry.apps.map(({ id }) => id), registry.problem] : registry,
 		[
-			["hello", "elsewhere", "future", "impostor", "canvas", "tasks"],
+			["hello", "elsewhere", "future", "impostor", "browser", "canvas", "tasks"],
 			'registry.json lists "hello" more than once; the first row is used',
 		],
 	);
@@ -156,8 +163,8 @@ async function gateChecks(started: StartedApp): Promise<void> {
 	);
 	check(
 		"an app may not take the name of a page Sumi draws itself",
-		await outputOf(started.send(InstallAppCommand, { id: "canvas" })),
-		'refused: "canvas" is the name of a page Sumi draws itself, so no app may take it',
+		await outputOf(started.send(InstallAppCommand, { id: "browser" })),
+		'refused: "browser" is the name of a page Sumi draws itself, so no app may take it',
 	);
 }
 
@@ -275,7 +282,7 @@ async function servedInstaller(): Promise<Server> {
 <script>window.__RELEASES__ = ${JSON.stringify(releases)};</script>
 <script>${bundle.replaceAll("</script", "<\\/script")}</script></body></html>`;
 	const server = createServer((request, response) => {
-		const asked = /^\/apps\/hello\/(\d+\.\d+\.\d+)\/([a-z.-]+)$/.exec(request.url ?? "");
+		const asked = /^\/apps\/([a-z][a-z0-9-]*)\/(\d+\.\d+\.\d+)\/([a-z.-]+)$/.exec(request.url ?? "");
 
 		if (asked === null) {
 			response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
@@ -285,10 +292,10 @@ async function servedInstaller(): Promise<Server> {
 
 		const origin = `http://${request.headers.host ?? ""}`;
 		response.writeHead(200, {
-			"Content-Type": asked[2]?.endsWith(".js") ? "text/javascript; charset=utf-8" : "text/html; charset=utf-8",
-			"Content-Security-Policy": framePolicyServedFrom("hello", origin),
+			"Content-Type": asked[3]?.endsWith(".js") ? "text/javascript; charset=utf-8" : "text/html; charset=utf-8",
+			"Content-Security-Policy": framePolicyServedFrom(asked[1] ?? "", origin),
 		});
-		response.end(readFileSync(path.join(helloReleaseFolderOf(HELLO_ROOT, asked[1] ?? ""), asked[2] ?? "")));
+		response.end(readFileSync(path.join(helloReleaseFolderOf(HELLO_ROOT, asked[2] ?? ""), asked[3] ?? "")));
 	});
 	await new Promise<void>((listening) => server.listen(0, "127.0.0.1", listening));
 	return server;
@@ -329,11 +336,79 @@ async function frameChecks(): Promise<void> {
 		);
 
 		await updateChecks(page);
+		await replacingChecks(page);
 		check("nothing on the page failed", await page.ask(`document.querySelector("#boom").textContent`), "");
 	} finally {
 		page.close();
 		server.close();
 	}
+}
+
+interface ReplacingRead {
+	readonly pages: readonly { readonly id: string; readonly isBuiltIn: boolean; readonly src: string | null }[];
+	readonly chatAddress: string | null;
+	readonly chatVersions: { readonly current: string | null; readonly failed: readonly string[] } | null;
+}
+
+const PAST_READY_TIMEOUT_MS = 5000;
+
+async function replacingReadOf(page: AskedPage): Promise<ReplacingRead> {
+	return (await page.ask("window.__appInstaller.readReplacing()")) as ReplacingRead;
+}
+
+function pagesDrawnOf(read: ReplacingRead): readonly string[] {
+	return read.pages.map(({ id, isBuiltIn, src }) => `${id}: ${isBuiltIn ? "built-in" : (src ?? "nothing")}`);
+}
+
+async function replacingChecks(page: AskedPage): Promise<void> {
+	const before = await replacingReadOf(page);
+	check("with no app installed, canvas, terminal and chat draw their built-in pages", pagesDrawnOf(before), [
+		"canvas: built-in",
+		"terminal: built-in",
+		"chat: built-in",
+	]);
+	check(
+		"canvas, terminal and chat install from the registry",
+		await page.ask("window.__appInstaller.installReplacing()"),
+		["canvas", "terminal", "chat"].map((id) => ({
+			id,
+			version: "1.0.0",
+		})),
+	);
+	const isReplaced = await waitUntil(
+		async () => (await replacingReadOf(page)).pages.every(({ src }) => src?.includes("/1.0.0/") === true),
+		WAIT_MS,
+		STEP_MS,
+	);
+	const after = await replacingReadOf(page);
+	check(
+		"an installed, current canvas, terminal and chat take their pages from the built-in ones",
+		pagesDrawnOf(after),
+		[
+			"canvas: /apps/canvas/1.0.0/index.html#sumi-tab=k-canvas",
+			"terminal: /apps/terminal/1.0.0/index.html#sumi-tab=k-terminal",
+			"chat: /apps/chat/1.0.0/index.html#sumi-tab=c1",
+		],
+	);
+	check("the replacing frames were seen", isReplaced, true);
+	await chatReadyChecks(page);
+}
+
+async function chatReadyChecks(page: AskedPage): Promise<void> {
+	await waited(PAST_READY_TIMEOUT_MS);
+	const settled = await replacingReadOf(page);
+	check(
+		"the shown chat app read its chat tab, whose address is the chat id, so it was ready and its version stays current",
+		[settled.chatAddress, settled.chatVersions, pagesDrawnOf(settled).at(-1)],
+		[
+			"c1",
+			{
+				current: "1.0.0",
+				failed: [],
+			},
+			"chat: /apps/chat/1.0.0/index.html#sumi-tab=c1",
+		],
+	);
 }
 
 async function updateChecks(page: AskedPage): Promise<void> {

@@ -18,7 +18,7 @@ import {
 	OpenNewChatCommand,
 	TearOffChatCommand,
 } from "./features/chat-opening/requests.js";
-import { AppFacesQuery, KnownAppsQuery } from "./features/app-faces/requests.js";
+import { AppFacesQuery, KnownAppsQuery, RereadAppFacesSubscriber } from "./features/app-faces/requests.js";
 import { OpenLinkCommand } from "./features/links/requests.js";
 import {
 	ClosedTabsQuery,
@@ -107,6 +107,7 @@ export const AppHostModule = module("app-host")
 		RereadClosedTabsForCoreSubscriber,
 		RereadShownSplitSubscriber,
 		RereadShownSplitForCoreSubscriber,
+		RereadAppFacesSubscriber,
 	)
 	.public(ChatListQuery, PinTabCommand, KnownAppsQuery)
 	.public(

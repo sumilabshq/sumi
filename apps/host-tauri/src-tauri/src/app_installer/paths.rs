@@ -3,7 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 const FORBIDDEN_IN_PATH: [char; 2] = ['\\', '\0'];
-const BUILT_IN_APPS: [&str; 5] = ["canvas", "browser", "terminal", "chat", "app"];
+const BUILT_IN_APPS: [&str; 2] = ["browser", "app"];
 
 pub fn checked_app_id(id: &str) -> Result<&str, String> {
     let mut chars = id.chars();
