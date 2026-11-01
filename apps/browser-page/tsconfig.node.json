@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"customConditions": ["source"],
+		"jsx": "react",
+		"jsxFactory": "h",
+		"jsxFragmentFactory": "Fragment",
+		"lib": ["ES2022", "DOM"],
+		"types": ["node"],
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"verbatimModuleSyntax": true,
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
+		"skipLibCheck": true
+	},
+	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/core" }],
+	"include": [
+		"vite.config.ts",
+		"scripts",
+		"sumi-app.ts",
+		"../../packages/shared/core/src/*.d.ts",
+		"../../packages/shared/kit/src/jsx-namespace.d.ts"
+	]
+}
