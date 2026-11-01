@@ -2,5 +2,7 @@
 export * from "./generated/file-system.js";
 export * from "./generated/terminal.js";
 export * from "./generated/places.js";
+export * from "./generated/web-page.js";
+export * from "./generated/assistant.js";
 export * from "./manifest.js";
 export * from "./version.js";

@@ -10,10 +10,11 @@ const FROM_THE_REPO = ["react", "react-dom", "zod", "typescript", "@types/react"
 const INTO_FLAG = "--into";
 const ONLY_CORE_AND_ZOD = /from\s*"(?!zod"|@widgetarium\/core\/requests"|\.)[^"]+"/g;
 
-const APP = `import { FileSystemModule, ReadFileQuery, WriteFileCommand, contractRefusal, CONTRACT_RANGE } from "@sumi/contract";
+const APP = `import { AssistantModule, FileSystemModule, ReadFileQuery, WebPageModule, WriteFileCommand, contractRefusal, CONTRACT_RANGE } from "@sumi/contract";
 import { app, messagePortTransport, portFromParent } from "@widgetarium/core/requests";
 
-const files = app().imports(FileSystemModule.over(messagePortTransport(portFromParent()))).start();
+const sumi = messagePortTransport(portFromParent());
+const files = app().imports(FileSystemModule.over(sumi), WebPageModule.over(sumi), AssistantModule.over(sumi)).start();
 
 export async function keep(content: string): Promise<string | null> {
 	await files.send(WriteFileCommand, { path: "tasks.json", content });
@@ -134,7 +135,11 @@ try {
 	check("the tarball ships its declarations", fs.existsSync(path.join(shipped, "dist/index.d.ts")), true);
 	check("every target its exports name is in the tarball", missingExportTargetsIn(shipped).join(", "), "");
 	check("the shipped files import only zod and @widgetarium/core/requests", shippedImportsOf(shipped).join(", "), "");
-	check("an app outside the repo type-checks WriteFileCommand and FileSystemModule", typeErrorsIn(project, APP), "");
+	check(
+		"an app outside the repo type-checks WriteFileCommand and imports FileSystemModule, WebPageModule and AssistantModule",
+		typeErrorsIn(project, APP),
+		"",
+	);
 	check(
 		"and a wrong input is a type error there, so the check can fail",
 		typeErrorsIn(project, WRONG_APP).includes("error TS"),
