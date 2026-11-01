@@ -100,8 +100,9 @@ export const AppTabQuery = query("app-tab")
 		return {
 			id: tab.id,
 			app: tab.app,
-			address: holdsTabs(tab) ? tab.id : tab.lastAddress,
+			address: tab.lastAddress,
 			title: tab.lastTitle ?? tab.title,
+			chatId: holdsTabs(tab) ? tab.id : null,
 		};
 	});
 

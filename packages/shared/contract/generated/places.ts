@@ -392,6 +392,7 @@ export const OwnAppTabSchema = z.object({
 	app: z.string(),
 	address: z.string().nullable(),
 	title: z.string().nullable(),
+	chatId: z.string().nullable(),
 });
 
 export const NamedRecordSchema = z.object({

@@ -81,22 +81,22 @@ async function wholeChatChecks(): Promise<void> {
 		[["Release plan", "running", 1]],
 	);
 
-	await chatAddressChecks(places);
+	await chatIdChecks(places);
 	await turnEndingChecks(places);
 	await archiveChecks(places, tabs);
 }
 
-async function chatAddressOf(places: StartedApp): Promise<string | null> {
+async function chatIdOf(places: StartedApp): Promise<string | null> {
 	const answer = await places.send(AppTabQuery, { id: "chat-a" });
-	return answer.ok ? answer.output.address : answer.reason;
+	return answer.ok ? answer.output.chatId : answer.reason;
 }
 
-async function chatAddressChecks(places: StartedApp): Promise<void> {
-	const kept = await chatAddressOf(places);
+async function chatIdChecks(places: StartedApp): Promise<void> {
+	const kept = await chatIdOf(places);
 	await places.send(RecordAppPageCommand, { id: "chat-a", address: "/elsewhere" });
 	check(
-		"a chat tab's address is its chat id, the one an installed chat app reads, whatever the app records",
-		[kept, await chatAddressOf(places)],
+		"a chat tab's chatId is its own id, whatever address the app records",
+		[kept, await chatIdOf(places)],
 		["chat-a", "chat-a"],
 	);
 }
