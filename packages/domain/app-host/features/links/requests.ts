@@ -72,9 +72,7 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 
 async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
 	const known = await readKnownApps(reach.send);
-	const app = known.some(({ id, isInstalled }) => id === BROWSER_PAGE_APP && isInstalled)
-		? BROWSER_PAGE_APP
-		: BROWSER_APP;
+	const app = isKnownApp(known, BROWSER_PAGE_APP) ? BROWSER_PAGE_APP : BROWSER_APP;
 	await openAppTab(reach, { app, address: href, opensNew });
 	return null;
 }
