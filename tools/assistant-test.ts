@@ -8,6 +8,7 @@ import type {
 	AssistantCall,
 	AssistantSession,
 	AssistantSetup,
+	RenderMarkdown,
 	CallFace,
 	ProviderReads,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
@@ -27,6 +28,7 @@ import {
 	WorkingFoldersQuery,
 	AttachFolderCommand,
 	AttachReachQuery,
+	AgentSetupQuery,
 	ChatQuery,
 	ClaudeOptionsQuery,
 	ClearChatCommand,
@@ -162,6 +164,7 @@ class FakeSessionGateway extends AssistantSessionGateway {
 
 class FakeSetupGateway extends AssistantSetupGateway {
 	compacts = false;
+	renderMarkdown: RenderMarkdown | null = null;
 
 	constructor(public reads: ProviderReads) {
 		super();
@@ -182,7 +185,7 @@ class FakeSetupGateway extends AssistantSetupGateway {
 			],
 			chosen: "chosen",
 			helperAgents: false,
-			renderMarkdown: null,
+			renderMarkdown: this.renderMarkdown,
 		};
 	}
 
@@ -512,6 +515,24 @@ check(
 	reasonOf(await codex.chat.send(AttachFilesCommand, { files: [fileOf("plan.md", "x")] })),
 	"Ollama can't read attached files",
 );
+
+const rendering = benchWith(CLAUDE);
+rendering.setup.renderMarkdown = () => () => undefined;
+const renderingSetup = await rendering.chat.send(AgentSetupQuery);
+check(
+	"the agent's setup crosses a MessagePort: it carries no function, even from a host that renders markdown",
+	renderingSetup.ok ? isCloned(renderingSetup.output) : renderingSetup.reason,
+	true,
+);
+
+function isCloned(output: unknown): boolean {
+	try {
+		structuredClone(output);
+		return true;
+	} catch {
+		return false;
+	}
+}
 
 const switched = benchWith(CLAUDE);
 await switched.chat.send(AttachFilesCommand, { files: [fileOf("photo.png", PNG_BYTES)] });
@@ -968,6 +989,7 @@ for (const bench of [
 	claude,
 	ollama,
 	codex,
+	rendering,
 	switched,
 	crowded,
 	cleared,

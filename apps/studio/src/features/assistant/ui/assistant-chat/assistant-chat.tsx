@@ -22,5 +22,5 @@ export function AssistantChat({ lead, title, cards }: AssistantChatProps): React
 	}
 
 	const setupFailure = failure === null ? null : NOT_REREAD.replace("{why}", failure);
-	return <ReadyChat setup={setup} setupFailure={setupFailure} lead={lead} title={title} cards={cards} />;
+	return <ReadyChat setupFailure={setupFailure} lead={lead} title={title} cards={cards} />;
 }

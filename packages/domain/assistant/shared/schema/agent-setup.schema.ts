@@ -26,7 +26,8 @@ export const AgentSetupSchema = z.object({
 	providers: z.array(AgentProviderSchema),
 	chosen: z.string(),
 	helperAgents: z.boolean(),
-	renderMarkdown: z.custom<(element: HTMLElement, markdown: string) => () => void>().nullable(),
+	// TRADE-OFF: always null, so contract 0.3 apps still parse it; drop at 0.4
+	renderMarkdown: z.null(),
 });
 
 export type AgentSetup = z.infer<typeof AgentSetupSchema>;

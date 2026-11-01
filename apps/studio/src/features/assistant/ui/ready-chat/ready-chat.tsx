@@ -19,10 +19,8 @@ import { FailureSaid } from "../failure-said/failure-said.js";
 import { ChatTurns } from "./chat-turns.js";
 import { ChatTaskLine } from "../chat-task-line/chat-task-line.js";
 import { ChatQuery, StopTurnCommand } from "@widgetarium/assistant";
-import type { AgentSetup } from "@widgetarium/assistant";
 
 export interface ReadyChatProps {
-	readonly setup: AgentSetup;
 	readonly setupFailure: string | null;
 	readonly lead?: ReactNode;
 	readonly title?: string | undefined;
@@ -31,7 +29,7 @@ export interface ReadyChatProps {
 
 const TITLE = "Widgetarium AI";
 
-export function ReadyChat({ setup, setupFailure, lead, title, cards }: ReadyChatProps): ReactElement {
+export function ReadyChat({ setupFailure, lead, title, cards }: ReadyChatProps): ReactElement {
 	const { data: chat } = useQuery(ChatQuery);
 	const { session } = chat;
 	const { scroller, isStuck, onScroll, toEnd } = useStuckToEnd([session.turns, session.busy]);
@@ -58,7 +56,7 @@ export function ReadyChat({ setup, setupFailure, lead, title, cards }: ReadyChat
 			{isEmpty ? <BareLead lead={lead} /> : <ChatLeadHead lead={lead} title={title ?? TITLE} />}
 			<div className="wg-studio-ai-scroll-frame">
 				<div className="wg-studio-ai-scroll" ref={scroller} onScroll={onScroll}>
-					<ChatTurns chat={chat} setup={setup} cards={cards} asks={asks} />
+					<ChatTurns chat={chat} cards={cards} asks={asks} />
 				</div>
 				{isStuck ? null : <ToEndButton toEnd={toEnd} />}
 			</div>

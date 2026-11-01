@@ -9,6 +9,7 @@ import { ChatToOpenQuery } from "@widgetarium/workspaces";
 import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { chatCardsOver } from "../assistant/chat-cards.js";
+import { ChatMarkdownContext, useMarkdownRendererOf } from "../features/assistant/lib/chat-markdown.js";
 import { ChatBody } from "./chat-body.js";
 import { ChatPage } from "./chat-page.js";
 
@@ -24,14 +25,17 @@ const CHAT_LABEL = "Chat";
 
 export function ChatPlate({ chatId, chatAppFor, assistant, crumb, more }: ChatPlateProps): ReactElement {
 	const [cards] = useState(() => chatCardsOver(assistant));
+	const renderMarkdown = useMarkdownRendererOf(assistant);
 	useNamesUnnamedPane(chatId);
 	return (
 		<Plate side="chat" label={CHAT_LABEL} edgeStart={null} lead={null} crumb={crumb} more={more} edgeEnd={null}>
 			{chatId === null ? null : (
-				<ChatPage
-					chatId={chatId}
-					renderBuiltIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
-				/>
+				<ChatMarkdownContext value={renderMarkdown}>
+					<ChatPage
+						chatId={chatId}
+						renderBuiltIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
+					/>
+				</ChatMarkdownContext>
 			)}
 		</Plate>
 	);

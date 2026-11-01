@@ -36,6 +36,6 @@ export function agentSetupOf(setup: AssistantSetup): AgentSetup {
 		})),
 		chosen: setup.chosen,
 		helperAgents: setup.helperAgents,
-		renderMarkdown: setup.renderMarkdown,
+		renderMarkdown: null,
 	};
 }
