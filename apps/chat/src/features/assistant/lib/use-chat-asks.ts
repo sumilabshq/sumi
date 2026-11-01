@@ -2,6 +2,7 @@ import { useCommand } from "@widgetarium/core/requests";
 import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
 import type { Report } from "./failure-line.js";
 import { SendMessageCommand } from "@widgetarium/assistant";
+import { answerSettled } from "./answer-settled.js";
 
 export interface ChangeHeld {
 	readonly report: Report;
@@ -26,19 +27,9 @@ export function useChatAsks({ report, change, setChange }: ChangeHeld): CardAsks
 		send: async (said) => {
 			setChange(() => null);
 			const asked = change ? change.rewrite(said) : said;
-			const isSent = await report(settled(sendMessage.run({ said: asked })), NOT_SENT);
+			const isSent = await report(answerSettled(sendMessage.run({ said: asked })), NOT_SENT);
 			keptUnless(isSent);
 			return isSent;
 		},
 	};
-}
-
-type Answered = { readonly ok: true } | { readonly ok: false; readonly reason: string };
-
-async function settled(answering: Promise<Answered>): Promise<void> {
-	const answer = await answering;
-
-	if (!answer.ok) {
-		throw new Error(answer.reason);
-	}
 }

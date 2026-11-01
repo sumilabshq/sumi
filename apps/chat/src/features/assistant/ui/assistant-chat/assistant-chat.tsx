@@ -10,11 +10,12 @@ export interface AssistantChatProps {
 	readonly lead?: ReactNode;
 	readonly title?: string | undefined;
 	readonly cards: ChatCardsSlot;
+	readonly chatId?: string | undefined;
 }
 
 const NOT_REREAD = "The assistant's setup could not be read again: {why}";
 
-export function AssistantChat({ lead, title, cards }: AssistantChatProps): ReactElement {
+export function AssistantChat({ lead, title, cards, chatId }: AssistantChatProps): ReactElement {
 	const { data: setup, failure } = useOptionalQuery(AgentSetupQuery);
 
 	if (setup === null) {
@@ -22,5 +23,5 @@ export function AssistantChat({ lead, title, cards }: AssistantChatProps): React
 	}
 
 	const setupFailure = failure === null ? null : NOT_REREAD.replace("{why}", failure);
-	return <ReadyChat setupFailure={setupFailure} lead={lead} title={title} cards={cards} />;
+	return <ReadyChat setupFailure={setupFailure} lead={lead} title={title} cards={cards} chatId={chatId} />;
 }

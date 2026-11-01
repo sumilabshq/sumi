@@ -1,4 +1,4 @@
-import { AppearanceModule, AssistantModule, PlacesModule } from "@sumi/contract";
+import { AppearanceModule, AssistantModule, PlacesModule, QuestionsModule } from "@sumi/contract";
 import { app, messagePortTransport, portFromParent } from "@widgetarium/core/requests";
 import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import { MascotModule } from "@widgetarium/mascot/module";
@@ -17,7 +17,12 @@ export function startSumiShell(): SumiShell {
 	return {
 		app: app()
 			.modules(MascotModule)
-			.imports(PlacesModule.over(transport), AssistantModule.over(transport), AppearanceModule.over(transport))
+			.imports(
+				PlacesModule.over(transport),
+				AssistantModule.over(transport),
+				AppearanceModule.over(transport),
+				QuestionsModule.over(transport),
+			)
 			.start({
 				platform: "browser",
 				scope: {

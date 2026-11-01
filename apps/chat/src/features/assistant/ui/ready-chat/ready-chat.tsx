@@ -16,6 +16,7 @@ import { scrollToCard } from "../../lib/scroll-to-card.js";
 import { BareLead } from "../chat-lead/bare-lead.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { FailureSaid } from "../failure-said/failure-said.js";
+import { QuestionsDock } from "../../../questions/ui/questions-dock/questions-dock.js";
 import { ChatTurns } from "./chat-turns.js";
 import { ChatQuery, StopTurnCommand } from "@widgetarium/assistant";
 
@@ -24,11 +25,12 @@ export interface ReadyChatProps {
 	readonly lead?: ReactNode;
 	readonly title?: string | undefined;
 	readonly cards: ChatCardsSlot;
+	readonly chatId?: string | undefined;
 }
 
 const TITLE = "Widgetarium AI";
 
-export function ReadyChat({ setupFailure, lead, title, cards }: ReadyChatProps): ReactElement {
+export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyChatProps): ReactElement {
 	const { data: chat } = useQuery(ChatQuery);
 	const { session } = chat;
 	const { scroller, isStuck, onScroll, toEnd } = useStuckToEnd([session.turns, session.busy]);
@@ -62,6 +64,7 @@ export function ReadyChat({ setupFailure, lead, title, cards }: ReadyChatProps):
 			<Pinned session={session} showCard={showCard} />
 			<Strip showCard={showCard} />
 			<FailureSaid failure={failure ?? setupFailure} />
+			{chatId === undefined ? null : <QuestionsDock chatId={chatId} report={report} />}
 			<Composer
 				busy={session.busy}
 				strip={<ClaudeStrip isEmpty={isEmpty} />}

@@ -1,0 +1,366 @@
+:is(.wg-root, .wg-portal) .wg-questions-dock {
+	--wg-questions-ink: var(--sumi-text);
+	--wg-questions-on-ink: var(--sumi-plate);
+	--wg-questions-on-ink-2: color-mix(in srgb, var(--sumi-plate) 66%, transparent);
+	--wg-questions-on-ink-3: color-mix(in srgb, var(--sumi-plate) 42%, transparent);
+	--wg-questions-ink-hover: color-mix(in srgb, var(--sumi-plate) 9%, transparent);
+	--wg-questions-success-soft: color-mix(in srgb, var(--sumi-success) 14%, transparent);
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	gap: var(--sumi-sp-2);
+	max-height: 45%;
+	min-height: 0;
+	padding: 0 16px;
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-height: 0;
+	padding: 6px;
+	border-radius: 16px;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block.is-needed {
+	flex: none;
+	max-height: 100%;
+	background: var(--wg-questions-ink);
+	color: var(--wg-questions-on-ink);
+	box-shadow: var(--sumi-shadow-pop);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block.is-optional {
+	flex: 1 1 auto;
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block-head {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 10px;
+	min-height: 46px;
+	padding: 0 4px;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block-title {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-width: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block-title b,
+:is(.wg-root, .wg-portal) .wg-questions-block-title span {
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block-title b {
+	font-size: 13.5px;
+	font-weight: var(--sumi-fw-semi);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block-title span {
+	font-size: var(--sumi-fs-12);
+	color: var(--sumi-text-2);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block.is-needed .wg-questions-block-title span {
+	color: var(--wg-questions-on-ink-2);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-face {
+	flex: none;
+	width: 32px;
+	height: 32px;
+	fill: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-face .wg-questions-face-eye {
+	fill: var(--sumi-plate);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block.is-needed .wg-questions-face {
+	fill: var(--wg-questions-on-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-block.is-needed .wg-questions-face .wg-questions-face-eye {
+	fill: var(--wg-questions-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	padding: 0 6px 0 10px;
+	border-radius: 11px;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card.is-open {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	padding: 10px 6px 12px 12px;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-head {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 26px;
+	font-weight: var(--sumi-fw-medium);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-question {
+	flex: 1;
+	min-width: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-text {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-detail {
+	margin: 0;
+	color: var(--sumi-text-2);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-options,
+:is(.wg-root, .wg-portal) .wg-questions-own {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-card-default {
+	margin: 0;
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-own-field {
+	flex: 1;
+	min-width: 120px;
+	height: 30px;
+	padding: 0 10px;
+	border: 1px solid var(--sumi-line-strong);
+	border-radius: 8px;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+	font: inherit;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-own-field:focus {
+	border-color: var(--sumi-text-3);
+	outline: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-btn {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 6px;
+	height: 30px;
+	padding: 0 12px;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-medium) 12.5px / 1 var(--sumi-font-ui);
+	white-space: nowrap;
+	cursor: pointer;
+	transition: background var(--sumi-dur-fast) var(--sumi-ease);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-btn:hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-btn.is-ink {
+	background: var(--wg-questions-ink);
+	color: var(--wg-questions-on-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-btn.is-picked {
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-btn:disabled {
+	opacity: 0.4;
+	cursor: default;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-skip,
+:is(.wg-root, .wg-portal) .wg-questions-hide {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	height: 26px;
+	padding: 0 9px;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-medium) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-hide {
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-skip:hover,
+:is(.wg-root, .wg-portal) .wg-questions-hide:hover {
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-skip svg,
+:is(.wg-root, .wg-portal) .wg-questions-hide svg,
+:is(.wg-root, .wg-portal) .wg-questions-num svg,
+:is(.wg-root, .wg-portal) .wg-questions-pill svg:last-child {
+	width: 12px;
+	height: 12px;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-num {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
+	color: var(--sumi-text-2);
+	font-size: var(--sumi-fs-11);
+	font-weight: var(--sumi-fw-semi);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-num.is-on {
+	background: var(--wg-questions-ink);
+	color: var(--wg-questions-on-ink);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-num.is-answered {
+	background: var(--wg-questions-success-soft);
+	color: var(--sumi-success);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-next {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 10px;
+	height: 40px;
+	padding: 0 12px 0 10px;
+	border-radius: 11px;
+	background: var(--wg-questions-ink-hover);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-next-num {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: var(--sumi-r-full);
+	background: var(--wg-questions-ink-hover);
+	font-size: var(--sumi-fs-11);
+	font-weight: var(--sumi-fw-semi);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-next-text {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	font-weight: var(--sumi-fw-medium);
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-next-kind {
+	color: var(--wg-questions-on-ink-3);
+	font-size: var(--sumi-fs-12);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-pill-row {
+	display: flex;
+	flex: none;
+	justify-content: flex-end;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-pill {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 8px;
+	height: 32px;
+	padding: 0 12px 0 4px;
+	border: 0;
+	border-radius: var(--sumi-r-full);
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-medium) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-pill .wg-questions-face {
+	width: 24px;
+	height: 24px;
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-pill svg:last-child {
+	color: var(--sumi-text-3);
+}
+
+:is(.wg-root, .wg-portal) .wg-questions-check {
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}

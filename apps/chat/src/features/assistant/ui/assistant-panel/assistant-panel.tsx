@@ -14,15 +14,16 @@ export interface AssistantPanelProps {
 	readonly lead?: ReactNode;
 	readonly title?: string | undefined;
 	readonly cards?: ChatCardsSlot | undefined;
+	readonly chatId?: string | undefined;
 }
 
-export function AssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT }: AssistantPanelProps): ReactElement {
+export function AssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT, chatId }: AssistantPanelProps): ReactElement {
 	const { data: chat } = useQuery(ChatQuery);
 	return (
 		<div className="wg-root wg-studio-ai-host">
 			{chat.isAvailable ? (
 				<OnRefused value={toastsAttachmentRefusals}>
-					<AssistantChat lead={lead} title={title} cards={cards} />
+					<AssistantChat lead={lead} title={title} cards={cards} chatId={chatId} />
 					<Toaster />
 				</OnRefused>
 			) : (

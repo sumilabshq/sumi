@@ -9,7 +9,7 @@ export function ChatOf({ chatId, shell }: { readonly chatId: string; readonly sh
 	useOpensChatDraft(shell, chatId);
 	return (
 		<AppProvider app={shell}>
-			<AssistantPanel />
+			<AssistantPanel chatId={chatId} />
 		</AppProvider>
 	);
 }

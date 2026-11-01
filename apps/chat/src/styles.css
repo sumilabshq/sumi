@@ -4,6 +4,7 @@
 @import "./features/assistant/assistant.css";
 @import "./features/assistant/assistant-utilities.css";
 @import "./features/mascot/mascot.css";
+@import "./features/questions/questions.css";
 
 @font-face {
 	font-family: "Inter Variable";
