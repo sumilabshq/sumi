@@ -11,7 +11,7 @@ type ManifestRead =
 			readonly reason: string;
 	  };
 
-const RESERVED_IDS: ReadonlySet<string> = new Set(["app", "chat", "canvas", "browser", "terminal"]);
+const RESERVED_IDS: ReadonlySet<string> = new Set(["app", "browser"]);
 
 export function parseManifest(raw: unknown): ManifestRead {
 	const read = AppManifestSchema.safeParse(raw);
