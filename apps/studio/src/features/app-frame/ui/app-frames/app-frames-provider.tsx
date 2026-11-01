@@ -8,6 +8,7 @@ import type { FrameRoutesFor } from "../../lib/frame-relay.js";
 import { FrameRoutesContext } from "../../lib/use-frame-port.js";
 import { useFleetFollowsDocument } from "../../lib/use-fleet-follows-document.js";
 import { useFleetFollowsInstalled } from "../../lib/use-fleet-follows-installed.js";
+import { useOpensAskedLinks } from "../../lib/use-opens-asked-links.js";
 
 export interface AppFramesProviderProps {
 	readonly routesFor: FrameRoutesFor;
@@ -31,6 +32,7 @@ export function AppFramesProvider({
 	);
 	useFleetFollowsInstalled(fleet);
 	useFleetFollowsDocument(fleet);
+	useOpensAskedLinks();
 	return (
 		<AppFramesContext.Provider value={fleet}>
 			<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>

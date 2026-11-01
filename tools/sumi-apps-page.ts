@@ -9,7 +9,9 @@ import { MemoryAppsGateway } from "../packages/state/app-installer/gateways/apps
 import type { ReleaseRead } from "../packages/state/app-installer/gateways/apps/apps.gateway.ts";
 import { InstallAppCommand } from "../packages/state/app-installer/generated/contract.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { OpenChatCommand, ShowTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
+import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
@@ -38,6 +40,8 @@ interface SumiAppsDriver {
 	readonly showTab: (id: string) => Promise<unknown>;
 	readonly openChat: () => Promise<unknown>;
 	readonly tab: (id: string) => Promise<unknown>;
+	readonly tabs: () => Promise<unknown>;
+	readonly chooseTheme: (choice: "system" | "light" | "dark") => Promise<unknown>;
 }
 
 reportsFailures();
@@ -122,10 +126,13 @@ async function outputOf(answer: Promise<{ ok: boolean; output?: unknown; reason?
 	return settled.ok ? settled.output : { refused: settled.reason };
 }
 
+const appearance = startStudioAppearance(window);
 const driver: SumiAppsDriver = {
 	install: (id) => outputOf(studioApp.send(InstallAppCommand, { id })),
 	showTab: (id) => outputOf(studioApp.send(ShowTabCommand, { id })),
 	tab: (id) => outputOf(studioApp.send(AppTabQuery, { id })),
+	tabs: () => outputOf(studioApp.send(AppTabsQuery)),
+	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(ChooseThemeCommand, { choice })),
 	openChat: () =>
 		outputOf(
 			studioApp.send(OpenChatCommand, {
@@ -146,6 +153,7 @@ try {
 		appId: SUMI_APPS_WORKSPACE,
 		core,
 		studioApp,
+		appearance,
 		assistant: echo,
 		assistantHost: {
 			webAssistant: echo,

@@ -449,6 +449,21 @@ body:has([data-browser-pages-live]),
 	text-overflow: ellipsis;
 }
 
+.wg-app-crumb {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.wg-app-crumb .wg-plate-crumb + .wg-plate-crumb-slash + .wg-plate-crumb,
+.wg-app-crumb .wg-plate-crumb:has(+ .wg-plate-crumb-slash) {
+	padding: 0 var(--sumi-sp-2);
+}
+
+.wg-app-crumb .wg-plate-crumb:last-child {
+	min-width: 0;
+}
+
 .wg-plate-menu {
 	display: flex;
 	flex-direction: column;

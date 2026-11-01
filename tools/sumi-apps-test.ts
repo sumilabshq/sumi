@@ -178,7 +178,10 @@ for (const app of CHECKED_APPS) {
 	releaseFromHead(app);
 }
 
-const registry = CHECKED_APPS.map((id) => ({
+const WEB_PAGE_APP: SumiAppId = "browser-page";
+const IS_WEB_PAGE_INSTALLED = CHECKED_APPS.includes(WEB_PAGE_APP);
+const LISTED_APPS = IS_WEB_PAGE_INSTALLED ? CHECKED_APPS : [...CHECKED_APPS, WEB_PAGE_APP];
+const registry = LISTED_APPS.map((id) => ({
 	id,
 	path: distOf(id),
 }));
@@ -405,7 +408,21 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 	);
 	await pressInFrame(page, "tasks", card);
 	const isOpened = await frameSees(page, "tasks", `document.querySelector("[data-tasks-accept]") !== null`);
-	check("tasks: pressing the card opens the task with its Accept", isOpened, true);
+	check("tasks: pressing the card, a plain anchor, opens the task with its Accept", isOpened, true);
+	check(
+		`tasks: the shell's crumb reads Tasks / ${TASK_ACCEPTED}`,
+		await crumbSays(page, ["Tasks", TASK_ACCEPTED]),
+		true,
+	);
+	check(
+		"tasks: the app draws no header of its own (no crumb, no back)",
+		await inFrame(
+			page,
+			"tasks",
+			`document.querySelector(".wg-plate-crumb, [aria-label='Back to the board']") === null`,
+		),
+		true,
+	);
 	await pressInFrame(page, "tasks", "[data-tasks-accept]");
 	await waitUntil(() => Promise.resolve(statusOnDisk(147) === "done"), WAIT_MS, STEP_MS);
 	check("tasks: Accept writes the task as done into tasks.json on disk", statusOnDisk(147), "done");
@@ -419,6 +436,9 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 			version: "0.1.0",
 		},
 	);
+	for (const id of CHECKED_APPS.filter((app) => app !== "tasks")) {
+		await page.ask(`window.__sumiApps.install(${JSON.stringify(id)})`);
+	}
 	await showAppTab(page, "tasks");
 	check(
 		"tasks: the reloaded frame reopens the task page it was on and draws the task as done, read back from disk",
@@ -428,6 +448,166 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 			`(() => { const shown = document.querySelector('[data-tasks-page="${TASK_ACCEPTED}"]'); const glyphs = shown === null ? [] : [...shown.querySelectorAll(".wg-tasks-st:not([data-leaving])")]; return glyphs.length > 0 && glyphs.every((glyph) => glyph.getAttribute("data-status") === "done") && shown.querySelector("[data-tasks-accept]") === null; })()`,
 		),
 		true,
+	);
+	await tasksHistoryChecks(page);
+	await tasksThemeChecks(page);
+	await tasksLinkChecks(page);
+}
+
+const CRUMB_WORDS = `[...document.querySelectorAll("[data-plate-crumb-app], [data-plate-crumb-page]")].filter((each) => each.getClientRects().length > 0).map((each) => each.textContent)`;
+const TASKS_BOARD = `document.querySelector('[data-tasks-page="board"]') !== null`;
+const PLAIN_TASK = "T-140";
+const BLANK_TASK = "T-141";
+const WEB_LINK = "https://example.org/e2e";
+const E2E_LINKS = `<div style="position:fixed;left:8px;bottom:8px;z-index:9;display:flex;gap:16px;padding:8px;background:white"><a id="e2e-plain" href="/${PLAIN_TASK}">plain</a><a id="e2e-deep" href="sumi://tasks/${TASK_ACCEPTED}">deep</a><a id="e2e-web" href="${WEB_LINK}">web</a><a id="e2e-blank" href="/${BLANK_TASK}" target="_blank">blank</a></div>`;
+
+async function crumbSays(page: AskedPage, words: readonly string[]): Promise<boolean> {
+	return waitUntil(async () => JSON.stringify(await page.ask(CRUMB_WORDS)) === JSON.stringify(words), WAIT_MS, STEP_MS);
+}
+
+async function pressInPage(page: AskedPage, selector: string): Promise<boolean> {
+	const box = await page.ask(
+		`(() => { const target = [...document.querySelectorAll(${JSON.stringify(selector)})].find((each) => each.getClientRects().length > 0); const box = target?.getBoundingClientRect(); return box ? [box.x + box.width / 2, box.y + box.height / 2] : null; })()`,
+	);
+
+	if (!Array.isArray(box)) {
+		return false;
+	}
+
+	await page.press(Number(box[0]), Number(box[1]));
+	return true;
+}
+
+async function tasksHistoryChecks(page: AskedPage): Promise<void> {
+	await pressInPage(page, "[data-app-back]");
+	check(
+		"tasks: the shell's back returns the frame to the board",
+		[await frameSees(page, "tasks", TASKS_BOARD), await crumbSays(page, ["Tasks"])],
+		[true, true],
+	);
+	await pressInPage(page, "[data-app-forward]");
+	check(
+		"tasks: the shell's forward returns the frame to the task",
+		[
+			await frameSees(page, "tasks", `document.querySelector('[data-tasks-page="task"]') !== null`),
+			await crumbSays(page, ["Tasks", TASK_ACCEPTED]),
+		],
+		[true, true],
+	);
+	await pressInPage(page, "[data-plate-crumb-page]");
+	check(
+		"tasks: the crumb's page part opens the address field",
+		await waitUntil(
+			async () => (await page.ask(`document.querySelector("[data-cm-mode]") !== null`)) === true,
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
+	);
+	await page.ask(
+		`(document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`,
+	);
+	await waitUntil(
+		async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
+		WAIT_MS,
+		STEP_MS,
+	);
+	await pressInPage(page, "[data-plate-crumb-app]");
+	check(
+		"tasks: the crumb's app part takes the tab home",
+		[await frameSees(page, "tasks", TASKS_BOARD), await crumbSays(page, ["Tasks"])],
+		[true, true],
+	);
+}
+
+async function tasksThemeChecks(page: AskedPage): Promise<void> {
+	const isDark = `document.documentElement.classList.contains("dark")`;
+	const wasLight = await frameSees(page, "tasks", `!${isDark}`);
+	await page.ask(`window.__sumiApps.chooseTheme("dark")`);
+	const turnedDark = await frameSees(page, "tasks", isDark);
+	await page.ask(`window.__sumiApps.chooseTheme("light")`);
+	const turnedLight = await frameSees(page, "tasks", `!${isDark}`);
+	await page.ask(`window.__sumiApps.chooseTheme("system")`);
+	check(
+		"tasks: switching Sumi's theme in the studio flips the app frame's theme, both ways",
+		[wasLight, turnedDark, turnedLight],
+		[true, true, true],
+	);
+}
+
+interface TabRow {
+	readonly id: string;
+	readonly app: string;
+	readonly address: string | null;
+	readonly isShown: boolean;
+}
+
+async function tabRowsOf(page: AskedPage): Promise<readonly TabRow[]> {
+	const answer = await page.ask("window.__sumiApps.tabs()");
+	const tabs: unknown = typeof answer === "object" && answer !== null ? Reflect.get(answer, "tabs") : null;
+	return Array.isArray(tabs) ? tabs.filter(isTabRow) : [];
+}
+
+function isTabRow(row: unknown): row is TabRow {
+	return typeof row === "object" && row !== null && typeof Reflect.get(row, "id") === "string";
+}
+
+async function shownTabIs(page: AskedPage, isWanted: (row: TabRow) => boolean): Promise<boolean> {
+	const isShown = await waitUntil(
+		async () => (await tabRowsOf(page)).some((row) => row.isShown && isWanted(row)),
+		WAIT_MS,
+		STEP_MS,
+	);
+
+	if (!isShown) {
+		console.log("tabs, not a check:", JSON.stringify(await tabRowsOf(page)));
+	}
+
+	return isShown;
+}
+
+async function webLinkChecks(page: AskedPage): Promise<void> {
+	await pressInFrame(page, "tasks", "#e2e-web");
+	const shownPart = IS_WEB_PAGE_INSTALLED
+		? `iframe[src*="/${WEB_PAGE_APP}/"]`
+		: `[data-app-missing="${WEB_PAGE_APP}"]:not([data-app-failed]) button`;
+	const drawn = `[...document.querySelectorAll(${JSON.stringify(shownPart)})].some((each) => each.getClientRects().length > 0 && (each.tagName === "IFRAME" || each.textContent === "Install ${WEB_PAGE_APP}"))`;
+	check(
+		`tasks: an https link opens a shown ${WEB_PAGE_APP} tab at that address, drawn ${IS_WEB_PAGE_INSTALLED ? "as the app" : "with its Install"}`,
+		[
+			await shownTabIs(page, (row) => row.app === WEB_PAGE_APP && row.address === WEB_LINK),
+			await waitUntil(async () => (await page.ask(drawn)) === true, WAIT_MS, STEP_MS),
+		],
+		[true, true],
+	);
+	await page.ask(`window.__sumiApps.showTab(${JSON.stringify(sumiTabOf("tasks"))})`);
+	await crumbSays(page, ["Tasks", TASK_ACCEPTED]);
+}
+
+async function tasksLinkChecks(page: AskedPage): Promise<void> {
+	const tasksTabs = async (): Promise<number> => (await tabRowsOf(page)).filter((row) => row.app === "tasks").length;
+	const before = await tasksTabs();
+	await inFrame(page, "tasks", `document.body.insertAdjacentHTML("beforeend", ${JSON.stringify(E2E_LINKS)})`);
+	await pressInFrame(page, "tasks", "#e2e-plain");
+	check(
+		`tasks: a plain <a href="/${PLAIN_TASK}"> navigates in the same tab`,
+		[await crumbSays(page, ["Tasks", PLAIN_TASK]), await tasksTabs()],
+		[true, before],
+	);
+	await pressInFrame(page, "tasks", "#e2e-deep");
+	check(`tasks: sumi://tasks/${TASK_ACCEPTED} opens that task`, await crumbSays(page, ["Tasks", TASK_ACCEPTED]), true);
+	await webLinkChecks(page);
+	await pressInFrame(page, "tasks", "#e2e-blank");
+	check(
+		`tasks: a target=_blank link opens a new tasks tab at ${BLANK_TASK}`,
+		[
+			await shownTabIs(
+				page,
+				(row) => row.app === "tasks" && row.id !== sumiTabOf("tasks") && row.address === BLANK_TASK,
+			),
+			await tasksTabs(),
+		],
+		[true, before + 1],
 	);
 }
 
@@ -466,12 +646,17 @@ async function browserPageChecks(page: AskedPage): Promise<void> {
 		true,
 	);
 	check(
-		"browser-page: WebPageQuery (memory fake) answers the opened page, settled, and the app shows its address",
+		"browser-page: WebPageQuery (memory fake) answers the opened page, settled",
 		await frameSees(
 			page,
 			"browser-page",
-			`document.querySelector(".wg-browser-page-area:not([data-loading]) [data-browser-pages]") !== null && document.querySelector(".wg-plate-head").textContent.includes("example.com")`,
+			`document.querySelector(".wg-browser-page-area:not([data-loading]) [data-browser-pages]") !== null`,
 		),
+		true,
+	);
+	check(
+		"browser-page: the shell's crumb reads Browser / example.com",
+		await crumbSays(page, ["Browser", "example.com"]),
 		true,
 	);
 	const isRecorded = await waitUntil(

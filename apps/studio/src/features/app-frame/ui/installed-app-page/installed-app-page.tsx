@@ -1,5 +1,6 @@
-import { createElement as h } from "react";
+import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
+import { AppHeader } from "../app-header/app-header.js";
 import { useInstalledAppView } from "../../lib/use-installed-app-view.js";
 import { FailedApp } from "../failed-app/failed-app.js";
 import { FrameNote } from "../frame-note/frame-note.js";
@@ -13,6 +14,7 @@ export interface InstalledAppPageProps {
 }
 
 const NO_TAB = "This tab was closed";
+const CHAT_APP = "chat";
 
 export function InstalledAppPage({ app, tabId, isShown }: InstalledAppPageProps): ReactElement {
 	const view = useInstalledAppView(app, tabId);
@@ -25,6 +27,11 @@ export function InstalledAppPage({ app, tabId, isShown }: InstalledAppPageProps)
 		case "missing":
 			return <MissingApp app={app} problem={view.problem} />;
 		case "frame":
-			return <AppFrame app={app} tabId={view.tabId} isShown={isShown} />;
+			return (
+				<Fragment>
+					{app === CHAT_APP ? null : <AppHeader app={app} tabId={view.tabId} />}
+					<AppFrame app={app} tabId={view.tabId} isShown={isShown} />
+				</Fragment>
+			);
 	}
 }
