@@ -71,6 +71,14 @@ export type BrowserView = z.infer<typeof BrowserViewSchema>;
 
 export const TabIdSchema = z.object({ tabId: z.string() });
 
+export const OpenPageSchema = z.object({
+	tabId: z.string(),
+	profileId: z
+		.string()
+		.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+		.optional(),
+});
+
 export const OpenAddressSchema = z.object({
 	tabId: z.string(),
 	address: z.string().trim().min(1),

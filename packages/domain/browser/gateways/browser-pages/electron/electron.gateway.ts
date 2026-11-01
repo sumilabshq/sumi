@@ -31,7 +31,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 		this.partition = partitionOfProfile(profileId);
 		this.remote = new ElectronRemote(remote);
 		this.remote.hardenPartition(this.partition);
-		this.create(FIRST_TAB);
+		this.create(FIRST_TAB, null);
 	}
 
 	look(): null {
@@ -126,12 +126,12 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	showTearOffGhost(): void {}
 
-	create(tabId: string): void {
+	create(tabId: string, profileId: string | null): void {
 		if (this.held.some((tab) => tab.now().id === tabId)) {
 			return;
 		}
 
-		const page = new WebviewTab(tabId, this.remote, this.partition, () => this.told());
+		const page = new WebviewTab(tabId, this.remote, this.partitionOf(profileId), () => this.told());
 
 		if (this.container) {
 			page.mountIn(this.container);
@@ -139,6 +139,16 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 		page.setShown(tabId === this.shown);
 		this.becomeHeld([...this.held, page], `open ${tabId}`);
+	}
+
+	private partitionOf(profileId: string | null): string {
+		if (profileId === null) {
+			return this.partition;
+		}
+
+		const partition = partitionOfProfile(profileId);
+		this.remote.hardenPartition(partition);
+		return partition;
 	}
 
 	close(tabId: string): void {

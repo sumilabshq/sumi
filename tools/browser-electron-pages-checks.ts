@@ -102,8 +102,8 @@ export async function checksElectronPages(): Promise<void> {
 	});
 	document.body.append(container);
 	gateway.attach(container);
-	gateway.create("page-b");
-	gateway.create("page-c");
+	gateway.create("page-b", null);
+	gateway.create("page-c", null);
 	gateway.open("tab-1", "https://example.com/");
 	gateway.open("page-b", "https://example.org/");
 	gateway.open("page-c", "https://example.net/");

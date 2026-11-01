@@ -330,7 +330,7 @@ async function checksPlacement(
 		cornerSides: 0,
 	});
 
-	gateway.create("tab-2");
+	gateway.create("tab-2", null);
 	gateway.show("tab-2");
 	await settledTicks();
 	check("a new tab hides the native page for its own new-tab card", rust.named("show").at(-1)?.args, { frames: [] });
@@ -425,7 +425,7 @@ async function checksStudioWindows(rust: FakeRust, gateway: TauriBrowserPagesGat
 
 async function checksFreshTabTearOff(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const lifted = "page-lifted";
-	gateway.create(lifted);
+	gateway.create(lifted, null);
 	gateway.tearOff(lifted, "tab-9");
 	await settledTicks();
 	check(
@@ -445,7 +445,7 @@ async function checksFreshTabTearOff(rust: FakeRust, gateway: TauriBrowserPagesG
 
 async function checksFreshTabOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const fresh = "tab-4";
-	gateway.create(fresh);
+	gateway.create(fresh, null);
 	gateway.openInOwnWindow(fresh);
 	await settledTicks();
 	const asked = rust.calls
@@ -459,7 +459,7 @@ async function checksFreshTabOwnWindow(rust: FakeRust, gateway: TauriBrowserPage
 
 async function checksClosingOwnWindow(rust: FakeRust, gateway: TauriBrowserPagesGateway): Promise<void> {
 	const apart = "tab-3";
-	gateway.create(apart);
+	gateway.create(apart, null);
 	gateway.open(apart, "https://example.com/");
 	await settledTicks();
 	gateway.openInOwnWindow(apart);
@@ -622,7 +622,7 @@ async function checksLooksInPanes(rust: FakeRust, gateway: TauriBrowserPagesGate
 		const container = document.createElement("div");
 		document.body.append(container);
 		laidAt(container, { left: 300 + at * 420, top: 100, width: 400, height: 600 });
-		gateway.create(tabId);
+		gateway.create(tabId, null);
 		gateway.open(tabId, `https://example.com/${tabId}`);
 		gateway.attachInPane(tabId, container);
 		return { tabId, container };

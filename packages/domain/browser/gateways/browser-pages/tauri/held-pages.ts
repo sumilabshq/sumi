@@ -19,7 +19,7 @@ export class HeldPages {
 		return this.held;
 	}
 
-	create(tabId: string): TauriPage {
+	create(tabId: string, profileId: string | null): TauriPage {
 		const known = this.heldPageOf(tabId);
 
 		if (known !== undefined) {
@@ -30,7 +30,7 @@ export class HeldPages {
 		const page = new TauriPage({
 			id: tabId,
 			bridge: this.ports.bridge,
-			profileId: this.ports.profileId,
+			profileId: profileId ?? this.ports.profileId,
 			changed: this.ports.changed,
 		});
 		this.replaceHeld([...this.held, page], `open ${tabId}`);
@@ -113,7 +113,7 @@ export class HeldPages {
 	}
 
 	private adopt(page: string): Promise<void> {
-		return this.create(page).adopt();
+		return this.create(page, null).adopt();
 	}
 
 	private isKnown(page: string): boolean {

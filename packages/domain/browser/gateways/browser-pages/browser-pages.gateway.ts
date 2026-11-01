@@ -30,7 +30,7 @@ export abstract class BrowserPagesGateway {
 	abstract layTearOffGhost(lay: GhostLay): Promise<void>;
 	abstract wearTearOffGhost(worn: GhostWorn): void;
 	abstract showTearOffGhost(shown: boolean): void;
-	abstract create(tabId: string): void;
+	abstract create(tabId: string, profileId: string | null): void;
 	abstract close(tabId: string): void;
 	abstract freeze(tabId: string): void;
 	abstract thaw(tabId: string): void;

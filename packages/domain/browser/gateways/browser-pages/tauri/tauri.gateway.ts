@@ -81,7 +81,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.unloading.start();
 		this.listenToBridge();
 		this.listenToStudio();
-		this.create(FIRST_TAB);
+		this.create(FIRST_TAB, null);
 	}
 
 	isAvailable(): boolean {
@@ -183,8 +183,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		}
 	}
 
-	create(tabId: string): void {
-		this.heldPages.create(tabId);
+	create(tabId: string, profileId: string | null): void {
+		this.heldPages.create(tabId, profileId);
 	}
 
 	close(tabId: string): void {

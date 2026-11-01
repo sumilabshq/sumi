@@ -22,6 +22,7 @@ import {
 	BrowserViewSchema,
 	OpenAddressSchema,
 	PagesHostSchema,
+	OpenPageSchema,
 	TabIdSchema,
 } from "../../shared/schema/browser-tab.schema.js";
 import type { BrowserTab, RecentSite } from "../../shared/schema/browser-tab.schema.js";
@@ -203,12 +204,12 @@ export const ShowTabCommand = command("show-tab")
 	});
 
 export const OpenPageCommand = command("open-page")
-	.input(TabIdSchema)
+	.input(OpenPageSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ browserPages: BrowserPagesGateway })
-	.handle(({ tabId }, { browserPages, invalidate }) => {
+	.handle(({ tabId, profileId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
-		return browserPages.create(tabId);
+		return browserPages.create(tabId, profileId ?? null);
 	});
 
 export const ClosePageCommand = command("close-page")

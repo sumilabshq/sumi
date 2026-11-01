@@ -111,6 +111,14 @@ export type BrowserView = z.infer<typeof BrowserViewSchema>;
 
 export const TabIdSchema = z.object({ tabId: z.string() });
 
+export const OpenPageSchema = z.object({
+	tabId: z.string(),
+	profileId: z
+		.string()
+		.regex(/^[a-z0-9]+(-[a-z0-9]+)*$/)
+		.optional(),
+});
+
 export const OpenAddressSchema = z.object({
 	tabId: z.string(),
 	address: z.string().trim().min(1),
@@ -341,7 +349,7 @@ export const ShowTabCommand = command("browser/show-tab")
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable);
 export const OpenPageCommand = command("browser/open-page")
-	.input(TabIdSchema)
+	.input(OpenPageSchema)
 	.idempotencyKey(Repeatable);
 export const ClosePageCommand = command("browser/close-page")
 	.input(TabIdSchema)
