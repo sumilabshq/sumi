@@ -471,6 +471,27 @@ check(
 	anywhereSignedUp.ok ? "ran" : anywhereSignedUp.reason,
 	'billing/create-customer answered forbidden: billing/create-customer is server-only, and module "auth" does not run on the server: only a server module may send it',
 );
+const anywhereOverTransport = await app()
+	.imports(
+		moduleContract("auth", Anywhere, [SignUpContract]).over(
+			orpcTransport("http://api", { fetch: anywhereServer.fetch }),
+		),
+	)
+	.start()
+	.send(SignUpContract, { userId: "u-5" });
+check(
+	"an Anywhere module is imported over a transport, and its call reaches the server it runs on",
+	anywhereOverTransport.ok ? "ran" : anywhereOverTransport.reason.includes('module "auth" does not run on the server'),
+	true,
+);
+check(
+	"a Device module imported over a transport is refused where .over is called",
+	thrownBy(() => {
+		// @ts-expect-error
+		moduleContract("auth", Device, [SignUpContract]).over(orpcTransport("http://api"));
+	}),
+	'module "auth" runs on a device: only a module .on(Server) or .on(Anywhere) is imported over a transport',
+);
 
 const remoteBillingServer = server()
 	.modules(AuthModule)
