@@ -22,11 +22,40 @@ interface PlacedTab extends TabSpot {
 
 const SHARED_LISTS: ReadonlySet<string> = new Set([WORKSPACE, PINNED]);
 const BAD_INPUT = "The {tool} input is not what the tool takes: {reason}";
+const NOT_AN_OBJECT = "The {tool} input is not an object.";
 const NO_TAB = "No tab {id} stands in a tab list.";
 const NO_GROUP = "No group {id} stands in a tab list.";
 const FOREIGN = "{what} belongs to another chat. Sumi reads and copies from other chats but never changes them.";
 
 export const PlaceSchema = z.string().min(1).default(THIS_CHAT);
+
+export function fieldsOf(tool: string, input: unknown): Readonly<Record<string, unknown>> {
+	if (!isFields(input)) {
+		throw new Error(NOT_AN_OBJECT.replace("{tool}", tool));
+	}
+
+	return withoutNulls(input);
+}
+
+function withoutNulls(fields: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+	return Object.fromEntries(
+		Object.entries(fields)
+			.filter(([, value]) => value !== null)
+			.map(([key, value]) => [key, withoutNullsIn(value)]),
+	);
+}
+
+function withoutNullsIn(value: unknown): unknown {
+	if (Array.isArray(value)) {
+		return value.map(withoutNullsIn);
+	}
+
+	return isFields(value) ? withoutNulls(value) : value;
+}
+
+function isFields(value: unknown): value is Readonly<Record<string, unknown>> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
 
 export function inputOf<Schema extends z.ZodType>(schema: Schema, tool: string, input: unknown): z.output<Schema> {
 	const parsed = schema.safeParse(input);

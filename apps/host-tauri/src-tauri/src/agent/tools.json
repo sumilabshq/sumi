@@ -740,5 +740,137 @@
 			"required": ["task", "to"],
 			"additionalProperties": false
 		}
+	},
+	{
+		"name": "ask_needed",
+		"description": "Ask the person questions you cannot go on without: a permission, a choice only they can make, a fact that is nowhere to read. Sumi shows them in a black block above the input that stays until answered, one at a time, and this call waits for every answer. Ask only what truly blocks you; for anything with a sensible default use ask_optional. Use it instead of AskUserQuestion, which does not work here.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"questions": {
+					"type": "array",
+					"minItems": 1,
+					"maxItems": 4,
+					"items": {
+						"type": "object",
+						"properties": {
+							"question": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 300,
+								"description": "One short question, ending with a question mark."
+							},
+							"detail": {
+								"type": ["string", "null"],
+								"maxLength": 1000,
+								"description": "One or two lines of why you ask, shown under the question."
+							},
+							"options": {
+								"type": ["array", "null"],
+								"maxItems": 6,
+								"description": "The answers the person presses, most likely first. None means they type an answer.",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 80
+										},
+										"detail": {
+											"type": ["string", "null"],
+											"maxLength": 300
+										}
+									},
+									"required": ["label"],
+									"additionalProperties": false
+								}
+							},
+							"multiple": {
+								"type": ["boolean", "null"],
+								"description": "The person may pick several options (default false)."
+							},
+							"ownAnswer": {
+								"type": ["boolean", "null"],
+								"description": "The person may answer in their own words beside the options (default true)."
+							}
+						},
+						"required": ["question"],
+						"additionalProperties": false
+					}
+				}
+			},
+			"required": ["questions"],
+			"additionalProperties": false
+		}
+	},
+	{
+		"name": "ask_optional",
+		"description": "Ask the person questions that do not stop you: a preference, a side fix you noticed, a clean-up. Sumi folds them into a grey pill the person opens when they like; every one can be skipped. The call answers at once with their ids: keep working on your default. Answers arrive between your steps or with the person's next message, as a list of answers; a skipped question means you do what its skipSays said.",
+		"inputSchema": {
+			"type": "object",
+			"properties": {
+				"questions": {
+					"type": "array",
+					"minItems": 1,
+					"maxItems": 10,
+					"items": {
+						"type": "object",
+						"properties": {
+							"question": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 300,
+								"description": "One short question, ending with a question mark."
+							},
+							"detail": {
+								"type": ["string", "null"],
+								"maxLength": 1000,
+								"description": "One or two lines of context, shown when the card opens."
+							},
+							"options": {
+								"type": ["array", "null"],
+								"maxItems": 6,
+								"description": "The answers the person presses, your pick first. None means they type an answer.",
+								"items": {
+									"type": "object",
+									"properties": {
+										"label": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 80
+										},
+										"detail": {
+											"type": ["string", "null"],
+											"maxLength": 300
+										}
+									},
+									"required": ["label"],
+									"additionalProperties": false
+								}
+							},
+							"multiple": {
+								"type": ["boolean", "null"],
+								"description": "The person may pick several options (default false)."
+							},
+							"ownAnswer": {
+								"type": ["boolean", "null"],
+								"description": "The person may answer in their own words beside the options (default true)."
+							},
+							"skipSays": {
+								"type": "string",
+								"minLength": 1,
+								"maxLength": 200,
+								"description": "What you do when the person skips it, in your words: \"I leave it and list it at the end\"."
+							}
+						},
+						"required": ["question", "skipSays"],
+						"additionalProperties": false
+					}
+				}
+			},
+			"required": ["questions"],
+			"additionalProperties": false
+		}
 	}
 ]

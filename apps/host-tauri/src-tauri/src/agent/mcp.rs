@@ -43,7 +43,7 @@ pub fn serve(args: &[String]) {
     }
 }
 
-fn flag_value(args: &[String], name: &str) -> String {
+pub fn flag_value(args: &[String], name: &str) -> String {
     args.iter().position(|arg| arg == name).and_then(|at| args.get(at + 1)).cloned().unwrap_or_default()
 }
 
@@ -106,9 +106,13 @@ fn pretty(value: &Value) -> String {
 }
 
 fn asked_app(bridge: &Bridge, tool: &str, input: Value) -> Result<Value, String> {
+    call_sumi(&bridge.socket, &bridge.token, &bridge.chat, tool, input)
+}
+
+pub fn call_sumi(socket: &str, token: &str, chat: &str, tool: &str, input: Value) -> Result<Value, String> {
     let no_app = |failure: io::Error| NO_APP.replace("{reason}", &failure.to_string());
-    let mut stream = UnixStream::connect(&bridge.socket).map_err(no_app)?;
-    let call = json!({ "token": bridge.token, "chat": bridge.chat, "tool": tool, "input": input });
+    let mut stream = UnixStream::connect(socket).map_err(no_app)?;
+    let call = json!({ "token": token, "chat": chat, "tool": tool, "input": input });
     writeln!(stream, "{call}").map_err(no_app)?;
     let mut line = String::new();
     BufReader::new(stream).read_line(&mut line).map_err(no_app)?;

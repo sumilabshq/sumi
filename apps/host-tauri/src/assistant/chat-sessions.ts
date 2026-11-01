@@ -2,6 +2,7 @@ import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import { ONE_CHAT } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
+import type { ChatQuestions } from "./chat-questions.js";
 import { NO_CHAT_TASKS } from "./chat-tasks.js";
 import type { ChatTasks, Nudge } from "./chat-tasks.js";
 import { EMPTY_SESSION } from "./session-steps.js";
@@ -14,6 +15,7 @@ export interface ChatSessionLink {
 	readonly focusedChat: FocusedChatPort;
 	readonly onSessionChanged: (chatId: string, session: AssistantSession) => void;
 	readonly tasks?: ChatTasks;
+	readonly questions?: ChatQuestions;
 }
 
 export interface ChatsLink extends ChatSessionLink {

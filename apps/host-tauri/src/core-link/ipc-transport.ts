@@ -3,6 +3,7 @@ import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/core/requests";
 import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/core/requests";
 import { PlacesModule } from "@widgetarium/places";
+import { QuestionsModule } from "@widgetarium/questions";
 import { TasksModule } from "@widgetarium/tasks";
 import { FileSystemModule } from "@widgetarium/file-system";
 import { TerminalModule } from "@widgetarium/terminal";
@@ -104,6 +105,7 @@ function listenOnWindow(name: string, heard: (payload: unknown) => void): () => 
 const EVERY_CORE_QUERY: Parameters<HearChanges>[0] = [
 	...PlacesModule.requests,
 	...TasksModule.requests,
+	...QuestionsModule.requests,
 	...FileSystemModule.requests,
 	...TerminalModule.requests,
 ]

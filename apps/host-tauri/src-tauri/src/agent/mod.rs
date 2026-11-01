@@ -1,3 +1,4 @@
+pub mod hook;
 pub mod hub;
 pub mod mcp;
 pub mod socket;
@@ -37,7 +38,10 @@ pub const ALLOWED_TOOLS: &[&str] = &[
     "task_check",
     "task_attach",
     "task_move",
+    "ask_needed",
+    "ask_optional",
 ];
+pub const DISALLOWED_TOOLS: &[&str] = &["AskUserQuestion"];
 const MISSING_ARGUMENT: &str = "The call is missing its {name} argument.";
 const NOT_A_CHANNEL: &str = "The call's onEvent argument is not a channel.";
 const NO_HUB: &str = "The agent tools have not started.";
@@ -57,7 +61,18 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 }
 
 pub fn claude_flags(link: &hub::AgentLink) -> Vec<String> {
-    vec!["--append-system-prompt".into(), PROMPT.into(), "--mcp-config".into(), mcp_config_of(link), "--allowedTools".into(), allowed_tools()]
+    vec![
+        "--append-system-prompt".into(),
+        PROMPT.into(),
+        "--mcp-config".into(),
+        mcp_config_of(link),
+        "--allowedTools".into(),
+        allowed_tools(),
+        "--disallowedTools".into(),
+        DISALLOWED_TOOLS.join(","),
+        "--settings".into(),
+        hook::settings_of(link),
+    ]
 }
 
 pub fn mcp_config_of(link: &hub::AgentLink) -> String {

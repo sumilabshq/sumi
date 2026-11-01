@@ -23,6 +23,7 @@ export interface TurnAsk {
 	readonly claude: ClaudeStart | null;
 	readonly folders: readonly string[];
 	readonly chatId: string | null;
+	readonly isWaitingOnPerson?: () => Promise<boolean>;
 }
 
 export const IDLE_MS = 180000;
@@ -121,13 +122,29 @@ function heard(scope: RunScope): void {
 	const minutes = String(Math.round(IDLE_MS / 60000));
 	scope.held.quietTimer = setTimeout(
 		() =>
-			giveUp(scope, {
-				failure: said(WENT_QUIET, scope).replace("{minutes}", minutes),
-				failureKind: "silent",
-				resumesAt: null,
+			void wentQuiet(scope).then((isQuiet) => {
+				if (!isQuiet) {
+					heard(scope);
+					return;
+				}
+
+				giveUp(scope, {
+					failure: said(WENT_QUIET, scope).replace("{minutes}", minutes),
+					failureKind: "silent",
+					resumesAt: null,
+				});
 			}),
 		IDLE_MS,
 	);
+}
+
+async function wentQuiet({ ask, held }: RunScope): Promise<boolean> {
+	if (held.settled) {
+		return false;
+	}
+
+	const isWaiting = (await ask.isWaitingOnPerson?.()) ?? false;
+	return !isWaiting;
 }
 
 function exitAnswer(scope: RunScope, code: number | null): RunAnswer {

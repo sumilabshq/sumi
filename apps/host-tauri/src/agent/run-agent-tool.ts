@@ -1,3 +1,4 @@
+import { askNeeded, askOptional, questionsSettled } from "./question-tools.js";
 import { tabAccess, tabRead } from "./read-tools.js";
 import { appState, appsList } from "./state-tools.js";
 import {
@@ -41,6 +42,9 @@ export const AGENT_TOOLS: Readonly<Record<string, AgentTool>> = {
 	task_check: taskCheck,
 	task_attach: taskAttach,
 	task_move: taskMove,
+	ask_needed: askNeeded,
+	ask_optional: askOptional,
+	questions_settled: questionsSettled,
 };
 
 export function runAgentTool(context: ToolContext, tool: string, input: unknown): Promise<unknown> {

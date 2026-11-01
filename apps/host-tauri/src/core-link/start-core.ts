@@ -14,6 +14,7 @@ import {
 import { PlacesModule } from "@widgetarium/places/module";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
 import { FileSystemModule } from "@widgetarium/file-system/module";
+import { QuestionsModule } from "@widgetarium/questions/module";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { AppCallerAuthenticate } from "@widgetarium/studio";
 import { serveCore } from "./core-calls.js";
@@ -52,7 +53,7 @@ export function startCore(): void {
 function coreServedOver(workspace: string, listener: ListeningTransport): StartedApp {
 	const own = localTransport();
 	server()
-		.modules(PlacesModule, FileSystemModule, ...APP_MODULES)
+		.modules(PlacesModule, FileSystemModule, QuestionsModule, ...APP_MODULES)
 		.listen(listener)
 		.listen(own)
 		.start({

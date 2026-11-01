@@ -1,10 +1,14 @@
-use widgetarium_host_tauri_lib::agent::mcp;
+use widgetarium_host_tauri_lib::agent::{hook, mcp};
 use widgetarium_host_tauri_lib::app_pages::{self, scheme};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     if mcp::is_asked(&args) {
         mcp::serve(&args);
+        return;
+    }
+    if hook::is_asked(&args) {
+        hook::run(&args);
         return;
     }
 

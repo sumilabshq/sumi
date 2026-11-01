@@ -22,7 +22,7 @@ import {
 	TasksQuery,
 } from "@widgetarium/tasks";
 import type { TaskCard, TaskView } from "@widgetarium/tasks";
-import { inputOf, outputOf } from "./tool-places.js";
+import { fieldsOf, inputOf, outputOf } from "./tool-places.js";
 import type { ToolContext } from "./tool-places.js";
 
 interface AgentCard {
@@ -49,8 +49,6 @@ interface AgentTask extends AgentCard {
 	readonly workplaces: readonly Pick<TaskView["workplaces"][number], "folder" | "branch" | "worktree">[];
 	readonly testCases: number | null;
 }
-
-const NOT_AN_OBJECT = "The {tool} input is not an object.";
 
 export async function taskSearch({ app }: ToolContext, input: unknown): Promise<readonly AgentCard[]> {
 	const asked = inputOf(SearchAskSchema, "task_search", fieldsOf("task_search", input));
@@ -124,26 +122,6 @@ function askedByChat<Schema extends z.ZodType>(
 		...fieldsOf(tool, input),
 		chat: context.chatId,
 	});
-}
-
-function fieldsOf(tool: string, input: unknown): Readonly<Record<string, unknown>> {
-	if (!isFields(input)) {
-		throw new Error(NOT_AN_OBJECT.replace("{tool}", tool));
-	}
-
-	return withoutNulls(input);
-}
-
-function withoutNulls(fields: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
-	return Object.fromEntries(
-		Object.entries(fields)
-			.filter(([, value]) => value !== null)
-			.map(([key, value]) => [key, isFields(value) ? withoutNulls(value) : value]),
-	);
-}
-
-function isFields(value: unknown): value is Readonly<Record<string, unknown>> {
-	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function agentCardOf(card: TaskCard): AgentCard {

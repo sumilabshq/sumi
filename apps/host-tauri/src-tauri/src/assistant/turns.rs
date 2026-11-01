@@ -10,6 +10,8 @@ use std::thread;
 use std::time::Duration;
 
 const HARD_STOP_AFTER: Duration = Duration::from_secs(5);
+const MCP_TOOL_TIMEOUT: &str = "MCP_TOOL_TIMEOUT";
+const PERSON_ANSWER_MS: &str = "86400000";
 const OWN_PROCESS_GROUP: i32 = 0;
 const GRACE_ON_QUIT: Duration = Duration::from_millis(300);
 const NOT_STARTED: &str = "{command} could not be started: {why}";
@@ -120,6 +122,7 @@ fn spawn_in_own_group(launch: &TurnLaunch) -> std::io::Result<Child> {
         .args(launch.argv)
         .current_dir(launch.cwd)
         .env("PATH", launch.search_path)
+        .env(MCP_TOOL_TIMEOUT, PERSON_ANSWER_MS)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

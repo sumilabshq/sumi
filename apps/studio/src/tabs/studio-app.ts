@@ -9,6 +9,8 @@ import { server } from "@widgetarium/core/requests/server";
 import { LayoutModule } from "@widgetarium/layout/module";
 import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
+import { QuestionsModule } from "@widgetarium/questions";
+import { QuestionsModule as RunnableQuestionsModule } from "@widgetarium/questions/module";
 import { TasksModule } from "@widgetarium/tasks";
 import type { BoardFile } from "@widgetarium/tasks/module";
 import { FileSystemModule } from "@widgetarium/file-system/module";
@@ -25,7 +27,7 @@ export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): S
 	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
 		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
-		.imports(PlacesModule.over(served), TasksModule.over(served))
+		.imports(PlacesModule.over(served), TasksModule.over(served), QuestionsModule.over(served))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
@@ -34,7 +36,7 @@ export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): S
 export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
 	server()
-		.modules(RunnablePlacesModule, FileSystemModule, ...APP_MODULES)
+		.modules(RunnablePlacesModule, FileSystemModule, RunnableQuestionsModule, ...APP_MODULES)
 		.listen(local)
 		.start({
 			env: {},

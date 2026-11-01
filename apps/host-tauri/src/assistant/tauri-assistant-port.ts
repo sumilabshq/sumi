@@ -8,6 +8,7 @@ import type {
 import type { ClaudeOptions } from "@widgetarium/assistant";
 import type { Emit } from "@widgetarium/core/engine/provider-stream.js";
 import type { AssistantBridge, ClaudeStart, ProviderFacts, ProvidersAnswer } from "./assistant-bridge.js";
+import { NO_CHAT_QUESTIONS } from "./chat-questions.js";
 import { NO_CHAT_TASKS } from "./chat-tasks.js";
 import { runTurn } from "./turn-run.js";
 import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
@@ -218,7 +219,8 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 		}
 
 		await doors.attachments.settled();
-		const prompt = await withTaskTrailer(doors, { chatId, asked });
+		const questions = doors.chats?.questions ?? NO_CHAT_QUESTIONS;
+		const prompt = await withTrailers(doors, { chatId, asked });
 		const ask = {
 			provider,
 			prompt,
@@ -226,14 +228,16 @@ function turnStarter(doors: TauriAssistantDoors, held: PortHeld): StartChatTurn 
 			claude: provider.id === PREFERRED_PROVIDER ? claudeStartOf(doors.claude.value()) : null,
 			folders: doors.folders.take(),
 			chatId,
+			isWaitingOnPerson: () => questions.isWaitingOnPerson(chatId),
 		};
 		const run = runTurn(doors.bridge, ask, hearingUsage(doors.claude, emit));
+		void run.done.then(() => questions.turnEnded(chatId));
 		return { run, providerId: provider.id, resumesWithoutAnId: provider.resumesWithoutAnId };
 	};
 }
 
-// TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task trailer
-async function withTaskTrailer(
+// TRADE-OFF: a slash command goes as typed, so a turn started by one carries no task or answers trailer
+async function withTrailers(
 	doors: TauriAssistantDoors,
 	{ chatId, asked }: { readonly chatId: string; readonly asked: string },
 ): Promise<string> {
@@ -241,8 +245,11 @@ async function withTaskTrailer(
 		return asked;
 	}
 
-	const { trailer } = await (doors.chats?.tasks ?? NO_CHAT_TASKS).askTrailer(chatId);
-	return trailer === null ? asked : `${asked}\n\n${trailer}`;
+	const [{ trailer }, answers] = await Promise.all([
+		(doors.chats?.tasks ?? NO_CHAT_TASKS).askTrailer(chatId),
+		(doors.chats?.questions ?? NO_CHAT_QUESTIONS).answersTrailer(chatId),
+	]);
+	return [asked, answers, trailer].filter((part) => part !== null).join("\n\n");
 }
 
 function claudeStartOf({ mode, model, effort }: ClaudeOptions): ClaudeStart {

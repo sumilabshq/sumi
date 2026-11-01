@@ -3,6 +3,7 @@ import {
 	AssistantModule,
 	FileSystemModule,
 	PlacesModule,
+	QuestionsModule,
 	TerminalModule,
 	WebPageModule,
 } from "@sumi/contract";
@@ -98,7 +99,7 @@ function leaseRoutes({ ask, leases, tabId, chatId }: FrameLease): FrameRoutes {
 }
 
 function coreRoutesOf(core: RemoteTransport): readonly FrameRoute[] {
-	return [FileSystemModule, TerminalModule, PlacesModule].map((module) => ({
+	return [FileSystemModule, TerminalModule, PlacesModule, QuestionsModule].map((module) => ({
 		module,
 		transport: core,
 		hears: hearsAll,

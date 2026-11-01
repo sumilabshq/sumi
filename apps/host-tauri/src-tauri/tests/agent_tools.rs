@@ -9,7 +9,7 @@ use std::thread;
 use widgetarium_host_tauri_lib::agent::hub::{AgentHub, AgentLink};
 use widgetarium_host_tauri_lib::agent::hub::tool_answer_of;
 use widgetarium_host_tauri_lib::agent::mcp::{content_of, tool_list};
-use widgetarium_host_tauri_lib::agent::{socket, ALLOWED_TOOLS, PROMPT};
+use widgetarium_host_tauri_lib::agent::{hook, socket, ALLOWED_TOOLS, PROMPT};
 use widgetarium_host_tauri_lib::assistant::providers::{provider_by_id, TurnAsk, TurnPlaces};
 
 struct Checks {
@@ -67,6 +67,11 @@ fn check_claude_args(checks: &mut Checks) {
     checks.check("it starts in MCP mode for this chat", args, vec!["--mcp", "--socket", "/tmp/sumi.sock", "--token", "t0k", "--chat", "chat-7"]);
     let allowed: Vec<String> = ALLOWED_TOOLS.iter().map(|tool| format!("mcp__sumi__{tool}")).collect();
     checks.check("only Sumi's own tools are allowed", after(&argv, "--allowedTools"), Some(allowed.join(",")));
+    checks.check("Claude Code's own question tool is off", after(&argv, "--disallowedTools").as_deref(), Some("AskUserQuestion"));
+    let settings: Value = serde_json::from_str(&after(&argv, "--settings").unwrap_or_default()).unwrap_or(Value::Null);
+    let hook = settings["hooks"]["PostToolUse"][0]["hooks"][0]["command"].as_str().unwrap_or_default();
+    checks.check("a hook after every tool hands over settled answers", hook, "'/Applications/Sumi.app/sumi' '--hook' '--socket' '/tmp/sumi.sock' '--token' 't0k' '--chat' 'chat-7'");
+    checks.check("the hook adds the answers as context", hook::context_of("answers")["hookSpecificOutput"]["additionalContext"].as_str(), Some("answers"));
     checks.check("the person's message stays last", argv.last().map(String::as_str), Some("which tabs?"));
     let codex = argv_with_agent("codex");
     checks.check("another provider gets no Claude-only flags", codex.iter().any(|arg| arg == "--mcp-config"), false);

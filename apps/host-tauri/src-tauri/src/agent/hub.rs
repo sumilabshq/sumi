@@ -13,6 +13,8 @@ const NO_STUDIO: &str = "Sumi's window is not open, so the app cannot answer.";
 const NO_ANSWER: &str = "Sumi's window did not answer in time.";
 const NOT_AN_ANSWER: &str = "A tool answer names its id and either ok with a value or a refusal with a reason.";
 const ANSWER_WAIT: Duration = Duration::from_secs(180);
+const PERSON_WAIT: Duration = Duration::from_secs(24 * 60 * 60);
+const WAITS_FOR_PERSON: &str = "ask_needed";
 
 pub struct AgentLink {
     pub exe: String,
@@ -49,7 +51,8 @@ impl AgentHub {
         let (answered, answer) = mpsc::channel();
         self.waiting.lock().expect("the agent hub's waiting calls").insert(id, answered);
         let sent = self.send_to_studio(json!({ "id": id, "chat": chat, "tool": tool, "input": input }));
-        let result = sent.and_then(|()| answer.recv_timeout(ANSWER_WAIT).map_err(|_| NO_ANSWER.to_string())?);
+        let wait = if tool == WAITS_FOR_PERSON { PERSON_WAIT } else { ANSWER_WAIT };
+        let result = sent.and_then(|()| answer.recv_timeout(wait).map_err(|_| NO_ANSWER.to_string())?);
         self.waiting.lock().expect("the agent hub's waiting calls").remove(&id);
         eprintln!("[agent] {tool} for chat {chat} → {}", if result.is_ok() { "answered" } else { "refused" });
         result
