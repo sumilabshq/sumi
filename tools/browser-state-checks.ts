@@ -308,6 +308,9 @@ createRoot(chatHost).render(
 			},
 			onStop: () => undefined,
 			onTyped: () => undefined,
+			editing: null,
+			onSaveEdit: () => Promise.resolve(true),
+			onCancelEdit: () => undefined,
 		}),
 	),
 );

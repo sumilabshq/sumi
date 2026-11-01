@@ -4,6 +4,7 @@ import { useQuery } from "@widgetarium/core/requests";
 import { ChatQuestionsQuery } from "@sumi/contract";
 import type { Report } from "../../../assistant/lib/failure-line.js";
 import { useQuestionDoing } from "../../lib/use-question-doing.js";
+import { useQueuesAnswers } from "../../lib/use-queues-answers.js";
 import { NeededBlock } from "./needed-block.js";
 import { OptionalBlock } from "./optional-block.js";
 
@@ -16,6 +17,7 @@ export function QuestionsDock({
 }): ReactElement | null {
   const { data } = useQuery(ChatQuestionsQuery, { chat: chatId });
   const doing = useQuestionDoing(chatId, report);
+  useQueuesAnswers(chatId, data.optional, report);
 
   if (data.needed.length === 0 && data.optional.length === 0) {
     return null;

@@ -18,6 +18,8 @@ import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { FailureSaid } from "../failure-said/failure-said.js";
 import { QuestionsDock } from "../../../questions/ui/questions-dock/questions-dock.js";
 import { ChatTurns } from "./chat-turns.js";
+import { QueueZone } from "../queue/queue-zone.js";
+import { useQueueActions } from "../../lib/use-queue-actions.js";
 import { ChatQuery, StopTurnCommand } from "@widgetarium/assistant";
 
 export interface ReadyChatProps {
@@ -37,6 +39,8 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 	const [change, setChange] = useState<AttachedChange | null>(null);
 	const { failure, report } = useFailureLine();
 	const asks = useChatAsks({ report, change, setChange });
+	const queueActions = useQueueActions(report);
+	const editing = chat.queued.find(({ isHeld }) => isHeld) ?? null;
 	const stopTurn = useCommand(StopTurnCommand);
 	const chatRoot = useRef<HTMLDivElement>(null);
 	const showCard = (key: string): void => scrollToCard(chatRoot.current, key);
@@ -65,6 +69,12 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			<Strip showCard={showCard} />
 			<FailureSaid failure={failure ?? setupFailure} />
 			{chatId === undefined ? null : <QuestionsDock chatId={chatId} report={report} />}
+			<QueueZone
+				queued={chat.queued}
+				isBusy={session.busy}
+				actions={queueActions}
+				onEdit={(queued) => void queueActions.hold(queued.id, true)}
+			/>
 			<Composer
 				busy={session.busy}
 				strip={<ClaudeStrip isEmpty={isEmpty} />}
@@ -73,6 +83,13 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 				onSend={asks.send}
 				onStop={() => void stopTurn.run()}
 				onTyped={typed}
+				editing={editing}
+				onSaveEdit={queueActions.saveEdit}
+				onCancelEdit={() => {
+					if (editing !== null) {
+						void queueActions.hold(editing.id, false);
+					}
+				}}
 			/>
 			<FileDropZone isOver={drop.isOver} />
 		</div>

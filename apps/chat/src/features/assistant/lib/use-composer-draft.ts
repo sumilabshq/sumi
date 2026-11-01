@@ -33,7 +33,7 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 	const hasInput = draft.trim() !== "" || drafted.length > 0;
 	const sendDraft = (): void => {
 		const said = draft.trim();
-		if (!hasInput || busy) return;
+		if (!hasInput) return;
 		setDraft("");
 		void onSend(said).then((isSent) => {
 			if (!isSent) {

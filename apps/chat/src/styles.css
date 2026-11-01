@@ -3,6 +3,7 @@
 @import "../../../design-systems/sumi/sumi.css";
 @import "./features/assistant/assistant.css";
 @import "./features/assistant/assistant-utilities.css";
+@import "./features/assistant/queue.css";
 @import "./features/mascot/mascot.css";
 @import "./features/questions/questions.css";
 

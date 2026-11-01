@@ -1414,7 +1414,9 @@
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure.is-quiet {
 	flex: none;
-	margin: 0 var(--wg-ai-gutter);
+	width: auto;
+	max-width: none;
+	margin: 0 max(var(--wg-ai-gutter), calc((100% - var(--wg-studio-chat-content, 100%)) / 2));
 	padding: 6px 10px;
 	border-radius: var(--wg-kit-plate);
 	font-size: var(--font-ui-smaller, 12px);

@@ -1,0 +1,215 @@
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue {
+	display: flex;
+	flex: none;
+	flex-direction: column;
+	min-height: 0;
+	position: relative;
+	max-height: 45%;
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1.4 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue::before {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 100%;
+	left: 0;
+	height: var(--sumi-sp-8);
+	background: linear-gradient(to bottom, transparent, var(--sumi-plate));
+	pointer-events: none;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-head {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-3);
+	height: 38px;
+	padding: 0 var(--sumi-sp-5) 0 var(--sumi-sp-8);
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+}
+
+:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-head, .wg-studio-ai-queue-fold, .wg-studio-ai-edit-bar) b {
+	color: var(--sumi-text);
+	font-weight: var(--sumi-fw-medium);
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-head b {
+	color: var(--sumi-text-2);
+}
+
+:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-when, .wg-studio-ai-queue-fold span, .wg-studio-ai-edit-bar span) {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-send, .wg-studio-ai-queued-more, .wg-studio-ai-edit-cancel) {
+	padding: 0 var(--sumi-sp-2);
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text);
+	font: var(--sumi-fw-medium) var(--sumi-fs-12) / 1.4 var(--sumi-font-ui);
+	text-decoration: underline;
+	text-decoration-color: var(--sumi-line-strong);
+	text-underline-offset: 3px;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-send:disabled {
+	color: var(--sumi-text-3);
+	cursor: default;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-more {
+	margin-top: var(--sumi-sp-2);
+	padding: 0;
+	color: var(--sumi-text-2);
+}
+
+:is(.wg-root, .wg-portal) :is(.wg-studio-ai-queue-hide, .wg-studio-ai-queued-act, .wg-studio-ai-queue-fold) {
+	border: none;
+	background: none;
+	box-shadow: none;
+	cursor: pointer;
+}
+
+:is(.wg-root, .wg-portal)
+	:is(.wg-studio-ai-queue-hide, .wg-studio-ai-queued-act:not(:disabled), .wg-studio-ai-queue-fold):hover {
+	background: var(--sumi-hover);
+	color: var(--sumi-text);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-hide {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border-radius: var(--sumi-r-md);
+	color: var(--sumi-text-3);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-list {
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-5);
+	min-height: 0;
+	overflow-y: auto;
+	padding: var(--sumi-sp-1) var(--sumi-sp-8) var(--sumi-sp-5);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued {
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-3);
+	align-items: flex-end;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued.is-held > :not(.wg-studio-ai-queued-line) {
+	opacity: 0.45;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued .wg-studio-ai-picture {
+	outline: 1px dashed var(--sumi-line-strong);
+	outline-offset: -1px;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued .wg-studio-ai-picture img {
+	opacity: 0.85;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-said {
+	display: flex;
+	box-sizing: border-box;
+	flex-direction: column;
+	align-items: flex-start;
+	max-width: 72%;
+	padding: 9px 13px;
+	border: 1px dashed var(--sumi-line-strong);
+	border-radius: var(--sumi-r-group);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-14) / 1.55 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-text {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-text.is-clamped {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 4;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-line {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-2);
+	height: 26px;
+	color: var(--sumi-text-3);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 16px var(--sumi-font-ui);
+	white-space: nowrap;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-state {
+	margin-right: var(--sumi-sp-3);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-act {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--sumi-sp-2);
+	height: 26px;
+	padding: 0 var(--sumi-sp-3);
+	border-radius: var(--sumi-r-sm);
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-medium) var(--sumi-fs-12) / 1 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queued-act:disabled {
+	color: var(--sumi-text-3);
+	cursor: default;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-queue-fold {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	box-sizing: border-box;
+	width: auto;
+	max-width: none;
+	height: 36px;
+	margin: 0 max(var(--sumi-sp-6), calc((100% - var(--wg-studio-chat-content, 100%)) / 2)) var(--sumi-sp-3);
+	padding: 0 var(--sumi-sp-5);
+	border-radius: var(--sumi-r-lg);
+	color: var(--sumi-text-3);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) / 1 var(--sumi-font-ui);
+	text-align: left;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-edit-bar {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-3);
+	margin-bottom: var(--sumi-sp-3);
+	padding: var(--sumi-sp-3) var(--sumi-sp-3) var(--sumi-sp-3) var(--sumi-sp-5);
+	border-radius: var(--sumi-r-md);
+	background: var(--sumi-active);
+	color: var(--sumi-text-3);
+	font: var(--sumi-fw-regular) var(--sumi-fs-12) / 1.3 var(--sumi-font-ui);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-send.is-queueing {
+	background: var(--sumi-text);
+	color: var(--sumi-plate);
+}
