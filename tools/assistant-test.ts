@@ -11,6 +11,7 @@ import type {
 	RenderMarkdown,
 	CallFace,
 	ProviderReads,
+	QueueChange,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import { toastRefusal } from "../packages/shared/core/src/command-refusals.ts";
@@ -97,6 +98,7 @@ const MEGABYTE = 1024 * 1024;
 
 class FakeSessionGateway extends AssistantSessionGateway {
 	readonly sent: string[] = [];
+	readonly queueChanges: QueueChange[] = [];
 	busy = false;
 	refusesWith: string | null = null;
 	private readonly watchers = new Set<() => void>();
@@ -113,7 +115,13 @@ class FakeSessionGateway extends AssistantSessionGateway {
 			tool: null,
 			phase: null,
 			spent: 0,
+			queued: [],
 		};
+	}
+
+	changeQueue(change: QueueChange): null {
+		this.queueChanges.push(change);
+		return null;
 	}
 
 	sessionChanged(changed: () => void): () => void {

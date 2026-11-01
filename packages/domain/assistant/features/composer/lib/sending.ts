@@ -5,7 +5,8 @@ import type { AttachmentFolderGateway } from "../../../gateways/attachment-folde
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { DraftAttachmentsGateway } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import { SentAttachmentsChangedEvent } from "../../../shared/events/sent-attachments.events.js";
-import { withAttachments } from "../../../shared/lib/attachment-trailer.js";
+import { attachmentsIn, withAttachments } from "../../../shared/lib/attachment-trailer.js";
+import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import { chosenOf } from "../../../shared/lib/chosen-provider.js";
 import { refusalOfReach } from "./attachment-rules.js";
 import { SENT, recordSent, sendOrRemoveWritten, writeDrafts } from "./attachments-on-disk.js";
@@ -19,13 +20,20 @@ export interface MessageParts extends SendingParts, Emitter<typeof SentAttachmen
 	readonly draftAttachments: DraftAttachmentsGateway;
 }
 
-export async function sendWithDrafts(
-	parts: MessageParts,
-	said: string,
-	drafts: readonly DraftAttachment[],
-): Promise<void> {
+export interface OutgoingMessage {
+	readonly said: string;
+	readonly drafts: readonly DraftAttachment[];
+	readonly replaces?: string | undefined;
+}
+
+const NO_SUCH_QUEUED = "That queued message was already sent or removed";
+
+export async function sendWithDrafts(parts: MessageParts, { said, drafts, replaces }: OutgoingMessage): Promise<void> {
+	const kept = replaces === undefined ? [] : keptEntriesOf(parts, replaces);
+	const deliver = deliveryOf(parts, replaces);
+
 	if (drafts.length === 0) {
-		await parts.assistantSession.send(said);
+		await deliver(withAttachments(said, kept));
 		return;
 	}
 
@@ -38,7 +46,7 @@ export async function sendWithDrafts(
 
 	const written = writeDrafts(drafts, provider.reads, parts.attachmentFiles);
 	parts.attachmentFolder.lendFolders(lentFoldersOf(drafts));
-	await sendOrRemoveWritten(parts, withAttachments(said, written.entries), written.files);
+	await sendOrRemoveWritten(parts, { said: withAttachments(said, [...kept, ...written.entries]), files: written.files }, deliver);
 
 	if (written.files.length > 0) {
 		recordSent(parts, written.files);
@@ -46,4 +54,29 @@ export async function sendWithDrafts(
 	}
 
 	saveDrafts(parts.draftAttachments, [], SENT);
+}
+
+function keptEntriesOf(parts: MessageParts, replaces: string): readonly TrailerEntry[] {
+	const queued = parts.assistantSession.session().queued.find(({ id }) => id === replaces);
+
+	if (queued === undefined) {
+		return refuse(NO_SUCH_QUEUED);
+	}
+
+	return attachmentsIn(queued.text).entries;
+}
+
+function deliveryOf(parts: MessageParts, replaces: string | undefined): (said: string) => Promise<void> {
+	if (replaces === undefined) {
+		return (said) => parts.assistantSession.send(said);
+	}
+
+	return (said) => {
+		const refusal = parts.assistantSession.changeQueue({
+			kind: "edit",
+			id: replaces,
+			said,
+		});
+		return refusal === null ? Promise.resolve() : Promise.reject(new Error(refusal));
+	};
 }

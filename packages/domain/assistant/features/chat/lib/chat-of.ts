@@ -4,12 +4,13 @@ import type {
 	AssistantSession,
 	AssistantTurn,
 	CallFace,
+	QueuedMessage,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { attachmentsIn } from "../../../shared/lib/attachment-trailer.js";
 import type { TrailerEntry } from "../../../shared/lib/attachment-trailer.js";
 import { shortPathOf } from "../../../shared/lib/short-path.js";
 import type { AttachmentChip } from "../../../shared/schema/attachment.schema.js";
-import type { Chat, ShownTurn } from "../../../shared/schema/chat.schema.js";
+import type { Chat, QueuedShown, ShownTurn } from "../../../shared/schema/chat.schema.js";
 import { turnStepsOf } from "./turn-steps.js";
 
 export interface ChatSeen {
@@ -26,6 +27,7 @@ export function chatOf({ isAvailable, session, cards, faces, previews }: ChatSee
 		isAvailable,
 		session,
 		turns: session.turns.map((turn, at) => shownTurnOf(turn, faces[at] ?? [], { at, previews })),
+		queued: session.queued.map((message) => queuedShownOf(message, previews)),
 		runningCall,
 		runningFace: runningCall === null ? null : (faces.at(-1)?.at(-1) ?? null),
 		isAsking: isAskingOf(session, cards),
@@ -61,6 +63,16 @@ function shownTurnOf(turn: AssistantTurn, faces: readonly CallFace[], place: Tur
 		turn,
 		steps: turnStepsOf(said, []),
 		attached: entries.map((entry, entryAt) => chipOf(entry, `${place.at}-${entryAt}`, place.previews)),
+	};
+}
+
+function queuedShownOf(message: QueuedMessage, previews: ReadonlyMap<string, string>): QueuedShown {
+	const { said, entries } = attachmentsIn(message.text);
+	return {
+		id: message.id,
+		isHeld: message.isHeld,
+		said,
+		attached: entries.map((entry, entryAt) => chipOf(entry, `${message.id}-${entryAt}`, previews)),
 	};
 }
 

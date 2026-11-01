@@ -130,6 +130,10 @@ export const IsWaitingOnPersonQuery = query("questions/is-waiting-on-person")
 	.input(ChatQuestionsAskSchema)
 	.output(WaitingSchema)
 	.settlesNow();
+export const ReadyAnswersQuery = query("questions/ready-answers")
+	.input(ChatQuestionsAskSchema)
+	.output(DeliveredSchema)
+	.settlesNow();
 export const AnswerQuestionCommand = command("questions/answer-question")
 	.input(AnswerQuestionAskSchema)
 	.idempotencyKey(Repeatable);
@@ -153,4 +157,4 @@ export const WithdrawNeededCommand = command("questions/withdraw-needed")
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
 
-export const QuestionsModule = moduleContract("questions", Server, [ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery, AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand, PostQuestionsCommand, DeliverQuestionsCommand, WithdrawNeededCommand]);
+export const QuestionsModule = moduleContract("questions", Server, [ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery, ReadyAnswersQuery, AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand, PostQuestionsCommand, DeliverQuestionsCommand, WithdrawNeededCommand]);

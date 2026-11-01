@@ -64,11 +64,11 @@ export function writeDrafts(
 
 export async function sendOrRemoveWritten(
 	parts: SendingParts,
-	said: string,
-	files: readonly WrittenAttachment[],
+	{ said, files }: { readonly said: string; readonly files: readonly WrittenAttachment[] },
+	deliver: (said: string) => Promise<void>,
 ): Promise<void> {
 	try {
-		await parts.assistantSession.send(said);
+		await deliver(said);
 	} catch (failed: unknown) {
 		files.forEach(({ path }) => parts.attachmentFiles.removeAttachment(path));
 		throw failed;

@@ -40,6 +40,27 @@ export const AssistantTurnSchema = z.object({
 	outcome: z.enum(["done", "stopped", "failed"]).optional(),
 });
 
+export const QueuedMessageSchema = z.object({
+	id: z.string(),
+	text: z.string(),
+	isHeld: z.boolean(),
+});
+
+export const QueueChangeAskedSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("remove"),
+		id: z.string(),
+	}),
+	z.object({
+		kind: z.literal("hold"),
+		id: z.string(),
+		isHeld: z.boolean(),
+	}),
+	z.object({
+		kind: z.literal("send-now"),
+	}),
+]);
+
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),
 	busy: z.boolean(),
@@ -47,6 +68,7 @@ export const AssistantSessionSchema = z.object({
 	tool: z.string().nullable(),
 	phase: z.enum(["thinking", "tools", "writing"]).nullable(),
 	spent: z.number(),
+	queued: z.array(QueuedMessageSchema).readonly(),
 });
 
 export const DiffLineSchema = z.object({
@@ -111,10 +133,20 @@ export const ShownTurnSchema = z.object({
 
 export type ShownTurn = z.infer<typeof ShownTurnSchema>;
 
+export const QueuedShownSchema = z.object({
+	id: z.string(),
+	isHeld: z.boolean(),
+	said: z.string(),
+	attached: z.array(AttachmentChipSchema),
+});
+
+export type QueuedShown = z.infer<typeof QueuedShownSchema>;
+
 export const ChatSchema = z.object({
 	isAvailable: z.boolean(),
 	session: AssistantSessionSchema,
 	turns: z.array(ShownTurnSchema),
+	queued: z.array(QueuedShownSchema),
 	runningCall: AssistantCallSchema.nullable(),
 	runningFace: CallFaceSchema.nullable(),
 	isAsking: z.boolean(),

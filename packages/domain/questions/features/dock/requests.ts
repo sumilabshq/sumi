@@ -1,12 +1,19 @@
 import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
 import { QuestionsChangedEvent } from "../../gateways/questions/questions.events.js";
 import { QuestionsGateway } from "../../gateways/questions/questions.gateway.js";
-import { questionAnswered, questionReopened, questionsSkipped } from "../../shared/lib/question-moves.js";
+import { answersText } from "../../shared/lib/answer-text.js";
+import {
+	answersReadyIn,
+	questionAnswered,
+	questionReopened,
+	questionsSkipped,
+} from "../../shared/lib/question-moves.js";
 import {
 	AnswerQuestionAskSchema,
 	ChangedCountSchema,
 	ChatQuestionsAskSchema,
 	ChatQuestionsSchema,
+	DeliveredSchema,
 	QuestionAskSchema,
 	QuestionsAskSchema,
 } from "../../shared/schema/question.schema.js";
@@ -52,6 +59,19 @@ export const ReopenQuestionCommand = command("reopen-question")
 		const changed = questions.changeQuestions(ask.chat, (held) => questionReopened(held, ask), `undo ${ask.id}`);
 		invalidate(ChatQuestionsQuery);
 		return changed.ok ? undefined : refuse(changed.refusal);
+	});
+
+export const ReadyAnswersQuery = query("ready-answers")
+	.input(ChatQuestionsAskSchema)
+	.output(DeliveredSchema)
+	.settlesNow()
+	.inject({ questions: QuestionsGateway })
+	.handle(({ chat }, { questions }) => {
+		const ready = answersReadyIn(questions.questionsOf(chat), chat);
+		return {
+			questions: [...ready],
+			text: answersText(ready),
+		};
 	});
 
 export const RereadQuestionsSubscriber = subscriber(QuestionsChangedEvent).handle((_input, { invalidate }) => {

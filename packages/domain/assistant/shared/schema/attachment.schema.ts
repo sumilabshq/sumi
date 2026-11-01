@@ -64,4 +64,9 @@ export const AttachmentAskedSchema = z.object({
 
 export const MessageAskedSchema = z.object({
 	said: z.string(),
+	replaces: z.string().optional(),
+});
+
+export const TextAskedSchema = z.object({
+	said: z.string(),
 });

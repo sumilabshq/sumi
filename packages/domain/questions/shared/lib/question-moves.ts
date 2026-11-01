@@ -159,6 +159,19 @@ export function deliverableIn(
 	);
 }
 
+export function answersReadyIn(held: readonly Question[], chat: string): readonly Question[] {
+	const optional = held.filter((question) => question.chat === chat && question.need === "optional");
+
+	if (optional.some(({ state }) => state === "open")) {
+		return [];
+	}
+
+	return deliverableIn(held, {
+		chat,
+		ids: null,
+	});
+}
+
 export function questionsDelivered(held: readonly Question[], delivered: readonly Question[]): Moved {
 	const ids = new Set(delivered.map(({ chat, id }) => `${chat}/${id}`));
 	return moved(

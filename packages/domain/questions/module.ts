@@ -10,6 +10,7 @@ import {
 import {
 	AnswerQuestionCommand,
 	ChatQuestionsQuery,
+	ReadyAnswersQuery,
 	ReopenQuestionCommand,
 	RereadQuestionsSubscriber,
 	SkipQuestionsCommand,
@@ -19,7 +20,7 @@ export const QuestionsModule = module("questions")
 	.on(Server)
 	.guard(PublicGuard)
 	.subscribers(RereadQuestionsSubscriber)
-	.public(ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery)
+	.public(ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery, ReadyAnswersQuery)
 	.public(AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand)
 	.public(PostQuestionsCommand, DeliverQuestionsCommand, WithdrawNeededCommand)
 	.provide((facts) => questionsPartsOn(facts));

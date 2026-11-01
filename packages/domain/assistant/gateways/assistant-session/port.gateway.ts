@@ -4,8 +4,11 @@ import type {
 	AssistantPort,
 	AssistantSession,
 	CallFace,
+	QueueChange,
 } from "@widgetarium/core/engine/assistant-port.js";
 import { AssistantSessionGateway } from "./assistant-session.gateway.js";
+
+const QUEUE_NOT_HERE = "This host cannot queue messages while the agent works.";
 
 export class PortAssistantSessionGateway extends AssistantSessionGateway {
 	constructor(private readonly port: AssistantPort) {
@@ -34,6 +37,14 @@ export class PortAssistantSessionGateway extends AssistantSessionGateway {
 
 	send(said: string): Promise<void> {
 		return this.port.send(said);
+	}
+
+	changeQueue(change: QueueChange): string | null {
+		if (this.port.changeQueue === undefined) {
+			return QUEUE_NOT_HERE;
+		}
+
+		return this.port.changeQueue(change);
 	}
 
 	retry(): void {

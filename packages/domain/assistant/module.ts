@@ -29,6 +29,8 @@ import {
 	ChatQuery,
 	RetryTurnCommand,
 	StopTurnCommand,
+	ChangeQueueCommand,
+	SendTextCommand,
 } from "./features/chat/requests.js";
 import {
 	AttachDroppedCommand,
@@ -99,6 +101,8 @@ export const AssistantModule = module("assistant")
 		ChatQuery,
 		RetryTurnCommand,
 		StopTurnCommand,
+		ChangeQueueCommand,
+		SendTextCommand,
 		DraftAttachmentsQuery,
 		ComposerPrefillQuery,
 		PrefillDraftCommand,

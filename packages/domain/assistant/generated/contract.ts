@@ -102,6 +102,11 @@ export const AttachmentAskedSchema = z.object({
 
 export const MessageAskedSchema = z.object({
 	said: z.string(),
+	replaces: z.string().optional(),
+});
+
+export const TextAskedSchema = z.object({
+	said: z.string(),
 });
 
 export const DraftTextSchema = z.object({ said: z.string() });
@@ -147,6 +152,27 @@ export const AssistantTurnSchema = z.object({
 	outcome: z.enum(["done", "stopped", "failed"]).optional(),
 });
 
+export const QueuedMessageSchema = z.object({
+	id: z.string(),
+	text: z.string(),
+	isHeld: z.boolean(),
+});
+
+export const QueueChangeAskedSchema = z.discriminatedUnion("kind", [
+	z.object({
+		kind: z.literal("remove"),
+		id: z.string(),
+	}),
+	z.object({
+		kind: z.literal("hold"),
+		id: z.string(),
+		isHeld: z.boolean(),
+	}),
+	z.object({
+		kind: z.literal("send-now"),
+	}),
+]);
+
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),
 	busy: z.boolean(),
@@ -154,6 +180,7 @@ export const AssistantSessionSchema = z.object({
 	tool: z.string().nullable(),
 	phase: z.enum(["thinking", "tools", "writing"]).nullable(),
 	spent: z.number(),
+	queued: z.array(QueuedMessageSchema).readonly(),
 });
 
 export const DiffLineSchema = z.object({
@@ -218,10 +245,20 @@ export const ShownTurnSchema = z.object({
 
 export type ShownTurn = z.infer<typeof ShownTurnSchema>;
 
+export const QueuedShownSchema = z.object({
+	id: z.string(),
+	isHeld: z.boolean(),
+	said: z.string(),
+	attached: z.array(AttachmentChipSchema),
+});
+
+export type QueuedShown = z.infer<typeof QueuedShownSchema>;
+
 export const ChatSchema = z.object({
 	isAvailable: z.boolean(),
 	session: AssistantSessionSchema,
 	turns: z.array(ShownTurnSchema),
+	queued: z.array(QueuedShownSchema),
 	runningCall: AssistantCallSchema.nullable(),
 	runningFace: CallFaceSchema.nullable(),
 	isAsking: z.boolean(),
@@ -372,6 +409,12 @@ export const RetryTurnCommand = command("assistant/retry-turn")
 	.idempotencyKey(Repeatable);
 export const StopTurnCommand = command("assistant/stop-turn")
 	.idempotencyKey(Repeatable);
+export const ChangeQueueCommand = command("assistant/change-queue")
+	.input(QueueChangeAskedSchema)
+	.idempotencyKey(PerCall);
+export const SendTextCommand = command("assistant/send-text")
+	.input(TextAskedSchema)
+	.idempotencyKey(PerCall);
 export const DraftAttachmentsQuery = query("assistant/draft-attachments")
 	.output(DraftAttachmentsSchema)
 	.settlesNow();
@@ -429,4 +472,4 @@ export const CompactChatCommand = command("assistant/compact-chat")
 export const FileDraggedEvent = event("assistant/file-dragged")
 	.input(FileDragEventSchema);
 
-export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);
+export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);

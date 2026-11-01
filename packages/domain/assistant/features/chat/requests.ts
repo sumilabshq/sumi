@@ -1,9 +1,10 @@
-import { Repeatable, command, deny, guard, query, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/core/requests";
 import { AssistantSessionChangedEvent } from "../../gateways/assistant-session/assistant-session.events.js";
 import { AssistantSessionGateway } from "../../gateways/assistant-session/assistant-session.gateway.js";
 import { SentAttachmentsGateway } from "../../gateways/sent-attachments/sent-attachments.gateway.js";
 import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
-import { ChatSchema } from "../../shared/schema/chat.schema.js";
+import { ChatSchema, QueueChangeAskedSchema } from "../../shared/schema/chat.schema.js";
+import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
 import { chatOf } from "./lib/chat-of.js";
 
 const APP_CALLABLE: ReadonlySet<string> = new Set(
@@ -12,6 +13,8 @@ const APP_CALLABLE: ReadonlySet<string> = new Set(
 		"retry-turn",
 		"stop-turn",
 		"send-message",
+		"send-text",
+		"change-queue",
 		"compact-chat",
 		"clear-chat",
 		"draft-attachments",
@@ -65,6 +68,21 @@ export const StopTurnCommand = command("stop-turn")
 	.idempotencyKey(Repeatable)
 	.inject({ assistantSession: AssistantSessionGateway })
 	.handle((_input, { assistantSession }) => assistantSession.stop());
+
+export const ChangeQueueCommand = command("change-queue")
+	.input(QueueChangeAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ assistantSession: AssistantSessionGateway })
+	.handle((change, { assistantSession }) => {
+		const refusal = assistantSession.changeQueue(change);
+		return refusal === null ? undefined : refuse(refusal);
+	});
+
+export const SendTextCommand = command("send-text")
+	.input(TextAskedSchema)
+	.idempotencyKey(PerCall)
+	.inject({ assistantSession: AssistantSessionGateway })
+	.handle(({ said }, { assistantSession }) => assistantSession.send(said));
 
 export const RereadChatSubscriber = subscriber(AssistantSessionChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(ChatQuery);

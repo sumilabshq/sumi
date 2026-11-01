@@ -93,10 +93,14 @@ export const SendMessageCommand = command("send-message")
 		clock: ClockGateway,
 	})
 	.emits(SentAttachmentsChangedEvent)
-	.handle(async ({ said }, parts) => {
+	.handle(async ({ said, replaces }, parts) => {
 		const drafts = parts.draftAttachments.draftAttachments();
 		parts.invalidate(DraftAttachmentsQuery);
-		await sendWithDrafts(parts, said, drafts);
+		await sendWithDrafts(parts, {
+			said,
+			drafts,
+			replaces,
+		});
 	});
 
 export const TakeDraftCommand = command("take-draft")
@@ -133,7 +137,10 @@ export const AdoptDraftCommand = command("adopt-draft")
 		}
 
 		try {
-			await sendWithDrafts(parts, adopted.said, adopted.attachments);
+			await sendWithDrafts(parts, {
+				said: adopted.said,
+				drafts: adopted.attachments,
+			});
 			return { said: "" };
 		} catch (failed) {
 			adoptUnsent(parts, adopted);
