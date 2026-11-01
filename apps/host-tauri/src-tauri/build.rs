@@ -75,7 +75,6 @@ const FILES_COMMANDS: &[&str] =
 
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows"];
 
-const APPS_COMMANDS: &[&str] = &["registry", "installed", "inspect", "install", "switch", "fail", "retry"];
 
 fn main() {
     let assistant = InlinedPlugin::new()
@@ -102,11 +101,8 @@ fn main() {
     let files = InlinedPlugin::new()
         .commands(FILES_COMMANDS)
         .default_permission(DefaultPermissionRule::AllowAllCommands);
-    let apps = InlinedPlugin::new()
-        .commands(APPS_COMMANDS)
-        .default_permission(DefaultPermissionRule::AllowAllCommands);
     let plugins = Attributes::new().plugin("assistant", assistant).plugin("store", store).plugin("browser", browser);
     let plugins = plugins.plugin("studio-log", studio_log).plugin("agent", agent).plugin("studio-core", studio_core);
-    tauri_build::try_build(plugins.plugin("terminal", terminal).plugin("files", files).plugin("apps", apps))
+    tauri_build::try_build(plugins.plugin("terminal", terminal).plugin("files", files))
         .expect("the Tauri build step failed")
 }

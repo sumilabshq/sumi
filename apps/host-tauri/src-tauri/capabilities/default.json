@@ -15,7 +15,6 @@
 		"agent:default",
 		"studio-core:default",
 		"terminal:default",
-		"files:default",
-		"apps:default"
+		"files:default"
 	]
 }

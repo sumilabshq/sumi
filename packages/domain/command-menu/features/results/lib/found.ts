@@ -91,8 +91,8 @@ const MENU_WORDS: ReadonlyMap<string, string> = new Map([
 
 export function appsFoundOf(faces: readonly AppFace[]): readonly Found[] {
 	return faces.flatMap((face) => {
-		const words = face.isBuiltIn ? MENU_WORDS.get(face.app) : `${face.title} ${face.app} app`;
-		return words === undefined ? [] : [appFoundOf(face, words)];
+		const words = MENU_WORDS.get(face.app) ?? (face.isBuiltIn ? undefined : `${face.title} ${face.app} app`);
+		return words === undefined || face.app === CHAT_APP ? [] : [appFoundOf(face, words)];
 	});
 }
 

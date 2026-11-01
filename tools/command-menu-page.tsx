@@ -2,7 +2,6 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
-import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
@@ -94,7 +93,6 @@ browser.recentSites.saveRecentSites(
 const studio = app()
 	.modules(
 		AppHostModule,
-		AppInstallerModule,
 		BrowserModule.with(browser.parts),
 		LayoutModule,
 		WorkspacesModule.with(

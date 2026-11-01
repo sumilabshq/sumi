@@ -12,6 +12,8 @@ import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
 import type { PaneView } from "@widgetarium/layout";
+import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
+import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import { askComposerOf } from "../assistant/ask-composer-seam.js";
 import { chatAppOf } from "../assistant/chat-app.js";
 import { chatDeliveryPortOf } from "../assistant/chat-delivery.js";
@@ -58,6 +60,7 @@ export interface StartedStudio {
 	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
 	readonly appearance: StudioAppearance;
+	readonly appPageUrlOf: AppPageUrlOf;
 }
 
 export interface StudioStart extends ProjectStart {
@@ -72,6 +75,7 @@ export interface StudioStart extends ProjectStart {
 	readonly core?: RemoteTransport;
 	readonly nativeWebPages?: NativeWebPages;
 	readonly appearance?: StudioAppearance;
+	readonly appPageUrlOf?: AppPageUrlOf;
 }
 
 interface ChatReach {
@@ -125,6 +129,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
 		appearance,
+		appPageUrlOf: start.appPageUrlOf ?? sumiAppPageUrlOf,
 		frameRoutes: frameRoutesOf({
 			...reach,
 			assistantHost: assistantHostOf(start),
@@ -178,6 +183,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		frame: screen.frame,
 		layoutApp: started.studioApp,
 		frameRoutes: started.frameRoutes,
+		appPageUrlOf: started.appPageUrlOf,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
@@ -205,12 +211,10 @@ function paneOf(started: StartedStudio, screen: StudioScreen, view: PaneView): R
 	});
 }
 
-function chatPlateOf({ chatApps, assistant, chatsColumn }: StartedStudio, chatId: string | null): ReactElement {
+function chatPlateOf({ chatsColumn }: StartedStudio, chatId: string | null): ReactElement {
 	return h(ChatPlate, {
 		key: chatId ?? "",
 		chatId,
-		chatAppFor: (id: string) => chatApps.appFor(id),
-		assistant,
 		crumb: chatsColumn.crumbOf(chatId),
 		more: chatsColumn.moreOf(chatId),
 	});

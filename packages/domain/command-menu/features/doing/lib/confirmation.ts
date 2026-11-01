@@ -4,7 +4,6 @@ import type { Intent, MenuCommand } from "../../../shared/schema/command-menu.sc
 const RAN: Readonly<Record<MenuCommand, string>> = {
 	"new-chat": "Ran “New chat”",
 	"new-tab": "New tab",
-	"update-apps": "Updated apps",
 };
 
 export function confirmationOf(intent: Intent): string {
@@ -22,8 +21,6 @@ export function confirmationOf(intent: Intent): string {
 			return `Switched to workspace ${intent.title}`;
 		case "open-app":
 			return `Opened ${intent.title}`;
-		case "install-app":
-			return `Installed ${intent.title}`;
 		case "open-address":
 			return openedSaidOf(intent.address, intent.where);
 		case "run":

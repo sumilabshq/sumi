@@ -4,16 +4,14 @@ import { app, orpcTransport } from "../packages/shared/core/src/requests/index.t
 import type { RemoteTransport } from "../packages/shared/core/src/requests/index.ts";
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
-import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
-import { MemoryAppsGateway } from "../packages/state/app-installer/gateways/apps/memory.gateway.ts";
-import type { ReleaseRead } from "../packages/state/app-installer/gateways/apps/apps.gateway.ts";
-import { InstallAppCommand } from "../packages/state/app-installer/generated/contract.ts";
+import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
+import { CommandMenuResultsQuery } from "../packages/domain/command-menu/index.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
@@ -29,18 +27,16 @@ import { SUMI_APPS_WORKSPACE, SUMI_CHAT_TAB } from "./sumi-apps-seed.ts";
 declare global {
 	interface Window {
 		__SUMI_APP_ORIGIN__?: string;
-		__SUMI_RELEASES__?: Readonly<Record<string, ReleaseRead>>;
-		__SUMI_REGISTRY__?: readonly { readonly id: string; readonly path: string }[];
 		__sumiApps?: SumiAppsDriver;
 	}
 }
 
 interface SumiAppsDriver {
-	readonly install: (id: string) => Promise<unknown>;
 	readonly showTab: (id: string) => Promise<unknown>;
 	readonly openChat: () => Promise<unknown>;
 	readonly tab: (id: string) => Promise<unknown>;
 	readonly tabs: () => Promise<unknown>;
+	readonly menuResults: (text: string) => Promise<unknown>;
 	readonly chooseTheme: (choice: "system" | "light" | "dark") => Promise<unknown>;
 }
 
@@ -57,19 +53,6 @@ const PROJECT: WidgetariumProject = {
 	packs: [corePack],
 };
 
-const apps = new MemoryAppsGateway({
-	registry: {
-		apps: (window.__SUMI_REGISTRY__ ?? []).map(({ id, path }) => ({
-			id,
-			source: {
-				kind: "folder",
-				path,
-			},
-		})),
-	},
-	folders: window.__SUMI_RELEASES__ ?? {},
-	fileUrlOf: ({ id, version }, file) => `${window.__SUMI_APP_ORIGIN__ ?? ""}/apps/${id}/${version}/${file}`,
-});
 const overHttp = orpcTransport(location.origin);
 const NOT_ABORTED = new AbortController().signal;
 // TRADE-OFF: no abort, like the Tauri IPC transport; an aborted call leaves app-host/held-tabs stale
@@ -108,9 +91,6 @@ const studioApp = app()
 				},
 			}),
 		),
-		AppInstallerModule.with({
-			apps,
-		}),
 		AppHostModule,
 		CommandMenuModule,
 	)
@@ -126,12 +106,23 @@ async function outputOf(answer: Promise<{ ok: boolean; output?: unknown; reason?
 	return settled.ok ? settled.output : { refused: settled.reason };
 }
 
+function servedPageUrlOf({ id, ui }: RegisteredApp): string {
+	return `${window.__SUMI_APP_ORIGIN__ ?? ""}/apps/${id}/${ui}`;
+}
+
 const appearance = startStudioAppearance(window);
 const driver: SumiAppsDriver = {
-	install: (id) => outputOf(studioApp.send(InstallAppCommand, { id })),
 	showTab: (id) => outputOf(studioApp.send(ShowTabCommand, { id })),
 	tab: (id) => outputOf(studioApp.send(AppTabQuery, { id })),
 	tabs: () => outputOf(studioApp.send(AppTabsQuery)),
+	menuResults: (text) =>
+		outputOf(
+			studioApp.send(CommandMenuResultsQuery, {
+				text,
+				door: "anywhere",
+				pageId: null,
+			}),
+		),
 	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(ChooseThemeCommand, { choice })),
 	openChat: () =>
 		outputOf(
@@ -158,6 +149,7 @@ try {
 		assistantHost: {
 			webAssistant: echo,
 		},
+		appPageUrlOf: servedPageUrlOf,
 	});
 
 	if (root !== null) {

@@ -3,6 +3,7 @@ import path from "node:path";
 import type { GenerateArgs } from "./cli-args.js";
 import type { CliOutput } from "./cli-output.js";
 import { generatedPackagesIn } from "@widgetarium/eslint-plugin/workspace";
+import { APP_REGISTRY_PACKAGE, appRegistryFilesOf } from "./apps-registry.js";
 import { generatedPackageOf } from "./module-entry.js";
 
 interface ModuleEntry {
@@ -22,7 +23,8 @@ export function runGenerate({ modules, check }: GenerateArgs, output: CliOutput,
 		output.out(NO_MODULES);
 		return 0;
 	}
-	const drifted = named.flatMap((module) => entriesOf(cwd, module)).filter(isDrifted);
+	const registry = modules.length === 0 ? appRegistryEntriesOf(cwd) : [];
+	const drifted = [...named.flatMap((module) => entriesOf(cwd, module)), ...registry].filter(isDrifted);
 	if (check) return staleReported(drifted, output);
 	for (const entry of drifted) writeEntry(entry, output);
 	return 0;
@@ -35,6 +37,21 @@ function entriesOf(cwd: string, module: string): ModuleEntry[] {
 		...files.map(({ entry, text }) => ({ module, entry, file: path.join(folder, entry), text })),
 		...strays.map((entry) => ({ module, entry, file: path.join(folder, entry), text: null })),
 	];
+}
+
+function appRegistryEntriesOf(cwd: string): ModuleEntry[] {
+	const folder = path.join(cwd, APP_REGISTRY_PACKAGE);
+
+	if (!fs.existsSync(folder)) {
+		return [];
+	}
+
+	return appRegistryFilesOf(cwd).map(({ entry, text }) => ({
+		module: APP_REGISTRY_PACKAGE,
+		entry,
+		file: path.join(folder, entry),
+		text,
+	}));
 }
 
 function isDrifted({ file, text }: ModuleEntry): boolean {

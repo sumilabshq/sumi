@@ -30,7 +30,7 @@ import { TasksModule } from "../packages/domain/tasks/module.ts";
 import { FixedClockGateway } from "../packages/domain/tasks/gateways/clock/clock.gateway.ts";
 import { MemoryTasksGateway } from "../packages/domain/tasks/gateways/tasks/memory.gateway.ts";
 import { BoardSchema, MOST_PROGRESSED } from "../packages/domain/tasks/shared/schema/task.schema.ts";
-import { undeliveredWordsOf } from "../apps/studio/src/features/tasks/lib/use-deliver-task.ts";
+import { undeliveredWordsOf } from "../apps/tasks/src/features/tasks/lib/use-deliver-task.ts";
 import type { Task } from "../packages/domain/tasks/shared/schema/task.schema.ts";
 import type { TaskView } from "../packages/domain/tasks/shared/schema/task-view.schema.ts";
 import { check, tally } from "./check-helpers.ts";

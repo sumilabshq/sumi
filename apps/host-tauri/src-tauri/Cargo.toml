@@ -83,8 +83,8 @@ path = "tests/browser_site_icon.rs"
 harness = false
 
 [[test]]
-name = "app_installer_rules"
-path = "tests/app_installer_rules.rs"
+name = "app_pages_rules"
+path = "tests/app_pages_rules.rs"
 harness = false
 
 [[test]]

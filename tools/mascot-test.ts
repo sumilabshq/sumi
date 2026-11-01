@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import http from "node:http";
-import { agentEventsBetween } from "../apps/studio/src/features/assistant/lib/agent-activity.ts";
-import type { ChatMoment } from "../apps/studio/src/features/assistant/lib/agent-activity.ts";
+import { agentEventsBetween } from "../apps/chat/src/features/assistant/lib/agent-activity.ts";
+import type { ChatMoment } from "../apps/chat/src/features/assistant/lib/agent-activity.ts";
 import {
 	ASLEEP_AFTER_MS,
 	DONE_HELD_MS,
