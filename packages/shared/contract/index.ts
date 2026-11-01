@@ -5,6 +5,7 @@ export * from "./generated/places.js";
 export * from "./generated/web-page.js";
 export * from "./generated/assistant.js";
 export * from "./generated/appearance.js";
+export * from "./generated/questions.js";
 export * from "./link-catcher.js";
 export * from "./manifest.js";
 export * from "./theme-wearer.js";
