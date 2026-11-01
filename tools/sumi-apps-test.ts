@@ -264,7 +264,7 @@ const APP_DRAWN: Readonly<Record<SumiAppId, string>> = {
 	tasks: "[data-tasks-card], [data-tasks-page]",
 	terminal: ".wg-terminal-screen",
 	canvas: "[data-canvas-view]",
-	"browser-page": ".wg-browser-page-area",
+	"browser-page": "[data-browser-page-state], .wg-browser-page-area",
 	chat: "textarea",
 };
 

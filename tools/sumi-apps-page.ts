@@ -117,14 +117,12 @@ const studioApp = app()
 			workspaceId: SUMI_APPS_WORKSPACE,
 		},
 	});
-void restoreTabs(studioApp);
-
 async function outputOf(answer: Promise<{ ok: boolean; output?: unknown; reason?: string }>): Promise<unknown> {
 	const settled = await answer;
 	return settled.ok ? settled.output : { refused: settled.reason };
 }
 
-window.__sumiApps = {
+const driver: SumiAppsDriver = {
 	install: (id) => outputOf(studioApp.send(InstallAppCommand, { id })),
 	showTab: (id) => outputOf(studioApp.send(ShowTabCommand, { id })),
 	tab: (id) => outputOf(studioApp.send(AppTabQuery, { id })),
@@ -136,6 +134,9 @@ window.__sumiApps = {
 			}),
 		),
 };
+void restoreTabs(studioApp).then(() => {
+	window.__sumiApps = driver;
+});
 
 const root = document.getElementById("root");
 
