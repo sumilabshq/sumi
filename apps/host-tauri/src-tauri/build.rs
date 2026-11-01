@@ -75,7 +75,6 @@ const FILES_COMMANDS: &[&str] =
 
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows"];
 
-
 fn main() {
     let assistant = InlinedPlugin::new()
         .commands(ASSISTANT_COMMANDS)

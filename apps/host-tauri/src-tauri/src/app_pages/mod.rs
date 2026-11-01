@@ -30,7 +30,7 @@ pub fn registered_builds(registry: &str) -> Vec<RegisteredBuild> {
         .collect()
 }
 
-// TODO: a release bundle carries no app builds yet; the registered folders are read from the monorepo checkout
+// TODO: bundle the app builds; a packaged Sumi reads this checkout path, so its apps and web links draw nothing
 pub fn apps_root() -> PathBuf {
     let root = PathBuf::from(MONOREPO_ROOT);
     root.canonicalize().unwrap_or(root)

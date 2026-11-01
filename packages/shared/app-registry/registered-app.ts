@@ -1,12 +1,7 @@
 export interface RegisteredApp {
 	readonly id: string;
 	readonly name: string;
-	readonly version: string;
-	readonly contract: string;
 	readonly ui: string;
-	readonly navigates: boolean;
-	readonly modules: readonly string[];
-	readonly folder: string;
 	readonly build: string;
 }
 
