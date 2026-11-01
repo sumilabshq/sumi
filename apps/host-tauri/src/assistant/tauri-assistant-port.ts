@@ -3,6 +3,7 @@ import type {
 	AssistantPort,
 	AssistantProvider,
 	AssistantSetup,
+	QueueChange,
 	RenderMarkdown,
 } from "@widgetarium/core/engine/assistant-port.js";
 import type { ClaudeOptions } from "@widgetarium/assistant";
@@ -13,6 +14,7 @@ import { NO_CHAT_TASKS } from "./chat-tasks.js";
 import { runTurn } from "./turn-run.js";
 import { ChatSessions, ONE_CHAT_LINK } from "./chat-sessions.js";
 import type { ChatsLink, StartChatTurn } from "./chat-sessions.js";
+import type { TurnSession } from "./turn-session.js";
 
 export interface PendingWrites {
 	settled(): Promise<void>;
@@ -47,15 +49,18 @@ export const CANNOT_COMPACT = "{label} cannot compact a conversation.";
 
 const NO_PROVIDER_LABEL = "No provider";
 
+const CHAT_NOT_OPEN = "This chat is not open, so its queue cannot change.";
+
 const SLASH = "/";
 
 export interface TauriAssistantPort extends AssistantPort {
 	readonly shownRead: () => Promise<void>;
+	readonly handQueueToAgent: (chatId: string) => string | null;
 }
 
 type SessionDoors = Pick<
 	TauriAssistantPort,
-	"shownRead" | "session" | "onSession" | "send" | "retry" | "stop" | "clear" | "compact"
+	"shownRead" | "session" | "onSession" | "send" | "retry" | "stop" | "clear" | "compact" | "changeQueue" | "handQueueToAgent"
 >;
 
 type SetupDoors = Pick<AssistantPort, "setup" | "onSetup" | "chooseProvider" | "setHelperAgents">;
@@ -101,12 +106,21 @@ function chatDoorsOf(sessions: ChatSessions, chatId: string, { doors, held }: Co
 		sendFromHost: async (said) => (await sessions.sessionOf(chatId)).sendFromHost(said),
 		retry: () => sessions.readyOf(chatId)?.retry(),
 		stop: () => sessions.readyOf(chatId)?.stop(),
+		changeQueue: (change) => changeQueueIn(sessions.readyOf(chatId), change),
 		clear: async () => (await sessions.sessionOf(chatId)).clear(),
 		compact: async () => {
 			await refuseOrThrow(doors, held);
 			await (await sessions.sessionOf(chatId)).compact();
 		},
 	};
+}
+
+function changeQueueIn(session: TurnSession | null, change: QueueChange): string | null {
+	if (session === null) {
+		return CHAT_NOT_OPEN;
+	}
+
+	return session.changeQueue(change);
 }
 
 function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held: PortHeld): SessionDoors {
@@ -117,6 +131,8 @@ function sessionDoorsOf(sessions: ChatSessions, doors: TauriAssistantDoors, held
 		send: async (said) => (await sessions.shownSession()).send(said),
 		retry: () => sessions.shownIfReady()?.retry(),
 		stop: () => sessions.shownIfReady()?.stop(),
+		changeQueue: (change) => changeQueueIn(sessions.shownIfReady(), change),
+		handQueueToAgent: (chatId) => sessions.readyOf(chatId)?.handQueueToAgent() ?? null,
 		clear: async () => (await sessions.shownSession()).clear(),
 		compact: () => compact(doors, held, sessions),
 	};

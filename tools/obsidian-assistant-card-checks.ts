@@ -41,6 +41,7 @@ const SPEC_CALL_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	queued: [],
 };
 export async function checkCardDoors(check: Check, fake: CardDoorsFake): Promise<void> {
 	checkCards(check, fake.port);

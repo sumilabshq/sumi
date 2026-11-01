@@ -29,6 +29,7 @@ const EMPTY_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	queued: [],
 };
 
 export function echoAssistantPort(): AssistantPort {

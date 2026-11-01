@@ -1,10 +1,11 @@
-import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantSession, QueueChange, QueuedMessage } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 import type { Emit, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import type { TurnEnded, TurnStarter } from "@widgetarium/tasks";
 import {
 	EMPTY_SESSION,
 	endedTurn,
+	heardMidTurn,
 	startedCompact,
 	startedTurn,
 	withoutLastCompact,
@@ -33,6 +34,8 @@ export interface TurnSession {
 	clear(): Promise<void>;
 	compact(): Promise<void>;
 	lastEndedTurn(): string | null;
+	changeQueue(change: QueueChange): string | null;
+	handQueueToAgent(): string | null;
 }
 
 export interface KeptChat {
@@ -89,6 +92,11 @@ export const COMPACT_PROMPT = "/compact";
 const NOT_STARTED = "The answer could not be started: {why}";
 const RESUMES_ITS_OWN_LAST = "last";
 const DRAW_EVERY_MS = 60;
+const HEARD_MID_TURN =
+	"The person sent these messages while you were working. They are their newest words: read them now and take them into account before your next step.";
+const MESSAGE_HEAD = "Message {n}:";
+export const NO_SUCH_QUEUED = "That queued message was already sent or removed.";
+export const NOTHING_READY = "Nothing in the queue is ready to send.";
 
 interface ActiveTurn {
 	readonly run: TurnRun;
@@ -115,6 +123,7 @@ interface SessionStore {
 	running: RunningTurn | null;
 	lastEnded: string | null;
 	generation: number;
+	queuedIdSequence: number;
 	drawTimer: ReturnType<typeof setTimeout> | null;
 	readonly resumes: Map<string, string>;
 	readonly watchers: Set<() => void>;
@@ -131,6 +140,7 @@ export function createTurnSession(startTurn: StartTurn, options: TurnSessionOpti
 		running: null,
 		lastEnded: null,
 		generation: 0,
+		queuedIdSequence: 0,
 		drawTimer: null,
 		resumes: new Map(history.kept.resumes),
 		watchers: new Set(),
@@ -159,6 +169,8 @@ export function createTurnSession(startTurn: StartTurn, options: TurnSessionOpti
 		},
 		compact: () => compact(store, startTurn),
 		lastEndedTurn: () => store.lastEnded,
+		changeQueue: (change) => changeQueue(store, startTurn, change),
+		handQueueToAgent: () => handQueueToAgent(store),
 	};
 }
 
@@ -219,7 +231,11 @@ function announceEnd(store: SessionStore, end: TurnEnd): void {
 	});
 }
 
-function settleRun(store: SessionStore, started: StartedTurn, { failure, failureKind, resumesAt }: RunAnswer): void {
+function settleRun(
+	store: SessionStore,
+	{ started, startTurn }: { readonly started: StartedTurn; readonly startTurn: StartTurn },
+	{ failure, failureKind, resumesAt }: RunAnswer,
+): void {
 	// TRADE-OFF: a marker, because a CLI that resumes its own last conversation names no id to carry
 	if (failure === null && started.resumesWithoutAnId && !store.resumes.has(started.providerId)) {
 		store.resumes.set(started.providerId, RESUMES_ITS_OWN_LAST);
@@ -229,6 +245,7 @@ function settleRun(store: SessionStore, started: StartedTurn, { failure, failure
 
 	if (failure === null) {
 		announceEnd(store, { ended: "done", failureKind: null, failure: null, resumesAt: null });
+		sendQueue(store, startTurn);
 		return;
 	}
 
@@ -262,7 +279,7 @@ async function answerTurn(store: SessionStore, startTurn: StartTurn, asked: stri
 	store.active = owned.active;
 	const answer = await started.run.done;
 	if (store.active === owned.active) {
-		settleRun(store, started, answer);
+		settleRun(store, { started, startTurn }, answer);
 	}
 }
 
@@ -281,13 +298,138 @@ interface Sent {
 
 function send(store: SessionStore, startTurn: StartTurn, { said, startedBy }: Sent): Promise<void> {
 	const asked = said.trim();
+
+	if (asked !== "" && store.session.busy && startedBy === "person") {
+		enqueue(store, asked);
+		return Promise.resolve();
+	}
+
 	const refusal = refusalOf(store.session, asked);
 	if (refusal !== null) {
 		return Promise.reject(new Error(refusal));
 	}
 
-	store.session = startedTurn(store.session, asked, store.clock());
+	store.session = startedTurn(store.session, [asked], store.clock());
 	return answer(store, startTurn, { asked, startedBy });
+}
+
+function writeQueued(store: SessionStore, queued: readonly QueuedMessage[], why: string): void {
+	const was = store.session.queued.length;
+	store.session = {
+		...store.session,
+		queued,
+	};
+	console.info(`[queue] ${was} → ${queued.length} queued (${why})`);
+	notify(store);
+}
+
+function enqueue(store: SessionStore, text: string): void {
+	store.queuedIdSequence += 1;
+	const id = `${store.clock()}-${store.queuedIdSequence}`;
+	writeQueued(store, [...store.session.queued, { id, text, isHeld: false }], `queued ${id} while the agent works`);
+}
+
+function changeQueue(store: SessionStore, startTurn: StartTurn, change: QueueChange): string | null {
+	if (change.kind === "send-now") {
+		return sendQueueNow(store, startTurn);
+	}
+
+	const { queued } = store.session;
+
+	if (!queued.some(({ id }) => id === change.id)) {
+		console.warn(`[queue] ${change.kind} ${change.id} refused: no such queued message`);
+		return NO_SUCH_QUEUED;
+	}
+
+	if (change.kind === "remove") {
+		writeQueued(store, without(queued, change.id), `removed ${change.id}`);
+		return null;
+	}
+
+	if (change.kind === "hold") {
+		writeQueued(store, patched(queued, change.id, { isHeld: change.isHeld }), `${change.isHeld ? "held" : "released"} ${change.id}`);
+		sendQueueIfIdle(store, startTurn);
+		return null;
+	}
+
+	const edited = change.said.trim();
+
+	if (edited === "") {
+		writeQueued(store, without(queued, change.id), `edited ${change.id} to nothing`);
+		return null;
+	}
+
+	writeQueued(store, patched(queued, change.id, { text: edited, isHeld: false }), `edited ${change.id}`);
+	sendQueueIfIdle(store, startTurn);
+	return null;
+}
+
+function without(queued: readonly QueuedMessage[], id: string): readonly QueuedMessage[] {
+	return queued.filter((message) => message.id !== id);
+}
+
+function patched(
+	queued: readonly QueuedMessage[],
+	id: string,
+	patch: Partial<Pick<QueuedMessage, "text" | "isHeld">>,
+): readonly QueuedMessage[] {
+	return queued.map((message) => (message.id === id ? { ...message, ...patch } : message));
+}
+
+function readyIn(queued: readonly QueuedMessage[]): readonly QueuedMessage[] {
+	return queued.filter(({ isHeld }) => !isHeld);
+}
+
+function takeReadyTexts(store: SessionStore): readonly string[] {
+	const ready = readyIn(store.session.queued);
+	store.session = {
+		...store.session,
+		queued: store.session.queued.filter(({ isHeld }) => isHeld),
+	};
+	return ready.map(({ text }) => text);
+}
+
+function sendQueueIfIdle(store: SessionStore, startTurn: StartTurn): void {
+	if (store.session.busy) {
+		return;
+	}
+
+	sendQueue(store, startTurn);
+}
+
+function sendQueue(store: SessionStore, startTurn: StartTurn): void {
+	if (readyIn(store.session.queued).length === 0) {
+		return;
+	}
+
+	const texts = takeReadyTexts(store);
+	store.session = startedTurn(store.session, texts, store.clock());
+	console.info(`[queue] ${texts.length} → 0 ready (sent as the next turn)`);
+	void answer(store, startTurn, { asked: texts.join("\n\n"), startedBy: "person" });
+}
+
+function sendQueueNow(store: SessionStore, startTurn: StartTurn): string | null {
+	if (readyIn(store.session.queued).length === 0) {
+		console.info("[queue] send now refused: nothing ready");
+		return NOTHING_READY;
+	}
+
+	stop(store);
+	sendQueue(store, startTurn);
+	return null;
+}
+
+function handQueueToAgent(store: SessionStore): string | null {
+	if (!store.session.busy || readyIn(store.session.queued).length === 0) {
+		return null;
+	}
+
+	const texts = takeReadyTexts(store);
+	store.session = heardMidTurn(store.session, texts, store.clock());
+	console.info(`[queue] ${texts.length} → 0 ready (handed to the agent between steps)`);
+	notify(store);
+	const messages = texts.map((text, messageIndex) => `${MESSAGE_HEAD.replace("{n}", String(messageIndex + 1))}\n${text}`);
+	return [HEARD_MID_TURN, ...messages].join("\n\n");
 }
 
 function compactRefusalOf({ session, resumes }: SessionStore): string | null {

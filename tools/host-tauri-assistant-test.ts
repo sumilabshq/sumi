@@ -25,7 +25,9 @@ import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import {
 	COMPACT_PROMPT,
+	NOTHING_READY,
 	NOTHING_TO_COMPACT,
+	NO_SUCH_QUEUED,
 	STOPPED,
 	createTurnSession,
 } from "../apps/host-tauri/src/assistant/turn-session.ts";
@@ -823,6 +825,98 @@ async function clearChecks(): Promise<void> {
 	check("and /compact has nothing to compact yet", await refusalOf(() => session.compact()), NOTHING_TO_COMPACT);
 }
 
+const READ_CALL = {
+	type: "assistant",
+	message: { content: [{ type: "tool_use", id: "q1", name: "Read", input: { file_path: "a.ts" } }] },
+};
+const READ_RESULT = { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "q1", content: "one line" }] } };
+
+async function queueChecks(): Promise<void> {
+	const ipc = fakeIpc();
+	const { port } = startedAssistant(ipc, {});
+	const first = await sendAndStart(port, ipc, "build the queue");
+	const startsBefore = callsNamed(ipc, "start_turn").length;
+	await port.send("use a pencil icon");
+	await flush();
+	check(
+		"a message sent while the agent works is queued, not refused and not started",
+		[port.session().queued.map(({ text }) => text), port.session().turns.length, callsNamed(ipc, "start_turn").length],
+		[["use a pencil icon"], 2, startsBefore],
+	);
+
+	streamed(first, [READ_CALL]);
+	const handed = port.handQueueToAgent("chat-1");
+	check("the hook between steps takes the ready queue as one text", handed?.includes("use a pencil icon"), true);
+	check(
+		"and the chat shows it as the person's message inside the running answer",
+		[port.session().queued.length, port.session().turns.map(({ role }) => role)],
+		[0, ["user", "agent", "user", "agent"]],
+	);
+	check("an empty queue hands the hook nothing", port.handQueueToAgent("chat-1"), null);
+
+	streamed(first, [READ_RESULT]);
+	check(
+		"a tool result after the split lands on its own call",
+		port.session().turns[1]?.calls.map(({ answered }) => answered),
+		[true],
+	);
+
+	await port.send("then run the tests");
+	const held = port.session().queued[0]?.id ?? "";
+	check("a change that lands answers no refusal", port.changeQueue?.({ kind: "hold", id: held, isHeld: true }), null);
+	streamed(first, [{ type: "result", is_error: false, usage: { output_tokens: 3 } }]);
+	said(first, { kind: "exited", code: 0 });
+	await flush();
+	check(
+		"a held message waits for its edit when the turn ends",
+		[port.session().busy, port.session().queued.map(({ isHeld }) => isHeld)],
+		[false, [true]],
+	);
+
+	port.changeQueue?.({ kind: "edit", id: held, said: "then run the chat tests" });
+	await flush();
+	const edited = callsNamed(ipc, "start_turn").at(-1)?.args;
+	check(
+		"an edit saved while the agent is idle sends the queue at once",
+		[Reflect.get(edited ?? {}, "prompt"), port.session().busy, port.session().queued.length],
+		["then run the chat tests", true, 0],
+	);
+
+	const running = lastChannel(ipc);
+	await port.send("first");
+	await port.send("second");
+	port.changeQueue?.({ kind: "remove", id: port.session().queued[0]?.id ?? "" });
+	check("remove takes one message out", port.session().queued.map(({ text }) => text), ["second"]);
+	await port.send("third");
+	streamed(running, [{ type: "result", is_error: false, usage: { output_tokens: 1 } }]);
+	said(running, { kind: "exited", code: 0 });
+	await flush();
+	const next = callsNamed(ipc, "start_turn").at(-1)?.args;
+	check(
+		"a turn that ends sends the ready queue as the next prompt, each message its own bubble",
+		[Reflect.get(next ?? {}, "prompt"), port.session().turns.slice(-3).map(({ role, text }) => `${role}:${text}`)],
+		["second\n\nthird", ["user:second", "user:third", "agent:"]],
+	);
+
+	check(
+		"a change to a message that is already gone is refused, never dropped in silence",
+		port.changeQueue?.({ kind: "edit", id: "gone", said: "too late" }),
+		NO_SUCH_QUEUED,
+	);
+	check("send now with nothing ready says so", port.changeQueue?.({ kind: "send-now" }), NOTHING_READY);
+
+	await port.send("stop and read this");
+	const stopsBefore = callsNamed(ipc, "stop_turn").length;
+	port.changeQueue?.({ kind: "send-now" });
+	await flush();
+	check(
+		"send now stops the running step and sends the queue",
+		[callsNamed(ipc, "stop_turn").length - stopsBefore, Reflect.get(callsNamed(ipc, "start_turn").at(-1)?.args ?? {}, "prompt")],
+		[1, "stop and read this"],
+	);
+}
+
+await queueChecks();
 await setupChecks();
 await streamChecks();
 await stopChecks();

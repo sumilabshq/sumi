@@ -63,7 +63,6 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 			await Promise.all([docs.flushAll(), joined.leave()]);
 		}),
 	);
-	openAgentTools(studioApp);
 	const assistant = startTauriAssistant({
 		renderMarkdown: tabLinksRenderer((id) => tabFaviconOf(studioApp, id)),
 		workspace: {
@@ -75,6 +74,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 			historyOf: docs.logs.historyOf,
 		},
 	});
+	openAgentTools(studioApp, assistant.port);
 	await assistant.port.shownRead();
 	return startedStudioOf(opening, { studioApp, assistant, core });
 }

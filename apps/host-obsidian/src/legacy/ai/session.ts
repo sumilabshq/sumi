@@ -5,7 +5,7 @@ import type { AiSettings, AiState } from "./settings.js";
 import type { ChatTurn, Run, Runner, RunAsk } from "./run.js";
 import type { Phase, StreamPart } from "@widgetarium/core/engine/provider-stream.js";
 import { freshCallOf } from "@widgetarium/core/engine/assistant-port.js";
-import type { AssistantTurn, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
+import type { AssistantTurn, QueuedMessage, TurnOutcome } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
 
 export interface SessionState {
@@ -16,6 +16,7 @@ export interface SessionState {
 	readonly tool: string | null;
 	readonly phase: Phase | null;
 	readonly spent: number;
+	readonly queued: readonly QueuedMessage[];
 }
 
 export type SessionWatcher = (state: SessionState) => void;
@@ -110,7 +111,7 @@ interface SessionStore {
 }
 
 function emptyState(): SessionState {
-	return { turns: [], busy: false, failure: null, session: null, tool: null, phase: null, spent: 0 };
+	return { turns: [], busy: false, failure: null, session: null, tool: null, phase: null, spent: 0, queued: [] };
 }
 
 function notifyWatchers(store: SessionStore): void {

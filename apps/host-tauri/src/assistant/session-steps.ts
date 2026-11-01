@@ -14,12 +14,19 @@ export const EMPTY_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	queued: [],
 };
 
-export function startedTurn(session: AssistantSession, asked: string, at: number): AssistantSession {
-	const question: AssistantTurn = { role: "user", text: asked, calls: [], startedAt: at };
-	const answer: AssistantTurn = { role: "agent", text: "", calls: [], startedAt: at };
-	return withStarted(session, [question, answer]);
+export function startedTurn(session: AssistantSession, asked: readonly string[], at: number): AssistantSession {
+	return withStarted(session, [...asked.map((text) => questionOf(text, at)), freshAnswerOf(at)]);
+}
+
+export function heardMidTurn(session: AssistantSession, heard: readonly string[], at: number): AssistantSession {
+	const paused = intoLastTurn(session, (turn) => (turn.role === "agent" ? { ...turn, endedAt: at } : turn));
+	return {
+		...paused,
+		turns: [...paused.turns, ...heard.map((text) => questionOf(text, at)), freshAnswerOf(at)],
+	};
 }
 
 export function startedCompact(session: AssistantSession, at: number): AssistantSession {
@@ -77,7 +84,7 @@ export function withPart(session: AssistantSession, part: StreamPart, at: number
 	}
 
 	if ("result" in part) {
-		return intoLastTurn(session, (turn) => ({ ...turn, calls: answered(turn.calls, part.result, at) }));
+		return intoTurnCalling(session, part.result.ref, (turn) => ({ ...turn, calls: answered(turn.calls, part.result, at) }));
 	}
 
 	if ("compacted" in part) {
@@ -96,6 +103,28 @@ function intoLastTurn(session: AssistantSession, step: (turn: AssistantTurn) => 
 	return { ...session, turns: [...session.turns.slice(0, -1), step(last)] };
 }
 
+function intoTurnCalling(
+	session: AssistantSession,
+	ref: string,
+	step: (turn: AssistantTurn) => AssistantTurn,
+): AssistantSession {
+	const at = session.turns.map((turn) => turn.calls.some((call) => call.ref === ref)).lastIndexOf(true);
+
+	if (at === -1) {
+		return intoLastTurn(session, step);
+	}
+
+	return { ...session, turns: session.turns.map((turn, index) => (index === at ? step(turn) : turn)) };
+}
+
+function questionOf(text: string, at: number): AssistantTurn {
+	return { role: "user", text, calls: [], startedAt: at };
+}
+
+function freshAnswerOf(at: number): AssistantTurn {
+	return { role: "agent", text: "", calls: [], startedAt: at };
+}
+
 function answered(calls: readonly AssistantCall[], result: ToolResult, at: number): AssistantCall[] {
 	return calls.map((call) =>
 		call.ref === result.ref
@@ -112,5 +141,6 @@ function withStarted(session: AssistantSession, started: readonly AssistantTurn[
 		tool: null,
 		phase: "thinking",
 		spent: 0,
+		queued: session.queued,
 	};
 }

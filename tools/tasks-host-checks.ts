@@ -103,6 +103,9 @@ async function startedTask(tasks: StartedApp, chatId: string, title: string): Pr
 	const context = {
 		app: tasks,
 		chatId,
+		queue: {
+			handQueueToAgent: () => null,
+		},
 	};
 	const created = await runAgentTool(context, "task_create", {
 		title,
@@ -124,6 +127,9 @@ async function toolsTakeTheChatFromContext(): Promise<void> {
 	const context = {
 		app: tasks,
 		chatId: A,
+		queue: {
+			handQueueToAgent: () => null,
+		},
 	};
 	const created = await runAgentTool(context, "task_create", {
 		chat: FOREIGN,
@@ -412,6 +418,9 @@ async function toolInputs(): Promise<void> {
 	const context = {
 		app: tasks,
 		chatId: A,
+		queue: {
+			handQueueToAgent: () => null,
+		},
 	};
 	const notObject = await thrownMessageOf(() => runAgentTool(context, "task_list", "everything"));
 	check("a non-object input is refused", notObject.includes("input is not an object"), true);

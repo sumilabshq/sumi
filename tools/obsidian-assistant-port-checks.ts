@@ -41,6 +41,7 @@ const NO_TURNS: SessionState = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	queued: [],
 };
 
 export async function checkedAssistantPort(check: Check): Promise<CheckedAssistant> {

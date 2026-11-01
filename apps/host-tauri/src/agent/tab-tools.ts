@@ -24,7 +24,7 @@ import {
 	assertOwnList,
 	spotOfTab,
 } from "./tool-places.js";
-import type { TabSpot, ToolContext } from "./tool-places.js";
+import type { ChatReach, TabSpot, ToolContext } from "./tool-places.js";
 import { AgentAppSchema } from "./state-tools.js";
 
 const ONE_GROUP = "Name either group or newGroup, not both.";
@@ -220,13 +220,13 @@ async function ensureGroupId(app: StartedApp, list: string, { group, newGroup }:
 	return created.id;
 }
 
-async function ownTabSpot({ app, chatId }: ToolContext, tabId: string): Promise<TabSpot> {
+async function ownTabSpot({ app, chatId }: ChatReach, tabId: string): Promise<TabSpot> {
 	const spot = spotOfTab(await outputOf(app.send(TabsSidebarQuery)), tabId);
 	assertOwnList(spot.list, chatId, THE_TAB.replace("{id}", tabId));
 	return spot;
 }
 
-async function ownGroupList({ app, chatId }: ToolContext, groupId: string): Promise<void> {
+async function ownGroupList({ app, chatId }: ChatReach, groupId: string): Promise<void> {
 	const list = listOfGroup(await outputOf(app.send(TabsSidebarQuery)), groupId);
 	assertOwnList(list, chatId, THE_GROUP.replace("{id}", groupId));
 }
@@ -235,7 +235,7 @@ function keptGroupOf(spot: TabSpot, list: string): string | null {
 	return list === spot.list ? spot.groupId : null;
 }
 
-async function tabNowOf({ app, chatId }: ToolContext, tabId: string) {
+async function tabNowOf({ app, chatId }: ChatReach, tabId: string) {
 	const spot = spotOfTab(await outputOf(app.send(TabsSidebarQuery)), tabId);
 	return {
 		id: tabId,

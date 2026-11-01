@@ -62,6 +62,18 @@ export const AssistantTurnSchema = z.object({
 
 export type AssistantTurn = z.infer<typeof AssistantTurnSchema>;
 
+export interface QueuedMessage {
+	readonly id: string;
+	readonly text: string;
+	readonly isHeld: boolean;
+}
+
+export type QueueChange =
+	| { readonly kind: "remove"; readonly id: string }
+	| { readonly kind: "hold"; readonly id: string; readonly isHeld: boolean }
+	| { readonly kind: "edit"; readonly id: string; readonly said: string }
+	| { readonly kind: "send-now" };
+
 export interface AssistantSession {
 	readonly turns: readonly AssistantTurn[];
 	readonly busy: boolean;
@@ -69,6 +81,7 @@ export interface AssistantSession {
 	readonly tool: string | null;
 	readonly phase: AssistantPhase | null;
 	readonly spent: number;
+	readonly queued: readonly QueuedMessage[];
 }
 
 export type CallKind = "search" | "read" | "edit" | "run" | "other";
@@ -176,6 +189,7 @@ export interface AssistantPort {
 	forChat?(chatId: string): AssistantPort;
 	lendDrafts?(isDrafted: (chatId: string) => boolean): void;
 	sendFromHost?(said: string): Promise<void>;
+	changeQueue?(change: QueueChange): string | null;
 }
 
 export function portForChat(port: AssistantPort, chatId: string): AssistantPort {
@@ -191,6 +205,7 @@ const NO_SESSION: AssistantSession = {
 	tool: null,
 	phase: null,
 	spent: 0,
+	queued: [],
 };
 
 const NO_JOBS: readonly AppJobs[] = [];

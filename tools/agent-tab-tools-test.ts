@@ -28,6 +28,9 @@ const fakes = studioFakesOf();
 const context = {
 	app: fakes.studioApp,
 	chatId: HOST_CHAT,
+	queue: {
+		handQueueToAgent: () => null,
+	},
 };
 
 async function refusalOf(name: string, input: unknown): Promise<string> {

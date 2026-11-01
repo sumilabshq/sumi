@@ -46,16 +46,11 @@ export async function askOptional(context: ToolContext, input: unknown) {
 	};
 }
 
-export async function questionsSettled({ app, chatId }: ToolContext) {
-	const delivered = await outputOf(
-		app.send(DeliverQuestionsCommand, {
-			chat: chatId,
-			ids: null,
-		}),
-	);
-	return {
-		text: delivered.text,
-	};
+// TODO: rename questions_settled → queue_between_steps, needs the Rust hook rebuilt
+export function questionsSettled({ chatId, queue }: ToolContext) {
+	return Promise.resolve({
+		text: queue.handQueueToAgent(chatId) ?? "",
+	});
 }
 
 async function posted(

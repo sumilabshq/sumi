@@ -4,10 +4,17 @@ import { PINNED, THIS_CHAT, WORKSPACE } from "./app-state.js";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, Sidebar, SidebarTab } from "./sidebar-lists.js";
 
+export interface QueueTaker {
+	readonly handQueueToAgent: (chatId: string) => string | null;
+}
+
 export interface ToolContext {
 	readonly app: StartedApp;
 	readonly chatId: string;
+	readonly queue: QueueTaker;
 }
+
+export type ChatReach = Pick<ToolContext, "app" | "chatId">;
 
 export interface TabSpot {
 	readonly list: string;
