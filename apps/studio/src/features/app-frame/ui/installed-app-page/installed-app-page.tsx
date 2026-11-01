@@ -25,6 +25,6 @@ export function InstalledAppPage({ app, tabId, isShown }: InstalledAppPageProps)
 		case "missing":
 			return <MissingApp app={app} problem={view.problem} />;
 		case "frame":
-			return <AppFrame app={app} tabId={view.tab.id} isShown={isShown} />;
+			return <AppFrame app={app} tabId={view.tabId} isShown={isShown} />;
 	}
 }

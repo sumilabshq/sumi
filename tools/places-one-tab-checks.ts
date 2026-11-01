@@ -2,6 +2,7 @@ import { app, localTransport } from "../packages/shared/core/src/requests/index.
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
 import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import {
+	AppTabQuery,
 	CloseTabCommand,
 	ClosedTabsQuery,
 	FoldTabCommand,
@@ -12,6 +13,7 @@ import {
 	PlaceTabCommand,
 	PlacesModule,
 	RecordTabTurnCommand,
+	RecordAppPageCommand,
 	ReopenClosedTabCommand,
 	SidebarQuery,
 } from "../packages/state/places/index.ts";
@@ -79,8 +81,24 @@ async function wholeChatChecks(): Promise<void> {
 		[["Release plan", "running", 1]],
 	);
 
+	await chatAddressChecks(places);
 	await turnEndingChecks(places);
 	await archiveChecks(places, tabs);
+}
+
+async function chatAddressOf(places: StartedApp): Promise<string | null> {
+	const answer = await places.send(AppTabQuery, { id: "chat-a" });
+	return answer.ok ? answer.output.address : answer.reason;
+}
+
+async function chatAddressChecks(places: StartedApp): Promise<void> {
+	const kept = await chatAddressOf(places);
+	await places.send(RecordAppPageCommand, { id: "chat-a", address: "/elsewhere" });
+	check(
+		"a chat tab's address is its chat id, the one an installed chat app reads, whatever the app records",
+		[kept, await chatAddressOf(places)],
+		["chat-a", "chat-a"],
+	);
 }
 
 async function turnEndingChecks(places: StartedApp): Promise<void> {

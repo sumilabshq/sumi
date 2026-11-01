@@ -2,6 +2,7 @@ import { Repeatable, command, deny, guard, query, refuse, subscriber } from "@wi
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
+import { holdsTabs } from "../../shared/lib/tabs/app-abilities.js";
 import {
 	AppPageSchema,
 	OwnAppTabAskSchema,
@@ -99,7 +100,7 @@ export const AppTabQuery = query("app-tab")
 		return {
 			id: tab.id,
 			app: tab.app,
-			address: tab.lastAddress,
+			address: holdsTabs(tab) ? tab.id : tab.lastAddress,
 			title: tab.lastTitle ?? tab.title,
 		};
 	});

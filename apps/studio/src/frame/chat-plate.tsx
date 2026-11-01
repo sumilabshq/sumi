@@ -10,6 +10,7 @@ import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { chatCardsOver } from "../assistant/chat-cards.js";
 import { ChatBody } from "./chat-body.js";
+import { ChatPage } from "./chat-page.js";
 
 export interface ChatPlateProps {
 	readonly chatId: string | null;
@@ -26,7 +27,12 @@ export function ChatPlate({ chatId, chatAppFor, assistant, crumb, more }: ChatPl
 	useNamesUnnamedPane(chatId);
 	return (
 		<Plate side="chat" label={CHAT_LABEL} edgeStart={null} lead={null} crumb={crumb} more={more} edgeEnd={null}>
-			{chatId === null ? null : <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
+			{chatId === null ? null : (
+				<ChatPage
+					chatId={chatId}
+					builtIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
+				/>
+			)}
 		</Plate>
 	);
 }

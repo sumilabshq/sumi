@@ -1,7 +1,7 @@
-import { createElement as h, useSyncExternalStore } from "react";
+import { Fragment, Suspense, createElement as h, useSyncExternalStore } from "react";
 import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { AppProvider, app, useQuery } from "../packages/shared/core/src/requests/index.ts";
 import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
 import { MemoryAppsGateway } from "../packages/state/app-installer/gateways/apps/memory.gateway.ts";
 import type { ReleaseRead } from "../packages/state/app-installer/gateways/apps/apps.gateway.ts";
@@ -11,8 +11,10 @@ import {
 	UpdateAppsCommand,
 } from "../packages/state/app-installer/generated/contract.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { AppTabsQuery } from "../packages/domain/app-host/generated/contract.ts";
-import { RecordAppPageCommand } from "../packages/state/places/generated/contract.ts";
+import { AppFacesQuery, AppTabsQuery } from "../packages/domain/app-host/generated/contract.ts";
+import { AppTabQuery, RecordAppPageCommand } from "../packages/state/places/generated/contract.ts";
+import { appPageOf } from "../apps/studio/src/frame/app-page-of.tsx";
+import { ChatPage } from "../apps/studio/src/frame/chat-page.tsx";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
@@ -39,6 +41,8 @@ interface AppInstallerDriver {
 	readonly recordAddress: (tabId: string, address: string) => Promise<unknown>;
 	readonly showTab: (tabId: string) => void;
 	readonly read: () => Promise<unknown>;
+	readonly installReplacing: () => Promise<unknown>;
+	readonly readReplacing: () => Promise<unknown>;
 }
 
 reportsFailures();
@@ -46,7 +50,14 @@ reportsFailures();
 const HELLO_FOLDER = "/releases/hello";
 const READY_TIMEOUT_MS = 3000;
 const TAB_IDS = ["t1", "t2"];
+const REPLACING_APPS = ["canvas", "terminal", "chat"];
+const PAGE_APPS = ["canvas", "terminal"];
+const CHAT_TAB = "c1";
 const releases = window.__RELEASES__ ?? {};
+
+function replacingFolderOf(id: string): string {
+	return `/releases/${id}`;
+}
 const apps = new MemoryAppsGateway({
 	registry: {
 		apps: [
@@ -57,6 +68,13 @@ const apps = new MemoryAppsGateway({
 					path: HELLO_FOLDER,
 				},
 			},
+			...REPLACING_APPS.map((id) => ({
+				id,
+				source: {
+					kind: "folder" as const,
+					path: replacingFolderOf(id),
+				},
+			})),
 			{
 				id: "elsewhere",
 				source: {
@@ -70,12 +88,15 @@ const apps = new MemoryAppsGateway({
 	fileUrlOf: ({ id, version }, file) => `/apps/${id}/${version}/${file}`,
 });
 const tabs = new MemoryTabsGateway(
-	placedTabsOf({
-		tabs: [helloTab("t1", "/busy"), helloTab("t2", "")],
-		shownId: "t1",
-		minted: 2,
-		closed: [],
-	}),
+	placedTabsOf(
+		{
+			tabs: [helloTab("t1", "/busy"), helloTab("t2", ""), ...PAGE_APPS.map((app) => seededTab(`k-${app}`, app, ""))],
+			shownId: "t1",
+			minted: 2,
+			closed: [],
+		},
+		[CHAT_TAB],
+	),
 );
 const core = placesLinkOf(tabs);
 const studio = app()
@@ -106,7 +127,7 @@ const studio = app()
 	.imports(PlacesContract.over(core))
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 
-interface SeededHelloTab {
+interface SeededTab {
 	readonly id: string;
 	readonly app: string;
 	readonly pageId: null;
@@ -114,10 +135,14 @@ interface SeededHelloTab {
 	readonly lastAddress: string;
 }
 
-function helloTab(id: string, address: string): SeededHelloTab {
+function helloTab(id: string, address: string): SeededTab {
+	return seededTab(id, "hello", address);
+}
+
+function seededTab(id: string, app: string, address: string): SeededTab {
 	return {
 		id,
-		app: "hello",
+		app,
 		pageId: null,
 		label: null,
 		lastAddress: address,
@@ -174,7 +199,84 @@ window.__appInstaller = {
 			})),
 		};
 	},
+	installReplacing: () =>
+		Promise.all(
+			REPLACING_APPS.map((id) => {
+				placeReplacing(id);
+				return outputOf(studio.send(InstallAppCommand, { id }));
+			}),
+		),
+	readReplacing: async () => {
+		const [chatTab, installed] = await Promise.all([
+			studio.send(AppTabQuery, { id: CHAT_TAB }),
+			studio.send(InstalledAppsQuery),
+		]);
+		const chatApp = installed.ok ? installed.output.apps.find(({ id }) => id === "chat") : undefined;
+		return {
+			pages: REPLACING_APPS.map((id) => ({
+				id,
+				isBuiltIn: document.querySelector(`[data-page="${id}"] [data-built-in]`) !== null,
+				src: document.querySelector(`[data-page="${id}"] iframe`)?.getAttribute("src") ?? null,
+			})),
+			chatAddress: chatTab.ok ? chatTab.output.address : chatTab.reason,
+			chatVersions:
+				chatApp === undefined
+					? null
+					: {
+							current: chatApp.current,
+							failed: chatApp.failed,
+						},
+		};
+	},
 };
+
+function placeReplacing(id: string): void {
+	const read = releases["1.0.0"];
+
+	if (read === undefined) {
+		throw new Error("the page was given no release 1.0.0");
+	}
+
+	apps.placeFolder(replacingFolderOf(id), {
+		...read,
+		manifest: {
+			...(read.manifest as Record<string, unknown>),
+			id,
+		},
+		release: {
+			...read.release,
+			app: id,
+		},
+	});
+}
+
+function BuiltInStandIn({ app }: { readonly app: string }): ReactElement {
+	return <p data-built-in={app}>{app}</p>;
+}
+
+function ReplacingPages(): ReactElement {
+	const { faces } = useQuery(AppFacesQuery).data;
+	return (
+		<>
+			{PAGE_APPS.map((app) => (
+				<div key={app} data-page={app} style={{ height: "100px" }}>
+					{appPageOf({
+						app,
+						faces,
+						builtIn: {
+							canvas: () => <BuiltInStandIn app="canvas" />,
+							terminal: () => <BuiltInStandIn app="terminal" />,
+						},
+						installed: () => <InstalledAppPage app={app} tabId={`k-${app}`} isShown={false} />,
+					})}
+				</div>
+			))}
+			<div data-page="chat" style={{ height: "100px" }}>
+				<ChatPage chatId={CHAT_TAB} builtIn={() => <BuiltInStandIn app="chat" />} />
+			</div>
+		</>
+	);
+}
 
 function onShown(told: () => void): () => void {
 	shownListeners.add(told);
@@ -190,6 +292,9 @@ function Frames(): ReactElement {
 					<InstalledAppPage app="hello" tabId={id} isShown={id === shown} />
 				</div>
 			))}
+			<Suspense fallback={null}>
+				<ReplacingPages />
+			</Suspense>
 		</AppFramesProvider>
 	);
 }
