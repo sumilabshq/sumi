@@ -7,4 +7,5 @@ export * from "./generated/assistant.js";
 export * from "./generated/appearance.js";
 export * from "./link-catcher.js";
 export * from "./manifest.js";
+export * from "./theme-wearer.js";
 export * from "./version.js";
