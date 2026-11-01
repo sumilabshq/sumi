@@ -3,6 +3,7 @@ import type { ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
+import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
 import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";
 import { AppFramesProvider } from "../features/app-frame/ui/app-frames/app-frames-provider.js";
@@ -12,6 +13,7 @@ export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
 	readonly layoutApp: StartedApp;
 	readonly frameRoutes: FrameRoutesFor;
+	readonly appPageUrlOf: AppPageUrlOf;
 	readonly studio: StudioHostPort;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
@@ -22,6 +24,7 @@ export function StudioLayout({
 	frame,
 	layoutApp,
 	frameRoutes,
+	appPageUrlOf,
 	studio,
 	left,
 	panes,
@@ -30,7 +33,7 @@ export function StudioLayout({
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
 		<AppProvider app={layoutApp}>
-			<AppFramesProvider routesFor={frameRoutes}>
+			<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf}>
 				<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} />
 			</AppFramesProvider>
 		</AppProvider>

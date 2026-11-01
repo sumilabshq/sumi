@@ -22,3 +22,4 @@ registry/*/*/build/
 apps/host-tauri/src-tauri/target/
 apps/host-tauri/src-tauri/gen/schemas/
 /tools/.scaffold-probe-*/
+/apps/*/*.tsbuildinfo

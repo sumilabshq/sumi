@@ -1,0 +1,45 @@
+@import "../../../design-systems/sumi/tokens.css";
+@import "../../../design-systems/sumi/sumi.css";
+@import "./features/plate/plate.css";
+
+@font-face {
+	font-family: "Inter Variable";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "JetBrains Mono";
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/jetbrains-mono/JetBrainsMonoVariable-latin.woff2") format("woff2");
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+	font-family: var(--sumi-font-ui);
+}
+
+.wg-terminal-app {
+	height: 100%;
+}
+
+.wg-terminal-note {
+	margin: 0;
+	padding: 16px;
+	color: var(--sumi-text-2);
+	font-family: var(--sumi-font-mono);
+	font-size: 13px;
+}
+
+.wg-app-plate-body > .wg-terminal {
+	flex: 1;
+	min-height: 0;
+}

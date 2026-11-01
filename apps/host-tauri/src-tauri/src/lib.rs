@@ -1,5 +1,5 @@
 pub mod agent;
-pub mod app_installer;
+pub mod app_pages;
 pub mod assistant;
 pub mod browser;
 pub mod drive_files;

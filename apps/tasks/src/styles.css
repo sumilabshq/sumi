@@ -1,0 +1,38 @@
+@import "@widgetarium/core/styles.css";
+@import "../../../design-systems/sumi/tokens.css";
+@import "../../../design-systems/sumi/sumi.css";
+@import "./features/plate/plate.css";
+@import "./features/tasks/tasks.css";
+
+@font-face {
+	font-family: "Inter Variable";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "JetBrains Mono";
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/jetbrains-mono/JetBrainsMonoVariable-latin.woff2") format("woff2");
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+	font-family: var(--sumi-font-ui);
+}
+
+.wg-tasks-app {
+	height: 100%;
+}
+
+.wg-app-plate-body > .wg-tasks {
+	flex: 1;
+}

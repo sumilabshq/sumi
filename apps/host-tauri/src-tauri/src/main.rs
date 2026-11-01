@@ -1,5 +1,5 @@
 use widgetarium_host_tauri_lib::agent::mcp;
-use widgetarium_host_tauri_lib::app_installer::{self, scheme};
+use widgetarium_host_tauri_lib::app_pages::{self, scheme};
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
@@ -18,8 +18,7 @@ fn main() {
         .plugin(widgetarium_host_tauri_lib::studio_core::init())
         .plugin(widgetarium_host_tauri_lib::terminal::init())
         .plugin(widgetarium_host_tauri_lib::files::init())
-        .plugin(app_installer::init())
-        .register_asynchronous_uri_scheme_protocol(scheme::SCHEME, app_installer::serve_scheme)
+        .register_asynchronous_uri_scheme_protocol(scheme::SCHEME, app_pages::serve_scheme)
         .run(tauri::generate_context!())
         .expect("the Widgetarium window failed to start");
 }

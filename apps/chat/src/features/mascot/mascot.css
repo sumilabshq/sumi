@@ -1,0 +1,362 @@
+.wg-mascot,
+.wg-chat-tab-icon {
+	/* TRADE-OFF: Sumi's own colours, not kit tokens: the body is a three-stop gradient per theme */
+	--wg-mascot-body-light: #3a3b41;
+	--wg-mascot-body-base: #17181b;
+	--wg-mascot-body-dark: #0b0b0d;
+	--wg-mascot-eye: #ffffff;
+	--wg-mascot-shadow: rgba(20, 21, 24, 0.13);
+	--wg-mascot-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.wg-mascot {
+	position: relative;
+	flex: none;
+	cursor: default;
+}
+
+:is(.theme-dark, .dark) :is(.wg-mascot, .wg-chat-tab-icon) {
+	--wg-mascot-body-light: #ffffff;
+	--wg-mascot-body-base: #f1f1ee;
+	--wg-mascot-body-dark: #b9bab5;
+	--wg-mascot-eye: #17181b;
+	--wg-mascot-shadow: rgba(0, 0, 0, 0.5);
+}
+
+.wg-mascot-stage {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 180px;
+	height: 180px;
+	transform-origin: 0 0;
+}
+
+.wg-mascot-layer {
+	position: absolute;
+	inset: 0;
+	transform-origin: 50% 90%;
+}
+
+.wg-mascot-pose {
+	transition: transform 0.7s var(--wg-mascot-spring);
+}
+
+.wg-mascot-breath {
+	animation: wg-mascot-breathe 3.4s ease-in-out infinite;
+}
+
+.wg-mascot-body-light {
+	stop-color: var(--wg-mascot-body-light);
+}
+
+.wg-mascot-body-base {
+	stop-color: var(--wg-mascot-body-base);
+}
+
+.wg-mascot-body-dark {
+	stop-color: var(--wg-mascot-body-dark);
+}
+
+.wg-mascot-svg {
+	position: absolute;
+	inset: 0;
+	width: 180px;
+	height: 180px;
+	overflow: visible;
+}
+
+.wg-mascot-turn {
+	transform-box: view-box;
+	transform-origin: 0 0;
+}
+
+.wg-mascot-lid {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+	animation: wg-mascot-blink 5.2s infinite;
+}
+
+.wg-mascot-eye {
+	fill: none;
+	stroke: var(--wg-mascot-eye);
+	stroke-linecap: round;
+	stroke-width: 8.5px;
+	transform-box: fill-box;
+	transform-origin: 50% 50%;
+	transition:
+		d 0.5s var(--wg-mascot-spring),
+		stroke-width 0.45s var(--wg-mascot-spring),
+		transform 0.5s var(--wg-mascot-spring);
+}
+
+.wg-mascot-mouth {
+	fill: none;
+	stroke: var(--wg-mascot-eye);
+	stroke-linecap: round;
+	stroke-width: 0;
+	transition:
+		d 0.5s var(--wg-mascot-spring),
+		stroke-width 0.35s var(--wg-mascot-spring);
+}
+
+.wg-mascot-shadow {
+	position: absolute;
+	left: 50%;
+	bottom: 4px;
+	width: 110px;
+	height: 10px;
+	margin-left: -55px;
+	border-radius: 999px;
+	background: var(--wg-mascot-shadow);
+	filter: blur(3px);
+}
+
+.wg-mascot-z,
+.wg-mascot-q {
+	position: absolute;
+	font-family: var(--font-interface, inherit);
+	pointer-events: none;
+	opacity: 0;
+}
+
+.wg-mascot-z {
+	right: 34.5px;
+	top: 22.5px;
+	font-size: 16.5px;
+	font-weight: 500;
+	color: var(--wg-kit-text-muted);
+	transition: opacity 0.5s;
+}
+
+.wg-mascot-q {
+	right: 30px;
+	top: 16.5px;
+	font-size: 19.5px;
+	font-weight: 600;
+	color: var(--wg-kit-text);
+	transform: translateY(6px) scale(0.4);
+	transition:
+		opacity 0.3s,
+		transform 0.5s var(--wg-mascot-spring);
+}
+
+@keyframes wg-mascot-breathe {
+	0%,
+	100% {
+		transform: scale(1, 1);
+	}
+	50% {
+		transform: scale(1.025, 0.975);
+	}
+}
+
+@keyframes wg-mascot-blink {
+	0%,
+	93%,
+	100% {
+		transform: scaleY(1);
+	}
+	96% {
+		transform: scaleY(0.08);
+	}
+}
+
+@keyframes wg-mascot-sway {
+	0%,
+	100% {
+		transform: rotate(-3deg);
+	}
+	50% {
+		transform: rotate(3deg);
+	}
+}
+
+@keyframes wg-mascot-bob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-3px);
+	}
+}
+
+@keyframes wg-mascot-z {
+	0% {
+		transform: translate(0, 0);
+		opacity: 0;
+	}
+	30% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate(10.5px, -19.5px);
+		opacity: 0;
+	}
+}
+
+.wg-mascot.is-listening .wg-mascot-pose {
+	transform: rotate(-6deg) translate(-6px, 2px);
+}
+
+.wg-mascot.is-thinking .wg-mascot-sway {
+	animation: wg-mascot-sway 2.6s ease-in-out infinite;
+}
+
+.wg-mascot:is(.is-thinking, .is-working, .is-done, .is-pleased, .is-error, .is-sleep, .is-surprised, .is-question)
+	.wg-mascot-lid {
+	animation: none;
+}
+
+.wg-mascot.is-working .wg-mascot-breath {
+	animation: wg-mascot-bob 0.55s ease-in-out infinite;
+}
+
+.wg-mascot:is(.is-done, .is-pleased) .wg-mascot-eye {
+	stroke-width: 3.25px;
+}
+
+.wg-mascot.is-done .wg-mascot-mouth {
+	stroke-width: 2.5px;
+}
+
+.wg-mascot.is-done .wg-mascot-pose {
+	transform: scale(1.04);
+}
+
+.wg-mascot.is-question .wg-mascot-pose {
+	transform: rotate(10deg);
+}
+
+.wg-mascot.is-question .wg-mascot-eye {
+	stroke-width: 9.5px;
+}
+
+.wg-mascot.is-question .wg-mascot-mouth {
+	stroke-width: 2.5px;
+}
+
+.wg-mascot.is-question .wg-mascot-q {
+	opacity: 1;
+	transform: translateY(0) scale(1) rotate(12deg);
+}
+
+.wg-mascot.is-error .wg-mascot-pose {
+	transform: translateY(7px) scale(1.02, 0.96);
+}
+
+.wg-mascot.is-error .wg-mascot-eye.is-left {
+	transform: rotate(-18deg);
+}
+
+.wg-mascot.is-error .wg-mascot-eye.is-right {
+	transform: rotate(18deg);
+}
+
+.wg-mascot.is-error .wg-mascot-mouth {
+	stroke-width: 2.5px;
+}
+
+.wg-mascot.is-sleep .wg-mascot-eye {
+	stroke-width: 2.75px;
+}
+
+.wg-mascot.is-sleep .wg-mascot-breath {
+	animation-duration: 5.5s;
+}
+
+.wg-mascot.is-sleep .wg-mascot-pose {
+	transform: translateY(4px);
+}
+
+.wg-mascot.is-sleep .wg-mascot-z {
+	opacity: 1;
+	animation: wg-mascot-z 2.4s ease-out infinite;
+}
+
+.wg-mascot.is-surprised .wg-mascot-eye {
+	stroke-width: 10px;
+}
+
+.wg-mascot.is-surprised .wg-mascot-pose {
+	transform: translateY(-5px) scale(0.98, 1.04);
+}
+
+.wg-mascot.is-surprised .wg-mascot-mouth {
+	stroke-width: 4.5px;
+}
+
+.wg-chat-tab-icon {
+	display: inline-block;
+	flex: none;
+	inline-size: var(--wg-chat-tab-icon-size, 16px);
+	block-size: var(--wg-chat-tab-icon-size, 16px);
+	vertical-align: middle;
+}
+
+.wg-chat-tab-icon-ink {
+	display: block;
+	inline-size: 100%;
+	block-size: 100%;
+	background-image: radial-gradient(
+		71.74% 71.74% at 42.35% 35.83%,
+		var(--wg-mascot-body-light) 0%,
+		var(--wg-mascot-body-base) 60%,
+		var(--wg-mascot-body-dark) 100%
+	);
+	/* TRADE-OFF: body path copied from INK_BODY_PATH, CSS cannot import it; chat-tab-icon-test pins them equal */
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='14 24 92 92'%3E%3Cpath d='M60 26 C88 26 104 46 104 68 C104 96 86 112 60 112 C34 112 16 96 16 68 C16 44 32 26 60 26Z'/%3E%3C/svg%3E")
+		center / 100% 100% no-repeat;
+}
+
+.wg-chat-tab-icon[data-motion="bob"] .wg-chat-tab-icon-ink {
+	animation: wg-mascot-bob 1.2s ease-in-out infinite;
+}
+
+.wg-chat-tab-icon-stroke {
+	fill: none;
+	stroke: var(--wg-mascot-eye);
+	stroke-linecap: round;
+}
+
+.wg-chat-tab-icon-lid {
+	transform-box: fill-box;
+	transform-origin: 50% 100%;
+}
+
+.wg-chat-tab-icon[data-motion="blink"] .wg-chat-tab-icon-lid {
+	animation: wg-mascot-blink 5s infinite;
+}
+
+.wg-chat-tab-icon-gaze {
+	transition: transform 0.35s var(--wg-mascot-spring);
+}
+
+.wg-chat-tab-icon-host:hover .wg-chat-tab-icon {
+	animation: wg-chat-tab-icon-hop 0.45s ease-out;
+}
+
+.wg-chat-tab-icon-host:hover .wg-chat-tab-icon-gaze {
+	transform: translate(4px, -2px);
+}
+
+@keyframes wg-chat-tab-icon-hop {
+	0%,
+	100% {
+		translate: 0 0;
+	}
+	40% {
+		translate: 0 -2px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wg-mascot,
+	.wg-mascot *,
+	.wg-chat-tab-icon,
+	.wg-chat-tab-icon * {
+		animation: none !important;
+		transition: none !important;
+	}
+}

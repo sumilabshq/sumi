@@ -18,7 +18,7 @@ import type { FakeBrowser } from "./browser-fakes.ts";
 import { exactStatesReport } from "./browser-states-exact.ts";
 import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask-ink-prompt.ts";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
-import { Composer } from "../apps/studio/src/features/assistant/ui/composer/composer.tsx";
+import { Composer } from "../apps/chat/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
 

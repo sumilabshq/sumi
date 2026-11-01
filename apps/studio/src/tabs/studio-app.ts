@@ -1,5 +1,5 @@
 import { AppHostModule } from "@widgetarium/app-host/module";
-import { AppInstallerModule } from "@widgetarium/app-installer/module";
+import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import { CommandMenuModule } from "@widgetarium/command-menu/module";
@@ -10,10 +10,8 @@ import { LayoutModule } from "@widgetarium/layout/module";
 import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
 import { TasksModule } from "@widgetarium/tasks";
-import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
 import { FileSystemModule } from "@widgetarium/file-system/module";
-import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
@@ -26,7 +24,7 @@ export interface StudioAppAsk {
 export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): StartedApp {
 	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
-		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppInstallerModule, AppHostModule, CommandMenuModule)
+		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
 		.imports(PlacesModule.over(served), TasksModule.over(served))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
@@ -36,7 +34,7 @@ export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): S
 export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
 	server()
-		.modules(RunnablePlacesModule, RunnableTasksModule, FileSystemModule, TerminalModule)
+		.modules(RunnablePlacesModule, FileSystemModule, ...APP_MODULES)
 		.listen(local)
 		.start({
 			env: {},

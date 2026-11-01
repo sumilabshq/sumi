@@ -1,0 +1,20 @@
+{
+	"apps": [
+		{
+			"id": "browser-page",
+			"build": "apps/browser-page/dist"
+		},
+		{
+			"id": "chat",
+			"build": "apps/chat/dist"
+		},
+		{
+			"id": "tasks",
+			"build": "apps/tasks/dist"
+		},
+		{
+			"id": "terminal",
+			"build": "apps/terminal/dist"
+		}
+	]
+}

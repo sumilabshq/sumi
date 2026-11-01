@@ -1,0 +1,15 @@
+{
+	"id": "chat",
+	"name": "Chat",
+	"version": "0.1.0",
+	"contract": "^0.3.2",
+	"ui": "index.html",
+	"modules": [
+		{
+			"name": "chat",
+			"runs": "page"
+		}
+	],
+	"mcp": false,
+	"navigates": true
+}

@@ -64,8 +64,6 @@ export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly(
 export const KnownAppSchema = z.object({
 	id: TabAppSchema,
 	isBuiltIn: z.boolean(),
-	isInstalled: z.boolean(),
-	isListed: z.boolean(),
 });
 
 export type KnownApp = z.infer<typeof KnownAppSchema>;

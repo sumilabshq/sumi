@@ -1,9 +1,9 @@
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import type { RequestListener, Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { homedir, tmpdir } from "node:os";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { getRequestListener } from "@hono/node-server";
 import { server } from "@widgetarium/core/requests/server";
@@ -20,7 +20,9 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { seededBoard } from "./tasks-fixture.ts";
-import { releaseReadOf } from "./app-release.ts";
+import { REGISTERED_APPS } from "../packages/shared/app-registry/index.ts";
+import { APP_MODULES } from "../packages/shared/app-registry/modules.ts";
+import { APP_REGISTRY_PACKAGE, appRegistryFilesOf } from "../packages/shared/cli/src/apps-registry.ts";
 import { framePolicyServedFrom } from "./frame-policy.ts";
 import { paged, waitUntil } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
@@ -32,7 +34,6 @@ import type { SumiAppId } from "./sumi-apps-seed.ts";
 const GATE = "test:sumi-apps";
 const WAIT_MS = 30_000;
 const STEP_MS = 250;
-const SUMI_ROOT = path.join(homedir(), "Projects", "Sumi");
 const CONTENT_TYPES: Readonly<Record<string, string>> = {
 	".js": "text/javascript; charset=utf-8",
 	".css": "text/css; charset=utf-8",
@@ -48,6 +49,7 @@ const PREBUILT = "SUMI_APPS_PREBUILT";
 const NOT_AN_APP = "test:sumi-apps checks {named}, which is none of {apps}";
 const TASKS_RELOAD_LAST: readonly SumiAppId[] = [...SUMI_APP_IDS.filter((app) => app !== "tasks"), "tasks"];
 const CHECKED_APPS = checkedAppsOf(process.argv.slice(2));
+const VITE = path.resolve("node_modules/vite/bin/vite.js");
 
 function checkedAppsOf(named: readonly string[]): readonly SumiAppId[] {
 	const unknown = named.find((each) => !TASKS_RELOAD_LAST.some((app) => app === each));
@@ -59,44 +61,49 @@ function checkedAppsOf(named: readonly string[]): readonly SumiAppId[] {
 	return named.length === 0 ? TASKS_RELOAD_LAST : TASKS_RELOAD_LAST.filter((app) => named.includes(app));
 }
 
-function repoOf(app: string): string {
-	return path.join(SUMI_ROOT, `sumi-${app}`);
+function buildFolderOf(app: string): string {
+	const registered = REGISTERED_APPS.find(({ id }) => id === app);
+	return path.resolve(registered === undefined ? path.join("apps", app, "dist") : registered.build);
 }
 
-function distOf(app: string): string {
-	return path.join(repoOf(app), "apps", "web", "dist");
-}
-
-function gitIn(repo: string, args: readonly string[]): string {
-	return execFileSync("git", ["-C", repo, ...args], {
-		encoding: "utf8",
-	}).trim();
-}
-
-function releaseFromHead(app: SumiAppId): void {
-	const repo = repoOf(app);
-
+function buildInMonorepo(app: SumiAppId): void {
 	if (process.env[PREBUILT] === "1") {
-		console.log(`${app}: ${PREBUILT}=1, the release in ${distOf(app)} is read as it is, not a check`);
+		console.log(`${app}: ${PREBUILT}=1, the build in ${buildFolderOf(app)} is read as it is, not a check`);
 		return;
 	}
 
+	execFileSync(process.execPath, [VITE, "build", "--logLevel", "warn"], {
+		cwd: path.resolve("apps", app),
+		stdio: ["ignore", "ignore", "inherit"],
+	});
 	check(
-		`${app}: the app repo has nothing uncommitted, so its release is built from HEAD`,
-		gitIn(repo, ["status", "--porcelain"]),
-		"",
+		`${app}: apps/${app} builds into the folder the registry serves`,
+		existsSync(path.join(buildFolderOf(app), "index.html")),
+		true,
 	);
-	for (const script of ["build", "release"]) {
-		execFileSync("pnpm", [script], {
-			cwd: repo,
-			env: {
-				...process.env,
-				SUMI_SHELL: process.cwd(),
-			},
-			stdio: ["ignore", "ignore", "inherit"],
-		});
-	}
-	console.log(`${app}: released from ${gitIn(repo, ["rev-parse", "--short", "HEAD"])}`);
+}
+
+function registryChecks(): void {
+	const folders = readdirSync("apps")
+		.filter((folder) => existsSync(path.join("apps", folder, "sumi-app.json")))
+		.sort();
+	check(
+		"the registry names every apps/* folder holding a sumi-app.json, and nothing else",
+		REGISTERED_APPS.map(({ id }) => id),
+		folders,
+	);
+	check(
+		"the registry on disk is what widgetarium generate writes from apps/*",
+		appRegistryFilesOf(process.cwd()).filter(
+			({ entry, text }) => readFileSync(path.join(APP_REGISTRY_PACKAGE, entry), "utf8") !== text,
+		),
+		[],
+	);
+	check(
+		"the core registers the modules the apps bring: tasks and terminal",
+		APP_MODULES.map((each) => each.definition.name),
+		["tasks", "terminal"],
+	);
 }
 
 function inScript(text: string): string {
@@ -174,28 +181,26 @@ const served = server()
 		},
 	});
 
+registryChecks();
 for (const app of CHECKED_APPS) {
-	releaseFromHead(app);
+	buildInMonorepo(app);
 }
 
 const WEB_PAGE_APP: SumiAppId = "browser-page";
-const IS_WEB_PAGE_INSTALLED = CHECKED_APPS.includes(WEB_PAGE_APP);
-const LISTED_APPS = IS_WEB_PAGE_INSTALLED ? CHECKED_APPS : [...CHECKED_APPS, WEB_PAGE_APP];
-const registry = LISTED_APPS.map((id) => ({
-	id,
-	path: distOf(id),
-}));
-const releases = Object.fromEntries(registry.map(({ path: folder }) => [folder, releaseReadOf(folder)]));
 function appFileOf(pathname: string): { readonly app: string; readonly file: string } | null {
-	const asked = /^\/apps\/([a-z][a-z0-9-]*)\/(\d+\.\d+\.\d+)\/(.+)$/.exec(pathname);
+	const asked = /^\/apps\/([a-z][a-z0-9-]*)\/(.+)$/.exec(pathname);
 	const app = asked?.[1];
-	const relative = asked?.[3];
+	const relative = asked?.[2];
 
 	if (app === undefined || relative === undefined || relative.includes("..")) {
 		return null;
 	}
 
-	const file = path.join(distOf(app), relative);
+	if (!REGISTERED_APPS.some(({ id }) => id === app)) {
+		return null;
+	}
+
+	const file = path.join(buildFolderOf(app), relative);
 	return existsSync(file)
 		? {
 				app,
@@ -234,7 +239,7 @@ const studioSheets = ["packages/shared/core/browser-host.css", "apps/host-obsidi
 const shellPage = `<!doctype html><html><head><meta charset="utf-8">
 <link rel="icon" href="data:,"><style>${studioSheets}</style><style>html,body,#root{height:100%;margin:0}</style></head>
 <body><div id="root"></div><pre id="boom"></pre>
-<script>${inScript(`window.__SUMI_APP_ORIGIN__ = ${JSON.stringify(apps.origin)}; window.__SUMI_REGISTRY__ = ${JSON.stringify(registry)}; window.__SUMI_RELEASES__ = ${JSON.stringify(releases)};`)}</script>
+<script>${inScript(`window.__SUMI_APP_ORIGIN__ = ${JSON.stringify(apps.origin)};`)}</script>
 <script>${inScript(bundle)}</script></body></html>`;
 const core = await listening(
 	getRequestListener((request) => {
@@ -266,7 +271,6 @@ async function frameSees(page: AskedPage, app: string, expression: string): Prom
 const APP_DRAWN: Readonly<Record<SumiAppId, string>> = {
 	tasks: "[data-tasks-card], [data-tasks-page]",
 	terminal: ".wg-terminal-screen",
-	canvas: "[data-canvas-view]",
 	"browser-page": "[data-browser-page-state], .wg-browser-page-area",
 	chat: "textarea",
 };
@@ -278,7 +282,7 @@ async function frameOpens(page: AskedPage, app: SumiAppId): Promise<void> {
 		WAIT_MS,
 		STEP_MS,
 	);
-	check(`${app}: the studio draws the installed app's frame in its tab`, isDrawn, true);
+	check(`${app}: the studio draws the registered app frame in its tab, with no install`, isDrawn, true);
 	check(
 		`${app}: the frame is sandboxed allow-scripts allow-forms`,
 		await page.ask(
@@ -376,17 +380,24 @@ async function showAppTab(page: AskedPage, app: SumiAppId): Promise<void> {
 	await frameOpens(page, app);
 }
 
-async function installAll(page: AskedPage): Promise<void> {
-	for (const id of CHECKED_APPS) {
-		check(
-			`${id}: installs from its folder release`,
-			await page.ask(`window.__sumiApps.install(${JSON.stringify(id)})`),
-			{
-				id,
-				version: "0.1.0",
-			},
-		);
-	}
+const MENU_ASKS = ["", "install", "update", "tasks", "chat"];
+
+async function nothingAsksToInstall(page: AskedPage): Promise<void> {
+	const said = await Promise.all(
+		MENU_ASKS.map(async (text) =>
+			JSON.stringify(await page.ask(`window.__sumiApps.menuResults(${JSON.stringify(text)})`)),
+		),
+	);
+	check(
+		"the command menu answers every ask with no Install row and no Update apps",
+		said.filter((answer) => /"title":"(Install |Update apps)/.test(answer) || answer.includes("refused")),
+		[],
+	);
+	check(
+		"no page of the studio offers to install an app",
+		await page.ask(`[...document.querySelectorAll("button")].some((each) => /^Install /.test(each.textContent ?? ""))`),
+		false,
+	);
 }
 
 async function studioStarts(page: AskedPage): Promise<void> {
@@ -428,17 +439,6 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 	check("tasks: Accept writes the task as done into tasks.json on disk", statusOnDisk(147), "done");
 	await page.ask("location.reload()");
 	await studioStarts(page);
-	check(
-		"tasks: after the studio reloads, the reinstalled app answers the same version",
-		await page.ask(`window.__sumiApps.install("tasks")`),
-		{
-			id: "tasks",
-			version: "0.1.0",
-		},
-	);
-	for (const id of CHECKED_APPS.filter((app) => app !== "tasks")) {
-		await page.ask(`window.__sumiApps.install(${JSON.stringify(id)})`);
-	}
 	await showAppTab(page, "tasks");
 	check(
 		"tasks: the reloaded frame reopens the task page it was on and draws the task as done, read back from disk",
@@ -568,12 +568,9 @@ async function shownTabIs(page: AskedPage, isWanted: (row: TabRow) => boolean): 
 
 async function webLinkChecks(page: AskedPage): Promise<void> {
 	await pressInFrame(page, "tasks", "#e2e-web");
-	const shownPart = IS_WEB_PAGE_INSTALLED
-		? `iframe[src*="/${WEB_PAGE_APP}/"]`
-		: `[data-app-missing="${WEB_PAGE_APP}"]:not([data-app-failed]) button`;
-	const drawn = `[...document.querySelectorAll(${JSON.stringify(shownPart)})].some((each) => each.getClientRects().length > 0 && (each.tagName === "IFRAME" || each.textContent === "Install ${WEB_PAGE_APP}"))`;
+	const drawn = `[...document.querySelectorAll('iframe[src*="/${WEB_PAGE_APP}/"]')].some((each) => each.getClientRects().length > 0)`;
 	check(
-		`tasks: an https link opens a shown ${WEB_PAGE_APP} tab at that address, drawn ${IS_WEB_PAGE_INSTALLED ? "as the app" : "with its Install"}`,
+		`tasks: an https link opens a shown ${WEB_PAGE_APP} tab at that address, drawn as the registered app`,
 		[
 			await shownTabIs(page, (row) => row.app === WEB_PAGE_APP && row.address === WEB_LINK),
 			await waitUntil(async () => (await page.ask(drawn)) === true, WAIT_MS, STEP_MS),
@@ -625,19 +622,6 @@ async function terminalChecks(page: AskedPage): Promise<void> {
 	);
 }
 
-async function canvasChecks(page: AskedPage): Promise<void> {
-	await showAppTab(page, "canvas");
-	check(
-		"canvas: the canvas view stands with a drawn canvas element of real size",
-		await frameSees(
-			page,
-			"canvas",
-			`(() => { const canvas = document.querySelector("[data-canvas-view] canvas"); return canvas !== null && canvas.width > 0 && canvas.height > 0; })()`,
-		),
-		true,
-	);
-}
-
 async function browserPageChecks(page: AskedPage): Promise<void> {
 	await showAppTab(page, "browser-page");
 	check(
@@ -679,6 +663,156 @@ async function chatChecks(page: AskedPage): Promise<void> {
 		await frameSees(page, "chat", `document.body.innerText.includes(${JSON.stringify(`echo: ${CHAT_SAID}`)})`),
 		true,
 	);
+	await chatLookChecks(page);
+}
+
+type ChatTheme = "light" | "dark";
+type ChatLook = Readonly<Record<string, readonly number[] | string>>;
+
+const CHAT_LOOK_SAID = [
+	"Here is [the docs](sumi://tasks/T-147) and `npm test`.",
+	"Steps:\n\n- one\n- two\n- three",
+	"Last one, plain words.",
+];
+const BOX_TOLERANCE_PX = 1;
+const INTER = `"Inter Variable", Inter, -apple-system, "system-ui", "Segoe UI", system-ui, sans-serif`;
+const JETBRAINS_MONO = `"JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace`;
+const BUILTIN_CHAT_BOXES: ChatLook = {
+	chat: [0, 0, 1108, 840],
+	column: [170, 0, 768, 704],
+	firstTurn: [194, -77, 720, 74],
+	turnGaps: [14, 14, 14, 14, 14, 14, 14],
+	composerGap: [57],
+	composer: [170, 720, 768, 120],
+	field: [186, 720, 736, 80],
+	list: "20px | 12px | 0px",
+};
+const REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG: Readonly<Record<ChatTheme, ChatLook>> = {
+	light: {
+		...BUILTIN_CHAT_BOXES,
+		background: "rgb(255, 255, 255)",
+		answerFont: `${INTER} | 14px | 22.4px | 400 | -0.078px | rgb(29, 29, 31)`,
+		mineFont: `${INTER} | 14px | 21.7px | 400 | -0.078px | rgb(29, 29, 31)`,
+		mineFill: "rgba(0, 0, 0, 0.06)",
+		codeFont: `${JETBRAINS_MONO} | 12.5px | 20px | 400 | -0.078px | oklch(0.2316 0 268.26) | oklch(0.9761 0 268.26)`,
+		link: "oklch(0.2316 0 268.26) | underline | oklch(0.2316 0 268.26) | 3px | 400",
+	},
+	dark: {
+		...BUILTIN_CHAT_BOXES,
+		background: "rgb(31, 31, 31)",
+		answerFont: `${INTER} | 14px | 22.4px | 400 | -0.078px | rgb(237, 237, 237)`,
+		mineFont: `${INTER} | 14px | 21.7px | 400 | -0.078px | rgb(237, 237, 237)`,
+		mineFill: "rgba(255, 255, 255, 0.09)",
+		codeFont: `${JETBRAINS_MONO} | 12.5px | 20px | 400 | -0.078px | oklch(0.9461 0 268.26) | oklch(0.2686 0 268.26)`,
+		link: "oklch(0.9461 0 268.26) | underline | oklch(0.9461 0 268.26) | 3px | 400",
+	},
+};
+const CHAT_FRAME_IN_PLATE = `(() => { const plate = document.querySelector('[data-shell-plate="chat"] .wg-shell-plate-body').getBoundingClientRect(); const frame = document.querySelector('iframe[data-app-frame-src*="${framePartOf("chat")}"]'); const box = frame.getBoundingClientRect(); return [box.x + frame.clientLeft - plate.x, box.y + frame.clientTop - plate.y]; })()`;
+const CHAT_LOOK = `(dx, dy) => {
+	const view = document.defaultView;
+	const boxOf = (element) => {
+		const box = element.getBoundingClientRect();
+		return [box.x + dx, box.y + dy, box.width, box.height].map((each) => Math.round(each));
+	};
+	const fillOf = (element) => {
+		for (let at = element; at !== null; at = at.parentElement) {
+			const fill = view.getComputedStyle(at).backgroundColor;
+			if (fill !== "rgba(0, 0, 0, 0)") return fill;
+		}
+		return "none";
+	};
+	const fontOf = (element) => {
+		const style = view.getComputedStyle(element);
+		return [style.fontFamily, style.fontSize, style.lineHeight, style.fontWeight, style.letterSpacing, style.color].join(" | ");
+	};
+	const turns = [...document.querySelectorAll(".wg-studio-ai-turn")];
+	const composer = document.querySelector(".wg-studio-ai-composer");
+	const link = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown a"));
+	const list = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown ul"));
+	const code = document.querySelector(".wg-studio-ai-said.is-markdown code");
+	const mine = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said");
+	return {
+		chat: boxOf(document.querySelector(".wg-studio-ai")),
+		column: boxOf(document.querySelector(".wg-studio-ai-scroll-frame")),
+		firstTurn: boxOf(turns[0]),
+		turnGaps: turns.slice(1).map((turn, at) => Math.round(turn.getBoundingClientRect().top - turns[at].getBoundingClientRect().bottom)),
+		composerGap: [Math.round(composer.getBoundingClientRect().top - turns[turns.length - 1].getBoundingClientRect().bottom)],
+		composer: boxOf(composer),
+		field: boxOf(document.querySelector(".wg-studio-ai-field")),
+		background: fillOf(document.querySelector(".wg-studio-ai-scroll")),
+		answerFont: fontOf(document.querySelector(".wg-studio-ai-said.is-markdown p")),
+		mineFont: fontOf(mine),
+		mineFill: fillOf(mine),
+		codeFont: fontOf(code) + " | " + fillOf(code),
+		link: [link.color, link.textDecorationLine, link.textDecorationColor, link.textUnderlineOffset, link.fontWeight].join(" | "),
+		list: [list.paddingLeft, list.marginTop, list.marginBottom].join(" | "),
+	};
+}`;
+
+function isLookAlike(measured: unknown, wanted: readonly number[] | string): boolean {
+	if (typeof wanted === "string") {
+		return measured === wanted;
+	}
+
+	return (
+		Array.isArray(measured) &&
+		measured.length === wanted.length &&
+		wanted.every((each, at) => Math.abs(Number(measured[at]) - each) <= BOX_TOLERANCE_PX)
+	);
+}
+
+async function chatLookOf(page: AskedPage): Promise<unknown> {
+	const offset = await page.ask(CHAT_FRAME_IN_PLATE);
+	return Array.isArray(offset)
+		? inFrame(page, "chat", `(${CHAT_LOOK})(${Number(offset[0])}, ${Number(offset[1])})`)
+		: null;
+}
+
+function lookOf(measured: unknown, quantity: string): unknown {
+	return typeof measured === "object" && measured !== null ? Reflect.get(measured, quantity) : undefined;
+}
+
+function isLookOfTag(measured: unknown, theme: ChatTheme): boolean {
+	return Object.entries(REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG[theme]).every(([quantity, wanted]) =>
+		isLookAlike(lookOf(measured, quantity), wanted),
+	);
+}
+
+async function chatLookChecks(page: AskedPage): Promise<void> {
+	for (const [at, said] of CHAT_LOOK_SAID.entries()) {
+		await typedInFrame(page, "chat", "textarea", said);
+		await frameSees(page, "chat", `document.querySelectorAll(".wg-studio-ai-turn").length === ${(at + 2) * 2}`);
+	}
+
+	for (const theme of ["light", "dark"] as const) {
+		await page.ask(`window.__sumiApps.chooseTheme(${JSON.stringify(theme)})`);
+		const held: { measured: unknown } = {
+			measured: null,
+		};
+		await waitUntil(
+			async () => {
+				held.measured = await chatLookOf(page);
+				return isLookOfTag(held.measured, theme);
+			},
+			WAIT_MS,
+			STEP_MS,
+		);
+
+		if (typeof held.measured !== "object") {
+			console.log(`chat (${theme}) was not measured, not a check:`, held.measured);
+		}
+
+		for (const [quantity, wanted] of Object.entries(REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG[theme])) {
+			const measured = lookOf(held.measured, quantity);
+			check(
+				`chat (${theme}): ${quantity} is the built-in chat's at builtin-apps-before-removal`,
+				isLookAlike(measured, wanted) ? wanted : measured,
+				wanted,
+			);
+		}
+	}
+
+	await page.ask(`window.__sumiApps.chooseTheme("system")`);
 }
 
 function failureChecks(failures: readonly string[]): void {
@@ -702,7 +836,6 @@ function failureChecks(failures: readonly string[]): void {
 
 const CHECKS_OF_APP: Readonly<Record<SumiAppId, (page: AskedPage) => Promise<void>>> = {
 	terminal: terminalChecks,
-	canvas: canvasChecks,
 	"browser-page": browserPageChecks,
 	chat: chatChecks,
 	tasks: tasksChecks,
@@ -716,7 +849,7 @@ const page = await paged(`${core.origin}/`, GATE, {
 
 try {
 	await studioStarts(page);
-	await installAll(page);
+	await nothingAsksToInstall(page);
 	for (const app of CHECKED_APPS) {
 		await CHECKS_OF_APP[app](page);
 	}

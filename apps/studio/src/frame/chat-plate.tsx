@@ -1,42 +1,26 @@
-import { createElement as h, useContext, useEffect, useState } from "react";
+import { createElement as h, useContext, useEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
-import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
 import { NameChatPaneCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import { ChatToOpenQuery } from "@widgetarium/workspaces";
 import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";
-import { chatCardsOver } from "../assistant/chat-cards.js";
-import { ChatMarkdownContext, useMarkdownRendererOf } from "../features/assistant/lib/chat-markdown.js";
-import { ChatBody } from "./chat-body.js";
 import { ChatPage } from "./chat-page.js";
 
 export interface ChatPlateProps {
 	readonly chatId: string | null;
-	readonly chatAppFor: (chatId: string) => StartedApp;
-	readonly assistant: AssistantPort;
 	readonly crumb: ReactNode;
 	readonly more: ReactNode;
 }
 
 const CHAT_LABEL = "Chat";
 
-export function ChatPlate({ chatId, chatAppFor, assistant, crumb, more }: ChatPlateProps): ReactElement {
-	const [cards] = useState(() => chatCardsOver(assistant));
-	const renderMarkdown = useMarkdownRendererOf(assistant);
+export function ChatPlate({ chatId, crumb, more }: ChatPlateProps): ReactElement {
 	useNamesUnnamedPane(chatId);
 	return (
 		<Plate side="chat" label={CHAT_LABEL} edgeStart={null} lead={null} crumb={crumb} more={more} edgeEnd={null}>
-			{chatId === null ? null : (
-				<ChatMarkdownContext value={renderMarkdown}>
-					<ChatPage
-						chatId={chatId}
-						renderBuiltIn={() => <ChatBody chatId={chatId} chatApp={chatAppFor(chatId)} cards={cards} />}
-					/>
-				</ChatMarkdownContext>
-			)}
+			{chatId === null ? null : <ChatPage chatId={chatId} />}
 		</Plate>
 	);
 }

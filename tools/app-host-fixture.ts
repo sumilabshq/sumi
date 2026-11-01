@@ -1,7 +1,5 @@
 import { app } from "../packages/shared/core/src/requests/index.ts";
 import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { AppInstallerModule } from "../packages/state/app-installer/module.ts";
-import type { AppsGateway } from "../packages/state/app-installer/gateways/apps/apps.gateway.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
@@ -126,7 +124,6 @@ export interface StudioSeed {
 	readonly isBrowserAvailable?: boolean;
 	readonly tree?: PaneTree;
 	readonly chatTitle?: string;
-	readonly apps?: AppsGateway;
 }
 
 export function appHostFakesOf({ studioWindow, essentials = null, view = "browser" }: StudioSeed): AppHostFakes {
@@ -145,7 +142,6 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = app()
 		.modules(
-			seed.apps === undefined ? AppInstallerModule : AppInstallerModule.with({ apps: seed.apps }),
 			AppHostModule.with({ ...appHost }),
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...layout }),

@@ -1,41 +1,27 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { FailAppVersionCommand } from "@widgetarium/app-installer";
-import { useCommand } from "@widgetarium/core/requests";
-import { AppFrameFleet, READY_TIMEOUT_MS } from "../../lib/app-frame-fleet.js";
-import { AppFramesContext } from "../../lib/app-frames-context.js";
+import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
+import type { AppPageUrlOf } from "@widgetarium/app-registry";
+import { AppPageUrlContext } from "../../lib/app-page-url-context.js";
 import type { FrameRoutesFor } from "../../lib/frame-relay.js";
 import { FrameRoutesContext } from "../../lib/use-frame-port.js";
-import { useFleetFollowsDocument } from "../../lib/use-fleet-follows-document.js";
-import { useFleetFollowsInstalled } from "../../lib/use-fleet-follows-installed.js";
 import { useOpensAskedLinks } from "../../lib/use-opens-asked-links.js";
 
 export interface AppFramesProviderProps {
 	readonly routesFor: FrameRoutesFor;
-	readonly readyTimeoutMs?: number;
+	readonly pageUrlOf?: AppPageUrlOf;
 	readonly children: ReactNode;
 }
 
 export function AppFramesProvider({
 	routesFor,
-	readyTimeoutMs = READY_TIMEOUT_MS,
+	pageUrlOf = sumiAppPageUrlOf,
 	children,
 }: AppFramesProviderProps): ReactElement {
-	const failVersion = useCommand(FailAppVersionCommand);
-	const [fleet] = useState(
-		() =>
-			new AppFrameFleet({
-				fail: (failed) => failVersion.run(failed),
-				onProblem: (reason) => console.error(`[widgetarium] app frames: ${reason}`),
-				readyTimeoutMs,
-			}),
-	);
-	useFleetFollowsInstalled(fleet);
-	useFleetFollowsDocument(fleet);
 	useOpensAskedLinks();
 	return (
-		<AppFramesContext.Provider value={fleet}>
+		<AppPageUrlContext.Provider value={pageUrlOf}>
 			<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>
-		</AppFramesContext.Provider>
+		</AppPageUrlContext.Provider>
 	);
 }

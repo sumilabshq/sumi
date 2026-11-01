@@ -1,0 +1,60 @@
+@import "@widgetarium/core/styles.css";
+@import "../../../design-systems/sumi/tokens.css";
+@import "../../../design-systems/sumi/sumi.css";
+@import "./features/assistant/assistant.css";
+@import "./features/assistant/assistant-utilities.css";
+@import "./features/mascot/mascot.css";
+
+@font-face {
+	font-family: "Inter Variable";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/inter/InterVariable-latin.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "JetBrains Mono";
+	font-style: normal;
+	font-weight: 100 800;
+	font-display: swap;
+	src: url("../../../packages/shared/kit/assets/fonts/jetbrains-mono/JetBrainsMonoVariable-latin.woff2") format("woff2");
+}
+
+html,
+body {
+	height: 100%;
+	margin: 0;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
+	font-family: var(--sumi-font-ui);
+	font-feature-settings: var(--sumi-font-features);
+	font-optical-sizing: auto;
+	font-size: var(--sumi-fs-13);
+	line-height: 1.4;
+	letter-spacing: -0.006em;
+	-webkit-font-smoothing: antialiased;
+}
+
+.wg-chat-app .wg-studio-ai-scroll-frame {
+	margin-block-end: var(--sumi-sp-4);
+}
+
+.wg-chat-app {
+	--wg-studio-edge: var(--wg-kit-plate-pad);
+	--wg-studio-chat-content: 768px;
+	--wg-studio-container-corner: calc(var(--radius) + var(--gap-plate));
+	--wg-studio-bubble-corner: calc(var(--radius) - 4px);
+}
+
+[id="app"],
+.wg-chat-app,
+.wg-chat-app > .wg-studio-ai-host {
+	height: 100%;
+}
+
+.wg-chat-app-none {
+	margin: 0;
+	padding: 24px;
+	color: var(--sumi-text-muted);
+}
