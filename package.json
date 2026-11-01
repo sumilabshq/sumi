@@ -91,6 +91,7 @@
 		"test:sumi-contract": "node --single-threaded --import ./tools/loader/register.mts tools/sumi-contract-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-system-files-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/terminal-lines-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/web-page-pages-checks.ts",
 		"test:contract-package": "node tools/contract-package-test.mts",
 		"test:contract-frame": "node --single-threaded --import ./tools/loader/register.mts tools/contract-frame-test.ts",
+		"test:sumi-apps": "node --single-threaded --import ./tools/loader/register.mts tools/sumi-apps-test.ts",
 		"test:app-frame-sandbox": "node --single-threaded --import ./tools/loader/register.mts tools/app-frame-sandbox-test.ts",
 		"test:app-plate": "node --single-threaded --import ./tools/loader/register.mts tools/app-plate-test.ts",
 		"test:shell-board-diff": "node --single-threaded --import ./tools/loader/register.mts tools/shell-board-diff.ts",

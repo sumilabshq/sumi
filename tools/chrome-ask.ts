@@ -10,6 +10,7 @@ export interface PageAsk {
 	readonly size: PageSize;
 	readonly onGpu?: boolean;
 	readonly hasFramesInProcess?: boolean;
+	readonly hearsFailures?: boolean;
 }
 
 export type PagePoint = readonly [x: number, y: number];
@@ -37,6 +38,9 @@ export interface AskedPage {
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
 	readonly shoot: () => Promise<Buffer>;
+	readonly typeText: (text: string) => Promise<void>;
+	readonly pressEnter: () => Promise<void>;
+	readonly failures: () => readonly string[];
 	readonly close: () => void;
 }
 
@@ -51,6 +55,9 @@ interface PageSocket {
 	readonly release: (at: PagePoint) => Promise<unknown>;
 	readonly reduceMotion: () => Promise<unknown>;
 	readonly shoot: () => Promise<Buffer>;
+	readonly typeText: (text: string) => Promise<void>;
+	readonly pressEnter: () => Promise<void>;
+	readonly failures: () => readonly string[];
 	readonly viewportSetTo: (size: PageSize) => Promise<unknown>;
 }
 
@@ -60,6 +67,8 @@ interface Waiting {
 }
 
 type Send = (method: string, params: Readonly<Record<string, unknown>>) => Promise<unknown>;
+
+type Heard = (method: string, params: unknown) => void;
 
 const OUTSIDE_X = -40;
 const DROP_SETTLE_MS = 50;
@@ -73,7 +82,7 @@ export async function paged(file: string, gate: string, asked: PageAsk): Promise
 		closeChrome(chrome, profile);
 		throw new Error(`chrome never opened a page for ${file}`);
 	}
-	const socket = await talking(socketUrl);
+	const socket = await talking(socketUrl, asked.hearsFailures === true);
 	await socket.viewportSetTo(asked.size);
 	return handled(socket, chrome, profile);
 }
@@ -114,6 +123,9 @@ function handled(socket: PageSocket, chrome: ChildProcess, profile: string): Ask
 		release: socket.release,
 		reduceMotion: socket.reduceMotion,
 		shoot: socket.shoot,
+		typeText: socket.typeText,
+		pressEnter: socket.pressEnter,
+		failures: socket.failures,
 		close: () => {
 			socket.close();
 			closeChrome(chrome, profile);
@@ -198,10 +210,23 @@ function pageSocketOf(entry: unknown): string | null {
 	return entry.webSocketDebuggerUrl || null;
 }
 
-async function talking(socketUrl: string): Promise<PageSocket> {
+async function talking(socketUrl: string, hearsFailures: boolean): Promise<PageSocket> {
 	const socket = new WebSocket(socketUrl);
 	await opening(socket);
-	const send = sender(socket);
+	const failures: string[] = [];
+	const send = sender(socket, (method, params) => {
+		const failure = failureOf(method, params);
+
+		if (failure !== null) {
+			failures.push(failure);
+		}
+	});
+
+	if (hearsFailures) {
+		await send("Runtime.enable", {});
+		await send("Log.enable", {});
+	}
+
 	return {
 		close: () => socket.close(),
 		ask: (expression) => answered(send, expression),
@@ -218,6 +243,14 @@ async function talking(socketUrl: string): Promise<PageSocket> {
 			send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] }),
 		shoot: async () =>
 			Buffer.from(String(fieldOf(fieldOf(await send("Page.captureScreenshot", {}), "result"), "data")), "base64"),
+		typeText: async (text) => {
+			await send("Input.insertText", { text });
+		},
+		pressEnter: async () => {
+			await send("Input.dispatchKeyEvent", ENTER_DOWN);
+			await send("Input.dispatchKeyEvent", ENTER_UP);
+		},
+		failures: () => [...failures],
 		viewportSetTo: ([width, height]) =>
 			send("Emulation.setDeviceMetricsOverride", { width, height, deviceScaleFactor: 1, mobile: false }),
 	};
@@ -292,10 +325,10 @@ function opening(socket: WebSocket): Promise<unknown> {
 	});
 }
 
-function sender(socket: WebSocket): Send {
+function sender(socket: WebSocket, heard: Heard): Send {
 	const pending = new Map<unknown, Waiting>();
 	let ticket = 0;
-	pumping(socket, pending);
+	pumping(socket, pending, heard);
 	return (method, params) =>
 		new Promise((done, fail) => {
 			const id = (ticket += 1);
@@ -304,11 +337,13 @@ function sender(socket: WebSocket): Send {
 		});
 }
 
-function pumping(socket: WebSocket, pending: Map<unknown, Waiting>): void {
+function pumping(socket: WebSocket, pending: Map<unknown, Waiting>, heard: Heard): void {
 	socket.addEventListener("message", (event: MessageEvent<unknown>) => {
 		const message: unknown = JSON.parse(String(event.data));
+		const method = fieldOf(message, "method");
 
-		if (typeof fieldOf(message, "method") === "string") {
+		if (typeof method === "string") {
+			heard(method, fieldOf(message, "params"));
 			return;
 		}
 
@@ -322,6 +357,46 @@ function pumping(socket: WebSocket, pending: Map<unknown, Waiting>): void {
 	};
 	socket.addEventListener("close", abandon);
 	socket.addEventListener("error", abandon);
+}
+
+const ENTER_DOWN = {
+	type: "keyDown",
+	key: "Enter",
+	code: "Enter",
+	windowsVirtualKeyCode: 13,
+	text: "\r",
+};
+
+const ENTER_UP = {
+	type: "keyUp",
+	key: "Enter",
+	code: "Enter",
+	windowsVirtualKeyCode: 13,
+};
+
+function failureOf(method: string, params: unknown): string | null {
+	if (method === "Runtime.exceptionThrown") {
+		const details = fieldOf(params, "exceptionDetails");
+		return `exception: ${String(fieldOf(fieldOf(details, "exception"), "description") ?? fieldOf(details, "text"))} at ${String(fieldOf(details, "url"))}`;
+	}
+
+	if (method === "Runtime.consoleAPICalled" && fieldOf(params, "type") === "error") {
+		const args = fieldOf(params, "args");
+		const said = Array.isArray(args)
+			? args.map((arg: unknown) => String(fieldOf(arg, "value") ?? fieldOf(arg, "description")))
+			: [];
+		const frames = fieldOf(fieldOf(params, "stackTrace"), "callFrames");
+		const at = Array.isArray(frames) ? String(fieldOf(frames[0], "url") ?? "") : "";
+		return `console.error: ${said.join(" ")} at ${at}`;
+	}
+
+	const entry = fieldOf(params, "entry");
+
+	if (method === "Log.entryAdded" && fieldOf(entry, "level") === "error") {
+		return `log ${String(fieldOf(entry, "source"))}: ${String(fieldOf(entry, "text"))} ${String(fieldOf(entry, "url") ?? "")}`;
+	}
+
+	return null;
 }
 
 function fieldOf(value: unknown, name: string): unknown {
