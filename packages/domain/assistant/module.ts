@@ -1,4 +1,4 @@
-import { Device, module, oneOf } from "@widgetarium/core/requests";
+import { Anywhere, PublicGuard, module, oneOf } from "@widgetarium/core/requests";
 import { FileDraggedEvent } from "./gateways/file-drop/file-drop.events.js";
 import { assistantPartsOn } from "./gateways/assistant-parts/assistant-parts.gateway.js";
 import { AssistantHost } from "./shared/host/assistant.host.js";
@@ -25,6 +25,7 @@ import {
 import {
 	RereadChatSubscriber,
 	RereadChatForAttachmentsSubscriber,
+	AssistantCallersGuard,
 	ChatQuery,
 	RetryTurnCommand,
 	StopTurnCommand,
@@ -55,7 +56,7 @@ import {
 } from "./features/slash-commands/requests.js";
 
 export const AssistantModule = module("assistant")
-	.on(Device)
+	.on(Anywhere)
 	.needs(
 		oneOf({
 			web: {
@@ -119,4 +120,6 @@ export const AssistantModule = module("assistant")
 		CompactChatCommand,
 		FileDraggedEvent,
 	)
+	.guard(PublicGuard)
+	.guard(AssistantCallersGuard)
 	.provide((facts) => assistantPartsOn(facts));
