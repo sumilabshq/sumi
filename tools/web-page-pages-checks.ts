@@ -3,8 +3,8 @@ import type { StartedApp } from "@widgetarium/core/requests";
 import { server } from "@widgetarium/core/requests/server";
 import {
 	CloseWebPageCommand,
-	GoBackCommand,
-	GoForwardCommand,
+	GoBackWebPageCommand,
+	GoForwardWebPageCommand,
 	OpenWebPageCommand,
 	PlaceWebPageCommand,
 	WebPageModule,
@@ -77,17 +77,17 @@ const anonymous = await appOver(null).send(WebPageQuery, { tab: "t1" });
 check("a call with no app caller is unauthenticated", anonymous.ok ? "answered" : anonymous.code, "unauthenticated");
 
 await notes.send(OpenWebPageCommand, { tab: "t1", url: "https://example.org/b" });
-const back = await notes.send(GoBackCommand, { tab: "t1" });
+const back = await notes.send(GoBackWebPageCommand, { tab: "t1" });
 const afterBack = await notes.send(WebPageQuery, { tab: "t1" });
 check(
-	"go-back moves to the page before",
+	"go-back-web-page moves to the page before",
 	[back.ok, afterBack.ok ? afterBack.output?.url : afterBack.reason],
 	[true, "https://example.com/a"],
 );
-const forward = await notes.send(GoForwardCommand, { tab: "t1" });
-const noForward = await notes.send(GoForwardCommand, { tab: "t1" });
+const forward = await notes.send(GoForwardWebPageCommand, { tab: "t1" });
+const noForward = await notes.send(GoForwardWebPageCommand, { tab: "t1" });
 check(
-	"go-forward moves on, and refuses when there is nothing ahead",
+	"go-forward-web-page moves on, and refuses when there is nothing ahead",
 	[forward.ok, noForward.ok ? "moved" : noForward.code],
 	[true, "refused"],
 );
@@ -113,6 +113,25 @@ check(
 			height: 200,
 		},
 	],
+);
+
+const outOfBounds = await Promise.all(
+	[-1, 16_385, Number.POSITIVE_INFINITY].map((x) =>
+		notes.send(PlaceWebPageCommand, {
+			tab: "t1",
+			area: {
+				x,
+				y: 0,
+				width: 10,
+				height: 10,
+			},
+		}),
+	),
+);
+check(
+	"place-web-page refuses an area off the 0 to 16384 pixel range",
+	outOfBounds.map((answer) => (answer.ok ? "placed" : answer.code)),
+	["invalid-input", "invalid-input", "invalid-input"],
 );
 
 const heard = {

@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+const PAGE_AREA_MAX_PX = 16_384;
+
+const PagePxSchema = z.number().min(0).max(PAGE_AREA_MAX_PX);
+
 export const WebPageTabSchema = z.object({
 	tab: z.string().min(1).max(200),
 });
@@ -10,10 +14,10 @@ export const OpenWebPageInputSchema = z.object({
 });
 
 export const PageAreaSchema = z.object({
-	x: z.number(),
-	y: z.number(),
-	width: z.number().min(0),
-	height: z.number().min(0),
+	x: PagePxSchema,
+	y: PagePxSchema,
+	width: PagePxSchema,
+	height: PagePxSchema,
 });
 
 export type PageArea = z.infer<typeof PageAreaSchema>;

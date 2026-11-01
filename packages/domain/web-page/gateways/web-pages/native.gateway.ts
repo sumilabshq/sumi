@@ -12,31 +12,31 @@ export class NativeWebPagesGateway extends WebPagesGateway {
 	}
 
 	override pageArea(tab: string): PageArea | null {
-		return this.nativePages.area(tab);
+		return this.nativePages.pageArea(tab);
 	}
 
-	override openPage(tab: string, url: string): Promise<void> {
-		return this.nativePages.open(tab, url);
+	override openPage(tab: string, url: string, profileId: string): Promise<void> {
+		return this.nativePages.openPage(tab, url, profileId);
 	}
 
 	override placePage(tab: string, area: PageArea | null): Promise<void> {
-		return this.nativePages.place(tab, area);
+		return this.nativePages.placePage(tab, area);
 	}
 
-	override pageBack(tab: string): Promise<void> {
-		return this.nativePages.back(tab);
+	override goBackPage(tab: string): Promise<void> {
+		return this.nativePages.goBackPage(tab);
 	}
 
-	override pageForward(tab: string): Promise<void> {
-		return this.nativePages.forward(tab);
+	override goForwardPage(tab: string): Promise<void> {
+		return this.nativePages.goForwardPage(tab);
 	}
 
 	override reloadPage(tab: string): Promise<void> {
-		return this.nativePages.reload(tab);
+		return this.nativePages.reloadPage(tab);
 	}
 
 	override closePage(tab: string): Promise<void> {
-		return this.nativePages.close(tab);
+		return this.nativePages.closePage(tab);
 	}
 
 	override pagesChanged(changed: () => void): () => void {

@@ -4,8 +4,8 @@ import { AppTabsHost } from "./shared/host/app-tabs.host.js";
 import { NativeWebPagesHost } from "./shared/host/native-web-pages.host.js";
 import {
 	CloseWebPageCommand,
-	GoBackCommand,
-	GoForwardCommand,
+	GoBackWebPageCommand,
+	GoForwardWebPageCommand,
 	OpenWebPageCommand,
 	PlaceWebPageCommand,
 	ReloadWebPageCommand,
@@ -13,9 +13,6 @@ import {
 	WebPageCallLoggerMiddleware,
 	WebPageQuery,
 } from "./features/pages/requests.js";
-
-export { AppTabsHost } from "./shared/host/app-tabs.host.js";
-export { NativeWebPagesHost } from "./shared/host/native-web-pages.host.js";
 
 export const WebPageModule = module("web-page")
 	.on(Server)
@@ -35,8 +32,8 @@ export const WebPageModule = module("web-page")
 		WebPageQuery,
 		OpenWebPageCommand,
 		PlaceWebPageCommand,
-		GoBackCommand,
-		GoForwardCommand,
+		GoBackWebPageCommand,
+		GoForwardWebPageCommand,
 		ReloadWebPageCommand,
 		CloseWebPageCommand,
 	)

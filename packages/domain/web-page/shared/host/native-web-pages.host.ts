@@ -4,30 +4,30 @@ import type { PageArea, WebPage } from "../schema/web-page.schema.js";
 
 export interface NativeWebPages {
 	page(tab: string): Promise<WebPage | null>;
-	area(tab: string): PageArea | null;
-	open(tab: string, url: string): Promise<void>;
-	place(tab: string, area: PageArea | null): Promise<void>;
-	back(tab: string): Promise<void>;
-	forward(tab: string): Promise<void>;
-	reload(tab: string): Promise<void>;
-	close(tab: string): Promise<void>;
+	pageArea(tab: string): PageArea | null;
+	openPage(tab: string, url: string, profileId: string): Promise<void>;
+	placePage(tab: string, area: PageArea | null): Promise<void>;
+	goBackPage(tab: string): Promise<void>;
+	goForwardPage(tab: string): Promise<void>;
+	reloadPage(tab: string): Promise<void>;
+	closePage(tab: string): Promise<void>;
 	pagesChanged(changed: () => void): () => void;
 }
 
-const METHODS: readonly string[] = [
-	"page",
-	"area",
-	"open",
-	"place",
-	"back",
-	"forward",
-	"reload",
-	"close",
-	"pagesChanged",
-];
+const NATIVE_WEB_PAGES_METHODS = {
+	page: true,
+	pageArea: true,
+	openPage: true,
+	placePage: true,
+	goBackPage: true,
+	goForwardPage: true,
+	reloadPage: true,
+	closePage: true,
+	pagesChanged: true,
+} as const satisfies Record<keyof NativeWebPages, true>;
 
 export const NativeWebPagesHost = hostObject<NativeWebPages>("NativeWebPages", isNativeWebPages);
 
 function isNativeWebPages(held: unknown): held is NativeWebPages {
-	return isObject(held) && METHODS.every((method) => typeof held[method] === "function");
+	return isObject(held) && Object.keys(NATIVE_WEB_PAGES_METHODS).every((method) => typeof held[method] === "function");
 }
