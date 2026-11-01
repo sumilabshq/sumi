@@ -118,7 +118,10 @@ export class ServerBuilder<N extends Provided = NothingProvided> {
 		const stops = this.plan.listeners.map((listener) => listener.serve(started));
 		return {
 			...started,
-			stop: () => stops.forEach((stop) => stop()),
+			stop: () => {
+				stops.forEach((stop) => stop());
+				started.stop();
+			},
 		};
 	}
 }
@@ -148,7 +151,7 @@ function startServer({ modules, env, scope, host = {} }: ServerStart, remote: Mo
 	const mediator = serverMediatorOf({ started, host, remote, bus });
 	const changed = new ChangeBroadcast();
 	const startedModules = started.modules.map(({ module, provided }) => ({ definition: module.definition, provided }));
-	startModuleEvents({
+	const stopEvents = startModuleEvents({
 		modules: startedModules,
 		listened: listenedEventNames(startedModules),
 		platform: "server",
@@ -163,7 +166,7 @@ function startServer({ modules, env, scope, host = {} }: ServerStart, remote: Mo
 		fetch: (request) => Promise.resolve(hono.fetch(request)),
 		answer,
 		changes: (hear) => changed.hear(hear),
-		stop: () => undefined,
+		stop: stopEvents,
 	};
 }
 

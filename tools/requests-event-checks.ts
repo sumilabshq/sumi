@@ -1,8 +1,11 @@
 import { z } from "zod";
 import {
+	Anywhere,
 	Device,
+	PublicGuard,
 	Repeatable,
 	app,
+	localTransport,
 	command,
 	event,
 	gatewayEvent,
@@ -13,6 +16,7 @@ import {
 	subscriber,
 } from "../packages/shared/core/src/requests/index.ts";
 import type { Failure } from "../packages/shared/core/src/requests/index.ts";
+import { server } from "../packages/shared/core/src/requests/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
 const SCOPE = { workspaceId: "events" };
@@ -498,3 +502,27 @@ check(
 	thrownBy(() => subscriber(event("reserved-heard")).inject({ invalidate: Ledger })),
 	"inject names invalidate, which the engine passes to every handler: name it otherwise",
 );
+
+const ServedLedgerModule = module("served-ledger")
+	.on(Anywhere)
+	.subscribers(BigAddReReadSubscriber)
+	.public(ValueQuery)
+	.guard(PublicGuard)
+	.provide(() => ({
+		ledger: new Ledger(),
+		heard: new Heard(),
+	}));
+const servedLedger = new Ledger();
+const servedLedgerServer = server()
+	.modules(
+		ServedLedgerModule.with({
+			ledger: servedLedger,
+			heard: new Heard(),
+		}),
+	)
+	.listen(localTransport())
+	.start({ env: {} });
+await settled();
+const listeningWhileServed = servedLedger.listenerCount;
+servedLedgerServer.stop();
+check("a server's stop stops its modules' event sources", [listeningWhileServed, servedLedger.listenerCount], [1, 0]);
