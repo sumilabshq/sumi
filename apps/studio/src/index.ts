@@ -3,5 +3,6 @@ export { restoreTabs, startCoreInProcess, startStudioApp } from "./tabs/studio-a
 export type { StudioAppAsk } from "./tabs/studio-app.js";
 export { focusedChatPortOf } from "./chats-column/focused-chat.js";
 export { AppCallerAuthenticate } from "./features/app-frame/lib/app-caller.js";
+export { nativeWebPagesOver } from "./features/app-frame/lib/native-web-pages.js";
 export { startBrowserApp } from "./browser/browser-app.js";
 export type { BrowserAppAsk } from "./browser/browser-app.js";

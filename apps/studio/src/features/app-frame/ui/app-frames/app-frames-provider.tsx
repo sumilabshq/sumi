@@ -1,23 +1,22 @@
-import { createElement as h, useMemo, useState } from "react";
+import { createElement as h, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { FailAppVersionCommand } from "@widgetarium/app-installer";
 import { useCommand } from "@widgetarium/core/requests";
-import type { RemoteTransport } from "@widgetarium/core/requests";
 import { AppFrameFleet, READY_TIMEOUT_MS } from "../../lib/app-frame-fleet.js";
 import { AppFramesContext } from "../../lib/app-frames-context.js";
-import { createFrameRelay } from "../../lib/frame-relay.js";
-import { FrameRelayContext } from "../../lib/use-frame-port.js";
+import type { FrameRoutesFor } from "../../lib/frame-relay.js";
+import { FrameRoutesContext } from "../../lib/use-frame-port.js";
 import { useFleetFollowsDocument } from "../../lib/use-fleet-follows-document.js";
 import { useFleetFollowsInstalled } from "../../lib/use-fleet-follows-installed.js";
 
 export interface AppFramesProviderProps {
-	readonly core: RemoteTransport;
+	readonly routesFor: FrameRoutesFor;
 	readonly readyTimeoutMs?: number;
 	readonly children: ReactNode;
 }
 
 export function AppFramesProvider({
-	core,
+	routesFor,
 	readyTimeoutMs = READY_TIMEOUT_MS,
 	children,
 }: AppFramesProviderProps): ReactElement {
@@ -30,12 +29,11 @@ export function AppFramesProvider({
 				readyTimeoutMs,
 			}),
 	);
-	const relay = useMemo(() => createFrameRelay(core), [core]);
 	useFleetFollowsInstalled(fleet);
 	useFleetFollowsDocument(fleet);
 	return (
 		<AppFramesContext.Provider value={fleet}>
-			<FrameRelayContext.Provider value={relay}>{children}</FrameRelayContext.Provider>
+			<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>
 		</AppFramesContext.Provider>
 	);
 }

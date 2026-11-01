@@ -19,6 +19,7 @@ import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { AppFramesProvider } from "../apps/studio/src/features/app-frame/ui/app-frames/app-frames-provider.tsx";
+import type { FrameRoutes } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { InstalledAppPage } from "../apps/studio/src/features/app-frame/ui/installed-app-page/installed-app-page.tsx";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
@@ -181,10 +182,22 @@ function onShown(told: () => void): () => void {
 	return () => shownListeners.delete(told);
 }
 
+function helloRoutes(): Promise<FrameRoutes> {
+	return Promise.resolve({
+		routes: [
+			{
+				module: PlacesContract,
+				transport: core,
+			},
+		],
+		release: () => undefined,
+	});
+}
+
 function Frames(): ReactElement {
 	const shown = useSyncExternalStore(onShown, () => shownTabId);
 	return (
-		<AppFramesProvider core={core} readyTimeoutMs={READY_TIMEOUT_MS}>
+		<AppFramesProvider routesFor={helloRoutes} readyTimeoutMs={READY_TIMEOUT_MS}>
 			{TAB_IDS.map((id) => (
 				<div key={id} data-tab={id} style={{ height: "200px" }}>
 					<InstalledAppPage app="hello" tabId={id} isShown={id === shown} />

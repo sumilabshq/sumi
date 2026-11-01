@@ -4,6 +4,21 @@ import { createFrameRelay } from "../apps/studio/src/features/app-frame/lib/fram
 import { server } from "@widgetarium/core/requests/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
+import {
+	AssistantModule,
+	AttachFolderCommand,
+	ChatQuery,
+	OpenWebPageCommand,
+	PickWorkingFolderCommand,
+	SendMessageCommand,
+	WebPageModule,
+	WebPageQuery,
+} from "../packages/shared/contract/index.ts";
+import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/core/requests";
+import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
+import { AssistantModule as RunnableAssistantModule } from "../packages/domain/assistant/module.ts";
+import { echoAssistantPort } from "./echo-assistant-port.ts";
+import { FrameChatServers } from "../apps/studio/src/assistant/frame-chat-servers.ts";
 import { MemoryFilesGateway } from "../packages/domain/file-system/gateways/files/memory.gateway.ts";
 import { FileSystemModule as RunnableFileSystemModule } from "../packages/domain/file-system/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
@@ -82,7 +97,12 @@ check("a change crosses the port to the calling side", heard.changes > 0, true);
 stopServing();
 channel.port2.close();
 
-const relay = createFrameRelay(localTransport());
+const relay = createFrameRelay([
+	{
+		module: FileSystemModule,
+		transport: localTransport(),
+	},
+]);
 const notRelayed = await relay.answer({
 	name: "tasks/board",
 	input: undefined,
@@ -99,6 +119,96 @@ const forged = await new AppCallerAuthenticate().userOf(new Headers({ [APP_CALLE
 	() => "refused",
 );
 check("a caller header that is not an app id is refused, never read as no caller", forged, "refused");
+
+function appOver(
+	served: ServingServer,
+	imported: (transport: RemoteTransport) => RemoteModule,
+	caller: string | null,
+): StartedApp {
+	const port = new MessageChannel();
+	const headers = caller === null ? {} : { [APP_CALLER_HEADER]: caller };
+	messagePortListener(port.port1, { headers }).serve(served);
+	return app()
+		.imports(imported(messagePortTransport(port.port2)))
+		.start();
+}
+
+const webPages = server()
+	.modules(RunnableWebPageModule)
+	.start({
+		env: {},
+		scope: {
+			workspaceId: "contract",
+		},
+		host: {
+			webAppTabs: {
+				appOfTab: (tab: string) => Promise.resolve(tab === "t1" ? "notes" : null),
+			},
+			authenticate: new AppCallerAuthenticate(),
+		},
+	});
+const pages = appOver(webPages, (transport) => WebPageModule.over(transport), "notes");
+await pages.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/page" });
+const page = await pages.send(WebPageQuery, { tab: "t1" });
+check(
+	"web-page from the contract opens and reads a page over memory (a fake browser)",
+	page.ok ? page.output?.title : page.reason,
+	"example.com",
+);
+const otherPage = await pages.send(WebPageQuery, { tab: "t2" });
+check("web-page refuses a tab that does not hold the calling app", otherPage.ok ? "read" : otherPage.code, "forbidden");
+
+const chat = server()
+	.modules(RunnableAssistantModule)
+	.start({
+		env: {},
+		scope: {
+			workspaceId: "contract",
+		},
+		host: {
+			webAssistant: echoAssistantPort(),
+			authenticate: new AppCallerAuthenticate(),
+		},
+	});
+const chatOfApp = appOver(chat, (transport) => AssistantModule.over(transport), "chat");
+await chatOfApp.send(SendMessageCommand, { said: "hi" });
+const chatRead = await chatOfApp.send(ChatQuery);
+check(
+	"an app sends a message and reads the answer through the assistant contract",
+	chatRead.ok ? chatRead.output.session.turns.map(({ text }) => text) : chatRead.reason,
+	["hi", "echo: hi"],
+);
+const picked = await chatOfApp.send(PickWorkingFolderCommand);
+check("an app may not pick a working folder", picked.ok ? "picked" : picked.code, "forbidden");
+const lent = await chatOfApp.send(AttachFolderCommand);
+check("an app may not lend a folder", lent.ok ? "lent" : lent.code, "forbidden");
+const shellPicked = await appOver(chat, (transport) => AssistantModule.over(transport), null).send(
+	PickWorkingFolderCommand,
+);
+check(
+	"the shell, with no app caller, is not held to the app list",
+	shellPicked.ok ? "picked" : shellPicked.code !== "forbidden",
+	true,
+);
+
+const chatServers = new FrameChatServers({
+	workspaceId: "contract",
+	host: {
+		webAssistant: echoAssistantPort(),
+	},
+});
+const firstFrame = chatServers.transportFor("c1");
+const secondFrame = chatServers.transportFor("c1");
+check("two frames of one chat share its server", firstFrame.transport === secondFrame.transport, true);
+firstFrame.release();
+const stillServed = await app().imports(AssistantModule.over(secondFrame.transport)).start().send(ChatQuery);
+secondFrame.release();
+const afterLast = await app().imports(AssistantModule.over(secondFrame.transport)).start().send(ChatQuery);
+check(
+	"a chat's server serves while a frame uses it and stops after the last one",
+	[stillServed.ok, afterLast.ok ? "served" : afterLast.code],
+	[true, "unreachable"],
+);
 
 console.log(tally.failed ? `sumi contract: ${tally.failed} check(s) failed` : "sumi contract: all checks passed");
 process.exit(tally.failed ? 1 : 0);

@@ -23,7 +23,7 @@ export class ChatApps {
 	}
 }
 
-function hostForChat(host: AssistantHostObjects, chatId: string): AssistantHostObjects {
+export function hostForChat(host: AssistantHostObjects, chatId: string): AssistantHostObjects {
 	if (host.tauriAssistant !== undefined) {
 		return {
 			...host,

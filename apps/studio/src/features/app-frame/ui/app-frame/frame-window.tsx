@@ -14,7 +14,7 @@ const TAB_IN_URL = "#sumi-tab=";
 
 export function FrameWindow({ app, url, tabId, onReady }: FrameWindowProps): ReactElement {
 	const frame = useRef<HTMLIFrameElement | null>(null);
-	useFramePort(frame, app, (answer) => {
+	useFramePort(frame, { app, tabId }, (answer) => {
 		if (answer.ok) {
 			onReady();
 		}
@@ -29,6 +29,7 @@ export function FrameWindow({ app, url, tabId, onReady }: FrameWindowProps): Rea
 			src={src}
 			sandbox={APP_FRAME_SANDBOX}
 			data-app-frame={app}
+			data-app-frame-tab={tabId}
 			data-app-frame-src={url}
 		/>
 	);

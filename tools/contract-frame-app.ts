@@ -1,5 +1,12 @@
 import {
 	AppTabQuery,
+	AssistantModule,
+	ChatQuery,
+	OpenWebPageCommand,
+	PickWorkingFolderCommand,
+	SendMessageCommand,
+	WebPageModule,
+	WebPageQuery,
 	ClosedTabsQuery,
 	FileSystemModule,
 	PlacesModule,
@@ -18,6 +25,8 @@ const SHELL_SAID = "sumi-42";
 const OUTPUT_WAIT_MS = 5000;
 const OUTPUT_STEP_MS = 100;
 const SECOND_PORT_WAIT_MS = 1500;
+const OWN_TAB = new URLSearchParams(location.hash.slice(1)).get("sumi-tab") ?? "";
+const CHAT_SAID = "hello from the frame";
 
 const transport = messagePortTransport(portFromParent());
 const heard = {
@@ -27,7 +36,13 @@ transport.changes(() => {
 	heard.changes += 1;
 });
 const sumi = app()
-	.imports(FileSystemModule.over(transport), TerminalModule.over(transport), PlacesModule.over(transport))
+	.imports(
+		FileSystemModule.over(transport),
+		TerminalModule.over(transport),
+		PlacesModule.over(transport),
+		WebPageModule.over(transport),
+		AssistantModule.over(transport),
+	)
 	.start();
 
 async function terminalSaid(): Promise<string> {
@@ -45,30 +60,67 @@ async function terminalSaid(): Promise<string> {
 	return last.ok ? last.output.output : last.reason;
 }
 
-async function run(): Promise<unknown> {
+async function filesTold(): Promise<object> {
 	const written = await sumi.send(WriteFileCommand, { path: NOTE_PATH, content: NOTE });
 	const read = await sumi.send(ReadFileQuery, { path: NOTE_PATH });
 	const climbed = await sumi.send(ReadFileQuery, { path: "../other-app/secret.txt" });
-	const closedTabs = await sumi.send(ClosedTabsQuery);
-	const otherTab = await sumi.send(AppTabQuery, {
-		id: new URLSearchParams(location.hash.slice(1)).get("sumi-tab") ?? "",
-	});
-	const typed = await sumi.send(SendTerminalCommand, { line: TYPED });
 	return {
 		origin: self.origin,
 		written: written.ok,
 		read: read.ok ? read.output : read.reason,
 		climbed: climbed.ok ? "read" : climbed.code,
+	};
+}
+
+async function placesTold(): Promise<object> {
+	const closedTabs = await sumi.send(ClosedTabsQuery);
+	const otherTab = await sumi.send(AppTabQuery, { id: "t9" });
+	const ownTab = await sumi.send(AppTabQuery, { id: OWN_TAB });
+	return {
 		closedTabs: closedTabs.ok ? "answered" : closedTabs.code,
 		otherTab: otherTab.ok ? "answered" : otherTab.code,
+		ownTab: ownTab.ok ? ownTab.output.address : ownTab.reason,
+	};
+}
+
+async function terminalTold(): Promise<object> {
+	const typed = await sumi.send(SendTerminalCommand, { line: TYPED });
+	return {
 		typed: typed.ok,
 		terminal: await terminalSaid(),
-		secondPort: await portFromParent(window, SECOND_PORT_WAIT_MS).then(
-			() => "handed",
-			() => "refused",
-		),
-		changesHeard: heard.changes,
 	};
+}
+
+async function webPageTold(): Promise<object> {
+	await sumi.send(OpenWebPageCommand, { tab: OWN_TAB, url: "https://example.com/start" });
+	const webPage = await sumi.send(WebPageQuery, { tab: OWN_TAB });
+	const otherWebPage = await sumi.send(WebPageQuery, { tab: "t9" });
+	return {
+		webPage: webPage.ok ? webPage.output?.title : webPage.reason,
+		otherWebPage: otherWebPage.ok ? "read" : otherWebPage.code,
+	};
+}
+
+async function chatTold(): Promise<object> {
+	await sumi.send(SendMessageCommand, { said: CHAT_SAID });
+	const chat = await sumi.send(ChatQuery);
+	const pickedFolder = await sumi.send(PickWorkingFolderCommand);
+	return {
+		chat: chat.ok ? chat.output.session.turns.at(-1)?.text : chat.reason,
+		pickedFolder: pickedFolder.ok ? "picked" : pickedFolder.code,
+	};
+}
+
+async function run(): Promise<unknown> {
+	const told = [await filesTold(), await placesTold(), await terminalTold(), await webPageTold(), await chatTold()];
+	const secondPort = await portFromParent(window, SECOND_PORT_WAIT_MS).then(
+		() => "handed",
+		() => "refused",
+	);
+	return Object.assign({}, ...told, {
+		secondPort,
+		changesHeard: heard.changes,
+	});
 }
 
 run().then(

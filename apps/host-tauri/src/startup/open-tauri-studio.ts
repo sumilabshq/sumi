@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { startStudio, startStudioApp } from "@widgetarium/studio";
+import { nativeWebPagesOver, startStudio, startStudioApp } from "@widgetarium/studio";
 import type { StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
@@ -31,7 +31,7 @@ export interface StudioOpening {
 	readonly workspace: WorkspaceEntry;
 }
 
-type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp" | "core">;
+type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp" | "core" | "nativeWebPages">;
 
 interface StartedParts {
 	readonly studioApp: StartedApp;
@@ -127,6 +127,7 @@ function startedPartsFieldsOf({ assistant, studioApp, core }: StartedParts): Stu
 		assistant: assistant.port,
 		assistantHost: assistant.host,
 		studioApp,
+		nativeWebPages: nativeWebPagesOver(studioApp),
 		core,
 	};
 }

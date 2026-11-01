@@ -9,6 +9,9 @@ import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib
 import { NodeFilesGateway } from "../packages/domain/file-system/gateways/files/node.gateway.ts";
 import { FileSystemModule } from "../packages/domain/file-system/module.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
+import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
+import { placedTabsOf } from "./places-fixture.ts";
 import { NodeTerminalSessionsGateway } from "../packages/domain/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { TerminalModule } from "../packages/domain/terminal/module.ts";
 import { paged, waitUntil } from "./chrome-ask.ts";
@@ -27,7 +30,25 @@ const served = server()
 	.modules(
 		FileSystemModule.with({ files: new NodeFilesGateway(appData) }),
 		TerminalModule.with({ sessions: terminal }),
-		PlacesModule,
+		PlacesModule.with({
+			windows: new MemoryWindowsGateway({ windows: [] }),
+			tabs: new MemoryTabsGateway(
+				placedTabsOf({
+					tabs: [
+						{
+							id: "t1",
+							app: "notes",
+							pageId: null,
+							label: null,
+							lastAddress: "/c1",
+						},
+					],
+					shownId: "t1",
+					minted: 1,
+					closed: [],
+				}),
+			),
+		}),
 	)
 	.start({
 		env: {},
@@ -86,6 +107,19 @@ try {
 	check("a relative path climbing out of the app's folder is refused", told["climbed"], "refused");
 	check("a Places request off the app allow-list is forbidden", told["closedTabs"], "forbidden");
 	check("a tab that does not hold the app is forbidden", told["otherTab"], "forbidden");
+	check("the app reads its own tab through Places", told["ownTab"], "/c1");
+	check(
+		"the frame opens a web page and WebPageQuery reads it back (memory fake browser in the shell)",
+		told["webPage"],
+		"example.com",
+	);
+	check("a web page in a tab the app does not hold is forbidden", told["otherWebPage"], "forbidden");
+	check(
+		"the frame sends a chat message and ChatQuery reads the fake port's answer, routed by the tab's address",
+		told["chat"],
+		"echo: hello from the frame",
+	);
+	check("a chat request off the app list is forbidden", told["pickedFolder"], "forbidden");
 	check("SendTerminalCommand is answered ok", told["typed"], true);
 	check(
 		"the shell ran the typed line and TerminalOutputQuery reads its output",

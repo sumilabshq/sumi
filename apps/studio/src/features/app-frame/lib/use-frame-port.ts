@@ -1,85 +1,108 @@
-import { createContext, useContext, useEffect, useRef } from "react";
+import { createContext, useContext, useEffect } from "react";
 import type { RefObject } from "react";
 import { PORT_WANTED, handPort, messagePortListener } from "@widgetarium/core/requests";
-import type { Answer, ServingServer } from "@widgetarium/core/requests";
 import { APP_CALLER_HEADER } from "./app-caller.js";
+import { createFrameRelay } from "./frame-relay.js";
+import type { FrameOpened, FrameRoutes, FrameRoutesFor } from "./frame-relay.js";
+import { useLatestAnswered } from "./use-latest-answered.js";
+import type { OnAnswered } from "./use-latest-answered.js";
 
 const SECOND_DOCUMENT =
 	"[widgetarium] app {app}: a second document in its frame wanted a port → refused; a frame gets one port per mount";
-const NO_RELAY = "An installed app is drawn inside AppFramesProvider, which relays its frames' calls to the core";
+const NO_ROUTES = "An installed app is drawn inside AppFramesProvider, which routes its frames' calls";
 
-export const FrameRelayContext = createContext<ServingServer | null>(null);
+export const FrameRoutesContext = createContext<FrameRoutesFor | null>(null);
+
+export interface PortHandovers {
+	readonly opened: FrameOpened;
+	readonly routesFor: FrameRoutesFor;
+	readonly onAnswered: OnAnswered;
+}
 
 export function useFramePort(
 	frame: RefObject<HTMLIFrameElement | null>,
-	app: string,
-	onAnswered: (answer: Answer<unknown>) => void,
+	{ app, tabId }: FrameOpened,
+	onAnswered: OnAnswered,
 ): void {
-	const relay = useContext(FrameRelayContext);
-	const latest = useRef(onAnswered);
-
+	const routesFor = useContext(FrameRoutesContext);
+	const latest = useLatestAnswered(onAnswered);
 	useEffect(() => {
-		latest.current = onAnswered;
-	});
-
-	useEffect(() => {
-		if (relay === null) {
-			throw new Error(NO_RELAY);
+		if (routesFor === null) {
+			throw new Error(NO_ROUTES);
 		}
 
-		return servePortHandovers(
-			() => frame.current?.contentWindow ?? null,
-			app,
-			relay,
-			(answer) => latest.current(answer),
-		);
-	}, [frame, app, relay]);
+		return servePortHandovers(() => frame.current?.contentWindow ?? null, {
+			opened: { app, tabId },
+			routesFor,
+			onAnswered: (answer) => latest.current(answer),
+		});
+	}, [frame, app, tabId, routesFor, latest]);
 }
 
-export function servePortHandovers(
-	frameWindowOf: () => Window | null,
-	app: string,
-	relay: ServingServer,
-	onAnswered: (answer: Answer<unknown>) => void,
-): () => void {
-	const current = {
-		stop: (): void => undefined,
-		isHanded: false,
-	};
+export function servePortHandovers(frameWindowOf: () => Window | null, handovers: PortHandovers): () => void {
+	const handover = new FramePortHandover(handovers);
 	const onPortWanted = ({ source, data }: MessageEvent): void => {
 		const frameWindow = frameWindowOf();
 
-		if (frameWindow === null || source !== frameWindow || data !== PORT_WANTED) {
-			return;
+		if (frameWindow !== null && source === frameWindow && data === PORT_WANTED) {
+			handover.hand(frameWindow);
 		}
-
-		if (current.isHanded) {
-			console.warn(SECOND_DOCUMENT.replace("{app}", app));
-			return;
-		}
-
-		current.isHanded = true;
-		current.stop = handFreshPort(frameWindow, app, relay, onAnswered);
 	};
 	window.addEventListener("message", onPortWanted);
 	return () => {
 		window.removeEventListener("message", onPortWanted);
-		current.stop();
+		handover.stop();
 	};
 }
 
-function handFreshPort(
-	frameWindow: Window,
-	app: string,
-	relay: ServingServer,
-	onAnswered: (answer: Answer<unknown>) => void,
-): () => void {
+class FramePortHandover {
+	private isHanded = false;
+	private isStopped = false;
+	private stopServing = (): void => undefined;
+
+	constructor(private readonly handovers: PortHandovers) {}
+
+	hand(frameWindow: Window): void {
+		if (this.isHanded) {
+			console.warn(SECOND_DOCUMENT.replace("{app}", this.handovers.opened.app));
+			return;
+		}
+
+		this.isHanded = true;
+		void handFreshPort(frameWindow, this.handovers).then((stop) => this.served(stop));
+	}
+
+	stop(): void {
+		this.isStopped = true;
+		this.stopServing();
+	}
+
+	private served(stop: () => void): void {
+		if (this.isStopped) {
+			stop();
+			return;
+		}
+
+		this.stopServing = stop;
+	}
+}
+
+async function handFreshPort(frameWindow: Window, handovers: PortHandovers): Promise<() => void> {
+	const { opened, routesFor } = handovers;
+	const routes = await routesFor(opened);
 	const channel = new MessageChannel();
-	const headers = {
-		[APP_CALLER_HEADER]: app,
-	};
-	const stop = messagePortListener(channel.port1, { headers, onAnswered }).serve(relay);
+	const stopServing = servedRelay(channel.port1, handovers, routes);
 	handPort(frameWindow, channel.port2);
-	console.info(`[widgetarium] app ${app}: no port → port handed`);
-	return stop;
+	console.info(`[widgetarium] app ${opened.app} tab ${opened.tabId}: no port → port handed`);
+	return () => {
+		stopServing();
+		routes.release();
+	};
+}
+
+function servedRelay(port: MessagePort, { opened, onAnswered }: PortHandovers, routes: FrameRoutes): () => void {
+	const headers = {
+		[APP_CALLER_HEADER]: opened.app,
+	};
+	return messagePortListener(port, { headers, onAnswered }).serve(createFrameRelay(routes.routes));
 }

@@ -32,6 +32,9 @@ import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
+import { frameRoutesOf } from "../tabs/frame-routes.js";
+import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
+import type { NativeWebPages } from "../features/app-frame/lib/web-page-hosts.js";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -51,6 +54,7 @@ export interface StartedStudio {
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
 	readonly core: RemoteTransport;
+	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
 }
 
@@ -64,6 +68,7 @@ export interface StudioStart extends ProjectStart {
 	readonly assistantHost?: AssistantHostObjects;
 	readonly studioApp?: StartedApp;
 	readonly core?: RemoteTransport;
+	readonly nativeWebPages?: NativeWebPages;
 }
 
 interface ChatReach {
@@ -105,16 +110,22 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 			core,
 		});
 	const state = start.state ?? createStudioState(studioApp);
+	const reach = {
+		workspaceId: lent.appId,
+		studioApp,
+		core,
+	};
 	return {
-		...startedChatOf(start, {
-			workspaceId: lent.appId,
-			studioApp,
-			core,
-		}),
+		...startedChatOf(start, reach),
 		...lent,
 		chatsColumn: createChatsColumnApp(studioApp),
 		studioApp,
 		core,
+		frameRoutes: frameRoutesOf({
+			...reach,
+			assistantHost: assistantHostOf(start),
+			nativeWebPages: start.nativeWebPages ?? null,
+		}),
 		project,
 		state,
 	};
@@ -161,7 +172,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 	return h(StudioLayout, {
 		frame: screen.frame,
 		layoutApp: started.studioApp,
-		core: started.core,
+		frameRoutes: started.frameRoutes,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {
@@ -228,7 +239,7 @@ function startedChatOf(
 	const ask = {
 		platform: "browser" as const,
 		workspaceId,
-		host: start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT },
+		host: assistantHostOf(start),
 		tasks: core,
 	};
 	return {
@@ -238,6 +249,10 @@ function startedChatOf(
 			browserApp: studioApp,
 		},
 	};
+}
+
+function assistantHostOf(start: StudioStart): AssistantHostObjects {
+	return start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT };
 }
 
 function lentPortsOf(opened: OpenedApp, start: StudioStart): Pick<StartedStudio, LentPort> {
