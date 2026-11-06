@@ -8,7 +8,7 @@ import { TasksModule } from "@widgetarium/tasks/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 import { server } from "@widgetarium/data-framework/server";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
-import { AppsModule } from "../plugins/apps/module/module.ts";
+import { AppsModule } from "../plugins/apps/data/apps/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";

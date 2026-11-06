@@ -38,9 +38,33 @@ sumi.profile.json ──► resolvePlugins(profile)        apps/studio/src/plugi
                         └── draws the TabPageSlot page in app tabs
 ```
 
+## Layout
+
+A requirement, enforced by `npm run test:plugin-layout` and the `plugin-layout-reviewer` agent:
+
+```
+plugins/<name>/
+  package.json  tsconfig.json  LICENSE
+  src/
+    plugin.ts     always: the plugin(...) definition and its imports, nothing else
+    slots.ts      when it declares slots: the slots, their item schemas and types
+    index.ts      re-exports only
+    <thing>.ts    everything else, one thing per file
+  data/           when it owns modules
+    <module>/     a data module package (placement.md)
+```
+
+| Breaks the layout | Because |
+| --- | --- |
+| no `src/plugin.ts` | a plugin folder without its plugin has no reason to exist |
+| a helper, slot, schema, type or second declaration in `plugin.ts` | `plugin.ts` is read to learn what the plugin is, at a glance |
+| `slot(...)` outside `slots.ts` | the slots a plugin offers are one list |
+| a `module.ts` or a `"level": "domain"` package outside `data/<module>/` | a plugin's data lives in one place |
+| anything in `index.ts` but `export … from` | the entry hides nothing |
+
 ## Example: apps
 
-`plugins/apps` declares `AppsSlot` (`{ id, title, icon, view }`) and owns `AppsModule` (`plugins/apps/module`, `@sumi/apps`): the core starts it with the plugin's own fills, and `AppsQuery` answers the apps a workspace has. The plugin fills the host's `TabPageSlot` with the page that draws an app's view. `plugins/terminal` requires it and fills `AppsSlot` with the Terminal. The shell's menu reads `AppsQuery`; nothing reads `AppsSlot` but the apps plugin.
+`plugins/apps` declares `AppsSlot` (`{ id, title, icon, view }`) and owns `AppsModule` (`plugins/apps/data/apps`, `@sumi/apps`): the core starts it with the plugin's own fills, and `AppsQuery` answers the apps a workspace has. The plugin fills the host's `TabPageSlot` with the page that draws an app's view. `plugins/terminal` requires it and fills `AppsSlot` with the Terminal. The shell's menu reads `AppsQuery`; nothing reads `AppsSlot` but the apps plugin.
 
 TODO: places' tabs (open, closed, history) move into the apps plugin; decided with the user, not started.
 TODO: `app-host` (`packages/domain`) imports `@sumi/apps` until the shell's tabs move into the apps plugin.

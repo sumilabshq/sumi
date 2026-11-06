@@ -22,6 +22,14 @@ queries, commands and events (`docs/architecture/plugins.md`). The host offers g
 reads only the slots it declares itself; it never reads, parses or configures a module with another
 plugin's fills. `AppHostModule({ apps })` did exactly that and was rewritten.
 
+**CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
+`plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin(...)` definition, no helper,
+slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
+`src/index.ts` (only re-exports), other files of `src/` split one thing per file, and `data/<module>/` (when it
+owns modules: each a data module package). A module outside `data/`, a slot outside `slots.ts` or a plugin
+outside `plugin.ts` fails `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the
+change; until the layout is right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
+
 @docs/architecture/README.md
 
 @docs/architecture/layers.md
@@ -66,7 +74,7 @@ apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
 plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins (background modules, tab page); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
-plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/module, @sumi/apps) and the app tab page
+plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
       ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, command-menu, web-page, mascot, fixture-billing

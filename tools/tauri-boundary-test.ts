@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
+import { workspacePackagesIn } from "@widgetarium/eslint-plugin/workspace";
 import { tauriImportRefusal, tauriOnlyInHost } from "../apps/tauri/tauri-reach.mts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const HOST = path.join(REPO, "apps", "tauri");
-const ANY_FOLDER = "/*";
 const TAURI_PACKAGES = "@tauri-apps/";
 const TAURI_GLOBAL = "__TAURI";
 const ONLY_HOST = "only apps/tauri reaches Tauri";
@@ -14,21 +14,9 @@ const SKIPPED_FOLDERS = ["node_modules", "dist", "target"].map((name) => `${path
 const DEPENDENCY_FIELDS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
 function guardedPackages(): readonly string[] {
-	const manifest: unknown = JSON.parse(fs.readFileSync(path.join(REPO, "package.json"), "utf8"));
-	const patterns: unknown =
-		typeof manifest === "object" && manifest !== null ? Reflect.get(manifest, "workspaces") : [];
-	return (Array.isArray(patterns) ? patterns : [])
-		.filter((pattern): pattern is string => typeof pattern === "string" && pattern.endsWith(ANY_FOLDER))
-		.flatMap((pattern) => foldersIn(path.join(REPO, pattern.slice(0, -ANY_FOLDER.length))))
-		.filter((folder) => fs.existsSync(path.join(folder, "package.json")))
+	return workspacePackagesIn(REPO)
+		.map(({ folder }) => path.join(REPO, folder))
 		.filter((folder) => folder !== HOST && !folder.startsWith(HOST + path.sep));
-}
-
-function foldersIn(parent: string): readonly string[] {
-	return fs
-		.readdirSync(parent, { withFileTypes: true })
-		.filter((entry) => entry.isDirectory())
-		.map((entry) => path.join(parent, entry.name));
 }
 
 function sourceFilesIn(folder: string): readonly string[] {

@@ -8,7 +8,7 @@ export interface WorkspacePackage {
 	readonly level: string;
 }
 
-const ANY_FOLDER = "/*";
+const ANY_FOLDER = "*";
 const DOMAIN_LEVEL = "domain";
 const CLIENT_LEVEL = "client";
 const CONTRACT_LEVEL = "contract";
@@ -54,14 +54,28 @@ function workspacesOf(cwd: string): string[] {
 }
 
 function foldersMatching(cwd: string, pattern: string): string[] {
-	if (!pattern.endsWith(ANY_FOLDER)) return [pattern];
-	const parent = pattern.slice(0, -ANY_FOLDER.length);
-	const absolute = path.join(cwd, parent);
+	return pattern
+		.split("/")
+		.reduce<string[]>(
+			(folders, segment) =>
+				segment === ANY_FOLDER
+					? folders.flatMap((folder) => subfoldersOf(cwd, folder))
+					: folders.map((folder) => joinedFolder(folder, segment)),
+			[""],
+		);
+}
+
+function subfoldersOf(cwd: string, folder: string): string[] {
+	const absolute = path.join(cwd, folder);
 	if (!fs.existsSync(absolute)) return [];
 	return fs
 		.readdirSync(absolute, { withFileTypes: true })
 		.filter((entry) => entry.isDirectory())
-		.map((entry) => `${parent}/${entry.name}`);
+		.map((entry) => joinedFolder(folder, entry.name));
+}
+
+function joinedFolder(folder: string, segment: string): string {
+	return folder === "" ? segment : `${folder}/${segment}`;
 }
 
 function packageIn(cwd: string, folder: string): WorkspacePackage[] {
