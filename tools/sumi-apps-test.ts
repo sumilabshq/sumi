@@ -296,6 +296,8 @@ async function frameOpens(page: AskedPage, app: SumiAppId): Promise<void> {
 const TASK_ACCEPTED = "T-147";
 const TERMINAL_LINE = "echo sumi-e2e-$((40+2))";
 const TERMINAL_SAID = "sumi-e2e-42";
+const TERMINAL_SCREEN = ".wg-terminal-screen";
+const TERMINAL_KEYS = "textarea.xterm-helper-textarea";
 const WEB_ADDRESS = "https://example.com/";
 const CHAT_SAID = "hello from the e2e";
 
@@ -610,13 +612,31 @@ async function tasksLinkChecks(page: AskedPage): Promise<void> {
 	);
 }
 
+async function typedOnTerminalScreen(page: AskedPage): Promise<boolean> {
+	const isDrawn = await frameSees(
+		page,
+		"terminal",
+		`document.querySelector(${JSON.stringify(TERMINAL_KEYS)}) !== null`,
+	);
+
+	if (!isDrawn) {
+		return false;
+	}
+
+	await pressInFrame(page, "terminal", TERMINAL_SCREEN);
+	const isFocused = await frameSees(
+		page,
+		"terminal",
+		`document.activeElement === document.querySelector(${JSON.stringify(TERMINAL_KEYS)})`,
+	);
+	await page.typeText(TERMINAL_LINE);
+	await page.pressEnter();
+	return isFocused;
+}
+
 async function terminalChecks(page: AskedPage): Promise<void> {
 	await showAppTab(page, "terminal");
-	check(
-		"terminal: pressing the Command field focuses it",
-		await typedInFrame(page, "terminal", 'input[aria-label="Command"]', TERMINAL_LINE),
-		true,
-	);
+	check("terminal: pressing the screen focuses its keyboard input", await typedOnTerminalScreen(page), true);
 	check(
 		"terminal: the frame draws what the real /bin/sh answered",
 		await frameSees(page, "terminal", `document.body.innerText.includes(${JSON.stringify(TERMINAL_SAID)})`),

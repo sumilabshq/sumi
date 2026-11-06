@@ -3,6 +3,8 @@ import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { TerminalSessionsGateway } from "./terminal-sessions.gateway.js";
 
 const SHELL = "/bin/sh";
+const PTY_ENTER = "\r";
+const PIPE_ENTER = "\n";
 
 export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 	private readonly shells = new Map<string, ChildProcessWithoutNullStreams>();
@@ -19,11 +21,11 @@ export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 	override async resize(): Promise<void> {}
 
 	override async type(session: string, keys: string): Promise<void> {
-		this.ensureShell(session).stdin.write(keys);
+		this.ensureShell(session).stdin.write(keys.replaceAll(PTY_ENTER, PIPE_ENTER));
 	}
 
 	override send(session: string, line: string): Promise<void> {
-		return this.type(session, `${line}\n`);
+		return this.type(session, `${line}${PIPE_ENTER}`);
 	}
 
 	stopAll(): void {
