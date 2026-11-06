@@ -11,7 +11,7 @@
 		"test": "node scripts/write-manifest.ts --check"
 	},
 	"dependencies": {
-		"@sumi/contract": "0.4.0",
+		"@sumi/contract": "0.5.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@xterm/addon-fit": "0.11.0",

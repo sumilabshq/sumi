@@ -1,18 +1,18 @@
 import { z } from "zod";
 
-export const TerminalTabIdSchema = z.string().min(1).max(200);
+export const TerminalSessionIdSchema = z.string().min(1).max(200);
 
-export const TerminalTabSchema = z.object({
-	tab: TerminalTabIdSchema,
+export const TerminalSessionSchema = z.object({
+	session: TerminalSessionIdSchema,
 });
 
 export const SendTerminalInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+	session: TerminalSessionIdSchema,
 	line: z.string().max(65536),
 });
 
 export const TypeTerminalInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+	session: TerminalSessionIdSchema,
 	keys: z.string().min(1).max(65536),
 });
 
@@ -21,8 +21,8 @@ export const TerminalSizeSchema = z.object({
 	rows: z.number().int().min(1).max(1000),
 });
 
-export const TerminalSizeInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+export const ResizeTerminalInputSchema = z.object({
+	session: TerminalSessionIdSchema,
 	cols: z.number().int().min(1).max(1000),
 	rows: z.number().int().min(1).max(1000),
 });

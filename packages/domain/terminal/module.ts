@@ -4,7 +4,6 @@ import {
 	RereadTerminalOutputSubscriber,
 	ResizeTerminalCommand,
 	SendTerminalCommand,
-	StartTerminalCommand,
 	TerminalAccessGuard,
 	TerminalCallLoggerMiddleware,
 	TerminalOutputQuery,
@@ -14,7 +13,7 @@ import {
 export const TerminalModule = module("terminal")
 	.on(Server)
 	.subscribers(RereadTerminalOutputSubscriber)
-	.public(TerminalOutputQuery, StartTerminalCommand, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand)
+	.public(TerminalOutputQuery, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand)
 	.guard(AuthenticatedGuard)
 	.guard(TerminalAccessGuard)
 	.use(TerminalCallLoggerMiddleware)

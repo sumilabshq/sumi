@@ -11,9 +11,9 @@ const UNMEASURED_SIZE: TerminalSize = {
 	rows: 40,
 };
 const ENTER = "\r";
-const NOT_OPENED = "[terminal] app {app}: no session → no session (the pty did not open)";
-const NOT_RESIZED = "[terminal] app {app}: resize skipped (no session yet; the next start opens at the screen's size)";
-const NOT_UNDERSTOOD = "[terminal] app {app}: the pty said something that is neither bytes nor an exit";
+const NOT_OPENED = "[terminal] session {session}: no pty → no pty (the pty did not open)";
+const NOT_RESIZED = "[terminal] session {session}: resize skipped (its shell has exited)";
+const NOT_UNDERSTOOD = "[terminal] session {session}: the pty said something that is neither bytes nor an exit";
 
 const PtyMessageSchema = z.union([
 	z.array(z.number().int().min(0).max(255)),
@@ -22,86 +22,86 @@ const PtyMessageSchema = z.union([
 	}),
 ]);
 
-const SessionIdSchema = z.number();
+const PtyIdSchema = z.number();
 
 const DoneSchema = z.null();
 
 export class TauriTerminalSessionsGateway extends TerminalSessionsGateway {
-	private readonly sessions = new Map<string, Promise<number>>();
+	private readonly ptys = new Map<string, Promise<number>>();
 
-	override async start(app: string, size: TerminalSize): Promise<void> {
-		if (this.sessions.has(app)) {
-			await this.resize(app, size);
+	override async start(session: string, size: TerminalSize): Promise<void> {
+		if (this.ptys.has(session)) {
+			await this.resize(session, size);
 			return;
 		}
 
-		await this.openSession(app, size);
+		await this.openPty(session, size);
 	}
 
-	override async resize(app: string, size: TerminalSize): Promise<void> {
-		const session = this.sessions.get(app);
+	override async resize(session: string, size: TerminalSize): Promise<void> {
+		const pty = this.ptys.get(session);
 
-		if (session === undefined) {
-			console.info(NOT_RESIZED.replace("{app}", app));
+		if (pty === undefined) {
+			console.info(NOT_RESIZED.replace("{session}", session));
 			return;
 		}
 
 		const resized = await invoke(RESIZE, {
-			id: await session,
+			id: await pty,
 			...size,
 		});
 		DoneSchema.parse(resized);
 	}
 
-	override async type(app: string, keys: string): Promise<void> {
+	override async type(session: string, keys: string): Promise<void> {
 		const written = await invoke(WRITE, {
-			id: await this.ensureSession(app, UNMEASURED_SIZE),
+			id: await this.ensurePty(session, UNMEASURED_SIZE),
 			data: keys,
 		});
 		DoneSchema.parse(written);
 	}
 
-	override send(app: string, line: string): Promise<void> {
-		return this.type(app, `${line}${ENTER}`);
+	override send(session: string, line: string): Promise<void> {
+		return this.type(session, `${line}${ENTER}`);
 	}
 
-	private ensureSession(app: string, size: TerminalSize): Promise<number> {
-		return this.sessions.get(app) ?? this.openSession(app, size);
+	private ensurePty(session: string, size: TerminalSize): Promise<number> {
+		return this.ptys.get(session) ?? this.openPty(session, size);
 	}
 
-	private openSession(app: string, size: TerminalSize): Promise<number> {
+	private openPty(session: string, size: TerminalSize): Promise<number> {
 		const opened = invoke(OPEN, {
-			onData: this.ptyChannelOf(app),
+			onData: this.ptyChannelOf(session),
 			...size,
 		}).then((id) => {
-			this.recordStart(app);
-			return SessionIdSchema.parse(id);
+			this.recordStart(session);
+			return PtyIdSchema.parse(id);
 		});
-		this.sessions.set(app, opened);
+		this.ptys.set(session, opened);
 		opened.catch((failure: unknown) => {
-			this.sessions.delete(app);
-			console.error(NOT_OPENED.replace("{app}", app), failure);
+			this.ptys.delete(session);
+			console.error(NOT_OPENED.replace("{session}", session), failure);
 		});
 		return opened;
 	}
 
-	private ptyChannelOf(app: string): Channel<unknown> {
+	private ptyChannelOf(session: string): Channel<unknown> {
 		const decoder = new TextDecoder();
 		return new Channel<unknown>((message) => {
 			const read = PtyMessageSchema.safeParse(message);
 
 			if (!read.success) {
-				console.error(NOT_UNDERSTOOD.replace("{app}", app), read.error);
+				console.error(NOT_UNDERSTOOD.replace("{session}", session), read.error);
 				return;
 			}
 
 			if (Array.isArray(read.data)) {
-				this.recordOutput(app, decoder.decode(new Uint8Array(read.data), { stream: true }));
+				this.recordOutput(session, decoder.decode(new Uint8Array(read.data), { stream: true }));
 				return;
 			}
 
-			this.sessions.delete(app);
-			this.recordExit(app, read.data.exit);
+			this.ptys.delete(session);
+			this.recordExit(session, read.data.exit);
 		});
 	}
 }

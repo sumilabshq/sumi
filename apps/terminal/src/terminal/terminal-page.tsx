@@ -3,7 +3,7 @@ import type { ReactElement, RefObject } from "react";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import type { ITheme } from "@xterm/xterm";
-import { ResizeTerminalCommand, StartTerminalCommand, TerminalOutputQuery, TypeTerminalCommand } from "@sumi/contract";
+import { ResizeTerminalCommand, TerminalOutputQuery, TypeTerminalCommand } from "@sumi/contract";
 import type { TerminalOutput } from "@sumi/contract";
 import type { Answer } from "@widgetarium/data-framework";
 import type { SumiShell } from "../sumi-shell.js";
@@ -113,7 +113,7 @@ function useTerminalOutput({ shell, transport, tabId }: SumiShell): OutputRead {
 		const reread = (): void => {
 			lastAsked += 1;
 			const asked = lastAsked;
-			void shell.send(TerminalOutputQuery, { tab: tabId }).then((answer) => {
+			void shell.send(TerminalOutputQuery, { session: tabId }).then((answer) => {
 				if (asked !== lastAsked) {
 					return;
 				}
@@ -147,12 +147,14 @@ function useWiresShell(terminal: RefObject<Terminal | null>, { shell, tabId }: S
 		}
 
 		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
-		void shell.send(StartTerminalCommand, { tab: tabId, cols: drawn.cols, rows: drawn.rows }).then(showRefusalOf);
+		void shell
+			.send(ResizeTerminalCommand, { session: tabId, cols: drawn.cols, rows: drawn.rows })
+			.then(showRefusalOf);
 		const typing = drawn.onData(
-			(keys) => void shell.send(TypeTerminalCommand, { tab: tabId, keys }).then(showRefusalOf),
+			(keys) => void shell.send(TypeTerminalCommand, { session: tabId, keys }).then(showRefusalOf),
 		);
 		const resizing = drawn.onResize(
-			(size) => void shell.send(ResizeTerminalCommand, { tab: tabId, ...size }).then(showRefusalOf),
+			(size) => void shell.send(ResizeTerminalCommand, { session: tabId, ...size }).then(showRefusalOf),
 		);
 		return () => {
 			typing.dispose();

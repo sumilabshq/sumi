@@ -8,7 +8,7 @@ use std::os::unix::process::CommandExt;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::str::FromStr;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 use std::time::{Duration, Instant};
 use tauri::ipc::{Channel, Invoke, InvokeBody, InvokeError, InvokeMessage, JavaScriptChannelId};
 use tauri::plugin::{Builder, TauriPlugin};
@@ -29,15 +29,21 @@ const EXIT_WAIT: Duration = Duration::from_secs(2);
 const EXIT_POLL: Duration = Duration::from_millis(20);
 
 struct Session {
-    master: File,
-    child: Child,
+    master: Mutex<File>,
+    master_fd: RawFd,
+    child: Mutex<Child>,
 }
 
-static SESSIONS: OnceLock<Mutex<HashMap<u64, Session>>> = OnceLock::new();
+static SESSIONS: OnceLock<Mutex<HashMap<u64, Arc<Session>>>> = OnceLock::new();
 static NEXT_ID: AtomicU64 = AtomicU64::new(1);
 
-fn sessions() -> &'static Mutex<HashMap<u64, Session>> {
+fn sessions() -> &'static Mutex<HashMap<u64, Arc<Session>>> {
     SESSIONS.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn session_of(id: u64) -> Result<Arc<Session>, String> {
+    let held = sessions().lock().map_err(|error| error.to_string())?;
+    held.get(&id).cloned().ok_or_else(|| NO_SESSION.to_string())
 }
 
 fn argument<'a>(message: &'a InvokeMessage<Wry>, name: &str) -> Result<&'a Value, String> {
@@ -142,8 +148,9 @@ pub fn settled_code(mut try_wait: impl FnMut() -> Option<Option<ExitStatus>>, wa
 fn exit_code_of(id: u64) -> Option<i32> {
     settled_code(
         || {
-            let mut held = sessions().lock().ok()?;
-            held.get_mut(&id)?.child.try_wait().ok()
+            let session = session_of(id).ok()?;
+            let mut child = session.child.lock().ok()?;
+            child.try_wait().ok()
         },
         EXIT_WAIT,
     )
@@ -182,7 +189,12 @@ fn open(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let child = child?;
     let reader = master_file.try_clone().map_err(|error| error.to_string())?;
     let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
-    sessions().lock().map_err(|error| error.to_string())?.insert(id, Session { master: master_file, child });
+    let session = Session {
+        master_fd: master_file.as_raw_fd(),
+        master: Mutex::new(master_file),
+        child: Mutex::new(child),
+    };
+    sessions().lock().map_err(|error| error.to_string())?.insert(id, Arc::new(session));
     pipe_output(id, reader, on_data);
     eprintln!("[terminal] session {id} opened ({}×{})", size.ws_col, size.ws_row);
     Ok(Value::from(id))
@@ -191,19 +203,18 @@ fn open(message: &InvokeMessage<Wry>) -> Result<Value, String> {
 fn write(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let id = number_of(message, "id")?;
     let data = argument(message, "data")?.as_str().ok_or_else(|| MISSING_ARGUMENT.replace("{name}", "data"))?;
-    let mut held = sessions().lock().map_err(|error| error.to_string())?;
-    let session = held.get_mut(&id).ok_or(NO_SESSION)?;
-    session.master.write_all(data.as_bytes()).map_err(|error| error.to_string())?;
+    let session = session_of(id)?;
+    let mut master = session.master.lock().map_err(|error| error.to_string())?;
+    master.write_all(data.as_bytes()).map_err(|error| error.to_string())?;
     Ok(Value::Null)
 }
 
 fn resize(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let id = number_of(message, "id")?;
     let size = cells_of(message)?;
-    let held = sessions().lock().map_err(|error| error.to_string())?;
-    let session = held.get(&id).ok_or(NO_SESSION)?;
+    let session = session_of(id)?;
 
-    if unsafe { libc::ioctl(session.master.as_raw_fd(), libc::TIOCSWINSZ as _, &size) } < 0 {
+    if unsafe { libc::ioctl(session.master_fd, libc::TIOCSWINSZ as _, &size) } < 0 {
         return Err(format!("resize failed: {}", std::io::Error::last_os_error()));
     }
 
@@ -213,9 +224,10 @@ fn resize(message: &InvokeMessage<Wry>) -> Result<Value, String> {
 fn close(message: &InvokeMessage<Wry>) -> Result<Value, String> {
     let id = number_of(message, "id")?;
     let removed = sessions().lock().map_err(|error| error.to_string())?.remove(&id);
-    let Some(mut session) = removed else { return Ok(Value::Null) };
-    let _ = session.child.kill();
-    let _ = session.child.wait();
+    let Some(session) = removed else { return Ok(Value::Null) };
+    let mut child = session.child.lock().map_err(|error| error.to_string())?;
+    let _ = child.kill();
+    let _ = child.wait();
     eprintln!("[terminal] session {id} closed");
     Ok(Value::Null)
 }

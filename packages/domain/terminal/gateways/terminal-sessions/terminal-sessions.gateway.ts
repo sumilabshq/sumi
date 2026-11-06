@@ -16,16 +16,16 @@ export abstract class TerminalSessionsGateway {
 		isPending: false,
 	};
 
-	abstract start(app: string, size: TerminalSize): Promise<void>;
+	abstract start(session: string, size: TerminalSize): Promise<void>;
 
-	abstract resize(app: string, size: TerminalSize): Promise<void>;
+	abstract resize(session: string, size: TerminalSize): Promise<void>;
 
-	abstract type(app: string, keys: string): Promise<void>;
+	abstract type(session: string, keys: string): Promise<void>;
 
-	abstract send(app: string, line: string): Promise<void>;
+	abstract send(session: string, line: string): Promise<void>;
 
-	outputOf(app: string): TerminalOutput {
-		return this.held.get(app) ?? NOT_STARTED;
+	outputOf(session: string): TerminalOutput {
+		return this.held.get(session) ?? NOT_STARTED;
 	}
 
 	onOutputChanged(listener: () => void): () => void {
@@ -33,39 +33,39 @@ export abstract class TerminalSessionsGateway {
 		return () => void this.listeners.delete(listener);
 	}
 
-	protected isRunning(app: string): boolean {
-		return this.outputOf(app).status === "running";
+	protected isRunning(session: string): boolean {
+		return this.outputOf(session).status === "running";
 	}
 
-	protected recordStart(app: string): void {
-		const held = this.outputOf(app);
-		this.storeOutput(app, {
+	protected recordStart(session: string): void {
+		const held = this.outputOf(session);
+		this.storeOutput(session, {
 			...held,
 			status: "running",
 			exitCode: null,
 		});
-		console.info(`[terminal] app ${app}: ${held.status} → running`);
+		console.info(`[terminal] session ${session}: ${held.status} → running`);
 	}
 
-	protected recordOutput(app: string, chunk: string): void {
-		const held = this.outputOf(app);
-		this.storeOutput(app, {
+	protected recordOutput(session: string, chunk: string): void {
+		const held = this.outputOf(session);
+		this.storeOutput(session, {
 			...held,
 			output: (held.output + chunk).slice(-MOST_OUTPUT_CHARS),
 		});
 	}
 
-	protected recordExit(app: string, exitCode: number | null): void {
-		this.storeOutput(app, {
-			...this.outputOf(app),
+	protected recordExit(session: string, exitCode: number | null): void {
+		this.storeOutput(session, {
+			...this.outputOf(session),
 			status: "exited",
 			exitCode,
 		});
-		console.info(`[terminal] app ${app}: running → exited ${String(exitCode)}`);
+		console.info(`[terminal] session ${session}: running → exited ${String(exitCode)}`);
 	}
 
-	private storeOutput(app: string, output: TerminalOutput): void {
-		this.held.set(app, output);
+	private storeOutput(session: string, output: TerminalOutput): void {
+		this.held.set(session, output);
 
 		if (this.telling.isPending) {
 			return;

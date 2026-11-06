@@ -6,7 +6,7 @@ export const manifest = defineApp({
 	id: "browser-page",
 	name: "Browser",
 	version: "0.1.0",
-	contract: "^0.4.0",
+	contract: "^0.5.0",
 	ui: "index.html",
 	modules: [
 		{

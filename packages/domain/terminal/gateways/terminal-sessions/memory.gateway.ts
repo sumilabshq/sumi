@@ -2,39 +2,39 @@ import type { TerminalSize } from "../../shared/schema/terminal.schema.js";
 import { TerminalSessionsGateway } from "./terminal-sessions.gateway.js";
 
 export class MemoryTerminalSessionsGateway extends TerminalSessionsGateway {
-	private readonly startCountByApp = new Map<string, number>();
-	private readonly sizeByApp = new Map<string, TerminalSize>();
+	private readonly startCountBySession = new Map<string, number>();
+	private readonly sizeBySession = new Map<string, TerminalSize>();
 
-	override start(app: string, size: TerminalSize): Promise<void> {
-		if (this.isRunning(app)) {
+	override start(session: string, size: TerminalSize): Promise<void> {
+		if (this.isRunning(session)) {
 			return Promise.resolve();
 		}
 
-		this.startCountByApp.set(app, this.startCountOf(app) + 1);
-		this.sizeByApp.set(app, size);
-		this.recordStart(app);
+		this.startCountBySession.set(session, this.startCountOf(session) + 1);
+		this.sizeBySession.set(session, size);
+		this.recordStart(session);
 		return Promise.resolve();
 	}
 
-	override resize(app: string, size: TerminalSize): Promise<void> {
-		this.sizeByApp.set(app, size);
+	override resize(session: string, size: TerminalSize): Promise<void> {
+		this.sizeBySession.set(session, size);
 		return Promise.resolve();
 	}
 
-	override type(app: string, keys: string): Promise<void> {
-		this.recordOutput(app, keys);
+	override type(session: string, keys: string): Promise<void> {
+		this.recordOutput(session, keys);
 		return Promise.resolve();
 	}
 
-	override send(app: string, line: string): Promise<void> {
-		return this.type(app, `${line}\r\n`);
+	override send(session: string, line: string): Promise<void> {
+		return this.type(session, `${line}\r\n`);
 	}
 
-	startCountOf(app: string): number {
-		return this.startCountByApp.get(app) ?? 0;
+	startCountOf(session: string): number {
+		return this.startCountBySession.get(session) ?? 0;
 	}
 
-	sizeOf(app: string): TerminalSize | null {
-		return this.sizeByApp.get(app) ?? null;
+	sizeOf(session: string): TerminalSize | null {
+		return this.sizeBySession.get(session) ?? null;
 	}
 }

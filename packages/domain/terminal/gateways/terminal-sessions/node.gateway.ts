@@ -11,19 +11,19 @@ export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 		super();
 	}
 
-	override async start(app: string): Promise<void> {
-		this.ensureShell(app);
+	override async start(session: string): Promise<void> {
+		this.ensureShell(session);
 	}
 
 	// TRADE-OFF: a piped shell has no window size; only a pty can follow the screen
 	override async resize(): Promise<void> {}
 
-	override async type(app: string, keys: string): Promise<void> {
-		this.ensureShell(app).stdin.write(keys);
+	override async type(session: string, keys: string): Promise<void> {
+		this.ensureShell(session).stdin.write(keys);
 	}
 
-	override send(app: string, line: string): Promise<void> {
-		return this.type(app, `${line}\n`);
+	override send(session: string, line: string): Promise<void> {
+		return this.type(session, `${line}\n`);
 	}
 
 	stopAll(): void {
@@ -32,19 +32,19 @@ export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 		}
 	}
 
-	private ensureShell(app: string): ChildProcessWithoutNullStreams {
-		return this.shells.get(app) ?? this.startShell(app);
+	private ensureShell(session: string): ChildProcessWithoutNullStreams {
+		return this.shells.get(session) ?? this.startShell(session);
 	}
 
-	private startShell(app: string): ChildProcessWithoutNullStreams {
+	private startShell(session: string): ChildProcessWithoutNullStreams {
 		const shell = spawn(SHELL, [], { cwd: this.folder });
-		this.shells.set(app, shell);
-		this.recordStart(app);
-		shell.stdout.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(app, chunk));
-		shell.stderr.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(app, chunk));
+		this.shells.set(session, shell);
+		this.recordStart(session);
+		shell.stdout.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(session, chunk));
+		shell.stderr.setEncoding("utf8").on("data", (chunk: string) => this.recordOutput(session, chunk));
 		shell.on("exit", (code) => {
-			this.shells.delete(app);
-			this.recordExit(app, code);
+			this.shells.delete(session);
+			this.recordExit(session, code);
 		});
 		return shell;
 	}

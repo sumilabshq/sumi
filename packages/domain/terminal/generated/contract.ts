@@ -2,24 +2,24 @@
 import { PerCall, Repeatable, Server, command, moduleContract, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
-export const TerminalTabIdSchema = z.string().min(1).max(200);
+export const TerminalSessionIdSchema = z.string().min(1).max(200);
 
-export const TerminalTabSchema = z.object({
-	tab: TerminalTabIdSchema,
+export const TerminalSessionSchema = z.object({
+	session: TerminalSessionIdSchema,
 });
 
 export const SendTerminalInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+	session: TerminalSessionIdSchema,
 	line: z.string().max(65536),
 });
 
 export const TypeTerminalInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+	session: TerminalSessionIdSchema,
 	keys: z.string().min(1).max(65536),
 });
 
-export const TerminalSizeInputSchema = z.object({
-	tab: TerminalTabIdSchema,
+export const ResizeTerminalInputSchema = z.object({
+	session: TerminalSessionIdSchema,
 	cols: z.number().int().min(1).max(1000),
 	rows: z.number().int().min(1).max(1000),
 });
@@ -35,13 +35,10 @@ export const TerminalOutputSchema = z.object({
 export type TerminalOutput = z.infer<typeof TerminalOutputSchema>;
 
 export const TerminalOutputQuery = query("terminal/terminal-output")
-	.input(TerminalTabSchema)
+	.input(TerminalSessionSchema)
 	.output(TerminalOutputSchema);
-export const StartTerminalCommand = command("terminal/start-terminal")
-	.input(TerminalSizeInputSchema)
-	.idempotencyKey(Repeatable);
 export const ResizeTerminalCommand = command("terminal/resize-terminal")
-	.input(TerminalSizeInputSchema)
+	.input(ResizeTerminalInputSchema)
 	.idempotencyKey(Repeatable);
 export const TypeTerminalCommand = command("terminal/type-terminal")
 	.input(TypeTerminalInputSchema)
@@ -50,4 +47,4 @@ export const SendTerminalCommand = command("terminal/send-terminal")
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall);
 
-export const TerminalModule = moduleContract("terminal", Server, [TerminalOutputQuery, StartTerminalCommand, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand]);
+export const TerminalModule = moduleContract("terminal", Server, [TerminalOutputQuery, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand]);
