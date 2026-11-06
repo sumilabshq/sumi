@@ -17,6 +17,7 @@ import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksCont
 import { AppCallerAuthenticate } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
+import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { serveCore } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
@@ -31,16 +32,22 @@ const NOT_COLD =
 const NOT_SWEPT = "[tasks] workspace {workspace}: stale tasks stay open ({reason})";
 const SWEPT = "[tasks] workspace {workspace}: {count} stale tasks → cancelled (the {when} sweep)";
 const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
+const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
+const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
+const PROFILE_UNREAD = "[studio-core] workspace {workspace}: sumi.profile.json not read, the built-in plugins start";
 
 export function startCore(): void {
 	const served = new Map<string, StartedApp>();
+	const store = new StoreClient((command, args) => invoke(command, args));
 	serveCore((workspace, listener) => {
-		const places = coreServedOver(workspace, listener);
-		served.set(workspace, places);
-		console.info(`[studio-core] workspace ${workspace}: none → serving places and tasks`);
-		void keepLiveWindows(places, workspace);
-		void forgetRunningTurns(places, workspace);
-		void superviseTasks(places, workspace);
+		void profileOrBuiltIn(store, workspace).then((profile) => {
+			const places = coreServedOver({ workspace, listener, store, profile });
+			served.set(workspace, places);
+			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", profile.plugins.join(", ")));
+			void keepLiveWindows(places, workspace);
+			void forgetRunningTurns(places, workspace);
+			void superviseTasks(places, workspace);
+		});
 	});
 	void getCurrentWebviewWindow().listen(CORE_WINDOW_CLOSED_EVENT, (event) => {
 		const window = z.string().safeParse(event.payload);
@@ -51,11 +58,27 @@ export function startCore(): void {
 	});
 }
 
-function coreServedOver(workspace: string, listener: ListeningTransport): StartedApp {
+interface CoreServing {
+	readonly workspace: string;
+	readonly listener: ListeningTransport;
+	readonly store: StoreClient;
+	readonly profile: SumiProfile;
+}
+
+async function profileOrBuiltIn(store: StoreClient, workspace: string): Promise<SumiProfile> {
+	try {
+		return await workspaceProfileOf(store, workspace);
+	} catch (failure) {
+		console.error(PROFILE_UNREAD.replace("{workspace}", workspace), failure);
+		return BUILT_IN_PROFILE;
+	}
+}
+
+function coreServedOver({ workspace, listener, store, profile }: CoreServing): StartedApp {
 	const own = localTransport();
 	// TRADE-OFF: modules from a plugin slot lose typed host needs; start() still refuses a missing one.
 	server()
-		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(BUILT_IN_PROFILE))
+		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile))
 		.listen(listener)
 		.listen(own)
 		.start({
@@ -66,7 +89,7 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 			},
 			scope: { workspaceId: workspace },
 			host: {
-				store: new StoreClient((command, args) => invoke(command, args)),
+				store,
 				file: tasksBoardFileOver(own),
 				authenticate: new AppCallerAuthenticate(),
 			},
@@ -74,11 +97,11 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }
 
-function sharedModulesOf(profile: SumiProfile): readonly ServerSideModule[] {
+function sharedModulesOf(workspace: string, profile: SumiProfile): readonly ServerSideModule[] {
 	const resolved = resolvePlugins(profile);
 
 	for (const refusal of resolved.refusals) {
-		console.error(`[studio-core] plugins: ${refusal}`);
+		console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));
 	}
 
 	return resolved.sharedModules;

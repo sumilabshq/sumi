@@ -8,6 +8,9 @@ import { server } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { HOST_CAPABILITY_MODULES } from "../apps/host-tauri/src/plugins/host-capabilities.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/host-tauri/src/plugins/sumi-plugins.ts";
+import { workspaceProfileOf } from "../apps/host-tauri/src/plugins/workspace-profile.ts";
+import { StoreClient } from "@widgetarium/behaviors/tauri-store";
+import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
@@ -81,6 +84,32 @@ check(
 	false,
 );
 startedCore.stop();
+
+const profileFiles = new FakeStore();
+profileFiles.put("workspace:research:sumi.profile.json", {
+	v: 1,
+	plugins: ["sumi-host"],
+	locked: [],
+});
+const profileStore = new StoreClient(profileFiles.invoke, undefined);
+const researchProfile = await workspaceProfileOf(profileStore, "research");
+const defaultProfile = await workspaceProfileOf(profileStore, "default");
+check(
+	"each workspace reads its own sumi.profile.json, and one without the file gets the built-in plugins",
+	[researchProfile, defaultProfile],
+	[
+		{
+			plugins: ["sumi-host"],
+			locked: [],
+		},
+		BUILT_IN_PROFILE,
+	],
+);
+check(
+	"a workspace that does not enable main starts none of the old app's modules",
+	resolvePlugins(researchProfile).sharedModules.length,
+	0,
+);
 
 if (tally.failed > 0) {
 	process.exit(1);
