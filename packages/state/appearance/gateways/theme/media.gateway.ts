@@ -27,11 +27,12 @@ export class MediaThemeGateway extends ThemeGateway {
 	}
 
 	override themeChanged(listener: () => void): () => void {
+		const systemSchemeChanged = (): void => listener();
 		this.listeners.add(listener);
-		this.system.addEventListener("change", listener);
+		this.system.addEventListener("change", systemSchemeChanged);
 		return () => {
 			this.listeners.delete(listener);
-			this.system.removeEventListener("change", listener);
+			this.system.removeEventListener("change", systemSchemeChanged);
 		};
 	}
 }

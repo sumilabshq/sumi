@@ -12,7 +12,7 @@ import { check, tally } from "./check-helpers.ts";
 
 class FakeSystemScheme implements SystemScheme {
 	matches = false;
-	private readonly listeners = new Set<() => void>();
+	private readonly listeners = new Set<(change: { readonly matches: boolean }) => void>();
 
 	addEventListener(_type: "change", listener: () => void): void {
 		this.listeners.add(listener);
@@ -24,7 +24,11 @@ class FakeSystemScheme implements SystemScheme {
 
 	flip(): void {
 		this.matches = !this.matches;
-		this.listeners.forEach((listener) => listener());
+		this.listeners.forEach((listener) =>
+			listener({
+				matches: this.matches,
+			}),
+		);
 	}
 }
 
@@ -68,6 +72,11 @@ check("back to the system, the system's scheme is read", await themeOf(), ["dark
 const byApp = await frame.send(ChooseThemeCommand, { choice: "light" });
 check("an app cannot choose Sumi's theme", byApp.ok ? "chosen" : byApp.code, "forbidden");
 check("a change reaches listeners as a re-read of theme", heard.includes("appearance/theme"), true);
+await new Promise((settled) => setTimeout(settled, 100));
+heard.length = 0;
+system.flip();
+await new Promise((settled) => setTimeout(settled, 100));
+check("a system scheme change reaches listeners as a re-read of theme", heard.includes("appearance/theme"), true);
 
 console.log(tally.failed ? `appearance theme: ${tally.failed} check(s) failed` : "appearance theme: all checks passed");
 process.exit(tally.failed ? 1 : 0);
