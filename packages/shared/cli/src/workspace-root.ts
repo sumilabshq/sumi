@@ -17,8 +17,9 @@ const TYPES_SCRIPT = "test:types";
 const TYPES_BUILD = "tsc -b ";
 const NO_WORKSPACE =
 	"no package.json with workspaces in {start} or above it; run widgetarium add inside the repository that holds packages/";
+const MODULE_FILE = "module.ts";
 const NO_MODULE =
-	"no module {module} in packages/domain or packages/state; create it first: widgetarium add module {module} --on Device";
+	"no workspace package {module} holds a module.ts; create it first: widgetarium add module {module} --on Device";
 
 export const LAYER_FOLDERS: Readonly<Record<ModuleLayer, string>> = {
 	domain: "packages/domain",
@@ -47,15 +48,21 @@ export function workspaceRootAbove(start: string): string {
 }
 
 export function moduleFolderIn(root: string, module: string): string {
-	const found = Object.values(LAYER_FOLDERS)
-		.map((layer) => `${layer}/${module}`)
-		.find((folder) => fs.existsSync(path.join(root, folder, "module.ts")));
+	const found = moduleFolderOf(root, module);
 
-	if (found === undefined) {
+	if (found === null) {
 		throw new CliRefusal(NO_MODULE.replaceAll("{module}", () => module));
 	}
 
 	return found;
+}
+
+export function moduleFolderOf(root: string, module: string): string | null {
+	return (
+		workspacePackagesIn(root)
+			.map(({ folder }) => folder)
+			.find((folder) => path.basename(folder) === module && fs.existsSync(path.join(root, folder, MODULE_FILE))) ?? null
+	);
 }
 
 export function packageFolderNamed(root: string, name: string): string | null {

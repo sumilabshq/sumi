@@ -23,8 +23,8 @@ import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-p
 import { AssistantModule as RunnableAssistantModule } from "../packages/domain/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { frameChatServersOf } from "../apps/studio/src/assistant/frame-chat-servers.ts";
-import { MemoryFilesGateway } from "../packages/domain/file-system/gateways/files/memory.gateway.ts";
-import { FileSystemModule as RunnableFileSystemModule } from "../packages/domain/file-system/module.ts";
+import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
+import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 

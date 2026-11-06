@@ -147,9 +147,7 @@ function useWiresShell(terminal: RefObject<Terminal | null>, { shell, tabId }: S
 		}
 
 		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
-		void shell
-			.send(ResizeTerminalCommand, { session: tabId, cols: drawn.cols, rows: drawn.rows })
-			.then(showRefusalOf);
+		void shell.send(ResizeTerminalCommand, { session: tabId, cols: drawn.cols, rows: drawn.rows }).then(showRefusalOf);
 		const typing = drawn.onData(
 			(keys) => void shell.send(TypeTerminalCommand, { session: tabId, keys }).then(showRefusalOf),
 		);

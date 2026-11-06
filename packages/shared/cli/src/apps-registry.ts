@@ -4,6 +4,7 @@ import { APP_MANIFEST_FILE, AppManifestSchema, CONTRACT_VERSION, contractRefusal
 import type { AppManifest } from "@sumi/contract";
 import { CliRefusal } from "./cli-output.js";
 import { GENERATED_HEADER } from "./module-entry.js";
+import { moduleFolderOf } from "./workspace-root.js";
 
 export interface RegistryFile {
 	readonly entry: string;
@@ -24,7 +25,6 @@ export const APP_REGISTRY_PACKAGE = "packages/shared/app-registry";
 
 const APPS_FOLDER = "apps";
 const BUILD_FOLDER = "dist";
-const MODULE_PACKAGE_LEVELS = ["packages/domain", "packages/state"];
 const UNREAD = "{file} is not an app manifest: {reason}";
 const REFUSED = "{file}: {reason}";
 const NOT_ITS_FOLDER = "{file} names the app {id}, but it stands in apps/{folder}";
@@ -121,10 +121,8 @@ function appModuleImportsOf(cwd: string, rows: readonly RegisteredRow[]): readon
 function moduleImportOf(cwd: string, module: string): readonly AppModuleImport[] {
 	const name = `${pascalOf(module)}Module`;
 	const declares = new RegExp(`export const ${name}\\b`);
-	const isDeclared = MODULE_PACKAGE_LEVELS.some((level) => {
-		const file = path.join(cwd, level, module, "module.ts");
-		return fs.existsSync(file) && declares.test(fs.readFileSync(file, "utf8"));
-	});
+	const folder = moduleFolderOf(cwd, module);
+	const isDeclared = folder !== null && declares.test(fs.readFileSync(path.join(cwd, folder, "module.ts"), "utf8"));
 	return isDeclared
 		? [
 				{

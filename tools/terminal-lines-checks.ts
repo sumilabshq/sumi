@@ -7,9 +7,9 @@ import {
 	TerminalModule,
 	TerminalOutputQuery,
 	TypeTerminalCommand,
-} from "../packages/domain/terminal/index.ts";
-import { MemoryTerminalSessionsGateway } from "../packages/domain/terminal/gateways/terminal-sessions/memory.gateway.ts";
-import { TerminalModule as RunnableTerminalModule } from "../packages/domain/terminal/module.ts";
+} from "../apps/tauri/capabilities/terminal/index.ts";
+import { MemoryTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal/gateways/terminal-sessions/memory.gateway.ts";
+import { TerminalModule as RunnableTerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
@@ -39,11 +39,15 @@ const NOTES_SESSION = "notes:s1";
 const NOTES_SECOND_SESSION = "notes:s2";
 
 const before = await notes.send(TerminalOutputQuery, { session: SESSION });
-check("a session never opened reads an empty terminal that has not started", before.ok ? before.output : before.reason, {
-	output: "",
-	status: "not-started",
-	exitCode: null,
-});
+check(
+	"a session never opened reads an empty terminal that has not started",
+	before.ok ? before.output : before.reason,
+	{
+		output: "",
+		status: "not-started",
+		exitCode: null,
+	},
+);
 
 const SCREEN = {
 	cols: 64,

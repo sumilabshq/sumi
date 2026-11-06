@@ -11,8 +11,6 @@ export const TAURI_HOST_FOLDER = "apps/tauri";
 export const TAURI_REACHERS_TO_MOVE = [
 	"packages/domain/app-host",
 	"packages/domain/browser",
-	"packages/domain/file-system",
-	"packages/domain/terminal",
 	"packages/domain/workspaces",
 	"packages/state/layout",
 	"packages/state/places",

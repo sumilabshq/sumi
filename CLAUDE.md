@@ -52,6 +52,7 @@ is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. 
 
 ```
 apps/tauri               FSL  the desktop host: windows, workspaces, the machine's capabilities; the product
+apps/tauri/capabilities/* FSL the modules only the host runs on the machine: terminal, file-system
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓

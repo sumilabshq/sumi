@@ -8,7 +8,7 @@ import { FileSystemModule, ReadFileQuery } from "@widgetarium/file-system";
 import { FileSystemModule as RunnableFileSystemModule } from "@widgetarium/file-system/module";
 import { BoardQuery, CreateTaskCommand, TasksModule } from "@widgetarium/tasks";
 import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
-import { NodeFilesGateway } from "../packages/domain/file-system/gateways/files/node.gateway.ts";
+import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";

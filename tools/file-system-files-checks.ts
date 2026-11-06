@@ -12,10 +12,10 @@ import {
 	RemoveCommand,
 	RenameCommand,
 	WriteFileCommand,
-} from "../packages/domain/file-system/index.ts";
-import { MemoryFilesGateway } from "../packages/domain/file-system/gateways/files/memory.gateway.ts";
-import { FileSystemModule as RunnableFileSystemModule } from "../packages/domain/file-system/module.ts";
-import { placedPathOf } from "../packages/domain/file-system/shared/lib/app-path.ts";
+} from "../apps/tauri/capabilities/file-system/index.ts";
+import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
+import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
+import { placedPathOf } from "../apps/tauri/capabilities/file-system/shared/lib/app-path.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 
