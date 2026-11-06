@@ -3,9 +3,9 @@ import type { ReactElement, RefObject } from "react";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import type { ITheme } from "@xterm/xterm";
-import { TerminalOutputQuery } from "@sumi/contract";
-import { LineInput } from "./line-input.js";
-import type { TerminalOutput } from "@sumi/contract";
+import { ResizeTerminalCommand, StartTerminalCommand, TerminalOutputQuery, TypeTerminalCommand } from "@sumi/contract";
+import type { TerminalOutput, TerminalSize } from "@sumi/contract";
+import type { Answer, StartedApp } from "@widgetarium/core/requests";
 import type { SumiShell } from "../sumi-shell.js";
 import { TERMINAL_SHEET } from "./terminal-sheet.js";
 
@@ -69,16 +69,15 @@ export function TerminalPage({ sumi, isDark }: TerminalPageProps): ReactElement 
 	const screen = useRef<HTMLDivElement>(null);
 	const terminal = useScreenIn(screen);
 	const read = useTerminalOutput(sumi);
+	const shellRefusal = useWiresShell(terminal, sumi.shell);
+	const failure = read.failure ?? shellRefusal;
 	useDrawsOutput(terminal, read.output);
 	useThemesScreen(screen, terminal, isDark);
 	return (
 		<div className="wg-terminal">
 			<div ref={screen} className="wg-terminal-screen" />
-			{read.output === null || read.output.isRunning ? null : (
-				<p className="wg-terminal-note">{exitedOf(read.output)}</p>
-			)}
-			{read.failure === null ? null : <p className="wg-terminal-note">{read.failure}</p>}
-			<LineInput sumi={sumi} />
+			{read.output?.status === "exited" ? <p className="wg-terminal-note">{exitedOf(read.output)}</p> : null}
+			{failure === null ? null : <p className="wg-terminal-note">{failure}</p>}
 		</div>
 	);
 }
@@ -133,6 +132,34 @@ function useTerminalOutput({ shell, transport }: SumiShell): OutputRead {
 	return read;
 }
 
+function useWiresShell(terminal: RefObject<Terminal | null>, shell: StartedApp): string | null {
+	const [refusal, setRefusal] = useState<string | null>(null);
+	useEffect(() => {
+		const drawn = terminal.current;
+
+		if (drawn === null) {
+			return;
+		}
+
+		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
+		void shell.send(StartTerminalCommand, sizeOf(drawn)).then(showRefusalOf);
+		const typing = drawn.onData((keys) => void shell.send(TypeTerminalCommand, { keys }).then(showRefusalOf));
+		const resizing = drawn.onResize((size) => void shell.send(ResizeTerminalCommand, size).then(showRefusalOf));
+		return () => {
+			typing.dispose();
+			resizing.dispose();
+		};
+	}, [terminal, shell]);
+	return refusal;
+}
+
+function sizeOf({ cols, rows }: Terminal): TerminalSize {
+	return {
+		cols,
+		rows,
+	};
+}
+
 function useDrawsOutput(terminal: RefObject<Terminal | null>, output: TerminalOutput | null): void {
 	const written = useRef("");
 	useEffect(() => {
@@ -163,13 +190,11 @@ function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject<Termin
 		}
 
 		layTerminalSheet();
-		// TODO: raw keystrokes (Ctrl-C, Tab, arrows) need a keystroke command; the contract takes whole lines only
 		const started = new Terminal({
 			fontFamily: cssValueOf(host, "--sumi-font-mono"),
 			fontSize: FONT_SIZE,
 			lineHeight: LINE_HEIGHT,
 			cursorBlink: false,
-			disableStdin: true,
 			scrollback: SCROLLBACK,
 			allowProposedApi: true,
 		});
@@ -177,7 +202,7 @@ function useScreenIn(screen: RefObject<HTMLDivElement | null>): RefObject<Termin
 		started.loadAddon(fit);
 		started.open(host);
 		fit.fit();
-		// TODO: the session's cols and rows reach no command; Sumi's pty keeps its own size
+		started.focus();
 		const resized = new ResizeObserver(() => fit.fit());
 		resized.observe(host);
 		terminal.current = started;

@@ -22,6 +22,8 @@ const NO_SESSION: &str = "This terminal is closed.";
 const NOT_A_CHANNEL: &str = "onData must be a channel.";
 const MISSING_ARGUMENT: &str = "The terminal call is missing {name}.";
 const UNKNOWN_COMMAND: &str = "The terminal has no command {name}.";
+const CELLS_OUT_OF_RANGE: &str = "The terminal's {name} must be 1 to 1000, not {asked}.";
+const MOST_CELLS: u16 = 1000;
 const READ_CHUNK_BYTES: usize = 16 * 1024;
 const EXIT_WAIT: Duration = Duration::from_secs(2);
 const EXIT_POLL: Duration = Duration::from_millis(20);
@@ -49,11 +51,19 @@ fn number_of(message: &InvokeMessage<Wry>, name: &str) -> Result<u64, String> {
 
 fn cells_of(message: &InvokeMessage<Wry>) -> Result<libc::winsize, String> {
     Ok(libc::winsize {
-        ws_row: number_of(message, "rows")? as u16,
-        ws_col: number_of(message, "cols")? as u16,
+        ws_row: cell_count_of(message, "rows")?,
+        ws_col: cell_count_of(message, "cols")?,
         ws_xpixel: 0,
         ws_ypixel: 0,
     })
+}
+
+fn cell_count_of(message: &InvokeMessage<Wry>, name: &str) -> Result<u16, String> {
+    let asked = number_of(message, name)?;
+    u16::try_from(asked)
+        .ok()
+        .filter(|count| (1..=MOST_CELLS).contains(count))
+        .ok_or_else(|| CELLS_OUT_OF_RANGE.replace("{name}", name).replace("{asked}", &asked.to_string()))
 }
 
 fn opened_pty(size: &libc::winsize) -> Result<(RawFd, RawFd), String> {

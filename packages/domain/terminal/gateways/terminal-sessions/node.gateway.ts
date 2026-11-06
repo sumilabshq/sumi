@@ -11,15 +11,29 @@ export class NodeTerminalSessionsGateway extends TerminalSessionsGateway {
 		super();
 	}
 
-	override async send(app: string, line: string): Promise<void> {
-		const shell = this.shells.get(app) ?? this.startShell(app);
-		shell.stdin.write(`${line}\n`);
+	override async start(app: string): Promise<void> {
+		this.ensureShell(app);
+	}
+
+	// TRADE-OFF: a piped shell has no window size; only a pty can follow the screen
+	override async resize(): Promise<void> {}
+
+	override async type(app: string, keys: string): Promise<void> {
+		this.ensureShell(app).stdin.write(keys);
+	}
+
+	override send(app: string, line: string): Promise<void> {
+		return this.type(app, `${line}\n`);
 	}
 
 	stopAll(): void {
 		for (const shell of this.shells.values()) {
 			shell.kill();
 		}
+	}
+
+	private ensureShell(app: string): ChildProcessWithoutNullStreams {
+		return this.shells.get(app) ?? this.startShell(app);
 	}
 
 	private startShell(app: string): ChildProcessWithoutNullStreams {

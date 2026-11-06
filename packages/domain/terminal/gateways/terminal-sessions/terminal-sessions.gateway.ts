@@ -1,11 +1,11 @@
-import type { TerminalOutput } from "../../shared/schema/terminal.schema.js";
+import type { TerminalOutput, TerminalSize } from "../../shared/schema/terminal.schema.js";
 
 const MOST_OUTPUT_CHARS = 262144;
 const TELL_EVERY_MS = 50;
 
 const NOT_STARTED: TerminalOutput = {
 	output: "",
-	isRunning: false,
+	status: "not-started",
 	exitCode: null,
 };
 
@@ -15,6 +15,12 @@ export abstract class TerminalSessionsGateway {
 	private readonly telling = {
 		isPending: false,
 	};
+
+	abstract start(app: string, size: TerminalSize): Promise<void>;
+
+	abstract resize(app: string, size: TerminalSize): Promise<void>;
+
+	abstract type(app: string, keys: string): Promise<void>;
 
 	abstract send(app: string, line: string): Promise<void>;
 
@@ -28,15 +34,17 @@ export abstract class TerminalSessionsGateway {
 	}
 
 	protected isRunning(app: string): boolean {
-		return this.outputOf(app).isRunning;
+		return this.outputOf(app).status === "running";
 	}
 
 	protected recordStart(app: string): void {
+		const held = this.outputOf(app);
 		this.storeOutput(app, {
-			...this.outputOf(app),
-			isRunning: true,
+			...held,
+			status: "running",
 			exitCode: null,
 		});
+		console.info(`[terminal] app ${app}: ${held.status} → running`);
 	}
 
 	protected recordOutput(app: string, chunk: string): void {
@@ -50,7 +58,7 @@ export abstract class TerminalSessionsGateway {
 	protected recordExit(app: string, exitCode: number | null): void {
 		this.storeOutput(app, {
 			...this.outputOf(app),
-			isRunning: false,
+			status: "exited",
 			exitCode,
 		});
 		console.info(`[terminal] app ${app}: running → exited ${String(exitCode)}`);

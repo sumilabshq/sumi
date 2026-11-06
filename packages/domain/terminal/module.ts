@@ -2,16 +2,19 @@ import { AuthenticatedGuard, Server, module } from "@widgetarium/core/requests";
 import { terminalPartsOn } from "./gateways/terminal-parts/terminal-parts.gateway.js";
 import {
 	RereadTerminalOutputSubscriber,
+	ResizeTerminalCommand,
 	SendTerminalCommand,
+	StartTerminalCommand,
 	TerminalAccessGuard,
 	TerminalCallLoggerMiddleware,
 	TerminalOutputQuery,
+	TypeTerminalCommand,
 } from "./features/lines/requests.js";
 
 export const TerminalModule = module("terminal")
 	.on(Server)
 	.subscribers(RereadTerminalOutputSubscriber)
-	.public(TerminalOutputQuery, SendTerminalCommand)
+	.public(TerminalOutputQuery, StartTerminalCommand, ResizeTerminalCommand, TypeTerminalCommand, SendTerminalCommand)
 	.guard(AuthenticatedGuard)
 	.guard(TerminalAccessGuard)
 	.use(TerminalCallLoggerMiddleware)

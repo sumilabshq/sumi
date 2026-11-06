@@ -1,8 +1,13 @@
-import { PerCall, command, guard, middleware, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, guard, middleware, query, refuse, subscriber } from "@widgetarium/core/requests";
 import type { User } from "@widgetarium/core/requests";
 import { TerminalOutputChangedEvent } from "../../gateways/terminal-sessions/terminal-sessions.events.js";
 import { TerminalSessionsGateway } from "../../gateways/terminal-sessions/terminal-sessions.gateway.js";
-import { SendTerminalInputSchema, TerminalOutputSchema } from "../../shared/schema/terminal.schema.js";
+import {
+	SendTerminalInputSchema,
+	TerminalOutputSchema,
+	TerminalSizeSchema,
+	TypeTerminalInputSchema,
+} from "../../shared/schema/terminal.schema.js";
 
 const CALLED = "[terminal] app {app} → {request} ({chars} chars)";
 const NO_APP = "only an app has a terminal: the call carries no app";
@@ -16,7 +21,7 @@ export const TerminalCallLoggerMiddleware = middleware().handle(({ request, inpu
 	console.info(
 		CALLED.replace("{app}", context.user?.id ?? "none")
 			.replace("{request}", request)
-			.replace("{chars}", String(SendTerminalInputSchema.safeParse(input).data?.line.length ?? 0)),
+			.replace("{chars}", String(charsOf(input))),
 	);
 	return next();
 });
@@ -25,6 +30,31 @@ export const TerminalOutputQuery = query("terminal-output")
 	.output(TerminalOutputSchema)
 	.inject({ sessions: TerminalSessionsGateway })
 	.handle((_input, { sessions, user }) => sessions.outputOf(appOf(user)));
+
+export const StartTerminalCommand = command("start-terminal")
+	.input(TerminalSizeSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ sessions: TerminalSessionsGateway })
+	.handle(async (size, { sessions, user, invalidate }) => {
+		await sessions.start(appOf(user), size);
+		invalidate(TerminalOutputQuery);
+	});
+
+export const ResizeTerminalCommand = command("resize-terminal")
+	.input(TerminalSizeSchema)
+	.idempotencyKey(Repeatable)
+	.inject({ sessions: TerminalSessionsGateway })
+	.handle(async (size, { sessions, user }) => {
+		await sessions.resize(appOf(user), size);
+	});
+
+export const TypeTerminalCommand = command("type-terminal")
+	.input(TypeTerminalInputSchema)
+	.idempotencyKey(PerCall)
+	.inject({ sessions: TerminalSessionsGateway })
+	.handle(async ({ keys }, { sessions, user }) => {
+		await sessions.type(appOf(user), keys);
+	});
 
 export const SendTerminalCommand = command("send-terminal")
 	.input(SendTerminalInputSchema)
@@ -47,4 +77,12 @@ function appOf(user: User | null): string {
 	}
 
 	return user.id;
+}
+
+function charsOf(input: unknown): number {
+	return (
+		SendTerminalInputSchema.safeParse(input).data?.line.length ??
+		TypeTerminalInputSchema.safeParse(input).data?.keys.length ??
+		0
+	);
 }
