@@ -83,7 +83,6 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 		.listen(own)
 		.start({
 			env: {
-				PLACES_STORE: "tauri",
 				FILES_STORE: "tauri",
 				TERMINAL_STORE: "tauri",
 			},

@@ -13,7 +13,6 @@ export const TAURI_REACHERS_TO_MOVE = [
 	"packages/domain/browser",
 	"packages/domain/workspaces",
 	"packages/state/layout",
-	"packages/state/places",
 	"packages/shared/data-framework",
 ];
 

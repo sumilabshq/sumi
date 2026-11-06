@@ -1,4 +1,5 @@
 import { AppHostModule } from "@widgetarium/app-host/module";
+import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
@@ -43,6 +44,7 @@ export function startCoreInProcess(workspaceId: string): RemoteTransport {
 			scope: { workspaceId },
 			host: {
 				file: boardFileInMemory(),
+				store: new StoreClient(memoryStoreInvoke()),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});

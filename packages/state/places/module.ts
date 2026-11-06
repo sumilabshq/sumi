@@ -1,5 +1,5 @@
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
-import { placesPartsOn } from "./gateways/places-parts/places-parts.gateway.js";
+import { PLACES_HOST_NEEDS, keptPlacesParts } from "./gateways/places-parts/places-parts.gateway.js";
 import {
 	CloseEssentialTabCommand,
 	CloseGroupCommand,
@@ -83,6 +83,7 @@ import {
 
 export const PlacesModule = module("places")
 	.on(Server)
+	.needs(PLACES_HOST_NEEDS)
 	.guard(PublicGuard)
 	.guard(AppCallersGuard)
 	.subscribers(
@@ -155,4 +156,4 @@ export const PlacesModule = module("places")
 		ReorderSplitMemberCommand,
 		ResizeSplitCommand,
 	)
-	.provide((facts) => placesPartsOn(facts));
+	.provide(({ scope, host }) => keptPlacesParts(host.store, scope.workspaceId));

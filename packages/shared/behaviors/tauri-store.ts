@@ -17,6 +17,7 @@ export type {
 	StoreRoot,
 	WorkspaceRoot,
 } from "./src/tauri-store/store-client.js";
+export { memoryStoreInvoke } from "./src/tauri-store/memory-store.js";
 export { StoreRefusedError, callStore } from "./src/tauri-store/store-invoke.js";
 export type { Invoke, StoreCommand, StoreRefusal } from "./src/tauri-store/store-invoke.js";
 export { validEntriesOf, validValuesOf } from "./src/tauri-store/valid-entries.js";

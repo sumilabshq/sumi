@@ -63,6 +63,7 @@ const startedCore = server()
 					return Promise.resolve();
 				},
 			},
+			store: new StoreClient(new FakeStore().invoke),
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
