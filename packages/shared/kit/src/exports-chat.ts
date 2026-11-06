@@ -52,4 +52,5 @@ export {
 } from "./components/questionnaire";
 export { readChatParts } from "./utils/chat-parts";
 export { BUBBLE_VARIANTS } from "./constants/chat";
+export { SCROLL_KEEP_ATTRIBUTE } from "./constants/message-scroller";
 export type * from "./exported-chat-types";

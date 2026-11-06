@@ -431,6 +431,38 @@ check(
 		return [queued, Math.abs(offsetOf("late")) <= 1];`),
 	[true, true],
 );
+check(
+	"A NARROWER PANE KEEPS THE PARAGRAPH CROSSING THE TOP EDGE IN PLACE, NOT ONLY ITS MESSAGE",
+	await ask(`chat.append({ id: "prose", paragraphs: 12 }); await frames();
+		const host = document.getElementById("host");
+		const read = document.querySelector('[data-message-id="prose"] [data-paragraph="6"]');
+		const top = () => Math.round(read.getBoundingClientRect().top - viewport.getBoundingClientRect().top);
+		viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: -120 })); viewport.scrollTop += top() + 10; await frames();
+		const was = top(); host.style.width = "260px"; await frames(); const narrowed = top();
+		host.style.width = "400px"; await frames();
+		return [Math.abs(was + 10) <= 1, Math.abs(narrowed - was) <= 1];`),
+	[true, true],
+);
+check(
+	"SHOW LESS ABOVE THE VIEW KEEPS ITS BUTTON UNDER THE POINTER",
+	await ask(`chat.append({ id: "fold", folds: true }); chat.append({ id: "below", height: 400 }); await frames();
+		const fold = document.querySelector('[data-fold="fold"]');
+		const top = () => Math.round(fold.getBoundingClientRect().top - viewport.getBoundingClientRect().top);
+		viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: -120 })); viewport.scrollTop += top() - 150; await frames();
+		const was = top(); fold.click(); await frames();
+		return [Math.abs(was - 150) <= 1, Math.abs(top() - was) <= 1];`),
+	[true, true],
+);
+check(
+	"SHOW MORE AT THE END OPENS DOWNWARD AND STOPS FOLLOWING THE END",
+	await ask(`chatCommands.scrollToEnd({ behavior: "instant" }); chat.append({ id: "fold2", folds: true }); await frames();
+		const fold = document.querySelector('[data-fold="fold2"]');
+		const block = document.querySelector('[data-message-id="fold2"] > div');
+		const top = () => Math.round(block.getBoundingClientRect().top - viewport.getBoundingClientRect().top);
+		fold.click(); await frames(); const was = top(); fold.click(); await frames();
+		return [Math.abs(top() - was) <= 1, distance() > 300];`),
+	[true, true],
+);
 page.close();
 
 console.log(`\n${checks} checks, ${failed} failed`);

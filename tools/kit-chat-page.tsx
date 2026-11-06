@@ -12,24 +12,51 @@ import {
 	useMessageScroller,
 	useMessageScrollerVisibility,
 } from "../packages/shared/kit/src/index";
+import { Fold } from "./kit-chat-fold";
 
 interface Row {
 	readonly id: string;
 	readonly height: number;
 	readonly anchor: boolean;
+	readonly paragraphs: number;
+	readonly folds: boolean;
 }
 
-interface RowAsk {
-	readonly id: string;
-	readonly height?: number;
-	readonly anchor?: boolean;
-}
+type RowAsk = Partial<Row> & { readonly id: string };
 
 const OPENING_ROWS = 30;
 const ROW_PX = 60;
+const PROSE =
+	"The reader keeps this line in view while the pane narrows, and every line above it wraps again into more lines.";
 
-function rowOf({ id, height = ROW_PX, anchor = false }: RowAsk): Row {
-	return { id, height, anchor };
+function rowOf({ id, height = ROW_PX, anchor = false, paragraphs = 0, folds = false }: RowAsk): Row {
+	return {
+		id,
+		height,
+		anchor,
+		paragraphs,
+		folds,
+	};
+}
+
+function drawRow(row: Row): ReactElement {
+	if (row.folds) {
+		return <Fold id={row.id} />;
+	}
+
+	if (row.paragraphs === 0) {
+		return <div style={{ height: row.height }}>{row.id}</div>;
+	}
+
+	return (
+		<div>
+			{Array.from({ length: row.paragraphs }, (_, at) => (
+				<p key={at} data-paragraph={at}>
+					{PROSE}
+				</p>
+			))}
+		</div>
+	);
 }
 
 function Chat(): ReactElement {
@@ -55,7 +82,7 @@ function Chat(): ReactElement {
 					<MessageScrollerContent>
 						{rows.map((row) => (
 							<MessageScrollerItem key={row.id} messageId={row.id} scrollAnchor={row.anchor}>
-								<div style={{ height: row.height }}>{row.id}</div>
+								{drawRow(row)}
 							</MessageScrollerItem>
 						))}
 					</MessageScrollerContent>

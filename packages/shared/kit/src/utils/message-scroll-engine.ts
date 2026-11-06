@@ -7,6 +7,7 @@ import {
 	edgesOf,
 	endTopOf,
 	fitsBelow,
+	keptOfClicked,
 	keptRowOf,
 	messageIdOf,
 	roomUnder,
@@ -65,6 +66,8 @@ export const OPENING_REPORT: ScrollReport = {
 type AttachedNodes = { readonly viewport?: HTMLElement | null; readonly content?: HTMLElement | null };
 
 const PASSIVE: AddEventListenerOptions = { passive: true };
+
+const CAPTURE: AddEventListenerOptions = { capture: true };
 
 interface Run {
 	readonly held: Held;
@@ -160,6 +163,7 @@ function watchViewport(run: Run, viewport: HTMLElement, content: HTMLElement): (
 		listen(viewport, "keydown", (event) => handleReleaseKey(run, event)),
 		listen(viewport, "touchstart", () => tookOver(run, false), PASSIVE),
 		listen(viewport, "scrollend", () => finishAutoscroll(run)),
+		listen(viewport, "click", (event) => holdClickedSpot(run, event.target), CAPTURE),
 	];
 	return () => {
 		unwatchSizes();
@@ -219,6 +223,16 @@ function handleScroll(run: Run): void {
 	else if (!held.autoscroll && viewport.scrollTop < held.lastTop - 1 && !isAtEnd(run, viewport))
 		held.isFollowing = false;
 	settleScroll(run);
+}
+
+function holdClickedSpot(run: Run, target: EventTarget | null): void {
+	const { held } = run;
+	const { viewport, content } = held;
+	const kept = viewport && content ? keptOfClicked(viewport, content, target) : null;
+	if (!kept) return;
+	stopAutoscroll(held);
+	held.isFollowing = false;
+	held.kept = kept;
 }
 
 function tookOver(run: Run, isLeavingTheEnd: boolean): void {

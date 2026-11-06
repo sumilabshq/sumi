@@ -28,6 +28,8 @@ export const MESSAGE_ID_ATTRIBUTE = "data-message-id";
 
 export const SCROLL_ANCHOR_ATTRIBUTE = "data-scroll-anchor";
 
+export const SCROLL_KEEP_ATTRIBUTE = "data-scroll-keep";
+
 export const MESSAGES_LABEL = "Messages";
 
 export const SCROLL_BUTTON_LABELS: Readonly<Record<ScrollDirection, string>> = {

@@ -5,5 +5,5 @@ export function listen<K extends keyof HTMLElementEventMap>(
 	options?: AddEventListenerOptions,
 ): () => void {
 	target.addEventListener(type, listener, options);
-	return () => target.removeEventListener(type, listener);
+	return () => target.removeEventListener(type, listener, options);
 }
