@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 import {
-	Fill,
 	SumiProfileSchema,
 	plugin,
 	profileRefusalsOf,
@@ -11,7 +10,7 @@ import {
 } from "../packages/shared/plugin-framework/src/index.ts";
 import type { Plugin, SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
 
-function fillsShownIn(slotFills: SlotFills, name: string): readonly (readonly [string, string])[] {
+function shownKeysIn(slotFills: SlotFills, name: string): readonly (readonly [string, string])[] {
 	return (slotFills.slots.get(name)?.fills ?? []).map((each) => [each.id, each.pluginId] as const);
 }
 
@@ -27,7 +26,7 @@ const StatusSlot = slot("composer-status")
 	.list();
 const TitleSlot = slot("chat-title").item(z.object({ text: z.string().default("Chat") }));
 const DoorsSlot = slot("doors")
-	.item(z.object({ key: z.string() }))
+	.item(z.strictObject({ key: z.string().min(1) }))
 	.list();
 
 const LayoutPlugin = plugin("layout").declare(PlateSlot);
@@ -51,7 +50,7 @@ const profile = SumiProfileSchema.parse({
 	plugins: ["layout", "chat", "background-agents", "usage-meter", "command-menu"],
 });
 
-export function typedOnly(): void {
+export function refusedByTypes(): void {
 	// @ts-expect-error
 	PlateSlot({ title: "a list fill without an id" });
 	// @ts-expect-error
@@ -77,16 +76,26 @@ check(
 const withoutMenu = startOrderOf(installedPlugins, ["layout", "chat"]);
 check("a plugin starts when an optional plugin it wants is off", idsOf(withoutMenu.plugins), ["layout", "chat"]);
 
-const LoopEnd = plugin("loop-end");
-const LoopMiddle = plugin("loop-middle").require(LoopEnd);
-const LoopEndClosed = plugin("loop-end").require(LoopMiddle);
+const LoopEndPlugin = plugin("loop-end");
+const LoopMiddlePlugin = plugin("loop-middle").require(LoopEndPlugin);
+const LoopEndClosedPlugin = plugin("loop-end").require(LoopMiddlePlugin);
 check(
 	"a requirement cycle is refused on both sides",
-	startOrderOf([LoopEndClosed, LoopMiddle], ["loop-end", "loop-middle"]).refusals,
+	startOrderOf([LoopEndClosedPlugin, LoopMiddlePlugin], ["loop-end", "loop-middle"]).refusals,
 	[
 		"plugin loop-middle requires loop-end, which requires it back",
 		"plugin loop-end requires loop-middle, which did not start",
 	],
+);
+
+const WantsBackPlugin = plugin("wants-back");
+const WantsFirstPlugin = plugin("wants-first").optional(WantsBackPlugin);
+const WantsBackClosedPlugin = plugin("wants-back").optional(WantsFirstPlugin);
+const optionalLoop = startOrderOf([WantsFirstPlugin, WantsBackClosedPlugin], ["wants-first", "wants-back"]);
+check(
+	"two plugins wanting each other optionally both start, with no refusal",
+	[[...idsOf(optionalLoop.plugins)].sort(), optionalLoop.refusals],
+	[["wants-back", "wants-first"], []],
 );
 
 check(
@@ -106,6 +115,11 @@ check(
 	false,
 );
 check("a plugin id that is not kebab case throws where it is declared", thrownBy(() => plugin("Chat")) !== "", true);
+check(
+	"a slot name that is not kebab case throws where it is declared",
+	thrownBy(() => slot("Chat Title")) !== "",
+	true,
+);
 
 const slotFills = slotFillsOf(startOrder.plugins, profile.plugins);
 check(
@@ -113,35 +127,40 @@ check(
 	[...slotFills.slots.keys()],
 	["layout/plate", "command-menu/doors", "chat/composer-status", "chat/chat-title"],
 );
-check("a list slot shows its fill", fillsShownIn(slotFills, "layout/plate"), [["chat", "chat"]]);
-check("a list slot shows fills in profile order", fillsShownIn(slotFills, "chat/composer-status"), [
+check("a list slot shows its fill", shownKeysIn(slotFills, "layout/plate"), [["chat", "chat"]]);
+check("a list slot shows fills in profile order", shownKeysIn(slotFills, "chat/composer-status"), [
 	["agents", "background-agents"],
 	["usage", "usage-meter"],
 ]);
-check("a single slot shows the fill of the plugin listed first", fillsShownIn(slotFills, "chat/chat-title"), [
+check("a single slot shows the fill of the plugin listed first", shownKeysIn(slotFills, "chat/chat-title"), [
 	["chat-title", "chat"],
 ]);
 check("a shown item is the parsed item, defaults applied", slotFills.slots.get("chat/chat-title")?.fills[0]?.item, {
 	text: "Chat",
 });
-check("a fill of an optional plugin that started is shown", fillsShownIn(slotFills, "command-menu/doors"), [
-	["ask", "chat"],
-]);
+check(
+	"a list fill's id is kept apart from its item, so a strict schema accepts it",
+	slotFills.slots.get("command-menu/doors")?.fills,
+	[{ pluginId: "chat", id: "ask", item: { key: "mod+i" } }],
+);
 check("valid fills raise no refusal", slotFills.refusals, []);
 
-const menuOff = slotFillsOf(withoutMenu.plugins, ["layout", "chat"]);
-check("a fill of an optional plugin that is off is skipped, not refused", menuOff.refusals, []);
-check("and its slot is not shown", menuOff.slots.has("command-menu/doors"), false);
+const slotFillsWithoutMenu = slotFillsOf(withoutMenu.plugins, ["layout", "chat"]);
+check("a fill of an optional plugin that is off is skipped, not refused", slotFillsWithoutMenu.refusals, []);
+check("and its slot is not shown", slotFillsWithoutMenu.slots.has("command-menu/doors"), false);
 
 const usageFirst = slotFillsOf(startOrder.plugins, ["layout", "chat", "usage-meter", "background-agents"]);
+check("moving a plugin up the profile lets its fill win the same id", shownKeysIn(usageFirst, "chat/composer-status"), [
+	["usage", "usage-meter"],
+	["agents", "usage-meter"],
+]);
+
 check(
-	"moving a plugin up the profile lets its fill win the same id",
-	fillsShownIn(usageFirst, "chat/composer-status"),
-	[
-		["usage", "usage-meter"],
-		["agents", "usage-meter"],
-	],
+	"a list fill with no id, past the types, throws naming the slot",
+	thrownBy(() => Reflect.apply(PlateSlot, undefined, [{ title: "no id" }])),
+	"a fill of the list slot plate needs a non-empty string id: plate({ id, … })",
 );
+check("a list fill with an empty id throws", thrownBy(() => PlateSlot({ id: "", title: "empty id" })) !== "", true);
 
 const OwnPagesSlot = slot("pages").item(z.string());
 const OtherPagesSlot = slot("pages").item(z.string());
@@ -154,11 +173,11 @@ check(
 	[["one/pages", "other/pages"], []],
 );
 
-const SquatterPlugin = plugin("squatter").declare(PlateSlot);
+const RedeclaringPlugin = plugin("redeclaring").declare(PlateSlot);
 check(
 	"a second declaration of the same slot is refused",
-	slotFillsOf([LayoutPlugin, SquatterPlugin], ["layout", "squatter"]).refusals,
-	["slot layout/plate is declared by layout and again by squatter"],
+	slotFillsOf([LayoutPlugin, RedeclaringPlugin], ["layout", "redeclaring"]).refusals,
+	["slot layout/plate is declared by layout and again by redeclaring"],
 );
 check(
 	"a plugin declaring two slots of one name is refused",
@@ -178,34 +197,36 @@ check(
 	["plugin stranger fills slot layout/plate without requiring layout or marking it optional"],
 );
 
-const LiarPlugin = plugin("liar")
+const LookalikeSlotPlugin = plugin("lookalike")
 	.require(LayoutPlugin)
 	.fill(
 		slot("plate")
 			.item(z.object({ count: z.number() }))
-			.list()({ id: "bad", count: 1 }),
+			.list()({ id: "lookalike", count: 1 }),
 	);
 check(
-	"a fill of a slot nobody declares stays refused even when the filler requires a plugin with that slot name",
-	slotFillsOf([LayoutPlugin, LiarPlugin], ["layout", "liar"]).refusals,
-	["plugin liar fills slot plate, which no started plugin declares"],
+	"a fill of a lookalike slot is refused even when the filler requires a plugin with that slot name",
+	slotFillsOf([LayoutPlugin, LookalikeSlotPlugin], ["layout", "lookalike"]).refusals,
+	["plugin lookalike fills slot plate, which no started plugin declares"],
 );
 
-const WrongItemPlugin = plugin("wrong-item")
+const UndeclaredDependencyPlugin = plugin("undeclared-dependency")
 	.require(LayoutPlugin)
-	.fill(PlateSlot({ id: "wrong", title: "Wrong" }), TitleSlot({}));
-const wrongItem = slotFillsOf([LayoutPlugin, ChatPlugin, WrongItemPlugin], ["layout", "chat", "wrong-item"]);
-check("a fill of a slot owned by a plugin it does not depend on is refused, naming the owner", wrongItem.refusals, [
-	"plugin wrong-item fills slot chat/chat-title without requiring chat or marking it optional",
-]);
-
-const untypedFill: unknown = Reflect.apply(PlateSlot, undefined, [{ id: "bad", title: 3 }]);
-const BadItemPlugin = plugin("bad-item").require(LayoutPlugin);
-const badItem = untypedFill instanceof Fill ? BadItemPlugin.fill(untypedFill) : BadItemPlugin;
+	.fill(PlateSlot({ id: "undeclared", title: "Undeclared" }), TitleSlot({}));
 check(
-	"a fill the slot's schema refuses, past the types, is refused",
-	slotFillsOf([LayoutPlugin, badItem], ["layout", "bad-item"]).refusals,
-	["plugin bad-item fills slot layout/plate with an item the slot refuses"],
+	"a fill of a slot owned by a plugin it does not depend on is refused, naming the owner",
+	slotFillsOf([LayoutPlugin, ChatPlugin, UndeclaredDependencyPlugin], ["layout", "chat", "undeclared-dependency"])
+		.refusals,
+	["plugin undeclared-dependency fills slot chat/chat-title without requiring chat or marking it optional"],
+);
+
+const EmptyDoorPlugin = plugin("empty-door")
+	.require(MenuPlugin)
+	.fill(DoorsSlot({ id: "empty", key: "" }));
+check(
+	"a fill the slot's schema refuses, with the types satisfied, is refused",
+	slotFillsOf([MenuPlugin, EmptyDoorPlugin], ["command-menu", "empty-door"]).refusals,
+	["plugin empty-door fills slot command-menu/doors with an item the slot refuses"],
 );
 
 if (tally.failed > 0) {

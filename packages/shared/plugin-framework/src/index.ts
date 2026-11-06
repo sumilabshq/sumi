@@ -1,7 +1,7 @@
-export { slot } from "./declared-slot";
-export type { Slot, SlotCardinality, SlotDraft, SlotShape, SlotValue } from "./declared-slot";
+export { SlotNameSchema, slot } from "./declared-slot";
+export type { Slot, SlotCardinality, SlotDraft, SlotFillInput, SlotShape } from "./declared-slot";
 export { Fill } from "./fill";
-export { Plugin, plugin, stampedSlotName } from "./plugin";
+export { Plugin, plugin, stampSlotName } from "./plugin";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema, profileRefusalsOf } from "./profile";
 export type { SumiProfile } from "./profile";
 export { slotFillsOf } from "./slot-fills";

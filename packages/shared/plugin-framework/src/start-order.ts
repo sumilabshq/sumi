@@ -16,7 +16,7 @@ interface StartRun {
 
 export function startOrderOf(installed: readonly Plugin[], enabledIds: readonly string[]): StartOrder {
 	const run: StartRun = {
-		enabled: enabledPluginsOf(installed, enabledIds),
+		enabled: enabledById(installed, enabledIds),
 		marks: new Map(),
 		plugins: [],
 		refusals: [],
@@ -32,7 +32,7 @@ export function startOrderOf(installed: readonly Plugin[], enabledIds: readonly 
 	};
 }
 
-function enabledPluginsOf(installed: readonly Plugin[], enabledIds: readonly string[]): ReadonlyMap<string, Plugin> {
+function enabledById(installed: readonly Plugin[], enabledIds: readonly string[]): ReadonlyMap<string, Plugin> {
 	const installedById = new Map(installed.map((each) => [each.id, each] as const));
 
 	return new Map(
@@ -51,7 +51,7 @@ function startPlugin(target: Plugin, run: StartRun): boolean {
 	}
 
 	run.marks.set(target.id, "visiting");
-	return settleStart(target, run, refuseRequirements(target, run));
+	return settleStart(target, run, startDependencies(target, run));
 }
 
 function settleStart(target: Plugin, run: StartRun, refusal: string | null): boolean {
@@ -66,11 +66,11 @@ function settleStart(target: Plugin, run: StartRun, refusal: string | null): boo
 	return true;
 }
 
-function refuseRequirements(target: Plugin, run: StartRun): string | null {
-	for (const required of target.parts.required) {
-		const requiredEnabled = run.enabled.get(required.id);
+function startDependencies(target: Plugin, run: StartRun): string | null {
+	for (const required of target.parts.requiredPlugins) {
+		const enabledRequirement = run.enabled.get(required.id);
 
-		if (requiredEnabled === undefined) {
+		if (enabledRequirement === undefined) {
 			return `plugin ${target.id} requires ${required.id}, which is not enabled`;
 		}
 
@@ -78,23 +78,23 @@ function refuseRequirements(target: Plugin, run: StartRun): string | null {
 			return `plugin ${target.id} requires ${required.id}, which requires it back`;
 		}
 
-		if (!startPlugin(requiredEnabled, run)) {
+		if (!startPlugin(enabledRequirement, run)) {
 			return `plugin ${target.id} requires ${required.id}, which did not start`;
 		}
 	}
 
-	startOptionalFirst(target, run);
+	startEnabledOptional(target, run);
 	return null;
 }
 
-function startOptionalFirst(target: Plugin, run: StartRun): void {
-	for (const wanted of target.parts.optional) {
-		const wantedEnabled = run.enabled.get(wanted.id);
+function startEnabledOptional(target: Plugin, run: StartRun): void {
+	for (const wanted of target.parts.optionalPlugins) {
+		const enabledOptional = run.enabled.get(wanted.id);
 
-		if (wantedEnabled === undefined || run.marks.get(wanted.id) === "visiting") {
+		if (enabledOptional === undefined || run.marks.get(wanted.id) === "visiting") {
 			continue;
 		}
 
-		startPlugin(wantedEnabled, run);
+		startPlugin(enabledOptional, run);
 	}
 }

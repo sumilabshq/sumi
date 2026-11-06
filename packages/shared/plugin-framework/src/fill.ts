@@ -1,9 +1,8 @@
-import type { z } from "zod";
 import type { SlotShape } from "./declared-slot";
 
-export class Fill<S extends z.ZodType = z.ZodType> {
+export class Fill {
 	constructor(
-		readonly slot: SlotShape<S>,
+		readonly slot: SlotShape,
 		readonly id: string,
 		readonly item: unknown,
 	) {}

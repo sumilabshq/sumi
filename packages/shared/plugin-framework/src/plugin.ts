@@ -3,9 +3,9 @@ import type { Fill } from "./fill";
 import { PluginIdSchema } from "./profile";
 
 interface PluginParts {
-	readonly required: readonly Plugin[];
-	readonly optional: readonly Plugin[];
-	readonly declared: readonly SlotShape[];
+	readonly requiredPlugins: readonly Plugin[];
+	readonly optionalPlugins: readonly Plugin[];
+	readonly declaredSlots: readonly SlotShape[];
 	readonly fills: readonly Fill[];
 }
 
@@ -18,21 +18,21 @@ export class Plugin {
 	require(...plugins: readonly Plugin[]): Plugin {
 		return new Plugin(this.id, {
 			...this.parts,
-			required: [...this.parts.required, ...plugins],
+			requiredPlugins: [...this.parts.requiredPlugins, ...plugins],
 		});
 	}
 
 	optional(...plugins: readonly Plugin[]): Plugin {
 		return new Plugin(this.id, {
 			...this.parts,
-			optional: [...this.parts.optional, ...plugins],
+			optionalPlugins: [...this.parts.optionalPlugins, ...plugins],
 		});
 	}
 
 	declare(...slots: readonly SlotShape[]): Plugin {
 		return new Plugin(this.id, {
 			...this.parts,
-			declared: [...this.parts.declared, ...slots],
+			declaredSlots: [...this.parts.declaredSlots, ...slots],
 		});
 	}
 
@@ -43,20 +43,20 @@ export class Plugin {
 		});
 	}
 
-	dependsOn(pluginId: string): boolean {
-		return [...this.parts.required, ...this.parts.optional].some((each) => each.id === pluginId);
+	hasDependencyOn(pluginId: string): boolean {
+		return [...this.parts.requiredPlugins, ...this.parts.optionalPlugins].some((each) => each.id === pluginId);
 	}
 }
 
 export function plugin(id: string): Plugin {
 	return new Plugin(PluginIdSchema.parse(id), {
-		required: [],
-		optional: [],
-		declared: [],
+		requiredPlugins: [],
+		optionalPlugins: [],
+		declaredSlots: [],
 		fills: [],
 	});
 }
 
-export function stampedSlotName(ownerId: string, declared: SlotShape): string {
-	return `${ownerId}/${declared.name}`;
+export function stampSlotName(ownerId: string, owned: SlotShape): string {
+	return `${ownerId}/${owned.name}`;
 }
