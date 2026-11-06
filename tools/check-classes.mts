@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { widgetFiles } from "./widget-files.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
-const PLUGIN_SHEET = "apps/host-obsidian/styles.css";
 // TODO: read these from packages/shared/core/src/engine/widget-build.ts once natively run tools can import it
 const SHEET_FILES = ["widget.css", "styles.css"];
 const CLASS_IN_A_RULE = /\.([a-z][\w-]*)/g;
@@ -50,7 +50,7 @@ function isTailwindStyled(file: string): boolean {
 }
 
 function pluginSheet(): string {
-	return fs.existsSync(PLUGIN_SHEET) ? fs.readFileSync(PLUGIN_SHEET, "utf8") : "";
+	return fs.existsSync(BOARD_SHEET) ? fs.readFileSync(BOARD_SHEET, "utf8") : "";
 }
 
 function classesStyledIn(css: string): string[] {

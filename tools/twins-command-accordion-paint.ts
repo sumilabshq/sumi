@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { paged } from "./chrome-ask.ts";
 import { bundleOf, THEMES } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type Twin = readonly [string, unknown, unknown];
 
@@ -104,7 +105,7 @@ const ACCORDION = `(() => {
 
 function pageHtml(script: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${OBSIDIAN_FOCUSED_SEARCH}</style>
 <style>${OBSIDIAN_FOCUS_OUTLINE}</style>
 <style>:root { ${THEMES.light} ${HOST_FONTS} } body { margin: 0; padding: 20px; font-family: var(--font-interface); }</style>

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
 import { bundleOf, THEMES } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type TwinCheck = readonly [string, unknown, unknown];
 
@@ -41,7 +42,7 @@ const BEFORE_THE_MIGRATION = {
 
 function twinPage(script: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; ${THEMES.light} ${HOST} background: var(--background-primary); }</style>
 </head><body class="wg-root theme-light"><div id="host"></div><script>${script}</script>
 <script>window.ready = true;</script></body></html>`;

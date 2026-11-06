@@ -5,6 +5,7 @@ import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf, THEMES } from "./harness.ts";
 import type { Theme } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type PaintCheck = readonly [string, unknown, unknown];
 
@@ -66,7 +67,7 @@ const ASK = `(() => {
 
 export function drawerPage(script: string, theme: Theme): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; ${THEMES[theme]} ${HOST} color-scheme: ${theme}; background: var(--background-primary); }</style>
 </head><body class="wg-root theme-${theme}"><div id="host"></div><script>${script}</script>
 <script>window.ready = true;</script></body></html>`;

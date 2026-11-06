@@ -2,8 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { TAILWIND_BANNER } from "./canvas-sheet.mts";
 import { studioSplitOf } from "./studio-sheet.mts";
-
-const BROWSER_SHEET_SOURCES = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 export interface BrowserSheets {
 	readonly app: string;

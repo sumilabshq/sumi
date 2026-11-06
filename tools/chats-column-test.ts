@@ -8,6 +8,7 @@ import { INSTRUMENT } from "./chats-column-instrument.ts";
 import { TAILWIND_BANNER, canvasSheet } from "./canvas-sheet.mts";
 import { bundleOf } from "./harness.ts";
 import { kitTooltipSheet } from "./kit-tooltip-sheet.ts";
+import { BOARD_SHEET, BROWSER_HOST_SHEET } from "./sheet-paths.mts";
 
 interface Timed {
 	readonly ms: number;
@@ -32,8 +33,8 @@ const bundle = await bundleOf("tools/chats-column-page.tsx");
 const sheets =
 	`${kitTooltipSheet()}\n` +
 	[
-		"packages/shared/core/browser-host.css",
-		"apps/host-obsidian/styles.css",
+		BROWSER_HOST_SHEET,
+		BOARD_SHEET,
 		"design-systems/sumi/sumi.css",
 		"apps/studio/src/features/workspaces/workspaces.css",
 		"apps/studio/src/features/frame/shell.css",

@@ -4,6 +4,7 @@ import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { BOARD_SHEET, BROWSER_HOST_SHEET } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 
@@ -15,8 +16,8 @@ mkdirSync(shotsAt, { recursive: true });
 const bundle = await bundleOf("tools/command-menu-page.tsx");
 const sheets = [
 	"design-systems/sumi/sumi.css",
-	"packages/shared/core/browser-host.css",
-	"apps/host-obsidian/styles.css",
+	BROWSER_HOST_SHEET,
+	BOARD_SHEET,
 	"apps/studio/src/features/command-menu/command-menu.css",
 ]
 	.map((at) => readFileSync(at, "utf8"))

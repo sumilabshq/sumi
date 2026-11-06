@@ -6,9 +6,10 @@ import { gzipSync } from "node:zlib";
 import esbuild from "esbuild";
 import type { Metafile, Plugin } from "esbuild";
 import { z } from "zod";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { paged, waitUntil } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 interface FirstLoad {
 	readonly files: readonly string[];
@@ -26,7 +27,6 @@ const PAINT_RUNS = 5;
 const PAINT_WAIT_MS = 30000;
 const PAINT_POLL_MS = 50;
 const VIEW = [1440, 900] as const;
-const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const LAZY_MODULES: Readonly<Record<string, RegExp>> = {
 	recharts: /node_modules\/recharts\//,
 	"the Babel parser": /node_modules\/@babel\/parser\//,
@@ -154,7 +154,7 @@ function checkSplits(metafile: Metafile, firstLoad: FirstLoad): void {
 }
 
 function pageHtml(entryFile: string): string {
-	const sheets = SHEETS.map((at) => fs.readFileSync(path.join(REPO, at), "utf8")).join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => fs.readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	return `<!doctype html><html><head><meta charset="utf-8">
 <style>${sheets}</style>
 <script>${TAURI_STUB}</script>

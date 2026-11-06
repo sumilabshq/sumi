@@ -3,6 +3,7 @@ import path from "node:path";
 import { transform } from "sucrase";
 import { createElement as h, Fragment, type ReactElement, type ReactNode } from "react";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type Held<T> = T | null | undefined;
 
@@ -345,7 +346,7 @@ const widgetItems = PIECES.map((piece) => {
 	);
 }).join("\n");
 
-const css = fs.readFileSync("apps/host-obsidian/styles.css", "utf8");
+const css = fs.readFileSync(BOARD_SHEET, "utf8");
 
 fs.writeFileSync(
 	OUT,

@@ -5,6 +5,7 @@ import { paged } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf, THEMES } from "./harness.ts";
 import { effectsBuiltByTailwind } from "./kit-layout-tailwind.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 export type Painted = readonly [name: string, got: unknown, want: unknown];
 
@@ -292,7 +293,7 @@ const STEPS = `(() => {
 
 function pageHtml(script: string, tailwindCss: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${tailwindCss}</style>
 <style>:root { ${THEMES.light} ${HOST} } body { margin: 0; padding: 20px; }</style>
 </head><body class="wg-root theme-light"><div id="host"></div><script>${script}</script></body></html>`;

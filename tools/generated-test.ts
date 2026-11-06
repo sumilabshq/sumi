@@ -5,7 +5,7 @@ import { GENERATED_HEADER } from "../packages/shared/cli/src/module-entry.js";
 import { runCli } from "../packages/shared/cli/src/run-cli.js";
 import type { CliOutput } from "../packages/shared/cli/src/cli-output.js";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { packageKindOf } from "../packages/shared/eslint-plugin/src/domain-file.ts";
 import { check, tally } from "./check-helpers.ts";
 

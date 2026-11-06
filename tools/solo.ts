@@ -3,6 +3,7 @@ import path from "node:path";
 import { transform } from "sucrase";
 import { createElement as h, Fragment, type ReactElement, type ReactNode } from "react";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type Held<T> = T | null | undefined;
 
@@ -348,7 +349,7 @@ const tiles = SOLO.map((entry) => {
 	return `<div class="theme-dark deck">${caption}${tile}</div>`;
 }).join("\n");
 
-const css = fs.readFileSync("apps/host-obsidian/styles.css", "utf8");
+const css = fs.readFileSync(BOARD_SHEET, "utf8");
 fs.writeFileSync(
 	OUT,
 	`<!doctype html><html><head><meta charset="utf-8"><style>

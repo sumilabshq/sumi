@@ -4,6 +4,7 @@ import path from "node:path";
 import { paged, waitUntil, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 type Board = "Fx-inter-chat" | "Gt-narrow";
@@ -185,9 +186,7 @@ async function boardReads(board: Board, theme: Theme): Promise<unknown[]> {
 
 async function buildReads(theme: Theme): Promise<unknown[]> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
-	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-		.map((at) => readFileSync(at, "utf8"))
-		.join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 	const file = path.join(outAt, `build-${theme}.html`);
 	writeFileSync(
 		file,

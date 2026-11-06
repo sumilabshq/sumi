@@ -20,6 +20,7 @@ import { bundleOf } from "./harness.ts";
 import { isRecord } from "./page-dom.ts";
 import { differences } from "./studio-tabs-diff.ts";
 import type { Difference } from "./studio-tabs-diff.ts";
+import { BOARD_SHEET, BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 
@@ -36,11 +37,8 @@ interface Phase {
 const REPO = path.resolve(import.meta.dirname, "..");
 const BOARDS = path.join(REPO, "docs/reference/chat-composer");
 const THEMES: readonly Theme[] = ["light", "dark"];
-const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const GEIST_FACES = (
-	readFileSync(path.join(REPO, "apps/host-obsidian/styles.css"), "utf8").match(
-		/@font-face\s*\{[^}]*font-family:\s*"Geist"[^}]*\}/g,
-	) ?? []
+	readFileSync(path.join(REPO, BOARD_SHEET), "utf8").match(/@font-face\s*\{[^}]*font-family:\s*"Geist"[^}]*\}/g) ?? []
 ).join("\n");
 const GEIST_LOADED = `(async (faces) => { if (faces !== "") { const sheet = document.createElement("style"); sheet.textContent = faces; document.head.append(sheet); } await Promise.all(["400 13px Geist", "500 13px Geist", "600 16px Geist", "400 15px Geist", "500 28px Geist"].map((face) => document.fonts.load(face))); await document.fonts.ready; return document.fonts.check("500 13px Geist"); })`;
 const SETTLE_MS = 400;
@@ -240,7 +238,7 @@ async function boardOf(phase: Phase, theme: Theme): Promise<Record<string, unkno
 }
 
 function builtPageOf(theme: Theme): string {
-	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const placed = `.wg-studio.wg-studio { display: block; height: auto; padding: 0; } .wg-studio .wg-studio-chat { width: 752px; height: 820px; padding: 0; } #chat, #chat > .wg-root { height: 100%; }`;
 	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>${placed}</style></head><body class="theme-${theme}"><div class="wg-root wg-portal wg-kit-portal-layer is-studio"></div><div class="wg-studio"><aside class="wg-studio-chat"><div id="chat"></div></aside></div><script>__BUNDLE__</script></body></html>`;
 }

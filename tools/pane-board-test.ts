@@ -30,6 +30,7 @@ import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shar
 import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
 import { sidebarOf } from "../packages/state/places/shared/lib/rows/sidebar-rows.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 let failed = 0;
 const quiet = console.info;
@@ -393,9 +394,7 @@ function checksGatewaysKeep(): void {
 
 async function pageOf(folder: string): Promise<AskedPage> {
 	const bundle = await bundleOf("tools/shell-frame-page.tsx");
-	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-		.map((at) => readFileSync(at, "utf8"))
-		.join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 	const file = path.join(folder, "pane-board.html");
 	writeFileSync(
 		file,

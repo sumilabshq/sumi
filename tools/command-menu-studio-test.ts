@@ -4,6 +4,7 @@ import path from "node:path";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 const VIEW: readonly [number, number] = [1440, 900];
 const SETTLE_MS = 350;
@@ -11,9 +12,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-command-
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/shell-frame-page.tsx");
-const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
+const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 const html = `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style>
 <style>html,body,#root{height:100%;margin:0}</style></head>
 <body><div id="root"></div><pre id="boom"></pre><script>localStorage.clear();</script>

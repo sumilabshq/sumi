@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { bundleOf, shoot, THEMES } from "./harness.ts";
 import type { Theme } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const SHOTS: readonly string[] = ["floating", "sheet", "drawer", "alert", "toast"];
 const THEME_ORDER: readonly Theme[] = ["light", "dark"];
@@ -24,7 +25,7 @@ const script = await bundleOf("tools/kit-overlays-shot-page.tsx");
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; padding: 32px; ${THEMES[theme]} ${HOST} color-scheme: ${theme};
 	background: var(--wg-kit-page); color: var(--wg-kit-text); font-family: var(--font-interface); }
 :is(*) { transition: none !important; animation: none !important; }</style>

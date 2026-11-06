@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
-const css = readFileSync("apps/host-obsidian/styles.css", "utf8");
+const css = readFileSync(BOARD_SHEET, "utf8");
 
 const rootTokenBlock = /\.wg-root\s*\{([\s\S]*?)\n\}/.exec(css);
 const kitRules = [

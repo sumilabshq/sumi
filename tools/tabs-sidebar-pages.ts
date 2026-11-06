@@ -5,6 +5,7 @@ import type { AskedPage } from "./chrome-ask.ts";
 import { canvasSheet } from "./canvas-sheet.mts";
 import { bundleOf } from "./harness.ts";
 import type { Theme } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 export const SIDEBAR_GATE = "test:studio-tabs";
 export const BOARD_SIZE: readonly [number, number] = [420, 1000];
@@ -70,7 +71,7 @@ export async function sidebarPageFile(folder: string): Promise<string> {
 	mkdirSync(folder, { recursive: true });
 	const [bundle, sheet] = await Promise.all([bundleOf("tools/tabs-sidebar-page.tsx"), canvasSheet(process.cwd())]);
 	const sumi = readFileSync("design-systems/sumi/sumi.css", "utf8");
-	const kit = readFileSync("apps/host-obsidian/styles.css", "utf8");
+	const kit = readFileSync(BOARD_SHEET, "utf8");
 	const file = path.join(folder, "tabs-sidebar.html");
 	writeFileSync(
 		file,

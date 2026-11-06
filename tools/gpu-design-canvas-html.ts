@@ -2,11 +2,10 @@ import { readFileSync } from "node:fs";
 import { HOST_SIZES } from "./gpu-canvas-serve.ts";
 import { FIXTURE_UTILITIES } from "./gpu-design-fixture-sheet.ts";
 import { THEMES } from "./harness.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 export function pageHtml(): string {
-	const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"].map((at) =>
-		readFileSync(at, "utf8"),
-	);
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8"));
 	const fonts = [400, 500, 600].map(
 		(weight, at) =>
 			`@font-face { font-family: Inter; font-weight: ${weight}; src: url(/fonts/${["Inter_400Regular", "Inter_500Medium", "Inter_600SemiBold"][at]}.ttf); }`,

@@ -5,9 +5,9 @@ import { paged, waited } from "./chrome-ask.ts";
 import { composerDiffReport } from "./chat-composer-diff.ts";
 import { UNJUDGED } from "./chat-composer-probe.ts";
 import { bundleOf } from "./harness.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const SEEN = `(() => ({
 	header: document.querySelectorAll(".wg-studio-ai-head:not(.is-bare)").length,
 	strip: document.querySelectorAll("[data-claude-strip]").length,
@@ -28,7 +28,7 @@ function check(what: string, got: unknown, wanted: unknown): void {
 }
 
 async function seenIn(state: string, bundled: string): Promise<unknown> {
-	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const html = `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style></head><body class="theme-light"><div class="wg-studio-chat" style="width:752px;height:820px"><div id="chat" style="height:100%"></div></div><script>${bundled.replaceAll("</script", "<\\/script")}</script></body></html>`;
 	const server = http.createServer((_request, response) => {
 		response.setHeader("content-type", "text/html");

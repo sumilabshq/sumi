@@ -5,6 +5,7 @@ import { z } from "zod";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 
@@ -15,9 +16,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-one-list
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/shell-frame-page.tsx");
-const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
+const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 
 let failed = 0;
 

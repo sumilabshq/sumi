@@ -10,6 +10,7 @@ import type { Difference } from "./studio-tabs-diff.ts";
 import { BOARD_CARD, BUILT_CARD, GEIST_LOADED, MANY, PALETTE_PROBE, STATES_PROBE } from "./browser-states-probe.ts";
 import type { StateParts } from "./browser-states-probe.ts";
 import type { StateScene } from "./browser-states-page.tsx";
+import { BOARD_SHEET, BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 export interface ExactStatesReport {
 	readonly differences: number;
@@ -43,11 +44,8 @@ interface Root {
 
 const REPO = path.resolve(import.meta.dirname, "..");
 const BOARDS = path.join(REPO, "docs/reference/browser-states");
-const SHEETS = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"];
 const GEIST_FACES = (
-	readFileSync(path.join(REPO, "apps/host-obsidian/styles.css"), "utf8").match(
-		/@font-face\s*\{[^}]*font-family:\s*"Geist"[^}]*\}/g,
-	) ?? []
+	readFileSync(path.join(REPO, BOARD_SHEET), "utf8").match(/@font-face\s*\{[^}]*font-family:\s*"Geist"[^}]*\}/g) ?? []
 ).join("\n");
 const BOARD_SIZE: readonly [number, number] = [1600, 1000];
 const BUILT_SIZE: readonly [number, number] = [1700, 1000];
@@ -238,7 +236,7 @@ async function probe(page: AskedPage, root: Root, parts: StateParts): Promise<Re
 }
 
 function builtPageOf(theme: string, brand: unknown, scenes: readonly StateScene[]): string {
-	const sheets = SHEETS.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
+	const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(path.join(REPO, at), "utf8")).join("\n");
 	const pinned = `.wg-studio, .wg-studio-outlet { --brand: ${String(brand)} !important; --font-interface: Geist, system-ui, sans-serif !important; }`;
 	return `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style><style>${pinned}</style></head><body class="theme-${theme}"><div id="root"></div><pre id="boom"></pre><script>localStorage.clear(); window.__SCENES__ = ${JSON.stringify(scenes)};</script><script>__BUNDLE__</script></body></html>`;
 }

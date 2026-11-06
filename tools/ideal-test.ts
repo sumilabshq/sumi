@@ -1,12 +1,13 @@
 import { readFileSync } from "node:fs";
 import { widgetModuleSources } from "./run-widget-source.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const ref = readFileSync("docs/reference/orbitask-converted.html", "utf8");
 const dialogRef = readFileSync("docs/reference/task-dialog.html", "utf8");
 const widgetSourceAt = (folder: string): string => Object.values(widgetModuleSources(folder)).join("\n");
 const WIDGETS_THE_ORBITASK_DESIGN_COVERS = ["archived-columns", "kanban-board", "task-card", "view-tabs"];
 const ours =
-	readFileSync("apps/host-obsidian/styles.css", "utf8") +
+	readFileSync(BOARD_SHEET, "utf8") +
 	readFileSync("registry/@default/tokens.css", "utf8") +
 	WIDGETS_THE_ORBITASK_DESIGN_COVERS.map((n) => widgetSourceAt(`registry/@default/${n}`)).join("\n");
 

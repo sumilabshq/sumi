@@ -2,6 +2,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { bundleOf, shoot, THEMES } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 interface Rect {
 	readonly x: number;
@@ -111,7 +112,7 @@ measureOnceDrawn();`;
 
 function pageAt(widthPx: number, isAnnotated: boolean): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>
 body { margin: 0; ${THEMES.light} background: var(--background-secondary); color: var(--text-normal);
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif; font-family: var(--font-interface);

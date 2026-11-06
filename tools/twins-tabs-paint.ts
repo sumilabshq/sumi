@@ -5,6 +5,7 @@ import { z } from "zod";
 import { paged } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf, THEMES } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type TwinCheck = readonly [name: string, got: unknown, want: unknown];
 
@@ -127,7 +128,7 @@ async function openPage(): Promise<AskedPage> {
 
 function pageHtml(script: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>:root { ${THEMES.light} ${HOST} } body { margin: 0; padding: 20px; }</style>
 </head><body class="wg-root theme-light"><div id="host"></div><script>${script}</script></body></html>`;
 }

@@ -3,7 +3,8 @@ import http from "node:http";
 import path from "node:path";
 import esbuild from "esbuild";
 import { THEMES } from "./harness.ts";
-import { radixInPictures } from "../apps/host-obsidian/radix-in-pictures.mts";
+import { createRadixInPicturesPlugin } from "./radix-in-pictures.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 export interface ServedPages {
 	readonly origin: string;
@@ -51,7 +52,7 @@ export async function servedGpuPages(
 
 async function bundled(entry: string): Promise<Buffer> {
 	const built = await esbuild.build({
-		plugins: [radixInPictures()],
+		plugins: [createRadixInPicturesPlugin()],
 		entryPoints: [entry],
 		bundle: true,
 		conditions: ["source"],
@@ -72,7 +73,7 @@ async function bundled(entry: string): Promise<Buffer> {
 
 function pageHtml(): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>html, body { margin: 0; height: 100%; overflow: hidden; } #stage { position: fixed; inset: 0; display: block; width: 100vw; height: 100vh; }</style>
 </head><body class="wg-root theme-light" style="${THEMES.light.replace(/\s+/g, " ")} ${HOST_SIZES}">
 <canvas id="stage"></canvas>

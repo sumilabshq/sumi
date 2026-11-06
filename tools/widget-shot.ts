@@ -7,7 +7,8 @@ import esbuild from "esbuild";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { LIB_FILES } from "../packages/shared/core/src/engine/widget-build.js";
 import type { Theme } from "./harness.ts";
-import { TEXT_LOADERS } from "./text-loaders.ts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const CHROME = process.env["WG_CHROME"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const ID = process.argv[2];
@@ -113,7 +114,7 @@ const bundled = bundle.outputFiles[0]?.text ?? "";
 
 for (const theme of THEME_ORDER) {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${fs.readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${fs.readFileSync(BOARD_SHEET, "utf8")}</style>
 ${fs.existsSync(scopeSheet) ? `<style>${fs.readFileSync(scopeSheet, "utf8")}</style>` : ""}
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;

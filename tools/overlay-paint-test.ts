@@ -9,8 +9,9 @@ import { drawerPaintChecks } from "./drawer-paint.ts";
 import { twinChecks } from "./twins-paint.ts";
 import { tabsTwinChecks } from "./twins-tabs-paint.ts";
 import { itemTwinChecks } from "./twins-item-paint.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
-const SHEET = readFileSync("apps/host-obsidian/styles.css", "utf8");
+const SHEET = readFileSync(BOARD_SHEET, "utf8");
 const FRAME = `<div class="wg-design-frame" style="width:600px">
 	<div class="wg-design-top" id="title"><span class="wg-design-name">Shell · New idea</span></div>
 	<div class="wg-design-screen" data-wg-overlay-root="" id="screen" style="min-height:400px">

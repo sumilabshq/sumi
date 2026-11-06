@@ -31,6 +31,7 @@ import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
 import { SUMI_APP_IDS, SUMI_APPS_WORKSPACE, SUMI_CHAT_TAB, SUMI_PAGE_APPS, sumiTabOf } from "./sumi-apps-seed.ts";
 import type { SumiAppId } from "./sumi-apps-seed.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 const GATE = "test:sumi-apps";
 const WAIT_MS = 30_000;
@@ -223,9 +224,7 @@ const apps = await listening(
 	}),
 );
 const bundle = await bundleOf("tools/sumi-apps-page.ts");
-const studioSheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
+const studioSheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 const shellPage = `<!doctype html><html><head><meta charset="utf-8">
 <link rel="icon" href="data:,"><style>${studioSheets}</style><style>html,body,#root{height:100%;margin:0}</style></head>
 <body><div id="root"></div><pre id="boom"></pre>

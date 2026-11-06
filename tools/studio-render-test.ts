@@ -16,6 +16,7 @@ import {
 import type { CatalogueSeen } from "./studio-render-catalogue.ts";
 import { bundleOf, findBrowser } from "./harness.ts";
 import { MEASURE_SCRIPT } from "./studio-render-measure.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 interface Seen extends CatalogueSeen {
 	readonly routeDom?: string | null;
@@ -75,9 +76,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-r
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/studio-render-page.tsx");
-const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
+const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 
 // TRADE-OFF: headless Chrome under a virtual time budget runs one animation frame; timers stand in for the rest
 const FRAMES_BY_TIMER = `window.requestAnimationFrame = (step) => setTimeout(() => step(performance.now()), 16); window.cancelAnimationFrame = (frame) => clearTimeout(frame);`;

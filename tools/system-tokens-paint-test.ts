@@ -6,6 +6,7 @@ import { z } from "zod";
 import { colorOf, type Rgba } from "../packages/shared/core/src/color-math.js";
 import { findBrowser } from "./harness.ts";
 import { THEMES, type HostTheme } from "./host-themes.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const CHANNEL_TOLERANCE = 1 / 255;
 const ALPHA_TOLERANCE = 0.002;
@@ -18,7 +19,7 @@ const BaselineSchema = z.object({
 });
 
 const baseline = BaselineSchema.parse(JSON.parse(readFileSync("tools/kit-tokens-obsidian.json", "utf8")));
-const sheet = readFileSync("apps/host-obsidian/styles.css", "utf8");
+const sheet = readFileSync(BOARD_SHEET, "utf8");
 const chrome = findBrowser("system tokens");
 const work = mkdtempSync(path.join(tmpdir(), "wg-system-tokens-"));
 let failed = 0;

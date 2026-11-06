@@ -5,7 +5,8 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { WIDGETS_DIR } from "../packages/shared/core/src/paths.js";
 import { collectFiles } from "./registry-files.ts";
-import { TEXT_LOADERS } from "./text-loaders.ts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 // TODO: delete with tools/card-variants.css once a card treatment is picked
 const CHROME = process.env["WG_CHROME"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
@@ -40,7 +41,7 @@ const LIGHT = `--background-primary:#ffffff;--background-secondary:#f6f6f6;--bac
 
 function pageFor(variant: string, title: string, said: string): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${readFileSync("tools/card-variants.css", "utf8")}</style>
 <style>
 body { margin: 0; padding: 28px 32px; ${LIGHT}

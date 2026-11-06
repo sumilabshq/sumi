@@ -6,6 +6,7 @@ import { paged, waited } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { readPageIconsScript } from "../packages/domain/browser/gateways/browser-pages/tauri/page-icon-script.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 
@@ -16,9 +17,7 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-site-ico
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/site-icon-page.tsx");
-const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
+const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
 
 const DrawnCaseSchema = z.object({
 	name: z.string(),

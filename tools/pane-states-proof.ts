@@ -7,6 +7,7 @@ import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { canvasSheet, withCanvasSheet } from "./canvas-sheet.mts";
 import { bundleOf } from "./harness.ts";
+import { BOARD_SHEET, BROWSER_HOST_SHEET } from "./sheet-paths.mts";
 
 const SIZE: readonly [number, number] = [1900, 1000];
 const SETTLED_MS = 500;
@@ -16,8 +17,8 @@ mkdirSync(shotsAt, { recursive: true });
 const [bundle, canvas] = await Promise.all([bundleOf("tools/studio-render-page.tsx"), canvasSheet(process.cwd())]);
 const sheets = [
 	readFileSync("design-systems/sumi/sumi.css", "utf8"),
-	readFileSync("packages/shared/core/browser-host.css", "utf8"),
-	withCanvasSheet(readFileSync("apps/host-obsidian/styles.css", "utf8"), canvas),
+	readFileSync(BROWSER_HOST_SHEET, "utf8"),
+	withCanvasSheet(readFileSync(BOARD_SHEET, "utf8"), canvas),
 ].join("\n");
 const PAGE = `<!doctype html><html class="theme-dark dark"><head><meta charset="utf-8"><style>${sheets}</style>
 <style>html,body,#root{height:100%;margin:0}</style></head>

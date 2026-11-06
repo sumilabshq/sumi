@@ -6,6 +6,7 @@ import { TONE_NAMES, toneClass } from "../packages/shared/kit/src/index.ts";
 import { colorOf } from "../packages/shared/core/src/color-math.ts";
 import { fieldIn, itemsIn } from "./held-fields.ts";
 import { isRecord, present } from "./page-dom.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type Theme = "light" | "dark";
 type Channels = readonly number[];
@@ -35,7 +36,7 @@ function levels(theme: Theme): unknown {
 	const file = path.join(work, `${theme}.html`);
 	writeFileSync(
 		file,
-		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+		`<!doctype html><html><head><meta charset="utf-8"><style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body{margin:0;${THEMES[theme]}}</style></head><body class="wg-root theme-${theme}"><pre id="out"></pre><script>
 window.addEventListener('load',()=>{
 	const probe=(value)=>{const node=document.createElement('div');node.style.cssText='width:10px;height:10px;background:'+value;

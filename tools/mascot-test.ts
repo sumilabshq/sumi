@@ -26,6 +26,7 @@ import { app } from "../packages/shared/core/src/requests/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 let failed = 0;
 function check(what: string, got: unknown, want: unknown): void {
@@ -285,7 +286,7 @@ const EYE_PATHS: Readonly<Record<MascotState, string>> = {
 const tokensOf = (path: string): string => (path.match(/-?[\d.]+|[A-Z]/g) ?? []).join(" ");
 
 const bundle = await bundleOf("tools/mascot-page.tsx");
-const sheet = readFileSync("apps/host-obsidian/styles.css", "utf8");
+const sheet = readFileSync(BOARD_SHEET, "utf8");
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sheet}</style>
 <style>#live { position: absolute; left: 600px; top: 200px; } #states { display: flex; gap: 8px; }</style></head>
 <body><div id="root"></div><pre id="boom"></pre><script>${bundle}</script></body></html>`;

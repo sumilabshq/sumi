@@ -3,9 +3,10 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const BoxSchema = z.object({
 	left: z.number(),
@@ -101,7 +102,7 @@ const bundle = await esbuild.build({
 });
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body {
 	margin: 0;

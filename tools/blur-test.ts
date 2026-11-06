@@ -2,10 +2,11 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const CHROME = process.env["WG_CHROME"] ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const work = mkdtempSync(path.join(tmpdir(), "wg-blur-"));
-const SHELL = readFileSync("apps/host-obsidian/styles.css", "utf8");
+const SHELL = readFileSync(BOARD_SHEET, "utf8");
 
 const HEAD = `<style>${SHELL}</style><style>
 body { margin: 0; --background-primary: #ffffff; --background-secondary: #f6f6f6; --text-normal: #222222;

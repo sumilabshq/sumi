@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { bundleOf, THEMES } from "./harness.ts";
 import type { Theme } from "./harness.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const out = path.resolve(process.argv[2] ?? path.join(tmpdir(), "widgetarium-kit-demo.html"));
 
@@ -31,7 +32,7 @@ const page = `<!doctype html><html lang="en"><head><meta charset="utf-8">
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ${themed("dark")} } }
 :root[data-theme="dark"] { ${themed("dark")} }
 </style>
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${DEMO_CHROME}</style>
 </head><body class="wg-root"><div id="demo"></div>
 <script>${script}</script>

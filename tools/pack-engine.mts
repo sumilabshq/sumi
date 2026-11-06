@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import esbuild, { type Plugin } from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { z } from "zod";
 import { SOURCE_CONDITION, fieldOf, isNodeExport, sourceOfExport } from "./export-source.mts";
 import { browserSheetsOf } from "./browser-sheet.mts";
@@ -99,7 +99,6 @@ async function buildEach(folders: readonly string[]): Promise<void> {
 
 const builtIn = (folder: string): string => path.join(folder, BUILT_TO);
 
-// TRADE-OFF: the engine package's sheet is cut from the app's styles.css; moving that owner into core touches every paint gate
 export function writeBrowserStyles(): void {
 	const { app, studio } = browserSheetsOf(REPO);
 	fs.mkdirSync(path.dirname(BROWSER_STYLES.into), { recursive: true });
