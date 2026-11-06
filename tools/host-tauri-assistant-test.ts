@@ -697,6 +697,76 @@ function startedPrompts(ipc: FakeIpc): unknown[] {
 	});
 }
 
+function lostResult(sessionId: string): unknown {
+	return {
+		type: "result",
+		subtype: "error_during_execution",
+		is_error: true,
+		session_id: sessionId,
+		errors: [`No conversation found with session ID: ${sessionId}`],
+	};
+}
+
+async function lostResumeChecks(): Promise<void> {
+	const ipc = fakeIpc();
+	const { port } = startedAssistant(ipc, {});
+	const first = await sendAndStart(port, ipc, "hi");
+	streamed(first, [{ type: "system", session_id: "gone-1" }]);
+	said(first, { kind: "exited", code: 0 });
+	await flush();
+
+	const lost = await sendAndStart(port, ipc, "again");
+	streamed(lost, [lostResult("gone-1")]);
+	said(lost, { kind: "exited", code: 1 });
+	await flush();
+	await flush();
+	check(
+		"a session Claude no longer has is dropped and the message runs again as a new one",
+		startedPrompts(ipc).slice(1),
+		[
+			["again", "gone-1"],
+			["again", null],
+		],
+	);
+	check("while it runs again, no failure is shown", [port.session().busy, port.session().failure], [true, null]);
+
+	const fresh = lastChannel(ipc);
+	streamed(fresh, CLAUDE_TURN);
+	said(fresh, { kind: "exited", code: 0 });
+	await flush();
+	check(
+		"the new run answers the turn",
+		[lastAnswer(port.session())?.outcome, lastAnswer(port.session())?.text, port.session().failure],
+		["done", "ok", null],
+	);
+	await sendAndStart(port, ipc, "next");
+	check("the next message resumes the new session", startedPrompts(ipc).at(-1), ["next", "sess-1"]);
+	said(lastChannel(ipc), { kind: "exited", code: 0 });
+	await flush();
+
+	const lostAgain = await sendAndStart(port, ipc, "third");
+	streamed(lostAgain, [lostResult("sess-1")]);
+	said(lostAgain, { kind: "exited", code: 1 });
+	await flush();
+	await flush();
+	const retried = lastChannel(ipc);
+	streamed(retried, [lostResult("sess-1")]);
+	said(retried, { kind: "exited", code: 1 });
+	await flush();
+	check(
+		"it runs again only once, then fails with Claude's own words",
+		[startedPrompts(ipc).slice(-3), port.session().failure],
+		[
+			[
+				["next", "sess-1"],
+				["third", "sess-1"],
+				["third", null],
+			],
+			"No conversation found with session ID: sess-1",
+		],
+	);
+}
+
 async function compactChecks(): Promise<void> {
 	const ipc = fakeIpc();
 	const { port } = startedAssistant(ipc, {});
@@ -924,6 +994,7 @@ await resumeChecks();
 await signalChecks();
 await failedWriteChecks();
 await errorChecks();
+await lostResumeChecks();
 await attachmentChecks();
 await folderAndOptionChecks();
 await fileDropChecks();

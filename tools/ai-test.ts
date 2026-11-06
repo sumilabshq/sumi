@@ -247,6 +247,16 @@ check(
 	{ failure: "rate limited" },
 );
 
+const lostHeard: StreamPart[] = [];
+readerNamed("claude-stream")(
+	'{"type":"result","subtype":"error_during_execution","is_error":true,"errors":["No conversation found with session ID: s-0"]}',
+	(event) => lostHeard.push(event),
+);
+check("a result with no text fails with its errors, and a missing session is marked lost", lostHeard, [
+	{ resumeLost: true },
+	{ failure: "No conversation found with session ID: s-0" },
+]);
+
 const beforeJunk = heard.length;
 claudeReader("not json at all", (event) => heard.push(event));
 claudeReader("", (event) => heard.push(event));

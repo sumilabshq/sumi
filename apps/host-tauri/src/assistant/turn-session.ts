@@ -262,15 +262,51 @@ function failTurn(store: SessionStore, generation: number, failed: unknown): voi
 	announceEnd(store, { ended: "failed", failureKind: "other", failure, resumesAt: null });
 }
 
-async function answerTurn(store: SessionStore, startTurn: StartTurn, asked: string, generation: number): Promise<void> {
-	const owned: { active: ActiveTurn | null } = { active: null };
-	const emit: Emit = (part) => {
-		if (owned.active !== null && store.active === owned.active) {
-			applyPart(store, owned.active, part);
-		}
-	};
-	const started = await startTurn(asked, (providerId) => store.resumes.get(providerId) ?? null, emit);
-	if (store.generation !== generation) {
+interface TurnRequest {
+	readonly asked: string;
+	readonly generation: number;
+	readonly isRetryAfterLostResume: boolean;
+}
+
+interface OwnedRun {
+	active: ActiveTurn | null;
+	resumeLost: boolean;
+}
+
+function applyOwnedPart(store: SessionStore, owned: OwnedRun, part: StreamPart): void {
+	if ("resumeLost" in part) {
+		owned.resumeLost = true;
+		return;
+	}
+
+	if (owned.active === null || store.active !== owned.active || (owned.resumeLost && "failure" in part)) {
+		return;
+	}
+
+	applyPart(store, owned.active, part);
+}
+
+function isRetriedFresh(owned: OwnedRun, turn: TurnRequest): boolean {
+	return owned.resumeLost && !turn.isRetryAfterLostResume && turn.asked !== COMPACT_PROMPT;
+}
+
+function forgetLostResume(store: SessionStore, owned: OwnedRun, providerId: string): void {
+	if (!owned.resumeLost) {
+		return;
+	}
+
+	console.info(`[ink] ${providerId} resume ${store.resumes.get(providerId) ?? "none"} → none: not found`);
+	store.resumes.delete(providerId);
+}
+
+async function answerTurn(store: SessionStore, startTurn: StartTurn, turn: TurnRequest): Promise<void> {
+	const owned: OwnedRun = { active: null, resumeLost: false };
+	const started = await startTurn(
+		turn.asked,
+		(providerId) => store.resumes.get(providerId) ?? null,
+		(part) => applyOwnedPart(store, owned, part),
+	);
+	if (store.generation !== turn.generation) {
 		started.run.stop();
 		return;
 	}
@@ -278,9 +314,17 @@ async function answerTurn(store: SessionStore, startTurn: StartTurn, asked: stri
 	owned.active = { run: started.run, providerId: started.providerId };
 	store.active = owned.active;
 	const answer = await started.run.done;
-	if (store.active === owned.active) {
-		settleRun(store, { started, startTurn }, answer);
+	if (store.active !== owned.active) {
+		return;
 	}
+
+	forgetLostResume(store, owned, started.providerId);
+	if (!isRetriedFresh(owned, turn)) {
+		settleRun(store, { started, startTurn }, answer);
+		return;
+	}
+
+	await answerTurn(store, startTurn, { ...turn, isRetryAfterLostResume: true });
 }
 
 function refusalOf(session: AssistantSession, asked: string): string | null {
@@ -464,7 +508,9 @@ function answer(
 		startedBy,
 		startedAt,
 	};
-	answerTurn(store, startTurn, asked, generation).catch((failed: unknown) => failTurn(store, generation, failed));
+	answerTurn(store, startTurn, { asked, generation, isRetryAfterLostResume: false }).catch((failed: unknown) =>
+		failTurn(store, generation, failed),
+	);
 	return Promise.resolve();
 }
 

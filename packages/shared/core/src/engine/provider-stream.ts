@@ -36,6 +36,7 @@ export type StreamPart =
 	| { readonly call: ToolCall }
 	| { readonly result: ToolResult }
 	| { readonly compacted: string }
+	| { readonly resumeLost: true }
 	| { readonly failure: string };
 
 export type Emit = (part: StreamPart) => void;
@@ -100,6 +101,8 @@ interface ClaudeStreamState {
 }
 
 const COMPACT_SUMMARY_LEAD = /^[\s\S]*?Summary:\s*\n/;
+const NO_CONVERSATION_TO_RESUME = "No conversation found with session ID";
+const AGENT_REPORTED_AN_ERROR = "the agent reported an error";
 
 const MS_PER_SECOND = 1000;
 
@@ -250,10 +253,36 @@ function createClaudeStream(): LineReader {
 			emitToolResults(event, emit);
 			return;
 		}
-		if (event["type"] !== "result") return;
-		if (event["is_error"] === true)
-			emit({ failure: String(event["result"] ?? event["subtype"] ?? "the agent reported an error") });
+		emitFailedResult(event, emit);
 	};
+}
+
+function emitFailedResult(event: Held, emit: Emit): void {
+	if (event["type"] !== "result" || event["is_error"] !== true) {
+		return;
+	}
+
+	const failure = failureReasonOf(event);
+	if (failure.includes(NO_CONVERSATION_TO_RESUME)) {
+		emit({ resumeLost: true });
+	}
+	emit({ failure });
+}
+
+function failureReasonOf(event: Held): string {
+	const result = event["result"];
+	if (typeof result === "string" && result !== "") {
+		return result;
+	}
+
+	const errors = event["errors"];
+	const said = Array.isArray(errors) ? errors.filter((error) => typeof error === "string" && error !== "") : [];
+	if (said.length > 0) {
+		return said.join("; ");
+	}
+
+	const subtype = event["subtype"];
+	return typeof subtype === "string" && subtype !== "" ? subtype : AGENT_REPORTED_AN_ERROR;
 }
 
 function compactSummaryIn(event: Held): string | null {
