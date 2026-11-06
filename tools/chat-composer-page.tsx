@@ -15,6 +15,7 @@ import type {
 import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
 import { MascotModule } from "../packages/domain/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
+import { MemoryChatDraftShelf } from "../apps/host-tauri/src/chat/tauri-chat-drafts.ts";
 
 declare global {
 	interface Window {
@@ -163,6 +164,7 @@ const claudeOptions = claudeOptionsCell({
 });
 const parts = tauriAssistantParts({
 	kind: "tauri",
+	chatDrafts: new MemoryChatDraftShelf(),
 	tauriAssistant: port,
 	tauriAttachments: {
 		folder: "/attachments",

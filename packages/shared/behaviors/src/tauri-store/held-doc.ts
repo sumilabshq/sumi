@@ -1,6 +1,7 @@
 import type { DocKind, DocState, StoreClient, StoreRoot } from "./store-client.js";
 
 const WRITE_DELAY_MS = 400;
+const MOST_WRITE_WAIT_MS = 2000;
 const MOST_WRITE_TRIES = 3;
 const READ_RETRY_MS: readonly number[] = [300, 1000, 3000, 10_000];
 const UNREAD: DocState<never> = {
@@ -28,6 +29,7 @@ export class HeldDoc<Doc extends object> {
 	private writingPatch: Partial<Doc> = {};
 	private writing: Promise<void> = Promise.resolve();
 	private delayedWrite: ReturnType<typeof setTimeout> | null = null;
+	private firstDelayedAt: number | null = null;
 	private readonly listeners = new Set<() => void>();
 
 	private constructor(
@@ -170,8 +172,15 @@ export class HeldDoc<Doc extends object> {
 	}
 
 	private delayWrite(): void {
-		this.cancelDelayedWrite();
-		this.delayedWrite = setTimeout(() => void this.flush(), WRITE_DELAY_MS);
+		const now = Date.now();
+		this.firstDelayedAt ??= now;
+		const left = MOST_WRITE_WAIT_MS - (now - this.firstDelayedAt);
+
+		if (this.delayedWrite !== null) {
+			clearTimeout(this.delayedWrite);
+		}
+
+		this.delayedWrite = setTimeout(() => void this.flush(), Math.max(0, Math.min(WRITE_DELAY_MS, left)));
 	}
 
 	private cancelDelayedWrite(): void {
@@ -180,6 +189,7 @@ export class HeldDoc<Doc extends object> {
 		}
 
 		this.delayedWrite = null;
+		this.firstDelayedAt = null;
 	}
 
 	private async writeChange(change: PendingChange<Doc>): Promise<boolean> {
@@ -220,6 +230,9 @@ export class HeldDoc<Doc extends object> {
 				...this.pending?.patch,
 			},
 		};
+		for (const listener of [...this.listeners]) {
+			listener();
+		}
 	}
 
 	private label(): string {

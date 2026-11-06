@@ -30,6 +30,7 @@ import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-optio
 import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
+import { MemoryChatDraftShelf } from "../apps/host-tauri/src/chat/tauri-chat-drafts.ts";
 
 declare global {
 	interface Window {
@@ -151,6 +152,7 @@ const askApp = app()
 		AssistantModule.with(
 			tauriAssistantParts({
 				kind: "tauri",
+				chatDrafts: new MemoryChatDraftShelf(),
 				tauriAssistant: {
 					...NO_ASSISTANT,
 					can: true,

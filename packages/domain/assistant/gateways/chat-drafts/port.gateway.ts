@@ -1,5 +1,5 @@
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
-import type { ChatDraft } from "./chat-drafts.gateway.js";
+import { isDrafted } from "../../shared/lib/chat-drafts.js";
 import { MemoryChatDraftsGateway } from "./memory.gateway.js";
 
 export class PortChatDraftsGateway extends MemoryChatDraftsGateway {
@@ -7,8 +7,4 @@ export class PortChatDraftsGateway extends MemoryChatDraftsGateway {
 		super();
 		port.lendDrafts?.((chatId) => isDrafted(this.chatDraft(chatId)));
 	}
-}
-
-function isDrafted(draft: ChatDraft | null): boolean {
-	return draft !== null && (draft.said.trim() !== "" || draft.attachments.length > 0);
 }

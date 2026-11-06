@@ -7,6 +7,7 @@ export type StoreCommand =
 	| "replace"
 	| "append"
 	| "read_lines"
+	| "take_entry"
 	| "open_first_workspace"
 	| "create_workspace"
 	| "attach_workspace_folder"

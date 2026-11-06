@@ -1,13 +1,13 @@
-import type { DraftAttachment } from "../draft-attachments/draft-attachments.gateway.js";
+import type { ChatDraft } from "../../shared/schema/chat-draft.schema.js";
 
-export interface ChatDraft {
-	readonly said: string;
-	readonly attachments: readonly DraftAttachment[];
-}
+export type { ChatDraft };
 
 export abstract class ChatDraftsGateway {
 	abstract openChat(): string | null;
 	abstract saveOpenChat(chatId: string): void;
 	abstract chatDraft(chatId: string): ChatDraft | null;
 	abstract saveChatDraft(chatId: string, draft: ChatDraft): void;
+	abstract unseenSaid(): string | null;
+	abstract problemOf(chatId: string): string | null;
+	abstract saveUnseenSaid(said: string | null): void;
 }

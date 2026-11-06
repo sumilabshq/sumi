@@ -1,7 +1,8 @@
 import type { ChatDraftsGateway } from "../../../gateways/chat-drafts/chat-drafts.gateway.js";
 import type { DraftAttachmentsGateway } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { AdoptedDraft } from "../../../shared/schema/attachment.schema.js";
-import { holdChatDraft, saveDrafts } from "./held-drafts.js";
+import { holdChatDraft } from "../../../shared/lib/chat-drafts.js";
+import { saveDrafts } from "./held-drafts.js";
 
 export interface AdoptingParts {
 	readonly chatDrafts: ChatDraftsGateway;

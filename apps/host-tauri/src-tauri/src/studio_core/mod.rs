@@ -1,7 +1,9 @@
 pub mod hub;
+pub mod quit;
 
 use crate::studio_caller::{is_shown_studio_label, refuse_foreign_caller, CORE_WINDOW};
 use hub::CoreHub;
+use quit::QuitFlushes;
 use serde_json::Value;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -25,10 +27,14 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         .invoke_handler(dispatch)
         .setup(|app, _api| {
             app.manage(Arc::new(CoreHub::new()));
+            app.manage(Arc::new(QuitFlushes::default()));
             Ok(())
         })
         .on_event(|app, event| {
             if matches!(event, RunEvent::Ready) {
+                if let Err(failure) = quit::wear_quit_menu(app) {
+                    eprintln!("[studio-core] quit menu default → default: {failure}, Cmd+Q quits without saving");
+                }
                 let app = app.clone();
                 std::thread::spawn(move || open_core_window(&app));
             }
@@ -90,6 +96,10 @@ fn dispatch<R: Runtime>(invoke: Invoke<R>) -> bool {
         "answer" => answer(&message),
         "changed" => changed(&message),
         "live_windows" => Ok(Value::from(live_studio_windows(message.webview().app_handle()))),
+        "flushed_before_quit" => {
+            quit::heard_flushed(message.webview().app_handle(), message.webview().label());
+            Ok(Value::Null)
+        }
         _ => return false,
     };
     resolver.respond(answer.map_err(InvokeError::from));

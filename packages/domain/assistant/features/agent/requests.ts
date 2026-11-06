@@ -3,6 +3,8 @@ import { AssistantSetupChangedEvent } from "../../gateways/assistant-setup/assis
 import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";
 import { ClaudeOptionsChangedEvent } from "../../gateways/claude-options/claude-options.events.js";
 import { ClaudeOptionsGateway } from "../../gateways/claude-options/claude-options.gateway.js";
+import { ChatDraftsGateway } from "../../gateways/chat-drafts/chat-drafts.gateway.js";
+import { chooseOptions, holdProvider } from "../../shared/lib/chat-drafts.js";
 import { OPTIONS_NOT_HERE } from "../../gateways/claude-options/none.gateway.js";
 import { WORKING_FOLDER_NOT_HERE } from "../../gateways/working-folders/none.gateway.js";
 import { WorkingFolderChangedEvent } from "../../gateways/working-folders/working-folders.events.js";
@@ -30,10 +32,14 @@ export const AgentSetupQuery = query("agent-setup")
 export const ChooseProviderCommand = command("choose-provider")
 	.input(ProviderAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ assistantSetup: AssistantSetupGateway })
-	.handle(async ({ id }, { assistantSetup, invalidate }) => {
+	.inject({
+		assistantSetup: AssistantSetupGateway,
+		chatDrafts: ChatDraftsGateway,
+	})
+	.handle(async ({ id }, { assistantSetup, chatDrafts, invalidate }) => {
 		invalidate(AgentSetupQuery);
 		await assistantSetup.chooseProvider(id);
+		holdProvider(chatDrafts, id);
 	});
 
 export const SetHelperAgentsCommand = command("set-helper-agents")
@@ -59,8 +65,11 @@ export const ClaudeOptionsQuery = query("claude-options")
 export const ChooseClaudeOptionCommand = command("choose-claude-option")
 	.input(ClaudeOptionAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ claudeOptions: ClaudeOptionsGateway })
-	.handle((asked, { claudeOptions, invalidate }) => {
+	.inject({
+		claudeOptions: ClaudeOptionsGateway,
+		chatDrafts: ChatDraftsGateway,
+	})
+	.handle((asked, { claudeOptions, chatDrafts, invalidate }) => {
 		const was = claudeOptions.claudeOptions();
 
 		if (was === null) {
@@ -69,7 +78,7 @@ export const ChooseClaudeOptionCommand = command("choose-claude-option")
 
 		invalidate(ClaudeOptionsQuery);
 		const next = withOptionChosen(was, asked);
-		claudeOptions.saveClaudeOptions(next);
+		chooseOptions({ claudeOptions, chatDrafts }, next);
 		console.debug(
 			`[widgetarium] claude options ${JSON.stringify(was)} → ${JSON.stringify(next)} (chose ${JSON.stringify(asked)})`,
 		);
@@ -81,8 +90,9 @@ export const ChooseClaudeModelCommand = command("choose-claude-model")
 	.inject({
 		assistantSetup: AssistantSetupGateway,
 		claudeOptions: ClaudeOptionsGateway,
+		chatDrafts: ChatDraftsGateway,
 	})
-	.handle(async ({ model }, { assistantSetup, claudeOptions, invalidate }) => {
+	.handle(async ({ model }, { assistantSetup, claudeOptions, chatDrafts, invalidate }) => {
 		const setup = await assistantSetup.setup();
 
 		if (!setup.providers.some(({ id }) => id === CLAUDE_CODE_PROVIDER_ID)) {
@@ -92,6 +102,7 @@ export const ChooseClaudeModelCommand = command("choose-claude-model")
 		if (setup.chosen !== CLAUDE_CODE_PROVIDER_ID) {
 			invalidate(AgentSetupQuery);
 			await assistantSetup.chooseProvider(CLAUDE_CODE_PROVIDER_ID);
+			holdProvider(chatDrafts, CLAUDE_CODE_PROVIDER_ID);
 			console.info(
 				`[widgetarium] provider ${setup.chosen} → ${CLAUDE_CODE_PROVIDER_ID} (chose the Claude model ${model})`,
 			);
@@ -104,7 +115,7 @@ export const ChooseClaudeModelCommand = command("choose-claude-model")
 		}
 
 		invalidate(ClaudeOptionsQuery);
-		claudeOptions.saveClaudeOptions(withOptionChosen(was, { model }));
+		chooseOptions({ claudeOptions, chatDrafts }, withOptionChosen(was, { model }));
 		console.debug(`[widgetarium] claude model ${was.model} → ${model}`);
 	});
 

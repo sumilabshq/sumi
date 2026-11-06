@@ -5,6 +5,8 @@ import { AttachmentFilesGateway } from "../../gateways/attachment-files/attachme
 import { AttachmentFolderGateway } from "../../gateways/attachment-folder/attachment-folder.gateway.js";
 import { FOLDERS_NOT_HERE } from "../../gateways/attachment-folder/none.gateway.js";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
+import { ClaudeOptionsGateway } from "../../gateways/claude-options/claude-options.gateway.js";
+import { holdChatDraft, wearChoices, wearProvider } from "../../shared/lib/chat-drafts.js";
 import { ChatDraftsGateway } from "../../gateways/chat-drafts/chat-drafts.gateway.js";
 import { DraftAttachmentsGateway } from "../../gateways/draft-attachments/draft-attachments.gateway.js";
 import { FileDragGateway } from "../../gateways/file-drag/file-drag.gateway.js";
@@ -21,7 +23,7 @@ import {
 	MessageAskedSchema,
 	TakenDraftSchema,
 } from "../../shared/schema/attachment.schema.js";
-import { ChatOpenedSchema, DraftTextSchema } from "../../shared/schema/chat-draft.schema.js";
+import { ChatOpenedSchema, DraftNoticeSchema, DraftTextSchema, OpenedDraftSchema } from "../../shared/schema/chat-draft.schema.js";
 import { DroppedAskedSchema, FileDragSchema, PageDragAskedSchema } from "../../shared/schema/file-drag.schema.js";
 import { adoptUnsent } from "./lib/adopted-draft.js";
 import { ACCEPTED, refusalOfCount, refusalOfReach } from "./lib/attachment-rules.js";
@@ -29,7 +31,7 @@ import { attachDrafted, attachOffered } from "./lib/attaching.js";
 import { sweepFolder } from "./lib/attachments-on-disk.js";
 import { chipOf, draftedFolders, offeredOf } from "./lib/drafts.js";
 import { fileDragOf, heardHostDrag, heardPageDrag } from "./lib/file-drag.js";
-import { holdChatDraft, saveDrafts, saveFileDrag } from "./lib/held-drafts.js";
+import { saveDrafts, saveFileDrag } from "./lib/held-drafts.js";
 import { sendWithDrafts } from "./lib/sending.js";
 
 const CLEARED = "the chat was cleared";
@@ -90,11 +92,13 @@ export const SendMessageCommand = command("send-message")
 		attachmentFolder: AttachmentFolderGateway,
 		draftAttachments: DraftAttachmentsGateway,
 		sentAttachments: SentAttachmentsGateway,
+		chatDrafts: ChatDraftsGateway,
 		clock: ClockGateway,
 	})
 	.emits(SentAttachmentsChangedEvent)
 	.handle(async ({ said, replaces }, parts) => {
 		const drafts = parts.draftAttachments.draftAttachments();
+		parts.chatDrafts.saveUnseenSaid(null);
 		parts.invalidate(DraftAttachmentsQuery);
 		await sendWithDrafts(parts, {
 			said,
@@ -274,6 +278,7 @@ export const ClearChatCommand = command("clear-chat")
 
 export const HoldDraftTextCommand = command("hold-draft-text")
 	.input(DraftTextSchema)
+	.output(DraftNoticeSchema)
 	.idempotencyKey(PerCall)
 	.inject({
 		chatDrafts: ChatDraftsGateway,
@@ -284,43 +289,62 @@ export const HoldDraftTextCommand = command("hold-draft-text")
 
 		if (openChat === null) {
 			console.debug("[widgetarium] draft text not held: no chat is open yet");
-			return;
+			return { notice: null };
 		}
 
+		const unseen = chatDrafts.unseenSaid();
+		const attachments = draftAttachments.draftAttachments();
+
+		if (unseen !== null && said === "") {
+			console.debug(`[widgetarium] chat ${openChat} kept its text: the composer has not shown it yet`);
+			holdChatDraft(chatDrafts, openChat, { attachments });
+			return { notice: chatDrafts.problemOf(openChat) };
+		}
+
+		chatDrafts.saveUnseenSaid(null);
 		holdChatDraft(chatDrafts, openChat, {
 			said,
-			attachments: draftAttachments.draftAttachments(),
+			attachments,
 		});
+		return { notice: chatDrafts.problemOf(openChat) };
 	});
 
 export const OpenChatDraftCommand = command("open-chat-draft")
 	.input(ChatOpenedSchema)
-	.output(DraftTextSchema)
+	.output(OpenedDraftSchema)
 	.idempotencyKey(PerCall)
 	.inject({
 		chatDrafts: ChatDraftsGateway,
 		draftAttachments: DraftAttachmentsGateway,
+		claudeOptions: ClaudeOptionsGateway,
+		assistantSetup: AssistantSetupGateway,
 	})
-	.handle(({ chatId }, { chatDrafts, draftAttachments, invalidate }) => {
+	.handle(async ({ chatId }, { chatDrafts, draftAttachments, claudeOptions, assistantSetup, invalidate }) => {
 		const left = chatDrafts.openChat();
 
 		if (left === chatId) {
-			return { said: "" };
+			return {
+				said: "",
+				notice: chatDrafts.problemOf(chatId),
+			};
 		}
 
 		if (left !== null) {
-			holdChatDraft(chatDrafts, left, {
-				said: chatDrafts.chatDraft(left)?.said ?? "",
-				attachments: draftAttachments.draftAttachments(),
-			});
+			holdChatDraft(chatDrafts, left, { attachments: draftAttachments.draftAttachments() });
 		}
 
 		chatDrafts.saveOpenChat(chatId);
 		console.debug(`[widgetarium] open chat ${String(left)} → ${chatId}`);
 		const opened = chatDrafts.chatDraft(chatId);
+		chatDrafts.saveUnseenSaid(opened === null || opened.said === "" ? null : opened.said);
 		invalidate(DraftAttachmentsQuery);
 		saveDrafts(draftAttachments, opened?.attachments ?? [], CHAT_SWITCHED);
-		return { said: opened?.said ?? "" };
+		wearChoices(claudeOptions, opened?.choices ?? null, chatId);
+		await wearProvider(assistantSetup, opened?.provider ?? null, chatId);
+		return {
+			said: opened?.said ?? "",
+			notice: chatDrafts.problemOf(chatId),
+		};
 	});
 
 export const HearHostDragSubscriber = subscriber(FileDraggedEvent)

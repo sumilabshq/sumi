@@ -10,6 +10,10 @@ import { TauriFileDrops } from "./tauri-file-drop.js";
 import type { ChatSpot, WebviewDragSource } from "./tauri-file-drop.js";
 import { tauriPrivateFolder } from "./tauri-private-folder.js";
 import type { ChatsLink } from "./chat-sessions.js";
+import { MemoryChatDraftShelf } from "../chat/tauri-chat-drafts.js";
+import { queueKeptLink } from "../chat/tauri-chat-queues.js";
+import type { ChatQueueKeeper } from "../chat/tauri-chat-queues.js";
+import type { ChatDraftShelf } from "../chat/tauri-chat-drafts.js";
 import type { ClaudeOptionsCell } from "./claude-options-cell.js";
 import type { TauriPrivateFolder } from "./tauri-private-folder.js";
 import { browserUsageMemory, claudeOptionsKeptIn } from "./kept-usage.js";
@@ -44,6 +48,7 @@ export type TauriAssistantHost = {
 	readonly claudeOptions: ClaudeOptionsCell;
 	readonly drops: TauriFileDrops;
 	readonly workspace: SharedWorkspaceFolder;
+	readonly chatDrafts: ChatDraftShelf;
 };
 
 export interface TauriAssistant {
@@ -80,6 +85,8 @@ export function attachmentsFolderIn(page: object): string | null {
 
 export interface TauriAssistantAsk {
 	readonly workspace: TauriWorkspaceFolders;
+	readonly chatDrafts?: ChatDraftShelf;
+	readonly chatQueues?: ChatQueueKeeper;
 	readonly ipc?: TauriIpc;
 	readonly page?: object;
 	readonly chats?: ChatsLink;
@@ -91,6 +98,8 @@ export interface TauriAssistantAsk {
 
 export function startTauriAssistant({
 	workspace,
+	chatDrafts = new MemoryChatDraftShelf(),
+	chatQueues,
 	ipc = tauriIpc,
 	page = window,
 	chats,
@@ -103,12 +112,14 @@ export function startTauriAssistant({
 	const privateFolder = tauriPrivateFolder(bridge);
 	const folders = folderLending(bridge);
 	const claudeOptions = claudeOptionsKeptIn(usageMemory);
+	const folder = attachmentsFolderIn(page);
+	const kept = chats === undefined || chatQueues === undefined ? chats : queueKeptLink(chats, chatQueues, { ...privateFolder, folder });
 	const port = tauriAssistantPort({
 		bridge,
 		attachments: privateFolder,
 		folders,
 		claude: claudeOptions,
-		...(chats === undefined ? {} : { chats }),
+		...(kept === undefined ? {} : { chats: kept }),
 		...(renderMarkdown === undefined ? {} : { renderMarkdown }),
 	});
 	return {
@@ -116,7 +127,7 @@ export function startTauriAssistant({
 		host: {
 			tauriAssistant: port,
 			tauriAttachments: {
-				folder: attachmentsFolderIn(page),
+				folder,
 				files: privateFolder,
 			},
 			folders,
@@ -126,6 +137,7 @@ export function startTauriAssistant({
 				client: workspace.client,
 				folder: workspaceFolderCell(workspace.opened),
 			},
+			chatDrafts,
 		},
 	};
 }

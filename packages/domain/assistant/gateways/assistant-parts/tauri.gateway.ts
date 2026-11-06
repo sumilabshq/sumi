@@ -1,4 +1,5 @@
 import { LendingAttachmentFolderGateway } from "../attachment-folder/lending.gateway.js";
+import { ShelfChatDraftsGateway } from "../chat-drafts/shelf.gateway.js";
 import { CellClaudeOptionsGateway } from "../claude-options/cell.gateway.js";
 import { HostFileDropGateway } from "../file-drop/host.gateway.js";
 import { ClientWorkingFoldersGateway } from "../working-folders/client.gateway.js";
@@ -12,5 +13,6 @@ export function tauriAssistantParts(host: TauriHosts): AssistantParts {
 		claudeOptions: new CellClaudeOptionsGateway(host.claudeOptions),
 		workingFolders: new ClientWorkingFoldersGateway(host.workspace),
 		fileDrop: new HostFileDropGateway(host.drops),
+		chatDrafts: new ShelfChatDraftsGateway(host.chatDrafts, host.tauriAssistant),
 	};
 }

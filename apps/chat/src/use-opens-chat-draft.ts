@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { OpenChatDraftCommand, PrefillDraftCommand } from "@sumi/contract";
 import type { StartedApp } from "@widgetarium/core/requests";
+import { toast } from "@widgetarium/kit";
 
 export function useOpensChatDraft(shell: StartedApp, chatId: string): void {
 	useEffect(() => {
@@ -16,6 +17,10 @@ async function openChatDraft(shell: StartedApp, chatId: string): Promise<void> {
 	if (!opened.ok) {
 		console.error(`[sumi-chat] the draft of chat ${chatId} was not opened: ${opened.reason}`);
 		return;
+	}
+
+	if (opened.output.notice !== null) {
+		toast.error(opened.output.notice, { id: `draft:${opened.output.notice}` });
 	}
 
 	if (opened.output.said === "") {

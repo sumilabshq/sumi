@@ -1,10 +1,11 @@
+use super::files::FILE_EXTENSION;
 use super::place;
 use super::refusal::Refusal;
 use super::workspaces::{self, WORKSPACES_FILE, WORKSPACE_FILE};
 use super::{RootKind, Store};
 use crate::studio_caller::{is_studio_label, refuse_foreign_caller};
 use serde_json::{json, Value};
-use tauri::ipc::{Invoke, InvokeBody, InvokeError, InvokeResolver};
+use tauri::ipc::{Invoke, InvokeBody, InvokeError, InvokeMessage, InvokeResolver, Response};
 use tauri::{AppHandle, Emitter, EventTarget, Manager, Runtime};
 use tauri_plugin_dialog::DialogExt;
 
@@ -12,6 +13,10 @@ const DOC_EXTENSION: &str = ".json";
 const LINES_EXTENSION: &str = ".jsonl";
 const MISSING_ARGUMENT: &str = "the call is missing its {name} argument";
 const NO_STORE: &str = "the store has not started";
+const NOT_BYTES: &str = "a stored file must be sent as raw bytes";
+const TAKEN_DOC_VERSION_FIELD: &str = "v";
+pub const FILE_ROOT_HEADER: &str = "x-ink-store-root";
+pub const FILE_PATH_HEADER: &str = "x-ink-store-path";
 
 pub const STORE_CHANGED: &str = "store-changed";
 
@@ -66,6 +71,16 @@ pub fn handle<R: Runtime>(invoke: Invoke<R>) -> bool {
         resolver.reject(NO_STORE);
         return true;
     };
+    if call.command == "write_file" {
+        resolver.respond(as_reply(write_file(&store, &message)));
+        return true;
+    }
+
+    if call.command == "read_file" {
+        resolver.respond(read_file(&store, &call).map(Response::new).map_err(as_error));
+        return true;
+    }
+
     match answer_of(&store, &call) {
         Some(answer) => {
             announce_change(&app, change_of(&call, &answer, &by));
@@ -82,6 +97,8 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
         "replace" => replace(store, call),
         "append" => append(store, call),
         "read_lines" => read_lines(store, call),
+        "remove_file" => remove_file(store, call),
+        "take_entry" => take_entry(store, call),
         "list_workspaces" => list_workspaces(store),
         "open_first_workspace" => workspaces::open_first(store).map(|entry| entry.to_json()),
         "create_workspace" => create_workspace(store, call),
@@ -94,7 +111,7 @@ pub fn answer_of(store: &Store, call: &Call) -> Option<Answer> {
 }
 
 pub fn change_of(call: &Call, answer: &Answer, by: &str) -> Option<Value> {
-    if !matches!(call.command.as_str(), "replace" | "append") {
+    if !matches!(call.command.as_str(), "replace" | "append" | "take_entry") {
         return None;
     }
 
@@ -221,7 +238,54 @@ fn respond_off_main_thread<R: Runtime>(resolver: InvokeResolver<R>, work: impl F
 }
 
 fn as_reply(answer: Answer) -> Result<Value, InvokeError> {
-    answer.map_err(|refusal| InvokeError::from(refusal.to_json()))
+    answer.map_err(as_error)
+}
+
+fn as_error(refusal: Refusal) -> InvokeError {
+    InvokeError::from(refusal.to_json())
+}
+
+fn file_place_of(store: &Store, root: &str, path: &str) -> Result<super::Place, Refusal> {
+    place::require_extension(path, FILE_EXTENSION)?;
+    store.place(root, path)
+}
+
+fn header_of<'a, R: Runtime>(message: &'a InvokeMessage<R>, name: &str) -> Result<&'a str, Refusal> {
+    message.headers().get(name).and_then(|value| value.to_str().ok()).ok_or_else(|| missing(name))
+}
+
+fn write_file<R: Runtime>(store: &Store, message: &InvokeMessage<R>) -> Answer {
+    let InvokeBody::Raw(bytes) = message.payload() else {
+        return Err(Refusal::BadCall { detail: NOT_BYTES.to_owned() });
+    };
+    let place = file_place_of(store, header_of(message, FILE_ROOT_HEADER)?, header_of(message, FILE_PATH_HEADER)?)?;
+    store.write_file(&place, bytes)?;
+    Ok(Value::Null)
+}
+
+fn read_file(store: &Store, call: &Call) -> Result<Vec<u8>, Refusal> {
+    store.read_file(&file_place_of(store, call.text("root")?, call.text("path")?)?)
+}
+
+fn take_entry(store: &Store, call: &Call) -> Answer {
+    let root = call.text("root")?;
+    let path = call.text("path")?;
+    place::require_extension(path, DOC_EXTENSION)?;
+    refuse_reserved(root, path)?;
+    let key = call.text("key")?;
+    let mut taken = Value::Null;
+    let written = store.update_doc(&store.place(root, path)?, call.text("reason")?, |held| {
+        let mut next = held.cloned().unwrap_or_default();
+        next.entry(TAKEN_DOC_VERSION_FIELD).or_insert(Value::from(1));
+        taken = next.remove(key).unwrap_or(Value::Null);
+        Ok(next)
+    })?;
+    Ok(json!({ "taken": taken, "rev": written.get("rev").cloned().unwrap_or(Value::Null) }))
+}
+
+fn remove_file(store: &Store, call: &Call) -> Answer {
+    store.remove_file(&file_place_of(store, call.text("root")?, call.text("path")?)?)?;
+    Ok(Value::Null)
 }
 
 fn missing(name: &str) -> Refusal {

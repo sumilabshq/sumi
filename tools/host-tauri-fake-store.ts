@@ -62,6 +62,7 @@ export class FakeStore {
 			replace: () => this.replace(key, args),
 			append: () => void this.lines.set(key, [...(this.lines.get(key) ?? []), args["line"]]),
 			read_lines: () => this.readLines(key),
+			take_entry: () => this.takeEntry(key, String(args["key"])),
 			list_workspaces: () => [...this.known.values()],
 			rename_workspace: () => null,
 			attach_workspace_folder: () => this.known.get(String(args["id"])) ?? null,
@@ -85,6 +86,21 @@ export class FakeStore {
 			doc: doc ?? null,
 			rev: typeof doc?.["rev"] === "number" ? doc["rev"] : 0,
 			quarantined: null,
+		};
+	}
+
+	private takeEntry(key: string, name: string): unknown {
+		const doc: Doc = { ...(this.files.get(key) ?? { v: 1 }) };
+		const taken = doc[name] ?? null;
+		delete doc[name];
+		const rev = Number(doc["rev"] ?? 0) + 1;
+		this.files.set(key, {
+			...doc,
+			rev,
+		});
+		return {
+			taken,
+			rev,
 		};
 	}
 

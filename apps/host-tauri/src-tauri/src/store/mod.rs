@@ -1,6 +1,7 @@
 pub mod atomic;
 pub mod dispatch;
 pub mod docs;
+pub mod files;
 pub mod lines;
 pub mod place;
 pub mod refusal;
@@ -86,6 +87,21 @@ impl Store {
     pub fn append_line(&self, place: &Place, line: &Value) -> Result<(), Refusal> {
         let _held = self.lock()?;
         lines::append(place, line)
+    }
+
+    pub fn write_file(&self, place: &Place, bytes: &[u8]) -> Result<(), Refusal> {
+        let _held = self.lock()?;
+        files::write(place, bytes)
+    }
+
+    pub fn read_file(&self, place: &Place) -> Result<Vec<u8>, Refusal> {
+        let _held = self.lock()?;
+        files::read(place)
+    }
+
+    pub fn remove_file(&self, place: &Place) -> Result<(), Refusal> {
+        let _held = self.lock()?;
+        files::remove(place)
     }
 
     pub fn read_lines(&self, place: &Place, before: Option<u64>, limit: usize) -> Result<LinesRead, Refusal> {

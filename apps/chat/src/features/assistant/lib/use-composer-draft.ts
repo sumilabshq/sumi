@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import type { ChangeEvent, ClipboardEvent, KeyboardEvent } from "react";
+import type { ChangeEvent, ClipboardEvent, KeyboardEvent, RefObject } from "react";
 import { useCommand, useQuery } from "@widgetarium/core/requests";
 import { DraftAttachmentsQuery, HoldDraftTextCommand } from "@widgetarium/assistant";
+import { toast } from "@widgetarium/kit";
 import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";
 import { useAttachesFiles } from "./use-attaches-files.js";
-
-const HOLD_TYPED_AFTER_MS = 400;
 
 export interface DraftAsk {
 	readonly busy: boolean;
@@ -28,14 +27,21 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 	const [draft, setDraft] = useState("");
 	const attach = useAttachesFiles();
 	const { data: drafted } = useQuery(DraftAttachmentsQuery);
-	useHoldsDraftOnLeave(draft);
-	const holdNow = useHoldsDraftWhileTyped({ draft, attachedCount: drafted.length });
+	const sending = useRef<string | null>(null);
+	const holdNow = useHoldsDraft({
+		draft,
+		attachedCount: drafted.length,
+		sending,
+	});
 	const hasInput = draft.trim() !== "" || drafted.length > 0;
 	const sendDraft = (): void => {
 		const said = draft.trim();
 		if (!hasInput) return;
+		sending.current = said;
 		setDraft("");
 		void onSend(said).then((isSent) => {
+			sending.current = null;
+
 			if (!isSent) {
 				setDraft((typed) => (typed === "" ? said : typed));
 				return;
@@ -70,31 +76,41 @@ export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerD
 interface HeldInput {
 	readonly draft: string;
 	readonly attachedCount: number;
+	readonly sending: RefObject<string | null>;
 }
 
-function useHoldsDraftWhileTyped({ draft, attachedCount }: HeldInput): () => void {
+function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void {
 	const holdDraftText = useCommand(HoldDraftTextCommand);
 	const latestHold = useRef(holdDraftText);
 	latestHold.current = holdDraftText;
 	const latestDraft = useRef(draft);
 	latestDraft.current = draft;
+	const hold = (said: string): void => {
+		if (said === "" && sending.current !== null) {
+			console.debug("[widgetarium] the cleared composer is not held: its message is still being sent");
+			return;
+		}
+
+		void latestHold.current.run({ said }).then(showsNotice);
+	};
+	const latestHoldOf = useRef(hold);
+	latestHoldOf.current = hold;
 	useEffect(() => {
-		const timer = setTimeout(() => void latestHold.current.run({ said: draft }), HOLD_TYPED_AFTER_MS);
-		return () => clearTimeout(timer);
+		latestHoldOf.current(draft);
 	}, [draft, attachedCount]);
-	return () => void latestHold.current.run({ said: latestDraft.current });
-}
-
-function useHoldsDraftOnLeave(draft: string): void {
-	const holdDraftText = useCommand(HoldDraftTextCommand);
-	const latestDraft = useRef(draft);
-	latestDraft.current = draft;
-	const latestHold = useRef(holdDraftText);
-	latestHold.current = holdDraftText;
 	useEffect(
 		() => () => {
-			void latestHold.current.run({ said: latestDraft.current });
+			latestHoldOf.current(latestDraft.current);
 		},
 		[],
 	);
+	return () => void latestHold.current.run({ said: latestDraft.current }).then(showsNotice);
+}
+
+function showsNotice(answer: { readonly ok: boolean; readonly output?: { readonly notice: string | null } }): void {
+	const notice = answer.ok ? (answer.output?.notice ?? null) : null;
+
+	if (notice !== null) {
+		toast.error(notice, { id: `draft:${notice}` });
+	}
 }

@@ -6,6 +6,7 @@ use std::time::{Duration, Instant};
 use tauri::EventTarget;
 use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of, change_of, is_studio_target};
 use widgetarium_host_tauri_lib::store::{atomic, workspaces, Refusal, Store, APP_FOLDER};
+use widgetarium_host_tauri_lib::studio_core::quit::QuitFlushes;
 use widgetarium_host_tauri_lib::studio_caller::{refuse_foreign_caller, NOT_FROM_STUDIO};
 
 const SETTINGS: &str = "settings.json";
@@ -203,6 +204,41 @@ fn paging(checks: &mut Checks) {
     checks.check("a repeated id inside one page is shown once", ids_of(&store.read_lines(&place, None, 10).unwrap().lines), ["1", "2", "3", "4", "x", "5"].map(str::to_owned).to_vec());
 }
 
+fn stored_files(checks: &mut Checks) {
+    let home = TempHome::new("files");
+    let store = home.store();
+    let place = store.place("global", "chat/drafts/one/two.bin").unwrap();
+    checks.check("a stored file is written with its folders", store.write_file(&place, &[1, 2, 3]).is_ok(), true);
+    checks.check("and read back byte for byte", store.read_file(&place).ok(), Some(vec![1, 2, 3]));
+    let removed = answer_of(&store, &call_of("remove_file", json!({ "root": "global", "path": "chat/drafts/one/two.bin" })));
+    checks.check("remove_file through the dispatch deletes it", (removed.map(|answer| answer.is_ok()), place.file.exists()), (Some(true), false));
+    let twice = answer_of(&store, &call_of("remove_file", json!({ "root": "global", "path": "chat/drafts/one/two.bin" })));
+    checks.check("removing it again is not an error", twice.map(|answer| answer.is_ok()), Some(true));
+    let not_bin = answer_of(&store, &call_of("remove_file", json!({ "root": "global", "path": "settings.json" })));
+    checks.check("remove_file refuses anything but a .bin", not_bin.and_then(|answer| answer.err()).map(|refusal| refusal.code()), Some("bad-path"));
+}
+
+fn taken_entries(checks: &mut Checks) {
+    let home = TempHome::new("take");
+    let store = home.store();
+    let place = store.place("global", "chat/queues.json").unwrap();
+    store.replace_doc(&place, json!({ "v": 2, "chat:a@gone": [{ "id": "1" }], "chat:b@here": [] }), 0, "seed").unwrap();
+    let take = || answer_of(&store, &call_of("take_entry", json!({ "root": "global", "path": "chat/queues.json", "key": "chat:a@gone", "reason": "claim" })));
+    let first = take().and_then(|answer| answer.ok()).map(|answer| answer["taken"].clone());
+    let second = take().and_then(|answer| answer.ok()).map(|answer| answer["taken"].clone());
+    checks.check("the first taker gets the entry, the second nothing", (first, second), (Some(json!([{ "id": "1" }])), Some(Value::Null)));
+    let left = store.read_doc(&place).unwrap().doc.unwrap();
+    checks.check("the taken entry is gone from the doc and the others stay", (left.get("chat:a@gone").is_none(), left.get("chat:b@here").is_some()), (true, true));
+}
+
+fn quit_waits_for_every_window(checks: &mut Checks) {
+    let flushes = QuitFlushes::default();
+    let windows = vec!["one".to_owned(), "two".to_owned()];
+    checks.check("a quit starts once", (flushes.start(&windows), flushes.start(&windows)), (true, false));
+    checks.check("one saved window is not enough", flushes.heard("one"), false);
+    checks.check("the last saved window lets the app quit", flushes.heard("two"), true);
+}
+
 fn workspace_life(checks: &mut Checks) {
     let home = TempHome::new("workspaces");
     let store = home.store();
@@ -289,6 +325,9 @@ fn main() -> ExitCode {
     quarantine(&mut checks);
     jsonl(&mut checks);
     paging(&mut checks);
+    stored_files(&mut checks);
+    taken_entries(&mut checks);
+    quit_waits_for_every_window(&mut checks);
     workspace_life(&mut checks);
     recent_folders(&mut checks);
     killed_between_write_and_rename(&mut checks);

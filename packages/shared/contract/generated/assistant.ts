@@ -111,6 +111,10 @@ export const TextAskedSchema = z.object({
 
 export const DraftTextSchema = z.object({ said: z.string() });
 
+export const DraftNoticeSchema = z.object({ notice: z.string().nullable() });
+
+export const OpenedDraftSchema = DraftTextSchema.extend(DraftNoticeSchema.shape);
+
 export const ChatOpenedSchema = z.object({ chatId: z.string().min(1) });
 
 export const TallySchema = z.object({
@@ -460,10 +464,11 @@ export const ClearChatCommand = command("assistant/clear-chat")
 	.idempotencyKey(Repeatable);
 export const HoldDraftTextCommand = command("assistant/hold-draft-text")
 	.input(DraftTextSchema)
+	.output(DraftNoticeSchema)
 	.idempotencyKey(PerCall);
 export const OpenChatDraftCommand = command("assistant/open-chat-draft")
 	.input(ChatOpenedSchema)
-	.output(DraftTextSchema)
+	.output(OpenedDraftSchema)
 	.idempotencyKey(PerCall);
 export const TakeDraftCommand = command("assistant/take-draft")
 	.output(TakenDraftSchema)

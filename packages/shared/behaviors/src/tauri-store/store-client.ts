@@ -66,6 +66,11 @@ const DocReadSchema = z.object({
 	quarantined: z.string().nullable(),
 });
 
+const TakenSchema = z.object({
+	taken: z.unknown(),
+	rev: z.number().int().positive(),
+});
+
 const ReplacedSchema = z.object({
 	rev: z.number().int().positive(),
 });
@@ -178,6 +183,11 @@ export class StoreClient {
 		} catch (failure: unknown) {
 			return staleOrThrow(failure);
 		}
+	}
+
+	async takeEntry<Doc>(root: StoreRoot, kind: DocKind<Doc>, key: string, reason: string): Promise<unknown> {
+		const answer = TakenSchema.parse(await callStore(this.invoke, "take_entry", { root, path: kind.file, key, reason }));
+		return answer.taken;
 	}
 
 	async appendLine(root: StoreRoot, file: string, line: { readonly id: string }): Promise<void> {

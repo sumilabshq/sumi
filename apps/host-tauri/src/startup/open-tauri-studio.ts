@@ -11,6 +11,11 @@ import { startTauriAssistant } from "../assistant/tauri-assistant.js";
 import type { TauriAssistant } from "../assistant/tauri-assistant.js";
 import { readChatLogs } from "../chat/tauri-chat-history.js";
 import type { TauriChatLogs } from "../chat/tauri-chat-history.js";
+import { TauriChatDraftShelf } from "../chat/tauri-chat-drafts.js";
+import { tauriDraftFiles } from "../chat/tauri-draft-files.js";
+import { TauriChatQueueShelf } from "../chat/tauri-chat-queues.js";
+import { savesBeforeQuit } from "./saves-before-quit.js";
+import { liveWindowLabels, ownWindowLabel } from "../chat/tauri-windows.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
@@ -41,6 +46,8 @@ interface StartedParts {
 
 interface HeldWorkspaceDocs {
 	readonly logs: TauriChatLogs;
+	readonly chatDrafts: TauriChatDraftShelf;
+	readonly chatQueues: TauriChatQueueShelf;
 }
 
 interface WorkspaceDocs extends HeldWorkspaceDocs {
@@ -56,6 +63,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	const docs = await readWorkspaceDocs(opening);
 	const joined = joinPlaces(opening.workspace.id);
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
+	savesBeforeQuit(docs.flushAll);
 	const core = ipcTransport(opening.workspace.id);
 	const studioApp = startTauriStudioApp(opening.workspace.id, core);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
@@ -64,6 +72,8 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 		}),
 	);
 	const assistant = startTauriAssistant({
+		chatDrafts: docs.chatDrafts,
+		chatQueues: docs.chatQueues,
 		renderMarkdown: tabLinksRenderer((id) => tabFaviconOf(studioApp, id)),
 		workspace: {
 			client: opening.workspaces,
@@ -103,11 +113,29 @@ async function readWorkspaceDocs(opening: StudioOpening): Promise<WorkspaceDocs>
 }
 
 function flushedDocsOf(settings: HeldSettings, docs: HeldWorkspaceDocs): readonly Flushed[] {
-	return [settings, docs.logs.sessions];
+	return [settings, docs.logs.sessions, docs.chatDrafts, docs.chatQueues];
 }
 
 async function readHeldDocs({ store, workspace }: StudioOpening): Promise<HeldWorkspaceDocs> {
-	return { logs: await readChatLogs(store, workspace.id) };
+	const kept = {
+		store,
+		files: tauriDraftFiles,
+		workspaceId: workspace.id,
+	};
+	const [logs, chatDrafts, chatQueues] = await Promise.all([
+		readChatLogs(store, workspace.id),
+		TauriChatDraftShelf.read(kept),
+		TauriChatQueueShelf.read({
+			...kept,
+			ownWindow: ownWindowLabel(),
+			liveWindows: liveWindowLabels,
+		}),
+	]);
+	return {
+		logs,
+		chatDrafts,
+		chatQueues,
+	};
 }
 
 function startedStudioOf(opening: StudioOpening, started: StartedParts): StartedStudio {

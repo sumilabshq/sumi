@@ -1,5 +1,3 @@
-import { ChatDraftsGateway } from "../../../gateways/chat-drafts/chat-drafts.gateway.js";
-import type { ChatDraft } from "../../../gateways/chat-drafts/chat-drafts.gateway.js";
 import { DraftAttachmentsGateway } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import { FileDragGateway } from "../../../gateways/file-drag/file-drag.gateway.js";
@@ -22,12 +20,6 @@ export function saveDrafts(
 	console.debug(`[widgetarium] draft attachments ${namesOf(was)} → ${namesOf(next)} (${reason})`);
 }
 
-export function holdChatDraft(chatDrafts: ChatDraftsGateway, chatId: string, next: ChatDraft): void {
-	const was = chatDrafts.chatDraft(chatId);
-	chatDrafts.saveChatDraft(chatId, next);
-	console.debug(`[widgetarium] chat ${chatId} draft ${draftSaid(was)} → ${draftSaid(next)}`);
-}
-
 export function saveFileDrag(fileDrag: FileDragGateway, next: FileDragState, reason: string): void {
 	const was = fileDragOf(fileDrag.fileDrag());
 	fileDrag.saveFileDrag(next);
@@ -38,8 +30,4 @@ export function saveFileDrag(fileDrag: FileDragGateway, next: FileDragState, rea
 	}
 
 	console.debug(`[widgetarium] file drag ${JSON.stringify(was)} → ${JSON.stringify(now)} (${reason})`);
-}
-
-function draftSaid(draft: ChatDraft | null): string {
-	return draft === null ? "none" : `${JSON.stringify(draft.said)} + ${String(draft.attachments.length)} files`;
 }

@@ -18,6 +18,10 @@ const STORE_COMMANDS: &[&str] = &[
     "replace",
     "append",
     "read_lines",
+    "write_file",
+    "read_file",
+    "remove_file",
+    "take_entry",
     "open_first_workspace",
     "create_workspace",
     "attach_workspace_folder",
@@ -73,7 +77,7 @@ const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
 const FILES_COMMANDS: &[&str] =
     &["read_file", "read_folder", "file_info", "write_file", "append_file", "make_folder", "remove", "rename", "copy"];
 
-const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows"];
+const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "flushed_before_quit"];
 
 fn main() {
     let assistant = InlinedPlugin::new()

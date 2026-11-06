@@ -7,6 +7,7 @@ import { ClaudeOptionsHost } from "./shared/host/claude-options.host.js";
 import { FileDropsHost } from "./shared/host/file-drops.host.js";
 import { FolderLendingHost } from "./shared/host/folder-lending.host.js";
 import { WorkspaceFoldersHost } from "./shared/host/workspace-folders.host.js";
+import { ChatDraftsHost } from "./shared/host/chat-drafts.host.js";
 import {
 	RereadAgentSetupSubscriber,
 	RereadClaudeOptionsSubscriber,
@@ -75,6 +76,7 @@ export const AssistantModule = module("assistant")
 				claudeOptions: ClaudeOptionsHost,
 				drops: FileDropsHost,
 				workspace: WorkspaceFoldersHost,
+				chatDrafts: ChatDraftsHost,
 			},
 		}),
 	)

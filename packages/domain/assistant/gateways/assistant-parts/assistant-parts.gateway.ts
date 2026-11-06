@@ -1,4 +1,5 @@
 import type { ChatDraftsGateway } from "../chat-drafts/chat-drafts.gateway.js";
+import type { ChatDraftShelf } from "../../shared/host/chat-drafts.host.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import type { AttachmentsFolder } from "../../shared/host/attachments-folder.host.js";
 import type { ClaudeOptionsCell } from "../../shared/host/claude-options.host.js";
@@ -56,6 +57,7 @@ export interface TauriHosts {
 	readonly claudeOptions: ClaudeOptionsCell;
 	readonly drops: FileDrops;
 	readonly workspace: WorkspaceFolders;
+	readonly chatDrafts: ChatDraftShelf;
 }
 
 export type AssistantHosts = WebHosts | ObsidianHosts | TauriHosts;
