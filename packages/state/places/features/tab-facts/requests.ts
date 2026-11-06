@@ -1,9 +1,7 @@
-import { Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/data-framework";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
-import { holdsTabs } from "../../shared/lib/tabs/app-abilities.js";
-import { canStep } from "../../shared/lib/tabs/tab-history.js";
 import { AskedLinkSchema } from "../../shared/schema/tabs.schema.js";
 import {
 	AppPageSchema,
@@ -13,6 +11,9 @@ import {
 	LinkFollowedSchema,
 	OwnAppTabAskSchema,
 	OwnAppTabSchema,
+	PressAppActionSchema,
+	TakeActionPressSchema,
+	TakenPressSchema,
 	KeepChatTabsAskSchema,
 	SeenTabSchema,
 	TabTurnMarksSchema,
@@ -20,6 +21,8 @@ import {
 	TakeAskedLinkSchema,
 } from "../../shared/schema/tab-facts.schema.js";
 import { linkRouteOf, navigatedPlan, withLinkAsked, withLinkTaken } from "./lib/link-routes.js";
+import { pressSaidOf, withPressQueued, withPressTaken } from "./lib/action-presses.js";
+import { ownAppTabOf } from "./lib/own-app-tab.js";
 import {
 	forgetRunningTurnsPlan,
 	keepChatTabsPlan,
@@ -71,6 +74,7 @@ const APP_CALLABLE: ReadonlySet<string> = new Set([
 	"places/record-app-page",
 	"places/app-tab",
 	"places/open-link",
+	"places/take-action-press",
 ]);
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
@@ -166,21 +170,30 @@ export const AppTabQuery = query("app-tab")
 	.guard(OwnsAppTabGuard)
 	.inject({ tabs: TabsGateway })
 	.handle(async ({ id }, { tabs }) => {
-		const tab = (await tabs.placedTabs()).tabs.find((held) => held.id === id);
+		const placed = await tabs.placedTabs();
+		const tab = placed.tabs.find((held) => held.id === id);
+		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(placed, tab);
+	});
 
-		if (tab === undefined) {
-			return refuse(NO_TAB.replace("{id}", id));
-		}
+export const PressAppActionCommand = command("press-app-action")
+	.input(PressAppActionSchema)
+	.idempotencyKey(PerCall)
+	.inject({ tabs: TabsGateway })
+	.handle(async (ask, { tabs }) => {
+		const queued = await tabs.movePlacedTabs((placed) => withPressQueued(placed, ask));
+		console.info(`[widgetarium] ${pressSaidOf(ask, queued)}`);
+		return typeof queued === "string" ? refuse(queued) : undefined;
+	});
 
-		return {
-			id: tab.id,
-			app: tab.app,
-			address: tab.lastAddress,
-			title: tab.lastTitle ?? tab.title,
-			chatId: holdsTabs(tab) ? tab.id : null,
-			canGoBack: canStep(tab, "back"),
-			canGoForward: canStep(tab, "forward"),
-		};
+export const TakeActionPressCommand = command("take-action-press")
+	.input(TakeActionPressSchema)
+	.output(TakenPressSchema)
+	.idempotencyKey(Repeatable)
+	.guard(OwnsAppTabGuard)
+	.inject({ tabs: TabsGateway })
+	.handle(async (ask, { tabs }) => {
+		const taken = await tabs.movePlacedTabs((placed) => withPressTaken(placed, ask));
+		return typeof taken === "string" ? refuse(taken) : { id: taken.id, action: taken.action };
 	});
 
 export const RereadAppTabSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {

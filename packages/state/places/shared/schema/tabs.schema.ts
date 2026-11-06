@@ -60,6 +60,30 @@ export const AskedLinkSchema = z.object({
 
 export type AskedLink = z.infer<typeof AskedLinkSchema>;
 
+export const AppActionSchema = z.object({
+	id: z
+		.string()
+		.max(40)
+		.regex(/^[a-z][a-z0-9-]*$/),
+	label: z.string().min(1).max(60),
+	icon: z
+		.string()
+		.max(40)
+		.regex(/^[a-z][a-z0-9-]*$/),
+	isOff: z.boolean().optional(),
+	isBusy: z.boolean().optional(),
+});
+
+export type AppAction = z.infer<typeof AppActionSchema>;
+
+export const PendingPressSchema = z.object({
+	id: z.string(),
+	tab: z.string(),
+	action: z.string(),
+});
+
+export type PendingPress = z.infer<typeof PendingPressSchema>;
+
 export const KeptTabSchema = z.object({
 	id: z.string(),
 	app: AppKindSchema,
@@ -70,6 +94,7 @@ export const KeptTabSchema = z.object({
 	lastAddress: z.string().nullable().default(null),
 	lastTitle: z.string().nullable().default(null),
 	lastFavicon: z.string().nullable().default(null),
+	lastActions: z.array(AppActionSchema).max(6).optional().catch(undefined),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
 	isFolded: z.boolean().default(false),
@@ -111,6 +136,8 @@ export const PlacedTabsSchema = z.object({
 	mintedSplits: z.number().int().nonnegative().default(0),
 	askedLinks: z.array(AskedLinkSchema).optional(),
 	mintedLinks: z.number().int().nonnegative().optional(),
+	pendingPresses: z.array(PendingPressSchema).optional(),
+	mintedPresses: z.number().int().nonnegative().optional(),
 });
 
 export type PlacedTabs = z.infer<typeof PlacedTabsSchema>;

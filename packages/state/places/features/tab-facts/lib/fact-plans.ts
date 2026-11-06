@@ -122,11 +122,11 @@ function isOwnFavicon(app: string, favicon: string): boolean {
 }
 
 function appPageReasonOf(tab: HostTab, recorded: HostTab, dropped: string | null): string {
-	const said = `tab ${tab.id} page ${tab.lastAddress ?? "none"} → ${recorded.lastAddress ?? "none"}, title ${tab.lastTitle ?? "none"} → ${recorded.lastTitle ?? "none"} (the app reported it`;
+	const said = `tab ${tab.id} page ${tab.lastAddress ?? "none"} → ${recorded.lastAddress ?? "none"}, title ${tab.lastTitle ?? "none"} → ${recorded.lastTitle ?? "none"}, actions ${actionIdsSaidOf(tab)} → ${actionIdsSaidOf(recorded)} (the app reported it`;
 	return dropped === null ? `${said})` : `${said}; ${dropped})`;
 }
 
-function withAppPage(tab: HostTab, { address, how, title, favicon }: AppPage): HostTab {
+function withAppPage(tab: HostTab, { address, how, title, favicon, actions }: AppPage): HostTab {
 	const isPushed = how === "push" && address !== undefined && address !== (tab.lastAddress ?? "");
 	const moved = isPushed ? pushedTab(tab, address) : tab;
 	const next = {
@@ -134,13 +134,26 @@ function withAppPage(tab: HostTab, { address, how, title, favicon }: AppPage): H
 		lastAddress: address ?? moved.lastAddress,
 		lastTitle: title ?? moved.lastTitle,
 		lastFavicon: favicon ?? moved.lastFavicon,
+		lastActions: actions ?? moved.lastActions,
 	};
-	const isSame =
-		!isPushed &&
+	return !isPushed && isSameRecord(tab, next) ? tab : next;
+}
+
+function isSameRecord(tab: HostTab, next: HostTab): boolean {
+	return (
 		next.lastAddress === tab.lastAddress &&
 		next.lastTitle === tab.lastTitle &&
-		next.lastFavicon === tab.lastFavicon;
-	return isSame ? tab : next;
+		next.lastFavicon === tab.lastFavicon &&
+		actionsSaidOf(next) === actionsSaidOf(tab)
+	);
+}
+
+function actionsSaidOf(tab: HostTab): string {
+	return JSON.stringify(tab.lastActions ?? []);
+}
+
+function actionIdsSaidOf(tab: HostTab): string {
+	return (tab.lastActions ?? []).map(({ id }) => id).join(",") || "none";
 }
 
 function withTabRecorded(moment: HostTabsMoment, recorded: HostTab): HostTabsMoment {

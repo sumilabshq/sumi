@@ -39,8 +39,10 @@ import {
 	ForgetRunningTurnsCommand,
 	KeepChatTabsCommand,
 	MarkTabSeenCommand,
+	PressAppActionCommand,
 	RecordAppPageCommand,
 	RecordTabTurnCommand,
+	TakeActionPressCommand,
 } from "./features/tab-facts/requests.js";
 import { GoBackInTabCommand, GoForwardInTabCommand } from "./features/tab-history/requests.js";
 import {
@@ -104,6 +106,8 @@ export const PlacesModule = module("places")
 		AppFacesQuery,
 		AppTabQuery,
 		AskedLinksQuery,
+		PressAppActionCommand,
+		TakeActionPressCommand,
 	)
 	.public(
 		RestoreTabsCommand,
