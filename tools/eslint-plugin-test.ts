@@ -30,11 +30,11 @@ const CLIENT_MODULE =
 const TALLY_MODULE =
 	'import { Device, module } from "@widgetarium/data-framework";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").on(Device).public(CountQuery);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
-const NEEDING_MODULE = [
-	'import { Device, module, oneOf } from "@widgetarium/data-framework";',
-	'import { AdapterHost, ProjectHost, Registry } from "./shared/host/canvas.host.js";',
-	'export { AdapterHost, ProjectHost } from "./shared/host/canvas.host.js";',
-	'export const CanvasModule = module("canvas").on(Device).needs(oneOf({ vault: { adapter: AdapterHost, registry: Registry }, project: { project: ProjectHost } }));',
+const CONFIGURED_MODULE = [
+	'import { Device, module } from "@widgetarium/data-framework";',
+	'import type { CanvasConfig } from "./shared/host/canvas.host.js";',
+	'export type { Adapter, CanvasConfig } from "./shared/host/canvas.host.js";',
+	'export const CanvasModule = module("canvas").on(Device).config<CanvasConfig>();',
 	"",
 ].join("\n");
 const PLACED_MODULE =
@@ -254,24 +254,16 @@ tested("module-definition", {
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
 		ok(SERVER_MODULE, "packages/billing/module.ts"),
 		ok(TALLY_MODULE, "packages/tally/module.ts"),
-		ok(NEEDING_MODULE, "packages/notes/module.ts"),
+		ok(CONFIGURED_MODULE, "packages/notes/module.ts"),
 	],
 	invalid: [
 		bad(
-			`${NEEDING_MODULE}export { StrayHost } from "./shared/host/canvas.host.js";`,
+			`${CONFIGURED_MODULE}export { StrayHost } from "./shared/host/canvas.host.js";`,
 			"notTheModule",
 			"packages/notes/module.ts",
 		),
 		bad(
-			NEEDING_MODULE.replace("export { AdapterHost, ProjectHost }", "export { StrayHost as AdapterHost, ProjectHost }"),
-			"notTheModule",
-			"packages/notes/module.ts",
-		),
-		bad(
-			NEEDING_MODULE.replace(
-				'export { AdapterHost, ProjectHost } from "./shared/host/canvas.host.js";',
-				"export { AdapterHost, ProjectHost };",
-			),
+			CONFIGURED_MODULE.replace("export type { Adapter, CanvasConfig }", "export { Adapter, CanvasConfig }"),
 			"notTheModule",
 			"packages/notes/module.ts",
 		),

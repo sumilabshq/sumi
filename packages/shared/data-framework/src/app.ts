@@ -4,17 +4,16 @@ import type { Answer, Refusal } from "./answer";
 import { MemoryDoneKeys } from "./done-keys";
 import type { DoneKeys } from "./done-keys";
 import { EventBus } from "./event-bus";
-import type { NeedsBox, Unboxed } from "./host-needs";
 import { Invalidations } from "./invalidation";
 import { LocalRoutes } from "./local-routes";
 import { Mediator } from "./mediator";
 import type { Sending } from "./mediator";
 import { RequestsModule, readyModuleOf } from "./module";
-import type { HandledModule, NothingProvided, Provided, ReadyModule, ServerParts, StartableModule } from "./module";
+import type { HandledModule, Provided, ReadyModule, ServerParts, StartableModule } from "./module";
 import type { RemoteModule } from "./module-contract";
 import { listenedEventNames, startModuleEvents } from "./module-events";
 import type { DeviceRuns } from "./placement";
-import type { ModuleFacts, ModuleScope, Platform, PlatformModule } from "./platform-module";
+import type { ModuleFacts, ModuleScope, Platform, RunnableModule } from "./platform-module";
 import { QueryWatches } from "./query-watches";
 import { SingleServer, RemoteModules } from "./remote-modules";
 import type { ModuleReach } from "./remote-modules";
@@ -32,7 +31,6 @@ export interface AppHost extends WireHost {
 	readonly doneKeys?: DoneKeys;
 }
 
-export type HostObjects = Readonly<Record<string, unknown>>;
 
 export interface AppStart {
 	readonly modules: readonly StartableModule[];
@@ -40,7 +38,7 @@ export interface AppStart {
 	readonly scope?: ModuleScope;
 	readonly env?: ServerParts["env"];
 	readonly server?: RemoteTransport | undefined;
-	readonly host?: AppHost & HostObjects;
+	readonly host?: AppHost;
 }
 
 export interface StartedApp {
@@ -56,45 +54,30 @@ export interface AppStartOptions {
 	readonly platform?: Platform;
 	readonly scope?: ModuleScope;
 	readonly env?: ServerParts["env"];
-	readonly host?: AppHost & HostObjects;
+	readonly host?: AppHost;
 }
 
-export type HostNeedsOf<M> =
-	M extends PlatformModule<Provided, DeviceRuns, infer N> ? NeedsBox<N> : NeedsBox<NothingProvided>;
-
-type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
-
-type HostOptionOf<N extends Provided> =
-	Record<never, never> extends N ? { readonly host?: AppHost & N } : { readonly host: AppHost & N };
-
-export type LentBy<N extends Provided> = keyof N extends never
-	? [options?: AppStartOptions]
-	: [options: AppStartOptions & HostOptionOf<N>];
-
-export type DeviceModule = PlatformModule<Provided, DeviceRuns, NothingProvided> | HandledModule<void> | ReadyModule;
+export type DeviceModule = RunnableModule<Provided, DeviceRuns> | HandledModule<void> | ReadyModule;
 
 const NO_SERVER = "{name} runs on no module of this app, and no server is configured";
 
-export class AppBuilder<N extends Provided = NothingProvided> {
+export class AppBuilder {
 	constructor(
 		private readonly ranModules: readonly DeviceModule[],
 		private readonly remoteModules: readonly RemoteModule[],
 	) {}
 
-	modules<const M extends readonly DeviceModule[]>(
-		...modules: M
-	): AppBuilder<N & Unboxed<IntersectionOf<HostNeedsOf<M[number]>>>> {
+	modules(...modules: readonly DeviceModule[]): AppBuilder {
 		return new AppBuilder([...this.ranModules, ...modules], this.remoteModules);
 	}
 
-	imports(...modules: readonly RemoteModule[]): AppBuilder<N> {
+	imports(...modules: readonly RemoteModule[]): AppBuilder {
 		return new AppBuilder(this.ranModules, [...this.remoteModules, ...modules]);
 	}
 
-	start(...[options = {}]: LentBy<N>): StartedApp {
-		const host = options.host ?? {};
+	start(options: AppStartOptions = {}): StartedApp {
 		const remote = new RemoteModules(this.remoteModules, noServer);
-		return startApp({ ...options, modules: this.ranModules, host }, remote);
+		return startApp({ ...options, modules: this.ranModules }, remote);
 	}
 }
 
@@ -109,17 +92,6 @@ export function app(start?: AppStart): AppBuilder | StartedApp {
 	return startApp(start, server === undefined ? null : new SingleServer(server));
 }
 
-export function hostProvidedOf(host: HostObjects): Provided {
-	const lent: Record<string, object> = {};
-
-	for (const [key, held] of Object.entries(host)) {
-		if (typeof held === "object" && held !== null) {
-			lent[key] = held;
-		}
-	}
-
-	return lent;
-}
 
 function startApp(start: AppStart, remote: ModuleReach | null): StartedApp {
 	const reportFailure = start.host?.reportFailure ?? reportToConsole;
@@ -219,10 +191,10 @@ function clientRoutesOf(start: AppStart, remote: ModuleReach | null): StartedRou
 	return routesOf({ side: "client", modules: ready, hasAuthenticate: false, hostProvided: {}, remote });
 }
 
-function factsOf({ platform, scope, env = {}, host = {} }: AppStart): ModuleFacts | null {
+function factsOf({ platform, scope, env = {} }: AppStart): ModuleFacts | null {
 	if (platform === undefined || scope === undefined) {
 		return null;
 	}
 
-	return { platform, scope, env, host: hostProvidedOf(host) };
+	return { platform, scope, env };
 }

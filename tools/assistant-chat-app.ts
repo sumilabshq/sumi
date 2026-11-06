@@ -25,18 +25,21 @@ export function memoryFolder(): MemoryFolder {
 
 export function chatAppOver(port: AssistantPort, privateFolder: MemoryFolder = memoryFolder()): StartedApp {
 	return app()
-		.modules(MascotModule, AssistantModule)
-		.start({
-			platform: "browser",
-			scope: {
-				workspaceId: "assistant-chat",
-			},
-			host: {
+		.modules(
+			MascotModule,
+			AssistantModule({
+				kind: "obsidian",
 				obsidianAssistant: port,
 				attachments: {
 					folder: SHOT_ATTACHMENTS,
 					files: privateFolder,
 				},
+			}),
+		)
+		.start({
+			platform: "browser",
+			scope: {
+				workspaceId: "assistant-chat",
 			},
 		});
 }

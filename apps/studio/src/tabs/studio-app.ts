@@ -1,29 +1,33 @@
-import { AppHostModule, CoreChangesHost } from "@widgetarium/app-host/module";
+import { AppHostModule } from "@widgetarium/app-host/module";
+import type { CoreChanges } from "@widgetarium/app-host/module";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
-import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
-import { BrowserModule, BrowserPagesIpcHost } from "@widgetarium/browser/module";
+import { BrowserModule } from "@widgetarium/browser/module";
+import type { BrowserPagesIpc } from "@widgetarium/browser/module";
 import { CommandMenuModule } from "@widgetarium/command-menu/module";
 import { app, localTransport } from "@widgetarium/data-framework";
-import type { HeldBy, Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { DeviceModule, Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
-import { LayoutModule, StudioWindowsHost } from "@widgetarium/layout/module";
+import { LayoutModule } from "@widgetarium/layout/module";
+import type { StudioWindows } from "@widgetarium/layout/module";
 import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
 import { QuestionsModule } from "@widgetarium/questions";
 import { QuestionsModule as RunnableQuestionsModule } from "@widgetarium/questions/module";
 import { TasksModule } from "@widgetarium/tasks";
+import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
 import { FileSystemModule } from "@widgetarium/file-system/module";
+import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
-export type TauriStudioLent = HeldBy<{
-	store: typeof StoreClient;
-	studioWindows: typeof StudioWindowsHost;
-	coreChanges: typeof CoreChangesHost;
-	browserIpc: typeof BrowserPagesIpcHost;
-}>;
+export interface TauriStudioLent {
+	readonly store: StoreClient;
+	readonly windows: StudioWindows;
+	readonly coreChanges: CoreChanges;
+	readonly ipc: BrowserPagesIpc;
+}
 
 export interface StudioAppAsk {
 	readonly platform: Platform;
@@ -35,9 +39,9 @@ export interface StudioAppAsk {
 export function startStudioApp({ platform, workspaceId, core, lent }: StudioAppAsk): StartedApp {
 	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
-		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
+		.modules(...studioModulesOf(lent))
 		.imports(PlacesModule.over(served), TasksModule.over(served), QuestionsModule.over(served))
-		.start({ platform, scope: { workspaceId }, ...(lent === undefined ? {} : { host: lent }) });
+		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
 }
@@ -45,14 +49,18 @@ export function startStudioApp({ platform, workspaceId, core, lent }: StudioAppA
 export function startCoreInProcess(workspaceId: string): RemoteTransport {
 	const local = localTransport();
 	server()
-		.modules(RunnablePlacesModule, FileSystemModule, RunnableQuestionsModule, ...APP_MODULES)
+		.modules(
+			RunnablePlacesModule({ store: new StoreClient(memoryStoreInvoke()) }),
+			FileSystemModule,
+			RunnableQuestionsModule,
+			RunnableTasksModule({ file: boardFileInMemory() }),
+			TerminalModule,
+		)
 		.listen(local)
 		.start({
 			env: {},
 			scope: { workspaceId },
 			host: {
-				file: boardFileInMemory(),
-				store: new StoreClient(memoryStoreInvoke()),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
@@ -65,6 +73,21 @@ export async function restoreTabs(studioApp: StartedApp): Promise<void> {
 	if (!answer.ok) {
 		console.error(`[widgetarium] the studio could not restore its tabs: ${answer.reason}`);
 	}
+}
+
+function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
+	if (lent === undefined) {
+		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule];
+	}
+
+	const { store, windows, coreChanges, ipc } = lent;
+	return [
+		LayoutModule({ tauri: { store, windows } }),
+		BrowserModule({ tauri: { ipc } }),
+		WorkspacesModule({ tauri: { store } }),
+		AppHostModule({ tauri: { store, coreChanges } }),
+		CommandMenuModule,
+	];
 }
 
 function boardFileInMemory(): BoardFile {

@@ -1,5 +1,5 @@
-import type { HostFacts, Platform } from "@widgetarium/data-framework";
-import type { LayoutHost } from "../../shared/host/layout.host.js";
+import type { ConfigFacts, Platform } from "@widgetarium/data-framework";
+import type { LayoutConfig } from "../../shared/host/layout.host.js";
 import type { FrameSidesGateway } from "../frame-sides/frame-sides.gateway.js";
 import type { FrameWidthsGateway } from "../frame-widths/frame-widths.gateway.js";
 import type { PaneTreeGateway } from "../pane-tree/pane-tree.gateway.js";
@@ -19,9 +19,9 @@ const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => Layo
 	server: () => serverLayoutParts(),
 };
 
-export function layoutPartsOn({ platform, scope, host }: HostFacts<LayoutHost>): LayoutParts {
-	if (host.kind === "tauri") {
-		return tauriLayoutParts(scope.workspaceId, host.store, host.studioWindows);
+export function layoutPartsOn({ platform, scope, config }: ConfigFacts<LayoutConfig>): LayoutParts {
+	if (config.tauri !== undefined) {
+		return tauriLayoutParts(scope.workspaceId, config.tauri.store, config.tauri.windows);
 	}
 
 	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);

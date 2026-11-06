@@ -35,12 +35,16 @@ class FakeSystemScheme implements SystemScheme {
 const system = new FakeSystemScheme();
 const local = localTransport();
 const served = server()
-	.modules(AppearanceModule)
+	.modules(
+		AppearanceModule({
+			systemScheme: system,
+		}),
+	)
 	.listen(local)
 	.start({
 		env: {},
 		scope: { workspaceId: "checks" },
-		host: { systemScheme: system, authenticate: new AppCallerAuthenticate() },
+		host: { authenticate: new AppCallerAuthenticate() },
 	});
 const studio = app().imports(AppearanceContract.over(local)).start();
 const frame = app()

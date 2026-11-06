@@ -8,9 +8,9 @@ export type TasksParts = {
 	readonly clock: ClockGateway;
 };
 
-export function tasksPartsOn({ host }: { readonly host: { readonly file: BoardFile } }): TasksParts {
+export function tasksPartsOn({ config }: { readonly config: { readonly file: BoardFile } }): TasksParts {
 	return {
-		tasks: new FileTasksGateway(host.file),
+		tasks: new FileTasksGateway(config.file),
 		clock: new SystemClockGateway(),
 	};
 }

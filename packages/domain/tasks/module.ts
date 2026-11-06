@@ -1,6 +1,6 @@
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { tasksPartsOn } from "./gateways/tasks-parts/tasks-parts.gateway.js";
-import { TASKS_HOST_NEEDS } from "./shared/host/tasks-host.js";
+import type { TasksConfig } from "./shared/host/tasks-host.js";
 import {
 	AttachToTaskCommand,
 	CheckCriterionCommand,
@@ -33,11 +33,11 @@ import {
 	SweepStaleTasksCommand,
 } from "./features/supervision/requests.js";
 
-export type { BoardFile } from "./shared/host/tasks-host.js";
+export type { BoardFile, TasksConfig } from "./shared/host/tasks-host.js";
 
 export const TasksModule = module("tasks")
 	.on(Server)
-	.needs(TASKS_HOST_NEEDS)
+	.config<TasksConfig>()
 	.guard(PublicGuard)
 	.subscribers(RereadTasksSubscriber)
 	.public(BoardQuery, TasksQuery, TaskQuery, SearchTasksQuery, ChatTaskLineQuery, TaskTrailerQuery)

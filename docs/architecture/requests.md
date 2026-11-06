@@ -88,27 +88,26 @@ export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_inpu
 - **Views never touch events.** A view reads with `useQuery` and acts with `useCommand`; events are inside modules: subscribers handle them and call `invalidate` to re-read queries. A view never emits or subscribes to an event.
 - **Where it lives.** An event a gateway is the source of lives beside it, `gateways/<gateway>/<gateway>.events.ts`; an emitted event in the feature that emits it, or `shared/events/<topic>.events.ts` when two features use it.
 
-## What a module needs from the host
+## A module's config
 
-`module("tasks").on(Device).needs({ file: BoardFileHost })` names live objects only the host has (a file it opened, a running agent); `provide(({ platform, scope, env, host }) => ...)` gets `host` typed to them, and `app()...start({ platform, scope, host: { file } })` must give them: a missing one is a type error and a start refusal ("tasks needs file: the host did not provide it as a BoardFile"). The host lends raw system objects only, never a module's gateway; the module builds its gateways on them.
-
-**An object with no runtime class is a `hostObject`.** An abstract class is checked by `instanceof`; an interface (a `BoardFile`, a `StartedProject`) has nothing to check, so the module names it with a guard, in its own `shared/host/<x>.host.ts`, and `module.ts` re-exports it so a host imports it from the `"./module"` entry (never from `"."`). A value the guard refuses is refused at start with the module, the key and the token's name.
+A module that needs live objects only its starter has (a store, a file it opened, a running agent) declares their shape with `.config<C>()`, and the module becomes callable: whoever starts it passes its config where it lists it, `TasksModule({ file })`, and `provide(({ platform, scope, env, config }) => ...)` receives it. The config is the module's own: no other module sees it. A config with a required field makes the uncalled module a type error in `.modules(...)`; a config whose fields are all optional lets the module stand uncalled, with an empty config. `XModule.with(fakes)` still skips config and `provide` alike. The starter passes raw objects only, never a module's gateway; the module builds its gateways on them. The config's types live in the module's `shared/host/<x>.host.ts`, and `module.ts` re-exports them as types.
 
 ```ts skip-check
-export const AdapterHost = hostObject("DataAdapter", isDataAdapter);
-module("canvas").on(Device).needs({ adapter: AdapterHost });
+export const TasksModule = module("tasks").on(Server).config<{ readonly file: BoardFile }>().public(…).provide(({ config }) => tasksPartsOn(config));
+server().modules(TasksModule({ file })).start({ env, scope });
 ```
 
-**One of several sets is `oneOf`.** `provide` gets `host` as a union tagged by the set's name, and `start({ host })` must lend exactly one set: lending parts of two, or none, is a type error and a start refusal ("canvas needs one of: folder {adapter, registry}, project {project}; the host lent parts of folder and project"); a set with a key missing names that key. One set may be empty (`oneOf({ tauri: { store: StoreClient }, elsewhere: {} })`): it is taken when the host lends none of the other sets' keys, so a module needs host objects on one host and runs on its own parts everywhere else.
+**A module mounted several ways takes a union with `kind`.** The starter names the variant, and `provide` branches on it:
 
 ```ts skip-check
 module("canvas")
 	.on(Device)
-	.needs(oneOf({ folder: { adapter: AdapterHost, registry: WidgetRegistry }, project: { project: ProjectHost } }))
-	.provide(({ host }) =>
-		host.kind === "folder" ? folderParts(host.adapter, host.registry) : projectParts(host.project),
-	);
+	.config<{ readonly kind: "vault"; readonly adapter: DataAdapter } | { readonly kind: "project"; readonly project: StartedProject }>()
+	.provide(({ config }) => (config.kind === "vault" ? vaultParts(config.adapter) : projectParts(config.project)));
+CanvasModule({ kind: "project", project });
 ```
+
+**Objects only one host has go in an optional field.** `LayoutModule` takes `{ tauri?: { store, windows } }`: the Tauri host calls `LayoutModule({ tauri: { store, windows } })`, every other starter lists `LayoutModule` uncalled, and `provide` picks its Tauri parts only when `config.tauri` is there.
 
 ## A module
 
@@ -129,10 +128,10 @@ export const BillingModule = module("billing")
 	.provide((facts) => billingPartsOn(facts));
 ```
 
-- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.needs`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
+- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.config`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
 - **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries, commands and public events are listed together. A request named twice is refused when the module is defined.
 - **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `emits` list, its public events and the events its own subscribers hear too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
-- **`.provide((facts) => parts)`** receives `{ platform, scope, env, host }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
+- **`.provide((facts) => parts)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
 - **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app().modules(LayoutModule.with(fakes)).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
 
 ## Sending to another module

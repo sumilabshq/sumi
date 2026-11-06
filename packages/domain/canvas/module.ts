@@ -1,10 +1,6 @@
-import { Device, module, oneOf } from "@widgetarium/data-framework";
+import { Device, module } from "@widgetarium/data-framework";
 import { canvasPartsOn } from "./gateways/canvas-parts/canvas-parts.gateway.js";
-import { AgentJobsHost } from "./shared/host/agent-jobs.host.js";
-import { DataAdapterHost } from "./shared/host/data-adapter.host.js";
-import { DrawingSurfaceHost } from "./shared/host/drawing-surface.host.js";
-import { StartedProjectHost } from "./shared/host/started-project.host.js";
-import { WidgetRegistryHost } from "./shared/host/widget-registry.host.js";
+import type { CanvasHosts } from "./gateways/canvas-parts/canvas-parts.gateway.js";
 import {
 	DrawingQuery,
 	RereadFieldSubscriber,
@@ -67,27 +63,12 @@ import {
 	RereadViewSubscriber,
 } from "./features/view/requests.js";
 
-export { AgentJobsHost } from "./shared/host/agent-jobs.host.js";
-export { DataAdapterHost } from "./shared/host/data-adapter.host.js";
-export { DrawingSurfaceHost } from "./shared/host/drawing-surface.host.js";
-export { StartedProjectHost } from "./shared/host/started-project.host.js";
-export { WidgetRegistryHost } from "./shared/host/widget-registry.host.js";
+export type { AgentJobs } from "./shared/host/agent-jobs.host.js";
+export type { CanvasHosts } from "./gateways/canvas-parts/canvas-parts.gateway.js";
 
 export const CanvasModule = module("canvas")
 	.on(Device)
-	.needs(
-		oneOf({
-			vault: {
-				adapter: DataAdapterHost,
-				registry: WidgetRegistryHost,
-				drawingHost: DrawingSurfaceHost,
-				agentJobs: AgentJobsHost,
-			},
-			project: {
-				project: StartedProjectHost,
-			},
-		}),
-	)
+	.config<CanvasHosts>()
 	.subscribers(
 		RereadFieldSubscriber,
 		RereadFieldForDesignSubscriber,

@@ -62,14 +62,14 @@ export interface TauriHosts {
 
 export type AssistantHosts = WebHosts | ObsidianHosts | TauriHosts;
 
-export function assistantPartsOn({ host }: { readonly host: AssistantHosts }): AssistantParts {
-	if (host.kind === "tauri") {
-		return tauriAssistantParts(host);
+export function assistantPartsOn({ config }: { readonly config: AssistantHosts }): AssistantParts {
+	if (config.kind === "tauri") {
+		return tauriAssistantParts(config);
 	}
 
-	if (host.kind === "obsidian") {
-		return obsidianAssistantParts(host);
+	if (config.kind === "obsidian") {
+		return obsidianAssistantParts(config);
 	}
 
-	return webAssistantParts(host);
+	return webAssistantParts(config);
 }

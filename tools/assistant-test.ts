@@ -262,14 +262,16 @@ function chatOver(parts: AssistantParts): StartedApp {
 
 function webChatApp(): StartedApp {
 	return app()
-		.modules(AssistantModule)
+		.modules(
+			AssistantModule({
+				kind: "web",
+				webAssistant: NO_ASSISTANT,
+			}),
+		)
 		.start({
 			platform: "browser",
 			scope: {
 				workspaceId: "assistant-web",
-			},
-			host: {
-				webAssistant: NO_ASSISTANT,
 			},
 		});
 }

@@ -38,10 +38,10 @@ export interface ProjectHosts {
 
 export type CanvasHosts = VaultHosts | ProjectHosts;
 
-export function canvasPartsOn({ host }: { readonly host: CanvasHosts }): CanvasParts {
-	if (host.kind === "vault") {
-		return vaultCanvasParts(host);
+export function canvasPartsOn({ config }: { readonly config: CanvasHosts }): CanvasParts {
+	if (config.kind === "vault") {
+		return vaultCanvasParts(config);
 	}
 
-	return projectCanvasParts(host);
+	return projectCanvasParts(config);
 }

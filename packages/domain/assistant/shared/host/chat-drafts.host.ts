@@ -1,5 +1,3 @@
-import { isObject } from "@widgetarium/data-framework/is-object";
-import { hostObject } from "@widgetarium/data-framework";
 import type { ChatDraft } from "../schema/chat-draft.schema.js";
 
 export interface ChatDraftShelf {
@@ -7,10 +5,4 @@ export interface ChatDraftShelf {
 	keep(chatId: string, draft: ChatDraft): void;
 	problemOf(chatId: string): string | null;
 	ready(chatId: string): Promise<void>;
-}
-
-export const ChatDraftsHost = hostObject<ChatDraftShelf>("ChatDraftShelf", isChatDraftShelf);
-
-function isChatDraftShelf(held: unknown): held is ChatDraftShelf {
-	return isObject(held) && typeof held["draftOf"] === "function" && typeof held["keep"] === "function" && typeof held["problemOf"] === "function" && typeof held["ready"] === "function";
 }

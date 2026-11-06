@@ -282,14 +282,16 @@ for (const [what, failure, prompt] of PROMPTED) {
 
 const chatSent: string[] = [];
 const chatApp = app()
-	.modules(AssistantModule)
+	.modules(
+		AssistantModule({
+			kind: "web",
+			webAssistant: NO_ASSISTANT,
+		}),
+	)
 	.start({
 		platform: "browser",
 		scope: {
 			workspaceId: "browser-state",
-		},
-		host: {
-			webAssistant: NO_ASSISTANT,
 		},
 	});
 const chatHost = document.createElement("div");

@@ -4,12 +4,12 @@ import { server } from "@widgetarium/data-framework/server";
 import type { StartedServer } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { ServerLeases } from "../features/app-frame/lib/server-leases.js";
-import type { AssistantHostObjects } from "./chat-app.js";
+import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { hostForChat } from "./chat-apps.js";
 
 interface FrameChatServersAsk {
 	readonly workspaceId: string;
-	readonly host: AssistantHostObjects;
+	readonly host: AssistantHosts;
 }
 
 export function frameChatServersOf(ask: FrameChatServersAsk): ServerLeases {
@@ -23,7 +23,7 @@ export function frameChatServersOf(ask: FrameChatServersAsk): ServerLeases {
 
 function startChatServer(local: LocalTransport, { workspaceId, host }: FrameChatServersAsk): StartedServer {
 	return server()
-		.modules(AssistantModule)
+		.modules(AssistantModule(host))
 		.listen(local)
 		.start({
 			env: {},
@@ -31,7 +31,6 @@ function startChatServer(local: LocalTransport, { workspaceId, host }: FrameChat
 				workspaceId,
 			},
 			host: {
-				...host,
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});

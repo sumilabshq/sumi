@@ -33,6 +33,7 @@ const routesFor = frameRoutesOf({
 	core,
 	studioApp: app().imports(PlacesModule.over(core)).start(),
 	assistantHost: {
+		kind: "web",
 		webAssistant: echoAssistantPort(),
 	},
 	nativeWebPages: null,

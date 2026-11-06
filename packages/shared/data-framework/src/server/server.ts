@@ -6,9 +6,6 @@ import { refusalOf } from "../answer";
 import type { Answer, Refusal } from "../answer";
 import { MemoryDoneKeys } from "../done-keys";
 import type { DoneKeys } from "../done-keys";
-import { hostProvidedOf } from "../app";
-import type { NeedsBox, Unboxed } from "../host-needs";
-import type { HostObjects } from "../app";
 import { EventBus } from "../event-bus";
 import { LocalRoutes } from "../local-routes";
 import type { Route } from "../local-routes";
@@ -16,7 +13,6 @@ import { Mediator } from "../mediator";
 import { readyModuleOf } from "../module";
 import type {
 	HandledModule,
-	NothingProvided,
 	Provided,
 	ReadyModule,
 	ServerParts,
@@ -25,7 +21,7 @@ import type {
 import type { RemoteModule } from "../module-contract";
 import { listenedEventNames, startModuleEvents } from "../module-events";
 import type { ServerRuns } from "../placement";
-import type { ModuleFacts, ModuleScope, PlatformModule } from "../platform-module";
+import type { ModuleFacts, ModuleScope, RunnableModule } from "../platform-module";
 import { MemoryRateLimits } from "../rate-limits";
 import type { RateLimits } from "../rate-limits";
 import { RemoteModules, notOverNetwork } from "../remote-modules";
@@ -52,29 +48,16 @@ interface ServerStart {
 	readonly modules: readonly StartableServerModule[];
 	readonly env: ServerParts["env"];
 	readonly scope?: ModuleScope;
-	readonly host?: ServerHost & HostObjects;
+	readonly host?: ServerHost;
 }
 
 interface ServerStartOptions {
 	readonly env: ServerParts["env"];
 	readonly scope?: ModuleScope;
-	readonly host?: ServerHost & HostObjects;
+	readonly host?: ServerHost;
 }
 
-type ServerHostOptionOf<N extends Provided> =
-	Record<never, never> extends N ? { readonly host?: ServerHost & N } : { readonly host: ServerHost & N };
-
-type ServerLentBy<N extends Provided> = keyof N extends never
-	? ServerStartOptions
-	: ServerStartOptions & ServerHostOptionOf<N>;
-
-type ServerHostNeedsOf<M> =
-	M extends PlatformModule<Provided, ServerRuns, infer N> ? NeedsBox<N> : NeedsBox<NothingProvided>;
-
-type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
-
-export type ServerSideModule =
-	PlatformModule<Provided, ServerRuns, NothingProvided> | HandledModule<ServerParts> | ReadyModule;
+export type ServerSideModule = RunnableModule<Provided, ServerRuns> | HandledModule<ServerParts> | ReadyModule;
 
 export interface StartedServer extends ServingServer {
 	readonly fetch: (request: Request) => Promise<Response>;
@@ -94,24 +77,22 @@ interface ServerPlan {
 	readonly listeners: readonly ListeningTransport[];
 }
 
-export class ServerBuilder<N extends Provided = NothingProvided> {
+export class ServerBuilder {
 	constructor(private readonly plan: ServerPlan) {}
 
-	modules<const M extends readonly ServerSideModule[]>(
-		...modules: M
-	): ServerBuilder<N & Unboxed<IntersectionOf<ServerHostNeedsOf<M[number]>>>> {
+	modules(...modules: readonly ServerSideModule[]): ServerBuilder {
 		return new ServerBuilder({ ...this.plan, ranModules: [...this.plan.ranModules, ...modules] });
 	}
 
-	imports(...modules: readonly RemoteModule[]): ServerBuilder<N> {
+	imports(...modules: readonly RemoteModule[]): ServerBuilder {
 		return new ServerBuilder({ ...this.plan, remoteModules: [...this.plan.remoteModules, ...modules] });
 	}
 
-	listen(transport: ListeningTransport): ServerBuilder<N> {
+	listen(transport: ListeningTransport): ServerBuilder {
 		return new ServerBuilder({ ...this.plan, listeners: [...this.plan.listeners, transport] });
 	}
 
-	start({ env, scope, host = {} }: ServerLentBy<N>): StartedServer {
+	start({ env, scope, host = {} }: ServerStartOptions): StartedServer {
 		// TODO: service tokens for server-to-server identity
 		const remote = new RemoteModules(this.plan.remoteModules, notHere);
 		const started = startServer(
@@ -141,7 +122,7 @@ export function server(start?: ServerStart): ServerBuilder | StartedServer {
 
 function startServer({ modules, env, scope, host = {} }: ServerStart, remote: ModuleReach | null): StartedServer {
 	const facts: ModuleFacts | null =
-		scope === undefined ? null : { platform: "server", scope, env, host: hostProvidedOf(host) };
+		scope === undefined ? null : { platform: "server", scope, env };
 	const started = routesOf({
 		side: "server",
 		modules: modules.map((module) => readyModuleOf(module, { env }, facts)),

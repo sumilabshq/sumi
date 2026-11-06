@@ -20,7 +20,7 @@ import { chatDeliveryPortOf } from "../assistant/chat-delivery.js";
 import { ChatDeliveryContext } from "../assistant/chat-delivery-context.js";
 import { ChatApps } from "../assistant/chat-apps.js";
 import { AskComposerContext } from "../features/command-menu/lib/ask-composer-context.js";
-import type { AssistantHostObjects } from "../assistant/chat-app.js";
+import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
 import { AppPlate } from "../frame/app-plate.js";
@@ -38,7 +38,7 @@ import { frameRoutesOf } from "../tabs/frame-routes.js";
 import { startStudioAppearance } from "../tabs/studio-appearance.js";
 import type { StudioAppearance } from "../tabs/studio-appearance.js";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
-import type { NativeWebPages } from "../features/app-frame/lib/web-page-hosts.js";
+import type { NativeWebPages } from "@widgetarium/web-page/module";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -70,7 +70,7 @@ export interface StudioStart extends ProjectStart {
 	readonly appId?: string;
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
-	readonly assistantHost?: AssistantHostObjects;
+	readonly assistantHost?: AssistantHosts;
 	readonly studioApp?: StartedApp;
 	readonly core?: RemoteTransport;
 	readonly nativeWebPages?: NativeWebPages;
@@ -260,8 +260,8 @@ function startedChatOf(
 	};
 }
 
-function assistantHostOf(start: StudioStart): AssistantHostObjects {
-	return start.assistantHost ?? { webAssistant: start.assistant ?? NO_ASSISTANT };
+function assistantHostOf(start: StudioStart): AssistantHosts {
+	return start.assistantHost ?? { kind: "web", webAssistant: start.assistant ?? NO_ASSISTANT };
 }
 
 function lentPortsOf(opened: OpenedApp, start: StudioStart): Pick<StartedStudio, LentPort> {

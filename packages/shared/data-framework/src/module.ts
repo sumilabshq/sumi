@@ -3,13 +3,18 @@ import type { AnyEvent } from "./event";
 import type { Guard, OpenGuard } from "./guard";
 import type { AnyHandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
-import { NOTHING_NEEDED, lentFor, withNeeds } from "./host-needs";
-import type { HeldBy, HostNeeds, Lent, NeedSets, NeedsShape, OneOf, OneSetLent, OneSetTagged } from "./host-needs";
 import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 import type { ModuleContract } from "./module-contract";
-import { PlatformModule } from "./platform-module";
-import type { AnyPlatformModule, HostFacts, ModuleFacts } from "./platform-module";
+import { PlatformModule, isRunnableModule } from "./platform-module";
+import type {
+	AnyPlatformModule,
+	CallableModule,
+	ConfigFacts,
+	ModuleFacts,
+	ModuleOf,
+	NoConfig,
+} from "./platform-module";
 import type { Placement } from "./placement";
 import type { AnyRequest } from "./request";
 import type { AnySubscriber } from "./subscriber";
@@ -37,7 +42,6 @@ export interface ModuleDefinition {
 	readonly publicEvents: readonly AnyEvent[];
 	readonly ownedEvents: readonly AnyEvent[];
 	readonly listedSubscribers: readonly AnySubscriber[];
-	readonly hostNeeds: HostNeeds;
 }
 
 export type ImportedModule = ModuleContract | AnyPlatformModule;
@@ -90,7 +94,6 @@ export class ServerModule<
 	readonly publicEvents: readonly AnyEvent[] = [];
 	readonly ownedEvents: readonly AnyEvent[] = [];
 	readonly listedSubscribers: readonly AnySubscriber[] = [];
-	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
 	constructor(
 		private readonly plan: ServerPlan<P>,
@@ -131,7 +134,6 @@ export class ClientModule<P extends Provided = NothingProvided, Q = void> implem
 	readonly publicEvents: readonly AnyEvent[] = [];
 	readonly ownedEvents: readonly AnyEvent[] = [];
 	readonly listedSubscribers: readonly AnySubscriber[] = [];
-	readonly hostNeeds: HostNeeds = NOTHING_NEEDED;
 
 	constructor(
 		readonly name: string,
@@ -170,7 +172,6 @@ interface ModulePlan<R extends Runs> {
 	readonly steps: readonly Step[];
 	readonly publicEvents: readonly AnyEvent[];
 	readonly subscribers: readonly AnySubscriber[];
-	readonly needs: HostNeeds;
 }
 
 type ServerOnlyListed<R extends Runs, L> = R extends "client"
@@ -195,7 +196,6 @@ export class ModuleDraft {
 			steps: [],
 			publicEvents: [],
 			subscribers: [],
-			needs: NOTHING_NEEDED,
 		});
 	}
 }
@@ -203,8 +203,7 @@ export class ModuleDraft {
 export class RequestsModule<
 	H extends readonly AnyHandledRequest[],
 	R extends Runs,
-	N extends Provided = NothingProvided,
-	G extends Lent = N,
+	C extends object = NoConfig,
 > implements ModuleDefinition {
 	readonly name: string;
 	readonly runs: R;
@@ -214,7 +213,6 @@ export class RequestsModule<
 	readonly publicEvents: readonly AnyEvent[];
 	readonly ownedEvents: readonly AnyEvent[];
 	readonly listedSubscribers: readonly AnySubscriber[];
-	readonly hostNeeds: HostNeeds;
 
 	constructor(private readonly plan: ModulePlan<R>) {
 		this.name = plan.name;
@@ -225,10 +223,9 @@ export class RequestsModule<
 		this.publicEvents = plan.publicEvents.map((listed) => listed.inModule(plan.name));
 		this.listedSubscribers = plan.subscribers.map((listed) => subscriberInModule(listed, plan.name));
 		this.ownedEvents = ownedEventsOf(this.publicEvents, this.listedSubscribers, plan.name);
-		this.hostNeeds = plan.needs;
 	}
 
-	public<const L extends readonly PublicItem[]>(...listed: L): RequestsModule<[...H, ...RequestsIn<L>], R, N, G> {
+	public<const L extends readonly PublicItem[]>(...listed: L): RequestsModule<[...H, ...RequestsIn<L>], R, C> {
 		return new RequestsModule({
 			...this.plan,
 			listed: this.withListed(listed.filter(isHandledRequest)),
@@ -238,7 +235,7 @@ export class RequestsModule<
 
 	serverOnly<const L extends readonly AnyHandledRequest[]>(
 		...listed: ServerOnlyListed<R, L>
-	): RequestsModule<[...H, ...L], R, N, G> {
+	): RequestsModule<[...H, ...L], R, C> {
 		const requests = listed.filter(isHandledRequest);
 		return new RequestsModule({
 			...this.plan,
@@ -247,48 +244,44 @@ export class RequestsModule<
 		});
 	}
 
-	imports(...modules: readonly ImportedModule[]): RequestsModule<H, R, N, G> {
+	imports(...modules: readonly ImportedModule[]): RequestsModule<H, R, C> {
 		return new RequestsModule({
 			...this.plan,
 			imports: [...this.plan.imports, ...modules.map(nameOfImported)],
 		});
 	}
 
-	subscribers(...subscribers: readonly AnySubscriber[]): RequestsModule<H, R, N, G> {
+	subscribers(...subscribers: readonly AnySubscriber[]): RequestsModule<H, R, C> {
 		return new RequestsModule({
 			...this.plan,
 			subscribers: [...this.plan.subscribers, ...subscribers],
 		});
 	}
 
-	needs<const S extends NeedSets>(needs: OneOf<S>): RequestsModule<H, R, N & OneSetLent<S>, G & OneSetTagged<S>>;
-	needs<const M extends NeedsShape>(needs: M): RequestsModule<H, R, N & HeldBy<M>, G & HeldBy<M>>;
-	needs(needs: NeedsShape | OneOf<NeedSets>): RequestsModule<H, R, Provided, Lent> {
-		return new RequestsModule({
-			...this.plan,
-			needs: withNeeds(this.plan.name, this.plan.needs, needs),
-		});
+	config<K extends object>(): RequestsModule<H, R, K> {
+		return new RequestsModule(this.plan);
 	}
 
-	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H, R, N, G>;
+	guard<A extends Added>(step: Guard<unknown, A, Inject> | OpenGuard): RequestsModule<H, R, C>;
 	guard(step: StepNeedingOptions): TakesOptionsFirst;
-	guard(step: Step | StepNeedingOptions): RequestsModule<H, R, N, G> | TakesOptionsFirst {
+	guard(step: Step | StepNeedingOptions): RequestsModule<H, R, C> | TakesOptionsFirst {
 		return new RequestsModule({
 			...this.plan,
 			steps: [...this.plan.steps, requireStep(step)],
 		});
 	}
 
-	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H, R, N, G>;
+	use<A extends Added>(step: Middleware<unknown, A, Inject>): RequestsModule<H, R, C>;
 	use(step: StepNeedingOptions): TakesOptionsFirst;
-	use(step: Step | StepNeedingOptions): RequestsModule<H, R, N, G> | TakesOptionsFirst {
+	use(step: Step | StepNeedingOptions): RequestsModule<H, R, C> | TakesOptionsFirst {
 		return new RequestsModule({
 			...this.plan,
 			steps: [...this.plan.steps, requireStep(step)],
 		});
 	}
 
-	provide(provide: (facts: HostFacts<G>) => NeedsOf<H>): PlatformModule<NeedsOf<H>, R, N> {
+	provide(provide: (facts: ConfigFacts<C>) => NeedsOf<H>): ModuleOf<NeedsOf<H>, R, C>;
+	provide(provide: (facts: ConfigFacts<C>) => NeedsOf<H>): CallableModule<NeedsOf<H>, R, C> {
 		const { name } = this.plan;
 		const handlers = this.plan.listed.map((listed) => ({
 			...listed,
@@ -296,7 +289,7 @@ export class RequestsModule<
 			emits: listed.emits.map((emitted) => emitted.inModule(name)),
 			module: this,
 		}));
-		return new PlatformModule(this, handlers, { provide });
+		return new PlatformModule(this, handlers, { provide }).callable<C>();
 	}
 
 	private withListed(requests: readonly AnyHandledRequest[]): readonly AnyHandledRequest[] {
@@ -334,22 +327,19 @@ export function readyModuleOf<Q>(
 	parts: Q,
 	facts: ModuleFacts | null,
 ): ReadyModule {
-	if (module instanceof PlatformModule) {
-		return module.startedOn(factsFor(module.definition, facts));
+	if (module instanceof HandledModule) {
+		return module.with(parts);
 	}
 
-	return module instanceof HandledModule ? module.with(parts) : module;
-}
+	if (!isRunnableModule(module)) {
+		return module;
+	}
 
-function factsFor(definition: ModuleDefinition, facts: ModuleFacts | null): ModuleFacts {
 	if (facts === null) {
-		throw new Error(NO_FACTS.replace("{module}", definition.name));
+		throw new Error(NO_FACTS.replace("{module}", module.definition.name));
 	}
 
-	return {
-		...facts,
-		host: lentFor(definition.name, definition.hostNeeds, facts.host),
-	};
+	return module.startedOn(facts);
 }
 
 function coverAfter(cover: Cover, step: Step): Cover {
@@ -375,7 +365,7 @@ function ownedEventsOf(
 }
 
 function nameOfImported(imported: ImportedModule): string {
-	return imported instanceof PlatformModule ? imported.definition.name : imported.name;
+	return "definition" in imported ? imported.definition.name : imported.name;
 }
 
 function subscriberInModule(listed: AnySubscriber, module: string): AnySubscriber {

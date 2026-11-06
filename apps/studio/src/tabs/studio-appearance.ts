@@ -17,7 +17,7 @@ const STUDIO_SCOPE = "studio";
 export function startStudioAppearance(view: Window): StudioAppearance {
 	const transport = localTransport();
 	server()
-		.modules(AppearanceModule)
+		.modules(AppearanceModule({ systemScheme: view.matchMedia(DARK_SCHEME) }))
 		.listen(transport)
 		.start({
 			env: {},
@@ -25,7 +25,6 @@ export function startStudioAppearance(view: Window): StudioAppearance {
 				workspaceId: STUDIO_SCOPE,
 			},
 			host: {
-				systemScheme: view.matchMedia(DARK_SCHEME),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});

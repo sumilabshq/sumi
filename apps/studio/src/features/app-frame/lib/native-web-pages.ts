@@ -13,7 +13,7 @@ import type { BrowserTabs } from "@widgetarium/browser";
 import type { Answer, StartedApp } from "@widgetarium/data-framework";
 import type { PageArea, WebPage } from "@widgetarium/web-page";
 import { PageHole } from "./page-hole.js";
-import type { NativeWebPages } from "./web-page-hosts.js";
+import type { NativeWebPages } from "@widgetarium/web-page/module";
 
 const REFUSED = "the browser refused {request} for tab {tab}: {reason}";
 

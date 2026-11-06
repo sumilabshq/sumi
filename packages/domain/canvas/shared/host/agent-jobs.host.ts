@@ -1,5 +1,3 @@
-import { isObject } from "@widgetarium/data-framework/is-object";
-import { hostObject } from "@widgetarium/data-framework";
 import type { Job, LiveJob } from "../schema/job.schema.js";
 
 export interface AgentJobs {
@@ -7,16 +5,4 @@ export interface AgentJobs {
 	liveOf(app: string, id: string): LiveJob | null;
 	stop(app: string, id: string): Promise<void>;
 	watch(changed: () => void): () => void;
-}
-
-export const AgentJobsHost = hostObject<AgentJobs>("AgentJobs", isAgentJobs);
-
-function isAgentJobs(held: unknown): held is AgentJobs {
-	return (
-		isObject(held) &&
-		typeof held["jobsOf"] === "function" &&
-		typeof held["liveOf"] === "function" &&
-		typeof held["stop"] === "function" &&
-		typeof held["watch"] === "function"
-	);
 }

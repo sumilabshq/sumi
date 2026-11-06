@@ -14,8 +14,8 @@ import { server } from "@widgetarium/data-framework/server";
 import { AppTabQuery } from "@widgetarium/places";
 import { TasksModule } from "@widgetarium/tasks";
 import { WebPageModule as ServerWebPageModule } from "@widgetarium/web-page/module";
-import type { AppTabs, NativeWebPages } from "../features/app-frame/lib/web-page-hosts.js";
-import type { AssistantHostObjects } from "../assistant/chat-app.js";
+import type { AppTabs, NativeWebPages, WebPageConfig } from "@widgetarium/web-page/module";
+import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { frameChatServersOf } from "../assistant/frame-chat-servers.js";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { hearsAll } from "../features/app-frame/lib/frame-relay.js";
@@ -27,7 +27,7 @@ export interface FrameRoutesAsk {
 	readonly workspaceId: string;
 	readonly core: RemoteTransport;
 	readonly studioApp: StartedApp;
-	readonly assistantHost: AssistantHostObjects;
+	readonly assistantHost: AssistantHosts;
 	readonly nativeWebPages: NativeWebPages | null;
 	readonly appearance: RemoteTransport;
 }
@@ -153,7 +153,7 @@ function startWebPageServer(
 	{ workspaceId, studioApp, nativeWebPages }: FrameRoutesAsk,
 ): StartedServer {
 	return server()
-		.modules(ServerWebPageModule)
+		.modules(ServerWebPageModule(webPageConfigOf(appTabsOver(studioApp), nativeWebPages)))
 		.listen(local)
 		.start({
 			env: {},
@@ -161,23 +161,21 @@ function startWebPageServer(
 				workspaceId,
 			},
 			host: {
-				...webPageHostOf(appTabsOver(studioApp), nativeWebPages),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
 }
 
-function webPageHostOf(
-	appTabs: AppTabs,
-	nativePages: NativeWebPages | null,
-): { readonly webAppTabs: AppTabs } | { readonly tauriAppTabs: AppTabs; readonly nativePages: NativeWebPages } {
+function webPageConfigOf(appTabs: AppTabs, nativePages: NativeWebPages | null): WebPageConfig {
 	if (nativePages === null) {
 		return {
+			kind: "web",
 			webAppTabs: appTabs,
 		};
 	}
 
 	return {
+		kind: "tauri",
 		tauriAppTabs: appTabs,
 		nativePages,
 	};

@@ -39,6 +39,7 @@ export interface SharedWorkspaceFolder {
 }
 
 export type TauriAssistantHost = {
+	readonly kind: "tauri";
 	readonly tauriAssistant: TauriAssistantPort;
 	readonly tauriAttachments: {
 		readonly folder: string | null;
@@ -125,6 +126,7 @@ export function startTauriAssistant({
 	return {
 		port,
 		host: {
+			kind: "tauri",
 			tauriAssistant: port,
 			tauriAttachments: {
 				folder,

@@ -1,7 +1,6 @@
-import { AuthenticatedGuard, Server, module, oneOf } from "@widgetarium/data-framework";
+import { AuthenticatedGuard, Server, module } from "@widgetarium/data-framework";
 import { webPagePartsOn } from "./gateways/web-page-parts/web-page-parts.gateway.js";
-import { AppTabsHost } from "./shared/host/app-tabs.host.js";
-import { NativeWebPagesHost } from "./shared/host/native-web-pages.host.js";
+import type { WebPageConfig } from "./gateways/web-page-parts/web-page-parts.gateway.js";
 import {
 	CloseWebPageCommand,
 	GoBackWebPageCommand,
@@ -14,19 +13,13 @@ import {
 	WebPageQuery,
 } from "./features/pages/requests.js";
 
+export type { AppTabs } from "./shared/host/app-tabs.host.js";
+export type { NativeWebPages } from "./shared/host/native-web-pages.host.js";
+export type { WebPageConfig } from "./gateways/web-page-parts/web-page-parts.gateway.js";
+
 export const WebPageModule = module("web-page")
 	.on(Server)
-	.needs(
-		oneOf({
-			web: {
-				webAppTabs: AppTabsHost,
-			},
-			tauri: {
-				tauriAppTabs: AppTabsHost,
-				nativePages: NativeWebPagesHost,
-			},
-		}),
-	)
+	.config<WebPageConfig>()
 	.subscribers(RereadWebPageSubscriber)
 	.public(
 		WebPageQuery,

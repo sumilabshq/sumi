@@ -22,16 +22,18 @@ export interface TauriHosts {
 	readonly nativePages: NativeWebPages;
 }
 
-export function webPagePartsOn({ host }: { readonly host: WebHosts | TauriHosts }): WebPageParts {
-	if (host.kind === "tauri") {
+export type WebPageConfig = WebHosts | TauriHosts;
+
+export function webPagePartsOn({ config }: { readonly config: WebPageConfig }): WebPageParts {
+	if (config.kind === "tauri") {
 		return {
-			webPages: new NativeWebPagesGateway(host.nativePages),
-			appTabs: new PlacesAppTabsGateway(host.tauriAppTabs),
+			webPages: new NativeWebPagesGateway(config.nativePages),
+			appTabs: new PlacesAppTabsGateway(config.tauriAppTabs),
 		};
 	}
 
 	return {
 		webPages: new MemoryWebPagesGateway(),
-		appTabs: new PlacesAppTabsGateway(host.webAppTabs),
+		appTabs: new PlacesAppTabsGateway(config.webAppTabs),
 	};
 }

@@ -8,14 +8,14 @@ import { listenOnWindow } from "../core-link/ipc-transport.js";
 export function tauriStudioLent(store: StoreClient): TauriStudioLent {
 	return {
 		store,
-		studioWindows: {
+		windows: {
 			openLabels: async () => (await getAllWindows()).map((window) => window.label),
 			onOwnCloseAsked: (listener) => void getCurrentWindow().onCloseRequested(listener),
 		},
 		coreChanges: {
 			onCoreChanged: (listener) => listenOnWindow(CORE_CHANGED_EVENT, () => listener()),
 		},
-		browserIpc: {
+		ipc: {
 			invoke: (command, args) => invoke(command, args),
 			channel: (onMessage) => {
 				const channel = new Channel<unknown>();

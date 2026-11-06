@@ -5,7 +5,7 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { app, localTransport } from "@widgetarium/data-framework";
 import type { ListeningTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
-import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import type { SharedModuleOf } from "@sumi/sumi-host-plugin";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
 import {
 	CloseWindowCommand,
@@ -76,9 +76,12 @@ async function profileOrBuiltIn(store: StoreClient, workspace: string): Promise<
 
 function coreServedOver({ workspace, listener, store, profile }: CoreServing): StartedApp {
 	const own = localTransport();
-	// TRADE-OFF: modules from a plugin slot lose typed host needs; start() still refuses a missing one.
+	const offers = {
+		store,
+		file: tasksBoardFileOver(own),
+	};
 	server()
-		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile))
+		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile).map((moduleOf) => moduleOf(offers)))
 		.listen(listener)
 		.listen(own)
 		.start({
@@ -88,15 +91,13 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 			},
 			scope: { workspaceId: workspace },
 			host: {
-				store,
-				file: tasksBoardFileOver(own),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }
 
-function sharedModulesOf(workspace: string, profile: SumiProfile): readonly ServerSideModule[] {
+function sharedModulesOf(workspace: string, profile: SumiProfile): readonly SharedModuleOf[] {
 	const resolved = resolvePlugins(profile);
 
 	for (const refusal of resolved.refusals) {

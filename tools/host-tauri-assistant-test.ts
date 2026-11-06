@@ -146,13 +146,12 @@ function memoryShelf(): UsageMemory {
 
 function chatOver({ host }: TauriAssistant): StartedApp {
 	return app()
-		.modules(AssistantModule)
+		.modules(AssistantModule(host))
 		.start({
 			platform: "tauri",
 			scope: {
 				workspaceId: "w1",
 			},
-			host,
 		});
 }
 
@@ -899,7 +898,10 @@ const READ_CALL = {
 	type: "assistant",
 	message: { content: [{ type: "tool_use", id: "q1", name: "Read", input: { file_path: "a.ts" } }] },
 };
-const READ_RESULT = { type: "user", message: { content: [{ type: "tool_result", tool_use_id: "q1", content: "one line" }] } };
+const READ_RESULT = {
+	type: "user",
+	message: { content: [{ type: "tool_result", tool_use_id: "q1", content: "one line" }] },
+};
 
 async function queueChecks(): Promise<void> {
 	const ipc = fakeIpc();
@@ -956,7 +958,11 @@ async function queueChecks(): Promise<void> {
 	await port.send("first");
 	await port.send("second");
 	port.changeQueue?.({ kind: "remove", id: port.session().queued[0]?.id ?? "" });
-	check("remove takes one message out", port.session().queued.map(({ text }) => text), ["second"]);
+	check(
+		"remove takes one message out",
+		port.session().queued.map(({ text }) => text),
+		["second"],
+	);
 	await port.send("third");
 	streamed(running, [{ type: "result", is_error: false, usage: { output_tokens: 1 } }]);
 	said(running, { kind: "exited", code: 0 });
@@ -964,7 +970,13 @@ async function queueChecks(): Promise<void> {
 	const next = callsNamed(ipc, "start_turn").at(-1)?.args;
 	check(
 		"a turn that ends sends the ready queue as the next prompt, each message its own bubble",
-		[Reflect.get(next ?? {}, "prompt"), port.session().turns.slice(-3).map(({ role, text }) => `${role}:${text}`)],
+		[
+			Reflect.get(next ?? {}, "prompt"),
+			port
+				.session()
+				.turns.slice(-3)
+				.map(({ role, text }) => `${role}:${text}`),
+		],
 		["second\n\nthird", ["user:second", "user:third", "agent:"]],
 	);
 
@@ -981,7 +993,10 @@ async function queueChecks(): Promise<void> {
 	await flush();
 	check(
 		"send now stops the running step and sends the queue",
-		[callsNamed(ipc, "stop_turn").length - stopsBefore, Reflect.get(callsNamed(ipc, "start_turn").at(-1)?.args ?? {}, "prompt")],
+		[
+			callsNamed(ipc, "stop_turn").length - stopsBefore,
+			Reflect.get(callsNamed(ipc, "start_turn").at(-1)?.args ?? {}, "prompt"),
+		],
 		[1, "stop and read this"],
 	);
 }

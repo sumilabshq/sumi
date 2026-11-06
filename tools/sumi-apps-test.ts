@@ -136,7 +136,9 @@ const served = server()
 		TerminalModule.with({
 			sessions: terminal,
 		}),
-		TasksModule,
+		TasksModule({
+			file: tasksBoardFileOver(own),
+		}),
 		PlacesModule.with({
 			windows: new MemoryWindowsGateway({
 				windows: [],
@@ -167,7 +169,6 @@ const served = server()
 			workspaceId: SUMI_APPS_WORKSPACE,
 		},
 		host: {
-			file: tasksBoardFileOver(own),
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});

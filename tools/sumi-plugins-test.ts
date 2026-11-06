@@ -13,30 +13,40 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
 
+const boardText: { text: string | null } = {
+	text: null,
+};
+const offers = {
+	store: new StoreClient(new FakeStore().invoke),
+	file: {
+		read: () => Promise.resolve(boardText.text),
+		write: (text: string) => {
+			boardText.text = text;
+			return Promise.resolve();
+		},
+	},
+};
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
+const sharedModules = resolved.sharedModules.map((moduleOf) => moduleOf(offers));
 const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, ...APP_MODULES];
-const coreModulesNow = [...HOST_CAPABILITY_MODULES, ...resolved.sharedModules];
+const coreModulesNow = [...HOST_CAPABILITY_MODULES, ...sharedModules];
+const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
 
 check("the built-in profile resolves with no refusal", resolved.refusals, []);
 check(
 	"the host runs the machine capabilities itself: files and terminal sessions",
-	HOST_CAPABILITY_MODULES.length === 2 &&
-		HOST_CAPABILITY_MODULES[0] === FileSystemModule &&
-		HOST_CAPABILITY_MODULES[1] === TerminalModule,
-	true,
+	HOST_CAPABILITY_MODULES.map(({ definition }) => definition.name),
+	[FileSystemModule.definition.name, TerminalModule.definition.name],
 );
 check(
 	"the main plugin fills only the old app's modules, none of the host's",
-	resolved.sharedModules.length === 3 &&
-		resolved.sharedModules[0] === PlacesModule &&
-		resolved.sharedModules[1] === QuestionsModule &&
-		resolved.sharedModules[2] === TasksModule,
-	true,
+	sharedModules.map(({ definition }) => definition.name),
+	[PlacesModule.definition.name, QuestionsModule.definition.name, TasksModule.definition.name],
 );
 check(
 	"the core still starts every module it started before, each once",
-	coreModulesNow.length === coreModulesBefore.length &&
-		coreModulesBefore.every((module) => coreModulesNow.filter((now) => now === module).length === 1),
+	coreNamesNow.length === coreModulesBefore.length &&
+		coreModulesBefore.every(({ definition }) => coreNamesNow.filter((name) => name === definition.name).length === 1),
 	true,
 );
 
@@ -47,23 +57,12 @@ check(
 	[[], 3],
 );
 
-const boardText: { text: string | null } = {
-	text: null,
-};
 const startedCore = server()
 	.modules(...coreModulesNow)
 	.start({
 		env: {},
 		scope: { workspaceId: "sumi-plugins" },
 		host: {
-			file: {
-				read: () => Promise.resolve(boardText.text),
-				write: (text: string) => {
-					boardText.text = text;
-					return Promise.resolve();
-				},
-			},
-			store: new StoreClient(new FakeStore().invoke),
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});

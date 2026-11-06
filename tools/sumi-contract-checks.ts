@@ -144,16 +144,20 @@ function appOver(
 }
 
 const webPages = server()
-	.modules(RunnableWebPageModule)
+	.modules(
+		RunnableWebPageModule({
+			kind: "web",
+			webAppTabs: {
+				appOfTab: (tab: string) => Promise.resolve(WEB_PAGE_TABS.get(tab) ?? null),
+			},
+		}),
+	)
 	.start({
 		env: {},
 		scope: {
 			workspaceId: "contract",
 		},
 		host: {
-			webAppTabs: {
-				appOfTab: (tab: string) => Promise.resolve(WEB_PAGE_TABS.get(tab) ?? null),
-			},
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
@@ -192,14 +196,18 @@ check(
 );
 
 const chat = server()
-	.modules(RunnableAssistantModule)
+	.modules(
+		RunnableAssistantModule({
+			kind: "web",
+			webAssistant: echoAssistantPort(),
+		}),
+	)
 	.start({
 		env: {},
 		scope: {
 			workspaceId: "contract",
 		},
 		host: {
-			webAssistant: echoAssistantPort(),
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
@@ -239,6 +247,7 @@ check(
 const chatServers = frameChatServersOf({
 	workspaceId: "contract",
 	host: {
+		kind: "web",
 		webAssistant: echoAssistantPort(),
 	},
 });

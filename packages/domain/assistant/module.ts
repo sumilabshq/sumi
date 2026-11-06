@@ -1,13 +1,7 @@
-import { Anywhere, PublicGuard, module, oneOf } from "@widgetarium/data-framework";
+import { Anywhere, PublicGuard, module } from "@widgetarium/data-framework";
 import { FileDraggedEvent } from "./gateways/file-drop/file-drop.events.js";
 import { assistantPartsOn } from "./gateways/assistant-parts/assistant-parts.gateway.js";
-import { AssistantHost } from "./shared/host/assistant.host.js";
-import { AttachmentsFolderHost } from "./shared/host/attachments-folder.host.js";
-import { ClaudeOptionsHost } from "./shared/host/claude-options.host.js";
-import { FileDropsHost } from "./shared/host/file-drops.host.js";
-import { FolderLendingHost } from "./shared/host/folder-lending.host.js";
-import { WorkspaceFoldersHost } from "./shared/host/workspace-folders.host.js";
-import { ChatDraftsHost } from "./shared/host/chat-drafts.host.js";
+import type { AssistantHosts } from "./gateways/assistant-parts/assistant-parts.gateway.js";
 import {
 	RereadAgentSetupSubscriber,
 	RereadClaudeOptionsSubscriber,
@@ -58,28 +52,11 @@ import {
 	SlashCommandsQuery,
 } from "./features/slash-commands/requests.js";
 
+export type { AssistantHosts } from "./gateways/assistant-parts/assistant-parts.gateway.js";
+
 export const AssistantModule = module("assistant")
 	.on(Anywhere)
-	.needs(
-		oneOf({
-			web: {
-				webAssistant: AssistantHost,
-			},
-			obsidian: {
-				obsidianAssistant: AssistantHost,
-				attachments: AttachmentsFolderHost,
-			},
-			tauri: {
-				tauriAssistant: AssistantHost,
-				tauriAttachments: AttachmentsFolderHost,
-				folders: FolderLendingHost,
-				claudeOptions: ClaudeOptionsHost,
-				drops: FileDropsHost,
-				workspace: WorkspaceFoldersHost,
-				chatDrafts: ChatDraftsHost,
-			},
-		}),
-	)
+	.config<AssistantHosts>()
 	.subscribers(
 		RereadAgentSetupSubscriber,
 		RereadClaudeOptionsSubscriber,

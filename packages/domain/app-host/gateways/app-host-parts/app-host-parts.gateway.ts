@@ -1,5 +1,5 @@
-import type { HostFacts, Platform } from "@widgetarium/data-framework";
-import type { AppHostLent } from "../../shared/host/app-host.host.js";
+import type { ConfigFacts, Platform } from "@widgetarium/data-framework";
+import type { AppHostConfig } from "../../shared/host/app-host.host.js";
 import type { CoreChangesGateway } from "../core-changes/core-changes.gateway.js";
 import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
 import type { PaneFlashGateway } from "../pane-flash/pane-flash.gateway.js";
@@ -23,9 +23,9 @@ const UNHOSTED_PARTS_ON: Readonly<Record<Platform, () => AppHostParts>> = {
 	server: memoryAppHostParts,
 };
 
-export function appHostPartsOn({ platform, host }: HostFacts<AppHostLent>): AppHostParts {
-	if (host.kind === "tauri") {
-		return tauriAppHostParts(host.store, host.coreChanges);
+export function appHostPartsOn({ platform, config }: ConfigFacts<AppHostConfig>): AppHostParts {
+	if (config.tauri !== undefined) {
+		return tauriAppHostParts(config.tauri.store, config.tauri.coreChanges);
 	}
 
 	return UNHOSTED_PARTS_ON[platform]();

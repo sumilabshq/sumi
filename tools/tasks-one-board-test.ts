@@ -28,7 +28,12 @@ const appData = mkdtempSync(path.join(tmpdir(), "wg-tasks-one-board-"));
 function startCore(workspaceId: string): LocalTransport {
 	const coreTransport = localTransport();
 	server()
-		.modules(RunnableFileSystemModule.with({ files: new NodeFilesGateway(appData, workspaceId) }), RunnableTasksModule)
+		.modules(
+			RunnableFileSystemModule.with({ files: new NodeFilesGateway(appData, workspaceId) }),
+			RunnableTasksModule({
+				file: tasksBoardFileOver(coreTransport),
+			}),
+		)
 		.listen(coreTransport)
 		.start({
 			env: {},
@@ -36,7 +41,6 @@ function startCore(workspaceId: string): LocalTransport {
 				workspaceId,
 			},
 			host: {
-				file: tasksBoardFileOver(coreTransport),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
@@ -81,7 +85,11 @@ const board = await page.send(BoardQuery, {});
 check("the page reads that task through the frame", board.ok && JSON.stringify(board.output).includes(TITLE), true);
 
 const tasksFileRead = await page.send(ReadFileQuery, { path: "tasks.json" });
-check("the board is kept in the tasks app's own tasks.json", tasksFileRead.ok && tasksFileRead.output.includes(TITLE), true);
+check(
+	"the board is kept in the tasks app's own tasks.json",
+	tasksFileRead.ok && tasksFileRead.output.includes(TITLE),
+	true,
+);
 check(
 	"that file sits under app-data/<workspace>/tasks",
 	existsSync(boardFileOf(WORKSPACE)) && readFileSync(boardFileOf(WORKSPACE), "utf8").includes(TITLE),

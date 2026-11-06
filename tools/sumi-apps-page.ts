@@ -147,6 +147,7 @@ try {
 		appearance,
 		assistant: echo,
 		assistantHost: {
+			kind: "web",
 			webAssistant: echo,
 		},
 		appPageUrlOf: servedPageUrlOf,

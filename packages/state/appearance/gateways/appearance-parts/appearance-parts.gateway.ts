@@ -7,11 +7,11 @@ export type AppearanceParts = {
 };
 
 export function appearancePartsOn({
-	host,
+	config,
 }: {
-	readonly host: { readonly systemScheme: SystemScheme };
+	readonly config: { readonly systemScheme: SystemScheme };
 }): AppearanceParts {
 	return {
-		theme: new MediaThemeGateway(host.systemScheme),
+		theme: new MediaThemeGateway(config.systemScheme),
 	};
 }

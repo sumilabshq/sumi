@@ -1,4 +1,5 @@
-import { HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind } from "@widgetarium/behaviors/tauri-store";
 import type { TabsGateway } from "../tabs/tabs.gateway.js";
 import { TauriTabsGateway } from "../tabs/tauri/tauri.gateway.js";
@@ -9,10 +10,6 @@ import type { KeptPlaces } from "../windows/tauri.gateway.js";
 export type PlacesParts = {
 	readonly windows: WindowsGateway;
 	readonly tabs: TabsGateway;
-};
-
-export const PLACES_HOST_NEEDS = {
-	store: StoreClient,
 };
 
 const PLACES: DocKind<KeptPlaces> = {

@@ -1,5 +1,5 @@
-import type { HostFacts, Platform } from "@widgetarium/data-framework";
-import type { WorkspacesHost } from "../../shared/host/workspaces.host.js";
+import type { ConfigFacts, Platform } from "@widgetarium/data-framework";
+import type { WorkspacesConfig } from "../../shared/host/workspaces.host.js";
 import type { ChatsGateway } from "../chats/chats.gateway.js";
 import type { CurrentWorkspaceGateway } from "../current-workspace/current-workspace.gateway.js";
 import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";
@@ -20,9 +20,9 @@ const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => Work
 	server: webWorkspacesParts,
 };
 
-export function workspacesPartsOn({ platform, scope, host }: HostFacts<WorkspacesHost>): WorkspacesParts {
-	if (host.kind === "tauri") {
-		return tauriWorkspacesParts(scope.workspaceId, host.store);
+export function workspacesPartsOn({ platform, scope, config }: ConfigFacts<WorkspacesConfig>): WorkspacesParts {
+	if (config.tauri !== undefined) {
+		return tauriWorkspacesParts(scope.workspaceId, config.tauri.store);
 	}
 
 	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);

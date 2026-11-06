@@ -9,9 +9,7 @@ import {
 	command,
 	event,
 	gatewayEvent,
-	hostObject,
 	module,
-	oneOf,
 	query,
 	subscriber,
 } from "../packages/shared/data-framework/src/index.ts";
@@ -281,203 +279,91 @@ check(
 	'the subscriber of other/changed listens to other/changed, but module "listening" does not import other: add .imports()',
 );
 
-const NeedsVaultModule = module("needing")
-	.on(Device)
-	.needs({ vault: Vault })
-	.public(ValueQuery)
-	.provide(({ host }) => {
-		check("provide receives what the module needs from the host", host.vault.name, "vault");
-		return { ledger: new Ledger() };
-	});
-
-app()
-	.modules(NeedsVaultModule)
-	.start({ ...ON_BROWSER, host: { vault: new Vault() } });
-check(
-	"a host object the module needs and the host did not give is refused at start, naming it",
-	thrownBy(() =>
-		app()
-			.modules(NeedsVaultModule)
-			// @ts-expect-error
-			.start(ON_BROWSER),
-	),
-	'module "needing" needs vault: the host did not provide it as a Vault',
-);
-
-interface Adapter {
-	readonly read: () => string;
-}
-
-interface StartedProject {
-	readonly folder: string;
-}
-
 class Registry {
 	readonly widgets = 3;
 }
 
-const isAdapter = (value: unknown): value is Adapter =>
-	typeof value === "object" && value !== null && "read" in value && typeof value.read === "function";
+const vaultsSeen: string[] = [];
 
-const isStartedProject = (value: unknown): value is StartedProject =>
-	typeof value === "object" && value !== null && "folder" in value && typeof value.folder === "string";
-
-const AdapterHost = hostObject("DataAdapter", isAdapter);
-
-const ProjectHost = hostObject("StartedProject", isStartedProject);
-
-const NeedsAdapterModule = module("adapting")
+const VaultedModule = module("vaulted")
 	.on(Device)
-	.needs({ adapter: AdapterHost })
+	.config<{ readonly vault: Vault }>()
 	.public(ValueQuery)
-	.provide(({ host }) => {
-		check("a host object with no runtime class reaches provide through its guard", host.adapter.read(), "read");
+	.provide(({ config }) => {
+		vaultsSeen.push(config.vault.name);
 		return { ledger: new Ledger() };
 	});
 
 app()
-	.modules(NeedsAdapterModule)
-	.start({ ...ON_BROWSER, host: { adapter: { read: () => "read" } } });
+	.modules(VaultedModule({ vault: new Vault() }))
+	.start(ON_BROWSER);
+check("provide receives the config the module was called with", vaultsSeen, ["vault"]);
 check(
-	"a host object its guard refuses is refused at start, naming the module, the key and the token",
+	"a module whose config is required fails when listed uncalled, and is a type error there",
 	thrownBy(() =>
 		app()
-			.modules(NeedsAdapterModule)
-			// @ts-expect-error
-			.start({ ...ON_BROWSER, host: { adapter: { write: () => "written" } } }),
+			.modules(
+				// @ts-expect-error
+				VaultedModule,
+			)
+			.start(ON_BROWSER),
+	).length > 0,
+	true,
+);
+check(
+	"a module whose config is required still takes fakes through .with, which skips its config",
+	thrownBy(() =>
+		app()
+			.modules(VaultedModule.with({ ledger: new Ledger() }))
+			.start(ON_BROWSER),
 	),
-	'module "adapting" needs adapter: the host did not provide it as a DataAdapter',
+	"",
 );
 
-const lentKinds: string[] = [];
+const placesSeen: string[] = [];
+
+const MaybeHostedModule = module("maybe-hosted")
+	.on(Device)
+	.config<{ readonly tauri?: { readonly vault: Vault } }>()
+	.public(ValueQuery)
+	.provide(({ config }) => {
+		placesSeen.push(config.tauri === undefined ? "elsewhere" : config.tauri.vault.name);
+		return { ledger: new Ledger() };
+	});
+
+app().modules(MaybeHostedModule).start(ON_BROWSER);
+app()
+	.modules(MaybeHostedModule({ tauri: { vault: new Vault() } }))
+	.start(ON_BROWSER);
+check(
+	"a module with only optional config runs uncalled with an empty config, and called with what it was given",
+	placesSeen,
+	["elsewhere", "vault"],
+);
+
+const mountsSeen: string[] = [];
 
 const MountedModule = module("canvas")
 	.on(Device)
-	.needs(oneOf({ vault: { adapter: AdapterHost, registry: Registry }, project: { project: ProjectHost } }))
+	.config<
+		{ readonly kind: "vault"; readonly registry: Registry } | { readonly kind: "project"; readonly folder: string }
+	>()
 	.public(ValueQuery)
-	.provide(({ host }) => {
-		// @ts-expect-error
-		void host.adapter;
-		lentKinds.push(
-			host.kind === "vault"
-				? `vault ${host.adapter.read()} ${host.registry.widgets}`
-				: `project ${host.project.folder}`,
-		);
+	.provide(({ config }) => {
+		mountsSeen.push(config.kind === "vault" ? `vault ${config.registry.widgets}` : `project ${config.folder}`);
 		return { ledger: new Ledger() };
 	});
 
 app()
-	.modules(MountedModule)
-	.start({ ...ON_BROWSER, host: { adapter: { read: () => "read" }, registry: new Registry() } });
+	.modules(MountedModule({ kind: "vault", registry: new Registry() }))
+	.start(ON_BROWSER);
 app()
-	.modules(MountedModule)
-	.start({ ...ON_BROWSER, host: { project: { folder: "apps/notes" } } });
-check("oneOf hands provide the one set the host lent, tagged by its name", lentKinds, [
-	"vault read 3",
+	.modules(MountedModule({ kind: "project", folder: "apps/notes" }))
+	.start(ON_BROWSER);
+check("a config union reaches provide as the variant the module was called with", mountsSeen, [
+	"vault 3",
 	"project apps/notes",
 ]);
-
-const ONE_OF_REFUSED =
-	'module "canvas" needs one of: vault {adapter, registry}, project {project}; the host lent {lent}';
-
-check(
-	"a host lending parts of two sets is refused, naming the module and the sets",
-	thrownBy(() =>
-		app()
-			.modules(MountedModule)
-			// @ts-expect-error
-			.start({ ...ON_BROWSER, host: { adapter: { read: () => "read" }, project: { folder: "apps/notes" } } }),
-	),
-	ONE_OF_REFUSED.replace("{lent}", "parts of vault and project"),
-);
-check(
-	"a host lending no set is refused, naming the module and the sets",
-	thrownBy(() =>
-		app()
-			.modules(MountedModule)
-			// @ts-expect-error
-			.start({ ...ON_BROWSER, host: {} }),
-	),
-	ONE_OF_REFUSED.replace("{lent}", "none of them"),
-);
-check(
-	"a set lent with a key missing is refused, naming that key",
-	thrownBy(() =>
-		app()
-			.modules(MountedModule)
-			// @ts-expect-error
-			.start({ ...ON_BROWSER, host: { adapter: { read: () => "read" } } }),
-	),
-	'module "canvas" needs registry: the host did not provide it as a Registry',
-);
-check(
-	"a project set lent with its one key undefined is a type error and refused",
-	thrownBy(() =>
-		app()
-			.modules(MountedModule)
-			// @ts-expect-error
-			.start({ ...ON_BROWSER, host: { project: undefined } }),
-	),
-	ONE_OF_REFUSED.replace("{lent}", "none of them"),
-);
-check(
-	"a module naming oneOf twice is refused where it is defined",
-	thrownBy(() =>
-		module("twice")
-			.on(Device)
-			.needs(oneOf({ one: { vault: Vault } }))
-			.needs(oneOf({ other: { registry: Registry } })),
-	),
-	'module "twice" names .needs(oneOf(...)) twice: a host lends one set of a single list',
-);
-
-const UNTOLD_SETS =
-	'module "untold" names oneOf sets a host cannot be told apart by: every set but one empty set needs keys of its own, none named kind';
-
-const kindsLent: string[] = [];
-const SometimesLentModule = module("sometimes")
-	.on(Device)
-	.needs(oneOf({ lent: { vault: Vault }, elsewhere: {} }))
-	.provide(({ host }) => {
-		kindsLent.push(host.kind);
-		return {};
-	});
-
-check(
-	"one empty oneOf set is taken when the host lends none of the others' keys, and the lent set when it does",
-	[
-		thrownBy(() => app().modules(SometimesLentModule).start(ON_BROWSER)),
-		thrownBy(() =>
-			app()
-				.modules(SometimesLentModule)
-				.start({ ...ON_BROWSER, host: { vault: new Vault() } }),
-		),
-		kindsLent,
-	],
-	["", "", ["elsewhere", "lent"]],
-);
-
-check(
-	"oneOf sets sharing a key, two holding none, or naming kind are refused where they are defined",
-	[
-		thrownBy(() =>
-			module("untold")
-				.on(Device)
-				.needs(oneOf({ one: { registry: Registry }, other: { registry: Registry, vault: Vault } })),
-		),
-		thrownBy(() =>
-			module("untold")
-				.on(Device)
-				.needs(oneOf({ one: {}, other: {}, third: { vault: Vault } })),
-		),
-		thrownBy(() =>
-			module("untold")
-				.on(Device)
-				.needs(oneOf({ one: { kind: Vault }, other: { registry: Registry } })),
-		),
-	],
-	[UNTOLD_SETS, UNTOLD_SETS, UNTOLD_SETS],
-);
 
 const BadPayloadEvent = event("bad-payload")
 	.input(z.object({ by: z.number() }))

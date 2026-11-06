@@ -40,7 +40,7 @@ export const BillingModule = module("billing")
 - `.serverOnly(...)`: the module's commands and queries that never cross the network. On a server, other server modules in the process may use them; on a device (an `Anywhere` module run in an app), only the module's own handlers. Not on a `Device` module: a type error says why.
 - `.imports(...)`: the other modules whose commands and queries this module's handlers send: their public ones always, their server-only ones when this module runs on a server too.
 - `.subscribers(...)`: what the module reacts to: subscribers of its own events, private or public, and of public events of the modules it imports (below).
-- `.needs({ file: BoardFileHost })`: live objects the host lends (a file it opened, a running agent); `provide` receives them as `host`, and the app's `start({ host })` must give them.
+- `.config<{ file: BoardFile }>()`: live objects its starter passes (a file it opened, a running agent); the module becomes callable, `TasksModule({ file })`, and `provide` receives them as `config`.
 
 **Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(Query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
 

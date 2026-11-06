@@ -1,7 +1,8 @@
+import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { portForChat } from "@widgetarium/core/engine/assistant-port.js";
 import type { StartedApp } from "@widgetarium/data-framework";
 import { chatAppOf } from "./chat-app.js";
-import type { AssistantHostObjects, ChatAppAsk } from "./chat-app.js";
+import type { ChatAppAsk } from "./chat-app.js";
 
 export class ChatApps {
 	private readonly apps = new Map<string, StartedApp>();
@@ -23,27 +24,23 @@ export class ChatApps {
 	}
 }
 
-export function hostForChat(host: AssistantHostObjects, chatId: string): AssistantHostObjects {
-	if (host.tauriAssistant !== undefined) {
+export function hostForChat(host: AssistantHosts, chatId: string): AssistantHosts {
+	if (host.kind === "tauri") {
 		return {
 			...host,
 			tauriAssistant: portForChat(host.tauriAssistant, chatId),
 		};
 	}
 
-	if (host.obsidianAssistant !== undefined) {
+	if (host.kind === "obsidian") {
 		return {
 			...host,
 			obsidianAssistant: portForChat(host.obsidianAssistant, chatId),
 		};
 	}
 
-	if (host.webAssistant !== undefined) {
-		return {
-			...host,
-			webAssistant: portForChat(host.webAssistant, chatId),
-		};
-	}
-
-	return host;
+	return {
+		...host,
+		webAssistant: portForChat(host.webAssistant, chatId),
+	};
 }

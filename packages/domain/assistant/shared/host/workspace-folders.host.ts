@@ -1,6 +1,3 @@
-import { isObject } from "@widgetarium/data-framework/is-object";
-import { hostObject } from "@widgetarium/data-framework";
-
 export interface WorkspaceFolder {
 	readonly id: string;
 	readonly name: string;
@@ -23,10 +20,4 @@ export interface WorkspaceFolderCell {
 export interface WorkspaceFolders {
 	readonly client: WorkspaceFolderClient;
 	readonly folder: WorkspaceFolderCell;
-}
-
-export const WorkspaceFoldersHost = hostObject<WorkspaceFolders>("WorkspaceFolders", isWorkspaceFolders);
-
-function isWorkspaceFolders(held: unknown): held is WorkspaceFolders {
-	return isObject(held) && isObject(held["client"]) && isObject(held["folder"]);
 }
