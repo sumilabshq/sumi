@@ -52,6 +52,12 @@ const PageHoveredEventSchema = z.object({
 	y: z.number(),
 });
 
+const PageKeyedEventSchema = z.object({
+	page: z.string(),
+	kind: z.literal("keyed"),
+	key: z.string(),
+});
+
 const WindowClosedEventSchema = z.object({
 	kind: z.literal("window-closed"),
 	window: z.string(),
@@ -62,6 +68,7 @@ export const PageEventSchema = z.union([
 	OwnWindowEventSchema,
 	PagePressedEventSchema,
 	PageHoveredEventSchema,
+	PageKeyedEventSchema,
 	WindowClosedEventSchema,
 ]);
 
@@ -69,8 +76,16 @@ export type PageLoadEvent = z.infer<typeof PageLoadEventSchema>;
 export type OwnWindowEvent = z.infer<typeof OwnWindowEventSchema>;
 export type PagePressedEvent = z.infer<typeof PagePressedEventSchema>;
 export type PageHoveredEvent = z.infer<typeof PageHoveredEventSchema>;
+export type PageKeyedEvent = z.infer<typeof PageKeyedEventSchema>;
 export type WindowClosedEvent = z.infer<typeof WindowClosedEventSchema>;
-export type PageEvent = PageLoadEvent | OwnWindowEvent | PagePressedEvent | PageHoveredEvent | WindowClosedEvent;
+export type PageEvent =
+	| PageLoadEvent
+	| OwnWindowEvent
+	| PagePressedEvent
+	| PageHoveredEvent
+	| PageKeyedEvent
+	| WindowClosedEvent;
+export type PageInputEvent = PagePressedEvent | PageHoveredEvent | PageKeyedEvent;
 
 export function isOwnWindowEvent(event: PageEvent): event is OwnWindowEvent {
 	return OwnWindowEventSchema.shape.kind.safeParse(event.kind).success;
@@ -80,8 +95,16 @@ export function isPagePressedEvent(event: PageEvent): event is PagePressedEvent 
 	return event.kind === "pressed";
 }
 
-export function isPageHoveredEvent(event: PageEvent): event is PageHoveredEvent {
+function isPageHoveredEvent(event: PageEvent): event is PageHoveredEvent {
 	return event.kind === "hovered";
+}
+
+export function isPageKeyedEvent(event: PageEvent): event is PageKeyedEvent {
+	return event.kind === "keyed";
+}
+
+export function isPageInputEvent(event: PageEvent): event is PageInputEvent {
+	return isPagePressedEvent(event) || isPageHoveredEvent(event) || isPageKeyedEvent(event);
 }
 
 export function isWindowClosedEvent(event: PageEvent): event is WindowClosedEvent {

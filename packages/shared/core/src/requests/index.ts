@@ -59,6 +59,7 @@ export {
 	portFromParent,
 } from "./message-port-transport";
 export type { PortListening } from "./message-port-transport";
+export { FrameCommandKeySchema } from "./frame-command-keys";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";
 export { InvalidationSchema } from "./invalidation";

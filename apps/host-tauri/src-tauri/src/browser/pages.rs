@@ -1,5 +1,6 @@
 use super::navigation_proxy::{self, FailedLoad, NavigationHooks, SubFrame};
 use super::page_holes::Rect;
+use super::page_keys;
 use super::page_pointer;
 use super::page_press;
 use super::policy::{self, PAGE_LABEL_PREFIX};
@@ -36,6 +37,7 @@ pub const OWN_WINDOW_OPENED: &str = "own-window-opened";
 pub const OWN_WINDOW_CLOSED: &str = "own-window-closed";
 pub const PAGE_PRESSED: &str = "pressed";
 pub const PAGE_HOVERED: &str = "hovered";
+pub const PAGE_KEYED: &str = "keyed";
 pub const PAGE_MOVED: &str = "moved";
 pub const WINDOW_CLOSED: &str = "window-closed";
 const SMALLEST_SIDE: f64 = 1.0;
@@ -257,9 +259,8 @@ impl Pages {
         self.tell_studios(json!({ "page": page_id, "kind": kind, "facts": facts, "failure": failure }));
     }
 
-    fn tell_hovered(&self, page_id: &str, x: f64, y: f64) {
+    fn tell_window_of(&self, page_id: &str, event: Value) {
         let Some(window) = self.window_of(page_id) else { return };
-        let event = json!({ "kind": PAGE_HOVERED, "page": page_id, "x": x, "y": y });
 
         if let Some(sink) = self.sinks.lock().expect("the browser's event sinks").get(&window) {
             let _ = sink.send(event);
@@ -326,17 +327,20 @@ impl Pages {
         let failed = self.clone();
         let pressed = self.clone();
         let hovered = self.clone();
+        let keyed = self.clone();
         let started_page = page_id.to_string();
         let failed_page = page_id.to_string();
         let pressed_page = page_id.to_string();
         on_main_thread(webview, move |view, answer| {
             webkit::round_bottom_corners(view, placement.corner, placement.corner_sides);
             let told = page_press::PageTold {
-                pressed: Rc::new(move |page_id| pressed.told(page_id, PAGE_PRESSED, Value::Null, Value::Null)),
-                hovered: Rc::new(move |page_id, x, y| hovered.tell_hovered(page_id, x, y)),
+                pressed: Rc::new(move |page_id| pressed.tell_window_of(page_id, json!({ "kind": PAGE_PRESSED, "page": page_id }))),
+                hovered: Rc::new(move |page_id, x, y| hovered.tell_window_of(page_id, json!({ "kind": PAGE_HOVERED, "page": page_id, "x": x, "y": y }))),
+                keyed: Rc::new(move |page_id, letter| keyed.tell_window_of(page_id, json!({ "kind": PAGE_KEYED, "page": page_id, "key": letter }))),
             };
             page_press::watch(view, &pressed_page, told);
             page_pointer::watch();
+            page_keys::watch();
             let hooks = NavigationHooks {
                 started: Rc::new(move |view| started.told(&started_page, "started", webkit::facts_of(view), Value::Null)),
                 failed: Rc::new(move |view, load| failed.tell_failure(&failed_page, view, load)),

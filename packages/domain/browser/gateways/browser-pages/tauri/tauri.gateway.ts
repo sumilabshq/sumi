@@ -17,7 +17,7 @@ import { OwnWindows } from "./own-windows.js";
 import { PageIcons } from "./page-icons.js";
 import { PageInputReplay } from "./page-input-replay.js";
 import { followTheme } from "./page-theme.js";
-import { isOwnWindowEvent, isPageHoveredEvent, isPagePressedEvent, isWindowClosedEvent } from "./pages-bridge.js";
+import { isOwnWindowEvent, isPageInputEvent, isWindowClosedEvent } from "./pages-bridge.js";
 import type { PageEvent, PageLoadEvent, PagesBridge } from "./pages-bridge.js";
 import { StudioWindows } from "./studio-windows.js";
 import { TearOffGhost } from "./tear-off-ghost.js";
@@ -336,7 +336,7 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 	}
 
 	private apply(event: PageEvent): void {
-		if (isPagePressedEvent(event) || isPageHoveredEvent(event)) {
+		if (isPageInputEvent(event)) {
 			this.replay.replay(event);
 			return;
 		}

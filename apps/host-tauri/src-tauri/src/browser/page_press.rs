@@ -14,6 +14,7 @@ thread_local! {
     static HOLES: RefCell<HashMap<usize, Vec<Rect>>> = RefCell::new(HashMap::new());
     static ON_PRESSED: RefCell<Option<Rc<dyn Fn(&str)>>> = const { RefCell::new(None) };
     static ON_HOVERED: RefCell<Option<Rc<dyn Fn(&str, f64, f64)>>> = const { RefCell::new(None) };
+    static ON_KEYED: RefCell<Option<Rc<dyn Fn(&str, &str)>>> = const { RefCell::new(None) };
 }
 
 const ORDERED_BELOW: isize = -1;
@@ -27,12 +28,33 @@ pub struct PageHit {
 pub struct PageTold {
     pub pressed: Rc<dyn Fn(&str)>,
     pub hovered: Rc<dyn Fn(&str, f64, f64)>,
+    pub keyed: Rc<dyn Fn(&str, &str)>,
 }
 
 pub fn watch(view: &WKWebView, page_id: &str, told: PageTold) {
     PAGE_VIEWS.with(|views| views.borrow_mut().insert(key_of(view), page_id.to_string()));
     ON_PRESSED.with(|held| held.replace(Some(told.pressed)));
     ON_HOVERED.with(|held| held.replace(Some(told.hovered)));
+    ON_KEYED.with(|held| held.replace(Some(told.keyed)));
+}
+
+pub fn tell_keyed(page_id: &str, letter: &str) {
+    if let Some(on_keyed) = ON_KEYED.with(|held| held.borrow().clone()) {
+        on_keyed(page_id, letter);
+    }
+}
+
+pub fn page_id_of_view(view: &NSView) -> Option<String> {
+    PAGE_VIEWS.with(|views| views.borrow().get(&key_of(view)).cloned())
+}
+
+pub fn studio_view_beside(page_view: &NSView) -> Option<Retained<NSView>> {
+    let superview = unsafe { page_view.superview() }?;
+    superview.subviews().iter().find(|held| is_studio_view(held))
+}
+
+fn is_studio_view(view: &NSView) -> bool {
+    is_web_view(view) && !is_page_view(view)
 }
 
 pub fn forget(view: &WKWebView) {
@@ -76,7 +98,7 @@ pub fn keep_under_studio(view: &WKWebView) {
     };
     let stacked: Vec<Retained<NSView>> = superview.subviews().iter().collect();
     let page_at = stacked.iter().position(|held| key_of(&**held) == key_of(view));
-    let studio_at = stacked.iter().position(|held| is_web_view(held) && !is_page_view(held));
+    let studio_at = stacked.iter().position(|held| is_studio_view(held));
     let (Some(page_at), Some(studio_at)) = (page_at, studio_at) else {
         eprintln!("[browser] page view stays where it is (page at {page_at:?}, studio at {studio_at:?} among {} views)", stacked.len());
         return;
@@ -97,7 +119,7 @@ pub fn page_hit_of(event: &NSEvent) -> Option<PageHit> {
     let mut stacked: Vec<Retained<NSView>> = content.subviews().iter().filter(|held| is_page_view(held)).collect();
     stacked.reverse();
     let view = stacked.into_iter().find(|held| !held.isHidden() && is_inside(point, held))?;
-    let page_id = PAGE_VIEWS.with(|views| views.borrow().get(&key_of(&*view)).cloned())?;
+    let page_id = page_id_of_view(&view)?;
     let is_in_hole = is_point_in_hole(&view, event);
     Some(PageHit { view, page_id, is_in_hole })
 }

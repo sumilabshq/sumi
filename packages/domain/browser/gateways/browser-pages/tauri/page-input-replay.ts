@@ -1,12 +1,17 @@
-import { isPagePressedEvent } from "./pages-bridge.js";
-import type { PageHoveredEvent, PagePressedEvent } from "./pages-bridge.js";
+import { isPageKeyedEvent, isPagePressedEvent } from "./pages-bridge.js";
+import type { PageHoveredEvent, PageInputEvent, PageKeyedEvent } from "./pages-bridge.js";
 
 export class PageInputReplay {
 	constructor(private readonly containerOf: (page: string) => HTMLElement | null) {}
 
-	replay(event: PagePressedEvent | PageHoveredEvent): void {
+	replay(event: PageInputEvent): void {
 		if (isPagePressedEvent(event)) {
 			this.press(event.page);
+			return;
+		}
+
+		if (isPageKeyedEvent(event)) {
+			this.pressKey(event);
 			return;
 		}
 
@@ -23,6 +28,21 @@ export class PageInputReplay {
 
 		const realm = this.realmOf(container);
 		container.dispatchEvent(new realm.Event("pointerdown", { bubbles: true, composed: true }));
+	}
+
+	private pressKey({ page, key }: PageKeyedEvent): void {
+		const container = this.containerOf(page);
+		const realm = container === null ? window : this.realmOf(container);
+		console.info(`[widgetarium] key ⌘${key.toUpperCase()} in browser page ${page} → studio`);
+		realm.dispatchEvent(
+			new realm.KeyboardEvent("keydown", {
+				key,
+				code: `Key${key.toUpperCase()}`,
+				metaKey: true,
+				bubbles: true,
+				cancelable: true,
+			}),
+		);
 	}
 
 	private hover({ page, x, y }: PageHoveredEvent): void {

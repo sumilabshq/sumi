@@ -2,6 +2,7 @@ pub mod dispatch;
 pub mod drive;
 pub mod navigation_proxy;
 pub mod page_holes;
+pub mod page_keys;
 pub mod page_pointer;
 pub mod page_press;
 pub mod pages;

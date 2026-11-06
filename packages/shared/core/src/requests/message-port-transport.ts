@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { reasonOf, refusalOf } from "./answer";
+import { forwardCommandKeysToParent } from "./frame-command-keys";
 import type { Answer } from "./answer";
 import { InvalidationSchema } from "./invalidation";
 import type { RemoteCall } from "./remote-server";
@@ -75,6 +76,7 @@ export function portFromParent(here: Window = window, waitMs: number = PORT_WAIT
 			here.removeEventListener("message", takeGivenPort);
 		};
 		here.addEventListener("message", takeGivenPort);
+		forwardCommandKeysToParent(here);
 		here.parent.postMessage(PORT_WANTED, "*");
 	});
 }

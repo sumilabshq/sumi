@@ -2,6 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { APP_FRAME_SANDBOX } from "../../lib/frame-sandbox.js";
 import { useFramePort } from "../../lib/use-frame-port.js";
+import { useReplaysFrameKeys } from "../../lib/use-replays-frame-keys.js";
 
 export interface FrameWindowProps {
 	readonly app: string;
@@ -19,7 +20,8 @@ export function FrameWindow({ app, url, tabId }: FrameWindowProps): ReactElement
 			setAnswered(true);
 		}
 	});
-	const src = `${url}${TAB_IN_URL}${encodeURIComponent(tabId)}`;
+	useReplaysFrameKeys(frame, app);
+	const src =`${url}${TAB_IN_URL}${encodeURIComponent(tabId)}`;
 
 	return (
 		<iframe
