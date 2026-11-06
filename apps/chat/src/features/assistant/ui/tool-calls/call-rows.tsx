@@ -1,14 +1,15 @@
 import { createElement as h, useState } from "react";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { CallRow } from "./call-row.js";
 
 export interface CallRowsProps {
 	readonly calls: readonly AssistantCall[];
 	readonly faces: readonly CallFace[];
+	readonly children?: ReactNode;
 }
 
-export function CallRows({ calls, faces }: CallRowsProps): ReactElement {
+export function CallRows({ calls, faces, children }: CallRowsProps): ReactElement {
 	const [openCalls, setOpenCalls] = useState<ReadonlySet<number>>(() => new Set());
 	return (
 		<div className="wg-studio-ai-tools-list">
@@ -24,6 +25,7 @@ export function CallRows({ calls, faces }: CallRowsProps): ReactElement {
 					/>
 				) : null;
 			})}
+			{children}
 		</div>
 	);
 }

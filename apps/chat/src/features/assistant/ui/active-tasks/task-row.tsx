@@ -8,11 +8,15 @@ const WAITING = "Waiting for its turn";
 
 export function TaskRow({ card }: { readonly card: TaskCard }): ReactElement {
 	return (
-		<div className="wg-studio-ai-live-task">
-			<span className="wg-studio-ai-live-task-number">{NUMBER.replace("{number}", String(card.number))}</span>
-			<span className="wg-studio-ai-live-task-title">{card.title}</span>
-			<span className="wg-studio-ai-live-task-step">{card.nextStep ?? WAITING}</span>
-			{card.steps.total === 0 ? null : <StepDots done={card.steps.done} total={card.steps.total} />}
+		<div className="wg-studio-ai-call">
+			<button className="wg-studio-ai-call-head" type="button" disabled={true}>
+				<span className="wg-studio-ai-call-name">
+					<span className="wg-studio-ai-call-verb">{NUMBER.replace("{number}", String(card.number))}</span>{" "}
+					<span className="wg-studio-ai-call-object">{card.title}</span>{" "}
+					<span className="wg-studio-ai-call-verb">{card.nextStep ?? WAITING}</span>
+				</span>
+				{card.steps.total === 0 ? null : <StepDots done={card.steps.done} total={card.steps.total} />}
+			</button>
 		</div>
 	);
 }

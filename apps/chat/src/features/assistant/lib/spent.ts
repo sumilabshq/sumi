@@ -1,11 +1,6 @@
 import type { AssistantCall, AssistantPhase, AssistantTurn } from "@widgetarium/core/engine/assistant-port.js";
 
-export interface PhaseSeen {
-	readonly phase: AssistantPhase | null;
-	readonly tool: string | null;
-}
-
-export interface ProgressSeen extends PhaseSeen {
+export interface SpentSeen {
 	readonly ms: number;
 	readonly spent: number;
 }
@@ -13,13 +8,8 @@ export interface ProgressSeen extends PhaseSeen {
 const A_MINUTE = 60000;
 const A_THOUSAND = 1000;
 
-const PHASE_SAID: Readonly<Record<AssistantPhase, string>> = {
-	thinking: "Thinking",
-	tools: "Running tools",
-	writing: "Writing",
-};
-
-const RUNNING = "Working";
+const THINKING = "Thinking";
+const WRITING = "Writing";
 
 const SECONDS_IN_MINUTE = 60;
 const SECONDS_IN_HOUR = 3600;
@@ -67,14 +57,13 @@ export function saidTokens(spent: number): string {
 	return `${(spent / A_THOUSAND).toFixed(1)}k tokens`;
 }
 
-export function saidPhase({ phase, tool }: PhaseSeen): string {
-	if (phase === "tools" && tool) return `Running ${tool}`;
-	return (phase ? PHASE_SAID[phase] : undefined) ?? RUNNING;
+export function saidWaiting(phase: AssistantPhase | null): string {
+	return phase === "writing" ? WRITING : THINKING;
 }
 
-// TRADE-OFF: the parts are joined with a separator rather than authored as one sentence, because a provider that reports no tokens must drop that part without leaving a gap behind it
-export function saidProgress({ ms, spent, phase, tool }: ProgressSeen): string {
-	return [saidElapsed(ms), saidTokens(spent), saidPhase({ phase, tool })].filter(Boolean).join(" · ");
+// TRADE-OFF: parts joined, so no tokens leaves no gap
+export function saidSpent({ ms, spent }: SpentSeen): string {
+	return [saidElapsed(ms), saidTokens(spent)].filter(Boolean).join(" · ");
 }
 
 function twoUnitsSaid(pattern: string, big: number, small: number): string {

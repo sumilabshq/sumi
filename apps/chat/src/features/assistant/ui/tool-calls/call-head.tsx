@@ -23,6 +23,7 @@ export function CallHead({ call, face, canOpen, isOpen, onToggle }: CallHeadProp
 		>
 			<CallName call={call} face={face} />
 			{face.meta ? <CallMetaSaid meta={face.meta} /> : null}
+			{call.answered ? null : <span className="wg-studio-ai-call-spin" aria-hidden="true" />}
 		</button>
 	);
 }

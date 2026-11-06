@@ -8,9 +8,17 @@ const DONE_VERBS: Readonly<Record<CallKind, string>> = {
 	other: "",
 };
 
+const DOING_VERBS: Readonly<Record<CallKind, string>> = {
+	search: "Searching",
+	read: "Reading",
+	edit: "Editing",
+	run: "Running",
+	other: "Running",
+};
+
 export function callVerbOf(face: CallFace, isAnswered: boolean): string {
-	if (!isAnswered && face.doing !== "") {
-		return capitalized(face.doing);
+	if (!isAnswered) {
+		return face.doing === "" ? DOING_VERBS[face.kind] : capitalized(face.doing);
 	}
 
 	const done = DONE_VERBS[face.kind];

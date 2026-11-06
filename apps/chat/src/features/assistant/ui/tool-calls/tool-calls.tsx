@@ -1,6 +1,7 @@
-import { createElement as h, useState } from "react";
+import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
+import { useRemembersGroupOpen } from "../../lib/use-remembers-group-open.js";
 import { Fold } from "../fold/fold.js";
 import { CallRows } from "./call-rows.js";
 import { ToolsHead } from "./tools-head.js";
@@ -11,7 +12,7 @@ export interface ToolCallsProps {
 }
 
 export function ToolCalls({ calls, faces }: ToolCallsProps): ReactElement {
-	const [isOpen, setOpen] = useState(false);
+	const [isOpen, setOpen] = useRemembersGroupOpen(calls[0]?.ref);
 	return (
 		<div className="wg-studio-ai-tools">
 			<ToolsHead calls={calls} faces={faces} isOpen={isOpen} onToggle={() => setOpen(!isOpen)} />
