@@ -2,5 +2,6 @@ import type { ComposerPrefill } from "../../shared/schema/composer-prefill.schem
 
 export abstract class ComposerPrefillGateway {
 	abstract composerPrefill(): ComposerPrefill | null;
-	abstract saveComposerPrefill(next: ComposerPrefill): void;
+	abstract saveComposerPrefill(next: ComposerPrefill | null): void;
+	abstract lastPrefillId(): number;
 }

@@ -320,6 +320,8 @@ export type ComposerPrefill = z.infer<typeof ComposerPrefillSchema>;
 
 export const PrefillAskedSchema = z.object({ text: z.string().trim().min(1) });
 
+export const PrefillTakenSchema = z.object({ id: z.number() });
+
 export const FileDragSchema = z.object({
 	isOver: z.boolean(),
 	dropped: z.string().nullable(),
@@ -424,6 +426,9 @@ export const ComposerPrefillQuery = query("assistant/composer-prefill")
 export const PrefillDraftCommand = command("assistant/prefill-draft")
 	.input(PrefillAskedSchema)
 	.idempotencyKey(PerCall);
+export const TakePrefillCommand = command("assistant/take-prefill")
+	.input(PrefillTakenSchema)
+	.idempotencyKey(Repeatable);
 export const AttachFilesCommand = command("assistant/attach-files")
 	.input(FilesAskedSchema)
 	.idempotencyKey(PerCall);
@@ -472,4 +477,4 @@ export const CompactChatCommand = command("assistant/compact-chat")
 export const FileDraggedEvent = event("assistant/file-dragged")
 	.input(FileDragEventSchema);
 
-export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);
+export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, TakePrefillCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);

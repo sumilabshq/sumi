@@ -24,6 +24,7 @@ const APP_CALLABLE: ReadonlySet<string> = new Set(
 		"attach-reach",
 		"composer-prefill",
 		"prefill-draft",
+		"take-prefill",
 		"hold-draft-text",
 		"open-chat-draft",
 		"slash-commands",

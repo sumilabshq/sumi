@@ -45,6 +45,9 @@ import {
 	OpenChatDraftCommand,
 	TakeDraftCommand,
 	AdoptDraftCommand,
+	ComposerPrefillQuery,
+	PrefillDraftCommand,
+	TakePrefillCommand,
 } from "../packages/domain/assistant/index.ts";
 import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../apps/chat/src/features/assistant/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../packages/domain/assistant/gateways/assistant-session/assistant-session.gateway.ts";
@@ -939,6 +942,19 @@ check(
 	"Create only: the new chat opens with the text and the files in its composer, and nothing is sent",
 	[heldForLater, openedDraft, await namesIn(drafted), drafted.session.sent],
 	["", "why does the build fail", ["asked.png"], []],
+);
+const prefilled = benchWith(CLAUDE);
+const prefillNow = async (): Promise<unknown> =>
+	prefilled.chat.send(ComposerPrefillQuery).then((answer) => (answer.ok ? answer.output : "refused"));
+await prefilled.chat.send(PrefillDraftCommand, { text: "fix the header" });
+const waiting = await prefillNow();
+await prefilled.chat.send(TakePrefillCommand, { id: 1 });
+const afterTake = await prefillNow();
+await prefilled.chat.send(PrefillDraftCommand, { text: "and the footer" });
+check(
+	"a prefill waits for a late composer, is taken once, and the next one gets a new id",
+	[waiting, afterTake, await prefillNow()],
+	[{ id: 1, text: "fix the header" }, null, { id: 2, text: "and the footer" }],
 );
 const alreadyOpen = benchWith(CLAUDE);
 await alreadyOpen.chat.send(OpenChatDraftCommand, { chatId: "shown-chat" });

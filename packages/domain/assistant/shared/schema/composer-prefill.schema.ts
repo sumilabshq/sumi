@@ -8,3 +8,5 @@ export const ComposerPrefillSchema = z.object({
 export type ComposerPrefill = z.infer<typeof ComposerPrefillSchema>;
 
 export const PrefillAskedSchema = z.object({ text: z.string().trim().min(1) });
+
+export const PrefillTakenSchema = z.object({ id: z.number() });

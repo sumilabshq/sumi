@@ -50,7 +50,7 @@ import {
 	SendMessageCommand,
 	SweepAttachmentsCommand,
 } from "./features/composer/requests.js";
-import { ComposerPrefillQuery, PrefillDraftCommand } from "./features/prefill/requests.js";
+import { ComposerPrefillQuery, PrefillDraftCommand, TakePrefillCommand } from "./features/prefill/requests.js";
 import {
 	CompactChatCommand,
 	RereadSlashCommandsSubscriber,
@@ -106,6 +106,7 @@ export const AssistantModule = module("assistant")
 		DraftAttachmentsQuery,
 		ComposerPrefillQuery,
 		PrefillDraftCommand,
+		TakePrefillCommand,
 		AttachFilesCommand,
 		RemoveAttachmentCommand,
 		SendMessageCommand,
