@@ -67,7 +67,7 @@ function settleStart(target: Plugin, run: StartRun, refusal: string | null): boo
 }
 
 function refuseRequirements(target: Plugin, run: StartRun): string | null {
-	for (const required of target.parts.requires) {
+	for (const required of target.parts.required) {
 		const requiredEnabled = run.enabled.get(required.id);
 
 		if (requiredEnabled === undefined) {
@@ -83,5 +83,18 @@ function refuseRequirements(target: Plugin, run: StartRun): string | null {
 		}
 	}
 
+	startOptionalFirst(target, run);
 	return null;
+}
+
+function startOptionalFirst(target: Plugin, run: StartRun): void {
+	for (const wanted of target.parts.optional) {
+		const wantedEnabled = run.enabled.get(wanted.id);
+
+		if (wantedEnabled === undefined || run.marks.get(wanted.id) === "visiting") {
+			continue;
+		}
+
+		startPlugin(wantedEnabled, run);
+	}
 }

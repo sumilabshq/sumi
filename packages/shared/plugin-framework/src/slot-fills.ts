@@ -1,5 +1,6 @@
-import type { DeclaredSlot, SlotCardinality } from "./declared-slot";
+import type { SlotCardinality, SlotShape } from "./declared-slot";
 import type { Fill } from "./fill";
+import { stampedSlotName } from "./plugin";
 import type { Plugin } from "./plugin";
 
 export interface ShownFill {
@@ -9,7 +10,8 @@ export interface ShownFill {
 }
 
 export interface FilledSlot {
-	readonly slot: DeclaredSlot;
+	readonly slot: SlotShape;
+	readonly ownerId: string;
 	readonly fills: readonly ShownFill[];
 }
 
@@ -19,115 +21,166 @@ export interface SlotFills {
 }
 
 interface SlotOwnership {
-	readonly slot: DeclaredSlot;
+	readonly slot: SlotShape;
 	readonly ownerId: string;
+	readonly stampedName: string;
 }
 
-type Ownerships = ReadonlyMap<string, SlotOwnership>;
-
 interface FillOffer {
-	readonly pluginId: string;
+	readonly filler: Plugin;
 	readonly fill: Fill;
 }
 
 interface ParsedFill extends ShownFill {
-	readonly slotName: string;
+	readonly stampedName: string;
 }
+
+type FillOutcome = ParsedFill | { readonly refusal: string } | { readonly skipped: true };
+
+const DECLARED_TWICE = "slot {slot} is declared by {owner} and again by {other}";
+const SAME_NAME_TWICE = "plugin {plugin} declares two slots named {name}";
+const NO_OWNER = "plugin {plugin} fills slot {name}, which no started plugin declares";
+const NOT_DEPENDED_ON = "plugin {plugin} fills slot {slot} without requiring {owner} or marking it optional";
+const REFUSED_ITEM = "plugin {plugin} fills slot {slot} with an item the slot refuses";
 
 export function slotFillsOf(started: readonly Plugin[], rankedIds: readonly string[]): SlotFills {
 	const declarations = declarationsOf(started);
-	const ownerships = new Map(firstDeclarationsOf(declarations).map((each) => [each.slot.name, each] as const));
-	const parsed = offersOf(started).map((offer) => parsedFillOf(offer, ownerships));
-	const fillsBySlot = groupedBySlotOf(parsed.filter(isParsedFill));
+	const owned = ownedOf(declarations);
+	const startedIds = new Set(started.map((each) => each.id));
+	const outcomes = offersOf(started).map((offer) => fillOutcomeOf(offer, owned.bySlot, startedIds));
+	const fillsByName = groupedByNameOf(outcomes.filter(isParsedFill));
 
 	return {
 		slots: new Map(
-			[...ownerships].map(([name, ownership]) => [
-				name,
-				filledSlotOf(ownership.slot, fillsBySlot.get(name) ?? [], rankedIds),
+			owned.ownerships.map((ownership) => [
+				ownership.stampedName,
+				filledSlotOf(ownership, fillsByName.get(ownership.stampedName) ?? [], rankedIds),
 			]),
 		),
-		refusals: [...repeatedDeclarationsOf(declarations), ...parsed.filter(isRefusal)],
+		refusals: [...owned.refusals, ...outcomes.flatMap((each) => ("refusal" in each ? [each.refusal] : []))],
 	};
 }
 
 function declarationsOf(started: readonly Plugin[]): readonly SlotOwnership[] {
 	return started.flatMap((each) =>
-		each.parts.declares.map((slot) => ({
+		each.parts.declared.map((slot) => ({
 			slot,
 			ownerId: each.id,
+			stampedName: stampedSlotName(each.id, slot),
 		})),
 	);
 }
 
-function firstDeclarationsOf(declarations: readonly SlotOwnership[]): readonly SlotOwnership[] {
-	return declarations.filter(
-		(each, at) => declarations.findIndex((other) => other.slot.name === each.slot.name) === at,
-	);
-}
+function ownedOf(declarations: readonly SlotOwnership[]): {
+	readonly ownerships: readonly SlotOwnership[];
+	readonly bySlot: ReadonlyMap<SlotShape, SlotOwnership>;
+	readonly refusals: readonly string[];
+} {
+	const bySlot = new Map<SlotShape, SlotOwnership>();
+	const byName = new Map<string, SlotOwnership>();
+	const refusals: string[] = [];
 
-function repeatedDeclarationsOf(declarations: readonly SlotOwnership[]): readonly string[] {
-	return declarations.flatMap((each, at) => {
-		const first = declarations.find((other) => other.slot.name === each.slot.name);
-		const isRepeat = first !== undefined && declarations.indexOf(first) !== at;
-		return isRepeat ? [`slot ${each.slot.name} is declared by ${first.ownerId} and again by ${each.ownerId}`] : [];
-	});
+	for (const each of declarations) {
+		const owner = bySlot.get(each.slot);
+
+		if (owner !== undefined) {
+			refusals.push(
+				DECLARED_TWICE.replace("{slot}", owner.stampedName)
+					.replace("{owner}", owner.ownerId)
+					.replace("{other}", each.ownerId),
+			);
+			continue;
+		}
+
+		if (byName.has(each.stampedName)) {
+			refusals.push(SAME_NAME_TWICE.replace("{plugin}", each.ownerId).replace("{name}", each.slot.name));
+			continue;
+		}
+
+		bySlot.set(each.slot, each);
+		byName.set(each.stampedName, each);
+	}
+
+	return {
+		ownerships: [...bySlot.values()],
+		bySlot,
+		refusals,
+	};
 }
 
 function offersOf(started: readonly Plugin[]): readonly FillOffer[] {
-	return started.flatMap((each) =>
-		each.parts.fills.map((fill) => ({
-			pluginId: each.id,
+	return started.flatMap((filler) =>
+		filler.parts.fills.map((fill) => ({
+			filler,
 			fill,
 		})),
 	);
 }
 
-function parsedFillOf({ pluginId, fill }: FillOffer, ownerships: Ownerships): ParsedFill | string {
-	const ownership = ownerships.get(fill.slot.name);
+function fillOutcomeOf(
+	{ filler, fill }: FillOffer,
+	bySlot: ReadonlyMap<SlotShape, SlotOwnership>,
+	startedIds: ReadonlySet<string>,
+): FillOutcome {
+	const ownership = bySlot.get(fill.slot);
 
 	if (ownership === undefined) {
-		return `plugin ${pluginId} fills slot ${fill.slot.name}, which no started plugin declares`;
+		return isForAbsentOptional(filler, fill.slot, startedIds)
+			? { skipped: true }
+			: { refusal: NO_OWNER.replace("{plugin}", filler.id).replace("{name}", fill.slot.name) };
+	}
+
+	if (ownership.ownerId !== filler.id && !filler.dependsOn(ownership.ownerId)) {
+		return {
+			refusal: NOT_DEPENDED_ON.replace("{plugin}", filler.id)
+				.replace("{slot}", ownership.stampedName)
+				.replace("{owner}", ownership.ownerId),
+		};
 	}
 
 	const parsed = ownership.slot.item.safeParse(fill.item);
 
 	if (!parsed.success) {
-		return `plugin ${pluginId} fills slot ${fill.slot.name} with an item the slot refuses`;
+		return { refusal: REFUSED_ITEM.replace("{plugin}", filler.id).replace("{slot}", ownership.stampedName) };
 	}
 
 	return {
-		pluginId,
+		pluginId: filler.id,
 		id: fill.id,
 		item: parsed.data,
-		slotName: fill.slot.name,
+		stampedName: ownership.stampedName,
 	};
 }
 
-function isParsedFill(parsed: ParsedFill | string): parsed is ParsedFill {
-	return typeof parsed !== "string";
+function isForAbsentOptional(filler: Plugin, slot: SlotShape, startedIds: ReadonlySet<string>): boolean {
+	return filler.parts.optional.some((each) => !startedIds.has(each.id) && each.parts.declared.includes(slot));
 }
 
-function isRefusal(parsed: ParsedFill | string): parsed is string {
-	return typeof parsed === "string";
+function isParsedFill(outcome: FillOutcome): outcome is ParsedFill {
+	return "stampedName" in outcome;
 }
 
-function groupedBySlotOf(fills: readonly ParsedFill[]): ReadonlyMap<string, readonly ParsedFill[]> {
+function groupedByNameOf(fills: readonly ParsedFill[]): ReadonlyMap<string, readonly ParsedFill[]> {
 	const grouped = new Map<string, readonly ParsedFill[]>();
 
 	for (const each of fills) {
-		grouped.set(each.slotName, [...(grouped.get(each.slotName) ?? []), each]);
+		grouped.set(each.stampedName, [...(grouped.get(each.stampedName) ?? []), each]);
 	}
 
 	return grouped;
 }
 
-function filledSlotOf(slot: DeclaredSlot, fills: readonly ParsedFill[], rankedIds: readonly string[]): FilledSlot {
+function filledSlotOf(
+	ownership: SlotOwnership,
+	fills: readonly ParsedFill[],
+	rankedIds: readonly string[],
+): FilledSlot {
 	const byRank = [...fills].sort((left, right) => rankedIds.indexOf(left.pluginId) - rankedIds.indexOf(right.pluginId));
 
 	return {
-		slot,
-		fills: visibleFillsOf(slot.cardinality, byRank),
+		slot: ownership.slot,
+		ownerId: ownership.ownerId,
+		fills: visibleFillsOf(ownership.slot.cardinality, byRank),
 	};
 }
 
