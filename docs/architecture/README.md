@@ -117,7 +117,7 @@ packages/client/      views: React blocks reading and writing data modules throu
 packages/domain/      data modules of a business area (chats, tabs, billing); may run on a server
 packages/state/       data modules of the app's own state (layout); run where the app runs
    ↓
-packages/shared/      code with no domain: core (requests, mediator, hooks), kit, behaviors, cli, eslint-plugin
+packages/shared/      code with no domain: framework (requests, mediator, hooks), core, kit, behaviors, cli, eslint-plugin
 ```
 
 `domain` and `state` are the same kind of package, a **data module** (`module(...)`, `"level": "domain"`), with the same rules; the folder only says what the data is about. A client package declares `"level": "client"`; a shared one `"level": "common"`.

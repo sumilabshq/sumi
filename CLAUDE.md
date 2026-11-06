@@ -58,7 +58,8 @@ apps/server              FSL  Hono: serves /rpc for modules that run on a server
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas (older shape)
 packages/state/*              app-state data modules: layout
       ↓
-packages/shared/core     FSL  requests, mediator, hooks; the widget engine (legacy)
+packages/shared/framework FSL @widgetarium/framework: requests, modules, mediator, transports, hooks
+packages/shared/core     FSL  the widget engine (legacy)
 packages/shared/kit      MIT  everything drawn: TSX, one file per kit item
 packages/shared/behaviors     headless behaviors: drag, scroll, the Tauri store client
 packages/shared/cli      FSL  the `widgetarium` bin: generate, create, check, catalogue, add

@@ -1,6 +1,6 @@
 # Requests
 
-Logic lives only in handlers. A view or another module reaches logic by sending a request through the mediator. Everything here is exported from `@widgetarium/core/requests`. Who may do what inside a handler, a gateway and lib is [layers.md](layers.md).
+Logic lives only in handlers. A view or another module reaches logic by sending a request through the mediator. Everything here is exported from `@widgetarium/framework`. Who may do what inside a handler, a gateway and lib is [layers.md](layers.md).
 
 ## A request handles itself
 
@@ -157,7 +157,7 @@ export const BuyCommand = command("buy")
 
 `npm run generate` reads each `module.ts`, finds the listed requests and events and writes `generated/contract.ts`: each request and event `.public` lists, up to its first handling step (an event's `.from(...)` is cut, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`). The contract carries no invalidation.
 
-- The contract imports only `zod` and `@widgetarium/core/requests`, so no handler or gateway can reach a client.
+- The contract imports only `zod` and `@widgetarium/framework`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
 - Refused: a request not listed by name, listed twice, not imported, a schema declared beside the request instead of in `shared/schema`, a cycle.
 - A function idempotency key is copied only when it is one arrow reading its input: `(input) => input.id`, or a template literal of its fields.
@@ -250,7 +250,7 @@ const served = server().modules(BillingModule, UsersModule).start({ env: process
 - **One app per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `AppProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
 - A server is a Hono app mounting `/rpc`. Over the network it answers only `.public` requests: a server-only one answers `404`, while an in-process `send` from another server module reaches it. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
 - A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step injecting what the module does not provide, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.
-- The wire is oRPC, and only `core` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
+- The wire is oRPC, and only `@widgetarium/framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
 
 ## The frame transport
 

@@ -29,7 +29,7 @@ An interface the host lends (the tasks module's `BoardFile`) is a `hostObject("B
 ## One platform's code out of another's bundle
 
 - A data module's `"."` is the generated contract: a client package importing it carries no handler and no gateway.
-- Only `apps/server` resolves the `server` export condition and imports `@widgetarium/core/requests/server` (Hono, the oRPC server).
+- Only `apps/server` resolves the `server` export condition and imports `@widgetarium/framework/server` (Hono, the oRPC server).
 - Today a module's picker imports every platform's gateways, so a browser bundle carries the Tauri gateway code, guarded at run time (`TRADE-OFF:` in `state/layout/gateways/layout-parts/tauri.gateway.ts`). **planned**: a build-time platform condition, proven from the bundle's metafile.
 
 ## The Tauri host

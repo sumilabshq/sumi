@@ -1,6 +1,6 @@
 # Requests, handlers, guards
 
-Logic lives in handlers. A request is a contract (`query` or `command`), a handler answers it, a module defines where its handlers run. Everything is imported from `@widgetarium/core/requests`, and every declaration is a fluent chain: one concern per call, in the order it runs, every behaviour ending in `.handle()`.
+Logic lives in handlers. A request is a contract (`query` or `command`), a handler answers it, a module defines where its handlers run. Everything is imported from `@widgetarium/framework`, and every declaration is a fluent chain: one concern per call, in the order it runs, every behaviour ending in `.handle()`.
 
 **A module is named `<Domain><Side>Module`, and a handler names its module**: `handler(PricesQuery, ShopServerModule)` shows in the handler file that it runs on the server. `module.ts` holds only the definition; `widgetarium generate` joins it with every exported `*Handler` into `generated/module.ts`.
 
@@ -12,7 +12,7 @@ Anyone may ask. `PublicGuard` is written, never implied.
 
 ```ts
 import { z } from "zod";
-import { PublicGuard, handler, query, serverModule } from "@widgetarium/core/requests";
+import { PublicGuard, handler, query, serverModule } from "@widgetarium/framework";
 
 const PriceSchema = z.object({ sku: z.string(), cents: z.number() });
 
@@ -42,7 +42,7 @@ export const PricesQueryHandler = handler(PricesQuery, ShopServerModule)
 
 ```ts
 import { z } from "zod";
-import { AuthenticatedGuard, handler, query, serverModule } from "@widgetarium/core/requests";
+import { AuthenticatedGuard, handler, query, serverModule } from "@widgetarium/framework";
 
 export abstract class Orders {
 	abstract ofUser(userId: string): Promise<string[]>;
@@ -71,7 +71,7 @@ Module guards decide identity only. A guard that resolves a record stays on the 
 
 ```ts
 import { z } from "zod";
-import { AuthenticatedGuard, PerCall, command, deny, guard, handler, serverModule } from "@widgetarium/core/requests";
+import { AuthenticatedGuard, PerCall, command, deny, guard, handler, serverModule } from "@widgetarium/framework";
 
 interface Invoice {
 	readonly id: string;
@@ -119,7 +119,7 @@ A middleware wraps the rest of the chain with `next()` and returns its answer; i
 
 ```ts
 import { z } from "zod";
-import { PublicGuard, handler, middleware, query, serverModule } from "@widgetarium/core/requests";
+import { PublicGuard, handler, middleware, query, serverModule } from "@widgetarium/framework";
 
 export abstract class Logger {
 	abstract timed(request: string, ms: number): void;
