@@ -7,6 +7,7 @@ import {
 	createAndSendFound,
 	createEmptyFound,
 	createOnlyFound,
+	linkFound,
 	searchFound,
 } from "./made.js";
 import { rankedOf } from "./match.js";
@@ -32,6 +33,7 @@ export interface Typed {
 	readonly text: string;
 	readonly lower: string;
 	readonly isAddress: boolean;
+	readonly isSumiLink: boolean;
 	readonly host: string;
 	readonly matched: string;
 }
@@ -137,6 +139,10 @@ function newTabMenuOf(pools: Pools, typed: Typed, around: Around): DraftedMenu {
 }
 
 function newTabOpensOf(pools: Pools, typed: Typed): readonly Found[] {
+	if (typed.isSumiLink) {
+		return [linkFound(typed.text, "new-tab", "")];
+	}
+
 	if (typed.isAddress) {
 		return [addressFound(typed.text, "new-tab", "")];
 	}
@@ -183,6 +189,10 @@ function jumpBackOf(pools: Pools): readonly Found[] {
 }
 
 function opensTypedFound(typed: Typed, where: "new-tab" | "this-tab", shownTitle: string): Found {
+	if (typed.isSumiLink) {
+		return linkFound(typed.text, where, shownTitle);
+	}
+
 	return typed.isAddress ? addressFound(typed.text, where, shownTitle) : searchFound(typed.text, where);
 }
 

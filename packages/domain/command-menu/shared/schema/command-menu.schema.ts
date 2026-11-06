@@ -81,6 +81,11 @@ export const IntentSchema = z.discriminatedUnion("do", [
 		where: WhereSchema,
 	}),
 	z.object({
+		do: z.literal("open-link"),
+		href: z.string().min(1),
+		where: WhereSchema,
+	}),
+	z.object({
 		do: z.literal("run"),
 		command: MenuCommandSchema,
 	}),

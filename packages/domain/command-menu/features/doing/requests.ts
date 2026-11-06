@@ -5,6 +5,7 @@ import {
 	CloseTabCommand,
 	HeldTabsQuery,
 	OpenChatCommand,
+	OpenLinkCommand,
 	OpenNewChatCommand,
 	OpenTabCommand,
 	PinTabCommand,
@@ -109,6 +110,9 @@ async function performOpening(
 			return;
 		case "open-address":
 			return openAddress(intent, send, { newTabList, pageId });
+		case "open-link":
+			await send(OpenLinkCommand, { href: intent.href, opensNew: intent.where === "new-tab" });
+			return;
 		case "run":
 			return runMenuCommand(intent.command, send);
 		case "close-tab":

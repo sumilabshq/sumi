@@ -1,3 +1,4 @@
+import { isSumiLink } from "@widgetarium/core/engine/sumi-link.js";
 import { hostOf, isAddressLike } from "../../../shared/lib/address.js";
 import type { Door, Intent } from "../../../shared/schema/command-menu.schema.js";
 import type { Typed } from "./drafts.js";
@@ -10,6 +11,7 @@ export function typedOf(text: string): Typed {
 		text: said,
 		lower: said.toLowerCase(),
 		isAddress,
+		isSumiLink: isSumiLink(said),
 		host,
 		matched: isAddress ? (host.replace(/^www\./, "").split(".")[0] ?? "") : said.toLowerCase(),
 	};
@@ -31,11 +33,7 @@ export function fallbackIntentOf(typed: Typed, door: Door): Intent | null {
 		};
 	}
 
-	return {
-		do: "open-address",
-		address: typed.text,
-		where: "new-tab",
-	};
+	return newTabIntentOf(typed);
 }
 
 export function fallbackLabelOf(typed: Typed, door: Door): string {
@@ -47,7 +45,7 @@ export function fallbackLabelOf(typed: Typed, door: Door): string {
 		return "New tab";
 	}
 
-	return typed.isAddress ? "Open in a new tab" : "Search the web";
+	return typed.isAddress || typed.isSumiLink ? "Open in a new tab" : "Search the web";
 }
 
 export function askInkOf(typed: Typed): Intent | null {
@@ -56,4 +54,18 @@ export function askInkOf(typed: Typed): Intent | null {
 		text: typed.text,
 		sends: typed.text !== "",
 	};
+}
+
+function newTabIntentOf(typed: Typed): Intent {
+	return typed.isSumiLink
+		? {
+				do: "open-link",
+				href: typed.text,
+				where: "new-tab",
+			}
+		: {
+				do: "open-address",
+				address: typed.text,
+				where: "new-tab",
+			};
 }

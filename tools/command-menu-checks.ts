@@ -280,12 +280,17 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	);
 });
 
-await check("the header door fills the text with what is shown", async () => {
+await check("the header door fills the text with the shown tab's deep link", async () => {
 	ok(await studio.send(DoRowCommand, { intent: { do: "open-app", app: "canvas", title: "Canvas" } }));
 	ok(await studio.send(ToggleCommandMenuCommand, { door: "this-tab", text: null }));
 	const menu = ok(await studio.send(CommandMenuQuery));
-	assert.equal(menu.door, "anywhere");
-	assert.equal(menu.text, "Canvas");
+	assert.equal(menu.door, "this-tab");
+	assert.equal(menu.text, "sumi://canvas/");
+	const typedLink = ok(await studio.send(CommandMenuResultsQuery, { text: "sumi://tasks/T-1", door: "this-tab" }));
+	assert.ok(
+		JSON.stringify(typedLink.sections).includes('"do":"open-link"'),
+		"a typed sumi:// link offers to open that link",
+	);
 });
 
 await check("a chat in another workspace is found and opened there", async () => {

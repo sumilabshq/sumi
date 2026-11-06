@@ -23,6 +23,8 @@ export function confirmationOf(intent: Intent): string {
 			return `Opened ${intent.title}`;
 		case "open-address":
 			return openedSaidOf(intent.address, intent.where);
+		case "open-link":
+			return `Opened ${intent.href} ${intent.where === "new-tab" ? "in a new tab" : "in this tab"}`;
 		case "run":
 			return RAN[intent.command];
 		case "ask-ink":

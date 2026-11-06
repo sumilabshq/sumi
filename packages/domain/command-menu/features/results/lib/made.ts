@@ -22,6 +22,21 @@ export function addressFound(typed: string, where: "new-tab" | "this-tab", inste
 	});
 }
 
+export function linkFound(typed: string, where: "new-tab" | "this-tab", instead: string): Found {
+	return madeOf({
+		key: `link:${where}`,
+		kind: "address",
+		title: `Open ${typed}`,
+		meta: where === "new-tab" ? NEW_TAB : insteadOf(instead),
+		glyph: "globe",
+		intent: {
+			do: "open-link",
+			href: typed,
+			where,
+		},
+	});
+}
+
 export function searchFound(typed: string, where: "new-tab" | "this-tab"): Found {
 	return madeOf({
 		key: `search:${where}`,
