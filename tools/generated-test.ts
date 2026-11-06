@@ -306,7 +306,8 @@ function generatedFilesOf(root: string): string[] {
 			fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name, "generated")),
 		)
 		.filter((generated) => fs.existsSync(generated))
-		.flatMap((generated) => fs.readdirSync(generated).map((name) => path.join(generated, name)));
+		.flatMap((generated) => fs.readdirSync(generated).map((name) => path.join(generated, name)))
+		.filter((file) => file.endsWith(".ts"));
 }
 
 function reExportsUnder(folder: string): string[] {

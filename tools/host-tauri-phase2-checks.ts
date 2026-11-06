@@ -29,6 +29,7 @@ import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/wor
 import { check, waitFor } from "./check-helpers.ts";
 import type { AssistantTurn } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
+import { placesOver } from "./places-fixture.ts";
 
 const WORKSPACE_PANES: DocKind<WindowsPanes> = {
 	file: "session.json",
@@ -72,7 +73,7 @@ async function railChecks(): Promise<void> {
 	fake.known.set(RESEARCH.id, RESEARCH);
 	const reopened: string[] = [];
 	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
-	const workspacesApp = app().modules(WorkspacesModule.with(parts)).start();
+	const workspacesApp = app().modules(WorkspacesModule.with(parts)).imports(placesOver()).start();
 	reopensOnWorkspaceSwitch(workspacesApp, DEFAULT.id, async () => void reopened.push("reopen"));
 	await quietly(() => waitFor(() => parts.workspaces.workspaces().length === 2));
 	const apps = tauriWorkspaceApps({ workspaces: new WorkspaceClient(fake.invoke), workspacesApp });
