@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { IconButton } from "@widgetarium/kit";
+import { IconButton, tooltipMarks } from "@widgetarium/kit";
 
 export interface InertButtonProps {
 	readonly label: string;
@@ -10,7 +10,14 @@ export interface InertButtonProps {
 
 export function InertButton({ label, className, children }: InertButtonProps): ReactElement {
 	return (
-		<IconButton variant="ghost" className={className} label={label} aria-disabled="true" data-ws-inert="">
+		<IconButton
+			variant="ghost"
+			className={className}
+			label={label}
+			aria-disabled="true"
+			data-ws-inert=""
+			{...tooltipMarks({ said: label, side: "bottom" })}
+		>
 			{children}
 		</IconButton>
 	);

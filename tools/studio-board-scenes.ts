@@ -271,26 +271,26 @@ const CHAT_PLATE: readonly Pair[] = [
 	{
 		name: "chat crumb",
 		board: "main.x-plate > header > .x-crumb",
-		built: ".wg-plate-head.is-chat .wg-ws-crumb",
+		built: ".wg-plate-head.is-chat [data-ws-crumb]",
 		isPlaced: true,
 		skip: TEXT_SIZE,
 	},
 	{
 		name: "crumb workspace",
 		board: "main.x-plate > header > .x-crumb > span:nth-child(1)",
-		built: ".wg-plate-head.is-chat .wg-ws-crumb-workspace",
+		built: ".wg-plate-head.is-chat [data-ws-crumb] .wg-plate-crumb-first",
 		only: WORDS,
 	},
 	{
 		name: "crumb slash",
 		board: "main.x-plate > header > .x-crumb > span:nth-child(2)",
-		built: ".wg-plate-head.is-chat .wg-ws-crumb-slash",
+		built: ".wg-plate-head.is-chat [data-ws-crumb] .wg-plate-crumb-slash",
 		only: WORDS,
 	},
 	{
 		name: "crumb chat",
 		board: "main.x-plate > header > .x-crumb > span:nth-child(3)",
-		built: ".wg-plate-head.is-chat .wg-ws-crumb-chat",
+		built: ".wg-plate-head.is-chat [data-ws-crumb] .wg-plate-crumb-second",
 		only: WORDS,
 	},
 ];

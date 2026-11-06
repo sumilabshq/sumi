@@ -841,12 +841,6 @@
 	color: var(--sumi-text-3);
 }
 
-.wg-ws-crumb-chat {
-	font-weight: var(--sumi-fw-medium);
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
 .wg-ws-row[data-ws-lifted] {
 	opacity: 0.35;
 }
