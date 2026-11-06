@@ -40,11 +40,11 @@ check(
 	true,
 );
 
-const mainOff = resolvePlugins({ plugins: ["sumi-host"], locked: ["sumi-host", "main"] });
+const emptyProfile = resolvePlugins({ plugins: [] });
 check(
-	"turning the locked main plugin off is refused, and its modules do not start",
-	[mainOff.refusals, mainOff.sharedModules],
-	[["sumi.profile.json locks plugin main, which it does not enable: a locked plugin cannot be disabled"], []],
+	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app",
+	[emptyProfile.refusals, emptyProfile.sharedModules.length],
+	[[], 3],
 );
 
 const boardText: { text: string | null } = {
@@ -88,8 +88,7 @@ startedCore.stop();
 const profileFiles = new FakeStore();
 profileFiles.put("workspace:research:sumi.profile.json", {
 	v: 1,
-	plugins: ["sumi-host"],
-	locked: [],
+	plugins: ["ghost"],
 });
 const profileStore = new StoreClient(profileFiles.invoke, undefined);
 const researchProfile = await workspaceProfileOf(profileStore, "research");
@@ -97,18 +96,12 @@ const defaultProfile = await workspaceProfileOf(profileStore, "default");
 check(
 	"each workspace reads its own sumi.profile.json, and one without the file gets the built-in plugins",
 	[researchProfile, defaultProfile],
-	[
-		{
-			plugins: ["sumi-host"],
-			locked: [],
-		},
-		BUILT_IN_PROFILE,
-	],
+	[{ plugins: ["ghost"] }, BUILT_IN_PROFILE],
 );
 check(
-	"a workspace that does not enable main starts none of the old app's modules",
-	resolvePlugins(researchProfile).sharedModules.length,
-	0,
+	"a plugin listed by one workspace is resolved for that workspace only",
+	[resolvePlugins(researchProfile).refusals, resolvePlugins(defaultProfile).refusals],
+	[["sumi.profile.json lists plugin ghost, which is not installed"], []],
 );
 
 if (tally.failed > 0) {

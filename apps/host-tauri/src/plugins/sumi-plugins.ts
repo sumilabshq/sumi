@@ -12,14 +12,16 @@ export interface ResolvedPlugins {
 const INSTALLED_PLUGINS = [SumiHostPlugin, MainPlugin];
 const SHARED_MODULES = stampSlotName(SumiHostPlugin.id, SharedModulesSlot);
 
+const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, MainPlugin.id];
+
 export const BUILT_IN_PROFILE: SumiProfile = {
-	plugins: ["sumi-host", "main"],
-	locked: ["sumi-host", "main"],
+	plugins: [],
 };
 
 export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
-	const startOrder = startOrderOf(INSTALLED_PLUGINS, profile.plugins);
-	const slotFills = slotFillsOf(startOrder.plugins, profile.plugins);
+	const enabledIds = [...ALWAYS_ON_PLUGINS, ...profile.plugins.filter((id) => !ALWAYS_ON_PLUGINS.includes(id))];
+	const startOrder = startOrderOf(INSTALLED_PLUGINS, enabledIds);
+	const slotFills = slotFillsOf(startOrder.plugins, enabledIds);
 	const sharedFills = slotFills.slots.get(SHARED_MODULES)?.fills ?? [];
 
 	return {

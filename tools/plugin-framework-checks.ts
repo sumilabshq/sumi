@@ -99,16 +99,19 @@ check(
 );
 
 check(
-	"a profile listing an unknown or repeated plugin, or locking one it does not enable, is refused",
-	profileRefusalsOf([LayoutPlugin, LayoutPlugin], { plugins: ["layout", "ghost", "layout"], locked: ["chat"] }),
+	"a profile listing an unknown or repeated plugin is refused",
+	profileRefusalsOf([LayoutPlugin, LayoutPlugin], { plugins: ["layout", "ghost", "layout"] }),
 	[
 		"two installed plugins are both named layout",
 		"sumi.profile.json lists plugin layout twice",
 		"sumi.profile.json lists plugin ghost, which is not installed",
-		"sumi.profile.json locks plugin chat, which it does not enable: a locked plugin cannot be disabled",
 	],
 );
-check("a profile without locked plugins locks none", profile.locked, []);
+check(
+	"a profile with a key it does not know, such as locked, is refused when parsed",
+	SumiProfileSchema.safeParse({ plugins: [], locked: [] }).success,
+	false,
+);
 check(
 	"a profile with an unknown key is refused when parsed",
 	SumiProfileSchema.safeParse({ plugins: [], overrides: [] }).success,

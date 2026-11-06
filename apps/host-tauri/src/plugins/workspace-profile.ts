@@ -7,7 +7,6 @@ import { BUILT_IN_PROFILE } from "./sumi-plugins.js";
 
 const KeptProfileSchema = z.looseObject({
 	plugins: z.array(PluginIdSchema),
-	locked: z.array(PluginIdSchema).default([]),
 });
 
 type KeptProfile = z.infer<typeof KeptProfileSchema>;
@@ -25,9 +24,7 @@ export async function workspaceProfileOf(store: StoreClient, workspace: string):
 		kind: WORKSPACE_PROFILE,
 		empty: BUILT_IN_PROFILE,
 	});
-	const { plugins, locked } = held.now();
 	return {
-		plugins,
-		locked,
+		plugins: held.now().plugins,
 	};
 }
