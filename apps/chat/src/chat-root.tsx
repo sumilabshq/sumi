@@ -1,9 +1,9 @@
-import { createElement as h, useEffect, useState } from "react";
+import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
-import { AppTabQuery, catchLinks, wearSumiTheme } from "@sumi/contract";
+import { catchLinks, wearSumiTheme } from "@sumi/contract";
 import { ChatOfTab } from "./chat-of-tab.js";
 import type { SumiShell } from "./sumi/sumi-shell.js";
-import type { TabRead } from "./tab-read.js";
+import { useTabChat } from "./use-tab-chat.js";
 
 export function ChatRoot({ shell }: { readonly shell: SumiShell }): ReactElement {
 	const tab = useTabChat(shell);
@@ -13,35 +13,6 @@ export function ChatRoot({ shell }: { readonly shell: SumiShell }): ReactElement
 			<ChatOfTab tab={tab} shell={shell.app} />
 		</div>
 	);
-}
-
-function useTabChat({ app, transport, tabId }: SumiShell): TabRead {
-	const [tab, setTab] = useState<TabRead>({
-		kind: "reading",
-	});
-	useEffect(() => {
-		const read = (): void =>
-			void app
-				.send(AppTabQuery, {
-					id: tabId,
-				})
-				.then((answer) =>
-					setTab(
-						answer.ok
-							? {
-									kind: "read",
-									chatId: answer.output.chatId,
-								}
-							: {
-									kind: "failed",
-									reason: answer.reason,
-								},
-					),
-				);
-		read();
-		return transport.changes(read);
-	}, [app, transport, tabId]);
-	return tab;
 }
 
 function useWearsSumi({ app, transport, tabId }: SumiShell): void {

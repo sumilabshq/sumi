@@ -13,15 +13,15 @@ export interface AssistantChatProps {
 	readonly chatId?: string | undefined;
 }
 
-const NOT_REREAD = "The assistant's setup could not be read again: {why}";
+const NOT_READ = "The assistant's setup could not be read: {why}";
 
 export function AssistantChat({ lead, title, cards, chatId }: AssistantChatProps): ReactElement {
 	const { data: setup, failure } = useOptionalQuery(AgentSetupQuery);
 
-	if (setup === null) {
-		return <SetupUnread lead={lead} title={title} failure={failure} />;
+	if (setup === null && failure === null) {
+		return <SetupUnread lead={lead} title={title} />;
 	}
 
-	const setupFailure = failure === null ? null : NOT_REREAD.replace("{why}", failure);
+	const setupFailure = failure === null ? null : NOT_READ.replace("{why}", failure);
 	return <ReadyChat setupFailure={setupFailure} lead={lead} title={title} cards={cards} chatId={chatId} />;
 }

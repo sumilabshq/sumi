@@ -12,11 +12,9 @@ export const PORT_WANTED = "widgetarium:port-wanted";
 
 const PORT_GIVEN = "widgetarium:port-given";
 const PORT_WAIT_MS = 10_000;
-const MOST_IN_FLIGHT = 64;
 const NO_PORT = "no window above this page handed it a port within {ms} ms; is it opened inside Sumi?";
 const NOT_AN_ANSWER = "{name}: the port answered something that is not an answer";
 const NOT_SENT = "{name}: the call could not cross the port ({failure})";
-const TOO_MANY = "{name}: more than {most} calls are waiting on this port; try again shortly";
 const NOT_A_CALL = "[widgetarium] a call reached the port in a shape it does not read";
 const NOT_READ = "[widgetarium] the port said something that is neither an answer nor a change";
 
@@ -148,7 +146,6 @@ class PortCalls implements RemoteTransport {
 
 class PortAnswers {
 	private readonly stopping = new AbortController();
-	private inFlight = 0;
 
 	constructor(
 		private readonly port: MessagePort,
@@ -174,20 +171,12 @@ class PortAnswers {
 			return;
 		}
 
-		this.inFlight += 1;
-		const answer = await this.answerOf(call.data).finally(() => {
-			this.inFlight -= 1;
-		});
+		const answer = await this.answerOf(call.data);
 		this.listening.onAnswered?.(answer);
 		this.post(call.data.id, answer);
 	}
 
 	private answerOf({ name, input, idempotencyKey }: PortCall): Promise<Answer<unknown>> {
-		if (this.inFlight > MOST_IN_FLIGHT) {
-			const most = String(MOST_IN_FLIGHT);
-			return Promise.resolve(refusalOf("rate-limited", TOO_MANY.replace("{name}", name).replace("{most}", most)));
-		}
-
 		const { signal } = this.stopping;
 		const headers = new Headers(this.listening.headers);
 		return this.server

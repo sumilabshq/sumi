@@ -2,12 +2,13 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { ASSISTANT_NOT_AVAILABLE } from "@widgetarium/core/engine/assistant-port.js";
 import { Toaster } from "@widgetarium/kit";
-import { OnRefused, useQuery } from "@widgetarium/core/requests";
+import { OnRefused, Slot, useQuery } from "@widgetarium/core/requests";
 import { toastsAttachmentRefusals } from "../../lib/refusals-shown.js";
 import { NO_CHAT_CARDS_SLOT } from "../../lib/chat-cards-slot.js";
 import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { AssistantChat } from "../assistant-chat/assistant-chat.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
+import { ChatUnread } from "../chat-unread/chat-unread.js";
 import { ChatQuery } from "@widgetarium/assistant";
 
 export interface AssistantPanelProps {
@@ -17,7 +18,18 @@ export interface AssistantPanelProps {
 	readonly chatId?: string | undefined;
 }
 
-export function AssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT, chatId }: AssistantPanelProps): ReactElement {
+export function AssistantPanel(props: AssistantPanelProps): ReactElement {
+	return (
+		<Slot
+			loading={null}
+			error={(reason) => <ChatUnread lead={props.lead} title={props.title} reason={reason} />}
+		>
+			<ReadAssistantPanel {...props} />
+		</Slot>
+	);
+}
+
+function ReadAssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT, chatId }: AssistantPanelProps): ReactElement {
 	const { data: chat } = useQuery(ChatQuery);
 	return (
 		<div className="wg-root wg-studio-ai-host">

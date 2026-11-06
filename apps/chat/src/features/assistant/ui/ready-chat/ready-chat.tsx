@@ -15,6 +15,7 @@ import { useFailureLine } from "../../lib/failure-line.js";
 import { scrollToCard } from "../../lib/scroll-to-card.js";
 import { BareLead } from "../chat-lead/bare-lead.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
+import { ChatPart } from "../chat-part/chat-part.js";
 import { FailureSaid } from "../failure-said/failure-said.js";
 import { QuestionsDock } from "../../../questions/ui/questions-dock/questions-dock.js";
 import { ChatTurns } from "./chat-turns.js";
@@ -77,7 +78,11 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			/>
 			<Composer
 				busy={session.busy}
-				strip={<ClaudeStrip isEmpty={isEmpty} />}
+				strip={
+					<ChatPart>
+						<ClaudeStrip isEmpty={isEmpty} />
+					</ChatPart>
+				}
 				isFirst={isEmpty}
 				attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
 				onSend={asks.send}

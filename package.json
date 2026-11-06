@@ -83,6 +83,8 @@
 		"test:body-lock": "node --single-threaded --import ./tools/loader/register.mts tools/body-lock-test.ts",
 		"test:mascot": "node --single-threaded --import ./tools/loader/register.mts tools/mascot-test.ts",
 		"test:chat-tab-icon": "node --single-threaded --import ./tools/loader/register.mts tools/chat-tab-icon-test.ts",
+		"test:chat-tab-read": "node --single-threaded --import ./tools/loader/register.mts tools/chat-tab-read-test.ts",
+		"test:chat-refusals": "node --single-threaded --import ./tools/loader/register.mts tools/chat-refusals-test.ts",
 		"test:shell-frame": "node --single-threaded --import ./tools/loader/register.mts tools/shell-frame-test.ts",
 		"test:tasks": "node --single-threaded --import ./tools/loader/register.mts tools/tasks-rules-test.ts",
 		"test:links": "node --single-threaded --import ./tools/loader/register.mts tools/links-test.ts",

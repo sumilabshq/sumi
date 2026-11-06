@@ -91,7 +91,8 @@ export class LocalRoutes {
 
 		const { authenticate } = this.parts;
 		const user = authenticate === null ? null : await authenticate.userOf(asked.sending.headers ?? NO_HEADERS);
-		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user } };
+		const isOverNetwork = asked.sending.isOverNetwork === true;
+		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user, isOverNetwork } };
 		return this.throughSteps({ route, asked, settle }, call, 0);
 	}
 

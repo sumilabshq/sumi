@@ -5,6 +5,7 @@ import { CompactLine } from "../compact-line/compact-line.js";
 import { Turn } from "../turn/turn.js";
 import { Starters } from "../starters/starters.js";
 import type { CardAsks, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
+import { ChatPart } from "../chat-part/chat-part.js";
 import { BusyLine } from "./busy-line.js";
 import { EndLine } from "./end-line.js";
 import type { Chat } from "@widgetarium/assistant";
@@ -20,7 +21,11 @@ export function ChatTurns({ chat, cards, asks }: ChatTurnsProps): ReactElement {
 	const { session } = chat;
 
 	if (session.turns.length === 0) {
-		return <EmptyChat starters={<Starters />} />;
+		return (
+			<ChatPart>
+				<EmptyChat starters={<Starters />} />
+			</ChatPart>
+		);
 	}
 
 	return (

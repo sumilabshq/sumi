@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { KeyboardEvent, RefObject } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useOptionalQuery } from "@widgetarium/core/requests";
 import type { MenuSpot } from "./menu-spot.js";
 import { slashAskOf, slashEntriesOf } from "./slash-matches.js";
 import type { SlashAsk, SlashEntry } from "./slash-matches.js";
@@ -34,7 +34,7 @@ const NO_MATCHES: readonly SlashEntry[] = [];
 const ABOVE_FIELD_PX = 4;
 
 export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
-	const { data: names } = useQuery(SlashCommandsQuery);
+	const names = useOptionalQuery(SlashCommandsQuery).data ?? [];
 	const clear = useCommand(ClearChatCommand);
 	const compact = useCommand(CompactChatCommand);
 	const [held, setHeld] = useState<SlashHeld>({

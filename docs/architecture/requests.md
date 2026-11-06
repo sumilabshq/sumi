@@ -201,7 +201,7 @@ client: input → module steps → request steps → idempotency key (minted if 
 server: input → Authenticate → default rate limit → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
 ```
 
-- **Rate limit:** `SERVER_RATE_LIMIT` (120 calls a minute per request and user) runs before every written step unless one of them is a `rateLimit(...)`. TODO: anonymous callers share one bucket per request.
+- **Rate limit:** `SERVER_RATE_LIMIT` (120 calls a minute per request and user) runs before every written step unless one of them is a `rateLimit(...)`. Every rate limit counts only calls that arrive over the network (`fetch`); a call through a listened transport (local, message port, Tauri IPC) is in-process and never limited. TODO: anonymous callers share one bucket per request.
 - **In-flight dedup:** a second identical query waits for the first. On the server it is keyed by request, input and user.
 - Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 
