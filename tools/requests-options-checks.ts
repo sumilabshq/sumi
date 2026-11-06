@@ -1,4 +1,5 @@
 import {
+	CallLoggerMiddleware,
 	HasPermissionGuard,
 	MemoryRateLimits,
 	RateLimitMiddleware,
@@ -76,3 +77,14 @@ check(
 await OptionsRecordingMiddleware.handle(stepCallHolding([]), NOTHING_INJECTED, passingNext);
 await OptionsRecordingMiddleware("timed").handle(stepCallHolding([]), NOTHING_INJECTED, passingNext);
 check("a step with optional options runs bare with none, and called with the ones given", optionsSeen, [[], ["timed"]]);
+
+const linesLogged: unknown[] = [];
+const logInfo = console.info;
+console.info = (line: unknown) => {
+	linesLogged.push(line);
+};
+await CallLoggerMiddleware("terminal", () => "(3 chars)").handle(stepCallHolding([]), NOTHING_INJECTED, passingNext);
+console.info = logInfo;
+check("a call logger writes its area, the calling app, the request and the detail it was given", linesLogged, [
+	"[terminal] app editor → pages/rename (3 chars)",
+]);

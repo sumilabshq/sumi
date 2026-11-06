@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, guard, middleware, query } from "@widgetarium/data-framework";
+import { CallLoggerMiddleware, PerCall, Repeatable, command, guard, query } from "@widgetarium/data-framework";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { FilesGateway } from "../../gateways/files/files.gateway.js";
 import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
@@ -11,7 +11,6 @@ import {
 	WriteFileInputSchema,
 } from "../../shared/schema/files.schema.js";
 
-const CALLED = "[file-system] app {app} → {request} {paths}";
 const PATH_KEYS: readonly string[] = ["path", "from", "to"];
 
 // TODO: per-app grants (folders, no remove); every app reaches every path today
@@ -19,14 +18,7 @@ export const FileAccessGuard = guard()
 	.needsUser()
 	.handle(() => undefined);
 
-export const FileCallLoggerMiddleware = middleware().handle(({ request, input, context }, _injected, next) => {
-	console.info(
-		CALLED.replace("{app}", context.user?.id ?? "none")
-			.replace("{request}", request)
-			.replace("{paths}", JSON.stringify(pathsOf(input))),
-	);
-	return next();
-});
+export const FileCallLoggerMiddleware = CallLoggerMiddleware("file-system", (input) => JSON.stringify(pathsOf(input)));
 
 export const ReadFileQuery = query("read-file")
 	.input(PathInputSchema)

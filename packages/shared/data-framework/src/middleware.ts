@@ -94,6 +94,7 @@ const NOTHING_INJECTED: NothingAdded = Object.freeze({});
 const NO_STEP_OPTIONS: StepOptions = Object.freeze([]);
 const RATE_LIMITED = "{name} was called too often; try again shortly";
 const WHOLE_CALL = "";
+const CALLED = "[{area}] app {app} → {request} {detail}";
 
 export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends StepOptions = never> {
 	constructor(
@@ -136,6 +137,18 @@ export const RateLimitMiddleware = middleware()
 	.handle(async ({ request, context, options: [limit] }, { rateLimits }, next) => {
 		if (await rateLimits.take(callerKeyOf(request, context.user, WHOLE_CALL), limit)) return next();
 		return refusalOf("rate-limited", RATE_LIMITED.replace("{name}", request));
+	});
+
+export const CallLoggerMiddleware = middleware()
+	.options<[area: string, detailOf: (input: unknown) => string]>()
+	.handle(({ request, input, context, options: [area, detailOf] }, _injected, next) => {
+		console.info(
+			CALLED.replace("{area}", area)
+				.replace("{app}", context.user?.id ?? "none")
+				.replace("{request}", request)
+				.replace("{detail}", detailOf(input)),
+		);
+		return next();
 	});
 
 export function declareStep<S extends Step, O extends StepOptions>(

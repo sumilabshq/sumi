@@ -1,9 +1,9 @@
 import {
+	CallLoggerMiddleware,
 	PerCall,
 	Repeatable,
 	command,
 	guard,
-	middleware,
 	query,
 	refuse,
 	subscriber,
@@ -18,7 +18,7 @@ import {
 	TypeTerminalInputSchema,
 } from "../../shared/schema/terminal.schema.js";
 
-const CALLED = "[terminal] app {app} → {request} ({chars} chars)";
+const CHARS_SENT = "({chars} chars)";
 const NO_APP = "only an app has a terminal: the call carries no app";
 
 // TODO: per-app grants (which commands may run); every app may type anything today
@@ -26,14 +26,9 @@ export const TerminalAccessGuard = guard()
 	.needsUser()
 	.handle(() => undefined);
 
-export const TerminalCallLoggerMiddleware = middleware().handle(({ request, input, context }, _injected, next) => {
-	console.info(
-		CALLED.replace("{app}", context.user?.id ?? "none")
-			.replace("{request}", request)
-			.replace("{chars}", String(charsOf(input))),
-	);
-	return next();
-});
+export const TerminalCallLoggerMiddleware = CallLoggerMiddleware("terminal", (input) =>
+	CHARS_SENT.replace("{chars}", String(charsOf(input))),
+);
 
 export const TerminalOutputQuery = query("terminal-output")
 	.output(TerminalOutputSchema)

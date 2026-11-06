@@ -1,4 +1,13 @@
-import { Repeatable, command, deny, guard, middleware, query, refuse, subscriber } from "@widgetarium/data-framework";
+import {
+	CallLoggerMiddleware,
+	Repeatable,
+	command,
+	deny,
+	guard,
+	query,
+	refuse,
+	subscriber,
+} from "@widgetarium/data-framework";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { WebPagesChangedEvent } from "../../gateways/web-pages/web-pages.events.js";
@@ -23,7 +32,7 @@ interface PageReach {
 	readonly invalidate: Invalidate;
 }
 
-const CALLED = "[web-page] app {app} → {request} tab {tab}";
+const TAB_CALLED = "tab {tab}";
 const NOT_ITS_TAB = "tab {tab} does not hold the app {app}";
 const NO_PAGE = "tab {tab} holds no web page: open one first";
 const NOT_OPENED = "the web page was not opened: {reason}";
@@ -62,16 +71,9 @@ export const AppOwnsTabGuard = guard<{ readonly tab: string }>()
 		}
 	});
 
-// TODO: one call logger for file-system, terminal and web-page
-export const WebPageCallLoggerMiddleware = middleware().handle(({ request, input, context }, _injected, next) => {
-	const said = WebPageTabSchema.safeParse(input);
-	console.info(
-		CALLED.replace("{app}", context.user?.id ?? "none")
-			.replace("{request}", request)
-			.replace("{tab}", said.success ? said.data.tab : "none"),
-	);
-	return next();
-});
+export const WebPageCallLoggerMiddleware = CallLoggerMiddleware("web-page", (input) =>
+	TAB_CALLED.replace("{tab}", WebPageTabSchema.safeParse(input).data?.tab ?? "none"),
+);
 
 export const WebPageQuery = query("web-page")
 	.input(WebPageTabSchema)

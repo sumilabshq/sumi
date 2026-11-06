@@ -21,7 +21,7 @@ export type { Duration, DurationParts } from "./duration";
 export { AuthenticatedGuard, GuardBuilder, HasPermissionGuard, PublicGuard, deny, guard } from "./guard";
 export type { Guard, InputGuard, OpenGuard, Signed, User, UserGuard } from "./guard";
 export { ClientHandlerBuilder, GuardedHandlerBuilder, HandlerDraft, NEEDS_GUARD, handler } from "./handler";
-export { MiddlewareBuilder, RateLimitMiddleware, middleware } from "./middleware";
+export { CallLoggerMiddleware, MiddlewareBuilder, RateLimitMiddleware, middleware } from "./middleware";
 export type {
 	Added,
 	Middleware,
