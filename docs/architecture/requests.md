@@ -176,7 +176,7 @@ A module's `.guard()` and `.use()` run before every listed request, on either si
 | `.guard(HasPermissionGuard(perm))`                    | refuses a user without the permission                                                        |
 | `.guard(guard<In>().inject({…}).handle(check))`       | a project's guard: `deny(reason)` refuses `forbidden`, a returned object adds to the context |
 | `guard().needsUser()`                                 | refuses `unauthenticated` with no user before its check, and covers the request              |
-| `.use(rateLimit({ calls, per }))`                     | refuses `rate-limited` past the limit; without one a server runs its own first               |
+| `.use(rateLimit({ calls, per }))`                     | refuses `rate-limited` past the limit; nothing is limited without one                        |
 | `.use(middleware().adds<A>().inject({…}).handle(fn))` | a project's middleware: wraps `next(added?)` and returns its answer                          |
 
 - **Module guards decide identity only** (`PublicGuard`, `AuthenticatedGuard`, `HasPermissionGuard`); they read no input. Ownership is a request's own guard: it resolves the record, checks its owner, refuses with `deny`, and returns the record for the handler to read from the context.
@@ -198,10 +198,10 @@ export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
 
 ```
 client: input → module steps → request steps → idempotency key (minted if PerCall and absent) → in-flight dedup → handle → output
-server: input → Authenticate → default rate limit → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
+server: input → Authenticate → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
 ```
 
-- **Rate limit:** `SERVER_RATE_LIMIT` (120 calls a minute per request and user) runs before every written step unless one of them is a `rateLimit(...)`. Every rate limit counts only calls that arrive over the network (`fetch`); a call through a listened transport (local, message port, Tauri IPC) is in-process and never limited. TODO: anonymous callers share one bucket per request.
+- **Rate limit:** only where declared: `.use(rateLimit({ calls, per }))` on a module or a request. There is no default, on a server or a device. TODO: anonymous callers share one bucket per request.
 - **In-flight dedup:** a second identical query waits for the first. On the server it is keyed by request, input and user.
 - Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 

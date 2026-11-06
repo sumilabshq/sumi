@@ -137,8 +137,7 @@ check("a guard and a middleware add to the context the handler reads", await edi
 	ok: true,
 	output: { user: "editor", startedAt: fx.STARTED_AT },
 });
-check("the default rate limit runs first, and a middleware wraps the rest of the chain", fx.traced, [
-	"rate limit",
+check("a request with no declared rate limit is never counted, and a middleware wraps the chain", fx.traced, [
 	"before",
 	"handler",
 	"after",
@@ -150,8 +149,7 @@ check(
 	await editor.send(fx.OrderedCommand, { note: "o-1" }),
 	{ ok: true, output: "editor" },
 );
-check("the default limit runs first, then module steps, the handler's, the key and the handle", fx.traced, [
-	"rate limit",
+check("module steps run first, then the handler's, the key and the handle", fx.traced, [
 	"module use",
 	"handler use",
 	"key",
@@ -162,7 +160,7 @@ const refusedByModule = await anonymous.send(fx.OrderedCommand, { note: "o-2" })
 check(
 	"the module guard refuses after the module middleware, before the handler's own",
 	[refusedByModule.ok ? "ran" : refusedByModule.code, fx.traced],
-	["unauthenticated", ["rate limit", "module use"]],
+	["unauthenticated", ["module use"]],
 );
 
 fx.shutGate();
@@ -273,7 +271,7 @@ check(
 	await anonymous.send(fx.SecretQuery),
 	{
 		ok: false,
-		reason: "step #2 of pages/secret answered without next(): a step may only refuse",
+		reason: "step #1 of pages/secret answered without next(): a step may only refuse",
 		code: "failed",
 		ran: false,
 	},
@@ -285,7 +283,7 @@ check(
 	[
 		{
 			ok: false,
-			reason: "step #2 of pages/who-else replaced user, which only the server sets",
+			reason: "step #1 of pages/who-else replaced user, which only the server sets",
 			code: "failed",
 			ran: false,
 		},

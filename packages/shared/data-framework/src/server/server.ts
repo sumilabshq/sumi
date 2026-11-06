@@ -267,12 +267,7 @@ function wireProcedureOf(request: AnyRequest, mediator: Mediator, changed: Chang
 		const call = WireCallSchema.safeParse(input);
 		if (!call.success) return refusalOf("invalid-input", NOT_A_CALL);
 		const { idempotencyKey } = call.data;
-		const sending = {
-			headers: context.headers,
-			signal,
-			isOverNetwork: true,
-			...(idempotencyKey === null ? {} : { idempotencyKey }),
-		};
+		const sending = { headers: context.headers, signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
 		const answered = await mediator.send(request, call.data.input, sending);
 		changed.tell(answered.ok ? answered.invalidated : undefined);
 		return answered;

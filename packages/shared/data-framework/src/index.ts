@@ -84,7 +84,7 @@ export type {
 } from "./module";
 export { permission } from "./permission";
 export type { Permission } from "./permission";
-export { MemoryRateLimits, RateLimits, SERVER_RATE_LIMIT } from "./rate-limits";
+export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
 export { reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";

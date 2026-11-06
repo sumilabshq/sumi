@@ -15,7 +15,6 @@ export interface Sending {
 	readonly headers?: Headers | undefined;
 	readonly fromModule?: string | undefined;
 	readonly fromRuns?: Runs | undefined;
-	readonly isOverNetwork?: boolean | undefined;
 }
 
 export type KeyMinting = "client-mints" | "caller-gives";

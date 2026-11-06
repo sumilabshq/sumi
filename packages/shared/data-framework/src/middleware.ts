@@ -14,7 +14,6 @@ export type NoCallFacts = { readonly [K in keyof CallFacts]?: never };
 
 export interface StepContext {
 	readonly user: User | null;
-	readonly isOverNetwork: boolean;
 }
 
 export interface StepCall<In = unknown> {
@@ -95,7 +94,6 @@ export function rateLimit(limit: RateLimit): Middleware {
 	const limited = middleware()
 		.inject(LIMITED_BY)
 		.handle(async ({ request, context }, { rateLimits }, next) => {
-			if (!context.isOverNetwork) return next();
 			if (await rateLimits.take(callerKeyOf(request, context.user, WHOLE_CALL), limit)) return next();
 			return refusalOf("rate-limited", RATE_LIMITED.replace("{name}", request));
 		});

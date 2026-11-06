@@ -1,4 +1,3 @@
-import { minutes } from "./duration";
 import type { Duration } from "./duration";
 
 export interface RateLimit {
@@ -14,8 +13,6 @@ interface Window {
 	readonly startedAt: number;
 	readonly calls: number;
 }
-
-export const SERVER_RATE_LIMIT: RateLimit = { calls: 120, per: minutes(1) };
 
 export class MemoryRateLimits extends RateLimits {
 	private readonly windows = new Map<string, Window>();
