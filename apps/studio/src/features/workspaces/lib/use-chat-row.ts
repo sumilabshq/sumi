@@ -1,4 +1,4 @@
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import { ChatListQuery } from "@widgetarium/app-host";
 import type { ChatRowData } from "@widgetarium/app-host";
 

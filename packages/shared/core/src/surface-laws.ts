@@ -1,5 +1,5 @@
 import type { Rgba } from "./color-math.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import {
 	colorIn,
 	depthReason,

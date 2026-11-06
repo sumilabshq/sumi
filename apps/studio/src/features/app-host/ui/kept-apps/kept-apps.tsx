@@ -2,7 +2,7 @@ import { createElement as h, Fragment, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { HeldTabsQuery } from "@widgetarium/app-host";
 import type { AppKind, HeldTabs } from "@widgetarium/app-host";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 
 export interface KeptInstance {
 	readonly app: AppKind;

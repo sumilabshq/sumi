@@ -2,7 +2,7 @@ import { contentHash } from "./content-hash.js";
 import { nameIn } from "./modules.js";
 import { isWidgetModule } from "./widget-files.js";
 import { REACH_SCAN_VERSION } from "./widget-reach/reach-scan.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { Fields } from "./catalogue-index.js";
 
 type HashedFiles = Readonly<Record<string, string>>;

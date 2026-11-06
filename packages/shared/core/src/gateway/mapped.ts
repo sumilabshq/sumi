@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { CollectionGateway, FilterRow, Query, RecordRef, Row, RowsResult, SortRow } from "@widgetarium/framework/gateway/contract";
+import type { CollectionGateway, FilterRow, Query, RecordRef, Row, RowsResult, SortRow } from "@widgetarium/data-framework/gateway/contract";
 import { collectionGateway, valueIn } from "./create";
 import { fieldsOf, isBoolean, isDay, isNumber } from "./fields";
 import type { FieldReport } from "./fields";
@@ -7,13 +7,13 @@ import { fieldOf } from "./match";
 import { delegateVerbs } from "./narrow";
 import type { ChosenProps, DeclaredNeeds, Resolution } from "./resolve-needs";
 import { resolveNeeds } from "./resolve-needs";
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 import { pageIn } from "./paged-read";
 import { problemsOf, reportDroppedSort, UnansweredFilterError } from "./problems";
 import type { Problem } from "./problems";
 import { actionOf } from "./verbs-of";
 import type { LooseAction } from "./verbs-of";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 type Held = Record<string, unknown>;
 

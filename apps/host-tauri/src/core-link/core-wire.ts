@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { InvalidationSchema } from "@widgetarium/framework";
+import { InvalidationSchema } from "@widgetarium/data-framework";
 
 export const CORE_CALL = "plugin:studio-core|call";
 export const CORE_SERVE = "plugin:studio-core|serve";

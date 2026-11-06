@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { MouseEvent, PointerEvent, ReactElement } from "react";
 import { Collapsible } from "radix-ui";
 import { Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { treeRowProps } from "@widgetarium/behaviors";
 import type { TreeDrag } from "@widgetarium/behaviors";
 import { PickLayerCommand } from "@widgetarium/canvas";

@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import { AssistantSessionGateway } from "../../gateways/assistant-session/assistant-session.gateway.js";
 import { AssistantSetupChangedEvent } from "../../gateways/assistant-setup/assistant-setup.events.js";
 import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";

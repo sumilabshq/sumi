@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import type { Answer } from "@widgetarium/framework";
+import type { Answer } from "@widgetarium/data-framework";
 
 export type OnAnswered = (answer: Answer<unknown>) => void;
 

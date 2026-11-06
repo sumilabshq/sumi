@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { ResizeSplitCommand } from "@widgetarium/app-host";
 import type { FrameBounds } from "@widgetarium/layout";
 import type { PaneEdge } from "../../lib/pane-layout.js";

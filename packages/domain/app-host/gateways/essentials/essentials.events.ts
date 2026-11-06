@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { EssentialsGateway } from "./essentials.gateway.js";
 
 export const EssentialsChangedEvent = event("essentials-changed").from(

@@ -20,7 +20,7 @@
 		"@sumi/contract": "0.3.4",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/eslint-plugin": "0.1.0",
-		"@widgetarium/framework": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"prettier": "3.9.6",
 		"zod": "^4.6.5"

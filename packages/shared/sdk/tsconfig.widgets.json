@@ -28,7 +28,7 @@
 			"@*/lib": ["../../../registry/@*/lib"]
 		}
 	},
-	"references": [{ "path": "../kit" }, { "path": "../framework" }, { "path": "../core" }],
+	"references": [{ "path": "../kit" }, { "path": "../data-framework" }, { "path": "../core" }],
 	"include": [
 		"types/**/*.d.ts",
 		"../../../tools/type-gate/**/*.ts",

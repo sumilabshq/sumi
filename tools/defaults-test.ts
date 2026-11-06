@@ -6,7 +6,7 @@ import {
 	defineDefaultImplementation,
 } from "../packages/shared/core/src/gateway/defaults.ts";
 import { gatewayOverImplementation } from "../packages/shared/core/src/gateway/adapted.js";
-import { shutHostFor } from "../packages/shared/framework/src/gateway/handler-context.ts";
+import { shutHostFor } from "../packages/shared/data-framework/src/gateway/handler-context.ts";
 import { declarationIn } from "../packages/shared/core/src/gateway/declaration.ts";
 import { present } from "./page-dom.ts";
 import { collectionOf, valueGatewayOf } from "./gateway-kinds.ts";

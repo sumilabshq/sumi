@@ -1,5 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
-import type { ModuleFacts, Platform } from "@widgetarium/framework";
+import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
 import { HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind } from "@widgetarium/behaviors/tauri-store";
 import type { TabsGateway } from "../tabs/tabs.gateway.js";

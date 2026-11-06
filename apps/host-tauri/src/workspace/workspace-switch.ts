@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 
 export function reopensOnWorkspaceSwitch(

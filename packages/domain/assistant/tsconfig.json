@@ -23,7 +23,7 @@
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [{ "path": "../../shared/core" }, { "path": "../../shared/framework" }],
+	"references": [{ "path": "../../shared/core" }, { "path": "../../shared/data-framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",

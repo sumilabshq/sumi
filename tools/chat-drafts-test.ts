@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type { AssistantPort, AssistantSetup } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
@@ -264,7 +264,7 @@ check(
 layJsdomGlobals();
 const { createElement: h, Suspense } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { AppProvider } = await import("../packages/shared/framework/src/index.ts");
+const { AppProvider } = await import("../packages/shared/data-framework/src/index.ts");
 const { useComposerDraft } = await import("../apps/chat/src/features/assistant/lib/use-composer-draft.ts");
 const RACE = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const FAST = "typed a moment before the switch";

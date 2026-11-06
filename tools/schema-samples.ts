@@ -1,4 +1,4 @@
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 
 export type SampleKind = "empty" | "minimal" | "nulls";
 type SchemaDef = Readonly<Record<string, unknown>>;

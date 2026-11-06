@@ -1,12 +1,12 @@
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
-import type { CollectionGateway, Row, RowsResult, ValueGateway } from "@widgetarium/framework/gateway/contract";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
+import type { CollectionGateway, Row, RowsResult, ValueGateway } from "@widgetarium/data-framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import { hardcodeCollection, hardcodeValue } from "@widgetarium/core/gateway/kept-in-tile.js";
 import type { HardcodeOptions } from "@widgetarium/core/gateway/kept-in-tile.js";
 import { narrowByRefs } from "@widgetarium/core/gateway/refs.js";
 import { filterRowsIn } from "@widgetarium/core/engine/held-reading.js";
 import type { HostFields } from "@widgetarium/core/engine/host-context.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { QueryPorts } from "@widgetarium/core/engine/packs.js";
 
 type ReadNow = (input: unknown) => unknown;

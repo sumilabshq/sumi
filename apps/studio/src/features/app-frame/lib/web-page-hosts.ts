@@ -1,4 +1,4 @@
-import type { PlatformModule } from "@widgetarium/framework";
+import type { PlatformModule } from "@widgetarium/data-framework";
 import type { WebPageModule } from "@widgetarium/web-page/module";
 
 type WebPageHostObjects =

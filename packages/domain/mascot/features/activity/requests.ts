@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import { AgentActivityChangedEvent } from "../../gateways/agent-activity/agent-activity.events.js";
 import { AgentActivityGateway } from "../../gateways/agent-activity/agent-activity.gateway.js";
 import { AgentActivitySchema, AgentEventsSchema } from "../../shared/schema/agent-activity.schema.js";

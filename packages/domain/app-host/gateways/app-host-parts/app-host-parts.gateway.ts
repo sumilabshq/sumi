@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/framework";
+import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
 import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
 import type { PaneFlashGateway } from "../pane-flash/pane-flash.gateway.js";
 import type { ShownViewGateway } from "../shown-view/shown-view.gateway.js";

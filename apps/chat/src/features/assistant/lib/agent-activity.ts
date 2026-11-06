@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { AgentEventSchema, RecordAgentEventsCommand } from "@widgetarium/mascot";
 import type { AgentEvent } from "@widgetarium/mascot";
 

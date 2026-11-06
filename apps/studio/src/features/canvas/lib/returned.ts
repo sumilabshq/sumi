@@ -1,5 +1,5 @@
-import { reasonOf } from "@widgetarium/framework";
-import type { RefusalHandler } from "@widgetarium/framework";
+import { reasonOf } from "@widgetarium/data-framework";
+import type { RefusalHandler } from "@widgetarium/data-framework";
 
 const RETURNED = "canvas/return";
 

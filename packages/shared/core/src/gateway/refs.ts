@@ -1,5 +1,5 @@
-import type { CanResult, CollectionGateway, FilterRow, GatewayBase, Unsubscribe, ValueGateway } from "@widgetarium/framework/gateway/contract";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import type { CanResult, CollectionGateway, FilterRow, GatewayBase, Unsubscribe, ValueGateway } from "@widgetarium/data-framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import { actionOf, callVerbOf, verbOf } from "./verbs-of";
 
 type PropRef = string;

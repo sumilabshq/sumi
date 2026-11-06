@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";

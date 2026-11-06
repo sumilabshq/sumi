@@ -1,6 +1,6 @@
 import { AppearanceModule, PlacesModule, TerminalModule } from "@sumi/contract";
-import { app, messagePortTransport } from "@widgetarium/framework";
-import type { RemoteTransport, StartedApp } from "@widgetarium/framework";
+import { app, messagePortTransport } from "@widgetarium/data-framework";
+import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 
 const TAB_KEY = "sumi-tab";
 

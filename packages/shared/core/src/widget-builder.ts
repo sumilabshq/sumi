@@ -5,7 +5,7 @@ import type { DrawnProps, InjectedWidget, ReadState } from "./declared-widget.js
 import { declarationIn, declareProps, defineStates, isDeclaredProps } from "./gateway/declared";
 import type { DeclaredProps } from "./gateway/declared";
 import type { Declaration } from "./gateway/declaration";
-import { useCommandHandle } from "@widgetarium/framework/command-handle";
+import { useCommandHandle } from "@widgetarium/data-framework/command-handle";
 import { isDrawnCommand } from "./declared-command.js";
 import { portReadOf, startOf, usePortHandle } from "./port-handles.js";
 import type { PortView } from "./port-handles.js";

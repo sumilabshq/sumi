@@ -1,11 +1,11 @@
 import { arrayGateway, refuseVerb, soloGateway } from "./create";
-import type { Action, CollectionGateway, ValueGateway } from "@widgetarium/framework/gateway/contract";
+import type { Action, CollectionGateway, ValueGateway } from "@widgetarium/data-framework/gateway/contract";
 import { storedRows } from "./kept-in-tile";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import type { FieldDescription } from "./manifest";
 import type { DeclaredNeed } from "./resolve-needs";
 import type { FieldType } from "./fields";
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 import { FIELD_TYPES } from "./fields";
 
 export interface PropDefault {

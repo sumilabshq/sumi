@@ -1,4 +1,4 @@
-import type { Send } from "@widgetarium/framework";
+import type { Send } from "@widgetarium/data-framework";
 import { REGISTERED_APPS } from "@widgetarium/app-registry";
 import type { RegisteredApp } from "@widgetarium/app-registry";
 import { AppFacesQuery as BuiltInFacesQuery } from "@widgetarium/places";

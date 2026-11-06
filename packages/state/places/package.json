@@ -21,7 +21,7 @@
 		"@tauri-apps/api": "^2.12.4",
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0",
-		"@widgetarium/framework": "0.1.0"
+		"@widgetarium/data-framework": "0.1.0"
 	},
 	"peerDependencies": {
 		"zod": "^4.6.5"

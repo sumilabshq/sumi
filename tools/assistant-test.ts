@@ -13,10 +13,10 @@ import type {
 	ProviderReads,
 	QueueChange,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
-import { toastRefusal } from "../packages/shared/framework/src/command-refusals.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
 import { toast } from "../packages/shared/kit/src/utils/toast.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { turnStepsOf } from "../packages/domain/assistant/features/chat/lib/turn-steps.ts";
 import { toolsSummaryOf } from "../apps/chat/src/features/assistant/lib/tools-summary.ts";

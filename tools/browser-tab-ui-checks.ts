@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/framework/src/index.ts";
+import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { check, waitFor } from "./check-helpers.ts";

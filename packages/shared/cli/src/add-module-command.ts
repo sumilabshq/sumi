@@ -11,7 +11,7 @@ import { formatFiles } from "./project-format.js";
 import { writeFile } from "./template-files.js";
 import { LAYER_FOLDERS, packageFolderNamed, rootManifestWith, workspaceRootAbove } from "./workspace-root.js";
 
-const FRAMEWORK_MANIFEST = "packages/shared/framework/package.json";
+const FRAMEWORK_MANIFEST = "packages/shared/data-framework/package.json";
 const LICENSE_FILE = "LICENSE";
 const TAKEN_FOLDER =
 	"{folder} already exists: pick another module name, or add a feature to it: widgetarium add feature {name}/<feature>";

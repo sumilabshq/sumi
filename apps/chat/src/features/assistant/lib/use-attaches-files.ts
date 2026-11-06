@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { AttachFilesCommand } from "@widgetarium/assistant";
 
 export function useAttachesFiles(): (files: readonly File[]) => void {

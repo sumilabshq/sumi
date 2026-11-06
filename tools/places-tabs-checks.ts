@@ -1,6 +1,6 @@
-import { app, localTransport } from "../packages/shared/framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
-import { server } from "../packages/shared/framework/src/server/index.ts";
+import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";

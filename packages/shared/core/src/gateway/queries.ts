@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Query, RowsResult } from "@widgetarium/framework/gateway/contract";
+import type { Query, RowsResult } from "@widgetarium/data-framework/gateway/contract";
 import { BARE_QUERY, DECLARATION } from "./declaration";
 import type { Declaration } from "./declaration";
 import { IBaseGateway } from "./declared";
@@ -14,7 +14,7 @@ import type {
 	QueryDeclared,
 	QueryHeldOf,
 } from "./declared-types";
-import type { HandlerContext } from "@widgetarium/framework/gateway/handler-context";
+import type { HandlerContext } from "@widgetarium/data-framework/gateway/handler-context";
 import { pageItemOf } from "./page";
 import { innerOf } from "./written";
 

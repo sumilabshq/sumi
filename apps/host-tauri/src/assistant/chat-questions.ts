@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { DeliverQuestionsCommand, IsWaitingOnPersonQuery, WithdrawNeededCommand } from "@widgetarium/questions";
 
 export interface ChatQuestions {

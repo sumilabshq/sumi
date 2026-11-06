@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverAnchor, PopoverAnchorAt, PopoverContent, PopoverItem } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import type { ChatRowData } from "@widgetarium/app-host";
 import { PinTabCommand } from "@widgetarium/app-host";
 

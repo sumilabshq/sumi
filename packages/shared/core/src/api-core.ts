@@ -34,7 +34,7 @@ import { pickedValue } from "./gateway/refs.js";
 import { applyTabStep, archivedOf, movesRows, movesSelection, tabsOf } from "./tab-rows.js";
 
 export { gatewayCache } from "./gateway/cache";
-export { stableKey } from "@widgetarium/framework/gateway/stable-key";
+export { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 export { canOf, collectionGateway, metaOf, rowOf, soloGateway, toRows, valueGateway } from "./gateway/create";
 export { narrow } from "./gateway/narrow";
 export { EMOJI_TABLE, EMOJI_VIEW_BOX } from "@widgetarium/kit/emoji-table";

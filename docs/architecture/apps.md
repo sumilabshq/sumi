@@ -26,7 +26,7 @@ Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a bro
 | `link-catcher.ts`        | `catchLinks({ sumi, tabId })`: every app's one link handler (see Links under The contract)               |
 | `theme-wearer.ts`        | `wearSumiTheme({ sumi, transport })`: puts `dark` and `theme-dark` on the frame's root from `ThemeQuery` |
 
-`sumi-contract.json` lists the shell modules an app may call: `["file-system", "terminal", "places", "web-page", "assistant", "appearance"]`. The generator copies each module's `"."` contract (requests and schemas, no handler, imports only `zod` and `@widgetarium/framework`) into `generated/<module>.ts`, so the built package is self-contained: its runtime peers are `@widgetarium/core` and `zod`. `npm run generate -- --check` fails on a stale copy. The transport is the framework's ([requests.md](requests.md#the-frame-transport)); an app writes:
+`sumi-contract.json` lists the shell modules an app may call: `["file-system", "terminal", "places", "web-page", "assistant", "appearance"]`. The generator copies each module's `"."` contract (requests and schemas, no handler, imports only `zod` and `@widgetarium/data-framework`) into `generated/<module>.ts`, so the built package is self-contained: its runtime peers are `@widgetarium/core` and `zod`. `npm run generate -- --check` fails on a stale copy. The transport is the framework's ([requests.md](requests.md#the-frame-transport)); an app writes:
 
 ```ts skip-check
 const sumi = messagePortTransport(portFromParent());

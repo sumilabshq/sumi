@@ -1,6 +1,6 @@
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import { isObject } from "@widgetarium/framework/is-object";
-import { hostObject } from "@widgetarium/framework";
+import { isObject } from "@widgetarium/data-framework/is-object";
+import { hostObject } from "@widgetarium/data-framework";
 
 export const StartedProjectHost = hostObject<StartedProject>("StartedProject", isStartedProject);
 

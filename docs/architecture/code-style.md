@@ -58,7 +58,7 @@ export const PayInvoiceCommand = command("pay-invoice")
 
 ## A request
 
-- `requests.ts` imports only `@widgetarium/framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
+- `requests.ts` imports only `@widgetarium/data-framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
 - Its schemas live in `shared/schema/`, never beside the request: the generator refuses one declared there.
 - **No reach-through.** A handler calls what it injected: `frameSides.saveSides(…)`, never `layout.frameSides.saveSides(…)`. If it needs it, it injects it.
 - A handler that refuses before writing calls `refuse(reason)` rather than throwing.

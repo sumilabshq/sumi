@@ -2,7 +2,7 @@ import { registryRefusal } from "../version.js";
 import { isCleanRepositoryPath, isPathInsideFolder, scopedName } from "./github.js";
 import { hasStringId } from "./catalogue-index.js";
 import type { Fields, IdentifiedRow } from "./catalogue-index.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 export interface RegistryRow extends IdentifiedRow {
 	readonly path: string | null;

@@ -1,6 +1,6 @@
 import { createElement as h, useContext, useEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { NameChatPaneCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import { ChatToOpenQuery } from "@widgetarium/workspaces";

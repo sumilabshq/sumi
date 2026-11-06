@@ -1,12 +1,12 @@
 import type { z } from "zod";
-import { COLLECTION_VERBS, READ_VERBS, VALUE_VERBS } from "@widgetarium/framework/gateway/contract";
-import type { CanResult, CollectionGateway, GatewayEvent, Unsubscribe, ValueGateway } from "@widgetarium/framework/gateway/contract";
+import { COLLECTION_VERBS, READ_VERBS, VALUE_VERBS } from "@widgetarium/data-framework/gateway/contract";
+import type { CanResult, CollectionGateway, GatewayEvent, Unsubscribe, ValueGateway } from "@widgetarium/data-framework/gateway/contract";
 import { canOf, collectionGateway, valueGateway } from "./create";
 import { MANY_VERBS } from "./many";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import { classNameOf, queryInputOf } from "./declaration";
-import { handlerContextOf } from "@widgetarium/framework/gateway/handler-context";
-import type { HandlerHost } from "@widgetarium/framework/gateway/handler-context";
+import { handlerContextOf } from "@widgetarium/data-framework/gateway/handler-context";
+import type { HandlerHost } from "@widgetarium/data-framework/gateway/handler-context";
 
 export interface AdaptedDeclaration {
 	readonly kind: unknown;

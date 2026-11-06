@@ -1,6 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { useMenuOpening } from "../../lib/menu-spot.js";
 import { EFFORT_FACES, MODE_FACES } from "../../lib/strip-faces.js";
 import { OptionMenu } from "./option-menu.js";

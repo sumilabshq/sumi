@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { ChangeQueueCommand, SendMessageCommand } from "@widgetarium/assistant";
 import { answerSettled } from "./answer-settled.js";
 import type { Report } from "./failure-line.js";

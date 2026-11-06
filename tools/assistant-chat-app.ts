@@ -1,7 +1,7 @@
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { MascotModule } from "../packages/domain/mascot/module.ts";
 
 export interface MemoryFolder {

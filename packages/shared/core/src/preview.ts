@@ -14,7 +14,7 @@ import type { HostClaimingNothing } from "./engine/host-none.js";
 import { NO_CARRIER, NO_CATALOGUE, NO_PREVIEW } from "./engine/catalogue-none.js";
 import { refuseRead } from "./engine/read-file.js";
 import type { Fields } from "./engine/catalogue-index.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { Here, Navigation, PassageReader, PassageRecord, ViewHost, WidgetCatalogue } from "./gateway/host.js";
 import type { GivenProps } from "./declared-widget.js";
 import type { WidgetComponent } from "./registry-scope.js";

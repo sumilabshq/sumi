@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { OpenLinkCommand } from "./generated/places.js";
 
 export interface LinkCatching {

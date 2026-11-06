@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { filledWithShown } from "../packages/domain/command-menu/features/opening/lib/shown-text.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { Answer } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../packages/domain/app-host/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";

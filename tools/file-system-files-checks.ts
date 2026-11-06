@@ -1,6 +1,6 @@
-import { app, orpcTransport } from "@widgetarium/framework";
-import type { StartedApp } from "@widgetarium/framework";
-import { server } from "@widgetarium/framework/server";
+import { app, orpcTransport } from "@widgetarium/data-framework";
+import type { StartedApp } from "@widgetarium/data-framework";
+import { server } from "@widgetarium/data-framework/server";
 import {
 	AppendFileCommand,
 	CopyCommand,

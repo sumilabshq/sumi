@@ -1,6 +1,6 @@
 import { ContinueTaskCommand } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { useHandsOnTask } from "./use-hands-on-task.js";
 
 export interface ContinueTask {

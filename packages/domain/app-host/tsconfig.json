@@ -24,7 +24,7 @@
 		{
 			"path": "../../shared/core"
 		},
-		{ "path": "../../shared/framework" }
+		{ "path": "../../shared/data-framework" }
 	],
 	"include": [
 		"*.ts",

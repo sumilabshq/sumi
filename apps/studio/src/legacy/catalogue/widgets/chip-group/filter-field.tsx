@@ -1,5 +1,5 @@
 import { createElement as h, useEffect, useState } from "react";
-import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
+import type { CommandAnswer } from "@widgetarium/data-framework/gateway/run-handler";
 import { Input, Icon } from "@widgetarium/kit";
 
 interface FilterFieldProps {

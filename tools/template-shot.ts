@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { TEMPLATES, templateWidgets } from "../packages/shared/core/src/templates.js";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { bundleOf, shoot, shotPage } from "./harness.ts";
 import type { Theme } from "./harness.ts";
 

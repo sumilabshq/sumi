@@ -1,6 +1,6 @@
 import { createElement as h, useRef, useState } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { ClaudeStrip } from "../claude-strip/claude-strip.js";
 import { useTellsAgentActivity } from "../../lib/agent-activity.js";
 import { useStuckToEnd } from "../../lib/use-stuck-to-end.js";

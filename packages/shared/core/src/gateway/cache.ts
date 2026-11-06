@@ -1,6 +1,6 @@
-import type { Unsubscribe } from "@widgetarium/framework/gateway/contract";
+import type { Unsubscribe } from "@widgetarium/data-framework/gateway/contract";
 import type { ActionMeta } from "./create";
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 
 interface CacheEntry {
 	status: "loading" | "ready" | "failed";

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { useTreeDrag, useTreeScroll } from "@widgetarium/behaviors";
 import { LayersPanelQuery } from "@widgetarium/canvas";
 import { MoveLayerCommand } from "@widgetarium/canvas";

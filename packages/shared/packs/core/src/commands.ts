@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { ICommand } from "@widgetarium/core/gateway/queries.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
-import type { CanResult } from "@widgetarium/framework/gateway/contract";
+import type { CanResult } from "@widgetarium/data-framework/gateway/contract";
 import { call, cannot, canOnTarget, targetedCommand, writeOnTarget } from "./targeted-command.js";
 import type { TargetFields, Verbs } from "./targeted-command.js";
 

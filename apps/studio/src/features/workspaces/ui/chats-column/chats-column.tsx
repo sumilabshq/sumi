@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { Slot } from "@widgetarium/framework";
+import { Slot } from "@widgetarium/data-framework";
 import { TipSurface } from "../../../canvas/ui/tip-surface/tip-surface.js";
 import { TabsSidebar } from "../../../app-host/ui/tabs-sidebar/tabs-sidebar.js";
 import { WorkspaceHeader } from "../workspace-header/workspace-header.js";

@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { PerCall, Repeatable, command, refuse } from "@widgetarium/framework";
-import type { Send } from "@widgetarium/framework";
+import { PerCall, Repeatable, command, refuse } from "@widgetarium/data-framework";
+import type { Send } from "@widgetarium/data-framework";
 import { FocusStudioWindowCommand, OpenChatWindowCommand } from "@widgetarium/browser";
 import { ClosePaneCommand, PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";

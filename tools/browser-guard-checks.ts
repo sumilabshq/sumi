@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer, StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import {
 	CapturePageCommand,

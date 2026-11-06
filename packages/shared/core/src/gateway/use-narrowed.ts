@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import type { CollectionGateway } from "@widgetarium/framework/gateway/contract";
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
+import type { CollectionGateway } from "@widgetarium/data-framework/gateway/contract";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 import type { Narrowing } from "./narrow";
 import { narrow } from "./narrow";
 

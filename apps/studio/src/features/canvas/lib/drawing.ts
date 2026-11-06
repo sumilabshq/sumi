@@ -1,4 +1,4 @@
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import type { WidgetSurfaceProps } from "@widgetarium/core/surface/widget-surface.js";
 import { DrawingQuery } from "@widgetarium/canvas";
 

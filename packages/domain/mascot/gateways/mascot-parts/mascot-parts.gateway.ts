@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/framework";
+import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
 import type { AgentActivityGateway } from "../agent-activity/agent-activity.gateway.js";
 import { memoryMascotParts } from "./memory.gateway.js";
 

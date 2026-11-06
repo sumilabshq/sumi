@@ -1,4 +1,4 @@
-import { refuse } from "@widgetarium/framework";
+import { refuse } from "@widgetarium/data-framework";
 import type { AssistantSetupGateway } from "../../../gateways/assistant-setup/assistant-setup.gateway.js";
 import type { DraftAttachmentsGateway } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";
 import { chosenOf } from "../../../shared/lib/chosen-provider.js";

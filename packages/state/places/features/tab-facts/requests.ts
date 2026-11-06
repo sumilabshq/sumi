@@ -1,4 +1,4 @@
-import { Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/data-framework";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";

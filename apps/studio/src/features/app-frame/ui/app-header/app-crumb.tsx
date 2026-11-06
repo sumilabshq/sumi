@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { RecordAppPageCommand } from "@widgetarium/places";
 import { MENU_DOOR_MARK } from "../../../command-menu/lib/menu-door-mark.js";
 import { useTogglesMenuOnShown } from "../../../command-menu/lib/use-toggles-menu-on-shown.js";

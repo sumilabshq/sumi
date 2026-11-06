@@ -1,4 +1,4 @@
-import { Repeatable, command, deny, guard, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, deny, guard, query, subscriber } from "@widgetarium/data-framework";
 import { ThemeChangedEvent } from "../../gateways/theme/theme.events.js";
 import { ThemeGateway } from "../../gateways/theme/theme.gateway.js";
 import { ChooseThemeInputSchema, ThemeSchema } from "../../shared/schema/theme.schema.js";

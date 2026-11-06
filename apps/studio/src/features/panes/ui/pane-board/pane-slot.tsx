@@ -1,6 +1,6 @@
 import { createElement as h, memo, useMemo } from "react";
 import type { CSSProperties, ReactElement, ReactNode } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { PaneCloseContext } from "../../lib/pane-close-context.js";
 import type { PanePlace, PaneRect } from "../../lib/pane-layout.js";
 import type { SlotLook } from "../../lib/use-board-look.js";

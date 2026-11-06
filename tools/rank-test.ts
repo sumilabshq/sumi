@@ -5,7 +5,7 @@ import type * as TierCards from "../registry/@default/tier-list/cards.ts";
 import type * as TierOrdering from "../registry/@default/tier-list/ordering.ts";
 import type * as TierPresets from "../registry/@default/tier-list/presets.ts";
 import type { FunctionComponent } from "react";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { byId } from "./dom-find.ts";
 import { runWidgetSource } from "./run-widget-source.ts";
 

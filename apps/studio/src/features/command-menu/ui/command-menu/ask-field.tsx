@@ -1,6 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { AttachFilesCommand, DraftAttachmentsQuery } from "@widgetarium/assistant";
 import { AskComposerBar } from "../../../assistant/ui/ask-composer-bar/ask-composer-bar.js";
 import { ASK_COMPOSER_MARK } from "../../lib/ask-composer-mark.js";

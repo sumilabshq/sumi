@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command } from "@widgetarium/framework";
+import { Repeatable, command } from "@widgetarium/data-framework";
 import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
 import { PaneTreeQuery, PlacementPreviewQuery } from "../../generated/contract.js";
 import { treeFocusingSplit, treeLeavingSplit, treeShowingSplit } from "../../shared/lib/split-boards.js";

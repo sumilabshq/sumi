@@ -30,7 +30,7 @@ const BUILDERS: ReadonlySet<string> = new Set([
 	"module",
 	"handler",
 ]);
-const FRAMEWORK_SOURCE = /^@widgetarium\/framework$|\/framework\/src\/index(\.[jt]s)?$/;
+const FRAMEWORK_SOURCE = /^@widgetarium\/data-framework$|\/data-framework\/src\/index(\.[jt]s)?$/;
 
 export function builderTracker(onBuilder: (found: BuilderCall) => void): Rule.RuleListener {
 	const builders = new Map<string, Builder>();

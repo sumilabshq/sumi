@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { CommandMenuGateway } from "./command-menu.gateway.js";
 
 export const CommandMenuChangedEvent = event("command-menu-changed").from(

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { OpenWorkspaceByPositionCommand } from "@widgetarium/workspaces";
 
 const DIGIT_KEY = /^Digit([1-9])$/;

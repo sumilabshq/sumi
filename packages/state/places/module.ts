@@ -1,4 +1,4 @@
-import { PublicGuard, Server, module } from "@widgetarium/framework";
+import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { placesPartsOn } from "./gateways/places-parts/places-parts.gateway.js";
 import {
 	CloseEssentialTabCommand,

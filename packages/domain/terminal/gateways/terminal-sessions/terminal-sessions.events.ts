@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { TerminalSessionsGateway } from "./terminal-sessions.gateway.js";
 
 export const TerminalOutputChangedEvent = event("terminal-output-changed").from(

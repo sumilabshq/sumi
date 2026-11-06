@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
 import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 import { MENU_DOOR_MARK } from "../../lib/menu-door-mark.js";

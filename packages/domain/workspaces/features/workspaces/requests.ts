@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
 import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
 import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";

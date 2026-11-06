@@ -29,7 +29,7 @@
 		{
 			"path": "../../packages/shared/core"
 		},
-		{ "path": "../../packages/shared/framework" }
+		{ "path": "../../packages/shared/data-framework" }
 	],
 	"include": [
 		"src/**/*.ts",

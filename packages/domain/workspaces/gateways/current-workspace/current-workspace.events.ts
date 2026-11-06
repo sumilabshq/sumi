@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { CurrentWorkspaceGateway } from "./current-workspace.gateway.js";
 
 export const CurrentWorkspaceChangedEvent = event("current-workspace-changed").from(

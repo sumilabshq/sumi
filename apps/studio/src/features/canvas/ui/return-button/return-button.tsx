@@ -1,7 +1,7 @@
 import { createElement as h, useContext } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { REFUSAL_HANDLER } from "@widgetarium/framework/command-refusals";
+import { REFUSAL_HANDLER } from "@widgetarium/data-framework/command-refusals";
 import { RoundButton } from "../round-button/round-button.js";
 import { useCanvasSurroundings } from "../../lib/canvas-surroundings.js";
 import { ReturnToNoteButton } from "./return-to-note-button.js";

@@ -1,5 +1,5 @@
-import { isObject } from "@widgetarium/framework/is-object";
-import { hostObject } from "@widgetarium/framework";
+import { isObject } from "@widgetarium/data-framework/is-object";
+import { hostObject } from "@widgetarium/data-framework";
 import type { Job, LiveJob } from "../schema/job.schema.js";
 
 export interface AgentJobs {

@@ -24,7 +24,7 @@
 		"@widgetarium/browser": "0.1.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/file-system": "0.1.0",
-		"@widgetarium/framework": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"@widgetarium/places": "0.1.0",
 		"@widgetarium/questions": "0.1.0",

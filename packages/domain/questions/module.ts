@@ -1,4 +1,4 @@
-import { PublicGuard, Server, module } from "@widgetarium/framework";
+import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { questionsPartsOn } from "./gateways/questions-parts/questions-parts.gateway.js";
 import {
 	DeliverQuestionsCommand,

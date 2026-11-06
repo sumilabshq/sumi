@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { ChatNote } from "./chat-note.js";
 import { ChatOf } from "./chat-of.js";
 import type { TabRead } from "./tab-read.js";

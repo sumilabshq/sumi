@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import { LayersPanelQuery } from "@widgetarium/canvas";
 import { LiveScreen } from "./live-screen.js";
 

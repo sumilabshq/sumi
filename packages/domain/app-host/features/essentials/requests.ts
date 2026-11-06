@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, refuse } from "@widgetarium/framework";
+import { Repeatable, command, refuse } from "@widgetarium/data-framework";
 import { CloseEssentialTabCommand, ReleaseEssentialTabCommand, ShowEssentialTabCommand } from "@widgetarium/places";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";

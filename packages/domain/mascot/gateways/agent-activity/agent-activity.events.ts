@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { AgentActivityGateway } from "./agent-activity.gateway.js";
 
 export const AgentActivityChangedEvent = event("agent-activity-changed").from(

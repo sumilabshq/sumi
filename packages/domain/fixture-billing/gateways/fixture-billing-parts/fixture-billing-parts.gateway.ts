@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/framework";
+import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
 import type { LedgerGateway } from "../ledger/ledger.gateway.js";
 import { MemoryLedgerGateway } from "../ledger/memory.gateway.js";
 

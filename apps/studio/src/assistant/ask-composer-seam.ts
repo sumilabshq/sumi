@@ -1,8 +1,8 @@
 import { AdoptDraftCommand, PrefillDraftCommand, TakeDraftCommand } from "@widgetarium/assistant";
 import type { AdoptedDraft } from "@widgetarium/assistant";
 import { OpenNewChatCommand } from "@widgetarium/app-host";
-import { toastRefusal } from "@widgetarium/framework/command-refusals";
-import type { StartedApp } from "@widgetarium/framework";
+import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { focusedChatPortOf } from "../chats-column/focused-chat.js";
 import type { AskComposer } from "../features/command-menu/lib/ask-composer-context.js";
 

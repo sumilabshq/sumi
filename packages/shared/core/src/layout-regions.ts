@@ -1,6 +1,6 @@
 import { ADAPTIVE, APART, COLUMN, DRAWER, GROUP, NO_SURFACE, ROW } from "./tree.js";
 import type { BoxNode, SurfaceSide, SurfaceWord } from "./tree.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 type TextTone = "value" | "caption";
 

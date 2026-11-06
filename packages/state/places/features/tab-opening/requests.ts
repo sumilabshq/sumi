@@ -1,4 +1,4 @@
-import { Repeatable, command } from "@widgetarium/framework";
+import { Repeatable, command } from "@widgetarium/data-framework";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, settledOf, settling, settlingWith } from "../../shared/lib/settling/settling.js";
 import type { Answer, Settled } from "../../shared/lib/settling/settling.js";

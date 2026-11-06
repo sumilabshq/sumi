@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
 import type { ChildProcess } from "node:child_process";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { ReadKind } from "@widgetarium/browser";
 import { InkReadingQuery, StopInkCommand } from "@widgetarium/browser";
 

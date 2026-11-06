@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { MomentFieldsSchema } from "../../shared/schema/canvas-moment.schema.js";
 import { CanvasMomentGateway } from "./canvas-moment.gateway.js";
 

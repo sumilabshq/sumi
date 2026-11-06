@@ -1,4 +1,4 @@
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
 import type { WidgetSourcePlace } from "../packages/shared/core/src/engine/source-offers.js";
 import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.js";

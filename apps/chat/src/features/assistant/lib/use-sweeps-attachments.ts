@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { SweepAttachmentsCommand } from "@widgetarium/assistant";
 
 const SWEEP_EVERY_MS = 600000;

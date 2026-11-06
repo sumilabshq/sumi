@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { IconButton, tooltipMarks } from "@widgetarium/kit";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces";

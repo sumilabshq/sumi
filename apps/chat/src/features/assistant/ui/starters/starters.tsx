@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { PrefillDraftCommand } from "@widgetarium/assistant";
 import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
 

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { declarationIn } from "../gateway/declaration.js";
 import type { GatewayMetadata } from "../gateway/implementation-metadata.js";
 import { innerOf } from "../gateway/written.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { HostSpec } from "./host-context.js";
 
 const SCHEMA_OF_CONTROL: Readonly<Record<string, (schema: z.ZodType) => boolean>> = {

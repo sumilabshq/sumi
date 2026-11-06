@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Slot } from "@widgetarium/framework";
+import { Slot } from "@widgetarium/data-framework";
 
 export function Placed({ at, children }: { readonly at: string; readonly children?: ReactNode }): ReactElement | null {
 	if (children === undefined || children === null) return null;

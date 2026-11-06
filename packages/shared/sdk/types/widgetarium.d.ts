@@ -15,7 +15,7 @@ export type {
 	SortRow,
 	Unsubscribe,
 	ValueOps,
-} from "../../framework/src/gateway/contract";
+} from "../../data-framework/src/gateway/contract";
 
 export type {
 	Aka,
@@ -28,7 +28,7 @@ export type {
 	RemoveAction,
 	Text,
 	UpdateAction,
-} from "../../framework/src/gateway/needs";
+} from "../../data-framework/src/gateway/needs";
 
 export type {
 	Choice,
@@ -102,7 +102,7 @@ export { z } from "../../core/src/gateway/declared";
 export type { DataState, Listed, PageState } from "../../core/src/gateway/use-data";
 export type { Page, PageInput } from "../../core/src/gateway/page";
 export { PageInputSchema, PageOf } from "../../core/src/gateway/page";
-export type { HandlerContext, HandlerUser } from "../../framework/src/gateway/handler-context";
+export type { HandlerContext, HandlerUser } from "../../data-framework/src/gateway/handler-context";
 export { useData } from "../../core/src/gateway/use-data";
 export {
 	action,
@@ -158,9 +158,9 @@ export type {
 	PagedQueryHandle,
 	PageItems,
 	QueryHandle,
-} from "../../framework/src/handle-types";
-export { OnRefused, toastRefusal } from "../../framework/src/command-refusals";
-export type { CommandRefusal, RefusalHandler } from "../../framework/src/command-refusals";
+} from "../../data-framework/src/handle-types";
+export { OnRefused, toastRefusal } from "../../data-framework/src/command-refusals";
+export type { CommandRefusal, RefusalHandler } from "../../data-framework/src/command-refusals";
 export type {
 	BuiltGivenProps,
 	BuiltWidget,
@@ -191,5 +191,5 @@ export type { MountedProps } from "../../core/src/mounted";
 export { Mounted } from "../../core/src/mounted";
 export type { WidgetRootProps } from "../../core/src/widget-root";
 export { WidgetRoot } from "../../core/src/widget-root";
-export type { CommandAnswer } from "../../framework/src/gateway/run-handler";
+export type { CommandAnswer } from "../../data-framework/src/gateway/run-handler";
 export { ICommand, IQuery } from "../../core/src/gateway/queries";

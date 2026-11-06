@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { RenameRowCommand } from "@widgetarium/command-menu";
 import type { Row } from "@widgetarium/command-menu";
 import type { Toast } from "./use-menu-moves.js";

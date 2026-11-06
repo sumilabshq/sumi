@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { HeldTabsQuery } from "@widgetarium/app-host";
 import type { HeldTab } from "@widgetarium/app-host";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import { Plate } from "../features/plate/ui/plate/plate.js";

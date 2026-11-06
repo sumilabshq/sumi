@@ -1,4 +1,4 @@
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import {
 	AppTabsQuery,
 	CloseOtherTabsCommand,

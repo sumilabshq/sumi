@@ -1,5 +1,5 @@
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { DesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/design-files.gateway.ts";
 import { MemoryCanvasMomentGateway } from "../packages/domain/canvas/gateways/canvas-moment/memory.gateway.ts";
 import { AgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/agent-jobs.gateway.ts";

@@ -1,7 +1,7 @@
 import { WHAT_A_FOLDER_WAS_STAMPED_BEFORE_STAMPS } from "./engine/widget-source.js";
 import type { Fields } from "./engine/catalogue-index.js";
 import type { WidgetLock } from "./engine/widget-lock.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { previewSize } from "./preview.js";
 import type { PreviewSpan } from "./preview.js";
 import { GRID, spanToPixels } from "./paths.js";

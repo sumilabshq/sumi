@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { DoRowCommand } from "@widgetarium/command-menu";
 import type { Intent, Results, Row } from "@widgetarium/command-menu";
 import { useAskComposer } from "./ask-composer-context.js";

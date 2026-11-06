@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
 import { OpenLinkCommand } from "@widgetarium/app-host";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { PRESSED_EVENTS, linkPressOf } from "../../lib/link-presses/link-press.js";
 
 export interface LinkOpenerProps {

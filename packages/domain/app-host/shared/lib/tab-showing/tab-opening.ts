@@ -5,7 +5,7 @@ import {
 	OpenTabCommand as PlacesOpenTabCommand,
 	ShowTabCommand as PlacesShowTabCommand,
 } from "@widgetarium/places";
-import type { Send } from "@widgetarium/framework";
+import type { Send } from "@widgetarium/data-framework";
 import { windowHoldingChat } from "../chat-holders.js";
 import type { TabToOpen } from "../../schema/app-tab.schema.js";
 import type { ChatToShow } from "../../schema/chat-opening.schema.js";

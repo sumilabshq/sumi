@@ -1,5 +1,5 @@
-import type { FilterRow, SortRow } from "@widgetarium/framework/gateway/contract";
-import type { HandlerHost } from "@widgetarium/framework/gateway/handler-context";
+import type { FilterRow, SortRow } from "@widgetarium/data-framework/gateway/contract";
+import type { HandlerHost } from "@widgetarium/data-framework/gateway/handler-context";
 import type { CommandMetadata, GatewayMetadata } from "../gateway/implementation-metadata.js";
 import type { NeedOfField } from "../gateway/props.js";
 import type { RefDescription, ViewCell } from "../gateway/refs.js";

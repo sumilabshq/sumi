@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import type { RefObject } from "react";
-import { useOptionalQuery, useQuery } from "@widgetarium/framework";
+import { useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import type { FrameBounds, PaneBoard, PaneLeaf, PaneNode, PanePlacement, PlacementPreview } from "@widgetarium/layout";
 import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
 import { focusedGroupOf } from "./aim-targets.js";

@@ -1,4 +1,4 @@
-import { PerCall, command, deny, guard, query } from "@widgetarium/framework";
+import { PerCall, command, deny, guard, query } from "@widgetarium/data-framework";
 import { LedgerGateway } from "../../gateways/ledger/ledger.gateway.js";
 import { BalanceSchema, ChargeInputSchema } from "../../shared/schema/balance.schema.js";
 import type { Balance, ChargeInput } from "../../shared/schema/balance.schema.js";

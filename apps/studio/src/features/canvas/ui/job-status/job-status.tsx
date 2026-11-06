@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { JobStatusQuery } from "@widgetarium/canvas";
 import { StopJobCommand } from "@widgetarium/canvas";
 import { JobLine } from "./job-line.js";

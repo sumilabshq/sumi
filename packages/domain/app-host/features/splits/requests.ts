@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import {
 	PlaceInViewCommand as PlacesPlaceInViewCommand,
 	RemoveFromSplitCommand as PlacesRemoveFromSplitCommand,

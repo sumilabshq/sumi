@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChangeEvent, ClipboardEvent, KeyboardEvent, RefObject } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { DraftAttachmentsQuery, HoldDraftTextCommand } from "@widgetarium/assistant";
 import { toast } from "@widgetarium/kit";
 import { sendState } from "./send-state.js";

@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { TaskStatusSchema, TasksQuery } from "@widgetarium/tasks";
 import type { TaskCard, TaskStatus } from "@widgetarium/tasks";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import { useOpenTask } from "../../lib/use-open-task.js";
 import type { TasksView } from "../../lib/use-tasks-view.js";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";

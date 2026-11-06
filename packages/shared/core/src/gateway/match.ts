@@ -1,4 +1,4 @@
-import type { FilterRow, Row, SortRow } from "@widgetarium/framework/gateway/contract";
+import type { FilterRow, Row, SortRow } from "@widgetarium/data-framework/gateway/contract";
 import { PAGE_UNASKED } from "./page";
 
 type Held = Record<string, unknown>;

@@ -1,4 +1,4 @@
-import type { ValueGateway } from "@widgetarium/framework/gateway/contract";
+import type { ValueGateway } from "@widgetarium/data-framework/gateway/contract";
 import { soloGateway } from "./create";
 import { useData } from "./use-data";
 

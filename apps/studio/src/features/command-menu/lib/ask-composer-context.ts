@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 
 export interface AskComposer {
 	readonly app: StartedApp | null;

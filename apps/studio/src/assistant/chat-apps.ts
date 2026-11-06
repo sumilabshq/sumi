@@ -1,5 +1,5 @@
 import { portForChat } from "@widgetarium/core/engine/assistant-port.js";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { chatAppOf } from "./chat-app.js";
 import type { AssistantHostObjects, ChatAppAsk } from "./chat-app.js";
 

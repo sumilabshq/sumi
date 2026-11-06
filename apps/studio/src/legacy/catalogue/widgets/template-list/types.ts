@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Row } from "@widgetarium/framework/gateway/contract";
+import type { Row } from "@widgetarium/data-framework/gateway/contract";
 
 const CellSchema = z.object({ label: z.string(), grow: z.number() });
 

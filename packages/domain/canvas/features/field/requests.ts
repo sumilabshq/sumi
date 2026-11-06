@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";

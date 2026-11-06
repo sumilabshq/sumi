@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { focusedChatPortOf } from "@widgetarium/studio";
 import { RecordChatTurnCommand } from "@widgetarium/workspaces";
 import { chatQuestionsOver } from "./chat-questions.js";

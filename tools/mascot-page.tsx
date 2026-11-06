@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/framework/src/index.ts";
+import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
 import { Mascot } from "../apps/chat/src/features/mascot/ui/mascot/mascot.tsx";
 import { MascotFigure } from "../apps/studio/src/features/mascot/ui/mascot-figure/mascot-figure.tsx";
 import { MascotStateSchema } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";

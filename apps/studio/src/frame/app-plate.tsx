@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { AppProvider } from "@widgetarium/framework";
-import type { StartedApp } from "@widgetarium/framework";
+import { AppProvider } from "@widgetarium/data-framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { WorkspaceAppPlate } from "./workspace-app-plate.js";
 import type { WorkspaceAppPlateProps } from "./workspace-app-plate.js";
 

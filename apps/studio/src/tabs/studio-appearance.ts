@@ -1,8 +1,8 @@
 import { AppearanceModule as AppearanceContract, ThemeQuery } from "@widgetarium/appearance";
 import { AppearanceModule } from "@widgetarium/appearance/module";
-import { app, localTransport } from "@widgetarium/framework";
-import type { RemoteTransport, StartedApp } from "@widgetarium/framework";
-import { server } from "@widgetarium/framework/server";
+import { app, localTransport } from "@widgetarium/data-framework";
+import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import { server } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
 export interface StudioAppearance {

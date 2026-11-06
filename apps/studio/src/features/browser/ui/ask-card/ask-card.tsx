@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { AskAnswer } from "@widgetarium/browser";
 import { AccessAsksQuery, AnswerAskCommand } from "@widgetarium/browser";
 import { AskChips } from "./ask-chips.js";

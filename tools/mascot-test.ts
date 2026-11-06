@@ -22,7 +22,7 @@ import { MemoryAgentActivityGateway } from "../packages/domain/mascot/gateways/a
 import { AgentActivityQuery, AgentActivitySchema, RecordAgentEventsCommand } from "../packages/domain/mascot/index.ts";
 import type { AgentActivity, AgentEvent } from "../packages/domain/mascot/index.ts";
 import { MascotModule } from "../packages/domain/mascot/module.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";

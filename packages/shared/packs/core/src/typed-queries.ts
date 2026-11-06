@@ -5,10 +5,10 @@ import type {
 	Row,
 	RowsResult,
 	ValueGateway,
-} from "@widgetarium/framework/gateway/contract";
+} from "@widgetarium/data-framework/gateway/contract";
 import { ICrudGateway, IValueGateway } from "@widgetarium/core/gateway/declared.js";
 import type { Answer } from "@widgetarium/core/gateway/declared.js";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import { callVerbOf } from "@widgetarium/core/gateway/verbs-of.js";
 import type { HostFields } from "@widgetarium/core/engine/host-context.js";
 import type { QueryPorts } from "@widgetarium/core/engine/packs.js";

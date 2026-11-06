@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { CloseViewPaneCommand } from "@widgetarium/app-host";
 import type { PaneLeaf } from "@widgetarium/layout";
 import { carriedTabOf } from "./split-panes.js";

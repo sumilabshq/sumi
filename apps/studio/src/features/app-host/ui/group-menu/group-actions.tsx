@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { Icon, PopoverItem } from "@widgetarium/kit";
 import { BOARD_ITEM } from "../../lib/menu-look/menu-look.js";
 import { CloseGroupCommand, UngroupCommand } from "@widgetarium/app-host";

@@ -1,4 +1,4 @@
-import { PublicGuard, Server, module } from "@widgetarium/framework";
+import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { tasksPartsOn } from "./gateways/tasks-parts/tasks-parts.gateway.js";
 import { TASKS_HOST_NEEDS } from "./shared/host/tasks-host.js";
 import {

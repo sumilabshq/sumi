@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import type { ReactElement, RefObject } from "react";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { ResetSidebarWidthCommand, ResizeSidebarWidthCommand, SidebarQuery } from "@widgetarium/canvas";
 import { SIDEBAR_HAIRLINE_PX } from "../../lib/sidebar-hairline.js";
 

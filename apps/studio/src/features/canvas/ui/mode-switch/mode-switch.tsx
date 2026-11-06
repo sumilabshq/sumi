@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, Segmented } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { ModeQuery } from "@widgetarium/canvas";
 import { SetModeCommand } from "@widgetarium/canvas";
 import type { CanvasMode } from "@widgetarium/canvas";

@@ -1,5 +1,5 @@
 import type { Component as ReactComponent, ComponentClass, createElement, ReactElement, ReactNode } from "react";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 export interface CrashBoundaryProps {
 	readonly children?: ReactNode;

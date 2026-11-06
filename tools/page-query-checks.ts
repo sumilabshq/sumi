@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { IQuery } from "../packages/shared/core/src/gateway/queries.ts";
-import type { Row } from "../packages/shared/framework/src/gateway/contract.ts";
-import type { HandlerContext } from "../packages/shared/framework/src/gateway/handler-context.ts";
+import type { Row } from "../packages/shared/data-framework/src/gateway/contract.ts";
+import type { HandlerContext } from "../packages/shared/data-framework/src/gateway/handler-context.ts";
 import { PageInputSchema, PageOf, offsetOfCursor, pageAt } from "../packages/shared/core/src/gateway/page.ts";
 import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.ts";
 import { useData } from "../packages/shared/core/src/gateway/use-data.ts";
@@ -10,8 +10,8 @@ import type { PageState } from "../packages/shared/core/src/gateway/use-data.ts"
 import { createGatewayCache } from "../packages/shared/core/src/gateway/cache.ts";
 import { nextPageOf, pagedRunnerOf } from "../packages/shared/core/src/gateway/paged-read.ts";
 import { gatewayOverImplementation } from "../packages/shared/core/src/gateway/adapted.ts";
-import { shutHostFor } from "../packages/shared/framework/src/gateway/handler-context.ts";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { shutHostFor } from "../packages/shared/data-framework/src/gateway/handler-context.ts";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
 import { render } from "../packages/shared/core/src/engine/render.js";
 import { createWidget } from "../packages/shared/core/src/widget-api.js";

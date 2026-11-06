@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Query, Row, RowsResult, SortRow } from "@widgetarium/framework/gateway/contract";
-import { COLLECTION_VERBS, VALUE_VERBS } from "@widgetarium/framework/gateway/contract";
+import type { Query, Row, RowsResult, SortRow } from "@widgetarium/data-framework/gateway/contract";
+import { COLLECTION_VERBS, VALUE_VERBS } from "@widgetarium/data-framework/gateway/contract";
 import type {
 	ConfigureMounts,
 	FoldIntoGroup,

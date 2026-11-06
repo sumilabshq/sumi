@@ -1,5 +1,5 @@
 import type { TabsSidebarQuery } from "@widgetarium/app-host";
-import type { OutputOf } from "@widgetarium/framework";
+import type { OutputOf } from "@widgetarium/data-framework";
 
 export type Sidebar = OutputOf<typeof TabsSidebarQuery>;
 type SidebarEntry = Sidebar["sections"][number]["entries"][number];

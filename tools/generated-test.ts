@@ -77,7 +77,7 @@ const CLIENT_JOINED = [
 
 const COUNT_REQUESTS = [
 	'import { z } from "zod";',
-	'import { Repeatable, command, query } from "@widgetarium/framework";',
+	'import { Repeatable, command, query } from "@widgetarium/data-framework";',
 	'import { CountSchema } from "../../shared/schema/count.schema.js";',
 	'import { Counter } from "../../gateways/counter/counter.gateway.js";',
 	"",
@@ -98,7 +98,7 @@ const COUNT_REQUESTS = [
 const REQUESTS_FILES: Readonly<Record<string, string>> = {
 	"package.json": JSON.stringify({ name: "@fixture/tally", widgetarium: { level: "domain" } }),
 	"module.ts": [
-		'import { Device, module } from "@widgetarium/framework";',
+		'import { Device, module } from "@widgetarium/data-framework";',
 		'import { BumpCommand, CountQuery } from "./features/count/requests.js";',
 		"",
 		'export const TallyModule = module("tally").on(Device).public(CountQuery, BumpCommand).provide((parts: TallyParts) => ({ ...parts }));',
@@ -112,7 +112,7 @@ const REQUESTS_FILES: Readonly<Record<string, string>> = {
 
 const REQUESTS_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import { Device, command, moduleContract, query } from "@widgetarium/framework";',
+	'import { Device, command, moduleContract, query } from "@widgetarium/data-framework";',
 	'import { z } from "zod";',
 	"",
 	"export const CountSchema = 1;",
@@ -132,7 +132,7 @@ const SERVER_CONTRACT = "generated/server.ts";
 
 const SERVING_SERVER = [
 	GENERATED_HEADER.trimEnd(),
-	'import { command } from "@widgetarium/framework";',
+	'import { command } from "@widgetarium/data-framework";',
 	'import { z } from "zod";',
 	"",
 	'export const BumpCommand = command("tally/bump")',
@@ -144,7 +144,7 @@ const SERVING_SERVER = [
 const SHARING_SERVER = [
 	GENERATED_HEADER.trimEnd(),
 	'import { CountSchema } from "./contract.js";',
-	'import { Repeatable, command } from "@widgetarium/framework";',
+	'import { Repeatable, command } from "@widgetarium/data-framework";',
 	'import { z } from "zod";',
 	"",
 	'export const BumpCommand = command("tally/bump")',
@@ -166,7 +166,7 @@ const REQUESTS_ENTRY = `${GENERATED_HEADER}export * from "./generated/contract.j
 
 const TYPED_REQUESTS = [
 	'import { z } from "zod";',
-	'import { query } from "@widgetarium/framework";',
+	'import { query } from "@widgetarium/data-framework";',
 	'import type { Count } from "../../shared/schema/count.schema.js";',
 	'import { Counter } from "../../gateways/counter/counter.gateway.js";',
 	"",
@@ -191,7 +191,7 @@ const TYPED_SCHEMA = [
 
 const TYPED_CONTRACT = [
 	GENERATED_HEADER.trimEnd(),
-	'import { Device, moduleContract, query } from "@widgetarium/framework";',
+	'import { Device, moduleContract, query } from "@widgetarium/data-framework";',
 	'import { z } from "zod";',
 	"",
 	"export const CountSchema = z.number();",
@@ -207,7 +207,7 @@ const TYPED_CONTRACT = [
 ].join("\n");
 
 const FOREST_REQUESTS = [
-	'import { query } from "@widgetarium/framework";',
+	'import { query } from "@widgetarium/data-framework";',
 	'import { ForestSchema } from "../../shared/schema/forest.schema.js";',
 	"",
 	'export const ForestQuery = query("forest").output(ForestSchema).handle(() => ({ trees: [] }));',
@@ -248,7 +248,7 @@ function servingManifest(name: string): string {
 
 const SHARING_REQUESTS = [
 	'import { z } from "zod";',
-	'import { Repeatable, command, query } from "@widgetarium/framework";',
+	'import { Repeatable, command, query } from "@widgetarium/data-framework";',
 	'import { CountSchema } from "../../shared/schema/count.schema.js";',
 	"",
 	'export const BumpCommand = command("bump")',
@@ -266,7 +266,7 @@ const SHARING_REQUESTS = [
 function moduleListing(listing: string, from = "./features/count/requests.js"): string {
 	const names = [...new Set(listing.match(/[A-Z]\w+(Query|Command)/g) ?? [])].join(", ");
 	return [
-		'import { Device, Server, module } from "@widgetarium/framework";',
+		'import { Device, Server, module } from "@widgetarium/data-framework";',
 		`import { ${names} } from "${from}";`,
 		"",
 		`export const TallyModule = module("tally")${listing.startsWith(".on(") ? "" : ".on(Device)"}${listing}.provide((parts: TallyParts) => ({ ...parts }));`,
@@ -445,9 +445,9 @@ try {
 		["contract.ts"],
 	);
 	check(
-		"the contract is self-contained: it imports only zod and @widgetarium/framework",
+		"the contract is self-contained: it imports only zod and @widgetarium/data-framework",
 		importedFrom(entryIn(tally, "generated/contract.ts")),
-		["@widgetarium/framework", "zod"],
+		["@widgetarium/data-framework", "zod"],
 	);
 	check(
 		"a short request name reaches the contract as <module>/<short>",
@@ -510,7 +510,7 @@ try {
 
 	const evented = await generatedIn("evented", {
 		"module.ts": [
-			'import { Device, module } from "@widgetarium/framework";',
+			'import { Device, module } from "@widgetarium/data-framework";',
 			'import { BumpCommand, CountQuery } from "./features/count/requests.js";',
 			'import { CountedEvent } from "./shared/events/count.events.js";',
 			"",
@@ -518,7 +518,7 @@ try {
 			"",
 		].join("\n"),
 		"shared/events/count.events.ts": [
-			'import { event } from "@widgetarium/framework";',
+			'import { event } from "@widgetarium/data-framework";',
 			'export const CountedEvent = event("counted");',
 			'export const RecountedEvent = event("recounted");',
 			"",
@@ -552,7 +552,7 @@ try {
 			forestContract.indexOf("LabelSchema =") < forestContract.indexOf("ForestSchema ="),
 			forestContract.indexOf("BranchSchema:") < forestContract.indexOf("ForestSchema ="),
 		],
-		[0, ["@widgetarium/framework", "zod"], true, true, true],
+		[0, ["@widgetarium/data-framework", "zod"], true, true, true],
 	);
 	check("every copied declaration appears once", forestContract.split("export const LabelSchema").length, 2);
 
@@ -599,7 +599,7 @@ try {
 		"a contract using a package other than zod and core is refused",
 		refusedWith(
 			packaged,
-			"uses Shape from some-package; a contract imports only zod, @widgetarium/framework and shared/schema",
+			"uses Shape from some-package; a contract imports only zod, @widgetarium/data-framework and shared/schema",
 		),
 		[1, true],
 	);
@@ -634,7 +634,7 @@ try {
 	const viewed = await generatedIn("viewed", {
 		"module.ts": moduleListing(".public(ViewQuery)", "./features/view/requests.js"),
 		"features/view/requests.tsx": [
-			'import { query } from "@widgetarium/framework";',
+			'import { query } from "@widgetarium/data-framework";',
 			"",
 			'export const ViewQuery = query("tally/view").settlesNow().handle(() => <b>no</b>);',
 			"",
@@ -645,7 +645,7 @@ try {
 		[viewed.code, entryIn(path.join(scratch, "packages/viewed"), "generated/contract.ts")],
 		[
 			0,
-			`${GENERATED_HEADER}import { Device, moduleContract, query } from "@widgetarium/framework";\n\nexport const ViewQuery = query("tally/view").settlesNow();\n\nexport const TallyModule = moduleContract("tally", Device, [ViewQuery]);\n`,
+			`${GENERATED_HEADER}import { Device, moduleContract, query } from "@widgetarium/data-framework";\n\nexport const ViewQuery = query("tally/view").settlesNow();\n\nexport const TallyModule = moduleContract("tally", Device, [ViewQuery]);\n`,
 		],
 	);
 
@@ -746,7 +746,7 @@ try {
 
 	const split = await generatedIn("split", {
 		"module.ts": [
-			'import { Device, module } from "@widgetarium/framework";',
+			'import { Device, module } from "@widgetarium/data-framework";',
 			'import { CountQuery } from "./features/count/requests.js";',
 			'import { BumpCommand } from "./features/bump/requests.js";',
 			"",
@@ -754,9 +754,9 @@ try {
 			"",
 		].join("\n"),
 		"features/count/requests.ts":
-			'import { query } from "@widgetarium/framework";\nimport { CountSchema as Shape } from "../../shared/schema/count.schema.js";\nexport const CountQuery = query("tally/count").output(Shape);\n',
+			'import { query } from "@widgetarium/data-framework";\nimport { CountSchema as Shape } from "../../shared/schema/count.schema.js";\nexport const CountQuery = query("tally/count").output(Shape);\n',
 		"features/bump/requests.ts":
-			'import { command, Repeatable } from "@widgetarium/framework";\nimport { BumpSchema as Shape } from "../../shared/schema/bump.schema.js";\nexport const BumpCommand = command("tally/bump").input(Shape).idempotencyKey(Repeatable);\n',
+			'import { command, Repeatable } from "@widgetarium/data-framework";\nimport { BumpSchema as Shape } from "../../shared/schema/bump.schema.js";\nexport const BumpCommand = command("tally/bump").input(Shape).idempotencyKey(Repeatable);\n',
 		"shared/schema/bump.schema.ts": "export const BumpSchema = 1;\n",
 	});
 	check(

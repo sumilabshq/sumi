@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent, ReactElement } from "react";
-import type { CollectionGateway, Query } from "../packages/shared/framework/src/gateway/contract.ts";
+import type { CollectionGateway, Query } from "../packages/shared/data-framework/src/gateway/contract.ts";
 import { byId, found } from "./dom-find.ts";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";

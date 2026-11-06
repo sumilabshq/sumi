@@ -10,7 +10,7 @@ import {
 	ReloadPageCommand,
 } from "@widgetarium/browser";
 import type { BrowserTabs } from "@widgetarium/browser";
-import type { Answer, StartedApp } from "@widgetarium/framework";
+import type { Answer, StartedApp } from "@widgetarium/data-framework";
 import type { PageArea, WebPage } from "@widgetarium/web-page";
 import { PageHole } from "./page-hole.js";
 import type { NativeWebPages } from "./web-page-hosts.js";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { FinishLine } from "../finish-line/finish-line.js";
 import { FailureCard } from "../failure-card/failure-card.js";
 import { RetryTurnCommand } from "@widgetarium/assistant";

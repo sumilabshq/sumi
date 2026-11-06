@@ -1,4 +1,4 @@
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import { AppFacesQuery } from "@widgetarium/app-host";
 import type { TabApp } from "@widgetarium/app-host";
 

@@ -7,8 +7,8 @@ import { LayoutModule } from "../packages/state/layout/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import {
 	ChatRecordsQuery,
 	CreateChatCommand,

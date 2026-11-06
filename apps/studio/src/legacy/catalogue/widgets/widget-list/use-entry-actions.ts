@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { PointerEvent } from "react";
-import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
+import type { CommandAnswer } from "@widgetarium/data-framework/gateway/run-handler";
 import type { PropsOf } from "@widgetarium/core/gateway/declared.js";
 import type { Entry, EntryState } from "./types.js";
 import type WidgetList from "./widget.js";

@@ -1,10 +1,10 @@
 import { JSDOM } from "jsdom";
 import type { ReactElement } from "react";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { rowOf } from "../packages/shared/core/src/gateway/create.js";
-import type { CollectionGateway, ValueGateway } from "../packages/shared/framework/src/gateway/contract.js";
+import type { CollectionGateway, ValueGateway } from "../packages/shared/data-framework/src/gateway/contract.js";
 import type { HostConsole, ViewHost } from "../packages/shared/core/src/gateway/host.js";
-import type { EveryValueVerb } from "../packages/shared/framework/src/gateway/needs.js";
+import type { EveryValueVerb } from "../packages/shared/data-framework/src/gateway/needs.js";
 import { byId } from "./dom-find.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });

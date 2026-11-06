@@ -69,7 +69,7 @@ function manifestOf({ name, placement, versions, license }: ModuleSeed): string 
 			".": entryOf("index"),
 			"./module": runnable,
 		},
-		dependencies: { "@widgetarium/framework": versions.framework },
+		dependencies: { "@widgetarium/data-framework": versions.framework },
 		peerDependencies: { zod: versions.zod },
 		widgetarium: { level: "domain" },
 		sideEffects: false,
@@ -100,7 +100,7 @@ function tsconfigOf(name: string): string {
 			skipLibCheck: true,
 			types: [],
 		},
-		references: [{ path: "../../shared/framework" }],
+		references: [{ path: "../../shared/data-framework" }],
 		include: [
 			"*.ts",
 			"gateways/**/*.ts",

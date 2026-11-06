@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect } from "react";
 import type { RefObject } from "react";
-import { PORT_WANTED, handPort, messagePortListener } from "@widgetarium/framework";
+import { PORT_WANTED, handPort, messagePortListener } from "@widgetarium/data-framework";
 import { APP_CALLER_HEADER } from "./app-caller.js";
 import { createFrameRelay } from "./frame-relay.js";
 import type { FrameOpened, FrameRoutes, FrameRoutesFor } from "./frame-relay.js";

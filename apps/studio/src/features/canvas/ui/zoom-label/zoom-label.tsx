@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import { CameraQuery } from "@widgetarium/canvas";
 import { GHOST_LABEL, RAISED_PILL } from "../../lib/top-bar-look.js";
 import { useTopBarLook } from "../../lib/top-bar-look-context.js";

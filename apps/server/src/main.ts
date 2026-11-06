@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server";
-import { server } from "@widgetarium/framework/server";
+import { server } from "@widgetarium/data-framework/server";
 import { FixtureBillingModule } from "@widgetarium/fixture-billing/module";
 import { DEV_WEB_ORIGIN, rpcApp } from "./rpc-app.js";
 

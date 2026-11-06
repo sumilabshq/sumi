@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { WindowsGateway } from "./windows.gateway.js";
 
 export const WindowsChangedEvent = event("windows-changed").from(

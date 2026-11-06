@@ -1,5 +1,5 @@
-import { app, localTransport, orpcTransport } from "@widgetarium/framework";
-import { server } from "@widgetarium/framework/server";
+import { app, localTransport, orpcTransport } from "@widgetarium/data-framework";
+import { server } from "@widgetarium/data-framework/server";
 import {
 	ChooseThemeCommand,
 	ThemeQuery,

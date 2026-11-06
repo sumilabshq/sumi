@@ -28,6 +28,6 @@
 		"allowJs": false,
 		"types": []
 	},
-	"references": [{ "path": "../kit" }, { "path": "../framework" }],
+	"references": [{ "path": "../kit" }, { "path": "../data-framework" }],
 	"include": ["src/**/*.ts"]
 }

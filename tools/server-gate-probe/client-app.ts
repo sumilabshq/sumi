@@ -1,4 +1,4 @@
-import { app, orpcTransport } from "@widgetarium/framework";
+import { app, orpcTransport } from "@widgetarium/data-framework";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 
 const SERVER = "http://localhost:8787";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Slot } from "@widgetarium/framework";
+import { Slot } from "@widgetarium/data-framework";
 
 const LEFT_OUT = (): null => null;
 

@@ -1,6 +1,6 @@
 import { BrowserModule } from "@widgetarium/browser/module";
-import { app } from "@widgetarium/framework";
-import type { Platform, StartedApp } from "@widgetarium/framework";
+import { app } from "@widgetarium/data-framework";
+import type { Platform, StartedApp } from "@widgetarium/data-framework";
 
 export interface BrowserAppAsk {
 	readonly platform: Platform;

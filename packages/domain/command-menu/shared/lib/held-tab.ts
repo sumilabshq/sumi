@@ -1,4 +1,4 @@
-import type { Send } from "@widgetarium/framework";
+import type { Send } from "@widgetarium/data-framework";
 import { HeldTabsQuery } from "@widgetarium/app-host";
 
 export async function heldTabOfPage(pageId: string | null, send: Send): Promise<string | null> {

@@ -2,7 +2,7 @@ import { createElement as h, useRef } from "react";
 import { useWearsInkUnder } from "../../../plate/lib/use-wears-ink-under.js";
 import type { ReactElement } from "react";
 import { useHoverIntent } from "@widgetarium/behaviors";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import type { FrameSide } from "@widgetarium/layout";
 import { FrameSidesQuery, PeekFrameSideCommand, ToggleFrameSideCommand } from "@widgetarium/layout";

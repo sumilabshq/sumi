@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { JSDOM } from "jsdom";
 import { standIn } from "./stand-in.ts";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
 import type { InstallerAdapter } from "../packages/shared/core/src/installer-context.js";
 

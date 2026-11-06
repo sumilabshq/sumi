@@ -1,6 +1,6 @@
 import { UndeliveredTaskCommand } from "@widgetarium/tasks";
 import type { Continued, TaskCard } from "@widgetarium/tasks";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
 import { useSendToChat } from "./chat-delivery.js";
 

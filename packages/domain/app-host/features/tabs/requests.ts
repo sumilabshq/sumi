@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
-import type { AnyQuery, Send } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import type { AnyQuery, Send } from "@widgetarium/data-framework";
 import {
 	AccessAsksChangedEvent,
 	BrowserTabsQuery,

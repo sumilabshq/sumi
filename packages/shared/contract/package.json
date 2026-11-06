@@ -17,7 +17,7 @@
 		}
 	},
 	"peerDependencies": {
-		"@widgetarium/framework": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
 		"zod": "^4.6.5"
 	},
 	"widgetarium": {

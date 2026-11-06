@@ -1,6 +1,6 @@
 import { ADAPTIVE, ALWAYS, APART, COLUMN, DRAWER, ROW } from "./tree.js";
 import type { BoardNode, BoxNode, Collapse, LeafNode, PlaceFlags } from "./tree.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { ALIGNS, JUSTIFIES } from "./tree-constants.js";
 import { isKnownRole } from "./surface-roles.js";
 import { isBoxDirection, isCollapseKind, isCollapseToggle, isSurfaceSide, surfaceWordOf } from "./node-words.js";

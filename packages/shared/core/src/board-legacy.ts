@@ -1,6 +1,6 @@
 import { ALWAYS, COLUMN, DRAWER, ROW } from "./tree.js";
 import type { BoardNode, BoxNode, LeafNode } from "./tree.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { boxFlags, normalizeLeaf, rowNode } from "./board-layout.js";
 import type { RawFields } from "./board-layout.js";
 

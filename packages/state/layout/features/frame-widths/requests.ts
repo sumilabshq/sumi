@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import { FrameWidthsChangedEvent } from "../../gateways/frame-widths/frame-widths.events.js";
 import { FrameWidthsGateway } from "../../gateways/frame-widths/frame-widths.gateway.js";
 import { FRAME_BOUNDS, FRAME_LIMITS, edgePxWithin, widthsWithin } from "../../shared/lib/frame-bounds.js";

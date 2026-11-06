@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
-import { Slot, useCommand, useQuery } from "@widgetarium/framework";
+import { Slot, useCommand, useQuery } from "@widgetarium/data-framework";
 import { CommandMenu } from "../../../command-menu/ui/command-menu/command-menu.js";
 import { CommandMenuKeys } from "../../../command-menu/ui/command-menu-keys/command-menu-keys.js";
 import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";

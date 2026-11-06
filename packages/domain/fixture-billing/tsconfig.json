@@ -23,7 +23,7 @@
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/framework" }],
+	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/data-framework" }],
 	"include": [
 		"*.ts",
 		"shared/**/*.ts",

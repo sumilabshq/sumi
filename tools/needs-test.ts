@@ -6,14 +6,14 @@ import type * as Parsed from "../packages/shared/core/src/gateway/parsed.js";
 import type * as Problems from "../packages/shared/core/src/gateway/problems.js";
 import { propsOfEveryShippedWidget } from "./widget-props.ts";
 import { TEXT_LOADERS } from "./text-loaders.mts";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import type * as Create from "../packages/shared/core/src/gateway/create.js";
 import type * as Fields from "../packages/shared/core/src/gateway/fields.js";
 import type * as ResolveNeeds from "../packages/shared/core/src/gateway/resolve-needs.js";
 import type * as Mapped from "../packages/shared/core/src/gateway/mapped.js";
 import type { needsOf } from "../packages/shared/core/src/gateway/props.js";
 import type { DeclaredNeeds } from "../packages/shared/core/src/gateway/resolve-needs.js";
-import type { Query } from "../packages/shared/framework/src/gateway/contract.js";
+import type { Query } from "../packages/shared/data-framework/src/gateway/contract.js";
 
 const built = await esbuild.build({
 	stdin: {

@@ -1,8 +1,8 @@
-import type { CollectionOps, FilterRow, GatewayBase, GatewayRef, SortRow, ValueOps } from "@widgetarium/framework/gateway/contract";
+import type { CollectionOps, FilterRow, GatewayBase, GatewayRef, SortRow, ValueOps } from "@widgetarium/data-framework/gateway/contract";
 
 export type DeclaredFilterRow = Omit<FilterRow, "spread"> & { spread?: GatewayRef | { wants: string } };
 
-import type { RecordRef } from "@widgetarium/framework/gateway/contract";
+import type { RecordRef } from "@widgetarium/data-framework/gateway/contract";
 export type { RecordRef };
 
 export type StandardVerb = "list" | "get" | "create" | "update" | "remove";

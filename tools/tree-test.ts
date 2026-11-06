@@ -5,7 +5,7 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { parse } from "yaml";
 import { findBrowser, widgetFiles } from "./harness.ts";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { standIn } from "./stand-in.ts";
 import type { BoardNode, BoxNode, PreferredSize } from "../packages/shared/core/src/tree-nodes.js";
 import type { Spot } from "../packages/shared/core/src/tree-drop.js";

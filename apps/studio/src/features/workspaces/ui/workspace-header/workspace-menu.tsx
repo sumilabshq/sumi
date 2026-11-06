@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import { CreateWorkspaceCommand, OpenWorkspaceCommand, WorkspacesQuery } from "@widgetarium/workspaces";
 

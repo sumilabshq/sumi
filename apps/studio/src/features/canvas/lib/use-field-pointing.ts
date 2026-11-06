@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from "react";
 import type { RefObject } from "react";
-import { useCommand } from "@widgetarium/framework";
-import type { OutputOf } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
+import type { OutputOf } from "@widgetarium/data-framework";
 import { useEscape, useFlyToElement, usePointedLayer, useResolvedSpot } from "@widgetarium/behaviors";
 import type { PanZoom, PointedLayer } from "@widgetarium/behaviors";
 import { FinishFlightCommand } from "@widgetarium/canvas";

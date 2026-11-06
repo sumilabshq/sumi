@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { OpenChatDraftCommand, PrefillDraftCommand } from "@sumi/contract";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
 
 export function useOpensChatDraft(shell: StartedApp, chatId: string): void {

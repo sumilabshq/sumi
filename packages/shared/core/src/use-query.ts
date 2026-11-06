@@ -4,7 +4,7 @@ import { portReadOf, startOf, usePortHandle } from "./port-handles.js";
 import type { RowWithRef } from "./gateway/manifest";
 import type { Page } from "./gateway/page";
 import type { QueryAskContract, QueryRowsContract, QueryValueContract } from "./gateway/queries";
-import type { AskedPagedQueryHandle, AskedQueryHandle, PagedQueryHandle, QueryHandle } from "@widgetarium/framework/handle-types";
+import type { AskedPagedQueryHandle, AskedQueryHandle, PagedQueryHandle, QueryHandle } from "@widgetarium/data-framework/handle-types";
 
 type PageAsk<In> = Omit<In, "cursor" | "limit"> & { readonly limit?: number };
 

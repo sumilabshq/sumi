@@ -1,4 +1,4 @@
-import { AuthenticatedGuard, Server, module } from "@widgetarium/framework";
+import { AuthenticatedGuard, Server, module } from "@widgetarium/data-framework";
 import { terminalPartsOn } from "./gateways/terminal-parts/terminal-parts.gateway.js";
 import {
 	RereadTerminalOutputSubscriber,

@@ -1,4 +1,4 @@
-import { Device, module } from "@widgetarium/framework";
+import { Device, module } from "@widgetarium/data-framework";
 import { PlacesModule } from "@widgetarium/places";
 import { ChatsChangedEvent } from "./gateways/chats/chats.events.js";
 import { workspacesPartsOn } from "./gateways/workspaces-parts/workspaces-parts.gateway.js";

@@ -8,7 +8,7 @@ import { shotUrl, themeNow } from "./engine/shot.js";
 import type { ShotHost } from "./engine/shot.js";
 import type { ViewHost } from "./gateway/host.js";
 import type { CardTile, CatalogueDefinition, MergedEntry } from "./catalogue-entries.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { Standin } from "./catalogue-standin.js";
 import { Contained } from "./catalogue-contained.js";
 

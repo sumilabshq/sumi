@@ -1,4 +1,4 @@
-import type { Emitter } from "@widgetarium/framework";
+import type { Emitter } from "@widgetarium/data-framework";
 import type { AssistantSessionGateway } from "../../../gateways/assistant-session/assistant-session.gateway.js";
 import type { AttachmentFilesGateway } from "../../../gateways/attachment-files/attachment-files.gateway.js";
 import type { ClockGateway } from "../../../gateways/clock/clock.gateway.js";

@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/framework";
-import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/framework";
+import { Repeatable, refusalOf, wireAnswerOf } from "@widgetarium/data-framework";
+import type { Answer, HearChanges, RemoteTransport } from "@widgetarium/data-framework";
 import { PlacesModule } from "@widgetarium/places";
 import { QuestionsModule } from "@widgetarium/questions";
 import { TasksModule } from "@widgetarium/tasks";

@@ -1,5 +1,5 @@
-import type { StartedApp } from "../packages/shared/framework/src/index.ts";
-import { app } from "../packages/shared/framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { app } from "../packages/shared/data-framework/src/index.ts";
 import {
 	PinTabCommand,
 	PlaceInViewCommand,

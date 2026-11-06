@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { OnRefused, Slot, toastRefusal } from "@widgetarium/framework";
+import { OnRefused, Slot, toastRefusal } from "@widgetarium/data-framework";
 import { Toaster } from "@widgetarium/kit";
 import { BOARD_ADDRESS } from "../features/tasks/lib/use-open-task.js";
 import { TaskPage } from "../features/tasks/ui/task-page/task-page.js";

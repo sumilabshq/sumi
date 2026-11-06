@@ -1,7 +1,7 @@
 import type { Extension, Runner } from "./cache";
 import { PAGE_UNASKED } from "./page";
 import type { Page } from "./page";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 export type PageReading = (input: unknown, signal?: AbortSignal) => Promise<unknown>;
 

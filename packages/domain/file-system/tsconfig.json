@@ -20,7 +20,7 @@
 		"skipLibCheck": true,
 		"types": ["node"]
 	},
-	"references": [{ "path": "../../shared/framework" }],
+	"references": [{ "path": "../../shared/data-framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",

@@ -8,7 +8,7 @@ import type { CatalogueMode } from "../packages/shared/core/src/catalogue-instal
 import type { RankEntry } from "../packages/shared/core/src/catalogue-view.js";
 import { WidgetRegistry } from "../packages/shared/core/src/registry.js";
 import { slotFit } from "../packages/shared/core/src/fit.js";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import { PAGE_HOST, boom, filesAdapter, pageFiles, pageGlobal, reportsFailures, stackOf } from "./page-harness.ts";
 
 interface AskedSlot {

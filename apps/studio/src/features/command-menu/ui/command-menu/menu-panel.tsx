@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { AppProvider, useOptionalQuery } from "@widgetarium/framework";
+import { AppProvider, useOptionalQuery } from "@widgetarium/data-framework";
 import { CommandMenuResultsQuery } from "@widgetarium/command-menu";
 import type { Door, Results } from "@widgetarium/command-menu";
 import { useAskComposer } from "../../lib/ask-composer-context.js";

@@ -4,9 +4,9 @@ import {
 	messagePortListener,
 	messagePortTransport,
 	orpcTransport,
-} from "../packages/shared/framework/src/index.ts";
-import type { RemoteTransport } from "../packages/shared/framework/src/index.ts";
-import { server } from "../packages/shared/framework/src/server/index.ts";
+} from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
+import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { check } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 

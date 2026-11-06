@@ -1,4 +1,4 @@
-import { AuthenticatedGuard, Server, module, oneOf } from "@widgetarium/framework";
+import { AuthenticatedGuard, Server, module, oneOf } from "@widgetarium/data-framework";
 import { webPagePartsOn } from "./gateways/web-page-parts/web-page-parts.gateway.js";
 import { AppTabsHost } from "./shared/host/app-tabs.host.js";
 import { NativeWebPagesHost } from "./shared/host/native-web-pages.host.js";

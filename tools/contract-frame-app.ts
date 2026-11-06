@@ -17,7 +17,7 @@ import {
 	TerminalOutputQuery,
 	WriteFileCommand,
 } from "@sumi/contract";
-import { app, messagePortTransport, portFromParent } from "@widgetarium/framework";
+import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 
 const NOTE_PATH = "notes/today.txt";
 const NOTE = "written by the frame";

@@ -1,4 +1,4 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
 import { OnceAllowancesChangedEvent } from "../../gateways/once-allowances/once-allowances.events.js";
 import { PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
 import { GrantsChangedEvent } from "../../gateways/browser-grant-reads/browser-grant-reads.events.js";

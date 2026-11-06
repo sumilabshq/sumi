@@ -4,7 +4,7 @@ import { collectionGateway, valueGateway } from "../gateway/create.js";
 import { resolveHostGateway } from "../engine/host-gateways.js";
 import type { HostGateway, HostGatewayContext, HostSpec, HostTile } from "../engine/host-context.js";
 import { failureMessage } from "../engine/failure-message.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { refOf } from "../gateway/refs.js";
 import type { AnyGateway } from "../gateway/refs.js";
 

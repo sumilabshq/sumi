@@ -1,5 +1,5 @@
-import { app, localTransport } from "@widgetarium/framework";
-import { server } from "@widgetarium/framework/server";
+import { app, localTransport } from "@widgetarium/data-framework";
+import { server } from "@widgetarium/data-framework/server";
 import {
 	CloseWindowCommand,
 	KeepLiveWindowsCommand,

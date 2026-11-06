@@ -7,10 +7,10 @@ import {
 	TerminalModule,
 	WebPageModule,
 } from "@sumi/contract";
-import { stableKey } from "@widgetarium/framework/gateway/stable-key";
-import type { LocalTransport, RemoteTransport, StartedApp } from "@widgetarium/framework";
-import type { StartedServer } from "@widgetarium/framework/server";
-import { server } from "@widgetarium/framework/server";
+import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
+import type { LocalTransport, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { StartedServer } from "@widgetarium/data-framework/server";
+import { server } from "@widgetarium/data-framework/server";
 import { AppTabQuery } from "@widgetarium/places";
 import { TasksModule } from "@widgetarium/tasks";
 import { WebPageModule as ServerWebPageModule } from "@widgetarium/web-page/module";

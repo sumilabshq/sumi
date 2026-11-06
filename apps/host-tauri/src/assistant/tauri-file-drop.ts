@@ -1,5 +1,5 @@
 import type { DroppedFile, FileDragEvent } from "@widgetarium/assistant";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { AssistantBridge, DroppedEntry } from "./assistant-bridge.js";
 
 export interface DragPoint {

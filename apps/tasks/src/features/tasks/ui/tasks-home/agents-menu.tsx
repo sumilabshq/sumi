@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { BoardQuery } from "@widgetarium/tasks";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 import {
 	DropdownMenu,
 	DropdownMenuContent,

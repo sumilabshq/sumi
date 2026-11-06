@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
 import { GPU_FRAMES } from "@widgetarium/gpu";
-import { useCommand, useQuery } from "@widgetarium/framework";
+import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { usePanZoom } from "@widgetarium/behaviors";
 import { FieldStateQuery } from "@widgetarium/canvas";
 import { CameraQuery } from "@widgetarium/canvas";

@@ -1,4 +1,4 @@
-import { handler, serverModule } from "@widgetarium/framework";
+import { handler, serverModule } from "@widgetarium/data-framework";
 import { BalanceQuery } from "@widgetarium/fixture-billing";
 
 const UnguardedServerModule = serverModule("fixture-billing");

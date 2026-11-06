@@ -1,5 +1,5 @@
 import { ChatListQuery, HeldTabsQuery } from "@widgetarium/app-host";
-import { useQuery } from "@widgetarium/framework";
+import { useQuery } from "@widgetarium/data-framework";
 
 export function useTabIdIfOpen(tabId: string | null): string | null {
 	const held = useQuery(HeldTabsQuery).data.tabs;

@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { WidgetSourcePlace } from "./engine/source-offers.js";
 
 const SOURCE_UNREADABLE = "[widgetarium] this source names neither a folder nor a repository, so it was skipped";

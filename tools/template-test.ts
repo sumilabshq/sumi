@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import { JSDOM } from "jsdom";
-import { isObject } from "../packages/shared/framework/src/is-object.js";
+import { isObject } from "../packages/shared/data-framework/src/is-object.js";
 import type { Template } from "../packages/shared/core/src/templates.js";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });

@@ -1,5 +1,5 @@
-import type { FilterRow, SortRow } from "@widgetarium/framework/gateway/contract";
-import { isObject } from "@widgetarium/framework/is-object";
+import type { FilterRow, SortRow } from "@widgetarium/data-framework/gateway/contract";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { HostSpec } from "./host-context.js";
 import { fieldsIn } from "../gateway/props.js";
 import type { PropConfig } from "../gateway/props.js";

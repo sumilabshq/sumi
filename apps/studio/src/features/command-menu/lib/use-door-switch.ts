@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { prefersReducedMotion } from "@widgetarium/kit";
 import { ChangeMenuDoorCommand } from "@widgetarium/command-menu";
 import type { Door } from "@widgetarium/command-menu";

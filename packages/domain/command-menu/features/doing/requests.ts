@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { PerCall, Repeatable, command, refuse } from "@widgetarium/framework";
-import type { Send } from "@widgetarium/framework";
+import { PerCall, Repeatable, command, refuse } from "@widgetarium/data-framework";
+import type { Send } from "@widgetarium/data-framework";
 import {
 	CloseTabCommand,
 	HeldTabsQuery,

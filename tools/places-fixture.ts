@@ -1,8 +1,8 @@
 import type { z } from "zod";
-import { localTransport } from "../packages/shared/framework/src/index.ts";
-import type { RemoteModule, RemoteTransport } from "../packages/shared/framework/src/index.ts";
+import { localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteModule, RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
 import { PlacesModule as PlacesContract } from "../packages/state/places/generated/contract.ts";
-import { server } from "../packages/shared/framework/src/server/index.ts";
+import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";

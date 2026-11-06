@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { PaneTreeGateway } from "./pane-tree.gateway.js";
 
 export const PanesChangedEvent = event("panes-changed").from(

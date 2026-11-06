@@ -1,4 +1,4 @@
-import type { Send } from "@widgetarium/framework";
+import type { Send } from "@widgetarium/data-framework";
 import {
 	AccessAsksQuery,
 	BrowserTabsQuery,

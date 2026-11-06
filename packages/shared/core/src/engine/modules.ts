@@ -1,7 +1,7 @@
 import { ROOT } from "../paths.js";
 import { contentHash } from "./content-hash.js";
 import { failureMessage } from "./failure-message.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 export interface ModuleAdapter {
 	exists(path: string): Promise<boolean>;

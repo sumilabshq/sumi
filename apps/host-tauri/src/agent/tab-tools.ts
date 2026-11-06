@@ -13,7 +13,7 @@ import {
 	TabsSidebarQuery,
 	UngroupCommand,
 } from "@widgetarium/app-host";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import {
 	PlaceSchema,
 	inputOf,

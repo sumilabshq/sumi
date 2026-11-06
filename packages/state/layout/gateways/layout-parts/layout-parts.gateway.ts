@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/framework";
+import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
 import type { FrameSidesGateway } from "../frame-sides/frame-sides.gateway.js";
 import type { FrameWidthsGateway } from "../frame-widths/frame-widths.gateway.js";
 import type { PaneTreeGateway } from "../pane-tree/pane-tree.gateway.js";

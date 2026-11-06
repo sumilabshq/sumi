@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { AttachPagesCommand, DetachPagesCommand } from "@widgetarium/browser";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { useHeldTab } from "./held-tab.js";
 
 export function useHoldsPages(isAvailable: boolean): RefObject<HTMLDivElement | null> {

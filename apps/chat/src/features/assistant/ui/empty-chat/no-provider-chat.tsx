@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { OpenProvidersCommand } from "@widgetarium/assistant";
 
 const NO_PROVIDER_LEAD = "{label} is not on this machine yet.";

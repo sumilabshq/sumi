@@ -1,5 +1,5 @@
-import { refuse } from "@widgetarium/framework";
-import type { User } from "@widgetarium/framework";
+import { refuse } from "@widgetarium/data-framework";
+import type { User } from "@widgetarium/data-framework";
 
 export type PlacedPath =
 	| {

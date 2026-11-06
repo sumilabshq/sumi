@@ -15,7 +15,7 @@ export type {
 	SortRow,
 	Unsubscribe,
 	ValueOps,
-} from "@widgetarium/framework/gateway/contract";
+} from "@widgetarium/data-framework/gateway/contract";
 
 export type {
 	Aka,
@@ -28,7 +28,7 @@ export type {
 	RemoveAction,
 	Text,
 	UpdateAction,
-} from "@widgetarium/framework/gateway/needs";
+} from "@widgetarium/data-framework/gateway/needs";
 
 export type {
 	Choice,
@@ -98,7 +98,7 @@ export { z } from "./gateway/declared.js";
 export type { DataState, Listed, PageState } from "./gateway/use-data.js";
 export type { Page, PageInput } from "./gateway/page.js";
 export { PageInputSchema, PageOf } from "./gateway/page.js";
-export type { HandlerContext, HandlerUser } from "@widgetarium/framework/gateway/handler-context";
+export type { HandlerContext, HandlerUser } from "@widgetarium/data-framework/gateway/handler-context";
 export { useData } from "./gateway/use-data.js";
 export { action, arrayGateway, canDo, collectionGateway, soloGateway, valueGateway } from "./gateway/create.js";
 export { fieldOf, textOf } from "./gateway/match.js";
@@ -147,9 +147,9 @@ export type {
 	PagedQueryHandle,
 	PageItems,
 	QueryHandle,
-} from "@widgetarium/framework/handle-types";
-export { OnRefused, toastRefusal } from "@widgetarium/framework/command-refusals";
-export type { CommandRefusal, RefusalHandler } from "@widgetarium/framework/command-refusals";
+} from "@widgetarium/data-framework/handle-types";
+export { OnRefused, toastRefusal } from "@widgetarium/data-framework/command-refusals";
+export type { CommandRefusal, RefusalHandler } from "@widgetarium/data-framework/command-refusals";
 export type {
 	BuiltGivenProps,
 	BuiltWidget,
@@ -180,5 +180,5 @@ export type { MountedProps } from "./mounted.js";
 export { Mounted } from "./mounted.js";
 export type { WidgetRootProps } from "./widget-root.js";
 export { WidgetRoot } from "./widget-root.js";
-export type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
+export type { CommandAnswer } from "@widgetarium/data-framework/gateway/run-handler";
 export { ICommand, IQuery } from "./gateway/queries.js";

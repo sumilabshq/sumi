@@ -3,7 +3,7 @@ import type { Rgba } from "./color-math.js";
 import { MAX_SURFACE_DEPTH } from "./surface-roles.js";
 import { GROUP } from "./tree.js";
 import type { SurfaceWord } from "./tree.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 interface MeasuredPresets {
 	readonly fill?: unknown;

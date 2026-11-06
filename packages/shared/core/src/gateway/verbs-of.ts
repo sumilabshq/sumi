@@ -1,5 +1,5 @@
-import type { CanResult } from "@widgetarium/framework/gateway/contract";
-import { isObject } from "@widgetarium/framework/is-object";
+import type { CanResult } from "@widgetarium/data-framework/gateway/contract";
+import { isObject } from "@widgetarium/data-framework/is-object";
 
 export type LooseVerb = (input?: unknown) => unknown;
 

@@ -6,7 +6,7 @@ export const QUERY_SUFFIX = "Query";
 
 export const COMMAND_SUFFIX = "Command";
 
-export const FRAMEWORK = "@widgetarium/framework";
+export const FRAMEWORK = "@widgetarium/data-framework";
 
 const WORD_START = /(?:^|-)([a-z0-9])/g;
 const UPPER_LETTER = /[A-Z]/g;

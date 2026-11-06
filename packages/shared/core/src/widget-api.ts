@@ -24,7 +24,7 @@ import type { Release } from "./gateway/host.js";
 import { createDeclaredWidget } from "./declared-widget.js";
 import { inject, widget } from "./widget-builder.js";
 import type { DrawnProps, InjectedWidget } from "./declared-widget.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import * as kitModule from "@widgetarium/kit";
 import * as emojiModule from "@widgetarium/kit/emojis";
 

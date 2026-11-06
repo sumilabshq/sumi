@@ -1,8 +1,8 @@
 import { createElement as h, useSyncExternalStore } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import { AppProvider } from "@widgetarium/framework";
-import type { StartedApp } from "@widgetarium/framework";
+import { AppProvider } from "@widgetarium/data-framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
 import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";

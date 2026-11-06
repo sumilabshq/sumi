@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { ASSISTANT_NOT_AVAILABLE } from "@widgetarium/core/engine/assistant-port.js";
 import { Toaster } from "@widgetarium/kit";
-import { OnRefused, Slot, useQuery } from "@widgetarium/framework";
+import { OnRefused, Slot, useQuery } from "@widgetarium/data-framework";
 import { toastsAttachmentRefusals } from "../../lib/refusals-shown.js";
 import { NO_CHAT_CARDS_SLOT } from "../../lib/chat-cards-slot.js";
 import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";

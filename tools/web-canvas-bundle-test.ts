@@ -8,7 +8,7 @@ interface Built {
 
 const WEB_STUDIO = "apps/studio/src/index.ts";
 const FIXTURE_IMPORTING_OBSIDIAN = 'import { Notice } from "obsidian";\nnew Notice("shown");\n';
-const SERVER_ENTRY = "packages/shared/framework/src/server/index.ts";
+const SERVER_ENTRY = "packages/shared/data-framework/src/server/index.ts";
 const GUARD_IMPORTING_SERVER = "tools/fixture-server-only/owns-invoice-guard.ts";
 const FIXTURE_PACKAGES = "tools/fixture-server-only/packages";
 const SERVER_CONDITION = "server";

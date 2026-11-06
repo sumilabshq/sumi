@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { TabsGateway } from "./tabs.gateway.js";
 
 export const PlacedTabsChangedEvent = event("placed-tabs-changed").from(

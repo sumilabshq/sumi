@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { ThemeGateway } from "./theme.gateway.js";
 
 export const ThemeChangedEvent = event("theme-changed").from(

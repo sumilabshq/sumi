@@ -39,7 +39,7 @@
 	},
 	"references": [
 		{ "path": "../packages/shared/kit" },
-		{ "path": "../packages/shared/framework" },
+		{ "path": "../packages/shared/data-framework" },
 		{ "path": "../packages/shared/core" }
 	],
 	"include": [

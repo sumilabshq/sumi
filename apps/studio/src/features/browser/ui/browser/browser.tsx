@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Slot } from "@widgetarium/framework";
+import { Slot } from "@widgetarium/data-framework";
 import { AskCard } from "../ask-card/ask-card.js";
 import { InkReading } from "../ink-reading/ink-reading.js";
 import { SearchWebAction } from "../search-web-action/search-web-action.js";

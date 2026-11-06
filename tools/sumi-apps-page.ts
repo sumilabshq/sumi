@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { app, orpcTransport } from "../packages/shared/framework/src/index.ts";
-import type { RemoteTransport } from "../packages/shared/framework/src/index.ts";
+import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";

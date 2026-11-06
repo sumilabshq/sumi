@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { AcceptTaskCommand } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import { Button } from "@widgetarium/kit";
 import { SendBackFold } from "./send-back-fold.js";
 

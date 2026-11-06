@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
 import { AssistantSetupChangedEvent } from "../../gateways/assistant-setup/assistant-setup.events.js";
 import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";
 import { ClaudeOptionsChangedEvent } from "../../gateways/claude-options/claude-options.events.js";

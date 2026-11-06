@@ -1,5 +1,5 @@
-import type { CanResult, CollectionGateway, RecordRef, Row, ValueGateway } from "@widgetarium/framework/gateway/contract";
-import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
+import type { CanResult, CollectionGateway, RecordRef, Row, ValueGateway } from "@widgetarium/data-framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/data-framework/gateway/needs";
 import { canDo, valueGateway } from "@widgetarium/core/gateway/create.js";
 import { fieldOf } from "@widgetarium/core/gateway/match.js";
 import { isEmpty } from "@widgetarium/core/gateway/narrow.js";

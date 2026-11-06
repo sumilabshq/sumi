@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { PropsOf } from "@widgetarium/core/gateway/declared.js";
-import type { Row } from "@widgetarium/framework/gateway/contract";
+import type { Row } from "@widgetarium/data-framework/gateway/contract";
 import { Button } from "@widgetarium/kit";
 import type ChipGroup from "./widget.js";
 

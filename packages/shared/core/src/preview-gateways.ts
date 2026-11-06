@@ -7,13 +7,13 @@ import { declaredOf, needsOf } from "./gateway/props.js";
 import type { DeclaredGateway, DeclaredProp } from "./gateway/props.js";
 import { storedRows } from "./gateway/kept-in-tile.js";
 import type { StoredRow } from "./gateway/kept-in-tile.js";
-import type { CollectionGateway } from "@widgetarium/framework/gateway/contract";
+import type { CollectionGateway } from "@widgetarium/data-framework/gateway/contract";
 import type { TileProp, TileProps } from "./model.js";
 import type { Fields } from "./engine/catalogue-index.js";
 import type { HostGatewayContext, PatchStep } from "./engine/host-context.js";
 import { resolveHostGateway } from "./engine/host-gateways.js";
 import { typeOf } from "./engine/record-type.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { isHostSpec } from "./surface/prop-gateway.js";
 
 export type PreviewGateways = Record<string, DeclaredGateway>;

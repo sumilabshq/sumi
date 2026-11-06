@@ -25,7 +25,7 @@ interface Cost {
 }
 
 const PREAMBLE = `import { z } from "zod";
-import { AuthenticatedGuard, PerCall, command, guard, handler, middleware, serverModule } from "@widgetarium/framework";
+import { AuthenticatedGuard, PerCall, command, guard, handler, middleware, serverModule } from "@widgetarium/data-framework";
 
 export abstract class LedgerGateway {
 	abstract add(amount: number): Promise<{ total: number }>;

@@ -1,4 +1,4 @@
-import { Repeatable, command, refuse } from "@widgetarium/framework";
+import { Repeatable, command, refuse } from "@widgetarium/data-framework";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";

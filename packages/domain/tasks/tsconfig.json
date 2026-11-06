@@ -21,7 +21,7 @@
 		"types": [],
 		"allowImportingTsExtensions": true
 	},
-	"references": [{ "path": "../../shared/framework" }],
+	"references": [{ "path": "../../shared/data-framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",

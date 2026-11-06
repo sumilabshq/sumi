@@ -1,6 +1,6 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import { runAgentTool } from "./run-agent-tool.js";
 import type { QueueTaker } from "./tool-places.js";
 

@@ -1,5 +1,14 @@
-import { PerCall, Repeatable, command, guard, middleware, query, refuse, subscriber } from "@widgetarium/framework";
-import type { User } from "@widgetarium/framework";
+import {
+	PerCall,
+	Repeatable,
+	command,
+	guard,
+	middleware,
+	query,
+	refuse,
+	subscriber,
+} from "@widgetarium/data-framework";
+import type { User } from "@widgetarium/data-framework";
 import { TerminalOutputChangedEvent } from "../../gateways/terminal-sessions/terminal-sessions.events.js";
 import { TerminalSessionsGateway } from "../../gateways/terminal-sessions/terminal-sessions.gateway.js";
 import {

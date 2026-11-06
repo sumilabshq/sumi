@@ -18,7 +18,7 @@ import type {
 	CommandHandle,
 	PagedQueryHandle,
 	QueryHandle,
-} from "@widgetarium/framework/handle-types";
+} from "@widgetarium/data-framework/handle-types";
 
 export interface FailedViewProps {
 	readonly failures: readonly string[];

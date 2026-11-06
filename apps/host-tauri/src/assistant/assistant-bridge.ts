@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import type { AttachedFilesReach, ProviderReads } from "@widgetarium/core/engine/assistant-port.js";
 
 export interface ProviderFacts {

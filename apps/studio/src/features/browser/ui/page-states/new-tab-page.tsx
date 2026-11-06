@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/framework";
+import { useCommand } from "@widgetarium/data-framework";
 import type { RecentSite } from "@widgetarium/browser";
 import { OpenAddressCommand } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";

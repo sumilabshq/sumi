@@ -2,9 +2,9 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { app, localTransport } from "@widgetarium/framework";
-import type { ListeningTransport, StartedApp } from "@widgetarium/framework";
-import { server } from "@widgetarium/framework/server";
+import { app, localTransport } from "@widgetarium/data-framework";
+import type { ListeningTransport, StartedApp } from "@widgetarium/data-framework";
+import { server } from "@widgetarium/data-framework/server";
 import {
 	CloseWindowCommand,
 	ForgetRunningTurnsCommand,

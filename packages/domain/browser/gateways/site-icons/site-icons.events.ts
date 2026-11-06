@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/framework";
+import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { SiteOriginSchema } from "../../shared/schema/site-icon.schema.js";
 import { SiteIconsGateway } from "./site-icons.gateway.js";
 

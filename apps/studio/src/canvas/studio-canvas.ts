@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import type { StartedApp } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/data-framework";
 import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
 import type { CanvasHosts } from "./canvas-hosts.js";
 import { startCanvasApp } from "./canvas-app.js";

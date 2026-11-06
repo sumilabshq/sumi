@@ -14,7 +14,7 @@ import { scopeOf } from "./engine/widget-source.js";
 import type { MadeBuild } from "./engine/builder.js";
 import type { Fields } from "./engine/catalogue-index.js";
 import { folderFor } from "./engine/github.js";
-import { isObject } from "@widgetarium/framework/is-object";
+import { isObject } from "@widgetarium/data-framework/is-object";
 import { refuse } from "./installer-context.js";
 import type { HeldWidgetFiles, InstallerAdapter, Installing, Refusal } from "./installer-context.js";
 import { cardMismatchIn } from "./installer-placement.js";
