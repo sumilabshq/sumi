@@ -1,19 +1,26 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
-import { RunningCall } from "../running-call/running-call.js";
-import { Working } from "../working/working.js";
 import type { Chat } from "@widgetarium/assistant";
+import { LiveWithTasks } from "../active-tasks/live-with-tasks.js";
+import { LiveStep } from "./live-step.js";
 
-export function BusyLine({ chat }: { readonly chat: Chat }): ReactNode {
-	const running = chat.runningCall;
+export interface BusyLineProps {
+	readonly chat: Chat;
+	readonly chatId?: string | undefined;
+}
 
+export function BusyLine({ chat, chatId }: BusyLineProps): ReactNode {
 	if (!chat.session.busy || chat.session.turns.at(-1)?.role === "compact") {
 		return null;
 	}
 
-	if (!running || !chat.runningFace) {
-		return <Working session={chat.session} />;
-	}
-
-	return <RunningCall call={running} face={chat.runningFace} />;
+	return (
+		<div className="wg-studio-ai-live">
+			{chatId === undefined ? (
+				<LiveStep chat={chat} />
+			) : (
+				<LiveWithTasks chatId={chatId} step={<LiveStep chat={chat} />} />
+			)}
+		</div>
+	);
 }

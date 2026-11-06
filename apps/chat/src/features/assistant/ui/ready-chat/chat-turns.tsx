@@ -15,9 +15,10 @@ export interface ChatTurnsProps {
 	readonly chat: Chat;
 	readonly cards: ChatCardsSlot;
 	readonly asks: CardAsks;
+	readonly chatId?: string | undefined;
 }
 
-export function ChatTurns({ chat, cards, asks }: ChatTurnsProps): ReactElement {
+export function ChatTurns({ chat, cards, asks, chatId }: ChatTurnsProps): ReactElement {
 	const { session } = chat;
 
 	if (session.turns.length === 0) {
@@ -47,7 +48,7 @@ export function ChatTurns({ chat, cards, asks }: ChatTurnsProps): ReactElement {
 					</Fragment>
 				);
 			})}
-			<BusyLine chat={chat} />
+			<BusyLine chat={chat} chatId={chatId} />
 			<EndLine chat={chat} />
 		</Fragment>
 	);

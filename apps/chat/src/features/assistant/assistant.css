@@ -3122,3 +3122,136 @@
 		transition: none;
 	}
 }
+
+.wg-chat-app .wg-studio-ai-live {
+	position: sticky;
+	bottom: 0;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	margin-top: calc(-1 * var(--sumi-sp-5));
+	padding: var(--sumi-sp-5) 0 var(--sumi-sp-2);
+	background: linear-gradient(180deg, transparent, var(--sumi-plate) var(--sumi-sp-5));
+}
+
+.wg-chat-app .wg-studio-ai-live-head {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	min-width: 0;
+}
+
+.wg-chat-app .wg-studio-ai-live-head > .wg-studio-ai-busy {
+	min-width: 0;
+}
+
+.wg-chat-app .wg-studio-ai-live-tasks-toggle {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-xs);
+	padding: 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text-2);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
+	letter-spacing: inherit;
+	cursor: pointer;
+	transition: color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-live-tasks-toggle:hover,
+.wg-chat-app .wg-studio-ai-live-tasks-toggle[aria-expanded="true"] {
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-live-tasks-separator {
+	color: var(--sumi-text-3);
+}
+
+.wg-chat-app .wg-studio-ai-live-tasks {
+	display: flex;
+	flex-direction: column;
+	gap: var(--sumi-sp-2);
+	margin-left: 5px;
+	padding: var(--sumi-sp-2) 0 0 var(--sumi-sp-5);
+	border-left: 1px solid var(--sumi-line);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table-wrap:has(> .wg-studio-ai-table.is-cut)::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1;
+	height: 96px;
+	border-radius: 0 0 var(--sumi-r-lg) var(--sumi-r-lg);
+	background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--sumi-text) 2.5%, var(--sumi-plate)) 72%);
+	pointer-events: none;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table > .wg-studio-ai-more {
+	z-index: 2;
+}
+
+.wg-chat-app .wg-studio-ai-live-task {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-xs);
+	min-width: 0;
+	color: var(--sumi-text-2);
+	font-size: var(--sumi-fs-13);
+}
+
+.wg-chat-app .wg-studio-ai-live-task-number {
+	flex: none;
+	color: var(--sumi-text-3);
+	font-variant-numeric: tabular-nums;
+}
+
+.wg-chat-app .wg-studio-ai-live-task-title {
+	flex: none;
+	max-width: 45%;
+	overflow: hidden;
+	color: var(--sumi-text);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wg-chat-app .wg-studio-ai-live-task-step {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--sumi-text-3);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wg-chat-app .wg-studio-ai-live-task-dots {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	gap: 3px;
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+	font-variant-numeric: tabular-nums;
+}
+
+.wg-chat-app .wg-studio-ai-live-task-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: var(--sumi-r-full);
+	background: color-mix(in srgb, var(--sumi-text) 14%, transparent);
+}
+
+.wg-chat-app .wg-studio-ai-live-task-dot.is-done {
+	background: var(--sumi-text-2);
+}
+
+.wg-chat-app .wg-studio-ai-live-task-dot.is-now {
+	background: var(--sumi-text);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--sumi-text) 12%, transparent);
+}

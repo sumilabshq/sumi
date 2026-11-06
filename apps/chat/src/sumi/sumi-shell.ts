@@ -2,6 +2,7 @@ import { AppearanceModule, AssistantModule, PlacesModule, QuestionsModule } from
 import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import { MascotModule } from "@widgetarium/mascot/module";
+import { TasksModule } from "@widgetarium/tasks";
 
 const TAB_KEY = "sumi-tab";
 const FRAME_WORKSPACE = "chat";
@@ -22,6 +23,7 @@ export function startSumiShell(): SumiShell {
 				AssistantModule.over(transport),
 				AppearanceModule.over(transport),
 				QuestionsModule.over(transport),
+				TasksModule.over(transport),
 			)
 			.start({
 				platform: "browser",

@@ -62,7 +62,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			{isEmpty ? <BareLead lead={lead} /> : <ChatLeadHead lead={lead} title={title ?? TITLE} />}
 			<div className="wg-studio-ai-scroll-frame">
 				<div className="wg-studio-ai-scroll" ref={scroller} onScroll={onScroll}>
-					<ChatTurns chat={chat} cards={cards} asks={asks} />
+					<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} />
 				</div>
 				{isStuck ? null : <ToEndButton toEnd={toEnd} />}
 			</div>

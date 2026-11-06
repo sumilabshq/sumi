@@ -111,7 +111,7 @@ function coreRoutesOf(core: RemoteTransport): readonly FrameRoute[] {
 }
 
 function tasksRoutesOf(core: RemoteTransport, app: string): readonly FrameRoute[] {
-	if (app !== TASKS_APP) {
+	if (app !== TASKS_APP && app !== CHAT_APP) {
 		return [];
 	}
 
