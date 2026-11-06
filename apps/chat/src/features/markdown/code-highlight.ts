@@ -1,7 +1,7 @@
 import { createCssVariablesTheme, createHighlighterCore } from "shiki/core";
 import type { HighlighterCore, ThemedToken } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
-import { LANGUAGE_LOADERS } from "./code-languages.js";
+import { loaderOf } from "./code-languages.js";
 import type { CodeLanguage } from "./code-languages.js";
 
 const THEME_NAME = "sumi";
@@ -52,7 +52,7 @@ async function highlighterFor(language: CodeLanguage): Promise<HighlighterCore> 
 	const ready = await highlighterReady();
 
 	if (!ready.getLoadedLanguages().includes(language)) {
-		await ready.loadLanguage(LANGUAGE_LOADERS[language]);
+		await ready.loadLanguage(loaderOf(language));
 	}
 
 	return ready;
