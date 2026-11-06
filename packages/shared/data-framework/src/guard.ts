@@ -1,13 +1,13 @@
 import { refusalOf } from "./answer";
 import type { Refusal } from "./answer";
 import type { Inject, Injected } from "./handler";
-import { declaredStep, stepOf } from "./middleware";
+import { declareStep, stepOf } from "./middleware";
 import type {
 	Added,
-	Declared,
+	DeclaredStep,
 	NothingAdded,
-	OptionedCall,
-	Options,
+	StepCallWithOptions,
+	StepOptions,
 	Step,
 	StepCall,
 	StepNext,
@@ -41,13 +41,13 @@ export type Signed = { readonly user: User };
 
 type Checked<A extends Added> = A | void | Promise<A | void>;
 
-type Check<In, A extends Added, D extends Inject, O extends Options> = (
-	call: OptionedCall<In, O>,
+type Check<In, A extends Added, D extends Inject, O extends StepOptions> = (
+	call: StepCallWithOptions<In, O>,
 	injected: Injected<D>,
 ) => Checked<A>;
 
 type AnyCheck = {
-	bivariant(call: OptionedCall<unknown, Options>, injected: Injected<Inject>): Checked<Added>;
+	bivariant(call: StepCallWithOptions<unknown, StepOptions>, injected: Injected<Inject>): Checked<Added>;
 }["bivariant"];
 
 interface Labelled<U extends boolean> {
@@ -63,14 +63,16 @@ const NOTHING_ADDED: NothingAdded = Object.freeze({});
 const UNLABELLED: Labelled<false> = { label: null, needsUser: false, takesOptions: false };
 const NEEDS_USER = "{request} needs a signed-in user";
 const NEEDS_PERMISSION = "{request} needs the permission {permission}";
+const NAMES_NO_PERMISSION =
+	"{request} is guarded by HasPermissionGuard used without permissions: call it as HasPermissionGuard(permission, …)";
 
-export class GuardBuilder<In, D extends Inject, U extends boolean = false, O extends Options = never> {
+export class GuardBuilder<In, D extends Inject, U extends boolean = false, O extends StepOptions = never> {
 	constructor(
 		private readonly tokens: D,
 		private readonly labelled: Labelled<U>,
 	) {}
 
-	options<const N extends Options>(): GuardBuilder<In, D, U, N> {
+	options<const N extends StepOptions>(): GuardBuilder<In, D, U, N> {
 		return new GuardBuilder(this.tokens, { ...this.labelled, takesOptions: true });
 	}
 
@@ -82,11 +84,11 @@ export class GuardBuilder<In, D extends Inject, U extends boolean = false, O ext
 		return new GuardBuilder(this.tokens, { ...this.labelled, needsUser: true });
 	}
 
-	handle<A extends Added = NothingAdded>(check: Check<In, A, D, O>): Declared<Guard<In, A, D, U>, O> {
+	handle<A extends Added = NothingAdded>(check: Check<In, A, D, O>): DeclaredStep<Guard<In, A, D, U>, O> {
 		const checking: AnyCheck = check;
 		const { tokens, labelled } = this;
 		const { needsUser } = labelled;
-		const guardWith = (options: Options): Guard<In, A, D, U> => {
+		const guardOf = (options: StepOptions): Guard<In, A, D, U> => {
 			const handled = async (call: StepCall, injected: Injected<Inject>, next: StepNext) => {
 				const outcome = await outcomeOf(() => {
 					if (needsUser) signedIn(call.request, call.context.user);
@@ -97,7 +99,7 @@ export class GuardBuilder<In, D extends Inject, U extends boolean = false, O ext
 			const shape = { kind: "guard", inject: tokens, label: labelled.label, needsUser } as const;
 			return { ...stepOf(shape, handled), kind: "guard", inject: tokens, needsUser };
 		};
-		return declaredStep(guardWith, labelled.takesOptions);
+		return declareStep(guardOf, labelled.takesOptions);
 	}
 }
 
@@ -132,6 +134,11 @@ export const HasPermissionGuard = new GuardBuilder<unknown, NothingAdded, true>(
 	.options<[first: Permission, ...rest: Permission[]]>()
 	.handle<Signed>(({ request, context, options }) => {
 		const user = signedIn(request, context.user);
+
+		if (options.length === 0) {
+			return deny(NAMES_NO_PERMISSION.replace("{request}", request));
+		}
+
 		const missing = options.find((wanted) => !user.permissions.includes(wanted));
 
 		if (missing === undefined) {

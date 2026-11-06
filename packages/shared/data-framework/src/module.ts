@@ -5,7 +5,7 @@ import type { AnyHandledRequest } from "./handled-request";
 import type { AnyHandler, GuardedState, Handler, Inject, Injected } from "./handler";
 import { NOTHING_NEEDED, lentFor, withNeeds } from "./host-needs";
 import type { HeldBy, HostNeeds, Lent, NeedSets, NeedsShape, OneOf, OneSetLent, OneSetTagged } from "./host-needs";
-import { stepGiven } from "./middleware";
+import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 import type { ModuleContract } from "./module-contract";
 import { PlatformModule } from "./platform-module";
@@ -275,7 +275,7 @@ export class RequestsModule<
 	guard(step: Step | StepNeedingOptions): RequestsModule<H, R, N, G> | TakesOptionsFirst {
 		return new RequestsModule({
 			...this.plan,
-			steps: [...this.plan.steps, stepGiven(step)],
+			steps: [...this.plan.steps, requireStep(step)],
 		});
 	}
 
@@ -284,7 +284,7 @@ export class RequestsModule<
 	use(step: Step | StepNeedingOptions): RequestsModule<H, R, N, G> | TakesOptionsFirst {
 		return new RequestsModule({
 			...this.plan,
-			steps: [...this.plan.steps, stepGiven(step)],
+			steps: [...this.plan.steps, requireStep(step)],
 		});
 	}
 

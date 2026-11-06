@@ -5,7 +5,7 @@ import type { Guard } from "./guard";
 import type { Handle, Inject, Unreserved } from "./handler";
 import { handlingOf } from "./handled-request";
 import type { HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
-import { stepGiven } from "./middleware";
+import { requireStep } from "./middleware";
 import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 
 type RequestKind = "query" | "command";
@@ -118,7 +118,7 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 	): RequestHandlerBuilder<R, NothingAdded, A>;
 	guard(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
 	guard(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
-		return handlingOf(this, stepGiven(step));
+		return handlingOf(this, requireStep(step));
 	}
 
 	use<R extends AnyRequest, A extends Added>(
@@ -127,7 +127,7 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 	): RequestHandlerBuilder<R, NothingAdded, A>;
 	use(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
 	use(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
-		return handlingOf(this, stepGiven(step));
+		return handlingOf(this, requireStep(step));
 	}
 
 	inject<R extends AnyRequest, const N extends Inject>(

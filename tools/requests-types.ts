@@ -38,7 +38,7 @@ const SignedOnlyGuard = guard()
 	.needsUser()
 	.handle(() => undefined);
 const FROM_TO = { from: "Home", to: "Start" };
-const LabelledMiddleware = middleware()
+const OptionalOptionsMiddleware = middleware()
 	.options<[label?: string]>()
 	.handle((_call, _deps, next) => next());
 
@@ -51,8 +51,8 @@ export function optionsTypedOnly(): void {
 	module("pages").on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
 	// @ts-expect-error
 	RateLimitMiddleware();
-	limited.use(LabelledMiddleware);
-	limited.use(LabelledMiddleware("timed"));
+	limited.use(OptionalOptionsMiddleware);
+	limited.use(OptionalOptionsMiddleware("timed"));
 	// @ts-expect-error
 	limited.use(TimedMiddleware());
 	limited.guard(HasPermissionGuard(fx.PagesPermissions.rename, fx.PagesPermissions.rename));

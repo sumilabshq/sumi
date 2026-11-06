@@ -27,7 +27,7 @@ export type {
 	Middleware,
 	Next,
 	NoCallFacts,
-	Options,
+	StepOptions,
 	Step,
 	StepCall,
 	StepContext,

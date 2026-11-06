@@ -22,11 +22,11 @@ export interface StepCall<In = unknown> {
 	readonly context: StepContext;
 }
 
-export type Options = readonly unknown[];
+export type StepOptions = readonly unknown[];
 
-export type OptionedCall<In, O extends Options> = StepCall<In> & { readonly options: O };
+export type StepCallWithOptions<In, O extends StepOptions> = StepCall<In> & { readonly options: O };
 
-export type Declared<S extends Step, O extends Options> = [O] extends [never]
+export type DeclaredStep<S extends Step, O extends StepOptions> = [O] extends [never]
 	? S
 	: [] extends O
 		? S & ((...options: O) => S)
@@ -34,8 +34,10 @@ export type Declared<S extends Step, O extends Options> = [O] extends [never]
 
 export type StepNeedingOptions = (...options: never) => Step;
 
-export type TakesOptionsFirst =
+const TAKES_OPTIONS_FIRST =
 	"this step takes options: call it with them first, as .use(Step(options)) or .guard(Step(options))";
+
+export type TakesOptionsFirst = typeof TAKES_OPTIONS_FIRST;
 
 export type StepNext = (added?: Added) => Promise<Answer<unknown>>;
 
@@ -63,8 +65,8 @@ export interface Middleware<In = unknown, A extends Added = Added, D extends Inj
 	readonly inject: D;
 }
 
-export type HandleStep<In, A extends Added, D extends Inject, O extends Options = never> = (
-	call: OptionedCall<In, O>,
+export type HandleStep<In, A extends Added, D extends Inject, O extends StepOptions = never> = (
+	call: StepCallWithOptions<In, O>,
 	injected: Injected<D>,
 	next: Next<A>,
 ) => Promise<Answer<unknown>>;
@@ -80,18 +82,20 @@ type AnyHandle = {
 	bivariant(call: StepCall, injected: Injected<Inject>, next: StepNext): Promise<Answer<unknown>>;
 }["bivariant"];
 
-type AnyOptionedHandle = {
-	bivariant(call: OptionedCall<unknown, Options>, injected: Injected<Inject>, next: StepNext): Promise<Answer<unknown>>;
+type AnyHandleWithOptions = {
+	bivariant(
+		call: StepCallWithOptions<unknown, StepOptions>,
+		injected: Injected<Inject>,
+		next: StepNext,
+	): Promise<Answer<unknown>>;
 }["bivariant"];
 
 const NOTHING_INJECTED: NothingAdded = Object.freeze({});
-const NO_OPTIONS: Options = Object.freeze([]);
+const NO_STEP_OPTIONS: StepOptions = Object.freeze([]);
 const RATE_LIMITED = "{name} was called too often; try again shortly";
-const STEP_NEEDS_OPTIONS: TakesOptionsFirst =
-	"this step takes options: call it with them first, as .use(Step(options)) or .guard(Step(options))";
 const WHOLE_CALL = "";
 
-export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends Options = never> {
+export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends StepOptions = never> {
 	constructor(
 		private readonly tokens: D,
 		private readonly takesOptions: boolean,
@@ -101,7 +105,7 @@ export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends 
 		return new MiddlewareBuilder(this.tokens, this.takesOptions);
 	}
 
-	options<const N extends Options>(): MiddlewareBuilder<In, A, D, N> {
+	options<const N extends StepOptions>(): MiddlewareBuilder<In, A, D, N> {
 		return new MiddlewareBuilder(this.tokens, true);
 	}
 
@@ -109,16 +113,16 @@ export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends 
 		return new MiddlewareBuilder(inject, this.takesOptions);
 	}
 
-	handle(handle: HandleStep<In, A, D, O>): Declared<Middleware<In, A, D>, O> {
-		const handling: AnyOptionedHandle = handle;
+	handle(handle: HandleStep<In, A, D, O>): DeclaredStep<Middleware<In, A, D>, O> {
+		const handling: AnyHandleWithOptions = handle;
 		const { tokens } = this;
-		const middlewareWith = (options: Options): Middleware<In, A, D> => {
+		const middlewareOf = (options: StepOptions): Middleware<In, A, D> => {
 			const step = stepOf({ kind: "middleware", inject: tokens }, (call, injected, next) =>
 				handling({ ...call, options }, injected, next),
 			);
 			return { ...step, kind: "middleware", inject: tokens };
 		};
-		return declaredStep(middlewareWith, this.takesOptions);
+		return declareStep(middlewareOf, this.takesOptions);
 	}
 }
 
@@ -134,23 +138,23 @@ export const RateLimitMiddleware = middleware()
 		return refusalOf("rate-limited", RATE_LIMITED.replace("{name}", request));
 	});
 
-export function declaredStep<S extends Step, O extends Options>(
-	stepWith: (options: Options) => S,
+export function declareStep<S extends Step, O extends StepOptions>(
+	stepWith: (options: StepOptions) => S,
 	takesOptions: boolean,
-): Declared<S, O>;
-export function declaredStep(stepWith: (options: Options) => Step, takesOptions: boolean): Step {
-	const bare = stepWith(NO_OPTIONS);
+): DeclaredStep<S, O>;
+export function declareStep(stepWith: (options: StepOptions) => Step, takesOptions: boolean): Step {
+	const bare = stepWith(NO_STEP_OPTIONS);
 
 	if (!takesOptions) {
 		return bare;
 	}
 
-	return Object.freeze(Object.assign((...options: Options) => stepWith(options), bare));
+	return Object.freeze(Object.assign((...options: StepOptions) => stepWith(options), bare));
 }
 
-export function stepGiven(step: Step | StepNeedingOptions): Step {
+export function requireStep(step: Step | StepNeedingOptions): Step {
 	if (!isStep(step)) {
-		throw new Error(STEP_NEEDS_OPTIONS);
+		throw new Error(TAKES_OPTIONS_FIRST);
 	}
 
 	return step;
