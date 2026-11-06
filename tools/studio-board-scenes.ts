@@ -208,18 +208,6 @@ const CHATS_COLUMN: readonly Pair[] = [
 	{ name: "unread dot", board: "nav.lc .bdot", built: ".wg-ws-unread" },
 	{ name: "spinner", board: "nav.lc .spin", built: ".wg-ws-spin" },
 	{
-		name: "routines",
-		board: "nav.lc .tabs > .x-row:nth-last-child(2)",
-		built: ".wg-ws-foot .wg-ws-line-row:first-child",
-		waived: SAME_INSETS_WIDTH,
-	},
-	{
-		name: "settings",
-		board: "nav.lc .tabs > .x-row:last-child",
-		built: ".wg-ws-foot .wg-ws-line-row:last-child",
-		waived: SAME_INSETS_WIDTH,
-	},
-	{
 		name: "strip",
 		board: "nav.lc .wsbar",
 		built: "[data-ws-strip]",
@@ -651,10 +639,6 @@ export const ALIGNMENTS: readonly Alignment[] = [
 	{ name: "sidebar top row on the plate header line", measure: ICON_ROW_CENTRES },
 	{ name: "tabs column first row on the app plate's guide", measure: TABS_TOP },
 	{
-		name: "chats column glyph rows: one glyph axis, one text axis",
-		measure: ONE_EDGE("[data-ws-new-chat], .wg-ws-foot .wg-ws-line-row", ":scope > svg", ":scope > span"),
-	},
-	{
 		name: "chat rows: one text axis",
 		measure: ONE_EDGE(".wg-ws-row", "", ".wg-ws-row-title"),
 	},
@@ -691,7 +675,7 @@ export const ALIGNMENTS: readonly Alignment[] = [
 	{
 		name: "chats column: one content axis",
 		measure: `(() => {
-			const lefts = { name: ".wg-ws-name-text", newChat: "[data-ws-new-chat] svg", section: ".wg-ws-section-label", routines: ".wg-ws-foot .wg-ws-line-row svg" };
+			const lefts = { name: ".wg-ws-name-text", newChat: "[data-ws-new-chat] svg", section: ".wg-ws-section-label" };
 			const said = Object.entries(lefts).map(([name, selector]) => [name, document.querySelector(selector)?.getBoundingClientRect().left ?? null]);
 			const found = said.filter(([, left]) => left !== null).map(([, left]) => left);
 			if (found.length < said.length) return "missing " + said.filter(([, left]) => left === null).map(([name]) => name).join(", ");

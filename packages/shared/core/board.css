@@ -16799,7 +16799,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 	display: none;
 }
 .wg-ws-chats,
-.wg-ws-foot,
 .wg-ws-section-rows {
 	display: flex;
 	flex-direction: column;
@@ -17030,10 +17029,6 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 .wg-ws-column .wg-ws-section-act .wg-kit-icon-glyph {
 	width: 13px;
 	height: 13px;
-}
-.wg-ws-foot {
-	flex: none;
-	padding-top: 2px;
 }
 .wg-ws-strip {
 	flex: none;

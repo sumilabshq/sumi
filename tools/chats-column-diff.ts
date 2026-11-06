@@ -158,12 +158,6 @@ const COLUMN: readonly Pair[] = [
 	{ name: "unread row", board: "nav.lc .sh ~ .x-row:has(.bdot)", built: '[data-ws-chat="checks"]' },
 	{ name: "unread dot", board: "nav.lc .bdot", built: ".wg-ws-unread" },
 	{ name: "spinner", board: "nav.lc .spin", built: ".wg-ws-spin" },
-	{
-		name: "routines",
-		board: "nav.lc .tabs > .x-row:nth-last-child(2)",
-		built: ".wg-ws-foot .wg-ws-line-row:first-child",
-	},
-	{ name: "settings", board: "nav.lc .tabs > .x-row:last-child", built: ".wg-ws-foot .wg-ws-line-row:last-child" },
 	{ name: "strip", board: "nav.lc .wsbar", built: "[data-ws-strip]" },
 	{ name: "strip current", board: "nav.lc .wsi.on", built: '[data-ws-strip-id="default"]' },
 	{ name: "strip current glyph", board: "nav.lc .wsi.on svg", built: '[data-ws-strip-id="default"] svg' },
