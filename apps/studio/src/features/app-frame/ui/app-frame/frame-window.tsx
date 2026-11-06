@@ -27,7 +27,7 @@ export function FrameWindow({ app, url, tabId }: FrameWindowProps): ReactElement
 		<iframe
 			ref={frame}
 			className="wg-app-frame"
-			title={app}
+			aria-label={app}
 			src={src}
 			sandbox={APP_FRAME_SANDBOX}
 			data-app-frame={app}
