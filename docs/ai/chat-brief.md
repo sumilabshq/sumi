@@ -29,9 +29,9 @@ An Obsidian plugin. A note can hold a **board**: a fenced ` ```widgetarium ` blo
 widget **tiles** and the **layout tree** they stand in. Saving the note redraws it. A **widget** is a
 folder under `.widgetarium/widgets/@scope/name/` holding `widget.tsx`. Data reaches a widget only
 through its **queries** (what it reads) and **commands** (what it writes), each bound on the tile to a
-handler — a vault folder, one note, a value typed into the tile (`@core/typed-value`), or another
-tile's prop (`@core/from-tile-value`). A command that writes the vault runs only once its binding
-carries `allow: [run]`.
+handler — a value typed into the tile (`@core/typed-value`), JSON read from a URL
+(`@core/fetch-rows`), or another tile's prop (`@core/from-tile-value`). A pack command that reaches
+outside the tile runs only once its binding carries `allow: [run]`.
 
 ```yaml
 v: 2
@@ -39,7 +39,7 @@ tiles:
   - id: w0
     widget: "@default/metric-total"
     props:
-      getRecords: { implementation: "@obsidian/folder", fields: { path: Metrics } }
+      getRecords: { implementation: "@core/fetch-rows", fields: { url: "https://example.com/metrics.json" } }
       getTitle: { implementation: "@core/typed-value", fields: { value: Revenue } }
 layout:
   dir: row
@@ -54,7 +54,6 @@ layout:
 - Every node may wear a `surface`: `none`, `apart` or `group`. A `group` is a faint grey plate
   with no edge, white on another group, earned only by a repeat; most nodes wear none.
 - Spacing is never written. It follows the tree: 24px in a region, 16px one box down, 8px deeper.
-- A board of typed tiles is a mock-up, not a screen.
 
 ## The tool
 
@@ -72,7 +71,7 @@ Also `install <id>`, `check <id>`, `base <name>`, `card <name>`, `layout <note>`
 ## What usually goes wrong
 
 - **The tile is in `tiles` but not in `layout`**, so nothing draws. Check both.
-- **A prop is still on its default.** A board of typed tiles is a mock-up.
+- **A prop is still on its default.**
 - **A button does nothing** because its command's binding carries no `allow: [run]`.
 - **A widget edit never reached the vault.** A scope that is a real directory is a frozen copy.
 - **The YAML does not parse**, and the whole note stops rendering.

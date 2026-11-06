@@ -7,25 +7,15 @@ import { storedRows } from "../gateway/kept-in-tile.js";
 import { valueIn } from "../gateway/create.js";
 import { fieldsOf } from "../gateway/fields.js";
 import type { FilterRow } from "../gateway/contract.js";
-import { conditionBody, conditionRowsIn, conditionSentence, keepRow, stepAt } from "./condition-steps.js";
-import type { ConditionAt, ConditionField, ConditionList, RowIndex } from "./condition-steps.js";
+import { WHERE_FIELD, conditionBody, conditionRowsIn, conditionSentence, keepRow, stepAt } from "./condition-steps.js";
+import type { ConditionAt, ConditionField, RowIndex } from "./condition-steps.js";
 import { boxRows, offeredBoxes } from "./offered-boxes.js";
 import { editorPopover, group, note, valueRow } from "./settings-rows.js";
 import type { SettingsSpec, SettingsState } from "./settings-state.js";
-import { boundPath } from "./vault-paths.js";
 
 const PICK_SPREAD = "Everything a filter has picked arrives as conditions of its own.";
 
-const CONDITION_LISTS: Readonly<Record<ConditionList, { readonly heading: string; readonly hint: string }>> = {
-	where: {
-		heading: "Where",
-		hint: "These decide which data arrives. A condition the widget declares cannot be edited here.",
-	},
-	counts: {
-		heading: "Counts when",
-		hint: "A note that arrives and does not match still belongs to the whole: a percent divides by it, and a run breaks on it.",
-	},
-};
+const WHERE_HINT = "These decide which data arrives. A condition the widget declares cannot be edited here.";
 
 type Fields = readonly ConditionField[];
 
@@ -34,15 +24,13 @@ export function whereGroup(
 	key: string,
 	spec: SettingsSpec,
 	config: TileProp,
-	list: ConditionList = "where",
 ): ReactElement {
-	const fields = fieldsFor(state, spec, config);
-	const held = conditionRowsIn(config, list);
+	const fields = fieldsFor(spec, config);
+	const held = conditionRowsIn(config);
 	const rows = held.filter((row) => row.fixed !== true);
-	const open = stepAt(state.openRow, key, list);
+	const open = stepAt(state.openRow, key);
 	const at = (index: RowIndex): ConditionAt => ({
 		key,
-		list,
 		config,
 		rows,
 		index,
@@ -55,21 +43,20 @@ export function whereGroup(
 		),
 		conditionRow(state, at(rows.length), fields, addRow("Add condition")),
 	];
-	if (list === "where" && offeredBoxes(state, "conditions").size > 0) {
+	if (offeredBoxes(state, "conditions").size > 0) {
 		drawn.push(conditionRow(state, at("spread"), fields, addRow("Everything a filter has picked")));
 	}
 	return group(
-		`${list}:${key}`,
-		`${CONDITION_LISTS[list].heading} · ${spec.label ?? key}`,
+		`${WHERE_FIELD}:${key}`,
+		`Where · ${spec.label ?? key}`,
 		drawn,
-		CONDITION_LISTS[list].hint,
+		WHERE_HINT,
 	);
 }
 
-function fieldsFor(state: SettingsState, spec: SettingsSpec, config: TileProp): Fields {
-	if (bindingOf(spec, config).binding === "hardcode")
-		return fieldsOf(storedRows(typedIn(spec, config) ?? declaredOf(spec)).map(valueIn));
-	return state.vaultFields?.[boundPath(config)] ?? [];
+function fieldsFor(spec: SettingsSpec, config: TileProp): Fields {
+	if (bindingOf(spec, config).binding !== "hardcode") return [];
+	return fieldsOf(storedRows(typedIn(spec, config) ?? declaredOf(spec)).map(valueIn));
 }
 
 function spreadBody(state: SettingsState, at: ConditionAt): ReactElement[] {
@@ -83,7 +70,7 @@ function conditionRow(state: SettingsState, at: ConditionAt, fields: Fields, tri
 	const body = at.index === "spread" ? spreadBody(state, at) : conditionBody(state, at, fields, at.step ?? "");
 	return editorPopover(
 		state,
-		`${at.list}:${at.key}#${at.index}`,
+		`${WHERE_FIELD}:${at.key}#${at.index}`,
 		trigger,
 		h("div", { className: "wg-set-pop-body" }, body),
 		"",

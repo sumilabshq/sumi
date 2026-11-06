@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { refOf } from "../gateway/refs.js";
 import { isObject } from "../engine/is-object.js";
-import { PropRefSchema } from "../engine/prop-ref.js";
 import type { Tile } from "../model.js";
 import { registeredCommands } from "../engine/packs.js";
 import { inResourceOrder } from "../gateway/implementation-metadata.js";
@@ -74,17 +73,12 @@ export function commandBindingOf(tile: Tile, name: string, spec: ParsedCommandSp
 	return { implementation: spec.source.implementation, fields: siblingRefsOf(tile.id, spec.source.fields ?? {}) };
 }
 
-export function isRunAllowed(binding: CommandBinding, isVaultTarget: boolean): boolean {
-	return binding.allow === undefined ? !isVaultTarget : binding.allow.includes("run");
+export function isRunAllowed(binding: CommandBinding, isConsentNeeded: boolean): boolean {
+	return binding.allow === undefined ? !isConsentNeeded : binding.allow.includes("run");
 }
 
 export function withRunAllowed(binding: CommandBinding, isOn: boolean): CommandBinding {
 	return { ...binding, allow: isOn ? ["run"] : [] };
-}
-
-export function targetOf(binding: CommandBinding): string | null {
-	const parsed = PropRefSchema.safeParse(binding.fields?.[TARGET_FIELD]);
-	return parsed.success ? parsed.data : null;
 }
 
 function siblingRefsOf(tileId: string, fields: Readonly<Record<string, unknown>>): Record<string, unknown> {

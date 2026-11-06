@@ -10,9 +10,15 @@ tiles:
     widget: "@default/editable-tabs"
     props:
       tabs:
-        implementation: "@obsidian/folder"
+        implementation: "@core/typed-rows"
         fields:
-          path: Orbitask/Boards
+          rows:
+            - { id: "To Do-1", board: "orbitask", name: "To Do 1", title: "To Do 1", status: "To Do", order: 1 }
+            - { id: "To Do-2", board: "orbitask", name: "To Do 2", title: "To Do 2", status: "To Do", order: 2 }
+            - { id: "Doing-1", board: "orbitask", name: "Doing 1", title: "Doing 1", status: "Doing", order: 3 }
+            - { id: "Doing-2", board: "orbitask", name: "Doing 2", title: "Doing 2", status: "Doing", order: 4 }
+            - { id: "Done-1", board: "orbitask", name: "Done 1", title: "Done 1", status: "Done", order: 5 }
+            - { id: "Done-2", board: "orbitask", name: "Done 2", title: "Done 2", status: "Done", order: 6 }
         allow: [list, create, update, remove]
   - id: views
     widget: "@default/view-tabs"
@@ -20,24 +26,29 @@ tiles:
     widget: "@default/kanban-board"
     props:
       tasks:
-        implementation: "@obsidian/folder"
+        implementation: "@core/typed-rows"
         fields:
-          path: Orbitask/Tasks
+          rows:
+            - { id: "To Do-1", board: "orbitask", name: "To Do 1", title: "To Do 1", status: "To Do", order: 1 }
+            - { id: "To Do-2", board: "orbitask", name: "To Do 2", title: "To Do 2", status: "To Do", order: 2 }
+            - { id: "Doing-1", board: "orbitask", name: "Doing 1", title: "Doing 1", status: "Doing", order: 3 }
+            - { id: "Doing-2", board: "orbitask", name: "Doing 2", title: "Doing 2", status: "Doing", order: 4 }
+            - { id: "Done-1", board: "orbitask", name: "Done 1", title: "Done 1", status: "Done", order: 5 }
+            - { id: "Done-2", board: "orbitask", name: "Done 2", title: "Done 2", status: "Done", order: 6 }
         allow: [list, get, create, update, remove]
       boards:
-        implementation: "@obsidian/folder"
+        implementation: "@core/from-tile-rows"
         fields:
-          path: Orbitask/Boards
-        allow: [list, create, update, repairIds]
+          ref: boards/tabs
     slots:
       card: "@default/task-card"
   - id: wynttpz
     widget: "@default/filter-panel"
     props:
       tasks:
-        implementation: "@obsidian/folder"
+        implementation: "@core/from-tile-rows"
         fields:
-          path: Orbitask/Tasks
+          ref: board/tasks
 mode: expanded
 layouts:
   "4":

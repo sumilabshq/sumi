@@ -15,8 +15,6 @@ import type { CommandBinding, CommandTarget, OfferedCommand, ParsedCommandSpec }
 import { hasPackFields, packFieldRows } from "./pack-fields.js";
 import { offeredEntries } from "./offered-boxes.js";
 import { isConsentNeededFor } from "../surface/host-commands.js";
-
-const NO_REFS = { described: () => null };
 import { draftOnInput, editorPopover, group, note, reportRow, valueRow, withHelp } from "./settings-rows.js";
 import { ChoiceList } from "./choice-list.js";
 import type { Choice } from "./choice-list.js";
@@ -54,7 +52,7 @@ export function actionGroup(state: SettingsState): ReactElement | null {
 export function commandDataGroups(state: SettingsState): ReactElement[] {
 	return commandsOf(state).map(([name, spec]) => {
 		const binding = commandBindingOf(state.tile, name, spec);
-		const isOn = isRunAllowed(binding, isConsentNeededFor(binding, state.refs ?? NO_REFS));
+		const isOn = isRunAllowed(binding, isConsentNeededFor(binding));
 		const flip = (next: boolean): void => writeBinding(state, name, withRunAllowed(binding, next));
 		const toggle = h(Switch, { checked: isOn, label: spec.label, onChange: flip });
 		return group(

@@ -2,7 +2,7 @@ import { boardIn } from "../../../shared/lib/design/board-in-note.js";
 import { textAt } from "./text-at.js";
 import type { ReadingAdapter } from "./text-at.js";
 import type { Board } from "@widgetarium/core/model.js";
-import { screenPathOf, vaultBindingOf } from "@widgetarium/core/app-design.js";
+import { screenPathOf } from "@widgetarium/core/app-design.js";
 import type { ScreenState } from "@widgetarium/core/app-design.js";
 import type { WidgetLookup } from "@widgetarium/core/registry.js";
 import { statePropsOf } from "../../../shared/lib/design/state-props.js";
@@ -20,8 +20,6 @@ interface DrawnStateSource {
 const NO_BOARD = "{name} holds no widgetarium board";
 const NO_FILE = "{name} does not exist";
 const BOARD_REFUSED = "{name}: {why}";
-const BOUND_TO_VAULT =
-	"{name} reads the vault ({binding}): a design is drawn from sample rows only. Ask the agent to redraw it.";
 
 export async function readDrawnState(
 	source: DrawnStateSource,
@@ -33,10 +31,7 @@ export async function readDrawnState(
 	if (typeof board === "string") return { name: state.name, board: null, refusal: board };
 	const picture = pictureOf(source, board, state.name === screen ? null : state.name);
 	if (picture) return { name: state.name, board, picture };
-	const binding = vaultBindingOf(board);
-	if (!binding) return { name: state.name, board };
-	const refusal = BOUND_TO_VAULT.replace("{name}", state.file).replace("{binding}", binding);
-	return { name: state.name, board: null, refusal };
+	return { name: state.name, board };
 }
 
 async function boardAt(source: DrawnStateSource, app: string, file: string): Promise<Board | string> {

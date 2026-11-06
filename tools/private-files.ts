@@ -1,11 +1,10 @@
-import { randomHex } from "./random-hex.js";
-
 type NodeFs = typeof import("node:fs");
 
 const PRIVATE_FOLDER = 0o700;
 const PRIVATE_FILE = 0o600;
 const OPEN_TO_OTHERS = 0o077;
-const NOT_PRIVATE = "{path} is not a private {kind} of this user, so the browser desk refuses it";
+const RANDOM_BYTES = 16;
+const NOT_PRIVATE = "{path} is not a private {kind} of this user";
 
 export class PrivateFiles {
 	private readonly createFlags: number;
@@ -73,13 +72,19 @@ export class PrivateFiles {
 	}
 
 	private refuseUnlessPrivate(path: string, kind: "folder" | "file"): void {
-		const held = this.fs.lstatSync(path);
-		const isKind = kind === "folder" ? held.isDirectory() : held.isFile();
+		const entry = this.fs.lstatSync(path);
+		const isKind = kind === "folder" ? entry.isDirectory() : entry.isFile();
 		// TRADE-OFF: Windows has no uid or mode bits, so only the link check holds there
-		const isOwned = this.uid === null || (held.uid === this.uid && (held.mode & OPEN_TO_OTHERS) === 0);
+		const isOwned = this.uid === null || (entry.uid === this.uid && (entry.mode & OPEN_TO_OTHERS) === 0);
 
-		if (held.isSymbolicLink() || !isKind || !isOwned) {
+		if (entry.isSymbolicLink() || !isKind || !isOwned) {
 			throw new Error(NOT_PRIVATE.replace("{path}", path).replace("{kind}", kind));
 		}
 	}
+}
+
+function randomHex(): string {
+	return Array.from(crypto.getRandomValues(new Uint8Array(RANDOM_BYTES)), (byte) =>
+		byte.toString(16).padStart(2, "0"),
+	).join("");
 }

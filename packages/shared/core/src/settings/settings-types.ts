@@ -8,17 +8,11 @@ import type { OpeningScale, Point } from "../settings-fit.js";
 import type { TileSurface } from "./surface-group.js";
 import type { BoxValues } from "./use-box-values.js";
 import type { LookPatch, MountStep, SettingsLook, SettingsTab } from "./use-settings-look.js";
-import type { DescribingHost, VaultFields } from "./use-vault-fields.js";
-import type { VaultFilesHost } from "./vault-paths.js";
 import type { GeometryManifest, GeometryOptions, Place, WindowGeometry } from "./window-geometry.js";
 
 export interface ChoiceOption {
 	readonly value: string;
 	readonly label: string;
-}
-
-export interface SettingsDefault extends PropDefault {
-	readonly path?: unknown;
 }
 
 export interface PropSource {
@@ -34,7 +28,7 @@ export interface SettingsSpec extends SeenSpec {
 	readonly options?: readonly ChoiceOption[] | undefined;
 	readonly sort?: readonly SortRow[] | undefined;
 	readonly where?: readonly FilterRow[] | undefined;
-	readonly default?: SettingsDefault | null;
+	readonly default?: PropDefault | null;
 	readonly source?: PropSource | undefined;
 }
 
@@ -53,8 +47,7 @@ export interface TilePatch {
 	readonly mounted?: Readonly<Record<string, TilePatch>>;
 }
 
-export interface SettingsHost extends DescribingHost, VaultFilesHost {
-	readonly propertiesOf?: (path: string) => readonly string[] | null | undefined;
+export interface SettingsHost {
 	readonly ui?: { readonly notify?: (said: string) => void } | null | undefined;
 }
 
@@ -71,7 +64,6 @@ export interface SettingsWindowOptions extends GeometryOptions {
 	readonly refs?: GatewayRefs | null | undefined;
 	readonly surface?: TileSurface | null | undefined;
 	readonly columns: number;
-	readonly countReaders: (path: string) => number;
 	readonly onDone: () => void;
 	readonly onDismiss: () => void;
 	readonly onResize?: ((size: Partial<Place>) => void) | undefined;
@@ -96,7 +88,6 @@ export interface SettingsStateAsk {
 	readonly look: SettingsLook;
 	readonly here: SettingsContext;
 	readonly geometry: WindowGeometry;
-	readonly vaultFields: VaultFields;
 	readonly boxValues: BoxValues;
 }
 
@@ -110,7 +101,6 @@ export interface BoardOptions {
 	readonly onResize: ((size: Partial<Place>) => void) | undefined;
 	readonly onCollapse: (() => void) | undefined;
 	readonly onExpand: (() => void) | undefined;
-	readonly countReaders: (path: string) => number;
 	readonly refs: GatewayRefs | null | undefined;
 	readonly surface: TileSurface | null | undefined;
 }
@@ -154,7 +144,6 @@ export interface SettingsState extends BoardOptions, ViewState, ChromeState {
 	readonly isMount: boolean;
 	readonly enter: (step: MountStep) => void;
 	readonly popTo: (depth: number) => void;
-	readonly vaultFields: VaultFields;
 	readonly boxValues: BoxValues;
 	readonly scale: number;
 	readonly live: boolean;

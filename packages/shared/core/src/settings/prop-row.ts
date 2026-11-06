@@ -3,46 +3,28 @@ import type { ReactElement, ReactNode } from "react";
 import type { TileProp } from "../model.js";
 import { bindingOf, declaredOf, fieldsIn, typedIn } from "../gateway/props.js";
 import type { PropBinding } from "../gateway/props.js";
-import { NOTE_CONTENT, noteFieldOf } from "../gateway/obsidian.js";
 import { hostGatewayFor } from "../engine/host-gateways.js";
 import { problemsOf } from "../gateway/problems.js";
 import { refOf } from "../gateway/refs.js";
 import { isShown } from "../prop-visibility.js";
 import { implementationBody, implementationLabel } from "./implementation-body.js";
-import { fillSentence } from "./item-yaml.js";
 import { refLabel } from "./offered-boxes.js";
 import { ProblemsMark } from "./problems-mark.js";
-import { isSwitched, propConfigOf, writtenPlainly, writtenText } from "./prop-writing.js";
+import { isSwitched, propConfigOf, writtenText } from "./prop-writing.js";
 import { editorPopover, group, valueRow, withHelp } from "./settings-rows.js";
 import type { SettingsManifest, SettingsSpec, SettingsState } from "./settings-state.js";
 import { sourceButton, sourceList, sourcesOpenKey } from "./source-list.js";
-import { statBody, statLabel, statStepOf } from "./stat-body.js";
 import { choiceBody, chosenLabel, pickedRowValue, switchedValue, typedBody, typedLabel } from "./typed-body.js";
 import { itemBody, itemRows, listedFields, openedItem } from "./typed-rows.js";
-import { refBody, vaultBody } from "./vault-body.js";
-import { boundPath } from "./vault-paths.js";
+import { refBody } from "./ref-body.js";
 
-const FROM_FOLDER = "Every note in the folder arrives as one item.";
-
-const FROM_FILE = "What the note holds is this value.";
-
-const FROM_NOTE_FIELD = "Reads one note: what it says, its name, or one of its properties.";
-
-const TYPED_ITEMS = "The items live in this tile, not in the vault.";
+const TYPED_ITEMS = "The items live in this tile.";
 
 const TYPED_VALUE = "The value lives in this tile.";
 
 const FROM_ANOTHER = "Reads another widget on this board, and the two move together.";
 
 const OWN_BOX_NOTE = "This widget keeps the pick to itself until you bind it.";
-
-const FROM_STATISTICS = "Counts the notes in a folder, and this prop gets the one number that comes out.";
-
-const READ_BY_MANY_FOLDER = "This folder is read by {field} widgets on this board.";
-
-const READ_BY_MANY_NOTE = "This note is read by {field} widgets on this board.";
-
-const FIELD_OF_NOTE = "{field} of {note}";
 
 type DrawnFor<Drawn> = (state: SettingsState, prop: SettingsProp) => Drawn;
 
@@ -51,9 +33,7 @@ const LABEL_OF_BINDING: Readonly<Record<PropBinding, DrawnFor<string>>> = {
 	memory: (state, prop) => implementationLabel(state, prop),
 	box: () => "Its own",
 	ref: (state, { config }) => refLabel(state, fieldsIn(config.fields)["ref"]),
-	stat: (_state, { config }) => statLabel(config),
 	hardcode: (_state, { spec, config }) => typedLabel(spec, config),
-	vault: (_state, prop) => vaultLabel(prop),
 };
 
 const BODY_OF_BINDING: Readonly<Record<PropBinding, DrawnFor<ReactNode[]>>> = {
@@ -61,9 +41,7 @@ const BODY_OF_BINDING: Readonly<Record<PropBinding, DrawnFor<ReactNode[]>>> = {
 	memory: (state, prop) => implementationBody(state, prop),
 	box: () => [],
 	ref: (state, { key, spec, config }) => refBody(state, key, spec, config),
-	stat: (state, { key, spec, config }) => statBody(state, key, spec, config),
 	hardcode: (state, prop) => typedBodyOf(state, prop),
-	vault: (state, { key, spec, config }) => vaultBody(state, key, spec, config),
 };
 
 export interface SettingsProp {
@@ -71,24 +49,22 @@ export interface SettingsProp {
 	readonly spec: SettingsSpec;
 	readonly config: TileProp;
 	readonly binding: PropBinding;
-	readonly path: string;
 }
 
 export type DeclaredEntry = readonly [string, SettingsSpec];
 
 export function propRow(state: SettingsState, prop: SettingsProp): ReactElement {
-	const { key, spec, config, binding, path } = prop;
-	const readerCount = binding === "vault" ? state.countReaders(path) : 0;
+	const { key, spec, config, binding } = prop;
 	const at = listedFields(spec, binding) ? openedItem(state.openRow, key) : null;
-	const under = at === null ? propBody(state, prop, readerCount) : itemBody(state, key, spec, config, at);
-	const seed = binding === "hardcode" ? writtenText(spec, typedIn(spec, config) ?? declaredOf(spec)) : path;
+	const under = at === null ? propBody(state, prop) : itemBody(state, key, spec, config, at);
+	const seed = binding === "hardcode" ? writtenText(spec, typedIn(spec, config) ?? declaredOf(spec)) : "";
 	const body = h("div", { className: "wg-set-pop-body" }, under);
 	return editorPopover(state, `prop:${key}`, propTrigger(state, prop), body, seed, isOnAStep(state, prop, at));
 }
 
 export function boundProp(state: SettingsState, key: string, spec: SettingsSpec): SettingsProp {
 	const config = propConfigOf(state, key, spec);
-	return { key, spec, config, binding: bindingOf(spec, config).binding, path: boundPath(config) };
+	return { key, spec, config, binding: bindingOf(spec, config).binding };
 }
 
 export function declaredProps(manifest: SettingsManifest, wanted: (spec: SettingsSpec) => boolean): DeclaredEntry[] {
@@ -107,19 +83,7 @@ export function propGroup(state: SettingsState): ReactElement | null {
 function kindNote(spec: SettingsSpec, binding: PropBinding): string {
 	if (binding === "box") return OWN_BOX_NOTE;
 	if (binding === "ref") return FROM_ANOTHER;
-	if (binding === "stat") return FROM_STATISTICS;
-	if (binding === "hardcode") return spec.kind === "value" ? TYPED_VALUE : TYPED_ITEMS;
-	if (spec.kind !== "value") return FROM_FOLDER;
-	return writtenPlainly(spec) ? FROM_NOTE_FIELD : FROM_FILE;
-}
-
-function readersNote(spec: SettingsSpec, readerCount: number): ReactElement | null {
-	if (readerCount < 2) return null;
-	return h(
-		"p",
-		{ className: "wg-set-pop-note", key: "readers" },
-		fillSentence(spec.kind === "value" ? READ_BY_MANY_NOTE : READ_BY_MANY_FOLDER, readerCount),
-	);
+	return spec.kind === "value" ? TYPED_VALUE : TYPED_ITEMS;
 }
 
 function propHead(state: SettingsState, prop: SettingsProp): ReactElement {
@@ -136,19 +100,8 @@ function propHead(state: SettingsState, prop: SettingsProp): ReactElement {
 	]);
 }
 
-function unpickedLabel(spec: SettingsSpec): string {
-	return spec.kind === "value" ? "Pick a note" : "Pick a folder";
-}
-
 function boundLabel(state: SettingsState, prop: SettingsProp): string {
 	return LABEL_OF_BINDING[prop.binding](state, prop);
-}
-
-function vaultLabel({ spec, config, path }: SettingsProp): string {
-	if (!path) return unpickedLabel(spec);
-	const field = noteFieldOf(spec, fieldsIn(config.fields));
-	if (!field || field === NOTE_CONTENT) return path;
-	return fillSentence(FIELD_OF_NOTE, field, path);
 }
 
 function bindingBody(state: SettingsState, prop: SettingsProp): ReactNode[] {
@@ -178,8 +131,8 @@ function propTrigger(state: SettingsState, prop: SettingsProp): ReactElement {
 	});
 }
 
-function isChosen({ spec, config, binding, path }: SettingsProp): boolean {
-	if (typedIn(spec, config) !== undefined || path || fieldsIn(config.fields)["ref"]) return true;
+function isChosen({ spec, config, binding }: SettingsProp): boolean {
+	if (typedIn(spec, config) !== undefined || fieldsIn(config.fields)["ref"]) return true;
 	return isPackBinding(binding) && typeof config.implementation === "string";
 }
 
@@ -187,14 +140,13 @@ function isPackBinding(binding: PropBinding): boolean {
 	return binding === "implementation" || binding === "memory";
 }
 
-function propBody(state: SettingsState, prop: SettingsProp, readerCount: number): ReactNode[] {
+function propBody(state: SettingsState, prop: SettingsProp): ReactNode[] {
 	const { key, spec, config } = prop;
 	const head = propHead(state, prop);
 	if (state.openRow === sourcesOpenKey(key)) return [head, ...sourceList(state, key, spec, config)];
-	return [head, readersNote(spec, readerCount), ...bindingBody(state, prop)];
+	return [head, ...bindingBody(state, prop)];
 }
 
-function isOnAStep(state: SettingsState, { key, binding }: SettingsProp, at: number | null): boolean {
-	if (at !== null || state.openRow === sourcesOpenKey(key)) return true;
-	return binding === "stat" && statStepOf(state.openRow, key) !== null;
+function isOnAStep(state: SettingsState, { key }: SettingsProp, at: number | null): boolean {
+	return at !== null || state.openRow === sourcesOpenKey(key);
 }

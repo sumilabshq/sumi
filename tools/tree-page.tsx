@@ -14,7 +14,7 @@ import { isBox, layNode, leavesOf } from "../packages/shared/core/src/tree.js";
 import type { BoardNode, BoxNode, LaidLeaf, LaidNode } from "../packages/shared/core/src/tree.js";
 import { isDrawable } from "../packages/shared/core/src/surface/is-drawable.js";
 import type { BoxAction } from "../packages/shared/core/src/surface/box-actions.js";
-import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
+import { createFileTree, createProbeHost } from "./vault-fixture.ts";
 import {
 	elementAt,
 	elementsAt,
@@ -23,7 +23,6 @@ import {
 	jsonIn,
 	present,
 	recordErrors,
-	rowsIn,
 	stackOf,
 } from "./page-dom.ts";
 
@@ -69,12 +68,11 @@ const widthsIn = (value: unknown): number[] =>
 
 const FILES = jsonIn("wg-widgets");
 const BOARD = boardJsonOf(jsonIn("wg-board"));
-const ROWS = rowsIn(jsonIn("wg-rows"));
 const TREE = treeIn(jsonIn("wg-tree"));
 const WIDTHS = widthsIn(jsonIn("wg-widths"));
 
 const adapter = createFileTree(isFileMap(FILES) ? FILES : {});
-const host = createProbeHost(createRowSlot(ROWS));
+const host = createProbeHost();
 
 const failures: string[] = [];
 recordErrors(failures);

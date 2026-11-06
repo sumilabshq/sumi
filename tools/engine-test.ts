@@ -227,7 +227,6 @@ const fullHost = standIn<Parameters<typeof viewHost>[0]>(
 			openNote: () => {},
 			renderMarkdown: (element: unknown, markdown: unknown) => `${String(markdown)} into ${String(element)}`,
 		},
-		slot: () => ({ list: () => {} }),
 		query: { backlinks: () => {} },
 		app: { vault: {} },
 		plugin: {},

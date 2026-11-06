@@ -1,6 +1,4 @@
-import { fieldsOf } from "../packages/shared/core/src/gateway/fields.js";
 import { refusingConsole } from "../packages/shared/core/src/engine/host-console.js";
-import type { NoteAddress, NoteRecord, VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
 import type { ViewHost } from "../packages/shared/core/src/gateway/host.js";
 import type { FolderListing } from "../packages/shared/core/src/engine/widget-build.js";
 import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
@@ -33,22 +31,6 @@ export function createFileTree(files: FileMap): RegistryAdapter {
 	};
 }
 
-export function createRowSlot(rows: readonly NoteRecord[]): VaultSlot & { readonly canDescribe: boolean } {
-	return {
-		canCreate: true,
-		canUpdate: true,
-		canRemove: true,
-		canSubscribe: false,
-		canDescribe: true,
-		list: async () => ({ rows, total: rows.length }),
-		get: async (ref: NoteAddress) => rows.find((row) => row.path === ref.path) ?? null,
-		describe: async () => fieldsOf(rows),
-		create: async () => null,
-		update: async () => null,
-		remove: async () => null,
-	};
-}
-
 export const PROBE_VIEW: ViewHost = {
 	platform: "probe",
 	type: "probe",
@@ -57,6 +39,6 @@ export const PROBE_VIEW: ViewHost = {
 	ui: { notify() {}, renderMarkdown: () => () => {} },
 };
 
-export function createProbeHost(slot: VaultSlot): SurfaceHost {
-	return { ...PROBE_VIEW, slot: () => slot, here: null };
+export function createProbeHost(): SurfaceHost {
+	return { ...PROBE_VIEW, here: null };
 }

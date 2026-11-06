@@ -14,8 +14,6 @@ import {
 	allowedVerbs,
 	fieldsIn,
 	implementationOf,
-	isFolderStatImplementation,
-	isVaultImplementation,
 	restrictToAllowed,
 } from "../gateway/props.js";
 import { refOf } from "../gateway/refs.js";
@@ -66,7 +64,6 @@ export function sourcesFor(spec: HostSpec | null | undefined): GatewayMetadata[]
 	const writes = (spec?.writes ?? []).filter((verb) => WRITING.includes(verb));
 	const fitting = registeredQueries().filter((entry) => {
 		if (entry.kind !== kind || NOT_OFFERED_YET.includes(entry.id) || !isFitFor(entry, spec)) return false;
-		if (isFolderStatImplementation(entry.id)) return spec?.type === "number";
 		if (kind === "collection" && writes.length > 0) return entry.implementation.prototype instanceof ICrudGateway;
 		return true;
 	});
@@ -90,7 +87,7 @@ export function resolveHostGateway(context: HostGatewayContext): HostGateway {
 	const chosen = hostGatewayFor(spec, config);
 	if (!chosen) throw new Error(NO_SUCH_GATEWAY.replace("{name}", name).replace("{id}", String(config.implementation)));
 	const parsed = parsedGatewayOf(context, chosen, config);
-	if (!RESTRICTED_BY_ALLOW.includes(chosen.id) && !isVaultImplementation(chosen.id)) return parsed;
+	if (!RESTRICTED_BY_ALLOW.includes(chosen.id)) return parsed;
 	return restrictToAllowed(parsed, allowedVerbs(spec, config)) ?? parsed;
 }
 

@@ -1,7 +1,6 @@
 # Widgetarium
 
-The product is the Tauri desktop studio (`apps/host-tauri`, `apps/studio`); Obsidian (`apps/host-obsidian`)
-is a later host. The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
+The product is the Tauri desktop studio (`apps/host-tauri`, `apps/studio`). The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
 
 ## Architecture
 
@@ -44,8 +43,8 @@ stand around `if`/`for` blocks. `===`, `const` unless reassigned, no nested tern
 Prettier the rest; a hook formats every edit, and `npm test` fails on a violation.
 
 **Everything is strict TypeScript.** `packages/shared/kit` and every package under `domain`, `state` and `client`
-is TSX (JSX with the classic `h` factory, one component per file); `packages/shared/core` and `apps/host-obsidian`
-are `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. `npm run test:types` gates it all
+is TSX (JSX with the classic `h` factory, one component per file); `packages/shared/core`
+is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. `npm run test:types` gates it all
 (`tsc -b`, then the `double-cast` lint): no `any`, no `as unknown as`, no `!`; data from outside arrives
 `unknown` and is narrowed by a guard.
 
@@ -53,7 +52,6 @@ are `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too.
 
 ```
 apps/host-tauri          FSL  the desktop host: windows, workspaces; the product
-apps/host-obsidian       FSL  the Obsidian plugin host
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
@@ -74,7 +72,7 @@ registry/                MIT  the widget library (legacy)
 `packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps.
 
 **The engine ships as versioned packages.** Every published package's `exports` carries three
-conditions: `source` → `src` (the monorepo, the test loader and the plugin build resolve it), `types`
+conditions: `source` → `src` (the monorepo and the test loader resolve it), `types`
 and `default` → `dist`. A new tsconfig or esbuild call inside the repo sets the `source` condition, or
 it reads a `dist` that `npm run pack:engine` deletes after packing. `npm run pack:engine` builds and
 packs each one into `dist-packages/`; `npm run test:engine-package` installs the tarballs into a
@@ -87,8 +85,8 @@ imports the app.** A plate law lives in
 re-export it from there. The app reaches core as `@widgetarium/core/<file>` and the kit as
 `@widgetarium/kit[/surface|/plates|/icons|/emoji-table|/emojis|/charts|/shapes|/showcase]` — the kit's
 `package.json` `exports` is the one list of its entry points, and the test loader resolves
-`@widgetarium/*` through it. Every tool runs from the repo root. A second host (web, Tauri) is another
-`apps/host-*` beside `host-obsidian`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
+`@widgetarium/*` through it. Every tool runs from the repo root. A second host is another
+`apps/host-*` beside `host-tauri`, never a branch inside core. Licences: each package folder carries its own `LICENSE`; the root `LICENSE` is only the
 map of which folder is MIT and which FSL-1.1-ALv2, and `REUSE.toml` maps paths to them.
 
 ## Sumi — the studio's design system
@@ -123,7 +121,7 @@ pictures under `references/` — by the format in `design-catalogue/README.md`, 
 shadcn's names** (`packages/shared/kit/src/constants/token-contract.ts`): `tokens.css` declares a few numeric
 parameters and every colour as an `oklch()` formula of them, in `:root` and in `.dark, .theme-dark`, so
 `--hue` re-derives both themes; the kit reads those names and `--wg-kit-*` are aliases onto them. The
-plugin's sheet carries `design-systems/default/tokens.css`, laid as `@layer wg-system` by the build,
+board sheet (`packages/shared/core/board.css`) carries `design-systems/default/tokens.css`, laid as `@layer wg-system` by the build,
 and `npm run test:system-tokens` holds it to the colours Obsidian drew before the flip. What cost the most to learn:
 
 - **A system is not the product it came from.** The domain, data and screens stay behind; a build
@@ -151,11 +149,9 @@ along with whatever depends on it — rather than ship it.
 
 **Tests import the real sources; nothing is copied.** Every `node tools/…` script in `package.json`
 runs under `node --single-threaded --import ./tools/loader/register.mts`, an in-memory loader that compiles `.ts`,
-`.tsx` and `.jsx` with esbuild exactly as `apps/host-obsidian/build.mts` does (`h`/`Fragment`, the
+`.tsx` and `.jsx` with esbuild (`h`/`Fragment`, the
 nearest `tsconfig.json`, `es2020`), resolves extensionless and `.js` specifiers to the `.ts` behind
-them and `@widgetarium/*` through each package's `exports`, reads `.md` and `.css` as text, answers
-`obsidian` with `tools/loader/obsidian-stub.mts` and the `widgetarium:*` specifiers the build
-provides. A test imports `../packages/shared/core/src/<file>`; an edit shows in the next run with no
+them and `@widgetarium/*` through each package's `exports`, and reads `.md` and `.css` as text. A test imports `../packages/shared/core/src/<file>`; an edit shows in the next run with no
 rebuild, and suites run side by side. A tool run by hand needs the same two flags.
 `--single-threaded` is not optional: under eight suites at once, Node 25 deadlocks in `process.exit()`
 when a background Sparkplug or Maglev compile job waits for a GC the exiting main thread never runs —

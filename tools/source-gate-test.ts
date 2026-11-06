@@ -1,4 +1,3 @@
-import { catalogueAdapter } from "./perf-fixture.ts";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import type { SourceDisk } from "../packages/shared/core/src/engine/source-disk.js";
 import type { WidgetSourcePlace } from "../packages/shared/core/src/engine/source-offers.js";
@@ -6,6 +5,15 @@ import type { InstallerAdapter } from "../packages/shared/core/src/installer-con
 import { standIn } from "./stand-in.ts";
 
 const { createInstaller, INDEX_PATH } = await import("../packages/shared/core/src/installer.js");
+
+type CatalogueFileReader = Pick<InstallerAdapter, "exists" | "read">;
+
+function catalogueFileReaderOf(catalogue: unknown, indexPath: string): CatalogueFileReader {
+	return {
+		exists: async (filePath) => filePath === indexPath && catalogue !== null,
+		read: async () => JSON.stringify(catalogue),
+	};
+}
 
 const GOOD_FOLDER = "/tmp/good-widgets";
 
@@ -34,7 +42,7 @@ const installerOver = (
 ) =>
 	createInstaller({
 		adapter: standIn<InstallerAdapter>(
-			catalogueAdapter(catalogue, INDEX_PATH),
+			catalogueFileReaderOf(catalogue, INDEX_PATH),
 			["exists", "read"],
 			"installer adapter",
 		),

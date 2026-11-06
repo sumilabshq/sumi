@@ -1,5 +1,5 @@
 import { THEMES } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { spawn } from "node:child_process";
 import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -7,6 +7,7 @@ import path from "node:path";
 import esbuild from "esbuild";
 import type { ChildProcess } from "node:child_process";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const { WIDGETS_DIR } = await import("../packages/shared/core/src/paths.js");
 const { cornerOf } = await import("../packages/shared/core/src/tree.js");
@@ -64,7 +65,6 @@ async function bundle(source: string): Promise<string> {
 			"widgetarium/kit/emojis": "./packages/shared/kit/src/emojis/emoji.tsx",
 			"widgetarium/kit/charts": "./packages/shared/kit/src/charts/index.ts",
 			"@default/lib": "./registry/@default/lib.ts",
-			obsidian: "./tools/obsidian-shim.ts",
 		},
 		logLevel: "warning",
 	});
@@ -75,7 +75,7 @@ async function bundle(source: string): Promise<string> {
 
 function pageFor(theme: keyof typeof THEMES, script: string, name: string, sheets: readonly string[] = []): string {
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${sheets.map((at) => readFileSync(at, "utf8")).join("\n")}</style>
 <style>body { margin: 0; ${THEMES[theme]}
 	--font-interface: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -447,8 +447,7 @@ const registry = {
 	get: (id) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
 	list: () => Object.values(shelf).map((manifest) => ({ manifest, component: Leaf })),
 };
-const slot = { canCreate: true, canUpdate: true, canRemove: true, canSubscribe: false, list: async () => ({ rows: [], total: 0 }), describe: async () => [] };
-const host = { platform: "probe", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
+const host = { platform: "probe", can: {}, ui: { notify() {}, openNote() {} } };
 let board = normalizeBoard({
 	tiles: [{ id: "t1", widget: GROUP_ID, settings: { holds: [{ name: "Kanban", widget: KANBAN_ID }] } }],
 	layouts: { 20: [{ id: "t1", x: 0, y: 0, w: 12, h: 6 }] },
@@ -595,27 +594,29 @@ const adapter = {
 };
 const ROWS = ["To Do", "Doing"].flatMap((status, at) =>
 	[1, 2].map((nth) => ({
-		path: "Orbitask/Tasks/" + status + "-" + nth + ".md",
-		ref: { path: "Orbitask/Tasks/" + status + "-" + nth + ".md" },
+		id: status + "-" + nth,
 		name: status + " " + nth,
-		props: { title: status + " " + nth, status, order: at * 2 + nth },
-		meta: { created: 1, modified: 2 },
-		attachments: 0,
+		title: status + " " + nth,
+		status,
+		order: at * 2 + nth,
 	})),
 );
-const slot = {
-	canCreate: false, canUpdate: false, canRemove: false, canSubscribe: false,
-	list: async () => ({ rows: ROWS, total: ROWS.length }),
-	describe: async () => [],
-};
-const host = { platform: "probe", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
+const host = { platform: "probe", can: {}, ui: { notify() {}, openNote() {} } };
 let board = normalizeBoard({
 	tiles: [
 		{
 			id: "t1",
 			widget: GROUP_ID,
 			mounts: { holds: [{ name: "Inner", widget: GROUP_ID }] },
-			mounted: { Inner: { widget: GROUP_ID, mounts: { holds: [{ name: "Kanban", widget: KANBAN_ID }] } } },
+			mounted: {
+				Inner: {
+					widget: GROUP_ID,
+					mounts: { holds: [{ name: "Kanban", widget: KANBAN_ID }] },
+					mounted: {
+						Kanban: { widget: KANBAN_ID, props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: ROWS } } } },
+					},
+				},
+			},
 		},
 	],
 	layout: { left: [], main: [[{ id: "t1", height: 560 }]], right: [] },

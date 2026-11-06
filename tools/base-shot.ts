@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
 import { findBrowser, widgetFiles } from "./harness.ts";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const { LAYOUT_NAMES, skeletonOf } = await import("../packages/shared/core/src/layouts.js");
 const { normalizeBoard, serializeBoard } = await import("../packages/shared/core/src/model.js");
@@ -40,7 +41,7 @@ for (const name of names) {
 		continue;
 	}
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;
 	--text-on-accent: #fff; --interactive-accent: #6d4ee0; --font-ui-small: 14px; --font-ui-medium: 15px;
@@ -50,7 +51,6 @@ for (const name of names) {
 </head><body><div class="wg-host"></div>
 <script id="wg-widgets" type="application/json">${JSON.stringify(files)}</script>
 <script id="wg-board" type="application/json">${JSON.stringify(board)}</script>
-<script id="wg-rows" type="application/json">[]</script>
 <script id="wg-measure" type="application/json"></script>
 <script>window.wgSteps = []; window.wgEditing = false;</script>
 <script>${bundled.text}</script>

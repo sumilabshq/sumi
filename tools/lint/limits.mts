@@ -15,7 +15,6 @@ export const LIMITS = {
 } as const;
 
 export const LINTED_ROOTS: readonly string[] = [
-	"apps/host-obsidian/src",
 	"packages/shared/core/src",
 	"packages/shared/kit/src",
 	"packages/shared/sdk/types",
@@ -25,7 +24,6 @@ export const LINTED_ROOTS: readonly string[] = [
 export const SKIPPED_PATHS: readonly string[] = [
 	"packages/shared/kit/src/emojis/emoji-table.ts",
 	"packages/shared/kit/src/icons/icon-table.ts",
-	"apps/host-obsidian/main.js",
 ];
 
 export const ALLOWED_COMMENT_PREFIXES: readonly string[] = ["TODO:", "TRADE-OFF:"];

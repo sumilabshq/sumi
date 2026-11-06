@@ -10,8 +10,7 @@ const dom = layJsdomGlobals();
 Object.assign(globalThis, { ResizeObserver: InertResizeObserver });
 Object.assign(dom.window, { ResizeObserver: InertResizeObserver });
 
-const SOURCE_ROOTS = ["packages/shared/kit/src", "packages/shared/core/src", "apps/host-obsidian/src"];
-const ENTRY_PROGRAMS = new Set([path.resolve("apps/host-obsidian/src/legacy/ai/widgets-cli.ts")]);
+const SOURCE_ROOTS = ["packages/shared/kit/src", "packages/shared/core/src"];
 const isModuleSource = (name: string): boolean => /\.(js|ts|tsx|jsx)$/.test(name) && !name.endsWith(".d.ts");
 
 const modules: string[] = [];
@@ -19,7 +18,7 @@ function walk(dir: string): void {
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
 		const full = path.join(dir, entry.name);
 		if (entry.isDirectory()) walk(full);
-		else if (isModuleSource(entry.name) && !ENTRY_PROGRAMS.has(full)) modules.push(full);
+		else if (isModuleSource(entry.name)) modules.push(full);
 	}
 }
 for (const root of SOURCE_ROOTS) walk(path.resolve(root));

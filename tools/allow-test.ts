@@ -4,7 +4,7 @@ import type { CanResult } from "../packages/shared/core/src/gateway/contract.ts"
 import { ICrudGateway, declareProps, manifestOfModule, z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
 
-const FOLDER = "@obsidian/folder";
+const TYPED_ROWS = "@core/typed-rows";
 
 let failed = 0;
 function check(name: string, got: unknown, want: unknown): void {
@@ -31,34 +31,29 @@ const onVerbs = (decisions: readonly VerbDecision[]): string[] =>
 	decisions.filter((decision) => decision.can).map((decision) => decision.verb);
 
 check(
-	"a folder bound with no list of its own only reads",
-	onVerbs(allowedVerbs(tasks, { implementation: FOLDER, fields: { path: "Tasks" } })),
-	["list", "get"],
-);
-check(
-	"a folder bound by the person carries what it may do",
-	onVerbs(allowedVerbs(tasks, { implementation: FOLDER, fields: { path: "Tasks" }, allow: ["list", "get", "create"] })),
-	["list", "get", "create"],
-);
-check(
 	"rows kept in the tile may do whatever the widget uses",
-	onVerbs(allowedVerbs(tasks, { implementation: "@core/typed-rows", fields: { rows: [] } })),
+	onVerbs(allowedVerbs(tasks, { implementation: TYPED_ROWS, fields: { rows: [] } })),
 	["list", "get", "create", "remove"],
 );
 check(
+	"and what the person switched on, once they say",
+	onVerbs(allowedVerbs(tasks, { implementation: TYPED_ROWS, fields: { rows: [] }, allow: ["list", "get", "create"] })),
+	["list", "get", "create"],
+);
+check(
 	"a verb the widget never asked for is never offered, allowed or not",
-	allowedVerbs(tasks, { implementation: FOLDER, allow: ["update"] }).map((decision) => decision.verb),
+	allowedVerbs(tasks, { implementation: TYPED_ROWS, allow: ["update"] }).map((decision) => decision.verb),
 	["list", "get", "create", "remove"],
 );
 check(
 	"and a switched-off verb says why",
-	allowedVerbs(tasks, { implementation: FOLDER, allow: [] })[2]?.reason,
+	allowedVerbs(tasks, { implementation: TYPED_ROWS, allow: [] })[2]?.reason,
 	"create is not switched on for this tile",
 );
 
 const rows = arrayGateway(["a"], { create: () => null, remove: () => null }, "allow-test");
 const narrowed = present(
-	restrictToAllowed(rows, allowedVerbs(tasks, { implementation: FOLDER, allow: ["list", "remove"] })),
+	restrictToAllowed(rows, allowedVerbs(tasks, { implementation: TYPED_ROWS, allow: ["list", "remove"] })),
 	"the narrowed gateway",
 );
 check("a gateway keeps the verbs the tile allows", [canDo(narrowed.list), canDo(narrowed.remove)], [true, true]);
@@ -77,7 +72,7 @@ check(
 );
 check(
 	"nothing is wrapped when nothing is cut",
-	restrictToAllowed(rows, allowedVerbs(tasks, { implementation: FOLDER, allow: ["list", "create", "remove"] })),
+	restrictToAllowed(rows, allowedVerbs(tasks, { implementation: TYPED_ROWS, allow: ["list", "create", "remove"] })),
 	rows,
 );
 

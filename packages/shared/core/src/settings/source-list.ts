@@ -10,8 +10,6 @@ import { offeredEntries } from "./offered-boxes.js";
 import { blankValue, writeProp, writtenText } from "./prop-writing.js";
 import { note } from "./settings-rows.js";
 import type { SettingsSpec, SettingsState } from "./settings-state.js";
-import { openStatStep } from "./stat-body.js";
-import { boundPath } from "./vault-paths.js";
 
 interface Picking {
 	readonly key: string;
@@ -72,8 +70,7 @@ function pickSource(state: SettingsState, picking: Picking, implementation: stri
 		return;
 	}
 	writeProp(state, key, spec, withFields(config, implementation, {}));
-	if (binding === "stat") openStatStep(state, key, null);
-	else state.openEditor(`prop:${key}`, binding === "vault" ? boundPath(config) : undefined);
+	state.openEditor(`prop:${key}`);
 }
 
 function pickTyped(state: SettingsState, { key, spec, config }: Picking): void {

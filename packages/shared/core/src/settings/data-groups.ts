@@ -5,16 +5,22 @@ import type { TileProp } from "../model.js";
 import { allowedVerbs, bindingOf, fieldsIn } from "../gateway/props.js";
 import type { PropBinding } from "../gateway/props.js";
 import { sortRowsIn } from "../engine/held-reading.js";
-import { textIn } from "../engine/held-text.js";
 import { propConfigOf, writeProp } from "./prop-writing.js";
 import { group, reportRow, titleCase } from "./settings-rows.js";
 import type { SettingsSpec, SettingsState } from "./settings-state.js";
-import { boundPath } from "./vault-paths.js";
 import { whereGroup } from "./where-group.js";
 
 const VERBS_SWITCHED_HERE = "Switch one off and this tile can no longer do it, whatever the widget asks for.";
 
-const ONE_EMPTY_FIELD = "One empty field turns the rows grey.";
+const TYPED_VERB_SAYINGS: ReadonlyMap<string, string> = new Map([
+	["list", "reads this widget's own list"],
+	["get", "reads one record"],
+	["create", "adds a row to this widget's own list"],
+	["update", "rewrites a row in this widget's own list"],
+	["remove", "drops a row from this widget's own list"],
+]);
+
+const NO_SAYINGS: ReadonlyMap<string, string> = new Map();
 
 interface DataProp {
 	readonly key: string;
@@ -45,11 +51,9 @@ function dataPropOf(state: SettingsState, key: string, spec: SettingsSpec): Data
 }
 
 function propDataGroups(state: SettingsState, prop: DataProp): ReactElement[] {
-	const { key, spec, config, binding } = prop;
+	const { key, spec, config } = prop;
 	const groups: ReactElement[] = [];
 	if (spec.kind !== "value" && !spec.source) groups.push(whereGroup(state, key, spec, config));
-	if (binding === "stat")
-		groups.push(whereGroup(state, key, spec, config), whereGroup(state, key, spec, config, "counts"));
 	const sorted = sortGroup(prop);
 	if (sorted) groups.push(sorted);
 	groups.push(verbsGroup(state, prop));
@@ -74,9 +78,6 @@ function sortGroup({ key, spec, config, label }: DataProp): ReactElement | null 
 
 function verbsGroup(state: SettingsState, prop: DataProp): ReactElement {
 	const { key, spec, config, label, binding } = prop;
-	const isHardcoded = binding === "hardcode";
-	const path = boundPath(config) || textIn(spec.default?.path);
-	const isOn = isHardcoded || Boolean(path);
 	const decisions = allowedVerbs(spec, config);
 	const verbsSwitchedOn = decisions.filter((decision) => decision.can).map((decision) => decision.verb);
 	const flipVerb =
@@ -86,7 +87,7 @@ function verbsGroup(state: SettingsState, prop: DataProp): ReactElement {
 				...config,
 				allow: next ? [...new Set([...verbsSwitchedOn, verb])] : verbsSwitchedOn.filter((held) => held !== verb),
 			});
-	const said = verbSayings(isHardcoded, path);
+	const said = binding === "hardcode" ? TYPED_VERB_SAYINGS : NO_SAYINGS;
 	return group(
 		`can:${key}`,
 		`What ${label} can do`,
@@ -95,24 +96,10 @@ function verbsGroup(state: SettingsState, prop: DataProp): ReactElement {
 				verb,
 				titleCase(verb),
 				said.get(verb) ?? `runs "${verb}" on this source`,
-				h(Switch, { checked: can && isOn, label: titleCase(verb), onChange: flipVerb(verb) }),
-				can && isOn,
+				h(Switch, { checked: can, label: titleCase(verb), onChange: flipVerb(verb) }),
+				can,
 			),
 		),
-		isOn ? VERBS_SWITCHED_HERE : ONE_EMPTY_FIELD,
+		VERBS_SWITCHED_HERE,
 	);
-}
-
-function verbSayings(isHardcoded: boolean, path: string): ReadonlyMap<string, string> {
-	const folder = path || "nowhere";
-	return new Map([
-		["list", isHardcoded ? "reads this widget's own list" : `reads the notes in ${folder}`],
-		["get", "reads one record"],
-		["create", isHardcoded ? "adds a row to this widget's own list" : `a new note lands in ${folder}`],
-		[
-			"update",
-			isHardcoded ? "rewrites a row in this widget's own list" : "writes frontmatter on the note it came from",
-		],
-		["remove", isHardcoded ? "drops a row from this widget's own list" : "moves the note to the vault's trash"],
-	]);
 }

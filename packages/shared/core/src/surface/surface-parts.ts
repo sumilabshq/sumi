@@ -8,7 +8,6 @@ import type { NodePath } from "../tree.js";
 import type { Board, Tile } from "../model.js";
 import type { GatewayRefs } from "../gateway/refs.js";
 import type { BoardEdits } from "./board-edits.js";
-import { countReaders } from "./count-readers.js";
 import type { CellSize } from "./tile-actions.js";
 import { TreeBoard } from "./tree-board.js";
 import { TreeSettings } from "./tree-settings.js";
@@ -112,7 +111,6 @@ function settingsElement(
 			gap: metrics.gap,
 			phone: classOf(width).name === "phone",
 			columns: metrics.columns,
-			countReaders: (folderPath) => countReaders(registry, board.tiles, folderPath),
 			onDone: () => session.close(true),
 			onDismiss: () => session.close(false),
 		},

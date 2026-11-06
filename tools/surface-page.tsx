@@ -11,7 +11,7 @@ import { contentInsetsOf } from "../packages/shared/core/src/content-insets.js";
 import { SlotList } from "../packages/shared/kit/src/index.ts";
 import { gapVarsOf } from "../packages/shared/core/src/tree.js";
 import { withSlotSurface } from "../packages/shared/core/src/widget-root.js";
-import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
+import { createFileTree, createProbeHost } from "./vault-fixture.ts";
 import { elementAt, elementsAt, present, stackOf } from "./page-dom.ts";
 
 const WIDTH = 1400;
@@ -63,7 +63,7 @@ const PAGE_HEIGHT = 900;
 const pagedBoard: Board = { ...board, mode: "expanded" };
 
 const registry = new WidgetRegistry({ vault: { adapter: createFileTree({}) } });
-const host = createProbeHost(createRowSlot([]));
+const host = createProbeHost();
 const mount = present(elementAt(".wg-host"), ".wg-host");
 
 interface Rect {

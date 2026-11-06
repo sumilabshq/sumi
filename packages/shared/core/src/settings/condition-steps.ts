@@ -33,7 +33,7 @@ const FIELD_PLACEHOLDER: Readonly<Partial<Record<ValueShape, string>>> = {
 	many: "One value",
 };
 
-export type ConditionList = "where" | "counts";
+export const WHERE_FIELD = "where";
 
 export type ConditionField = Pick<FieldReport, "prop" | "type" | "values">;
 
@@ -41,7 +41,6 @@ export type RowIndex = number | "spread";
 
 export interface ConditionAt {
 	readonly key: string;
-	readonly list: ConditionList;
 	readonly config: TileProp;
 	readonly rows: readonly FilterRow[];
 	readonly index: RowIndex;
@@ -55,8 +54,8 @@ export interface OpenStep {
 
 type Fields = readonly ConditionField[];
 
-export function conditionRowsIn(config: TileProp, list: ConditionList): FilterRow[] {
-	return filterRowsIn(fieldsIn(config.fields)[list]);
+export function conditionRowsIn(config: TileProp): FilterRow[] {
+	return filterRowsIn(fieldsIn(config.fields)[WHERE_FIELD]);
 }
 
 export function conditionSentence(state: SettingsState, fields: Fields, row: FilterRow): string {
@@ -69,8 +68,8 @@ export function conditionSentence(state: SettingsState, fields: Fields, row: Fil
 		: `${row.prop} ${kind.label} ${valueSaid(state, row.value)}`;
 }
 
-export function stepAt(openRow: string | null, key: string, list: ConditionList): OpenStep | null {
-	const head = `${list}:${key}#`;
+export function stepAt(openRow: string | null, key: string): OpenStep | null {
+	const head = `${WHERE_FIELD}:${key}#`;
 	if (!String(openRow ?? "").startsWith(head)) return null;
 	const [index = "", step] = String(openRow).slice(head.length).split("|");
 	return { index, step: step ?? "" };
@@ -114,12 +113,12 @@ function fieldNamed(fields: Fields, prop: string | undefined): ConditionField {
 }
 
 function writeWhere(state: SettingsState, at: ConditionAt, rows: readonly FilterRow[]): void {
-	const fixed = conditionRowsIn(at.config, at.list).filter((row) => row.fixed === true);
+	const fixed = conditionRowsIn(at.config).filter((row) => row.fixed === true);
 	state.onPatch({ props: { ...(state.tile.props ?? {}), [at.key]: withListIn(at, [...fixed, ...rows]) } });
 }
 
 function withListIn(at: ConditionAt, rows: readonly FilterRow[]): TileProp {
-	return withFieldsPatched(at.config, { [at.list]: rows });
+	return withFieldsPatched(at.config, { [WHERE_FIELD]: rows });
 }
 
 function withRowAt(rows: readonly FilterRow[], index: RowIndex, row: FilterRow): FilterRow[] {
@@ -128,7 +127,7 @@ function withRowAt(rows: readonly FilterRow[], index: RowIndex, row: FilterRow):
 }
 
 function openStep(state: SettingsState, at: ConditionAt, step: string, seed?: string): void {
-	state.openEditor(`${at.list}:${at.key}#${at.index}${step ? `|${step}` : ""}`, seed ?? "");
+	state.openEditor(`${WHERE_FIELD}:${at.key}#${at.index}${step ? `|${step}` : ""}`, seed ?? "");
 }
 
 function useItFoot(disabled: boolean, onClick: () => void): ReactElement {

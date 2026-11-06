@@ -58,7 +58,7 @@ Nothing is chosen by breakpoint.
 | `menu`   | a panel growing from the press that opened it |
 | `hide`   | nothing on screen; its widgets stay mounted   |
 
-A collapsed box opens from a button in Obsidian's view header: `toggle: always` keeps it on every
+A collapsed box opens from a button in the view header: `toggle: always` keeps it on every
 width, `toggle: adaptive` only while the box is out of the row. A `@default/toggle` tile named in
 `trigger` replaces the header button.
 
@@ -69,22 +69,17 @@ it, `fields` is what it is told.
 
 ```yaml
 props:
-  getRecords: { implementation: "@obsidian/folder", fields: { path: Metrics } }
-  getStatus: { implementation: "@obsidian/file", fields: { path: Habits.md, field: status } }
+  getRecords: { implementation: "@core/fetch-rows", fields: { url: "https://example.com/metrics.json" } }
   getTitle: { implementation: "@core/typed-value", fields: { value: Revenue } }
   getColumns: { implementation: "@core/typed-rows", fields: { rows: [{ name: To Do }] } }
   getPeriod: { implementation: "@core/from-tile-value", fields: { ref: "w1/getSelection" } }
   getView: { implementation: "@core/screen-state", fields: { key: home.view } }
-  getDone: { implementation: "@stats/count", fields: { path: Log } }
 ```
 
-- **`@obsidian/folder`**: every note of `path` is a row; **`@obsidian/file`**: one note, `field`
-  naming `content`, `name` or a property. **A board whose tiles are all typed is a mock-up, not a
-  screen.**
 - **`@core/typed-value`, `@core/typed-rows`**: a value or rows kept in the tile.
+- **`@core/fetch`, `@core/fetch-rows`**: a JSON value or list read from `url`.
 - **`@core/from-tile-value`, `@core/from-tile-rows`**: `ref` is `<tileId>/<propName>`, the only way two
   tiles talk. **`@core/screen-state`**: a value every tile naming the key shares.
-- **`@stats/<algorithm>`**: one number over the notes of `path`.
 - A feature handler of the app is bound by the id its pack registers.
 - A prop with no binding draws its declared default.
 
@@ -92,15 +87,14 @@ props:
 
 ## Switching a command on
 
-**A command that writes the vault stays shut until its binding carries `allow: [run]`.** That line is
-the person's consent; without it the widget hides its Add, Save or Delete. Switch on exactly the
+**A pack command that reaches outside the tile stays shut until its binding carries `allow: [run]`.**
+That line is the person's consent; without it the widget hides its Add, Save or Delete. Switch on exactly the
 commands the spec's actions name; `report` prints the line for every one still shut.
 
 ```yaml
 props:
-  getWords: { implementation: "@obsidian/folder", fields: { path: Words } }
-  createWord: { implementation: "@obsidian/folder-create", fields: { path: Words }, allow: [run] }
-  updateWord: { implementation: "@obsidian/folder-update", fields: { path: Words }, allow: [run] }
+  getWords: { implementation: "@core/fetch-rows", fields: { url: "https://example.com/words.json" } }
+  sendWord: { implementation: "@core/fetch-send", fields: { url: "https://example.com/words" }, allow: [run] }
 ```
 
 A command over rows kept in the tile (`@core/rows-create`, `@core/value-set`) runs without it.

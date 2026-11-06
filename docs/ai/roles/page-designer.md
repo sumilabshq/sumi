@@ -34,19 +34,20 @@ Widgets do not draw these.
   section's `mounts.controls`, or in the header. Give it `getFields` (the form's rows: `name`,
   `label`, `kind` line, text, number, choice or lines, `options`, `isRequired`), `getPreset` for what
   every new record starts with (`$today` is today), `getNameFrom`, and bind `create` to
-  `@obsidian/folder-create` over the list's folder with `allow: [run]`.
+  `@core/rows-create` with `target` naming the list's prop.
 - **A plus alone** (`getLabel` empty) when it stands beside the one list it adds to; **"Add word"**
   when the page adds more than one kind of thing or the place does not say what. One add per kind
   of thing per page, never one inside every list.
 - **Edit and delete** of the open record are `@default/record-actions` beside that record's title:
-  `getRows` the same folder, `getPicked` bound with `@core/from-tile-value` to the list's selection,
-  `getFields` for the edit form, `getNoun`, and `update` and `remove` switched on with `allow: [run]`.
+  `getRows` the same list, `getPicked` bound with `@core/from-tile-value` to the list's selection,
+  `getFields` for the edit form, `getNoun`, and `update` and `remove` bound to `@core/rows-update` and
+  `@core/rows-remove`.
 
 ## Placing and binding
 
 - Put every widget the orchestrator listed into the slot the design names.
-- Bind every query to the folder, note or handler it reads.
-- A command that writes the vault (`createWord`, `removeDeck`, …) is shut until the tile binds it
+- Bind every query to the handler it reads.
+- A pack command that reaches outside the tile is shut until the tile binds it
   with `allow: [run]` — {handbook}/board.md, "Switching a command on". Switch on exactly the commands
   the spec's actions say yes to: a list whose spec says add gets its create command, one whose spec
   says no gets none.

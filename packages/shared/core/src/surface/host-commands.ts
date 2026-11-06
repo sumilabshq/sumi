@@ -10,10 +10,8 @@ import { useSignalUntilUnmount } from "../gateway/use-signal-until-unmount.js";
 import { portsOf, registeredCommands } from "../engine/packs.js";
 import type { PortsHost } from "../engine/packs.js";
 import type { CommandMetadata } from "../gateway/implementation-metadata.js";
-import { commandBindingOf, commandSpecsOf, isRunAllowed, targetOf } from "./command-binding.js";
+import { commandBindingOf, commandSpecsOf, isRunAllowed } from "./command-binding.js";
 import type { CommandBinding } from "./command-binding.js";
-
-type DescribedRefs = Pick<GatewayRefs, "described">;
 
 interface CommandAsk {
 	readonly name: string;
@@ -31,7 +29,6 @@ interface TileCommandsAsk extends Pick<CommandAsk, "refs" | "host" | "signal"> {
 type CommandSpecs = ReturnType<typeof commandSpecsOf>;
 
 const NOT_ALLOWED = '"{name}" is switched off for this tile';
-const VAULT_NOT_SWITCHED_ON = '"{name}" writes the vault, which stays shut until it is switched on in the Data tab';
 const PACK_NOT_SWITCHED_ON = '"{name}" runs {title}, which stays shut until it is switched on in the Data tab';
 const UNKNOWN_IMPLEMENTATION = '"{name}" names {implementation}, which this host does not run';
 
@@ -49,9 +46,8 @@ export function useHostCommands(
 	);
 }
 
-export function isConsentNeededFor(binding: CommandBinding, refs: DescribedRefs): boolean {
-	const packed = commandOf(binding.implementation);
-	return packed ? isConsentNeeded(packed, binding, refs) : false;
+export function isConsentNeededFor(binding: CommandBinding): boolean {
+	return commandOf(binding.implementation)?.consent === "always";
 }
 
 function hostCommandsOf(specs: CommandSpecs, { tile, ...asked }: TileCommandsAsk): Record<string, AnsweringCommand> {
@@ -64,13 +60,6 @@ function hostCommandsOf(specs: CommandSpecs, { tile, ...asked }: TileCommandsAsk
 	);
 }
 
-function isConsentNeeded(packed: CommandMetadata, binding: CommandBinding, refs: DescribedRefs): boolean {
-	if (packed.consent === "free") return false;
-	if (packed.consent === "always") return true;
-	const target = targetOf(binding);
-	return target ? refs.described(target)?.isVault === true : false;
-}
-
 function hostCommandOf(ask: CommandAsk): AnsweringCommand | null {
 	const { name, binding } = ask;
 	const { implementation } = binding;
@@ -81,7 +70,7 @@ function hostCommandOf(ask: CommandAsk): AnsweringCommand | null {
 		return createRefusedCommand(
 			UNKNOWN_IMPLEMENTATION.replace("{name}", name).replace("{implementation}", implementation),
 		);
-	if (!isRunAllowed(binding, isConsentNeeded(packed, binding, ask.refs)))
+	if (!isRunAllowed(binding, packed.consent === "always"))
 		return createRefusedCommand(shutReasonOf(name, packed));
 	return createPackedCommand(packed, ask);
 }
@@ -105,7 +94,6 @@ function commandOf(implementation: string | undefined): CommandMetadata | undefi
 }
 
 function shutReasonOf(name: string, packed: CommandMetadata): string {
-	if (packed.consent === "vault-target") return VAULT_NOT_SWITCHED_ON.replace("{name}", name);
 	return PACK_NOT_SWITCHED_ON.replace("{name}", name).replace("{title}", packed.title);
 }
 

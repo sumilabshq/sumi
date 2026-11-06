@@ -20,19 +20,19 @@ tiles:
   - id: nav
     widget: "@default/icon-list"
     props:
-      getEntries: { implementation: "@obsidian/folder", fields: { path: Boards } }
+      getEntries: { implementation: "@core/typed-rows", fields: { rows: [] } }
   - id: running
     widget: "@flow/in-flight"
     props:
-      getFlights: { implementation: "@obsidian/folder", fields: { path: Sessions } }
+      getFlights: { implementation: "@core/typed-rows", fields: { rows: [] } }
   - id: bugs
     widget: "@flow/plan-qa"
     props:
-      getQuestions: { implementation: "@obsidian/folder", fields: { path: Bugs } }
+      getQuestions: { implementation: "@core/typed-rows", fields: { rows: [] } }
   - id: tail
     widget: "@flow/session-tail"
     props:
-      getLines: { implementation: "@obsidian/folder", fields: { path: Sessions/live.md } }
+      getLines: { implementation: "@core/typed-rows", fields: { rows: [] } }
   - id: notice
     widget: "@flow/notice"
     props:
@@ -94,16 +94,16 @@ tiles:
   - id: tracks
     widget: "@media/track-list"
     props:
-      getTracks: { implementation: "@obsidian/folder", fields: { path: Music/Tracks } }
+      getTracks: { implementation: "@core/typed-rows", fields: { rows: [] } }
       getFilter: { implementation: "@core/from-tile-value", fields: { ref: "tabs/getSelection" } }
   - id: albums
     widget: "@media/album-grid"
     props:
-      getAlbums: { implementation: "@obsidian/folder", fields: { path: Music/Albums } }
+      getAlbums: { implementation: "@core/typed-rows", fields: { rows: [] } }
   - id: player
     widget: "@media/player"
     props:
-      getTracks: { implementation: "@obsidian/folder", fields: { path: Music/Tracks } }
+      getTracks: { implementation: "@core/typed-rows", fields: { rows: [] } }
       getPlaying: { implementation: "@core/from-tile-value", fields: { ref: "tracks/getSelection" } }
 layout:
   dir: column
@@ -158,7 +158,7 @@ tiles:
       getFilling: { implementation: "@core/typed-value", fields: { value: per-row } }
       getArrangement: { implementation: "@core/typed-value", fields: { value: grid } }
       getMinWidthPx: { implementation: "@core/typed-value", fields: { value: 280 } }
-      getItems: { implementation: "@obsidian/folder", fields: { path: Projects } }
+      getItems: { implementation: "@core/typed-rows", fields: { rows: [] } }
     slots:
       item: { widget: "@flow/project-card" }
   - id: today
@@ -194,7 +194,7 @@ layout:
 ```
 ````
 
-`projects` fills **per row**: `@flow/project-card` is drawn again for every note in the folder, and
+`projects` fills **per row**: `@flow/project-card` is drawn again for every row, and
 the grid wraps once a card would go under 280px. `today` fills **placed**: two widgets a person put
 there, each with its own props; its `controls` govern that section only. Neither section wears a
 plate: a `grid` gives every card one, a `column` leaves its widgets bare.

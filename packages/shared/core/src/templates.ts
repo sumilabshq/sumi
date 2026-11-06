@@ -70,8 +70,8 @@ const TASK_BOARD: Template = {
 				widget: "@default/editable-tabs",
 				props: {
 					getTabs: {
-						implementation: "@obsidian/folder",
-						fields: { path: "Orbitask/Boards" },
+						implementation: "@core/typed-rows",
+						fields: { rows: [] },
 						allow: ["list", "create", "update", "remove"],
 					},
 				},
@@ -80,7 +80,7 @@ const TASK_BOARD: Template = {
 				id: "filter",
 				widget: "@default/filter-panel",
 				props: {
-					getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" }, allow: ["list"] },
+					getTasks: { implementation: "@core/from-tile-rows", fields: { ref: "kanban/getTasks" } },
 					getBoard: { implementation: "@core/from-tile-value", fields: { ref: "boards/getSelection" } },
 				},
 			},
@@ -98,16 +98,12 @@ const TASK_BOARD: Template = {
 				slots: { card: { widget: "@default/task-card" } },
 				props: {
 					getTasks: {
-						implementation: "@obsidian/folder",
-						fields: { path: "Orbitask/Tasks" },
+						implementation: "@core/typed-rows",
+						fields: { rows: [] },
 						allow: ["list", "get", "create", "update", "remove"],
 					},
 					getChosen: { implementation: "@core/from-tile-value", fields: { ref: "filter/getChosen" } },
-					getBoards: {
-						implementation: "@obsidian/folder",
-						fields: { path: "Orbitask/Boards" },
-						allow: ["list", "create", "update", "repairIds"],
-					},
+					getBoards: { implementation: "@core/from-tile-rows", fields: { ref: "boards/getTabs" } },
 					getSelection: { implementation: "@core/from-tile-value", fields: { ref: "boards/getSelection" } },
 				},
 			},

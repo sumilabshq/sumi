@@ -9,7 +9,8 @@ import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import { standIn } from "./stand-in.ts";
 import type { BoardNode, BoxNode, PreferredSize } from "../packages/shared/core/src/tree-nodes.js";
 import type { Spot } from "../packages/shared/core/src/tree-drop.js";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const {
 	targetAt,
@@ -61,17 +62,6 @@ function boardOf(at: string): unknown {
 	}
 	return parse(block);
 }
-
-const ROWS = ["To Do", "Doing", "Done"].flatMap((status, at) =>
-	[1, 2].map((nth) => ({
-		path: `Orbitask/Tasks/${status}-${nth}.md`,
-		ref: { path: `Orbitask/Tasks/${status}-${nth}.md` },
-		name: `${status} ${nth}`,
-		props: { title: `${status} ${nth}`, status, order: at * 2 + nth },
-		meta: { created: 1, modified: 2 },
-		attachments: 0,
-	})),
-);
 
 // TODO: manifest field stackBelowPx — collapseBelowPx means chip, not own row
 const TREE = [
@@ -125,7 +115,7 @@ const HOST_BUTTON_PAINT_COPIED_VERBATIM = `button:not(.clickable-icon) {
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
 <style>${HOST_BUTTON_PAINT_COPIED_VERBATIM}</style>
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --background-modifier-hover: #ededed; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;
@@ -136,7 +126,6 @@ const page = `<!doctype html><html><head><meta charset="utf-8">
 </head><body><div class="wg-host"></div>
 <script id="wg-widgets" type="application/json">${inertJson(widgetFiles())}</script>
 <script id="wg-board" type="application/json">${JSON.stringify(board)}</script>
-<script id="wg-rows" type="application/json">${JSON.stringify(ROWS)}</script>
 <script id="wg-tree" type="application/json">${JSON.stringify(TREE)}</script>
 <script id="wg-widths" type="application/json">${JSON.stringify(WIDTHS)}</script>
 <script id="wg-measure" type="application/json"></script>

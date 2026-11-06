@@ -1,7 +1,6 @@
 import type { FilterRow, SortRow } from "../gateway/contract.js";
 import type { HandlerHost } from "../gateway/handler-context.js";
 import type { CommandMetadata, GatewayMetadata } from "../gateway/implementation-metadata.js";
-import type { FileHost, FolderHost, VaultSlot } from "../gateway/obsidian.js";
 import type { NeedOfField } from "../gateway/props.js";
 import type { RefDescription, ViewCell } from "../gateway/refs.js";
 import type { CommandInputDeclared, commandInput, commandOutput } from "../gateway/declared-types.js";
@@ -48,20 +47,6 @@ export interface NetworkPort {
 	request(url: string, ask: NetworkAsk): Promise<NetworkAnswer>;
 }
 
-export interface VaultNote {
-	readonly path: string;
-	readonly name: string;
-	readonly props: Readonly<Record<string, unknown>>;
-}
-
-export interface VaultPort {
-	readonly can: boolean;
-	folder(path: string): VaultSlot;
-	notesTagged(tag: string): Promise<readonly VaultNote[]>;
-	notesMatching(text: string): Promise<readonly VaultNote[]>;
-	open(path: string): void;
-}
-
 export interface RefsPort {
 	read(ref: string): Promise<unknown>;
 	watch(refs: string[], changed: () => void): () => void;
@@ -73,7 +58,6 @@ export interface ImplementationPorts extends HandlerHost {
 	readonly commandLine: CommandLinePort;
 	readonly workingDirectory: string | undefined;
 	readonly network: NetworkPort;
-	readonly vault: VaultPort;
 	readonly refs: RefsPort;
 	readonly catalogue: CataloguePort;
 	readonly studio: StudioHostPort;
@@ -105,20 +89,11 @@ export interface PagePort {
 	param(key: string): ViewCell | null;
 }
 
-export interface ShapeReader {
-	readShape?(path: string): unknown;
-}
-
-export interface NotesPort extends FolderHost, FileHost {
-	readonly shapes?: ShapeReader | null | undefined;
-}
-
 export interface QueryPorts extends ImplementationPorts {
 	readonly prop: PropPort;
 	readonly kept: KeptPort;
 	readonly screen: ScreenPort;
 	readonly page: PagePort;
-	readonly notes: NotesPort;
 }
 
 export interface Pack {
@@ -132,7 +107,6 @@ export interface PortsHost {
 	readonly commandLine?: CommandLinePort | undefined;
 	readonly workingDirectory?: string | undefined;
 	readonly network?: NetworkPort | undefined;
-	readonly vault?: VaultPort | undefined;
 	readonly catalogue?: CataloguePort | undefined;
 	readonly studio?: StudioHostPort | undefined;
 	readonly studioState?: StudioState | undefined;
@@ -145,7 +119,6 @@ export interface PortsHost {
 const OUTSIDE_THE_PACK = '{id} is not named under its pack "{pack}": name it "{pack}/…"';
 const NO_COMMAND_LINE = "no command line on this host";
 const NO_NETWORK = "no network on this host";
-const NO_VAULT = "no vault on this host";
 
 const SHUT_COMMAND_LINE: CommandLinePort = {
 	can: false,
@@ -155,18 +128,6 @@ const SHUT_COMMAND_LINE: CommandLinePort = {
 const SHUT_NETWORK: NetworkPort = {
 	can: false,
 	request: () => Promise.reject(new Error(NO_NETWORK)),
-};
-
-const SHUT_VAULT: VaultPort = {
-	can: false,
-	folder: () => {
-		throw new Error(NO_VAULT);
-	},
-	notesTagged: () => Promise.reject(new Error(NO_VAULT)),
-	notesMatching: () => Promise.reject(new Error(NO_VAULT)),
-	open: () => {
-		throw new Error(NO_VAULT);
-	},
 };
 
 const NAMED_TWICE = "{id} names two implementations of one pack";
@@ -211,7 +172,6 @@ export function portsOf(host: PortsHost, refs: RefsPort, self: string): Implemen
 		commandLine: host.commandLine ?? SHUT_COMMAND_LINE,
 		workingDirectory: host.workingDirectory,
 		network: host.network ?? SHUT_NETWORK,
-		vault: host.vault ?? SHUT_VAULT,
 		refs,
 		catalogue: host.catalogue ?? NO_CATALOGUE_PORT,
 		studio: host.studio ?? NO_STUDIO_HOST,

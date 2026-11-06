@@ -12,13 +12,6 @@ import { runCli } from "../packages/shared/cli/src/run-cli.js";
 import { HANDBOOK_PAGES } from "../packages/shared/cli/src/handbook-copy.js";
 import type { CliOutput } from "../packages/shared/cli/src/cli-output.js";
 import { z } from "zod";
-import type { TFile, TFolder } from "obsidian";
-import { layProject } from "../packages/shared/core/src/project/index.js";
-import { engineClosureIn, enginePackagesOf, type EngineTarball } from "../packages/shared/cli/src/engine-tarballs.js";
-import { formatProject } from "../packages/shared/cli/src/project-format.js";
-import { vaultProjectWriter, type ProjectVault } from "../apps/host-obsidian/src/vault-project-writer.js";
-import { pluginProjectSeed } from "./project-seed.mts";
-import { standIn } from "./stand-in.ts";
 import { fieldOf } from "./export-source.mts";
 import { fakeEngine } from "./fake-engine.ts";
 import {
@@ -119,33 +112,6 @@ function systemFile(system: string, file: string): string {
 function agentReadOrderIn(agents: string): string[] {
 	const look = agents.slice(agents.indexOf("## The look"));
 	return [...new Set([...look.matchAll(/(USAGE\.md|DESIGN\.md|src\/styles\/tokens\.css)/g)].map(([found]) => found))];
-}
-
-async function layOverVault(folder: string, closure: readonly EngineTarball[]): Promise<void> {
-	const seed = { ...pluginProjectSeed(), engine: enginePackagesOf(closure) };
-	fs.mkdirSync(path.dirname(folder), { recursive: true });
-	const vault = folderBackedVault(path.dirname(folder));
-	await layProject(vaultProjectWriter(vault, path.basename(folder)), { name: "shop", system: "default", seed });
-}
-
-function folderBackedVault(root: string): ProjectVault {
-	const entry = standIn<TFolder>({}, [], "vault entry");
-	return standIn<ProjectVault>(
-		{
-			getAbstractFileByPath: (at: string) => (fs.existsSync(path.join(root, at)) ? entry : null),
-			createFolder: async (at: string) => {
-				fs.mkdirSync(path.join(root, at));
-				return entry;
-			},
-			create: async (at: string, text: string) => {
-				if (fs.existsSync(path.join(root, at))) throw new Error(`${at} already exists`);
-				fs.writeFileSync(path.join(root, at), text);
-				return standIn<TFile>({}, [], "vault file");
-			},
-		},
-		["getAbstractFileByPath", "createFolder", "create"],
-		"folder-backed vault",
-	);
 }
 
 function jsonAt(at: string): unknown {
@@ -418,22 +384,6 @@ try {
 		[1, true, false],
 	);
 	check("system check passes the shipped default", (await cli(["system", "check", "default"])).code, 0);
-
-	const cliTwin = path.join(scratch, "by-cli", "shop");
-	await cli(["create", cliTwin, "--engine", engine, "--no-install", "--no-git"]);
-	const vaultTwin = path.join(scratch, "by-vault", "shop");
-	await layOverVault(vaultTwin, engineClosureIn(engine));
-	await formatProject(vaultTwin);
-	const vaulted = filesIn(vaultTwin);
-	const createdByCli = filesIn(cliTwin).filter((at) => !at.startsWith("vendor/"));
-	check("Obsidian's new app holds the very files create lays, the engine tarballs aside", vaulted, createdByCli);
-	check(
-		"and each holds the same text once both are formatted",
-		createdByCli.filter(
-			(at) => fs.readFileSync(path.join(cliTwin, at), "utf8") !== fs.readFileSync(path.join(vaultTwin, at), "utf8"),
-		),
-		[],
-	);
 } finally {
 	fs.rmSync(scratch, { recursive: true, force: true });
 }

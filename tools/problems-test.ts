@@ -1,5 +1,5 @@
 import type { z as Zod } from "zod";
-import type { HostGatewayContext, HostGatewayHost } from "../packages/shared/core/src/engine/host-context.js";
+import type { HostGatewayContext } from "../packages/shared/core/src/engine/host-context.js";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
 import type { HostGateway } from "../packages/shared/core/src/engine/host-context.js";
 import type { CollectionGateway } from "../packages/shared/core/src/gateway/contract.js";
@@ -68,12 +68,6 @@ function declaredModuleOf(value: unknown): DeclaredModule {
 	return value;
 }
 
-const READS_NO_VAULT: HostGatewayHost = {
-	slot: () => {
-		throw new Error("the problems gate reads no vault");
-	},
-};
-
 const refs = createGatewayRefs();
 const cellFor = createViewCells();
 const TaskSchema = z.object({ title: z.string(), done: z.boolean().optional() });
@@ -104,7 +98,7 @@ const context = (
 	tile: { id: "t2", props: { [name]: { implementation, fields: { ref } } } },
 	refs,
 	cellFor,
-	host: READS_NO_VAULT,
+	host: {},
 	propsRef: { current: {} },
 	patchProp: () => {},
 });

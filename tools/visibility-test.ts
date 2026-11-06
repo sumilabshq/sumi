@@ -36,14 +36,14 @@ const perRow = seenOf(manifest, {
 	props: { fills: { implementation: "@core/typed-value", fields: { value: "per-row" } } },
 });
 const bound = seenOf(manifest, {
-	props: { items: { implementation: "@obsidian/folder", fields: { path: "Sessions" } } },
+	props: { items: { implementation: "@core/from-tile-rows", fields: { ref: "sessions/rows" } } },
 });
 
 check("an unset value is seen as its default", seenPropOf(placed, "fills").value, "placed");
 check("a typed value is seen as what was typed", seenPropOf(perRow, "fills").value, "per-row");
 check("an unset prop is not set", seenPropOf(placed, "fills").isSet, false);
 check("a typed prop is set", seenPropOf(perRow, "fills").isSet, true);
-check("a vault binding is named", seenPropOf(bound, "items").binding, "vault");
+check("a binding is named", seenPropOf(bound, "items").binding, "ref");
 check("a collection is seen as rows", seenPropOf(placed, "items").rows, []);
 check("the control is handed over", seenPropOf(placed, "pageSize").control, "number");
 

@@ -1,6 +1,4 @@
 node_modules
-apps/host-obsidian/main.js
-apps/host-obsidian/data.json
 package-lock.json
 export
 packages/shared/kit/assets

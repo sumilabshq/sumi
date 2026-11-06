@@ -1,6 +1,6 @@
 # Hosts
 
-A host is the framework code that runs apps inside another program: `apps/host-tauri` (the desktop app, the product), `apps/host-obsidian` (the Obsidian plugin), the browser host inside `@widgetarium/vite`. A project writes no host code.
+A host is the framework code that runs apps inside another program: `apps/host-tauri` (the desktop app, the product), the browser host inside `@widgetarium/vite`. A project writes no host code.
 
 ## What a host hands an app
 
@@ -20,9 +20,9 @@ export function startLayoutApp({ platform, workspaceId }: LayoutAppAsk): Started
 
 A host never builds a module's gateway and never passes a "parts" object. What a module needs from the platform it reaches through its gateways. A module that writes the Tauri store is lent a `StoreClient` (`@widgetarium/behaviors/tauri-store`) as a host object, never Tauri's `invoke`. A module that keeps one file is lent that file instead: the tasks module's `TASKS_HOST_NEEDS` takes a `BoardFile` whose reads and writes are FileSystem requests.
 
-**Host objects, through `.needs`.** A live object only the host has (an Obsidian vault, its widget registry, a running agent) is lent raw: the module declares `.needs({ vault: Vault })`, the host passes `start({ platform, scope, host: { vault } })`, and `provide` builds the module's gateways on it. A missing or wrongly typed one is a type error and a start refusal naming the module and the key.
+**Host objects, through `.needs`.** A live object only the host has (a file it opened, a running agent) is lent raw: the module declares `.needs({ file: BoardFileHost })`, the host passes `start({ platform, scope, host: { file } })`, and `provide` builds the module's gateways on it. A missing or wrongly typed one is a type error and a start refusal naming the module and the key.
 
-An interface the host lends (Obsidian's `DataAdapter`) is a `hostObject("DataAdapter", isDataAdapter)` token the module re-exports from `module.ts`; the host imports it from the module's `"./module"` entry. A module mounted two ways declares `oneOf`, and each host lends one set: Obsidian's vault mount `start({ ..., host: { adapter, registry } })`, a project mount `start({ ..., host: { project } })`.
+An interface the host lends (the tasks module's `BoardFile`) is a `hostObject("BoardFile", isBoardFile)` token the module re-exports from `module.ts`; the host imports it from the module's `"./module"` entry. A module mounted two ways declares `oneOf`, and each host lends one set: a folder mount `start({ ..., host: { adapter, registry } })`, a project mount `start({ ..., host: { project } })`.
 
 `app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys`, `rateLimits` and `reportFailure`.
 
@@ -37,13 +37,6 @@ An interface the host lends (Obsidian's `DataAdapter`) is a `hostObject("DataAda
 `apps/host-tauri` opens the studio windows, keeps the workspaces, and starts each window's app with `platform: "tauri"` and the window's workspace. Settings and sessions are files the module gateways read and write through `@widgetarium/behaviors/tauri-store`.
 
 TODO: `settings.json` and `session.json` each have two holders, the host's own documents and the layout's gateways, both writing rev-checked patches. One owner per file is the target.
-
-## The Obsidian host
-
-1. Installs as a plugin and keeps its settings.
-2. Opens a note whose front matter names `widgetarium-app` in the studio view.
-3. Starts each mount's app with `platform: "browser"`.
-4. Runs the AI agent's tools (`widgets.mjs`) over the vault.
 
 ## Deploy
 

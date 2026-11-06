@@ -66,9 +66,7 @@ import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
-import { PrivateFiles } from "../apps/host-obsidian/src/browser/private-files.ts";
-import { readsOf, PRESETS } from "../apps/host-obsidian/src/legacy/ai/providers.ts";
-import { expandArgs } from "../apps/host-obsidian/src/legacy/ai/command.ts";
+import { PrivateFiles } from "./private-files.ts";
 
 let failed = 0;
 let checks = 0;
@@ -574,24 +572,6 @@ cleared.session.busy = true;
 await cleared.chat.send(SendMessageCommand, { said: "x" });
 await cleared.chat.send(ClearChatCommand);
 check("clearing the chat removes every attached file", fs.readdirSync(cleared.folder).length, 0);
-
-check(
-	"the shipped providers read what they can: Claude Code images and files by path with no count limit, Gemini files by path, Ollama inline and at most ten, Codex and OpenCode nothing",
-	PRESETS.map((provider) => [provider.id, readsOf(provider)]),
-	[
-		["claude-code", CLAUDE],
-		["codex", CODEX],
-		["opencode", CODEX],
-		["gemini", { images: false, files: "path" }],
-		["ollama", { ...OLLAMA, mostAttached: 10 }],
-		["custom", CODEX],
-	],
-);
-const claudePreset = PRESETS[0];
-const argv = claudePreset
-	? expandArgs(claudePreset, { prompt: "p", brief: "b", vaultPath: "/v", pluginPath: "/p", attachmentsPath: "/att" })
-	: [];
-check("Claude Code is given the attachments folder to read", argv[argv.indexOf("/att") - 1], "--add-dir");
 
 const pageDrag = webChatApp();
 const isPageOver = async (): Promise<unknown> => {

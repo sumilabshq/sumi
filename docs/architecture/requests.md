@@ -90,23 +90,23 @@ export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_inpu
 
 ## What a module needs from the host
 
-`module("canvas").on(Device).needs({ vault: Vault })` names live objects only the host has (an Obsidian vault, a running agent); `provide(({ platform, scope, env, host }) => ...)` gets `host` typed to them, and `app()...start({ platform, scope, host: { vault } })` must give them: a missing one is a type error and a start refusal ("canvas needs vault: the host did not provide it as a Vault"). The host lends raw system objects only, never a module's gateway; the module builds its gateways on them.
+`module("tasks").on(Device).needs({ file: BoardFileHost })` names live objects only the host has (a file it opened, a running agent); `provide(({ platform, scope, env, host }) => ...)` gets `host` typed to them, and `app()...start({ platform, scope, host: { file } })` must give them: a missing one is a type error and a start refusal ("tasks needs file: the host did not provide it as a BoardFile"). The host lends raw system objects only, never a module's gateway; the module builds its gateways on them.
 
-**An object with no runtime class is a `hostObject`.** An abstract class is checked by `instanceof`; an interface (Obsidian's `DataAdapter`, a `StartedProject`) has nothing to check, so the module names it with a guard, in its own `shared/host/<x>.host.ts`, and `module.ts` re-exports it so a host imports it from the `"./module"` entry (never from `"."`). A value the guard refuses is refused at start with the module, the key and the token's name.
+**An object with no runtime class is a `hostObject`.** An abstract class is checked by `instanceof`; an interface (a `BoardFile`, a `StartedProject`) has nothing to check, so the module names it with a guard, in its own `shared/host/<x>.host.ts`, and `module.ts` re-exports it so a host imports it from the `"./module"` entry (never from `"."`). A value the guard refuses is refused at start with the module, the key and the token's name.
 
 ```ts skip-check
 export const AdapterHost = hostObject("DataAdapter", isDataAdapter);
 module("canvas").on(Device).needs({ adapter: AdapterHost });
 ```
 
-**One of several sets is `oneOf`.** `provide` gets `host` as a union tagged by the set's name, and `start({ host })` must lend exactly one set: lending parts of two, or none, is a type error and a start refusal ("canvas needs one of: vault {adapter, registry}, project {project}; the host lent parts of vault and project"); a set with a key missing names that key.
+**One of several sets is `oneOf`.** `provide` gets `host` as a union tagged by the set's name, and `start({ host })` must lend exactly one set: lending parts of two, or none, is a type error and a start refusal ("canvas needs one of: folder {adapter, registry}, project {project}; the host lent parts of folder and project"); a set with a key missing names that key.
 
 ```ts skip-check
 module("canvas")
 	.on(Device)
-	.needs(oneOf({ vault: { adapter: AdapterHost, registry: WidgetRegistry }, project: { project: ProjectHost } }))
+	.needs(oneOf({ folder: { adapter: AdapterHost, registry: WidgetRegistry }, project: { project: ProjectHost } }))
 	.provide(({ host }) =>
-		host.kind === "vault" ? vaultParts(host.adapter, host.registry) : projectParts(host.project),
+		host.kind === "folder" ? folderParts(host.adapter, host.registry) : projectParts(host.project),
 	);
 ```
 

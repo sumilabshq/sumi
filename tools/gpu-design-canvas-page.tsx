@@ -25,7 +25,6 @@ reportsFailures();
 registerPacks(corePack);
 
 const VIEW = { width: 1280, height: 800 };
-const NOT_HERE = "not on this test page";
 const IN_PLATE = { isInPlate: true };
 const PLATE_CRUMB = { first: "Canvas", second: "Farm" };
 const registry = new ModuleRegistry({
@@ -43,9 +42,6 @@ const states: DrawnState[] = DESIGN_FRAMES.map(({ state, widget, props }) => ({
 const TEST_HOST = {
 	...NO_HOST,
 	can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
-	slot: (): never => {
-		throw new Error(NOT_HERE);
-	},
 };
 const designFolderGateway = new FixedDesignFolderGateway(async () => ({
 	screens: [{ name: DESIGN_SCREEN, states }],

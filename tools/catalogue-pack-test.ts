@@ -107,15 +107,6 @@ const ports: ImplementationPorts = {
 	commandLine: { can: false, run: async () => ({ ok: false, output: "", failure: "none" }) },
 	workingDirectory: undefined,
 	network: { can: false, request: () => Promise.reject(new Error("no network")) },
-	vault: {
-		can: false,
-		folder: () => {
-			throw new Error("no vault");
-		},
-		notesTagged: () => Promise.reject(new Error("no vault")),
-		notesMatching: () => Promise.reject(new Error("no vault")),
-		open: () => undefined,
-	},
 	refs: {
 		read: async (ref) => values.get(ref) ?? null,
 		watch: () => () => undefined,

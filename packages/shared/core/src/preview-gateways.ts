@@ -10,7 +10,7 @@ import type { StoredRow } from "./gateway/kept-in-tile.js";
 import type { CollectionGateway } from "./gateway/contract";
 import type { TileProp, TileProps } from "./model.js";
 import type { Fields } from "./engine/catalogue-index.js";
-import type { HostGatewayContext, HostGatewayHost, PatchStep } from "./engine/host-context.js";
+import type { HostGatewayContext, PatchStep } from "./engine/host-context.js";
 import { resolveHostGateway } from "./engine/host-gateways.js";
 import { typeOf } from "./engine/record-type.js";
 import { isObject } from "./engine/is-object.js";
@@ -25,14 +25,6 @@ type PreviewWorld = Omit<HostGatewayContext, "name" | "spec">;
 const SELECTION = "@core/selection";
 
 const SELECTED_ROW = "@core/selected-row";
-
-const PREVIEW_READS_NO_VAULT = "a preview reads no vault";
-
-const PREVIEW_HOST: HostGatewayHost = {
-	slot: () => {
-		throw new Error(PREVIEW_READS_NO_VAULT);
-	},
-};
 
 interface PreviewRecord {
 	readonly [field: string]: unknown;
@@ -144,7 +136,7 @@ function createPreviewWorld(
 	return {
 		tile,
 		refs: refsOverPreview(tile.id, gateways),
-		host: PREVIEW_HOST,
+		host: {},
 		cellFor: screenSeededBy(manifest, tile.id, props),
 		...propsKeptBy(tile.props),
 	};

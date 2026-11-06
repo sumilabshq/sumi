@@ -31,8 +31,6 @@ service. Each version becomes Apache 2.0 two years after its release:
                   packages/shared/behaviors/LICENSE
   apps/studio/    the studio drawn around an app
                   apps/studio/LICENSE
-  apps/host-obsidian/  the Obsidian plugin
-                  apps/host-obsidian/LICENSE
 
 Anything outside these folders (tools, docs) is under FSL-1.1-ALv2 as in
 packages/shared/core/LICENSE. REUSE.toml maps every path to its licence.

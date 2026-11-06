@@ -6,7 +6,7 @@ import { normalizeBoard } from "../packages/shared/core/src/model.js";
 import type { Board } from "../packages/shared/core/src/model.js";
 import { leavesOf, swapBoxes } from "../packages/shared/core/src/tree.js";
 import { declaredName, WidgetRegistry } from "../packages/shared/core/src/registry.js";
-import { createFileTree, createProbeHost, createRowSlot } from "./vault-fixture.ts";
+import { createFileTree, createProbeHost } from "./vault-fixture.ts";
 import {
 	elementAt,
 	elementsAt,
@@ -16,16 +16,14 @@ import {
 	present,
 	recordErrors,
 	recordWarnings,
-	rowsIn,
 	textOf,
 } from "./page-dom.ts";
 
 const FILES = jsonIn("wg-widgets");
 const BOARD = jsonIn("wg-board");
-const ROWS = rowsIn(jsonIn("wg-rows"));
 
 const adapter = createFileTree(isFileMap(FILES) ? FILES : {});
-const host = createProbeHost(createRowSlot(ROWS));
+const host = createProbeHost();
 
 const failures: string[] = [];
 const warnings: string[] = [];

@@ -7,7 +7,6 @@ import type { DeclaredNeed } from "./resolve-needs";
 import type { FieldType } from "./fields";
 import { stableKey } from "./stable-key";
 import { FIELD_TYPES } from "./fields";
-import { STAT_ALGORITHMS } from "../engine/stat-fields";
 
 export interface PropDefault {
 	readonly value?: unknown;
@@ -49,7 +48,7 @@ export type NeedOfField = Omit<FieldDescription, "type"> & DeclaredNeed;
 
 export type TypedKey = "rows" | "value";
 
-export type PropBinding = "stat" | "ref" | "box" | "hardcode" | "vault" | "memory" | "implementation";
+export type PropBinding = "ref" | "box" | "hardcode" | "memory" | "implementation";
 
 export interface BoundProp {
 	readonly kind: "value" | "collection";
@@ -74,27 +73,18 @@ export const SCREEN_STATE = "@core/screen-state";
 
 export const SELECTED_ROW = "@core/selected-row";
 
-const NOTE_IN_VAULT = "@obsidian/file";
-
-const FOLDER_IN_VAULT = "@obsidian/folder";
-
 const FROM_TILE_VALUE = "@core/from-tile-value";
 
 const FROM_TILE_ROWS = "@core/from-tile-rows";
-
-const FOLDER_STAT_PREFIX = "@stats/";
 
 const BINDING_OF_IMPLEMENTATION: ReadonlyMap<string, PropBinding> = new Map<string, PropBinding>([
 	[TYPED_VALUE, "hardcode"],
 	[TYPED_ROWS, "hardcode"],
 	[SCREEN_STATE, "memory"],
-	[NOTE_IN_VAULT, "vault"],
-	[FOLDER_IN_VAULT, "vault"],
 	[FROM_TILE_VALUE, "ref"],
 	[FROM_TILE_ROWS, "ref"],
 ]);
 
-const VERBS_A_VAULT_BINDING_OFFERS_UNASKED: readonly string[] = ["list", "get"];
 const NOT_SWITCHED_ON = "{verb} is not switched on for this tile";
 
 const ALLOW_IS_NOT_A_LIST =
@@ -161,21 +151,8 @@ export function implementationOf(spec: Held<DeclaredProp>, config: Held<PropConf
 	return typeof config?.implementation === "string" ? config.implementation : declaredImplementationOf(spec);
 }
 
-export function vaultImplementationOf(spec: Held<DeclaredProp>): string {
-	return spec?.kind === "value" ? NOTE_IN_VAULT : FOLDER_IN_VAULT;
-}
-
 export function fromTileImplementationOf(spec: Held<DeclaredProp>): string {
 	return spec?.kind === "value" ? FROM_TILE_VALUE : FROM_TILE_ROWS;
-}
-
-export function isVaultImplementation(id: unknown): boolean {
-	return id === NOTE_IN_VAULT || id === FOLDER_IN_VAULT;
-}
-
-export function isFolderStatImplementation(id: unknown): boolean {
-	if (typeof id !== "string" || !id.startsWith(FOLDER_STAT_PREFIX)) return false;
-	return STAT_ALGORITHMS.some((algorithm) => id === `${FOLDER_STAT_PREFIX}${algorithm}`);
 }
 
 export function bindingOf(spec: Held<DeclaredProp>, config: Held<PropConfig>): BoundProp {
@@ -184,8 +161,7 @@ export function bindingOf(spec: Held<DeclaredProp>, config: Held<PropConfig>): B
 
 export function allowedVerbs(spec: Held<DeclaredProp>, config: Held<PropConfig>): VerbDecision[] {
 	const uses = requestedVerbs(spec);
-	const unasked = isVaultImplementation(implementationOf(spec, config)) ? VERBS_A_VAULT_BINDING_OFFERS_UNASKED : uses;
-	const allowed = allowWritten(config, unasked);
+	const allowed = allowWritten(config, uses);
 	return uses.map((verb) =>
 		allowed.includes(verb)
 			? { verb, can: true, reason: null }
@@ -223,16 +199,14 @@ function fieldTypeOf(type: unknown): FieldType {
 
 function bindingNamed(spec: Held<DeclaredProp>, config: Held<PropConfig>): PropBinding {
 	if (typeof config?.implementation !== "string" && sourceImplementationOf(spec)) return "box";
-	const implementation = implementationOf(spec, config);
-	if (isFolderStatImplementation(implementation)) return "stat";
-	return BINDING_OF_IMPLEMENTATION.get(implementation) ?? "implementation";
+	return BINDING_OF_IMPLEMENTATION.get(implementationOf(spec, config)) ?? "implementation";
 }
 
 function declaredImplementationOf(spec: Held<DeclaredProp>): string {
 	const source = sourceImplementationOf(spec);
 	if (source) return source;
 	if (spec?.default?.from === "memory") return SCREEN_STATE;
-	return declaredOf(spec) === undefined ? vaultImplementationOf(spec) : typedImplementationOf(spec);
+	return typedImplementationOf(spec);
 }
 
 function sourceImplementationOf(spec: Held<DeclaredProp>): string | null {

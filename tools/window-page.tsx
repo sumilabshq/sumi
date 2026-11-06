@@ -6,8 +6,7 @@ import { WidgetSurface } from "../packages/shared/core/src/surface.js";
 import { normalizeBoard } from "../packages/shared/core/src/model.js";
 import type { Board } from "../packages/shared/core/src/model.js";
 import { GRID, measureGrid } from "../packages/shared/core/src/paths.js";
-import type { BoardRegistry, SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
-import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
+import type { BoardRegistry } from "../packages/shared/core/src/surface/use-surface-shared.js";
 import { PROBE_VIEW } from "./vault-fixture.ts";
 import { elementAt, elementsAt, present, stackOf } from "./page-dom.ts";
 
@@ -33,17 +32,6 @@ const registry: BoardRegistry = {
 	tileRefOf: (id) => id,
 };
 
-const slot: VaultSlot & { readonly describe: () => Promise<never[]> } = {
-	canCreate: true,
-	canUpdate: true,
-	canRemove: true,
-	canSubscribe: false,
-	list: () => Promise.resolve({ rows: [], total: 0 }),
-	get: () => Promise.resolve(null),
-	describe: () => Promise.resolve([]),
-};
-
-const host: SurfaceHost = { ...PROBE_VIEW, slot: () => slot };
 
 const mount = present(elementAt(".wg-host"), ".wg-host");
 const stagedState = location.hash.slice(1);
@@ -64,7 +52,7 @@ function draw(): void {
 			boardNode: mount,
 			board,
 			registry,
-			host,
+			host: PROBE_VIEW,
 			editing: true,
 			initialWidth: mount.clientWidth,
 			onChange: (next) => {

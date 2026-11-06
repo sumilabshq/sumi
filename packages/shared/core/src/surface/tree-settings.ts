@@ -15,7 +15,7 @@ const TREE_PLACE = { w: 1, h: 1 };
 
 type SettingsFrame = Pick<
 	SettingsWindowAsk,
-	"host" | "registry" | "refs" | "cell" | "gap" | "phone" | "columns" | "countReaders" | "onDone" | "onDismiss"
+	"host" | "registry" | "refs" | "cell" | "gap" | "phone" | "columns" | "onDone" | "onDismiss"
 >;
 
 export interface TreeSettingsProps {

@@ -222,8 +222,7 @@ check("every example passes the linter the agent must pass", linted, []);
 
 const RESTATED_IN_THE_CHAT_BRIEF: readonly (readonly [string, string, string, string])[] = [
 	["the spacing steps", "16px one box down, 8px deeper", SURFACES_PAGE, "16px one box down, 8px deeper"],
-	["a board of typed tiles", "is a mock-up, not a screen", BOARD, "is a mock-up, not a screen"],
-	["the vault binding", "@obsidian/folder", BOARD, "@obsidian/folder"],
+	["the JSON list binding", "@core/fetch-rows", BOARD, "@core/fetch-rows"],
 	["the ref binding", "@core/from-tile-value", BOARD, "@core/from-tile-value"],
 	["the lint command", "lint <note> --text", BOARD, "lint"],
 ];

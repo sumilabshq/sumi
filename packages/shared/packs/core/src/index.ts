@@ -160,7 +160,7 @@ export const corePack = definePack({
 			description: "Sets a value on this board.",
 			fields: TargetSchema,
 			target: "value",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(RowsCreateCommand, {
 			id: "@core/rows-create",
@@ -169,7 +169,7 @@ export const corePack = definePack({
 			description: "Adds a row to a list on this board.",
 			fields: TargetSchema,
 			target: "collection",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(RowsUpdateCommand, {
 			id: "@core/rows-update",
@@ -178,7 +178,7 @@ export const corePack = definePack({
 			description: "Rewrites a row of a list on this board.",
 			fields: TargetSchema,
 			target: "collection",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(RowsRemoveCommand, {
 			id: "@core/rows-remove",
@@ -187,7 +187,7 @@ export const corePack = definePack({
 			description: "Drops a row from a list on this board.",
 			fields: TargetSchema,
 			target: "collection",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(RowsReplaceCommand, {
 			id: "@core/rows-replace",
@@ -196,7 +196,7 @@ export const corePack = definePack({
 			description: "Writes a new set of rows over a list on this board.",
 			fields: TargetSchema,
 			target: "collection",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(RowsRepairIdsCommand, {
 			id: "@core/rows-repair-ids",
@@ -205,7 +205,7 @@ export const corePack = definePack({
 			description: "Gives a fresh id to every row of a list that shares one with another.",
 			fields: TargetSchema,
 			target: "collection",
-			consent: "vault-target",
+			consent: "free",
 		}),
 		defineCommandMetadata(FetchSendCommand, {
 			id: "@core/fetch-send",

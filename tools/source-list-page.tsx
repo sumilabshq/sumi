@@ -5,10 +5,13 @@ import { render } from "../packages/shared/core/src/engine/render.js";
 import { WidgetSurface } from "../packages/shared/core/src/surface.js";
 import { normalizeBoard } from "../packages/shared/core/src/model.js";
 import type { Board } from "../packages/shared/core/src/model.js";
-import type { BoardRegistry, SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
-import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
+import type { BoardRegistry } from "../packages/shared/core/src/surface/use-surface-shared.js";
 import { PROBE_VIEW } from "./vault-fixture.ts";
 import { elementAt, elementsAt, present } from "./page-dom.ts";
+import { definePack, registerPacks } from "../packages/shared/core/src/engine/packs.ts";
+import { IQuery } from "../packages/shared/core/src/gateway/queries.ts";
+import { defineGatewayMetadata } from "../packages/shared/core/src/gateway/implementation-metadata.ts";
+import { z } from "../packages/shared/core/src/gateway/declared.ts";
 
 const WIDGET = "@probe/counter";
 
@@ -29,6 +32,34 @@ const manifest = {
 	},
 } as const;
 
+const COUNTED_SOURCES = ["How many", "Sum", "Average", "Lowest", "Highest", "Share", "Streak", "Best streak"];
+
+class CountedNumberQuery extends IQuery.output(z.number()) {
+	constructor(readonly fields: object) {
+		super();
+	}
+
+	get(): number {
+		return 0;
+	}
+}
+
+registerPacks(
+	definePack({
+		id: "@counted",
+		title: "Counted",
+		queries: COUNTED_SOURCES.map((title, at) =>
+			defineGatewayMetadata(CountedNumberQuery, {
+				id: `@counted/source-${at}`,
+				title,
+				resource: "Statistics",
+				fields: z.object({}),
+			}),
+		),
+		commands: [],
+	}),
+);
+
 function Probe(): ReactElement {
 	return h("div", { className: "probe" }, "probe");
 }
@@ -39,12 +70,6 @@ const registry: BoardRegistry = {
 	tileRefOf: (id) => id,
 };
 
-const SLOT_THAT_DESCRIBES_NOTHING: VaultSlot = {
-	list: async () => ({ rows: [], total: 0 }),
-	get: async () => null,
-};
-
-const host: SurfaceHost = { ...PROBE_VIEW, slot: () => SLOT_THAT_DESCRIBES_NOTHING };
 const mount = present(elementAt(".wg-host"), ".wg-host");
 
 let board: Board = normalizeBoard({
@@ -58,7 +83,7 @@ function draw(): void {
 			boardNode: mount,
 			board,
 			registry,
-			host,
+			host: PROBE_VIEW,
 			editing: true,
 			initialWidth: mount.clientWidth,
 			onChange: (next) => {

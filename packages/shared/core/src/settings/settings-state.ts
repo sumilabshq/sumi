@@ -6,7 +6,6 @@ import { seenOf } from "../prop-visibility.js";
 import { barPlacement, CHROME } from "../settings-fit.js";
 import type { DialogFrame } from "../settings-fit.js";
 import { writtenText } from "./prop-writing.js";
-import { boundPath } from "./vault-paths.js";
 import type { MountStep, SettingsLook } from "./use-settings-look.js";
 import type { Place } from "./window-geometry.js";
 import type {
@@ -26,7 +25,6 @@ export type {
 	ChoiceOption,
 	PropSource,
 	SettingsContext,
-	SettingsDefault,
 	SettingsHost,
 	SettingsManifest,
 	SettingsRegistry,
@@ -49,7 +47,6 @@ export function settingsState({
 	look,
 	here,
 	geometry,
-	vaultFields,
 	boxValues,
 }: SettingsStateAsk): SettingsState {
 	const { path } = look.view;
@@ -65,7 +62,6 @@ export function settingsState({
 		enter: (step) => look.put({ path: [...path, step], tab: "settings", openRow: null, draft: "" }),
 		popTo: (depth) => look.put({ path: path.slice(0, depth), tab: "settings", openRow: null, draft: "" }),
 		...boardOptions(options, path),
-		vaultFields,
 		boxValues,
 		...viewState(look, here, options.place),
 		scale: geometry.scale,
@@ -107,14 +103,14 @@ function startingDraft(key: string, here: SettingsContext, place: Place): string
 function startingPropDraft(here: SettingsContext, name: string): string {
 	const spec = here.manifest.props?.[name];
 	const config = here.tile.props?.[name] ?? {};
-	if (bindingOf(spec, config).binding !== "hardcode") return boundPath(config);
+	if (bindingOf(spec, config).binding !== "hardcode") return "";
 	const held = typedIn(spec, config) ?? declaredOf(spec);
 	if (held === undefined || !spec) return "";
 	return writtenText(spec, held);
 }
 
 function boardOptions(options: SettingsWindowOptions, path: readonly MountStep[]): BoardOptions {
-	const { place, host, registry, columns, onDone, onDismiss, onResize, onCollapse, onExpand, countReaders, refs } =
+	const { place, host, registry, columns, onDone, onDismiss, onResize, onCollapse, onExpand, refs } =
 		options;
 	return {
 		place,
@@ -126,7 +122,6 @@ function boardOptions(options: SettingsWindowOptions, path: readonly MountStep[]
 		onResize,
 		onCollapse,
 		onExpand,
-		countReaders,
 		refs,
 		surface: path.length > 0 ? null : options.surface,
 	};

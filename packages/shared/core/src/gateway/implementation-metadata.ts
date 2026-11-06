@@ -59,7 +59,7 @@ export function defineGatewayMetadata<C extends Constructed>(
 
 export type CommandTargetKind = "collection" | "value";
 
-export type CommandConsent = "free" | "vault-target" | "always";
+export type CommandConsent = "free" | "always";
 
 export interface CommandMetadata<C extends Constructed = Constructed> {
 	readonly implementation: C;

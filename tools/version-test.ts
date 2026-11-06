@@ -288,17 +288,5 @@ const offer = {
 	check("and nothing of it reached the vault", vault.files.size, 0);
 }
 
-const { drawable } = await import("../apps/host-obsidian/src/legacy/widget-offers.js");
-
-const offered = (api: unknown) =>
-	drawable({ manifest: { id: "@demo/clock", api }, sources: { "widget.tsx": WIDGET }, path: "@demo/clock" });
-check("an offer inside the range is drawn on its card", Boolean(pathIn(offered(WIDGET_API), "component")), true);
-check("an offer outside it is never built", pathIn(offered(WIDGET_API + 1), "component") ?? null, null);
-check(
-	"and the card is handed the refusal, named, with both numbers",
-	String(pathIn(offered(WIDGET_API + 1), "error", "message") ?? ""),
-	`@demo/clock needs widget API ${WIDGET_API + 1}, and this Widgetarium provides ${WIDGET_API}.`,
-);
-
 console.log(failed ? `\nversion gate: ${failed} of ${checks} failed` : `\nversion gate: clean, ${checks} checks`);
 process.exit(failed ? 1 : 0);

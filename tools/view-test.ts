@@ -1,9 +1,11 @@
 import { pathToFileURL } from "node:url";
 
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
-import { stage, widgetFiles, WIDGETS_AT } from "./harness.ts";
+import { stage, TASK_ROWS, widgetFiles, WIDGETS_AT } from "./harness.ts";
 
 export { stage, widgetFiles, WIDGETS_AT };
+
+const TASK_NOTES = TASK_ROWS.map(({ title, status, order, ...note }) => ({ ...note, props: { title, status, order } }));
 
 const PROBE = `import { IValueGateway, createWidget, defineLayout, defineMetadata, z } from "widgetarium";
 const Probe = createWidget({
@@ -77,7 +79,7 @@ const GROUPED = {
 			widget: "@default/view-group",
 			settings: { views: `${KANBAN}, ${ARCHIVED}` },
 			mounted: {
-				[KANBAN]: { props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } } },
+				[KANBAN]: { props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } } },
 			},
 		},
 	],
@@ -96,7 +98,7 @@ const STRIPPED = {
 			widget: "@default/view-group",
 			settings: { views: `${KANBAN}, ${ARCHIVED}` },
 			mounted: {
-				[KANBAN]: { props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } } },
+				[KANBAN]: { props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } } },
 			},
 		},
 	],
@@ -115,7 +117,7 @@ const LOOSE = {
 			id: "board",
 			widget: KANBAN,
 			settings: { columns: "To Do, Doing, Done" },
-			props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } },
+			props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } },
 		},
 	],
 	layout: rowsOver("board"),
@@ -143,7 +145,7 @@ const STUCK = {
 			id: "board",
 			widget: KANBAN,
 			settings: { columns: "To Do, Doing, Done" },
-			props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } },
+			props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } },
 		},
 		{ id: "filters", widget: "@default/filter-panel" },
 	],
@@ -368,12 +370,13 @@ async function gate() {
 		[{ name: "One", board: "one" }],
 	);
 
+	const BOARDS_URL = "https://boards.test/list.json";
 	const BOUND = {
 		tiles: [
 			{
 				id: "boards",
 				widget: "@default/editable-tabs",
-				props: { getTabs: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Boards" } } },
+				props: { getTabs: { implementation: "@core/fetch-rows", fields: { url: BOARDS_URL } } },
 			},
 		],
 		layout: kept([{ id: "boards", height: 56 }]),
@@ -389,7 +392,7 @@ async function gate() {
 		{ name: "named", click: ".wg-set-pop textarea", type: 'name: "Solo"' },
 		{ name: "applied", click: ".wg-set-pop button", said: "Apply" },
 		{ name: "backSources", click: SOURCES_BUTTON },
-		{ name: "back", click: SOURCE_ROW, saying: "Notes in it" },
+		{ name: "back", click: SOURCE_ROW, saying: "A JSON list" },
 		{ name: "againSources", click: SOURCES_BUTTON },
 		{ name: "again", click: SOURCE_ROW, saying: "Typed here" },
 		{ name: "done", click: ".wg-set-head button", said: "Done" },
@@ -400,29 +403,26 @@ async function gate() {
 		SWITCH_KIND.map((step) => at(switched, step.name, "pressed")),
 		SWITCH_KIND.map(() => true),
 	);
-	check("a folder-bound strip draws the notes it lists", Number(at(switched, "arrival", "strip", "length")) > 0, true);
 	check("the prop names no source until its source button is pressed", at(switched, "opened", "kinds"), []);
 	check(
 		"the source list offers every place the rows can live on a board of one tile",
 		at(switched, "sources", "kinds"),
-		["Typed here", "Notes in it", "Notes with a tag", "Notes matching words", "A JSON list"],
+		["Typed here", "A JSON list"],
 	);
 	check(
 		"and the same source says the same thing whichever kind it is bound to",
 		[at(switched, "opened", "popHint"), at(switched, "opened", "popHint") === at(typed, "opened", "popHint")],
 		["Every tab is a record. A folder makes each a note; a typed list lives in this tile.", true],
 	);
-	check("the typed list draws instead of the folder", at(switched, "applied", "strip"), ["Solo"]);
-	check("going back to the folder brings its notes again", Number(at(switched, "back", "strip", "length")) > 1, true);
+	check("the typed list draws instead of the JSON list", at(switched, "applied", "strip"), ["Solo"]);
 	check(
 		"and coming back finds the typed list where it was left",
 		[at(switched, "again", "strip"), at(switched, "again", "popRows")],
 		[["Solo"], ["Solo", "Add item"]],
 	);
 	check("both live in the tile, and only one of them is read", at(switched, "done", "tiles", "0", "props", "getTabs"), {
-		allow: ["list", "get"],
 		implementation: "@core/typed-rows",
-		fields: { path: "Orbitask/Boards", rows: [{ name: "Solo" }] },
+		fields: { url: BOARDS_URL, rows: [{ name: "Solo" }] },
 	});
 	check("the strip draws the typed list at the end", at(switched, "done", "strip"), ["Solo"]);
 	check(
@@ -446,7 +446,7 @@ async function gate() {
 				id: "filters",
 				widget: "@default/filter-panel",
 				props: {
-					getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } },
+					getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_NOTES } },
 					getGroups: { implementation: "@core/typed-rows", fields: { rows: [{ prop: "status", label: "Stage" }] } },
 					getOpenGroup: { implementation: "@core/typed-value", fields: { value: "status" } },
 				},
@@ -519,7 +519,7 @@ async function gate() {
 				id: "board",
 				widget: KANBAN,
 				settings: { columns: "To Do, Doing, Done" },
-				props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } },
+				props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } },
 			},
 		],
 		layout: kept([
@@ -550,9 +550,9 @@ async function gate() {
 	);
 	check("the Where list offers a way to add one", listAt(built, "data", "rows").includes("Add condition"), true);
 	check(
-		"the first step offers the properties the notes carry, and says what it wants",
+		"the first step offers the properties the rows carry, and says what it wants",
 		[at(built, "adding", "popItems"), at(built, "adding", "popNote")],
-		[["order", "status", "title"], "Which property of the data are we looking at?"],
+		[["board", "id", "name", "order", "status", "title"], "Which property of the data are we looking at?"],
 	);
 	check(
 		"the second offers the conditions that property takes, and says what it wants",
@@ -649,7 +649,7 @@ async function gate() {
 				id: "filters",
 				widget: "@default/filter-panel",
 				props: {
-					getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } },
+					getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_NOTES } },
 					getGroups: { implementation: "@core/typed-rows", fields: { rows: [{ prop: "status", label: "Stage" }] } },
 				},
 			},
@@ -704,7 +704,7 @@ async function gate() {
 				mounted: {
 					Kanban: {
 						widget: KANBAN,
-						props: { getTasks: { implementation: "@obsidian/folder", fields: { path: "Orbitask/Tasks" } } },
+						props: { getTasks: { implementation: "@core/typed-rows", fields: { rows: TASK_ROWS } } },
 					},
 				},
 			},
@@ -777,9 +777,9 @@ async function gate() {
 	);
 	check("and the widget in it is the very tile it always was", at(heldBox, "of", "0", "id"), "group:Kanban");
 	check(
-		"which is why the folder it reads never moved",
-		at(tileIn(renamed, "typed", "group:Kanban"), "props", "getTasks", "fields", "path"),
-		"Orbitask/Tasks",
+		"which is why the rows it reads never moved",
+		Number(at(tileIn(renamed, "typed", "group:Kanban"), "props", "getTasks", "fields", "rows", "length")),
+		TASK_ROWS.length,
 	);
 	check("an edited note is written", Number(at(renamed, "typed", "writes")) > 0, true);
 

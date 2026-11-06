@@ -16,7 +16,6 @@ An npm-workspaces monorepo. Dependencies point one way: the app uses core, core 
 
 | Folder                                         | What it is                                                                | Licence      |
 | ---------------------------------------------- | ------------------------------------------------------------------------- | ------------ |
-| [`apps/host-obsidian`](apps/host-obsidian)     | The Obsidian plugin: mounts core in a note and gives it the vault         | FSL-1.1-ALv2 |
 | [`packages/shared/core`](packages/shared/core) | The board engine: layout tree, widget build and install, gateways, render | FSL-1.1-ALv2 |
 | [`packages/shared/kit`](packages/shared/kit)   | The component kit every widget and screen is drawn with                   | MIT          |
 | [`packages/shared/sdk`](packages/shared/sdk)   | The types a widget is written against                                     | FSL-1.1-ALv2 |
@@ -29,12 +28,6 @@ An npm-workspaces monorepo. Dependencies point one way: the app uses core, core 
 ```bash
 npm install
 ```
-
-```bash
-npm run dev
-```
-
-`dev` builds the plugin with a sourcemap and copies it into the vault; `npm run install-vault` does the same with a production build. The vault defaults to the author's; point elsewhere with `WG_VAULT=/path/to/vault`. After an install, reload the plugin in Obsidian with the command **Widgetarium: Reload plugin**.
 
 ```bash
 npm test
@@ -101,6 +94,5 @@ Two licences, one per folder. [LICENSE](LICENSE) is the map.
 | `registry/`             | [MIT](registry/LICENSE)                      |
 | `packages/shared/core/` | [FSL-1.1-ALv2](packages/shared/core/LICENSE) |
 | `packages/shared/sdk/`  | [FSL-1.1-ALv2](packages/shared/sdk/LICENSE)  |
-| `apps/host-obsidian/`   | [FSL-1.1-ALv2](apps/host-obsidian/LICENSE)   |
 
 The kit and the widgets are MIT so they can be copied into any project, including a commercial one. The FSL folders may be used, changed and shared for any purpose except a Competing Use: offering them, or something substantially similar built from them, as a commercial product or service. Each version becomes Apache 2.0 two years after its release. To build a competing product, contact the author for a commercial license.

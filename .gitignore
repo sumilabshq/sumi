@@ -1,11 +1,7 @@
 node_modules
-/apps/host-obsidian/main.js
-/apps/host-obsidian/main.js.map
-/apps/host-obsidian/gpu/
 
 .DS_Store
 .obsidian/
-/apps/host-obsidian/data.json
 /export/
 /*.png
 .omc/

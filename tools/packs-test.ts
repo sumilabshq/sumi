@@ -1,31 +1,12 @@
-import type { ImplementationPorts, NetworkAsk, VaultNote } from "../packages/shared/core/src/engine/packs.ts";
+import type { ImplementationPorts, NetworkAsk } from "../packages/shared/core/src/engine/packs.ts";
 import {
 	definePack,
 	registeredCommands,
 	registeredQueries,
 	shutPortsOf,
 } from "../packages/shared/core/src/engine/packs.ts";
-import { handlerContextOf } from "../packages/shared/core/src/gateway/handler-context.ts";
-import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.ts";
-import { NO_STUDIO_STATE } from "../packages/shared/core/src/engine/studio-state-port.ts";
-import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
 import { sourcesFor } from "../packages/shared/core/src/engine/host-gateways.ts";
-import { arrayGateway } from "../packages/shared/core/src/gateway/create.ts";
-import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.ts";
 import { FetchRowsQuery, FetchSendCommand, FetchValueQuery } from "../packages/shared/packs/core/src/index.ts";
-import {
-	FileSetCommand,
-	FolderCreateCommand,
-	FolderPageQuery,
-	FolderRemoveCommand,
-	FolderUpdateCommand,
-	OpenCommand,
-	SearchQuery,
-	TagQuery,
-} from "../packages/shared/packs/obsidian/src/index.ts";
-import { BreakdownQuery, NumberQuery, SeriesQuery, StreakQuery } from "../packages/shared/packs/stats/src/index.ts";
-import { PushCommand } from "../packages/shared/packs/git/src/commands.ts";
 
 let failed = 0;
 function check(what: string, got: unknown, wanted: unknown): void {
@@ -46,49 +27,8 @@ async function refusalOf(run: () => Promise<unknown>): Promise<string> {
 }
 
 const asked: [string, NetworkAsk][] = [];
-const written: unknown[][] = [];
-const opened: string[] = [];
-const NOTES: readonly VaultNote[] = [
-	{ path: "Tasks/a.md", name: "a", props: { title: "Water", tags: ["home"] } },
-	{ path: "Tasks/b.md", name: "b", props: { title: "Pay rent" } },
-];
-const slot: VaultSlot = {
-	canCreate: true,
-	canUpdate: true,
-	canRemove: true,
-	list: async () => ({ rows: [], total: 0 }),
-	get: async () => null,
-	create: async (draft) => {
-		written.push(["create", draft]);
-		return null;
-	},
-	update: async (address, patch) => {
-		written.push(["update", address, patch]);
-		return null;
-	},
-	remove: async (address) => {
-		written.push(["remove", address]);
-		return null;
-	},
-};
-const days = arrayGateway(
-	[
-		{ date: "2026-10-01", done: 2, area: "home" },
-		{ date: "2026-10-01", done: 1, area: "work" },
-		{ date: "2026-10-02", done: 4, area: "home" },
-	],
-	{},
-	"packs-test/days",
-);
-let isConfirmed = false;
 const portsOf = (answer: string, status = 200): ImplementationPorts => ({
-	self: "t1/probe",
-	catalogue: NO_CATALOGUE_PORT,
-	studio: NO_STUDIO_HOST,
-	studioState: NO_STUDIO_STATE,
-	assistant: NO_ASSISTANT,
-	commandLine: { can: false, run: async () => ({ ok: false, output: "", failure: "none" }) },
-	workingDirectory: undefined,
+	...shutPortsOf("t1/probe"),
 	network: {
 		can: true,
 		request: async (url, ask) => {
@@ -96,24 +36,6 @@ const portsOf = (answer: string, status = 200): ImplementationPorts => ({
 			return { status, text: answer };
 		},
 	},
-	vault: {
-		can: true,
-		folder: (path) => {
-			written.push(["folder", path]);
-			return slot;
-		},
-		notesTagged: async (tag) => NOTES.filter((note) => JSON.stringify(note.props["tags"] ?? []).includes(tag)),
-		notesMatching: async (text) =>
-			NOTES.filter((note) => JSON.stringify(note.props).toLowerCase().includes(text.toLowerCase())),
-		open: (path) => void opened.push(path),
-	},
-	refs: {
-		read: async () => null,
-		watch: () => () => {},
-		get: (ref) => (ref === "t1/days" ? days : null),
-		described: () => null,
-	},
-	confirm: async () => isConfirmed,
 });
 
 const json = JSON.stringify({ data: { items: [{ title: "One" }, { title: "Two" }, { title: "Three" }], count: 3 } });
@@ -152,106 +74,9 @@ check("fetch-send posts what it was sent as JSON", asked.at(-1), [
 	{ method: "POST", body: '{"note":"hi"}', headers: { "content-type": "application/json" } },
 ]);
 
-const tagged = await new TagQuery({ tag: "#home" }, portsOf("")).list();
-check(
-	"tag lists the notes carrying it, as rows with their properties",
-	tagged.rows.map((row) => [row.ref, row["title"]]),
-	[["Tasks/a.md", "Water"]],
-);
-check(
-	"search matches a property",
-	(await new SearchQuery({ text: "rent" }, portsOf("")).list()).rows.map((row) => row.ref),
-	["Tasks/b.md"],
-);
-check("an empty search lists nothing", (await new SearchQuery({ text: " " }, portsOf("")).list()).total, 0);
-
-written.length = 0;
-await new FolderCreateCommand({ path: "Tasks" }, portsOf("")).run({ name: "c", title: "New", body: "text" });
-await new FolderUpdateCommand({ path: "Tasks" }, portsOf("")).run({ ref: "Tasks/a.md", title: "Water plants" });
-await new FolderRemoveCommand({ path: "Tasks" }, portsOf("")).run({ ref: "Tasks/b.md" });
-await new FileSetCommand({ path: "Tasks/a.md", field: "done" }, portsOf("")).run(true);
-check("folder and file commands write through the folder slot", written, [
-	["folder", "Tasks"],
-	["create", { name: "c", props: { title: "New" }, body: "text" }],
-	["folder", "Tasks"],
-	["update", { path: "Tasks/a.md" }, { props: { title: "Water plants" } }],
-	["folder", "Tasks"],
-	["remove", { path: "Tasks/b.md" }],
-	["folder", "Tasks"],
-	["update", { path: "Tasks/a.md" }, { props: { done: true } }],
-]);
-check(
-	"a folder command with no folder asks for one",
-	await refusalOf(() => new FolderCreateCommand({}, portsOf("")).run({ name: "x" })),
-	"no folder: type its path in the settings window",
-);
-new OpenCommand({}, portsOf("")).run({ ref: "Tasks/a.md" });
-check("open opens the note it was sent", opened, ["Tasks/a.md"]);
-
-check(
-	"a number over another widget's rows",
-	await new NumberQuery({ rows: "t1/days", algorithm: "sum", field: "done" }, portsOf("")).get(),
-	7,
-);
-const series = await new SeriesQuery({ rows: "t1/days", measure: "sum", field: "done" }, portsOf("")).list();
-check(
-	"a series sums per day, oldest first",
-	series.rows.map((row) => [row.date, row.value]),
-	[
-		["2026-10-01", 3],
-		["2026-10-02", 4],
-	],
-);
-const shares = await new BreakdownQuery({ rows: "t1/days", groupBy: "area" }, portsOf("")).list();
-check(
-	"a breakdown counts per value with its share",
-	shares.rows.map((row) => [row.label, row.value, row.share]),
-	[
-		["home", 2, 0.667],
-		["work", 1, 0.333],
-	],
-);
-check("a streak answers its longest run", (await new StreakQuery({ rows: "t1/days" }, portsOf("")).get()).best, 2);
-check(
-	"a stat over no list asks for one",
-	await refusalOf(() => new NumberQuery({}, portsOf("")).get()),
-	"no list: pick the widget whose rows are counted in the settings window",
-);
-
-isConfirmed = false;
-check(
-	"a push nobody confirms sends nothing",
-	await refusalOf(() => new PushCommand({}, portsOf("")).run(undefined)),
-	"the push was not confirmed, so nothing was sent",
-);
-
 const listed = (spec: Parameters<typeof sourcesFor>[0]): string[] => sourcesFor(spec).map((entry) => entry.id);
 const forTitles = listed({ kind: "collection", describes: { title: { type: "line" } } });
-check(
-	"a list of titles is offered sources of any shape, not commits",
-	[forTitles.includes("@obsidian/tag"), forTitles.includes("@core/fetch-rows"), forTitles.includes("@git/commits")],
-	[true, true, false],
-);
-check(
-	"a list reading sha and subject is offered commits",
-	listed({ kind: "collection", describes: { sha: { type: "line" }, subject: { type: "line" } } }).includes(
-		"@git/commits",
-	),
-	true,
-);
-const forNumber = listed({ kind: "value", type: "number" });
-check(
-	"a number prop is offered one number, not a branch",
-	[forNumber.includes("@stats/number"), forNumber.includes("@git/current-branch")],
-	[true, false],
-);
-check(
-	"every pack is registered under its own name",
-	["@core", "@obsidian", "@stats", "@git"].map((pack) =>
-		[...registeredQueries(), ...registeredCommands()].some((entry) => entry.id.startsWith(`${pack}/`)),
-	),
-	[true, true, true, true],
-);
+check("a list of titles is offered fetched rows", forTitles.includes("@core/fetch-rows"), true);
 
 const everyId = [...registeredQueries(), ...registeredCommands()].map((entry) => entry.id);
 check(
@@ -262,8 +87,8 @@ check(
 check(
 	"and a pack naming one id twice is refused",
 	await refusalOf(async () => {
-		const [count] = registeredQueries().filter((entry) => entry.id === "@stats/count");
-		if (!count) throw new Error("no count to name twice");
+		const [count] = registeredQueries().filter((entry) => entry.id === "@core/typed-value");
+		if (!count) throw new Error("no typed value to name twice");
 		definePack({
 			id: "@twice",
 			title: "Twice",
@@ -275,53 +100,6 @@ check(
 		});
 	}),
 	"@twice/count names two implementations of one pack",
-);
-
-console.log("\n— the folder answers pages —");
-const folderNotes = arrayGateway(
-	Array.from({ length: 7 }, (_, at) => ({
-		ref: `Tasks/${at}.md`,
-		value: { path: `Tasks/${at}.md`, status: at % 2 === 0 ? "open" : "done" },
-	})),
-);
-const folderPages = new FolderPageQuery(folderNotes);
-const openContext = handlerContextOf(shutPortsOf("pages"), new AbortController().signal);
-const openFirst = await folderPages.query(
-	{ limit: 2, where: [{ prop: "status", op: "eq", value: "open" }] },
-	openContext,
-);
-const openSecond = await folderPages.query(
-	{ limit: 2, cursor: openFirst.next, where: [{ prop: "status", op: "eq", value: "open" }] },
-	openContext,
-);
-check(
-	"a page holds only the rows its filter keeps, and its cursor is the offset where the next one starts",
-	[
-		openFirst.items.map((row) => row.ref),
-		openFirst.next,
-		openFirst.total,
-		openSecond.items.map((row) => row.ref),
-		openSecond.next,
-	],
-	[["Tasks/0.md", "Tasks/2.md"], "2", 4, ["Tasks/4.md", "Tasks/6.md"], null],
-);
-const newestFirst = await folderPages.query({ limit: 2, sort: [{ prop: "path", dir: "desc" }] }, openContext);
-check(
-	"a page is cut from the rows in the order its sort asks",
-	newestFirst.items.map((row) => row.ref),
-	["Tasks/6.md", "Tasks/5.md"],
-);
-check(
-	"a cursor that is not an offset is refused, not read as the first page",
-	await refusalOf(() => folderPages.query({ limit: 2, cursor: "two" }, openContext)),
-	'a cursor of this page is an offset, written in digits; "two" is not one',
-);
-const stopped = new AbortController();
-stopped.abort();
-check(
-	"a read whose asker is gone stops instead of answering",
-	await refusalOf(() => folderPages.query({ limit: 2 }, handlerContextOf(shutPortsOf("pages"), stopped.signal))),
-	"This operation was aborted",
 );
 
 console.log(`\n${failed === 0 ? "packs: clean" : `packs: ${failed} failed`}`);

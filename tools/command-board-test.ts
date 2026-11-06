@@ -84,16 +84,7 @@ const registry = {
 	get: (id: string) => (id === ID ? { manifest, component: TaskBoard, module } : null),
 	list: () => [{ manifest }],
 };
-const slot = {
-	canCreate: true,
-	canUpdate: true,
-	canRemove: true,
-	canSubscribe: false,
-	list: async () => ({ rows: [], total: 0 }),
-	update: async () => null,
-	describe: async () => [],
-};
-const host = { platform: "test", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
+const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 
 let board: Board = normalizeBoard({
 	tiles: [
@@ -116,7 +107,7 @@ const draw = (): void =>
 			boardNode: mount,
 			board,
 			registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-			host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+			host: standIn<SurfaceHost>(host, ["ui"], "host"),
 			editing: false,
 			initialWidth: 1280,
 			onChange: (next: Board) => {
@@ -203,18 +194,7 @@ const withProps = (props: Tile["props"]): void => {
 	board = { ...board, tiles: board.tiles.map((tile) => ({ ...tile, props: { ...tile.props, ...props } })) };
 	draw();
 };
-const moveInVault = { implementation: "@core/rows-update", fields: { target: "t1/tasks" } };
-withProps({ tasks: { implementation: "@obsidian/folder", fields: { path: "Tasks" } }, move: moveInVault });
-await tick();
-check("a command over a vault list stays shut until it is switched on", last().move.can(), {
-	can: false,
-	reason: '"move" writes the vault, which stays shut until it is switched on in the Data tab',
-});
-withProps({ move: { ...moveInVault, allow: ["run"] } });
-await tick();
-check("and opens once the Data tab switches it on", last().move.can(), { can: true });
-withProps({ tasks: typedTasks, move: moveInVault });
-await tick();
+const moveRows = { implementation: "@core/rows-update", fields: { target: "t1/tasks" } };
 
 registerTestPack();
 const packedMove = { implementation: "@test/move", fields: { prefix: "x-" } };
@@ -259,7 +239,7 @@ check(
 	[true, "stamp answered an output its schema refuses"],
 );
 check("and both refused outputs came after the handler ran", packStamps, ["abcdefg", "ab", "abc"]);
-withProps({ tasks: typedTasks, move: moveInVault });
+withProps({ tasks: typedTasks, move: moveRows });
 await tick();
 
 const unbound = Object.fromEntries(Object.entries(board.tiles[0]?.props ?? {}).filter(([name]) => name !== "move"));
@@ -299,7 +279,7 @@ const drawEditing = (): void =>
 			boardNode: mount,
 			board,
 			registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-			host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+			host: standIn<SurfaceHost>(host, ["ui"], "host"),
 			editing: isEditing,
 			initialWidth: 1280,
 			onChange: (next: Board) => {

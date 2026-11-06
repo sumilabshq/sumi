@@ -46,7 +46,7 @@ const NOTHING_THERE = "nothing stands there any more, so its surface was left al
 export function surfaceChoicesAt(layout: BoxNode, path: NodePath, widgetOf: WidgetOf = NO_WIDGETS): SurfaceChoice[] {
 	const already = wrongNow(layout, widgetOf);
 	const side = nodeAt(layout, path)?.side;
-	return SURFACES.map((surface) => ({
+	return SURFACES.map((surface: SurfaceWord) => ({
 		surface,
 		refusal: introducedFinding(layout, path, { surface, side }, { already, widgetOf }),
 	}));

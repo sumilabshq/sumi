@@ -1,6 +1,5 @@
 import { useRef } from "react";
-import { hostGatewayFor, refsOfFields } from "../engine/host-gateways.js";
-import { isVaultImplementation } from "../gateway/props.js";
+import { refsOfFields } from "../engine/host-gateways.js";
 import { whereOf } from "../engine/held-reading.js";
 import type { EngineManifest } from "../engine/catalogue-index.js";
 import { isObject } from "../engine/is-object.js";
@@ -79,7 +78,6 @@ function publishGateways(
 				title: textOr(manifest, "title", manifest.id),
 				kind: textOr(gateway, "kind", "collection"),
 				shape: textOr(spec, "shape", "value"),
-				isVault: isVaultImplementation(hostGatewayFor(hostSpec, config)?.id),
 			},
 			dependsOn: leansOn,
 		});

@@ -2,7 +2,7 @@ import { propConfig } from "../model.js";
 import type { Tile, TileProp } from "../model.js";
 import type { FormEvent, FunctionComponent } from "react";
 import { Input, TextArea } from "@widgetarium/kit";
-import { declaredOf, isVaultImplementation } from "../gateway/props.js";
+import { declaredOf } from "../gateway/props.js";
 import type { SettingsSpec, TilePatch } from "./settings-state.js";
 
 export interface TypedControlProps {
@@ -74,11 +74,7 @@ export function writeProp(
 ): void {
 	const formerNames = namesIn(spec?.aka);
 	const kept = Object.entries(state.tile.props ?? {}).filter(([propName]) => !formerNames.includes(propName));
-	const consented =
-		isVaultImplementation(config.implementation) && config.allow === undefined
-			? { ...config, allow: [...(spec?.writes ?? [])] }
-			: config;
-	state.onPatch({ props: { ...Object.fromEntries(kept), [key]: consented } });
+	state.onPatch({ props: { ...Object.fromEntries(kept), [key]: config } });
 }
 
 function namesIn(aka: unknown): readonly unknown[] {

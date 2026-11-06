@@ -15,7 +15,6 @@ export function queryPortsOf(context: HostGatewayContext, isDeclaredSource: bool
 		kept: keptPortOf(context),
 		screen: { cell: cellFor },
 		page: { param: (key) => pageParamOf(host.pageParamsKey ?? host.notePath, key) },
-		notes: host,
 	};
 }
 

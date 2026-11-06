@@ -4,7 +4,7 @@ Two kinds of code predate these rules. Both leave by rewrite, one package at a t
 
 ## `legacy/` folders
 
-Code written before any of these rules lives in a `legacy/` folder inside the app or host that runs it: `apps/studio/src/legacy/`, `apps/host-obsidian/src/legacy/`. It works as it does today; it is moved there, not changed.
+Code written before any of these rules lives in a `legacy/` folder inside the app or host that runs it: `apps/studio/src/legacy/`. It works as it does today; it is moved there, not changed.
 
 | Rule                                                                              | Why                                                   |
 | --------------------------------------------------------------------------------- | ----------------------------------------------------- |

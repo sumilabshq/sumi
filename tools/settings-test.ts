@@ -314,7 +314,7 @@ console.log("\n— and the panel writes what it draws —");
 				kind: "collection",
 				label: "Tasks",
 				writes: ["list", "create", "update", "remove"],
-				default: { path: "Orbitask/Tasks" },
+				default: { rows: [] },
 			},
 			boards: {
 				kind: "collection",
@@ -343,15 +343,7 @@ console.log("\n— and the panel writes what it draws —");
 			id === KANBAN_ID ? { manifest, component: Leaf } : { manifest: { id, title: id }, component: Leaf },
 		list: () => [{ manifest }, { manifest: fitting }, { manifest: misfit }],
 	};
-	const slot = {
-		canCreate: true,
-		canUpdate: true,
-		canRemove: true,
-		canSubscribe: false,
-		list: async () => ({ rows: [], total: 0 }),
-		describe: async () => [],
-	};
-	const host = { platform: "test", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 
 	let board = normalizeBoard({
 		tiles: [{ id: "t1", widget: KANBAN_ID }],
@@ -364,7 +356,7 @@ console.log("\n— and the panel writes what it draws —");
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -467,18 +459,6 @@ console.log("\n— and the panel writes what it draws —");
 	);
 	check("and it opened no popover to do it", Boolean(find(OPEN_POP + " input")), false);
 
-	await press(rowSaying("Tasks"));
-	const path = find(OPEN_POP + " input");
-	inputOf(path).value = "Orbitask/Archive";
-	inputOf(path).dispatchEvent(new dom.window.Event("input", { bubbles: true }));
-	await tick();
-	await press(all(OPEN_POP + " button").find((button) => button.textContent.trim() === "Apply"));
-	check(
-		"the source folder is written to the draft",
-		rowSaying("Tasks")?.textContent.includes("Orbitask/Archive"),
-		true,
-	);
-
 	await press(rowSaying("Card"));
 	const request = CATALOGUE_REQUESTS.current();
 	check("pressing the slot row asks the sidebar catalogue to fill it", request?.mode, "fill");
@@ -533,12 +513,12 @@ console.log("\n— and the panel writes what it draws —");
 	const canRow = (name: string) => all(".wg-set-panel .wg-kit-row").find((row) => row.textContent.startsWith(name));
 	check(
 		"the Data tab reports what the source can do",
-		canRow("Create")?.textContent.includes("Orbitask/Archive"),
+		canRow("Create")?.textContent.includes("this widget's own list"),
 		true,
 	);
 	const switchOf = (name: string) => canRow(name)?.querySelector('[role="switch"]');
 	check(
-		"and binding the folder switched on every verb the widget uses",
+		"and every verb the widget uses is switched on",
 		switchOf("Create")?.getAttribute("aria-checked"),
 		"true",
 	);
@@ -555,42 +535,6 @@ console.log("\n— and the panel writes what it draws —");
 	// CONTEXT: the kit took the row, so the class the old list rules were scoped under is never drawn
 	check("nothing in the window draws a .wg-set-list", all(".wg-set-list").length, 0);
 	check("and the rows it would have styled are drawn all the same", all(".wg-set-row").length > 0, true);
-
-	const groupSaying = (label: string) =>
-		all(".wg-set-group").find((node) => node.querySelector(".wg-kit-side-label")?.textContent === label);
-	const boards = groupSaying("What Boards can do");
-	check(
-		"a source with no folder reports every action off together",
-		[...present(boards, "What Boards can do").querySelectorAll('[role="switch"]')].every(
-			(toggle) => toggle.getAttribute("aria-checked") === "false",
-		),
-		true,
-	);
-	check(
-		"and says why, once, above them",
-		present(boards, "What Boards can do").querySelector(".wg-kit-row")?.textContent.includes("nowhere"),
-		true,
-	);
-
-	await press(tab("Settings"));
-	await press(rowSaying("Tasks"));
-	const cleared = find(OPEN_POP + " input");
-	inputOf(cleared).value = "";
-	inputOf(cleared).dispatchEvent(new dom.window.Event("input", { bubbles: true }));
-	await tick();
-	await press(all(OPEN_POP + " button").find((button) => button.textContent.trim() === "Apply"));
-	check(
-		"clearing it names no folder, because a default is never a path",
-		rowSaying("Tasks")?.textContent.includes("Orbitask/Tasks"),
-		false,
-	);
-	check("and the row says the difference out loud", Boolean(rowSaying("Tasks")?.classList.contains("is-unset")), true);
-	await press(tab("Data"));
-	check(
-		"so the actions stay on, because the default is the folder now",
-		canRow("Create")?.textContent.includes("Orbitask/Tasks"),
-		true,
-	);
 
 	await press(tab("Design"));
 	check("the Design tab counts no cells, because a tree cell has none to count", Boolean(rowSaying("Width")), false);
@@ -628,8 +572,6 @@ console.log("\n— and the panel writes what it draws —");
 
 	await press(all(".wg-set-head button").find((button) => button.textContent.trim() === "Done"));
 	check("Done saves the typed value", typedFieldOf(propOf(tileOf(board, 0).props, "groupBy"), "value"), "assignee");
-	// the section cleared this field on purpose, and an empty own path is what falls back
-	check("and the cleared source, still cleared", typedFieldOf(propOf(tileOf(board, 0).props, "tasks"), "path"), "");
 	check("and the slot that was picked", heldOf(tileOf(board, 0).slots, "card").widget, OTHER_ID);
 	// CONTEXT: this file's check stringifies, so two objects always match — the comparison must be text
 	check(
@@ -658,15 +600,15 @@ console.log("\n— and the panel writes what it draws —");
 		const before = JSON.stringify(serializeBoard(board));
 		await press(find('.wg-tile-actions button[aria-label="Settings"]'));
 		await press(tab("Settings"));
-		await press(rowSaying("Tasks"));
+		await press(rowSaying("Group tasks by"));
 		const elsewhere = find(OPEN_POP + " input");
-		inputOf(elsewhere).value = "Orbitask/Elsewhere";
+		inputOf(elsewhere).value = "elsewhere";
 		inputOf(elsewhere).dispatchEvent(new dom.window.Event("input", { bubbles: true }));
 		await tick();
 		await press(all(OPEN_POP + " button").find((button) => button.textContent.trim() === "Apply"));
 		check(
 			"the window shows the change while it is open",
-			rowSaying("Tasks")?.textContent.includes("Orbitask/Elsewhere"),
+			rowSaying("Group tasks by")?.textContent.includes("elsewhere"),
 			true,
 		);
 		check("and the board on disk has not moved", JSON.stringify(serializeBoard(board)), before);
@@ -775,15 +717,7 @@ console.log("\n— an unfed child is a level of its own, and the trail is the wa
 		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
 		list: () => Object.values(shelf).map((manifest) => ({ manifest })),
 	};
-	const slot = {
-		canCreate: true,
-		canUpdate: true,
-		canRemove: true,
-		canSubscribe: false,
-		list: async () => ({ rows: [], total: 0 }),
-		describe: async () => [],
-	};
-	const host = { platform: "test", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 
 	// TWO TILES OF ONE WIDGET, because that is the shape the stale-board closure was said to eat
 	let board = normalizeBoard({
@@ -810,7 +744,7 @@ console.log("\n— an unfed child is a level of its own, and the trail is the wa
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1003,7 +937,7 @@ console.log("\n— an unfed child is a level of its own, and the trail is the wa
 
 	// THE AFFORDANCE IS NOT BEHIND A HOVER. Gutenberg shipped that, called it a mistake, and was
 	// still adding a back button to it five years later.
-	const sheet = readFileSync(new URL("../apps/host-obsidian/styles.css", import.meta.url), "utf8");
+	const sheet = readFileSync(new URL("../packages/shared/core/board.css", import.meta.url), "utf8");
 	const hoverGated = sheet
 		.split("}")
 		.map((block) => present(block.split("{")[0], "selector"))
@@ -1092,7 +1026,7 @@ console.log("\n— a tile that was skipped by the memo still writes onto the boa
 	// CONTEXT: one definition object, or every tile redraws and the memo is never exercised
 	const definition = { manifest, component: Probe };
 	const registry = { get: (id: string) => (id === PROBE_ID ? definition : null), list: () => [{ manifest }] };
-	const host = { platform: "test", can: {}, slot: () => null, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 
 	let board = normalizeBoard({
 		tiles: [
@@ -1113,7 +1047,7 @@ console.log("\n— a tile that was skipped by the memo still writes onto the boa
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1157,129 +1091,10 @@ console.log("\n— a tile that was skipped by the memo still writes onto the boa
 	render(null, mount);
 }
 
-console.log("\n— a folder's readers are counted by the widget in the record, not by its key —");
+console.log("\n— a prop renamed in the manifest still finds the value the tile chose —");
 {
-	// THE KEY IS NO LONGER A WIDGET ID, so counting readers by parsing it can only ever answer
-	// zero for everything mounted. Nothing covered this line before, which is why it stayed.
-	const FOLDER = "Notes/Tasks";
-	const READER_ID = "@test/reader";
-	const GROUP_ID = "@test/group";
-	const shelf: Readonly<Record<string, object>> = {
-		[READER_ID]: {
-			id: READER_ID,
-			title: "Reader",
-			props: { rows: { kind: "collection", label: "Rows", writes: ["list"], default: { path: FOLDER } } },
-		},
-		[GROUP_ID]: { id: GROUP_ID, title: "Group", mounts: { holds: {} } },
-	};
-	const Leaf = () => h("div", { className: "leaf" }, "leaf");
-	const registry = {
-		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
-		list: () => Object.values(shelf).map((manifest) => ({ manifest })),
-	};
-	const slot = {
-		canCreate: true,
-		canUpdate: true,
-		canRemove: true,
-		canSubscribe: false,
-		list: async () => ({ rows: [], total: 0 }),
-		describe: async () => [],
-	};
-	const host = { platform: "test", can: {}, slot: () => slot, ui: { notify() {}, openNote() {} } };
-
-	let board = normalizeBoard({
-		tiles: [
-			{
-				id: "alone",
-				widget: READER_ID,
-				props: { rows: { implementation: "@obsidian/folder", fields: { path: FOLDER } } },
-			},
-			{
-				id: "group",
-				widget: GROUP_ID,
-				settings: { holds: [{ name: "Mine", widget: READER_ID }] },
-				mounted: {
-					Mine: {
-						widget: READER_ID,
-						props: { rows: { implementation: "@obsidian/folder", fields: { path: FOLDER } } },
-					},
-				},
-			},
-		],
-		layouts: {
-			20: [
-				{ id: "alone", x: 0, y: 0, w: 9, h: 6 },
-				{ id: "group", x: 9, y: 0, w: 9, h: 6 },
-			],
-		},
-	});
-	const mount = byId(document, "host");
-	const draw = () =>
-		render(
-			h(WidgetSurface, {
-				boardNode: mount,
-				board,
-				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
-				editing: true,
-				initialWidth: boardWidthPx,
-				onChange: (next) => {
-					board = next;
-					draw();
-				},
-			}),
-			mount,
-		);
-	draw();
-	const tick = async () => {
-		for (let frame = 0; frame < 3; frame += 1)
-			await new Promise((done) => globalThis.requestAnimationFrame(() => setTimeout(done, 0)));
-	};
-	const press = async (node: Element | null | undefined) => {
-		node?.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
-		await tick();
-	};
-
-	await press([...document.querySelectorAll('.wg-tile-actions button[aria-label="Settings"]')][0]);
-	await press(document.querySelector(".wg-set-panel .wg-set-row"));
-	const notes = [...document.querySelectorAll(OPEN_POP + " .wg-set-pop-note")].map((node) => node.textContent.trim());
-	check(
-		"a widget mounted under a NAME still counts as a reader of its folder",
-		notes.includes("This folder is read by 2 widgets on this board."),
-		true,
-	);
-	// CONTEXT: VACUOUS unless the count can be wrong — one reader must draw no hint at all
-	board = normalizeBoard({
-		tiles: [
-			{
-				id: "alone",
-				widget: READER_ID,
-				props: { rows: { implementation: "@obsidian/folder", fields: { path: FOLDER } } },
-			},
-		],
-		layouts: { 20: [{ id: "alone", x: 0, y: 0, w: 9, h: 6 }] },
-	});
-	render(null, mount);
-	draw();
-	await press([...document.querySelectorAll('.wg-tile-actions button[aria-label="Settings"]')][0]);
-	await press(document.querySelector(".wg-set-panel .wg-set-row"));
-	check(
-		"and the only reader on a board is told nothing",
-		[
-			document.querySelector(OPEN_POP + " .wg-set-pop-title .wg-kit-help-button")?.getAttribute("aria-description") ??
-				null,
-			[...document.querySelectorAll(OPEN_POP + " .wg-set-pop-note")].map((node) => node.textContent.trim()),
-		],
-		["Every note in the folder arrives as one item.", []],
-	);
-
-	render(null, mount);
-}
-
-console.log("\n— a prop renamed in the manifest still finds the folder the tile chose —");
-{
-	const CHOSEN = "Notes/Days";
-	const DECLARED = "Notes/Fallback";
+	const CHOSEN = "Chosen days";
+	const DECLARED = "Declared days";
 	const RENAMED_ID = "@test/renamed";
 	const shelf: Readonly<Record<string, object>> = {
 		[RENAMED_ID]: {
@@ -1287,11 +1102,12 @@ console.log("\n— a prop renamed in the manifest still finds the folder the til
 			title: "Renamed",
 			props: {
 				days: {
-					kind: "collection",
+					kind: "value",
+					type: "line",
 					label: "Days",
 					aka: ["rows"],
-					writes: ["list"],
-					default: { path: DECLARED },
+					writes: ["get"],
+					default: { value: DECLARED },
 				},
 			},
 		},
@@ -1301,31 +1117,14 @@ console.log("\n— a prop renamed in the manifest still finds the folder the til
 		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
 		list: () => Object.values(shelf).map((manifest) => ({ manifest })),
 	};
-	const slot = {
-		canCreate: true,
-		canUpdate: true,
-		canRemove: true,
-		canSubscribe: false,
-		list: async () => ({ rows: [], total: 0 }),
-		describe: async () => [],
-	};
-	const asked: string[] = [];
-	const host = {
-		platform: "test",
-		can: {},
-		slot: (binding: { readonly path: string }) => {
-			asked.push(binding.path);
-			return slot;
-		},
-		ui: { notify() {}, openNote() {} },
-	};
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 
 	let board = normalizeBoard({
 		tiles: [
 			{
 				id: "alone",
 				widget: RENAMED_ID,
-				props: { rows: { implementation: "@obsidian/folder", fields: { path: CHOSEN } } },
+				props: { rows: { implementation: "@core/typed-value", fields: { value: CHOSEN } } },
 			},
 		],
 		layouts: { 20: [{ id: "alone", x: 0, y: 0, w: 9, h: 6 }] },
@@ -1337,7 +1136,7 @@ console.log("\n— a prop renamed in the manifest still finds the folder the til
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1349,11 +1148,6 @@ console.log("\n— a prop renamed in the manifest still finds the folder the til
 		);
 	render(null, mount);
 	draw();
-	check(
-		"the gateway reads the folder stored under the old key",
-		[asked.includes(CHOSEN), asked.includes(DECLARED)],
-		[true, false],
-	);
 
 	const tick = async () => {
 		for (let frame = 0; frame < 3; frame += 1)
@@ -1366,14 +1160,14 @@ console.log("\n— a prop renamed in the manifest still finds the folder the til
 	await press([...document.querySelectorAll('.wg-tile-actions button[aria-label="Settings"]')][0]);
 	await press(document.querySelector(".wg-set-panel .wg-set-row"));
 	check(
-		"the window offers the folder that was chosen, not the declared one",
+		"the window offers the value that was chosen, not the declared one",
 		found(document, ".wg-set-panel .wg-set-row").textContent.includes(CHOSEN),
 		true,
 	);
 	await press([...document.querySelectorAll(OPEN_POP + " button")].find((node) => node.textContent === "Apply"));
 	await press([...document.querySelectorAll(".wg-set-head button")].find((node) => node.textContent === "Done"));
 	check("and the first write moves the record onto the new key", Object.keys(tileOf(board, 0).props ?? {}), ["days"]);
-	check("without losing the folder on the way", typedFieldOf(propOf(tileOf(board, 0).props, "days"), "path"), CHOSEN);
+	check("without losing the value on the way", typedFieldOf(propOf(tileOf(board, 0).props, "days"), "value"), CHOSEN);
 
 	render(null, mount);
 }
@@ -1396,7 +1190,7 @@ console.log("\n— a line is typed into a field, a text into an area that keeps 
 		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
 		list: () => Object.values(shelf).map((manifest) => ({ manifest })),
 	};
-	const host = { platform: "test", can: {}, slot: () => null, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 	let board = normalizeBoard({
 		tiles: [
 			{
@@ -1417,7 +1211,7 @@ console.log("\n— a line is typed into a field, a text into an area that keeps 
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1469,133 +1263,6 @@ console.log("\n— a line is typed into a field, a text into an area that keeps 
 	render(null, mount);
 }
 
-console.log("\n— a text reads a note: its content, its name, or one of its properties —");
-{
-	const READER_ID = "@test/note-reader";
-	const shelf: Readonly<Record<string, object>> = {
-		[READER_ID]: {
-			id: READER_ID,
-			title: "Note reader",
-			props: { body: { kind: "value", type: "text", label: "Body", writes: ["get"], default: { value: "" } } },
-		},
-	};
-	const Leaf = () => h("div", { className: "leaf" }, "leaf");
-	const registry = {
-		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
-		list: () => Object.values(shelf).map((manifest) => ({ manifest })),
-	};
-	const app = { vault: { getAllLoadedFiles: () => [{ path: "Habits.md" }] } };
-	const propertiesOf = (path: string) => (path === "Habits.md" ? ["status"] : []);
-	const host = {
-		platform: "test",
-		app,
-		propertiesOf,
-		can: {},
-		slot: () => null,
-		file: () => null,
-		ui: { notify() {}, openNote() {} },
-	};
-	let board = normalizeBoard({
-		tiles: [
-			{
-				id: "reader",
-				widget: READER_ID,
-				props: { body: { implementation: "@core/typed-value", fields: { value: "# Hi" } } },
-			},
-		],
-		layouts: { 20: [{ id: "reader", x: 0, y: 0, w: 9, h: 6 }] },
-	});
-	const mount = byId(document, "host");
-	const draw = () =>
-		render(
-			h(WidgetSurface, {
-				boardNode: mount,
-				board,
-				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
-				editing: true,
-				initialWidth: boardWidthPx,
-				onChange: (next) => {
-					board = next;
-					draw();
-				},
-			}),
-			mount,
-		);
-	draw();
-	const tick = async () => {
-		for (let frame = 0; frame < 3; frame += 1)
-			await new Promise((done) => globalThis.requestAnimationFrame(() => setTimeout(done, 0)));
-	};
-	const press = async (node: Element | null | undefined) => {
-		node?.dispatchEvent(new dom.window.MouseEvent("click", { bubbles: true }));
-		await tick();
-	};
-	const popButton = (text: string) =>
-		[...document.querySelectorAll(OPEN_POP + " button")].find((node) => node.textContent === text);
-
-	await press([...document.querySelectorAll('.wg-tile-actions button[aria-label="Settings"]')][0]);
-	await press(
-		[...document.querySelectorAll(".wg-set-panel .wg-kit-row")].find((row) => row.textContent.includes("Body")),
-	);
-	const sourceRow = (title: string) =>
-		[...document.querySelectorAll(OPEN_POP + " .wg-set-sources button")].find(
-			(node) => node.querySelector(".wg-kit-row-label")?.firstChild?.textContent === title,
-		);
-	check(
-		"the prop names where its data comes from behind one button, not a row of tabs",
-		Boolean(popButton("Its content or a property")),
-		false,
-	);
-	await press(document.querySelector(OPEN_POP + ' button[aria-label="Where the data comes from"]'));
-	check(
-		"a text is offered a file, beside typing it",
-		[Boolean(sourceRow("Its content or a property")), Boolean(sourceRow("Typed here"))],
-		[true, true],
-	);
-	check(
-		"and the source it reads from now is the one marked",
-		sourceRow("Typed here")?.getAttribute("aria-current"),
-		"true",
-	);
-
-	await press(sourceRow("Its content or a property"));
-	await press(popButton("Habits.md"));
-	check(
-		"the parts offered are content, name and the note's own properties",
-		["Content", "Name", "status"].map((label) => Boolean(popButton(label))),
-		[true, true, true],
-	);
-	check(
-		"picking the note reads its content",
-		present(popButton("Content"), "Content").getAttribute("aria-checked"),
-		"true",
-	);
-
-	await press(popButton("status"));
-	check(
-		"and the row says which part of which note",
-		found(document, ".wg-set-panel").textContent.includes("status of Habits.md"),
-		true,
-	);
-	await press([...document.querySelectorAll(".wg-set-head button")].find((node) => node.textContent === "Done"));
-	check(
-		"picking a property binds that property of that note",
-		[
-			propOf(tileOf(board, 0).props, "body").implementation,
-			...(["path", "field"] as const).map((name) => typedFieldOf(propOf(tileOf(board, 0).props, "body"), name)),
-		],
-		["@obsidian/file", "Habits.md", "status"],
-	);
-	check(
-		"the field survives the board being written",
-		typedFieldOf(propOf(present(serializeBoard(board).tiles[0], "tile 0").props, "body"), "field"),
-		"status",
-	);
-
-	render(null, mount);
-}
-
 console.log("\n— an emoji and an icon are picked off a grid, never typed —");
 {
 	const BADGE_ID = "@probe/badge";
@@ -1626,7 +1293,7 @@ console.log("\n— an emoji and an icon are picked off a grid, never typed —")
 		get: (id: string) => (id === BADGE_ID ? { manifest, component: Leaf } : null),
 		list: () => [{ manifest }],
 	};
-	const host = { platform: "test", can: {}, slot: () => null, file: () => null, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 	let board = normalizeBoard({
 		tiles: [{ id: "badge", widget: BADGE_ID }],
 		layouts: { 20: [{ id: "badge", x: 0, y: 0, w: 6, h: 4 }] },
@@ -1638,7 +1305,7 @@ console.log("\n— an emoji and an icon are picked off a grid, never typed —")
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1764,7 +1431,7 @@ console.log("\n— a surface is picked in the Design tab, and only the ones the 
 		get: (id: string) => (id === CARD_ID ? { manifest, component: Leaf } : null),
 		list: () => [{ manifest }],
 	};
-	const host = { platform: "test", can: {}, slot: () => null, file: () => null, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 	let board = normalizeBoard({
 		v: 2,
 		tiles: [
@@ -1800,7 +1467,7 @@ console.log("\n— a surface is picked in the Design tab, and only the ones the 
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {
@@ -1936,7 +1603,7 @@ console.log("\n— one switch, and the window asks only for the half in use —"
 		get: (id: string) => (shelf[id] ? { manifest: shelf[id], component: Leaf } : null),
 		list: () => Object.values(shelf).map((held) => ({ manifest: held })),
 	};
-	const host = { platform: "test", can: {}, slot: () => null, ui: { notify() {}, openNote() {} } };
+	const host = { platform: "test", can: {}, ui: { notify() {}, openNote() {} } };
 	let board = normalizeBoard({
 		tiles: [
 			{
@@ -1964,7 +1631,7 @@ console.log("\n— one switch, and the window asks only for the half in use —"
 				boardNode: mount,
 				board,
 				registry: standIn<BoardRegistry>(registry, ["get", "list"], "registry"),
-				host: standIn<SurfaceHost>(host, ["slot", "ui"], "host"),
+				host: standIn<SurfaceHost>(host, ["ui"], "host"),
 				editing: true,
 				initialWidth: boardWidthPx,
 				onChange: (next) => {

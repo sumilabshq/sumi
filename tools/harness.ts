@@ -4,10 +4,10 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import type { Plugin } from "esbuild";
 import { isObject } from "../packages/shared/core/src/engine/is-object.js";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
-import { radixInPictures } from "../apps/host-obsidian/radix-in-pictures.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { createRadixInPicturesPlugin } from "./radix-in-pictures.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 export type Theme = "light" | "dark";
 
@@ -28,7 +28,6 @@ export interface StageAsk {
 	readonly files?: Readonly<Record<string, string>>;
 	readonly steps?: readonly unknown[];
 	readonly editing?: boolean;
-	readonly rows?: readonly unknown[];
 }
 
 export type StagedPage = Readonly<Record<string, unknown>> & { readonly file: string; readonly failure?: string };
@@ -71,12 +70,12 @@ export function widgetFiles(): Record<string, string> {
 
 export const TASK_ROWS = ["To Do", "Doing", "Done"].flatMap((status, at) =>
 	[1, 2].map((nth) => ({
-		path: `Orbitask/Tasks/${status}-${nth}.md`,
-		ref: { path: `Orbitask/Tasks/${status}-${nth}.md` },
+		id: `${status}-${nth}`,
+		board: "orbitask",
 		name: `${status} ${nth}`,
-		props: { title: `${status} ${nth}`, status, order: at * 2 + nth },
-		meta: { created: 1, modified: 2 },
-		attachments: 0,
+		title: `${status} ${nth}`,
+		status,
+		order: at * 2 + nth,
 	})),
 );
 
@@ -108,7 +107,7 @@ const HARNESS_CHROME = `.harness-top { display: flex; align-items: baseline; gap
 
 export function shotPage({ theme, title, lead, body }: ShotPage): string {
 	return `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>
 body { margin: 0; padding: 28px 32px; ${THEMES[theme]}
 	background: var(--background-primary); color: var(--text-normal);
@@ -140,17 +139,10 @@ export function shoot(file: string, extra: readonly string[], { width, height }:
 	);
 }
 
-export const OBSIDIAN_STUB: Plugin = {
-	name: "obsidian-stub",
-	setup(build) {
-		build.onResolve({ filter: /^obsidian$/ }, () => ({ path: path.resolve("tools/loader/obsidian-stub.mts") }));
-	},
-};
-
-export async function bundleOf(entry: string, plugins: readonly Plugin[] = []): Promise<string> {
+export async function bundleOf(entry: string): Promise<string> {
 	const built = await esbuild.build({
 		entryPoints: [entry],
-		plugins: [radixInPictures(), ...plugins],
+		plugins: [createRadixInPicturesPlugin()],
 		bundle: true,
 		conditions: ["source"],
 		loader: TEXT_LOADERS,
@@ -165,7 +157,7 @@ export async function bundleOf(entry: string, plugins: readonly Plugin[] = []): 
 	return firstOutput(built.outputFiles);
 }
 
-export async function stage({ board, files, steps, editing, rows }: StageAsk): Promise<StagedPage> {
+export async function stage({ board, files, steps, editing }: StageAsk): Promise<StagedPage> {
 	const bundle = await esbuild.build({
 		entryPoints: ["tools/view-page.tsx"],
 		bundle: true,
@@ -181,7 +173,7 @@ export async function stage({ board, files, steps, editing, rows }: StageAsk): P
 	});
 
 	const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>body { margin: 0; background: #fff; color: #222; --background-primary: #fff; --background-secondary: #f6f6f6;
 	--background-modifier-border: #e4e4e4; --text-normal: #222; --text-muted: #707070; --text-faint: #ababab;
 	--text-on-accent: #fff; --interactive-accent: #6d4ee0; }
@@ -190,7 +182,6 @@ ${STILL}</style>
 </head><body><div class="wg-host"></div>
 <script id="wg-widgets" type="application/json">${JSON.stringify(files ?? widgetFiles())}</script>
 <script id="wg-board" type="application/json">${JSON.stringify(board)}</script>
-<script id="wg-rows" type="application/json">${JSON.stringify(rows ?? TASK_ROWS)}</script>
 <script id="wg-measure" type="application/json"></script>
 <script>window.wgSteps = ${JSON.stringify(steps ?? [])}; window.wgEditing = ${JSON.stringify(Boolean(editing))};</script>
 <script>${firstOutput(bundle.outputFiles)}</script>

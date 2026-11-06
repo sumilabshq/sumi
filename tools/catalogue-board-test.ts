@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { createProbeHost, createRowSlot } from "./vault-fixture.ts";
+import { createProbeHost } from "./vault-fixture.ts";
 import type { MergedEntry } from "../packages/shared/core/src/catalogue-entries.ts";
 import type { CataloguePort } from "../packages/shared/core/src/engine/catalogue-port.ts";
 import { NO_CATALOGUE_PORT } from "../packages/shared/core/src/engine/catalogue-port.ts";
@@ -100,7 +100,7 @@ const port: CataloguePort = {
 	says: NO_CATALOGUE_PORT.says,
 };
 
-const host = { ...createProbeHost(createRowSlot([])), catalogue: port };
+const host = { ...createProbeHost(), catalogue: port };
 const node = document.getElementById("host");
 if (!node) throw new Error("no host");
 let board = normalizeBoard(CATALOGUE_BOARDS.catalogue);

@@ -19,12 +19,6 @@ export type Design = z.infer<typeof DesignSchema>;
 export type DesignRead =
 	{ readonly design: Design; readonly refusal?: undefined } | { readonly design?: undefined; readonly refusal: string };
 
-const VAULT_BINDING = /"implementation":"(@obsidian\/[^"]+)"/;
-
-export function vaultBindingOf(board: unknown): string | null {
-	return JSON.stringify(board).match(VAULT_BINDING)?.[1] ?? null;
-}
-
 export function isSafeAppName(app: string): boolean {
 	return app.trim() !== "" && !app.includes("/") && !app.includes("\\") && !app.includes("..");
 }

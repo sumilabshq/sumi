@@ -13,13 +13,33 @@ function check(name: string, got: unknown, want: unknown): void {
 	);
 }
 
+function withTaskRows<Tile extends { readonly props?: Readonly<Record<string, unknown>> }>(
+	tile: Tile,
+	prop: string | undefined,
+): Tile {
+	const held = prop === undefined ? undefined : tile.props?.[prop];
+	if (prop === undefined || !isObject(held)) {
+		return tile;
+	}
+
+	return { ...tile, props: { ...tile.props, [prop]: { ...held, fields: { rows: TASK_ROWS } } } };
+}
+
 const fieldOf = (value: unknown, key: string): unknown => (isObject(value) ? value[key] : undefined);
 const sortedListOf = (value: unknown): unknown[] => (Array.isArray(value) ? [...value].sort() : []);
 
 const template = TEMPLATES[0];
 if (!template) throw new Error("core ships no template");
+const TYPED_ROWS_OF: Readonly<Record<string, string>> = { boards: "getTabs", kanban: "getTasks" };
+const filled = {
+	...template,
+	board: {
+		...template.board,
+		tiles: template.board.tiles.map((tile) => withTaskRows(tile, TYPED_ROWS_OF[tile.id])),
+	},
+};
 const staged = await stage({
-	board: serializeBoard(templateBoard(template)),
+	board: serializeBoard(templateBoard(filled)),
 	steps: [
 		{ name: "filterOpened", click: ".ofp-open" },
 		{ name: "cardPressed", click: ".orbi-kanban .ok-card-slot", saying: "Doing 1" },
@@ -43,7 +63,7 @@ check(
 check(
 	"and the kanban drew a card per task, through the slot the template names",
 	sortedListOf(fieldOf(seen, "cards")),
-	TASK_ROWS.map((row) => row.props.title).sort(),
+	TASK_ROWS.map((row) => row.title).sort(),
 );
 check("the filter drew a control the person can press", fieldOf(staged["filterOpened"], "pressed"), true);
 check("no card is open on arrival", fieldOf(seen, "openedCard"), null);

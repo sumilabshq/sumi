@@ -44,9 +44,6 @@
 		"*.tsx",
 		"loader/**/*.mts",
 		"lint/**/*.mts",
-		"../apps/host-obsidian/*.mts",
-		"../apps/host-obsidian/src/legacy/build-modules.d.ts",
-		"../apps/host-obsidian/src/project-seed-module.d.ts",
 		"../packages/shared/core/src/*.d.ts",
 		"../apps/host-tauri/src/style-sheets.d.ts",
 		"../packages/shared/kit/src/jsx-namespace.d.ts"

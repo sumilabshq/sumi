@@ -28,19 +28,6 @@ export function isFileMap(value: unknown): value is Readonly<Record<string, stri
 	return isRecord(value) && Object.values(value).every((held) => typeof held === "string");
 }
 
-export interface JsonRow {
-	readonly path: string;
-	readonly [field: string]: unknown;
-}
-
-export function isJsonRow(value: unknown): value is JsonRow {
-	return isRecord(value) && typeof value["path"] === "string";
-}
-
-export function rowsIn(value: unknown): JsonRow[] {
-	return Array.isArray(value) ? value.filter(isJsonRow) : [];
-}
-
 function stackOrSelf(part: unknown): unknown {
 	if (typeof part !== "object" || part === null || !("stack" in part)) return part;
 	return part.stack ?? part;

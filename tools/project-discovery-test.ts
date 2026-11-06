@@ -13,7 +13,6 @@ import {
 	type ProjectFiles,
 } from "../packages/shared/core/src/project/index.js";
 import { fieldOf } from "./export-source.mts";
-import { vaultProjectFiles, type ProjectAdapter } from "../apps/host-obsidian/src/legacy/project-files-vault.js";
 
 type FixtureFiles = Readonly<Record<string, string>>;
 
@@ -135,11 +134,6 @@ check("widgetarium.json fills every unnamed path from the handbook", config.path
 check("the aliases follow the configured paths", config.aliases["@widgets"], "src/ui/widgets");
 check("app names the app and defaults its icon", config.app, { name: "shop", icon: "public/icon.svg" });
 check("the project map is exactly what the folders hold", await discoverProject(files, config), EXPECTED_MAP);
-check(
-	"a vault adapter finds the same map as Node",
-	await discoverProject(vaultProjectFiles(adapterOver(nodeProjectFiles(vault, fileSystem)), PROJECT_FOLDER), config),
-	EXPECTED_MAP,
-);
 check("a clean project has no findings", await checkProject(files), []);
 const jsonSchema = projectConfigJsonSchema();
 check(
@@ -289,22 +283,4 @@ async function configOf(projectFiles: ProjectFiles): Promise<ProjectConfig> {
 	const reading = await readProjectConfig(projectFiles);
 	if ("refusal" in reading) throw new Error(reading.refusal);
 	return reading.config;
-}
-
-function adapterOver(vaultFiles: ProjectFiles): ProjectAdapter {
-	return {
-		list: async (at) => {
-			const listed = await vaultFiles.list(at);
-			return { files: [...listed.files], folders: [...listed.folders] };
-		},
-		read: async (at) => {
-			const text = await vaultFiles.read(at);
-			if (text === null) throw new Error(`${at} does not exist`);
-			return text;
-		},
-		stat: async (at) => {
-			if ((await vaultFiles.read(at)) !== null) return { type: "file", ctime: 0, mtime: 0, size: 0 };
-			return (await vaultFiles.exists(at)) ? { type: "folder", ctime: 0, mtime: 0, size: 0 } : null;
-		},
-	};
 }

@@ -13,7 +13,6 @@ import type { HostGatewayContext } from "../packages/shared/core/src/engine/host
 import type { Patch } from "../packages/shared/core/src/gateway/contract.ts";
 import { collectionOf, updateOf, valueGatewayOf } from "./gateway-kinds.ts";
 import { fieldIn } from "./held-fields.ts";
-import { createRowSlot } from "./vault-fixture.ts";
 import { withPageParams } from "../packages/shared/core/src/engine/page-params.ts";
 import { todayIso } from "../packages/shared/core/src/today.ts";
 
@@ -40,11 +39,7 @@ check(
 	registeredQueries()
 		.filter(
 			(entry) =>
-				!entry.id.startsWith("@stats/") &&
-				!entry.id.startsWith("@git/") &&
-				!entry.id.startsWith("@catalogue/") &&
-				!entry.id.startsWith("@core/fetch") &&
-				!["@obsidian/tag", "@obsidian/search"].includes(entry.id),
+				!entry.id.startsWith("@catalogue/") && !entry.id.startsWith("@core/fetch"),
 		)
 		.map((entry) => [entry.id, entry.implementation.name, entry.kind]),
 	[
@@ -57,17 +52,7 @@ check(
 		["@core/from-tile-rows", "FromTileRowsQuery", "collection"],
 		["@core/selected-row", "SelectedRowQuery", "value"],
 		["@core/selection", "SelectionQuery", "value"],
-		["@obsidian/file", "FileQuery", "value"],
-		["@obsidian/folder", "FolderQuery", "collection"],
 	],
-);
-check(
-	"statistics are one gateway per algorithm, each named for it",
-	registeredQueries()
-		.filter((entry) => entry.id.startsWith("@stats/"))
-		.map((entry) => entry.implementation.name)
-		.slice(0, 3),
-	["CountQuery", "SumQuery", "AverageQuery"],
 );
 
 check(
@@ -114,8 +99,8 @@ check(
 		"@core/typed-value",
 		"@core/typed-rows",
 		"@core/screen-state",
-		"@obsidian/file",
-		"@obsidian/folder",
+		"@core/typed-value",
+		"@core/typed-rows",
 		"@core/selected-row",
 	],
 );
@@ -123,25 +108,17 @@ check(
 	"a binding names its implementation outright, and nothing else names one",
 	[
 		hostGatewayFor(value, { implementation: "@core/from-tile-value", fields: { ref: "t1/selection" } })?.id,
-		hostGatewayFor(value, { implementation: "@stats/sum", fields: { path: "Log" } })?.id,
+		hostGatewayFor(value, { implementation: "@core/today", fields: {} })?.id,
 		hostGatewayFor(value, { implementation: "@core/selected-row", fields: {} })?.id,
 		hostGatewayFor(value, { implementation: "@core/stat-sum" })?.id ?? null,
 	],
-	["@core/from-tile-value", "@stats/sum", "@core/selected-row", null],
+	["@core/from-tile-value", "@core/today", "@core/selected-row", null],
 );
 
 check(
 	"a prop that writes rows is offered only sources that can write them",
 	sourcesFor({ kind: "collection", writes: ["list", "get", "update"] }).map((entry) => entry.id),
-	["@core/typed-rows", "@core/from-tile-rows", "@obsidian/folder"],
-);
-check(
-	"a number is offered the statistics, a line is not",
-	[
-		sourcesFor({ kind: "value", type: "number" }).some((entry) => entry.id === "@stats/sum"),
-		sourcesFor({ kind: "value", type: "line" }).some((entry) => entry.id === "@stats/sum"),
-	],
-	[true, false],
+	["@core/typed-rows", "@core/from-tile-rows"],
 );
 
 const refs = createGatewayRefs();
@@ -165,7 +142,7 @@ const contextFor = (fields: Readonly<Record<string, string>>): HostGatewayContex
 	tile: { id: "t2", props: { board: { implementation: "@core/selected-row", fields } } },
 	refs,
 	cellFor,
-	host: { slot: () => createRowSlot([]) },
+	host: {},
 	propsRef: { current: {} },
 	patchProp: () => {},
 });
@@ -230,7 +207,7 @@ const onPage = (notePath: string, tileId: string, implementation: string, fields
 		resolveHostGateway({
 			...contextFor({}),
 			name: "project",
-			host: { slot: () => createRowSlot([]), notePath },
+			host: { notePath },
 			tile: { id: tileId, props: { project: { implementation, fields } } },
 		}),
 	);
@@ -255,7 +232,7 @@ check(
 	'a page parameter names its key, such as "project"',
 );
 check(
-	"today is the local day the stats count from",
+	"today is the local day",
 	await onPage("Desk/Home.md", "digest", "@core/today", {}).get(),
 	todayIso(),
 );
@@ -279,27 +256,6 @@ check(
 		'SelectionQuery needs "rows" to name a prop of another tile, written tile/prop; it holds 7',
 	],
 );
-
-const readOnlyNote = valueGatewayOf(
-	resolveHostGateway({
-		...contextFor({}),
-		spec: { kind: "value", type: "text", writes: ["get", "update"] },
-		tile: {
-			id: "t5",
-			props: { board: { implementation: "@obsidian/file", fields: { path: "Note.md" }, allow: ["get", "update"] } },
-		},
-		host: {
-			slot: () => createRowSlot([]),
-			file: () => ({ canUpdate: false, get: async () => ({ path: "Note.md", content: "kept" }), update: () => true }),
-		},
-	}),
-);
-check(
-	"a note its host cannot write answers can() no for update, though the person switched it on",
-	readOnlyNote.update.can().can,
-	false,
-);
-check("and still reads its body", await readOnlyNote.get(), "kept");
 
 let keptRows: unknown = [];
 const typedRows = collectionOf(
@@ -363,26 +319,6 @@ check(
 	"a bound page query is asked through its own input schema and handed the query ports as ctx.host",
 	[queried.input.limit, queried.ctx.user, queried.ctx.host.self, "prop" in queried.ctx.host],
 	[100, null, "t7/notes", true],
-);
-
-const folderPages = resolveHostGateway({
-	...contextFor({}),
-	name: "notes",
-	spec: { kind: "collection" },
-	tile: { id: "t8", props: { notes: { implementation: "@obsidian/folder", fields: { path: "Notes" } } } },
-	host: {
-		slot: () => createRowSlot(["a", "b", "c"].map((name) => ({ path: `Notes/${name}.md`, name, props: {} }))),
-	},
-});
-const firstFolderPage: unknown = await Reflect.apply(
-	present(Reflect.get(folderPages, "query"), "the folder's page query"),
-	folderPages,
-	[{ limit: 2 }],
-);
-check(
-	"a folder bound on the board answers a page with the cursor of the next",
-	[fieldIn(firstFolderPage, "next"), fieldIn(firstFolderPage, "total")],
-	["2", 3],
 );
 
 console.log(`\n${failed === 0 ? "host gateways: clean" : `host gateways: ${failed} failed`}`);

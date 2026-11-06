@@ -6,7 +6,8 @@ import path from "node:path";
 import esbuild from "esbuild";
 import { findBrowser } from "./harness.ts";
 import { THEMES, HOST_FONTS, type HostTheme } from "./host-themes.ts";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 interface CanvasFrame {
 	readonly file: string;
@@ -30,11 +31,7 @@ interface ArtboardPlace {
 }
 
 const OUT = "docs/reference/metric-total";
-const SHEETS = [
-	"apps/host-obsidian/styles.css",
-	"registry/@default/tokens.css",
-	"registry/@default/metric-total/widget.css",
-];
+const SHEETS = [BOARD_SHEET, "registry/@default/tokens.css", "registry/@default/metric-total/widget.css"];
 
 const FRAMES: readonly CanvasFrame[] = [
 	{ file: "Main", title: "Card — curve", theme: "light", view: "curve", tile: [840, 480], frame: [900, 560] },
@@ -202,7 +199,6 @@ async function bundled(): Promise<string> {
 			"widgetarium/kit/emojis": "./packages/shared/kit/src/emojis/emoji.tsx",
 			"widgetarium/kit/charts": "./packages/shared/kit/src/charts/index.ts",
 			"@default/lib": "./registry/@default/lib.ts",
-			obsidian: "./tools/obsidian-shim.ts",
 		},
 		logLevel: "warning",
 	});

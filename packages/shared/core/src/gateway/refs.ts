@@ -21,7 +21,6 @@ export interface RefDescription {
 	title: string;
 	kind: string;
 	shape?: string;
-	isVault?: boolean;
 }
 
 export interface GatewayRefs {

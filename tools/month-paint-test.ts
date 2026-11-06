@@ -4,10 +4,11 @@ import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { LIB_FILES } from "../packages/shared/core/src/engine/widget-build.js";
 import { z } from "../packages/shared/core/src/gateway/declared.ts";
 import { present } from "./page-dom.ts";
+import { BOARD_SHEET } from "./sheet-paths.mts";
 
 const ClearancesSchema = z.object({
 	name: z.string(),
@@ -115,7 +116,6 @@ window.__measure = () => [...document.querySelectorAll(".wg-root")].map(clearanc
 const alias: Record<string, string> = {
 	widgetarium: "./tools/fill-shim.ts",
 	"widgetarium/kit": "./packages/shared/kit/src/index.ts",
-	obsidian: "./tools/obsidian-shim.ts",
 };
 for (const scope of fs.readdirSync("registry").filter((name) => name.startsWith("@"))) {
 	const lib = LIB_FILES.map((name) => path.join("registry", scope, name)).find((at) => fs.existsSync(at));
@@ -157,7 +157,7 @@ const boxes = tiles
 	.join("");
 
 const page = `<!doctype html><html><head><meta charset="utf-8">
-<style>${readFileSync("apps/host-obsidian/styles.css", "utf8")}</style>
+<style>${readFileSync(BOARD_SHEET, "utf8")}</style>
 <style>${readFileSync("registry/@default/tokens.css", "utf8")}</style>
 <style>${HOST_RULES}</style>
 <style>body { margin: 0; padding: 8px; ${THEME}

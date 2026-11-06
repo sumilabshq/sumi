@@ -4,7 +4,7 @@ import type { AdaptedGateway } from "../gateway/adapted.js";
 import type { DeclaredProp } from "../gateway/props.js";
 import type { FilterRow, SortRow } from "../gateway/contract.js";
 import type { GatewayRefs, ViewCell } from "../gateway/refs.js";
-import type { NotesPort, PortsHost } from "./packs.js";
+import type { PortsHost } from "./packs.js";
 
 export interface HostFields {
 	readonly [field: string]: unknown;
@@ -19,10 +19,6 @@ export interface HostFields {
 	readonly picked?: unknown;
 	readonly fieldFrom?: unknown;
 	readonly whenNothingPicked?: unknown;
-	readonly date?: unknown;
-	readonly window?: unknown;
-	readonly compare?: unknown;
-	readonly counts?: unknown;
 }
 
 export interface HostSource {
@@ -38,7 +34,7 @@ export interface HostSpec extends DeclaredProp {
 	readonly aka?: unknown;
 }
 
-export type HostGatewayHost = NotesPort & PortsHost;
+export type HostGatewayHost = PortsHost;
 
 export interface HostTile {
 	readonly id: string;

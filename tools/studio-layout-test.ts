@@ -6,7 +6,7 @@ import { PLATE_LEAST_PX } from "../packages/state/layout/shared/lib/frame-bounds
 import { paged, waited } from "./chrome-ask.ts";
 import type { AskedPage, PagePoint } from "./chrome-ask.ts";
 import { bundleOf } from "./harness.ts";
-import { isRecord } from "./page-dom.ts";
+import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 interface Layout {
 	readonly chat: { readonly left: number; readonly right: number; readonly width: number };
@@ -29,22 +29,11 @@ const shotsAt = path.resolve(process.argv[2] ?? path.join(tmpdir(), "wg-studio-l
 mkdirSync(shotsAt, { recursive: true });
 
 const bundle = await bundleOf("tools/studio-render-page.tsx");
-const sheets = ["packages/shared/core/browser-host.css", "apps/host-obsidian/styles.css"]
-	.map((at) => readFileSync(at, "utf8"))
-	.join("\n");
-const OBSIDIAN_MAC_CORNERS = "button { corner-shape: superellipse(1.33); }";
-const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${OBSIDIAN_MAC_CORNERS}</style><style>${sheets}</style></head>
+const sheets = BROWSER_SHEET_SOURCES.map((at) => readFileSync(at, "utf8")).join("\n");
+const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>${sheets}</style></head>
 <body><div id="root"></div><pre id="boom"></pre>
 <script>if (location.hash !== "#kept") localStorage.clear(); window.__MODE__ = "studio";</script>
 <script>${bundle}</script></body></html>`;
-
-const SQUIRCLED_BUTTONS = `(() => ({
-	isSupported: CSS.supports("corner-shape", "round"),
-	buttons: document.querySelectorAll(".wg-studio button").length,
-	squircled: [...document.querySelectorAll(".wg-studio button")]
-		.map((button) => getComputedStyle(button).getPropertyValue("corner-shape"))
-		.filter((shape) => shape !== "round" && shape !== "superellipse(1)"),
-}))()`;
 
 const LAYOUT_OF = `(() => {
 	const chat = document.querySelector('[data-shell-plate="chat"]').getBoundingClientRect();
@@ -75,34 +64,6 @@ const SEND_MINE = `(() => {
 	setTimeout(() => document.querySelector('.wg-studio-chat button[aria-label="Send"]').click(), 100);
 	return true;
 })()`;
-
-const PAINT_OF = `(parent, token, property) => {
-	const probe = parent.appendChild(document.createElement("i"));
-	probe.style[property] = "var(" + token + ")";
-	const painted = getComputedStyle(probe)[property];
-	probe.remove();
-	return painted;
-}`;
-
-const HOST_ACCENT = "rgb(255, 0, 128)";
-const HOST_ON_ACCENT = "rgb(0, 0, 0)";
-
-const ACCENT_PAINT_OF = `((isInObsidian) => {
-	const studio = document.querySelector(".wg-studio");
-	document.body.style.setProperty("--interactive-accent", ${JSON.stringify(HOST_ACCENT)});
-	document.body.style.setProperty("--interactive-accent-hover", ${JSON.stringify(HOST_ACCENT)});
-	document.body.style.setProperty("--text-on-accent", ${JSON.stringify(HOST_ON_ACCENT)});
-	studio.parentElement.classList.toggle("wg-studio-view", isInObsidian);
-	const chat = document.querySelector(".wg-studio-chat .wg-root");
-	const paintOf = (token, property) => (${PAINT_OF})(chat, token, property);
-	const painted = {
-		accent: paintOf("--wg-kit-accent", "backgroundColor"),
-		onAccent: paintOf("--brand-foreground", "color"),
-		ring: paintOf("--ring", "backgroundColor"),
-	};
-	studio.parentElement.classList.remove("wg-studio-view");
-	return painted;
-})`;
 
 const CONTENT_COLUMN = `(() => {
 	const chat = document.querySelector(".wg-studio-chat .wg-studio-ai").getBoundingClientRect();
@@ -158,15 +119,6 @@ async function draggedEdge(page: AskedPage, byPx: number): Promise<Layout> {
 	await page.release(to);
 	await waited(120);
 	return layoutOf(page);
-}
-
-function isPaintedAs(painted: unknown, wanted: Readonly<Record<string, string>>): boolean {
-	if (typeof painted !== "object" || painted === null) {
-		return false;
-	}
-
-	const held = Object.fromEntries(Object.entries(painted));
-	return Object.entries(wanted).every(([name, colour]) => held[name] === colour);
 }
 
 function isCentredColumn(column: unknown): boolean {
@@ -234,19 +186,6 @@ try {
 
 	await page.ask(SEND_MINE);
 	await untilAnswered(page, `document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said") !== null`);
-	const hosted = await page.ask(`${ACCENT_PAINT_OF}(true)`);
-	check(
-		"inside Obsidian the studio's accent and text on the accent are the host's",
-		isPaintedAs(hosted, { accent: HOST_ACCENT, onAccent: HOST_ON_ACCENT }),
-		hosted,
-	);
-	check("and the focus ring stays the system's neutral grey", !isPaintedAs(hosted, { ring: HOST_ACCENT }), hosted);
-	const hostless = await page.ask(`${ACCENT_PAINT_OF}(false)`);
-	check(
-		"and outside Obsidian the system's own accent stays",
-		!isPaintedAs(hostless, { accent: HOST_ACCENT }),
-		hostless,
-	);
 	await draggedEdge(page, WIDE_CHAT_PX - (await layoutOf(page)).chat.width);
 	const column = await page.ask(CONTENT_COLUMN);
 	check(
@@ -270,17 +209,6 @@ try {
 			isNear(canvasAfter.stage, canvasBefore.stage - CANVAS_DRAG_PX) &&
 			isNear(canvasAfter.stage, canvasAfter.appInner),
 		{ staged, before: canvasBefore.stage, after: canvasAfter.stage, plate: canvasAfter.appInner },
-	);
-	const corners = await page.ask(SQUIRCLED_BUTTONS);
-	check(
-		"Obsidian's macOS superellipse leaves every studio button round",
-		isRecord(corners) &&
-			corners["isSupported"] === true &&
-			typeof corners["buttons"] === "number" &&
-			corners["buttons"] > 0 &&
-			Array.isArray(corners["squircled"]) &&
-			corners["squircled"].length === 0,
-		corners,
 	);
 	const boom = await page.ask(`document.getElementById("boom").textContent`);
 	check("the studio drew without a failure", boom === "", boom);

@@ -1,6 +1,5 @@
 import { JSDOM } from "jsdom";
 import type { SurfaceHost } from "../packages/shared/core/src/surface/use-surface-shared.js";
-import type { VaultSlot } from "../packages/shared/core/src/gateway/obsidian.js";
 import { refusingConsole } from "../packages/shared/core/src/engine/host-console.js";
 import { byId, found } from "./dom-find.ts";
 
@@ -96,25 +95,11 @@ const registry = new WidgetRegistry({
 await registry.load();
 
 let board = normalizeBoard({ tiles: [], layouts: {} });
-const emptySlot: VaultSlot = {
-	canCreate: false,
-	canUpdate: false,
-	canRemove: false,
-	canSubscribe: false,
-	list: async () => ({ rows: [], total: 0 }),
-	get: async () => null,
-	describe: async () => [],
-	create: async () => null,
-	update: async () => null,
-	remove: async () => null,
-	subscribe: () => () => {},
-};
 const host: SurfaceHost = {
 	platform: "test",
 	type: "test",
 	console: refusingConsole("the expand test has no console"),
 	can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
-	slot: () => emptySlot,
 	ui: { notify() {}, renderMarkdown: () => () => {} },
 };
 

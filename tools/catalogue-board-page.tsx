@@ -14,7 +14,7 @@ import { placeWidget } from "../packages/shared/core/src/surface/drop-receivers.
 import { TEMPLATES } from "../packages/shared/core/src/templates.js";
 import { CATALOGUE_BOARDS } from "../apps/studio/src/legacy/catalogue/catalogue-boards.js";
 import { CATALOGUE_WIDGETS } from "../apps/studio/src/legacy/catalogue/catalogue-widgets.js";
-import { createProbeHost, createRowSlot } from "./vault-fixture.ts";
+import { createProbeHost } from "./vault-fixture.ts";
 import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();
@@ -72,7 +72,7 @@ function draw(): void {
 			board,
 			boardNode: node,
 			registry,
-			host: { ...createProbeHost(createRowSlot([])), catalogue: port },
+			host: { ...createProbeHost(), catalogue: port },
 			editing: false,
 			isReadOnly: true,
 			screen: true,

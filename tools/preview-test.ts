@@ -178,8 +178,8 @@ const REFUSING_CONSOLE: HostConsole = {
 	run: async () => ({ ok: false, output: "", failure: "no console" }),
 };
 const REAL_HOST: ViewHost = {
-	platform: "obsidian",
-	type: "obsidian-desktop",
+	platform: "tauri",
+	type: "tauri-desktop",
 	can: { catalogue: false, fullscreen: false, subscribe: false, network: false, renderMarkdown: false },
 	console: REFUSING_CONSOLE,
 	ui: { notify() {}, renderMarkdown: () => () => {} },

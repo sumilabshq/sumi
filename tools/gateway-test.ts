@@ -1,12 +1,11 @@
 import esbuild from "esbuild";
-import { TEXT_LOADERS } from "../apps/host-obsidian/build.mts";
+import { TEXT_LOADERS } from "./text-loaders.mts";
 import { fieldAt, fieldIn, itemsIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { standIn } from "./stand-in.ts";
 import { callAsUntypedSource } from "./untyped-source.ts";
 import type { ActionMeta } from "../packages/shared/core/src/gateway/create.ts";
 import type { FieldType } from "../packages/shared/core/src/gateway/fields.ts";
-import type { FileHost } from "../packages/shared/core/src/gateway/obsidian.ts";
 
 type GatewayBundle = typeof import("../packages/shared/core/src/gateway/create.ts") &
 	typeof import("../packages/shared/core/src/gateway/refs.ts") &
@@ -17,13 +16,11 @@ type GatewayBundle = typeof import("../packages/shared/core/src/gateway/create.t
 	typeof import("../packages/shared/core/src/gateway/match.ts") &
 	typeof import("../packages/shared/core/src/gateway/fields.ts") &
 	typeof import("../packages/shared/core/src/gateway/operators.ts") &
-	typeof import("../packages/shared/core/src/gateway/obsidian.ts") &
-	typeof import("../packages/shared/packs/core/src/picked.ts") &
-	typeof import("../packages/shared/packs/obsidian/src/file-gateway.ts");
+	typeof import("../packages/shared/packs/core/src/picked.ts");
 
 const built = await esbuild.build({
 	stdin: {
-		contents: `export * from "./packages/shared/core/src/gateway/create"; export * from "./packages/shared/core/src/gateway/refs"; export * from "./packages/shared/core/src/gateway/cache"; export * from "./packages/shared/core/src/gateway/props.js"; export * from "./packages/shared/core/src/gateway/kept-in-tile.js"; export * from "./packages/shared/core/src/gateway/narrow"; export * from "./packages/shared/core/src/gateway/match"; export * from "./packages/shared/core/src/gateway/fields"; export * from "./packages/shared/core/src/gateway/operators"; export * from "./packages/shared/core/src/gateway/obsidian.js"; export * from "./packages/shared/packs/core/src/picked.ts"; export * from "./packages/shared/packs/obsidian/src/file-gateway.ts";`,
+		contents: `export * from "./packages/shared/core/src/gateway/create"; export * from "./packages/shared/core/src/gateway/refs"; export * from "./packages/shared/core/src/gateway/cache"; export * from "./packages/shared/core/src/gateway/props.js"; export * from "./packages/shared/core/src/gateway/kept-in-tile.js"; export * from "./packages/shared/core/src/gateway/narrow"; export * from "./packages/shared/core/src/gateway/match"; export * from "./packages/shared/core/src/gateway/fields"; export * from "./packages/shared/core/src/gateway/operators"; export * from "./packages/shared/packs/core/src/picked.ts";`,
 		resolveDir: process.cwd(),
 		loader: "js",
 	},
@@ -57,8 +54,6 @@ const gateway = standIn<GatewayBundle>(
 		"createPickedGateway",
 		"createGatewayRefs",
 		"refCollection",
-		"fileGateway",
-		"noteFieldOf",
 	],
 	"gateway bundle",
 );
@@ -641,49 +636,6 @@ const messageOf = (failure: unknown): string => String(failure instanceof Error 
 		(nowhereCan.can ? undefined : nowhereCan.reason)?.includes("Neither"),
 		JSON.stringify(nowhere.update.can()),
 	);
-}
-
-{
-	const record = { path: "Habits.md", name: "Habits", props: { status: "active", goal: "12" }, content: "# Habits" };
-	let written: unknown = null;
-	const host = standIn<FileHost>(
-		{
-			file: () => ({
-				canUpdate: true,
-				get: async () => record,
-				update: async (next: unknown) => ((written = next), true),
-			}),
-		},
-		["file"],
-		"file host",
-	);
-	const read = async (field?: string, type = "text"): Promise<ReturnType<typeof gateway.fileGateway>> =>
-		gateway.fileGateway({ host, path: "Habits.md", part: { field, type }, requested: ["get", "update"] });
-	check(
-		"file field: a number prop gets a number, not the string the note holds",
-		(await (await read("goal", "number")).get()) === 12,
-	);
-	check(
-		"file field: a typed value with no field reads the content",
-		gateway.noteFieldOf({ kind: "value", type: "text" }, {}) === "content",
-	);
-	check(
-		"file field: an untyped value with no field still reads the whole note",
-		gateway.noteFieldOf({ kind: "value" }, {}) === undefined,
-	);
-	check("file field: no field answers with the whole note", (await (await read()).get()) === record);
-	check("file field: content answers with the body", (await (await read("content")).get()) === "# Habits");
-	check("file field: name answers with the name, not the path", (await (await read("name")).get()) === "Habits");
-	check("file field: a property answers with its value", (await (await read("status")).get()) === "active");
-	check("file field: a property the note lacks answers with null", (await (await read("missing")).get()) === null);
-	check(
-		"file field: two fields of one note are two cache entries",
-		(await read("status")).id !== (await read("name")).id,
-	);
-	const body = await read("content");
-	await body.update("# Rewritten");
-	check("file field: content writes the body", written === "# Rewritten");
-	check("file field: a property refuses a write it cannot make", (await read("status")).update.can().can === false);
 }
 
 if (failed > 0) {
