@@ -599,6 +599,11 @@ async function checkFastPassStaysFolded(page: AskedPage, theme: Theme): Promise<
 }
 
 async function checkZonesOutsideWindow(page: AskedPage, theme: Theme): Promise<void> {
+	await checkOpeningStrip(page, theme);
+	await checkKeepZones(page, theme);
+}
+
+async function checkOpeningStrip(page: AskedPage, theme: Theme): Promise<void> {
 	const farLeft = await leftLookAfterLeavingTo(page, -200, 400);
 	check(`${theme}: leaving the window far past the left edge leaves the chats folded`, farLeft === "hidden", farLeft);
 	await page.ask(`window.__CURSOR__ = { x: -30, y: 400 }; true`);
@@ -612,6 +617,9 @@ async function checkZonesOutsideWindow(page: AskedPage, theme: Theme): Promise<v
 	);
 	const inStrip = await leftLookAfterLeavingTo(page, -110, 400);
 	check(`${theme}: stopping just past the left edge peeks the chats`, inStrip === "peeking", inStrip);
+}
+
+async function checkKeepZones(page: AskedPage, theme: Theme): Promise<void> {
 	const keptBeside = await leftLookWithCursorAt(page, -120, 400);
 	check(`${theme}: the zone left of the window keeps the peek open`, keptBeside === "peeking", keptBeside);
 	const keptAbove = await leftLookWithCursorAt(page, 100, -40);
