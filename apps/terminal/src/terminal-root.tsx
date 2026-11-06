@@ -1,7 +1,6 @@
 import { createElement as h, useEffect, useSyncExternalStore } from "react";
 import type { ReactElement } from "react";
 import { RecordAppPageCommand, catchLinks, wearSumiTheme } from "@sumi/contract";
-import { AppPlate } from "./features/plate/ui/app-plate.js";
 import { TerminalPage } from "./terminal/terminal-page.js";
 import type { SumiShell } from "./sumi-shell.js";
 
@@ -23,11 +22,9 @@ export function TerminalRoot({ sumi }: TerminalRootProps): ReactElement {
 	useWearsSumi(sumi);
 	useRecordsPage(sumi);
 	return (
-		<div className="wg-terminal-app">
-			<AppPlate name={APP_NAME}>
-				<TerminalPage sumi={sumi} isDark={isDark} />
-			</AppPlate>
-		</div>
+		<main className="wg-terminal-app wg-app-body" aria-label={APP_NAME}>
+			<TerminalPage sumi={sumi} isDark={isDark} />
+		</main>
 	);
 }
 

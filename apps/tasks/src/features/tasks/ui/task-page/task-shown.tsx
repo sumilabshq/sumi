@@ -4,7 +4,7 @@ import type { TaskView } from "@widgetarium/tasks";
 import { useTaskPageLayout } from "../../lib/use-task-page-layout.js";
 import { useRereadsAtContinue } from "../../lib/use-rereads-at-continue.js";
 import { NarrowTask } from "./narrow-task.js";
-import { TaskHeader } from "./task-header.js";
+import { TaskActions } from "./task-actions.js";
 import { WideTask } from "./wide-task.js";
 
 export interface TaskShownProps {
@@ -24,7 +24,7 @@ export function TaskShown({ view }: TaskShownProps): ReactElement {
 			data-narrow={isNarrow ? "" : undefined}
 			data-tasks-layout={layout}
 		>
-			<TaskHeader owner={view.card.owner} isNarrow={isNarrow} />
+			<TaskActions owner={view.card.owner} />
 			{isNarrow ? <NarrowTask view={view} /> : <WideTask view={view} hasSide={layout === "wide"} />}
 		</div>
 	);

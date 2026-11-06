@@ -423,6 +423,11 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 		),
 		true,
 	);
+	check(
+		"tasks: the frame draws no plate or header row of its own",
+		await inFrame(page, "tasks", `document.querySelector(".wg-plate-head, .wg-app-plate") === null`),
+		true,
+	);
 	await pressInFrame(page, "tasks", "[data-tasks-accept]");
 	await waitUntil(() => Promise.resolve(statusOnDisk(147) === "done"), WAIT_MS, STEP_MS);
 	check("tasks: Accept writes the task as done into tasks.json on disk", statusOnDisk(147), "done");
@@ -443,7 +448,7 @@ async function tasksChecks(page: AskedPage): Promise<void> {
 	await tasksLinkChecks(page);
 }
 
-const CRUMB_WORDS = `[...document.querySelectorAll("[data-plate-crumb-app], [data-plate-crumb-page]")].filter((each) => each.getClientRects().length > 0).map((each) => each.textContent)`;
+const CRUMB_WORDS = `[...document.querySelectorAll(".wg-plate-head.is-app [data-plate-crumb] :is(.wg-plate-crumb-first, .wg-plate-crumb-second)")].filter((each) => each.getClientRects().length > 0).map((each) => each.textContent)`;
 const TASKS_BOARD = `document.querySelector('[data-tasks-page="board"]') !== null`;
 const PLAIN_TASK = "T-140";
 const BLANK_TASK = "T-141";
@@ -483,9 +488,16 @@ async function tasksHistoryChecks(page: AskedPage): Promise<void> {
 		],
 		[true, true],
 	);
-	await pressInPage(page, "[data-plate-crumb-page]");
 	check(
-		"tasks: the crumb's page part opens the address field",
+		"tasks: the whole crumb is one button, with no separate home part",
+		await page.ask(
+			`(() => { const shown = [...document.querySelectorAll(".wg-plate-head.is-app [data-plate-crumb]")].filter((each) => each.getClientRects().length > 0); return [shown.length, shown[0]?.querySelectorAll("button").length ?? null, shown[0]?.tagName ?? null]; })()`,
+		),
+		[1, 0, "BUTTON"],
+	);
+	await pressInPage(page, ".wg-plate-head.is-app [data-plate-crumb]");
+	check(
+		"tasks: pressing the crumb opens the address field",
 		await waitUntil(
 			async () => (await page.ask(`document.querySelector("[data-cm-mode]") !== null`)) === true,
 			WAIT_MS,
@@ -493,19 +505,20 @@ async function tasksHistoryChecks(page: AskedPage): Promise<void> {
 		),
 		true,
 	);
-	await page.ask(
-		`(document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`,
-	);
-	await waitUntil(
-		async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
-		WAIT_MS,
-		STEP_MS,
-	);
-	await pressInPage(page, "[data-plate-crumb-app]");
 	check(
-		"tasks: the crumb's app part takes the tab home",
-		[await frameSees(page, "tasks", TASKS_BOARD), await crumbSays(page, ["Tasks"])],
-		[true, true],
+		`tasks: the address field holds the tab's deep link sumi://tasks/${TASK_ACCEPTED}`,
+		await page.ask(`document.querySelector(".wg-cm-input")?.value ?? null`),
+		`sumi://tasks/${TASK_ACCEPTED}`,
+	);
+	await pressInPage(page, ".wg-plate-head.is-app [data-plate-crumb]");
+	check(
+		"tasks: pressing the crumb again shuts the address field",
+		await waitUntil(
+			async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
 	);
 }
 
@@ -632,6 +645,7 @@ async function browserPageChecks(page: AskedPage): Promise<void> {
 		await crumbSays(page, ["Browser", "example.com"]),
 		true,
 	);
+	await browserActionChecks(page);
 	const isRecorded = await waitUntil(
 		async () =>
 			JSON.stringify(await page.ask(`window.__sumiApps.tab(${JSON.stringify(sumiTabOf("browser-page"))})`)).includes(
@@ -643,9 +657,38 @@ async function browserPageChecks(page: AskedPage): Promise<void> {
 	check("browser-page: the tab's address in Places names the page the app opened", isRecorded, true);
 }
 
+async function browserActionChecks(page: AskedPage): Promise<void> {
+	const tabOfBrowser = `window.__sumiApps.tab(${JSON.stringify(sumiTabOf("browser-page"))})`;
+	check(
+		"browser-page: the shell's header draws the app's Reload action",
+		await waitUntil(
+			async () => (await page.ask(`document.querySelector('[data-app-action="reload"]') !== null`)) === true,
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
+	);
+	check(
+		"browser-page: the frame draws no plate or header row of its own",
+		await inFrame(page, "browser-page", `document.querySelector(".wg-plate-head, .wg-app-plate") === null`),
+		true,
+	);
+	await pressInPage(page, '[data-app-action="reload"]');
+	check(
+		"browser-page: the app takes the Reload press, so none waits in Places",
+		await waitUntil(
+			async () => JSON.stringify(await page.ask(tabOfBrowser)).includes('"presses":[]'),
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
+	);
+}
+
 async function chatChecks(page: AskedPage): Promise<void> {
 	await page.ask("window.__sumiApps.openChat()");
 	await frameOpens(page, "chat");
+	await chatCrumbChecks(page);
 	check("chat: pressing the composer focuses it", await typedInFrame(page, "chat", "textarea", CHAT_SAID), true);
 	check(
 		"chat: the app draws the echo fake agent's answer",
@@ -653,6 +696,40 @@ async function chatChecks(page: AskedPage): Promise<void> {
 		true,
 	);
 	await chatLookChecks(page);
+}
+
+const CHAT_CRUMB = ".wg-plate-head.is-chat [data-ws-crumb]";
+
+async function chatCrumbChecks(page: AskedPage): Promise<void> {
+	check(
+		"chat: the header crumb is one button holding workspace / chat",
+		await waitUntil(
+			async () =>
+				(await page.ask(
+					`(() => { const crumb = document.querySelector(${JSON.stringify(CHAT_CRUMB)}); return crumb?.tagName === "BUTTON" && crumb.querySelector(".wg-plate-crumb-first") !== null && crumb.querySelector(".wg-plate-crumb-second") !== null; })()`,
+				)) === true,
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
+	);
+	await pressInPage(page, CHAT_CRUMB);
+	check(
+		"chat: pressing the crumb fills the address field with sumi://chat/<id>",
+		await waitUntil(
+			async () =>
+				String(await page.ask(`document.querySelector(".wg-cm-input")?.value ?? ""`)).startsWith("sumi://chat/"),
+			WAIT_MS,
+			STEP_MS,
+		),
+		true,
+	);
+	await pressInPage(page, CHAT_CRUMB);
+	await waitUntil(
+		async () => (await page.ask(`document.querySelector("[data-cm-mode]") === null`)) === true,
+		WAIT_MS,
+		STEP_MS,
+	);
 }
 
 type ChatTheme = "light" | "dark";

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { catchLinks, wearSumiTheme } from "@sumi/contract";
+import { catchLinks, startHeaderActions, wearSumiTheme } from "@sumi/contract";
 import { BrowserRoot } from "./browser-root.js";
 import { startSumiShell } from "./sumi-shell.js";
 import { SumiTab } from "./sumi-tab.js";
@@ -16,4 +16,7 @@ if (mount === null) {
 const shell = startSumiShell();
 wearSumiTheme({ sumi: shell.app, transport: shell.transport });
 catchLinks({ sumi: shell.app, tabId: shell.tabId });
-createRoot(mount).render(<BrowserRoot tab={new SumiTab(shell)} page={new SumiWebPage(shell)} />);
+const headerActions = startHeaderActions({ sumi: shell.app, transport: shell.transport, tabId: shell.tabId });
+createRoot(mount).render(
+	<BrowserRoot tab={new SumiTab(shell)} page={new SumiWebPage(shell)} headerActions={headerActions} />,
+);

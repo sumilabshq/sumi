@@ -1,7 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { Slot } from "@widgetarium/data-framework";
-import { PlateHeaderPart } from "../../../plate/ui/plate-header-part.js";
 import { useTasksView } from "../../lib/use-tasks-view.js";
 import type { TasksView } from "../../lib/use-tasks-view.js";
 import { TasksBoard } from "../tasks-board/tasks-board.js";
@@ -13,11 +12,9 @@ export function TasksHome(): ReactElement {
 	const view = useTasksView();
 	return (
 		<Fragment>
-			<PlateHeaderPart place="controls">
-				<Slot loading={null}>
-					<TasksControls view={view} />
-				</Slot>
-			</PlateHeaderPart>
+			<Slot loading={null}>
+				<TasksControls view={view} />
+			</Slot>
 			<Slot>{bodyOf(view)}</Slot>
 		</Fragment>
 	);

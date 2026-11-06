@@ -164,17 +164,18 @@
 	background: var(--sumi-text-3);
 }
 
-.wg-plate-head-row:has(.wg-tasks-head) > .wg-plate-gap {
-	flex: 0;
-}
-
 .wg-tasks-head {
 	container: tasks-head / inline-size;
+	position: sticky;
+	top: 0;
+	z-index: 1;
 	display: flex;
-	flex: 1 1 0;
 	align-items: center;
 	gap: var(--sumi-sp-4);
+	height: var(--sumi-header-h);
 	min-width: 0;
+	padding: 0 var(--sumi-sp-4);
+	background: var(--sumi-plate);
 }
 
 .wg-tasks-filter {
@@ -184,7 +185,6 @@
 .wg-tasks-mode {
 	display: inline-flex;
 	flex: none;
-	margin-left: var(--sumi-sp-5);
 }
 
 .wg-tasks-search {

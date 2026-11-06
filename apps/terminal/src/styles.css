@@ -1,6 +1,5 @@
 @import "../../../design-systems/sumi/tokens.css";
 @import "../../../design-systems/sumi/sumi.css";
-@import "./features/plate/plate.css";
 
 @font-face {
 	font-family: "Inter Variable";
@@ -27,10 +26,6 @@ body {
 	font-family: var(--sumi-font-ui);
 }
 
-.wg-terminal-app {
-	height: 100%;
-}
-
 .wg-terminal-note {
 	margin: 0;
 	padding: 16px;
@@ -39,7 +34,18 @@ body {
 	font-size: 13px;
 }
 
-.wg-app-plate-body > .wg-terminal {
+.wg-app-body > .wg-terminal {
 	flex: 1;
 	min-height: 0;
+}
+
+.wg-app-body {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	height: 100vh;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
 }

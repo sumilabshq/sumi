@@ -5,6 +5,7 @@ import type { SumiFrame } from "./sumi-frame.js";
 const NO_TAB = "useSumiTab is used outside SumiTabContext";
 
 export interface SumiTab {
+	readonly tabId: string;
 	readonly address: string | null;
 	readonly open: (address: string) => void;
 }
@@ -51,5 +52,5 @@ export function useTabOf({ sumi, transport, tabId }: SumiFrame): SumiTab {
 		[sumi, tabId],
 	);
 
-	return useMemo(() => ({ address, open }), [address, open]);
+	return useMemo(() => ({ tabId, address, open }), [tabId, address, open]);
 }

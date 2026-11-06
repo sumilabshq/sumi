@@ -1,7 +1,6 @@
 @import "@widgetarium/core/styles.css";
 @import "../../../design-systems/sumi/tokens.css";
 @import "../../../design-systems/sumi/sumi.css";
-@import "./features/plate/plate.css";
 @import "./features/tasks/tasks.css";
 
 @font-face {
@@ -29,10 +28,17 @@ body {
 	font-family: var(--sumi-font-ui);
 }
 
-.wg-tasks-app {
-	height: 100%;
+.wg-app-body {
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	height: 100vh;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--sumi-plate);
+	color: var(--sumi-text);
 }
 
-.wg-app-plate-body > .wg-tasks {
+.wg-app-body > .wg-tasks {
 	flex: 1;
 }

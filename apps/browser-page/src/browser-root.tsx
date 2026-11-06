@@ -1,6 +1,6 @@
 import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
-import { AppPlate } from "./features/plate/ui/app-plate.js";
+import type { HeaderActions } from "@sumi/contract";
 import { NewTabPage } from "./browser/new-tab-page.js";
 import { NotAvailableNote } from "./browser/not-available-note.js";
 import { recordIn, useTabAddress } from "./browser/use-tab-address.js";
@@ -18,9 +18,10 @@ const SUMI_APP_PROTOCOL = "sumi-app:";
 export interface BrowserRootProps {
 	readonly tab: SumiTab;
 	readonly page: SumiWebPage;
+	readonly headerActions: HeaderActions;
 }
 
-export function BrowserRoot({ tab, page }: BrowserRootProps): ReactElement {
+export function BrowserRoot({ tab, page, headerActions }: BrowserRootProps): ReactElement {
 	const { address, failure, navigate } = useTabAddress(tab);
 	useEffect(() => {
 		if (location.protocol !== SUMI_APP_PROTOCOL) {
@@ -41,23 +42,29 @@ export function BrowserRoot({ tab, page }: BrowserRootProps): ReactElement {
 		});
 	}, [tab, address]);
 	return (
-		<div className="wg-browser-app">
-			<AppPlate name={APP_NAME}>
-				<BrowserBody tab={tab} page={page} address={address} failure={failure} navigate={navigate} />
-			</AppPlate>
-		</div>
+		<main className="wg-browser-app wg-app-body" aria-label={APP_NAME}>
+			<BrowserBody
+				tab={tab}
+				page={page}
+				headerActions={headerActions}
+				address={address}
+				failure={failure}
+				navigate={navigate}
+			/>
+		</main>
 	);
 }
 
 interface BrowserBodyProps {
 	readonly tab: SumiTab;
 	readonly page: SumiWebPage;
+	readonly headerActions: HeaderActions;
 	readonly address: string | null;
 	readonly failure: string | null;
 	readonly navigate: (address: string) => void;
 }
 
-function BrowserBody({ tab, page, address, failure, navigate }: BrowserBodyProps): ReactElement | null {
+function BrowserBody({ tab, page, headerActions, address, failure, navigate }: BrowserBodyProps): ReactElement | null {
 	if (failure !== null) {
 		return <NotAvailableNote reason={failure} />;
 	}
@@ -70,5 +77,5 @@ function BrowserBody({ tab, page, address, failure, navigate }: BrowserBodyProps
 		return <NewTabPage onOpen={(typed) => navigate(webAddressOf(typed))} />;
 	}
 
-	return <WebPageView tab={tab} page={page} address={address} onUrl={navigate} />;
+	return <WebPageView tab={tab} page={page} headerActions={headerActions} address={address} onUrl={navigate} />;
 }

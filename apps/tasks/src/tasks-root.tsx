@@ -4,8 +4,8 @@ import { RecordAppPageCommand, catchLinks, wearSumiTheme } from "@sumi/contract"
 import { TaskRefSchema } from "@widgetarium/tasks";
 import { AppProvider } from "@widgetarium/data-framework";
 import type { StartedApp } from "@widgetarium/data-framework";
-import { AppPlate } from "./features/plate/ui/app-plate.js";
 import { BOARD_ADDRESS } from "./features/tasks/lib/use-open-task.js";
+import { HeaderActionsContext, useStartsHeaderActions } from "./sumi/header-actions.js";
 import type { SumiFrame } from "./sumi/sumi-frame.js";
 import { SumiTabContext, useTabOf } from "./sumi/sumi-tab.js";
 import { TasksPage } from "./tasks/tasks-page.js";
@@ -26,6 +26,7 @@ interface RecordedPage {
 
 export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 	const tab = useTabOf(frame);
+	const headerActions = useStartsHeaderActions(frame);
 	useWearsSumi(frame);
 	useRecordsFavicon(frame);
 	useRecordsTitle(frame, tab.address);
@@ -37,13 +38,13 @@ export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 	const shown = shownAddressOf(tab.address);
 	return (
 		<SumiTabContext.Provider value={tab}>
-			<AppProvider app={frame.sumi}>
-				<div className="wg-tasks-app">
-					<AppPlate name={APP_NAME}>
+			<HeaderActionsContext.Provider value={headerActions}>
+				<AppProvider app={frame.sumi}>
+					<main className="wg-tasks-app wg-app-body" aria-label={APP_NAME}>
 						<TasksPage key={shown} address={shown} />
-					</AppPlate>
-				</div>
-			</AppProvider>
+					</main>
+				</AppProvider>
+			</HeaderActionsContext.Provider>
 		</SumiTabContext.Provider>
 	);
 }
