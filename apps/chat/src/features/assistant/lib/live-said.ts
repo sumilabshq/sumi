@@ -14,7 +14,7 @@ const DONE_THEN = "{done}, ";
 // TRADE-OFF: done and now are two spans of one sentence, because they are painted in two colours
 export function liveSaidOf(calls: readonly AssistantCall[], faces: readonly CallFace[], waiting: string): LiveSaid {
 	const known = knownFacesOf(calls, faces);
-	const done = toolsSummaryOf(known.filter((_, at) => calls[at]?.answered === true));
+	const done = toolsSummaryOf(answeredFacesOf(calls, known));
 	const running = known[calls.map((call) => call.answered).lastIndexOf(false)];
 
 	if (!running) {
@@ -24,8 +24,18 @@ export function liveSaidOf(calls: readonly AssistantCall[], faces: readonly Call
 		};
 	}
 
-	const now = DOING.replace("{verb}", callVerbOf(running, false)).replace("{object}", running.object);
+	return saidWithRunning(done, doingSaidOf(running));
+}
 
+function answeredFacesOf(calls: readonly AssistantCall[], known: readonly CallFace[]): readonly CallFace[] {
+	return known.filter((_, at) => calls[at]?.answered === true);
+}
+
+function doingSaidOf(running: CallFace): string {
+	return DOING.replace("{verb}", callVerbOf(running, false)).replace("{object}", running.object);
+}
+
+function saidWithRunning(done: string, now: string): LiveSaid {
 	if (done === "") {
 		return {
 			done: "",

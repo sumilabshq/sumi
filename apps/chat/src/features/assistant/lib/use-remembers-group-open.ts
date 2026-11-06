@@ -8,17 +8,20 @@ export function useRemembersGroupOpen(key: string | undefined): readonly [boolea
 	const [isOpen, setOpen] = useState(() => key !== undefined && opened?.has(key) === true);
 	const choose = (next: boolean): void => {
 		setOpen(next);
-
-		if (key === undefined || opened === null) {
-			return;
-		}
-
-		if (next) {
-			opened.add(key);
-			return;
-		}
-
-		opened.delete(key);
+		rememberChoice(opened, key, next);
 	};
 	return [isOpen, choose];
+}
+
+function rememberChoice(opened: Set<string> | null, key: string | undefined, isOpen: boolean): void {
+	if (key === undefined || opened === null) {
+		return;
+	}
+
+	if (isOpen) {
+		opened.add(key);
+		return;
+	}
+
+	opened.delete(key);
 }
