@@ -11895,6 +11895,47 @@ body.wg-tree-carrying .wg-tile-body {
 	font-size: var(--wg-kit-text-s);
 	line-height: 1.4;
 }
+
+:is(.wg-root, .wg-portal) .wg-kit-tooltip-host {
+	--wg-kit-tooltip-in: var(--sumi-dur-fast);
+	--wg-kit-tooltip-out: var(--sumi-dur-out);
+	--wg-kit-tooltip-glide: var(--sumi-dur-fast);
+	--wg-kit-tooltip-glide-ease: var(--sumi-ease-out);
+	--wg-kit-tooltip-pad-start: 10px;
+	font-family: var(--sumi-font-ui);
+	font-feature-settings: var(--sumi-font-features);
+	font-optical-sizing: auto;
+	line-height: 1.4;
+	-webkit-font-smoothing: antialiased;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip.is-hosted {
+	height: var(--sumi-h-tip);
+	padding: 0 10px;
+	border-radius: var(--sumi-r-tip);
+	background: var(--sumi-text);
+	color: var(--sumi-plate);
+	font-size: var(--sumi-fs-tip);
+	font-weight: var(--sumi-fw-medium);
+	line-height: 1.4;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip.is-hosted.has-keys {
+	padding: 0 6px 0 10px;
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip-key {
+	font-size: var(--sumi-fs-11);
+	border-radius: var(--sumi-r-xs);
+	background: var(--sumi-tip-kbd);
+	color: var(--sumi-plate);
+}
+
+:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip-arrow {
+	width: var(--sumi-tip-arrow);
+	height: var(--sumi-tip-arrow);
+	background: var(--sumi-text);
+}
 @keyframes wg-kit-tooltip-words-in {
 	from {
 		opacity: 0;
@@ -17712,42 +17753,6 @@ body:has([data-browser-pages-live]),
 	display: flex;
 	flex-direction: column;
 	min-width: 200px;
-}
-:is(.wg-root, .wg-portal) .wg-kit-tooltip-host {
-	--wg-kit-tooltip-in: var(--sumi-dur-fast);
-	--wg-kit-tooltip-out: var(--sumi-dur-out);
-	--wg-kit-tooltip-glide: var(--sumi-dur-fast);
-	--wg-kit-tooltip-glide-ease: var(--sumi-ease-out);
-	--wg-kit-tooltip-pad-start: 10px;
-	font-family: var(--sumi-font-ui);
-	font-feature-settings: var(--sumi-font-features);
-	font-optical-sizing: auto;
-	line-height: 1.4;
-	-webkit-font-smoothing: antialiased;
-}
-:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip.is-hosted {
-	height: var(--sumi-h-tip);
-	padding: 0 10px;
-	border-radius: var(--sumi-r-tip);
-	background: var(--sumi-text);
-	color: var(--sumi-plate);
-	font-size: var(--sumi-fs-tip);
-	font-weight: var(--sumi-fw-medium);
-	line-height: 1.4;
-}
-:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip.is-hosted.has-keys {
-	padding: 0 6px 0 10px;
-}
-:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip-key {
-	font-size: var(--sumi-fs-11);
-	border-radius: var(--sumi-r-xs);
-	background: var(--sumi-tip-kbd);
-	color: var(--sumi-plate);
-}
-:is(.wg-root, .wg-portal) .wg-kit-tooltip-host .wg-kit-tooltip-arrow {
-	width: var(--sumi-tip-arrow);
-	height: var(--sumi-tip-arrow);
-	background: var(--sumi-text);
 }
 .wg-pane-board {
 	position: relative;
