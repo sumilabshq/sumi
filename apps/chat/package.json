@@ -11,7 +11,7 @@
 		"test": "node scripts/write-manifest.ts --check"
 	},
 	"dependencies": {
-		"@sumi/contract": "0.3.2",
+		"@sumi/contract": "0.3.4",
 		"@tanstack/react-query": "5.104.1",
 		"@widgetarium/assistant": "0.1.0",
 		"@widgetarium/core": "0.1.0",

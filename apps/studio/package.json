@@ -32,7 +32,7 @@
 		"@widgetarium/browser": "0.1.0",
 		"@widgetarium/canvas": "0.1.0",
 		"@widgetarium/command-menu": "0.1.0",
-		"@sumi/contract": "0.3.1",
+		"@sumi/contract": "0.3.4",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/file-system": "0.1.0",
 		"@widgetarium/terminal": "0.1.0",
