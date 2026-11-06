@@ -522,10 +522,6 @@
 	color: var(--sumi-text-3);
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-tools-icon {
-	flex: none;
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-tools-chevron {
 	flex: none;
 	transition: rotate 160ms ease;
@@ -767,52 +763,6 @@
 	padding: 0 20px;
 	font-size: 13px;
 	font-weight: var(--font-medium, 500);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-running {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 6px 16px 6px 6px;
-	border-radius: calc(var(--wg-kit-control-radius) + 6px);
-	background: var(--wg-kit-group-fill);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-running-mark {
-	display: inline-flex;
-	flex: none;
-	align-items: center;
-	justify-content: center;
-	width: 40px;
-	height: 40px;
-	border-radius: var(--wg-kit-round);
-	background: var(--wg-kit-raise);
-	color: var(--wg-kit-accent);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-running-mark > * {
-	animation: wg-studio-ai-stage-turn 900ms linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	:is(.wg-root, .wg-portal) .wg-studio-ai-running-mark > * {
-		animation: none;
-	}
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-running-said {
-	flex-grow: 1;
-	min-width: 0;
-	overflow: hidden;
-	font-size: 14px;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-running-took {
-	flex: none;
-	font-size: 12px;
-	color: var(--wg-kit-text-muted);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-failure-card {
@@ -1094,29 +1044,9 @@
 	padding: 2px 2px 6px;
 }
 
-:is(.wg-root, .wg-portal) .wg-studio-ai-busy-mark {
-	grid-row: 1 / span 2;
-	align-self: start;
-	margin-top: 2px;
-	color: var(--wg-kit-text-muted);
-	animation: wg-studio-ai-thinking 1500ms ease-in-out infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	:is(.wg-root, .wg-portal) .wg-studio-ai-busy-mark {
-		animation: none;
-		opacity: 0.7;
-	}
-}
-
 :is(.wg-root, .wg-portal) .wg-studio-ai-busy-said {
 	font-size: var(--font-ui-small, 14px);
 	color: var(--wg-kit-text);
-}
-
-:is(.wg-root, .wg-portal) .wg-studio-ai-busy-warn {
-	font-size: var(--font-ui-smaller, 12px);
-	color: var(--text-faint);
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-build {
@@ -1695,34 +1625,6 @@
 	border-radius: calc(var(--wg-studio-bubble-corner) - 4px);
 	background: var(--wg-kit-highlight-wash);
 	color: var(--wg-kit-highlight-ink);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown table {
-	display: table;
-	width: calc(100% - 2 * var(--wg-studio-edge));
-	margin: var(--wg-studio-edge) var(--wg-studio-edge) calc(8px + var(--wg-studio-edge));
-	border-collapse: separate;
-	border-spacing: 0;
-	border-radius: calc(var(--wg-studio-bubble-corner) - 6px);
-	background: var(--wg-kit-raise);
-	box-shadow: 0 0 0 var(--wg-studio-edge) var(--wg-kit-group-fill);
-	font-size: var(--wg-kit-text-s);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown :is(th, td) {
-	padding: 10px 14px;
-	border: none;
-	border-bottom: 1px solid var(--wg-kit-group-line);
-	text-align: start;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown th {
-	font-weight: var(--font-medium, 500);
-	color: var(--wg-kit-text-muted);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown tr:last-child td {
-	border-bottom: none;
 }
 
 .wg-chat-app .wg-studio-ai-failure {
@@ -2582,57 +2484,6 @@
 	color: var(--wg-kit-text);
 }
 
-.wg-chat-app .wg-studio-ai-said.is-markdown pre {
-	--wg-studio-code-pad: 14px;
-	--wg-studio-code-copy: 30px;
-	position: relative;
-	margin: 0;
-	padding: var(--wg-studio-code-pad) 16px;
-	border-radius: 24px;
-	background: var(--wg-kit-group-fill);
-	box-shadow: none;
-	overflow-x: hidden;
-	font-size: 12.5px;
-	line-height: 1.7;
-	white-space: pre-wrap;
-	overflow-wrap: anywhere;
-	tab-size: 4;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown pre::before {
-	content: "";
-	float: right;
-	width: calc(var(--wg-studio-code-copy) + 8px);
-	height: calc(var(--wg-studio-code-copy) - 8px);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown pre > code {
-	padding: 0;
-	border-radius: 0;
-	background: none;
-	white-space: inherit;
-	overflow-wrap: inherit;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown pre .copy-code-button {
-	position: absolute;
-	top: calc(var(--wg-studio-code-pad) - 6px);
-	right: calc(var(--wg-studio-code-pad) - 6px);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--wg-studio-code-copy);
-	height: var(--wg-studio-code-copy);
-	margin: 0;
-	padding: 0;
-	border: none;
-	border-radius: var(--wg-kit-control-radius);
-	background: var(--wg-kit-raise);
-	box-shadow: none;
-	color: var(--wg-kit-text);
-	font-size: 12px;
-}
-
 .wg-chat-app .wg-studio-ai-said.is-markdown kbd {
 	padding: 1px 6px;
 	border: 1px solid var(--border);
@@ -2669,15 +2520,6 @@
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > hr,
 .wg-chat-app .wg-studio-ai-said.is-markdown > div > hr + * {
 	margin-top: 16px;
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown > div > table {
-	margin-top: calc(12px + var(--wg-studio-edge));
-	margin-bottom: var(--wg-studio-edge);
-}
-
-.wg-chat-app .wg-studio-ai-said.is-markdown > div > table:first-child {
-	margin-top: var(--wg-studio-edge);
 }
 
 .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-link-icon {
@@ -2826,5 +2668,457 @@
 @keyframes wg-studio-ai-compact-spin {
 	to {
 		transform: rotate(360deg);
+	}
+}
+
+.wg-chat-app {
+	--sumi-code-foreground: var(--sumi-text);
+	--sumi-code-background: transparent;
+	--sumi-code-token-keyword: var(--sumi-hue-purple);
+	--sumi-code-token-function: var(--sumi-hue-blue);
+	--sumi-code-token-string: var(--sumi-hue-green);
+	--sumi-code-token-string-expression: var(--sumi-hue-teal);
+	--sumi-code-token-constant: var(--sumi-hue-orange);
+	--sumi-code-token-parameter: var(--sumi-text);
+	--sumi-code-token-punctuation: var(--sumi-text-2);
+	--sumi-code-token-comment: var(--sumi-text-3);
+	--sumi-code-token-link: var(--sumi-accent-text);
+	--wg-code-pad-block: 12px;
+	--wg-code-pad-inline: 14px;
+	--wg-code-line: 1.6;
+	--wg-code-size: 12.5px;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock {
+	position: relative;
+	overflow: hidden;
+	border-radius: var(--sumi-r-lg);
+	background: var(--wg-kit-group-fill);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre {
+	margin: 0;
+	padding: var(--wg-code-pad-block) var(--wg-code-pad-inline);
+	overflow-x: auto;
+	color: var(--sumi-code-foreground);
+	font-size: var(--wg-code-size);
+	line-height: var(--wg-code-line);
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	tab-size: 4;
+}
+
+:root[data-code-wrap="off"] .wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre {
+	white-space: pre;
+	overflow-wrap: normal;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock pre > code {
+	padding: 0;
+	border-radius: 0;
+	background: none;
+	font-size: inherit;
+	white-space: inherit;
+	overflow-wrap: inherit;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tools {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	height: calc(2 * var(--wg-code-pad-block) + var(--wg-code-line) * var(--wg-code-size));
+	padding: 0 10px 0 32px;
+	background: linear-gradient(90deg, transparent, var(--wg-kit-group-fill) 24px);
+	opacity: 0;
+	transition: opacity var(--sumi-dur-fast) var(--sumi-ease);
+}
+
+.wg-chat-app
+	.wg-studio-ai-said.is-markdown
+	.wg-studio-ai-codeblock:is(:hover, :focus-within)
+	.wg-studio-ai-codeblock-tools {
+	opacity: 1;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-lang {
+	padding: 0 6px;
+	font-family: var(--sumi-font-ui);
+	font-size: var(--sumi-fs-11);
+	color: var(--sumi-text-3);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--sumi-h-xs);
+	height: var(--sumi-h-xs);
+	padding: 0;
+	border: none;
+	border-radius: var(--sumi-r-sm);
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text-3);
+	cursor: pointer;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool:hover {
+	background: var(--sumi-active);
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool.is-copied {
+	color: var(--sumi-hue-green);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool svg {
+	width: var(--sumi-icon-sm);
+	height: var(--sumi-icon-sm);
+}
+
+.wg-chat-app .wg-studio-ai-more {
+	display: inline-flex;
+	align-self: flex-start;
+	align-items: center;
+	gap: 4px;
+	height: var(--sumi-h-xs);
+	padding: 0;
+	border: none;
+	background: none;
+	box-shadow: none;
+	color: var(--sumi-text-3);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
+	cursor: pointer;
+}
+
+.wg-chat-app .wg-studio-ai-more:hover {
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-more svg {
+	width: 12px;
+	height: 12px;
+	transition: rotate var(--sumi-dur-fast) var(--sumi-ease);
+}
+
+.wg-chat-app :not(.is-cut) > .wg-studio-ai-more svg {
+	rotate: 180deg;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock > .wg-studio-ai-more {
+	margin: calc(-1 * var(--sumi-sp-2)) var(--wg-code-pad-inline) var(--sumi-sp-4);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock.is-cut pre {
+	max-height: calc(
+		var(--wg-code-lines-when-cut) * var(--wg-code-line) * var(--wg-code-size) + var(--wg-code-pad-block)
+	);
+	overflow-y: hidden;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock.is-cut::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	height: 96px;
+	background: linear-gradient(180deg, transparent, var(--wg-kit-group-fill) 72%);
+	pointer-events: none;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock.is-cut > .wg-studio-ai-more {
+	position: absolute;
+	bottom: var(--sumi-sp-4);
+	left: var(--wg-code-pad-inline);
+	z-index: 1;
+	margin: 0;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table {
+	overflow-x: auto;
+	border-radius: var(--sumi-r-lg);
+	background: color-mix(in srgb, var(--sumi-text) 2.5%, transparent);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table table {
+	display: table;
+	width: max-content;
+	margin: 0;
+	min-width: 100%;
+	border-collapse: collapse;
+	font-size: var(--sumi-fs-13);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table :is(th, td) {
+	padding: 10px 14px;
+	border-bottom: 1px solid color-mix(in srgb, var(--sumi-text) 6%, transparent);
+	text-align: start;
+	vertical-align: top;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table th {
+	font-weight: var(--sumi-fw-medium);
+	color: var(--sumi-text-2);
+	white-space: nowrap;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table td {
+	max-width: 28em;
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table tr:last-child td {
+	border-bottom: none;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table > .wg-studio-ai-more {
+	position: sticky;
+	left: var(--wg-code-pad-inline);
+	margin: var(--sumi-sp-4) var(--wg-code-pad-inline);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > * + .wg-studio-ai-table-wrap {
+	margin-top: var(--sumi-sp-6);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown > div > :is(h1, h2, h3, h4, h5, h6) + .wg-studio-ai-table-wrap {
+	margin-top: var(--sumi-sp-5);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table-wrap {
+	position: relative;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table-tools {
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	height: 40px;
+	padding: 0 10px 0 32px;
+	border-radius: 0 var(--sumi-r-lg) 0 0;
+	background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--sumi-text) 2.5%, var(--sumi-plate)) 24px);
+	opacity: 0;
+	transition: opacity var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app
+	.wg-studio-ai-said.is-markdown
+	.wg-studio-ai-table-wrap:is(:hover, :focus-within)
+	.wg-studio-ai-table-tools {
+	opacity: 1;
+}
+
+.wg-chat-app .wg-studio-ai-said-text.is-clamped {
+	display: -webkit-box;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 5;
+}
+
+.wg-chat-app .wg-studio-ai-tools-head .wg-studio-ai-tools-chevron {
+	color: var(--sumi-text-3);
+}
+
+.wg-chat-app .wg-studio-ai-tools-head:hover .wg-studio-ai-tools-chevron {
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-call-meta.is-counts {
+	font-family: var(--sumi-font-ui);
+	font-size: inherit;
+	font-variant-numeric: tabular-nums;
+}
+
+.wg-chat-app .wg-studio-ai-call-meta.is-counts .is-added {
+	color: var(--sumi-hue-green);
+}
+
+.wg-chat-app .wg-studio-ai-call-meta.is-counts .is-removed {
+	color: var(--sumi-hue-red);
+}
+
+.wg-chat-app .wg-studio-ai-tools-list {
+	margin-left: 5px;
+	padding-left: var(--sumi-sp-5);
+	border-left: 1px solid var(--sumi-line);
+}
+
+.wg-chat-app .wg-studio-ai-busy {
+	display: flex;
+	align-items: center;
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-xs);
+	padding: 0;
+	font-size: var(--sumi-fs-13);
+}
+
+.wg-chat-app .wg-studio-ai-busy-said {
+	min-width: 0;
+	overflow: hidden;
+	color: var(--sumi-text);
+	font-size: inherit;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.wg-chat-app .wg-studio-ai-busy-took {
+	flex: none;
+	color: var(--sumi-text-3);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table.is-cut .is-past-cut {
+	display: none;
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-table.is-cut tr:has(+ .is-past-cut) td {
+	border-bottom: none;
+}
+
+.wg-chat-app .wg-studio-ai-call-head {
+	gap: var(--sumi-sp-4);
+	height: var(--sumi-h-xs);
+	padding: 0 var(--sumi-sp-2);
+	border-radius: var(--sumi-r-sm);
+	color: var(--sumi-text);
+	font: var(--sumi-fw-regular) var(--sumi-fs-13) var(--sumi-font-ui);
+}
+
+.wg-chat-app .wg-studio-ai-call-head:not(:disabled):hover {
+	background: none;
+}
+
+.wg-chat-app .wg-studio-ai-call-verb {
+	color: var(--sumi-text-2);
+	transition: color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-call-head:not(:disabled):hover .wg-studio-ai-call-verb {
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-call-open {
+	margin-left: var(--sumi-sp-2);
+	border-radius: var(--sumi-r-lg);
+}
+
+.wg-chat-app .wg-studio-ai-call-part-said {
+	tab-size: 2;
+}
+
+.wg-chat-app .wg-studio-ai-more,
+.wg-chat-app .wg-studio-ai-tools-head,
+.wg-chat-app .wg-studio-ai-tools-head .wg-studio-ai-tools-chevron {
+	transition: color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown .wg-studio-ai-codeblock-tool {
+	transition:
+		color var(--sumi-dur-base) var(--sumi-ease),
+		background-color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-said.is-markdown > div:not(:empty) + .wg-studio-ai-codeblock {
+	margin-top: 12px;
+}
+
+.wg-chat-app .wg-studio-ai-call-name.is-failed .wg-studio-ai-call-verb {
+	color: var(--wg-kit-error-ink);
+}
+
+.wg-chat-app .wg-studio-ai-call-object {
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-tools-list {
+	box-sizing: border-box;
+	width: auto;
+	gap: var(--sumi-sp-2);
+	padding-top: var(--sumi-sp-2);
+}
+
+.wg-chat-app .wg-studio-ai-tools {
+	gap: 0;
+}
+
+.wg-chat-app .wg-studio-ai-call-open:not(:has(> .wg-studio-ai-diff)) {
+	padding: 0;
+	background: none;
+}
+
+.wg-chat-app .wg-studio-ai-call-part-label {
+	color: var(--sumi-text-3);
+	font-size: var(--sumi-fs-12);
+}
+
+.wg-chat-app .wg-studio-ai-reveal {
+	display: grid;
+	grid-template-rows: 0fr;
+	opacity: 0;
+	transition:
+		grid-template-rows 220ms var(--sumi-ease),
+		opacity 220ms var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-reveal.is-open {
+	grid-template-rows: 1fr;
+	opacity: 1;
+}
+
+.wg-chat-app .wg-studio-ai-reveal-inner {
+	min-height: 0;
+	overflow: hidden;
+}
+
+.wg-chat-app .wg-studio-ai-reveal.is-open > .wg-studio-ai-reveal-inner > .wg-studio-ai-call-open {
+	margin-top: var(--sumi-sp-1);
+}
+
+.wg-chat-app .wg-studio-ai-to-end {
+	border-radius: 0;
+	background: none;
+	box-shadow: none;
+}
+
+.wg-chat-app .wg-studio-ai-to-end-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--sumi-h-md);
+	height: var(--sumi-h-md);
+	padding: 0;
+	border: none;
+	border-radius: var(--sumi-r-full);
+	background-color: var(--sumi-overlay);
+	box-shadow: var(--sumi-shadow-pop);
+	backdrop-filter: var(--sumi-blur-pop);
+	color: var(--sumi-text-2);
+	cursor: pointer;
+	transition:
+		color var(--sumi-dur-base) var(--sumi-ease),
+		background-color var(--sumi-dur-base) var(--sumi-ease);
+}
+
+.wg-chat-app .wg-studio-ai-to-end-button:hover {
+	background-color: color-mix(in srgb, var(--sumi-text) 9%, var(--sumi-overlay));
+	color: var(--sumi-text);
+}
+
+.wg-chat-app .wg-studio-ai-to-end-button:focus-visible {
+	outline: 2px solid var(--sumi-focus-ring);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.wg-chat-app .wg-studio-ai-reveal {
+		transition: none;
 	}
 }

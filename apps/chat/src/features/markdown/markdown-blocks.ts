@@ -1,4 +1,6 @@
 import { isSumiLink, linkOf, linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
+import { createCodeBlock } from "./code-block.js";
+import { createTableFrame } from "./table-frame.js";
 
 const FENCE = /^\s*(```|~~~)/;
 const HEADING = /^(#{1,6})\s+(.*?)\s*#*\s*$/;
@@ -140,7 +142,8 @@ function blockAt(page: Document, lines: readonly string[], at: number): Block {
 }
 
 function fencedAt(page: Document, lines: readonly string[], at: number): Block {
-	const opener = (FENCE.exec(lines[at] ?? "") ?? [])[1] ?? "```";
+	const openerLine = (lines[at] ?? "").trim();
+	const opener = FENCE.exec(openerLine)?.[1] ?? "```";
 	const body: string[] = [];
 	let next = at + 1;
 
@@ -149,11 +152,8 @@ function fencedAt(page: Document, lines: readonly string[], at: number): Block {
 		next += 1;
 	}
 
-	const block = page.createElement("pre");
-	const code = block.appendChild(page.createElement("code"));
-	code.textContent = body.join("\n");
 	return {
-		node: block,
+		node: createCodeBlock(page, openerLine.slice(opener.length).trim(), body.join("\n")),
 		next: next + 1,
 	};
 }
@@ -241,7 +241,7 @@ function tableAt(page: Document, lines: readonly string[], at: number): Block {
 	}
 
 	return {
-		node: table,
+		node: createTableFrame(page, table, lines.slice(at, next).join("\n")),
 		next,
 	};
 }
