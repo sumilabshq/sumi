@@ -34,7 +34,14 @@ export function StudioLayout({
 	return (
 		<AppProvider app={layoutApp}>
 			<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf}>
-				<StudioFrame frame={frame} chromeLeftPx={chromeLeftPx} left={left} panes={panes} panel={panel} />
+				<StudioFrame
+					frame={frame}
+					chromeLeftPx={chromeLeftPx}
+					readCursor={studio.cursorInWindow}
+					left={left}
+					panes={panes}
+					panel={panel}
+				/>
 			</AppFramesProvider>
 		</AppProvider>
 	);

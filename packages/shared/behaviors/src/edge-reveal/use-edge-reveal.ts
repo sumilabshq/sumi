@@ -1,21 +1,12 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { EdgeIntent } from "./edge-intent.js";
-import type { EdgePoint, EdgeSide } from "./edge-intent.js";
+import { CursorOutside } from "./cursor-outside.js";
+import { RestReveal } from "./edge-rest.js";
+import { EDGE_SIDES, EdgeIntent } from "./edge-intent.js";
+import type { EdgePoint } from "./edge-intent.js";
+import type { EdgeRevealAsk } from "./edge-reveal-ask.js";
 
-export type EdgeLook = "fixed" | "tucked" | "out";
-
-export interface EdgeRevealAsk {
-	readonly frame: RefObject<HTMLElement | null>;
-	readonly content: RefObject<HTMLElement | null>;
-	readonly panels: Readonly<Record<EdgeSide, RefObject<HTMLElement | null>>>;
-	readonly sides: Readonly<Record<EdgeSide, EdgeLook>>;
-	readonly reveal: (side: EdgeSide) => void;
-	readonly conceal: (side: EdgeSide) => void;
-}
-
-const CONCEAL_MS = 150;
-const SIDES: readonly EdgeSide[] = ["left", "right"];
+export type { EdgeLook, EdgeRevealAsk, ReadCursor } from "./edge-reveal-ask.js";
 const NO_BUTTON = 0;
 const KEYBOARD_FOCUS = ":focus-visible";
 
@@ -23,27 +14,34 @@ export function useEdgeReveal(ask: EdgeRevealAsk): void {
 	const latest = useRef(ask);
 	latest.current = ask;
 
-	useEffect(() => followPointer(new EdgeRevealDriver(latest, new EdgeIntent())), []);
+	useEffect(
+		() =>
+			followPointer(new EdgeRevealDriver(latest, new EdgeIntent(), new CursorOutside(latest), new RestReveal(latest))),
+		[],
+	);
 }
 
 function followPointer(driver: EdgeRevealDriver): () => void {
 	const onMove = (event: PointerEvent): void => driver.readMove(event);
+	const onOver = (event: PointerEvent): void => driver.readOver(event);
 	const onLeave = (event: MouseEvent): void => driver.readWindowLeave(event);
 	document.addEventListener("pointermove", onMove, { passive: true });
+	document.addEventListener("pointerover", onOver, { passive: true });
 	document.documentElement.addEventListener("mouseleave", onLeave);
 	return () => {
 		document.removeEventListener("pointermove", onMove);
+		document.removeEventListener("pointerover", onOver);
 		document.documentElement.removeEventListener("mouseleave", onLeave);
 		driver.stop();
 	};
 }
 
 class EdgeRevealDriver {
-	private readonly concealTimers = new Map<EdgeSide, number>();
-
 	constructor(
 		private readonly latest: RefObject<EdgeRevealAsk>,
 		private readonly intent: EdgeIntent,
+		private readonly outside: CursorOutside,
+		private readonly rest: RestReveal,
 	) {}
 
 	readMove(event: PointerEvent): void {
@@ -54,8 +52,15 @@ class EdgeRevealDriver {
 			return;
 		}
 
-		this.concealOnContent(ask, event);
-		this.revealIfTucked(this.intent.sideOnMove(edgePointOf(event, frame)));
+		this.foldOnContent(ask, event);
+		this.rest.watchRestAt(this.intent.sideOnMove(edgePointOf(event, frame)), {
+			x: event.clientX,
+			y: event.clientY,
+		});
+	}
+
+	readOver(event: PointerEvent): void {
+		this.foldOnContent(this.latest.current, event);
 	}
 
 	readWindowLeave(event: MouseEvent): void {
@@ -65,61 +70,29 @@ class EdgeRevealDriver {
 			return;
 		}
 
-		this.revealIfTucked(this.intent.sideOnWindowLeave(edgePointOf(event, frame)));
+		this.rest.cancel();
+		this.outside.follow(this.intent.sideOnWindowLeave(edgePointOf(event, frame)));
 	}
 
 	stop(): void {
-		for (const side of SIDES) {
-			this.cancelConceal(side);
-		}
+		this.rest.cancel();
+		this.outside.stop();
 	}
 
-	private concealOnContent(ask: EdgeRevealAsk, event: PointerEvent): void {
+	private foldOnContent(ask: EdgeRevealAsk, event: PointerEvent): void {
 		const isOnContent = event.target instanceof Node && ask.content.current?.contains(event.target) === true;
 
-		for (const side of SIDES) {
-			if (ask.sides[side] !== "out" || !isOnContent) {
-				this.cancelConceal(side);
-				continue;
-			}
+		if (!isOnContent) {
+			return;
+		}
 
-			if (!this.concealTimers.has(side)) {
-				this.concealTimers.set(
-					side,
-					window.setTimeout(() => this.concealIfStillOut(side), CONCEAL_MS),
-				);
+		this.rest.cancel();
+
+		for (const side of EDGE_SIDES) {
+			if (ask.sides[side] === "out" && !isKeyboardFocusIn(ask.panels[side].current)) {
+				ask.conceal(side);
 			}
 		}
-	}
-
-	private concealIfStillOut(side: EdgeSide): void {
-		this.concealTimers.delete(side);
-		const ask = this.latest.current;
-
-		if (ask.sides[side] !== "out" || isKeyboardFocusIn(ask.panels[side].current)) {
-			return;
-		}
-
-		ask.conceal(side);
-	}
-
-	private cancelConceal(side: EdgeSide): void {
-		const timer = this.concealTimers.get(side);
-
-		if (timer === undefined) {
-			return;
-		}
-
-		window.clearTimeout(timer);
-		this.concealTimers.delete(side);
-	}
-
-	private revealIfTucked(side: EdgeSide | null): void {
-		if (side === null || this.latest.current.sides[side] !== "tucked") {
-			return;
-		}
-
-		this.latest.current.reveal(side);
 	}
 }
 

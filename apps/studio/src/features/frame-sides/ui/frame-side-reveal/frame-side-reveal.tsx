@@ -1,7 +1,7 @@
 import { Fragment, createElement as h, useEffect, useRef } from "react";
 import type { ReactElement, RefObject } from "react";
 import { useEdgeReveal } from "@widgetarium/behaviors";
-import type { EdgeLook } from "@widgetarium/behaviors";
+import type { EdgeLook, ReadCursor } from "@widgetarium/behaviors";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import type { FrameSide, SideLook } from "@widgetarium/layout";
 import {
@@ -16,6 +16,7 @@ export interface FrameSideRevealProps {
 	readonly frame: RefObject<HTMLElement | null>;
 	readonly content: RefObject<HTMLElement | null>;
 	readonly panel: RefObject<HTMLElement | null>;
+	readonly readCursor: ReadCursor;
 }
 
 const EDGE_LOOK: Readonly<Record<SideLook, EdgeLook>> = {
@@ -27,7 +28,7 @@ const EDGE_LOOK: Readonly<Record<SideLook, EdgeLook>> = {
 const SIDES: readonly FrameSide[] = ["left"];
 const NO_PANEL: RefObject<HTMLElement | null> = { current: null };
 
-export function FrameSideReveal({ frame, content, panel }: FrameSideRevealProps): ReactElement {
+export function FrameSideReveal({ frame, content, panel, readCursor }: FrameSideRevealProps): ReactElement {
 	const sides = useQuery(FrameSidesQuery).data;
 	const peek = useCommand(PeekFrameSideCommand);
 	const conceal = useCommand(ConcealFrameSideCommand);
@@ -46,6 +47,7 @@ export function FrameSideReveal({ frame, content, panel }: FrameSideRevealProps)
 		},
 		reveal: (side) => runOnFrameSide(side, (frameSide) => void peek.run({ side: frameSide })),
 		conceal: (side) => runOnFrameSide(side, (frameSide) => void conceal.run({ side: frameSide })),
+		readCursor,
 	});
 	return (
 		<Fragment>

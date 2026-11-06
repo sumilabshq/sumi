@@ -12,8 +12,14 @@ export interface ChromeInsets {
 	readonly top: number;
 }
 
+export interface CursorPoint {
+	readonly x: number;
+	readonly y: number;
+}
+
 export interface StudioHostPort {
 	insets(): ChromeInsets;
+	cursorInWindow(): Promise<CursorPoint | null>;
 	onInsets(changed: () => void): () => void;
 	apps(): Promise<readonly HostApp[]>;
 	openApp(id: string): Promise<void>;
@@ -31,6 +37,7 @@ export const NO_INSETS: ChromeInsets = {
 
 export const NO_STUDIO_HOST: StudioHostPort = {
 	insets: () => NO_INSETS,
+	cursorInWindow: () => Promise.resolve(null),
 	onInsets: () => () => undefined,
 	apps: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),
 	openApp: () => Promise.reject(new Error(NOT_AVAILABLE_ON_HOST)),

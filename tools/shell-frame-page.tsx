@@ -4,7 +4,7 @@ import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.j
 import { PageInputSchema, PageOf } from "../packages/shared/core/src/gateway/page.js";
 import { IQuery } from "../packages/shared/core/src/gateway/queries.js";
 import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.js";
-import type { StudioHostPort } from "../packages/shared/core/src/engine/studio-host.js";
+import type { CursorPoint, StudioHostPort } from "../packages/shared/core/src/engine/studio-host.js";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.js";
 import type {
 	AssistantPort,
@@ -37,14 +37,32 @@ reportsFailures();
 const STARTED_AT = performance.now();
 const HAS_TRAFFIC_LIGHTS = new URLSearchParams(location.search).has("lights");
 const IS_RECORDS_PENDING = new URLSearchParams(location.search).has("records-pending");
-const TAURI_LIKE_HOST: StudioHostPort = {
+const CURSOR_FROM_TEST_HOST: StudioHostPort = {
 	...NO_STUDIO_HOST,
+	cursorInWindow: async () => cursorSetByTest(),
+};
+const TAURI_LIKE_HOST: StudioHostPort = {
+	...CURSOR_FROM_TEST_HOST,
 	insets: () => ({
 		left: 76,
 		right: 0,
 		top: 37,
 	}),
 };
+
+function cursorSetByTest(): CursorPoint | null {
+	const held: unknown = Reflect.get(window, "__CURSOR__");
+	return isCursorPoint(held) ? held : null;
+}
+
+function isCursorPoint(held: unknown): held is CursorPoint {
+	return (
+		typeof held === "object" &&
+		held !== null &&
+		typeof Reflect.get(held, "x") === "number" &&
+		typeof Reflect.get(held, "y") === "number"
+	);
+}
 
 type FixtureTask = { readonly id: string; readonly title: string };
 
@@ -209,7 +227,7 @@ try {
 	const started = startStudio(PROJECT, {
 		assistant,
 		studioApp,
-		studio: HAS_TRAFFIC_LIGHTS ? TAURI_LIKE_HOST : NO_STUDIO_HOST,
+		studio: HAS_TRAFFIC_LIGHTS ? TAURI_LIKE_HOST : CURSOR_FROM_TEST_HOST,
 		appId: "Default",
 	});
 	Object.assign(window, {

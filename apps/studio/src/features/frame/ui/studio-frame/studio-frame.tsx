@@ -1,6 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement, ReactNode, RefObject } from "react";
 import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
+import type { ReadCursor } from "@widgetarium/behaviors";
 import { Slot, useCommand, useQuery } from "@widgetarium/data-framework";
 import { CommandMenu } from "../../../command-menu/ui/command-menu/command-menu.js";
 import { CommandMenuKeys } from "../../../command-menu/ui/command-menu-keys/command-menu-keys.js";
@@ -20,6 +21,7 @@ import { FrameSideColumn } from "./frame-side-column.js";
 export interface StudioFrameProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
 	readonly chromeLeftPx: number;
+	readonly readCursor: ReadCursor;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
 	readonly panel: ReactNode;
@@ -27,7 +29,7 @@ export interface StudioFrameProps {
 
 const FRAME_CLASS = "wg-studio wg-shell";
 
-export function StudioFrame({ frame, chromeLeftPx, left, panes, panel }: StudioFrameProps): ReactElement {
+export function StudioFrame({ frame, chromeLeftPx, readCursor, left, panes, panel }: StudioFrameProps): ReactElement {
 	const widths = useQuery(FrameWidthsQuery).data;
 	const sides = useQuery(FrameSidesQuery).data;
 	const resizeEdge = useCommand(ResizeFrameEdgeCommand);
@@ -63,7 +65,7 @@ export function StudioFrame({ frame, chromeLeftPx, left, panes, panel }: StudioF
 					/>
 					{panel === null ? null : <div className="wg-shell-panel">{panel}</div>}
 				</div>
-				<FrameSideReveal frame={frame} content={appZone} panel={leftSide} />
+				<FrameSideReveal frame={frame} content={appZone} panel={leftSide} readCursor={readCursor} />
 				<FrameSideToggle side="left" />
 				<LinkOpener frame={frame} />
 				<Slot loading={null}>

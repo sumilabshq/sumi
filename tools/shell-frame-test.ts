@@ -539,6 +539,90 @@ const SlideFramesSchema = z.array(
 	}),
 );
 
+const APP_FRAME_FIXTURE = `(() => {
+	const frame = document.createElement("iframe");
+	frame.dataset.probeFrame = "";
+	frame.srcdoc = "<body style='margin:0;height:100vh'></body>";
+	Object.assign(frame.style, { position: "absolute", inset: "0", width: "100%", height: "100%", border: "0" });
+	document.querySelector(".wg-shell-app-zone").append(frame);
+	return true;
+})()`;
+
+async function checkAppFrameFoldsPeek(page: AskedPage, theme: Theme): Promise<void> {
+	await page.ask(APP_FRAME_FIXTURE);
+	await waited(100);
+	await page.hover(60, 400);
+	await page.hover(700, 400);
+	await waited(400);
+	const framed = SidesSchema.parse(await page.ask(SIDES));
+	check(`${theme}: entering an app frame folds the peek away`, framed.left === "hidden", framed);
+	await page.ask(`document.querySelector("[data-probe-frame]").remove(); true`);
+}
+
+const CONCEAL_AT_ONCE_MS = 50;
+const EDGE_REST_MS = 80;
+const CURSOR_SETTLE_MS = 250;
+
+const LEAVE_AT_LEFT_EDGE = `(() => {
+	document.documentElement.dispatchEvent(new MouseEvent("mouseleave", { clientX: 0, clientY: 400 }));
+	return true;
+})()`;
+
+async function leftLookWithCursorAt(page: AskedPage, x: number, y: number): Promise<string> {
+	await page.ask(`window.__CURSOR__ = { x: ${x}, y: ${y} }; true`);
+	await waited(CURSOR_SETTLE_MS);
+	return SidesSchema.parse(await page.ask(SIDES)).left;
+}
+
+async function leftLookAfterLeavingTo(page: AskedPage, x: number, y: number): Promise<string> {
+	await page.ask(`window.__CURSOR__ = { x: ${x}, y: ${y} }; true`);
+	await page.ask(LEAVE_AT_LEFT_EDGE);
+	await waited(CURSOR_SETTLE_MS);
+	return SidesSchema.parse(await page.ask(SIDES)).left;
+}
+
+const LEFT_STATES_SEEN = `(() => {
+	const column = document.querySelector('[data-shell-side="left"]').parentElement;
+	window.__LEFT_STATES__ = [];
+	new MutationObserver(() => window.__LEFT_STATES__.push(column.dataset.state)).observe(column, { attributes: true, attributeFilter: ["data-state"] });
+	return true;
+})()`;
+
+async function checkFastPassStaysFolded(page: AskedPage, theme: Theme): Promise<void> {
+	await page.hover(300, 400);
+	await page.ask(LEFT_STATES_SEEN);
+	await page.hover(1, 400);
+	await page.hover(300, 400);
+	await waited(300);
+	const seen = z.array(z.string()).parse(await page.ask("window.__LEFT_STATES__"));
+	check(`${theme}: a pointer flying across the left edge never peeks the chats`, !seen.includes("peeking"), seen);
+}
+
+async function checkZonesOutsideWindow(page: AskedPage, theme: Theme): Promise<void> {
+	const farLeft = await leftLookAfterLeavingTo(page, -200, 400);
+	check(`${theme}: leaving the window far past the left edge leaves the chats folded`, farLeft === "hidden", farLeft);
+	await page.ask(`window.__CURSOR__ = { x: -30, y: 400 }; true`);
+	await page.ask(LEAVE_AT_LEFT_EDGE);
+	await waited(20);
+	const flownPast = await leftLookWithCursorAt(page, -200, 400);
+	check(
+		`${theme}: flying through the strip past the left edge leaves the chats folded`,
+		flownPast === "hidden",
+		flownPast,
+	);
+	const inStrip = await leftLookAfterLeavingTo(page, -110, 400);
+	check(`${theme}: stopping just past the left edge peeks the chats`, inStrip === "peeking", inStrip);
+	const keptBeside = await leftLookWithCursorAt(page, -120, 400);
+	check(`${theme}: the zone left of the window keeps the peek open`, keptBeside === "peeking", keptBeside);
+	const keptAbove = await leftLookWithCursorAt(page, 100, -40);
+	check(`${theme}: the zone above the chats keeps the peek open`, keptAbove === "peeking", keptAbove);
+	const pastAbove = await leftLookWithCursorAt(page, 100, -120);
+	check(`${theme}: past the zone above the chats folds the peek away`, pastAbove === "hidden", pastAbove);
+	await leftLookAfterLeavingTo(page, -30, 400);
+	const pastBeside = await leftLookWithCursorAt(page, -200, 400);
+	check(`${theme}: past the zone left of the window folds the peek away`, pastBeside === "hidden", pastBeside);
+	await page.ask(`delete window.__CURSOR__; true`);
+}
 const SLIDE_LEAST_STEPS = 5;
 const SLIDE_SLACK_PX = 1;
 
@@ -586,8 +670,8 @@ async function walkSides(theme: Theme): Promise<void> {
 		await page.hover(1, 400);
 		const revealMs = z.number().parse(await page.ask("window.__REVEAL__"));
 		check(
-			`${theme}: the edge shows the chats within 200ms, slide included`,
-			revealMs >= 0 && revealMs <= 200,
+			`${theme}: resting at the edge shows the chats after the rest and within 300ms, slide included`,
+			revealMs >= EDGE_REST_MS && revealMs <= 300,
 			revealMs,
 		);
 		await waited(200);
@@ -602,9 +686,9 @@ async function walkSides(theme: Theme): Promise<void> {
 		const outside = await sidesAt();
 		check(`${theme}: the window's padding keeps the peek open`, outside.left === "peeking", outside);
 		await page.hover(700, 400);
-		await waited(400);
+		await waited(CONCEAL_AT_ONCE_MS);
 		const closed = await sidesAt();
-		check(`${theme}: entering the content folds the peek away`, closed.left === "hidden", closed);
+		check(`${theme}: entering the content folds the peek away at once`, closed.left === "hidden", closed);
 		await waited(700);
 		await page.hover(60, 400);
 		await page.hover(-40, 400);
@@ -615,6 +699,9 @@ async function walkSides(theme: Theme): Promise<void> {
 			overshot.left === "peeking",
 			overshot,
 		);
+		await checkAppFrameFoldsPeek(page, theme);
+		await checkFastPassStaysFolded(page, theme);
+		await checkZonesOutsideWindow(page, theme);
 		await page.hover(700, 400);
 		await waited(900);
 		await page.hover(...closed.leftToggle);

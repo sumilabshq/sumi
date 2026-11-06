@@ -1,5 +1,7 @@
 export type EdgeSide = "left" | "right";
 
+export const EDGE_SIDES: readonly EdgeSide[] = ["left", "right"];
+
 export interface EdgePoint {
 	readonly x: number;
 	readonly y: number;
@@ -64,6 +66,10 @@ export class EdgeIntent {
 	}
 }
 
+export function isNearCorner(y: number, heightPx: number): boolean {
+	return y <= CROSSED_PX || y >= heightPx - CROSSED_PX;
+}
+
 function exitOf(point: EdgePoint, push: Push): EdgePoint {
 	return {
 		...point,
@@ -77,7 +83,7 @@ function clamp(value: number, mostPx: number): number {
 }
 
 function isNearTopOrBottom({ y, heightPx }: EdgePoint): boolean {
-	return y <= CROSSED_PX || y >= heightPx - CROSSED_PX;
+	return isNearCorner(y, heightPx);
 }
 
 function sideWithin(x: number, widthPx: number, reachPx: number): EdgeSide | null {

@@ -1,6 +1,7 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { cursorPosition, getCurrentWindow } from "@tauri-apps/api/window";
 import { browserStudioHost } from "@widgetarium/studio";
 import type { ChromeInsets, StudioHostPort } from "@widgetarium/studio";
+import type { CursorPoint } from "@widgetarium/core/engine/studio-host.js";
 import { NO_INSETS } from "@widgetarium/core/engine/studio-host.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
 import type { WorkspaceApps } from "./workspace/tauri-workspace-apps.js";
@@ -20,6 +21,7 @@ export function tauriStudioHost(project: WidgetariumProject, workspaceApps: Work
 		...browserStudioHost(project.app, project.routes),
 		...workspaceApps,
 		insets: () => held.insets,
+		cursorInWindow,
 		onInsets: (changed) => {
 			const reread = (): void => {
 				void getCurrentWindow()
@@ -32,5 +34,18 @@ export function tauriStudioHost(project: WidgetariumProject, workspaceApps: Work
 			window.addEventListener("resize", reread);
 			return () => window.removeEventListener("resize", reread);
 		},
+	};
+}
+
+async function cursorInWindow(): Promise<CursorPoint> {
+	const studioWindow = getCurrentWindow();
+	const [cursor, inner, scale] = await Promise.all([
+		cursorPosition(),
+		studioWindow.innerPosition(),
+		studioWindow.scaleFactor(),
+	]);
+	return {
+		x: (cursor.x - inner.x) / scale,
+		y: (cursor.y - inner.y) / scale,
 	};
 }

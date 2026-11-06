@@ -60,7 +60,7 @@ export { FollowingGhost } from "./src/held-drag/following-ghost.js";
 export { useLiftedPress } from "./src/held-drag/use-lifted-press.js";
 export type { LiftedPressAsk, PendingPress } from "./src/held-drag/use-lifted-press.js";
 export { useEdgeReveal } from "./src/edge-reveal/use-edge-reveal.js";
-export type { EdgeLook } from "./src/edge-reveal/use-edge-reveal.js";
+export type { EdgeLook, ReadCursor } from "./src/edge-reveal/use-edge-reveal.js";
 export { useHoverIntent } from "./src/edge-reveal/use-hover-intent.js";
 export { localFlagMemory } from "./src/edge-reveal/flag-memory.js";
 export type { FlagMemory } from "./src/edge-reveal/flag-memory.js";
