@@ -22,7 +22,10 @@ import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { PluginApp } from "@sumi/apps-plugin";
 import { tauriStudioHost } from "../tauri-studio-host.js";
+import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
+import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
 import { joinPlaces } from "../core-link/window-places.js";
 import { tauriWorkspaceApps } from "../workspace/tauri-workspace-apps.js";
@@ -38,9 +41,16 @@ export interface StudioOpening {
 	readonly workspace: WorkspaceEntry;
 }
 
-type StudioStartedFields = Pick<StudioStart, "assistant" | "assistantHost" | "studioApp" | "core" | "nativeWebPages">;
+type StudioStartedFields = Pick<
+	StudioStart,
+	"apps" | "assistant" | "assistantHost" | "studioApp" | "core" | "nativeWebPages"
+>;
+
+const PROFILE_UNREAD =
+	"[studio] workspace {workspace}: sumi.profile.json not read, the built-in plugins draw their apps";
 
 interface StartedParts {
+	readonly apps: readonly PluginApp[];
 	readonly studioApp: StartedApp;
 	readonly assistant: TauriAssistant;
 	readonly core: RemoteTransport;
@@ -71,7 +81,8 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 		console.error("[ink] quit handshake none → none: this window quits without saving first", failure);
 	});
 	const core = ipcTransport(opening.workspace.id);
-	const studioApp = startTauriStudioApp(opening, core);
+	const apps = await pluginAppsOf(opening);
+	const studioApp = startTauriStudioApp(opening, core, apps);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
 		reopenWindow(async () => {
 			await Promise.all([docs.flushAll(), joined.leave()]);
@@ -92,16 +103,29 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	});
 	openAgentTools(studioApp, assistant.port);
 	await assistant.port.shownRead();
-	return startedStudioOf(opening, { studioApp, assistant, core });
+	return startedStudioOf(opening, { apps, studioApp, assistant, core });
 }
 
-function startTauriStudioApp({ workspace, store }: StudioOpening, core: RemoteTransport): StartedApp {
+function startTauriStudioApp(
+	{ workspace, store }: StudioOpening,
+	core: RemoteTransport,
+	apps: readonly PluginApp[],
+): StartedApp {
 	return startStudioApp({
 		platform: "tauri",
 		workspaceId: workspace.id,
 		core,
 		lent: tauriStudioLent(store),
+		apps,
 	});
+}
+
+async function pluginAppsOf({ store, workspace }: StudioOpening): Promise<readonly PluginApp[]> {
+	const profile = await workspaceProfileOf(store, workspace.id).catch((failure: unknown) => {
+		console.error(PROFILE_UNREAD.replace("{workspace}", workspace.id), failure);
+		return BUILT_IN_PROFILE;
+	});
+	return resolvePlugins(profile).apps;
 }
 
 async function reopenWindow(leaveWindow: () => Promise<void>): Promise<void> {
@@ -161,8 +185,9 @@ function studioHostOf({ project, workspaces }: StudioOpening, workspacesApp: Sta
 	return tauriStudioHost(project, tauriWorkspaceApps({ workspaces, workspacesApp }));
 }
 
-function startedPartsFieldsOf({ assistant, studioApp, core }: StartedParts): StudioStartedFields {
+function startedPartsFieldsOf({ apps, assistant, studioApp, core }: StartedParts): StudioStartedFields {
 	return {
+		apps,
 		assistant: assistant.port,
 		assistantHost: assistant.host,
 		studioApp,

@@ -1,6 +1,6 @@
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { tasksPartsOn } from "./gateways/tasks-parts/tasks-parts.gateway.js";
-import type { TasksConfig } from "./shared/host/tasks-host.js";
+import type { TasksConfig } from "./shared/host/tasks.host.js";
 import {
 	AttachToTaskCommand,
 	CheckCriterionCommand,
@@ -33,7 +33,7 @@ import {
 	SweepStaleTasksCommand,
 } from "./features/supervision/requests.js";
 
-export type { BoardFile, TasksConfig } from "./shared/host/tasks-host.js";
+export type { BoardFile, TasksConfig } from "./shared/host/tasks.host.js";
 
 export const TasksModule = module("tasks")
 	.on(Server)

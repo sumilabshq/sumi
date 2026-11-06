@@ -4,6 +4,7 @@ import type {
 	Answer,
 	HearChanges,
 	ModuleContract,
+	ServerRuns,
 	RemoteTransport,
 	ServedCall,
 	ServingServer,
@@ -12,7 +13,7 @@ import type {
 export type HeardInvalidation = Parameters<HearChanges>[0][number];
 
 export interface FrameRoute {
-	readonly module: ModuleContract;
+	readonly module: ModuleContract<ServerRuns>;
 	readonly transport: RemoteTransport;
 	readonly hears: (invalidation: HeardInvalidation) => boolean;
 }

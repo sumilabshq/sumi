@@ -85,7 +85,7 @@ import {
 	TabsSidebarQuery,
 } from "./features/tabs/requests.js";
 
-export type { AppHostConfig, CoreChanges } from "./shared/host/app-host.host.js";
+export type { AppHostConfig, CoreChanges, PluginAppFace } from "./shared/host/app-host.host.js";
 
 export const AppHostModule = module("app-host")
 	.on(Device)

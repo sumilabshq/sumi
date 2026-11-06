@@ -2,6 +2,8 @@ import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
+import type { PluginApp } from "@sumi/apps-plugin";
+import { AppViewsContext } from "../../lib/app-views-context.js";
 import { AppPageUrlContext } from "../../lib/app-page-url-context.js";
 import type { FrameRoutesFor } from "../../lib/frame-relay.js";
 import { FrameRoutesContext } from "../../lib/use-frame-port.js";
@@ -10,18 +12,22 @@ import { useOpensAskedLinks } from "../../lib/use-opens-asked-links.js";
 export interface AppFramesProviderProps {
 	readonly routesFor: FrameRoutesFor;
 	readonly pageUrlOf?: AppPageUrlOf;
+	readonly apps: readonly PluginApp[];
 	readonly children: ReactNode;
 }
 
 export function AppFramesProvider({
 	routesFor,
 	pageUrlOf = sumiAppPageUrlOf,
+	apps,
 	children,
 }: AppFramesProviderProps): ReactElement {
 	useOpensAskedLinks();
 	return (
 		<AppPageUrlContext.Provider value={pageUrlOf}>
-			<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>
+			<AppViewsContext.Provider value={apps}>
+				<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>
+			</AppViewsContext.Provider>
 		</AppPageUrlContext.Provider>
 	);
 }

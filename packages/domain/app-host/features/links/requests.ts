@@ -3,6 +3,8 @@ import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { isKnownApp, readKnownApps } from "../../shared/lib/apps/known-apps.js";
+import { PluginAppsGateway } from "../../gateways/plugin-apps/plugin-apps.gateway.js";
+import type { PluginAppFace } from "../../shared/host/app-host.host.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { openTabSettled, showChatSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -10,10 +12,14 @@ import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";
 import type { AppKind } from "../../shared/schema/app-tab.schema.js";
 import { LinkToOpenSchema } from "../../shared/schema/link.schema.js";
 
+interface LinkReach extends TabsReach {
+	readonly pluginApps: readonly PluginAppFace[];
+}
+
 interface LinkOpening {
 	readonly target: LinkTarget;
 	readonly opensNew: boolean;
-	readonly reach: TabsReach;
+	readonly reach: LinkReach;
 }
 
 const BROWSER_APP: AppKind = "browser";
@@ -25,10 +31,10 @@ const OPENED = "[widgetarium] link {href} opened{where}";
 export const OpenLinkCommand = command("open-link")
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
-	.inject(SHOWING_PARTS)
+	.inject({ ...SHOWING_PARTS, pluginApps: PluginAppsGateway })
 	.emits(TabsSettledEvent)
-	.handle(async ({ href, opensNew }, { send, emit, ...parts }) => {
-		const reach = { parts, send, told: () => emit(TabsSettledEvent) };
+	.handle(async ({ href, opensNew }, { send, emit, pluginApps, ...parts }) => {
+		const reach = { parts, send, told: () => emit(TabsSettledEvent), pluginApps: pluginApps.pluginApps() };
 		const refusal = isWebPage(href)
 			? await openWebPageLinked(href, opensNew, reach)
 			: await openSumiLinked(href, opensNew, reach);
@@ -44,7 +50,7 @@ function isWebPage(href: string): boolean {
 	return WEB_SCHEMES.has(URL.parse(href)?.protocol ?? "");
 }
 
-async function openSumiLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<string | null> {
+async function openSumiLinked(href: string, opensNew: boolean, reach: LinkReach): Promise<string | null> {
 	const read = linkTargetOf(href);
 	return read.ok ? openTargetLinked({ target: read.target, opensNew, reach }) : read.reason;
 }
@@ -62,7 +68,7 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 
 	const app = AppKindSchema.safeParse(target.app);
 
-	if (!app.success || !isKnownApp(await readKnownApps(reach.send), target.app)) {
+	if (!app.success || !isKnownApp(await readKnownApps(reach.send, reach.pluginApps), target.app)) {
 		return NO_SUCH_APP.replace("{app}", target.app);
 	}
 
@@ -70,8 +76,8 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 	return null;
 }
 
-async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
-	const known = await readKnownApps(reach.send);
+async function openWebPageLinked(href: string, opensNew: boolean, reach: LinkReach): Promise<null> {
+	const known = await readKnownApps(reach.send, reach.pluginApps);
 	const app = isKnownApp(known, BROWSER_PAGE_APP) ? BROWSER_PAGE_APP : BROWSER_APP;
 	await openAppTab(reach, { app, address: href, opensNew });
 	return null;

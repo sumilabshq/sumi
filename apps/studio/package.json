@@ -24,6 +24,7 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/contract": "0.5.0",
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/app-registry": "0.1.0",

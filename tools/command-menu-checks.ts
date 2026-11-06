@@ -25,12 +25,13 @@ import {
 } from "../packages/domain/command-menu/index.ts";
 import type { Intent, Results, ResultsAsk } from "../packages/domain/command-menu/index.ts";
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
+import { BUILT_IN_APPS } from "./plugin-apps-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver } from "./places-fixture.ts";
 
 const studio = app()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, CommandMenuModule)
+	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule({ apps: BUILT_IN_APPS }), CommandMenuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 

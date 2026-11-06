@@ -29,7 +29,14 @@ import { paged, waitUntil } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
-import { SUMI_APP_IDS, SUMI_APPS_WORKSPACE, SUMI_CHAT_TAB, SUMI_PAGE_APPS, sumiTabOf } from "./sumi-apps-seed.ts";
+import {
+	SUMI_APP_IDS,
+	SUMI_APPS_WORKSPACE,
+	SUMI_CHAT_TAB,
+	SUMI_PAGE_APPS,
+	SUMI_VIEW_APPS,
+	sumiTabOf,
+} from "./sumi-apps-seed.ts";
 import type { SumiAppId } from "./sumi-apps-seed.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
@@ -102,9 +109,9 @@ function registryChecks(): void {
 		[],
 	);
 	check(
-		"the core registers the modules the apps bring: tasks and terminal",
+		"the core registers the modules the apps bring: tasks",
 		APP_MODULES.map((each) => each.definition.name),
-		["tasks", "terminal"],
+		["tasks"],
 	);
 }
 
@@ -174,7 +181,7 @@ const served = server()
 	});
 
 registryChecks();
-for (const app of CHECKED_APPS) {
+for (const app of CHECKED_APPS.filter((checked) => !SUMI_VIEW_APPS.includes(checked))) {
 	buildInMonorepo(app);
 }
 
@@ -369,7 +376,33 @@ async function typedInFrame(page: AskedPage, app: string, selector: string, text
 
 async function showAppTab(page: AskedPage, app: SumiAppId): Promise<void> {
 	await page.ask(`window.__sumiApps.showTab(${JSON.stringify(sumiTabOf(app))})`);
-	await frameOpens(page, app);
+	await (SUMI_VIEW_APPS.includes(app) ? viewOpens(page, app) : frameOpens(page, app));
+}
+
+async function viewOpens(page: AskedPage, app: SumiAppId): Promise<void> {
+	const isDrawn = await pageSees(page, `document.querySelector(${JSON.stringify(APP_DRAWN[app])}) !== null`);
+	check(
+		`${app}: the studio draws the plugin's view in its tab, with no frame`,
+		[isDrawn, await page.ask(`document.querySelector('iframe[data-app-frame-src*="${framePartOf(app)}"]') === null`)],
+		[true, true],
+	);
+}
+
+async function pageSees(page: AskedPage, expression: string): Promise<boolean> {
+	return waitUntil(async () => (await page.ask(expression)) === true, WAIT_MS, STEP_MS);
+}
+
+async function pressOnPage(page: AskedPage, selector: string): Promise<boolean> {
+	const box = await page.ask(
+		`(() => { const box = document.querySelector(${JSON.stringify(selector)})?.getBoundingClientRect(); return box ? [box.x + box.width / 2, box.y + box.height / 2] : null; })()`,
+	);
+
+	if (!Array.isArray(box)) {
+		return false;
+	}
+
+	await page.press(Number(box[0]), Number(box[1]));
+	return true;
 }
 
 const MENU_ASKS = ["", "install", "update", "tasks", "chat"];
@@ -614,20 +647,15 @@ async function tasksLinkChecks(page: AskedPage): Promise<void> {
 }
 
 async function typedOnTerminalScreen(page: AskedPage): Promise<boolean> {
-	const isDrawn = await frameSees(
-		page,
-		"terminal",
-		`document.querySelector(${JSON.stringify(TERMINAL_KEYS)}) !== null`,
-	);
+	const isDrawn = await pageSees(page, `document.querySelector(${JSON.stringify(TERMINAL_KEYS)}) !== null`);
 
 	if (!isDrawn) {
 		return false;
 	}
 
-	await pressInFrame(page, "terminal", TERMINAL_SCREEN);
-	const isFocused = await frameSees(
+	await pressOnPage(page, TERMINAL_SCREEN);
+	const isFocused = await pageSees(
 		page,
-		"terminal",
 		`document.activeElement === document.querySelector(${JSON.stringify(TERMINAL_KEYS)})`,
 	);
 	await page.typeText(TERMINAL_LINE);
@@ -639,8 +667,11 @@ async function terminalChecks(page: AskedPage): Promise<void> {
 	await showAppTab(page, "terminal");
 	check("terminal: pressing the screen focuses its keyboard input", await typedOnTerminalScreen(page), true);
 	check(
-		"terminal: the frame draws what the real /bin/sh answered",
-		await frameSees(page, "terminal", `document.body.innerText.includes(${JSON.stringify(TERMINAL_SAID)})`),
+		"terminal: the view draws what the real /bin/sh answered",
+		await pageSees(
+			page,
+			`document.querySelector(${JSON.stringify(TERMINAL_SCREEN)})?.innerText.includes(${JSON.stringify(TERMINAL_SAID)}) === true`,
+		),
 		true,
 	);
 }

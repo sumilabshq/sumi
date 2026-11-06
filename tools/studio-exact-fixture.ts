@@ -1,3 +1,4 @@
+import { ListedPluginAppsGateway } from "../packages/domain/app-host/gateways/plugin-apps/listed.gateway.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -184,6 +185,7 @@ export function exactStudio({
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
 				coreChanges: new NoCoreChangesGateway(),
+				pluginApps: new ListedPluginAppsGateway([]),
 			}),
 			BrowserModule.with(fakeBrowser(boardPages).parts),
 			LayoutModule,

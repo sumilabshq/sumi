@@ -20,10 +20,4 @@ export const REGISTERED_APPS: readonly RegisteredApp[] = [
 		ui: "index.html",
 		build: "apps/tasks/dist",
 	},
-	{
-		id: "terminal",
-		name: "Terminal",
-		ui: "index.html",
-		build: "apps/terminal/dist",
-	},
 ];

@@ -1,3 +1,5 @@
+import { BUILT_IN_APPS } from "./plugin-apps-fixture.ts";
+import { ListedPluginAppsGateway } from "../packages/domain/app-host/gateways/plugin-apps/listed.gateway.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -106,6 +108,7 @@ export interface AppHostFakes {
 	readonly shownView: MemoryShownViewGateway;
 	readonly paneFlash: RecordedPaneFlash;
 	readonly coreChanges: NoCoreChangesGateway;
+	readonly pluginApps: ListedPluginAppsGateway;
 }
 
 export interface StudioFakes {
@@ -135,6 +138,7 @@ export function appHostFakesOf({ studioWindow, essentials = null, view = "browse
 		shownView: new MemoryShownViewGateway(view),
 		paneFlash: new RecordedPaneFlash(),
 		coreChanges: new NoCoreChangesGateway(),
+		pluginApps: new ListedPluginAppsGateway(BUILT_IN_APPS),
 	};
 }
 

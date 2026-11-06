@@ -59,7 +59,7 @@ export function servePortHandovers(frameWindowOf: () => Window | null, handovers
 	};
 }
 
-function useFrameRoutesFor(): FrameRoutesFor {
+export function useFrameRoutesFor(): FrameRoutesFor {
 	const routesFor = useContext(FrameRoutesContext);
 
 	if (routesFor === null) {

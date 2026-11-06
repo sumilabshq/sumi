@@ -21,7 +21,7 @@ export function FrameWindow({ app, url, tabId }: FrameWindowProps): ReactElement
 		}
 	});
 	useReplaysFrameKeys(frame, app);
-	const src =`${url}${TAB_IN_URL}${encodeURIComponent(tabId)}`;
+	const src = `${url}${TAB_IN_URL}${encodeURIComponent(tabId)}`;
 
 	return (
 		<iframe

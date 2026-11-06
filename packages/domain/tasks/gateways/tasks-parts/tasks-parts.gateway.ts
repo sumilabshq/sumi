@@ -1,4 +1,4 @@
-import type { BoardFile } from "../../shared/host/tasks-host.js";
+import type { BoardFile } from "../../shared/host/tasks.host.js";
 import { ClockGateway, SystemClockGateway } from "../clock/clock.gateway.js";
 import { FileTasksGateway } from "../tasks/file.gateway.js";
 import type { TasksGateway } from "../tasks/tasks.gateway.js";

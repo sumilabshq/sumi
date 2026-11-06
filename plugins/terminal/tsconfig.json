@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "ES2020",
+		"module": "ESNext",
+		"moduleResolution": "bundler",
+		"customConditions": ["source"],
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"exactOptionalPropertyTypes": true,
+		"noUncheckedIndexedAccess": true,
+		"noImplicitOverride": true,
+		"noEmit": true,
+		"tsBuildInfoFile": "../../node_modules/.cache/widgetarium/terminal-plugin.tsbuildinfo",
+		"isolatedModules": true,
+		"verbatimModuleSyntax": true,
+		"skipLibCheck": true,
+		"jsx": "react",
+		"jsxFactory": "h",
+		"jsxFragmentFactory": "Fragment",
+		"types": ["node"]
+	},
+	"references": [
+		{ "path": "../../packages/shared/data-framework" },
+		{ "path": "../../packages/shared/plugin-framework" }
+	],
+	"include": ["src/**/*.ts", "src/**/*.tsx", "../../packages/shared/core/src/*.d.ts"]
+}

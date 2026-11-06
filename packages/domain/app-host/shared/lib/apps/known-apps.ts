@@ -2,20 +2,30 @@ import type { Send } from "@widgetarium/data-framework";
 import { REGISTERED_APPS } from "@widgetarium/app-registry";
 import type { RegisteredApp } from "@widgetarium/app-registry";
 import { AppFacesQuery as BuiltInFacesQuery } from "@widgetarium/places";
-import type { AppFace, KnownApp } from "../../schema/app-tab.schema.js";
+import type { PluginAppFace } from "../../host/app-host.host.js";
+import { TabArtSchema } from "../../schema/app-tab.schema.js";
+import type { AppFace, KnownApp, TabArt } from "../../schema/app-tab.schema.js";
 
 interface Faces {
 	readonly faces: readonly AppFace[];
 }
 
-const REGISTERED_APP_ICON = "built-app";
+const INSTALLED_APP_ICON: TabArt = "built-app";
 
-export async function readAppFaces(send: Send): Promise<Faces> {
-	return withRegisteredFaces(await send(BuiltInFacesQuery), REGISTERED_APPS);
+export async function readAppFaces(send: Send, pluginApps: readonly PluginAppFace[]): Promise<Faces> {
+	const { faces } = await send(BuiltInFacesQuery);
+	const installed = [
+		...REGISTERED_APPS.map((registered) => withShellFace(registeredFaceOf(registered), faces)),
+		...pluginApps.map(pluginFaceOf),
+	];
+	const installedIds = new Set(installed.map(({ app }) => app));
+	return {
+		faces: [...faces.filter(({ app }) => !installedIds.has(app)), ...installed],
+	};
 }
 
-export async function readKnownApps(send: Send): Promise<readonly KnownApp[]> {
-	const { faces } = await readAppFaces(send);
+export async function readKnownApps(send: Send, pluginApps: readonly PluginAppFace[]): Promise<readonly KnownApp[]> {
+	const { faces } = await readAppFaces(send, pluginApps);
 	return faces.map(({ app, isBuiltIn }) => ({
 		id: app,
 		isBuiltIn,
@@ -26,18 +36,26 @@ export function isKnownApp(known: readonly KnownApp[], id: string): boolean {
 	return known.some((app) => app.id === id);
 }
 
-function withRegisteredFaces({ faces }: Faces, registered: readonly RegisteredApp[]): Faces {
-	const registeredFaces: readonly AppFace[] = registered.map(({ id, name }) => {
-		const shellFace = faces.find(({ app }) => app === id);
-		return {
-			app: id,
-			title: shellFace?.title ?? name,
-			icon: shellFace?.icon ?? REGISTERED_APP_ICON,
-			isBuiltIn: false,
-		};
-	});
-	const registeredIds = new Set(registered.map(({ id }) => id));
+function registeredFaceOf({ id, name }: RegisteredApp): AppFace {
 	return {
-		faces: [...faces.filter(({ app }) => !registeredIds.has(app)), ...registeredFaces],
+		app: id,
+		title: name,
+		icon: INSTALLED_APP_ICON,
+		isBuiltIn: false,
 	};
+}
+
+function pluginFaceOf({ id, title, icon }: PluginAppFace): AppFace {
+	const art = TabArtSchema.safeParse(icon);
+	return {
+		app: id,
+		title,
+		icon: art.success ? art.data : INSTALLED_APP_ICON,
+		isBuiltIn: false,
+	};
+}
+
+function withShellFace(installed: AppFace, shellFaces: readonly AppFace[]): AppFace {
+	const shellFace = shellFaces.find(({ app }) => app === installed.app);
+	return shellFace === undefined ? installed : { ...installed, title: shellFace.title, icon: shellFace.icon };
 }

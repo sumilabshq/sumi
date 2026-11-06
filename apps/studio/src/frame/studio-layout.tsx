@@ -4,6 +4,7 @@ import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import { AppProvider } from "@widgetarium/data-framework";
 import type { StartedApp } from "@widgetarium/data-framework";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
+import type { PluginApp } from "@sumi/apps-plugin";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
 import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";
 import { AppFramesProvider } from "../features/app-frame/ui/app-frames/app-frames-provider.js";
@@ -14,6 +15,7 @@ export interface StudioLayoutProps {
 	readonly layoutApp: StartedApp;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly appPageUrlOf: AppPageUrlOf;
+	readonly apps: readonly PluginApp[];
 	readonly studio: StudioHostPort;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
@@ -25,6 +27,7 @@ export function StudioLayout({
 	layoutApp,
 	frameRoutes,
 	appPageUrlOf,
+	apps,
 	studio,
 	left,
 	panes,
@@ -33,7 +36,7 @@ export function StudioLayout({
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
 		<AppProvider app={layoutApp}>
-			<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf}>
+			<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf} apps={apps}>
 				<StudioFrame
 					frame={frame}
 					chromeLeftPx={chromeLeftPx}

@@ -1,0 +1,23 @@
+{
+	"name": "@sumi/apps-plugin",
+	"version": "0.1.0",
+	"description": "The apps slot: an app is a plugin's view, drawn in a tab by the shell",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

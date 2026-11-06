@@ -28,7 +28,7 @@ const offers = {
 };
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
 const sharedModules = resolved.sharedModules.map((moduleOf) => moduleOf(offers));
-const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, ...APP_MODULES];
+const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, TerminalModule, ...APP_MODULES];
 const coreModulesNow = [...HOST_CAPABILITY_MODULES, ...sharedModules];
 const coreNamesNow = coreModulesNow.map(({ definition }) => definition.name);
 
@@ -50,11 +50,17 @@ check(
 	true,
 );
 
+check(
+	"the built-in profile draws the terminal plugin's app",
+	resolved.apps.map(({ id, title, icon }) => [id, title, icon]),
+	[["terminal", "Terminal", "terminal"]],
+);
+
 const emptyProfile = resolvePlugins({ plugins: [] });
 check(
-	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app",
-	[emptyProfile.refusals, emptyProfile.sharedModules.length],
-	[[], 3],
+	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app, with no terminal app",
+	[emptyProfile.refusals, emptyProfile.sharedModules.length, emptyProfile.apps.length],
+	[[], 3, 0],
 );
 
 const startedCore = server()

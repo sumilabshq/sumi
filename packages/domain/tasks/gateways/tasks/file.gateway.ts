@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { BoardFile } from "../../shared/host/tasks-host.js";
+import type { BoardFile } from "../../shared/host/tasks.host.js";
 import { BoardSchema } from "../../shared/schema/task.schema.js";
 import type { Board } from "../../shared/schema/task.schema.js";
 import { EMPTY_BOARD, TasksGateway } from "./tasks.gateway.js";

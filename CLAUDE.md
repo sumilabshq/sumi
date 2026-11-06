@@ -58,6 +58,8 @@ apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
 plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins; runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
+plugins/apps             FSL  @sumi/apps-plugin: the apps slot, a plugin's view drawn in a tab
+plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app
       ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas (older shape)
 packages/state/*              app-state data modules: layout

@@ -11,10 +11,6 @@
 		{
 			"id": "tasks",
 			"build": "apps/tasks/dist"
-		},
-		{
-			"id": "terminal",
-			"build": "apps/terminal/dist"
 		}
 	]
 }
