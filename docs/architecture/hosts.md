@@ -36,6 +36,8 @@ An interface the host lends (the tasks module's `BoardFile`) is a `hostObject("B
 
 `apps/host-tauri` opens the studio windows, keeps the workspaces, and starts each window's app with `platform: "tauri"` and the window's workspace. Settings and sessions are files the module gateways read and write through `@widgetarium/behaviors/tauri-store`.
 
+**Running it.** `npm run dev` in `apps/host-tauri` is the whole dev start: Tauri's `beforeDevCommand` runs `dev-frontend.mts`, which serves the window's project on port 5173; `npm run build` builds it through `build-frontend.mts`. The project is `apps/host-tauri/project`: a Widgetarium project inside the repo with no `package.json` and no `node_modules` of its own, so it resolves React and every package from the root `node_modules`. `WIDGETARIUM_PROJECT=<folder>` draws another project instead. A project with its own React loads a second copy, every hook fails with "Invalid hook call" and the window stays empty; `npm run test:single-react` fails when a second copy appears anywhere in the repo.
+
 TODO: `settings.json` and `session.json` each have two holders, the host's own documents and the layout's gateways, both writing rev-checked patches. One owner per file is the target.
 
 ## Deploy

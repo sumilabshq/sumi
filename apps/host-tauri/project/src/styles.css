@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "@widgetarium/kit/theme.css";
+@import "@widgetarium/core/styles.css";
+@import "../../../../design-systems/default/tokens.css";

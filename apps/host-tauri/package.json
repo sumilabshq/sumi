@@ -11,6 +11,7 @@
 	},
 	"scripts": {
 		"dev": "tauri dev",
+		"dev:frontend": "node dev-frontend.mts",
 		"build:frontend": "node build-frontend.mts",
 		"build": "tauri build --bundles app --no-sign",
 		"start": "tauri build --debug --bundles app --no-sign && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
