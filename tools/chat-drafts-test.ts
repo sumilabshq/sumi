@@ -161,37 +161,33 @@ await frame.send(HoldDraftTextCommand, { said: TYPED });
 await frame.send(ChooseClaudeOptionCommand, { effort: "high" });
 const inOther = await opened(frame, OTHER);
 await frame.send(ChooseClaudeOptionCommand, { effort: "low" });
-check(
-	"another chat opens with an empty composer and none of Daily's files",
-	[inOther.said, inOther.files],
-	["", []],
-);
-check(
-	"coming back to Daily brings its text, its image and its effort",
-	await opened(frame, DAILY),
-	{
-		said: TYPED,
-		files: ["shot.png"],
-		effort: "high",
-	},
-);
+check("another chat opens with an empty composer and none of Daily's files", [inOther.said, inOther.files], ["", []]);
+check("coming back to Daily brings its text, its image and its effort", await opened(frame, DAILY), {
+	said: TYPED,
+	files: ["shot.png"],
+	effort: "high",
+});
 
 const remounted = chatServerOver(firstShelf);
-check(
-	"a chat frame started again (the old one stopped) opens Daily whole",
-	await opened(remounted, DAILY),
-	{
-		said: TYPED,
-		files: ["shot.png"],
-		effort: "high",
-	},
-);
+check("a chat frame started again (the old one stopped) opens Daily whole", await opened(remounted, DAILY), {
+	said: TYPED,
+	files: ["shot.png"],
+	effort: "high",
+});
 
 await firstShelf.flush();
 const kept = fake.files.get(`workspace:${DEFAULT.id}:chat/drafts.json`);
 check(
 	"the draft is a workspace file and the image a file beside it",
-	[kept === undefined ? null : Object.keys(kept).filter((key) => key.startsWith("chat:")).map((key) => key.slice(5)).sort(), diskFiles.size],
+	[
+		kept === undefined
+			? null
+			: Object.keys(kept)
+					.filter((key) => key.startsWith("chat:"))
+					.map((key) => key.slice(5))
+					.sort(),
+		diskFiles.size,
+	],
 	[[DAILY, OTHER].sort(), 1],
 );
 
@@ -228,7 +224,12 @@ await lateComposer.send(HoldDraftTextCommand, { said: "" });
 await restartedShelf.flush();
 check(
 	"sending empties the draft: no text, no files kept, the image sent",
-	[restartedShelf.draftOf(DAILY)?.said ?? "", restartedShelf.draftOf(DAILY)?.attachments.length ?? 0, diskFiles.size, sent.length],
+	[
+		restartedShelf.draftOf(DAILY)?.said ?? "",
+		restartedShelf.draftOf(DAILY)?.attachments.length ?? 0,
+		diskFiles.size,
+		sent.length,
+	],
 	["", 0, 0, 1],
 );
 
@@ -240,11 +241,7 @@ const noteAgain = chatServerOver(restartedShelf);
 await opened(noteAgain, NOTE);
 await noteAgain.send(HoldDraftTextCommand, { said: "a short note" });
 await noteAgain.send(HoldDraftTextCommand, { said: "" });
-check(
-	"text deleted right after it was put back is deleted for good",
-	restartedShelf.draftOf(NOTE)?.said ?? "",
-	"",
-);
+check("text deleted right after it was put back is deleted for good", restartedShelf.draftOf(NOTE)?.said ?? "", "");
 
 const providerFrame = chatServerOver(restartedShelf);
 await opened(providerFrame, DAILY);
@@ -380,12 +377,21 @@ const restoredQueue = restoredSession.now().queued;
 const restoredPath = [...afterReboot.held.keys()][0] ?? "";
 check(
 	"after a reboot the queue comes back as it was, waiting: same order, held stays held, nothing sent",
-	[restoredQueue.map(({ isHeld }) => isHeld), restoredQueue[1]?.text, starts.length - startsBeforeRestart, restoredSession.now().busy],
+	[
+		restoredQueue.map(({ isHeld }) => isHeld),
+		restoredQueue[1]?.text,
+		starts.length - startsBeforeRestart,
+		restoredSession.now().busy,
+	],
 	[[false, true], "and this too", 0, false],
 );
 check(
 	"its image is put back into the attachments folder and the message names the new file",
-	[afterReboot.held.get(restoredPath)?.length, restoredQueue[0]?.text.includes(restoredPath) ?? false, restoredPath === shotPath],
+	[
+		afterReboot.held.get(restoredPath)?.length,
+		restoredQueue[0]?.text.includes(restoredPath) ?? false,
+		restoredPath === shotPath,
+	],
 	[PNG.length, true, false],
 );
 
@@ -444,29 +450,103 @@ check(
 	true,
 );
 
-const quitSteps: string[] = [];
-const quitListeners = new Map<string, () => void>();
-savesBeforeQuit(
-	async () => {
-		await pause(20);
-		quitSteps.push("saved");
-	},
-	{
-		listen: (event, heard) => void quitListeners.set(event, heard),
-		tellFlushed: async () => void quitSteps.push("told the app"),
-		page: {
-			addEventListener: (event: string, heard: () => void) => void quitListeners.set(event, heard),
+interface QuitProbe {
+	readonly steps: string[];
+	readonly listeners: Map<string, () => void>;
+}
+
+async function quitProbeOver(unsaved: readonly string[]): Promise<QuitProbe> {
+	const steps: string[] = [];
+	const listeners = new Map<string, () => void>();
+	await savesBeforeQuit(
+		async () => {
+			await pause(20);
+			steps.push("saved");
+			return unsaved;
 		},
+		{
+			listen: async (event, heard) => void listeners.set(event, heard),
+			tellListening: async () => void steps.push("listening"),
+			tellFlushed: async (isSaved) => void steps.push(isSaved ? "told the app: saved" : "told the app: NOT saved"),
+			page: {
+				addEventListener: (event: string, heard: () => void) => void listeners.set(event, heard),
+			},
+			now: Date.now,
+		},
+	);
+	return {
+		steps,
+		listeners,
+	};
+}
+
+const quitting = await quitProbeOver([]);
+quitting.listeners.get(FLUSH_BEFORE_QUIT_EVENT)?.();
+await waitFor(() => quitting.steps.length === 3);
+quitting.listeners.get("pagehide")?.();
+await waitFor(() => quitting.steps.length === 4);
+check("a window says it listens, saves before it tells the app to go on, and saves on pagehide too", quitting.steps, [
+	"listening",
+	"saved",
+	"told the app: saved",
+	"saved",
+]);
+const notSaving = await quitProbeOver(["workspace:x:chat/drafts.json chat:a"]);
+notSaving.listeners.get(FLUSH_BEFORE_QUIT_EVENT)?.();
+await waitFor(() => notSaving.steps.length === 3);
+check("a save that did not land is told to the app as not saved", notSaving.steps.at(-1), "told the app: NOT saved");
+
+const staleStore = new FakeStore();
+const staleLeft = { count: 5 };
+const staleInvoke: typeof staleStore.invoke = async (command, args) => {
+	if (command.endsWith("|replace") && staleLeft.count > 0) {
+		staleLeft.count -= 1;
+		throw {
+			code: "stale-rev",
+			currentRev: 0,
+		};
+	}
+
+	return staleStore.invoke(command, args);
+};
+const contested = await HeldDoc.read({
+	store: new StoreClient(staleInvoke, undefined),
+	root: "global",
+	kind: {
+		file: "contested.json",
+		v: 1,
+		schema: z.record(z.string(), z.unknown()),
 	},
-);
-quitListeners.get(FLUSH_BEFORE_QUIT_EVENT)?.();
-await waitFor(() => quitSteps.length === 2);
-quitListeners.get("pagehide")?.();
-await waitFor(() => quitSteps.length === 3);
+	empty: {},
+});
+contested.change({ "chat:a": "typed" }, "typing");
+const landed = await contested.saveUntil(Date.now() + 2000);
+const neverStore = new FakeStore();
+const never = await HeldDoc.read({
+	store: new StoreClient(async (command, args) => {
+		if (command.endsWith("|replace")) {
+			throw {
+				code: "io",
+				detail: "disk gone",
+			};
+		}
+
+		return neverStore.invoke(command, args);
+	}, undefined),
+	root: "global",
+	kind: {
+		file: "never.json",
+		v: 1,
+		schema: z.record(z.string(), z.unknown()),
+	},
+	empty: {},
+});
+never.change({ "chat:b": "typed" }, "typing");
+const unlanded = await never.saveUntil(Date.now() + 400);
 check(
-	"asked to quit, a window saves before it tells the app to go on; a hidden page saves too",
-	quitSteps,
-	["saved", "told the app", "saved"],
+	"saving for a quit retries from a fresh read until it lands, and names what never landed",
+	[landed, staleStore.files.get("global:contested.json")?.["chat:a"], unlanded],
+	[[], "typed", ["global:never.json chat:b"]],
 );
 
 interface TestDisk {
@@ -604,6 +684,11 @@ check(
 	claimed.map((queue) => queue.length).sort(),
 	[0, 1],
 );
+check(
+	"the taken queue is on disk under its new window before anything else is written",
+	JSON.stringify(sharedStore.files.get(queuesFile) ?? {}).includes("queued before the crash"),
+	true,
+);
 
 const unreadDisk = diskOf();
 const unreadStore = new FakeStore();
@@ -644,8 +729,95 @@ const unwrittenShelf = await TauriChatDraftShelf.read({
 });
 unwrittenShelf.keep(OTHER, draftWith(""));
 const writeNotice = await waitFor(() => unwrittenShelf.problemOf(OTHER) !== null, 100);
-const isWrittenOnRetry = await waitFor(() => unwrittenDisk.held.size === 1 && unwrittenShelf.problemOf(OTHER) === null, 1000);
-check("a file that cannot be written is said to the person and written on a retry", [writeNotice, isWrittenOnRetry], [true, true]);
+const isWrittenOnRetry = await waitFor(
+	() => unwrittenDisk.held.size === 1 && unwrittenShelf.problemOf(OTHER) === null,
+	1000,
+);
+check(
+	"a file that cannot be written is said to the person and written on a retry",
+	[writeNotice, isWrittenOnRetry],
+	[true, true],
+);
+
+const legacyStore = new FakeStore();
+legacyStore.put(draftsFile, {
+	v: 1,
+	rev: 1,
+	drafts: {
+		[DAILY]: {
+			said: "legacy daily",
+			attachments: [],
+			choices: null,
+			provider: null,
+		},
+		[OTHER]: {
+			said: "legacy other",
+			attachments: [],
+			choices: null,
+			provider: null,
+		},
+	},
+});
+const legacyAt = (): ChatDraftsAt => ({
+	store: new StoreClient(legacyStore.invoke, undefined),
+	files: diskOf().files,
+	workspaceId: DEFAULT.id,
+});
+const legacyShelf = await TauriChatDraftShelf.read(legacyAt());
+const movedKeys = Object.keys(legacyStore.files.get(draftsFile) ?? {}).filter(
+	(key) => key === "drafts" || key.startsWith("chat:"),
+);
+legacyShelf.keep(DAILY, {
+	...(legacyShelf.draftOf(DAILY) ?? draftWith("")),
+	said: "legacy daily edited",
+});
+await legacyShelf.flush();
+const afterLegacy = await TauriChatDraftShelf.read(legacyAt());
+check(
+	"drafts from the one-key file all move to their own entries on read; editing one keeps the others",
+	[movedKeys.sort(), afterLegacy.draftOf(DAILY)?.said, afterLegacy.draftOf(OTHER)?.said],
+	[[`chat:${DAILY}`, `chat:${OTHER}`].sort(), "legacy daily edited", "legacy other"],
+);
+
+const lazyDisk = diskOf();
+const lazyReads: string[] = [];
+const countedFiles: DraftFiles = {
+	...lazyDisk.files,
+	read: async (root, path) => {
+		lazyReads.push(path);
+		return lazyDisk.files.read(root, path);
+	},
+};
+const lazyStore = new FakeStore();
+const lazyAt = (): ChatDraftsAt => ({
+	store: new StoreClient(lazyStore.invoke, undefined),
+	files: countedFiles,
+	workspaceId: DEFAULT.id,
+});
+const lazySeed = await TauriChatDraftShelf.read(lazyAt());
+lazySeed.keep(DAILY, draftWith("a draft with a picture"));
+lazySeed.keep(OTHER, draftWith("another draft with a picture"));
+await lazySeed.flush();
+const lazyShelf = await TauriChatDraftShelf.read(lazyAt());
+const readsAtStart = lazyReads.length;
+const listedAtStart = lazyShelf.draftOf(DAILY)?.said;
+await opened(chatServerOver(lazyShelf), DAILY);
+check(
+	"startup reads no draft file; opening a chat reads only that chat's",
+	[readsAtStart, listedAtStart, lazyReads.length, lazyShelf.draftOf(DAILY)?.attachments.length],
+	[0, "a draft with a picture", 1, 1],
+);
+lazyShelf.keep(OTHER, {
+	...(lazyShelf.draftOf(OTHER) ?? draftWith("")),
+	said: "edited before it was opened",
+});
+await lazyShelf.flush();
+const otherOnDisk = JSON.stringify(lazyStore.files.get(draftsFile)?.[`chat:${OTHER}`] ?? {});
+check(
+	"a chat edited before its files were read keeps them listed and on disk",
+	[otherOnDisk.includes("shot.png"), lazyDisk.held.size],
+	[true, 2],
+);
 
 console.log(tally.failed ? `chat drafts: ${tally.failed} check(s) failed` : "chat drafts: all checks passed");
 process.exit(tally.failed ? 1 : 0);

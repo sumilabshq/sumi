@@ -9,5 +9,6 @@ export abstract class ChatDraftsGateway {
 	abstract saveChatDraft(chatId: string, draft: ChatDraft): void;
 	abstract unseenSaid(): string | null;
 	abstract problemOf(chatId: string): string | null;
+	abstract ready(chatId: string): Promise<void>;
 	abstract saveUnseenSaid(said: string | null): void;
 }

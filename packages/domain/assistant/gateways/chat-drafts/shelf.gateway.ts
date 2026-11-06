@@ -16,6 +16,10 @@ export class ShelfChatDraftsGateway extends ChatDraftsGateway {
 		port.lendDrafts?.((chatId) => isDrafted(shelf.draftOf(chatId)));
 	}
 
+	ready(chatId: string): Promise<void> {
+		return this.shelf.ready(chatId);
+	}
+
 	problemOf(chatId: string): string | null {
 		return this.shelf.problemOf(chatId);
 	}

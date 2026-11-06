@@ -52,6 +52,8 @@ const BEFORE_ENTRIES = "queues";
 const UNSAFE_IN_FILE = /[^a-z0-9._-]/g;
 const UUID_PREFIX = /^[0-9a-f-]{36}-/;
 const MOST_WRITE_TRIES = 4;
+const TAKEN_SAVE_MS = 2000;
+const FILES_STILL_WRITING = "queued message files still being written";
 const RETRY_AFTER_MS = 2000;
 const NOT_COPIED = "[queue] chat {chat}: {path} is not in memory, its message is kept without the file";
 const NOT_WRITTEN = "[queue] chat {chat}: {path} could not be stored after {tries} tries";
@@ -91,6 +93,11 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 		const queued = restored.map(({ message }) => message);
 		this.heard.set(chatId, queued);
 		this.keepOwn(chatId, restored.map(({ keptAs }) => keptAs), `chat ${chatId} queue read back`);
+
+		if (orphaned.length > 0) {
+			await this.saveTaken(`chat ${chatId} queue taken from closed windows`);
+		}
+
 		console.info(`[queue] chat ${chatId}: ${String(queued.length)} queued read back (${String(orphaned.length)} from closed windows), waiting`);
 		return queued;
 	}
@@ -117,6 +124,15 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 	async flush(): Promise<void> {
 		await Promise.all([...this.writing]);
 		await this.doc.flush();
+	}
+
+	async saveUntil(untilMs: number): Promise<readonly string[]> {
+		const isWritten = await Promise.race([
+			Promise.all([...this.writing]).then(() => true),
+			new Promise<boolean>((late) => setTimeout(() => late(false), Math.max(0, untilMs - Date.now()))),
+		]);
+		const unsaved = await this.doc.saveUntil(untilMs);
+		return isWritten ? unsaved : [FILES_STILL_WRITING, ...unsaved];
 	}
 
 	private async takeOrphansOf(chatId: string): Promise<readonly KeptQueued[]> {
@@ -149,6 +165,18 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 			},
 			"queues moved to one entry per chat",
 		);
+		await this.saveTaken("queues moved to one entry per chat");
+	}
+
+	private async saveTaken(reason: string): Promise<void> {
+		const unsaved = await this.doc.saveUntil(Date.now() + TAKEN_SAVE_MS);
+
+		if (unsaved.length > 0) {
+			console.error(`[queue] ${reason} → NOT saved, only this window holds it: ${unsaved.join(", ")}`);
+			return;
+		}
+
+		console.info(`[queue] ${reason} → saved`);
 	}
 
 	private keptOf(

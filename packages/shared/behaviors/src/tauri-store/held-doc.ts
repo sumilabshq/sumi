@@ -2,6 +2,8 @@ import type { DocKind, DocState, StoreClient, StoreRoot } from "./store-client.j
 
 const WRITE_DELAY_MS = 400;
 const MOST_WRITE_WAIT_MS = 2000;
+const SAVE_AGAIN_AFTER_MS = 100;
+const IN_MEMORY_ONLY = "(read-only on disk, kept in memory)";
 const MOST_WRITE_TRIES = 3;
 const READ_RETRY_MS: readonly number[] = [300, 1000, 3000, 10_000];
 const UNREAD: DocState<never> = {
@@ -30,6 +32,7 @@ export class HeldDoc<Doc extends object> {
 	private writing: Promise<void> = Promise.resolve();
 	private delayedWrite: ReturnType<typeof setTimeout> | null = null;
 	private firstDelayedAt: number | null = null;
+	private isKeptInMemoryOnly = false;
 	private readonly listeners = new Set<() => void>();
 
 	private constructor(
@@ -86,6 +89,18 @@ export class HeldDoc<Doc extends object> {
 		this.cancelDelayedWrite();
 		this.writing = this.writing.then(() => this.writePending());
 		return this.writing;
+	}
+
+	async saveUntil(untilMs: number): Promise<readonly string[]> {
+		await this.flush();
+
+		while (this.pending !== null && Date.now() < untilMs) {
+			await new Promise((waited) => setTimeout(waited, SAVE_AGAIN_AFTER_MS));
+			await this.flush();
+		}
+
+		const unsaved = Object.keys(this.pending?.patch ?? {}).map((key) => `${this.label()} ${key}`);
+		return this.isKeptInMemoryOnly ? [...unsaved, `${this.label()} ${IN_MEMORY_ONLY}`] : unsaved;
 	}
 
 	private readUntilLanded(attempt: number): void {
@@ -195,6 +210,7 @@ export class HeldDoc<Doc extends object> {
 	private async writeChange(change: PendingChange<Doc>): Promise<boolean> {
 		if (this.held.isReadOnly) {
 			console.warn(`[ink] ${this.label()} is newer than this app or unreadable, changes stay in memory`);
+			this.isKeptInMemoryOnly = true;
 			return true;
 		}
 

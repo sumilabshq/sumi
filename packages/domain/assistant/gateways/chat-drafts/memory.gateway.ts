@@ -6,6 +6,10 @@ export class MemoryChatDraftsGateway extends ChatDraftsGateway {
 	private unseen: string | null = null;
 	private readonly drafts = new Map<string, ChatDraft>();
 
+	ready(): Promise<void> {
+		return Promise.resolve();
+	}
+
 	problemOf(): null {
 		return null;
 	}

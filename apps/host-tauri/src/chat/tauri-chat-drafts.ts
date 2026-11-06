@@ -17,6 +17,7 @@ export interface ChatDraftShelf {
 	draftOf(chatId: string): ChatDraft | null;
 	keep(chatId: string, draft: ChatDraft): void;
 	problemOf(chatId: string): string | null;
+	ready(chatId: string): Promise<void>;
 }
 
 export interface DraftFiles {
@@ -68,6 +69,9 @@ const CHAT_DRAFTS: DocKind<ChatEntriesDoc> = {
 
 export const CHAT_ENTRY = "chat:";
 const BEFORE_ENTRIES = "drafts";
+const MOVE_SAVE_MS = 2000;
+const MOVED_TO_ENTRIES = "drafts moved to one entry per chat";
+const FILES_STILL_WRITING = "chat draft files still being written";
 const RETRY_AFTER_MS: readonly number[] = [1000, 5000, 30_000, 120_000];
 const CHUNK = 0x8000;
 const NOT_READ = "{names} could not be read back from disk ({why}). They stay in this draft and are tried again.";
@@ -77,6 +81,7 @@ const NOT_REMOVED = "[ink] chat {chat}: draft file of {name} could not be remove
 interface HeldChat {
 	readonly draft: ChatDraft;
 	readonly unread: readonly KeptAttachment[];
+	readonly isOpened: boolean;
 }
 
 export class MemoryChatDraftShelf implements ChatDraftShelf {
@@ -97,6 +102,10 @@ export class MemoryChatDraftShelf implements ChatDraftShelf {
 
 	problemOf(): null {
 		return null;
+	}
+
+	ready(): Promise<void> {
+		return Promise.resolve();
 	}
 }
 
@@ -119,8 +128,9 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 			empty: {},
 		});
 		const shelf = new TauriChatDraftShelf(at, doc);
-		await shelf.followDoc();
-		doc.watch(() => void shelf.followDoc());
+		await shelf.moveEntriesFromBefore();
+		shelf.followDoc();
+		doc.watch(() => shelf.followDoc());
 		console.info(`[ink] chat drafts read back for ${String(shelf.held.size)} chats`);
 		return shelf;
 	}
@@ -133,22 +143,41 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 		return this.problems.get(chatId) ?? null;
 	}
 
+	async ready(chatId: string): Promise<void> {
+		const held = this.held.get(chatId);
+
+		if (held === undefined || held.isOpened) {
+			return;
+		}
+
+		this.held.set(chatId, {
+			...held,
+			isOpened: true,
+		});
+		const failure = await this.readUnread(chatId);
+
+		if (failure === null) {
+			return;
+		}
+
+		const unread = this.held.get(chatId)?.unread ?? [];
+		const said = NOT_READ.replace("{names}", unread.map(({ name }) => name).join(", ")).replace("{why}", failure);
+		this.problems.set(chatId, said);
+		console.error(`[ink] chat ${chatId}: ${said}`);
+		this.retry(chatId, 0, async () => (await this.readUnread(chatId)) === null);
+	}
+
 	keep(chatId: string, draft: ChatDraft): void {
 		const was = this.held.get(chatId);
 		const next: HeldChat = {
 			draft,
-			unread: was?.unread ?? [],
+			unread: (was?.unread ?? []).filter(({ id }) => !draft.attachments.some((attachment) => attachment.id === id)),
+			isOpened: was?.isOpened ?? true,
 		};
 		const written = this.writeFilesOf(chatId, was?.draft.attachments ?? [], draft.attachments);
 		const kept = keptOf(next);
 		this.remember(chatId, next, kept);
-		this.doc.change(
-			{
-				[entryKeyOf(chatId)]: kept ?? undefined,
-				[BEFORE_ENTRIES]: undefined,
-			},
-			`chat ${chatId} draft kept`,
-		);
+		this.doc.change({ [entryKeyOf(chatId)]: kept ?? undefined }, `chat ${chatId} draft kept`);
 
 		if (written.length > 0 || (was?.draft.attachments.length ?? 0) !== draft.attachments.length) {
 			this.track(Promise.all(written).then(() => this.doc.flush()));
@@ -160,7 +189,41 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 		await this.doc.flush();
 	}
 
-	private async followDoc(): Promise<void> {
+	async saveUntil(untilMs: number): Promise<readonly string[]> {
+		const isWritten = await Promise.race([
+			Promise.all([...this.writing]).then(() => true),
+			new Promise<boolean>((late) => setTimeout(() => late(false), Math.max(0, untilMs - Date.now()))),
+		]);
+		const unsaved = await this.doc.saveUntil(untilMs);
+		return isWritten ? unsaved : [FILES_STILL_WRITING, ...unsaved];
+	}
+
+	private async moveEntriesFromBefore(): Promise<void> {
+		if (this.doc.now()[BEFORE_ENTRIES] === undefined) {
+			return;
+		}
+
+		const taken = await this.at.store.takeEntry(this.root(), CHAT_DRAFTS, BEFORE_ENTRIES, MOVED_TO_ENTRIES);
+		const keyed = new Set(Object.keys(this.doc.now()));
+		const moved = [...entriesOf({ [BEFORE_ENTRIES]: taken })].filter(([chatId]) => !keyed.has(entryKeyOf(chatId)));
+		this.doc.change(
+			{
+				[BEFORE_ENTRIES]: undefined,
+				...Object.fromEntries(moved.map(([chatId, kept]) => [entryKeyOf(chatId), kept])),
+			},
+			MOVED_TO_ENTRIES,
+		);
+		const unsaved = await this.doc.saveUntil(Date.now() + MOVE_SAVE_MS);
+
+		if (unsaved.length > 0) {
+			console.error(`[ink] chat drafts one key → one entry per chat NOT saved: ${unsaved.join(", ")}`);
+			return;
+		}
+
+		console.info(`[ink] chat drafts one key → one entry per chat: ${moved.map(([chatId]) => chatId).join(", ")}`);
+	}
+
+	private followDoc(): void {
 		const entries = entriesOf(this.doc.now());
 		const changed = [...entries].filter(([chatId, kept]) => this.seen.get(chatId) !== JSON.stringify(kept));
 		const gone = [...this.seen.keys()].filter((chatId) => !entries.has(chatId));
@@ -170,76 +233,61 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 			this.held.delete(chatId);
 		}
 
-		await Promise.all(changed.map(([chatId, kept]) => this.load(chatId, kept)));
+		for (const [chatId, kept] of changed) {
+			this.load(chatId, kept);
+		}
 	}
 
-	private async load(chatId: string, kept: KeptChatDraft): Promise<void> {
+	private load(chatId: string, kept: KeptChatDraft): void {
 		this.seen.set(chatId, JSON.stringify(kept));
-		const read = await Promise.all(kept.attachments.map((attachment) => this.attachmentOf(chatId, attachment)));
-		const attachments = read.flatMap(({ attachment }) => (attachment === null ? [] : [attachment]));
-		const unread = kept.attachments.filter((_attachment, at) => read[at]?.attachment === null);
 		this.held.set(chatId, {
 			draft: {
 				said: kept.said,
 				choices: kept.choices,
 				provider: kept.provider,
-				attachments,
+				attachments: kept.attachments.filter(isFolder).map(folderAttachmentOf),
 			},
-			unread,
+			unread: kept.attachments.filter((attachment) => !isFolder(attachment)),
+			isOpened: false,
 		});
-		this.reportUnread(chatId, unread, read.find(({ failure }) => failure !== null)?.failure ?? null);
 	}
 
-	private reportUnread(chatId: string, unread: readonly KeptAttachment[], failure: string | null): void {
-		if (unread.length === 0) {
-			this.problems.delete(chatId);
-			return;
-		}
-
-		const said = NOT_READ.replace("{names}", unread.map(({ name }) => name).join(", ")).replace("{why}", failure ?? "");
-		this.problems.set(chatId, said);
-		console.error(`[ink] chat ${chatId}: ${said}`);
-		this.retry(chatId, 0, () => this.retryUnread(chatId));
-	}
-
-	private async retryUnread(chatId: string): Promise<boolean> {
+	private async readUnread(chatId: string): Promise<string | null> {
 		const held = this.held.get(chatId);
 
 		if (held === undefined || held.unread.length === 0) {
-			return true;
+			return null;
 		}
 
 		const read = await Promise.all(held.unread.map((attachment) => this.attachmentOf(chatId, attachment)));
 		const found = read.flatMap(({ attachment }) => (attachment === null ? [] : [attachment]));
-		const unread = held.unread.filter((_attachment, at) => read[at]?.attachment === null);
+		const failure = read.find((answer) => answer.failure !== null)?.failure ?? null;
 		const now = this.held.get(chatId) ?? held;
 		this.held.set(chatId, {
+			...now,
 			draft: {
 				...now.draft,
 				attachments: [...found, ...now.draft.attachments],
 			},
-			unread,
+			unread: now.unread.filter(({ id }) => !found.some((attachment) => attachment.id === id)),
 		});
 
-		if (unread.length === 0) {
-			this.problems.delete(chatId);
-			console.info(`[ink] chat ${chatId}: ${String(found.length)} attached files read back on a retry`);
+		if (failure !== null) {
+			return failure;
 		}
 
-		return unread.length === 0;
+		this.problems.delete(chatId);
+		console.info(`[ink] chat ${chatId}: ${String(found.length)} attached files read back`);
+		return null;
 	}
 
 	private async attachmentOf(
 		chatId: string,
 		kept: KeptAttachment,
 	): Promise<{ readonly attachment: DraftAttachment | null; readonly failure: string | null }> {
-		if (kept.kind === "folder") {
+		if (isFolder(kept)) {
 			return {
-				attachment: {
-					...kept,
-					bytes: new Uint8Array(),
-					preview: null,
-				},
+				attachment: folderAttachmentOf(kept),
 				failure: null,
 			};
 		}
@@ -369,6 +417,18 @@ function keptOf({ draft, unread }: HeldChat): KeptChatDraft | null {
 				path,
 			})),
 		],
+	};
+}
+
+function isFolder({ kind }: Pick<KeptAttachment, "kind">): boolean {
+	return kind === "folder";
+}
+
+function folderAttachmentOf(kept: KeptAttachment): DraftAttachment {
+	return {
+		...kept,
+		bytes: new Uint8Array(),
+		preview: null,
 	};
 }
 

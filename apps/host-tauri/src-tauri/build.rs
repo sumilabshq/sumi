@@ -77,7 +77,7 @@ const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
 const FILES_COMMANDS: &[&str] =
     &["read_file", "read_folder", "file_info", "write_file", "append_file", "make_folder", "remove", "rename", "copy"];
 
-const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "flushed_before_quit"];
+const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "quit_listening", "flushed_before_quit"];
 
 fn main() {
     let assistant = InlinedPlugin::new()

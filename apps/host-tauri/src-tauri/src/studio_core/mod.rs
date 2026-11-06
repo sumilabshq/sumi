@@ -32,13 +32,12 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
         })
         .on_event(|app, event| {
             if matches!(event, RunEvent::Ready) {
-                if let Err(failure) = quit::wear_quit_menu(app) {
-                    eprintln!("[studio-core] quit menu default → default: {failure}, Cmd+Q quits without saving");
-                }
+                quit::ask_macos_before_terminating(app);
                 let app = app.clone();
                 std::thread::spawn(move || open_core_window(&app));
             }
             follow_closed_window(app, event);
+            quit::follow_exit_request(app, event);
         })
         .build()
 }
@@ -59,6 +58,7 @@ fn follow_closed_window<R: Runtime>(app: &AppHandle<R>, event: &RunEvent) {
         return;
     }
 
+    app.state::<Arc<QuitFlushes>>().gone(label);
     if let Err(failure) = app.emit_to(CORE_WINDOW, WINDOW_CLOSED_EVENT, label) {
         eprintln!("[studio-core] window {label} closed → the core was not told: {failure}");
     }
@@ -96,8 +96,13 @@ fn dispatch<R: Runtime>(invoke: Invoke<R>) -> bool {
         "answer" => answer(&message),
         "changed" => changed(&message),
         "live_windows" => Ok(Value::from(live_studio_windows(message.webview().app_handle()))),
+        "quit_listening" => {
+            message.webview().app_handle().state::<Arc<QuitFlushes>>().listening(message.webview().label());
+            Ok(Value::Null)
+        }
         "flushed_before_quit" => {
-            quit::heard_flushed(message.webview().app_handle(), message.webview().label());
+            let is_saved = argument(&message, "isSaved").ok().and_then(Value::as_bool).unwrap_or(false);
+            quit::heard_flushed(message.webview().app_handle(), message.webview().label(), is_saved);
             Ok(Value::Null)
         }
         _ => return false,

@@ -15,6 +15,7 @@ import { TauriChatDraftShelf } from "../chat/tauri-chat-drafts.js";
 import { tauriDraftFiles } from "../chat/tauri-draft-files.js";
 import { TauriChatQueueShelf } from "../chat/tauri-chat-queues.js";
 import { savesBeforeQuit } from "./saves-before-quit.js";
+import type { SaveForQuit } from "./saves-before-quit.js";
 import { liveWindowLabels, ownWindowLabel } from "../chat/tauri-windows.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
@@ -52,10 +53,12 @@ interface HeldWorkspaceDocs {
 
 interface WorkspaceDocs extends HeldWorkspaceDocs {
 	readonly flushAll: () => Promise<void>;
+	readonly saveForQuit: SaveForQuit;
 }
 
 interface Flushed {
 	flush(): Promise<void>;
+	saveUntil(untilMs: number): Promise<readonly string[]>;
 }
 
 export async function openTauriStudio(opening: StudioOpening): Promise<StartedStudio> {
@@ -63,7 +66,9 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	const docs = await readWorkspaceDocs(opening);
 	const joined = joinPlaces(opening.workspace.id);
 	void getCurrentWindow().onCloseRequested(docs.flushAll);
-	savesBeforeQuit(docs.flushAll);
+	void savesBeforeQuit(docs.saveForQuit).catch((failure: unknown) => {
+		console.error("[ink] quit handshake none → none: this window quits without saving first", failure);
+	});
 	const core = ipcTransport(opening.workspace.id);
 	const studioApp = startTauriStudioApp(opening.workspace.id, core);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
@@ -108,6 +113,10 @@ async function readWorkspaceDocs(opening: StudioOpening): Promise<WorkspaceDocs>
 		...docs,
 		flushAll: async () => {
 			await Promise.all(flushedDocsOf(opening.settings, docs).map((doc) => doc.flush()));
+		},
+		saveForQuit: async (untilMs) => {
+			const unsaved = await Promise.all(flushedDocsOf(opening.settings, docs).map((doc) => doc.saveUntil(untilMs)));
+			return unsaved.flat();
 		},
 	};
 }

@@ -127,7 +127,7 @@ export class FakeStore {
 			throw { code: "stale-rev", currentRev };
 		}
 
-		const doc: unknown = args["doc"];
+		const doc: unknown = JSON.parse(JSON.stringify(args["doc"] ?? {}));
 		this.files.set(key, {
 			...(typeof doc === "object" && doc !== null ? doc : {}),
 			rev: currentRev + 1,

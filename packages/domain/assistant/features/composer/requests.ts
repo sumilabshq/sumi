@@ -335,6 +335,7 @@ export const OpenChatDraftCommand = command("open-chat-draft")
 
 		chatDrafts.saveOpenChat(chatId);
 		console.debug(`[widgetarium] open chat ${String(left)} → ${chatId}`);
+		await chatDrafts.ready(chatId);
 		const opened = chatDrafts.chatDraft(chatId);
 		chatDrafts.saveUnseenSaid(opened === null || opened.said === "" ? null : opened.said);
 		invalidate(DraftAttachmentsQuery);

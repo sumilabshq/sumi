@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 use tauri::EventTarget;
 use widgetarium_host_tauri_lib::store::dispatch::{answer_of, call_of, change_of, is_studio_target};
 use widgetarium_host_tauri_lib::store::{atomic, workspaces, Refusal, Store, APP_FOLDER};
-use widgetarium_host_tauri_lib::studio_core::quit::QuitFlushes;
+use widgetarium_host_tauri_lib::studio_core::quit::{QuitEnd, QuitFlushes, QuitStart};
 use widgetarium_host_tauri_lib::studio_caller::{refuse_foreign_caller, NOT_FROM_STUDIO};
 
 const SETTINGS: &str = "settings.json";
@@ -233,10 +233,21 @@ fn taken_entries(checks: &mut Checks) {
 
 fn quit_waits_for_every_window(checks: &mut Checks) {
     let flushes = QuitFlushes::default();
-    let windows = vec!["one".to_owned(), "two".to_owned()];
-    checks.check("a quit starts once", (flushes.start(&windows), flushes.start(&windows)), (true, false));
-    checks.check("one saved window is not enough", flushes.heard("one"), false);
-    checks.check("the last saved window lets the app quit", flushes.heard("two"), true);
+    let live = vec!["one".to_owned(), "two".to_owned(), "never-listened".to_owned()];
+    flushes.listening("one");
+    flushes.listening("two");
+    let first = flushes.start(&live, QuitEnd::ReplyToMacOs);
+    let again = flushes.start(&live, QuitEnd::Exit);
+    checks.check("a quit starts once and waits only for windows that listen", (first, again, flushes.waiting_for()), (QuitStart::Waiting, QuitStart::AlreadyWaiting, vec!["one".to_owned(), "two".to_owned()]));
+    checks.check("one answered window is not enough", flushes.heard("one"), None);
+    checks.check("the last answered window ends the quit the way it began", (flushes.heard("two"), flushes.is_done()), (Some(QuitEnd::ReplyToMacOs), true));
+    checks.check("once done, the next exit request goes through at once", flushes.start(&live, QuitEnd::Exit), QuitStart::Now);
+    let silent = QuitFlushes::default();
+    checks.check("with no window listening, a quit does not wait", silent.start(&live, QuitEnd::Exit), QuitStart::Now);
+    let closed = QuitFlushes::default();
+    closed.listening("one");
+    closed.gone("one");
+    checks.check("a closed window is not waited for", closed.start(&live, QuitEnd::Exit), QuitStart::Now);
 }
 
 fn workspace_life(checks: &mut Checks) {
