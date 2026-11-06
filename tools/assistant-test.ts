@@ -64,8 +64,8 @@ import { shortPathOf } from "../packages/domain/assistant/shared/lib/short-path.
 import { attachmentsIn, withAttachments } from "../packages/domain/assistant/shared/lib/attachment-trailer.ts";
 import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/lib/attachment-sweep.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
-import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
+import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { PrivateFiles } from "./private-files.ts";
 
 let failed = 0;

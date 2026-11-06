@@ -1,14 +1,14 @@
 import type { AssistantPort, AssistantSession } from "../packages/shared/core/src/engine/assistant-port.ts";
-import type { IpcOptions, TauriIpc } from "../apps/host-tauri/src/assistant/assistant-bridge.ts";
+import type { IpcOptions, TauriIpc } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import {
 	ATTACHMENT_PATH_HEADER,
 	droppedBytesIn,
 	droppedEntriesIn,
 	pickedFolderIn,
 	providersAnswerIn,
-} from "../apps/host-tauri/src/assistant/assistant-bridge.ts";
-import { cssPointOf, dragStepOf, isInside } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
-import type { ChatSpot, WebviewDragSource } from "../apps/host-tauri/src/assistant/tauri-file-drop.ts";
+} from "../apps/tauri/src/assistant/assistant-bridge.ts";
+import { cssPointOf, dragStepOf, isInside } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
+import type { ChatSpot, WebviewDragSource } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { attachmentFilesIn } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
 import {
@@ -30,15 +30,15 @@ import {
 	NO_SUCH_QUEUED,
 	STOPPED,
 	createTurnSession,
-} from "../apps/host-tauri/src/assistant/turn-session.ts";
-import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../apps/host-tauri/src/assistant/tauri-assistant-port.ts";
-import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+} from "../apps/tauri/src/assistant/turn-session.ts";
+import { CANNOT_COMPACT, UNKNOWN_PROVIDER } from "../apps/tauri/src/assistant/tauri-assistant-port.ts";
+import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { DEFAULT, FakeStore, quietly } from "./host-tauri-fake-store.ts";
-import { startTauriAssistant } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
-import { keptUsageIn } from "../apps/host-tauri/src/assistant/kept-usage.ts";
-import type { UsageMemory } from "../apps/host-tauri/src/assistant/kept-usage.ts";
-import type { TauriAssistant, TauriWorkspaceFolders } from "../apps/host-tauri/src/assistant/tauri-assistant.ts";
+import { startTauriAssistant } from "../apps/tauri/src/assistant/tauri-assistant.ts";
+import { keptUsageIn } from "../apps/tauri/src/assistant/kept-usage.ts";
+import type { UsageMemory } from "../apps/tauri/src/assistant/kept-usage.ts";
+import type { TauriAssistant, TauriWorkspaceFolders } from "../apps/tauri/src/assistant/tauri-assistant.ts";
 
 let failed = 0;
 let checks = 0;

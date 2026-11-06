@@ -1,7 +1,7 @@
 import { StrictMode, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
-import { startTauriStudio } from "../apps/host-tauri/src/index.ts";
+import { startTauriStudio } from "../apps/tauri/src/index.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 
 const PROJECT: WidgetariumProject = {

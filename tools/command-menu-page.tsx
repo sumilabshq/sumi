@@ -26,11 +26,11 @@ import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib
 import type { AskComposer } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
-import { claudeOptionsCell } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
-import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
+import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
-import { MemoryChatDraftShelf } from "../apps/host-tauri/src/chat/tauri-chat-drafts.ts";
+import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
 
 declare global {
 	interface Window {

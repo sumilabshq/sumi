@@ -49,7 +49,7 @@
 		"loader/**/*.mts",
 		"lint/**/*.mts",
 		"../packages/shared/core/src/*.d.ts",
-		"../apps/host-tauri/src/style-sheets.d.ts",
+		"../apps/tauri/src/style-sheets.d.ts",
 		"../packages/shared/kit/src/jsx-namespace.d.ts"
 	]
 }

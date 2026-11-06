@@ -3,8 +3,8 @@ import { TauriPaneTreeGateway } from "../packages/state/layout/gateways/pane-tre
 import { boardOf } from "../packages/state/layout/shared/lib/pane-trees.ts";
 import { groupedChat } from "../packages/state/layout/shared/lib/chat-groups.ts";
 import type { WindowsPanes } from "../packages/state/layout/gateways/pane-tree/tauri.gateway.ts";
-import { createTurnSession } from "../apps/host-tauri/src/assistant/turn-session.ts";
-import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+import { createTurnSession } from "../apps/tauri/src/assistant/turn-session.ts";
+import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { profileFilesOf } from "../packages/domain/browser/gateways/browser-parts/tauri.gateway.ts";
 import {
 	KeptGrantsSchema,
@@ -20,9 +20,9 @@ import {
 	workspaceRootOf,
 } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/host-tauri/src/workspace/tauri-workspace-apps.ts";
-import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
-import { reopensOnWorkspaceSwitch } from "../apps/host-tauri/src/workspace/workspace-switch.ts";
+import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/tauri/src/workspace/tauri-workspace-apps.ts";
+import { WorkspaceClient } from "../apps/tauri/src/workspace/workspace-client.ts";
+import { reopensOnWorkspaceSwitch } from "../apps/tauri/src/workspace/workspace-switch.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";

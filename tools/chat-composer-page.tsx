@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { AssistantPanel } from "../apps/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
-import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/host-tauri/src/assistant/claude-options-cell.ts";
-import { workspaceFolderCell } from "../apps/host-tauri/src/assistant/workspace-folder-cell.ts";
+import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/tauri/src/assistant/claude-options-cell.ts";
+import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type {
 	AssistantPort,
@@ -15,7 +15,7 @@ import type {
 import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
 import { MascotModule } from "../packages/domain/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
-import { MemoryChatDraftShelf } from "../apps/host-tauri/src/chat/tauri-chat-drafts.ts";
+import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
 
 declare global {
 	interface Window {

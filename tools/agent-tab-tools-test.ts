@@ -1,7 +1,7 @@
 import { HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
-import { AGENT_TOOLS, runAgentTool } from "../apps/host-tauri/src/agent/run-agent-tool.ts";
+import { AGENT_TOOLS, runAgentTool } from "../apps/tauri/src/agent/run-agent-tool.ts";
 import { readFileSync } from "node:fs";
-import { AgentAppSchema, appState, appsList } from "../apps/host-tauri/src/agent/state-tools.ts";
+import { AgentAppSchema, appState, appsList } from "../apps/tauri/src/agent/state-tools.ts";
 import {
 	groupCreate,
 	groupDelete,
@@ -10,13 +10,13 @@ import {
 	tabDuplicate,
 	tabOpen,
 	tabUpdate,
-} from "../apps/host-tauri/src/agent/tab-tools.ts";
-import { assertOwnList } from "../apps/host-tauri/src/agent/tool-places.ts";
+} from "../apps/tauri/src/agent/tab-tools.ts";
+import { assertOwnList } from "../apps/tauri/src/agent/tool-places.ts";
 import { regionOnPage } from "../packages/domain/browser/shared/lib/region-within.ts";
 import { READ_DOM } from "../packages/domain/browser/shared/lib/page-scripts.ts";
 import { JSDOM } from "jsdom";
-import { tabLinksRenderer } from "../apps/host-tauri/src/agent/tab-links.ts";
-import type { AppState } from "../apps/host-tauri/src/agent/app-state.ts";
+import { tabLinksRenderer } from "../apps/tauri/src/agent/tab-links.ts";
+import type { AppState } from "../apps/tauri/src/agent/app-state.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
@@ -392,7 +392,7 @@ check(
 unrender();
 check("unrendering empties the holder", said.childNodes.length, 0);
 
-const listedTools: unknown = JSON.parse(readFileSync("apps/host-tauri/src-tauri/src/agent/tools.json", "utf8"));
+const listedTools: unknown = JSON.parse(readFileSync("apps/tauri/src-tauri/src/agent/tools.json", "utf8"));
 check(
 	"the app answers exactly the tools Claude is told about",
 	Array.isArray(listedTools) ? listedTools.map((tool: { name: string }) => tool.name).toSorted() : null,

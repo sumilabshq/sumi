@@ -1,5 +1,5 @@
-import { ChatSessions, ONE_CHAT_LINK } from "../apps/host-tauri/src/assistant/chat-sessions.ts";
-import type { RunAnswer, TurnRun } from "../apps/host-tauri/src/assistant/turn-run.ts";
+import { ChatSessions, ONE_CHAT_LINK } from "../apps/tauri/src/assistant/chat-sessions.ts";
+import type { RunAnswer, TurnRun } from "../apps/tauri/src/assistant/turn-run.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 interface HeldRun {

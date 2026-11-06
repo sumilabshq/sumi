@@ -9,7 +9,7 @@ import { FileSystemModule as RunnableFileSystemModule } from "@widgetarium/file-
 import { BoardQuery, CreateTaskCommand, TasksModule } from "@widgetarium/tasks";
 import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
 import { NodeFilesGateway } from "../packages/domain/file-system/gateways/files/node.gateway.ts";
-import { tasksBoardFileOver } from "../apps/host-tauri/src/core-link/tasks-board-file.ts";
+import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";

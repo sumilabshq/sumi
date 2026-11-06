@@ -1,14 +1,11 @@
-import { APP_MODULES } from "@widgetarium/app-registry/modules";
+import { SharedModulesSlot, SumiHostPlugin } from "@sumi/sumi-host-plugin";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { plugin } from "@widgetarium/plugin-framework";
 import { PlacesModule } from "@widgetarium/places/module";
 import { QuestionsModule } from "@widgetarium/questions/module";
-import { isHostCapability } from "./host-capabilities.js";
-import { SharedModulesSlot, SumiHostPlugin } from "./sumi-host-plugin.js";
+import { TasksModule } from "@widgetarium/tasks/module";
 
-const OLD_APP_MODULES: readonly ServerSideModule[] = [PlacesModule, QuestionsModule, ...APP_MODULES].filter(
-	(module) => !isHostCapability(module),
-);
+const OLD_APP_MODULES: readonly ServerSideModule[] = [PlacesModule, QuestionsModule, TasksModule];
 
 export const MainPlugin = plugin("main")
 	.require(SumiHostPlugin)

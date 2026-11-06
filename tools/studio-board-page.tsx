@@ -4,7 +4,7 @@ import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.
 import { NO_STUDIO_HOST } from "../packages/shared/core/src/engine/studio-host.js";
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.js";
 import { corePack } from "../packages/shared/packs/core/src/index.js";
-import { BESIDE_TRAFFIC_LIGHTS } from "../apps/host-tauri/src/tauri-studio-host.js";
+import { BESIDE_TRAFFIC_LIGHTS } from "../apps/tauri/src/tauri-studio-host.js";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.js";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { NO_ESSENTIALS, exactStudio } from "./studio-exact-fixture.ts";

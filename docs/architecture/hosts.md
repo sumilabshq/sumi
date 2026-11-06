@@ -1,6 +1,6 @@
 # Hosts
 
-A host is the framework code that runs apps inside another program: `apps/host-tauri` (the desktop app, the product), the browser host inside `@widgetarium/vite`. A project writes no host code.
+A host is the framework code that runs apps inside another program: `apps/tauri` (the desktop app, the product), the browser host inside `@widgetarium/vite`. A project writes no host code.
 
 ## What a host hands an app
 
@@ -34,18 +34,18 @@ An interface the host lends (the tasks module's `BoardFile`) is a `hostObject("B
 
 ## The Tauri host
 
-`apps/host-tauri` opens the studio windows, keeps the workspaces, and starts each window's app with `platform: "tauri"` and the window's workspace. Settings and sessions are files the module gateways read and write through `@widgetarium/behaviors/tauri-store`.
+`apps/tauri` opens the studio windows, keeps the workspaces, and starts each window's app with `platform: "tauri"` and the window's workspace. Settings and sessions are files the module gateways read and write through `@widgetarium/behaviors/tauri-store`.
 
 **Only the host touches the machine.** The core runs the host's capabilities itself, `HOST_CAPABILITY_MODULES` in `src/plugins/host-capabilities.ts` (files and terminal sessions, through Tauri), then the modules plugins put in the host's shared modules slot. Plugins reach a capability only through `@sumi/contract`, never through `@tauri-apps/*` or a host gateway.
 
-| Plugin      | Is                                                                                                                                                                     | Lives in                          |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| `sumi-host` | the host's own declaration of the slots it offers (today `SharedModulesSlot`); it runs nothing                                                                         | `src/plugins/sumi-host-plugin.ts` |
-| `main`      | the app as it was before plugins: fills the slot with its own modules (places, questions, the generated app modules) and shrinks as pieces move into their own plugins | `src/plugins/main-plugin.ts`      |
+| Plugin      | Is                                                                                                                                                 | Lives in            |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| `sumi-host` | the host's own declaration of the slots it offers (today `SharedModulesSlot`); it runs nothing                                                     | `plugins/sumi-host` |
+| `main`      | the app as it was before plugins: fills the slot with its own modules (places, questions, tasks) and shrinks as pieces move into their own plugins | `plugins/main`      |
 
 `resolvePlugins(profile)` (`src/plugins/sumi-plugins.ts`) answers the shared modules and every refusal; the core logs each refusal as `[studio-core] plugins: …`. Both are always on: `ALWAYS_ON_PLUGINS` in the host, never in a profile. Each workspace keeps its own `sumi.profile.json` (`{ "plugins": [...] }`, the extra plugins it enables); no file means none. `npm run test:sumi-plugins` holds the module set, and starts a core from it in memory to check every module answers.
 
-**Running it.** `npm run dev` in `apps/host-tauri` is the whole dev start: Tauri's `beforeDevCommand` runs `dev-frontend.mts`, which serves the window's project on port 5173; `npm run build` builds it through `build-frontend.mts`. The project is `apps/host-tauri/project`: a Widgetarium project inside the repo with no `package.json` and no `node_modules` of its own, so it resolves React and every package from the root `node_modules`. `WIDGETARIUM_PROJECT=<folder>` draws another project instead. A project with its own React loads a second copy, every hook fails with "Invalid hook call" and the window stays empty; `npm run test:single-react` fails when a second copy appears anywhere in the repo.
+**Running it.** `npm run dev` in `apps/tauri` is the whole dev start: Tauri's `beforeDevCommand` runs `dev-frontend.mts`, which serves the window's project on port 5173; `npm run build` builds it through `build-frontend.mts`. The project is `apps/tauri/project`: a Widgetarium project inside the repo with no `package.json` and no `node_modules` of its own, so it resolves React and every package from the root `node_modules`. `WIDGETARIUM_PROJECT=<folder>` draws another project instead. A project with its own React loads a second copy, every hook fails with "Invalid hook call" and the window stays empty; `npm run test:single-react` fails when a second copy appears anywhere in the repo.
 
 TODO: `settings.json` and `session.json` each have two holders, the host's own documents and the layout's gateways, both writing rev-checked patches. One owner per file is the target.
 

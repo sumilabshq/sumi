@@ -5,7 +5,7 @@ import { WorkspaceIconSchema } from "../../shared/schema/workspace.schema.js";
 import type { Workspace, WorkspaceFolder, WorkspaceIcon } from "../../shared/schema/workspace.schema.js";
 import { WorkspacesGateway } from "./workspaces.gateway.js";
 
-// TODO: one entry schema; apps/host-tauri keeps its own WorkspaceEntrySchema
+// TODO: one entry schema; apps/tauri keeps its own WorkspaceEntrySchema
 export const KeptWorkspaceEntrySchema = z.object({
 	id: z.string().min(1),
 	name: z.string(),

@@ -15,7 +15,7 @@ registry/*/*/build/
 /apps/**/dist/
 .playwright-mcp/
 
-apps/host-tauri/src-tauri/target/
-apps/host-tauri/src-tauri/gen/schemas/
+apps/tauri/src-tauri/target/
+apps/tauri/src-tauri/gen/schemas/
 /tools/.scaffold-probe-*/
 /apps/*/*.tsbuildinfo

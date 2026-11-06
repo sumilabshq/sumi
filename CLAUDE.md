@@ -1,6 +1,6 @@
 # Widgetarium
 
-The product is the Tauri desktop studio (`apps/host-tauri`, `apps/studio`). The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
+The product is the Tauri desktop studio (`apps/tauri`, `apps/studio`). The vault widget system (boards, tiles, the catalogue, `registry/`) is legacy.
 
 ## Architecture
 
@@ -51,9 +51,12 @@ is `.ts` React with `h()` hyperscript, **no JSX there**; `tools/` is `.ts` too. 
 **The repository is an npm-workspaces monorepo, and the arrows between its parts point one way.**
 
 ```
-apps/host-tauri          FSL  the desktop host: windows, workspaces; the product
+apps/tauri               FSL  the desktop host: windows, workspaces, the machine's capabilities; the product
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
+      ↓
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins; runs nothing
+plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
       ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas (older shape)
 packages/state/*              app-state data modules: layout
@@ -71,7 +74,7 @@ packages/shared/sdk      FSL  what a widget author compiles against (legacy)
 registry/                MIT  the widget library (legacy)
 ```
 
-`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps.
+`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps; each plugin is a folder of `plugins/`. Only `apps/tauri` touches Tauri: a plugin never imports `@tauri-apps/*`.
 
 **The engine ships as versioned packages.** Every published package's `exports` carries three
 conditions: `source` → `src` (the monorepo and the test loader resolve it), `types`

@@ -1,7 +1,7 @@
-import { ChatSessions } from "../apps/host-tauri/src/assistant/chat-sessions.ts";
-import { chatSessionLinkOf } from "../apps/host-tauri/src/assistant/chat-session-link.ts";
-import type { RunAnswer, TurnRun } from "../apps/host-tauri/src/assistant/turn-run.ts";
-import { readChatLogs } from "../apps/host-tauri/src/chat/tauri-chat-history.ts";
+import { ChatSessions } from "../apps/tauri/src/assistant/chat-sessions.ts";
+import { chatSessionLinkOf } from "../apps/tauri/src/assistant/chat-session-link.ts";
+import type { RunAnswer, TurnRun } from "../apps/tauri/src/assistant/turn-run.ts";
+import { readChatLogs } from "../apps/tauri/src/chat/tauri-chat-history.ts";
 import { focusedChatPortOf } from "../apps/studio/src/chats-column/focused-chat.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";

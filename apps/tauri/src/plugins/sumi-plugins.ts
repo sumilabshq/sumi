@@ -1,8 +1,8 @@
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { profileRefusalsOf, slotFillsOf, stampSlotName, startOrderOf } from "@widgetarium/plugin-framework";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
-import { MainPlugin } from "./main-plugin.js";
-import { SharedModuleSchema, SharedModulesSlot, SumiHostPlugin } from "./sumi-host-plugin.js";
+import { MainPlugin } from "@sumi/main-plugin";
+import { SharedModuleSchema, SharedModulesSlot, SumiHostPlugin } from "@sumi/sumi-host-plugin";
 
 export interface ResolvedPlugins {
 	readonly sharedModules: readonly ServerSideModule[];

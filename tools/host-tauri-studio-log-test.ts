@@ -1,5 +1,5 @@
-import { forwardStudioLogs } from "../apps/host-tauri/src/studio-log.ts";
-import type { LogLevel, LoggedConsole } from "../apps/host-tauri/src/studio-log.ts";
+import { forwardStudioLogs } from "../apps/tauri/src/studio-log.ts";
+import type { LogLevel, LoggedConsole } from "../apps/tauri/src/studio-log.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const sent: string[] = [];

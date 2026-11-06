@@ -15,7 +15,7 @@ import { FileSystemModule } from "../packages/domain/file-system/module.ts";
 import { NodeTerminalSessionsGateway } from "../packages/domain/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { TerminalModule } from "../packages/domain/terminal/module.ts";
 import { TasksModule } from "../packages/domain/tasks/module.ts";
-import { tasksBoardFileOver } from "../apps/host-tauri/src/core-link/tasks-board-file.ts";
+import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";

@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { check, tally } from "./check-helpers.ts";
-import { SETTINGS, readSettings } from "../apps/host-tauri/src/settings/settings-doc.ts";
+import { SETTINGS, readSettings } from "../apps/tauri/src/settings/settings-doc.ts";
 
-import { TauriOpening } from "../apps/host-tauri/src/startup/tauri-opening.ts";
+import { TauriOpening } from "../apps/tauri/src/startup/tauri-opening.ts";
 import {
 	GLOBAL_ROOT,
 	STORE_CHANGED,
@@ -11,8 +11,8 @@ import {
 } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import { StoreRefusedError } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
 import type { Invoke } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
-import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
-import type { WorkspaceEntry } from "../apps/host-tauri/src/workspace/workspace-docs.ts";
+import { WorkspaceClient } from "../apps/tauri/src/workspace/workspace-client.ts";
+import type { WorkspaceEntry } from "../apps/tauri/src/workspace/workspace-docs.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 
 async function settingsChecks(): Promise<void> {

@@ -1,0 +1,24 @@
+{
+	"name": "@sumi/main-plugin",
+	"version": "0.1.0",
+	"description": "The Sumi app as it was before plugins; it shrinks as pieces move into their own plugins",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/places": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0",
+		"@widgetarium/questions": "0.1.0",
+		"@widgetarium/tasks": "0.1.0"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

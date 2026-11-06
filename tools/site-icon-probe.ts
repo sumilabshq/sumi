@@ -13,7 +13,7 @@ import { MemorySiteIconsGateway } from "../packages/domain/browser/gateways/site
 import { TauriSiteFilesGateway } from "../packages/domain/browser/gateways/site-files/tauri/tauri.gateway.ts";
 
 const PROBE = path.resolve(
-	process.env["CARGO_TARGET_DIR"] ?? "apps/host-tauri/src-tauri/target",
+	process.env["CARGO_TARGET_DIR"] ?? "apps/tauri/src-tauri/target",
 	"debug/examples/site_icon_probe",
 );
 const COMMANDS: Readonly<Record<string, string>> = {

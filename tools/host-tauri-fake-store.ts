@@ -1,5 +1,5 @@
 import type { Invoke } from "../packages/shared/behaviors/src/tauri-store/store-invoke.ts";
-import type { WorkspaceEntry } from "../apps/host-tauri/src/workspace/workspace-docs.ts";
+import type { WorkspaceEntry } from "../apps/tauri/src/workspace/workspace-docs.ts";
 
 export type Doc = Record<string, unknown>;
 
