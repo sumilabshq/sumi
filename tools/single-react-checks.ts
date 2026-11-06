@@ -5,6 +5,16 @@ import { check, tally } from "./check-helpers.ts";
 const REPO = path.resolve(import.meta.dirname, "..");
 const SKIPPED = new Set([".git", ".claude", "target", ".cache"]);
 
+const REACT_PACKAGES = new Set(["react", "react-dom"]);
+
+function isReactPackage(folder: string, name: string): boolean {
+	if (path.basename(folder) !== "node_modules" || !REACT_PACKAGES.has(name)) {
+		return false;
+	}
+
+	return fs.existsSync(path.join(folder, name, "package.json"));
+}
+
 function reactCopiesUnder(folder: string): string[] {
 	const copies: string[] = [];
 
@@ -14,10 +24,8 @@ function reactCopiesUnder(folder: string): string[] {
 		}
 
 		const inner = path.join(folder, entry.name);
-		const isReactPackage =
-			path.basename(folder) === "node_modules" && (entry.name === "react" || entry.name === "react-dom");
 
-		if (isReactPackage && fs.existsSync(path.join(inner, "package.json"))) {
+		if (isReactPackage(folder, entry.name)) {
 			copies.push(path.relative(REPO, inner));
 			continue;
 		}
