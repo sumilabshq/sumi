@@ -15,6 +15,7 @@ import {
 } from "@widgetarium/places";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
 import { AppCallerAuthenticate } from "@widgetarium/studio";
+import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
 import { serveCore } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
@@ -54,7 +55,7 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 	const own = localTransport();
 	// TRADE-OFF: modules from a plugin slot lose typed host needs; start() still refuses a missing one.
 	server()
-		.modules(...sharedModulesOf(BUILT_IN_PROFILE))
+		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(BUILT_IN_PROFILE))
 		.listen(listener)
 		.listen(own)
 		.start({
