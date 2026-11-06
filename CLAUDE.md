@@ -16,6 +16,12 @@ gets a new transport, never a new message vocabulary. A design or diff introduci
 once: `@sumi/contract` got `ask { service, input }` with a `storage` read/write service, five agents built on
 it, and all of it had to be redone.
 
+**CRITICAL — a plugin owns its data; the host knows no plugin.** A plugin declares its slots and its modules;
+its slots' fills are read only by its own code, and everyone else reaches the data through its module's
+queries, commands and events (`docs/architecture/plugins.md`). The host offers generic capabilities and
+reads only the slots it declares itself; it never reads, parses or configures a module with another
+plugin's fills. `AppHostModule({ apps })` did exactly that and was rewritten.
+
 @docs/architecture/README.md
 
 @docs/architecture/layers.md
@@ -29,6 +35,8 @@ it, and all of it had to be redone.
 @docs/architecture/views.md
 
 @docs/architecture/hosts.md
+
+@docs/architecture/plugins.md
 
 @docs/architecture/lint.md
 
@@ -56,13 +64,13 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins; runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins (shared modules, tab page); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
-plugins/apps             FSL  @sumi/apps-plugin: the apps slot, a plugin's view drawn in a tab
-plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app
+plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/module, @sumi/apps) and the app tab page
+plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
       ↓
-packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas (older shape)
-packages/state/*              app-state data modules: layout
+packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, command-menu, web-page, mascot, fixture-billing
+packages/state/*              app-state data modules: layout, places, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks
 packages/shared/plugin-framework FSL @widgetarium/plugin-framework: plugins, slots, fills, sumi.profile.json; the Tauri host resolves its plugins with it

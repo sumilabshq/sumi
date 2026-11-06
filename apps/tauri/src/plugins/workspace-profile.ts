@@ -3,7 +3,7 @@ import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
 import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { PROFILE_FILE, PluginIdSchema } from "@widgetarium/plugin-framework";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
-import { BUILT_IN_PROFILE } from "./sumi-plugins.js";
+import { BUILT_IN_PROFILE } from "@widgetarium/studio";
 
 const KeptProfileSchema = z.looseObject({
 	plugins: z.array(PluginIdSchema),

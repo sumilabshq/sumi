@@ -6,6 +6,7 @@ import {
 	profileRefusalsOf,
 	slot,
 	slotFillsOf,
+	slotReaderOf,
 	startOrderOf,
 } from "../packages/shared/plugin-framework/src/index.ts";
 import type { Plugin, SlotFills } from "../packages/shared/plugin-framework/src/index.ts";
@@ -230,6 +231,23 @@ check(
 	"a fill the slot's schema refuses, with the types satisfied, is refused",
 	slotFillsOf([MenuPlugin, EmptyDoorPlugin], ["command-menu", "empty-door"]).refusals,
 	["plugin empty-door fills slot command-menu/doors with an item the slot refuses"],
+);
+
+const KeyDoorPlugin = plugin("key-door")
+	.require(MenuPlugin)
+	.fill(DoorsSlot({ id: "keys", key: "K" }));
+const keyDoorFills = slotFillsOf([MenuPlugin, KeyDoorPlugin], ["command-menu", "key-door"]);
+check(
+	"the declaring plugin reads its slot's fills, parsed, each with its id",
+	slotReaderOf(keyDoorFills, MenuPlugin)
+		.fillsOf(DoorsSlot)
+		.map(({ id, key }) => [id, key]),
+	[["keys", "K"]],
+);
+check(
+	"a plugin reading a slot it does not declare is refused, even the one it fills",
+	thrownBy(() => slotReaderOf(keyDoorFills, KeyDoorPlugin).fillsOf(DoorsSlot)),
+	"plugin key-door reads slot doors, which it does not declare: a plugin reads only its own slots",
 );
 
 if (tally.failed > 0) {

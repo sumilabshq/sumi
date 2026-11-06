@@ -24,6 +24,11 @@
 		}
 	},
 	"dependencies": {
+		"@widgetarium/plugin-framework": "0.1.0",
+		"@sumi/terminal-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@sumi/main-plugin": "0.1.0",
+		"@sumi/apps": "0.1.0",
 		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/contract": "0.5.0",
 		"@widgetarium/app-host": "0.1.0",

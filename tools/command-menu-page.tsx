@@ -1,3 +1,4 @@
+import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
@@ -94,6 +95,7 @@ browser.recentSites.saveRecentSites(
 const studio = app()
 	.modules(
 		AppHostModule,
+		TerminalAppsModule,
 		BrowserModule.with(browser.parts),
 		LayoutModule,
 		WorkspacesModule.with(

@@ -6,3 +6,5 @@ export { APP_CALLER_HEADER, AppCallerAuthenticate } from "./features/app-frame/l
 export { nativeWebPagesOver } from "./features/app-frame/lib/native-web-pages.js";
 export { startBrowserApp } from "./browser/browser-app.js";
 export type { BrowserAppAsk } from "./browser/browser-app.js";
+export { BUILT_IN_PROFILE, resolvePlugins } from "./plugins/sumi-plugins.js";
+export type { HostOffers, ResolvedPlugins, SharedModule } from "./plugins/sumi-plugins.js";

@@ -1,4 +1,4 @@
-import { ListedPluginAppsGateway } from "../packages/domain/app-host/gateways/plugin-apps/listed.gateway.ts";
+import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -179,13 +179,13 @@ export function exactStudio({
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
 		.modules(
+			TerminalAppsModule,
 			AppHostModule.with({
 				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
 				coreChanges: new NoCoreChangesGateway(),
-				pluginApps: new ListedPluginAppsGateway([]),
 			}),
 			BrowserModule.with(fakeBrowser(boardPages).parts),
 			LayoutModule,

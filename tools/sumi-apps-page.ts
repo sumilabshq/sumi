@@ -1,4 +1,5 @@
-import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/tauri/src/plugins/sumi-plugins.ts";
+import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
@@ -65,7 +66,7 @@ const core: RemoteTransport = {
 		}),
 	changes: (hear) => overHttp.changes(hear),
 };
-const PLUGIN_APPS = resolvePlugins(BUILT_IN_PROFILE).apps;
+const PLUGINS = resolvePlugins(BUILT_IN_PROFILE);
 const studioApp = app()
 	.modules(
 		LayoutModule,
@@ -93,7 +94,8 @@ const studioApp = app()
 				},
 			}),
 		),
-		AppHostModule({ apps: PLUGIN_APPS }),
+		AppHostModule,
+		TerminalAppsModule,
 		CommandMenuModule,
 	)
 	.imports(PlacesModule.over(core), TasksModule.over(core))
@@ -153,7 +155,7 @@ try {
 			webAssistant: echo,
 		},
 		appPageUrlOf: servedPageUrlOf,
-		apps: PLUGIN_APPS,
+		plugins: PLUGINS,
 	});
 
 	if (root !== null) {

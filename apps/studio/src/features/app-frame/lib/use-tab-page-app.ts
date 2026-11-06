@@ -10,7 +10,7 @@ const ROUTES_FAILED = "[widgetarium] app {app} tab {tab}: no view → no view, i
 const STOPPED_FIRST =
 	"[widgetarium] app {app} tab {tab}: no view → no view, the tab unmounted while its routes were built";
 
-export function usePluginApp(opened: FrameOpened): StartedApp | null {
+export function useTabPageApp(opened: FrameOpened): StartedApp | null {
 	const routesFor = useFrameRoutesFor();
 	const [started, setStarted] = useState<StartedApp | null>(null);
 	const { app: appId, tabId } = opened;

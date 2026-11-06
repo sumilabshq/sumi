@@ -1,4 +1,4 @@
-import { ListedPluginAppsGateway } from "../packages/domain/app-host/gateways/plugin-apps/listed.gateway.ts";
+import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -29,12 +29,11 @@ export function studioAppOf({
 }: StudioAppParts): StartedApp {
 	return app()
 		.modules(
+			TerminalAppsModule,
 			browser === undefined ? BrowserModule : BrowserModule.with(browser),
 			LayoutModule,
 			workspaces === undefined ? WorkspacesModule : WorkspacesModule.with(workspaces),
-			appHost === undefined
-				? AppHostModule
-				: AppHostModule.with({ ...appHost, pluginApps: new ListedPluginAppsGateway([]) }),
+			appHost === undefined ? AppHostModule : AppHostModule.with({ ...appHost }),
 			CommandMenuModule,
 		)
 		.imports(placesOver(places))

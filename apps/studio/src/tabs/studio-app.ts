@@ -1,5 +1,5 @@
 import { AppHostModule } from "@widgetarium/app-host/module";
-import type { CoreChanges, PluginAppFace } from "@widgetarium/app-host/module";
+import type { CoreChanges } from "@widgetarium/app-host/module";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
@@ -10,17 +10,12 @@ import type { DeviceModule, Platform, RemoteTransport, StartedApp } from "@widge
 import { server } from "@widgetarium/data-framework/server";
 import { LayoutModule } from "@widgetarium/layout/module";
 import type { StudioWindows } from "@widgetarium/layout/module";
-import { PlacesModule } from "@widgetarium/places";
-import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
-import { QuestionsModule } from "@widgetarium/questions";
-import { QuestionsModule as RunnableQuestionsModule } from "@widgetarium/questions/module";
-import { TasksModule } from "@widgetarium/tasks";
-import { TasksModule as RunnableTasksModule } from "@widgetarium/tasks/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
 import { FileSystemModule } from "@widgetarium/file-system/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
+import type { SharedModule } from "../plugins/sumi-plugins.js";
 
 export interface TauriStudioLent {
 	readonly store: StoreClient;
@@ -34,29 +29,27 @@ export interface StudioAppAsk {
 	readonly workspaceId: string;
 	readonly core?: RemoteTransport;
 	readonly lent?: TauriStudioLent;
-	readonly apps: readonly PluginAppFace[];
+	readonly sharedModules: readonly SharedModule[];
 }
 
-export function startStudioApp({ platform, workspaceId, core, lent, apps }: StudioAppAsk): StartedApp {
-	const served = core ?? startCoreInProcess(workspaceId);
+export function startStudioApp({ platform, workspaceId, core, lent, sharedModules }: StudioAppAsk): StartedApp {
+	const served = core ?? startCoreInProcess(workspaceId, sharedModules);
 	const studioApp = app()
-		.modules(...studioModulesOf(lent, apps))
-		.imports(PlacesModule.over(served), TasksModule.over(served), QuestionsModule.over(served))
+		.modules(...studioModulesOf(lent))
+		.imports(...sharedModules.map(({ contract }) => contract.over(served)))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
 }
 
-export function startCoreInProcess(workspaceId: string): RemoteTransport {
+export function startCoreInProcess(workspaceId: string, sharedModules: readonly SharedModule[]): RemoteTransport {
 	const local = localTransport();
+	const offers = {
+		store: new StoreClient(memoryStoreInvoke()),
+		file: boardFileInMemory(),
+	};
 	server()
-		.modules(
-			RunnablePlacesModule({ store: new StoreClient(memoryStoreInvoke()) }),
-			FileSystemModule,
-			RunnableQuestionsModule,
-			RunnableTasksModule({ file: boardFileInMemory() }),
-			TerminalModule,
-		)
+		.modules(FileSystemModule, TerminalModule, ...sharedModules.map(({ moduleOf }) => moduleOf(offers)))
 		.listen(local)
 		.start({
 			env: {},
@@ -76,9 +69,9 @@ export async function restoreTabs(studioApp: StartedApp): Promise<void> {
 	}
 }
 
-function studioModulesOf(lent: TauriStudioLent | undefined, apps: readonly PluginAppFace[]): readonly DeviceModule[] {
+function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
 	if (lent === undefined) {
-		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule({ apps }), CommandMenuModule];
+		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule];
 	}
 
 	const { store, windows, coreChanges, ipc } = lent;
@@ -86,7 +79,7 @@ function studioModulesOf(lent: TauriStudioLent | undefined, apps: readonly Plugi
 		LayoutModule({ tauri: { store, windows } }),
 		BrowserModule({ tauri: { ipc } }),
 		WorkspacesModule({ tauri: { store } }),
-		AppHostModule({ tauri: { store, coreChanges }, apps }),
+		AppHostModule({ tauri: { store, coreChanges } }),
 		CommandMenuModule,
 	];
 }

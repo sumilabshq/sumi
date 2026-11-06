@@ -5,7 +5,6 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { app, localTransport } from "@widgetarium/data-framework";
 import type { ListeningTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
-import type { SharedModuleOf } from "@sumi/sumi-host-plugin";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
 import {
 	CloseWindowCommand,
@@ -14,9 +13,9 @@ import {
 	PlacesModule as PlacesContract,
 } from "@widgetarium/places";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
-import { AppCallerAuthenticate } from "@widgetarium/studio";
+import { AppCallerAuthenticate, BUILT_IN_PROFILE, resolvePlugins } from "@widgetarium/studio";
+import type { SharedModule } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
-import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
 import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { serveCore } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
@@ -81,7 +80,7 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 		file: tasksBoardFileOver(own),
 	};
 	server()
-		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile).map((moduleOf) => moduleOf(offers)))
+		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile).map(({ moduleOf }) => moduleOf(offers)))
 		.listen(listener)
 		.listen(own)
 		.start({
@@ -97,7 +96,7 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }
 
-function sharedModulesOf(workspace: string, profile: SumiProfile): readonly SharedModuleOf[] {
+function sharedModulesOf(workspace: string, profile: SumiProfile): readonly SharedModule[] {
 	const resolved = resolvePlugins(profile);
 
 	for (const refusal of resolved.refusals) {

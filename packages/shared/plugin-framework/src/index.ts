@@ -8,3 +8,5 @@ export { slotFillsOf } from "./slot-fills";
 export type { FilledSlot, ShownFill, SlotFills } from "./slot-fills";
 export { startOrderOf } from "./start-order";
 export type { StartOrder } from "./start-order";
+export { slotReaderOf } from "./slot-reader";
+export type { FilledItem, SlotReader } from "./slot-reader";

@@ -2,7 +2,8 @@ import type { Send } from "@widgetarium/data-framework";
 import { REGISTERED_APPS } from "@widgetarium/app-registry";
 import type { RegisteredApp } from "@widgetarium/app-registry";
 import { AppFacesQuery as BuiltInFacesQuery } from "@widgetarium/places";
-import type { PluginAppFace } from "../../host/app-host.host.js";
+import { AppsQuery } from "@sumi/apps";
+import type { AppFace as PluginAppFace } from "@sumi/apps";
 import { TabArtSchema } from "../../schema/app-tab.schema.js";
 import type { AppFace, KnownApp, TabArt } from "../../schema/app-tab.schema.js";
 
@@ -12,8 +13,8 @@ interface Faces {
 
 const INSTALLED_APP_ICON: TabArt = "built-app";
 
-export async function readAppFaces(send: Send, pluginApps: readonly PluginAppFace[]): Promise<Faces> {
-	const { faces } = await send(BuiltInFacesQuery);
+export async function readAppFaces(send: Send): Promise<Faces> {
+	const [{ faces }, { apps: pluginApps }] = await Promise.all([send(BuiltInFacesQuery), send(AppsQuery)]);
 	const installed = [
 		...REGISTERED_APPS.map((registered) => withShellFace(registeredFaceOf(registered), faces)),
 		...pluginApps.map(pluginFaceOf),
@@ -24,8 +25,8 @@ export async function readAppFaces(send: Send, pluginApps: readonly PluginAppFac
 	};
 }
 
-export async function readKnownApps(send: Send, pluginApps: readonly PluginAppFace[]): Promise<readonly KnownApp[]> {
-	const { faces } = await readAppFaces(send, pluginApps);
+export async function readKnownApps(send: Send): Promise<readonly KnownApp[]> {
+	const { faces } = await readAppFaces(send);
 	return faces.map(({ app, isBuiltIn }) => ({
 		id: app,
 		isBuiltIn,
