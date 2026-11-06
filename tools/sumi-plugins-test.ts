@@ -4,6 +4,8 @@ import { PlacesModule } from "@widgetarium/places/module";
 import { QuestionsModule } from "@widgetarium/questions/module";
 import { TasksModule } from "@widgetarium/tasks/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
+import { server } from "@widgetarium/data-framework/server";
+import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { HOST_CAPABILITY_MODULES } from "../apps/host-tauri/src/plugins/host-capabilities.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/host-tauri/src/plugins/sumi-plugins.ts";
 import { check, tally } from "./check-helpers.ts";
@@ -41,6 +43,44 @@ check(
 	[mainOff.refusals, mainOff.sharedModules],
 	[["sumi.profile.json locks plugin main, which it does not enable: a locked plugin cannot be disabled"], []],
 );
+
+const boardText: { text: string | null } = {
+	text: null,
+};
+const startedCore = server()
+	.modules(...coreModulesNow)
+	.start({
+		env: {},
+		scope: { workspaceId: "sumi-plugins" },
+		host: {
+			file: {
+				read: () => Promise.resolve(boardText.text),
+				write: (text: string) => {
+					boardText.text = text;
+					return Promise.resolve();
+				},
+			},
+			authenticate: new AppCallerAuthenticate(),
+		},
+	});
+const routedCodes = await Promise.all(
+	coreModulesBefore.map(async (module) => {
+		const answered = await startedCore.answer({
+			name: module.handlers[0]?.request.name ?? "",
+			input: undefined,
+			idempotencyKey: null,
+			signal: new AbortController().signal,
+			headers: new Headers({ "x-sumi-app": "tasks" }),
+		});
+		return answered.ok ? "answered" : answered.code;
+	}),
+);
+check(
+	"a core started from the host's capabilities and the slot answers a call of every module (demo with memory stores)",
+	routedCodes.includes("not-found"),
+	false,
+);
+startedCore.stop();
 
 if (tally.failed > 0) {
 	process.exit(1);
