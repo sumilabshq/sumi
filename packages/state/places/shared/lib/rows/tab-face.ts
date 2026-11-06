@@ -14,12 +14,9 @@ export interface Named {
 const APP_TITLES: Readonly<Record<BuiltInApp, string>> = {
 	canvas: "Canvas",
 	browser: "Browser",
-	terminal: "Terminal",
 	tasks: "Tasks",
 	chat: "New chat",
 };
-// TODO: terminal's title and art move to the terminal plugin's face
-const OPENED_BY_PLUGIN: ReadonlySet<BuiltInApp> = new Set(["terminal"]);
 const EMPTY_PAGE_TITLE = "New tab";
 const INSTALLED_APP_ART: TabArt = "built-app";
 const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
@@ -42,7 +39,6 @@ const ART_OF_EXTENSION: Readonly<Record<string, TabArt>> = {
 };
 const ART_OF_APP: Readonly<Record<Exclude<BuiltInApp, "browser">, TabArt>> = {
 	canvas: "canvas",
-	terminal: "terminal",
 	tasks: "tasks",
 	chat: "chat",
 };
@@ -61,14 +57,12 @@ export function titleOfTab(tab: HostTab): string {
 }
 
 export function appFacesOf(): readonly AppFace[] {
-	return BuiltInAppSchema.options
-		.filter((app) => !OPENED_BY_PLUGIN.has(app))
-		.map((app) => ({
-			app,
-			title: APP_TITLES[app],
-			icon: tabArtOf(app, null),
-			isBuiltIn: true,
-		}));
+	return BuiltInAppSchema.options.map((app) => ({
+		app,
+		title: APP_TITLES[app],
+		icon: tabArtOf(app, null),
+		isBuiltIn: true,
+	}));
 }
 
 export function tabArtOf(app: AppKind, address: string | null): TabArt {

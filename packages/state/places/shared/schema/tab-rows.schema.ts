@@ -10,7 +10,6 @@ export type TabStatus = z.infer<typeof TabStatusSchema>;
 export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
-	"terminal",
 	"tasks",
 	"git",
 	"files",

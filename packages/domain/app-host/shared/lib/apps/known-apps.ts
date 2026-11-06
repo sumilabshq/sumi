@@ -4,7 +4,6 @@ import type { RegisteredApp } from "@widgetarium/app-registry";
 import { AppFacesQuery as BuiltInFacesQuery } from "@widgetarium/places";
 import { AppsQuery } from "@sumi/apps";
 import type { AppFace as PluginAppFace } from "@sumi/apps";
-import { TabArtSchema } from "../../schema/app-tab.schema.js";
 import type { AppFace, KnownApp, TabArt } from "../../schema/app-tab.schema.js";
 
 interface Faces {
@@ -14,7 +13,8 @@ interface Faces {
 const INSTALLED_APP_ICON: TabArt = "built-app";
 
 export async function readAppFaces(send: Send): Promise<Faces> {
-	const [{ faces }, { apps: pluginApps }] = await Promise.all([send(BuiltInFacesQuery), send(AppsQuery)]);
+	const [builtIn, { apps: pluginApps }] = await Promise.all([send(BuiltInFacesQuery), send(AppsQuery)]);
+	const faces = builtIn.faces.map((face) => ({ ...face, favicon: null }));
 	const installed = [
 		...REGISTERED_APPS.map((registered) => withShellFace(registeredFaceOf(registered), faces)),
 		...pluginApps.map(pluginFaceOf),
@@ -42,16 +42,17 @@ function registeredFaceOf({ id, name }: RegisteredApp): AppFace {
 		app: id,
 		title: name,
 		icon: INSTALLED_APP_ICON,
+		favicon: null,
 		isBuiltIn: false,
 	};
 }
 
-function pluginFaceOf({ id, title, icon }: PluginAppFace): AppFace {
-	const art = TabArtSchema.safeParse(icon);
+function pluginFaceOf({ id, title, iconUrl }: PluginAppFace): AppFace {
 	return {
 		app: id,
 		title,
-		icon: art.success ? art.data : INSTALLED_APP_ICON,
+		icon: INSTALLED_APP_ICON,
+		favicon: iconUrl,
 		isBuiltIn: false,
 	};
 }

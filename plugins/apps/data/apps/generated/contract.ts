@@ -5,7 +5,7 @@ import { z } from "zod";
 export const AppFaceSchema = z.object({
 	id: z.string(),
 	title: z.string(),
-	icon: z.string(),
+	iconUrl: z.string(),
 });
 
 export type AppFace = z.infer<typeof AppFaceSchema>;

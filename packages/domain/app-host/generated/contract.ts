@@ -30,7 +30,6 @@ export type TabStatus = z.infer<typeof TabStatusSchema>;
 export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
-	"terminal",
 	"tasks",
 	"git",
 	"files",
@@ -54,6 +53,7 @@ export const AppFaceSchema = z.object({
 	app: TabAppSchema,
 	title: z.string(),
 	icon: TabArtSchema,
+	favicon: z.string().nullable(),
 	isBuiltIn: z.boolean(),
 });
 

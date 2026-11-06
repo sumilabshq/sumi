@@ -22,7 +22,6 @@ const ABILITIES_OF_APP: Readonly<Record<BuiltInApp, AppAbilities>> = {
 		navigates: true,
 	},
 	canvas: PAGE_APP,
-	terminal: PAGE_APP,
 	tasks: PAGE_APP,
 	chat: {
 		holdsTabs: true,

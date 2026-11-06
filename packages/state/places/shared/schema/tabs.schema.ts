@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { KeptSplitSchema } from "./splits.schema.js";
 
-export const BuiltInAppSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
+export const BuiltInAppSchema = z.enum(["canvas", "browser", "tasks", "chat"]);
 
 export type BuiltInApp = z.infer<typeof BuiltInAppSchema>;
 

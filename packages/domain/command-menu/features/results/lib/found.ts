@@ -344,7 +344,7 @@ function appFoundOf(face: AppFace, haystack: string): Found {
 		haystack,
 		icon: iconOf({
 			art: face.icon,
-			favicon: null,
+			favicon: face.favicon,
 			title: face.title,
 			address: null,
 			mark: NO_MARK,

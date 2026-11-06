@@ -34,7 +34,7 @@ function pluginRefusalsOf(pluginsRoot: string, name: string): readonly string[] 
 
 function topRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
 	return readdirSync(folder)
-		.filter((entry) => !ALLOWED_TOP.has(entry))
+		.filter((entry) => !ALLOWED_TOP.has(entry) && !entry.startsWith("."))
 		.map((entry) => `${at(entry)}: a plugin holds only src/, data/, package.json, tsconfig.json and LICENSE`);
 }
 

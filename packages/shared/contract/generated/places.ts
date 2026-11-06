@@ -225,7 +225,7 @@ export const ChatTabAskSchema = z.object({
 	chatId: z.string().min(1),
 });
 
-export const BuiltInAppSchema = z.enum(["canvas", "browser", "terminal", "tasks", "chat"]);
+export const BuiltInAppSchema = z.enum(["canvas", "browser", "tasks", "chat"]);
 
 export const InstalledAppIdSchema = z
 	.string()
@@ -508,7 +508,6 @@ export type TabStatus = z.infer<typeof TabStatusSchema>;
 export const TabArtSchema = z.enum([
 	"canvas",
 	"browser",
-	"terminal",
 	"tasks",
 	"git",
 	"files",

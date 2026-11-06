@@ -17,6 +17,7 @@ import { workspaceProfileOf } from "../apps/tauri/src/plugins/workspace-profile.
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
+import { TERMINAL_FACE } from "./plugin-apps-fixture.ts";
 
 const boardText: { text: string | null } = {
 	text: null,
@@ -98,7 +99,7 @@ check(
 check(
 	"the apps plugin's module answers the terminal plugin's app, read from the apps plugin's own slot",
 	await appIdsAnsweredBy(resolved),
-	{ apps: [{ id: "terminal", title: "Terminal", icon: "terminal" }] },
+	{ apps: [TERMINAL_FACE] },
 );
 check("the apps plugin's tab page draws the terminal", resolved.tabPage?.draws("terminal"), true);
 

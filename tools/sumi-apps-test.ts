@@ -27,6 +27,7 @@ import { APP_REGISTRY_PACKAGE, appRegistryFilesOf } from "../packages/shared/cli
 import { framePolicyServedFrom } from "./frame-policy.ts";
 import { paged, waitUntil } from "./chrome-ask.ts";
 import type { AskedPage } from "./chrome-ask.ts";
+import { TERMINAL_FACE } from "./plugin-apps-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 import { bundleOf } from "./harness.ts";
 import {
@@ -671,6 +672,23 @@ async function terminalChecks(page: AskedPage): Promise<void> {
 		await pageSees(
 			page,
 			`document.querySelector(${JSON.stringify(TERMINAL_SCREEN)})?.innerText.includes(${JSON.stringify(TERMINAL_SAID)}) === true`,
+		),
+		true,
+	);
+	await page.ask(`window.__sumiApps.showTab(${JSON.stringify(sumiTabOf("tasks"))})`);
+	await page.ask(`window.__sumiApps.showTab(${JSON.stringify(sumiTabOf("terminal"))})`);
+	check(
+		"terminal: its tab row draws the terminal plugin's own SVG (demo: re-read by showing the tab again; the desktop re-reads on the core's change signal)",
+		await pageSees(
+			page,
+			`document.querySelector('[data-tabs-id="${sumiTabOf("terminal")}"] [data-host-tab-favicon]')?.getAttribute("src") === ${JSON.stringify(TERMINAL_FACE.iconUrl)}`,
+		),
+		true,
+	);
+	check(
+		"terminal: the menu offers it with the terminal plugin's own SVG",
+		JSON.stringify(await page.ask(`window.__sumiApps.menuResults("terminal")`)).includes(
+			JSON.stringify(TERMINAL_FACE.iconUrl).slice(1, -1),
 		),
 		true,
 	);

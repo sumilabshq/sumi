@@ -4,7 +4,7 @@ import { BackgroundModulesSlot, SumiHostPlugin, TabPageSlot } from "@sumi/sumi-h
 import { plugin } from "@widgetarium/plugin-framework";
 import { appsTabPageOf } from "./apps-tab-page.js";
 import { AppsSlot } from "./slots.js";
-import { withoutView } from "./without-view.js";
+import { faceOf } from "./face-of.js";
 
 export const AppsPlugin = plugin("apps")
 	.require(SumiHostPlugin)
@@ -12,7 +12,7 @@ export const AppsPlugin = plugin("apps")
 	.fill(
 		BackgroundModulesSlot({
 			id: "apps",
-			module: ({ fillsOf }) => AppsModule({ apps: fillsOf(AppsSlot).map(withoutView) }),
+			module: ({ fillsOf }) => AppsModule({ apps: fillsOf(AppsSlot).map(faceOf) }),
 			contract: AppsContract,
 		}),
 		TabPageSlot({ tabPage: ({ fillsOf }) => appsTabPageOf(fillsOf(AppsSlot)) }),
