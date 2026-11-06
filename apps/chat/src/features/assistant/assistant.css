@@ -1592,6 +1592,14 @@
 	gap: 14px;
 }
 
+.wg-chat-app .wg-studio-ai-row {
+	--wg-studio-ai-line-overhang: 12px;
+	content-visibility: auto;
+	contain-intrinsic-size: auto 600px;
+	padding-block-end: var(--wg-studio-ai-line-overhang);
+	margin-block-end: calc(-1 * var(--wg-studio-ai-line-overhang));
+}
+
 .wg-chat-app .wg-studio-ai-said {
 	padding: 0;
 	color: var(--sumi-text);
