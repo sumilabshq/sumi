@@ -2,7 +2,8 @@ import type { AnyEvent, Emitter } from "./event";
 import type { Guard } from "./guard";
 import { checkInject, withDefaultCallFacts, withStep } from "./handler";
 import type { Handle, Handler, Inject, Unreserved } from "./handler";
-import type { Added, Middleware, NothingAdded, Step } from "./middleware";
+import { stepGiven } from "./middleware";
+import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 import type { AnyCommand, AnyRequest, InputOf } from "./request";
 import type { Invalidator } from "./invalidation";
 
@@ -34,12 +35,16 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 		});
 	}
 
-	guard<A extends Added>(step: Guard<InputOf<R>, A, Inject>): RequestHandlerBuilder<R, D, C & A> {
-		return new RequestHandlerBuilder(withStep(this.plan, step));
+	guard<A extends Added>(step: Guard<InputOf<R>, A, Inject>): RequestHandlerBuilder<R, D, C & A>;
+	guard(step: StepNeedingOptions): TakesOptionsFirst;
+	guard(step: Step | StepNeedingOptions): RequestHandlerBuilder<R, D, Added> | TakesOptionsFirst {
+		return new RequestHandlerBuilder(withStep(this.plan, stepGiven(step)));
 	}
 
-	use<A extends Added>(step: Middleware<InputOf<R>, A, Inject>): RequestHandlerBuilder<R, D, C & A> {
-		return new RequestHandlerBuilder(withStep(this.plan, step));
+	use<A extends Added>(step: Middleware<InputOf<R>, A, Inject>): RequestHandlerBuilder<R, D, C & A>;
+	use(step: StepNeedingOptions): TakesOptionsFirst;
+	use(step: Step | StepNeedingOptions): RequestHandlerBuilder<R, D, Added> | TakesOptionsFirst {
+		return new RequestHandlerBuilder(withStep(this.plan, stepGiven(step)));
 	}
 
 	inject<const N extends Inject>(inject: N & Unreserved<N>): RequestHandlerBuilder<R, N, C> {
@@ -63,11 +68,14 @@ export class RequestHandlerBuilder<R extends AnyRequest, D extends Inject, C ext
 	}
 }
 
-export function handlingOf<R extends AnyRequest>(request: R): RequestHandlerBuilder<R, NothingAdded, NothingAdded> {
+export function handlingOf<R extends AnyRequest>(
+	request: R,
+	...steps: readonly Step[]
+): RequestHandlerBuilder<R, NothingAdded, NothingAdded> {
 	return new RequestHandlerBuilder({
 		request,
 		inject: NOTHING_INJECTED,
-		steps: [],
+		steps,
 		emits: [],
 	});
 }

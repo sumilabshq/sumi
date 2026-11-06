@@ -5,7 +5,8 @@ import type { Guard } from "./guard";
 import type { Handle, Inject, Unreserved } from "./handler";
 import { handlingOf } from "./handled-request";
 import type { HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
-import type { Added, Middleware, NothingAdded } from "./middleware";
+import { stepGiven } from "./middleware";
+import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
 
 type RequestKind = "query" | "command";
 type KeyStage = "unkeyed" | "keyed";
@@ -114,15 +115,19 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 	guard<R extends AnyRequest, A extends Added>(
 		this: R,
 		step: Guard<InputOf<R>, A, Inject>,
-	): RequestHandlerBuilder<R, NothingAdded, A> {
-		return handlingOf(this).guard(step);
+	): RequestHandlerBuilder<R, NothingAdded, A>;
+	guard(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
+	guard(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
+		return handlingOf(this, stepGiven(step));
 	}
 
 	use<R extends AnyRequest, A extends Added>(
 		this: R,
 		step: Middleware<InputOf<R>, A, Inject>,
-	): RequestHandlerBuilder<R, NothingAdded, A> {
-		return handlingOf(this).use(step);
+	): RequestHandlerBuilder<R, NothingAdded, A>;
+	use(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
+	use(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
+		return handlingOf(this, stepGiven(step));
 	}
 
 	inject<R extends AnyRequest, const N extends Inject>(
@@ -142,6 +147,14 @@ export class Contract<K extends RequestKind, I extends z.ZodType, O extends z.Zo
 
 type ListedQuery = AnyQuery | HandledRequest<AnyQuery, Inject, Added>;
 
+export interface CommandNeedsIdempotencyKey<I extends z.ZodType, O extends z.ZodType> {
+	readonly name: string;
+	input<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<S, O>;
+	output<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<I, S>;
+	invalidates(queries: readonly ListedQuery[]): CommandNeedsIdempotencyKey<I, O>;
+	idempotencyKey(key: IdempotencyKey<z.output<I>>): Contract<"command", I, O, "keyed">;
+}
+
 export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, KeyStage>;
 export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, "keyed">;
 
@@ -159,7 +172,7 @@ export function query(name: string): Contract<"query", z.ZodVoid, z.ZodVoid, "ke
 	return new Contract(definitionOf("query", name), "keyed");
 }
 
-export function command(name: string): Contract<"command", z.ZodVoid, z.ZodVoid, "unkeyed"> {
+export function command(name: string): CommandNeedsIdempotencyKey<z.ZodVoid, z.ZodVoid> {
 	return new Contract(definitionOf("command", name), "unkeyed");
 }
 

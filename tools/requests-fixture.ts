@@ -14,7 +14,7 @@ import {
 	minutes,
 	permission,
 	query,
-	rateLimit,
+	RateLimitMiddleware,
 	refuse,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
@@ -273,7 +273,7 @@ export const StampCommandHandler = handler(StampCommand, PagesServerModule)
 export const TracedCommandHandler = handler(TracedCommand, PagesServerModule)
 	.guard(AuthenticatedGuard)
 	.guard(TracingGuard)
-	.use(rateLimit({ calls: 5, per: minutes(1) }))
+	.use(RateLimitMiddleware({ calls: 5, per: minutes(1) }))
 	.handle(() => {
 		traced.push("handler");
 		return "traced";
@@ -393,7 +393,7 @@ export function servedPublicly<R extends AnyRequest>(
 
 export const ServedLimitedQueryHandler = handler(LimitedQuery, PagesServerModule)
 	.guard(PublicGuard)
-	.use(rateLimit({ calls: 2, per: minutes(1) }))
+	.use(RateLimitMiddleware({ calls: 2, per: minutes(1) }))
 	.handle(() => 1);
 
 export const ServedGuardCrashQueryHandler = handler(GuardCrashQuery, PagesServerModule)

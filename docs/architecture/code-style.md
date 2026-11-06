@@ -4,7 +4,7 @@ How code is written inside the architecture. The rules hold in any project built
 
 ## Names
 
-**A name ends with its kind**, and every declared building block is PascalCase, so a later move to classes renames nothing. camelCase is for ordinary values and functions only.
+**A name ends with its kind**, and every building block declared once and used as a name is PascalCase, a step taking options included (`HasPermissionGuard(perm)`, `RateLimitMiddleware({ calls, per })`). camelCase is for ordinary values and for the functions that start a chain (`command`, `guard`, `middleware`, `minutes`).
 
 | Thing              | Rule                                                                     | Example                                                         |
 | ------------------ | ------------------------------------------------------------------------ | --------------------------------------------------------------- |

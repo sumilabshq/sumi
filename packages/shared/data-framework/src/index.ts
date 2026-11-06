@@ -21,8 +21,18 @@ export type { Duration, DurationParts } from "./duration";
 export { AuthenticatedGuard, GuardBuilder, HasPermissionGuard, PublicGuard, deny, guard } from "./guard";
 export type { Guard, InputGuard, OpenGuard, Signed, User, UserGuard } from "./guard";
 export { ClientHandlerBuilder, GuardedHandlerBuilder, HandlerDraft, NEEDS_GUARD, handler } from "./handler";
-export { MiddlewareBuilder, middleware, rateLimit } from "./middleware";
-export type { Added, Middleware, Next, NoCallFacts, Step, StepCall, StepContext } from "./middleware";
+export { MiddlewareBuilder, RateLimitMiddleware, middleware } from "./middleware";
+export type {
+	Added,
+	Middleware,
+	Next,
+	NoCallFacts,
+	Options,
+	Step,
+	StepCall,
+	StepContext,
+	TakesOptionsFirst,
+} from "./middleware";
 export type {
 	AnyHandler,
 	CallFacts,

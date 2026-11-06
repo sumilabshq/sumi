@@ -1,7 +1,9 @@
 import { z } from "zod";
 import {
 	AuthenticatedGuard,
+	Device,
 	HasPermissionGuard,
+	module,
 	PerCall,
 	PublicGuard,
 	clientModule,
@@ -11,11 +13,11 @@ import {
 	middleware,
 	minutes,
 	query,
-	rateLimit,
+	RateLimitMiddleware,
 	seconds,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
-import type { User } from "../packages/shared/data-framework/src/index.ts";
+import type { TakesOptionsFirst, User } from "../packages/shared/data-framework/src/index.ts";
 import * as fx from "./requests-fixture.ts";
 
 const Plain = query("pages/plain").output(z.string());
@@ -36,6 +38,31 @@ const SignedOnlyGuard = guard()
 	.needsUser()
 	.handle(() => undefined);
 const FROM_TO = { from: "Home", to: "Start" };
+const LabelledMiddleware = middleware()
+	.options<[label?: string]>()
+	.handle((_call, _deps, next) => next());
+
+export function optionsTypedOnly(): void {
+	const limited = query("pages/limited").output(z.string());
+	limited.use(RateLimitMiddleware({ calls: 1, per: minutes(1) }));
+	limited.use(RateLimitMiddleware) satisfies TakesOptionsFirst;
+	// @ts-expect-error
+	limited.use(RateLimitMiddleware).handle(() => "");
+	module("pages").on(Device).use(RateLimitMiddleware) satisfies TakesOptionsFirst;
+	// @ts-expect-error
+	RateLimitMiddleware();
+	limited.use(LabelledMiddleware);
+	limited.use(LabelledMiddleware("timed"));
+	// @ts-expect-error
+	limited.use(TimedMiddleware());
+	limited.guard(HasPermissionGuard(fx.PagesPermissions.rename, fx.PagesPermissions.rename));
+	// @ts-expect-error
+	limited.guard(HasPermissionGuard());
+	// @ts-expect-error
+	limited.guard(HasPermissionGuard).handle(() => "");
+	// @ts-expect-error
+	command("pages/unkeyed-guard").guard(AuthenticatedGuard);
+}
 
 export function typedOnly(): void {
 	const draft = handler(Plain, PlainServerModule);
@@ -74,7 +101,7 @@ export function typedOnly(): void {
 	clientModule("pages").guard(PublicGuard);
 	serverModule("pages")
 		.use(TimedMiddleware)
-		.use(rateLimit({ calls: 1, per: minutes(1) }));
+		.use(RateLimitMiddleware({ calls: 1, per: minutes(1) }));
 
 	PlainClientModule.handlers([PlainClientHandler]);
 	PlainServerModule.handlers([PublicPlainHandler]);
@@ -89,7 +116,7 @@ export function typedOnly(): void {
 	// @ts-expect-error
 	publicly.guard(SignedOnlyGuard);
 	publicly.guard(InputOnlyGuard);
-	publicly.use(rateLimit({ calls: 1, per: minutes(1) }));
+	publicly.use(RateLimitMiddleware({ calls: 1, per: minutes(1) }));
 	// @ts-expect-error
 	handler(Plain, PlainServerModule).guard(AuthenticatedGuard).guard(PublicGuard);
 	// @ts-expect-error

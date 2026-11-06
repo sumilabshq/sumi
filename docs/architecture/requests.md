@@ -173,11 +173,36 @@ A module's `.guard()` and `.use()` run before every listed request, on either si
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `.guard(PublicGuard)`                                 | lets anyone through; only input guards may follow it                                         |
 | `.guard(AuthenticatedGuard)`                          | refuses `unauthenticated` with no user; adds `user: User`                                    |
-| `.guard(HasPermissionGuard(perm))`                    | refuses a user without the permission                                                        |
+| `.guard(HasPermissionGuard(perm, …))`                 | refuses a user missing any of the permissions, naming it                                     |
 | `.guard(guard<In>().inject({…}).handle(check))`       | a project's guard: `deny(reason)` refuses `forbidden`, a returned object adds to the context |
 | `guard().needsUser()`                                 | refuses `unauthenticated` with no user before its check, and covers the request              |
-| `.use(rateLimit({ calls, per }))`                     | refuses `rate-limited` past the limit; nothing is limited without one                        |
+| `.use(RateLimitMiddleware({ calls, per }))`           | refuses `rate-limited` past the limit; nothing is limited without one                        |
 | `.use(middleware().adds<A>().inject({…}).handle(fn))` | a project's middleware: wraps `next(added?)` and returns its answer                          |
+
+**`.guard` decides who may call: the same answer every time for the same user and input. Everything else, a limit or a counter included, is `.use`.**
+
+**A step that takes options declares them and is called with them where it is used.** `.options<[…]>()` lists them as a function's parameters; the handler reads them as `options`. Injected dependencies stay in `.inject` and come from `provide`, never from the call.
+
+```ts skip-check
+export const RateLimitMiddleware = middleware()
+	.options<[limit: RateLimit]>()
+	.inject({ rateLimits: RateLimits })
+	.handle(async ({ request, context, options: [limit] }, { rateLimits }, next) => …);
+
+command("charge")
+	.idempotencyKey(PerCall)
+	.guard(HasPermissionGuard(BillingPermissions.charge, BillingPermissions.refund))
+	.use(RateLimitMiddleware({ calls: 5, per: minutes(1) }))
+	.handle(…);
+```
+
+| Options                  | `.use(Step)` | `.use(Step(…))` |
+| ------------------------ | ------------ | --------------- |
+| none declared            | ✓            | type error      |
+| every parameter optional | ✓            | ✓               |
+| a required parameter     | type error   | ✓               |
+
+A step needing options passed bare answers the type `"this step takes options: call it with them first, …"`, so the next call in the chain names the fix.
 
 - **Module guards decide identity only** (`PublicGuard`, `AuthenticatedGuard`, `HasPermissionGuard`); they read no input. Ownership is a request's own guard: it resolves the record, checks its owner, refuses with `deny`, and returns the record for the handler to read from the context.
 - **A step only refuses.** An `ok` answer it did not get from `next()` is refused as `failed`, so a middleware before a guard cannot answer for anyone.
@@ -201,7 +226,7 @@ client: input → module steps → request steps → idempotency key (minted if 
 server: input → Authenticate → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
 ```
 
-- **Rate limit:** only where declared: `.use(rateLimit({ calls, per }))` on a module or a request. There is no default, on a server or a device. TODO: anonymous callers share one bucket per request.
+- **Rate limit:** only where declared: `.use(RateLimitMiddleware({ calls, per }))` on a module or a request. There is no default, on a server or a device. TODO: anonymous callers share one bucket per request.
 - **In-flight dedup:** a second identical query waits for the first. On the server it is keyed by request, input and user.
 - Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 

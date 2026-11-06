@@ -23,7 +23,11 @@ const RESERVED_KEYS = ["send", "invalidate", "emit", "idempotencyKey", "signal",
 
 type ReservedKey = (typeof RESERVED_KEYS)[number];
 
-export type Unreserved<N> = { readonly [K in keyof N]: K extends ReservedKey ? never : N[K] };
+export type Unreserved<N> = {
+	readonly [K in keyof N]: K extends ReservedKey
+		? `.inject cannot name ${K}: the engine passes ${K} to every handler, name this key otherwise`
+		: N[K];
+};
 
 const RESERVED_KEY_INJECTED = "inject names {key}, which the engine passes to every handler: name it otherwise";
 const SENDS_NOWHERE = "a handler called outside an app cannot send {sent}";
