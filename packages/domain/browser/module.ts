@@ -1,8 +1,9 @@
-import { Device, module } from "@widgetarium/data-framework";
+import { Device, module, oneOf } from "@widgetarium/data-framework";
 import { AccessAsksChangedEvent } from "./gateways/access-asks/access-asks.events.js";
 import { PagesChangedEvent } from "./gateways/browser-pages/browser-pages.events.js";
 import { InkActivityChangedEvent } from "./gateways/ink-activity/ink-activity.events.js";
 import { browserPartsOn } from "./gateways/browser-parts/browser-parts.gateway.js";
+import { BrowserPagesIpcHost } from "./shared/host/browser.host.js";
 import {
 	AccessAsksQuery,
 	AnswerAskCommand,
@@ -60,8 +61,11 @@ import {
 	ShowTearOffGhostCommand,
 } from "./features/tabs/requests.js";
 
+export { BrowserPagesIpcHost } from "./shared/host/browser.host.js";
+
 export const BrowserModule = module("browser")
 	.on(Device)
+	.needs(oneOf({ tauri: { browserIpc: BrowserPagesIpcHost }, elsewhere: {} }))
 	.subscribers(
 		KeepOnceOnTabsSubscriber,
 		NoteVisitsSubscriber,

@@ -15,6 +15,7 @@ import { TauriChatDraftShelf } from "../chat/tauri-chat-drafts.js";
 import { tauriDraftFiles } from "../chat/tauri-draft-files.js";
 import { TauriChatQueueShelf } from "../chat/tauri-chat-queues.js";
 import { savesBeforeQuit } from "./saves-before-quit.js";
+import { tauriStudioLent } from "./tauri-studio-lent.js";
 import type { SaveForQuit } from "./saves-before-quit.js";
 import { liveWindowLabels, ownWindowLabel } from "../chat/tauri-windows.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
@@ -70,7 +71,7 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 		console.error("[ink] quit handshake none → none: this window quits without saving first", failure);
 	});
 	const core = ipcTransport(opening.workspace.id);
-	const studioApp = startTauriStudioApp(opening.workspace.id, core);
+	const studioApp = startTauriStudioApp(opening, core);
 	reopensOnWorkspaceSwitch(studioApp, opening.workspace.id, () =>
 		reopenWindow(async () => {
 			await Promise.all([docs.flushAll(), joined.leave()]);
@@ -94,11 +95,12 @@ export async function openTauriStudio(opening: StudioOpening): Promise<StartedSt
 	return startedStudioOf(opening, { studioApp, assistant, core });
 }
 
-function startTauriStudioApp(workspaceId: string, core: RemoteTransport): StartedApp {
+function startTauriStudioApp({ workspace, store }: StudioOpening, core: RemoteTransport): StartedApp {
 	return startStudioApp({
 		platform: "tauri",
-		workspaceId,
+		workspaceId: workspace.id,
 		core,
+		lent: tauriStudioLent(store),
 	});
 }
 

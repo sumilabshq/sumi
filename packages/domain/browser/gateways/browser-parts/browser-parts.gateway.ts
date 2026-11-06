@@ -1,4 +1,5 @@
-import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
+import type { HostFacts, Platform } from "@widgetarium/data-framework";
+import type { BrowserHost } from "../../shared/host/browser.host.js";
 import type { AccessAsksGateway } from "../access-asks/access-asks.gateway.js";
 import type { BrowserAuditGateway } from "../browser-audit/browser-audit.gateway.js";
 import type { BrowserGrantReadsGateway } from "../browser-grant-reads/browser-grant-reads.gateway.js";
@@ -35,14 +36,19 @@ export type BrowserParts = KeptBrowserParts &
 		readonly inkActivity: InkActivityGateway;
 	};
 
-const PARTS_ON: Readonly<Record<Platform, () => BrowserParts>> = {
+const UNHOSTED_PARTS_ON: Readonly<Record<Platform, () => BrowserParts>> = {
 	browser: () => startedOrOff(browserWindowParts),
-	tauri: () => startedOrOff(tauriBrowserParts),
+	tauri: webBrowserParts,
 	server: webBrowserParts,
 };
 
-export function browserPartsOn(facts: ModuleFacts): BrowserParts {
-	return PARTS_ON[facts.platform]();
+export function browserPartsOn({ platform, host }: HostFacts<BrowserHost>): BrowserParts {
+	if (host.kind === "tauri") {
+		const { browserIpc } = host;
+		return startedOrOff(() => tauriBrowserParts(browserIpc));
+	}
+
+	return UNHOSTED_PARTS_ON[platform]();
 }
 
 function browserWindowParts(): BrowserParts {

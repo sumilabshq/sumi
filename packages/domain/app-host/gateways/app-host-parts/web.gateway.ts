@@ -1,3 +1,4 @@
+import { NoCoreChangesGateway } from "../core-changes/none.gateway.js";
 import { LocalStorageEssentialsGateway } from "../essentials/local-storage.gateway.js";
 import { DocumentPaneFlashGateway } from "../pane-flash/document.gateway.js";
 import { MemoryShownViewGateway } from "../shown-view/memory.gateway.js";
@@ -11,5 +12,6 @@ export function webAppHostParts(): AppHostParts {
 		essentials: new LocalStorageEssentialsGateway(),
 		shownView: new MemoryShownViewGateway(STUDIO_OPENED_ON),
 		paneFlash: new DocumentPaneFlashGateway(),
+		coreChanges: new NoCoreChangesGateway(),
 	};
 }

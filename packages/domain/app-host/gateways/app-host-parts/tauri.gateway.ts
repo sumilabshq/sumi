@@ -1,7 +1,8 @@
-import { invoke } from "@tauri-apps/api/core";
 import { studioWindowOf } from "@widgetarium/behaviors";
-import { GLOBAL_ROOT, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
-import type { DocKind } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT, HeldDoc } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
+import type { CoreChanges } from "../../shared/host/app-host.host.js";
+import { LentCoreChangesGateway } from "../core-changes/lent.gateway.js";
 import { EssentialsDocSchema, TauriEssentialsGateway } from "../essentials/tauri.gateway.js";
 import type { EssentialsDoc } from "../essentials/tauri.gateway.js";
 import { DocumentPaneFlashGateway } from "../pane-flash/document.gateway.js";
@@ -16,9 +17,7 @@ const ESSENTIALS: DocKind<EssentialsDoc> = {
 	schema: EssentialsDocSchema,
 };
 
-// TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too; export conditions would need a condition the test loader and the Vite configs do not set
-export function tauriAppHostParts(): AppHostParts {
-	const store = new StoreClient(tauriInvoke);
+export function tauriAppHostParts(store: StoreClient, coreChanges: CoreChanges): AppHostParts {
 	const studioWindow = studioWindowOf(location.search);
 	return {
 		studioWindow: new TauriStudioWindowGateway(studioWindow),
@@ -27,9 +26,6 @@ export function tauriAppHostParts(): AppHostParts {
 		),
 		shownView: new MemoryShownViewGateway(STUDIO_OPENED_ON),
 		paneFlash: new DocumentPaneFlashGateway(),
+		coreChanges: new LentCoreChangesGateway(coreChanges),
 	};
-}
-
-function tauriInvoke(command: string, args: Readonly<Record<string, unknown>>): Promise<unknown> {
-	return invoke(command, args);
 }

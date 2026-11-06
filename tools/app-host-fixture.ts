@@ -5,6 +5,7 @@ import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/es
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
 import type { StudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/studio-window.gateway.ts";
 import { PaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/pane-flash.gateway.ts";
+import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
@@ -104,6 +105,7 @@ export interface AppHostFakes {
 	readonly essentials: MemoryEssentialsGateway;
 	readonly shownView: MemoryShownViewGateway;
 	readonly paneFlash: RecordedPaneFlash;
+	readonly coreChanges: NoCoreChangesGateway;
 }
 
 export interface StudioFakes {
@@ -132,6 +134,7 @@ export function appHostFakesOf({ studioWindow, essentials = null, view = "browse
 		essentials: new MemoryEssentialsGateway(essentials),
 		shownView: new MemoryShownViewGateway(view),
 		paneFlash: new RecordedPaneFlash(),
+		coreChanges: new NoCoreChangesGateway(),
 	};
 }
 

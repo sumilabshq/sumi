@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ZodType } from "zod";
 import { StoreRefusedError, callStore } from "./store-invoke.js";
-import type { Invoke } from "./store-invoke.js";
+import type { Invoke, StoreCommand } from "./store-invoke.js";
 
 export type WorkspaceRoot = `workspace:${string}`;
 
@@ -147,6 +147,10 @@ export class StoreClient {
 		}
 	}
 
+	call(command: StoreCommand, args: Readonly<Record<string, unknown>>): Promise<unknown> {
+		return callStore(this.invoke, command, args);
+	}
+
 	async readDoc<Doc>(root: StoreRoot, kind: DocKind<Doc>): Promise<DocState<Doc>> {
 		const answer = DocReadSchema.parse(await callStore(this.invoke, "read", { root, path: kind.file }));
 		if (answer.quarantined !== null) {
@@ -186,7 +190,9 @@ export class StoreClient {
 	}
 
 	async takeEntry<Doc>(root: StoreRoot, kind: DocKind<Doc>, key: string, reason: string): Promise<unknown> {
-		const answer = TakenSchema.parse(await callStore(this.invoke, "take_entry", { root, path: kind.file, key, reason }));
+		const answer = TakenSchema.parse(
+			await callStore(this.invoke, "take_entry", { root, path: kind.file, key, reason }),
+		);
 		return answer.taken;
 	}
 

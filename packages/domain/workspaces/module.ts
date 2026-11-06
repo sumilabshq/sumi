@@ -2,6 +2,7 @@ import { Device, module } from "@widgetarium/data-framework";
 import { PlacesModule } from "@widgetarium/places";
 import { ChatsChangedEvent } from "./gateways/chats/chats.events.js";
 import { workspacesPartsOn } from "./gateways/workspaces-parts/workspaces-parts.gateway.js";
+import { WORKSPACES_HOST_NEEDS } from "./shared/host/workspaces.host.js";
 import {
 	ChatToOpenQuery,
 	WorkspaceCrumbQuery,
@@ -29,6 +30,7 @@ import {
 export const WorkspacesModule = module("workspaces")
 	.on(Device)
 	.imports(PlacesModule)
+	.needs(WORKSPACES_HOST_NEEDS)
 	.subscribers(
 		RereadChatsSubscriber,
 		RereadCrumbForWorkspacesSubscriber,

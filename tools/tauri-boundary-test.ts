@@ -1,21 +1,34 @@
 import fs from "node:fs";
 import path from "node:path";
-import { TAURI_REACHERS_TO_MOVE, tauriImportRefusal, tauriOnlyInHost } from "../apps/tauri/tauri-reach.mts";
+import { tauriImportRefusal, tauriOnlyInHost } from "../apps/tauri/tauri-reach.mts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
 const REPO = path.resolve(import.meta.dirname, "..");
-const PLUGINS = path.join(REPO, "plugins");
+const HOST = path.join(REPO, "apps", "tauri");
+const ANY_FOLDER = "/*";
 const TAURI_PACKAGES = "@tauri-apps/";
 const TAURI_GLOBAL = "__TAURI";
 const ONLY_HOST = "only apps/tauri reaches Tauri";
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx", ".mts", ".js", ".jsx", ".mjs"]);
+const SKIPPED_FOLDERS = ["node_modules", "dist", "target"].map((name) => `${path.sep}${name}${path.sep}`);
 const DEPENDENCY_FIELDS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
-function pluginFolders(): readonly string[] {
+function guardedPackages(): readonly string[] {
+	const manifest: unknown = JSON.parse(fs.readFileSync(path.join(REPO, "package.json"), "utf8"));
+	const patterns: unknown =
+		typeof manifest === "object" && manifest !== null ? Reflect.get(manifest, "workspaces") : [];
+	return (Array.isArray(patterns) ? patterns : [])
+		.filter((pattern): pattern is string => typeof pattern === "string" && pattern.endsWith(ANY_FOLDER))
+		.flatMap((pattern) => foldersIn(path.join(REPO, pattern.slice(0, -ANY_FOLDER.length))))
+		.filter((folder) => fs.existsSync(path.join(folder, "package.json")))
+		.filter((folder) => folder !== HOST && !folder.startsWith(HOST + path.sep));
+}
+
+function foldersIn(parent: string): readonly string[] {
 	return fs
-		.readdirSync(PLUGINS, { withFileTypes: true })
+		.readdirSync(parent, { withFileTypes: true })
 		.filter((entry) => entry.isDirectory())
-		.map((entry) => path.join(PLUGINS, entry.name));
+		.map((entry) => path.join(parent, entry.name));
 }
 
 function sourceFilesIn(folder: string): readonly string[] {
@@ -23,7 +36,7 @@ function sourceFilesIn(folder: string): readonly string[] {
 		.readdirSync(folder, { withFileTypes: true, recursive: true })
 		.filter((entry) => entry.isFile() && SOURCE_EXTENSIONS.has(path.extname(entry.name)))
 		.map((entry) => path.join(entry.parentPath, entry.name))
-		.filter((file) => !file.includes(`${path.sep}node_modules${path.sep}`));
+		.filter((file) => !SKIPPED_FOLDERS.some((skipped) => file.includes(skipped)));
 }
 
 function declaredTauriOf(folder: string): readonly string[] {
@@ -36,7 +49,9 @@ function declaredTauriOf(folder: string): readonly string[] {
 	return DEPENDENCY_FIELDS.flatMap((field) => {
 		const listed: unknown = Reflect.get(manifest, field);
 		return typeof listed === "object" && listed !== null
-			? Object.keys(listed).filter((name) => name.startsWith(TAURI_PACKAGES))
+			? Object.keys(listed)
+					.filter((name) => name.startsWith(TAURI_PACKAGES))
+					.map((name) => `${path.relative(REPO, folder)}: ${name}`)
 			: [];
 	});
 }
@@ -50,36 +65,38 @@ function tauriReachingFilesIn(folder: string): readonly string[] {
 		.map((file) => path.relative(REPO, file));
 }
 
-const plugins = pluginFolders();
-check("the plugins folder holds plugins to guard", plugins.length > 0, true);
+const guarded = guardedPackages();
 check(
-	"no plugin declares a Tauri package",
-	plugins.flatMap((folder) => declaredTauriOf(folder)),
+	"every workspace package but the host is guarded, plugins included",
+	[guarded.length > 20, guarded.some((folder) => folder.includes(`${path.sep}plugins${path.sep}`))],
+	[true, true],
+);
+check(
+	"no package outside apps/tauri declares a Tauri package",
+	guarded.flatMap((folder) => declaredTauriOf(folder)),
 	[],
 );
 check(
-	"no plugin file imports Tauri or reaches its global",
-	plugins.flatMap((folder) => tauriReachingFilesIn(folder)),
+	"no file outside apps/tauri imports Tauri or reaches its global",
+	guarded.flatMap((folder) => tauriReachingFilesIn(folder)),
 	[],
 );
 
-const pluginFile = path.join(PLUGINS, "main/src/index.ts");
+const pluginFile = path.join(REPO, "plugins/main/src/index.ts");
 const hostFile = path.join(REPO, "apps/tauri/src/start-tauri-studio.ts");
+const capabilityFile = path.join(REPO, "apps/tauri/capabilities/terminal/module.ts");
 check(
-	"the rule refuses Tauri to a plugin and lets the host through",
+	"the rule refuses Tauri everywhere but the host and lets the host and its capabilities through",
 	[
 		tauriImportRefusal("@tauri-apps/api/core", pluginFile)?.includes(ONLY_HOST) ?? false,
+		tauriImportRefusal("@tauri-apps/api/core", path.join(REPO, "packages/state/layout/module.ts"))?.includes(
+			ONLY_HOST,
+		) ?? false,
 		tauriImportRefusal("@tauri-apps/api/core", hostFile),
+		tauriImportRefusal("@tauri-apps/api/core", capabilityFile),
 		tauriImportRefusal("@sumi/contract", pluginFile),
 	],
-	[true, null, null],
-);
-check(
-	"the rule refuses Tauri to a shared package not on the list to move",
-	tauriImportRefusal("@tauri-apps/api/core", path.join(REPO, "packages/shared/kit/src/index.ts"))?.includes(
-		ONLY_HOST,
-	) ?? false,
-	true,
+	[true, true, null, null, null],
 );
 
 const viteRefusal = thrownBy(() =>
@@ -97,12 +114,6 @@ check("the host's Vite build fails a plugin importing Tauri", viteRefusal.includ
 
 const loaderRefusal = thrownBy(() => import.meta.resolve("@tauri-apps/api/core"));
 check("the test loader refuses Tauri to a file outside the host", loaderRefusal.includes(ONLY_HOST), true);
-
-check(
-	"every folder still allowed to reach Tauri exists, so a moved one is dropped from the list",
-	TAURI_REACHERS_TO_MOVE.filter((folder) => !fs.existsSync(path.join(REPO, folder))),
-	[],
-);
 
 console.log(tally.failed ? `tauri boundary: ${tally.failed} check(s) failed` : "tauri boundary: all checks passed");
 process.exit(tally.failed ? 1 : 0);

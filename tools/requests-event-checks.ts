@@ -432,10 +432,33 @@ check(
 );
 
 const UNTOLD_SETS =
-	'module "untold" names oneOf sets a host cannot be told apart by: every set needs keys of its own, none named kind';
+	'module "untold" names oneOf sets a host cannot be told apart by: every set but one empty set needs keys of its own, none named kind';
+
+const kindsLent: string[] = [];
+const SometimesLentModule = module("sometimes")
+	.on(Device)
+	.needs(oneOf({ lent: { vault: Vault }, elsewhere: {} }))
+	.provide(({ host }) => {
+		kindsLent.push(host.kind);
+		return {};
+	});
 
 check(
-	"oneOf sets sharing a key, holding none or naming kind are refused where they are defined",
+	"one empty oneOf set is taken when the host lends none of the others' keys, and the lent set when it does",
+	[
+		thrownBy(() => app().modules(SometimesLentModule).start(ON_BROWSER)),
+		thrownBy(() =>
+			app()
+				.modules(SometimesLentModule)
+				.start({ ...ON_BROWSER, host: { vault: new Vault() } }),
+		),
+		kindsLent,
+	],
+	["", "", ["elsewhere", "lent"]],
+);
+
+check(
+	"oneOf sets sharing a key, two holding none, or naming kind are refused where they are defined",
 	[
 		thrownBy(() =>
 			module("untold")
@@ -445,7 +468,7 @@ check(
 		thrownBy(() =>
 			module("untold")
 				.on(Device)
-				.needs(oneOf({ one: {}, other: { vault: Vault } })),
+				.needs(oneOf({ one: {}, other: {}, third: { vault: Vault } })),
 		),
 		thrownBy(() =>
 			module("untold")

@@ -50,7 +50,7 @@ const NOT_LENT = 'module "{module}" needs {key}: the host did not provide it as 
 const NOT_ONE_SET = 'module "{module}" needs one of: {sets}; the host lent {lent}';
 const SECOND_ONE_OF = 'module "{module}" names .needs(oneOf(...)) twice: a host lends one set of a single list';
 const UNTOLD_SETS =
-	'module "{module}" names oneOf sets a host cannot be told apart by: every set needs keys of its own, none named kind';
+	'module "{module}" names oneOf sets a host cannot be told apart by: every set but one empty set needs keys of its own, none named kind';
 const KIND_KEY = "kind";
 
 export function hostObject<T extends object>(name: string, holds: (value: unknown) => value is T): HostObject<T> {
@@ -130,6 +130,12 @@ function setLentBy(module: string, sets: NeedSets, host: Lent): string {
 		return kind;
 	}
 
+	const emptyKind = touched.length === 0 ? emptySetOf(sets) : undefined;
+
+	if (emptyKind !== undefined) {
+		return emptyKind;
+	}
+
 	const said = NOT_ONE_SET.replace("{module}", module).replace("{sets}", setsListed(sets));
 	throw new Error(said.replace("{lent}", touched.length === 0 ? "none of them" : `parts of ${touched.join(" and ")}`));
 }
@@ -137,7 +143,12 @@ function setLentBy(module: string, sets: NeedSets, host: Lent): string {
 function areToldApart(sets: NeedSets): boolean {
 	const keys = Object.values(sets).map((needs) => Object.keys(needs));
 	const named = keys.flat();
-	return keys.every((own) => own.length > 0) && !named.includes(KIND_KEY) && new Set(named).size === named.length;
+	const emptySets = keys.filter((own) => own.length === 0);
+	return emptySets.length <= 1 && !named.includes(KIND_KEY) && new Set(named).size === named.length;
+}
+
+function emptySetOf(sets: NeedSets): string | undefined {
+	return Object.keys(sets).find((kind) => Object.keys(sets[kind] ?? {}).length === 0);
 }
 
 function setsListed(sets: NeedSets): string {

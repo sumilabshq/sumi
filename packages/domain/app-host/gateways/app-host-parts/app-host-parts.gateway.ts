@@ -1,4 +1,6 @@
-import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
+import type { HostFacts, Platform } from "@widgetarium/data-framework";
+import type { AppHostLent } from "../../shared/host/app-host.host.js";
+import type { CoreChangesGateway } from "../core-changes/core-changes.gateway.js";
 import type { EssentialsGateway } from "../essentials/essentials.gateway.js";
 import type { PaneFlashGateway } from "../pane-flash/pane-flash.gateway.js";
 import type { ShownViewGateway } from "../shown-view/shown-view.gateway.js";
@@ -12,14 +14,19 @@ export interface AppHostParts {
 	readonly essentials: EssentialsGateway;
 	readonly shownView: ShownViewGateway;
 	readonly paneFlash: PaneFlashGateway;
+	readonly coreChanges: CoreChangesGateway;
 }
 
-const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => AppHostParts>> = {
-	browser: () => webAppHostParts(),
-	tauri: () => tauriAppHostParts(),
-	server: () => memoryAppHostParts(),
+const UNHOSTED_PARTS_ON: Readonly<Record<Platform, () => AppHostParts>> = {
+	browser: webAppHostParts,
+	tauri: webAppHostParts,
+	server: memoryAppHostParts,
 };
 
-export function appHostPartsOn(facts: ModuleFacts): AppHostParts {
-	return PARTS_ON[facts.platform](facts);
+export function appHostPartsOn({ platform, host }: HostFacts<AppHostLent>): AppHostParts {
+	if (host.kind === "tauri") {
+		return tauriAppHostParts(host.store, host.coreChanges);
+	}
+
+	return UNHOSTED_PARTS_ON[platform]();
 }

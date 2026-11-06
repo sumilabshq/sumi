@@ -1,9 +1,11 @@
-import { Device, module } from "@widgetarium/data-framework";
+import { Device, module, oneOf } from "@widgetarium/data-framework";
+import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { BrowserModule } from "@widgetarium/browser";
 import { LayoutModule } from "@widgetarium/layout";
 import { PlacesModule } from "@widgetarium/places";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import { appHostPartsOn } from "./gateways/app-host-parts/app-host-parts.gateway.js";
+import { CoreChangesHost } from "./shared/host/app-host.host.js";
 import {
 	ChatListQuery,
 	PinTabCommand,
@@ -84,9 +86,12 @@ import {
 	TabsSidebarQuery,
 } from "./features/tabs/requests.js";
 
+export { CoreChangesHost } from "./shared/host/app-host.host.js";
+
 export const AppHostModule = module("app-host")
 	.on(Device)
 	.imports(BrowserModule, LayoutModule, PlacesModule, WorkspacesModule)
+	.needs(oneOf({ tauri: { store: StoreClient, coreChanges: CoreChangesHost }, elsewhere: {} }))
 	.subscribers(
 		RereadChatListSubscriber,
 		RereadChatListForCoreSubscriber,

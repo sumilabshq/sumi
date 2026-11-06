@@ -29,7 +29,8 @@ import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.j
 import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
-import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
 import {
 	keepChatTabs,

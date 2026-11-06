@@ -8,7 +8,7 @@ export { event } from "./event";
 export type { AnyEvent, Emit, Emitter, Event, EventArgs, EventInputOf } from "./event";
 export { subscriber } from "./subscriber";
 export type { AnySubscriber, Subscriber, SubscriberBuilder } from "./subscriber";
-export { gatewayEvent, tauriEvent, windowEvent } from "./event-source";
+export { gatewayEvent, windowEvent } from "./event-source";
 export type { EventSource, Fire, SourceContext } from "./event-source";
 export { AppProvider } from "./app-provider";
 export type { AppProviderProps } from "./app-provider";

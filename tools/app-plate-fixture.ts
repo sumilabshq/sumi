@@ -4,6 +4,7 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
@@ -78,6 +79,7 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 			essentials: new MemoryEssentialsGateway(KEPT_ESSENTIALS),
 			shownView: new MemoryShownViewGateway("canvas"),
 			paneFlash: new NoPaneFlashGateway(),
+			coreChanges: new NoCoreChangesGateway(),
 		},
 		workspaces: newChatWorkspaces(),
 		workspaceId: TAURI_WORKSPACE,

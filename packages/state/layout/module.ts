@@ -1,6 +1,8 @@
-import { Device, module } from "@widgetarium/data-framework";
+import { Device, module, oneOf } from "@widgetarium/data-framework";
+import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { PanesChangedEvent } from "./gateways/pane-tree/pane-tree.events.js";
 import { layoutPartsOn } from "./gateways/layout-parts/layout-parts.gateway.js";
+import { StudioWindowsHost } from "./shared/host/layout.host.js";
 import {
 	ClosePanesOfTabsCommand,
 	CloseShownTabPaneCommand,
@@ -34,8 +36,11 @@ import {
 	ResizeFrameEdgeCommand,
 } from "./features/frame-widths/requests.js";
 
+export { StudioWindowsHost } from "./shared/host/layout.host.js";
+
 export const LayoutModule = module("layout")
 	.on(Device)
+	.needs(oneOf({ tauri: { store: StoreClient, studioWindows: StudioWindowsHost }, elsewhere: {} }))
 	.subscribers(RereadSidesSubscriber, RereadFrameWidthsSubscriber, RereadPanesSubscriber)
 	.public(
 		FrameSidesQuery,

@@ -5,23 +5,10 @@ const TAURI_PACKAGES = "@tauri-apps/";
 const REFUSED =
 	"{importer} imports {specifier}, but only apps/tauri reaches Tauri: ask the host through a request of @sumi/contract";
 
-export const TAURI_HOST_FOLDER = "apps/tauri";
-
-// TODO: move each into apps/tauri, then drop it here
-export const TAURI_REACHERS_TO_MOVE = [
-	"packages/domain/app-host",
-	"packages/domain/browser",
-	"packages/domain/workspaces",
-	"packages/state/layout",
-	"packages/shared/data-framework",
-];
+const TAURI_HOST_FOLDER = path.join(REPO, "apps", "tauri") + path.sep;
 
 export function tauriImportRefusal(specifier: string, importer: string): string | null {
-	if (!specifier.startsWith(TAURI_PACKAGES)) {
-		return null;
-	}
-
-	if (REACHING_FOLDERS.some((folder) => importer.startsWith(folder))) {
+	if (!specifier.startsWith(TAURI_PACKAGES) || importer.startsWith(TAURI_HOST_FOLDER)) {
 		return null;
 	}
 
@@ -45,7 +32,3 @@ export const tauriOnlyInHost = {
 		return null;
 	},
 };
-
-const REACHING_FOLDERS = [TAURI_HOST_FOLDER, ...TAURI_REACHERS_TO_MOVE].map(
-	(folder) => path.join(REPO, folder) + path.sep,
-);

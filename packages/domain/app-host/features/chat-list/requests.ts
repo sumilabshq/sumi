@@ -1,7 +1,8 @@
 import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
 import { ChatTabsQuery, PinTabCommand as PlacesPinTabCommand } from "@widgetarium/places";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
-import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { ChatListSchema, TabPinSchema } from "../../shared/schema/chat-list.schema.js";
 import { chatListOf } from "./lib/chat-list.js";
 

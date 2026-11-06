@@ -1,4 +1,5 @@
-import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
+import type { HostFacts, Platform } from "@widgetarium/data-framework";
+import type { LayoutHost } from "../../shared/host/layout.host.js";
 import type { FrameSidesGateway } from "../frame-sides/frame-sides.gateway.js";
 import type { FrameWidthsGateway } from "../frame-widths/frame-widths.gateway.js";
 import type { PaneTreeGateway } from "../pane-tree/pane-tree.gateway.js";
@@ -12,12 +13,16 @@ export interface LayoutParts {
 	readonly paneTree: PaneTreeGateway;
 }
 
-const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => LayoutParts>> = {
-	browser: ({ scope }) => webLayoutParts(scope.workspaceId),
-	tauri: ({ scope }) => tauriLayoutParts(scope.workspaceId),
+const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => LayoutParts>> = {
+	browser: webLayoutParts,
+	tauri: webLayoutParts,
 	server: () => serverLayoutParts(),
 };
 
-export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
-	return PARTS_ON[facts.platform](facts);
+export function layoutPartsOn({ platform, scope, host }: HostFacts<LayoutHost>): LayoutParts {
+	if (host.kind === "tauri") {
+		return tauriLayoutParts(scope.workspaceId, host.store, host.studioWindows);
+	}
+
+	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);
 }

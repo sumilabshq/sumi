@@ -1,6 +1,6 @@
 export * from "./legacy/index.js";
 export { restoreTabs, startCoreInProcess, startStudioApp } from "./tabs/studio-app.js";
-export type { StudioAppAsk } from "./tabs/studio-app.js";
+export type { StudioAppAsk, TauriStudioLent } from "./tabs/studio-app.js";
 export { focusedChatPortOf } from "./chats-column/focused-chat.js";
 export { APP_CALLER_HEADER, AppCallerAuthenticate } from "./features/app-frame/lib/app-caller.js";
 export { nativeWebPagesOver } from "./features/app-frame/lib/native-web-pages.js";

@@ -64,9 +64,12 @@ export type HostNeedsOf<M> =
 
 type IntersectionOf<U> = (U extends unknown ? (union: U) => void : never) extends (all: infer I) => void ? I : never;
 
+type HostOptionOf<N extends Provided> =
+	Record<never, never> extends N ? { readonly host?: AppHost & N } : { readonly host: AppHost & N };
+
 export type LentBy<N extends Provided> = keyof N extends never
 	? [options?: AppStartOptions]
-	: [options: AppStartOptions & { readonly host: AppHost & N }];
+	: [options: AppStartOptions & HostOptionOf<N>];
 
 export type DeviceModule = PlatformModule<Provided, DeviceRuns, NothingProvided> | HandledModule<void> | ReadyModule;
 

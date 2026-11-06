@@ -1,6 +1,5 @@
-import { invoke } from "@tauri-apps/api/core";
-import { HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
-import type { Invoke } from "@widgetarium/behaviors/tauri-store";
+import { HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import {
 	KEPT_CHATS,
 	KEPT_LEGACY_CHAT_INDEX,
@@ -15,12 +14,11 @@ import { firstChats } from "./memory.gateway.js";
 import type { WorkspacesParts } from "./workspaces-parts.gateway.js";
 
 // TRADE-OFF: the docs are read after start, so the first frame shows a fresh chat and no workspace names; the picker is synchronous
-export function tauriWorkspacesParts(workspaceId: string, tauriCall: Invoke): WorkspacesParts {
-	const store = new StoreClient(tauriCall);
+export function tauriWorkspacesParts(workspaceId: string, store: StoreClient): WorkspacesParts {
 	const root = workspaceRootOf(workspaceId);
 	return {
 		workspaceChats: new TauriWorkspaceChatsGateway(store),
-		workspaces: new TauriWorkspacesGateway(tauriCall, store),
+		workspaces: new TauriWorkspacesGateway(store),
 		currentWorkspace: new MemoryCurrentWorkspaceGateway({
 			currentId: workspaceId,
 			openingId: null,
@@ -38,9 +36,4 @@ export function tauriWorkspacesParts(workspaceId: string, tauriCall: Invoke): Wo
 			firstChats(),
 		),
 	};
-}
-
-// TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too, as in the layout module
-export function tauriInvoke(command: string, args: Readonly<Record<string, unknown>>): Promise<unknown> {
-	return invoke(command, args);
 }

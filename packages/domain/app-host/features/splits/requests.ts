@@ -8,7 +8,8 @@ import {
 } from "@widgetarium/places";
 import { ClosePaneCommand } from "@widgetarium/layout";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
-import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ShownSplitSchema, SplitPlacingSchema } from "../../shared/schema/split.schema.js";

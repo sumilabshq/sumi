@@ -48,7 +48,7 @@ function heldRun(): HeldRun {
 }
 
 function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
-	const parts = tauriWorkspacesParts(DEFAULT.id, fake.invoke);
+	const parts = tauriWorkspacesParts(DEFAULT.id, new StoreClient(fake.invoke));
 	const tabs = new MemoryTabsGateway();
 	const marks = new Map<string, string>();
 	tabs.placedTabsChanged(() => {

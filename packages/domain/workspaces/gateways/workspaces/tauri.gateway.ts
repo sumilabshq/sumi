@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { GLOBAL_ROOT, HeldDoc, callStore, validEntriesOf, validValuesOf } from "@widgetarium/behaviors/tauri-store";
-import type { DocKind, Invoke, StoreClient } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT, HeldDoc, validEntriesOf, validValuesOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { WorkspaceIconSchema } from "../../shared/schema/workspace.schema.js";
 import type { Workspace, WorkspaceFolder, WorkspaceIcon } from "../../shared/schema/workspace.schema.js";
 import { WorkspacesGateway } from "./workspaces.gateway.js";
@@ -41,12 +41,9 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 	private entries: readonly KeptWorkspaceEntry[] = [];
 	private looks: HeldDoc<KeptLooks> | null = null;
 
-	constructor(
-		private readonly invoke: Invoke,
-		store: StoreClient,
-	) {
+	constructor(private readonly store: StoreClient) {
 		super();
-		this.landed = this.read(store);
+		this.landed = this.read();
 		this.landed.catch((failure: unknown) => console.error("[widgetarium] workspaces could not be read", failure));
 	}
 
@@ -86,7 +83,7 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 
 	async createWorkspace(name: string): Promise<Workspace> {
 		const looks = await this.landed;
-		const entry = KeptWorkspaceEntrySchema.parse(await callStore(this.invoke, "create_workspace", { name }));
+		const entry = KeptWorkspaceEntrySchema.parse(await this.store.call("create_workspace", { name }));
 		this.entries = [...this.entries, entry];
 		looks.change({ order: [...looks.now().order, entry.id] }, `new workspace ${entry.id}`);
 		await looks.flush();
@@ -94,7 +91,7 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 	}
 
 	async markWorkspaceOpened(id: string): Promise<WorkspaceFolder> {
-		const entry = KeptWorkspaceEntrySchema.parse(await callStore(this.invoke, "mark_workspace_opened", { id }));
+		const entry = KeptWorkspaceEntrySchema.parse(await this.store.call("mark_workspace_opened", { id }));
 		return {
 			folder: entry.folder,
 			isFolderFound: entry.folderFound,
@@ -102,18 +99,18 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 	}
 
 	async attachWorkspaceFolder(id: string): Promise<void> {
-		await callStore(this.invoke, "attach_workspace_folder", { id });
+		await this.store.call("attach_workspace_folder", { id });
 	}
 
-	private async read(store: StoreClient): Promise<HeldDoc<KeptLooks>> {
+	private async read(): Promise<HeldDoc<KeptLooks>> {
 		const [looks, entries] = await Promise.all([
 			HeldDoc.read({
-				store,
+				store: this.store,
 				root: GLOBAL_ROOT,
 				kind: KEPT_LOOKS,
 				empty: KeptLooksSchema.parse({}),
 			}),
-			callStore(this.invoke, "list_workspaces", {}),
+			this.store.call("list_workspaces", {}),
 		]);
 		this.entries = KeptWorkspaceEntrySchema.array().parse(entries);
 		this.looks = looks;
@@ -131,7 +128,7 @@ export class TauriWorkspacesGateway extends WorkspacesGateway {
 		}
 
 		this.latestNames.delete(id);
-		await callStore(this.invoke, "rename_workspace", { id, name });
+		await this.store.call("rename_workspace", { id, name });
 	}
 
 	private tell(): void {

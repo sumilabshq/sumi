@@ -81,7 +81,7 @@ function hearCoreChanges(workspace: string, hear: HearChanges): () => void {
 	};
 }
 
-function listenOnWindow(name: string, heard: (payload: unknown) => void): () => void {
+export function listenOnWindow(name: string, heard: (payload: unknown) => void): () => void {
 	const hearing = {
 		isStopped: false,
 		unlisten: (): void => undefined,

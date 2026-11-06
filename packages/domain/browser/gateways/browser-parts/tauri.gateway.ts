@@ -1,5 +1,4 @@
 import { studioWindowOf } from "@widgetarium/behaviors";
-import { Channel, invoke } from "@tauri-apps/api/core";
 import { GLOBAL_ROOT, HeldDoc, StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { DEFAULT_BROWSER_PROFILE } from "../../shared/lib/browser-profile.js";
 import { TauriBrowserAuditGateway } from "../browser-audit/tauri.gateway.js";
@@ -21,16 +20,6 @@ export interface TauriProfileFiles {
 	readonly siteIcons: string;
 }
 
-// TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too, as in the layout module
-const BROWSER_IPC: BrowserPagesIpc = {
-	invoke: (command, args) => invoke(command, args),
-	channel: (onMessage) => {
-		const channel = new Channel<unknown>();
-		channel.onmessage = onMessage;
-		return channel;
-	},
-};
-
 export function profileFilesOf(profileId: string): TauriProfileFiles {
 	const at = (file: string): string => `profiles/${profileId}/${file}`;
 	return {
@@ -42,7 +31,7 @@ export function profileFilesOf(profileId: string): TauriProfileFiles {
 	};
 }
 
-export function tauriBrowserParts(ipc: BrowserPagesIpc = BROWSER_IPC): BrowserParts {
+export function tauriBrowserParts(ipc: BrowserPagesIpc): BrowserParts {
 	const store = new StoreClient((command, args) => ipc.invoke(command, args));
 	const files = profileFilesOf(DEFAULT_BROWSER_PROFILE);
 	const grants = HeldDoc.reading({

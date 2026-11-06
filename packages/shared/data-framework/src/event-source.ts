@@ -43,18 +43,6 @@ export function windowEvent(type: string): EventSource {
 	};
 }
 
-export function tauriEvent(name: string): EventSource {
-	return {
-		label: `tauriEvent(${name})`,
-		listen(_context, fire) {
-			const unlistened = import("@tauri-apps/api/event").then(({ listen }) =>
-				listen<unknown>(name, ({ payload }) => fire(payload)),
-			);
-			return () => void unlistened.then((unlisten) => unlisten());
-		},
-	};
-}
-
 function payloadOf(event: Event): unknown {
 	if (event instanceof MessageEvent) {
 		return event.data;

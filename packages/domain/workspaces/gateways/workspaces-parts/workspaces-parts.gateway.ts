@@ -1,9 +1,10 @@
-import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
+import type { HostFacts, Platform } from "@widgetarium/data-framework";
+import type { WorkspacesHost } from "../../shared/host/workspaces.host.js";
 import type { ChatsGateway } from "../chats/chats.gateway.js";
 import type { CurrentWorkspaceGateway } from "../current-workspace/current-workspace.gateway.js";
 import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";
 import type { WorkspacesGateway } from "../workspaces/workspaces.gateway.js";
-import { tauriInvoke, tauriWorkspacesParts } from "./tauri.gateway.js";
+import { tauriWorkspacesParts } from "./tauri.gateway.js";
 import { webWorkspacesParts } from "./web.gateway.js";
 
 export type WorkspacesParts = {
@@ -13,12 +14,16 @@ export type WorkspacesParts = {
 	readonly chats: ChatsGateway;
 };
 
-const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => WorkspacesParts>> = {
-	browser: ({ scope }) => webWorkspacesParts(scope.workspaceId),
-	tauri: ({ scope }) => tauriWorkspacesParts(scope.workspaceId, tauriInvoke),
-	server: ({ scope }) => webWorkspacesParts(scope.workspaceId),
+const UNHOSTED_PARTS_ON: Readonly<Record<Platform, (workspaceId: string) => WorkspacesParts>> = {
+	browser: webWorkspacesParts,
+	tauri: webWorkspacesParts,
+	server: webWorkspacesParts,
 };
 
-export function workspacesPartsOn(facts: ModuleFacts): WorkspacesParts {
-	return PARTS_ON[facts.platform](facts);
+export function workspacesPartsOn({ platform, scope, host }: HostFacts<WorkspacesHost>): WorkspacesParts {
+	if (host.kind === "tauri") {
+		return tauriWorkspacesParts(scope.workspaceId, host.store);
+	}
+
+	return UNHOSTED_PARTS_ON[platform](scope.workspaceId);
 }

@@ -61,9 +61,12 @@ interface ServerStartOptions {
 	readonly host?: ServerHost & HostObjects;
 }
 
+type ServerHostOptionOf<N extends Provided> =
+	Record<never, never> extends N ? { readonly host?: ServerHost & N } : { readonly host: ServerHost & N };
+
 type ServerLentBy<N extends Provided> = keyof N extends never
 	? ServerStartOptions
-	: ServerStartOptions & { readonly host: ServerHost & N };
+	: ServerStartOptions & ServerHostOptionOf<N>;
 
 type ServerHostNeedsOf<M> =
 	M extends PlatformModule<Provided, ServerRuns, infer N> ? NeedsBox<N> : NeedsBox<NothingProvided>;

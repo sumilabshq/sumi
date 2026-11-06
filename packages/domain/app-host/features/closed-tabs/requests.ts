@@ -6,7 +6,8 @@ import {
 import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
-import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
+import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import { ClosedTabIdSchema, ClosedTabsSchema } from "../../shared/schema/closed-tab.schema.js";
 

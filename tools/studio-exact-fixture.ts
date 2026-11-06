@@ -8,6 +8,7 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -182,6 +183,7 @@ export function exactStudio({
 				essentials: keptEssentials,
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
+				coreChanges: new NoCoreChangesGateway(),
 			}),
 			BrowserModule.with(fakeBrowser(boardPages).parts),
 			LayoutModule,

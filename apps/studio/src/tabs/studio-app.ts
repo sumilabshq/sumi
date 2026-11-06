@@ -1,13 +1,13 @@
-import { AppHostModule } from "@widgetarium/app-host/module";
+import { AppHostModule, CoreChangesHost } from "@widgetarium/app-host/module";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
-import { BrowserModule } from "@widgetarium/browser/module";
+import { BrowserModule, BrowserPagesIpcHost } from "@widgetarium/browser/module";
 import { CommandMenuModule } from "@widgetarium/command-menu/module";
 import { app, localTransport } from "@widgetarium/data-framework";
-import type { Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { HeldBy, Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
-import { LayoutModule } from "@widgetarium/layout/module";
+import { LayoutModule, StudioWindowsHost } from "@widgetarium/layout/module";
 import { PlacesModule } from "@widgetarium/places";
 import { PlacesModule as RunnablePlacesModule } from "@widgetarium/places/module";
 import { QuestionsModule } from "@widgetarium/questions";
@@ -18,18 +18,26 @@ import { FileSystemModule } from "@widgetarium/file-system/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
+export type TauriStudioLent = HeldBy<{
+	store: typeof StoreClient;
+	studioWindows: typeof StudioWindowsHost;
+	coreChanges: typeof CoreChangesHost;
+	browserIpc: typeof BrowserPagesIpcHost;
+}>;
+
 export interface StudioAppAsk {
 	readonly platform: Platform;
 	readonly workspaceId: string;
 	readonly core?: RemoteTransport;
+	readonly lent?: TauriStudioLent;
 }
 
-export function startStudioApp({ platform, workspaceId, core }: StudioAppAsk): StartedApp {
+export function startStudioApp({ platform, workspaceId, core, lent }: StudioAppAsk): StartedApp {
 	const served = core ?? startCoreInProcess(workspaceId);
 	const studioApp = app()
 		.modules(LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule)
 		.imports(PlacesModule.over(served), TasksModule.over(served), QuestionsModule.over(served))
-		.start({ platform, scope: { workspaceId } });
+		.start({ platform, scope: { workspaceId }, ...(lent === undefined ? {} : { host: lent }) });
 	void restoreTabs(studioApp);
 	return studioApp;
 }

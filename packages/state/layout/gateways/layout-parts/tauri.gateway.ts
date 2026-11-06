@@ -1,10 +1,9 @@
-import { invoke } from "@tauri-apps/api/core";
-import { getAllWindows, getCurrentWindow } from "@tauri-apps/api/window";
 import { z } from "zod";
 import { MAIN_STUDIO_WINDOW, studioWindowOf, viewFileOf } from "@widgetarium/behaviors";
 import type { StudioWindow } from "@widgetarium/behaviors";
-import { GLOBAL_ROOT, HeldDoc, StoreClient, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
-import type { DocKind } from "@widgetarium/behaviors/tauri-store";
+import { GLOBAL_ROOT, HeldDoc, workspaceRootOf } from "@widgetarium/behaviors/tauri-store";
+import type { DocKind, StoreClient } from "@widgetarium/behaviors/tauri-store";
+import type { StudioWindows } from "../../shared/host/layout.host.js";
 import { USUAL_WIDTHS } from "../../shared/lib/frame-bounds.js";
 import { KeptSidesSchema, TauriFrameSidesGateway } from "../frame-sides/tauri.gateway.js";
 import { KeptWidthsSchema, TauriFrameWidthsGateway } from "../frame-widths/tauri.gateway.js";
@@ -33,9 +32,7 @@ const SETTINGS: DocKind<Settings> = {
 	schema: SettingsSchema,
 };
 
-// TRADE-OFF: a static import puts the Tauri invoke into the browser bundle too; export conditions would need a condition the test loader and the Vite configs do not set
-export function tauriLayoutParts(workspaceId: string): LayoutParts {
-	const store = new StoreClient(tauriInvoke);
+export function tauriLayoutParts(workspaceId: string, store: StoreClient, windows: StudioWindows): LayoutParts {
 	const settings = HeldDoc.reading({ store, root: GLOBAL_ROOT, kind: SETTINGS, empty: SettingsSchema.parse({}) });
 	const studioWindow = studioWindowOf(location.search);
 	const docOf = (file: string): HeldDoc<Session> =>
@@ -53,8 +50,8 @@ export function tauriLayoutParts(workspaceId: string): LayoutParts {
 		first: firstPanesOf(bootOf(studioWindow)),
 		boot: bootOf(studioWindow),
 	});
-	forgetsOnClose(paneTree, studioWindow.label);
-	forgetsDeadWindows(paneTree, studioWindow.label);
+	forgetsOnClose(paneTree, studioWindow.label, windows);
+	forgetsDeadWindows(paneTree, studioWindow.label, windows);
 	return {
 		frameSides: new TauriFrameSidesGateway(windowView, FIRST_SIDES),
 		frameWidths: new TauriFrameWidthsGateway(settings, USUAL_WIDTHS),
@@ -62,7 +59,7 @@ export function tauriLayoutParts(workspaceId: string): LayoutParts {
 	};
 }
 
-function forgetsDeadWindows(paneTree: TauriPaneTreeGateway, label: string): void {
+function forgetsDeadWindows(paneTree: TauriPaneTreeGateway, label: string, windows: StudioWindows): void {
 	if (label !== MAIN_STUDIO_WINDOW) {
 		return;
 	}
@@ -73,23 +70,18 @@ function forgetsDeadWindows(paneTree: TauriPaneTreeGateway, label: string): void
 		}
 
 		stop();
-		void getAllWindows().then((windows) =>
-			paneTree.forgetWindowsExcept(
-				windows.map((window) => window.label),
-				"the main window started and they are not open",
-			),
-		);
+		void windows
+			.openLabels()
+			.then((labels) => paneTree.forgetWindowsExcept(labels, "the main window started and they are not open"));
 	});
 }
 
-function forgetsOnClose(paneTree: TauriPaneTreeGateway, label: string): void {
+function forgetsOnClose(paneTree: TauriPaneTreeGateway, label: string, windows: StudioWindows): void {
 	if (label === MAIN_STUDIO_WINDOW) {
 		return;
 	}
 
-	void getCurrentWindow().onCloseRequested(() =>
-		paneTree.forgetOwnWindow(`window ${label} closed, its tabs go back to the lists`),
-	);
+	windows.onOwnCloseAsked(() => paneTree.forgetOwnWindow(`window ${label} closed, its tabs go back to the lists`));
 }
 
 function sessionOf(file: string): DocKind<Session> {
@@ -139,8 +131,4 @@ function firstPanesOf(boot: PaneView | null): PaneTree {
 		minted: 0,
 		targetId: "pane-torn",
 	};
-}
-
-function tauriInvoke(command: string, args: Readonly<Record<string, unknown>>): Promise<unknown> {
-	return invoke(command, args);
 }

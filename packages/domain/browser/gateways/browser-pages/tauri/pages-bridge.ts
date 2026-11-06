@@ -2,11 +2,9 @@ import type { GhostLay, GhostWorn } from "../../../shared/schema/tear-off-ghost.
 import { z } from "zod";
 import { PageFailureSchema } from "../../../shared/schema/browser-tab.schema.js";
 import type { PageRegion } from "../../../shared/schema/page-read.schema.js";
+import type { BrowserPagesIpc } from "../../../shared/host/browser.host.js";
 
-export interface BrowserPagesIpc {
-	invoke(command: string, args?: Readonly<Record<string, unknown>>): Promise<unknown>;
-	channel(onMessage: (message: unknown) => void): unknown;
-}
+export type { BrowserPagesIpc } from "../../../shared/host/browser.host.js";
 
 export const PageFactsSchema = z.object({
 	url: z.string(),
@@ -79,12 +77,7 @@ export type PageHoveredEvent = z.infer<typeof PageHoveredEventSchema>;
 export type PageKeyedEvent = z.infer<typeof PageKeyedEventSchema>;
 export type WindowClosedEvent = z.infer<typeof WindowClosedEventSchema>;
 export type PageEvent =
-	| PageLoadEvent
-	| OwnWindowEvent
-	| PagePressedEvent
-	| PageHoveredEvent
-	| PageKeyedEvent
-	| WindowClosedEvent;
+	PageLoadEvent | OwnWindowEvent | PagePressedEvent | PageHoveredEvent | PageKeyedEvent | WindowClosedEvent;
 export type PageInputEvent = PagePressedEvent | PageHoveredEvent | PageKeyedEvent;
 
 export function isOwnWindowEvent(event: PageEvent): event is OwnWindowEvent {
