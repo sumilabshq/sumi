@@ -17379,6 +17379,7 @@ body.wg-studio-in-front > .wg-kit-portal-layer.is-studio {
 }
 .wg-shell-left {
 	position: relative;
+	z-index: 4;
 	flex: 0 1 auto;
 	box-sizing: border-box;
 	width: var(--wg-shell-left-w);
