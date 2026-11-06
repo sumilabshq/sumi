@@ -15,8 +15,11 @@ export class MemoryFilesGateway extends FilesGateway {
 	private readonly files = new Map<string, string>();
 	private readonly folders = new Set<string>();
 
-	constructor(private readonly appData: string) {
-		super();
+	constructor(
+		private readonly appData: string,
+		workspaceId: string,
+	) {
+		super(workspaceId);
 	}
 
 	override appDataFolder(): Promise<string> {

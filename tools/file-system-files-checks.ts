@@ -20,7 +20,12 @@ import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/fea
 import { check, tally } from "./check-helpers.ts";
 
 const APP_DATA = "/data";
-const files = new MemoryFilesGateway(APP_DATA);
+const WORKSPACE = "ws-1";
+const ROOT = {
+	appDataFolder: APP_DATA,
+	workspaceId: WORKSPACE,
+};
+const files = new MemoryFilesGateway(APP_DATA, WORKSPACE);
 const served = server()
 	.modules(RunnableFileSystemModule.with({ files }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
@@ -37,19 +42,24 @@ const other = appOver("other");
 const nobody = appOver(null);
 
 const user = (id: string) => ({ id, permissions: [] });
-check("a relative path lands in the app's own data folder", placedPathOf(APP_DATA, user("notes"), "a/b.txt"), {
-	path: "/data/app-data/notes/a/b.txt",
+check("a relative path lands in the app's own data folder", placedPathOf(ROOT, user("notes"), "a/b.txt"), {
+	path: "/data/app-data/ws-1/notes/a/b.txt",
 });
-check("an absolute path is taken as given", placedPathOf(APP_DATA, user("notes"), "/tmp/x"), { path: "/tmp/x" });
-check("a path climbing out is refused", "refusal" in placedPathOf(APP_DATA, user("notes"), "a/../../b"), true);
-check("an app id that is not a folder name is refused", "refusal" in placedPathOf(APP_DATA, user("../x"), "a"), true);
-check("a call with no app is refused", "refusal" in placedPathOf(APP_DATA, null, "a"), true);
+check("an absolute path is taken as given", placedPathOf(ROOT, user("notes"), "/tmp/x"), { path: "/tmp/x" });
+check("a path climbing out is refused", "refusal" in placedPathOf(ROOT, user("notes"), "a/../../b"), true);
+check("an app id that is not a folder name is refused", "refusal" in placedPathOf(ROOT, user("../x"), "a"), true);
+check("a call with no app is refused", "refusal" in placedPathOf(ROOT, null, "a"), true);
+check(
+	"a workspace id that is not a folder name is refused",
+	"refusal" in placedPathOf({ appDataFolder: APP_DATA, workspaceId: "../x" }, user("notes"), "a"),
+	true,
+);
 
 const written = await notes.send(WriteFileCommand, { path: "todo.txt", content: "one" });
 await notes.send(AppendFileCommand, { path: "todo.txt", content: " two" });
 const read = await notes.send(ReadFileQuery, { path: "todo.txt" });
 check("write then append then read answers both", [written.ok, read.ok ? read.output : read.reason], [true, "one two"]);
-check("the write landed in that app's folder", await files.readFile("/data/app-data/notes/todo.txt"), "one two");
+check("the write landed in that app's folder", await files.readFile("/data/app-data/ws-1/notes/todo.txt"), "one two");
 
 const othersRead = await other.send(ReadFileQuery, { path: "todo.txt" });
 check(

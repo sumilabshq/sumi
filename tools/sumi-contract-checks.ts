@@ -85,7 +85,7 @@ check(
 );
 
 const core = server()
-	.modules(RunnableFileSystemModule.with({ files: new MemoryFilesGateway("/data") }))
+	.modules(RunnableFileSystemModule.with({ files: new MemoryFilesGateway("/data", "contract") }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 const channel = new MessageChannel();
 const stopServing = messagePortListener(channel.port1, { headers: { [APP_CALLER_HEADER]: "notes" } }).serve(core);

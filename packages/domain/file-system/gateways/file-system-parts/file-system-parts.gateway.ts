@@ -11,12 +11,14 @@ const FILES_STORE = "FILES_STORE";
 const TAURI_FILES_STORE = "tauri";
 const MEMORY_APP_DATA = "/app-data-in-memory";
 
-export function fileSystemPartsOn({ env }: ModuleFacts): FileSystemParts {
-	return env[FILES_STORE] === TAURI_FILES_STORE ? { files: new TauriFilesGateway() } : memoryFileSystemParts();
-}
+export function fileSystemPartsOn({ env, scope }: ModuleFacts): FileSystemParts {
+	if (env[FILES_STORE] === TAURI_FILES_STORE) {
+		return {
+			files: new TauriFilesGateway(scope.workspaceId),
+		};
+	}
 
-export function memoryFileSystemParts(): FileSystemParts {
 	return {
-		files: new MemoryFilesGateway(MEMORY_APP_DATA),
+		files: new MemoryFilesGateway(MEMORY_APP_DATA, scope.workspaceId),
 	};
 }

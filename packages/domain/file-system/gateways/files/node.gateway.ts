@@ -11,8 +11,11 @@ const ABSENT: FileInfo = {
 };
 
 export class NodeFilesGateway extends FilesGateway {
-	constructor(private readonly appData: string) {
-		super();
+	constructor(
+		private readonly appData: string,
+		workspaceId: string,
+	) {
+		super(workspaceId);
 	}
 
 	override appDataFolder(): Promise<string> {

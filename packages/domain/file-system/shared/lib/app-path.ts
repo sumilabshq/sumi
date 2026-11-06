@@ -10,24 +10,32 @@ export type PlacedPath =
 	  };
 
 export interface AppDataHolder {
+	readonly workspaceId: string;
 	appDataFolder(): Promise<string>;
+}
+
+export interface AppDataRoot {
+	readonly appDataFolder: string;
+	readonly workspaceId: string;
 }
 
 const APP_DATA_FOLDER = "app-data";
 const APP_ID = /^[a-z][a-z0-9-]*$/;
+const WORKSPACE_ID = /^[A-Za-z0-9][A-Za-z0-9-]*$/;
 const NO_APP = "only an app may reach files: the call carries no app";
 const BAD_APP = "the app id {value} cannot name a folder";
+const BAD_WORKSPACE = "the workspace id {value} cannot name a folder";
 const NUL_IN_PATH = "the path {value} holds a NUL character";
 const LEAVES_APP_DATA = "the path {value} climbs out of the app's own folder; name it absolute instead";
 
-export function placedPathOf(appDataFolder: string, user: User | null, path: string): PlacedPath {
+export function placedPathOf(root: AppDataRoot, user: User | null, path: string): PlacedPath {
 	if (user === null) {
 		return {
 			refusal: NO_APP,
 		};
 	}
 
-	const refusal = pathRefusalOf(user, path);
+	const refusal = workspaceRefusalOf(root.workspaceId) ?? pathRefusalOf(user, path);
 
 	if (refusal !== null) {
 		return {
@@ -35,20 +43,25 @@ export function placedPathOf(appDataFolder: string, user: User | null, path: str
 		};
 	}
 
-	if (path.startsWith("/")) {
-		return {
-			path,
-		};
-	}
-
-	const parts = path.split("/").filter((part) => part !== "" && part !== ".");
 	return {
-		path: [appDataFolder.replace(/\/+$/, ""), APP_DATA_FOLDER, user.id, ...parts].join("/"),
+		path: path.startsWith("/") ? path : inAppFolder(root, user, path),
 	};
 }
 
+function inAppFolder({ appDataFolder, workspaceId }: AppDataRoot, user: User, path: string): string {
+	const parts = path.split("/").filter((part) => part !== "" && part !== ".");
+	return [appDataFolder.replace(/\/+$/, ""), APP_DATA_FOLDER, workspaceId, user.id, ...parts].join("/");
+}
+
 export async function placedIn(holder: AppDataHolder, user: User | null, path: string): Promise<string> {
-	const placed = placedPathOf(await holder.appDataFolder(), user, path);
+	const placed = placedPathOf(
+		{
+			appDataFolder: await holder.appDataFolder(),
+			workspaceId: holder.workspaceId,
+		},
+		user,
+		path,
+	);
 
 	if ("refusal" in placed) {
 		return refuse(placed.refusal);
@@ -59,6 +72,14 @@ export async function placedIn(holder: AppDataHolder, user: User | null, path: s
 
 export function refuseFailure(failure: unknown): never {
 	return refuse(failure instanceof Error ? failure.message : String(failure));
+}
+
+function workspaceRefusalOf(workspaceId: string): string | null {
+	if (WORKSPACE_ID.test(workspaceId)) {
+		return null;
+	}
+
+	return BAD_WORKSPACE.replace("{value}", JSON.stringify(workspaceId));
 }
 
 function pathRefusalOf(user: User, path: string): string | null {

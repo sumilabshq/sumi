@@ -1,6 +1,8 @@
 import type { FileInfo, FolderEntry } from "../../shared/schema/files.schema.js";
 
 export abstract class FilesGateway {
+	constructor(readonly workspaceId: string) {}
+
 	abstract appDataFolder(): Promise<string>;
 	abstract readFile(path: string): Promise<string>;
 	abstract readFolder(path: string): Promise<readonly FolderEntry[]>;

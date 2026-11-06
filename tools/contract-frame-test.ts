@@ -28,7 +28,7 @@ const appData = mkdtempSync(path.join(tmpdir(), "wg-contract-frame-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
 const served = server()
 	.modules(
-		FileSystemModule.with({ files: new NodeFilesGateway(appData) }),
+		FileSystemModule.with({ files: new NodeFilesGateway(appData, "contract-frame") }),
 		TerminalModule.with({ sessions: terminal }),
 		PlacesModule.with({
 			windows: new MemoryWindowsGateway({ windows: [] }),
@@ -118,7 +118,7 @@ try {
 	check("ReadFileQuery reads back what the frame wrote", told["read"], "written by the frame");
 	check(
 		"the file lands in the app's own data folder on disk",
-		readFileSync(path.join(appData, "app-data", "notes", "notes", "today.txt"), "utf8"),
+		readFileSync(path.join(appData, "app-data", "contract-frame", "notes", "notes", "today.txt"), "utf8"),
 		"written by the frame",
 	);
 	check("a relative path climbing out of the app's folder is refused", told["climbed"], "refused");
