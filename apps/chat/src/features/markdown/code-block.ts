@@ -1,3 +1,4 @@
+import { SCROLL_KEEP_ATTRIBUTE } from "@widgetarium/kit";
 import { highlightCode } from "./code-highlight.js";
 import { languageOf } from "./code-languages.js";
 import type { CodeLanguage } from "./code-languages.js";
@@ -88,9 +89,10 @@ function createWrapTool(page: Document): HTMLButtonElement {
 	const wrap = createTool(page, {
 		said: "",
 		glyph: "text-wrap",
-		onPress: (wrap) => toggleCodeWrap(page, wrap),
+		onPress: () => toggleCodeWrap(page),
 	});
 	wrap.setAttribute(CODE_WRAP_TOGGLE_ATTRIBUTE, "");
+	wrap.setAttribute(SCROLL_KEEP_ATTRIBUTE, "");
 	syncCodeWrapToggle(page, wrap);
 	return wrap;
 }

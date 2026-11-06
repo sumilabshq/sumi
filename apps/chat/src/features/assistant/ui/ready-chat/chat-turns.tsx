@@ -1,5 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
+import { MessageScrollerItem } from "@widgetarium/kit";
 import { EmptyChat } from "../empty-chat/empty-chat.js";
 import { CompactLine } from "../compact-line/compact-line.js";
 import { Turn } from "../turn/turn.js";
@@ -37,7 +38,7 @@ export function ChatTurns({ chat, cards, asks, chatId }: ChatTurnsProps): ReactE
 				const turnAt = { at, isAnswerable: isLast && !session.busy, isLive };
 				const { before, after } = cards.around(session, turnAt, asks);
 				return (
-					<Fragment key={at}>
+					<MessageScrollerItem key={at} messageId={`turn-${at}`} className="wg-studio-ai-row">
 						{before}
 						{shown.turn.role === "compact" ? (
 							<CompactLine turn={shown.turn} render={renderMarkdown} live={isLive} />
@@ -45,7 +46,7 @@ export function ChatTurns({ chat, cards, asks, chatId }: ChatTurnsProps): ReactE
 							<Turn shown={shown} render={renderMarkdown} live={isLive} />
 						)}
 						{after}
-					</Fragment>
+					</MessageScrollerItem>
 				);
 			})}
 			<BusyLine chat={chat} chatId={chatId} />

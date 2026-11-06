@@ -20,8 +20,7 @@ export function applySavedCodeWrap(page: Document): void {
 	page.documentElement.setAttribute(WRAP_ATTRIBUTE, readSavedWrap(page));
 }
 
-export function toggleCodeWrap(page: Document, anchor: Element): void {
-	const anchorTop = anchor.getBoundingClientRect().top;
+export function toggleCodeWrap(page: Document): void {
 	const next = isCodeWrapped(page) ? UNWRAPPED : WRAPPED;
 	page.documentElement.setAttribute(WRAP_ATTRIBUTE, next);
 	saveWrap(page, next);
@@ -29,8 +28,6 @@ export function toggleCodeWrap(page: Document, anchor: Element): void {
 	for (const toggle of page.querySelectorAll(`[${CODE_WRAP_TOGGLE_ATTRIBUTE}]`)) {
 		syncCodeWrapToggle(page, toggle);
 	}
-
-	scrollerOf(page, anchor)?.scrollBy({ top: anchor.getBoundingClientRect().top - anchorTop });
 }
 
 export function syncCodeWrapToggle(page: Document, toggle: Element): void {
@@ -44,18 +41,6 @@ export function syncCodeWrapToggle(page: Document, toggle: Element): void {
 
 function isCodeWrapped(page: Document): boolean {
 	return page.documentElement.getAttribute(WRAP_ATTRIBUTE) !== UNWRAPPED;
-}
-
-function scrollerOf(page: Document, node: Element): Element | null {
-	for (let at = node.parentElement; at !== null; at = at.parentElement) {
-		const overflow = page.defaultView?.getComputedStyle(at).overflowY;
-
-		if ((overflow === "auto" || overflow === "scroll") && at.scrollHeight > at.clientHeight) {
-			return at;
-		}
-	}
-
-	return page.scrollingElement;
 }
 
 // TRADE-OFF: browser storage, not a settings module: a view-only choice kept per device

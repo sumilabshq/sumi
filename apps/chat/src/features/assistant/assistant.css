@@ -44,8 +44,16 @@
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
 	padding: 4px var(--wg-ai-gutter);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-scroll-content {
+	gap: 12px;
+	padding: 0;
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-row {
+	gap: inherit;
 }
 
 :is(.wg-root, .wg-portal) .wg-studio-ai-turn {
@@ -1577,8 +1585,11 @@
 }
 
 .wg-chat-app .wg-studio-ai-scroll {
-	gap: 14px;
 	padding: 14px 24px 12px;
+}
+
+.wg-chat-app .wg-studio-ai-scroll-content {
+	gap: 14px;
 }
 
 .wg-chat-app .wg-studio-ai-said {
