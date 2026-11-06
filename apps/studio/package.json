@@ -24,7 +24,7 @@
 		}
 	},
 	"dependencies": {
-		"@sumi/contract": "0.3.5",
+		"@sumi/contract": "0.4.0",
 		"@tauri-apps/api": "^2.12.4",
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/app-registry": "0.1.0",

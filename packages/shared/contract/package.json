@@ -1,6 +1,6 @@
 {
 	"name": "@sumi/contract",
-	"version": "0.3.5",
+	"version": "0.4.0",
 	"description": "What a Sumi app imports: the shell modules it may call, the app manifest and the contract version gate",
 	"license": "MIT",
 	"type": "module",

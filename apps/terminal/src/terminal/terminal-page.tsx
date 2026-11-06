@@ -4,8 +4,8 @@ import { FitAddon } from "@xterm/addon-fit";
 import { Terminal } from "@xterm/xterm";
 import type { ITheme } from "@xterm/xterm";
 import { ResizeTerminalCommand, StartTerminalCommand, TerminalOutputQuery, TypeTerminalCommand } from "@sumi/contract";
-import type { TerminalOutput, TerminalSize } from "@sumi/contract";
-import type { Answer, StartedApp } from "@widgetarium/data-framework";
+import type { TerminalOutput } from "@sumi/contract";
+import type { Answer } from "@widgetarium/data-framework";
 import type { SumiShell } from "../sumi-shell.js";
 import { TERMINAL_SHEET } from "./terminal-sheet.js";
 
@@ -15,6 +15,7 @@ const LINE_HEIGHT = 1.25;
 const SCROLLBACK = 10_000;
 const EXITED = "Exited";
 const EXITED_WITH = "Exited with {code}";
+const NO_TAB = "This terminal was opened without a tab, so it has no session of its own";
 
 // TRADE-OFF: ANSI colours are terminal data, not UI tokens; Sumi has no 16-colour scale
 const LIGHT_ANSI: ITheme = {
@@ -69,8 +70,8 @@ export function TerminalPage({ sumi, isDark }: TerminalPageProps): ReactElement 
 	const screen = useRef<HTMLDivElement>(null);
 	const terminal = useScreenIn(screen);
 	const read = useTerminalOutput(sumi);
-	const shellRefusal = useWiresShell(terminal, sumi.shell);
-	const failure = read.failure ?? shellRefusal;
+	const shellRefusal = useWiresShell(terminal, sumi);
+	const failure = sumi.tabId === null ? NO_TAB : (read.failure ?? shellRefusal);
 	useDrawsOutput(terminal, read.output);
 	useThemesScreen(screen, terminal, isDark);
 	return (
@@ -98,17 +99,21 @@ function useThemesScreen(
 	}, [screen, terminal, isDark]);
 }
 
-function useTerminalOutput({ shell, transport }: SumiShell): OutputRead {
+function useTerminalOutput({ shell, transport, tabId }: SumiShell): OutputRead {
 	const [read, setRead] = useState<OutputRead>({
 		output: null,
 		failure: null,
 	});
 	useEffect(() => {
+		if (tabId === null) {
+			return;
+		}
+
 		let lastAsked = 0;
 		const reread = (): void => {
 			lastAsked += 1;
 			const asked = lastAsked;
-			void shell.send(TerminalOutputQuery).then((answer) => {
+			void shell.send(TerminalOutputQuery, { tab: tabId }).then((answer) => {
 				if (asked !== lastAsked) {
 					return;
 				}
@@ -128,36 +133,33 @@ function useTerminalOutput({ shell, transport }: SumiShell): OutputRead {
 		};
 		reread();
 		return transport.changes(reread);
-	}, [shell, transport]);
+	}, [shell, transport, tabId]);
 	return read;
 }
 
-function useWiresShell(terminal: RefObject<Terminal | null>, shell: StartedApp): string | null {
+function useWiresShell(terminal: RefObject<Terminal | null>, { shell, tabId }: SumiShell): string | null {
 	const [refusal, setRefusal] = useState<string | null>(null);
 	useEffect(() => {
 		const drawn = terminal.current;
 
-		if (drawn === null) {
+		if (drawn === null || tabId === null) {
 			return;
 		}
 
 		const showRefusalOf = (answer: Answer<unknown>): void => setRefusal(answer.ok ? null : answer.reason);
-		void shell.send(StartTerminalCommand, sizeOf(drawn)).then(showRefusalOf);
-		const typing = drawn.onData((keys) => void shell.send(TypeTerminalCommand, { keys }).then(showRefusalOf));
-		const resizing = drawn.onResize((size) => void shell.send(ResizeTerminalCommand, size).then(showRefusalOf));
+		void shell.send(StartTerminalCommand, { tab: tabId, cols: drawn.cols, rows: drawn.rows }).then(showRefusalOf);
+		const typing = drawn.onData(
+			(keys) => void shell.send(TypeTerminalCommand, { tab: tabId, keys }).then(showRefusalOf),
+		);
+		const resizing = drawn.onResize(
+			(size) => void shell.send(ResizeTerminalCommand, { tab: tabId, ...size }).then(showRefusalOf),
+		);
 		return () => {
 			typing.dispose();
 			resizing.dispose();
 		};
-	}, [terminal, shell]);
+	}, [terminal, shell, tabId]);
 	return refusal;
-}
-
-function sizeOf({ cols, rows }: Terminal): TerminalSize {
-	return {
-		cols,
-		rows,
-	};
 }
 
 function useDrawsOutput(terminal: RefObject<Terminal | null>, output: TerminalOutput | null): void {

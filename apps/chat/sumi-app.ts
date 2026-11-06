@@ -6,7 +6,7 @@ export const manifest = defineApp({
 	id: "chat",
 	name: "Chat",
 	version: "0.1.0",
-	contract: "^0.3.2",
+	contract: "^0.4.0",
 	ui: "index.html",
 	modules: [
 		{

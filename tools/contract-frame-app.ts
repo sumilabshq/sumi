@@ -50,7 +50,7 @@ const sumi = app()
 
 async function terminalSaid(): Promise<string> {
 	for (let leftMs = OUTPUT_WAIT_MS; leftMs > 0; leftMs -= OUTPUT_STEP_MS) {
-		const output = await sumi.send(TerminalOutputQuery);
+		const output = await sumi.send(TerminalOutputQuery, { tab: OWN_TAB });
 
 		if (output.ok && output.output.output.includes(SHELL_SAID)) {
 			return output.output.output;
@@ -59,7 +59,7 @@ async function terminalSaid(): Promise<string> {
 		await new Promise((settled) => setTimeout(settled, OUTPUT_STEP_MS));
 	}
 
-	const last = await sumi.send(TerminalOutputQuery);
+	const last = await sumi.send(TerminalOutputQuery, { tab: OWN_TAB });
 	return last.ok ? last.output.output : last.reason;
 }
 
@@ -87,7 +87,7 @@ async function placesTold(): Promise<object> {
 }
 
 async function terminalTold(): Promise<object> {
-	const typed = await sumi.send(SendTerminalCommand, { line: TYPED });
+	const typed = await sumi.send(SendTerminalCommand, { tab: OWN_TAB, line: TYPED });
 	return {
 		typed: typed.ok,
 		terminal: await terminalSaid(),

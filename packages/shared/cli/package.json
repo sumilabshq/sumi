@@ -17,7 +17,7 @@
 	],
 	"dependencies": {
 		"@babel/parser": "^8.0.5",
-		"@sumi/contract": "0.3.5",
+		"@sumi/contract": "0.4.0",
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/eslint-plugin": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
