@@ -237,8 +237,8 @@ try {
 		`[document.activeElement?.hasAttribute("data-under-menu") ?? false, document.querySelector(".wg-cm-layer") === null]`,
 	);
 	check(
-		"a press below the open menu reaches the field there and shuts the menu",
-		JSON.stringify(underneath) === JSON.stringify([true, true]),
+		"a press below the open menu shuts it and stays on the overlay",
+		JSON.stringify(underneath) === JSON.stringify([false, true]),
 		underneath,
 	);
 	await page.ask(`document.querySelector("[data-under-menu]")?.remove(); true`);

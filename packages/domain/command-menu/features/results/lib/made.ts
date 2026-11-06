@@ -88,6 +88,24 @@ export function createOnlyFound(typed: string): Found {
 	};
 }
 
+export function createEmptyFound(): Found {
+	return {
+		...madeOf({
+			key: "ask:empty",
+			kind: "ask",
+			title: "Create only",
+			meta: "Empty chat",
+			glyph: "pencil",
+			intent: {
+				do: "ask-ink",
+				text: "",
+				sends: false,
+			},
+		}),
+		shortcut: ENTER,
+	};
+}
+
 export function askFallbackFound(typed: string): Found {
 	return madeOf({
 		key: "fallback:ask",

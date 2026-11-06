@@ -1,6 +1,14 @@
 import type { Door } from "../../../shared/schema/command-menu.schema.js";
 import type { Found } from "./found.js";
-import { addressFound, askFallbackFound, askFound, createAndSendFound, createOnlyFound, searchFound } from "./made.js";
+import {
+	addressFound,
+	askFallbackFound,
+	askFound,
+	createAndSendFound,
+	createEmptyFound,
+	createOnlyFound,
+	searchFound,
+} from "./made.js";
 import { rankedOf } from "./match.js";
 
 export interface Draft {
@@ -142,7 +150,7 @@ function newTabOpensOf(pools: Pools, typed: Typed): readonly Found[] {
 
 function askingMenuOf(typed: Typed): DraftedMenu {
 	if (typed.text === "") {
-		return uncountedMenuOf([]);
+		return uncountedMenuOf([listOf(UNLABELLED, [createEmptyFound()])]);
 	}
 
 	return uncountedMenuOf([

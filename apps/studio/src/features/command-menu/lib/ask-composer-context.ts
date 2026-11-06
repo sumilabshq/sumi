@@ -3,7 +3,7 @@ import type { StartedApp } from "@widgetarium/core/requests";
 
 export interface AskComposer {
 	readonly app: StartedApp | null;
-	ask(text: string, sends: boolean): void;
+	ask(text: string, sends: boolean, chatId: string | null): void;
 }
 
 export const NO_ASK_COMPOSER: AskComposer = {

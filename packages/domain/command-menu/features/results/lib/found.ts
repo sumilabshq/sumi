@@ -40,6 +40,8 @@ const APP = "App";
 const NO_MARK = "none";
 const UNKNOWN_ART = "site";
 const CHAT_APP = "chat";
+const SUMI_CHAT = "Sumi Chat";
+const SUMI_CHAT_WORDS = "sumi chat new chat ask assistant";
 
 export function tabsFoundOf(sidebar: TabsSidebar): readonly Found[] {
 	const listed = listedTabsOf(sidebar).map(({ tab, listTitle }) => tabFoundOf(tab, listTitle));
@@ -90,10 +92,11 @@ const MENU_WORDS: ReadonlyMap<string, string> = new Map([
 ]);
 
 export function appsFoundOf(faces: readonly AppFace[]): readonly Found[] {
-	return faces.flatMap((face) => {
+	const opened = faces.flatMap((face) => {
 		const words = MENU_WORDS.get(face.app) ?? (face.isBuiltIn ? undefined : `${face.title} ${face.app} app`);
 		return words === undefined || face.app === CHAT_APP ? [] : [appFoundOf(face, words)];
 	});
+	return [...opened, sumiChatFoundOf(artOf(faces, CHAT_APP))];
 }
 
 export function chatsElsewhereFoundOf(rows: readonly ChatElsewhereRow[], faces: readonly AppFace[]): readonly Found[] {
@@ -181,6 +184,32 @@ export function sitesFoundOf(sites: readonly RecentSite[]): readonly Found[] {
 			isOnScreen: false,
 		};
 	});
+}
+
+function sumiChatFoundOf(art: string): Found {
+	return {
+		key: "app:sumi-chat",
+		kind: "app",
+		title: SUMI_CHAT,
+		meta: APP,
+		haystack: SUMI_CHAT_WORDS,
+		icon: iconOf({
+			art,
+			favicon: null,
+			title: SUMI_CHAT,
+			address: null,
+			mark: NO_MARK,
+		}),
+		intent: {
+			do: "run",
+			command: "new-chat",
+		},
+		shortcut: null,
+		renames: null,
+		actions: [],
+		host: "",
+		isOnScreen: false,
+	};
 }
 
 function tabFoundOf(tab: AppTabState, listTitle: string): Found {

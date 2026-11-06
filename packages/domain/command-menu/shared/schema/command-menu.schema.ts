@@ -86,7 +86,7 @@ export const IntentSchema = z.discriminatedUnion("do", [
 	}),
 	z.object({
 		do: z.literal("ask-ink"),
-		text: z.string().min(1),
+		text: z.string(),
 		sends: z.boolean(),
 	}),
 	z.object({
@@ -210,6 +210,7 @@ export type Results = z.infer<typeof ResultsSchema>;
 export const DoneSchema = z.object({
 	said: z.string(),
 	isMenuKept: z.boolean(),
+	chatId: z.string().nullable(),
 });
 
 export type Done = z.infer<typeof DoneSchema>;

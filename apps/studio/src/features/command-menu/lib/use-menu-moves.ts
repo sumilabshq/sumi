@@ -71,7 +71,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 				}
 
 				if (intent.do === "ask-ink") {
-					askComposer.ask(intent.text, intent.sends);
+					askComposer.ask(intent.text, intent.sends, answer.output.chatId);
 				}
 
 				if (answer.output.isMenuKept) {

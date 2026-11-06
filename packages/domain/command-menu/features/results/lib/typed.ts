@@ -16,7 +16,7 @@ export function typedOf(text: string): Typed {
 }
 
 export function fallbackIntentOf(typed: Typed, door: Door): Intent | null {
-	if (typed.text !== "" && door === "ask") {
+	if (door === "ask") {
 		return {
 			do: "ask-ink",
 			text: typed.text,
@@ -39,7 +39,7 @@ export function fallbackIntentOf(typed: Typed, door: Door): Intent | null {
 }
 
 export function fallbackLabelOf(typed: Typed, door: Door): string {
-	if (typed.text !== "" && door === "ask") {
+	if (door === "ask") {
 		return "Create only";
 	}
 
@@ -51,16 +51,9 @@ export function fallbackLabelOf(typed: Typed, door: Door): string {
 }
 
 export function askInkOf(typed: Typed): Intent | null {
-	if (typed.text === "") {
-		return {
-			do: "run",
-			command: "new-chat",
-		};
-	}
-
 	return {
 		do: "ask-ink",
 		text: typed.text,
-		sends: true,
+		sends: typed.text !== "",
 	};
 }

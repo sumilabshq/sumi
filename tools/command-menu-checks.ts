@@ -71,7 +71,7 @@ await check("empty Suggested holds only what exists; the keys make a new chat or
 	const empty = await results({ text: "", door: "anywhere" });
 	assert.equal(empty.foundCount, null);
 	assert.equal(empty.sections.length, 1);
-	assert.deepEqual(empty.askInk, { do: "run", command: "new-chat" });
+	assert.deepEqual(empty.askInk, { do: "ask-ink", text: "", sends: false });
 	assert.deepEqual(empty.fallbackIntent, { do: "run", command: "new-tab" });
 	assert.equal(empty.fallbackLabel, "New tab");
 });
@@ -108,10 +108,37 @@ await check("New offers Search the web, then Ask Sumi", async () => {
 	);
 });
 
-await check("the Ask door offers Create and send, then Create only", async () => {
+await check("the empty Ask door makes an empty chat on Enter and Shift+Enter", async () => {
 	const empty = await results({ text: "", door: "ask" });
-	assert.deepEqual(empty.sections, []);
-	assert.deepEqual(empty.askInk, { do: "run", command: "new-chat" });
+	assert.deepEqual(
+		empty.sections.flatMap((section) => section.rows).map((row) => [row.title, row.shortcut, row.intent]),
+		[["Create only", "↵", { do: "ask-ink", text: "", sends: false }]],
+	);
+	assert.deepEqual(empty.askInk, { do: "ask-ink", text: "", sends: false });
+	assert.deepEqual(empty.fallbackIntent, { do: "ask-ink", text: "", sends: false });
+	assert.equal(empty.fallbackLabel, "Create only");
+});
+
+await check("an empty ask makes one untitled chat and hands its id back", async () => {
+	const chatsBefore = await chatCount();
+	const done = ok(await studio.send(DoRowCommand, { intent: { do: "ask-ink", text: "", sends: false } }));
+	assert.equal(await chatCount(), chatsBefore + 1);
+	assert.notEqual(done.chatId, null);
+});
+
+await check("New tab lists Sumi Chat among apps, found by either word", async () => {
+	const empty = await results({ text: "", door: "new-tab" });
+	const grid = empty.sections[0]?.rows.map((row) => row.title) ?? [];
+	assert.ok(grid.includes("Sumi Chat"), `got ${grid.join(", ")}`);
+
+	for (const word of ["sumi", "chat"]) {
+		const found = await results({ text: word, door: "new-tab" });
+		const titles = found.sections.flatMap((section) => section.rows).map((row) => row.title);
+		assert.ok(titles.includes("Sumi Chat"), `${word}: got ${titles.join(", ")}`);
+	}
+});
+
+await check("the Ask door offers Create and send, then Create only", async () => {
 	const found = await results({ text: "release plan", door: "ask" });
 	assert.deepEqual(
 		found.sections.flatMap((section) => section.rows).map((row) => [row.kind, row.title]),

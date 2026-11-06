@@ -30,7 +30,7 @@ export const DoRowCommand = command("do-row")
 	.idempotencyKey(PerCall)
 	.inject({ commandMenu: CommandMenuGateway })
 	.handle(async ({ intent }, { commandMenu, send }): Promise<Done> => {
-		await performIntent(intent, send, commandMenu.menu());
+		const chatId = await performIntent(intent, send, commandMenu.menu());
 		const after = menuAfter(intent, commandMenu.menu());
 
 		if (after.next !== null) {
@@ -42,6 +42,7 @@ export const DoRowCommand = command("do-row")
 		return {
 			said,
 			isMenuKept: after.isMenuKept,
+			chatId,
 		};
 	});
 
@@ -72,10 +73,24 @@ export const RenameRowCommand = command("rename-row")
 		return {
 			said: `Renamed. Search finds “${trimmed}” from now on`,
 			isMenuKept: true,
+			chatId: null,
 		};
 	});
 
-async function performIntent(intent: Intent, send: Send, { newTabList, pageId }: KeptMenu): Promise<void> {
+async function performIntent(intent: Intent, send: Send, menu: KeptMenu): Promise<string | null> {
+	if (intent.do === "ask-ink") {
+		return newChatIdOf(intent.text, send);
+	}
+
+	await performOpening(intent, send, menu);
+	return null;
+}
+
+async function performOpening(
+	intent: Exclude<Intent, { do: "ask-ink" }>,
+	send: Send,
+	{ newTabList, pageId }: KeptMenu,
+): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
 			return send(ShowTabCommand, { id: intent.id });
@@ -96,8 +111,6 @@ async function performIntent(intent: Intent, send: Send, { newTabList, pageId }:
 			return openAddress(intent, send, { newTabList, pageId });
 		case "run":
 			return runMenuCommand(intent.command, send);
-		case "ask-ink":
-			return createChat(intent.text, send);
 		case "close-tab":
 			return send(CloseTabCommand, { id: intent.id });
 		case "pin-chat":
@@ -143,8 +156,9 @@ async function runMenuCommand(menuCommand: MenuCommand, send: Send): Promise<voi
 	}
 }
 
-async function createChat(title: string, send: Send): Promise<void> {
-	await send(OpenNewChatCommand, { title });
+async function newChatIdOf(text: string, send: Send): Promise<string> {
+	const opened = await send(OpenNewChatCommand, { title: text === "" ? null : text });
+	return opened.id;
 }
 
 function unknownIntent(intent: never): never {

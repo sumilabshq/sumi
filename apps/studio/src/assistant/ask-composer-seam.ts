@@ -15,23 +15,24 @@ export interface AskComposerApps {
 interface AskedDraft {
 	readonly text: string;
 	readonly sends: boolean;
+	readonly chatId: string | null;
 }
 
 export function askComposerOf(apps: AskComposerApps): AskComposer {
 	return {
 		app: apps.askApp,
-		ask: (text, sends) => {
-			if (text.trim() === "") {
+		ask: (text, sends, chatId) => {
+			if (chatId === null && text.trim() === "") {
 				return;
 			}
 
-			void handDraftToChat(apps, { text, sends });
+			void handDraftToChat(apps, { text, sends, chatId });
 		},
 	};
 }
 
 async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promise<void> {
-	const chatId = focusedChatPortOf(apps.studioApp).now()?.id ?? (await newChatIdIn(apps.studioApp));
+	const chatId = asked.chatId ?? focusedChatPortOf(apps.studioApp).now()?.id ?? (await newChatIdIn(apps.studioApp));
 
 	if (chatId === null) {
 		return;

@@ -2,8 +2,9 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/core/requests";
 import { RecordAppPageCommand } from "@widgetarium/places";
+import { MENU_DOOR_MARK } from "../../../command-menu/lib/menu-door-mark.js";
 import { useTogglesMenuOnShown } from "../../../command-menu/lib/use-toggles-menu-on-shown.js";
-import { PageCrumb } from "./page-crumb.js";
+import { PageCrumb, TYPE_ADDRESS_LABEL } from "./page-crumb.js";
 
 export interface AppCrumbProps {
 	readonly tabId: string;
@@ -16,6 +17,24 @@ const HOME = "Go to the home of {app}";
 export function AppCrumb({ tabId, appTitle, pageTitle }: AppCrumbProps): ReactElement {
 	const recordPage = useCommand(RecordAppPageCommand);
 	const openMenu = useTogglesMenuOnShown(appTitle, null);
+
+	if (pageTitle === null) {
+		return (
+			<span className="wg-app-crumb" data-plate-crumb="">
+				<button
+					type="button"
+					className="wg-plate-crumb is-pressable"
+					aria-label={TYPE_ADDRESS_LABEL}
+					data-plate-crumb-app=""
+					{...MENU_DOOR_MARK}
+					onClick={openMenu}
+				>
+					<span className="wg-plate-crumb-first">{appTitle}</span>
+				</button>
+			</span>
+		);
+	}
+
 	return (
 		<span className="wg-app-crumb" data-plate-crumb="">
 			<button
@@ -27,7 +46,7 @@ export function AppCrumb({ tabId, appTitle, pageTitle }: AppCrumbProps): ReactEl
 			>
 				<span className="wg-plate-crumb-first">{appTitle}</span>
 			</button>
-			{pageTitle === null ? null : <PageCrumb title={pageTitle} openMenu={openMenu} />}
+			<PageCrumb title={pageTitle} openMenu={openMenu} />
 		</span>
 	);
 }

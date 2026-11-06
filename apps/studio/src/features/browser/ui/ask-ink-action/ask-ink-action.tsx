@@ -13,5 +13,5 @@ export interface AskInkActionProps {
 export function AskInkAction({ tabId, label }: AskInkActionProps): ReactElement {
 	const prompt = useQuery(AskInkPromptQuery, { tabId }).data;
 	const askComposer = useAskComposer();
-	return <AskInkButton label={label} onPress={() => askComposer.ask(prompt, false)} />;
+	return <AskInkButton label={label} onPress={() => askComposer.ask(prompt, false, null)} />;
 }

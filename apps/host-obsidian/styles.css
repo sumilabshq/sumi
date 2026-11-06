@@ -18104,7 +18104,7 @@ body:has([data-browser-pages-live]),
 	letter-spacing: -0.006em;
 	color: var(--sumi-text);
 	-webkit-font-smoothing: antialiased;
-	pointer-events: none;
+	pointer-events: auto;
 }
 .wg-cm-layer * {
 	box-sizing: border-box;
@@ -18120,7 +18120,6 @@ body:has([data-browser-pages-live]),
 	text-align: left;
 }
 .wg-cm-panel {
-	pointer-events: auto;
 	position: absolute;
 	left: 50%;
 	top: 116px;

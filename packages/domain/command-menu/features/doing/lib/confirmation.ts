@@ -26,12 +26,20 @@ export function confirmationOf(intent: Intent): string {
 		case "run":
 			return RAN[intent.command];
 		case "ask-ink":
-			return intent.sends ? `New chat: asked Sumi “${intent.text}”` : `New chat: drafted “${intent.text}”`;
+			return askedSaidOf(intent.text, intent.sends);
 		case "close-tab":
 			return `Closed “${intent.title}”`;
 		case "pin-chat":
 			return intent.isPinned ? "Pinned" : "Unpinned";
 	}
+}
+
+function askedSaidOf(text: string, sends: boolean): string {
+	if (text === "") {
+		return "New chat";
+	}
+
+	return sends ? `New chat: asked Sumi “${text}”` : `New chat: drafted “${text}”`;
 }
 
 function openedSaidOf(address: string, where: "new-tab" | "this-tab"): string {

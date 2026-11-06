@@ -7,7 +7,7 @@ export interface PageCrumbProps {
 	readonly openMenu: () => void;
 }
 
-const ADDRESS = "Type an address";
+export const TYPE_ADDRESS_LABEL = "Type an address";
 
 export function PageCrumb({ title, openMenu }: PageCrumbProps): ReactElement {
 	return (
@@ -16,7 +16,7 @@ export function PageCrumb({ title, openMenu }: PageCrumbProps): ReactElement {
 			<button
 				type="button"
 				className="wg-plate-crumb is-pressable"
-				aria-label={ADDRESS}
+				aria-label={TYPE_ADDRESS_LABEL}
 				data-plate-crumb-page=""
 				{...MENU_DOOR_MARK}
 				onClick={openMenu}
