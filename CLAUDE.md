@@ -74,7 +74,7 @@ packages/shared/sdk      FSL  what a widget author compiles against (legacy)
 registry/                MIT  the widget library (legacy)
 ```
 
-`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps; each plugin is a folder of `plugins/`. Only `apps/tauri` touches Tauri: a plugin never imports `@tauri-apps/*`.
+`packages/` holds only the four layer folders `domain/`, `state/`, `client/` and `shared/`; hosts are apps; each plugin is a folder of `plugins/`. Only `apps/tauri` touches Tauri: anywhere else an import of `@tauri-apps/*` fails the build and the test loader (`apps/tauri/tauri-reach.mts`, `npm run test:tauri-boundary`).
 
 **The engine ships as versioned packages.** Every published package's `exports` carries three
 conditions: `source` → `src` (the monorepo and the test loader resolve it), `types`

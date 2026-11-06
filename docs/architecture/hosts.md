@@ -38,6 +38,8 @@ An interface the host lends (the tasks module's `BoardFile`) is a `hostObject("B
 
 **Only the host touches the machine.** The core runs the host's capabilities itself, `HOST_CAPABILITY_MODULES` in `src/plugins/host-capabilities.ts` (files and terminal sessions, through Tauri), then the modules plugins put in the host's shared modules slot. Plugins reach a capability only through `@sumi/contract`, never through `@tauri-apps/*` or a host gateway.
 
+`apps/tauri/tauri-reach.mts` holds the rule: only `apps/tauri` resolves `@tauri-apps/*`, plus the folders in `TAURI_REACHERS_TO_MOVE`, a list that only shrinks as each moves into the host. Any other import of it fails the host's Vite build and the test loader, and `npm run test:tauri-boundary` fails a plugin that declares a Tauri package, imports one or reads `__TAURI`. Code running in the studio window can still reach Tauri's global at run time; only a plugin running in its own frame, as apps do, closes that.
+
 | Plugin      | Is                                                                                                                                                 | Lives in            |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
 | `sumi-host` | the host's own declaration of the slots it offers (today `SharedModulesSlot`); it runs nothing                                                     | `plugins/sumi-host` |

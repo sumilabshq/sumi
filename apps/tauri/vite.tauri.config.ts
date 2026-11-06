@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { tauriOnlyInHost } from "./tauri-reach.mts";
 
 type Config = Readonly<Record<string, unknown>>;
 
@@ -41,6 +42,7 @@ async function projectConfig(): Promise<Config> {
 function withTauriBuild(config: Config): Config {
 	return {
 		...config,
+		plugins: [tauriOnlyInHost, ...pluginsOf(config)],
 		build: {
 			...fieldOf(config, "build"),
 			outDir: FRONTEND_DIST,
@@ -55,6 +57,11 @@ function withTauriBuild(config: Config): Config {
 			},
 		},
 	};
+}
+
+function pluginsOf(config: Config): readonly unknown[] {
+	const held = config["plugins"];
+	return Array.isArray(held) ? held : [];
 }
 
 function fieldOf(config: Config, name: string): Config {

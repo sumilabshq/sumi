@@ -5,6 +5,7 @@ import type { LoadFnOutput, LoadHookSync, ResolveHookSync } from "node:module";
 import { transformSync, type Loader } from "esbuild";
 import { REPO, nearestTsconfig, sourceUrlOf } from "./source-path.mts";
 import { SOURCE_CONDITION } from "../export-source.mts";
+import { tauriImportRefusal } from "../../apps/tauri/tauri-reach.mts";
 
 const TRANSFORMED: ReadonlyMap<string, Loader> = new Map([
 	[".ts", "ts"],
@@ -16,6 +17,11 @@ const TOOLS = path.join(REPO, "tools") + path.sep;
 const tsconfigText = new Map<string, string>();
 
 export const resolve: ResolveHookSync = (specifier, context, nextResolve) => {
+	const refusal =
+		context.parentURL?.startsWith("file:") === true
+			? tauriImportRefusal(specifier, fileURLToPath(context.parentURL))
+			: null;
+	if (refusal !== null) throw new Error(refusal);
 	const found = sourceUrlOf(specifier, context.parentURL);
 	if (found) return { url: found, shortCircuit: true };
 	return nextResolve(specifier, { ...context, conditions: [SOURCE_CONDITION, ...context.conditions] });
