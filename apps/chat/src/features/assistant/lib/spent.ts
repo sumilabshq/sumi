@@ -21,13 +21,30 @@ const PHASE_SAID: Readonly<Record<AssistantPhase, string>> = {
 
 const RUNNING = "Working";
 
-const SECONDS = "{s} s";
-const MINUTES = "{m} m {s} s";
+const SECONDS_IN_MINUTE = 60;
+const SECONDS_IN_HOUR = 3600;
+const SECONDS_IN_DAY = 86400;
+const SECONDS = "{big}s";
+const MINUTES = "{big}m {small}s";
+const HOURS = "{big}h {small}m";
+const DAYS = "{big}d {small}h";
 
 export function saidElapsed(ms: number): string {
 	const whole = Math.max(0, Math.floor(ms / 1000));
-	if (ms < A_MINUTE) return SECONDS.replace("{s}", String(whole));
-	return MINUTES.replace("{m}", String(Math.floor(whole / 60))).replace("{s}", String(whole % 60));
+
+	if (ms < A_MINUTE) {
+		return SECONDS.replace("{big}", String(whole));
+	}
+
+	if (whole < SECONDS_IN_HOUR) {
+		return twoUnitsSaid(MINUTES, Math.floor(whole / SECONDS_IN_MINUTE), whole % SECONDS_IN_MINUTE);
+	}
+
+	if (whole < SECONDS_IN_DAY) {
+		return twoUnitsSaid(HOURS, Math.floor(whole / SECONDS_IN_HOUR), Math.floor((whole % SECONDS_IN_HOUR) / SECONDS_IN_MINUTE));
+	}
+
+	return twoUnitsSaid(DAYS, Math.floor(whole / SECONDS_IN_DAY), Math.floor((whole % SECONDS_IN_DAY) / SECONDS_IN_HOUR));
 }
 
 export function callsSpanMs(calls: readonly AssistantCall[]): number | null {
@@ -58,4 +75,8 @@ export function saidPhase({ phase, tool }: PhaseSeen): string {
 // TRADE-OFF: the parts are joined with a separator rather than authored as one sentence, because a provider that reports no tokens must drop that part without leaving a gap behind it
 export function saidProgress({ ms, spent, phase, tool }: ProgressSeen): string {
 	return [saidElapsed(ms), saidTokens(spent), saidPhase({ phase, tool })].filter(Boolean).join(" · ");
+}
+
+function twoUnitsSaid(pattern: string, big: number, small: number): string {
+	return pattern.replace("{big}", String(big)).replace("{small}", String(small));
 }

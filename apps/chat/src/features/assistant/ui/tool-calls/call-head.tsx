@@ -1,6 +1,5 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Icon } from "@widgetarium/kit";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
 import { CallMetaSaid } from "./call-meta.js";
 import { CallName } from "./call-name.js";
@@ -22,10 +21,7 @@ export function CallHead({ call, face, canOpen, isOpen, onToggle }: CallHeadProp
 			aria-expanded={canOpen ? isOpen : undefined}
 			onClick={onToggle}
 		>
-			<span className={call.failed ? "wg-studio-ai-call-mark is-failed" : "wg-studio-ai-call-mark"}>
-				<Icon name={face.glyph} size={16} />
-			</span>
-			<CallName face={face} />
+			<CallName call={call} face={face} />
 			{face.meta ? <CallMetaSaid meta={face.meta} /> : null}
 		</button>
 	);

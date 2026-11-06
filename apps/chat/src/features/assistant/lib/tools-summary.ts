@@ -6,18 +6,14 @@ interface DoneText {
 	readonly many: string;
 }
 
-const USED_ONE = "Used 1 tool";
-const USED_MANY = "Used {count} tools";
-const USED_AND_DONE = "{used} · {done}";
-
 const DONE_TEXT: Readonly<Record<CallKind, DoneText>> = {
 	search: {
-		one: "searched",
-		many: "searched",
+		one: "searched 1 pattern",
+		many: "searched {count} patterns",
 	},
 	read: {
-		one: "read",
-		many: "read",
+		one: "read 1 file",
+		many: "read {count} files",
 	},
 	edit: {
 		one: "edited 1 file",
@@ -28,24 +24,18 @@ const DONE_TEXT: Readonly<Record<CallKind, DoneText>> = {
 		many: "ran {count} commands",
 	},
 	other: {
-		one: "",
-		many: "",
+		one: "used 1 tool",
+		many: "used {count} tools",
 	},
 };
 
-export function toolsSummaryOf(faces: readonly CallFace[]): string {
-	const used = countText(faces.length, USED_ONE, USED_MANY);
-	const done = doneTextOf(faces);
-	return done === "" ? used : USED_AND_DONE.replace("{used}", used).replace("{done}", done);
-}
-
 // TRADE-OFF: a list of what was done is joined, not authored, because its parts vary per turn
-function doneTextOf(faces: readonly CallFace[]): string {
+export function toolsSummaryOf(faces: readonly CallFace[]): string {
 	const kinds = [...new Set(faces.map(({ kind }) => kind))];
-	return kinds
+	const done = kinds
 		.map((kind) => countText(countOfKind(faces, kind), DONE_TEXT[kind].one, DONE_TEXT[kind].many))
-		.filter((said) => said !== "")
 		.join(", ");
+	return done.charAt(0).toUpperCase() + done.slice(1);
 }
 
 function countOfKind(faces: readonly CallFace[], kind: CallKind): number {

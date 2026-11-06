@@ -858,7 +858,7 @@ check(
 		]),
 		toolsSummaryOf([faceOf("other", "q")]),
 	],
-	["Used 5 tools · read, edited 2 files, ran a command", "Used 1 tool"],
+	["Read 1 file, edited 2 files, ran a command", "Used 1 tool"],
 );
 
 const saidOf = (answer: { readonly ok: boolean; readonly output?: { readonly said: string } }): string | null =>

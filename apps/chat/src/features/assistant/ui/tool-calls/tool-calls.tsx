@@ -1,6 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import type { AssistantCall, CallFace } from "@widgetarium/core/engine/assistant-port.js";
+import { Fold } from "../fold/fold.js";
 import { CallRows } from "./call-rows.js";
 import { ToolsHead } from "./tools-head.js";
 
@@ -14,7 +15,9 @@ export function ToolCalls({ calls, faces }: ToolCallsProps): ReactElement {
 	return (
 		<div className="wg-studio-ai-tools">
 			<ToolsHead calls={calls} faces={faces} isOpen={isOpen} onToggle={() => setOpen(!isOpen)} />
-			{isOpen ? <CallRows calls={calls} faces={faces} /> : null}
+			<Fold isOpen={isOpen}>
+				<CallRows calls={calls} faces={faces} />
+			</Fold>
 		</div>
 	);
 }
