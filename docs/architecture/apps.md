@@ -96,7 +96,7 @@ The frame is `<iframe sandbox="allow-scripts allow-forms">` (`APP_FRAME_SANDBOX`
 
 ## The Tasks app
 
-`apps/tasks` keeps its board in its own `tasks.json`: its page starts `@widgetarium/tasks` with host `file`, a `BoardFile` whose `read` and `write` are `ReadFileQuery` and `WriteFileCommand` over the frame transport. `FileTasksGateway` keeps `{ rev, board }` in the file (TRADE-OFF: the rev is read, then written; FileSystem has no compare-and-write yet). The shell's own tasks module, its `tasks.json` and the chat task lines are a separate board: the app no longer reaches them.
+`apps/tasks` runs no tasks module of its own: its page imports `TasksModule` over the frame, and `frameRoutesOf` routes it to the core window, the one place `@widgetarium/tasks` runs. The core lends the module a `BoardFile` (`apps/host-tauri/src/core-link/tasks-board-file.ts`) whose `read` and `write` are `ReadFileQuery` and `WriteFileCommand` sent as app `tasks`, so the board lives in `app-data/<workspace>/tasks/tasks.json` under the plain relative path `tasks.json`. `FileTasksGateway` keeps `{ rev, board }` in it (TRADE-OFF: the rev is read, then written; FileSystem has no compare-and-write yet, and the core is its one writer). Agent tools, chat task lines and the page all read that one board.
 
 ## Order
 

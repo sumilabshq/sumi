@@ -18,6 +18,7 @@ import { QuestionsModule } from "@widgetarium/questions/module";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { AppCallerAuthenticate } from "@widgetarium/studio";
 import { serveCore } from "./core-calls.js";
+import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
 
 const NOT_KEPT = "[studio-core] workspace {workspace}: the open windows were not checked ({reason})";
@@ -65,6 +66,7 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 			scope: { workspaceId: workspace },
 			host: {
 				store: new StoreClient((command, args) => invoke(command, args)),
+				file: tasksBoardFileOver(own),
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});

@@ -33,7 +33,6 @@ import {
 	SweepStaleTasksCommand,
 } from "./features/supervision/requests.js";
 
-export { BoardFileHost, TasksStoreHost } from "./shared/host/tasks-host.js";
 export type { BoardFile } from "./shared/host/tasks-host.js";
 
 export const TasksModule = module("tasks")

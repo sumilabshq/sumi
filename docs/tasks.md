@@ -2,7 +2,7 @@
 
 ## Owner
 
-- `tasks.json` in the workspace is written only by the tasks module (`packages/domain/tasks`) served in the core window; every other window reads and asks through it.
+- `app-data/<workspace>/tasks/tasks.json` is written only by the tasks module (`packages/domain/tasks`) served in the core window; every other window reads and asks through it.
 - Every change is one command with a reason, logged as `from → to` with who made it.
 
 ## Who creates

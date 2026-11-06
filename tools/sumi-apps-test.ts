@@ -6,6 +6,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getRequestListener } from "@hono/node-server";
+import { localTransport } from "@widgetarium/core/requests";
 import { server } from "@widgetarium/core/requests/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
@@ -14,7 +15,7 @@ import { FileSystemModule } from "../packages/domain/file-system/module.ts";
 import { NodeTerminalSessionsGateway } from "../packages/domain/terminal/gateways/terminal-sessions/node.gateway.ts";
 import { TerminalModule } from "../packages/domain/terminal/module.ts";
 import { TasksModule } from "../packages/domain/tasks/module.ts";
-import type { BoardFile } from "../packages/domain/tasks/module.ts";
+import { tasksBoardFileOver } from "../apps/host-tauri/src/core-link/tasks-board-file.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
@@ -123,25 +124,13 @@ function listening(listener: RequestListener): Promise<{ readonly server: Server
 	);
 }
 
-function boardFileInMemory(): BoardFile {
-	const held: { text: string | null } = {
-		text: null,
-	};
-	return {
-		read: () => Promise.resolve(held.text),
-		write: (text) => {
-			held.text = text;
-			return Promise.resolve();
-		},
-	};
-}
-
 const appData = mkdtempSync(path.join(tmpdir(), "wg-sumi-apps-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
+const own = localTransport();
 const served = server()
 	.modules(
 		FileSystemModule.with({
-			files: new NodeFilesGateway(appData),
+			files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
 		}),
 		TerminalModule.with({
 			sessions: terminal,
@@ -170,13 +159,14 @@ const served = server()
 			),
 		}),
 	)
+	.listen(own)
 	.start({
 		env: {},
 		scope: {
 			workspaceId: SUMI_APPS_WORKSPACE,
 		},
 		host: {
-			file: boardFileInMemory(),
+			file: tasksBoardFileOver(own),
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
@@ -311,7 +301,7 @@ const WEB_ADDRESS = "https://example.com/";
 const CHAT_SAID = "hello from the e2e";
 
 function tasksFileOf(): string {
-	return path.join(appData, "app-data", "tasks", "tasks.json");
+	return path.join(appData, "app-data", SUMI_APPS_WORKSPACE, "tasks", "tasks.json");
 }
 
 function seedTasksFile(): void {

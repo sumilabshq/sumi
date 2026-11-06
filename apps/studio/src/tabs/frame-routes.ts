@@ -12,6 +12,7 @@ import type { LocalTransport, RemoteTransport, StartedApp } from "@widgetarium/c
 import type { StartedServer } from "@widgetarium/core/requests/server";
 import { server } from "@widgetarium/core/requests/server";
 import { AppTabQuery } from "@widgetarium/places";
+import { TasksModule } from "@widgetarium/tasks";
 import { WebPageModule as ServerWebPageModule } from "@widgetarium/web-page/module";
 import type { AppTabs, NativeWebPages } from "../features/app-frame/lib/web-page-hosts.js";
 import type { AssistantHostObjects } from "../assistant/chat-app.js";
@@ -37,11 +38,12 @@ interface FrameLease {
 		readonly chats: ServerLeases;
 		readonly webPages: ServerLeases;
 	};
-	readonly tabId: string;
+	readonly opened: FrameOpened;
 	readonly chatId: string | null;
 }
 
 const CHAT_APP = "chat";
+const TASKS_APP = "tasks";
 const WEB_PAGE_SERVER = "studio";
 const NO_CHAT = "[widgetarium] app {app} tab {tab}: no chat route ({reason})";
 const NOT_CLOSED = "[widgetarium] tab {tab}: its web page was left open on frame unmount ({reason})";
@@ -59,7 +61,7 @@ export function frameRoutesOf(ask: FrameRoutesAsk): FrameRoutesFor {
 		return leaseRoutes({
 			ask,
 			leases,
-			tabId: opened.tabId,
+			opened,
 			chatId,
 		});
 	};
@@ -76,12 +78,14 @@ export function webPageRouteOf({ transport }: HeldTransport, tabId: string): Fra
 	};
 }
 
-function leaseRoutes({ ask, leases, tabId, chatId }: FrameLease): FrameRoutes {
+function leaseRoutes({ ask, leases, opened, chatId }: FrameLease): FrameRoutes {
+	const { tabId } = opened;
 	const webPage = leases.webPages.lease(WEB_PAGE_SERVER);
 	const chat = chatId === null ? null : leases.chats.lease(chatId);
 	return {
 		routes: [
 			...coreRoutesOf(ask.core),
+			...tasksRoutesOf(ask.core, opened.app),
 			webPageRouteOf(webPage, tabId),
 			...chatRoutesOf(chat),
 			{
@@ -104,6 +108,20 @@ function coreRoutesOf(core: RemoteTransport): readonly FrameRoute[] {
 		transport: core,
 		hears: hearsAll,
 	}));
+}
+
+function tasksRoutesOf(core: RemoteTransport, app: string): readonly FrameRoute[] {
+	if (app !== TASKS_APP) {
+		return [];
+	}
+
+	return [
+		{
+			module: TasksModule,
+			transport: core,
+			hears: hearsAll,
+		},
+	];
 }
 
 function chatRoutesOf(chat: HeldTransport | null): readonly FrameRoute[] {

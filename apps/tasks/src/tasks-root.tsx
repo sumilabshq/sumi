@@ -1,4 +1,4 @@
-import { createElement as h, useEffect, useMemo } from "react";
+import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
 import { RecordAppPageCommand, catchLinks, wearSumiTheme } from "@sumi/contract";
 import { TaskRefSchema } from "@widgetarium/tasks";
@@ -6,10 +6,8 @@ import { AppProvider } from "@widgetarium/core/requests";
 import type { StartedApp } from "@widgetarium/core/requests";
 import { AppPlate } from "./features/plate/ui/app-plate.js";
 import { BOARD_ADDRESS } from "./features/tasks/lib/use-open-task.js";
-import { boardFileOver } from "./sumi/board-file.js";
 import type { SumiFrame } from "./sumi/sumi-frame.js";
 import { SumiTabContext, useTabOf } from "./sumi/sumi-tab.js";
-import { startTasksApp } from "./tasks-app.js";
 import { TasksPage } from "./tasks/tasks-page.js";
 
 const APP_NAME = "Tasks";
@@ -27,7 +25,6 @@ interface RecordedPage {
 }
 
 export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
-	const tasksApp = useTasksApp(frame);
 	const tab = useTabOf(frame);
 	useWearsSumi(frame);
 	useRecordsFavicon(frame);
@@ -40,7 +37,7 @@ export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 	const shown = shownAddressOf(tab.address);
 	return (
 		<SumiTabContext.Provider value={tab}>
-			<AppProvider app={tasksApp}>
+			<AppProvider app={frame.sumi}>
 				<div className="wg-tasks-app">
 					<AppPlate name={APP_NAME}>
 						<TasksPage key={shown} address={shown} />
@@ -49,12 +46,6 @@ export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 			</AppProvider>
 		</SumiTabContext.Provider>
 	);
-}
-
-function useTasksApp(frame: SumiFrame): StartedApp {
-	const tasksApp = useMemo(() => startTasksApp(boardFileOver(frame.sumi)), [frame]);
-	useEffect(() => frame.transport.changes(() => void tasksApp.queryClient.invalidateQueries()), [frame, tasksApp]);
-	return tasksApp;
 }
 
 function useWearsSumi(frame: SumiFrame): void {
