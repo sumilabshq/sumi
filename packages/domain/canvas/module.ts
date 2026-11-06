@@ -1,4 +1,4 @@
-import { Device, module, oneOf } from "@widgetarium/core/requests";
+import { Device, module, oneOf } from "@widgetarium/framework";
 import { canvasPartsOn } from "./gateways/canvas-parts/canvas-parts.gateway.js";
 import { AgentJobsHost } from "./shared/host/agent-jobs.host.js";
 import { DataAdapterHost } from "./shared/host/data-adapter.host.js";

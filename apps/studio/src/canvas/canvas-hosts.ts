@@ -1,4 +1,4 @@
-import type { HostObject } from "@widgetarium/core/requests";
+import type { HostObject } from "@widgetarium/framework";
 import type {
 	AgentJobsHost,
 	DataAdapterHost,

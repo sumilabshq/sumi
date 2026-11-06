@@ -1,5 +1,5 @@
-import { PerCall, Repeatable, command, guard, middleware, query } from "@widgetarium/core/requests";
-import type { Invalidate } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, guard, middleware, query } from "@widgetarium/framework";
+import type { Invalidate } from "@widgetarium/framework";
 import { FilesGateway } from "../../gateways/files/files.gateway.js";
 import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
 import {

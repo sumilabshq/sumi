@@ -1,6 +1,6 @@
 import { AssistantModule } from "@widgetarium/assistant/module";
-import { app } from "@widgetarium/core/requests";
-import type { Platform, PlatformModule, RemoteTransport, StartedApp } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
+import type { Platform, PlatformModule, RemoteTransport, StartedApp } from "@widgetarium/framework";
 import { MascotModule } from "@widgetarium/mascot/module";
 import { TasksModule } from "@widgetarium/tasks";
 

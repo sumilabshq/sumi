@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { TasksGateway } from "./tasks.gateway.js";
 
 export const TasksChangedEvent = event("tasks-changed").from(

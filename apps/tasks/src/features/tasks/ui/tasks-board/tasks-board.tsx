@@ -2,7 +2,7 @@ import { createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { BoardQuery } from "@widgetarium/tasks";
 import type { BoardColumn as Column, TaskStatus } from "@widgetarium/tasks";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { useGlidesBoard } from "../../lib/use-glides-board.js";
 import { useRereadsAtContinue } from "../../lib/use-rereads-at-continue.js";
 import type { TasksView } from "../../lib/use-tasks-view.js";

@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Query } from "../packages/shared/framework/src/gateway/contract.ts";
 import { byId } from "./dom-find.ts";
 
 const dom = new JSDOM(`<!doctype html><body><div id="host"></div></body>`, { pretendToBeVisual: true });

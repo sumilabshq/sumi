@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "../packages/shared/framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";

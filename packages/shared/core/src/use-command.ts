@@ -1,8 +1,8 @@
 import { useCommandOver } from "./declared-command.js";
-import { useCommandHandle } from "./command-handle.js";
+import { useCommandHandle } from "@widgetarium/framework/command-handle";
 import { declaredHandlerOf } from "./handler-of.js";
 import type { CommandContract } from "./gateway/queries";
-import type { CommandHandle } from "./handle-types.js";
+import type { CommandHandle } from "@widgetarium/framework/handle-types";
 
 export type CommandHandleOf<C> = C extends CommandContract<infer In, infer Out> ? CommandHandle<In, Out> : never;
 

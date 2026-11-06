@@ -1,7 +1,7 @@
 import type { CSSProperties, Dispatch, SetStateAction } from "react";
 import type { Tile, TileMounts, TileProps, TileSettings } from "../model.js";
 import type { PropDefault } from "../gateway/props.js";
-import type { SortRow, FilterRow } from "../gateway/contract.js";
+import type { SortRow, FilterRow } from "@widgetarium/framework/gateway/contract";
 import type { GatewayRefs } from "../gateway/refs.js";
 import type { Seen, SeenSpec } from "../prop-visibility.js";
 import type { OpeningScale, Point } from "../settings-fit.js";

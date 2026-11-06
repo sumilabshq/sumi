@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { ChatTabsQuery, PinTabCommand as PlacesPinTabCommand } from "@widgetarium/places";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent, TabsSettledEvent } from "../../shared/events/tabs.events.js";

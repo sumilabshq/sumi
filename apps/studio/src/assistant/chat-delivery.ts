@@ -2,7 +2,7 @@ import { ChatListQuery, OpenChatCommand, OpenNewChatCommand } from "@widgetarium
 import { portForChat } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
 import { failureMessage } from "@widgetarium/core/engine/failure-message.js";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 
 export interface ChatDelivery {
 	readonly chat: string | null;

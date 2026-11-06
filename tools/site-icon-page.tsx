@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import { TabArt } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
 import type { TabArtSize } from "../apps/studio/src/features/app-host/ui/tab-face/tab-art.tsx";
-import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { AppProvider, app } from "../packages/shared/framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { WebBrowserPagesGateway } from "../packages/domain/browser/gateways/browser-pages/web.gateway.ts";

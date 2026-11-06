@@ -1,4 +1,4 @@
-import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
+import type { RemoteTransport, StartedApp } from "@widgetarium/framework";
 import { ThemeQuery } from "./generated/appearance.js";
 
 export interface ThemeWearing {

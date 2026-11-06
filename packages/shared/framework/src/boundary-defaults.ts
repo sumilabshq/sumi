@@ -1,5 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
+// TODO: the framework should not draw; move kit views to the app
 import { EmptyState, Skeleton } from "@widgetarium/kit";
 
 const COULD_NOT_LOAD = "Could not load";

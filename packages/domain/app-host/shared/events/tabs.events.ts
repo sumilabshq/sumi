@@ -1,4 +1,4 @@
-import { event, tauriEvent } from "@widgetarium/core/requests";
+import { event, tauriEvent } from "@widgetarium/framework";
 import { z } from "zod";
 
 const STUDIO_CORE_CHANGED = "studio-core-changed";

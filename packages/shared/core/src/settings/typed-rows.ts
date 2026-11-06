@@ -4,7 +4,7 @@ import { Button, CodeArea, Icon, Row, RowLabel, RowValue, SidebarGroup } from "@
 import type { TileProp } from "../model.js";
 import { declaredOf, describedFields, typedIn, withTyped } from "../gateway/props.js";
 import type { DescribedField, PropBinding } from "../gateway/props.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { readYaml, yamlOf } from "./item-yaml.js";
 import type { Item, ReadItem } from "./item-yaml.js";
 import { useYamlParse } from "./yaml-parse.js";

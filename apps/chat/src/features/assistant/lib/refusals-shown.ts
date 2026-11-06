@@ -1,5 +1,5 @@
-import { toastRefusal } from "@widgetarium/core/requests";
-import type { CommandRefusal } from "@widgetarium/core/requests";
+import { toastRefusal } from "@widgetarium/framework";
+import type { CommandRefusal } from "@widgetarium/framework";
 import { AttachFilesCommand, RemoveAttachmentCommand } from "@widgetarium/assistant";
 
 const TOASTED: ReadonlySet<string> = new Set([AttachFilesCommand.name, RemoveAttachmentCommand.name]);

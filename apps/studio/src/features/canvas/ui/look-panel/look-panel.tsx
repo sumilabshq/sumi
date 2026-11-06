@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { LookPanelQuery } from "@widgetarium/canvas";
 import { PickLookCommand } from "@widgetarium/canvas";
 import { LOOK_PANEL, LOOK_SAID, LOOK_TITLE } from "../../lib/look-chrome.js";

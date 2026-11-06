@@ -1,5 +1,5 @@
-import { Repeatable, command, deny, guard, middleware, query, refuse, subscriber } from "@widgetarium/core/requests";
-import type { Invalidate } from "@widgetarium/core/requests";
+import { Repeatable, command, deny, guard, middleware, query, refuse, subscriber } from "@widgetarium/framework";
+import type { Invalidate } from "@widgetarium/framework";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { WebPagesChangedEvent } from "../../gateways/web-pages/web-pages.events.js";
 import { WebPagesGateway } from "../../gateways/web-pages/web-pages.gateway.js";

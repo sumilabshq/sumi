@@ -1,0 +1,80 @@
+{
+	"name": "@widgetarium/framework",
+	"version": "0.1.0",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./src/index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./server": {
+			"source": "./src/server/index.ts",
+			"types": "./dist/server/index.d.ts",
+			"default": "./dist/server/index.js"
+		},
+		"./gateway/contract": {
+			"source": "./src/gateway/contract.ts",
+			"types": "./dist/gateway/contract.d.ts",
+			"default": "./dist/gateway/contract.js"
+		},
+		"./gateway/needs": {
+			"source": "./src/gateway/needs.ts",
+			"types": "./dist/gateway/needs.d.ts",
+			"default": "./dist/gateway/needs.js"
+		},
+		"./gateway/run-handler": {
+			"source": "./src/gateway/run-handler.ts",
+			"types": "./dist/gateway/run-handler.d.ts",
+			"default": "./dist/gateway/run-handler.js"
+		},
+		"./gateway/handler-context": {
+			"source": "./src/gateway/handler-context.ts",
+			"types": "./dist/gateway/handler-context.d.ts",
+			"default": "./dist/gateway/handler-context.js"
+		},
+		"./gateway/stable-key": {
+			"source": "./src/gateway/stable-key.ts",
+			"types": "./dist/gateway/stable-key.d.ts",
+			"default": "./dist/gateway/stable-key.js"
+		},
+		"./is-object": {
+			"source": "./src/is-object.ts",
+			"types": "./dist/is-object.d.ts",
+			"default": "./dist/is-object.js"
+		},
+		"./command-refusals": {
+			"source": "./src/command-refusals.ts",
+			"types": "./dist/command-refusals.d.ts",
+			"default": "./dist/command-refusals.js"
+		},
+		"./handle-types": {
+			"source": "./src/handle-types.ts",
+			"types": "./dist/handle-types.d.ts",
+			"default": "./dist/handle-types.js"
+		},
+		"./command-handle": {
+			"source": "./src/command-handle.ts",
+			"types": "./dist/command-handle.d.ts",
+			"default": "./dist/command-handle.js"
+		}
+	},
+	"dependencies": {
+		"@orpc/client": "2.0.0-beta.41",
+		"@orpc/server": "2.0.0-beta.41",
+		"@tanstack/react-query": "5.104.1",
+		"@widgetarium/kit": "0.1.0",
+		"hono": "4.13.12",
+		"zod": "^4.6.5"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8"
+	},
+	"widgetarium": {
+		"level": "common"
+	}
+}

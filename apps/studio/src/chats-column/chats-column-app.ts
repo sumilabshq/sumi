@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
-import { AppProvider } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { AppProvider } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
 import { ChatRenaming } from "../features/workspaces/lib/chat-renaming.js";
 import { ChatCrumb } from "../features/workspaces/ui/chat-crumb/chat-crumb.js";
 import { ChatMore } from "../features/workspaces/ui/chat-more/chat-more.js";

@@ -1,6 +1,6 @@
-import type { CollectionGateway, FilterRow, Query } from "./contract";
+import type { CollectionGateway, FilterRow, Query } from "@widgetarium/framework/gateway/contract";
 import { collectionGateway } from "./create";
-import { stableKey } from "./stable-key";
+import { stableKey } from "@widgetarium/framework/gateway/stable-key";
 import { KNOWN_OPERATORS } from "./match";
 import { isAction, verbOf } from "./verbs-of";
 

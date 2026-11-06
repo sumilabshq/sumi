@@ -4,7 +4,7 @@ import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-col
 import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
-import { AppProvider } from "../packages/shared/core/src/requests/index.ts";
+import { AppProvider } from "../packages/shared/framework/src/index.ts";
 import { PlaceInViewCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 import type { PlacedTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";

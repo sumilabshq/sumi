@@ -1,4 +1,4 @@
-import { query, subscriber } from "@widgetarium/core/requests";
+import { query, subscriber } from "@widgetarium/framework";
 import { PageLooksChangedEvent, PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
 import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
 import { BrowserViewSchema } from "../../shared/schema/browser-tab.schema.js";

@@ -5,7 +5,7 @@ import { Terminal } from "@xterm/xterm";
 import type { ITheme } from "@xterm/xterm";
 import { ResizeTerminalCommand, StartTerminalCommand, TerminalOutputQuery, TypeTerminalCommand } from "@sumi/contract";
 import type { TerminalOutput, TerminalSize } from "@sumi/contract";
-import type { Answer, StartedApp } from "@widgetarium/core/requests";
+import type { Answer, StartedApp } from "@widgetarium/framework";
 import type { SumiShell } from "../sumi-shell.js";
 import { TERMINAL_SHEET } from "./terminal-sheet.js";
 

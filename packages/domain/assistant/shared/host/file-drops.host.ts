@@ -1,5 +1,5 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { hostObject } from "@widgetarium/core/requests";
+import { isObject } from "@widgetarium/framework/is-object";
+import { hostObject } from "@widgetarium/framework";
 import type { FileDragEvent } from "../schema/file-drag.schema.js";
 
 export interface FileDrops {

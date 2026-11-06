@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command } from "@widgetarium/core/requests";
+import { Repeatable, command } from "@widgetarium/framework";
 import {
 	CloseGroupCommand as PlacesCloseGroupCommand,
 	CloseOtherTabsCommand as PlacesCloseOtherTabsCommand,

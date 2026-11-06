@@ -2,7 +2,7 @@ import { ADAPTIVE, APART, COLUMN, DRAWER, NO_SURFACE, ROW, TEXT_ROLE } from "./t
 import { beside, childrenOf, hole } from "./layout-regions.js";
 import type { BaseBox, BaseNode, BaseText } from "./layout-regions.js";
 import type { LayoutBase } from "./layout-bases.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 export interface SlotRule {
 	readonly maxWidgets?: number;

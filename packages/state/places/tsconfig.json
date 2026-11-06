@@ -23,7 +23,8 @@
 	"references": [
 		{
 			"path": "../../shared/core"
-		}
+		},
+		{ "path": "../../shared/framework" }
 	],
 	"include": [
 		"*.ts",

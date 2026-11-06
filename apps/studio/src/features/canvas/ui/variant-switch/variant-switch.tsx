@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { VariantsQuery } from "@widgetarium/canvas";
 import { PickVariantCommand } from "@widgetarium/canvas";
 import { PillSwitch } from "../pill-switch/pill-switch.js";

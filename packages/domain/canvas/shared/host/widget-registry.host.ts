@@ -1,6 +1,6 @@
 import type { WidgetRegistry } from "@widgetarium/core/registry.js";
-import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { hostObject } from "@widgetarium/core/requests";
+import { isObject } from "@widgetarium/framework/is-object";
+import { hostObject } from "@widgetarium/framework";
 
 export const WidgetRegistryHost = hostObject<WidgetRegistry>("WidgetRegistry", isWidgetRegistry);
 

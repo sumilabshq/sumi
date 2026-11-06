@@ -3,7 +3,7 @@ import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } fro
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { bundleOf, findBrowser } from "./harness.ts";
-import { isObject } from "../packages/shared/core/src/engine/is-object.ts";
+import { isObject } from "../packages/shared/framework/src/is-object.ts";
 import type {
 	BoardNode,
 	BoxNode,

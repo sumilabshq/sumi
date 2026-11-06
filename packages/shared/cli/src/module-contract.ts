@@ -57,7 +57,7 @@ const SERVER_ONLY_METHOD = "serverOnly";
 const EVENT_ROOT = "event";
 const PLACEMENT_METHOD = "on";
 const PLACEMENTS: ReadonlySet<string> = new Set(["Server", "Device", "Anywhere"]);
-const CORE_REQUESTS = "@widgetarium/core/requests";
+const FRAMEWORK = "@widgetarium/framework";
 const PUBLIC_CONTRACT_SPECIFIER = "./contract.js";
 const CONTRACT_STEPS: ReadonlySet<string> = new Set(["input", "output", "idempotencyKey", "cache", "settlesNow"]);
 const NOTHING_BOUND: ReadonlySet<string> = new Set();
@@ -151,7 +151,7 @@ function descriptorOf(moduleName: string, tag: string, placement: string, listed
 	const text = `\nexport const ${moduleName} = moduleContract(${JSON.stringify(tag)}, ${placement}, [${requests.join(", ")}]);\n`;
 	return {
 		text,
-		imports: [namedImportOf(CORE_REQUESTS, "moduleContract"), namedImportOf(CORE_REQUESTS, placement)],
+		imports: [namedImportOf(FRAMEWORK, "moduleContract"), namedImportOf(FRAMEWORK, placement)],
 	};
 }
 

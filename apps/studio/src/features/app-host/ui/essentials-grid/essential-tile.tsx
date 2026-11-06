@@ -1,6 +1,6 @@
 import { createElement as h, memo } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { ShowEssentialCommand } from "@widgetarium/app-host";
 import type { EssentialTile as EssentialTileState } from "@widgetarium/app-host";
 import { DropTint } from "../drop-tint/drop-tint.js";

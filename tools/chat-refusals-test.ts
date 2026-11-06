@@ -8,7 +8,7 @@ const { createElement: h } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { AssistantPanel } = await import("../apps/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx");
 const { NO_ASSISTANT } = await import("../packages/shared/core/src/engine/assistant-port.ts");
-const { AppProvider } = await import("../packages/shared/core/src/requests/index.ts");
+const { AppProvider } = await import("../packages/shared/framework/src/index.ts");
 const { chatAppOver } = await import("./assistant-chat-app.ts");
 
 const LOCAL_REFUSAL = "places/app-tab was called too often; try again shortly";

@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { AnswerQuestionCommand, ReopenQuestionCommand, SkipQuestionsCommand } from "@sumi/contract";
 import { answerSettled } from "../../assistant/lib/answer-settled.js";
 import type { Report } from "../../assistant/lib/failure-line.js";

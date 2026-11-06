@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import {
 	ClosedTabsQuery as PlacedClosedTabsQuery,
 	ReopenClosedTabCommand as PlacesReopenClosedTabCommand,

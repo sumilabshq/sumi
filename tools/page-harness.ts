@@ -1,6 +1,6 @@
 import type { ViewHost } from "../packages/shared/core/src/gateway/host.js";
 import { NO_HOST } from "../packages/shared/core/src/engine/host-none.js";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import type { FolderListing } from "../packages/shared/core/src/engine/widget-build.js";
 import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
 

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { PlaceInViewCommand } from "@widgetarium/app-host";
 import { PlacePaneCommand } from "@widgetarium/layout";
 import type { Placers } from "./view-drops.js";

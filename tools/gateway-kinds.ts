@@ -1,4 +1,4 @@
-import type { GatewayBase } from "../packages/shared/core/src/gateway/contract.ts";
+import type { GatewayBase } from "../packages/shared/framework/src/gateway/contract.ts";
 
 type Kinded = GatewayBase & { readonly kind: "collection" | "value" };
 

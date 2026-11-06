@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import type { PaneEdge } from "./pane-layout.js";
 import { ResizePaneSplitCommand } from "@widgetarium/layout";
 

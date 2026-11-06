@@ -1,5 +1,5 @@
 import type { Continued, TaskCard } from "@widgetarium/tasks";
-import type { CommandAnswer } from "@widgetarium/core/gateway/run-handler.js";
+import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
 import { useListedChat } from "./chat-delivery.js";
 import { useDeliverTask } from "./use-deliver-task.js";
 

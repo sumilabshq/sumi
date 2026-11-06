@@ -18,6 +18,7 @@ export const REPO = path.resolve(import.meta.dirname, "..");
 export const PACKED_INTO = path.join(REPO, "dist-packages");
 export const ENGINE_PACKAGES: readonly string[] = [
 	"packages/shared/kit",
+	"packages/shared/framework",
 	"packages/shared/core",
 	"packages/shared/packs/core",
 	"packages/shared/packs/catalogue",

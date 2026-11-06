@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { NoProviderChat } from "./no-provider-chat.js";
 import { ReadyEmptyChat } from "./ready-empty-chat.js";
 import { AgentSetupQuery } from "@widgetarium/assistant";

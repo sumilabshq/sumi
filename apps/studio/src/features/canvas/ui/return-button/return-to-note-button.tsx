@@ -1,8 +1,8 @@
 import { createElement as h, useContext } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { REFUSAL_HANDLER } from "@widgetarium/core/command-refusals.js";
-import { useQuery } from "@widgetarium/core/requests";
+import { REFUSAL_HANDLER } from "@widgetarium/framework/command-refusals";
+import { useQuery } from "@widgetarium/framework";
 import { ReturnNoteQuery } from "@widgetarium/canvas";
 import { RoundButton } from "../round-button/round-button.js";
 import { returned } from "../../lib/returned.js";

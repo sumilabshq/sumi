@@ -15,7 +15,7 @@
 		}
 	},
 	"dependencies": {
-		"@widgetarium/core": "0.1.0",
+		"@widgetarium/framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"canvaskit-wasm": "0.42.0",
 		"react-reconciler": "0.33.0",

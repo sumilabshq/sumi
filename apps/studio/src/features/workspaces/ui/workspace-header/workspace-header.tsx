@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon, Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from "@widgetarium/kit";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { WorkspacesQuery } from "@widgetarium/workspaces";
 import { WorkspaceLook } from "../workspace-look/workspace-look.js";
 import { WorkspaceMenu } from "./workspace-menu.js";

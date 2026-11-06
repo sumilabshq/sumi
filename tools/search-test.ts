@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 
 const { fold, rankSearch, DEFAULT_FIELDS } = await import("../packages/shared/core/src/engine/search.js");
 

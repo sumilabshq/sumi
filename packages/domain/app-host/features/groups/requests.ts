@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command } from "@widgetarium/core/requests";
+import { Repeatable, command } from "@widgetarium/framework";
 import {
 	CreateGroupCommand as PlacesCreateGroupCommand,
 	FoldGroupCommand as PlacesFoldGroupCommand,

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { ContextMenu, ContextMenuTrigger } from "@widgetarium/kit";
 import { CanOpenOwnWindowQuery, SectionListSchema, TabsSidebarQuery } from "@widgetarium/app-host";
 import { EssentialsGrid } from "../essentials-grid/essentials-grid.js";

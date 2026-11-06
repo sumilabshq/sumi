@@ -1,4 +1,4 @@
-import { PerCall, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { lookPathOf } from "@widgetarium/core/app-look.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";

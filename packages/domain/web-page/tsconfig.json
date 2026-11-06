@@ -20,11 +20,7 @@
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [
-		{
-			"path": "../../shared/core"
-		}
-	],
+	"references": [{ "path": "../../shared/framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",

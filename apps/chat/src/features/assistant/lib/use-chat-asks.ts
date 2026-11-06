@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
 import type { Report } from "./failure-line.js";
 import { SendMessageCommand } from "@widgetarium/assistant";

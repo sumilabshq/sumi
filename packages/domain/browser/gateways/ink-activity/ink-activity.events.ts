@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { InkActivityGateway } from "./ink-activity.gateway.js";
 
 export const InkActivityChangedEvent = event("ink-activity-changed").from(

@@ -1,7 +1,7 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { folderNameOf, shortPathOf } from "../../lib/short-path.js";
 import { useMenuOpening } from "../../lib/menu-spot.js";
 import { ChatMenu } from "../chat-menu/chat-menu.js";

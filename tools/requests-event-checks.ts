@@ -14,9 +14,9 @@ import {
 	oneOf,
 	query,
 	subscriber,
-} from "../packages/shared/core/src/requests/index.ts";
-import type { Failure } from "../packages/shared/core/src/requests/index.ts";
-import { server } from "../packages/shared/core/src/requests/server/index.ts";
+} from "../packages/shared/framework/src/index.ts";
+import type { Failure } from "../packages/shared/framework/src/index.ts";
+import { server } from "../packages/shared/framework/src/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
 const SCOPE = { workspaceId: "events" };

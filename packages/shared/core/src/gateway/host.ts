@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { VaultRecord } from "./needs";
+import type { VaultRecord } from "@widgetarium/framework/gateway/needs";
 import type { DropTarget } from "../tree-drop";
 
 export interface HostConsole {

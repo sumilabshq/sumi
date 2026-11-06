@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { SearchTasksQuery } from "@widgetarium/tasks";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { useOpenTask } from "../../lib/use-open-task.js";
 import { TaskRow } from "./task-row.js";
 

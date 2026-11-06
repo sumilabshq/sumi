@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { PanesChangedEvent } from "../../gateways/pane-tree/pane-tree.events.js";
 import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
 import { PaneBoardSchema, PanePlacementSchema, PlacementPreviewSchema } from "../../shared/schema/pane-tree.schema.js";

@@ -12,8 +12,8 @@
 	},
 	"dependencies": {
 		"@hono/node-server": "2.1.5",
-		"@widgetarium/core": "0.1.0",
 		"@widgetarium/fixture-billing": "0.1.0",
+		"@widgetarium/framework": "0.1.0",
 		"hono": "4.13.12"
 	},
 	"devDependencies": {

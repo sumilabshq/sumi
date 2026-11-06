@@ -1,4 +1,4 @@
-import type { Query, RecordRef, Row, RowsResult } from "./contract";
+import type { Query, RecordRef, Row, RowsResult } from "@widgetarium/framework/gateway/contract";
 import { rowOf, toRows } from "./create";
 import { classNameOf, declarationIn } from "./declaration";
 import { ICrudGateway, IListGateway, IValueGateway } from "./declared";

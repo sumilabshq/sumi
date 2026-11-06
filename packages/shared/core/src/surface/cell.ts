@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { TreeCell } from "./tree-cell.js";
 import type { DrawnCell, TreeCellProps } from "./tree-cell.js";
 

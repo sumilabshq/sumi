@@ -1,4 +1,4 @@
-import { app, orpcTransport } from "@widgetarium/core/requests";
+import { app, orpcTransport } from "@widgetarium/framework";
 import { PlacesModule } from "../packages/shared/contract/index.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";

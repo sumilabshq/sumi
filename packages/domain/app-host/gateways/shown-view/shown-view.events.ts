@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { ShownViewGateway } from "./shown-view.gateway.js";
 
 export const ShownViewChangedEvent = event("shown-view-changed").from(

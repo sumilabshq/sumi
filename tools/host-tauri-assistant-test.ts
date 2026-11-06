@@ -21,8 +21,8 @@ import {
 	FileDragQuery,
 	SendMessageCommand,
 } from "../packages/domain/assistant/index.ts";
-import { app } from "../packages/shared/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "../packages/shared/framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/framework/src/index.ts";
 import {
 	COMPACT_PROMPT,
 	NOTHING_READY,

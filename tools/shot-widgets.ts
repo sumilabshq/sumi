@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, readdirSync, statSync, writeFileSync, mkdirS
 import { tmpdir } from "node:os";
 import { pathToFileURL } from "node:url";
 import path from "node:path";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { bundleOf, shoot, shotPage, type ShotSize, type Theme } from "./harness.ts";
 
 const { WIDGETS_DIR, GRID, spanToPixels } = await import("../packages/shared/core/src/paths.js");

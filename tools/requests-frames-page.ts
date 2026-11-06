@@ -10,8 +10,8 @@ import {
 	handler,
 	query,
 	useQuery,
-} from "../packages/shared/core/src/requests/index.ts";
-import type { AnyQuery } from "../packages/shared/core/src/requests/index.ts";
+} from "../packages/shared/framework/src/index.ts";
+import type { AnyQuery } from "../packages/shared/framework/src/index.ts";
 
 const RUNS = 12;
 const READY_FRAMES_SEEN = 2;

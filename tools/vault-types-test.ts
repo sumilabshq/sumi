@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { widgetTypeFiles } from "./widget-types.mts";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 
 const laid = fs.mkdtempSync(path.join(os.tmpdir(), "wg-vault-"));
 for (const [name, text] of Object.entries(widgetTypeFiles())) {

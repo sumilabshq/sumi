@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { TipSurface } from "../features/canvas/ui/tip-surface/tip-surface.js";
-import { AppProvider, OnRefused, toastRefusal } from "@widgetarium/core/requests";
+import { AppProvider, OnRefused, toastRefusal } from "@widgetarium/framework";
 import { Toaster } from "@widgetarium/kit";
 import { HeldTabContext } from "../features/browser/lib/held-tab.js";
 import { Browser } from "../features/browser/ui/browser/browser.js";

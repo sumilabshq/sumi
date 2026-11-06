@@ -5,7 +5,7 @@ import { generationOf, widgetKeyOf } from "../engine/widget-ref.js";
 import { useInstallJob } from "../engine/install-jobs.js";
 import type { InstallJob } from "../engine/install-jobs.js";
 import type { CataloguePort } from "../engine/catalogue-port.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { Tile } from "../model.js";
 import type { WidgetDefinition } from "./is-drawable.js";
 

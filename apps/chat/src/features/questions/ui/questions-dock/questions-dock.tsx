@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { ChatQuestionsQuery } from "@sumi/contract";
 import type { Report } from "../../../assistant/lib/failure-line.js";
 import { useQuestionDoing } from "../../lib/use-question-doing.js";

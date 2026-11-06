@@ -4,7 +4,7 @@ import { BODIES, bodyLayoutWith, isBody } from "./layout-bodies.js";
 import { childrenOf } from "./layout-regions.js";
 import type { BaseBox, BaseNode, BaseText } from "./layout-regions.js";
 import type { BoardNode, BoxNode, LeafNode } from "./tree.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { TYPED_VALUE } from "./gateway/props.js";
 
 export type { LayoutBase };

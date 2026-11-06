@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppTabQuery } from "@sumi/contract";
-import type { Answer, HearChanges } from "@widgetarium/core/requests";
+import type { Answer, HearChanges } from "@widgetarium/framework";
 import type { SumiShell } from "./sumi/sumi-shell.js";
 import type { TabRead } from "./tab-read.js";
 

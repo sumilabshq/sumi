@@ -17,7 +17,7 @@ import type { CreatedWidget } from "../packages/shared/core/src/widget-api.js";
 import { fieldIn } from "./held-fields.ts";
 import { present } from "./page-dom.ts";
 import { callAsUntypedSource, constructAsUntypedSource } from "./untyped-source.ts";
-import type { Patch, RecordRef, Row, RowsResult } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Patch, RecordRef, Row, RowsResult } from "../packages/shared/framework/src/gateway/contract.ts";
 import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
 import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
 import {

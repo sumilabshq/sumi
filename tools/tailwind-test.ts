@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import { fakeVault, type FakeVault } from "./fake-vault.ts";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 
 const dom = new JSDOM("<!doctype html><body></body>");
 Object.assign(globalThis, {

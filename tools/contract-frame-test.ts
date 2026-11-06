@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getRequestListener } from "@hono/node-server";
-import { server } from "@widgetarium/core/requests/server";
+import { server } from "@widgetarium/framework/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { NodeFilesGateway } from "../packages/domain/file-system/gateways/files/node.gateway.ts";
 import { FileSystemModule } from "../packages/domain/file-system/module.ts";

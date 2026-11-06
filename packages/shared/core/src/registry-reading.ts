@@ -13,7 +13,7 @@ import {
 } from "./engine/widget-build.js";
 import type { FolderListing } from "./engine/widget-build.js";
 import { RECORD_FILE } from "./engine/catalogue-index.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { isScopeFolder } from "./engine/source-disk.js";
 
 export interface FileStat {

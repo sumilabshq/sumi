@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { KeyboardEvent, RefObject } from "react";
-import { useCommand, useOptionalQuery } from "@widgetarium/core/requests";
+import { useCommand, useOptionalQuery } from "@widgetarium/framework";
 import type { MenuSpot } from "./menu-spot.js";
 import { slashAskOf, slashEntriesOf } from "./slash-matches.js";
 import type { SlashAsk, SlashEntry } from "./slash-matches.js";

@@ -4,7 +4,7 @@ import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { MemoryOnceAllowancesGateway } from "../packages/domain/browser/gateways/once-allowances/memory.gateway.ts";
 import { activityWith, isSameActivity } from "../packages/domain/browser/shared/lib/ink-activity.ts";
 import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
-import { app } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
 import { check } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 

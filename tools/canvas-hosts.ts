@@ -1,5 +1,5 @@
-import { app } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";

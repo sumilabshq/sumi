@@ -1,4 +1,4 @@
-import { AuthenticatedGuard, Server, module } from "@widgetarium/core/requests";
+import { AuthenticatedGuard, Server, module } from "@widgetarium/framework";
 import { fileSystemPartsOn } from "./gateways/file-system-parts/file-system-parts.gateway.js";
 import {
 	AppendFileCommand,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
 import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioViewSchema } from "../../shared/schema/studio-view.schema.js";

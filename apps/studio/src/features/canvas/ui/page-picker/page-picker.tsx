@@ -1,7 +1,7 @@
 import { Fragment, createElement as h, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { Icon, Popover, PopoverItem, PopoverSeparator } from "@widgetarium/kit";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { PageChoicesQuery } from "@widgetarium/canvas";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";
 import { PAGE_NAME_AND_PHOTO_LEAVE } from "../../lib/app-zone-steps.js";

@@ -1,14 +1,14 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import type { Action, DuplicateIdReport, Row } from "./contract";
+import type { Action, DuplicateIdReport, Row } from "@widgetarium/framework/gateway/contract";
 import { metaOf } from "./create";
 import type { ActionMeta } from "./create";
 import { gatewayCache } from "./cache";
-import { stableKey } from "./stable-key";
+import { stableKey } from "@widgetarium/framework/gateway/stable-key";
 import type { Runner } from "./cache";
 import { isPage, nextPageOf, pagedRunnerOf, withoutCursor } from "./paged-read";
 import type { PageReading } from "./paged-read";
 import type { Page } from "./page";
-import { isObject } from "../engine/is-object";
+import { isObject } from "@widgetarium/framework/is-object";
 
 export type Listed<O> = O extends { rows: infer Rows } ? Rows : O | null;
 

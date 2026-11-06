@@ -4,7 +4,7 @@ import type { StudioBrowser } from "../browser/browser-app.js";
 import { routeElementOf } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { StudioView } from "@widgetarium/core/engine/studio-state-port.js";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { Plate } from "../features/plate/ui/plate/plate.js";
 import { PlateCrumb } from "../features/plate/ui/plate-header/plate-crumb.js";
 import { PlateMore } from "../features/plate/ui/plate-header/plate-more.js";

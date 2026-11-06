@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { ComposerPrefillQuery, TakePrefillCommand } from "@widgetarium/assistant";
 
 export function useTakesPrefill(

@@ -21,11 +21,7 @@
 		"types": [],
 		"allowImportingTsExtensions": true
 	},
-	"references": [
-		{
-			"path": "../../shared/core"
-		}
-	],
+	"references": [{ "path": "../../shared/framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",

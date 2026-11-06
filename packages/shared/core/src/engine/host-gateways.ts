@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { propConfig } from "../model.js";
 import type { TileProp } from "../model.js";
-import { stableKey } from "../gateway/stable-key.js";
+import { stableKey } from "@widgetarium/framework/gateway/stable-key";
 import { gatewayOverImplementation } from "../gateway/adapted.js";
 import { inResourceOrder } from "../gateway/implementation-metadata.js";
 import type { GatewayMetadata } from "../gateway/implementation-metadata.js";

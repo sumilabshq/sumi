@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { GoBackCommand, GoForwardCommand, PageHeadQuery } from "@widgetarium/browser";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { useHeldTab } from "../features/browser/lib/held-tab.js";
 import { KeptOutChip } from "../features/browser/ui/kept-out-chip/kept-out-chip.js";
 import { HeaderButton } from "../features/plate/ui/plate-header/header-button.js";

@@ -1,4 +1,4 @@
-import { Device, module } from "@widgetarium/core/requests";
+import { Device, module } from "@widgetarium/framework";
 import { mascotPartsOn } from "./gateways/mascot-parts/mascot-parts.gateway.js";
 import {
 	RereadAgentActivitySubscriber,

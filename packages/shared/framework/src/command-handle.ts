@@ -5,10 +5,10 @@ import { stableKey } from "./gateway/stable-key";
 import type { CommandAnswer } from "./gateway/run-handler";
 import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
-import { reasonOf } from "./requests/answer";
-import { APP } from "./requests/app-context";
-import { reportToConsole } from "./requests/report-failure";
-import type { FailureReport } from "./requests/report-failure";
+import { reasonOf } from "./answer";
+import { APP } from "./app-context";
+import { reportToConsole } from "./report-failure";
+import type { FailureReport } from "./report-failure";
 
 type Run = (input: unknown) => Promise<CommandAnswer<unknown>>;
 type BoundRun = () => Promise<CommandAnswer<unknown>>;

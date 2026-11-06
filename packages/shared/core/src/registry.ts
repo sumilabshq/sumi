@@ -11,7 +11,7 @@ import type { FolderFiles } from "./engine/widget-build.js";
 import { readRecord } from "./engine/catalogue-index.js";
 import type { EngineManifest, WidgetRecord } from "./engine/catalogue-index.js";
 import { idOfFolder } from "./engine/github.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import {
 	ENGINE_SCOPE,
 	componentIn,

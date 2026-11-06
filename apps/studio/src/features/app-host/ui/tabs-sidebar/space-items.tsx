@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { ContextMenuGroup } from "@widgetarium/kit";
 import { CreateGroupCommand } from "@widgetarium/app-host";
 import { useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";

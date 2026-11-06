@@ -11,14 +11,14 @@ import { formatFiles } from "./project-format.js";
 import { writeFile } from "./template-files.js";
 import { LAYER_FOLDERS, packageFolderNamed, rootManifestWith, workspaceRootAbove } from "./workspace-root.js";
 
-const CORE_MANIFEST = "packages/shared/core/package.json";
+const FRAMEWORK_MANIFEST = "packages/shared/framework/package.json";
 const LICENSE_FILE = "LICENSE";
 const TAKEN_FOLDER =
 	"{folder} already exists: pick another module name, or add a feature to it: widgetarium add feature {name}/<feature>";
 const TAKEN_PACKAGE = "{package} already names {folder}: pick another module name";
-const NO_CORE = "no {file} with a version and a zod dependency: add module runs inside the widgetarium repository";
+const NO_FRAMEWORK = "no {file} with a version and a zod dependency: add module runs inside the widgetarium repository";
 
-const CoreManifestSchema = z.object({
+const FrameworkManifestSchema = z.object({
 	version: z.string(),
 	dependencies: z.object({ zod: z.string() }),
 });
@@ -61,14 +61,14 @@ function refuseTaken(root: string, folder: string, name: string): void {
 }
 
 function versionsIn(root: string): PackageVersions {
-	const manifest = CoreManifestSchema.safeParse(jsonAt(path.join(root, CORE_MANIFEST)));
+	const manifest = FrameworkManifestSchema.safeParse(jsonAt(path.join(root, FRAMEWORK_MANIFEST)));
 
 	if (!manifest.success) {
-		throw new CliRefusal(NO_CORE.replace("{file}", () => CORE_MANIFEST));
+		throw new CliRefusal(NO_FRAMEWORK.replace("{file}", () => FRAMEWORK_MANIFEST));
 	}
 
 	return {
-		core: manifest.data.version,
+		framework: manifest.data.version,
 		zod: manifest.data.dependencies.zod,
 	};
 }

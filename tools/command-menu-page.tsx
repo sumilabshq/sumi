@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
+import { AppProvider, app } from "../packages/shared/framework/src/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";

@@ -2,7 +2,7 @@ import path from "node:path";
 import type { PlannedFile } from "./add-plan.js";
 import {
 	COMMAND_SUFFIX,
-	CORE_REQUESTS,
+	FRAMEWORK,
 	QUERY_SUFFIX,
 	camelOf,
 	jsSpecifierOf,
@@ -135,7 +135,7 @@ function requestsTextOf(seed: FeatureSeed, names: FeatureNames): string {
 	];
 	const schemas = [names.schema, ...(seed.command === null ? [] : [inputSchemaOf(seed.command)])].sort();
 	return [
-		`import { ${imported.sort().join(", ")} } from "${CORE_REQUESTS}";`,
+		`import { ${imported.sort().join(", ")} } from "${FRAMEWORK}";`,
 		`import { ${names.gateway} } from "${relativeJs(names.gatewayFile)}";`,
 		`import { ${schemas.join(", ")} } from "${relativeJs(names.schemaFile)}";`,
 		...(seed.query === null ? [] : ["", ...queryLinesOf(seed.query, names)]),

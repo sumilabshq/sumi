@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { fadedTurn } from "./faded-turn.js";
 import { ShowPageCommand } from "@widgetarium/canvas";
 

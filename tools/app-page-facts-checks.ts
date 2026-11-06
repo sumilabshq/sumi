@@ -1,4 +1,4 @@
-import { app } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
 import { RecordAppPageCommand } from "../packages/state/places/index.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { check } from "./check-helpers.ts";

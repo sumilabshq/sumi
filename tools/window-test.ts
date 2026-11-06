@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
 import { TEXT_LOADERS } from "./text-loaders.mts";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { colorOf } from "../packages/shared/core/src/color-math.js";
 import { withColourBytes } from "./colour-bytes.ts";
 import { findBrowser } from "./harness.ts";

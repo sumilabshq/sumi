@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { useShortcut } from "../../lib/shortcut/use-shortcut.js";
 import { ReopenClosedTabCommand } from "@widgetarium/app-host";
 import { REOPEN_KEY } from "../../lib/tab-keys.js";

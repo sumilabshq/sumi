@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { TearOffChatCommand, TearOffTabCommand } from "@widgetarium/app-host";
 import type { TabRef } from "../tab-drag/tab-ref.js";
 

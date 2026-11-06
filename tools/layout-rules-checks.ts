@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from "node:util";
-import { Refused, app } from "../packages/shared/core/src/requests/index.ts";
+import { Refused, app } from "../packages/shared/framework/src/index.ts";
 import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";

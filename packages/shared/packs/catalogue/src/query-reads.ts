@@ -1,5 +1,5 @@
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
-import type { Query, Row, RowsResult } from "@widgetarium/core/gateway/contract.js";
+import type { Query, Row, RowsResult } from "@widgetarium/framework/gateway/contract";
 import { PropRefSchema } from "@widgetarium/core/engine/prop-ref.js";
 import { pageOf } from "@widgetarium/core/gateway/match.js";
 

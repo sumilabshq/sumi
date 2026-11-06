@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { refuseVerb } from "./gateway/create";
-import type { CollectionGateway, Query, ValueGateway } from "./gateway/contract";
+import type { CollectionGateway, Query, ValueGateway } from "@widgetarium/framework/gateway/contract";
 import { useData } from "./gateway/use-data";
 import { defaultOf } from "./gateway/declared";
 import type { Declaration } from "./gateway/declaration";
 import { withManyVerbs } from "./gateway/many";
-import type { EveryValueVerb } from "./gateway/needs";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 import { checkCollectionWrites, checkValueUpdate } from "./gateway/parsed";
 
 const NOT_PICKED = 'prop "{name}" did not pick {verb}, so the widget cannot {verb}';

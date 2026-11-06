@@ -1,6 +1,6 @@
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { app } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
 import { CloseWindowCommand, OpenWindowCommand, OpenWindowsQuery, PlacesModule } from "@widgetarium/places";
 import { ipcTransport } from "./ipc-transport.js";
 

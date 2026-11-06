@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { MemoryDoneKeys, app, clientModule, handler, query } from "../packages/shared/core/src/requests/index.ts";
-import type { Failure } from "../packages/shared/core/src/requests/index.ts";
+import { MemoryDoneKeys, app, clientModule, handler, query } from "../packages/shared/framework/src/index.ts";
+import type { Failure } from "../packages/shared/framework/src/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 

@@ -1,4 +1,4 @@
-import { Anywhere, PublicGuard, module } from "@widgetarium/core/requests";
+import { Anywhere, PublicGuard, module } from "@widgetarium/framework";
 import { appearancePartsOn } from "./gateways/appearance-parts/appearance-parts.gateway.js";
 import { SystemSchemeHost } from "./shared/host/system-scheme.host.js";
 import { ChooseThemeCommand, RereadThemeSubscriber, ThemeQuery } from "./features/theme/requests.js";

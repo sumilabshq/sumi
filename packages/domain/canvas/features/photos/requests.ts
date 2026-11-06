@@ -1,4 +1,4 @@
-import { PerCall, command, reasonOf } from "@widgetarium/core/requests";
+import { PerCall, command, reasonOf } from "@widgetarium/framework";
 import {
 	REFERENCES_FOLDER,
 	designFolderOf,

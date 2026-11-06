@@ -1,7 +1,7 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
 import { SetWorkspaceIconCommand } from "@widgetarium/workspaces";
 import { tabOf } from "../../lib/look-choices.js";

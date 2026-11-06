@@ -1,6 +1,6 @@
 import KIT_THEME from "@widgetarium/kit/theme.css";
 import { failureMessage } from "./failure-message.js";
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 interface Stylesheet {
 	readonly path: string;

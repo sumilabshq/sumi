@@ -1,6 +1,6 @@
 import { Component, createElement as h } from "react";
 import type { ComponentType, ReactNode } from "react";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { FailedViewProps } from "./widget-builder-types.js";
 
 const DID_NOT_DRAW = "The widget could not be drawn";

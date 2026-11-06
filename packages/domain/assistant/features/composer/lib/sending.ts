@@ -1,5 +1,5 @@
-import { refuse } from "@widgetarium/core/requests";
-import type { Emitter } from "@widgetarium/core/requests";
+import { refuse } from "@widgetarium/framework";
+import type { Emitter } from "@widgetarium/framework";
 import type { AssistantSetupGateway } from "../../../gateways/assistant-setup/assistant-setup.gateway.js";
 import type { AttachmentFolderGateway } from "../../../gateways/attachment-folder/attachment-folder.gateway.js";
 import type { DraftAttachment } from "../../../gateways/draft-attachments/draft-attachments.gateway.js";

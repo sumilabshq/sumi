@@ -14,8 +14,8 @@ import {
 	rateLimit,
 	seconds,
 	serverModule,
-} from "../packages/shared/core/src/requests/index.ts";
-import type { User } from "../packages/shared/core/src/requests/index.ts";
+} from "../packages/shared/framework/src/index.ts";
+import type { User } from "../packages/shared/framework/src/index.ts";
 import * as fx from "./requests-fixture.ts";
 
 const Plain = query("pages/plain").output(z.string());

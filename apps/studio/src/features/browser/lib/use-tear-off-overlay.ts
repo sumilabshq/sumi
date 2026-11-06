@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { LayTearOffGhostCommand, ShowTearOffGhostCommand, WearTearOffGhostCommand } from "@widgetarium/browser";
 import type { OverlayPort } from "@widgetarium/behaviors";
 

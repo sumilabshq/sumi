@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/core/src/requests/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "../packages/shared/framework/src/index.ts";
+import type { Answer, StartedApp } from "../packages/shared/framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import {

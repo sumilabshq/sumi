@@ -1,4 +1,4 @@
-import { refuse } from "@widgetarium/core/requests";
+import { refuse } from "@widgetarium/framework";
 import type { PlacedTabs } from "../../schema/tabs.schema.js";
 import type { TabsAsk, TabsSettled } from "../../schema/screen.schema.js";
 import { showingOf } from "../showing/showing.js";

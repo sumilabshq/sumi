@@ -6,7 +6,7 @@ import { widgetKeyOf, widgetRef } from "./engine/widget-ref.js";
 import { commitsOf } from "./engine/widget-lock.js";
 import type { WidgetLock } from "./engine/widget-lock.js";
 import { folderFor } from "./engine/github.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { HeldWidgetFiles, Installing } from "./installer-context.js";
 
 export interface Placement {

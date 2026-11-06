@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { refOf } from "../gateway/refs.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { Tile } from "../model.js";
 import { registeredCommands } from "../engine/packs.js";
 import { inResourceOrder } from "../gateway/implementation-metadata.js";

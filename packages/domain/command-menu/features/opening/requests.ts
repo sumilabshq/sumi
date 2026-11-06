@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { AppTabsQuery } from "@widgetarium/app-host";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";

@@ -9,10 +9,10 @@ import type {
 	RowsResult,
 	Unsubscribe,
 	ValueGateway,
-} from "./contract";
+} from "@widgetarium/framework/gateway/contract";
 import { z } from "zod";
-import { COLLECTION_VERBS, READ_VERBS, VALUE_VERBS } from "./contract";
-import type { EveryValueVerb } from "./needs";
+import { COLLECTION_VERBS, READ_VERBS, VALUE_VERBS } from "@widgetarium/framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 import { isMatch, pageOf, sortRows } from "./match";
 import { isAction, verbOf } from "./verbs-of";
 

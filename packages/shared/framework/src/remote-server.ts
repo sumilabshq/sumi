@@ -1,4 +1,4 @@
-import { stableKey } from "../gateway/stable-key";
+import { stableKey } from "./gateway/stable-key";
 import type { Answer } from "./answer";
 import { NEVER_ABORTED } from "./handler";
 import type { Asked, Settle } from "./mediator";

@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { WindowsChangedEvent } from "../../gateways/windows/windows.events.js";
 import { WindowsGateway } from "../../gateways/windows/windows.gateway.js";
 import { LiveWindowsSchema, WindowLabelSchema, WindowsSchema } from "../../shared/schema/windows.schema.js";

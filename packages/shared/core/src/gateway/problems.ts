@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { RecordRef } from "./contract";
+import type { RecordRef } from "@widgetarium/framework/gateway/contract";
 
 export interface ProblemIssue {
 	readonly path: readonly PropertyKey[];

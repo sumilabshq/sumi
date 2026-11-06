@@ -1,4 +1,4 @@
-import type { ModuleFacts } from "@widgetarium/core/requests";
+import type { ModuleFacts } from "@widgetarium/framework";
 import type { CommandMenuGateway } from "../command-menu/command-menu.gateway.js";
 import { MemoryCommandMenuGateway } from "../command-menu/memory.gateway.js";
 

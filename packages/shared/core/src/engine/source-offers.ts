@@ -5,7 +5,7 @@ import { commitUrl, idOfFolder, isCleanRepositoryPath, rawUrl, readRepository, s
 import type { Repository } from "./github.js";
 import { REGISTRY_FILE, readRegistry } from "./registry-file.js";
 import type { RegistryFile, RegistryRow } from "./registry-file.js";
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { filesUnder, modulesAt, sayJavascriptRefused, scopeOf, stampOf, widgetFilesAt } from "./source-disk.js";
 import type { HeldFiles, SourceDisk } from "./source-disk.js";
 

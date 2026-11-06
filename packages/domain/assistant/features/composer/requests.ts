@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { AssistantSessionGateway } from "../../gateways/assistant-session/assistant-session.gateway.js";
 import { AssistantSetupGateway } from "../../gateways/assistant-setup/assistant-setup.gateway.js";
 import { AttachmentFilesGateway } from "../../gateways/attachment-files/attachment-files.gateway.js";

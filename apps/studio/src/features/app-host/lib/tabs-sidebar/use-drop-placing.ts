@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { PlaceEssentialCommand, PlaceGroupCommand, PlaceTabCommand, TabDropSchema } from "@widgetarium/app-host";
 import type { TabDrop } from "@widgetarium/app-host";
 import type { DragSource } from "../tab-drag/drag-source.js";

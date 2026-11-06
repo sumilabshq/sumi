@@ -1,7 +1,7 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
-import { refusalOf } from "@widgetarium/core/requests";
-import type { Answer, ListeningTransport, ServedCall, ServingServer } from "@widgetarium/core/requests";
+import { refusalOf } from "@widgetarium/framework";
+import type { Answer, ListeningTransport, ServedCall, ServingServer } from "@widgetarium/framework";
 import { CORE_ANSWER, CORE_CHANGED, CORE_SERVE, CoreAskSchema } from "./core-wire.js";
 
 export type StartWorkspace = (workspace: string, listener: ListeningTransport) => void;

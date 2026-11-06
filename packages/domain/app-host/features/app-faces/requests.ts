@@ -1,4 +1,4 @@
-import { query } from "@widgetarium/core/requests";
+import { query } from "@widgetarium/framework";
 import { AppFacesSchema, KnownAppsSchema } from "../../shared/schema/app-tab.schema.js";
 import { readAppFaces, readKnownApps } from "../../shared/lib/apps/known-apps.js";
 

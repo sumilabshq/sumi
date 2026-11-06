@@ -1,5 +1,5 @@
 import type { KeyboardEvent } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { CloseCommandMenuCommand } from "@widgetarium/command-menu";
 import { ASK_COMPOSER_SELECTOR } from "./ask-composer-mark.js";
 import { MENU_KEY_ACTS } from "./menu-key-acts.js";

@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { FileDragEventSchema } from "../../shared/schema/file-drag.schema.js";
 import { FileDropGateway } from "./file-drop.gateway.js";
 

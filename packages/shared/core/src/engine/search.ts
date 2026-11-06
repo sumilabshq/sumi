@@ -1,4 +1,4 @@
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 // TRADE-OFF: tiers, not multipliers — a weight only holds "title beats description" on average
 const NAME_TIER = 3;

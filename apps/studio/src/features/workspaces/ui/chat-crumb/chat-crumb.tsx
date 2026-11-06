@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { NEW_CHAT_TITLE } from "@widgetarium/core/engine/focused-chat-port.js";
 import { WorkspaceCrumbQuery } from "@widgetarium/workspaces";
 import type { ChatRenaming } from "../../lib/chat-renaming.js";

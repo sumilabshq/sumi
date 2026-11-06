@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { WIRE_PREFIX } from "@widgetarium/core/requests/server";
+import { WIRE_PREFIX } from "@widgetarium/framework/server";
 
 interface Served {
 	readonly fetch: (request: Request) => Promise<Response>;

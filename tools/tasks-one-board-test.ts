@@ -1,9 +1,9 @@
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/core/requests";
-import type { LocalTransport } from "@widgetarium/core/requests";
-import { server } from "@widgetarium/core/requests/server";
+import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/framework";
+import type { LocalTransport } from "@widgetarium/framework";
+import { server } from "@widgetarium/framework/server";
 import { FileSystemModule, ReadFileQuery } from "@widgetarium/file-system";
 import { FileSystemModule as RunnableFileSystemModule } from "@widgetarium/file-system/module";
 import { BoardQuery, CreateTaskCommand, TasksModule } from "@widgetarium/tasks";

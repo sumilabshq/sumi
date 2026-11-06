@@ -23,7 +23,7 @@ import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store
 import { FOLDER_NOT_FOUND, tauriWorkspaceApps } from "../apps/host-tauri/src/workspace/tauri-workspace-apps.ts";
 import { WorkspaceClient } from "../apps/host-tauri/src/workspace/workspace-client.ts";
 import { reopensOnWorkspaceSwitch } from "../apps/host-tauri/src/workspace/workspace-switch.ts";
-import { app } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "../packages/shared/framework/src/index.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { tauriWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/tauri.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";

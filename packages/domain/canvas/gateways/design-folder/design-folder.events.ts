@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { DesignAppSchema } from "../../shared/schema/design-app.schema.js";
 import { DesignFolderGateway } from "./design-folder.gateway.js";
 

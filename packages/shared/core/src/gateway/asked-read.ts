@@ -1,9 +1,9 @@
 import { z } from "zod";
 import type { AdaptedGateway } from "./adapted";
-import type { Action, CanResult } from "./contract";
+import type { Action, CanResult } from "@widgetarium/framework/gateway/contract";
 import type { ActionMeta } from "./create";
 import { isPageSchema, PageInputSchema, pageOverListing } from "./page";
-import { fitOutput } from "./run-handler";
+import { fitOutput } from "@widgetarium/framework/gateway/run-handler";
 
 export interface AskedShape {
 	readonly input: z.ZodType;

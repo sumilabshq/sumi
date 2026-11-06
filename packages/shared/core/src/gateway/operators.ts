@@ -1,4 +1,4 @@
-import type { FilterRow } from "./contract";
+import type { FilterRow } from "@widgetarium/framework/gateway/contract";
 import type { FieldType } from "./fields";
 
 export type ValueShape = "none" | "one" | "many" | "day" | "number";

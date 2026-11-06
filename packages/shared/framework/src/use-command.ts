@@ -1,11 +1,11 @@
 import { useContext, useMemo, useRef } from "react";
-import { useCommandHandle } from "../command-handle";
-import { REFUSAL_HANDLER } from "../command-refusals";
-import type { RefusalHandler } from "../command-refusals";
-import type { Action, CanResult } from "../gateway/contract";
-import type { CommandAnswer } from "../gateway/run-handler";
-import { stableKey } from "../gateway/stable-key";
-import type { CommandHandle } from "../handle-types";
+import { useCommandHandle } from "./command-handle";
+import { REFUSAL_HANDLER } from "./command-refusals";
+import type { RefusalHandler } from "./command-refusals";
+import type { Action, CanResult } from "./gateway/contract";
+import type { CommandAnswer } from "./gateway/run-handler";
+import { stableKey } from "./gateway/stable-key";
+import type { CommandHandle } from "./handle-types";
 import { useApp } from "./app-context";
 import type { StartedApp } from "./app";
 import type { AnyCommand, OutputOf, SentOf } from "./request";

@@ -2,7 +2,7 @@ import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
 import { AcceptTaskCommand, KeepTaskCommand } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { Button } from "@widgetarium/kit";
 import { StatusGlyph } from "../status-glyph/status-glyph.js";
 import { BannerSaid } from "./banner-said.js";

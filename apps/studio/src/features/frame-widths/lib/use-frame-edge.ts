@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useEdgeResize } from "@widgetarium/behaviors";
 import type { EdgeResizeHandlers } from "@widgetarium/behaviors";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import type { FrameEdge } from "@widgetarium/layout";
 import { ResetFrameEdgeCommand, ResizeFrameEdgeCommand } from "@widgetarium/layout";
 import { FrameEdgeDrag } from "./frame-edge-drag.js";

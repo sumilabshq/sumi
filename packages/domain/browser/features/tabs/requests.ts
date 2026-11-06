@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { RecentSitesChangedEvent } from "../../gateways/recent-sites/recent-sites.events.js";
 import { OnceAllowancesChangedEvent } from "../../gateways/once-allowances/once-allowances.events.js";
 import { InkActivityChangedEvent } from "../../gateways/ink-activity/ink-activity.events.js";

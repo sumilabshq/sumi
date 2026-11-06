@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, settledOf, settlingWith } from "../../shared/lib/settling/settling.js";

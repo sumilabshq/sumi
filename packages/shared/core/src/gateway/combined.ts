@@ -1,4 +1,4 @@
-import type { GatewayEvent, Unsubscribe } from "./contract";
+import type { GatewayEvent, Unsubscribe } from "@widgetarium/framework/gateway/contract";
 
 export type Subscribe = (listener: (event: GatewayEvent) => void) => Unsubscribe;
 

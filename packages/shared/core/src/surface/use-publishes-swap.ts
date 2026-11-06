@@ -1,8 +1,8 @@
 import { useMemo } from "react";
-import { stableKey } from "../gateway/stable-key.js";
+import { stableKey } from "@widgetarium/framework/gateway/stable-key";
 import { arrayGateway, valueGateway } from "../gateway/create.js";
-import type { CollectionGateway, ValueGateway } from "../gateway/contract.js";
-import type { EveryValueVerb } from "../gateway/needs.js";
+import type { CollectionGateway, ValueGateway } from "@widgetarium/framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 import type { GatewayRefs, RefDescription, ViewCell } from "../gateway/refs.js";
 import type { TabRow } from "../tab-rows.js";
 import type { LaidBox } from "../tree-laid.js";

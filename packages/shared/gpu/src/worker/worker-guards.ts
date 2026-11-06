@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { Camera, Viewport } from "../engine/camera.js";
 import type { GpuSwitches } from "../engine/canvas-view.js";
 import type { CanvasPoint } from "../engine/gpu-canvas.js";

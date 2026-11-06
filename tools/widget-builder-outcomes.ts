@@ -4,12 +4,12 @@ import { z } from "zod";
 import { toast } from "@widgetarium/kit";
 import { render } from "../packages/shared/core/src/engine/render.js";
 import { inject, widget } from "../packages/shared/core/src/widget-builder.ts";
-import { OnRefused } from "../packages/shared/core/src/command-refusals.ts";
-import type { CommandRefusal } from "../packages/shared/core/src/command-refusals.ts";
+import { OnRefused } from "../packages/shared/framework/src/command-refusals.ts";
+import type { CommandRefusal } from "../packages/shared/framework/src/command-refusals.ts";
 import { ICommand, IQuery } from "../packages/shared/core/src/gateway/queries.ts";
 import { implementationOfFunction } from "../packages/shared/core/src/gateway/function-handler.ts";
 import { declarationIn } from "../packages/shared/core/src/gateway/declared.ts";
-import { stableKey } from "../packages/shared/core/src/gateway/stable-key.ts";
+import { stableKey } from "../packages/shared/framework/src/gateway/stable-key.ts";
 import type { InjectProps } from "../packages/shared/core/src/widget-builder-types.ts";
 import { present } from "./page-dom.ts";
 

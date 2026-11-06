@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useSlotsOf } from "./slot-components.js";
 import type { SlotComponent, SlotList } from "./slot-components.js";
 import type { MountEntry } from "./gateway/host.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 export function useSlotsGiven(held: unknown, isSingle: boolean): SlotComponent | SlotList {
 	const nodes = elementsOf(held);

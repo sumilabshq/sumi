@@ -28,7 +28,11 @@
 		"allowJs": false,
 		"types": []
 	},
-	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/core" }],
+	"references": [
+		{ "path": "../../packages/shared/kit" },
+		{ "path": "../../packages/shared/core" },
+		{ "path": "../../packages/shared/framework" }
+	],
 	"include": [
 		"src/**/*.ts",
 		"../../packages/shared/core/src/*.d.ts",

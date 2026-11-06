@@ -1,4 +1,4 @@
-import { Anywhere, PublicGuard, module, oneOf } from "@widgetarium/core/requests";
+import { Anywhere, PublicGuard, module, oneOf } from "@widgetarium/framework";
 import { FileDraggedEvent } from "./gateways/file-drop/file-drop.events.js";
 import { assistantPartsOn } from "./gateways/assistant-parts/assistant-parts.gateway.js";
 import { AssistantHost } from "./shared/host/assistant.host.js";

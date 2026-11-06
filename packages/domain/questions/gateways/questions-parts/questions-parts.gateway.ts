@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
+import type { ModuleFacts, Platform } from "@widgetarium/framework";
 import { MemoryQuestionsGateway } from "../questions/memory.gateway.js";
 import type { QuestionsGateway } from "../questions/questions.gateway.js";
 

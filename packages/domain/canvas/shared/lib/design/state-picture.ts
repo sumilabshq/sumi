@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { mountSpecsOf } from "@widgetarium/core/manifest-holds.js";
 import type { SlotState } from "@widgetarium/core/gateway/declared-types.js";
 import type { WidgetLookup } from "@widgetarium/core/registry.js";

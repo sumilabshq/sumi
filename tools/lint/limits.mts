@@ -15,6 +15,7 @@ export const LIMITS = {
 } as const;
 
 export const LINTED_ROOTS: readonly string[] = [
+	"packages/shared/framework/src",
 	"packages/shared/core/src",
 	"packages/shared/kit/src",
 	"packages/shared/sdk/types",

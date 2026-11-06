@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { RecentSitesGateway } from "./recent-sites.gateway.js";
 
 export const RecentSitesChangedEvent = event("recent-sites-changed").from(

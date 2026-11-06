@@ -1,4 +1,4 @@
-import { query, refuse, subscriber } from "@widgetarium/core/requests";
+import { query, refuse, subscriber } from "@widgetarium/framework";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
 import { TasksChangedEvent } from "../../gateways/tasks/tasks.events.js";
 import { TasksGateway } from "../../gateways/tasks/tasks.gateway.js";

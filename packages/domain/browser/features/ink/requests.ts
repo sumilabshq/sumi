@@ -1,4 +1,4 @@
-import { PerCall, command } from "@widgetarium/core/requests";
+import { PerCall, command } from "@widgetarium/framework";
 import { searchAddressOf } from "../../shared/lib/search-address.js";
 import {
 	CapturePageSchema,

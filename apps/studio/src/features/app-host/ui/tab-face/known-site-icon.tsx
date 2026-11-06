@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useOptionalQuery } from "@widgetarium/core/requests";
+import { useOptionalQuery } from "@widgetarium/framework";
 import { SiteIconQuery } from "@widgetarium/browser";
 import { FaviconImage } from "./favicon-image.js";
 import type { TabArtSize } from "./tab-art.js";

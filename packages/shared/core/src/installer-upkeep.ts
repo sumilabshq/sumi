@@ -2,7 +2,7 @@ import { WIDGETS_DIR, LOCK_PATH } from "./paths.js";
 import { releaseModules, withoutEntry } from "./engine/widget-lock.js";
 import type { WidgetLock } from "./engine/widget-lock.js";
 import { folderFor, idOfFolder } from "./engine/github.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { isScopeFolder } from "./engine/source-disk.js";
 import { refuse } from "./installer-context.js";
 import type { InstallerAdapter, Installing, Refusal } from "./installer-context.js";

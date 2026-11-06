@@ -23,7 +23,7 @@
 		"skipLibCheck": true,
 		"types": ["node"]
 	},
-	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/core" }],
+	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/framework" }],
 	"include": [
 		"src/**/*.ts",
 		"../../packages/shared/core/src/*.d.ts",

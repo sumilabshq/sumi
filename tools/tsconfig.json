@@ -37,7 +37,11 @@
 			"@*/lib": ["../registry/@*/lib"]
 		}
 	},
-	"references": [{ "path": "../packages/shared/kit" }, { "path": "../packages/shared/core" }],
+	"references": [
+		{ "path": "../packages/shared/kit" },
+		{ "path": "../packages/shared/framework" },
+		{ "path": "../packages/shared/core" }
+	],
 	"include": [
 		"*.ts",
 		"*.mts",

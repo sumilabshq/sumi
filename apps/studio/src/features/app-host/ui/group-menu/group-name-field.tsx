@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { RenameGroupCommand } from "@widgetarium/app-host";
 import type { GroupFace } from "../../lib/tabs-sidebar/sidebar-groups.js";
 

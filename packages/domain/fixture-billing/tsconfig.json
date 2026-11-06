@@ -23,7 +23,7 @@
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/core" }],
+	"references": [{ "path": "../../shared/kit" }, { "path": "../../shared/framework" }],
 	"include": [
 		"*.ts",
 		"shared/**/*.ts",

@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { BrowserPagesGateway } from "./browser-pages.gateway.js";
 
 export const PagesChangedEvent = event("pages-changed").from(

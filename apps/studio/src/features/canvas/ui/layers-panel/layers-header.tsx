@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, IconButton } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { LayersPanelQuery } from "@widgetarium/canvas";
 import { ToggleLayoutLockCommand } from "@widgetarium/canvas";
 import { PanelHeader } from "../side-panel/panel-header.js";

@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { SharedSubscriptions } from "../shared-subscriptions";
+import { SharedSubscriptions } from "./shared-subscriptions";
 import { queryKeyOf } from "./query-key";
 import type { AnyQuery } from "./request";
 import { NOT_WATCHED } from "./route-queries";

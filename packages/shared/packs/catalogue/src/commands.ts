@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
 import { ICommand } from "@widgetarium/core/gateway/queries.js";
-import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import {
 	ClearAskedSchema,
 	PlaceAskedSchema,

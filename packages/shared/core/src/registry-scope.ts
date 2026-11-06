@@ -13,7 +13,7 @@ import { compileWidget } from "./engine/widget-build.js";
 import { HELD_BY_THE_ENGINE } from "./engine/modules.js";
 import { moduleFromCompiled } from "./engine/compiled-module.js";
 import type { RequireModule } from "./engine/compiled-module.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { HELD_MARK, NODE_MARK, SCOPE_MARK, WIDGET_MARK } from "./engine/node-marks.js";
 import { declareProps } from "./gateway/declared";
 import type { DeclaredProps } from "./gateway/declared";

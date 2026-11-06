@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/framework";
 import { AssistantSessionChangedEvent } from "../../gateways/assistant-session/assistant-session.events.js";
 import { AssistantSessionGateway } from "../../gateways/assistant-session/assistant-session.gateway.js";
 import { SentAttachmentsGateway } from "../../gateways/sent-attachments/sent-attachments.gateway.js";

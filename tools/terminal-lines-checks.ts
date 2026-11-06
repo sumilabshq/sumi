@@ -1,6 +1,6 @@
-import { app, orpcTransport } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
-import { server } from "@widgetarium/core/requests/server";
+import { app, orpcTransport } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
+import { server } from "@widgetarium/framework/server";
 import {
 	ResizeTerminalCommand,
 	SendTerminalCommand,

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { IconButton } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { WorkspaceGlyph } from "../workspace-glyph/workspace-glyph.js";
 import type { WorkspaceRow } from "@widgetarium/workspaces";
 import { SetWorkspaceIconCommand } from "@widgetarium/workspaces";

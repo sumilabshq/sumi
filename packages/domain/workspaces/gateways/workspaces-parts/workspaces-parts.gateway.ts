@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
+import type { ModuleFacts, Platform } from "@widgetarium/framework";
 import type { ChatsGateway } from "../chats/chats.gateway.js";
 import type { CurrentWorkspaceGateway } from "../current-workspace/current-workspace.gateway.js";
 import type { WorkspaceChatsGateway } from "../workspace-chats/workspace-chats.gateway.js";

@@ -1,4 +1,4 @@
-import { query, subscriber } from "@widgetarium/core/requests";
+import { query, subscriber } from "@widgetarium/framework";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { closedRowsOf } from "../../shared/lib/rows/closed-rows.js";

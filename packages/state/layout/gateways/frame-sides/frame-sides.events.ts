@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { FrameSidesGateway } from "./frame-sides.gateway.js";
 
 export const FrameSidesChangedEvent = event("frame-sides-changed").from(

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { CALLOUT } from "@widgetarium/behaviors";
 import type { NoteSide, PlacedNote } from "@widgetarium/behaviors";
 import { FocusWidgetCommand } from "@widgetarium/canvas";

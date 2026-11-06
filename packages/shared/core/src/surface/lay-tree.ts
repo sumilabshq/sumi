@@ -2,7 +2,7 @@ import { columnsOf, keptAt, leavesOf, moveInto, placeInto, REGION_GAP_PX } from 
 import type { AskLeaf, BoxNode, PreferredSize } from "../tree-nodes.js";
 import type { StandingColumn } from "../tree-columns.js";
 import type { EngineManifest } from "../engine/catalogue-index.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { InsetsByCell } from "../content-insets.js";
 import type { Board, Tile } from "../model.js";
 import type { Carry } from "./carry.js";

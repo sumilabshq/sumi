@@ -1,6 +1,6 @@
-import { app, localTransport, orpcTransport } from "../packages/shared/core/src/requests/index.ts";
-import type { RemoteTransport, StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { server } from "../packages/shared/core/src/requests/server/index.ts";
+import { app, localTransport, orpcTransport } from "../packages/shared/framework/src/index.ts";
+import type { RemoteTransport, StartedApp } from "../packages/shared/framework/src/index.ts";
+import { server } from "../packages/shared/framework/src/server/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { FixtureBillingModule as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
 import { MemoryLedgerGateway } from "../packages/domain/fixture-billing/gateways/ledger/memory.gateway.ts";

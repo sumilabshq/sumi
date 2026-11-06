@@ -17,16 +17,6 @@
 			"types": "./dist/app.d.ts",
 			"default": "./dist/app.js"
 		},
-		"./requests": {
-			"source": "./src/requests/index.ts",
-			"types": "./dist/requests/index.d.ts",
-			"default": "./dist/requests/index.js"
-		},
-		"./requests/server": {
-			"source": "./src/requests/server/index.ts",
-			"types": "./dist/requests/server/index.d.ts",
-			"default": "./dist/requests/server/index.js"
-		},
 		"./styles.css": {
 			"style": "./dist/styles.css",
 			"default": "./dist/styles.css"
@@ -39,17 +29,14 @@
 	},
 	"dependencies": {
 		"@babel/parser": "^8.0.5",
-		"@orpc/client": "2.0.0-beta.41",
-		"@orpc/server": "2.0.0-beta.41",
 		"@radix-ui/react-dismissable-layer": "1.1.20",
 		"@radix-ui/react-focus-guards": "1.1.6",
 		"@radix-ui/react-focus-scope": "1.2.0",
 		"@radix-ui/react-portal": "1.1.18",
-		"@tanstack/react-query": "5.104.1",
 		"@tauri-apps/api": "^2.12.4",
+		"@widgetarium/framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
 		"aria-hidden": "1.2.6",
-		"hono": "4.13.12",
 		"motion": "^14.1.0",
 		"radix-ui": "^1.7.0",
 		"react-remove-scroll": "2.7.2",

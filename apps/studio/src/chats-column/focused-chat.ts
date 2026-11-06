@@ -1,5 +1,5 @@
 import type { FocusedChat, FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
 import { ChatListQuery } from "@widgetarium/app-host";

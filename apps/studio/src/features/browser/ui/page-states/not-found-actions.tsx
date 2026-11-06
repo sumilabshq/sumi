@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import type { BrowserTabState, PageFailure } from "@widgetarium/browser";
 import { OpenAddressCommand, ReloadPageCommand } from "@widgetarium/browser";
 import { hostOf } from "../../lib/failure-copy.js";

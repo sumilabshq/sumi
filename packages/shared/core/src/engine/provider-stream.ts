@@ -1,4 +1,4 @@
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 export type Held = Readonly<Record<string, unknown>>;
 

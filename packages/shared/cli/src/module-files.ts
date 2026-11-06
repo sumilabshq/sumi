@@ -1,5 +1,5 @@
 import type { PlannedFile } from "./add-plan.js";
-import { CORE_REQUESTS, camelOf, jsSpecifierOf, pascalOf } from "./scaffold-names.js";
+import { FRAMEWORK, camelOf, jsSpecifierOf, pascalOf } from "./scaffold-names.js";
 
 export type ModulePlacement = "Server" | "Device" | "Anywhere";
 
@@ -11,7 +11,7 @@ export interface ModuleSeed {
 }
 
 export interface PackageVersions {
-	readonly core: string;
+	readonly framework: string;
 	readonly zod: string;
 }
 
@@ -61,7 +61,7 @@ function manifestOf({ name, placement, versions, license }: ModuleSeed): string 
 	const runnable = placement === "Server" ? { server: "./module.ts" } : entryOf("module");
 	const manifest = {
 		name: `@widgetarium/${name}`,
-		version: versions.core,
+		version: versions.framework,
 		...(license === null ? {} : { license: license.id }),
 		type: "module",
 		files: ["dist"],
@@ -69,7 +69,7 @@ function manifestOf({ name, placement, versions, license }: ModuleSeed): string 
 			".": entryOf("index"),
 			"./module": runnable,
 		},
-		dependencies: { "@widgetarium/core": versions.core },
+		dependencies: { "@widgetarium/framework": versions.framework },
 		peerDependencies: { zod: versions.zod },
 		widgetarium: { level: "domain" },
 		sideEffects: false,
@@ -100,7 +100,7 @@ function tsconfigOf(name: string): string {
 			skipLibCheck: true,
 			types: [],
 		},
-		references: [{ path: "../../shared/core" }],
+		references: [{ path: "../../shared/framework" }],
 		include: [
 			"*.ts",
 			"gateways/**/*.ts",
@@ -117,7 +117,7 @@ function moduleTextOf({ name, placement }: ModuleSeed): string {
 	const isServer = placement === "Server";
 	const imported = [placement, "module", ...(isServer ? [SERVER_GUARD] : [])].sort();
 	return [
-		`import { ${imported.join(", ")} } from "${CORE_REQUESTS}";`,
+		`import { ${imported.join(", ")} } from "${FRAMEWORK}";`,
 		`import { ${camelOf(name)}PartsOn } from "./${jsSpecifierOf(pickerPathOf(name))}";`,
 		"",
 		`export const ${moduleConstOf(name)} = module("${name}")`,
@@ -133,7 +133,7 @@ function pickerTextOf(name: string): string {
 	const parts = partsTypeOf(name);
 	const memory = memoryPartsOf(name);
 	return [
-		`import type { ModuleFacts, Platform } from "${CORE_REQUESTS}";`,
+		`import type { ModuleFacts, Platform } from "${FRAMEWORK}";`,
 		"",
 		`export type ${parts} = {};`,
 		"",

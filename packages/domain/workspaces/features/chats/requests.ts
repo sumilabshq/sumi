@@ -1,5 +1,5 @@
-import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
-import type { Send } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/framework";
+import type { Send } from "@widgetarium/framework";
 import { KeepChatTabsCommand, RecordTabTurnCommand } from "@widgetarium/places";
 import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";

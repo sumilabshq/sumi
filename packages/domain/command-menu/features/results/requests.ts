@@ -1,4 +1,4 @@
-import { query, subscriber } from "@widgetarium/core/requests";
+import { query, subscriber } from "@widgetarium/framework";
 import { AppFacesQuery, AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";

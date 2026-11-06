@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 import { doorOfLetter } from "../../lib/menu-key-labels.js";
 

@@ -1,4 +1,4 @@
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { Fields } from "./catalogue-index.js";
 
 type PropSpecs = Readonly<Record<string, Fields>>;

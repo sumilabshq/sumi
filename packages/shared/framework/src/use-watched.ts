@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { stableKey } from "../gateway/stable-key";
+import { stableKey } from "./gateway/stable-key";
 import type { StartedApp } from "./app";
 import type { AnyQuery } from "./request";
 

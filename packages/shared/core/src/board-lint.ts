@@ -4,7 +4,7 @@ import { baseMismatch, bodySlotNamesOf, bodySlotProblems, emptyColumnsOf, isBody
 import { ROLES, SLOT_SURFACES } from "./surface-roles.js";
 import { COLLAPSES, APART, TOGGLES, NO_SURFACE, SIDES, SURFACES, SWAP, TEXT_ROLE } from "./tree.js";
 import type { NodePath } from "./tree.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { isRawBox } from "./board-layout.js";
 import type { RawBox, RawFields } from "./board-layout.js";
 

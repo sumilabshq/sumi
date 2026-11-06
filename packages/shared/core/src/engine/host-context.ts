@@ -2,7 +2,7 @@ import type { z } from "zod";
 import type { TileProp, TileProps } from "../model.js";
 import type { AdaptedGateway } from "../gateway/adapted.js";
 import type { DeclaredProp } from "../gateway/props.js";
-import type { FilterRow, SortRow } from "../gateway/contract.js";
+import type { FilterRow, SortRow } from "@widgetarium/framework/gateway/contract";
 import type { GatewayRefs, ViewCell } from "../gateway/refs.js";
 import type { PortsHost } from "./packs.js";
 

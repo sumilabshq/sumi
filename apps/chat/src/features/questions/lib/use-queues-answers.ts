@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useApp, useCommand } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { useApp, useCommand } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
 import { DeliverQuestionsCommand, ReadyAnswersQuery } from "@sumi/contract";
 import type { Question } from "@sumi/contract";
 import { SendTextCommand } from "@widgetarium/assistant";

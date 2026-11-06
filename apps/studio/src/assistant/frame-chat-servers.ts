@@ -1,7 +1,7 @@
 import { AssistantModule } from "@widgetarium/assistant/module";
-import type { LocalTransport } from "@widgetarium/core/requests";
-import { server } from "@widgetarium/core/requests/server";
-import type { StartedServer } from "@widgetarium/core/requests/server";
+import type { LocalTransport } from "@widgetarium/framework";
+import { server } from "@widgetarium/framework/server";
+import type { StartedServer } from "@widgetarium/framework/server";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { ServerLeases } from "../features/app-frame/lib/server-leases.js";
 import type { AssistantHostObjects } from "./chat-app.js";

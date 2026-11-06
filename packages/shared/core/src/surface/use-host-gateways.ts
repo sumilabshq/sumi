@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { refsOfFields } from "../engine/host-gateways.js";
 import { whereOf } from "../engine/held-reading.js";
 import type { EngineManifest } from "../engine/catalogue-index.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { refOf, refsWithin } from "../gateway/refs.js";
 import type { AnyGateway, GatewayRefs } from "../gateway/refs.js";
 import type { Tile } from "../model.js";

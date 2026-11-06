@@ -4,7 +4,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { TEXT_LOADERS } from "./text-loaders.mts";
 import { createRadixInPicturesPlugin } from "./radix-in-pictures.mts";
 import { BOARD_SHEET } from "./sheet-paths.mts";

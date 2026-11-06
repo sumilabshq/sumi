@@ -17,6 +17,8 @@ service. Each version becomes Apache 2.0 two years after its release:
 
   packages/shared/core/  the engine that lays out and renders boards
                   packages/shared/core/LICENSE
+  packages/shared/framework/ the request framework: modules, commands, queries, transports
+                  packages/shared/framework/LICENSE
   packages/shared/sdk/   the types a widget is written against
                   packages/shared/sdk/LICENSE
   packages/shared/cli/   the widgetarium command

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { AppTabsQuery } from "@widgetarium/app-host";
 import type { ChatListQuery } from "@widgetarium/app-host";
-import type { OutputOf } from "@widgetarium/core/requests";
+import type { OutputOf } from "@widgetarium/framework";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, ListedGroup, Sidebar, SidebarTab, TabList } from "./sidebar-lists.js";
 

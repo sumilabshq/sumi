@@ -1,6 +1,6 @@
 import { createElement as h, useState, useTransition } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { PAGE_UNASKED } from "@widgetarium/core/gateway/page.js";
 import { PagesQuery } from "@widgetarium/canvas";
 import { useTurnToPage } from "../../lib/use-turn-to-page.js";

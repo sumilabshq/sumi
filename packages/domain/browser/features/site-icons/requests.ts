@@ -1,4 +1,4 @@
-import { query, subscriber } from "@widgetarium/core/requests";
+import { query, subscriber } from "@widgetarium/framework";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
 import { SiteFilesGateway } from "../../gateways/site-files/site-files.gateway.js";
 import { SiteIconChangedEvent } from "../../gateways/site-icons/site-icons.events.js";

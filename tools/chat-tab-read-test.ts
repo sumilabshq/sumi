@@ -1,15 +1,15 @@
 import { layJsdomGlobals } from "./jsdom-globals.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
-import type { Answer, HearChanges, RemoteTransport } from "../packages/shared/core/src/requests/index.ts";
-import type { RemoteCall } from "../packages/shared/core/src/requests/remote-server.ts";
+import type { Answer, HearChanges, RemoteTransport } from "../packages/shared/framework/src/index.ts";
+import type { RemoteCall } from "../packages/shared/framework/src/remote-server.ts";
 
 layJsdomGlobals();
 
 const { createElement: h } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { PlacesModule } = await import("@sumi/contract");
-const { ChangeBroadcast, app, refusalOf } = await import("../packages/shared/core/src/requests/index.ts");
+const { ChangeBroadcast, app, refusalOf } = await import("../packages/shared/framework/src/index.ts");
 const { useTabChat } = await import("../apps/chat/src/use-tab-chat.ts");
 
 const TAB = "t1";

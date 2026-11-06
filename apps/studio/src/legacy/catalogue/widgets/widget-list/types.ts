@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Row } from "@widgetarium/core/gateway/contract.js";
+import type { Row } from "@widgetarium/framework/gateway/contract";
 
 export const JobSchema = z.object({
 	widget: z.string(),

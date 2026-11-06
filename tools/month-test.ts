@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import type { RecordRef } from "../packages/shared/core/src/gateway/contract.ts";
+import type { RecordRef } from "../packages/shared/framework/src/gateway/contract.ts";
 import { declaredPropIn } from "./card-props.ts";
 import { byId, foundAs } from "./dom-find.ts";
 import { present } from "./page-dom.ts";

@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { ShowChatTabCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { app, localTransport } from "../packages/shared/core/src/requests/index.ts";
-import type { StartedApp } from "../packages/shared/core/src/requests/index.ts";
-import { server } from "../packages/shared/core/src/requests/server/index.ts";
+import { app, localTransport } from "../packages/shared/framework/src/index.ts";
+import type { StartedApp } from "../packages/shared/framework/src/index.ts";
+import { server } from "../packages/shared/framework/src/server/index.ts";
 import {
 	CreateTaskAskSchema,
 	EditTaskAskSchema,

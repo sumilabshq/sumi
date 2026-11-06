@@ -1,4 +1,4 @@
-import { event, gatewayEvent } from "@widgetarium/core/requests";
+import { event, gatewayEvent } from "@widgetarium/framework";
 import { WorkingFoldersGateway } from "./working-folders.gateway.js";
 
 export const WorkingFolderChangedEvent = event("working-folder-changed").from(

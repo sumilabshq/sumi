@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
-import { FrameCommandKeySchema } from "@widgetarium/core/requests";
+import { FrameCommandKeySchema } from "@widgetarium/framework";
 
 const TAKEN = "[widgetarium] key ⌘{key} in app {app} frame → kept by the app (it handled the key itself)";
 const REPLAYED = "[widgetarium] key ⌘{key} in app {app} frame → studio";

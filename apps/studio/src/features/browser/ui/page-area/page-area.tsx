@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { BrowserTabsQuery } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";
 import { useHoldsPages } from "../../lib/use-holds-pages.js";

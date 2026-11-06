@@ -1,5 +1,5 @@
-import { app } from "@widgetarium/core/requests";
-import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
+import type { RemoteTransport, StartedApp } from "@widgetarium/framework";
 import { FileInfoQuery, FileSystemModule, ReadFileQuery, WriteFileCommand } from "@widgetarium/file-system";
 import { APP_CALLER_HEADER } from "@widgetarium/studio";
 import type { BoardFile } from "@widgetarium/tasks/module";

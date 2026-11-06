@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { Popover } from "@widgetarium/kit";
 import { SiteAccessQuery } from "@widgetarium/browser";
 import { useHeldTab } from "../../lib/held-tab.js";

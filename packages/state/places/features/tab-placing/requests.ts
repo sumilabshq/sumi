@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { Repeatable, command } from "@widgetarium/core/requests";
+import { Repeatable, command } from "@widgetarium/framework";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving, settledOf, settling, settlingWith } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";

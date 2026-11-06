@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";

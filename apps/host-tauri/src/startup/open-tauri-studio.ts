@@ -19,7 +19,7 @@ import { liveWindowLabels, ownWindowLabel } from "../chat/tauri-windows.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import type { RemoteTransport, StartedApp } from "@widgetarium/core/requests";
+import type { RemoteTransport, StartedApp } from "@widgetarium/framework";
 import { tauriStudioHost } from "../tauri-studio-host.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
 import { joinPlaces } from "../core-link/window-places.js";

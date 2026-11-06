@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { AppProvider } from "@widgetarium/core/requests";
-import type { StartedApp } from "@widgetarium/core/requests";
+import { AppProvider } from "@widgetarium/framework";
+import type { StartedApp } from "@widgetarium/framework";
 import { AssistantPanel } from "./features/assistant/ui/assistant-panel/assistant-panel.js";
 import { useOpensChatDraft } from "./use-opens-chat-draft.js";
 

@@ -1,6 +1,6 @@
 import { applyQuery, collectionGateway, rowOf, toRows, valueGateway, valueIn } from "./create";
-import type { CollectionGateway, Query, Row, RowsResult, ValueGateway } from "./contract";
-import type { EveryValueVerb } from "./needs";
+import type { CollectionGateway, Query, Row, RowsResult, ValueGateway } from "@widgetarium/framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 
 type Held<T> = T | null | undefined;
 

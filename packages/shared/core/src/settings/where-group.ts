@@ -6,7 +6,7 @@ import { bindingOf, declaredOf, typedIn } from "../gateway/props.js";
 import { storedRows } from "../gateway/kept-in-tile.js";
 import { valueIn } from "../gateway/create.js";
 import { fieldsOf } from "../gateway/fields.js";
-import type { FilterRow } from "../gateway/contract.js";
+import type { FilterRow } from "@widgetarium/framework/gateway/contract";
 import { WHERE_FIELD, conditionBody, conditionRowsIn, conditionSentence, keepRow, stepAt } from "./condition-steps.js";
 import type { ConditionAt, ConditionField, RowIndex } from "./condition-steps.js";
 import { boxRows, offeredBoxes } from "./offered-boxes.js";

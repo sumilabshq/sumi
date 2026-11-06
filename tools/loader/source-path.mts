@@ -5,14 +5,15 @@ import { sourceOfExport } from "../export-source.mts";
 
 export const REPO = fileURLToPath(new URL("../../", import.meta.url));
 
-type WorkspacePackage = "core" | "kit";
+type WorkspacePackage = "core" | "framework" | "kit";
 type ExportsMap = ReadonlyMap<string, string>;
 
 const WORKSPACE_FOLDERS: Readonly<Record<WorkspacePackage, string>> = {
 	core: "packages/shared/core",
+	framework: "packages/shared/framework",
 	kit: "packages/shared/kit",
 };
-const WORKSPACE_SPECIFIER = /^@widgetarium\/(core|kit)(\/.*)?$/;
+const WORKSPACE_SPECIFIER = /^@widgetarium\/(core|framework|kit)(\/.*)?$/;
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".mts"];
 const COMPILED_TO_JS = /\.(js|mjs)$/;
 const exportsOf = new Map<WorkspacePackage, ExportsMap>();
@@ -40,7 +41,7 @@ const inRepoSource = (at: string): boolean => at.startsWith(REPO) && !at.include
 const isRelative = (specifier: string): boolean => specifier.startsWith("./") || specifier.startsWith("../");
 const isFromRepoSource = (parentURL: string | undefined): boolean =>
 	parentURL?.startsWith("file:") === true && inRepoSource(fileURLToPath(parentURL));
-const isWorkspacePackage = (name: string | undefined): name is WorkspacePackage => name === "core" || name === "kit";
+const isWorkspacePackage = (name: string | undefined): name is WorkspacePackage => name === "core" || name === "framework" || name === "kit";
 
 function packageExports(name: WorkspacePackage): ExportsMap {
 	const held = exportsOf.get(name);

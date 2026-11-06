@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { HeldTabsQuery, OpenLinkCommand } from "@widgetarium/app-host";
-import { useCommand, useOptionalQuery } from "@widgetarium/core/requests";
+import { useCommand, useOptionalQuery } from "@widgetarium/framework";
 import { AskedLinksQuery, TakeAskedLinkCommand } from "@widgetarium/places";
 
 const NOT_OPENED = "[widgetarium] the link {href} asked from tab {from} was not opened: {reason}";

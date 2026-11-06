@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { FieldStateQuery } from "@widgetarium/canvas";
 import { FieldStage } from "./field-stage.js";
 

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { collectionGateway, applyQuery } from "../packages/shared/core/src/gateway/create.ts";
-import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Query } from "../packages/shared/framework/src/gateway/contract.ts";
 import { fieldsOf } from "../packages/shared/core/src/gateway/fields.ts";
 import { mapCollection } from "../packages/shared/core/src/gateway/mapped.ts";
 import { parseReadsBy } from "../packages/shared/core/src/gateway/parsed.ts";

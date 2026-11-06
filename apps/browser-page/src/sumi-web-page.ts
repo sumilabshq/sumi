@@ -1,6 +1,6 @@
 import { OpenWebPageCommand, PlaceWebPageCommand, ReloadWebPageCommand, WebPageQuery } from "@sumi/contract";
 import type { PageArea, WebPage } from "@sumi/contract";
-import type { Answer } from "@widgetarium/core/requests";
+import type { Answer } from "@widgetarium/framework";
 import type { SumiShell } from "./sumi-shell.js";
 
 export class SumiWebPage {

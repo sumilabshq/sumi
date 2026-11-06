@@ -1,4 +1,4 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { InkActivityChangedEvent } from "../../gateways/ink-activity/ink-activity.events.js";
 import { AccessAsksChangedEvent } from "../../gateways/access-asks/access-asks.events.js";
 import { AccessAsksGateway } from "../../gateways/access-asks/access-asks.gateway.js";

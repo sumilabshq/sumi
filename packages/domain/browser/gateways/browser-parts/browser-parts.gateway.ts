@@ -1,4 +1,4 @@
-import type { ModuleFacts, Platform } from "@widgetarium/core/requests";
+import type { ModuleFacts, Platform } from "@widgetarium/framework";
 import type { AccessAsksGateway } from "../access-asks/access-asks.gateway.js";
 import type { BrowserAuditGateway } from "../browser-audit/browser-audit.gateway.js";
 import type { BrowserGrantReadsGateway } from "../browser-grant-reads/browser-grant-reads.gateway.js";

@@ -1,5 +1,5 @@
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 
 const { findBlocks, replaceBlock, readBody, replaceBody } = await import("../packages/shared/core/src/block-writer.js");
 

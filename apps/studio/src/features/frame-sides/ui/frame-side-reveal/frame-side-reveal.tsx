@@ -2,7 +2,7 @@ import { Fragment, createElement as h, useEffect, useRef } from "react";
 import type { ReactElement, RefObject } from "react";
 import { useEdgeReveal } from "@widgetarium/behaviors";
 import type { EdgeLook } from "@widgetarium/behaviors";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import type { FrameSide, SideLook } from "@widgetarium/layout";
 import {
 	ConcealFrameSideCommand,

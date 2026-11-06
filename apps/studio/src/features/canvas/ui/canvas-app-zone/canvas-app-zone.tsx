@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { Slot } from "@widgetarium/core/requests";
+import { Slot } from "@widgetarium/framework";
 import { AddPhoto } from "../add-photo/add-photo.js";
 import { PagePicker } from "../page-picker/page-picker.js";
 import { SidebarToggle } from "../sidebar-toggle/sidebar-toggle.js";

@@ -1,4 +1,4 @@
-import { stableKey } from "../gateway/stable-key";
+import { stableKey } from "./gateway/stable-key";
 import { reasonOf, refusalOf, refusalOfThrown } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { DoneKeys } from "./done-keys";

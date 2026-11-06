@@ -1,4 +1,4 @@
-import type { ModuleFacts } from "@widgetarium/core/requests";
+import type { ModuleFacts } from "@widgetarium/framework";
 import type { FilesGateway } from "../files/files.gateway.js";
 import { MemoryFilesGateway } from "../files/memory.gateway.js";
 import { TauriFilesGateway } from "../files/tauri.gateway.js";

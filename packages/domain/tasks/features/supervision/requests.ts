@@ -1,4 +1,4 @@
-import { Repeatable, command, refuse } from "@widgetarium/core/requests";
+import { Repeatable, command, refuse } from "@widgetarium/framework";
 import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
 import { TasksGateway } from "../../gateways/tasks/tasks.gateway.js";
 import type { BoardStep } from "../../shared/lib/task-moves.js";

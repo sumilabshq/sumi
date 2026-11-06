@@ -1,4 +1,5 @@
 import { createContext } from "react";
+// TODO: the framework should not draw; move kit views to the app
 import { toast } from "@widgetarium/kit";
 
 export interface CommandRefusal {

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactNode } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { RunningCall } from "../running-call/running-call.js";
 import { Working } from "../working/working.js";
 import { StopTurnCommand } from "@widgetarium/assistant";

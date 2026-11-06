@@ -1,7 +1,7 @@
 import { createElement as h, useRef } from "react";
 import type { ChangeEvent, ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { filesOfType, useDroppedFiles, usePastedFiles } from "@widgetarium/behaviors";
 import { AddPhotosCommand } from "@widgetarium/canvas";
 import { useCanvasSurroundings } from "../../lib/canvas-surroundings.js";

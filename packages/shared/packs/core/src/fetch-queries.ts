@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Query, RowsResult } from "@widgetarium/core/gateway/contract.js";
+import type { Query, RowsResult } from "@widgetarium/framework/gateway/contract";
 import { rowOf } from "@widgetarium/core/gateway/create.js";
 import { IQuery } from "@widgetarium/core/gateway/queries.js";
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";

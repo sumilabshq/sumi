@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { PrimaryAction } from "../page-state/primary-action.js";
 import { QuietAction } from "../page-state/quiet-action.js";
 import type { PageFailure } from "@widgetarium/browser";

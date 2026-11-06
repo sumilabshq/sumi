@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
 
 export const SHOWN_TAB_SECTION = null;

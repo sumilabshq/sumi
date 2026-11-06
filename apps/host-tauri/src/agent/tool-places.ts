@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 import { PINNED, THIS_CHAT, WORKSPACE } from "./app-state.js";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, Sidebar, SidebarTab } from "./sidebar-lists.js";

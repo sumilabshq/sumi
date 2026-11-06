@@ -1,5 +1,5 @@
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 import { CreateWorkspaceCommand, OpenWorkspaceCommand } from "@widgetarium/workspaces";
 import type { WorkspaceClient } from "./workspace-client.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";

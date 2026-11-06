@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { isDeclaredProps, manifestOfModule } from "./gateway/declared";
 import type { DeclaredModule } from "./gateway/declared";
 import type { GivenProps } from "./declared-widget.js";

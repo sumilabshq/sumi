@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { ShowPageCommand } from "@widgetarium/canvas";
-import { REFUSAL_HANDLER } from "@widgetarium/core/command-refusals.js";
-import type { RefusalHandler, StartedApp } from "@widgetarium/core/requests";
+import { REFUSAL_HANDLER } from "@widgetarium/framework/command-refusals";
+import type { RefusalHandler, StartedApp } from "@widgetarium/framework";
 
 export interface CanvasHandle {
 	readonly showPage: (page: string) => void;

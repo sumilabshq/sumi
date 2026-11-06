@@ -1,6 +1,6 @@
-import { localTransport } from "@widgetarium/core/requests";
-import type { LocalTransport, RemoteTransport } from "@widgetarium/core/requests";
-import type { StartedServer } from "@widgetarium/core/requests/server";
+import { localTransport } from "@widgetarium/framework";
+import type { LocalTransport, RemoteTransport } from "@widgetarium/framework";
+import type { StartedServer } from "@widgetarium/framework/server";
 
 export interface HeldTransport {
 	readonly transport: RemoteTransport;

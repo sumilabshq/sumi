@@ -1,4 +1,4 @@
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { PropConfig } from "./gateway/props.js";
 import { heldLook } from "./held-records.js";
 import { slotSurfaceNamed } from "./surface-roles.js";

@@ -1,4 +1,4 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { FrameSidesChangedEvent } from "../../gateways/frame-sides/frame-sides.events.js";
 import { FrameSidesGateway } from "../../gateways/frame-sides/frame-sides.gateway.js";
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";

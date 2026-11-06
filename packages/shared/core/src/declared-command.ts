@@ -2,18 +2,18 @@ import { useCallback, useContext, useMemo, useRef } from "react";
 import { z } from "zod";
 import { canOf } from "./gateway/create";
 import { gatewayCache } from "./gateway/cache";
-import type { Action, CanResult } from "./gateway/contract";
+import type { Action, CanResult } from "@widgetarium/framework/gateway/contract";
 import { declarationIn } from "./gateway/declared";
-import { AnsweringCommand, answerAfterRun, fitOutput, runHandler } from "./gateway/run-handler";
-import type { CommandAnswer, HandlerContract } from "./gateway/run-handler";
+import { AnsweringCommand, answerAfterRun, fitOutput, runHandler } from "@widgetarium/framework/gateway/run-handler";
+import type { CommandAnswer, HandlerContract } from "@widgetarium/framework/gateway/run-handler";
 import { classNameOf } from "./gateway/declaration";
 import type { Declaration } from "./gateway/declaration";
-import { shutHostFor } from "./gateway/handler-context";
-import type { HandlerContext } from "./gateway/handler-context";
+import { shutHostFor } from "@widgetarium/framework/gateway/handler-context";
+import type { HandlerContext } from "@widgetarium/framework/gateway/handler-context";
 import { useHandlerContext } from "./gateway/use-signal-until-unmount";
-import { isObject } from "./engine/is-object.js";
-import { REFUSAL_HANDLER } from "./command-refusals.js";
-import type { RefusalHandler } from "./command-refusals.js";
+import { isObject } from "@widgetarium/framework/is-object";
+import { REFUSAL_HANDLER } from "@widgetarium/framework/command-refusals";
+import type { RefusalHandler } from "@widgetarium/framework/command-refusals";
 
 const NOT_GIVEN = "{name} is not given";
 

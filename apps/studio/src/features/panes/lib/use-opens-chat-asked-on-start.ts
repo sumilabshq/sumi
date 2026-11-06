@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { studioWindowOf } from "@widgetarium/behaviors";
 import { OpenChatAskedOnStartCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";

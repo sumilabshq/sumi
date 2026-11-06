@@ -1,11 +1,11 @@
 import { z } from "zod";
-import type { CollectionGateway, Query, Row, RowsResult, ValueGateway } from "./contract";
-import type { EveryValueVerb } from "./needs";
+import type { CollectionGateway, Query, Row, RowsResult, ValueGateway } from "@widgetarium/framework/gateway/contract";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 import { collectionGateway, valueGateway } from "./create";
 import { pageIn } from "./paged-read";
 import type { GatewayContext } from "./problems";
 import { reportUnansweredFilter, UnansweredFilterError } from "./problems";
-import { isObject } from "../engine/is-object";
+import { isObject } from "@widgetarium/framework/is-object";
 
 const WRITE_REFUSED = 'prop "{name}" refused a {verb} its schema does not accept: {issues}';
 

@@ -4,7 +4,7 @@ import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import esbuild from "esbuild";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { LIB_FILES } from "../packages/shared/core/src/engine/widget-build.js";
 import type { Theme } from "./harness.ts";
 import { TEXT_LOADERS } from "./text-loaders.mts";

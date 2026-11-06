@@ -1,4 +1,4 @@
-import { isObject } from "@widgetarium/core/engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 type Method = (...args: unknown[]) => unknown;
 

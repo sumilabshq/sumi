@@ -1,5 +1,5 @@
 import { movedNode } from "@widgetarium/core/engine/node-moves.js";
-import { refuse } from "@widgetarium/core/requests";
+import { refuse } from "@widgetarium/framework";
 import type { LayerMove } from "../../../shared/schema/layer-move.schema.js";
 
 const NOT_MOVED = "Nothing was moved: {why}";

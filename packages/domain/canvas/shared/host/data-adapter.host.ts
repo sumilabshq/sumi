@@ -1,6 +1,6 @@
 import type { DataAdapter } from "obsidian";
-import { isObject } from "@widgetarium/core/engine/is-object.js";
-import { hostObject } from "@widgetarium/core/requests";
+import { isObject } from "@widgetarium/framework/is-object";
+import { hostObject } from "@widgetarium/framework";
 
 export const DataAdapterHost = hostObject<DataAdapter>("DataAdapter", isDataAdapter);
 

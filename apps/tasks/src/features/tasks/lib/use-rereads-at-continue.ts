@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { BoardQuery, TaskQuery, TasksQuery } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
-import { useApp } from "@widgetarium/core/requests";
+import { useApp } from "@widgetarium/framework";
 
 const REREAD = [BoardQuery, TaskQuery, TasksQuery];
 

@@ -1,6 +1,6 @@
 import { createElement as h, useRef, useState } from "react";
 import type { KeyboardEvent, ReactElement } from "react";
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { RenameTabCommand } from "@widgetarium/app-host";
 import { useSelectsOnMount } from "../../lib/use-selects-on-mount.js";
 

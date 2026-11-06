@@ -1,6 +1,6 @@
 import type { ReactElement } from "react";
 import type { z } from "zod";
-import type { Action, CanResult, GatewayBase, Query, Row, RowsResult } from "./contract";
+import type { Action, CanResult, GatewayBase, Query, Row, RowsResult } from "@widgetarium/framework/gateway/contract";
 import type { ManifestCard, PropCommon, RecordRef, RowWithRef, WidgetSize } from "./manifest";
 import type { ManyVerbsOf } from "./many";
 import type { Described } from "./written";
@@ -19,7 +19,7 @@ import type {
 } from "./declared";
 import type { Page, PAGE_ITEM } from "./page";
 import type { CommandContract, QueryAskContract, QueryRowsContract, QueryValueContract } from "./queries";
-import type { CommandAnswer } from "./run-handler";
+import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
 
 export declare const rowHeld: unique symbol;
 export declare const valueHeld: unique symbol;

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { SortRow } from "./contract";
+import type { SortRow } from "@widgetarium/framework/gateway/contract";
 import type { DeclaredFilterRow, HeldSpec } from "./manifest";
 
 export const DECLARATION = Symbol.for("widgetarium.declaration");

@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent } from "react";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import type { DeclaredModule } from "../packages/shared/core/src/gateway/declared-types.js";
 import { found } from "./dom-find.ts";
 import { runWidgetSource } from "./run-widget-source.ts";

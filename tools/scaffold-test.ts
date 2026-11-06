@@ -21,7 +21,7 @@ interface ProcessRun {
 const REPO = path.resolve(import.meta.dirname, "..");
 const PROBE = path.join(REPO, "tools", `.scaffold-probe-${process.pid}`);
 const LOADER = path.join(REPO, "tools/loader/register.mts");
-const COPIED_PACKAGES = ["packages/shared/core", "packages/shared/kit", "packages/domain/fixture-billing"];
+const COPIED_PACKAGES = ["packages/shared/framework", "packages/shared/core", "packages/shared/kit", "packages/domain/fixture-billing"];
 const LINKED_SCOPE = "@widgetarium";
 const NOTES = "packages/domain/notes";
 const BILLING = "packages/state/billing";
@@ -74,7 +74,7 @@ function layNodeModules(): void {
 		}
 	}
 
-	for (const name of ["core", "kit"]) {
+	for (const name of ["core", "framework", "kit"]) {
 		fs.symlinkSync(`../../packages/shared/${name}`, path.join(modules, LINKED_SCOPE, name));
 	}
 }

@@ -1,8 +1,8 @@
 import { PrefillDraftCommand } from "../packages/domain/assistant/generated/contract.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/core/src/requests/index.ts";
-import type { Answer } from "../packages/shared/core/src/requests/index.ts";
+import { AppProvider, app } from "../packages/shared/framework/src/index.ts";
+import type { Answer } from "../packages/shared/framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { SearchWebCommand } from "../packages/domain/browser/index.ts";
 import { AskInkPromptQuery, LeaveFailureCommand, OpenAddressCommand } from "../packages/domain/browser/index.ts";

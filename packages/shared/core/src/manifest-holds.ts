@@ -1,4 +1,4 @@
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import type { MountSpec } from "./held-records.js";
 
 export interface SlotSpec {

@@ -4,7 +4,7 @@ import { SidebarGroup } from "@widgetarium/kit";
 import { matchesNeedle, referenceText, widgetsOffering } from "../ref-draft.js";
 import type { ReferenceDraft } from "../ref-draft.js";
 import type { GatewayRefs, RefDescription } from "../gateway/refs.js";
-import { isObject } from "../engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { note, pickRow } from "./settings-rows.js";
 import type { SettingsState } from "./settings-state.js";
 

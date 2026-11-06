@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { handlerContextOf } from "./handler-context";
-import type { HandlerContext, HandlerHost } from "./handler-context";
+import { handlerContextOf } from "@widgetarium/framework/gateway/handler-context";
+import type { HandlerContext, HandlerHost } from "@widgetarium/framework/gateway/handler-context";
 
 export function useSignalUntilUnmount(): AbortSignal {
 	const [controller, setController] = useState(() => new AbortController());

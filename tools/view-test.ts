@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { stage, TASK_ROWS, widgetFiles, WIDGETS_AT } from "./harness.ts";
 
 export { stage, widgetFiles, WIDGETS_AT };

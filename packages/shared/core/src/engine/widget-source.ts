@@ -13,7 +13,7 @@ import {
 import type { Repository } from "./github.js";
 import { apiRefusal } from "../version.js";
 import { failureMessage } from "./failure-message.js";
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import {
 	SCOPE_FILES,
 	WIDGET_FILES,

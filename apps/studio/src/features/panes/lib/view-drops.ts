@@ -1,4 +1,4 @@
-import type { CommandHandle, OutputOf, SentOf } from "@widgetarium/core/requests";
+import type { CommandHandle, OutputOf, SentOf } from "@widgetarium/framework";
 import type { PlaceInViewCommand } from "@widgetarium/app-host";
 import type { PaneBoard, PaneLeaf, PanePlacement, PaneView, PlacePaneCommand } from "@widgetarium/layout";
 import { carriedTabOf, viewTargetOf } from "./split-panes.js";

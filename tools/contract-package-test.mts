@@ -11,7 +11,7 @@ const INTO_FLAG = "--into";
 const ONLY_CORE_AND_ZOD = /from\s*"(?!zod"|@widgetarium\/core\/requests"|\.)[^"]+"/g;
 
 const APP = `import { AssistantModule, FileSystemModule, ReadFileQuery, WebPageModule, WriteFileCommand, contractRefusal, CONTRACT_RANGE } from "@sumi/contract";
-import { app, messagePortTransport, portFromParent } from "@widgetarium/core/requests";
+import { app, messagePortTransport, portFromParent } from "@widgetarium/framework";
 
 const sumi = messagePortTransport(portFromParent());
 const files = app().imports(FileSystemModule.over(sumi), WebPageModule.over(sumi), AssistantModule.over(sumi)).start();
@@ -26,7 +26,7 @@ export const gate: string | null = contractRefusal(CONTRACT_RANGE, "0.3.0");
 `;
 
 const WRONG_APP = `import { WriteFileCommand } from "@sumi/contract";
-import { app } from "@widgetarium/core/requests";
+import { app } from "@widgetarium/framework";
 
 export const sent = app().start().send(WriteFileCommand, { path: 1 });
 `;
@@ -134,7 +134,7 @@ try {
 	check("the tarball ships a built dist", fs.existsSync(path.join(shipped, "dist/index.js")), true);
 	check("the tarball ships its declarations", fs.existsSync(path.join(shipped, "dist/index.d.ts")), true);
 	check("every target its exports name is in the tarball", missingExportTargetsIn(shipped).join(", "), "");
-	check("the shipped files import only zod and @widgetarium/core/requests", shippedImportsOf(shipped).join(", "), "");
+	check("the shipped files import only zod and @widgetarium/framework", shippedImportsOf(shipped).join(", "), "");
 	check(
 		"an app outside the repo type-checks WriteFileCommand and imports FileSystemModule, WebPageModule and AssistantModule",
 		typeErrorsIn(project, APP),

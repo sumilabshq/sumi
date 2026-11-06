@@ -1,6 +1,6 @@
 import { featureNamesOf, requestNamesOf, shortNameOf, type FeatureNames, type FeatureSeed } from "./feature-files.js";
 import { memoryPartsOf, moduleConstOf, pickerPathOf, type ModulePlacement } from "./module-files.js";
-import { COMMAND_SUFFIX, CORE_REQUESTS, QUERY_SUFFIX } from "./scaffold-names.js";
+import { COMMAND_SUFFIX, FRAMEWORK, QUERY_SUFFIX } from "./scaffold-names.js";
 
 export interface CheckedFeature {
 	readonly module: string;
@@ -47,8 +47,8 @@ function importsOf({ module, folder, seed, names, isServer, moduleConst }: Check
 	const contract = [...(isServer ? [moduleConst] : []), ...requestNamesOf(seed)].sort();
 	const runnable = isServer ? `${moduleConst} as Runnable${moduleConst}` : moduleConst;
 	return [
-		`import { app${isServer ? ", orpcTransport, type User" : ""} } from "${CORE_REQUESTS}";`,
-		...(isServer ? [`import { Authenticate, server } from "${CORE_REQUESTS}/server";`] : []),
+		`import { app${isServer ? ", orpcTransport, type User" : ""} } from "${FRAMEWORK}";`,
+		...(isServer ? [`import { Authenticate, server } from "${FRAMEWORK}/server";`] : []),
 		`import { ${contract.join(", ")} } from "../${folder}/index.ts";`,
 		`import { ${memoryPartsOf(module)} } from "../${folder}/${pickerPathOf(module)}";`,
 		`import { ${names.memoryGateway} } from "../${folder}/${names.memoryFile}";`,

@@ -1,4 +1,4 @@
-import { Device, module } from "@widgetarium/core/requests";
+import { Device, module } from "@widgetarium/framework";
 import { BrowserModule } from "@widgetarium/browser";
 import { LayoutModule } from "@widgetarium/layout";
 import { PlacesModule } from "@widgetarium/places";

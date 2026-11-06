@@ -1,4 +1,4 @@
-import type { ModuleFacts } from "@widgetarium/core/requests";
+import type { ModuleFacts } from "@widgetarium/framework";
 import type { TerminalSessionsGateway } from "../terminal-sessions/terminal-sessions.gateway.js";
 import { MemoryTerminalSessionsGateway } from "../terminal-sessions/memory.gateway.js";
 import { TauriTerminalSessionsGateway } from "../terminal-sessions/tauri.gateway.js";

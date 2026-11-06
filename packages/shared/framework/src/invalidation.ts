@@ -1,6 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
-import { stableKey } from "../gateway/stable-key";
+import { stableKey } from "./gateway/stable-key";
 import type { CallingModule } from "./calling-module";
 import type { AnyQuery, SentOf } from "./request";
 

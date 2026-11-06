@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { useOptionalQuery } from "@widgetarium/core/requests";
+import { useOptionalQuery } from "@widgetarium/framework";
 import type { ChatCardsSlot } from "../../lib/chat-cards-slot.js";
 import { ReadyChat } from "../ready-chat/ready-chat.js";
 import { SetupUnread } from "../setup-unread/setup-unread.js";

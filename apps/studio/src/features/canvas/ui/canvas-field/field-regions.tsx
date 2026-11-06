@@ -1,6 +1,6 @@
 import { Fragment, createElement as h } from "react";
 import type { ReactElement } from "react";
-import { useQuery } from "@widgetarium/core/requests";
+import { useQuery } from "@widgetarium/framework";
 import { FieldRegionsQuery } from "@widgetarium/canvas";
 import { RegionDrawn } from "./region-drawn.js";
 

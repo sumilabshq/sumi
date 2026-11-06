@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 import {
 	ReleaseChatTasksCommand,
 	SettleTurnCommand,

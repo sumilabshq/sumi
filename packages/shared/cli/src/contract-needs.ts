@@ -69,7 +69,7 @@ const KNOWN_GLOBALS: ReadonlySet<string> = new Set([
 ]);
 const SCHEMAS = "shared/schema/";
 const SCRIPT = /\.[jt]s$/;
-const CONTRACT_PACKAGES: ReadonlySet<string> = new Set(["zod", "@widgetarium/core/requests"]);
+const CONTRACT_PACKAGES: ReadonlySet<string> = new Set(["zod", "@widgetarium/framework"]);
 
 const DECLARED_BESIDE =
 	"{file}: the contract of {name} uses {used}, declared in that file; a contract reads only imports, so move {used} to shared/schema";
@@ -79,7 +79,7 @@ const NOT_DECLARED = "{file}: the contract of {name} uses {used}, which that fil
 const NOT_A_SCHEMA =
 	"{file}: the contract of {name} uses {used} from {specifier}; a contract imports only shared/schema and packages, so no handler code reaches a client";
 const NOT_A_CONTRACT_PACKAGE =
-	"{file}: the contract of {name} uses {used} from {specifier}; a contract imports only zod, @widgetarium/core/requests and shared/schema";
+	"{file}: the contract of {name} uses {used} from {specifier}; a contract imports only zod, @widgetarium/framework and shared/schema";
 const SCHEMA_BY_NAME = "{file}: the contract of {name} uses {used}; import a schema by its own name from shared/schema";
 
 export function needsOfRequest(asked: RequestImports): ContractNeed[] {

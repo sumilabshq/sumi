@@ -1,7 +1,7 @@
 import { ShowViewCommand, ShownViewQuery } from "@widgetarium/app-host";
 import { STUDIO_OPENED_ON } from "@widgetarium/core/engine/studio-state-port.js";
 import type { StudioMoment, StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
-import type { StartedApp } from "@widgetarium/core/requests";
+import type { StartedApp } from "@widgetarium/framework";
 import { createListeners } from "./listeners.js";
 
 // TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's ShownViewQuery; views should read the query themselves

@@ -1,4 +1,4 @@
-import { isObject } from "../engine/is-object";
+import { isObject } from "../is-object";
 
 const IDENTITY_MARK = "\u0000identity:";
 const IDENTITIES = new WeakMap<object, string>();

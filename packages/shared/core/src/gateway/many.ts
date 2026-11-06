@@ -1,4 +1,4 @@
-import type { Action, RecordRef, Row } from "./contract";
+import type { Action, RecordRef, Row } from "@widgetarium/framework/gateway/contract";
 import type { LooseAction } from "./verbs-of";
 import { actionOf, verbOf } from "./verbs-of";
 

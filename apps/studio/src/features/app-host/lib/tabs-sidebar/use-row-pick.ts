@@ -1,4 +1,4 @@
-import { useCommand } from "@widgetarium/core/requests";
+import { useCommand } from "@widgetarium/framework";
 import { CloseTabCommand, OpenChatCommand, ShowTabCommand } from "@widgetarium/app-host";
 import type { SidebarTab } from "@widgetarium/app-host";
 

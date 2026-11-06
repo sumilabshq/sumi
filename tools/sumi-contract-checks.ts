@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
-import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/core/requests";
+import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/framework";
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { webPageRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
-import { server } from "@widgetarium/core/requests/server";
+import { server } from "@widgetarium/framework/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
 import {
@@ -18,7 +18,7 @@ import {
 	WebPageModule,
 	WebPageQuery,
 } from "../packages/shared/contract/index.ts";
-import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/core/requests";
+import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/framework";
 import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
 import { AssistantModule as RunnableAssistantModule } from "../packages/domain/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";

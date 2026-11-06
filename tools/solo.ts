@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { transform } from "sucrase";
 import { createElement as h, Fragment, type ReactElement, type ReactNode } from "react";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import { BOARD_SHEET } from "./sheet-paths.mts";
 
 type Held<T> = T | null | undefined;

@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { Slot } from "@widgetarium/core/requests";
+import { Slot } from "@widgetarium/framework";
 import { PlateHeaderPart } from "../../../plate/ui/plate-header-part.js";
 import { useTasksView } from "../../lib/use-tasks-view.js";
 import type { TasksView } from "../../lib/use-tasks-view.js";

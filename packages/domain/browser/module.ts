@@ -1,4 +1,4 @@
-import { Device, module } from "@widgetarium/core/requests";
+import { Device, module } from "@widgetarium/framework";
 import { AccessAsksChangedEvent } from "./gateways/access-asks/access-asks.events.js";
 import { PagesChangedEvent } from "./gateways/browser-pages/browser-pages.events.js";
 import { InkActivityChangedEvent } from "./gateways/ink-activity/ink-activity.events.js";

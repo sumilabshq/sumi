@@ -1,4 +1,4 @@
-import { Device, module } from "@widgetarium/core/requests";
+import { Device, module } from "@widgetarium/framework";
 import { PanesChangedEvent } from "./gateways/pane-tree/pane-tree.events.js";
 import { layoutPartsOn } from "./gateways/layout-parts/layout-parts.gateway.js";
 import {

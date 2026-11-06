@@ -6,7 +6,7 @@ import {
 } from "../packages/shared/core/src/gateway/refs.ts";
 import { createPickedGateway, selectionGateway } from "../packages/shared/packs/core/src/picked.ts";
 import { arrayGateway } from "../packages/shared/core/src/gateway/create.ts";
-import type { Patch } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Patch } from "../packages/shared/framework/src/gateway/contract.ts";
 import { wireTiles } from "../packages/shared/core/src/engine/wiring.js";
 import { mountKeyFor } from "../packages/shared/core/src/mount-key.js";
 import { createWidthGate, createWidthWatcher } from "../packages/shared/core/src/width-gate.js";

@@ -5,7 +5,7 @@ import { withDefaultSurfaces } from "./surface-default.js";
 import type { RoleOf } from "./surface-laws.js";
 import { swapsFromGroups } from "./view-groups.js";
 import type { NameOf } from "./view-groups.js";
-import { isObject } from "./engine/is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 import { KEEP_ID_WITHOUT_REGISTRY, normalizeTile } from "./board-tiles.js";
 import type { HeldRecord, IdOf, SlotRecord, Tile, TileMounts, TileProps, TileSettings } from "./board-tiles.js";
 import { isRawBox, normalizeBox, slotFlags } from "./board-layout.js";

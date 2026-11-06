@@ -1,8 +1,8 @@
 import type { z as Zod } from "zod";
 import type { HostGatewayContext } from "../packages/shared/core/src/engine/host-context.js";
-import { isObject } from "../packages/shared/core/src/engine/is-object.js";
+import { isObject } from "../packages/shared/framework/src/is-object.js";
 import type { HostGateway } from "../packages/shared/core/src/engine/host-context.js";
-import type { CollectionGateway } from "../packages/shared/core/src/gateway/contract.js";
+import type { CollectionGateway } from "../packages/shared/framework/src/gateway/contract.js";
 import type { DeclaredModule, WidgetLayout } from "../packages/shared/core/src/gateway/declared-types.js";
 import type { ActionMeta } from "../packages/shared/core/src/gateway/create.js";
 import { runWidgetSource } from "./run-widget-source.ts";

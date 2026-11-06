@@ -7,9 +7,9 @@ import type {
 	Row,
 	RowsResult,
 	ValueGateway,
-} from "@widgetarium/core/gateway/contract.js";
+} from "@widgetarium/framework/gateway/contract";
 import { ICrudGateway, IValueGateway } from "@widgetarium/core/gateway/declared.js";
-import type { EveryValueVerb } from "@widgetarium/core/gateway/needs.js";
+import type { EveryValueVerb } from "@widgetarium/framework/gateway/needs";
 import { refCollection, refValue } from "@widgetarium/core/gateway/refs.js";
 import { callVerbOf, verbOf } from "@widgetarium/core/gateway/verbs-of.js";
 import { stringIn } from "@widgetarium/core/engine/held-text.js";

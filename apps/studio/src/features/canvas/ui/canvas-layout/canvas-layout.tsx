@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement, ReactNode } from "react";
-import { Slot } from "@widgetarium/core/requests";
+import { Slot } from "@widgetarium/framework";
 import { Placed } from "./placed.js";
 
 export interface CanvasLayoutProps {

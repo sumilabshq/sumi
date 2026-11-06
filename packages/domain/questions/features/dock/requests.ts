@@ -1,4 +1,4 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/framework";
 import { QuestionsChangedEvent } from "../../gateways/questions/questions.events.js";
 import { QuestionsGateway } from "../../gateways/questions/questions.gateway.js";
 import { answersText } from "../../shared/lib/answer-text.js";

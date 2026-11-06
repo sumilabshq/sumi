@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { portFromParent } from "@widgetarium/core/requests";
+import { portFromParent } from "@widgetarium/framework";
 import { startSumiShell } from "./sumi-shell.js";
 import { OutsideSumi } from "./outside-sumi.js";
 import { TerminalRoot } from "./terminal-root.js";

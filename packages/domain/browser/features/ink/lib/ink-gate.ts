@@ -1,4 +1,4 @@
-import { refuse } from "@widgetarium/core/requests";
+import { refuse } from "@widgetarium/framework";
 import { AccessAsksGateway } from "../../../gateways/access-asks/access-asks.gateway.js";
 import { BrowserAuditGateway } from "../../../gateways/browser-audit/browser-audit.gateway.js";
 import { BrowserGrantReadsGateway } from "../../../gateways/browser-grant-reads/browser-grant-reads.gateway.js";

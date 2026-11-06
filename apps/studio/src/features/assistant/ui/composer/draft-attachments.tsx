@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { useOverflowsAcross } from "../../lib/use-overflows-across.js";
 import { hasPreview, isPicture, useOpensPictures } from "../../lib/use-opens-pictures.js";
 import { AttachmentCard } from "./attachment-card.js";

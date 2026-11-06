@@ -1,5 +1,5 @@
 import { definePack, registerPacks, registeredQueries } from "../packages/shared/core/src/engine/packs.ts";
-import type { HandlerContext } from "../packages/shared/core/src/gateway/handler-context.ts";
+import type { HandlerContext } from "../packages/shared/framework/src/gateway/handler-context.ts";
 import { PageInputSchema, PageOf, pageAt } from "../packages/shared/core/src/gateway/page.ts";
 import type { Page, PageInput } from "../packages/shared/core/src/gateway/page.ts";
 import { IQuery } from "../packages/shared/core/src/gateway/queries.ts";
@@ -10,7 +10,7 @@ import { arrayGateway, soloGateway } from "../packages/shared/core/src/gateway/c
 import { defineGatewayMetadata } from "../packages/shared/core/src/gateway/implementation-metadata.ts";
 import { IValueGateway, z } from "../packages/shared/core/src/gateway/declared.ts";
 import type { HostGatewayContext } from "../packages/shared/core/src/engine/host-context.ts";
-import type { Patch } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Patch } from "../packages/shared/framework/src/gateway/contract.ts";
 import { collectionOf, updateOf, valueGatewayOf } from "./gateway-kinds.ts";
 import { fieldIn } from "./held-fields.ts";
 import { withPageParams } from "../packages/shared/core/src/engine/page-params.ts";

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import type { Answer } from "@widgetarium/core/requests";
+import type { Answer } from "@widgetarium/framework";
 
 export type OnAnswered = (answer: Answer<unknown>) => void;
 

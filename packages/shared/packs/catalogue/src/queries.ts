@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { ImplementationPorts } from "@widgetarium/core/engine/packs.js";
-import type { Query, Row, RowsResult } from "@widgetarium/core/gateway/contract.js";
+import type { Query, Row, RowsResult } from "@widgetarium/framework/gateway/contract";
 import { rowOf } from "@widgetarium/core/gateway/create.js";
 import { IQuery } from "@widgetarium/core/gateway/queries.js";
 import type { CatalogueMode } from "@widgetarium/core/engine/catalogue-requests.js";

@@ -1,6 +1,6 @@
 import { createElement as h, useRef } from "react";
 import type { ReactElement } from "react";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { Icon, IconButton, tooltipMarks } from "@widgetarium/kit";
 import { CreateWorkspaceCommand, WorkspacesQuery } from "@widgetarium/workspaces";
 import { useFadesAtEdges } from "../../lib/use-fades-at-edges.js";

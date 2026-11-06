@@ -2,7 +2,7 @@ import { folderFor, rawUrl, readRepository } from "./github.js";
 import { isInstalled } from "./catalogue-index.js";
 import type { Fields } from "./catalogue-index.js";
 import { WIDGETS_DIR } from "../paths.js";
-import { isObject } from "./is-object.js";
+import { isObject } from "@widgetarium/framework/is-object";
 
 type Theme = "light" | "dark";
 

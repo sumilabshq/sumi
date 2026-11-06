@@ -1,5 +1,5 @@
 import { createElement as h } from "react";
-import type { CommandAnswer } from "@widgetarium/core/gateway/run-handler.js";
+import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
 import { Card, Icon, IconButton } from "@widgetarium/kit";
 import { SketchRegion } from "./sketch-region.js";
 import type { Template } from "./types.js";

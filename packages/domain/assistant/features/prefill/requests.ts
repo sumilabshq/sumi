@@ -1,4 +1,4 @@
-import { PerCall, Repeatable, command, query } from "@widgetarium/core/requests";
+import { PerCall, Repeatable, command, query } from "@widgetarium/framework";
 import { ComposerPrefillGateway } from "../../gateways/composer-prefill/composer-prefill.gateway.js";
 import { ComposerPrefillSchema, PrefillAskedSchema, PrefillTakenSchema } from "../../shared/schema/composer-prefill.schema.js";
 

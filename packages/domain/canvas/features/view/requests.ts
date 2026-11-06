@@ -1,4 +1,4 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/core/requests";
+import { Repeatable, command, query, subscriber } from "@widgetarium/framework";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";

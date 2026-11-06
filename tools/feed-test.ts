@@ -1,6 +1,6 @@
 import { JSDOM } from "jsdom";
 import type { FunctionComponent, ReactElement, ReactNode } from "react";
-import type { Query } from "../packages/shared/core/src/gateway/contract.ts";
+import type { Query } from "../packages/shared/framework/src/gateway/contract.ts";
 import { offsetOfCursor, pageAt } from "../packages/shared/core/src/gateway/page.ts";
 import type { PageInput } from "../packages/shared/core/src/gateway/page.ts";
 import type { WidgetComponent } from "../packages/shared/core/src/registry-scope.js";

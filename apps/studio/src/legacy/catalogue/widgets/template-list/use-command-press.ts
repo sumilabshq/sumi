@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CommandAnswer } from "@widgetarium/core/gateway/run-handler.js";
+import type { CommandAnswer } from "@widgetarium/framework/gateway/run-handler";
 
 export function useCommandPress(send: () => Promise<CommandAnswer>) {
 	const [isBusy, setBusy] = useState(false);

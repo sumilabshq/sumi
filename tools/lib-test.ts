@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import nodePath from "node:path";
 import { pathToFileURL } from "node:url";
-import type { RecordRef } from "../packages/shared/core/src/gateway/contract.ts";
+import type { RecordRef } from "../packages/shared/framework/src/gateway/contract.ts";
 import { rowOf } from "../packages/shared/core/src/gateway/create.ts";
 import type { RegistryAdapter } from "../packages/shared/core/src/registry-reading.js";
 import { fieldAt } from "./held-fields.ts";

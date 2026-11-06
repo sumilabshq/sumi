@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { AppFacesQuery } from "@widgetarium/app-host";
-import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/framework";
 import { AppTabQuery, GoBackInTabCommand, GoForwardInTabCommand } from "@widgetarium/places";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 import { PlateHeaderPart } from "../../../plate/ui/plate-header/plate-header-part.js";

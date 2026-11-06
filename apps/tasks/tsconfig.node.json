@@ -20,7 +20,11 @@
 		"noEmit": true,
 		"skipLibCheck": true
 	},
-	"references": [{ "path": "../../packages/shared/kit" }, { "path": "../../packages/shared/core" }],
+	"references": [
+		{ "path": "../../packages/shared/kit" },
+		{ "path": "../../packages/shared/core" },
+		{ "path": "../../packages/shared/framework" }
+	],
 	"include": [
 		"vite.config.ts",
 		"scripts",

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { OutputOf } from "@widgetarium/core/requests";
+import type { OutputOf } from "@widgetarium/framework";
 import type { PagesQuery } from "@widgetarium/canvas";
 import { PAGE_ROW } from "../../lib/panel-row-look.js";
 

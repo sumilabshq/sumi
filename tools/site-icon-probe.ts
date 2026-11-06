@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { JSDOM } from "jsdom";
-import { app } from "../packages/shared/core/src/requests/index.ts";
+import { app } from "../packages/shared/framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { SiteIconQuery } from "../packages/domain/browser/index.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";

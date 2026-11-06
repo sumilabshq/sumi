@@ -1,4 +1,4 @@
-import { refusalOf } from "@widgetarium/core/requests";
+import { refusalOf } from "@widgetarium/framework";
 import type {
 	AnyRequest,
 	Answer,
@@ -7,7 +7,7 @@ import type {
 	RemoteTransport,
 	ServedCall,
 	ServingServer,
-} from "@widgetarium/core/requests";
+} from "@widgetarium/framework";
 
 export type HeardInvalidation = Parameters<HearChanges>[0][number];
 

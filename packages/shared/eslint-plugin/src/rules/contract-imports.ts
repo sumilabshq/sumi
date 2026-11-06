@@ -15,7 +15,7 @@ export const contractImports: Rule.RuleModule = {
 		schema: [],
 		messages: {
 			reachesIn:
-				"a contract imports only shared/schema, @widgetarium/core/requests and shared packages; {{specifier}} is not one of them",
+				"a contract imports only shared/schema, @widgetarium/framework and shared packages; {{specifier}} is not one of them",
 			wiring: "a contract never imports a module's wiring: {{specifier}}",
 		},
 	},

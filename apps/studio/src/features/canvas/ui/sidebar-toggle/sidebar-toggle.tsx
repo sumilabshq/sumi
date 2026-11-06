@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { useCommand, useQuery } from "@widgetarium/core/requests";
+import { useCommand, useQuery } from "@widgetarium/framework";
 import { SidebarQuery, ToggleSidebarCommand } from "@widgetarium/canvas";
 import { SIDEBAR_LABEL } from "../../lib/sidebar-label.js";
 import { RoundButton } from "../round-button/round-button.js";

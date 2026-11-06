@@ -1,5 +1,5 @@
-import type { User } from "@widgetarium/core/requests";
-import { Authenticate } from "@widgetarium/core/requests/server";
+import type { User } from "@widgetarium/framework";
+import { Authenticate } from "@widgetarium/framework/server";
 
 export const APP_CALLER_HEADER = "x-sumi-app";
 
