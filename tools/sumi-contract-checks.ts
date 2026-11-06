@@ -211,19 +211,21 @@ check(
 	chatRead.ok ? chatRead.output.session.turns.map(({ text }) => text) : chatRead.reason,
 	["hi", "echo: hi"],
 );
-const picked = await chatOfApp.send(PickWorkingFolderCommand);
-check("an app may not pick a working folder", picked.ok ? "picked" : picked.code, "forbidden");
-const lent = await chatOfApp.send(AttachFolderCommand);
-check("an app may not lend a folder", lent.ok ? "lent" : lent.code, "forbidden");
-const shellOnly = [
+const chosenByChat = [
+	await chatOfApp.send(PickWorkingFolderCommand),
 	await chatOfApp.send(ChooseProviderCommand, { id: "claude" }),
 	await chatOfApp.send(OpenProvidersCommand),
-	await chatOfApp.send(FileDragQuery),
 ];
 check(
-	"an app may not choose a provider, open the providers or hear file drags: those are the shell's",
+	"the chat app picks a folder, chooses a provider and opens the providers itself",
+	chosenByChat.map((answer) => answer.ok || answer.code !== "forbidden"),
+	[true, true, true],
+);
+const shellOnly = [await chatOfApp.send(AttachFolderCommand), await chatOfApp.send(FileDragQuery)];
+check(
+	"an app may not lend a folder or hear file drags: those are the shell's",
 	shellOnly.map((answer) => (answer.ok ? "answered" : answer.code)),
-	["forbidden", "forbidden", "forbidden"],
+	["forbidden", "forbidden"],
 );
 const shellPicked = await appOver(chat, (transport) => AssistantModule.over(transport), null).send(
 	PickWorkingFolderCommand,

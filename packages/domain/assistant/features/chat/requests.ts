@@ -31,6 +31,12 @@ const APP_CALLABLE: ReadonlySet<string> = new Set(
 		"agent-setup",
 		"claude-options",
 		"working-folders",
+		"choose-provider",
+		"open-providers",
+		"choose-claude-option",
+		"choose-claude-model",
+		"choose-working-folder",
+		"pick-working-folder",
 	].map((short) => `assistant/${short}`),
 );
 const NOT_FOR_APPS =
