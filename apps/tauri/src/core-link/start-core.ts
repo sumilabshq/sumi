@@ -14,7 +14,7 @@ import {
 } from "@widgetarium/places";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
 import { AppCallerAuthenticate, BUILT_IN_PROFILE, resolvePlugins } from "@widgetarium/studio";
-import type { SharedModule } from "@widgetarium/studio";
+import type { BackgroundModule } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { serveCore } from "./core-calls.js";
@@ -80,7 +80,10 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 		file: tasksBoardFileOver(own),
 	};
 	server()
-		.modules(...HOST_CAPABILITY_MODULES, ...sharedModulesOf(workspace, profile).map(({ moduleOf }) => moduleOf(offers)))
+		.modules(
+			...HOST_CAPABILITY_MODULES,
+			...backgroundModulesOf(workspace, profile).map(({ moduleOf }) => moduleOf(offers)),
+		)
 		.listen(listener)
 		.listen(own)
 		.start({
@@ -96,14 +99,14 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
 }
 
-function sharedModulesOf(workspace: string, profile: SumiProfile): readonly SharedModule[] {
+function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly BackgroundModule[] {
 	const resolved = resolvePlugins(profile);
 
 	for (const refusal of resolved.refusals) {
 		console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));
 	}
 
-	return resolved.sharedModules;
+	return resolved.backgroundModules;
 }
 
 function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string): void {

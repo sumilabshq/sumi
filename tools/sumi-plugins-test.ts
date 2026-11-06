@@ -35,7 +35,7 @@ const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 
 function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
-	return [...HOST_CAPABILITY_MODULES, ...resolved.sharedModules.map(({ moduleOf }) => moduleOf(offers))];
+	return [...HOST_CAPABILITY_MODULES, ...resolved.backgroundModules.map(({ moduleOf }) => moduleOf(offers))];
 }
 
 async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
@@ -80,8 +80,8 @@ check(
 	[FileSystemModule.definition.name, TerminalModule.definition.name],
 );
 check(
-	"the shared modules slot holds the apps plugin's module and the old app's, none of the host's",
-	resolved.sharedModules.map(({ contract }) => contract.name),
+	"the background modules slot holds the apps plugin's module and the old app's, none of the host's",
+	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
 		AppsModule.definition.name,
 		PlacesModule.definition.name,
@@ -105,7 +105,7 @@ check("the apps plugin's tab page draws the terminal", resolved.tabPage?.draws("
 const emptyProfile = resolvePlugins({ plugins: [] });
 check(
 	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app and the apps module",
-	[emptyProfile.refusals, emptyProfile.sharedModules.length],
+	[emptyProfile.refusals, emptyProfile.backgroundModules.length],
 	[[], 4],
 );
 check(

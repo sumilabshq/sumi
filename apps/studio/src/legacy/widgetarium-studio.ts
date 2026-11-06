@@ -114,14 +114,14 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const project = startOpenedProject(opened, start);
 	const lent = lentPortsOf(opened, start);
 	const plugins = start.plugins ?? resolvePlugins(BUILT_IN_PROFILE);
-	const core = start.core ?? startCoreInProcess(lent.appId, plugins.sharedModules);
+	const core = start.core ?? startCoreInProcess(lent.appId, plugins.backgroundModules);
 	const studioApp =
 		start.studioApp ??
 		startStudioApp({
 			platform: "browser",
 			workspaceId: lent.appId,
 			core,
-			sharedModules: plugins.sharedModules,
+			backgroundModules: plugins.backgroundModules,
 		});
 	const state = start.state ?? createStudioState(studioApp);
 	const appearance = start.appearance ?? startStudioAppearance(window);

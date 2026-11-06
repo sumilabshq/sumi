@@ -15,7 +15,7 @@ import { FileSystemModule } from "@widgetarium/file-system/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
-import type { SharedModule } from "../plugins/sumi-plugins.js";
+import type { BackgroundModule } from "../plugins/sumi-plugins.js";
 
 export interface TauriStudioLent {
 	readonly store: StoreClient;
@@ -29,27 +29,30 @@ export interface StudioAppAsk {
 	readonly workspaceId: string;
 	readonly core?: RemoteTransport;
 	readonly lent?: TauriStudioLent;
-	readonly sharedModules: readonly SharedModule[];
+	readonly backgroundModules: readonly BackgroundModule[];
 }
 
-export function startStudioApp({ platform, workspaceId, core, lent, sharedModules }: StudioAppAsk): StartedApp {
-	const served = core ?? startCoreInProcess(workspaceId, sharedModules);
+export function startStudioApp({ platform, workspaceId, core, lent, backgroundModules }: StudioAppAsk): StartedApp {
+	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
 	const studioApp = app()
 		.modules(...studioModulesOf(lent))
-		.imports(...sharedModules.map(({ contract }) => contract.over(served)))
+		.imports(...backgroundModules.map(({ contract }) => contract.over(served)))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
 }
 
-export function startCoreInProcess(workspaceId: string, sharedModules: readonly SharedModule[]): RemoteTransport {
+export function startCoreInProcess(
+	workspaceId: string,
+	backgroundModules: readonly BackgroundModule[],
+): RemoteTransport {
 	const local = localTransport();
 	const offers = {
 		store: new StoreClient(memoryStoreInvoke()),
 		file: boardFileInMemory(),
 	};
 	server()
-		.modules(FileSystemModule, TerminalModule, ...sharedModules.map(({ moduleOf }) => moduleOf(offers)))
+		.modules(FileSystemModule, TerminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.listen(local)
 		.start({
 			env: {},

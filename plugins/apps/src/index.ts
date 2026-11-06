@@ -1,8 +1,9 @@
 import type { ComponentType } from "react";
 import { z } from "zod";
 import { AppsModule as AppsContract } from "@sumi/apps";
+import type { AppFace } from "@sumi/apps";
 import { AppsModule } from "@sumi/apps/module";
-import { SharedModulesSlot, SumiHostPlugin, TabPageSlot } from "@sumi/sumi-host-plugin";
+import { BackgroundModulesSlot, SumiHostPlugin, TabPageSlot } from "@sumi/sumi-host-plugin";
 import { plugin, slot } from "@widgetarium/plugin-framework";
 import { appsTabPageOf } from "./apps-tab-page.js";
 
@@ -26,14 +27,17 @@ export const AppsPlugin = plugin("apps")
 	.require(SumiHostPlugin)
 	.declare(AppsSlot)
 	.fill(
-		SharedModulesSlot({
+		BackgroundModulesSlot({
 			id: "apps",
-			module: ({ fillsOf }) =>
-				AppsModule({ apps: fillsOf(AppsSlot).map(({ id, title, icon }) => ({ id, title, icon })) }),
+			module: ({ fillsOf }) => AppsModule({ apps: fillsOf(AppsSlot).map(withoutView) }),
 			contract: AppsContract,
 		}),
 		TabPageSlot({ tabPage: ({ fillsOf }) => appsTabPageOf(fillsOf(AppsSlot)) }),
 	);
+
+function withoutView({ id, title, icon }: AppFace & { readonly view: AppView }): AppFace {
+	return { id, title, icon };
+}
 
 function isComponent(value: unknown): boolean {
 	return typeof value === "function" || (typeof value === "object" && value !== null && "$$typeof" in value);

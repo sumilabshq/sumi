@@ -13,7 +13,7 @@ export interface CoreOffers extends SlotReader {
 	readonly file: BoardFile;
 }
 
-export type SharedModuleOf = (offers: CoreOffers) => ServerSideModule;
+export type BackgroundModuleOf = (offers: CoreOffers) => ServerSideModule;
 
 export interface TabPageProps {
 	readonly app: string;
@@ -28,16 +28,16 @@ export interface DrawnTabPage {
 export type TabPageOf = (offers: SlotReader) => DrawnTabPage;
 
 const NOT_A_MODULE_OF =
-	"a shared module is a function of what the core offers, answering a module(...) configured from it";
-const NOT_A_CONTRACT = 'a shared module names its contract, the module(...) descriptor of its package\'s "." entry';
+	"a background module is a function of what the core offers, answering a module(...) configured from it";
+const NOT_A_CONTRACT = 'a background module names its contract, the module(...) descriptor of its package\'s "." entry';
 const NOT_A_TAB_PAGE_OF = "a tab page is a function of the plugin's slot reader, answering { page, draws }";
 
-export const SharedModuleSchema = z.object({
-	module: z.custom<SharedModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
+export const BackgroundModuleSchema = z.object({
+	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
 	contract: z.custom<ModuleContract<ServerRuns>>((value) => value instanceof ModuleContract, NOT_A_CONTRACT),
 });
 
-export const SharedModulesSlot = slot("shared-modules").item(SharedModuleSchema).list();
+export const BackgroundModulesSlot = slot("background-modules").item(BackgroundModuleSchema).list();
 
 export const TabPageSchema = z.object({
 	tabPage: z.custom<TabPageOf>((value) => typeof value === "function", NOT_A_TAB_PAGE_OF),
@@ -45,4 +45,4 @@ export const TabPageSchema = z.object({
 
 export const TabPageSlot = slot("tab-page").item(TabPageSchema);
 
-export const SumiHostPlugin = plugin("sumi-host").declare(SharedModulesSlot, TabPageSlot);
+export const SumiHostPlugin = plugin("sumi-host").declare(BackgroundModulesSlot, TabPageSlot);

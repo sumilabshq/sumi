@@ -20,10 +20,10 @@ Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece 
 
 The host declares its own slots in `plugins/sumi-host` and reads only those:
 
-| Slot                | Item                                            | The host                                                                                          |
-| ------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `SharedModulesSlot` | `{ module: (offers) => module, contract }`      | starts `module(offers)` in the core per workspace; each studio window imports `contract` over IPC |
-| `TabPageSlot`       | `{ tabPage: (offers) => { page, draws(app) } }` | draws `page` in a tab whose app it `draws`, inside an app over the tab's frame routes             |
+| Slot                    | Item                                            | The host                                                                                          |
+| ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| `BackgroundModulesSlot` | `{ module: (offers) => module, contract }`      | starts `module(offers)` in the core per workspace; each studio window imports `contract` over IPC |
+| `TabPageSlot`           | `{ tabPage: (offers) => { page, draws(app) } }` | draws `page` in a tab whose app it `draws`, inside an app over the tab's frame routes             |
 
 `offers` always holds `fillsOf(slot)`, the plugin's own slot reader.
 
@@ -32,9 +32,9 @@ The host declares its own slots in `plugins/sumi-host` and reads only those:
 ```
 sumi.profile.json ──► resolvePlugins(profile)        apps/studio/src/plugins/sumi-plugins.ts
                         │
-      core window ──────┼── host capabilities (files, terminal) + every SharedModulesSlot module(offers)
+      core window ──────┼── host capabilities (files, terminal) + every BackgroundModulesSlot module(offers)
                         │                                       served per workspace over IPC
-      studio window ────┼── imports every SharedModulesSlot contract over the core transport
+      studio window ────┼── imports every BackgroundModulesSlot contract over the core transport
                         └── draws the TabPageSlot page in app tabs
 ```
 

@@ -11,8 +11,8 @@ import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { AppsPlugin } from "@sumi/apps-plugin";
 import { MainPlugin } from "@sumi/main-plugin";
 import {
-	SharedModuleSchema,
-	SharedModulesSlot,
+	BackgroundModuleSchema,
+	BackgroundModulesSlot,
 	SumiHostPlugin,
 	TabPageSchema,
 	TabPageSlot,
@@ -22,19 +22,19 @@ import { TerminalPlugin } from "@sumi/terminal-plugin";
 
 export type HostOffers = Omit<CoreOffers, "fillsOf">;
 
-export interface SharedModule {
+export interface BackgroundModule {
 	readonly contract: ModuleContract<ServerRuns>;
 	moduleOf(offers: HostOffers): ServerSideModule;
 }
 
 export interface ResolvedPlugins {
-	readonly sharedModules: readonly SharedModule[];
+	readonly backgroundModules: readonly BackgroundModule[];
 	readonly tabPage: DrawnTabPage | null;
 	readonly refusals: readonly string[];
 }
 
 const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, MainPlugin, TerminalPlugin];
-const SHARED_MODULES = stampSlotName(SumiHostPlugin.id, SharedModulesSlot);
+const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
 
 const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, AppsPlugin.id, MainPlugin.id];
@@ -51,8 +51,8 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 		slotReaderOf(slotFills, pluginOf(startOrder.plugins, fill.pluginId));
 
 	return {
-		sharedModules: fillsOf(slotFills, SHARED_MODULES).flatMap((fill) => {
-			const parsed = SharedModuleSchema.safeParse(fill.item);
+		backgroundModules: fillsOf(slotFills, BACKGROUND_MODULES).flatMap((fill) => {
+			const parsed = BackgroundModuleSchema.safeParse(fill.item);
 			return parsed.success
 				? [
 						{

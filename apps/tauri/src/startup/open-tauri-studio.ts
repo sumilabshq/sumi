@@ -114,7 +114,7 @@ function startTauriStudioApp(
 		workspaceId: workspace.id,
 		core,
 		lent: tauriStudioLent(store),
-		sharedModules: plugins.sharedModules,
+		backgroundModules: plugins.backgroundModules,
 	});
 }
 
