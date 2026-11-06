@@ -5,18 +5,17 @@ import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { app, localTransport } from "@widgetarium/data-framework";
 import type { ListeningTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
+import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import type { SumiProfile } from "@widgetarium/plugin-framework";
 import {
 	CloseWindowCommand,
 	ForgetRunningTurnsCommand,
 	KeepLiveWindowsCommand,
 	PlacesModule as PlacesContract,
 } from "@widgetarium/places";
-import { PlacesModule } from "@widgetarium/places/module";
 import { ReconcileTasksCommand, SweepStaleTasksCommand, TasksModule as TasksContract } from "@widgetarium/tasks";
-import { FileSystemModule } from "@widgetarium/file-system/module";
-import { QuestionsModule } from "@widgetarium/questions/module";
-import { APP_MODULES } from "@widgetarium/app-registry/modules";
 import { AppCallerAuthenticate } from "@widgetarium/studio";
+import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
 import { serveCore } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
@@ -53,8 +52,9 @@ export function startCore(): void {
 
 function coreServedOver(workspace: string, listener: ListeningTransport): StartedApp {
 	const own = localTransport();
+	// TRADE-OFF: modules from a plugin slot lose typed host needs; start() still refuses a missing one.
 	server()
-		.modules(PlacesModule, FileSystemModule, QuestionsModule, ...APP_MODULES)
+		.modules(...sharedModulesOf(BUILT_IN_PROFILE))
 		.listen(listener)
 		.listen(own)
 		.start({
@@ -71,6 +71,16 @@ function coreServedOver(workspace: string, listener: ListeningTransport): Starte
 			},
 		});
 	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
+}
+
+function sharedModulesOf(profile: SumiProfile): readonly ServerSideModule[] {
+	const resolved = resolvePlugins(profile);
+
+	for (const refusal of resolved.refusals) {
+		console.error(`[studio-core] plugins: ${refusal}`);
+	}
+
+	return resolved.sharedModules;
 }
 
 function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string): void {
