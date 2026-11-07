@@ -1563,7 +1563,7 @@
 	white-space: nowrap;
 }
 
-.wg-chat-app .wg-studio-ai > * {
+.wg-chat-app :is(.wg-studio-ai, .wg-studio-ai-dock) > * {
 	box-sizing: border-box;
 	width: 100%;
 	max-width: var(--wg-studio-chat-content);
@@ -1590,6 +1590,7 @@
 
 .wg-chat-app .wg-studio-ai-scroll {
 	--wg-studio-ai-end-room: 28px;
+	overflow-x: hidden;
 	padding: 14px 24px var(--wg-studio-ai-end-room);
 }
 
@@ -1599,8 +1600,6 @@
 
 .wg-chat-app .wg-studio-ai-row {
 	--wg-studio-ai-line-overhang: 12px;
-	content-visibility: auto;
-	contain-intrinsic-size: auto 600px;
 	padding-block-end: var(--wg-studio-ai-line-overhang);
 	margin-block-end: calc(-1 * var(--wg-studio-ai-line-overhang));
 }
@@ -3241,4 +3240,62 @@
 .wg-chat-app .wg-studio-ai-live-task-dot.is-now {
 	background: var(--sumi-text);
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--sumi-text) 12%, transparent);
+}
+
+:is(.wg-root, .wg-portal) .wg-studio-ai-dock {
+	display: contents;
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) {
+	--wg-studio-ai-dock-gap: 8px;
+	display: grid;
+	grid-template-rows: auto minmax(0, 1fr) auto;
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) > .wg-studio-ai-scroll-frame {
+	grid-row: 2 / 4;
+	grid-column: 1;
+	max-width: none;
+	margin-block-end: 0;
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll {
+	padding-block-end: calc(var(--wg-studio-ai-dock-height, 0px) + var(--wg-studio-ai-end-room));
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll-content {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: calc(var(--wg-studio-chat-content) - 48px);
+	margin-inline: auto;
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-live {
+	bottom: calc(var(--wg-studio-ai-dock-height, 0px) - var(--wg-studio-ai-end-room));
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-to-end {
+	bottom: calc(var(--wg-studio-ai-dock-height, 0px) + 8px);
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) .wg-studio-ai-scroll-frame:has(.wg-studio-ai-live) .wg-studio-ai-to-end {
+	bottom: calc(var(--wg-studio-ai-dock-height, 0px) + var(--sumi-h-xs) + var(--sumi-sp-5) + 8px);
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty) > .wg-studio-ai-dock {
+	position: relative;
+	z-index: 2;
+	grid-row: 3;
+	grid-column: 1;
+	display: flex;
+	flex-direction: column;
+	gap: var(--wg-studio-ai-dock-gap);
+	max-width: none;
+	padding-block-start: calc(var(--sumi-sp-4) + var(--wg-studio-ai-dock-gap));
+	background: var(--sumi-plate);
+}
+
+.wg-chat-app .wg-studio-ai:not(.is-empty):has(.wg-studio-ai-live) > .wg-studio-ai-dock {
+	padding-block-start: calc(var(--wg-studio-ai-dock-gap) - 2px);
 }

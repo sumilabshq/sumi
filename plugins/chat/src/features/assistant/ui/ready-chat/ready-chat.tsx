@@ -20,6 +20,7 @@ import { QuestionsDock } from "../../../questions/ui/questions-dock/questions-do
 import { ChatTurns } from "./chat-turns.js";
 import { QueueZone } from "../queue/queue-zone.js";
 import { useQueueActions } from "../../lib/use-queue-actions.js";
+import { ChatDock } from "./chat-dock.js";
 import { ChatQuery, StopTurnCommand } from "@widgetarium/assistant";
 
 export interface ReadyChatProps {
@@ -61,36 +62,38 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 			<ChatScroll key={chatId}>
 				<ChatTurns chat={chat} cards={cards} asks={asks} chatId={chatId} />
 			</ChatScroll>
-			<Pinned session={session} showCard={showCard} />
-			<Strip showCard={showCard} />
-			<FailureSaid failure={failure ?? setupFailure} />
-			{chatId === undefined ? null : <QuestionsDock chatId={chatId} report={report} />}
-			<QueueZone
-				queued={chat.queued}
-				isBusy={session.busy}
-				actions={queueActions}
-				onEdit={(queued) => void queueActions.hold(queued.id, true)}
-			/>
-			<Composer
-				busy={session.busy}
-				strip={
-					<ChatPart>
-						<ClaudeStrip isEmpty={isEmpty} />
-					</ChatPart>
-				}
-				isFirst={isEmpty}
-				attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
-				onSend={asks.send}
-				onStop={() => void stopTurn.run({ chat: chatId ?? null })}
-				onTyped={typed}
-				editing={editing}
-				onSaveEdit={queueActions.saveEdit}
-				onCancelEdit={() => {
-					if (editing !== null) {
-						void queueActions.hold(editing.id, false);
+			<ChatDock>
+				<Pinned session={session} showCard={showCard} />
+				<Strip showCard={showCard} />
+				<FailureSaid failure={failure ?? setupFailure} />
+				{chatId === undefined ? null : <QuestionsDock chatId={chatId} report={report} />}
+				<QueueZone
+					queued={chat.queued}
+					isBusy={session.busy}
+					actions={queueActions}
+					onEdit={(queued) => void queueActions.hold(queued.id, true)}
+				/>
+				<Composer
+					busy={session.busy}
+					strip={
+						<ChatPart>
+							<ClaudeStrip isEmpty={isEmpty} />
+						</ChatPart>
 					}
-				}}
-			/>
+					isFirst={isEmpty}
+					attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
+					onSend={asks.send}
+					onStop={() => void stopTurn.run({ chat: chatId ?? null })}
+					onTyped={typed}
+					editing={editing}
+					onSaveEdit={queueActions.saveEdit}
+					onCancelEdit={() => {
+						if (editing !== null) {
+							void queueActions.hold(editing.id, false);
+						}
+					}}
+				/>
+			</ChatDock>
 			<FileDropZone isOver={drop.isOver} />
 		</div>
 	);
