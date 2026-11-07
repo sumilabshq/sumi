@@ -31,6 +31,15 @@ export function highlightCode(code: HTMLElement, body: string, language: CodeLan
 	);
 }
 
+export async function highlightedLinesOf(
+	page: Document,
+	body: string,
+	language: CodeLanguage,
+): Promise<readonly (readonly Node[])[]> {
+	const lines = await tokensOf(body, language);
+	return lines.map((line) => line.map((token) => createTokenNode(page, token)));
+}
+
 async function tokensOf(body: string, language: CodeLanguage): Promise<ThemedToken[][]> {
 	const key = `${language}\n${body}`;
 	const kept = tokensByKey.get(key);

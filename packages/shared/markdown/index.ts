@@ -6,3 +6,5 @@ export { RUN_COMMAND_EVENT, createCodeBlock } from "./src/code-block.js";
 export type { CodeBlockAsk } from "./src/code-block.js";
 export { OPENED_LIVE_ATTRIBUTE, openCutsIn } from "./src/more-toggle.js";
 export { languageOf } from "./src/code-languages.js";
+export { createCodeLines } from "./src/code-lines.js";
+export type { CodeLinesAsk } from "./src/code-lines.js";
