@@ -3,7 +3,7 @@ import type { ReactElement, ReactNode } from "react";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
-import { TabPageContext } from "../../lib/tab-page-context.js";
+import { TabPagesContext } from "../../lib/tab-page-context.js";
 import { AppPageUrlContext } from "../../lib/app-page-url-context.js";
 import type { FrameRoutesFor } from "../../lib/frame-relay.js";
 import { FrameRoutesContext } from "../../lib/use-frame-port.js";
@@ -12,22 +12,22 @@ import { useOpensAskedLinks } from "../../lib/use-opens-asked-links.js";
 export interface AppFramesProviderProps {
 	readonly routesFor: FrameRoutesFor;
 	readonly pageUrlOf?: AppPageUrlOf;
-	readonly tabPage: DrawnTabPage | null;
+	readonly tabPages: readonly DrawnTabPage[];
 	readonly children: ReactNode;
 }
 
 export function AppFramesProvider({
 	routesFor,
 	pageUrlOf = sumiAppPageUrlOf,
-	tabPage,
+	tabPages,
 	children,
 }: AppFramesProviderProps): ReactElement {
 	useOpensAskedLinks();
 	return (
 		<AppPageUrlContext.Provider value={pageUrlOf}>
-			<TabPageContext.Provider value={tabPage}>
+			<TabPagesContext.Provider value={tabPages}>
 				<FrameRoutesContext.Provider value={routesFor}>{children}</FrameRoutesContext.Provider>
-			</TabPageContext.Provider>
+			</TabPagesContext.Provider>
 		</AppPageUrlContext.Provider>
 	);
 }

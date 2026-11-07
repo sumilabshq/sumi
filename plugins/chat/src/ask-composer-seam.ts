@@ -3,12 +3,12 @@ import type { AdoptedDraft } from "@widgetarium/assistant";
 import { OpenNewChatCommand } from "@widgetarium/app-host";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { StartedApp } from "@widgetarium/data-framework";
-import { focusedChatPortOf } from "../chats-column/focused-chat.js";
-import { AskComposerBar } from "../features/assistant/ui/ask-composer-bar/ask-composer-bar.js";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
+import { AskComposerBar } from "./features/assistant/ui/ask-composer-bar/ask-composer-bar.js";
 
 export interface AskComposerApps {
-	readonly studioApp: StartedApp;
+	readonly windowApp: StartedApp;
+	readonly focusedChatId: () => string | null;
 	readonly askApp: StartedApp;
 	readonly chatAppFor: (chatId: string) => StartedApp;
 }
@@ -34,7 +34,7 @@ export function askComposerOf(apps: AskComposerApps): AskComposer {
 }
 
 async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promise<void> {
-	const chatId = asked.chatId ?? focusedChatPortOf(apps.studioApp).now()?.id ?? (await newChatIdIn(apps.studioApp));
+	const chatId = asked.chatId ?? apps.focusedChatId() ?? (await newChatIdIn(apps.windowApp));
 
 	if (chatId === null) {
 		return;
@@ -75,8 +75,8 @@ async function adoptIn(chatApp: StartedApp, draft: AdoptedDraft): Promise<void> 
 	}
 }
 
-async function newChatIdIn(studioApp: StartedApp): Promise<string | null> {
-	const opened = await studioApp.send(OpenNewChatCommand, { title: null });
+async function newChatIdIn(windowApp: StartedApp): Promise<string | null> {
+	const opened = await windowApp.send(OpenNewChatCommand, { title: null });
 
 	if (!opened.ok) {
 		console.error(`[widgetarium] Ask Sumi found no chat on this board and could not open one: ${opened.reason}`);

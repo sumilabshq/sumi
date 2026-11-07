@@ -265,7 +265,7 @@ layJsdomGlobals();
 const { createElement: h, Suspense } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { AppProvider } = await import("../packages/shared/data-framework/src/index.ts");
-const { useComposerDraft } = await import("../apps/chat/src/features/assistant/lib/use-composer-draft.ts");
+const { useComposerDraft } = await import("../plugins/chat/src/features/assistant/lib/use-composer-draft.ts");
 const RACE = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const FAST = "typed a moment before the switch";
 interface ProbeHands {

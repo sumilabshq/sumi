@@ -109,7 +109,7 @@ async function chatTold(): Promise<object> {
 	const chat = await sumi.send(ChatQuery);
 	const pickedFolder = await sumi.send(PickWorkingFolderCommand);
 	return {
-		chat: chat.ok ? chat.output.session.turns.at(-1)?.text : chat.reason,
+		chat: chat.ok ? chat.output.session.turns.at(-1)?.text : chat.code,
 		pickedFolder: pickedFolder.ok ? "picked" : pickedFolder.code,
 	};
 }

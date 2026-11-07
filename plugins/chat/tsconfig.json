@@ -24,11 +24,14 @@
 		"types": ["node"]
 	},
 	"references": [
+		{ "path": "../../packages/shared/kit" },
+		{ "path": "../../packages/shared/core" },
 		{ "path": "../../packages/shared/data-framework" },
 		{ "path": "../../packages/shared/plugin-framework" }
 	],
 	"include": [
 		"src/**/*.ts",
+		"src/**/*.tsx",
 		"../../packages/shared/core/src/*.d.ts",
 		"../../packages/shared/kit/src/jsx-namespace.d.ts"
 	]

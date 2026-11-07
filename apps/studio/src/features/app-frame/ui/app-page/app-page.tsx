@@ -13,7 +13,6 @@ export interface AppPageProps {
 }
 
 const NO_TAB = "This tab was closed";
-const CHAT_APP = "chat";
 
 export function AppPage({ app, tabId }: AppPageProps): ReactElement {
 	const view = useAppPageView(app, tabId);
@@ -26,14 +25,14 @@ export function AppPage({ app, tabId }: AppPageProps): ReactElement {
 		case "page":
 			return (
 				<Fragment>
-					<AppHeader app={app} tabId={view.tabId} />
+					{view.page.header === "shell" ? <AppHeader app={app} tabId={view.tabId} /> : null}
 					<TabPageView page={view.page} app={app} tabId={view.tabId} />
 				</Fragment>
 			);
 		case "frame":
 			return (
 				<Fragment>
-					{app === CHAT_APP ? null : <AppHeader app={app} tabId={view.tabId} />}
+					<AppHeader app={app} tabId={view.tabId} />
 					<AppFrame registered={view.registered} tabId={view.tabId} />
 				</Fragment>
 			);

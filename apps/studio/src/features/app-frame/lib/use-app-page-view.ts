@@ -1,7 +1,7 @@
 import { REGISTERED_APPS, registeredAppOf } from "@widgetarium/app-registry";
 import type { RegisteredApp } from "@widgetarium/app-registry";
 import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
-import { useTabPage } from "./tab-page-context.js";
+import { useTabPageOf } from "./tab-page-context.js";
 import { useTabIdIfOpen } from "./use-tab-id-if-open.js";
 
 export type AppPageView =
@@ -14,7 +14,7 @@ export type AppPageView =
 	| {
 			readonly kind: "page";
 			readonly tabId: string;
-			readonly page: DrawnTabPage["page"];
+			readonly page: DrawnTabPage;
 	  }
 	| {
 			readonly kind: "frame";
@@ -32,17 +32,17 @@ const MISSING: AppPageView = {
 
 export function useAppPageView(app: string, tabId: string | null): AppPageView {
 	const openTabId = useTabIdIfOpen(tabId);
-	const tabPage = useTabPage();
+	const tabPage = useTabPageOf(app);
 
 	if (openTabId === null) {
 		return CLOSED;
 	}
 
-	if (tabPage?.draws(app) === true) {
+	if (tabPage !== null) {
 		return {
 			kind: "page",
 			tabId: openTabId,
-			page: tabPage.page,
+			page: tabPage,
 		};
 	}
 

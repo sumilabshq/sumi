@@ -1,10 +1,6 @@
 {
 	"apps": [
 		{
-			"id": "chat",
-			"build": "apps/chat/dist"
-		},
-		{
 			"id": "tasks",
 			"build": "apps/tasks/dist"
 		}

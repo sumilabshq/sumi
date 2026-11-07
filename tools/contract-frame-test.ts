@@ -137,11 +137,10 @@ try {
 		"not-found",
 	);
 	check(
-		"the chat app in a chat tab sends a message and ChatQuery reads the fake port's answer",
-		chatTold["chat"],
-		"echo: hello from the frame",
+		"a frame of the chat app in a chat tab gets no assistant route: the chat is the chat plugin's page",
+		[chatTold["chat"], chatTold["pickedFolder"]],
+		["not-found", "not-found"],
 	);
-	check("a chat request off the app list is forbidden", chatTold["pickedFolder"], "forbidden");
 	check("SendTerminalCommand is answered ok", told["typed"], true);
 	check(
 		"the shell ran the typed line and TerminalOutputQuery reads its output",

@@ -22,7 +22,6 @@ import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@
 import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
 import { AssistantModule as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
-import { frameChatServersOf } from "../apps/studio/src/assistant/frame-chat-servers.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
 import { FileSystemModule as RunnableFileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
 import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
@@ -242,26 +241,6 @@ check(
 	"the shell, with no app caller, is not held to the app list",
 	shellPicked.ok ? "picked" : shellPicked.code !== "forbidden",
 	true,
-);
-
-const chatServers = frameChatServersOf({
-	workspaceId: "contract",
-	host: {
-		kind: "web",
-		webAssistant: echoAssistantPort(),
-	},
-});
-const firstFrame = chatServers.lease("c1");
-const secondFrame = chatServers.lease("c1");
-check("two frames of one chat share its server", firstFrame.transport === secondFrame.transport, true);
-firstFrame.release();
-const stillServed = await app().imports(AssistantModule.over(secondFrame.transport)).start().send(ChatQuery);
-secondFrame.release();
-const afterLast = await app().imports(AssistantModule.over(secondFrame.transport)).start().send(ChatQuery);
-check(
-	"a chat's server serves while a frame uses it and stops after the last one",
-	[stillServed.ok, afterLast.ok ? "served" : afterLast.code],
-	[true, "unreachable"],
 );
 
 console.log(tally.failed ? `sumi contract: ${tally.failed} check(s) failed` : "sumi contract: all checks passed");

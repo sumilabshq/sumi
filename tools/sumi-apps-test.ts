@@ -17,6 +17,7 @@ import { TerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
 import { TasksModule } from "../packages/domain/tasks/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
+import { QuestionsModule } from "../plugins/chat/data/questions/module.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -147,6 +148,7 @@ const served = server()
 		TasksModule({
 			file: tasksBoardFileOver(own),
 		}),
+		QuestionsModule,
 		PlacesModule.with({
 			windows: new MemoryWindowsGateway({
 				windows: [],
@@ -270,7 +272,7 @@ const APP_DRAWN: Readonly<Record<SumiAppId, string>> = {
 	tasks: "[data-tasks-card], [data-tasks-page]",
 	terminal: ".wg-terminal-screen",
 	"browser-page": "[data-browser-page-state], .wg-browser-page-area",
-	chat: "textarea",
+	chat: '[data-app-view="chat"] textarea',
 };
 
 async function frameOpens(page: AskedPage, app: SumiAppId): Promise<void> {
@@ -309,6 +311,8 @@ const TERMINAL_SCREEN = ".wg-terminal-screen";
 const TERMINAL_KEYS = "textarea.xterm-helper-textarea";
 const WEB_ADDRESS = "https://example.com/";
 const CHAT_SAID = "hello from the e2e";
+const CHAT_VIEW = '[data-app-view="chat"]';
+const CHAT_FIELD = `${CHAT_VIEW} textarea`;
 
 function tasksFileOf(): string {
 	return path.join(appData, "app-data", SUMI_APPS_WORKSPACE, "tasks", "tasks.json");
@@ -379,19 +383,6 @@ async function typedThrough({ page, sees, press, ask }: TypingReach, selector: s
 	await page.typeText(text);
 	await page.pressEnter();
 	return isFocused;
-}
-
-async function typedInFrame(page: AskedPage, app: string, selector: string, text: string): Promise<boolean> {
-	return typedThrough(
-		{
-			page,
-			sees: (expression) => frameSees(page, app, expression),
-			press: (pressed) => pressInFrame(page, app, pressed),
-			ask: (expression) => inFrame(page, app, expression),
-		},
-		selector,
-		text,
-	);
 }
 
 async function typedOnPage(page: AskedPage, selector: string, text: string): Promise<boolean> {
@@ -797,12 +788,15 @@ async function browserActionChecks(page: AskedPage): Promise<void> {
 
 async function chatChecks(page: AskedPage): Promise<void> {
 	await page.ask("window.__sumiApps.openChat()");
-	await frameOpens(page, "chat");
+	await viewOpens(page, "chat");
 	await chatCrumbChecks(page);
-	check("chat: pressing the composer focuses it", await typedInFrame(page, "chat", "textarea", CHAT_SAID), true);
+	check("chat: pressing the composer focuses it", await typedOnPage(page, CHAT_FIELD, CHAT_SAID), true);
 	check(
-		"chat: the app draws the echo fake agent's answer",
-		await frameSees(page, "chat", `document.body.innerText.includes(${JSON.stringify(`echo: ${CHAT_SAID}`)})`),
+		"chat: the chat plugin's view draws the echo fake agent's answer",
+		await pageSees(
+			page,
+			`document.querySelector(${JSON.stringify(CHAT_VIEW)})?.innerText.includes(${JSON.stringify(`echo: ${CHAT_SAID}`)}) === true`,
+		),
 		true,
 	);
 	await chatLookChecks(page);
@@ -883,9 +877,8 @@ const REFERENCE_CHAT_LOOK_AT_BUILTIN_TAG: Readonly<Record<ChatTheme, ChatLook>> 
 		link: "oklch(0.9461 0 268.26) | underline | oklch(0.9461 0 268.26) | 3px | 400",
 	},
 };
-const CHAT_FRAME_IN_PLATE = `(() => { const plate = document.querySelector('[data-shell-plate="chat"] .wg-shell-plate-body').getBoundingClientRect(); const frame = document.querySelector('iframe[data-app-frame-src*="${framePartOf("chat")}"]'); const box = frame.getBoundingClientRect(); return [box.x + frame.clientLeft - plate.x, box.y + frame.clientTop - plate.y]; })()`;
-const CHAT_LOOK = `(dx, dy) => {
-	const view = document.defaultView;
+const CHAT_LOOK = `(root, dx, dy) => {
+	const view = root.ownerDocument.defaultView;
 	const boxOf = (element) => {
 		const box = element.getBoundingClientRect();
 		return [box.x + dx, box.y + dy, box.width, box.height].map((each) => Math.round(each));
@@ -901,22 +894,22 @@ const CHAT_LOOK = `(dx, dy) => {
 		const style = view.getComputedStyle(element);
 		return [style.fontFamily, style.fontSize, style.lineHeight, style.fontWeight, style.letterSpacing, style.color].join(" | ");
 	};
-	const turns = [...document.querySelectorAll(".wg-studio-ai-turn")];
-	const composer = document.querySelector(".wg-studio-ai-composer");
-	const link = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown a"));
-	const list = view.getComputedStyle(document.querySelector(".wg-studio-ai-said.is-markdown ul"));
-	const code = document.querySelector(".wg-studio-ai-said.is-markdown code");
-	const mine = document.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said");
+	const turns = [...root.querySelectorAll(".wg-studio-ai-turn")];
+	const composer = root.querySelector(".wg-studio-ai-composer");
+	const link = view.getComputedStyle(root.querySelector(".wg-studio-ai-said.is-markdown a"));
+	const list = view.getComputedStyle(root.querySelector(".wg-studio-ai-said.is-markdown ul"));
+	const code = root.querySelector(".wg-studio-ai-said.is-markdown code");
+	const mine = root.querySelector(".wg-studio-ai-turn.is-mine .wg-studio-ai-said");
 	return {
-		chat: boxOf(document.querySelector(".wg-studio-ai")),
-		column: boxOf(document.querySelector(".wg-studio-ai-scroll-frame")),
+		chat: boxOf(root.querySelector(".wg-studio-ai")),
+		column: boxOf(root.querySelector(".wg-studio-ai-scroll-frame")),
 		firstTurn: boxOf(turns[0]),
 		turnGaps: turns.slice(1).map((turn, at) => Math.round(turn.getBoundingClientRect().top - turns[at].getBoundingClientRect().bottom)),
 		composerGap: [Math.round(composer.getBoundingClientRect().top - turns[turns.length - 1].getBoundingClientRect().bottom)],
 		composer: boxOf(composer),
-		field: boxOf(document.querySelector(".wg-studio-ai-field")),
-		background: fillOf(document.querySelector(".wg-studio-ai-scroll")),
-		answerFont: fontOf(document.querySelector(".wg-studio-ai-said.is-markdown p")),
+		field: boxOf(root.querySelector(".wg-studio-ai-field")),
+		background: fillOf(root.querySelector(".wg-studio-ai-scroll")),
+		answerFont: fontOf(root.querySelector(".wg-studio-ai-said.is-markdown p")),
 		mineFont: fontOf(mine),
 		mineFill: fillOf(mine),
 		codeFont: fontOf(code) + " | " + fillOf(code),
@@ -938,10 +931,11 @@ function isLookAlike(measured: unknown, wanted: readonly number[] | string): boo
 }
 
 async function chatLookOf(page: AskedPage): Promise<unknown> {
-	const offset = await page.ask(CHAT_FRAME_IN_PLATE);
-	return Array.isArray(offset)
-		? inFrame(page, "chat", `(${CHAT_LOOK})(${Number(offset[0])}, ${Number(offset[1])})`)
-		: null;
+	return page
+		.ask(
+			`(() => { const plate = document.querySelector('[data-shell-plate="chat"] .wg-shell-plate-body').getBoundingClientRect(); return (${CHAT_LOOK})(document.querySelector(${JSON.stringify(CHAT_VIEW)}), -plate.x, -plate.y); })()`,
+		)
+		.catch((failure: unknown) => `unmeasured: ${String(failure)}`);
 }
 
 function lookOf(measured: unknown, quantity: string): unknown {
@@ -956,8 +950,11 @@ function isLookOfTag(measured: unknown, theme: ChatTheme): boolean {
 
 async function chatLookChecks(page: AskedPage): Promise<void> {
 	for (const [at, said] of CHAT_LOOK_SAID.entries()) {
-		await typedInFrame(page, "chat", "textarea", said);
-		await frameSees(page, "chat", `document.querySelectorAll(".wg-studio-ai-turn").length === ${(at + 2) * 2}`);
+		await typedOnPage(page, CHAT_FIELD, said);
+		await pageSees(
+			page,
+			`document.querySelectorAll(${JSON.stringify(`${CHAT_VIEW} .wg-studio-ai-turn`)}).length === ${(at + 2) * 2}`,
+		);
 	}
 
 	for (const theme of ["light", "dark"] as const) {

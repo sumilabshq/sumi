@@ -19,7 +19,7 @@ import { toast } from "../packages/shared/kit/src/utils/toast.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { turnStepsOf } from "../plugins/chat/data/assistant/features/chat/lib/turn-steps.ts";
-import { toolsSummaryOf } from "../apps/chat/src/features/assistant/lib/tools-summary.ts";
+import { toolsSummaryOf } from "../plugins/chat/src/features/assistant/lib/tools-summary.ts";
 import {
 	AttachFilesCommand,
 	ChooseClaudeModelCommand,
@@ -49,7 +49,7 @@ import {
 	PrefillDraftCommand,
 	TakePrefillCommand,
 } from "../plugins/chat/data/assistant/index.ts";
-import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../apps/chat/src/features/assistant/lib/slash-matches.ts";
+import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../plugins/chat/src/features/assistant/lib/slash-matches.ts";
 import { AssistantSessionGateway } from "../plugins/chat/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
 import { AssistantSetupGateway } from "../plugins/chat/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
 import { PrivateFolderAttachmentFilesGateway } from "../plugins/chat/data/assistant/gateways/attachment-files/private-folder.gateway.ts";

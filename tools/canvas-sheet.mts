@@ -12,6 +12,7 @@ const SOURCES = [
 	"apps/studio/src/features/assistant",
 	"apps/studio/src/canvas",
 	"apps/studio/src/browser",
+	"plugins/chat/src",
 ];
 const SCANNED = /\.(ts|tsx)$/;
 const CANDIDATE = /[^\s"'`]+/g;
@@ -24,6 +25,11 @@ const NAMED_SHEETS: Readonly<Record<string, string>> = {
 	"@widgetarium/studio/workspaces.css": "apps/studio/src/features/workspaces/workspaces.css",
 	"@widgetarium/studio/shell.css": "apps/studio/src/features/frame/shell.css",
 	"@widgetarium/studio/command-menu.css": "plugins/command-menu/src/command-menu.css",
+	"@sumi/chat-plugin/assistant.css": "plugins/chat/src/features/assistant/assistant.css",
+	"@sumi/chat-plugin/assistant-utilities.css": "plugins/chat/src/features/assistant/assistant-utilities.css",
+	"@sumi/chat-plugin/queue.css": "plugins/chat/src/features/assistant/queue.css",
+	"@sumi/chat-plugin/questions.css": "plugins/chat/src/features/questions/questions.css",
+	"@sumi/chat-plugin/chat-page.css": "plugins/chat/src/chat-page.css",
 };
 // TRADE-OFF: a prefix on every class, because utilities are !important and Obsidian, its themes and other plugins share one page
 const ENTRY = `@layer theme, base, components, utilities;
@@ -35,6 +41,11 @@ const ENTRY = `@layer theme, base, components, utilities;
 @import "@widgetarium/studio/workspaces.css";
 @import "@widgetarium/studio/shell.css";
 @import "@widgetarium/studio/command-menu.css";
+@import "@sumi/chat-plugin/assistant.css";
+@import "@sumi/chat-plugin/assistant-utilities.css";
+@import "@sumi/chat-plugin/queue.css";
+@import "@sumi/chat-plugin/questions.css";
+@import "@sumi/chat-plugin/chat-page.css";
 `;
 
 export async function canvasSheet(repo: string): Promise<string> {

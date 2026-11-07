@@ -14,13 +14,14 @@ const FILL_TAB_STYLE: CSSProperties = {
 };
 
 export interface TabPageViewProps {
-	readonly page: DrawnTabPage["page"];
+	readonly page: DrawnTabPage;
 	readonly app: string;
 	readonly tabId: string;
 }
 
-export function TabPageView({ page: Page, app, tabId }: TabPageViewProps): ReactElement | null {
-	const started = useTabPageApp({ app, tabId });
+export function TabPageView({ page, app, tabId }: TabPageViewProps): ReactElement | null {
+	const started = useTabPageApp(page, { app, tabId });
+	const Page = page.page;
 
 	if (started === null) {
 		return null;

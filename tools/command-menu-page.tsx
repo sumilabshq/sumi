@@ -11,7 +11,7 @@ import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/wo
 import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import { DoRowCommand } from "../plugins/command-menu/data/command-menu/index.ts";
 import { CommandMenuLayer } from "../plugins/command-menu/src/ui/command-menu-layer/command-menu-layer.tsx";
-import { AskComposerBar } from "../apps/studio/src/features/assistant/ui/ask-composer-bar/ask-composer-bar.tsx";
+import { AskComposerBar } from "../plugins/chat/src/features/assistant/ui/ask-composer-bar/ask-composer-bar.tsx";
 import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
 import { SearchButton } from "../apps/studio/src/features/workspaces/ui/search-button/search-button.tsx";
 import { useTogglesMenuOnShown } from "../apps/studio/src/features/plate/lib/use-toggles-menu-on-shown.ts";

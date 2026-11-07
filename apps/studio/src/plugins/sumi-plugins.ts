@@ -23,8 +23,10 @@ import {
 	WindowLayersSlot,
 	WindowModuleSchema,
 	WindowModulesSlot,
+	WindowProviderSchema,
+	WindowProvidersSlot,
 } from "@sumi/sumi-host-plugin";
-import type { CoreOffers, DrawnTabPage } from "@sumi/sumi-host-plugin";
+import type { CoreOffers, DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
 import { TerminalPlugin } from "@sumi/terminal-plugin";
 
@@ -40,11 +42,17 @@ export interface WindowLayer {
 	readonly layer: ComponentType;
 }
 
+export interface WindowProvider {
+	readonly id: string;
+	providerOf(offers: WindowOffers): ComponentType<WindowProviderProps>;
+}
+
 export interface ResolvedPlugins {
 	readonly backgroundModules: readonly BackgroundModule[];
 	readonly windowModules: readonly DeviceModule[];
 	readonly windowLayers: readonly WindowLayer[];
-	readonly tabPage: DrawnTabPage | null;
+	readonly windowProviders: readonly WindowProvider[];
+	readonly tabPages: readonly DrawnTabPage[];
 	readonly refusals: readonly string[];
 }
 
@@ -61,6 +69,7 @@ const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlo
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
 const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
 const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
+const WINDOW_PROVIDERS = stampSlotName(SumiHostPlugin.id, WindowProvidersSlot);
 
 const ALWAYS_ON_PLUGINS: readonly string[] = [
 	SumiHostPlugin.id,
@@ -108,23 +117,23 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 					]
 				: [];
 		}),
-		tabPage: tabPageOf(fillsOf(slotFills, TAB_PAGE), readerOf),
+		windowProviders: fillsOf(slotFills, WINDOW_PROVIDERS).flatMap((fill) => {
+			const parsed = WindowProviderSchema.safeParse(fill.item);
+			return parsed.success
+				? [
+						{
+							id: `${fill.pluginId}/${fill.id}`,
+							providerOf: (offers: WindowOffers) => parsed.data.provider({ ...offers, ...readerOf(fill) }),
+						},
+					]
+				: [];
+		}),
+		tabPages: fillsOf(slotFills, TAB_PAGE).flatMap((fill) => {
+			const parsed = TabPageSchema.safeParse(fill.item);
+			return parsed.success ? [parsed.data.tabPage(readerOf(fill))] : [];
+		}),
 		refusals: [...profileRefusalsOf(INSTALLED_PLUGINS, profile), ...startOrder.refusals, ...slotFills.refusals],
 	};
-}
-
-function tabPageOf(
-	fills: readonly ShownFill[],
-	readerOf: (fill: ShownFill) => ReturnType<typeof slotReaderOf>,
-): DrawnTabPage | null {
-	const [fill] = fills;
-
-	if (fill === undefined) {
-		return null;
-	}
-
-	const parsed = TabPageSchema.safeParse(fill.item);
-	return parsed.success ? parsed.data.tabPage(readerOf(fill)) : null;
 }
 
 function fillsOf(slotFills: SlotFills, slot: string): readonly ShownFill[] {

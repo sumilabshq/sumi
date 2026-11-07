@@ -5,7 +5,6 @@ import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/us
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameRoutesOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
-import { echoAssistantPort } from "./echo-assistant-port.ts";
 
 declare global {
 	interface Window {
@@ -32,10 +31,6 @@ const routesFor = frameRoutesOf({
 	workspaceId: "contract-frame",
 	core,
 	studioApp: app().imports(PlacesModule.over(core)).start(),
-	assistantHost: {
-		kind: "web",
-		webAssistant: echoAssistantPort(),
-	},
 	nativeWebPages: null,
 	appearance: startStudioAppearance(window).transport,
 });

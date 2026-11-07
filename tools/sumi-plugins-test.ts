@@ -40,6 +40,16 @@ const offers = {
 const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
+const HOST_ROOTS = ["apps/studio/src", "apps/tauri/src"];
+const CHAT_PLUGIN_NAMES = ["@sumi/chat-plugin", "ChatPlugin"];
+const CHAT_PIECES = [
+	"AssistantModule(",
+	"askComposerOf",
+	"AskComposerContext.Provider",
+	"AssistantPanel",
+	'"chat" ? null',
+	'CHAT_APP = "chat"',
+];
 
 function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
 	return [...HOST_CAPABILITY_MODULES, ...resolved.backgroundModules.map(({ moduleOf }) => moduleOf(offers))];
@@ -79,6 +89,20 @@ function sourcesNaming(word: string): readonly string[] {
 	);
 }
 
+function hostSourcesNaming(words: readonly string[]): readonly string[] {
+	return HOST_ROOTS.flatMap((root) =>
+		readdirSync(root, { recursive: true, withFileTypes: true })
+			.filter((entry) => entry.isFile() && /\.(ts|tsx|mts)$/.test(entry.name))
+			.map((entry) => path.join(entry.parentPath, entry.name))
+			.filter((file) => !file.endsWith("sumi-plugins.ts"))
+			.filter((file) => words.some((word) => readFileSync(file, "utf8").includes(word))),
+	);
+}
+
+function tabPageDrawing(resolved: ResolvedPlugins, app: string): boolean {
+	return resolved.tabPages.some((page) => page.draws(app));
+}
+
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
 const coreModulesNow = coreModulesOf(resolved);
 const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, TerminalModule, ...APP_MODULES];
@@ -113,8 +137,28 @@ check(
 );
 check(
 	"the apps plugin's tab page draws the terminal and the browser page",
-	[resolved.tabPage?.draws("terminal"), resolved.tabPage?.draws("browser-page")],
+	[tabPageDrawing(resolved, "terminal"), tabPageDrawing(resolved, "browser-page")],
 	[true, true],
+);
+check(
+	"the chat plugin draws the chat app's page itself, with no shell header, in the window",
+	resolved.tabPages.filter((page) => page.draws("chat")).map(({ header }) => header),
+	["none"],
+);
+check(
+	"the chat plugin lends the window its Ask composer through the host's window providers slot",
+	resolved.windowProviders.map(({ id }) => id),
+	["chat/ask-composer"],
+);
+check(
+	"only the host's plugin list names the chat plugin: no other host source imports it",
+	hostSourcesNaming(CHAT_PLUGIN_NAMES),
+	[],
+);
+check(
+	"no host source starts the assistant, draws the chat, wires its composer or special-cases the chat app",
+	hostSourcesNaming(CHAT_PIECES),
+	[],
 );
 
 const emptyProfile = resolvePlugins({ plugins: [] });
@@ -125,7 +169,7 @@ check(
 );
 check(
 	"a profile without the terminal plugin has no terminal app, in the module and on the tab page",
-	[await appIdsAnsweredBy(emptyProfile), emptyProfile.tabPage?.draws("terminal")],
+	[await appIdsAnsweredBy(emptyProfile), tabPageDrawing(emptyProfile, "terminal")],
 	[{ apps: [] }, false],
 );
 check(

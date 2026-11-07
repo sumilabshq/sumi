@@ -1,5 +1,5 @@
 import { createElement as h, useMemo, useRef, useSyncExternalStore } from "react";
-import type { ReactElement, RefObject } from "react";
+import type { ComponentType, ReactElement, RefObject } from "react";
 import { registerPacks } from "@widgetarium/core/engine/packs.js";
 import { NO_ASSISTANT } from "@widgetarium/core/engine/assistant-port.js";
 import type { AssistantPort } from "@widgetarium/core/engine/assistant-port.js";
@@ -14,15 +14,10 @@ import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import type { PaneView } from "@widgetarium/layout";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
-import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
+import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
 import type { ResolvedPlugins, WindowLayer } from "../plugins/sumi-plugins.js";
-import { askComposerOf } from "../assistant/ask-composer-seam.js";
-import { chatAppOf } from "../assistant/chat-app.js";
-import { chatDeliveryPortOf } from "../assistant/chat-delivery.js";
-import { ChatDeliveryContext } from "../assistant/chat-delivery-context.js";
-import { ChatApps } from "../assistant/chat-apps.js";
-import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
+import { TabFaceContext } from "@sumi/sumi-host-plugin";
 import { MenuTabFace } from "../features/app-host/ui/tab-face/menu-tab-face.js";
 import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -57,15 +52,15 @@ export interface StartedStudio {
 	readonly appId: string;
 	readonly state: StudioState;
 	readonly design: StudioDesign;
-	readonly askApp: StartedApp;
-	readonly chatApps: ChatApps;
 	readonly browser: StudioBrowser;
 	readonly studioApp: StartedApp;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
 	readonly appearance: StudioAppearance;
 	readonly appPageUrlOf: AppPageUrlOf;
-	readonly tabPage: DrawnTabPage | null;
+	readonly tabPages: readonly DrawnTabPage[];
+	readonly windowOffers: WindowOffers;
+	readonly windowProviders: readonly ComponentType<WindowProviderProps>[];
 	readonly windowLayers: readonly WindowLayer[];
 }
 
@@ -83,12 +78,6 @@ export interface StudioStart extends ProjectStart {
 	readonly appearance?: StudioAppearance;
 	readonly appPageUrlOf?: AppPageUrlOf;
 	readonly plugins?: ResolvedPlugins;
-}
-
-interface ChatReach {
-	readonly workspaceId: string;
-	readonly studioApp: StartedApp;
-	readonly core: RemoteTransport;
 }
 
 export interface WidgetariumStudioProps {
@@ -128,23 +117,31 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		});
 	const state = start.state ?? createStudioState(studioApp);
 	const appearance = start.appearance ?? startStudioAppearance(window);
-	const reach = {
+	const chatsColumn = createChatsColumnApp(studioApp);
+	const windowOffers: WindowOffers = {
 		workspaceId: lent.appId,
-		studioApp,
+		windowApp: studioApp,
 		core,
+		assistant: assistantHostOf(start),
+		focusedChatId: () => chatsColumn.focusedChat.now()?.id ?? null,
 	};
 	return {
-		...startedChatOf(start, reach),
 		...lent,
-		chatsColumn: createChatsColumnApp(studioApp),
+		browser: {
+			browserApp: studioApp,
+		},
+		chatsColumn,
 		studioApp,
 		appearance,
 		appPageUrlOf: start.appPageUrlOf ?? sumiAppPageUrlOf,
-		tabPage: plugins.tabPage,
+		tabPages: plugins.tabPages,
+		windowOffers,
+		windowProviders: plugins.windowProviders.map(({ providerOf }) => providerOf(windowOffers)),
 		windowLayers: plugins.windowLayers,
 		frameRoutes: frameRoutesOf({
-			...reach,
-			assistantHost: assistantHostOf(start),
+			workspaceId: lent.appId,
+			studioApp,
+			core,
 			nativeWebPages: start.nativeWebPages ?? null,
 			appearance: appearance.transport,
 		}),
@@ -162,35 +159,10 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	useStudioPortalClass();
 	const catalogueAsk = useTakesCatalogueAsks(frame, started.catalogue.requests, state);
 	const backToView = useMemo(() => () => state.show("app"), [state]);
-	const askComposer = useMemo(
-		() =>
-			askComposerOf({
-				studioApp: started.studioApp,
-				askApp: started.askApp,
-				chatAppFor: (chatId) => started.chatApps.appFor(chatId),
-			}),
-		[started.studioApp, started.askApp, started.chatApps],
-	);
-	const chatDelivery = useMemo(
-		() =>
-			chatDeliveryPortOf({
-				studioApp: started.studioApp,
-				assistant: started.assistant,
-			}),
-		[started.studioApp, started.assistant],
-	);
 	return h(
-		ChatDeliveryContext.Provider,
-		{ value: chatDelivery },
-		h(
-			AskComposerContext.Provider,
-			{ value: askComposer },
-			h(
-				TabFaceContext.Provider,
-				{ value: MenuTabFace },
-				studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
-			),
-		),
+		TabFaceContext.Provider,
+		{ value: MenuTabFace },
+		studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
 	);
 }
 
@@ -200,7 +172,9 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		layoutApp: started.studioApp,
 		frameRoutes: started.frameRoutes,
 		appPageUrlOf: started.appPageUrlOf,
-		tabPage: started.tabPage,
+		tabPages: started.tabPages,
+		windowOffers: started.windowOffers,
+		windowProviders: started.windowProviders,
 		windowLayers: started.windowLayers,
 		studio: started.studio,
 		left: started.chatsColumn.column,
@@ -257,25 +231,6 @@ function cataloguePanelOf(started: StartedStudio, { panel, host, catalogueAsk }:
 
 	const { catalogue, state } = started;
 	return h(StudioSidebar, { catalogue, host, catalogueAsk, onClose: () => state.closePanel("catalogue") });
-}
-
-function startedChatOf(
-	start: StudioStart,
-	{ workspaceId, studioApp, core }: ChatReach,
-): Pick<StartedStudio, "askApp" | "chatApps" | "browser"> {
-	const ask = {
-		platform: "browser" as const,
-		workspaceId,
-		host: assistantHostOf(start),
-		tasks: core,
-	};
-	return {
-		askApp: chatAppOf(ask),
-		chatApps: new ChatApps(ask),
-		browser: {
-			browserApp: studioApp,
-		},
-	};
 }
 
 function assistantHostOf(start: StudioStart): AssistantHosts {
