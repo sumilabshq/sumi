@@ -10,6 +10,8 @@ export type PathInput = z.infer<typeof PathInputSchema>;
 
 export const FileContentSchema = z.string();
 
+export const FileBytesSchema = z.string().base64();
+
 export const WriteFileInputSchema = z.object({
 	path: FilePathSchema,
 	content: z.string().max(16777216),

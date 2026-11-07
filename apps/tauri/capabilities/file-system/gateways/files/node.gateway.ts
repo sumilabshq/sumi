@@ -1,5 +1,7 @@
+import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import nodePath from "node:path";
+import { promisify } from "node:util";
 import type { FileInfo, FolderEntry } from "../../shared/schema/files.schema.js";
 import { FilesGateway } from "./files.gateway.js";
 
@@ -24,6 +26,14 @@ export class NodeFilesGateway extends FilesGateway {
 
 	override readFile(path: string): Promise<string> {
 		return fs.readFile(path, "utf8");
+	}
+
+	override async readFileBytes(path: string): Promise<string> {
+		return (await fs.readFile(path)).toString("base64");
+	}
+
+	override async openInSystemApp(path: string): Promise<void> {
+		await promisify(execFile)("open", [path]);
 	}
 
 	override async readFolder(path: string): Promise<readonly FolderEntry[]> {

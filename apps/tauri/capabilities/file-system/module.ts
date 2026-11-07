@@ -7,6 +7,8 @@ import {
 	FileCallLoggerMiddleware,
 	FileInfoQuery,
 	MakeFolderCommand,
+	OpenInSystemAppCommand,
+	ReadFileBytesQuery,
 	ReadFileQuery,
 	ReadFolderQuery,
 	RemoveCommand,
@@ -18,6 +20,7 @@ export const FileSystemModule = module("file-system")
 	.on(Server)
 	.public(
 		ReadFileQuery,
+		ReadFileBytesQuery,
 		ReadFolderQuery,
 		FileInfoQuery,
 		WriteFileCommand,
@@ -26,6 +29,7 @@ export const FileSystemModule = module("file-system")
 		RemoveCommand,
 		RenameCommand,
 		CopyCommand,
+		OpenInSystemAppCommand,
 	)
 	.guard(AuthenticatedGuard)
 	.guard(FileAccessGuard)

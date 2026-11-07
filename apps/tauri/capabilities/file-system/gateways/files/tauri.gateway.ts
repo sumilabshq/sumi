@@ -18,6 +18,14 @@ export class TauriFilesGateway extends FilesGateway {
 		return z.string().parse(await invoke(`${FILES}read_file`, { path }));
 	}
 
+	override async readFileBytes(path: string): Promise<string> {
+		return z.string().parse(await invoke(`${FILES}read_file_bytes`, { path }));
+	}
+
+	override async openInSystemApp(path: string): Promise<void> {
+		DoneSchema.parse(await invoke(`${FILES}open_in_system_app`, { path }));
+	}
+
 	override async readFolder(path: string): Promise<readonly FolderEntry[]> {
 		return z.array(FolderEntrySchema).parse(await invoke(`${FILES}read_folder`, { path }));
 	}

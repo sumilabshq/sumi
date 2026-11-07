@@ -12,6 +12,8 @@ export type PathInput = z.infer<typeof PathInputSchema>;
 
 export const FileContentSchema = z.string();
 
+export const FileBytesSchema = z.string().base64();
+
 export const WriteFileInputSchema = z.object({
 	path: FilePathSchema,
 	content: z.string().max(16777216),
@@ -53,6 +55,9 @@ export type FileInfo = z.infer<typeof FileInfoSchema>;
 export const ReadFileQuery = query("file-system/read-file")
 	.input(PathInputSchema)
 	.output(FileContentSchema);
+export const ReadFileBytesQuery = query("file-system/read-file-bytes")
+	.input(PathInputSchema)
+	.output(FileBytesSchema);
 export const ReadFolderQuery = query("file-system/read-folder")
 	.input(PathInputSchema)
 	.output(FolderSchema);
@@ -77,5 +82,8 @@ export const RenameCommand = command("file-system/rename")
 export const CopyCommand = command("file-system/copy")
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
+export const OpenInSystemAppCommand = command("file-system/open-in-system-app")
+	.input(PathInputSchema)
+	.idempotencyKey(PerCall);
 
-export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFolderQuery, FileInfoQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);
+export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, ReadFolderQuery, FileInfoQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand, OpenInSystemAppCommand]);

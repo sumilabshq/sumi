@@ -75,7 +75,19 @@ const AGENT_COMMANDS: &[&str] = &["open_channel", "answer"];
 const TERMINAL_COMMANDS: &[&str] = &["open", "write", "resize", "close"];
 
 const FILES_COMMANDS: &[&str] =
-    &["read_file", "read_folder", "file_info", "write_file", "append_file", "make_folder", "remove", "rename", "copy"];
+    &[
+    "read_file",
+    "read_file_bytes",
+    "read_folder",
+    "file_info",
+    "write_file",
+    "append_file",
+    "make_folder",
+    "remove",
+    "rename",
+    "copy",
+    "open_in_system_app",
+];
 
 const STUDIO_CORE_COMMANDS: &[&str] = &["serve", "call", "answer", "changed", "live_windows", "quit_listening", "flushed_before_quit"];
 

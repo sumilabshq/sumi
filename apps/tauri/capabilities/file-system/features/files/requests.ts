@@ -3,6 +3,7 @@ import type { Invalidate } from "@widgetarium/data-framework";
 import { FilesGateway } from "../../gateways/files/files.gateway.js";
 import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
 import {
+	FileBytesSchema,
 	FileContentSchema,
 	FileInfoSchema,
 	FolderSchema,
@@ -25,6 +26,24 @@ export const ReadFileQuery = query("read-file")
 	.output(FileContentSchema)
 	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => files.readFile(await placedIn(files, user, path)).catch(refuseFailure));
+
+export const ReadFileBytesQuery = query("read-file-bytes")
+	.input(PathInputSchema)
+	.output(FileBytesSchema)
+	.inject({ files: FilesGateway })
+	.handle(async ({ path }, { files, user }) =>
+		files.readFileBytes(await placedIn(files, user, path)).catch(refuseFailure),
+	);
+
+export const OpenInSystemAppCommand = command("open-in-system-app")
+	.input(PathInputSchema)
+	.idempotencyKey(PerCall)
+	.inject({ files: FilesGateway })
+	.handle(async ({ path }, { files, user }) => {
+		const placed = await placedIn(files, user, path);
+		await files.openInSystemApp(placed).catch(refuseFailure);
+		console.info(`[file-system] ${placed} opened in its system app`);
+	});
 
 export const ReadFolderQuery = query("read-folder")
 	.input(PathInputSchema)

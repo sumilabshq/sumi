@@ -1,5 +1,7 @@
 use super::store::atomic::write_atomically;
 use super::studio_caller::refuse_foreign_caller;
+use base64::engine::general_purpose::STANDARD as BASE64;
+use base64::Engine;
 use serde::Serialize;
 use serde_json::Value;
 use std::fs::{self, OpenOptions};
@@ -7,6 +9,7 @@ use std::io::{self, ErrorKind, Read, Write};
 use std::os::unix::ffi::OsStrExt;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::UNIX_EPOCH;
 use tauri::ipc::{Invoke, InvokeBody, InvokeError};
 use tauri::plugin::{Builder, TauriPlugin};
@@ -142,6 +145,34 @@ pub fn read_file(path: &Path) -> Result<String, String> {
     Ok(text)
 }
 
+pub fn read_file_bytes(path: &Path) -> Result<String, String> {
+    refuse_unsafe_path(path)?;
+    let metadata = fs::metadata(path).map_err(|error| failed("read", path, &error))?;
+
+    if !metadata.is_file() {
+        return Err(format!("{} is not a regular file, so it is not read.", path.display()));
+    }
+
+    refuse_oversized(path, metadata.len())?;
+    let mut bytes = Vec::new();
+    fs::File::open(path)
+        .and_then(|file| file.take(MAX_CONTENT_BYTES + 1).read_to_end(&mut bytes))
+        .map_err(|error| failed("read", path, &error))?;
+    refuse_oversized(path, bytes.len() as u64)?;
+    Ok(BASE64.encode(bytes))
+}
+
+pub fn open_in_system_app(path: &Path) -> Result<(), String> {
+    refuse_unsafe_path(path)?;
+    let opened = Command::new("open").arg(path).status().map_err(|error| failed("open", path, &error))?;
+
+    if !opened.success() {
+        return Err(format!("{} did not open in its system app ({opened}).", path.display()));
+    }
+
+    Ok(())
+}
+
 pub fn read_folder(path: &Path) -> Result<Vec<FolderEntry>, String> {
     refuse_unsafe_path(path)?;
     let listing = fs::read_dir(path).map_err(|error| failed("list", path, &error))?;
@@ -268,6 +299,8 @@ fn answered<T: Serialize>(answer: Result<T, String>) -> Result<Value, String> {
 fn answer_of(command: &str, args: &Value) -> Result<Value, String> {
     match command {
         "read_file" => answered(read_file(&path_of(args, "path")?)),
+        "read_file_bytes" => answered(read_file_bytes(&path_of(args, "path")?)),
+        "open_in_system_app" => answered(open_in_system_app(&path_of(args, "path")?)),
         "read_folder" => answered(read_folder(&path_of(args, "path")?)),
         "file_info" => answered(file_info(&path_of(args, "path")?)),
         "write_file" => answered(write_file(&path_of(args, "path")?, text_of(args, "content")?)),

@@ -36,6 +36,15 @@ export class MemoryFilesGateway extends FilesGateway {
 		throw new Error((this.folders.has(path) ? NOT_A_FILE : MISSING).replace("{path}", path));
 	}
 
+	override async readFileBytes(path: string): Promise<string> {
+		const bytes = new TextEncoder().encode(await this.readFile(path));
+		return btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""));
+	}
+
+	override async openInSystemApp(path: string): Promise<void> {
+		await this.readFile(path);
+	}
+
 	override async readFolder(path: string): Promise<readonly FolderEntry[]> {
 		if (!this.folders.has(path)) {
 			throw new Error(MISSING.replace("{path}", path));

@@ -5,6 +5,8 @@ export abstract class FilesGateway {
 
 	abstract appDataFolder(): Promise<string>;
 	abstract readFile(path: string): Promise<string>;
+	abstract readFileBytes(path: string): Promise<string>;
+	abstract openInSystemApp(path: string): Promise<void>;
 	abstract readFolder(path: string): Promise<readonly FolderEntry[]>;
 	abstract fileInfo(path: string): Promise<FileInfo>;
 	abstract writeFile(path: string, content: string): Promise<void>;
