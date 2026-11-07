@@ -78,8 +78,9 @@ plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module 
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot
 plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
+plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions), the questions background module and the menu's Ask door ⌘I
       ↓
-packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, web-page, mascot, fixture-billing
+packages/domain/*             business data modules: workspaces, app-host, browser, canvas, tasks, web-page, mascot, fixture-billing
 packages/state/*              app-state data modules: layout, places, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks

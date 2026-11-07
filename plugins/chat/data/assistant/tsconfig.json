@@ -17,19 +17,19 @@
 		"noUncheckedIndexedAccess": true,
 		"noImplicitOverride": true,
 		"noEmit": true,
-		"tsBuildInfoFile": "../../../node_modules/.cache/widgetarium/assistant.tsbuildinfo",
+		"tsBuildInfoFile": "../../../../node_modules/.cache/widgetarium/assistant.tsbuildinfo",
 		"isolatedModules": true,
 		"verbatimModuleSyntax": true,
 		"skipLibCheck": true,
 		"types": []
 	},
-	"references": [{ "path": "../../shared/core" }, { "path": "../../shared/data-framework" }],
+	"references": [{ "path": "../../../../packages/shared/core" }, { "path": "../../../../packages/shared/data-framework" }],
 	"include": [
 		"*.ts",
 		"gateways/**/*.ts",
 		"features/**/*.ts",
 		"shared/**/*.ts",
 		"generated/**/*.ts",
-		"../../shared/core/src/*.d.ts"
+		"../../../../packages/shared/core/src/*.d.ts"
 	]
 }

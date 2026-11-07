@@ -3,8 +3,6 @@ import type { Found } from "../../../shared/schema/command-menu.schema.js";
 
 const NEW_TAB = "New tab";
 const IN_THIS_TAB = "In this tab";
-const ENTER = "↵";
-const SHIFT_ENTER = "⇧↵";
 
 export function addressFound(typed: string, where: "new-tab" | "this-tab", instead: string): Found {
 	const bare = bareAddressOf(typed);
@@ -65,60 +63,6 @@ export function askFound(typed: string, workspaceName: string): Found {
 			sends: true,
 		},
 	});
-}
-
-export function createAndSendFound(typed: string): Found {
-	return {
-		...madeOf({
-			key: "ask:send",
-			kind: "ask",
-			title: "Create and send",
-			meta: "",
-			glyph: "ink",
-			intent: {
-				do: "ask-ink",
-				text: typed,
-				sends: true,
-			},
-		}),
-		shortcut: ENTER,
-	};
-}
-
-export function createOnlyFound(typed: string): Found {
-	return {
-		...madeOf({
-			key: "ask:draft",
-			kind: "ask",
-			title: "Create only",
-			meta: "Don’t send",
-			glyph: "pencil",
-			intent: {
-				do: "ask-ink",
-				text: typed,
-				sends: false,
-			},
-		}),
-		shortcut: SHIFT_ENTER,
-	};
-}
-
-export function createEmptyFound(): Found {
-	return {
-		...madeOf({
-			key: "ask:empty",
-			kind: "ask",
-			title: "Create only",
-			meta: "Empty chat",
-			glyph: "pencil",
-			intent: {
-				do: "ask-ink",
-				text: "",
-				sends: false,
-			},
-		}),
-		shortcut: ENTER,
-	};
 }
 
 export function askFallbackFound(typed: string): Found {

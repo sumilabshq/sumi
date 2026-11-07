@@ -22,11 +22,13 @@ import {
 
 export type {
 	CommandMenuConfig,
+	Draft,
 	DraftedMenu,
 	DraftsOf,
 	FilledDoor,
 	FilledPage,
 	FilledRowSource,
+	Found,
 	PageAsk,
 	RowsOf,
 } from "./shared/host/command-menu.host.js";

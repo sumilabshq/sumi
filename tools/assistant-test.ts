@@ -17,8 +17,8 @@ import { app } from "../packages/shared/data-framework/src/index.ts";
 import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
 import { toast } from "../packages/shared/kit/src/utils/toast.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
-import { turnStepsOf } from "../packages/domain/assistant/features/chat/lib/turn-steps.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { turnStepsOf } from "../plugins/chat/data/assistant/features/chat/lib/turn-steps.ts";
 import { toolsSummaryOf } from "../apps/chat/src/features/assistant/lib/tools-summary.ts";
 import {
 	AttachFilesCommand,
@@ -48,21 +48,21 @@ import {
 	ComposerPrefillQuery,
 	PrefillDraftCommand,
 	TakePrefillCommand,
-} from "../packages/domain/assistant/index.ts";
+} from "../plugins/chat/data/assistant/index.ts";
 import { saidPiecesOf, slashAskOf, slashEntriesOf } from "../apps/chat/src/features/assistant/lib/slash-matches.ts";
-import { AssistantSessionGateway } from "../packages/domain/assistant/gateways/assistant-session/assistant-session.gateway.ts";
-import { AssistantSetupGateway } from "../packages/domain/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
-import { PrivateFolderAttachmentFilesGateway } from "../packages/domain/assistant/gateways/attachment-files/private-folder.gateway.ts";
-import { CellClaudeOptionsGateway } from "../packages/domain/assistant/gateways/claude-options/cell.gateway.ts";
-import { ClockGateway } from "../packages/domain/assistant/gateways/clock/clock.gateway.ts";
-import { ClientWorkingFoldersGateway } from "../packages/domain/assistant/gateways/working-folders/client.gateway.ts";
-import { portAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
-import type { AssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
-import type { WorkspaceFolder } from "../packages/domain/assistant/shared/host/workspace-folders.host.ts";
-import { isSameDrafts } from "../packages/domain/assistant/features/composer/lib/drafts.ts";
-import { shortPathOf } from "../packages/domain/assistant/shared/lib/short-path.ts";
-import { attachmentsIn, withAttachments } from "../packages/domain/assistant/shared/lib/attachment-trailer.ts";
-import { KEPT_AT_MOST_MS } from "../packages/domain/assistant/features/composer/lib/attachment-sweep.ts";
+import { AssistantSessionGateway } from "../plugins/chat/data/assistant/gateways/assistant-session/assistant-session.gateway.ts";
+import { AssistantSetupGateway } from "../plugins/chat/data/assistant/gateways/assistant-setup/assistant-setup.gateway.ts";
+import { PrivateFolderAttachmentFilesGateway } from "../plugins/chat/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
+import { CellClaudeOptionsGateway } from "../plugins/chat/data/assistant/gateways/claude-options/cell.gateway.ts";
+import { ClockGateway } from "../plugins/chat/data/assistant/gateways/clock/clock.gateway.ts";
+import { ClientWorkingFoldersGateway } from "../plugins/chat/data/assistant/gateways/working-folders/client.gateway.ts";
+import { portAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
+import type { AssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/assistant-parts.gateway.ts";
+import type { WorkspaceFolder } from "../plugins/chat/data/assistant/shared/host/workspace-folders.host.ts";
+import { isSameDrafts } from "../plugins/chat/data/assistant/features/composer/lib/drafts.ts";
+import { shortPathOf } from "../plugins/chat/data/assistant/shared/lib/short-path.ts";
+import { attachmentsIn, withAttachments } from "../plugins/chat/data/assistant/shared/lib/attachment-trailer.ts";
+import { KEPT_AT_MOST_MS } from "../plugins/chat/data/assistant/features/composer/lib/attachment-sweep.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";

@@ -1,4 +1,4 @@
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";

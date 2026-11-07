@@ -1,4 +1,4 @@
-import { PrefillDraftCommand } from "../packages/domain/assistant/generated/contract.ts";
+import { PrefillDraftCommand } from "../plugins/chat/data/assistant/generated/contract.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
@@ -17,7 +17,7 @@ import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 import { exactStatesReport } from "./browser-states-exact.ts";
 import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask-ink-prompt.ts";
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { Composer } from "../apps/chat/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { AskComposerContext, NO_ASK_COMPOSER } from "@sumi/sumi-host-plugin";

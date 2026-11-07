@@ -32,14 +32,6 @@ export const CommandMenuPlugin = plugin("command-menu")
 			placeholder: "Search the web or ask Sumi",
 			startsWith: "empty",
 		}),
-		// TODO: the ask door moves to the chat plugin in phase D.
-		MenuDoorsSlot({
-			id: "ask",
-			letter: "i",
-			label: "Ask",
-			placeholder: "Ask Sumi anything",
-			startsWith: "empty",
-		}),
 		MenuDoorsSlot({
 			id: "this-tab",
 			letter: "l",

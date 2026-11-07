@@ -1,0 +1,26 @@
+{
+	"name": "@sumi/chat-plugin",
+	"version": "0.1.0",
+	"description": "The chat: the assistant and questions modules, the Ask door of the command menu and its page",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/command-menu-plugin": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0",
+		"@widgetarium/questions": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

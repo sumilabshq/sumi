@@ -9,6 +9,11 @@ import { TerminalModule } from "@widgetarium/terminal/module";
 import { server } from "@widgetarium/data-framework/server";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { AppsModule } from "../plugins/apps/data/apps/module.ts";
+import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
+import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "../plugins/command-menu/src/index.ts";
+import { MainPlugin } from "../plugins/main/src/plugin.ts";
+import { BackgroundModulesSlot } from "../plugins/sumi-host/src/slots.ts";
+import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
@@ -33,6 +38,7 @@ const offers = {
 	},
 };
 const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/"];
+const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 
 function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
@@ -59,6 +65,10 @@ async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
 	return answered.ok ? answered.output : answered.reason;
 }
 
+function fillIdsOf(filler: Plugin, slot: SlotShape): readonly string[] {
+	return filler.parts.fills.filter((fill) => fill.slot === slot).map(({ id }) => id);
+}
+
 function sourcesNaming(word: string): readonly string[] {
 	return SCANNED_ROOTS.flatMap((root) =>
 		readdirSync(root, { recursive: true, withFileTypes: true })
@@ -81,12 +91,12 @@ check(
 	[FileSystemModule.definition.name, TerminalModule.definition.name],
 );
 check(
-	"the background modules slot holds the apps plugin's module and the old app's, none of the host's",
+	"the background modules slot holds the apps plugin's module, the chat plugin's questions and the old app's, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
 		AppsModule.definition.name,
-		PlacesModule.definition.name,
 		QuestionsModule.definition.name,
+		PlacesModule.definition.name,
 		TasksModule.definition.name,
 	],
 );
@@ -125,11 +135,21 @@ check(
 );
 
 check(
-	"no code outside the command menu plugin names its slots: the host never reads them",
+	"no code outside the command menu plugin and its fillers names its slots: the host never reads them",
 	["MenuDoorsSlot", "MenuPagesSlot", "MenuRowSourcesSlot"].flatMap((word) =>
-		sourcesNaming(word).filter((file) => !file.startsWith("plugins/command-menu/")),
+		sourcesNaming(word).filter((file) => !MENU_SLOT_OWNERS.some((owner) => file.startsWith(owner))),
 	),
 	[],
+);
+check(
+	"the Ask door, ⌘I, and its page are the chat plugin's fills, and the menu fills no Ask of its own",
+	[fillIdsOf(ChatPlugin, MenuDoorsSlot), fillIdsOf(ChatPlugin, MenuPagesSlot), fillIdsOf(CommandMenuPlugin, MenuDoorsSlot)],
+	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
+);
+check(
+	"questions is the chat plugin's background module, no longer the old app's",
+	[fillIdsOf(ChatPlugin, BackgroundModulesSlot), fillIdsOf(MainPlugin, BackgroundModulesSlot)],
+	[["questions"], ["places", "tasks"]],
 );
 check(
 	"the built-in profile runs the command menu's module in the window and draws its layer",

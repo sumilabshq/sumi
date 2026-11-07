@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { AssistantPanel } from "../apps/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx";
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
-import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { tauriAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell, DEFAULT_CLAUDE_OPTIONS } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folder-cell.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";

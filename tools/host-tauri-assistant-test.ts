@@ -9,8 +9,8 @@ import {
 } from "../apps/tauri/src/assistant/assistant-bridge.ts";
 import { cssPointOf, dragStepOf, isInside } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
 import type { ChatSpot, WebviewDragSource } from "../apps/tauri/src/assistant/tauri-file-drop.ts";
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
-import { attachmentFilesIn } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
+import { attachmentFilesIn } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
 import {
 	AttachDroppedCommand,
 	AttachFolderCommand,
@@ -20,7 +20,7 @@ import {
 	DraftAttachmentsQuery,
 	FileDragQuery,
 	SendMessageCommand,
-} from "../packages/domain/assistant/index.ts";
+} from "../plugins/chat/data/assistant/index.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import {

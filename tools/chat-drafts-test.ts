@@ -3,7 +3,7 @@ import type { StartedApp } from "../packages/shared/data-framework/src/index.ts"
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type { AssistantPort, AssistantSetup } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { AssistantModule } from "../packages/domain/assistant/module.ts";
+import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import {
 	AttachFilesCommand,
 	ChooseClaudeOptionCommand,
@@ -13,11 +13,11 @@ import {
 	HoldDraftTextCommand,
 	OpenChatDraftCommand,
 	SendMessageCommand,
-} from "../packages/domain/assistant/index.ts";
-import { portAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/port.gateway.ts";
-import { PrivateFolderAttachmentFilesGateway } from "../packages/domain/assistant/gateways/attachment-files/private-folder.gateway.ts";
-import { ShelfChatDraftsGateway } from "../packages/domain/assistant/gateways/chat-drafts/shelf.gateway.ts";
-import { CellClaudeOptionsGateway } from "../packages/domain/assistant/gateways/claude-options/cell.gateway.ts";
+} from "../plugins/chat/data/assistant/index.ts";
+import { portAssistantParts } from "../plugins/chat/data/assistant/gateways/assistant-parts/port.gateway.ts";
+import { PrivateFolderAttachmentFilesGateway } from "../plugins/chat/data/assistant/gateways/attachment-files/private-folder.gateway.ts";
+import { ShelfChatDraftsGateway } from "../plugins/chat/data/assistant/gateways/chat-drafts/shelf.gateway.ts";
+import { CellClaudeOptionsGateway } from "../plugins/chat/data/assistant/gateways/claude-options/cell.gateway.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
 import { z } from "zod";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";

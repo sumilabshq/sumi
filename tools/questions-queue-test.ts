@@ -9,9 +9,9 @@ import {
 	ReadyAnswersQuery,
 	QuestionsModule as QuestionsContract,
 	SkipQuestionsCommand,
-} from "../packages/domain/questions/generated/contract.ts";
-import { QuestionsModule } from "../packages/domain/questions/module.ts";
-import { MemoryQuestionsGateway } from "../packages/domain/questions/gateways/questions/memory.gateway.ts";
+} from "../plugins/chat/data/questions/generated/contract.ts";
+import { QuestionsModule } from "../plugins/chat/data/questions/module.ts";
+import { MemoryQuestionsGateway } from "../plugins/chat/data/questions/gateways/questions/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const CHAT = "chat-1";

@@ -1,6 +1,8 @@
 import type { Send } from "@widgetarium/data-framework";
 import type { Found, MenuDoor } from "../schema/command-menu.schema.js";
 
+export type { Found };
+
 export type Pools = Readonly<Record<string, readonly Found[]>>;
 
 export interface Typed {

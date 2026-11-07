@@ -20,7 +20,7 @@ import {
 } from "../packages/shared/contract/index.ts";
 import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/data-framework";
 import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
-import { AssistantModule as RunnableAssistantModule } from "../packages/domain/assistant/module.ts";
+import { AssistantModule as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { frameChatServersOf } from "../apps/studio/src/assistant/frame-chat-servers.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";

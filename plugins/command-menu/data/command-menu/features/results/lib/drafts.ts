@@ -12,9 +12,6 @@ import {
 	addressFound,
 	askFallbackFound,
 	askFound,
-	createAndSendFound,
-	createEmptyFound,
-	createOnlyFound,
 	linkFound,
 	searchFound,
 } from "./made.js";
@@ -41,10 +38,6 @@ export const BUILT_IN_PAGES: readonly FilledPage[] = [
 		id: "this-tab",
 		draftsOf: thisTabPageOf,
 	},
-	{
-		id: "ask",
-		draftsOf: askPageOf,
-	},
 ];
 
 function anywherePageOf({ pools, findable, typed, around }: PageAsk): DraftedMenu {
@@ -66,10 +59,6 @@ function newTabPageOf({ pools, typed, around }: PageAsk): DraftedMenu {
 
 function thisTabPageOf({ pools, typed, around }: PageAsk): DraftedMenu {
 	return thisTabMenuOf(pools, typed, around);
-}
-
-function askPageOf({ typed }: PageAsk): DraftedMenu {
-	return askingMenuOf(typed);
 }
 
 function poolOf(pools: Pools, source: string): readonly Found[] {
@@ -141,17 +130,6 @@ function newTabOpensOf(pools: Pools, typed: Typed): readonly Found[] {
 		...rankedOf(poolOf(pools, "sites"), typed.matched).slice(0, OPENS_NEW),
 		searchFound(typed.text, "new-tab"),
 	];
-}
-
-function askingMenuOf(typed: Typed): DraftedMenu {
-	if (typed.text === "") {
-		return uncountedMenuOf([listOf(UNLABELLED, [createEmptyFound()])]);
-	}
-
-	return uncountedMenuOf([
-		listOf(UNLABELLED, [createAndSendFound(typed.text)]),
-		fallbackDraftOf(UNLABELLED, [createOnlyFound(typed.text)]),
-	]);
 }
 
 function thisTabMenuOf(pools: Pools, typed: Typed, around: Around): DraftedMenu {

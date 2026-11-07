@@ -10,6 +10,7 @@ import type { ComponentType } from "react";
 import type { DeviceModule, ServerRuns, ModuleContract } from "@widgetarium/data-framework";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { AppsPlugin } from "@sumi/apps-plugin";
+import { ChatPlugin } from "@sumi/chat-plugin";
 import { CommandMenuPlugin } from "@sumi/command-menu-plugin";
 import { MainPlugin } from "@sumi/main-plugin";
 import {
@@ -47,13 +48,27 @@ export interface ResolvedPlugins {
 	readonly refusals: readonly string[];
 }
 
-const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, CommandMenuPlugin, MainPlugin, TerminalPlugin, BrowserPagePlugin];
+const INSTALLED_PLUGINS = [
+	SumiHostPlugin,
+	AppsPlugin,
+	CommandMenuPlugin,
+	ChatPlugin,
+	MainPlugin,
+	TerminalPlugin,
+	BrowserPagePlugin,
+];
 const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
 const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
 const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
 
-const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, AppsPlugin.id, CommandMenuPlugin.id, MainPlugin.id];
+const ALWAYS_ON_PLUGINS: readonly string[] = [
+	SumiHostPlugin.id,
+	AppsPlugin.id,
+	CommandMenuPlugin.id,
+	ChatPlugin.id,
+	MainPlugin.id,
+];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [TerminalPlugin.id, BrowserPagePlugin.id],
