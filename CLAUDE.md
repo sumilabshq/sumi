@@ -22,6 +22,14 @@ queries, commands and events (`docs/architecture/plugins.md`). The host offers g
 reads only the slots it declares itself; it never reads, parses or configures a module with another
 plugin's fills. `AppHostModule({ apps })` did exactly that and was rewritten.
 
+**CRITICAL — the machine is reached only through the Sumi contract.** The file system and terminal
+sessions are the host's capabilities, and every plugin and app reaches them through `@sumi/contract`
+(`ReadFileQuery`, `TerminalOutputQuery`, …), never through Tauri. They are not a reason a plugin "cannot" do
+something: a plugin that needs the machine sends a contract request. `sumi-host` and its slots
+(`BackgroundModulesSlot` and the rest) are part of that contract, the base every plugin builds on; a module
+runs in the background because a plugin fills `BackgroundModulesSlot`, and the app reads that slot and starts
+it. Nothing in host code names a plugin's module.
+
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
 `plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin(...)` definition, no helper,
 slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
