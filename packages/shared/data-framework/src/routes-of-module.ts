@@ -8,9 +8,9 @@ export interface ModuleRoutes {
 	readonly routes: readonly Route[];
 }
 
-export function moduleRoutesOf(module: ReadyModule, hostProvided: Provided): ModuleRoutes {
+export function moduleRoutesOf(module: ReadyModule, runtimeProvided: Provided): ModuleRoutes {
 	const provides = module.provide();
-	const provided = { ...provides, ...hostProvided };
+	const provided = { ...provides, ...runtimeProvided };
 	const routes = module.handlers.map((handler) => ({
 		handler,
 		provided,

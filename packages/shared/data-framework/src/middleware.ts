@@ -39,6 +39,16 @@ const TAKES_OPTIONS_FIRST =
 
 export type TakesOptionsFirst = typeof TAKES_OPTIONS_FIRST;
 
+type UnmetKeyOf<D extends Inject, P> = {
+	readonly [K in keyof D]: K extends keyof P ? (P[K] extends InstanceType<D[K]> ? never : K) : K;
+}[keyof D];
+
+export type RequiresMet<D extends Inject, P> = [UnmetKeyOf<D, P>] extends [never]
+	? unknown
+	: {
+			readonly requires: `this step requires ${UnmetKeyOf<D, P> & string}, which neither the module's provide nor the runtime's gives as that type`;
+		};
+
 export type StepNext = (added?: Added) => Promise<Answer<unknown>>;
 
 export type Next<A extends Added> = (...added: keyof A extends never ? [] : [added: A]) => Promise<Answer<unknown>>;
@@ -47,14 +57,14 @@ type StepKind = "middleware" | "guard" | "public";
 
 export interface Step {
 	readonly kind: StepKind;
-	readonly inject: Inject;
+	readonly requires: Inject;
 	readonly needsUser: boolean;
 	readonly label: string | null;
 	handle(call: StepCall, injected: Injected<Inject>, next: StepNext): Promise<Answer<unknown>>;
 }
 
 export interface Typed<In, A extends Added, D extends Inject> {
-	readonly inject: D;
+	readonly requires: D;
 	readonly needsInput?: (input: In) => void;
 	readonly adds?: (added: A) => A;
 }
@@ -62,7 +72,7 @@ export interface Typed<In, A extends Added, D extends Inject> {
 export interface Middleware<In = unknown, A extends Added = Added, D extends Inject = Inject>
 	extends Step, Typed<In, A, D> {
 	readonly kind: "middleware";
-	readonly inject: D;
+	readonly requires: D;
 }
 
 export type HandleStep<In, A extends Added, D extends Inject, O extends StepOptions = never> = (
@@ -73,7 +83,7 @@ export type HandleStep<In, A extends Added, D extends Inject, O extends StepOpti
 
 export interface StepShape {
 	readonly kind: StepKind;
-	readonly inject: Inject;
+	readonly requires: Inject;
 	readonly needsUser?: boolean;
 	readonly label?: string | null;
 }
@@ -90,7 +100,7 @@ type AnyHandleWithOptions = {
 	): Promise<Answer<unknown>>;
 }["bivariant"];
 
-const NOTHING_INJECTED: NothingAdded = Object.freeze({});
+const NOTHING_REQUIRED: NothingAdded = Object.freeze({});
 const NO_STEP_OPTIONS: StepOptions = Object.freeze([]);
 const RATE_LIMITED = "{name} was called too often; try again shortly";
 const WHOLE_CALL = "";
@@ -110,30 +120,30 @@ export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends 
 		return new MiddlewareBuilder(this.tokens, true);
 	}
 
-	inject<const N extends Inject>(inject: N): MiddlewareBuilder<In, A, N, O> {
-		return new MiddlewareBuilder(inject, this.takesOptions);
+	requires<const N extends Inject>(required: N): MiddlewareBuilder<In, A, N, O> {
+		return new MiddlewareBuilder(required, this.takesOptions);
 	}
 
 	handle(handle: HandleStep<In, A, D, O>): DeclaredStep<Middleware<In, A, D>, O> {
 		const handling: AnyHandleWithOptions = handle;
 		const { tokens } = this;
 		const middlewareOf = (options: StepOptions): Middleware<In, A, D> => {
-			const step = stepOf({ kind: "middleware", inject: tokens }, (call, injected, next) =>
+			const step = stepOf({ kind: "middleware", requires: tokens }, (call, injected, next) =>
 				handling({ ...call, options }, injected, next),
 			);
-			return { ...step, kind: "middleware", inject: tokens };
+			return { ...step, kind: "middleware", requires: tokens };
 		};
 		return declareStep(middlewareOf, this.takesOptions);
 	}
 }
 
 export function middleware<In = unknown>(): MiddlewareBuilder<In, NothingAdded, NothingAdded> {
-	return new MiddlewareBuilder(NOTHING_INJECTED, false);
+	return new MiddlewareBuilder(NOTHING_REQUIRED, false);
 }
 
 export const RateLimitMiddleware = middleware()
 	.options<[limit: RateLimit]>()
-	.inject({ rateLimits: RateLimits })
+	.requires({ rateLimits: RateLimits })
 	.handle(async ({ request, context, options: [limit] }, { rateLimits }, next) => {
 		if (await rateLimits.take(callerKeyOf(request, context.user, WHOLE_CALL), limit)) return next();
 		return refusalOf("rate-limited", RATE_LIMITED.replace("{name}", request));
@@ -180,7 +190,7 @@ function isStep(step: Step | StepNeedingOptions): step is Step {
 export function stepOf(shape: StepShape, handle: AnyHandle): Step {
 	return Object.freeze({
 		kind: shape.kind,
-		inject: shape.inject,
+		requires: shape.requires,
 		needsUser: shape.needsUser ?? false,
 		label: shape.label ?? null,
 		handle: (call: StepCall, injected: Injected<Inject>, next: StepNext) => handle(call, injected, next),

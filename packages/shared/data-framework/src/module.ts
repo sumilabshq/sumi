@@ -207,7 +207,6 @@ export class RequestsModule<R extends Runs, C extends object = NoConfig> impleme
 		this.handlers = plan.listed.map((listed) => ({
 			...listed,
 			request: listed.request.inModule(plan.name),
-			emits: listed.emits.map((emitted) => emitted.inModule(plan.name)),
 			module: this,
 		}));
 	}
@@ -350,6 +349,5 @@ function subscriberInModule(listed: AnySubscriber, module: string): AnySubscribe
 	return {
 		...listed,
 		event: listed.event.inModule(module),
-		emits: listed.emits.map((emitted) => emitted.inModule(module)),
 	};
 }

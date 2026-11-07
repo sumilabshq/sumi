@@ -3,7 +3,6 @@ import { command, query, subscriber } from "#module";
 import { FOLDERS_NOT_HERE } from "../../gateways/attachment-folder/none.gateway.js";
 import { holdChatDraft, wearChoices, wearProvider } from "../../shared/lib/chat-drafts.js";
 import { FileDraggedEvent } from "../../gateways/chat-parts/chat-parts.events.js";
-import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
 import { chosenOf } from "../../shared/lib/chosen-provider.js";
 import { AdoptedDraftSchema, AttachReachSchema, AttachmentAskedSchema, DraftAttachmentsSchema, FilesAskedSchema, MessageAskedSchema, TakenDraftSchema } from "../../shared/schema/attachment.schema.js";
 import { ChatOpenedSchema, DraftNoticeSchema, DraftTextSchema, HeldDraftTextSchema, OpenedDraftSchema } from "../../shared/schema/chat-draft.schema.js";
@@ -69,7 +68,6 @@ export const SendMessageCommand = command("send-message")
 	.public()
 	.input(MessageAskedSchema)
 	.idempotencyKey(PerCall)
-	.emits(SentAttachmentsChangedEvent)
 	.handle(inChat(async ({ said, replaces }, injects) => {
 		const drafts = injects.draftAttachments.draftAttachments();
 		injects.chatDrafts.saveUnseenSaid(null);
@@ -98,7 +96,6 @@ export const AdoptDraftCommand = command("adopt-draft")
 	.input(AdoptedDraftSchema)
 	.output(DraftTextSchema)
 	.idempotencyKey(PerCall)
-	.emits(SentAttachmentsChangedEvent)
 	.handle(inChat(async (adopted, injects) => {
 		injects.invalidate(DraftAttachmentsQuery);
 
@@ -122,7 +119,6 @@ export const SweepAttachmentsCommand = command("sweep-attachments")
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
-	.emits(SentAttachmentsChangedEvent)
 	.handle(inChat((_input, injects) =>
 		sweepFolder(injects, {
 			isBusy: injects.assistantSession.session().busy,
@@ -217,7 +213,6 @@ export const ClearChatCommand = command("clear-chat")
 	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
-	.emits(SentAttachmentsChangedEvent)
 	.handle(inChat(async (_input, injects) => {
 		await injects.assistantSession.clear();
 		injects.invalidate(DraftAttachmentsQuery);

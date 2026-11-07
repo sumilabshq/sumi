@@ -13,7 +13,7 @@ interface Starting {
 	readonly side: Side;
 	readonly modules: readonly ReadyModule[];
 	readonly hasAuthenticate: boolean;
-	readonly hostProvided: Provided;
+	readonly runtimeProvided: Provided;
 	readonly remote: ModuleReach | null;
 }
 
@@ -27,8 +27,9 @@ const WRONG_MODULE = '{request} is handled in module "{module}", but its name na
 const BUILT_FOR = 'the handler of {request} was built for module "{built}", but module "{module}" holds it';
 const TWO_HANDLERS = "{request} has {count} handlers";
 const NOT_PROVIDED = "the handler of {request} injects {key}, which its module does not provide as a {token}";
-const HOST_KEY = 'module "{module}" provides {key}, which the host provides';
+const RUNTIME_KEY = 'module "{module}" provides {key}, which {starter}.provide() already gives every module: rename one';
 const RESERVED_KEY = 'module "{module}" provides {key}, a name the framework gives every handler: rename it';
+const RUNTIME_RESERVED_KEY = "{starter}.provide() returns {key}, a name the framework gives every handler: rename it";
 const RESERVED_KEYS: ReadonlySet<string> = new Set(["send", "emit", "invalidate", "user", "signal", "idempotencyKey"]);
 const NEEDS_AUTHENTICATE = "{request} is guarded by {guard}, which needs an Authenticate in the starter's host";
 const NEEDS_USER_ON_CLIENT =
@@ -37,10 +38,10 @@ const UNGUARDED =
 	"{request} runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
 const GUARD_AT = "guard #{at}";
 const MIDDLEWARE_AT = "middleware #{at}";
-const STEP_NOT_PROVIDED = "{step} of {request} injects {key}, which its module does not provide as a {token}";
+const STEP_NOT_PROVIDED =
+	"{step} of {request} requires {key}, which neither its module nor {starter}.provide() gives as a {token}";
 const IMPORT_UNMET =
 	'module "{module}" imports {imported}, which {starter} neither runs nor reaches: add it to .modules() or .imports()';
-const FOREIGN_EMIT = '{owner} emits {event}, which module "{module}" does not own: a module emits only its own events';
 const EVENT_NOT_IMPORTED =
 	'{owner} listens to {event}, but module "{module}" does not import {eventModule}: add .imports()';
 const EVENT_OVER_NETWORK =
@@ -60,17 +61,17 @@ export function routesOf(starting: Starting): StartedRoutes {
 		...ranAndImportedFindings(starting),
 		...importedTwiceFindings(starting),
 	]);
-	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.hostProvided));
+	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.runtimeProvided));
 	const routes = moduleRoutes.flatMap((ofModule) => ofModule.routes);
 	refuseOn(starting.side, [
 		...moduleRoutes.flatMap(reservedKeyFindings),
-		...moduleRoutes.flatMap((ofModule) => hostKeyFindings(ofModule, starting.hostProvided)),
+		...runtimeReservedKeyFindings(starting),
+		...moduleRoutes.flatMap((ofModule) => runtimeKeyFindings(ofModule, starting)),
 		...moduleRoutes.flatMap(({ module, routes: ofModule }) =>
 			ofModule.flatMap((route) => routeFindings(module, route, starting)),
 		),
 		...duplicateFindings(routes.map((route) => route.handler)),
 		...importFindings(starting),
-		...moduleRoutes.flatMap(({ module }) => emitFindings(module)),
 		...moduleRoutes.flatMap(({ module }) => listenFindings(module, starting)),
 	]);
 	return {
@@ -109,16 +110,26 @@ function importedTwiceFindings({ remote }: Starting): string[] {
 		.map(([imported, count]) => IMPORTED_TWICE.replace("{module}", imported).replace("{count}", String(count)));
 }
 
+function runtimeReservedKeyFindings({ side, runtimeProvided }: Starting): string[] {
+	return Object.keys(runtimeProvided)
+		.filter((key) => RESERVED_KEYS.has(key))
+		.map((key) => RUNTIME_RESERVED_KEY.replace("{starter}", STARTERS[side]).replace("{key}", key));
+}
+
 function reservedKeyFindings({ module, provides }: ModuleRoutes): string[] {
 	return Object.keys(provides)
 		.filter((key) => RESERVED_KEYS.has(key))
 		.map((key) => RESERVED_KEY.replace("{module}", module.definition.name).replace("{key}", key));
 }
 
-function hostKeyFindings({ module, provides }: ModuleRoutes, hostProvided: Provided): string[] {
+function runtimeKeyFindings({ module, provides }: ModuleRoutes, { side, runtimeProvided }: Starting): string[] {
 	return Object.keys(provides)
-		.filter((key) => key in hostProvided)
-		.map((key) => HOST_KEY.replace("{module}", module.definition.name).replace("{key}", key));
+		.filter((key) => key in runtimeProvided)
+		.map((key) =>
+			RUNTIME_KEY.replace("{module}", module.definition.name)
+				.replace("{key}", key)
+				.replace("{starter}", STARTERS[side]),
+		);
 }
 
 function routeFindings(module: ReadyModule, route: Route, starting: Starting): string[] {
@@ -146,15 +157,20 @@ function stepFindings(module: ReadyModule, route: Route, { side, hasAuthenticate
 		needing === undefined
 			? []
 			: [fill(template, route.handler.request.name).replace("{guard}", stepNameOf(declared, needing))];
-	return [...unprovidedStepFindings(route, declared), ...authenticate];
+	return [...unprovidedStepFindings(route, declared, side), ...authenticate];
 }
 
-function unprovidedStepFindings({ handler: { request }, steps, provided }: Route, declared: readonly Step[]): string[] {
+function unprovidedStepFindings(
+	{ handler: { request }, steps, provided }: Route,
+	declared: readonly Step[],
+	side: Side,
+): string[] {
 	return steps.flatMap((step) =>
-		missingOf(step.inject, provided).map(([key, token]) =>
+		missingOf(step.requires, provided).map(([key, token]) =>
 			fill(STEP_NOT_PROVIDED, request.name)
 				.replace("{step}", stepNameOf(declared, step))
 				.replace("{key}", key)
+				.replace("{starter}", STARTERS[side])
 				.replace("{token}", token),
 		),
 	);
@@ -180,23 +196,6 @@ function importFindings({ side, modules, remote }: Starting): string[] {
 				IMPORT_UNMET.replace("{module}", definition.name)
 					.replace("{imported}", imported)
 					.replace("{starter}", STARTERS[side]),
-			),
-	);
-}
-
-function emitFindings({ definition, handlers }: ReadyModule): string[] {
-	const emitters = [
-		...handlers.map((handler) => ({ owner: handler.request.name, emits: handler.emits })),
-		...definition.listedSubscribers.map((listed) => ({
-			owner: `the subscriber of ${listed.event.name}`,
-			emits: listed.emits,
-		})),
-	];
-	return emitters.flatMap(({ owner, emits }) =>
-		emits
-			.filter((emitted) => emitted.inModule(definition.name).module !== definition.name)
-			.map(({ name }) =>
-				FOREIGN_EMIT.replace("{owner}", owner).replace("{event}", name).replace("{module}", definition.name),
 			),
 	);
 }

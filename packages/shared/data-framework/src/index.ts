@@ -110,6 +110,7 @@ export { permission } from "./permission";
 export type { Permission } from "./permission";
 export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
+export type { RuntimeFacts, RuntimeProvider, RuntimeProvides } from "./runtime-provides";
 export { reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";
 export { PerCall, Repeatable, command, query } from "./request";

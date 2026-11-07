@@ -26,7 +26,6 @@ export const OpenLinkCommand = command("open-link")
 	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ href, opensNew }, { send, emit, ...injects }) => {
 		const reach = { injects, send, told: () => emit(TabsSettledEvent) };
 		const refusal = isWebPage(href)

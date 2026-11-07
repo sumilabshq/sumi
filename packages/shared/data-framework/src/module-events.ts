@@ -59,7 +59,6 @@ function subscribed(
 	listed: AnySubscriber,
 ): () => void {
 	const emitting = {
-		declared: listed.emits,
 		owner: `the subscriber of ${listed.event.name}`,
 		module: definition.name,
 	};

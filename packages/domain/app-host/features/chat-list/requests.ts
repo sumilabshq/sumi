@@ -17,7 +17,6 @@ export const PinTabCommand = command("pin-tab")
 	.public()
 	.input(TabPinSchema)
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id, isPinned }, { send, emit, studioWindow }) => {
 		await send(PlacesPinTabCommand, { window: studioWindow.windowLabel(), id, isPinned });
 		emit(TabsSettledEvent);

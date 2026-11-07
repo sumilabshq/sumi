@@ -67,7 +67,7 @@ export const AppCallersGuard = guard().handle(({ request, context }) => {
 });
 
 export const OwnsAppTabGuard = guard<{ readonly id: string }>()
-	.inject({ tabs: TabsGateway })
+	.requires({ tabs: TabsGateway })
 	.handle(async ({ input, context }, { tabs }) => {
 		if (context.user === null) {
 			return;
@@ -77,7 +77,7 @@ export const OwnsAppTabGuard = guard<{ readonly id: string }>()
 	});
 
 export const OwnsLinkingTabGuard = guard<{ readonly from: string }>()
-	.inject({ tabs: TabsGateway })
+	.requires({ tabs: TabsGateway })
 	.handle(async ({ input, context }, { tabs }) => {
 		if (context.user === null) {
 			return;

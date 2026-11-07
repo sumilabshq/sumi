@@ -12,7 +12,6 @@ export const AddPhotosCommand = command("add-photos")
 	.public()
 	.input(PhotosSchema)
 	.idempotencyKey(PerCall)
-	.emits(DesignChangedEvent)
 	.handle(async ({ photos }, { canvasMoment, designFolder, designFiles, photoWrites, emit }) => {
 		const { app } = canvasMoment.moment();
 

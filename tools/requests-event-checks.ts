@@ -14,7 +14,7 @@ import {
 	query,
 	subscriber,
 } from "../packages/shared/data-framework/src/index.ts";
-import type { Failure } from "../packages/shared/data-framework/src/index.ts";
+import type { AnySubscriber, Failure } from "../packages/shared/data-framework/src/index.ts";
 import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
@@ -57,7 +57,7 @@ const LedgerDeclared = module("ledger")
 	.on(Device)
 	.provide(() => ({ ledger: new Ledger(), heard: new Heard() }));
 
-const ledgerBuilt = buildersOf<typeof LedgerDeclared>();
+const ledgerBuilt = buildersOf<typeof LedgerDeclared, typeof AddedEvent>();
 
 const AddedEvent = event("added").input(z.object({ by: z.number() }));
 
@@ -76,7 +76,6 @@ const AddCommand = ledgerBuilt
 	.public()
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable)
-	.emits(AddedEvent)
 	.handle(({ by }, { ledger, heard, emit, invalidate }) => {
 		if (by < 0) {
 			invalidate(ValueQuery);
@@ -231,20 +230,30 @@ check(
 
 const ForeignEvent = event("other/changed");
 
-const EmitsForeignCommand = command("emits-foreign")
+const OwnChangedEvent = event("own-changed");
+
+const ForeignEmittingDeclared = module("foreign-emitting")
+	.on(Device)
+	.provide(() => ({}));
+
+const foreignEmittingBuilt = buildersOf<typeof ForeignEmittingDeclared, typeof OwnChangedEvent>();
+
+const EmitsForeignCommand = foreignEmittingBuilt
+	.command("emits-foreign")
 	.public()
 	.idempotencyKey(Repeatable)
-	.emits(ForeignEvent)
+	// @ts-expect-error a module emits only its own events
 	.handle((_input, { emit }) => emit(ForeignEvent));
 
-const ForeignEmittingModule = module("foreign-emitting")
-	.on(Device)
-	.provide(() => ({}))
-	.handles(EmitsForeignCommand);
+const EmitsForeignContract = command("foreign-emitting/emits-foreign").idempotencyKey(Repeatable);
 
+const foreignEmitting = app()
+	.modules(ForeignEmittingDeclared.handles(EmitsForeignCommand, OwnChangedEvent))
+	.start(ON_BROWSER);
+const emittedForeign = await foreignEmitting.send(EmitsForeignContract);
 check(
-	"a request emitting another module's event is refused at start",
-	thrownBy(() => app().modules(ForeignEmittingModule).start(ON_BROWSER)).split("\n")[1],
+	"a request emitting another module's event is refused where it emits",
+	emittedForeign.ok ? "ok" : emittedForeign.reason,
 	'foreign-emitting/emits-foreign emits other/changed, which module "foreign-emitting" does not own: a module emits only its own events',
 );
 
@@ -263,7 +272,7 @@ const HearsKeptSubscriber = subscriber(event("keeper/kept-changed")).handle(() =
 
 const HearsSharedSubscriber = subscriber(event("keeper/shared-changed")).handle(() => undefined);
 
-const hearerModuleOf = (heard: typeof HearsKeptSubscriber) =>
+const hearerModuleOf = (heard: AnySubscriber) =>
 	module("hearer")
 		.on(Device)
 		.imports(KeeperModule)
@@ -428,10 +437,12 @@ const ServedLedgerModule = module("served-ledger")
 const servedLedger = new Ledger();
 const servedLedgerServer = server()
 	.modules(
-		ServedLedgerModule({ injects: {
-			ledger: servedLedger,
-			heard: new Heard(),
-		} }),
+		ServedLedgerModule({
+			injects: {
+				ledger: servedLedger,
+				heard: new Heard(),
+			},
+		}),
 	)
 	.listen(localTransport())
 	.start({ env: {} });

@@ -25,7 +25,7 @@ type DeniedCode = "unauthenticated" | "forbidden";
 export interface Guard<In = unknown, A extends Added = Added, D extends Inject = Inject, U extends boolean = boolean>
 	extends Step, Typed<In, A, D> {
 	readonly kind: "guard";
-	readonly inject: D;
+	readonly requires: D;
 	readonly needsUser: U;
 }
 
@@ -58,7 +58,7 @@ interface Labelled<U extends boolean> {
 
 type Outcome = { readonly added: Added } | { readonly refusal: Refusal };
 
-const NOTHING_INJECTED: NothingAdded = Object.freeze({});
+const NOTHING_REQUIRED: NothingAdded = Object.freeze({});
 const NOTHING_ADDED: NothingAdded = Object.freeze({});
 const UNLABELLED: Labelled<false> = { label: null, needsUser: false, takesOptions: false };
 const NEEDS_USER = "{request} needs a signed-in user";
@@ -76,8 +76,8 @@ export class GuardBuilder<In, D extends Inject, U extends boolean = false, O ext
 		return new GuardBuilder(this.tokens, { ...this.labelled, takesOptions: true });
 	}
 
-	inject<const N extends Inject>(inject: N): GuardBuilder<In, N, U, O> {
-		return new GuardBuilder(inject, this.labelled);
+	requires<const N extends Inject>(required: N): GuardBuilder<In, N, U, O> {
+		return new GuardBuilder(required, this.labelled);
 	}
 
 	needsUser(): GuardBuilder<In, D, true, O> {
@@ -96,15 +96,15 @@ export class GuardBuilder<In, D extends Inject, U extends boolean = false, O ext
 				});
 				return "refusal" in outcome ? outcome.refusal : next(outcome.added);
 			};
-			const shape = { kind: "guard", inject: tokens, label: labelled.label, needsUser } as const;
-			return { ...stepOf(shape, handled), kind: "guard", inject: tokens, needsUser };
+			const shape = { kind: "guard", requires: tokens, label: labelled.label, needsUser } as const;
+			return { ...stepOf(shape, handled), kind: "guard", requires: tokens, needsUser };
 		};
 		return declareStep(guardOf, labelled.takesOptions);
 	}
 }
 
 export function guard<In = unknown>(): GuardBuilder<In, NothingAdded> {
-	return new GuardBuilder(NOTHING_INJECTED, UNLABELLED);
+	return new GuardBuilder(NOTHING_REQUIRED, UNLABELLED);
 }
 
 export function deny(reason: string): never {
@@ -112,7 +112,7 @@ export function deny(reason: string): never {
 }
 
 export const PublicGuard: OpenGuard = {
-	...stepOf({ kind: "public", inject: NOTHING_INJECTED, label: "PublicGuard" }, (_call, _injected, next) => next()),
+	...stepOf({ kind: "public", requires: NOTHING_REQUIRED, label: "PublicGuard" }, (_call, _injected, next) => next()),
 	kind: "public",
 };
 
@@ -120,13 +120,13 @@ export const AuthenticatedGuard: Guard<unknown, Signed, NothingAdded, true> = ne
 	unknown,
 	NothingAdded,
 	true
->(NOTHING_INJECTED, { label: "AuthenticatedGuard", needsUser: true, takesOptions: false }).handle(
+>(NOTHING_REQUIRED, { label: "AuthenticatedGuard", needsUser: true, takesOptions: false }).handle(
 	({ request, context }) => ({
 		user: signedIn(request, context.user),
 	}),
 );
 
-export const HasPermissionGuard = new GuardBuilder<unknown, NothingAdded, true>(NOTHING_INJECTED, {
+export const HasPermissionGuard = new GuardBuilder<unknown, NothingAdded, true>(NOTHING_REQUIRED, {
 	label: "HasPermissionGuard",
 	needsUser: true,
 	takesOptions: false,

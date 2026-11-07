@@ -1,13 +1,22 @@
 import { z } from "zod";
 import type { Duration } from "./duration";
-import type { AnyEvent, Emitter } from "./event";
+import type { AnyEvent } from "./event";
 import type { Guard } from "./guard";
 import type { Handle, Inject } from "./handler";
 import { handlingOf } from "./handled-request";
-import type { HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
+import type { EmitterOf, HandledRequest, InvalidatorOf, RequestHandlerBuilder } from "./handled-request";
 import { requireStep } from "./middleware";
-import type { Added, Middleware, NothingAdded, Step, StepNeedingOptions, TakesOptionsFirst } from "./middleware";
+import type {
+	Added,
+	Middleware,
+	NothingAdded,
+	RequiresMet,
+	Step,
+	StepNeedingOptions,
+	TakesOptionsFirst,
+} from "./middleware";
 import type { NothingProvided } from "./module";
+import type { ProvidedByRuntime } from "./runtime-provides";
 
 type RequestKind = "query" | "command";
 type KeyStage = "unkeyed" | "keyed";
@@ -56,7 +65,10 @@ const NO_MODULES = "{request}.callableBy() names no module: name the modules tha
 const IN_PROCESS: Visibility = Object.freeze({ reach: "process" });
 const PUBLIC: Visibility = Object.freeze({ reach: "public" });
 
-type ProvidedOfRequest<R> = R extends Contract<RequestKind, z.ZodType, z.ZodType, KeyStage, infer P> ? P : never;
+type ProvidedOfRequest<R> =
+	R extends Contract<RequestKind, z.ZodType, z.ZodType, KeyStage, infer P, AnyEvent> ? P : never;
+
+type ProvidedInRuntimeOf<R> = ProvidedOfRequest<R> & ProvidedByRuntime;
 
 export class Contract<
 	K extends RequestKind,
@@ -64,6 +76,7 @@ export class Contract<
 	O extends z.ZodType,
 	Key extends KeyStage,
 	P extends object = NothingProvided,
+	E extends AnyEvent = never,
 > {
 	readonly kind: K;
 	readonly name: string;
@@ -92,43 +105,43 @@ export class Contract<
 		this.visibility = definition.visibility;
 	}
 
-	input<S extends z.ZodType>(schema: S): Contract<K, S, O, Key, P> {
+	input<S extends z.ZodType>(schema: S): Contract<K, S, O, Key, P, E> {
 		return new Contract({ ...this.definition, input: schema }, this.keyStage);
 	}
 
-	output<S extends z.ZodType>(schema: S): Contract<K, I, S, Key, P> {
+	output<S extends z.ZodType>(schema: S): Contract<K, I, S, Key, P, E> {
 		return new Contract({ ...this.definition, output: schema }, this.keyStage);
 	}
 
 	idempotencyKey(
-		this: Contract<"command", I, O, "unkeyed", P>,
+		this: Contract<"command", I, O, "unkeyed", P, E>,
 		key: IdempotencyKey<z.output<I>>,
-	): Contract<"command", I, O, "keyed", P> {
+	): Contract<"command", I, O, "keyed", P, E> {
 		return new Contract({ ...this.definition, idempotencyKey: key }, "keyed");
 	}
 
-	cache(this: Contract<"query", I, O, Key, P>, policy: CachePolicy): Contract<"query", I, O, Key, P> {
+	cache(this: Contract<"query", I, O, Key, P, E>, policy: CachePolicy): Contract<"query", I, O, Key, P, E> {
 		return new Contract({ ...this.definition, freshFor: policy.freshFor }, this.keyStage);
 	}
 
-	settlesNow(this: Contract<"query", I, O, Key, P>): Contract<"query", I, O, Key, P> {
+	settlesNow(this: Contract<"query", I, O, Key, P, E>): Contract<"query", I, O, Key, P, E> {
 		return new Contract({ ...this.definition, settlesNow: true }, this.keyStage);
 	}
 
 	invalidates(
-		this: Contract<"command", I, O, Key, P>,
+		this: Contract<"command", I, O, Key, P, E>,
 		queries: readonly ListedQuery[],
-	): Contract<"command", I, O, Key, P> {
+	): Contract<"command", I, O, Key, P, E> {
 		const invalidates = queries.map((listed) => (listed instanceof Contract ? listed : listed.request));
 		return new Contract({ ...this.definition, invalidates }, this.keyStage);
 	}
 
-	public(): Contract<K, I, O, Key, P> {
+	public(): Contract<K, I, O, Key, P, E> {
 		this.refuseSecondVisibility();
 		return new Contract({ ...this.definition, visibility: PUBLIC }, this.keyStage);
 	}
 
-	callableBy(...modules: readonly NamedModule[]): Contract<K, I, O, Key, P> {
+	callableBy(...modules: readonly NamedModule[]): Contract<K, I, O, Key, P, E> {
 		if (modules.length === 0) {
 			throw new Error(NO_MODULES.replace("{request}", this.name));
 		}
@@ -138,7 +151,7 @@ export class Contract<
 		return new Contract({ ...this.definition, visibility }, this.keyStage);
 	}
 
-	inModule(module: string): Contract<K, I, O, Key, P> {
+	inModule(module: string): Contract<K, I, O, Key, P, E> {
 		if (this.module !== null) {
 			return this;
 		}
@@ -147,25 +160,18 @@ export class Contract<
 		return new Contract({ ...this.definition, name: `${module}/${this.name}`, module, invalidates }, this.keyStage);
 	}
 
-	emits<R extends AnyRequest, const E extends readonly AnyEvent[]>(
+	guard<R extends AnyRequest, A extends Added, D extends Inject>(
 		this: R,
-		...events: E
-	): RequestHandlerBuilder<R, ProvidedOfRequest<R>, Emitter<E[number]>> {
-		return handlingOf<R, ProvidedOfRequest<R>>(this).emits(...events);
-	}
-
-	guard<R extends AnyRequest, A extends Added>(
-		this: R,
-		step: Guard<InputOf<R>, A, Inject>,
+		step: Guard<InputOf<R>, A, D> & RequiresMet<D, ProvidedInRuntimeOf<R>>,
 	): RequestHandlerBuilder<R, ProvidedOfRequest<R>, A>;
 	guard(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
 	guard(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
 		return handlingOf(this, requireStep(step));
 	}
 
-	use<R extends AnyRequest, A extends Added>(
+	use<R extends AnyRequest, A extends Added, D extends Inject>(
 		this: R,
-		step: Middleware<InputOf<R>, A, Inject>,
+		step: Middleware<InputOf<R>, A, D> & RequiresMet<D, ProvidedInRuntimeOf<R>>,
 	): RequestHandlerBuilder<R, ProvidedOfRequest<R>, A>;
 	use(this: AnyRequest, step: StepNeedingOptions): TakesOptionsFirst;
 	use(this: AnyRequest, step: Step | StepNeedingOptions): unknown {
@@ -174,7 +180,7 @@ export class Contract<
 
 	handle<R extends AnyRequest>(
 		this: R,
-		handle: Handle<R, ProvidedOfRequest<R>, InvalidatorOf<R>>,
+		handle: Handle<R, ProvidedInRuntimeOf<R>, InvalidatorOf<R> & EmitterOf<R>>,
 	): HandledRequest<R, ProvidedOfRequest<R>, NothingAdded> {
 		return handlingOf<R, ProvidedOfRequest<R>>(this).handle(handle);
 	}
@@ -188,18 +194,23 @@ export class Contract<
 
 type ListedQuery = AnyQuery | HandledRequest<AnyQuery, object, Added>;
 
-export interface CommandNeedsIdempotencyKey<I extends z.ZodType, O extends z.ZodType, P extends object = NothingProvided> {
+export interface CommandNeedsIdempotencyKey<
+	I extends z.ZodType,
+	O extends z.ZodType,
+	P extends object = NothingProvided,
+	E extends AnyEvent = never,
+> {
 	readonly name: string;
-	input<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<S, O, P>;
-	output<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<I, S, P>;
-	invalidates(queries: readonly ListedQuery[]): CommandNeedsIdempotencyKey<I, O, P>;
-	public(): CommandNeedsIdempotencyKey<I, O, P>;
-	callableBy(...modules: readonly NamedModule[]): CommandNeedsIdempotencyKey<I, O, P>;
-	idempotencyKey(key: IdempotencyKey<z.output<I>>): Contract<"command", I, O, "keyed", P>;
+	input<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<S, O, P, E>;
+	output<S extends z.ZodType>(schema: S): CommandNeedsIdempotencyKey<I, S, P, E>;
+	invalidates(queries: readonly ListedQuery[]): CommandNeedsIdempotencyKey<I, O, P, E>;
+	public(): CommandNeedsIdempotencyKey<I, O, P, E>;
+	callableBy(...modules: readonly NamedModule[]): CommandNeedsIdempotencyKey<I, O, P, E>;
+	idempotencyKey(key: IdempotencyKey<z.output<I>>): Contract<"command", I, O, "keyed", P, E>;
 }
 
-export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, KeyStage, object>;
-export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, "keyed", object>;
+export type Query<I extends z.ZodType, O extends z.ZodType> = Contract<"query", I, O, KeyStage, object, AnyEvent>;
+export type Command<I extends z.ZodType, O extends z.ZodType> = Contract<"command", I, O, "keyed", object, AnyEvent>;
 
 export type AnyQuery = Query<z.ZodType, z.ZodType>;
 export type AnyCommand = Command<z.ZodType, z.ZodType>;
@@ -217,10 +228,10 @@ export function query<P extends object = NothingProvided>(
 	return new Contract(definitionOf("query", name), "keyed");
 }
 
-export function command<P extends object = NothingProvided>(
+export function command<P extends object = NothingProvided, E extends AnyEvent = never>(
 	name: string,
-): CommandNeedsIdempotencyKey<z.ZodVoid, z.ZodVoid, P> {
-	return new Contract<"command", z.ZodVoid, z.ZodVoid, "unkeyed", P>(definitionOf("command", name), "unkeyed");
+): CommandNeedsIdempotencyKey<z.ZodVoid, z.ZodVoid, P, E> {
+	return new Contract<"command", z.ZodVoid, z.ZodVoid, "unkeyed", P, E>(definitionOf("command", name), "unkeyed");
 }
 
 export function isQuery(request: AnyRequest): request is AnyQuery {

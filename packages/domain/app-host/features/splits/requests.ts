@@ -20,7 +20,6 @@ export const PlaceInViewCommand = command("place-in-view")
 	.input(SplitPlacingSchema)
 	.output(z.object({ isPlaced: z.boolean() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async (placing, { send, emit, ...injects }) => {
 		const placed = await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesPlaceInViewCommand, { at, ...placing }),
@@ -32,7 +31,6 @@ export const CloseViewPaneCommand = command("close-view-pane")
 	.public()
 	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ paneId, tabId }, { send, emit, ...injects }) => {
 		const left =
 			tabId === null
@@ -56,7 +54,6 @@ export const ResizeSplitCommand = command("resize-split")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ branchId, at: edge, share }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesResizeSplitCommand, { at, branchId, edge, share }),

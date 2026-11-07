@@ -6,8 +6,11 @@ import {
 	module,
 	PerCall,
 	PublicGuard,
+	RateLimits,
+	buildersOf,
 	clientModule,
 	command,
+	event,
 	guard,
 	handler,
 	middleware,
@@ -41,6 +44,77 @@ const FROM_TO = { from: "Home", to: "Start" };
 const OptionalOptionsMiddleware = middleware()
 	.options<[label?: string]>()
 	.handle((_call, _deps, next) => next());
+
+class Ledger {
+	total(): number {
+		return 0;
+	}
+}
+
+class Clock {
+	now(): number {
+		return 0;
+	}
+}
+
+const LedgerDeclared = module("ledger")
+	.on(Device)
+	.provide(() => ({ ledger: new Ledger() }));
+const OwnChangedEvent = event("own-changed");
+const ForeignChangedEvent = event("other/changed");
+const ledgerBuilt = buildersOf<typeof LedgerDeclared, typeof OwnChangedEvent>();
+const NeedsLedgerGuard = guard()
+	.requires({ ledger: Ledger })
+	.handle(() => undefined);
+const NeedsClockGuard = guard()
+	.requires({ clock: Clock })
+	.handle(() => undefined);
+const NeedsLedgerAsClockGuard = guard()
+	.requires({ ledger: Clock })
+	.handle(() => undefined);
+const NeedsRateLimitsMiddleware = middleware()
+	.requires({ rateLimits: RateLimits })
+	.handle((_call, _deps, next) => next());
+
+export function requiresTypedOnly(): void {
+	ledgerBuilt
+		.query("total")
+		.output(z.number())
+		.guard(NeedsLedgerGuard)
+		.handle((_input, { ledger }) => ledger.total());
+	ledgerBuilt
+		.query("limited")
+		.use(NeedsRateLimitsMiddleware)
+		.handle(() => undefined);
+	ledgerBuilt
+		.query("timed")
+		// @ts-expect-error a step requiring a key neither the module nor the runtime provides
+		.guard(NeedsClockGuard);
+	ledgerBuilt
+		.query("mistyped")
+		// @ts-expect-error a step requiring a key provided as another type
+		.guard(NeedsLedgerAsClockGuard);
+	ledgerBuilt
+		.query("runtime")
+		.output(z.boolean())
+		.handle((_input, { rateLimits }) => rateLimits instanceof RateLimits);
+}
+
+export function emitTypedOnly(): void {
+	ledgerBuilt
+		.command("emits-own")
+		.idempotencyKey(PerCall)
+		.handle((_input, { emit }) => emit(OwnChangedEvent));
+	ledgerBuilt
+		.command("emits-foreign")
+		.idempotencyKey(PerCall)
+		// @ts-expect-error a module emits only its own events
+		.handle((_input, { emit }) => emit(ForeignChangedEvent));
+	ledgerBuilt
+		.query("reads")
+		// @ts-expect-error a query emits nothing
+		.handle((_input, { emit }) => emit(OwnChangedEvent));
+}
 
 export function optionsTypedOnly(): void {
 	const limited = query("pages/limited").output(z.string());

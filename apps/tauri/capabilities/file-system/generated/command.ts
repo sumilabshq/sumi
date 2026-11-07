@@ -2,4 +2,4 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { FileSystemModule } from "../module.js";
 
-export const { command, query, subscriber, event } = buildersOf<typeof FileSystemModule>();
+export const { command, query, subscriber } = buildersOf<typeof FileSystemModule, never>();

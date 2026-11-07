@@ -43,7 +43,6 @@ export const PickLookCommand = command("pick-look")
 	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall)
-	.emits(DesignChangedEvent)
 	.handle(async ({ settingName, option }, { canvasMoment, designFolder, designFiles, emit }) => {
 		const { app } = canvasMoment.moment();
 		const path = lookPathOf(app);

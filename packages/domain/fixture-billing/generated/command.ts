@@ -2,4 +2,4 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { FixtureBillingModule } from "../module.js";
 
-export const { command, query, subscriber, event } = buildersOf<typeof FixtureBillingModule>();
+export const { command, query, subscriber } = buildersOf<typeof FixtureBillingModule, never>();

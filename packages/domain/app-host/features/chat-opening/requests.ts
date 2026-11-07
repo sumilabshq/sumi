@@ -16,7 +16,6 @@ export const OpenChatCommand = command("open-chat")
 	.public()
 	.input(ChatToShowSchema)
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async (chat, { send, emit, ...injects }) => {
 		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, chat);
 	});
@@ -26,7 +25,6 @@ export const OpenNewChatCommand = command("open-new-chat")
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
-	.emits(TabsSettledEvent)
 	.handle(async ({ title }, { send, emit, ...injects }) => {
 		const created = await createChat(send, title);
 		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
@@ -38,7 +36,6 @@ export const NameChatPaneCommand = command("name-chat-pane")
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
-	.emits(TabsSettledEvent)
 	.handle(async ({ paneId }, { send, emit, ...injects }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 
@@ -60,7 +57,6 @@ export const NameChatPaneCommand = command("name-chat-pane")
 export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 	.public()
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async (_input, { send, emit, ...injects }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 

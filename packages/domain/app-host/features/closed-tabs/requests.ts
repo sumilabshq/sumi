@@ -15,7 +15,6 @@ export const ReopenClosedTabByIdCommand = command("reopen-closed-tab-by-id")
 	.public()
 	.input(ClosedTabIdSchema)
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ tabId }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesReopenClosedTabCommand, { at, tabId }),

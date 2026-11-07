@@ -68,6 +68,7 @@ const NOT_HANDLING =
 	'{module}: module.ts must end with .handles(...handled), importing handled from "./generated/handled.js", and pass .handles() nothing else';
 const HANDLES_METHOD = "handles";
 const HANDLED_NAME = "handled";
+const NO_EVENT = "never";
 const HANDLED_SPECIFIER = "./generated/handled.js";
 const SOURCE_SCRIPT = /\.tsx?$/;
 
@@ -147,13 +148,13 @@ function clientFilesOf(folder: string): GeneratedFile[] {
 }
 
 function requestsModuleFilesOf(folder: string, declared: DeclaredModule): GeneratedFile[] {
-	const { contract, server, handledItems } = moduleContractsOf(folder, declared.name);
+	const { contract, server, handledItems, ownedEvents } = moduleContractsOf(folder, declared.name);
 	refuseServerEntryMismatch(folder, server !== null);
 	refuseNotHandling(folder, declared.name);
 	refuseNoBuildersImport(folder);
 	const files = [
 		{ entry: CONTRACT_ENTRY, text: GENERATED_HEADER + contract },
-		{ entry: COMMAND_ENTRY, text: GENERATED_HEADER + commandTextOf(declared.name) },
+		{ entry: COMMAND_ENTRY, text: GENERATED_HEADER + commandTextOf(declared.name, ownedEvents) },
 		{ entry: HANDLED_ENTRY, text: GENERATED_HEADER + handledTextOf(handledItems) },
 		{ entry: ROOT_ENTRY, text: GENERATED_HEADER + rootReExportOf(CONTRACT_ENTRY) },
 	];
@@ -221,28 +222,37 @@ function refuseNoBuildersImport(folder: string): void {
 	}
 }
 
-function commandTextOf(moduleName: string): string {
+function commandTextOf(moduleName: string, ownedEvents: readonly HandledItem[]): string {
+	const emitted = ownedEvents.length === 0 ? NO_EVENT : ownedEvents.map(({ name }) => `typeof ${name}`).sort().join(" | ");
 	return [
 		`import { buildersOf } from "${FRAMEWORK}";\n`,
 		`import type { ${moduleName} } from "../module.js";\n`,
+		...itemImportsOf(ownedEvents, "import type"),
 		"\n",
-		`export const { command, query, subscriber, event } = buildersOf<typeof ${moduleName}>();\n`,
+		`export const { command, query, subscriber } = buildersOf<typeof ${moduleName}, ${emitted}>();\n`,
 	].join("");
 }
 
 function handledTextOf(items: readonly HandledItem[]): string {
+	const names = items.map(({ name }) => name).sort();
+	const typeImport = `import type { ModuleItem } from "${FRAMEWORK}";\n`;
+	const imports = itemImportsOf(items, "import").join("");
+	return `${typeImport}${imports}\nexport const ${HANDLED_NAME}: readonly ModuleItem[] = [${names.join(", ")}];\n`;
+}
+
+function itemImportsOf(items: readonly HandledItem[], keyword: "import" | "import type"): string[] {
 	const byFile = new Map<string, string[]>();
 
 	for (const { name, file } of items) {
 		byFile.set(file, [...(byFile.get(file) ?? []), name]);
 	}
 
-	const imports = [...byFile]
+	return [...byFile]
 		.sort(([first], [second]) => first.localeCompare(second))
-		.map(([file, names]) => `import { ${[...names].sort().join(", ")} } from "../${file.replace(SOURCE_SCRIPT, ".js")}";\n`);
-	const names = items.map(({ name }) => name).sort();
-	const typeImport = `import type { ModuleItem } from "${FRAMEWORK}";\n`;
-	return `${typeImport}${imports.join("")}\nexport const ${HANDLED_NAME}: readonly ModuleItem[] = [${names.join(", ")}];\n`;
+		.map(
+			([file, names]) =>
+				`${keyword} { ${[...names].sort().join(", ")} } from "../${file.replace(SOURCE_SCRIPT, ".js")}";\n`,
+		);
 }
 
 function entryTextOf(folder: string, declared: DeclaredModule, features: readonly string[]): string {

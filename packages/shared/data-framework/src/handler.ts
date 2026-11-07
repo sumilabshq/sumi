@@ -1,5 +1,4 @@
 import type { Guard, OpenGuard, User } from "./guard";
-import type { AnyEvent } from "./event";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { AnyModule, ClientModule, ModuleDefinition, Provided, ServerModule } from "./module";
 import type { AnyRequest, InputOf, ReturnedOf } from "./request";
@@ -75,7 +74,6 @@ export interface Handler<
 	readonly state: S;
 	handle(input: InputOf<R>, context: P & Partial<CallFacts> & C): Returned<R>;
 	readonly watch: Bivariant<Watch<R, P>> | null;
-	readonly emits: readonly AnyEvent[];
 }
 
 export type AnyHandler = Handler<AnyRequest, Readonly<Record<string, unknown>>>;
@@ -240,6 +238,5 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		state,
 		handle: withDefaultCallFacts(handle),
 		watch,
-		emits: [],
 	};
 }

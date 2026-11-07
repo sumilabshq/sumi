@@ -177,7 +177,6 @@ export class LocalRoutes {
 			const send = sendOf(walk, { signal: facts.signal, key, invalidated, calling });
 			const emitted: [AnyEvent, unknown][] = [];
 			const emitting = {
-				declared: route.handler.emits,
 				owner: asked.request.name,
 				module: route.handler.request.module ?? "",
 			};

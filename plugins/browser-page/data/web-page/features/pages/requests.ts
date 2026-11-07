@@ -51,7 +51,7 @@ const CLOSE: PageStep = {
 
 export const AppOwnsTabGuard = guard<{ readonly tab: string }>()
 	.needsUser()
-	.inject({ appTabs: AppTabsGateway })
+	.requires({ appTabs: AppTabsGateway })
 	.handle(async ({ input, context: { user } }, { appTabs }) => {
 		if (user !== null && (await appTabs.appOfTab(input.tab)) !== user.id) {
 			deny(NOT_ITS_TAB.replace("{tab}", input.tab).replace("{app}", user.id));

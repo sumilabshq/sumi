@@ -23,7 +23,6 @@ export const ShowEssentialCommand = command("show-essential")
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		const essential = findEssential(await keptOf(injects.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
@@ -35,7 +34,6 @@ export const RemoveEssentialCommand = command("remove-essential")
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
@@ -49,7 +47,6 @@ export const CloseEssentialCommand = command("close-essential")
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(CloseEssentialTabCommand, { at, essentialId: id }),
@@ -60,7 +57,6 @@ export const PlaceEssentialCommand = command("place-essential")
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id, to }, { send, emit, ...injects }) => {
 		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));

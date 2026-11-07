@@ -8,10 +8,7 @@ import esbuild from "esbuild";
 import { TEXT_LOADERS } from "./text-loaders.mts";
 import { packageKindOf } from "../packages/shared/eslint-plugin/src/domain-file.ts";
 import { check, tally } from "./check-helpers.ts";
-import {
-	ResizeTerminalCommand,
-	TerminalOutputQuery,
-} from "../apps/tauri/capabilities/terminal/generated/contract.ts";
+import { ResizeTerminalCommand, TerminalOutputQuery } from "../apps/tauri/capabilities/terminal/generated/contract.ts";
 
 interface CliRun {
 	readonly code: number;
@@ -173,7 +170,7 @@ const REQUESTS_BUILDERS = [
 	'import { buildersOf } from "@widgetarium/data-framework";',
 	'import type { TallyModule } from "../module.js";',
 	"",
-	"export const { command, query, subscriber, event } = buildersOf<typeof TallyModule>();",
+	"export const { command, query, subscriber } = buildersOf<typeof TallyModule, never>();",
 	"",
 ].join("\n");
 
@@ -313,7 +310,7 @@ const SHARING_REQUESTS = [
 ].join("\n");
 
 const EVENTS = [
-	'import { event } from "#module";',
+	'import { event } from "@widgetarium/data-framework";',
 	'export const CountedEvent = event("counted").public();',
 	'export const RecountedEvent = event("recounted");',
 	"",
@@ -578,6 +575,18 @@ try {
 		"generated/handled.ts lists every event, public or not, beside the handled requests",
 		entryIn(eventedFolder, HANDLED).includes("[BumpCommand, CountQuery, CountedEvent, RecountedEvent]"),
 		true,
+	);
+	check(
+		"generated/command.ts types emit by every event of the module, imported as types",
+		[
+			entryIn(eventedFolder, BUILDERS).includes(
+				'import type { CountedEvent, RecountedEvent } from "../shared/events/count.events.js";',
+			),
+			entryIn(eventedFolder, BUILDERS).includes(
+				"buildersOf<typeof TallyModule, typeof CountedEvent | typeof RecountedEvent>();",
+			),
+		],
+		[true, true],
 	);
 
 	const forest = await generatedIn("forest", {
@@ -854,7 +863,8 @@ try {
 	);
 
 	const strayRequest = await generatedIn("stray-request", {
-		"shared/lib/extra.ts": 'import { query } from "#module";\nexport const ExtraQuery = query("extra").public().handle(() => 0);\n',
+		"shared/lib/extra.ts":
+			'import { query } from "#module";\nexport const ExtraQuery = query("extra").public().handle(() => 0);\n',
 	});
 	check(
 		"an exported request outside the files generate reads is refused, naming file and const",

@@ -3,6 +3,7 @@ import {
 	Anywhere,
 	AuthenticatedGuard,
 	Device,
+	MemoryRateLimits,
 	PublicGuard,
 	Repeatable,
 	Server,
@@ -272,11 +273,7 @@ check("provide receives the platform and scope its starter was told", seenFacts,
 
 check(
 	"a module that runs anywhere still needs a guard on the server",
-	thrownBy(() =>
-		server()
-			.modules(tallyOver(new Counter()))
-			.start({ env: {}, scope: SCOPE }),
-	).split("\n")[1],
+	thrownBy(() => server().modules(tallyOver(new Counter())).start({ env: {}, scope: SCOPE })).split("\n")[1],
 	"tally/count runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 );
 
@@ -338,26 +335,43 @@ check(
 const ClockedQuery = query("clocked")
 	.public()
 	.output(z.number())
-	.guard(
-		guard()
-			.inject({ clock: Clock })
-			.handle(() => undefined),
-	)
 	.handle(() => 1);
 
+const ClockGuard = guard()
+	.requires({ clock: Clock })
+	.handle(() => undefined);
+
 check(
-	"a guard injecting what its module does not provide is refused when app() starts",
+	"a module guard requiring what neither its module nor the runtime provides is refused when app() starts",
 	thrownBy(() =>
 		app()
 			.modules(
 				module("tally")
 					.on(Anywhere)
+					.guard(ClockGuard)
 					.provide(() => ({}))
 					.handles(ClockedQuery),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
-	"guard #1 of tally/clocked injects clock, which its module does not provide as a Clock",
+	"guard #1 of tally/clocked requires clock, which neither its module nor app().provide() gives as a Clock",
+);
+
+check(
+	"a module guard requiring what app().provide() gives starts",
+	thrownBy(() =>
+		app()
+			.modules(
+				module("tally")
+					.on(Anywhere)
+					.guard(ClockGuard)
+					.provide(() => ({}))
+					.handles(ClockedQuery),
+			)
+			.provide(() => ({ rateLimits: new MemoryRateLimits(), clock: new Clock() }))
+			.start(ON_BROWSER),
+	),
+	"",
 );
 
 const shop = app().modules(ShopModule, PaymentsModule).start(ON_BROWSER);
@@ -439,7 +453,9 @@ const ForgetContract = command("notes/forget")
 const notesServer = server().modules(NotesModule).start({ env: {}, scope: SCOPE });
 const notesOverWire = app()
 	.imports(
-		moduleContract("notes", Server, [ForgetContract])({ over: orpcTransport("http://notes", { fetch: notesServer.fetch }) }),
+		moduleContract("notes", Server, [ForgetContract])({
+			over: orpcTransport("http://notes", { fetch: notesServer.fetch }),
+		}),
 	)
 	.start();
 const forgetAnswer = await notesOverWire.send(ForgetContract, { id: "n-1" });
@@ -526,11 +542,10 @@ const anywhereSignedUp = await app()
 	.imports(AuthContract({ over: orpcTransport("http://api", { fetch: anywhereServer.fetch }) }))
 	.start()
 	.send(SignUpContract, { userId: "u-4" });
-check(
-	"an Anywhere module on a server sends another module's request with no mark in-process",
-	anywhereSignedUp,
-	{ ok: true, output: "cus-u-4" },
-);
+check("an Anywhere module on a server sends another module's request with no mark in-process", anywhereSignedUp, {
+	ok: true,
+	output: "cus-u-4",
+});
 check(
 	"a Device module imported over a transport is refused where .over is called",
 	thrownBy(() => {
@@ -572,18 +587,22 @@ let headerAtBilling: string | null = null;
 const reportsServer = server()
 	.modules(ReportsModule)
 	.imports(
-		BillingContract({ over: orpcTransport("http://billing", {
+		BillingContract({
+			over: orpcTransport("http://billing", {
 				fetch: (request) => {
 					headerAtBilling = request.headers.get("x-caller");
 					return billingServer.fetch(request);
 				},
 				headers: () => ({ "x-caller": "reports" }),
-			}), }),
+			}),
+		}),
 	)
 	.start({ env: {}, scope: SCOPE });
 const reports = app()
 	.imports(
-		moduleContract("reports", Server, [ReportContract])({ over: orpcTransport("http://reports", { fetch: reportsServer.fetch }), }),
+		moduleContract("reports", Server, [ReportContract])({
+			over: orpcTransport("http://reports", { fetch: reportsServer.fetch }),
+		}),
 	)
 	.start();
 check(
@@ -607,7 +626,10 @@ check(
 	"a module imported twice is refused by name when app() starts",
 	thrownBy(() =>
 		app()
-			.imports(BillingContract({ over: orpcTransport("http://one") }), BillingContract({ over: orpcTransport("http://two") }))
+			.imports(
+				BillingContract({ over: orpcTransport("http://one") }),
+				BillingContract({ over: orpcTransport("http://two") }),
+			)
 			.start(),
 	).split("\n")[1],
 	'module "billing" is imported 2 times in .imports(): import it once',
@@ -664,7 +686,9 @@ const AuditModule = module("audit")
 const vaultServer = server().modules(VaultModule, AuditModule).start({ env: {}, scope: SCOPE });
 const auditOverWire = app()
 	.imports(
-		moduleContract("audit", Server, [PeekContract])({ over: orpcTransport("http://api", { fetch: vaultServer.fetch }) }),
+		moduleContract("audit", Server, [PeekContract])({
+			over: orpcTransport("http://api", { fetch: vaultServer.fetch }),
+		}),
 	)
 	.start();
 check(
@@ -714,16 +738,11 @@ check(
 	entryFromView.ok ? "ran" : [entryFromView.code, entryFromView.reason],
 	["forbidden", "ledger/entry is callable only by module(s) clerk, not by a view"],
 );
-check(
-	"a view reading it now is refused the same way",
-	ledgerApp.routes.readNow(EntryContract),
-	null,
-);
-check(
-	"a module it names may send it",
-	await ledgerApp.send(query("clerk/read").output(z.string())),
-	{ ok: true, output: "entry" },
-);
+check("a view reading it now is refused the same way", ledgerApp.routes.readNow(EntryContract), null);
+check("a module it names may send it", await ledgerApp.send(query("clerk/read").output(z.string())), {
+	ok: true,
+	output: "entry",
+});
 const entryFromStranger = await ledgerApp.send(query("stranger/read").output(z.string()));
 check(
 	"a module it does not name is refused",

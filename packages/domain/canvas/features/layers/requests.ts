@@ -69,7 +69,6 @@ export const MoveLayerCommand = command("move-layer")
 	.public()
 	.input(LayerMoveAskSchema)
 	.idempotencyKey(PerCall)
-	.emits(DesignChangedEvent)
 	.handle(
 		async (
 			{ dragged, parent, before },

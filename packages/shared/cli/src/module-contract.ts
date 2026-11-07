@@ -29,6 +29,7 @@ export interface ModuleContracts {
 	readonly contract: string;
 	readonly server: string | null;
 	readonly handledItems: readonly HandledItem[];
+	readonly ownedEvents: readonly HandledItem[];
 }
 
 type ItemRoot = "query" | "command" | "event" | "subscriber";
@@ -132,10 +133,13 @@ export function moduleContractsOf(folder: string, moduleName: string): ModuleCon
 			serverListed.length === 0
 				? null
 				: serverContractOf({ folder, listed: serverListed, listedNames, extraImports: [] }, publicContract),
-		handledItems: items
-			.filter(({ root, isHandled }) => root === "event" || isHandled)
-			.map(({ name, file }) => ({ name, file: file.relative })),
+		handledItems: items.filter(({ root, isHandled }) => root === "event" || isHandled).map(handledItemOf),
+		ownedEvents: items.filter(({ root }) => root === "event").map(handledItemOf),
 	};
+}
+
+function handledItemOf({ name, file }: DeclaredItem): HandledItem {
+	return { name, file: file.relative };
 }
 
 function declaredItemsOf(folder: string, moduleName: string): DeclaredItem[] {

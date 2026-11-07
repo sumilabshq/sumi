@@ -2,4 +2,4 @@
 import { buildersOf } from "@widgetarium/data-framework";
 import type { AppsModule } from "../module.js";
 
-export const { command, query, subscriber, event } = buildersOf<typeof AppsModule>();
+export const { command, query, subscriber } = buildersOf<typeof AppsModule, never>();

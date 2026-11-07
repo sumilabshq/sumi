@@ -59,7 +59,6 @@ export const CanOpenOwnWindowQuery = query("can-open-own-window")
 export const RestoreTabsCommand = command("restore-tabs")
 	.public()
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async (_input, { send, emit, ...injects }) => {
 		await readyToRestore(send, injects);
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
@@ -76,7 +75,6 @@ export const ShowTabCommand = command("show-tab")
 	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(({ id }, { send, emit, ...injects }) =>
 		showTabSettled({ injects, send, told: () => emit(TabsSettledEvent) }, id),
 	);
@@ -85,7 +83,6 @@ export const ShowChatTabCommand = command("show-chat-tab")
 	.public()
 	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ chatId }, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesShowChatTabCommand, { at, chatId }),
@@ -96,7 +93,6 @@ export const PlaceTabCommand = command("place-tab")
 	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
-	.emits(TabsSettledEvent)
 	.handle(async ({ id, to }, { send, emit, ...injects }) => {
 		const reach = { injects, send, told: () => emit(TabsSettledEvent) };
 
@@ -120,20 +116,17 @@ export const PlaceTabCommand = command("place-tab")
 	});
 
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
-	.emits(TabsSettledEvent)
 	.handle(async (_input, { send, emit, invalidate, ...injects }) => {
 		invalidateTabReads(invalidate);
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) => send(FitTabsToPanesCommand, { at }));
 	});
 
 export const RememberPagesSubscriber = subscriber(PagesChangedEvent)
-	.emits(TabsSettledEvent)
 	.handle(async (_input, { send, emit, ...injects }) => {
 		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) => send(RememberPagesCommand, { at }));
 	});
 
 export const KeepChatTabsSubscriber = subscriber(ChatsChangedEvent)
-	.emits(TabsSettledEvent)
 	.handle(async (_input, { send, emit }) => {
 		await keepChatTabs(send);
 		emit(TabsSettledEvent);
