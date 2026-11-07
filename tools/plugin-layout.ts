@@ -26,7 +26,7 @@ const FOREIGN_LIB = "a feature's lib/ is its own; what two features use goes to 
 
 export function layoutRefusalsOf(pluginsRoot: string): readonly string[] {
 	return readdirSync(pluginsRoot)
-		.filter((name) => statSync(path.join(pluginsRoot, name)).isDirectory())
+		.filter((name) => !name.startsWith(".") && statSync(path.join(pluginsRoot, name)).isDirectory())
 		.sort()
 		.flatMap((name) => pluginRefusalsOf(pluginsRoot, name));
 }
