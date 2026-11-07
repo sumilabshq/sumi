@@ -1,5 +1,4 @@
-import { AppHostModule } from "@widgetarium/app-host/module";
-import type { CoreChanges } from "@widgetarium/app-host/module";
+import type { CoreChanges, WindowModuleOffers } from "@sumi/sumi-host-plugin";
 import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-store";
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
@@ -21,7 +20,7 @@ import { FileSystemModule } from "@widgetarium/file-system/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
-import type { BackgroundModule } from "../plugins/sumi-plugins.js";
+import type { BackgroundModule, WindowModule } from "../plugins/sumi-plugins.js";
 
 const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [FileSystemContract, TerminalContract];
 
@@ -44,7 +43,7 @@ export interface StudioAppAsk {
 	readonly core?: RemoteTransport;
 	readonly lent?: TauriStudioLent;
 	readonly backgroundModules: readonly BackgroundModule[];
-	readonly windowModules: readonly DeviceModule[];
+	readonly windowModules: readonly WindowModule[];
 }
 
 export function startStudioApp({
@@ -57,7 +56,7 @@ export function startStudioApp({
 }: StudioAppAsk): Runtime {
 	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
 	const studioApp = runtime()
-		.modules(...studioModulesOf(lent), ...windowModules)
+		.modules(...studioModulesOf(lent), ...windowModules.map((one) => one.moduleOf(windowModuleOffersOf(lent))))
 		.imports(...backgroundModules.map(({ contract }) => contract({ over: served })))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
@@ -90,15 +89,14 @@ export async function restoreTabs(studioApp: Runtime): Promise<void> {
 
 function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
 	if (lent === undefined) {
-		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule];
+		return [LayoutModule, BrowserModule, WorkspacesModule];
 	}
 
-	const { store, windows, coreChanges, ipc } = lent;
+	const { store, windows, ipc } = lent;
 	return [
 		LayoutModule({ tauri: { store, windows } }),
 		BrowserModule({ tauri: { ipc } }),
 		WorkspacesModule({ tauri: { store } }),
-		AppHostModule({ tauri: { store, coreChanges } }),
 	];
 }
 
@@ -113,4 +111,8 @@ function boardFileInMemory(): BoardFile {
 			return Promise.resolve();
 		},
 	};
+}
+
+function windowModuleOffersOf(lent: TauriStudioLent | undefined): WindowModuleOffers {
+	return lent === undefined ? {} : { tauri: { store: lent.store, coreChanges: lent.coreChanges } };
 }

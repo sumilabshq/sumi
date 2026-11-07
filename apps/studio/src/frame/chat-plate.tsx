@@ -1,7 +1,7 @@
 import { createElement as h, useContext, useEffect } from "react";
 import type { ReactElement, ReactNode } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { NameChatPaneCommand } from "@widgetarium/app-host";
+import { NameChatPaneCommand } from "@sumi/chat-tabs";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import { ChatToOpenQuery } from "@widgetarium/workspaces";
 import { PaneCloseContext } from "../features/panes/lib/pane-close-context.js";

@@ -1,10 +1,10 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import type { AppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
+import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
+import type { AppHostParts } from "../plugins/apps/data/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
+import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
@@ -28,7 +28,7 @@ export function studioAppOf({ browser, appHost, workspaces, workspaceId = "studi
 			LayoutModule,
 			workspaces === undefined ? WorkspacesModule : WorkspacesModule({ injects: workspaces }),
 			appHost === undefined ? AppHostModule : AppHostModule({ injects: { ...appHost } }),
-			...COMMAND_MENU_MODULES,
+			...PLUGIN_WINDOW_MODULES,
 		)
 		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId } });

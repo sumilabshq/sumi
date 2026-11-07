@@ -1,4 +1,4 @@
-import { HeldTabsQuery, OpenTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { HeldTabsQuery, OpenTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { AGENT_TOOLS, runAgentTool } from "../apps/tauri/src/agent/run-agent-tool.ts";
 import { readFileSync } from "node:fs";
 import { AgentAppSchema, appState, appsList } from "../apps/tauri/src/agent/state-tools.ts";

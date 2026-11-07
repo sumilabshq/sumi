@@ -10,6 +10,7 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/chat-tabs": "0.1.0",
 		"@sumi/command-menu-plugin": "0.1.0",
 		"@sumi/contract": "0.6.0",
 		"@sumi/apps-plugin": "0.1.0",

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AppTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
-import { ChatListQuery } from "@widgetarium/app-host";
+import { ChatListQuery } from "@sumi/chat-tabs";
 import { AppStateInputSchema, appStateOf } from "./app-state.js";
 import type { AppState } from "./app-state.js";
 import { inputOf, outputOf } from "./tool-places.js";

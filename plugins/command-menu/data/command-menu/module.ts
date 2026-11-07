@@ -1,6 +1,7 @@
 import { Device, module } from "@widgetarium/data-framework";
 import { AppHostModule } from "@widgetarium/app-host";
 import { AppsModule } from "@sumi/apps";
+import { ChatTabsModule } from "@sumi/chat-tabs";
 import { BrowserModule } from "@widgetarium/browser";
 import { WorkspacesModule } from "@widgetarium/workspaces";
 import type { CommandMenuConfig } from "./shared/host/command-menu.host.js";
@@ -22,7 +23,7 @@ export type {
 
 export const CommandMenuModule = module("command-menu")
 	.on(Device)
-	.imports(AppHostModule, AppsModule, BrowserModule, WorkspacesModule)
+	.imports(AppHostModule, AppsModule, BrowserModule, ChatTabsModule, WorkspacesModule)
 	.config<CommandMenuConfig>()
 	.provide((facts) => commandMenuPartsOn(facts))
 	.handles(...handled);

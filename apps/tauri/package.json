@@ -17,6 +17,7 @@
 		"start": "tauri build --debug --bundles app --no-sign && open src-tauri/target/debug/bundle/macos/Widgetarium.app"
 	},
 	"dependencies": {
+		"@sumi/chat-tabs": "0.1.0",
 		"@sumi/main-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@tauri-apps/api": "^2.12.4",

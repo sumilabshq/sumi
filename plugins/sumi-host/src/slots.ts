@@ -63,7 +63,18 @@ export interface WindowProviderProps {
 
 export type TabPageOf = (offers: SlotReader) => DrawnTabPage;
 
-export type WindowModuleOf = (offers: SlotReader) => DeviceModule;
+export interface CoreChanges {
+	onCoreChanged(listener: () => void): () => void;
+}
+
+export interface WindowModuleOffers {
+	readonly tauri?: {
+		readonly store: StoreClient;
+		readonly coreChanges: CoreChanges;
+	};
+}
+
+export type WindowModuleOf = (offers: SlotReader & WindowModuleOffers) => DeviceModule;
 
 export type WindowLayerOf = (offers: SlotReader) => ComponentType;
 

@@ -1,6 +1,7 @@
 import { query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { AppTabsQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { ChatListQuery } from "@sumi/chat-tabs";
 import { AppsQuery } from "@sumi/apps";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";

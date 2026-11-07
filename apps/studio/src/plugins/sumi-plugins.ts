@@ -33,6 +33,7 @@ import type {
 	CoreOffers,
 	DrawnTabPage,
 	FrameServing,
+	WindowModuleOffers,
 	WindowOffers,
 	WindowProviderProps,
 	WindowServerOffers,
@@ -69,6 +70,10 @@ export interface FrameModule {
 	servingOf(offers: WindowOffers): FrameServing;
 }
 
+export interface WindowModule {
+	moduleOf(offers: WindowModuleOffers): DeviceModule;
+}
+
 export interface WindowServerModule {
 	readonly id: string;
 	moduleOf(offers: WindowServerOffers): ServerSideModule;
@@ -76,7 +81,7 @@ export interface WindowServerModule {
 
 export interface ResolvedPlugins {
 	readonly backgroundModules: readonly BackgroundModule[];
-	readonly windowModules: readonly DeviceModule[];
+	readonly windowModules: readonly WindowModule[];
 	readonly windowLayers: readonly WindowLayer[];
 	readonly windowProviders: readonly WindowProvider[];
 	readonly tabPages: readonly DrawnTabPage[];
@@ -150,7 +155,9 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 		}),
 		windowModules: fillsOf(slotFills, WINDOW_MODULES).flatMap((fill) => {
 			const parsed = WindowModuleSchema.safeParse(fill.item);
-			return parsed.success ? [parsed.data.module(readerOf(fill))] : [];
+			return parsed.success
+				? [{ moduleOf: (offers: WindowModuleOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }) }]
+				: [];
 		}),
 		windowLayers: fillsOf(slotFills, WINDOW_LAYERS).flatMap((fill) => {
 			const parsed = WindowLayerSchema.safeParse(fill.item);

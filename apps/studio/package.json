@@ -24,6 +24,7 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/chat-tabs": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
 		"@sumi/terminal-plugin": "0.1.0",
 		"@sumi/browser-page-plugin": "0.1.0",

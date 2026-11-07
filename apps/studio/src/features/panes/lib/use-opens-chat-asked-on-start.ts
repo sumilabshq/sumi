@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
 import { studioWindowOf } from "@widgetarium/behaviors";
-import { OpenChatAskedOnStartCommand } from "@widgetarium/app-host";
+import { OpenChatAskedOnStartCommand } from "@sumi/chat-tabs";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import { ChatToOpenQuery } from "@widgetarium/workspaces";
 import { hasUnnamedChatPane } from "./unnamed-chat-pane.js";

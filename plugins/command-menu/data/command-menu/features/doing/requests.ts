@@ -2,7 +2,19 @@ import { z } from "zod";
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import { command } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { CloseTabCommand, HeldTabsQuery, OpenChatCommand, OpenLinkCommand, OpenNewChatCommand, OpenTabCommand, PinTabCommand, RenameTabCommand, ReopenClosedTabByIdCommand, ShowEssentialCommand, ShowTabCommand } from "@widgetarium/app-host";
+import {
+	CloseTabCommand,
+	HeldTabsQuery,
+	OpenChatCommand,
+	OpenLinkCommand,
+	OpenTabCommand,
+	PinTabCommand,
+	RenameTabCommand,
+	ReopenClosedTabByIdCommand,
+	ShowEssentialCommand,
+	ShowTabCommand,
+} from "@widgetarium/app-host";
+import { OpenNewChatCommand } from "@sumi/chat-tabs";
 import type { HeldTabs } from "@widgetarium/app-host";
 import { OpenAddressCommand } from "@widgetarium/browser";
 import { OpenChatElsewhereCommand, OpenWorkspaceCommand, RenameWorkspaceCommand } from "@widgetarium/workspaces";

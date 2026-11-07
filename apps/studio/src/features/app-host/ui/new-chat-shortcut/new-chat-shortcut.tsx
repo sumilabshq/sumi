@@ -1,6 +1,6 @@
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { OpenNewChatCommand } from "@widgetarium/app-host";
+import { OpenNewChatCommand } from "@sumi/chat-tabs";
 import { useShortcut } from "../../lib/shortcut/use-shortcut.js";
 import { NEW_CHAT_KEY } from "../../lib/tab-keys.js";
 

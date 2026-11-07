@@ -1,14 +1,12 @@
 import {
-	NameChatPaneCommand,
 	OpenChatCommand,
-	OpenNewChatCommand,
 	PinTabCommand,
 	RenameTabCommand,
 	TearOffTabCommand,
-} from "../packages/domain/app-host/generated/contract.ts";
+} from "../plugins/apps/data/app-host/generated/contract.ts";
 import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";
 import { ChatToOpenQuery } from "../packages/domain/workspaces/generated/contract.ts";
-import { ChatListQuery } from "../packages/domain/app-host/generated/contract.ts";
+import { ChatListQuery, NameChatPaneCommand, OpenNewChatCommand } from "../plugins/chat/data/chat-tabs/index.ts";
 import { FIRST_PANES } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";

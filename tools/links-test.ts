@@ -1,4 +1,4 @@
-import { AppTabsQuery, OpenLinkCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { AppTabsQuery, OpenLinkCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { linkOf, linkTargetOf } from "../packages/shared/core/src/engine/sumi-link.ts";
 import type { LinkTarget } from "../packages/shared/core/src/engine/sumi-link.ts";
 import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";

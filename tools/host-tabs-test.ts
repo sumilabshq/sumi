@@ -15,7 +15,7 @@ import { addGroup, ungroup } from "../plugins/apps/data/places/shared/lib/tabs/t
 import { rememberPages } from "../plugins/apps/data/places/shared/lib/tabs/page-memory.ts";
 import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
 import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
-import { addEssential, essentialsOf } from "../packages/domain/app-host/shared/lib/essentials/essentials.ts";
+import { addEssential, essentialsOf } from "../plugins/apps/data/app-host/shared/lib/essentials/essentials.ts";
 import { withTabsClosed } from "../plugins/apps/data/places/shared/lib/showing/closing.ts";
 import {
 	chatTabToShow,

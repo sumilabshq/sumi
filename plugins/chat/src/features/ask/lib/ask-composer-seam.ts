@@ -1,6 +1,6 @@
 import { AdoptDraftCommand, PrefillDraftCommand, TakeDraftCommand } from "@widgetarium/assistant";
 import type { AdoptedDraft } from "@widgetarium/assistant";
-import { OpenNewChatCommand } from "@widgetarium/app-host";
+import { OpenNewChatCommand } from "@sumi/chat-tabs";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { AskComposer } from "@sumi/sumi-host-plugin";

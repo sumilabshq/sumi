@@ -5,7 +5,7 @@ import type {
 	TabChild,
 	TabDrop,
 	TabsSidebar,
-} from "../packages/domain/app-host/index.ts";
+} from "../plugins/apps/data/app-host/index.ts";
 import { arrangedSidebar } from "../apps/studio/src/features/app-host/lib/tab-drag/arranged-sidebar.ts";
 import type { DragSource } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-source.ts";
 import { DragPreview } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-preview.ts";

@@ -1,12 +1,12 @@
-import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
-import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
-import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
+import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
+import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
+import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -21,7 +21,7 @@ import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/wo
 import { PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { PaneSide, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
 import { CreateChatCommand } from "../packages/domain/workspaces/generated/contract.ts";
-import { RenameTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { RenameTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 

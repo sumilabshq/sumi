@@ -1,4 +1,5 @@
-import { ChatListQuery, HeldTabsQuery } from "@widgetarium/app-host";
+import { HeldTabsQuery } from "@widgetarium/app-host";
+import { ChatListQuery } from "@sumi/chat-tabs";
 import { useQuery } from "@widgetarium/data-framework";
 
 export function useTabIdIfOpen(tabId: string | null): string | null {

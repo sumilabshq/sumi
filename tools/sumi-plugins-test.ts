@@ -301,9 +301,12 @@ check(
 	[["places", "apps"], ["questions"], ["tasks"]],
 );
 check(
-	"the built-in profile runs the command menu's module in the window and draws its layer",
-	[resolved.windowModules.map(({ definition }) => definition.name), resolved.windowLayers.map(({ id }) => id)],
-	[["command-menu"], ["command-menu/command-menu"]],
+	"the built-in profile runs the apps plugin's app-host, the command menu's module and the chat's chat-tabs in the window and draws the menu's layer",
+	[
+		resolved.windowModules.map((windowModule) => windowModule.moduleOf({}).definition.name),
+		resolved.windowLayers.map(({ id }) => id),
+	],
+	[["app-host", "command-menu", "chat-tabs"], ["command-menu/command-menu"]],
 );
 
 const startedCore = runtime()

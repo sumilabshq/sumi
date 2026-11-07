@@ -15,7 +15,7 @@ Code written before any of these rules lives in a `legacy/` folder inside the ap
 
 ## The older module shape
 
-`packages/domain/{app-host,browser,canvas}`, `plugins/chat/data/assistant` and `packages/client/mascot` were written in an earlier shape. Recognise it by:
+`plugins/apps/data/app-host`, `packages/domain/{browser,canvas}`, `plugins/chat/data/assistant` and `packages/client/mascot` were written in an earlier shape. Recognise it by:
 
 | Older shape                                                                  | This architecture                                                                   |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |

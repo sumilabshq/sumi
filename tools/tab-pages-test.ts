@@ -9,8 +9,8 @@ import {
 	ShowViewCommand,
 	ShownViewQuery,
 	TearOffTabCommand,
-} from "../packages/domain/app-host/generated/contract.ts";
-import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+} from "../plugins/apps/data/app-host/generated/contract.ts";
+import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";

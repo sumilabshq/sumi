@@ -1,7 +1,7 @@
 import type { AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
 import type { AppFace } from "@sumi/apps";
 import type { RecentSite } from "@widgetarium/browser";
-import type { ChatListData, ChatRowData } from "@widgetarium/app-host";
+import type { ChatListData, ChatRowData } from "@sumi/chat-tabs";
 import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
 import { hostOf } from "../../../shared/lib/address.js";
 import type { Found, Intent, RowIcon } from "../../../shared/schema/command-menu.schema.js";

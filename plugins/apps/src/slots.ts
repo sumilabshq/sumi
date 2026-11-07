@@ -19,7 +19,7 @@ export type ArtOf = (address: string) => string | null;
 const NOT_A_VIEW = "an app's view is a React component that takes { tabId }";
 const NOT_AN_ACTION = "an app's header action is a React component that takes { tabId }";
 const NOT_A_TITLE = "an app's titleOf answers a tab's title from its address";
-const NOT_MODULES ="an app's tab modules are a function answering the modules each of its tabs runs";
+const NOT_MODULES = "an app's tab modules are a function answering the modules each of its tabs runs";
 const NOT_AN_SVG = "an app's icon is the markup of its own SVG, starting with <svg";
 const ICON_LIMIT = 32_768;
 const ART_NAME = /^[a-z][a-z0-9-]*$/;

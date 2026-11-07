@@ -1,6 +1,6 @@
 import { appStateOf } from "../apps/tauri/src/agent/app-state.ts";
 import type { AppTabs, ChatList, Sidebar } from "../apps/tauri/src/agent/app-state.ts";
-import type { TabChild } from "../packages/domain/app-host/generated/contract.ts";
+import type { TabChild } from "../plugins/apps/data/app-host/generated/contract.ts";
 
 let failed = 0;
 

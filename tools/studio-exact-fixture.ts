@@ -1,23 +1,23 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
-import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
+import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
+import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
+import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
-import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
-import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
+import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/none.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
+import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
+import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import { OpenChatCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { OpenChatCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -186,7 +186,7 @@ export function exactStudio({
 			BrowserModule({ injects: fakeBrowser(boardPages).parts }),
 			LayoutModule,
 			WorkspacesModule({ injects: workspaces }),
-			...COMMAND_MENU_MODULES,
+			...PLUGIN_WINDOW_MODULES,
 		)
 		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });

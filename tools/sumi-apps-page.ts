@@ -7,8 +7,7 @@ import type { RemoteTransport } from "../packages/shared/data-framework/src/inde
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../packages/domain/app-host/generated/contract.ts";
+import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -93,9 +92,8 @@ const studioApp = runtime()
 				},
 			}),
 		}),
-		AppHostModule,
 		PluginAppsModule,
-		...PLUGINS.windowModules,
+		...PLUGINS.windowModules.map((windowModule) => windowModule.moduleOf({})),
 	)
 	.imports(PlacesModule({ over: core }), TasksModule({ over: core }))
 	.start({

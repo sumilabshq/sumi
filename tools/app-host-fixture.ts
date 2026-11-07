@@ -1,21 +1,21 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
-import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
-import type { StudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/studio-window.gateway.ts";
-import { PaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/pane-flash.gateway.ts";
-import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
-import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
-import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
+import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
+import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
+import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
+import type { StudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/studio-window.gateway.ts";
+import { PaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
+import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
+import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
+import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
+import type { StudioView } from "../plugins/apps/data/app-host/shared/schema/studio-view.schema.ts";
 import { PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
+import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
@@ -151,7 +151,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			BrowserModule({ injects: fakeBrowser(pages).parts }),
 			LayoutModule({ injects: { ...layout } }),
 			WorkspacesModule({ injects: workspacesOf(seed.chatTitle ?? null) }),
-			...COMMAND_MENU_MODULES,
+			...PLUGIN_WINDOW_MODULES,
 		)
 		.imports(PlacesModule({ over: placesLinkOf(places) }))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });

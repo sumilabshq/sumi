@@ -3,12 +3,12 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
+import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
+import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import { DoRowCommand } from "../plugins/command-menu/data/command-menu/index.ts";
 import { CommandMenuLayer } from "../plugins/command-menu/src/features/command-menu/ui/command-menu-layer/command-menu-layer.tsx";
 import { AskComposerBar } from "../plugins/chat/src/features/ask/ui/ask-composer-bar/ask-composer-bar.tsx";
@@ -125,7 +125,7 @@ const studio = runtime()
 					openOnStartId: "chat-0",
 				},
 			}), }),
-		...COMMAND_MENU_MODULES,
+		...PLUGIN_WINDOW_MODULES,
 	)
 	.imports(
 		placesOver(
