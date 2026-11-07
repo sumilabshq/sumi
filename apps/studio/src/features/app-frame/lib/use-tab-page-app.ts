@@ -76,9 +76,13 @@ export function useTabPageApp(page: DrawnTabPage, opened: FrameOpened): Runtime 
 
 function appOver({ routes, own }: TabAppParts, { appId, workspaceId }: TabAppScope): Runtime {
 	const transport = relayTransportOf(routes.routes, appId);
+	const ownImported = new Set(own.imports.map(({ name }) => name));
+	const routed = routes.routes
+		.map(({ module }) => module({ over: transport }))
+		.filter(({ name }) => !ownImported.has(name));
 	return runtime()
 		.modules(...own.modules)
-		.imports(...routes.routes.map(({ module }) => module({ over: transport })), ...own.imports)
+		.imports(...routed, ...own.imports)
 		.start({
 			platform: TAB_PAGE_PLATFORM,
 			scope: {
