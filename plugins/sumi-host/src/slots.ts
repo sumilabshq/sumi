@@ -2,8 +2,9 @@ import type { ComponentType, ReactNode } from "react";
 import { z } from "zod";
 import type { AssistantHosts } from "@widgetarium/assistant/module";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { ModuleContract } from "@widgetarium/data-framework";
+import { isModuleContract } from "@widgetarium/data-framework";
 import type {
+	ModuleContract,
 	DeviceModule,
 	Platform,
 	RemoteModule,
@@ -98,7 +99,7 @@ const NOT_A_WINDOW_SERVER_MODULE_OF =
 
 export const BackgroundModuleSchema = z.object({
 	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
-	contract: z.custom<ModuleContract<ServerRuns>>((value) => value instanceof ModuleContract, NOT_A_CONTRACT),
+	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_CONTRACT),
 });
 
 export const BackgroundModulesSlot = slot("background-modules").item(BackgroundModuleSchema).list();
@@ -128,7 +129,7 @@ export const WindowProviderSchema = z.object({
 export const WindowProvidersSlot = slot("window-providers").item(WindowProviderSchema).list();
 
 export const FrameModuleSchema = z.object({
-	contract: z.custom<ModuleContract<ServerRuns>>((value) => value instanceof ModuleContract, NOT_A_FRAME_CONTRACT),
+	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_FRAME_CONTRACT),
 	serving: z.custom<FrameServingOf>((value) => typeof value === "function", NOT_A_FRAME_SERVING_OF),
 });
 

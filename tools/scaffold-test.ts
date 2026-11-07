@@ -93,7 +93,7 @@ async function checksScaffolding(): Promise<void> {
 	const runs = [
 		await cli("add", "module", "notes", "--on", "Device"),
 		await cli("add", "feature", "notes/tasks", "--query", "Tasks", "--command", "AddTask"),
-		keepNoteInPublicList(),
+		keepNoteInModule(),
 		await cli("add", "feature", "notes/tags"),
 		await cli("add", "module", "billing", "--on", "Server", "--in", "state"),
 		await cli("add", "feature", "billing/ledger", "--command", "Charge"),
@@ -117,23 +117,40 @@ async function checksScaffolding(): Promise<void> {
 	checksLaidFiles();
 }
 
-function keepNoteInPublicList(): CliRun {
+function keepNoteInModule(): CliRun {
 	const moduleFile = path.join(PROBE, NOTES, "module.ts");
-	const text = fs.readFileSync(moduleFile, "utf8");
-	fs.writeFileSync(moduleFile, text.replace("AddTaskCommand)", `AddTaskCommand, ${KEPT_NOTE}\n)`));
+	fs.appendFileSync(moduleFile, `\n${KEPT_NOTE}\n`);
 	return { code: 0, said: "" };
 }
 
 function checksLaidFiles(): void {
 	check(
-		"module.ts lists every feature's requests in .public, keeps what was written there, and a server module is guarded",
+		"module.ts ends with .handles(...handled) and add feature leaves it alone, handled lists every feature's requests, and a server module is guarded",
 		[
-			listedIn(`${NOTES}/module.ts`),
+			probeText(`${NOTES}/module.ts`).includes(".handles(...handled);"),
 			probeText(`${NOTES}/module.ts`).includes(KEPT_NOTE),
-			listedIn(`${BILLING}/module.ts`),
+			handledIn(NOTES),
+			handledIn(BILLING),
 			probeText(`${BILLING}/module.ts`).includes(".guard(AuthenticatedGuard)"),
 		],
-		["TasksQuery, AddTaskCommand, TagsQuery", true, "ChargeCommand", true],
+		[true, true, "AddTaskCommand, TagsQuery, TasksQuery", "ChargeCommand", true],
+	);
+	check(
+		"every laid request is public and takes its builder from #module",
+		[`${NOTES}/features/tasks/requests.ts`, `${BILLING}/features/ledger/requests.ts`].map((file) => [
+			probeText(file).includes('from "#module"'),
+			probeText(file).includes(".public()"),
+			probeText(file).includes(".inject("),
+		]),
+		[
+			[true, true, false],
+			[true, true, false],
+		],
+	);
+	check(
+		"a module's package resolves #module to its generated builders",
+		JSON.parse(probeText(`${NOTES}/package.json`)).imports["#module"].source,
+		"./generated/command.ts",
 	);
 	check(
 		"the parts picker holds a memory gateway per feature",
@@ -252,9 +269,9 @@ async function isFormatted(file: string): Promise<boolean> {
 	return prettier.check(fs.readFileSync(at, "utf8"), { ...options, filepath: at });
 }
 
-function listedIn(moduleFile: string): string {
-	const code = probeText(moduleFile).replace(KEPT_NOTE, "").replace(/\s+/g, " ");
-	return /\.public\(([^)]*)\)/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
+function handledIn(folder: string): string {
+	const code = probeText(`${folder}/generated/handled.ts`).replace(/\s+/g, " ");
+	return /handled: readonly ModuleItem\[\] = \[([^\]]*)\]/.exec(code)?.[1]?.trim().replace(/,$/, "") ?? "";
 }
 
 function probeText(file: string): string {

@@ -1,13 +1,8 @@
 import { Device, module } from "@widgetarium/data-framework";
 import { mascotPartsOn } from "./gateways/mascot-parts/mascot-parts.gateway.js";
-import {
-	RereadAgentActivitySubscriber,
-	AgentActivityQuery,
-	RecordAgentEventsCommand,
-} from "./features/activity/requests.js";
+import { handled } from "./generated/handled.js";
 
 export const MascotModule = module("mascot")
 	.on(Device)
-	.subscribers(RereadAgentActivitySubscriber)
-	.public(AgentActivityQuery, RecordAgentEventsCommand)
-	.provide((facts) => mascotPartsOn(facts));
+	.provide((facts) => mascotPartsOn(facts))
+	.handles(...handled);

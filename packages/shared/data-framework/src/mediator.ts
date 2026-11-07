@@ -1,8 +1,8 @@
 import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { Invalidation } from "./invalidation";
-import type { LocalRoutes } from "./local-routes";
-import type { Runs } from "./module";
+import { refuseCaller } from "./local-routes";
+import type { LocalRoutes, Route } from "./local-routes";
 import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
@@ -13,9 +13,14 @@ export interface Sending {
 	readonly idempotencyKey?: string | undefined;
 	readonly signal?: AbortSignal | undefined;
 	readonly headers?: Headers | undefined;
-	readonly fromModule?: string | undefined;
-	readonly fromRuns?: Runs | undefined;
+	readonly inProcessCaller?: InProcessCaller | undefined;
 }
+
+export interface InProcessCaller {
+	readonly module: string | null;
+}
+
+export const VIEW_CALLER: InProcessCaller = Object.freeze({ module: null });
 
 export type KeyMinting = "client-mints" | "caller-gives";
 
@@ -49,10 +54,13 @@ export class Mediator implements Settle {
 
 	async send(request: AnyRequest, sent: unknown, sending: Sending = {}): Promise<Answer<unknown>> {
 		try {
+			const route = this.parts.local.routeOf(request);
+			const refusedCaller = route === undefined ? null : refuseCaller(route, sending.inProcessCaller);
+			if (refusedCaller !== null) return this.refuse(request, refusedCaller);
 			const input = request.inputSchema.safeParse(sent);
 			if (!input.success)
 				return this.refuse(request, refusalOf("invalid-input", issuesOf(request.name, "input", input.error)));
-			return await this.routed({ request, sent, input: input.data, sending, givenKey: this.givenKeyOf(sending) });
+			return await this.routed(route, { request, sent, input: input.data, sending, givenKey: this.givenKeyOf(sending) });
 		} catch (thrown) {
 			return this.refuse(request, refusalOf("failed", reasonOf(thrown)), thrown);
 		}
@@ -80,9 +88,8 @@ export class Mediator implements Settle {
 		return answer;
 	}
 
-	private routed(asked: Asked): Promise<Answer<unknown>> {
+	private routed(route: Route | undefined, asked: Asked): Promise<Answer<unknown>> {
 		const { local, remote, missing } = this.parts;
-		const route = local.routeOf(asked.request);
 		if (route !== undefined) return local.run(route, asked, this);
 		if (remote?.reachesModule(asked.request.module ?? "") === true) return remote.run(asked, this);
 		return Promise.resolve(this.refuse(asked.request, missing(asked.request)));

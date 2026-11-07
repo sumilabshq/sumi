@@ -1,49 +1,28 @@
-import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
 import { AskedLinkSchema } from "../../shared/schema/tabs.schema.js";
-import {
-	AppPageSchema,
-	AskedLinksAskSchema,
-	AskedLinksSchema,
-	LinkAskSchema,
-	LinkFollowedSchema,
-	OwnAppTabAskSchema,
-	OwnAppTabSchema,
-	PressAppActionSchema,
-	TakeActionPressSchema,
-	TakenPressSchema,
-	KeepChatTabsAskSchema,
-	SeenTabSchema,
-	TabTurnMarksSchema,
-	TabTurnSchema,
-	TakeAskedLinkSchema,
-} from "../../shared/schema/tab-facts.schema.js";
+import { AppPageSchema, AskedLinksAskSchema, AskedLinksSchema, LinkAskSchema, LinkFollowedSchema, OwnAppTabAskSchema, OwnAppTabSchema, PressAppActionSchema, TakeActionPressSchema, TakenPressSchema, KeepChatTabsAskSchema, SeenTabSchema, TabTurnMarksSchema, TabTurnSchema, TakeAskedLinkSchema } from "../../shared/schema/tab-facts.schema.js";
 import { linkRouteOf, navigatedPlan, withLinkAsked, withLinkTaken } from "./lib/link-routes.js";
 import { pressSaidOf, withPressQueued, withPressTaken } from "./lib/action-presses.js";
 import { ownAppTabOf } from "./lib/own-app-tab.js";
-import {
-	forgetRunningTurnsPlan,
-	keepChatTabsPlan,
-	markSeenPlan,
-	recordAppPagePlan,
-	recordTurnPlan,
-} from "./lib/fact-plans.js";
+import { forgetRunningTurnsPlan, keepChatTabsPlan, markSeenPlan, recordAppPagePlan, recordTurnPlan } from "./lib/fact-plans.js";
 
 export const KeepChatTabsCommand = command("keep-chat-tabs")
+	.public()
 	.input(KeepChatTabsAskSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ chats }, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(null, keepChatTabsPlan(chats))));
 	});
 
 export const RecordTabTurnCommand = command("record-tab-turn")
+	.public()
 	.input(TabTurnSchema)
 	.output(TabTurnMarksSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async (turn, { tabs }) => {
 		const marks = answered(await tabs.movePlacedTabs(moving(null, recordTurnPlan(turn))));
 
@@ -55,16 +34,16 @@ export const RecordTabTurnCommand = command("record-tab-turn")
 	});
 
 export const MarkTabSeenCommand = command("mark-tab-seen")
+	.public()
 	.input(SeenTabSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ id }, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(null, markSeenPlan(id))));
 	});
 
 export const ForgetRunningTurnsCommand = command("forget-running-turns")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async (_input, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(null, forgetRunningTurnsPlan())));
 	});
@@ -108,11 +87,11 @@ export const OwnsLinkingTabGuard = guard<{ readonly from: string }>()
 	});
 
 export const OpenLinkCommand = command("open-link")
+	.public()
 	.input(LinkAskSchema)
 	.output(LinkFollowedSchema)
 	.idempotencyKey(Repeatable)
 	.guard(OwnsLinkingTabGuard)
-	.inject({ tabs: TabsGateway })
 	.handle(async (ask, { tabs }) => {
 		const tab = (await tabs.placedTabs()).tabs.find(({ id }) => id === ask.from);
 
@@ -140,9 +119,9 @@ export const OpenLinkCommand = command("open-link")
 	});
 
 export const AskedLinksQuery = query("asked-links")
+	.public()
 	.input(AskedLinksAskSchema)
 	.output(AskedLinksSchema)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ tabIds }, { tabs }) => {
 		const held = new Set(tabIds);
 		return {
@@ -151,10 +130,10 @@ export const AskedLinksQuery = query("asked-links")
 	});
 
 export const TakeAskedLinkCommand = command("take-asked-link")
+	.public()
 	.input(TakeAskedLinkSchema)
 	.output(AskedLinkSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ id }, { tabs }) => {
 		const taken = await tabs.movePlacedTabs((placed) => withLinkTaken(placed, id));
 		return typeof taken === "string" ? refuse(taken) : taken;
@@ -165,10 +144,10 @@ export const RereadAskedLinksSubscriber = subscriber(PlacedTabsChangedEvent).han
 });
 
 export const AppTabQuery = query("app-tab")
+	.public()
 	.input(OwnAppTabAskSchema)
 	.output(OwnAppTabSchema)
 	.guard(OwnsAppTabGuard)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ id }, { tabs }) => {
 		const placed = await tabs.placedTabs();
 		const tab = placed.tabs.find((held) => held.id === id);
@@ -176,9 +155,9 @@ export const AppTabQuery = query("app-tab")
 	});
 
 export const PressAppActionCommand = command("press-app-action")
+	.public()
 	.input(PressAppActionSchema)
 	.idempotencyKey(PerCall)
-	.inject({ tabs: TabsGateway })
 	.handle(async (ask, { tabs }) => {
 		const queued = await tabs.movePlacedTabs((placed) => withPressQueued(placed, ask));
 		console.info(`[widgetarium] ${pressSaidOf(ask, queued)}`);
@@ -186,11 +165,11 @@ export const PressAppActionCommand = command("press-app-action")
 	});
 
 export const TakeActionPressCommand = command("take-action-press")
+	.public()
 	.input(TakeActionPressSchema)
 	.output(TakenPressSchema)
 	.idempotencyKey(Repeatable)
 	.guard(OwnsAppTabGuard)
-	.inject({ tabs: TabsGateway })
 	.handle(async (ask, { tabs }) => {
 		const taken = await tabs.movePlacedTabs((placed) => withPressTaken(placed, ask));
 		return typeof taken === "string" ? refuse(taken) : { id: taken.id, action: taken.action };
@@ -201,10 +180,10 @@ export const RereadAppTabSubscriber = subscriber(PlacedTabsChangedEvent).handle(
 });
 
 export const RecordAppPageCommand = command("record-app-page")
+	.public()
 	.input(AppPageSchema)
 	.idempotencyKey(Repeatable)
 	.guard(OwnsAppTabGuard)
-	.inject({ tabs: TabsGateway })
 	.handle(async (page, { tabs }) => {
 		answered(await tabs.movePlacedTabs(moving(null, recordAppPagePlan(page))));
 	});

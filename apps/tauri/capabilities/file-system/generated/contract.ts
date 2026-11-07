@@ -51,30 +51,39 @@ export const FileInfoSchema = z.object({
 export type FileInfo = z.infer<typeof FileInfoSchema>;
 
 export const ReadFileQuery = query("file-system/read-file")
+	.public()
 	.input(PathInputSchema)
 	.output(FileContentSchema);
 export const ReadFolderQuery = query("file-system/read-folder")
+	.public()
 	.input(PathInputSchema)
 	.output(FolderSchema);
 export const FileInfoQuery = query("file-system/file-info")
+	.public()
 	.input(PathInputSchema)
 	.output(FileInfoSchema);
 export const WriteFileCommand = command("file-system/write-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(Repeatable);
 export const AppendFileCommand = command("file-system/append-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(PerCall);
 export const MakeFolderCommand = command("file-system/make-folder")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable);
 export const RemoveCommand = command("file-system/remove")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable);
 export const RenameCommand = command("file-system/rename")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
 export const CopyCommand = command("file-system/copy")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
 

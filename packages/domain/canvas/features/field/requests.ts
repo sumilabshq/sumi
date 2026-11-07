@@ -1,11 +1,8 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
-import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
-import { WidgetDrawingGateway } from "../../gateways/widget-drawing/widget-drawing.gateway.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { DrawingSchema } from "../../shared/schema/drawing.schema.js";
 import { FieldRegionsSchema } from "../../shared/schema/regions.schema.js";
@@ -20,19 +17,14 @@ import { regionsOf } from "./lib/regions-of.js";
 const FIELD_STATE_FIELDS: readonly CanvasField[] = [...PAGE_FIELDS, "mode", "selection", "focusedWidget"];
 
 export const DrawingQuery = query("drawing")
+	.public()
 	.output(DrawingSchema)
 	.settlesNow()
-	.inject({ widgetDrawing: WidgetDrawingGateway })
 	.handle((_input, { widgetDrawing }) => widgetDrawing.drawing());
 
 export const FieldRegionsQuery = query("field-regions")
+	.public()
 	.output(FieldRegionsSchema)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-		agentJobs: AgentJobsGateway,
-		widgetDrawing: WidgetDrawingGateway,
-	})
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
 		const moment = canvasMoment.moment();
 		const now = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -40,12 +32,8 @@ export const FieldRegionsQuery = query("field-regions")
 	});
 
 export const FieldStateQuery = query("field-state")
+	.public()
 	.output(FieldStateSchema)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-		agentJobs: AgentJobsGateway,
-	})
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const now = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -67,9 +55,9 @@ export const FieldStateQuery = query("field-state")
 	});
 
 export const PickSpotCommand = command("pick-spot")
+	.public()
 	.input(SpotPickSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ selection }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const { change, reason } = pickedChange(moment, selection);
@@ -81,9 +69,9 @@ export const PickSpotCommand = command("pick-spot")
 	});
 
 export const ResolveSpotCommand = command("resolve-spot")
+	.public()
 	.input(SpotFoundSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ spot }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const { selection } = moment;

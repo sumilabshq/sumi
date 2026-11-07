@@ -48,10 +48,10 @@ const AT: TabsAsk = {
 function placesApp(tabs: MemoryTabsGateway): StartedApp {
 	const core = localTransport();
 	server()
-		.modules(RunnablePlacesModule.with({ windows: new MemoryWindowsGateway({ windows: [] }), tabs }))
+		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
 		.listen(core)
 		.start({ env: {} });
-	return app().imports(PlacesModule.over(core)).start();
+	return app().imports(PlacesModule({ over: core })).start();
 }
 
 async function sidebarOf(places: StartedApp): Promise<PlacedSidebar | string> {

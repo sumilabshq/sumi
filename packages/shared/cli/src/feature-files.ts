@@ -1,5 +1,6 @@
 import path from "node:path";
 import type { PlannedFile } from "./add-plan.js";
+import { MODULE_SPECIFIER } from "./contract-needs.js";
 import {
 	COMMAND_SUFFIX,
 	FRAMEWORK,
@@ -129,14 +130,11 @@ function memoryTextOf({ command }: FeatureSeed, names: FeatureNames): string {
 }
 
 function requestsTextOf(seed: FeatureSeed, names: FeatureNames): string {
-	const imported = [
-		...(seed.query === null ? [] : ["query"]),
-		...(seed.command === null ? [] : ["PerCall", "command"]),
-	];
+	const builders = [...(seed.command === null ? [] : ["command"]), ...(seed.query === null ? [] : ["query"])];
 	const schemas = [names.schema, ...(seed.command === null ? [] : [inputSchemaOf(seed.command)])].sort();
 	return [
-		`import { ${imported.sort().join(", ")} } from "${FRAMEWORK}";`,
-		`import { ${names.gateway} } from "${relativeJs(names.gatewayFile)}";`,
+		...(seed.command === null ? [] : [`import { PerCall } from "${FRAMEWORK}";`]),
+		`import { ${builders.join(", ")} } from "${MODULE_SPECIFIER}";`,
 		`import { ${schemas.join(", ")} } from "${relativeJs(names.schemaFile)}";`,
 		...(seed.query === null ? [] : ["", ...queryLinesOf(seed.query, names)]),
 		...(seed.command === null ? [] : ["", ...commandLinesOf(seed, seed.command, names)]),
@@ -144,11 +142,11 @@ function requestsTextOf(seed: FeatureSeed, names: FeatureNames): string {
 	].join("\n");
 }
 
-function queryLinesOf(query: string, { key, schema, gateway }: FeatureNames): string[] {
+function queryLinesOf(query: string, { key, schema }: FeatureNames): string[] {
 	return [
 		`export const ${query} = query("${shortNameOf(query, QUERY_SUFFIX)}")`,
+		"\t.public()",
 		`\t.output(${schema})`,
-		`\t.inject({ ${key}: ${gateway} })`,
 		`\t.handle((_input, { ${key} }) => ${key}.${key}());`,
 	];
 }
@@ -156,16 +154,16 @@ function queryLinesOf(query: string, { key, schema, gateway }: FeatureNames): st
 function commandLinesOf(
 	{ query }: FeatureSeed,
 	command: string,
-	{ key, schema, gateway, save }: FeatureNames,
+	{ key, schema, save }: FeatureNames,
 ): string[] {
 	const shortName = shortNameOf(command, COMMAND_SUFFIX);
 	const context = query === null ? key : `${key}, invalidate`;
 	return [
 		`export const ${command} = command("${shortName}")`,
+		"\t.public()",
 		`\t.input(${inputSchemaOf(command)})`,
 		`\t.output(${schema})`,
 		"\t.idempotencyKey(PerCall)",
-		`\t.inject({ ${key}: ${gateway} })`,
 		`\t.handle(({ name }, { ${context} }) => {`,
 		...(query === null ? [] : [`\t\tinvalidate(${query});`]),
 		`\t\tconst was = ${key}.${key}();`,

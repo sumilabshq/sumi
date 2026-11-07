@@ -1,26 +1,18 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
-import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, settledOf, settlingWith } from "../../shared/lib/settling/settling.js";
 import { momentOfWindow } from "../../shared/lib/tabs/kept-tabs.js";
 import { shownSplitOf } from "../../shared/lib/splits/split-members.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import {
-	LeftSplitSchema,
-	PlaceInViewAskSchema,
-	PlacedInViewSchema,
-	ReorderSplitMemberAskSchema,
-	ResizeSplitAskSchema,
-	ShownSplitSchema,
-	SplitMemberAskSchema,
-} from "../../shared/schema/split-asks.schema.js";
+import { LeftSplitSchema, PlaceInViewAskSchema, PlacedInViewSchema, ReorderSplitMemberAskSchema, ResizeSplitAskSchema, ShownSplitSchema, SplitMemberAskSchema } from "../../shared/schema/split-asks.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 
 export const ShownSplitQuery = query("shown-split")
+	.public()
 	.input(WindowLabelSchema)
 	.output(ShownSplitSchema)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ window }, { tabs }) => {
 		const moment = momentOfWindow(await tabs.placedTabs(), window);
 		return {
@@ -30,10 +22,10 @@ export const ShownSplitQuery = query("shown-split")
 	});
 
 export const PlaceInViewCommand = command("place-in-view")
+	.public()
 	.input(PlaceInViewAskSchema)
 	.output(PlacedInViewSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ at, ...placing }, { tabs }) => {
 		const { view, effects, extra } = answered(await tabs.movePlacedTabs(settlingWith(at, placeInViewPlan(placing))));
 		return {
@@ -44,10 +36,10 @@ export const PlaceInViewCommand = command("place-in-view")
 	});
 
 export const RemoveFromSplitCommand = command("remove-from-split")
+	.public()
 	.input(SplitMemberAskSchema)
 	.output(LeftSplitSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ at, tabId }, { tabs }) => {
 		const { view, effects, extra } = answered(await tabs.movePlacedTabs(settlingWith(at, removeFromSplitPlan(tabId))));
 		return {
@@ -58,19 +50,19 @@ export const RemoveFromSplitCommand = command("remove-from-split")
 	});
 
 export const ReorderSplitMemberCommand = command("reorder-split-member")
+	.public()
 	.input(ReorderSplitMemberAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ at, tabId, before }, { tabs }) =>
 		settledOf(await tabs.movePlacedTabs(settlingWith(at, reorderSplitMemberPlan(tabId, before)))),
 	);
 
 export const ResizeSplitCommand = command("resize-split")
+	.public()
 	.input(ResizeSplitAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ tabs: TabsGateway })
 	.handle(async ({ at, branchId, edge, share }, { tabs }) =>
 		settledOf(await tabs.movePlacedTabs(settlingWith(at, resizeSplitPlan({ branchId, at: edge, share })))),
 	);

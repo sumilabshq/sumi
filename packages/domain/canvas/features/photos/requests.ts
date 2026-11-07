@@ -1,30 +1,17 @@
-import { PerCall, command, reasonOf } from "@widgetarium/data-framework";
-import {
-	REFERENCES_FOLDER,
-	designFolderOf,
-	designPathOf,
-	referencePathOf,
-	withReferencesAdded,
-} from "@widgetarium/core/app-design.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
+import { PerCall, reasonOf } from "@widgetarium/data-framework";
+import { command } from "#module";
+import { REFERENCES_FOLDER, designFolderOf, designPathOf, referencePathOf, withReferencesAdded } from "@widgetarium/core/app-design.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
 import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
-import { PhotoWritesGateway } from "../../gateways/photo-writes/photo-writes.gateway.js";
 import { PhotosSchema } from "../../shared/schema/photos.schema.js";
 import { photoFilesOf } from "./lib/photo-files.js";
 
 const PHOTOS_FAILED = "The photos were not added to the canvas: {why}";
 
 export const AddPhotosCommand = command("add-photos")
+	.public()
 	.input(PhotosSchema)
 	.idempotencyKey(PerCall)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-		designFiles: DesignFilesGateway,
-		photoWrites: PhotoWritesGateway,
-	})
 	.emits(DesignChangedEvent)
 	.handle(async ({ photos }, { canvasMoment, designFolder, designFiles, photoWrites, emit }) => {
 		const { app } = canvasMoment.moment();

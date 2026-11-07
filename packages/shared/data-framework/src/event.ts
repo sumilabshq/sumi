@@ -27,6 +27,11 @@ export class Event<I extends z.ZodType> {
 		return new Event(this.name, this.inputSchema, sources);
 	}
 
+	// TODO: event visibility is read by the generator only
+	public(): Event<I> {
+		return this;
+	}
+
 	sourceOn(platform: Platform | null): EventSource | null {
 		const { sources } = this;
 

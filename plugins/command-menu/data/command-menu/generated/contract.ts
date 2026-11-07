@@ -243,30 +243,38 @@ export const DoneSchema = z.object({
 
 export type Done = z.infer<typeof DoneSchema>;
 
-export const CommandMenuQuery = query("command-menu/command-menu")
-	.output(KeptMenuSchema)
-	.settlesNow();
-export const MenuDoorsQuery = query("command-menu/menu-doors")
-	.output(MenuDoorsSchema)
-	.settlesNow();
-export const CommandMenuResultsQuery = query("command-menu/command-menu-results")
-	.input(ResultsAskSchema)
-	.output(ResultsSchema);
-export const ToggleCommandMenuCommand = command("command-menu/toggle-command-menu")
-	.input(OpenMenuSchema)
-	.idempotencyKey(PerCall);
-export const ChangeMenuDoorCommand = command("command-menu/change-menu-door")
-	.input(z.object({ door: DoorSchema }))
-	.idempotencyKey(Repeatable);
-export const CloseCommandMenuCommand = command("command-menu/close-command-menu")
-	.idempotencyKey(Repeatable);
 export const DoRowCommand = command("command-menu/do-row")
+	.public()
 	.input(z.object({ intent: IntentSchema }))
 	.output(DoneSchema)
 	.idempotencyKey(PerCall);
 export const RenameRowCommand = command("command-menu/rename-row")
+	.public()
 	.input(RenameAskSchema)
 	.output(DoneSchema)
 	.idempotencyKey(Repeatable);
+export const CommandMenuQuery = query("command-menu/command-menu")
+	.public()
+	.output(KeptMenuSchema)
+	.settlesNow();
+export const MenuDoorsQuery = query("command-menu/menu-doors")
+	.public()
+	.output(MenuDoorsSchema)
+	.settlesNow();
+export const ToggleCommandMenuCommand = command("command-menu/toggle-command-menu")
+	.public()
+	.input(OpenMenuSchema)
+	.idempotencyKey(PerCall);
+export const ChangeMenuDoorCommand = command("command-menu/change-menu-door")
+	.public()
+	.input(z.object({ door: DoorSchema }))
+	.idempotencyKey(Repeatable);
+export const CloseCommandMenuCommand = command("command-menu/close-command-menu")
+	.public()
+	.idempotencyKey(Repeatable);
+export const CommandMenuResultsQuery = query("command-menu/command-menu-results")
+	.public()
+	.input(ResultsAskSchema)
+	.output(ResultsSchema);
 
-export const CommandMenuModule = moduleContract("command-menu", Device, [CommandMenuQuery, MenuDoorsQuery, CommandMenuResultsQuery, ToggleCommandMenuCommand, ChangeMenuDoorCommand, CloseCommandMenuCommand, DoRowCommand, RenameRowCommand]);
+export const CommandMenuModule = moduleContract("command-menu", Device, [DoRowCommand, RenameRowCommand, CommandMenuQuery, MenuDoorsQuery, ToggleCommandMenuCommand, ChangeMenuDoorCommand, CloseCommandMenuCommand, CommandMenuResultsQuery]);

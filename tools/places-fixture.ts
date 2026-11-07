@@ -39,14 +39,14 @@ export function placedTabsOf(
 export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 	const link = localTransport();
 	server()
-		.modules(PlacesModule.with({ windows: new MemoryWindowsGateway({ windows: [] }), tabs }))
+		.modules(PlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
 		.listen(link)
 		.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 	return link;
 }
 
 export function placesOver(tabs: MemoryTabsGateway = new MemoryTabsGateway()): RemoteModule {
-	return PlacesContract.over(placesLinkOf(tabs));
+	return PlacesContract({ over: placesLinkOf(tabs) });
 }
 
 export async function windowTabsIn(tabs: MemoryTabsGateway, window = MAIN_WINDOW): Promise<WindowTabs> {

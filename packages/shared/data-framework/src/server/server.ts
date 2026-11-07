@@ -24,7 +24,7 @@ import type { ServerRuns } from "../placement";
 import type { ModuleFacts, ModuleScope, RunnableModule } from "../platform-module";
 import { MemoryRateLimits } from "../rate-limits";
 import type { RateLimits } from "../rate-limits";
-import { RemoteModules, notOverNetwork } from "../remote-modules";
+import { RemoteModules } from "../remote-modules";
 import type { ModuleReach } from "../remote-modules";
 import { reportToConsole } from "../report-failure";
 import type { FailureReport } from "../report-failure";
@@ -190,15 +190,31 @@ function answering(
 			return refusalOf("not-found", NOT_HERE.replace("{name}", name));
 		}
 
-		if (route.isServerOnly) {
-			return notOverNetwork(route.handler.request);
-		}
-
-		const sending = { signal, headers, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
-		const answered = await mediator.send(route.handler.request, input, sending);
-		changed.tell(answered.ok ? answered.invalidated : undefined);
-		return answered;
+		return answeredFromOutside({ mediator, changed }, route.handler.request, { input, idempotencyKey, signal, headers });
 	};
+}
+
+interface OutsideAnswering {
+	readonly mediator: Mediator;
+	readonly changed: ChangeBroadcast;
+}
+
+interface OutsideCall {
+	readonly input?: unknown;
+	readonly idempotencyKey: string | null;
+	readonly signal: AbortSignal | undefined;
+	readonly headers: Headers | undefined;
+}
+
+async function answeredFromOutside(
+	{ mediator, changed }: OutsideAnswering,
+	request: AnyRequest,
+	{ input, idempotencyKey, signal, headers }: OutsideCall,
+): Promise<Answer<unknown>> {
+	const sending = { signal, headers, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
+	const answered = await mediator.send(request, input, sending);
+	changed.tell(answered.ok ? answered.invalidated : undefined);
+	return answered;
 }
 
 interface ServerWiring {
@@ -232,28 +248,17 @@ function routerOf(
 	changed: ChangeBroadcast,
 ): Record<string, Record<string, WireProcedure>> {
 	const router: Record<string, Record<string, WireProcedure>> = {};
-	for (const { handler, isServerOnly } of routes.values()) {
+	for (const { handler } of routes.values()) {
 		const [module = "", name = ""] = wirePathOf(handler.request);
-		const procedure = isServerOnly
-			? notOverNetworkProcedureOf(handler.request)
-			: wireProcedureOf(handler.request, mediator, changed);
-		router[module] = { ...router[module], [name]: procedure };
+		router[module] = { ...router[module], [name]: wireProcedureOf(handler.request, mediator, changed) };
 	}
 	return router;
-}
-
-function notOverNetworkProcedureOf(request: AnyRequest): WireProcedure {
-	return os.$context<WireContext>().handler(() => notOverNetwork(request));
 }
 
 function wireProcedureOf(request: AnyRequest, mediator: Mediator, changed: ChangeBroadcast) {
 	return os.$context<WireContext>().handler(async ({ input, context, signal }) => {
 		const call = WireCallSchema.safeParse(input);
 		if (!call.success) return refusalOf("invalid-input", NOT_A_CALL);
-		const { idempotencyKey } = call.data;
-		const sending = { headers: context.headers, signal, ...(idempotencyKey === null ? {} : { idempotencyKey }) };
-		const answered = await mediator.send(request, call.data.input, sending);
-		changed.tell(answered.ok ? answered.invalidated : undefined);
-		return answered;
+		return answeredFromOutside({ mediator, changed }, request, { ...call.data, signal, headers: context.headers });
 	});
 }

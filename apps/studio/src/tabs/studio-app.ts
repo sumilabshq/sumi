@@ -43,7 +43,7 @@ export function startStudioApp({
 	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
 	const studioApp = app()
 		.modules(...studioModulesOf(lent), ...windowModules)
-		.imports(...backgroundModules.map(({ contract }) => contract.over(served)))
+		.imports(...backgroundModules.map(({ contract }) => contract({ over: served })))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;

@@ -47,7 +47,7 @@ async function allowedOriginFor(url: string, origin: string): Promise<string | n
 
 async function checkRequests(url: string): Promise<void> {
 	const client = app()
-		.imports(FixtureBillingModule.over(orpcTransport(url)))
+		.imports(FixtureBillingModule({ over: orpcTransport(url) }))
 		.start();
 	const opened = await client.send(BalanceQuery);
 	check("a query travels over real HTTP and answers", opened, {

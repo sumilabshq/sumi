@@ -19,10 +19,10 @@ const CHAT = "chat-1";
 function questionsApp(): StartedApp {
 	const link = localTransport();
 	server()
-		.modules(QuestionsModule.with({ questions: new MemoryQuestionsGateway() }))
+		.modules(QuestionsModule({ injects: { questions: new MemoryQuestionsGateway() } }))
 		.listen(link)
 		.start({ env: {} });
-	return app().imports(QuestionsContract.over(link)).start();
+	return app().imports(QuestionsContract({ over: link })).start();
 }
 
 async function sent<T>(answering: Promise<{ readonly ok: true; readonly output: T } | { readonly ok: false; readonly reason: string }>): Promise<T> {

@@ -1,68 +1,56 @@
 import type { AnyEvent, Emitter, EventInputOf } from "./event";
-import { checkInject } from "./handler";
-import type { Inject, Injected, Unreserved } from "./handler";
 import type { Invalidator } from "./invalidation";
 import type { Added, NothingAdded } from "./middleware";
+import type { NothingProvided } from "./module";
 import type { Sender } from "./send";
 
-export type SubscriberHandle<E extends AnyEvent, D extends Inject, C extends Added> = (
+export type SubscriberHandle<E extends AnyEvent, P extends object, C extends Added> = (
 	input: EventInputOf<E>,
-	context: Injected<D> & C & Invalidator & Sender,
+	context: P & C & Invalidator & Sender,
 ) => void | Promise<void>;
 
-export interface Subscriber<E extends AnyEvent = AnyEvent, D extends Inject = Inject> {
+export interface Subscriber<E extends AnyEvent = AnyEvent, P extends object = object> {
 	readonly kind: "subscriber";
 	readonly event: E;
-	readonly inject: D;
 	readonly emits: readonly AnyEvent[];
 	readonly handle: {
-		bivariant(input: EventInputOf<E>, context: Injected<D> & Added): void | Promise<void>;
+		bivariant(input: EventInputOf<E>, context: P & Added): void | Promise<void>;
 	}["bivariant"];
 }
 
-export type AnySubscriber = Subscriber<AnyEvent, Inject>;
+export type AnySubscriber = Subscriber;
 
-interface SubscriberPlan<E extends AnyEvent, D extends Inject> {
+interface SubscriberPlan<E extends AnyEvent> {
 	readonly event: E;
-	readonly inject: D;
 	readonly emits: readonly AnyEvent[];
 }
 
-const NOTHING_INJECTED: NothingAdded = Object.freeze({});
+export class SubscriberBuilder<E extends AnyEvent, P extends object, C extends Added> {
+	constructor(private readonly plan: SubscriberPlan<E>) {}
 
-export class SubscriberBuilder<E extends AnyEvent, D extends Inject, C extends Added> {
-	constructor(private readonly plan: SubscriberPlan<E, D>) {}
-
-	emits<const L extends readonly AnyEvent[]>(...events: L): SubscriberBuilder<E, D, C & Emitter<L[number]>> {
+	emits<const L extends readonly AnyEvent[]>(...events: L): SubscriberBuilder<E, P, C & Emitter<L[number]>> {
 		return new SubscriberBuilder({
 			...this.plan,
 			emits: [...this.plan.emits, ...events],
 		});
 	}
 
-	inject<const N extends Inject>(inject: N & Unreserved<N>): SubscriberBuilder<E, N, C> {
-		return new SubscriberBuilder({
-			...this.plan,
-			inject: checkInject(inject),
-		});
-	}
-
-	handle(handle: SubscriberHandle<E, D, C>): Subscriber<E, D> {
-		const { event, inject, emits } = this.plan;
+	handle(handle: SubscriberHandle<E, P, C>): Subscriber<E, P> {
+		const { event, emits } = this.plan;
 		return {
 			kind: "subscriber",
 			event,
-			inject,
 			emits,
 			handle,
 		};
 	}
 }
 
-export function subscriber<E extends AnyEvent>(event: E): SubscriberBuilder<E, NothingAdded, NothingAdded> {
+export function subscriber<E extends AnyEvent, P extends object = NothingProvided>(
+	event: E,
+): SubscriberBuilder<E, P, NothingAdded> {
 	return new SubscriberBuilder({
 		event,
-		inject: NOTHING_INJECTED,
 		emits: [],
 	});
 }

@@ -46,15 +46,13 @@ const served = server()
 		scope: { workspaceId: "checks" },
 		host: { authenticate: new AppCallerAuthenticate() },
 	});
-const studio = app().imports(AppearanceContract.over(local)).start();
+const studio = app().imports(AppearanceContract({ over: local })).start();
 const frame = app()
 	.imports(
-		AppearanceContract.over(
-			orpcTransport("http://appearance.test", {
+		AppearanceContract({ over: orpcTransport("http://appearance.test", {
 				fetch: served.fetch,
 				headers: () => ({ [APP_CALLER_HEADER]: "tasks" }),
-			}),
-		),
+			}), }),
 	)
 	.start();
 const heard: string[] = [];

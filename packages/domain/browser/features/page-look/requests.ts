@@ -1,15 +1,14 @@
-import { query, subscriber } from "@widgetarium/data-framework";
+import { query, subscriber } from "#module";
 import { PageLooksChangedEvent, PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
-import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
 import { BrowserViewSchema } from "../../shared/schema/browser-tab.schema.js";
 import { PageHeadSchema } from "../../shared/schema/page-look.schema.js";
 import { pageHeadOf } from "./lib/page-head.js";
 
 export const PageHeadQuery = query("page-head")
+	.public()
 	.input(BrowserViewSchema)
 	.output(PageHeadSchema.nullable())
 	.settlesNow()
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ heldTabId }, { browserPages }) => {
 		const shownId = heldTabId ?? browserPages.shownId();
 		const shown = browserPages.tabs().find((tab) => tab.id === shownId);

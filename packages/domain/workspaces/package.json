@@ -19,6 +19,13 @@
 			"default": "./dist/module.js"
 		}
 	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
 	"dependencies": {
 		"@widgetarium/behaviors": "0.1.0",
 		"@widgetarium/core": "0.1.0",

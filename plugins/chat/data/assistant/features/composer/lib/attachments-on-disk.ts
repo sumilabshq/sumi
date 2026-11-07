@@ -63,22 +63,22 @@ export function writeDrafts(
 }
 
 export async function sendOrRemoveWritten(
-	parts: SendingParts,
+	injects: SendingParts,
 	{ said, files }: { readonly said: string; readonly files: readonly WrittenAttachment[] },
 	deliver: (said: string) => Promise<void>,
 ): Promise<void> {
 	try {
 		await deliver(said);
 	} catch (failed: unknown) {
-		files.forEach(({ path }) => parts.attachmentFiles.removeAttachment(path));
+		files.forEach(({ path }) => injects.attachmentFiles.removeAttachment(path));
 		throw failed;
 	}
 }
 
-export function recordSent(parts: SendingParts, files: readonly WrittenAttachment[]): void {
-	const was = parts.sentAttachments.sentAttachments();
-	const next = sentRecordOf(was, files, parts.clock.now());
-	parts.sentAttachments.saveSentAttachments(next);
+export function recordSent(injects: SendingParts, files: readonly WrittenAttachment[]): void {
+	const was = injects.sentAttachments.sentAttachments();
+	const next = sentRecordOf(was, files, injects.clock.now());
+	injects.sentAttachments.saveSentAttachments(next);
 	console.debug(`[widgetarium] attachments on disk ${pathsOf(was)} → ${pathsOf(next)} (${SENT})`);
 }
 

@@ -52,11 +52,11 @@ function bench(): Bench {
 	const clock = new FixedClockGateway(START);
 	const link = localTransport();
 	server()
-		.modules(TasksModule.with({ tasks: memory, clock }))
+		.modules(TasksModule({ injects: { tasks: memory, clock } }))
 		.listen(link)
 		.start({ env: {} });
 	return {
-		tasks: app().imports(TasksContract.over(link)).start(),
+		tasks: app().imports(TasksContract({ over: link })).start(),
 		memory,
 		clock,
 	};

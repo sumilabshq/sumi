@@ -6,7 +6,7 @@ import type { DoneKeys } from "./done-keys";
 import { EventBus } from "./event-bus";
 import { Invalidations } from "./invalidation";
 import { LocalRoutes } from "./local-routes";
-import { Mediator } from "./mediator";
+import { Mediator, VIEW_CALLER } from "./mediator";
 import type { Sending } from "./mediator";
 import { RequestsModule, readyModuleOf } from "./module";
 import type { HandledModule, Provided, ReadyModule, ServerParts, StartableModule } from "./module";
@@ -154,7 +154,7 @@ class ClientApp implements StartedApp {
 
 	send<R extends AnyRequest>(request: R, ...asked: [...InputArgs<R>, sending?: Sending]): Promise<Answer<OutputOf<R>>>;
 	async send(request: AnyRequest, sent?: unknown, sending?: Sending): Promise<Answer<unknown>> {
-		const answer = await this.parts.mediator.send(request, sent, sending);
+		const answer = await this.parts.mediator.send(request, sent, { ...sending, inProcessCaller: VIEW_CALLER });
 		void this.reReadAfter(request, answer);
 		return answer;
 	}

@@ -58,7 +58,7 @@ check("an unchanged activity is the same activity", isSameActivity(quiet, activi
 check("a changed activity is not", isSameActivity(quiet, activityWith(quiet, { stoppedAt: 6 })), false);
 
 const stopping = fakeBrowser();
-const stoppingApp = app().modules(BrowserModule.with(stopping.parts)).start();
+const stoppingApp = app().modules(BrowserModule({ injects: stopping.parts })).start();
 let inkTold = 0;
 stopping.parts.inkActivity.inkActivityChanged(() => {
 	inkTold += 1;

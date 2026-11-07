@@ -1,13 +1,8 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
-import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
-import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
-import { SidebarWidthGateway } from "../../gateways/sidebar-width/sidebar-width.gateway.js";
-import { WidgetDrawingGateway } from "../../gateways/widget-drawing/widget-drawing.gateway.js";
 import type { CanvasField } from "../../shared/schema/canvas-moment.schema.js";
 import { LayersPanelSchema } from "../../shared/schema/layer-row.schema.js";
 import { LayerIdSchema, LayerMoveAskSchema, SeenLayersSchema } from "../../shared/schema/layer.schema.js";
@@ -38,18 +33,9 @@ const PANEL_FIELDS: readonly CanvasField[] = [
 	"closedLayers",
 ];
 
-const PAGES_READ = {
-	canvasMoment: CanvasMomentGateway,
-	designFolder: DesignFolderGateway,
-	agentJobs: AgentJobsGateway,
-};
-
 export const LayersPanelQuery = query("layers-panel")
+	.public()
 	.output(LayersPanelSchema)
-	.inject({
-		...PAGES_READ,
-		widgetDrawing: WidgetDrawingGateway,
-	})
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs, widgetDrawing }) => {
 		const moment = canvasMoment.moment();
 		const now = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -63,9 +49,9 @@ export const LayersPanelQuery = query("layers-panel")
 	});
 
 export const KeepSeenLayersCommand = command("keep-seen-layers")
+	.public()
 	.input(SeenLayersSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ key, layers }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const seenLayers = {
@@ -80,13 +66,9 @@ export const KeepSeenLayersCommand = command("keep-seen-layers")
 	});
 
 export const MoveLayerCommand = command("move-layer")
+	.public()
 	.input(LayerMoveAskSchema)
 	.idempotencyKey(PerCall)
-	.inject({
-		...PAGES_READ,
-		designFiles: DesignFilesGateway,
-		widgetDrawing: WidgetDrawingGateway,
-	})
 	.emits(DesignChangedEvent)
 	.handle(
 		async (
@@ -138,9 +120,9 @@ export const MoveLayerCommand = command("move-layer")
 	);
 
 export const PickLayerCommand = command("pick-layer")
+	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject(PAGES_READ)
 	.handle(async ({ id }, { canvasMoment, designFolder, agentJobs }) => {
 		const asked = canvasMoment.moment();
 		const folder = await designFolder.folder(asked.app);
@@ -178,9 +160,9 @@ export const PickLayerCommand = command("pick-layer")
 	});
 
 export const ToggleLayerFoldCommand = command("toggle-layer-fold")
+	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ id }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const closed = moment.closedLayers;
@@ -193,8 +175,8 @@ export const ToggleLayerFoldCommand = command("toggle-layer-fold")
 	});
 
 export const ToggleLayoutLockCommand = command("toggle-layout-lock")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const isLayoutLocked = !moment.isLayoutLocked;
@@ -212,12 +194,9 @@ export const ToggleLayoutLockCommand = command("toggle-layout-lock")
 	});
 
 export const SidebarQuery = query("sidebar")
+	.public()
 	.output(SidebarSchema)
 	.settlesNow()
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		sidebarWidth: SidebarWidthGateway,
-	})
 	.handle((_input, { canvasMoment, sidebarWidth }) => ({
 		isOpen: canvasMoment.moment().isLayersOpen,
 		px: sidebarPxOf(sidebarWidth.sidebarPx()),
@@ -226,8 +205,8 @@ export const SidebarQuery = query("sidebar")
 	}));
 
 export const ToggleSidebarCommand = command("toggle-sidebar")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const isLayersOpen = !moment.isLayersOpen;
@@ -245,9 +224,9 @@ export const ToggleSidebarCommand = command("toggle-sidebar")
 	});
 
 export const ResizeSidebarWidthCommand = command("resize-sidebar-width")
+	.public()
 	.input(SidebarResizeSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ sidebarWidth: SidebarWidthGateway })
 	.handle(({ px, roomPx }, { sidebarWidth, invalidate }) => {
 		const was = sidebarPxOf(sidebarWidth.sidebarPx());
 		const next = sidebarPxWithin(px, roomPx);
@@ -263,8 +242,8 @@ export const ResizeSidebarWidthCommand = command("resize-sidebar-width")
 	});
 
 export const ResetSidebarWidthCommand = command("reset-sidebar-width")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ sidebarWidth: SidebarWidthGateway })
 	.handle((_input, { sidebarWidth, invalidate }) => {
 		const was = sidebarPxOf(sidebarWidth.sidebarPx());
 		const next = SIDEBAR_BOUNDS.usualPx;

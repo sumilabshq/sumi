@@ -1,50 +1,45 @@
-import { PerCall, Repeatable, command, refuse } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command } from "#module";
 import type { Send } from "@widgetarium/data-framework";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
 import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
-import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { showChatSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { isChatHeld } from "../../shared/lib/chat-holders.js";
-import {
-	ChatOpenedSchema,
-	ChatPaneSchema,
-	ChatToShowSchema,
-	NewChatTitleSchema,
-} from "../../shared/schema/chat-opening.schema.js";
+import { ChatOpenedSchema, ChatPaneSchema, ChatToShowSchema, NewChatTitleSchema } from "../../shared/schema/chat-opening.schema.js";
 
 const NOT_READ = "the layout or the chats are not read yet";
 const NOT_AN_EMPTY_CHAT_PANE = "pane {pane} is not a chat pane waiting for a chat";
 
 export const OpenChatCommand = command("open-chat")
+	.public()
 	.input(ChatToShowSchema)
 	.idempotencyKey(Repeatable)
-	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (chat, { send, emit, ...parts }) => {
-		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, chat);
+	.handle(async (chat, { send, emit, ...injects }) => {
+		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, chat);
 	});
 
 export const OpenNewChatCommand = command("open-new-chat")
+	.public()
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall)
-	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ title }, { send, emit, ...parts }) => {
+	.handle(async ({ title }, { send, emit, ...injects }) => {
 		const created = await createChat(send, title);
-		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
+		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, { chatId: created.id, paneId: null });
 		return created;
 	});
 
 export const NameChatPaneCommand = command("name-chat-pane")
+	.public()
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId)
-	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ paneId }, { send, emit, ...parts }) => {
+	.handle(async ({ paneId }, { send, emit, ...injects }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 
 		if (!board.isLoaded || !asked.isRead) {
@@ -58,15 +53,15 @@ export const NameChatPaneCommand = command("name-chat-pane")
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId, paneId });
+		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, { chatId, paneId });
 		return { id: chatId };
 	});
 
 export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (_input, { send, emit, ...parts }) => {
+	.handle(async (_input, { send, emit, ...injects }) => {
 		const [board, asked] = await Promise.all([send(PaneTreeQuery), send(ChatToOpenQuery)]);
 
 		if (!board.isLoaded || !asked.isRead) {
@@ -78,7 +73,7 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
+		await showChatSettled({ injects, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
 		await send(ForgetChatToOpenCommand, { id: asked.id });
 	});
 

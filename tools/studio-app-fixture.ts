@@ -30,10 +30,10 @@ export function studioAppOf({
 	return app()
 		.modules(
 			PluginAppsModule,
-			browser === undefined ? BrowserModule : BrowserModule.with(browser),
+			browser === undefined ? BrowserModule : BrowserModule({ injects: browser }),
 			LayoutModule,
-			workspaces === undefined ? WorkspacesModule : WorkspacesModule.with(workspaces),
-			appHost === undefined ? AppHostModule : AppHostModule.with({ ...appHost }),
+			workspaces === undefined ? WorkspacesModule : WorkspacesModule({ injects: workspaces }),
+			appHost === undefined ? AppHostModule : AppHostModule({ injects: { ...appHost } }),
 			...COMMAND_MENU_MODULES,
 		)
 		.imports(placesOver(places))

@@ -5,11 +5,10 @@ import type { AddFeatureArgs } from "./scaffold-args.js";
 import { CliRefusal, type CliOutput } from "./cli-output.js";
 import { checkFileOf, checkTextOf } from "./feature-check-file.js";
 import { featureFilesOf, featureNamesOf, requestNamesOf } from "./feature-files.js";
-import { moduleWired, pickerWired, placementIn } from "./feature-wiring.js";
+import { pickerWired, placementIn } from "./feature-wiring.js";
 import { runGenerate } from "./generate-command.js";
 import { pickerPathOf } from "./module-files.js";
 import { formatFiles } from "./project-format.js";
-import { jsSpecifierOf } from "./scaffold-names.js";
 import { writeFile } from "./template-files.js";
 import { moduleFolderIn, workspaceRootAbove } from "./workspace-root.js";
 
@@ -55,16 +54,9 @@ function createdFilesOf({ folder, moduleFile, args }: FeatureTarget): PlannedFil
 	return [...featureFilesOf(args).map(({ at, text }) => ({ at: `${folder}/${at}`, text })), check];
 }
 
-function editedFilesOf({ root, folder, moduleFile, args }: FeatureTarget): PlannedFile[] {
-	const names = featureNamesOf(args.feature);
+function editedFilesOf({ root, folder, args }: FeatureTarget): PlannedFile[] {
 	const picker = pickerAt(root, `${folder}/${pickerPathOf(args.module)}`);
-	return [
-		{
-			at: moduleFile.at,
-			text: moduleWired(moduleFile, requestNamesOf(args), `./${jsSpecifierOf(names.requestsFile)}`),
-		},
-		{ at: picker.at, text: pickerWired({ ...picker, module: args.module }, names) },
-	];
+	return [{ at: picker.at, text: pickerWired({ ...picker, module: args.module }, featureNamesOf(args.feature)) }];
 }
 
 function refuseTaken({ root, folder, args }: FeatureTarget, created: readonly PlannedFile[]): void {

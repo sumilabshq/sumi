@@ -117,48 +117,62 @@ export const WorkspacesSchema = z.object({
 
 export type WorkspacesView = z.infer<typeof WorkspacesSchema>;
 
-export const WorkspacesQuery = query("workspaces/workspaces")
-	.output(WorkspacesSchema)
-	.settlesNow();
 export const ChatRecordsQuery = query("workspaces/chat-records")
+	.public()
 	.output(ChatRecordsSchema)
 	.settlesNow();
 export const WorkspaceCrumbQuery = query("workspaces/workspace-crumb")
+	.public()
 	.output(WorkspaceCrumbSchema)
 	.settlesNow();
-export const ChatToOpenQuery = query("workspaces/chat-to-open")
-	.output(ChatToOpenSchema)
-	.settlesNow();
-export const ChatsElsewhereQuery = query("workspaces/chats-elsewhere")
-	.output(ChatsElsewhereSchema);
-export const OpenWorkspaceCommand = command("workspaces/open-workspace")
-	.input(WorkspaceIdSchema)
-	.idempotencyKey(Repeatable);
-export const OpenChatElsewhereCommand = command("workspaces/open-chat-elsewhere")
-	.input(ChatElsewhereSchema)
-	.idempotencyKey(Repeatable);
-export const OpenWorkspaceByPositionCommand = command("workspaces/open-workspace-by-position")
-	.input(WorkspacePositionSchema)
-	.idempotencyKey(Repeatable);
-export const CreateWorkspaceCommand = command("workspaces/create-workspace")
-	.output(WorkspaceIdSchema)
-	.idempotencyKey(PerCall);
-export const RenameWorkspaceCommand = command("workspaces/rename-workspace")
-	.input(WorkspaceNameSchema)
-	.idempotencyKey(Repeatable);
-export const SetWorkspaceIconCommand = command("workspaces/set-workspace-icon")
-	.input(WorkspaceIconChoiceSchema)
-	.idempotencyKey(Repeatable);
 export const CreateChatCommand = command("workspaces/create-chat")
+	.public()
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall);
 export const ForgetChatToOpenCommand = command("workspaces/forget-chat-to-open")
+	.public()
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable);
+export const ChatToOpenQuery = query("workspaces/chat-to-open")
+	.public()
+	.output(ChatToOpenSchema)
+	.settlesNow();
 export const RecordChatTurnCommand = command("workspaces/record-chat-turn")
+	.public()
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable);
-export const ChatsChangedEvent = event("workspaces/chats-changed");
+export const WorkspacesQuery = query("workspaces/workspaces")
+	.public()
+	.output(WorkspacesSchema)
+	.settlesNow();
+export const OpenWorkspaceCommand = command("workspaces/open-workspace")
+	.public()
+	.input(WorkspaceIdSchema)
+	.idempotencyKey(Repeatable);
+export const ChatsElsewhereQuery = query("workspaces/chats-elsewhere")
+	.public()
+	.output(ChatsElsewhereSchema);
+export const OpenChatElsewhereCommand = command("workspaces/open-chat-elsewhere")
+	.public()
+	.input(ChatElsewhereSchema)
+	.idempotencyKey(Repeatable);
+export const OpenWorkspaceByPositionCommand = command("workspaces/open-workspace-by-position")
+	.public()
+	.input(WorkspacePositionSchema)
+	.idempotencyKey(Repeatable);
+export const CreateWorkspaceCommand = command("workspaces/create-workspace")
+	.public()
+	.output(WorkspaceIdSchema)
+	.idempotencyKey(PerCall);
+export const RenameWorkspaceCommand = command("workspaces/rename-workspace")
+	.public()
+	.input(WorkspaceNameSchema)
+	.idempotencyKey(Repeatable);
+export const SetWorkspaceIconCommand = command("workspaces/set-workspace-icon")
+	.public()
+	.input(WorkspaceIconChoiceSchema)
+	.idempotencyKey(Repeatable);
+export const ChatsChangedEvent = event("workspaces/chats-changed").public();
 
-export const WorkspacesModule = moduleContract("workspaces", Device, [WorkspacesQuery, ChatRecordsQuery, WorkspaceCrumbQuery, ChatToOpenQuery, ChatsElsewhereQuery, OpenWorkspaceCommand, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand, CreateChatCommand, ForgetChatToOpenCommand, RecordChatTurnCommand]);
+export const WorkspacesModule = moduleContract("workspaces", Device, [ChatRecordsQuery, WorkspaceCrumbQuery, CreateChatCommand, ForgetChatToOpenCommand, ChatToOpenQuery, RecordChatTurnCommand, WorkspacesQuery, OpenWorkspaceCommand, ChatsElsewhereQuery, OpenChatElsewhereCommand, OpenWorkspaceByPositionCommand, CreateWorkspaceCommand, RenameWorkspaceCommand, SetWorkspaceIconCommand]);

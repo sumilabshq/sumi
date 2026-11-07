@@ -55,10 +55,10 @@ interface HeldRun {
 function tasksApp(): StartedApp {
 	const link = localTransport();
 	server()
-		.modules(TasksModule.with({ tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) }))
+		.modules(TasksModule({ injects: { tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) } }))
 		.listen(link)
 		.start({ env: {} });
-	return app().imports(TasksContract.over(link)).start();
+	return app().imports(TasksContract({ over: link })).start();
 }
 
 async function viewOf(tasks: StartedApp, task: string): Promise<TaskView> {

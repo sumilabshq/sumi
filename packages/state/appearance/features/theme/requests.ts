@@ -1,6 +1,6 @@
-import { Repeatable, command, deny, guard, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable, deny, guard } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { ThemeChangedEvent } from "../../gateways/theme/theme.events.js";
-import { ThemeGateway } from "../../gateways/theme/theme.gateway.js";
 import { ChooseThemeInputSchema, ThemeSchema } from "../../shared/schema/theme.schema.js";
 import { schemeOf } from "./lib/scheme.js";
 
@@ -13,8 +13,8 @@ export const StudioCallerGuard = guard().handle(({ context }) => {
 });
 
 export const ThemeQuery = query("theme")
+	.public()
 	.output(ThemeSchema)
-	.inject({ theme: ThemeGateway })
 	.handle((_input, { theme }) => {
 		const choice = theme.choice();
 		return {
@@ -24,10 +24,10 @@ export const ThemeQuery = query("theme")
 	});
 
 export const ChooseThemeCommand = command("choose-theme")
+	.public()
 	.input(ChooseThemeInputSchema)
 	.idempotencyKey(Repeatable)
 	.guard(StudioCallerGuard)
-	.inject({ theme: ThemeGateway })
 	.handle(({ choice }, { theme, invalidate }) => {
 		const was = theme.choice();
 

@@ -11,8 +11,10 @@ export const BalanceSchema = z.object({ currency: z.string(), total: z.number(),
 export type Balance = z.infer<typeof BalanceSchema>;
 
 export const BalanceQuery = query("fixture-billing/balance")
+	.public()
 	.output(BalanceSchema);
 export const ChargeCommand = command("fixture-billing/charge")
+	.public()
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)
 	.idempotencyKey(PerCall);

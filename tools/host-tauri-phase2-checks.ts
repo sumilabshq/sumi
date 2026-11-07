@@ -73,7 +73,7 @@ async function railChecks(): Promise<void> {
 	fake.known.set(RESEARCH.id, RESEARCH);
 	const reopened: string[] = [];
 	const parts = tauriWorkspacesParts(DEFAULT.id, new StoreClient(fake.invoke));
-	const workspacesApp = app().modules(WorkspacesModule.with(parts)).imports(placesOver()).start();
+	const workspacesApp = app().modules(WorkspacesModule({ injects: parts })).imports(placesOver()).start();
 	reopensOnWorkspaceSwitch(workspacesApp, DEFAULT.id, async () => void reopened.push("reopen"));
 	await quietly(() => waitFor(() => parts.workspaces.workspaces().length === 2));
 	const apps = tauriWorkspaceApps({ workspaces: new WorkspaceClient(fake.invoke), workspacesApp });

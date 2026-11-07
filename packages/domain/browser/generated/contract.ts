@@ -302,110 +302,142 @@ export const GhostShownSchema = z.object({
 	shown: z.boolean(),
 });
 
-export const BrowserTabsQuery = query("browser/browser-tabs")
-	.input(BrowserViewSchema)
-	.output(BrowserTabsSchema)
-	.settlesNow();
-export const AskInkPromptQuery = query("browser/ask-ink-prompt")
-	.input(TabIdSchema)
-	.output(z.string())
-	.settlesNow();
-export const PageHeadQuery = query("browser/page-head")
-	.input(BrowserViewSchema)
-	.output(PageHeadSchema.nullable())
-	.settlesNow();
-export const SiteIconQuery = query("browser/site-icon")
-	.input(SiteOriginSchema)
-	.output(SiteIconOfOriginSchema);
-export const SiteAccessQuery = query("browser/site-access")
-	.input(BrowserViewSchema)
-	.output(SiteAccessSchema)
-	.settlesNow();
 export const AccessAsksQuery = query("browser/access-asks")
+	.public()
 	.output(AccessAsksSchema)
 	.settlesNow();
 export const InkReadingQuery = query("browser/ink-reading")
+	.public()
 	.output(InkReadingSchema.nullable())
 	.settlesNow();
-export const OpenAddressCommand = command("browser/open-address")
-	.input(OpenAddressSchema)
-	.idempotencyKey(PerCall);
-export const OpenTabInOwnWindowCommand = command("browser/open-tab-in-own-window")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const FocusOwnWindowCommand = command("browser/focus-own-window")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const FocusStudioWindowCommand = command("browser/focus-studio-window")
-	.input(z.object({ window: z.string().min(1) }))
-	.idempotencyKey(Repeatable);
-export const OpenTabWindowCommand = command("browser/open-tab-window")
-	.input(TabWindowSchema)
-	.idempotencyKey(Repeatable);
-export const TearOffCommand = command("browser/tear-off")
-	.input(TabIdSchema.extend({ openWith: z.string() }))
-	.idempotencyKey(Repeatable);
-export const LayTearOffGhostCommand = command("browser/lay-tear-off-ghost")
-	.input(GhostLaySchema)
-	.idempotencyKey(Repeatable);
-export const WearTearOffGhostCommand = command("browser/wear-tear-off-ghost")
-	.input(GhostWornSchema)
-	.idempotencyKey(Repeatable);
-export const ShowTearOffGhostCommand = command("browser/show-tear-off-ghost")
-	.input(GhostShownSchema)
-	.idempotencyKey(Repeatable);
-export const ShowTabCommand = command("browser/show-tab")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const OpenPageCommand = command("browser/open-page")
-	.input(OpenPageSchema)
-	.idempotencyKey(Repeatable);
-export const ClosePageCommand = command("browser/close-page")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const GoBackCommand = command("browser/go-back")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const GoForwardCommand = command("browser/go-forward")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const ReloadPageCommand = command("browser/reload-page")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const LeaveFailureCommand = command("browser/leave-failure")
-	.input(TabIdSchema)
-	.idempotencyKey(Repeatable);
-export const AttachPagesCommand = command("browser/attach-pages")
-	.input(PagesHostSchema)
-	.idempotencyKey(Repeatable);
-export const DetachPagesCommand = command("browser/detach-pages")
-	.input(PagesHostSchema)
-	.idempotencyKey(Repeatable);
-export const SetSiteLevelCommand = command("browser/set-site-level")
-	.input(SiteLevelSchema)
-	.idempotencyKey(Repeatable);
 export const AnswerAskCommand = command("browser/answer-ask")
+	.public()
 	.input(AnswerAskSchema)
 	.idempotencyKey((input) => input.id);
 export const StopInkCommand = command("browser/stop-ink")
+	.public()
 	.idempotencyKey(Repeatable);
 export const ReadPageContentCommand = command("browser/read-page-content")
+	.public()
 	.input(ReadPageSchema)
 	.output(PageContentSchema)
 	.idempotencyKey(PerCall);
 export const CapturePageCommand = command("browser/capture-page")
+	.public()
 	.input(CapturePageSchema)
 	.output(PageShotSchema)
 	.idempotencyKey(PerCall);
 export const InkOpenAddressCommand = command("browser/ink-open-address")
+	.public()
 	.input(InkAddressSchema)
 	.output(OpenedPageSchema)
 	.idempotencyKey(PerCall);
 export const SearchWebCommand = command("browser/search-web")
+	.public()
 	.input(SearchWebSchema)
 	.idempotencyKey(PerCall);
-export const PagesChangedEvent = event("browser/pages-changed");
-export const InkActivityChangedEvent = event("browser/ink-activity-changed");
-export const AccessAsksChangedEvent = event("browser/access-asks-changed");
+export const PageHeadQuery = query("browser/page-head")
+	.public()
+	.input(BrowserViewSchema)
+	.output(PageHeadSchema.nullable())
+	.settlesNow();
+export const SiteIconQuery = query("browser/site-icon")
+	.public()
+	.input(SiteOriginSchema)
+	.output(SiteIconOfOriginSchema);
+export const SiteAccessQuery = query("browser/site-access")
+	.public()
+	.input(BrowserViewSchema)
+	.output(SiteAccessSchema)
+	.settlesNow();
+export const SetSiteLevelCommand = command("browser/set-site-level")
+	.public()
+	.input(SiteLevelSchema)
+	.idempotencyKey(Repeatable);
+export const BrowserTabsQuery = query("browser/browser-tabs")
+	.public()
+	.input(BrowserViewSchema)
+	.output(BrowserTabsSchema)
+	.settlesNow();
+export const AskInkPromptQuery = query("browser/ask-ink-prompt")
+	.public()
+	.input(TabIdSchema)
+	.output(z.string())
+	.settlesNow();
+export const OpenAddressCommand = command("browser/open-address")
+	.public()
+	.input(OpenAddressSchema)
+	.idempotencyKey(PerCall);
+export const OpenTabInOwnWindowCommand = command("browser/open-tab-in-own-window")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const FocusOwnWindowCommand = command("browser/focus-own-window")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const FocusStudioWindowCommand = command("browser/focus-studio-window")
+	.public()
+	.input(z.object({ window: z.string().min(1) }))
+	.idempotencyKey(Repeatable);
+export const OpenTabWindowCommand = command("browser/open-tab-window")
+	.public()
+	.input(TabWindowSchema)
+	.idempotencyKey(Repeatable);
+export const TearOffCommand = command("browser/tear-off")
+	.public()
+	.input(TabIdSchema.extend({ openWith: z.string() }))
+	.idempotencyKey(Repeatable);
+export const LayTearOffGhostCommand = command("browser/lay-tear-off-ghost")
+	.public()
+	.input(GhostLaySchema)
+	.idempotencyKey(Repeatable);
+export const WearTearOffGhostCommand = command("browser/wear-tear-off-ghost")
+	.public()
+	.input(GhostWornSchema)
+	.idempotencyKey(Repeatable);
+export const ShowTearOffGhostCommand = command("browser/show-tear-off-ghost")
+	.public()
+	.input(GhostShownSchema)
+	.idempotencyKey(Repeatable);
+export const ShowTabCommand = command("browser/show-tab")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const OpenPageCommand = command("browser/open-page")
+	.public()
+	.input(OpenPageSchema)
+	.idempotencyKey(Repeatable);
+export const ClosePageCommand = command("browser/close-page")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const GoBackCommand = command("browser/go-back")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const GoForwardCommand = command("browser/go-forward")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const ReloadPageCommand = command("browser/reload-page")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const LeaveFailureCommand = command("browser/leave-failure")
+	.public()
+	.input(TabIdSchema)
+	.idempotencyKey(Repeatable);
+export const AttachPagesCommand = command("browser/attach-pages")
+	.public()
+	.input(PagesHostSchema)
+	.idempotencyKey(Repeatable);
+export const DetachPagesCommand = command("browser/detach-pages")
+	.public()
+	.input(PagesHostSchema)
+	.idempotencyKey(Repeatable);
+export const AccessAsksChangedEvent = event("browser/access-asks-changed").public();
+export const PagesChangedEvent = event("browser/pages-changed").public();
+export const InkActivityChangedEvent = event("browser/ink-activity-changed").public();
 
-export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteIconQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenTabWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);
+export const BrowserModule = moduleContract("browser", Device, [AccessAsksQuery, InkReadingQuery, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand, PageHeadQuery, SiteIconQuery, SiteAccessQuery, SetSiteLevelCommand, BrowserTabsQuery, AskInkPromptQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenTabWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand]);

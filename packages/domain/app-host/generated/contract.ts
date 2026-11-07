@@ -368,63 +368,141 @@ export const GroupFaceSchema = z.object({
 
 export type GroupFace = z.infer<typeof GroupFaceSchema>;
 
+export const AppFacesQuery = query("app-host/app-faces")
+	.public()
+	.output(AppFacesSchema);
+export const KnownAppsQuery = query("app-host/known-apps")
+	.public()
+	.output(KnownAppsSchema);
 export const ChatListQuery = query("app-host/chat-list")
+	.public()
 	.output(ChatListSchema);
 export const PinTabCommand = command("app-host/pin-tab")
+	.public()
 	.input(TabPinSchema)
 	.idempotencyKey(Repeatable);
-export const KnownAppsQuery = query("app-host/known-apps")
-	.output(KnownAppsSchema);
-export const OpenLinkCommand = command("app-host/open-link")
-	.input(LinkToOpenSchema)
-	.idempotencyKey(Repeatable);
 export const OpenChatCommand = command("app-host/open-chat")
+	.public()
 	.input(ChatToShowSchema)
 	.idempotencyKey(Repeatable);
 export const OpenNewChatCommand = command("app-host/open-new-chat")
+	.public()
 	.input(NewChatTitleSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey(PerCall);
 export const NameChatPaneCommand = command("app-host/name-chat-pane")
+	.public()
 	.input(ChatPaneSchema)
 	.output(ChatOpenedSchema)
 	.idempotencyKey((input) => input.paneId);
 export const OpenChatAskedOnStartCommand = command("app-host/open-chat-asked-on-start")
+	.public()
 	.idempotencyKey(Repeatable);
-export const AppTabsQuery = query("app-host/app-tabs")
-	.output(AppTabsSchema);
-export const AppFacesQuery = query("app-host/app-faces")
-	.output(AppFacesSchema);
 export const ClosedTabsQuery = query("app-host/closed-tabs")
+	.public()
 	.output(ClosedTabsSchema);
 export const ReopenClosedTabByIdCommand = command("app-host/reopen-closed-tab-by-id")
+	.public()
 	.input(ClosedTabIdSchema)
 	.idempotencyKey(Repeatable);
-export const TabsSidebarQuery = query("app-host/tabs-sidebar")
-	.output(TabsSidebarSchema);
-export const HeldTabsQuery = query("app-host/held-tabs")
-	.output(HeldTabsSchema);
-export const CanOpenOwnWindowQuery = query("app-host/can-open-own-window")
-	.output(z.boolean());
-export const ShownViewQuery = query("app-host/shown-view")
-	.output(StudioViewSchema)
-	.settlesNow();
-export const RestoreTabsCommand = command("app-host/restore-tabs")
-	.idempotencyKey(Repeatable);
-export const ShowTabCommand = command("app-host/show-tab")
+export const ShowEssentialCommand = command("app-host/show-essential")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("app-host/show-chat-tab")
-	.input(z.object({ chatId: z.string().min(1) }))
+export const RemoveEssentialCommand = command("app-host/remove-essential")
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const CloseEssentialCommand = command("app-host/close-essential")
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const PlaceEssentialCommand = command("app-host/place-essential")
+	.public()
+	.input(z.object({ id: z.string(), to: TabDropSchema }))
+	.idempotencyKey(Repeatable);
+export const CreateGroupCommand = command("app-host/create-group")
+	.public()
+	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
+	.output(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const RenameGroupCommand = command("app-host/rename-group")
+	.public()
+	.input(z.object({ id: z.string(), name: z.string() }))
+	.idempotencyKey(Repeatable);
+export const SetGroupHueCommand = command("app-host/set-group-hue")
+	.public()
+	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
+	.idempotencyKey(Repeatable);
+export const FoldGroupCommand = command("app-host/fold-group")
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const PlaceGroupCommand = command("app-host/place-group")
+	.public()
+	.input(
+		z.object({
+			id: z.string().min(1),
+			to: z.object({
+				list: z.string().min(1),
+				before: z.string().nullable(),
+			}),
+		}),
+	)
+	.idempotencyKey(Repeatable);
+export const FoldTabCommand = command("app-host/fold-tab")
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const UngroupCommand = command("app-host/ungroup")
+	.public()
+	.input(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const OpenLinkCommand = command("app-host/open-link")
+	.public()
+	.input(LinkToOpenSchema)
+	.idempotencyKey(Repeatable);
+export const ShownViewQuery = query("app-host/shown-view")
+	.public()
+	.output(StudioViewSchema)
+	.settlesNow();
+export const ShowViewCommand = command("app-host/show-view")
+	.public()
+	.input(z.object({ view: StudioViewSchema }))
+	.idempotencyKey(Repeatable);
+export const ShownSplitQuery = query("app-host/shown-split")
+	.public()
+	.output(ShownSplitSchema);
+export const PlaceInViewCommand = command("app-host/place-in-view")
+	.public()
+	.input(SplitPlacingSchema)
+	.output(z.object({ isPlaced: z.boolean() }))
+	.idempotencyKey(Repeatable);
+export const CloseViewPaneCommand = command("app-host/close-view-pane")
+	.public()
+	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
+	.idempotencyKey(Repeatable);
+export const ResizeSplitCommand = command("app-host/resize-split")
+	.public()
+	.input(
+		z.object({
+			branchId: z.string().min(1),
+			at: z.number().int().nonnegative(),
+			share: z.number().positive(),
+		}),
+	)
 	.idempotencyKey(Repeatable);
 export const OpenTabCommand = command("app-host/open-tab")
+	.public()
 	.input(TabToOpenSchema)
 	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable);
 export const OpenTabBelowCommand = command("app-host/open-tab-below")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const DuplicateTabCommand = command("app-host/duplicate-tab")
+	.public()
 	.input(
 		z.object({
 			id: z.string(),
@@ -436,92 +514,61 @@ export const DuplicateTabCommand = command("app-host/duplicate-tab")
 	.output(OpenedTabSchema)
 	.idempotencyKey(Repeatable);
 export const ReloadTabCommand = command("app-host/reload-tab")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const RenameTabCommand = command("app-host/rename-tab")
+	.public()
 	.input(z.object({ id: z.string(), label: z.string() }))
 	.idempotencyKey(Repeatable);
 export const CloseOtherTabsCommand = command("app-host/close-other-tabs")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const ReopenClosedTabCommand = command("app-host/reopen-closed-tab")
+	.public()
 	.idempotencyKey(Repeatable);
 export const CloseTabCommand = command("app-host/close-tab")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const CloseShownTabCommand = command("app-host/close-shown-tab")
-	.idempotencyKey(Repeatable);
-export const PlaceTabCommand = command("app-host/place-tab")
-	.input(z.object({ id: z.string(), to: TabDropSchema }))
+	.public()
 	.idempotencyKey(Repeatable);
 export const TearOffTabCommand = command("app-host/tear-off-tab")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const CloseGroupCommand = command("app-host/close-group")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const ShowEssentialCommand = command("app-host/show-essential")
+export const AppTabsQuery = query("app-host/app-tabs")
+	.public()
+	.output(AppTabsSchema);
+export const TabsSidebarQuery = query("app-host/tabs-sidebar")
+	.public()
+	.output(TabsSidebarSchema);
+export const HeldTabsQuery = query("app-host/held-tabs")
+	.public()
+	.output(HeldTabsSchema);
+export const CanOpenOwnWindowQuery = query("app-host/can-open-own-window")
+	.public()
+	.output(z.boolean());
+export const RestoreTabsCommand = command("app-host/restore-tabs")
+	.public()
+	.idempotencyKey(Repeatable);
+export const ShowTabCommand = command("app-host/show-tab")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const RemoveEssentialCommand = command("app-host/remove-essential")
-	.input(z.object({ id: z.string() }))
+export const ShowChatTabCommand = command("app-host/show-chat-tab")
+	.public()
+	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable);
-export const CloseEssentialCommand = command("app-host/close-essential")
-	.input(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const PlaceEssentialCommand = command("app-host/place-essential")
+export const PlaceTabCommand = command("app-host/place-tab")
+	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable);
-export const CreateGroupCommand = command("app-host/create-group")
-	.input(z.union([z.object({ withTabId: z.string() }), z.object({ list: z.string() })]).and(GroupFaceSchema))
-	.output(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const RenameGroupCommand = command("app-host/rename-group")
-	.input(z.object({ id: z.string(), name: z.string() }))
-	.idempotencyKey(Repeatable);
-export const SetGroupHueCommand = command("app-host/set-group-hue")
-	.input(z.object({ id: z.string(), hue: GroupHueSchema.nullable() }))
-	.idempotencyKey(Repeatable);
-export const FoldGroupCommand = command("app-host/fold-group")
-	.input(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const FoldTabCommand = command("app-host/fold-tab")
-	.input(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const PlaceGroupCommand = command("app-host/place-group")
-	.input(
-		z.object({
-			id: z.string().min(1),
-			to: z.object({
-				list: z.string().min(1),
-				before: z.string().nullable(),
-			}),
-		}),
-	)
-	.idempotencyKey(Repeatable);
-export const UngroupCommand = command("app-host/ungroup")
-	.input(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const ShowViewCommand = command("app-host/show-view")
-	.input(z.object({ view: StudioViewSchema }))
-	.idempotencyKey(Repeatable);
-export const ShownSplitQuery = query("app-host/shown-split")
-	.output(ShownSplitSchema);
-export const PlaceInViewCommand = command("app-host/place-in-view")
-	.input(SplitPlacingSchema)
-	.output(z.object({ isPlaced: z.boolean() }))
-	.idempotencyKey(Repeatable);
-export const CloseViewPaneCommand = command("app-host/close-view-pane")
-	.input(z.object({ paneId: z.string().min(1), tabId: z.string().min(1).nullable() }))
-	.idempotencyKey(Repeatable);
-export const ResizeSplitCommand = command("app-host/resize-split")
-	.input(
-		z.object({
-			branchId: z.string().min(1),
-			at: z.number().int().nonnegative(),
-			share: z.number().positive(),
-		}),
-	)
-	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, KnownAppsQuery, OpenLinkCommand, OpenChatCommand, OpenNewChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, AppTabsQuery, AppFacesQuery, ClosedTabsQuery, ReopenClosedTabByIdCommand, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, ShownViewQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, PlaceTabCommand, TearOffTabCommand, CloseGroupCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [AppFacesQuery, KnownAppsQuery, ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, ClosedTabsQuery, ReopenClosedTabByIdCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, FoldTabCommand, UngroupCommand, OpenLinkCommand, ShownViewQuery, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, TearOffTabCommand, CloseGroupCommand, AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, PlaceTabCommand]);

@@ -1,30 +1,18 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { RecentSitesChangedEvent } from "../../gateways/recent-sites/recent-sites.events.js";
 import { OnceAllowancesChangedEvent } from "../../gateways/once-allowances/once-allowances.events.js";
 import { InkActivityChangedEvent } from "../../gateways/ink-activity/ink-activity.events.js";
 import { PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
 import { GrantsChangedEvent } from "../../gateways/browser-grant-reads/browser-grant-reads.events.js";
 import { z } from "zod";
-import { BrowserGrantReadsGateway } from "../../gateways/browser-grant-reads/browser-grant-reads.gateway.js";
 import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
-import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
-import { AccessAsksGateway } from "../../gateways/access-asks/access-asks.gateway.js";
-import { InkActivityGateway } from "../../gateways/ink-activity/ink-activity.gateway.js";
-import { OnceAllowancesGateway } from "../../gateways/once-allowances/once-allowances.gateway.js";
-import { RecentSitesGateway } from "../../gateways/recent-sites/recent-sites.gateway.js";
 import { decideBrowserAccess, refuseUrlShape } from "../../shared/lib/decide-browser-access.js";
 import { effectiveGrants } from "../../shared/lib/once-grants.js";
 import { SENSITIVE_SITES } from "../../shared/lib/sensitive-sites.js";
 import { urlOf } from "../../shared/lib/site-key.js";
 import { isSameSites, visitOf, withVisit } from "../../shared/lib/recent-sites.js";
-import {
-	BrowserTabsSchema,
-	BrowserViewSchema,
-	OpenAddressSchema,
-	PagesHostSchema,
-	OpenPageSchema,
-	TabIdSchema,
-} from "../../shared/schema/browser-tab.schema.js";
+import { BrowserTabsSchema, BrowserViewSchema, OpenAddressSchema, PagesHostSchema, OpenPageSchema, TabIdSchema } from "../../shared/schema/browser-tab.schema.js";
 import type { BrowserTab, RecentSite } from "../../shared/schema/browser-tab.schema.js";
 import { askInkPromptOf } from "./lib/ask-ink-prompt.js";
 import { nearMatchOf } from "./lib/near-match.js";
@@ -41,10 +29,6 @@ const NOT_A_HOST = "the browser draws its pages only into an element";
 const NO_GHOST_HOST = "this host opens no windows of its own, so a dragged tab has no ghost outside it";
 
 export const NoteVisitsSubscriber = subscriber(PagesChangedEvent)
-	.inject({
-		recentSites: RecentSitesGateway,
-		browserPages: BrowserPagesGateway,
-	})
 	.handle((_input, { recentSites, browserPages }) => {
 		const was = recentSites.recentSites();
 		const visited = browserPages
@@ -63,17 +47,10 @@ export const NoteVisitsSubscriber = subscriber(PagesChangedEvent)
 	});
 
 export const BrowserTabsQuery = query("browser-tabs")
+	.public()
 	.input(BrowserViewSchema)
 	.output(BrowserTabsSchema)
 	.settlesNow()
-	.inject({
-		browserPages: BrowserPagesGateway,
-		browserGrantReads: BrowserGrantReadsGateway,
-		onceAllowances: OnceAllowancesGateway,
-		inkActivity: InkActivityGateway,
-		recentSites: RecentSitesGateway,
-		clock: ClockGateway,
-	})
 	.handle(({ heldTabId }, { browserPages, browserGrantReads, onceAllowances, inkActivity, recentSites, clock }) => {
 		const shownId = heldTabId ?? browserPages.shownId();
 		const sites = recentSites.recentSites();
@@ -96,19 +73,19 @@ export const BrowserTabsQuery = query("browser-tabs")
 	});
 
 export const AskInkPromptQuery = query("ask-ink-prompt")
+	.public()
 	.input(TabIdSchema)
 	.output(z.string())
 	.settlesNow()
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages }) => {
 		const tab = browserPages.tabs().find(({ id }) => id === tabId);
 		return tab === undefined ? refuse(NO_TAB) : askInkPromptOf(tab);
 	});
 
 export const OpenAddressCommand = command("open-address")
+	.public()
 	.input(OpenAddressSchema)
 	.idempotencyKey(PerCall)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId, address, heldTabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		const url = urlOf(webAddressOf(address));
@@ -132,9 +109,9 @@ export const OpenAddressCommand = command("open-address")
 	});
 
 export const OpenTabInOwnWindowCommand = command("open-tab-in-own-window")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		const refusal = refuseOwnWindow(browserPages, tabId);
@@ -142,58 +119,58 @@ export const OpenTabInOwnWindowCommand = command("open-tab-in-own-window")
 	});
 
 export const FocusOwnWindowCommand = command("focus-own-window")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages }) => browserPages.focusOwnWindow(tabId));
 
 export const FocusStudioWindowCommand = command("focus-studio-window")
+	.public()
 	.input(z.object({ window: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ window }, { browserPages }) => browserPages.focusStudioWindow(window));
 
 export const OpenTabWindowCommand = command("open-tab-window")
+	.public()
 	.input(TabWindowSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId, view }, { browserPages }) =>
 		browserPages.canOpenOwnWindow() ? browserPages.openTabWindow(tabId, view) : refuse(NO_OWN_WINDOWS),
 	);
 
 export const TearOffCommand = command("tear-off")
+	.public()
 	.input(TabIdSchema.extend({ openWith: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId, openWith }, { browserPages }) => {
 		const refusal = refuseOwnWindow(browserPages, tabId);
 		return refusal === null ? browserPages.tearOff(tabId, openWith) : refuse(refusal);
 	});
 
 export const LayTearOffGhostCommand = command("lay-tear-off-ghost")
+	.public()
 	.input(GhostLaySchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle((lay, { browserPages }) =>
 		browserPages.canOpenOwnWindow() ? browserPages.layTearOffGhost(lay) : refuse(NO_GHOST_HOST),
 	);
 
 export const WearTearOffGhostCommand = command("wear-tear-off-ghost")
+	.public()
 	.input(GhostWornSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle((worn, { browserPages }) => browserPages.wearTearOffGhost(worn));
 
 export const ShowTearOffGhostCommand = command("show-tear-off-ghost")
+	.public()
 	.input(GhostShownSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ shown }, { browserPages }) => browserPages.showTearOffGhost(shown));
 
 export const ShowTabCommand = command("show-tab")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		browserPages.show(tabId);
@@ -205,21 +182,18 @@ export const ShowTabCommand = command("show-tab")
 	});
 
 export const OpenPageCommand = command("open-page")
+	.public()
 	.input(OpenPageSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId, profileId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		return browserPages.create(tabId, profileId ?? null);
 	});
 
 export const ClosePageCommand = command("close-page")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({
-		browserPages: BrowserPagesGateway,
-		accessAsks: AccessAsksGateway,
-	})
 	.handle(({ tabId }, { browserPages, accessAsks, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		for (const ask of accessAsks.accessAsks().filter((asked) => asked.tabId === tabId)) {
@@ -231,36 +205,36 @@ export const ClosePageCommand = command("close-page")
 	});
 
 export const GoBackCommand = command("go-back")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		return browserPages.back(tabId);
 	});
 
 export const GoForwardCommand = command("go-forward")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		return browserPages.forward(tabId);
 	});
 
 export const ReloadPageCommand = command("reload-page")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		return browserPages.reload(tabId);
 	});
 
 export const LeaveFailureCommand = command("leave-failure")
+	.public()
 	.input(TabIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ tabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		const tab = browserPages.tabs().find(({ id }) => id === tabId);
@@ -274,9 +248,9 @@ export const LeaveFailureCommand = command("leave-failure")
 	});
 
 export const AttachPagesCommand = command("attach-pages")
+	.public()
 	.input(PagesHostSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ host, heldTabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		if (!isPagesHost(host)) {
@@ -292,9 +266,9 @@ export const AttachPagesCommand = command("attach-pages")
 	});
 
 export const DetachPagesCommand = command("detach-pages")
+	.public()
 	.input(PagesHostSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ host, heldTabId }, { browserPages, invalidate }) => {
 		invalidate(BrowserTabsQuery);
 		if (!isPagesHost(host)) {

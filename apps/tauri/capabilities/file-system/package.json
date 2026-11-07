@@ -17,6 +17,13 @@
 			"source": "./module.ts"
 		}
 	},
+	"imports": {
+		"#module": {
+			"source": "./generated/command.ts",
+			"types": "./dist/generated/command.d.ts",
+			"default": "./dist/generated/command.js"
+		}
+	},
 	"dependencies": {
 		"@tauri-apps/api": "^2.12.4",
 		"@widgetarium/data-framework": "0.1.0"

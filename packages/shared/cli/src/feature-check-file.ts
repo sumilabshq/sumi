@@ -59,10 +59,12 @@ function importsOf({ module, folder, seed, names, isServer, moduleConst }: Check
 
 function startOf({ module, names, isServer, moduleConst }: CheckPlan): string[] {
 	const fakes = [
-		`${isServer ? `Runnable${moduleConst}` : moduleConst}.with({`,
+		`${isServer ? `Runnable${moduleConst}` : moduleConst}({`,
+		"\tinjects: {",
 		`\t\t...${memoryPartsOf(module)}(),`,
 		`\t\t${names.key},`,
-		"\t})",
+		"\t},",
+		"})",
 	];
 	return [
 		`const ${names.key} = new ${names.memoryGateway}({`,
@@ -99,7 +101,7 @@ function serverStartOf(moduleConst: string, fakes: readonly string[]): string[] 
 		"\t\thost: { authenticate: new CheckerAuthenticate() },",
 		"\t});",
 		"const started = app()",
-		`\t.imports(${moduleConst}.over(orpcTransport("${SERVER_URL}", { fetch: served.fetch })))`,
+		`\t.imports(${moduleConst}({ over: orpcTransport("${SERVER_URL}", { fetch: served.fetch }) }))`,
 		"\t.start();",
 	];
 }

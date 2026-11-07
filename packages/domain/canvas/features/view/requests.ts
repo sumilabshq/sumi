@@ -1,20 +1,14 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";
 import { CanvasOpenedSchema, CanvasOpeningSchema, ModeAnswerSchema } from "../../shared/schema/canvas-view.schema.js";
-import {
-	OPENING_FIELDS,
-	isTouching,
-	momentOpened,
-	momentWriteOf,
-	openingOf,
-} from "../../shared/lib/view/canvas-moment.js";
+import { OPENING_FIELDS, isTouching, momentOpened, momentWriteOf, openingOf } from "../../shared/lib/view/canvas-moment.js";
 
 export const OpenCanvasCommand = command("open-canvas")
+	.public()
 	.input(CanvasOpenedSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((opened, { canvasMoment }) => {
 		const write = momentWriteOf(canvasMoment.moment(), momentOpened(opened), `open ${opened.app}`);
 
@@ -31,21 +25,21 @@ export const OpenCanvasCommand = command("open-canvas")
 	});
 
 export const CanvasOpeningQuery = query("canvas-opening")
+	.public()
 	.output(CanvasOpeningSchema)
 	.settlesNow()
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => openingOf(canvasMoment.moment()));
 
 export const CameraQuery = query("camera")
+	.public()
 	.output(CameraAnswerSchema)
 	.settlesNow()
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => ({ camera: canvasMoment.moment().camera }));
 
 export const KeepCameraCommand = command("keep-camera")
+	.public()
 	.input(CameraKeptSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ camera }, { canvasMoment }) => {
 		const write = momentWriteOf(canvasMoment.moment(), { camera }, "camera moved");
 
@@ -55,15 +49,15 @@ export const KeepCameraCommand = command("keep-camera")
 	});
 
 export const ModeQuery = query("mode")
+	.public()
 	.output(ModeAnswerSchema)
 	.settlesNow()
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => ({ mode: canvasMoment.moment().mode }));
 
 export const SetModeCommand = command("set-mode")
+	.public()
 	.input(ModeAnswerSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ mode }, { canvasMoment }) => {
 		const write = momentWriteOf(canvasMoment.moment(), { mode }, `${mode} mode`);
 

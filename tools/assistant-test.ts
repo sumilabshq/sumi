@@ -252,7 +252,7 @@ function benchWith(reads: ProviderReads): Bench {
 
 function chatOver(parts: AssistantParts): StartedApp {
 	return app()
-		.modules(AssistantModule.with(oneChatParts(parts)))
+		.modules(AssistantModule({ injects: oneChatParts(parts) }))
 		.start({
 			platform: "browser",
 			scope: {

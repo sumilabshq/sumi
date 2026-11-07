@@ -98,10 +98,9 @@ const studio = app()
 	.modules(
 		AppHostModule,
 		PluginAppsModule,
-		BrowserModule.with(browser.parts),
+		BrowserModule({ injects: browser.parts }),
 		LayoutModule,
-		WorkspacesModule.with(
-			memoryWorkspacesParts({
+		WorkspacesModule({ injects: memoryWorkspacesParts({
 				workspaces: [
 					{
 						id: "default",
@@ -125,8 +124,7 @@ const studio = app()
 					})),
 					openOnStartId: "chat-0",
 				},
-			}),
-		),
+			}), }),
 		...COMMAND_MENU_MODULES,
 	)
 	.imports(
@@ -153,7 +151,7 @@ const ASK_WORKSPACE = {
 };
 const askApp = app()
 	.modules(
-		AssistantModule.with(oneChatParts(
+		AssistantModule({ injects: oneChatParts(
 			tauriAssistantParts({
 				kind: "tauri",
 				chatDrafts: new MemoryChatDraftShelf(),
@@ -198,8 +196,7 @@ const askApp = app()
 					},
 					folder: workspaceFolderCell(ASK_WORKSPACE),
 				},
-			}),),
-		),
+			}),), }),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
 window.__ASKED__ = [];

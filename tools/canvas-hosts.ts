@@ -37,7 +37,7 @@ export function canvasPartsOver(chosen: Partial<CanvasParts> = {}): CanvasParts 
 
 export function canvasAppOver(parts: CanvasParts): StartedApp {
 	return app()
-		.modules(CanvasModule.with(parts))
+		.modules(CanvasModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: FARM_OPENED.app } });
 }
 

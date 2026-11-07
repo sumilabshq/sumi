@@ -1,10 +1,8 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { InkActivityChangedEvent } from "../../gateways/ink-activity/ink-activity.events.js";
 import { AccessAsksChangedEvent } from "../../gateways/access-asks/access-asks.events.js";
-import { AccessAsksGateway } from "../../gateways/access-asks/access-asks.gateway.js";
 import { BrowserGrantsGateway } from "../../gateways/browser-grants/browser-grants.gateway.js";
-import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
-import { InkActivityGateway } from "../../gateways/ink-activity/ink-activity.gateway.js";
 import { OnceAllowancesGateway } from "../../gateways/once-allowances/once-allowances.gateway.js";
 import { onceToWrite, siteLevelToWrite } from "../../shared/lib/grant-changes.js";
 import { activityWith, isSameActivity } from "../../shared/lib/ink-activity.js";
@@ -23,26 +21,21 @@ const ALREADY_ANSWERED = "that question was already answered";
 const ALLOWED_WHEN_ASKED = "allowed for this site when Sumi asked";
 
 export const AccessAsksQuery = query("access-asks")
+	.public()
 	.output(AccessAsksSchema)
 	.settlesNow()
-	.inject({ accessAsks: AccessAsksGateway })
 	.handle((_input, { accessAsks }) => accessAsks.accessAsks());
 
 export const InkReadingQuery = query("ink-reading")
+	.public()
 	.output(InkReadingSchema.nullable())
 	.settlesNow()
-	.inject({ inkActivity: InkActivityGateway })
 	.handle((_input, { inkActivity }) => inkActivity.inkActivity().reading);
 
 export const AnswerAskCommand = command("answer-ask")
+	.public()
 	.input(AnswerAskSchema)
 	.idempotencyKey((input) => input.id)
-	.inject({
-		accessAsks: AccessAsksGateway,
-		browserGrants: BrowserGrantsGateway,
-		onceAllowances: OnceAllowancesGateway,
-		clock: ClockGateway,
-	})
 	.handle(({ id, answer }, { accessAsks, browserGrants, onceAllowances, clock, invalidate }) => {
 		invalidate(AccessAsksQuery);
 		const asked = accessAsks.accessAsks().find((ask) => ask.id === id);
@@ -70,11 +63,8 @@ export const AnswerAskCommand = command("answer-ask")
 	});
 
 export const StopInkCommand = command("stop-ink")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({
-		inkActivity: InkActivityGateway,
-		clock: ClockGateway,
-	})
 	.handle((_input, { inkActivity, clock }) => {
 		const was = inkActivity.inkActivity();
 		const stopped = activityWith(was, {

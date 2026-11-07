@@ -465,96 +465,130 @@ export const MountPictureSchema: z.ZodType<MountPicture> = z.lazy(() =>
 	}),
 );
 
-export const OpenCanvasCommand = command("canvas/open-canvas")
-	.input(CanvasOpenedSchema)
-	.idempotencyKey(Repeatable);
-export const CanvasOpeningQuery = query("canvas/canvas-opening")
-	.output(CanvasOpeningSchema)
-	.settlesNow();
-export const CameraQuery = query("canvas/camera")
-	.output(CameraAnswerSchema)
-	.settlesNow();
-export const KeepCameraCommand = command("canvas/keep-camera")
-	.input(CameraKeptSchema)
-	.idempotencyKey(Repeatable);
-export const ModeQuery = query("canvas/mode")
-	.output(ModeAnswerSchema)
-	.settlesNow();
-export const SetModeCommand = command("canvas/set-mode")
-	.input(ModeAnswerSchema)
-	.idempotencyKey(Repeatable);
 export const DrawingQuery = query("canvas/drawing")
+	.public()
 	.output(DrawingSchema)
 	.settlesNow();
 export const FieldRegionsQuery = query("canvas/field-regions")
+	.public()
 	.output(FieldRegionsSchema);
 export const FieldStateQuery = query("canvas/field-state")
+	.public()
 	.output(FieldStateSchema);
 export const PickSpotCommand = command("canvas/pick-spot")
+	.public()
 	.input(SpotPickSchema)
 	.idempotencyKey(Repeatable);
 export const ResolveSpotCommand = command("canvas/resolve-spot")
+	.public()
 	.input(SpotFoundSchema)
 	.idempotencyKey(Repeatable);
 export const JobStatusQuery = query("canvas/job-status")
+	.public()
 	.output(JobStatusSchema);
 export const StopJobCommand = command("canvas/stop-job")
+	.public()
 	.input(JobIdSchema)
 	.idempotencyKey(PerCall);
 export const LayersPanelQuery = query("canvas/layers-panel")
+	.public()
 	.output(LayersPanelSchema);
 export const KeepSeenLayersCommand = command("canvas/keep-seen-layers")
+	.public()
 	.input(SeenLayersSchema)
 	.idempotencyKey(Repeatable);
 export const MoveLayerCommand = command("canvas/move-layer")
+	.public()
 	.input(LayerMoveAskSchema)
 	.idempotencyKey(PerCall);
 export const PickLayerCommand = command("canvas/pick-layer")
+	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable);
 export const ToggleLayerFoldCommand = command("canvas/toggle-layer-fold")
+	.public()
 	.input(LayerIdSchema)
 	.idempotencyKey(Repeatable);
 export const ToggleLayoutLockCommand = command("canvas/toggle-layout-lock")
+	.public()
 	.idempotencyKey(Repeatable);
 export const SidebarQuery = query("canvas/sidebar")
+	.public()
 	.output(SidebarSchema)
 	.settlesNow();
 export const ToggleSidebarCommand = command("canvas/toggle-sidebar")
+	.public()
 	.idempotencyKey(Repeatable);
 export const ResizeSidebarWidthCommand = command("canvas/resize-sidebar-width")
+	.public()
 	.input(SidebarResizeSchema)
 	.idempotencyKey(Repeatable);
 export const ResetSidebarWidthCommand = command("canvas/reset-sidebar-width")
+	.public()
 	.idempotencyKey(Repeatable);
 export const LookPanelQuery = query("canvas/look-panel")
+	.public()
 	.output(LookPanelSchema);
 export const PickLookCommand = command("canvas/pick-look")
+	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall);
 export const PageChoicesQuery = query("canvas/page-choices")
+	.public()
 	.output(PageChoicesSchema);
 export const PagesQuery = query("canvas/pages")
+	.public()
 	.input(PagesAskSchema)
 	.output(PagesPageSchema);
 export const VariantsQuery = query("canvas/variants")
+	.public()
 	.output(VariantsSchema);
 export const ReturnNoteQuery = query("canvas/return-note")
+	.public()
 	.input(ReturnNoteAskSchema)
 	.output(ReturnNoteSchema);
 export const ShowPageCommand = command("canvas/show-page")
+	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable);
 export const FocusWidgetCommand = command("canvas/focus-widget")
+	.public()
 	.input(WidgetAskSchema)
 	.idempotencyKey(Repeatable);
 export const FinishFlightCommand = command("canvas/finish-flight")
+	.public()
 	.idempotencyKey(Repeatable);
 export const PickVariantCommand = command("canvas/pick-variant")
+	.public()
 	.input(ScreenAskSchema)
 	.idempotencyKey(Repeatable);
 export const AddPhotosCommand = command("canvas/add-photos")
+	.public()
 	.input(PhotosSchema)
 	.idempotencyKey(PerCall);
+export const OpenCanvasCommand = command("canvas/open-canvas")
+	.public()
+	.input(CanvasOpenedSchema)
+	.idempotencyKey(Repeatable);
+export const CanvasOpeningQuery = query("canvas/canvas-opening")
+	.public()
+	.output(CanvasOpeningSchema)
+	.settlesNow();
+export const CameraQuery = query("canvas/camera")
+	.public()
+	.output(CameraAnswerSchema)
+	.settlesNow();
+export const KeepCameraCommand = command("canvas/keep-camera")
+	.public()
+	.input(CameraKeptSchema)
+	.idempotencyKey(Repeatable);
+export const ModeQuery = query("canvas/mode")
+	.public()
+	.output(ModeAnswerSchema)
+	.settlesNow();
+export const SetModeCommand = command("canvas/set-mode")
+	.public()
+	.input(ModeAnswerSchema)
+	.idempotencyKey(Repeatable);
 
-export const CanvasModule = moduleContract("canvas", Device, [OpenCanvasCommand, CanvasOpeningQuery, CameraQuery, KeepCameraCommand, ModeQuery, SetModeCommand, DrawingQuery, FieldRegionsQuery, FieldStateQuery, PickSpotCommand, ResolveSpotCommand, JobStatusQuery, StopJobCommand, LayersPanelQuery, KeepSeenLayersCommand, MoveLayerCommand, PickLayerCommand, ToggleLayerFoldCommand, ToggleLayoutLockCommand, SidebarQuery, ToggleSidebarCommand, ResizeSidebarWidthCommand, ResetSidebarWidthCommand, LookPanelQuery, PickLookCommand, PageChoicesQuery, PagesQuery, VariantsQuery, ReturnNoteQuery, ShowPageCommand, FocusWidgetCommand, FinishFlightCommand, PickVariantCommand, AddPhotosCommand]);
+export const CanvasModule = moduleContract("canvas", Device, [DrawingQuery, FieldRegionsQuery, FieldStateQuery, PickSpotCommand, ResolveSpotCommand, JobStatusQuery, StopJobCommand, LayersPanelQuery, KeepSeenLayersCommand, MoveLayerCommand, PickLayerCommand, ToggleLayerFoldCommand, ToggleLayoutLockCommand, SidebarQuery, ToggleSidebarCommand, ResizeSidebarWidthCommand, ResetSidebarWidthCommand, LookPanelQuery, PickLookCommand, PageChoicesQuery, PagesQuery, VariantsQuery, ReturnNoteQuery, ShowPageCommand, FocusWidgetCommand, FinishFlightCommand, PickVariantCommand, AddPhotosCommand, OpenCanvasCommand, CanvasOpeningQuery, CameraQuery, KeepCameraCommand, ModeQuery, SetModeCommand]);

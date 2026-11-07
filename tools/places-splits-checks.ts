@@ -100,7 +100,7 @@ function started(): { readonly window: StartedApp; readonly tabs: MemoryTabsGate
 	const tabs = new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]));
 	return {
 		window: app()
-			.imports(PlacesModule.over(placesLinkOf(tabs)))
+			.imports(PlacesModule({ over: placesLinkOf(tabs) }))
 			.start(),
 		tabs,
 	};

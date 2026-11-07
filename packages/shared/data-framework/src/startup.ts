@@ -28,6 +28,8 @@ const BUILT_FOR = 'the handler of {request} was built for module "{built}", but 
 const TWO_HANDLERS = "{request} has {count} handlers";
 const NOT_PROVIDED = "the handler of {request} injects {key}, which its module does not provide as a {token}";
 const HOST_KEY = 'module "{module}" provides {key}, which the host provides';
+const RESERVED_KEY = 'module "{module}" provides {key}, a name the framework gives every handler: rename it';
+const RESERVED_KEYS: ReadonlySet<string> = new Set(["send", "emit", "invalidate", "user", "signal", "idempotencyKey"]);
 const NEEDS_AUTHENTICATE = "{request} is guarded by {guard}, which needs an Authenticate in the starter's host";
 const NEEDS_USER_ON_CLIENT =
 	"{request} is guarded by {guard}, which needs a user, and app() has no Authenticate: guard it where its server handles it";
@@ -39,8 +41,6 @@ const STEP_NOT_PROVIDED = "{step} of {request} injects {key}, which its module d
 const IMPORT_UNMET =
 	'module "{module}" imports {imported}, which {starter} neither runs nor reaches: add it to .modules() or .imports()';
 const FOREIGN_EMIT = '{owner} emits {event}, which module "{module}" does not own: a module emits only its own events';
-const EVENT_NOT_PUBLIC =
-	'{owner} listens to {event}, which module "{eventModule}" keeps private: list it in .public() of {eventModule}';
 const EVENT_NOT_IMPORTED =
 	'{owner} listens to {event}, but module "{module}" does not import {eventModule}: add .imports()';
 const EVENT_OVER_NETWORK =
@@ -60,9 +60,10 @@ export function routesOf(starting: Starting): StartedRoutes {
 		...ranAndImportedFindings(starting),
 		...importedTwiceFindings(starting),
 	]);
-	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.side, starting.hostProvided));
+	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.hostProvided));
 	const routes = moduleRoutes.flatMap((ofModule) => ofModule.routes);
 	refuseOn(starting.side, [
+		...moduleRoutes.flatMap(reservedKeyFindings),
 		...moduleRoutes.flatMap((ofModule) => hostKeyFindings(ofModule, starting.hostProvided)),
 		...moduleRoutes.flatMap(({ module, routes: ofModule }) =>
 			ofModule.flatMap((route) => routeFindings(module, route, starting)),
@@ -106,6 +107,12 @@ function importedTwiceFindings({ remote }: Starting): string[] {
 	return [...counts]
 		.filter(([, count]) => count > 1)
 		.map(([imported, count]) => IMPORTED_TWICE.replace("{module}", imported).replace("{count}", String(count)));
+}
+
+function reservedKeyFindings({ module, provides }: ModuleRoutes): string[] {
+	return Object.keys(provides)
+		.filter((key) => RESERVED_KEYS.has(key))
+		.map((key) => RESERVED_KEY.replace("{module}", module.definition.name).replace("{key}", key));
 }
 
 function hostKeyFindings({ module, provides }: ModuleRoutes, hostProvided: Provided): string[] {
@@ -227,13 +234,8 @@ function eventSourceFindings(
 		return [said(EVENT_NOT_IMPORTED)];
 	}
 
-	const ran = modules.find((started) => started.definition.name === eventModule)?.definition;
-
-	if (ran === undefined) {
-		return remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
-	}
-
-	return ran.publicEvents.some(({ name }) => name === event.name) ? [] : [said(EVENT_NOT_PUBLIC)];
+	const isRanHere = modules.some((started) => started.definition.name === eventModule);
+	return !isRanHere && remote?.reachesModule(eventModule) === true ? [said(EVENT_OVER_NETWORK)] : [];
 }
 
 function duplicateFindings(handlers: readonly AnyHandler[]): string[] {

@@ -29,7 +29,7 @@ function startCore(workspaceId: string): LocalTransport {
 	const coreTransport = localTransport();
 	server()
 		.modules(
-			RunnableFileSystemModule.with({ files: new NodeFilesGateway(appData, workspaceId) }),
+			RunnableFileSystemModule({ injects: { files: new NodeFilesGateway(appData, workspaceId) } }),
 			RunnableTasksModule({
 				file: tasksBoardFileOver(coreTransport),
 			}),
@@ -54,7 +54,7 @@ function boardFileOf(workspaceId: string): string {
 const coreTransport = startCore(WORKSPACE);
 const otherCoreTransport = startCore(OTHER_WORKSPACE);
 
-const core = app().imports(TasksModule.over(coreTransport)).start();
+const core = app().imports(TasksModule({ over: coreTransport })).start();
 const created = await core.send(CreateTaskCommand, {
 	chat: "chat-1",
 	title: TITLE,
@@ -79,7 +79,7 @@ const relay = createFrameRelay([
 const channel = new MessageChannel();
 const stopServing = messagePortListener(channel.port1, { headers: { [APP_CALLER_HEADER]: "tasks" } }).serve(relay);
 const frameTransport = messagePortTransport(channel.port2);
-const page = app().imports(TasksModule.over(frameTransport), FileSystemModule.over(frameTransport)).start();
+const page = app().imports(TasksModule({ over: frameTransport }), FileSystemModule({ over: frameTransport })).start();
 
 const board = await page.send(BoardQuery, {});
 check("the page reads that task through the frame", board.ok && JSON.stringify(board.output).includes(TITLE), true);
@@ -96,7 +96,7 @@ check(
 	true,
 );
 
-const otherCore = app().imports(TasksModule.over(otherCoreTransport)).start();
+const otherCore = app().imports(TasksModule({ over: otherCoreTransport })).start();
 const otherBoard = await otherCore.send(BoardQuery, {});
 check(
 	"another workspace's board does not hold that task",

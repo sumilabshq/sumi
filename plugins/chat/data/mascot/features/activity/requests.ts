@@ -1,19 +1,19 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { AgentActivityChangedEvent } from "../../gateways/agent-activity/agent-activity.events.js";
-import { AgentActivityGateway } from "../../gateways/agent-activity/agent-activity.gateway.js";
 import { AgentActivitySchema, AgentEventsSchema } from "../../shared/schema/agent-activity.schema.js";
 import { activityAfter } from "./lib/activity-after.js";
 
 export const AgentActivityQuery = query("agent-activity")
+	.public()
 	.output(AgentActivitySchema)
 	.settlesNow()
-	.inject({ agentActivity: AgentActivityGateway })
 	.handle((_input, { agentActivity }) => agentActivity.agentActivity());
 
 export const RecordAgentEventsCommand = command("record-agent-events")
+	.public()
 	.input(AgentEventsSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ agentActivity: AgentActivityGateway })
 	.handle(({ events }, { agentActivity, invalidate }) => {
 		invalidate(AgentActivityQuery);
 		const was = agentActivity.agentActivity();

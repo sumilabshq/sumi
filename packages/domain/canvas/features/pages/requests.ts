@@ -1,23 +1,11 @@
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { offsetOfCursor, pageAt } from "@widgetarium/core/gateway/page.js";
-import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
 import { COMPONENTS_PAGE } from "../../shared/schema/canvas-page.schema.js";
-import {
-	PageAskSchema,
-	PageChoicesSchema,
-	PagesAskSchema,
-	PagesPageSchema,
-	ReturnNoteAskSchema,
-	ReturnNoteSchema,
-	ScreenAskSchema,
-	VariantsSchema,
-	WidgetAskSchema,
-} from "../../shared/schema/pages.schema.js";
+import { PageAskSchema, PageChoicesSchema, PagesAskSchema, PagesPageSchema, ReturnNoteAskSchema, ReturnNoteSchema, ScreenAskSchema, VariantsSchema, WidgetAskSchema } from "../../shared/schema/pages.schema.js";
 import { PAGE_FIELDS, pagesNowOf } from "../../shared/lib/pages/pages-now.js";
 import { pageTurnWhileRead } from "../../shared/lib/pages/page-turn.js";
 import { pageChoicesOf } from "../../shared/lib/pages/page-choices.js";
@@ -28,15 +16,9 @@ import { variantsOf } from "./lib/variants-of.js";
 const SPEC_REFUSED = "The spec of {app} cannot be read: {why}";
 const NO_NOTE_TO_RETURN_TO = "{app} has no page with a note to go back to.";
 
-const PAGES_READ = {
-	canvasMoment: CanvasMomentGateway,
-	designFolder: DesignFolderGateway,
-	agentJobs: AgentJobsGateway,
-};
-
 export const PageChoicesQuery = query("page-choices")
+	.public()
 	.output(PageChoicesSchema)
-	.inject(PAGES_READ)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const { pages } = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -44,9 +26,9 @@ export const PageChoicesQuery = query("page-choices")
 	});
 
 export const PagesQuery = query("pages")
+	.public()
 	.input(PagesAskSchema)
 	.output(PagesPageSchema)
-	.inject(PAGES_READ)
 	.handle(async ({ cursor, limit }, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const { pages } = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -60,8 +42,8 @@ export const PagesQuery = query("pages")
 	});
 
 export const VariantsQuery = query("variants")
+	.public()
 	.output(VariantsSchema)
-	.inject(PAGES_READ)
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const { pages } = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -69,9 +51,9 @@ export const VariantsQuery = query("variants")
 	});
 
 export const ReturnNoteQuery = query("return-note")
+	.public()
 	.input(ReturnNoteAskSchema)
 	.output(ReturnNoteSchema)
-	.inject(PAGES_READ)
 	.handle(async ({ cameFrom }, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const { app } = moment;
@@ -101,9 +83,9 @@ export const ReturnNoteQuery = query("return-note")
 	});
 
 export const ShowPageCommand = command("show-page")
+	.public()
 	.input(PageAskSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ page }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const write = momentWriteOf(moment, pageTurnedTo(moment, page), `show ${page}`);
@@ -121,9 +103,9 @@ export const ShowPageCommand = command("show-page")
 	});
 
 export const FocusWidgetCommand = command("focus-widget")
+	.public()
 	.input(WidgetAskSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle(({ widget }, { canvasMoment }) => {
 		const moment = canvasMoment.moment();
 		const change = {
@@ -145,8 +127,8 @@ export const FocusWidgetCommand = command("focus-widget")
 	});
 
 export const FinishFlightCommand = command("finish-flight")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ canvasMoment: CanvasMomentGateway })
 	.handle((_input, { canvasMoment }) => {
 		const write = momentWriteOf(canvasMoment.moment(), { focusedWidget: null }, "flown to the widget");
 
@@ -156,9 +138,9 @@ export const FinishFlightCommand = command("finish-flight")
 	});
 
 export const PickVariantCommand = command("pick-variant")
+	.public()
 	.input(ScreenAskSchema)
 	.idempotencyKey(Repeatable)
-	.inject(PAGES_READ)
 	.handle(async ({ screen }, { canvasMoment, designFolder, agentJobs }) => {
 		const asked = canvasMoment.moment();
 		const folder = await designFolder.folder(asked.app);

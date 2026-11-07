@@ -33,7 +33,6 @@ interface Appended {
 const GATEWAYS = "gateways/";
 const PLACEMENTS: readonly ModulePlacement[] = ["Server", "Device", "Anywhere"];
 const NO_PLACEMENT = "{file} has no .on(Server | Device | Anywhere): add feature reads where the module runs";
-const NO_PUBLIC = "{file} has no .public(...) call: add it before .provide, then run add feature again";
 const NO_PARTS_TYPE =
 	"{picker} has no `export type {parts} = { ... }`: add `readonly {key}: {gateway};` to the module's parts by hand";
 const NO_MEMORY_PARTS =
@@ -49,25 +48,6 @@ export function placementIn({ at, text }: PlannedFile): ModulePlacement {
 	}
 
 	return placement;
-}
-
-export function moduleWired({ at, text }: PlannedFile, requests: readonly string[], from: string): string {
-	const file = parsedFile(text);
-	const [listing] = callsNamed(file.program, "public");
-
-	if (listing === undefined) {
-		throw new CliRefusal(NO_PUBLIC.replace("{file}", () => at));
-	}
-
-	return withEdits(text, [
-		importEdit(file, [`import { ${[...requests].sort().join(", ")} } from "${from}";`]),
-		appendedEdit({
-			container: listing,
-			children: listing.arguments,
-			alone: requests.join(", "),
-			after: `, ${requests.join(", ")}`,
-		}),
-	]);
 }
 
 export function pickerWired(picker: PickerSource, names: FeatureNames): string {

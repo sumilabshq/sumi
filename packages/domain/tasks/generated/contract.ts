@@ -520,86 +520,108 @@ export type Actor = z.infer<typeof ActorSchema>;
 
 export type Transition = z.infer<typeof TransitionSchema>;
 
-export const BoardQuery = query("tasks/board")
-	.input(BoardAskSchema)
-	.output(BoardAnswerSchema);
-export const TasksQuery = query("tasks/tasks")
-	.input(TasksAskSchema)
-	.output(TaskPageSchema);
-export const TaskQuery = query("tasks/task")
-	.input(TaskAskSchema)
-	.output(TaskViewSchema);
-export const SearchTasksQuery = query("tasks/search-tasks")
-	.input(SearchAskSchema)
-	.output(SearchHitsSchema);
-export const ChatTaskLineQuery = query("tasks/chat-task-line")
-	.input(ChatAskSchema)
-	.output(ChatTaskLineSchema);
-export const TaskTrailerQuery = query("tasks/task-trailer")
-	.input(ChatAskSchema)
-	.output(TurnTrailerSchema);
 export const CreateTaskCommand = command("tasks/create-task")
+	.public()
 	.input(CreateTaskAskSchema)
 	.output(CreatedSchema)
 	.idempotencyKey(Repeatable);
 export const EditTaskCommand = command("tasks/edit-task")
+	.public()
 	.input(EditTaskAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
 export const StartTaskCommand = command("tasks/start-task")
+	.public()
 	.input(StartTaskAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
 export const MarkStepCommand = command("tasks/mark-step")
+	.public()
 	.input(MarkStepAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
 export const CheckCriterionCommand = command("tasks/check-criterion")
+	.public()
 	.input(CheckCriterionAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
 export const AttachToTaskCommand = command("tasks/attach-to-task")
+	.public()
 	.input(AttachToTaskAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
 export const MoveTaskCommand = command("tasks/move-task")
+	.public()
 	.input(MoveTaskAskSchema)
 	.output(TaskViewSchema)
 	.idempotencyKey(Repeatable);
+export const BoardQuery = query("tasks/board")
+	.public()
+	.input(BoardAskSchema)
+	.output(BoardAnswerSchema);
+export const TasksQuery = query("tasks/tasks")
+	.public()
+	.input(TasksAskSchema)
+	.output(TaskPageSchema);
+export const TaskQuery = query("tasks/task")
+	.public()
+	.input(TaskAskSchema)
+	.output(TaskViewSchema);
+export const SearchTasksQuery = query("tasks/search-tasks")
+	.public()
+	.input(SearchAskSchema)
+	.output(SearchHitsSchema);
+export const ChatTaskLineQuery = query("tasks/chat-task-line")
+	.public()
+	.input(ChatAskSchema)
+	.output(ChatTaskLineSchema);
+export const TaskTrailerQuery = query("tasks/task-trailer")
+	.public()
+	.input(ChatAskSchema)
+	.output(TurnTrailerSchema);
 export const AcceptTaskCommand = command("tasks/accept-task")
+	.public()
+	.input(TaskAskSchema)
+	.output(TaskCardSchema)
+	.idempotencyKey(Repeatable);
+export const KeepTaskCommand = command("tasks/keep-task")
+	.public()
 	.input(TaskAskSchema)
 	.output(TaskCardSchema)
 	.idempotencyKey(Repeatable);
 export const SendBackTaskCommand = command("tasks/send-back-task")
+	.public()
 	.input(SendBackAskSchema)
 	.output(ContinuedSchema)
 	.idempotencyKey(Repeatable);
 export const ContinueTaskCommand = command("tasks/continue-task")
+	.public()
 	.input(ContinueAskSchema)
 	.output(ContinuedSchema)
 	.idempotencyKey(Repeatable);
-export const KeepTaskCommand = command("tasks/keep-task")
-	.input(TaskAskSchema)
-	.output(TaskCardSchema)
-	.idempotencyKey(Repeatable);
 export const UndeliveredTaskCommand = command("tasks/undelivered-task")
+	.public()
 	.input(UndeliveredAskSchema)
 	.output(TaskCardSchema)
 	.idempotencyKey(Repeatable);
 export const SettleTurnCommand = command("tasks/settle-turn")
+	.public()
 	.input(SettleTurnAskSchema)
 	.output(TurnFollowUpSchema)
 	.idempotencyKey((input) => `${input.chat}:${input.turn}`);
 export const ReleaseChatTasksCommand = command("tasks/release-chat-tasks")
+	.public()
 	.input(ReleaseChatAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
 export const ReconcileTasksCommand = command("tasks/reconcile-tasks")
+	.public()
 	.input(ReconcileAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
 export const SweepStaleTasksCommand = command("tasks/sweep-stale-tasks")
+	.public()
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
 
-export const TasksModule = moduleContract("tasks", Server, [BoardQuery, TasksQuery, TaskQuery, SearchTasksQuery, ChatTaskLineQuery, TaskTrailerQuery, CreateTaskCommand, EditTaskCommand, StartTaskCommand, MarkStepCommand, CheckCriterionCommand, AttachToTaskCommand, MoveTaskCommand, AcceptTaskCommand, SendBackTaskCommand, ContinueTaskCommand, KeepTaskCommand, UndeliveredTaskCommand, SettleTurnCommand, ReleaseChatTasksCommand, ReconcileTasksCommand, SweepStaleTasksCommand]);
+export const TasksModule = moduleContract("tasks", Server, [CreateTaskCommand, EditTaskCommand, StartTaskCommand, MarkStepCommand, CheckCriterionCommand, AttachToTaskCommand, MoveTaskCommand, BoardQuery, TasksQuery, TaskQuery, SearchTasksQuery, ChatTaskLineQuery, TaskTrailerQuery, AcceptTaskCommand, KeepTaskCommand, SendBackTaskCommand, ContinueTaskCommand, UndeliveredTaskCommand, SettleTurnCommand, ReleaseChatTasksCommand, ReconcileTasksCommand, SweepStaleTasksCommand]);

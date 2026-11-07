@@ -1,23 +1,11 @@
 import { z } from "zod";
-import { PerCall, Repeatable, command, refuse } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import {
-	CloseTabCommand,
-	HeldTabsQuery,
-	OpenChatCommand,
-	OpenLinkCommand,
-	OpenNewChatCommand,
-	OpenTabCommand,
-	PinTabCommand,
-	RenameTabCommand,
-	ReopenClosedTabByIdCommand,
-	ShowEssentialCommand,
-	ShowTabCommand,
-} from "@widgetarium/app-host";
+import { CloseTabCommand, HeldTabsQuery, OpenChatCommand, OpenLinkCommand, OpenNewChatCommand, OpenTabCommand, PinTabCommand, RenameTabCommand, ReopenClosedTabByIdCommand, ShowEssentialCommand, ShowTabCommand } from "@widgetarium/app-host";
 import type { HeldTabs } from "@widgetarium/app-host";
 import { OpenAddressCommand } from "@widgetarium/browser";
 import { OpenChatElsewhereCommand, OpenWorkspaceCommand, RenameWorkspaceCommand } from "@widgetarium/workspaces";
-import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
 import { DoneSchema, IntentSchema, RenameAskSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Done, Intent, KeptMenu, MenuCommand } from "../../shared/schema/command-menu.schema.js";
 import { confirmationOf } from "./lib/confirmation.js";
@@ -26,10 +14,10 @@ import { menuAfter } from "./lib/menu-after.js";
 const NO_NAME = "A new name cannot be empty.";
 
 export const DoRowCommand = command("do-row")
+	.public()
 	.input(z.object({ intent: IntentSchema }))
 	.output(DoneSchema)
 	.idempotencyKey(PerCall)
-	.inject({ commandMenu: CommandMenuGateway })
 	.handle(async ({ intent }, { commandMenu, send }): Promise<Done> => {
 		const chatId = await performIntent(intent, send, commandMenu.menu());
 		const after = menuAfter(intent, commandMenu.menu());
@@ -48,6 +36,7 @@ export const DoRowCommand = command("do-row")
 	});
 
 export const RenameRowCommand = command("rename-row")
+	.public()
 	.input(RenameAskSchema)
 	.output(DoneSchema)
 	.idempotencyKey(Repeatable)

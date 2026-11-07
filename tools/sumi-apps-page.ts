@@ -69,9 +69,8 @@ const PLUGINS = resolvePlugins(BUILT_IN_PROFILE);
 const studioApp = app()
 	.modules(
 		LayoutModule,
-		BrowserModule.with(fakeBrowser(new FakeBrowserPagesGateway()).parts),
-		WorkspacesModule.with(
-			memoryWorkspacesParts({
+		BrowserModule({ injects: fakeBrowser(new FakeBrowserPagesGateway()).parts }),
+		WorkspacesModule({ injects: memoryWorkspacesParts({
 				workspaces: [
 					{
 						id: SUMI_APPS_WORKSPACE,
@@ -91,13 +90,12 @@ const studioApp = app()
 					],
 					openOnStartId: null,
 				},
-			}),
-		),
+			}), }),
 		AppHostModule,
 		PluginAppsModule,
 		...PLUGINS.windowModules,
 	)
-	.imports(PlacesModule.over(core), TasksModule.over(core))
+	.imports(PlacesModule({ over: core }), TasksModule({ over: core }))
 	.start({
 		platform: "browser",
 		scope: {

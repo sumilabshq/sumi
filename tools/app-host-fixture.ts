@@ -146,14 +146,14 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = app()
 		.modules(
-			AppHostModule.with({ ...appHost }),
+			AppHostModule({ injects: { ...appHost } }),
 			PluginAppsModule,
-			BrowserModule.with(fakeBrowser(pages).parts),
-			LayoutModule.with({ ...layout }),
-			WorkspacesModule.with(workspacesOf(seed.chatTitle ?? null)),
+			BrowserModule({ injects: fakeBrowser(pages).parts }),
+			LayoutModule({ injects: { ...layout } }),
+			WorkspacesModule({ injects: workspacesOf(seed.chatTitle ?? null) }),
 			...COMMAND_MENU_MODULES,
 		)
-		.imports(PlacesModule.over(placesLinkOf(places)))
+		.imports(PlacesModule({ over: placesLinkOf(places) }))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });
 	return {
 		appHost,

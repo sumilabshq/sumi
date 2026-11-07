@@ -405,121 +405,157 @@ export type WorkingFolders = z.infer<typeof WorkingFoldersSchema>;
 export const FolderAskedSchema = ChatKeySchema.extend({ path: z.string().min(1) });
 
 export const AgentSetupQuery = query("assistant/agent-setup")
+	.public()
 	.input(ChatKeySchema)
 	.output(AgentSetupSchema);
 export const ChooseProviderCommand = command("assistant/choose-provider")
+	.public()
 	.input(ProviderAskedSchema)
 	.idempotencyKey(PerCall);
 export const SetHelperAgentsCommand = command("assistant/set-helper-agents")
+	.public()
 	.input(HelperAgentsAskedSchema)
 	.idempotencyKey(PerCall);
 export const OpenProvidersCommand = command("assistant/open-providers")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const ClaudeOptionsQuery = query("assistant/claude-options")
+	.public()
 	.input(ChatKeySchema)
 	.output(ClaudeOptionsSchema.nullable())
 	.settlesNow();
 export const ChooseClaudeOptionCommand = command("assistant/choose-claude-option")
+	.public()
 	.input(ClaudeOptionInChatSchema)
 	.idempotencyKey(PerCall);
 export const ChooseClaudeModelCommand = command("assistant/choose-claude-model")
+	.public()
 	.input(ClaudeModelAskedSchema)
 	.idempotencyKey(PerCall);
 export const WorkingFoldersQuery = query("assistant/working-folders")
+	.public()
 	.input(ChatKeySchema)
 	.output(WorkingFoldersSchema.nullable());
 export const ChooseWorkingFolderCommand = command("assistant/choose-working-folder")
+	.public()
 	.input(FolderAskedSchema)
 	.idempotencyKey(PerCall);
 export const PickWorkingFolderCommand = command("assistant/pick-working-folder")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(PerCall);
 export const ChatQuery = query("assistant/chat")
+	.public()
 	.input(ChatKeySchema)
 	.output(ChatSchema)
 	.settlesNow();
 export const RetryTurnCommand = command("assistant/retry-turn")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const StopTurnCommand = command("assistant/stop-turn")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const ChangeQueueCommand = command("assistant/change-queue")
+	.public()
 	.input(QueueChangeInChatSchema)
 	.idempotencyKey(PerCall);
 export const SendTextCommand = command("assistant/send-text")
+	.public()
 	.input(TextAskedSchema)
 	.idempotencyKey(PerCall);
 export const DraftAttachmentsQuery = query("assistant/draft-attachments")
+	.public()
 	.input(ChatKeySchema)
 	.output(DraftAttachmentsSchema)
 	.settlesNow();
-export const ComposerPrefillQuery = query("assistant/composer-prefill")
-	.input(ChatKeySchema)
-	.output(ComposerPrefillSchema.nullable())
-	.settlesNow();
-export const PrefillDraftCommand = command("assistant/prefill-draft")
-	.input(PrefillAskedSchema)
-	.idempotencyKey(PerCall);
-export const TakePrefillCommand = command("assistant/take-prefill")
-	.input(PrefillTakenSchema)
-	.idempotencyKey(Repeatable);
 export const AttachFilesCommand = command("assistant/attach-files")
+	.public()
 	.input(FilesAskedSchema)
 	.idempotencyKey(PerCall);
 export const RemoveAttachmentCommand = command("assistant/remove-attachment")
+	.public()
 	.input(AttachmentAskedSchema)
 	.idempotencyKey((input) => input.id);
 export const SendMessageCommand = command("assistant/send-message")
+	.public()
 	.input(MessageAskedSchema)
 	.idempotencyKey(PerCall);
-export const SweepAttachmentsCommand = command("assistant/sweep-attachments")
-	.input(ChatKeySchema)
-	.idempotencyKey(Repeatable);
-export const AttachReachQuery = query("assistant/attach-reach")
-	.input(ChatKeySchema)
-	.output(AttachReachSchema)
-	.settlesNow();
-export const AttachFolderCommand = command("assistant/attach-folder")
-	.input(ChatKeySchema)
-	.idempotencyKey(PerCall);
-export const FileDragQuery = query("assistant/file-drag")
-	.input(ChatKeySchema)
-	.output(FileDragSchema)
-	.settlesNow();
-export const HearPageDragCommand = command("assistant/hear-page-drag")
-	.input(PageDragAskedSchema)
-	.idempotencyKey(PerCall);
-export const AttachDroppedCommand = command("assistant/attach-dropped")
-	.input(DroppedAskedSchema)
-	.idempotencyKey((input) => input.id);
-export const SlashCommandsQuery = query("assistant/slash-commands")
-	.input(ChatKeySchema)
-	.output(SlashNamesSchema);
-export const ClearChatCommand = command("assistant/clear-chat")
-	.input(ChatKeySchema)
-	.idempotencyKey(Repeatable);
-export const HoldDraftTextCommand = command("assistant/hold-draft-text")
-	.input(HeldDraftTextSchema)
-	.output(DraftNoticeSchema)
-	.idempotencyKey(PerCall);
-export const OpenChatDraftCommand = command("assistant/open-chat-draft")
-	.input(ChatOpenedSchema)
-	.output(OpenedDraftSchema)
-	.idempotencyKey(PerCall);
 export const TakeDraftCommand = command("assistant/take-draft")
+	.public()
 	.input(ChatKeySchema)
 	.output(TakenDraftSchema)
 	.idempotencyKey(PerCall);
 export const AdoptDraftCommand = command("assistant/adopt-draft")
+	.public()
 	.input(AdoptedDraftSchema)
 	.output(DraftTextSchema)
 	.idempotencyKey(PerCall);
+export const SweepAttachmentsCommand = command("assistant/sweep-attachments")
+	.public()
+	.input(ChatKeySchema)
+	.idempotencyKey(Repeatable);
+export const AttachReachQuery = query("assistant/attach-reach")
+	.public()
+	.input(ChatKeySchema)
+	.output(AttachReachSchema)
+	.settlesNow();
+export const AttachFolderCommand = command("assistant/attach-folder")
+	.public()
+	.input(ChatKeySchema)
+	.idempotencyKey(PerCall);
+export const FileDragQuery = query("assistant/file-drag")
+	.public()
+	.input(ChatKeySchema)
+	.output(FileDragSchema)
+	.settlesNow();
+export const HearPageDragCommand = command("assistant/hear-page-drag")
+	.public()
+	.input(PageDragAskedSchema)
+	.idempotencyKey(PerCall);
+export const AttachDroppedCommand = command("assistant/attach-dropped")
+	.public()
+	.input(DroppedAskedSchema)
+	.idempotencyKey((input) => input.id);
+export const ClearChatCommand = command("assistant/clear-chat")
+	.public()
+	.input(ChatKeySchema)
+	.idempotencyKey(Repeatable);
+export const HoldDraftTextCommand = command("assistant/hold-draft-text")
+	.public()
+	.input(HeldDraftTextSchema)
+	.output(DraftNoticeSchema)
+	.idempotencyKey(PerCall);
+export const OpenChatDraftCommand = command("assistant/open-chat-draft")
+	.public()
+	.input(ChatOpenedSchema)
+	.output(OpenedDraftSchema)
+	.idempotencyKey(PerCall);
+export const ComposerPrefillQuery = query("assistant/composer-prefill")
+	.public()
+	.input(ChatKeySchema)
+	.output(ComposerPrefillSchema.nullable())
+	.settlesNow();
+export const PrefillDraftCommand = command("assistant/prefill-draft")
+	.public()
+	.input(PrefillAskedSchema)
+	.idempotencyKey(PerCall);
+export const TakePrefillCommand = command("assistant/take-prefill")
+	.public()
+	.input(PrefillTakenSchema)
+	.idempotencyKey(Repeatable);
+export const SlashCommandsQuery = query("assistant/slash-commands")
+	.public()
+	.input(ChatKeySchema)
+	.output(SlashNamesSchema);
 export const CompactChatCommand = command("assistant/compact-chat")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const FileDraggedEvent = event("assistant/file-dragged")
+	.public()
 	.input(ChatFileDragEventSchema);
 
-export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, TakePrefillCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);
+export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, TakeDraftCommand, AdoptDraftCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, ComposerPrefillQuery, PrefillDraftCommand, TakePrefillCommand, SlashCommandsQuery, CompactChatCommand]);

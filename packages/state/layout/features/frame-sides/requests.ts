@@ -1,19 +1,19 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { FrameSidesChangedEvent } from "../../gateways/frame-sides/frame-sides.events.js";
-import { FrameSidesGateway } from "../../gateways/frame-sides/frame-sides.gateway.js";
 import { FrameSideInputSchema, FrameSidesSchema } from "../../shared/schema/frame-sides.schema.js";
 import { concealedLook, peekedLook, refuseTurn, toggledLook } from "./lib/side-looks.js";
 
 export const FrameSidesQuery = query("frame-sides")
+	.public()
 	.output(FrameSidesSchema)
 	.settlesNow()
-	.inject({ frameSides: FrameSidesGateway })
 	.handle((_input, { frameSides }) => frameSides.sides());
 
 export const ToggleFrameSideCommand = command("toggle-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSides: FrameSidesGateway })
 	.handle(({ side }, { frameSides, invalidate }) => {
 		invalidate(FrameSidesQuery);
 		const sides = frameSides.sides();
@@ -37,9 +37,9 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 	});
 
 export const PeekFrameSideCommand = command("peek-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSides: FrameSidesGateway })
 	.handle(({ side }, { frameSides, invalidate }) => {
 		invalidate(FrameSidesQuery);
 		const sides = frameSides.sides();
@@ -69,9 +69,9 @@ export const PeekFrameSideCommand = command("peek-frame-side")
 	});
 
 export const ConcealFrameSideCommand = command("conceal-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSides: FrameSidesGateway })
 	.handle(({ side }, { frameSides, invalidate }) => {
 		invalidate(FrameSidesQuery);
 		const sides = frameSides.sides();

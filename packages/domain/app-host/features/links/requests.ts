@@ -1,9 +1,9 @@
-import { Repeatable, command, refuse } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command } from "#module";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { isKnownApp, readKnownApps } from "../../shared/lib/apps/known-apps.js";
-import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { openTabSettled, showChatSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";
@@ -23,12 +23,12 @@ const NO_SUCH_APP = "Sumi has no app named {app}";
 const OPENED = "[widgetarium] link {href} opened{where}";
 
 export const OpenLinkCommand = command("open-link")
+	.public()
 	.input(LinkToOpenSchema)
 	.idempotencyKey(Repeatable)
-	.inject(SHOWING_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ href, opensNew }, { send, emit, ...parts }) => {
-		const reach = { parts, send, told: () => emit(TabsSettledEvent) };
+	.handle(async ({ href, opensNew }, { send, emit, ...injects }) => {
+		const reach = { injects, send, told: () => emit(TabsSettledEvent) };
 		const refusal = isWebPage(href)
 			? await openWebPageLinked(href, opensNew, reach)
 			: await openSumiLinked(href, opensNew, reach);

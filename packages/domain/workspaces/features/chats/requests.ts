@@ -1,30 +1,22 @@
-import { PerCall, Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
 import { KeepChatTabsCommand, RecordTabTurnCommand } from "@widgetarium/places";
 import { WorkspacesChangedEvent } from "../../gateways/workspaces/workspaces.events.js";
 import { CurrentWorkspaceChangedEvent } from "../../gateways/current-workspace/current-workspace.events.js";
 import { ChatsChangedEvent } from "../../gateways/chats/chats.events.js";
 import { ChatsGateway } from "../../gateways/chats/chats.gateway.js";
-import { CurrentWorkspaceGateway } from "../../gateways/current-workspace/current-workspace.gateway.js";
-import { WorkspacesGateway } from "../../gateways/workspaces/workspaces.gateway.js";
 import { titleOf } from "../../shared/lib/chat-title.js";
 import { currentWorkspaceOf } from "../../shared/lib/current-workspace.js";
-import {
-	ChatIdSchema,
-	ChatRecordsSchema,
-	ChatToOpenSchema,
-	ChatTurnSchema,
-	NewChatSchema,
-	WorkspaceCrumbSchema,
-} from "../../shared/schema/chat.schema.js";
+import { ChatIdSchema, ChatRecordsSchema, ChatToOpenSchema, ChatTurnSchema, NewChatSchema, WorkspaceCrumbSchema } from "../../shared/schema/chat.schema.js";
 import type { KeptChat, KeptChats } from "../../shared/schema/chat.schema.js";
 
 const TITLE_MOST_CHARS = 80;
 
 export const ChatRecordsQuery = query("chat-records")
+	.public()
 	.output(ChatRecordsSchema)
 	.settlesNow()
-	.inject({ chats: ChatsGateway })
 	.handle((_input, { chats }) => ({
 		isRead: chats.isLoaded(),
 		chats: chats.chats().chats.map((chat) => ({
@@ -35,21 +27,18 @@ export const ChatRecordsQuery = query("chat-records")
 	}));
 
 export const WorkspaceCrumbQuery = query("workspace-crumb")
+	.public()
 	.output(WorkspaceCrumbSchema)
 	.settlesNow()
-	.inject({
-		workspaces: WorkspacesGateway,
-		currentWorkspace: CurrentWorkspaceGateway,
-	})
 	.handle((_input, { workspaces, currentWorkspace }) => ({
 		workspace: currentWorkspaceOf(workspaces.workspaces(), currentWorkspace.currentWorkspace().currentId).name,
 	}));
 
 export const CreateChatCommand = command("create-chat")
+	.public()
 	.input(NewChatSchema)
 	.output(ChatIdSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chats: ChatsGateway })
 	.handle(async ({ title }, { chats, invalidate, send }) => {
 		invalidate(ChatRecordsQuery);
 		const kept = chats.chats();
@@ -68,9 +57,9 @@ export const CreateChatCommand = command("create-chat")
 	});
 
 export const ForgetChatToOpenCommand = command("forget-chat-to-open")
+	.public()
 	.input(ChatIdSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chats: ChatsGateway })
 	.handle(({ id }, { chats }) => {
 		const kept = chats.chats();
 
@@ -93,9 +82,9 @@ export const ForgetChatToOpenCommand = command("forget-chat-to-open")
 	});
 
 export const ChatToOpenQuery = query("chat-to-open")
+	.public()
 	.output(ChatToOpenSchema)
 	.settlesNow()
-	.inject({ chats: ChatsGateway })
 	.handle((_input, { chats }) => {
 		if (!chats.isLoaded()) {
 			return {
@@ -112,9 +101,9 @@ export const ChatToOpenQuery = query("chat-to-open")
 	});
 
 export const RecordChatTurnCommand = command("record-chat-turn")
+	.public()
 	.input(ChatTurnSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chats: ChatsGateway })
 	.handle(async (turn, { chats, invalidate, send }) => {
 		invalidate(ChatRecordsQuery);
 		const kept = chats.chats();

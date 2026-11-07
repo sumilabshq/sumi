@@ -58,7 +58,7 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 		parts,
 		marks,
 		started: app()
-			.modules(LayoutModule.with({ ...partsOf() }), WorkspacesModule.with(parts))
+			.modules(LayoutModule({ injects: { ...partsOf() } }), WorkspacesModule({ injects: parts }))
 			.imports(placesOver(tabs))
 			.start(),
 	};

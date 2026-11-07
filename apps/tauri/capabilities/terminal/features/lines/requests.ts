@@ -1,23 +1,8 @@
-import {
-	CallLoggerMiddleware,
-	PerCall,
-	Repeatable,
-	command,
-	guard,
-	query,
-	refuse,
-	subscriber,
-} from "@widgetarium/data-framework";
+import { CallLoggerMiddleware, PerCall, Repeatable, guard, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import type { User } from "@widgetarium/data-framework";
 import { TerminalOutputChangedEvent } from "../../gateways/terminal-sessions/terminal-sessions.events.js";
-import { TerminalSessionsGateway } from "../../gateways/terminal-sessions/terminal-sessions.gateway.js";
-import {
-	ResizeTerminalInputSchema,
-	SendTerminalInputSchema,
-	TerminalOutputSchema,
-	TerminalSessionSchema,
-	TypeTerminalInputSchema,
-} from "../../shared/schema/terminal.schema.js";
+import { ResizeTerminalInputSchema, SendTerminalInputSchema, TerminalOutputSchema, TerminalSessionSchema, TypeTerminalInputSchema } from "../../shared/schema/terminal.schema.js";
 
 const CHARS_SENT = "({chars} chars)";
 const NO_APP = "only an app has a terminal: the call carries no app";
@@ -33,15 +18,15 @@ export const TerminalCallLoggerMiddleware = CallLoggerMiddleware("terminal", (in
 );
 
 export const TerminalOutputQuery = query("terminal-output")
+	.public()
 	.input(TerminalSessionSchema)
 	.output(TerminalOutputSchema)
-	.inject({ sessions: TerminalSessionsGateway })
 	.handle(({ session }, { sessions, user }) => sessions.outputOf(sessionOf(user, session)));
 
 export const ResizeTerminalCommand = command("resize-terminal")
+	.public()
 	.input(ResizeTerminalInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ sessions: TerminalSessionsGateway })
 	.handle(async ({ session, cols, rows }, { sessions, user, invalidate }) => {
 		const owned = sessionOf(user, session);
 
@@ -55,17 +40,17 @@ export const ResizeTerminalCommand = command("resize-terminal")
 	});
 
 export const TypeTerminalCommand = command("type-terminal")
+	.public()
 	.input(TypeTerminalInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ sessions: TerminalSessionsGateway })
 	.handle(async ({ session, keys }, { sessions, user }) => {
 		await sessions.type(sessionOf(user, session), keys);
 	});
 
 export const SendTerminalCommand = command("send-terminal")
+	.public()
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ sessions: TerminalSessionsGateway })
 	.handle(async ({ session, line }, { sessions, user, invalidate }) => {
 		await sessions.send(sessionOf(user, session), line);
 		invalidate(TerminalOutputQuery);

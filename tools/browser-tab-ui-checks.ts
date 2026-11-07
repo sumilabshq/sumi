@@ -8,7 +8,7 @@ import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
 const browser = fakeBrowser();
-const browserApp = app().modules(BrowserModule.with(browser.parts)).start();
+const browserApp = app().modules(BrowserModule({ injects: browser.parts })).start();
 const host = document.createElement("div");
 document.body.append(host);
 createRoot(host).render(h(AppProvider, { app: browserApp }, inBrowserPlate()));

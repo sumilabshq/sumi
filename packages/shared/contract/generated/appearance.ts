@@ -22,8 +22,10 @@ export const ChooseThemeInputSchema = z.object({
 });
 
 export const ThemeQuery = query("appearance/theme")
+	.public()
 	.output(ThemeSchema);
 export const ChooseThemeCommand = command("appearance/choose-theme")
+	.public()
 	.input(ChooseThemeInputSchema)
 	.idempotencyKey(Repeatable);
 

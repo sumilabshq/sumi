@@ -1,29 +1,23 @@
 import { z } from "zod";
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { AppTabsQuery } from "@widgetarium/app-host";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
-import { CommandMenuGateway } from "../../gateways/command-menu/command-menu.gateway.js";
-import { MenuFillsGateway } from "../../gateways/menu-fills/menu-fills.gateway.js";
-import {
-	DoorSchema,
-	KeptMenuSchema,
-	MenuDoorsSchema,
-	OpenMenuSchema,
-} from "../../shared/schema/command-menu.schema.js";
+import { DoorSchema, KeptMenuSchema, MenuDoorsSchema, OpenMenuSchema } from "../../shared/schema/command-menu.schema.js";
 import { doorKeysOf, refuseDoor } from "./lib/doors.js";
 import { heldTabOfPage } from "../../shared/lib/held-tab.js";
 import { filledWithShown } from "./lib/shown-text.js";
 
 export const CommandMenuQuery = query("command-menu")
+	.public()
 	.output(KeptMenuSchema)
 	.settlesNow()
-	.inject({ commandMenu: CommandMenuGateway })
 	.handle((_input, { commandMenu }) => commandMenu.menu());
 
 export const MenuDoorsQuery = query("menu-doors")
+	.public()
 	.output(MenuDoorsSchema)
 	.settlesNow()
-	.inject({ menuFills: MenuFillsGateway })
 	.handle((_input, { menuFills }) => ({
 		doors: menuFills.doors().map((door) => ({
 			...door,
@@ -32,9 +26,9 @@ export const MenuDoorsQuery = query("menu-doors")
 	}));
 
 export const ToggleCommandMenuCommand = command("toggle-command-menu")
+	.public()
 	.input(OpenMenuSchema)
 	.idempotencyKey(PerCall)
-	.inject({ commandMenu: CommandMenuGateway, menuFills: MenuFillsGateway })
 	.handle(async ({ door, text, shownName, newTabList, pageId }, { commandMenu, menuFills, send, invalidate }) => {
 		const refusal = refuseDoor(door, menuFills.doors());
 
@@ -83,9 +77,9 @@ export const ToggleCommandMenuCommand = command("toggle-command-menu")
 	});
 
 export const ChangeMenuDoorCommand = command("change-menu-door")
+	.public()
 	.input(z.object({ door: DoorSchema }))
 	.idempotencyKey(Repeatable)
-	.inject({ commandMenu: CommandMenuGateway, menuFills: MenuFillsGateway })
 	.handle(({ door }, { commandMenu, menuFills, invalidate }) => {
 		const refusal = refuseDoor(door, menuFills.doors());
 
@@ -113,8 +107,8 @@ export const ChangeMenuDoorCommand = command("change-menu-door")
 	});
 
 export const CloseCommandMenuCommand = command("close-command-menu")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ commandMenu: CommandMenuGateway })
 	.handle((_input, { commandMenu, invalidate }) => {
 		invalidate(CommandMenuQuery);
 		const was = commandMenu.menu();

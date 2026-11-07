@@ -1,31 +1,16 @@
-import { PerCall, command } from "@widgetarium/data-framework";
+import { PerCall } from "@widgetarium/data-framework";
+import { command } from "#module";
 import { searchAddressOf } from "../../shared/lib/search-address.js";
-import {
-	CapturePageSchema,
-	InkAddressSchema,
-	OpenedPageSchema,
-	PageContentSchema,
-	ReadPageSchema,
-	PageShotSchema,
-} from "../../shared/schema/page-read.schema.js";
+import { CapturePageSchema, InkAddressSchema, OpenedPageSchema, PageContentSchema, ReadPageSchema, PageShotSchema } from "../../shared/schema/page-read.schema.js";
 import { SearchWebSchema } from "../../shared/schema/search-web.schema.js";
-import {
-	INK_GATE,
-	arrivalAllowed,
-	changeActivity,
-	fadeReading,
-	inspected,
-	navigationAllowed,
-	readAllowed,
-	stillAllowed,
-} from "./lib/ink-gate.js";
+import { arrivalAllowed, changeActivity, fadeReading, inspected, navigationAllowed, readAllowed, stillAllowed } from "./lib/ink-gate.js";
 import { refuseReportedRead } from "./lib/read-refusals.js";
 
 export const ReadPageContentCommand = command("read-page-content")
+	.public()
 	.input(ReadPageSchema)
 	.output(PageContentSchema)
 	.idempotencyKey(PerCall)
-	.inject(INK_GATE)
 	.handle(async ({ tabId, form }, gate) => {
 		const read = await readAllowed(gate, "content", tabId);
 
@@ -41,10 +26,10 @@ export const ReadPageContentCommand = command("read-page-content")
 	});
 
 export const CapturePageCommand = command("capture-page")
+	.public()
 	.input(CapturePageSchema)
 	.output(PageShotSchema)
 	.idempotencyKey(PerCall)
-	.inject(INK_GATE)
 	.handle(async ({ region, area, tabId }, gate) => {
 		const read = await readAllowed(gate, "screenshot", tabId);
 
@@ -60,10 +45,10 @@ export const CapturePageCommand = command("capture-page")
 	});
 
 export const InkOpenAddressCommand = command("ink-open-address")
+	.public()
 	.input(InkAddressSchema)
 	.output(OpenedPageSchema)
 	.idempotencyKey(PerCall)
-	.inject(INK_GATE)
 	.handle(async ({ url }, gate) => {
 		const navigation = await navigationAllowed(gate, url, gate.browserPages.shownId());
 		const { tabId } = navigation;
@@ -83,9 +68,9 @@ export const InkOpenAddressCommand = command("ink-open-address")
 	});
 
 export const SearchWebCommand = command("search-web")
+	.public()
 	.input(SearchWebSchema)
 	.idempotencyKey(PerCall)
-	.inject(INK_GATE)
 	.handle(async ({ text, heldTabId }, gate) => {
 		const navigation = await navigationAllowed(gate, searchAddressOf(text), heldTabId ?? gate.browserPages.shownId());
 		gate.browserPages.open(navigation.tabId, navigation.url);

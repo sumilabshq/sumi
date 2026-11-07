@@ -3,8 +3,9 @@ import { refusalOfThrown } from "./answer";
 import type { Invalidations } from "./invalidation";
 import { NEVER_ABORTED } from "./handler";
 import type { CallFacts } from "./handler";
-import { callerRefusalOf } from "./local-routes";
+import { refuseCaller } from "./local-routes";
 import type { LocalRoutes, Route } from "./local-routes";
+import { VIEW_CALLER } from "./mediator";
 import type { ModuleReach } from "./remote-modules";
 import { reportRefusal } from "./report-failure";
 import type { FailureReport } from "./report-failure";
@@ -71,7 +72,7 @@ export class RouteQueries {
 
 	private viewRouteOf(request: AnyRequest): Route | undefined {
 		const route = this.parts.local.routeOf(request);
-		return route === undefined || callerRefusalOf(route, {}) !== null ? undefined : route;
+		return route === undefined || refuseCaller(route, VIEW_CALLER) !== null ? undefined : route;
 	}
 }
 

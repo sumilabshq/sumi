@@ -30,7 +30,7 @@ const BUILDERS: ReadonlySet<string> = new Set([
 	"module",
 	"handler",
 ]);
-const FRAMEWORK_SOURCE = /^@widgetarium\/data-framework$|\/data-framework\/src\/index(\.[jt]s)?$/;
+const BUILDER_SOURCE = /^@widgetarium\/data-framework$|\/data-framework\/src\/index(\.[jt]s)?$|^#module$/;
 
 export function builderTracker(onBuilder: (found: BuilderCall) => void): Rule.RuleListener {
 	const builders = new Map<string, Builder>();
@@ -58,7 +58,7 @@ export function chainCallsOf(call: ChainCall): ChainCall[] {
 }
 
 function trackImport(builders: Map<string, Builder>, node: ESTree.ImportDeclaration): void {
-	if (typeof node.source.value !== "string" || !FRAMEWORK_SOURCE.test(node.source.value)) return;
+	if (typeof node.source.value !== "string" || !BUILDER_SOURCE.test(node.source.value)) return;
 	for (const specifier of node.specifiers) {
 		const imported = specifier.type === "ImportSpecifier" ? nameOf(specifier.imported) : "";
 		if (isBuilder(imported)) builders.set(specifier.local.name, imported);

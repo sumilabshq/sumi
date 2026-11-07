@@ -96,7 +96,7 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): S
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
-	return app().imports(PlacesContract.over(own), TasksContract.over(own)).start();
+	return app().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
 }
 
 function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly BackgroundModule[] {

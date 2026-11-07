@@ -1,44 +1,19 @@
 import { z } from "zod";
-import { Repeatable, command, query, subscriber } from "@widgetarium/data-framework";
+import { Repeatable } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import type { AnyQuery, Send } from "@widgetarium/data-framework";
-import {
-	AccessAsksChangedEvent,
-	BrowserTabsQuery,
-	InkActivityChangedEvent,
-	PagesChangedEvent,
-} from "@widgetarium/browser";
+import { AccessAsksChangedEvent, BrowserTabsQuery, InkActivityChangedEvent, PagesChangedEvent } from "@widgetarium/browser";
 import { DropGoneTabsCommand, PanesChangedEvent } from "@widgetarium/layout";
-import {
-	FitTabsToPanesCommand,
-	HeldTabsQuery as PlacedHeldTabsQuery,
-	MakeEssentialCommand,
-	OpenTabInOwnWindowCommand,
-	PlaceTabCommand as PlacesPlaceTabCommand,
-	ReorderSplitMemberCommand,
-	SidebarQuery,
-	PlacedTabsQuery,
-	RememberPagesCommand,
-	RestoreTabsCommand as PlacesRestoreTabsCommand,
-	ShowChatTabCommand as PlacesShowChatTabCommand,
-	TabRowsQuery,
-} from "@widgetarium/places";
+import { FitTabsToPanesCommand, HeldTabsQuery as PlacedHeldTabsQuery, MakeEssentialCommand, OpenTabInOwnWindowCommand, PlaceTabCommand as PlacesPlaceTabCommand, ReorderSplitMemberCommand, SidebarQuery, PlacedTabsQuery, RememberPagesCommand, RestoreTabsCommand as PlacesRestoreTabsCommand, ShowChatTabCommand as PlacesShowChatTabCommand, TabRowsQuery } from "@widgetarium/places";
 import { ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
 import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
-import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
-import {
-	keepChatTabs,
-	saveEssentials,
-	sendLogged,
-	settleAsked,
-	tabsAskOf,
-} from "../../shared/lib/tab-showing/tab-settling.js";
+import { keepChatTabs, saveEssentials, sendLogged, settleAsked, tabsAskOf } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
@@ -55,80 +30,75 @@ interface EssentialDrop {
 	readonly id: string;
 	readonly at: number;
 }
-const TAB_PARTS = {
-	studioWindow: StudioWindowGateway,
-	essentials: EssentialsGateway,
-	shownView: ShownViewGateway,
-	paneFlash: PaneFlashGateway,
-};
 
 export const AppTabsQuery = query("app-tabs")
+	.public()
 	.output(AppTabsSchema)
-	.inject(TAB_PARTS)
-	.handle(async (_input, { send, ...parts }) => send(TabRowsQuery, { at: await tabsAskOf({ parts, send }) }));
+	.handle(async (_input, { send, ...injects }) => send(TabRowsQuery, { at: await tabsAskOf({ injects, send }) }));
 
 export const TabsSidebarQuery = query("tabs-sidebar")
+	.public()
 	.output(TabsSidebarSchema)
-	.inject(TAB_PARTS)
-	.handle(async (_input, { send, ...parts }) => {
-		const [at] = await Promise.all([tabsAskOf({ parts, send }), parts.essentials.essentialsLoaded()]);
-		const essentials = essentialsOf(parts.essentials.essentials()).essentials;
+	.handle(async (_input, { send, ...injects }) => {
+		const [at] = await Promise.all([tabsAskOf({ injects, send }), injects.essentials.essentialsLoaded()]);
+		const essentials = essentialsOf(injects.essentials.essentials()).essentials;
 		return send(SidebarQuery, { at, essentials });
 	});
 
 // TODO: a transport that cannot abort (Tauri IPC) leaves held-tabs stale after a dropped call
 export const HeldTabsQuery = query("held-tabs")
+	.public()
 	.output(HeldTabsSchema)
-	.inject(TAB_PARTS)
-	.handle(async (_input, { send, ...parts }) => send(PlacedHeldTabsQuery, { at: await tabsAskOf({ parts, send }) }));
+	.handle(async (_input, { send, ...injects }) => send(PlacedHeldTabsQuery, { at: await tabsAskOf({ injects, send }) }));
 
 export const CanOpenOwnWindowQuery = query("can-open-own-window")
+	.public()
 	.output(z.boolean())
 	.handle(async (_input, { send }) => (await send(BrowserTabsQuery, ALL_PAGES)).canOpenOwnWindow);
 
 export const RestoreTabsCommand = command("restore-tabs")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (_input, { send, emit, ...parts }) => {
-		await readyToRestore(send, parts);
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+	.handle(async (_input, { send, emit, ...injects }) => {
+		await readyToRestore(send, injects);
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesRestoreTabsCommand, {
 				at,
-				essentials: essentialsOf(parts.essentials.essentials()).essentials,
-				isBeside: parts.studioWindow.opensBesideAnother(),
-				keepsPages: parts.studioWindow.keepsPagesAcrossStarts(),
+				essentials: essentialsOf(injects.essentials.essentials()).essentials,
+				isBeside: injects.studioWindow.opensBesideAnother(),
+				keepsPages: injects.studioWindow.keepsPagesAcrossStarts(),
 			}),
 		);
 	});
 
 export const ShowTabCommand = command("show-tab")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(({ id }, { send, emit, ...parts }) =>
-		showTabSettled({ parts, send, told: () => emit(TabsSettledEvent) }, id),
+	.handle(({ id }, { send, emit, ...injects }) =>
+		showTabSettled({ injects, send, told: () => emit(TabsSettledEvent) }, id),
 	);
 
 export const ShowChatTabCommand = command("show-chat-tab")
+	.public()
 	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ chatId }, { send, emit, ...parts }) => {
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+	.handle(async ({ chatId }, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(PlacesShowChatTabCommand, { at, chatId }),
 		);
 	});
 
 export const PlaceTabCommand = command("place-tab")
+	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async ({ id, to }, { send, emit, ...parts }) => {
-		const reach = { parts, send, told: () => emit(TabsSettledEvent) };
+	.handle(async ({ id, to }, { send, emit, ...injects }) => {
+		const reach = { injects, send, told: () => emit(TabsSettledEvent) };
 
 		if (to.kind === "list") {
 			const place = { list: to.list, groupId: to.groupId, before: to.before };
@@ -146,22 +116,20 @@ export const PlaceTabCommand = command("place-tab")
 			return;
 		}
 
-		await makeEssential(reach, parts.essentials, { id, at: to.at });
+		await makeEssential(reach, injects.essentials, { id, at: to.at });
 	});
 
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (_input, { send, emit, invalidate, ...parts }) => {
+	.handle(async (_input, { send, emit, invalidate, ...injects }) => {
 		invalidateTabReads(invalidate);
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) => send(FitTabsToPanesCommand, { at }));
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) => send(FitTabsToPanesCommand, { at }));
 	});
 
 export const RememberPagesSubscriber = subscriber(PagesChangedEvent)
-	.inject(TAB_PARTS)
 	.emits(TabsSettledEvent)
-	.handle(async (_input, { send, emit, ...parts }) => {
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) => send(RememberPagesCommand, { at }));
+	.handle(async (_input, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) => send(RememberPagesCommand, { at }));
 	});
 
 export const KeepChatTabsSubscriber = subscriber(ChatsChangedEvent)
@@ -221,12 +189,12 @@ async function dropGoneTabPanes(send: Send, window: string): Promise<void> {
 	await sendLogged("drop the panes of gone tabs", () => send(DropGoneTabsCommand, { heldTabIds }));
 }
 
-async function readyToRestore(send: Send, parts: Pick<TabParts, "essentials" | "studioWindow">): Promise<void> {
-	await parts.essentials.essentialsLoaded();
+async function readyToRestore(send: Send, injects: Pick<TabParts, "essentials" | "studioWindow">): Promise<void> {
+	await injects.essentials.essentialsLoaded();
 	await sendLogged("keep a tab for every chat", () => keepChatTabs(send));
 
-	if (!parts.studioWindow.opensBesideAnother()) {
-		await dropGoneTabPanes(send, parts.studioWindow.windowLabel());
+	if (!injects.studioWindow.opensBesideAnother()) {
+		await dropGoneTabPanes(send, injects.studioWindow.windowLabel());
 	}
 }
 

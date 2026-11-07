@@ -8,9 +8,9 @@ import { check } from "./check-helpers.ts";
 const SERVER_URL = "http://fixture-billing.test";
 
 const ledger = new MemoryLedgerGateway("USD");
-const served = server().modules(RunnableFixtureBillingModule.with({ ledger })).start({ env: {} });
+const served = server().modules(RunnableFixtureBillingModule({ injects: { ledger } })).start({ env: {} });
 const client = app()
-	.imports(FixtureBillingModule.over(orpcTransport(SERVER_URL, { fetch: served.fetch })))
+	.imports(FixtureBillingModule({ over: orpcTransport(SERVER_URL, { fetch: served.fetch }) }))
 	.start();
 
 const first = await client.send(ChargeCommand, { amount: 10 });

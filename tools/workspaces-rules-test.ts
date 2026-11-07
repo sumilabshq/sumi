@@ -82,7 +82,7 @@ function started(
 	parts: WorkspacesParts,
 	tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS)),
 ): StartedApp {
-	return app().modules(WorkspacesModule.with(parts)).imports(placesOver(tabs)).start();
+	return app().modules(WorkspacesModule({ injects: parts })).imports(placesOver(tabs)).start();
 }
 
 async function marksIn(tabs: MemoryTabsGateway): Promise<Readonly<Record<string, string>>> {
