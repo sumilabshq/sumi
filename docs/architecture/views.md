@@ -19,14 +19,14 @@ Views live in client packages (`packages/client/<name>`, `"level": "client"`). A
 
 ## Reaching the data
 
-The app starts the modules and gives the views their app:
+The app starts the modules and gives the views their runtime:
 
 ```tsx skip-check
 const layoutApp = startLayoutApp({ platform, workspaceId });
 
-<AppProvider app={layoutApp}>
+<RuntimeProvider runtime={layoutApp}>
 	<StudioFrame />
-</AppProvider>;
+</RuntimeProvider>;
 ```
 
 A block imports requests from the data module's `"."` and reads them through the hooks; it never imports `"./module"`, a handler or a gateway. An adapter outside React that needs the same data uses the same started app (`layoutApp.send`, `layoutApp.routes`), never a second one.

@@ -108,7 +108,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 **A decision in a gateway?** It moves to the handler, or to a pure function in `lib/` the handler calls ([layers.md](layers.md)).
 
-**What does an app import?** The module from `"./module"` to start it, the views from the client package's `"."`: `app().modules(LayoutModule).start({ platform, scope })` and `<AppProvider app={…}><StudioFrame /></AppProvider>`.
+**What does an app import?** The module from `"./module"` to start it, the views from the client package's `"."`: `runtime().modules(LayoutModule).start({ platform, scope })` and `<RuntimeProvider runtime={…}><StudioFrame /></RuntimeProvider>`.
 
 **One platform's gateway in another's bundle?** Today the picker imports every implementation, so a browser bundle carries Tauri's gateway code (a `TRADE-OFF:` in `tauri.gateway.ts`, guarded at run time). **planned**: a build-time platform condition.
 

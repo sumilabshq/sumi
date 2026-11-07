@@ -9,7 +9,7 @@ pages win, and a change to the architecture changes them in the same commit.
 
 **CRITICAL — one request system, never a second.** Every call between an app, the shell and a module is a
 command or query of a module over a transport (`docs/architecture/requests.md`: `RemoteTransport`,
-`server().listen(transport)`, `.imports(X.over(transport))`; identity from `Authenticate`, permissions by
+`runtime()` exposed by an adapter, `.imports(X({ over: transport }))`; identity from `Authenticate`, permissions by
 guards, tracking by middleware, push by the transport's `changes`). A new boundary (iframe, window, process)
 gets a new transport, never a new message vocabulary. A design or diff introducing "services", `ask`/`answer`,
 `op: "read" | "write"`, a bridge protocol or an events channel beside requests is refused on sight. It happened

@@ -103,7 +103,7 @@ export const TasksModule = module("tasks")
 	.config<{ readonly file: BoardFile }>()
 	.provide(({ config }) => tasksPartsOn(config))
 	.handles(...handled);
-server().modules(TasksModule({ file })).start({ env, scope });
+runtime().modules(TasksModule({ file })).start({ platform: "server", env, scope });
 ```
 
 **A module mounted several ways takes a union with `kind`.** The starter names the variant, and `provide` branches on it:
@@ -143,7 +143,7 @@ export const QuestionsModule = module("questions")
 - **Builders from `#module`.** `generated/command.ts` holds `export const { command, query, subscriber } = buildersOf<typeof QuestionsModule, typeof AskedEvent | …>();`, the second argument every event of the package (`never` with none); `package.json` maps `"imports": { "#module": … }` to it. `event` comes from `@widgetarium/data-framework`. A handler's second parameter is typed by what `provide` and the runtime return, so a request has no `.inject`: using a key neither returns is a type error.
 - **Stamping:** handling a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its events and the events its own subscribers hear too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
 - **`.provide((facts) => injects)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform), keyed by gateway name.
-- **A test hands fakes:** `LayoutModule({ injects: fakes })` skips `provide`; `app().modules(LayoutModule({ injects: fakes })).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/command-menu-checks.ts`).
+- **A test hands fakes:** `LayoutModule({ injects: fakes })` skips `provide`; `runtime().modules(LayoutModule({ injects: fakes })).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/command-menu-checks.ts`).
 
 ## Sending to another module
 
@@ -178,7 +178,7 @@ The mediator routes by request name, so the generated contract and the request t
 
 ## Guards and middleware
 
-A module's `.guard()` and `.use()` run before every request it handles, on either side; a request's own run after them, as written, after the input is validated and before the idempotency key and `.handle`. `app()` refuses at start a step that needs a user, since a client has no `Authenticate`, and a step requiring what neither its module nor the runtime provides. `server()` refuses a request no guard covers, on its module or itself.
+A module's `.guard()` and `.use()` run before every request it handles, in any runtime; a request's own run after them, as written, after the input is validated and before the idempotency key and `.handle`. `runtime()` refuses at start a step requiring what neither its module nor the runtime provides. An adapter refuses to mount, naming each request, a public request no guard covers (on its module or itself) and, when it has no `Authenticate`, a step that needs a user; a runtime nobody exposes needs no guard.
 
 | Step                                                    | Does                                                                                         |
 | ------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -217,9 +217,9 @@ A step needing options passed bare answers the type `"this step takes options: c
 
 - **Module guards decide identity only** (`PublicGuard`, `AuthenticatedGuard`, `HasPermissionGuard`); they read no input. Ownership is a request's own guard: it resolves the record, checks its owner, refuses with `deny`, and returns the record for the handler to read from the context.
 - **A step only refuses.** An `ok` answer it did not get from `next()` is refused as `failed`, so a middleware before a guard cannot answer for anyone.
-- A middleware never adds `user`, `idempotencyKey` or `signal`: the user comes from the server host's `Authenticate` alone (`userOf(headers) → User | null`). A guard never holds a secret and never verifies a token.
+- A middleware never adds `user`, `idempotencyKey` or `signal`: the user comes from the exposing adapter's `Authenticate` alone (`userOf(headers) → User | null`). A guard never holds a secret and never verifies a token.
 - A step never changes `input`, and gets every dependency through its own `.requires`, resolved from the `provide` of each module it runs in merged with the runtime's: a step is shared across modules, so its keys are declared, not inferred.
-- **Checked twice.** A step on a request from `#module` is checked where it is written: each key it requires must be one the module's `provide` or the runtime returns, as that type, or `.guard` / `.use` is a type error naming the key (`this step requires clock, which neither the module's provide nor the runtime's gives as that type`). A module's own `.guard` / `.use` come before its `provide`, so only the start checks them: `app()` and `server()` refuse a step requiring what the module and the runtime do not provide, naming the step, the request, the key and its type.
+- **Checked twice.** A step on a request from `#module` is checked where it is written: each key it requires must be one the module's `provide` or the runtime returns, as that type, or `.guard` / `.use` is a type error naming the key (`this step requires clock, which neither the module's provide nor the runtime's gives as that type`). A module's own `.guard` / `.use` come before its `provide`, so only the start checks them: `runtime()` refuses a step requiring what the module and the runtime do not provide, naming the step, the request, the key and its type.
 
 ```ts skip-check
 export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
@@ -234,12 +234,12 @@ export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
 ## Policy order
 
 ```
-client: input → module steps → request steps → idempotency key (minted if PerCall and absent) → in-flight dedup → handle → output
-server: input → Authenticate → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
+in process: input → module steps → request steps → idempotency key (minted if PerCall and absent) → in-flight dedup → handle → output
+outside:    input → the adapter's Authenticate → module steps → request steps → idempotency key → in-flight dedup (per user) → handle → output
 ```
 
-- **Rate limit:** only where declared: `.use(RateLimitMiddleware({ calls, per }))` on a module or a request. There is no default, on a server or a device. TODO: anonymous callers share one bucket per request.
-- **In-flight dedup:** a second identical query waits for the first. On the server it is keyed by request, input and user.
+- **Rate limit:** only where declared: `.use(RateLimitMiddleware({ calls, per }))` on a module or a request. There is no default, in any runtime. TODO: anonymous callers share one bucket per request.
+- **In-flight dedup:** a second identical query waits for the first. It is keyed by request, input and user.
 - Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 
 ## Idempotency
@@ -251,8 +251,8 @@ server: input → Authenticate → module steps → request steps → idempotenc
 | `.idempotencyKey(Repeatable)` | repeats are wanted (a toggle, a "+1" counter)                                        |
 
 - **Done keys are scoped per user:** `${request}:${user.id ?? "anonymous"}:${key}`. A second call with a key still running waits for the first.
-- **On a server an anonymous caller's key made from the input is never replayed**: two strangers sending the same data would get each other's answer. A `PerCall` key still is.
-- **`PerCall` keys:** the client mediator mints one for a call sent with none; `useCommand` keeps one per call so only a retry reuses it. A server refuses a `PerCall` call with no key (`missing-key`).
+- **An anonymous outside caller's key made from the input is never replayed**: two strangers sending the same data through an adapter would get each other's answer. A `PerCall` key still is.
+- **`PerCall` keys:** the mediator mints one for an in-process call sent with none (a view, a handler's or subscriber's send); `useCommand` keeps one per call so only a retry reuses it. An outside call brings its own: a `PerCall` call through an adapter with no key is refused (`missing-key`), and so are the sends its handler makes with none.
 - The handler receives `idempotencyKey` and hands it on to a provider that supports one (Stripe).
 - `MemoryDoneKeys` keeps the last 1000 and evicts only settled answers. TODO: a durable store for a server with more than one process.
 - Uniqueness across users is not a key's job: it is a database constraint (see Data).
@@ -264,41 +264,52 @@ Every answer is `{ ok: true, output }` or `{ ok: false, code, reason, ran }`.
 - A command whose handler throws answers `ran: true`: the write may have happened, so it is never retried and its done key stays.
 - A handler that refuses **before** writing calls `refuse(reason)`; the answer is `{ ok: false, code: "refused", ran: false }` and the done key is released.
 
-## Starting: `app()` and `server()`
+## Starting: `runtime()` and adapters
 
-An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached through a transport. **planned**: one `runtime()` with adapters in place of `app()` and `server()`; not built.
+A runtime is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached through a transport. It assembles the running modules (routes, mediator, cache, event sources); exposing them to outside callers is an adapter's job, never the runtime's.
 
 ```ts skip-check
-const layoutApp = app()
+const layoutApp = runtime()
 	.modules(LayoutModule)
 	.imports(BillingModule({ over: orpcTransport(env.API_URL) }))
 	.start({ platform: "tauri", scope: { workspaceId } });
 
-const served = server().modules(BillingModule, UsersModule).start({ env: process.env, host: { authenticate } });
+const api = runtime().modules(BillingModule, UsersModule).start({ platform: "server", env: process.env });
+const http = dataFrameworkMiddleware(api, { authenticate });
 ```
 
-- `.modules(...)` take the runnable module from `<package>/module`: an app takes `Device` and `Anywhere` modules, a server `Server` and `Anywhere` ones (a type error otherwise, and refused at start).
+| Adapter                                                         | Exposes the runtime to                                                            |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `<RuntimeProvider runtime={…}>`                                 | views in the same process (`useQuery`, `useCommand`); no guard, no user           |
+| `dataFrameworkMiddleware(runtime, { authenticate? })`           | HTTP: a Hono app answering `/rpc/*` and the changes stream at `/rpc-changes`      |
+| `servePort(runtime, port, { authenticate?, headers? })`         | a page over a `MessagePort` ([The frame transport](#the-frame-transport))         |
+| `local.serve(runtime, { authenticate? })` on `localTransport()` | other runtimes of the same process, importing over that transport                 |
+| `runtime.expose({ adapter, authenticate? })`                    | an adapter a host writes itself (the core's IPC): `{ answer, changes, requests }` |
+
+- `.modules(...)` take the runnable module from `<package>/module`, any placement. `start({ platform: "server" })` refuses a `Device` module; any other platform runs all three.
 - `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"."` entry, called with a transport: `BillingModule({ over: transport })`. Only those two are callable (a `Device` module is a type error, and refused where it is called). No server code reaches the bundle.
 - **A transport is a port.** `RemoteTransport` (`transport.ts`) carries a call there and its answer back (`call`), and the changes the server reports that this client did not cause (`changes`). The framework ships `orpcTransport(url, { fetch?, headers? })` (HTTP; changes over the SSE stream at `/rpc-changes`) and `localTransport()` (same process). An app writes its own for anything else (the studio's IPC to its core window), with no change to the framework.
-- **A call carries its caller's headers.** `ServedCall.headers` and `RemoteCall.headers` reach `Authenticate`; `orpcTransport` sends them as HTTP headers, `localTransport` and the studio's IPC pass them on. A relay stamps them; the caller never writes its own.
-- **A server listens on transports.** `server().modules(...).listen(transport)` hands every module of that server to the transport's `serve`; several `.listen` calls serve the same modules over several transports. Modules that need different transports are different servers. HTTP is served by the server's own `fetch`, whatever is listened on.
-- Every module's `.imports` must be met by the app's `.modules` or `.imports`; start refuses naming the missing module.
+- **A call carries its caller's headers.** `ServedCall.headers` and `RemoteCall.headers` reach the adapter's `Authenticate`; `orpcTransport` sends them as HTTP headers, `localTransport` and the studio's IPC pass them on. A relay stamps them; the caller never writes its own.
+- **`Authenticate` belongs to the adapter**, one per adapter, since only an outside caller has headers to read. An in-process call (a view, a handler's or subscriber's send) carries no user.
+- **Several adapters, one runtime.** The same started runtime is served over HTTP, a port and a local transport at once; each adapter's call returns its own stop. Changes a call causes, inside or outside, reach every adapter's hearers and the runtime's own cache.
+- Every module's `.imports` must be met by the runtime's `.modules` or `.imports`; start refuses naming the missing module.
 - `.provide((facts) => …)` is the runtime's own provide ([Runtime provides](#runtime-provides)).
-- `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch, answer, changes, stop }`.
-- **One app per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `AppProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
-- A server is a Hono app mounting `/rpc`. Over a transport it answers only `.public()` requests: an unmarked one answers `not-found`, a `.callableBy()` one `forbidden`, while an in-process `send` from another module reaches both. Its host gives `authenticate`, `doneKeys`, `reportFailure`.
-- A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.
+- `.start({ platform?, scope?, env?, host? })` answers the `Runtime`: `send`, `routes`, `watches`, `queryClient`, `expose`, `stop`. The host gives `doneKeys` and `reportFailure`.
+- **One runtime per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `RuntimeProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
+- **An adapter answers only `.public()` requests**: an unmarked one answers `not-found`, a `.callableBy()` one `forbidden`, while an in-process `send` from another module reaches both.
+- `runtime()` refuses at start, naming the request: two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
+- **An adapter refuses to mount**, naming each request: a public request no guard covers (`PublicGuard` when anyone may call it), and, when the adapter has no `Authenticate`, a guard that needs a user. A runtime nobody exposes needs neither.
 - The wire is oRPC, and only `@widgetarium/data-framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
 
 ## Runtime provides
 
-A runtime (`app()`, `server()`; the planned `runtime()` takes the same) has its own `.provide((facts) => …)`: what every module of that runtime receives, merged into each handler's, subscriber's and step's context beside the module's own `provide`. Prior art: NestJS global modules, Angular's root injector.
+A runtime has its own `.provide((facts) => …)`: what every module of that runtime receives, merged into each handler's, subscriber's and step's context beside the module's own `provide`. Prior art: NestJS global modules, Angular's root injector.
 
 ```ts skip-check
-const served = server()
+const api = runtime()
 	.modules(BillingModule)
 	.provide(({ env }) => ({ rateLimits: new RedisRateLimits(env.REDIS_URL) }))
-	.start({ env: process.env });
+	.start({ platform: "server", env: process.env });
 ```
 
 - **Typed by `RuntimeProvides`**, an interface exported from `@widgetarium/data-framework`: `{ readonly rateLimits: RateLimits }`. `.provide` returns all of it, and every handler of a `#module` request reads it from its context.
@@ -311,35 +322,36 @@ declare module "@widgetarium/data-framework" {
 	}
 }
 
-app()
+runtime()
 	.modules(TasksModule)
 	.provide(() => ({ rateLimits: new MemoryRateLimits(), clock: new SystemClock() }))
 	.start({ platform, scope });
 ```
 
 - **No `.provide` means the default** `{ rateLimits: new MemoryRateLimits() }`. TODO: an app that adds keys and skips `.provide` passes the type check and lacks them at run time.
-- **One owner per key.** A module whose `provide` returns a key the runtime provides is refused at start, naming the module, the key and the runtime (`module "greedy" provides rateLimits, which server().provide() already gives every module: rename one`). The reserved context names stay refused.
-- `facts` are `{ platform, scope, env }`; `platform` and `scope` are `null` when the starter was told neither.
+- **One owner per key.** A module whose `provide` returns a key the runtime provides is refused at start, naming the module, the key and the runtime (`module "greedy" provides rateLimits, which runtime().provide() already gives every module: rename one`). The reserved context names stay refused.
+- `facts` are `{ platform, scope, env }`; `platform` and `scope` are `null` when `start` was told neither.
 
 ## The frame transport
 
 A page in another window or a sandboxed iframe reaches modules over a `MessagePort`, the same requests and nothing else (`message-port-transport.ts`).
 
-| Side             | Call                                     | Does                                                                                                   |
-| ---------------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| the page         | `portFromParent()`                       | posts `PORT_WANTED` to the window above and takes the port it hands down; refuses after 10 s           |
-| the page         | `messagePortTransport(port)`             | a `RemoteTransport`: `call` posts `{ id, name, input, idempotencyKey }`, `changes` hears invalidations |
-| the window above | `handPort(frame, port)`                  | posts the other end of a fresh `MessageChannel` into that frame only                                   |
-| the window above | `messagePortListener(port, { headers })` | a `ListeningTransport`: answers each call through the server it serves, stamped with `headers`         |
+| Side             | Call                                                  | Does                                                                                                   |
+| ---------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| the page         | `portFromParent()`                                    | posts `PORT_WANTED` to the window above and takes the port it hands down; refuses after 10 s           |
+| the page         | `messagePortTransport(port)`                          | a `RemoteTransport`: `call` posts `{ id, name, input, idempotencyKey }`, `changes` hears invalidations |
+| the window above | `handPort(frame, port)`                               | posts the other end of a fresh `MessageChannel` into that frame only                                   |
+| the window above | `servePort(runtime, port, { authenticate, headers })` | an adapter: answers each call through that runtime, stamped with `headers`; returns its stop           |
+| the window above | `relayPort(answering, port, { headers })`             | the same over any `Answering` (`{ answer, changes }`), such as the shell's frame relay                 |
 
 ```ts skip-check
-const files = app()
+const files = runtime()
 	.imports(FileSystemModule({ over: messagePortTransport(portFromParent()) }))
 	.start();
 await files.send(WriteFileCommand, { path: "tasks.json", content });
 ```
 
-The port carries calls, answers and `{ invalidated }`, never a message of its own: a new kind of thing an app wants is a request of a module. Sumi's shell serves frames through a relay (`apps/studio/src/features/app-frame`): `servePortHandovers` answers only a handover wanted by that frame, stamps `x-sumi-app: <the app the shell opened there>`, and `createFrameRelay(routes)` passes each call to the transport of the route whose module holds it (the core, or a server inside the studio window), refusing any other name; routes are built per frame mount ([apps.md](apps.md#the-contract)). In the core `AppCallerAuthenticate` turns the header into `user`.
+The port carries calls, answers and `{ invalidated }`, never a message of its own: a new kind of thing an app wants is a request of a module. Sumi's shell serves frames through a relay (`apps/studio/src/features/app-frame`): `servePortHandovers` answers only a handover wanted by that frame, stamps `x-sumi-app: <the app the shell opened there>`, and `relayPort(createFrameRelay(routes), port, …)` passes each call to the transport of the route whose module holds it (the core, or a runtime inside the studio window), refusing any other name; routes are built per frame mount ([apps.md](apps.md#the-contract)). In the core `AppCallerAuthenticate` turns the header into `user`.
 
 ## Cache and re-read
 

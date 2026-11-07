@@ -58,14 +58,15 @@ flowchart LR
 	reread -->|useQuery| view
 ```
 
-**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module({ over: transport }))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change. A runtime's own `.provide(...)` gives every module of it the same objects (`rateLimits`, and keys an app adds to `RuntimeProvides`) ([requests.md](requests.md#runtime-provides)).
+**Apps.** An app is a runtime, shaped like a module: `.modules(...)` run inside it, `.imports(Module({ over: transport }))` are reached through a transport (HTTP, IPC, in process), by the same calls. A server is the same runtime that an adapter exposes: views get it through `<RuntimeProvider>`, outside callers through `dataFrameworkMiddleware` (Hono), `servePort` or a local transport. A monolith lists every module in one runtime's `.modules`; a service is a module moved to another runtime and imported over a transport to it. The module's code does not change. A runtime's own `.provide(...)` gives every module of it the same objects (`rateLimits`, and keys an app adds to `RuntimeProvides`) ([requests.md](requests.md#runtime-provides)).
 
 ```ts
-app()
+runtime()
 	.modules(LayoutModule)
 	.imports(BillingModule({ over: orpcTransport(env.API_URL) }))
 	.start({ platform, scope });
-server().modules(BillingModule, UsersModule).start({ env: process.env });
+const api = runtime().modules(BillingModule, UsersModule).start({ platform: "server", env: process.env });
+serve({ fetch: dataFrameworkMiddleware(api, { authenticate }).fetch });
 ```
 
 ```mermaid
@@ -85,13 +86,13 @@ flowchart LR
 	billing -->|"send: any request, in process"| users
 ```
 
-**Guards.** A guard is the same code everywhere: it refuses a call before the handler runs (no user, not the owner, a transition that is not allowed). On a server it protects the data, because nobody can reach past it; a server module's public request must have one. On a device it is an ordinary early check, optional: it keeps the app from doing what makes no sense, but anyone can send a request by hand past it, so it protects nothing.
+**Guards.** A guard is the same code everywhere: it refuses a call before the handler runs (no user, not the owner, a transition that is not allowed). Where an adapter exposes a runtime it protects the data, because nobody can reach past it; every public request an adapter exposes must have one, and the adapter refuses to mount naming each that has none. In a runtime nobody exposes it is an ordinary early check, optional: it keeps the app from doing what makes no sense, but anyone can send a request by hand past it, so it protects nothing.
 
 ```mermaid
 flowchart TB
-	call["A call to a request"] --> where{"Module runs on"}
-	where -->|Server| sg["Guards: required on public requests, protect the data"]
-	where -->|Device| dg["Guards: optional, early checks only"]
+	call["A call to a request"] --> where{"The runtime is"}
+	where -->|exposed by an adapter| sg["Guards: required on public requests, protect the data"]
+	where -->|in process only| dg["Guards: optional, early checks only"]
 	sg --> handler["Handler"]
 	dg --> handler
 ```
