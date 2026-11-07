@@ -1,7 +1,7 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
 import type { Send, User } from "@widgetarium/data-framework";
 import { AppTabQuery } from "@widgetarium/places";
-import { command, query } from "#module";
+import { command, query, subscriber } from "#module";
 import {
 	AppPageAskSchema,
 	AppPageSchema,
@@ -9,10 +9,12 @@ import {
 	PageTitlesSchema,
 	PressAppActionSchema,
 	RecordedAppPageSchema,
+	RememberedPageTitlesSchema,
 	TakeActionPressSchema,
 	TakenPressSchema,
 } from "../../shared/schema/page.schema.js";
-import { pageRecordedOf, refuseForeignFavicon } from "./lib/page-records.js";
+import { pageRecordedOf, refuseForeignFavicon, rememberedPageOf } from "./lib/page-records.js";
+import { KeptPagesChangedEvent } from "../../gateways/pages/pages.events.js";
 import { pressTakenFrom, refusePress, withPressQueued } from "./lib/presses.js";
 
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
@@ -128,3 +130,43 @@ async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ ap
 
 	return tab;
 }
+
+export const RememberPageTitlesCommand = command("remember-page-titles")
+	.public()
+	.input(RememberedPageTitlesSchema)
+	.idempotencyKey(Repeatable)
+	.handle(({ pages: remembered }, { pages, user, invalidate }) => {
+		if (user !== null) {
+			return refuse(
+				ONLY_SHELL.replace("{app}", user.id).replace("{what}", "remember the titles of the browser's pages"),
+			);
+		}
+
+		const kept = remembered.flatMap((one) => {
+			const was = pages.page(one.tabId);
+			const next = rememberedPageOf(was, one);
+
+			if (next === null) {
+				return [];
+			}
+
+			const reason = `tab ${one.tabId} title ${was.title ?? "none"} → ${next.title ?? "none"} (the browser's page)`;
+			pages.savePage(one.tabId, next, reason);
+			console.info(`[apps] ${reason}`);
+			return [one.tabId];
+		});
+
+		if (kept.length === 0) {
+			return;
+		}
+
+		invalidate(PageTitlesQuery);
+		for (const id of kept) {
+			invalidate(AppPageQuery, { id });
+		}
+	});
+
+export const RereadKeptPagesSubscriber = subscriber(KeptPagesChangedEvent).handle((_input, { invalidate }) => {
+	invalidate(AppPageQuery);
+	invalidate(PageTitlesQuery);
+});

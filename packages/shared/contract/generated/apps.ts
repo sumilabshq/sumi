@@ -112,6 +112,19 @@ export const TakenPressSchema = z.object({
 	action: z.string(),
 });
 
+export const RememberedPageTitleSchema = z.object({
+	tabId: z.string().min(1),
+	url: z.string().max(8192),
+	title: z.string().max(4096),
+	favicon: z.string().max(65_536).nullable(),
+});
+
+export type RememberedPageTitle = z.infer<typeof RememberedPageTitleSchema>;
+
+export const RememberedPageTitlesSchema = z.object({
+	pages: z.array(RememberedPageTitleSchema).max(200),
+});
+
 export const AppsQuery = query("apps/apps")
 	.public()
 	.output(AppsSchema);
@@ -136,5 +149,9 @@ export const TakeActionPressCommand = command("apps/take-action-press")
 	.input(TakeActionPressSchema)
 	.output(TakenPressSchema)
 	.idempotencyKey(Repeatable);
+export const RememberPageTitlesCommand = command("apps/remember-page-titles")
+	.public()
+	.input(RememberedPageTitlesSchema)
+	.idempotencyKey(Repeatable);
 
-export const AppsModule = moduleContract("apps", Anywhere, [AppsQuery, AppPageQuery, PageTitlesQuery, RecordAppPageCommand, PressAppActionCommand, TakeActionPressCommand]);
+export const AppsModule = moduleContract("apps", Anywhere, [AppsQuery, AppPageQuery, PageTitlesQuery, RecordAppPageCommand, PressAppActionCommand, TakeActionPressCommand, RememberPageTitlesCommand]);

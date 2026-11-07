@@ -12,7 +12,7 @@ import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.even
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
-import { pageTitlesOf } from "../../shared/lib/page-titles/page-titles-read.js";
+import { pageTitlesOf, rememberPageTitles } from "../../shared/lib/page-titles/page-titles-read.js";
 import { pageTabsOfRows, pageTabsOfSidebar, titledSidebarOf, titledTabOf } from "../../shared/lib/page-titles/page-titles.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
 import { keepChatTabs, saveEssentials, sendLogged, settleAsked, tabsAskOf } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -130,7 +130,11 @@ export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent)
 
 export const RememberPagesSubscriber = subscriber(PagesChangedEvent)
 	.handle(async (_input, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) => send(RememberPagesCommand, { at }));
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, async (at) => {
+			const settled = await send(RememberPagesCommand, { at });
+			await rememberPageTitles(send, at);
+			return settled;
+		});
 	});
 
 export const KeepChatTabsSubscriber = subscriber(ChatsChangedEvent)

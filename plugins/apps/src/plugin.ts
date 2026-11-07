@@ -21,8 +21,8 @@ export const AppsPlugin = plugin("apps")
 		}),
 		BackgroundModulesSlot({
 			id: "apps",
-			module: ({ fillsOf }) =>
-				AppsModule({ apps: fillsOf(AppsSlot).map(faceOf), titlesOf: titlesOfApps(fillsOf(AppsSlot)) }),
+			module: ({ fillsOf, store }) =>
+				AppsModule({ apps: fillsOf(AppsSlot).map(faceOf), titlesOf: titlesOfApps(fillsOf(AppsSlot)), store }),
 			contract: AppsContract,
 		}),
 		TabPageSlot({ id: "apps", tabPage: ({ fillsOf }) => appsTabPageOf(fillsOf(AppsSlot)) }),

@@ -1,4 +1,4 @@
-import type { AppPage } from "../../../shared/schema/page.schema.js";
+import type { AppPage, RememberedPageTitle } from "../../../shared/schema/page.schema.js";
 
 export interface RecordedPage {
 	readonly id: string;
@@ -38,4 +38,19 @@ export function refuseForeignFavicon(app: string, favicon: string | undefined): 
 
 function idsOf(actions: readonly { readonly id: string }[]): string {
 	return actions.map(({ id }) => id).join(",") || "none";
+}
+
+const UNREMEMBERED_ADDRESSES: ReadonlySet<string> = new Set(["", "about:blank"]);
+
+export function rememberedPageOf(was: AppPage, { url, title, favicon }: RememberedPageTitle): AppPage | null {
+	if (UNREMEMBERED_ADDRESSES.has(url)) {
+		return null;
+	}
+
+	const next = {
+		...was,
+		title: title === "" ? was.title : title,
+		favicon: favicon ?? was.favicon,
+	};
+	return next.title === was.title && next.favicon === was.favicon ? null : next;
 }

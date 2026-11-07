@@ -685,8 +685,6 @@ export const KeptTabSchema = z.object({
 	label: z.string().nullable(),
 	essentialId: z.string().nullable().default(null),
 	lastAddress: z.string().nullable().default(null),
-	lastTitle: z.string().nullable().default(null),
-	lastFavicon: z.string().nullable().default(null),
 	title: z.string().nullable().default(null),
 	mark: TabMarkSchema.default("none"),
 	isFolded: z.boolean().default(false),

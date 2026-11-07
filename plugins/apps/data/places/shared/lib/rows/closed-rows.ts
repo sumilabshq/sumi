@@ -20,7 +20,7 @@ function closedRowOf(apps: PlacedApps, { tab, address }: ClosedTab): readonly Cl
 			app: tab.app,
 			address,
 			icon: tabArtOf(apps, tab.app, address),
-			favicon: tab.lastFavicon,
+			favicon: null,
 		},
 	];
 }

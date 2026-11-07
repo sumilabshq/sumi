@@ -95,3 +95,16 @@ export const TakenPressSchema = z.object({
 	id: z.string(),
 	action: z.string(),
 });
+
+export const RememberedPageTitleSchema = z.object({
+	tabId: z.string().min(1),
+	url: z.string().max(8192),
+	title: z.string().max(4096),
+	favicon: z.string().max(65_536).nullable(),
+});
+
+export type RememberedPageTitle = z.infer<typeof RememberedPageTitleSchema>;
+
+export const RememberedPageTitlesSchema = z.object({
+	pages: z.array(RememberedPageTitleSchema).max(200),
+});

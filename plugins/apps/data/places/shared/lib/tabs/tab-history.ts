@@ -22,7 +22,6 @@ export function pushedTab(tab: HostTab, address: string): HostTab {
 	return {
 		...tab,
 		lastAddress: address,
-		lastTitle: null,
 		history: {
 			back: [...back, tab.lastAddress ?? ""].slice(-MOST_STEPS_KEPT),
 			forward: [],
@@ -41,7 +40,6 @@ export function steppedTab(tab: HostTab, step: TabStep): HostTab | null {
 			: {
 					...tab,
 					lastAddress: to,
-					lastTitle: null,
 					history: {
 						back: back.slice(0, -1),
 						forward: [here, ...forward],
@@ -55,7 +53,6 @@ export function steppedTab(tab: HostTab, step: TabStep): HostTab | null {
 		: {
 				...tab,
 				lastAddress: to,
-				lastTitle: null,
 				history: {
 					back: [...back, here].slice(-MOST_STEPS_KEPT),
 					forward: forward.slice(1),

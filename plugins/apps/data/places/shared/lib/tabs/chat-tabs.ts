@@ -117,8 +117,6 @@ function chatTabOf(app: string, { id, title }: NamedRecord): HostTab {
 		label: null,
 		essentialId: null,
 		lastAddress: null,
-		lastTitle: null,
-		lastFavicon: null,
 		title,
 		mark: "none",
 		isFolded: false,

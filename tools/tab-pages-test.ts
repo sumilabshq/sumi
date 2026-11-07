@@ -35,8 +35,6 @@ function restoredTabs(): SeededTabs {
 			label: null,
 			essentialId: null,
 			lastAddress: null,
-			lastTitle: null,
-			lastFavicon: null,
 		})),
 		lists: {
 			[WORKSPACE_LIST]: RESTORED.map((id) => ({
@@ -101,8 +99,6 @@ function terminalTabs(): SeededTabs {
 				label: null,
 				essentialId: null,
 				lastAddress: null,
-				lastTitle: null,
-				lastFavicon: null,
 			},
 		],
 		lists: {

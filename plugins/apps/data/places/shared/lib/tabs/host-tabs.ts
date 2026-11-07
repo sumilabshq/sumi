@@ -279,8 +279,6 @@ function mintTab(moment: HostTabsMoment, opened: OpenedTab, essentialId: string 
 		label: null,
 		essentialId,
 		lastAddress: null,
-		lastTitle: null,
-		lastFavicon: null,
 		title: null,
 		mark: "none",
 		isFolded: false,

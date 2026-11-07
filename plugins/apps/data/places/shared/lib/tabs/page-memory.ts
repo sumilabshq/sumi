@@ -47,21 +47,12 @@ export function forgetPages(moment: HostTabsMoment): MovedTabs | null {
 function withPageRemembered(tab: HostTab, pages: readonly RememberedPage[]): HostTab {
 	const page = pages.find((one) => one.pageId === tab.pageId);
 
-	if (page === undefined || UNREMEMBERED_ADDRESSES.has(page.url)) {
-		return tab;
-	}
-
-	const title = page.title === "" ? tab.lastTitle : page.title;
-	const favicon = page.favicon ?? tab.lastFavicon;
-
-	if (page.url === tab.lastAddress && title === tab.lastTitle && favicon === tab.lastFavicon) {
+	if (page === undefined || UNREMEMBERED_ADDRESSES.has(page.url) || page.url === tab.lastAddress) {
 		return tab;
 	}
 
 	return {
 		...tab,
 		lastAddress: page.url,
-		lastTitle: title,
-		lastFavicon: favicon,
 	};
 }

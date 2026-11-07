@@ -8,6 +8,7 @@ import {
 	PageTitlesQuery,
 	PressAppActionCommand,
 	RecordAppPageCommand,
+	RememberPageTitlesCommand,
 	TakeActionPressCommand,
 } from "../plugins/apps/data/apps/index.ts";
 import { AppsModule as RunnableAppsModule } from "../plugins/apps/data/apps/module.ts";
@@ -17,6 +18,14 @@ import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/mem
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
+import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
+import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
+import {
+	KEPT_PAGES,
+	KeptPagesGateway,
+	KeptPagesSchema,
+} from "../plugins/apps/data/apps/gateways/pages/kept.gateway.ts";
+import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 
 const TASKS_ICON = "sumi-app://tasks/1.0.0/icon.png";
@@ -155,9 +164,67 @@ async function titleChecks(): Promise<void> {
 	]);
 }
 
+const DOCS_PAGE = {
+	tabId: "n1",
+	url: "https://docs.example.com/",
+	title: "Docs",
+	favicon: "https://docs.example.com/favicon.ico",
+};
+
+async function rememberChecks(): Promise<void> {
+	const byApp = await tasks.send(RememberPageTitlesCommand, { pages: [DOCS_PAGE] });
+	check("an app cannot remember the browser's page titles: only the shell does", byApp.ok, false);
+	await studio.send(RememberPageTitlesCommand, { pages: [DOCS_PAGE] });
+	check("the shell remembers a browser page's title and icon on its tab", await pageOf("n1"), [
+		"Docs",
+		DOCS_PAGE.favicon,
+	]);
+	await studio.send(RememberPageTitlesCommand, {
+		pages: [
+			{
+				...DOCS_PAGE,
+				url: "about:blank",
+				title: "Blank",
+			},
+		],
+	});
+	await studio.send(RememberPageTitlesCommand, { pages: [{ ...DOCS_PAGE, title: "" }] });
+	check("a blank page and an empty title keep the remembered title", await pageOf("n1"), ["Docs", DOCS_PAGE.favicon]);
+}
+
+async function keptChecks(): Promise<void> {
+	const store = new StoreClient(new FakeStore().invoke);
+	const at = {
+		store,
+		root: workspaceRootOf(DEFAULT.id),
+		kind: KEPT_PAGES,
+		empty: KeptPagesSchema.parse({}),
+	};
+	const first = await HeldDoc.read(at);
+	new KeptPagesGateway(first).savePage(
+		"t1",
+		{
+			title: "Board",
+			favicon: null,
+			actions: [],
+			presses: [],
+		},
+		"test",
+	);
+	await first.flush();
+	const reread = new KeptPagesGateway(await HeldDoc.read(at)).page("t1");
+	check(
+		"a recorded title survives a restart; actions and presses do not",
+		[reread.title, reread.actions],
+		["Board", []],
+	);
+}
+
 console.info = () => undefined;
 await recordChecks();
 await pressChecks();
 await titleChecks();
+await rememberChecks();
+await keptChecks();
 console.log(tally.failed ? `apps pages: ${tally.failed} check(s) failed` : "apps pages: all checks passed");
 process.exit(tally.failed ? 1 : 0);

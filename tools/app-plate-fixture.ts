@@ -44,8 +44,6 @@ const KEPT_TABS: SeededTabs = {
 			label: null,
 			essentialId: null,
 			lastAddress: null,
-			lastTitle: null,
-			lastFavicon: null,
 		},
 		{
 			id: "tab-10",
@@ -54,8 +52,6 @@ const KEPT_TABS: SeededTabs = {
 			label: null,
 			essentialId: null,
 			lastAddress: null,
-			lastTitle: null,
-			lastFavicon: null,
 		},
 	],
 	lists: {

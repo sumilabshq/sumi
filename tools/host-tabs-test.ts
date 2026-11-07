@@ -317,13 +317,11 @@ const page = {
 };
 const remembered = rememberPages(withPage, [page]);
 check(
-	"a page's address, title and icon are remembered on its tab for the next start",
+	"a page's address is remembered on its tab for the next start; its title and icon are the apps module's",
 	[
 		tabOf(movedTo(remembered, withPage), "tab-1").lastAddress,
-		tabOf(movedTo(remembered, withPage), "tab-1").lastTitle,
-		tabOf(movedTo(remembered, withPage), "tab-1").lastFavicon,
 	],
-	[page.url, page.title, page.favicon],
+	[page.url],
 );
 check(
 	"a blank page and an unchanged page remember nothing",
@@ -368,19 +366,19 @@ check(
 
 const unloaded = tabRowsOf(restarted, [], "browser", [ONE]);
 check(
-	"after a start, an unloaded tab shows the title and icon it last had, and a never-loaded one reads New tab",
+	"after a start, an unloaded tab shows its site and no icon until the apps module titles it, and a never-loaded one reads New tab",
 	[
 		unloaded.find((row) => row.id === "tab-1")?.title,
 		unloaded.find((row) => row.id === "tab-1")?.favicon,
 		unloaded.find((row) => row.id === "tab-2")?.title,
 	],
-	[page.title, page.favicon, "New tab"],
+	["duckduckgo.com", null, "New tab"],
 );
 
 const titleless = {
 	...restarted,
 	tabs: restarted.tabs.map((tab) =>
-		tab.id === "tab-3" ? { ...tab, lastAddress: "https://example.com/", lastTitle: null } : tab,
+		tab.id === "tab-3" ? { ...tab, lastAddress: "https://example.com/" } : tab,
 	),
 };
 check(

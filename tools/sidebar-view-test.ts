@@ -36,8 +36,6 @@ function tabOf(id: string, app: HostTab["app"]): HostTab {
 		label: null,
 		essentialId: null,
 		lastAddress: null,
-		lastTitle: null,
-		lastFavicon: null,
 		title: null,
 		mark: "none",
 		isFolded: false,

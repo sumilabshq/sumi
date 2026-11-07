@@ -1,12 +1,5 @@
 import type { AppPage } from "../../shared/schema/page.schema.js";
-import { PagesGateway } from "./pages.gateway.js";
-
-const EMPTY_PAGE: AppPage = {
-	title: null,
-	favicon: null,
-	actions: [],
-	presses: [],
-};
+import { EMPTY_PAGE, PagesGateway } from "./pages.gateway.js";
 
 export class MemoryPagesGateway extends PagesGateway {
 	private readonly pages = new Map<string, AppPage>();
@@ -26,5 +19,9 @@ export class MemoryPagesGateway extends PagesGateway {
 
 	override savePressesMinted(minted: number): void {
 		this.minted = minted;
+	}
+
+	override pagesChanged(): () => void {
+		return () => undefined;
 	}
 }

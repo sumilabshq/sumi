@@ -26,8 +26,6 @@ export interface HostTab extends OpenedTab {
 	readonly label: string | null;
 	readonly essentialId: string | null;
 	readonly lastAddress: string | null;
-	readonly lastTitle: string | null;
-	readonly lastFavicon: string | null;
 	readonly history?: TabHistory | undefined;
 	readonly title: string | null;
 	readonly mark: TabMark;
