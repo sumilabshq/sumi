@@ -52,7 +52,7 @@ async function tabOf(): Promise<unknown> {
 }
 
 async function historyChecks(): Promise<void> {
-	await tasks.send(RecordAppAddressCommand, { id: "t1", address: "T-1", how: "push", title: "T-1" });
+	await tasks.send(RecordAppAddressCommand, { id: "t1", address: "T-1", how: "push" });
 	await tasks.send(RecordAppAddressCommand, { id: "t1", address: "T-1?view=list", how: "replace" });
 	check("a push makes a step back; a replace makes none", await tabOf(), ["T-1?view=list", true, false]);
 	await studio.send(GoBackInTabCommand, { id: "t1" });

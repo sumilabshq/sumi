@@ -2,6 +2,7 @@ import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
 import { FilePageModule } from "@sumi/file-page/module";
 import { SumiHostPlugin } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
+import { fileNameOf } from "./features/file-page/lib/file-name.js";
 import { FileViewersSlot } from "./slots.js";
 
 export const FilesPlugin = plugin("files")
@@ -16,6 +17,7 @@ export const FilesPlugin = plugin("files")
 				view,
 				actions,
 				tabModules: () => [FilePageModule],
+				titleOf: fileNameOf,
 			})),
 		),
 	);

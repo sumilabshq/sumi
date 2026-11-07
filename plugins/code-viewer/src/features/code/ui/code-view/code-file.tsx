@@ -1,16 +1,15 @@
 import { createElement as h, useMemo } from "react";
 import type { ReactElement } from "react";
 import { ReadFileQuery } from "@sumi/contract";
-import { FileNote, SourcePage, useFileSwitches, useRecordsFileTitle } from "@sumi/files-plugin";
+import { FileNote, SourcePage, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { shownCodeOf } from "../../lib/shown-code.js";
 
 export interface CodeFileProps {
-	readonly tabId: string;
 	readonly path: string;
 }
 
-export function CodeFile({ tabId, path }: CodeFileProps): ReactElement | null {
+export function CodeFile({ path }: CodeFileProps): ReactElement | null {
 	const read = useOptionalQuery(ReadFileQuery, { path });
 	const switches = useFileSwitches();
 	const showsSecrets = switches.isOn("values");
@@ -18,7 +17,6 @@ export function CodeFile({ tabId, path }: CodeFileProps): ReactElement | null {
 		() => (read.data === null ? null : shownCodeOf(path, read.data, showsSecrets)),
 		[path, read.data, showsSecrets],
 	);
-	useRecordsFileTitle(tabId, path);
 
 	if (read.failure !== null) {
 		return <FileNote said={read.failure} />;

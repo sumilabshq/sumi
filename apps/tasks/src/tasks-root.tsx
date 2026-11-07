@@ -1,6 +1,6 @@
 import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
-import { RecordAppAddressCommand, catchLinks, wearSumiTheme } from "@sumi/contract";
+import { RecordAppPageCommand, catchLinks, wearSumiTheme } from "@sumi/contract";
 import { TaskRefSchema } from "@widgetarium/tasks";
 import { RuntimeProvider } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
@@ -85,7 +85,7 @@ function useRecordsTitle({ sumi, tabId }: SumiFrame, address: string | null): vo
 }
 
 function recordPage(sumi: Runtime, page: RecordedPage): void {
-	void sumi.send(RecordAppAddressCommand, page).then((recorded) => {
+	void sumi.send(RecordAppPageCommand, page).then((recorded) => {
 		if (!recorded.ok) {
 			console.error(`[tasks] recording the tab page was refused: ${recorded.reason}`);
 		}

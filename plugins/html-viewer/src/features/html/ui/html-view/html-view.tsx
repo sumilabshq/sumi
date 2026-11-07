@@ -16,5 +16,5 @@ export function HtmlView({ tabId }: HtmlViewProps): ReactElement | null {
 		return null;
 	}
 
-	return path === null ? <FileNote said={NO_FILE} /> : <HtmlFile tabId={tabId} path={path} />;
+	return path === null ? <FileNote said={NO_FILE} /> : <HtmlFile path={path} />;
 }

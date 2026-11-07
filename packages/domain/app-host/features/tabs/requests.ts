@@ -12,6 +12,8 @@ import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.even
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
+import { pageTitlesOf } from "../../shared/lib/page-titles/page-titles-read.js";
+import { pageTabsOfRows, pageTabsOfSidebar, titledSidebarOf, titledTabOf } from "../../shared/lib/page-titles/page-titles.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
 import { keepChatTabs, saveEssentials, sendLogged, settleAsked, tabsAskOf } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -34,7 +36,11 @@ interface EssentialDrop {
 export const AppTabsQuery = query("app-tabs")
 	.public()
 	.output(AppTabsSchema)
-	.handle(async (_input, { send, ...injects }) => send(TabRowsQuery, { at: await tabsAskOf({ injects, send }) }));
+	.handle(async (_input, { send, ...injects }) => {
+		const rows = await send(TabRowsQuery, { at: await tabsAskOf({ injects, send }) });
+		const titles = await pageTitlesOf(send, pageTabsOfRows(rows.tabs));
+		return { ...rows, tabs: rows.tabs.map((tab) => titledTabOf(tab, titles)) };
+	});
 
 export const TabsSidebarQuery = query("tabs-sidebar")
 	.public()
@@ -42,7 +48,8 @@ export const TabsSidebarQuery = query("tabs-sidebar")
 	.handle(async (_input, { send, ...injects }) => {
 		const [at] = await Promise.all([tabsAskOf({ injects, send }), injects.essentials.essentialsLoaded()]);
 		const essentials = essentialsOf(injects.essentials.essentials()).essentials;
-		return send(SidebarQuery, { at, essentials });
+		const sidebar = await send(SidebarQuery, { at, essentials });
+		return titledSidebarOf(sidebar, await pageTitlesOf(send, pageTabsOfSidebar(sidebar)));
 	});
 
 // TODO: a transport that cannot abort (Tauri IPC) leaves held-tabs stale after a dropped call

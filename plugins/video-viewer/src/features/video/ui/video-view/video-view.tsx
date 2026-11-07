@@ -16,5 +16,5 @@ export function VideoView({ tabId }: VideoViewProps): ReactElement | null {
 		return null;
 	}
 
-	return path === null ? <FileNote said={NO_FILE} /> : <VideoFile tabId={tabId} path={path} />;
+	return path === null ? <FileNote said={NO_FILE} /> : <VideoFile path={path} />;
 }

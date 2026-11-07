@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { AppsQuery } from "@sumi/apps";
+import { AppPageQuery, AppsQuery } from "@sumi/apps";
 import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import { AppTabQuery, GoBackInTabCommand, GoForwardInTabCommand } from "@widgetarium/places";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
@@ -18,6 +18,7 @@ const HOME_ADDRESS = "";
 export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 	const tab = useOptionalQuery(AppTabQuery, { id: tabId }).data;
 	const { apps } = useQuery(AppsQuery).data;
+	const pageTitle = useOptionalQuery(AppPageQuery, { id: tabId }).data?.title ?? null;
 	const goBack = useCommand(GoBackInTabCommand);
 	const goForward = useCommand(GoForwardInTabCommand);
 
@@ -49,7 +50,7 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 				<PlateCrumb
 					words={{
 						first: apps.find(({ id }) => id === app)?.title ?? app,
-						second: tab.address === HOME_ADDRESS || tab.address === null ? null : (tab.title ?? tab.address),
+						second: tab.address === HOME_ADDRESS || tab.address === null ? null : (pageTitle ?? tab.address),
 					}}
 					isPressable
 				/>

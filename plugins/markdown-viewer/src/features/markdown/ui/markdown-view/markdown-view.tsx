@@ -16,5 +16,5 @@ export function MarkdownView({ tabId }: MarkdownViewProps): ReactElement | null 
 		return null;
 	}
 
-	return path === null ? <FileNote said={NO_FILE} /> : <MarkdownFile tabId={tabId} path={path} />;
+	return path === null ? <FileNote said={NO_FILE} /> : <MarkdownFile path={path} />;
 }

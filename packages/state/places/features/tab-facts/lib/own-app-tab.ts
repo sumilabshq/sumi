@@ -10,7 +10,7 @@ export function ownAppTabOf(tab: KeptTab): OwnAppTab {
 		id: tab.id,
 		app: tab.app,
 		address: tab.lastAddress,
-		title: tab.lastTitle ?? tab.title,
+		title: tab.title,
 		chatId: holdsTabs(tab) ? tab.id : null,
 		canGoBack: canStep(tab, "back"),
 		canGoForward: canStep(tab, "forward"),

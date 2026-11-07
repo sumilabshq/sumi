@@ -5,36 +5,73 @@ import { command, query } from "#module";
 import {
 	AppPageAskSchema,
 	AppPageSchema,
+	PageTitlesAskSchema,
+	PageTitlesSchema,
 	PressAppActionSchema,
 	RecordedAppPageSchema,
 	TakeActionPressSchema,
 	TakenPressSchema,
 } from "../../shared/schema/page.schema.js";
+import { pageRecordedOf, refuseForeignFavicon } from "./lib/page-records.js";
 import { pressTakenFrom, refusePress, withPressQueued } from "./lib/presses.js";
 
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
-const ONLY_SHELL_PRESSES = "the app {app} cannot press header actions: only the shell presses them";
+const ONLY_SHELL = "the app {app} cannot {what}: only the shell does";
 
 export const AppPageQuery = query("app-page")
 	.public()
 	.input(AppPageAskSchema)
 	.output(AppPageSchema)
-	.handle(async ({ id }, { pages, send, user }) => {
-		await refuseForeignTab(send, user, id);
-		return pages.page(id);
+	.handle(async ({ id }, { pages, pageTitles, send, user }) => {
+		const tab = await ownTabOf(send, user, id);
+		const page = pages.page(id);
+		return {
+			...page,
+			title: page.title ?? pageTitles.titleOf(tab.app, tab.address),
+		};
+	});
+
+export const PageTitlesQuery = query("page-titles")
+	.public()
+	.input(PageTitlesAskSchema)
+	.output(PageTitlesSchema)
+	.handle(({ tabs }, { appList, pages, pageTitles, user }) => {
+		if (user !== null) {
+			return refuse(ONLY_SHELL.replace("{app}", user.id).replace("{what}", "read the titles of every tab"));
+		}
+
+		const faces = appList.apps();
+		return {
+			pages: tabs.map(({ id, app, address }) => {
+				const page = pages.page(id);
+				const face = faces.find((each) => each.id === app);
+				return {
+					id,
+					title: page.title ?? pageTitles.titleOf(app, address),
+					favicon: page.favicon ?? face?.iconUrl ?? null,
+					appTitle: face?.title ?? null,
+				};
+			}),
+		};
 	});
 
 export const RecordAppPageCommand = command("record-app-page")
 	.public()
 	.input(RecordedAppPageSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ id, actions }, { pages, send, user, invalidate }) => {
-		await refuseForeignTab(send, user, id);
-		const was = pages.page(id);
-		const reason = `tab ${id} actions ${idsOf(was.actions)} → ${idsOf(actions)} (the page reported them)`;
-		pages.savePage(id, { ...was, actions }, reason);
+	.handle(async (recorded, { pages, send, user, invalidate }) => {
+		const tab = await ownTabOf(send, user, recorded.id);
+		const refusal = refuseForeignFavicon(tab.app, recorded.favicon);
+
+		if (refusal !== null) {
+			return refuse(refusal);
+		}
+
+		const { page, reason } = pageRecordedOf(pages.page(recorded.id), recorded);
+		pages.savePage(recorded.id, page, reason);
 		console.info(`[apps] ${reason}`);
-		invalidate(AppPageQuery, { id });
+		invalidate(AppPageQuery, { id: recorded.id });
+		invalidate(PageTitlesQuery);
 	});
 
 export const PressAppActionCommand = command("press-app-action")
@@ -43,7 +80,7 @@ export const PressAppActionCommand = command("press-app-action")
 	.idempotencyKey(PerCall)
 	.handle(({ tab, action }, { pages, user, invalidate }) => {
 		if (user !== null) {
-			return refuse(ONLY_SHELL_PRESSES.replace("{app}", user.id));
+			return refuse(ONLY_SHELL.replace("{app}", user.id).replace("{what}", "press header actions"));
 		}
 
 		const was = pages.page(tab);
@@ -68,7 +105,7 @@ export const TakeActionPressCommand = command("take-action-press")
 	.output(TakenPressSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ id, press }, { pages, send, user, invalidate }) => {
-		await refuseForeignTab(send, user, id);
+		await ownTabOf(send, user, id);
 		const taken = pressTakenFrom(pages.page(id), id, press);
 
 		if (typeof taken === "string") {
@@ -82,18 +119,12 @@ export const TakeActionPressCommand = command("take-action-press")
 		return taken.press;
 	});
 
-async function refuseForeignTab(send: Send, user: User | null, id: string): Promise<void> {
-	if (user === null) {
-		return;
-	}
-
+async function ownTabOf(send: Send, user: User | null, id: string): Promise<{ app: string; address: string | null }> {
 	const tab = await send(AppTabQuery, { id });
 
-	if (tab.app !== user.id) {
-		refuse(NOT_ITS_TAB.replace("{id}", id).replace("{app}", user.id));
+	if (user !== null && tab.app !== user.id) {
+		return refuse(NOT_ITS_TAB.replace("{id}", id).replace("{app}", user.id));
 	}
-}
 
-function idsOf(actions: readonly { readonly id: string }[]): string {
-	return actions.map(({ id }) => id).join(",") || "none";
+	return tab;
 }

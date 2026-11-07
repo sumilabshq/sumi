@@ -2,7 +2,6 @@ export * from "./slots.js";
 export * from "./plugin.js";
 export { useFileTab } from "./shared/lib/use-file-tab.js";
 export type { FileTab } from "./shared/lib/use-file-tab.js";
-export { useRecordsFileTitle } from "./features/file-page/lib/use-records-file-title.js";
 export { FileNote } from "./features/file-page/ui/file-note/file-note.js";
 export { SourcePage } from "./features/file-page/ui/source-page/source-page.js";
 export type { SourcePageProps } from "./features/file-page/ui/source-page/source-page.js";

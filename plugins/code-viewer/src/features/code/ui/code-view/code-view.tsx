@@ -16,5 +16,5 @@ export function CodeView({ tabId }: CodeViewProps): ReactElement | null {
 		return null;
 	}
 
-	return path === null ? <FileNote said={NO_FILE} /> : <CodeFile tabId={tabId} path={path} />;
+	return path === null ? <FileNote said={NO_FILE} /> : <CodeFile path={path} />;
 }

@@ -66,19 +66,6 @@ export const AppAddressSchema = z.object({
 	id: z.string().min(1),
 	address: z.string().max(2048).optional(),
 	how: z.enum(["push", "replace"]).optional(),
-	title: z.string().max(200).optional(),
-	favicon: z
-		.union([
-			z
-				.string()
-				.max(65_536)
-				.regex(/^data:image\//),
-			z
-				.string()
-				.max(2048)
-				.regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
-		])
-		.optional(),
 });
 
 export type AppAddress = z.infer<typeof AppAddressSchema>;

@@ -28,15 +28,55 @@ export const AppPageAskSchema = z.object({
 });
 
 export const AppPageSchema = z.object({
+	title: z.string().nullable(),
+	favicon: z.string().nullable(),
 	actions: z.array(AppActionSchema),
 	presses: z.array(PressSchema),
 });
 
 export type AppPage = z.infer<typeof AppPageSchema>;
 
+export const PageFaviconSchema = z.union([
+	z
+		.string()
+		.max(65_536)
+		.regex(/^data:image\//),
+	z
+		.string()
+		.max(2048)
+		.regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
+]);
+
 export const RecordedAppPageSchema = z.object({
 	id: z.string().min(1),
-	actions: z.array(AppActionSchema).max(6),
+	title: z.string().max(200).optional(),
+	favicon: PageFaviconSchema.optional(),
+	actions: z.array(AppActionSchema).max(6).optional(),
+});
+
+export const PageTabSchema = z.object({
+	id: z.string().min(1),
+	app: z.string().min(1),
+	address: z.string().nullable(),
+});
+
+export type PageTab = z.infer<typeof PageTabSchema>;
+
+export const PageTitlesAskSchema = z.object({
+	tabs: z.array(PageTabSchema),
+});
+
+export const PageTitleSchema = z.object({
+	id: z.string(),
+	title: z.string().nullable(),
+	favicon: z.string().nullable(),
+	appTitle: z.string().nullable(),
+});
+
+export type PageTitle = z.infer<typeof PageTitleSchema>;
+
+export const PageTitlesSchema = z.object({
+	pages: z.array(PageTitleSchema),
 });
 
 export type RecordedAppPage = z.infer<typeof RecordedAppPageSchema>;

@@ -5,6 +5,7 @@ import { plugin } from "@widgetarium/plugin-framework";
 import { appsTabPageOf } from "./features/app-tab/ui/app-tab/apps-tab-page.js";
 import { AppsSlot } from "./slots.js";
 import { faceOf } from "./features/app-tab/lib/face-of.js";
+import { titlesOfApps } from "./features/app-tab/lib/titles-of-apps.js";
 
 export const AppsPlugin = plugin("apps")
 	.require(SumiHostPlugin)
@@ -12,7 +13,8 @@ export const AppsPlugin = plugin("apps")
 	.fill(
 		BackgroundModulesSlot({
 			id: "apps",
-			module: ({ fillsOf }) => AppsModule({ apps: fillsOf(AppsSlot).map(faceOf) }),
+			module: ({ fillsOf }) =>
+				AppsModule({ apps: fillsOf(AppsSlot).map(faceOf), titlesOf: titlesOfApps(fillsOf(AppsSlot)) }),
 			contract: AppsContract,
 		}),
 		TabPageSlot({ id: "apps", tabPage: ({ fillsOf }) => appsTabPageOf(fillsOf(AppsSlot)) }),

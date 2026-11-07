@@ -16,5 +16,5 @@ export function ImageView({ tabId }: ImageViewProps): ReactElement | null {
 		return null;
 	}
 
-	return path === null ? <FileNote said={NO_FILE} /> : <ImageFile tabId={tabId} path={path} />;
+	return path === null ? <FileNote said={NO_FILE} /> : <ImageFile path={path} />;
 }

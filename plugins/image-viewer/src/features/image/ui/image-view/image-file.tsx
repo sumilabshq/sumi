@@ -1,19 +1,17 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { ReadFileBytesQuery } from "@sumi/contract";
-import { FileNote, useFileSwitches, useRecordsFileTitle } from "@sumi/files-plugin";
+import { FileNote, useFileSwitches } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { imageSourceOf } from "../../lib/image-types.js";
 
 export interface ImageFileProps {
-	readonly tabId: string;
 	readonly path: string;
 }
 
-export function ImageFile({ tabId, path }: ImageFileProps): ReactElement | null {
+export function ImageFile({ path }: ImageFileProps): ReactElement | null {
 	const read = useOptionalQuery(ReadFileBytesQuery, { path });
 	const isActualSize = useFileSwitches().isOn("size");
-	useRecordsFileTitle(tabId, path);
 
 	if (read.failure !== null) {
 		return <FileNote said={read.failure} />;

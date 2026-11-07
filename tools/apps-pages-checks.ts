@@ -4,6 +4,7 @@ import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/s
 import {
 	AppPageQuery,
 	AppsModule,
+	PageTitlesQuery,
 	PressAppActionCommand,
 	RecordAppPageCommand,
 	TakeActionPressCommand,
@@ -17,11 +18,28 @@ import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/fea
 import { check, tally } from "./check-helpers.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 
+const TASKS_ICON = "sumi-app://tasks/1.0.0/icon.png";
+const FACES = [
+	{
+		id: "tasks",
+		title: "Tasks",
+		iconUrl: TASKS_ICON,
+		art: null,
+		isListed: true,
+	},
+	{
+		id: "notes",
+		title: "Notes",
+		iconUrl: null,
+		art: null,
+		isListed: true,
+	},
+];
 const tabs = new MemoryTabsGateway(
 	placedTabsOf({
 		tabs: [
 			{ id: "t1", app: "tasks", pageId: null, label: null, lastAddress: "" },
-			{ id: "n1", app: "notes", pageId: null, label: null, lastAddress: "" },
+			{ id: "n1", app: "notes", pageId: null, label: null, lastAddress: "docs/readme.md" },
 		],
 		shownId: "t1",
 		minted: 2,
@@ -32,7 +50,7 @@ const served = dataFrameworkMiddleware(
 	runtime()
 		.modules(
 			RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }),
-			RunnableAppsModule({ apps: [] }),
+			RunnableAppsModule({ apps: FACES, titlesOf: new Map([["notes", (address: string) => `Note ${address}`]]) }),
 		)
 		.start({ platform: "server", env: {}, scope: { workspaceId: "apps-pages" } }),
 	{ authenticate: new AppCallerAuthenticate() },
@@ -101,8 +119,42 @@ async function pressChecks(): Promise<void> {
 	check("nothing waits after the press is taken", await pressesOf(), []);
 }
 
+async function pageOf(id: string): Promise<unknown> {
+	const answer = await studio.send(AppPageQuery, { id });
+	return answer.ok ? [answer.output.title, answer.output.favicon] : answer.reason;
+}
+
+async function refusedOf(page: Record<string, string>): Promise<boolean> {
+	return !(await tasks.send(RecordAppPageCommand, { id: "t1", ...page })).ok;
+}
+
+async function titlesOf(app: Runtime): Promise<unknown> {
+	const answer = await app.send(PageTitlesQuery, {
+		tabs: [
+			{ id: "t1", app: "tasks", address: "" },
+			{ id: "n1", app: "notes", address: "docs/readme.md" },
+		],
+	});
+	return answer.ok ? answer.output.pages.map(({ title, favicon, appTitle }) => [title, favicon, appTitle]) : false;
+}
+
+async function titleChecks(): Promise<void> {
+	check("a title past 200 characters is refused", await refusedOf({ title: "t".repeat(201) }), true);
+	check("a favicon on the web is refused", await refusedOf({ favicon: "https://example.com/icon.png" }), true);
+	check("another app's favicon is refused", await refusedOf({ favicon: "sumi-app://other/1.0.0/icon.png" }), true);
+	check("an unrecorded page takes its title from the app's titleOf", await pageOf("n1"), ["Note docs/readme.md", null]);
+	await tasks.send(RecordAppPageCommand, { id: "t1", title: "Board", favicon: TASKS_ICON });
+	check("the app's own title and favicon are kept", await pageOf("t1"), ["Board", TASKS_ICON]);
+	check("an app cannot read every tab's title", await titlesOf(tasks), false);
+	check("the shell reads every tab's title, favicon and app title", await titlesOf(studio), [
+		["Board", TASKS_ICON, "Tasks"],
+		["Note docs/readme.md", null, "Notes"],
+	]);
+}
+
 console.info = () => undefined;
 await recordChecks();
 await pressChecks();
+await titleChecks();
 console.log(tally.failed ? `apps pages: ${tally.failed} check(s) failed` : "apps pages: all checks passed");
 process.exit(tally.failed ? 1 : 0);

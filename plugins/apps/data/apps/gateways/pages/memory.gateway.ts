@@ -2,6 +2,8 @@ import type { AppPage } from "../../shared/schema/page.schema.js";
 import { PagesGateway } from "./pages.gateway.js";
 
 const EMPTY_PAGE: AppPage = {
+	title: null,
+	favicon: null,
 	actions: [],
 	presses: [],
 };
