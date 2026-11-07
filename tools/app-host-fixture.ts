@@ -1,4 +1,4 @@
-import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -147,7 +147,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const studioApp = app()
 		.modules(
 			AppHostModule.with({ ...appHost }),
-			TerminalAppsModule,
+			PluginAppsModule,
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...layout }),
 			WorkspacesModule.with(workspacesOf(seed.chatTitle ?? null)),

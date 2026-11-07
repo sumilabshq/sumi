@@ -31,7 +31,7 @@ export function FrameWindow({ app, url, tabId }: FrameWindowProps): ReactElement
 			src={src}
 			sandbox={APP_FRAME_SANDBOX}
 			data-app-frame={app}
-			data-app-frame-tab={tabId}
+			data-page-anchor-tab={tabId}
 			data-app-frame-src={url}
 			data-app-frame-answered={isAnswered ? "" : undefined}
 		/>

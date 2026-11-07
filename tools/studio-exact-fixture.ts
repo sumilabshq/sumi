@@ -1,4 +1,4 @@
-import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -179,7 +179,7 @@ export function exactStudio({
 	const boardPages = new BoardPagesGateway();
 	const studioApp = app()
 		.modules(
-			TerminalAppsModule,
+			PluginAppsModule,
 			AppHostModule.with({
 				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,

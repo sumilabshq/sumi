@@ -64,7 +64,7 @@ plugins/<name>/
 
 ## Example: apps
 
-`plugins/apps` declares `AppsSlot` (`{ id, title, icon, view }`) and owns `AppsModule` (`plugins/apps/data/apps`, `@sumi/apps`): the core starts it with the plugin's own fills, and `AppsQuery` answers the apps a workspace has. The plugin fills the host's `TabPageSlot` with the page that draws an app's view. `plugins/terminal` requires it and fills `AppsSlot` with the Terminal. The shell's menu reads `AppsQuery`; nothing reads `AppsSlot` but the apps plugin.
+`plugins/apps` declares `AppsSlot` (`{ id, title, icon, view }`) and owns `AppsModule` (`plugins/apps/data/apps`, `@sumi/apps`): the core starts it with the plugin's own fills, and `AppsQuery` answers the apps a workspace has. The plugin fills the host's `TabPageSlot` with the page that draws an app's view. `plugins/terminal` and `plugins/browser-page` require it and fill `AppsSlot` with the Terminal and the Browser. The shell's menu reads `AppsQuery`; nothing reads `AppsSlot` but the apps plugin.
 
 TODO: places' tabs (open, closed, history) move into the apps plugin; decided with the user, not started.
 TODO: `app-host` (`packages/domain`) imports `@sumi/apps` until the shell's tabs move into the apps plugin.

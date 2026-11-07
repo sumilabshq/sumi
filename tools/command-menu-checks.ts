@@ -1,4 +1,4 @@
-import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import assert from "node:assert/strict";
 import { filledWithShown } from "../packages/domain/command-menu/features/opening/lib/shown-text.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
@@ -31,7 +31,7 @@ import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver } from "./places-fixture.ts";
 
 const studio = app()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, TerminalAppsModule, CommandMenuModule)
+	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, CommandMenuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 
@@ -208,7 +208,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	const withPages = app()
 		.modules(
 			AppHostModule.with({ ...appHostFakesOf({}) }),
-			TerminalAppsModule,
+			PluginAppsModule,
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...partsOf() }),
 			WorkspacesModule,
@@ -332,7 +332,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 				}),
 			),
 			AppHostModule,
-			TerminalAppsModule,
+			PluginAppsModule,
 			CommandMenuModule,
 		)
 		.imports(placesOver())

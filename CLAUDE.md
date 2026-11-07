@@ -76,6 +76,7 @@ plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers 
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
+plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot
       ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, command-menu, web-page, mascot, fixture-billing
 packages/state/*              app-state data modules: layout, places, appearance

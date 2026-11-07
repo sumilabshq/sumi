@@ -1,16 +1,18 @@
 import type { PageArea } from "@widgetarium/web-page";
 
-const NO_FRAME = "no app frame holds tab {tab}, so its web page has nowhere to stand";
+const NO_ANCHOR = "no app frame or view holds tab {tab}, so its web page has nowhere to stand";
+
+const PAGE_ANCHOR_TAB = "data-page-anchor-tab";
 
 export class PageHole {
 	readonly element = document.createElement("div");
 	private readonly resized = new ResizeObserver(() => this.lay());
 
 	private constructor(
-		private readonly frame: HTMLIFrameElement,
+		private readonly anchor: HTMLElement,
 		private placed: PageArea,
 	) {
-		this.resized.observe(frame);
+		this.resized.observe(anchor);
 		window.addEventListener("resize", this.lay);
 		window.addEventListener("scroll", this.lay, {
 			capture: true,
@@ -20,14 +22,14 @@ export class PageHole {
 		document.body.append(this.element);
 	}
 
-	static overFrame(tab: string, area: PageArea): PageHole {
-		const frame = document.querySelector(`iframe[data-app-frame-tab="${CSS.escape(tab)}"]`);
+	static overAnchor(tab: string, area: PageArea): PageHole {
+		const anchor = document.querySelector(`[${PAGE_ANCHOR_TAB}="${CSS.escape(tab)}"]`);
 
-		if (!(frame instanceof HTMLIFrameElement)) {
-			throw new Error(NO_FRAME.replace("{tab}", tab));
+		if (!(anchor instanceof HTMLElement)) {
+			throw new Error(NO_ANCHOR.replace("{tab}", tab));
 		}
 
-		return new PageHole(frame, area);
+		return new PageHole(anchor, area);
 	}
 
 	get area(): PageArea {
@@ -49,9 +51,9 @@ export class PageHole {
 	}
 
 	private readonly lay = (): void => {
-		const box = this.frame.getBoundingClientRect();
+		const box = this.anchor.getBoundingClientRect();
 
-		if (!this.frame.isConnected || box.width === 0 || box.height === 0) {
+		if (!this.anchor.isConnected || box.width === 0 || box.height === 0) {
 			this.element.style.display = "none";
 			return;
 		}

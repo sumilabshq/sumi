@@ -17,7 +17,7 @@ import { workspaceProfileOf } from "../apps/tauri/src/plugins/workspace-profile.
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
-import { TERMINAL_FACE } from "./plugin-apps-fixture.ts";
+import { BROWSER_PAGE_FACE, TERMINAL_FACE } from "./plugin-apps-fixture.ts";
 
 const boardText: { text: string | null } = {
 	text: null,
@@ -32,7 +32,7 @@ const offers = {
 		},
 	},
 };
-const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/"];
+const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 
 function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
@@ -97,11 +97,15 @@ check(
 	true,
 );
 check(
-	"the apps plugin's module answers the terminal plugin's app, read from the apps plugin's own slot",
+	"the apps plugin's module answers the terminal and browser-page plugins' apps, read from the apps plugin's own slot",
 	await appIdsAnsweredBy(resolved),
-	{ apps: [TERMINAL_FACE] },
+	{ apps: [TERMINAL_FACE, BROWSER_PAGE_FACE] },
 );
-check("the apps plugin's tab page draws the terminal", resolved.tabPage?.draws("terminal"), true);
+check(
+	"the apps plugin's tab page draws the terminal and the browser page",
+	[resolved.tabPage?.draws("terminal"), resolved.tabPage?.draws("browser-page")],
+	[true, true],
+);
 
 const emptyProfile = resolvePlugins({ plugins: [] });
 check(

@@ -18,6 +18,7 @@ import {
 	TabPageSlot,
 } from "@sumi/sumi-host-plugin";
 import type { CoreOffers, DrawnTabPage } from "@sumi/sumi-host-plugin";
+import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
 import { TerminalPlugin } from "@sumi/terminal-plugin";
 
 export type HostOffers = Omit<CoreOffers, "fillsOf">;
@@ -33,14 +34,14 @@ export interface ResolvedPlugins {
 	readonly refusals: readonly string[];
 }
 
-const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, MainPlugin, TerminalPlugin];
+const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, MainPlugin, TerminalPlugin, BrowserPagePlugin];
 const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
 
 const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, AppsPlugin.id, MainPlugin.id];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
-	plugins: [TerminalPlugin.id],
+	plugins: [TerminalPlugin.id, BrowserPagePlugin.id],
 };
 
 export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {

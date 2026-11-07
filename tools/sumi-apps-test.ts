@@ -355,24 +355,56 @@ async function pressInFrame(page: AskedPage, app: string, selector: string): Pro
 	return true;
 }
 
-async function typedInFrame(page: AskedPage, app: string, selector: string, text: string): Promise<boolean> {
-	const target = JSON.stringify(selector);
-	const isReached = await frameSees(page, app, `document.querySelector(${target}) !== null`);
+interface TypingReach {
+	readonly page: AskedPage;
+	readonly sees: (expression: string) => Promise<boolean>;
+	readonly press: (selector: string) => Promise<boolean>;
+	readonly ask: (expression: string) => Promise<unknown>;
+}
 
-	if (!isReached) {
+async function typedThrough({ page, sees, press, ask }: TypingReach, selector: string, text: string): Promise<boolean> {
+	const target = JSON.stringify(selector);
+
+	if (!(await sees(`document.querySelector(${target}) !== null`))) {
 		return false;
 	}
 
-	await pressInFrame(page, app, selector);
-	const isFocused = (await inFrame(page, app, `document.activeElement === document.querySelector(${target})`)) === true;
+	await press(selector);
+	const isFocused = (await ask(`document.activeElement === document.querySelector(${target})`)) === true;
 
 	if (!isFocused) {
-		await inFrame(page, app, `document.querySelector(${target}).focus()`);
+		await ask(`document.querySelector(${target}).focus()`);
 	}
 
 	await page.typeText(text);
 	await page.pressEnter();
 	return isFocused;
+}
+
+async function typedInFrame(page: AskedPage, app: string, selector: string, text: string): Promise<boolean> {
+	return typedThrough(
+		{
+			page,
+			sees: (expression) => frameSees(page, app, expression),
+			press: (pressed) => pressInFrame(page, app, pressed),
+			ask: (expression) => inFrame(page, app, expression),
+		},
+		selector,
+		text,
+	);
+}
+
+async function typedOnPage(page: AskedPage, selector: string, text: string): Promise<boolean> {
+	return typedThrough(
+		{
+			page,
+			sees: (expression) => pageSees(page, expression),
+			press: (pressed) => pressOnPage(page, pressed),
+			ask: (expression) => page.ask(expression),
+		},
+		selector,
+		text,
+	);
 }
 
 async function showAppTab(page: AskedPage, app: SumiAppId): Promise<void> {
@@ -607,9 +639,9 @@ async function shownTabIs(page: AskedPage, isWanted: (row: TabRow) => boolean): 
 
 async function webLinkChecks(page: AskedPage): Promise<void> {
 	await pressInFrame(page, "tasks", "#e2e-web");
-	const drawn = `[...document.querySelectorAll('iframe[src*="/${WEB_PAGE_APP}/"]')].some((each) => each.getClientRects().length > 0)`;
+	const drawn = `[...document.querySelectorAll('[data-app-view="${WEB_PAGE_APP}"]')].some((each) => each.getClientRects().length > 0)`;
 	check(
-		`tasks: an https link opens a shown ${WEB_PAGE_APP} tab at that address, drawn as the registered app`,
+		`tasks: an https link opens a shown ${WEB_PAGE_APP} tab at that address, drawn as the plugin's view`,
 		[
 			await shownTabIs(page, (row) => row.app === WEB_PAGE_APP && row.address === WEB_LINK),
 			await waitUntil(async () => (await page.ask(drawn)) === true, WAIT_MS, STEP_MS),
@@ -694,19 +726,27 @@ async function terminalChecks(page: AskedPage): Promise<void> {
 	);
 }
 
+const BROWSER_ANCHOR_SELECTOR = `[data-page-anchor-tab="${sumiTabOf("browser-page")}"]`;
+
 async function browserPageChecks(page: AskedPage): Promise<void> {
 	await showAppTab(page, "browser-page");
 	check(
 		"browser-page: pressing the address field focuses it",
-		await typedInFrame(page, "browser-page", 'input[aria-label="Search or type an address"]', WEB_ADDRESS),
+		await typedOnPage(page, 'input[aria-label="Search or type an address"]', WEB_ADDRESS),
 		true,
 	);
 	check(
 		"browser-page: WebPageQuery (memory fake) answers the opened page, settled",
-		await frameSees(
+		await pageSees(
 			page,
-			"browser-page",
 			`document.querySelector(".wg-browser-page-area:not([data-loading]) [data-browser-pages]") !== null`,
+		),
+		true,
+	);
+	check(
+		"browser-page: the native page's anchor is the view's own container, the one the page area is measured in",
+		await page.ask(
+			`(() => { const anchor = document.querySelector(${JSON.stringify(BROWSER_ANCHOR_SELECTOR)}); const root = document.querySelector("[data-browser-root]"); return anchor?.tagName === "DIV" && anchor.contains(root) && ["x", "y"].every((side) => anchor.getBoundingClientRect()[side] === root.getBoundingClientRect()[side]); })()`,
 		),
 		true,
 	);
@@ -739,8 +779,8 @@ async function browserActionChecks(page: AskedPage): Promise<void> {
 		true,
 	);
 	check(
-		"browser-page: the frame draws no plate or header row of its own",
-		await inFrame(page, "browser-page", `document.querySelector(".wg-plate-head, .wg-app-plate") === null`),
+		"browser-page: the view draws no plate or header row of its own",
+		await page.ask(`document.querySelector("[data-browser-root] :is(.wg-plate-head, .wg-app-plate)") === null`),
 		true,
 	);
 	await pressInPage(page, '[data-app-action="reload"]');

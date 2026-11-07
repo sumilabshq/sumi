@@ -62,7 +62,7 @@ class BrowserModuleWebPages implements NativeWebPages {
 	}
 
 	private async attachHole(tab: string, area: PageArea): Promise<PageHole> {
-		const hole = PageHole.overFrame(tab, area);
+		const hole = PageHole.overAnchor(tab, area);
 
 		try {
 			await throwIfRefused(

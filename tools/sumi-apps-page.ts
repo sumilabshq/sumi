@@ -1,4 +1,4 @@
-import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
@@ -95,7 +95,7 @@ const studioApp = app()
 			}),
 		),
 		AppHostModule,
-		TerminalAppsModule,
+		PluginAppsModule,
 		CommandMenuModule,
 	)
 	.imports(PlacesModule.over(core), TasksModule.over(core))

@@ -1,4 +1,4 @@
-import { TerminalAppsModule } from "./plugin-apps-fixture.ts";
+import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -29,7 +29,7 @@ export function studioAppOf({
 }: StudioAppParts): StartedApp {
 	return app()
 		.modules(
-			TerminalAppsModule,
+			PluginAppsModule,
 			browser === undefined ? BrowserModule : BrowserModule.with(browser),
 			LayoutModule,
 			workspaces === undefined ? WorkspacesModule : WorkspacesModule.with(workspaces),

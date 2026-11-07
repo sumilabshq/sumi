@@ -3,12 +3,6 @@ import type { RegisteredApp } from "../registered-app.js";
 
 export const REGISTERED_APPS: readonly RegisteredApp[] = [
 	{
-		id: "browser-page",
-		name: "Browser",
-		ui: "index.html",
-		build: "apps/browser-page/dist",
-	},
-	{
 		id: "chat",
 		name: "Chat",
 		ui: "index.html",

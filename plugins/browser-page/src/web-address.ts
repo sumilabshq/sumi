@@ -6,12 +6,12 @@ const LOOKS_LIKE_A_HOST = /^[^\s/]+\.[^\s/]+(\/.*)?$|^localhost(:\d+)?(\/.*)?$/i
 export function webAddressOf(typed: string): string {
 	const address = typed.trim();
 
-	if (HAS_SCHEME.test(address) && !LOOKS_LIKE_A_HOST.test(address)) {
-		return address;
-	}
-
 	if (LOOKS_LIKE_A_HOST.test(address)) {
 		return `https://${address}`;
+	}
+
+	if (HAS_SCHEME.test(address)) {
+		return address;
 	}
 
 	return searchAddressOf(address);
