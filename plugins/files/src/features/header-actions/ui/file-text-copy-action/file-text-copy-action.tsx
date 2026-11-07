@@ -11,6 +11,9 @@ export interface FileTextCopyActionProps {
 
 export function FileTextCopyAction({ tabId }: FileTextCopyActionProps): ReactElement {
 	const { path } = useFileTab(tabId);
-	const read = useOptionalQuery(ReadFileQuery, { path: path ?? "" });
-	return <CopyAction copied={path === null ? null : read.data} />;
+	return path === null ? <CopyAction copied={null} /> : <KnownFileTextCopy path={path} />;
+}
+
+function KnownFileTextCopy({ path }: { readonly path: string }): ReactElement {
+	return <CopyAction copied={useOptionalQuery(ReadFileQuery, { path }).data} />;
 }

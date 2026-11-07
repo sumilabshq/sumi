@@ -11,8 +11,11 @@ export interface CodeCopyActionProps {
 
 export function CodeCopyAction({ tabId }: CodeCopyActionProps): ReactElement {
 	const { path } = useFileTab(tabId);
-	const read = useOptionalQuery(ReadFileQuery, { path: path ?? "" });
+	return path === null ? <CopyAction copied={null} /> : <KnownCodeCopy path={path} />;
+}
+
+function KnownCodeCopy({ path }: { readonly path: string }): ReactElement {
+	const read = useOptionalQuery(ReadFileQuery, { path });
 	const showsSecrets = useFileSwitches().isOn("values");
-	const copied = path === null || read.data === null ? null : shownCodeOf(path, read.data, showsSecrets).body;
-	return <CopyAction copied={copied} />;
+	return <CopyAction copied={read.data === null ? null : shownCodeOf(path, read.data, showsSecrets).body} />;
 }
