@@ -16,7 +16,7 @@ export interface AssistantChatProps {
 const NOT_READ = "The assistant's setup could not be read: {why}";
 
 export function AssistantChat({ lead, title, cards, chatId }: AssistantChatProps): ReactElement {
-	const { data: setup, failure } = useOptionalQuery(AgentSetupQuery);
+	const { data: setup, failure } = useOptionalQuery(AgentSetupQuery, { chat: chatId ?? null });
 
 	if (setup === null && failure === null) {
 		return <SetupUnread lead={lead} title={title} />;

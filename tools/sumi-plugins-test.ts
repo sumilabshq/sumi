@@ -170,6 +170,19 @@ check(
 	hostSourcesNaming(["@widgetarium/web-page", "WebPageModule", "NativeWebPages", "nativeWebPagesOver"]),
 	[],
 );
+check(
+	"the chat plugin serves one assistant per window through the host's window server modules slot",
+	resolved.windowServerModules.map(({ id }) => id),
+	["chat/assistant"],
+);
+check(
+	"no source starts an assistant per chat: no per-chat app, no host narrowed to a chat outside the module's gateways",
+	[
+		...["ChatApps", "chatAppOf"].flatMap(sourcesNaming),
+		...sourcesNaming("hostForChat").filter((file) => !file.includes("plugins/chat/data/assistant/gateways/")),
+	],
+	[],
+);
 
 const emptyProfile = resolvePlugins({ plugins: [] });
 check(

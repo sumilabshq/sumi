@@ -3,6 +3,7 @@ import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
 import { SendMessageCommand } from "@widgetarium/assistant";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
+import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface ChangeHeld {
 	readonly report: Report;
@@ -13,6 +14,7 @@ export interface ChangeHeld {
 const NOT_SENT = "the message could not be sent";
 
 export function useChatAsks({ report, change, setChange }: ChangeHeld): CardAsks {
+	const chat = useChatKey();
 	const sendMessage = useCommand(SendMessageCommand);
 	const keptUnless = (isDone: boolean): void => {
 		if (!isDone) setChange((held) => held ?? change);
@@ -27,7 +29,7 @@ export function useChatAsks({ report, change, setChange }: ChangeHeld): CardAsks
 		send: async (said) => {
 			setChange(() => null);
 			const asked = change ? change.rewrite(said) : said;
-			const isSent = await report(answerSettled(sendMessage.run({ said: asked })), NOT_SENT);
+			const isSent = await report(answerSettled(sendMessage.run({ chat, said: asked })), NOT_SENT);
 			keptUnless(isSent);
 			return isSent;
 		},

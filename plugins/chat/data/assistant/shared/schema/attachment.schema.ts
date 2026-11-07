@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 
 export const FileKindSchema = z.enum(["image", "text"]);
 
@@ -39,7 +40,7 @@ export const TakenDraftSchema = z.object({
 });
 
 export const AdoptedDraftSchema = z.object({
-	chatId: z.string().min(1),
+	chat: z.string().min(1).max(200),
 	said: z.string(),
 	attachments: z.array(DraftAttachmentSchema),
 	sends: z.boolean(),
@@ -54,19 +55,19 @@ export const AttachReachSchema = z.object({
 
 export type AttachReach = z.infer<typeof AttachReachSchema>;
 
-export const FilesAskedSchema = z.object({
+export const FilesAskedSchema = ChatKeySchema.extend({
 	files: z.array(z.custom<File>()).min(1),
 });
 
-export const AttachmentAskedSchema = z.object({
+export const AttachmentAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
-export const MessageAskedSchema = z.object({
+export const MessageAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 	replaces: z.string().optional(),
 });
 
-export const TextAskedSchema = z.object({
+export const TextAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 });

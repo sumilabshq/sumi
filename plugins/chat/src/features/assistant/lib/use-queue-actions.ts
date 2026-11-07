@@ -2,6 +2,7 @@ import { useCommand } from "@widgetarium/data-framework";
 import { ChangeQueueCommand, SendMessageCommand } from "@widgetarium/assistant";
 import { answerSettled } from "../../../shared/lib/answer-settled.js";
 import type { Report } from "../../../shared/lib/failure-line.js";
+import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface QueueActions {
 	remove(id: string): void;
@@ -16,6 +17,7 @@ const NOT_SENT = "the queue was not sent";
 const NOT_SAVED = "the edited message was not saved";
 
 export function useQueueActions(report: Report): QueueActions {
+	const chat = useChatKey();
 	const change = useCommand(ChangeQueueCommand);
 	const sendMessage = useCommand(SendMessageCommand);
 	return {
@@ -23,8 +25,11 @@ export function useQueueActions(report: Report): QueueActions {
 			void report(
 				answerSettled(
 					change.run({
-						kind: "remove",
-						id,
+						chat,
+						change: {
+							kind: "remove",
+							id,
+						},
 					}),
 				),
 				NOT_REMOVED,
@@ -33,18 +38,22 @@ export function useQueueActions(report: Report): QueueActions {
 			report(
 				answerSettled(
 					change.run({
-						kind: "hold",
-						id,
-						isHeld,
+						chat,
+						change: {
+							kind: "hold",
+							id,
+							isHeld,
+						},
 					}),
 				),
 				NOT_HELD,
 			),
-		sendNow: () => void report(answerSettled(change.run({ kind: "send-now" })), NOT_SENT),
+		sendNow: () => void report(answerSettled(change.run({ chat, change: { kind: "send-now" } })), NOT_SENT),
 		saveEdit: (id, said) =>
 			report(
 				answerSettled(
 					sendMessage.run({
+						chat,
 						said,
 						replaces: id,
 					}),

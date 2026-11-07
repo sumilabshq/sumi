@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 
 export const AttachedFilesReachSchema = z.enum(["path", "inline", "none"]);
 
@@ -32,10 +33,10 @@ export const AgentSetupSchema = z.object({
 
 export type AgentSetup = z.infer<typeof AgentSetupSchema>;
 
-export const ProviderAskedSchema = z.object({
+export const ProviderAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
-export const HelperAgentsAskedSchema = z.object({
+export const HelperAgentsAskedSchema = ChatKeySchema.extend({
 	on: z.boolean(),
 });

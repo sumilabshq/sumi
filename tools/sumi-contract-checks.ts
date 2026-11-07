@@ -212,24 +212,24 @@ const chat = server()
 		},
 	});
 const chatOfApp = appOver(chat, (transport) => AssistantModule.over(transport), "chat");
-await chatOfApp.send(SendMessageCommand, { said: "hi" });
-const chatRead = await chatOfApp.send(ChatQuery);
+await chatOfApp.send(SendMessageCommand, { chat: null, said: "hi" });
+const chatRead = await chatOfApp.send(ChatQuery, { chat: null });
 check(
 	"an app sends a message and reads the answer through the assistant contract",
 	chatRead.ok ? chatRead.output.session.turns.map(({ text }) => text) : chatRead.reason,
 	["hi", "echo: hi"],
 );
 const chosenByChat = [
-	await chatOfApp.send(PickWorkingFolderCommand),
-	await chatOfApp.send(ChooseProviderCommand, { id: "claude" }),
-	await chatOfApp.send(OpenProvidersCommand),
+	await chatOfApp.send(PickWorkingFolderCommand, { chat: null }),
+	await chatOfApp.send(ChooseProviderCommand, { chat: null, id: "claude" }),
+	await chatOfApp.send(OpenProvidersCommand, { chat: null }),
 ];
 check(
 	"the chat app picks a folder, chooses a provider and opens the providers itself",
 	chosenByChat.map((answer) => answer.ok || answer.code !== "forbidden"),
 	[true, true, true],
 );
-const shellOnly = [await chatOfApp.send(AttachFolderCommand), await chatOfApp.send(FileDragQuery)];
+const shellOnly = [await chatOfApp.send(AttachFolderCommand, { chat: null }), await chatOfApp.send(FileDragQuery, { chat: null })];
 check(
 	"an app may not lend a folder or hear file drags: those are the shell's",
 	shellOnly.map((answer) => (answer.ok ? "answered" : answer.code)),
@@ -237,6 +237,7 @@ check(
 );
 const shellPicked = await appOver(chat, (transport) => AssistantModule.over(transport), null).send(
 	PickWorkingFolderCommand,
+	{ chat: null },
 );
 check(
 	"the shell, with no app caller, is not held to the app list",

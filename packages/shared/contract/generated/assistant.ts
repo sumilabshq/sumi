@@ -34,11 +34,15 @@ export const AgentSetupSchema = z.object({
 
 export type AgentSetup = z.infer<typeof AgentSetupSchema>;
 
-export const ProviderAskedSchema = z.object({
+export const ChatKeySchema = z.object({
+	chat: z.string().min(1).max(200).nullable(),
+});
+
+export const ProviderAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
-export const HelperAgentsAskedSchema = z.object({
+export const HelperAgentsAskedSchema = ChatKeySchema.extend({
 	on: z.boolean(),
 });
 
@@ -77,7 +81,7 @@ export const TakenDraftSchema = z.object({
 });
 
 export const AdoptedDraftSchema = z.object({
-	chatId: z.string().min(1),
+	chat: z.string().min(1).max(200),
 	said: z.string(),
 	attachments: z.array(DraftAttachmentSchema),
 	sends: z.boolean(),
@@ -92,20 +96,20 @@ export const AttachReachSchema = z.object({
 
 export type AttachReach = z.infer<typeof AttachReachSchema>;
 
-export const FilesAskedSchema = z.object({
+export const FilesAskedSchema = ChatKeySchema.extend({
 	files: z.array(z.custom<File>()).min(1),
 });
 
-export const AttachmentAskedSchema = z.object({
+export const AttachmentAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
-export const MessageAskedSchema = z.object({
+export const MessageAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 	replaces: z.string().optional(),
 });
 
-export const TextAskedSchema = z.object({
+export const TextAskedSchema = ChatKeySchema.extend({
 	said: z.string(),
 });
 
@@ -115,7 +119,13 @@ export const DraftNoticeSchema = z.object({ notice: z.string().nullable() });
 
 export const OpenedDraftSchema = DraftTextSchema.extend(DraftNoticeSchema.shape);
 
-export const ChatOpenedSchema = z.object({ chatId: z.string().min(1) });
+export const HeldDraftTextSchema = ChatKeySchema.extend({ said: z.string() });
+
+export const ChatOpenedSchema = z.object({ chat: z.string().min(1).max(200) });
+
+export type ChatKeyed = z.infer<typeof ChatKeySchema>;
+
+export type ChatKey = ChatKeyed["chat"];
 
 export const TallySchema = z.object({
 	passed: z.number(),
@@ -176,6 +186,10 @@ export const QueueChangeAskedSchema = z.discriminatedUnion("kind", [
 		kind: z.literal("send-now"),
 	}),
 ]);
+
+export const QueueChangeInChatSchema = ChatKeySchema.extend({
+	change: QueueChangeAskedSchema,
+});
 
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),
@@ -311,7 +325,11 @@ export const ClaudeOptionAskedSchema = z.union([
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
 
-export const ClaudeModelAskedSchema = z.object({
+export const ClaudeOptionInChatSchema = ChatKeySchema.extend({
+	option: ClaudeOptionAskedSchema,
+});
+
+export const ClaudeModelAskedSchema = ChatKeySchema.extend({
 	model: ClaudeModelSchema,
 });
 
@@ -322,9 +340,9 @@ export const ComposerPrefillSchema = z.object({
 
 export type ComposerPrefill = z.infer<typeof ComposerPrefillSchema>;
 
-export const PrefillAskedSchema = z.object({ text: z.string().trim().min(1) });
+export const PrefillAskedSchema = ChatKeySchema.extend({ text: z.string().trim().min(1) });
 
-export const PrefillTakenSchema = z.object({ id: z.number() });
+export const PrefillTakenSchema = ChatKeySchema.extend({ id: z.number() });
 
 export const FileDragSchema = z.object({
 	isOver: z.boolean(),
@@ -337,11 +355,11 @@ export const PageDragSchema = z.enum(["enter", "leave", "drop"]);
 
 export type PageDrag = z.infer<typeof PageDragSchema>;
 
-export const PageDragAskedSchema = z.object({
+export const PageDragAskedSchema = ChatKeySchema.extend({
 	drag: PageDragSchema,
 });
 
-export const DroppedAskedSchema = z.object({
+export const DroppedAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
@@ -366,6 +384,10 @@ export const FileDragEventSchema = z.discriminatedUnion("kind", [
 
 export type FileDragEvent = z.infer<typeof FileDragEventSchema>;
 
+export const ChatFileDragEventSchema = ChatKeySchema.extend({
+	drag: FileDragEventSchema,
+});
+
 export const SlashNameSchema = z.enum(["clear", "compact"]);
 
 export type SlashName = z.infer<typeof SlashNameSchema>;
@@ -380,9 +402,10 @@ export const WorkingFoldersSchema = z.object({
 
 export type WorkingFolders = z.infer<typeof WorkingFoldersSchema>;
 
-export const FolderAskedSchema = z.object({ path: z.string().min(1) });
+export const FolderAskedSchema = ChatKeySchema.extend({ path: z.string().min(1) });
 
 export const AgentSetupQuery = query("assistant/agent-setup")
+	.input(ChatKeySchema)
 	.output(AgentSetupSchema);
 export const ChooseProviderCommand = command("assistant/choose-provider")
 	.input(ProviderAskedSchema)
@@ -391,40 +414,49 @@ export const SetHelperAgentsCommand = command("assistant/set-helper-agents")
 	.input(HelperAgentsAskedSchema)
 	.idempotencyKey(PerCall);
 export const OpenProvidersCommand = command("assistant/open-providers")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const ClaudeOptionsQuery = query("assistant/claude-options")
+	.input(ChatKeySchema)
 	.output(ClaudeOptionsSchema.nullable())
 	.settlesNow();
 export const ChooseClaudeOptionCommand = command("assistant/choose-claude-option")
-	.input(ClaudeOptionAskedSchema)
+	.input(ClaudeOptionInChatSchema)
 	.idempotencyKey(PerCall);
 export const ChooseClaudeModelCommand = command("assistant/choose-claude-model")
 	.input(ClaudeModelAskedSchema)
 	.idempotencyKey(PerCall);
 export const WorkingFoldersQuery = query("assistant/working-folders")
+	.input(ChatKeySchema)
 	.output(WorkingFoldersSchema.nullable());
 export const ChooseWorkingFolderCommand = command("assistant/choose-working-folder")
 	.input(FolderAskedSchema)
 	.idempotencyKey(PerCall);
 export const PickWorkingFolderCommand = command("assistant/pick-working-folder")
+	.input(ChatKeySchema)
 	.idempotencyKey(PerCall);
 export const ChatQuery = query("assistant/chat")
+	.input(ChatKeySchema)
 	.output(ChatSchema)
 	.settlesNow();
 export const RetryTurnCommand = command("assistant/retry-turn")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const StopTurnCommand = command("assistant/stop-turn")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const ChangeQueueCommand = command("assistant/change-queue")
-	.input(QueueChangeAskedSchema)
+	.input(QueueChangeInChatSchema)
 	.idempotencyKey(PerCall);
 export const SendTextCommand = command("assistant/send-text")
 	.input(TextAskedSchema)
 	.idempotencyKey(PerCall);
 export const DraftAttachmentsQuery = query("assistant/draft-attachments")
+	.input(ChatKeySchema)
 	.output(DraftAttachmentsSchema)
 	.settlesNow();
 export const ComposerPrefillQuery = query("assistant/composer-prefill")
+	.input(ChatKeySchema)
 	.output(ComposerPrefillSchema.nullable())
 	.settlesNow();
 export const PrefillDraftCommand = command("assistant/prefill-draft")
@@ -443,13 +475,17 @@ export const SendMessageCommand = command("assistant/send-message")
 	.input(MessageAskedSchema)
 	.idempotencyKey(PerCall);
 export const SweepAttachmentsCommand = command("assistant/sweep-attachments")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const AttachReachQuery = query("assistant/attach-reach")
+	.input(ChatKeySchema)
 	.output(AttachReachSchema)
 	.settlesNow();
 export const AttachFolderCommand = command("assistant/attach-folder")
+	.input(ChatKeySchema)
 	.idempotencyKey(PerCall);
 export const FileDragQuery = query("assistant/file-drag")
+	.input(ChatKeySchema)
 	.output(FileDragSchema)
 	.settlesNow();
 export const HearPageDragCommand = command("assistant/hear-page-drag")
@@ -459,11 +495,13 @@ export const AttachDroppedCommand = command("assistant/attach-dropped")
 	.input(DroppedAskedSchema)
 	.idempotencyKey((input) => input.id);
 export const SlashCommandsQuery = query("assistant/slash-commands")
+	.input(ChatKeySchema)
 	.output(SlashNamesSchema);
 export const ClearChatCommand = command("assistant/clear-chat")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const HoldDraftTextCommand = command("assistant/hold-draft-text")
-	.input(DraftTextSchema)
+	.input(HeldDraftTextSchema)
 	.output(DraftNoticeSchema)
 	.idempotencyKey(PerCall);
 export const OpenChatDraftCommand = command("assistant/open-chat-draft")
@@ -471,6 +509,7 @@ export const OpenChatDraftCommand = command("assistant/open-chat-draft")
 	.output(OpenedDraftSchema)
 	.idempotencyKey(PerCall);
 export const TakeDraftCommand = command("assistant/take-draft")
+	.input(ChatKeySchema)
 	.output(TakenDraftSchema)
 	.idempotencyKey(PerCall);
 export const AdoptDraftCommand = command("assistant/adopt-draft")
@@ -478,8 +517,9 @@ export const AdoptDraftCommand = command("assistant/adopt-draft")
 	.output(DraftTextSchema)
 	.idempotencyKey(PerCall);
 export const CompactChatCommand = command("assistant/compact-chat")
+	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable);
 export const FileDraggedEvent = event("assistant/file-dragged")
-	.input(FileDragEventSchema);
+	.input(ChatFileDragEventSchema);
 
 export const AssistantModule = moduleContract("assistant", Anywhere, [AgentSetupQuery, ChooseProviderCommand, SetHelperAgentsCommand, OpenProvidersCommand, ClaudeOptionsQuery, ChooseClaudeOptionCommand, ChooseClaudeModelCommand, WorkingFoldersQuery, ChooseWorkingFolderCommand, PickWorkingFolderCommand, ChatQuery, RetryTurnCommand, StopTurnCommand, ChangeQueueCommand, SendTextCommand, DraftAttachmentsQuery, ComposerPrefillQuery, PrefillDraftCommand, TakePrefillCommand, AttachFilesCommand, RemoveAttachmentCommand, SendMessageCommand, SweepAttachmentsCommand, AttachReachQuery, AttachFolderCommand, FileDragQuery, HearPageDragCommand, AttachDroppedCommand, SlashCommandsQuery, ClearChatCommand, HoldDraftTextCommand, OpenChatDraftCommand, TakeDraftCommand, AdoptDraftCommand, CompactChatCommand]);

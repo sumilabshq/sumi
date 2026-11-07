@@ -6,6 +6,7 @@ import {
 	WindowLayersSlot,
 	WindowModulesSlot,
 	WindowProvidersSlot,
+	WindowServerModulesSlot,
 } from "./slots.js";
 
 export const SumiHostPlugin = plugin("sumi-host").declare(
@@ -15,4 +16,5 @@ export const SumiHostPlugin = plugin("sumi-host").declare(
 	WindowLayersSlot,
 	WindowProvidersSlot,
 	FrameModulesSlot,
+	WindowServerModulesSlot,
 );

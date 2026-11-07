@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 
 export const PermissionModeSchema = z.enum(["manual", "acceptEdits", "plan", "auto"]);
 
@@ -41,6 +42,10 @@ export const ClaudeOptionAskedSchema = z.union([
 
 export type ClaudeOptionAsked = z.infer<typeof ClaudeOptionAskedSchema>;
 
-export const ClaudeModelAskedSchema = z.object({
+export const ClaudeOptionInChatSchema = ChatKeySchema.extend({
+	option: ClaudeOptionAskedSchema,
+});
+
+export const ClaudeModelAskedSchema = ChatKeySchema.extend({
 	model: ClaudeModelSchema,
 });

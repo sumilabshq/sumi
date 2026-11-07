@@ -5,6 +5,7 @@ import type { MenuSpot } from "./menu-spot.js";
 import { slashAskOf, slashEntriesOf } from "./slash-matches.js";
 import type { SlashAsk, SlashEntry } from "./slash-matches.js";
 import { ClearChatCommand, CompactChatCommand, SlashCommandsQuery } from "@widgetarium/assistant";
+import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface SlashMenuAsk {
 	readonly draft: string;
@@ -34,7 +35,8 @@ const NO_MATCHES: readonly SlashEntry[] = [];
 const ABOVE_FIELD_PX = 4;
 
 export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
-	const names = useOptionalQuery(SlashCommandsQuery).data ?? [];
+	const chat = useChatKey();
+	const names = useOptionalQuery(SlashCommandsQuery, { chat }).data ?? [];
 	const clear = useCommand(ClearChatCommand);
 	const compact = useCommand(CompactChatCommand);
 	const [held, setHeld] = useState<SlashHeld>({
@@ -62,7 +64,7 @@ export function useSlashMenu({ draft, fill, box }: SlashMenuAsk): SlashMenu {
 		}
 
 		fill("");
-		const ran = entry.name === "clear" ? clear.run() : compact.run();
+		const ran = entry.name === "clear" ? clear.run({ chat }) : compact.run({ chat });
 		void ran.then((answer) => {
 			if (!answer.ok) {
 				fill(draft);

@@ -9,9 +9,13 @@ import { CarriedAttachments } from "./carried-attachments.js";
 import { MenuField } from "./menu-field.js";
 import type { MenuFieldAsk } from "./menu-field.js";
 
+const ASK_COMPOSER_CHAT = {
+	chat: null,
+};
+
 export function AskField({ field }: { readonly field: MenuFieldAsk }): ReactElement {
 	const attachFiles = useCommand(AttachFilesCommand);
-	const { data: drafts } = useQuery(DraftAttachmentsQuery);
+	const { data: drafts } = useQuery(DraftAttachmentsQuery, ASK_COMPOSER_CHAT);
 	const { bar: ComposerBar } = useAskComposer();
 	const isAsking = field.door === "ask";
 	return (
@@ -19,7 +23,7 @@ export function AskField({ field }: { readonly field: MenuFieldAsk }): ReactElem
 			<MenuField
 				ask={field}
 				end={isAsking ? null : <CarriedAttachments carried={carriedOf(drafts)} onOpen={() => field.onDoor("ask")} />}
-				onFiles={isAsking ? (files) => void attachFiles.run({ files: [...files] }) : null}
+				onFiles={isAsking ? (files) => void attachFiles.run({ ...ASK_COMPOSER_CHAT, files: [...files] }) : null}
 			/>
 			{isAsking ? (
 				<div className="wg-cm-ask" {...ASK_COMPOSER_MARK}>

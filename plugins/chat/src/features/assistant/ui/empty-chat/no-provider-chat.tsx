@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { Button, Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { OpenProvidersCommand } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const NO_PROVIDER_LEAD = "{label} is not on this machine yet.";
 const NO_PROVIDER_SAID =
@@ -10,13 +11,14 @@ const NO_PROVIDER_SAID =
 const SET_UP = "Set up a provider";
 
 export function NoProviderChat({ label }: { readonly label: string }): ReactElement {
+	const chat = useChatKey();
 	const openProviders = useCommand(OpenProvidersCommand);
 	return (
 		<div className="wg-studio-ai-empty">
 			<Icon name="gear" size={28} />
 			<p className="wg-studio-ai-empty-lead">{NO_PROVIDER_LEAD.replace("{label}", label)}</p>
 			<p className="wg-studio-ai-empty-said">{NO_PROVIDER_SAID}</p>
-			<Button variant="accent" size="m" onClick={() => void openProviders.run()}>
+			<Button variant="accent" size="m" onClick={() => void openProviders.run({ chat })}>
 				{SET_UP}
 			</Button>
 		</div>

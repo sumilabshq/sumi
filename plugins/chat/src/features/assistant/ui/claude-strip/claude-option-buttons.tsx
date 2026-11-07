@@ -7,6 +7,7 @@ import { OptionMenu } from "./option-menu.js";
 import { StripButton } from "./strip-button.js";
 import { ChooseClaudeOptionCommand } from "@widgetarium/assistant";
 import type { ClaudeOptions } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export interface ClaudeOptionButtonsProps {
 	readonly claude: ClaudeOptions;
@@ -18,6 +19,7 @@ const PERMISSION_MODE = "Permission mode";
 const EFFORT = "Effort";
 
 export function ClaudeOptionButtons({ claude, usage = null, modelButton }: ClaudeOptionButtonsProps): ReactElement {
+	const chat = useChatKey();
 	const choose = useCommand(ChooseClaudeOptionCommand);
 	const mode = useMenuOpening();
 	const effort = useMenuOpening();
@@ -37,14 +39,14 @@ export function ClaudeOptionButtons({ claude, usage = null, modelButton }: Claud
 				opening={mode}
 				faces={MODE_FACES}
 				picked={claude.mode}
-				onPick={(picked) => void choose.run({ mode: picked })}
+				onPick={(picked) => void choose.run({ chat, option: { mode: picked } })}
 			/>
 			<OptionMenu
 				label={EFFORT}
 				opening={effort}
 				faces={EFFORT_FACES}
 				picked={claude.effort}
-				onPick={(picked) => void choose.run({ effort: picked })}
+				onPick={(picked) => void choose.run({ chat, option: { effort: picked } })}
 			/>
 		</>
 	);

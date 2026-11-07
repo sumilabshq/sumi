@@ -1,6 +1,6 @@
 import { Anywhere, PublicGuard, module } from "@widgetarium/data-framework";
-import { FileDraggedEvent } from "./gateways/file-drop/file-drop.events.js";
-import { assistantPartsOn } from "./gateways/assistant-parts/assistant-parts.gateway.js";
+import { FileDraggedEvent } from "./gateways/chat-parts/chat-parts.events.js";
+import { chatPartsOn } from "./gateways/assistant-parts/chat-parts-on.js";
 import type { AssistantHosts } from "./gateways/assistant-parts/assistant-parts.gateway.js";
 import {
 	RereadAgentSetupSubscriber,
@@ -106,4 +106,4 @@ export const AssistantModule = module("assistant")
 	)
 	.guard(PublicGuard)
 	.guard(AssistantCallersGuard)
-	.provide((facts) => assistantPartsOn(facts));
+	.provide((facts) => chatPartsOn(facts));

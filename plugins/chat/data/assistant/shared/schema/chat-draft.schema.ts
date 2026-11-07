@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 import type { DraftAttachment } from "./attachment.schema.js";
 import type { ClaudeOptions } from "./claude-options.schema.js";
 
@@ -8,7 +9,9 @@ export const DraftNoticeSchema = z.object({ notice: z.string().nullable() });
 
 export const OpenedDraftSchema = DraftTextSchema.extend(DraftNoticeSchema.shape);
 
-export const ChatOpenedSchema = z.object({ chatId: z.string().min(1) });
+export const HeldDraftTextSchema = ChatKeySchema.extend({ said: z.string() });
+
+export const ChatOpenedSchema = z.object({ chat: z.string().min(1).max(200) });
 
 export type ClaudeChoices = Pick<ClaudeOptions, "mode" | "model" | "effort">;
 

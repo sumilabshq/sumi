@@ -31,6 +31,7 @@ import type { RunAnswer } from "../apps/tauri/src/assistant/turn-run.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 import { layJsdomGlobals } from "./jsdom-globals.ts";
+import { oneChatParts } from "./assistant-one-chat-parts.ts";
 
 const DAILY = "3b0c1d7e-2f4a-4c55-9a1e-6d2b8f0c4a11";
 const OTHER = "9e2f6a10-7b3c-4d8e-8f21-0c5d3a9b7e42";
@@ -122,11 +123,11 @@ function chatServerOver(shelf: TauriChatDraftShelf): StartedApp {
 	);
 	return app()
 		.modules(
-			AssistantModule.with({
+			AssistantModule.with(oneChatParts({
 				...portAssistantParts(port, attachmentFiles),
 				claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
 				chatDrafts: new ShelfChatDraftsGateway(shelf, port),
-			}),
+			})),
 		)
 		.start({
 			platform: "browser",
@@ -143,9 +144,9 @@ interface ComposerSeen {
 }
 
 async function opened(server: StartedApp, chatId: string): Promise<ComposerSeen> {
-	const draft = await server.send(OpenChatDraftCommand, { chatId });
-	const chips = await server.send(DraftAttachmentsQuery);
-	const options = await server.send(ClaudeOptionsQuery);
+	const draft = await server.send(OpenChatDraftCommand, { chat: chatId });
+	const chips = await server.send(DraftAttachmentsQuery, { chat: null });
+	const options = await server.send(ClaudeOptionsQuery, { chat: null });
 	return {
 		said: draft.ok ? draft.output.said : null,
 		files: chips.ok ? chips.output.map(({ name }) => name) : [],
@@ -156,11 +157,11 @@ async function opened(server: StartedApp, chatId: string): Promise<ComposerSeen>
 const firstShelf = await readShelf();
 const frame = chatServerOver(firstShelf);
 await opened(frame, DAILY);
-await frame.send(AttachFilesCommand, { files: [new File([PNG], "shot.png")] });
-await frame.send(HoldDraftTextCommand, { said: TYPED });
-await frame.send(ChooseClaudeOptionCommand, { effort: "high" });
+await frame.send(AttachFilesCommand, { chat: null, files: [new File([PNG], "shot.png")] });
+await frame.send(HoldDraftTextCommand, { chat: null, said: TYPED });
+await frame.send(ChooseClaudeOptionCommand, { chat: null, option: { effort: "high" } });
 const inOther = await opened(frame, OTHER);
-await frame.send(ChooseClaudeOptionCommand, { effort: "low" });
+await frame.send(ChooseClaudeOptionCommand, { chat: null, option: { effort: "low" } });
 check("another chat opens with an empty composer and none of Daily's files", [inOther.said, inOther.files], ["", []]);
 check("coming back to Daily brings its text, its image and its effort", await opened(frame, DAILY), {
 	said: TYPED,
@@ -212,15 +213,15 @@ check("and the other chat keeps its own effort", (await opened(restarted, OTHER)
 
 const lateComposer = chatServerOver(restartedShelf);
 await opened(lateComposer, DAILY);
-await lateComposer.send(HoldDraftTextCommand, { said: "" });
+await lateComposer.send(HoldDraftTextCommand, { chat: null, said: "" });
 check(
 	"an empty hold from a composer that has not shown the text yet leaves the kept text alone",
 	restartedShelf.draftOf(DAILY)?.said,
 	TYPED,
 );
-await lateComposer.send(HoldDraftTextCommand, { said: TYPED });
-await lateComposer.send(SendMessageCommand, { said: TYPED });
-await lateComposer.send(HoldDraftTextCommand, { said: "" });
+await lateComposer.send(HoldDraftTextCommand, { chat: null, said: TYPED });
+await lateComposer.send(SendMessageCommand, { chat: null, said: TYPED });
+await lateComposer.send(HoldDraftTextCommand, { chat: null, said: "" });
 await restartedShelf.flush();
 check(
 	"sending empties the draft: no text, no files kept, the image sent",
@@ -236,18 +237,18 @@ check(
 const NOTE = "e4a1b2c3-0d5f-4a6b-8c7d-9e0f1a2b3c4d";
 const noteFrame = chatServerOver(restartedShelf);
 await opened(noteFrame, NOTE);
-await noteFrame.send(HoldDraftTextCommand, { said: "a short note" });
+await noteFrame.send(HoldDraftTextCommand, { chat: null, said: "a short note" });
 const noteAgain = chatServerOver(restartedShelf);
 await opened(noteAgain, NOTE);
-await noteAgain.send(HoldDraftTextCommand, { said: "a short note" });
-await noteAgain.send(HoldDraftTextCommand, { said: "" });
+await noteAgain.send(HoldDraftTextCommand, { chat: null, said: "a short note" });
+await noteAgain.send(HoldDraftTextCommand, { chat: null, said: "" });
 check("text deleted right after it was put back is deleted for good", restartedShelf.draftOf(NOTE)?.said ?? "", "");
 
 const providerFrame = chatServerOver(restartedShelf);
 await opened(providerFrame, DAILY);
-await providerFrame.send(ChooseProviderCommand, { id: "codex" });
+await providerFrame.send(ChooseProviderCommand, { chat: null, id: "codex" });
 await opened(providerFrame, OTHER);
-await providerFrame.send(ChooseProviderCommand, { id: "claude-code" });
+await providerFrame.send(ChooseProviderCommand, { chat: null, id: "claude-code" });
 await opened(providerFrame, DAILY);
 const dailyProvider = chosen.provider;
 await restartedShelf.flush();
@@ -703,7 +704,7 @@ seeded.keep(DAILY, draftWith("with a picture"));
 await seeded.flush();
 unreadDisk.failReadsOnce.add(`chat/drafts/${DAILY}/${SHOT_ID}.bin`);
 const unreadShelf = await TauriChatDraftShelf.read(unreadAt([150]));
-const openedUnread = await chatServerOver(unreadShelf).send(OpenChatDraftCommand, { chatId: DAILY });
+const openedUnread = await chatServerOver(unreadShelf).send(OpenChatDraftCommand, { chat: DAILY });
 const noticeOnOpen = openedUnread.ok && openedUnread.output.notice !== null;
 const notice = unreadShelf.problemOf(DAILY);
 unreadShelf.keep(DAILY, {

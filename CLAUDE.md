@@ -75,7 +75,7 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers, providers and frame modules), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers, providers, frame modules and window server modules), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot

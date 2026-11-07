@@ -4,6 +4,7 @@ import { Icon } from "@widgetarium/kit";
 import { useCommand } from "@widgetarium/data-framework";
 import { PrefillDraftCommand } from "@widgetarium/assistant";
 import { SKILL_ENTRIES } from "../../lib/slash-matches.js";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const TITLE_OF: Readonly<Record<string, string>> = {
 	"create-app": "Create an app",
@@ -11,6 +12,7 @@ const TITLE_OF: Readonly<Record<string, string>> = {
 };
 
 export function Starters(): ReactElement {
+	const chat = useChatKey();
 	const prefillDraft = useCommand(PrefillDraftCommand);
 	return (
 		<div className="wg-studio-ai-starters">
@@ -20,7 +22,7 @@ export function Starters(): ReactElement {
 					type="button"
 					className="wg-studio-ai-starter"
 					data-starter={name}
-					onClick={() => void prefillDraft.run({ text: `/${name} ` })}
+					onClick={() => void prefillDraft.run({ chat, text: `/${name} ` })}
 				>
 					<Icon name={icon} size={16} className="wg-studio-ai-starter-icon" />
 					{TITLE_OF[name] ?? `/${name}`}

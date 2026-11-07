@@ -10,7 +10,6 @@ export interface AskComposerApps {
 	readonly windowApp: StartedApp;
 	readonly focusedChatId: () => string | null;
 	readonly askApp: StartedApp;
-	readonly chatAppFor: (chatId: string) => StartedApp;
 }
 
 interface AskedDraft {
@@ -40,26 +39,26 @@ async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promis
 		return;
 	}
 
-	const taken = await apps.askApp.send(TakeDraftCommand);
+	const taken = await apps.askApp.send(TakeDraftCommand, { chat: null });
 
 	if (!taken.ok) {
 		console.error(`[widgetarium] Ask Sumi could not take the attachments of its composer: ${taken.reason}`);
 		return;
 	}
 
-	await adoptIn(apps.chatAppFor(chatId), {
-		chatId,
+	await adoptIn(apps.askApp, {
+		chat: chatId,
 		said: asked.text,
 		attachments: taken.output.attachments,
 		sends: asked.sends,
 	});
 }
 
-async function adoptIn(chatApp: StartedApp, draft: AdoptedDraft): Promise<void> {
-	const adopted = await chatApp.send(AdoptDraftCommand, draft);
+async function adoptIn(askApp: StartedApp, draft: AdoptedDraft): Promise<void> {
+	const adopted = await askApp.send(AdoptDraftCommand, draft);
 
 	if (!adopted.ok) {
-		console.error(`[widgetarium] Ask Sumi could not hand its draft to chat ${draft.chatId}: ${adopted.reason}`);
+		console.error(`[widgetarium] Ask Sumi could not hand its draft to chat ${draft.chat}: ${adopted.reason}`);
 		toastRefusal({ name: AdoptDraftCommand.name, reason: adopted.reason, ran: adopted.ran });
 		return;
 	}
@@ -68,10 +67,10 @@ async function adoptIn(chatApp: StartedApp, draft: AdoptedDraft): Promise<void> 
 		return;
 	}
 
-	const filled = await chatApp.send(PrefillDraftCommand, { text: adopted.output.said });
+	const filled = await askApp.send(PrefillDraftCommand, { chat: draft.chat, text: adopted.output.said });
 
 	if (!filled.ok) {
-		console.error(`[widgetarium] Ask Sumi could not fill the composer of chat ${draft.chatId}: ${filled.reason}`);
+		console.error(`[widgetarium] Ask Sumi could not fill the composer of chat ${draft.chat}: ${filled.reason}`);
 	}
 }
 

@@ -10,6 +10,7 @@ import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";
 import { StripButton } from "./strip-button.js";
 import { ChooseWorkingFolderCommand, PickWorkingFolderCommand } from "@widgetarium/assistant";
 import type { WorkingFolders } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 const CHOOSE_A_FOLDER = "Choose a folder";
 const WORK_IN_A_FOLDER = "Work in a folder…";
@@ -18,6 +19,7 @@ const OPEN_ANOTHER = "Open another folder…";
 
 export function FolderButton({ folders }: { readonly folders: WorkingFolders }): ReactElement {
 	const menu = useMenuOpening();
+	const chat = useChatKey();
 	const choose = useCommand(ChooseWorkingFolderCommand);
 	const pickAnother = useCommand(PickWorkingFolderCommand);
 	return (
@@ -36,7 +38,7 @@ export function FolderButton({ folders }: { readonly folders: WorkingFolders }):
 						isPicked={path === folders.current}
 						onPick={() => {
 							menu.close();
-							void choose.run({ path });
+							void choose.run({ chat, path });
 						}}
 					/>
 				))}
@@ -46,7 +48,7 @@ export function FolderButton({ folders }: { readonly folders: WorkingFolders }):
 					mark={<Icon name="folder-plus" size={16} />}
 					onPick={() => {
 						menu.close();
-						void pickAnother.run();
+						void pickAnother.run({ chat });
 					}}
 				/>
 			</ChatMenu>

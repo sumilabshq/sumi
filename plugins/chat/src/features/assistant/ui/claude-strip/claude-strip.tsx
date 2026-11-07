@@ -7,11 +7,13 @@ import { FolderButton } from "./folder-button.js";
 import { ModelButton } from "./model-button.js";
 import { UsageButton } from "./usage-button.js";
 import { AgentSetupQuery, ClaudeOptionsQuery, WorkingFoldersQuery } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function ClaudeStrip({ isEmpty }: { readonly isEmpty: boolean }): ReactElement {
-	const { data: setup } = useQuery(AgentSetupQuery);
-	const { data: options } = useQuery(ClaudeOptionsQuery);
-	const folders = useOptionalQuery(WorkingFoldersQuery).data ?? null;
+	const chat = useChatKey();
+	const { data: setup } = useQuery(AgentSetupQuery, { chat });
+	const { data: options } = useQuery(ClaudeOptionsQuery, { chat });
+	const folders = useOptionalQuery(WorkingFoldersQuery, { chat }).data ?? null;
 	const claude = shownClaudeOptions(setup, options);
 	const modelButton = <ModelButton setup={setup} claude={claude} />;
 	return (

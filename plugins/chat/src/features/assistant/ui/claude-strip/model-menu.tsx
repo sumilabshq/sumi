@@ -7,6 +7,7 @@ import { ModelsPane } from "./models-pane.js";
 import { ProvidersPane } from "./providers-pane.js";
 import { ChooseClaudeModelCommand, ChooseProviderCommand, OpenProvidersCommand } from "@widgetarium/assistant";
 import type { AgentSetup, ClaudeOptions } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export interface ModelMenuProps {
 	readonly opening: MenuOpening;
@@ -16,6 +17,7 @@ export interface ModelMenuProps {
 
 export function ModelMenu({ opening, setup, claude }: ModelMenuProps): ReactElement {
 	const [browsedProviderId, setBrowsedProviderId] = useState<string | null>(null);
+	const chat = useChatKey();
 	const chooseProvider = useCommand(ChooseProviderCommand);
 	const chooseClaudeModel = useCommand(ChooseClaudeModelCommand);
 	const openProviders = useCommand(OpenProvidersCommand);
@@ -34,7 +36,7 @@ export function ModelMenu({ opening, setup, claude }: ModelMenuProps): ReactElem
 					onBrowse={setBrowsedProviderId}
 					onManage={() => {
 						closeMenu();
-						void openProviders.run();
+						void openProviders.run({ chat });
 					}}
 				/>
 				<div role="separator" aria-orientation="vertical" className="wg-studio-ai-menu-pane-divider" />
@@ -44,11 +46,11 @@ export function ModelMenu({ opening, setup, claude }: ModelMenuProps): ReactElem
 					shownProviderId={shownProviderId}
 					onPickModel={(model) => {
 						closeMenu();
-						void chooseClaudeModel.run({ model });
+						void chooseClaudeModel.run({ chat, model });
 					}}
 					onPickProvider={(id) => {
 						closeMenu();
-						void chooseProvider.run({ id });
+						void chooseProvider.run({ chat, id });
 					}}
 				/>
 			</div>

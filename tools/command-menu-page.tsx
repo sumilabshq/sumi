@@ -33,6 +33,7 @@ import { workspaceFolderCell } from "../apps/tauri/src/assistant/workspace-folde
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
+import { oneChatParts } from "./assistant-one-chat-parts.ts";
 
 declare global {
 	interface Window {
@@ -152,7 +153,7 @@ const ASK_WORKSPACE = {
 };
 const askApp = app()
 	.modules(
-		AssistantModule.with(
+		AssistantModule.with(oneChatParts(
 			tauriAssistantParts({
 				kind: "tauri",
 				chatDrafts: new MemoryChatDraftShelf(),
@@ -197,7 +198,7 @@ const askApp = app()
 					},
 					folder: workspaceFolderCell(ASK_WORKSPACE),
 				},
-			}),
+			}),),
 		),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });

@@ -6,6 +6,7 @@ import { toast } from "@widgetarium/kit";
 import { sendState } from "./send-state.js";
 import type { SendState } from "./send-state.js";
 import { useAttachesFiles } from "./use-attaches-files.js";
+import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 export interface DraftAsk {
 	readonly busy: boolean;
@@ -26,7 +27,7 @@ export interface ComposerDraft {
 export function useComposerDraft({ busy, onSend, onTyped }: DraftAsk): ComposerDraft {
 	const [draft, setDraft] = useState("");
 	const attach = useAttachesFiles();
-	const { data: drafted } = useQuery(DraftAttachmentsQuery);
+	const { data: drafted } = useQuery(DraftAttachmentsQuery, { chat: useChatKey() });
 	const sending = useRef<string | null>(null);
 	const holdNow = useHoldsDraft({
 		draft,
@@ -80,6 +81,7 @@ interface HeldInput {
 }
 
 function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void {
+	const chat = useChatKey();
 	const holdDraftText = useCommand(HoldDraftTextCommand);
 	const latestHold = useRef(holdDraftText);
 	latestHold.current = holdDraftText;
@@ -91,7 +93,7 @@ function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void
 			return;
 		}
 
-		void latestHold.current.run({ said }).then(showsNotice);
+		void latestHold.current.run({ chat, said }).then(showsNotice);
 	};
 	const latestHoldOf = useRef(hold);
 	latestHoldOf.current = hold;
@@ -104,7 +106,7 @@ function useHoldsDraft({ draft, attachedCount, sending }: HeldInput): () => void
 		},
 		[],
 	);
-	return () => void latestHold.current.run({ said: latestDraft.current }).then(showsNotice);
+	return () => void latestHold.current.run({ chat, said: latestDraft.current }).then(showsNotice);
 }
 
 function showsNotice(answer: { readonly ok: boolean; readonly output?: { readonly notice: string | null } }): void {

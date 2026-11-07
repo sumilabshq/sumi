@@ -10,6 +10,7 @@ import { AssistantChat } from "../assistant-chat/assistant-chat.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";
 import { ChatUnread } from "../chat-unread/chat-unread.js";
 import { ChatQuery } from "@widgetarium/assistant";
+import { ChatKeyContext } from "../../../../shared/lib/chat-key-context.js";
 
 export interface AssistantPanelProps {
 	readonly lead?: ReactNode;
@@ -20,17 +21,19 @@ export interface AssistantPanelProps {
 
 export function AssistantPanel(props: AssistantPanelProps): ReactElement {
 	return (
-		<Slot
-			loading={null}
-			error={(reason) => <ChatUnread lead={props.lead} title={props.title} reason={reason} />}
-		>
-			<ReadAssistantPanel {...props} />
-		</Slot>
+		<ChatKeyContext.Provider value={props.chatId ?? null}>
+			<Slot
+				loading={null}
+				error={(reason) => <ChatUnread lead={props.lead} title={props.title} reason={reason} />}
+			>
+				<ReadAssistantPanel {...props} />
+			</Slot>
+		</ChatKeyContext.Provider>
 	);
 }
 
 function ReadAssistantPanel({ lead, title, cards = NO_CHAT_CARDS_SLOT, chatId }: AssistantPanelProps): ReactElement {
-	const { data: chat } = useQuery(ChatQuery);
+	const { data: chat } = useQuery(ChatQuery, { chat: chatId ?? null });
 	return (
 		<div className="wg-root wg-studio-ai-host">
 			{chat.isAvailable ? (

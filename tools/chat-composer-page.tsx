@@ -16,6 +16,7 @@ import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts
 import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
+import { oneChatParts } from "./assistant-one-chat-parts.ts";
 
 declare global {
 	interface Window {
@@ -220,7 +221,7 @@ if (which === "attach") {
 }
 
 const chat = app()
-	.modules(MascotModule, AssistantModule.with(parts))
+	.modules(MascotModule, AssistantModule.with(oneChatParts(parts)))
 	.start({
 		platform: "browser",
 		scope: {

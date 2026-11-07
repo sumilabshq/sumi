@@ -18,6 +18,8 @@ import {
 	BackgroundModulesSlot,
 	FrameModuleSchema,
 	FrameModulesSlot,
+	WindowServerModuleSchema,
+	WindowServerModulesSlot,
 	SumiHostPlugin,
 	TabPageSchema,
 	TabPageSlot,
@@ -28,7 +30,14 @@ import {
 	WindowProviderSchema,
 	WindowProvidersSlot,
 } from "@sumi/sumi-host-plugin";
-import type { CoreOffers, DrawnTabPage, FrameServing, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
+import type {
+	CoreOffers,
+	DrawnTabPage,
+	FrameServing,
+	WindowOffers,
+	WindowProviderProps,
+	WindowServerOffers,
+} from "@sumi/sumi-host-plugin";
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
 import { TerminalPlugin } from "@sumi/terminal-plugin";
 
@@ -55,6 +64,11 @@ export interface FrameModule {
 	servingOf(offers: WindowOffers): FrameServing;
 }
 
+export interface WindowServerModule {
+	readonly id: string;
+	moduleOf(offers: WindowServerOffers): ServerSideModule;
+}
+
 export interface ResolvedPlugins {
 	readonly backgroundModules: readonly BackgroundModule[];
 	readonly windowModules: readonly DeviceModule[];
@@ -62,6 +76,7 @@ export interface ResolvedPlugins {
 	readonly windowProviders: readonly WindowProvider[];
 	readonly tabPages: readonly DrawnTabPage[];
 	readonly frameModules: readonly FrameModule[];
+	readonly windowServerModules: readonly WindowServerModule[];
 	readonly refusals: readonly string[];
 }
 
@@ -80,6 +95,7 @@ const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
 const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
 const WINDOW_PROVIDERS = stampSlotName(SumiHostPlugin.id, WindowProvidersSlot);
 const FRAME_MODULES = stampSlotName(SumiHostPlugin.id, FrameModulesSlot);
+const WINDOW_SERVER_MODULES = stampSlotName(SumiHostPlugin.id, WindowServerModulesSlot);
 
 const ALWAYS_ON_PLUGINS: readonly string[] = [
 	SumiHostPlugin.id,
@@ -150,6 +166,17 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 							id: `${fill.pluginId}/${fill.id}`,
 							contract: parsed.data.contract,
 							servingOf: (offers: WindowOffers) => parsed.data.serving({ ...offers, ...readerOf(fill) }),
+						},
+					]
+				: [];
+		}),
+		windowServerModules: fillsOf(slotFills, WINDOW_SERVER_MODULES).flatMap((fill) => {
+			const parsed = WindowServerModuleSchema.safeParse(fill.item);
+			return parsed.success
+				? [
+						{
+							id: `${fill.pluginId}/${fill.id}`,
+							moduleOf: (offers: WindowServerOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
 						},
 					]
 				: [];

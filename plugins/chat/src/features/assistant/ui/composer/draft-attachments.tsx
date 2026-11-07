@@ -6,9 +6,11 @@ import { hasPreview, isPicture, useOpensPictures } from "../../lib/use-opens-pic
 import { AttachmentCard } from "./attachment-card.js";
 import { AttachmentsMore } from "./attachments-more.js";
 import { DraftAttachmentsQuery, RemoveAttachmentCommand } from "@widgetarium/assistant";
+import { useChatKey } from "../../../../shared/lib/chat-key-context.js";
 
 export function DraftAttachments(): ReactElement | null {
-	const { data: drafts } = useQuery(DraftAttachmentsQuery);
+	const chat = useChatKey();
+	const { data: drafts } = useQuery(DraftAttachmentsQuery, { chat });
 	const remove = useCommand(RemoveAttachmentCommand);
 	const track = useRef<HTMLDivElement>(null);
 	const across = useOverflowsAcross(track, drafts.length);
@@ -30,7 +32,7 @@ export function DraftAttachments(): ReactElement | null {
 						key={chip.id}
 						chip={chip}
 						onOpen={isPicture(chip) && hasPreview(chip) ? () => open(chip) : undefined}
-						onRemove={() => void remove.run({ id: chip.id })}
+						onRemove={() => void remove.run({ chat, id: chip.id })}
 					/>
 				))}
 			</div>

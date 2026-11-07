@@ -9,10 +9,14 @@ import { ModelButton } from "../../../assistant/ui/claude-strip/model-button.js"
 import { ComposerTools } from "../../../assistant/ui/composer/composer-tools.js";
 import { DraftAttachments } from "../../../assistant/ui/composer/draft-attachments.js";
 
+const ASK_COMPOSER_CHAT = {
+	chat: null,
+};
+
 export function AskComposerBar(): ReactElement {
-	const setup = useOptionalQuery(AgentSetupQuery).data;
-	const options = useOptionalQuery(ClaudeOptionsQuery).data;
-	const folders = useOptionalQuery(WorkingFoldersQuery).data;
+	const setup = useOptionalQuery(AgentSetupQuery, ASK_COMPOSER_CHAT).data;
+	const options = useOptionalQuery(ClaudeOptionsQuery, ASK_COMPOSER_CHAT).data;
+	const folders = useOptionalQuery(WorkingFoldersQuery, ASK_COMPOSER_CHAT).data;
 	const claude = shownClaudeOptions(setup, options);
 	return (
 		<>

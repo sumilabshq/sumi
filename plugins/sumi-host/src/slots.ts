@@ -28,12 +28,19 @@ export interface TabPageProps {
 	readonly tabId: string;
 }
 
+export interface WindowServerOffers {
+	readonly workspaceId: string;
+	readonly platform: Platform;
+	readonly core: RemoteTransport;
+	readonly assistant: AssistantHosts;
+}
+
 export interface WindowOffers {
 	readonly workspaceId: string;
 	readonly platform: Platform;
 	readonly windowApp: StartedApp;
 	readonly core: RemoteTransport;
-	readonly assistant: AssistantHosts;
+	readonly windowServer: RemoteTransport;
 	focusedChatId(): string | null;
 }
 
@@ -68,6 +75,8 @@ export interface FrameServing {
 
 export type FrameServingOf = (offers: SlotReader & WindowOffers) => FrameServing;
 
+export type WindowServerModuleOf = (offers: SlotReader & WindowServerOffers) => ServerSideModule;
+
 const NOT_A_MODULE_OF =
 	"a background module is a function of what the core offers, answering a module(...) configured from it";
 const NOT_A_CONTRACT = 'a background module names its contract, the module(...) descriptor of its package\'s "." entry';
@@ -83,6 +92,9 @@ const NOT_A_FRAME_CONTRACT =
 	'a frame module names its contract, the module(...) descriptor of its package\'s "." entry, keyed by { tab }';
 const NOT_A_FRAME_SERVING_OF =
 	"a frame module is a function of the plugin's slot reader and the window's offers, answering { module, frameClosed(tabId) }";
+
+const NOT_A_WINDOW_SERVER_MODULE_OF =
+	"a window server module is a function of the plugin's slot reader and what a window lends its server, answering a module(...) served once per window";
 
 export const BackgroundModuleSchema = z.object({
 	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
@@ -121,3 +133,9 @@ export const FrameModuleSchema = z.object({
 });
 
 export const FrameModulesSlot = slot("frame-modules").item(FrameModuleSchema).list();
+
+export const WindowServerModuleSchema = z.object({
+	module: z.custom<WindowServerModuleOf>((value) => typeof value === "function", NOT_A_WINDOW_SERVER_MODULE_OF),
+});
+
+export const WindowServerModulesSlot = slot("window-server-modules").item(WindowServerModuleSchema).list();

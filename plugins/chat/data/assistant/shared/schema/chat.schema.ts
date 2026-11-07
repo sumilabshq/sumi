@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 import { AttachmentChipSchema } from "./attachment.schema.js";
 
 export const TallySchema = z.object({
@@ -60,6 +61,10 @@ export const QueueChangeAskedSchema = z.discriminatedUnion("kind", [
 		kind: z.literal("send-now"),
 	}),
 ]);
+
+export const QueueChangeInChatSchema = ChatKeySchema.extend({
+	change: QueueChangeAskedSchema,
+});
 
 export const AssistantSessionSchema = z.object({
 	turns: z.array(AssistantTurnSchema).readonly(),

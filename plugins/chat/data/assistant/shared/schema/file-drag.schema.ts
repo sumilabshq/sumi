@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChatKeySchema } from "./chat-key.schema.js";
 
 export const FileDragSchema = z.object({
 	isOver: z.boolean(),
@@ -11,11 +12,11 @@ export const PageDragSchema = z.enum(["enter", "leave", "drop"]);
 
 export type PageDrag = z.infer<typeof PageDragSchema>;
 
-export const PageDragAskedSchema = z.object({
+export const PageDragAskedSchema = ChatKeySchema.extend({
 	drag: PageDragSchema,
 });
 
-export const DroppedAskedSchema = z.object({
+export const DroppedAskedSchema = ChatKeySchema.extend({
 	id: z.string(),
 });
 
@@ -39,3 +40,7 @@ export const FileDragEventSchema = z.discriminatedUnion("kind", [
 ]);
 
 export type FileDragEvent = z.infer<typeof FileDragEventSchema>;
+
+export const ChatFileDragEventSchema = ChatKeySchema.extend({
+	drag: FileDragEventSchema,
+});

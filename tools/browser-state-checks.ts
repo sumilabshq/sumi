@@ -334,7 +334,7 @@ createRoot(askingHost).render(
 			{
 				value: {
 					...NO_ASK_COMPOSER,
-					ask: (text: string) => void chatApp.send(PrefillDraftCommand, { text }),
+					ask: (text: string) => void chatApp.send(PrefillDraftCommand, { chat: null, text }),
 				},
 			},
 			h(Browser, {}),

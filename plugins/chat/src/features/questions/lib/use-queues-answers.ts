@@ -43,7 +43,7 @@ async function queueAnswers(chatId: string, { app, sendText, deliver }: AnswerSt
 		return;
 	}
 
-	outputOf(await sendText.run({ said: ready.text }));
+	outputOf(await sendText.run({ chat: chatId, said: ready.text }));
 	const delivered = await deliver.run({ chat: chatId, ids: ready.questions.map(({ id }) => id) });
 
 	if (!delivered.ok) {

@@ -3,12 +3,14 @@ import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { SendMessageCommand } from "@widgetarium/assistant";
 import { RUN_COMMAND_EVENT } from "./code-block.js";
+import { useChatKey } from "../../../shared/lib/chat-key-context.js";
 
 type SendSaid = (said: string) => Promise<unknown>;
 
 const RUN_ASK = "Run this command:\n\n```bash\n{command}\n```";
 
 export function useRunsCodeCommands(holder: RefObject<HTMLDivElement | null>): void {
+	const chat = useChatKey();
 	const sendMessage = useCommand(SendMessageCommand);
 	useEffect(() => {
 		const node = holder.current;
@@ -17,10 +19,10 @@ export function useRunsCodeCommands(holder: RefObject<HTMLDivElement | null>): v
 			return undefined;
 		}
 
-		const askToRun = askToRunWith((said) => sendMessage.run({ said }));
+		const askToRun = askToRunWith((said) => sendMessage.run({ chat, said }));
 		node.addEventListener(RUN_COMMAND_EVENT, askToRun);
 		return () => node.removeEventListener(RUN_COMMAND_EVENT, askToRun);
-	}, [holder, sendMessage]);
+	}, [holder, sendMessage, chat]);
 }
 
 function askToRunWith(send: SendSaid): (event: Event) => void {

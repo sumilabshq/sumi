@@ -13,7 +13,7 @@ const ADOPTED = "a new chat took a draft";
 
 export function adoptUnsent(
 	{ chatDrafts, draftAttachments }: AdoptingParts,
-	{ chatId, said, attachments }: AdoptedDraft,
+	{ chat: chatId, said, attachments }: AdoptedDraft,
 ): { readonly said: string } {
 	if (chatDrafts.openChat() !== chatId) {
 		holdChatDraft(chatDrafts, chatId, {

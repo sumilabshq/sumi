@@ -33,7 +33,7 @@ export interface ReadyChatProps {
 const TITLE = "Widgetarium AI";
 
 export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyChatProps): ReactElement {
-	const { data: chat } = useQuery(ChatQuery);
+	const { data: chat } = useQuery(ChatQuery, { chat: chatId ?? null });
 	const { session } = chat;
 	const [change, setChange] = useState<AttachedChange | null>(null);
 	const { failure, report } = useFailureLine();
@@ -81,7 +81,7 @@ export function ReadyChat({ setupFailure, lead, title, cards, chatId }: ReadyCha
 				isFirst={isEmpty}
 				attached={change ? { label: change.label, onClear: () => setChange(null) } : null}
 				onSend={asks.send}
-				onStop={() => void stopTurn.run()}
+				onStop={() => void stopTurn.run({ chat: chatId ?? null })}
 				onTyped={typed}
 				editing={editing}
 				onSaveEdit={queueActions.saveEdit}

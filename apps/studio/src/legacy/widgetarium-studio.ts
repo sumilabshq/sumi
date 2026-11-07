@@ -34,6 +34,7 @@ import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
 import { startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
 import { frameRoutesOf } from "../tabs/frame-routes.js";
+import { startWindowServer } from "../tabs/window-server.js";
 import { startStudioAppearance } from "../tabs/studio-appearance.js";
 import type { StudioAppearance } from "../tabs/studio-appearance.js";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
@@ -117,12 +118,18 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const state = start.state ?? createStudioState(studioApp);
 	const appearance = start.appearance ?? startStudioAppearance(window);
 	const chatsColumn = createChatsColumnApp(studioApp);
+	const platform = start.platform ?? "browser";
 	const windowOffers: WindowOffers = {
 		workspaceId: lent.appId,
-		platform: start.platform ?? "browser",
+		platform,
 		windowApp: studioApp,
 		core,
-		assistant: assistantHostOf(start),
+		windowServer: startWindowServer(plugins.windowServerModules, {
+			workspaceId: lent.appId,
+			platform,
+			core,
+			assistant: assistantHostOf(start),
+		}),
 		focusedChatId: () => chatsColumn.focusedChat.now()?.id ?? null,
 	};
 	return {

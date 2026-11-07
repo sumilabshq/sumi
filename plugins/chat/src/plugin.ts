@@ -1,5 +1,12 @@
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "@sumi/command-menu-plugin";
-import { BackgroundModulesSlot, SumiHostPlugin, TabPageSlot, WindowProvidersSlot } from "@sumi/sumi-host-plugin";
+import {
+	BackgroundModulesSlot,
+	SumiHostPlugin,
+	TabPageSlot,
+	WindowProvidersSlot,
+	WindowServerModulesSlot,
+} from "@sumi/sumi-host-plugin";
+import { AssistantModule } from "@widgetarium/assistant/module";
 import { plugin } from "@widgetarium/plugin-framework";
 import { QuestionsModule as QuestionsContract } from "@widgetarium/questions";
 import { QuestionsModule } from "@widgetarium/questions/module";
@@ -12,6 +19,7 @@ export const ChatPlugin = plugin("chat")
 	.fill(
 		BackgroundModulesSlot({ id: "questions", module: () => QuestionsModule, contract: QuestionsContract }),
 		TabPageSlot({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
+		WindowServerModulesSlot({ id: "assistant", module: ({ assistant }) => AssistantModule(assistant) }),
 		WindowProvidersSlot({ id: "ask-composer", provider: askComposerProviderOf }),
 		MenuDoorsSlot({
 			id: "ask",

@@ -11,7 +11,7 @@ export function useOpensChatDraft(shell: StartedApp, chatId: string): void {
 
 async function openChatDraft(shell: StartedApp, chatId: string): Promise<void> {
 	const opened = await shell.send(OpenChatDraftCommand, {
-		chatId,
+		chat: chatId,
 	});
 
 	if (!opened.ok) {
@@ -28,6 +28,7 @@ async function openChatDraft(shell: StartedApp, chatId: string): Promise<void> {
 	}
 
 	const filled = await shell.send(PrefillDraftCommand, {
+		chat: chatId,
 		text: opened.output.said,
 	});
 
