@@ -1,3 +1,4 @@
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import {
 	CreateGroupCommand,
 	HeldTabsQuery,
@@ -10,15 +11,15 @@ import {
 	TearOffTabCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { PaneTreeQuery, PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
-import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
-import { givePage } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
+import { givePage } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
 import { check, tally, thrownBy, waitFor } from "./check-helpers.ts";
 
 const BROWSER_FIRST_PAGE = "tab-1";
@@ -76,7 +77,7 @@ async function tearOffChecks(): Promise<void> {
 		[(await pageIdOf(studioApp, "tab-12")) === pageId, pages.calls.slice(callsBefore)],
 		[true, [`tear off ${pageId} as tab-12`]],
 	);
-	const moment = momentOfWindow(placedTabsOf(restoredTabs()), "main");
+	const moment = momentOfWindow(placedTabsOf(restoredTabs()), "main", BUILT_IN_APPS);
 	const given = givePage(moment, { id: "tab-12", pageId: "page-mine", why: "test" })?.moment ?? moment;
 	check(
 		"no tab takes a page another tab holds, and no tab trades its page",

@@ -14,6 +14,8 @@
 		"@sumi/contract": "0.6.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@sumi/apps": "0.1.0",
+		"@widgetarium/behaviors": "0.1.0",
+		"@widgetarium/places": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"peerDependencies": {

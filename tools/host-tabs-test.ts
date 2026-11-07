@@ -1,4 +1,5 @@
-import { tabRowsOf } from "../packages/state/places/shared/lib/rows/tab-rows.ts";
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
+import { tabRowsOf } from "../plugins/apps/data/places/shared/lib/rows/tab-rows.ts";
 import {
 	emptyMoment,
 	findGroup,
@@ -8,14 +9,14 @@ import {
 	openTab,
 	placeTab,
 	tabOf,
-} from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { closeGroup, closeTabs, reopenClosed } from "../packages/state/places/shared/lib/tabs/tab-closing.ts";
-import { addGroup, ungroup } from "../packages/state/places/shared/lib/tabs/tab-groups.ts";
-import { rememberPages } from "../packages/state/places/shared/lib/tabs/page-memory.ts";
-import type { HostTabsMoment, MovedTabs, TabGroup } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
+} from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { closeGroup, closeTabs, reopenClosed } from "../plugins/apps/data/places/shared/lib/tabs/tab-closing.ts";
+import { addGroup, ungroup } from "../plugins/apps/data/places/shared/lib/tabs/tab-groups.ts";
+import { rememberPages } from "../plugins/apps/data/places/shared/lib/tabs/page-memory.ts";
+import type { HostTabsMoment, MovedTabs, TabGroup } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
 import { addEssential, essentialsOf } from "../packages/domain/app-host/shared/lib/essentials/essentials.ts";
-import { withTabsClosed } from "../packages/state/places/shared/lib/showing/closing.ts";
+import { withTabsClosed } from "../plugins/apps/data/places/shared/lib/showing/closing.ts";
 import {
 	chatTabToShow,
 	showingOf,
@@ -26,11 +27,11 @@ import {
 	withTabPressed,
 	withTabShown,
 	withTabTornOff,
-} from "../packages/state/places/shared/lib/showing/showing.ts";
-import { withHomeFollowed, withTabsAtHome } from "../packages/state/places/shared/lib/showing/rehoming.ts";
-import type { TabFacts } from "../packages/state/places/shared/lib/showing/tab-facts.ts";
-import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";
-import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
+} from "../plugins/apps/data/places/shared/lib/showing/showing.ts";
+import { withHomeFollowed, withTabsAtHome } from "../plugins/apps/data/places/shared/lib/showing/rehoming.ts";
+import type { TabFacts } from "../plugins/apps/data/places/shared/lib/showing/tab-facts.ts";
+import { KeptSessionTabsSchema, migratedTabsOf } from "../plugins/apps/data/places/gateways/tabs/tauri/kept-session.ts";
+import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
 
 let failed = 0;
 const quiet = console.info;
@@ -58,13 +59,13 @@ function movedTo(moved: MovedTabs | null, was: HostTabsMoment): HostTabsMoment {
 }
 
 function threeTabs(): HostTabsMoment {
-	const one = openTab(emptyMoment(), browser, atEnd(ONE)).moment;
+	const one = openTab(emptyMoment(BUILT_IN_APPS), browser, atEnd(ONE)).moment;
 	const two = openTab(one, browser, atEnd(ONE)).moment;
 	return openTab(two, browser, atEnd(ONE)).moment;
 }
 
 function threeWorkspaceTabs(): HostTabsMoment {
-	const one = openTab(emptyMoment(), browser, atEnd(WORKSPACE_LIST)).moment;
+	const one = openTab(emptyMoment(BUILT_IN_APPS), browser, atEnd(WORKSPACE_LIST)).moment;
 	const two = openTab(one, browser, atEnd(WORKSPACE_LIST)).moment;
 	return openTab(two, browser, atEnd(WORKSPACE_LIST)).moment;
 }
@@ -106,7 +107,7 @@ const legacy = KeptSessionTabsSchema.parse({
 });
 check(
 	"a session from before lists and groups opens with every tab in the open tabs",
-	flatTabIdsOf(momentOfWindow(migratedTabsOf(legacy, []), "main"), WORKSPACE_LIST),
+	flatTabIdsOf(momentOfWindow(migratedTabsOf(legacy, []), "main", BUILT_IN_APPS), WORKSPACE_LIST),
 	["tab-1", "tab-2"],
 );
 
@@ -150,7 +151,7 @@ check(
 	[flatTabIdsOf(reopened, TWO), flatTabIdsOf(reopened, WORKSPACE_LIST)],
 	[[], ["tab-1"]],
 );
-const workspaceTab = openTab(emptyMoment(), browser, atEnd(WORKSPACE_LIST)).moment;
+const workspaceTab = openTab(emptyMoment(BUILT_IN_APPS), browser, atEnd(WORKSPACE_LIST)).moment;
 const workspaceClosed = closeTabs(workspaceTab, new Map(), {
 	ids: ["tab-1"],
 	reason: "close the workspace tab",

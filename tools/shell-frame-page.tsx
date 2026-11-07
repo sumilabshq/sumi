@@ -28,7 +28,7 @@ import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts
 import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryChatsGateway } from "../packages/domain/workspaces/gateways/chats/memory.gateway.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 

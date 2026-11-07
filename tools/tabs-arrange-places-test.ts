@@ -6,9 +6,9 @@ import {
 	PlaceTabCommand,
 	PlacesModule,
 	SidebarQuery,
-} from "../packages/state/places/index.ts";
-import type { Screen, TabsAsk } from "../packages/state/places/index.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+} from "../plugins/apps/data/places/index.ts";
+import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import type { SidebarEntry, TabDrop, TabsSidebar } from "../packages/domain/app-host/index.ts";
 import { arrangedSidebar } from "../apps/studio/src/features/app-host/lib/tab-drag/arranged-sidebar.ts";
 import type { DragSource } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-source.ts";

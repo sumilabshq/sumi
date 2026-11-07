@@ -10,8 +10,8 @@ import { NoCoreChangesGateway } from "../packages/domain/app-host/gateways/core-
 import { MemoryShownViewGateway } from "../packages/domain/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../packages/domain/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../packages/domain/app-host/shared/schema/studio-view.schema.ts";
-import { PlacesModule } from "../packages/state/places/generated/contract.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";

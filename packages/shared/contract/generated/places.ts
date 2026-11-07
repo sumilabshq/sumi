@@ -4,7 +4,9 @@ import { z } from "zod";
 
 export const TornViewSchema = z.enum(["chat", "app"]);
 
-export const PageAppSchema = z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat");
+export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
+
+export const PageAppSchema = AppKindSchema;
 
 export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
 
@@ -227,14 +229,6 @@ export const ChatTabAskSchema = z.object({
 	at: TabsAskSchema,
 	chatId: z.string().min(1),
 });
-
-export const BuiltInAppSchema = z.enum(["canvas", "browser", "tasks", "chat"]);
-
-export const InstalledAppIdSchema = z
-	.string()
-	.regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
-
-export const AppKindSchema = z.union([BuiltInAppSchema, InstalledAppIdSchema]);
 
 export const EssentialSchema = z.object({
 	id: z.string(),
@@ -648,8 +642,6 @@ export const ClosedTabRowSchema = z.object({
 export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
 
 export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
-
-export type BuiltInApp = z.infer<typeof BuiltInAppSchema>;
 
 export type AppKind = z.infer<typeof AppKindSchema>;
 

@@ -10,6 +10,7 @@ import { TerminalModule } from "@widgetarium/terminal/module";
 import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps";
 import { AppsModule } from "../plugins/apps/data/apps/module.ts";
+import { AppsPlugin } from "../plugins/apps/src/plugin.ts";
 import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "../plugins/command-menu/src/index.ts";
 import { MainPlugin } from "../plugins/main/src/plugin.ts";
@@ -146,12 +147,12 @@ check(
 	[FileSystemModule.definition.name, TerminalModule.definition.name],
 );
 check(
-	"the background modules slot holds the apps plugin's module, the chat plugin's questions and the old app's, none of the host's",
+	"the background modules slot holds the apps plugin's places and apps, the chat plugin's questions and the old app's tasks, none of the host's",
 	resolved.backgroundModules.map(({ contract }) => contract.name),
 	[
+		PlacesModule.definition.name,
 		AppsModule.definition.name,
 		QuestionsModule.definition.name,
-		PlacesModule.definition.name,
 		TasksModule.definition.name,
 	],
 );
@@ -291,9 +292,13 @@ check(
 	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
 );
 check(
-	"questions is the chat plugin's background module, no longer the old app's",
-	[fillIdsOf(ChatPlugin, BackgroundModulesSlot), fillIdsOf(MainPlugin, BackgroundModulesSlot)],
-	[["questions"], ["places", "tasks"]],
+	"places and apps are the apps plugin's background modules, questions the chat plugin's, tasks the old app's",
+	[
+		fillIdsOf(AppsPlugin, BackgroundModulesSlot),
+		fillIdsOf(ChatPlugin, BackgroundModulesSlot),
+		fillIdsOf(MainPlugin, BackgroundModulesSlot),
+	],
+	[["places", "apps"], ["questions"], ["tasks"]],
 );
 check(
 	"the built-in profile runs the command menu's module in the window and draws its layer",

@@ -122,5 +122,4 @@ TODO: the chat pane's plate, its crumb and more menu, the chats column and the c
 
 TODO: a row source of another plugin sends only to modules the menu's module imports.
 
-TODO: places' tabs (open, closed, history) move into the apps plugin; decided with the user, not started.
 TODO: `app-host` (`packages/domain`) imports `@sumi/apps` until the shell's tabs move into the apps plugin.

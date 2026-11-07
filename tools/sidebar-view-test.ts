@@ -1,8 +1,9 @@
-import { emptyMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import type { HostTab, HostTabsMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { sidebarOf } from "../packages/state/places/shared/lib/rows/sidebar-rows.ts";
-import type { PageFacts } from "../packages/state/places/shared/schema/screen.schema.ts";
-import type { PlacedSidebar, SidebarEntry } from "../packages/state/places/shared/schema/tab-rows.schema.ts";
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
+import { emptyMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import type { HostTab, HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { sidebarOf } from "../plugins/apps/data/places/shared/lib/rows/sidebar-rows.ts";
+import type { PageFacts } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
+import type { PlacedSidebar, SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
 
 let failed = 0;
 
@@ -44,7 +45,7 @@ function tabOf(id: string, app: HostTab["app"]): HostTab {
 }
 
 const MOMENT: HostTabsMoment = {
-	...emptyMoment(),
+	...emptyMoment(BUILT_IN_APPS),
 	tabs: [
 		tabOf("chat-1", "chat"),
 		tabOf("chat-2", "chat"),
@@ -133,7 +134,7 @@ check(
 	apart,
 );
 
-const empty = sidebarWith(emptyMoment(), null);
+const empty = sidebarWith(emptyMoment(BUILT_IN_APPS), null);
 check(
 	"both sections stand even when empty, and a new tab goes to Open",
 	JSON.stringify(empty.sections.map((section) => section.list)) === '["pinned","workspace"]' &&

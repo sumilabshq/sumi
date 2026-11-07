@@ -1,3 +1,4 @@
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "@widgetarium/data-framework";
 import {
 	CloseWindowCommand,
@@ -5,21 +6,27 @@ import {
 	OpenWindowCommand,
 	OpenWindowsQuery,
 	PlacesModule,
-} from "../packages/state/places/index.ts";
-import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
+} from "../plugins/apps/data/places/index.ts";
+import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const windows = new MemoryWindowsGateway({ windows: [] });
 const core = localTransport();
 core.serve(
 	runtime()
-		.modules(RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway() } }))
+		.modules(
+			RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway(), placedApps: builtInPlacedApps() } }),
+		)
 		.start({ platform: "server", env: {} }),
 );
-const main = runtime().imports(PlacesModule({ over: core })).start();
-const side = runtime().imports(PlacesModule({ over: core })).start();
+const main = runtime()
+	.imports(PlacesModule({ over: core }))
+	.start();
+const side = runtime()
+	.imports(PlacesModule({ over: core }))
+	.start();
 const labelsOf = async (): Promise<readonly string[]> => {
 	const answered = await side.send(OpenWindowsQuery);
 	return answered.ok ? answered.output.windows.map((open) => open.label) : [answered.reason];

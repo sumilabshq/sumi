@@ -18,7 +18,13 @@ import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
 export const ChatPlugin = plugin("chat")
 	.require(SumiHostPlugin, AppsPlugin, CommandMenuPlugin)
 	.fill(
-		AppsSlot({ id: "chat", title: "New chat", art: "chat", isListed: false }),
+		AppsSlot({
+			id: "chat",
+			title: "New chat",
+			art: "chat",
+			isListed: false,
+			tabs: { holdsTabs: true, splits: true, runsInPage: false, keepsRecord: true },
+		}),
 		BackgroundModulesSlot({ id: "questions", module: () => QuestionsModule, contract: QuestionsContract }),
 		TabPageSlot({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
 		WindowServerModulesSlot({ id: "assistant", module: ({ assistant }) => AssistantModule(assistant) }),

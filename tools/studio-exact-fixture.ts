@@ -5,7 +5,7 @@ import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../packages/domain/app-host/gateways/pane-flash/none.gateway.ts";
@@ -180,13 +180,15 @@ export function exactStudio({
 	const studioApp = runtime()
 		.modules(
 			PluginAppsModule,
-			AppHostModule({ injects: {
-				studioWindow: new MemoryStudioWindowGateway(),
-				essentials: keptEssentials,
-				shownView: new MemoryShownViewGateway("browser"),
-				paneFlash: new NoPaneFlashGateway(),
-				coreChanges: new NoCoreChangesGateway(),
-			} }),
+			AppHostModule({
+				injects: {
+					studioWindow: new MemoryStudioWindowGateway(),
+					essentials: keptEssentials,
+					shownView: new MemoryShownViewGateway("browser"),
+					paneFlash: new NoPaneFlashGateway(),
+					coreChanges: new NoCoreChangesGateway(),
+				},
+			}),
 			BrowserModule({ injects: fakeBrowser(boardPages).parts }),
 			LayoutModule,
 			WorkspacesModule({ injects: workspaces }),

@@ -1,7 +1,7 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useTabHeader } from "@sumi/sumi-host-plugin";
-import type { AppView, TabModulesOf, TitleOf } from "../../../../slots.js";
+import type { AppView, ArtOf, TabModulesOf, TabRules, TitleOf } from "../../../../slots.js";
 
 export interface FilledApp {
 	readonly id: string;
@@ -13,6 +13,9 @@ export interface FilledApp {
 	readonly actions?: readonly AppView[] | undefined;
 	readonly tabModules?: TabModulesOf | undefined;
 	readonly titleOf?: TitleOf | undefined;
+	readonly artOf?: ArtOf | undefined;
+	readonly newTabTitle?: string | undefined;
+	readonly tabs?: TabRules | undefined;
 }
 
 export interface DrawnApp extends FilledApp {

@@ -23,7 +23,7 @@ import type { BrowserTab } from "../packages/domain/browser/shared/schema/browse
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
 import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";

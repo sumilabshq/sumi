@@ -1,3 +1,4 @@
+import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
@@ -6,6 +7,7 @@ import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store
 import {
 	CreateGroupCommand,
 	KeepChatTabsCommand,
+	OpenTabBelowCommand,
 	OpenTabCommand,
 	PinTabCommand,
 	PlaceGroupCommand,
@@ -13,14 +15,14 @@ import {
 	PlacedTabsQuery,
 	PlacesModule,
 	ShowTabCommand,
-} from "../packages/state/places/index.ts";
-import type { Screen, TabsAsk } from "../packages/state/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { TauriTabsGateway } from "../packages/state/places/gateways/tabs/tauri/tauri.gateway.ts";
-import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
-import { KeptPlacesSchema } from "../packages/state/places/gateways/windows/tauri.gateway.ts";
-import type { KeptPlaces } from "../packages/state/places/gateways/windows/tauri.gateway.ts";
+} from "../plugins/apps/data/places/index.ts";
+import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { TauriTabsGateway } from "../plugins/apps/data/places/gateways/tabs/tauri/tauri.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
+import { KeptPlacesSchema } from "../plugins/apps/data/places/gateways/windows/tauri.gateway.ts";
+import type { KeptPlaces } from "../plugins/apps/data/places/gateways/windows/tauri.gateway.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 
@@ -50,10 +52,21 @@ function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runt
 	const core = localTransport();
 	core.serve(
 		runtime()
-			.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+			.modules(
+				RunnablePlacesModule({
+					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+				}),
+			)
 			.start({ platform: "server", env: {} }),
 	);
-	return [runtime().imports(PlacesModule({ over: core })).start(), runtime().imports(PlacesModule({ over: core })).start()];
+	return [
+		runtime()
+			.imports(PlacesModule({ over: core }))
+			.start(),
+		runtime()
+			.imports(PlacesModule({ over: core }))
+			.start(),
+	];
 }
 
 async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {
@@ -94,6 +107,7 @@ async function migrationChecks(): Promise<void> {
 			store,
 			root,
 			kept: HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) }),
+			apps: BUILT_IN_APPS,
 		});
 	const [main] = windowsOver(tabsIn());
 	check(
@@ -136,7 +150,7 @@ async function unreadableChecks(): Promise<void> {
 	fake.put(`${root}:places.json`, { v: 1, rev: 1, tabs: { broken: true } });
 	const store = new StoreClient(fake.invoke);
 	const kept = HeldDoc.read({ store, root, kind: PLACES, empty: KeptPlacesSchema.parse({}) });
-	const [main] = windowsOver(new TauriTabsGateway({ store, root, kept }));
+	const [main] = windowsOver(new TauriTabsGateway({ store, root, kept, apps: BUILT_IN_APPS }));
 	const placed = await main.send(PlacedTabsQuery, { window: "main" });
 	check(
 		"unreadable tabs start empty and are kept aside, never read again from the older files",
@@ -190,6 +204,22 @@ async function oneWriterChecks(): Promise<void> {
 	});
 	await side.send(ShowTabCommand, { at: askAt("studio-2"), id: "tab-1" });
 	check("and the other window hears the change without asking", await waitFor(() => heard.count > 0), true);
+}
+
+async function declaredRuleChecks(): Promise<void> {
+	const tabs = new MemoryTabsGateway();
+	const [main] = windowsOver(tabs);
+	const canvas = await main.send(OpenTabCommand, { at: askAt("main"), app: "canvas" });
+	const below = await main.send(OpenTabBelowCommand, { at: askAt("main"), id: canvas.ok ? canvas.output.id : "" });
+	const placed = await main.send(PlacedTabsQuery, { window: "main" });
+	const belowApp = placed.ok && below.ok ? placed.output.tabs.find(({ id }) => id === below.output.id)?.app : null;
+	check("a tab opened below opens the app that declares it navigates", belowApp, "browser");
+	const chat = await main.send(OpenTabCommand, { at: askAt("main"), app: "chat" });
+	check(
+		"opening a tab of the app that declares it draws no page is refused",
+		chat.ok ? "opened" : chat.reason,
+		"a tab of chat cannot be opened: chat draws no page in a tab",
+	);
 }
 
 async function lawChecks(): Promise<void> {
@@ -280,6 +310,7 @@ await migrationChecks();
 await unreadableChecks();
 await oneWriterChecks();
 await lawChecks();
+await declaredRuleChecks();
 console.info = quiet;
 console.log(tally.failed ? `places tabs: ${tally.failed} check(s) failed` : "places tabs: all checks passed");
 process.exit(tally.failed ? 1 : 0);

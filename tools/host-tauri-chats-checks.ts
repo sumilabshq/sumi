@@ -22,8 +22,8 @@ import { check, waitFor } from "./check-helpers.ts";
 import { DEFAULT, FakeStore, RESEARCH, quietly } from "./host-tauri-fake-store.ts";
 import type { Doc } from "./host-tauri-fake-store.ts";
 import { placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { MarkTabSeenCommand } from "../packages/state/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MarkTabSeenCommand } from "../plugins/apps/data/places/generated/contract.ts";
 
 interface HeldRun {
 	readonly run: TurnRun;

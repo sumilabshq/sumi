@@ -1,3 +1,4 @@
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
@@ -17,11 +18,11 @@ import {
 	ShowTabCommand,
 	SidebarQuery,
 	TearOffTabCommand,
-} from "../packages/state/places/index.ts";
-import type { PlacedSidebar, Screen, TabsAsk } from "../packages/state/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
+} from "../plugins/apps/data/places/index.ts";
+import type { PlacedSidebar, Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const WINDOW = "main";
@@ -48,7 +49,11 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 	const core = localTransport();
 	core.serve(
 		runtime()
-			.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+			.modules(
+				RunnablePlacesModule({
+					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+				}),
+			)
 			.start({ platform: "server", env: {} }),
 	);
 	return runtime()

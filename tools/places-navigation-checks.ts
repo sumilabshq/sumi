@@ -1,3 +1,4 @@
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
@@ -10,10 +11,10 @@ import {
 	PlacesModule,
 	RecordAppAddressCommand,
 	TakeAskedLinkCommand,
-} from "../packages/state/places/index.ts";
-import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
+} from "../plugins/apps/data/places/index.ts";
+import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { placedTabsOf } from "./places-fixture.ts";
@@ -31,7 +32,11 @@ const tabs = new MemoryTabsGateway(
 );
 const served = dataFrameworkMiddleware(
 	runtime()
-		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+		.modules(
+			RunnablePlacesModule({
+				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+			}),
+		)
 		.start({ platform: "server", env: {} }),
 	{ authenticate: new AppCallerAuthenticate() },
 );

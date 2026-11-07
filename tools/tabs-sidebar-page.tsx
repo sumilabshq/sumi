@@ -7,7 +7,7 @@ import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
 import { RuntimeProvider } from "../packages/shared/data-framework/src/index.ts";
 import { PlaceInViewCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
-import type { PlacedTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
+import type { PlacedTabs } from "../plugins/apps/data/places/shared/schema/tabs.schema.ts";
 
 reportsFailures();
 

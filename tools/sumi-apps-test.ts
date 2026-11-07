@@ -1,3 +1,4 @@
+import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -16,10 +17,10 @@ import { NodeTerminalSessionsGateway } from "../apps/tauri/capabilities/terminal
 import { TerminalModule } from "../apps/tauri/capabilities/terminal/module.ts";
 import { TasksModule } from "../packages/domain/tasks/module.ts";
 import { tasksBoardFileOver } from "../apps/tauri/src/core-link/tasks-board-file.ts";
-import { PlacesModule } from "../packages/state/places/module.ts";
+import { PlacesModule } from "../plugins/apps/data/places/module.ts";
 import { QuestionsModule } from "../plugins/chat/data/questions/module.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { MemoryWindowsGateway } from "../packages/state/places/gateways/windows/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 import { seededBoard } from "./tasks-fixture.ts";
 import { REGISTERED_APPS } from "../packages/shared/app-registry/index.ts";
@@ -138,18 +139,24 @@ const appData = mkdtempSync(path.join(tmpdir(), "wg-sumi-apps-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
 const own = localTransport();
 const sumiCore = runtime()
-		.modules(
-			FileSystemModule({ injects: {
+	.modules(
+		FileSystemModule({
+			injects: {
 				files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
-			} }),
-			TerminalModule({ injects: {
+			},
+		}),
+		TerminalModule({
+			injects: {
 				sessions: terminal,
-			} }),
-			TasksModule({
-				file: tasksBoardFileOver(own),
-			}),
-			QuestionsModule,
-			PlacesModule({ injects: {
+			},
+		}),
+		TasksModule({
+			file: tasksBoardFileOver(own),
+		}),
+		QuestionsModule,
+		PlacesModule({
+			injects: {
+				placedApps: builtInPlacedApps(),
 				windows: new MemoryWindowsGateway({
 					windows: [],
 				}),
@@ -170,15 +177,16 @@ const sumiCore = runtime()
 						[SUMI_CHAT_TAB],
 					),
 				),
-			} }),
-		)
-		.start({
-			platform: "server",
-			env: {},
-			scope: {
-				workspaceId: SUMI_APPS_WORKSPACE,
 			},
-		});
+		}),
+	)
+	.start({
+		platform: "server",
+		env: {},
+		scope: {
+			workspaceId: SUMI_APPS_WORKSPACE,
+		},
+	});
 const authenticate = new AppCallerAuthenticate();
 own.serve(sumiCore, { authenticate });
 const served = dataFrameworkMiddleware(sumiCore, { authenticate });

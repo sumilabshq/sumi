@@ -16,7 +16,7 @@ import { CommandMenuResultsQuery } from "../plugins/command-menu/data/command-me
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { AppTabQuery, PlacesModule } from "../packages/state/places/generated/contract.ts";
+import { AppTabQuery, PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
 import { TasksModule } from "../packages/domain/tasks/index.ts";
 import { WidgetariumStudio, startStudio } from "../apps/studio/src/legacy/widgetarium-studio.ts";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
@@ -70,7 +70,8 @@ const studioApp = runtime()
 	.modules(
 		LayoutModule,
 		BrowserModule({ injects: fakeBrowser(new FakeBrowserPagesGateway()).parts }),
-		WorkspacesModule({ injects: memoryWorkspacesParts({
+		WorkspacesModule({
+			injects: memoryWorkspacesParts({
 				workspaces: [
 					{
 						id: SUMI_APPS_WORKSPACE,
@@ -90,7 +91,8 @@ const studioApp = runtime()
 					],
 					openOnStartId: null,
 				},
-			}), }),
+			}),
+		}),
 		AppHostModule,
 		PluginAppsModule,
 		...PLUGINS.windowModules,

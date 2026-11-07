@@ -14,6 +14,8 @@ export type TabModulesOf = () => readonly DeviceModule[];
 
 export type TitleOf = (address: string) => string;
 
+export type ArtOf = (address: string) => string | null;
+
 const NOT_A_VIEW = "an app's view is a React component that takes { tabId }";
 const NOT_AN_ACTION = "an app's header action is a React component that takes { tabId }";
 const NOT_A_TITLE = "an app's titleOf answers a tab's title from its address";
@@ -22,6 +24,17 @@ const NOT_AN_SVG = "an app's icon is the markup of its own SVG, starting with <s
 const ICON_LIMIT = 32_768;
 const ART_NAME = /^[a-z][a-z0-9-]*$/;
 const NOT_AN_ART = "an app's art names a picture the shell draws, such as canvas or chat";
+const NOT_AN_ART_OF = "an app's artOf answers the picture of a tab from its address, or null for the app's own art";
+
+export const TabRulesSchema = z.object({
+	holdsTabs: z.boolean().optional(),
+	navigates: z.boolean().optional(),
+	splits: z.boolean().optional(),
+	runsInPage: z.boolean().optional(),
+	keepsRecord: z.boolean().optional(),
+});
+
+export type TabRules = z.infer<typeof TabRulesSchema>;
 
 export const AppSchema = z.object({
 	title: z.string().min(1),
@@ -31,6 +44,9 @@ export const AppSchema = z.object({
 		.regex(/^<svg[\s>]/, NOT_AN_SVG)
 		.optional(),
 	art: z.string().regex(ART_NAME, NOT_AN_ART).optional(),
+	artOf: z.custom<ArtOf>((value) => typeof value === "function", NOT_AN_ART_OF).optional(),
+	newTabTitle: z.string().min(1).optional(),
+	tabs: TabRulesSchema.optional(),
 	isListed: z.boolean().optional(),
 	view: z.custom<AppView>(isComponent, NOT_A_VIEW).optional(),
 	actions: z.array(z.custom<AppView>(isComponent, NOT_AN_ACTION)).optional(),

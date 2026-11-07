@@ -22,8 +22,8 @@ import type { WorkspaceFolder } from "../packages/domain/workspaces/shared/schem
 import { check, tally } from "./check-helpers.ts";
 import { quietly } from "./host-tauri-fake-store.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { MarkTabSeenCommand } from "../packages/state/places/generated/contract.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { MarkTabSeenCommand } from "../plugins/apps/data/places/generated/contract.ts";
 
 const SEEDED_CHATS = ["old", "pinned", "new"];
 
@@ -82,7 +82,10 @@ function started(
 	parts: WorkspacesParts,
 	tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS)),
 ): Runtime {
-	return runtime().modules(WorkspacesModule({ injects: parts })).imports(placesOver(tabs)).start();
+	return runtime()
+		.modules(WorkspacesModule({ injects: parts }))
+		.imports(placesOver(tabs))
+		.start();
 }
 
 async function marksIn(tabs: MemoryTabsGateway): Promise<Readonly<Record<string, string>>> {

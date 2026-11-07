@@ -1,3 +1,4 @@
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
@@ -11,16 +12,16 @@ import {
 	ShowTabCommand,
 	ShownSplitQuery,
 	SidebarQuery,
-} from "../packages/state/places/index.ts";
-import type { Screen, TabsAsk } from "../packages/state/places/index.ts";
-import type { SidebarEntry } from "../packages/state/places/shared/schema/tab-rows.schema.ts";
-import type { SplitDir, SplitNode } from "../packages/state/places/shared/schema/splits.schema.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { splitMapOf } from "../packages/state/places/shared/lib/splits/split-map.ts";
-import { splitBreaksOf } from "../packages/state/places/shared/lib/splits/split-members.ts";
-import { placeInView } from "../packages/state/places/shared/lib/splits/split-moves.ts";
-import { momentOfWindow } from "../packages/state/places/shared/lib/tabs/kept-tabs.ts";
-import type { HostTabsMoment } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
+} from "../plugins/apps/data/places/index.ts";
+import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import type { SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
+import type { SplitDir, SplitNode } from "../plugins/apps/data/places/shared/schema/splits.schema.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { splitMapOf } from "../plugins/apps/data/places/shared/lib/splits/split-map.ts";
+import { splitBreaksOf } from "../plugins/apps/data/places/shared/lib/splits/split-members.ts";
+import { placeInView } from "../plugins/apps/data/places/shared/lib/splits/split-moves.ts";
+import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
+import type { HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
 import { MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
@@ -163,7 +164,7 @@ async function fullChecks(window: Runtime): Promise<void> {
 async function liftingChecks(): Promise<void> {
 	const lifted = started();
 	await lifted.window.send(PlaceInViewCommand, { at: AT, tabId: "tab-6", targetTabId: "tab-1", side: "right" });
-	const listed = momentOfWindow(await lifted.tabs.placedTabs(), MAIN_WINDOW).lists;
+	const listed = momentOfWindow(await lifted.tabs.placedTabs(), MAIN_WINDOW, BUILT_IN_APPS).lists;
 	check(
 		"a chat's own tab dropped in the view is lifted out of the chat into Open first",
 		[
@@ -192,7 +193,7 @@ async function swappingChecks(): Promise<void> {
 		],
 		[["show-split"], "tab-1"],
 	);
-	const moment = momentOfWindow(await tabs.placedTabs(), MAIN_WINDOW);
+	const moment = momentOfWindow(await tabs.placedTabs(), MAIN_WINDOW, BUILT_IN_APPS);
 	check("the split is the window's shown view", moment.shownSplitId, "split-1");
 	check(
 		"showing another member of the shown split only moves the focus: no redraw",
@@ -398,7 +399,7 @@ function mapChecks(): void {
 
 async function lawChecks(): Promise<void> {
 	const { tabs } = started();
-	const moment = momentOfWindow(await tabs.placedTabs(), MAIN_WINDOW);
+	const moment = momentOfWindow(await tabs.placedTabs(), MAIN_WINDOW, BUILT_IN_APPS);
 	const placed = placeInView(moment, { tabId: "tab-2", targetTabId: "tab-1", side: "right" });
 	const first = "moment" in placed ? placed.moment.splits[0] : undefined;
 	const twice: HostTabsMoment =

@@ -10,7 +10,7 @@ import { reportsFailures } from "./page-harness.ts";
 import { BOARD_CHAT_FACTS, BOARD_CHAT_IDS, BOARD_PINNED, boardWorkspacesParts } from "./board-workspaces-fixture.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 import { placedTabsOf } from "./places-fixture.ts";
-import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import type { WorkspacesCount } from "./board-workspaces-fixture.ts";
 
 reportsFailures();

@@ -8,7 +8,7 @@ import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserParts } from "../packages/domain/browser/gateways/browser-parts/browser-parts.gateway.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import type { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
+import type { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { placesOver } from "./places-fixture.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 

@@ -1,3 +1,4 @@
+import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -27,9 +28,9 @@ import {
 } from "../packages/state/layout/features/frame-sides/requests.ts";
 import { ResizeFrameEdgeCommand } from "../packages/state/layout/features/frame-widths/requests.ts";
 import type { PaneSide, PaneTree, PaneView } from "../packages/state/layout/shared/schema/pane-tree.schema.ts";
-import { emptyMoment, openTab } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
-import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
-import { sidebarOf } from "../packages/state/places/shared/lib/rows/sidebar-rows.ts";
+import { emptyMoment, openTab } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
+import { WORKSPACE_LIST } from "../plugins/apps/data/places/shared/lib/tabs/tab-lists.ts";
+import { sidebarOf } from "../plugins/apps/data/places/shared/lib/rows/sidebar-rows.ts";
 import { BROWSER_SHEET_SOURCES } from "./sheet-paths.mts";
 
 let failed = 0;
@@ -94,7 +95,7 @@ function checksTree(): void {
 		parts.paneTree.tree().root,
 	);
 	const workspaceEnd = { chatId: WORKSPACE_LIST, groupId: null, before: null };
-	const oneTab = openTab(emptyMoment(), { app: "browser", pageId: null }, workspaceEnd).moment;
+	const oneTab = openTab(emptyMoment(BUILT_IN_APPS), { app: "browser", pageId: null }, workspaceEnd).moment;
 	const twoTabs = openTab(oneTab, { app: "browser", pageId: null }, workspaceEnd).moment;
 	const sidebar = sidebarOf({
 		moment: twoTabs,
