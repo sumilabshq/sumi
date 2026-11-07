@@ -39,7 +39,13 @@ import type {
 	WindowServerOffers,
 } from "@sumi/sumi-host-plugin";
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
+import { CodeViewerPlugin } from "@sumi/code-viewer-plugin";
+import { FilesPlugin } from "@sumi/files-plugin";
+import { HtmlViewerPlugin } from "@sumi/html-viewer-plugin";
+import { ImageViewerPlugin } from "@sumi/image-viewer-plugin";
+import { MarkdownViewerPlugin } from "@sumi/markdown-viewer-plugin";
 import { TerminalPlugin } from "@sumi/terminal-plugin";
+import { VideoViewerPlugin } from "@sumi/video-viewer-plugin";
 
 export type HostOffers = Omit<CoreOffers, "fillsOf">;
 
@@ -88,6 +94,12 @@ const INSTALLED_PLUGINS = [
 	MainPlugin,
 	TerminalPlugin,
 	BrowserPagePlugin,
+	FilesPlugin,
+	MarkdownViewerPlugin,
+	CodeViewerPlugin,
+	ImageViewerPlugin,
+	VideoViewerPlugin,
+	HtmlViewerPlugin,
 ];
 const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
@@ -106,7 +118,16 @@ const ALWAYS_ON_PLUGINS: readonly string[] = [
 ];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
-	plugins: [TerminalPlugin.id, BrowserPagePlugin.id],
+	plugins: [
+		TerminalPlugin.id,
+		BrowserPagePlugin.id,
+		FilesPlugin.id,
+		MarkdownViewerPlugin.id,
+		CodeViewerPlugin.id,
+		ImageViewerPlugin.id,
+		VideoViewerPlugin.id,
+		HtmlViewerPlugin.id,
+	],
 };
 
 export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {

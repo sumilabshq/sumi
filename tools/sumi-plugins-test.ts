@@ -8,6 +8,7 @@ import { TasksModule } from "@widgetarium/tasks/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 import { server } from "@widgetarium/data-framework/server";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import { AppsSchema } from "@sumi/apps";
 import { AppsModule } from "../plugins/apps/data/apps/module.ts";
 import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "../plugins/command-menu/src/index.ts";
@@ -37,7 +38,8 @@ const offers = {
 		},
 	},
 };
-const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/"];
+const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/", "plugins/files/"];
+const FILE_APP_IDS = ["file", "markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 const HOST_ROOTS = ["apps/studio/src", "apps/tauri/src"];
@@ -130,15 +132,21 @@ check(
 		coreModulesBefore.every(({ definition }) => coreNamesNow.filter((name) => name === definition.name).length === 1),
 	true,
 );
+const answeredApps = AppsSchema.parse(await appIdsAnsweredBy(resolved)).apps;
 check(
 	"the apps plugin's module answers the terminal and browser-page plugins' apps, read from the apps plugin's own slot",
-	await appIdsAnsweredBy(resolved),
-	{ apps: [TERMINAL_FACE, BROWSER_PAGE_FACE] },
+	answeredApps.slice(0, 2),
+	[TERMINAL_FACE, BROWSER_PAGE_FACE],
 );
 check(
-	"the apps plugin's tab page draws the terminal and the browser page",
-	[tabPageDrawing(resolved, "terminal"), tabPageDrawing(resolved, "browser-page")],
-	[true, true],
+	"the files plugin passes its file app and every viewer of its own slot on to the apps slot, registered once",
+	answeredApps.slice(2).map(({ id }) => id),
+	FILE_APP_IDS,
+);
+check(
+	"the apps plugin's tab page draws the terminal, the browser page, the file app and every viewer",
+	["terminal", "browser-page", ...FILE_APP_IDS].map((app) => tabPageDrawing(resolved, app)),
+	["terminal", "browser-page", ...FILE_APP_IDS].map(() => true),
 );
 check(
 	"the chat plugin draws the chat app's page itself, with no shell header, in the window",
@@ -215,7 +223,11 @@ check(
 );
 check(
 	"the Ask door, ⌘I, and its page are the chat plugin's fills, and the menu fills no Ask of its own",
-	[fillIdsOf(ChatPlugin, MenuDoorsSlot), fillIdsOf(ChatPlugin, MenuPagesSlot), fillIdsOf(CommandMenuPlugin, MenuDoorsSlot)],
+	[
+		fillIdsOf(ChatPlugin, MenuDoorsSlot),
+		fillIdsOf(ChatPlugin, MenuPagesSlot),
+		fillIdsOf(CommandMenuPlugin, MenuDoorsSlot),
+	],
 	[["ask"], ["ask"], ["anywhere", "new-tab", "this-tab"]],
 );
 check(
