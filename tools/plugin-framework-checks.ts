@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 import {
+	DerivedFill,
 	SumiProfileSchema,
 	plugin,
 	profileRefusalsOf,
@@ -249,6 +250,238 @@ check(
 	thrownBy(() => slotReaderOf(keyDoorFills, KeyDoorPlugin).fillsOf(DoorsSlot)),
 	"plugin key-door reads slot doors, which it does not declare: a plugin reads only its own slots",
 );
+
+const ViewersSlot = slot("viewers")
+	.item(z.object({ title: z.string(), size: z.number() }))
+	.list();
+const FilesPlugin = plugin("files")
+	.require(LayoutPlugin)
+	.declare(ViewersSlot)
+	.fill(PlateSlot(ViewersSlot, (viewers) => viewers.map((viewer) => ({ id: viewer.id, title: viewer.title }))));
+const MarkdownViewerPlugin = plugin("markdown-viewer")
+	.require(FilesPlugin)
+	.fill(ViewersSlot({ id: "markdown", title: "Markdown", size: 1 }));
+const ImageViewerPlugin = plugin("image-viewer")
+	.require(FilesPlugin)
+	.fill(ViewersSlot({ id: "image", title: "Image", size: 2 }));
+const viewerFills = slotFillsOf(
+	[LayoutPlugin, FilesPlugin, MarkdownViewerPlugin, ImageViewerPlugin],
+	["layout", "files", "markdown-viewer", "image-viewer"],
+);
+check(
+	"a plugin fills another slot from its own slot's fills, one item per source fill, under its own name",
+	shownKeysIn(viewerFills, "layout/plate"),
+	[
+		["markdown", "files"],
+		["image", "files"],
+	],
+);
+check(
+	"a built fill holds the item its function built",
+	viewerFills.slots.get("layout/plate")?.fills.map(({ item }) => item),
+	[{ title: "Markdown" }, { title: "Image" }],
+);
+check("building fills from a slot raises no refusal", viewerFills.refusals, []);
+check(
+	"the owner of the target slot reads built fills like any other",
+	slotReaderOf(viewerFills, LayoutPlugin)
+		.fillsOf(PlateSlot)
+		.map(({ id, title }) => [id, title]),
+	[
+		["markdown", "Markdown"],
+		["image", "Image"],
+	],
+);
+
+const SizedSlot = slot("sized")
+	.item(z.object({ title: z.string(), size: z.number() }))
+	.list();
+const FilteringPlugin = plugin("filtering")
+	.require(LayoutPlugin)
+	.declare(SizedSlot)
+	.fill(
+		SizedSlot({ id: "small", title: "Small", size: 1 }),
+		SizedSlot({ id: "big", title: "Big", size: 9 }),
+		PlateSlot(SizedSlot, (items) =>
+			items.filter(({ size }) => size > 5).map(({ id, title }) => ({ id: `${id}-plate`, title })),
+		),
+	);
+check(
+	"a building function may drop source fills",
+	shownKeysIn(slotFillsOf([LayoutPlugin, FilteringPlugin], ["layout", "filtering"]), "layout/plate"),
+	[["big-plate", "filtering"]],
+);
+
+const CountedSlot = slot("counted")
+	.item(z.object({ title: z.string() }))
+	.list();
+const CountingPlugin = plugin("counting")
+	.require(ChatPlugin)
+	.declare(CountedSlot)
+	.fill(
+		CountedSlot({ id: "one", title: "One" }),
+		CountedSlot({ id: "two", title: "Two" }),
+		TitleSlot(CountedSlot, (items) => [{ text: `${items.length} counted` }]),
+	);
+const countedFills = slotFillsOf([LayoutPlugin, ChatPlugin, CountingPlugin], ["counting", "layout", "chat"]);
+check(
+	"a building function may fold many source fills into one item of a single slot",
+	countedFills.slots.get("chat/chat-title")?.fills,
+	[{ pluginId: "counting", id: "chat-title", item: { text: "2 counted" } }],
+);
+
+const FirstSlot = slot("first")
+	.item(z.object({ title: z.string() }))
+	.list();
+const SecondSlot = slot("second")
+	.item(z.object({ title: z.string() }))
+	.list();
+const ChainPlugin = plugin("chain")
+	.require(LayoutPlugin)
+	.declare(FirstSlot, SecondSlot)
+	.fill(
+		PlateSlot(SecondSlot, (items) => items.map(({ id, title }) => ({ id: `${id}-plate`, title }))),
+		SecondSlot(FirstSlot, (items) =>
+			items.map(({ id, title }) => ({ id: `${id}-second`, title: title.toUpperCase() })),
+		),
+		FirstSlot({ id: "seed", title: "seed" }),
+	);
+const chainFills = slotFillsOf([LayoutPlugin, ChainPlugin], ["layout", "chain"]);
+check(
+	"a built slot feeds the next build, whatever order the fills are written in",
+	[shownKeysIn(chainFills, "layout/plate"), chainFills.slots.get("layout/plate")?.fills[0]?.item],
+	[[["seed-second-plate", "chain"]], { title: "SEED" }],
+);
+
+const LoopFirstSlot = slot("loop-first")
+	.item(z.object({ title: z.string() }))
+	.list();
+const LoopSecondSlot = slot("loop-second")
+	.item(z.object({ title: z.string() }))
+	.list();
+const LoopingPlugin = plugin("looping")
+	.declare(LoopFirstSlot, LoopSecondSlot)
+	.fill(
+		LoopSecondSlot(LoopFirstSlot, (items) => items),
+		LoopFirstSlot(LoopSecondSlot, (items) => items),
+	);
+check(
+	"two slots built from each other are both refused as a loop",
+	slotFillsOf([LoopingPlugin], ["looping"]).refusals,
+	[
+		"plugin looping derives fills of slot looping/loop-second from slot looping/loop-first, which waits on those fills: a loop",
+		"plugin looping derives fills of slot looping/loop-first from slot looping/loop-second, which waits on those fills: a loop",
+	],
+);
+
+const SelfSlot = slot("self")
+	.item(z.object({ title: z.string() }))
+	.list();
+const SelfPlugin = plugin("self-building")
+	.declare(SelfSlot)
+	.fill(SelfSlot(SelfSlot, (items) => items));
+check("a slot built from itself is refused as a loop", slotFillsOf([SelfPlugin], ["self-building"]).refusals, [
+	"plugin self-building derives fills of slot self-building/self from slot self-building/self, which waits on those fills: a loop",
+]);
+
+const BorrowingPlugin = plugin("borrowing")
+	.require(LayoutPlugin, FilesPlugin)
+	.fill(PlateSlot(ViewersSlot, (viewers) => viewers.map(({ id, title }) => ({ id, title }))));
+check(
+	"building from a slot the plugin does not declare is refused, even from a plugin it requires",
+	slotFillsOf([LayoutPlugin, FilesPlugin, BorrowingPlugin], ["layout", "files", "borrowing"]).refusals,
+	[
+		"plugin borrowing derives fills of slot layout/plate from slot files/viewers, which it does not declare: a plugin derives only from its own slots",
+	],
+);
+
+const UnownedBuildPlugin = plugin("unowned-build")
+	.declare(SizedSlot)
+	.fill(
+		SizedSlot({ id: "only", title: "Only", size: 1 }),
+		PlateSlot(SizedSlot, (items) => items.map(({ id, title }) => ({ id, title }))),
+	);
+check(
+	"a built fill of a slot owned by a plugin the builder does not depend on is refused, like a plain fill",
+	slotFillsOf([LayoutPlugin, UnownedBuildPlugin], ["layout", "unowned-build"]).refusals,
+	["plugin unowned-build fills slot layout/plate without requiring layout or marking it optional"],
+);
+
+function pluginBuildingPlate(id: string, derive: unknown): Plugin {
+	const built: unknown = Reflect.apply(PlateSlot, undefined, [SizedSlot, derive]);
+
+	if (!(built instanceof DerivedFill)) {
+		throw new Error(`plate built for ${id} is not a derived fill`);
+	}
+
+	return plugin(id)
+		.require(LayoutPlugin)
+		.declare(SizedSlot)
+		.fill(SizedSlot({ id: "seed", title: "Seed", size: 1 }), built);
+}
+
+function buildRefusalsOf(id: string, derive: unknown): readonly string[] {
+	return slotFillsOf([LayoutPlugin, pluginBuildingPlate(id, derive)], ["layout", id]).refusals;
+}
+
+check(
+	"a built item the target slot's schema refuses is refused, past the types",
+	buildRefusalsOf("wrong-item", () => [{ id: "bad", title: 3 }]),
+	["plugin wrong-item fills slot layout/plate with an item the slot refuses"],
+);
+check(
+	"a built item of a list slot with no id is refused, naming why",
+	buildRefusalsOf("no-id", () => [{ title: "No id" }]),
+	[
+		"plugin no-id derives fills of slot layout/plate from slot no-id/sized, and that failed: a fill of the list slot plate needs a non-empty string id: plate({ id, … })",
+	],
+);
+check(
+	"a building function that throws is refused with its error",
+	buildRefusalsOf("throwing", () => {
+		throw new Error("viewer list unreadable");
+	}),
+	[
+		"plugin throwing derives fills of slot layout/plate from slot throwing/sized, and that failed: viewer list unreadable",
+	],
+);
+check(
+	"a building function answering something that is not a list is refused",
+	buildRefusalsOf("not-list", () => ({ id: "one", title: "One" })),
+	[
+		"plugin not-list derives fills of slot layout/plate from slot not-list/sized, and answered something that is not a list",
+	],
+);
+check(
+	"a slot called with a second argument that is not a function throws, naming the shape",
+	thrownBy(() => Reflect.apply(PlateSlot, undefined, [SizedSlot, "not a function"])),
+	"a fill of slot plate built from another slot takes that slot and a function: plate(SourceSlot, (items) => [ … ])",
+);
+check(
+	"a slot called with a first argument that is not a slot, and a function, throws",
+	thrownBy(() => Reflect.apply(PlateSlot, undefined, [{ title: "not a slot" }, () => []])),
+	"a fill of slot plate built from another slot takes that slot and a function: plate(SourceSlot, (items) => [ … ])",
+);
+
+const NamesSlot = slot("names").item(z.string()).list();
+check(
+	"a fill built from a slot whose items are not objects throws, past the types, naming both slots",
+	thrownBy(() => Reflect.apply(PlateSlot, undefined, [NamesSlot, () => []])),
+	"a fill of slot plate is built only from a slot whose items are objects, and slot names holds other items",
+);
+
+export const builtByTypes: DerivedFill = PlateSlot(ViewersSlot, (viewers) =>
+	viewers.map((viewer) => ({ id: `${viewer.id}-${viewer.size}`, title: viewer.title })),
+);
+
+export function buildRefusedByTypes(): void {
+	// @ts-expect-error
+	PlateSlot(NamesSlot, () => []);
+	// @ts-expect-error
+	PlateSlot(ViewersSlot, (viewers) => viewers.map((viewer) => ({ title: viewer.title })));
+	// @ts-expect-error
+	PlateSlot(ViewersSlot, (viewers) => viewers.map((viewer) => ({ id: viewer.id, title: viewer.size })));
+}
 
 if (tally.failed > 0) {
 	process.exit(1);

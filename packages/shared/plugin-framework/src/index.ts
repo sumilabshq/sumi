@@ -1,12 +1,13 @@
 export { SlotNameSchema, slot } from "./declared-slot";
-export type { Slot, SlotCardinality, SlotDraft, SlotFillInput, SlotShape } from "./declared-slot";
-export { Fill } from "./fill";
+export type { FilledItem, Slot, SlotCardinality, SlotDraft, SlotFillInput, SlotShape } from "./declared-slot";
+export { DerivedFill, Fill } from "./fill";
 export { Plugin, plugin, stampSlotName } from "./plugin";
 export { PROFILE_FILE, PluginIdSchema, SumiProfileSchema, profileRefusalsOf } from "./profile";
 export type { SumiProfile } from "./profile";
 export { slotFillsOf } from "./slot-fills";
-export type { FilledSlot, ShownFill, SlotFills } from "./slot-fills";
+export type { FilledSlot, ShownFill } from "./fill-outcome";
+export type { SlotFills } from "./slot-fills";
 export { startOrderOf } from "./start-order";
 export type { StartOrder } from "./start-order";
 export { slotReaderOf } from "./slot-reader";
-export type { FilledItem, SlotReader } from "./slot-reader";
+export type { SlotReader } from "./slot-reader";

@@ -1,5 +1,5 @@
 import type { SlotShape } from "./declared-slot";
-import type { Fill } from "./fill";
+import { DerivedFill, Fill } from "./fill";
 import { PluginIdSchema } from "./profile";
 
 interface PluginParts {
@@ -7,6 +7,7 @@ interface PluginParts {
 	readonly optionalPlugins: readonly Plugin[];
 	readonly declaredSlots: readonly SlotShape[];
 	readonly fills: readonly Fill[];
+	readonly derivedFills: readonly DerivedFill[];
 }
 
 export class Plugin {
@@ -36,10 +37,11 @@ export class Plugin {
 		});
 	}
 
-	fill(...fills: readonly Fill[]): Plugin {
+	fill(...fills: readonly (Fill | DerivedFill)[]): Plugin {
 		return new Plugin(this.id, {
 			...this.parts,
-			fills: [...this.parts.fills, ...fills],
+			fills: [...this.parts.fills, ...fills.filter((each) => each instanceof Fill)],
+			derivedFills: [...this.parts.derivedFills, ...fills.filter((each) => each instanceof DerivedFill)],
 		});
 	}
 
@@ -54,6 +56,7 @@ export function plugin(id: string): Plugin {
 		optionalPlugins: [],
 		declaredSlots: [],
 		fills: [],
+		derivedFills: [],
 	});
 }
 

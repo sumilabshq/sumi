@@ -8,6 +8,7 @@ Two frameworks, two jobs. **`@widgetarium/data-framework`** carries every piece 
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `plugin(id)`                                       | a plugin: `.require(P)` / `.optional(P)` the plugins it builds on, `.declare(Slot)` the slots it owns, `.fill(Slot({ … }))` what it puts into another plugin's slot |
 | `slot(name).item(schema)[.list()]`                 | a typed extension point; a fill is checked against the schema; a list fill carries an `id`                                                                          |
+| `Slot(SourceSlot, (items) => [...])`               | a fill built from the fills of a slot the plugin declares itself: the function gets that slot's items, each with its `id`, and answers the items to put in `Slot`   |
 | `sumi.profile.json`                                | per workspace: `{ "plugins": [...] }`, the plugins switched on beside the always-on ones; no file is the built-in profile                                           |
 | `startOrderOf`, `slotFillsOf`, `profileRefusalsOf` | resolve a profile: start order, each slot's fills, every refusal                                                                                                    |
 | `slotReaderOf(fills, plugin)`                      | reads the fills of the slots that plugin declares, and refuses any other slot                                                                                       |
@@ -31,6 +32,28 @@ The host declares its own slots in `plugins/sumi-host` and reads only those:
 | `FrameModulesSlot`        | `{ contract, serving: (offers) => { module, frameClosed(tabId) } }`, a list                   | serves `module` in each studio window behind `AppCallerAuthenticate` and routes `contract` to every app frame, each frame hearing only its own `{ tab }`; calls `frameClosed` when a frame goes                                              |
 
 `offers` always holds `fillsOf(slot)`, the plugin's own slot reader. The window offers (`WindowOffers`) are what a window lends a plugin's modules: `workspaceId`, `platform`, `windowApp` (the window's app), `core` (the transport to the core), `windowServer` (the transport to the window server's modules) and `focusedChatId()`; a window provider and a frame module get them with their reader, a tab page's `modulesOf` with the tab. A window also lends what any drawn plugin may use through `@sumi/sumi-host-plugin`: `AskComposerContext` (the chat composer, its app and bar), `TabFaceContext` (a tab's art) and `OPENS_LAYER_MARK` (an element that opens a layer, so a press on it is not a press outside).
+
+## Fills built from a slot
+
+A plugin that collects fills in its own slot can pass them on to another plugin's slot, so the plugins filling it register once:
+
+```ts skip-check
+export const FilesPlugin = plugin("files")
+	.require(AppsPlugin)
+	.declare(FileViewersSlot)
+	.fill(
+		AppsSlot(FileViewersSlot, (viewers) =>
+			viewers.map((viewer) => ({ id: viewer.id, title: viewer.title, icon: viewer.icon, view: viewer.view })),
+		),
+	);
+```
+
+- **The same call.** `AppsSlot({ ... })` is a fill; `AppsSlot(SourceSlot, build)` is a fill built from `SourceSlot`. The function may map, drop, or fold many items into one; its answer is a list of items, typed by the target slot.
+- **Only from its own slots.** The source must be a slot the building plugin declares, as `fillsOf` reads only its own slots; any other source is refused.
+- **Resolved before anyone reads.** `slotFillsOf` resolves plain fills first, then each built fill once its source is complete, so a built slot may feed another build whatever order the fills are written in. Two builds waiting on each other, or a slot built from itself, are refused as a loop.
+- **Checked like any fill.** Each built item passes the same checks as a plain fill of the building plugin: the target's owner is required or optional, and the target's schema accepts the item. A function that throws or answers something that is not a list is refused with the reason.
+
+`tools/plugin-framework-checks.ts` holds each rule, and each was broken on purpose once.
 
 ## How Sumi runs them
 
