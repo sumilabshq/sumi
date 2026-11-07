@@ -25,10 +25,13 @@ plugin's fills. `AppHostModule({ apps })` did exactly that and was rewritten.
 **CRITICAL — the plugin layout is a requirement, not a preference.** Every plugin is
 `plugins/<name>/` and nothing else: `src/plugin.ts` (always; only the `plugin(...)` definition, no helper,
 slot, schema or type), `src/slots.ts` (when it declares slots: the slots, their item schemas and types),
-`src/index.ts` (only re-exports), other files of `src/` split one thing per file, and `data/<module>/` (when it
-owns modules: each a data module package). A module outside `data/`, a slot outside `slots.ts` or a plugin
-outside `plugin.ts` fails `npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the
-change; until the layout is right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
+`src/index.ts` (only re-exports), every other file of `src/` placed as in a client package
+(`features/<feature>/ui/<block>/*.tsx` with the `.css` a block uses beside it, `features/<feature>/lib/*.ts`,
+`shared/ui/` and `shared/lib/` for what two features use, nothing else loose in `src/`, no feature importing
+another's `lib/`), and `data/<module>/` (when it owns modules: each a data module package). A module outside
+`data/`, a slot outside `slots.ts`, a plugin outside `plugin.ts` or a file out of its place fails
+`npm run test:plugin-layout`, and the `plugin-layout-reviewer` agent refuses the change; until the layout is
+right, no other quality of the change counts. `docs/architecture/plugins.md#layout`.
 
 @docs/architecture/README.md
 
@@ -72,13 +75,13 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins (background modules, tab page, window modules and layers) and what it lends a window (ask composer, tab face); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers and providers), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot
 plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
-plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions), the questions background module and the menu's Ask door ⌘I
+plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
       ↓
 packages/domain/*             business data modules: workspaces, app-host, browser, canvas, tasks, web-page, mascot, fixture-billing
 packages/state/*              app-state data modules: layout, places, appearance

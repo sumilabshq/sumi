@@ -11,7 +11,18 @@ const PLUGIN_FILE = "src/plugin.ts";
 const SLOTS_FILE = "src/slots.ts";
 const INDEX_FILE = "src/index.ts";
 const ALLOWED_TOP = new Set(["src", "data", "node_modules", "package.json", "tsconfig.json", "LICENSE"]);
+const SRC_TOP_FILES = new Set(["plugin.ts", "slots.ts", "index.ts"]);
+const SRC_AREAS = new Set(["features", "shared"]);
+const AREA_PARTS = new Set(["ui", "lib"]);
+const UI_FILE = /\.(tsx|css)$/;
+const LIB_FILE = /(?<!\.d)\.ts$/;
 const SOURCE = /\.(ts|tsx)$/;
+const LOOSE_IN_SRC = "no other loose file at the top of src; it goes to features/<feature>/ or shared/";
+const NOT_A_PART = "a feature or shared/ holds only ui/ and lib/";
+const NOT_A_BLOCK = "ui/ holds only block folders, ui/<block>/";
+const NOT_UI_FILE = "a block folder holds only its .tsx and the .css it uses";
+const NOT_LIB_FILE = "lib/ holds only .ts files, no folder, no .tsx, no .css";
+const FOREIGN_LIB = "a feature's lib/ is its own; what two features use goes to shared/lib/";
 
 export function layoutRefusalsOf(pluginsRoot: string): readonly string[] {
 	return readdirSync(pluginsRoot)
@@ -28,8 +39,153 @@ function pluginRefusalsOf(pluginsRoot: string, name: string): readonly string[] 
 		...pluginFileRefusalsOf(folder, at),
 		...slotRefusalsOf(folder, at),
 		...indexRefusalsOf(folder, at),
+		...srcPlacementRefusalsOf(folder, at),
+		...foreignLibRefusalsOf(folder, at),
 		...dataRefusalsOf(folder, at),
 	];
+}
+
+function srcPlacementRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
+	const src = path.join(folder, "src");
+
+	if (!existsSync(src)) {
+		return [];
+	}
+
+	return entriesOf(src).flatMap(({ name, isFolder }) => {
+		const relative = `src/${name}`;
+
+		if (isFolder && SRC_AREAS.has(name)) {
+			return name === "shared"
+				? areaPartsRefusalsOf(folder, relative, at)
+				: entriesOf(path.join(folder, relative)).flatMap((feature) =>
+						feature.isFolder
+							? areaPartsRefusalsOf(folder, `${relative}/${feature.name}`, at)
+							: [`${at(`${relative}/${feature.name}`)}: features/ holds only feature folders`],
+					);
+		}
+
+		return isFolder || !SRC_TOP_FILES.has(name) ? [`${at(relative)}: ${LOOSE_IN_SRC}`] : [];
+	});
+}
+
+function areaPartsRefusalsOf(folder: string, relative: string, at: (relative: string) => string): readonly string[] {
+	return entriesOf(path.join(folder, relative)).flatMap(({ name, isFolder }) => {
+		const part = `${relative}/${name}`;
+
+		if (!isFolder || !AREA_PARTS.has(name)) {
+			return [`${at(part)}: ${NOT_A_PART}`];
+		}
+
+		return name === "ui" ? uiRefusalsOf(folder, part, at) : libRefusalsOf(folder, part, at);
+	});
+}
+
+function uiRefusalsOf(folder: string, relative: string, at: (relative: string) => string): readonly string[] {
+	return entriesOf(path.join(folder, relative)).flatMap(({ name, isFolder }) => {
+		const block = `${relative}/${name}`;
+
+		if (!isFolder) {
+			return [`${at(block)}: ${NOT_A_BLOCK}`];
+		}
+
+		return entriesOf(path.join(folder, block))
+			.filter((entry) => entry.isFolder || !UI_FILE.test(entry.name))
+			.map((entry) => `${at(`${block}/${entry.name}`)}: ${NOT_UI_FILE}`);
+	});
+}
+
+function libRefusalsOf(folder: string, relative: string, at: (relative: string) => string): readonly string[] {
+	return entriesOf(path.join(folder, relative))
+		.filter((entry) => entry.isFolder || !LIB_FILE.test(entry.name))
+		.map((entry) => `${at(`${relative}/${entry.name}`)}: ${NOT_LIB_FILE}`);
+}
+
+function foreignLibRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {
+	const src = path.join(folder, "src");
+	const features = path.join(src, "features");
+	return sourcesUnder(src)
+		.filter((file) => path.dirname(file) !== src)
+		.flatMap((file) => {
+			const own = featureOf(features, file);
+			return importsOf(file)
+				.filter(({ source }) => source.startsWith("."))
+				.filter(({ source }) => {
+					const target = path.resolve(path.dirname(file), source);
+					const theirs = featureOf(features, target);
+					return theirs !== null && theirs !== own && isInLib(features, theirs, target);
+				})
+				.map(
+					({ source, line }) => `${at(path.relative(folder, file))}:${line}: imports ${source}; ${FOREIGN_LIB}`,
+				);
+		});
+}
+
+function featureOf(features: string, file: string): string | null {
+	const relative = path.relative(features, file);
+
+	if (relative.startsWith("..") || path.isAbsolute(relative)) {
+		return null;
+	}
+
+	const [feature = null] = relative.split(path.sep);
+	return feature;
+}
+
+function isInLib(features: string, feature: string, target: string): boolean {
+	return !path.relative(path.join(features, feature, "lib"), target).startsWith("..");
+}
+
+interface FoundImport {
+	readonly source: string;
+	readonly line: string;
+}
+
+function importsOf(file: string): readonly FoundImport[] {
+	const body = programOf(file);
+	const declared = body.flatMap((statement) => {
+		const source = nodeAt(statement, "source");
+		return source !== null && typeof source["value"] === "string"
+			? [{ source: source["value"], line: lineOf(statement) }]
+			: [];
+	});
+	const loaded = callsOfImport(body).flatMap((call) => {
+		const [argument] = Array.isArray(call["arguments"]) ? call["arguments"] : [nodeAt(call, "source")];
+		const value = isAstNode(argument) ? argument["value"] : null;
+		return typeof value === "string" ? [{ source: value, line: lineOf(call) }] : [];
+	});
+	return [...declared, ...loaded];
+}
+
+function isDynamicImport(node: AstNode): boolean {
+	return (
+		node.type === "ImportExpression" ||
+		(node.type === "CallExpression" && nodeAt(node, "callee")?.type === "Import")
+	);
+}
+
+function callsOfImport(nodes: readonly unknown[]): readonly AstNode[] {
+	return nodes.flatMap((node) => {
+		if (!isAstNode(node)) {
+			return [];
+		}
+
+		const own = isDynamicImport(node) ? [node] : [];
+		const children = Object.values(node).flatMap((value) => (Array.isArray(value) ? value : [value]));
+		return [...own, ...callsOfImport(children)];
+	});
+}
+
+interface FolderEntry {
+	readonly name: string;
+	readonly isFolder: boolean;
+}
+
+function entriesOf(folder: string): readonly FolderEntry[] {
+	return readdirSync(folder, { withFileTypes: true })
+		.filter((entry) => !entry.name.startsWith("."))
+		.map((entry) => ({ name: entry.name, isFolder: entry.isDirectory() }))
+		.sort((left, right) => left.name.localeCompare(right.name));
 }
 
 function topRefusalsOf(folder: string, at: (relative: string) => string): readonly string[] {

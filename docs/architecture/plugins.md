@@ -54,18 +54,30 @@ plugins/<name>/
     plugin.ts     always: the plugin(...) definition and its imports, nothing else
     slots.ts      when it declares slots: the slots, their item schemas and types
     index.ts      re-exports only
-    <thing>.ts    everything else, one thing per file
+    features/<feature>/ui/<block>/   the feature's blocks, .tsx, and the .css a block uses beside it
+    features/<feature>/lib/          the feature's hooks and helpers, .ts
+    shared/ui/<block>/               blocks two features use, the root views
+    shared/lib/                      hooks and helpers two features use
   data/           when it owns modules
     <module>/     a data module package (placement.md)
 ```
 
-| Breaks the layout                                                       | Because                                                      |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------ |
-| no `src/plugin.ts`                                                      | a plugin folder without its plugin has no reason to exist    |
-| a helper, slot, schema, type or second declaration in `plugin.ts`       | `plugin.ts` is read to learn what the plugin is, at a glance |
-| `slot(...)` outside `slots.ts`                                          | the slots a plugin offers are one list                       |
-| a `module.ts` or a `"level": "domain"` package outside `data/<module>/` | a plugin's data lives in one place                           |
-| anything in `index.ts` but `export … from`                              | the entry hides nothing                                      |
+Apart from `plugin.ts`, `slots.ts` and `index.ts`, `src/` is a client package's inside ([placement.md](placement.md#a-client-package), [views.md](views.md)): one file per thing, each where its kind and its users put it.
+
+| Breaks the layout                                                                   | Because                                                      |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| no `src/plugin.ts`                                                                  | a plugin folder without its plugin has no reason to exist    |
+| a helper, slot, schema, type or second declaration in `plugin.ts`                   | `plugin.ts` is read to learn what the plugin is, at a glance |
+| `slot(...)` outside `slots.ts`                                                      | the slots a plugin offers are one list                       |
+| a `module.ts` or a `"level": "domain"` package outside `data/<module>/`             | a plugin's data lives in one place                           |
+| anything in `index.ts` but `export … from`                                          | the entry hides nothing                                      |
+| any other file or folder at the top of `src/` but `features/` and `shared/`         | a flat heap hides which feature a file serves                |
+| a feature or `shared/` holding anything but `ui/` and `lib/`                        | a file's kind decides its folder                             |
+| a file loose in `ui/`, or anything but `.tsx` and `.css` in `ui/<block>/`           | a block and its sheet stand together, hooks go to `lib/`     |
+| a folder, a `.tsx` or a `.css` in `lib/`                                            | `lib/` is flat `.ts`; what is drawn is a block               |
+| a file outside `features/<f>/` importing `features/<f>/lib/` (`plugin.ts` excepted) | a feature's lib is its own; what two features use is shared  |
+
+A feature may draw another feature's block; it never imports another feature's `lib/`. Which feature a file belongs to, and whether a `shared/` file really serves two, is the `plugin-layout-reviewer`'s call.
 
 ## Example: apps
 
