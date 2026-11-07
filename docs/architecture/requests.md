@@ -239,7 +239,7 @@ outside:    input → the adapter's Authenticate → module steps → request st
 ```
 
 - **Rate limit:** only where declared: `.use(RateLimitMiddleware({ calls, per }))` on a module or a request. There is no default, in any runtime. TODO: anonymous callers share one bucket per request.
-- **In-flight dedup:** a second identical query waits for the first. It is keyed by request, input and user.
+- **In-flight dedup:** a second identical query waits for the first. It is keyed by request, origin (in process or outside), user and input.
 - Every refusal reaches the developer once through the host's `reportFailure` (the console by default) and the person once through the app's refusal handler ([views.md](views.md)).
 
 ## Idempotency
@@ -250,7 +250,7 @@ outside:    input → the adapter's Authenticate → module steps → request st
 | `.idempotencyKey(PerCall)`    | each call is new; the key travels with the call                                      |
 | `.idempotencyKey(Repeatable)` | repeats are wanted (a toggle, a "+1" counter)                                        |
 
-- **Done keys are scoped per user:** `${request}:${user.id ?? "anonymous"}:${key}`. A second call with a key still running waits for the first.
+- **Done keys are scoped per origin and user:** `[request, "in-process" | "outside", user.id ?? "anonymous", key]`, so an in-process call never replays an outside caller's answer, nor the reverse. A second call with a key still running waits for the first.
 - **An anonymous outside caller's key made from the input is never replayed**: two strangers sending the same data through an adapter would get each other's answer. A `PerCall` key still is.
 - **`PerCall` keys:** the mediator mints one for an in-process call sent with none (a view, a handler's or subscriber's send); `useCommand` keeps one per call so only a retry reuses it. An outside call brings its own: a `PerCall` call through an adapter with no key is refused (`missing-key`), and so are the sends its handler makes with none.
 - The handler receives `idempotencyKey` and hands it on to a provider that supports one (Stripe).
@@ -290,15 +290,20 @@ const http = dataFrameworkMiddleware(api, { authenticate });
 - `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"."` entry, called with a transport: `BillingModule({ over: transport })`. Only those two are callable (a `Device` module is a type error, and refused where it is called). No server code reaches the bundle.
 - **A transport is a port.** `RemoteTransport` (`transport.ts`) carries a call there and its answer back (`call`), and the changes the server reports that this client did not cause (`changes`). The framework ships `orpcTransport(url, { fetch?, headers? })` (HTTP; changes over the SSE stream at `/rpc-changes`) and `localTransport()` (same process). An app writes its own for anything else (the studio's IPC to its core window), with no change to the framework.
 - **A call carries its caller's headers.** `ServedCall.headers` and `RemoteCall.headers` reach the adapter's `Authenticate`; `orpcTransport` sends them as HTTP headers, `localTransport` and the studio's IPC pass them on. A relay stamps them; the caller never writes its own.
-- **`Authenticate` belongs to the adapter**, one per adapter, since only an outside caller has headers to read. An in-process call (a view, a handler's or subscriber's send) carries no user.
+- **`Authenticate` belongs to the adapter**, one per adapter, since only an outside caller has headers to read. An in-process call (a view, a handler's or subscriber's send) carries no user, and `runtime.send` passes on only `idempotencyKey`, `signal` and `headers`.
+- **An `Authenticate` that throws** answers the caller `unauthenticated` with a reason that names only the request; the error itself reaches `reportFailure`.
 - **Several adapters, one runtime.** The same started runtime is served over HTTP, a port and a local transport at once; each adapter's call returns its own stop. Changes a call causes, inside or outside, reach every adapter's hearers and the runtime's own cache.
 - Every module's `.imports` must be met by the runtime's `.modules` or `.imports`; start refuses naming the missing module.
 - `.provide((facts) => …)` is the runtime's own provide ([Runtime provides](#runtime-provides)).
 - `.start({ platform?, scope?, env?, host? })` answers the `Runtime`: `send`, `routes`, `watches`, `queryClient`, `expose`, `stop`. The host gives `doneKeys` and `reportFailure`.
+- **`stop()` is final.** After it `send` answers `unreachable`, `expose` throws, and an adapter mounted before keeps its own stop and answers its callers `unreachable`.
+- **Whoever starts a runtime stops it when a mount refuses:** `mountOrStop(started, (runtime) => local.serve(runtime, { authenticate }))` stops it and rethrows.
+- **One runtime per local transport:** a second `serve` while one is served throws; a stop clears only its own serving.
 - **One runtime per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `RuntimeProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
-- **An adapter answers only `.public()` requests**: an unmarked one answers `not-found`, a `.callableBy()` one `forbidden`, while an in-process `send` from another module reaches both.
+- **An adapter mounts only `.public()` requests**: an unmarked or `.callableBy()` one is not mounted, so an outside caller gets `not-found` as for a request no module runs, while an in-process `send` from another module reaches both.
 - `runtime()` refuses at start, naming the request: two handlers for one request, a missing or wrong provided value, a step requiring what neither the module nor the runtime provides, a module key the runtime provides too, a declared send nothing can answer.
 - **An adapter refuses to mount**, naming each request: a public request no guard covers (`PublicGuard` when anyone may call it), and, when the adapter has no `Authenticate`, a guard that needs a user. A runtime nobody exposes needs neither.
+- **A guard that needs a user is checked at adapter mount, never at runtime start:** in process it answers `unauthenticated`.
 - The wire is oRPC, and only `@widgetarium/data-framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
 
 ## Runtime provides
@@ -328,7 +333,7 @@ runtime()
 	.start({ platform, scope });
 ```
 
-- **No `.provide` means the default** `{ rateLimits: new MemoryRateLimits() }`. TODO: an app that adds keys and skips `.provide` passes the type check and lacks them at run time.
+- **No `.provide` means the default** `{ rateLimits: new MemoryRateLimits() }`, allowed only while `RuntimeProvides` has no other key: once an app adds one, `runtime().start()` without `.provide` is a type error naming it (`call .provide() before .start(): the default runtime lacks clock`).
 - **One owner per key.** A module whose `provide` returns a key the runtime provides is refused at start, naming the module, the key and the runtime (`module "greedy" provides rateLimits, which runtime().provide() already gives every module: rename one`). The reserved context names stay refused.
 - `facts` are `{ platform, scope, env }`; `platform` and `scope` are `null` when `start` was told neither.
 
