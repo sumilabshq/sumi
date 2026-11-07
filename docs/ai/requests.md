@@ -95,7 +95,7 @@ export const BillingServerModule = serverModule("billing")
 	.provide(() => ({ invoices, payments }));
 
 export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
-	.inject({ invoices: Invoices })
+	.requires({ invoices: Invoices })
 	.handle(async ({ input, context }, { invoices }) => {
 		const invoice = await invoices.byId(input.invoiceId);
 		if (invoice === null || invoice.ownerId !== context.user?.id) return deny("not your invoice");
@@ -132,7 +132,7 @@ class ConsoleLogger extends Logger {
 }
 
 export const TimingLoggerMiddleware = middleware()
-	.inject({ logger: Logger })
+	.requires({ logger: Logger })
 	.handle(async ({ request }, { logger }, next) => {
 		const startedAt = Date.now();
 		const answer = await next();

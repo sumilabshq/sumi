@@ -109,7 +109,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 ## A gateway
 
-- Declared as an `abstract class` with abstract methods; that class types the key `provide` returns and the key a step's `.inject` names.
+- Declared as an `abstract class` with abstract methods; that class types the key `provide` returns and the key a step's `.requires` names.
 - Every implementation sits beside it, named for its storage (`tauri.gateway.ts`, `px-memory.gateway.ts`); one with private parts gets its own folder.
 - Stores and hands back, nothing else ([layers.md](layers.md)): it may map, serialize, check a stored shape and translate a storage error; it never decides, never calls another gateway.
 - **One area per class, split by area, never by line count.** Method names repeating one noun (`jobs`, `onJobs`, `liveJob`, `stopJob`) mean that noun is a class of its own. Moving bodies into free-function files to shorten a class is not a split. The `cohesion-reviewer` agent checks this.

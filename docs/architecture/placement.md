@@ -104,7 +104,7 @@ There is no `"./gateways"`: the module picks its gateways from the facts it is g
 
 **Two handlers of one feature compute the same thing.** It is a pure function in that feature's `lib/`. Two features → `shared/lib/`. A feature never imports another feature's `lib/`.
 
-**Where does this handler get X?** The module's `provide` returns `x: XGateway`, built from the facts; the handler reads `x` from its second parameter, typed through `#module`. A guard or middleware names it in its own `.inject`.
+**Where does this handler get X?** The module's `provide` returns `x: XGateway`, built from the facts; the handler reads `x` from its second parameter, typed through `#module`. A guard or middleware names it in its own `.requires`.
 
 **A decision in a gateway?** It moves to the handler, or to a pure function in `lib/` the handler calls ([layers.md](layers.md)).
 

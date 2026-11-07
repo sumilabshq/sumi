@@ -22,7 +22,7 @@ A host never builds a module's gateway and never passes a "parts" object. What a
 
 **Live objects, through a module's config.** A live object only the host has (a file it opened, a running agent) is passed raw where the host lists the module: `CanvasModule({ kind: "project", project })`, and `provide` builds the module's gateways on it ([requests.md](requests.md#a-modules-config)). The config's types are re-exported from the module's `"./module"` entry. A plugin module the core starts is a function of what the core offers, `({ store, file }) => PlacesModule({ store })` in the `BackgroundModulesSlot`, so the plugin decides its module's config and the core only offers.
 
-`app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys`, `rateLimits` and `reportFailure`.
+`app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys` and `reportFailure`; `rateLimits` comes from the runtime's `.provide` ([requests.md](requests.md#runtime-provides)).
 
 ## One platform's code out of another's bundle
 

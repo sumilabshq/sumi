@@ -44,7 +44,7 @@ export const BillingModule = module("billing")
 
 **Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(Query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
 
-**Events.** An event is a fact in the past tense (`PanesChangedEvent`), with an input schema. A handler emits one of its own module's events (`emit(PanesChangedEvent)`, typed by the handler's `.emits`); or it comes from outside: `event("panes-changed").from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)))`, `windowEvent(type)`, per platform or for all. A subscriber handles it: `subscriber(PanesChangedEvent).handle((input, { invalidate, send }) => ...)`. Subscribers run after the emitter has answered, each on its own: one failing is reported and touches nothing else. **A view reads with useQuery and acts with useCommand; events are inside modules: subscribers handle them and call invalidate to re-read queries. A view never emits or subscribes to an event.**
+**Events.** An event is a fact in the past tense (`PanesChangedEvent`), with an input schema. A command or a subscriber emits one of its own module's events (`emit(PanesChangedEvent)`, typed by the events of its package, never declared); or it comes from outside: `event("panes-changed").from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)))`, `windowEvent(type)`, per platform or for all. A subscriber handles it: `subscriber(PanesChangedEvent).handle((input, { invalidate, send }) => ...)`. Subscribers run after the emitter has answered, each on its own: one failing is reported and touches nothing else. **A view reads with useQuery and acts with useCommand; events are inside modules: subscribers handle them and call invalidate to re-read queries. A view never emits or subscribes to an event.**
 
 ```mermaid
 flowchart LR
@@ -58,7 +58,7 @@ flowchart LR
 	reread -->|useQuery| view
 ```
 
-**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module({ over: transport }))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change.
+**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module({ over: transport }))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change. A runtime's own `.provide(...)` gives every module of it the same objects (`rateLimits`, and keys an app adds to `RuntimeProvides`) ([requests.md](requests.md#runtime-provides)).
 
 ```ts
 app()
@@ -126,7 +126,7 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 
 1. **Imports go one way: `apps` → `client` → `domain`/`state` → `shared`.** A package never imports an app. A package reaches a data module only through its `"."` entry, the generated contract.
 2. **A file's place is what it is.** A request and its handler → `features/<feature>/requests.ts`. What is drawn → a client package. Storage or an outside system → `gateways/`. A pure computation → `lib/`. Which gateway a platform gets → the module's `provide`.
-3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler receives what its module's `provide` returns as its second argument, typed; a guard or middleware, shared across modules, declares what it needs in `.inject`. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
+3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler receives what its module's `provide` returns as its second argument, typed; a guard or middleware, shared across modules, declares what it needs in `.requires`, met by its module's `provide` or its runtime's. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
 
 ## Names
 
@@ -135,13 +135,13 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 | a read and its handler        | `query("<short-name>").output(…).handle(fn)`                   | noun phrase + `Query`       | `FrameSidesQuery`        |
 | a write and its handler       | `command("<short-name>").input(…).idempotencyKey(…)….handle()` | verb phrase + `Command`     | `ToggleFrameSideCommand` |
 | a data module                 | `module("<name>").on(…).provide(fn).handles(...handled)`       | its area + `Module`         | `LayoutModule`           |
-| who may call                  | `guard<In>().inject({…}).handle(check)`                        | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
-| what wraps a call             | `middleware().inject({…}).handle(fn)`                          | what it does + `Middleware` | `TimingLoggerMiddleware` |
+| who may call                  | `guard<In>().requires({…}).handle(check)`                      | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
+| what wraps a call             | `middleware().requires({…}).handle(fn)`                        | what it does + `Middleware` | `TimingLoggerMiddleware` |
 | storage or an outside system  | `abstract class`, its own token                                | its data + `Gateway`        | `FrameSidesGateway`      |
 | one storage's implementation  | `class … extends FrameSidesGateway`                            | `<Storage><Name>Gateway`    | `TauriFrameSidesGateway` |
 | reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`                   | —                           | —                        |
 
-A request's string name is short: the constant without its suffix, in kebab case (`ToggleFrameSideCommand` → `"toggle-frame-side"`). `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`. The module stamps the name `<module>/<short>` when it handles it, so the module name is never written twice. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
+A request's string name is short: the constant without its suffix, in kebab case (`ToggleFrameSideCommand` → `"toggle-frame-side"`). `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. The module stamps the name `<module>/<short>` when it handles it, so the module name is never written twice. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
 
 ## Imports
 
