@@ -3,7 +3,13 @@ import { command } from "#module";
 import { settledOf, settling } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import { CloseEssentialAskSchema, SettleAskSchema, TabAskSchema } from "../../shared/schema/tab-asks.schema.js";
-import { closeEssentialPlan, closeGroupPlan, closeOthersPlan, closeShownPlan, closeTabPlan } from "./lib/closing-plans.js";
+import {
+	closeEssentialPlan,
+	closeGroupPlan,
+	closeOthersPlan,
+	closeShownPlan,
+	closeTabPlan,
+} from "./lib/closing-plans.js";
 
 export const CloseTabCommand = command("close-tab")
 	.public()

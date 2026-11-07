@@ -12,7 +12,7 @@ import {
 	PlaceTabCommand,
 	PlacesModule,
 	RecordTabTurnCommand,
-	RecordAppPageCommand,
+	RecordAppAddressCommand,
 	ReopenClosedTabCommand,
 	ShowTabCommand,
 	SidebarQuery,
@@ -51,7 +51,9 @@ function placesApp(tabs: MemoryTabsGateway): Runtime {
 			.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
 			.start({ platform: "server", env: {} }),
 	);
-	return runtime().imports(PlacesModule({ over: core })).start();
+	return runtime()
+		.imports(PlacesModule({ over: core }))
+		.start();
 }
 
 async function sidebarOf(places: Runtime): Promise<PlacedSidebar | string> {
@@ -95,7 +97,7 @@ async function chatIdOf(places: Runtime): Promise<string | null> {
 
 async function chatIdChecks(places: Runtime): Promise<void> {
 	const kept = await chatIdOf(places);
-	await places.send(RecordAppPageCommand, { id: "chat-a", address: "/elsewhere" });
+	await places.send(RecordAppAddressCommand, { id: "chat-a", address: "/elsewhere" });
 	check(
 		"a chat tab's chatId is its own id, whatever address the app records",
 		[kept, await chatIdOf(places)],

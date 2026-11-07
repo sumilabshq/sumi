@@ -1,7 +1,6 @@
-import { BuiltInAppSchema } from "../../schema/tabs.schema.js";
 import type { AppKind, BuiltInApp } from "../../schema/tabs.schema.js";
 import { isBuiltInApp } from "../tabs/app-abilities.js";
-import type { AppFace, TabArt } from "../../schema/tab-rows.schema.js";
+import type { TabArt } from "../../schema/tab-rows.schema.js";
 import type { HostTab } from "../tabs/host-tabs-moment.js";
 
 export interface Named {
@@ -54,15 +53,6 @@ export function titleOfTab(tab: HostTab): string {
 		title: tab.title,
 		address: null,
 	});
-}
-
-export function appFacesOf(): readonly AppFace[] {
-	return BuiltInAppSchema.options.map((app) => ({
-		app,
-		title: APP_TITLES[app],
-		icon: tabArtOf(app, null),
-		isBuiltIn: true,
-	}));
 }
 
 export function tabArtOf(app: AppKind, address: string | null): TabArt {

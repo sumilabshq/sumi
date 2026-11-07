@@ -1,10 +1,10 @@
 import { useQuery } from "@widgetarium/data-framework";
-import { AppFacesQuery } from "@widgetarium/app-host";
+import { AppsQuery } from "@sumi/apps";
 import type { TabApp } from "@widgetarium/app-host";
 
 export type AppTitleOf = (app: TabApp) => string;
 
 export function useAppTitleOf(): AppTitleOf {
-	const { faces } = useQuery(AppFacesQuery).data;
-	return (app) => faces.find((face) => face.app === app)?.title ?? app;
+	const { apps } = useQuery(AppsQuery).data;
+	return (app) => apps.find(({ id }) => id === app)?.title ?? app;
 }

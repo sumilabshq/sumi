@@ -1,9 +1,8 @@
-import { AppearanceModule, FileSystemModule, PlacesModule, QuestionsModule, TerminalModule } from "@sumi/contract";
+import { AppearanceModule } from "@sumi/contract";
 import type { FrameServing } from "@sumi/sumi-host-plugin";
 import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
 import { mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { LocalTransport, ModuleContract, RemoteTransport, ServerRuns } from "@widgetarium/data-framework";
-import { TasksModule } from "@widgetarium/tasks";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { hearsAll } from "../features/app-frame/lib/frame-relay.js";
 import type { FrameOpened, FrameRoute, FrameRoutes, FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
@@ -18,6 +17,7 @@ export interface ServedFrameModule {
 export interface FrameRoutesAsk {
 	readonly workspaceId: string;
 	readonly core: RemoteTransport;
+	readonly coreModules: readonly ModuleContract<ServerRuns>[];
 	readonly appearance: RemoteTransport;
 	readonly frameModules: readonly ServedFrameModule[];
 }
@@ -33,7 +33,6 @@ interface FrameLease {
 	readonly opened: FrameOpened;
 }
 
-const TASKS_APP = "tasks";
 const WINDOW_SERVER = "studio";
 
 export function frameRoutesOf(ask: FrameRoutesAsk): FrameRoutesFor {
@@ -76,8 +75,11 @@ function leaseRoutes({ ask, leased, opened }: FrameLease): FrameRoutes {
 	}));
 	return {
 		routes: [
-			...coreRoutesOf(ask.core),
-			...tasksRoutesOf(ask.core, opened.app),
+			...ask.coreModules.map((module) => ({
+				module,
+				transport: ask.core,
+				hears: hearsAll,
+			})),
 			...held.map(({ served, lease }) => frameModuleRouteOf(lease, served.contract, tabId)),
 			{
 				module: AppearanceModule,
@@ -92,28 +94,6 @@ function leaseRoutes({ ask, leased, opened }: FrameLease): FrameRoutes {
 			}
 		},
 	};
-}
-
-function coreRoutesOf(core: RemoteTransport): readonly FrameRoute[] {
-	return [FileSystemModule, TerminalModule, PlacesModule, QuestionsModule].map((module) => ({
-		module,
-		transport: core,
-		hears: hearsAll,
-	}));
-}
-
-function tasksRoutesOf(core: RemoteTransport, app: string): readonly FrameRoute[] {
-	if (app !== TASKS_APP) {
-		return [];
-	}
-
-	return [
-		{
-			module: TasksModule,
-			transport: core,
-			hears: hearsAll,
-		},
-	];
 }
 
 function startFrameModuleServer(local: LocalTransport, serving: FrameServing, workspaceId: string): () => void {

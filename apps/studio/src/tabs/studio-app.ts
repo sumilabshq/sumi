@@ -5,7 +5,15 @@ import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import type { BrowserPagesIpc } from "@widgetarium/browser/module";
 import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
-import type { DeviceModule, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
+import type {
+	DeviceModule,
+	ModuleContract,
+	Platform,
+	RemoteTransport,
+	Runtime,
+	ServerRuns,
+} from "@widgetarium/data-framework";
+import { FileSystemModule as FileSystemContract, TerminalModule as TerminalContract } from "@sumi/contract";
 import { LayoutModule } from "@widgetarium/layout/module";
 import type { StudioWindows } from "@widgetarium/layout/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
@@ -14,6 +22,14 @@ import { TerminalModule } from "@widgetarium/terminal/module";
 import { WorkspacesModule } from "@widgetarium/workspaces/module";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import type { BackgroundModule } from "../plugins/sumi-plugins.js";
+
+const HOST_CAPABILITY_CONTRACTS: readonly ModuleContract<ServerRuns>[] = [FileSystemContract, TerminalContract];
+
+export function frameCoreModulesOf(
+	backgroundModules: readonly BackgroundModule[],
+): readonly ModuleContract<ServerRuns>[] {
+	return [...HOST_CAPABILITY_CONTRACTS, ...backgroundModules.map(({ contract }) => contract)];
+}
 
 export interface TauriStudioLent {
 	readonly store: StoreClient;

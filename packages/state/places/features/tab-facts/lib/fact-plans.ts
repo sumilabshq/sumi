@@ -3,7 +3,7 @@ import { heldTabOf } from "../../../shared/lib/tabs/host-tabs.js";
 import { markAfter, markSeen, recordTurn, withRunningMarksCleared } from "../../../shared/lib/tabs/tab-marks.js";
 import { movedPlan, refusal } from "../../../shared/lib/settling/settling.js";
 import type { MomentPlan, Planned, Refusal } from "../../../shared/lib/settling/settling.js";
-import type { AppPage, NamedRecord, TabTurn } from "../../../shared/schema/tab-facts.schema.js";
+import type { AppAddress, NamedRecord, TabTurn } from "../../../shared/schema/tab-facts.schema.js";
 import { abilitiesOf } from "../../../shared/lib/tabs/app-abilities.js";
 import { pushedTab } from "../../../shared/lib/tabs/tab-history.js";
 import type { HostTab, HostTabsMoment } from "../../../shared/lib/tabs/host-tabs.js";
@@ -21,7 +21,7 @@ export interface TurnMarks {
 }
 
 interface FaviconKept {
-	readonly page: AppPage;
+	readonly page: AppAddress;
 	readonly dropped: string | null;
 }
 
@@ -62,7 +62,7 @@ export function markSeenPlan(id: string): MomentPlan<null> {
 	};
 }
 
-export function recordAppPagePlan(page: AppPage): MomentPlan<null> {
+export function recordAppAddressPlan(page: AppAddress): MomentPlan<null> {
 	return (moment) => {
 		const tab = heldTabOf(moment, page.id);
 
@@ -82,7 +82,7 @@ function isReportingItsPage(app: string): boolean {
 	return abilitiesOf(app).runsInPage && app !== "browser";
 }
 
-function appPageRecorded(moment: HostTabsMoment, tab: HostTab, page: AppPage): Planned<null> | Refusal {
+function appPageRecorded(moment: HostTabsMoment, tab: HostTab, page: AppAddress): Planned<null> | Refusal {
 	const kept = withOwnFaviconOnly(tab.app, page);
 	const recorded = withAppPage(tab, kept.page);
 
@@ -100,7 +100,7 @@ function appPageRecorded(moment: HostTabsMoment, tab: HostTab, page: AppPage): P
 	);
 }
 
-function withOwnFaviconOnly(app: string, page: AppPage): FaviconKept {
+function withOwnFaviconOnly(app: string, page: AppAddress): FaviconKept {
 	if (page.favicon === undefined || isOwnFavicon(app, page.favicon)) {
 		return {
 			page,
@@ -122,11 +122,11 @@ function isOwnFavicon(app: string, favicon: string): boolean {
 }
 
 function appPageReasonOf(tab: HostTab, recorded: HostTab, dropped: string | null): string {
-	const said = `tab ${tab.id} page ${tab.lastAddress ?? "none"} → ${recorded.lastAddress ?? "none"}, title ${tab.lastTitle ?? "none"} → ${recorded.lastTitle ?? "none"}, actions ${actionIdsSaidOf(tab)} → ${actionIdsSaidOf(recorded)} (the app reported it`;
+	const said = `tab ${tab.id} page ${tab.lastAddress ?? "none"} → ${recorded.lastAddress ?? "none"}, title ${tab.lastTitle ?? "none"} → ${recorded.lastTitle ?? "none"} (the app reported it`;
 	return dropped === null ? `${said})` : `${said}; ${dropped})`;
 }
 
-function withAppPage(tab: HostTab, { address, how, title, favicon, actions }: AppPage): HostTab {
+function withAppPage(tab: HostTab, { address, how, title, favicon }: AppAddress): HostTab {
 	const isPushed = how === "push" && address !== undefined && address !== (tab.lastAddress ?? "");
 	const moved = isPushed ? pushedTab(tab, address) : tab;
 	const next = {
@@ -134,26 +134,14 @@ function withAppPage(tab: HostTab, { address, how, title, favicon, actions }: Ap
 		lastAddress: address ?? moved.lastAddress,
 		lastTitle: title ?? moved.lastTitle,
 		lastFavicon: favicon ?? moved.lastFavicon,
-		lastActions: actions ?? moved.lastActions,
 	};
 	return !isPushed && isSameRecord(tab, next) ? tab : next;
 }
 
 function isSameRecord(tab: HostTab, next: HostTab): boolean {
 	return (
-		next.lastAddress === tab.lastAddress &&
-		next.lastTitle === tab.lastTitle &&
-		next.lastFavicon === tab.lastFavicon &&
-		actionsSaidOf(next) === actionsSaidOf(tab)
+		next.lastAddress === tab.lastAddress && next.lastTitle === tab.lastTitle && next.lastFavicon === tab.lastFavicon
 	);
-}
-
-function actionsSaidOf(tab: HostTab): string {
-	return JSON.stringify(tab.lastActions ?? []);
-}
-
-function actionIdsSaidOf(tab: HostTab): string {
-	return (tab.lastActions ?? []).map(({ id }) => id).join(",") || "none";
 }
 
 function withTabRecorded(moment: HostTabsMoment, recorded: HostTab): HostTabsMoment {

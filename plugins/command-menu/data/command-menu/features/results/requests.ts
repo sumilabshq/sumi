@@ -1,13 +1,22 @@
 import { query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
-import { AppFacesQuery, AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
+import { AppsQuery } from "@sumi/apps";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Found, Results } from "../../shared/schema/command-menu.schema.js";
-import { appsFoundOf, chatsElsewhereFoundOf, chatsFoundOf, closedFoundOf, sitesFoundOf, tabsFoundOf, workspacesFoundOf } from "./lib/found.js";
+import {
+	appsFoundOf,
+	chatsElsewhereFoundOf,
+	chatsFoundOf,
+	closedFoundOf,
+	sitesFoundOf,
+	tabsFoundOf,
+	workspacesFoundOf,
+} from "./lib/found.js";
 import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
 import { BUILT_IN_PAGES } from "./lib/drafts.js";
@@ -78,11 +87,11 @@ export const ResultsOnPagesChangedSubscriber = subscriber(PagesChangedEvent).han
 const tabRowsOf: RowsOf = async (send) => tabsFoundOf(await send(TabsSidebarQuery));
 
 const chatRowsOf: RowsOf = async (send) => {
-	const [sidebar, chats, apps] = await Promise.all([send(TabsSidebarQuery), send(ChatListQuery), send(AppFacesQuery)]);
-	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.faces);
+	const [sidebar, chats, apps] = await Promise.all([send(TabsSidebarQuery), send(ChatListQuery), send(AppsQuery)]);
+	return chatsFoundOf(chats, shownChatIdsOf(sidebar), apps.apps);
 };
 
-const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(AppFacesQuery)).faces);
+const appRowsOf: RowsOf = async (send) => appsFoundOf((await send(AppsQuery)).apps);
 
 const siteRowsOf: RowsOf = async (send) => sitesFoundOf((await send(BrowserTabsQuery, ALL_PAGES)).recentSites);
 
@@ -91,8 +100,8 @@ const workspaceRowsOf: RowsOf = async (send) => workspacesFoundOf(await send(Wor
 const closedTabRowsOf: RowsOf = async (send) => closedFoundOf((await send(ClosedTabsQuery)).tabs);
 
 const chatElsewhereRowsOf: RowsOf = async (send) => {
-	const [elsewhere, apps] = await Promise.all([send(ChatsElsewhereQuery), send(AppFacesQuery)]);
-	return chatsElsewhereFoundOf(elsewhere.rows, apps.faces);
+	const [elsewhere, apps] = await Promise.all([send(ChatsElsewhereQuery), send(AppsQuery)]);
+	return chatsElsewhereFoundOf(elsewhere.rows, apps.apps);
 };
 
 function builtInSourcesOf(): readonly FilledRowSource[] {

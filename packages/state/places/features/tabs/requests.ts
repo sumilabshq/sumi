@@ -1,10 +1,15 @@
 import { query, subscriber } from "#module";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { closedRowsOf } from "../../shared/lib/rows/closed-rows.js";
-import { appFacesOf } from "../../shared/lib/rows/tab-face.js";
 import { momentOfWindow, windowTabsOf } from "../../shared/lib/tabs/kept-tabs.js";
 import { SettleAskSchema } from "../../shared/schema/tab-asks.schema.js";
-import { AppFacesSchema, AppTabsSchema, ClosedTabsSchema, HeldTabsSchema, PlacedSidebarSchema, SidebarAskSchema } from "../../shared/schema/tab-rows.schema.js";
+import {
+	AppTabsSchema,
+	ClosedTabsSchema,
+	HeldTabsSchema,
+	PlacedSidebarSchema,
+	SidebarAskSchema,
+} from "../../shared/schema/tab-rows.schema.js";
 import { ChatTabsSchema, WindowTabsSchema } from "../../shared/schema/tabs.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { chatTabsOf, heldTabsAt, placedSidebarOf, rowsAt } from "./lib/tab-reads.js";
@@ -37,12 +42,6 @@ export const ClosedTabsQuery = query("closed-tabs")
 	.public()
 	.output(ClosedTabsSchema)
 	.handle(async (_input, { tabs }) => ({ tabs: closedRowsOf((await tabs.placedTabs()).closed) }));
-
-export const AppFacesQuery = query("app-faces")
-	.public()
-	.output(AppFacesSchema)
-	.settlesNow()
-	.handle(() => ({ faces: appFacesOf() }));
 
 export const ChatTabsQuery = query("chat-tabs")
 	.public()

@@ -4,7 +4,7 @@ import {
 	ChatQuery,
 	OpenWebPageCommand,
 	PickWorkingFolderCommand,
-	RecordAppPageCommand,
+	RecordAppAddressCommand,
 	SendMessageCommand,
 	WebPageModule,
 	WebPageQuery,
@@ -115,7 +115,7 @@ async function chatTold(): Promise<object> {
 }
 
 async function foreignChatTold(): Promise<object> {
-	await sumi.send(RecordAppPageCommand, { id: OWN_TAB, address: `/${CHAT_TAB}` });
+	await sumi.send(RecordAppAddressCommand, { id: OWN_TAB, address: `/${CHAT_TAB}` });
 	const foreignChat = await sumi.send(ChatQuery, { chat: null });
 	return {
 		foreignChat: foreignChat.ok ? "read" : foreignChat.code,

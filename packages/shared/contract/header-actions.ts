@@ -1,6 +1,6 @@
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
-import { AppTabQuery, RecordAppPageCommand, TakeActionPressCommand } from "./generated/places.js";
-import type { AppAction } from "./generated/places.js";
+import { AppPageQuery, RecordAppPageCommand, TakeActionPressCommand } from "./generated/apps.js";
+import type { AppAction } from "./generated/apps.js";
 
 export interface HeaderActionsFrame {
 	readonly sumi: Runtime;
@@ -71,14 +71,14 @@ async function takeWaitingPresses(
 	seenPressIds: Set<string>,
 	onPress: (action: string) => void,
 ): Promise<void> {
-	const tab = await frame.sumi.send(AppTabQuery, { id: frame.tabId });
+	const page = await frame.sumi.send(AppPageQuery, { id: frame.tabId });
 
-	if (!tab.ok) {
-		console.error(`[sumi] reading the presses of tab ${frame.tabId} was refused: ${tab.reason}`);
+	if (!page.ok) {
+		console.error(`[sumi] reading the presses of tab ${frame.tabId} was refused: ${page.reason}`);
 		return;
 	}
 
-	for (const { id } of (tab.output.presses ?? []).filter((press) => !seenPressIds.has(press.id))) {
+	for (const { id } of page.output.presses.filter((press) => !seenPressIds.has(press.id))) {
 		seenPressIds.add(id);
 		void takePress(frame, id, onPress);
 	}

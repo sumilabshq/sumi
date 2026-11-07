@@ -32,7 +32,7 @@ import { browserCataloguePort } from "./catalogue/browser-catalogue-port.js";
 import { STUDIO_PACKS } from "./logic/studio-pack.js";
 import { webStudioDesign } from "../canvas/studio-canvas.js";
 import type { StudioDesign } from "../canvas/studio-canvas.js";
-import { startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
+import { frameCoreModulesOf, startCoreInProcess, startStudioApp } from "../tabs/studio-app.js";
 import { frameRoutesOf } from "../tabs/frame-routes.js";
 import { startWindowServer } from "../tabs/window-server.js";
 import { startStudioAppearance } from "../tabs/studio-appearance.js";
@@ -148,6 +148,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		frameRoutes: frameRoutesOf({
 			workspaceId: lent.appId,
 			core,
+			coreModules: frameCoreModulesOf(plugins.backgroundModules),
 			appearance: appearance.transport,
 			frameModules: plugins.frameModules.map(({ contract, servingOf }) => ({
 				contract,

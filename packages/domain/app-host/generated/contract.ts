@@ -49,27 +49,6 @@ export const TabArtSchema = z.enum([
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 
-export const AppFaceSchema = z.object({
-	app: TabAppSchema,
-	title: z.string(),
-	icon: TabArtSchema,
-	favicon: z.string().nullable(),
-	isBuiltIn: z.boolean(),
-});
-
-export type AppFace = z.infer<typeof AppFaceSchema>;
-
-export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });
-
-export const KnownAppSchema = z.object({
-	id: TabAppSchema,
-	isBuiltIn: z.boolean(),
-});
-
-export type KnownApp = z.infer<typeof KnownAppSchema>;
-
-export const KnownAppsSchema = z.object({ apps: z.array(KnownAppSchema).readonly() });
-
 export const ChatMarkSchema = z.enum(["none", "running", "unread"]);
 
 export const AppTabSchema = z.object({
@@ -368,12 +347,6 @@ export const GroupFaceSchema = z.object({
 
 export type GroupFace = z.infer<typeof GroupFaceSchema>;
 
-export const AppFacesQuery = query("app-host/app-faces")
-	.public()
-	.output(AppFacesSchema);
-export const KnownAppsQuery = query("app-host/known-apps")
-	.public()
-	.output(KnownAppsSchema);
 export const ChatListQuery = query("app-host/chat-list")
 	.public()
 	.output(ChatListSchema);
@@ -571,4 +544,4 @@ export const PlaceTabCommand = command("app-host/place-tab")
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable);
 
-export const AppHostModule = moduleContract("app-host", Device, [AppFacesQuery, KnownAppsQuery, ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, ClosedTabsQuery, ReopenClosedTabByIdCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, FoldTabCommand, UngroupCommand, OpenLinkCommand, ShownViewQuery, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, TearOffTabCommand, CloseGroupCommand, AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, PlaceTabCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ChatListQuery, PinTabCommand, OpenChatCommand, OpenNewChatCommand, NameChatPaneCommand, OpenChatAskedOnStartCommand, ClosedTabsQuery, ReopenClosedTabByIdCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, FoldTabCommand, UngroupCommand, OpenLinkCommand, ShownViewQuery, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, TearOffTabCommand, CloseGroupCommand, AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, PlaceTabCommand]);

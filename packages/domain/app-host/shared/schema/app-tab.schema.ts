@@ -49,27 +49,6 @@ export const TabArtSchema = z.enum([
 
 export type TabArt = z.infer<typeof TabArtSchema>;
 
-export const AppFaceSchema = z.object({
-	app: TabAppSchema,
-	title: z.string(),
-	icon: TabArtSchema,
-	favicon: z.string().nullable(),
-	isBuiltIn: z.boolean(),
-});
-
-export type AppFace = z.infer<typeof AppFaceSchema>;
-
-export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });
-
-export const KnownAppSchema = z.object({
-	id: TabAppSchema,
-	isBuiltIn: z.boolean(),
-});
-
-export type KnownApp = z.infer<typeof KnownAppSchema>;
-
-export const KnownAppsSchema = z.object({ apps: z.array(KnownAppSchema).readonly() });
-
 export const AppTabSchema = z.object({
 	id: z.string(),
 	app: TabAppSchema,

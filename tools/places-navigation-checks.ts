@@ -8,7 +8,7 @@ import {
 	GoForwardInTabCommand,
 	OpenLinkCommand,
 	PlacesModule,
-	RecordAppPageCommand,
+	RecordAppAddressCommand,
 	TakeAskedLinkCommand,
 } from "../packages/state/places/index.ts";
 import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
@@ -52,8 +52,8 @@ async function tabOf(): Promise<unknown> {
 }
 
 async function historyChecks(): Promise<void> {
-	await tasks.send(RecordAppPageCommand, { id: "t1", address: "T-1", how: "push", title: "T-1" });
-	await tasks.send(RecordAppPageCommand, { id: "t1", address: "T-1?view=list", how: "replace" });
+	await tasks.send(RecordAppAddressCommand, { id: "t1", address: "T-1", how: "push", title: "T-1" });
+	await tasks.send(RecordAppAddressCommand, { id: "t1", address: "T-1?view=list", how: "replace" });
 	check("a push makes a step back; a replace makes none", await tabOf(), ["T-1?view=list", true, false]);
 	await studio.send(GoBackInTabCommand, { id: "t1" });
 	check("back returns to the board and offers forward", await tabOf(), ["", false, true]);

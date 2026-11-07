@@ -7,14 +7,20 @@ import { useRecordsAppTab } from "../../lib/use-records-app-tab.js";
 export interface FilledApp {
 	readonly id: string;
 	readonly title: string;
-	readonly icon: string;
-	readonly view: AppView;
+	readonly icon?: string | undefined;
+	readonly art?: string | undefined;
+	readonly isListed?: boolean | undefined;
+	readonly view?: AppView | undefined;
 	readonly actions?: readonly AppView[] | undefined;
 	readonly tabModules?: TabModulesOf | undefined;
 }
 
+export interface DrawnApp extends FilledApp {
+	readonly view: AppView;
+}
+
 export interface AppTabProps {
-	readonly filled: FilledApp;
+	readonly filled: DrawnApp;
 	readonly tabId: string;
 }
 

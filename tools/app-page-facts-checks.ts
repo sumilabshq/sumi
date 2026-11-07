@@ -1,5 +1,5 @@
 import { runtime } from "@widgetarium/data-framework";
-import { RecordAppPageCommand } from "../packages/state/places/index.ts";
+import { RecordAppAddressCommand } from "../packages/state/places/index.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { check } from "./check-helpers.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
@@ -24,7 +24,7 @@ export async function pageFactChecks(): Promise<void> {
 		return [tab?.lastTitle ?? null, tab?.lastFavicon ?? null];
 	};
 	const refusedOf = async (page: Record<string, string>): Promise<boolean> =>
-		!(await places.send(RecordAppPageCommand, { id: "t1", ...page })).ok;
+		!(await places.send(RecordAppAddressCommand, { id: "t1", ...page })).ok;
 
 	check("a title past 200 characters is refused", await refusedOf({ title: LONG_TITLE }), true);
 	check("an address past 2048 characters is refused", await refusedOf({ address: `/${"a".repeat(2048)}` }), true);
@@ -35,9 +35,9 @@ export async function pageFactChecks(): Promise<void> {
 		true,
 	);
 	check("another app's favicon alone is refused", await refusedOf({ favicon: FOREIGN_FAVICON }), true);
-	await places.send(RecordAppPageCommand, { id: "t1", title: "Hello", favicon: FOREIGN_FAVICON });
+	await places.send(RecordAppAddressCommand, { id: "t1", title: "Hello", favicon: FOREIGN_FAVICON });
 	check("another app's favicon is dropped and the title beside it kept", await recorded(), ["Hello", null]);
-	await places.send(RecordAppPageCommand, { id: "t1", favicon: "sumi-app://hello/1.0.0/icon.png" });
+	await places.send(RecordAppAddressCommand, { id: "t1", favicon: "sumi-app://hello/1.0.0/icon.png" });
 	check("the app's own favicon is kept", await recorded(), ["Hello", "sumi-app://hello/1.0.0/icon.png"]);
 	places.stop();
 }

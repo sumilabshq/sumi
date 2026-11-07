@@ -5,10 +5,17 @@ import { WebPageModule } from "@widgetarium/web-page";
 import { BROWSER_PAGE_ICON } from "./features/browser-page/lib/browser-page-icon.js";
 import { LazyBrowserPageView } from "./features/browser-page/lib/lazy-browser-page-view.js";
 import { webPageServingOf } from "./features/web-page/lib/web-page-serving.js";
+import { ReloadPageAction } from "./features/web-page/ui/reload-page-action/reload-page-action.js";
 
 export const BrowserPagePlugin = plugin("browser-page")
 	.require(SumiHostPlugin, AppsPlugin)
 	.fill(
-		AppsSlot({ id: "browser-page", title: "Browser", icon: BROWSER_PAGE_ICON, view: LazyBrowserPageView }),
+		AppsSlot({
+			id: "browser-page",
+			title: "Browser",
+			icon: BROWSER_PAGE_ICON,
+			view: LazyBrowserPageView,
+			actions: [ReloadPageAction],
+		}),
 		FrameModulesSlot({ id: "web-page", contract: WebPageModule, serving: webPageServingOf }),
 	);

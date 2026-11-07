@@ -3,7 +3,7 @@ import { command } from "#module";
 import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
-import { isKnownApp, readKnownApps } from "../../shared/lib/apps/known-apps.js";
+import { AppsQuery } from "@sumi/apps";
 import { openTabSettled, showChatSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";
@@ -61,7 +61,7 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 
 	const app = AppKindSchema.safeParse(target.app);
 
-	if (!app.success || !isKnownApp(await readKnownApps(reach.send), target.app)) {
+	if (!app.success || !(await isKnownApp(reach, target.app))) {
 		return NO_SUCH_APP.replace("{app}", target.app);
 	}
 
@@ -70,8 +70,7 @@ async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promi
 }
 
 async function openWebPageLinked(href: string, opensNew: boolean, reach: TabsReach): Promise<null> {
-	const known = await readKnownApps(reach.send);
-	const app = isKnownApp(known, BROWSER_PAGE_APP) ? BROWSER_PAGE_APP : BROWSER_APP;
+	const app = (await isKnownApp(reach, BROWSER_PAGE_APP)) ? BROWSER_PAGE_APP : BROWSER_APP;
 	await openAppTab(reach, { app, address: href, opensNew });
 	return null;
 }
@@ -91,4 +90,9 @@ async function openAppTab(reach: TabsReach, { app, address, opensNew }: AppTabAs
 		show: true,
 		reusesHeld: !opensNew,
 	});
+}
+
+async function isKnownApp(reach: TabsReach, app: string): Promise<boolean> {
+	const { apps } = await reach.send(AppsQuery);
+	return apps.some(({ id }) => id === app);
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RefCallback } from "react";
-import { OpenWebPageCommand, ReloadWebPageCommand, WebPageQuery } from "@sumi/contract";
+import { OpenWebPageCommand, WebPageQuery } from "@sumi/contract";
 import type { WebPage } from "@sumi/contract";
 import type { Answer } from "@widgetarium/data-framework";
 import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
@@ -10,7 +10,6 @@ interface WebPageControls {
 	readonly page: WebPage;
 	readonly failure: string | null;
 	readonly areaRef: RefCallback<HTMLDivElement>;
-	readonly reload: () => void;
 }
 
 interface AddressOpening {
@@ -21,7 +20,6 @@ interface AddressOpening {
 }
 
 export function useWebPage(tabId: string, address: string, onNavigated: (url: string) => void): WebPageControls {
-	const shell = useRuntime("useWebPage");
 	const read = useOptionalQuery(WebPageQuery, { tab: tabId });
 	const heldPage = read.isLoading ? undefined : read.data;
 	const [refusal, showRefusal] = useRefusal();
@@ -31,7 +29,6 @@ export function useWebPage(tabId: string, address: string, onNavigated: (url: st
 		page: heldPage ?? waitingFor(address),
 		failure: read.failure ?? refusal,
 		areaRef: usePlacesArea(tabId, heldPage !== null && heldPage !== undefined),
-		reload: () => void shell.send(ReloadWebPageCommand, { tab: tabId }).then(showRefusal),
 	};
 }
 

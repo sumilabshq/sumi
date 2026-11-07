@@ -10,6 +10,7 @@
 		}
 	},
 	"dependencies": {
+		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/sumi-host-plugin": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/places": "0.1.0",

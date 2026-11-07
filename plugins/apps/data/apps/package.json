@@ -27,7 +27,8 @@
 		}
 	},
 	"dependencies": {
-		"@widgetarium/data-framework": "0.1.0"
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/places": "0.1.0"
 	},
 	"peerDependencies": {
 		"zod": "^4.6.5"

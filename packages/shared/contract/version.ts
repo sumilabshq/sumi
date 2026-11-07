@@ -1,4 +1,4 @@
-export const CONTRACT_VERSION = "0.5.0";
+export const CONTRACT_VERSION = "0.6.0";
 
 export const VERSION_PATTERN = /^(\d+)\.(\d+)\.(\d+)$/;
 

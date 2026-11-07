@@ -1,6 +1,6 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { AppFacesQuery } from "@widgetarium/app-host";
+import { AppsQuery } from "@sumi/apps";
 import { useCommand, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import { AppTabQuery, GoBackInTabCommand, GoForwardInTabCommand } from "@widgetarium/places";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
@@ -17,7 +17,7 @@ const HOME_ADDRESS = "";
 
 export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 	const tab = useOptionalQuery(AppTabQuery, { id: tabId }).data;
-	const { faces } = useQuery(AppFacesQuery).data;
+	const { apps } = useQuery(AppsQuery).data;
 	const goBack = useCommand(GoBackInTabCommand);
 	const goForward = useCommand(GoForwardInTabCommand);
 
@@ -48,14 +48,14 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 			<PlateHeaderPart place="crumb">
 				<PlateCrumb
 					words={{
-						first: faces.find((face) => face.app === app)?.title ?? app,
+						first: apps.find(({ id }) => id === app)?.title ?? app,
 						second: tab.address === HOME_ADDRESS || tab.address === null ? null : (tab.title ?? tab.address),
 					}}
 					isPressable
 				/>
 			</PlateHeaderPart>
 			<PlateHeaderPart place="controls">
-				<AppActions tabId={tabId} actions={tab.actions ?? []} />
+				<AppActions tabId={tabId} />
 			</PlateHeaderPart>
 		</Fragment>
 	);

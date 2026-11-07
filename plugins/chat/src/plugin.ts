@@ -1,3 +1,4 @@
+import { AppsPlugin, AppsSlot } from "@sumi/apps-plugin";
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "@sumi/command-menu-plugin";
 import {
 	BackgroundModulesSlot,
@@ -15,8 +16,9 @@ import { askPageOf } from "./features/ask/lib/ask-page.js";
 import { CHAT_TAB_PAGE } from "./features/chat-page/lib/chat-tab-page.js";
 
 export const ChatPlugin = plugin("chat")
-	.require(SumiHostPlugin, CommandMenuPlugin)
+	.require(SumiHostPlugin, AppsPlugin, CommandMenuPlugin)
 	.fill(
+		AppsSlot({ id: "chat", title: "New chat", art: "chat", isListed: false }),
 		BackgroundModulesSlot({ id: "questions", module: () => QuestionsModule, contract: QuestionsContract }),
 		TabPageSlot({ id: "chat", tabPage: () => CHAT_TAB_PAGE }),
 		WindowServerModulesSlot({ id: "assistant", module: ({ assistant }) => AssistantModule(assistant) }),

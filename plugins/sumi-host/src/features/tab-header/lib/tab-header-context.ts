@@ -7,6 +7,7 @@ export interface HeaderActionProps {
 	readonly icon: string;
 	readonly isDone?: boolean;
 	readonly isOff?: boolean;
+	readonly isBusy?: boolean;
 	readonly onPress: () => void;
 }
 

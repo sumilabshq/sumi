@@ -4,8 +4,22 @@ import { answered, settledOf, settling, settlingWith } from "../../shared/lib/se
 import type { Answer, Settled } from "../../shared/lib/settling/settling.js";
 import { OpenedTabSettledSchema, TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import type { TabsSettled } from "../../shared/schema/screen.schema.js";
-import { DuplicateTabAskSchema, OpenTabAskSchema, ReleaseEssentialAskSchema, ReopenClosedAskSchema, ShowEssentialAskSchema, TabAskSchema } from "../../shared/schema/tab-asks.schema.js";
-import { duplicatePlan, openBelowPlan, openPlan, releaseEssentialPlan, reopenPlan, showEssentialPlan } from "./lib/opening-plans.js";
+import {
+	DuplicateTabAskSchema,
+	OpenTabAskSchema,
+	ReleaseEssentialAskSchema,
+	ReopenClosedAskSchema,
+	ShowEssentialAskSchema,
+	TabAskSchema,
+} from "../../shared/schema/tab-asks.schema.js";
+import {
+	duplicatePlan,
+	openBelowPlan,
+	openPlan,
+	releaseEssentialPlan,
+	reopenPlan,
+	showEssentialPlan,
+} from "./lib/opening-plans.js";
 
 export const OpenTabCommand = command("open-tab")
 	.public()

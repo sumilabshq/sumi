@@ -8,13 +8,7 @@ import type {
 	Typed,
 } from "../../../shared/host/command-menu.host.js";
 import type { Found } from "../../../shared/schema/command-menu.schema.js";
-import {
-	addressFound,
-	askFallbackFound,
-	askFound,
-	linkFound,
-	searchFound,
-} from "./made.js";
+import { addressFound, askFallbackFound, askFound, linkFound, searchFound } from "./made.js";
 import { rankedOf } from "./match.js";
 
 const FOUND_SHOWN = 8;

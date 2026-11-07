@@ -5,7 +5,15 @@ import { answered, settledOf, settlingWith } from "../../shared/lib/settling/set
 import { momentOfWindow } from "../../shared/lib/tabs/kept-tabs.js";
 import { shownSplitOf } from "../../shared/lib/splits/split-members.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import { LeftSplitSchema, PlaceInViewAskSchema, PlacedInViewSchema, ReorderSplitMemberAskSchema, ResizeSplitAskSchema, ShownSplitSchema, SplitMemberAskSchema } from "../../shared/schema/split-asks.schema.js";
+import {
+	LeftSplitSchema,
+	PlaceInViewAskSchema,
+	PlacedInViewSchema,
+	ReorderSplitMemberAskSchema,
+	ResizeSplitAskSchema,
+	ShownSplitSchema,
+	SplitMemberAskSchema,
+} from "../../shared/schema/split-asks.schema.js";
 import { WindowLabelSchema } from "../../shared/schema/windows.schema.js";
 import { placeInViewPlan, removeFromSplitPlan, reorderSplitMemberPlan, resizeSplitPlan } from "./lib/split-plans.js";
 

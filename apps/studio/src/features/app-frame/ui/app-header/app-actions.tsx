@@ -1,16 +1,15 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
-import { useCommand } from "@widgetarium/data-framework";
-import { PressAppActionCommand } from "@widgetarium/places";
-import type { AppAction } from "@widgetarium/places";
+import { AppPageQuery, PressAppActionCommand } from "@sumi/apps";
+import { useCommand, useOptionalQuery } from "@widgetarium/data-framework";
 import { HeaderButton } from "../../../plate/ui/plate-header/header-button.js";
 
 export interface AppActionsProps {
 	readonly tabId: string;
-	readonly actions: readonly AppAction[];
 }
 
-export function AppActions({ tabId, actions }: AppActionsProps): ReactElement {
+export function AppActions({ tabId }: AppActionsProps): ReactElement {
+	const actions = useOptionalQuery(AppPageQuery, { id: tabId }).data?.actions ?? [];
 	const press = useCommand(PressAppActionCommand);
 	return (
 		<Fragment>

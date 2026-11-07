@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AppActionSchema, AskedLinkSchema, TabMarkSchema } from "./tabs.schema.js";
+import { AskedLinkSchema, TabMarkSchema } from "./tabs.schema.js";
 
 export const TabTurnSchema = z.object({
 	id: z.string().min(1),
@@ -27,37 +27,9 @@ export const OwnAppTabSchema = z.object({
 	chatId: z.string().nullable(),
 	canGoBack: z.boolean().optional(),
 	canGoForward: z.boolean().optional(),
-	actions: z.array(AppActionSchema).optional(),
-	presses: z
-		.array(
-			z.object({
-				id: z.string(),
-				action: z.string(),
-			}),
-		)
-		.optional(),
 });
 
 export type OwnAppTab = z.infer<typeof OwnAppTabSchema>;
-
-export const PressAppActionSchema = z.object({
-	tab: z.string().min(1),
-	action: z.string().min(1),
-});
-
-export type PressAppAction = z.infer<typeof PressAppActionSchema>;
-
-export const TakeActionPressSchema = z.object({
-	id: z.string().min(1),
-	press: z.string().min(1),
-});
-
-export type TakeActionPress = z.infer<typeof TakeActionPressSchema>;
-
-export const TakenPressSchema = z.object({
-	id: z.string(),
-	action: z.string(),
-});
 
 export const TabStepSchema = z.object({ id: z.string().min(1) });
 
@@ -90,7 +62,7 @@ export type NamedRecord = z.infer<typeof NamedRecordSchema>;
 
 export const KeepChatTabsAskSchema = z.object({ chats: z.array(NamedRecordSchema) });
 
-export const AppPageSchema = z.object({
+export const AppAddressSchema = z.object({
 	id: z.string().min(1),
 	address: z.string().max(2048).optional(),
 	how: z.enum(["push", "replace"]).optional(),
@@ -107,7 +79,6 @@ export const AppPageSchema = z.object({
 				.regex(/^sumi-app:\/\/[a-z][a-z0-9-]*\//),
 		])
 		.optional(),
-	actions: z.array(AppActionSchema).max(6).optional(),
 });
 
-export type AppPage = z.infer<typeof AppPageSchema>;
+export type AppAddress = z.infer<typeof AppAddressSchema>;

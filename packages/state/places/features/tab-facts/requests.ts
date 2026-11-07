@@ -1,14 +1,32 @@
-import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
+import { Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
 import { command, query, subscriber } from "#module";
 import { PlacedTabsChangedEvent } from "../../gateways/tabs/tabs.events.js";
 import { TabsGateway } from "../../gateways/tabs/tabs.gateway.js";
 import { answered, moving } from "../../shared/lib/settling/settling.js";
 import { AskedLinkSchema } from "../../shared/schema/tabs.schema.js";
-import { AppPageSchema, AskedLinksAskSchema, AskedLinksSchema, LinkAskSchema, LinkFollowedSchema, OwnAppTabAskSchema, OwnAppTabSchema, PressAppActionSchema, TakeActionPressSchema, TakenPressSchema, KeepChatTabsAskSchema, SeenTabSchema, TabTurnMarksSchema, TabTurnSchema, TakeAskedLinkSchema } from "../../shared/schema/tab-facts.schema.js";
+import {
+	AppAddressSchema,
+	AskedLinksAskSchema,
+	AskedLinksSchema,
+	LinkAskSchema,
+	LinkFollowedSchema,
+	OwnAppTabAskSchema,
+	OwnAppTabSchema,
+	KeepChatTabsAskSchema,
+	SeenTabSchema,
+	TabTurnMarksSchema,
+	TabTurnSchema,
+	TakeAskedLinkSchema,
+} from "../../shared/schema/tab-facts.schema.js";
 import { linkRouteOf, navigatedPlan, withLinkAsked, withLinkTaken } from "./lib/link-routes.js";
-import { pressSaidOf, withPressQueued, withPressTaken } from "./lib/action-presses.js";
 import { ownAppTabOf } from "./lib/own-app-tab.js";
-import { forgetRunningTurnsPlan, keepChatTabsPlan, markSeenPlan, recordAppPagePlan, recordTurnPlan } from "./lib/fact-plans.js";
+import {
+	forgetRunningTurnsPlan,
+	keepChatTabsPlan,
+	markSeenPlan,
+	recordAppAddressPlan,
+	recordTurnPlan,
+} from "./lib/fact-plans.js";
 
 export const KeepChatTabsCommand = command("keep-chat-tabs")
 	.public()
@@ -50,10 +68,9 @@ export const ForgetRunningTurnsCommand = command("forget-running-turns")
 
 const APP_CALLABLE: ReadonlySet<string> = new Set([
 	"places/open-tab",
-	"places/record-app-page",
+	"places/record-app-address",
 	"places/app-tab",
 	"places/open-link",
-	"places/take-action-press",
 ]);
 const NOT_FOR_APPS = "{request} is not open to apps; an app may call {allowed}";
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
@@ -151,41 +168,20 @@ export const AppTabQuery = query("app-tab")
 	.handle(async ({ id }, { tabs }) => {
 		const placed = await tabs.placedTabs();
 		const tab = placed.tabs.find((held) => held.id === id);
-		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(placed, tab);
-	});
-
-export const PressAppActionCommand = command("press-app-action")
-	.public()
-	.input(PressAppActionSchema)
-	.idempotencyKey(PerCall)
-	.handle(async (ask, { tabs }) => {
-		const queued = await tabs.movePlacedTabs((placed) => withPressQueued(placed, ask));
-		console.info(`[widgetarium] ${pressSaidOf(ask, queued)}`);
-		return typeof queued === "string" ? refuse(queued) : undefined;
-	});
-
-export const TakeActionPressCommand = command("take-action-press")
-	.public()
-	.input(TakeActionPressSchema)
-	.output(TakenPressSchema)
-	.idempotencyKey(Repeatable)
-	.guard(OwnsAppTabGuard)
-	.handle(async (ask, { tabs }) => {
-		const taken = await tabs.movePlacedTabs((placed) => withPressTaken(placed, ask));
-		return typeof taken === "string" ? refuse(taken) : { id: taken.id, action: taken.action };
+		return tab === undefined ? refuse(NO_TAB.replace("{id}", id)) : ownAppTabOf(tab);
 	});
 
 export const RereadAppTabSubscriber = subscriber(PlacedTabsChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(AppTabQuery);
 });
 
-export const RecordAppPageCommand = command("record-app-page")
+export const RecordAppAddressCommand = command("record-app-address")
 	.public()
-	.input(AppPageSchema)
+	.input(AppAddressSchema)
 	.idempotencyKey(Repeatable)
 	.guard(OwnsAppTabGuard)
 	.handle(async (page, { tabs }) => {
-		answered(await tabs.movePlacedTabs(moving(null, recordAppPagePlan(page))));
+		answered(await tabs.movePlacedTabs(moving(null, recordAppAddressPlan(page))));
 	});
 
 async function denyUnlessAppHolds(tabs: TabsGateway, tabId: string, app: string): Promise<void> {

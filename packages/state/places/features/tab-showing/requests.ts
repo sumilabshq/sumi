@@ -2,8 +2,22 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { settledOf, settling } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import { ChatTabAskSchema, RestoreTabsAskSchema, SettleAskSchema, TabAskSchema } from "../../shared/schema/tab-asks.schema.js";
-import { fitTabsPlan, ownWindowPlan, reloadPlan, rememberPagesPlan, restorePlan, showChatTabPlan, showTabPlan, tearOffPlan } from "./lib/showing-plans.js";
+import {
+	ChatTabAskSchema,
+	RestoreTabsAskSchema,
+	SettleAskSchema,
+	TabAskSchema,
+} from "../../shared/schema/tab-asks.schema.js";
+import {
+	fitTabsPlan,
+	ownWindowPlan,
+	reloadPlan,
+	rememberPagesPlan,
+	restorePlan,
+	showChatTabPlan,
+	showTabPlan,
+	tearOffPlan,
+} from "./lib/showing-plans.js";
 
 export const RestoreTabsCommand = command("restore-tabs")
 	.public()

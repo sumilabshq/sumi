@@ -20,12 +20,13 @@ import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import type { ResolvedPlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
+import { frameCoreModulesOf } from "../apps/studio/src/tabs/studio-app.ts";
 import { HOST_CAPABILITY_MODULES } from "../apps/tauri/src/plugins/host-capabilities.ts";
 import { workspaceProfileOf } from "../apps/tauri/src/plugins/workspace-profile.ts";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { FakeStore } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
-import { BROWSER_PAGE_FACE, TERMINAL_FACE } from "./plugin-apps-fixture.ts";
+import { BROWSER_PAGE_FACE, BUILT_IN_FACES, TERMINAL_FACE } from "./plugin-apps-fixture.ts";
 
 const boardText: { text: string | null } = {
 	text: null,
@@ -41,7 +42,14 @@ const offers = {
 	},
 };
 const SUMI_PLUGINS_TEST = "the sumi-plugins test";
-const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/", "plugins/files/"];
+const APPS_SLOT_OWNERS = [
+	"plugins/apps/",
+	"plugins/terminal/",
+	"plugins/browser-page/",
+	"plugins/files/",
+	"plugins/main/",
+	"plugins/chat/",
+];
 const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
@@ -154,15 +162,26 @@ check(
 	true,
 );
 const answeredApps = AppsSchema.parse(await appIdsAnsweredBy(resolved)).apps;
+const answeredFaceOf = (id: string): unknown => answeredApps.find((face) => face.id === id) ?? null;
 check(
 	"the apps plugin's module answers the terminal and browser-page plugins' apps, read from the apps plugin's own slot",
-	answeredApps.slice(0, 2),
+	[answeredFaceOf("terminal"), answeredFaceOf("browser-page")],
 	[TERMINAL_FACE, BROWSER_PAGE_FACE],
 );
 check(
+	"the apps module answers canvas, browser, tasks and chat from their owners' fills, as any other app",
+	["canvas", "browser", "tasks", "chat"].map((id) => answeredFaceOf(id)),
+	["canvas", "browser", "tasks", "chat"].map((id) => BUILT_IN_FACES.find((face) => face.id === id) ?? id),
+);
+check(
 	"the files plugin passes every viewer of its own slot on to the apps slot, registered once, and adds no app of its own",
-	answeredApps.slice(2).map(({ id }) => id),
+	answeredApps.map(({ id }) => id).filter((id) => VIEWER_APP_IDS.includes(id) || id === "file"),
 	VIEWER_APP_IDS,
+);
+check(
+	"the apps module is the only list of apps: no other module answers app faces",
+	sourcesNaming("AppFacesQuery").filter((file) => !file.includes("/generated/")),
+	[],
 );
 check(
 	"the apps plugin's tab page draws the terminal, the browser page and every viewer",
@@ -173,6 +192,18 @@ check(
 	"each viewer tab runs its own file-page module, the terminal's tab none",
 	await Promise.all(["terminal", ...VIEWER_APP_IDS].map((app) => tabModuleNamesOf(resolved, app))),
 	[[], ...VIEWER_APP_IDS.map(() => ["file-page"])],
+);
+check(
+	"a frame reaches the host's capabilities and every module a plugin registers in the background, and no other",
+	frameCoreModulesOf(resolved.backgroundModules).map(({ name }) => name),
+	["file-system", "terminal", ...resolved.backgroundModules.map(({ contract }) => contract.name)],
+);
+check(
+	"the registered background modules include places, tasks, questions and apps, so no host list names them",
+	["places", "tasks", "questions", "apps"].every((name) =>
+		frameCoreModulesOf(resolved.backgroundModules).some((module) => module.name === name),
+	),
+	true,
 );
 check(
 	"the chat plugin draws the chat app's page itself, with no shell header, in the window",
@@ -231,8 +262,11 @@ check(
 );
 check(
 	"a profile without the terminal plugin has no terminal app, in the module and on the tab page",
-	[await appIdsAnsweredBy(emptyProfile), tabPageDrawing(emptyProfile, "terminal")],
-	[{ apps: [] }, false],
+	[
+		AppsSchema.parse(await appIdsAnsweredBy(emptyProfile)).apps.some(({ id }) => id === "terminal"),
+		tabPageDrawing(emptyProfile, "terminal"),
+	],
+	[false, false],
 );
 check(
 	"no code outside the apps plugin and its fillers names the apps slot: the host never reads it",

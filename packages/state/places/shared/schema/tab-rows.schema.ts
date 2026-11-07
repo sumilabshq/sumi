@@ -209,14 +209,3 @@ export const ClosedTabRowSchema = z.object({
 export type ClosedTabRow = z.infer<typeof ClosedTabRowSchema>;
 
 export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).readonly() });
-
-export const AppFaceSchema = z.object({
-	app: AppKindSchema,
-	title: z.string(),
-	icon: TabArtSchema,
-	isBuiltIn: z.boolean(),
-});
-
-export type AppFace = z.infer<typeof AppFaceSchema>;
-
-export const AppFacesSchema = z.object({ faces: z.array(AppFaceSchema).readonly() });

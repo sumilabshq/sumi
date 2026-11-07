@@ -6,7 +6,7 @@ export const manifest = defineApp({
 	id: "tasks",
 	name: "Tasks",
 	version: "0.1.0",
-	contract: "^0.5.0",
+	contract: "^0.6.0",
 	ui: "index.html",
 	modules: [
 		{

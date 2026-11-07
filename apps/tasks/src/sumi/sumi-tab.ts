@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { AppTabQuery, RecordAppPageCommand } from "@sumi/contract";
+import { AppTabQuery, RecordAppAddressCommand } from "@sumi/contract";
 import type { SumiFrame } from "./sumi-frame.js";
 
 const NO_TAB = "useSumiTab is used outside SumiTabContext";
@@ -43,7 +43,7 @@ export function useTabOf({ sumi, transport, tabId }: SumiFrame): SumiTab {
 	const open = useCallback(
 		(next: string) => {
 			setAddress(next);
-			void sumi.send(RecordAppPageCommand, { id: tabId, address: next, how: "push" }).then((recorded) => {
+			void sumi.send(RecordAppAddressCommand, { id: tabId, address: next, how: "push" }).then((recorded) => {
 				if (!recorded.ok) {
 					console.error(`[tasks] recording the address ${next} was refused: ${recorded.reason}`);
 				}

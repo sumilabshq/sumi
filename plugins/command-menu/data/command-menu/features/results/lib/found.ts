@@ -1,4 +1,5 @@
-import type { AppFace, AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
+import type { AppTabState, ChatMark, ClosedTabRow, EssentialTile, TabsSidebar } from "@widgetarium/app-host";
+import type { AppFace } from "@sumi/apps";
 import type { RecentSite } from "@widgetarium/browser";
 import type { ChatListData, ChatRowData } from "@widgetarium/app-host";
 import type { ChatElsewhereRow, WorkspacesView } from "@widgetarium/workspaces";
@@ -24,6 +25,7 @@ const WORKSPACE = "Workspace";
 const APP = "App";
 const NO_MARK = "none";
 const UNKNOWN_ART = "site";
+const INSTALLED_ART = "built-app";
 const CHAT_APP = "chat";
 const SUMI_CHAT = "Sumi Chat";
 const SUMI_CHAT_WORDS = "sumi chat new chat ask assistant";
@@ -78,8 +80,8 @@ const MENU_WORDS: ReadonlyMap<string, string> = new Map([
 
 export function appsFoundOf(faces: readonly AppFace[]): readonly Found[] {
 	const opened = faces.flatMap((face) => {
-		const words = MENU_WORDS.get(face.app) ?? (face.isBuiltIn ? undefined : `${face.title} ${face.app} app`);
-		return words === undefined || face.app === CHAT_APP ? [] : [appFoundOf(face, words)];
+		const words = MENU_WORDS.get(face.id) ?? (face.isListed ? `${face.title} ${face.id} app` : undefined);
+		return words === undefined || face.id === CHAT_APP ? [] : [appFoundOf(face, words)];
 	});
 	return [...opened, sumiChatFoundOf(artOf(faces, CHAT_APP))];
 }
@@ -296,8 +298,8 @@ function chatMetaOf(row: ChatRowData, isOnScreen: boolean): string {
 	return said.filter((part) => part !== "").join(" · ");
 }
 
-function artOf(faces: readonly AppFace[], app: AppFace["app"]): string {
-	return faces.find((face) => face.app === app)?.icon ?? UNKNOWN_ART;
+function artOf(faces: readonly AppFace[], app: AppFace["id"]): string {
+	return faces.find((face) => face.id === app)?.art ?? UNKNOWN_ART;
 }
 
 function iconOf(face: ShownFace): RowIcon {
@@ -318,18 +320,18 @@ function letterOf(name: string): string {
 function appFoundOf(face: AppFace, haystack: string): Found {
 	const intent: Intent = {
 		do: "open-app",
-		app: face.app,
+		app: face.id,
 		title: face.title,
 	};
 	return {
-		key: `app:${face.app}`,
+		key: `app:${face.id}`,
 		kind: "app",
 		title: face.title,
 		meta: APP,
 		haystack,
 		icon: iconOf({
-			art: face.icon,
-			favicon: face.favicon,
+			art: face.art ?? INSTALLED_ART,
+			favicon: face.iconUrl,
 			title: face.title,
 			address: null,
 			mark: NO_MARK,

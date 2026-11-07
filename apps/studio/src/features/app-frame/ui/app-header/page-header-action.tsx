@@ -12,6 +12,7 @@ export function PageHeaderAction({
 	icon,
 	isDone = false,
 	isOff = false,
+	isBusy = false,
 	onPress,
 }: HeaderActionProps): ReactElement {
 	return (
@@ -19,6 +20,7 @@ export function PageHeaderAction({
 			label={label}
 			icon={icon}
 			isOff={isOff}
+			aria-busy={isBusy || undefined}
 			style={isDone ? DONE_LOOK : undefined}
 			onClick={() => !isOff && onPress()}
 		/>

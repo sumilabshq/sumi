@@ -39,7 +39,7 @@
 		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/command-menu-plugin": "0.1.0",
 		"@sumi/chat-plugin": "0.1.0",
-		"@sumi/contract": "0.5.0",
+		"@sumi/contract": "0.6.0",
 		"@widgetarium/app-host": "0.1.0",
 		"@widgetarium/app-registry": "0.1.0",
 		"@widgetarium/appearance": "0.1.0",

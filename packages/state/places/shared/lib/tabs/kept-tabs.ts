@@ -46,8 +46,6 @@ export function placedWith(placed: PlacedTabs, window: string | null, moment: Ho
 		mintedSplits,
 		askedLinks: placed.askedLinks,
 		mintedLinks: placed.mintedLinks,
-		pendingPresses: placed.pendingPresses,
-		mintedPresses: placed.mintedPresses,
 		views: window === null ? placed.views : { ...placed.views, [window]: { shownId, lastShown, shownSplitId } },
 	});
 }

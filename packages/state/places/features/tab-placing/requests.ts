@@ -3,9 +3,27 @@ import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
 import { answered, moving, settledOf, settling, settlingWith } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
-import { CreateGroupAskSchema, FoldTabAskSchema, GroupAskSchema, GroupHueAskSchema, MakeEssentialAskSchema, PlaceGroupAskSchema, PinTabAskSchema, PlaceTabAskSchema, RenameGroupAskSchema, RenameTabAskSchema } from "../../shared/schema/tab-asks.schema.js";
+import {
+	CreateGroupAskSchema,
+	FoldTabAskSchema,
+	GroupAskSchema,
+	GroupHueAskSchema,
+	MakeEssentialAskSchema,
+	PlaceGroupAskSchema,
+	PinTabAskSchema,
+	PlaceTabAskSchema,
+	RenameGroupAskSchema,
+	RenameTabAskSchema,
+} from "../../shared/schema/tab-asks.schema.js";
 import { EssentialFaceSchema } from "../../shared/schema/tab-rows.schema.js";
-import { createGroupPlan, foldGroupPlan, groupHuePlan, placeGroupPlan, renameGroupPlan, ungroupPlan } from "./lib/group-plans.js";
+import {
+	createGroupPlan,
+	foldGroupPlan,
+	groupHuePlan,
+	placeGroupPlan,
+	renameGroupPlan,
+	ungroupPlan,
+} from "./lib/group-plans.js";
 import { foldTabPlan, makeEssentialPlan, pinPlan, placeTabPlan, renamePlan } from "./lib/placing-plans.js";
 
 export const PlaceTabCommand = command("place-tab")
