@@ -17,7 +17,6 @@ import {
 	OpenChatAskedOnStartCommand,
 	OpenChatCommand,
 	OpenNewChatCommand,
-	TearOffChatCommand,
 } from "./features/chat-opening/requests.js";
 import { AppFacesQuery, KnownAppsQuery } from "./features/app-faces/requests.js";
 import { OpenLinkCommand } from "./features/links/requests.js";
@@ -117,7 +116,6 @@ export const AppHostModule = module("app-host")
 		OpenLinkCommand,
 		OpenChatCommand,
 		OpenNewChatCommand,
-		TearOffChatCommand,
 		NameChatPaneCommand,
 		OpenChatAskedOnStartCommand,
 		AppTabsQuery,

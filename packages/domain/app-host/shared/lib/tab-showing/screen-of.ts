@@ -17,7 +17,7 @@ export function screenOf({ browserTabs, asks, board }: ScreenSources): Screen {
 		shownTabPaneId: board.leaves.find((leaf) => leaf.view.kind === "app" && leaf.view.tabId === null)?.id ?? null,
 		tabTargetId: board.tabTargetId,
 		chatGroups: board.chatGroups.map(({ chatId, paneIds }) => ({ chatId, paneIds: [...paneIds] })),
-		elsewhere: board.elsewhere.map(({ window, tabIds }) => ({ window, tabIds: [...tabIds] })),
+		elsewhere: board.elsewhere.map(({ window, tabIds, chatIds }) => ({ window, tabIds: [...tabIds, ...chatIds] })),
 		focusedChatId: board.focusedChatId,
 	};
 }

@@ -2,6 +2,8 @@
 import { PerCall, Repeatable, Server, command, moduleContract, query } from "@widgetarium/data-framework";
 import { z } from "zod";
 
+export const TornViewSchema = z.enum(["chat", "app"]);
+
 export const PageAppSchema = z.string().regex(/^(?!chat$)[a-z][a-z0-9-]*$/, "a page app is any app but the chat");
 
 export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
@@ -66,6 +68,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("focus-own-window"), pageId: z.string() }),
 	z.object({ kind: z.literal("focus-window"), window: z.string() }),
 	z.object({ kind: z.literal("tear-off-page"), pageId: z.string(), tabId: z.string() }),
+	z.object({ kind: z.literal("tear-off-tab"), tabId: z.string(), view: TornViewSchema }),
 	z.object({ kind: z.literal("close-panes"), tabIds: z.array(z.string()) }),
 	z.object({ kind: z.literal("close-chat-panes"), chatIds: z.array(z.string()) }),
 	z.object({ kind: z.literal("open-shown-tab-pane") }),

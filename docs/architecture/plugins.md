@@ -71,7 +71,14 @@ plugins/<name>/
 
 ## Example: command menu
 
-`plugins/command-menu` declares `MenuDoorsSlot` (`{ id, letter, label, placeholder, startsWith }`), `MenuPagesSlot` (`{ id, draftsOf }`, the sections a door draws) and `MenuRowSourcesSlot` (`{ id, isFindable, rowsOf(send) }`, rows other plugins add). It owns `CommandMenuModule` (`plugins/command-menu/data/command-menu`, `@sumi/command-menu`), started with its own fills through `WindowModulesSlot`, and draws the menu and its keys through `WindowLayersSlot`. Its own fills are the doors ⌘K, ⌘N, ⌘L and, until the chat plugin takes it, ⌘I. The module's built-in pages and rows answer when no fill replaces them; a page filled for a door wins. The shell opens the menu only through `ToggleCommandMenuCommand` and reads the doors' keys through `MenuDoorsQuery`.
+`plugins/command-menu` declares `MenuDoorsSlot` (`{ id, letter, label, placeholder, startsWith }`), `MenuPagesSlot` (`{ id, draftsOf }`, the sections a door draws) and `MenuRowSourcesSlot` (`{ id, isFindable, rowsOf(send) }`, rows other plugins add). It owns `CommandMenuModule` (`plugins/command-menu/data/command-menu`, `@sumi/command-menu`), started with its own fills through `WindowModulesSlot`, and draws the menu and its keys through `WindowLayersSlot`. Its own fills are the doors ⌘K, ⌘N and ⌘L; ⌘I is the chat plugin's. The module's built-in pages and rows answer when no fill replaces them; a page filled for a door wins. The shell opens the menu only through `ToggleCommandMenuCommand` and reads the doors' keys through `MenuDoorsQuery`.
+
+## Example: chat
+
+`plugins/chat` owns the chat's modules: `plugins/chat/data/assistant` (`@widgetarium/assistant`) and `plugins/chat/data/questions` (`@widgetarium/questions`). It fills the host's `BackgroundModulesSlot` with `QuestionsModule`, and the menu's `MenuDoorsSlot` and `MenuPagesSlot` with the Ask door, ⌘I, and its page (Create and send, Create only); a picked row hands its draft to a chat through the composer the window lends. A chat is a tab of the `chat` app in places, and it tears off, opens and closes through the same places commands as every tab: places decides which window shows it, and app-host only carries out the effects.
+
+TODO: the host still starts `AssistantModule` per chat with the machine's assistant ports; it moves to a chat-plugin fill once the host offers those ports.
+TODO: the chat view is still a frame app (`apps/chat`): its `MascotModule` runs inside the page, and a tab page's app has no slot for a plugin's own module.
 
 TODO: a row source of another plugin sends only to modules the menu's module imports.
 

@@ -11,6 +11,7 @@ import { regionOnScreen } from "../../../shared/lib/region-within.js";
 import { BrowserPagesGateway } from "../browser-pages.gateway.js";
 import type { PageLook } from "../../../shared/schema/page-look.schema.js";
 import type { GhostLay, GhostWorn } from "../../../shared/schema/tear-off-ghost.schema.js";
+import type { TabWindowView } from "../../../shared/schema/tab-window.schema.js";
 import { DrawnPages } from "./drawn-pages.js";
 import { HeldPages } from "./held-pages.js";
 import { OwnWindows } from "./own-windows.js";
@@ -149,8 +150,8 @@ export class TauriBrowserPagesGateway extends BrowserPagesGateway {
 		this.studioWindows.focus(windowLabel);
 	}
 
-	openChatWindow(chatId: string): void {
-		this.studioWindows.openChat(chatId);
+	openTabWindow(tabId: string, view: TabWindowView): void {
+		this.studioWindows.openTab(tabId, view);
 	}
 
 	tearOff(tabId: string, openWith: string): void {

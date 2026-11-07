@@ -79,8 +79,8 @@ export class RecordedPagesGateway extends FakeBrowserPagesGateway {
 		this.calls.push(`show ${tabId}`);
 	}
 
-	override openChatWindow(chatId = ""): void {
-		this.calls.push(`chat window ${chatId}`);
+	override openTabWindow(tabId = "", view = ""): void {
+		this.calls.push(`${view} window ${tabId}`);
 	}
 
 	override tearOff(tabId = "", openWith = ""): void {

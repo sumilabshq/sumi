@@ -114,7 +114,7 @@ export class FakeBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusStudioWindow(): void {}
 
-	openChatWindow(): void {}
+	openTabWindow(): void {}
 
 	tearOff(): void {}
 

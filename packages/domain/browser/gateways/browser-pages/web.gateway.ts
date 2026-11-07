@@ -52,7 +52,7 @@ export class WebBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusStudioWindow(): void {}
 
-	openChatWindow(): void {}
+	openTabWindow(): void {}
 
 	tearOff(): void {}
 

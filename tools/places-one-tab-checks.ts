@@ -15,7 +15,9 @@ import {
 	RecordTabTurnCommand,
 	RecordAppPageCommand,
 	ReopenClosedTabCommand,
+	ShowTabCommand,
 	SidebarQuery,
+	TearOffTabCommand,
 } from "../packages/state/places/index.ts";
 import type { PlacedSidebar, Screen, TabsAsk } from "../packages/state/places/index.ts";
 import { PlacesModule as RunnablePlacesModule } from "../packages/state/places/module.ts";
@@ -198,12 +200,46 @@ async function reuseChecks(): Promise<void> {
 	);
 }
 
+async function oneWindowOwnerChecks(): Promise<void> {
+	const places = placesApp(new MemoryTabsGateway());
+	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-b", title: "Draft" }] });
+	const terminal = await places.send(OpenTabCommand, { at: AT, app: "terminal", list: null });
+	const terminalId = terminal.ok ? terminal.output.id : terminal.reason;
+	const able = { ...AT, screen: { ...NO_SCREEN, canOpenOwnWindow: true } };
+	const held = { ...able, screen: { ...able.screen, elsewhere: [{ window: "studio-2", tabIds: ["chat-b"] }] } };
+	const effectsOf = (answer: { readonly ok: boolean; readonly output?: { readonly effects: readonly unknown[] } }) =>
+		answer.ok ? answer.output?.effects : "refused";
+	check(
+		"places tears off a chat and a page-less app tab by one command, each into a window of its own",
+		[
+			effectsOf(await places.send(TearOffTabCommand, { at: able, id: "chat-b" })),
+			effectsOf(await places.send(TearOffTabCommand, { at: able, id: terminalId })),
+		],
+		[
+			[
+				{ kind: "close-chat-panes", chatIds: ["chat-b"] },
+				{ kind: "tear-off-tab", tabId: "chat-b", view: "chat" },
+			],
+			[{ kind: "tear-off-tab", tabId: terminalId, view: "app" }],
+		],
+	);
+	check(
+		"a chat another window holds comes forward on open and on tear-off, decided by places alone",
+		[
+			effectsOf(await places.send(ShowTabCommand, { at: held, id: "chat-b" })),
+			effectsOf(await places.send(TearOffTabCommand, { at: held, id: "chat-b" })),
+		],
+		[[{ kind: "focus-window", window: "studio-2" }], [{ kind: "focus-window", window: "studio-2" }]],
+	);
+}
+
 const quiet = console.info;
 console.info = () => undefined;
 await wholeChatChecks();
 await sameForEveryTabChecks();
 await foldChecks();
 await reuseChecks();
+await oneWindowOwnerChecks();
 console.info = quiet;
 console.log(tally.failed ? `places one tab: ${tally.failed} check(s) failed` : "places one tab: all checks passed");
 process.exit(tally.failed ? 1 : 0);

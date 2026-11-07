@@ -4,7 +4,7 @@ import {
 	OpenNewChatCommand,
 	PinTabCommand,
 	RenameTabCommand,
-	TearOffChatCommand,
+	TearOffTabCommand,
 } from "../packages/domain/app-host/generated/contract.ts";
 import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";
 import { ChatToOpenQuery } from "../packages/domain/workspaces/generated/contract.ts";
@@ -55,9 +55,9 @@ async function unknownChatChecks(): Promise<void> {
 
 async function tearOffChecks(): Promise<void> {
 	const { studioApp, pages } = studioFakesOf();
-	const torn = await studioApp.send(TearOffChatCommand, { chatId: HOST_CHAT });
+	const torn = await studioApp.send(TearOffTabCommand, { id: HOST_CHAT });
 	check(
-		"tearing off a chat closes it on this board first, then opens its own window",
+		"a chat tears off through the tab command: places closes it on this board, then it opens in its own window",
 		[torn.ok, await boardChatsOf(studioApp), pages.calls.at(-1)],
 		[true, [], `chat window ${HOST_CHAT}`],
 	);

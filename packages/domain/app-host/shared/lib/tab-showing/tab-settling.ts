@@ -8,6 +8,7 @@ import {
 	OpenAddressCommand,
 	OpenPageCommand,
 	OpenTabInOwnWindowCommand,
+	OpenTabWindowCommand,
 	ReloadPageCommand,
 	ShowTabCommand as ShowBrowserPageCommand,
 	TearOffCommand,
@@ -37,7 +38,7 @@ import { screenOf } from "./screen-of.js";
 const ALL_PAGES = { heldTabId: null };
 
 const PAGE_EFFECTS = ["open-page", "close-page", "show-page", "open-address", "reload-page"] as const;
-const WINDOW_EFFECTS = ["open-own-window", "focus-window", "focus-own-window", "tear-off-page"] as const;
+const WINDOW_EFFECTS = ["open-own-window", "focus-window", "focus-own-window", "tear-off-page", "tear-off-tab"] as const;
 const PANE_EFFECTS = [
 	"close-panes",
 	"close-chat-panes",
@@ -187,6 +188,8 @@ function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
 			return send(FocusOwnWindowCommand, { tabId: effect.pageId });
 		case "tear-off-page":
 			return send(TearOffCommand, { tabId: effect.pageId, openWith: effect.tabId });
+		case "tear-off-tab":
+			return send(OpenTabWindowCommand, { tabId: effect.tabId, view: effect.view });
 	}
 }
 

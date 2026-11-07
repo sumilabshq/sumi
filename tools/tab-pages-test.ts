@@ -88,6 +88,42 @@ async function tearOffChecks(): Promise<void> {
 	);
 }
 
+function terminalTabs(): SeededTabs {
+	return {
+		...restoredTabs(),
+		tabs: [
+			...restoredTabs().tabs,
+			{
+				id: "tab-20",
+				app: "terminal",
+				pageId: null,
+				label: null,
+				essentialId: null,
+				lastAddress: null,
+				lastTitle: null,
+				lastFavicon: null,
+			},
+		],
+		lists: {
+			[WORKSPACE_LIST]: [...RESTORED, "tab-20"].map((id) => ({
+				kind: "tab",
+				id,
+			})),
+		},
+		minted: 20,
+	};
+}
+
+async function pagelessTearOffChecks(): Promise<void> {
+	const { pages, studioApp } = studioFakesOf({ tabs: terminalTabs(), pages: [BROWSER_FIRST_PAGE] });
+	const torn = await studioApp.send(TearOffTabCommand, { id: "tab-20" });
+	check(
+		"a tab of an app with no page tears off through the same command: places opens a studio window holding the tab",
+		[torn.ok, await pageIdOf(studioApp, "tab-20"), pages.calls.at(-1)],
+		[true, null, "app window tab-20"],
+	);
+}
+
 async function ownWindowDropChecks(): Promise<void> {
 	const { pages, studioApp } = restoredStudio();
 	const placed = await studioApp.send(PlaceTabCommand, { id: "tab-15", to: { kind: "own-window" } });
@@ -185,6 +221,7 @@ async function viewChecks(): Promise<void> {
 const quiet = console.info;
 console.info = () => undefined;
 await tearOffChecks();
+await pagelessTearOffChecks();
 await ownWindowDropChecks();
 await showAndPaneChecks();
 await handlerRuleChecks();

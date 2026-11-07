@@ -1,3 +1,4 @@
+import type { TabWindowView } from "../../../shared/schema/tab-window.schema.js";
 import type { PagesBridge } from "./pages-bridge.js";
 
 interface StudioWindowsPorts {
@@ -28,11 +29,13 @@ export class StudioWindows {
 		this.bringForward(windowLabel);
 	}
 
-	openChat(chatId: string): void {
-		const opened = this.ports.bridge.openChatWindow(chatId, null).then((windowLabel) => {
-			console.info(`[widgetarium] chat ${chatId} ${this.ports.ownLabel} → ${windowLabel} (torn off)`);
+	openTab(tabId: string, view: TabWindowView): void {
+		const opening =
+			view === "chat" ? this.ports.bridge.openChatWindow(tabId, null) : this.ports.bridge.openStudioWindow(tabId, null);
+		const opened = opening.then((windowLabel) => {
+			console.info(`[widgetarium] ${view} tab ${tabId} ${this.ports.ownLabel} → ${windowLabel} (torn off)`);
 		});
-		this.logFailure(opened, `chat ${chatId} could not open in a studio window of its own`);
+		this.logFailure(opened, `${view} tab ${tabId} could not open in a studio window of its own`);
 	}
 
 	tearOff(tabId: string, openWith: string): void {

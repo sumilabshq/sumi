@@ -30,6 +30,7 @@ import { askInkPromptOf } from "./lib/ask-ink-prompt.js";
 import { nearMatchOf } from "./lib/near-match.js";
 import { isPagesHost, webAddressOf } from "./lib/web-address.js";
 import { GhostLaySchema, GhostShownSchema, GhostWornSchema } from "../../shared/schema/tear-off-ghost.schema.js";
+import { TabWindowSchema } from "../../shared/schema/tab-window.schema.js";
 
 const NOT_OPENED = "the browser opens only web pages: {reason}";
 const SCHEME_NOT_ALLOWED = "scheme-not-allowed";
@@ -152,12 +153,12 @@ export const FocusStudioWindowCommand = command("focus-studio-window")
 	.inject({ browserPages: BrowserPagesGateway })
 	.handle(({ window }, { browserPages }) => browserPages.focusStudioWindow(window));
 
-export const OpenChatWindowCommand = command("open-chat-window")
-	.input(z.object({ chatId: z.string().min(1) }))
+export const OpenTabWindowCommand = command("open-tab-window")
+	.input(TabWindowSchema)
 	.idempotencyKey(Repeatable)
 	.inject({ browserPages: BrowserPagesGateway })
-	.handle(({ chatId }, { browserPages }) =>
-		browserPages.canOpenOwnWindow() ? browserPages.openChatWindow(chatId) : refuse(NO_OWN_WINDOWS),
+	.handle(({ tabId, view }, { browserPages }) =>
+		browserPages.canOpenOwnWindow() ? browserPages.openTabWindow(tabId, view) : refuse(NO_OWN_WINDOWS),
 	);
 
 export const TearOffCommand = command("tear-off")

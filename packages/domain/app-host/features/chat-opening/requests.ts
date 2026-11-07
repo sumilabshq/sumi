@@ -1,14 +1,12 @@
-import { z } from "zod";
 import { PerCall, Repeatable, command, refuse } from "@widgetarium/data-framework";
 import type { Send } from "@widgetarium/data-framework";
-import { FocusStudioWindowCommand, OpenChatWindowCommand } from "@widgetarium/browser";
-import { ClosePaneCommand, PaneTreeQuery } from "@widgetarium/layout";
+import { PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
 import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { SHOWING_PARTS } from "../../shared/lib/tab-showing/showing-parts.js";
 import { showChatSettled } from "../../shared/lib/tab-showing/tab-opening.js";
-import { isChatHeld, windowHoldingChat } from "../../shared/lib/chat-holders.js";
+import { isChatHeld } from "../../shared/lib/chat-holders.js";
 import {
 	ChatOpenedSchema,
 	ChatPaneSchema,
@@ -82,28 +80,6 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
 		await showChatSettled({ parts, send, told: () => emit(TabsSettledEvent) }, { chatId: asked.id, paneId: null });
 		await send(ForgetChatToOpenCommand, { id: asked.id });
-	});
-
-export const TearOffChatCommand = command("tear-off-chat")
-	.input(z.object({ chatId: z.string().min(1) }))
-	.idempotencyKey(Repeatable)
-	.handle(async ({ chatId }, { send }) => {
-		const board = await send(PaneTreeQuery);
-		const holder = windowHoldingChat(board, chatId);
-
-		if (holder !== null) {
-			console.info(`[widgetarium] tear off chat ${chatId} → window ${holder} comes forward (it holds the chat)`);
-			await send(FocusStudioWindowCommand, { window: holder });
-			return;
-		}
-
-		const standing = board.leaves.find((leaf) => leaf.view.kind === "chat" && leaf.view.chatId === chatId);
-
-		if (standing !== undefined) {
-			await send(ClosePaneCommand, { id: standing.id });
-		}
-
-		await send(OpenChatWindowCommand, { chatId });
 	});
 
 async function chatIdForPane(send: Send, board: PaneBoard, askedId: string | null): Promise<string> {

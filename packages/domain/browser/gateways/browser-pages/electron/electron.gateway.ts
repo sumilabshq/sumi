@@ -114,7 +114,7 @@ export class ElectronBrowserPagesGateway extends BrowserPagesGateway {
 
 	focusStudioWindow(): void {}
 
-	openChatWindow(): void {}
+	openTabWindow(): void {}
 
 	tearOff(): void {}
 

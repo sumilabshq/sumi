@@ -265,6 +265,15 @@ export const SiteIconOfOriginSchema = z.object({
 
 export type SiteIconOfOrigin = z.infer<typeof SiteIconOfOriginSchema>;
 
+export const TabWindowViewSchema = z.enum(["chat", "app"]);
+
+export type TabWindowView = z.infer<typeof TabWindowViewSchema>;
+
+export const TabWindowSchema = z.object({
+	tabId: z.string().min(1),
+	view: TabWindowViewSchema,
+});
+
 export const GhostPageSchema = z.object({
 	htmlClass: z.string(),
 	htmlAttributes: z.array(z.tuple([z.string(), z.string()])),
@@ -330,8 +339,8 @@ export const FocusOwnWindowCommand = command("browser/focus-own-window")
 export const FocusStudioWindowCommand = command("browser/focus-studio-window")
 	.input(z.object({ window: z.string().min(1) }))
 	.idempotencyKey(Repeatable);
-export const OpenChatWindowCommand = command("browser/open-chat-window")
-	.input(z.object({ chatId: z.string().min(1) }))
+export const OpenTabWindowCommand = command("browser/open-tab-window")
+	.input(TabWindowSchema)
 	.idempotencyKey(Repeatable);
 export const TearOffCommand = command("browser/tear-off")
 	.input(TabIdSchema.extend({ openWith: z.string() }))
@@ -399,4 +408,4 @@ export const PagesChangedEvent = event("browser/pages-changed");
 export const InkActivityChangedEvent = event("browser/ink-activity-changed");
 export const AccessAsksChangedEvent = event("browser/access-asks-changed");
 
-export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteIconQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenChatWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);
+export const BrowserModule = moduleContract("browser", Device, [BrowserTabsQuery, AskInkPromptQuery, PageHeadQuery, SiteIconQuery, SiteAccessQuery, AccessAsksQuery, InkReadingQuery, OpenAddressCommand, OpenTabInOwnWindowCommand, FocusOwnWindowCommand, FocusStudioWindowCommand, OpenTabWindowCommand, TearOffCommand, LayTearOffGhostCommand, WearTearOffGhostCommand, ShowTearOffGhostCommand, ShowTabCommand, OpenPageCommand, ClosePageCommand, GoBackCommand, GoForwardCommand, ReloadPageCommand, LeaveFailureCommand, AttachPagesCommand, DetachPagesCommand, SetSiteLevelCommand, AnswerAskCommand, StopInkCommand, ReadPageContentCommand, CapturePageCommand, InkOpenAddressCommand, SearchWebCommand]);

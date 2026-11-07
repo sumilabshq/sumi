@@ -8,6 +8,7 @@ import type {
 	ShotAsk,
 } from "../../shared/schema/page-read.schema.js";
 import type { GhostLay, GhostWorn } from "../../shared/schema/tear-off-ghost.schema.js";
+import type { TabWindowView } from "../../shared/schema/tab-window.schema.js";
 
 export abstract class BrowserPagesGateway {
 	abstract isAvailable(): boolean;
@@ -25,7 +26,7 @@ export abstract class BrowserPagesGateway {
 	abstract openInOwnWindow(tabId: string): void;
 	abstract focusOwnWindow(tabId: string): void;
 	abstract focusStudioWindow(window: string): void;
-	abstract openChatWindow(chatId: string): void;
+	abstract openTabWindow(tabId: string, view: TabWindowView): void;
 	abstract tearOff(tabId: string, openWith: string): void;
 	abstract layTearOffGhost(lay: GhostLay): Promise<void>;
 	abstract wearTearOffGhost(worn: GhostWorn): void;
