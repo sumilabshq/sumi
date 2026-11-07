@@ -1,6 +1,10 @@
 import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
+import { TabHeaderContext } from "@sumi/sumi-host-plugin";
+import type { TabHeader } from "@sumi/sumi-host-plugin";
 import { AppHeader } from "../app-header/app-header.js";
+import { PageHeaderAction } from "../app-header/page-header-action.js";
+import { PageHeaderActions } from "../app-header/page-header-actions.js";
 import { useAppPageView } from "../../lib/use-app-page-view.js";
 import { FrameNote } from "../frame-note/frame-note.js";
 import { MissingApp } from "../missing-app/missing-app.js";
@@ -13,6 +17,10 @@ export interface AppPageProps {
 }
 
 const NO_TAB = "This tab was closed";
+const PAGE_HEADER: TabHeader = {
+	Actions: PageHeaderActions,
+	Action: PageHeaderAction,
+};
 
 export function AppPage({ app, tabId }: AppPageProps): ReactElement {
 	const view = useAppPageView(app, tabId);
@@ -24,10 +32,10 @@ export function AppPage({ app, tabId }: AppPageProps): ReactElement {
 			return <MissingApp app={app} />;
 		case "page":
 			return (
-				<Fragment>
+				<TabHeaderContext.Provider value={PAGE_HEADER}>
 					{view.page.header === "shell" ? <AppHeader app={app} tabId={view.tabId} /> : null}
 					<TabPageView page={view.page} app={app} tabId={view.tabId} />
-				</Fragment>
+				</TabHeaderContext.Provider>
 			);
 		case "frame":
 			return (
