@@ -4,19 +4,21 @@ Logic lives only in handlers. A view or another module reaches logic by sending 
 
 ## A request handles itself
 
-A request and its handler are one chain in `features/<feature>/requests.ts`. The chain up to the first `.inject`, `.guard`, `.use`, `.emits` or `.handle` is the **contract**; the rest is the **handling**.
+A request and its handler are one chain in `features/<feature>/requests.ts`, built with `command`, `query` and `subscriber` from `#module` (the package's `generated/command.ts`). The chain up to the first `.guard`, `.use`, `.emits` or `.handle` is the **contract**; the rest is the **handling**.
 
 ```ts skip-check
+import { command, query } from "#module";
+
 export const FrameSidesQuery = query("frame-sides")
+	.public()
 	.output(FrameSidesSchema)
 	.settlesNow()
-	.inject({ frameSides: FrameSidesGateway })
 	.handle((_input, { frameSides }) => frameSides.sides());
 
 export const ToggleFrameSideCommand = command("toggle-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSides: FrameSidesGateway })
 	.handle(({ side }, { frameSides, invalidate }) => {
 		invalidate(FrameSidesQuery);
 		const sides = frameSides.sides();
@@ -36,13 +38,18 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 
 ### The contract
 
-| Declaration                                    | On      | Means                                                      |
-| ---------------------------------------------- | ------- | ---------------------------------------------------------- |
-| `query("<short>")`, `command("<short>")`       | both    | the short kebab name: the constant without its suffix      |
-| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`     |
-| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error        |
-| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)    |
-| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module |
+| Declaration                                    | On      | Means                                                       |
+| ---------------------------------------------- | ------- | ----------------------------------------------------------- |
+| `query("<short>")`, `command("<short>")`       | both    | the short kebab name: the constant without its suffix       |
+| no mark                                        | both    | callable only in the same process: any module or view there |
+| `.public()`                                    | both    | callable by anyone, through guards; enters the contract     |
+| `.callableBy(OtherModule, …)`                  | both    | callable only by those services                             |
+| `.input(S)`, `.output(S)`                      | both    | zod schemas from `shared/schema`; omitted means `void`      |
+| `.idempotencyKey(PerCall \| Repeatable \| fn)` | command | **required**: a command with no key is a type error         |
+| `.cache({ freshFor })`                         | query   | the time an answer stays fresh (TanStack's `staleTime`)     |
+| `.settlesNow()`                                | query   | answered synchronously on its first read of a local module  |
+
+**Visibility is one check, and it fails closed.** The mediator runs `refuseCaller` (`local-routes.ts`) before it parses the input. A call counts as from outside unless its in-process sender marks it: a handler's or subscriber's `send` names its module, the runtime's own views send as a view. Every served call (HTTP, `MessagePort`, the studio's IPC relay) is outside. Outside, only `.public()` passes; anything else answers `not-found` with one message, whatever the request's visibility. In the process, `.callableBy(...)` lets only its own module and the listed modules through (a view is refused `forbidden`). `.callableBy` stays refused over a transport until modules have an identity there. `.public()` and `.callableBy()` on one request throw.
 
 **Strings only for free-form data** (request names, reasons). Every other choice is a typed value: a guard, a `permission("…")` constant, `PerCall` / `Repeatable`, a `Duration` (`seconds(n)`, `minutes(n)`, `hours(n)`).
 
@@ -50,12 +57,11 @@ export const ToggleFrameSideCommand = command("toggle-frame-side")
 
 | Step                   | Means                                                                                   |
 | ---------------------- | --------------------------------------------------------------------------------------- |
-| `.inject({ key: C })`  | what the handler needs, each an abstract class; the module's `provide` must return it   |
 | `.guard(G)`, `.use(M)` | who may call, and what wraps the call ([Guards and middleware](#guards-and-middleware)) |
 | `.emits(Event, …)`     | the events this handler may emit ([Events](#events-and-subscribers))                    |
 | `.handle(fn)`          | ends the chain; typed to take the contract's input and return its output                |
 
-`.handle` receives `(input, context)`; the context holds the injected keys, what guards and middleware added, `idempotencyKey`, `signal`, `user`, `send` ([Sending](#sending-to-another-module)), `emit` when it declared `.emits`, and, in a command, `invalidate` ([Re-reading](#re-reading-invalidate)). `send` and `invalidate` are never declared: the engine passes them to every handler and subscriber. Their names and the other context names (`emit`, `idempotencyKey`, `signal`, `user`) are reserved: `.inject` naming one is a type error and throws where it is declared. A handler that refuses before writing calls `refuse(reason)` ([ran](#ran)).
+`.handle` receives `(input, context)`; the context holds what the module's `provide` returns (keys are the gateway names, `questions: QuestionsGateway`; named `injects` when not destructured), what guards and middleware added, `idempotencyKey`, `signal`, `user`, `send` ([Sending](#sending-to-another-module)), `emit` when it declared `.emits`, and, in a command, `invalidate` ([Re-reading](#re-reading-invalidate)). `send` and `invalidate` are never declared: the engine passes them to every handler and subscriber. Their names and the other context names (`emit`, `idempotencyKey`, `signal`, `user`) are reserved: a guard's or middleware's `.inject` naming one is a type error and throws where it is declared. A handler that refuses before writing calls `refuse(reason)` ([ran](#ran)).
 
 ## Re-reading: `invalidate`
 
@@ -71,9 +77,9 @@ A command or a subscriber calls `invalidate(Query, input?)` for each query its w
 An event is a fact in the past tense with an input schema, and it lives only inside modules:
 
 ```ts skip-check
-export const PanesChangedEvent = event("panes-changed").from(
-	gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)),
-);
+export const PanesChangedEvent = event("panes-changed")
+	.public()
+	.from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)));
 
 export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(PaneTreeQuery);
@@ -82,18 +88,22 @@ export const RereadPanesSubscriber = subscriber(PanesChangedEvent).handle((_inpu
 ```
 
 - **Two sources.** A handler emits it (`.emits(Event)`, then `emit(Event, input)`, which returns nothing to await), or it comes from outside with `.from(...)`: one source for every platform, or a record keyed by platform (a missing platform never fires). Sources: `gatewayEvent(Gateway, (gateway, fire) => gateway.xChanged(fire))` for a gateway's own listener in the process (a signal only the host has, such as Tauri's, reaches a module this way: the host lends an object, a gateway wraps it), `windowEvent(type)` (`window.addEventListener`, the payload of a `MessageEvent` or `CustomEvent`). A payload the event's schema refuses is reported and dropped, never delivered.
-- **Private unless public.** An event belongs to the module whose package declares it. Listed in `.public(...)` beside the requests, it enters the generated contract and other modules may subscribe to it; not listed, it is private: only the module's own subscribers hear it. A handler emits only its own module's events, public or private; emitting another module's event is refused at start. The app starts a source only while some subscriber listens, and stops it with `stop()`.
-- **Subscribers.** `subscriber(Event).inject({...}).emits(...).handle((input, { invalidate, send, emit }) => ...)`, listed with `.subscribers(...)`: what the module reacts to; many per event are normal. A subscriber is named for what it does (`RereadPanesSubscriber`, `EnsurePanePagesSubscriber`), never for its trigger. A subscriber of another module's event needs that module in `.imports()` and the event in that module's `.public()`, or the start is refused naming the fix; events do not cross the network yet, so an event of a module imported from an address is refused at start.
+- **`.public()` enters the contract.** An event belongs to the module whose package declares it. Marked `event("x").public()`, it enters the generated contract; unmarked, any module that imports its module still hears it in process. A handler emits only its own module's events; emitting another module's event is refused at start. The app starts a source only while some subscriber listens, and stops it with `stop()`.
+- **Subscribers.** `subscriber(Event).emits(...).handle((input, { invalidate, send, emit, ...injects }) => ...)`, from `#module`: what the module reacts to; many per event are normal. The generator puts every subscriber of the package in `handled`. A subscriber is named for what it does (`RereadPanesSubscriber`, `EnsurePanePagesSubscriber`), never for its trigger. A subscriber of another module's event needs that module in `.imports()`, or the start is refused naming the fix; events do not cross the network yet, so an event of a module imported from an address is refused at start.
 - **After the answer, each on its own.** Subscribers run after the emitting handler has answered (scheduled, never inline); one throwing or rejecting is reported once and touches neither the emitter nor the other subscribers.
 - **Views never touch events.** A view reads with `useQuery` and acts with `useCommand`; events are inside modules: subscribers handle them and call `invalidate` to re-read queries. A view never emits or subscribes to an event.
 - **Where it lives.** An event a gateway is the source of lives beside it, `gateways/<gateway>/<gateway>.events.ts`; an emitted event in the feature that emits it, or `shared/events/<topic>.events.ts` when two features use it.
 
 ## A module's config
 
-A module that needs live objects only its starter has (a store, a file it opened, a running agent) declares their shape with `.config<C>()`, and the module becomes callable: whoever starts it passes its config where it lists it, `TasksModule({ file })`, and `provide(({ platform, scope, env, config }) => ...)` receives it. The config is the module's own: no other module sees it. A config with a required field makes the uncalled module a type error in `.modules(...)`; a config whose fields are all optional lets the module stand uncalled, with an empty config. `XModule.with(fakes)` still skips config and `provide` alike. The starter passes raw objects only, never a module's gateway; the module builds its gateways on them. The config's types live in the module's `shared/host/<x>.host.ts`, and `module.ts` re-exports them as types.
+A module that needs live objects only its starter has (a store, a file it opened, a running agent) declares their shape with `.config<C>()`, and the module becomes callable: whoever starts it passes its config where it lists it, `TasksModule({ file })`, and `provide(({ platform, scope, env, config }) => ...)` receives it. The config is the module's own: no other module sees it. A config with a required field makes the uncalled module a type error in `.modules(...)`; a config whose fields are all optional lets the module stand uncalled, with an empty config. `XModule({ injects: fakes })` skips config and `provide` alike. The starter passes raw objects only, never a module's gateway; the module builds its gateways on them. The config's types live in the module's `shared/host/<x>.host.ts`, and `module.ts` re-exports them as types.
 
 ```ts skip-check
-export const TasksModule = module("tasks").on(Server).config<{ readonly file: BoardFile }>().public(…).provide(({ config }) => tasksPartsOn(config));
+export const TasksModule = module("tasks")
+	.on(Server)
+	.config<{ readonly file: BoardFile }>()
+	.provide(({ config }) => tasksPartsOn(config))
+	.handles(...handled);
 server().modules(TasksModule({ file })).start({ env, scope });
 ```
 
@@ -102,8 +112,12 @@ server().modules(TasksModule({ file })).start({ env, scope });
 ```ts skip-check
 module("canvas")
 	.on(Device)
-	.config<{ readonly kind: "vault"; readonly adapter: DataAdapter } | { readonly kind: "project"; readonly project: StartedProject }>()
-	.provide(({ config }) => (config.kind === "vault" ? vaultParts(config.adapter) : projectParts(config.project)));
+	.config<
+		| { readonly kind: "vault"; readonly adapter: DataAdapter }
+		| { readonly kind: "project"; readonly project: StartedProject }
+	>()
+	.provide(({ config }) => (config.kind === "vault" ? vaultParts(config.adapter) : projectParts(config.project)))
+	.handles(...handled);
 CanvasModule({ kind: "project", project });
 ```
 
@@ -111,34 +125,33 @@ CanvasModule({ kind: "project", project });
 
 ## A module
 
-A module says where it may run, which of its commands, queries and events others may use, what it reacts to, and picks its gateways. `module.ts` holds only this:
+A module says where it may run, what it imports and guards, and picks its gateways. It never lists its requests. `module.ts` holds only this (`plugins/chat/data/questions/module.ts`, `packages/state/layout/module.ts`):
 
 ```ts skip-check
-export const LayoutModule = module("layout")
-	.on(Device)
-	.subscribers(RereadSidesSubscriber, RereadPanesSubscriber)
-	.public(FrameSidesQuery, ToggleFrameSideCommand, /* … */ DropGoneTabsCommand, PanesChangedEvent)
-	.provide((facts) => ({ ...layoutPartsOn(facts) }));
+import { PublicGuard, Server, module } from "@widgetarium/data-framework";
+import { questionsPartsOn } from "./gateways/questions-parts/questions-parts.gateway.js";
+import { handled } from "./generated/handled.js";
 
-export const BillingModule = module("billing")
+export const QuestionsModule = module("questions")
 	.on(Server)
-	.imports(UsersModule)
-	.public(InvoicesQuery, ChargeCommand)
-	.serverOnly(CreateCustomerCommand)
-	.provide((facts) => billingPartsOn(facts));
+	.guard(PublicGuard)
+	.provide((facts) => questionsPartsOn(facts))
+	.handles(...handled);
 ```
 
-- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.config`, `.subscribers`, `.public`, `.serverOnly`, `.guard`, `.use`, then `.provide` last. `.public` before `.on` is a type error; `.serverOnly` on a `Device` module fails with the message "serverOnly needs .on(Server) or .on(Anywhere)".
-- **Two lists, no duplicates:** every request stands in exactly one of `.public` (any caller: views, other modules, the network) and `.serverOnly` (never over the network: other server modules in the process when it runs on a server; only its own handlers when an `Anywhere` module runs on a device). Queries, commands and public events are listed together. A request named twice is refused when the module is defined.
-- **Stamping:** listing a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `emits` list, its public events and the events its own subscribers hear too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
-- **`.provide((facts) => parts)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform). It is typed against every listed request's `.inject`: a missing or wrongly typed part is a type error.
-- **A test hands fakes:** `LayoutModule.with(parts)` skips `provide`; `app().modules(LayoutModule.with(fakes)).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/layout-rules-checks.ts`).
+- **Order:** `module(name).on(Server | Device | Anywhere)` first, then `.imports`, `.config`, `.guard`, `.use`, `.provide`, and `.handles(...handled)` last.
+- **The generator lists.** `widgetarium generate` scans `features/**/requests.ts(x)`, `gateways/**/*.events.ts` and `shared/events/*.events.ts` and writes `generated/handled.ts` (`export const handled: readonly ModuleItem[] = [...]`): every request with a handler, every event, every subscriber. A name declared in two files is refused.
+- **Builders from `#module`.** `generated/command.ts` holds `export const { command, query, subscriber, event } = buildersOf<typeof QuestionsModule>();`; `package.json` maps `"imports": { "#module": … }` to it. A handler's second parameter is typed by what `provide` returns, so a request has no `.inject`: using a key `provide` does not return is a type error.
+- **Stamping:** handling a request renames it `<module>/<short>` (`layout/toggle-frame-side`), its `emits` list, its events and the events its own subscribers hear too. That full name is its address on the wire, in logs and in done keys; the generated contract carries it.
+- **`.provide((facts) => injects)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform), keyed by gateway name.
+- **A test hands fakes:** `LayoutModule({ injects: fakes })` skips `provide`; `app().modules(LayoutModule({ injects: fakes })).start({ platform, scope }).send(Request, input)` runs the real handlers over them (`tools/command-menu-checks.ts`).
 
 ## Sending to another module
 
 ```ts skip-check
 import { ChargeCommand } from "@widgetarium/billing";
 import { CreateCustomerCommand } from "@widgetarium/billing/server";
+import { command } from "#module";
 
 export const BuyCommand = command("buy")
 	.input(BuyInputSchema)
@@ -148,17 +161,17 @@ export const BuyCommand = command("buy")
 
 - `send` is in every handler's and subscriber's context and takes any request, typed by that request's input and output. Nothing lists what a handler sends: prior art is MediatR's `ISender.Send` and NestJS's `CommandBus.execute`.
 - The sending module names the other in `.imports(BillingModule)`. A send to a module not in `.imports` fails at the send, naming the fix (`shop/buy sends payments/charge, but module "shop" does not import payments: add .imports()`); a request of the own module needs no import.
-- Public requests come from the other module's `"."` entry, server-only ones from `"./server"`, and only a module `.on(Server)` may send another module's server-only request: any other is refused where the request is routed, the one check for handlers and subscribers alike (`callerRefusalOf`). A server-only request never crosses the network: a send to one at an imported address is refused before it leaves. Never import its `module.ts`, handler or gateway.
+- `.public()` requests come from the other module's `"."` entry; the non-public requests of a `Server` or `Anywhere` module from its `"./server"`, for other server modules in the same process. A non-public request sent at an imported address is refused by the server that serves it (`refuseCaller`). Never import its `module.ts`, handler or gateway.
 - `send` routes in process when the other module runs in the same app, else over the network to the address the app imported it at. A request no module runs and no server reaches answers `no-server`, and the sender fails with it.
 - A refusal before the other side wrote refuses the sender; a failure after it fails the sender with `ran: true`.
 
 ## The generated contract
 
-`npm run generate` reads each `module.ts`, finds the listed requests and events and writes `generated/contract.ts`: each request and event `.public` lists, up to its first handling step (an event's `.from(...)` is cut, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule.at(url))` takes and which carries no code. When the module has server-only requests it also writes `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server-only one (`"./server"`). The contract carries no invalidation.
+`npm run generate` scans each data module's requests and events and writes, per package: `generated/handled.ts` and `generated/command.ts` ([A module](#a-module)); `generated/contract.ts`: each `.public()` request and event up to its first handling step, `.public()` / `.callableBy()` cut out (an event's `.from(...)` is cut too, so no source reaches a client), with every schema it uses copied in, transitively, and the module's descriptor (`export const BillingModule = moduleContract("billing", Server, [...])`), which `.imports(BillingModule({ over: transport }))` takes and which carries no code; and, for a `Server` or `Anywhere` module with non-public requests, `generated/server.ts` with them. The root `index.ts` re-exports the contract (`"."`), the root `server.ts` the server one (`"./server"`). The contract carries no invalidation. A contract is callable; `isModuleContract(value)` tells one apart.
 
 - The contract imports only `zod` and `@widgetarium/data-framework`, so no handler or gateway can reach a client.
 - A copied schema is built only from `z.*` calls, literals, object and array literals, other copied schemas and `z.lazy(() => X)`. A function, a helper call or a foreign import is refused by name: a refinement belongs to the handler or beside the gateway (`KeptPaneTreeSchema`).
-- Refused: a request not listed by name, listed twice, not imported, a schema declared beside the request instead of in `shared/schema`, a cycle.
+- Refused: a `module.ts` not ending in `.handles(...handled)` imported from `"./generated/handled.js"`; a `package.json` without the `#module` import; a `"./server"` export with no non-public request, or non-public requests with no `"./server"` export; a name declared twice; a schema declared beside the request instead of in `shared/schema`; a cycle.
 - A function idempotency key is copied only when it is one arrow reading its input: `(input) => input.id`, or a template literal of its fields.
 - `npm run generate -- --check` (in `test:generated`) fails on a stale file.
 
@@ -166,7 +179,7 @@ The mediator routes by request name, so the generated contract and the request t
 
 ## Guards and middleware
 
-A module's `.guard()` and `.use()` run before every listed request, on either side; a request's own run after them, as written, after the input is validated and before the idempotency key and `.handle`. `app()` refuses at start a step that needs a user, since a client has no `Authenticate`, and a step injecting what the module does not provide. `server()` refuses a request no guard covers, on its module or itself.
+A module's `.guard()` and `.use()` run before every request it handles, on either side; a request's own run after them, as written, after the input is validated and before the idempotency key and `.handle`. `app()` refuses at start a step that needs a user, since a client has no `Authenticate`, and a step injecting what the module does not provide. `server()` refuses a request no guard covers, on its module or itself.
 
 | Step                                                  | Does                                                                                         |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------- |
@@ -180,7 +193,7 @@ A module's `.guard()` and `.use()` run before every listed request, on either si
 
 **`.guard` decides who may call: the same answer every time for the same user and input. Everything else, a limit or a counter included, is `.use`.**
 
-**A step that takes options declares them and is called with them where it is used.** `.options<[…]>()` lists them as a function's parameters; the handler reads them as `options`. Injected dependencies stay in `.inject` and come from `provide`, never from the call.
+**A step that takes options declares them and is called with them where it is used.** `.options<[…]>()` lists them as a function's parameters; the handler reads them as `options`. A step's dependencies stay in its `.inject` and come from the module's `provide`, never from the call.
 
 ```ts skip-check
 export const RateLimitMiddleware = middleware()
@@ -206,7 +219,7 @@ A step needing options passed bare answers the type `"this step takes options: c
 - **Module guards decide identity only** (`PublicGuard`, `AuthenticatedGuard`, `HasPermissionGuard`); they read no input. Ownership is a request's own guard: it resolves the record, checks its owner, refuses with `deny`, and returns the record for the handler to read from the context.
 - **A step only refuses.** An `ok` answer it did not get from `next()` is refused as `failed`, so a middleware before a guard cannot answer for anyone.
 - A middleware never adds `user`, `idempotencyKey` or `signal`: the user comes from the server host's `Authenticate` alone (`userOf(headers) → User | null`). A guard never holds a secret and never verifies a token.
-- A step never changes `input`, and gets every dependency through `.inject`, resolved from the module's `provide`.
+- A step never changes `input`, and gets every dependency through its own `.inject`, resolved from the `provide` of each module it runs in and checked at start: a step is shared across modules, so its keys are declared, not inferred.
 
 ```ts skip-check
 export const OwnsInvoiceGuard = guard<{ readonly invoiceId: string }>()
@@ -253,26 +266,26 @@ Every answer is `{ ok: true, output }` or `{ ok: false, code, reason, ran }`.
 
 ## Starting: `app()` and `server()`
 
-An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached through a transport.
+An app is shaped like a module: `.modules(...)` run in it, `.imports(...)` are reached through a transport. **planned**: one `runtime()` with adapters in place of `app()` and `server()`; not built.
 
 ```ts skip-check
 const layoutApp = app()
 	.modules(LayoutModule)
-	.imports(BillingModule.over(orpcTransport(env.API_URL)))
+	.imports(BillingModule({ over: orpcTransport(env.API_URL) }))
 	.start({ platform: "tauri", scope: { workspaceId } });
 
 const served = server().modules(BillingModule, UsersModule).start({ env: process.env, host: { authenticate } });
 ```
 
 - `.modules(...)` take the runnable module from `<package>/module`: an app takes `Device` and `Anywhere` modules, a server `Server` and `Anywhere` ones (a type error otherwise, and refused at start).
-- `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"."` entry, over a transport: `.over(transport)` exists only on those two (a `Device` module is a type error, and refused where `.over` is called). No server code reaches the bundle.
+- `.imports(...)` take `Server` and `Anywhere` modules, by the descriptor in their `"."` entry, called with a transport: `BillingModule({ over: transport })`. Only those two are callable (a `Device` module is a type error, and refused where it is called). No server code reaches the bundle.
 - **A transport is a port.** `RemoteTransport` (`transport.ts`) carries a call there and its answer back (`call`), and the changes the server reports that this client did not cause (`changes`). The framework ships `orpcTransport(url, { fetch?, headers? })` (HTTP; changes over the SSE stream at `/rpc-changes`) and `localTransport()` (same process). An app writes its own for anything else (the studio's IPC to its core window), with no change to the framework.
 - **A call carries its caller's headers.** `ServedCall.headers` and `RemoteCall.headers` reach `Authenticate`; `orpcTransport` sends them as HTTP headers, `localTransport` and the studio's IPC pass them on. A relay stamps them; the caller never writes its own.
 - **A server listens on transports.** `server().modules(...).listen(transport)` hands every module of that server to the transport's `serve`; several `.listen` calls serve the same modules over several transports. Modules that need different transports are different servers. HTTP is served by the server's own `fetch`, whatever is listened on.
 - Every module's `.imports` must be met by the app's `.modules` or `.imports`; start refuses naming the missing module.
 - `.start({ platform, scope, env?, host? })` answers the started app; a server's `.start({ env, scope?, host? })` answers `{ fetch, answer, changes, stop }`.
 - **One app per set of modules.** Views and adapters share it: `apps/studio/src/tabs/layout-app.ts` starts the layout once, and `AppProvider` and every adapter over it use that one (`layoutApp.send`, `layoutApp.routes`).
-- A server is a Hono app mounting `/rpc`. Over the network it answers only `.public` requests: a server-only one answers `404`, while an in-process `send` from another server module reaches it. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
+- A server is a Hono app mounting `/rpc`. Over a transport it answers only `.public()` requests: an unmarked one answers `not-found`, a `.callableBy()` one `forbidden`, while an in-process `send` from another module reaches both. Its host gives `authenticate`, `doneKeys`, `rateLimits`, `reportFailure`.
 - A starter refuses, naming the request: two handlers for one request, a missing or wrong provided value, a step injecting what the module does not provide, a server request no guard covers, a guard that needs a user when the host has no `Authenticate`, a declared send nothing can answer.
 - The wire is oRPC, and only `@widgetarium/data-framework` knows it (`wire.ts`, `wire-client.ts`, `server/`). `apps/server` serves it ([hosts.md](hosts.md#deploy)).
 
@@ -289,7 +302,7 @@ A page in another window or a sandboxed iframe reaches modules over a `MessagePo
 
 ```ts skip-check
 const files = app()
-	.imports(FileSystemModule.over(messagePortTransport(portFromParent())))
+	.imports(FileSystemModule({ over: messagePortTransport(portFromParent()) }))
 	.start();
 await files.send(WriteFileCommand, { path: "tasks.json", content });
 ```

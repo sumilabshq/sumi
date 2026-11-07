@@ -32,7 +32,9 @@ Sumi is a shell. Every page a person opens (chat, tasks, canvas, terminal, a bro
 
 ```ts skip-check
 const sumi = messagePortTransport(portFromParent());
-const tasks = app().imports(FileSystemModule.over(sumi), PlacesModule.over(sumi)).start();
+const tasks = app()
+	.imports(FileSystemModule({ over: sumi }), PlacesModule({ over: sumi }))
+	.start();
 ```
 
 There is no message vocabulary between Sumi and an app: everything an app asks is a command or a query of a listed module.
