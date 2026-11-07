@@ -1,5 +1,5 @@
-import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { FixtureBillingModule as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
 import { MemoryLedgerGateway } from "../packages/domain/fixture-billing/gateways/ledger/memory.gateway.ts";
@@ -8,8 +8,12 @@ import { check } from "./check-helpers.ts";
 const SERVER_URL = "http://fixture-billing.test";
 
 const ledger = new MemoryLedgerGateway("USD");
-const served = server().modules(RunnableFixtureBillingModule({ injects: { ledger } })).start({ env: {} });
-const client = app()
+const served = dataFrameworkMiddleware(
+	runtime()
+		.modules(RunnableFixtureBillingModule({ injects: { ledger } }))
+		.start({ platform: "server", env: {} }),
+);
+const client = runtime()
 	.imports(FixtureBillingModule({ over: orpcTransport(SERVER_URL, { fetch: served.fetch }) }))
 	.start();
 

@@ -4,7 +4,7 @@ import {
 	Device,
 	PublicGuard,
 	Repeatable,
-	app,
+	runtime,
 	buildersOf,
 	localTransport,
 	command,
@@ -15,7 +15,6 @@ import {
 	subscriber,
 } from "../packages/shared/data-framework/src/index.ts";
 import type { AnySubscriber, Failure } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
 const SCOPE = { workspaceId: "events" };
@@ -150,7 +149,7 @@ export function typedOnly(): void {
 function ledgerApp(failures: Failure[] = []) {
 	const ledger = new Ledger();
 	const heard = new Heard();
-	const started = app()
+	const started = runtime()
 		.modules(LedgerModule({ injects: { ledger, heard } }))
 		.start({ ...ON_BROWSER, host: { reportFailure: (failure) => failures.push(failure) } });
 	return { started, ledger, heard };
@@ -220,7 +219,7 @@ const ReachingModule = module("reaching")
 	.provide(() => ({}))
 	.handles(ReachesOtherCommand);
 
-const reaching = app().modules(ReachingModule).start(ON_BROWSER);
+const reaching = runtime().modules(ReachingModule).start(ON_BROWSER);
 const reached = await reaching.send(ReachOtherContract);
 check(
 	"invalidating a query of a module this one does not import fails, naming the fix",
@@ -247,7 +246,7 @@ const EmitsForeignCommand = foreignEmittingBuilt
 
 const EmitsForeignContract = command("foreign-emitting/emits-foreign").idempotencyKey(Repeatable);
 
-const foreignEmitting = app()
+const foreignEmitting = runtime()
 	.modules(ForeignEmittingDeclared.handles(EmitsForeignCommand, OwnChangedEvent))
 	.start(ON_BROWSER);
 const emittedForeign = await foreignEmitting.send(EmitsForeignContract);
@@ -281,12 +280,12 @@ const hearerModuleOf = (heard: AnySubscriber) =>
 
 check(
 	"another module in the same process subscribing to an event with no mark starts",
-	thrownBy(() => app().modules(KeeperModule, hearerModuleOf(HearsKeptSubscriber)).start(ON_BROWSER)),
+	thrownBy(() => runtime().modules(KeeperModule, hearerModuleOf(HearsKeptSubscriber)).start(ON_BROWSER)),
 	"",
 );
 check(
 	"another module subscribing to a public event starts",
-	thrownBy(() => app().modules(KeeperModule, hearerModuleOf(HearsSharedSubscriber)).start(ON_BROWSER)),
+	thrownBy(() => runtime().modules(KeeperModule, hearerModuleOf(HearsSharedSubscriber)).start(ON_BROWSER)),
 	"",
 );
 
@@ -299,7 +298,7 @@ const ListeningModule = module("listening")
 
 check(
 	"a subscriber of another module's event needs that module in .imports()",
-	thrownBy(() => app().modules(ListeningModule).start(ON_BROWSER)).split("\n")[1],
+	thrownBy(() => runtime().modules(ListeningModule).start(ON_BROWSER)).split("\n")[1],
 	'the subscriber of other/changed listens to other/changed, but module "listening" does not import other: add .imports()',
 );
 
@@ -318,14 +317,14 @@ const VaultedModule = module("vaulted")
 	})
 	.handles(ValueQuery);
 
-app()
+runtime()
 	.modules(VaultedModule({ vault: new Vault() }))
 	.start(ON_BROWSER);
 check("provide receives the config the module was called with", vaultsSeen, ["vault"]);
 check(
 	"a module whose config is required fails when listed uncalled, and is a type error there",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(
 				// @ts-expect-error
 				VaultedModule,
@@ -337,7 +336,7 @@ check(
 check(
 	"a module whose config is required still takes fakes through .with, which skips its config",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(VaultedModule({ injects: { ledger: new Ledger() } }))
 			.start(ON_BROWSER),
 	),
@@ -355,8 +354,8 @@ const MaybeHostedModule = module("maybe-hosted")
 	})
 	.handles(ValueQuery);
 
-app().modules(MaybeHostedModule).start(ON_BROWSER);
-app()
+runtime().modules(MaybeHostedModule).start(ON_BROWSER);
+runtime()
 	.modules(MaybeHostedModule({ tauri: { vault: new Vault() } }))
 	.start(ON_BROWSER);
 check(
@@ -378,10 +377,10 @@ const MountedModule = module("canvas")
 	})
 	.handles(ValueQuery);
 
-app()
+runtime()
 	.modules(MountedModule({ kind: "vault", registry: new Registry() }))
 	.start(ON_BROWSER);
-app()
+runtime()
 	.modules(MountedModule({ kind: "project", folder: "apps/notes" }))
 	.start(ON_BROWSER);
 check("a config union reaches provide as the variant the module was called with", mountsSeen, [
@@ -405,7 +404,7 @@ const BadPayloadModule = module("payloads")
 const payloadFailures: Failure[] = [];
 const payloadLedger = new Ledger();
 const payloadHeard = new Heard();
-app()
+runtime()
 	.modules(BadPayloadModule({ injects: { ledger: payloadLedger, heard: payloadHeard } }))
 	.start({ ...ON_BROWSER, host: { reportFailure: (failure) => payloadFailures.push(failure) } });
 payloadLedger.add(1);
@@ -435,7 +434,7 @@ const ServedLedgerModule = module("served-ledger")
 	}))
 	.handles(ValueQuery, LedgerChangedEvent, BigAddReReadSubscriber);
 const servedLedger = new Ledger();
-const servedLedgerServer = server()
+const servedLedgerServer = runtime()
 	.modules(
 		ServedLedgerModule({
 			injects: {
@@ -444,8 +443,8 @@ const servedLedgerServer = server()
 			},
 		}),
 	)
-	.listen(localTransport())
-	.start({ env: {} });
+	.start({ platform: "server", env: {} });
+localTransport().serve(servedLedgerServer);
 await settled();
 const listeningWhileServed = servedLedger.listenerCount;
 servedLedgerServer.stop();

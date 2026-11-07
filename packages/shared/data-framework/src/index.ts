@@ -1,17 +1,19 @@
-export { AppBuilder, app } from "./app";
+export { RuntimeBuilder, runtime } from "./runtime";
+export { Authenticate } from "./authenticate";
+export type { AdapterServing, Exposed, Exposing } from "./exposure";
 export { queryKeyOf } from "./query-key";
 export { QueryWatches } from "./query-watches";
 export { RouteQueries } from "./route-queries";
 export type { SettledNow } from "./route-queries";
-export type { AppStartOptions, AppHost, AppStart, DeviceModule, StartedApp } from "./app";
+export type { DeviceModule, Runtime, RuntimeHost, RuntimeStartOptions, ServerSideModule } from "./runtime";
 export { event } from "./event";
 export type { AnyEvent, Emit, Emitter, Event, EventArgs, EventInputOf } from "./event";
 export { subscriber } from "./subscriber";
 export type { AnySubscriber, Subscriber, SubscriberBuilder } from "./subscriber";
 export { gatewayEvent, windowEvent } from "./event-source";
 export type { EventSource, Fire, SourceContext } from "./event-source";
-export { AppProvider } from "./app-provider";
-export type { AppProviderProps } from "./app-provider";
+export { RuntimeProvider } from "./runtime-provider";
+export type { RuntimeProviderProps } from "./runtime-provider";
 export { REFUSAL_CODES, reasonOf, refusalOf } from "./answer";
 export type { Answer, Refusal, RefusalCode } from "./answer";
 export { DoneKeys, MemoryDoneKeys } from "./done-keys";
@@ -58,16 +60,17 @@ export {
 export { isModuleContract, moduleContract } from "./module-contract";
 export type { ContractShape, ModuleContract, ModuleUse, ReachableContract } from "./module-contract";
 export { ChangeBroadcast } from "./transport";
-export type { HearChanges, ListeningTransport, RemoteTransport, ServedCall, ServingServer } from "./transport";
+export type { Answering, HearChanges, RemoteTransport, ServedCall } from "./transport";
 export { LocalTransport, localTransport } from "./local-transport";
 export {
 	PORT_WANTED,
 	handPort,
-	messagePortListener,
 	messagePortTransport,
 	portFromParent,
+	relayPort,
+	servePort,
 } from "./message-port-transport";
-export type { PortListening } from "./message-port-transport";
+export type { PortRelaying, PortServing } from "./message-port-transport";
 export { FrameCommandKeySchema } from "./frame-command-keys";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";
@@ -104,13 +107,12 @@ export type {
 	Runs,
 	ServerParts,
 	StartableModule,
-	StartableServerModule,
 } from "./module";
 export { permission } from "./permission";
 export type { Permission } from "./permission";
 export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
-export type { RuntimeFacts, RuntimeProvider, RuntimeProvides } from "./runtime-provides";
+export type { RuntimeFacts, RuntimeProvides, RuntimeProviding } from "./runtime-provides";
 export { reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";
 export { PerCall, Repeatable, command, query } from "./request";
@@ -138,7 +140,7 @@ export { RequestFailed } from "./request-failed";
 export type { FailedView } from "./request-boundary";
 export { Slot } from "./slot";
 export type { BoundaryProps } from "./slot";
-export { useApp } from "./app-context";
+export { useRuntime } from "./runtime-context";
 export { useCommand } from "./use-command";
 export { useOptionalQuery } from "./use-optional-query";
 export type { OptionalQueryRead } from "./use-optional-query";

@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import { BoardQuery, TaskQuery, TasksQuery } from "@widgetarium/tasks";
 import type { TaskCard } from "@widgetarium/tasks";
-import { useApp } from "@widgetarium/data-framework";
+import { useRuntime } from "@widgetarium/data-framework";
 
 const REREAD = [BoardQuery, TaskQuery, TasksQuery];
 
 export function useRereadsAtContinue(cards: readonly TaskCard[]): void {
-	const { queryClient } = useApp("useRereadsAtContinue");
+	const { queryClient } = useRuntime("useRereadsAtContinue");
 	const earliest = earliestContinueOf(cards);
 	useEffect(() => {
 		if (earliest === null) {

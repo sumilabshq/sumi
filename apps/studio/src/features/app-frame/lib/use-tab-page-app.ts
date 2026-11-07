@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { app } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { DrawnTabPage, TabModules } from "@sumi/sumi-host-plugin";
 import type { FrameOpened, FrameRoutes } from "./frame-relay.js";
 import { relayTransportOf } from "./relay-transport.js";
@@ -9,7 +9,7 @@ import { useWindowOffers } from "./window-offers-context.js";
 
 interface HeldTabApp {
 	routes: FrameRoutes | null;
-	app: StartedApp | null;
+	app: Runtime | null;
 	isStopped: boolean;
 }
 
@@ -31,10 +31,10 @@ const START_FAILED =
 const STOPPED_FIRST =
 	"[widgetarium] app {app} tab {tab}: no view → no view, the tab unmounted while its routes were built";
 
-export function useTabPageApp(page: DrawnTabPage, opened: FrameOpened): StartedApp | null {
+export function useTabPageApp(page: DrawnTabPage, opened: FrameOpened): Runtime | null {
 	const routesFor = useFrameRoutesFor();
 	const offers = useWindowOffers();
-	const [started, setStarted] = useState<StartedApp | null>(null);
+	const [started, setStarted] = useState<Runtime | null>(null);
 	const { app: appId, tabId } = opened;
 	useEffect(() => {
 		const held: HeldTabApp = {
@@ -74,9 +74,9 @@ export function useTabPageApp(page: DrawnTabPage, opened: FrameOpened): StartedA
 	return started;
 }
 
-function appOver({ routes, own }: TabAppParts, { appId, workspaceId }: TabAppScope): StartedApp {
+function appOver({ routes, own }: TabAppParts, { appId, workspaceId }: TabAppScope): Runtime {
 	const transport = relayTransportOf(routes.routes, appId);
-	return app()
+	return runtime()
 		.modules(...own.modules)
 		.imports(...routes.routes.map(({ module }) => module({ over: transport })), ...own.imports)
 		.start({

@@ -21,8 +21,8 @@ import {
 	FileDragQuery,
 	SendMessageCommand,
 } from "../plugins/chat/data/assistant/index.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	COMPACT_PROMPT,
 	NOTHING_READY,
@@ -144,8 +144,8 @@ function memoryShelf(): UsageMemory {
 	};
 }
 
-function chatOver({ host }: TauriAssistant): StartedApp {
-	return app()
+function chatOver({ host }: TauriAssistant): Runtime {
+	return runtime()
 		.modules(AssistantModule(host))
 		.start({
 			platform: "tauri",

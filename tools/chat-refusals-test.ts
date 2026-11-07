@@ -8,7 +8,7 @@ const { createElement: h } = await import("react");
 const { createRoot } = await import("react-dom/client");
 const { AssistantPanel } = await import("../plugins/chat/src/features/assistant/ui/assistant-panel/assistant-panel.tsx");
 const { NO_ASSISTANT } = await import("../packages/shared/core/src/engine/assistant-port.ts");
-const { AppProvider } = await import("../packages/shared/data-framework/src/index.ts");
+const { RuntimeProvider } = await import("../packages/shared/data-framework/src/index.ts");
 const { chatAppOver } = await import("./assistant-chat-app.ts");
 
 const LOCAL_REFUSAL = "places/app-tab was called too often; try again shortly";
@@ -29,7 +29,7 @@ function drawnPanel(port: AssistantPort): HTMLElement {
 			"div",
 			null,
 			h("span", { "data-beside-chat": "" }, "beside the chat"),
-			h(AppProvider, { app: chatAppOver(port) }, h(AssistantPanel, { title: "Chat" })),
+			h(RuntimeProvider, { runtime: chatAppOver(port) }, h(AssistantPanel, { title: "Chat" })),
 		),
 	);
 	return host;

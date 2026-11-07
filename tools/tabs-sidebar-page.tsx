@@ -4,7 +4,7 @@ import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-col
 import { CommandMenu } from "../plugins/command-menu/src/features/command-menu/ui/command-menu/command-menu.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
-import { AppProvider } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider } from "../packages/shared/data-framework/src/index.ts";
 import { PlaceInViewCommand } from "../packages/domain/app-host/generated/contract.ts";
 import { boom, reportsFailures, stackOf } from "./page-harness.ts";
 import type { PlacedTabs } from "../packages/state/places/shared/schema/tabs.schema.ts";
@@ -58,7 +58,7 @@ try {
 	studioLayer.className = "wg-root wg-portal wg-kit-portal-layer is-studio";
 	document.body.appendChild(studioLayer);
 	createRoot(root).render(
-		<AppProvider app={exact.studioApp}>
+		<RuntimeProvider runtime={exact.studioApp}>
 			<Profiler
 				id="tabs"
 				onRender={() => {
@@ -80,7 +80,7 @@ try {
 				/>
 			</Profiler>
 			<CommandMenu />
-		</AppProvider>,
+		</RuntimeProvider>,
 	);
 } catch (failure: unknown) {
 	boom(stackOf(failure));

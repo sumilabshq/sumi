@@ -1,3 +1,4 @@
+import { runtime } from "@widgetarium/data-framework";
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { APP_MODULES } from "@widgetarium/app-registry/modules";
@@ -6,8 +7,7 @@ import { PlacesModule } from "@widgetarium/places/module";
 import { QuestionsModule } from "@widgetarium/questions/module";
 import { TasksModule } from "@widgetarium/tasks/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
-import { server } from "@widgetarium/data-framework/server";
-import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import type { ServerSideModule } from "@widgetarium/data-framework";
 import { AppsSchema } from "@sumi/apps";
 import { AppsModule } from "../plugins/apps/data/apps/module.ts";
 import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
@@ -38,6 +38,7 @@ const offers = {
 		},
 	},
 };
+const SUMI_PLUGINS_TEST = "the sumi-plugins test";
 const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/", "plugins/files/"];
 const FILE_APP_IDS = ["file", "markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
@@ -58,16 +59,14 @@ function coreModulesOf(resolved: ResolvedPlugins): readonly ServerSideModule[] {
 }
 
 async function appIdsAnsweredBy(resolved: ResolvedPlugins): Promise<unknown> {
-	const core = server()
+	const core = runtime()
 		.modules(...coreModulesOf(resolved))
 		.start({
+			platform: "server",
 			env: {},
 			scope: { workspaceId: "sumi-plugins" },
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
 		});
-	const answered = await core.answer({
+	const answered = await core.expose({ adapter: SUMI_PLUGINS_TEST, authenticate: new AppCallerAuthenticate() }).answer({
 		name: "apps/apps",
 		input: undefined,
 		idempotencyKey: null,
@@ -241,18 +240,17 @@ check(
 	[["command-menu"], ["command-menu/command-menu"]],
 );
 
-const startedCore = server()
+const startedCore = runtime()
 	.modules(...coreModulesNow)
 	.start({
+		platform: "server",
 		env: {},
 		scope: { workspaceId: "sumi-plugins" },
-		host: {
-			authenticate: new AppCallerAuthenticate(),
-		},
 	});
+const exposedCore = startedCore.expose({ adapter: SUMI_PLUGINS_TEST, authenticate: new AppCallerAuthenticate() });
 const routedCodes = await Promise.all(
 	coreModulesBefore.map(async (module) => {
-		const answered = await startedCore.answer({
+		const answered = await exposedCore.answer({
 			name: module.handlers[0]?.request.name ?? "",
 			input: undefined,
 			idempotencyKey: null,

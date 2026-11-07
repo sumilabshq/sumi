@@ -1,6 +1,6 @@
-import { app, orpcTransport } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { localTransport, orpcTransport, runtime } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
+import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import {
 	ResizeTerminalCommand,
 	SendTerminalCommand,
@@ -14,19 +14,23 @@ import { AppCallerAuthenticate, APP_CALLER_HEADER } from "../apps/studio/src/fea
 import { check, tally, waitFor } from "./check-helpers.ts";
 
 const sessions = new MemoryTerminalSessionsGateway();
-const served = server()
+const terminal = runtime()
 	.modules(RunnableTerminalModule({ injects: { sessions } }))
-	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
+	.start({ platform: "server", env: {} });
+const authenticate = new AppCallerAuthenticate();
+const served = dataFrameworkMiddleware(terminal, { authenticate });
+const local = localTransport();
+local.serve(terminal, { authenticate });
 const heard = {
 	changes: 0,
 };
-served.changes(() => {
+local.changes(() => {
 	heard.changes += 1;
 });
 
-function appOver(id: string | null): StartedApp {
+function appOver(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
-	return app()
+	return runtime()
 		.imports(TerminalModule({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
 		.start();
 }

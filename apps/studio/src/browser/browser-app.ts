@@ -1,6 +1,6 @@
 import { BrowserModule } from "@widgetarium/browser/module";
-import { app } from "@widgetarium/data-framework";
-import type { Platform, StartedApp } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
+import type { Platform, Runtime } from "@widgetarium/data-framework";
 
 export interface BrowserAppAsk {
 	readonly platform: Platform;
@@ -8,9 +8,9 @@ export interface BrowserAppAsk {
 }
 
 export interface StudioBrowser {
-	readonly browserApp: StartedApp;
+	readonly browserApp: Runtime;
 }
 
-export function startBrowserApp({ platform, workspaceId }: BrowserAppAsk): StartedApp {
-	return app().modules(BrowserModule).start({ platform, scope: { workspaceId } });
+export function startBrowserApp({ platform, workspaceId }: BrowserAppAsk): Runtime {
+	return runtime().modules(BrowserModule).start({ platform, scope: { workspaceId } });
 }

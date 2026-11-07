@@ -1,7 +1,7 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import assert from "node:assert/strict";
 import { filledWithShown } from "../plugins/command-menu/data/command-menu/features/opening/lib/shown-text.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../packages/domain/app-host/index.ts";
@@ -30,7 +30,7 @@ import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver } from "./places-fixture.ts";
 
-const studio = app()
+const studio = runtime()
 	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, ...COMMAND_MENU_MODULES)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
@@ -205,7 +205,7 @@ await check("a workspace renamed from the menu is found by its name", async () =
 
 await check("Enter on an address opens it in a new browser tab, Open here replaces the shown page", async () => {
 	const pages = new RecordedPagesGateway([]);
-	const withPages = app()
+	const withPages = runtime()
 		.modules(
 			AppHostModule({ injects: { ...appHostFakesOf({}) } }),
 			PluginAppsModule,
@@ -296,7 +296,7 @@ await check("the header door fills the text with the shown tab's deep link", asy
 });
 
 await check("a chat in another workspace is found and opened there", async () => {
-	const elsewhere = app()
+	const elsewhere = runtime()
 		.modules(
 			BrowserModule,
 			LayoutModule,

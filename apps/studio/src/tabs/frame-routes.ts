@@ -1,9 +1,8 @@
 import { AppearanceModule, FileSystemModule, PlacesModule, QuestionsModule, TerminalModule } from "@sumi/contract";
 import type { FrameServing } from "@sumi/sumi-host-plugin";
 import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
+import { runtime } from "@widgetarium/data-framework";
 import type { LocalTransport, ModuleContract, RemoteTransport, ServerRuns } from "@widgetarium/data-framework";
-import type { StartedServer } from "@widgetarium/data-framework/server";
-import { server } from "@widgetarium/data-framework/server";
 import { TasksModule } from "@widgetarium/tasks";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 import { hearsAll } from "../features/app-frame/lib/frame-relay.js";
@@ -117,17 +116,17 @@ function tasksRoutesOf(core: RemoteTransport, app: string): readonly FrameRoute[
 	];
 }
 
-function startFrameModuleServer(local: LocalTransport, serving: FrameServing, workspaceId: string): StartedServer {
-	return server()
-		.modules(serving.module)
-		.listen(local)
-		.start({
-			env: {},
-			scope: {
-				workspaceId,
-			},
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
-		});
+function startFrameModuleServer(local: LocalTransport, serving: FrameServing, workspaceId: string): () => void {
+	const frameModule = runtime().modules(serving.module).start({
+		platform: "server",
+		env: {},
+		scope: {
+			workspaceId,
+		},
+	});
+	const stopServing = local.serve(frameModule, { authenticate: new AppCallerAuthenticate() });
+	return () => {
+		stopServing();
+		frameModule.stop();
+	};
 }

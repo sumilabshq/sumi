@@ -5,12 +5,15 @@ import type { Answer } from "./answer";
 import { InvalidationSchema } from "./invalidation";
 import type { RemoteCall } from "./remote-server";
 import { ChangeBroadcast } from "./transport";
-import type { HearChanges, ListeningTransport, RemoteTransport, ServingServer } from "./transport";
+import type { AdapterServing } from "./exposure";
+import type { Runtime } from "./runtime";
+import type { Answering, HearChanges, RemoteTransport } from "./transport";
 import { wireAnswerOf } from "./wire";
 
 export const PORT_WANTED = "widgetarium:port-wanted";
 
 const PORT_GIVEN = "widgetarium:port-given";
+const SERVE_PORT = "servePort()";
 const PORT_WAIT_MS = 10_000;
 const NO_PORT = "no window above this page handed it a port within {ms} ms; is it opened inside Sumi?";
 const NOT_AN_ANSWER = "{name}: the port answered something that is not an answer";
@@ -38,7 +41,7 @@ const PortGivenSchema = z.literal(PORT_GIVEN);
 
 type PortCall = z.infer<typeof PortCallSchema>;
 
-export interface PortListening {
+export interface PortRelaying {
 	readonly headers?: Readonly<Record<string, string>>;
 	readonly onAnswered?: (answer: Answer<unknown>) => void;
 }
@@ -47,10 +50,18 @@ export function messagePortTransport(port: MessagePort | Promise<MessagePort>): 
 	return new PortCalls(port);
 }
 
-export function messagePortListener(port: MessagePort, listening: PortListening = {}): ListeningTransport {
-	return {
-		serve: (server: ServingServer) => new PortAnswers(port, server, listening).stop,
-	};
+export interface PortServing extends PortRelaying, AdapterServing {}
+
+export function servePort(
+	runtime: Runtime,
+	port: MessagePort,
+	{ authenticate, ...relaying }: PortServing = {},
+): () => void {
+	return relayPort(runtime.expose({ adapter: SERVE_PORT, authenticate }), port, relaying);
+}
+
+export function relayPort(answering: Answering, port: MessagePort, relaying: PortRelaying = {}): () => void {
+	return new PortAnswers(port, answering, relaying).stop;
 }
 
 export function portFromParent(here: Window = window, waitMs: number = PORT_WAIT_MS): Promise<MessagePort> {
@@ -149,11 +160,11 @@ class PortAnswers {
 
 	constructor(
 		private readonly port: MessagePort,
-		private readonly server: ServingServer,
-		private readonly listening: PortListening,
+		private readonly answering: Answering,
+		private readonly relaying: PortRelaying,
 	) {
 		port.onmessage = ({ data }) => void this.answer(data);
-		const stopHearing = server.changes((invalidated) => port.postMessage({ invalidated }));
+		const stopHearing = answering.changes((invalidated) => port.postMessage({ invalidated }));
 		this.stop = () => {
 			stopHearing();
 			this.stopping.abort();
@@ -172,14 +183,14 @@ class PortAnswers {
 		}
 
 		const answer = await this.answerOf(call.data);
-		this.listening.onAnswered?.(answer);
+		this.relaying.onAnswered?.(answer);
 		this.post(call.data.id, answer);
 	}
 
 	private answerOf({ name, input, idempotencyKey }: PortCall): Promise<Answer<unknown>> {
 		const { signal } = this.stopping;
-		const headers = new Headers(this.listening.headers);
-		return this.server
+		const headers = new Headers(this.relaying.headers);
+		return this.answering
 			.answer({ name, input, idempotencyKey, signal, headers })
 			.catch((failure: unknown) => refusalOf("unreachable", reasonOf(failure), true));
 	}

@@ -6,8 +6,8 @@ import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getRequestListener } from "@hono/node-server";
-import { localTransport } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { localTransport, runtime } from "@widgetarium/data-framework";
+import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
@@ -137,51 +137,51 @@ function listening(listener: RequestListener): Promise<{ readonly server: Server
 const appData = mkdtempSync(path.join(tmpdir(), "wg-sumi-apps-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
 const own = localTransport();
-const served = server()
-	.modules(
-		FileSystemModule({ injects: {
-			files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
-		} }),
-		TerminalModule({ injects: {
-			sessions: terminal,
-		} }),
-		TasksModule({
-			file: tasksBoardFileOver(own),
-		}),
-		QuestionsModule,
-		PlacesModule({ injects: {
-			windows: new MemoryWindowsGateway({
-				windows: [],
+const sumiCore = runtime()
+		.modules(
+			FileSystemModule({ injects: {
+				files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
+			} }),
+			TerminalModule({ injects: {
+				sessions: terminal,
+			} }),
+			TasksModule({
+				file: tasksBoardFileOver(own),
 			}),
-			tabs: new MemoryTabsGateway(
-				placedTabsOf(
-					{
-						tabs: SUMI_PAGE_APPS.map((app) => ({
-							id: sumiTabOf(app),
-							app,
-							pageId: null,
-							label: null,
-							lastAddress: "",
-						})),
-						shownId: sumiTabOf("tasks"),
-						minted: SUMI_PAGE_APPS.length,
-						closed: [],
-					},
-					[SUMI_CHAT_TAB],
+			QuestionsModule,
+			PlacesModule({ injects: {
+				windows: new MemoryWindowsGateway({
+					windows: [],
+				}),
+				tabs: new MemoryTabsGateway(
+					placedTabsOf(
+						{
+							tabs: SUMI_PAGE_APPS.map((app) => ({
+								id: sumiTabOf(app),
+								app,
+								pageId: null,
+								label: null,
+								lastAddress: "",
+							})),
+							shownId: sumiTabOf("tasks"),
+							minted: SUMI_PAGE_APPS.length,
+							closed: [],
+						},
+						[SUMI_CHAT_TAB],
+					),
 				),
-			),
-		} }),
-	)
-	.listen(own)
-	.start({
-		env: {},
-		scope: {
-			workspaceId: SUMI_APPS_WORKSPACE,
-		},
-		host: {
-			authenticate: new AppCallerAuthenticate(),
-		},
-	});
+			} }),
+		)
+		.start({
+			platform: "server",
+			env: {},
+			scope: {
+				workspaceId: SUMI_APPS_WORKSPACE,
+			},
+		});
+const authenticate = new AppCallerAuthenticate();
+own.serve(sumiCore, { authenticate });
+const served = dataFrameworkMiddleware(sumiCore, { authenticate });
 
 registryChecks();
 for (const app of CHECKED_APPS.filter((checked) => !SUMI_VIEW_APPS.includes(checked))) {

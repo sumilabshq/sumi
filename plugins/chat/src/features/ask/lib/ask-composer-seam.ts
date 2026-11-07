@@ -2,14 +2,14 @@ import { AdoptDraftCommand, PrefillDraftCommand, TakeDraftCommand } from "@widge
 import type { AdoptedDraft } from "@widgetarium/assistant";
 import { OpenNewChatCommand } from "@widgetarium/app-host";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
 import { AskComposerBar } from "../ui/ask-composer-bar/ask-composer-bar.js";
 
 export interface AskComposerApps {
-	readonly windowApp: StartedApp;
+	readonly windowApp: Runtime;
 	readonly focusedChatId: () => string | null;
-	readonly askApp: StartedApp;
+	readonly askApp: Runtime;
 }
 
 interface AskedDraft {
@@ -54,7 +54,7 @@ async function handDraftToChat(apps: AskComposerApps, asked: AskedDraft): Promis
 	});
 }
 
-async function adoptIn(askApp: StartedApp, draft: AdoptedDraft): Promise<void> {
+async function adoptIn(askApp: Runtime, draft: AdoptedDraft): Promise<void> {
 	const adopted = await askApp.send(AdoptDraftCommand, draft);
 
 	if (!adopted.ok) {
@@ -74,7 +74,7 @@ async function adoptIn(askApp: StartedApp, draft: AdoptedDraft): Promise<void> {
 	}
 }
 
-async function newChatIdIn(windowApp: StartedApp): Promise<string | null> {
+async function newChatIdIn(windowApp: Runtime): Promise<string | null> {
 	const opened = await windowApp.send(OpenNewChatCommand, { title: null });
 
 	if (!opened.ok) {

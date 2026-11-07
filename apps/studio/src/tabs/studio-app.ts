@@ -4,9 +4,8 @@ import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-sto
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import type { BrowserPagesIpc } from "@widgetarium/browser/module";
-import { app, localTransport } from "@widgetarium/data-framework";
-import type { DeviceModule, Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport } from "@widgetarium/data-framework";
+import type { DeviceModule, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { LayoutModule } from "@widgetarium/layout/module";
 import type { StudioWindows } from "@widgetarium/layout/module";
 import type { BoardFile } from "@widgetarium/tasks/module";
@@ -39,9 +38,9 @@ export function startStudioApp({
 	lent,
 	backgroundModules,
 	windowModules,
-}: StudioAppAsk): StartedApp {
+}: StudioAppAsk): Runtime {
 	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
-	const studioApp = app()
+	const studioApp = runtime()
 		.modules(...studioModulesOf(lent), ...windowModules)
 		.imports(...backgroundModules.map(({ contract }) => contract({ over: served })))
 		.start({ platform, scope: { workspaceId } });
@@ -58,20 +57,14 @@ export function startCoreInProcess(
 		store: new StoreClient(memoryStoreInvoke()),
 		file: boardFileInMemory(),
 	};
-	server()
+	const core = runtime()
 		.modules(FileSystemModule, TerminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
-		.listen(local)
-		.start({
-			env: {},
-			scope: { workspaceId },
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
-		});
+		.start({ platform: "server", env: {}, scope: { workspaceId } });
+	local.serve(core, { authenticate: new AppCallerAuthenticate() });
 	return local;
 }
 
-export async function restoreTabs(studioApp: StartedApp): Promise<void> {
+export async function restoreTabs(studioApp: Runtime): Promise<void> {
 	const answer = await studioApp.send(RestoreTabsCommand);
 
 	if (!answer.ok) {

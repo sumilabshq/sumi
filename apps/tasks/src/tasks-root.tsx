@@ -2,8 +2,8 @@ import { createElement as h, useEffect } from "react";
 import type { ReactElement } from "react";
 import { RecordAppPageCommand, catchLinks, wearSumiTheme } from "@sumi/contract";
 import { TaskRefSchema } from "@widgetarium/tasks";
-import { AppProvider } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { RuntimeProvider } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { BOARD_ADDRESS } from "./features/tasks/lib/use-open-task.js";
 import { HeaderActionsContext, useStartsHeaderActions } from "./sumi/header-actions.js";
 import type { SumiFrame } from "./sumi/sumi-frame.js";
@@ -39,11 +39,11 @@ export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 	return (
 		<SumiTabContext.Provider value={tab}>
 			<HeaderActionsContext.Provider value={headerActions}>
-				<AppProvider app={frame.sumi}>
+				<RuntimeProvider runtime={frame.sumi}>
 					<main className="wg-tasks-app wg-app-body" aria-label={APP_NAME}>
 						<TasksPage key={shown} address={shown} />
 					</main>
-				</AppProvider>
+				</RuntimeProvider>
 			</HeaderActionsContext.Provider>
 		</SumiTabContext.Provider>
 	);
@@ -84,7 +84,7 @@ function useRecordsTitle({ sumi, tabId }: SumiFrame, address: string | null): vo
 	}, [sumi, tabId, address]);
 }
 
-function recordPage(sumi: StartedApp, page: RecordedPage): void {
+function recordPage(sumi: Runtime, page: RecordedPage): void {
 	void sumi.send(RecordAppPageCommand, page).then((recorded) => {
 		if (!recorded.ok) {
 			console.error(`[tasks] recording the tab page was refused: ${recorded.reason}`);

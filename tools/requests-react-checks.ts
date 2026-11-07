@@ -3,17 +3,17 @@ import type { ReactElement, ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import {
-	AppProvider,
+	RuntimeProvider,
 	OnRefused,
 	Slot,
-	app,
+	runtime,
 	orpcTransport,
 	useCommand,
 	useOptionalQuery,
 	useQuery,
 } from "../packages/shared/data-framework/src/index.ts";
-import type { CommandHandle, CommandRefusal, StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import type { CommandHandle, CommandRefusal, Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 
@@ -24,11 +24,11 @@ const refusals: CommandRefusal[] = [];
 const loading = h("span", null, "slot loading");
 const failed = (reason: string): ReactNode => h("span", null, `failed: ${reason}`);
 
-function drawn(started: StartedApp, tree: ReactNode): HTMLElement {
+function drawn(started: Runtime, tree: ReactNode): HTMLElement {
 	const host = document.createElement("div");
 	document.body.append(host);
 	createRoot(host).render(
-		h(OnRefused, { value: (refusal) => refusals.push(refusal) }, h(AppProvider, { app: started }, tree)),
+		h(OnRefused, { value: (refusal) => refusals.push(refusal) }, h(RuntimeProvider, { runtime: started }, tree)),
 	);
 	return host;
 }
@@ -56,7 +56,7 @@ function Count(): ReactElement {
 }
 
 const pages = new fx.MemoryPages();
-const local = (): StartedApp => app({ modules: [fx.pagesModuleOver(pages)] });
+const local = (): Runtime => runtime().modules(fx.pagesModuleOver(pages)).start();
 
 fx.shutGate();
 const suspended = drawn(local(), h(Slot, { loading, error: failed }, h(Slow)));
@@ -120,21 +120,21 @@ function CommitProbe(): ReactElement {
 	}, []);
 	return h(Slot, { loading, error: failed }, h(Count));
 }
-flushSync(() => createRoot(countHost).render(h(AppProvider, { app: counted }, h(CommitProbe))));
+flushSync(() => createRoot(countHost).render(h(RuntimeProvider, { runtime: counted }, h(CommitProbe))));
 check("a settlesNow query draws its answer in the very first commit, never its loading", firstCommits, [
 	String(pages.titles.length),
 ]);
 
-const remoteServer = server({
-	modules: [fx.JoinedPagesServerModule],
-	env: {},
-	host: { authenticate: new fx.HeaderAuthenticate() },
-});
-const mixed = app({
-	modules: [fx.pagesModuleOver(new fx.MemoryPages())],
-	server: orpcTransport("http://server.test", { fetch: (request) => remoteServer.fetch(request) }),
-});
-const policies = (started: StartedApp) =>
+const remoteServer = dataFrameworkMiddleware(
+	runtime().modules(fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule).start({ platform: "server" }),
+	{ authenticate: new fx.HeaderAuthenticate() },
+);
+const overRemote = orpcTransport("http://server.test", { fetch: (request) => remoteServer.fetch(request) });
+const mixed = runtime()
+	.modules(fx.pagesModuleOver(new fx.MemoryPages()))
+	.imports(fx.OrderedContract({ over: overRemote }))
+	.start();
+const policies = (started: Runtime) =>
 	started.queryClient
 		.getQueryCache()
 		.getAll()
@@ -149,10 +149,9 @@ check("a local query gets no retries, no re-read on focus, and runs offline", po
 	{ retries: false, networkMode: "always", refetchOnWindowFocus: false },
 ]);
 
-const remoteOnly = app({
-	modules: [],
-	server: orpcTransport("http://server.test", { fetch: (request) => remoteServer.fetch(request) }),
-});
+const remoteOnly = runtime()
+	.imports(fx.PagesContract({ over: overRemote }))
+	.start();
 const remoteHost = drawn(remoteOnly, h(Slot, { loading, error: failed }, h(PageList)));
 await waitFor(() => remoteHost.textContent === "Home");
 check(
@@ -162,7 +161,7 @@ check(
 );
 
 const touchedPages = new fx.MemoryPages();
-const touched = app({ modules: [fx.pagesModuleOver(touchedPages)] });
+const touched = runtime().modules(fx.pagesModuleOver(touchedPages)).start();
 function Both(): ReactElement {
 	return h("p", null, `${useQuery(fx.PagesQuery, { prefix: "" }).data.join(",")} / ${useQuery(fx.CountQuery).data}`);
 }

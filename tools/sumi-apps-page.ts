@@ -2,7 +2,7 @@ import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
@@ -66,7 +66,7 @@ const core: RemoteTransport = {
 	changes: (hear) => overHttp.changes(hear),
 };
 const PLUGINS = resolvePlugins(BUILT_IN_PROFILE);
-const studioApp = app()
+const studioApp = runtime()
 	.modules(
 		LayoutModule,
 		BrowserModule({ injects: fakeBrowser(new FakeBrowserPagesGateway()).parts }),

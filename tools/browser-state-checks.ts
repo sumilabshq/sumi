@@ -1,7 +1,7 @@
 import { PrefillDraftCommand } from "../plugins/chat/data/assistant/generated/contract.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { SearchWebCommand } from "../packages/domain/browser/index.ts";
@@ -68,7 +68,7 @@ for (const [host, recent, wanted] of NEAR) {
 }
 
 function started(browser: FakeBrowser) {
-	return app().modules(BrowserModule({ injects: browser.parts })).start();
+	return runtime().modules(BrowserModule({ injects: browser.parts })).start();
 }
 
 function said(answer: Answer<unknown>): string {
@@ -109,7 +109,7 @@ shown.pages.tab = {
 const shownApp = started(shown);
 const host = document.createElement("div");
 document.body.append(host);
-createRoot(host).render(h(AppProvider, { app: shownApp }, inBrowserPlate()));
+createRoot(host).render(h(RuntimeProvider, { runtime: shownApp }, inBrowserPlate()));
 await waitFor(() => host.querySelector("[data-browser-page-state]") !== null);
 
 check(
@@ -281,7 +281,7 @@ for (const [what, failure, prompt] of PROMPTED) {
 }
 
 const chatSent: string[] = [];
-const chatApp = app()
+const chatApp = runtime()
 	.modules(
 		AssistantModule({
 			kind: "web",
@@ -298,8 +298,8 @@ const chatHost = document.createElement("div");
 document.body.append(chatHost);
 createRoot(chatHost).render(
 	h(
-		AppProvider,
-		{ app: chatApp },
+		RuntimeProvider,
+		{ runtime: chatApp },
 		h(Composer, {
 			busy: false,
 			isFirst: true,
@@ -327,8 +327,8 @@ const askingHost = document.createElement("div");
 document.body.append(askingHost);
 createRoot(askingHost).render(
 	h(
-		AppProvider,
-		{ app: app().modules(BrowserModule({ injects: asking.parts })).start() },
+		RuntimeProvider,
+		{ runtime: runtime().modules(BrowserModule({ injects: asking.parts })).start() },
 		h(
 			AskComposerContext,
 			{
@@ -365,7 +365,7 @@ signingIn.pages.tab = {
 };
 const signingInHost = document.createElement("div");
 document.body.append(signingInHost);
-createRoot(signingInHost).render(h(AppProvider, { app: started(signingIn) }, inBrowserPlate()));
+createRoot(signingInHost).render(h(RuntimeProvider, { runtime: started(signingIn) }, inBrowserPlate()));
 await waitFor(() => signingInHost.querySelector("[data-browser-kept-out]") !== null);
 check(
 	"a sign-in site Sumi may not read says so in the header's controls",

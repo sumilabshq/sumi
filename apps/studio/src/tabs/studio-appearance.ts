@@ -1,13 +1,12 @@
 import { AppearanceModule as AppearanceContract, ThemeQuery } from "@widgetarium/appearance";
 import { AppearanceModule } from "@widgetarium/appearance/module";
-import { app, localTransport } from "@widgetarium/data-framework";
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport } from "@widgetarium/data-framework";
+import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
 export interface StudioAppearance {
 	readonly transport: RemoteTransport;
-	readonly appearanceApp: StartedApp;
+	readonly appearanceApp: Runtime;
 }
 
 const DARK_SCHEME = "(prefers-color-scheme: dark)";
@@ -16,19 +15,17 @@ const STUDIO_SCOPE = "studio";
 
 export function startStudioAppearance(view: Window): StudioAppearance {
 	const transport = localTransport();
-	server()
+	const appearance = runtime()
 		.modules(AppearanceModule({ systemScheme: view.matchMedia(DARK_SCHEME) }))
-		.listen(transport)
 		.start({
+			platform: "server",
 			env: {},
 			scope: {
 				workspaceId: STUDIO_SCOPE,
 			},
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
 		});
-	const appearanceApp = app().imports(AppearanceContract({ over: transport })).start();
+	transport.serve(appearance, { authenticate: new AppCallerAuthenticate() });
+	const appearanceApp = runtime().imports(AppearanceContract({ over: transport })).start();
 	const wear = (): void => {
 		void appearanceApp.send(ThemeQuery).then((theme) => {
 			if (!theme.ok) {

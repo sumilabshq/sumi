@@ -1,6 +1,6 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import type { AppHostParts } from "../packages/domain/app-host/gateways/app-host-parts/app-host-parts.gateway.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -20,14 +20,8 @@ export interface StudioAppParts {
 	readonly places?: MemoryTabsGateway;
 }
 
-export function studioAppOf({
-	browser,
-	appHost,
-	workspaces,
-	workspaceId = "studio",
-	places,
-}: StudioAppParts): StartedApp {
-	return app()
+export function studioAppOf({ browser, appHost, workspaces, workspaceId = "studio", places }: StudioAppParts): Runtime {
+	return runtime()
 		.modules(
 			PluginAppsModule,
 			browser === undefined ? BrowserModule : BrowserModule({ injects: browser }),

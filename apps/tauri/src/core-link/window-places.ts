@@ -1,11 +1,11 @@
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
-import { app } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { CloseWindowCommand, OpenWindowCommand, OpenWindowsQuery, PlacesModule } from "@widgetarium/places";
 import { ipcTransport } from "./ipc-transport.js";
 
 export interface WindowPlaces {
-	readonly places: StartedApp;
+	readonly places: Runtime;
 	leave(): Promise<void>;
 }
 
@@ -14,7 +14,7 @@ const NOT_JOINED = "[places] window {window}: none → open refused ({reason})";
 const NOT_LEFT = "[places] window {window}: open → close refused ({reason})";
 
 export function joinPlaces(workspace: string): WindowPlaces {
-	const places = app()
+	const places = runtime()
 		.imports(PlacesModule({ over: ipcTransport(workspace) }))
 		.start();
 	const window = getCurrentWebviewWindow().label;
@@ -34,7 +34,7 @@ export function joinPlaces(workspace: string): WindowPlaces {
 	};
 }
 
-async function join(places: StartedApp, window: string): Promise<void> {
+async function join(places: Runtime, window: string): Promise<void> {
 	const answered = await places.send(OpenWindowCommand, { window });
 
 	if (!answered.ok) {
@@ -42,7 +42,7 @@ async function join(places: StartedApp, window: string): Promise<void> {
 	}
 }
 
-async function rejoinIfMissing(places: StartedApp, window: string): Promise<void> {
+async function rejoinIfMissing(places: Runtime, window: string): Promise<void> {
 	const open = await places.send(OpenWindowsQuery);
 
 	if (open.ok && !open.output.windows.some((listed) => listed.label === window)) {
@@ -50,7 +50,7 @@ async function rejoinIfMissing(places: StartedApp, window: string): Promise<void
 	}
 }
 
-async function leave(places: StartedApp, window: string): Promise<void> {
+async function leave(places: Runtime, window: string): Promise<void> {
 	const answered = await places.send(CloseWindowCommand, { window });
 
 	if (!answered.ok) {

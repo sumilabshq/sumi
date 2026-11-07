@@ -1,6 +1,5 @@
-import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
@@ -47,16 +46,17 @@ function askAt(window: string): TabsAsk {
 	return { window, view: "canvas", screen: NO_SCREEN };
 }
 
-function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [StartedApp, StartedApp] {
+function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runtime, Runtime] {
 	const core = localTransport();
-	server()
-		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
-		.listen(core)
-		.start({ env: {} });
-	return [app().imports(PlacesModule({ over: core })).start(), app().imports(PlacesModule({ over: core })).start()];
+	core.serve(
+		runtime()
+			.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+			.start({ platform: "server", env: {} }),
+	);
+	return [runtime().imports(PlacesModule({ over: core })).start(), runtime().imports(PlacesModule({ over: core })).start()];
 }
 
-async function listsIn(windowApp: StartedApp, window: string): Promise<unknown> {
+async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {
 	const placed = await windowApp.send(PlacedTabsQuery, { window });
 	return placed.ok ? [placed.output.lists, placed.output.shownId] : placed.reason;
 }
@@ -244,7 +244,7 @@ async function lawChecks(): Promise<void> {
 	await groupPlacingChecks(main, grouped.ok ? grouped.output.id : "");
 }
 
-async function groupPlacingChecks(main: StartedApp, groupId: string): Promise<void> {
+async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void> {
 	const toOpen = await main.send(PlaceGroupCommand, {
 		window: "main",
 		id: groupId,

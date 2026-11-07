@@ -1,7 +1,7 @@
 import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
 import type { CanvasHosts } from "./canvas-hosts.js";
 import { startCanvasApp } from "./canvas-app.js";
@@ -55,7 +55,7 @@ export function webStudioDesign(app: string): StudioDesign {
 	};
 }
 
-function useStartedCanvas(design: StudioDesign, project: StartedProject): StartedApp {
+function useStartedCanvas(design: StudioDesign, project: StartedProject): Runtime {
 	const [canvasApp] = useState(() => startCanvasApp(design.hostsOf(project), design.app));
 	useEffect(() => () => canvasApp.stop(), [canvasApp]);
 	return canvasApp;

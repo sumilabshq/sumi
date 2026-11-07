@@ -1,4 +1,4 @@
-import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import type { ServerSideModule } from "@widgetarium/data-framework";
 import { FileSystemModule } from "@widgetarium/file-system/module";
 import { TerminalModule } from "@widgetarium/terminal/module";
 

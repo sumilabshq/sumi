@@ -17,13 +17,9 @@ export interface ServedCall {
 	readonly headers?: Headers | undefined;
 }
 
-export interface ServingServer {
+export interface Answering {
 	answer(call: ServedCall): Promise<Answer<unknown>>;
 	changes(hear: HearChanges): () => void;
-}
-
-export interface ListeningTransport {
-	serve(server: ServingServer): () => void;
 }
 
 export class ChangeBroadcast {

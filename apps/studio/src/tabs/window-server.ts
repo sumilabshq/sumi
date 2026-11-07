@@ -1,7 +1,6 @@
 import type { WindowServerOffers } from "@sumi/sumi-host-plugin";
-import { localTransport } from "@widgetarium/data-framework";
+import { localTransport, runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
 import type { WindowServerModule } from "../plugins/sumi-plugins.js";
 
 export function startWindowServer(
@@ -15,15 +14,16 @@ export function startWindowServer(
 		return transport;
 	}
 
-	server()
+	const windowServer = runtime()
 		.modules(...modules.map(({ moduleOf }) => moduleOf(offers)))
-		.listen(transport)
 		.start({
+			platform: "server",
 			env: {},
 			scope: {
 				workspaceId: offers.workspaceId,
 			},
 		});
+	transport.serve(windowServer);
 	console.info(
 		`[widgetarium] window server of ${offers.workspaceId}: none → serving ${modules.map(({ id }) => id).join(", ")}`,
 	);

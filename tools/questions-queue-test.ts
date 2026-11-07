@@ -1,6 +1,5 @@
-import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	AnswerQuestionCommand,
 	ChatQuestionsQuery,
@@ -16,13 +15,14 @@ import { check, tally } from "./check-helpers.ts";
 
 const CHAT = "chat-1";
 
-function questionsApp(): StartedApp {
+function questionsApp(): Runtime {
 	const link = localTransport();
-	server()
-		.modules(QuestionsModule({ injects: { questions: new MemoryQuestionsGateway() } }))
-		.listen(link)
-		.start({ env: {} });
-	return app().imports(QuestionsContract({ over: link })).start();
+	link.serve(
+		runtime()
+			.modules(QuestionsModule({ injects: { questions: new MemoryQuestionsGateway() } }))
+			.start({ platform: "server", env: {} }),
+	);
+	return runtime().imports(QuestionsContract({ over: link })).start();
 }
 
 async function sent<T>(answering: Promise<{ readonly ok: true; readonly output: T } | { readonly ok: false; readonly reason: string }>): Promise<T> {

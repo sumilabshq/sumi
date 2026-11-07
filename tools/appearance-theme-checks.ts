@@ -1,5 +1,5 @@
-import { app, localTransport, orpcTransport } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport, orpcTransport } from "@widgetarium/data-framework";
+import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import {
 	ChooseThemeCommand,
 	ThemeQuery,
@@ -34,20 +34,22 @@ class FakeSystemScheme implements SystemScheme {
 
 const system = new FakeSystemScheme();
 const local = localTransport();
-const served = server()
-	.modules(
-		AppearanceModule({
-			systemScheme: system,
-		}),
-	)
-	.listen(local)
-	.start({
-		env: {},
-		scope: { workspaceId: "checks" },
-		host: { authenticate: new AppCallerAuthenticate() },
-	});
-const studio = app().imports(AppearanceContract({ over: local })).start();
-const frame = app()
+const appearance = runtime()
+		.modules(
+			AppearanceModule({
+				systemScheme: system,
+			}),
+		)
+		.start({
+			platform: "server",
+			env: {},
+			scope: { workspaceId: "checks" },
+		});
+const authenticate = new AppCallerAuthenticate();
+local.serve(appearance, { authenticate });
+const served = dataFrameworkMiddleware(appearance, { authenticate });
+const studio = runtime().imports(AppearanceContract({ over: local })).start();
+const frame = runtime()
 	.imports(
 		AppearanceContract({ over: orpcTransport("http://appearance.test", {
 				fetch: served.fetch,

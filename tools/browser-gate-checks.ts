@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { CapturePageCommand, InkOpenAddressCommand, ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { LocalStorageBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/local-storage.gateway.ts";
@@ -8,8 +8,8 @@ import { check, thrownBy, waitFor } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 
-function started(browser: FakeBrowser): StartedApp {
-	return app().modules(BrowserModule({ injects: browser.parts })).start();
+function started(browser: FakeBrowser): Runtime {
+	return runtime().modules(BrowserModule({ injects: browser.parts })).start();
 }
 
 function said(answer: Answer<unknown>): string {

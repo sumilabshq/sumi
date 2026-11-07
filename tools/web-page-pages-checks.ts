@@ -1,6 +1,5 @@
-import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport, messagePortTransport, servePort } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import {
 	CloseWebPageCommand,
 	GoBackWebPageCommand,
@@ -28,7 +27,7 @@ class FixedAppTabsGateway extends AppTabsGateway {
 }
 
 const webPages = new MemoryWebPagesGateway();
-const served = server()
+const served = runtime()
 	.modules(
 		RunnableWebPageModule({ injects: {
 			webPages,
@@ -36,15 +35,15 @@ const served = server()
 		} }),
 	)
 	.start({
+		platform: "server",
 		env: {},
-		host: { authenticate: new AppCallerAuthenticate() },
 	});
 
-function appOver(caller: string | null): StartedApp {
+function appOver(caller: string | null): Runtime {
 	const channel = new MessageChannel();
 	const headers = caller === null ? {} : { [APP_CALLER_HEADER]: caller };
-	messagePortListener(channel.port1, { headers }).serve(served);
-	return app()
+	servePort(served, channel.port1, { authenticate: new AppCallerAuthenticate(), headers });
+	return runtime()
 		.imports(WebPageModule({ over: messagePortTransport(channel.port2) }))
 		.start();
 }
@@ -138,7 +137,7 @@ const heard = {
 	changes: 0,
 };
 const local = localTransport();
-const stopLocal = local.serve(served);
+const stopLocal = local.serve(served, { authenticate: new AppCallerAuthenticate() });
 local.changes((invalidated) => {
 	heard.changes += invalidated.filter(({ query }) => query === WebPageQuery.name).length;
 });

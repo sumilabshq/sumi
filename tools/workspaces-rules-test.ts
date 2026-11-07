@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	ChatToOpenQuery,
 	ForgetChatToOpenCommand,
@@ -81,8 +81,8 @@ function seededParts(): WorkspacesParts {
 function started(
 	parts: WorkspacesParts,
 	tabs = new MemoryTabsGateway(placedTabsOf(NO_SESSION_TABS, SEEDED_CHATS)),
-): StartedApp {
-	return app().modules(WorkspacesModule({ injects: parts })).imports(placesOver(tabs)).start();
+): Runtime {
+	return runtime().modules(WorkspacesModule({ injects: parts })).imports(placesOver(tabs)).start();
 }
 
 async function marksIn(tabs: MemoryTabsGateway): Promise<Readonly<Record<string, string>>> {

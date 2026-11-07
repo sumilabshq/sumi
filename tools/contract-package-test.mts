@@ -11,10 +11,10 @@ const INTO_FLAG = "--into";
 const ONLY_CORE_AND_ZOD = /from\s*"(?!zod"|@widgetarium\/core\/requests"|\.)[^"]+"/g;
 
 const APP = `import { AssistantModule, FileSystemModule, ReadFileQuery, WebPageModule, WriteFileCommand, contractRefusal, CONTRACT_RANGE } from "@sumi/contract";
-import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
+import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 
 const sumi = messagePortTransport(portFromParent());
-const files = app().imports(FileSystemModule({ over: sumi }), WebPageModule({ over: sumi }), AssistantModule({ over: sumi })).start();
+const files = runtime().imports(FileSystemModule({ over: sumi }), WebPageModule({ over: sumi }), AssistantModule({ over: sumi })).start();
 
 export async function keep(content: string): Promise<string | null> {
 	await files.send(WriteFileCommand, { path: "tasks.json", content });
@@ -26,9 +26,9 @@ export const gate: string | null = contractRefusal(CONTRACT_RANGE, "0.3.0");
 `;
 
 const WRONG_APP = `import { WriteFileCommand } from "@sumi/contract";
-import { app } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
 
-export const sent = app().start().send(WriteFileCommand, { path: 1 });
+export const sent = runtime().start().send(WriteFileCommand, { path: 1 });
 `;
 
 const PROJECT_TSCONFIG = {

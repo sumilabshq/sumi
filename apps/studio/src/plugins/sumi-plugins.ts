@@ -7,8 +7,7 @@ import {
 } from "@widgetarium/plugin-framework";
 import type { Plugin, ShownFill, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
-import type { DeviceModule, ServerRuns, ModuleContract } from "@widgetarium/data-framework";
-import type { ServerSideModule } from "@widgetarium/data-framework/server";
+import type { DeviceModule, ModuleContract, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
 import { AppsPlugin } from "@sumi/apps-plugin";
 import { ChatPlugin } from "@sumi/chat-plugin";
 import { CommandMenuPlugin } from "@sumi/command-menu-plugin";

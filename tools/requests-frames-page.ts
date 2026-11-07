@@ -3,9 +3,9 @@ import type { ReactElement } from "react";
 import { createRoot } from "react-dom/client";
 import { z } from "zod";
 import {
-	AppProvider,
+	RuntimeProvider,
 	Slot,
-	app,
+	runtime,
 	clientModule,
 	handler,
 	query,
@@ -27,7 +27,9 @@ const SettledNowQueryHandler = handler(SettledNowQuery, ProbeClientModule).handl
 const AsyncQueryHandler = handler(AsyncQuery, ProbeClientModule).handle(
 	({ run }) => new Promise<number>((settled) => setTimeout(() => settled(run), ASYNC_DELAY_MS)),
 );
-const started = app({ modules: [ProbeClientModule.handlers([SettledNowQueryHandler, AsyncQueryHandler])] });
+const started = runtime()
+	.modules(ProbeClientModule.handlers([SettledNowQueryHandler, AsyncQueryHandler]))
+	.start();
 
 function Probe({ asked, run }: { readonly asked: AnyQuery; readonly run: number }): ReactElement {
 	const { data } = useQuery(asked, { run });
@@ -56,7 +58,7 @@ function isSampledEnough(states: readonly string[]): boolean {
 
 function mountProbe(node: HTMLElement, asked: AnyQuery, run: number): void {
 	const loading = h("div", { "data-state": "loading" });
-	createRoot(node).render(h(AppProvider, { app: started }, h(Slot, { loading }, h(Probe, { asked, run }))));
+	createRoot(node).render(h(RuntimeProvider, { runtime: started }, h(Slot, { loading }, h(Probe, { asked, run }))));
 }
 
 async function loadingFramesOf(asked: AnyQuery): Promise<number[]> {

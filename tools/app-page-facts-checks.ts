@@ -1,4 +1,4 @@
-import { app } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
 import { RecordAppPageCommand } from "../packages/state/places/index.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
 import { check } from "./check-helpers.ts";
@@ -16,7 +16,7 @@ export async function pageFactChecks(): Promise<void> {
 			closed: [],
 		}),
 	);
-	const places = app()
+	const places = runtime()
 		.imports(placesOver(tabs))
 		.start({ platform: "browser", scope: { workspaceId: "default" } });
 	const recorded = async (): Promise<unknown> => {

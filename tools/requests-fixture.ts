@@ -19,7 +19,7 @@ import {
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
 import type { AnyRequest, Handler, Injected, User } from "../packages/shared/data-framework/src/index.ts";
-import { Authenticate } from "../packages/shared/data-framework/src/server/index.ts";
+import { Authenticate, Server, moduleContract } from "../packages/shared/data-framework/src/index.ts";
 
 export const PagesPermissions = { rename: permission("pages.rename") };
 
@@ -438,6 +438,14 @@ export const SERVED_PAGE_HANDLERS = [
 ] as const;
 
 export const JoinedPagesServerModule = PagesServerModule.handlers(SERVED_PAGE_HANDLERS);
+
+export const PagesContract = moduleContract(
+	"pages",
+	Server,
+	SERVED_PAGE_HANDLERS.map(({ request }) => request),
+);
+
+export const OrderedContract = moduleContract("ordered", Server, [OrderedCommand]);
 
 export class HeaderAuthenticate extends Authenticate {
 	override async userOf(headers: Headers): Promise<User | null> {

@@ -1,9 +1,9 @@
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { AppTabQuery, RecordAppPageCommand, TakeActionPressCommand } from "./generated/places.js";
 import type { AppAction } from "./generated/places.js";
 
 export interface HeaderActionsFrame {
-	readonly sumi: StartedApp;
+	readonly sumi: Runtime;
 	readonly transport: RemoteTransport;
 	readonly tabId: string;
 }

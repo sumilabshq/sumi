@@ -13,10 +13,10 @@ import type {
 	ProviderReads,
 	QueueChange,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { toastRefusal } from "../packages/shared/data-framework/src/command-refusals.ts";
 import { toast } from "../packages/shared/kit/src/utils/toast.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { turnStepsOf } from "../plugins/chat/data/assistant/features/chat/lib/turn-steps.ts";
 import { toolsSummaryOf } from "../plugins/chat/src/features/assistant/lib/tools-summary.ts";
@@ -219,7 +219,7 @@ class FakeClock extends ClockGateway {
 }
 
 interface Bench {
-	readonly chat: StartedApp;
+	readonly chat: Runtime;
 	readonly parts: AssistantParts;
 	readonly session: FakeSessionGateway;
 	readonly setup: FakeSetupGateway;
@@ -250,8 +250,8 @@ function benchWith(reads: ProviderReads): Bench {
 	};
 }
 
-function chatOver(parts: AssistantParts): StartedApp {
-	return app()
+function chatOver(parts: AssistantParts): Runtime {
+	return runtime()
 		.modules(AssistantModule({ injects: oneChatParts(parts) }))
 		.start({
 			platform: "browser",
@@ -261,8 +261,8 @@ function chatOver(parts: AssistantParts): StartedApp {
 		});
 }
 
-function webChatApp(): StartedApp {
-	return app()
+function webChatApp(): Runtime {
+	return runtime()
 		.modules(
 			AssistantModule({
 				kind: "web",
@@ -717,7 +717,7 @@ check("a picked folder becomes the current one", await currentFolder(), {
 	recent: ["/Users/me/other"],
 });
 const sharedFolder = workspaceFolderCell(opened);
-const folderAppOver = (): StartedApp =>
+const folderAppOver = (): Runtime =>
 	chatOver({
 		...portAssistantParts(NO_ASSISTANT, claude.parts.attachmentFiles),
 		workingFolders: new ClientWorkingFoldersGateway({
@@ -730,7 +730,7 @@ const folderAppOver = (): StartedApp =>
 	});
 const askFolders = folderAppOver();
 const chatFolders = folderAppOver();
-const folderIn = async (started: StartedApp): Promise<unknown> => {
+const folderIn = async (started: Runtime): Promise<unknown> => {
 	const folders = await started.send(WorkingFoldersQuery, { chat: null });
 	return folders.ok ? folders.output?.current : folders.reason;
 };

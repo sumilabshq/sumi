@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { DeliverQuestionsCommand, IsWaitingOnPersonQuery, WithdrawNeededCommand } from "@widgetarium/questions";
 
 export interface ChatQuestions {
@@ -18,7 +18,7 @@ export const NO_CHAT_QUESTIONS: ChatQuestions = {
 	turnEnded: () => Promise.resolve(),
 };
 
-export function chatQuestionsOver(app: StartedApp): ChatQuestions {
+export function chatQuestionsOver(app: Runtime): ChatQuestions {
 	return {
 		answersTrailer: (chatId) => answersTrailer(app, chatId),
 		isWaitingOnPerson: (chatId) => isWaitingOnPerson(app, chatId),
@@ -26,7 +26,7 @@ export function chatQuestionsOver(app: StartedApp): ChatQuestions {
 	};
 }
 
-async function answersTrailer(app: StartedApp, chatId: string): Promise<string | null> {
+async function answersTrailer(app: Runtime, chatId: string): Promise<string | null> {
 	const answered = await app.send(DeliverQuestionsCommand, { chat: chatId, ids: null });
 
 	if (!answered.ok) {
@@ -37,7 +37,7 @@ async function answersTrailer(app: StartedApp, chatId: string): Promise<string |
 	return answered.output.text;
 }
 
-async function isWaitingOnPerson(app: StartedApp, chatId: string): Promise<boolean> {
+async function isWaitingOnPerson(app: Runtime, chatId: string): Promise<boolean> {
 	const answered = await app.send(IsWaitingOnPersonQuery, { chat: chatId });
 
 	if (!answered.ok) {
@@ -48,7 +48,7 @@ async function isWaitingOnPerson(app: StartedApp, chatId: string): Promise<boole
 	return answered.output.isWaiting;
 }
 
-async function turnEnded(app: StartedApp, chatId: string): Promise<void> {
+async function turnEnded(app: Runtime, chatId: string): Promise<void> {
 	const answered = await app.send(WithdrawNeededCommand, { chat: chatId });
 
 	if (!answered.ok) {

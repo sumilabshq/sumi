@@ -1,10 +1,11 @@
+import { runtime } from "@widgetarium/data-framework";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { getRequestListener } from "@hono/node-server";
-import { server } from "@widgetarium/data-framework/server";
+import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { NodeFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/node.gateway.ts";
 import { FileSystemModule } from "../apps/tauri/capabilities/file-system/module.ts";
@@ -26,41 +27,44 @@ const SHELL_PAGE = `<!doctype html><html><head><meta charset="utf-8"></head><bod
 
 const appData = mkdtempSync(path.join(tmpdir(), "wg-contract-frame-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
-const served = server()
-	.modules(
-		FileSystemModule({ injects: { files: new NodeFilesGateway(appData, "contract-frame") } }),
-		TerminalModule({ injects: { sessions: terminal } }),
-		PlacesModule({ injects: {
-			windows: new MemoryWindowsGateway({ windows: [] }),
-			tabs: new MemoryTabsGateway(
-				placedTabsOf({
-					tabs: [
-						{
-							id: "t1",
-							app: "notes",
-							pageId: null,
-							label: null,
-							lastAddress: "/start",
-						},
-						{
-							id: "c1",
-							app: "chat",
-							pageId: null,
-							label: null,
-						},
-					],
-					shownId: "t1",
-					minted: 1,
-					closed: [],
-				}),
-			),
-		} }),
-	)
-	.start({
-		env: {},
-		scope: { workspaceId: "contract-frame" },
-		host: { authenticate: new AppCallerAuthenticate() },
-	});
+const served = dataFrameworkMiddleware(
+	runtime()
+		.modules(
+			FileSystemModule({ injects: { files: new NodeFilesGateway(appData, "contract-frame") } }),
+			TerminalModule({ injects: { sessions: terminal } }),
+			PlacesModule({ injects: {
+				windows: new MemoryWindowsGateway({ windows: [] }),
+				tabs: new MemoryTabsGateway(
+					placedTabsOf({
+						tabs: [
+							{
+								id: "t1",
+								app: "notes",
+								pageId: null,
+								label: null,
+								lastAddress: "/start",
+							},
+							{
+								id: "c1",
+								app: "chat",
+								pageId: null,
+								label: null,
+							},
+						],
+						shownId: "t1",
+						minted: 1,
+						closed: [],
+					}),
+				),
+			} }),
+		)
+		.start({
+			platform: "server",
+			env: {},
+			scope: { workspaceId: "contract-frame" },
+		}),
+	{ authenticate: new AppCallerAuthenticate() },
+);
 const scripts: Readonly<Record<string, string>> = {
 	"/shell.js": await bundleOf("tools/contract-frame-shell.ts"),
 	"/app.js": await bundleOf("tools/contract-frame-app.ts"),

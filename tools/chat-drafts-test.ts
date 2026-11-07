@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
 import type { AssistantPort, AssistantSetup } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
@@ -111,7 +111,7 @@ function readShelf(): Promise<TauriChatDraftShelf> {
 	});
 }
 
-function chatServerOver(shelf: TauriChatDraftShelf): StartedApp {
+function chatServerOver(shelf: TauriChatDraftShelf): Runtime {
 	const tempFiles = new Map<string, Uint8Array>();
 	const attachmentFiles = new PrivateFolderAttachmentFilesGateway(
 		{
@@ -121,7 +121,7 @@ function chatServerOver(shelf: TauriChatDraftShelf): StartedApp {
 		},
 		"/attachments",
 	);
-	return app()
+	return runtime()
 		.modules(
 			AssistantModule({ injects: oneChatParts({
 				...portAssistantParts(port, attachmentFiles),
@@ -143,7 +143,7 @@ interface ComposerSeen {
 	readonly effort: string | null;
 }
 
-async function opened(server: StartedApp, chatId: string): Promise<ComposerSeen> {
+async function opened(server: Runtime, chatId: string): Promise<ComposerSeen> {
 	const draft = await server.send(OpenChatDraftCommand, { chat: chatId });
 	const chips = await server.send(DraftAttachmentsQuery, { chat: null });
 	const options = await server.send(ClaudeOptionsQuery, { chat: null });
@@ -265,7 +265,7 @@ check(
 layJsdomGlobals();
 const { createElement: h, Suspense } = await import("react");
 const { createRoot } = await import("react-dom/client");
-const { AppProvider } = await import("../packages/shared/data-framework/src/index.ts");
+const { RuntimeProvider } = await import("../packages/shared/data-framework/src/index.ts");
 const { useComposerDraft } = await import("../plugins/chat/src/features/assistant/lib/use-composer-draft.ts");
 const RACE = "5c6d7e8f-9a0b-4c1d-8e2f-3a4b5c6d7e8f";
 const FAST = "typed a moment before the switch";
@@ -297,10 +297,10 @@ function TypingProbe({ hands }: { readonly hands: ProbeHands }): null {
 	return null;
 }
 
-async function probeOver(frame: StartedApp): Promise<ProbeHands> {
+async function probeOver(frame: Runtime): Promise<ProbeHands> {
 	const hands = handsOf();
 	createRoot(document.createElement("div")).render(
-		h(AppProvider, { app: frame }, h(Suspense, { fallback: null }, h(TypingProbe, { hands }))),
+		h(RuntimeProvider, { runtime: frame }, h(Suspense, { fallback: null }, h(TypingProbe, { hands }))),
 	);
 	await waitFor(() => hands.fill !== null);
 	return hands;

@@ -4,7 +4,7 @@ import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { MemoryOnceAllowancesGateway } from "../packages/domain/browser/gateways/once-allowances/memory.gateway.ts";
 import { activityWith, isSameActivity } from "../packages/domain/browser/shared/lib/ink-activity.ts";
 import { effectiveGrants, onceAllowanceOf } from "../packages/domain/browser/shared/lib/once-grants.ts";
-import { app } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
 import { check } from "./check-helpers.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
@@ -58,7 +58,7 @@ check("an unchanged activity is the same activity", isSameActivity(quiet, activi
 check("a changed activity is not", isSameActivity(quiet, activityWith(quiet, { stoppedAt: 6 })), false);
 
 const stopping = fakeBrowser();
-const stoppingApp = app().modules(BrowserModule({ injects: stopping.parts })).start();
+const stoppingApp = runtime().modules(BrowserModule({ injects: stopping.parts })).start();
 let inkTold = 0;
 stopping.parts.inkActivity.inkActivityChanged(() => {
 	inkTold += 1;

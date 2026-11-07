@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { AppTabQuery } from "@sumi/contract";
-import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
+import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
 import { NEW_TAB_ADDRESS } from "./new-tab-address.js";
 import { recordTabPage } from "../../../shared/lib/record-tab-page.js";
 
@@ -33,7 +33,7 @@ function useFollowsStoredAddress(stored: string | null, setAddress: Dispatch<Set
 }
 
 function useNavigates(tabId: string, setAddress: (address: string) => void): (address: string) => void {
-	const shell = useApp("useNavigates");
+	const shell = useRuntime("useNavigates");
 	return useCallback(
 		(nextAddress: string): void => {
 			setAddress(nextAddress);

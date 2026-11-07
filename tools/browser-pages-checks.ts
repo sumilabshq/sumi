@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import {
@@ -89,7 +89,7 @@ class ManyPagesGateway extends FakeBrowserPagesGateway {
 interface ManyPages {
 	readonly browser: FakeBrowser;
 	readonly pages: ManyPagesGateway;
-	readonly started: StartedApp;
+	readonly started: Runtime;
 }
 
 function manyPages(): ManyPages {
@@ -98,7 +98,7 @@ function manyPages(): ManyPages {
 	return {
 		browser,
 		pages,
-		started: app().modules(BrowserModule({ injects: browser.parts })).start(),
+		started: runtime().modules(BrowserModule({ injects: browser.parts })).start(),
 	};
 }
 
@@ -106,7 +106,7 @@ function said(answer: Answer<unknown>): string {
 	return answer.ok ? "ok" : answer.reason;
 }
 
-async function opened(started: StartedApp, tabIds: readonly string[]): Promise<void> {
+async function opened(started: Runtime, tabIds: readonly string[]): Promise<void> {
 	for (const tabId of tabIds) {
 		await started.send(OpenPageCommand, { tabId });
 	}

@@ -1,5 +1,6 @@
 import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
+import type { User } from "./guard";
 import type { Invalidation } from "./invalidation";
 import { refuseCaller } from "./local-routes";
 import type { LocalRoutes, Route } from "./local-routes";
@@ -13,22 +14,28 @@ export interface Sending {
 	readonly idempotencyKey?: string | undefined;
 	readonly signal?: AbortSignal | undefined;
 	readonly headers?: Headers | undefined;
+}
+
+export interface MediatedSending extends Sending {
 	readonly inProcessCaller?: InProcessCaller | undefined;
+	readonly outsideCaller?: OutsideCaller | undefined;
 }
 
 export interface InProcessCaller {
 	readonly module: string | null;
 }
 
-export const VIEW_CALLER: InProcessCaller = Object.freeze({ module: null });
+export interface OutsideCaller {
+	user(): Promise<User | null>;
+}
 
-export type KeyMinting = "client-mints" | "caller-gives";
+export const VIEW_CALLER: InProcessCaller = Object.freeze({ module: null });
 
 export interface Asked {
 	readonly request: AnyRequest;
 	readonly sent: unknown;
 	readonly input: unknown;
-	readonly sending: Sending;
+	readonly sending: MediatedSending;
 	readonly givenKey: string | undefined;
 }
 
@@ -36,13 +43,12 @@ export interface Settle {
 	held(request: AnyRequest, returned: unknown, ran?: boolean, invalidated?: readonly Invalidation[]): Answer<unknown>;
 	refuse(request: AnyRequest, refusal: Refusal, thrown?: unknown): Refusal;
 	shared(key: string, run: () => Promise<Answer<unknown>>): Promise<Answer<unknown>>;
-	send(request: AnyRequest, sent: unknown, sending?: Sending): Promise<Answer<unknown>>;
+	send(request: AnyRequest, sent: unknown, sending?: MediatedSending): Promise<Answer<unknown>>;
 }
 
 interface MediatorParts {
 	readonly local: LocalRoutes;
 	readonly remote: ModuleReach | null;
-	readonly keyMinting: KeyMinting;
 	readonly missing: Missing;
 	readonly reportFailure: FailureReport;
 }
@@ -52,7 +58,7 @@ export class Mediator implements Settle {
 
 	constructor(private readonly parts: MediatorParts) {}
 
-	async send(request: AnyRequest, sent: unknown, sending: Sending = {}): Promise<Answer<unknown>> {
+	async send(request: AnyRequest, sent: unknown, sending: MediatedSending = {}): Promise<Answer<unknown>> {
 		try {
 			const route = this.parts.local.routeOf(request);
 			const refusedCaller = route === undefined ? null : refuseCaller(route, sending.inProcessCaller);
@@ -95,8 +101,8 @@ export class Mediator implements Settle {
 		return Promise.resolve(this.refuse(asked.request, missing(asked.request)));
 	}
 
-	private givenKeyOf({ idempotencyKey }: Sending): string | undefined {
-		if (idempotencyKey !== undefined || this.parts.keyMinting === "caller-gives") return idempotencyKey;
+	private givenKeyOf({ idempotencyKey, outsideCaller }: MediatedSending): string | undefined {
+		if (idempotencyKey !== undefined || outsideCaller !== undefined) return idempotencyKey;
 		return crypto.randomUUID();
 	}
 }

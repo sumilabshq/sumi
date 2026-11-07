@@ -3,7 +3,7 @@ import type { RefCallback } from "react";
 import { OpenWebPageCommand, ReloadWebPageCommand, WebPageQuery } from "@sumi/contract";
 import type { WebPage } from "@sumi/contract";
 import type { Answer } from "@widgetarium/data-framework";
-import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
+import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
 import { usePlacesArea } from "./use-places-area.js";
 
 interface WebPageControls {
@@ -21,7 +21,7 @@ interface AddressOpening {
 }
 
 export function useWebPage(tabId: string, address: string, onNavigated: (url: string) => void): WebPageControls {
-	const shell = useApp("useWebPage");
+	const shell = useRuntime("useWebPage");
 	const read = useOptionalQuery(WebPageQuery, { tab: tabId });
 	const heldPage = read.isLoading ? undefined : read.data;
 	const [refusal, showRefusal] = useRefusal();
@@ -42,7 +42,7 @@ function useRefusal(): [string | null, (answer: Answer<unknown>) => void] {
 }
 
 function useOpensAddress({ tabId, address, heldPage, showRefusal }: AddressOpening): void {
-	const shell = useApp("useOpensAddress");
+	const shell = useRuntime("useOpensAddress");
 	const shownUrl = useRef<string | null>(null);
 	shownUrl.current = heldPage?.url ?? null;
 	const isRead = heldPage !== undefined;

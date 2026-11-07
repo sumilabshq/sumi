@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery as useCachedQuery } from "@tanstack/react-query";
 import { reasonOf } from "./answer";
-import { useApp } from "./app-context";
+import { useRuntime } from "./runtime-context";
 import { queryOptionsOf } from "./query-options";
 import type { AnyQuery, InputArgs, OutputOf } from "./request";
 import { useWatchesWhileShown } from "./use-watched";
@@ -16,7 +16,7 @@ export function useOptionalQuery<R extends AnyQuery>(
 	...input: InputArgs<R>
 ): OptionalQueryRead<OutputOf<R>>;
 export function useOptionalQuery(request: AnyQuery, sent?: unknown): OptionalQueryRead<unknown> {
-	const started = useApp("useOptionalQuery");
+	const started = useRuntime("useOptionalQuery");
 	const read = useCachedQuery({ ...queryOptionsOf(started, request, sent), placeholderData: keepPreviousData });
 	useWatchesWhileShown(started, request, sent);
 	return {

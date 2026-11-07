@@ -1,5 +1,5 @@
 import type { HostApp, StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { CreateWorkspaceCommand, OpenWorkspaceCommand } from "@widgetarium/workspaces";
 import type { WorkspaceClient } from "./workspace-client.js";
 import type { WorkspaceEntry } from "./workspace-docs.js";
@@ -8,7 +8,7 @@ export type WorkspaceApps = Pick<StudioHostPort, "apps" | "openApp" | "createApp
 
 export interface WorkspaceAppsAsk {
 	readonly workspaces: WorkspaceClient;
-	readonly workspacesApp: StartedApp;
+	readonly workspacesApp: Runtime;
 }
 
 export const FOLDER_NOT_FOUND = "folder not found · Locate";

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { PINNED, THIS_CHAT, WORKSPACE } from "./app-state.js";
 import { tabListsOf } from "./sidebar-lists.js";
 import type { ListedEntry, Sidebar, SidebarTab } from "./sidebar-lists.js";
@@ -9,7 +9,7 @@ export interface QueueTaker {
 }
 
 export interface ToolContext {
-	readonly app: StartedApp;
+	readonly app: Runtime;
 	readonly chatId: string;
 	readonly queue: QueueTaker;
 }

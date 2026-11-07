@@ -1,5 +1,5 @@
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import {
 	CapturePageCommand,
@@ -28,8 +28,8 @@ for (const request of INK_REQUESTS) {
 	);
 }
 
-function started(browser: FakeBrowser): StartedApp {
-	return app().modules(BrowserModule({ injects: browser.parts })).start();
+function started(browser: FakeBrowser): Runtime {
+	return runtime().modules(BrowserModule({ injects: browser.parts })).start();
 }
 
 function said(answer: Answer<unknown>): string {

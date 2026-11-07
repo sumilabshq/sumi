@@ -1,5 +1,5 @@
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { DesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/design-files.gateway.ts";
 import { MemoryCanvasMomentGateway } from "../packages/domain/canvas/gateways/canvas-moment/memory.gateway.ts";
 import { AgentJobsGateway } from "../packages/domain/canvas/gateways/agent-jobs/agent-jobs.gateway.ts";
@@ -116,7 +116,7 @@ async function checkProjectWithNoDesignFolder(check: Check): Promise<void> {
 
 async function checkAbsentDesignIsStartedByAJob(check: Check): Promise<void> {
 	const absent = new FixedDesignFolderGateway(async () => null);
-	const groupsOf = async (canvas: StartedApp): Promise<unknown> => {
+	const groupsOf = async (canvas: Runtime): Promise<unknown> => {
 		const choices = await canvas.send(PageChoicesQuery);
 		return choices.ok ? choices.output.groups : choices.reason;
 	};

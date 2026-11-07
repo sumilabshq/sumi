@@ -10,14 +10,14 @@ import {
 	ReloadPageCommand,
 } from "@widgetarium/browser";
 import type { BrowserTabs } from "@widgetarium/browser";
-import type { Answer, StartedApp } from "@widgetarium/data-framework";
+import type { Answer, Runtime } from "@widgetarium/data-framework";
 import type { PageArea, WebPage } from "@widgetarium/web-page";
 import { PageHole } from "./page-hole.js";
 import type { NativeWebPages } from "@widgetarium/web-page/module";
 
 const REFUSED = "the browser refused {request} for tab {tab}: {reason}";
 
-export function nativeWebPagesOver(studioApp: StartedApp): NativeWebPages {
+export function nativeWebPagesOver(studioApp: Runtime): NativeWebPages {
 	return new BrowserModuleWebPages(studioApp);
 }
 
@@ -25,7 +25,7 @@ export function nativeWebPagesOver(studioApp: StartedApp): NativeWebPages {
 class BrowserModuleWebPages implements NativeWebPages {
 	private readonly holes = new Map<string, PageHole>();
 
-	constructor(private readonly studioApp: StartedApp) {}
+	constructor(private readonly studioApp: Runtime) {}
 
 	async page(tab: string): Promise<WebPage | null> {
 		return pageOf(await this.studioApp.send(BrowserTabsQuery, { heldTabId: tab }), tab);

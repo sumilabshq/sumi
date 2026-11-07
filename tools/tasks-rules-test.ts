@@ -1,6 +1,5 @@
-import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { Answer, StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Answer, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	AcceptTaskCommand,
 	AttachToTaskCommand,
@@ -42,7 +41,7 @@ const B = "chat-b";
 const HOUR = 3_600_000;
 
 interface Bench {
-	readonly tasks: StartedApp;
+	readonly tasks: Runtime;
 	readonly memory: MemoryTasksGateway;
 	readonly clock: FixedClockGateway;
 }
@@ -51,12 +50,13 @@ function bench(): Bench {
 	const memory = new MemoryTasksGateway();
 	const clock = new FixedClockGateway(START);
 	const link = localTransport();
-	server()
-		.modules(TasksModule({ injects: { tasks: memory, clock } }))
-		.listen(link)
-		.start({ env: {} });
+	link.serve(
+		runtime()
+			.modules(TasksModule({ injects: { tasks: memory, clock } }))
+			.start({ platform: "server", env: {} }),
+	);
 	return {
-		tasks: app().imports(TasksContract({ over: link })).start(),
+		tasks: runtime().imports(TasksContract({ over: link })).start(),
 		memory,
 		clock,
 	};
@@ -74,7 +74,7 @@ function reasonOf(answer: Answer<unknown>): string {
 	return answer.ok ? "" : answer.reason;
 }
 
-async function codeTask(tasks: StartedApp, title: string, chat = A): Promise<string> {
+async function codeTask(tasks: Runtime, title: string, chat = A): Promise<string> {
 	const created = outputOf(
 		await tasks.send(CreateTaskCommand, {
 			chat,
@@ -87,7 +87,7 @@ async function codeTask(tasks: StartedApp, title: string, chat = A): Promise<str
 	return created.task.card.id;
 }
 
-async function startedCodeTask(tasks: StartedApp, title: string, chat = A): Promise<string> {
+async function startedCodeTask(tasks: Runtime, title: string, chat = A): Promise<string> {
 	const id = await codeTask(tasks, title, chat);
 	outputOf(
 		await tasks.send(AttachToTaskCommand, {
@@ -100,7 +100,7 @@ async function startedCodeTask(tasks: StartedApp, title: string, chat = A): Prom
 	return id;
 }
 
-async function readyForTest(tasks: StartedApp, id: string): Promise<void> {
+async function readyForTest(tasks: Runtime, id: string): Promise<void> {
 	outputOf(await tasks.send(MarkStepCommand, { chat: A, task: id, step: "S1", state: "done" }));
 	outputOf(await tasks.send(MarkStepCommand, { chat: A, task: id, step: "S2", state: "done" }));
 	outputOf(
@@ -937,7 +937,7 @@ async function agentCarriesOutThePersonsWord(): Promise<void> {
 	check("an agent restores a cancelled task on the person's word", restored.card.status, "todo");
 }
 
-async function approvedByWord(tasks: StartedApp): Promise<TaskView> {
+async function approvedByWord(tasks: Runtime): Promise<TaskView> {
 	const id = await startedCodeTask(tasks, "Approved in chat");
 	await readyForTest(tasks, id);
 	outputOf(await tasks.send(MoveTaskCommand, { chat: A, task: id, to: "ready_to_test" }));

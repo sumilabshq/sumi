@@ -17,7 +17,7 @@ import {
 	TerminalOutputQuery,
 	WriteFileCommand,
 } from "@sumi/contract";
-import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
+import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 
 const NOTE_PATH = "notes/today.txt";
 const NOTE = "written by the frame";
@@ -38,7 +38,7 @@ const heard = {
 transport.changes(() => {
 	heard.changes += 1;
 });
-const sumi = app()
+const sumi = runtime()
 	.imports(
 		FileSystemModule({ over: transport }),
 		TerminalModule({ over: transport }),

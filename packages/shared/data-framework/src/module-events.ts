@@ -5,7 +5,7 @@ import { invalidateInto } from "./invalidation";
 import type { Invalidation } from "./invalidation";
 import { emitOf } from "./event-bus";
 import type { EventBus } from "./event-bus";
-import type { Sending } from "./mediator";
+import type { MediatedSending } from "./mediator";
 import type { ModuleDefinition, Provided } from "./module";
 import type { Platform } from "./platform-module";
 import { outputOfSent, stampSent } from "./send";
@@ -20,7 +20,7 @@ export interface StartedModule {
 }
 
 export interface EventSender {
-	send(request: AnyRequest, sent: unknown, sending?: Sending): Promise<Answer<unknown>>;
+	send(request: AnyRequest, sent: unknown, sending?: MediatedSending): Promise<Answer<unknown>>;
 }
 
 interface EventParts {

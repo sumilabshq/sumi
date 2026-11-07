@@ -13,7 +13,7 @@ import {
 	TabsSidebarQuery,
 	UngroupCommand,
 } from "@widgetarium/app-host";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import {
 	PlaceSchema,
 	inputOf,
@@ -199,7 +199,7 @@ function ownListOf(place: string, chatId: string): string {
 	return list;
 }
 
-async function placeTabs(app: StartedApp, tabIds: readonly string[], place: ListPlace): Promise<void> {
+async function placeTabs(app: Runtime, tabIds: readonly string[], place: ListPlace): Promise<void> {
 	for (const id of tabIds) {
 		await outputOf(app.send(PlaceTabCommand, { id, to: { kind: "list", ...place } }));
 	}
@@ -209,7 +209,7 @@ function isOneGroup({ group, newGroup }: Pick<Grouping, "group" | "newGroup">): 
 	return group === undefined || newGroup === undefined;
 }
 
-async function ensureGroupId(app: StartedApp, list: string, { group, newGroup }: Grouping): Promise<string | null> {
+async function ensureGroupId(app: Runtime, list: string, { group, newGroup }: Grouping): Promise<string | null> {
 	if (newGroup === undefined) {
 		return group ?? null;
 	}

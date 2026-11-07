@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { TipSurface } from "../features/canvas/ui/tip-surface/tip-surface.js";
-import { AppProvider, OnRefused, toastRefusal } from "@widgetarium/data-framework";
+import { RuntimeProvider, OnRefused, toastRefusal } from "@widgetarium/data-framework";
 import { Toaster } from "@widgetarium/kit";
 import { HeldTabContext } from "../features/browser/lib/held-tab.js";
 import { Browser } from "../features/browser/ui/browser/browser.js";
@@ -18,7 +18,7 @@ const STAGE = "wg-root cv:h-full cv:overflow-hidden cv:p-0 cv:[--wg-board-pad:0p
 export function BrowserPage({ browser, heldTabId }: BrowserPageProps): ReactElement {
 	return (
 		<div className={STAGE} data-browser-studio="">
-			<AppProvider app={browser.browserApp}>
+			<RuntimeProvider runtime={browser.browserApp}>
 				<HeldTabContext value={heldTabId}>
 					<OnRefused value={toastRefusal}>
 						<Toaster />
@@ -27,7 +27,7 @@ export function BrowserPage({ browser, heldTabId }: BrowserPageProps): ReactElem
 						</TipSurface>
 					</OnRefused>
 				</HeldTabContext>
-			</AppProvider>
+			</RuntimeProvider>
 		</div>
 	);
 }

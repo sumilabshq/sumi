@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { ReadPageContentCommand } from "../packages/domain/browser/index.ts";
 import { check, waitFor } from "./check-helpers.ts";
@@ -8,10 +8,10 @@ import { inBrowserPlate } from "./browser-plate.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 
 const browser = fakeBrowser();
-const browserApp = app().modules(BrowserModule({ injects: browser.parts })).start();
+const browserApp = runtime().modules(BrowserModule({ injects: browser.parts })).start();
 const host = document.createElement("div");
 document.body.append(host);
-createRoot(host).render(h(AppProvider, { app: browserApp }, inBrowserPlate()));
+createRoot(host).render(h(RuntimeProvider, { runtime: browserApp }, inBrowserPlate()));
 
 await waitFor(() => host.querySelector('[data-plate-place="lead"] button[aria-label="Back"]') !== null);
 

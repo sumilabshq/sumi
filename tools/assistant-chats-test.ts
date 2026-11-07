@@ -1,4 +1,4 @@
-import { app } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import {
 	ChatQuery,
@@ -28,7 +28,7 @@ function saidOf(answer: Awaited<ReturnType<typeof chats.send<typeof ChatQuery>>>
 }
 
 const asked: string[] = [];
-const chats = app()
+const chats = runtime()
 	.modules(AssistantModule({ kind: "web", webAssistant: chatPortsOf(asked) }))
 	.start({
 		platform: "browser",

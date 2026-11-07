@@ -7,8 +7,8 @@ import { LayoutModule } from "../packages/state/layout/module.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { StoreClient } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	ChatRecordsQuery,
 	CreateChatCommand,
@@ -32,7 +32,7 @@ interface HeldRun {
 
 interface TauriWorkspaces {
 	readonly parts: WorkspacesParts;
-	readonly started: StartedApp;
+	readonly started: Runtime;
 	readonly marks: Map<string, string>;
 }
 
@@ -57,7 +57,7 @@ function tauriWorkspacesOf(fake: FakeStore): TauriWorkspaces {
 	return {
 		parts,
 		marks,
-		started: app()
+		started: runtime()
 			.modules(LayoutModule({ injects: { ...partsOf() } }), WorkspacesModule({ injects: parts }))
 			.imports(placesOver(tabs))
 			.start(),

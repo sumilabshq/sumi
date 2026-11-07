@@ -1,6 +1,6 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider } from "../packages/shared/data-framework/src/index.js";
+import { RuntimeProvider } from "../packages/shared/data-framework/src/index.js";
 import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-column/chats-column.js";
 import { ChatCrumb } from "../apps/studio/src/features/workspaces/ui/chat-crumb/chat-crumb.js";
 import { ChatMore } from "../apps/studio/src/features/workspaces/ui/chat-more/chat-more.js";
@@ -82,8 +82,8 @@ if (root === null) {
 
 createRoot(root).render(
 	h(
-		AppProvider,
-		{ app: started },
+		RuntimeProvider,
+		{ runtime: started },
 		h(
 			Profiler,
 			{

@@ -1,5 +1,5 @@
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	CloseTabCommand,
 	PinTabCommand,
@@ -96,10 +96,10 @@ function entryShapeOf(entry: SidebarEntry): unknown {
 	return entry.kind === "tab" ? entry.tab.id : entry.kind;
 }
 
-function started(): { readonly window: StartedApp; readonly tabs: MemoryTabsGateway } {
+function started(): { readonly window: Runtime; readonly tabs: MemoryTabsGateway } {
 	const tabs = new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]));
 	return {
-		window: app()
+		window: runtime()
 			.imports(PlacesModule({ over: placesLinkOf(tabs) }))
 			.start(),
 		tabs,
@@ -118,7 +118,7 @@ async function effectKindsOf(answer: Promise<unknown>): Promise<unknown> {
 		: settled;
 }
 
-async function splitOf(window: StartedApp): Promise<unknown> {
+async function splitOf(window: Runtime): Promise<unknown> {
 	const shown = await sent(window.send(ShownSplitQuery, { window: MAIN_WINDOW }));
 	return typeof shown === "string" || shown.split === null
 		? shown
@@ -141,7 +141,7 @@ async function placingChecks(): Promise<void> {
 	await fullChecks(window);
 }
 
-async function fullChecks(window: StartedApp): Promise<void> {
+async function fullChecks(window: Runtime): Promise<void> {
 	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-3", targetTabId: "tab-2", side: "bottom" });
 	await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-4", targetTabId: "tab-1", side: "left" });
 	const full = await window.send(PlaceInViewCommand, { at: AT, tabId: "tab-5", targetTabId: "tab-1", side: "top" });
@@ -227,7 +227,7 @@ async function dissolvingChecks(): Promise<void> {
 	});
 }
 
-async function openShapesOf(window: StartedApp): Promise<unknown> {
+async function openShapesOf(window: Runtime): Promise<unknown> {
 	const sidebar = await sent(window.send(SidebarQuery, { at: AT, essentials: [] }));
 	const sections = typeof sidebar === "string" ? [] : sidebar.sections;
 	const open = sections.find((section) => section.list === "workspace")?.entries ?? [];
@@ -365,7 +365,7 @@ async function sidebarChecks(): Promise<void> {
 	await allPinnedChecks(window);
 }
 
-async function allPinnedChecks(window: StartedApp): Promise<void> {
+async function allPinnedChecks(window: Runtime): Promise<void> {
 	await window.send(PinTabCommand, { window: MAIN_WINDOW, id: "tab-2", isPinned: true });
 	const allPinned = await sent(window.send(SidebarQuery, { at: AT, essentials: [] }));
 	check(

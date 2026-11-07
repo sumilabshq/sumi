@@ -1,4 +1,4 @@
-import { MemoryDoneKeys, MemoryRateLimits, app } from "../packages/shared/data-framework/src/index.ts";
+import { MemoryDoneKeys, MemoryRateLimits, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { DoneKeys, RateLimit, RateLimits } from "../packages/shared/data-framework/src/index.ts";
 import {
 	PublicGuard,
@@ -10,7 +10,7 @@ import {
 	query,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { z } from "zod";
 import { orpcTransport } from "../packages/shared/data-framework/src/wire-client.ts";
 import { check, thrownBy } from "./check-helpers.ts";
@@ -33,26 +33,28 @@ class TracingDoneKeys extends MemoryDoneKeys {
 }
 
 const rateLimits: RateLimits = new TracingRateLimits();
-const served = server()
-	.modules(fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule)
-	.provide(() => ({ rateLimits }))
-	.start({
-		env: { PAGES_SEED: "Home,About" },
-		host: { authenticate: new fx.HeaderAuthenticate(), doneKeys: new TracingDoneKeys() },
-	});
+const served = dataFrameworkMiddleware(
+	runtime()
+		.modules(fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule)
+		.provide(() => ({ rateLimits }))
+		.start({
+			platform: "server",
+			env: { PAGES_SEED: "Home,About" },
+			host: { doneKeys: new TracingDoneKeys() },
+		}),
+	{ authenticate: new fx.HeaderAuthenticate() },
+);
 
 const wireCalls: string[] = [];
 function clientAs(user: string | null) {
-	return app({
-		modules: [],
-		server: orpcTransport(SERVER, {
-			fetch: (request) => {
-				wireCalls.push(new URL(request.url).pathname);
-				return served.fetch(request);
-			},
-			headers: () => (user === null ? {} : { "x-user": user }),
-		}),
+	const over = orpcTransport(SERVER, {
+		fetch: (request) => {
+			wireCalls.push(new URL(request.url).pathname);
+			return served.fetch(request);
+		},
+		headers: () => (user === null ? {} : { "x-user": user }),
 	});
+	return runtime().imports(fx.PagesContract({ over }), fx.OrderedContract({ over })).start();
 }
 
 const anonymous = clientAs(null);
@@ -209,63 +211,86 @@ check("a server refuses a PerCall call that arrives with no key", keyless.ok ? n
 const crashed = await anonymous.send(fx.CrashQuery);
 check("a server crash reaches the client as a refusal with its code", crashed.ok ? null : crashed.code, "failed");
 
-const unreachable = app({
-	modules: [],
-	server: orpcTransport(SERVER, { fetch: () => Promise.reject(new TypeError("Failed to fetch")) }),
-});
+const unreachable = runtime()
+	.imports(
+		fx.PagesContract({
+			over: orpcTransport(SERVER, { fetch: () => Promise.reject(new TypeError("Failed to fetch")) }),
+		}),
+	)
+	.start();
 const lost = await unreachable.send(fx.PagesQuery, { prefix: "" });
 check("an unreachable server is a refusal, never a throw", lost.ok ? null : lost.code, "unreachable");
 
 check(
-	"server() refuses a client module",
-	thrownBy(() => server({ modules: [fx.pagesModuleOver(new fx.MemoryPages())], env: {} })),
-	'server() refused:\nmodule "pages" runs on the client; a server runs only modules that run on the server',
+	"a runtime on the server platform refuses a client module",
+	thrownBy(() => runtime().modules(fx.pagesModuleOver(new fx.MemoryPages())).start({ platform: "server" })),
+	'runtime() refused:\nmodule "pages" runs on the client; a server runs only modules that run on the server',
+);
+const keptInProcess = runtime().modules(fx.JoinedPagesServerModule).start({ platform: "server" });
+check(
+	"a runtime never exposed starts with guards that need a user and no Authenticate",
+	thrownBy(() => keptInProcess),
+	"",
 );
 check(
-	"server() refuses a module whose guards need a user and no Authenticate",
-	thrownBy(() => server({ modules: [fx.JoinedPagesServerModule], env: {} })),
+	"an adapter with no Authenticate refuses to expose requests whose guards need a user",
+	thrownBy(() => dataFrameworkMiddleware(keptInProcess)),
 	[
-		"server() refused:",
+		"dataFrameworkMiddleware() refused:",
 		...["rename-page", "traced", "who", "stamp", "context", "secret", "who-else", "pay"].map(
-			(name) => `pages/${name} is guarded by AuthenticatedGuard, which needs an Authenticate in the starter's host`,
+			(name) =>
+				`pages/${name} is guarded by AuthenticatedGuard, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one`,
 		),
-		"pages/mine is guarded by guard #1, which needs an Authenticate in the starter's host",
+		"pages/mine is guarded by guard #1, which needs a user, and dataFrameworkMiddleware() has no Authenticate: pass one",
 	].join("\n"),
 );
 const RenameElsewhereCommand = command("pages/rename-elsewhere")
 	.idempotencyKey(Repeatable)
 	.input(z.object({ from: z.string() }));
 check(
-	"server() refuses a guard whose required dependency neither its module nor the runtime provides, naming request and guard",
+	"runtime() refuses a guard whose required dependency neither its module nor the runtime provides, naming request and guard",
 	thrownBy(() => {
 		const ElsewhereServerModule = serverModule("pages");
 		const RenameElsewhereCommandHandler = handler(RenameElsewhereCommand, ElsewhereServerModule)
 			.guard(PublicGuard)
 			.guard(fx.KnownPageGuard)
 			.handle(() => undefined);
-		return server({ modules: [ElsewhereServerModule.handlers([RenameElsewhereCommandHandler])], env: {} });
+		return runtime()
+			.modules(ElsewhereServerModule.handlers([RenameElsewhereCommandHandler]))
+			.start({ platform: "server" });
 	}),
-	"server() refused:\nguard #2 of pages/rename-elsewhere requires pages, which neither its module nor server().provide() gives as a Pages",
+	"runtime() refused:\nguard #2 of pages/rename-elsewhere requires pages, which neither its module nor runtime().provide() gives as a Pages",
 );
-const Unguarded = query("pages/unguarded").output(z.string());
+const Unguarded = query("pages/unguarded").public().output(z.string());
 const UnguardedClientModule = clientModule("pages");
 const UnguardedQueryHandler = handler(Unguarded, UnguardedClientModule).handle(() => "");
 const InputOnlyGuard = guard().handle(() => undefined);
 const UnguardedServerModule = serverModule("pages").guard(InputOnlyGuard);
 check(
-	"server() refuses a request no guard covers, and a handler built for another module",
+	"runtime() refuses a handler built for another module",
 	thrownBy(() =>
-		server({
+		runtime()
 			// @ts-expect-error
-			modules: [UnguardedServerModule.handlers([UnguardedQueryHandler])],
-			env: {},
-		}),
+			.modules(UnguardedServerModule.handlers([UnguardedQueryHandler]))
+			.start({ platform: "server" }),
 	),
+	'runtime() refused:\nthe handler of pages/unguarded was built for module "pages", but module "pages" holds it',
+);
+const unguardedRuntime = runtime()
+	.modules(UnguardedClientModule.handlers([UnguardedQueryHandler]))
+	.start({ platform: "tauri" });
+check(
+	"an adapter refuses to expose a public request no guard covers, naming it",
+	thrownBy(() => dataFrameworkMiddleware(unguardedRuntime, { authenticate: new fx.HeaderAuthenticate() })),
 	[
-		"server() refused:",
-		'the handler of pages/unguarded was built for module "pages", but module "pages" holds it',
-		"pages/unguarded runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
+		"dataFrameworkMiddleware() refused:",
+		"pages/unguarded is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 	].join("\n"),
+);
+check(
+	"the same runtime answers the request in process, where no adapter exposes it",
+	await unguardedRuntime.send(Unguarded),
+	{ ok: true, output: "" },
 );
 
 check(
@@ -354,10 +379,14 @@ const GreedyQueryHandler = handler(GreedyQuery, GreedyServerModule)
 	.guard(PublicGuard)
 	.handle(() => "");
 check(
-	"server() refuses a module providing what the runtime provides, naming both",
-	thrownBy(() => server({ modules: [GreedyServerModule.handlers([GreedyQueryHandler])], env: {} })),
-	'server() refused:\nmodule "greedy" provides rateLimits, which server().provide() already gives every module: rename one',
+	"runtime() refuses a module providing what the runtime provides, naming both",
+	thrownBy(() =>
+		runtime()
+			.modules(GreedyServerModule.handlers([GreedyQueryHandler]))
+			.start({ platform: "server" }),
+	),
+	'runtime() refused:\nmodule "greedy" provides rateLimits, which runtime().provide() already gives every module: rename one',
 );
 
 const outside = await served.fetch(new Request(`${SERVER}/elsewhere`));
-check("server() answers only /rpc", outside.status, 404);
+check("dataFrameworkMiddleware() answers only /rpc", outside.status, 404);

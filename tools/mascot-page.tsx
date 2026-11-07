@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { Mascot } from "../plugins/chat/src/features/mascot/ui/mascot/mascot.tsx";
 import { MascotFigure } from "../apps/studio/src/features/mascot/ui/mascot-figure/mascot-figure.tsx";
 import { MascotStateSchema } from "../apps/studio/src/features/mascot/lib/mascot-state.schema.ts";
@@ -13,7 +13,7 @@ import { reportsFailures } from "./page-harness.ts";
 
 reportsFailures();
 
-const started = app()
+const started = runtime()
 	.modules(MascotModule)
 	.start({
 		platform: "browser",
@@ -33,7 +33,7 @@ Object.assign(window, {
 function Live() {
 	const [outfit, wear] = useState<OutfitId>("bare");
 	Object.assign(window, { __WEAR__: wear });
-	return h("div", { id: "live" }, h(AppProvider, { app: started }, h(Mascot, { outfit, size: 180 })));
+	return h("div", { id: "live" }, h(RuntimeProvider, { runtime: started }, h(Mascot, { outfit, size: 180 })));
 }
 
 const isQuiet = location.hash === "#quiet";

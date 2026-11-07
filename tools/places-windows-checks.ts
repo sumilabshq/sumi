@@ -1,5 +1,4 @@
-import { app, localTransport } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport } from "@widgetarium/data-framework";
 import {
 	CloseWindowCommand,
 	KeepLiveWindowsCommand,
@@ -14,12 +13,13 @@ import { check, tally, waitFor } from "./check-helpers.ts";
 
 const windows = new MemoryWindowsGateway({ windows: [] });
 const core = localTransport();
-server()
-	.modules(RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway() } }))
-	.listen(core)
-	.start({ env: {} });
-const main = app().imports(PlacesModule({ over: core })).start();
-const side = app().imports(PlacesModule({ over: core })).start();
+core.serve(
+	runtime()
+		.modules(RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway() } }))
+		.start({ platform: "server", env: {} }),
+);
+const main = runtime().imports(PlacesModule({ over: core })).start();
+const side = runtime().imports(PlacesModule({ over: core })).start();
 const labelsOf = async (): Promise<readonly string[]> => {
 	const answered = await side.send(OpenWindowsQuery);
 	return answered.ok ? answered.output.windows.map((open) => open.label) : [answered.reason];

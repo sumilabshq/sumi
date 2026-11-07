@@ -18,7 +18,6 @@ import type { Callers } from "./policies";
 import type { AnyRequest } from "./request";
 import { outputOfSent, stampSent } from "./send";
 import type { CallingModule } from "./calling-module";
-import type { Authenticate } from "./server/authenticate";
 
 export interface Route {
 	readonly handler: AnyHandler;
@@ -28,9 +27,7 @@ export interface Route {
 
 interface LocalParts {
 	readonly routes: ReadonlyMap<string, Route>;
-	readonly authenticate: Authenticate | null;
 	readonly doneKeys: DoneKeys;
-	readonly callers: Callers;
 	readonly bus: EventBus;
 }
 
@@ -46,7 +43,6 @@ interface Keyed {
 	readonly key: string | null;
 }
 
-const NO_HEADERS = new Headers();
 const CALL_FACT_KEYS: readonly (keyof CallFacts)[] = ["user", "idempotencyKey", "signal"];
 const ANSWERED_FOR_HANDLER = "{step} of {request} answered without next(): a step may only refuse";
 const REPLACED_FACT = "{step} of {request} replaced {fact}, which only the server sets";
@@ -80,8 +76,7 @@ export class LocalRoutes {
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		const { authenticate } = this.parts;
-		const user = authenticate === null ? null : await authenticate.userOf(asked.sending.headers ?? NO_HEADERS);
+		const user = (await asked.sending.outsideCaller?.user()) ?? null;
 		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user } };
 		return this.throughSteps({ route, asked, settle }, call, 0);
 	}
@@ -147,7 +142,7 @@ export class LocalRoutes {
 
 	private runDeduped(walk: Walk, { input, user, key }: Keyed, run: () => Promise<Answer<unknown>>) {
 		const { request } = walk.asked;
-		if (key !== null && isKeyReplayed(request, user, this.parts.callers))
+		if (key !== null && isKeyReplayed(request, user, callersOf(walk.asked)))
 			return this.once(callerKeyOf(request.name, user, key), run);
 		if (key !== null || request.kind !== "query") return run();
 		return walk.settle.shared(callerKeyOf(request.name, user, stableKey(input)), run);
@@ -209,6 +204,7 @@ function sendOf({ asked, settle }: Walk, { signal, key, invalidated, calling }: 
 		const idempotencyKey = key === null ? undefined : `${key}:${stamped.name}`;
 		const answer = await settle.send(stamped, input, {
 			headers: asked.sending.headers,
+			outsideCaller: asked.sending.outsideCaller,
 			signal,
 			idempotencyKey,
 			inProcessCaller: { module: calling.module },
@@ -228,6 +224,10 @@ function callingModuleOf({ handler }: Route, asked: Asked): CallingModule {
 		importedModuleNames: handler.module.importedModuleNames,
 		owner: asked.request.name,
 	};
+}
+
+function callersOf({ sending }: Asked): Callers {
+	return sending.outsideCaller === undefined ? "one" : "many";
 }
 
 function isListedCaller(request: AnyRequest, modules: readonly string[], { module }: InProcessCaller): boolean {

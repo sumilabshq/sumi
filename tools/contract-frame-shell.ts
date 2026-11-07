@@ -1,4 +1,4 @@
-import { app, orpcTransport } from "@widgetarium/data-framework";
+import { runtime, orpcTransport } from "@widgetarium/data-framework";
 import { PlacesModule } from "../packages/shared/contract/index.ts";
 import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/frame-sandbox.ts";
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
@@ -38,7 +38,7 @@ const routesFor = frameRoutesOf({
 			contract: WebPageModule,
 			serving: webPageServingOf({
 				platform: "browser",
-				windowApp: app().imports(PlacesModule({ over: core })).start(),
+				windowApp: runtime().imports(PlacesModule({ over: core })).start(),
 			}),
 		},
 	],

@@ -7,7 +7,7 @@ import {
 	PublicGuard,
 	Repeatable,
 	Server,
-	app,
+	runtime,
 	buildersOf,
 	command,
 	deny,
@@ -17,8 +17,8 @@ import {
 	query,
 } from "../packages/shared/data-framework/src/index.ts";
 import type { ModuleFacts } from "../packages/shared/data-framework/src/index.ts";
-import { orpcTransport } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { orpcTransport, servePort } from "../packages/shared/data-framework/src/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 
 class Counter {
@@ -185,14 +185,10 @@ export function typedOnly(): void {
 	// @ts-expect-error
 	module("tally").handles(CountQuery);
 	// @ts-expect-error
-	app().imports(PaymentsContract);
+	runtime().imports(PaymentsContract);
 	// @ts-expect-error
 	DevicePaymentsContract({ over: orpcTransport("http://127.0.0.1:9") });
-	// @ts-expect-error
-	server().modules(DeviceTallyModule);
-	// @ts-expect-error
-	app().modules(BillingModule);
-	app().imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }));
+	runtime().imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }));
 	// @ts-expect-error
 	buildersOf<{ readonly counter: Counter }>();
 	// @ts-expect-error
@@ -200,9 +196,9 @@ export function typedOnly(): void {
 }
 
 const counter = new Counter();
-const started = app().modules(tallyOver(counter)).start(ON_BROWSER);
+const started = runtime().modules(tallyOver(counter)).start(ON_BROWSER);
 
-check("a self-handled query answers through app()", await started.send(CountContract), { ok: true, output: 0 });
+check("a self-handled query answers through runtime()", await started.send(CountContract), { ok: true, output: 0 });
 check("a self-handled command runs its handler", await started.send(BumpContract, { by: 3 }), {
 	ok: true,
 	output: undefined,
@@ -251,12 +247,12 @@ check(
 
 check(
 	"a module picking its parts from the platform is refused by a starter told no platform",
-	thrownBy(() => app().modules(tallyOver(counter)).start()),
+	thrownBy(() => runtime().modules(tallyOver(counter)).start()),
 	'module "tally" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope',
 );
 
 let seenFacts: ModuleFacts | null = null;
-app()
+runtime()
 	.modules(
 		TallyDeclared.provide((facts) => {
 			seenFacts = facts;
@@ -272,37 +268,38 @@ check("provide receives the platform and scope its starter was told", seenFacts,
 });
 
 check(
-	"a module that runs anywhere still needs a guard on the server",
-	thrownBy(() => server().modules(tallyOver(new Counter())).start({ env: {}, scope: SCOPE })).split("\n")[1],
-	"tally/count runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
+	"a module that runs anywhere still needs a guard where an adapter exposes it",
+	thrownBy(() =>
+		dataFrameworkMiddleware(
+			runtime().modules(tallyOver(new Counter())).start({ platform: "server", env: {}, scope: SCOPE }),
+		),
+	).split("\n")[1],
+	"tally/count is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 );
 
 check(
 	"a module guarded with PublicGuard starts on the server",
 	thrownBy(() =>
-		server()
+		runtime()
 			.modules(
 				TallyDeclared.guard(PublicGuard)
 					.provide(() => ({ counter: new Counter() }))
 					.handles(CountQuery, BumpCommand),
 			)
-			.start({ env: {}, scope: SCOPE }),
+			.start({ platform: "server", env: {}, scope: SCOPE }),
 	),
 	"",
 );
 
 check(
-	"a device module is refused when server() starts",
-	thrownBy(() =>
-		server()
-			// @ts-expect-error
-			.modules(DeviceTallyModule)
-			.start({ env: {}, scope: SCOPE }),
-	).split("\n")[1],
+	"a device module is refused when runtime() starts",
+	thrownBy(() => runtime().modules(DeviceTallyModule).start({ platform: "server", env: {}, scope: SCOPE })).split(
+		"\n",
+	)[1],
 	'module "tally" runs on the client; a server runs only modules that run on the server',
 );
 
-const closed = app()
+const closed = runtime()
 	.modules(
 		module("tally")
 			.on(Anywhere)
@@ -313,23 +310,28 @@ const closed = app()
 	.start(ON_BROWSER);
 const closedRead = await closed.send(CountContract);
 check(
-	"a module guard that denies refuses its requests under app()",
+	"a module guard that denies refuses its requests under runtime()",
 	closedRead.ok ? "ran" : [closedRead.code, closedRead.reason],
 	["forbidden", "the tally is closed"],
 );
 
+const signedInTally = runtime()
+	.modules(
+		TallyDeclared.guard(AuthenticatedGuard)
+			.provide(() => ({ counter: new Counter() }))
+			.handles(CountQuery, BumpCommand),
+	)
+	.start(ON_BROWSER);
+const signedInRead = await signedInTally.send(CountContract);
 check(
-	"a module guard that needs a user is refused when app() starts, since a client has no Authenticate",
-	thrownBy(() =>
-		app()
-			.modules(
-				TallyDeclared.guard(AuthenticatedGuard)
-					.provide(() => ({ counter: new Counter() }))
-					.handles(CountQuery, BumpCommand),
-			)
-			.start(ON_BROWSER),
-	).split("\n")[1],
-	"tally/count is guarded by AuthenticatedGuard, which needs a user, and app() has no Authenticate: guard it where its server handles it",
+	"a module guard that needs a user starts in process, where a call carries no user and is refused",
+	signedInRead.ok ? "ran" : signedInRead.code,
+	"unauthenticated",
+);
+check(
+	"an adapter with no Authenticate refuses to expose a module guard that needs a user",
+	thrownBy(() => servePort(signedInTally, new MessageChannel().port1)).split("\n")[1],
+	"tally/count is guarded by AuthenticatedGuard, which needs a user, and servePort() has no Authenticate: pass one",
 );
 
 const ClockedQuery = query("clocked")
@@ -342,9 +344,9 @@ const ClockGuard = guard()
 	.handle(() => undefined);
 
 check(
-	"a module guard requiring what neither its module nor the runtime provides is refused when app() starts",
+	"a module guard requiring what neither its module nor the runtime provides is refused when runtime() starts",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(
 				module("tally")
 					.on(Anywhere)
@@ -354,13 +356,13 @@ check(
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
-	"guard #1 of tally/clocked requires clock, which neither its module nor app().provide() gives as a Clock",
+	"guard #1 of tally/clocked requires clock, which neither its module nor runtime().provide() gives as a Clock",
 );
 
 check(
-	"a module guard requiring what app().provide() gives starts",
+	"a module guard requiring what runtime().provide() gives starts",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(
 				module("tally")
 					.on(Anywhere)
@@ -374,24 +376,24 @@ check(
 	"",
 );
 
-const shop = app().modules(ShopModule, PaymentsModule).start(ON_BROWSER);
+const shop = runtime().modules(ShopModule, PaymentsModule).start(ON_BROWSER);
 check("a request sends another module's contract through the running app", await shop.send(BuyContract, { cents: 5 }), {
 	ok: true,
 	output: "charged 5",
 });
 
 check(
-	"a module whose import the app neither runs nor reaches is refused when app() starts",
-	thrownBy(() => app().modules(ShopModule).start(ON_BROWSER))
+	"a module whose import the app neither runs nor reaches is refused when runtime() starts",
+	thrownBy(() => runtime().modules(ShopModule).start(ON_BROWSER))
 		.split("\n")
 		.slice(1),
-	['module "shop" imports payments, which app() neither runs nor reaches: add it to .modules() or .imports()'],
+	['module "shop" imports payments, which runtime() neither runs nor reaches: add it to .modules() or .imports()'],
 );
 
 check(
 	"the same module starts when the app imports its dependency at an address",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(ShopModule)
 			.imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }))
 			.start(ON_BROWSER),
@@ -399,7 +401,7 @@ check(
 	"",
 );
 
-const unimportedBuy = await app()
+const unimportedBuy = await runtime()
 	.modules(
 		module("shop")
 			.on(Anywhere)
@@ -415,9 +417,11 @@ check(
 	'shop/buy sends payments/charge, but module "shop" does not import payments: add .imports()',
 );
 
-const billingServer = server().modules(AuthModule, BillingModule).start({ env: {}, scope: SCOPE });
+const billingServer = dataFrameworkMiddleware(
+	runtime().modules(AuthModule, BillingModule).start({ platform: "server", env: {}, scope: SCOPE }),
+);
 const AuthContract = moduleContract("auth", Server, [SignUpContract]);
-const overWire = app()
+const overWire = runtime()
 	.imports(
 		AuthContract({ over: orpcTransport("http://api", { fetch: billingServer.fetch }) }),
 		BillingContract({ over: orpcTransport("http://api", { fetch: billingServer.fetch }) }),
@@ -450,8 +454,10 @@ const NotesModule = module("notes")
 const ForgetContract = command("notes/forget")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-const notesServer = server().modules(NotesModule).start({ env: {}, scope: SCOPE });
-const notesOverWire = app()
+const notesServer = dataFrameworkMiddleware(
+	runtime().modules(NotesModule).start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const notesOverWire = runtime()
 	.imports(
 		moduleContract("notes", Server, [ForgetContract])({
 			over: orpcTransport("http://notes", { fetch: notesServer.fetch }),
@@ -469,11 +475,11 @@ check(
 const CREATE_CUSTOMER_IN_PROCESS_ONLY = "billing/create-customer is reached only from inside its own process";
 
 const wireCalls: string[] = [];
-const countingFetch = (request: Request): Promise<Response> => {
+const countingFetch = (request: Request): Response | Promise<Response> => {
 	wireCalls.push(new URL(request.url).pathname);
 	return billingServer.fetch(request);
 };
-const leaky = app()
+const leaky = runtime()
 	.imports({
 		name: "billing",
 		transport: orpcTransport("http://api", { fetch: countingFetch }),
@@ -508,16 +514,18 @@ const ProvisionContract = command("accounts/provision")
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId);
-const accountsServer = server()
-	.modules(
-		module("accounts")
-			.on(Server)
-			.guard(PublicGuard)
-			.provide(() => ({}))
-			.handles(ProvisionCommand),
-	)
-	.start({ env: {}, scope: SCOPE });
-const provisioned = await app()
+const accountsServer = dataFrameworkMiddleware(
+	runtime()
+		.modules(
+			module("accounts")
+				.on(Server)
+				.guard(PublicGuard)
+				.provide(() => ({}))
+				.handles(ProvisionCommand),
+		)
+		.start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const provisioned = await runtime()
 	.imports({
 		name: "accounts",
 		transport: orpcTransport("http://accounts", { fetch: accountsServer.fetch }),
@@ -537,8 +545,10 @@ const AnywhereSignUp = module("auth")
 	.imports(BillingContract)
 	.provide(() => ({}))
 	.handles(SignUpCommand);
-const anywhereServer = server().modules(AnywhereSignUp, BillingModule).start({ env: {}, scope: SCOPE });
-const anywhereSignedUp = await app()
+const anywhereServer = dataFrameworkMiddleware(
+	runtime().modules(AnywhereSignUp, BillingModule).start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const anywhereSignedUp = await runtime()
 	.imports(AuthContract({ over: orpcTransport("http://api", { fetch: anywhereServer.fetch }) }))
 	.start()
 	.send(SignUpContract, { userId: "u-4" });
@@ -555,11 +565,13 @@ check(
 	'module "auth" runs on a device: only a module .on(Server) or .on(Anywhere) is imported over a transport',
 );
 
-const remoteBillingServer = server()
-	.modules(AuthModule)
-	.imports(BillingContract({ over: orpcTransport("http://billing", { fetch: billingServer.fetch }) }))
-	.start({ env: {}, scope: SCOPE });
-const remoteSignedUp = await app()
+const remoteBillingServer = dataFrameworkMiddleware(
+	runtime()
+		.modules(AuthModule)
+		.imports(BillingContract({ over: orpcTransport("http://billing", { fetch: billingServer.fetch }) }))
+		.start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const remoteSignedUp = await runtime()
 	.imports(AuthContract({ over: orpcTransport("http://api", { fetch: remoteBillingServer.fetch }) }))
 	.start()
 	.send(SignUpContract, { userId: "u-5" });
@@ -584,21 +596,23 @@ const ReportsModule = module("reports")
 	.provide(() => ({}))
 	.handles(ReportQuery);
 let headerAtBilling: string | null = null;
-const reportsServer = server()
-	.modules(ReportsModule)
-	.imports(
-		BillingContract({
-			over: orpcTransport("http://billing", {
-				fetch: (request) => {
-					headerAtBilling = request.headers.get("x-caller");
-					return billingServer.fetch(request);
-				},
-				headers: () => ({ "x-caller": "reports" }),
+const reportsServer = dataFrameworkMiddleware(
+	runtime()
+		.modules(ReportsModule)
+		.imports(
+			BillingContract({
+				over: orpcTransport("http://billing", {
+					fetch: (request) => {
+						headerAtBilling = request.headers.get("x-caller");
+						return billingServer.fetch(request);
+					},
+					headers: () => ({ "x-caller": "reports" }),
+				}),
 			}),
-		}),
-	)
-	.start({ env: {}, scope: SCOPE });
-const reports = app()
+		)
+		.start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const reports = runtime()
 	.imports(
 		moduleContract("reports", Server, [ReportContract])({
 			over: orpcTransport("http://reports", { fetch: reportsServer.fetch }),
@@ -612,9 +626,9 @@ check(
 );
 
 check(
-	"a module both run and imported from an address is refused by name when app() starts",
+	"a module both run and imported from an address is refused by name when runtime() starts",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(PaymentsModule)
 			.imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }))
 			.start(ON_BROWSER),
@@ -623,9 +637,9 @@ check(
 );
 
 check(
-	"a module imported twice is refused by name when app() starts",
+	"a module imported twice is refused by name when runtime() starts",
 	thrownBy(() =>
-		app()
+		runtime()
 			.imports(
 				BillingContract({ over: orpcTransport("http://one") }),
 				BillingContract({ over: orpcTransport("http://two") }),
@@ -660,7 +674,7 @@ const VaultModule = module("vault")
 	.provide(() => ({}))
 	.handles(ReadQuery, SecretQuery);
 
-const vaultOnDevice = app().modules(VaultModule).start(ON_BROWSER);
+const vaultOnDevice = runtime().modules(VaultModule).start(ON_BROWSER);
 check(
 	"a module on a device sends its own request with no mark from its own handler",
 	await vaultOnDevice.send(ReadContract),
@@ -683,8 +697,10 @@ const AuditModule = module("audit")
 	.imports(VaultModule)
 	.provide(() => ({}))
 	.handles(PeekQuery);
-const vaultServer = server().modules(VaultModule, AuditModule).start({ env: {}, scope: SCOPE });
-const auditOverWire = app()
+const vaultServer = dataFrameworkMiddleware(
+	runtime().modules(VaultModule, AuditModule).start({ platform: "server", env: {}, scope: SCOPE }),
+);
+const auditOverWire = runtime()
 	.imports(
 		moduleContract("audit", Server, [PeekContract])({
 			over: orpcTransport("http://api", { fetch: vaultServer.fetch }),
@@ -696,7 +712,7 @@ check(
 	await auditOverWire.send(PeekContract),
 	{ ok: true, output: "s3cret" },
 );
-const secretOverWire = await app()
+const secretOverWire = await runtime()
 	.imports({
 		name: "vault",
 		transport: orpcTransport("http://api", { fetch: vaultServer.fetch }),
@@ -729,7 +745,7 @@ const ledgerReaderModuleOf = (name: string) =>
 		.imports(LedgerModule)
 		.provide(() => ({}))
 		.handles(ReadEntryQuery);
-const ledgerApp = app()
+const ledgerApp = runtime()
 	.modules(LedgerModule, ledgerReaderModuleOf("clerk"), ledgerReaderModuleOf("stranger"))
 	.start(ON_BROWSER);
 const entryFromView = await ledgerApp.send(EntryContract);
@@ -751,9 +767,9 @@ check(
 );
 
 check(
-	"a module providing a name the framework gives every handler is refused when app() starts",
+	"a module providing a name the framework gives every handler is refused when runtime() starts",
 	thrownBy(() =>
-		app()
+		runtime()
 			.modules(
 				module("tally")
 					.on(Anywhere)

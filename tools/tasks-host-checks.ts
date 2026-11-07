@@ -1,7 +1,6 @@
 import { z } from "zod";
-import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	CreateTaskAskSchema,
 	EditTaskAskSchema,
@@ -52,16 +51,17 @@ interface HeldRun {
 	readonly finish: (answer: RunAnswer) => void;
 }
 
-function tasksApp(): StartedApp {
+function tasksApp(): Runtime {
 	const link = localTransport();
-	server()
-		.modules(TasksModule({ injects: { tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) } }))
-		.listen(link)
-		.start({ env: {} });
-	return app().imports(TasksContract({ over: link })).start();
+	link.serve(
+		runtime()
+			.modules(TasksModule({ injects: { tasks: new MemoryTasksGateway(), clock: new FixedClockGateway(START) } }))
+			.start({ platform: "server", env: {} }),
+	);
+	return runtime().imports(TasksContract({ over: link })).start();
 }
 
-async function viewOf(tasks: StartedApp, task: string): Promise<TaskView> {
+async function viewOf(tasks: Runtime, task: string): Promise<TaskView> {
 	const read = await tasks.send(TaskQuery, { task });
 
 	if (!read.ok) {
@@ -76,7 +76,7 @@ function createdIdOf(created: unknown): string {
 }
 
 async function statusComes(
-	tasks: StartedApp,
+	tasks: Runtime,
 	{ task, status }: { readonly task: string; readonly status: string },
 ): Promise<boolean> {
 	for (let tries = 0; tries < 100; tries += 1) {
@@ -99,7 +99,7 @@ async function thrownMessageOf(run: () => Promise<unknown>): Promise<string> {
 	}
 }
 
-async function startedTask(tasks: StartedApp, chatId: string, title: string): Promise<string> {
+async function startedTask(tasks: Runtime, chatId: string, title: string): Promise<string> {
 	const context = {
 		app: tasks,
 		chatId,
@@ -167,7 +167,7 @@ interface Held {
 	readonly drafts: Set<string>;
 }
 
-function heldSessions(tasks: StartedApp, chatTasks: ChatTasks = chatTasksOver(tasks)): Held {
+function heldSessions(tasks: Runtime, chatTasks: ChatTasks = chatTasksOver(tasks)): Held {
 	const runs: HeldRun[] = [];
 	const drafts = new Set<string>();
 	const sessions = new ChatSessions(
@@ -284,7 +284,7 @@ interface GatedSettle {
 	readonly gate: { open: () => void };
 }
 
-function gatedSettle(tasks: StartedApp): GatedSettle {
+function gatedSettle(tasks: Runtime): GatedSettle {
 	const real = chatTasksOver(tasks);
 	const gate: { open: () => void } = { open: () => undefined };
 	const opened = new Promise<void>((open) => {

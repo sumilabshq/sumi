@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { RecordAppPageCommand } from "@sumi/contract";
-import { useApp } from "@widgetarium/data-framework";
+import { useRuntime } from "@widgetarium/data-framework";
 import { iconUrlOf } from "./icon-url.js";
 
 interface RecordedFace {
@@ -11,7 +11,7 @@ interface RecordedFace {
 const NOT_RECORDED = "[apps] tab {tab}: its title and icon stay as they were ({reason})";
 
 export function useRecordsAppTab({ title, icon }: RecordedFace, tabId: string): void {
-	const shell = useApp("useRecordsAppTab");
+	const shell = useRuntime("useRecordsAppTab");
 	useEffect(() => {
 		void shell.send(RecordAppPageCommand, { id: tabId, title, favicon: iconUrlOf(icon) }).then((answer) => {
 			if (!answer.ok) {

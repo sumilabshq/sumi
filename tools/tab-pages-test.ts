@@ -14,7 +14,7 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { placedTabsOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { PaneTreeQuery, PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HOST_CHAT, studioFakesOf } from "./app-host-fixture.ts";
 import { WORKSPACE_LIST } from "../packages/state/places/shared/lib/tabs/tab-lists.ts";
 import { givePage } from "../packages/state/places/shared/lib/tabs/host-tabs.ts";
@@ -55,7 +55,7 @@ function restoredStudio() {
 	return studioFakesOf({ tabs: restoredTabs(), pages: [BROWSER_FIRST_PAGE] });
 }
 
-async function pageIdOf(studioApp: StartedApp, tabId: string): Promise<string | null> {
+async function pageIdOf(studioApp: Runtime, tabId: string): Promise<string | null> {
 	const held = await studioApp.send(HeldTabsQuery);
 	return held.ok ? (held.output.tabs.find((tab) => tab.id === tabId)?.pageId ?? null) : null;
 }

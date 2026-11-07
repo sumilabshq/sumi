@@ -1,7 +1,7 @@
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot, MenuRowSourcesSlot } from "@sumi/command-menu-plugin";
 import { SumiHostPlugin, WindowModuleSchema, WindowModulesSlot } from "@sumi/sumi-host-plugin";
 import { plugin, slotFillsOf, slotReaderOf, stampSlotName, startOrderOf } from "@widgetarium/plugin-framework";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
@@ -79,7 +79,7 @@ if (windowModuleFill === undefined) {
 }
 
 const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(slotReaderOf(slotFills, CommandMenuPlugin));
-const studio = app()
+const studio = runtime()
 	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, menuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "menu-fills" } });

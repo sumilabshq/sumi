@@ -1,10 +1,14 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
 import { refusalOf } from "@widgetarium/data-framework";
-import type { Answer, ListeningTransport, ServedCall, ServingServer } from "@widgetarium/data-framework";
+import type { Answer, Answering, ServedCall } from "@widgetarium/data-framework";
 import { CORE_ANSWER, CORE_CHANGED, CORE_SERVE, CoreAskSchema } from "./core-wire.js";
 
-export type StartWorkspace = (workspace: string, listener: ListeningTransport) => void;
+export interface CoreListener {
+	serve(answering: Answering): () => void;
+}
+
+export type StartWorkspace = (workspace: string, listener: CoreListener) => void;
 
 const NOT_AN_ASK = "a call reached the core in a shape it does not read";
 const NOT_SERVING = "[studio-core] the core could not take calls";
@@ -38,10 +42,10 @@ export function serveCore(startWorkspace: StartWorkspace): void {
 	invoke(CORE_SERVE, { onCall: calls }).catch((failure: unknown) => console.error(NOT_SERVING, failure));
 }
 
-class WorkspaceListener implements ListeningTransport {
-	private readonly served: Promise<ServingServer>;
+class WorkspaceListener implements CoreListener {
+	private readonly served: Promise<Answering>;
 	private settle: {
-		readonly serve: (server: ServingServer) => void;
+		readonly serve: (answering: Answering) => void;
 		readonly fail: (failure: unknown) => void;
 	} = {
 		serve: () => undefined,
@@ -57,9 +61,9 @@ class WorkspaceListener implements ListeningTransport {
 		});
 	}
 
-	serve(server: ServingServer): () => void {
-		this.settle.serve(server);
-		return server.changes((invalidated) => {
+	serve(answering: Answering): () => void {
+		this.settle.serve(answering);
+		return answering.changes((invalidated) => {
 			invoke(CORE_CHANGED, {
 				workspace: this.workspace,
 				invalidated,
@@ -72,7 +76,7 @@ class WorkspaceListener implements ListeningTransport {
 	}
 
 	async answer(call: ServedCall): Promise<Answer<unknown>> {
-		const server = await this.served.catch((failure: unknown) =>
+		const answering = await this.served.catch((failure: unknown) =>
 			refusalOf(
 				"unreachable",
 				NOT_STARTED.replace("{name}", call.name)
@@ -81,12 +85,12 @@ class WorkspaceListener implements ListeningTransport {
 			),
 		);
 
-		if ("ok" in server) {
-			return server;
+		if ("ok" in answering) {
+			return answering;
 		}
 
 		try {
-			return await server.answer(call);
+			return await answering.answer(call);
 		} catch (failure) {
 			console.error(FAILED.replace("{name}", call.name).replace("{failure}", String(failure)), failure);
 			return refusalOf("unreachable", FAILED.replace("{name}", call.name).replace("{failure}", String(failure)), true);

@@ -1,6 +1,6 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
@@ -114,7 +114,7 @@ export interface StudioFakes {
 	readonly places: MemoryTabsGateway;
 	readonly pages: RecordedPagesGateway;
 	readonly layout: LayoutParts;
-	readonly studioApp: StartedApp;
+	readonly studioApp: Runtime;
 }
 
 export interface StudioSeed {
@@ -144,7 +144,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const places = seed.places ?? new MemoryTabsGateway(placedTabsOf(seed.tabs ?? NO_TABS, [HOST_CHAT]));
 	const pages = new RecordedPagesGateway(seed.pages ?? [], seed.isBrowserAvailable ?? true);
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
-	const studioApp = app()
+	const studioApp = runtime()
 		.modules(
 			AppHostModule({ injects: { ...appHost } }),
 			PluginAppsModule,

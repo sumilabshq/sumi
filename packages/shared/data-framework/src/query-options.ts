@@ -1,6 +1,6 @@
 import type { QueryFunctionContext } from "@tanstack/react-query";
 import { queryKeyOf } from "./query-key";
-import type { StartedApp } from "./app";
+import type { Runtime } from "./runtime";
 import { RequestFailed } from "./request-failed";
 import type { AnyQuery } from "./request";
 
@@ -20,7 +20,7 @@ const REMOTE_POLICY = {
 	networkMode: "online",
 } as const;
 
-export function queryOptionsOf(started: StartedApp, request: AnyQuery, sent: unknown) {
+export function queryOptionsOf(started: Runtime, request: AnyQuery, sent: unknown) {
 	const queryKey = queryKeyOf(request, sent);
 	return {
 		queryKey,

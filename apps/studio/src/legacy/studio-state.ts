@@ -1,11 +1,11 @@
 import { ShowViewCommand, ShownViewQuery } from "@widgetarium/app-host";
 import { STUDIO_OPENED_ON } from "@widgetarium/core/engine/studio-state-port.js";
 import type { StudioMoment, StudioState, StudioView } from "@widgetarium/core/engine/studio-state-port.js";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { createListeners } from "./listeners.js";
 
 // TRADE-OFF: the core StudioState port still carries the shown view, so it reads and writes app-host's ShownViewQuery; views should read the query themselves
-export function createStudioState(studioApp: StartedApp): StudioState {
+export function createStudioState(studioApp: Runtime): StudioState {
 	const listeners = createListeners();
 	let moment = STUDIO_OPENED_ON;
 	const momentNow = (): StudioMoment => {
@@ -50,12 +50,12 @@ export function createStudioState(studioApp: StartedApp): StudioState {
 	};
 }
 
-function shownViewOf(studioApp: StartedApp): StudioView {
+function shownViewOf(studioApp: Runtime): StudioView {
 	const read = studioApp.routes.readNow(ShownViewQuery);
 	return read === null ? STUDIO_OPENED_ON.view : ShownViewQuery.outputSchema.parse(read.output);
 }
 
-async function showView(studioApp: StartedApp, view: StudioView): Promise<void> {
+async function showView(studioApp: Runtime, view: StudioView): Promise<void> {
 	const answer = await studioApp.send(ShowViewCommand, { view });
 
 	if (!answer.ok) {

@@ -104,6 +104,8 @@ const NOTHING_REQUIRED: NothingAdded = Object.freeze({});
 const NO_STEP_OPTIONS: StepOptions = Object.freeze([]);
 const RATE_LIMITED = "{name} was called too often; try again shortly";
 const WHOLE_CALL = "";
+const GUARD_AT = "guard #{at}";
+const MIDDLEWARE_AT = "middleware #{at}";
 const CALLED = "[{area}] app {app} → {request} {detail}";
 
 export class MiddlewareBuilder<In, A extends Added, D extends Inject, O extends StepOptions = never> {
@@ -199,4 +201,9 @@ export function stepOf(shape: StepShape, handle: AnyHandle): Step {
 
 export function isGuardStep(step: Step): boolean {
 	return step.kind === "guard" || step.kind === "public";
+}
+
+export function stepNameOf(declared: readonly Step[], step: Step): string {
+	const at = String(declared.indexOf(step) + 1);
+	return step.label ?? (isGuardStep(step) ? GUARD_AT : MIDDLEWARE_AT).replace("{at}", at);
 }

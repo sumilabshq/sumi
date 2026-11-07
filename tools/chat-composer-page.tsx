@@ -12,7 +12,7 @@ import type {
 	AssistantSession,
 	AssistantSetup,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
@@ -220,7 +220,7 @@ if (which === "attach") {
 	]);
 }
 
-const chat = app()
+const chat = runtime()
 	.modules(MascotModule, AssistantModule({ injects: oneChatParts(parts) }))
 	.start({
 		platform: "browser",
@@ -236,8 +236,8 @@ if (!holder) {
 
 createRoot(holder).render(
 	h(
-		AppProvider,
-		{ app: chat },
+		RuntimeProvider,
+		{ runtime: chat },
 		h(AssistantPanel, { title: "Habit tracker", lead: h("span", { className: "chat-composer-lead" }) }),
 	),
 );

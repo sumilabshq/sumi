@@ -2,7 +2,6 @@ import type { Provided, ServerParts } from "./module";
 import type { ModuleScope, Platform } from "./platform-module";
 import { MemoryRateLimits } from "./rate-limits";
 import type { RateLimits } from "./rate-limits";
-import type { ModuleReach } from "./remote-modules";
 
 export interface RuntimeProvides {
 	readonly rateLimits: RateLimits;
@@ -16,13 +15,8 @@ export interface RuntimeFacts extends ServerParts {
 	readonly scope: ModuleScope | null;
 }
 
-export type RuntimeProvider = (facts: RuntimeFacts) => RuntimeProvides & Provided;
+export type RuntimeProviding = (facts: RuntimeFacts) => RuntimeProvides & Provided;
 
 export type ProvideRuntime = (facts: RuntimeFacts) => Provided;
-
-export interface RuntimeWiring {
-	readonly remote: ModuleReach | null;
-	readonly provideRuntime: ProvideRuntime;
-}
 
 export const provideDefaultRuntime: ProvideRuntime = () => ({ rateLimits: new MemoryRateLimits() });

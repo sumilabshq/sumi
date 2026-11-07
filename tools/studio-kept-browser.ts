@@ -4,14 +4,14 @@ import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/
 import { MemoryRecentSitesGateway } from "../packages/domain/browser/gateways/recent-sites/memory.gateway.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
 import { isLaidOnScreen } from "../packages/domain/browser/shared/lib/is-laid-on-screen.ts";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { restoreTabs } from "../apps/studio/src/tabs/studio-app.ts";
 import { FakeBrowserPagesGateway, HurriedClockGateway } from "./browser-fakes.ts";
 import { studioAppOf } from "./studio-app-fixture.ts";
 
 export const KEPT_PAGE = "data-kept-page";
 
-export function keptStudioApp(): StartedApp {
+export function keptStudioApp(): Runtime {
 	const parts = browserPartsOf(
 		{
 			browserPages: new LaidPagesGateway(),

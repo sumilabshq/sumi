@@ -7,7 +7,7 @@ import type {
 	ServerRuns,
 	RemoteTransport,
 	ServedCall,
-	ServingServer,
+	Answering,
 } from "@widgetarium/data-framework";
 
 export type HeardInvalidation = Parameters<HearChanges>[0][number];
@@ -41,7 +41,7 @@ export function hearsAll(): boolean {
 	return true;
 }
 
-export function createFrameRelay(routes: readonly FrameRoute[]): ServingServer {
+export function createFrameRelay(routes: readonly FrameRoute[]): Answering {
 	const relayed = relayedOf(routes);
 	return {
 		answer: (call) => answerThrough(relayed, call),

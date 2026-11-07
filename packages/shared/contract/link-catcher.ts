@@ -1,8 +1,8 @@
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { OpenLinkCommand } from "./generated/places.js";
 
 export interface LinkCatching {
-	readonly sumi: StartedApp;
+	readonly sumi: Runtime;
 	readonly tabId: string;
 }
 

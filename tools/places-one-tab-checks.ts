@@ -1,6 +1,5 @@
-import { app, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	AppTabQuery,
 	CloseTabCommand,
@@ -45,16 +44,17 @@ const AT: TabsAsk = {
 	screen: NO_SCREEN,
 };
 
-function placesApp(tabs: MemoryTabsGateway): StartedApp {
+function placesApp(tabs: MemoryTabsGateway): Runtime {
 	const core = localTransport();
-	server()
-		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
-		.listen(core)
-		.start({ env: {} });
-	return app().imports(PlacesModule({ over: core })).start();
+	core.serve(
+		runtime()
+			.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+			.start({ platform: "server", env: {} }),
+	);
+	return runtime().imports(PlacesModule({ over: core })).start();
 }
 
-async function sidebarOf(places: StartedApp): Promise<PlacedSidebar | string> {
+async function sidebarOf(places: Runtime): Promise<PlacedSidebar | string> {
 	const answer = await places.send(SidebarQuery, { at: AT, essentials: [] });
 	return answer.ok ? answer.output : answer.reason;
 }
@@ -88,12 +88,12 @@ async function wholeChatChecks(): Promise<void> {
 	await archiveChecks(places, tabs);
 }
 
-async function chatIdOf(places: StartedApp): Promise<string | null> {
+async function chatIdOf(places: Runtime): Promise<string | null> {
 	const answer = await places.send(AppTabQuery, { id: "chat-a" });
 	return answer.ok ? answer.output.chatId : answer.reason;
 }
 
-async function chatIdChecks(places: StartedApp): Promise<void> {
+async function chatIdChecks(places: Runtime): Promise<void> {
 	const kept = await chatIdOf(places);
 	await places.send(RecordAppPageCommand, { id: "chat-a", address: "/elsewhere" });
 	check(
@@ -103,7 +103,7 @@ async function chatIdChecks(places: StartedApp): Promise<void> {
 	);
 }
 
-async function turnEndingChecks(places: StartedApp): Promise<void> {
+async function turnEndingChecks(places: Runtime): Promise<void> {
 	await places.send(RecordTabTurnCommand, { id: "chat-a", title: null, isBusy: false, isSeen: false });
 	const unread = openRowsOf(await sidebarOf(places));
 	await places.send(MarkTabSeenCommand, { id: "chat-a" });
@@ -114,7 +114,7 @@ async function turnEndingChecks(places: StartedApp): Promise<void> {
 	);
 }
 
-async function archiveChecks(places: StartedApp, tabs: MemoryTabsGateway): Promise<void> {
+async function archiveChecks(places: Runtime, tabs: MemoryTabsGateway): Promise<void> {
 	const closed = await places.send(CloseTabCommand, { at: AT, id: "chat-a" });
 	const closedRows = await places.send(ClosedTabsQuery);
 	check(

@@ -1,6 +1,6 @@
 import { createElement as h, useState } from "react";
 import type { ReactElement } from "react";
-import { AppProvider, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
+import { RuntimeProvider, useOptionalQuery, useQuery } from "@widgetarium/data-framework";
 import { CommandMenuResultsQuery, MenuDoorsQuery } from "@sumi/command-menu";
 import type { Door, Results } from "@sumi/command-menu";
 import { useAskComposer } from "@sumi/sumi-host-plugin";
@@ -66,9 +66,9 @@ export function MenuPanel({ door, startText, pageId }: MenuPanelProps): ReactEle
 			{askApp === null ? (
 				<MenuField ask={field} end={null} onFiles={null} />
 			) : (
-				<AppProvider app={askApp}>
+				<RuntimeProvider runtime={askApp}>
 					<AskField field={field} />
-				</AppProvider>
+				</RuntimeProvider>
 			)}
 			<div className="wg-cm-hr" />
 			<MenuHead door={doors.shownDoor} doors={menuDoors} foundCount={shownCount} onDoor={doors.switchTo} />

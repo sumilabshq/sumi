@@ -1,28 +1,23 @@
-import { isCovering } from "./guard";
 import type { AnyHandler, Inject } from "./handler";
 import type { Route } from "./local-routes";
-import { isGuardStep } from "./middleware";
-import type { Step } from "./middleware";
-import type { ModuleDefinition, Provided, ReadyModule, Side } from "./module";
+import { stepNameOf } from "./middleware";
+import type { ModuleDefinition, Provided, ReadyModule } from "./module";
+import type { Platform } from "./platform-module";
 import type { ModuleReach } from "./remote-modules";
 import type { AnyEvent } from "./event";
 import { moduleRoutesOf } from "./routes-of-module";
 import type { ModuleRoutes } from "./routes-of-module";
 
 interface Starting {
-	readonly side: Side;
+	readonly platform: Platform | null;
 	readonly modules: readonly ReadyModule[];
-	readonly hasAuthenticate: boolean;
 	readonly runtimeProvided: Provided;
 	readonly remote: ModuleReach | null;
 }
 
-const REFUSED = "{starter} refused:\n{findings}";
-const STARTERS = { client: "app()", server: "server()" } as const;
-const WRONG_SIDE = {
-	client: 'module "{module}" runs on the server; a client app reaches it through its server',
-	server: 'module "{module}" runs on the client; a server runs only modules that run on the server',
-} as const;
+const STARTER = "runtime()";
+const REFUSED = "runtime() refused:\n{findings}";
+const ON_DEVICE = 'module "{module}" runs on the client; a server runs only modules that run on the server';
 const WRONG_MODULE = '{request} is handled in module "{module}", but its name names module "{named}"';
 const BUILT_FOR = 'the handler of {request} was built for module "{built}", but module "{module}" holds it';
 const TWO_HANDLERS = "{request} has {count} handlers";
@@ -31,13 +26,6 @@ const RUNTIME_KEY = 'module "{module}" provides {key}, which {starter}.provide()
 const RESERVED_KEY = 'module "{module}" provides {key}, a name the framework gives every handler: rename it';
 const RUNTIME_RESERVED_KEY = "{starter}.provide() returns {key}, a name the framework gives every handler: rename it";
 const RESERVED_KEYS: ReadonlySet<string> = new Set(["send", "emit", "invalidate", "user", "signal", "idempotencyKey"]);
-const NEEDS_AUTHENTICATE = "{request} is guarded by {guard}, which needs an Authenticate in the starter's host";
-const NEEDS_USER_ON_CLIENT =
-	"{request} is guarded by {guard}, which needs a user, and app() has no Authenticate: guard it where its server handles it";
-const UNGUARDED =
-	"{request} runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
-const GUARD_AT = "guard #{at}";
-const MIDDLEWARE_AT = "middleware #{at}";
 const STEP_NOT_PROVIDED =
 	"{step} of {request} requires {key}, which neither its module nor {starter}.provide() gives as a {token}";
 const IMPORT_UNMET =
@@ -56,20 +44,14 @@ export interface StartedRoutes {
 }
 
 export function routesOf(starting: Starting): StartedRoutes {
-	refuseOn(starting.side, [
-		...sideFindings(starting),
-		...ranAndImportedFindings(starting),
-		...importedTwiceFindings(starting),
-	]);
+	refuseOn([...platformFindings(starting), ...ranAndImportedFindings(starting), ...importedTwiceFindings(starting)]);
 	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.runtimeProvided));
 	const routes = moduleRoutes.flatMap((ofModule) => ofModule.routes);
-	refuseOn(starting.side, [
+	refuseOn([
 		...moduleRoutes.flatMap(reservedKeyFindings),
 		...runtimeReservedKeyFindings(starting),
 		...moduleRoutes.flatMap((ofModule) => runtimeKeyFindings(ofModule, starting)),
-		...moduleRoutes.flatMap(({ module, routes: ofModule }) =>
-			ofModule.flatMap((route) => routeFindings(module, route, starting)),
-		),
+		...moduleRoutes.flatMap(({ module, routes: ofModule }) => ofModule.flatMap((route) => routeFindings(module, route))),
 		...duplicateFindings(routes.map((route) => route.handler)),
 		...importFindings(starting),
 		...moduleRoutes.flatMap(({ module }) => listenFindings(module, starting)),
@@ -80,15 +62,16 @@ export function routesOf(starting: Starting): StartedRoutes {
 	};
 }
 
-function refuseOn(side: Side, findings: readonly string[]): void {
+function refuseOn(findings: readonly string[]): void {
 	if (findings.length === 0) return;
-	throw new Error(REFUSED.replace("{starter}", STARTERS[side]).replace("{findings}", findings.join("\n")));
+	throw new Error(REFUSED.replace("{findings}", findings.join("\n")));
 }
 
-function sideFindings({ side, modules }: Starting): string[] {
+function platformFindings({ platform, modules }: Starting): string[] {
+	if (platform !== "server") return [];
 	return modules
-		.filter(({ definition }) => definition.runs !== side && definition.runs !== "anywhere")
-		.map(({ definition }) => WRONG_SIDE[side].replace("{module}", definition.name));
+		.filter(({ definition }) => definition.runs === "client")
+		.map(({ definition }) => ON_DEVICE.replace("{module}", definition.name));
 }
 
 function ranAndImportedFindings({ modules, remote }: Starting): string[] {
@@ -110,10 +93,10 @@ function importedTwiceFindings({ remote }: Starting): string[] {
 		.map(([imported, count]) => IMPORTED_TWICE.replace("{module}", imported).replace("{count}", String(count)));
 }
 
-function runtimeReservedKeyFindings({ side, runtimeProvided }: Starting): string[] {
+function runtimeReservedKeyFindings({ runtimeProvided }: Starting): string[] {
 	return Object.keys(runtimeProvided)
 		.filter((key) => RESERVED_KEYS.has(key))
-		.map((key) => RUNTIME_RESERVED_KEY.replace("{starter}", STARTERS[side]).replace("{key}", key));
+		.map((key) => RUNTIME_RESERVED_KEY.replace("{starter}", STARTER).replace("{key}", key));
 }
 
 function reservedKeyFindings({ module, provides }: ModuleRoutes): string[] {
@@ -122,17 +105,15 @@ function reservedKeyFindings({ module, provides }: ModuleRoutes): string[] {
 		.map((key) => RESERVED_KEY.replace("{module}", module.definition.name).replace("{key}", key));
 }
 
-function runtimeKeyFindings({ module, provides }: ModuleRoutes, { side, runtimeProvided }: Starting): string[] {
+function runtimeKeyFindings({ module, provides }: ModuleRoutes, { runtimeProvided }: Starting): string[] {
 	return Object.keys(provides)
 		.filter((key) => key in runtimeProvided)
 		.map((key) =>
-			RUNTIME_KEY.replace("{module}", module.definition.name)
-				.replace("{key}", key)
-				.replace("{starter}", STARTERS[side]),
+			RUNTIME_KEY.replace("{module}", module.definition.name).replace("{key}", key).replace("{starter}", STARTER),
 		);
 }
 
-function routeFindings(module: ReadyModule, route: Route, starting: Starting): string[] {
+function routeFindings(module: ReadyModule, route: Route): string[] {
 	const { request } = route.handler;
 	const { definition } = module;
 	const named =
@@ -141,44 +122,19 @@ function routeFindings(module: ReadyModule, route: Route, starting: Starting): s
 	const injected = missingOf(route.handler.inject, route.provided).map(([key, token]) =>
 		fill(NOT_PROVIDED, request.name).replace("{key}", key).replace("{token}", token),
 	);
-	return [...named, ...built, ...injected, ...stepFindings(module, route, starting)];
+	return [...named, ...built, ...injected, ...unprovidedStepFindings(route)];
 }
 
-function stepFindings(module: ReadyModule, route: Route, { side, hasAuthenticate }: Starting): string[] {
-	const declared = [...module.definition.steps, ...route.handler.steps];
-
-	if (side === "server" && !declared.some(isCovering)) {
-		return [fill(UNGUARDED, route.handler.request.name)];
-	}
-
-	const needing = hasAuthenticate ? undefined : route.steps.find((step) => step.needsUser);
-	const template = side === "server" ? NEEDS_AUTHENTICATE : NEEDS_USER_ON_CLIENT;
-	const authenticate =
-		needing === undefined
-			? []
-			: [fill(template, route.handler.request.name).replace("{guard}", stepNameOf(declared, needing))];
-	return [...unprovidedStepFindings(route, declared, side), ...authenticate];
-}
-
-function unprovidedStepFindings(
-	{ handler: { request }, steps, provided }: Route,
-	declared: readonly Step[],
-	side: Side,
-): string[] {
+function unprovidedStepFindings({ handler: { request }, steps, provided }: Route): string[] {
 	return steps.flatMap((step) =>
 		missingOf(step.requires, provided).map(([key, token]) =>
 			fill(STEP_NOT_PROVIDED, request.name)
-				.replace("{step}", stepNameOf(declared, step))
+				.replace("{step}", stepNameOf(steps, step))
 				.replace("{key}", key)
-				.replace("{starter}", STARTERS[side])
+				.replace("{starter}", STARTER)
 				.replace("{token}", token),
 		),
 	);
-}
-
-function stepNameOf(declared: readonly Step[], step: Step): string {
-	const at = String(declared.indexOf(step) + 1);
-	return step.label ?? (isGuardStep(step) ? GUARD_AT : MIDDLEWARE_AT).replace("{at}", at);
 }
 
 function missingOf(inject: Inject, provided: Provided): [string, string][] {
@@ -187,7 +143,7 @@ function missingOf(inject: Inject, provided: Provided): [string, string][] {
 		.map(([key, token]) => [key, token.name]);
 }
 
-function importFindings({ side, modules, remote }: Starting): string[] {
+function importFindings({ modules, remote }: Starting): string[] {
 	const ranModuleNames = new Set(modules.map(({ definition }) => definition.name));
 	return modules.flatMap(({ definition }) =>
 		definition.importedModuleNames
@@ -195,7 +151,7 @@ function importFindings({ side, modules, remote }: Starting): string[] {
 			.map((imported) =>
 				IMPORT_UNMET.replace("{module}", definition.name)
 					.replace("{imported}", imported)
-					.replace("{starter}", STARTERS[side]),
+					.replace("{starter}", STARTER),
 			),
 	);
 }

@@ -1,8 +1,8 @@
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { ThemeQuery } from "./generated/appearance.js";
 
 export interface ThemeWearing {
-	readonly sumi: StartedApp;
+	readonly sumi: Runtime;
 	readonly transport: RemoteTransport;
 }
 

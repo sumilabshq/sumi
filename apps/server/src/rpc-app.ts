@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { WIRE_PREFIX } from "@widgetarium/data-framework/server";
 
 interface Served {
-	readonly fetch: (request: Request) => Promise<Response>;
+	readonly fetch: (request: Request) => Response | Promise<Response>;
 }
 
 // TODO: verify the origin with one fetch from the Obsidian desktop app

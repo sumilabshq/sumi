@@ -1,10 +1,10 @@
 import type { FocusedChat, FocusedChatPort } from "@widgetarium/core/engine/focused-chat-port.js";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import type { PaneBoard } from "@widgetarium/layout";
 import { ChatListQuery } from "@widgetarium/app-host";
 
-export function focusedChatPortOf(studioApp: StartedApp): FocusedChatPort {
+export function focusedChatPortOf(studioApp: Runtime): FocusedChatPort {
 	return {
 		now: () => focusedChatIn(studioApp),
 		isOnScreen: (chatId) => boardIn(studioApp)?.chatGroups.some((group) => group.chatId === chatId) ?? false,
@@ -19,7 +19,7 @@ export function focusedChatPortOf(studioApp: StartedApp): FocusedChatPort {
 	};
 }
 
-function focusedChatIn(studioApp: StartedApp): FocusedChat | null {
+function focusedChatIn(studioApp: Runtime): FocusedChat | null {
 	const focusedId = boardIn(studioApp)?.focusedChatId ?? null;
 	const read = studioApp.routes.readNow(ChatListQuery);
 
@@ -32,7 +32,7 @@ function focusedChatIn(studioApp: StartedApp): FocusedChat | null {
 	return row === undefined ? null : { id: row.id, title: row.title };
 }
 
-function boardIn(studioApp: StartedApp): PaneBoard | null {
+function boardIn(studioApp: Runtime): PaneBoard | null {
 	const read = studioApp.routes.readNow(PaneTreeQuery);
 	return read === null ? null : PaneTreeQuery.outputSchema.parse(read.output);
 }

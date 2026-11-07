@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { OpenChatDraftCommand, PrefillDraftCommand } from "@sumi/contract";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { toast } from "@widgetarium/kit";
 
-export function useOpensChatDraft(shell: StartedApp, chatId: string): void {
+export function useOpensChatDraft(shell: Runtime, chatId: string): void {
 	useEffect(() => {
 		void openChatDraft(shell, chatId);
 	}, [shell, chatId]);
 }
 
-async function openChatDraft(shell: StartedApp, chatId: string): Promise<void> {
+async function openChatDraft(shell: Runtime, chatId: string): Promise<void> {
 	const opened = await shell.send(OpenChatDraftCommand, {
 		chat: chatId,
 	});

@@ -1,6 +1,6 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
@@ -158,7 +158,7 @@ export interface ExactStudioAsk {
 }
 
 export interface ExactStudio {
-	readonly studioApp: StartedApp;
+	readonly studioApp: Runtime;
 	readonly places: MemoryTabsGateway;
 	readonly essentials: MemoryEssentialsGateway;
 	readonly switchChat: (id: string) => void;
@@ -177,7 +177,7 @@ export function exactStudio({
 	const places = new MemoryTabsGateway(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds, titles));
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
-	const studioApp = app()
+	const studioApp = runtime()
 		.modules(
 			PluginAppsModule,
 			AppHostModule({ injects: {

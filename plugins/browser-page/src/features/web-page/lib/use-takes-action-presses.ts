@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { AppTabQuery, TakeActionPressCommand } from "@sumi/contract";
-import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 
 type ActionRuns = Readonly<Record<string, () => void>>;
 
 interface PressTaking {
-	readonly shell: StartedApp;
+	readonly shell: Runtime;
 	readonly tabId: string;
 	readonly runs: { readonly current: ActionRuns };
 }
@@ -16,7 +16,7 @@ const TAKE_REFUSED = "[browser-page] press {press} of tab {tab} not taken here: 
 const NOT_SHOWN = "[browser-page] action {action} was pressed while no page shows it";
 
 export function useTakesActionPresses(tabId: string, runs: ActionRuns): void {
-	const shell = useApp("useTakesActionPresses");
+	const shell = useRuntime("useTakesActionPresses");
 	const presses = useOptionalQuery(AppTabQuery, { id: tabId }).data?.presses ?? NO_PRESSES;
 	const latestRuns = useRef(runs);
 	latestRuns.current = runs;

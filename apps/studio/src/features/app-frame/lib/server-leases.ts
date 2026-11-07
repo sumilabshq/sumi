@@ -1,6 +1,5 @@
 import { localTransport } from "@widgetarium/data-framework";
 import type { LocalTransport, RemoteTransport } from "@widgetarium/data-framework";
-import type { StartedServer } from "@widgetarium/data-framework/server";
 
 export interface HeldTransport {
 	readonly transport: RemoteTransport;
@@ -9,11 +8,11 @@ export interface HeldTransport {
 
 interface LeasedServer {
 	readonly transport: RemoteTransport;
-	readonly server: StartedServer;
+	readonly stopServer: () => void;
 	readonly frameCount: number;
 }
 
-type StartServer = (key: string, local: LocalTransport) => StartedServer;
+type StartServer = (key: string, local: LocalTransport) => () => void;
 
 export class ServerLeases {
 	private readonly leased = new Map<string, LeasedServer>();
@@ -44,7 +43,7 @@ export class ServerLeases {
 		const local = localTransport();
 		const leased = {
 			transport: local,
-			server: this.startServer(key, local),
+			stopServer: this.startServer(key, local),
 			frameCount: 1,
 		};
 		this.leased.set(key, leased);
@@ -75,7 +74,7 @@ export class ServerLeases {
 			return;
 		}
 
-		held.server.stop();
+		held.stopServer();
 		this.leased.delete(key);
 		console.info(`[widgetarium] ${this.kind} ${key} server served → stopped, frames 1 → 0`);
 	}

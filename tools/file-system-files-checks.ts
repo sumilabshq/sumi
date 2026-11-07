@@ -1,6 +1,6 @@
-import { app, orpcTransport } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, orpcTransport } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
+import { dataFrameworkMiddleware } from "@widgetarium/data-framework/server";
 import {
 	AppendFileCommand,
 	CopyCommand,
@@ -26,13 +26,16 @@ const ROOT = {
 	workspaceId: WORKSPACE,
 };
 const files = new MemoryFilesGateway(APP_DATA, WORKSPACE);
-const served = server()
-	.modules(RunnableFileSystemModule({ injects: { files } }))
-	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
+const served = dataFrameworkMiddleware(
+	runtime()
+		.modules(RunnableFileSystemModule({ injects: { files } }))
+		.start({ platform: "server", env: {} }),
+	{ authenticate: new AppCallerAuthenticate() },
+);
 
-function appOver(id: string | null): StartedApp {
+function appOver(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
-	return app()
+	return runtime()
 		.imports(FileSystemModule({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
 		.start();
 }

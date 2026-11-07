@@ -1,6 +1,6 @@
 import { AppTabQuery } from "@sumi/contract";
 import type { FrameServing, WindowOffers } from "@sumi/sumi-host-plugin";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { WebPageModule } from "@widgetarium/web-page/module";
 import type { AppTabs, NativeWebPages, WebPageConfig } from "@widgetarium/web-page/module";
 import { nativeWebPagesOver } from "./native-web-pages.js";
@@ -32,7 +32,7 @@ function webPageConfigOf(appTabs: AppTabs, nativePages: NativeWebPages | null): 
 	};
 }
 
-function appTabsOver(windowApp: StartedApp): AppTabs {
+function appTabsOver(windowApp: Runtime): AppTabs {
 	return {
 		appOfTab: async (tab) => {
 			const answer = await windowApp.send(AppTabQuery, { id: tab });

@@ -2,8 +2,8 @@ import { createElement as h, useEffect, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { CanvasOpeningQuery, OpenCanvasCommand } from "@widgetarium/canvas";
 import type { CanvasOpened, CanvasOpening } from "@widgetarium/canvas";
-import { AppProvider, OnRefused, toastRefusal, useQuery } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { RuntimeProvider, OnRefused, toastRefusal, useQuery } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { Toaster } from "@widgetarium/kit";
 import { PlateHeaderPart } from "../features/plate/ui/plate-header/plate-header-part.js";
 import { Canvas } from "../features/canvas/ui/canvas/canvas.js";
@@ -19,7 +19,7 @@ export interface CanvasShell {
 }
 
 export interface CanvasPageProps {
-	readonly canvasApp: StartedApp;
+	readonly canvasApp: Runtime;
 	readonly opened: CanvasOpened;
 	readonly surroundings: CanvasSurroundings;
 	readonly shell: CanvasShell | undefined;
@@ -43,7 +43,7 @@ export function CanvasPage({
 	}
 
 	return (
-		<AppProvider app={canvasApp}>
+		<RuntimeProvider runtime={canvasApp}>
 			<CanvasSurroundingsContext value={surroundings}>
 				<OnRefused value={toastRefusal}>
 					<Toaster />
@@ -53,7 +53,7 @@ export function CanvasPage({
 					</TipSurface>
 				</OnRefused>
 			</CanvasSurroundingsContext>
-		</AppProvider>
+		</RuntimeProvider>
 	);
 }
 
@@ -83,7 +83,7 @@ function plateControlsOf(shell: CanvasShell | undefined): ReactElement | undefin
 	);
 }
 
-function useOpensCanvas(canvasApp: StartedApp, opened: CanvasOpened): boolean {
+function useOpensCanvas(canvasApp: Runtime, opened: CanvasOpened): boolean {
 	const [isOpen, setOpen] = useState(false);
 	useEffect(() => {
 		void canvasApp.send(OpenCanvasCommand, opened).then((answer) => {

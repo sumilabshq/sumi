@@ -1,5 +1,5 @@
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import {
 	PinTabCommand,
 	PlaceInViewCommand,
@@ -67,8 +67,8 @@ interface Drag {
 
 console.info = () => undefined;
 
-async function splitWindowOf(pinned: readonly string[]): Promise<StartedApp> {
-	const window = app()
+async function splitWindowOf(pinned: readonly string[]): Promise<Runtime> {
+	const window = runtime()
 		.imports(PlacesModule({ over: placesLinkOf(new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]))) }))
 		.start();
 	await window.send(PlaceInViewCommand, {
@@ -95,7 +95,7 @@ async function splitWindowOf(pinned: readonly string[]): Promise<StartedApp> {
 	return window;
 }
 
-async function sidebarIn(window: StartedApp): Promise<TabsSidebar> {
+async function sidebarIn(window: Runtime): Promise<TabsSidebar> {
 	const read = await window.send(SidebarQuery, {
 		at: AT,
 		essentials: [],

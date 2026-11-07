@@ -1,7 +1,7 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { IsTooltipHosted, TooltipHost } from "../packages/shared/kit/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -94,7 +94,7 @@ browser.recentSites.saveRecentSites(
 		favicon: null,
 	})),
 );
-const studio = app()
+const studio = runtime()
 	.modules(
 		AppHostModule,
 		PluginAppsModule,
@@ -149,7 +149,7 @@ const ASK_WORKSPACE = {
 	folderFound: true,
 	recentFolders: ["/Users/me/Apps/translator", "/Users/me/Apps/recipes"],
 };
-const askApp = app()
+const askApp = runtime()
 	.modules(
 		AssistantModule({ injects: oneChatParts(
 			tauriAssistantParts({
@@ -236,12 +236,12 @@ const root = document.getElementById("root");
 
 if (root !== null) {
 	createRoot(root).render(
-		<AppProvider app={studio}>
+		<RuntimeProvider runtime={studio}>
 			<AskComposerContext value={askComposer}>
 				<TabFaceContext value={MenuTabFace}>
 					<Demo />
 				</TabFaceContext>
 			</AskComposerContext>
-		</AppProvider>,
+		</RuntimeProvider>,
 	);
 }

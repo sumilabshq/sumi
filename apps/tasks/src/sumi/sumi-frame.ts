@@ -1,12 +1,12 @@
 import { AppearanceModule, PlacesModule } from "@sumi/contract";
 import { TasksModule } from "@widgetarium/tasks";
-import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import { runtime, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
+import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 
 const TAB_KEY = "sumi-tab";
 
 export interface SumiFrame {
-	readonly sumi: StartedApp;
+	readonly sumi: Runtime;
 	readonly transport: RemoteTransport;
 	readonly tabId: string;
 }
@@ -14,7 +14,7 @@ export interface SumiFrame {
 export async function startSumiFrame(): Promise<SumiFrame> {
 	const transport = messagePortTransport(await portFromParent());
 	return {
-		sumi: app()
+		sumi: runtime()
 			.imports(
 				PlacesModule({ over: transport }),
 				AppearanceModule({ over: transport }),

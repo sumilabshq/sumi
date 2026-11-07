@@ -1,8 +1,7 @@
 import type { z } from "zod";
-import { localTransport } from "../packages/shared/data-framework/src/index.ts";
+import { localTransport, runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteModule, RemoteTransport } from "../packages/shared/data-framework/src/index.ts";
 import { PlacesModule as PlacesContract } from "../packages/state/places/generated/contract.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
 import { PlacesModule } from "../packages/state/places/module.ts";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { KeptSessionTabsSchema, migratedTabsOf } from "../packages/state/places/gateways/tabs/tauri/kept-session.ts";
@@ -38,10 +37,12 @@ export function placedTabsOf(
 
 export function placesLinkOf(tabs: MemoryTabsGateway): RemoteTransport {
 	const link = localTransport();
-	server()
-		.modules(PlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
-		.listen(link)
-		.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
+	link.serve(
+		runtime()
+			.modules(PlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+			.start({ platform: "server", env: {} }),
+		{ authenticate: new AppCallerAuthenticate() },
+	);
 	return link;
 }
 

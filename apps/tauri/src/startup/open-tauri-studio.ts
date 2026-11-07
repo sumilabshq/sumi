@@ -21,7 +21,7 @@ import { liveWindowLabels, ownWindowLabel } from "../chat/tauri-windows.js";
 import type { HeldSettings } from "../settings/settings-doc.js";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { tauriStudioHost } from "../tauri-studio-host.js";
 import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { ipcTransport } from "../core-link/ipc-transport.js";
@@ -49,7 +49,7 @@ const PROFILE_UNREAD =
 
 interface StartedParts {
 	readonly plugins: ResolvedPlugins;
-	readonly studioApp: StartedApp;
+	readonly studioApp: Runtime;
 	readonly assistant: TauriAssistant;
 	readonly core: RemoteTransport;
 }
@@ -108,7 +108,7 @@ function startTauriStudioApp(
 	{ workspace, store }: StudioOpening,
 	core: RemoteTransport,
 	plugins: ResolvedPlugins,
-): StartedApp {
+): Runtime {
 	return startStudioApp({
 		platform: "tauri",
 		workspaceId: workspace.id,
@@ -180,7 +180,7 @@ function startedStudioOf(opening: StudioOpening, started: StartedParts): Started
 	});
 }
 
-function studioHostOf({ project, workspaces }: StudioOpening, workspacesApp: StartedApp): StudioHostPort {
+function studioHostOf({ project, workspaces }: StudioOpening, workspacesApp: Runtime): StudioHostPort {
 	return tauriStudioHost(project, tauriWorkspaceApps({ workspaces, workspacesApp }));
 }
 
@@ -195,7 +195,7 @@ function startedPartsFieldsOf({ plugins, assistant, studioApp, core }: StartedPa
 	};
 }
 
-async function tabFaviconOf(studioApp: StartedApp, id: string): Promise<string | null> {
+async function tabFaviconOf(studioApp: Runtime, id: string): Promise<string | null> {
 	const tabs = await studioApp.send(AppTabsQuery);
 
 	if (!tabs.ok) {

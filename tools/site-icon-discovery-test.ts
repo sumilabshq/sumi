@@ -1,5 +1,5 @@
 import { JSDOM } from "jsdom";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { SiteIconQuery } from "../packages/domain/browser/index.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -37,7 +37,7 @@ function startedOver(served: ServedSiteFiles) {
 		siteIcons,
 		siteFiles,
 	});
-	const started = app()
+	const started = runtime()
 		.modules(BrowserModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: "icons" } });
 	return { started, siteFiles, siteIcons };

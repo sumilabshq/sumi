@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { DataAdapter, Stat } from "obsidian";
 import { render } from "../packages/shared/core/src/engine/render.js";
-import { AppProvider, OnRefused, useCommand } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, OnRefused, useCommand } from "../packages/shared/data-framework/src/index.ts";
 import type { CommandHandle, CommandRefusal } from "../packages/shared/data-framework/src/index.ts";
 import type { WidgetRegistry } from "../packages/shared/core/src/registry.ts";
 import { ObsidianDesignFilesGateway } from "../packages/domain/canvas/gateways/design-files/obsidian.gateway.ts";
@@ -42,7 +42,7 @@ async function checkFailedWrite(check: Check, settle: () => Promise<void>): Prom
 	const hearing = h(
 		OnRefused,
 		{ value: (refusal: CommandRefusal) => heard.push(refusal) },
-		h(AppProvider, { app: canvasApp }, h(PhotoView)),
+		h(RuntimeProvider, { runtime: canvasApp }, h(PhotoView)),
 	);
 	render(hearing, node);
 	await settle();

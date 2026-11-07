@@ -1,10 +1,10 @@
 import { createContext, useContext } from "react";
 import type { ComponentType } from "react";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { NoComposerBar } from "./no-composer-bar.js";
 
 export interface AskComposer {
-	readonly app: StartedApp | null;
+	readonly app: Runtime | null;
 	readonly bar: ComponentType;
 	ask(text: string, sends: boolean, chatId: string | null): void;
 }

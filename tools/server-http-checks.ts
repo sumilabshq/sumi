@@ -1,8 +1,8 @@
 import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 import path from "node:path";
-import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
+import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { check } from "./check-helpers.ts";
 
@@ -46,7 +46,7 @@ async function allowedOriginFor(url: string, origin: string): Promise<string | n
 }
 
 async function checkRequests(url: string): Promise<void> {
-	const client = app()
+	const client = runtime()
 		.imports(FixtureBillingModule({ over: orpcTransport(url) }))
 		.start();
 	const opened = await client.send(BalanceQuery);
@@ -62,7 +62,7 @@ async function checkRequests(url: string): Promise<void> {
 	await checkRepeatedKey(client);
 }
 
-async function checkRepeatedKey(client: StartedApp): Promise<void> {
+async function checkRepeatedKey(client: Runtime): Promise<void> {
 	const first = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	const repeat = await client.send(ChargeCommand, { amount: 10 }, { idempotencyKey: REPEATED_KEY });
 	check("a repeat of one idempotency key gets the first answer, which ran", [first.ok, repeat], [true, first]);

@@ -1,6 +1,6 @@
 import { Suspense, createElement as h } from "react";
 import type { CSSProperties, ReactElement } from "react";
-import { AppProvider } from "@widgetarium/data-framework";
+import { RuntimeProvider } from "@widgetarium/data-framework";
 import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
 import { useTabPageApp } from "../../lib/use-tab-page-app.js";
 
@@ -29,11 +29,11 @@ export function TabPageView({ page, app, tabId }: TabPageViewProps): ReactElemen
 
 	return (
 		<div style={FILL_TAB_STYLE} data-app-view={app} data-page-anchor-tab={tabId}>
-			<AppProvider app={started}>
+			<RuntimeProvider runtime={started}>
 				<Suspense fallback={null}>
 					<Page app={app} tabId={tabId} />
 				</Suspense>
-			</AppProvider>
+			</RuntimeProvider>
 		</div>
 	);
 }

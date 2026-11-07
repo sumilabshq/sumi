@@ -1,9 +1,8 @@
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/data-framework";
+import { runtime, localTransport, messagePortTransport, relayPort } from "@widgetarium/data-framework";
 import type { LocalTransport } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
 import { FileSystemModule, ReadFileQuery } from "@widgetarium/file-system";
 import { FileSystemModule as RunnableFileSystemModule } from "@widgetarium/file-system/module";
 import { BoardQuery, CreateTaskCommand, TasksModule } from "@widgetarium/tasks";
@@ -27,23 +26,23 @@ const appData = mkdtempSync(path.join(tmpdir(), "wg-tasks-one-board-"));
 
 function startCore(workspaceId: string): LocalTransport {
 	const coreTransport = localTransport();
-	server()
-		.modules(
-			RunnableFileSystemModule({ injects: { files: new NodeFilesGateway(appData, workspaceId) } }),
-			RunnableTasksModule({
-				file: tasksBoardFileOver(coreTransport),
+	coreTransport.serve(
+		runtime()
+			.modules(
+				RunnableFileSystemModule({ injects: { files: new NodeFilesGateway(appData, workspaceId) } }),
+				RunnableTasksModule({
+					file: tasksBoardFileOver(coreTransport),
+				}),
+			)
+			.start({
+				platform: "server",
+				env: {},
+				scope: {
+					workspaceId,
+				},
 			}),
-		)
-		.listen(coreTransport)
-		.start({
-			env: {},
-			scope: {
-				workspaceId,
-			},
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
-		});
+		{ authenticate: new AppCallerAuthenticate() },
+	);
 	return coreTransport;
 }
 
@@ -54,7 +53,7 @@ function boardFileOf(workspaceId: string): string {
 const coreTransport = startCore(WORKSPACE);
 const otherCoreTransport = startCore(OTHER_WORKSPACE);
 
-const core = app().imports(TasksModule({ over: coreTransport })).start();
+const core = runtime().imports(TasksModule({ over: coreTransport })).start();
 const created = await core.send(CreateTaskCommand, {
 	chat: "chat-1",
 	title: TITLE,
@@ -77,9 +76,9 @@ const relay = createFrameRelay([
 	},
 ]);
 const channel = new MessageChannel();
-const stopServing = messagePortListener(channel.port1, { headers: { [APP_CALLER_HEADER]: "tasks" } }).serve(relay);
+const stopServing = relayPort(relay, channel.port1, { headers: { [APP_CALLER_HEADER]: "tasks" } });
 const frameTransport = messagePortTransport(channel.port2);
-const page = app().imports(TasksModule({ over: frameTransport }), FileSystemModule({ over: frameTransport })).start();
+const page = runtime().imports(TasksModule({ over: frameTransport }), FileSystemModule({ over: frameTransport })).start();
 
 const board = await page.send(BoardQuery, {});
 check("the page reads that task through the frame", board.ok && JSON.stringify(board.output).includes(TITLE), true);
@@ -96,7 +95,7 @@ check(
 	true,
 );
 
-const otherCore = app().imports(TasksModule({ over: otherCoreTransport })).start();
+const otherCore = runtime().imports(TasksModule({ over: otherCoreTransport })).start();
 const otherBoard = await otherCore.send(BoardQuery, {});
 check(
 	"another workspace's board does not hold that task",

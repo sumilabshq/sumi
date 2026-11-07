@@ -2,7 +2,7 @@ import { createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { JobSchema } from "../packages/shared/core/src/app-jobs.ts";
 import type { Job } from "../packages/shared/core/src/app-jobs.ts";
-import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
+import { RuntimeProvider, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { PlannedPageRegion } from "../apps/studio/src/features/canvas/ui/canvas-field/regions/planned-page-region.tsx";
 import { PageRow } from "../apps/studio/src/features/canvas/ui/pages-list/page-row.tsx";
 import { JobLine } from "../apps/studio/src/features/canvas/ui/job-status/job-line.tsx";
@@ -83,8 +83,8 @@ function isRunning(page: string): boolean {
 
 createRoot(host).render(
 	h(
-		AppProvider,
-		{ app: app({ modules: [] }) },
+		RuntimeProvider,
+		{ runtime: runtime().modules().start() },
 		h("div", { className: "wg-portal", style: { display: "flex", flexDirection: "column", gap: "24px" } }, [
 			h(
 				"div",

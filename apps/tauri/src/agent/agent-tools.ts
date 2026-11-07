@@ -1,6 +1,6 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { z } from "zod";
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { runAgentTool } from "./run-agent-tool.js";
 import type { QueueTaker } from "./tool-places.js";
 
@@ -16,7 +16,7 @@ const AgentAskSchema = z.object({
 
 type AgentAsk = z.infer<typeof AgentAskSchema>;
 
-export function openAgentTools(app: StartedApp, queue: QueueTaker): void {
+export function openAgentTools(app: Runtime, queue: QueueTaker): void {
 	const channel = new Channel<unknown>((message) => void answerAsk({ app, queue }, message));
 	invoke(OPEN_CHANNEL, { onEvent: channel }).catch((failure: unknown) =>
 		console.error("[agent] the agent tools channel did not open", failure),
@@ -24,7 +24,7 @@ export function openAgentTools(app: StartedApp, queue: QueueTaker): void {
 }
 
 async function answerAsk(
-	{ app, queue }: { readonly app: StartedApp; readonly queue: QueueTaker },
+	{ app, queue }: { readonly app: Runtime; readonly queue: QueueTaker },
 	message: unknown,
 ): Promise<void> {
 	const parsed = AgentAskSchema.safeParse(message);

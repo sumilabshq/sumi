@@ -1,4 +1,2 @@
-export { ServerBuilder, server } from "./server";
-export type { ServerSideModule, StartedServer } from "./server";
-export { Authenticate } from "./authenticate";
+export { dataFrameworkMiddleware } from "./middleware";
 export { WIRE_PREFIX } from "../wire";

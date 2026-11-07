@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
 import { AppTabQuery, OpenInSystemAppCommand, RecordAppPageCommand, TakeActionPressCommand } from "@sumi/contract";
 import type { AppPage } from "@sumi/contract";
-import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { useRuntime, useOptionalQuery } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 
 export interface FileActionsAsk {
 	readonly tabId: string;
@@ -30,7 +30,7 @@ const NO_PRESSES: readonly { readonly id: string }[] = [];
 const FAILED = "[files] {what} for {path} failed: {reason}";
 
 export function useOffersFileActions(ask: FileActionsAsk): void {
-	const shell = useApp("useOffersFileActions");
+	const shell = useRuntime("useOffersFileActions");
 	const latest = useRef(ask);
 	latest.current = ask;
 	useTakesPresses(shell, ask.tabId, {
@@ -52,7 +52,7 @@ export function useOffersFileActions(ask: FileActionsAsk): void {
 	}, [shell, ask.tabId, ask.path]);
 }
 
-function useTakesPresses(shell: StartedApp, tabId: string, runs: ActionRuns): void {
+function useTakesPresses(shell: Runtime, tabId: string, runs: ActionRuns): void {
 	const presses = useOptionalQuery(AppTabQuery, { id: tabId }).data?.presses ?? NO_PRESSES;
 	const latestRuns = useRef(runs);
 	latestRuns.current = runs;
@@ -73,7 +73,7 @@ async function copyToClipboard({ path, copied }: FileActionsAsk): Promise<void> 
 	await navigator.clipboard.writeText(copied()).catch((error: unknown) => reportFailure("copy", path, String(error)));
 }
 
-async function openInSystemApp(shell: StartedApp, path: string): Promise<void> {
+async function openInSystemApp(shell: Runtime, path: string): Promise<void> {
 	const opened = await shell.send(OpenInSystemAppCommand, { path });
 
 	if (!opened.ok) {
@@ -81,7 +81,7 @@ async function openInSystemApp(shell: StartedApp, path: string): Promise<void> {
 	}
 }
 
-function recordPage(shell: StartedApp, page: AppPage): void {
+function recordPage(shell: Runtime, page: AppPage): void {
 	void shell.send(RecordAppPageCommand, page).then((answer) => {
 		if (!answer.ok) {
 			reportFailure("record the page", page.id, answer.reason);

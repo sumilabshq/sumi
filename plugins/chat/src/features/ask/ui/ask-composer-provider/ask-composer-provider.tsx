@@ -3,14 +3,14 @@ import type { ComponentType, ReactElement } from "react";
 import { AskComposerContext } from "@sumi/sumi-host-plugin";
 import type { WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
 import { AssistantModule } from "@widgetarium/assistant";
-import { app } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
 import { askComposerOf } from "../../lib/ask-composer-seam.js";
 
 export function askComposerProviderOf(offers: WindowOffers): ComponentType<WindowProviderProps> {
 	const composer = askComposerOf({
 		windowApp: offers.windowApp,
 		focusedChatId: () => offers.focusedChatId(),
-		askApp: app()
+		askApp: runtime()
 			.imports(AssistantModule({ over: offers.windowServer }))
 			.start({
 				platform: offers.platform,

@@ -1,8 +1,7 @@
 import { readFileSync } from "node:fs";
-import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/data-framework";
+import { runtime, localTransport, messagePortTransport, servePort } from "@widgetarium/data-framework";
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameModuleRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
-import { server } from "@widgetarium/data-framework/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
 import {
@@ -18,7 +17,7 @@ import {
 	WebPageModule,
 	WebPageQuery,
 } from "../packages/shared/contract/index.ts";
-import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/data-framework";
+import type { RemoteModule, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { WebPageModule as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
 import { AssistantModule as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
@@ -83,17 +82,20 @@ check(
 	true,
 );
 
-const core = server()
+const core = runtime()
 	.modules(RunnableFileSystemModule({ injects: { files: new MemoryFilesGateway("/data", "contract") } }))
-	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
+	.start({ platform: "server", env: {} });
 const channel = new MessageChannel();
-const stopServing = messagePortListener(channel.port1, { headers: { [APP_CALLER_HEADER]: "notes" } }).serve(core);
+const stopServing = servePort(core, channel.port1, {
+	authenticate: new AppCallerAuthenticate(),
+	headers: { [APP_CALLER_HEADER]: "notes" },
+});
 const heard = { changes: 0 };
 const transport = messagePortTransport(channel.port2);
 transport.changes(() => {
 	heard.changes += 1;
 });
-const sumi = app().imports(FileSystemModule({ over: transport })).start();
+const sumi = runtime().imports(FileSystemModule({ over: transport })).start();
 await sumi.send(WriteFileCommand, { path: "a.txt", content: "over a port" });
 const read = await sumi.send(ReadFileQuery, { path: "a.txt" });
 check(
@@ -130,19 +132,19 @@ const forged = await new AppCallerAuthenticate().userOf(new Headers({ [APP_CALLE
 check("a caller header that is not an app id is refused, never read as no caller", forged, "refused");
 
 function appOver(
-	served: ServingServer,
+	served: Runtime,
 	imported: (transport: RemoteTransport) => RemoteModule,
 	caller: string | null,
-): StartedApp {
+): Runtime {
 	const port = new MessageChannel();
 	const headers = caller === null ? {} : { [APP_CALLER_HEADER]: caller };
-	messagePortListener(port.port1, { headers }).serve(served);
-	return app()
+	servePort(served, port.port1, { authenticate: new AppCallerAuthenticate(), headers });
+	return runtime()
 		.imports(imported(messagePortTransport(port.port2)))
 		.start();
 }
 
-const webPages = server()
+const webPages = runtime()
 	.modules(
 		RunnableWebPageModule({
 			kind: "web",
@@ -152,16 +154,14 @@ const webPages = server()
 		}),
 	)
 	.start({
+		platform: "server",
 		env: {},
 		scope: {
 			workspaceId: "contract",
 		},
-		host: {
-			authenticate: new AppCallerAuthenticate(),
-		},
 	});
 const webPagesLocal = localTransport();
-webPagesLocal.serve(webPages);
+webPagesLocal.serve(webPages, { authenticate: new AppCallerAuthenticate() });
 const heardByT1: string[] = [];
 createFrameRelay([
 	frameModuleRouteOf(
@@ -195,7 +195,7 @@ check(
 	[true, false],
 );
 
-const chat = server()
+const chat = runtime()
 	.modules(
 		RunnableAssistantModule({
 			kind: "web",
@@ -203,12 +203,10 @@ const chat = server()
 		}),
 	)
 	.start({
+		platform: "server",
 		env: {},
 		scope: {
 			workspaceId: "contract",
-		},
-		host: {
-			authenticate: new AppCallerAuthenticate(),
 		},
 	});
 const chatOfApp = appOver(chat, (transport) => AssistantModule({ over: transport }), "chat");

@@ -9,10 +9,10 @@ import type {
 	Platform,
 	RemoteModule,
 	RemoteTransport,
+	Runtime,
 	ServerRuns,
-	StartedApp,
+	ServerSideModule,
 } from "@widgetarium/data-framework";
-import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { slot } from "@widgetarium/plugin-framework";
 import type { SlotReader } from "@widgetarium/plugin-framework";
 import type { BoardFile } from "@widgetarium/tasks/module";
@@ -39,7 +39,7 @@ export interface WindowServerOffers {
 export interface WindowOffers {
 	readonly workspaceId: string;
 	readonly platform: Platform;
-	readonly windowApp: StartedApp;
+	readonly windowApp: Runtime;
 	readonly core: RemoteTransport;
 	readonly windowServer: RemoteTransport;
 	focusedChatId(): string | null;

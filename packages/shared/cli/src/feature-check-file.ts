@@ -47,8 +47,8 @@ function importsOf({ module, folder, seed, names, isServer, moduleConst }: Check
 	const contract = [...(isServer ? [moduleConst] : []), ...requestNamesOf(seed)].sort();
 	const runnable = isServer ? `${moduleConst} as Runnable${moduleConst}` : moduleConst;
 	return [
-		`import { app${isServer ? ", orpcTransport, type User" : ""} } from "${FRAMEWORK}";`,
-		...(isServer ? [`import { Authenticate, server } from "${FRAMEWORK}/server";`] : []),
+		`import { ${isServer ? "Authenticate, orpcTransport, " : ""}runtime${isServer ? ", type User" : ""} } from "${FRAMEWORK}";`,
+		...(isServer ? [`import { dataFrameworkMiddleware } from "${FRAMEWORK}/server";`] : []),
 		`import { ${contract.join(", ")} } from "../${folder}/index.ts";`,
 		`import { ${memoryPartsOf(module)} } from "../${folder}/${pickerPathOf(module)}";`,
 		`import { ${names.memoryGateway} } from "../${folder}/${names.memoryFile}";`,
@@ -75,7 +75,7 @@ function startOf({ module, names, isServer, moduleConst }: CheckPlan): string[] 
 }
 
 function localStartOf(fakes: readonly string[]): string[] {
-	return ["const started = app()", "\t.modules(", ...fakes.map((line) => `\t${line}`), "\t)", "\t.start();"];
+	return ["const started = runtime()", "\t.modules(", ...fakes.map((line) => `\t${line}`), "\t)", "\t.start();"];
 }
 
 function serverStartOf(moduleConst: string, fakes: readonly string[]): string[] {
@@ -92,15 +92,15 @@ function serverStartOf(moduleConst: string, fakes: readonly string[]): string[] 
 		"\t}",
 		"}",
 		"",
-		"const served = server()",
-		"\t.modules(",
-		...fakes.map((line) => `\t${line}`),
-		"\t)",
-		"\t.start({",
-		"\t\tenv: {},",
-		"\t\thost: { authenticate: new CheckerAuthenticate() },",
-		"\t});",
-		"const started = app()",
+		"const served = dataFrameworkMiddleware(",
+		"\truntime()",
+		"\t\t.modules(",
+		...fakes.map((line) => `\t\t${line}`),
+		"\t\t)",
+		'\t\t.start({ platform: "server", env: {} }),',
+		"\t{ authenticate: new CheckerAuthenticate() },",
+		");",
+		"const started = runtime()",
 		`\t.imports(${moduleConst}({ over: orpcTransport("${SERVER_URL}", { fetch: served.fetch }) }))`,
 		"\t.start();",
 	];

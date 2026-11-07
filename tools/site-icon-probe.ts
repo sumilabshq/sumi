@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { JSDOM } from "jsdom";
-import { app } from "../packages/shared/data-framework/src/index.ts";
+import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { SiteIconQuery } from "../packages/domain/browser/index.ts";
 import { browserPartsOf } from "../packages/domain/browser/gateways/browser-parts/memory.gateway.ts";
@@ -36,7 +36,7 @@ const rustProbe = {
 	channel: () => null,
 };
 const siteIcons = new MemorySiteIconsGateway();
-const started = app()
+const started = runtime()
 	.modules(
 		BrowserModule({ injects: browserPartsOf({
 				browserPages: new WebBrowserPagesGateway(),

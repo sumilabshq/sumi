@@ -1,6 +1,6 @@
-import { app, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import {
 	AppTabQuery,
 	PlacesModule,
@@ -26,13 +26,16 @@ const tabs = new MemoryTabsGateway(
 		closed: [],
 	}),
 );
-const served = server()
-	.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
-	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
+const served = dataFrameworkMiddleware(
+	runtime()
+		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
+		.start({ platform: "server", env: {} }),
+	{ authenticate: new AppCallerAuthenticate() },
+);
 
-function placesAs(id: string | null): StartedApp {
+function placesAs(id: string | null): Runtime {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
-	return app()
+	return runtime()
 		.imports(PlacesModule({ over: orpcTransport("http://places.test", { fetch: served.fetch, headers }) }))
 		.start();
 }

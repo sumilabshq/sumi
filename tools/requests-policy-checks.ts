@@ -1,15 +1,14 @@
 import { z } from "zod";
-import { MemoryDoneKeys, app, clientModule, handler, query } from "../packages/shared/data-framework/src/index.ts";
+import { MemoryDoneKeys, runtime, clientModule, handler, query } from "../packages/shared/data-framework/src/index.ts";
 import type { Failure } from "../packages/shared/data-framework/src/index.ts";
 import { check, thrownBy } from "./check-helpers.ts";
 import * as fx from "./requests-fixture.ts";
 
 const reported: Failure[] = [];
 const pages = new fx.MemoryPages();
-const started = app({
-	modules: [fx.pagesModuleOver(pages)],
-	host: { reportFailure: (failure) => reported.push(failure) },
-});
+const started = runtime()
+	.modules(fx.pagesModuleOver(pages))
+	.start({ host: { reportFailure: (failure) => reported.push(failure) } });
 
 check("a query answers its handler's output", await started.send(fx.PagesQuery, { prefix: "" }), {
 	ok: true,
@@ -109,7 +108,7 @@ check("two identical reads at once run the handler once", pages.runs, ["list H"]
 const unhandled = query("pages/unhandled").output(z.string());
 check("a request no module runs, with no server, is refused as no-server", await started.send(unhandled), {
 	ok: false,
-	reason: "pages/unhandled runs on no module of this app, and no server is configured",
+	reason: "pages/unhandled runs on no module of this runtime, and no import reaches it",
 	code: "no-server",
 	ran: false,
 });
@@ -146,17 +145,17 @@ const MissingClientModule = clientModule("pages").provide(() => ({ missing: {} }
 check(
 	"a handler injecting what its module does not provide refuses the start, naming it",
 	thrownBy(() =>
-		app({
-			modules: [
+		runtime()
+			.modules(
 				MissingClientModule.handlers([
 					handler(fx.SlowQuery, MissingClientModule)
 						.inject({ missing: Missing })
 						.handle(() => "x"),
 				]),
-			],
-		}),
+			)
+			.start(),
 	),
-	"app() refused:\nthe handler of pages/slow injects missing, which its module does not provide as a Missing",
+	"runtime() refused:\nthe handler of pages/slow injects missing, which its module does not provide as a Missing",
 );
 
 const PlainClientModule = clientModule("pages");
@@ -164,41 +163,47 @@ const OtherQuery = query("other/thing").output(z.string());
 check(
 	"a handler in a module its request does not name refuses the start",
 	thrownBy(() =>
-		app({ modules: [PlainClientModule.handlers([handler(OtherQuery, PlainClientModule).handle(() => "x")])] }),
+		runtime()
+			.modules(PlainClientModule.handlers([handler(OtherQuery, PlainClientModule).handle(() => "x")]))
+			.start(),
 	),
-	'app() refused:\nother/thing is handled in module "pages", but its name names module "other"',
+	'runtime() refused:\nother/thing is handled in module "pages", but its name names module "other"',
 );
 
 const ElsewhereClientModule = clientModule("pages");
 check(
 	"a handler built for one module and joined into another refuses the start, naming both",
 	thrownBy(() =>
-		app({
-			modules: [ElsewhereClientModule.handlers([handler(fx.SlowQuery, PlainClientModule).handle(() => "x")])],
-		}),
+		runtime()
+			.modules(ElsewhereClientModule.handlers([handler(fx.SlowQuery, PlainClientModule).handle(() => "x")]))
+			.start(),
 	),
-	'app() refused:\nthe handler of pages/slow was built for module "pages", but module "pages" holds it',
+	'runtime() refused:\nthe handler of pages/slow was built for module "pages", but module "pages" holds it',
 );
 
 check(
 	"two handlers for one request refuse the start",
 	thrownBy(() =>
-		app({
-			modules: [
+		runtime()
+			.modules(
 				fx.PagesClientModule.handlers([
 					fx.SlowQueryHandler,
 					handler(fx.SlowQuery, fx.PagesClientModule).handle(() => "again"),
 				]).with(new fx.MemoryPages()),
-			],
-		}),
+			)
+			.start(),
 	),
-	"app() refused:\npages/slow has 2 handlers",
+	"runtime() refused:\npages/slow has 2 handlers",
 );
 
 check(
-	"a client app refuses a module that runs on the server",
-	thrownBy(() => app({ modules: [fx.JoinedPagesServerModule.with({ env: {} })] })),
-	'app() refused:\nmodule "pages" runs on the server; a client app reaches it through its server',
+	"a runtime on a device platform runs a module that runs on the server too",
+	thrownBy(() =>
+		runtime()
+			.modules(fx.JoinedPagesServerModule.with({ env: {} }))
+			.start({ platform: "tauri" }),
+	),
+	"",
 );
 
 const keys = new MemoryDoneKeys(2);

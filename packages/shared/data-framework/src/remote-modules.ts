@@ -19,31 +19,6 @@ interface RemoteEntry {
 	readonly publicRequestNames: ReadonlySet<string>;
 }
 
-export class SingleServer implements ModuleReach {
-	readonly importedModuleNames: readonly string[] = [];
-	private readonly server: RemoteServer;
-
-	constructor(private readonly transport: RemoteTransport) {
-		this.server = new RemoteServer((call) => transport.call(call));
-	}
-
-	changes(hear: HearChanges): () => void {
-		return this.transport.changes(hear);
-	}
-
-	reachesModule(): boolean {
-		return true;
-	}
-
-	forwards(): boolean {
-		return true;
-	}
-
-	run(asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		return this.server.run(asked, settle);
-	}
-}
-
 export class RemoteModules implements ModuleReach {
 	readonly importedModuleNames: readonly string[];
 	private readonly entries: ReadonlyMap<string, RemoteEntry>;

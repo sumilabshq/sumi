@@ -1,18 +1,18 @@
-import { app, localTransport, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { RemoteTransport, StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { server } from "../packages/shared/data-framework/src/server/index.ts";
+import { runtime, localTransport, orpcTransport } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
+import { dataFrameworkMiddleware } from "../packages/shared/data-framework/src/server/index.ts";
 import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/fixture-billing";
 import { FixtureBillingModule as RunnableFixtureBillingModule } from "../packages/domain/fixture-billing/module.ts";
 import { MemoryLedgerGateway } from "../packages/domain/fixture-billing/gateways/ledger/memory.gateway.ts";
 import { check, waitFor } from "./check-helpers.ts";
 
 interface Heard {
-	readonly client: StartedApp;
+	readonly client: Runtime;
 	readonly balanceChanges: { count: number };
 }
 
 function clientOver(transport: RemoteTransport): Heard {
-	const client = app().imports(FixtureBillingModule({ over: transport })).start();
+	const client = runtime().imports(FixtureBillingModule({ over: transport })).start();
 	const balanceChanges = { count: 0 };
 	client.routes.watch(BalanceQuery, undefined, () => {
 		balanceChanges.count += 1;
@@ -21,17 +21,17 @@ function clientOver(transport: RemoteTransport): Heard {
 }
 
 const overLocal = localTransport();
-const notYet = await app().imports(FixtureBillingModule({ over: overLocal })).start().send(BalanceQuery);
+const notYet = await runtime().imports(FixtureBillingModule({ over: overLocal })).start().send(BalanceQuery);
 check(
 	"a local transport no server listens on yet answers unreachable, never throws",
 	notYet.ok ? "answered" : notYet.code,
 	"unreachable",
 );
 
-const localServer = server()
+const localServer = runtime()
 	.modules(RunnableFixtureBillingModule({ injects: { ledger: new MemoryLedgerGateway("USD") } }))
-	.listen(overLocal)
-	.start({ env: {} });
+	.start({ platform: "server", env: {} });
+const stopServingLocal = overLocal.serve(localServer);
 const localCharger = clientOver(overLocal);
 const localWatcher = clientOver(overLocal);
 const charged = await localCharger.client.send(ChargeCommand, { amount: 7 });
@@ -41,17 +41,20 @@ check(
 	await waitFor(() => localWatcher.balanceChanges.count > 0),
 	true,
 );
+stopServingLocal();
 localServer.stop();
 const afterStop = await localCharger.client.send(BalanceQuery);
 check(
-	"a stopped server leaves its local transport unreachable",
+	"a stopped adapter leaves its local transport unreachable",
 	afterStop.ok ? "answered" : afterStop.code,
 	"unreachable",
 );
 
-const httpServer = server()
-	.modules(RunnableFixtureBillingModule({ injects: { ledger: new MemoryLedgerGateway("USD") } }))
-	.start({ env: {} });
+const httpServer = dataFrameworkMiddleware(
+	runtime()
+		.modules(RunnableFixtureBillingModule({ injects: { ledger: new MemoryLedgerGateway("USD") } }))
+		.start({ platform: "server", env: {} }),
+);
 const overHttp = (): RemoteTransport => orpcTransport("http://billing.test", { fetch: httpServer.fetch });
 const httpCharger = clientOver(overHttp());
 const httpWatcher = clientOver(overHttp());

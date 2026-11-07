@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from "node:util";
-import { Refused, app } from "../packages/shared/data-framework/src/index.ts";
+import { Refused, runtime } from "../packages/shared/data-framework/src/index.ts";
 import { FIRST_PANES, layoutPartsOf } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutMemories } from "../packages/state/layout/gateways/layout-parts/memory.gateway.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
@@ -252,7 +252,7 @@ async function checksPreview(check: Check): Promise<void> {
 
 function checksSendSaves(check: Check): void {
 	const parts = partsOf();
-	const layoutApp = app()
+	const layoutApp = runtime()
 		.modules(LayoutModule({ injects: { ...parts } }))
 		.start();
 	placeTab(parts, "tab-8", "pane-app");

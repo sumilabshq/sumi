@@ -1,5 +1,5 @@
-import { app } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { runtime } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { SpecRead } from "../packages/shared/core/src/app-spec.ts";
 import type { StartedProject } from "../packages/shared/core/src/app/widgetarium-app.js";
 import { ModuleRegistry } from "../packages/shared/core/src/engine/module-registry.js";
@@ -35,13 +35,13 @@ export function canvasPartsOver(chosen: Partial<CanvasParts> = {}): CanvasParts 
 	};
 }
 
-export function canvasAppOver(parts: CanvasParts): StartedApp {
-	return app()
+export function canvasAppOver(parts: CanvasParts): Runtime {
+	return runtime()
 		.modules(CanvasModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: FARM_OPENED.app } });
 }
 
-export async function openedCanvasOver(parts: CanvasParts, opened: CanvasOpened = FARM_OPENED): Promise<StartedApp> {
+export async function openedCanvasOver(parts: CanvasParts, opened: CanvasOpened = FARM_OPENED): Promise<Runtime> {
 	const canvas = canvasAppOver(parts);
 	const answer = await canvas.send(OpenCanvasCommand, opened);
 

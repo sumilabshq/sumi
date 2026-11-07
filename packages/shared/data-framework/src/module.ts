@@ -72,22 +72,29 @@ interface ServerPlan<P extends Provided> {
 
 const NOTHING_PROVIDED: NothingProvided = Object.freeze({});
 
+interface PartsProvider<Q> {
+	provide(parts: Q): Provided;
+}
+
 export class HandledModule<Q> {
+	// TRADE-OFF: a method-shaped provider keeps Q bivariant, so one runtime list holds void and ServerParts modules
+	private readonly provider: PartsProvider<Q>;
+
 	constructor(
 		readonly definition: ModuleDefinition,
 		readonly handlers: readonly AnyHandler[],
-		private readonly provider: (parts: Q) => Provided,
-	) {}
+		provide: (parts: Q) => Provided,
+	) {
+		this.provider = { provide };
+	}
 
 	with(parts: Q): ReadyModule {
 		const { definition, handlers, provider } = this;
-		return { definition, handlers, provide: () => provider(parts) };
+		return { definition, handlers, provide: () => provider.provide(parts) };
 	}
 }
 
-export type StartableModule = HandledModule<void> | ReadyModule | AnyPlatformModule;
-
-export type StartableServerModule = HandledModule<ServerParts> | ReadyModule | AnyPlatformModule;
+export type StartableModule = HandledModule<ServerParts | void> | ReadyModule | AnyPlatformModule;
 
 export class ServerModule<
 	P extends Provided = NothingProvided,

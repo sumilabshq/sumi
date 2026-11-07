@@ -10,7 +10,7 @@ import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.j
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import type { Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import type { PaneView } from "@widgetarium/layout";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
@@ -53,7 +53,7 @@ export interface StartedStudio {
 	readonly state: StudioState;
 	readonly design: StudioDesign;
 	readonly browser: StudioBrowser;
-	readonly studioApp: StartedApp;
+	readonly studioApp: Runtime;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly chatsColumn: ChatsColumnApp;
 	readonly appearance: StudioAppearance;
@@ -72,7 +72,7 @@ export interface StudioStart extends ProjectStart {
 	readonly state?: StudioState;
 	readonly design?: StudioDesign;
 	readonly assistantHost?: AssistantHosts;
-	readonly studioApp?: StartedApp;
+	readonly studioApp?: Runtime;
 	readonly core?: RemoteTransport;
 	readonly platform?: Platform;
 	readonly appearance?: StudioAppearance;

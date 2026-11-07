@@ -6,7 +6,7 @@ import type { CommandAnswer } from "./gateway/run-handler";
 import type { Action } from "./gateway/contract";
 import type { BoundCommandHandle, CommandHandle, CommandState } from "./handle-types.js";
 import { reasonOf } from "./answer";
-import { APP } from "./app-context";
+import { RUNTIME } from "./runtime-context";
 import { reportToConsole } from "./report-failure";
 import type { FailureReport } from "./report-failure";
 
@@ -44,7 +44,7 @@ export function useCommandHandle(
 	const latest = useRef(command);
 	latest.current = command;
 	const onRefused = useContext(REFUSAL_HANDLER);
-	const reportFailure = useContext(APP)?.reportFailure ?? reportToConsole;
+	const reportFailure = useContext(RUNTIME)?.reportFailure ?? reportToConsole;
 	const told = useRef<Told>({ onRefused, reportFailure });
 	told.current = { onRefused, reportFailure };
 	const [runs, setRuns] = useState<Runs>(NO_RUNS);

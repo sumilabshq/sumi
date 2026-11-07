@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { useApp, useCommand } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { useRuntime, useCommand } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import { DeliverQuestionsCommand, ReadyAnswersQuery } from "@sumi/contract";
 import type { Question } from "@sumi/contract";
 import { SendTextCommand } from "@widgetarium/assistant";
@@ -11,14 +11,14 @@ const QUEUED_NOT_MARKED =
 	"[questions] chat {chat}: the answers are queued but still unmarked, so they may also ride the next message";
 
 interface AnswerSteps {
-	readonly app: StartedApp;
+	readonly app: Runtime;
 	readonly sendText: ReturnType<typeof useCommand<typeof SendTextCommand>>;
 	readonly deliver: ReturnType<typeof useCommand<typeof DeliverQuestionsCommand>>;
 }
 
 export function useQueuesAnswers(chatId: string, optionalQuestions: readonly Question[], report: Report): void {
 	const steps: AnswerSteps = {
-		app: useApp("useQueuesAnswers"),
+		app: useRuntime("useQueuesAnswers"),
 		sendText: useCommand(SendTextCommand),
 		deliver: useCommand(DeliverQuestionsCommand),
 	};

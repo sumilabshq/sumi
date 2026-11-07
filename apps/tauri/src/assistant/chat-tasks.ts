@@ -1,4 +1,4 @@
-import type { StartedApp } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import {
 	ReleaseChatTasksCommand,
 	SettleTurnCommand,
@@ -40,7 +40,7 @@ export const NO_CHAT_TASKS: ChatTasks = {
 	release: () => Promise.resolve(),
 };
 
-export function chatTasksOver(app: StartedApp): ChatTasks {
+export function chatTasksOver(app: Runtime): ChatTasks {
 	return {
 		askTrailer: (chatId) => askTrailer(app, chatId),
 		settle: (chatId, turn, facts) => settle(app, settleAskOf(chatId, turn, facts)),
@@ -74,7 +74,7 @@ function turnFailureOf({ failureKind, failure, resumesAt }: SettledTurn): Settle
 	};
 }
 
-async function askTrailer(app: StartedApp, chatId: string): Promise<TurnTrailer> {
+async function askTrailer(app: Runtime, chatId: string): Promise<TurnTrailer> {
 	const answered = await app.send(TaskTrailerQuery, { chat: chatId });
 
 	if (!answered.ok) {
@@ -85,7 +85,7 @@ async function askTrailer(app: StartedApp, chatId: string): Promise<TurnTrailer>
 	return answered.output;
 }
 
-async function settle(app: StartedApp, ask: SettleTurnAsk): Promise<Nudge | null> {
+async function settle(app: Runtime, ask: SettleTurnAsk): Promise<Nudge | null> {
 	const answered = await app.send(SettleTurnCommand, ask);
 
 	if (!answered.ok) {
@@ -102,7 +102,7 @@ async function settle(app: StartedApp, ask: SettleTurnAsk): Promise<Nudge | null
 	return answered.output.followUp;
 }
 
-async function unsent(app: StartedApp, nudge: Nudge, reason: string): Promise<void> {
+async function unsent(app: Runtime, nudge: Nudge, reason: string): Promise<void> {
 	const answered = await app.send(UndeliveredTaskCommand, { task: nudge.task, reason });
 
 	if (!answered.ok) {
@@ -114,7 +114,7 @@ async function unsent(app: StartedApp, nudge: Nudge, reason: string): Promise<vo
 	console.info(`[tasks] ${nudge.task}: its nudge was not sent (${reason}) → ${answered.output.status}`);
 }
 
-async function release(app: StartedApp, chatId: string, why: ChatReleased): Promise<void> {
+async function release(app: Runtime, chatId: string, why: ChatReleased): Promise<void> {
 	const answered = await app.send(ReleaseChatTasksCommand, { chat: chatId, why });
 
 	if (!answered.ok) {

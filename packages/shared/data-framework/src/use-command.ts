@@ -6,12 +6,12 @@ import type { Action, CanResult } from "./gateway/contract";
 import type { CommandAnswer } from "./gateway/run-handler";
 import { stableKey } from "./gateway/stable-key";
 import type { CommandHandle } from "./handle-types";
-import { useApp } from "./app-context";
-import type { StartedApp } from "./app";
+import { useRuntime } from "./runtime-context";
+import type { Runtime } from "./runtime";
 import type { AnyCommand, OutputOf, SentOf } from "./request";
 
 interface CommandRunNeeds {
-	readonly started: StartedApp;
+	readonly started: Runtime;
 	readonly request: AnyCommand;
 	readonly onRefused: RefusalHandler;
 	readonly callKeys: Map<string, string>;
@@ -19,7 +19,7 @@ interface CommandRunNeeds {
 
 export function useCommand<R extends AnyCommand>(request: R): CommandHandle<SentOf<R>, OutputOf<R>>;
 export function useCommand(request: AnyCommand): CommandHandle<unknown, unknown> {
-	const started = useApp("useCommand");
+	const started = useRuntime("useCommand");
 	const onRefused = useContext(REFUSAL_HANDLER);
 	const callKeys = useRef(new Map<string, string>()).current;
 	const run = useMemo(
@@ -45,7 +45,7 @@ async function answerOf(
 	return answer;
 }
 
-function canRun(started: StartedApp, request: AnyCommand): CanResult {
+function canRun(started: Runtime, request: AnyCommand): CanResult {
 	const reason = started.routes.cannotRun(request);
 	return reason === null ? { can: true } : { can: false, reason };
 }

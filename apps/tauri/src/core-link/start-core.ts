@@ -2,9 +2,8 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { app, localTransport } from "@widgetarium/data-framework";
-import type { ListeningTransport, StartedApp } from "@widgetarium/data-framework";
-import { server } from "@widgetarium/data-framework/server";
+import { runtime, localTransport } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
 import {
 	CloseWindowCommand,
@@ -18,6 +17,7 @@ import type { BackgroundModule } from "@widgetarium/studio";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { workspaceProfileOf } from "../plugins/workspace-profile.js";
 import { serveCore } from "./core-calls.js";
+import type { CoreListener } from "./core-calls.js";
 import { tasksBoardFileOver } from "./tasks-board-file.js";
 import { CORE_LIVE_WINDOWS, CORE_WINDOW_CLOSED_EVENT, LiveWindowsSchema } from "./core-wire.js";
 
@@ -31,12 +31,13 @@ const NOT_COLD =
 const NOT_SWEPT = "[tasks] workspace {workspace}: stale tasks stay open ({reason})";
 const SWEPT = "[tasks] workspace {workspace}: {count} stale tasks → cancelled (the {when} sweep)";
 const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
+const CORE_IPC = "the core IPC";
 const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
 const PROFILE_UNREAD = "[studio-core] workspace {workspace}: sumi.profile.json not read, the built-in plugins start";
 
 export function startCore(): void {
-	const served = new Map<string, StartedApp>();
+	const served = new Map<string, Runtime>();
 	const store = new StoreClient((command, args) => invoke(command, args));
 	serveCore((workspace, listener) => {
 		void profileOrBuiltIn(store, workspace).then((profile) => {
@@ -59,7 +60,7 @@ export function startCore(): void {
 
 interface CoreServing {
 	readonly workspace: string;
-	readonly listener: ListeningTransport;
+	readonly listener: CoreListener;
 	readonly store: StoreClient;
 	readonly profile: SumiProfile;
 }
@@ -73,30 +74,29 @@ async function profileOrBuiltIn(store: StoreClient, workspace: string): Promise<
 	}
 }
 
-function coreServedOver({ workspace, listener, store, profile }: CoreServing): StartedApp {
+function coreServedOver({ workspace, listener, store, profile }: CoreServing): Runtime {
 	const own = localTransport();
 	const offers = {
 		store,
 		file: tasksBoardFileOver(own),
 	};
-	server()
+	const core = runtime()
 		.modules(
 			...HOST_CAPABILITY_MODULES,
 			...backgroundModulesOf(workspace, profile).map(({ moduleOf }) => moduleOf(offers)),
 		)
-		.listen(listener)
-		.listen(own)
 		.start({
+			platform: "server",
 			env: {
 				FILES_STORE: "tauri",
 				TERMINAL_STORE: "tauri",
 			},
 			scope: { workspaceId: workspace },
-			host: {
-				authenticate: new AppCallerAuthenticate(),
-			},
 		});
-	return app().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
+	const authenticate = new AppCallerAuthenticate();
+	listener.serve(core.expose({ adapter: CORE_IPC, authenticate }));
+	own.serve(core, { authenticate });
+	return runtime().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
 }
 
 function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly BackgroundModule[] {
@@ -109,7 +109,7 @@ function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly 
 	return resolved.backgroundModules;
 }
 
-function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string): void {
+function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {
 	for (const [workspace, places] of served) {
 		void places.send(CloseWindowCommand, { window }).then((answered) => {
 			if (!answered.ok) {
@@ -121,7 +121,7 @@ function closeEverywhere(served: ReadonlyMap<string, StartedApp>, window: string
 	}
 }
 
-async function keepLiveWindows(places: StartedApp, workspace: string): Promise<void> {
+async function keepLiveWindows(places: Runtime, workspace: string): Promise<void> {
 	const live = LiveWindowsSchema.parse(await invoke(CORE_LIVE_WINDOWS));
 	const answered = await places.send(KeepLiveWindowsCommand, { windows: live });
 
@@ -130,7 +130,7 @@ async function keepLiveWindows(places: StartedApp, workspace: string): Promise<v
 	}
 }
 
-async function forgetRunningTurns(places: StartedApp, workspace: string): Promise<void> {
+async function forgetRunningTurns(places: Runtime, workspace: string): Promise<void> {
 	const answered = await places.send(ForgetRunningTurnsCommand);
 
 	if (!answered.ok) {
@@ -138,13 +138,13 @@ async function forgetRunningTurns(places: StartedApp, workspace: string): Promis
 	}
 }
 
-async function superviseTasks(core: StartedApp, workspace: string): Promise<void> {
+async function superviseTasks(core: Runtime, workspace: string): Promise<void> {
 	await reconcileTasks(core, workspace);
 	await sweepStaleTasks(core, workspace, "start");
 	setInterval(() => void sweepStaleTasks(core, workspace, "six-hourly"), SWEEP_EVERY_MS);
 }
 
-async function reconcileTasks(core: StartedApp, workspace: string): Promise<void> {
+async function reconcileTasks(core: Runtime, workspace: string): Promise<void> {
 	if (isCoreReloaded()) {
 		console.info(NOT_COLD.replace("{workspace}", workspace));
 		return;
@@ -160,7 +160,7 @@ async function reconcileTasks(core: StartedApp, workspace: string): Promise<void
 	console.info(RECONCILED.replace("{workspace}", workspace).replace("{count}", String(answered.output.changed)));
 }
 
-async function sweepStaleTasks(core: StartedApp, workspace: string, when: string): Promise<void> {
+async function sweepStaleTasks(core: Runtime, workspace: string, when: string): Promise<void> {
 	const answered = await core.send(SweepStaleTasksCommand);
 
 	if (!answered.ok) {

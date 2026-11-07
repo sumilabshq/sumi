@@ -1,8 +1,8 @@
 import { createElement as h, useSyncExternalStore } from "react";
 import type { ComponentType, ReactElement, ReactNode, RefObject } from "react";
 import type { StudioHostPort } from "@widgetarium/core/engine/studio-host.js";
-import { AppProvider } from "@widgetarium/data-framework";
-import type { StartedApp } from "@widgetarium/data-framework";
+import { RuntimeProvider } from "@widgetarium/data-framework";
+import type { Runtime } from "@widgetarium/data-framework";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
 import type { WindowLayer } from "../plugins/sumi-plugins.js";
@@ -16,7 +16,7 @@ import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.
 
 export interface StudioLayoutProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
-	readonly layoutApp: StartedApp;
+	readonly layoutApp: Runtime;
 	readonly frameRoutes: FrameRoutesFor;
 	readonly appPageUrlOf: AppPageUrlOf;
 	readonly tabPages: readonly DrawnTabPage[];
@@ -45,7 +45,7 @@ export function StudioLayout({
 }: StudioLayoutProps): ReactElement {
 	const chromeLeftPx = useSyncExternalStore(studio.onInsets, () => studio.insets().left);
 	return (
-		<AppProvider app={layoutApp}>
+		<RuntimeProvider runtime={layoutApp}>
 			<WindowOffersContext value={windowOffers}>
 				<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf} tabPages={tabPages}>
 					<WindowLayersContext value={windowLayers}>
@@ -62,6 +62,6 @@ export function StudioLayout({
 					</WindowLayersContext>
 				</AppFramesProvider>
 			</WindowOffersContext>
-		</AppProvider>
+		</RuntimeProvider>
 	);
 }

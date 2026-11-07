@@ -8,7 +8,7 @@ import type { HearChanges, RemoteTransport } from "./transport";
 import { WIRE_CHANGES_PATH, WIRE_PREFIX, wireAnswerOf, wirePathOf } from "./wire";
 import type { WireCall } from "./wire";
 
-type Fetch = (request: Request) => Promise<Response>;
+type Fetch = (request: Request) => Response | Promise<Response>;
 
 interface CallContext {
 	readonly headers: Readonly<Record<string, string>>;
@@ -116,7 +116,7 @@ function linkTo(server: string, { fetch = globalThis.fetch, headers }: WireHost)
 	return new RPCLink<CallContext>({
 		origin: server,
 		url: WIRE_PREFIX,
-		fetch: (url, init) => fetch(new Request(url, init)),
+		fetch: (url, init) => Promise.resolve(fetch(new Request(url, init))),
 		headers: ({ context }) => ({ ...headers?.(), ...context.headers }),
 	});
 }
