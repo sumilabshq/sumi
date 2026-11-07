@@ -1,7 +1,7 @@
 {
 	"name": "@sumi/sumi-host-plugin",
 	"version": "0.1.0",
-	"description": "The Sumi host's own plugin: the slots the host offers every other plugin",
+	"description": "The Sumi host's own plugin: the slots the host offers every other plugin, and what it lends a window's plugins",
 	"license": "FSL-1.1-ALv2",
 	"type": "module",
 	"exports": {

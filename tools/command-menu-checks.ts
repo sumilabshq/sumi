@@ -1,6 +1,6 @@
 import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import assert from "node:assert/strict";
-import { filledWithShown } from "../packages/domain/command-menu/features/opening/lib/shown-text.ts";
+import { filledWithShown } from "../plugins/command-menu/data/command-menu/features/opening/lib/shown-text.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
@@ -14,7 +14,7 @@ import {
 	firstChats,
 	memoryWorkspacesParts,
 } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
+import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import {
 	ChangeMenuDoorCommand,
 	CommandMenuQuery,
@@ -23,15 +23,15 @@ import {
 	CloseCommandMenuCommand,
 	ToggleCommandMenuCommand,
 	RenameRowCommand,
-} from "../packages/domain/command-menu/index.ts";
-import type { Intent, Results, ResultsAsk } from "../packages/domain/command-menu/index.ts";
+} from "../plugins/command-menu/data/command-menu/index.ts";
+import type { Intent, Results, ResultsAsk } from "../plugins/command-menu/data/command-menu/index.ts";
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
 import { placesOver } from "./places-fixture.ts";
 
 const studio = app()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, CommandMenuModule)
+	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, ...COMMAND_MENU_MODULES)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
 
@@ -212,7 +212,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...partsOf() }),
 			WorkspacesModule,
-			CommandMenuModule,
+			...COMMAND_MENU_MODULES,
 		)
 		.imports(placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
@@ -333,7 +333,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 			),
 			AppHostModule,
 			PluginAppsModule,
-			CommandMenuModule,
+			...COMMAND_MENU_MODULES,
 		)
 		.imports(placesOver())
 		.start({ platform: "browser", scope: { workspaceId: "untitled" } });

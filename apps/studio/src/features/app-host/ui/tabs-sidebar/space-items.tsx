@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { ContextMenuGroup } from "@widgetarium/kit";
 import { CreateGroupCommand } from "@widgetarium/app-host";
-import { useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";
+import { useTogglesNewTabMenu } from "../../lib/use-toggles-new-tab-menu.js";
 import { PointerItem } from "./pointer-item.js";
 import type { Pointed, PointerMenuProps } from "./pointer-menu.js";
 

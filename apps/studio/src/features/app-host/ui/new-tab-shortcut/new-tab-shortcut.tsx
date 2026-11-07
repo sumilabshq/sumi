@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { SHOWN_TAB_SECTION, useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";
+import { SHOWN_TAB_SECTION, useTogglesNewTabMenu } from "../../lib/use-toggles-new-tab-menu.js";
 import { useShortcut } from "../../lib/shortcut/use-shortcut.js";
 import { NEW_TAB_KEY } from "../../lib/tab-keys.js";
 

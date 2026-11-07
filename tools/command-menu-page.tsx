@@ -8,23 +8,24 @@ import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
-import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
-import { DoRowCommand } from "../packages/domain/command-menu/index.ts";
-import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
-import { CommandMenuKeys } from "../apps/studio/src/features/command-menu/ui/command-menu-keys/command-menu-keys.tsx";
-import { SearchButton } from "../apps/studio/src/features/command-menu/ui/search-button/search-button.tsx";
-import { useTogglesMenuOnShown } from "../apps/studio/src/features/command-menu/lib/use-toggles-menu-on-shown.ts";
+import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
+import { DoRowCommand } from "../plugins/command-menu/data/command-menu/index.ts";
+import { CommandMenuLayer } from "../plugins/command-menu/src/ui/command-menu-layer/command-menu-layer.tsx";
+import { AskComposerBar } from "../apps/studio/src/features/assistant/ui/ask-composer-bar/ask-composer-bar.tsx";
+import { MenuTabFace } from "../apps/studio/src/features/app-host/ui/tab-face/menu-tab-face.tsx";
+import { SearchButton } from "../apps/studio/src/features/workspaces/ui/search-button/search-button.tsx";
+import { useTogglesMenuOnShown } from "../apps/studio/src/features/plate/lib/use-toggles-menu-on-shown.ts";
 import {
 	SHOWN_TAB_SECTION,
 	useTogglesNewTabMenu,
-} from "../apps/studio/src/features/command-menu/lib/use-toggles-new-tab-menu.ts";
+} from "../apps/studio/src/features/app-host/lib/use-toggles-new-tab-menu.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
 import { reportsFailures } from "./page-harness.ts";
 import { placedTabsOf, placesOver } from "./places-fixture.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
-import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
-import type { AskComposer } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
+import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
+import type { AskComposer } from "@sumi/sumi-host-plugin";
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { tauriAssistantParts } from "../packages/domain/assistant/gateways/assistant-parts/tauri.gateway.ts";
 import { claudeOptionsCell } from "../apps/tauri/src/assistant/claude-options-cell.ts";
@@ -125,7 +126,7 @@ const studio = app()
 				},
 			}),
 		),
-		CommandMenuModule,
+		...COMMAND_MENU_MODULES,
 	)
 	.imports(
 		placesOver(
@@ -203,6 +204,7 @@ const askApp = app()
 window.__ASKED__ = [];
 const askComposer: AskComposer = {
 	app: askApp,
+	bar: AskComposerBar,
 	ask: (text, sends) => window.__ASKED__?.push({ text, sends }),
 };
 
@@ -226,8 +228,7 @@ function Demo(): ReturnType<typeof h> {
 					</button>
 				</main>
 			</div>
-			<CommandMenu />
-			<CommandMenuKeys />
+			<CommandMenuLayer />
 			<TooltipHost />
 		</IsTooltipHosted.Provider>
 	);
@@ -239,7 +240,9 @@ if (root !== null) {
 	createRoot(root).render(
 		<AppProvider app={studio}>
 			<AskComposerContext value={askComposer}>
-				<Demo />
+				<TabFaceContext value={MenuTabFace}>
+					<Demo />
+				</TabFaceContext>
 			</AskComposerContext>
 		</AppProvider>,
 	);

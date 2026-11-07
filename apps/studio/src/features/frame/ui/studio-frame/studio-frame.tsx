@@ -3,8 +3,6 @@ import type { ReactElement, ReactNode, RefObject } from "react";
 import { IsTooltipHosted, TooltipHost } from "@widgetarium/kit";
 import type { ReadCursor } from "@widgetarium/behaviors";
 import { Slot, useCommand, useQuery } from "@widgetarium/data-framework";
-import { CommandMenu } from "../../../command-menu/ui/command-menu/command-menu.js";
-import { CommandMenuKeys } from "../../../command-menu/ui/command-menu-keys/command-menu-keys.js";
 import { NewChatShortcut } from "../../../app-host/ui/new-chat-shortcut/new-chat-shortcut.js";
 import { LinkOpener } from "../../../app-host/ui/link-opener/link-opener.js";
 import { FrameSidesQuery } from "@widgetarium/layout";
@@ -17,6 +15,7 @@ import type { PaneBoardProps } from "../../../panes/ui/pane-board/pane-board.js"
 import { useWritesChromeLeft } from "../../lib/use-writes-chrome-left.js";
 import { useWritesFrameWidths } from "../../lib/use-writes-frame-widths.js";
 import { FrameSideColumn } from "./frame-side-column.js";
+import { WindowLayers } from "./window-layers.js";
 
 export interface StudioFrameProps {
 	readonly frame: RefObject<HTMLDivElement | null>;
@@ -69,8 +68,7 @@ export function StudioFrame({ frame, chromeLeftPx, readCursor, left, panes, pane
 				<FrameSideToggle side="left" />
 				<LinkOpener frame={frame} />
 				<Slot loading={null}>
-					<CommandMenu />
-					<CommandMenuKeys />
+					<WindowLayers />
 					<NewChatShortcut frame={frame} />
 				</Slot>
 				<TooltipHost />

@@ -72,13 +72,14 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins (background modules, tab page); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the slots the host offers plugins (background modules, tab page, window modules and layers) and what it lends a window (ask composer, tab face); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot
+plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
       ↓
-packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, command-menu, web-page, mascot, fixture-billing
+packages/domain/*             business data modules: workspaces, app-host, browser, assistant, canvas, tasks, questions, web-page, mascot, fixture-billing
 packages/state/*              app-state data modules: layout, places, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks

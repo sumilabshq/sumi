@@ -1,7 +1,7 @@
 import { Profiler, createElement as h } from "react";
 import { createRoot } from "react-dom/client";
 import { ChatsColumn } from "../apps/studio/src/features/workspaces/ui/chats-column/chats-column.tsx";
-import { CommandMenu } from "../apps/studio/src/features/command-menu/ui/command-menu/command-menu.tsx";
+import { CommandMenu } from "../plugins/command-menu/src/ui/command-menu/command-menu.tsx";
 import { createStudioState } from "../apps/studio/src/legacy/studio-state.js";
 import { TEAR_OFF_ASKED, exactStudio } from "./studio-exact-fixture.ts";
 import { AppProvider } from "../packages/shared/data-framework/src/index.ts";

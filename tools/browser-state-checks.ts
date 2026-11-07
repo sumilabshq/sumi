@@ -20,7 +20,7 @@ import { askInkPromptOf } from "../packages/domain/browser/features/tabs/lib/ask
 import { AssistantModule } from "../packages/domain/assistant/module.ts";
 import { Composer } from "../apps/chat/src/features/assistant/ui/composer/composer.tsx";
 import { NO_ASSISTANT } from "../packages/shared/core/src/engine/assistant-port.ts";
-import { AskComposerContext } from "../apps/studio/src/features/command-menu/lib/ask-composer-context.ts";
+import { AskComposerContext, NO_ASK_COMPOSER } from "@sumi/sumi-host-plugin";
 
 const EVENT_DELIVERED_WITHIN_MS = 200;
 
@@ -333,7 +333,7 @@ createRoot(askingHost).render(
 			AskComposerContext,
 			{
 				value: {
-					app: null,
+					...NO_ASK_COMPOSER,
 					ask: (text: string) => void chatApp.send(PrefillDraftCommand, { text }),
 				},
 			},

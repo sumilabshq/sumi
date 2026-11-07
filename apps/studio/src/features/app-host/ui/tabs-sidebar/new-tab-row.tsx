@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon, tooltipMarks } from "@widgetarium/kit";
-import { MENU_DOOR_MARK } from "../../../command-menu/lib/menu-door-mark.js";
-import { useTogglesNewTabMenu } from "../../../command-menu/lib/use-toggles-new-tab-menu.js";
+import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
+import { useTogglesNewTabMenu } from "../../lib/use-toggles-new-tab-menu.js";
 import { keyHintOf } from "../../lib/shortcut/key-hint.js";
 import { ROW_WORDS, SIDEBAR_ROW } from "../../lib/tabs-look/tabs-look.js";
 
@@ -27,7 +27,7 @@ export function NewTabRow({ list }: NewTabRowProps): ReactElement {
 				side: "bottom",
 				align: "start",
 			})}
-			{...MENU_DOOR_MARK}
+			{...OPENS_LAYER_MARK}
 		>
 			<Icon name="plus" size={16} />
 			<span className={ROW_WORDS}>{NEW_TAB}</span>

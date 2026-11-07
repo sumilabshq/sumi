@@ -15,7 +15,7 @@ import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory
 import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
+import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import type { LayoutParts } from "../packages/state/layout/gateways/layout-parts/layout-parts.gateway.ts";
@@ -151,7 +151,7 @@ export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 			BrowserModule.with(fakeBrowser(pages).parts),
 			LayoutModule.with({ ...layout }),
 			WorkspacesModule.with(workspacesOf(seed.chatTitle ?? null)),
-			CommandMenuModule,
+			...COMMAND_MENU_MODULES,
 		)
 		.imports(PlacesModule.over(placesLinkOf(places)))
 		.start({ platform: "browser", scope: { workspaceId: "workspace-1" } });

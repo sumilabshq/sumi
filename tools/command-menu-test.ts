@@ -18,7 +18,7 @@ const sheets = [
 	"design-systems/sumi/sumi.css",
 	BROWSER_HOST_SHEET,
 	BOARD_SHEET,
-	"apps/studio/src/features/command-menu/command-menu.css",
+	"plugins/command-menu/src/command-menu.css",
 ]
 	.map((at) => readFileSync(at, "utf8"))
 	.join("\n");

@@ -1,0 +1,36 @@
+{
+	"name": "@sumi/command-menu",
+	"version": "0.1.0",
+	"description": "The command menu plugin's module: where the menu is open, what its doors find for the typed text, and what a picked row does",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"exports": {
+		".": {
+			"source": "./index.ts",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./module": {
+			"source": "./module.ts",
+			"types": "./dist/module.d.ts",
+			"default": "./dist/module.js"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/browser": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/workspaces": "0.1.0"
+	},
+	"peerDependencies": {
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "domain"
+	},
+	"sideEffects": false
+}

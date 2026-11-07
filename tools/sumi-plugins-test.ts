@@ -124,6 +124,19 @@ check(
 	[],
 );
 
+check(
+	"no code outside the command menu plugin names its slots: the host never reads them",
+	["MenuDoorsSlot", "MenuPagesSlot", "MenuRowSourcesSlot"].flatMap((word) =>
+		sourcesNaming(word).filter((file) => !file.startsWith("plugins/command-menu/")),
+	),
+	[],
+);
+check(
+	"the built-in profile runs the command menu's module in the window and draws its layer",
+	[resolved.windowModules.map(({ definition }) => definition.name), resolved.windowLayers.map(({ id }) => id)],
+	[["command-menu"], ["command-menu/command-menu"]],
+);
+
 const startedCore = server()
 	.modules(...coreModulesNow)
 	.start({

@@ -12,8 +12,7 @@ import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../packages/domai
 import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
-import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
-import { CommandMenuResultsQuery } from "../packages/domain/command-menu/index.ts";
+import { CommandMenuResultsQuery } from "../plugins/command-menu/data/command-menu/index.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
@@ -96,7 +95,7 @@ const studioApp = app()
 		),
 		AppHostModule,
 		PluginAppsModule,
-		CommandMenuModule,
+		...PLUGINS.windowModules,
 	)
 	.imports(PlacesModule.over(core), TasksModule.over(core))
 	.start({

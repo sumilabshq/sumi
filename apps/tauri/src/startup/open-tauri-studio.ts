@@ -115,6 +115,7 @@ function startTauriStudioApp(
 		core,
 		lent: tauriStudioLent(store),
 		backgroundModules: plugins.backgroundModules,
+		windowModules: plugins.windowModules,
 	});
 }
 

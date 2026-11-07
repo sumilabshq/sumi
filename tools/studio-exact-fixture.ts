@@ -2,7 +2,7 @@ import { PluginAppsModule } from "./plugin-apps-fixture.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../packages/domain/app-host/module.ts";
-import { CommandMenuModule } from "../packages/domain/command-menu/module.ts";
+import { COMMAND_MENU_MODULES } from "./command-menu-fixture.ts";
 import { MemoryEssentialsGateway } from "../packages/domain/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../packages/domain/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../packages/state/places/gateways/tabs/memory.gateway.ts";
@@ -190,7 +190,7 @@ export function exactStudio({
 			BrowserModule.with(fakeBrowser(boardPages).parts),
 			LayoutModule,
 			WorkspacesModule.with(workspaces),
-			CommandMenuModule,
+			...COMMAND_MENU_MODULES,
 		)
 		.imports(placesOver(places))
 		.start({ platform: "browser", scope: { workspaceId: EXACT_WORKSPACE } });

@@ -1,9 +1,9 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { useCommand } from "@widgetarium/data-framework";
-import { ToggleCommandMenuCommand } from "@widgetarium/command-menu";
+import { ToggleCommandMenuCommand } from "@sumi/command-menu";
 import { linkOf } from "@widgetarium/core/engine/sumi-link.js";
-import { MENU_DOOR_MARK } from "../../../command-menu/lib/menu-door-mark.js";
+import { OPENS_LAYER_MARK } from "@sumi/sumi-host-plugin";
 import { CrumbSaid } from "../../../plate/ui/plate-header/crumb-said.js";
 import type { CrumbWords } from "../../../plate/ui/plate-header/plate-crumb.js";
 
@@ -36,7 +36,7 @@ export function ChatLinkCrumb({ chatId, words }: ChatLinkCrumbProps): ReactEleme
 			aria-disabled={openMenuWithLink === undefined ? true : undefined}
 			data-plate-crumb=""
 			data-ws-crumb=""
-			{...MENU_DOOR_MARK}
+			{...OPENS_LAYER_MARK}
 			onClick={openMenuWithLink}
 		>
 			<CrumbSaid words={words} />

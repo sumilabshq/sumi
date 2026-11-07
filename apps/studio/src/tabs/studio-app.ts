@@ -4,7 +4,6 @@ import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-sto
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import type { BrowserPagesIpc } from "@widgetarium/browser/module";
-import { CommandMenuModule } from "@widgetarium/command-menu/module";
 import { app, localTransport } from "@widgetarium/data-framework";
 import type { DeviceModule, Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import { server } from "@widgetarium/data-framework/server";
@@ -30,12 +29,20 @@ export interface StudioAppAsk {
 	readonly core?: RemoteTransport;
 	readonly lent?: TauriStudioLent;
 	readonly backgroundModules: readonly BackgroundModule[];
+	readonly windowModules: readonly DeviceModule[];
 }
 
-export function startStudioApp({ platform, workspaceId, core, lent, backgroundModules }: StudioAppAsk): StartedApp {
+export function startStudioApp({
+	platform,
+	workspaceId,
+	core,
+	lent,
+	backgroundModules,
+	windowModules,
+}: StudioAppAsk): StartedApp {
 	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
 	const studioApp = app()
-		.modules(...studioModulesOf(lent))
+		.modules(...studioModulesOf(lent), ...windowModules)
 		.imports(...backgroundModules.map(({ contract }) => contract.over(served)))
 		.start({ platform, scope: { workspaceId } });
 	void restoreTabs(studioApp);
@@ -74,7 +81,7 @@ export async function restoreTabs(studioApp: StartedApp): Promise<void> {
 
 function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModule[] {
 	if (lent === undefined) {
-		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule, CommandMenuModule];
+		return [LayoutModule, BrowserModule, WorkspacesModule, AppHostModule];
 	}
 
 	const { store, windows, coreChanges, ipc } = lent;
@@ -83,7 +90,6 @@ function studioModulesOf(lent: TauriStudioLent | undefined): readonly DeviceModu
 		BrowserModule({ tauri: { ipc } }),
 		WorkspacesModule({ tauri: { store } }),
 		AppHostModule({ tauri: { store, coreChanges } }),
-		CommandMenuModule,
 	];
 }
 

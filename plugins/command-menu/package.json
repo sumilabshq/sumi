@@ -1,0 +1,31 @@
+{
+	"name": "@sumi/command-menu-plugin",
+	"version": "0.1.0",
+	"description": "The command menu: its doors, pages and row sources, its module and the layer the host draws it in",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./src/index.ts"
+		}
+	},
+	"dependencies": {
+		"@sumi/command-menu": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
+		"@widgetarium/app-host": "0.1.0",
+		"@widgetarium/assistant": "0.1.0",
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/plugin-framework": "0.1.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.8",
+		"react-dom": "^19.2.8",
+		"zod": "^4.6.5"
+	},
+	"widgetarium": {
+		"level": "plugin"
+	},
+	"sideEffects": false
+}

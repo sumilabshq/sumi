@@ -24,8 +24,10 @@ The host declares its own slots in `plugins/sumi-host` and reads only those:
 | ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `BackgroundModulesSlot` | `{ module: (offers) => module, contract }`      | starts `module(offers)` in the core per workspace; each studio window imports `contract` over IPC |
 | `TabPageSlot`           | `{ tabPage: (offers) => { page, draws(app) } }` | draws `page` in a tab whose app it `draws`, inside an app over the tab's frame routes             |
+| `WindowModulesSlot`     | `{ module: (offers) => module }`                | runs `module(offers)` in each studio window's app, beside the shell's own modules                 |
+| `WindowLayersSlot`      | `{ layer: (offers) => component }`              | draws `component` over the studio frame, inside the window's app                                  |
 
-`offers` always holds `fillsOf(slot)`, the plugin's own slot reader.
+`offers` always holds `fillsOf(slot)`, the plugin's own slot reader. A window also lends what any drawn plugin may use through `@sumi/sumi-host-plugin`: `AskComposerContext` (the chat composer, its app and bar), `TabFaceContext` (a tab's art) and `OPENS_LAYER_MARK` (an element that opens a layer, so a press on it is not a press outside).
 
 ## How Sumi runs them
 
@@ -35,6 +37,7 @@ sumi.profile.json ──► resolvePlugins(profile)        apps/studio/src/plugi
       core window ──────┼── host capabilities (files, terminal) + every BackgroundModulesSlot module(offers)
                         │                                       served per workspace over IPC
       studio window ────┼── imports every BackgroundModulesSlot contract over the core transport
+                        ├── runs every WindowModulesSlot module, draws every WindowLayersSlot layer
                         └── draws the TabPageSlot page in app tabs
 ```
 
@@ -65,6 +68,12 @@ plugins/<name>/
 ## Example: apps
 
 `plugins/apps` declares `AppsSlot` (`{ id, title, icon, view }`) and owns `AppsModule` (`plugins/apps/data/apps`, `@sumi/apps`): the core starts it with the plugin's own fills, and `AppsQuery` answers the apps a workspace has. The plugin fills the host's `TabPageSlot` with the page that draws an app's view. `plugins/terminal` and `plugins/browser-page` require it and fill `AppsSlot` with the Terminal and the Browser. The shell's menu reads `AppsQuery`; nothing reads `AppsSlot` but the apps plugin.
+
+## Example: command menu
+
+`plugins/command-menu` declares `MenuDoorsSlot` (`{ id, letter, label, placeholder, startsWith }`), `MenuPagesSlot` (`{ id, draftsOf }`, the sections a door draws) and `MenuRowSourcesSlot` (`{ id, isFindable, rowsOf(send) }`, rows other plugins add). It owns `CommandMenuModule` (`plugins/command-menu/data/command-menu`, `@sumi/command-menu`), started with its own fills through `WindowModulesSlot`, and draws the menu and its keys through `WindowLayersSlot`. Its own fills are the doors ⌘K, ⌘N, ⌘L and, until the chat plugin takes it, ⌘I. The module's built-in pages and rows answer when no fill replaces them; a page filled for a door wins. The shell opens the menu only through `ToggleCommandMenuCommand` and reads the doors' keys through `MenuDoorsQuery`.
+
+TODO: a row source of another plugin sends only to modules the menu's module imports.
 
 TODO: places' tabs (open, closed, history) move into the apps plugin; decided with the user, not started.
 TODO: `app-host` (`packages/domain`) imports `@sumi/apps` until the shell's tabs move into the apps plugin.

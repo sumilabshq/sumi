@@ -4,7 +4,8 @@ import { OpenNewChatCommand } from "@widgetarium/app-host";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { StartedApp } from "@widgetarium/data-framework";
 import { focusedChatPortOf } from "../chats-column/focused-chat.js";
-import type { AskComposer } from "../features/command-menu/lib/ask-composer-context.js";
+import { AskComposerBar } from "../features/assistant/ui/ask-composer-bar/ask-composer-bar.js";
+import type { AskComposer } from "@sumi/sumi-host-plugin";
 
 export interface AskComposerApps {
 	readonly studioApp: StartedApp;
@@ -21,6 +22,7 @@ interface AskedDraft {
 export function askComposerOf(apps: AskComposerApps): AskComposer {
 	return {
 		app: apps.askApp,
+		bar: AskComposerBar,
 		ask: (text, sends, chatId) => {
 			if (chatId === null && text.trim() === "") {
 				return;

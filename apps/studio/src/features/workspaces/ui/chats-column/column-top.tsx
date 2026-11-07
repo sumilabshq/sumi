@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { Icon } from "@widgetarium/kit";
-import { SearchButton } from "../../../command-menu/ui/search-button/search-button.js";
+import { SearchButton } from "../search-button/search-button.js";
 import { InertButton } from "../inert-button/inert-button.js";
 
 const SETTINGS = "Settings";

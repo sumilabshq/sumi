@@ -5,8 +5,10 @@ import { AppProvider } from "@widgetarium/data-framework";
 import type { StartedApp } from "@widgetarium/data-framework";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
+import type { WindowLayer } from "../plugins/sumi-plugins.js";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
 import { StudioFrame } from "../features/frame/ui/studio-frame/studio-frame.js";
+import { WindowLayersContext } from "../features/frame/lib/window-layers-context.js";
 import { AppFramesProvider } from "../features/app-frame/ui/app-frames/app-frames-provider.js";
 import type { PaneBoardProps } from "../features/panes/ui/pane-board/pane-board.js";
 
@@ -16,6 +18,7 @@ export interface StudioLayoutProps {
 	readonly frameRoutes: FrameRoutesFor;
 	readonly appPageUrlOf: AppPageUrlOf;
 	readonly tabPage: DrawnTabPage | null;
+	readonly windowLayers: readonly WindowLayer[];
 	readonly studio: StudioHostPort;
 	readonly left: ReactNode;
 	readonly panes: PaneBoardProps;
@@ -28,6 +31,7 @@ export function StudioLayout({
 	frameRoutes,
 	appPageUrlOf,
 	tabPage,
+	windowLayers,
 	studio,
 	left,
 	panes,
@@ -37,14 +41,16 @@ export function StudioLayout({
 	return (
 		<AppProvider app={layoutApp}>
 			<AppFramesProvider routesFor={frameRoutes} pageUrlOf={appPageUrlOf} tabPage={tabPage}>
-				<StudioFrame
-					frame={frame}
-					chromeLeftPx={chromeLeftPx}
-					readCursor={studio.cursorInWindow}
-					left={left}
-					panes={panes}
-					panel={panel}
-				/>
+				<WindowLayersContext value={windowLayers}>
+					<StudioFrame
+						frame={frame}
+						chromeLeftPx={chromeLeftPx}
+						readCursor={studio.cursorInWindow}
+						left={left}
+						panes={panes}
+						panel={panel}
+					/>
+				</WindowLayersContext>
 			</AppFramesProvider>
 		</AppProvider>
 	);

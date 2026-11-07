@@ -16,13 +16,14 @@ import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
 import type { DrawnTabPage } from "@sumi/sumi-host-plugin";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../plugins/sumi-plugins.js";
-import type { ResolvedPlugins } from "../plugins/sumi-plugins.js";
+import type { ResolvedPlugins, WindowLayer } from "../plugins/sumi-plugins.js";
 import { askComposerOf } from "../assistant/ask-composer-seam.js";
 import { chatAppOf } from "../assistant/chat-app.js";
 import { chatDeliveryPortOf } from "../assistant/chat-delivery.js";
 import { ChatDeliveryContext } from "../assistant/chat-delivery-context.js";
 import { ChatApps } from "../assistant/chat-apps.js";
-import { AskComposerContext } from "../features/command-menu/lib/ask-composer-context.js";
+import { AskComposerContext, TabFaceContext } from "@sumi/sumi-host-plugin";
+import { MenuTabFace } from "../features/app-host/ui/tab-face/menu-tab-face.js";
 import type { AssistantHosts } from "@widgetarium/assistant/module";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
 import type { ChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -65,6 +66,7 @@ export interface StartedStudio {
 	readonly appearance: StudioAppearance;
 	readonly appPageUrlOf: AppPageUrlOf;
 	readonly tabPage: DrawnTabPage | null;
+	readonly windowLayers: readonly WindowLayer[];
 }
 
 export interface StudioStart extends ProjectStart {
@@ -122,6 +124,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 			workspaceId: lent.appId,
 			core,
 			backgroundModules: plugins.backgroundModules,
+			windowModules: plugins.windowModules,
 		});
 	const state = start.state ?? createStudioState(studioApp);
 	const appearance = start.appearance ?? startStudioAppearance(window);
@@ -138,6 +141,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		appearance,
 		appPageUrlOf: start.appPageUrlOf ?? sumiAppPageUrlOf,
 		tabPage: plugins.tabPage,
+		windowLayers: plugins.windowLayers,
 		frameRoutes: frameRoutesOf({
 			...reach,
 			assistantHost: assistantHostOf(start),
@@ -181,7 +185,11 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 		h(
 			AskComposerContext.Provider,
 			{ value: askComposer },
-			studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+			h(
+				TabFaceContext.Provider,
+				{ value: MenuTabFace },
+				studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+			),
 		),
 	);
 }
@@ -193,6 +201,7 @@ function studioLayoutOf(started: StartedStudio, screen: StudioScreen): ReactElem
 		frameRoutes: started.frameRoutes,
 		appPageUrlOf: started.appPageUrlOf,
 		tabPage: started.tabPage,
+		windowLayers: started.windowLayers,
 		studio: started.studio,
 		left: started.chatsColumn.column,
 		panes: {

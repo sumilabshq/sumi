@@ -6,9 +6,11 @@ import {
 	startOrderOf,
 } from "@widgetarium/plugin-framework";
 import type { Plugin, ShownFill, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
-import type { ServerRuns, ModuleContract } from "@widgetarium/data-framework";
+import type { ComponentType } from "react";
+import type { DeviceModule, ServerRuns, ModuleContract } from "@widgetarium/data-framework";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { AppsPlugin } from "@sumi/apps-plugin";
+import { CommandMenuPlugin } from "@sumi/command-menu-plugin";
 import { MainPlugin } from "@sumi/main-plugin";
 import {
 	BackgroundModuleSchema,
@@ -16,6 +18,10 @@ import {
 	SumiHostPlugin,
 	TabPageSchema,
 	TabPageSlot,
+	WindowLayerSchema,
+	WindowLayersSlot,
+	WindowModuleSchema,
+	WindowModulesSlot,
 } from "@sumi/sumi-host-plugin";
 import type { CoreOffers, DrawnTabPage } from "@sumi/sumi-host-plugin";
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
@@ -28,17 +34,26 @@ export interface BackgroundModule {
 	moduleOf(offers: HostOffers): ServerSideModule;
 }
 
+export interface WindowLayer {
+	readonly id: string;
+	readonly layer: ComponentType;
+}
+
 export interface ResolvedPlugins {
 	readonly backgroundModules: readonly BackgroundModule[];
+	readonly windowModules: readonly DeviceModule[];
+	readonly windowLayers: readonly WindowLayer[];
 	readonly tabPage: DrawnTabPage | null;
 	readonly refusals: readonly string[];
 }
 
-const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, MainPlugin, TerminalPlugin, BrowserPagePlugin];
+const INSTALLED_PLUGINS = [SumiHostPlugin, AppsPlugin, CommandMenuPlugin, MainPlugin, TerminalPlugin, BrowserPagePlugin];
 const BACKGROUND_MODULES = stampSlotName(SumiHostPlugin.id, BackgroundModulesSlot);
 const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
+const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
+const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
 
-const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, AppsPlugin.id, MainPlugin.id];
+const ALWAYS_ON_PLUGINS: readonly string[] = [SumiHostPlugin.id, AppsPlugin.id, CommandMenuPlugin.id, MainPlugin.id];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [TerminalPlugin.id, BrowserPagePlugin.id],
@@ -59,6 +74,21 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 						{
 							contract: parsed.data.contract,
 							moduleOf: (offers: HostOffers) => parsed.data.module({ ...offers, ...readerOf(fill) }),
+						},
+					]
+				: [];
+		}),
+		windowModules: fillsOf(slotFills, WINDOW_MODULES).flatMap((fill) => {
+			const parsed = WindowModuleSchema.safeParse(fill.item);
+			return parsed.success ? [parsed.data.module(readerOf(fill))] : [];
+		}),
+		windowLayers: fillsOf(slotFills, WINDOW_LAYERS).flatMap((fill) => {
+			const parsed = WindowLayerSchema.safeParse(fill.item);
+			return parsed.success
+				? [
+						{
+							id: `${fill.pluginId}/${fill.id}`,
+							layer: parsed.data.layer(readerOf(fill)),
 						},
 					]
 				: [];
