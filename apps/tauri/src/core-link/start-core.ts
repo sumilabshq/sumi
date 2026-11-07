@@ -2,7 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { runtime, localTransport } from "@widgetarium/data-framework";
+import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { SumiProfile } from "@widgetarium/plugin-framework";
 import {
@@ -35,13 +35,19 @@ const CORE_IPC = "the core IPC";
 const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
 const PROFILE_UNREAD = "[studio-core] workspace {workspace}: sumi.profile.json not read, the built-in plugins start";
+const NOT_STARTED = "[studio-core] workspace {workspace}: none → failed, every call answers unreachable";
 
 export function startCore(): void {
 	const served = new Map<string, Runtime>();
 	const store = new StoreClient((command, args) => invoke(command, args));
 	serveCore((workspace, listener) => {
 		void profileOrBuiltIn(store, workspace).then((profile) => {
-			const places = coreServedOver({ workspace, listener, store, profile });
+			const places = coreServedOrFailed({ workspace, listener, store, profile });
+
+			if (places === null) {
+				return;
+			}
+
 			served.set(workspace, places);
 			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", profile.plugins.join(", ")));
 			void keepLiveWindows(places, workspace);
@@ -74,6 +80,16 @@ async function profileOrBuiltIn(store: StoreClient, workspace: string): Promise<
 	}
 }
 
+function coreServedOrFailed(serving: CoreServing): Runtime | null {
+	try {
+		return coreServedOver(serving);
+	} catch (failure) {
+		console.error(NOT_STARTED.replace("{workspace}", serving.workspace), failure);
+		serving.listener.fail(failure);
+		return null;
+	}
+}
+
 function coreServedOver({ workspace, listener, store, profile }: CoreServing): Runtime {
 	const own = localTransport();
 	const offers = {
@@ -94,9 +110,13 @@ function coreServedOver({ workspace, listener, store, profile }: CoreServing): R
 			scope: { workspaceId: workspace },
 		});
 	const authenticate = new AppCallerAuthenticate();
-	listener.serve(core.expose({ adapter: CORE_IPC, authenticate }));
-	own.serve(core, { authenticate });
-	return runtime().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
+	return mountOrStop(core, (started) => {
+		const exposed = started.expose({ adapter: CORE_IPC, authenticate });
+		own.serve(started, { authenticate });
+		const places = runtime().imports(PlacesContract({ over: own }), TasksContract({ over: own })).start();
+		listener.serve(exposed);
+		return places;
+	});
 }
 
 function backgroundModulesOf(workspace: string, profile: SumiProfile): readonly BackgroundModule[] {

@@ -1,6 +1,7 @@
 export { RuntimeBuilder, runtime } from "./runtime";
+export { mountOrStop } from "./mount-or-stop";
 export { Authenticate } from "./authenticate";
-export type { AdapterServing, Exposed, Exposing } from "./exposure";
+export type { AdapterOptions, ExposeOptions, Exposed } from "./exposure";
 export { queryKeyOf } from "./query-key";
 export { QueryWatches } from "./query-watches";
 export { RouteQueries } from "./route-queries";
@@ -70,7 +71,7 @@ export {
 	relayPort,
 	servePort,
 } from "./message-port-transport";
-export type { PortRelaying, PortServing } from "./message-port-transport";
+export type { RelayPortOptions, ServePortOptions } from "./message-port-transport";
 export { FrameCommandKeySchema } from "./frame-command-keys";
 export { orpcTransport } from "./wire-client";
 export { wireAnswerOf } from "./wire";
@@ -112,7 +113,7 @@ export { permission } from "./permission";
 export type { Permission } from "./permission";
 export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
-export type { RuntimeFacts, RuntimeProvides, RuntimeProviding } from "./runtime-provides";
+export type { ProvideRuntime, RuntimeFacts, RuntimeProvides } from "./runtime-provides";
 export { reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";
 export { PerCall, Repeatable, command, query } from "./request";

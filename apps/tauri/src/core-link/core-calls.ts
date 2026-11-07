@@ -6,6 +6,7 @@ import { CORE_ANSWER, CORE_CHANGED, CORE_SERVE, CoreAskSchema } from "./core-wir
 
 export interface CoreListener {
 	serve(answering: Answering): () => void;
+	fail(failure: unknown): void;
 }
 
 export type StartWorkspace = (workspace: string, listener: CoreListener) => void;

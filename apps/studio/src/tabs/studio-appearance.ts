@@ -1,6 +1,6 @@
 import { AppearanceModule as AppearanceContract, ThemeQuery } from "@widgetarium/appearance";
 import { AppearanceModule } from "@widgetarium/appearance/module";
-import { runtime, localTransport } from "@widgetarium/data-framework";
+import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
 
@@ -24,7 +24,7 @@ export function startStudioAppearance(view: Window): StudioAppearance {
 				workspaceId: STUDIO_SCOPE,
 			},
 		});
-	transport.serve(appearance, { authenticate: new AppCallerAuthenticate() });
+	mountOrStop(appearance, (started) => transport.serve(started, { authenticate: new AppCallerAuthenticate() }));
 	const appearanceApp = runtime().imports(AppearanceContract({ over: transport })).start();
 	const wear = (): void => {
 		void appearanceApp.send(ThemeQuery).then((theme) => {

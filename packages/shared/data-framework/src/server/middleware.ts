@@ -3,7 +3,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { Hono } from "hono";
 import { streamSSE } from "hono/streaming";
 import { refusalOf } from "../answer";
-import type { AdapterServing, Exposed } from "../exposure";
+import type { AdapterOptions, Exposed } from "../exposure";
 import { NEVER_ABORTED } from "../handler";
 import type { AnyRequest } from "../request";
 import type { Runtime } from "../runtime";
@@ -16,10 +16,11 @@ interface WireContext {
 const ADAPTER = "dataFrameworkMiddleware()";
 const NOT_A_CALL = "the body is not a widgetarium call";
 
-export function dataFrameworkMiddleware(runtime: Runtime, { authenticate }: AdapterServing = {}): Hono {
+export function dataFrameworkMiddleware(runtime: Runtime, { authenticate }: AdapterOptions = {}): Hono {
 	const exposed = runtime.expose({ adapter: ADAPTER, authenticate });
 	const handler = new RPCHandler<WireContext>(routerOf(exposed));
 	const hono = new Hono();
+	// TODO: authenticate the changes stream and filter invalidations per user
 	hono.get(WIRE_CHANGES_PATH, (context) =>
 		streamSSE(context, async (stream) => {
 			const stopHearing = exposed.changes((invalidated) => void stream.writeSSE({ data: JSON.stringify(invalidated) }));

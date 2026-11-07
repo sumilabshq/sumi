@@ -1,22 +1,24 @@
 import { refusalOf } from "./answer";
-import type { Answer } from "./answer";
+import type { Answer, Refusal } from "./answer";
 import type { Authenticate } from "./authenticate";
 import { isCovering } from "./guard";
 import type { User } from "./guard";
 import type { Invalidation } from "./invalidation";
+import { refuseCaller } from "./local-routes";
 import type { Route } from "./local-routes";
 import type { Mediator, OutsideCaller } from "./mediator";
 import type { AnyRequest } from "./request";
 import { stepNameOf } from "./middleware";
+import { throwIfRefused } from "./throw-if-refused";
 import type { ChangeBroadcast } from "./transport";
 import type { Answering, ServedCall } from "./transport";
 
-export interface Exposing {
+export interface ExposeOptions {
 	readonly adapter: string;
 	readonly authenticate?: Authenticate | undefined;
 }
 
-export type AdapterServing = Pick<Exposing, "authenticate">;
+export type AdapterOptions = Pick<ExposeOptions, "authenticate">;
 
 export interface Exposed extends Answering {
 	readonly requests: readonly AnyRequest[];
@@ -27,30 +29,30 @@ export interface ExposedRuntime {
 	readonly mediator: Mediator;
 	announce(invalidated: readonly Invalidation[] | undefined): void;
 	readonly changed: ChangeBroadcast;
+	stoppedRefusal(name: string): Refusal | null;
 }
 
-const REFUSED = "{adapter} refused:\n{findings}";
 const NOT_HERE = "{name} runs on no module of this runtime";
 const UNGUARDED =
 	"{request} is exposed with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it";
 const NEEDS_AUTHENTICATE =
 	"{request} is guarded by {guard}, which needs a user, and {adapter} has no Authenticate: pass one";
 
-export function exposedOf(runtime: ExposedRuntime, exposing: Exposing): Exposed {
-	const routes = [...runtime.routes.values()];
-	refuseOn(
-		exposing,
-		routes.filter(isPublic).flatMap((route) => guardFindings(route, exposing)),
+export function createExposure(runtime: ExposedRuntime, options: ExposeOptions): Exposed {
+	const reachable = [...runtime.routes.values()].filter(isReachableOutside);
+	throwIfRefused(
+		options.adapter,
+		reachable.flatMap((route) => guardFindings(route, options)),
 	);
-	const authenticate = exposing.authenticate ?? null;
+	const authenticate = options.authenticate ?? null;
 	return {
-		requests: routes.map(({ handler }) => handler.request),
+		requests: reachable.map(({ handler }) => handler.request),
 		answer: (call) => answerOutside(runtime, authenticate, call),
 		changes: (hear) => runtime.changed.hear(hear),
 	};
 }
 
-class AuthenticatedCaller implements OutsideCaller {
+class HeadersCaller implements OutsideCaller {
 	private known: Promise<User | null> | null = null;
 
 	constructor(
@@ -75,7 +77,13 @@ async function answerOutside(
 		return refusalOf("not-found", NOT_HERE.replace("{name}", name));
 	}
 
-	const outsideCaller = new AuthenticatedCaller(authenticate, headers ?? new Headers());
+	const stopped = runtime.stoppedRefusal(name);
+
+	if (stopped !== null) {
+		return stopped;
+	}
+
+	const outsideCaller = new HeadersCaller(authenticate, headers ?? new Headers());
 	const keyed = idempotencyKey === null ? {} : { idempotencyKey };
 	const answered = await runtime.mediator.send(route.handler.request, input, {
 		signal,
@@ -87,11 +95,11 @@ async function answerOutside(
 	return answered;
 }
 
-function isPublic({ handler: { request } }: Route): boolean {
-	return request.visibility.reach === "public";
+function isReachableOutside(route: Route): boolean {
+	return refuseCaller(route, undefined) === null;
 }
 
-function guardFindings({ handler: { request }, steps }: Route, { adapter, authenticate }: Exposing): string[] {
+function guardFindings({ handler: { request }, steps }: Route, { adapter, authenticate }: ExposeOptions): string[] {
 	if (!steps.some(isCovering)) {
 		return [UNGUARDED.replace("{request}", request.name)];
 	}
@@ -107,12 +115,4 @@ function guardFindings({ handler: { request }, steps }: Route, { adapter, authen
 			.replace("{guard}", stepNameOf(steps, needing))
 			.replace("{adapter}", adapter),
 	];
-}
-
-function refuseOn({ adapter }: Exposing, findings: readonly string[]): void {
-	if (findings.length === 0) {
-		return;
-	}
-
-	throw new Error(REFUSED.replace("{adapter}", adapter).replace("{findings}", findings.join("\n")));
 }

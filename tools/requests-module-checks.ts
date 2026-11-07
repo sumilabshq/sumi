@@ -472,7 +472,7 @@ check(
 	[true, ["n-1"]],
 );
 
-const CREATE_CUSTOMER_IN_PROCESS_ONLY = "billing/create-customer is reached only from inside its own process";
+const CREATE_CUSTOMER_NOT_EXPOSED = "billing/create-customer: the server exposes no such request";
 
 const wireCalls: string[] = [];
 const countingFetch = (request: Request): Response | Promise<Response> => {
@@ -490,7 +490,7 @@ const askedOverWire = await leaky.send(CreateCustomerContract, { userId: "u-3" }
 check(
 	"a request with no mark reaching the server over the wire is refused there as not found",
 	askedOverWire.ok ? "ran" : [askedOverWire.code, askedOverWire.reason],
-	["not-found", CREATE_CUSTOMER_IN_PROCESS_ONLY],
+	["not-found", CREATE_CUSTOMER_NOT_EXPOSED],
 );
 
 const LooseCreateCustomerContract = command("billing/create-customer")
@@ -501,7 +501,7 @@ const probedOverWire = await leaky.send(LooseCreateCustomerContract, { userId: 5
 check(
 	"an outside caller sending invalid input to a process-only request learns only that it is not found",
 	probedOverWire.ok ? "ran" : [probedOverWire.code, probedOverWire.reason],
-	["not-found", CREATE_CUSTOMER_IN_PROCESS_ONLY],
+	["not-found", CREATE_CUSTOMER_NOT_EXPOSED],
 );
 
 const ProvisionCommand = command("provision")
@@ -536,7 +536,7 @@ const provisioned = await runtime()
 check(
 	"a request callable by named modules is refused over a transport like a process-only one, naming no module",
 	provisioned.ok ? "ran" : [provisioned.code, provisioned.reason],
-	["not-found", "accounts/provision is reached only from inside its own process"],
+	["not-found", "accounts/provision: the server exposes no such request"],
 );
 
 const AnywhereSignUp = module("auth")
@@ -578,7 +578,7 @@ const remoteSignedUp = await runtime()
 check(
 	"a server sending a request with no mark to a module it imports from an address is refused there",
 	remoteSignedUp.ok ? "ran" : remoteSignedUp.reason,
-	`billing/create-customer answered not-found: ${CREATE_CUSTOMER_IN_PROCESS_ONLY}`,
+	`billing/create-customer answered not-found: ${CREATE_CUSTOMER_NOT_EXPOSED}`,
 );
 
 const ReportQuery = query("report")
@@ -723,7 +723,7 @@ const secretOverWire = await runtime()
 check(
 	"a request with no mark is refused over the wire",
 	secretOverWire.ok ? "ran" : [secretOverWire.code, secretOverWire.reason],
-	["not-found", "vault/secret is reached only from inside its own process"],
+	["not-found", "vault/secret: the server exposes no such request"],
 );
 
 const EntryQuery = query("entry")

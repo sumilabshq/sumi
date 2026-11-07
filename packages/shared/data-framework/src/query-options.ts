@@ -20,18 +20,18 @@ const REMOTE_POLICY = {
 	networkMode: "online",
 } as const;
 
-export function queryOptionsOf(started: Runtime, request: AnyQuery, sent: unknown) {
+export function queryOptionsOf(runtime: Runtime, request: AnyQuery, sent: unknown) {
 	const queryKey = queryKeyOf(request, sent);
 	return {
 		queryKey,
 		queryFn: async ({ signal }: QueryFunctionContext): Promise<unknown> => {
-			const answer = await started.send(request, sent, { signal });
+			const answer = await runtime.send(request, sent, { signal });
 			if (!answer.ok) throw new RequestFailed(answer.reason, answer.code, queryKey);
 			return answer.output;
 		},
 		staleTime: request.freshFor ?? 0,
-		initialData: request.isSettledNow ? () => started.routes.readNow(request, sent)?.output : undefined,
-		...(started.routes.isLocal(request) ? LOCAL_POLICY : REMOTE_POLICY),
+		initialData: request.isSettledNow ? () => runtime.routes.readNow(request, sent)?.output : undefined,
+		...(runtime.routes.isLocal(request) ? LOCAL_POLICY : REMOTE_POLICY),
 	};
 }
 

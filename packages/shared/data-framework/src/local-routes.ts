@@ -14,7 +14,7 @@ import type { Asked, InProcessCaller, Settle } from "./mediator";
 import type { Added, Step, StepCall, StepContext } from "./middleware";
 import type { Provided } from "./module";
 import { callerKeyOf, isKeyReplayed, keyRead } from "./policies";
-import type { Callers } from "./policies";
+import type { CallerOrigin } from "./policies";
 import type { AnyRequest } from "./request";
 import { outputOfSent, stampSent } from "./send";
 import type { CallingModule } from "./calling-module";
@@ -37,6 +37,8 @@ interface Walk {
 	readonly settle: Settle;
 }
 
+type CallerRead = { readonly user: User | null } | { readonly thrown: unknown };
+
 interface Keyed {
 	readonly input: unknown;
 	readonly user: User | null;
@@ -50,6 +52,7 @@ const STEP_AT = "step #{at}";
 const REACHED_IN_PROCESS_ONLY = "{request} is reached only from inside its own process";
 const CALLABLE_BY_MODULES = "{request} is callable only by module(s) {modules}, not by {caller}";
 const VIEW = "a view";
+const UNKNOWN_CALLER = "{request}: the caller could not be authenticated";
 
 export function refuseCaller({ handler: { request } }: Route, caller: InProcessCaller | undefined): Refusal | null {
 	const { visibility } = request;
@@ -76,8 +79,14 @@ export class LocalRoutes {
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		const user = (await asked.sending.outsideCaller?.user()) ?? null;
-		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user } };
+		const caller = await callerUserOf(asked);
+
+		if ("thrown" in caller) {
+			const reason = UNKNOWN_CALLER.replace("{request}", asked.request.name);
+			return settle.refuse(asked.request, refusalOf("unauthenticated", reason), caller.thrown);
+		}
+
+		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user: caller.user } };
 		return this.throughSteps({ route, asked, settle }, call, 0);
 	}
 
@@ -142,10 +151,14 @@ export class LocalRoutes {
 
 	private runDeduped(walk: Walk, { input, user, key }: Keyed, run: () => Promise<Answer<unknown>>) {
 		const { request } = walk.asked;
-		if (key !== null && isKeyReplayed(request, user, callersOf(walk.asked)))
-			return this.once(callerKeyOf(request.name, user, key), run);
+		const origin = callerOriginOf(walk.asked);
+
+		if (key !== null && isKeyReplayed(request, user, origin)) {
+			return this.once(callerKeyOf(request.name, origin, user, key), run);
+		}
+
 		if (key !== null || request.kind !== "query") return run();
-		return walk.settle.shared(callerKeyOf(request.name, user, stableKey(input)), run);
+		return walk.settle.shared(callerKeyOf(request.name, origin, user, stableKey(input)), run);
 	}
 
 	private async once(doneKey: string, run: () => Promise<Answer<unknown>>): Promise<Answer<unknown>> {
@@ -226,8 +239,16 @@ function callingModuleOf({ handler }: Route, asked: Asked): CallingModule {
 	};
 }
 
-function callersOf({ sending }: Asked): Callers {
-	return sending.outsideCaller === undefined ? "one" : "many";
+function callerOriginOf({ sending }: Asked): CallerOrigin {
+	return sending.outsideCaller === undefined ? "in-process" : "outside";
+}
+
+async function callerUserOf({ sending }: Asked): Promise<CallerRead> {
+	try {
+		return { user: (await sending.outsideCaller?.user()) ?? null };
+	} catch (thrown) {
+		return { thrown };
+	}
 }
 
 function isListedCaller(request: AnyRequest, modules: readonly string[], { module }: InProcessCaller): boolean {

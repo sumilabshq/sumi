@@ -6,6 +6,7 @@ import type { Platform } from "./platform-module";
 import type { ModuleReach } from "./remote-modules";
 import type { AnyEvent } from "./event";
 import { moduleRoutesOf } from "./routes-of-module";
+import { throwIfRefused } from "./throw-if-refused";
 import type { ModuleRoutes } from "./routes-of-module";
 
 interface Starting {
@@ -16,7 +17,6 @@ interface Starting {
 }
 
 const STARTER = "runtime()";
-const REFUSED = "runtime() refused:\n{findings}";
 const ON_DEVICE = 'module "{module}" runs on the client; a server runs only modules that run on the server';
 const WRONG_MODULE = '{request} is handled in module "{module}", but its name names module "{named}"';
 const BUILT_FOR = 'the handler of {request} was built for module "{built}", but module "{module}" holds it';
@@ -44,10 +44,10 @@ export interface StartedRoutes {
 }
 
 export function routesOf(starting: Starting): StartedRoutes {
-	refuseOn([...platformFindings(starting), ...ranAndImportedFindings(starting), ...importedTwiceFindings(starting)]);
+	throwIfRefused(STARTER, [...platformFindings(starting), ...ranAndImportedFindings(starting), ...importedTwiceFindings(starting)]);
 	const moduleRoutes = starting.modules.map((module) => moduleRoutesOf(module, starting.runtimeProvided));
 	const routes = moduleRoutes.flatMap((ofModule) => ofModule.routes);
-	refuseOn([
+	throwIfRefused(STARTER, [
 		...moduleRoutes.flatMap(reservedKeyFindings),
 		...runtimeReservedKeyFindings(starting),
 		...moduleRoutes.flatMap((ofModule) => runtimeKeyFindings(ofModule, starting)),
@@ -60,11 +60,6 @@ export function routesOf(starting: Starting): StartedRoutes {
 		routes: new Map(routes.map((route) => [route.handler.request.name, route])),
 		modules: moduleRoutes,
 	};
-}
-
-function refuseOn(findings: readonly string[]): void {
-	if (findings.length === 0) return;
-	throw new Error(REFUSED.replace("{findings}", findings.join("\n")));
 }
 
 function platformFindings({ platform, modules }: Starting): string[] {

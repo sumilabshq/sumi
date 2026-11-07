@@ -1,3 +1,4 @@
+import { ORPCError } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { z } from "zod";
 import { reasonOf, refusalOf } from "./answer";
@@ -25,6 +26,9 @@ const CHANGES_LOST = "[widgetarium] the changes stream from {server} ended, so i
 const CHANGES_AGAIN_MS = 1000;
 const EVENT_END = "\n\n";
 const DATA_LINE = "data: ";
+const NOT_EXPOSED = "{name}: the server exposes no such request";
+const NOT_FOUND_STATUS = 404;
+const NotFoundResponseSchema = z.object({ status: z.literal(NOT_FOUND_STATUS) });
 const ChangedSchema = z.array(InvalidationSchema);
 
 export function orpcTransport(server: string, host: WireHost = {}): RemoteTransport {
@@ -49,6 +53,10 @@ async function callOver(
 		const answered = await link.call(wirePathOf(request), call, { context, signal });
 		return wireAnswerOf(answered) ?? refusalOf("unreachable", NOT_AN_ANSWER.replace("{name}", request.name));
 	} catch (thrown) {
+		if (thrown instanceof ORPCError && NotFoundResponseSchema.safeParse(thrown.data).success) {
+			return refusalOf("not-found", NOT_EXPOSED.replace("{name}", request.name));
+		}
+
 		return refusalOf("unreachable", reasonOf(thrown));
 	}
 }

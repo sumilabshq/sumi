@@ -9,6 +9,8 @@ await import("./requests-module-checks.ts");
 await import("./requests-event-checks.ts");
 await import("./requests-transport-checks.ts");
 await import("./requests-options-checks.ts");
+await import("./requests-runtime-checks.ts");
+await import("./requests-provides-checks.ts");
 
 console.log(tally.failed ? `requests: ${tally.failed} check(s) failed` : "requests: all checks passed");
 process.exit(tally.failed ? 1 : 0);

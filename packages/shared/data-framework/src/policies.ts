@@ -5,13 +5,17 @@ import type { AnyRequest } from "./request";
 
 type KeyRead = { readonly key: string | null } | { readonly refusal: Refusal };
 
-export type Callers = "one" | "many";
+export type CallerOrigin = "in-process" | "outside";
 
 const NO_CALL_KEY = "{name} is PerCall: send it with an idempotency key";
 const ANONYMOUS = "anonymous";
 
-export function callerKeyOf(name: string, user: User | null, tail: string): string {
+export function userKeyOf(name: string, user: User | null, tail: string): string {
 	return JSON.stringify([name, user?.id ?? ANONYMOUS, tail]);
+}
+
+export function callerKeyOf(name: string, origin: CallerOrigin, user: User | null, tail: string): string {
+	return JSON.stringify([name, origin, user?.id ?? ANONYMOUS, tail]);
 }
 
 export function keyRead(request: AnyRequest, input: unknown, given: string | undefined): KeyRead {
@@ -23,6 +27,6 @@ export function keyRead(request: AnyRequest, input: unknown, given: string | und
 	return { refusal: refusalOf("missing-key", NO_CALL_KEY.replace("{name}", request.name)) };
 }
 
-export function isKeyReplayed(request: AnyRequest, user: User | null, callers: Callers): boolean {
-	return user !== null || callers === "one" || typeof request.keyPolicy !== "function";
+export function isKeyReplayed(request: AnyRequest, user: User | null, origin: CallerOrigin): boolean {
+	return user !== null || origin === "in-process" || typeof request.keyPolicy !== "function";
 }

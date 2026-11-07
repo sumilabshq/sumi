@@ -10,13 +10,17 @@ export interface RuntimeProvides {
 // TRADE-OFF: a mapped copy, since an interface has no implicit index signature and contexts meet Record types
 export type ProvidedByRuntime = Pick<RuntimeProvides, keyof RuntimeProvides>;
 
+type DefaultedRuntimeKey = "rateLimits";
+
+export type UndefaultedRuntimeKey = Exclude<keyof RuntimeProvides, DefaultedRuntimeKey>;
+
 export interface RuntimeFacts extends ServerParts {
 	readonly platform: Platform | null;
 	readonly scope: ModuleScope | null;
 }
 
-export type RuntimeProviding = (facts: RuntimeFacts) => RuntimeProvides & Provided;
+export type ProvideRuntime = (facts: RuntimeFacts) => ProvidedByRuntime & Provided;
 
-export type ProvideRuntime = (facts: RuntimeFacts) => Provided;
+export type ProvideDefaultRuntime = (facts: RuntimeFacts) => Pick<RuntimeProvides, DefaultedRuntimeKey>;
 
-export const provideDefaultRuntime: ProvideRuntime = () => ({ rateLimits: new MemoryRateLimits() });
+export const provideDefaultRuntime: ProvideDefaultRuntime = () => ({ rateLimits: new MemoryRateLimits() });

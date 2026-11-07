@@ -1,7 +1,7 @@
 import { AppearanceModule, FileSystemModule, PlacesModule, QuestionsModule, TerminalModule } from "@sumi/contract";
 import type { FrameServing } from "@sumi/sumi-host-plugin";
 import { stableKey } from "@widgetarium/data-framework/gateway/stable-key";
-import { runtime } from "@widgetarium/data-framework";
+import { mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { LocalTransport, ModuleContract, RemoteTransport, ServerRuns } from "@widgetarium/data-framework";
 import { TasksModule } from "@widgetarium/tasks";
 import { AppCallerAuthenticate } from "../features/app-frame/lib/app-caller.js";
@@ -124,7 +124,9 @@ function startFrameModuleServer(local: LocalTransport, serving: FrameServing, wo
 			workspaceId,
 		},
 	});
-	const stopServing = local.serve(frameModule, { authenticate: new AppCallerAuthenticate() });
+	const stopServing = mountOrStop(frameModule, (started) =>
+		local.serve(started, { authenticate: new AppCallerAuthenticate() }),
+	);
 	return () => {
 		stopServing();
 		frameModule.stop();

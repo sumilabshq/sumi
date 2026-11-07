@@ -4,7 +4,7 @@ import { StoreClient, memoryStoreInvoke } from "@widgetarium/behaviors/tauri-sto
 import { RestoreTabsCommand } from "@widgetarium/app-host";
 import { BrowserModule } from "@widgetarium/browser/module";
 import type { BrowserPagesIpc } from "@widgetarium/browser/module";
-import { runtime, localTransport } from "@widgetarium/data-framework";
+import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
 import type { DeviceModule, Platform, RemoteTransport, Runtime } from "@widgetarium/data-framework";
 import { LayoutModule } from "@widgetarium/layout/module";
 import type { StudioWindows } from "@widgetarium/layout/module";
@@ -60,7 +60,7 @@ export function startCoreInProcess(
 	const core = runtime()
 		.modules(FileSystemModule, TerminalModule, ...backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
 		.start({ platform: "server", env: {}, scope: { workspaceId } });
-	local.serve(core, { authenticate: new AppCallerAuthenticate() });
+	mountOrStop(core, (started) => local.serve(started, { authenticate: new AppCallerAuthenticate() }));
 	return local;
 }
 

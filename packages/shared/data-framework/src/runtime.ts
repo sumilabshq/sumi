@@ -4,8 +4,8 @@ import type { Answer, Refusal } from "./answer";
 import { MemoryDoneKeys } from "./done-keys";
 import type { DoneKeys } from "./done-keys";
 import { EventBus } from "./event-bus";
-import { exposedOf } from "./exposure";
-import type { Exposed, Exposing } from "./exposure";
+import { createExposure } from "./exposure";
+import type { ExposeOptions, Exposed } from "./exposure";
 import { Invalidations } from "./invalidation";
 import type { Invalidation } from "./invalidation";
 import { LocalRoutes } from "./local-routes";
@@ -24,9 +24,15 @@ import type { FailureReport } from "./report-failure";
 import type { AnyRequest, InputArgs, OutputOf } from "./request";
 import { RouteQueries } from "./route-queries";
 import { provideDefaultRuntime } from "./runtime-provides";
-import type { ProvideRuntime, RuntimeFacts, RuntimeProviding } from "./runtime-provides";
+import type {
+	ProvideDefaultRuntime,
+	ProvideRuntime,
+	RuntimeFacts,
+	UndefaultedRuntimeKey,
+} from "./runtime-provides";
 import { routesOf } from "./startup";
 import type { StartedRoutes } from "./startup";
+import { throwIfRefused } from "./throw-if-refused";
 import { ChangeBroadcast } from "./transport";
 
 export interface RuntimeHost {
@@ -47,7 +53,7 @@ export interface Runtime {
 	readonly routes: RouteQueries;
 	readonly watches: QueryWatches;
 	send<R extends AnyRequest>(request: R, ...asked: [...InputArgs<R>, sending?: Sending]): Promise<Answer<OutputOf<R>>>;
-	expose(exposing: Exposing): Exposed;
+	expose(options: ExposeOptions): Exposed;
 	stop(): void;
 }
 
@@ -58,32 +64,42 @@ export type ServerSideModule = RunnableModule<Provided, ServerRuns> | HandledMod
 interface RuntimePlan {
 	readonly ranModules: readonly StartableModule[];
 	readonly remoteModules: readonly RemoteModule[];
-	readonly provideRuntime: ProvideRuntime;
+	readonly provideRuntime: ProvideRuntime | ProvideDefaultRuntime;
 }
 
-const UNREACHED = "{name} runs on no module of this runtime, and no import reaches it";
+type StartableProvision = "provided" | "defaulted";
 
-export class RuntimeBuilder {
+type DefaultProvision = [UndefaultedRuntimeKey] extends [never]
+	? "defaulted"
+	: `call .provide() before .start(): the default runtime lacks ${UndefaultedRuntimeKey & string}`;
+
+const UNREACHED = "{name} runs on no module of this runtime, and no import reaches it";
+const STOPPED = "{name}: the runtime that answers it is stopped";
+const EXPOSED_STOPPED = "the runtime is stopped: start a new one to expose it";
+
+export class RuntimeBuilder<Provision extends string> {
+	declare readonly provision: Provision;
+
 	constructor(private readonly plan: RuntimePlan) {}
 
-	modules(...modules: readonly StartableModule[]): RuntimeBuilder {
+	modules(...modules: readonly StartableModule[]): RuntimeBuilder<Provision> {
 		return new RuntimeBuilder({ ...this.plan, ranModules: [...this.plan.ranModules, ...modules] });
 	}
 
-	imports(...modules: readonly RemoteModule[]): RuntimeBuilder {
+	imports(...modules: readonly RemoteModule[]): RuntimeBuilder<Provision> {
 		return new RuntimeBuilder({ ...this.plan, remoteModules: [...this.plan.remoteModules, ...modules] });
 	}
 
-	provide(provideRuntime: RuntimeProviding): RuntimeBuilder {
+	provide(provideRuntime: ProvideRuntime): RuntimeBuilder<"provided"> {
 		return new RuntimeBuilder({ ...this.plan, provideRuntime });
 	}
 
-	start(options: RuntimeStartOptions = {}): Runtime {
+	start(this: RuntimeBuilder<StartableProvision>, options: RuntimeStartOptions = {}): Runtime {
 		return startRuntime(this.plan, options);
 	}
 }
 
-export function runtime(): RuntimeBuilder {
+export function runtime(): RuntimeBuilder<DefaultProvision> {
 	return new RuntimeBuilder({ ranModules: [], remoteModules: [], provideRuntime: provideDefaultRuntime });
 }
 
@@ -121,7 +137,6 @@ function startRuntime(plan: RuntimePlan, start: RuntimeStartOptions): Runtime {
 		routes,
 		reportFailure,
 		queryClient,
-		invalidations,
 		changed,
 		announce,
 		isModuleRequest: (request) =>
@@ -139,7 +154,6 @@ interface RuntimeParts {
 	readonly routes: RouteQueries;
 	readonly reportFailure: FailureReport;
 	readonly queryClient: QueryClient;
-	readonly invalidations: Invalidations;
 	readonly changed: ChangeBroadcast;
 	readonly announce: (invalidated: readonly Invalidation[] | undefined) => void;
 	readonly isModuleRequest: (request: AnyRequest) => boolean;
@@ -151,6 +165,7 @@ class StartedRuntime implements Runtime {
 	readonly watches: QueryWatches;
 	readonly routes: RouteQueries;
 	readonly reportFailure: FailureReport;
+	private isStopped = false;
 
 	constructor(private readonly parts: RuntimeParts) {
 		this.queryClient = parts.queryClient;
@@ -160,29 +175,58 @@ class StartedRuntime implements Runtime {
 	}
 
 	send<R extends AnyRequest>(request: R, ...asked: [...InputArgs<R>, sending?: Sending]): Promise<Answer<OutputOf<R>>>;
-	async send(request: AnyRequest, sent?: unknown, sending?: Sending): Promise<Answer<unknown>> {
-		const answer = await this.parts.mediator.send(request, sent, { ...sending, inProcessCaller: VIEW_CALLER });
-		this.parts.changed.tell(answer.ok ? answer.invalidated : undefined);
-		void this.reReadAfter(request, answer);
+	async send(request: AnyRequest, sent?: unknown, sending: Sending = {}): Promise<Answer<unknown>> {
+		const stopped = this.stoppedRefusal(request.name);
+
+		if (stopped !== null) {
+			return stopped;
+		}
+
+		const { idempotencyKey, signal, headers } = sending;
+		const answer = await this.parts.mediator.send(request, sent, {
+			idempotencyKey,
+			signal,
+			headers,
+			inProcessCaller: VIEW_CALLER,
+		});
+		this.reReadAfter(request, answer);
 		return answer;
 	}
 
-	expose(exposing: Exposing): Exposed {
+	expose(options: ExposeOptions): Exposed {
+		throwIfRefused(options.adapter, this.isStopped ? [EXPOSED_STOPPED] : []);
 		const { started, mediator, announce, changed } = this.parts;
-		return exposedOf({ routes: started.routes, mediator, announce, changed }, exposing);
+		return createExposure(
+			{ routes: started.routes, mediator, announce, changed, stoppedRefusal: (name) => this.stoppedRefusal(name) },
+			options,
+		);
 	}
 
 	stop(): void {
-		this.parts.stop();
-	}
-
-	private async reReadAfter(request: AnyRequest, answer: Answer<unknown>): Promise<void> {
-		if (this.parts.isModuleRequest(request)) {
-			this.parts.invalidations.apply(answer.ok ? (answer.invalidated ?? []) : []);
+		if (this.isStopped) {
 			return;
 		}
 
-		// TODO: remove with the older module shape, whose commands re-read by .invalidates() or everything
+		this.isStopped = true;
+		this.parts.stop();
+	}
+
+	private stoppedRefusal(name: string): Refusal | null {
+		return this.isStopped ? refusalOf("unreachable", STOPPED.replace("{name}", name)) : null;
+	}
+
+	private reReadAfter(request: AnyRequest, answer: Answer<unknown>): void {
+		if (this.parts.isModuleRequest(request)) {
+			this.parts.announce(answer.ok ? answer.invalidated : undefined);
+			return;
+		}
+
+		this.parts.changed.tell(answer.ok ? answer.invalidated : undefined);
+		void this.reReadLegacy(request, answer);
+	}
+
+	// TODO: remove with the older module shape, whose commands re-read by .invalidates() or everything
+	private async reReadLegacy(request: AnyRequest, answer: Answer<unknown>): Promise<void> {
 		if (request.kind !== "command" || (!answer.ok && !answer.ran)) return;
 		const listed = request.invalidated;
 		if (listed === null) return this.queryClient.invalidateQueries();

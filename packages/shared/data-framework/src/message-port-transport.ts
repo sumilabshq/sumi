@@ -5,7 +5,7 @@ import type { Answer } from "./answer";
 import { InvalidationSchema } from "./invalidation";
 import type { RemoteCall } from "./remote-server";
 import { ChangeBroadcast } from "./transport";
-import type { AdapterServing } from "./exposure";
+import type { AdapterOptions } from "./exposure";
 import type { Runtime } from "./runtime";
 import type { Answering, HearChanges, RemoteTransport } from "./transport";
 import { wireAnswerOf } from "./wire";
@@ -41,7 +41,7 @@ const PortGivenSchema = z.literal(PORT_GIVEN);
 
 type PortCall = z.infer<typeof PortCallSchema>;
 
-export interface PortRelaying {
+export interface RelayPortOptions {
 	readonly headers?: Readonly<Record<string, string>>;
 	readonly onAnswered?: (answer: Answer<unknown>) => void;
 }
@@ -50,17 +50,17 @@ export function messagePortTransport(port: MessagePort | Promise<MessagePort>): 
 	return new PortCalls(port);
 }
 
-export interface PortServing extends PortRelaying, AdapterServing {}
+export interface ServePortOptions extends RelayPortOptions, AdapterOptions {}
 
 export function servePort(
 	runtime: Runtime,
 	port: MessagePort,
-	{ authenticate, ...relaying }: PortServing = {},
+	{ authenticate, ...relaying }: ServePortOptions = {},
 ): () => void {
 	return relayPort(runtime.expose({ adapter: SERVE_PORT, authenticate }), port, relaying);
 }
 
-export function relayPort(answering: Answering, port: MessagePort, relaying: PortRelaying = {}): () => void {
+export function relayPort(answering: Answering, port: MessagePort, relaying: RelayPortOptions = {}): () => void {
 	return new PortAnswers(port, answering, relaying).stop;
 }
 
@@ -161,7 +161,7 @@ class PortAnswers {
 	constructor(
 		private readonly port: MessagePort,
 		private readonly answering: Answering,
-		private readonly relaying: PortRelaying,
+		private readonly relaying: RelayPortOptions,
 	) {
 		port.onmessage = ({ data }) => void this.answer(data);
 		const stopHearing = answering.changes((invalidated) => port.postMessage({ invalidated }));

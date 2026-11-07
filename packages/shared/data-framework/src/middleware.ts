@@ -2,7 +2,7 @@ import { refusalOf } from "./answer";
 import type { Answer } from "./answer";
 import type { User } from "./guard";
 import type { CallFacts, Inject, Injected } from "./handler";
-import { callerKeyOf } from "./policies";
+import { userKeyOf } from "./policies";
 import { RateLimits } from "./rate-limits";
 import type { RateLimit } from "./rate-limits";
 
@@ -147,7 +147,7 @@ export const RateLimitMiddleware = middleware()
 	.options<[limit: RateLimit]>()
 	.requires({ rateLimits: RateLimits })
 	.handle(async ({ request, context, options: [limit] }, { rateLimits }, next) => {
-		if (await rateLimits.take(callerKeyOf(request, context.user, WHOLE_CALL), limit)) return next();
+		if (await rateLimits.take(userKeyOf(request, context.user, WHOLE_CALL), limit)) return next();
 		return refusalOf("rate-limited", RATE_LIMITED.replace("{name}", request));
 	});
 
