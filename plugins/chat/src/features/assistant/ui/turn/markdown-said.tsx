@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
-import { OPENED_LIVE_ATTRIBUTE } from "../../lib/more-toggle.js";
+import { OPENED_LIVE_ATTRIBUTE } from "@widgetarium/markdown";
 import { settledPart } from "../../lib/settled-part.js";
 import { useLatchesTrue } from "../../lib/use-latches-true.js";
 import { useRendersSettledMarkdown } from "../../lib/use-renders-settled-markdown.js";

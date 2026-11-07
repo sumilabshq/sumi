@@ -1,9 +1,8 @@
 import type { RenderMarkdown } from "@widgetarium/core/engine/assistant-port.js";
-import { markdownNodesOf } from "./markdown-blocks.js";
-import { OPENED_LIVE_ATTRIBUTE, openCutsIn } from "./more-toggle.js";
+import { CHAT_LOOK, OPENED_LIVE_ATTRIBUTE, markdownNodesOf, openCutsIn } from "@widgetarium/markdown";
 
 export const renderMarkdown: RenderMarkdown = (element, markdown) => {
-	element.replaceChildren(...markdownNodesOf(element.ownerDocument, markdown));
+	element.replaceChildren(...markdownNodesOf(element.ownerDocument, markdown, CHAT_LOOK));
 
 	if (element.hasAttribute(OPENED_LIVE_ATTRIBUTE)) {
 		openCutsIn(element);

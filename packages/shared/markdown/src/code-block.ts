@@ -5,6 +5,13 @@ import type { CodeLanguage } from "./code-languages.js";
 import { CODE_WRAP_TOGGLE_ATTRIBUTE, applySavedCodeWrap, syncCodeWrapToggle, toggleCodeWrap } from "./code-wrap.js";
 import { createCopyTool, createTool } from "./copy-tool.js";
 import { createMoreToggle } from "./more-toggle.js";
+import type { MarkdownLook } from "./markdown-look.js";
+
+export interface CodeBlockAsk {
+	readonly info: string;
+	readonly body: string;
+	readonly look: MarkdownLook;
+}
 
 export const RUN_COMMAND_EVENT = "wg-run-command";
 
@@ -14,14 +21,18 @@ const RUNNABLE_LANGUAGE = "bash";
 const RUN_SAID = "Ask to run it";
 const MORE_LINES = "Show {count} more lines";
 
-export function createCodeBlock(page: Document, info: string, body: string): Element {
+export function createCodeBlock(page: Document, { info, body, look }: CodeBlockAsk): Element {
 	applySavedCodeWrap(page);
 	const label = info.split(/\s+/)[0] ?? "";
 	const language = languageOf(label);
 	const block = page.createElement("div");
 	block.className = "wg-studio-ai-codeblock";
-	block.append(createCodeTools(page, label, body), createCodePre(page, body, language));
-	appendCutToggle(page, block, body);
+	block.append(createCodeTools(page, { info: label, body, look }), createCodePre(page, body, language));
+
+	if (look.cutsLong) {
+		appendCutToggle(page, block, body);
+	}
+
 	return block;
 }
 
@@ -53,7 +64,7 @@ function appendCutToggle(page: Document, block: HTMLElement, body: string): void
 	);
 }
 
-function createCodeTools(page: Document, label: string, body: string): Element {
+function createCodeTools(page: Document, { info: label, body, look }: CodeBlockAsk): Element {
 	const tools = page.createElement("div");
 	tools.className = "wg-studio-ai-codeblock-tools";
 
@@ -63,7 +74,7 @@ function createCodeTools(page: Document, label: string, body: string): Element {
 		name.textContent = label;
 	}
 
-	if (languageOf(label) === RUNNABLE_LANGUAGE) {
+	if (look.runsCode && languageOf(label) === RUNNABLE_LANGUAGE) {
 		tools.append(createRunTool(page, body));
 	}
 

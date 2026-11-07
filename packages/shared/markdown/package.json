@@ -1,0 +1,21 @@
+{
+	"name": "@widgetarium/markdown",
+	"version": "0.1.0",
+	"description": "The Markdown and code-block renderer the chat and the file viewers draw with",
+	"license": "FSL-1.1-ALv2",
+	"type": "module",
+	"exports": {
+		".": {
+			"source": "./index.ts"
+		}
+	},
+	"dependencies": {
+		"@widgetarium/core": "0.1.0",
+		"@widgetarium/kit": "0.1.0",
+		"shiki": "3.23.0"
+	},
+	"widgetarium": {
+		"level": "common"
+	},
+	"sideEffects": false
+}

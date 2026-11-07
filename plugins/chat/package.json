@@ -19,11 +19,11 @@
 		"@widgetarium/core": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
 		"@widgetarium/kit": "0.1.0",
+		"@widgetarium/markdown": "0.1.0",
 		"@widgetarium/mascot": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0",
 		"@widgetarium/questions": "0.1.0",
-		"@widgetarium/tasks": "0.1.0",
-		"shiki": "3.23.0"
+		"@widgetarium/tasks": "0.1.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.8",
