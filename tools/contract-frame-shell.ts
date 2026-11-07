@@ -4,6 +4,8 @@ import { APP_FRAME_SANDBOX } from "../apps/studio/src/features/app-frame/lib/fra
 import { servePortHandovers } from "../apps/studio/src/features/app-frame/lib/use-frame-port.ts";
 import type { FrameOpened } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { frameRoutesOf } from "../apps/studio/src/tabs/frame-routes.ts";
+import { webPageServingOf } from "../plugins/browser-page/src/features/web-page/lib/web-page-serving.ts";
+import { WebPageModule } from "../plugins/browser-page/data/web-page/index.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 
 declare global {
@@ -30,9 +32,16 @@ const core = orpcTransport(location.origin);
 const routesFor = frameRoutesOf({
 	workspaceId: "contract-frame",
 	core,
-	studioApp: app().imports(PlacesModule.over(core)).start(),
-	nativeWebPages: null,
 	appearance: startStudioAppearance(window).transport,
+	frameModules: [
+		{
+			contract: WebPageModule,
+			serving: webPageServingOf({
+				platform: "browser",
+				windowApp: app().imports(PlacesModule.over(core)).start(),
+			}),
+		},
+	],
 });
 
 for (const { app: frameApp, tabId, page } of FRAMES) {

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { app, localTransport, messagePortListener, messagePortTransport } from "@widgetarium/data-framework";
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
-import { webPageRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
+import { frameModuleRouteOf } from "../apps/studio/src/tabs/frame-routes.ts";
 import { server } from "@widgetarium/data-framework/server";
 import { CONTRACT_VERSION, contractRefusal, defineApp } from "../packages/shared/contract/index.ts";
 import { ReadFileQuery, WriteFileCommand, FileSystemModule } from "../packages/shared/contract/index.ts";
@@ -19,7 +19,7 @@ import {
 	WebPageQuery,
 } from "../packages/shared/contract/index.ts";
 import type { RemoteModule, RemoteTransport, ServingServer, StartedApp } from "@widgetarium/data-framework";
-import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
+import { WebPageModule as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
 import { AssistantModule as RunnableAssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import { echoAssistantPort } from "./echo-assistant-port.ts";
 import { MemoryFilesGateway } from "../apps/tauri/capabilities/file-system/gateways/files/memory.gateway.ts";
@@ -164,11 +164,12 @@ const webPagesLocal = localTransport();
 webPagesLocal.serve(webPages);
 const heardByT1: string[] = [];
 createFrameRelay([
-	webPageRouteOf(
+	frameModuleRouteOf(
 		{
 			transport: webPagesLocal,
 			release: () => undefined,
 		},
+		WebPageModule,
 		"t1",
 	),
 ]).changes((invalidated) => {

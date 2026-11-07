@@ -1,5 +1,5 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { BUILT_IN_PROFILE, nativeWebPagesOver, resolvePlugins, startStudio, startStudioApp } from "@widgetarium/studio";
+import { BUILT_IN_PROFILE, resolvePlugins, startStudio, startStudioApp } from "@widgetarium/studio";
 import type { ResolvedPlugins, StartedStudio, StudioStart } from "@widgetarium/studio";
 import { setTracing } from "@widgetarium/core/trace.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
@@ -41,7 +41,7 @@ export interface StudioOpening {
 
 type StudioStartedFields = Pick<
 	StudioStart,
-	"plugins" | "assistant" | "assistantHost" | "studioApp" | "core" | "nativeWebPages"
+	"plugins" | "assistant" | "assistantHost" | "studioApp" | "core" | "platform"
 >;
 
 const PROFILE_UNREAD =
@@ -190,7 +190,7 @@ function startedPartsFieldsOf({ plugins, assistant, studioApp, core }: StartedPa
 		assistant: assistant.port,
 		assistantHost: assistant.host,
 		studioApp,
-		nativeWebPages: nativeWebPagesOver(studioApp),
+		platform: "tauri",
 		core,
 	};
 }

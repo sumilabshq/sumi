@@ -160,8 +160,23 @@ check(
 	hostSourcesNaming(CHAT_PIECES),
 	[],
 );
+check(
+	"the browser-page plugin serves its web-page module to every frame through the host's frame modules slot",
+	resolved.frameModules.map(({ id, contract }) => [id, contract.name]),
+	[["browser-page/web-page", "web-page"]],
+);
+check(
+	"no host source names the web-page module, its package or its native pages",
+	hostSourcesNaming(["@widgetarium/web-page", "WebPageModule", "NativeWebPages", "nativeWebPagesOver"]),
+	[],
+);
 
 const emptyProfile = resolvePlugins({ plugins: [] });
+check(
+	"a profile without the browser-page plugin serves frames no web-page module",
+	emptyProfile.frameModules.length,
+	0,
+);
 check(
 	"a profile cannot turn off the host's always-on plugins: an empty one still starts the old app and the apps module",
 	[emptyProfile.refusals, emptyProfile.backgroundModules.length],

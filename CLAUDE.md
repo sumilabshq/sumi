@@ -75,15 +75,15 @@ apps/tauri/capabilities/* FSL the modules only the host runs on the machine: ter
 apps/studio              FSL  @widgetarium/studio: the studio drawn around an app
 apps/server              FSL  Hono: serves /rpc for modules that run on a server
       ↓
-plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers and providers), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
+plugins/sumi-host        FSL  @sumi/sumi-host-plugin: the host's slots (background modules, tab pages, window modules, layers, providers and frame modules), the window offers, and what a window lends drawn plugins (AskComposerContext, TabFaceContext, OPENS_LAYER_MARK); runs nothing
 plugins/main             FSL  @sumi/main-plugin: the app as it was before plugins; shrinks as pieces move out
 plugins/apps             FSL  @sumi/apps-plugin: owns the apps slot, its module (plugins/apps/data/apps, @sumi/apps) and the app tab page
 plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of the apps slot
-plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot
+plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through the frame modules slot
 plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
-plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
+plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions, plugins/chat/data/mascot), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
       ↓
-packages/domain/*             business data modules: workspaces, app-host, browser, canvas, tasks, web-page, mascot, fixture-billing
+packages/domain/*             business data modules: workspaces, app-host, browser, canvas, tasks, fixture-billing
 packages/state/*              app-state data modules: layout, places, appearance
       ↓
 packages/shared/data-framework FSL @widgetarium/data-framework: requests, modules, mediator, transports, hooks

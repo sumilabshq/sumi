@@ -287,11 +287,22 @@ function importedFrom(text: string): string[] {
 	return [...text.matchAll(IMPORTED_FROM)].map(([, specifier]) => specifier ?? "").sort();
 }
 
-function newShapePackagesOf(root: string): string[] {
+function packageFoldersOf(root: string): string[] {
 	const packages = path.join(root, "packages");
-	return fs
+	const plugins = path.join(root, "plugins");
+	const layered = fs
 		.readdirSync(packages)
-		.flatMap((layer) => fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name)))
+		.flatMap((layer) => fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name)));
+	const owned = fs
+		.readdirSync(plugins)
+		.map((name) => path.join(plugins, name, "data"))
+		.filter((data) => fs.existsSync(data))
+		.flatMap((data) => fs.readdirSync(data).map((name) => path.join(data, name)));
+	return [...layered, ...owned];
+}
+
+function newShapePackagesOf(root: string): string[] {
+	return packageFoldersOf(root)
 		.filter((folder) => {
 			const kind = packageKindOf(folder);
 			return kind?.kind === "client-package" || (kind?.kind === "module" && kind.module.runs === "anywhere");
@@ -299,12 +310,8 @@ function newShapePackagesOf(root: string): string[] {
 }
 
 function generatedFilesOf(root: string): string[] {
-	const packages = path.join(root, "packages");
-	return fs
-		.readdirSync(packages)
-		.flatMap((layer) =>
-			fs.readdirSync(path.join(packages, layer)).map((name) => path.join(packages, layer, name, "generated")),
-		)
+	return packageFoldersOf(root)
+		.map((folder) => path.join(folder, "generated"))
 		.filter((generated) => fs.existsSync(generated))
 		.flatMap((generated) => fs.readdirSync(generated).map((name) => path.join(generated, name)))
 		.filter((file) => file.endsWith(".ts"));

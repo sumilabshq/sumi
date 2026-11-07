@@ -3,7 +3,14 @@ import { z } from "zod";
 import type { AssistantHosts } from "@widgetarium/assistant/module";
 import type { StoreClient } from "@widgetarium/behaviors/tauri-store";
 import { ModuleContract } from "@widgetarium/data-framework";
-import type { DeviceModule, RemoteModule, RemoteTransport, ServerRuns, StartedApp } from "@widgetarium/data-framework";
+import type {
+	DeviceModule,
+	Platform,
+	RemoteModule,
+	RemoteTransport,
+	ServerRuns,
+	StartedApp,
+} from "@widgetarium/data-framework";
 import type { ServerSideModule } from "@widgetarium/data-framework/server";
 import { slot } from "@widgetarium/plugin-framework";
 import type { SlotReader } from "@widgetarium/plugin-framework";
@@ -23,6 +30,7 @@ export interface TabPageProps {
 
 export interface WindowOffers {
 	readonly workspaceId: string;
+	readonly platform: Platform;
 	readonly windowApp: StartedApp;
 	readonly core: RemoteTransport;
 	readonly assistant: AssistantHosts;
@@ -53,6 +61,13 @@ export type WindowLayerOf = (offers: SlotReader) => ComponentType;
 
 export type WindowProviderOf = (offers: SlotReader & WindowOffers) => ComponentType<WindowProviderProps>;
 
+export interface FrameServing {
+	readonly module: ServerSideModule;
+	frameClosed(tabId: string): void;
+}
+
+export type FrameServingOf = (offers: SlotReader & WindowOffers) => FrameServing;
+
 const NOT_A_MODULE_OF =
 	"a background module is a function of what the core offers, answering a module(...) configured from it";
 const NOT_A_CONTRACT = 'a background module names its contract, the module(...) descriptor of its package\'s "." entry';
@@ -63,6 +78,11 @@ const NOT_A_WINDOW_LAYER_OF =
 	"a window layer is a function of the plugin's slot reader, answering a React component the window draws over its frame";
 const NOT_A_WINDOW_PROVIDER_OF =
 	"a window provider is a function of the plugin's slot reader and the window's offers, answering a React component that wraps the window's frame";
+
+const NOT_A_FRAME_CONTRACT =
+	'a frame module names its contract, the module(...) descriptor of its package\'s "." entry, keyed by { tab }';
+const NOT_A_FRAME_SERVING_OF =
+	"a frame module is a function of the plugin's slot reader and the window's offers, answering { module, frameClosed(tabId) }";
 
 export const BackgroundModuleSchema = z.object({
 	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
@@ -94,3 +114,10 @@ export const WindowProviderSchema = z.object({
 });
 
 export const WindowProvidersSlot = slot("window-providers").item(WindowProviderSchema).list();
+
+export const FrameModuleSchema = z.object({
+	contract: z.custom<ModuleContract<ServerRuns>>((value) => value instanceof ModuleContract, NOT_A_FRAME_CONTRACT),
+	serving: z.custom<FrameServingOf>((value) => typeof value === "function", NOT_A_FRAME_SERVING_OF),
+});
+
+export const FrameModulesSlot = slot("frame-modules").item(FrameModuleSchema).list();

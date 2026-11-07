@@ -10,7 +10,7 @@ import type { SurfaceHost } from "@widgetarium/core/surface/use-surface-shared.j
 import { openApp, startOpenedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { OpenedApp, ProjectStart, StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { WidgetariumProject } from "@widgetarium/core/app/widgetarium-project.js";
-import type { RemoteTransport, StartedApp } from "@widgetarium/data-framework";
+import type { Platform, RemoteTransport, StartedApp } from "@widgetarium/data-framework";
 import type { PaneView } from "@widgetarium/layout";
 import { sumiAppPageUrlOf } from "@widgetarium/app-registry";
 import type { AppPageUrlOf } from "@widgetarium/app-registry";
@@ -37,7 +37,6 @@ import { frameRoutesOf } from "../tabs/frame-routes.js";
 import { startStudioAppearance } from "../tabs/studio-appearance.js";
 import type { StudioAppearance } from "../tabs/studio-appearance.js";
 import type { FrameRoutesFor } from "../features/app-frame/lib/frame-relay.js";
-import type { NativeWebPages } from "@widgetarium/web-page/module";
 import type { StudioBrowser } from "../browser/browser-app.js";
 import { useTakesCatalogueAsks } from "./studio-on-screen.js";
 import { StudioSidebar } from "./studio-sidebar.js";
@@ -74,7 +73,7 @@ export interface StudioStart extends ProjectStart {
 	readonly assistantHost?: AssistantHosts;
 	readonly studioApp?: StartedApp;
 	readonly core?: RemoteTransport;
-	readonly nativeWebPages?: NativeWebPages;
+	readonly platform?: Platform;
 	readonly appearance?: StudioAppearance;
 	readonly appPageUrlOf?: AppPageUrlOf;
 	readonly plugins?: ResolvedPlugins;
@@ -120,6 +119,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 	const chatsColumn = createChatsColumnApp(studioApp);
 	const windowOffers: WindowOffers = {
 		workspaceId: lent.appId,
+		platform: start.platform ?? "browser",
 		windowApp: studioApp,
 		core,
 		assistant: assistantHostOf(start),
@@ -140,10 +140,12 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		windowLayers: plugins.windowLayers,
 		frameRoutes: frameRoutesOf({
 			workspaceId: lent.appId,
-			studioApp,
 			core,
-			nativeWebPages: start.nativeWebPages ?? null,
 			appearance: appearance.transport,
+			frameModules: plugins.frameModules.map(({ contract, servingOf }) => ({
+				contract,
+				serving: servingOf(windowOffers),
+			})),
 		}),
 		project,
 		state,

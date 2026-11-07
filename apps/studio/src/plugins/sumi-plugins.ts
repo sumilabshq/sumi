@@ -16,6 +16,8 @@ import { MainPlugin } from "@sumi/main-plugin";
 import {
 	BackgroundModuleSchema,
 	BackgroundModulesSlot,
+	FrameModuleSchema,
+	FrameModulesSlot,
 	SumiHostPlugin,
 	TabPageSchema,
 	TabPageSlot,
@@ -26,7 +28,7 @@ import {
 	WindowProviderSchema,
 	WindowProvidersSlot,
 } from "@sumi/sumi-host-plugin";
-import type { CoreOffers, DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
+import type { CoreOffers, DrawnTabPage, FrameServing, WindowOffers, WindowProviderProps } from "@sumi/sumi-host-plugin";
 import { BrowserPagePlugin } from "@sumi/browser-page-plugin";
 import { TerminalPlugin } from "@sumi/terminal-plugin";
 
@@ -47,12 +49,19 @@ export interface WindowProvider {
 	providerOf(offers: WindowOffers): ComponentType<WindowProviderProps>;
 }
 
+export interface FrameModule {
+	readonly id: string;
+	readonly contract: ModuleContract<ServerRuns>;
+	servingOf(offers: WindowOffers): FrameServing;
+}
+
 export interface ResolvedPlugins {
 	readonly backgroundModules: readonly BackgroundModule[];
 	readonly windowModules: readonly DeviceModule[];
 	readonly windowLayers: readonly WindowLayer[];
 	readonly windowProviders: readonly WindowProvider[];
 	readonly tabPages: readonly DrawnTabPage[];
+	readonly frameModules: readonly FrameModule[];
 	readonly refusals: readonly string[];
 }
 
@@ -70,6 +79,7 @@ const TAB_PAGE = stampSlotName(SumiHostPlugin.id, TabPageSlot);
 const WINDOW_MODULES = stampSlotName(SumiHostPlugin.id, WindowModulesSlot);
 const WINDOW_LAYERS = stampSlotName(SumiHostPlugin.id, WindowLayersSlot);
 const WINDOW_PROVIDERS = stampSlotName(SumiHostPlugin.id, WindowProvidersSlot);
+const FRAME_MODULES = stampSlotName(SumiHostPlugin.id, FrameModulesSlot);
 
 const ALWAYS_ON_PLUGINS: readonly string[] = [
 	SumiHostPlugin.id,
@@ -131,6 +141,18 @@ export function resolvePlugins(profile: SumiProfile): ResolvedPlugins {
 		tabPages: fillsOf(slotFills, TAB_PAGE).flatMap((fill) => {
 			const parsed = TabPageSchema.safeParse(fill.item);
 			return parsed.success ? [parsed.data.tabPage(readerOf(fill))] : [];
+		}),
+		frameModules: fillsOf(slotFills, FRAME_MODULES).flatMap((fill) => {
+			const parsed = FrameModuleSchema.safeParse(fill.item);
+			return parsed.success
+				? [
+						{
+							id: `${fill.pluginId}/${fill.id}`,
+							contract: parsed.data.contract,
+							servingOf: (offers: WindowOffers) => parsed.data.serving({ ...offers, ...readerOf(fill) }),
+						},
+					]
+				: [];
 		}),
 		refusals: [...profileRefusalsOf(INSTALLED_PLUGINS, profile), ...startOrder.refusals, ...slotFills.refusals],
 	};

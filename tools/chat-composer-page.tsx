@@ -13,7 +13,7 @@ import type {
 	AssistantSetup,
 } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { AppProvider, app } from "../packages/shared/data-framework/src/index.ts";
-import { MascotModule } from "../packages/domain/mascot/module.ts";
+import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
 import { memoryFolder } from "./assistant-chat-app.ts";
 import { MemoryChatDraftShelf } from "../apps/tauri/src/chat/tauri-chat-drafts.ts";
 

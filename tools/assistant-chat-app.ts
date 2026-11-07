@@ -2,7 +2,7 @@ import { AssistantModule } from "../plugins/chat/data/assistant/module.ts";
 import type { AssistantPort } from "../packages/shared/core/src/engine/assistant-port.ts";
 import { app } from "../packages/shared/data-framework/src/index.ts";
 import type { StartedApp } from "../packages/shared/data-framework/src/index.ts";
-import { MascotModule } from "../packages/domain/mascot/module.ts";
+import { MascotModule } from "../plugins/chat/data/mascot/module.ts";
 
 export interface MemoryFolder {
 	readonly files: Map<string, Uint8Array>;

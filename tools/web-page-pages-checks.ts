@@ -9,10 +9,10 @@ import {
 	PlaceWebPageCommand,
 	WebPageModule,
 	WebPageQuery,
-} from "../packages/domain/web-page/index.ts";
-import { AppTabsGateway } from "../packages/domain/web-page/gateways/app-tabs/app-tabs.gateway.ts";
-import { MemoryWebPagesGateway } from "../packages/domain/web-page/gateways/web-pages/memory.gateway.ts";
-import { WebPageModule as RunnableWebPageModule } from "../packages/domain/web-page/module.ts";
+} from "../plugins/browser-page/data/web-page/index.ts";
+import { AppTabsGateway } from "../plugins/browser-page/data/web-page/gateways/app-tabs/app-tabs.gateway.ts";
+import { MemoryWebPagesGateway } from "../plugins/browser-page/data/web-page/gateways/web-pages/memory.gateway.ts";
+import { WebPageModule as RunnableWebPageModule } from "../plugins/browser-page/data/web-page/module.ts";
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally, waitFor } from "./check-helpers.ts";
 

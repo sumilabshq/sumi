@@ -1,6 +1,7 @@
 import { plugin } from "@widgetarium/plugin-framework";
 import {
 	BackgroundModulesSlot,
+	FrameModulesSlot,
 	TabPageSlot,
 	WindowLayersSlot,
 	WindowModulesSlot,
@@ -13,4 +14,5 @@ export const SumiHostPlugin = plugin("sumi-host").declare(
 	WindowModulesSlot,
 	WindowLayersSlot,
 	WindowProvidersSlot,
+	FrameModulesSlot,
 );
