@@ -84,7 +84,10 @@ export function withPart(session: AssistantSession, part: StreamPart, at: number
 	}
 
 	if ("result" in part) {
-		return intoTurnCalling(session, part.result.ref, (turn) => ({ ...turn, calls: answered(turn.calls, part.result, at) }));
+		return intoTurnCalling(session, part.result.ref, (turn) => ({
+			...turn,
+			calls: answered(turn.calls, part.result, at),
+		}));
 	}
 
 	if ("compacted" in part) {

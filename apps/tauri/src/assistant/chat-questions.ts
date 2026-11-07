@@ -8,7 +8,8 @@ export interface ChatQuestions {
 }
 
 const NOT_DELIVERED = "[questions] chat {chat}: settled answers stay for the next step ({reason})";
-const NOT_READ = "[questions] chat {chat}: whether it waits on the person is unknown, so the quiet turn stops ({reason})";
+const NOT_READ =
+	"[questions] chat {chat}: whether it waits on the person is unknown, so the quiet turn stops ({reason})";
 const NOT_WITHDRAWN = "[questions] chat {chat}: needed questions stay open after the turn ended ({reason})";
 
 export const NO_CHAT_QUESTIONS: ChatQuestions = {

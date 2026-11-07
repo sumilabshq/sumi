@@ -18,7 +18,10 @@ export interface QuitHearing {
 	readonly now: () => number;
 }
 
-export async function savesBeforeQuit(saveForQuit: SaveForQuit, hearing: QuitHearing = tauriQuitHearing()): Promise<void> {
+export async function savesBeforeQuit(
+	saveForQuit: SaveForQuit,
+	hearing: QuitHearing = tauriQuitHearing(),
+): Promise<void> {
 	await hearing.listen(FLUSH_BEFORE_QUIT_EVENT, () => void saveAndTell(saveForQuit, hearing));
 	hearing.page.addEventListener(PAGE_HIDDEN, () => void saveForQuit(hearing.now() + QUIT_SAVE_MS));
 	await hearing.tellListening();

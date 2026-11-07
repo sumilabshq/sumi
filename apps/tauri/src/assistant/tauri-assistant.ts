@@ -114,7 +114,10 @@ export function startTauriAssistant({
 	const folders = folderLending(bridge);
 	const claudeOptions = claudeOptionsKeptIn(usageMemory);
 	const folder = attachmentsFolderIn(page);
-	const kept = chats === undefined || chatQueues === undefined ? chats : queueKeptLink(chats, chatQueues, { ...privateFolder, folder });
+	const kept =
+		chats === undefined || chatQueues === undefined
+			? chats
+			: queueKeptLink(chats, chatQueues, { ...privateFolder, folder });
 	const port = tauriAssistantPort({
 		bridge,
 		attachments: privateFolder,

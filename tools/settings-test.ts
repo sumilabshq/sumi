@@ -517,11 +517,7 @@ console.log("\n— and the panel writes what it draws —");
 		true,
 	);
 	const switchOf = (name: string) => canRow(name)?.querySelector('[role="switch"]');
-	check(
-		"and every verb the widget uses is switched on",
-		switchOf("Create")?.getAttribute("aria-checked"),
-		"true",
-	);
+	check("and every verb the widget uses is switched on", switchOf("Create")?.getAttribute("aria-checked"), "true");
 	check("Remove is reported too", switchOf("Remove")?.getAttribute("aria-checked"), "true");
 	await press(switchOf("Remove"));
 	check(

@@ -31,7 +31,11 @@ export const AnswerQuestionCommand = command("answer-question")
 	.idempotencyKey(Repeatable)
 	.inject({ questions: QuestionsGateway })
 	.handle((ask, { questions, invalidate }) => {
-		const changed = questions.changeQuestions(ask.chat, (held) => questionAnswered(held, ask, Date.now()), `answer ${ask.id}`);
+		const changed = questions.changeQuestions(
+			ask.chat,
+			(held) => questionAnswered(held, ask, Date.now()),
+			`answer ${ask.id}`,
+		);
 		invalidate(ChatQuestionsQuery);
 		return changed.ok ? undefined : refuse(changed.refusal);
 	});
@@ -81,6 +85,8 @@ export const RereadQuestionsSubscriber = subscriber(QuestionsChangedEvent).handl
 function dockOf(held: readonly Question[]): ChatQuestions {
 	return {
 		needed: held.filter(({ need, state }) => need === "needed" && state === "open"),
-		optional: held.filter(({ need, state, isDelivered }) => need === "optional" && state !== "withdrawn" && !isDelivered),
+		optional: held.filter(
+			({ need, state, isDelivered }) => need === "optional" && state !== "withdrawn" && !isDelivered,
+		),
 	};
 }

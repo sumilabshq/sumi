@@ -321,10 +321,18 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 		this.seen.set(chatId, JSON.stringify(KeptChatDraftSchema.parse(kept)));
 	}
 
-	private writeFilesOf(chatId: string, was: readonly DraftAttachment[], next: readonly DraftAttachment[]): Promise<void>[] {
+	private writeFilesOf(
+		chatId: string,
+		was: readonly DraftAttachment[],
+		next: readonly DraftAttachment[],
+	): Promise<void>[] {
 		for (const removed of filesOutside(was, next)) {
 			const removing = this.at.files.remove(this.root(), draftFileOf(chatId, removed.id));
-			this.track(removing.catch((failure: unknown) => console.error(NOT_REMOVED.replace("{chat}", chatId).replace("{name}", removed.name), failure)));
+			this.track(
+				removing.catch((failure: unknown) =>
+					console.error(NOT_REMOVED.replace("{chat}", chatId).replace("{name}", removed.name), failure),
+				),
+			);
 		}
 
 		return filesOutside(next, was).map((added) => this.writeFile(chatId, added));
@@ -364,7 +372,9 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 		setTimeout(() => {
 			void tryAgain().then((isDone) => {
 				if (!isDone) {
-					console.warn(`[ink] chat ${chatId}: retry ${String(attempt + 1)} failed, trying again in ${String(delay)} ms`);
+					console.warn(
+						`[ink] chat ${chatId}: retry ${String(attempt + 1)} failed, trying again in ${String(delay)} ms`,
+					);
 					this.retry(chatId, attempt + 1, tryAgain);
 				}
 			});
@@ -382,7 +392,10 @@ export class TauriChatDraftShelf implements ChatDraftShelf {
 }
 
 export function entriesOf(doc: ChatEntriesDoc): ReadonlyMap<string, KeptChatDraft> {
-	const before = z.record(z.string(), z.unknown()).catch({}).parse(doc[BEFORE_ENTRIES] ?? {});
+	const before = z
+		.record(z.string(), z.unknown())
+		.catch({})
+		.parse(doc[BEFORE_ENTRIES] ?? {});
 	const keyed = Object.entries(doc).flatMap(([key, value]): [string, unknown][] =>
 		key.startsWith(CHAT_ENTRY) ? [[key.slice(CHAT_ENTRY.length), value]] : [],
 	);
@@ -436,7 +449,10 @@ function isEmptyDraft({ said, attachments, choices, provider }: ChatDraft): bool
 	return said === "" && attachments.length === 0 && choices === null && provider === null;
 }
 
-function filesOutside(attachments: readonly DraftAttachment[], other: readonly DraftAttachment[]): readonly DraftAttachment[] {
+function filesOutside(
+	attachments: readonly DraftAttachment[],
+	other: readonly DraftAttachment[],
+): readonly DraftAttachment[] {
 	return attachments.filter((one) => one.kind !== "folder" && !other.some(({ id }) => id === one.id));
 }
 

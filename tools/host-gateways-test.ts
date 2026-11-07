@@ -37,10 +37,7 @@ function refusal(run: () => void): string | null {
 check(
 	"every gateway the host offers is a class under an interface, named for what it is",
 	registeredQueries()
-		.filter(
-			(entry) =>
-				!entry.id.startsWith("@catalogue/") && !entry.id.startsWith("@core/fetch"),
-		)
+		.filter((entry) => !entry.id.startsWith("@catalogue/") && !entry.id.startsWith("@core/fetch"))
 		.map((entry) => [entry.id, entry.implementation.name, entry.kind]),
 	[
 		["@core/typed-value", "TypedValueQuery", "value"],
@@ -231,11 +228,7 @@ check(
 	refusal(() => onPage("Desk/Project.md", "header", "@core/page-param", {})),
 	'a page parameter names its key, such as "project"',
 );
-check(
-	"today is the local day",
-	await onPage("Desk/Home.md", "digest", "@core/today", {}).get(),
-	todayIso(),
-);
+check("today is the local day", await onPage("Desk/Home.md", "digest", "@core/today", {}).get(), todayIso());
 
 const boundTo = (implementation: string, fields: Readonly<Record<string, unknown>>): string | null =>
 	refusal(() =>

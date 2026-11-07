@@ -21,7 +21,12 @@ interface ProcessRun {
 const REPO = path.resolve(import.meta.dirname, "..");
 const PROBE = path.join(REPO, "tools", `.scaffold-probe-${process.pid}`);
 const LOADER = path.join(REPO, "tools/loader/register.mts");
-const COPIED_PACKAGES = ["packages/shared/data-framework", "packages/shared/core", "packages/shared/kit", "packages/domain/fixture-billing"];
+const COPIED_PACKAGES = [
+	"packages/shared/data-framework",
+	"packages/shared/core",
+	"packages/shared/kit",
+	"packages/domain/fixture-billing",
+];
 const LINKED_SCOPE = "@widgetarium";
 const NOTES = "packages/domain/notes";
 const BILLING = "packages/state/billing";

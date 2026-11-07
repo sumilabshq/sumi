@@ -15,16 +15,7 @@ import type { BoardNode, BoxNode, LaidLeaf, LaidNode } from "../packages/shared/
 import { isDrawable } from "../packages/shared/core/src/surface/is-drawable.js";
 import type { BoxAction } from "../packages/shared/core/src/surface/box-actions.js";
 import { createFileTree, createProbeHost } from "./vault-fixture.ts";
-import {
-	elementAt,
-	elementsAt,
-	isFileMap,
-	isRecord,
-	jsonIn,
-	present,
-	recordErrors,
-	stackOf,
-} from "./page-dom.ts";
+import { elementAt, elementsAt, isFileMap, isRecord, jsonIn, present, recordErrors, stackOf } from "./page-dom.ts";
 
 interface TreeCell {
 	readonly id: string;

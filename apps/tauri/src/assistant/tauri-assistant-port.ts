@@ -60,7 +60,16 @@ export interface TauriAssistantPort extends AssistantPort {
 
 type SessionDoors = Pick<
 	TauriAssistantPort,
-	"shownRead" | "session" | "onSession" | "send" | "retry" | "stop" | "clear" | "compact" | "changeQueue" | "handQueueToAgent"
+	| "shownRead"
+	| "session"
+	| "onSession"
+	| "send"
+	| "retry"
+	| "stop"
+	| "clear"
+	| "compact"
+	| "changeQueue"
+	| "handQueueToAgent"
 >;
 
 type SetupDoors = Pick<AssistantPort, "setup" | "onSetup" | "chooseProvider" | "setHelperAgents">;

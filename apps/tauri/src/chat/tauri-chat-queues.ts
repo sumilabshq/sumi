@@ -92,13 +92,19 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 		const restored = await Promise.all([...own, ...orphaned].map((queued) => this.restoredOf(chatId, queued, files)));
 		const queued = restored.map(({ message }) => message);
 		this.heard.set(chatId, queued);
-		this.keepOwn(chatId, restored.map(({ keptAs }) => keptAs), `chat ${chatId} queue read back`);
+		this.keepOwn(
+			chatId,
+			restored.map(({ keptAs }) => keptAs),
+			`chat ${chatId} queue read back`,
+		);
 
 		if (orphaned.length > 0) {
 			await this.saveTaken(`chat ${chatId} queue taken from closed windows`);
 		}
 
-		console.info(`[queue] chat ${chatId}: ${String(queued.length)} queued read back (${String(orphaned.length)} from closed windows), waiting`);
+		console.info(
+			`[queue] chat ${chatId}: ${String(queued.length)} queued read back (${String(orphaned.length)} from closed windows), waiting`,
+		);
 		return queued;
 	}
 
@@ -109,13 +115,19 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 
 		this.heard.set(chatId, queued);
 		const was = queueIn(this.doc.now()[this.ownKeyOf(chatId)]);
-		const keptFiles = new Map(was.flatMap(({ files: kept }) => kept.map((file): [string, KeptFile] => [file.path, file])));
+		const keptFiles = new Map(
+			was.flatMap(({ files: kept }) => kept.map((file): [string, KeptFile] => [file.path, file])),
+		);
 		const next = queued.map((message) => this.keptOf(chatId, message, { files, keptFiles }));
 		const stillNamed = new Set(next.flatMap(({ files: kept }) => kept.map(({ file }) => file)));
 
 		for (const gone of [...keptFiles.values()].filter(({ file }) => !stillNamed.has(file))) {
 			const removing = this.at.files.remove(this.root(), gone.file);
-			this.track(removing.catch((failure: unknown) => console.error(NOT_REMOVED.replace("{chat}", chatId).replace("{path}", gone.path), failure)));
+			this.track(
+				removing.catch((failure: unknown) =>
+					console.error(NOT_REMOVED.replace("{chat}", chatId).replace("{path}", gone.path), failure),
+				),
+			);
 		}
 
 		this.keepOwn(chatId, next, `chat ${chatId} queue ${String(was.length)} → ${String(next.length)}`);
@@ -143,7 +155,12 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 		);
 		const taken = await Promise.all(
 			orphanKeys.map(async (key) => {
-				const held = await this.at.store.takeEntry(this.root(), CHAT_QUEUES, key, `window ${this.at.ownWindow} took ${key}`);
+				const held = await this.at.store.takeEntry(
+					this.root(),
+					CHAT_QUEUES,
+					key,
+					`window ${this.at.ownWindow} took ${key}`,
+				);
 				this.doc.change({ [key]: undefined }, `${key} taken`);
 				return queueIn(held);
 			}),
@@ -156,8 +173,16 @@ export class TauriChatQueueShelf implements ChatQueueKeeper {
 			return;
 		}
 
-		const held = await this.at.store.takeEntry(this.root(), CHAT_QUEUES, BEFORE_ENTRIES, "queues moved to one entry per chat");
-		const before = z.record(z.string(), z.unknown()).catch({}).parse(held ?? {});
+		const held = await this.at.store.takeEntry(
+			this.root(),
+			CHAT_QUEUES,
+			BEFORE_ENTRIES,
+			"queues moved to one entry per chat",
+		);
+		const before = z
+			.record(z.string(), z.unknown())
+			.catch({})
+			.parse(held ?? {});
 		this.doc.change(
 			{
 				[BEFORE_ENTRIES]: undefined,

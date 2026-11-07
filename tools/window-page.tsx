@@ -32,7 +32,6 @@ const registry: BoardRegistry = {
 	tileRefOf: (id) => id,
 };
 
-
 const mount = present(elementAt(".wg-host"), ".wg-host");
 const stagedState = location.hash.slice(1);
 if (stagedState === "phone") mount.style.width = "390px";

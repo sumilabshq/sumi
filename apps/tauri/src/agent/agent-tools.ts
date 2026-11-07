@@ -23,7 +23,10 @@ export function openAgentTools(app: StartedApp, queue: QueueTaker): void {
 	);
 }
 
-async function answerAsk({ app, queue }: { readonly app: StartedApp; readonly queue: QueueTaker }, message: unknown): Promise<void> {
+async function answerAsk(
+	{ app, queue }: { readonly app: StartedApp; readonly queue: QueueTaker },
+	message: unknown,
+): Promise<void> {
 	const parsed = AgentAskSchema.safeParse(message);
 
 	if (!parsed.success) {

@@ -391,7 +391,11 @@ function changeQueue(store: SessionStore, startTurn: StartTurn, change: QueueCha
 	}
 
 	if (change.kind === "hold") {
-		writeQueued(store, patched(queued, change.id, { isHeld: change.isHeld }), `${change.isHeld ? "held" : "released"} ${change.id}`);
+		writeQueued(
+			store,
+			patched(queued, change.id, { isHeld: change.isHeld }),
+			`${change.isHeld ? "held" : "released"} ${change.id}`,
+		);
 		sendQueueIfIdle(store, startTurn);
 		return null;
 	}
@@ -472,7 +476,9 @@ function handQueueToAgent(store: SessionStore): string | null {
 	store.session = heardMidTurn(store.session, texts, store.clock());
 	console.info(`[queue] ${texts.length} → 0 ready (handed to the agent between steps)`);
 	notify(store);
-	const messages = texts.map((text, messageIndex) => `${MESSAGE_HEAD.replace("{n}", String(messageIndex + 1))}\n${text}`);
+	const messages = texts.map(
+		(text, messageIndex) => `${MESSAGE_HEAD.replace("{n}", String(messageIndex + 1))}\n${text}`,
+	);
 	return [HEARD_MID_TURN, ...messages].join("\n\n");
 }
 
