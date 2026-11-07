@@ -1,4 +1,4 @@
-import { FilesPlugin, FileViewersSlot } from "@sumi/files-plugin";
+import { FilePathCopyAction, FilesPlugin, FileViewersSlot, OpenInSystemAppAction } from "@sumi/files-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { LazyVideoView } from "./features/video/lib/lazy-video-view.js";
 import { VIDEO_ICON } from "./features/video/lib/video-icon.js";
@@ -13,5 +13,6 @@ export const VideoViewerPlugin = plugin("video-viewer")
 			icon: VIDEO_ICON,
 			extensions: Object.keys(VIDEO_TYPES),
 			view: LazyVideoView,
+			actions: [FilePathCopyAction, OpenInSystemAppAction],
 		}),
 	);

@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { ReadFileQuery } from "@sumi/contract";
-import { FileNote, useOffersFileActions } from "@sumi/files-plugin";
+import { FileNote, SourcePage, useFileSwitches, useRecordsFileTitle } from "@sumi/files-plugin";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 
 export interface HtmlFileProps {
@@ -10,15 +10,13 @@ export interface HtmlFileProps {
 }
 
 const SCRIPTS_ONLY = "allow-scripts";
+const HTML = "html";
 
 // TODO: relative images, styles and scripts of the page do not load; srcdoc has no base folder
 export function HtmlFile({ tabId, path }: HtmlFileProps): ReactElement | null {
 	const read = useOptionalQuery(ReadFileQuery, { path });
-	useOffersFileActions({
-		tabId,
-		path,
-		copied: () => read.data ?? "",
-	});
+	const switches = useFileSwitches();
+	useRecordsFileTitle(tabId, path);
 
 	if (read.failure !== null) {
 		return <FileNote said={read.failure} />;
@@ -28,8 +26,13 @@ export function HtmlFile({ tabId, path }: HtmlFileProps): ReactElement | null {
 		return null;
 	}
 
+	if (switches.isOn("source")) {
+		return <SourcePage body={read.data} language={HTML} wraps={false} />;
+	}
+
 	return (
 		<iframe
+			key={switches.loads}
 			title={path.slice(path.lastIndexOf("/") + 1)}
 			sandbox={SCRIPTS_ONLY}
 			srcDoc={read.data}

@@ -14,6 +14,8 @@ import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot } from "../plugins/command-menu/src/index.ts";
 import { MainPlugin } from "../plugins/main/src/plugin.ts";
 import { BackgroundModulesSlot } from "../plugins/sumi-host/src/slots.ts";
+import type { WindowOffers } from "../plugins/sumi-host/src/slots.ts";
+import { localTransport } from "@widgetarium/data-framework";
 import type { Plugin, SlotShape } from "@widgetarium/plugin-framework";
 import { AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { BUILT_IN_PROFILE, resolvePlugins } from "../apps/studio/src/plugins/sumi-plugins.ts";
@@ -40,7 +42,7 @@ const offers = {
 };
 const SUMI_PLUGINS_TEST = "the sumi-plugins test";
 const APPS_SLOT_OWNERS = ["plugins/apps/", "plugins/terminal/", "plugins/browser-page/", "plugins/files/"];
-const FILE_APP_IDS = ["file", "markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
+const VIEWER_APP_IDS = ["markdown-viewer", "code-viewer", "image-viewer", "video-viewer", "html-viewer"];
 const MENU_SLOT_OWNERS = ["plugins/command-menu/", "plugins/chat/"];
 const SCANNED_ROOTS = ["apps", "packages", "plugins"];
 const HOST_ROOTS = ["apps/studio/src", "apps/tauri/src"];
@@ -104,6 +106,26 @@ function tabPageDrawing(resolved: ResolvedPlugins, app: string): boolean {
 	return resolved.tabPages.some((page) => page.draws(app));
 }
 
+const TAB_OFFERS: WindowOffers = {
+	workspaceId: "sumi-plugins",
+	platform: "browser",
+	windowApp: runtime().start({ platform: "browser", scope: { workspaceId: "sumi-plugins" } }),
+	core: localTransport(),
+	windowServer: localTransport(),
+	focusedChatId: () => null,
+};
+
+async function tabModuleNamesOf(resolved: ResolvedPlugins, app: string): Promise<readonly string[]> {
+	const page = resolved.tabPages.find((each) => each.draws(app));
+
+	if (page === undefined) {
+		return [];
+	}
+
+	const { modules } = await page.modulesOf({ app, tabId: "tab-1" }, TAB_OFFERS);
+	return modules.map(({ definition }) => definition.name);
+}
+
 const resolved = resolvePlugins(BUILT_IN_PROFILE);
 const coreModulesNow = coreModulesOf(resolved);
 const coreModulesBefore = [PlacesModule, FileSystemModule, QuestionsModule, TerminalModule, ...APP_MODULES];
@@ -138,14 +160,19 @@ check(
 	[TERMINAL_FACE, BROWSER_PAGE_FACE],
 );
 check(
-	"the files plugin passes its file app and every viewer of its own slot on to the apps slot, registered once",
+	"the files plugin passes every viewer of its own slot on to the apps slot, registered once, and adds no app of its own",
 	answeredApps.slice(2).map(({ id }) => id),
-	FILE_APP_IDS,
+	VIEWER_APP_IDS,
 );
 check(
-	"the apps plugin's tab page draws the terminal, the browser page, the file app and every viewer",
-	["terminal", "browser-page", ...FILE_APP_IDS].map((app) => tabPageDrawing(resolved, app)),
-	["terminal", "browser-page", ...FILE_APP_IDS].map(() => true),
+	"the apps plugin's tab page draws the terminal, the browser page and every viewer",
+	["terminal", "browser-page", ...VIEWER_APP_IDS].map((app) => tabPageDrawing(resolved, app)),
+	["terminal", "browser-page", ...VIEWER_APP_IDS].map(() => true),
+);
+check(
+	"each viewer tab runs its own file-page module, the terminal's tab none",
+	await Promise.all(["terminal", ...VIEWER_APP_IDS].map((app) => tabModuleNamesOf(resolved, app))),
+	[[], ...VIEWER_APP_IDS.map(() => ["file-page"])],
 );
 check(
 	"the chat plugin draws the chat app's page itself, with no shell header, in the window",

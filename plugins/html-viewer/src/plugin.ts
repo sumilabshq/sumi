@@ -1,4 +1,11 @@
-import { FilesPlugin, FileViewersSlot } from "@sumi/files-plugin";
+import {
+	FilesPlugin,
+	FileTextCopyAction,
+	FileViewersSlot,
+	OpenInSystemAppAction,
+	ReloadAction,
+	SourceAction,
+} from "@sumi/files-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
 import { HTML_ICON } from "./features/html/lib/html-icon.js";
 import { LazyHtmlView } from "./features/html/lib/lazy-html-view.js";
@@ -12,5 +19,6 @@ export const HtmlViewerPlugin = plugin("html-viewer")
 			icon: HTML_ICON,
 			extensions: ["html", "htm"],
 			view: LazyHtmlView,
+			actions: [ReloadAction, SourceAction, FileTextCopyAction, OpenInSystemAppAction],
 		}),
 	);

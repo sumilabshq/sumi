@@ -1,8 +1,8 @@
 import { JSDOM } from "jsdom";
-import { CHAT_LOOK, FILE_LOOK, markdownNodesOf } from "@widgetarium/markdown";
+import { CHAT_LOOK, FILE_LOOK, createCodeLines, markdownNodesOf } from "@widgetarium/markdown";
 import type { FileViewer } from "../plugins/files/src/slots.ts";
-import { extensionOf, viewerOfFile } from "../plugins/files/src/features/file-app/lib/viewer-of-file.ts";
-import { secretsHidden, shownCodeOf } from "../plugins/code-viewer/src/features/code/lib/shown-code.ts";
+import { extensionOf, viewerOfFile } from "../plugins/files/src/features/viewer-choice/lib/viewer-of-file.ts";
+import { hasSecretsAt, secretsHidden, shownCodeOf } from "../plugins/code-viewer/src/features/code/lib/shown-code.ts";
 import { check, tally } from "./check-helpers.ts";
 
 const NO_VIEW = (): null => null;
@@ -64,14 +64,31 @@ check(
 	secretsHidden("# keys\nAPI_KEY=sk-123\nexport TOKEN = abc\nEMPTY=\n"),
 	"# keys\nAPI_KEY=••••••••\nexport TOKEN = ••••••••\nEMPTY=\n",
 );
-check("an .env.local file is read as dotenv with its values hidden", shownCodeOf("/p/.env.local", "A=1"), {
+check("an .env.local file is read as dotenv with its values hidden", shownCodeOf("/p/.env.local", "A=1", false), {
 	language: "dotenv",
 	body: "A=••••••••",
 });
-check("any other file keeps its text and takes its extension as the language", shownCodeOf("/p/x.JSON", "{}"), {
+check(
+	"only .env files offer Show hidden values",
+	["/p/.env", "/p/.env.local", "/p/prod.env", "/p/app.ts"].map(hasSecretsAt),
+	[true, true, true, false],
+);
+check("Show hidden values draws an .env file as it is on disk", shownCodeOf("/p/.env", "A=1", true).body, "A=1");
+check("any other file keeps its text and takes its extension as the language", shownCodeOf("/p/x.JSON", "{}", false), {
 	language: "json",
 	body: "{}",
 });
+check(
+	"code lines number every line, the empty last one too, and wrap only when asked",
+	[false, true].map((wraps) => {
+		const lines = createCodeLines(new JSDOM("").window.document, { body: "a\n\nb\n", language: "txt", wraps });
+		return [lines.className, [...lines.querySelectorAll(".sumi-code-number")].map((number) => number.textContent)];
+	}),
+	[
+		["sumi-code-lines", ["1", "2", "3", "4"]],
+		["sumi-code-lines is-wrapped", ["1", "2", "3", "4"]],
+	],
+);
 check(
 	"a bash block in the chat offers to run it and folds past 50 lines",
 	codeToolsOf(LONG_BASH, CHAT_LOOK).length > codeToolsOf(LONG_BASH, FILE_LOOK).length,

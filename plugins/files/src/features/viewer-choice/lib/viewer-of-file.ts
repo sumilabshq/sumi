@@ -18,6 +18,7 @@ const DECLARED = "{path} opens in {viewer}, which declares .{extension}";
 const FALLBACK = "{path} opens in {viewer}, which opens any file";
 const NONE = "no viewer opens {path}";
 
+// TODO: route file_open through this once the files MCP tool lands; only checks call it today
 export function viewerOfFile(path: string, viewers: readonly FileViewer[], choices: ViewerChoices): ChosenViewer {
 	const extension = extensionOf(path);
 	const chosen = viewers.find(({ id }) => id === choices[extension]);

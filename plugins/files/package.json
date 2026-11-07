@@ -12,7 +12,10 @@
 	"dependencies": {
 		"@sumi/apps-plugin": "0.1.0",
 		"@sumi/contract": "0.5.0",
+		"@sumi/file-page": "0.1.0",
+		"@sumi/sumi-host-plugin": "0.1.0",
 		"@widgetarium/data-framework": "0.1.0",
+		"@widgetarium/markdown": "0.1.0",
 		"@widgetarium/plugin-framework": "0.1.0"
 	},
 	"peerDependencies": {

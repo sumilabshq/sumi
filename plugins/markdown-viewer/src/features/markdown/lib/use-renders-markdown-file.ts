@@ -22,12 +22,10 @@ export function useRendersMarkdownFile(markdown: string | null): RefObject<HTMLD
 }
 
 function layPageSheet(page: Document): void {
-	if (page.getElementById(SHEET_ID) !== null) {
-		return;
-	}
-
-	const sheet = page.createElement("style");
+	const sheet = page.getElementById(SHEET_ID) ?? page.head.appendChild(page.createElement("style"));
 	sheet.id = SHEET_ID;
-	sheet.textContent = MARKDOWN_PAGE_SHEET;
-	page.head.append(sheet);
+
+	if (sheet.textContent !== MARKDOWN_PAGE_SHEET) {
+		sheet.textContent = MARKDOWN_PAGE_SHEET;
+	}
 }
