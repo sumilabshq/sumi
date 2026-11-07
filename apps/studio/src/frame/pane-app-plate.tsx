@@ -71,7 +71,7 @@ function paneBodyOf(paneTab: HeldTab | null, { browser, design, project }: PaneB
 	const { id, app, pageId } = paneTab;
 
 	if (app === CANVAS_APP) {
-		return <StudioCanvas design={design} project={project} shell={IN_PLATE} />;
+		return <StudioCanvas design={design} project={project} shell={IN_PLATE} tabId={id} />;
 	}
 
 	if (app !== BROWSER_APP) {

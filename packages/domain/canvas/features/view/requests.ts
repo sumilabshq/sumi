@@ -3,14 +3,30 @@ import { command, query, subscriber } from "#module";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";
 import { CanvasOpenedSchema, CanvasOpeningSchema, ModeAnswerSchema } from "../../shared/schema/canvas-view.schema.js";
-import { OPENING_FIELDS, isTouching, momentOpened, momentWriteOf, openingOf } from "../../shared/lib/view/canvas-moment.js";
+import {
+	OPENING_FIELDS,
+	isOpenAsAsked,
+	isTouching,
+	momentOpened,
+	momentWriteOf,
+	openingOf,
+} from "../../shared/lib/view/canvas-moment.js";
 
 export const OpenCanvasCommand = command("open-canvas")
 	.public()
 	.input(CanvasOpenedSchema)
 	.idempotencyKey(Repeatable)
 	.handle((opened, { canvasMoment }) => {
-		const write = momentWriteOf(canvasMoment.moment(), momentOpened(opened), `open ${opened.app}`);
+		const was = canvasMoment.moment();
+
+		if (isOpenAsAsked(was, opened)) {
+			console.info(
+				`[widgetarium] canvas open skipped: ${opened.app} /${opened.page} is open, its camera and picks kept`,
+			);
+			return;
+		}
+
+		const write = momentWriteOf(was, momentOpened(opened), `open ${opened.app}`);
 
 		if (write === null) {
 			console.info(`[widgetarium] canvas open skipped: ${opened.app} is open as asked`);

@@ -80,7 +80,7 @@ function keptAppPageOf({ app, tabId }: KeptInstance, pages: KeptAppPages): React
 	}
 
 	if (app === CANVAS_APP) {
-		return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} />;
+		return <StudioCanvas design={pages.design} project={pages.project} shell={IN_PLATE} tabId={tabId} />;
 	}
 
 	return <AppPage app={app} tabId={tabId} />;

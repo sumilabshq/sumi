@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { movedNow } from "@widgetarium/gpu";
 import type { LookWatcher, StageLook } from "@widgetarium/gpu";
@@ -15,6 +15,13 @@ export function usePainter(
 	const waiting = useRef<StageLook | null>(null);
 	const settled = useRef(onSettled);
 	settled.current = onSettled;
+	useEffect(
+		() => () => {
+			window.cancelAnimationFrame(frame.current);
+			window.clearTimeout(settle.current);
+		},
+		[],
+	);
 	return useCallback(
 		(look: StageLook): void => {
 			waiting.current = look;

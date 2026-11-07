@@ -1,10 +1,11 @@
-import { createElement as h, useEffect, useRef, useState } from "react";
+import { createElement as h, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactElement } from "react";
 import type { StartedProject } from "@widgetarium/core/app/widgetarium-app.js";
 import type { Runtime } from "@widgetarium/data-framework";
 import type { CanvasSurroundings } from "../features/canvas/lib/canvas-surroundings.js";
 import type { CanvasHosts } from "./canvas-hosts.js";
 import { startCanvasApp } from "./canvas-app.js";
+import { KeptCanvases } from "./kept-canvases.js";
 import { CANVAS_OPENED_ON, DesignStage } from "./design-stage.js";
 import type { CanvasShell, StageSize } from "./design-stage.js";
 
@@ -12,12 +13,14 @@ export interface StudioDesign {
 	readonly app: string;
 	readonly hostsOf: (project: StartedProject) => CanvasHosts;
 	readonly surroundings: CanvasSurroundings;
+	readonly canvases: KeptCanvases;
 }
 
 export interface StudioCanvasProps {
 	readonly design: StudioDesign;
 	readonly project: StartedProject;
 	readonly shell: CanvasShell;
+	readonly tabId: string | null;
 }
 
 const STAYS_IN_ITS_TAB: CanvasSurroundings = {
@@ -29,22 +32,21 @@ const STAYS_IN_ITS_TAB: CanvasSurroundings = {
 	},
 };
 
-export function StudioCanvas({ design, project, shell }: StudioCanvasProps): ReactElement {
+export function StudioCanvas({ design, project, shell, tabId }: StudioCanvasProps): ReactElement {
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<StageSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
-	const canvasApp = useStartedCanvas(design, project);
-	const stage =
-		size && canvasApp
-			? h(DesignStage, {
-					app: design.app,
-					opening: CANVAS_OPENED_ON,
-					canvasApp,
-					surroundings: design.surroundings,
-					size,
-					shell,
-				})
-			: null;
+	const canvasApp = useStartedCanvas(design, project, tabId);
+	const stage = size
+		? h(DesignStage, {
+				app: design.app,
+				opening: CANVAS_OPENED_ON,
+				canvasApp,
+				surroundings: design.surroundings,
+				size,
+				shell,
+			})
+		: null;
 	return h("div", { ref: viewRef, className: "cv:h-full cv:overflow-hidden", "data-canvas-studio": "" }, stage);
 }
 
@@ -53,18 +55,15 @@ export function webStudioDesign(app: string): StudioDesign {
 		app,
 		hostsOf: (project) => ({ project }),
 		surroundings: STAYS_IN_ITS_TAB,
+		canvases: new KeptCanvases(),
 	};
 }
 
-function useStartedCanvas(design: StudioDesign, project: StartedProject): Runtime | null {
-	const [canvasApp, setCanvasApp] = useState<Runtime | null>(null);
-	const { app, hostsOf } = design;
-	useEffect(() => {
-		const started = startCanvasApp(hostsOf(project), app);
-		setCanvasApp(started);
-		return () => started.stop();
-	}, [app, hostsOf, project]);
-	return canvasApp;
+function useStartedCanvas(design: StudioDesign, project: StartedProject, tabId: string | null): Runtime {
+	return useMemo(
+		() => design.canvases.canvasOf(tabId ?? design.app, () => startCanvasApp(design.hostsOf(project), design.app)),
+		[design, project, tabId],
+	);
 }
 
 function useWatchesInnerSize(ref: { readonly current: HTMLElement | null }, onSize: (size: StageSize) => void): void {

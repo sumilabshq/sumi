@@ -113,3 +113,7 @@ function transitionOf(
 function fieldsChanged(was: CanvasMoment, now: CanvasMoment): CanvasField[] {
 	return CanvasFieldSchema.options.filter((field) => !Object.is(was[field], now[field]));
 }
+
+export function isOpenAsAsked(moment: CanvasMoment, opened: CanvasOpened): boolean {
+	return moment.app === opened.app && moment.page === opened.page;
+}
