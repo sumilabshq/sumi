@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { CLAUDE_CODE_PROVIDER_ID } from "../../lib/shown-claude-options.js";
+import { CLAUDE_CODE_PROVIDER_ID } from "../../../../shared/lib/shown-claude-options.js";
 import { MODEL_FACES, providerLabelOf } from "../../lib/strip-faces.js";
 import { ChatMenuLabel } from "../chat-menu/chat-menu-label.js";
 import { ChatMenuRow } from "../chat-menu/chat-menu-row.js";

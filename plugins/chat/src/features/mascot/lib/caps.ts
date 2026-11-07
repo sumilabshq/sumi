@@ -1,9 +1,9 @@
-import { directionAt, hang, hangingLine, headRing, peak, spectacles } from "../scene/accessories.js";
-import { closed, leafShape, open, placed, sharp } from "../scene/paths.js";
-import { R, frame, item, itemsOf, line, seatOf } from "../scene/scene.js";
-import type { Frame, Profile, Scene, SceneItem } from "../scene/scene.js";
-import { TAU, add, bend, mul, shell, sphere, stepsOf, tilt, unit } from "../scene/vector.js";
-import type { Point, Vec3 } from "../scene/vector.js";
+import { directionAt, hang, hangingLine, headRing, peak, spectacles } from "./accessories.js";
+import { closed, leafShape, open, placed, sharp } from "./paths.js";
+import { R, frame, item, itemsOf, line, seatOf } from "./scene.js";
+import type { Frame, Profile, Scene, SceneItem } from "./scene.js";
+import { TAU, add, bend, mul, shell, sphere, stepsOf, tilt, unit } from "./vector.js";
+import type { Point, Vec3 } from "./vector.js";
 
 const NEWSBOY_RIM = R - 14.5;
 const NEWSBOY_CROWN: Readonly<Profile> = [

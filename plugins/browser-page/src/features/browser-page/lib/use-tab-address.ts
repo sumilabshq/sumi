@@ -3,7 +3,7 @@ import type { Dispatch, SetStateAction } from "react";
 import { AppTabQuery } from "@sumi/contract";
 import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
 import { NEW_TAB_ADDRESS } from "./new-tab-address.js";
-import { recordTabPage } from "./record-tab-page.js";
+import { recordTabPage } from "../../../shared/lib/record-tab-page.js";
 
 export interface TabAddress {
 	readonly address: string | null;

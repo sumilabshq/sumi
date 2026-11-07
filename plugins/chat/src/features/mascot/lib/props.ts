@@ -1,10 +1,10 @@
-import { hang, hangingLine } from "../scene/accessories.js";
-import type { Hung } from "../scene/accessories.js";
-import { closed, leafShape, open, placed, sharp } from "../scene/paths.js";
-import { R, frame, item, line } from "../scene/scene.js";
-import type { Profile, Scene, SceneItem } from "../scene/scene.js";
-import { TAU, add, bend, east, mul, sphere, stepsOf, tilt, unit } from "../scene/vector.js";
-import type { Point, Vec3 } from "../scene/vector.js";
+import { hang, hangingLine } from "./accessories.js";
+import type { Hung } from "./accessories.js";
+import { closed, leafShape, open, placed, sharp } from "./paths.js";
+import { R, frame, item, line } from "./scene.js";
+import type { Profile, Scene, SceneItem } from "./scene.js";
+import { TAU, add, bend, east, mul, sphere, stepsOf, tilt, unit } from "./vector.js";
+import type { Point, Vec3 } from "./vector.js";
 
 const EARCUP: Readonly<Profile> = [
 	[0, 10.5],

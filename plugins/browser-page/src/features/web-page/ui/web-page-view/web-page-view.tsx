@@ -1,10 +1,10 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import { NotAvailableNote } from "./not-available-note.js";
-import { siteOf } from "./site-of.js";
-import { useOffersReload } from "./use-offers-reload.js";
-import { useRecordsTitle } from "./use-records-title.js";
-import { useWebPage } from "./use-web-page.js";
+import { NotAvailableNote } from "../../../../shared/ui/not-available-note/not-available-note.js";
+import { siteOf } from "../../lib/site-of.js";
+import { useOffersReload } from "../../lib/use-offers-reload.js";
+import { useRecordsTitle } from "../../../../shared/lib/use-records-title.js";
+import { useWebPage } from "../../lib/use-web-page.js";
 
 export interface WebPageViewProps {
 	readonly tabId: string;

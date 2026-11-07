@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import type { RefObject } from "react";
 import { useCommand } from "@widgetarium/data-framework";
 import { SendMessageCommand } from "@widgetarium/assistant";
-import { RUN_COMMAND_EVENT } from "../../markdown/code-block.js";
+import { RUN_COMMAND_EVENT } from "./code-block.js";
 
 type SendSaid = (said: string) => Promise<unknown>;
 

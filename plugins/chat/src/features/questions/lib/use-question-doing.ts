@@ -1,7 +1,7 @@
 import { useCommand } from "@widgetarium/data-framework";
 import { AnswerQuestionCommand, ReopenQuestionCommand, SkipQuestionsCommand } from "@sumi/contract";
-import { answerSettled } from "../../assistant/lib/answer-settled.js";
-import type { Report } from "../../assistant/lib/failure-line.js";
+import { answerSettled } from "../../../shared/lib/answer-settled.js";
+import type { Report } from "../../../shared/lib/failure-line.js";
 
 export interface QuestionDoing {
 	answer(id: string, picked: readonly string[], own: string | null): void;

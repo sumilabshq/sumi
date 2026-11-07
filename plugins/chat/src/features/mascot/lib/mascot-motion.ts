@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 import type { MascotState } from "./mascot-state.schema.js";
-import type { Look } from "./scene/scene.js";
+import type { Look } from "./scene.js";
 
 export interface Spring {
 	readonly look: Look;

@@ -4,7 +4,7 @@ import type { StartedApp } from "@widgetarium/data-framework";
 import { DeliverQuestionsCommand, ReadyAnswersQuery } from "@sumi/contract";
 import type { Question } from "@sumi/contract";
 import { SendTextCommand } from "@widgetarium/assistant";
-import type { Report } from "../../assistant/lib/failure-line.js";
+import type { Report } from "../../../shared/lib/failure-line.js";
 
 const NOT_QUEUED = "the answers did not reach the queue";
 const QUEUED_NOT_MARKED =

@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import { NewTabPage } from "./new-tab-page.js";
-import { useRecordsTitle } from "./use-records-title.js";
-import { webAddressOf } from "./web-address.js";
+import { useRecordsTitle } from "../../../../shared/lib/use-records-title.js";
+import { webAddressOf } from "../../lib/web-address.js";
 
 export interface NewTabViewProps {
 	readonly tabId: string;

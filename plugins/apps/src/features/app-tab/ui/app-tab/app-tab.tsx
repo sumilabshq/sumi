@@ -1,7 +1,7 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { AppView } from "./slots.js";
-import { useRecordsAppTab } from "./use-records-app-tab.js";
+import type { AppView } from "../../../../slots.js";
+import { useRecordsAppTab } from "../../lib/use-records-app-tab.js";
 
 export interface FilledApp {
 	readonly id: string;

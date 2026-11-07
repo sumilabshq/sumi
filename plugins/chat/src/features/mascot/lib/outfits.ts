@@ -1,6 +1,6 @@
-import { Scene } from "../scene/scene.js";
-import type { Look, MascotScene, SceneIds } from "../scene/scene.js";
-import type { OutfitId } from "../outfit.schema.js";
+import { Scene } from "./scene.js";
+import type { Look, MascotScene, SceneIds } from "./scene.js";
+import type { OutfitId } from "./outfit.schema.js";
 import {
 	dressEyeshade,
 	dressHome,

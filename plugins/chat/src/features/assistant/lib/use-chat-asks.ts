@@ -1,8 +1,8 @@
 import { useCommand } from "@widgetarium/data-framework";
 import type { AttachedChange, CardAsks } from "./chat-cards-slot.js";
-import type { Report } from "./failure-line.js";
+import type { Report } from "../../../shared/lib/failure-line.js";
 import { SendMessageCommand } from "@widgetarium/assistant";
-import { answerSettled } from "./answer-settled.js";
+import { answerSettled } from "../../../shared/lib/answer-settled.js";
 
 export interface ChangeHeld {
 	readonly report: Report;

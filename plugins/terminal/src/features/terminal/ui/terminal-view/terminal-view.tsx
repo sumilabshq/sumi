@@ -4,10 +4,10 @@ import { TerminalOutputQuery, ThemeQuery } from "@sumi/contract";
 import type { TerminalOutput } from "@sumi/contract";
 import { useApp, useOptionalQuery } from "@widgetarium/data-framework";
 import type { AppViewProps } from "@sumi/apps-plugin";
-import { useDrawsOutput } from "./use-draws-output.js";
-import { useScreenIn } from "./use-screen-in.js";
-import { useThemesScreen } from "./use-themes-screen.js";
-import { useWiresShell } from "./use-wires-shell.js";
+import { useDrawsOutput } from "../../lib/use-draws-output.js";
+import { useScreenIn } from "../../lib/use-screen-in.js";
+import { useThemesScreen } from "../../lib/use-themes-screen.js";
+import { useWiresShell } from "../../lib/use-wires-shell.js";
 
 const APP_NAME = "Terminal";
 const EXITED = "Exited";

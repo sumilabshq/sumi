@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useApp } from "@widgetarium/data-framework";
-import { recordTabPage } from "./record-tab-page.js";
+import { recordTabPage } from "../../../shared/lib/record-tab-page.js";
 import { useTakesActionPresses } from "./use-takes-action-presses.js";
 
 const RELOAD = "reload";

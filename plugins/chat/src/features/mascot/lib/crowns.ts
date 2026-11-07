@@ -1,9 +1,9 @@
-import { directionAt, glass, lens } from "../scene/accessories.js";
-import { closed, hull, placed, runOf, sharp } from "../scene/paths.js";
-import { R, frame, item, seatOf } from "../scene/scene.js";
-import type { Built, Frame, Profile, Scene, SceneItem } from "../scene/scene.js";
-import { TAU, add, bend, mul, sphere, stepsOf, sub, tilt } from "../scene/vector.js";
-import type { Point, Vec3 } from "../scene/vector.js";
+import { directionAt, glass, lens } from "./accessories.js";
+import { closed, hull, placed, runOf, sharp } from "./paths.js";
+import { R, frame, item, seatOf } from "./scene.js";
+import type { Built, Frame, Profile, Scene, SceneItem } from "./scene.js";
+import { TAU, add, bend, mul, sphere, stepsOf, sub, tilt } from "./vector.js";
+import type { Point, Vec3 } from "./vector.js";
 
 const PARTY_CONE: Readonly<Profile> = [
 	[0, 17],

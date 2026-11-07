@@ -1,7 +1,7 @@
 import { useCommand } from "@widgetarium/data-framework";
 import { ChangeQueueCommand, SendMessageCommand } from "@widgetarium/assistant";
-import { answerSettled } from "./answer-settled.js";
-import type { Report } from "./failure-line.js";
+import { answerSettled } from "../../../shared/lib/answer-settled.js";
+import type { Report } from "../../../shared/lib/failure-line.js";
 
 export interface QueueActions {
 	remove(id: string): void;

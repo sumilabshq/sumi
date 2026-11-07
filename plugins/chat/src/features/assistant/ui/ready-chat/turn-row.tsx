@@ -5,7 +5,7 @@ import type { ShownTurn } from "@widgetarium/assistant";
 import { CompactLine } from "../compact-line/compact-line.js";
 import { Turn } from "../turn/turn.js";
 import type { CardsAround } from "../../lib/chat-cards-slot.js";
-import { renderMarkdown } from "../../../markdown/render-markdown.js";
+import { renderMarkdown } from "../../lib/render-markdown.js";
 import { CardsOnly } from "./cards-only.js";
 
 export interface TurnRowProps {

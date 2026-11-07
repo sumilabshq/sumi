@@ -2,12 +2,12 @@ import { createElement as h, Fragment } from "react";
 import type { ReactElement } from "react";
 import { useOptionalQuery } from "@widgetarium/data-framework";
 import { AgentSetupQuery, ClaudeOptionsQuery, WorkingFoldersQuery } from "@widgetarium/assistant";
-import { shownClaudeOptions } from "../../lib/shown-claude-options.js";
-import { ClaudeOptionButtons } from "../claude-strip/claude-option-buttons.js";
-import { FolderButton } from "../claude-strip/folder-button.js";
-import { ModelButton } from "../claude-strip/model-button.js";
-import { ComposerTools } from "../composer/composer-tools.js";
-import { DraftAttachments } from "../composer/draft-attachments.js";
+import { shownClaudeOptions } from "../../../../shared/lib/shown-claude-options.js";
+import { ClaudeOptionButtons } from "../../../assistant/ui/claude-strip/claude-option-buttons.js";
+import { FolderButton } from "../../../assistant/ui/claude-strip/folder-button.js";
+import { ModelButton } from "../../../assistant/ui/claude-strip/model-button.js";
+import { ComposerTools } from "../../../assistant/ui/composer/composer-tools.js";
+import { DraftAttachments } from "../../../assistant/ui/composer/draft-attachments.js";
 
 export function AskComposerBar(): ReactElement {
 	const setup = useOptionalQuery(AgentSetupQuery).data;

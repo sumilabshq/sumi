@@ -10,7 +10,7 @@ import { useSweepsAttachments } from "../../lib/use-sweeps-attachments.js";
 import { Composer } from "../composer/composer.js";
 import { FileDropZone } from "../file-drop-zone/file-drop-zone.js";
 import type { AttachedChange, ChatCardsSlot } from "../../lib/chat-cards-slot.js";
-import { useFailureLine } from "../../lib/failure-line.js";
+import { useFailureLine } from "../../../../shared/lib/failure-line.js";
 import { scrollToCard } from "../../lib/scroll-to-card.js";
 import { BareLead } from "../chat-lead/bare-lead.js";
 import { ChatLeadHead } from "../chat-lead/chat-lead.js";

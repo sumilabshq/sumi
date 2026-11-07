@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { z } from "zod";
 import { slot } from "@widgetarium/plugin-framework";
-import { isComponent } from "./is-component.js";
+import { isComponent } from "./features/app-tab/lib/is-component.js";
 
 export interface AppViewProps {
 	readonly tabId: string;

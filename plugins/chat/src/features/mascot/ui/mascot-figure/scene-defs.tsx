@@ -1,8 +1,8 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
 import type { MascotFrame } from "../../lib/mascot-motion.js";
-import type { ScenePaint, SceneIds } from "../../lib/scene/scene.js";
-import { INK_BODY_PATH } from "../../lib/wardrobe/outfits.js";
+import type { ScenePaint, SceneIds } from "../../lib/scene.js";
+import { INK_BODY_PATH } from "../../lib/outfits.js";
 
 export interface SceneDefsProps {
 	readonly ids: SceneIds;

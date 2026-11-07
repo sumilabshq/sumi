@@ -1,7 +1,7 @@
 import { CommandMenuModule } from "@sumi/command-menu/module";
 import { SumiHostPlugin, WindowLayersSlot, WindowModulesSlot } from "@sumi/sumi-host-plugin";
 import { plugin } from "@widgetarium/plugin-framework";
-import { CommandMenuLayer } from "./ui/command-menu-layer/command-menu-layer.js";
+import { CommandMenuLayer } from "./features/command-menu/ui/command-menu-layer/command-menu-layer.js";
 import { MenuDoorsSlot, MenuPagesSlot, MenuRowSourcesSlot } from "./slots.js";
 
 export const CommandMenuPlugin = plugin("command-menu")

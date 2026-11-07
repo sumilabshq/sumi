@@ -3,7 +3,7 @@ import type { TabModules, TabPageProps, WindowOffers } from "@sumi/sumi-host-plu
 import { AssistantModule } from "@widgetarium/assistant/module";
 import { MascotModule } from "@widgetarium/mascot/module";
 import { TasksModule } from "@widgetarium/tasks";
-import { hostForChat } from "./chat-apps.js";
+import { hostForChat } from "../../../shared/lib/chat-apps.js";
 
 const NO_CHAT = "[sumi-chat] tab {tab}: no chat → no assistant in its page ({reason})";
 

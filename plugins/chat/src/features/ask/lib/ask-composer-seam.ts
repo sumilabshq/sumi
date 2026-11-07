@@ -4,7 +4,7 @@ import { OpenNewChatCommand } from "@widgetarium/app-host";
 import { toastRefusal } from "@widgetarium/data-framework/command-refusals";
 import type { StartedApp } from "@widgetarium/data-framework";
 import type { AskComposer } from "@sumi/sumi-host-plugin";
-import { AskComposerBar } from "./features/assistant/ui/ask-composer-bar/ask-composer-bar.js";
+import { AskComposerBar } from "../ui/ask-composer-bar/ask-composer-bar.js";
 
 export interface AskComposerApps {
 	readonly windowApp: StartedApp;

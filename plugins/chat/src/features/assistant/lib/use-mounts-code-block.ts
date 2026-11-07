@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
-import { createCodeBlock } from "../../markdown/code-block.js";
+import { createCodeBlock } from "./code-block.js";
 
 export function useMountsCodeBlock(info: string, body: string): RefObject<HTMLDivElement | null> {
 	const holder = useRef<HTMLDivElement>(null);

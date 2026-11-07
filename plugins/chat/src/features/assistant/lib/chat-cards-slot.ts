@@ -1,6 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
 import type { AssistantSession } from "@widgetarium/core/engine/assistant-port.js";
-import type { Report } from "./failure-line.js";
+import type { Report } from "../../../shared/lib/failure-line.js";
 
 export interface AttachedChange {
 	readonly label: string;

@@ -1,6 +1,6 @@
 import { createElement as h } from "react";
 import type { ReactElement } from "react";
-import type { SceneItem } from "../../lib/scene/scene.js";
+import type { SceneItem } from "../../lib/scene.js";
 
 export interface ScenePathsProps {
 	readonly items: readonly SceneItem[];

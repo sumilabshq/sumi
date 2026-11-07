@@ -1,8 +1,8 @@
 import { createElement as h, useId, useMemo } from "react";
 import type { ReactElement } from "react";
 import { bodyPoseOf, useMascotMotion } from "../../lib/mascot-motion.js";
-import type { SceneIds } from "../../lib/scene/scene.js";
-import { OUTFITS, sceneOf } from "../../lib/wardrobe/outfits.js";
+import type { SceneIds } from "../../lib/scene.js";
+import { OUTFITS, sceneOf } from "../../lib/outfits.js";
 import type { MascotState } from "../../lib/mascot-state.schema.js";
 import type { OutfitId } from "../../lib/outfit.schema.js";
 import type { MascotTouchHandlers } from "../../lib/mascot-state.js";
