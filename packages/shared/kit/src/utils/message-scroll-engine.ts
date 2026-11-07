@@ -1,4 +1,4 @@
-import { AUTOSCROLL_SETTLE_MS, RELEASE_KEYS } from "../constants/message-scroller";
+import { AUTOSCROLL_SETTLE_MS, FOLLOW_RESUMES_WITHIN_PX, RELEASE_KEYS } from "../constants/message-scroller";
 import type { ScrollPosition } from "../constants/message-scroller";
 import {
 	anchorsIn,
@@ -220,7 +220,7 @@ function handleScroll(run: Run): void {
 	const { viewport } = held;
 	if (!viewport) return;
 	if (held.autoscroll && Math.abs(viewport.scrollTop - held.autoscroll.target) <= 1) finishAutoscroll(run);
-	else if (!held.autoscroll && viewport.scrollTop < held.lastTop - 1 && !isAtEnd(run, viewport))
+	else if (!held.autoscroll && viewport.scrollTop < held.lastTop - 1 && !isFlushWithEnd(viewport))
 		held.isFollowing = false;
 	settleScroll(run);
 }
@@ -354,10 +354,14 @@ function settleScroll(run: Run): void {
 	const { viewport, content } = held;
 	if (!viewport || !content) return;
 	held.wasAtEnd = isAtEnd(run, viewport);
-	if (held.wasAtEnd && !held.autoscroll) held.isFollowing = run.settingsOf().autoScroll;
+	if (isFlushWithEnd(viewport) && !held.autoscroll) held.isFollowing = run.settingsOf().autoScroll;
 	held.lastTop = viewport.scrollTop;
 	held.kept = keptRowOf(viewport, content);
 	run.report();
+}
+
+function isFlushWithEnd(viewport: HTMLElement): boolean {
+	return distanceToEnd(viewport) <= FOLLOW_RESUMES_WITHIN_PX;
 }
 
 function isAtEnd(run: Run, viewport: HTMLElement): boolean {

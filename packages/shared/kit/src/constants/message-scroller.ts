@@ -18,6 +18,8 @@ export const SCROLL_DIRECTION_WORD: WordChoice<ScrollDirection> = {
 
 export const SCROLL_EDGE_THRESHOLD_PX = 8;
 
+export const FOLLOW_RESUMES_WITHIN_PX = 2;
+
 export const SCROLL_PREVIOUS_ITEM_PEEK_PX = 64;
 
 export const AUTOSCROLL_SETTLE_MS = 900;

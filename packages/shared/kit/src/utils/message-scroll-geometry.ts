@@ -18,6 +18,8 @@ export interface KeptRow {
 
 const IN_FLOW_POSITIONS: readonly string[] = ["static", "relative"];
 
+const HELD_WHEN_CLICKED = "button, summary, a, [role='button']";
+
 export function endTopOf(viewport: HTMLElement): number {
 	return Math.max(0, viewport.scrollHeight - viewport.clientHeight);
 }
@@ -59,7 +61,10 @@ export function keptRowOf(viewport: HTMLElement, content: HTMLElement): KeptRow 
 }
 
 export function keptOfClicked(viewport: HTMLElement, content: HTMLElement, target: EventTarget | null): KeptRow | null {
-	const kept = target instanceof Element ? target.closest(`[${SCROLL_KEEP_ATTRIBUTE}]`) : null;
+	const kept =
+		target instanceof Element
+			? (target.closest(`[${SCROLL_KEEP_ATTRIBUTE}]`) ?? target.closest(HELD_WHEN_CLICKED))
+			: null;
 	const row = kept?.closest(`[${MESSAGE_ID_ATTRIBUTE}]`);
 	if (!kept || !row || !content.contains(row)) return null;
 	return keptRowAt(row, kept, viewport.getBoundingClientRect().top);

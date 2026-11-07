@@ -42,13 +42,26 @@ function holdLayerOpen(latest: LatestAsk, mountOrder: number): () => void {
 function listenForDismiss(layer: OpenLayer, latest: LatestAsk): () => void {
 	const dismissOnEscape = escapeDismissal(layer, latest);
 	const dismissOnOutsidePress = outsidePressDismissal(layer, latest);
+	const dismissOnPressInFrame = pressInFrameDismissal(latest);
 	document.addEventListener("keydown", dismissOnEscape, CAPTURE_PAST_THE_EDITOR_SHIELD);
+	window.addEventListener("blur", dismissOnPressInFrame);
 	for (const name of PRESS_EVENTS)
 		document.addEventListener(name, dismissOnOutsidePress, CAPTURE_PAST_THE_EDITOR_SHIELD);
 	return () => {
 		document.removeEventListener("keydown", dismissOnEscape, CAPTURE_PAST_THE_EDITOR_SHIELD);
+		window.removeEventListener("blur", dismissOnPressInFrame);
 		for (const name of PRESS_EVENTS)
 			document.removeEventListener(name, dismissOnOutsidePress, CAPTURE_PAST_THE_EDITOR_SHIELD);
+	};
+}
+
+function pressInFrameDismissal(latest: LatestAsk): () => void {
+	return () => {
+		setTimeout(() => {
+			if (document.activeElement?.tagName === "IFRAME") {
+				latest.current.onOutsidePress?.();
+			}
+		});
 	};
 }
 

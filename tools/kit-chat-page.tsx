@@ -12,6 +12,7 @@ import {
 	useMessageScroller,
 	useMessageScrollerVisibility,
 } from "../packages/shared/kit/src/index";
+import { Expander } from "./kit-chat-expander";
 import { Fold } from "./kit-chat-fold";
 
 interface Row {
@@ -20,6 +21,7 @@ interface Row {
 	readonly anchor: boolean;
 	readonly paragraphs: number;
 	readonly folds: boolean;
+	readonly expands: boolean;
 }
 
 type RowAsk = Partial<Row> & { readonly id: string };
@@ -29,19 +31,24 @@ const ROW_PX = 60;
 const PROSE =
 	"The reader keeps this line in view while the pane narrows, and every line above it wraps again into more lines.";
 
-function rowOf({ id, height = ROW_PX, anchor = false, paragraphs = 0, folds = false }: RowAsk): Row {
+function rowOf(ask: RowAsk): Row {
 	return {
-		id,
-		height,
-		anchor,
-		paragraphs,
-		folds,
+		height: ROW_PX,
+		anchor: false,
+		paragraphs: 0,
+		folds: false,
+		expands: false,
+		...ask,
 	};
 }
 
 function drawRow(row: Row): ReactElement {
 	if (row.folds) {
 		return <Fold id={row.id} />;
+	}
+
+	if (row.expands) {
+		return <Expander id={row.id} />;
 	}
 
 	if (row.paragraphs === 0) {

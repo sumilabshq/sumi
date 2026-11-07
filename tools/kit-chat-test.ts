@@ -463,6 +463,23 @@ check(
 		return [Math.abs(top() - was) <= 1, distance() > 300];`),
 	[true, true],
 );
+check(
+	"AN UNMARKED EXPANDER AT THE END KEEPS ITS BUTTON AND OPENS DOWNWARD",
+	await ask(`chatCommands.scrollToEnd({ behavior: "instant" }); chat.append({ id: "tools", expands: true }); await frames();
+		const expander = document.querySelector('[data-expander="tools"]');
+		const top = () => Math.round(expander.getBoundingClientRect().top - viewport.getBoundingClientRect().top);
+		expander.click(); await frames(); const was = top(); expander.click(); await frames();
+		return [Math.abs(top() - was) <= 1, distance() > 300];`),
+	[true, true],
+);
+check(
+	"A SMALL WHEEL UP INSIDE THE EDGE ZONE IS NOT PULLED BACK WHEN THE LAST MESSAGE GROWS",
+	await ask(`chatCommands.scrollToEnd({ behavior: "instant" }); chat.append({ id: "tail", height: 100 }); await frames();
+		viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: -40 })); viewport.scrollTop -= 6; await frames();
+		const held = viewport.scrollTop; chat.grow("tail", 120); await frames();
+		return Math.abs(viewport.scrollTop - held) <= 1;`),
+	true,
+);
 page.close();
 
 console.log(`\n${checks} checks, ${failed} failed`);
