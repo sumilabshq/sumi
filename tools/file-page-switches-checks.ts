@@ -1,14 +1,18 @@
-import { runtime } from "@widgetarium/data-framework";
+import { localTransport, runtime } from "@widgetarium/data-framework";
+import { FileSystemModule, PlacesModule } from "@sumi/contract";
 import type { Runtime } from "@widgetarium/data-framework";
 import { FileSwitchesQuery, FlipFileSwitchCommand, ReloadFileCommand } from "../plugins/files/data/file-page/index.ts";
-import { memoryFilePageParts } from "../plugins/files/data/file-page/gateways/file-page-parts/file-page-parts.gateway.ts";
 import { FilePageModule } from "../plugins/files/data/file-page/module.ts";
 import { check, tally } from "./check-helpers.ts";
 
+const UNUSED_CORE = localTransport();
+Object.assign(globalThis, { window: new EventTarget() });
+
 function startedTab(): Runtime {
 	return runtime()
-		.modules(FilePageModule({ injects: memoryFilePageParts() }))
-		.start();
+		.modules(FilePageModule({ tabId: "tab-1" }))
+		.imports(FileSystemModule({ over: UNUSED_CORE }), PlacesModule({ over: UNUSED_CORE }))
+		.start({ platform: "browser", scope: { workspaceId: "file-page" } });
 }
 
 async function switchesOf(started: Runtime): Promise<unknown> {

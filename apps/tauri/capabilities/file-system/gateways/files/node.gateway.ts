@@ -10,6 +10,7 @@ const ABSENT: FileInfo = {
 	kind: null,
 	size: null,
 	modifiedMs: null,
+	identity: null,
 };
 
 export class NodeFilesGateway extends FilesGateway {
@@ -58,6 +59,7 @@ export class NodeFilesGateway extends FilesGateway {
 			kind: stat.isDirectory() ? "folder" : "file",
 			size: stat.size,
 			modifiedMs: stat.mtimeMs,
+			identity: `${stat.dev}:${stat.ino}`,
 		};
 	}
 
@@ -88,4 +90,21 @@ export class NodeFilesGateway extends FilesGateway {
 		await fs.mkdir(nodePath.dirname(to), { recursive: true });
 		await fs.cp(from, to, { recursive: true });
 	}
+
+	override async locatedFile(path: string, identity: string): Promise<string | null> {
+		if ((await identityAt(path)) === identity) {
+			return path;
+		}
+
+		const folder = nodePath.dirname(path);
+		const names = await fs.readdir(folder).catch((): string[] => []);
+		const identities = await Promise.all(names.map((name) => identityAt(nodePath.join(folder, name))));
+		const at = identities.indexOf(identity);
+		return at === -1 ? null : nodePath.join(folder, names[at] ?? "");
+	}
+}
+
+async function identityAt(path: string): Promise<string | null> {
+	const stat = await fs.lstat(path).catch(() => null);
+	return stat === null ? null : `${stat.dev}:${stat.ino}`;
 }

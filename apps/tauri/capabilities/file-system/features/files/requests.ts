@@ -2,7 +2,17 @@ import { CallLoggerMiddleware, PerCall, Repeatable, guard } from "@widgetarium/d
 import { command, query } from "#module";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
-import { FileBytesSchema, FileContentSchema, FileInfoSchema, FolderSchema, MoveInputSchema, PathInputSchema, WriteFileInputSchema } from "../../shared/schema/files.schema.js";
+import {
+	FileBytesSchema,
+	FileContentSchema,
+	FileInfoSchema,
+	FolderSchema,
+	LocateFileInputSchema,
+	LocatedFileSchema,
+	MoveInputSchema,
+	PathInputSchema,
+	WriteFileInputSchema,
+} from "../../shared/schema/files.schema.js";
 
 const PATH_KEYS: readonly string[] = ["path", "from", "to"];
 
@@ -53,6 +63,14 @@ export const FileInfoQuery = query("file-info")
 	.input(PathInputSchema)
 	.output(FileInfoSchema)
 	.handle(async ({ path }, { files, user }) => files.fileInfo(await placedIn(files, user, path)));
+
+export const LocatedFileQuery = query("located-file")
+	.public()
+	.input(LocateFileInputSchema)
+	.output(LocatedFileSchema)
+	.handle(async ({ path, identity }, { files, user }) => ({
+		path: await files.locatedFile(await placedIn(files, user, path), identity),
+	}));
 
 export const WriteFileCommand = command("write-file")
 	.public()

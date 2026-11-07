@@ -97,3 +97,8 @@ harness = false
 name = "terminal_exit"
 path = "tests/terminal_exit.rs"
 harness = false
+
+[[test]]
+name = "files_locate"
+path = "tests/files_locate.rs"
+harness = false

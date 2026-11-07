@@ -9,9 +9,9 @@ export function appsTabPageOf(apps: readonly FilledApp[]): DrawnTabPage {
 	return {
 		header: "shell",
 		draws: (app) => drawnOf(app) !== null,
-		modulesOf: ({ app }): Promise<TabModules> =>
+		modulesOf: ({ app, tabId }): Promise<TabModules> =>
 			Promise.resolve({
-				modules: drawnOf(app)?.tabModules?.() ?? [],
+				modules: drawnOf(app)?.tabModules?.({ tabId }) ?? [],
 				imports: [],
 			}),
 		page: ({ app, tabId }: TabPageProps): ReactElement | null => {

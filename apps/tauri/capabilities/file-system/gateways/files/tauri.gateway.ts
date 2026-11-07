@@ -8,6 +8,7 @@ import { FilesGateway } from "./files.gateway.js";
 const FILES = "plugin:files|";
 
 const DoneSchema = z.null();
+const LocatedSchema = z.string().nullable();
 
 export class TauriFilesGateway extends FilesGateway {
 	override appDataFolder(): Promise<string> {
@@ -56,5 +57,9 @@ export class TauriFilesGateway extends FilesGateway {
 
 	override async copy(from: string, to: string): Promise<void> {
 		DoneSchema.parse(await invoke(`${FILES}copy`, { from, to }));
+	}
+
+	override async locatedFile(path: string, identity: string): Promise<string | null> {
+		return LocatedSchema.parse(await invoke(`${FILES}locate_file`, { path, identity }));
 	}
 }

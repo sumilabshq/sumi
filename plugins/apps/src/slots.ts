@@ -10,7 +10,11 @@ export interface AppViewProps {
 
 export type AppView = ComponentType<AppViewProps>;
 
-export type TabModulesOf = () => readonly DeviceModule[];
+export interface ModulesTab {
+	readonly tabId: string;
+}
+
+export type TabModulesOf = (tab: ModulesTab) => readonly DeviceModule[];
 
 export type TitleOf = (address: string) => string;
 

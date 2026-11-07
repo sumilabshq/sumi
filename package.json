@@ -34,7 +34,7 @@
 		"test:version": "node --single-threaded --import ./tools/loader/register.mts tools/version-test.ts",
 		"test:plugin-framework": "node --single-threaded --import ./tools/loader/register.mts tools/plugin-framework-checks.ts",
 		"test:sumi-plugins": "node --single-threaded --import ./tools/loader/register.mts tools/sumi-plugins-test.ts",
-		"test:file-viewers": "node --single-threaded --import ./tools/loader/register.mts tools/file-viewers-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-page-switches-checks.ts",
+		"test:file-viewers": "node --single-threaded --import ./tools/loader/register.mts tools/file-viewers-test.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-page-switches-checks.ts && node --single-threaded --import ./tools/loader/register.mts tools/file-moves-checks.ts",
 		"test:plugin-layout": "node --single-threaded --import ./tools/loader/register.mts tools/plugin-layout-test.ts",
 		"test:memory-store": "node --single-threaded --import ./tools/loader/register.mts tools/memory-store-checks.ts",
 		"test:tauri-boundary": "node --single-threaded --import ./tools/loader/register.mts tools/tauri-boundary-test.ts",

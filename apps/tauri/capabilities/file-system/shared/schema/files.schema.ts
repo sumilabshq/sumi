@@ -46,6 +46,16 @@ export const FileInfoSchema = z.object({
 	kind: EntryKindSchema.nullable(),
 	size: z.number().nullable(),
 	modifiedMs: z.number().nullable(),
+	identity: z.string().nullable(),
 });
 
 export type FileInfo = z.infer<typeof FileInfoSchema>;
+
+export const LocateFileInputSchema = z.object({
+	path: FilePathSchema,
+	identity: z.string().min(1).max(64),
+});
+
+export const LocatedFileSchema = z.object({
+	path: z.string().nullable(),
+});

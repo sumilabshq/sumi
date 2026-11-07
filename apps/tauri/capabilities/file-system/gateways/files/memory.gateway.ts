@@ -9,6 +9,7 @@ const ABSENT: FileInfo = {
 	kind: null,
 	size: null,
 	modifiedMs: null,
+	identity: null,
 };
 
 export class MemoryFilesGateway extends FilesGateway {
@@ -64,6 +65,7 @@ export class MemoryFilesGateway extends FilesGateway {
 				kind: "file",
 				size: content.length,
 				modifiedMs: null,
+				identity: null,
 			};
 		}
 
@@ -116,6 +118,10 @@ export class MemoryFilesGateway extends FilesGateway {
 		for (let parent = parentOf(path); parent !== "" && parent !== "/"; parent = parentOf(parent)) {
 			this.folders.add(parent);
 		}
+	}
+
+	override locatedFile(): Promise<string | null> {
+		return Promise.resolve(null);
 	}
 }
 

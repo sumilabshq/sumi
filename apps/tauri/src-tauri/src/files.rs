@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::fs::{self, OpenOptions};
 use std::io::{self, ErrorKind, Read, Write};
 use std::os::unix::ffi::OsStrExt;
-use std::os::unix::fs::OpenOptionsExt;
+use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::UNIX_EPOCH;
@@ -41,6 +41,7 @@ pub struct FileInfo {
     pub kind: Option<EntryKind>,
     pub size: Option<u64>,
     pub modified_ms: Option<u64>,
+    pub identity: Option<String>,
 }
 
 pub fn refuse_unsafe_path(path: &Path) -> Result<(), String> {
@@ -187,6 +188,30 @@ pub fn read_folder(path: &Path) -> Result<Vec<FolderEntry>, String> {
     Ok(entries)
 }
 
+fn identity_of(metadata: &fs::Metadata) -> String {
+    format!("{}:{}", metadata.dev(), metadata.ino())
+}
+
+fn is_identity(path: &Path, identity: &str) -> bool {
+    fs::symlink_metadata(path).is_ok_and(|metadata| identity_of(&metadata) == identity)
+}
+
+pub fn locate_file(path: &Path, identity: &str) -> Result<Option<String>, String> {
+    refuse_unsafe_path(path)?;
+    if is_identity(path, identity) {
+        return Ok(Some(path.to_string_lossy().into_owned()));
+    }
+
+    let Some(folder) = path.parent() else {
+        return Ok(None);
+    };
+    let Ok(entries) = fs::read_dir(folder) else {
+        return Ok(None);
+    };
+    let moved = entries.flatten().map(|entry| entry.path()).find(|sibling| is_identity(sibling, identity));
+    Ok(moved.map(|found| found.to_string_lossy().into_owned()))
+}
+
 pub fn file_info(path: &Path) -> Result<FileInfo, String> {
     refuse_unsafe_path(path)?;
     let metadata = match fs::metadata(path) {
@@ -197,6 +222,7 @@ pub fn file_info(path: &Path) -> Result<FileInfo, String> {
                 kind: None,
                 size: None,
                 modified_ms: None,
+                identity: None,
             })
         }
         Err(error) => return Err(failed("read", path, &error)),
@@ -211,6 +237,7 @@ pub fn file_info(path: &Path) -> Result<FileInfo, String> {
         kind: Some(kind_of(&metadata)),
         size: Some(metadata.len()),
         modified_ms,
+        identity: Some(identity_of(&metadata)),
     })
 }
 
@@ -303,6 +330,7 @@ fn answer_of(command: &str, args: &Value) -> Result<Value, String> {
         "open_in_system_app" => answered(open_in_system_app(&path_of(args, "path")?)),
         "read_folder" => answered(read_folder(&path_of(args, "path")?)),
         "file_info" => answered(file_info(&path_of(args, "path")?)),
+        "locate_file" => answered(locate_file(&path_of(args, "path")?, text_of(args, "identity")?)),
         "write_file" => answered(write_file(&path_of(args, "path")?, text_of(args, "content")?)),
         "append_file" => answered(append_file(&path_of(args, "path")?, text_of(args, "content")?)),
         "make_folder" => answered(make_folder(&path_of(args, "path")?)),

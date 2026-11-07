@@ -80,6 +80,7 @@ const FILES_COMMANDS: &[&str] =
     "read_file_bytes",
     "read_folder",
     "file_info",
+    "locate_file",
     "write_file",
     "append_file",
     "make_folder",

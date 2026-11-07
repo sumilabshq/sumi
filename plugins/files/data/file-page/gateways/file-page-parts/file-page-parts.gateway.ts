@@ -1,26 +1,25 @@
-import type { ModuleFacts, Platform } from "@widgetarium/data-framework";
+import type { ConfigFacts } from "@widgetarium/data-framework";
+import type { FilePageConfig } from "../../shared/host/file-page.host.js";
+import type { HeldFileGateway } from "../held-file/held-file.gateway.js";
+import { MemoryHeldFileGateway } from "../held-file/memory.gateway.js";
+import { GivenPageTabGateway } from "../page-tab/given.gateway.js";
+import type { PageTabGateway } from "../page-tab/page-tab.gateway.js";
 import type { SwitchesGateway } from "../switches/switches.gateway.js";
 import { MemorySwitchesGateway } from "../switches/memory.gateway.js";
 
 export type FilePageParts = {
 	readonly switches: SwitchesGateway;
+	readonly pageTab: PageTabGateway;
+	readonly heldFile: HeldFileGateway;
 };
 
-const PARTS_ON: Readonly<Record<Platform, (facts: ModuleFacts) => FilePageParts>> = {
-	browser: memoryFilePageParts,
-	tauri: memoryFilePageParts,
-	server: memoryFilePageParts,
-};
-
-export function filePagePartsOn(facts: ModuleFacts): FilePageParts {
-	return PARTS_ON[facts.platform](facts);
-}
-
-export function memoryFilePageParts(): FilePageParts {
+export function filePagePartsOn({ config }: ConfigFacts<FilePageConfig>): FilePageParts {
 	return {
 		switches: new MemorySwitchesGateway({
 			on: [],
 			loads: 0,
 		}),
+		pageTab: new GivenPageTabGateway(config.tabId),
+		heldFile: new MemoryHeldFileGateway(),
 	};
 }

@@ -48,9 +48,19 @@ export const FileInfoSchema = z.object({
 	kind: EntryKindSchema.nullable(),
 	size: z.number().nullable(),
 	modifiedMs: z.number().nullable(),
+	identity: z.string().nullable(),
 });
 
 export type FileInfo = z.infer<typeof FileInfoSchema>;
+
+export const LocateFileInputSchema = z.object({
+	path: FilePathSchema,
+	identity: z.string().min(1).max(64),
+});
+
+export const LocatedFileSchema = z.object({
+	path: z.string().nullable(),
+});
 
 export const ReadFileQuery = query("file-system/read-file")
 	.public()
@@ -72,6 +82,10 @@ export const FileInfoQuery = query("file-system/file-info")
 	.public()
 	.input(PathInputSchema)
 	.output(FileInfoSchema);
+export const LocatedFileQuery = query("file-system/located-file")
+	.public()
+	.input(LocateFileInputSchema)
+	.output(LocatedFileSchema);
 export const WriteFileCommand = command("file-system/write-file")
 	.public()
 	.input(WriteFileInputSchema)
@@ -97,4 +111,4 @@ export const CopyCommand = command("file-system/copy")
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
 
-export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, OpenInSystemAppCommand, ReadFolderQuery, FileInfoQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);
+export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, OpenInSystemAppCommand, ReadFolderQuery, FileInfoQuery, LocatedFileQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);
