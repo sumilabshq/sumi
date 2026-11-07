@@ -1,8 +1,11 @@
+import { AppsPlugin } from "@sumi/apps-plugin";
+import { ChatTabsModule } from "@sumi/chat-tabs/module";
 import { CommandMenuPlugin, MenuDoorsSlot, MenuPagesSlot, MenuRowSourcesSlot } from "@sumi/command-menu-plugin";
+import { ChatPlugin } from "../plugins/chat/src/plugin.ts";
 import { SumiHostPlugin, WindowModuleSchema, WindowModulesSlot } from "@sumi/sumi-host-plugin";
 import { plugin, slotFillsOf, slotReaderOf, stampSlotName, startOrderOf } from "@widgetarium/plugin-framework";
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
-import { AppHostModule } from "../packages/domain/app-host/module.ts";
+import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
@@ -69,10 +72,12 @@ const ProbePlugin = plugin("probe")
 		}),
 	);
 
-const ENABLED = [SumiHostPlugin.id, CommandMenuPlugin.id, ProbePlugin.id];
-const startOrder = startOrderOf([SumiHostPlugin, CommandMenuPlugin, ProbePlugin], ENABLED);
+const ENABLED = [SumiHostPlugin.id, AppsPlugin.id, CommandMenuPlugin.id, ChatPlugin.id, ProbePlugin.id];
+const startOrder = startOrderOf([SumiHostPlugin, AppsPlugin, CommandMenuPlugin, ChatPlugin, ProbePlugin], ENABLED);
 const slotFills = slotFillsOf(startOrder.plugins, ENABLED);
-const [windowModuleFill] = slotFills.slots.get(stampSlotName(SumiHostPlugin.id, WindowModulesSlot))?.fills ?? [];
+const windowModuleFill = slotFills.slots
+	.get(stampSlotName(SumiHostPlugin.id, WindowModulesSlot))
+	?.fills.find(({ pluginId }) => pluginId === CommandMenuPlugin.id);
 
 if (windowModuleFill === undefined) {
 	throw new Error("the command menu plugin filled no window module");
@@ -80,7 +85,7 @@ if (windowModuleFill === undefined) {
 
 const menuModule = WindowModuleSchema.parse(windowModuleFill.item).module(slotReaderOf(slotFills, CommandMenuPlugin));
 const studio = runtime()
-	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, menuModule)
+	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, ChatTabsModule, PluginAppsModule, menuModule)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "menu-fills" } });
 
@@ -102,9 +107,9 @@ check(
 
 const { doors } = await outputOf(studio.send(MenuDoorsQuery));
 check(
-	"the menu's own doors come first, then the door another plugin filled, with its keys",
+	"the menu's own doors come first, then the doors other plugins filled (the chat's Ask, the probe), with their keys",
 	doors.map(({ id, keys }) => `${id} ${keys}`),
-	["anywhere ⌘K", "new-tab ⌘N", "ask ⌘I", "this-tab ⌘L", "probe ⌘P"],
+	["anywhere ⌘K", "new-tab ⌘N", "this-tab ⌘L", "ask ⌘I", "probe ⌘P"],
 );
 
 const probed = await outputOf(studio.send(CommandMenuResultsQuery, { text: "", door: "probe", pageId: null }));
