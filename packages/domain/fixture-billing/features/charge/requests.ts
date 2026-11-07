@@ -1,5 +1,5 @@
-import { PerCall, command, deny, guard, query } from "@widgetarium/data-framework";
-import { LedgerGateway } from "../../gateways/ledger/ledger.gateway.js";
+import { PerCall, deny, guard } from "@widgetarium/data-framework";
+import { command, query } from "#module";
 import { BalanceSchema, ChargeInputSchema } from "../../shared/schema/balance.schema.js";
 import type { Balance, ChargeInput } from "../../shared/schema/balance.schema.js";
 
@@ -14,16 +14,16 @@ export const WithinLimitGuard = guard<ChargeInput>().handle(({ input }) => {
 });
 
 export const BalanceQuery = query("balance")
+	.public()
 	.output(BalanceSchema)
-	.inject({ ledger: LedgerGateway })
 	.handle((_input, { ledger }) => ledger.balance());
 
 export const ChargeCommand = command("charge")
+	.public()
 	.input(ChargeInputSchema)
 	.output(BalanceSchema)
 	.idempotencyKey(PerCall)
 	.guard(WithinLimitGuard)
-	.inject({ ledger: LedgerGateway })
 	.handle(({ amount }, { ledger, invalidate }) => {
 		invalidate(BalanceQuery);
 		const was = ledger.balance();

@@ -10,7 +10,7 @@ import type { AnyEvent } from "./event";
 import type { User } from "./guard";
 import { NEVER_ABORTED } from "./handler";
 import type { AnyHandler, CallFacts } from "./handler";
-import type { Asked, Sending, Settle } from "./mediator";
+import type { Asked, InProcessCaller, Settle } from "./mediator";
 import type { Added, Step, StepCall, StepContext } from "./middleware";
 import type { Provided } from "./module";
 import { callerKeyOf, isKeyReplayed, keyRead } from "./policies";
@@ -24,8 +24,6 @@ export interface Route {
 	readonly handler: AnyHandler;
 	readonly provided: Provided;
 	readonly steps: readonly Step[];
-	readonly isServerOnly: boolean;
-	readonly isOwnModuleOnly: boolean;
 }
 
 interface LocalParts {
@@ -53,26 +51,25 @@ const CALL_FACT_KEYS: readonly (keyof CallFacts)[] = ["user", "idempotencyKey", 
 const ANSWERED_FOR_HANDLER = "{step} of {request} answered without next(): a step may only refuse";
 const REPLACED_FACT = "{step} of {request} replaced {fact}, which only the server sets";
 const STEP_AT = "step #{at}";
-const SERVER_ONLY_SEND =
-	'{request} is server-only, and module "{module}" does not run on the server: only a server module may send it';
-const OWN_MODULE_ONLY =
-	'{request} is server-only, and module "{module}" runs on a device: only its own handlers may send it';
+const REACHED_IN_PROCESS_ONLY = "{request} is reached only from inside its own process";
+const CALLABLE_BY_MODULES = "{request} is callable only by module(s) {modules}, not by {caller}";
+const VIEW = "a view";
 
-export function callerRefusalOf(route: Route, sending: Sending): Refusal | null {
-	const { request } = route.handler;
+export function refuseCaller({ handler: { request } }: Route, caller: InProcessCaller | undefined): Refusal | null {
+	const { visibility } = request;
 
-	if (!route.isServerOnly || sending.fromModule === request.module) {
+	if (caller === undefined) {
+		return visibility.reach === "public"
+			? null
+			: refusalOf("not-found", REACHED_IN_PROCESS_ONLY.replace("{request}", request.name));
+	}
+
+	if (visibility.reach !== "modules" || isListedCaller(request, visibility.modules, caller)) {
 		return null;
 	}
 
-	if (route.isOwnModuleOnly) {
-		return refusalOf(
-			"forbidden",
-			OWN_MODULE_ONLY.replace("{request}", request.name).replace("{module}", request.module ?? ""),
-		);
-	}
-
-	return offServerRefusalOf(request, sending);
+	const said = CALLABLE_BY_MODULES.replace("{request}", request.name).replace("{modules}", visibility.modules.join(", "));
+	return refusalOf("forbidden", said.replace("{caller}", caller.module ?? VIEW));
 }
 
 export class LocalRoutes {
@@ -83,12 +80,6 @@ export class LocalRoutes {
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		const refused = callerRefusalOf(route, asked.sending);
-
-		if (refused !== null) {
-			return settle.refuse(asked.request, refused);
-		}
-
 		const { authenticate } = this.parts;
 		const user = authenticate === null ? null : await authenticate.userOf(asked.sending.headers ?? NO_HEADERS);
 		const call: StepCall = { request: asked.request.name, input: asked.input, context: { user } };
@@ -186,7 +177,6 @@ export class LocalRoutes {
 			const send = sendOf(walk, { signal: facts.signal, key, invalidated, calling });
 			const emitted: [AnyEvent, unknown][] = [];
 			const emitting = {
-				declared: route.handler.emits,
 				owner: asked.request.name,
 				module: route.handler.request.module ?? "",
 			};
@@ -213,7 +203,7 @@ interface SendState {
 	readonly calling: CallingModule;
 }
 
-function sendOf({ route, asked, settle }: Walk, { signal, key, invalidated, calling }: SendState) {
+function sendOf({ asked, settle }: Walk, { signal, key, invalidated, calling }: SendState) {
 	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
 		const stamped = stampSent(sent, calling);
 		const idempotencyKey = key === null ? undefined : `${key}:${stamped.name}`;
@@ -221,8 +211,7 @@ function sendOf({ route, asked, settle }: Walk, { signal, key, invalidated, call
 			headers: asked.sending.headers,
 			signal,
 			idempotencyKey,
-			fromModule: calling.module,
-			fromRuns: route.handler.module.runs,
+			inProcessCaller: { module: calling.module },
 		});
 
 		if (answer.ok) {
@@ -241,6 +230,10 @@ function callingModuleOf({ handler }: Route, asked: Asked): CallingModule {
 	};
 }
 
+function isListedCaller(request: AnyRequest, modules: readonly string[], { module }: InProcessCaller): boolean {
+	return module !== null && (module === request.module || modules.includes(module));
+}
+
 function replacedFactOf(context: StepContext, added: Added): string | null {
 	const kept: Added = { user: context.user };
 	return CALL_FACT_KEYS.find((fact) => fact in added && added[fact] !== kept[fact]) ?? null;
@@ -248,15 +241,4 @@ function replacedFactOf(context: StepContext, added: Added): string | null {
 
 function ranIn(request: AnyRequest, passedOn: readonly Answer<unknown>[]): boolean {
 	return passedOn.some((answer) => (answer.ok ? request.kind === "command" : answer.ran));
-}
-
-function offServerRefusalOf(request: AnyRequest, { fromModule, fromRuns }: Sending): Refusal | null {
-	if (fromRuns === undefined || fromRuns === "server") {
-		return null;
-	}
-
-	return refusalOf(
-		"forbidden",
-		SERVER_ONLY_SEND.replace("{request}", request.name).replace("{module}", fromModule ?? ""),
-	);
 }

@@ -9,7 +9,7 @@ import { fakeBrowser } from "./browser-fakes.ts";
 import type { FakeBrowser } from "./browser-fakes.ts";
 
 function started(browser: FakeBrowser): StartedApp {
-	return app().modules(BrowserModule.with(browser.parts)).start();
+	return app().modules(BrowserModule({ injects: browser.parts })).start();
 }
 
 function said(answer: Answer<unknown>): string {

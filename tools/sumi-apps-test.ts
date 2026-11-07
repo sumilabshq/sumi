@@ -139,17 +139,17 @@ const terminal = new NodeTerminalSessionsGateway(appData);
 const own = localTransport();
 const served = server()
 	.modules(
-		FileSystemModule.with({
+		FileSystemModule({ injects: {
 			files: new NodeFilesGateway(appData, SUMI_APPS_WORKSPACE),
-		}),
-		TerminalModule.with({
+		} }),
+		TerminalModule({ injects: {
 			sessions: terminal,
-		}),
+		} }),
 		TasksModule({
 			file: tasksBoardFileOver(own),
 		}),
 		QuestionsModule,
-		PlacesModule.with({
+		PlacesModule({ injects: {
 			windows: new MemoryWindowsGateway({
 				windows: [],
 			}),
@@ -170,7 +170,7 @@ const served = server()
 					[SUMI_CHAT_TAB],
 				),
 			),
-		}),
+		} }),
 	)
 	.listen(own)
 	.start({

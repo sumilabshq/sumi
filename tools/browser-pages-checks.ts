@@ -98,7 +98,7 @@ function manyPages(): ManyPages {
 	return {
 		browser,
 		pages,
-		started: app().modules(BrowserModule.with(browser.parts)).start(),
+		started: app().modules(BrowserModule({ injects: browser.parts })).start(),
 	};
 }
 

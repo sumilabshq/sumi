@@ -123,11 +123,11 @@ function chatServerOver(shelf: TauriChatDraftShelf): StartedApp {
 	);
 	return app()
 		.modules(
-			AssistantModule.with(oneChatParts({
+			AssistantModule({ injects: oneChatParts({
 				...portAssistantParts(port, attachmentFiles),
 				claudeOptions: new CellClaudeOptionsGateway(claudeOptionsCell()),
 				chatDrafts: new ShelfChatDraftsGateway(shelf, port),
-			})),
+			}) }),
 		)
 		.start({
 			platform: "browser",

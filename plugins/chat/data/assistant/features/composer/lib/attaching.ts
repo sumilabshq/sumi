@@ -22,16 +22,16 @@ export interface OfferedAttachments {
 
 const ATTACHED = "attached {names}";
 
-export async function attachOffered(parts: AttachingParts, offered: OfferedAttachments): Promise<void> {
-	const provider = chosenOf(await parts.assistantSetup.setup());
-	const folders = draftedFolders(offered.folders, provider, parts.draftAttachments.draftAttachments());
+export async function attachOffered(injects: AttachingParts, offered: OfferedAttachments): Promise<void> {
+	const provider = chosenOf(await injects.assistantSetup.setup());
+	const folders = draftedFolders(offered.folders, provider, injects.draftAttachments.draftAttachments());
 
 	if (folders.refusal !== null) {
 		return refuse(folders.refusal);
 	}
 
 	attachDrafted(
-		parts.draftAttachments,
+		injects.draftAttachments,
 		draftedTogether([folders, await draftedFiles(offered.files, provider)]),
 		provider.reads,
 	);

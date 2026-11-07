@@ -1,5 +1,4 @@
 import type { Guard, OpenGuard, User } from "./guard";
-import type { AnyEvent } from "./event";
 import type { Added, Middleware, NothingAdded, Step } from "./middleware";
 import type { AnyModule, ClientModule, ModuleDefinition, Provided, ServerModule } from "./module";
 import type { AnyRequest, InputOf, ReturnedOf } from "./request";
@@ -17,7 +16,7 @@ export interface CallFacts {
 	readonly user: User | null;
 }
 
-export type HandlerContext<D extends Inject, C extends Added = NothingAdded> = Injected<D> & CallFacts & Sender & C;
+export type HandlerContext<P extends object, C extends Added = NothingAdded> = P & CallFacts & Sender & C;
 
 const RESERVED_KEYS = ["send", "invalidate", "emit", "idempotencyKey", "signal", "user"] as const;
 
@@ -51,41 +50,40 @@ type Fitting<P, N extends Inject> = {
 	readonly [K in keyof N]: K extends keyof P ? (P[K] extends InstanceType<N[K]> ? N[K] : never) : never;
 };
 
-export type Handle<R extends AnyRequest, D extends Inject, C extends Added = NothingAdded> = (
+export type Handle<R extends AnyRequest, P extends object, C extends Added = NothingAdded> = (
 	input: InputOf<R>,
-	context: HandlerContext<D, C>,
+	context: HandlerContext<P, C>,
 ) => Returned<R>;
 
-export type Watch<R extends AnyRequest, D extends Inject> = (
+export type Watch<R extends AnyRequest, P extends object> = (
 	input: InputOf<R>,
-	injected: Injected<D>,
+	injected: P,
 	changed: () => void,
 ) => () => void;
 
 export interface Handler<
 	R extends AnyRequest = AnyRequest,
-	D extends Inject = Inject,
+	P extends object = object,
 	S extends HandlerState = HandlerState,
 	C extends Added = NothingAdded,
 > {
 	readonly request: R;
 	readonly module: ModuleDefinition;
-	readonly inject: D;
+	readonly inject: Inject;
 	readonly steps: readonly Step[];
 	readonly state: S;
-	handle(input: InputOf<R>, context: Injected<D> & Partial<CallFacts> & C): Returned<R>;
-	readonly watch: Bivariant<Watch<R, D>> | null;
-	readonly emits: readonly AnyEvent[];
+	handle(input: InputOf<R>, context: P & Partial<CallFacts> & C): Returned<R>;
+	readonly watch: Bivariant<Watch<R, P>> | null;
 }
 
-export type AnyHandler = Handler<AnyRequest, Inject>;
+export type AnyHandler = Handler<AnyRequest, Readonly<Record<string, unknown>>>;
 
 interface Plan<R extends AnyRequest, D extends Inject> {
 	readonly request: R;
 	readonly module: ModuleDefinition;
 	readonly inject: D;
 	readonly steps: readonly Step[];
-	readonly watch: Watch<R, D> | null;
+	readonly watch: Watch<R, Injected<D>> | null;
 }
 
 const NOTHING_INJECTED: NothingAdded = Object.freeze({});
@@ -139,11 +137,11 @@ export class GuardedHandlerBuilder<R extends AnyRequest, P, D extends Inject, S 
 		return new GuardedHandlerBuilder({ ...this.plan, inject: checkInject(inject), watch: null }, this.state);
 	}
 
-	watch(watch: Watch<R, D>): GuardedHandlerBuilder<R, P, D, S, C> {
+	watch(watch: Watch<R, Injected<D>>): GuardedHandlerBuilder<R, P, D, S, C> {
 		return new GuardedHandlerBuilder({ ...this.plan, watch }, this.state);
 	}
 
-	handle(handle: Handle<R, D, C>): Handler<R, D, S, C> {
+	handle(handle: Handle<R, Injected<D>, C>): Handler<R, Injected<D>, S, C> {
 		return handlerOf(this.plan, this.state, handle);
 	}
 }
@@ -159,11 +157,11 @@ export class ClientHandlerBuilder<R extends AnyRequest, P, D extends Inject, C e
 		return new ClientHandlerBuilder({ ...this.plan, inject: checkInject(inject), watch: null });
 	}
 
-	watch(watch: Watch<R, D>): ClientHandlerBuilder<R, P, D, C> {
+	watch(watch: Watch<R, Injected<D>>): ClientHandlerBuilder<R, P, D, C> {
 		return new ClientHandlerBuilder({ ...this.plan, watch });
 	}
 
-	handle(handle: Handle<R, D, C>): Handler<R, D, "client", C> {
+	handle(handle: Handle<R, Injected<D>, C>): Handler<R, Injected<D>, "client", C> {
 		return handlerOf(this.plan, "client", handle);
 	}
 }
@@ -206,9 +204,9 @@ export function withStep<P extends { readonly steps: readonly Step[] }>(plan: P,
 	return { ...plan, steps: [...plan.steps, step] };
 }
 
-export function withDefaultCallFacts<R extends AnyRequest, D extends Inject, C extends Added>(
-	handle: Handle<R, D, C>,
-): Handler<R, D, HandlerState, C>["handle"] {
+export function withDefaultCallFacts<R extends AnyRequest, P extends object, C extends Added>(
+	handle: Handle<R, P, C>,
+): Handler<R, P, HandlerState, C>["handle"] {
 	return (input, context) =>
 		handle(input, {
 			idempotencyKey: null,
@@ -230,8 +228,8 @@ const sendsNowhere: Send = (sent, ..._asked) => Promise.reject(new Error(SENDS_N
 function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerState, C extends Added>(
 	{ request, module, inject, steps, watch }: Plan<R, D>,
 	state: S,
-	handle: Handle<R, D, C>,
-): Handler<R, D, S, C> {
+	handle: Handle<R, Injected<D>, C>,
+): Handler<R, Injected<D>, S, C> {
 	return {
 		request,
 		module,
@@ -240,6 +238,5 @@ function handlerOf<R extends AnyRequest, D extends Inject, S extends HandlerStat
 		state,
 		handle: withDefaultCallFacts(handle),
 		watch,
-		emits: [],
 	};
 }

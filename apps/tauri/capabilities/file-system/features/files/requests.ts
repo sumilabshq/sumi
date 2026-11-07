@@ -1,16 +1,8 @@
-import { CallLoggerMiddleware, PerCall, Repeatable, command, guard, query } from "@widgetarium/data-framework";
+import { CallLoggerMiddleware, PerCall, Repeatable, guard } from "@widgetarium/data-framework";
+import { command, query } from "#module";
 import type { Invalidate } from "@widgetarium/data-framework";
-import { FilesGateway } from "../../gateways/files/files.gateway.js";
 import { placedIn, refuseFailure } from "../../shared/lib/app-path.js";
-import {
-	FileBytesSchema,
-	FileContentSchema,
-	FileInfoSchema,
-	FolderSchema,
-	MoveInputSchema,
-	PathInputSchema,
-	WriteFileInputSchema,
-} from "../../shared/schema/files.schema.js";
+import { FileBytesSchema, FileContentSchema, FileInfoSchema, FolderSchema, MoveInputSchema, PathInputSchema, WriteFileInputSchema } from "../../shared/schema/files.schema.js";
 
 const PATH_KEYS: readonly string[] = ["path", "from", "to"];
 
@@ -22,23 +14,23 @@ export const FileAccessGuard = guard()
 export const FileCallLoggerMiddleware = CallLoggerMiddleware("file-system", (input) => JSON.stringify(pathsOf(input)));
 
 export const ReadFileQuery = query("read-file")
+	.public()
 	.input(PathInputSchema)
 	.output(FileContentSchema)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => files.readFile(await placedIn(files, user, path)).catch(refuseFailure));
 
 export const ReadFileBytesQuery = query("read-file-bytes")
+	.public()
 	.input(PathInputSchema)
 	.output(FileBytesSchema)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) =>
 		files.readFileBytes(await placedIn(files, user, path)).catch(refuseFailure),
 	);
 
 export const OpenInSystemAppCommand = command("open-in-system-app")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => {
 		const placed = await placedIn(files, user, path);
 		await files.openInSystemApp(placed).catch(refuseFailure);
@@ -46,9 +38,9 @@ export const OpenInSystemAppCommand = command("open-in-system-app")
 	});
 
 export const ReadFolderQuery = query("read-folder")
+	.public()
 	.input(PathInputSchema)
 	.output(FolderSchema)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => {
 		const entries = await files.readFolder(await placedIn(files, user, path)).catch(refuseFailure);
 		return {
@@ -57,60 +49,60 @@ export const ReadFolderQuery = query("read-folder")
 	});
 
 export const FileInfoQuery = query("file-info")
+	.public()
 	.input(PathInputSchema)
 	.output(FileInfoSchema)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user }) => files.fileInfo(await placedIn(files, user, path)));
 
 export const WriteFileCommand = command("write-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path, content }, { files, user, invalidate }) => {
 		await files.writeFile(await placedIn(files, user, path), content);
 		rereadFiles(invalidate);
 	});
 
 export const AppendFileCommand = command("append-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path, content }, { files, user, invalidate }) => {
 		await files.appendFile(await placedIn(files, user, path), content);
 		rereadFiles(invalidate);
 	});
 
 export const MakeFolderCommand = command("make-folder")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user, invalidate }) => {
 		await files.makeFolder(await placedIn(files, user, path));
 		rereadFiles(invalidate);
 	});
 
 export const RemoveCommand = command("remove")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ files: FilesGateway })
 	.handle(async ({ path }, { files, user, invalidate }) => {
 		await files.remove(await placedIn(files, user, path));
 		rereadFiles(invalidate);
 	});
 
 export const RenameCommand = command("rename")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ files: FilesGateway })
 	.handle(async ({ from, to }, { files, user, invalidate }) => {
 		await files.rename(await placedIn(files, user, from), await placedIn(files, user, to));
 		rereadFiles(invalidate);
 	});
 
 export const CopyCommand = command("copy")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall)
-	.inject({ files: FilesGateway })
 	.handle(async ({ from, to }, { files, user, invalidate }) => {
 		await files.copy(await placedIn(files, user, from), await placedIn(files, user, to));
 		rereadFiles(invalidate);

@@ -840,208 +840,267 @@ export interface WindowsMoved {
 
 export type MoveWindows = (now: Windows) => WindowsMoved | null;
 
-export const OpenWindowsQuery = query("places/open-windows")
-	.output(WindowsSchema);
-export const OpenWindowCommand = command("places/open-window")
-	.input(WindowLabelSchema)
-	.idempotencyKey(Repeatable);
-export const CloseWindowCommand = command("places/close-window")
-	.input(WindowLabelSchema)
-	.idempotencyKey(Repeatable);
-export const KeepLiveWindowsCommand = command("places/keep-live-windows")
-	.input(LiveWindowsSchema)
-	.idempotencyKey(Repeatable);
-export const PlacedTabsQuery = query("places/placed-tabs")
-	.input(WindowLabelSchema)
-	.output(WindowTabsSchema);
-export const TabRowsQuery = query("places/tab-rows")
-	.input(SettleAskSchema)
-	.output(AppTabsSchema);
-export const SidebarQuery = query("places/sidebar")
-	.input(SidebarAskSchema)
-	.output(PlacedSidebarSchema);
-export const HeldTabsQuery = query("places/held-tabs")
-	.input(SettleAskSchema)
-	.output(HeldTabsSchema);
-export const ClosedTabsQuery = query("places/closed-tabs")
-	.output(ClosedTabsSchema);
-export const ChatTabsQuery = query("places/chat-tabs")
-	.output(ChatTabsSchema);
-export const AppFacesQuery = query("places/app-faces")
-	.output(AppFacesSchema)
-	.settlesNow();
-export const AppTabQuery = query("places/app-tab")
-	.input(OwnAppTabAskSchema)
-	.output(OwnAppTabSchema);
-export const AskedLinksQuery = query("places/asked-links")
-	.input(AskedLinksAskSchema)
-	.output(AskedLinksSchema);
-export const PressAppActionCommand = command("places/press-app-action")
-	.input(PressAppActionSchema)
-	.idempotencyKey(PerCall);
-export const TakeActionPressCommand = command("places/take-action-press")
-	.input(TakeActionPressSchema)
-	.output(TakenPressSchema)
-	.idempotencyKey(Repeatable);
-export const RestoreTabsCommand = command("places/restore-tabs")
-	.input(RestoreTabsAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ShowTabCommand = command("places/show-tab")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("places/show-chat-tab")
-	.input(ChatTabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const FitTabsToPanesCommand = command("places/fit-tabs-to-panes")
-	.input(SettleAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const RememberPagesCommand = command("places/remember-pages")
-	.input(SettleAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const OpenTabInOwnWindowCommand = command("places/open-tab-in-own-window")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const TearOffTabCommand = command("places/tear-off-tab")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ReloadTabCommand = command("places/reload-tab")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const OpenTabCommand = command("places/open-tab")
-	.input(OpenTabAskSchema)
-	.output(OpenedTabSettledSchema)
-	.idempotencyKey(Repeatable);
-export const OpenTabBelowCommand = command("places/open-tab-below")
-	.input(TabAskSchema)
-	.output(OpenedTabSettledSchema)
-	.idempotencyKey(Repeatable);
-export const DuplicateTabCommand = command("places/duplicate-tab")
-	.input(DuplicateTabAskSchema)
-	.output(OpenedTabSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ReopenClosedTabCommand = command("places/reopen-closed-tab")
-	.input(ReopenClosedAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ShowEssentialTabCommand = command("places/show-essential-tab")
-	.input(ShowEssentialAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ReleaseEssentialTabCommand = command("places/release-essential-tab")
-	.input(ReleaseEssentialAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const CloseTabCommand = command("places/close-tab")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const CloseOtherTabsCommand = command("places/close-other-tabs")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const CloseShownTabCommand = command("places/close-shown-tab")
-	.input(SettleAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const CloseGroupCommand = command("places/close-group")
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const CloseEssentialTabCommand = command("places/close-essential-tab")
-	.input(CloseEssentialAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const PlaceTabCommand = command("places/place-tab")
-	.input(PlaceTabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const MakeEssentialCommand = command("places/make-essential")
-	.input(MakeEssentialAskSchema)
-	.output(EssentialFaceSchema)
-	.idempotencyKey(Repeatable);
-export const RenameTabCommand = command("places/rename-tab")
-	.input(RenameTabAskSchema)
-	.idempotencyKey(Repeatable);
-export const PinTabCommand = command("places/pin-tab")
-	.input(PinTabAskSchema)
-	.idempotencyKey(Repeatable);
-export const KeepChatTabsCommand = command("places/keep-chat-tabs")
-	.input(KeepChatTabsAskSchema)
-	.idempotencyKey(Repeatable);
-export const RecordTabTurnCommand = command("places/record-tab-turn")
-	.input(TabTurnSchema)
-	.output(TabTurnMarksSchema)
-	.idempotencyKey(Repeatable);
-export const RecordAppPageCommand = command("places/record-app-page")
-	.input(AppPageSchema)
-	.idempotencyKey(Repeatable);
-export const OpenLinkCommand = command("places/open-link")
-	.input(LinkAskSchema)
-	.output(LinkFollowedSchema)
-	.idempotencyKey(Repeatable);
-export const TakeAskedLinkCommand = command("places/take-asked-link")
-	.input(TakeAskedLinkSchema)
-	.output(AskedLinkSchema)
-	.idempotencyKey(Repeatable);
-export const GoBackInTabCommand = command("places/go-back-in-tab")
-	.input(TabStepSchema)
-	.idempotencyKey(Repeatable);
-export const GoForwardInTabCommand = command("places/go-forward-in-tab")
-	.input(TabStepSchema)
-	.idempotencyKey(Repeatable);
-export const MarkTabSeenCommand = command("places/mark-tab-seen")
-	.input(SeenTabSchema)
-	.idempotencyKey(Repeatable);
-export const ForgetRunningTurnsCommand = command("places/forget-running-turns")
-	.idempotencyKey(Repeatable);
-export const CreateGroupCommand = command("places/create-group")
-	.input(CreateGroupAskSchema)
-	.output(z.object({ id: z.string() }))
-	.idempotencyKey(Repeatable);
-export const RenameGroupCommand = command("places/rename-group")
-	.input(RenameGroupAskSchema)
-	.idempotencyKey(Repeatable);
-export const SetGroupHueCommand = command("places/set-group-hue")
-	.input(GroupHueAskSchema)
-	.idempotencyKey(Repeatable);
-export const FoldGroupCommand = command("places/fold-group")
-	.input(GroupAskSchema)
-	.idempotencyKey(Repeatable);
-export const FoldTabCommand = command("places/fold-tab")
-	.input(FoldTabAskSchema)
-	.idempotencyKey(Repeatable);
-export const PlaceGroupCommand = command("places/place-group")
-	.input(PlaceGroupAskSchema)
-	.idempotencyKey(Repeatable);
-export const UngroupCommand = command("places/ungroup")
-	.input(GroupAskSchema)
-	.idempotencyKey(Repeatable);
 export const ShownSplitQuery = query("places/shown-split")
+	.public()
 	.input(WindowLabelSchema)
 	.output(ShownSplitSchema);
 export const PlaceInViewCommand = command("places/place-in-view")
+	.public()
 	.input(PlaceInViewAskSchema)
 	.output(PlacedInViewSchema)
 	.idempotencyKey(Repeatable);
 export const RemoveFromSplitCommand = command("places/remove-from-split")
+	.public()
 	.input(SplitMemberAskSchema)
 	.output(LeftSplitSchema)
 	.idempotencyKey(Repeatable);
 export const ReorderSplitMemberCommand = command("places/reorder-split-member")
+	.public()
 	.input(ReorderSplitMemberAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
 export const ResizeSplitCommand = command("places/resize-split")
+	.public()
 	.input(ResizeSplitAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
+export const CloseTabCommand = command("places/close-tab")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseOtherTabsCommand = command("places/close-other-tabs")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseShownTabCommand = command("places/close-shown-tab")
+	.public()
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseGroupCommand = command("places/close-group")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const CloseEssentialTabCommand = command("places/close-essential-tab")
+	.public()
+	.input(CloseEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const KeepChatTabsCommand = command("places/keep-chat-tabs")
+	.public()
+	.input(KeepChatTabsAskSchema)
+	.idempotencyKey(Repeatable);
+export const RecordTabTurnCommand = command("places/record-tab-turn")
+	.public()
+	.input(TabTurnSchema)
+	.output(TabTurnMarksSchema)
+	.idempotencyKey(Repeatable);
+export const MarkTabSeenCommand = command("places/mark-tab-seen")
+	.public()
+	.input(SeenTabSchema)
+	.idempotencyKey(Repeatable);
+export const ForgetRunningTurnsCommand = command("places/forget-running-turns")
+	.public()
+	.idempotencyKey(Repeatable);
+export const OpenLinkCommand = command("places/open-link")
+	.public()
+	.input(LinkAskSchema)
+	.output(LinkFollowedSchema)
+	.idempotencyKey(Repeatable);
+export const AskedLinksQuery = query("places/asked-links")
+	.public()
+	.input(AskedLinksAskSchema)
+	.output(AskedLinksSchema);
+export const TakeAskedLinkCommand = command("places/take-asked-link")
+	.public()
+	.input(TakeAskedLinkSchema)
+	.output(AskedLinkSchema)
+	.idempotencyKey(Repeatable);
+export const AppTabQuery = query("places/app-tab")
+	.public()
+	.input(OwnAppTabAskSchema)
+	.output(OwnAppTabSchema);
+export const PressAppActionCommand = command("places/press-app-action")
+	.public()
+	.input(PressAppActionSchema)
+	.idempotencyKey(PerCall);
+export const TakeActionPressCommand = command("places/take-action-press")
+	.public()
+	.input(TakeActionPressSchema)
+	.output(TakenPressSchema)
+	.idempotencyKey(Repeatable);
+export const RecordAppPageCommand = command("places/record-app-page")
+	.public()
+	.input(AppPageSchema)
+	.idempotencyKey(Repeatable);
+export const GoBackInTabCommand = command("places/go-back-in-tab")
+	.public()
+	.input(TabStepSchema)
+	.idempotencyKey(Repeatable);
+export const GoForwardInTabCommand = command("places/go-forward-in-tab")
+	.public()
+	.input(TabStepSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabCommand = command("places/open-tab")
+	.public()
+	.input(OpenTabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabBelowCommand = command("places/open-tab-below")
+	.public()
+	.input(TabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const DuplicateTabCommand = command("places/duplicate-tab")
+	.public()
+	.input(DuplicateTabAskSchema)
+	.output(OpenedTabSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReopenClosedTabCommand = command("places/reopen-closed-tab")
+	.public()
+	.input(ReopenClosedAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowEssentialTabCommand = command("places/show-essential-tab")
+	.public()
+	.input(ShowEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReleaseEssentialTabCommand = command("places/release-essential-tab")
+	.public()
+	.input(ReleaseEssentialAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const PlaceTabCommand = command("places/place-tab")
+	.public()
+	.input(PlaceTabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const MakeEssentialCommand = command("places/make-essential")
+	.public()
+	.input(MakeEssentialAskSchema)
+	.output(EssentialFaceSchema)
+	.idempotencyKey(Repeatable);
+export const RenameTabCommand = command("places/rename-tab")
+	.public()
+	.input(RenameTabAskSchema)
+	.idempotencyKey(Repeatable);
+export const PinTabCommand = command("places/pin-tab")
+	.public()
+	.input(PinTabAskSchema)
+	.idempotencyKey(Repeatable);
+export const FoldTabCommand = command("places/fold-tab")
+	.public()
+	.input(FoldTabAskSchema)
+	.idempotencyKey(Repeatable);
+export const CreateGroupCommand = command("places/create-group")
+	.public()
+	.input(CreateGroupAskSchema)
+	.output(z.object({ id: z.string() }))
+	.idempotencyKey(Repeatable);
+export const RenameGroupCommand = command("places/rename-group")
+	.public()
+	.input(RenameGroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const SetGroupHueCommand = command("places/set-group-hue")
+	.public()
+	.input(GroupHueAskSchema)
+	.idempotencyKey(Repeatable);
+export const FoldGroupCommand = command("places/fold-group")
+	.public()
+	.input(GroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const PlaceGroupCommand = command("places/place-group")
+	.public()
+	.input(PlaceGroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const UngroupCommand = command("places/ungroup")
+	.public()
+	.input(GroupAskSchema)
+	.idempotencyKey(Repeatable);
+export const RestoreTabsCommand = command("places/restore-tabs")
+	.public()
+	.input(RestoreTabsAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowTabCommand = command("places/show-tab")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ShowChatTabCommand = command("places/show-chat-tab")
+	.public()
+	.input(ChatTabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const FitTabsToPanesCommand = command("places/fit-tabs-to-panes")
+	.public()
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const RememberPagesCommand = command("places/remember-pages")
+	.public()
+	.input(SettleAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const OpenTabInOwnWindowCommand = command("places/open-tab-in-own-window")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const TearOffTabCommand = command("places/tear-off-tab")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const ReloadTabCommand = command("places/reload-tab")
+	.public()
+	.input(TabAskSchema)
+	.output(TabsSettledSchema)
+	.idempotencyKey(Repeatable);
+export const PlacedTabsQuery = query("places/placed-tabs")
+	.public()
+	.input(WindowLabelSchema)
+	.output(WindowTabsSchema);
+export const TabRowsQuery = query("places/tab-rows")
+	.public()
+	.input(SettleAskSchema)
+	.output(AppTabsSchema);
+export const SidebarQuery = query("places/sidebar")
+	.public()
+	.input(SidebarAskSchema)
+	.output(PlacedSidebarSchema);
+export const HeldTabsQuery = query("places/held-tabs")
+	.public()
+	.input(SettleAskSchema)
+	.output(HeldTabsSchema);
+export const ClosedTabsQuery = query("places/closed-tabs")
+	.public()
+	.output(ClosedTabsSchema);
+export const AppFacesQuery = query("places/app-faces")
+	.public()
+	.output(AppFacesSchema)
+	.settlesNow();
+export const ChatTabsQuery = query("places/chat-tabs")
+	.public()
+	.output(ChatTabsSchema);
+export const OpenWindowsQuery = query("places/open-windows")
+	.public()
+	.output(WindowsSchema);
+export const OpenWindowCommand = command("places/open-window")
+	.public()
+	.input(WindowLabelSchema)
+	.idempotencyKey(Repeatable);
+export const CloseWindowCommand = command("places/close-window")
+	.public()
+	.input(WindowLabelSchema)
+	.idempotencyKey(Repeatable);
+export const KeepLiveWindowsCommand = command("places/keep-live-windows")
+	.public()
+	.input(LiveWindowsSchema)
+	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, AppFacesQuery, AppTabQuery, AskedLinksQuery, PressAppActionCommand, TakeActionPressCommand, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, RecordAppPageCommand, OpenLinkCommand, TakeAskedLinkCommand, GoBackInTabCommand, GoForwardInTabCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, FoldTabCommand, PlaceGroupCommand, UngroupCommand, ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand]);
+export const PlacesModule = moduleContract("places", Server, [ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, OpenLinkCommand, AskedLinksQuery, TakeAskedLinkCommand, AppTabQuery, PressAppActionCommand, TakeActionPressCommand, RecordAppPageCommand, GoBackInTabCommand, GoForwardInTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, FoldTabCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, UngroupCommand, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, AppFacesQuery, ChatTabsQuery, OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand]);

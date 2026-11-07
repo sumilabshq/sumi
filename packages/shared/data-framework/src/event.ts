@@ -7,24 +7,32 @@ export type PlatformSources = Readonly<Partial<Record<Platform, EventSource>>>;
 
 type Sources = EventSource | PlatformSources;
 
-export class Event<I extends z.ZodType> {
+export class Event<I extends z.ZodType, N extends string = string> {
 	readonly kind = "event";
 	readonly module: string | null;
+	readonly name: string;
 
 	constructor(
-		readonly name: string,
+		readonly declaredName: N,
 		readonly inputSchema: I,
 		private readonly sources: Sources | null,
+		stampedName: string = declaredName,
 	) {
-		this.module = moduleOfName(name);
+		this.name = stampedName;
+		this.module = moduleOfName(stampedName);
 	}
 
-	input<S extends z.ZodType>(schema: S): Event<S> {
-		return new Event(this.name, schema, this.sources);
+	input<S extends z.ZodType>(schema: S): Event<S, N> {
+		return new Event(this.declaredName, schema, this.sources, this.name);
 	}
 
-	from(sources: Sources): Event<I> {
-		return new Event(this.name, this.inputSchema, sources);
+	from(sources: Sources): Event<I, N> {
+		return new Event(this.declaredName, this.inputSchema, sources, this.name);
+	}
+
+	// TODO: event visibility is read by the generator only
+	public(): Event<I, N> {
+		return this;
 	}
 
 	sourceOn(platform: Platform | null): EventSource | null {
@@ -41,8 +49,12 @@ export class Event<I extends z.ZodType> {
 		return platform === null ? null : (sources[platform] ?? null);
 	}
 
-	inModule(module: string): Event<I> {
-		return this.module === null ? new Event(`${module}/${this.name}`, this.inputSchema, this.sources) : this;
+	inModule(module: string): Event<I, N> {
+		if (this.module !== null) {
+			return this;
+		}
+
+		return new Event(this.declaredName, this.inputSchema, this.sources, `${module}/${this.name}`);
 	}
 }
 
@@ -60,7 +72,7 @@ export type Emit<E extends AnyEvent> = <V extends E>(event: V, ...input: EventAr
 
 export type Emitter<E extends AnyEvent> = Readonly<Record<"emit", Emit<E>>>;
 
-export function event(name: string): Event<z.ZodVoid> {
+export function event<const N extends string>(name: N): Event<z.ZodVoid, N> {
 	return new Event(name, z.void(), null);
 }
 

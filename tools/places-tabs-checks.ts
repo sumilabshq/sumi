@@ -50,10 +50,10 @@ function askAt(window: string): TabsAsk {
 function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [StartedApp, StartedApp] {
 	const core = localTransport();
 	server()
-		.modules(RunnablePlacesModule.with({ windows: new MemoryWindowsGateway({ windows: [] }), tabs }))
+		.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
 		.listen(core)
 		.start({ env: {} });
-	return [app().imports(PlacesModule.over(core)).start(), app().imports(PlacesModule.over(core)).start()];
+	return [app().imports(PlacesModule({ over: core })).start(), app().imports(PlacesModule({ over: core })).start()];
 }
 
 async function listsIn(windowApp: StartedApp, window: string): Promise<unknown> {

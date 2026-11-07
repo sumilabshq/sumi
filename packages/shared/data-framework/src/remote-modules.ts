@@ -1,5 +1,4 @@
-import { refusalOf } from "./answer";
-import type { Answer, Refusal } from "./answer";
+import type { Answer } from "./answer";
 import type { Asked, Settle } from "./mediator";
 import type { RemoteModule } from "./module-contract";
 import { RemoteServer } from "./remote-server";
@@ -18,12 +17,6 @@ export interface ModuleReach {
 interface RemoteEntry {
 	readonly server: RemoteServer;
 	readonly publicRequestNames: ReadonlySet<string>;
-}
-
-const NOT_OVER_NETWORK = "{name} is server-only: it is not callable over the network";
-
-export function notOverNetwork(request: AnyRequest): Refusal {
-	return refusalOf("not-found", NOT_OVER_NETWORK.replace("{name}", request.name));
 }
 
 export class SingleServer implements ModuleReach {
@@ -92,10 +85,6 @@ export class RemoteModules implements ModuleReach {
 
 		if (entry === undefined) {
 			return Promise.resolve(settle.refuse(asked.request, this.missing(asked.request)));
-		}
-
-		if (!entry.publicRequestNames.has(asked.request.name)) {
-			return Promise.resolve(settle.refuse(asked.request, notOverNetwork(asked.request)));
 		}
 
 		return entry.server.run(asked, settle);

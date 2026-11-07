@@ -27,7 +27,7 @@ function sceneElement(scene: StateScene): ReturnType<typeof h> {
 	};
 	browser.recentSites.saveRecentSites(scene.recentSites);
 
-	const sceneApp = app().modules(BrowserModule.with(browser.parts)).start();
+	const sceneApp = app().modules(BrowserModule({ injects: browser.parts })).start();
 	return h(
 		"div",
 		{

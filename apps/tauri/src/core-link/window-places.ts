@@ -15,7 +15,7 @@ const NOT_LEFT = "[places] window {window}: open → close refused ({reason})";
 
 export function joinPlaces(workspace: string): WindowPlaces {
 	const places = app()
-		.imports(PlacesModule.over(ipcTransport(workspace)))
+		.imports(PlacesModule({ over: ipcTransport(workspace) }))
 		.start();
 	const window = getCurrentWebviewWindow().label;
 	const membership = { isLeaving: false };

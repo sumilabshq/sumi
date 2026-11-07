@@ -22,7 +22,7 @@ A host never builds a module's gateway and never passes a "parts" object. What a
 
 **Live objects, through a module's config.** A live object only the host has (a file it opened, a running agent) is passed raw where the host lists the module: `CanvasModule({ kind: "project", project })`, and `provide` builds the module's gateways on it ([requests.md](requests.md#a-modules-config)). The config's types are re-exported from the module's `"./module"` entry. A plugin module the core starts is a function of what the core offers, `({ store, file }) => PlacesModule({ store })` in the `BackgroundModulesSlot`, so the plugin decides its module's config and the core only offers.
 
-`app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys`, `rateLimits` and `reportFailure`.
+`app()`'s host gives `doneKeys`, `reportFailure`, and `fetch` and `headers` for the wire (the token travels in `headers`; a client never authenticates). `server()`'s host gives `authenticate`, `doneKeys` and `reportFailure`; `rateLimits` comes from the runtime's `.provide` ([requests.md](requests.md#runtime-provides)).
 
 ## One platform's code out of another's bundle
 
@@ -56,10 +56,10 @@ TODO: `settings.json` and `session.json` each have two holders, the host's own d
 
 ## Deploy
 
-| An app's modules…          | It needs                                                                                                                     |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| all run where the app runs | no server; the app runs every handler itself                                                                                 |
-| some run on a server       | `apps/server`: `server().modules(...).start({ env })` serves `/rpc/*`; the app imports them with `.over(orpcTransport(url))` |
+| An app's modules…          | It needs                                                                                                                          |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| all run where the app runs | no server; the app runs every handler itself                                                                                      |
+| some run on a server       | `apps/server`: `server().modules(...).start({ env })` serves `/rpc/*`; the app imports them with `({ over: orpcTransport(url) })` |
 
 `apps/server` is Hono, mounted in `src/main.ts` with CORS for Obsidian's origin and the dev web origin (`WEB_ORIGIN`). `main.ts` is the one file that reads `process.env`. `npm run test:server` starts it on a free port and calls it over real HTTP. There is never a server per device: desktop and mobile call the same `/rpc`.
 

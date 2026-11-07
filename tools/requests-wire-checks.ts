@@ -33,11 +33,13 @@ class TracingDoneKeys extends MemoryDoneKeys {
 }
 
 const rateLimits: RateLimits = new TracingRateLimits();
-const served = server({
-	modules: [fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule],
-	env: { PAGES_SEED: "Home,About" },
-	host: { authenticate: new fx.HeaderAuthenticate(), rateLimits, doneKeys: new TracingDoneKeys() },
-});
+const served = server()
+	.modules(fx.JoinedPagesServerModule, fx.JoinedOrderedServerModule)
+	.provide(() => ({ rateLimits }))
+	.start({
+		env: { PAGES_SEED: "Home,About" },
+		host: { authenticate: new fx.HeaderAuthenticate(), doneKeys: new TracingDoneKeys() },
+	});
 
 const wireCalls: string[] = [];
 function clientAs(user: string | null) {
@@ -234,7 +236,7 @@ const RenameElsewhereCommand = command("pages/rename-elsewhere")
 	.idempotencyKey(Repeatable)
 	.input(z.object({ from: z.string() }));
 check(
-	"server() refuses a guard whose injected dependency its module does not provide, naming request and guard",
+	"server() refuses a guard whose required dependency neither its module nor the runtime provides, naming request and guard",
 	thrownBy(() => {
 		const ElsewhereServerModule = serverModule("pages");
 		const RenameElsewhereCommandHandler = handler(RenameElsewhereCommand, ElsewhereServerModule)
@@ -243,7 +245,7 @@ check(
 			.handle(() => undefined);
 		return server({ modules: [ElsewhereServerModule.handlers([RenameElsewhereCommandHandler])], env: {} });
 	}),
-	"server() refused:\nguard #2 of pages/rename-elsewhere injects pages, which its module does not provide as a Pages",
+	"server() refused:\nguard #2 of pages/rename-elsewhere requires pages, which neither its module nor server().provide() gives as a Pages",
 );
 const Unguarded = query("pages/unguarded").output(z.string());
 const UnguardedClientModule = clientModule("pages");
@@ -352,9 +354,9 @@ const GreedyQueryHandler = handler(GreedyQuery, GreedyServerModule)
 	.guard(PublicGuard)
 	.handle(() => "");
 check(
-	"server() refuses a module providing what the host provides",
+	"server() refuses a module providing what the runtime provides, naming both",
 	thrownBy(() => server({ modules: [GreedyServerModule.handlers([GreedyQueryHandler])], env: {} })),
-	'server() refused:\nmodule "greedy" provides rateLimits, which the host provides',
+	'server() refused:\nmodule "greedy" provides rateLimits, which server().provide() already gives every module: rename one',
 );
 
 const outside = await served.fetch(new Request(`${SERVER}/elsewhere`));

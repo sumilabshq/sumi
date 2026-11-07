@@ -1,11 +1,5 @@
 import { refuse } from "@widgetarium/data-framework";
-import { AccessAsksGateway } from "../../../gateways/access-asks/access-asks.gateway.js";
-import { BrowserAuditGateway } from "../../../gateways/browser-audit/browser-audit.gateway.js";
-import { BrowserGrantReadsGateway } from "../../../gateways/browser-grant-reads/browser-grant-reads.gateway.js";
-import { BrowserPagesGateway } from "../../../gateways/browser-pages/browser-pages.gateway.js";
-import { ClockGateway } from "../../../gateways/clock/clock.gateway.js";
-import { InkActivityGateway } from "../../../gateways/ink-activity/ink-activity.gateway.js";
-import { OnceAllowancesGateway } from "../../../gateways/once-allowances/once-allowances.gateway.js";
+import type { BrowserParts } from "../../../gateways/browser-parts/browser-parts.gateway.js";
 import { decideBrowserAccess, refuseUrlShape, siteKeyOfAddress } from "../../../shared/lib/decide-browser-access.js";
 import { activityWith, isSameActivity } from "../../../shared/lib/ink-activity.js";
 import { effectiveGrants } from "../../../shared/lib/once-grants.js";
@@ -23,17 +17,6 @@ import { CHANGED_DURING_CAPTURE, SECRET_FIELD_ON_PAGE, isSamePage, refusalOfOutc
 import type { BrowserNavigation, BrowserRead } from "./read-refusals.js";
 import { refuseSecretContent } from "./secret-content.js";
 
-// TODO: split reads from navigation once two features can share these gate steps
-export const INK_GATE = {
-	browserPages: BrowserPagesGateway,
-	browserGrantReads: BrowserGrantReadsGateway,
-	browserAudit: BrowserAuditGateway,
-	clock: ClockGateway,
-	onceAllowances: OnceAllowancesGateway,
-	accessAsks: AccessAsksGateway,
-	inkActivity: InkActivityGateway,
-};
-
 const ALLOWED = "allowed";
 const UNCHANGED_AFTER_READ = "unchanged-after-read";
 const NO_SECRET_IN_CONTENT = "no-secret-in-content";
@@ -43,7 +26,11 @@ const TURNED_BACK = "redirected-to-closed-site";
 const LEFT_FOR = "about:blank";
 const UNANSWERED_AFTER_MS = 2 * 60 * 1000;
 
-export type Gate = { readonly [Key in keyof typeof INK_GATE]: InstanceType<(typeof INK_GATE)[Key]> };
+// TODO: split reads from navigation once two features can share these gate steps
+export type Gate = Pick<
+	BrowserParts,
+	"browserPages" | "browserGrantReads" | "browserAudit" | "clock" | "onceAllowances" | "accessAsks" | "inkActivity"
+>;
 
 export async function readAllowed(gate: Gate, kind: BrowserRead["kind"], asked: string | null): Promise<BrowserRead> {
 	const tabId = asked ?? gate.browserPages.shownId();

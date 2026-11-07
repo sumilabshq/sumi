@@ -1,22 +1,8 @@
 import { z } from "zod";
-import { Repeatable, command, refuse } from "@widgetarium/data-framework";
-import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command } from "#module";
 import { PaneTreeQuery, PlacementPreviewQuery } from "../../generated/contract.js";
-import {
-	boardOf,
-	goneTabPanesOf,
-	paneShowingTab,
-	shownTabPaneOf,
-	tabPaneIdsOf,
-	tabTargetOf,
-	treeWithoutGoneTabs,
-	treeWithoutPane,
-	treeShowingChat,
-	treeShowingShownTabAlone,
-	treeShowingTabInGroup,
-	treeWithoutPanes,
-	withTabShown,
-} from "../../shared/lib/pane-trees.js";
+import { boardOf, goneTabPanesOf, paneShowingTab, shownTabPaneOf, tabPaneIdsOf, tabTargetOf, treeWithoutGoneTabs, treeWithoutPane, treeShowingChat, treeShowingShownTabAlone, treeShowingTabInGroup, treeWithoutPanes, withTabShown } from "../../shared/lib/pane-trees.js";
 import { goneTabsWords, paneTransitionOf } from "../../shared/lib/pane-words.js";
 import { holdsOf } from "../../shared/lib/window-trees.js";
 import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.js";
@@ -24,9 +10,9 @@ import type { PaneBoard, PaneTree } from "../../shared/schema/pane-tree.schema.j
 const NO_TAB_TARGET = "the target pane is not an app pane showing a tab";
 
 export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
+	.public()
 	.input(z.object({ tabId: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ tabId }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -55,6 +41,7 @@ export const ShowTabInTargetPaneCommand = command("show-tab-in-target-pane")
 	});
 
 export const ShowChatInPaneCommand = command("show-chat-in-pane")
+	.public()
 	.input(
 		z.object({
 			chatId: z.string().min(1),
@@ -62,7 +49,6 @@ export const ShowChatInPaneCommand = command("show-chat-in-pane")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ chatId, paneId }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -87,8 +73,8 @@ export const ShowChatInPaneCommand = command("show-chat-in-pane")
 	});
 
 export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((_input, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -108,8 +94,8 @@ export const OpenShownTabPaneCommand = command("open-shown-tab-pane")
 	});
 
 export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
+	.public()
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((_input, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -128,9 +114,9 @@ export const CloseShownTabPaneCommand = command("close-shown-tab-pane")
 	});
 
 export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
+	.public()
 	.input(z.object({ tabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ tabIds }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -148,9 +134,9 @@ export const ClosePanesOfTabsCommand = command("close-panes-of-tabs")
 	});
 
 export const DropGoneTabsCommand = command("drop-gone-tabs")
+	.public()
 	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ heldTabIds }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -168,6 +154,7 @@ export const DropGoneTabsCommand = command("drop-gone-tabs")
 	});
 
 export const ShowTabInChatGroupCommand = command("show-tab-in-chat-group")
+	.public()
 	.input(
 		z.object({
 			chatId: z.string().min(1),
@@ -176,7 +163,6 @@ export const ShowTabInChatGroupCommand = command("show-tab-in-chat-group")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ chatId, tabId, isOnlyWhenBare }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);

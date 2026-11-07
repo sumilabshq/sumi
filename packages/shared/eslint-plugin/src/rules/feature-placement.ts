@@ -4,8 +4,8 @@ import { FEATURE_FILES, LEAF_FILES, REQUESTS_FILE, isFeatureFolder, packageKindO
 import type { DomainFile } from "../domain-file.js";
 import { fillTemplate } from "../fill-template.js";
 
-const TOP_FILES = /^(module\.ts|index\.ts|package\.json|tsconfig(\.[\w-]+)?\.json|LICENSE|README\.md|[\w-]+\.css)$/;
-const ROOT_ENTRY = "index.ts";
+const TOP_FILES = /^(module\.ts|index\.ts|server\.ts|package\.json|tsconfig(\.[\w-]+)?\.json|LICENSE|README\.md|[\w-]+\.css)$/;
+const ROOT_ENTRIES: ReadonlySet<string> = new Set(["index.ts", "server.ts"]);
 const TOP_FOLDERS: ReadonlySet<string> = new Set([
 	"features",
 	"shared",
@@ -42,7 +42,7 @@ const NO_IMPLEMENTATION_ENTRY =
 
 export function placementOf(file: DomainFile): string[] {
 	const relative = file.inside.join("/");
-	if (relative === ROOT_ENTRY) {
+	if (ROOT_ENTRIES.has(relative)) {
 		return [];
 	}
 

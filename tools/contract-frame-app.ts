@@ -40,11 +40,11 @@ transport.changes(() => {
 });
 const sumi = app()
 	.imports(
-		FileSystemModule.over(transport),
-		TerminalModule.over(transport),
-		PlacesModule.over(transport),
-		WebPageModule.over(transport),
-		AssistantModule.over(transport),
+		FileSystemModule({ over: transport }),
+		TerminalModule({ over: transport }),
+		PlacesModule({ over: transport }),
+		WebPageModule({ over: transport }),
+		AssistantModule({ over: transport }),
 	)
 	.start();
 

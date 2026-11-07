@@ -4,7 +4,7 @@ import { BalanceQuery, ChargeCommand, FixtureBillingModule } from "@widgetarium/
 const SERVER = "http://localhost:8787";
 
 const started = app()
-	.imports(FixtureBillingModule.over(orpcTransport(SERVER)))
+	.imports(FixtureBillingModule({ over: orpcTransport(SERVER) }))
 	.start();
 
 export const charged = started.send(ChargeCommand, { amount: 1 });

@@ -77,20 +77,20 @@ export interface TabStores {
 }
 
 export interface TabsReach {
-	readonly parts: TabStores;
+	readonly injects: TabStores;
 	readonly send: Send;
 	readonly told: () => void;
 }
 
-export async function tabsAskOf({ parts, send }: Pick<TabsReach, "parts" | "send">): Promise<TabsAsk> {
+export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "send">): Promise<TabsAsk> {
 	const [browserTabs, asks, board] = await Promise.all([
 		send(BrowserTabsQuery, ALL_PAGES),
 		send(AccessAsksQuery),
 		send(PaneTreeQuery),
 	]);
 	return {
-		window: parts.studioWindow.windowLabel(),
-		view: parts.shownView.shownView(),
+		window: injects.studioWindow.windowLabel(),
+		view: injects.shownView.shownView(),
 		screen: screenOf({ browserTabs, asks, board }),
 	};
 }
@@ -100,7 +100,7 @@ export async function settleAsked<S extends TabsSettled>(
 	ask: (at: TabsAsk) => Promise<S>,
 ): Promise<S> {
 	const settled = await ask(await tabsAskOf(reach));
-	saveView(reach.parts.shownView, settled.view);
+	saveView(reach.injects.shownView, settled.view);
 
 	for (const effect of settled.effects) {
 		await sendLogged(effect.kind, () => sendEffect(effect, reach));
@@ -193,7 +193,7 @@ function sendWindowEffect(effect: WindowEffect, send: Send): Promise<unknown> {
 	}
 }
 
-async function sendPaneEffect(effect: PaneEffect, { parts, send }: TabsReach): Promise<unknown> {
+async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach): Promise<unknown> {
 	switch (effect.kind) {
 		case "close-panes":
 			return send(ClosePanesOfTabsCommand, { tabIds: effect.tabIds });
@@ -207,7 +207,7 @@ async function sendPaneEffect(effect: PaneEffect, { parts, send }: TabsReach): P
 			return send(ShowTabInTargetPaneCommand, { tabId: effect.tabId });
 		case "flash-pane":
 			await send(AimPaneCommand, { id: effect.paneId });
-			return parts.paneFlash.flashPane(effect.paneId);
+			return injects.paneFlash.flashPane(effect.paneId);
 	}
 }
 

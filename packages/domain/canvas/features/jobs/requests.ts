@@ -1,21 +1,15 @@
-import { PerCall, query, command, subscriber } from "@widgetarium/data-framework";
-import { AgentJobsGateway } from "../../gateways/agent-jobs/agent-jobs.gateway.js";
+import { PerCall } from "@widgetarium/data-framework";
+import { query, command, subscriber } from "#module";
 import { JobsChangedEvent } from "../../gateways/agent-jobs/agent-jobs.events.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
 import { JobIdSchema, JobStatusSchema } from "../../shared/schema/job.schema.js";
 import { PAGE_FIELDS, pagesNowOf } from "../../shared/lib/pages/pages-now.js";
 import { isTouching } from "../../shared/lib/view/canvas-moment.js";
 
 export const JobStatusQuery = query("job-status")
+	.public()
 	.output(JobStatusSchema)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-		agentJobs: AgentJobsGateway,
-	})
 	.handle(async (_input, { canvasMoment, designFolder, agentJobs }) => {
 		const moment = canvasMoment.moment();
 		const { app, pages } = pagesNowOf(moment, await designFolder.folder(moment.app), agentJobs.jobsOf(moment.app));
@@ -35,12 +29,9 @@ export const JobStatusQuery = query("job-status")
 	});
 
 export const StopJobCommand = command("stop-job")
+	.public()
 	.input(JobIdSchema)
 	.idempotencyKey(PerCall)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		agentJobs: AgentJobsGateway,
-	})
 	.handle(async ({ id }, { canvasMoment, agentJobs }) => {
 		const { app } = canvasMoment.moment();
 		await agentJobs.stopJob(app, id);

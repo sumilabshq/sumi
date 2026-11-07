@@ -38,7 +38,7 @@ const routesFor = frameRoutesOf({
 			contract: WebPageModule,
 			serving: webPageServingOf({
 				platform: "browser",
-				windowApp: app().imports(PlacesModule.over(core)).start(),
+				windowApp: app().imports(PlacesModule({ over: core })).start(),
 			}),
 		},
 	],

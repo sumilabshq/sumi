@@ -1,40 +1,28 @@
-import { PerCall, Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { chooseOptions, holdProvider } from "../../shared/lib/chat-drafts.js";
 import { OPTIONS_NOT_HERE } from "../../gateways/claude-options/none.gateway.js";
 import { WORKING_FOLDER_NOT_HERE } from "../../gateways/working-folders/none.gateway.js";
-import {
-	AssistantSetupChangedEvent,
-	ClaudeOptionsChangedEvent,
-	WorkingFolderChangedEvent,
-} from "../../gateways/chat-parts/chat-parts.events.js";
-import {
-	AgentSetupSchema,
-	HelperAgentsAskedSchema,
-	ProviderAskedSchema,
-} from "../../shared/schema/agent-setup.schema.js";
-import {
-	ClaudeModelAskedSchema,
-	ClaudeOptionInChatSchema,
-	ClaudeOptionsSchema,
-} from "../../shared/schema/claude-options.schema.js";
+import { AssistantSetupChangedEvent, ClaudeOptionsChangedEvent, WorkingFolderChangedEvent } from "../../gateways/chat-parts/chat-parts.events.js";
+import { AgentSetupSchema, HelperAgentsAskedSchema, ProviderAskedSchema } from "../../shared/schema/agent-setup.schema.js";
+import { ClaudeModelAskedSchema, ClaudeOptionInChatSchema, ClaudeOptionsSchema } from "../../shared/schema/claude-options.schema.js";
 import { FolderAskedSchema, WorkingFoldersSchema } from "../../shared/schema/working-folder.schema.js";
 import { CLAUDE_CODE_PROVIDER_ID, agentSetupOf, withOptionChosen, workingFoldersOf } from "./lib/agent-setup.js";
 import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
 import { inChat } from "../../gateways/chat-parts/in-chat.js";
-import { ChatPartsGateway } from "../../gateways/chat-parts/chat-parts.gateway.js";
 
 const NO_CLAUDE_CODE = "Claude Code is not among the providers, so its model cannot be chosen.";
 
 export const AgentSetupQuery = query("agent-setup")
+	.public()
 	.input(ChatKeySchema)
 	.output(AgentSetupSchema)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async (_input, { assistantSetup }) => agentSetupOf(await assistantSetup.setup())));
 
 export const ChooseProviderCommand = command("choose-provider")
+	.public()
 	.input(ProviderAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async ({ id }, { assistantSetup, chatDrafts, invalidate }) => {
 		invalidate(AgentSetupQuery);
 		await assistantSetup.chooseProvider(id);
@@ -42,31 +30,31 @@ export const ChooseProviderCommand = command("choose-provider")
 	}));
 
 export const SetHelperAgentsCommand = command("set-helper-agents")
+	.public()
 	.input(HelperAgentsAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async ({ on }, { assistantSetup, invalidate }) => {
 		invalidate(AgentSetupQuery);
 		await assistantSetup.setHelperAgents(on);
 	}));
 
 export const OpenProvidersCommand = command("open-providers")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { assistantSetup }) => assistantSetup.openProviders()));
 
 export const ClaudeOptionsQuery = query("claude-options")
+	.public()
 	.input(ChatKeySchema)
 	.output(ClaudeOptionsSchema.nullable())
 	.settlesNow()
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { claudeOptions }) => claudeOptions.claudeOptions()));
 
 export const ChooseClaudeOptionCommand = command("choose-claude-option")
+	.public()
 	.input(ClaudeOptionInChatSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(({ option: asked }, { claudeOptions, chatDrafts, invalidate }) => {
 		const was = claudeOptions.claudeOptions();
 
@@ -83,9 +71,9 @@ export const ChooseClaudeOptionCommand = command("choose-claude-option")
 	}));
 
 export const ChooseClaudeModelCommand = command("choose-claude-model")
+	.public()
 	.input(ClaudeModelAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async ({ model }, { assistantSetup, claudeOptions, chatDrafts, invalidate }) => {
 		const setup = await assistantSetup.setup();
 
@@ -114,18 +102,18 @@ export const ChooseClaudeModelCommand = command("choose-claude-model")
 	}));
 
 export const WorkingFoldersQuery = query("working-folders")
+	.public()
 	.input(ChatKeySchema)
 	.output(WorkingFoldersSchema.nullable())
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { workingFolders }) => {
 		const held = workingFolders.workspaceFolder();
 		return held === null ? null : workingFoldersOf(held);
 	}));
 
 export const ChooseWorkingFolderCommand = command("choose-working-folder")
+	.public()
 	.input(FolderAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async ({ path }, { workingFolders, invalidate }) => {
 		const was = workingFolders.workspaceFolder();
 
@@ -140,9 +128,9 @@ export const ChooseWorkingFolderCommand = command("choose-working-folder")
 	}));
 
 export const PickWorkingFolderCommand = command("pick-working-folder")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(async (_input, { workingFolders, invalidate }) => {
 		const was = workingFolders.workspaceFolder();
 

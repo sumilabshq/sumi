@@ -20,7 +20,7 @@ Code written before any of these rules lives in a `legacy/` folder inside the ap
 | Older shape                                                                  | This architecture                                                                   |
 | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `features/<f>/contract.ts` + `handlers.ts`                                   | `features/<f>/requests.ts`                                                          |
-| `handler(XCommand, CanvasClientModule).inject(…).handle(…)`                  | `command("x").….inject(…).handle(…)`                                                |
+| `handler(XCommand, CanvasClientModule).inject(…).handle(…)`                  | `command("x").….handle(…)`, `command` from `#module`                                |
 | `clientModule("canvas")` / `serverModule("billing")`, `<Domain><Side>Module` | `module("canvas")`, `<Area>Module`; the app picks the side                          |
 | request name `"canvas/add-photos"`                                           | `"add-photos"`, stamped by the module                                               |
 | `provide((parts) => …)`, the host builds `webCanvasParts(…)`                 | `provide((facts) => …)`, the module picks its gateways                              |

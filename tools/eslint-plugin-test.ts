@@ -28,13 +28,15 @@ const CLIENT_MODULE =
 	'import { clientModule } from "@widgetarium/data-framework";\nexport const NotesClientModule = clientModule("notes");\n';
 
 const TALLY_MODULE =
-	'import { Device, module } from "@widgetarium/data-framework";\nimport { CountQuery } from "./features/count/requests.js";\nexport const TallyModule = module("tally").on(Device).public(CountQuery);\n';
+	'import { Device, module } from "@widgetarium/data-framework";\nimport { handled } from "./generated/handled.js";\nexport const TallyModule = module("tally").on(Device).handles(...handled);\n';
 const COUNT_REQUESTS = "packages/tally/features/count/requests.ts";
+const MODULE_REQUESTS = 'import { command, query } from "#module";\n';
 const CONFIGURED_MODULE = [
 	'import { Device, module } from "@widgetarium/data-framework";',
 	'import type { CanvasConfig } from "./shared/host/canvas.host.js";',
+	'import { handled } from "./generated/handled.js";',
 	'export type { Adapter, CanvasConfig } from "./shared/host/canvas.host.js";',
-	'export const CanvasModule = module("canvas").on(Device).config<CanvasConfig>();',
+	'export const CanvasModule = module("canvas").on(Device).config<CanvasConfig>().handles(...handled);',
 	"",
 ].join("\n");
 const PLACED_MODULE =
@@ -89,6 +91,8 @@ const WORKSPACE: Readonly<Record<string, string>> = {
 	"packages/gauge/package.json": JSON.stringify({ name: "@fixture/gauge", widgetarium: { level: "domain" } }),
 	"packages/gauge/module.ts": PLACED_MODULE.replaceAll("{name}", "gauge").replaceAll("{on}", "Device"),
 	"packages/gauge/features/read/requests.ts": "",
+	"packages/gauge/serve.ts": "",
+	"packages/ledger/server.ts": "",
 	"apps/host-web/package.json": JSON.stringify({ name: "@fixture/host-web" }),
 	"apps/web/package.json": JSON.stringify({ name: "@fixture/web" }),
 	"apps/web/tsconfig.json": JSON.stringify({ compilerOptions: { customConditions: ["source"] } }),
@@ -144,8 +148,14 @@ tested("building-block-names", {
 		ok(`${REQUESTS}export const OwnsNoteGuard = guard().handle(() => undefined);`),
 		ok(`${REQUESTS}export const BillingServerModule = serverModule("billing").guard(PublicGuard);`),
 		ok('import { query } from "./elsewhere.js";\nconst pages = query("x");'),
+		ok(
+			`${MODULE_REQUESTS}export const CountQuery = query("count").public().handle((_input, { counter }) => counter.value);`,
+			COUNT_REQUESTS,
+		),
 	],
 	invalid: [
+		bad(`${MODULE_REQUESTS}export const Count = query("count").public();`, "wrongSuffix", COUNT_REQUESTS),
+		bad(`${MODULE_REQUESTS}const BumpCommand = command("bump");`, "unnamed", COUNT_REQUESTS),
 		bad('import { module } from "@widgetarium/data-framework";\nexport const Tally = module("tally");', "wrongSuffix"),
 		bad(
 			'import { event } from "@widgetarium/data-framework";\nexport const PanesChanged = event("panes-changed");',
@@ -180,6 +190,11 @@ tested("no-choice-strings", {
 	],
 	invalid: [
 		bad(`${REQUESTS}export const AddCommand = command("notes/add").idempotencyKey("per-call");`, "choiceString"),
+		bad(
+			`${MODULE_REQUESTS}export const BumpCommand = command("bump").idempotencyKey("per-call");`,
+			"choiceString",
+			COUNT_REQUESTS,
+		),
 		bad(`${REQUESTS}export const PagesQuery = query("notes/pages").cache({ freshFor: "5m" });`, "choiceString"),
 		bad(`${REQUESTS}export const NotesClientModule = clientModule("notes").provide("parts");`, "choiceString"),
 	],
@@ -307,8 +322,12 @@ tested("feature-layout", {
 		ok('import { paths } from "./paths.js";', "packages/notes/gateways/store/obsidian/obsidian.gateway.ts"),
 		ok(CLIENT_MODULE, "packages/notes/module.ts"),
 		ok("export const ClockHost = 1;", "packages/tally/shared/host/clock.host.ts"),
+		ok(PLACED_MODULE.replaceAll("{name}", "ledger").replaceAll("{on}", "Server"), "packages/ledger/module.ts"),
+		ok('export * from "./generated/server.js";', "packages/ledger/server.ts"),
 	],
 	invalid: [
+		bad(PLACED_MODULE.replaceAll("{name}", "gauge").replaceAll("{on}", "Device"), "misplaced", "packages/gauge/module.ts"),
+		bad("export const a = 1;", "misplaced", "packages/gauge/serve.ts"),
 		bad("export const ClockHost = 1;", "misplaced", "packages/tally/shared/host/clock.ts"),
 		bad(
 			'import { query } from "@widgetarium/data-framework";\nexport const CountQuery = query("counting").handle(() => 1);',
@@ -372,7 +391,8 @@ const SEARCH_HANDLERS = "packages/notes/features/search/handlers.ts";
 const STORE_GATEWAY = "packages/notes/gateways/store/store.gateway.ts";
 tested("layer-order", {
 	valid: [
-		ok('import { CountQuery } from "./features/count/requests.js";', "packages/tally/module.ts"),
+		ok('import { TallyCallersGuard } from "./features/count/requests.js";', "packages/tally/module.ts"),
+		ok('import { handled } from "./generated/handled.js";', "packages/tally/module.ts"),
 		ok('import type { Note } from "../schema/note.schema.js";'),
 		ok('import { clock } from "../../shared/lib/clock.js";', STORE_GATEWAY),
 		ok('import { Store } from "../store/obsidian/obsidian.gateway.js";', STORE_GATEWAY),

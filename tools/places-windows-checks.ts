@@ -15,11 +15,11 @@ import { check, tally, waitFor } from "./check-helpers.ts";
 const windows = new MemoryWindowsGateway({ windows: [] });
 const core = localTransport();
 server()
-	.modules(RunnablePlacesModule.with({ windows, tabs: new MemoryTabsGateway() }))
+	.modules(RunnablePlacesModule({ injects: { windows, tabs: new MemoryTabsGateway() } }))
 	.listen(core)
 	.start({ env: {} });
-const main = app().imports(PlacesModule.over(core)).start();
-const side = app().imports(PlacesModule.over(core)).start();
+const main = app().imports(PlacesModule({ over: core })).start();
+const side = app().imports(PlacesModule({ over: core })).start();
 const labelsOf = async (): Promise<readonly string[]> => {
 	const answered = await side.send(OpenWindowsQuery);
 	return answered.ok ? answered.output.windows.map((open) => open.label) : [answered.reason];

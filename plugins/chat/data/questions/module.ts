@@ -1,26 +1,9 @@
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { questionsPartsOn } from "./gateways/questions-parts/questions-parts.gateway.js";
-import {
-	DeliverQuestionsCommand,
-	IsWaitingOnPersonQuery,
-	PostQuestionsCommand,
-	QuestionsQuery,
-	WithdrawNeededCommand,
-} from "./features/agent/requests.js";
-import {
-	AnswerQuestionCommand,
-	ChatQuestionsQuery,
-	ReadyAnswersQuery,
-	ReopenQuestionCommand,
-	RereadQuestionsSubscriber,
-	SkipQuestionsCommand,
-} from "./features/dock/requests.js";
+import { handled } from "./generated/handled.js";
 
 export const QuestionsModule = module("questions")
 	.on(Server)
 	.guard(PublicGuard)
-	.subscribers(RereadQuestionsSubscriber)
-	.public(ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery, ReadyAnswersQuery)
-	.public(AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand)
-	.public(PostQuestionsCommand, DeliverQuestionsCommand, WithdrawNeededCommand)
-	.provide((facts) => questionsPartsOn(facts));
+	.provide((facts) => questionsPartsOn(facts))
+	.handles(...handled);

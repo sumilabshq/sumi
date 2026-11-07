@@ -56,20 +56,21 @@ export class EventBus {
 
 export type Deliver = (event: AnyEvent, input: unknown) => void;
 
-const UNDECLARED_EMIT = "{owner} emits {event}, which it does not declare in .emits()";
+const FOREIGN_EMIT = '{owner} emits {event}, which module "{module}" does not own: a module emits only its own events';
 
 export interface Emitting {
-	readonly declared: readonly AnyEvent[];
 	readonly owner: string;
 	readonly module: string;
 }
 
-export function emitOf(bus: EventBus, { declared, owner, module }: Emitting, deliver: Deliver) {
+export function emitOf(bus: EventBus, { owner, module }: Emitting, deliver: Deliver) {
 	return (event: AnyEvent, sent?: unknown): void => {
 		const stamped = event.inModule(module);
 
-		if (!declared.some(({ name }) => name === stamped.name)) {
-			throw new Error(UNDECLARED_EMIT.replace("{owner}", owner).replace("{event}", stamped.name));
+		if (stamped.module !== module) {
+			throw new Error(
+				FOREIGN_EMIT.replace("{owner}", owner).replace("{event}", stamped.name).replace("{module}", module),
+			);
 		}
 
 		deliver(stamped, bus.inputOf(stamped, sent));

@@ -1,23 +1,10 @@
-import {
-	CallLoggerMiddleware,
-	Repeatable,
-	command,
-	deny,
-	guard,
-	query,
-	refuse,
-	subscriber,
-} from "@widgetarium/data-framework";
+import { CallLoggerMiddleware, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import type { Invalidate } from "@widgetarium/data-framework";
 import { AppTabsGateway } from "../../gateways/app-tabs/app-tabs.gateway.js";
 import { WebPagesChangedEvent } from "../../gateways/web-pages/web-pages.events.js";
 import { WebPagesGateway } from "../../gateways/web-pages/web-pages.gateway.js";
-import {
-	OpenWebPageInputSchema,
-	PlaceWebPageInputSchema,
-	WebPageSchema,
-	WebPageTabSchema,
-} from "../../shared/schema/web-page.schema.js";
+import { OpenWebPageInputSchema, PlaceWebPageInputSchema, WebPageSchema, WebPageTabSchema } from "../../shared/schema/web-page.schema.js";
 import type { PageArea, WebPage } from "../../shared/schema/web-page.schema.js";
 import { refuseWebUrl, urlWithoutFragment } from "./lib/web-url.js";
 
@@ -64,7 +51,7 @@ const CLOSE: PageStep = {
 
 export const AppOwnsTabGuard = guard<{ readonly tab: string }>()
 	.needsUser()
-	.inject({ appTabs: AppTabsGateway })
+	.requires({ appTabs: AppTabsGateway })
 	.handle(async ({ input, context: { user } }, { appTabs }) => {
 		if (user !== null && (await appTabs.appOfTab(input.tab)) !== user.id) {
 			deny(NOT_ITS_TAB.replace("{tab}", input.tab).replace("{app}", user.id));
@@ -76,10 +63,10 @@ export const WebPageCallLoggerMiddleware = CallLoggerMiddleware("web-page", (inp
 );
 
 export const WebPageQuery = query("web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.output(WebPageSchema.nullable())
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(async ({ tab }, { webPages }) => {
 		const page = await webPages.page(tab);
 		return page === null
@@ -95,10 +82,10 @@ export const RereadWebPageSubscriber = subscriber(WebPagesChangedEvent).handle((
 });
 
 export const OpenWebPageCommand = command("open-web-page")
+	.public()
 	.input(OpenWebPageInputSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(async ({ tab, url }, { webPages, invalidate, user }) => {
 		const refusal = refuseWebUrl(url);
 
@@ -116,10 +103,10 @@ export const OpenWebPageCommand = command("open-web-page")
 	});
 
 export const PlaceWebPageCommand = command("place-web-page")
+	.public()
 	.input(PlaceWebPageInputSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(async ({ tab, area }, { webPages, invalidate }) => {
 		await pageOrRefuse(webPages, tab);
 		const was = webPages.pageArea(tab);
@@ -128,31 +115,31 @@ export const PlaceWebPageCommand = command("place-web-page")
 	});
 
 export const GoBackWebPageCommand = command("go-back-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_BACK));
 
 export const GoForwardWebPageCommand = command("go-forward-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(({ tab }, reach) => takePageStep(reach, tab, GO_FORWARD));
 
 export const ReloadWebPageCommand = command("reload-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(({ tab }, reach) => takePageStep(reach, tab, RELOAD));
 
 export const CloseWebPageCommand = command("close-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable)
 	.guard(AppOwnsTabGuard)
-	.inject({ webPages: WebPagesGateway })
 	.handle(({ tab }, reach) => takePageStep(reach, tab, CLOSE));
 
 async function takePageStep({ webPages, invalidate }: PageReach, tab: string, step: PageStep): Promise<void> {

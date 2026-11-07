@@ -53,37 +53,48 @@ export const FileInfoSchema = z.object({
 export type FileInfo = z.infer<typeof FileInfoSchema>;
 
 export const ReadFileQuery = query("file-system/read-file")
+	.public()
 	.input(PathInputSchema)
 	.output(FileContentSchema);
 export const ReadFileBytesQuery = query("file-system/read-file-bytes")
+	.public()
 	.input(PathInputSchema)
 	.output(FileBytesSchema);
+export const OpenInSystemAppCommand = command("file-system/open-in-system-app")
+	.public()
+	.input(PathInputSchema)
+	.idempotencyKey(PerCall);
 export const ReadFolderQuery = query("file-system/read-folder")
+	.public()
 	.input(PathInputSchema)
 	.output(FolderSchema);
 export const FileInfoQuery = query("file-system/file-info")
+	.public()
 	.input(PathInputSchema)
 	.output(FileInfoSchema);
 export const WriteFileCommand = command("file-system/write-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(Repeatable);
 export const AppendFileCommand = command("file-system/append-file")
+	.public()
 	.input(WriteFileInputSchema)
 	.idempotencyKey(PerCall);
 export const MakeFolderCommand = command("file-system/make-folder")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable);
 export const RemoveCommand = command("file-system/remove")
+	.public()
 	.input(PathInputSchema)
 	.idempotencyKey(Repeatable);
 export const RenameCommand = command("file-system/rename")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
 export const CopyCommand = command("file-system/copy")
+	.public()
 	.input(MoveInputSchema)
 	.idempotencyKey(PerCall);
-export const OpenInSystemAppCommand = command("file-system/open-in-system-app")
-	.input(PathInputSchema)
-	.idempotencyKey(PerCall);
 
-export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, ReadFolderQuery, FileInfoQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand, OpenInSystemAppCommand]);
+export const FileSystemModule = moduleContract("file-system", Server, [ReadFileQuery, ReadFileBytesQuery, OpenInSystemAppCommand, ReadFolderQuery, FileInfoQuery, WriteFileCommand, AppendFileCommand, MakeFolderCommand, RemoveCommand, RenameCommand, CopyCommand]);

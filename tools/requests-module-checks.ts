@@ -3,10 +3,12 @@ import {
 	Anywhere,
 	AuthenticatedGuard,
 	Device,
+	MemoryRateLimits,
 	PublicGuard,
 	Repeatable,
 	Server,
 	app,
+	buildersOf,
 	command,
 	deny,
 	guard,
@@ -29,6 +31,8 @@ class Clock {
 	}
 }
 
+type TallyParts = { readonly counter: Counter };
+
 const ON_BROWSER = {
 	platform: "browser",
 	scope: { workspaceId: "tally-workspace" },
@@ -36,13 +40,14 @@ const ON_BROWSER = {
 
 const SCOPE = { workspaceId: "tally-workspace" };
 
-const CountQuery = query("count")
+const CountQuery = query<TallyParts>("count")
+	.public()
 	.output(z.number())
 	.settlesNow()
-	.inject({ counter: Counter })
 	.handle((_input, { counter }) => counter.value);
 
-const BumpCommand = command("bump")
+const BumpCommand = command<TallyParts>("bump")
+	.public()
 	.input(z.object({ by: z.number() }))
 	.idempotencyKey(Repeatable)
 	.invalidates([CountQuery])
@@ -53,7 +58,6 @@ const BumpCommand = command("bump")
 			}
 		}),
 	)
-	.inject({ counter: Counter })
 	.handle(({ by }, { counter }) => {
 		counter.value += by;
 	});
@@ -64,7 +68,11 @@ const BumpContract = command("tally/bump")
 	.idempotencyKey(Repeatable)
 	.invalidates([CountContract]);
 
-const TallyModule = module("tally").on(Anywhere).public(CountQuery, BumpCommand);
+const TallyDeclared = module("tally").on(Anywhere);
+
+function tallyOver(counter: Counter) {
+	return TallyDeclared.provide(() => ({ counter })).handles(CountQuery, BumpCommand);
+}
 
 const ChargeContract = command("payments/charge")
 	.input(z.object({ cents: z.number() }))
@@ -79,12 +87,14 @@ const PaymentsContract = moduleContract("payments", Server, [ChargeContract]);
 const DevicePaymentsContract = moduleContract("payments", Device, [ChargeContract]);
 
 const ChargeCommand = command("charge")
+	.public()
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable)
 	.handle(({ cents }) => `charged ${cents}`);
 
 const BuyCommand = command("buy")
+	.public()
 	.input(z.object({ cents: z.number() }))
 	.output(z.string())
 	.idempotencyKey(Repeatable)
@@ -97,15 +107,16 @@ const BuyContract = command("shop/buy")
 
 const PaymentsModule = module("payments")
 	.on(Anywhere)
-	.public(ChargeCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(ChargeCommand);
 const ShopModule = module("shop")
 	.on(Anywhere)
 	.imports(PaymentsContract)
-	.public(BuyCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(BuyCommand);
 
 const InvoicesQuery = query("invoices")
+	.public()
 	.output(z.array(z.string()))
 	.handle(() => ["inv-1"]);
 
@@ -124,12 +135,12 @@ const CreateCustomerContract = command("billing/create-customer")
 const BillingModule = module("billing")
 	.on(Server)
 	.guard(PublicGuard)
-	.public(InvoicesQuery)
-	.serverOnly(CreateCustomerCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(InvoicesQuery, CreateCustomerCommand);
 const BillingContract = moduleContract("billing", Server, [InvoicesContract]);
 
 const SignUpCommand = command("sign-up")
+	.public()
 	.input(z.object({ userId: z.string() }))
 	.output(z.string())
 	.idempotencyKey((input) => input.userId)
@@ -144,22 +155,26 @@ const AuthModule = module("auth")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
-	.public(SignUpCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(SignUpCommand);
 
 const DeviceTallyModule = module("tally")
 	.on(Device)
-	.public(CountQuery, BumpCommand)
-	.provide(() => ({ counter: new Counter() }));
+	.provide(() => ({ counter: new Counter() }))
+	.handles(CountQuery, BumpCommand);
 
 export function typedOnly(): void {
+	const tally = buildersOf<typeof DeviceTallyModule>();
 	// @ts-expect-error
 	command("unkeyed").handle(() => undefined);
+	tally
+		.query("read")
+		.output(z.number())
+		.handle((_input, { counter }) => counter.value);
 	// @ts-expect-error
-	TallyModule.provide(() => ({}));
+	tally.query("timed").handle((_input, { clock }) => clock);
 	// @ts-expect-error
-	TallyModule.provide(() => ({ counter: new Clock() }));
-	TallyModule.provide(() => ({ counter: new Counter() }));
+	query("loose").handle((_input, { counter }) => counter);
 	command("pay")
 		.idempotencyKey(Repeatable)
 		.handle(async (_input, { send }) => {
@@ -168,25 +183,24 @@ export function typedOnly(): void {
 			await send(ChargeContract, { cents: "five" });
 		});
 	// @ts-expect-error
-	module("tally").public(CountQuery);
-	// @ts-expect-error
-	module("tally").on(Device).serverOnly(CountQuery);
-	module("tally").on(Anywhere).serverOnly(CountQuery);
+	module("tally").handles(CountQuery);
 	// @ts-expect-error
 	app().imports(PaymentsContract);
 	// @ts-expect-error
-	DevicePaymentsContract.over(orpcTransport("http://127.0.0.1:9"));
+	DevicePaymentsContract({ over: orpcTransport("http://127.0.0.1:9") });
 	// @ts-expect-error
 	server().modules(DeviceTallyModule);
 	// @ts-expect-error
 	app().modules(BillingModule);
-	app().imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")));
+	app().imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }));
+	// @ts-expect-error
+	buildersOf<{ readonly counter: Counter }>();
+	// @ts-expect-error
+	module("tally").on(Device).config<{ readonly injects: number }>();
 }
 
 const counter = new Counter();
-const started = app()
-	.modules(TallyModule.provide(() => ({ counter })))
-	.start(ON_BROWSER);
+const started = app().modules(tallyOver(counter)).start(ON_BROWSER);
 
 check("a self-handled query answers through app()", await started.send(CountContract), { ok: true, output: 0 });
 check("a self-handled command runs its handler", await started.send(BumpContract, { by: 3 }), {
@@ -195,15 +209,17 @@ check("a self-handled command runs its handler", await started.send(BumpContract
 });
 check("its write is seen by the next read", await started.send(CountContract), { ok: true, output: 3 });
 check(
-	"a short name is the request's own: the module adds its prefix when it lists it",
+	"a short name is the request's own: the module adds its prefix when it handles it",
 	[CountQuery.request.name, CountQuery.request.module],
 	["count", null],
 );
 
-const stamped = TallyModule.provide(() => ({ counter })).handlers;
 check(
 	"the module stamps every request and its invalidates list with <module>/<short>",
-	stamped.map(({ request }) => [request.name, request.invalidated?.map(({ name }) => name) ?? null]),
+	tallyOver(counter).handlers.map(({ request }) => [
+		request.name,
+		request.invalidated?.map(({ name }) => name) ?? null,
+	]),
 	[
 		["tally/count", null],
 		["tally/bump", ["tally/count"]],
@@ -214,28 +230,38 @@ const refused = await started.send(BumpContract, { by: 11 });
 check("its own input guard refuses on the client", refused.ok ? "ran" : refused.code, "forbidden");
 
 check(
-	"a request listed twice, in .public() and .serverOnly(), is refused by name",
-	thrownBy(() => module("tally").on(Server).public(CountQuery).serverOnly(CountQuery)),
-	'module "tally" lists count twice: a request stands in exactly one of .public() and .serverOnly()',
+	"a request handled twice by one module is refused by name",
+	thrownBy(() => TallyDeclared.provide(() => ({ counter })).handles(CountQuery, CountQuery)),
+	'module "tally" handles count twice: a request belongs to one module, once',
+);
+
+check(
+	"a request says who may call it once: .public() and .callableBy() together are refused",
+	[
+		thrownBy(() => query("both").public().callableBy(PaymentsContract)),
+		thrownBy(() => query("twice").public().public()),
+		thrownBy(() => query("nobody").callableBy()),
+	],
+	[
+		"both already says who may call it: a request is .public() or .callableBy(...) once, never both",
+		"twice already says who may call it: a request is .public() or .callableBy(...) once, never both",
+		"nobody.callableBy() names no module: name the modules that may call it",
+	],
 );
 
 check(
 	"a module picking its parts from the platform is refused by a starter told no platform",
-	thrownBy(() =>
-		app()
-			.modules(TallyModule.provide(() => ({ counter })))
-			.start(),
-	),
+	thrownBy(() => app().modules(tallyOver(counter)).start()),
 	'module "tally" picks its parts from the platform and scope, and its starter was told neither: pass platform and scope',
 );
 
 let seenFacts: ModuleFacts | null = null;
 app()
 	.modules(
-		TallyModule.provide((facts) => {
+		TallyDeclared.provide((facts) => {
 			seenFacts = facts;
 			return { counter };
-		}),
+		}).handles(CountQuery, BumpCommand),
 	)
 	.start({ platform: "tauri", scope: { workspaceId: "w-1" } });
 check("provide receives the platform and scope its starter was told", seenFacts, {
@@ -247,11 +273,7 @@ check("provide receives the platform and scope its starter was told", seenFacts,
 
 check(
 	"a module that runs anywhere still needs a guard on the server",
-	thrownBy(() =>
-		server()
-			.modules(TallyModule.provide(() => ({ counter: new Counter() })))
-			.start({ env: {}, scope: SCOPE }),
-	).split("\n")[1],
+	thrownBy(() => server().modules(tallyOver(new Counter())).start({ env: {}, scope: SCOPE })).split("\n")[1],
 	"tally/count runs on the server with no guard deciding who calls it: guard its module or handler with AuthenticatedGuard, HasPermissionGuard or a guard that needs a user, PublicGuard when anyone may call it",
 );
 
@@ -259,7 +281,11 @@ check(
 	"a module guarded with PublicGuard starts on the server",
 	thrownBy(() =>
 		server()
-			.modules(TallyModule.guard(PublicGuard).provide(() => ({ counter: new Counter() })))
+			.modules(
+				TallyDeclared.guard(PublicGuard)
+					.provide(() => ({ counter: new Counter() }))
+					.handles(CountQuery, BumpCommand),
+			)
 			.start({ env: {}, scope: SCOPE }),
 	),
 	"",
@@ -280,9 +306,9 @@ const closed = app()
 	.modules(
 		module("tally")
 			.on(Anywhere)
-			.public(CountQuery, BumpCommand)
 			.guard(guard().handle(() => deny("the tally is closed")))
-			.provide(() => ({ counter: new Counter() })),
+			.provide(() => ({ counter: new Counter() }))
+			.handles(CountQuery, BumpCommand),
 	)
 	.start(ON_BROWSER);
 const closedRead = await closed.send(CountContract);
@@ -296,34 +322,56 @@ check(
 	"a module guard that needs a user is refused when app() starts, since a client has no Authenticate",
 	thrownBy(() =>
 		app()
-			.modules(TallyModule.guard(AuthenticatedGuard).provide(() => ({ counter: new Counter() })))
+			.modules(
+				TallyDeclared.guard(AuthenticatedGuard)
+					.provide(() => ({ counter: new Counter() }))
+					.handles(CountQuery, BumpCommand),
+			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
 	"tally/count is guarded by AuthenticatedGuard, which needs a user, and app() has no Authenticate: guard it where its server handles it",
 );
 
 const ClockedQuery = query("clocked")
+	.public()
 	.output(z.number())
-	.guard(
-		guard()
-			.inject({ clock: Clock })
-			.handle(() => undefined),
-	)
 	.handle(() => 1);
 
+const ClockGuard = guard()
+	.requires({ clock: Clock })
+	.handle(() => undefined);
+
 check(
-	"a guard injecting what its module does not provide is refused when app() starts",
+	"a module guard requiring what neither its module nor the runtime provides is refused when app() starts",
 	thrownBy(() =>
 		app()
 			.modules(
 				module("tally")
 					.on(Anywhere)
-					.public(ClockedQuery)
-					.provide(() => ({})),
+					.guard(ClockGuard)
+					.provide(() => ({}))
+					.handles(ClockedQuery),
 			)
 			.start(ON_BROWSER),
 	).split("\n")[1],
-	"guard #1 of tally/clocked injects clock, which its module does not provide as a Clock",
+	"guard #1 of tally/clocked requires clock, which neither its module nor app().provide() gives as a Clock",
+);
+
+check(
+	"a module guard requiring what app().provide() gives starts",
+	thrownBy(() =>
+		app()
+			.modules(
+				module("tally")
+					.on(Anywhere)
+					.guard(ClockGuard)
+					.provide(() => ({}))
+					.handles(ClockedQuery),
+			)
+			.provide(() => ({ rateLimits: new MemoryRateLimits(), clock: new Clock() }))
+			.start(ON_BROWSER),
+	),
+	"",
 );
 
 const shop = app().modules(ShopModule, PaymentsModule).start(ON_BROWSER);
@@ -345,7 +393,7 @@ check(
 	thrownBy(() =>
 		app()
 			.modules(ShopModule)
-			.imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")))
+			.imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }))
 			.start(ON_BROWSER),
 	),
 	"",
@@ -355,8 +403,8 @@ const unimportedBuy = await app()
 	.modules(
 		module("shop")
 			.on(Anywhere)
-			.public(BuyCommand)
-			.provide(() => ({})),
+			.provide(() => ({}))
+			.handles(BuyCommand),
 		PaymentsModule,
 	)
 	.start(ON_BROWSER)
@@ -367,27 +415,17 @@ check(
 	'shop/buy sends payments/charge, but module "shop" does not import payments: add .imports()',
 );
 
-check(
-	"inject naming a key the engine passes to every handler is refused where it is declared",
-	[
-		// @ts-expect-error
-		thrownBy(() => command("reserved").idempotencyKey(Repeatable).inject({ send: Counter })),
-		thrownBy(() => command("free").idempotencyKey(Repeatable).inject({ counter: Counter })),
-	],
-	["inject names send, which the engine passes to every handler: name it otherwise", ""],
-);
-
 const billingServer = server().modules(AuthModule, BillingModule).start({ env: {}, scope: SCOPE });
 const AuthContract = moduleContract("auth", Server, [SignUpContract]);
 const overWire = app()
 	.imports(
-		AuthContract.over(orpcTransport("http://api", { fetch: billingServer.fetch })),
-		BillingContract.over(orpcTransport("http://api", { fetch: billingServer.fetch })),
+		AuthContract({ over: orpcTransport("http://api", { fetch: billingServer.fetch }) }),
+		BillingContract({ over: orpcTransport("http://api", { fetch: billingServer.fetch }) }),
 	)
 	.start();
 
 check(
-	"a server-only request runs in-process when a server module sends it",
+	"a request with no mark runs in-process when another module of the same server sends it",
 	await overWire.send(SignUpContract, { userId: "u-1" }),
 	{ ok: true, output: "cus-u-1" },
 );
@@ -398,6 +436,7 @@ check("a public request answers over the wire", await overWire.send(InvoicesCont
 
 const forgotten: string[] = [];
 const ForgetCommand = command("forget")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
 	.handle(({ id }) => {
@@ -406,15 +445,17 @@ const ForgetCommand = command("forget")
 const NotesModule = module("notes")
 	.on(Server)
 	.guard(PublicGuard)
-	.public(ForgetCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(ForgetCommand);
 const ForgetContract = command("notes/forget")
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 const notesServer = server().modules(NotesModule).start({ env: {}, scope: SCOPE });
 const notesOverWire = app()
 	.imports(
-		moduleContract("notes", Server, [ForgetContract]).over(orpcTransport("http://notes", { fetch: notesServer.fetch })),
+		moduleContract("notes", Server, [ForgetContract])({
+			over: orpcTransport("http://notes", { fetch: notesServer.fetch }),
+		}),
 	)
 	.start();
 const forgetAnswer = await notesOverWire.send(ForgetContract, { id: "n-1" });
@@ -424,6 +465,8 @@ check(
 	forgetAnswer.ok ? [true, forgotten] : [forgetAnswer.code, forgetAnswer.reason],
 	[true, ["n-1"]],
 );
+
+const CREATE_CUSTOMER_IN_PROCESS_ONLY = "billing/create-customer is reached only from inside its own process";
 
 const wireCalls: string[] = [];
 const countingFetch = (request: Request): Promise<Response> => {
@@ -439,91 +482,95 @@ const leaky = app()
 	.start();
 const askedOverWire = await leaky.send(CreateCustomerContract, { userId: "u-3" });
 check(
-	"a server-only request reaching the server over the wire answers a refusal naming it, never unreachable",
+	"a request with no mark reaching the server over the wire is refused there as not found",
 	askedOverWire.ok ? "ran" : [askedOverWire.code, askedOverWire.reason],
-	["not-found", "billing/create-customer is server-only: it is not callable over the network"],
+	["not-found", CREATE_CUSTOMER_IN_PROCESS_ONLY],
 );
 
-wireCalls.length = 0;
-const devicePayments = app()
-	.imports(BillingContract.over(orpcTransport("http://api", { fetch: countingFetch })))
-	.start();
-const sentOverWire = await devicePayments.send(CreateCustomerContract, { userId: "u-2" });
+const LooseCreateCustomerContract = command("billing/create-customer")
+	.input(z.object({ userId: z.number() }))
+	.output(z.string())
+	.idempotencyKey(Repeatable);
+const probedOverWire = await leaky.send(LooseCreateCustomerContract, { userId: 5 });
 check(
-	"a server-only request sent from a device is refused before it crosses the network",
-	[sentOverWire.ok ? "ran" : sentOverWire.code, wireCalls.filter((path) => path.startsWith("/rpc/"))],
-	["not-found", []],
+	"an outside caller sending invalid input to a process-only request learns only that it is not found",
+	probedOverWire.ok ? "ran" : [probedOverWire.code, probedOverWire.reason],
+	["not-found", CREATE_CUSTOMER_IN_PROCESS_ONLY],
+);
+
+const ProvisionCommand = command("provision")
+	.callableBy(AuthContract)
+	.input(z.object({ userId: z.string() }))
+	.output(z.string())
+	.idempotencyKey((input) => input.userId)
+	.handle(({ userId }) => `prov-${userId}`);
+const ProvisionContract = command("accounts/provision")
+	.input(z.object({ userId: z.string() }))
+	.output(z.string())
+	.idempotencyKey((input) => input.userId);
+const accountsServer = server()
+	.modules(
+		module("accounts")
+			.on(Server)
+			.guard(PublicGuard)
+			.provide(() => ({}))
+			.handles(ProvisionCommand),
+	)
+	.start({ env: {}, scope: SCOPE });
+const provisioned = await app()
+	.imports({
+		name: "accounts",
+		transport: orpcTransport("http://accounts", { fetch: accountsServer.fetch }),
+		publicRequestNames: ["accounts/provision"],
+	})
+	.start()
+	.send(ProvisionContract, { userId: "u-9" });
+check(
+	"a request callable by named modules is refused over a transport like a process-only one, naming no module",
+	provisioned.ok ? "ran" : [provisioned.code, provisioned.reason],
+	["not-found", "accounts/provision is reached only from inside its own process"],
 );
 
 const AnywhereSignUp = module("auth")
 	.on(Anywhere)
 	.guard(PublicGuard)
 	.imports(BillingContract)
-	.public(SignUpCommand)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(SignUpCommand);
 const anywhereServer = server().modules(AnywhereSignUp, BillingModule).start({ env: {}, scope: SCOPE });
 const anywhereSignedUp = await app()
-	.imports(AuthContract.over(orpcTransport("http://api", { fetch: anywhereServer.fetch })))
+	.imports(AuthContract({ over: orpcTransport("http://api", { fetch: anywhereServer.fetch }) }))
 	.start()
 	.send(SignUpContract, { userId: "u-4" });
-check(
-	"a module not on the server sending a server-only request is refused at the send",
-	anywhereSignedUp.ok ? "ran" : anywhereSignedUp.reason,
-	'billing/create-customer answered forbidden: billing/create-customer is server-only, and module "auth" does not run on the server: only a server module may send it',
-);
-const anywhereOverTransport = await app()
-	.imports(
-		moduleContract("auth", Anywhere, [SignUpContract]).over(
-			orpcTransport("http://api", { fetch: anywhereServer.fetch }),
-		),
-	)
-	.start()
-	.send(SignUpContract, { userId: "u-5" });
-check(
-	"an Anywhere module is imported over a transport, and its call reaches the server it runs on",
-	anywhereOverTransport.ok ? "ran" : anywhereOverTransport.reason.includes('module "auth" does not run on the server'),
-	true,
-);
+check("an Anywhere module on a server sends another module's request with no mark in-process", anywhereSignedUp, {
+	ok: true,
+	output: "cus-u-4",
+});
 check(
 	"a Device module imported over a transport is refused where .over is called",
 	thrownBy(() => {
 		// @ts-expect-error
-		moduleContract("auth", Device, [SignUpContract]).over(orpcTransport("http://api"));
+		moduleContract("auth", Device, [SignUpContract])({ over: orpcTransport("http://api") });
 	}),
 	'module "auth" runs on a device: only a module .on(Server) or .on(Anywhere) is imported over a transport',
 );
 
 const remoteBillingServer = server()
 	.modules(AuthModule)
-	.imports(BillingContract.over(orpcTransport("http://billing")))
+	.imports(BillingContract({ over: orpcTransport("http://billing", { fetch: billingServer.fetch }) }))
 	.start({ env: {}, scope: SCOPE });
 const remoteSignedUp = await app()
-	.imports(AuthContract.over(orpcTransport("http://api", { fetch: remoteBillingServer.fetch })))
+	.imports(AuthContract({ over: orpcTransport("http://api", { fetch: remoteBillingServer.fetch }) }))
 	.start()
 	.send(SignUpContract, { userId: "u-5" });
 check(
-	"a server sending a server-only request to a module it imports from an address is refused at the send",
+	"a server sending a request with no mark to a module it imports from an address is refused there",
 	remoteSignedUp.ok ? "ran" : remoteSignedUp.reason,
-	"billing/create-customer answered not-found: billing/create-customer is server-only: it is not callable over the network",
-);
-
-const DeviceSignUp = module("auth")
-	.on(Device)
-	.imports(BillingContract)
-	.public(SignUpCommand)
-	.provide(() => ({}));
-const deviceSignedUp = await app()
-	.modules(DeviceSignUp)
-	.imports(BillingContract.over(orpcTransport("http://billing")))
-	.start(ON_BROWSER)
-	.send(SignUpContract, { userId: "u-6" });
-check(
-	"a device sending a server-only request to a module it imports from an address is refused at the send",
-	deviceSignedUp.ok ? "ran" : deviceSignedUp.reason,
-	"billing/create-customer answered not-found: billing/create-customer is server-only: it is not callable over the network",
+	`billing/create-customer answered not-found: ${CREATE_CUSTOMER_IN_PROCESS_ONLY}`,
 );
 
 const ReportQuery = query("report")
+	.public()
 	.output(z.number())
 	.handle(async (_input, { send }) => {
 		const invoices = await send(InvoicesContract);
@@ -534,28 +581,28 @@ const ReportsModule = module("reports")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(BillingContract)
-	.public(ReportQuery)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(ReportQuery);
 let headerAtBilling: string | null = null;
 const reportsServer = server()
 	.modules(ReportsModule)
 	.imports(
-		BillingContract.over(
-			orpcTransport("http://billing", {
+		BillingContract({
+			over: orpcTransport("http://billing", {
 				fetch: (request) => {
 					headerAtBilling = request.headers.get("x-caller");
 					return billingServer.fetch(request);
 				},
 				headers: () => ({ "x-caller": "reports" }),
 			}),
-		),
+		}),
 	)
 	.start({ env: {}, scope: SCOPE });
 const reports = app()
 	.imports(
-		moduleContract("reports", Server, [ReportContract]).over(
-			orpcTransport("http://reports", { fetch: reportsServer.fetch }),
-		),
+		moduleContract("reports", Server, [ReportContract])({
+			over: orpcTransport("http://reports", { fetch: reportsServer.fetch }),
+		}),
 	)
 	.start();
 check(
@@ -569,7 +616,7 @@ check(
 	thrownBy(() =>
 		app()
 			.modules(PaymentsModule)
-			.imports(PaymentsContract.over(orpcTransport("http://127.0.0.1:9")))
+			.imports(PaymentsContract({ over: orpcTransport("http://127.0.0.1:9") }))
 			.start(ON_BROWSER),
 	).split("\n")[1],
 	'module "payments" is both run in .modules() and imported from an address in .imports(): keep exactly one',
@@ -579,7 +626,10 @@ check(
 	"a module imported twice is refused by name when app() starts",
 	thrownBy(() =>
 		app()
-			.imports(BillingContract.over(orpcTransport("http://one")), BillingContract.over(orpcTransport("http://two")))
+			.imports(
+				BillingContract({ over: orpcTransport("http://one") }),
+				BillingContract({ over: orpcTransport("http://two") }),
+			)
 			.start(),
 	).split("\n")[1],
 	'module "billing" is imported 2 times in .imports(): import it once',
@@ -600,70 +650,49 @@ const SecretQuery = query("secret")
 	.handle(() => "s3cret");
 const SecretContract = query("vault/secret").output(z.string()).settlesNow();
 const ReadQuery = query("read")
+	.public()
 	.output(z.string())
 	.handle(async (_input, { send }) => `read ${await send(SecretContract)}`);
 const ReadContract = query("vault/read").output(z.string());
 const VaultModule = module("vault")
 	.on(Anywhere)
 	.guard(PublicGuard)
-	.public(ReadQuery)
-	.serverOnly(SecretQuery)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(ReadQuery, SecretQuery);
 
 const vaultOnDevice = app().modules(VaultModule).start(ON_BROWSER);
 check(
-	"an anywhere module on a device sends its own server-only request from its own handler",
+	"a module on a device sends its own request with no mark from its own handler",
 	await vaultOnDevice.send(ReadContract),
 	{ ok: true, output: "read s3cret" },
 );
-const viewAsked = await vaultOnDevice.send(SecretContract);
 check(
-	"a view asking an anywhere module's server-only request on a device is refused, naming why",
-	[viewAsked.ok ? "ran" : [viewAsked.code, viewAsked.reason], vaultOnDevice.routes.readNow(SecretContract)],
-	[
-		[
-			"forbidden",
-			'vault/secret is server-only, and module "vault" runs on a device: only its own handlers may send it',
-		],
-		null,
-	],
+	"a request with no mark is answered to any caller in the same process, a view included",
+	[await vaultOnDevice.send(SecretContract), vaultOnDevice.routes.readNow(SecretContract)],
+	[{ ok: true, output: "s3cret" }, { output: "s3cret" }],
 );
 
 const PeekQuery = query("peek")
+	.public()
 	.output(z.string())
 	.handle(async (_input, { send }) => send(SecretContract));
 const PeekContract = query("audit/peek").output(z.string());
-const peekedOnDevice = await app()
-	.modules(
-		VaultModule,
-		module("audit")
-			.on(Anywhere)
-			.imports(VaultModule)
-			.public(PeekQuery)
-			.provide(() => ({})),
-	)
-	.start(ON_BROWSER)
-	.send(PeekContract);
-check(
-	"another module on a device sending an anywhere module's server-only request is refused at the send",
-	peekedOnDevice.ok ? "ran" : peekedOnDevice.reason,
-	'vault/secret answered forbidden: vault/secret is server-only, and module "vault" runs on a device: only its own handlers may send it',
-);
-
 const AuditModule = module("audit")
 	.on(Server)
 	.guard(PublicGuard)
 	.imports(VaultModule)
-	.public(PeekQuery)
-	.provide(() => ({}));
+	.provide(() => ({}))
+	.handles(PeekQuery);
 const vaultServer = server().modules(VaultModule, AuditModule).start({ env: {}, scope: SCOPE });
 const auditOverWire = app()
 	.imports(
-		moduleContract("audit", Server, [PeekContract]).over(orpcTransport("http://api", { fetch: vaultServer.fetch })),
+		moduleContract("audit", Server, [PeekContract])({
+			over: orpcTransport("http://api", { fetch: vaultServer.fetch }),
+		}),
 	)
 	.start();
 check(
-	"a server module sends an anywhere module's server-only request in the same server",
+	"a server module sends another module's request with no mark in the same server",
 	await auditOverWire.send(PeekContract),
 	{ ok: true, output: "s3cret" },
 );
@@ -676,7 +705,69 @@ const secretOverWire = await app()
 	.start()
 	.send(SecretContract);
 check(
-	"an anywhere module's server-only request is refused over the wire",
+	"a request with no mark is refused over the wire",
 	secretOverWire.ok ? "ran" : [secretOverWire.code, secretOverWire.reason],
-	["not-found", "vault/secret is server-only: it is not callable over the network"],
+	["not-found", "vault/secret is reached only from inside its own process"],
+);
+
+const EntryQuery = query("entry")
+	.callableBy({ name: "clerk" })
+	.output(z.string())
+	.handle(() => "entry");
+const EntryContract = query("ledger/entry").output(z.string());
+const LedgerModule = module("ledger")
+	.on(Anywhere)
+	.provide(() => ({}))
+	.handles(EntryQuery);
+const ReadEntryQuery = query("read")
+	.public()
+	.output(z.string())
+	.handle(async (_input, { send }) => send(EntryContract));
+const ledgerReaderModuleOf = (name: string) =>
+	module(name)
+		.on(Anywhere)
+		.imports(LedgerModule)
+		.provide(() => ({}))
+		.handles(ReadEntryQuery);
+const ledgerApp = app()
+	.modules(LedgerModule, ledgerReaderModuleOf("clerk"), ledgerReaderModuleOf("stranger"))
+	.start(ON_BROWSER);
+const entryFromView = await ledgerApp.send(EntryContract);
+check(
+	"a view sending a request callable by named modules is refused, naming the modules",
+	entryFromView.ok ? "ran" : [entryFromView.code, entryFromView.reason],
+	["forbidden", "ledger/entry is callable only by module(s) clerk, not by a view"],
+);
+check("a view reading it now is refused the same way", ledgerApp.routes.readNow(EntryContract), null);
+check("a module it names may send it", await ledgerApp.send(query("clerk/read").output(z.string())), {
+	ok: true,
+	output: "entry",
+});
+const entryFromStranger = await ledgerApp.send(query("stranger/read").output(z.string()));
+check(
+	"a module it does not name is refused",
+	entryFromStranger.ok ? "ran" : [entryFromStranger.code, entryFromStranger.reason],
+	["refused", "ledger/entry answered forbidden: ledger/entry is callable only by module(s) clerk, not by stranger"],
+);
+
+check(
+	"a module providing a name the framework gives every handler is refused when app() starts",
+	thrownBy(() =>
+		app()
+			.modules(
+				module("tally")
+					.on(Anywhere)
+					.provide(() => ({ send: new Counter(), counter: new Counter() }))
+					.handles(CountQuery),
+			)
+			.start(ON_BROWSER),
+	).split("\n")[1],
+	'module "tally" provides send, a name the framework gives every handler: rename it',
+);
+
+const nullInjects = { injects: null };
+check(
+	"a module called with injects that are not an object is refused",
+	thrownBy(() => TallyDeclared.provide(() => ({ counter }))(nullInjects)),
+	"a module called with { injects } takes the object of its provided parts as injects",
 );

@@ -30,10 +30,10 @@ class FixedAppTabsGateway extends AppTabsGateway {
 const webPages = new MemoryWebPagesGateway();
 const served = server()
 	.modules(
-		RunnableWebPageModule.with({
+		RunnableWebPageModule({ injects: {
 			webPages,
 			appTabs: new FixedAppTabsGateway(),
-		}),
+		} }),
 	)
 	.start({
 		env: {},
@@ -45,7 +45,7 @@ function appOver(caller: string | null): StartedApp {
 	const headers = caller === null ? {} : { [APP_CALLER_HEADER]: caller };
 	messagePortListener(channel.port1, { headers }).serve(served);
 	return app()
-		.imports(WebPageModule.over(messagePortTransport(channel.port2)))
+		.imports(WebPageModule({ over: messagePortTransport(channel.port2) }))
 		.start();
 }
 

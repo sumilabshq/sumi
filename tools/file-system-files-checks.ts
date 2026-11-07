@@ -27,13 +27,13 @@ const ROOT = {
 };
 const files = new MemoryFilesGateway(APP_DATA, WORKSPACE);
 const served = server()
-	.modules(RunnableFileSystemModule.with({ files }))
+	.modules(RunnableFileSystemModule({ injects: { files } }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 
 function appOver(id: string | null): StartedApp {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	return app()
-		.imports(FileSystemModule.over(orpcTransport("http://checks.test", { fetch: served.fetch, headers })))
+		.imports(FileSystemModule({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
 		.start();
 }
 

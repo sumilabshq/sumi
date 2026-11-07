@@ -6,6 +6,6 @@ import { TasksModule } from "@widgetarium/tasks";
 export function chatModulesOf(_tab: TabPageProps, offers: WindowOffers): Promise<TabModules> {
 	return Promise.resolve({
 		modules: [MascotModule],
-		imports: [TasksModule.over(offers.core), AssistantModule.over(offers.windowServer)],
+		imports: [TasksModule({ over: offers.core }), AssistantModule({ over: offers.windowServer })],
 	});
 }

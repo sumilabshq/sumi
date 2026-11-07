@@ -35,15 +35,19 @@ export const TerminalOutputSchema = z.object({
 export type TerminalOutput = z.infer<typeof TerminalOutputSchema>;
 
 export const TerminalOutputQuery = query("terminal/terminal-output")
+	.public()
 	.input(TerminalSessionSchema)
 	.output(TerminalOutputSchema);
 export const ResizeTerminalCommand = command("terminal/resize-terminal")
+	.public()
 	.input(ResizeTerminalInputSchema)
 	.idempotencyKey(Repeatable);
 export const TypeTerminalCommand = command("terminal/type-terminal")
+	.public()
 	.input(TypeTerminalInputSchema)
 	.idempotencyKey(PerCall);
 export const SendTerminalCommand = command("terminal/send-terminal")
+	.public()
 	.input(SendTerminalInputSchema)
 	.idempotencyKey(PerCall);
 

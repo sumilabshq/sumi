@@ -11,7 +11,7 @@ export function askComposerProviderOf(offers: WindowOffers): ComponentType<Windo
 		windowApp: offers.windowApp,
 		focusedChatId: () => offers.focusedChatId(),
 		askApp: app()
-			.imports(AssistantModule.over(offers.windowServer))
+			.imports(AssistantModule({ over: offers.windowServer }))
 			.start({
 				platform: offers.platform,
 				scope: {

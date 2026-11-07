@@ -30,13 +30,13 @@ const tabs = new MemoryTabsGateway(
 	}),
 );
 const served = server()
-	.modules(RunnablePlacesModule.with({ windows: new MemoryWindowsGateway({ windows: [] }), tabs }))
+	.modules(RunnablePlacesModule({ injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs } }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 
 function placesAs(id: string | null): StartedApp {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	return app()
-		.imports(PlacesModule.over(orpcTransport("http://places.test", { fetch: served.fetch, headers })))
+		.imports(PlacesModule({ over: orpcTransport("http://places.test", { fetch: served.fetch, headers }) }))
 		.start();
 }
 

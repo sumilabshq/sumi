@@ -207,10 +207,10 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	const pages = new RecordedPagesGateway([]);
 	const withPages = app()
 		.modules(
-			AppHostModule.with({ ...appHostFakesOf({}) }),
+			AppHostModule({ injects: { ...appHostFakesOf({}) } }),
 			PluginAppsModule,
-			BrowserModule.with(fakeBrowser(pages).parts),
-			LayoutModule.with({ ...partsOf() }),
+			BrowserModule({ injects: fakeBrowser(pages).parts }),
+			LayoutModule({ injects: { ...partsOf() } }),
 			WorkspacesModule,
 			...COMMAND_MENU_MODULES,
 		)
@@ -300,8 +300,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 		.modules(
 			BrowserModule,
 			LayoutModule,
-			WorkspacesModule.with(
-				memoryWorkspacesParts({
+			WorkspacesModule({ injects: memoryWorkspacesParts({
 					workspaces: [
 						{
 							id: "untitled",
@@ -329,8 +328,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 							openOnStartId: null,
 						},
 					},
-				}),
-			),
+				}), }),
 			AppHostModule,
 			PluginAppsModule,
 			...COMMAND_MENU_MODULES,

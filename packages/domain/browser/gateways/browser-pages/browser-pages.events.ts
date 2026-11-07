@@ -1,7 +1,7 @@
 import { event, gatewayEvent } from "@widgetarium/data-framework";
 import { BrowserPagesGateway } from "./browser-pages.gateway.js";
 
-export const PagesChangedEvent = event("pages-changed").from(
+export const PagesChangedEvent = event("pages-changed").public().from(
 	gatewayEvent(BrowserPagesGateway, (gateway, fire) => gateway.pagesChanged(fire)),
 );
 

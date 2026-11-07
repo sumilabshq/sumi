@@ -60,16 +60,14 @@ const siteFiles = new MemorySiteFilesGateway({
 });
 const studio = app()
 	.modules(
-		BrowserModule.with(
-			browserPartsOf({
+		BrowserModule({ injects: browserPartsOf({
 				browserPages: new WebBrowserPagesGateway(),
 				browserGrants: new MemoryBrowserGrantsGateway(),
 				browserAudit: new MemoryBrowserAuditGateway(),
 				recentSites: new MemoryRecentSitesGateway(),
 				siteIcons,
 				siteFiles,
-			}),
-		),
+			}), }),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "icons" } });
 const UNREAD_ICON = drawnIcon("rgb(52, 168, 83)");

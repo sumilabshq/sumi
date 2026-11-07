@@ -1,31 +1,16 @@
-import { Repeatable, command, query, refuse } from "@widgetarium/data-framework";
-import { QuestionsGateway } from "../../gateways/questions/questions.gateway.js";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query } from "#module";
 import { answersText } from "../../shared/lib/answer-text.js";
-import {
-	deliverableIn,
-	neededWithdrawn,
-	questionsDelivered,
-	questionsPosted,
-} from "../../shared/lib/question-moves.js";
-import {
-	ChangedCountSchema,
-	ChatQuestionsAskSchema,
-	DeliverQuestionsAskSchema,
-	DeliveredSchema,
-	PostQuestionsAskSchema,
-	PostedSchema,
-	QuestionSchema,
-	QuestionsAskSchema,
-	WaitingSchema,
-} from "../../shared/schema/question.schema.js";
+import { deliverableIn, neededWithdrawn, questionsDelivered, questionsPosted } from "../../shared/lib/question-moves.js";
+import { ChangedCountSchema, ChatQuestionsAskSchema, DeliverQuestionsAskSchema, DeliveredSchema, PostQuestionsAskSchema, PostedSchema, QuestionSchema, QuestionsAskSchema, WaitingSchema } from "../../shared/schema/question.schema.js";
 import type { Question } from "../../shared/schema/question.schema.js";
 import { ChatQuestionsQuery } from "../dock/requests.js";
 
 export const PostQuestionsCommand = command("post-questions")
+	.public()
 	.input(PostQuestionsAskSchema)
 	.output(PostedSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ questions: QuestionsGateway })
 	.handle((ask, { questions, invalidate }) => {
 		const changed = questions.changeQuestions(
 			ask.chat,
@@ -44,26 +29,26 @@ export const PostQuestionsCommand = command("post-questions")
 	});
 
 export const QuestionsQuery = query("questions")
+	.public()
 	.input(QuestionsAskSchema)
 	.output(QuestionSchema.array())
 	.settlesNow()
-	.inject({ questions: QuestionsGateway })
 	.handle(({ chat, ids }, { questions }) => questions.questionsOf(chat).filter(({ id }) => ids.includes(id)));
 
 export const IsWaitingOnPersonQuery = query("is-waiting-on-person")
+	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(WaitingSchema)
 	.settlesNow()
-	.inject({ questions: QuestionsGateway })
 	.handle(({ chat }, { questions }) => ({
 		isWaiting: questions.questionsOf(chat).some(({ need, state }) => need === "needed" && state === "open"),
 	}));
 
 export const DeliverQuestionsCommand = command("deliver-questions")
+	.public()
 	.input(DeliverQuestionsAskSchema)
 	.output(DeliveredSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ questions: QuestionsGateway })
 	.handle((ask, { questions, invalidate }) => {
 		const taken: { delivered: readonly Question[] } = {
 			delivered: [],
@@ -89,10 +74,10 @@ export const DeliverQuestionsCommand = command("deliver-questions")
 	});
 
 export const WithdrawNeededCommand = command("withdraw-needed")
+	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ questions: QuestionsGateway })
 	.handle(({ chat }, { questions, invalidate }) => {
 		const counted = {
 			open: 0,

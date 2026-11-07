@@ -12,7 +12,7 @@ interface Heard {
 }
 
 function clientOver(transport: RemoteTransport): Heard {
-	const client = app().imports(FixtureBillingModule.over(transport)).start();
+	const client = app().imports(FixtureBillingModule({ over: transport })).start();
 	const balanceChanges = { count: 0 };
 	client.routes.watch(BalanceQuery, undefined, () => {
 		balanceChanges.count += 1;
@@ -21,7 +21,7 @@ function clientOver(transport: RemoteTransport): Heard {
 }
 
 const overLocal = localTransport();
-const notYet = await app().imports(FixtureBillingModule.over(overLocal)).start().send(BalanceQuery);
+const notYet = await app().imports(FixtureBillingModule({ over: overLocal })).start().send(BalanceQuery);
 check(
 	"a local transport no server listens on yet answers unreachable, never throws",
 	notYet.ok ? "answered" : notYet.code,
@@ -29,7 +29,7 @@ check(
 );
 
 const localServer = server()
-	.modules(RunnableFixtureBillingModule.with({ ledger: new MemoryLedgerGateway("USD") }))
+	.modules(RunnableFixtureBillingModule({ injects: { ledger: new MemoryLedgerGateway("USD") } }))
 	.listen(overLocal)
 	.start({ env: {} });
 const localCharger = clientOver(overLocal);
@@ -50,7 +50,7 @@ check(
 );
 
 const httpServer = server()
-	.modules(RunnableFixtureBillingModule.with({ ledger: new MemoryLedgerGateway("USD") }))
+	.modules(RunnableFixtureBillingModule({ injects: { ledger: new MemoryLedgerGateway("USD") } }))
 	.start({ env: {} });
 const overHttp = (): RemoteTransport => orpcTransport("http://billing.test", { fetch: httpServer.fetch });
 const httpCharger = clientOver(overHttp());

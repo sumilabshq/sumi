@@ -15,6 +15,7 @@ export const AppsSchema = z.object({
 });
 
 export const AppsQuery = query("apps/apps")
+	.public()
 	.output(AppsSchema);
 
 export const AppsModule = moduleContract("apps", Anywhere, [AppsQuery]);

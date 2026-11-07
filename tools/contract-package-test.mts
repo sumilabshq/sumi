@@ -14,7 +14,7 @@ const APP = `import { AssistantModule, FileSystemModule, ReadFileQuery, WebPageM
 import { app, messagePortTransport, portFromParent } from "@widgetarium/data-framework";
 
 const sumi = messagePortTransport(portFromParent());
-const files = app().imports(FileSystemModule.over(sumi), WebPageModule.over(sumi), AssistantModule.over(sumi)).start();
+const files = app().imports(FileSystemModule({ over: sumi }), WebPageModule({ over: sumi }), AssistantModule({ over: sumi })).start();
 
 export async function keep(content: string): Promise<string | null> {
 	await files.send(WriteFileCommand, { path: "tasks.json", content });

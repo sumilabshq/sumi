@@ -1,22 +1,13 @@
-import { query, subscriber } from "@widgetarium/data-framework";
+import { query, subscriber } from "#module";
 import type { Send } from "@widgetarium/data-framework";
 import { AppFacesQuery, AppTabsQuery, ChatListQuery, ClosedTabsQuery, TabsSidebarQuery } from "@widgetarium/app-host";
 import { BrowserTabsQuery, PagesChangedEvent } from "@widgetarium/browser";
 import { ChatsChangedEvent, ChatsElsewhereQuery, WorkspacesQuery } from "@widgetarium/workspaces";
 import { CommandMenuChangedEvent } from "../../gateways/command-menu/command-menu.events.js";
-import { MenuFillsGateway } from "../../gateways/menu-fills/menu-fills.gateway.js";
 import type { FilledRowSource, Pools, RowsOf } from "../../shared/host/command-menu.host.js";
 import { FoundSchema, ResultsAskSchema, ResultsSchema } from "../../shared/schema/command-menu.schema.js";
 import type { Found, Results } from "../../shared/schema/command-menu.schema.js";
-import {
-	appsFoundOf,
-	chatsElsewhereFoundOf,
-	chatsFoundOf,
-	closedFoundOf,
-	sitesFoundOf,
-	tabsFoundOf,
-	workspacesFoundOf,
-} from "./lib/found.js";
+import { appsFoundOf, chatsElsewhereFoundOf, chatsFoundOf, closedFoundOf, sitesFoundOf, tabsFoundOf, workspacesFoundOf } from "./lib/found.js";
 import { shownChatIdsOf } from "./lib/sidebar-tabs.js";
 import { ghostOf, sectionsOf } from "./lib/sections.js";
 import { BUILT_IN_PAGES } from "./lib/drafts.js";
@@ -32,9 +23,9 @@ interface SourcedRows {
 }
 
 export const CommandMenuResultsQuery = query("command-menu-results")
+	.public()
 	.input(ResultsAskSchema)
 	.output(ResultsSchema)
-	.inject({ menuFills: MenuFillsGateway })
 	.handle(async ({ text, door, pageId }, { menuFills, send }): Promise<Results> => {
 		const page = [...menuFills.pages(), ...BUILT_IN_PAGES].find(({ id }) => id === door);
 		const [sourced, appTabs, workspaces, browser] = await Promise.all([

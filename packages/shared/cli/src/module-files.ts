@@ -1,4 +1,6 @@
 import type { PlannedFile } from "./add-plan.js";
+import { MODULE_SPECIFIER } from "./contract-needs.js";
+import { COMMAND_ENTRY, HANDLED_ENTRY } from "./module-entry.js";
 import { FRAMEWORK, camelOf, jsSpecifierOf, pascalOf } from "./scaffold-names.js";
 
 export type ModulePlacement = "Server" | "Device" | "Anywhere";
@@ -57,6 +59,10 @@ function entryOf(file: string): Readonly<Record<string, string>> {
 	};
 }
 
+function scriptOf(file: string): string {
+	return file.replace(/\.ts$/, "");
+}
+
 function manifestOf({ name, placement, versions, license }: ModuleSeed): string {
 	const runnable = placement === "Server" ? { server: "./module.ts" } : entryOf("module");
 	const manifest = {
@@ -69,6 +75,7 @@ function manifestOf({ name, placement, versions, license }: ModuleSeed): string 
 			".": entryOf("index"),
 			"./module": runnable,
 		},
+		imports: { [MODULE_SPECIFIER]: entryOf(scriptOf(COMMAND_ENTRY)) },
 		dependencies: { "@widgetarium/data-framework": versions.framework },
 		peerDependencies: { zod: versions.zod },
 		widgetarium: { level: "domain" },
@@ -119,12 +126,13 @@ function moduleTextOf({ name, placement }: ModuleSeed): string {
 	return [
 		`import { ${imported.join(", ")} } from "${FRAMEWORK}";`,
 		`import { ${camelOf(name)}PartsOn } from "./${jsSpecifierOf(pickerPathOf(name))}";`,
+		`import { handled } from "./${jsSpecifierOf(HANDLED_ENTRY)}";`,
 		"",
 		`export const ${moduleConstOf(name)} = module("${name}")`,
 		`\t.on(${placement})`,
-		"\t.public()",
 		...(isServer ? [`\t.guard(${SERVER_GUARD})`] : []),
-		`\t.provide((facts) => ${camelOf(name)}PartsOn(facts));`,
+		`\t.provide((facts) => ${camelOf(name)}PartsOn(facts))`,
+		"\t.handles(...handled);",
 		"",
 	].join("\n");
 }

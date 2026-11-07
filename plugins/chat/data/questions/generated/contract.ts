@@ -118,43 +118,53 @@ export const WaitingSchema = z.object({
 	isWaiting: z.boolean(),
 });
 
-export const ChatQuestionsQuery = query("questions/chat-questions")
-	.input(ChatQuestionsAskSchema)
-	.output(ChatQuestionsSchema)
-	.settlesNow();
+export const PostQuestionsCommand = command("questions/post-questions")
+	.public()
+	.input(PostQuestionsAskSchema)
+	.output(PostedSchema)
+	.idempotencyKey(Repeatable);
 export const QuestionsQuery = query("questions/questions")
+	.public()
 	.input(QuestionsAskSchema)
 	.output(QuestionSchema.array())
 	.settlesNow();
 export const IsWaitingOnPersonQuery = query("questions/is-waiting-on-person")
+	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(WaitingSchema)
 	.settlesNow();
-export const ReadyAnswersQuery = query("questions/ready-answers")
-	.input(ChatQuestionsAskSchema)
-	.output(DeliveredSchema)
-	.settlesNow();
-export const AnswerQuestionCommand = command("questions/answer-question")
-	.input(AnswerQuestionAskSchema)
-	.idempotencyKey(Repeatable);
-export const SkipQuestionsCommand = command("questions/skip-questions")
-	.input(QuestionsAskSchema)
-	.output(ChangedCountSchema)
-	.idempotencyKey(Repeatable);
-export const ReopenQuestionCommand = command("questions/reopen-question")
-	.input(QuestionAskSchema)
-	.idempotencyKey(Repeatable);
-export const PostQuestionsCommand = command("questions/post-questions")
-	.input(PostQuestionsAskSchema)
-	.output(PostedSchema)
-	.idempotencyKey(Repeatable);
 export const DeliverQuestionsCommand = command("questions/deliver-questions")
+	.public()
 	.input(DeliverQuestionsAskSchema)
 	.output(DeliveredSchema)
 	.idempotencyKey(Repeatable);
 export const WithdrawNeededCommand = command("questions/withdraw-needed")
+	.public()
 	.input(ChatQuestionsAskSchema)
 	.output(ChangedCountSchema)
 	.idempotencyKey(Repeatable);
+export const ChatQuestionsQuery = query("questions/chat-questions")
+	.public()
+	.input(ChatQuestionsAskSchema)
+	.output(ChatQuestionsSchema)
+	.settlesNow();
+export const AnswerQuestionCommand = command("questions/answer-question")
+	.public()
+	.input(AnswerQuestionAskSchema)
+	.idempotencyKey(Repeatable);
+export const SkipQuestionsCommand = command("questions/skip-questions")
+	.public()
+	.input(QuestionsAskSchema)
+	.output(ChangedCountSchema)
+	.idempotencyKey(Repeatable);
+export const ReopenQuestionCommand = command("questions/reopen-question")
+	.public()
+	.input(QuestionAskSchema)
+	.idempotencyKey(Repeatable);
+export const ReadyAnswersQuery = query("questions/ready-answers")
+	.public()
+	.input(ChatQuestionsAskSchema)
+	.output(DeliveredSchema)
+	.settlesNow();
 
-export const QuestionsModule = moduleContract("questions", Server, [ChatQuestionsQuery, QuestionsQuery, IsWaitingOnPersonQuery, ReadyAnswersQuery, AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand, PostQuestionsCommand, DeliverQuestionsCommand, WithdrawNeededCommand]);
+export const QuestionsModule = moduleContract("questions", Server, [PostQuestionsCommand, QuestionsQuery, IsWaitingOnPersonQuery, DeliverQuestionsCommand, WithdrawNeededCommand, ChatQuestionsQuery, AnswerQuestionCommand, SkipQuestionsCommand, ReopenQuestionCommand, ReadyAnswersQuery]);

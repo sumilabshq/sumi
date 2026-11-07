@@ -9,7 +9,7 @@ const BOARD_FILE_PATH = "tasks.json";
 
 export function tasksBoardFileOver(core: RemoteTransport): BoardFile {
 	const files = app()
-		.imports(FileSystemModule.over(stampCaller(core, TASKS_APP_ID)))
+		.imports(FileSystemModule({ over: stampCaller(core, TASKS_APP_ID) }))
 		.start();
 	return {
 		read: () => readBoardText(files),

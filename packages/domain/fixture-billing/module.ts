@@ -1,9 +1,9 @@
 import { PublicGuard, Server, module } from "@widgetarium/data-framework";
 import { fixtureBillingPartsOn } from "./gateways/fixture-billing-parts/fixture-billing-parts.gateway.js";
-import { BalanceQuery, ChargeCommand } from "./features/charge/requests.js";
+import { handled } from "./generated/handled.js";
 
 export const FixtureBillingModule = module("fixture-billing")
 	.on(Server)
-	.public(BalanceQuery, ChargeCommand)
 	.guard(PublicGuard)
-	.provide((facts) => fixtureBillingPartsOn(facts));
+	.provide((facts) => fixtureBillingPartsOn(facts))
+	.handles(...handled);

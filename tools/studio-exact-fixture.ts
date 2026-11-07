@@ -180,16 +180,16 @@ export function exactStudio({
 	const studioApp = app()
 		.modules(
 			PluginAppsModule,
-			AppHostModule.with({
+			AppHostModule({ injects: {
 				studioWindow: new MemoryStudioWindowGateway(),
 				essentials: keptEssentials,
 				shownView: new MemoryShownViewGateway("browser"),
 				paneFlash: new NoPaneFlashGateway(),
 				coreChanges: new NoCoreChangesGateway(),
-			}),
-			BrowserModule.with(fakeBrowser(boardPages).parts),
+			} }),
+			BrowserModule({ injects: fakeBrowser(boardPages).parts }),
 			LayoutModule,
-			WorkspacesModule.with(workspaces),
+			WorkspacesModule({ injects: workspaces }),
 			...COMMAND_MENU_MODULES,
 		)
 		.imports(placesOver(places))

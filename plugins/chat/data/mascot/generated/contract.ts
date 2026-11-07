@@ -32,9 +32,11 @@ export const AgentActivitySchema = z.object({
 export type AgentActivity = z.infer<typeof AgentActivitySchema>;
 
 export const AgentActivityQuery = query("mascot/agent-activity")
+	.public()
 	.output(AgentActivitySchema)
 	.settlesNow();
 export const RecordAgentEventsCommand = command("mascot/record-agent-events")
+	.public()
 	.input(AgentEventsSchema)
 	.idempotencyKey(Repeatable);
 

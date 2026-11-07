@@ -28,9 +28,9 @@ const appData = mkdtempSync(path.join(tmpdir(), "wg-contract-frame-"));
 const terminal = new NodeTerminalSessionsGateway(appData);
 const served = server()
 	.modules(
-		FileSystemModule.with({ files: new NodeFilesGateway(appData, "contract-frame") }),
-		TerminalModule.with({ sessions: terminal }),
-		PlacesModule.with({
+		FileSystemModule({ injects: { files: new NodeFilesGateway(appData, "contract-frame") } }),
+		TerminalModule({ injects: { sessions: terminal } }),
+		PlacesModule({ injects: {
 			windows: new MemoryWindowsGateway({ windows: [] }),
 			tabs: new MemoryTabsGateway(
 				placedTabsOf({
@@ -54,7 +54,7 @@ const served = server()
 					closed: [],
 				}),
 			),
-		}),
+		} }),
 	)
 	.start({
 		env: {},

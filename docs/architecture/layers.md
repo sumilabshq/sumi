@@ -24,7 +24,6 @@ nor hidden in a gateway; `shared/lib/` holds what two features use.
 export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSidesStore: FrameSidesStore })
 	.handle(({ side }, { frameSidesStore }) => frameSidesStore.toggle(side));
 
 export class FrameSidesStore {
@@ -78,7 +77,6 @@ export abstract class UserGateway {
 export const ToggleFrameSideCommand = command("toggle-frame-side")
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ frameSides: FrameSidesGateway })
 	.handle(({ side }, { frameSides }) => {
 		const sides = frameSides.sides();
 		const next = toggledLook(sides[side]);

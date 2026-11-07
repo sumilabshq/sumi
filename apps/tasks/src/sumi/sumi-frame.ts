@@ -16,9 +16,9 @@ export async function startSumiFrame(): Promise<SumiFrame> {
 	return {
 		sumi: app()
 			.imports(
-				PlacesModule.over(transport),
-				AppearanceModule.over(transport),
-				TasksModule.over(transport),
+				PlacesModule({ over: transport }),
+				AppearanceModule({ over: transport }),
+				TasksModule({ over: transport }),
 			)
 			.start(),
 		transport,

@@ -15,7 +15,7 @@ import { check, tally, waitFor } from "./check-helpers.ts";
 
 const sessions = new MemoryTerminalSessionsGateway();
 const served = server()
-	.modules(RunnableTerminalModule.with({ sessions }))
+	.modules(RunnableTerminalModule({ injects: { sessions } }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 const heard = {
 	changes: 0,
@@ -27,7 +27,7 @@ served.changes(() => {
 function appOver(id: string | null): StartedApp {
 	const headers = (): Record<string, string> => (id === null ? {} : { [APP_CALLER_HEADER]: id });
 	return app()
-		.imports(TerminalModule.over(orpcTransport("http://checks.test", { fetch: served.fetch, headers })))
+		.imports(TerminalModule({ over: orpcTransport("http://checks.test", { fetch: served.fetch, headers }) }))
 		.start();
 }
 

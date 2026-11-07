@@ -6,7 +6,7 @@ import type { DoneKeys } from "./done-keys";
 import { EventBus } from "./event-bus";
 import { Invalidations } from "./invalidation";
 import { LocalRoutes } from "./local-routes";
-import { Mediator } from "./mediator";
+import { Mediator, VIEW_CALLER } from "./mediator";
 import type { Sending } from "./mediator";
 import { RequestsModule, readyModuleOf } from "./module";
 import type { HandledModule, Provided, ReadyModule, ServerParts, StartableModule } from "./module";
@@ -16,11 +16,12 @@ import type { DeviceRuns } from "./placement";
 import type { ModuleFacts, ModuleScope, Platform, RunnableModule } from "./platform-module";
 import { QueryWatches } from "./query-watches";
 import { SingleServer, RemoteModules } from "./remote-modules";
-import type { ModuleReach } from "./remote-modules";
 import { reportToConsole } from "./report-failure";
 import type { FailureReport } from "./report-failure";
 import type { AnyRequest, InputArgs, OutputOf } from "./request";
 import { RouteQueries } from "./route-queries";
+import { provideDefaultRuntime } from "./runtime-provides";
+import type { ProvideRuntime, RuntimeProvider, RuntimeWiring } from "./runtime-provides";
 import { routesOf } from "./startup";
 import type { StartedRoutes } from "./startup";
 import type { RemoteTransport } from "./transport";
@@ -61,23 +62,31 @@ export type DeviceModule = RunnableModule<Provided, DeviceRuns> | HandledModule<
 
 const NO_SERVER = "{name} runs on no module of this app, and no server is configured";
 
+interface AppPlan {
+	readonly ranModules: readonly DeviceModule[];
+	readonly remoteModules: readonly RemoteModule[];
+	readonly provideRuntime: ProvideRuntime;
+}
+
 export class AppBuilder {
-	constructor(
-		private readonly ranModules: readonly DeviceModule[],
-		private readonly remoteModules: readonly RemoteModule[],
-	) {}
+	constructor(private readonly plan: AppPlan) {}
 
 	modules(...modules: readonly DeviceModule[]): AppBuilder {
-		return new AppBuilder([...this.ranModules, ...modules], this.remoteModules);
+		return new AppBuilder({ ...this.plan, ranModules: [...this.plan.ranModules, ...modules] });
 	}
 
 	imports(...modules: readonly RemoteModule[]): AppBuilder {
-		return new AppBuilder(this.ranModules, [...this.remoteModules, ...modules]);
+		return new AppBuilder({ ...this.plan, remoteModules: [...this.plan.remoteModules, ...modules] });
+	}
+
+	provide(provideRuntime: RuntimeProvider): AppBuilder {
+		return new AppBuilder({ ...this.plan, provideRuntime });
 	}
 
 	start(options: AppStartOptions = {}): StartedApp {
-		const remote = new RemoteModules(this.remoteModules, noServer);
-		return startApp({ ...options, modules: this.ranModules }, remote);
+		const { ranModules, remoteModules, provideRuntime } = this.plan;
+		const remote = new RemoteModules(remoteModules, noServer);
+		return startApp({ ...options, modules: ranModules }, { remote, provideRuntime });
 	}
 }
 
@@ -85,18 +94,18 @@ export function app(): AppBuilder;
 export function app(start: AppStart): StartedApp;
 export function app(start?: AppStart): AppBuilder | StartedApp {
 	if (start === undefined) {
-		return new AppBuilder([], []);
+		return new AppBuilder({ ranModules: [], remoteModules: [], provideRuntime: provideDefaultRuntime });
 	}
 
 	const { server } = start;
-	return startApp(start, server === undefined ? null : new SingleServer(server));
+	const remote = server === undefined ? null : new SingleServer(server);
+	return startApp(start, { remote, provideRuntime: provideDefaultRuntime });
 }
 
-
-function startApp(start: AppStart, remote: ModuleReach | null): StartedApp {
+function startApp(start: AppStart, { remote, provideRuntime }: RuntimeWiring): StartedApp {
 	const reportFailure = start.host?.reportFailure ?? reportToConsole;
 	const bus = new EventBus(reportFailure);
-	const startedRoutes = clientRoutesOf(start, remote);
+	const startedRoutes = clientRoutesOf(start, { remote, provideRuntime });
 	const local = new LocalRoutes({
 		routes: startedRoutes.routes,
 		authenticate: null,
@@ -154,7 +163,7 @@ class ClientApp implements StartedApp {
 
 	send<R extends AnyRequest>(request: R, ...asked: [...InputArgs<R>, sending?: Sending]): Promise<Answer<OutputOf<R>>>;
 	async send(request: AnyRequest, sent?: unknown, sending?: Sending): Promise<Answer<unknown>> {
-		const answer = await this.parts.mediator.send(request, sent, sending);
+		const answer = await this.parts.mediator.send(request, sent, { ...sending, inProcessCaller: VIEW_CALLER });
 		void this.reReadAfter(request, answer);
 		return answer;
 	}
@@ -185,10 +194,12 @@ function noServer(request: AnyRequest): Refusal {
 	return refusalOf("no-server", NO_SERVER.replace("{name}", request.name));
 }
 
-function clientRoutesOf(start: AppStart, remote: ModuleReach | null): StartedRoutes {
+function clientRoutesOf(start: AppStart, { remote, provideRuntime }: RuntimeWiring): StartedRoutes {
 	const facts = factsOf(start);
 	const ready = start.modules.map((module) => readyModuleOf(module, undefined, facts));
-	return routesOf({ side: "client", modules: ready, hasAuthenticate: false, hostProvided: {}, remote });
+	const { platform = null, scope = null, env = {} } = start;
+	const runtimeProvided = provideRuntime({ platform, scope, env });
+	return routesOf({ side: "client", modules: ready, hasAuthenticate: false, runtimeProvided, remote });
 }
 
 function factsOf({ platform, scope, env = {} }: AppStart): ModuleFacts | null {

@@ -40,24 +40,31 @@ export const WebPageSchema = z.object({
 export type WebPage = z.infer<typeof WebPageSchema>;
 
 export const WebPageQuery = query("web-page/web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.output(WebPageSchema.nullable());
 export const OpenWebPageCommand = command("web-page/open-web-page")
+	.public()
 	.input(OpenWebPageInputSchema)
 	.idempotencyKey(Repeatable);
 export const PlaceWebPageCommand = command("web-page/place-web-page")
+	.public()
 	.input(PlaceWebPageInputSchema)
 	.idempotencyKey(Repeatable);
 export const GoBackWebPageCommand = command("web-page/go-back-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable);
 export const GoForwardWebPageCommand = command("web-page/go-forward-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable);
 export const ReloadWebPageCommand = command("web-page/reload-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable);
 export const CloseWebPageCommand = command("web-page/close-web-page")
+	.public()
 	.input(WebPageTabSchema)
 	.idempotencyKey(Repeatable);
 

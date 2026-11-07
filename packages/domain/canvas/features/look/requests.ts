@@ -1,10 +1,8 @@
-import { PerCall, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { lookPathOf } from "@widgetarium/core/app-look.js";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
-import { CanvasMomentGateway } from "../../gateways/canvas-moment/canvas-moment.gateway.js";
 import { DesignChangedEvent } from "../../gateways/design-folder/design-folder.events.js";
-import { DesignFolderGateway } from "../../gateways/design-folder/design-folder.gateway.js";
-import { DesignFilesGateway } from "../../gateways/design-files/design-files.gateway.js";
 import { LookPanelSchema, LookPickSchema } from "../../shared/schema/look-row.schema.js";
 import { lookTextPicked } from "./lib/look-picked.js";
 import type { LookTextPicked } from "./lib/look-picked.js";
@@ -16,11 +14,8 @@ const UNREADABLE = "The look cannot be read: {why}";
 const NO_LOOK = "{app} has no look to change yet: the assistant offers it first.";
 
 export const LookPanelQuery = query("look-panel")
+	.public()
 	.output(LookPanelSchema)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-	})
 	.handle(async (_input, { canvasMoment, designFolder }) => {
 		const { look } = await designFolder.folder(canvasMoment.moment().app);
 
@@ -45,14 +40,9 @@ export const LookPanelQuery = query("look-panel")
 	});
 
 export const PickLookCommand = command("pick-look")
+	.public()
 	.input(LookPickSchema)
 	.idempotencyKey(PerCall)
-	.inject({
-		canvasMoment: CanvasMomentGateway,
-		designFolder: DesignFolderGateway,
-		designFiles: DesignFilesGateway,
-	})
-	.emits(DesignChangedEvent)
 	.handle(async ({ settingName, option }, { canvasMoment, designFolder, designFiles, emit }) => {
 		const { app } = canvasMoment.moment();
 		const path = lookPathOf(app);

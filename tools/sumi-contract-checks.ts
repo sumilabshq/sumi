@@ -84,7 +84,7 @@ check(
 );
 
 const core = server()
-	.modules(RunnableFileSystemModule.with({ files: new MemoryFilesGateway("/data", "contract") }))
+	.modules(RunnableFileSystemModule({ injects: { files: new MemoryFilesGateway("/data", "contract") } }))
 	.start({ env: {}, host: { authenticate: new AppCallerAuthenticate() } });
 const channel = new MessageChannel();
 const stopServing = messagePortListener(channel.port1, { headers: { [APP_CALLER_HEADER]: "notes" } }).serve(core);
@@ -93,7 +93,7 @@ const transport = messagePortTransport(channel.port2);
 transport.changes(() => {
 	heard.changes += 1;
 });
-const sumi = app().imports(FileSystemModule.over(transport)).start();
+const sumi = app().imports(FileSystemModule({ over: transport })).start();
 await sumi.send(WriteFileCommand, { path: "a.txt", content: "over a port" });
 const read = await sumi.send(ReadFileQuery, { path: "a.txt" });
 check(
@@ -175,9 +175,9 @@ createFrameRelay([
 ]).changes((invalidated) => {
 	heardByT1.push(...invalidated.map(({ inputKey }) => inputKey ?? "all"));
 });
-const pages = appOver(webPages, (transport) => WebPageModule.over(transport), "notes");
+const pages = appOver(webPages, (transport) => WebPageModule({ over: transport }), "notes");
 await pages.send(OpenWebPageCommand, { tab: "t1", url: "https://example.com/page#private-token" });
-await appOver(webPages, (transport) => WebPageModule.over(transport), "tasks").send(OpenWebPageCommand, {
+await appOver(webPages, (transport) => WebPageModule({ over: transport }), "tasks").send(OpenWebPageCommand, {
 	tab: "t2",
 	url: "https://example.org/",
 });
@@ -211,7 +211,7 @@ const chat = server()
 			authenticate: new AppCallerAuthenticate(),
 		},
 	});
-const chatOfApp = appOver(chat, (transport) => AssistantModule.over(transport), "chat");
+const chatOfApp = appOver(chat, (transport) => AssistantModule({ over: transport }), "chat");
 await chatOfApp.send(SendMessageCommand, { chat: null, said: "hi" });
 const chatRead = await chatOfApp.send(ChatQuery, { chat: null });
 check(
@@ -235,7 +235,7 @@ check(
 	shellOnly.map((answer) => (answer.ok ? "answered" : answer.code)),
 	["forbidden", "forbidden"],
 );
-const shellPicked = await appOver(chat, (transport) => AssistantModule.over(transport), null).send(
+const shellPicked = await appOver(chat, (transport) => AssistantModule({ over: transport }), null).send(
 	PickWorkingFolderCommand,
 	{ chat: null },
 );

@@ -6,7 +6,7 @@ import type { Invalidation } from "./invalidation";
 import { emitOf } from "./event-bus";
 import type { EventBus } from "./event-bus";
 import type { Sending } from "./mediator";
-import type { ModuleDefinition, Provided, Runs } from "./module";
+import type { ModuleDefinition, Provided } from "./module";
 import type { Platform } from "./platform-module";
 import { outputOfSent, stampSent } from "./send";
 import type { CallingModule } from "./calling-module";
@@ -59,7 +59,6 @@ function subscribed(
 	listed: AnySubscriber,
 ): () => void {
 	const emitting = {
-		declared: listed.emits,
 		owner: `the subscriber of ${listed.event.name}`,
 		module: definition.name,
 	};
@@ -69,7 +68,7 @@ function subscribed(
 		importedModuleNames: definition.importedModuleNames,
 		owner: emitting.owner,
 	};
-	const send = subscriberSendOf(sender, calling, definition.runs);
+	const send = subscriberSendOf(sender, calling);
 	return bus.subscribe(listed.event.name, async (input) => {
 		const invalidated: Invalidation[] = [];
 		await listed.handle(input, {
@@ -109,9 +108,9 @@ function sourceStarted(
 	return [source.listen({ provided }, fire)];
 }
 
-function subscriberSendOf(sender: EventSender, calling: CallingModule, fromRuns: Runs) {
+function subscriberSendOf(sender: EventSender, calling: CallingModule) {
 	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
 		const stamped = stampSent(sent, calling);
-		return outputOfSent(stamped, await sender.send(stamped, input, { fromModule: calling.module, fromRuns }));
+		return outputOfSent(stamped, await sender.send(stamped, input, { inProcessCaller: { module: calling.module } }));
 	};
 }

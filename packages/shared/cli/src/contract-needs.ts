@@ -4,6 +4,7 @@ import { CliRefusal } from "./cli-output.js";
 import type { Imported } from "./contract-imports.js";
 import type { SchemaRoot } from "./contract-schemas.js";
 import type { NameUse } from "./free-names.js";
+import { FRAMEWORK } from "./scaffold-names.js";
 import { exportedConstsOf, rootCallOf } from "@widgetarium/eslint-plugin/babel-chain";
 import { fillTemplate } from "@widgetarium/eslint-plugin/fill-template";
 
@@ -69,7 +70,8 @@ const KNOWN_GLOBALS: ReadonlySet<string> = new Set([
 ]);
 const SCHEMAS = "shared/schema/";
 const SCRIPT = /\.[jt]s$/;
-const CONTRACT_PACKAGES: ReadonlySet<string> = new Set(["zod", "@widgetarium/data-framework"]);
+export const MODULE_SPECIFIER = "#module";
+const CONTRACT_PACKAGES: ReadonlySet<string> = new Set(["zod", FRAMEWORK]);
 
 const DECLARED_BESIDE =
 	"{file}: the contract of {name} uses {used}, declared in that file; a contract reads only imports, so move {used} to shared/schema";
@@ -140,6 +142,10 @@ function refuseDeclaredBeside(request: ListedRequest, used: string): void {
 
 function needForContract(folder: string, request: ListedRequest, from: Imported): ContractNeed {
 	const data = { file: request.file.relative, name: request.name, used: from.local, specifier: from.specifier };
+
+	if (from.specifier === MODULE_SPECIFIER) {
+		return { kind: "import", imported: { ...from, specifier: FRAMEWORK } };
+	}
 
 	if (!from.specifier.startsWith(".")) {
 		if (!CONTRACT_PACKAGES.has(from.specifier)) {

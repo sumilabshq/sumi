@@ -1,27 +1,23 @@
-import { PerCall, Repeatable, command, query } from "@widgetarium/data-framework";
-import {
-	ComposerPrefillSchema,
-	PrefillAskedSchema,
-	PrefillTakenSchema,
-} from "../../shared/schema/composer-prefill.schema.js";
+import { PerCall, Repeatable } from "@widgetarium/data-framework";
+import { command, query } from "#module";
+import { ComposerPrefillSchema, PrefillAskedSchema, PrefillTakenSchema } from "../../shared/schema/composer-prefill.schema.js";
 import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
 import { inChat } from "../../gateways/chat-parts/in-chat.js";
-import { ChatPartsGateway } from "../../gateways/chat-parts/chat-parts.gateway.js";
 
 const PREFILLED = "another app asked for a draft";
 const TAKEN = "the composer took it";
 
 export const ComposerPrefillQuery = query("composer-prefill")
+	.public()
 	.input(ChatKeySchema)
 	.output(ComposerPrefillSchema.nullable())
 	.settlesNow()
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { composerPrefill }) => composerPrefill.composerPrefill()));
 
 export const PrefillDraftCommand = command("prefill-draft")
+	.public()
 	.input(PrefillAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(
 		inChat(({ text }, { composerPrefill, invalidate }) => {
 			invalidate(ComposerPrefillQuery);
@@ -37,9 +33,9 @@ export const PrefillDraftCommand = command("prefill-draft")
 	);
 
 export const TakePrefillCommand = command("take-prefill")
+	.public()
 	.input(PrefillTakenSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(
 		inChat(({ id }, { composerPrefill, invalidate }) => {
 			const was = composerPrefill.composerPrefill();

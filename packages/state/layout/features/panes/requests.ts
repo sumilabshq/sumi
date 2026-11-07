@@ -1,17 +1,9 @@
 import { z } from "zod";
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { PanesChangedEvent } from "../../gateways/pane-tree/pane-tree.events.js";
-import { PaneTreeGateway } from "../../gateways/pane-tree/pane-tree.gateway.js";
 import { PaneBoardSchema, PanePlacementSchema, PlacementPreviewSchema } from "../../shared/schema/pane-tree.schema.js";
-import {
-	boardOf,
-	isAimable,
-	placedTreeOf,
-	placementPreviewOf,
-	refuseUnknownPane,
-	treeWithoutPane,
-	withTarget,
-} from "../../shared/lib/pane-trees.js";
+import { boardOf, isAimable, placedTreeOf, placementPreviewOf, refuseUnknownPane, treeWithoutPane, withTarget } from "../../shared/lib/pane-trees.js";
 import { refuseUnknownEdge, shareAt, withSplitShare } from "../../shared/lib/pane-splits.js";
 import { leavesOf } from "../../shared/lib/pane-nodes.js";
 import { homeOfPlacement, refuseHomeTarget } from "../../shared/lib/chat-groups.js";
@@ -19,19 +11,19 @@ import type { PanePlacement, PaneTree } from "../../shared/schema/pane-tree.sche
 import { paneTransitionOf, viewWords } from "../../shared/lib/pane-words.js";
 
 export const PaneTreeQuery = query("pane-tree")
+	.public()
 	.output(PaneBoardSchema)
 	.settlesNow()
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((_input, { paneTree }) => ({
 		...boardOf(paneTree.tree(), paneTree.elsewhere()),
 		isLoaded: paneTree.isLoaded(),
 	}));
 
 export const PlacementPreviewQuery = query("placement-preview")
+	.public()
 	.input(PanePlacementSchema.nullable())
 	.output(PlacementPreviewSchema.nullable())
 	.settlesNow()
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((placement, { paneTree }) => {
 		if (placement === null) {
 			return null;
@@ -48,9 +40,9 @@ export const PlacementPreviewQuery = query("placement-preview")
 	});
 
 export const PlacePaneCommand = command("place-pane")
+	.public()
 	.input(PanePlacementSchema)
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((placement, { paneTree, invalidate }) => {
 		const { view, targetId, side } = placement;
 		invalidate(PaneTreeQuery);
@@ -82,9 +74,9 @@ export const PlacePaneCommand = command("place-pane")
 	});
 
 export const ClosePaneCommand = command("close-pane")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ id }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -102,6 +94,7 @@ export const ClosePaneCommand = command("close-pane")
 	});
 
 export const ResizePaneSplitCommand = command("resize-pane-split")
+	.public()
 	.input(
 		z.object({
 			splitId: z.string(),
@@ -110,7 +103,6 @@ export const ResizePaneSplitCommand = command("resize-pane-split")
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle((asked, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		invalidate(PlacementPreviewQuery);
@@ -128,9 +120,9 @@ export const ResizePaneSplitCommand = command("resize-pane-split")
 	});
 
 export const AimPaneCommand = command("aim-pane")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject({ paneTree: PaneTreeGateway })
 	.handle(({ id }, { paneTree, invalidate }) => {
 		invalidate(PaneTreeQuery);
 		const tree = paneTree.tree();

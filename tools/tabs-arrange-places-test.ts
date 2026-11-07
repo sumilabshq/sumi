@@ -69,7 +69,7 @@ console.info = () => undefined;
 
 async function splitWindowOf(pinned: readonly string[]): Promise<StartedApp> {
 	const window = app()
-		.imports(PlacesModule.over(placesLinkOf(new MemoryTabsGateway(placedTabsOf(SEED, ["chat"])))))
+		.imports(PlacesModule({ over: placesLinkOf(new MemoryTabsGateway(placedTabsOf(SEED, ["chat"]))) }))
 		.start();
 	await window.send(PlaceInViewCommand, {
 		at: AT,

@@ -199,28 +199,27 @@ export const SplitDrawingSchema = z.object({
 export type SplitDrawing = z.infer<typeof SplitDrawingSchema>;
 
 export const FrameSidesQuery = query("layout/frame-sides")
+	.public()
 	.output(FrameSidesSchema)
 	.settlesNow();
-export const FrameWidthsQuery = query("layout/frame-widths")
-	.output(FrameWidthsAnswerSchema)
-	.settlesNow();
-export const PaneTreeQuery = query("layout/pane-tree")
-	.output(PaneBoardSchema)
-	.settlesNow();
-export const PlacementPreviewQuery = query("layout/placement-preview")
-	.input(PanePlacementSchema.nullable())
-	.output(PlacementPreviewSchema.nullable())
-	.settlesNow();
 export const ToggleFrameSideCommand = command("layout/toggle-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable);
 export const PeekFrameSideCommand = command("layout/peek-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable);
 export const ConcealFrameSideCommand = command("layout/conceal-frame-side")
+	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable);
+export const FrameWidthsQuery = query("layout/frame-widths")
+	.public()
+	.output(FrameWidthsAnswerSchema)
+	.settlesNow();
 export const ResizeFrameEdgeCommand = command("layout/resize-frame-edge")
+	.public()
 	.input(
 		z.object({
 			edge: FrameEdgeSchema,
@@ -230,6 +229,7 @@ export const ResizeFrameEdgeCommand = command("layout/resize-frame-edge")
 	)
 	.idempotencyKey(Repeatable);
 export const ResetFrameEdgeCommand = command("layout/reset-frame-edge")
+	.public()
 	.input(
 		z.object({
 			edge: FrameEdgeSchema,
@@ -237,13 +237,62 @@ export const ResetFrameEdgeCommand = command("layout/reset-frame-edge")
 		}),
 	)
 	.idempotencyKey(Repeatable);
+export const ShowTabInTargetPaneCommand = command("layout/show-tab-in-target-pane")
+	.public()
+	.input(z.object({ tabId: z.string() }))
+	.idempotencyKey(Repeatable);
+export const ShowChatInPaneCommand = command("layout/show-chat-in-pane")
+	.public()
+	.input(
+		z.object({
+			chatId: z.string().min(1),
+			paneId: z.string().nullable(),
+		}),
+	)
+	.idempotencyKey(Repeatable);
+export const OpenShownTabPaneCommand = command("layout/open-shown-tab-pane")
+	.public()
+	.idempotencyKey(Repeatable);
+export const CloseShownTabPaneCommand = command("layout/close-shown-tab-pane")
+	.public()
+	.idempotencyKey(Repeatable);
+export const ClosePanesOfTabsCommand = command("layout/close-panes-of-tabs")
+	.public()
+	.input(z.object({ tabIds: z.array(z.string()).readonly() }))
+	.idempotencyKey(Repeatable);
+export const DropGoneTabsCommand = command("layout/drop-gone-tabs")
+	.public()
+	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
+	.idempotencyKey(Repeatable);
+export const ShowTabInChatGroupCommand = command("layout/show-tab-in-chat-group")
+	.public()
+	.input(
+		z.object({
+			chatId: z.string().min(1),
+			tabId: z.string(),
+			isOnlyWhenBare: z.boolean(),
+		}),
+	)
+	.idempotencyKey(Repeatable);
+export const PaneTreeQuery = query("layout/pane-tree")
+	.public()
+	.output(PaneBoardSchema)
+	.settlesNow();
+export const PlacementPreviewQuery = query("layout/placement-preview")
+	.public()
+	.input(PanePlacementSchema.nullable())
+	.output(PlacementPreviewSchema.nullable())
+	.settlesNow();
 export const PlacePaneCommand = command("layout/place-pane")
+	.public()
 	.input(PanePlacementSchema)
 	.idempotencyKey(Repeatable);
 export const ClosePaneCommand = command("layout/close-pane")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
 export const ResizePaneSplitCommand = command("layout/resize-pane-split")
+	.public()
 	.input(
 		z.object({
 			splitId: z.string(),
@@ -253,46 +302,20 @@ export const ResizePaneSplitCommand = command("layout/resize-pane-split")
 	)
 	.idempotencyKey(Repeatable);
 export const AimPaneCommand = command("layout/aim-pane")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable);
-export const ShowChatInPaneCommand = command("layout/show-chat-in-pane")
-	.input(
-		z.object({
-			chatId: z.string().min(1),
-			paneId: z.string().nullable(),
-		}),
-	)
-	.idempotencyKey(Repeatable);
-export const ShowTabInTargetPaneCommand = command("layout/show-tab-in-target-pane")
-	.input(z.object({ tabId: z.string() }))
-	.idempotencyKey(Repeatable);
-export const ShowTabInChatGroupCommand = command("layout/show-tab-in-chat-group")
-	.input(
-		z.object({
-			chatId: z.string().min(1),
-			tabId: z.string(),
-			isOnlyWhenBare: z.boolean(),
-		}),
-	)
-	.idempotencyKey(Repeatable);
-export const OpenShownTabPaneCommand = command("layout/open-shown-tab-pane")
-	.idempotencyKey(Repeatable);
-export const CloseShownTabPaneCommand = command("layout/close-shown-tab-pane")
-	.idempotencyKey(Repeatable);
-export const ClosePanesOfTabsCommand = command("layout/close-panes-of-tabs")
-	.input(z.object({ tabIds: z.array(z.string()).readonly() }))
-	.idempotencyKey(Repeatable);
-export const DropGoneTabsCommand = command("layout/drop-gone-tabs")
-	.input(z.object({ heldTabIds: z.array(z.string()).readonly() }))
-	.idempotencyKey(Repeatable);
 export const ShowSplitCommand = command("layout/show-split")
+	.public()
 	.input(SplitDrawingSchema)
 	.idempotencyKey(Repeatable);
+export const LeaveSplitCommand = command("layout/leave-split")
+	.public()
+	.idempotencyKey(Repeatable);
 export const FocusSplitCommand = command("layout/focus-split")
+	.public()
 	.input(z.object({ focusedId: z.string().min(1) }))
 	.idempotencyKey(Repeatable);
-export const LeaveSplitCommand = command("layout/leave-split")
-	.idempotencyKey(Repeatable);
-export const PanesChangedEvent = event("layout/panes-changed");
+export const PanesChangedEvent = event("layout/panes-changed").public();
 
-export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, FrameWidthsQuery, PaneTreeQuery, PlacementPreviewQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowChatInPaneCommand, ShowTabInTargetPaneCommand, ShowTabInChatGroupCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand, ShowSplitCommand, FocusSplitCommand, LeaveSplitCommand]);
+export const LayoutModule = moduleContract("layout", Device, [FrameSidesQuery, ToggleFrameSideCommand, PeekFrameSideCommand, ConcealFrameSideCommand, FrameWidthsQuery, ResizeFrameEdgeCommand, ResetFrameEdgeCommand, ShowTabInTargetPaneCommand, ShowChatInPaneCommand, OpenShownTabPaneCommand, CloseShownTabPaneCommand, ClosePanesOfTabsCommand, DropGoneTabsCommand, ShowTabInChatGroupCommand, PaneTreeQuery, PlacementPreviewQuery, PlacePaneCommand, ClosePaneCommand, ResizePaneSplitCommand, AimPaneCommand, ShowSplitCommand, LeaveSplitCommand, FocusSplitCommand]);

@@ -1,10 +1,8 @@
 import { z } from "zod";
-import { Repeatable, command, refuse } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command } from "#module";
 import { CloseEssentialTabCommand, ReleaseEssentialTabCommand, ShowEssentialTabCommand } from "@widgetarium/places";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { PaneFlashGateway } from "../../gateways/pane-flash/pane-flash.gateway.js";
-import { ShownViewGateway } from "../../gateways/shown-view/shown-view.gateway.js";
-import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { essentialsOf, findEssential, moveEssential, removeEssential } from "../../shared/lib/essentials/essentials.js";
 import { saveEssentials, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -20,61 +18,51 @@ const WORKSPACE_END = {
 	groupId: null,
 	before: null,
 };
-const TAB_PARTS = {
-	studioWindow: StudioWindowGateway,
-	essentials: EssentialsGateway,
-	shownView: ShownViewGateway,
-	paneFlash: PaneFlashGateway,
-};
 
 export const ShowEssentialCommand = command("show-essential")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ id }, { send, emit, ...parts }) => {
-		const essential = findEssential(await keptOf(parts.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+	.handle(async ({ id }, { send, emit, ...injects }) => {
+		const essential = findEssential(await keptOf(injects.essentials), id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(ShowEssentialTabCommand, { at, essential: refOf(essential) }),
 		);
 	});
 
 export const RemoveEssentialCommand = command("remove-essential")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ id }, { send, emit, ...parts }) => {
-		const kept = await keptOf(parts.essentials);
+	.handle(async ({ id }, { send, emit, ...injects }) => {
+		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 		await releaseEssential(
-			{ parts, send, told: () => emit(TabsSettledEvent) },
+			{ injects, send, told: () => emit(TabsSettledEvent) },
 			{ kept, essential, place: WORKSPACE_END },
 		);
 	});
 
 export const CloseEssentialCommand = command("close-essential")
+	.public()
 	.input(z.object({ id: z.string() }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ id }, { send, emit, ...parts }) => {
-		await settleAsked({ parts, send, told: () => emit(TabsSettledEvent) }, (at) =>
+	.handle(async ({ id }, { send, emit, ...injects }) => {
+		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
 			send(CloseEssentialTabCommand, { at, essentialId: id }),
 		);
 	});
 
 export const PlaceEssentialCommand = command("place-essential")
+	.public()
 	.input(z.object({ id: z.string(), to: TabDropSchema }))
 	.idempotencyKey(Repeatable)
-	.inject(TAB_PARTS)
-	.emits(TabsSettledEvent)
-	.handle(async ({ id, to }, { send, emit, ...parts }) => {
-		const kept = await keptOf(parts.essentials);
+	.handle(async ({ id, to }, { send, emit, ...injects }) => {
+		const kept = await keptOf(injects.essentials);
 		const essential = findEssential(kept, id) ?? refuse(NO_ESSENTIAL.replace("{id}", id));
 
 		if (to.kind === "essentials") {
-			saveEssentials(kept, moveEssential(kept, essential, to.at), parts.essentials);
+			saveEssentials(kept, moveEssential(kept, essential, to.at), injects.essentials);
 			return;
 		}
 
@@ -87,7 +75,7 @@ export const PlaceEssentialCommand = command("place-essential")
 		}
 
 		const place = { list: to.list, groupId: to.groupId, before: to.before };
-		await releaseEssential({ parts, send, told: () => emit(TabsSettledEvent) }, { kept, essential, place });
+		await releaseEssential({ injects, send, told: () => emit(TabsSettledEvent) }, { kept, essential, place });
 	});
 
 interface EssentialRelease {
@@ -97,11 +85,11 @@ interface EssentialRelease {
 }
 
 async function releaseEssential(
-	reach: TabsReach & { readonly parts: { readonly essentials: EssentialsGateway } },
+	reach: TabsReach & { readonly injects: { readonly essentials: EssentialsGateway } },
 	{ kept, essential, place }: EssentialRelease,
 ): Promise<void> {
 	await settleAsked(reach, (at) => reach.send(ReleaseEssentialTabCommand, { at, essential: refOf(essential), place }));
-	saveEssentials(kept, removeEssential(kept, essential), reach.parts.essentials);
+	saveEssentials(kept, removeEssential(kept, essential), reach.injects.essentials);
 }
 
 async function keptOf(essentials: EssentialsGateway): Promise<KeptEssentials> {

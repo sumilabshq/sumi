@@ -24,27 +24,27 @@ The rules every developer and every agent follows when writing code in this repo
 
 **Requests: CQRS.** A query reads, a command writes (CQRS; as `useQuery` / `useMutation` in TanStack Query, `query` / `mutation` in tRPC, requests and handlers in MediatR). A request carries its contract (zod input and output) and its handler. Views call `useQuery` / `useCommand`; nothing else reaches logic.
 
-**Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). It declares what it is and which of its commands and queries others may use:
+**Modules.** A module is one area's data: its commands and queries, their storage (gateways) and their rules (like NestJS or Medusa modules). A module declares where it runs and what it provides; it never lists its requests, the generator does:
 
-```ts
+```ts skip-check
 export const BillingModule = module("billing")
 	.on(Server)
 	.imports(UsersModule)
-	.public(InvoicesQuery, ChargeCommand)
-	.serverOnly(CreateCustomerCommand)
-	.provide((facts) => billingPartsOn(facts));
+	.guard(AuthenticatedGuard)
+	.provide((facts) => billingPartsOn(facts))
+	.handles(...handled);
 ```
 
 - `.on(Server | Device | Anywhere)`: where the module may run.
-- `.public(...)`: the module's API: the commands and queries any caller may use (views, other modules, the network) and the events other modules may subscribe to. An event not listed is private: only the module's own subscribers hear it, and it never enters the contract.
-- `.serverOnly(...)`: the module's commands and queries that never cross the network. On a server, other server modules in the process may use them; on a device (an `Anywhere` module run in an app), only the module's own handlers. Not on a `Device` module: a type error says why.
-- `.imports(...)`: the other modules whose commands and queries this module's handlers send: their public ones always, their server-only ones when this module runs on a server too.
-- `.subscribers(...)`: what the module reacts to: subscribers of its own events, private or public, and of public events of the modules it imports (below).
+- `.imports(...)`: the other modules whose commands and queries this module's handlers send, and whose events its subscribers hear.
 - `.config<{ file: BoardFile }>()`: live objects its starter passes (a file it opened, a running agent); the module becomes callable, `TasksModule({ file })`, and `provide` receives them as `config`.
+- `.provide(fn)`: the gateways its handlers receive, picked from the facts.
+- `.handles(...handled)`: always last; `handled` is `generated/handled.ts`, every request, event and subscriber `widgetarium generate` found in the package.
+- **Who may call is on the request.** No mark: only the same process, any module or view of that runtime. `.public()`: anyone, through guards, and it enters the contract. `.callableBy(OtherModule, …)`: only those services. An event marked `.public()` enters the contract.
 
 **Re-reading: `invalidate`.** A command or a subscriber calls `invalidate(Query, input?)` for each query its work made stale (like `revalidatePath` / `revalidateTag` in Next.js server actions, or `invalidateQueries` in TanStack's `onSuccess`). Invalidations apply only after a successful answer; a refused or failed call re-reads nothing, and a command that invalidates nothing re-reads nothing. Over the network the names ride in the answer (`invalidated: [...]`) and the client re-reads them.
 
-**Events.** An event is a fact in the past tense (`PanesChangedEvent`), with an input schema. A handler emits one of its own module's events (`emit(PanesChangedEvent)`, typed by the handler's `.emits`); or it comes from outside: `event("panes-changed").from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)))`, `windowEvent(type)`, per platform or for all. A subscriber handles it: `subscriber(PanesChangedEvent).handle((input, { invalidate, send }) => ...)`. Subscribers run after the emitter has answered, each on its own: one failing is reported and touches nothing else. **A view reads with useQuery and acts with useCommand; events are inside modules: subscribers handle them and call invalidate to re-read queries. A view never emits or subscribes to an event.**
+**Events.** An event is a fact in the past tense (`PanesChangedEvent`), with an input schema. A command or a subscriber emits one of its own module's events (`emit(PanesChangedEvent)`, typed by the events of its package, never declared); or it comes from outside: `event("panes-changed").from(gatewayEvent(PaneTreeGateway, (gateway, fire) => gateway.treeChanged(fire)))`, `windowEvent(type)`, per platform or for all. A subscriber handles it: `subscriber(PanesChangedEvent).handle((input, { invalidate, send }) => ...)`. Subscribers run after the emitter has answered, each on its own: one failing is reported and touches nothing else. **A view reads with useQuery and acts with useCommand; events are inside modules: subscribers handle them and call invalidate to re-read queries. A view never emits or subscribes to an event.**
 
 ```mermaid
 flowchart LR
@@ -58,12 +58,12 @@ flowchart LR
 	reread -->|useQuery| view
 ```
 
-**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module.over(transport))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change.
+**Apps.** An app is shaped like a module: `.modules(...)` run inside it, `.imports(Module({ over: transport }))` are reached through a transport (HTTP, IPC, in process), by the same calls. An app with views is a device app (React); a server is an app too (Hono). A monolith lists every module in one server's `.modules`; a service is a module moved to another server and imported over a transport to it. The module's code does not change. A runtime's own `.provide(...)` gives every module of it the same objects (`rateLimits`, and keys an app adds to `RuntimeProvides`) ([requests.md](requests.md#runtime-provides)).
 
 ```ts
 app()
 	.modules(LayoutModule)
-	.imports(BillingModule.over(orpcTransport(env.API_URL)))
+	.imports(BillingModule({ over: orpcTransport(env.API_URL) }))
 	.start({ platform, scope });
 server().modules(BillingModule, UsersModule).start({ env: process.env });
 ```
@@ -75,14 +75,14 @@ flowchart LR
 		layout["LayoutModule · on(Device)"]
 	end
 	subgraph api["Server app"]
-		wire["Network: public only"]
+		wire["Transport: .public() only"]
 		billing["BillingModule · on(Server)"]
 		users["UsersModule · on(Server)"]
 	end
 	view -->|in process| layout
-	view -->|"BillingModule.over(orpcTransport(url)) · HTTP"| wire
+	view -->|"BillingModule({ over: orpcTransport(url) }) · HTTP"| wire
 	wire --> billing
-	billing -->|"send: public and server-only, in process"| users
+	billing -->|"send: any request, in process"| users
 ```
 
 **Guards.** A guard is the same code everywhere: it refuses a call before the handler runs (no user, not the owner, a transition that is not allowed). On a server it protects the data, because nobody can reach past it; a server module's public request must have one. On a device it is an ordinary early check, optional: it keeps the app from doing what makes no sense, but anyone can send a request by hand past it, so it protects nothing.
@@ -96,7 +96,7 @@ flowchart TB
 	dg --> handler
 ```
 
-**What a package exports.** `"."` holds the public contract and the module's descriptor, enough to call it at a URL and nothing that runs; `"./server"` holds the server-only contract, imported only by server modules; `"./module"` holds the module with its handlers and gateways, imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
+**What a package exports.** `"."` holds the public contract and the module's descriptor, enough to call it at a URL and nothing that runs; `"./server"` holds the non-public requests of a `Server` or `Anywhere` module, imported only by server modules; `"./module"` holds the module with its handlers and gateways, imported only by the app that runs it. A device bundle therefore carries the code of the modules it runs and the contracts of the ones it imports, never a server module's code.
 
 ### Starting a module or a feature
 
@@ -126,22 +126,22 @@ packages/shared/      code with no domain: framework (requests, mediator, hooks)
 
 1. **Imports go one way: `apps` → `client` → `domain`/`state` → `shared`.** A package never imports an app. A package reaches a data module only through its `"."` entry, the generated contract.
 2. **A file's place is what it is.** A request and its handler → `features/<feature>/requests.ts`. What is drawn → a client package. Storage or an outside system → `gateways/`. A pure computation → `lib/`. Which gateway a platform gets → the module's `provide`.
-3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler declares what it needs in `.inject` and receives it as an argument. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
+3. **Nothing reaches for anything.** A view sends requests through `useQuery` / `useCommand`. A handler receives what its module's `provide` returns as its second argument, typed; a guard or middleware, shared across modules, declares what it needs in `.requires`, met by its module's `provide` or its runtime's. A host hands the app facts (platform, workspace, env), never gateways. No hidden globals, no singletons.
 
 ## Names
 
 | Declares                      | Written                                                        | Named                       | Example                  |
 | ----------------------------- | -------------------------------------------------------------- | --------------------------- | ------------------------ |
-| a read and its handler        | `query("<short-name>").output(…).inject({…}).handle(fn)`       | noun phrase + `Query`       | `FrameSidesQuery`        |
+| a read and its handler        | `query("<short-name>").output(…).handle(fn)`                   | noun phrase + `Query`       | `FrameSidesQuery`        |
 | a write and its handler       | `command("<short-name>").input(…).idempotencyKey(…)….handle()` | verb phrase + `Command`     | `ToggleFrameSideCommand` |
-| a data module                 | `module("<name>").on(…).public(…).serverOnly(…).provide(fn)`   | its area + `Module`         | `LayoutModule`           |
-| who may call                  | `guard<In>().inject({…}).handle(check)`                        | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
-| what wraps a call             | `middleware().inject({…}).handle(fn)`                          | what it does + `Middleware` | `TimingLoggerMiddleware` |
+| a data module                 | `module("<name>").on(…).provide(fn).handles(...handled)`       | its area + `Module`         | `LayoutModule`           |
+| who may call                  | `guard<In>().requires({…}).handle(check)`                      | what it checks + `Guard`    | `OwnsInvoiceGuard`       |
+| what wraps a call             | `middleware().requires({…}).handle(fn)`                        | what it does + `Middleware` | `TimingLoggerMiddleware` |
 | storage or an outside system  | `abstract class`, its own token                                | its data + `Gateway`        | `FrameSidesGateway`      |
 | one storage's implementation  | `class … extends FrameSidesGateway`                            | `<Storage><Name>Gateway`    | `TauriFrameSidesGateway` |
 | reading and writing in a view | `useQuery`, `useOptionalQuery`, `useCommand`                   | —                           | —                        |
 
-A request's string name is short: the constant without its suffix, in kebab case (`ToggleFrameSideCommand` → `"toggle-frame-side"`). The module stamps it `<module>/<short>` when it lists it, so the module name is never written twice. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
+A request's string name is short: the constant without its suffix, in kebab case (`ToggleFrameSideCommand` → `"toggle-frame-side"`). `query`, `command` and `subscriber` come from `#module` (`generated/command.ts`), typed by the module's `provide`, the runtime's and the package's events. The module stamps the name `<module>/<short>` when it handles it, so the module name is never written twice. Every declaration is a fluent chain and every behaviour ends in `.handle()` ([code-style.md](code-style.md#the-fluent-chain)).
 
 ## Imports
 

@@ -78,7 +78,7 @@ function appOver({ routes, own }: TabAppParts, { appId, workspaceId }: TabAppSco
 	const transport = relayTransportOf(routes.routes, appId);
 	return app()
 		.modules(...own.modules)
-		.imports(...routes.routes.map(({ module }) => module.over(transport)), ...own.imports)
+		.imports(...routes.routes.map(({ module }) => module({ over: transport })), ...own.imports)
 		.start({
 			platform: TAB_PAGE_PLATFORM,
 			scope: {

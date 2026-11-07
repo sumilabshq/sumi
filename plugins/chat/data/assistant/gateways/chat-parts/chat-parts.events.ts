@@ -20,5 +20,6 @@ export const WorkingFolderChangedEvent = event("working-folder-changed").from(
 );
 
 export const FileDraggedEvent = event("file-dragged")
+	.public()
 	.input(ChatFileDragEventSchema)
 	.from(gatewayEvent(ChatPartsGateway, (gateway, fire) => gateway.fileDragged((chat, drag) => fire({ chat, drag }))));

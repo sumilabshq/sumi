@@ -1,12 +1,8 @@
-import { Repeatable, command, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { Repeatable, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { OnceAllowancesChangedEvent } from "../../gateways/once-allowances/once-allowances.events.js";
 import { PagesChangedEvent } from "../../gateways/browser-pages/browser-pages.events.js";
 import { GrantsChangedEvent } from "../../gateways/browser-grant-reads/browser-grant-reads.events.js";
-import { BrowserGrantReadsGateway } from "../../gateways/browser-grant-reads/browser-grant-reads.gateway.js";
-import { BrowserGrantsGateway } from "../../gateways/browser-grants/browser-grants.gateway.js";
-import { BrowserPagesGateway } from "../../gateways/browser-pages/browser-pages.gateway.js";
-import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
-import { OnceAllowancesGateway } from "../../gateways/once-allowances/once-allowances.gateway.js";
 import { decideBrowserAccess, isKeptOut } from "../../shared/lib/decide-browser-access.js";
 import { refuseSiteKey, siteLevelToWrite } from "../../shared/lib/grant-changes.js";
 import { effectiveGrants, isSameAllowances, onceKeptOnTabs } from "../../shared/lib/once-grants.js";
@@ -18,11 +14,6 @@ import type { SiteGrant, SiteRow } from "../../shared/schema/site-access.schema.
 const SET_IN_SITE_ACCESS = "set in site access";
 
 export const KeepOnceOnTabsSubscriber = subscriber(PagesChangedEvent)
-	.inject({
-		onceAllowances: OnceAllowancesGateway,
-		browserPages: BrowserPagesGateway,
-		clock: ClockGateway,
-	})
 	.handle((_input, { onceAllowances, browserPages, clock }) => {
 		const was = onceAllowances.onceAllowances();
 		const kept = onceKeptOnTabs(was, browserPages.tabs(), clock.now());
@@ -36,15 +27,10 @@ export const KeepOnceOnTabsSubscriber = subscriber(PagesChangedEvent)
 	});
 
 export const SiteAccessQuery = query("site-access")
+	.public()
 	.input(BrowserViewSchema)
 	.output(SiteAccessSchema)
 	.settlesNow()
-	.inject({
-		browserGrantReads: BrowserGrantReadsGateway,
-		onceAllowances: OnceAllowancesGateway,
-		browserPages: BrowserPagesGateway,
-		clock: ClockGateway,
-	})
 	.handle(({ heldTabId }, { browserGrantReads, onceAllowances, browserPages, clock }) => {
 		const kept = browserGrantReads.grants();
 		const shownId = heldTabId ?? browserPages.shownId();
@@ -61,12 +47,9 @@ export const SiteAccessQuery = query("site-access")
 	});
 
 export const SetSiteLevelCommand = command("set-site-level")
+	.public()
 	.input(SiteLevelSchema)
 	.idempotencyKey(Repeatable)
-	.inject({
-		browserGrants: BrowserGrantsGateway,
-		clock: ClockGateway,
-	})
 	.handle(({ siteKey, level }, { browserGrants, clock, invalidate }) => {
 		invalidate(SiteAccessQuery);
 		const refusal = refuseSiteKey(siteKey);

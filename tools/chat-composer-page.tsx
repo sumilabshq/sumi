@@ -221,7 +221,7 @@ if (which === "attach") {
 }
 
 const chat = app()
-	.modules(MascotModule, AssistantModule.with(oneChatParts(parts)))
+	.modules(MascotModule, AssistantModule({ injects: oneChatParts(parts) }))
 	.start({
 		platform: "browser",
 		scope: {

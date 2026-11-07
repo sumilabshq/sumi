@@ -253,7 +253,7 @@ async function checksPreview(check: Check): Promise<void> {
 function checksSendSaves(check: Check): void {
 	const parts = partsOf();
 	const layoutApp = app()
-		.modules(LayoutModule.with({ ...parts }))
+		.modules(LayoutModule({ injects: { ...parts } }))
 		.start();
 	placeTab(parts, "tab-8", "pane-app");
 	void layoutApp.send(DropGoneTabsCommand, { heldTabIds: [] });

@@ -28,36 +28,36 @@ export interface OutgoingMessage {
 
 const NO_SUCH_QUEUED = "That queued message was already sent or removed";
 
-export async function sendWithDrafts(parts: MessageParts, { said, drafts, replaces }: OutgoingMessage): Promise<void> {
-	const kept = replaces === undefined ? [] : keptEntriesOf(parts, replaces);
-	const deliver = deliveryOf(parts, replaces);
+export async function sendWithDrafts(injects: MessageParts, { said, drafts, replaces }: OutgoingMessage): Promise<void> {
+	const kept = replaces === undefined ? [] : keptEntriesOf(injects, replaces);
+	const deliver = deliveryOf(injects, replaces);
 
 	if (drafts.length === 0) {
 		await deliver(withAttachments(said, kept));
 		return;
 	}
 
-	const provider = chosenOf(await parts.assistantSetup.setup());
+	const provider = chosenOf(await injects.assistantSetup.setup());
 	const refusal = drafts.map((draft) => refusalOfReach(draft.kind, provider)).find((found) => found !== null);
 
 	if (refusal) {
 		return refuse(refusal);
 	}
 
-	const written = writeDrafts(drafts, provider.reads, parts.attachmentFiles);
-	parts.attachmentFolder.lendFolders(lentFoldersOf(drafts));
-	await sendOrRemoveWritten(parts, { said: withAttachments(said, [...kept, ...written.entries]), files: written.files }, deliver);
+	const written = writeDrafts(drafts, provider.reads, injects.attachmentFiles);
+	injects.attachmentFolder.lendFolders(lentFoldersOf(drafts));
+	await sendOrRemoveWritten(injects, { said: withAttachments(said, [...kept, ...written.entries]), files: written.files }, deliver);
 
 	if (written.files.length > 0) {
-		recordSent(parts, written.files);
-		parts.emit(SentAttachmentsChangedEvent);
+		recordSent(injects, written.files);
+		injects.emit(SentAttachmentsChangedEvent);
 	}
 
-	saveDrafts(parts.draftAttachments, [], SENT);
+	saveDrafts(injects.draftAttachments, [], SENT);
 }
 
-function keptEntriesOf(parts: MessageParts, replaces: string): readonly TrailerEntry[] {
-	const queued = parts.assistantSession.session().queued.find(({ id }) => id === replaces);
+function keptEntriesOf(injects: MessageParts, replaces: string): readonly TrailerEntry[] {
+	const queued = injects.assistantSession.session().queued.find(({ id }) => id === replaces);
 
 	if (queued === undefined) {
 		return refuse(NO_SUCH_QUEUED);
@@ -66,13 +66,13 @@ function keptEntriesOf(parts: MessageParts, replaces: string): readonly TrailerE
 	return attachmentsIn(queued.text).entries;
 }
 
-function deliveryOf(parts: MessageParts, replaces: string | undefined): (said: string) => Promise<void> {
+function deliveryOf(injects: MessageParts, replaces: string | undefined): (said: string) => Promise<void> {
 	if (replaces === undefined) {
-		return (said) => parts.assistantSession.send(said);
+		return (said) => injects.assistantSession.send(said);
 	}
 
 	return (said) => {
-		const refusal = parts.assistantSession.changeQueue({
+		const refusal = injects.assistantSession.changeQueue({
 			kind: "edit",
 			id: replaces,
 			said,

@@ -18,7 +18,7 @@ import {
 	refuse,
 	serverModule,
 } from "../packages/shared/data-framework/src/index.ts";
-import type { AnyRequest, Handler, User } from "../packages/shared/data-framework/src/index.ts";
+import type { AnyRequest, Handler, Injected, User } from "../packages/shared/data-framework/src/index.ts";
 import { Authenticate } from "../packages/shared/data-framework/src/server/index.ts";
 
 export const PagesPermissions = { rename: permission("pages.rename") };
@@ -77,76 +77,83 @@ export const ThrowingGuard = guard().handle(() => {
 });
 
 export const KnownPageGuard = guard<{ readonly from: string }>()
-	.inject({ pages: Pages })
+	.requires({ pages: Pages })
 	.handle(({ request, input }, { pages }) => {
 		if (!pages.list("").includes(input.from)) deny(`${request}: no such page`);
 		return { known: input.from };
 	});
 
 export const PagesQuery = query("pages/pages")
+	.public()
 	.input(z.object({ prefix: z.string() }))
 	.output(z.array(z.string()));
 
-export const CountQuery = query("pages/count").settlesNow().output(z.number());
+export const CountQuery = query("pages/count").public().settlesNow().output(z.number());
 
-export const SlowQuery = query("pages/slow").output(z.string());
+export const SlowQuery = query("pages/slow").public().output(z.string());
 
-export const CrashQuery = query("pages/crash").output(z.string());
+export const CrashQuery = query("pages/crash").public().output(z.string());
 
-export const BadOutputQuery = query("pages/bad-output").output(z.string().min(10));
+export const BadOutputQuery = query("pages/bad-output").public().output(z.string().min(10));
 
 export const AddPageCommand = command("pages/add-page")
+	.public()
 	.idempotencyKey(PerCall)
 	.input(z.object({ title: z.string().min(1) }))
 	.output(z.object({ count: z.number() }));
 
 export const RenamePageCommand = command("pages/rename-page")
+	.public()
 	.input(z.object({ from: z.string(), to: z.string() }))
 	.idempotencyKey(({ from, to }) => [from, to].join(" to "))
 	.output(z.object({ count: z.number() }))
 	.invalidates([PagesQuery]);
 
-export const BumpCommand = command("pages/bump").idempotencyKey(Repeatable).output(z.number());
+export const BumpCommand = command("pages/bump").public().idempotencyKey(Repeatable).output(z.number());
 
 export const TouchPagesCommand = command("pages/touch-pages")
+	.public()
 	.idempotencyKey(Repeatable)
 	.input(z.object({ title: z.string() }))
 	.invalidates([PagesQuery]);
 
-export const CrashCommand = command("pages/crash-command").idempotencyKey(Repeatable);
+export const CrashCommand = command("pages/crash-command").public().idempotencyKey(Repeatable);
 
-export const GuardCrashQuery = query("pages/guard-crash").output(z.string());
+export const GuardCrashQuery = query("pages/guard-crash").public().output(z.string());
 
-export const LimitedQuery = query("pages/limited").output(z.number());
+export const LimitedQuery = query("pages/limited").public().output(z.number());
 
-export const TracedCommand = command("pages/traced").idempotencyKey(PerCall).output(z.string());
+export const TracedCommand = command("pages/traced").public().idempotencyKey(PerCall).output(z.string());
 
-export const WhoQuery = query("pages/who").output(z.string());
+export const WhoQuery = query("pages/who").public().output(z.string());
 
 export const StampCommand = command("pages/stamp")
+	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
 	.output(z.string());
 
-export const RefusingCommand = command("pages/refusing").idempotencyKey(PerCall);
+export const RefusingCommand = command("pages/refusing").public().idempotencyKey(PerCall);
 
-export const BrokenCountQuery = query("pages/broken-count").settlesNow().output(z.number());
+export const BrokenCountQuery = query("pages/broken-count").public().settlesNow().output(z.number());
 
-export const SecretQuery = query("pages/secret").output(z.string());
+export const SecretQuery = query("pages/secret").public().output(z.string());
 
-export const WhoElseQuery = query("pages/who-else").output(z.string());
+export const WhoElseQuery = query("pages/who-else").public().output(z.string());
 
 export const PayCommand = command("pages/pay")
+	.public()
 	.idempotencyKey(PerCall)
 	.input(z.object({ n: z.number() }))
 	.output(z.number());
 
 export const NoteCommand = command("pages/note")
+	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
 	.output(z.number());
 
-export const MineQuery = query("pages/mine").output(z.string());
+export const MineQuery = query("pages/mine").public().output(z.string());
 
 export const counted = { bumps: 0, refusals: 0, stamps: 0, pays: 0, notes: 0 };
 
@@ -290,7 +297,9 @@ export const WrappingMiddleware = middleware()
 		return answer;
 	});
 
-export const ContextQuery = query("pages/context").output(z.object({ user: z.string(), startedAt: z.number() }));
+export const ContextQuery = query("pages/context")
+	.public()
+	.output(z.object({ user: z.string(), startedAt: z.number() }));
 
 export const ContextQueryHandler = handler(ContextQuery, PagesServerModule)
 	.guard(AuthenticatedGuard)
@@ -355,6 +364,7 @@ export const HandlerTracingMiddleware = middleware().handle(async (_call, _deps,
 });
 
 export const OrderedCommand = command("ordered/ordered")
+	.public()
 	.input(z.object({ note: z.string() }))
 	.idempotencyKey(({ note }) => note)
 	.output(z.string());
@@ -384,8 +394,8 @@ export function pagesChanged(pages: Pages): void {
 }
 
 export function servedPublicly<R extends AnyRequest>(
-	local: Handler<R, typeof PAGES, "client">,
-): Handler<R, typeof PAGES, "public"> {
+	local: Handler<R, Injected<typeof PAGES>, "client">,
+): Handler<R, Injected<typeof PAGES>, "public"> {
 	const served = handler(local.request, PagesServerModule).guard(PublicGuard).inject(PAGES);
 	const watched = local.watch === null ? served : served.watch(local.watch);
 	return watched.handle((input, context) => local.handle(input, context));

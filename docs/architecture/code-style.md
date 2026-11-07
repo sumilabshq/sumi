@@ -26,21 +26,23 @@ How code is written inside the architecture. The rules hold in any project built
 
 ## The fluent chain
 
-The fluent chain is this project's one declaration pattern: requests, modules, guards and middleware are all declared by it, as zod schemas already are.
+The fluent chain is this project's one declaration pattern: requests, modules, guards, middleware, slots and plugins are all declared by it, as zod schemas already are.
 
+- **A kind is declared with a chain; a value of a kind is one object.** Declaring a request, module, guard, middleware, slot or plugin is a chain. Using one is a single object: a fill, options, a module's config (`TasksModule({ file })`), `BillingModule({ over })`, `LayoutModule({ injects })`, input, start settings.
+- **A call that changes the chain's types takes one item; a call that lists independent items takes many.** `.guard`, `.use`, `.provide` take one; `.handles`, `.fill`, `.imports` take many.
 - **One concern per call**, read top to bottom in the order it runs.
 - **Every behaviour ends in `.handle()`**: a request, a guard, a middleware.
 - **`.guard` decides who may call, `.use` wraps the call**: two verbs, never one for both.
-- **Never an options object.** A declaration that takes `{ inject, run, … }` is the shape this rule replaced.
+- **A declaration never takes an options object.** A declaration that takes `{ inject, run, … }` is the shape this rule replaced.
 
 ```ts skip-check
 export const PayInvoiceCommand = command("pay-invoice")
+	.public()
 	.input(PayInvoiceInputSchema)
 	.idempotencyKey((input) => input.invoiceId)
 	.guard(AuthenticatedGuard)
 	.guard(OwnsInvoiceGuard)
 	.use(TimingLoggerMiddleware)
-	.inject({ invoices: InvoicesGateway })
 	.handle((input, { invoices, invoice, user, idempotencyKey }) => {
 		const refusal = refusePayment(invoice);
 
@@ -54,13 +56,13 @@ export const PayInvoiceCommand = command("pay-invoice")
 
 ## Injected keys
 
-**An injected key is the data's name: the class name without `Gateway`, in camelCase.** `frameSides: FrameSidesGateway`, `paneTree: PaneTreeGateway`, `invoices: InvoicesGateway`. Never shortened further, never generic (`store`, `data`, `gw`). The name of a thing is the same everywhere it appears: the key in `.inject`, the field in `provide`, the parameter in `.handle`.
+**An injected key is the data's name: the class name without `Gateway`, in camelCase.** `frameSides: FrameSidesGateway`, `paneTree: PaneTreeGateway`, `invoices: InvoicesGateway`. Never shortened further, never generic (`store`, `data`, `gw`). The name of a thing is the same everywhere it appears: the field `provide` returns, the key a guard's or middleware's `.inject` names, the parameter in `.handle`.
 
 ## A request
 
-- `requests.ts` imports only `@widgetarium/data-framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
+- `requests.ts` imports only `#module` (its builders), `@widgetarium/data-framework`, `zod`, its own `shared/schema`, its gateways, its feature's `lib/`, `shared/lib/` and other modules' `"."` entries.
 - Its schemas live in `shared/schema/`, never beside the request: the generator refuses one declared there.
-- **No reach-through.** A handler calls what it injected: `frameSides.saveSides(…)`, never `layout.frameSides.saveSides(…)`. If it needs it, it injects it.
+- **No reach-through.** A handler calls what `provide` handed it: `frameSides.saveSides(…)`, never `layout.frameSides.saveSides(…)`. If it needs it, `provide` returns it under its own key.
 - A handler that refuses before writing calls `refuse(reason)` rather than throwing.
 - `requests.ts` stays ≤ 400 lines. A feature that outgrows it splits into two features.
 - No file of a data module keeps top-level state: no `let`, no writable `Map`, `Set` or array (`module-state`). State lives behind a gateway.
@@ -96,7 +98,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 - One picker per module in `gateways/<module>-parts/`: a record keyed by `Platform`, so a new platform is a type error until every module answers it.
 - A class built there takes its dependencies as constructor arguments.
-- `module.ts` holds only `module(...)…provide((facts) => ({ ...layoutPartsOn(facts) }))`.
+- `module.ts` holds only `module(...)…provide((facts) => ({ ...layoutPartsOn(facts) })).handles(...handled)`.
 
 ## A block
 
@@ -107,7 +109,7 @@ export function layoutPartsOn(facts: ModuleFacts): LayoutParts {
 
 ## A gateway
 
-- Declared as an `abstract class` with abstract methods; that class is what `.inject` names.
+- Declared as an `abstract class` with abstract methods; that class types the key `provide` returns and the key a step's `.requires` names.
 - Every implementation sits beside it, named for its storage (`tauri.gateway.ts`, `px-memory.gateway.ts`); one with private parts gets its own folder.
 - Stores and hands back, nothing else ([layers.md](layers.md)): it may map, serialize, check a stored shape and translate a storage error; it never decides, never calls another gateway.
 - **One area per class, split by area, never by line count.** Method names repeating one noun (`jobs`, `onJobs`, `liveJob`, `stopJob`) mean that noun is a class of its own. Moving bodies into free-function files to shorten a class is not a split. The `cohesion-reviewer` agent checks this.

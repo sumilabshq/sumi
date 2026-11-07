@@ -55,7 +55,8 @@ export {
 	module,
 	serverModule,
 } from "./module";
-export { ModuleContract, moduleContract } from "./module-contract";
+export { isModuleContract, moduleContract } from "./module-contract";
+export type { ContractShape, ModuleContract, ModuleUse, ReachableContract } from "./module-contract";
 export { ChangeBroadcast } from "./transport";
 export type { HearChanges, ListeningTransport, RemoteTransport, ServedCall, ServingServer } from "./transport";
 export { LocalTransport, localTransport } from "./local-transport";
@@ -81,16 +82,22 @@ export type {
 	AnyPlatformModule,
 	CallableModule,
 	ConfigFacts,
+	InjectsUse,
 	ModuleFacts,
+	ModuleOf,
 	ModuleScope,
 	NoConfig,
 	Platform,
+	ProvidedOf,
 	RunnableModule,
 } from "./platform-module";
+export { buildersOf } from "./module-builders";
 export type {
 	Cover,
+	HandlingDefinition,
 	ImportedModule,
 	ModuleDefinition,
+	ModuleItem,
 	NothingProvided,
 	Provided,
 	ReadyModule,
@@ -103,6 +110,7 @@ export { permission } from "./permission";
 export type { Permission } from "./permission";
 export { MemoryRateLimits, RateLimits } from "./rate-limits";
 export type { RateLimit } from "./rate-limits";
+export type { RuntimeFacts, RuntimeProvider, RuntimeProvides } from "./runtime-provides";
 export { reportToConsole } from "./report-failure";
 export type { Failure, FailureReport } from "./report-failure";
 export { PerCall, Repeatable, command, query } from "./request";
@@ -117,10 +125,12 @@ export type {
 	InputArgs,
 	InputOf,
 	KeyPolicy,
+	NamedModule,
 	OutputOf,
 	Query,
 	ReturnedOf,
 	SentOf,
+	Visibility,
 } from "./request";
 export { Refused, refuse } from "./refused";
 export type { Send } from "./send";

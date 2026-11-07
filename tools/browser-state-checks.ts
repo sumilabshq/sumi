@@ -68,7 +68,7 @@ for (const [host, recent, wanted] of NEAR) {
 }
 
 function started(browser: FakeBrowser) {
-	return app().modules(BrowserModule.with(browser.parts)).start();
+	return app().modules(BrowserModule({ injects: browser.parts })).start();
 }
 
 function said(answer: Answer<unknown>): string {
@@ -328,7 +328,7 @@ document.body.append(askingHost);
 createRoot(askingHost).render(
 	h(
 		AppProvider,
-		{ app: app().modules(BrowserModule.with(asking.parts)).start() },
+		{ app: app().modules(BrowserModule({ injects: asking.parts })).start() },
 		h(
 			AskComposerContext,
 			{

@@ -38,7 +38,7 @@ function startedOver(served: ServedSiteFiles) {
 		siteFiles,
 	});
 	const started = app()
-		.modules(BrowserModule.with(parts))
+		.modules(BrowserModule({ injects: parts }))
 		.start({ platform: "browser", scope: { workspaceId: "icons" } });
 	return { started, siteFiles, siteIcons };
 }

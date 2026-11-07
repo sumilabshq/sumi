@@ -38,16 +38,14 @@ const rustProbe = {
 const siteIcons = new MemorySiteIconsGateway();
 const started = app()
 	.modules(
-		BrowserModule.with(
-			browserPartsOf({
+		BrowserModule({ injects: browserPartsOf({
 				browserPages: new WebBrowserPagesGateway(),
 				browserGrants: new MemoryBrowserGrantsGateway(),
 				browserAudit: new MemoryBrowserAuditGateway(),
 				recentSites: new MemoryRecentSitesGateway(),
 				siteIcons,
 				siteFiles: new TauriSiteFilesGateway(rustProbe),
-			}),
-		),
+			}), }),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "probe" } });
 

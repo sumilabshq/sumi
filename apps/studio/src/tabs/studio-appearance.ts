@@ -28,7 +28,7 @@ export function startStudioAppearance(view: Window): StudioAppearance {
 				authenticate: new AppCallerAuthenticate(),
 			},
 		});
-	const appearanceApp = app().imports(AppearanceContract.over(transport)).start();
+	const appearanceApp = app().imports(AppearanceContract({ over: transport })).start();
 	const wear = (): void => {
 		void appearanceApp.send(ThemeQuery).then((theme) => {
 			if (!theme.ok) {

@@ -1,4 +1,5 @@
-import { PerCall, Repeatable, command, deny, guard, query, refuse, subscriber } from "@widgetarium/data-framework";
+import { PerCall, Repeatable, deny, guard, refuse } from "@widgetarium/data-framework";
+import { command, query, subscriber } from "#module";
 import { AssistantSessionChangedEvent } from "../../gateways/chat-parts/chat-parts.events.js";
 import { SentAttachmentsChangedEvent } from "../../shared/events/sent-attachments.events.js";
 import { ChatSchema, QueueChangeInChatSchema } from "../../shared/schema/chat.schema.js";
@@ -6,7 +7,6 @@ import { TextAskedSchema } from "../../shared/schema/attachment.schema.js";
 import { chatOf } from "./lib/chat-of.js";
 import { ChatKeySchema } from "../../shared/schema/chat-key.schema.js";
 import { inChat } from "../../gateways/chat-parts/in-chat.js";
-import { ChatPartsGateway } from "../../gateways/chat-parts/chat-parts.gateway.js";
 
 const APP_CALLABLE: ReadonlySet<string> = new Set(
 	[
@@ -50,10 +50,10 @@ export const AssistantCallersGuard = guard().handle(({ request, context }) => {
 });
 
 export const ChatQuery = query("chat")
+	.public()
 	.input(ChatKeySchema)
 	.output(ChatSchema)
 	.settlesNow()
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { assistantSession, sentAttachments }) => {
 		const session = assistantSession.session();
 		return chatOf({
@@ -66,30 +66,30 @@ export const ChatQuery = query("chat")
 	}));
 
 export const RetryTurnCommand = command("retry-turn")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { assistantSession }) => assistantSession.retry()));
 
 export const StopTurnCommand = command("stop-turn")
+	.public()
 	.input(ChatKeySchema)
 	.idempotencyKey(Repeatable)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat((_input, { assistantSession }) => assistantSession.stop()));
 
 export const ChangeQueueCommand = command("change-queue")
+	.public()
 	.input(QueueChangeInChatSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(({ change }, { assistantSession }) => {
 		const refusal = assistantSession.changeQueue(change);
 		return refusal === null ? undefined : refuse(refusal);
 	}));
 
 export const SendTextCommand = command("send-text")
+	.public()
 	.input(TextAskedSchema)
 	.idempotencyKey(PerCall)
-	.inject({ chatParts: ChatPartsGateway })
 	.handle(inChat(({ said }, { assistantSession }) => assistantSession.send(said)));
 
 export const RereadChatSubscriber = subscriber(AssistantSessionChangedEvent).handle(({ chat }, { invalidate }) => {

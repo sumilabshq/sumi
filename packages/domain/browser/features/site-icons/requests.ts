@@ -1,17 +1,11 @@
-import { query, subscriber } from "@widgetarium/data-framework";
-import { ClockGateway } from "../../gateways/clock/clock.gateway.js";
+import { query, subscriber } from "#module";
 import { SiteFilesGateway } from "../../gateways/site-files/site-files.gateway.js";
 import { SiteIconChangedEvent } from "../../gateways/site-icons/site-icons.events.js";
-import { SiteIconsGateway } from "../../gateways/site-icons/site-icons.gateway.js";
 import { DATA_IMAGE, iconLinksOfHead } from "../../shared/lib/page-icon-links.js";
 import { keptIconOfOrigin, originPageOf, withIconKept } from "../../shared/lib/site-icon-cache.js";
 import { iconAddressesOf } from "../../shared/lib/site-icon-choice.js";
 import { originOf } from "../../shared/lib/site-key.js";
-import {
-	SiteIconAnswerSchema,
-	SiteIconOfOriginSchema,
-	SiteOriginSchema,
-} from "../../shared/schema/site-icon.schema.js";
+import { SiteIconAnswerSchema, SiteIconOfOriginSchema, SiteOriginSchema } from "../../shared/schema/site-icon.schema.js";
 import type { KeptSiteIcon, SiteIconAnswer } from "../../shared/schema/site-icon.schema.js";
 
 interface DiscoveredIcon extends SiteIconAnswer {
@@ -22,13 +16,9 @@ const WEB_ORIGIN = /^https?:\/\//;
 const MOST_LOGGED_ADDRESS = 120;
 
 export const SiteIconQuery = query("site-icon")
+	.public()
 	.input(SiteOriginSchema)
 	.output(SiteIconOfOriginSchema)
-	.inject({
-		siteIcons: SiteIconsGateway,
-		siteFiles: SiteFilesGateway,
-		clock: ClockGateway,
-	})
 	.handle(async ({ origin }, { siteIcons, siteFiles, clock }) => {
 		if (!WEB_ORIGIN.test(origin) || originOf(origin) !== origin) {
 			return { icon: null };
