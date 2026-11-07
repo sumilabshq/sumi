@@ -51,11 +51,18 @@ function titledOf(row: TitledRow, page: PageTitle | undefined): Pick<TitledRow, 
 		return row;
 	}
 
-	const placesFallback = row.title === row.app;
 	return {
-		title: page.title ?? (placesFallback ? (page.appTitle ?? row.title) : row.title),
+		title: page.title ?? fallbackTitleOf(row, page),
 		favicon: page.favicon ?? row.favicon,
 	};
+}
+
+function fallbackTitleOf(row: TitledRow, page: PageTitle): string {
+	if (row.title !== row.app) {
+		return row.title;
+	}
+
+	return page.appTitle ?? row.title;
 }
 
 function titledEntryOf(entry: SidebarEntry, titles: PageTitles): SidebarEntry {

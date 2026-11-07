@@ -18,6 +18,10 @@ interface TasksRootProps {
 	readonly frame: SumiFrame;
 }
 
+interface TasksMainProps {
+	readonly address: string;
+}
+
 interface RecordedPage {
 	readonly id: string;
 	readonly title?: string;
@@ -35,17 +39,23 @@ export function TasksRoot({ frame }: TasksRootProps): ReactElement | null {
 		return null;
 	}
 
-	const shown = shownAddressOf(tab.address);
 	return (
 		<SumiTabContext.Provider value={tab}>
 			<HeaderActionsContext.Provider value={headerActions}>
 				<RuntimeProvider runtime={frame.sumi}>
-					<main className="wg-tasks-app wg-app-body" aria-label={APP_NAME}>
-						<TasksPage key={shown} address={shown} />
-					</main>
+					<TasksMain address={tab.address} />
 				</RuntimeProvider>
 			</HeaderActionsContext.Provider>
 		</SumiTabContext.Provider>
+	);
+}
+
+function TasksMain({ address }: TasksMainProps): ReactElement {
+	const shown = shownAddressOf(address);
+	return (
+		<main className="wg-tasks-app wg-app-body" aria-label={APP_NAME}>
+			<TasksPage key={shown} address={shown} />
+		</main>
 	);
 }
 

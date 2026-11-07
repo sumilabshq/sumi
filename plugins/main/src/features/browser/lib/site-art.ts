@@ -24,10 +24,18 @@ export function siteArtOf(address: string): string {
 
 function extensionOf(address: string): string {
 	try {
-		const { pathname } = new URL(address);
-		const last = pathname.split("/").at(-1) ?? "";
-		return last.includes(".") ? (last.split(".").at(-1) ?? "").toLowerCase() : "";
+		return extensionOfPath(new URL(address).pathname);
 	} catch {
 		return "";
 	}
+}
+
+function extensionOfPath(pathname: string): string {
+	const last = pathname.split("/").at(-1) ?? "";
+
+	if (!last.includes(".")) {
+		return "";
+	}
+
+	return (last.split(".").at(-1) ?? "").toLowerCase();
 }

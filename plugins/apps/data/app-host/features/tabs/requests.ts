@@ -23,6 +23,7 @@ import {
 	ShowChatTabCommand as PlacesShowChatTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
+import type { TabsAsk, TabsSettled } from "@widgetarium/places";
 import { ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
@@ -49,12 +50,18 @@ import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
+import type { TabDrop } from "../../shared/schema/tab-drop.schema.js";
 
 const ALL_PAGES = { heldTabId: null };
 
 interface TabParts {
 	readonly studioWindow: StudioWindowGateway;
 	readonly essentials: EssentialsGateway;
+}
+
+interface PlacedDrop {
+	readonly id: string;
+	readonly to: Exclude<TabDrop, { readonly kind: "essentials" }>;
 }
 
 interface EssentialDrop {
@@ -134,23 +141,12 @@ export const PlaceTabCommand = command("place-tab")
 	.handle(async ({ id, to }, { send, emit, ...injects }) => {
 		const reach = { injects, send, told: () => emit(TabsSettledEvent) };
 
-		if (to.kind === "list") {
-			const place = { list: to.list, groupId: to.groupId, before: to.before };
-			await settleAsked(reach, (at) => send(PlacesPlaceTabCommand, { at, id, place }));
+		if (to.kind === "essentials") {
+			await makeEssential(reach, injects.essentials, { id, at: to.at });
 			return;
 		}
 
-		if (to.kind === "split") {
-			await settleAsked(reach, (at) => send(ReorderSplitMemberCommand, { at, tabId: id, before: to.before }));
-			return;
-		}
-
-		if (to.kind === "own-window") {
-			await settleAsked(reach, (at) => send(OpenTabInOwnWindowCommand, { at, id }));
-			return;
-		}
-
-		await makeEssential(reach, injects.essentials, { id, at: to.at });
+		await settleAsked(reach, placingOf(send, { id, to }));
 	});
 
 export const EnsurePanePagesSubscriber = subscriber(PanesChangedEvent).handle(
@@ -234,6 +230,19 @@ async function readyToRestore(send: Send, injects: Pick<TabParts, "essentials" |
 	if (!injects.studioWindow.opensBesideAnother()) {
 		await dropGoneTabPanes(send, injects.studioWindow.windowLabel());
 	}
+}
+
+function placingOf(send: Send, { id, to }: PlacedDrop): (at: TabsAsk) => Promise<TabsSettled> {
+	if (to.kind === "list") {
+		const place = { list: to.list, groupId: to.groupId, before: to.before };
+		return (at) => send(PlacesPlaceTabCommand, { at, id, place });
+	}
+
+	if (to.kind === "split") {
+		return (at) => send(ReorderSplitMemberCommand, { at, tabId: id, before: to.before });
+	}
+
+	return (at) => send(OpenTabInOwnWindowCommand, { at, id });
 }
 
 async function makeEssential(

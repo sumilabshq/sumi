@@ -1,6 +1,7 @@
 import type { AppKind } from "../../schema/tabs.schema.js";
 import { TabArtSchema } from "../../schema/tab-rows.schema.js";
 import type { TabArt } from "../../schema/tab-rows.schema.js";
+import type { PlacedApp } from "../../host/places.host.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 import type { HostTab } from "../tabs/host-tabs-moment.js";
 
@@ -13,8 +14,8 @@ export interface Named {
 
 const UNDRAWN_ART: TabArt = "built-app";
 
-export function titleOf(apps: PlacedApps, { app, label, title, address }: Named): string {
-	return label ?? title ?? siteOf(address) ?? newTabTitleOf(apps, app);
+export function titleOf(apps: PlacedApps, named: Named): string {
+	return named.label ?? named.title ?? siteOf(named.address) ?? newTabTitleOf(apps, named.app);
 }
 
 export function titleOfTab(apps: PlacedApps, tab: HostTab): string {
@@ -33,9 +34,16 @@ export function tabArtOf(apps: PlacedApps, app: AppKind, address: string | null)
 		return UNDRAWN_ART;
 	}
 
-	const addressArt = address === null || address === "" ? null : (placed.artOf?.(address) ?? null);
-	const drawn = TabArtSchema.safeParse(addressArt ?? placed.art);
+	const drawn = TabArtSchema.safeParse(addressArtOf(placed, address) ?? placed.art);
 	return drawn.success ? drawn.data : UNDRAWN_ART;
+}
+
+function addressArtOf(placed: PlacedApp, address: string | null): string | null {
+	if (address === null || address === "" || placed.artOf === null) {
+		return null;
+	}
+
+	return placed.artOf(address);
 }
 
 export function hostOf(url: string): string | null {

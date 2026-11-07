@@ -19,12 +19,15 @@ import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windo
 import { APP_CALLER_HEADER, AppCallerAuthenticate } from "../apps/studio/src/features/app-frame/lib/app-caller.ts";
 import { check, tally } from "./check-helpers.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
+import type { DocAt } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import {
 	KEPT_PAGES,
 	KeptPagesGateway,
 	KeptPagesSchema,
 } from "../plugins/apps/data/apps/gateways/pages/kept.gateway.ts";
+import type { KeptPages } from "../plugins/apps/data/apps/gateways/pages/kept.gateway.ts";
+import type { AppPage } from "../plugins/apps/data/apps/shared/schema/page.schema.ts";
 import { DEFAULT, FakeStore } from "./host-tauri-fake-store.ts";
 import { placedTabsOf } from "./places-fixture.ts";
 
@@ -179,6 +182,9 @@ async function rememberChecks(): Promise<void> {
 		"Docs",
 		DOCS_PAGE.favicon,
 	]);
+}
+
+async function blankRememberChecks(): Promise<void> {
 	await studio.send(RememberPageTitlesCommand, {
 		pages: [
 			{
@@ -192,25 +198,26 @@ async function rememberChecks(): Promise<void> {
 	check("a blank page and an empty title keep the remembered title", await pageOf("n1"), ["Docs", DOCS_PAGE.favicon]);
 }
 
-async function keptChecks(): Promise<void> {
-	const store = new StoreClient(new FakeStore().invoke);
-	const at = {
-		store,
+const BOARD_PAGE: AppPage = {
+	title: "Board",
+	favicon: null,
+	actions: [],
+	presses: [],
+};
+
+function keptPagesAt(): DocAt<KeptPages> {
+	return {
+		store: new StoreClient(new FakeStore().invoke),
 		root: workspaceRootOf(DEFAULT.id),
 		kind: KEPT_PAGES,
 		empty: KeptPagesSchema.parse({}),
 	};
+}
+
+async function keptChecks(): Promise<void> {
+	const at = keptPagesAt();
 	const first = await HeldDoc.read(at);
-	new KeptPagesGateway(first).savePage(
-		"t1",
-		{
-			title: "Board",
-			favicon: null,
-			actions: [],
-			presses: [],
-		},
-		"test",
-	);
+	new KeptPagesGateway(first).savePage("t1", BOARD_PAGE, "test");
 	await first.flush();
 	const reread = new KeptPagesGateway(await HeldDoc.read(at)).page("t1");
 	check(
@@ -225,6 +232,7 @@ await recordChecks();
 await pressChecks();
 await titleChecks();
 await rememberChecks();
+await blankRememberChecks();
 await keptChecks();
 console.log(tally.failed ? `apps pages: ${tally.failed} check(s) failed` : "apps pages: all checks passed");
 process.exit(tally.failed ? 1 : 0);

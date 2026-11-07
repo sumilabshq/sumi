@@ -1,4 +1,5 @@
-import type { AppPage, RememberedPageTitle } from "../../../shared/schema/page.schema.js";
+import type { AppFace } from "../../../shared/schema/app.schema.js";
+import type { AppPage, PageTitle, RememberedPageTitle } from "../../../shared/schema/page.schema.js";
 
 export interface RecordedPage {
 	readonly id: string;
@@ -12,20 +13,54 @@ export interface PageRecorded {
 	readonly reason: string;
 }
 
+export interface TitledTab {
+	readonly id: string;
+	readonly app: string;
+	readonly title: string | null;
+	readonly favicon: string | null;
+}
+
 const APP_FILES = "sumi-app://";
 const FOREIGN_FAVICON = "a favicon not served by {app} itself is refused";
 
-export function pageRecordedOf(was: AppPage, { id, title, favicon, actions }: RecordedPage): PageRecorded {
+export function pageRecordedOf(was: AppPage, recorded: RecordedPage): PageRecorded {
 	const page = {
 		...was,
-		title: title ?? was.title,
-		favicon: favicon ?? was.favicon,
-		actions: actions ?? was.actions,
+		title: recorded.title ?? was.title,
+		favicon: recorded.favicon ?? was.favicon,
+		actions: recorded.actions ?? was.actions,
 	};
 	return {
 		page,
-		reason: `tab ${id} title ${was.title ?? "none"} → ${page.title ?? "none"}, actions ${idsOf(was.actions)} → ${idsOf(page.actions)} (the page reported it)`,
+		reason: `tab ${recorded.id} title ${titleSaid(was)} → ${titleSaid(page)}, actions ${idsOf(was.actions)} → ${idsOf(page.actions)} (the page reported it)`,
 	};
+}
+
+export function pageRememberedOf(was: AppPage, remembered: RememberedPageTitle): PageRecorded | null {
+	const page = rememberedPageOf(was, remembered);
+
+	if (page === null) {
+		return null;
+	}
+
+	return {
+		page,
+		reason: `tab ${remembered.tabId} title ${titleSaid(was)} → ${titleSaid(page)} (the browser's page)`,
+	};
+}
+
+export function pageTitleOf(tab: TitledTab, faces: readonly AppFace[]): PageTitle {
+	const face = faces.find((each) => each.id === tab.app);
+	return {
+		id: tab.id,
+		title: tab.title,
+		favicon: tab.favicon ?? face?.iconUrl ?? null,
+		appTitle: face?.title ?? null,
+	};
+}
+
+function titleSaid(page: AppPage): string {
+	return page.title ?? "none";
 }
 
 export function refuseForeignFavicon(app: string, favicon: string | undefined): string | null {
@@ -42,15 +77,15 @@ function idsOf(actions: readonly { readonly id: string }[]): string {
 
 const UNREMEMBERED_ADDRESSES: ReadonlySet<string> = new Set(["", "about:blank"]);
 
-export function rememberedPageOf(was: AppPage, { url, title, favicon }: RememberedPageTitle): AppPage | null {
-	if (UNREMEMBERED_ADDRESSES.has(url)) {
+function rememberedPageOf(was: AppPage, remembered: RememberedPageTitle): AppPage | null {
+	if (UNREMEMBERED_ADDRESSES.has(remembered.url)) {
 		return null;
 	}
 
 	const next = {
 		...was,
-		title: title === "" ? was.title : title,
-		favicon: favicon ?? was.favicon,
+		title: remembered.title === "" ? was.title : remembered.title,
+		favicon: remembered.favicon ?? was.favicon,
 	};
 	return next.title === was.title && next.favicon === was.favicon ? null : next;
 }

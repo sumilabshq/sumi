@@ -50,7 +50,7 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 				<PlateCrumb
 					words={{
 						first: apps.find(({ id }) => id === app)?.title ?? app,
-						second: tab.address === HOME_ADDRESS || tab.address === null ? null : (pageTitle ?? tab.address),
+						second: pageWordOf(tab.address, pageTitle),
 					}}
 					isPressable
 				/>
@@ -60,4 +60,12 @@ export function AppHeader({ app, tabId }: AppHeaderProps): ReactElement | null {
 			</PlateHeaderPart>
 		</Fragment>
 	);
+}
+
+function pageWordOf(address: string | null, pageTitle: string | null): string | null {
+	if (address === HOME_ADDRESS || address === null) {
+		return null;
+	}
+
+	return pageTitle ?? address;
 }

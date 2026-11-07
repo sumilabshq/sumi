@@ -46,21 +46,18 @@ export interface StudioAppAsk {
 	readonly windowModules: readonly WindowModule[];
 }
 
-export function startStudioApp({
-	platform,
-	workspaceId,
-	core,
-	lent,
-	backgroundModules,
-	windowModules,
-}: StudioAppAsk): Runtime {
-	const served = core ?? startCoreInProcess(workspaceId, backgroundModules);
+export function startStudioApp(ask: StudioAppAsk): Runtime {
+	const served = ask.core ?? startCoreInProcess(ask.workspaceId, ask.backgroundModules);
 	const studioApp = runtime()
-		.modules(...studioModulesOf(lent), ...windowModules.map((one) => one.moduleOf(windowModuleOffersOf(lent))))
-		.imports(...backgroundModules.map(({ contract }) => contract({ over: served })))
-		.start({ platform, scope: { workspaceId } });
+		.modules(...studioModulesOf(ask.lent), ...windowModulesOf(ask))
+		.imports(...ask.backgroundModules.map(({ contract }) => contract({ over: served })))
+		.start({ platform: ask.platform, scope: { workspaceId: ask.workspaceId } });
 	void restoreTabs(studioApp);
 	return studioApp;
+}
+
+function windowModulesOf({ windowModules, lent }: StudioAppAsk): readonly DeviceModule[] {
+	return windowModules.map((one) => one.moduleOf(windowModuleOffersOf(lent)));
 }
 
 export function startCoreInProcess(

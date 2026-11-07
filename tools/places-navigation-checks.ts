@@ -75,6 +75,13 @@ async function historyChecks(): Promise<void> {
 }
 
 async function linkChecks(): Promise<void> {
+	await sameTabLinkChecks();
+	const first = await askedLinkChecks();
+	await takenLinkChecks(first);
+	await refusedLinkChecks();
+}
+
+async function sameTabLinkChecks(): Promise<void> {
 	const same = await tasks.send(OpenLinkCommand, { from: "t1", href: "/T-2", inNewTab: false });
 	check(
 		"a /<page> link navigates the same tab and pushes",
@@ -87,9 +94,16 @@ async function linkChecks(): Promise<void> {
 		[deep.ok ? deep.output.kind : deep.reason, await tabOf()],
 		["navigated", ["T-3", true, false]],
 	);
+}
+
+async function askLinksOfStudio(): Promise<void> {
 	await tasks.send(OpenLinkCommand, { from: "t1", href: "/T-4", inNewTab: true });
 	await tasks.send(OpenLinkCommand, { from: "t1", href: "https://example.com/a", inNewTab: false });
 	await tasks.send(OpenLinkCommand, { from: "t1", href: "sumi://chat/c-1", inNewTab: false });
+}
+
+async function askedLinkChecks(): Promise<string> {
+	await askLinksOfStudio();
 	const asked = await studio.send(AskedLinksQuery, { tabIds: ["t1"] });
 	check(
 		"a new-tab, web or other-app link is asked of the studio, the same-app one as sumi://",
@@ -100,12 +114,18 @@ async function linkChecks(): Promise<void> {
 			["sumi://chat/c-1", false],
 		],
 	);
+	return asked.ok ? (asked.output.links[0]?.id ?? "") : "";
+}
+
+async function takenLinkChecks(first: string): Promise<void> {
 	const other = await studio.send(AskedLinksQuery, { tabIds: ["n1"] });
 	check("a window reads only the links asked from its own tabs", other.ok ? other.output.links : other.reason, []);
-	const first = asked.ok ? (asked.output.links[0]?.id ?? "") : "";
 	const taken = await studio.send(TakeAskedLinkCommand, { id: first });
 	const again = await studio.send(TakeAskedLinkCommand, { id: first });
 	check("an asked link is taken once", [taken.ok, again.ok], [true, false]);
+}
+
+async function refusedLinkChecks(): Promise<void> {
 	const refused = await tasks.send(OpenLinkCommand, { from: "t1", href: "javascript:alert(1)", inNewTab: false });
 	check("a link of another scheme is refused", refused.ok, false);
 	const foreign = await tasks.send(OpenLinkCommand, { from: "n1", href: "/x", inNewTab: false });

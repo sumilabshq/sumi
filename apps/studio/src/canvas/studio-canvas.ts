@@ -23,6 +23,12 @@ export interface StudioCanvasProps {
 	readonly tabId: string | null;
 }
 
+interface StagedCanvas {
+	readonly props: StudioCanvasProps;
+	readonly canvasApp: Runtime;
+	readonly size: StageSize;
+}
+
 const STAYS_IN_ITS_TAB: CanvasSurroundings = {
 	gpu: null,
 	ownsPaste: () => true,
@@ -32,22 +38,24 @@ const STAYS_IN_ITS_TAB: CanvasSurroundings = {
 	},
 };
 
-export function StudioCanvas({ design, project, shell, tabId }: StudioCanvasProps): ReactElement {
+export function StudioCanvas(props: StudioCanvasProps): ReactElement {
 	const viewRef = useRef<HTMLDivElement | null>(null);
 	const [size, setSize] = useState<StageSize | null>(null);
 	useWatchesInnerSize(viewRef, setSize);
-	const canvasApp = useStartedCanvas(design, project, tabId);
-	const stage = size
-		? h(DesignStage, {
-				app: design.app,
-				opening: CANVAS_OPENED_ON,
-				canvasApp,
-				surroundings: design.surroundings,
-				size,
-				shell,
-			})
-		: null;
+	const canvasApp = useStartedCanvas(props.design, props.project, props.tabId);
+	const stage = size ? drawDesignStage({ props, canvasApp, size }) : null;
 	return h("div", { ref: viewRef, className: "cv:h-full cv:overflow-hidden", "data-canvas-studio": "" }, stage);
+}
+
+function drawDesignStage({ props, canvasApp, size }: StagedCanvas): ReactElement {
+	return h(DesignStage, {
+		app: props.design.app,
+		opening: CANVAS_OPENED_ON,
+		canvasApp,
+		surroundings: props.design.surroundings,
+		size,
+		shell: props.shell,
+	});
 }
 
 export function webStudioDesign(app: string): StudioDesign {

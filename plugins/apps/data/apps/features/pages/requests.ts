@@ -13,12 +13,21 @@ import {
 	TakeActionPressSchema,
 	TakenPressSchema,
 } from "../../shared/schema/page.schema.js";
-import { pageRecordedOf, refuseForeignFavicon, rememberedPageOf } from "./lib/page-records.js";
+import type { PageTab, RememberedPageTitle } from "../../shared/schema/page.schema.js";
+import { pageRecordedOf, pageRememberedOf, pageTitleOf, refuseForeignFavicon } from "./lib/page-records.js";
+import type { TitledTab } from "./lib/page-records.js";
+import type { PageTitlesGateway } from "../../gateways/page-titles/page-titles.gateway.js";
+import { onlyShellReasonOf } from "./lib/shell-only.js";
 import { KeptPagesChangedEvent } from "../../gateways/pages/pages.events.js";
+import type { PagesGateway } from "../../gateways/pages/pages.gateway.js";
 import { pressTakenFrom, refusePress, withPressQueued } from "./lib/presses.js";
 
+interface PageReaders {
+	readonly pages: PagesGateway;
+	readonly pageTitles: PageTitlesGateway;
+}
+
 const NOT_ITS_TAB = "tab {id} does not hold the app {app}";
-const ONLY_SHELL = "the app {app} cannot {what}: only the shell does";
 
 export const AppPageQuery = query("app-page")
 	.public()
@@ -39,23 +48,24 @@ export const PageTitlesQuery = query("page-titles")
 	.output(PageTitlesSchema)
 	.handle(({ tabs }, { appList, pages, pageTitles, user }) => {
 		if (user !== null) {
-			return refuse(ONLY_SHELL.replace("{app}", user.id).replace("{what}", "read the titles of every tab"));
+			return refuse(onlyShellReasonOf(user.id, "read the titles of every tab"));
 		}
 
 		const faces = appList.apps();
 		return {
-			pages: tabs.map(({ id, app, address }) => {
-				const page = pages.page(id);
-				const face = faces.find((each) => each.id === app);
-				return {
-					id,
-					title: page.title ?? pageTitles.titleOf(app, address),
-					favicon: page.favicon ?? face?.iconUrl ?? null,
-					appTitle: face?.title ?? null,
-				};
-			}),
+			pages: tabs.map((tab) => pageTitleOf(titledTabOf(tab, { pages, pageTitles }), faces)),
 		};
 	});
+
+function titledTabOf(tab: PageTab, readers: PageReaders): TitledTab {
+	const page = readers.pages.page(tab.id);
+	return {
+		id: tab.id,
+		app: tab.app,
+		title: page.title ?? readers.pageTitles.titleOf(tab.app, tab.address),
+		favicon: page.favicon,
+	};
+}
 
 export const RecordAppPageCommand = command("record-app-page")
 	.public()
@@ -82,7 +92,7 @@ export const PressAppActionCommand = command("press-app-action")
 	.idempotencyKey(PerCall)
 	.handle(({ tab, action }, { pages, user, invalidate }) => {
 		if (user !== null) {
-			return refuse(ONLY_SHELL.replace("{app}", user.id).replace("{what}", "press header actions"));
+			return refuse(onlyShellReasonOf(user.id, "press header actions"));
 		}
 
 		const was = pages.page(tab);
@@ -137,24 +147,10 @@ export const RememberPageTitlesCommand = command("remember-page-titles")
 	.idempotencyKey(Repeatable)
 	.handle(({ pages: remembered }, { pages, user, invalidate }) => {
 		if (user !== null) {
-			return refuse(
-				ONLY_SHELL.replace("{app}", user.id).replace("{what}", "remember the titles of the browser's pages"),
-			);
+			return refuse(onlyShellReasonOf(user.id, "remember the titles of the browser's pages"));
 		}
 
-		const kept = remembered.flatMap((one) => {
-			const was = pages.page(one.tabId);
-			const next = rememberedPageOf(was, one);
-
-			if (next === null) {
-				return [];
-			}
-
-			const reason = `tab ${one.tabId} title ${was.title ?? "none"} → ${next.title ?? "none"} (the browser's page)`;
-			pages.savePage(one.tabId, next, reason);
-			console.info(`[apps] ${reason}`);
-			return [one.tabId];
-		});
+		const kept = remembered.flatMap((one) => keepRemembered(pages, one));
 
 		if (kept.length === 0) {
 			return;
@@ -165,6 +161,18 @@ export const RememberPageTitlesCommand = command("remember-page-titles")
 			invalidate(AppPageQuery, { id });
 		}
 	});
+
+function keepRemembered(pages: PagesGateway, remembered: RememberedPageTitle): readonly string[] {
+	const next = pageRememberedOf(pages.page(remembered.tabId), remembered);
+
+	if (next === null) {
+		return [];
+	}
+
+	pages.savePage(remembered.tabId, next.page, next.reason);
+	console.info(`[apps] ${next.reason}`);
+	return [remembered.tabId];
+}
 
 export const RereadKeptPagesSubscriber = subscriber(KeptPagesChangedEvent).handle((_input, { invalidate }) => {
 	invalidate(AppPageQuery);

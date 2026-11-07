@@ -1,6 +1,6 @@
 import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
-import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
+import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
 import { HeldDoc } from "../packages/shared/behaviors/src/tauri-store/held-doc.ts";
 import { StoreClient, workspaceRootOf } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
 import type { DocKind } from "../packages/shared/behaviors/src/tauri-store/store-client.ts";
@@ -50,23 +50,24 @@ function askAt(window: string): TabsAsk {
 
 function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runtime, Runtime] {
 	const core = localTransport();
-	core.serve(
-		runtime()
-			.modules(
-				RunnablePlacesModule({
-					injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
-				}),
-			)
-			.start({ platform: "server", env: {} }),
-	);
-	return [
-		runtime()
-			.imports(PlacesModule({ over: core }))
-			.start(),
-		runtime()
-			.imports(PlacesModule({ over: core }))
-			.start(),
-	];
+	core.serve(placesCoreOver(tabs));
+	return [windowOver(core), windowOver(core)];
+}
+
+function placesCoreOver(tabs: MemoryTabsGateway | TauriTabsGateway): Runtime {
+	return runtime()
+		.modules(
+			RunnablePlacesModule({
+				injects: { windows: new MemoryWindowsGateway({ windows: [] }), tabs, placedApps: builtInPlacedApps() },
+			}),
+		)
+		.start({ platform: "server", env: {} });
+}
+
+function windowOver(core: RemoteTransport): Runtime {
+	return runtime()
+		.imports(PlacesModule({ over: core }))
+		.start();
 }
 
 async function listsIn(windowApp: Runtime, window: string): Promise<unknown> {

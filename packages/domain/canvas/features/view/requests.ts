@@ -3,40 +3,25 @@ import { command, query, subscriber } from "#module";
 import { CanvasMomentChangedEvent } from "../../gateways/canvas-moment/canvas-moment.events.js";
 import { CameraAnswerSchema, CameraKeptSchema } from "../../shared/schema/camera.schema.js";
 import { CanvasOpenedSchema, CanvasOpeningSchema, ModeAnswerSchema } from "../../shared/schema/canvas-view.schema.js";
-import {
-	OPENING_FIELDS,
-	isOpenAsAsked,
-	isTouching,
-	momentOpened,
-	momentWriteOf,
-	openingOf,
-} from "../../shared/lib/view/canvas-moment.js";
+import { OPENING_FIELDS, isTouching, momentWriteOf, openingOf } from "../../shared/lib/view/canvas-moment.js";
+import { canvasOpenStepOf } from "./lib/canvas-opening.js";
 
 export const OpenCanvasCommand = command("open-canvas")
 	.public()
 	.input(CanvasOpenedSchema)
 	.idempotencyKey(Repeatable)
 	.handle((opened, { canvasMoment }) => {
-		const was = canvasMoment.moment();
+		const step = canvasOpenStepOf(canvasMoment.moment(), opened);
 
-		if (isOpenAsAsked(was, opened)) {
-			console.info(
-				`[widgetarium] canvas open skipped: ${opened.app} /${opened.page} is open, its camera and picks kept`,
-			);
+		if (step.kind === "skip") {
+			console.info(`[widgetarium] ${step.said}`);
 			return;
 		}
 
-		const write = momentWriteOf(was, momentOpened(opened), `open ${opened.app}`);
+		canvasMoment.saveMoment(step.write);
 
-		if (write === null) {
-			console.info(`[widgetarium] canvas open skipped: ${opened.app} is open as asked`);
-			return;
-		}
-
-		canvasMoment.saveMoment(write);
-
-		if (write.said !== null) {
-			console.info(`[widgetarium] ${write.said}`);
+		if (step.write.said !== null) {
+			console.info(`[widgetarium] ${step.write.said}`);
 		}
 	});
 

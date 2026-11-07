@@ -1,19 +1,31 @@
 import type { PlacedApp } from "@widgetarium/places/module";
+import type { TabRules } from "../../../slots.js";
 import type { FilledApp } from "../ui/app-tab/app-tab.js";
 
-export function placedAppOf({ id, title, art, artOf, newTabTitle, tabs }: FilledApp): PlacedApp {
+type AppAbilities = PlacedApp["abilities"];
+
+const PAGE_APP_ABILITIES: AppAbilities = {
+	holdsTabs: false,
+	navigates: false,
+	splits: false,
+	runsInPage: true,
+	keepsRecord: false,
+};
+
+export function placedAppOf(app: FilledApp): PlacedApp {
 	return {
-		id,
-		title,
-		newTabTitle: newTabTitle ?? null,
-		art: art ?? null,
-		artOf: artOf ?? null,
+		id: app.id,
+		title: app.title,
+		newTabTitle: app.newTabTitle ?? null,
+		art: app.art ?? null,
+		artOf: app.artOf ?? null,
 		abilities: {
-			holdsTabs: tabs?.holdsTabs ?? false,
-			navigates: tabs?.navigates ?? false,
-			splits: tabs?.splits ?? false,
-			runsInPage: tabs?.runsInPage ?? true,
-			keepsRecord: tabs?.keepsRecord ?? false,
+			...PAGE_APP_ABILITIES,
+			...declaredRulesOf(app.tabs),
 		},
 	};
+}
+
+function declaredRulesOf(tabs: TabRules | undefined): Partial<AppAbilities> {
+	return Object.fromEntries(Object.entries(tabs ?? {}).filter(([, rule]) => rule !== undefined));
 }
