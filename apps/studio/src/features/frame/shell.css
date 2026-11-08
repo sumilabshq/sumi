@@ -486,22 +486,6 @@ body:has([data-browser-pages-live]),
 	min-width: 0;
 }
 
-.wg-pane > .wg-shell-plate::after {
-	content: "";
-	position: absolute;
-	z-index: 3;
-	inset: 0;
-	border-color: var(--sumi-plate);
-	border-style: solid;
-	border-width: var(--wg-pane-rim, 0);
-	border-radius: inherit;
-	pointer-events: none;
-}
-
-.wg-pane > .wg-shell-plate:has([data-browser-pages-live])::after {
-	border-width: 0;
-}
-
 .wg-pane-group {
 	position: absolute;
 	border-radius: var(--sumi-r-group);

@@ -17,7 +17,7 @@ export interface PaneSlotProps {
 }
 
 export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }: PaneSlotProps): ReactElement {
-	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners, rim } = look;
+	const { place, isAtTopLeft, isAtTopRight, isDimmed, isMoving, isAway, corners } = look;
 	const close = usePaneClosing(leaf);
 	const aimPane = useCommand(AimPaneCommand);
 	const markTabSeen = useCommand(MarkTabSeenCommand);
@@ -46,7 +46,6 @@ export const PaneSlot = memo(function PaneSlot({ leaf, look, drawn, onFocused }:
 				top: place.top,
 				width: place.width,
 				height: place.height,
-				...{ "--wg-pane-rim": rim },
 				...(corners === undefined ? {} : { "--wg-pane-corners": corners }),
 			}}
 			data-pane-id={leaf.id}
@@ -90,7 +89,6 @@ function isSameLook(before: SlotLook, after: SlotLook): boolean {
 		before.isMoving === after.isMoving &&
 		before.isAway === after.isAway &&
 		before.corners === after.corners &&
-		before.rim === after.rim &&
 		isSamePlace(before.place, after.place)
 	);
 }

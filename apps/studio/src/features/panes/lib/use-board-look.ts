@@ -5,7 +5,7 @@ import type { FrameBounds, PaneBoard, PaneLeaf, PaneNode, PanePlacement, Placeme
 import { PaneTreeQuery, PlacementPreviewQuery } from "@widgetarium/layout";
 import { focusedGroupOf } from "./aim-targets.js";
 import { drawLayout } from "./draw-layout.js";
-import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf, rimOf } from "./pane-layout.js";
+import { cornersOf, fixedPlaceOf, nodeWithId, paneLayoutOf, panePlacesOf } from "./pane-layout.js";
 import type { PaneEdge, PaneLayout, PanePlace, PaneRect, PaneSpacing } from "./pane-layout.js";
 import { useBoardBox } from "./use-board-box.js";
 import { useLingering } from "./use-lingering.js";
@@ -29,7 +29,6 @@ export interface SlotLook {
 	readonly isMoving: boolean;
 	readonly isAway: boolean;
 	readonly corners: string | undefined;
-	readonly rim: string;
 }
 
 export interface BoardLook {
@@ -176,7 +175,6 @@ function slotLooksOf(
 			isMoving: leaf.id === movingId,
 			isAway: focus !== null && !focus.paneIds.includes(leaf.id),
 			corners: groupId === undefined ? undefined : cornersOf(shown.rects.get(leaf.id), shown.groups.get(groupId)),
-			rim: rimOf(shown.rects.get(leaf.id), groupId === undefined ? undefined : shown.groups.get(groupId)),
 		};
 	};
 }
