@@ -2,6 +2,10 @@ import type { Plugin } from "./plugin";
 import type { AnyApp, ApiOf, CallerFacts, Dependency, ProvideFor } from "./plugin-app";
 import { sentenceOf } from "./sentence";
 import { Service } from "./service";
+import { SlotFills } from "./slot-fills";
+import type { SlotFilled } from "./slot-fills";
+import { UiSlot } from "./ui-slot";
+import type { SlotAdding, SlotComponent, SlotReplacing, SlotShape } from "./ui-slot";
 
 export interface ServiceProvision {
 	readonly service: Service<unknown>;
@@ -11,6 +15,7 @@ export interface ServiceProvision {
 export interface AppliedPlugins {
 	readonly appliedIds: ReadonlySet<string>;
 	readonly refusals: readonly string[];
+	readonly slotFills: SlotFills;
 }
 
 interface ApplyRun {
@@ -19,6 +24,7 @@ interface ApplyRun {
 	readonly failed: Set<string>;
 	readonly refusals: string[];
 	readonly closers: (() => void)[];
+	readonly slotFilled: SlotFilled[];
 }
 
 const NO_PROVIDER = "plugin {plugin} requires the service {service}, which no host provides";
@@ -26,17 +32,18 @@ const REQUIRED_FAILED = "plugin {plugin} requires {required}, which did not star
 const APPLY_THREW = "plugin {plugin} could not apply: {reason}";
 const NOT_LISTED = "plugin {plugin} uses {used}, which it does not list in .require or .optional";
 const CALLED_LATE = "{plugin}.{method} was called after start: call it inside apply";
+const SLOT_LATE = "slot {slot}.{kind} was called after start: call it inside apply";
+const REPLACED_TWICE = "plugin {plugin} replaces slot {slot}, which {other} already replaces: one replacement per slot";
+const SLOTS_TAKEN = "plugin {plugin} returns an API field named slots, which its UI slots take: rename the field";
 
-export function appliedPluginsOf(
-	started: readonly Plugin[],
-	provisions: readonly ServiceProvision[],
-): AppliedPlugins {
+export function appliedPluginsOf(started: readonly Plugin[], provisions: readonly ServiceProvision[]): AppliedPlugins {
 	const run: ApplyRun = {
 		provisions: new Map(provisions.map((provision) => [provision.service.id, provision])),
 		apis: new Map(),
 		failed: new Set(),
 		refusals: [],
 		closers: [],
+		slotFilled: [],
 	};
 
 	for (const each of started) {
@@ -50,6 +57,7 @@ export function appliedPluginsOf(
 	return {
 		appliedIds: new Set(started.filter(({ id }) => !run.failed.has(id)).map(({ id }) => id)),
 		refusals: run.refusals,
+		slotFills: new SlotFills(run.slotFilled.filter(({ pluginId }) => !run.failed.has(pluginId))),
 	};
 }
 
@@ -108,7 +116,7 @@ interface UseAsk {
 
 function usedApiOf(dependency: Dependency, { caller, provided, run }: UseAsk): unknown {
 	if (!(dependency instanceof Service)) {
-		return run.apis.has(dependency.id) ? run.apis.get(dependency.id) : null;
+		return run.apis.has(dependency.id) ? withSlotsOf(dependency, run.apis.get(dependency.id), { caller, run }) : null;
 	}
 
 	const provision = run.provisions.get(dependency.id);
@@ -122,6 +130,86 @@ function usedApiOf(dependency: Dependency, { caller, provided, run }: UseAsk): u
 	}
 
 	return provided.get(dependency.id);
+}
+
+interface FillAsk {
+	readonly caller: CallerFacts;
+	readonly run: ApplyRun;
+}
+
+function withSlotsOf(dependency: Dependency, api: unknown, ask: FillAsk): unknown {
+	const slots = slotsOf(dependency);
+
+	if (slots.length === 0) {
+		return api;
+	}
+
+	if (isRecord(api) && "slots" in api) {
+		throw new Error(sentenceOf(SLOTS_TAKEN, { plugin: dependency.id }));
+	}
+
+	return {
+		...(isRecord(api) ? api : {}),
+		slots: Object.fromEntries(slots.map(([key, slot]) => [key, fillingOf(slot, ask)])),
+	};
+}
+
+function slotsOf(dependency: Dependency): readonly (readonly [string, UiSlot<unknown, SlotShape>])[] {
+	if (!("slots" in dependency) || !isRecord(dependency.slots)) {
+		return [];
+	}
+
+	return Object.entries(dependency.slots).flatMap(([key, slot]) =>
+		slot instanceof UiSlot ? [[key, slot] as const] : [],
+	);
+}
+
+function fillingOf(
+	slot: UiSlot<unknown, SlotShape>,
+	{ caller, run }: FillAsk,
+): SlotReplacing<never> | SlotAdding<never> {
+	const state = { isOpen: true };
+	run.closers.push(() => {
+		state.isOpen = false;
+	});
+	const filled =
+		(kind: SlotFilled["kind"]) =>
+		(component: SlotComponent<never>): void =>
+			recordFill({ slot: slot.name, kind, component, isOpen: state.isOpen }, { caller, run });
+	return slot.shape === "list" ? { add: filled("add") } : { replace: filled("replace") };
+}
+
+interface FillCall {
+	readonly slot: string;
+	readonly kind: SlotFilled["kind"];
+	readonly component: SlotComponent<never>;
+	readonly isOpen: boolean;
+}
+
+function recordFill({ slot, kind, component, isOpen }: FillCall, ask: FillAsk): void {
+	if (!isOpen) {
+		throw new Error(sentenceOf(SLOT_LATE, { slot, kind }));
+	}
+
+	if (kind === "replace") {
+		refuseSecondReplacement(slot, ask);
+	}
+
+	ask.run.slotFilled.push({ slot, pluginId: ask.caller.pluginId, kind, component });
+}
+
+function refuseSecondReplacement(slot: string, { caller, run }: FillAsk): void {
+	const replacing = run.slotFilled.find(
+		(each) => each.slot === slot && each.kind === "replace" && !run.failed.has(each.pluginId),
+	);
+
+	if (replacing !== undefined) {
+		throw new Error(sentenceOf(REPLACED_TWICE, { plugin: caller.pluginId, slot, other: replacing.pluginId }));
+	}
+}
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+	return typeof value === "object" && value !== null;
 }
 
 function closableApiOf(pluginId: string, api: unknown, run: ApplyRun): unknown {
@@ -148,11 +236,7 @@ function closableApiOf(pluginId: string, api: unknown, run: ApplyRun): unknown {
 }
 
 function isMethods(api: unknown): api is Readonly<Record<string, (...args: readonly unknown[]) => unknown>> {
-	return (
-		typeof api === "object" &&
-		api !== null &&
-		Object.values(api).every((value) => typeof value === "function")
-	);
+	return typeof api === "object" && api !== null && Object.values(api).every((value) => typeof value === "function");
 }
 
 function reasonOf(thrown: unknown): string {

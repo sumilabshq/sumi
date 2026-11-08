@@ -18,6 +18,8 @@ import type { DrawnTabPage, WindowOffers, WindowProviderProps } from "@sumi/sumi
 import { builtInPluginState, startSumiPlugins } from "../plugins/sumi-plugins.js";
 import type { ResolvedPlugins, WindowLayer } from "../plugins/sumi-plugins.js";
 import { TabFaceContext } from "@sumi/sumi-host-plugin";
+import type { SlotFills } from "@widgetarium/plugin-framework";
+import { PluginSlotsContext } from "@widgetarium/plugin-framework/react";
 import { MenuTabFace } from "../features/app-host/ui/tab-face/menu-tab-face.js";
 import type { AssistantHosts } from "@widgetarium/assistant/implementation";
 import { createChatsColumnApp } from "../chats-column/chats-column-app.js";
@@ -62,6 +64,7 @@ export interface StartedStudio {
 	readonly windowOffers: WindowOffers;
 	readonly windowProviders: readonly ComponentType<WindowProviderProps>[];
 	readonly windowLayers: readonly WindowLayer[];
+	readonly slotFills: SlotFills;
 }
 
 export interface StudioStart extends ProjectStart {
@@ -145,6 +148,7 @@ export function startOpenedStudio(opened: OpenedApp, start: StudioStart): Starte
 		windowOffers,
 		windowProviders: plugins.windowProviders.map(({ providerOf }) => providerOf(windowOffers)),
 		windowLayers: plugins.windowLayers,
+		slotFills: plugins.slotFills,
 		frameRoutes: frameRoutesOf({
 			workspaceId: lent.appId,
 			core,
@@ -172,9 +176,13 @@ export function WidgetariumStudio({ started }: WidgetariumStudioProps): ReactEle
 	const catalogueAsk = useTakesCatalogueAsks(frame, started.catalogue.requests, state);
 	const backToView = useMemo(() => () => state.show("app"), [state]);
 	return h(
-		TabFaceContext.Provider,
-		{ value: MenuTabFace },
-		studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+		PluginSlotsContext.Provider,
+		{ value: started.slotFills },
+		h(
+			TabFaceContext.Provider,
+			{ value: MenuTabFace },
+			studioLayoutOf(started, { frame, pathname, view, panel, host, catalogueAsk, backToView }),
+		),
 	);
 }
 

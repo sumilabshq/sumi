@@ -34,6 +34,32 @@ export const markdownViewer = plugin("markdown-viewer")
 - **Using what was not listed is refused.** `app.use(dep)` on a dependency missing from `.require` / `.optional` refuses the plugin; so does a required service no host provides.
 - **Refusals spread.** A plugin refused (its `apply` threw, a requirement is off, a cycle) does not start, and every plugin requiring it is refused too, each naming why. Every cycle is refused, optional ones included: `plugin X optionally uses Y, which uses it back`.
 
+## UI slots
+
+A plugin marks a place in its own view where other plugins may draw. Slots exist only in the UI; data goes through the API.
+
+```tsx skip-check
+<PluginSlot name="chat.composer-model" props={{ chatId }}>
+	<DefaultModel />
+</PluginSlot>
+<ListPluginSlot name="chat.composer-badges" props={{ chatId }} />
+
+app.use(chat).slots.composerModel.replace(ModelPicker);
+app.use(chat).slots.composerBadges.add(UsageBadge);
+```
+
+| Element            | Filled with                                                                | Draws                                                                            |
+| ------------------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `<PluginSlot>`     | `.replace(Component)`, one plugin; a second replacement refuses its plugin | the replacement with the slot's `props`, else its children                       |
+| `<ListPluginSlot>` | `.add(Component)`, any number of plugins                                   | every added component with the slot's `props`, in apply order, else its children |
+
+- **Named under the owner.** `name` is `"<plugin id>.<slot>"`, a string literal in a `.tsx` of the owning plugin; `data-framework generate` reads every slot element there and writes `slots: { composerModel: pluginSlot<…>("chat.composer-model"), … }` into `src/generated/plugin.ts`. A name under another plugin's id, one name drawn twice, or `props` that is not an object literal is refused.
+- **Typed by the generator.** A typo in `slots.composerModl` or `.add` on a single slot is a type error; a component must take only the keys of `props`. TRADE-OFF: each prop is typed `never`, so the value types are not checked: reading them needs the type checker.
+- **Filled inside `apply`.** A call after start throws `slot chat.composer-model.replace was called after start: call it inside apply`; the fills of a plugin whose `apply` fails are dropped.
+- **Drawn through context.** `runtime().start()` answers `slotFills`; the studio window passes them in `PluginSlotsContext` (`@widgetarium/plugin-framework/react`), and every slot element under it reads its own. `tools/plugin-slot-checks.ts` renders each case.
+
+No plugin draws a slot yet: they wait for their first use.
+
 A plugin's constant may meet a data module's of the same name (`apps`, `commandMenu`). The plugin keeps the name; the data side is imported under an alias: `apps as appsContract` from `"./contract"`, `apps as appsModule` from `"./implementation"`.
 
 ## A plugin owns its data

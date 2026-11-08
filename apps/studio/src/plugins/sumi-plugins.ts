@@ -1,5 +1,5 @@
 import { MemoryPluginStateStore, runtime } from "@widgetarium/plugin-framework";
-import type { PluginStateStore, SumiProfile } from "@widgetarium/plugin-framework";
+import type { PluginStateStore, SlotFills, SumiProfile } from "@widgetarium/plugin-framework";
 import type { ComponentType } from "react";
 import type { DeviceModule, ModuleContract, Runtime, ServerRuns, ServerSideModule } from "@widgetarium/data-framework";
 import { apps } from "@sumi/apps-plugin";
@@ -84,6 +84,7 @@ export interface ResolvedPlugins {
 	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
 	readonly notes: readonly string[];
+	readonly slotFills: SlotFills;
 	ownPrefixOf(app: string): string | null;
 }
 
@@ -147,6 +148,7 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		startedIds: started.startedIds,
 		refusals: started.refusals,
 		notes: started.notes,
+		slotFills: started.slotFills,
 		// TODO: two plugins drawing one app: the first tab page's plugin is taken as the frame's own
 		ownPrefixOf: (app) => {
 			const drawing = registered.tabPages.find(({ drawn }) => drawn.draws(app));
