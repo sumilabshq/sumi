@@ -14,7 +14,7 @@ import { menuAfter } from "./lib/menu-after.js";
 
 const NO_NAME = "A new name cannot be empty.";
 
-export const doRow = command()
+export const runIntent = command()
 	.public()
 	.input(z.object({ intent: IntentSchema }))
 	.output(DoneSchema)

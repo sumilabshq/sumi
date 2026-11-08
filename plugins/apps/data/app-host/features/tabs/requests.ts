@@ -22,7 +22,7 @@ import {
 } from "../../shared/lib/page-titles/page-titles.js";
 import { addEssential, essentialsOf, nextEssentialIdOf } from "../../shared/lib/essentials/essentials.js";
 import {
-	keepTabsForChats,
+	sendKeepChatTabs,
 	saveEssentials,
 	sendLogged,
 	settleAsked,
@@ -149,7 +149,7 @@ export const rememberPages = subscriber(browser.browserPages.pagesChanged).handl
 );
 
 export const keepChatTabs = subscriber(workspaces.chats.chatsChanged).handle(async (_input, { send, emit }) => {
-	await keepTabsForChats(send);
+	await sendKeepChatTabs(send);
 	emit(tabsSettled);
 });
 
@@ -205,7 +205,7 @@ async function dropGoneTabPanes(send: Send, window: string): Promise<void> {
 
 async function readyToRestore(send: Send, injects: Pick<TabParts, "essentials" | "studioWindow">): Promise<void> {
 	await injects.essentials.essentialsLoaded();
-	await sendLogged("keep a tab for every chat", () => keepTabsForChats(send));
+	await sendLogged("keep a tab for every chat", () => sendKeepChatTabs(send));
 
 	if (!injects.studioWindow.opensBesideAnother()) {
 		await dropGoneTabPanes(send, injects.studioWindow.windowLabel());

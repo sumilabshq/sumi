@@ -99,7 +99,7 @@ export function saveEssentials(was: KeptEssentials, moved: MovedEssentials | nul
 	console.info(`[widgetarium] essentials ${was.essentials.length} → ${moved.kept.essentials.length} (${moved.reason})`);
 }
 
-export async function keepTabsForChats(send: Send): Promise<void> {
+export async function sendKeepChatTabs(send: Send): Promise<void> {
 	const records = await send(workspaces.chats.chatRecords);
 
 	if (!records.isRead) {

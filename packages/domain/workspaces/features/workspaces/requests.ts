@@ -129,7 +129,7 @@ export const renameWorkspace = command()
 	.public()
 	.input(WorkspaceNameSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ id, name }, { workspaces: keptWorkspaces, invalidate }) => {
+	.handle(async ({ id, name }, { workspaces: workspacesGateway, invalidate }) => {
 		invalidate(workspaces);
 		const trimmed = name.trim();
 
@@ -137,7 +137,7 @@ export const renameWorkspace = command()
 			return refuse(NO_NAME);
 		}
 
-		const was = workspaceIn(keptWorkspaces.workspaces(), id);
+		const was = workspaceIn(workspacesGateway.workspaces(), id);
 
 		if (was.name === trimmed) {
 			console.info(`[widgetarium] workspace ${id} rename skipped: already ${trimmed}`);
@@ -145,7 +145,7 @@ export const renameWorkspace = command()
 		}
 
 		const reason = `workspace ${id} name ${was.name} → ${trimmed}`;
-		await keptWorkspaces.saveWorkspaceName(id, trimmed, reason);
+		await workspacesGateway.saveWorkspaceName(id, trimmed, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
@@ -153,11 +153,11 @@ export const setWorkspaceIcon = command()
 	.public()
 	.input(WorkspaceIconChoiceSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ id, icon }, { workspaces: keptWorkspaces, invalidate }) => {
+	.handle(async ({ id, icon }, { workspaces: workspacesGateway, invalidate }) => {
 		invalidate(workspaces);
-		const was = workspaceIn(keptWorkspaces.workspaces(), id);
+		const was = workspaceIn(workspacesGateway.workspaces(), id);
 		const reason = `workspace ${id} icon ${JSON.stringify(was.icon)} → ${JSON.stringify(icon)}`;
-		await keptWorkspaces.saveWorkspaceIcon(id, icon, reason);
+		await workspacesGateway.saveWorkspaceIcon(id, icon, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 
@@ -169,15 +169,18 @@ export const rereadWorkspacesForCurrent = subscriber(currentWorkspaceChanged).ha
 	invalidate(workspaces);
 });
 
-async function switchToWorkspace(id: string, { workspaces, currentWorkspace }: OpeningParts): Promise<void> {
+async function switchToWorkspace(
+	id: string,
+	{ workspaces: workspacesGateway, currentWorkspace }: OpeningParts,
+): Promise<void> {
 	const current = currentWorkspace.currentWorkspace();
 
 	if (id === current.currentId) {
-		console.info(`[widgetarium] open workspace ${id} skipped: it is the current one`);
+		console.info(`[widgetarium] switch to workspace ${id} skipped: it is the current one`);
 		return;
 	}
 
-	workspaceIn(workspaces.workspaces(), id);
+	workspaceIn(workspacesGateway.workspaces(), id);
 	currentWorkspace.saveCurrentWorkspace(
 		{
 			...current,
@@ -185,11 +188,11 @@ async function switchToWorkspace(id: string, { workspaces, currentWorkspace }: O
 		},
 		`workspace opening ${current.openingId ?? "none"} → ${id}`,
 	);
-	const folder = await workspaces.markWorkspaceOpened(id);
+	const folder = await workspacesGateway.markWorkspaceOpened(id);
 
 	if (isFolderMissing(folder)) {
 		console.info(`[widgetarium] workspace ${id} lost its folder ${folder.folder ?? ""}: asking for it`);
-		await workspaces.attachWorkspaceFolder(id);
+		await workspacesGateway.attachWorkspaceFolder(id);
 	}
 
 	const reason = `workspace current ${current.currentId} → ${id} (opened)`;

@@ -30,7 +30,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 	const [pickedAt, setPickedAt] = useState(0);
 	const [isActing, setActing] = useState(false);
 	const [toast, setToast] = useState<Toast>({ message: "", isWarning: false });
-	const doRow = useCommand(commandMenu.doing.doRow);
+	const runIntent = useCommand(commandMenu.doing.runIntent);
 	// TRADE-OFF: the assistant runs in its own app, so the view hands the text over once the chat is made
 	const askComposer = useAskComposer();
 	const rows = results.sections.flatMap((section) => section.rows);
@@ -64,7 +64,7 @@ export function useMenuMoves(results: Results): MenuMoves {
 		},
 		run: (intent) => {
 			setActing(false);
-			void doRow.run({ intent }).then((answer) => {
+			void runIntent.run({ intent }).then((answer) => {
 				if (!answer.ok) {
 					setToast({ message: answer.reason, isWarning: true });
 					return;

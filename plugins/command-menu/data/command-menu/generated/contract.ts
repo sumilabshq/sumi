@@ -245,7 +245,7 @@ export type Done = z.infer<typeof DoneSchema>;
 
 export const commandMenu = moduleContract("command-menu", Device, {
 	doing: {
-		doRow: named("doing.do-row", command()
+		runIntent: named("doing.run-intent", command()
 			.public()
 			.input(z.object({ intent: IntentSchema }))
 			.output(DoneSchema)

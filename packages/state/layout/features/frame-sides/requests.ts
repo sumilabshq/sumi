@@ -14,9 +14,9 @@ export const toggleFrameSide = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ side }, { frameSides: keptFrameSides, invalidate }) => {
+	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
 		invalidate(frameSides);
-		const sides = keptFrameSides.sides();
+		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = toggledLook(was);
 		const refusal = refuseTurn(was, next);
@@ -26,7 +26,7 @@ export const toggleFrameSide = command()
 		}
 
 		const reason = `frame side ${side} ${was} → ${next} (toggle)`;
-		keptFrameSides.saveSides(
+		frameSidesGateway.saveSides(
 			{
 				...sides,
 				[side]: next,
@@ -40,9 +40,9 @@ export const peekFrameSide = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ side }, { frameSides: keptFrameSides, invalidate }) => {
+	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
 		invalidate(frameSides);
-		const sides = keptFrameSides.sides();
+		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = peekedLook(was);
 
@@ -58,7 +58,7 @@ export const peekFrameSide = command()
 		}
 
 		const reason = `frame side ${side} ${was} → ${next} (peek)`;
-		keptFrameSides.saveSides(
+		frameSidesGateway.saveSides(
 			{
 				...sides,
 				[side]: next,
@@ -72,9 +72,9 @@ export const concealFrameSide = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ side }, { frameSides: keptFrameSides, invalidate }) => {
+	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
 		invalidate(frameSides);
-		const sides = keptFrameSides.sides();
+		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = concealedLook(was);
 
@@ -90,7 +90,7 @@ export const concealFrameSide = command()
 		}
 
 		const reason = `frame side ${side} ${was} → ${next} (conceal)`;
-		keptFrameSides.saveSides(
+		frameSidesGateway.saveSides(
 			{
 				...sides,
 				[side]: next,

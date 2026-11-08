@@ -37,7 +37,7 @@ export const toggleCommandMenu = command()
 	.handle(
 		async (
 			{ door, text, shownName, newTabList, pageId },
-			{ commandMenu: keptCommandMenu, menuFills, send, invalidate },
+			{ commandMenu: commandMenuGateway, menuFills, send, invalidate },
 		) => {
 			const refusal = refuseDoor(door, menuFills.doors());
 
@@ -46,7 +46,7 @@ export const toggleCommandMenu = command()
 			}
 
 			invalidate(commandMenu);
-			const was = keptCommandMenu.menu();
+			const was = commandMenuGateway.menu();
 			const filled =
 				text === null
 					? filledWithShown((await send(appHost.tabs.appTabs)).tabs, shownName, await heldTabOfPage(pageId, send))
@@ -59,7 +59,7 @@ export const toggleCommandMenu = command()
 				was.pageId === pageId
 			) {
 				const shut = `command menu open at ${was.door} → shut (the same opener again)`;
-				keptCommandMenu.saveMenu(
+				commandMenuGateway.saveMenu(
 					{
 						...was,
 						isOpen: false,
@@ -71,7 +71,7 @@ export const toggleCommandMenu = command()
 			}
 
 			const reason = `command menu ${was.isOpen ? `open at ${was.door}` : "shut"} → open at ${filled.door} with "${filled.text}" over ${pageId ?? "the shown tab"}, new tabs into ${newTabList ?? "the shown tab's list"}`;
-			keptCommandMenu.saveMenu(
+			commandMenuGateway.saveMenu(
 				{
 					isOpen: true,
 					door: filled.door,
@@ -90,7 +90,7 @@ export const changeMenuDoor = command()
 	.public()
 	.input(z.object({ door: DoorSchema }))
 	.idempotencyKey(Repeatable)
-	.handle(({ door }, { commandMenu: keptCommandMenu, menuFills, invalidate }) => {
+	.handle(({ door }, { commandMenu: commandMenuGateway, menuFills, invalidate }) => {
 		const refusal = refuseDoor(door, menuFills.doors());
 
 		if (refusal !== null) {
@@ -98,7 +98,7 @@ export const changeMenuDoor = command()
 		}
 
 		invalidate(commandMenu);
-		const was = keptCommandMenu.menu();
+		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen || was.door === door) {
 			console.info(`[widgetarium] command menu door skipped: ${was.isOpen ? `already ${door}` : "shut"}`);
@@ -106,7 +106,7 @@ export const changeMenuDoor = command()
 		}
 
 		const reason = `command menu door ${was.door} → ${door}`;
-		keptCommandMenu.saveMenu(
+		commandMenuGateway.saveMenu(
 			{
 				...was,
 				door,
@@ -119,9 +119,9 @@ export const changeMenuDoor = command()
 export const closeCommandMenu = command()
 	.public()
 	.idempotencyKey(Repeatable)
-	.handle((_input, { commandMenu: keptCommandMenu, invalidate }) => {
+	.handle((_input, { commandMenu: commandMenuGateway, invalidate }) => {
 		invalidate(commandMenu);
-		const was = keptCommandMenu.menu();
+		const was = commandMenuGateway.menu();
 
 		if (!was.isOpen) {
 			console.info("[widgetarium] command menu close skipped: already shut");
@@ -129,7 +129,7 @@ export const closeCommandMenu = command()
 		}
 
 		const reason = `command menu open at ${was.door} → shut`;
-		keptCommandMenu.saveMenu(
+		commandMenuGateway.saveMenu(
 			{
 				...was,
 				isOpen: false,

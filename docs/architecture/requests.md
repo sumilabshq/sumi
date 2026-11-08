@@ -13,15 +13,15 @@ export const frameSides = query()
 	.public()
 	.output(FrameSidesSchema)
 	.settlesNow()
-	.handle((_input, { frameSides: keptFrameSides }) => keptFrameSides.sides());
+	.handle((_input, { frameSides: frameSidesGateway }) => frameSidesGateway.sides());
 
 export const toggleFrameSide = command()
 	.public()
 	.input(FrameSideInputSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ side }, { frameSides: keptFrameSides, invalidate }) => {
+	.handle(({ side }, { frameSides: frameSidesGateway, invalidate }) => {
 		invalidate(frameSides);
-		const sides = keptFrameSides.sides();
+		const sides = frameSidesGateway.sides();
 		const was = sides[side];
 		const next = toggledLook(was);
 		const refusal = refuseTurn(was, next);
@@ -31,7 +31,7 @@ export const toggleFrameSide = command()
 		}
 
 		const reason = `frame side ${side} ${was} → ${next} (toggle)`;
-		keptFrameSides.saveSides({ ...sides, [side]: next }, reason);
+		frameSidesGateway.saveSides({ ...sides, [side]: next }, reason);
 		console.info(`[widgetarium] ${reason}`);
 	});
 ```
@@ -141,7 +141,7 @@ export const questions = module()
 - **Order:** `module().on(Server | Device | Anywhere)` first, then `.imports`, `.config`, `.guard`, `.use`, `.provide`, and `.handles(handled)` last.
 - **The generator names and lists.** `widgetarium generate` scans `features/**/requests.ts(x)`, `gateways/**/*.events.ts` and `shared/events/*.events.ts` and writes `generated/handled.ts`: `export const handled = handledItems("questions", [named("agent.ask", ask), …, rereadQuestions])`, every request with a handler and every event named by its path in the module, and every subscriber. The module's name is the kebab of its constant (`chatTabs` → `chat-tabs`), and `.handles(handled)` gives it to the module; nothing reads the name before. Two items on one path, a constant that is not camelCase letters, a `query("…")` given a string and a group named like a field of the descriptor are refused.
 - **Builders from `#module`.** `generated/command.ts` holds `export const { command, query, subscriber } = buildersOf<typeof questions, typeof asked | …>();`, the second argument every event of the package (`never` with none); `package.json` maps `"imports": { "#module": … }` to it. `event` comes from `@widgetarium/data-framework`. A handler's second parameter is typed by what `provide` and the runtime return, so a request has no `.inject`: using a key neither returns is a type error.
-- **Names:** a request's path is its feature folder and its constant in kebab case (`frame-sides.toggle-frame-side`); handling it stamps the module, `layout.frame-sides.toggle-frame-side`, its events and the events its own subscribers hear too. A building block and every step of its chain share one identity cell, so the name the generator writes once reaches the object every file imports. TRADE-OFF: named by the generated list, since JavaScript cannot read a variable's name; reading an unnamed one throws, naming `npm run generate`. That full name is its address on the wire, in logs and in done keys; the generated contract carries it. Inside its module a handler names a sibling by direct import (`invalidate(frameSides)`); when a destructured key shadows it, the key is renamed in the destructuring (`{ frameSides: keptFrameSides }`), never copied into a proxy variable.
+- **Names:** a request's path is its feature folder and its constant in kebab case (`frame-sides.toggle-frame-side`); handling it stamps the module, `layout.frame-sides.toggle-frame-side`, its events and the events its own subscribers hear too. A building block and every step of its chain share one identity cell, so the name the generator writes once reaches the object every file imports. TRADE-OFF: named by the generated list, since JavaScript cannot read a variable's name; reading an unnamed one throws, naming `npm run generate`. That full name is its address on the wire, in logs and in done keys; the generated contract carries it. Inside its module a handler names a sibling by direct import (`invalidate(frameSides)`); when a destructured key shadows it, the key is renamed in the destructuring to `<key>Gateway` (`{ frameSides: frameSidesGateway }`), never copied into a proxy variable.
 - **`.provide((facts) => injects)`** receives `{ platform, scope, env, config }`: `platform` is `"tauri" | "browser" | "server"`, `scope.workspaceId` the workspace (the app id on the web), `env` the variables, `config` what the module was called with. The module picks its implementations from them in `gateways/<module>-parts/` (`layoutPartsOn`, one entry per platform), keyed by gateway name.
 - **A test hands fakes:** `layout({ injects: fakes })` skips `provide`; `runtime().modules(layout({ injects: fakes })).start({ platform, scope }).send(request, input)` runs the real handlers over them (`tools/command-menu-checks.ts`).
 

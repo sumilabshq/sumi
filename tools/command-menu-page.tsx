@@ -142,7 +142,7 @@ const studio = runtime()
 		),
 	)
 	.start({ platform: "browser", scope: { workspaceId: "default" } });
-void studio.send(commandMenu.doing.doRow, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
+void studio.send(commandMenu.doing.runIntent, { intent: { do: "open-app", app: "canvas", title: "Canvas" } });
 
 const ASK_WORKSPACE = {
 	id: "default",

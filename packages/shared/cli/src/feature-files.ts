@@ -54,12 +54,16 @@ export function featureFilesOf(seed: FeatureSeed): PlannedFile[] {
 	];
 }
 
+export function gatewayBindingOf(key: string): string {
+	return `${key}Gateway`;
+}
+
 export function inputSchemaOf(command: string): string {
 	return `${pascalOf(kebabOf(command))}${INPUT_SUFFIX}`;
 }
 
-function heldKeyOf(seed: FeatureSeed, { key, record }: FeatureNames): string {
-	return seed.query === key ? `kept${record}` : key;
+function heldKeyOf(seed: FeatureSeed, { key }: FeatureNames): string {
+	return seed.query === key ? gatewayBindingOf(key) : key;
 }
 
 function relativeJs(file: string): string {

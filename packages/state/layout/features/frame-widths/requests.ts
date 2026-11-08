@@ -24,9 +24,9 @@ export const resizeFrameEdge = command()
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.handle(({ edge, px, mostPx }, { frameWidths: keptFrameWidths, invalidate }) => {
+	.handle(({ edge, px, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
 		invalidate(frameWidths);
-		const widths = widthsWithin(keptFrameWidths.widths());
+		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, px, mostPx);
 
 		if (widths[edge] === next) {
@@ -34,7 +34,7 @@ export const resizeFrameEdge = command()
 		}
 
 		const reason = `frame width ${edge} ${widths[edge]} → ${next} (drag)`;
-		keptFrameWidths.saveWidths(
+		frameWidthsGateway.saveWidths(
 			{
 				...widths,
 				[edge]: next,
@@ -53,9 +53,9 @@ export const resetFrameEdge = command()
 		}),
 	)
 	.idempotencyKey(Repeatable)
-	.handle(({ edge, mostPx }, { frameWidths: keptFrameWidths, invalidate }) => {
+	.handle(({ edge, mostPx }, { frameWidths: frameWidthsGateway, invalidate }) => {
 		invalidate(frameWidths);
-		const widths = widthsWithin(keptFrameWidths.widths());
+		const widths = widthsWithin(frameWidthsGateway.widths());
 		const next = edgePxWithin(edge, FRAME_BOUNDS[edge].usualPx, mostPx);
 
 		if (widths[edge] === next) {
@@ -63,7 +63,7 @@ export const resetFrameEdge = command()
 		}
 
 		const reason = `frame width ${edge} ${widths[edge]} → ${next} (reset)`;
-		keptFrameWidths.saveWidths(
+		frameWidthsGateway.saveWidths(
 			{
 				...widths,
 				[edge]: next,

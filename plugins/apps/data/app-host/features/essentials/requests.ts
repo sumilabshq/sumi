@@ -8,7 +8,7 @@ import {
 	essentialsOf,
 	findEssential,
 	moveEssential,
-	removeEssentialMove,
+	moveToRemoveEssential,
 } from "../../shared/lib/essentials/essentials.js";
 import { saveEssentials, settleAsked } from "../../shared/lib/tab-showing/tab-settling.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
@@ -93,7 +93,7 @@ async function releaseEssential(
 	await settleAsked(reach, (at) =>
 		reach.send(places.tabOpening.releaseEssentialTab, { at, essential: refOf(essential), place }),
 	);
-	saveEssentials(kept, removeEssentialMove(kept, essential), reach.injects.essentials);
+	saveEssentials(kept, moveToRemoveEssential(kept, essential), reach.injects.essentials);
 }
 
 async function keptOf(essentials: EssentialsGateway): Promise<KeptEssentials> {

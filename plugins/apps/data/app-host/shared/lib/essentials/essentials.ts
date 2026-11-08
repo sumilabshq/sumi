@@ -70,7 +70,7 @@ export function moveEssential(kept: KeptEssentials, moved: Essential, at: number
 	};
 }
 
-export function removeEssentialMove(kept: KeptEssentials, removed: Essential): MovedEssentials {
+export function moveToRemoveEssential(kept: KeptEssentials, removed: Essential): MovedEssentials {
 	return {
 		kept: {
 			...kept,

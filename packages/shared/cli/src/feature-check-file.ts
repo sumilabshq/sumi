@@ -1,4 +1,4 @@
-import { featureNamesOf, type FeatureNames, type FeatureSeed } from "./feature-files.js";
+import { featureNamesOf, gatewayBindingOf, type FeatureNames, type FeatureSeed } from "./feature-files.js";
 import { memoryPartsOf, moduleConstOf, pickerPathOf, type ModulePlacement } from "./module-files.js";
 import { FRAMEWORK, camelOf, kebabOf } from "./scaffold-names.js";
 
@@ -28,7 +28,7 @@ export function checkTextOf(checked: CheckedFeature): string {
 		names: featureNamesOf(checked.seed.feature),
 		isServer: checked.placement === "Server",
 		moduleConst: moduleConstOf(checked.module),
-		held: `kept${featureNamesOf(checked.seed.feature).record}`,
+		held: gatewayBindingOf(featureNamesOf(checked.seed.feature).key),
 	};
 	const featureOf = (request: string): string => `${plan.moduleConst}.${camelOf(checked.seed.feature)}.${request}`;
 	const { seed } = checked;

@@ -36,9 +36,9 @@ export const answerAsk = command()
 	.public()
 	.input(AnswerAskSchema)
 	.idempotencyKey((input) => input.id)
-	.handle(({ id, answer }, { accessAsks: keptAccessAsks, browserGrants, onceAllowances, clock, invalidate }) => {
+	.handle(({ id, answer }, { accessAsks: accessAsksGateway, browserGrants, onceAllowances, clock, invalidate }) => {
 		invalidate(accessAsks);
-		const asked = keptAccessAsks.accessAsks().find((ask) => ask.id === id);
+		const asked = accessAsksGateway.accessAsks().find((ask) => ask.id === id);
 
 		if (asked === undefined) {
 			return refuse(ALREADY_ANSWERED);
@@ -58,7 +58,7 @@ export const answerAsk = command()
 			allowOnce(asked, answering);
 		}
 
-		keptAccessAsks.saveAnswer(id, answer);
+		accessAsksGateway.saveAnswer(id, answer);
 		console.info(`[widgetarium] browser ask ${id} for ${asked.siteKey} waiting → ${answer}`);
 	});
 

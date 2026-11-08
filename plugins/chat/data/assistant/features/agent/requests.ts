@@ -72,8 +72,8 @@ export const chooseClaudeOption = command()
 	.input(ClaudeOptionInChatSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(({ option: asked }, { claudeOptions: keptClaudeOptions, chatDrafts, invalidate }) => {
-			const was = keptClaudeOptions.claudeOptions();
+		inChat(({ option: asked }, { claudeOptions: claudeOptionsGateway, chatDrafts, invalidate }) => {
+			const was = claudeOptionsGateway.claudeOptions();
 
 			if (was === null) {
 				return refuse(OPTIONS_NOT_HERE);
@@ -81,7 +81,7 @@ export const chooseClaudeOption = command()
 
 			invalidate(claudeOptions);
 			const next = withOptionChosen(was, asked);
-			chooseOptions({ claudeOptions: keptClaudeOptions, chatDrafts }, next);
+			chooseOptions({ claudeOptions: claudeOptionsGateway, chatDrafts }, next);
 			console.debug(
 				`[widgetarium] claude options ${JSON.stringify(was)} → ${JSON.stringify(next)} (chose ${JSON.stringify(asked)})`,
 			);
@@ -93,7 +93,7 @@ export const chooseClaudeModel = command()
 	.input(ClaudeModelAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async ({ model }, { assistantSetup, claudeOptions: keptClaudeOptions, chatDrafts, invalidate }) => {
+		inChat(async ({ model }, { assistantSetup, claudeOptions: claudeOptionsGateway, chatDrafts, invalidate }) => {
 			const setup = await assistantSetup.setup();
 
 			if (!setup.providers.some(({ id }) => id === CLAUDE_CODE_PROVIDER_ID)) {
@@ -109,14 +109,14 @@ export const chooseClaudeModel = command()
 				);
 			}
 
-			const was = keptClaudeOptions.claudeOptions();
+			const was = claudeOptionsGateway.claudeOptions();
 
 			if (was === null) {
 				return refuse(OPTIONS_NOT_HERE);
 			}
 
 			invalidate(claudeOptions);
-			chooseOptions({ claudeOptions: keptClaudeOptions, chatDrafts }, withOptionChosen(was, { model }));
+			chooseOptions({ claudeOptions: claudeOptionsGateway, chatDrafts }, withOptionChosen(was, { model }));
 			console.debug(`[widgetarium] claude model ${was.model} → ${model}`);
 		}),
 	);
@@ -137,16 +137,16 @@ export const chooseWorkingFolder = command()
 	.input(FolderAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async ({ path }, { workingFolders: keptWorkingFolders, invalidate }) => {
-			const was = keptWorkingFolders.workspaceFolder();
+		inChat(async ({ path }, { workingFolders: workingFoldersGateway, invalidate }) => {
+			const was = workingFoldersGateway.workspaceFolder();
 
 			if (was === null) {
 				return refuse(WORKING_FOLDER_NOT_HERE);
 			}
 
 			invalidate(workingFolders);
-			const next = await keptWorkingFolders.chosenFolder(was.id, path);
-			keptWorkingFolders.saveWorkspaceFolder(next);
+			const next = await workingFoldersGateway.chosenFolder(was.id, path);
+			workingFoldersGateway.saveWorkspaceFolder(next);
 			console.info(`[widgetarium] working folder ${String(was.folder)} → ${String(next.folder)} (chose ${path})`);
 		}),
 	);
@@ -156,14 +156,14 @@ export const pickWorkingFolder = command()
 	.input(ChatKeySchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async (_input, { workingFolders: keptWorkingFolders, invalidate }) => {
-			const was = keptWorkingFolders.workspaceFolder();
+		inChat(async (_input, { workingFolders: workingFoldersGateway, invalidate }) => {
+			const was = workingFoldersGateway.workspaceFolder();
 
 			if (was === null) {
 				return refuse(WORKING_FOLDER_NOT_HERE);
 			}
 
-			const picked = await keptWorkingFolders.attachedPickedFolder(was.id);
+			const picked = await workingFoldersGateway.attachedPickedFolder(was.id);
 
 			if (picked === null) {
 				console.info(`[widgetarium] working folder kept ${String(was.folder)}: no folder was picked`);
@@ -171,7 +171,7 @@ export const pickWorkingFolder = command()
 			}
 
 			invalidate(workingFolders);
-			keptWorkingFolders.saveWorkspaceFolder(picked);
+			workingFoldersGateway.saveWorkspaceFolder(picked);
 			console.info(
 				`[widgetarium] working folder ${String(was.folder)} → ${String(picked.folder)} (picked another folder)`,
 			);

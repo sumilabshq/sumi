@@ -65,8 +65,8 @@ export const removeAttachment = command()
 	.input(AttachmentAskedSchema)
 	.idempotencyKey((input) => input.id)
 	.handle(
-		inChat(({ id }, { draftAttachments: keptDraftAttachments, invalidate }) => {
-			const drafts = keptDraftAttachments.draftAttachments();
+		inChat(({ id }, { draftAttachments: draftAttachmentsGateway, invalidate }) => {
+			const drafts = draftAttachmentsGateway.draftAttachments();
 			const removed = drafts.find((draft) => draft.id === id);
 
 			if (!removed) {
@@ -75,7 +75,7 @@ export const removeAttachment = command()
 
 			invalidate(draftAttachments);
 			saveDrafts(
-				keptDraftAttachments,
+				draftAttachmentsGateway,
 				drafts.filter((draft) => draft !== removed),
 				REMOVED.replace("{name}", removed.name),
 			);
@@ -105,10 +105,10 @@ export const takeDraft = command()
 	.output(TakenDraftSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat((_input, { draftAttachments: keptDraftAttachments, invalidate }) => {
-			const attachments = keptDraftAttachments.draftAttachments();
+		inChat((_input, { draftAttachments: draftAttachmentsGateway, invalidate }) => {
+			const attachments = draftAttachmentsGateway.draftAttachments();
 			invalidate(draftAttachments);
-			saveDrafts(keptDraftAttachments, [], HANDED_OVER);
+			saveDrafts(draftAttachmentsGateway, [], HANDED_OVER);
 			return { attachments: [...attachments] };
 		}),
 	);
@@ -169,33 +169,35 @@ export const attachFolder = command()
 	.input(ChatKeySchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(async (_input, { assistantSetup, attachmentFolder, draftAttachments: keptDraftAttachments, invalidate }) => {
-			if (!attachmentFolder.canPick()) {
-				return refuse(FOLDERS_NOT_HERE);
-			}
+		inChat(
+			async (_input, { assistantSetup, attachmentFolder, draftAttachments: draftAttachmentsGateway, invalidate }) => {
+				if (!attachmentFolder.canPick()) {
+					return refuse(FOLDERS_NOT_HERE);
+				}
 
-			const provider = chosenOf(await assistantSetup.setup());
-			const held = keptDraftAttachments.draftAttachments();
-			const refusal = refusalOfReach("folder", provider) ?? refusalOfCount(held.length, 1, provider.reads);
+				const provider = chosenOf(await assistantSetup.setup());
+				const held = draftAttachmentsGateway.draftAttachments();
+				const refusal = refusalOfReach("folder", provider) ?? refusalOfCount(held.length, 1, provider.reads);
 
-			if (refusal) {
-				return refuse(refusal);
-			}
+				if (refusal) {
+					return refuse(refusal);
+				}
 
-			const path = await attachmentFolder.pickedFolder();
+				const path = await attachmentFolder.pickedFolder();
 
-			if (path === null) {
-				console.debug("[widgetarium] attach folder skipped: no folder was picked");
-				return;
-			}
+				if (path === null) {
+					console.debug("[widgetarium] attach folder skipped: no folder was picked");
+					return;
+				}
 
-			invalidate(draftAttachments);
-			attachDrafted(
-				keptDraftAttachments,
-				draftedFolders([path], provider, keptDraftAttachments.draftAttachments()),
-				provider.reads,
-			);
-		}),
+				invalidate(draftAttachments);
+				attachDrafted(
+					draftAttachmentsGateway,
+					draftedFolders([path], provider, draftAttachmentsGateway.draftAttachments()),
+					provider.reads,
+				);
+			},
+		),
 	);
 
 export const fileDrag = query()
@@ -210,9 +212,13 @@ export const hearPageDrag = command()
 	.input(PageDragAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(({ drag }, { fileDrag: keptFileDrag, invalidate }) => {
+		inChat(({ drag }, { fileDrag: fileDragGateway, invalidate }) => {
 			invalidate(fileDrag);
-			saveFileDrag(keptFileDrag, heardPageDrag(keptFileDrag.fileDrag(), drag), `the page heard a file drag ${drag}`);
+			saveFileDrag(
+				fileDragGateway,
+				heardPageDrag(fileDragGateway.fileDrag(), drag),
+				`the page heard a file drag ${drag}`,
+			);
 		}),
 	);
 
@@ -300,7 +306,7 @@ export const openChatDraft = command()
 		inChat(
 			async (
 				{ chat: chatId },
-				{ chatDrafts, draftAttachments: keptDraftAttachments, claudeOptions, assistantSetup, invalidate },
+				{ chatDrafts, draftAttachments: draftAttachmentsGateway, claudeOptions, assistantSetup, invalidate },
 			) => {
 				const left = chatDrafts.openChat();
 
@@ -312,7 +318,7 @@ export const openChatDraft = command()
 				}
 
 				if (left !== null) {
-					holdChatDraft(chatDrafts, left, { attachments: keptDraftAttachments.draftAttachments() });
+					holdChatDraft(chatDrafts, left, { attachments: draftAttachmentsGateway.draftAttachments() });
 				}
 
 				chatDrafts.saveOpenChat(chatId);
@@ -321,7 +327,7 @@ export const openChatDraft = command()
 				const opened = chatDrafts.chatDraft(chatId);
 				chatDrafts.saveUnseenSaid(opened === null || opened.said === "" ? null : opened.said);
 				invalidate(draftAttachments);
-				saveDrafts(keptDraftAttachments, opened?.attachments ?? [], CHAT_SWITCHED);
+				saveDrafts(draftAttachmentsGateway, opened?.attachments ?? [], CHAT_SWITCHED);
 				wearChoices(claudeOptions, opened?.choices ?? null, chatId);
 				await wearProvider(assistantSetup, opened?.provider ?? null, chatId);
 				return {
@@ -333,11 +339,11 @@ export const openChatDraft = command()
 	);
 
 export const hearHostDrag = subscriber(fileDragged).handle(
-	inChat(({ drag: event }, { fileDrag: keptFileDrag, invalidate }) => {
+	inChat(({ drag: event }, { fileDrag: fileDragGateway, invalidate }) => {
 		invalidate(fileDrag);
 		saveFileDrag(
-			keptFileDrag,
-			heardHostDrag(keptFileDrag.fileDrag(), event, crypto.randomUUID()),
+			fileDragGateway,
+			heardHostDrag(fileDragGateway.fileDrag(), event, crypto.randomUUID()),
 			`the host heard a file drag ${event.kind}`,
 		);
 	}),

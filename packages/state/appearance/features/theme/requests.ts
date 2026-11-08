@@ -28,8 +28,8 @@ export const chooseTheme = command()
 	.input(ChooseThemeInputSchema)
 	.idempotencyKey(Repeatable)
 	.guard(StudioCallerGuard)
-	.handle(({ choice }, { theme: keptTheme, invalidate }) => {
-		const was = keptTheme.choice();
+	.handle(({ choice }, { theme: themeGateway, invalidate }) => {
+		const was = themeGateway.choice();
 
 		if (was === choice) {
 			console.info(`[widgetarium] theme choice ${choice} kept (already chosen)`);
@@ -37,7 +37,7 @@ export const chooseTheme = command()
 		}
 
 		const reason = `theme choice ${was} → ${choice} (chosen in the studio)`;
-		keptTheme.saveChoice(choice, reason);
+		themeGateway.saveChoice(choice, reason);
 		invalidate(theme);
 		console.info(`[widgetarium] ${reason}`);
 	});

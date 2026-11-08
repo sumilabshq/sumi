@@ -23,11 +23,11 @@ export const prefillDraft = command()
 	.input(PrefillAskedSchema)
 	.idempotencyKey(PerCall)
 	.handle(
-		inChat(({ text }, { composerPrefill: keptComposerPrefill, invalidate }) => {
+		inChat(({ text }, { composerPrefill: composerPrefillGateway, invalidate }) => {
 			invalidate(composerPrefill);
-			const was = keptComposerPrefill.composerPrefill();
-			keptComposerPrefill.saveComposerPrefill({
-				id: keptComposerPrefill.lastPrefillId() + 1,
+			const was = composerPrefillGateway.composerPrefill();
+			composerPrefillGateway.saveComposerPrefill({
+				id: composerPrefillGateway.lastPrefillId() + 1,
 				text,
 			});
 			console.debug(
@@ -41,8 +41,8 @@ export const takePrefill = command()
 	.input(PrefillTakenSchema)
 	.idempotencyKey(Repeatable)
 	.handle(
-		inChat(({ id }, { composerPrefill: keptComposerPrefill, invalidate }) => {
-			const was = keptComposerPrefill.composerPrefill();
+		inChat(({ id }, { composerPrefill: composerPrefillGateway, invalidate }) => {
+			const was = composerPrefillGateway.composerPrefill();
 
 			if (was?.id !== id) {
 				console.debug(
@@ -52,7 +52,7 @@ export const takePrefill = command()
 			}
 
 			invalidate(composerPrefill);
-			keptComposerPrefill.saveComposerPrefill(null);
+			composerPrefillGateway.saveComposerPrefill(null);
 			console.debug(`[widgetarium] composer prefill ${JSON.stringify(was.text)} → null (${TAKEN})`);
 		}),
 	);

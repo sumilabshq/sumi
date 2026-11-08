@@ -3,7 +3,7 @@ import { command, query, subscriber } from "#module";
 import { windowsChanged } from "../../gateways/windows/windows.events.js";
 import { WindowsGateway } from "../../gateways/windows/windows.gateway.js";
 import { LiveWindowsSchema, WindowLabelSchema, WindowsSchema } from "../../shared/schema/windows.schema.js";
-import { closeWindowMove, openWindowMove, keepWindows } from "./lib/windows.js";
+import { moveToCloseWindow, moveToOpenWindow, keepWindows } from "./lib/windows.js";
 import type { MoveWindows } from "../../shared/schema/windows.schema.js";
 
 export const openWindows = query()
@@ -17,7 +17,7 @@ export const openWindow = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window }, { windows, invalidate }) => {
 		invalidate(openWindows);
-		await moveAndLog(windows, openWindowMove(window, Date.now()), `open ${window}`);
+		await moveAndLog(windows, moveToOpenWindow(window, Date.now()), `open ${window}`);
 	});
 
 export const closeWindow = command()
@@ -26,7 +26,7 @@ export const closeWindow = command()
 	.idempotencyKey(Repeatable)
 	.handle(async ({ window }, { windows, invalidate }) => {
 		invalidate(openWindows);
-		await moveAndLog(windows, closeWindowMove(window), `close ${window}`);
+		await moveAndLog(windows, moveToCloseWindow(window), `close ${window}`);
 	});
 
 export const keepLiveWindows = command()

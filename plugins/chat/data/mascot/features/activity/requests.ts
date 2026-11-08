@@ -14,12 +14,12 @@ export const recordAgentEvents = command()
 	.public()
 	.input(AgentEventsSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ events }, { agentActivity: keptAgentActivity, invalidate }) => {
+	.handle(({ events }, { agentActivity: agentActivityGateway, invalidate }) => {
 		invalidate(agentActivity);
-		const was = keptAgentActivity.agentActivity();
+		const was = agentActivityGateway.agentActivity();
 		const now = activityAfter(was, events, Date.now());
 		const reason = `agent ${events.join(", ")}: ${JSON.stringify(was)} → ${JSON.stringify(now)}`;
-		keptAgentActivity.saveAgentActivity(now, reason);
+		agentActivityGateway.saveAgentActivity(now, reason);
 		console.debug(`[widgetarium] ${reason}`);
 	});
 

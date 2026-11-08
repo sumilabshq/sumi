@@ -114,7 +114,9 @@ await check("the empty Ask door makes an empty chat on Enter and Shift+Enter", a
 
 await check("an empty ask makes one untitled chat and hands its id back", async () => {
 	const chatsBefore = await chatCount();
-	const done = ok(await studio.send(commandMenu.doing.doRow, { intent: { do: "ask-ink", text: "", sends: false } }));
+	const done = ok(
+		await studio.send(commandMenu.doing.runIntent, { intent: { do: "ask-ink", text: "", sends: false } }),
+	);
 	assert.equal(await chatCount(), chatsBefore + 1);
 	assert.notEqual(done.chatId, null);
 });
@@ -158,7 +160,7 @@ await check("the Ask door offers Create and send, then Create only", async () =>
 await check("Ask Sumi makes a chat named by the text", async () => {
 	const found = await results({ text: "Release notes", door: "anywhere" });
 	const chatsBefore = await chatCount();
-	const done = ok(await studio.send(commandMenu.doing.doRow, { intent: intentOf(found.askInk) }));
+	const done = ok(await studio.send(commandMenu.doing.runIntent, { intent: intentOf(found.askInk) }));
 	assert.equal(done.isMenuKept, false);
 	assert.equal(await chatCount(), chatsBefore + 1);
 	const titles = ok(await studio.send(chatTabs.chatList.chatList)).recents.map((row) => row.title);
@@ -168,7 +170,7 @@ await check("Ask Sumi makes a chat named by the text", async () => {
 
 await check("Create only makes the chat and says nothing was sent", async () => {
 	const found = await results({ text: "Draft only", door: "ask" });
-	const done = ok(await studio.send(commandMenu.doing.doRow, { intent: intentOf(found.fallbackIntent) }));
+	const done = ok(await studio.send(commandMenu.doing.runIntent, { intent: intentOf(found.fallbackIntent) }));
 	assert.equal(done.said, "New chat: drafted “Draft only”");
 	assert.equal(ok(await studio.send(commandMenu.opening.commandMenu)).isOpen, false);
 });
@@ -210,7 +212,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
 	const tabsBefore = ok(await withPages.send(appHost.tabs.appTabs)).tabs.length;
 	ok(
-		await withPages.send(commandMenu.doing.doRow, {
+		await withPages.send(commandMenu.doing.runIntent, {
 			intent: { do: "open-address", address: "example.com", where: "new-tab" },
 		}),
 	);
@@ -221,7 +223,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 		`opened ${pages.opened.join(", ")}`,
 	);
 	ok(
-		await withPages.send(commandMenu.doing.doRow, {
+		await withPages.send(commandMenu.doing.runIntent, {
 			intent: { do: "open-address", address: "github.com", where: "this-tab" },
 		}),
 	);
@@ -232,7 +234,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	);
 	console.info(`    pages: ${pages.calls.join(", ")} (${newPage}); addresses: ${pages.opened.join(", ")}`);
 	ok(
-		await withPages.send(commandMenu.doing.doRow, {
+		await withPages.send(commandMenu.doing.runIntent, {
 			intent: { do: "open-address", address: "second.example", where: "new-tab" },
 		}),
 	);
@@ -274,11 +276,11 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 	assert.equal(filledWithShown([shownRow, pressedRow], "", null).text, "example.com/shown");
 	ok(await withPages.send(commandMenu.opening.closeCommandMenu));
 	const shownId = ok(await withPages.send(appHost.tabs.appTabs)).tabs.find((tab) => tab.isShown)?.id ?? "";
-	ok(await withPages.send(commandMenu.doing.doRow, { intent: { do: "close-tab", id: shownId, title: "example" } }));
+	ok(await withPages.send(commandMenu.doing.runIntent, { intent: { do: "close-tab", id: shownId, title: "example" } }));
 	const empty = ok(await withPages.send(commandMenu.results.commandMenuResults, { text: "", door: "new-tab" }));
 	const closedRow = empty.sections.find((section) => section.label === "Recently closed")?.rows[0];
 	assert.equal(closedRow?.kind, "closed-tab");
-	ok(await withPages.send(commandMenu.doing.doRow, { intent: closedRow.intent }));
+	ok(await withPages.send(commandMenu.doing.runIntent, { intent: closedRow.intent }));
 	assert.ok(
 		ok(await withPages.send(appHost.tabs.appTabs)).tabs.some((tab) => tab.id === shownId),
 		"the closed tab came back",
@@ -286,7 +288,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 });
 
 await check("the header door fills the text with the shown tab's deep link", async () => {
-	ok(await studio.send(commandMenu.doing.doRow, { intent: { do: "open-app", app: "canvas", title: "Canvas" } }));
+	ok(await studio.send(commandMenu.doing.runIntent, { intent: { do: "open-app", app: "canvas", title: "Canvas" } }));
 	ok(await studio.send(commandMenu.opening.toggleCommandMenu, { door: "this-tab", text: null }));
 	const menu = ok(await studio.send(commandMenu.opening.commandMenu));
 	assert.equal(menu.door, "this-tab");
@@ -348,7 +350,7 @@ await check("a chat in another workspace is found and opened there", async () =>
 	const row = found.sections.flatMap((section) => section.rows).find((one) => one.intent.do === "open-chat-elsewhere");
 	assert.equal(row?.title, "Default tab number one");
 	assert.equal(row.meta, "In Default");
-	ok(await elsewhere.send(commandMenu.doing.doRow, { intent: row.intent }));
+	ok(await elsewhere.send(commandMenu.doing.runIntent, { intent: row.intent }));
 	assert.equal(ok(await elsewhere.send(workspaces.workspaces.workspaces)).current.id, "default");
 });
 
