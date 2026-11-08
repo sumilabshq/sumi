@@ -2,12 +2,13 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { z } from "zod";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { localTransport, mountOrStop, runtime } from "@widgetarium/data-framework";
+import { localTransport, mountOrStop, runtime, wireNameOf } from "@widgetarium/data-framework";
 import type { Runtime } from "@widgetarium/data-framework";
 import { places as placesContract } from "@widgetarium/places/contract";
 import { tasks } from "@widgetarium/tasks/contract";
 import { AppCallerAuthenticate, startSumiPlugins } from "@widgetarium/studio";
-import type { ResolvedPlugins } from "@widgetarium/studio";
+import type { BackgroundModule, ResolvedPlugins } from "@widgetarium/studio";
+import type { ModuleExposure, ServedModule } from "@sumi/sumi-host-plugin";
 import { HOST_CAPABILITY_MODULES } from "../plugins/host-capabilities.js";
 import { workspacePluginStateOf } from "../plugins/workspace-plugin-state.js";
 import { serveCore } from "./core-calls.js";
@@ -30,6 +31,7 @@ const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins 
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
 const PLUGIN_NOTED = "[studio-core] workspace {workspace}: plugins: {note}";
 const NOT_STARTED = "[studio-core] workspace {workspace}: none → failed, every call answers unreachable";
+const NOT_EXPOSED = "[studio-core] module {module}: an adapter refused to serve it; the core runs on without it";
 
 export function startCore(): void {
 	const served = new Map<string, Runtime>();
@@ -126,12 +128,34 @@ function coreServedOver({ workspace, listener, store, plugins }: CoreServing): R
 	return mountOrStop(core, (started) => {
 		const exposed = started.expose({ adapter: CORE_IPC, authenticate });
 		own.serve(started, { authenticate });
+		exposeBackgroundModules(started, plugins.backgroundModules);
 		const places = runtime()
 			.imports(placesContract({ over: own }), tasks({ over: own }))
 			.start();
 		listener.serve(exposed);
 		return places;
 	});
+}
+
+function exposeBackgroundModules(started: Runtime, background: readonly BackgroundModule[]): void {
+	for (const { contract, prefix, exposes } of background) {
+		const module = wireNameOf(prefix, contract.name);
+
+		for (const expose of exposes) {
+			exposeOrReport(expose, {
+				runtime: started,
+				module,
+			});
+		}
+	}
+}
+
+function exposeOrReport(expose: ModuleExposure, served: ServedModule): void {
+	try {
+		expose(served);
+	} catch (refused) {
+		console.error(NOT_EXPOSED.replace("{module}", served.module), refused);
+	}
 }
 
 function closeEverywhere(served: ReadonlyMap<string, Runtime>, window: string): void {

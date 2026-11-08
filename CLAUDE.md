@@ -90,6 +90,7 @@ plugins/terminal         FSL  @sumi/terminal-plugin: the Terminal app, a fill of
 plugins/browser-page     FSL  @sumi/browser-page-plugin: the Browser app, a fill of the apps slot, and its module (plugins/browser-page/data/web-page, @widgetarium/web-page) served to every frame through the frame modules slot
 plugins/command-menu     FSL  @sumi/command-menu-plugin: the menu's doors, pages and row sources, its module (plugins/command-menu/data/command-menu, @sumi/command-menu) and its window layer
 plugins/chat             FSL  @sumi/chat-plugin: the chat's modules (plugins/chat/data/assistant, plugins/chat/data/questions, plugins/chat/data/mascot, plugins/chat/data/chat-tabs: the chat list and which chat a new or empty pane opens), the chat tab page, the Ask composer (a window provider), the questions background module and the menu's Ask door ⌘I with its page
+plugins/mcp              FSL  @sumi/mcp-plugin: the mcp.mcpModules slot (background modules served to agents over MCP through serveMcp) and its module (plugins/mcp/data/mcp, @sumi/mcp), the one list of MCP servers
       ↓
 packages/domain/*             business data modules: workspaces, browser, canvas, tasks, fixture-billing
 packages/state/*              app-state data modules: layout, appearance

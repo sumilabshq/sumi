@@ -7,6 +7,7 @@ import { apps } from "@sumi/apps-plugin";
 import { chat } from "@sumi/chat-plugin";
 import { commandMenu } from "@sumi/command-menu-plugin";
 import { main } from "@sumi/main-plugin";
+import { mcp } from "@sumi/mcp-plugin";
 import {
 	BackgroundModuleSchema,
 	FrameModuleSchema,
@@ -20,6 +21,7 @@ import {
 import type {
 	CoreOffers,
 	DrawnTabPage,
+	ModuleExposure,
 	FrameServing,
 	WindowModuleOffers,
 	WindowOffers,
@@ -41,6 +43,7 @@ export type HostOffers = Omit<CoreOffers, "fillsOf">;
 export interface BackgroundModule {
 	readonly contract: ModuleContract<ServerRuns>;
 	readonly prefix: string | null;
+	readonly exposes: readonly ModuleExposure[];
 	moduleOf(offers: HostOffers): ServerSideModule;
 }
 
@@ -90,6 +93,7 @@ const INSTALLED_PLUGINS = [
 	commandMenu,
 	chat,
 	main,
+	mcp,
 	terminal,
 	browserPage,
 	files,
@@ -100,7 +104,7 @@ const INSTALLED_PLUGINS = [
 	htmlViewer,
 	git,
 ];
-const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main];
+const ALWAYS_ON_PLUGINS = [sumiHost, apps, commandMenu, chat, main, mcp];
 
 export const BUILT_IN_PROFILE: SumiProfile = {
 	plugins: [
@@ -187,6 +191,7 @@ function backgroundModulesOf(started: PluginRuntime): readonly BackgroundModule[
 					{
 						contract: parsed.data.contract,
 						prefix,
+						exposes: parsed.data.exposes,
 						moduleOf: (hostOffers: HostOffers) =>
 							prefixedModule(parsed.data.module({ ...hostOffers, ...offers }), prefix),
 					},

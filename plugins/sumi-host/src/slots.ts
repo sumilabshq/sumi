@@ -24,6 +24,13 @@ export interface CoreOffers extends SlotReader {
 
 export type BackgroundModuleOf = (offers: CoreOffers) => ServerSideModule;
 
+export interface ServedModule {
+	readonly runtime: Runtime;
+	readonly module: string;
+}
+
+export type ModuleExposure = (served: ServedModule) => void;
+
 export interface TabPageProps {
 	readonly app: string;
 	readonly tabId: string;
@@ -91,6 +98,8 @@ export type WindowServerModuleOf = (offers: SlotReader & WindowServerOffers) => 
 
 const NOT_A_MODULE_OF =
 	"a background module is a function of what the core offers, answering a module(...) configured from it";
+const NOT_AN_EXPOSURE =
+	"a background module's exposes lists adapters, each a function of { runtime, module } that serves the module";
 const NOT_A_CONTRACT = 'a background module names its contract, the module(...) descriptor of its package\'s "." entry';
 const NOT_A_TAB_PAGE_OF = "a tab page is a function of the plugin's slot reader, answering { page, draws }";
 const NOT_A_WINDOW_MODULE_OF =
@@ -111,6 +120,7 @@ const NOT_A_WINDOW_SERVER_MODULE_OF =
 export const BackgroundModuleSchema = z.object({
 	module: z.custom<BackgroundModuleOf>((value) => typeof value === "function", NOT_A_MODULE_OF),
 	contract: z.custom<ModuleContract<ServerRuns>>(isModuleContract, NOT_A_CONTRACT),
+	exposes: z.array(z.custom<ModuleExposure>((value) => typeof value === "function", NOT_AN_EXPOSURE)).default([]),
 });
 
 export const backgroundModules = slot().item(BackgroundModuleSchema).list();

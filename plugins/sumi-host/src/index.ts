@@ -14,6 +14,8 @@ export type {
 	DrawnTabPage,
 	FrameServing,
 	FrameServingOf,
+	ModuleExposure,
+	ServedModule,
 	TabModules,
 	TabPageOf,
 	TabPageProps,
