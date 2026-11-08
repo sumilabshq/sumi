@@ -33,11 +33,13 @@ export class RouteQueries {
 	constructor(private readonly parts: RouteQueriesParts) {}
 
 	isLocal(request: AnyRequest): boolean {
-		return this.parts.local.routeOf(request) !== undefined;
+		return this.parts.local.unprefixedRouteOf(request) !== undefined;
 	}
 
 	cannotRun(request: AnyRequest): string | null {
-		if (this.isLocal(request) || this.parts.remote?.reachesModule(request.module ?? "") === true) return null;
+		const addressing = this.parts.local.addressingOf(request, null);
+		if (addressing.kind === "ambiguous") return addressing.reason;
+		if (addressing.kind === "found" || this.parts.remote?.reachesModule(request.module ?? "") === true) return null;
 		return this.parts.missing(request).reason;
 	}
 
@@ -71,7 +73,7 @@ export class RouteQueries {
 	}
 
 	private viewRouteOf(request: AnyRequest): Route | undefined {
-		const route = this.parts.local.routeOf(request);
+		const route = this.parts.local.unprefixedRouteOf(request);
 		return route === undefined || refuseCaller(route, VIEW_CALLER) !== null ? undefined : route;
 	}
 }

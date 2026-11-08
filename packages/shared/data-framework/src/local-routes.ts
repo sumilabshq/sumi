@@ -1,4 +1,6 @@
 import { stableKey } from "./gateway/stable-key";
+import { addressingOf } from "./addressing";
+import type { Addressing } from "./addressing";
 import { reasonOf, refusalOf, refusalOfThrown } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { DoneKeys } from "./done-keys";
@@ -22,6 +24,7 @@ import type { CallingModule } from "./calling-module";
 
 export interface Route {
 	readonly name: string;
+	readonly prefix: string | null;
 	readonly handler: AnyHandler;
 	readonly provided: Provided;
 	readonly steps: readonly Step[];
@@ -96,14 +99,23 @@ export class LocalRoutes {
 		this.prefixedByName = prefixedByNameOf(parts.routes);
 	}
 
-	// TODO: prefer the sender's own prefix when two prefixed modules share a request
 	routeNamed(name: string): Route | undefined {
 		return this.parts.routes.get(name);
 	}
 
-	routeOf(request: AnyRequest): Route | undefined {
+	candidatesOf(request: AnyRequest): readonly Route[] {
+		const unprefixed = this.parts.routes.get(request.name);
 		const prefixed = this.prefixedByName.get(request.name) ?? [];
-		return this.parts.routes.get(request.name) ?? (prefixed.length === 1 ? prefixed[0] : undefined);
+		return unprefixed === undefined ? prefixed : [unprefixed, ...prefixed];
+	}
+
+	addressingOf(request: AnyRequest, senderPrefix: string | null): Addressing<Route> {
+		return addressingOf(request.name, this.candidatesOf(request), senderPrefix);
+	}
+
+	unprefixedRouteOf(request: AnyRequest): Route | undefined {
+		const addressing = this.addressingOf(request, null);
+		return addressing.kind === "found" ? addressing.target : undefined;
 	}
 
 	async run(route: Route, asked: Asked, settle: Settle): Promise<Answer<unknown>> {
@@ -248,7 +260,10 @@ function sendOf({ asked, settle }: Walk, { signal, key, invalidated, calling }: 
 			outsideCaller: asked.sending.outsideCaller,
 			signal,
 			idempotencyKey,
-			inProcessCaller: { module: calling.module },
+			inProcessCaller: {
+				module: calling.module,
+				prefix: calling.prefix,
+			},
 		});
 
 		if (answer.ok) {
@@ -259,9 +274,10 @@ function sendOf({ asked, settle }: Walk, { signal, key, invalidated, calling }: 
 	};
 }
 
-function callingModuleOf({ handler }: Route, asked: Asked): CallingModule {
+function callingModuleOf({ handler, prefix }: Route, asked: Asked): CallingModule {
 	return {
 		module: handler.request.module ?? "",
+		prefix,
 		importedModuleNames: handler.module.importedModuleNames,
 		owner: asked.request.name,
 	};

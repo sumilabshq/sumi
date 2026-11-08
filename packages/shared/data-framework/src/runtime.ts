@@ -120,7 +120,11 @@ function startRuntime(plan: RuntimePlan, start: RuntimeStartOptions): Runtime {
 		changed.tell(invalidated);
 	};
 	const routes = new RouteQueries({ local, remote, missing: unreached, reportFailure, invalidations });
-	const modules = started.modules.map(({ module, provided }) => ({ definition: module.definition, provided }));
+	const modules = started.modules.map(({ module, provided }) => ({
+		definition: module.definition,
+		prefix: module.prefix ?? null,
+		provided,
+	}));
 	const stopHearing = remote.changes((invalidated) => invalidations.apply(invalidated));
 	const stopEvents = startModuleEvents({
 		modules,
@@ -140,7 +144,8 @@ function startRuntime(plan: RuntimePlan, start: RuntimeStartOptions): Runtime {
 		changed,
 		announce,
 		isModuleRequest: (request) =>
-			local.routeOf(request)?.handler.module instanceof RequestsModule || remote.forwards(request),
+			local.candidatesOf(request).some(({ handler }) => handler.module instanceof RequestsModule) ||
+			remote.forwards(request),
 		stop: () => {
 			stopHearing();
 			stopEvents();

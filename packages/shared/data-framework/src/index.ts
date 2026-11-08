@@ -60,6 +60,8 @@ export {
 } from "./module";
 export { prefixedModule } from "./module-prefix";
 export { wireNameOf } from "./identity";
+export { addressingOf } from "./addressing";
+export type { Addressing } from "./addressing";
 export { isDescriptorKey, isModuleContract, moduleContract, moduleNamespace } from "./module-contract";
 export type {
 	ContractLeaf,

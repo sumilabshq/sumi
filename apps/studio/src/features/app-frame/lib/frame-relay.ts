@@ -1,5 +1,6 @@
-import { refusalOf, wireNameOf } from "@widgetarium/data-framework";
+import { addressingOf, refusalOf, wireNameOf } from "@widgetarium/data-framework";
 import type {
+	Addressing,
 	AnyRequest,
 	Answer,
 	HearChanges,
@@ -48,7 +49,7 @@ export function hearsAll(): boolean {
 export function createFrameRelay(routes: readonly FrameRoute[], ownPrefix: string | null = null): Answering {
 	const relayed = relayedOf(routes);
 	return {
-		answer: (call) => answerThrough(pickedOf(relayed.get(call.name) ?? [], ownPrefix), call),
+		answer: (call) => answerThrough(addressingOf(call.name, relayed.get(call.name) ?? [], ownPrefix), call),
 		changes: (hear) => relayChanges(routes, hear),
 	};
 }
@@ -58,23 +59,22 @@ function relayChanges(routes: readonly FrameRoute[], hear: HearChanges): () => v
 	return () => stops.forEach((stop) => stop());
 }
 
-function pickedOf(candidates: readonly Relayed[], ownPrefix: string | null): Relayed | undefined {
-	const own = ownPrefix === null ? undefined : candidates.find(({ prefix }) => prefix === ownPrefix);
-	const unprefixed = candidates.find(({ prefix }) => prefix === null);
-	return own ?? unprefixed ?? (candidates.length === 1 ? candidates[0] : undefined);
-}
-
 function answerThrough(
-	held: Relayed | undefined,
+	addressing: Addressing<Relayed>,
 	{ name, input, idempotencyKey, signal, headers }: ServedCall,
 ): Promise<Answer<unknown>> {
-	if (held === undefined) {
+	if (addressing.kind === "none") {
 		return Promise.resolve(refusalOf("not-found", NOT_RELAYED.replace("{name}", name)));
 	}
 
-	return held.transport.call({
-		name: held.name,
-		request: held.request,
+	if (addressing.kind === "ambiguous") {
+		return Promise.resolve(refusalOf("not-found", addressing.reason));
+	}
+
+	const { target } = addressing;
+	return target.transport.call({
+		name: target.name,
+		request: target.request,
 		sent: input,
 		idempotencyKey,
 		signal,
@@ -104,6 +104,7 @@ function hearOwn(routes: readonly FrameRoute[], invalidated: readonly HeardInval
 	}
 }
 
+// TODO: prefix invalidations and events, so an aliased module's own reach only its frames
 function isHeardBy({ module, hears }: FrameRoute, invalidation: HeardInvalidation): boolean {
 	return module.requests.some(({ name }) => name === invalidation.query) && hears(invalidation);
 }

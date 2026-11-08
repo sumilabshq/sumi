@@ -1,3 +1,5 @@
+import { NOT_ADDRESSED } from "./addressing";
+import type { Addressing } from "./addressing";
 import { issuesOf, reasonOf, refusalOf } from "./answer";
 import type { Answer, Refusal } from "./answer";
 import type { User } from "./guard";
@@ -24,13 +26,17 @@ export interface MediatedSending extends Sending {
 
 export interface InProcessCaller {
 	readonly module: string | null;
+	readonly prefix: string | null;
 }
 
 export interface OutsideCaller {
 	user(): Promise<User | null>;
 }
 
-export const VIEW_CALLER: InProcessCaller = Object.freeze({ module: null });
+export const VIEW_CALLER: InProcessCaller = Object.freeze({
+	module: null,
+	prefix: null,
+});
 
 export interface Asked {
 	readonly request: AnyRequest;
@@ -61,10 +67,13 @@ export class Mediator implements Settle {
 
 	async send(request: AnyRequest, sent: unknown, sending: MediatedSending = {}): Promise<Answer<unknown>> {
 		try {
-			const route =
-				sending.routeName === undefined
-					? this.parts.local.routeOf(request)
-					: this.parts.local.routeNamed(sending.routeName);
+			const addressing = this.localAddressingOf(request, sending);
+
+			if (addressing.kind === "ambiguous") {
+				return this.refuse(request, refusalOf("not-found", addressing.reason));
+			}
+
+			const route = addressing.kind === "found" ? addressing.target : undefined;
 			const refusedCaller = route === undefined ? null : refuseCaller(route, sending.inProcessCaller);
 			if (refusedCaller !== null) return this.refuse(request, refusedCaller);
 			const input = request.inputSchema.safeParse(sent);
@@ -103,6 +112,15 @@ export class Mediator implements Settle {
 		if (route !== undefined) return local.run(route, asked, this);
 		if (remote?.reachesModule(asked.request.module ?? "") === true) return remote.run(asked, this);
 		return Promise.resolve(this.refuse(asked.request, missing(asked.request)));
+	}
+
+	private localAddressingOf(request: AnyRequest, sending: MediatedSending): Addressing<Route> {
+		if (sending.routeName !== undefined) {
+			const named = this.parts.local.routeNamed(sending.routeName);
+			return named === undefined ? NOT_ADDRESSED : { kind: "found", target: named };
+		}
+
+		return this.parts.local.addressingOf(request, sending.inProcessCaller?.prefix ?? null);
 	}
 
 	private givenKeyOf({ idempotencyKey, outsideCaller }: MediatedSending): string | undefined {

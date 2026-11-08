@@ -12,8 +12,10 @@ export interface ModuleRoutes {
 export function moduleRoutesOf(module: ReadyModule, runtimeProvided: Provided): ModuleRoutes {
 	const provides = module.provide();
 	const provided = { ...provides, ...runtimeProvided };
+	const prefix = module.prefix ?? null;
 	const routes = module.handlers.map((handler) => ({
-		name: wireNameOf(module.prefix ?? null, handler.request.name),
+		name: wireNameOf(prefix, handler.request.name),
+		prefix,
 		handler,
 		provided,
 		steps: [...module.definition.steps, ...handler.steps],

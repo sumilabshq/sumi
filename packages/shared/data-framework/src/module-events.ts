@@ -16,6 +16,7 @@ import type { AnySubscriber } from "./subscriber";
 
 export interface StartedModule {
 	readonly definition: ModuleDefinition;
+	readonly prefix: string | null;
 	readonly provided: Provided;
 }
 
@@ -55,7 +56,7 @@ export function listenedEventNames(modules: readonly StartedModule[]): Set<strin
 
 function subscribed(
 	{ bus, sender, applyInvalidations }: EventParts,
-	{ definition, provided }: StartedModule,
+	{ definition, prefix, provided }: StartedModule,
 	listed: AnySubscriber,
 ): () => void {
 	const emitting = {
@@ -65,6 +66,7 @@ function subscribed(
 	const emit = emitOf(bus, emitting, (event, input) => bus.publish(event, input));
 	const calling = {
 		module: definition.name,
+		prefix,
 		importedModuleNames: definition.importedModuleNames,
 		owner: emitting.owner,
 	};
@@ -111,6 +113,12 @@ function sourceStarted(
 function subscriberSendOf(sender: EventSender, calling: CallingModule) {
 	return async (sent: AnyRequest, input?: unknown): Promise<unknown> => {
 		const stamped = stampSent(sent, calling);
-		return outputOfSent(stamped, await sender.send(stamped, input, { inProcessCaller: { module: calling.module } }));
+		const answer = await sender.send(stamped, input, {
+			inProcessCaller: {
+				module: calling.module,
+				prefix: calling.prefix,
+			},
+		});
+		return outputOfSent(stamped, answer);
 	};
 }

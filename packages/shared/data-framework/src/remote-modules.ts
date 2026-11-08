@@ -1,3 +1,6 @@
+import { addressingOf } from "./addressing";
+import type { Addressing } from "./addressing";
+import { refusalOf } from "./answer";
 import type { Answer } from "./answer";
 import { wireNameOf } from "./identity";
 import type { Asked, Settle } from "./mediator";
@@ -17,7 +20,8 @@ export interface ModuleReach {
 
 interface RemoteEntry {
 	readonly module: string;
-	readonly isPrefixed: boolean;
+	readonly name: string;
+	readonly prefix: string | null;
 	readonly server: RemoteServer;
 	readonly publicRequestNames: ReadonlySet<string>;
 }
@@ -36,14 +40,15 @@ export class RemoteModules implements ModuleReach {
 		this.transports = [...new Set(remoteModules.map(({ transport }) => transport))];
 		this.entries = remoteModules.map(({ name, prefix, transport, publicRequestNames }) => ({
 			module: name,
-			isPrefixed: prefix !== null,
+			name: wireNameOf(prefix, name),
+			prefix,
 			server: new RemoteServer((call) => transport.call(call), prefix),
 			publicRequestNames: new Set(publicRequestNames),
 		}));
 	}
 
 	reachesModule(module: string): boolean {
-		return this.entryOf(module) !== undefined;
+		return this.importedOf(module).length > 0;
 	}
 
 	changes(hear: HearChanges): () => void {
@@ -52,22 +57,28 @@ export class RemoteModules implements ModuleReach {
 	}
 
 	forwards(request: AnyRequest): boolean {
-		return this.entryOf(request.module ?? "")?.publicRequestNames.has(request.name) === true;
+		return this.importedOf(request.module ?? "").some(({ publicRequestNames }) => publicRequestNames.has(request.name));
 	}
 
 	run(asked: Asked, settle: Settle): Promise<Answer<unknown>> {
-		const entry = this.entryOf(asked.request.module ?? "");
+		const addressing = this.addressingOf(asked);
 
-		if (entry === undefined) {
+		if (addressing.kind === "none") {
 			return Promise.resolve(settle.refuse(asked.request, this.missing(asked.request)));
 		}
 
-		return entry.server.run(asked, settle);
+		if (addressing.kind === "ambiguous") {
+			return Promise.resolve(settle.refuse(asked.request, refusalOf("not-found", addressing.reason)));
+		}
+
+		return addressing.target.server.run(asked, settle);
 	}
 
-	// TODO: prefer the sender's own prefix when two prefixed imports share a module name
-	private entryOf(module: string): RemoteEntry | undefined {
-		const named = this.entries.filter((entry) => entry.module === module);
-		return named.find((entry) => !entry.isPrefixed) ?? (named.length === 1 ? named[0] : undefined);
+	private addressingOf({ request, sending }: Asked): Addressing<RemoteEntry> {
+		return addressingOf(request.name, this.importedOf(request.module ?? ""), sending.inProcessCaller?.prefix ?? null);
+	}
+
+	private importedOf(module: string): readonly RemoteEntry[] {
+		return this.entries.filter((entry) => entry.module === module);
 	}
 }

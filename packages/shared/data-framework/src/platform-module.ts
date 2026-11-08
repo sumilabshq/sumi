@@ -131,12 +131,22 @@ function createModuleCall<P extends Provided, R extends Runs, C>(platform: Platf
 	function called(use: InjectsUse<P> & PrefixUse): ReadyModule;
 	function called(config: C & PrefixUse): RunnableModule<P, R>;
 	function called(given: (InjectsUse<P> | C) & PrefixUse): ReadyModule | RunnableModule<P, R> {
+		if (given.prefix === undefined) {
+			return calledOn(platform, given);
+		}
+
 		const { prefix, ...config } = given;
-		const placed = prefix === undefined ? platform : platform.prefixed(prefix);
-		return isInjectsUse<P>(config) ? placed.readyWith(config.injects) : placed.configured(config);
+		return calledOn(platform.prefixed(prefix), config);
 	}
 
 	return called;
+}
+
+function calledOn<P extends Provided, R extends Runs>(
+	platform: PlatformModule<P, R>,
+	given: unknown,
+): ReadyModule | RunnableModule<P, R> {
+	return isInjectsUse<P>(given) ? platform.readyWith(given.injects) : platform.configured(given);
 }
 
 function isInjectsUse<P extends Provided>(given: unknown): given is InjectsUse<P> {

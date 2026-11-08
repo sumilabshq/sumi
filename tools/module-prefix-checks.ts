@@ -12,7 +12,12 @@ import {
 	query as contractQuery,
 	runtime,
 } from "../packages/shared/data-framework/src/index.ts";
-import type { RemoteTransport, Runtime, ServedCall, ServerSideModule } from "../packages/shared/data-framework/src/index.ts";
+import type {
+	RemoteTransport,
+	Runtime,
+	ServedCall,
+	ServerSideModule,
+} from "../packages/shared/data-framework/src/index.ts";
 import { createFrameRelay, hearsAll } from "../apps/studio/src/features/app-frame/lib/frame-relay.ts";
 import { check, tally, thrownBy } from "./check-helpers.ts";
 
@@ -31,6 +36,11 @@ const echoContract = moduleContract("echo", Anywhere, {
 		said: named("talk.said", contractQuery().public().output(z.string())),
 	},
 });
+
+const AMBIGUOUS_ECHO =
+	"echo.talk.said is served by left.echo.talk.said, right.echo.talk.said, and no prefix picks one: send it from a module of one of them, or import the contract with its prefix";
+const AMBIGUOUS_VOICE =
+	"voice.talk.spoken is served by left.voice.talk.spoken, right.voice.talk.spoken, and no prefix picks one: send it from a module of one of them, or import the contract with its prefix";
 
 function exposedNamesOf(started: Runtime): readonly string[] {
 	return started.expose({ adapter: "prefix checks" }).requests.map(({ name }) => name);
@@ -118,10 +128,7 @@ check(
 
 check(
 	"the host's prefixedModule leaves a module unprefixed when the plugin has no alias, and prefixes it when it has one",
-	[
-		prefixedModule(echo, null) === echo,
-		exposedNamesOf(serverWith(prefixedModule(echo, "echo-3"))),
-	],
+	[prefixedModule(echo, null) === echo, exposedNamesOf(serverWith(prefixedModule(echo, "echo-3")))],
 	[true, ["echo-3.echo.talk.said"]],
 );
 
@@ -143,11 +150,100 @@ const twinRoutes = ["left", "right"].map((prefix) => ({
 }));
 const frameCall = outsideCall("echo.talk.said");
 await createFrameRelay(twinRoutes, "right").answer(frameCall);
-await createFrameRelay(twinRoutes, null).answer(frameCall);
+const unpicked = await createFrameRelay(twinRoutes, null).answer(frameCall);
 check(
-	"the frame relay sends a frame's bare name to its own plugin's prefixed module first, and refuses a choice it cannot make",
-	relayedNames,
-	["right.echo.talk.said"],
+	"the frame relay sends a frame's bare name to its own plugin's prefixed module first, and refuses a choice it cannot make, naming the candidates",
+	[relayedNames, unpicked.ok ? "answered" : unpicked.reason],
+	[["right.echo.talk.said"], AMBIGUOUS_ECHO],
+);
+
+const voiceDefinition = module("voice")
+	.on(Anywhere)
+	.config<{ readonly word: string }>()
+	.guard(PublicGuard)
+	.provide(({ config }) => ({
+		line: {
+			word: config.word,
+		},
+	}));
+const { query: voiceQuery } = buildersOf<typeof voiceDefinition, never>();
+const spoken = voiceQuery()
+	.public()
+	.output(z.string())
+	.handle((_input, { line }) => line.word);
+const voice = handledModule(voiceDefinition, [named("talk.spoken", spoken)]);
+const voiceContract = moduleContract("voice", Anywhere, {
+	talk: {
+		spoken: named("talk.spoken", contractQuery().public().output(z.string())),
+	},
+});
+const givenConfigs: object[] = [];
+const keeperDefinition = module("keeper")
+	.on(Anywhere)
+	.config<{ readonly word: string }>()
+	.guard(PublicGuard)
+	.provide(({ config }) => {
+		givenConfigs.push(config);
+		return {};
+	});
+const keeper = handledModule(keeperDefinition, []);
+const keeperConfig = {
+	word: "kept",
+};
+serverWith(keeper(keeperConfig), keeper({ word: "prefixed", prefix: "keeper-2" }));
+check(
+	"a module called with no prefix receives the given config object itself; with one, a copy without prefix",
+	[givenConfigs[0] === keeperConfig, givenConfigs[1]],
+	[true, { word: "prefixed" }],
+);
+
+const callerDefinition = module("caller")
+	.on(Anywhere)
+	.imports(voiceContract)
+	.guard(PublicGuard)
+	.provide(() => ({}));
+const { query: callerQuery } = buildersOf<typeof callerDefinition, never>();
+const heard = callerQuery()
+	.public()
+	.output(z.string())
+	.handle((_input, { send }) => send(voiceContract.talk.spoken));
+const caller = handledModule(callerDefinition, [named("talk.heard", heard)]);
+const callerContract = moduleContract("caller", Anywhere, {
+	talk: {
+		heard: named("talk.heard", contractQuery().public().output(z.string())),
+	},
+});
+
+async function heardBy(started: Runtime): Promise<string> {
+	const answer = await started.send(callerContract.talk.heard);
+	return answer.ok ? String(answer.output) : answer.reason;
+}
+
+const twoVoices = [voice({ word: "left", prefix: "left" }), voice({ word: "right", prefix: "right" })];
+const voicesServed = localTransport();
+voicesServed.serve(serverWith(...twoVoices));
+const bareVoice = await serverWith(...twoVoices).send(voiceContract.talk.spoken);
+check(
+	"an in-process send reaches the sender's own prefix first; two prefixed candidates and no sender prefix are refused, naming them",
+	[
+		await heardBy(serverWith(...twoVoices, caller({ prefix: "right" }))),
+		await heardBy(serverWith(...twoVoices, caller({ prefix: "left" }))),
+		bareVoice.ok ? "answered" : [bareVoice.code, bareVoice.reason],
+	],
+	["right", "left", ["not-found", AMBIGUOUS_VOICE]],
+);
+check(
+	"a send through imported contracts reaches the import of the sender's own prefix",
+	await heardBy(
+		runtime()
+			.modules(caller({ prefix: "right" }))
+			.imports(
+				voiceContract({ over: voicesServed, prefix: "left" }),
+				voiceContract({ over: voicesServed, prefix: "right" }),
+			)
+			.start({ platform: "server", env: {}, scope: { workspaceId: "prefix-checks" } }),
+	),
+	"right",
 );
 
 if (tally.failed > 0) {
