@@ -16,6 +16,7 @@
 		"widgetarium.schema.json"
 	],
 	"dependencies": {
+		"@babel/core": "^7.29.0",
 		"@babel/parser": "^8.0.5",
 		"@sumi/contract": "0.6.0",
 		"@widgetarium/core": "0.1.0",

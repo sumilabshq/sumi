@@ -18,4 +18,5 @@ registry/*/*/build/
 apps/tauri/src-tauri/target/
 apps/tauri/src-tauri/gen/schemas/
 /tools/.scaffold-probe-*/
+/tools/.rename-probe-*/
 /apps/*/*.tsbuildinfo

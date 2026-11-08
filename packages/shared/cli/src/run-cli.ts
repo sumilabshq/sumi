@@ -16,6 +16,8 @@ import { CliRefusal, type CliOutput } from "./cli-output.js";
 import { runCheck } from "./check-command.js";
 import { runCreate } from "./create-command.js";
 import { runGenerate } from "./generate-command.js";
+import { parseRenameArgs } from "./rename-args.js";
+import { runRename } from "./rename-command.js";
 import { runSystem } from "./system-command.js";
 
 export async function runCli(argv: readonly string[], output: CliOutput, cwd: string = process.cwd()): Promise<number> {
@@ -45,6 +47,7 @@ async function runCommand(
 	if (command === "add") return runAddKind(rest, { output, cwd });
 	if (command === "generate") return runGenerate(parseGenerateArgs(rest), output, cwd);
 	if (command === "system") return runSystem(parseSystemArgs(rest), output, cwd);
+	if (command === "rename") return runRename(parseRenameArgs(rest), output, cwd);
 	if (command === undefined || HELP_WORDS.includes(command)) {
 		output.out(CLI_HELP);
 		return 0;
