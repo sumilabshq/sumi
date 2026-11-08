@@ -26,7 +26,7 @@ import { frameCoreModulesOf } from "../apps/studio/src/tabs/studio-app.ts";
 import { HOST_CAPABILITY_MODULES } from "../apps/tauri/src/plugins/host-capabilities.ts";
 import { workspacePluginStateOf } from "../apps/tauri/src/plugins/workspace-plugin-state.ts";
 import { StoreClient } from "@widgetarium/behaviors/tauri-store";
-import { FakeStore } from "./host-tauri-fake-store.ts";
+import { FakeStore, quietly } from "./host-tauri-fake-store.ts";
 import { check, tally } from "./check-helpers.ts";
 import { BROWSER_PAGE_FACE, BUILT_IN_FACES, TERMINAL_FACE } from "./plugin-apps-fixture.ts";
 
@@ -345,7 +345,7 @@ check(
 	true,
 );
 
-const BUILT_IN_STARTED = resolved.startedNames;
+const BUILT_IN_STARTED = resolved.startedIds;
 const workspaceFiles = new FakeStore();
 workspaceFiles.put("workspace:research:sumi.profile.json", {
 	v: 1,
@@ -353,7 +353,7 @@ workspaceFiles.put("workspace:research:sumi.profile.json", {
 });
 workspaceFiles.put("workspace:kept:sumi.plugins.json", {
 	v: 1,
-	version: 1,
+	rev: 4,
 	plugins: {
 		chat: { enabled: false },
 		terminal: { enabled: false },
@@ -361,30 +361,72 @@ workspaceFiles.put("workspace:kept:sumi.plugins.json", {
 	},
 });
 workspaceFiles.put("workspace:newer:sumi.plugins.json", {
-	v: 1,
-	version: 2,
-	plugins: {},
+	v: 2,
+	rev: 7,
+	plugins: {
+		terminal: { enabled: false },
+	},
 });
+workspaceFiles.put("workspace:odd:sumi.profile.json", {
+	v: 1,
+	plugins: "terminal",
+});
+workspaceFiles.put("workspace:broken:sumi.profile.json", {
+	v: 1,
+	plugins: ["terminal"],
+});
+workspaceFiles.quarantinedOnce.set("workspace:broken:sumi.plugins.json", "sumi.plugins.json.corrupt-1");
 const workspaceStore = new StoreClient(workspaceFiles.invoke, undefined);
-const researchPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "research"));
-const defaultPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "default"));
-await new Promise((settled) => setTimeout(settled, 0));
+
+async function startedIn(workspace: string): Promise<ResolvedPlugins> {
+	return startSumiPlugins(await workspacePluginStateOf(workspaceStore, workspace));
+}
+
+async function settledSaves(): Promise<void> {
+	await new Promise((settled) => setTimeout(settled, 0));
+}
+
+const firstStarts = await quietly(async () => {
+	const started = [await startedIn("research"), await startedIn("default")];
+	await settledSaves();
+	return started;
+});
+const [researchPlugins, defaultPlugins] = firstStarts.answer;
 check(
-	"a workspace with no plugin state starts the plugins its sumi.profile.json enabled, or the built-in ones without one",
-	[researchPlugins.startedNames, researchPlugins.refusals, defaultPlugins.startedNames, defaultPlugins.refusals],
+	"a workspace with no plugin state starts the plugins its sumi.profile.json enabled, or the built-in ones without one; an enabled plugin not built in is a note",
+	[
+		researchPlugins?.startedIds,
+		researchPlugins?.refusals,
+		researchPlugins?.notes,
+		defaultPlugins?.startedIds,
+		defaultPlugins?.refusals,
+	],
 	[
 		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
-		["the plugin state enables plugin ghost, which is not installed: its entry stays"],
+		[],
+		["plugin ghost is enabled in sumi.plugins.json but not built in: its entry stays"],
 		BUILT_IN_STARTED,
 		[],
 	],
 );
 check(
-	"the first start seeds each workspace's own plugin state, version 1, and the next start reads it",
+	"the seeding is logged naming its source, and the profile is superseded once",
+	[
+		firstStarts.infos.some((said) =>
+			said.includes("sumi.plugins.json none → seeded from sumi.profile.json (ghost, terminal)"),
+		),
+		firstStarts.infos.some((said) => said.includes("sumi.plugins.json none → seeded from the built-in profile")),
+		firstStarts.infos.filter((said) => said.endsWith("sumi.profile.json in use → superseded by sumi.plugins.json")),
+	],
+	[true, true, ["[studio] workspace research: sumi.profile.json in use → superseded by sumi.plugins.json"]],
+);
+check(
+	"the first start seeds each workspace's own plugin state under the store's v, and the next start reads it",
 	[
 		workspaceFiles.files.get(`workspace:research:${PLUGIN_STATE_FILE}`)?.["plugins"],
+		workspaceFiles.files.get(`workspace:default:${PLUGIN_STATE_FILE}`)?.["v"],
 		workspaceFiles.files.get(`workspace:default:${PLUGIN_STATE_FILE}`)?.["version"],
-		startSumiPlugins(await workspacePluginStateOf(workspaceStore, "research")).startedNames,
+		(await startedIn("research")).startedIds,
 	],
 	[
 		{
@@ -405,28 +447,96 @@ check(
 			git: { enabled: false },
 		},
 		1,
+		undefined,
 		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
 	],
 );
-const keptPlugins = startSumiPlugins(await workspacePluginStateOf(workspaceStore, "kept"));
+const keptStart = await quietly(async () => {
+	const started = await startedIn("kept");
+	await settledSaves();
+	return started;
+});
 check(
-	"a kept state turns plugins off, but never an always-on one, and a plugin it does not list starts enabled",
-	[keptPlugins.startedNames.includes("chat"), keptPlugins.startedNames.includes("terminal"), keptPlugins.startedNames.includes("git"), keptPlugins.refusals],
-	[true, false, true, ["plugin chat is always on: the plugin state's enabled: false is ignored"]],
+	"a kept state turns plugins off, a disabled always-on one is enabled in the file and logged, a plugin it does not list starts enabled",
+	[
+		keptStart.answer.startedIds.includes("chat"),
+		keptStart.answer.startedIds.includes("terminal"),
+		keptStart.answer.startedIds.includes("git"),
+		keptStart.answer.refusals,
+		Reflect.get(Object(workspaceFiles.files.get(`workspace:kept:${PLUGIN_STATE_FILE}`)?.["plugins"]), "chat"),
+		keptStart.infos.some(
+			(said) => said.includes("rev 4 → 5 (") && said.includes("plugin chat enabled: false → true (always on)"),
+		),
+	],
+	[true, false, true, [], { enabled: true }, true],
 );
+const newerStart = await quietly(async () => {
+	const started = await startedIn("newer");
+	await settledSaves();
+	return started;
+});
 check(
-	"a plugin state of another version fails the workspace's start with the reason",
-	await workspacePluginStateOf(workspaceStore, "newer").then(
-		(store) => {
-			try {
-				startSumiPlugins(store);
-				return "started";
-			} catch (failure) {
-				return failure instanceof Error ? failure.message.split(":")[0] : "thrown";
-			}
-		},
-	),
-	"the plugin state sumi.plugins.json is not a version 1 plugin state, so no plugin starts",
+	"a plugin state of a newer v is read but never written",
+	[
+		newerStart.answer.startedIds.includes("terminal"),
+		workspaceFiles.files.get(`workspace:newer:${PLUGIN_STATE_FILE}`)?.["rev"],
+		newerStart.infos.filter((said) => said.includes("newer state kept, not written")).length,
+	],
+	[false, 7, 1],
+);
+const oddStart = await quietly(async () => (await startedIn("odd")).startedIds);
+check(
+	"a sumi.profile.json of another shape seeds from the built-in profile, logged as an error",
+	[oddStart.answer, oddStart.errors],
+	[
+		BUILT_IN_STARTED,
+		["[studio] workspace odd: sumi.profile.json of another shape → the built-in profile seeds the plugins"],
+	],
+);
+const brokenStarts = await quietly(async () => {
+	const stores = [
+		await workspacePluginStateOf(workspaceStore, "broken"),
+		await workspacePluginStateOf(workspaceStore, "broken"),
+	];
+	const started = stores.map((store) => startSumiPlugins(store).startedIds);
+	await settledSaves();
+	return started;
+});
+check(
+	"a quarantined state never fails the start: it is reseeded, the reset is an error naming the copy, and a second reader seeds the same",
+	[
+		brokenStarts.answer[0],
+		brokenStarts.answer[0] === undefined ? false : brokenStarts.answer[0].join() === brokenStarts.answer[1]?.join(),
+		brokenStarts.errors,
+		brokenStarts.infos.filter((said) => said.includes("was written by another window first, rev 1 stays")).length,
+	],
+	[
+		["sumi-host", "apps", "command-menu", "chat", "main", "terminal"],
+		true,
+		[
+			"[studio] workspace broken: sumi.plugins.json unparseable → kept aside as sumi.plugins.json.corrupt-1 beside it; plugin choices reset to sumi.profile.json",
+		],
+		1,
+	],
+);
+const racedStore = await workspacePluginStateOf(workspaceStore, "raced");
+workspaceFiles.put("workspace:raced:sumi.plugins.json", {
+	v: 1,
+	rev: 1,
+	plugins: {
+		git: { enabled: false },
+	},
+});
+const racedStart = await quietly(async () => {
+	startSumiPlugins(racedStore);
+	await settledSaves();
+});
+check(
+	"a save that loses the rev race re-reads the file and logs the plugins it computed → the ones stored",
+	racedStart.infos.filter((said) =>
+		said.includes('was written by another window first at rev 1, plugins of this start {"apps"'),
+	).length === 1 && racedStart.infos.some((said) => said.includes('→ stored {"git":{"enabled":false}}')),
+	true,
 );
 
 if (tally.failed > 0) {

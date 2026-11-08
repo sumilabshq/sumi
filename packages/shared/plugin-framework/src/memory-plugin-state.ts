@@ -1,8 +1,10 @@
 import type { PluginState, PluginStateStore } from "./plugin-state";
 
 export class MemoryPluginStateStore implements PluginStateStore {
+	readonly initialSource = "the given ids";
+
 	constructor(
-		private readonly firstEnabled: readonly string[],
+		private readonly initialEnabled: readonly string[],
 		private kept: PluginState | null = null,
 	) {}
 
@@ -10,11 +12,11 @@ export class MemoryPluginStateStore implements PluginStateStore {
 		return this.kept;
 	}
 
-	firstEnabledIds(): readonly string[] {
-		return this.firstEnabled;
+	initialEnabledIds(): readonly string[] {
+		return this.initialEnabled;
 	}
 
-	savePluginState(state: PluginState): void {
+	queuePluginStateSave(state: PluginState): void {
 		this.kept = state;
 	}
 }

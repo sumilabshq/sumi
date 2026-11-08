@@ -11,7 +11,8 @@ import {
 	runtime,
 	slot,
 } from "../packages/shared/plugin-framework/src/index.ts";
-import type { ListSlot, Plugin, PluginState } from "../packages/shared/plugin-framework/src/index.ts";
+import type { ListSlot, Plugin, PluginRuntime, PluginState } from "../packages/shared/plugin-framework/src/index.ts";
+import { originOf } from "../packages/shared/plugin-framework/src/plugin-names.ts";
 import { slotFillsOf } from "../packages/shared/plugin-framework/src/slot-fills.ts";
 import type { SlotFills } from "../packages/shared/plugin-framework/src/slot-fills.ts";
 import { slotReaderOf } from "../packages/shared/plugin-framework/src/slot-reader.ts";
@@ -591,57 +592,120 @@ check(
 	"",
 );
 
+const twinPlate = titledSlot();
+const twinHost = pluginWithSlots(plugin("twin-host").declare(twinPlate), { plate: namedSlot("plate", twinPlate) });
+
 function twinPlugin(title: string) {
-	const plate = titledSlot();
-	const declared = plugin("twin").declare(plate).fill(plate.add({ id: "own", title }));
-	return pluginWithSlots(declared, { plate: namedSlot("plate", plate) });
+	return plugin("twin")
+		.require(twinHost)
+		.fill(twinHost.plate.add({ id: title, title }));
 }
 
 function stateIn(store: MemoryPluginStateStore): PluginState | null {
 	return store.keptPluginState();
 }
 
+function platesOf(started: PluginRuntime): readonly (readonly [string, string])[] {
+	return started.fillsOf(twinHost.plate).map(({ pluginId, id }) => [id, pluginId] as const);
+}
+
 const twinA = twinPlugin("a");
 const twinB = twinPlugin("b");
-const refusedTwins = runtime().builtInPlugins(twinA, twinB).state(new MemoryPluginStateStore(["twin"])).start();
+const twinC = twinPlugin("c");
+const refusedTwins = runtime()
+	.builtInPlugins(twinHost, twinA, twinB)
+	.state(new MemoryPluginStateStore(["twin-host", "twin"]))
+	.start();
 check(
 	"two built-in plugins with one id: the second does not start, refused naming both and the fix",
-	[refusedTwins.startedNames, refusedTwins.refusals],
+	[refusedTwins.startedIds, refusedTwins.refusals],
 	[
-		["twin"],
+		["twin-host", "twin"],
 		[
-			'plugins #1 and #2 of .builtInPlugins() are both named "twin", so the second does not start: rename the plugin("twin") string of one, or start the runtime .withNameResolves()',
+			'plugins #2 and #3 of .builtInPlugins() are both named "twin", so the second does not start: rename the plugin("twin") string of one, or start the runtime .withNameResolves()',
 		],
 	],
 );
-const twinsStore = new MemoryPluginStateStore(["twin"]);
-const resolvedTwins = runtime().builtInPlugins(twinA, twinB).state(twinsStore).withNameResolves().start();
+const twinsStore = new MemoryPluginStateStore(["twin-host", "twin"]);
+const resolvedTwins = runtime().builtInPlugins(twinHost, twinA, twinB).state(twinsStore).withNameResolves().start();
 check(
-	"withNameResolves() starts the second under <id>-2, its alias, and the first keeps its id",
-	[resolvedTwins.startedNames, resolvedTwins.aliasOf("twin"), resolvedTwins.aliasOf("twin-2"), resolvedTwins.refusals],
-	[["twin", "twin-2"], null, "twin-2", []],
-);
-check(
-	"each twin reads its own slot, filled under its own name",
+	"withNameResolves() starts the second under <id>-2, which prefixes its modules, and the first keeps its id and no prefix",
 	[
-		resolvedTwins.readerOf("twin").fillsOf(twinA.plate),
-		resolvedTwins.readerOf("twin-2").fillsOf(twinB.plate),
-		resolvedTwins.fillsOf(twinB.plate).map(({ pluginId }) => pluginId),
-	],
-	[[{ title: "a", id: "own" }], [{ title: "b", id: "own" }], ["twin-2"]],
-);
-check(
-	"the alias is saved in the state, and a later start keeps it",
-	[
-		stateIn(twinsStore)?.plugins,
-		runtime().builtInPlugins(twinA, twinB).state(twinsStore).withNameResolves().start().startedNames,
+		resolvedTwins.startedIds,
+		resolvedTwins.modulePrefixOf("twin"),
+		resolvedTwins.modulePrefixOf("twin-2"),
+		resolvedTwins.refusals,
+		platesOf(resolvedTwins),
 	],
 	[
-		{
-			twin: { enabled: true },
-			"twin-2": { enabled: true, alias: "twin-2" },
-		},
-		["twin", "twin-2"],
+		["twin-host", "twin", "twin-2"],
+		null,
+		"twin-2",
+		[],
+		[
+			["a", "twin"],
+			["b", "twin-2"],
+		],
+	],
+);
+check(
+	"the state records which plugin each name stands for: the alias, the id it repeats and the plugin's origin",
+	stateIn(twinsStore)?.plugins,
+	{
+		"twin-host": { enabled: true },
+		twin: { enabled: true, from: originOf(twinA) },
+		"twin-2": { enabled: true, alias: "twin-2", of: "twin", from: originOf(twinB) },
+	},
+);
+check(
+	"reordering builtInPlugins never moves an alias to another plugin",
+	platesOf(runtime().builtInPlugins(twinB, twinHost, twinA).state(twinsStore).withNameResolves().start()),
+	[
+		["a", "twin"],
+		["b", "twin-2"],
+	],
+);
+check(
+	"a new plugin repeating an id takes the next free suffix; the saved names stay",
+	platesOf(runtime().builtInPlugins(twinC, twinB, twinHost, twinA).state(twinsStore).withNameResolves().start()),
+	[
+		["a", "twin"],
+		["b", "twin-2"],
+		["c", "twin-3"],
+	],
+);
+check(
+	"two plugins of one id with the same origin keep builtInPlugins order",
+	originOf(twinPlugin("a")) === originOf(twinA) && originOf(twinA) !== originOf(twinB),
+	true,
+);
+const twinBChanged = plugin("twin")
+	.require(twinHost)
+	.fill(twinHost.plate.add({ id: "b", title: "b" }), twinHost.plate.add({ id: "b-more", title: "b, more" }));
+check(
+	"a plugin whose fills changed takes a saved name nobody claimed before a new suffix",
+	platesOf(runtime().builtInPlugins(twinHost, twinA, twinBChanged).state(twinsStore).withNameResolves().start()),
+	[
+		["a", "twin"],
+		["b", "twin-2"],
+		["b-more", "twin-2"],
+	],
+);
+const slottedPlate = titledSlot();
+const slottedTwin = pluginWithSlots(plugin("twin").declare(slottedPlate), { plate: namedSlot("plate", slottedPlate) });
+const slotted = runtime()
+	.builtInPlugins(twinHost, twinA, slottedTwin)
+	.state(new MemoryPluginStateStore(["twin-host", "twin"]))
+	.withNameResolves()
+	.start();
+check(
+	"a plugin that would run under an alias and declares slots does not start, refused with the reason",
+	[slotted.startedIds, slotted.refusals],
+	[
+		["twin-host", "twin"],
+		[
+			'plugin #3 of .builtInPlugins() would run as twin-2, since another plugin is named "twin" too, but it declares slots, which an aliased plugin cannot yet, so it does not start: rename the plugin("twin") string of one',
+		],
 	],
 );
 check(
@@ -657,12 +721,11 @@ check(
 const seededStore = new MemoryPluginStateStore(["chat"]);
 const seeded = runtime().builtInPlugins(layout, chat, agents).alwaysOn(layout).state(seededStore).start();
 check(
-	"a missing state is seeded from the first enabled ids and the always-on plugins: the enabled set does not change",
-	[seeded.startedNames, stateIn(seededStore)],
+	"a missing state is seeded from the initial enabled ids and the always-on plugins: the enabled set does not change",
+	[seeded.startedIds, stateIn(seededStore)],
 	[
 		["layout", "chat"],
 		{
-			version: 1,
 			plugins: {
 				layout: { enabled: true },
 				chat: { enabled: true },
@@ -672,7 +735,6 @@ check(
 	],
 );
 const keptStore = new MemoryPluginStateStore([], {
-	version: 1,
 	plugins: {
 		layout: { enabled: false },
 		ghost: { enabled: false },
@@ -681,55 +743,72 @@ const keptStore = new MemoryPluginStateStore([], {
 });
 const kept = runtime().builtInPlugins(layout, chat, agents).alwaysOn(layout).state(keptStore).start();
 check(
-	"a plugin new to the build starts enabled, an always-on plugin cannot be disabled, a removed plugin keeps its entry",
-	[kept.startedNames, kept.refusals, stateIn(keptStore)?.plugins],
+	"a plugin new to the build starts enabled, a disabled always-on plugin is enabled in the state, a removed plugin keeps its entry",
+	[kept.startedIds, kept.refusals, stateIn(keptStore)?.plugins],
 	[
 		["layout", "chat", "background-agents"],
-		["plugin layout is always on: the plugin state's enabled: false is ignored"],
+		[],
 		{
-			layout: { enabled: false },
+			layout: { enabled: true },
 			ghost: { enabled: false },
 			chat: { enabled: true },
 			"background-agents": { enabled: true },
 		},
 	],
 );
+const ghostly = runtime()
+	.builtInPlugins(layout)
+	.state(new MemoryPluginStateStore([], { plugins: { layout: { enabled: true }, ghost: { enabled: true } } }))
+	.start();
 check(
-	"a state enabling a plugin that is not installed is refused, and its entry stays",
-	runtime()
-		.builtInPlugins(layout)
-		.state(new MemoryPluginStateStore([], { version: 1, plugins: { layout: { enabled: true }, ghost: { enabled: true } } }))
-		.start().refusals,
-	["the plugin state enables plugin ghost, which is not installed: its entry stays"],
+	"a state enabling a plugin that is not built in is a note, never a refusal, and its entry stays",
+	[ghostly.refusals, ghostly.notes],
+	[[], ["plugin ghost is enabled in sumi.plugins.json but not built in: its entry stays"]],
 );
+const looseStore = new MemoryPluginStateStore([], {
+	written: "by a newer build",
+	plugins: {
+		layout: { enabled: true, pinned: true },
+	},
+});
+runtime().builtInPlugins(layout, chat).state(looseStore).start();
+check("fields this build does not know are read and kept on the next write", stateIn(looseStore), {
+	plugins: {
+		layout: { enabled: true, pinned: true },
+		chat: { enabled: true },
+	},
+	written: "by a newer build",
+});
 check(
 	"a state that cannot be read fails the start with the reason, never a silent reset",
 	thrownBy(() =>
 		runtime()
 			.builtInPlugins(layout)
 			.state({
+				initialSource: "nothing",
 				keptPluginState: () => {
 					throw new Error("the disk is gone");
 				},
-				firstEnabledIds: () => [],
-				savePluginState: () => undefined,
+				initialEnabledIds: () => [],
+				queuePluginStateSave: () => undefined,
 			})
 			.start(),
 	),
 	"the plugin state sumi.plugins.json cannot be read, so no plugin starts: the disk is gone",
 );
 check(
-	"a state of another version fails the start with the reason",
+	"a state of another shape fails the start with the reason",
 	thrownBy(() =>
 		runtime()
 			.builtInPlugins(layout)
 			.state({
-				keptPluginState: () => ({ version: 2, plugins: {} }),
-				firstEnabledIds: () => [],
-				savePluginState: () => undefined,
+				initialSource: "nothing",
+				keptPluginState: () => ({ plugins: 3 }),
+				initialEnabledIds: () => [],
+				queuePluginStateSave: () => undefined,
 			})
 			.start(),
-	).startsWith("the plugin state sumi.plugins.json is not a version 1 plugin state, so no plugin starts:"),
+	).startsWith("the plugin state sumi.plugins.json is not a plugin state, so no plugin starts:"),
 	true,
 );
 

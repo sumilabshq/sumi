@@ -78,8 +78,9 @@ export interface ResolvedPlugins {
 	readonly tabPages: readonly DrawnTabPage[];
 	readonly frameModules: readonly FrameModule[];
 	readonly windowServerModules: readonly WindowServerModule[];
-	readonly startedNames: readonly string[];
+	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
+	readonly notes: readonly string[];
 	ownPrefixOf(app: string): string | null;
 }
 
@@ -148,11 +149,13 @@ export function startSumiPlugins(store: PluginStateStore): ResolvedPlugins {
 		tabPages: tabPages.map(({ drawn }) => drawn),
 		frameModules: frameModulesOf(started),
 		windowServerModules: windowServerModulesOf(started),
-		startedNames: started.startedNames,
+		startedIds: started.startedIds,
 		refusals: started.refusals,
+		notes: started.notes,
+		// TODO: two plugins drawing one app: the first tab page's plugin is taken as the frame's own
 		ownPrefixOf: (app) => {
 			const drawing = tabPages.find(({ drawn }) => drawn.draws(app));
-			return drawing === undefined ? null : started.aliasOf(drawing.pluginId);
+			return drawing === undefined ? null : started.modulePrefixOf(drawing.pluginId);
 		},
 	};
 }
@@ -172,7 +175,7 @@ function shownFillsOf(started: PluginRuntime, slot: SlotShape): readonly Readabl
 	return started.fillsOf(slot).map((fill) => ({
 		fill,
 		offers: started.readerOf(fill.pluginId),
-		prefix: started.aliasOf(fill.pluginId),
+		prefix: started.modulePrefixOf(fill.pluginId),
 	}));
 }
 

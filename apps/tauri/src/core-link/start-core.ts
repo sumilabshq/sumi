@@ -28,6 +28,7 @@ const SWEEP_EVERY_MS = 6 * 60 * 60 * 1000;
 const CORE_IPC = "the core IPC";
 const SERVING = "[studio-core] workspace {workspace}: none → serving, plugins {plugins}";
 const PLUGIN_REFUSED = "[studio-core] workspace {workspace}: plugins: {refusal}";
+const PLUGIN_NOTED = "[studio-core] workspace {workspace}: plugins: {note}";
 const NOT_STARTED = "[studio-core] workspace {workspace}: none → failed, every call answers unreachable";
 
 export function startCore(): void {
@@ -46,7 +47,7 @@ export function startCore(): void {
 			}
 
 			served.set(workspace, places);
-			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", plugins.startedNames.join(", ")));
+			console.info(SERVING.replace("{workspace}", workspace).replace("{plugins}", plugins.startedIds.join(", ")));
 			void keepLiveWindows(places, workspace);
 			void forgetRunningTurns(places, workspace);
 			void superviseTasks(places, workspace);
@@ -78,6 +79,10 @@ async function pluginsOrFailed(
 
 		for (const refusal of plugins.refusals) {
 			console.error(PLUGIN_REFUSED.replace("{workspace}", workspace).replace("{refusal}", refusal));
+		}
+
+		for (const note of plugins.notes) {
+			console.info(PLUGIN_NOTED.replace("{workspace}", workspace).replace("{note}", note));
 		}
 
 		return plugins;

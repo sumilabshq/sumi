@@ -35,6 +35,7 @@ export class FakeStore {
 	readonly lines = new Map<string, unknown[]>();
 	readonly calls: Call[] = [];
 	readonly known = new Map<string, WorkspaceEntry>();
+	readonly quarantinedOnce = new Map<string, string>();
 	refusesFirst = false;
 	answerOverride: unknown = undefined;
 
@@ -81,6 +82,18 @@ export class FakeStore {
 	}
 
 	private read(key: string): unknown {
+		const aside = this.quarantinedOnce.get(key);
+
+		if (aside !== undefined) {
+			this.quarantinedOnce.delete(key);
+			this.files.delete(key);
+			return {
+				doc: null,
+				rev: 0,
+				quarantined: aside,
+			};
+		}
+
 		const doc = this.files.get(key);
 		return {
 			doc: doc ?? null,
@@ -136,14 +149,17 @@ export class FakeStore {
 	}
 }
 
-export async function quietly<Answer>(run: () => Promise<Answer>): Promise<{ answer: Answer; infos: string[] }> {
+export async function quietly<Answer>(
+	run: () => Promise<Answer>,
+): Promise<{ answer: Answer; infos: string[]; errors: string[] }> {
 	const infos: string[] = [];
+	const errors: string[] = [];
 	const { info, warn, error } = console;
 	console.info = (...said: unknown[]) => void infos.push(said.map(String).join(" "));
 	console.warn = () => undefined;
-	console.error = () => undefined;
+	console.error = (...said: unknown[]) => void errors.push(said.map(String).join(" "));
 	try {
-		return { answer: await run(), infos };
+		return { answer: await run(), infos, errors };
 	} finally {
 		Object.assign(console, { info, warn, error });
 	}

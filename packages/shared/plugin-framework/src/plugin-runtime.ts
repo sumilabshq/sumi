@@ -1,7 +1,8 @@
 import type { SlotShape } from "./declared-slot";
 import type { ShownFill } from "./fill-outcome";
 import type { Plugin } from "./plugin";
-import { settledStateOf } from "./plugin-state";
+import { namedPluginsOf } from "./plugin-names";
+import { keptStateOf, settledStateOf } from "./plugin-state";
 import type { PluginStateStore } from "./plugin-state";
 import { sentenceOf } from "./sentence";
 import { slotFillsOf } from "./slot-fills";
@@ -11,9 +12,10 @@ import type { SlotReader } from "./slot-reader";
 import { startOrderOf } from "./start-order";
 
 export interface PluginRuntime {
-	readonly startedNames: readonly string[];
+	readonly startedIds: readonly string[];
 	readonly refusals: readonly string[];
-	aliasOf(pluginId: string): string | null;
+	readonly notes: readonly string[];
+	modulePrefixOf(pluginId: string): string | null;
 	fillsOf(slot: SlotShape): readonly ShownFill[];
 	readerOf(pluginId: string): SlotReader;
 }
@@ -27,13 +29,6 @@ interface RuntimePlan {
 
 type Statefulness = "stateless" | "stated";
 
-interface NamedPlugins {
-	readonly named: readonly Plugin[];
-	readonly refusals: readonly string[];
-}
-
-const ID_TWICE =
-	'plugins #{first} and #{second} of .builtInPlugins() are both named "{plugin}", so the second does not start: rename the plugin("{plugin}") string of one, or start the runtime .withNameResolves()';
 const NOT_STARTED = "plugin {plugin} filled a slot but did not start";
 const NO_STATE = "the plugin runtime starts with no state: call .state(store) before .start()";
 
@@ -74,66 +69,43 @@ export function runtime(): PluginRuntimeBuilder<"stateless"> {
 }
 
 function startPlugins(plan: RuntimePlan, store: PluginStateStore): PluginRuntime {
-	const { named, refusals: nameRefusals } = namedPluginsOf(plan.builtIn, plan.resolvesNames);
-	const state = settledStateOf({ named, alwaysOnIds: new Set(plan.alwaysOn.map(({ id }) => id)), store });
-	const startOrder = startOrderOf(named, state.rankedNames);
-	const slotFills = slotFillsOf(startOrder.plugins, state.rankedNames);
-	return new StartedPlugins(startOrder.plugins, slotFills, [
-		...nameRefusals,
-		...state.refusals,
-		...startOrder.refusals,
-		...slotFills.refusals,
-	]);
+	const kept = keptStateOf(store);
+	const { named, refusals: nameRefusals } = namedPluginsOf(plan.builtIn, { resolvesNames: plan.resolvesNames, kept });
+	const alwaysOnIds = new Set(plan.alwaysOn.map(({ id }) => id));
+	const state = settledStateOf({ named, alwaysOnIds, store, kept });
+	const startOrder = startOrderOf(named, state.rankedIds);
+	const slotFills = slotFillsOf(startOrder.plugins, state.rankedIds);
+	return new StartedPlugins({
+		started: startOrder.plugins,
+		slotFills,
+		refusals: [...nameRefusals, ...startOrder.refusals, ...slotFills.refusals],
+		notes: state.notes,
+	});
 }
 
-function namedPluginsOf(builtIn: readonly Plugin[], resolvesNames: boolean): NamedPlugins {
-	const named: Plugin[] = [];
-	const refusals: string[] = [];
-
-	for (const [at, each] of builtIn.entries()) {
-		const first = named.findIndex(({ id }) => id === each.id);
-
-		if (first === -1) {
-			named.push(each);
-			continue;
-		}
-
-		if (!resolvesNames) {
-			refusals.push(
-				sentenceOf(ID_TWICE, { first: String(first + 1), second: String(at + 1), plugin: each.id }),
-			);
-			continue;
-		}
-
-		named.push(each.aliased(freeAliasOf(each.id, named)));
-	}
-
-	return { named, refusals };
-}
-
-function freeAliasOf(id: string, named: readonly Plugin[]): string {
-	const taken = new Set(named.map((each) => each.id));
-	let suffix = 2;
-
-	while (taken.has(`${id}-${suffix}`)) {
-		suffix += 1;
-	}
-
-	return `${id}-${suffix}`;
+interface StartedParts {
+	readonly started: readonly Plugin[];
+	readonly slotFills: SlotFills;
+	readonly refusals: readonly string[];
+	readonly notes: readonly string[];
 }
 
 class StartedPlugins implements PluginRuntime {
-	readonly startedNames: readonly string[];
+	readonly startedIds: readonly string[];
+	readonly refusals: readonly string[];
+	readonly notes: readonly string[];
+	private readonly started: readonly Plugin[];
+	private readonly slotFills: SlotFills;
 
-	constructor(
-		private readonly started: readonly Plugin[],
-		private readonly slotFills: SlotFills,
-		readonly refusals: readonly string[],
-	) {
-		this.startedNames = started.map(({ id }) => id);
+	constructor({ started, slotFills, refusals, notes }: StartedParts) {
+		this.started = started;
+		this.slotFills = slotFills;
+		this.refusals = refusals;
+		this.notes = notes;
+		this.startedIds = started.map(({ id }) => id);
 	}
 
-	aliasOf(pluginId: string): string | null {
+	modulePrefixOf(pluginId: string): string | null {
 		return this.startedOf(pluginId).isAliased ? pluginId : null;
 	}
 
