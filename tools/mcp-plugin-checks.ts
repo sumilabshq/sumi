@@ -27,6 +27,16 @@ const offers = {
 	},
 };
 
+function startedCore(registered: HostRegistrations): StartedHost["core"] {
+	return runtime()
+		.modules(...registered.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
+		.start({
+			platform: "server",
+			env: {},
+			scope: { workspaceId: "mcp-plugin-workspace" },
+		});
+}
+
 function startedHost(plugins: readonly Plugin[]): StartedHost {
 	const registered = emptyHostRegistrations();
 	const started = pluginRuntime()
@@ -35,13 +45,7 @@ function startedHost(plugins: readonly Plugin[]): StartedHost {
 		.provide(backend, backendFor(registered))
 		.start();
 	const own = localTransport();
-	const core = runtime()
-		.modules(...registered.backgroundModules.map(({ moduleOf }) => moduleOf(offers)))
-		.start({
-			platform: "server",
-			env: {},
-			scope: { workspaceId: "mcp-plugin-workspace" },
-		});
+	const core = startedCore(registered);
 	own.serve(core);
 	startBackendServers({
 		workspaceId: "mcp-plugin-workspace",
