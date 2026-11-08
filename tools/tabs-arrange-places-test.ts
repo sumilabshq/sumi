@@ -7,30 +7,17 @@ import {
 	PlacesModule,
 	SidebarQuery,
 } from "../plugins/apps/data/places/index.ts";
-import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import type { SidebarEntry, TabDrop, TabsSidebar } from "../plugins/apps/data/app-host/index.ts";
 import { arrangedSidebar } from "../apps/studio/src/features/app-host/lib/tab-drag/arranged-sidebar.ts";
 import type { DragSource } from "../apps/studio/src/features/app-host/lib/tab-drag/drag-source.ts";
-import { MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import { BARE_SCREEN, MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
-
-const NO_SCREEN: Screen = {
-	pages: [],
-	isBrowserAvailable: false,
-	canOpenOwnWindow: false,
-	tabPanes: [],
-	shownTabPaneId: null,
-	tabTargetId: null,
-	chatGroups: [],
-	elsewhere: [],
-	focusedChatId: null,
-};
 
 const AT: TabsAsk = {
 	window: MAIN_WINDOW,
-	view: "canvas",
-	screen: NO_SCREEN,
+	screen: BARE_SCREEN,
 };
 
 const SEED = {
@@ -137,7 +124,9 @@ function sourceOf(sidebar: TabsSidebar, { id, isFromBlock, pinned }: Drag): Drag
 		groupId: null,
 		splitId: isFromBlock ? splitIdIn(sidebar) : null,
 		list: pinned.includes(id) && !isFromBlock ? "pinned" : "workspace",
-		isChat: false,
+		isHolder: false,
+		isNestable: true,
+		isTearable: true,
 	};
 }
 

@@ -61,7 +61,7 @@ function carriedItemOf({ source, element }: PickedItem): CarriedItem | null {
 	}
 
 	const title = (element.querySelector(ROW_WORDS)?.textContent ?? element.textContent ?? "").trim();
-	return source.isChat ? { kind: CARRIED_CHAT, id: source.id, title } : carriedTabOf(source, title);
+	return source.isHolder ? { kind: CARRIED_CHAT, id: source.id, title } : carriedTabOf(source, title);
 }
 
 function carriedTabOf({ id, list }: TabRef, title: string): CarriedItem {

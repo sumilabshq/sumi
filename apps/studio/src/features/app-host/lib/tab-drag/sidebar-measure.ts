@@ -85,7 +85,7 @@ function measuredOf(found: Iterable<HTMLElement>): readonly Measured[] {
 function measuredRowsOf(found: Iterable<HTMLElement>): readonly MeasuredRow[] {
 	return measuredOf(found).map((row) => ({
 		...row,
-		isChat: row.element.dataset["tabsChat"] !== undefined,
+		isHolder: row.element.dataset["tabsChat"] !== undefined,
 		isFolded: row.element.querySelector("[data-tabs-fold][data-folded]") !== null,
 		cardRect: rectOf(cardOrRowOf(row.element)),
 	}));
