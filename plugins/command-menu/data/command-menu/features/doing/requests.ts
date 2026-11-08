@@ -5,7 +5,6 @@ import type { Send } from "@widgetarium/data-framework";
 import {
 	CloseTabCommand,
 	HeldTabsQuery,
-	OpenChatCommand,
 	OpenLinkCommand,
 	OpenTabCommand,
 	PinTabCommand,
@@ -95,13 +94,12 @@ async function performOpening(
 ): Promise<void> {
 	switch (intent.do) {
 		case "show-tab":
+		case "open-chat":
 			return send(ShowTabCommand, { id: intent.id });
 		case "reopen-closed":
 			return send(ReopenClosedTabByIdCommand, { tabId: intent.tabId });
 		case "show-essential":
 			return send(ShowEssentialCommand, { id: intent.id });
-		case "open-chat":
-			return send(OpenChatCommand, { chatId: intent.id, paneId: null });
 		case "open-chat-elsewhere":
 			return send(OpenChatElsewhereCommand, { workspaceId: intent.workspaceId, chatId: intent.chatId });
 		case "open-workspace":

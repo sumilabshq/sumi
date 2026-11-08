@@ -32,7 +32,7 @@ import type { HostTab } from "../../../shared/lib/tabs/host-tabs.js";
 
 const NOT_HELD = 'the host holds no tab "{id}"';
 const NOT_LISTED = 'the tab "{id}" stands in no list';
-const NOT_A_PAGE_APP = 'a tab of {app} cannot be opened: {app} draws no page in a tab';
+const NOT_A_PAGE_APP = "a tab of {app} cannot be opened: {app} draws no page in a tab";
 const NO_NEW_TAB_APP = "no app declares that it navigates, so a new tab has nothing to open";
 const NO_LIST = 'a new tab cannot go to "{list}": no such tab list here';
 const NO_GROUP = 'no group "{id}"';
@@ -235,7 +235,7 @@ function withEssentialShown(showing: Showing, facts: TabFacts, live: HostTab): S
 		return withTabShown(showing, facts, live);
 	}
 
-	return withEffect(showing, { kind: "show-chat", chatId: live.id });
+	return withEffect(showing, { kind: "show-chat", chatId: live.id, paneId: null });
 }
 
 function withEssentialOpened(showing: Showing, facts: TabFacts, essential: EssentialRef): Showing | Refusal {

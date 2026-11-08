@@ -13,7 +13,7 @@ import {
 	ShownSplitQuery,
 	SidebarQuery,
 } from "../plugins/apps/data/places/index.ts";
-import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
 import type { SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
 import type { SplitDir, SplitNode } from "../plugins/apps/data/places/shared/schema/splits.schema.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
@@ -22,22 +22,10 @@ import { splitBreaksOf } from "../plugins/apps/data/places/shared/lib/splits/spl
 import { placeInView } from "../plugins/apps/data/places/shared/lib/splits/split-moves.ts";
 import { momentOfWindow } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
 import type { HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
-import { MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import { BARE_SCREEN, MAIN_WINDOW, placedTabsOf, placesLinkOf } from "./places-fixture.ts";
 import { check, tally } from "./check-helpers.ts";
 
-const NO_SCREEN: Screen = {
-	pages: [],
-	isBrowserAvailable: false,
-	canOpenOwnWindow: false,
-	tabPanes: [],
-	shownTabPaneId: null,
-	tabTargetId: null,
-	chatGroups: [],
-	elsewhere: [],
-	focusedChatId: null,
-};
-
-const AT: TabsAsk = { window: MAIN_WINDOW, view: "canvas", screen: NO_SCREEN };
+const AT: TabsAsk = { window: MAIN_WINDOW, screen: BARE_SCREEN };
 
 const SEED = {
 	tabs: ["tab-1", "tab-2", "tab-3", "tab-4", "tab-5", "tab-6"].map((id) => ({

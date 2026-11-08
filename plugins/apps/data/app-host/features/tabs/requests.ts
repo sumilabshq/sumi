@@ -20,14 +20,12 @@ import {
 	PlacedTabsQuery,
 	RememberPagesCommand,
 	RestoreTabsCommand as PlacesRestoreTabsCommand,
-	ShowChatTabCommand as PlacesShowChatTabCommand,
 	TabRowsQuery,
 } from "@widgetarium/places";
 import type { TabsAsk, TabsSettled } from "@widgetarium/places";
 import { ChatsChangedEvent } from "@widgetarium/workspaces";
 import { EssentialsChangedEvent } from "../../gateways/essentials/essentials.events.js";
 import { EssentialsGateway } from "../../gateways/essentials/essentials.gateway.js";
-import { ShownViewChangedEvent } from "../../gateways/shown-view/shown-view.events.js";
 import { StudioWindowGateway } from "../../gateways/studio-window/studio-window.gateway.js";
 import { StudioCoreChangedEvent } from "../../gateways/core-changes/core-changes.events.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
@@ -50,6 +48,7 @@ import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import { AppTabsSchema, HeldTabsSchema, TabsSidebarSchema } from "../../shared/schema/app-tab.schema.js";
 import { TabDropSchema } from "../../shared/schema/tab-drop.schema.js";
+import { TabToShowSchema } from "../../shared/schema/tab-to-show.schema.js";
 import type { TabDrop } from "../../shared/schema/tab-drop.schema.js";
 
 const ALL_PAGES = { heldTabId: null };
@@ -118,20 +117,18 @@ export const RestoreTabsCommand = command("restore-tabs")
 
 export const ShowTabCommand = command("show-tab")
 	.public()
-	.input(z.object({ id: z.string() }))
+	.input(TabToShowSchema)
 	.idempotencyKey(Repeatable)
-	.handle(({ id }, { send, emit, ...injects }) =>
-		showTabSettled({ injects, send, told: () => emit(TabsSettledEvent) }, id),
+	.handle((asked, { send, emit, ...injects }) =>
+		showTabSettled({ injects, send, told: () => emit(TabsSettledEvent) }, asked),
 	);
 
-export const ShowChatTabCommand = command("show-chat-tab")
+export const SyncChatTabsCommand = command("sync-chat-tabs")
 	.public()
-	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable)
-	.handle(async ({ chatId }, { send, emit, ...injects }) => {
-		await settleAsked({ injects, send, told: () => emit(TabsSettledEvent) }, (at) =>
-			send(PlacesShowChatTabCommand, { at, chatId }),
-		);
+	.handle(async (_input, { send, emit }) => {
+		await keepChatTabs(send);
+		emit(TabsSettledEvent);
 	});
 
 export const PlaceTabCommand = command("place-tab")
@@ -178,10 +175,6 @@ export const RereadTabsSubscriber = subscriber(TabsSettledEvent).handle((_input,
 });
 
 export const RereadTabsForCoreSubscriber = subscriber(StudioCoreChangedEvent).handle((_input, { invalidate }) => {
-	invalidateTabReads(invalidate);
-});
-
-export const RereadTabsForShownViewSubscriber = subscriber(ShownViewChangedEvent).handle((_input, { invalidate }) => {
 	invalidateTabReads(invalidate);
 });
 

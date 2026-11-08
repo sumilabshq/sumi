@@ -53,6 +53,7 @@ export function reopenClosed(moment: HostTabsMoment, chatId: string, tabId: stri
 			...withHeldRestored(reopenedLayoutOf(moment, reopened, chatId), reopened),
 			tabs: [...moment.tabs, reopened.tab, ...(reopened.held?.tabs ?? [])],
 			shownId: reopened.tab.id,
+			selectedId: reopened.tab.id,
 			closed: moment.closed.filter((_closed, at) => at !== index),
 		},
 		reason: reopenSaid(reopened, chatId),
@@ -130,7 +131,8 @@ function closedMoment(
 		...moment,
 		...layoutLeftBy(moment, closed, leaving),
 		tabs: moment.tabs.filter((tab) => !leaving.tabs.has(tab.id)),
-		shownId: shownAfterClosing(moment, leaving.tabs),
+		shownId: survivingIdOf(moment, moment.shownId, leaving.tabs),
+		selectedId: survivingIdOf(moment, moment.selectedId, leaving.tabs),
 		closed: keptClosed(moment.apps, moment.closed, closed),
 	};
 }
@@ -159,14 +161,12 @@ function leavingOf(closed: readonly ClosedTab[]): Leaving {
 	};
 }
 
-function shownAfterClosing(moment: HostTabsMoment, closingIds: ReadonlySet<string>): string | null {
-	const { shownId } = moment;
-
-	if (shownId === null || !closingIds.has(shownId)) {
-		return shownId;
+function survivingIdOf(moment: HostTabsMoment, id: string | null, closingIds: ReadonlySet<string>): string | null {
+	if (id === null || !closingIds.has(id)) {
+		return id;
 	}
 
-	return neighbourOf(moment, shownId, closingIds);
+	return neighbourOf(moment, id, closingIds);
 }
 
 function neighbourOf(moment: HostTabsMoment, id: string, leaving: ReadonlySet<string>): string | null {

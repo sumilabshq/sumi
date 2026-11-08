@@ -4,14 +4,6 @@ import { z } from "zod";
 
 export const TornViewSchema = z.enum(["chat", "app"]);
 
-export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
-
-export const PageAppSchema = AppKindSchema;
-
-export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
-
-export type StudioView = z.infer<typeof StudioViewSchema>;
-
 export const PageFactsSchema = z.object({
 	pageId: z.string(),
 	title: z.string(),
@@ -41,7 +33,6 @@ export type Screen = z.infer<typeof ScreenSchema>;
 
 export const TabsAskSchema = z.object({
 	window: z.string().min(1),
-	view: StudioViewSchema,
 	screen: ScreenSchema,
 });
 
@@ -76,7 +67,7 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 	z.object({ kind: z.literal("open-shown-tab-pane") }),
 	z.object({ kind: z.literal("close-shown-tab-pane") }),
 	z.object({ kind: z.literal("show-in-target-pane"), tabId: z.string() }),
-	z.object({ kind: z.literal("show-chat"), chatId: z.string() }),
+	z.object({ kind: z.literal("show-chat"), chatId: z.string(), paneId: z.string().nullable() }),
 	z.object({
 		kind: z.literal("show-in-chat-group"),
 		chatId: z.string(),
@@ -97,7 +88,6 @@ export const TabEffectSchema = z.discriminatedUnion("kind", [
 export type TabEffect = z.infer<typeof TabEffectSchema>;
 
 export const TabsSettledSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 });
 
@@ -105,7 +95,6 @@ export type TabsSettled = z.infer<typeof TabsSettledSchema>;
 
 export const OpenedTabSettledSchema = z.object({
 	id: z.string(),
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 });
 
@@ -138,13 +127,11 @@ export const ResizeSplitAskSchema = z.object({
 });
 
 export const PlacedInViewSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 	isPlaced: z.boolean(),
 });
 
 export const LeftSplitSchema = z.object({
-	view: StudioViewSchema,
 	effects: z.array(TabEffectSchema),
 	isMember: z.boolean(),
 });
@@ -225,10 +212,14 @@ export const TabAskSchema = z.object({
 	id: z.string().min(1),
 });
 
-export const ChatTabAskSchema = z.object({
-	at: TabsAskSchema,
-	chatId: z.string().min(1),
+export const ShowTabAskSchema = TabAskSchema.extend({
+	paneId: z.string().min(1).nullable().default(null),
+	isFollowingFocus: z.boolean().default(false),
 });
+
+export type ShowTabAsk = z.infer<typeof ShowTabAskSchema>;
+
+export const AppKindSchema = z.string().regex(/^[a-z][a-z0-9-]*$/, "an app id is lowercase letters, digits and dashes");
 
 export const EssentialSchema = z.object({
 	id: z.string(),
@@ -252,6 +243,8 @@ export const PlaceTabAskSchema = z.object({
 	id: z.string().min(1),
 	place: TabPlaceSchema,
 });
+
+export const PageAppSchema = AppKindSchema;
 
 export const OpenTabAskSchema = z.object({
 	at: TabsAskSchema,
@@ -362,6 +355,13 @@ export const MakeEssentialAskSchema = z.object({
 	at: TabsAskSchema,
 	id: z.string().min(1),
 	essentialId: z.string().min(1),
+});
+
+export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
+
+export const ShowViewAskSchema = z.object({
+	window: z.string().min(1),
+	view: StudioViewSchema,
 });
 
 export const TabTurnSchema = z.object({
@@ -484,7 +484,11 @@ export const AppTabSchema = z.object({
 
 export type AppTab = z.infer<typeof AppTabSchema>;
 
-export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
+export const AppTabStateSchema = AppTabSchema.extend({
+	isShown: z.boolean(),
+	isNestable: z.boolean(),
+	isTearable: z.boolean(),
+});
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
 
@@ -630,6 +634,8 @@ export const HeldTabsSchema = z.object({
 	shownTabId: z.string().nullable(),
 });
 
+export type HeldTabs = z.infer<typeof HeldTabsSchema>;
+
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
@@ -646,6 +652,8 @@ export const ClosedTabsSchema = z.object({ tabs: z.array(ClosedTabRowSchema).rea
 export type AppKind = z.infer<typeof AppKindSchema>;
 
 export type PageApp = z.infer<typeof PageAppSchema>;
+
+export type StudioView = z.infer<typeof StudioViewSchema>;
 
 export type TabMark = z.infer<typeof TabMarkSchema>;
 
@@ -939,12 +947,7 @@ export const RestoreTabsCommand = command("places/restore-tabs")
 	.idempotencyKey(Repeatable);
 export const ShowTabCommand = command("places/show-tab")
 	.public()
-	.input(TabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("places/show-chat-tab")
-	.public()
-	.input(ChatTabAskSchema)
+	.input(ShowTabAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
 export const FitTabsToPanesCommand = command("places/fit-tabs-to-panes")
@@ -972,6 +975,10 @@ export const ReloadTabCommand = command("places/reload-tab")
 	.input(TabAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable);
+export const ShowViewCommand = command("places/show-view")
+	.public()
+	.input(ShowViewAskSchema)
+	.idempotencyKey(Repeatable);
 export const PlacedTabsQuery = query("places/placed-tabs")
 	.public()
 	.input(WindowLabelSchema)
@@ -988,6 +995,10 @@ export const HeldTabsQuery = query("places/held-tabs")
 	.public()
 	.input(SettleAskSchema)
 	.output(HeldTabsSchema);
+export const ShownViewQuery = query("places/shown-view")
+	.public()
+	.input(WindowLabelSchema)
+	.output(StudioViewSchema);
 export const ClosedTabsQuery = query("places/closed-tabs")
 	.public()
 	.output(ClosedTabsSchema);
@@ -1010,4 +1021,4 @@ export const KeepLiveWindowsCommand = command("places/keep-live-windows")
 	.input(LiveWindowsSchema)
 	.idempotencyKey(Repeatable);
 
-export const PlacesModule = moduleContract("places", Server, [ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, OpenLinkCommand, AskedLinksQuery, TakeAskedLinkCommand, AppTabQuery, RecordAppAddressCommand, GoBackInTabCommand, GoForwardInTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, FoldTabCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, UngroupCommand, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ClosedTabsQuery, ChatTabsQuery, OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand]);
+export const PlacesModule = moduleContract("places", Server, [ShownSplitQuery, PlaceInViewCommand, RemoveFromSplitCommand, ReorderSplitMemberCommand, ResizeSplitCommand, CloseTabCommand, CloseOtherTabsCommand, CloseShownTabCommand, CloseGroupCommand, CloseEssentialTabCommand, KeepChatTabsCommand, RecordTabTurnCommand, MarkTabSeenCommand, ForgetRunningTurnsCommand, OpenLinkCommand, AskedLinksQuery, TakeAskedLinkCommand, AppTabQuery, RecordAppAddressCommand, GoBackInTabCommand, GoForwardInTabCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReopenClosedTabCommand, ShowEssentialTabCommand, ReleaseEssentialTabCommand, PlaceTabCommand, MakeEssentialCommand, RenameTabCommand, PinTabCommand, FoldTabCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, UngroupCommand, RestoreTabsCommand, ShowTabCommand, FitTabsToPanesCommand, RememberPagesCommand, OpenTabInOwnWindowCommand, TearOffTabCommand, ReloadTabCommand, ShowViewCommand, PlacedTabsQuery, TabRowsQuery, SidebarQuery, HeldTabsQuery, ShownViewQuery, ClosedTabsQuery, ChatTabsQuery, OpenWindowsQuery, OpenWindowCommand, CloseWindowCommand, KeepLiveWindowsCommand]);

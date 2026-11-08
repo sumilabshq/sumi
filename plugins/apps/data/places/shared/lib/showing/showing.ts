@@ -10,7 +10,8 @@ import {
 } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, MovedTabs } from "../tabs/host-tabs.js";
 import type { PageApp } from "../../schema/tabs.schema.js";
-import type { StudioView, TabEffect } from "../../schema/screen.schema.js";
+import type { TabEffect } from "../../schema/screen.schema.js";
+import type { StudioView } from "../../schema/tabs.schema.js";
 import type { Essential } from "../../schema/tab-rows.schema.js";
 import { chatHomeOf } from "./chat-home.js";
 import { newTabPageOf } from "./new-tab-page.js";
@@ -22,7 +23,6 @@ export type { TabEffect } from "../../schema/screen.schema.js";
 
 export interface Showing {
 	readonly moment: HostTabsMoment;
-	readonly shownView: StudioView;
 	readonly effects: readonly TabEffect[];
 	readonly reasons: readonly string[];
 }
@@ -37,10 +37,9 @@ export interface EnsuredPage {
 	readonly pageId: string | null;
 }
 
-export function showingOf(moment: HostTabsMoment, shownView: StudioView): Showing {
+export function showingOf(moment: HostTabsMoment): Showing {
 	return {
 		moment,
-		shownView,
 		effects: [],
 		reasons: [],
 	};
@@ -79,14 +78,14 @@ export function withEffect(showing: Showing, effect: TabEffect): Showing {
 }
 
 export function withView(showing: Showing, view: StudioView, reason: string): Showing {
-	if (showing.shownView === view) {
+	if (showing.moment.view === view) {
 		return showing;
 	}
 
 	return {
 		...showing,
-		shownView: view,
-		reasons: [...showing.reasons, `view ${showing.shownView} → ${view}, ${reason}`],
+		moment: { ...showing.moment, view },
+		reasons: [...showing.reasons, `view ${showing.moment.view} → ${view}, ${reason}`],
 	};
 }
 
@@ -199,7 +198,7 @@ export function withChatTabPlaced(
 		return marked;
 	}
 
-	const opened = isOnBoard ? marked : withEffect(marked, { kind: "show-chat", chatId });
+	const opened = isOnBoard ? marked : withEffect(marked, { kind: "show-chat", chatId, paneId: null });
 	const placed = withEffect(opened, { kind: "show-in-chat-group", chatId, tabId: tab.id, isOnlyWhenBare });
 	return withPageEnsured(placed, facts, { tabId: tab.id, why: `shown in chat ${chatId}` }).showing;
 }
@@ -244,7 +243,7 @@ export function chatTabToShow(moment: HostTabsMoment, chatId: string): string | 
 
 export function withFreeTabBesidePanes(showing: Showing, facts: TabFacts): Showing {
 	const inPanes = tabIdsInPanesOf(facts);
-	const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.shownView));
+	const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.moment.view));
 	const shownPane = facts.tabPanes.find(({ tabId }) => tabId === shownId);
 
 	if (shownId === null || shownPane === undefined || shownPane.paneId === facts.tabTargetId) {
@@ -266,7 +265,7 @@ export function withTabTornOff(showing: Showing, facts: TabFacts, tabId: string)
 	const isInPane = facts.tabPanes.some((pane) => pane.tabId === tabId);
 	const unpaned = isInPane ? withEffect(showing, { kind: "close-panes", tabIds: [tabId] }) : showing;
 
-	if (shownTabIdOf(unpaned.moment, shownAppOf(unpaned.shownView)) !== tabId) {
+	if (shownTabIdOf(unpaned.moment, shownAppOf(unpaned.moment.view)) !== tabId) {
 		return unpaned;
 	}
 
@@ -295,7 +294,7 @@ export function withPanePagesEnsured(showing: Showing, facts: TabFacts): Showing
 
 export function withFirstTabShown(showing: Showing, facts: TabFacts, essentials: readonly Essential[]): Showing {
 	const { moment } = showing;
-	const shownApp = shownAppOf(showing.shownView);
+	const shownApp = shownAppOf(showing.moment.view);
 	const shownId = shownTabIdOf(moment, shownApp);
 
 	if (shownId !== null) {

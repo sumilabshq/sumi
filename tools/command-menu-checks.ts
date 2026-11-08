@@ -4,7 +4,12 @@ import { filledWithShown } from "../plugins/command-menu/data/command-menu/featu
 import { runtime } from "../packages/shared/data-framework/src/index.ts";
 import type { Answer } from "../packages/shared/data-framework/src/index.ts";
 import { AppHostModule } from "../plugins/apps/data/app-host/module.ts";
-import { AppTabsQuery, HeldTabsQuery, RenameTabCommand } from "../plugins/apps/data/app-host/index.ts";
+import {
+	AppTabsQuery,
+	HeldTabsQuery,
+	RenameTabCommand,
+	RestoreTabsCommand,
+} from "../plugins/apps/data/app-host/index.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
@@ -28,12 +33,15 @@ import type { Intent, Results, ResultsAsk } from "../plugins/command-menu/data/c
 import { RecordedPagesGateway, appHostFakesOf } from "./app-host-fixture.ts";
 import { fakeBrowser } from "./browser-fakes.ts";
 import { partsOf } from "./layout-rules-checks.ts";
-import { placesOver } from "./places-fixture.ts";
+import { placesOver, withWindowView } from "./places-fixture.ts";
+import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
+import { emptyPlacedTabs } from "../plugins/apps/data/places/shared/lib/tabs/kept-tabs.ts";
 
 const studio = runtime()
 	.modules(BrowserModule, LayoutModule, WorkspacesModule, AppHostModule, PluginAppsModule, ...PLUGIN_WINDOW_MODULES)
 	.imports(placesOver())
 	.start({ platform: "browser", scope: { workspaceId: "studio" } });
+await studio.send(RestoreTabsCommand);
 
 await check("opens anywhere and the door changes", async () => {
 	ok(await studio.send(ToggleCommandMenuCommand, { door: "anywhere", text: "" }));
@@ -214,7 +222,7 @@ await check("Enter on an address opens it in a new browser tab, Open here replac
 			WorkspacesModule,
 			...PLUGIN_WINDOW_MODULES,
 		)
-		.imports(placesOver())
+		.imports(placesOver(new MemoryTabsGateway(withWindowView(emptyPlacedTabs(), "browser"))))
 		.start({ platform: "browser", scope: { workspaceId: "studio" } });
 	const tabsBefore = ok(await withPages.send(AppTabsQuery)).tabs.length;
 	ok(await withPages.send(DoRowCommand, { intent: { do: "open-address", address: "example.com", where: "new-tab" } }));
@@ -300,7 +308,8 @@ await check("a chat in another workspace is found and opened there", async () =>
 		.modules(
 			BrowserModule,
 			LayoutModule,
-			WorkspacesModule({ injects: memoryWorkspacesParts({
+			WorkspacesModule({
+				injects: memoryWorkspacesParts({
 					workspaces: [
 						{
 							id: "untitled",
@@ -328,7 +337,8 @@ await check("a chat in another workspace is found and opened there", async () =>
 							openOnStartId: null,
 						},
 					},
-				}), }),
+				}),
+			}),
 			AppHostModule,
 			PluginAppsModule,
 			...PLUGIN_WINDOW_MODULES,

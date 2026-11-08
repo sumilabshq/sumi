@@ -1,7 +1,7 @@
 import {
-	OpenChatCommand,
 	PinTabCommand,
 	RenameTabCommand,
+	ShowTabCommand,
 	TearOffTabCommand,
 } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { PaneTreeQuery } from "../packages/state/layout/generated/contract.ts";
@@ -43,7 +43,7 @@ async function namingChecks(): Promise<void> {
 async function unknownChatChecks(): Promise<void> {
 	const { studioApp } = studioFakesOf();
 	const before = await boardChatsOf(studioApp);
-	const opened = await studioApp.send(OpenChatCommand, { chatId: "chat-gone", paneId: null });
+	const opened = await studioApp.send(ShowTabCommand, { id: "chat-gone" });
 	check(
 		"opening a chat that does not exist is refused before the layout changes",
 		[opened.ok, await boardChatsOf(studioApp)],

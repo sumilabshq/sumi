@@ -67,7 +67,11 @@ export const AppTabSchema = z.object({
 
 export type AppTab = z.infer<typeof AppTabSchema>;
 
-export const AppTabStateSchema = AppTabSchema.extend({ isShown: z.boolean() });
+export const AppTabStateSchema = AppTabSchema.extend({
+	isShown: z.boolean(),
+	isNestable: z.boolean(),
+	isTearable: z.boolean(),
+});
 
 export type AppTabState = z.infer<typeof AppTabStateSchema>;
 
@@ -227,13 +231,6 @@ export const HeldTabsSchema = z.object({
 
 export type HeldTabs = z.infer<typeof HeldTabsSchema>;
 
-export const ChatToShowSchema = z.object({
-	chatId: z.string().min(1),
-	paneId: z.string().nullable(),
-});
-
-export type ChatToShow = z.infer<typeof ChatToShowSchema>;
-
 export const ClosedTabRowSchema = z.object({
 	tabId: z.string().min(1),
 	title: z.string(),
@@ -319,10 +316,16 @@ export const TabPinSchema = z.object({
 	isPinned: z.boolean(),
 });
 
-export const OpenChatCommand = command("app-host/open-chat")
-	.public()
-	.input(ChatToShowSchema)
-	.idempotencyKey(Repeatable);
+export const TabToShowSchema = z.object({
+	id: z.string().min(1),
+	paneId: z.string().min(1).nullable().default(null),
+	isFollowingFocus: z.boolean().default(false),
+});
+
+export type TabToShow = z.input<typeof TabToShowSchema>;
+
+export const ViewToShowSchema = z.object({ view: StudioViewSchema });
+
 export const ClosedTabsQuery = query("app-host/closed-tabs")
 	.public()
 	.output(ClosedTabsSchema);
@@ -389,11 +392,10 @@ export const OpenLinkCommand = command("app-host/open-link")
 	.idempotencyKey(Repeatable);
 export const ShownViewQuery = query("app-host/shown-view")
 	.public()
-	.output(StudioViewSchema)
-	.settlesNow();
+	.output(StudioViewSchema);
 export const ShowViewCommand = command("app-host/show-view")
 	.public()
-	.input(z.object({ view: StudioViewSchema }))
+	.input(ViewToShowSchema)
 	.idempotencyKey(Repeatable);
 export const ShownSplitQuery = query("app-host/shown-split")
 	.public()
@@ -489,11 +491,10 @@ export const RestoreTabsCommand = command("app-host/restore-tabs")
 	.idempotencyKey(Repeatable);
 export const ShowTabCommand = command("app-host/show-tab")
 	.public()
-	.input(z.object({ id: z.string() }))
+	.input(TabToShowSchema)
 	.idempotencyKey(Repeatable);
-export const ShowChatTabCommand = command("app-host/show-chat-tab")
+export const SyncChatTabsCommand = command("app-host/sync-chat-tabs")
 	.public()
-	.input(z.object({ chatId: z.string().min(1) }))
 	.idempotencyKey(Repeatable);
 export const PlaceTabCommand = command("app-host/place-tab")
 	.public()
@@ -503,4 +504,4 @@ export const StudioCoreChangedEvent = event("app-host/studio-core-changed")
 	.public();
 export const TabsSettledEvent = event("app-host/tabs-settled").public();
 
-export const AppHostModule = moduleContract("app-host", Device, [OpenChatCommand, ClosedTabsQuery, ReopenClosedTabByIdCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, FoldTabCommand, UngroupCommand, OpenLinkCommand, ShownViewQuery, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, TearOffTabCommand, CloseGroupCommand, PinTabCommand, AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, RestoreTabsCommand, ShowTabCommand, ShowChatTabCommand, PlaceTabCommand]);
+export const AppHostModule = moduleContract("app-host", Device, [ClosedTabsQuery, ReopenClosedTabByIdCommand, ShowEssentialCommand, RemoveEssentialCommand, CloseEssentialCommand, PlaceEssentialCommand, CreateGroupCommand, RenameGroupCommand, SetGroupHueCommand, FoldGroupCommand, PlaceGroupCommand, FoldTabCommand, UngroupCommand, OpenLinkCommand, ShownViewQuery, ShowViewCommand, ShownSplitQuery, PlaceInViewCommand, CloseViewPaneCommand, ResizeSplitCommand, OpenTabCommand, OpenTabBelowCommand, DuplicateTabCommand, ReloadTabCommand, RenameTabCommand, CloseOtherTabsCommand, ReopenClosedTabCommand, CloseTabCommand, CloseShownTabCommand, TearOffTabCommand, CloseGroupCommand, PinTabCommand, AppTabsQuery, TabsSidebarQuery, HeldTabsQuery, CanOpenOwnWindowQuery, RestoreTabsCommand, ShowTabCommand, SyncChatTabsCommand, PlaceTabCommand]);

@@ -31,7 +31,6 @@ import { KeepChatTabsCommand } from "@widgetarium/places";
 import type { TabEffect, TabsAsk, TabsSettled } from "@widgetarium/places";
 import { ChatRecordsQuery } from "@widgetarium/workspaces";
 import type { KeptEssentials } from "../../schema/essential.schema.js";
-import type { StudioView } from "../../schema/studio-view.schema.js";
 import type { MovedEssentials } from "../essentials/essentials.js";
 import { screenOf } from "./screen-of.js";
 
@@ -63,11 +62,6 @@ interface StudioWindowSeat {
 	windowLabel(): string;
 }
 
-interface ShownViewStore {
-	shownView(): StudioView;
-	saveShownView(view: StudioView, reason: string): void;
-}
-
 interface PaneFlasher {
 	flashPane(paneId: string): void;
 }
@@ -78,7 +72,6 @@ interface EssentialsStore {
 
 export interface TabStores {
 	readonly studioWindow: StudioWindowSeat;
-	readonly shownView: ShownViewStore;
 	readonly paneFlash: PaneFlasher;
 }
 
@@ -96,7 +89,6 @@ export async function tabsAskOf({ injects, send }: Pick<TabsReach, "injects" | "
 	]);
 	return {
 		window: injects.studioWindow.windowLabel(),
-		view: injects.shownView.shownView(),
 		screen: screenOf({ browserTabs, asks, board }),
 	};
 }
@@ -106,7 +98,6 @@ export async function settleAsked<S extends TabsSettled>(
 	ask: (at: TabsAsk) => Promise<S>,
 ): Promise<S> {
 	const settled = await ask(await tabsAskOf(reach));
-	saveView(reach.injects.shownView, settled.view);
 
 	for (const effect of settled.effects) {
 		await sendLogged(effect.kind, () => sendEffect(effect, reach));
@@ -142,18 +133,6 @@ export async function sendLogged(what: string, sending: () => Promise<unknown> |
 	} catch (failure: unknown) {
 		console.error(`[widgetarium] the host tabs could not ${what}`, failure);
 	}
-}
-
-function saveView(shownView: ShownViewStore, next: StudioView): void {
-	const was = shownView.shownView();
-
-	if (was === next) {
-		return;
-	}
-
-	const reason = `shown view ${was} → ${next} (tabs settled)`;
-	shownView.saveShownView(next, reason);
-	console.info(`[widgetarium] ${reason}`);
 }
 
 async function sendEffect(effect: TabEffect, reach: TabsReach): Promise<unknown> {
@@ -220,7 +199,7 @@ async function sendPaneEffect(effect: PaneEffect, { injects, send }: TabsReach):
 function sendViewEffect(effect: ViewEffect, send: Send): Promise<unknown> {
 	switch (effect.kind) {
 		case "show-chat":
-			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: null });
+			return send(ShowChatInPaneCommand, { chatId: effect.chatId, paneId: effect.paneId });
 		case "show-in-chat-group":
 			return send(ShowTabInChatGroupCommand, chatGroupAskOf(effect));
 		case "show-split":

@@ -1,11 +1,11 @@
 import { useLayoutEffect, useRef } from "react";
 import { useCommand, useQuery } from "@widgetarium/data-framework";
-import { ShowChatTabCommand } from "@widgetarium/app-host";
+import { ShowTabCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";
 
 export function ChatFollower(): null {
 	const chatId = useQuery(PaneTreeQuery).data.focusedChatId;
-	const showChatTab = useCommand(ShowChatTabCommand);
+	const showTab = useCommand(ShowTabCommand);
 	const followedId = useRef<string | null>(null);
 	useLayoutEffect(() => {
 		if (followedId.current === chatId) {
@@ -15,8 +15,8 @@ export function ChatFollower(): null {
 		followedId.current = chatId;
 
 		if (chatId !== null) {
-			void showChatTab.run({ chatId });
+			void showTab.run({ id: chatId, isFollowingFocus: true });
 		}
-	}, [chatId, showChatTab]);
+	}, [chatId, showTab]);
 	return null;
 }

@@ -1,3 +1,7 @@
+import { BARE_SCREEN } from "./places-fixture.ts";
+import { selectedIdsOf } from "../plugins/apps/data/places/shared/lib/rows/tab-rows.ts";
+import { tabFactsOf } from "../plugins/apps/data/places/shared/lib/showing/tab-facts.ts";
+import type { Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -38,6 +42,11 @@ const quiet = console.info;
 const SPACING = {
 	gapPx: 8,
 	leastPx: 320,
+};
+
+const SHOWN_PANE_ONLY: Screen = {
+	...BARE_SCREEN,
+	shownTabPaneId: "pane-shown",
 };
 
 function check(what: string, isOk: boolean, got: unknown): void {
@@ -101,9 +110,7 @@ function checksTree(): void {
 		moment: twoTabs,
 		essentials: [],
 		pages: [],
-		shownApp: null,
-		shownTileRowId: null,
-		hasShownTabPane: true,
+		highlightedIds: selectedIdsOf(twoTabs, tabFactsOf(SHOWN_PANE_ONLY)),
 		elsewhere: [],
 	});
 	const rows =

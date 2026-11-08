@@ -1,26 +1,28 @@
 import { flatTabIdsOf, isPageTab } from "../tabs/host-tabs.js";
 import type { HostTab, HostTabsMoment, PageTab } from "../tabs/host-tabs.js";
 import { hostOf, tabArtOf, titleOf, titleOfTab } from "./tab-face.js";
-import { shownTabIdOf } from "../showing/showing.js";
+import { chatHomeOf } from "../showing/chat-home.js";
+import { shownAppOf, shownTabIdOf } from "../showing/showing.js";
+import { tabIdsInPanesOf } from "../showing/tab-facts.js";
+import type { TabFacts } from "../showing/tab-facts.js";
 import { pagesOfTabs } from "../showing/tab-pages.js";
 import type { AppTab, AppTabState, Essential, EssentialTile, TabStatus } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
-import type { PageApp } from "../../schema/tabs.schema.js";
+import { canStandInHolders, isTearable } from "../tabs/app-abilities.js";
 import type { PlacedApps } from "../tabs/app-abilities.js";
 
 export interface RowLooks {
-	readonly shownIds: ReadonlySet<string>;
+	readonly highlightedIds: ReadonlySet<string>;
 	readonly elsewhereIds: ReadonlySet<string>;
 }
 
 export function tabRowsOf(
 	moment: HostTabsMoment,
 	pages: readonly PageFacts[],
-	shownApp: PageApp | null,
 	listIds: readonly string[],
 ): readonly AppTabState[] {
 	const rows = new TabRows(moment, pages, {
-		shownIds: shownIdsOf(moment, shownApp),
+		highlightedIds: shownIdsOf(moment),
 		elsewhereIds: new Set(),
 	});
 	const pageIds = new Set(moment.tabs.filter((tab) => isPageTab(moment.apps, tab)).map((tab) => tab.id));
@@ -28,9 +30,20 @@ export function tabRowsOf(
 	return listed.filter((id) => pageIds.has(id)).flatMap((id) => rows.rowsOf(id));
 }
 
-export function shownIdsOf(moment: HostTabsMoment, shownApp: PageApp | null): ReadonlySet<string> {
-	const shownId = shownTabIdOf(moment, shownApp);
+export function shownIdsOf(moment: HostTabsMoment): ReadonlySet<string> {
+	const shownId = shownTabIdOf(moment, shownAppOf(moment.view));
 	return new Set(shownId === null ? [] : [shownId]);
+}
+
+export function selectedIdsOf(moment: HostTabsMoment, facts: TabFacts): ReadonlySet<string> {
+	const { selectedId } = moment;
+
+	if (selectedId === null || facts.tabWindows.has(selectedId) || !isTabOnScreen(moment, facts, selectedId)) {
+		return new Set();
+	}
+
+	const holderId = chatHomeOf(moment, selectedId);
+	return new Set(holderId === null ? [selectedId] : [selectedId, holderId]);
 }
 
 export class TabRows {
@@ -60,7 +73,9 @@ export class TabRows {
 			{
 				...paged,
 				isInOwnWindow: paged.isInOwnWindow || this.looks.elsewhereIds.has(tab.id),
-				isShown: this.looks.shownIds.has(tab.id),
+				isShown: this.looks.highlightedIds.has(tab.id),
+				isNestable: canStandInHolders(this.moment.apps, tab),
+				isTearable: isTearable(this.moment.apps, tab),
 			},
 		];
 	}
@@ -83,7 +98,7 @@ export class TabRows {
 			}),
 			icon: tabArtOf(this.moment.apps, essential.app, page?.url || essential.address),
 			favicon: page?.favicon ?? essential.favicon,
-			isShown: this.looks.shownIds.has(live.id),
+			isShown: this.looks.highlightedIds.has(live.id),
 			isLive: true,
 		};
 	}
@@ -176,4 +191,12 @@ function statusOf({ isInkReading, isAskWaiting, isClosedToInk }: PageFacts): Tab
 	}
 
 	return isClosedToInk ? "cannot-look" : null;
+}
+
+function isTabOnScreen(moment: HostTabsMoment, facts: TabFacts, id: string): boolean {
+	return (
+		(facts.shownTabPaneId !== null && shownTabIdOf(moment, shownAppOf(moment.view)) === id) ||
+		facts.chatGroupIds.includes(id) ||
+		tabIdsInPanesOf(facts).includes(id)
+	);
 }

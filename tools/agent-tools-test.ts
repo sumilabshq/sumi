@@ -28,6 +28,8 @@ function tab(id: string, title: string, isShown = false) {
 		isInOwnWindow: false,
 		mark: "none" as const,
 		isShown,
+		isNestable: true,
+		isTearable: true,
 	};
 }
 

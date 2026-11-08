@@ -8,51 +8,44 @@ import { createListeners } from "./listeners.js";
 export function createStudioState(studioApp: Runtime): StudioState {
 	const listeners = createListeners();
 	let moment = STUDIO_OPENED_ON;
-	const momentNow = (): StudioMoment => {
-		const view = shownViewOf(studioApp);
-
-		if (view !== moment.view) {
-			moment = { ...moment, view };
-		}
-
-		return moment;
-	};
 	const become = (next: StudioMoment, reason: string): void => {
 		console.info(`[widgetarium] studio ${JSON.stringify(moment)} → ${JSON.stringify(next)} (${reason})`);
 		moment = next;
 		listeners.notify();
 	};
+	const rereadView = async (): Promise<void> => {
+		const answer = await studioApp.send(ShownViewQuery);
+
+		if (!answer.ok) {
+			console.error(`[widgetarium] the studio could not read the shown view: ${answer.reason}`);
+			return;
+		}
+
+		if (answer.output !== moment.view) {
+			become({ ...moment, view: answer.output }, "shown view read");
+		}
+	};
+	studioApp.routes.watch(ShownViewQuery, undefined, () => void rereadView());
+	void rereadView();
 	return {
-		now: momentNow,
-		subscribe: (changed) => {
-			const stopPanel = listeners.subscribe(changed);
-			const stopView = studioApp.routes.watch(ShownViewQuery, undefined, changed);
-			return () => {
-				stopPanel();
-				stopView();
-			};
-		},
+		now: () => moment,
+		subscribe: (changed) => listeners.subscribe(changed),
 		show: (view) => void showView(studioApp, view),
 		openPanel: (panel) => {
 			if (moment.panel === panel) {
 				return;
 			}
 
-			become({ ...momentNow(), panel }, `open ${panel}`);
+			become({ ...moment, panel }, `open ${panel}`);
 		},
 		closePanel: (panel) => {
 			if (moment.panel !== panel) {
 				return;
 			}
 
-			become({ ...momentNow(), panel: "none" }, `close ${panel}`);
+			become({ ...moment, panel: "none" }, `close ${panel}`);
 		},
 	};
-}
-
-function shownViewOf(studioApp: Runtime): StudioView {
-	const read = studioApp.routes.readNow(ShownViewQuery);
-	return read === null ? STUDIO_OPENED_ON.view : ShownViewQuery.outputSchema.parse(read.output);
 }
 
 async function showView(studioApp: Runtime, view: StudioView): Promise<void> {

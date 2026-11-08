@@ -1,8 +1,11 @@
+import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_APPS } from "./placed-apps-fixture.ts";
 import { emptyMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
 import type { HostTab, HostTabsMoment } from "../plugins/apps/data/places/shared/lib/tabs/host-tabs.ts";
 import { sidebarOf } from "../plugins/apps/data/places/shared/lib/rows/sidebar-rows.ts";
-import type { PageFacts } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
+import type { PageFacts, Screen } from "../plugins/apps/data/places/shared/schema/screen.schema.ts";
+import { selectedIdsOf } from "../plugins/apps/data/places/shared/lib/rows/tab-rows.ts";
+import { tabFactsOf } from "../plugins/apps/data/places/shared/lib/showing/tab-facts.ts";
 import type { PlacedSidebar, SidebarEntry } from "../plugins/apps/data/places/shared/schema/tab-rows.schema.ts";
 
 let failed = 0;
@@ -70,15 +73,22 @@ const MOMENT: HostTabsMoment = {
 	],
 };
 
-function sidebarWith(moment: HostTabsMoment, shownTileRowId: string | null): PlacedSidebar {
+function createScreenWithChats(chatIds: readonly string[]): Screen {
+	return {
+		...BARE_SCREEN,
+		shownTabPaneId: "pane-shown",
+		chatGroups: chatIds.map((chatId) => ({ chatId, paneIds: [`pane-${chatId}`] })),
+	};
+}
+
+function sidebarWith(moment: HostTabsMoment, selectedId: string | null): PlacedSidebar {
+	const selected = { ...moment, selectedId };
 	return sidebarOf({
-		moment,
+		moment: selected,
 		essentials: [],
 		pages: [pageOf("apart", true), pageOf("sub", false)],
-		shownApp: null,
-		hasShownTabPane: true,
+		highlightedIds: selectedIdsOf(selected, tabFactsOf(createScreenWithChats(selectedId === null ? [] : [selectedId]))),
 		elsewhere: [],
-		shownTileRowId,
 	});
 }
 

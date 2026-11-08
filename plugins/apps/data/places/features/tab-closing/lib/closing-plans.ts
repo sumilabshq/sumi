@@ -35,7 +35,7 @@ export function closeOthersPlan(id: string): ShowingPlan {
 
 export function closeShownPlan(): ShowingPlan {
 	return (showing, facts) => {
-		const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.shownView));
+		const shownId = shownTabIdOf(showing.moment, shownAppOf(showing.moment.view));
 
 		if (shownId === null) {
 			return refusal(NOTHING_SHOWN);

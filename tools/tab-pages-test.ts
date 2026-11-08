@@ -12,7 +12,7 @@ import {
 } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { placedTabsOf } from "./places-fixture.ts";
+import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { PaneTreeQuery, PlacePaneCommand } from "../packages/state/layout/generated/contract.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -201,7 +201,7 @@ function pagedTabs(): SeededTabs {
 }
 
 async function pagesAfterRestoreOf(keepsPages: boolean): Promise<readonly (string | null)[]> {
-	const places = new MemoryTabsGateway(placedTabsOf(pagedTabs(), [HOST_CHAT]));
+	const places = new MemoryTabsGateway(withWindowView(placedTabsOf(pagedTabs(), [HOST_CHAT]), "browser"));
 	const studioWindow = new MemoryStudioWindowGateway({ label: "main", isBeside: false, keepsPages });
 	const { studioApp } = studioFakesOf({ places, studioWindow, pages: [BROWSER_FIRST_PAGE] });
 	await studioApp.send(RestoreTabsCommand);

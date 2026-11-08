@@ -7,7 +7,7 @@ import type { RemoteTransport } from "../packages/shared/data-framework/src/inde
 import type { WidgetariumProject } from "../packages/shared/core/src/app/widgetarium-project.ts";
 import { corePack } from "../packages/shared/packs/core/src/index.ts";
 import type { RegisteredApp } from "../packages/shared/app-registry/index.ts";
-import { AppTabsQuery, OpenChatCommand, ShowTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { AppTabsQuery, ShowTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { ChooseThemeCommand } from "../packages/state/appearance/generated/contract.ts";
 import { startStudioAppearance } from "../apps/studio/src/tabs/studio-appearance.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
@@ -125,13 +125,7 @@ const driver: SumiAppsDriver = {
 			}),
 		),
 	chooseTheme: (choice) => outputOf(appearance.appearanceApp.send(ChooseThemeCommand, { choice })),
-	openChat: () =>
-		outputOf(
-			studioApp.send(OpenChatCommand, {
-				chatId: SUMI_CHAT_TAB,
-				paneId: null,
-			}),
-		),
+	openChat: () => outputOf(studioApp.send(ShowTabCommand, { id: SUMI_CHAT_TAB })),
 };
 void restoreTabs(studioApp).then(() => {
 	window.__sumiApps = driver;

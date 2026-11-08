@@ -7,12 +7,11 @@ import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateway
 import type { StudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/studio-window.gateway.ts";
 import { PaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/pane-flash.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import type { StudioView } from "../plugins/apps/data/app-host/shared/schema/studio-view.schema.ts";
 import { PlacesModule } from "../plugins/apps/data/places/generated/contract.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { placedTabsOf, placesLinkOf } from "./places-fixture.ts";
+import { placedTabsOf, placesLinkOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
@@ -104,7 +103,6 @@ export class RecordedPaneFlash extends PaneFlashGateway {
 export interface AppHostFakes {
 	readonly studioWindow: StudioWindowGateway;
 	readonly essentials: MemoryEssentialsGateway;
-	readonly shownView: MemoryShownViewGateway;
 	readonly paneFlash: RecordedPaneFlash;
 	readonly coreChanges: NoCoreChangesGateway;
 }
@@ -129,11 +127,10 @@ export interface StudioSeed {
 	readonly chatTitle?: string;
 }
 
-export function appHostFakesOf({ studioWindow, essentials = null, view = "browser" }: StudioSeed): AppHostFakes {
+export function appHostFakesOf({ studioWindow, essentials = null }: StudioSeed): AppHostFakes {
 	return {
 		studioWindow: studioWindow ?? new MemoryStudioWindowGateway(),
 		essentials: new MemoryEssentialsGateway(essentials),
-		shownView: new MemoryShownViewGateway(view),
 		paneFlash: new RecordedPaneFlash(),
 		coreChanges: new NoCoreChangesGateway(),
 	};
@@ -141,7 +138,7 @@ export function appHostFakesOf({ studioWindow, essentials = null, view = "browse
 
 export function studioFakesOf(seed: StudioSeed = {}): StudioFakes {
 	const appHost = appHostFakesOf(seed);
-	const places = seed.places ?? new MemoryTabsGateway(placedTabsOf(seed.tabs ?? NO_TABS, [HOST_CHAT]));
+	const places = seed.places ?? createSeededPlaces(seed);
 	const pages = new RecordedPagesGateway(seed.pages ?? [], seed.isBrowserAvailable ?? true);
 	const layout = partsOf(seed.tree ?? treeShowingChat(FIRST_PANES, HOST_CHAT, null));
 	const studioApp = runtime()
@@ -186,4 +183,8 @@ function workspacesOf(title: string | null): ReturnType<typeof memoryWorkspacesP
 			openOnStartId: HOST_CHAT,
 		},
 	});
+}
+
+function createSeededPlaces({ tabs, view = "browser" }: StudioSeed): MemoryTabsGateway {
+	return new MemoryTabsGateway(withWindowView(placedTabsOf(tabs ?? NO_TABS, [HOST_CHAT]), view));
 }

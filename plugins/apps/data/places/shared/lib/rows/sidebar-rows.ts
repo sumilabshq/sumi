@@ -1,7 +1,7 @@
 import { newTabPlaceOf } from "../tabs/host-tabs.js";
 import type { HostTabsMoment, TabGroup } from "../tabs/host-tabs.js";
 import { PINNED_LIST, SECTION_TITLES, WORKSPACE_LIST, findGroup } from "../tabs/tab-lists.js";
-import { TabRows, shownIdsOf } from "./tab-rows.js";
+import { TabRows } from "./tab-rows.js";
 import { SplitRows } from "./split-rows.js";
 import { holderIdsOf } from "../tabs/app-abilities.js";
 import type {
@@ -13,24 +13,21 @@ import type {
 	TabChild,
 } from "../../schema/tab-rows.schema.js";
 import type { PageFacts } from "../../schema/screen.schema.js";
-import type { ListEntry, PageApp, SectionList } from "../../schema/tabs.schema.js";
+import type { ListEntry, SectionList } from "../../schema/tabs.schema.js";
 
 export interface SidebarRowsAsk {
 	readonly moment: HostTabsMoment;
 	readonly essentials: readonly Essential[];
 	readonly pages: readonly PageFacts[];
-	readonly shownApp: PageApp | null;
-	readonly hasShownTabPane: boolean;
+	readonly highlightedIds: ReadonlySet<string>;
 	readonly elsewhere: readonly string[];
-	readonly shownTileRowId: string | null;
 }
 
 const SECTION_ORDER: readonly SectionList[] = [PINNED_LIST, WORKSPACE_LIST];
 
 export function sidebarOf(ask: SidebarRowsAsk): PlacedSidebar {
-	const shownPageIds = shownIdsOf(ask.moment, ask.hasShownTabPane ? ask.shownApp : null);
 	const rows = new TabRows(ask.moment, ask.pages, {
-		shownIds: ask.shownTileRowId === null ? shownPageIds : new Set([...shownPageIds, ask.shownTileRowId]),
+		highlightedIds: ask.highlightedIds,
 		elsewhereIds: new Set(ask.elsewhere),
 	});
 	const entries = new SidebarEntries(ask.moment, rows);

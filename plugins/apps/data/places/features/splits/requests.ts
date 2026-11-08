@@ -35,11 +35,10 @@ export const PlaceInViewCommand = command("place-in-view")
 	.output(PlacedInViewSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ at, ...placing }, { tabs, placedApps }) => {
-		const { view, effects, extra } = answered(
+		const { effects, extra } = answered(
 			await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), placeInViewPlan(placing))),
 		);
 		return {
-			view,
 			effects,
 			isPlaced: extra,
 		};
@@ -51,11 +50,10 @@ export const RemoveFromSplitCommand = command("remove-from-split")
 	.output(LeftSplitSchema)
 	.idempotencyKey(Repeatable)
 	.handle(async ({ at, tabId }, { tabs, placedApps }) => {
-		const { view, effects, extra } = answered(
+		const { effects, extra } = answered(
 			await tabs.movePlacedTabs(settlingWith(at, placedApps.placedApps(), removeFromSplitPlan(tabId))),
 		);
 		return {
-			view,
 			effects,
 			isMember: extra,
 		};

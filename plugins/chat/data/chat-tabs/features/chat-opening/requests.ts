@@ -1,5 +1,5 @@
 import { PerCall, Repeatable, refuse } from "@widgetarium/data-framework";
-import { OpenChatCommand } from "@widgetarium/app-host";
+import { SyncChatTabsCommand, ShowTabCommand } from "@widgetarium/app-host";
 import { PaneTreeQuery } from "@widgetarium/layout";
 import { ChatToOpenQuery, CreateChatCommand, ForgetChatToOpenCommand } from "@widgetarium/workspaces";
 import { command } from "#module";
@@ -16,7 +16,8 @@ export const OpenNewChatCommand = command("open-new-chat")
 	.idempotencyKey(PerCall)
 	.handle(async ({ title }, { send }) => {
 		const created = await send(CreateChatCommand, { title });
-		await send(OpenChatCommand, { chatId: created.id, paneId: null });
+		await send(SyncChatTabsCommand);
+		await send(ShowTabCommand, { id: created.id });
 		return created;
 	});
 
@@ -39,7 +40,8 @@ export const NameChatPaneCommand = command("name-chat-pane")
 		}
 
 		const chatId = await chatIdForPane(send, board, asked.id);
-		await send(OpenChatCommand, { chatId, paneId });
+		await send(SyncChatTabsCommand);
+		await send(ShowTabCommand, { id: chatId, paneId });
 		return { id: chatId };
 	});
 
@@ -58,6 +60,7 @@ export const OpenChatAskedOnStartCommand = command("open-chat-asked-on-start")
 		}
 
 		console.info(`[widgetarium] chat ${asked.id} opens on start (asked from another workspace)`);
-		await send(OpenChatCommand, { chatId: asked.id, paneId: null });
+		await send(SyncChatTabsCommand);
+		await send(ShowTabCommand, { id: asked.id });
 		await send(ForgetChatToOpenCommand, { id: asked.id });
 	});

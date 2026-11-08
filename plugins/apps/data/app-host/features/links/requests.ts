@@ -4,7 +4,7 @@ import { linkTargetOf } from "@widgetarium/core/engine/sumi-link.js";
 import type { LinkTarget } from "@widgetarium/core/engine/sumi-link.js";
 import { TabsSettledEvent } from "../../shared/events/tabs.events.js";
 import { AppsQuery } from "@sumi/apps";
-import { openTabSettled, showChatSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
+import { openTabSettled, showTabSettled } from "../../shared/lib/tab-showing/tab-opening.js";
 import type { TabsReach } from "../../shared/lib/tab-showing/tab-settling.js";
 import { AppKindSchema } from "../../shared/schema/app-tab.schema.js";
 import type { AppKind } from "../../shared/schema/app-tab.schema.js";
@@ -49,13 +49,8 @@ async function openSumiLinked(href: string, opensNew: boolean, reach: TabsReach)
 }
 
 async function openTargetLinked({ target, opensNew, reach }: LinkOpening): Promise<string | null> {
-	if (target.kind === "chat") {
-		await showChatSettled(reach, { chatId: target.id, paneId: null });
-		return null;
-	}
-
-	if (target.kind === "tab") {
-		await showTabSettled(reach, target.id);
+	if (target.kind === "chat" || target.kind === "tab") {
+		await showTabSettled(reach, { id: target.id });
 		return null;
 	}
 

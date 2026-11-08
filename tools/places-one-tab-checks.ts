@@ -1,3 +1,4 @@
+import { BARE_SCREEN } from "./places-fixture.ts";
 import { builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { Runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -16,10 +17,11 @@ import {
 	RecordAppAddressCommand,
 	ReopenClosedTabCommand,
 	ShowTabCommand,
+	ShowViewCommand,
 	SidebarQuery,
 	TearOffTabCommand,
 } from "../plugins/apps/data/places/index.ts";
-import type { PlacedSidebar, Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import type { AppTabState, PlacedSidebar, TabChild, TabsAsk } from "../plugins/apps/data/places/index.ts";
 import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { MemoryWindowsGateway } from "../plugins/apps/data/places/gateways/windows/memory.gateway.ts";
@@ -27,22 +29,9 @@ import { check, tally } from "./check-helpers.ts";
 
 const WINDOW = "main";
 
-const NO_SCREEN: Screen = {
-	pages: [],
-	isBrowserAvailable: false,
-	canOpenOwnWindow: false,
-	tabPanes: [],
-	shownTabPaneId: null,
-	tabTargetId: null,
-	chatGroups: [],
-	elsewhere: [],
-	focusedChatId: null,
-};
-
 const AT: TabsAsk = {
 	window: WINDOW,
-	view: "canvas",
-	screen: NO_SCREEN,
+	screen: BARE_SCREEN,
 };
 
 function placesApp(tabs: MemoryTabsGateway): Runtime {
@@ -162,7 +151,7 @@ async function sameForEveryTabChecks(): Promise<void> {
 	check(
 		"a chat dropped onto a chat is refused, and a chat becomes an essential like any tab",
 		[inChat.ok ? "placed" : inChat.reason, essential.ok ? essential.output.title : essential.reason],
-		['the tab "chat-b" holds tabs of its own: it cannot stand inside "chat-a"', "Two"],
+		['the tab "chat-b" cannot stand inside "chat-a": its app does not let it', "Two"],
 	);
 }
 
@@ -212,7 +201,7 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-b", title: "Draft" }] });
 	const terminal = await places.send(OpenTabCommand, { at: AT, app: "terminal", list: null });
 	const terminalId = terminal.ok ? terminal.output.id : terminal.reason;
-	const able = { ...AT, screen: { ...NO_SCREEN, canOpenOwnWindow: true } };
+	const able = { ...AT, screen: { ...BARE_SCREEN, canOpenOwnWindow: true } };
 	const held = { ...able, screen: { ...able.screen, elsewhere: [{ window: "studio-2", tabIds: ["chat-b"] }] } };
 	const effectsOf = (answer: { readonly ok: boolean; readonly output?: { readonly effects: readonly unknown[] } }) =>
 		answer.ok ? answer.output?.effects : "refused";
@@ -227,7 +216,7 @@ async function oneWindowOwnerChecks(): Promise<void> {
 				{ kind: "close-chat-panes", chatIds: ["chat-b"] },
 				{ kind: "tear-off-tab", tabId: "chat-b", view: "chat" },
 			],
-			[{ kind: "tear-off-tab", tabId: terminalId, view: "app" }],
+			[{ kind: "tear-off-tab", tabId: terminalId, view: "app" }, { kind: "close-shown-tab-pane" }],
 		],
 	);
 	check(
@@ -240,8 +229,81 @@ async function oneWindowOwnerChecks(): Promise<void> {
 	);
 }
 
+function childTabsOf(children: readonly TabChild[]): readonly AppTabState[] {
+	return children.flatMap((child) => (child.kind === "tab" ? [child.tab] : child.group.tabs));
+}
+
+async function selectionChecks(): Promise<void> {
+	const places = placesApp(new MemoryTabsGateway());
+	await places.send(KeepChatTabsCommand, { chats: [{ id: "chat-b", title: "Draft" }] });
+	const onScreen: TabsAsk = {
+		...AT,
+		screen: {
+			...BARE_SCREEN,
+			shownTabPaneId: "pane-shown",
+			chatGroups: [{ chatId: "chat-b", paneIds: ["pane-chat"] }],
+		},
+	};
+	const canvas = await places.send(OpenTabCommand, { at: onScreen, app: "canvas", list: null });
+	const tasks = await places.send(OpenTabCommand, { at: onScreen, app: "tasks", list: null });
+	const canvasId = canvas.ok ? canvas.output.id : canvas.reason;
+	const tasksId = tasks.ok ? tasks.output.id : tasks.reason;
+	const readHighlightedIds = async (at: TabsAsk): Promise<readonly string[]> => {
+		const answer = await places.send(SidebarQuery, { at, essentials: [] });
+		return answer.ok
+			? answer.output.sections
+					.flatMap((section) => section.entries)
+					.flatMap((entry) => (entry.kind === "tab" ? [entry.tab, ...childTabsOf(entry.children ?? [])] : []))
+					.flatMap((tab) => (tab.isShown ? [tab.id] : []))
+			: [answer.reason];
+	};
+	const showTabThenReadHighlightedIds = async (id: string, at: TabsAsk = onScreen): Promise<readonly string[]> => {
+		await places.send(ShowTabCommand, { at, id });
+		return readHighlightedIds(at);
+	};
+	check(
+		"one press highlights the pressed tab alone, whatever its app, a chat included",
+		[
+			await showTabThenReadHighlightedIds(tasksId),
+			await showTabThenReadHighlightedIds(canvasId),
+			await showTabThenReadHighlightedIds("chat-b"),
+		],
+		[[tasksId], [canvasId], ["chat-b"]],
+	);
+	const inChat = await places.send(OpenTabCommand, { at: onScreen, app: "canvas", list: "chat-b" });
+	const inChatId = inChat.ok ? inChat.output.id : inChat.reason;
+	const withInChatPane: TabsAsk = {
+		...onScreen,
+		screen: {
+			...onScreen.screen,
+			tabPanes: [{ paneId: "pane-beside", tabId: inChatId }],
+			chatGroups: [{ chatId: "chat-b", paneIds: ["pane-chat", "pane-beside"] }],
+		},
+	};
+	check(
+		"a tab inside a chat is highlighted together with its chat",
+		await showTabThenReadHighlightedIds(inChatId, withInChatPane),
+		["chat-b", inChatId],
+	);
+	await places.send(ShowTabCommand, { at: withInChatPane, id: "chat-b", isFollowingFocus: true });
+	const afterFocus = await readHighlightedIds(withInChatPane);
+	await places.send(ShowTabCommand, { at: withInChatPane, id: "chat-b" });
+	check(
+		"focus moving into a chat keeps the selection on its tab, a press on the chat selects the chat",
+		[afterFocus, await readHighlightedIds(withInChatPane)],
+		[["chat-b", inChatId], ["chat-b"]],
+	);
+	const chatView = await places.send(ShowViewCommand, { window: onScreen.window, view: "chat" });
+	check(
+		"the shown view names an app whose tabs run in a page, never a chat",
+		chatView.ok ? "shown" : chatView.reason,
+		'the view "chat" names no app whose tabs run in a page',
+	);
+}
+
 const quiet = console.info;
 console.info = () => undefined;
+await selectionChecks();
 await wholeChatChecks();
 await sameForEveryTabChecks();
 await foldChecks();

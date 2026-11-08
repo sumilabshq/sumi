@@ -3,7 +3,6 @@ import { buildersOf } from "@widgetarium/data-framework";
 import type { AppHostModule } from "../module.js";
 import type { StudioCoreChangedEvent } from "../gateways/core-changes/core-changes.events.js";
 import type { EssentialsChangedEvent } from "../gateways/essentials/essentials.events.js";
-import type { ShownViewChangedEvent } from "../gateways/shown-view/shown-view.events.js";
 import type { TabsSettledEvent } from "../shared/events/tabs.events.js";
 
-export const { command, query, subscriber } = buildersOf<typeof AppHostModule, typeof EssentialsChangedEvent | typeof ShownViewChangedEvent | typeof StudioCoreChangedEvent | typeof TabsSettledEvent>();
+export const { command, query, subscriber } = buildersOf<typeof AppHostModule, typeof EssentialsChangedEvent | typeof StudioCoreChangedEvent | typeof TabsSettledEvent>();

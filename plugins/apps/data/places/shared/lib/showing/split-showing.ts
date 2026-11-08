@@ -86,7 +86,7 @@ function withSplitLeft(showing: Showing, facts: TabFacts, split: KeptSplit): Sho
 
 	return isPageTab(showing.moment.apps, tab)
 		? withTabShown(unboarded, boardlessOf(facts), tab)
-		: withEffect(unboarded, { kind: "show-chat", chatId: tab.id });
+		: withEffect(unboarded, { kind: "show-chat", chatId: tab.id, paneId: null });
 }
 
 function unboardedOf(showing: Showing): Showing {

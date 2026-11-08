@@ -1,3 +1,4 @@
+import { BARE_SCREEN } from "./places-fixture.ts";
 import { BUILT_IN_APPS, builtInPlacedApps } from "./placed-apps-fixture.ts";
 import { runtime, localTransport } from "../packages/shared/data-framework/src/index.ts";
 import type { RemoteTransport, Runtime } from "../packages/shared/data-framework/src/index.ts";
@@ -16,7 +17,7 @@ import {
 	PlacesModule,
 	ShowTabCommand,
 } from "../plugins/apps/data/places/index.ts";
-import type { Screen, TabsAsk } from "../plugins/apps/data/places/index.ts";
+import type { TabsAsk } from "../plugins/apps/data/places/index.ts";
 import { PlacesModule as RunnablePlacesModule } from "../plugins/apps/data/places/module.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
 import { TauriTabsGateway } from "../plugins/apps/data/places/gateways/tabs/tauri/tauri.gateway.ts";
@@ -32,20 +33,8 @@ const PLACES: DocKind<KeptPlaces> = {
 	schema: KeptPlacesSchema,
 };
 
-const NO_SCREEN: Screen = {
-	pages: [],
-	isBrowserAvailable: false,
-	canOpenOwnWindow: false,
-	tabPanes: [],
-	shownTabPaneId: null,
-	tabTargetId: null,
-	chatGroups: [],
-	elsewhere: [],
-	focusedChatId: null,
-};
-
 function askAt(window: string): TabsAsk {
-	return { window, view: "canvas", screen: NO_SCREEN };
+	return { window, screen: BARE_SCREEN };
 }
 
 function windowsOver(tabs: MemoryTabsGateway | TauriTabsGateway): readonly [Runtime, Runtime] {
@@ -259,7 +248,7 @@ async function lawChecks(): Promise<void> {
 		],
 		[
 			2,
-			'the tab "chat-b" holds tabs of its own: it cannot stand inside "chat-a"',
+			'the tab "chat-b" cannot stand inside "chat-a": its app does not let it',
 			'no tab list "tab-1" is here: a tab stands in Open, Pinned or a chat',
 		],
 	);
@@ -301,7 +290,7 @@ async function groupPlacingChecks(main: Runtime, groupId: string): Promise<void>
 	check(
 		"a group holding a chat cannot stand inside another chat",
 		intoChat.ok ? "placed" : intoChat.reason,
-		`the group "${groupId}" holds a tab that holds tabs: it cannot stand inside "chat-a"`,
+		`the group "${groupId}" holds a tab whose app does not let it stand inside "chat-a"`,
 	);
 }
 

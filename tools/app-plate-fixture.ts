@@ -1,11 +1,10 @@
 import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { placedTabsOf } from "./places-fixture.ts";
+import { placedTabsOf, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/none.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import { MemoryBrowserAuditGateway } from "../packages/domain/browser/gateways/browser-audit/memory.gateway.ts";
 import { MemoryBrowserGrantsGateway } from "../packages/domain/browser/gateways/browser-grants/memory.gateway.ts";
@@ -73,13 +72,12 @@ export function tauriLikeStudioStart(assistant: AssistantPort): StudioStart {
 		appHost: {
 			studioWindow: new MemoryStudioWindowGateway(),
 			essentials: new MemoryEssentialsGateway(KEPT_ESSENTIALS),
-			shownView: new MemoryShownViewGateway("canvas"),
 			paneFlash: new NoPaneFlashGateway(),
 			coreChanges: new NoCoreChangesGateway(),
 		},
 		workspaces: newChatWorkspaces(),
 		workspaceId: TAURI_WORKSPACE,
-		places: new MemoryTabsGateway(placedTabsOf(KEPT_TABS, [CHAT_ID])),
+		places: new MemoryTabsGateway(withWindowView(placedTabsOf(KEPT_TABS, [CHAT_ID]), "canvas")),
 	});
 	void restoreTabs(studioApp);
 	Object.assign(window, {

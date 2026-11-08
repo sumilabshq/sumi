@@ -6,18 +6,17 @@ import { PLUGIN_WINDOW_MODULES } from "./command-menu-fixture.ts";
 import { MemoryEssentialsGateway } from "../plugins/apps/data/app-host/gateways/essentials/memory.gateway.ts";
 import { MemoryStudioWindowGateway } from "../plugins/apps/data/app-host/gateways/studio-window/memory.gateway.ts";
 import { MemoryTabsGateway } from "../plugins/apps/data/places/gateways/tabs/memory.gateway.ts";
-import { placedTabsOf, placesOver } from "./places-fixture.ts";
+import { placedTabsOf, placesOver, withWindowView } from "./places-fixture.ts";
 import type { SeededTabs } from "./places-fixture.ts";
 import { NoPaneFlashGateway } from "../plugins/apps/data/app-host/gateways/pane-flash/none.gateway.ts";
 import { NoCoreChangesGateway } from "../plugins/apps/data/app-host/gateways/core-changes/none.gateway.ts";
-import { MemoryShownViewGateway } from "../plugins/apps/data/app-host/gateways/shown-view/memory.gateway.ts";
 import type { KeptEssentials } from "../plugins/apps/data/app-host/shared/schema/essential.schema.ts";
 import { BrowserModule } from "../packages/domain/browser/module.ts";
 import type { BrowserTab } from "../packages/domain/browser/shared/schema/browser-tab.schema.ts";
 import { LayoutModule } from "../packages/state/layout/module.ts";
 import { ShowChatInPaneCommand } from "../packages/state/layout/generated/contract.ts";
 import { WorkspacesModule } from "../packages/domain/workspaces/module.ts";
-import { OpenChatCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
+import { ShowTabCommand } from "../plugins/apps/data/app-host/generated/contract.ts";
 import { memoryWorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/memory.gateway.ts";
 import type { WorkspacesParts } from "../packages/domain/workspaces/gateways/workspaces-parts/workspaces-parts.gateway.ts";
 import { FakeBrowserPagesGateway, fakeBrowser } from "./browser-fakes.ts";
@@ -168,7 +167,9 @@ export function exactStudio({
 	const kept = workspaces.chats.chats().chats;
 	const titles = Object.fromEntries(kept.map((chat) => [chat.id, { title: chat.title ?? "New chat" }]));
 	const chatIds = kept.map((chat) => chat.id);
-	const places = new MemoryTabsGateway(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds, titles));
+	const places = new MemoryTabsGateway(
+		withWindowView(placedTabsOf(keptTabsIn(releaseChatId), chatIds, pinnedChatIds, titles), "browser"),
+	);
 	const keptEssentials = new MemoryEssentialsGateway(essentials);
 	const boardPages = new BoardPagesGateway();
 	const studioApp = runtime()
@@ -178,7 +179,6 @@ export function exactStudio({
 				injects: {
 					studioWindow: new MemoryStudioWindowGateway(),
 					essentials: keptEssentials,
-					shownView: new MemoryShownViewGateway("browser"),
 					paneFlash: new NoPaneFlashGateway(),
 					coreChanges: new NoCoreChangesGateway(),
 				},
@@ -195,7 +195,7 @@ export function exactStudio({
 		studioApp,
 		places,
 		essentials: keptEssentials,
-		switchChat: (id) => void studioApp.send(OpenChatCommand, { chatId: id, paneId: null }),
+		switchChat: (id) => void studioApp.send(ShowTabCommand, { id }),
 		holdElsewhere: (pageId) => boardPages.holdElsewhere(pageId),
 	};
 }

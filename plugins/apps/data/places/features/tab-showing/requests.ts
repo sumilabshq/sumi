@@ -1,11 +1,12 @@
 import { Repeatable } from "@widgetarium/data-framework";
 import { command } from "#module";
-import { settledOf, settling } from "../../shared/lib/settling/settling.js";
+import { answered, moving, settledOf, settling } from "../../shared/lib/settling/settling.js";
 import { TabsSettledSchema } from "../../shared/schema/screen.schema.js";
 import {
-	ChatTabAskSchema,
 	RestoreTabsAskSchema,
 	SettleAskSchema,
+	ShowTabAskSchema,
+	ShowViewAskSchema,
 	TabAskSchema,
 } from "../../shared/schema/tab-asks.schema.js";
 import {
@@ -14,8 +15,8 @@ import {
 	reloadPlan,
 	rememberPagesPlan,
 	restorePlan,
-	showChatTabPlan,
 	showTabPlan,
+	showViewPlan,
 	tearOffPlan,
 } from "./lib/showing-plans.js";
 
@@ -30,20 +31,11 @@ export const RestoreTabsCommand = command("restore-tabs")
 
 export const ShowTabCommand = command("show-tab")
 	.public()
-	.input(TabAskSchema)
+	.input(ShowTabAskSchema)
 	.output(TabsSettledSchema)
 	.idempotencyKey(Repeatable)
-	.handle(async ({ at, id }, { tabs, placedApps }) =>
-		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showTabPlan(id)))),
-	);
-
-export const ShowChatTabCommand = command("show-chat-tab")
-	.public()
-	.input(ChatTabAskSchema)
-	.output(TabsSettledSchema)
-	.idempotencyKey(Repeatable)
-	.handle(async ({ at, chatId }, { tabs, placedApps }) =>
-		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showChatTabPlan(chatId)))),
+	.handle(async ({ at, ...asked }, { tabs, placedApps }) =>
+		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), showTabPlan(asked)))),
 	);
 
 export const FitTabsToPanesCommand = command("fit-tabs-to-panes")
@@ -90,3 +82,11 @@ export const ReloadTabCommand = command("reload-tab")
 	.handle(async ({ at, id }, { tabs, placedApps }) =>
 		settledOf(await tabs.movePlacedTabs(settling(at, placedApps.placedApps(), reloadPlan(id)))),
 	);
+
+export const ShowViewCommand = command("show-view")
+	.public()
+	.input(ShowViewAskSchema)
+	.idempotencyKey(Repeatable)
+	.handle(async ({ window, view }, { tabs, placedApps }) => {
+		answered(await tabs.movePlacedTabs(moving(window, placedApps.placedApps(), showViewPlan(view))));
+	});

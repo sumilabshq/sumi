@@ -9,6 +9,10 @@ export const PageAppSchema = AppKindSchema;
 
 export type PageApp = z.infer<typeof PageAppSchema>;
 
+export const StudioViewSchema = z.union([z.literal("app"), PageAppSchema]);
+
+export type StudioView = z.infer<typeof StudioViewSchema>;
+
 export const TabMarkSchema = z.enum(["none", "running", "unread"]);
 
 export type TabMark = z.infer<typeof TabMarkSchema>;
@@ -86,6 +90,8 @@ export const WindowViewSchema = z.object({
 	shownId: z.string().nullable(),
 	lastShown: z.record(z.string(), z.string()).default({}),
 	shownSplitId: z.string().nullable().default(null),
+	view: StudioViewSchema.default("app"),
+	selectedId: z.string().nullable().default(null),
 });
 
 export type WindowView = z.infer<typeof WindowViewSchema>;
